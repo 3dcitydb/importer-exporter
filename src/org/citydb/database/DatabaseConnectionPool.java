@@ -85,6 +85,9 @@ public class DatabaseConnectionPool {
 		if (conn.getUser() == null || conn.getUser().trim().length() == 0)
 			throw new DatabaseConfigurationException(Language.I18N.getString("db.dialog.error.conn.user"));
 
+		if (conn.getInternalPassword() == null || conn.getInternalPassword().trim().length() == 0)
+			throw new DatabaseConfigurationException(Language.I18N.getString("db.dialog.error.conn.pass"));
+
 		if (conn.getServer() == null || conn.getServer().trim().length() == 0)
 			throw new DatabaseConfigurationException(Language.I18N.getString("db.dialog.error.conn.server"));
 
@@ -106,9 +109,7 @@ public class DatabaseConnectionPool {
 		properties.setUrl(databaseAdapter.getJDBCUrl(conn.getServer(), conn.getPort(), conn.getSid()));
 		properties.setDriverClassName(databaseAdapter.getConnectionFactoryClassName());
 		properties.setUsername(conn.getUser());
-		if (conn.getInternalPassword() != null && conn.getInternalPassword().length() != 0)
-			properties.setPassword(conn.getInternalPassword());
-		
+		properties.setPassword(conn.getInternalPassword());
 		properties.setName(poolName);
 		properties.setDefaultAutoCommit(true);
 

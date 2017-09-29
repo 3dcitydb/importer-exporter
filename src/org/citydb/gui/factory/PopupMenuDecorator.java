@@ -27,7 +27,6 @@
  */
 package org.citydb.gui.factory;
 
-import java.awt.Component;
 import java.awt.Point;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -46,7 +45,7 @@ import org.citydb.gui.factory.popup.StandardTreePopupMenu;
 
 public class PopupMenuDecorator implements StandardEditingPopupMenuDecorator {
 	private static PopupMenuDecorator instance;
-	private static HashMap<Class<? extends Component>, AbstractStandardPopupMenu> popupMenus = new HashMap<Class<? extends Component>, AbstractStandardPopupMenu>();
+	private static HashMap<String, AbstractStandardPopupMenu> popupMenus = new HashMap<String, AbstractStandardPopupMenu>();
 
 	private PopupMenuDecorator() {
 		// just to thwart instantiation
@@ -134,7 +133,7 @@ public class PopupMenuDecorator implements StandardEditingPopupMenuDecorator {
 	}
 
 	private AbstractStandardPopupMenu getStandardEditingPopupMenu(JComponent component) {
-		AbstractStandardPopupMenu popupMenu = popupMenus.get(component.getClass());
+		AbstractStandardPopupMenu popupMenu = popupMenus.get(component.getClass().getName());
 
 		if (popupMenu == null) {
 			if (component instanceof JTree) {
@@ -146,7 +145,7 @@ public class PopupMenuDecorator implements StandardEditingPopupMenuDecorator {
 			}
 
 			popupMenu.doTranslation();
-			popupMenus.put(component.getClass(), popupMenu);
+			popupMenus.put(component.getClass().getName(), popupMenu);
 		}
 
 		return popupMenu;
