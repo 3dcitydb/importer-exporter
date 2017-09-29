@@ -1,10 +1,8 @@
 package org.citydb.api.geometry;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlList;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlValue;
 
@@ -13,19 +11,18 @@ public class PositionList {
 	@XmlAttribute(required=false)
 	private Integer dimension = 2;
 	@XmlValue
-	@XmlList
-    private List<Double> coords;
+    private DoubleList coords;
 	
 	public PositionList() {
-		coords = new ArrayList<>();
+		coords = new DoubleList();
 	}
 
 	public List<Double> getCoords() {
-		return coords;
+		return coords.getValues();
 	}
 
 	public void setCoords(List<Double> coords) {
-		this.coords = coords;
+		this.coords.setValues(coords);
 	}
 	
 	public int getDimension() {
@@ -40,7 +37,7 @@ public class PositionList {
 	}
 
 	public boolean isValid() {
-		return coords != null && !coords.isEmpty() && coords.size() % getDimension() == 0;
+		return coords.getValues() != null && !coords.getValues().isEmpty() && coords.getValues().size() % getDimension() == 0;
 	}
 	
 }
