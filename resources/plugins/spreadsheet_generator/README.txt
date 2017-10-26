@@ -1,4 +1,4 @@
-﻿3D City Database Importer/Exporter Spreadsheet Generator Plugin v2.2.0
+﻿3D City Database Importer/Exporter Spreadsheet Generator Plugin v2.2.1
 
   This software is free software and is distributed on an "AS IS" BASIS,
   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -33,7 +33,7 @@ You may obtain a copy of the License at
 2. Copyright
 ------------
 
-(C) 2013 - 2016
+(C) 2013 - 2017
 Chair of Geoinformatics
 Technical University of Munich, Germany
 https://www.gis.bgu.tum.de/
@@ -64,7 +64,7 @@ called "spreadsheet_generator.jar". Following simple steps will guide you
 through the install process:  
 
 * Open the folder that contains your locally installed instance of the
-  Importer/Exporter version 3.x (the installation directory).
+  Importer/Exporter version 3.3.x (the installation directory).
 * Open the plugins subfolder. If it is not available, create a new subfolder
   and name it "plugins". 
 * Extract the downloaded zip file in the plugins folder. As a result a new
