@@ -46,7 +46,7 @@ import org.citydb.util.Util;
 
 public class DefaultDatabaseVersionChecker implements DatabaseVersionChecker {
 	private final DatabaseVersionSupport[] supportedVersions = new DatabaseVersionSupport[]{
-			DatabaseVersionSupport.targetVersion(3, 3, 0).withBackwardsCompatibility(3, 0, 0).withRevisionForwardCompatibility(true)
+			DatabaseVersionSupport.targetVersion(3, 3, 1).withBackwardsCompatibility(3, 0, 0).withRevisionForwardCompatibility(true)
 	};
 
 	@Override
