@@ -68,9 +68,9 @@ public class DefaultDatabaseVersionChecker implements DatabaseVersionChecker {
 		// check for outdated version
 		for (DatabaseVersionSupport supportedVersion : supportedVersions) {
 			if (supportedVersion.getTargetVersion().compareTo(version) > 0) {
-				String message = "The version " + version + " of the " + Database.CITYDB_PRODUCT_NAME + " is outdated. Consider upgrading.";
+				String message = "The version " + version + " of the " + Database.CITYDB_PRODUCT_NAME + " is out of date. Consider upgrading.";
 
-				String text = Language.I18N.getString("db.dialog.warn.version.outdated");
+				String text = Language.I18N.getString("db.dialog.warn.version.outofdate");
 				Object[] args = new Object[]{ version, Database.CITYDB_PRODUCT_NAME };
 				String formattedMessage = MessageFormat.format(text, args);
 
