@@ -1588,11 +1588,11 @@ public class KmlExporter implements EventHandler {
 
 					if (cause instanceof SQLException) {
 						Iterator<Throwable> iter = ((SQLException)cause).iterator();
-						LOG.error("A SQL error occured: " + iter.next().getMessage());
+						LOG.error("A SQL error occurred: " + iter.next().getMessage());
 						while (iter.hasNext())
 							LOG.error("Cause: " + iter.next().getMessage());
 					} else {
-						LOG.error("An error occured: " + cause.getMessage());
+						LOG.error("An error occurred: " + cause.getMessage());
 						while ((cause = cause.getCause()) != null)
 							LOG.error("Cause: " + cause.getMessage());
 					}

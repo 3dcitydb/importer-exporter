@@ -642,7 +642,7 @@ public class KmlExporterManager {
 				Process process = pb.start();
 				process.waitFor();
 			} catch (IOException|InterruptedException e) {
-				Logger.getInstance().debug("Unexpected errors occured while converting collada to glTF for city object '" + colladaBundle.getGmlId() + "' with output path: '" + gltfModelFile.getAbsolutePath() + "'");
+				Logger.getInstance().debug("Unexpected errors occurred while converting collada to glTF for city object '" + colladaBundle.getGmlId() + "' with output path: '" + gltfModelFile.getAbsolutePath() + "'");
 			}
 			finally {
 				if (config.getProject().getKmlExporter().isNotCreateColladaFiles() && gltfModelFile.exists()) {
