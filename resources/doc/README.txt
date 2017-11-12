@@ -186,10 +186,10 @@ and with the support from the following cooperation partners:
 --------------------
 
 Claus Nagel <cnagel@virtualcitysystems.de>
-Richard Redweik <rredweik@virtualcitysystems.de>
-Felix Kunde <felix-kunde@gmx.de>
 Zhihang Yao <zhihang.yao@tum.de>
 György Hudra <ghudra@moss.de>
+Felix Kunde <felix-kunde@gmx.de>
+Richard Redweik <richard.redweik@posteo.de>
 Thomas H. Kolbe <thomas.kolbe@tum.de>
 
 Version !impexp.version! is based on earlier versions of the

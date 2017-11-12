@@ -67,7 +67,7 @@ public class InfoDialog extends JDialog {
 	public InfoDialog(Config config, JFrame frame) {
 		super(frame, Language.I18N.getString("menu.help.info.label"), true);
 		this.config = config;
-		
+
 		initGUI();
 	}
 
@@ -141,11 +141,11 @@ public class InfoDialog extends JDialog {
 			authors.setFont(authorsHeader.getFont());
 
 			authors.setText("Claus Nagel <cnagel@virtualcitysystems.de>\n" +
-					"Richard Redweik <rredweik@virtualcitysystems.de>\n" +
-					"Felix Kunde <felix-kunde@gmx.de>\n" +
 					"Zhihang Yao <zhihang.yao@tum.de>\n" +
 					"György Hudra <ghudra@moss.de>\n" +
-			"Thomas H. Kolbe <thomas.kolbe@tum.de>");				
+					"Felix Kunde <felix-kunde@gmx.de>\n" +
+					"Richard Redweik <richard.redweik@posteo.de>\n" +
+					"Thomas H. Kolbe <thomas.kolbe@tum.de>");				
 			general.add(authors, GuiUtil.setConstraints(0,1,1.0,1.0,GridBagConstraints.BOTH,2,5,5,5));
 
 			String tum_label_text = config.getProject().getGlobal().getLanguage() == LanguageType.EN ?
@@ -162,9 +162,9 @@ public class InfoDialog extends JDialog {
 					tum_label_text + "\n" +
 					"https://www.gis.bgu.tum.de/\n\n" +
 					"This program is free software and licensed under the\n" +
-			"Apache License, Version 2.0. For a copy of the Apache License see\n<http://www.apache.org/licenses/LICENSE-2.0>.");				
+					"Apache License, Version 2.0. For a copy of the Apache License see\n<http://www.apache.org/licenses/LICENSE-2.0>.");				
 			general.add(copy, GuiUtil.setConstraints(0,3,1.0,1.0,GridBagConstraints.BOTH,2,5,5,5));				
-	
+
 			PopupMenuDecorator.getInstance().decorate(authors, copy);
 		}
 
@@ -178,7 +178,7 @@ public class InfoDialog extends JDialog {
 			String text = Language.I18N.getString("menu.help.info.partner");
 			Object[] args = new Object[]{ this.getClass().getPackage().getImplementationTitle() };
 			String result = MessageFormat.format(text, args);
-			
+
 			JLabel supportText = new JLabel(result);
 			partner.add(supportText, GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.HORIZONTAL,15,5,0,5));
 
@@ -189,34 +189,34 @@ public class InfoDialog extends JDialog {
 			logos.setLayout(new GridBagLayout());
 			{
 				Font font = UIManager.getFont("Label.font");
-		        String bodyRule = "body { font-family: " + font.getFamily() + "; " + "font-size: " + font.getSize() + "pt; }";
+				String bodyRule = "body { font-family: " + font.getFamily() + "; " + "font-size: " + font.getSize() + "pt; }";
 
 				String tum_label_text = config.getProject().getGlobal().getLanguage() == LanguageType.EN ?
 						"Chair of Geoinformatics,<br/>nTechnical University of Munich" : "Lehrstuhl für Geoinformatik,<br/>Technische Universität München";
-				
-		        JLabel tum_logo = new JLabel(new ImageIcon(getToolkit().getImage(this.getClass().getResource("/resources/img/partner/tum_logo.png"))));
+
+				JLabel tum_logo = new JLabel(new ImageIcon(getToolkit().getImage(this.getClass().getResource("/resources/img/partner/tum_logo.png"))));
 				logos.add(tum_logo, GuiUtil.setConstraints(0,0,0,0,GridBagConstraints.NONE,10,0,10,0));
 				JEditorPane tum_label = new JEditorPane("text/html", "<html><b>" + tum_label_text + "</b><br/>https://www.gis.bgu.tum.de/</html>");
-		        ((HTMLDocument)tum_label.getDocument()).getStyleSheet().addRule(bodyRule);
+				((HTMLDocument)tum_label.getDocument()).getStyleSheet().addRule(bodyRule);
 				tum_label.setEditable(false);
-		        logos.add(tum_label, GuiUtil.setConstraints(1,0,1,0,GridBagConstraints.HORIZONTAL,5,15,5,5));
+				logos.add(tum_label, GuiUtil.setConstraints(1,0,1,0,GridBagConstraints.HORIZONTAL,5,15,5,5));
 
 				JLabel vcs_logo = new JLabel(new ImageIcon(getToolkit().getImage(this.getClass().getResource("/resources/img/partner/vcs_logo.png"))));
 				logos.add(vcs_logo, GuiUtil.setConstraints(0,1,0,0,GridBagConstraints.NONE,5,5,10,0));
 				JEditorPane vcs_label = new JEditorPane("text/html", "<html><b>virtualcitySYSTEMS GmbH, Berlin</b><br/>http://www.virtualcitysystems.de/</html>");
-		        ((HTMLDocument)vcs_label.getDocument()).getStyleSheet().addRule(bodyRule);
-		        vcs_label.setEditable(false);				
+				((HTMLDocument)vcs_label.getDocument()).getStyleSheet().addRule(bodyRule);
+				vcs_label.setEditable(false);				
 				logos.add(vcs_label, GuiUtil.setConstraints(1,1,1,0,GridBagConstraints.HORIZONTAL,5,15,5,5));
-				
+
 				JLabel moss_logo = new JLabel(new ImageIcon(getToolkit().getImage(this.getClass().getResource("/resources/img/partner/moss_logo.png"))));
 				logos.add(moss_logo, GuiUtil.setConstraints(0,2,0,0,GridBagConstraints.NONE,5,5,5,0));
 				JEditorPane moss_label = new JEditorPane("text/html", "<html><b>M.O.S.S. Computer Grafik Systeme GmbH,<br/>Taufkirchen, Germany</b><br/>http://www.moss.de/</html>");
-		        ((HTMLDocument)moss_label.getDocument()).getStyleSheet().addRule(bodyRule);
-		        moss_label.setEditable(false);				
+				((HTMLDocument)moss_label.getDocument()).getStyleSheet().addRule(bodyRule);
+				moss_label.setEditable(false);				
 				logos.add(moss_label, GuiUtil.setConstraints(1,2,1,0,GridBagConstraints.HORIZONTAL,5,15,5,5));
 
 				logos.add(new JLabel(), GuiUtil.setConstraints(0,3,1.0,1.0,GridBagConstraints.BOTH,5,5,0,5));
-	
+
 				PopupMenuDecorator.getInstance().decorate(tum_label, vcs_label, moss_label);
 			}		
 		}

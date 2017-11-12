@@ -33,10 +33,10 @@
         <appsubpath>!izpack.installation.folder!</appsubpath>
         <authors>
             <author name="Claus Nagel" email="cnagel@virtualcitysystems.de"/>
-            <author name="Richard Redweik" email="rredweik@virtualcitysystems.de"/>
             <author name="Zhihang Yao" email="zhihang.yao@tum.de"/>
             <author name="György Hudra" email="ghudra@moss.de"/>
             <author name="Felix Kunde" email="felix-kunde@gmx.de"/>
+            <author name="Richard Redweik" email="richard.redweik@posteo.de"/>
             <author name="Thomas H. Kolbe" email="thomas.kolbe@tum.de"/>
         </authors>
         <url>!3dcitydb.homepage!</url>
