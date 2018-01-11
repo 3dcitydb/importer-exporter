@@ -60,7 +60,7 @@ the !impexp.name!. Please always check the changelog.
 5. How to use
 -------------
 
-a) Make sure you are using a Java JDK >= 1.7.
+a) Make sure you are using a Java JDK >= 1.8.
 b) Put the "!impexp.plugin.api.jar.filename!" in your classpath.
 c) Implement the "!impexp.plugin.api.maininterface!" interface.
 d) Implement further extension interfaces required by your plugin.

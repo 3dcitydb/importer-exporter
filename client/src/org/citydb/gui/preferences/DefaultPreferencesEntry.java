@@ -1,0 +1,84 @@
+/*
+ * 3D City Database - The Open Source CityGML Database
+ * http://www.3dcitydb.org/
+ * 
+ * Copyright 2013 - 2017
+ * Chair of Geoinformatics
+ * Technical University of Munich, Germany
+ * https://www.gis.bgu.tum.de/
+ * 
+ * The 3D City Database is jointly developed with the following
+ * cooperation partners:
+ * 
+ * virtualcitySYSTEMS GmbH, Berlin <http://www.virtualcitysystems.de/>
+ * M.O.S.S. Computer Grafik Systeme GmbH, Taufkirchen <http://www.moss.de/>
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *     
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.citydb.gui.preferences;
+
+import org.citydb.plugin.extension.preferences.PreferencesEntry;
+import org.citydb.plugin.extension.preferences.PreferencesEvent;
+
+public class DefaultPreferencesEntry extends PreferencesEntry {
+	public AbstractPreferencesComponent component;
+	
+	public DefaultPreferencesEntry(AbstractPreferencesComponent component) {
+		this.component = component;
+	}
+	
+	@Override
+	public boolean isModified() {
+		return component.isModified();
+	}
+
+	@Override
+	public boolean handleEvent(PreferencesEvent event) {
+		switch (event) {
+		case APPLY_SETTINGS:
+			component.setSettings();
+			break;
+		case RESTORE_SETTINGS:
+			component.loadSettings();
+			break;
+		case SET_DEFAULT_SETTINGS:
+			component.resetSettings();
+			break;
+		}
+		
+		return true;
+	}
+
+	@Override
+	public String getLocalizedTitle() {
+		return component.getTitle();
+	}
+
+	@Override
+	public final AbstractPreferencesComponent getViewComponent() {
+		return component;
+	}
+	
+	@Override
+	public final void addChildEntry(PreferencesEntry child) {
+		if (!(child instanceof DefaultPreferencesEntry))
+			throw new IllegalArgumentException("Only DefaultPreferencesEntry instances are allowed as child entries.");
+		
+		super.addChildEntry(child);
+	}
+
+	public void doTranslation() {
+		component.doTranslation();
+	}
+
+}

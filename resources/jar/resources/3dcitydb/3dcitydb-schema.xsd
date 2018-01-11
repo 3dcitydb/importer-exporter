@@ -1,0 +1,510 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<xs:schema elementFormDefault="qualified" version="1.0" targetNamespace="http://www.3dcitydb.org/database/schema/3.0" xmlns="http://www.3dcitydb.org/database/schema/3.0" xmlns:tns="http://www.3dcitydb.org/database/schema/3.0" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <xs:element name="schemaMapping" type="schemaMapping"/>
+
+  <xs:complexType name="schemaMapping">
+    <xs:sequence>
+      <xs:element name="metadata" type="metadata" minOccurs="0"/>
+      <xs:element name="applicationSchemas">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="schema" type="schema" maxOccurs="unbounded"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="attributeTypes" minOccurs="0">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="attributeType" type="complexAttributeType" minOccurs="0" maxOccurs="unbounded"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="complexTypes" minOccurs="0">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="complexType" type="complexType" minOccurs="0" maxOccurs="unbounded"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="objectTypes" minOccurs="0">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="objectType" type="objectType" minOccurs="0" maxOccurs="unbounded"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="featureTypes" minOccurs="0">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="featureType" type="featureType" minOccurs="0" maxOccurs="unbounded"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="propertyInjections" minOccurs="0">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="propertyInjection" type="propertyInjection" minOccurs="0" maxOccurs="unbounded"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="metadata">
+    <xs:sequence>
+      <xs:element name="name" type="xs:string"/>
+      <xs:element name="version" type="xs:string" minOccurs="0"/>
+      <xs:element name="description" type="xs:string" minOccurs="0"/>
+      <xs:element name="dbPrefix" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="schema">
+    <xs:sequence>
+      <xs:element name="namespace" type="namespace" maxOccurs="unbounded"/>
+    </xs:sequence>
+    <xs:attribute name="id" type="xs:ID" use="required"/>
+    <xs:attribute name="xmlPrefix" type="xs:string"/>
+    <xs:attribute name="isADERoot" type="xs:boolean"/>
+  </xs:complexType>
+
+  <xs:complexType name="namespace">
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attribute name="context" type="cityGMLContext" use="required"/>
+        <xs:attribute name="schemaLocation" type="xs:string"/>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+
+  <xs:complexType name="complexAttributeType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element name="attribute" type="attribute"/>
+        <xs:element name="complexAttribute" type="complexAttribute"/>
+      </xs:choice>
+    </xs:sequence>
+    <xs:attribute name="id" type="xs:ID" use="required"/>
+    <xs:attribute name="table" type="xs:string"/>
+  </xs:complexType>
+
+  <xs:complexType name="attribute">
+    <xs:complexContent>
+      <xs:extension base="abstractAttribute">
+        <xs:sequence>
+          <xs:choice minOccurs="0">
+            <xs:element name="join" type="join"/>
+            <xs:element name="reverseJoin" type="reverseJoin"/>
+          </xs:choice>
+        </xs:sequence>
+        <xs:attribute name="column" type="xs:string" use="required"/>
+        <xs:attribute name="type" type="simpleType" use="required"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="abstractAttribute" abstract="true">
+    <xs:complexContent>
+      <xs:extension base="abstractProperty">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="abstractProperty" abstract="true">
+    <xs:complexContent>
+      <xs:extension base="abstractPathElement">
+        <xs:sequence/>
+        <xs:attribute name="minOccurs" type="xs:int"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="abstractPathElement" abstract="true">
+    <xs:sequence/>
+    <xs:attribute name="path" type="xs:string" use="required"/>
+    <xs:attribute name="schema" type="xs:string" use="required"/>
+    <xs:attribute name="queryable" type="xs:boolean"/>
+  </xs:complexType>
+
+  <xs:complexType name="join">
+    <xs:complexContent>
+      <xs:extension base="abstractJoin">
+        <xs:sequence>
+          <xs:element name="condition" type="condition" minOccurs="0" maxOccurs="unbounded"/>
+          <xs:element name="treeHierarchy" type="treeHierarchy" minOccurs="0"/>
+        </xs:sequence>
+        <xs:attribute name="table" type="xs:string" use="required"/>
+        <xs:attribute name="fromColumn" type="xs:string" use="required"/>
+        <xs:attribute name="toColumn" type="xs:string" use="required"/>
+        <xs:attribute name="toRole" type="tableRole" use="required"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="abstractJoin" abstract="true">
+    <xs:sequence/>
+  </xs:complexType>
+
+  <xs:complexType name="condition">
+    <xs:sequence/>
+    <xs:attribute name="column" type="xs:string" use="required"/>
+    <xs:attribute name="value" type="xs:string" use="required"/>
+    <xs:attribute name="type" type="simpleType" use="required"/>
+  </xs:complexType>
+
+  <xs:complexType name="treeHierarchy">
+    <xs:sequence/>
+    <xs:attribute name="rootColumn" type="xs:string" use="required"/>
+  </xs:complexType>
+
+  <xs:complexType name="reverseJoin">
+    <xs:complexContent>
+      <xs:extension base="abstractJoin">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="complexAttribute">
+    <xs:complexContent>
+      <xs:extension base="abstractAttribute">
+        <xs:sequence>
+          <xs:choice minOccurs="0">
+            <xs:element name="join" type="join"/>
+            <xs:element name="reverseJoin" type="reverseJoin"/>
+          </xs:choice>
+          <xs:choice minOccurs="0" maxOccurs="unbounded">
+            <xs:element name="attribute" type="attribute"/>
+            <xs:element name="complexAttribute" type="complexAttribute"/>
+          </xs:choice>
+        </xs:sequence>
+        <xs:attribute name="type" type="xs:string"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="complexType">
+    <xs:complexContent>
+      <xs:extension base="abstractPathElement">
+        <xs:sequence>
+          <xs:element name="extension" type="complexTypeExtension" minOccurs="0"/>
+          <xs:choice minOccurs="0" maxOccurs="unbounded">
+            <xs:element name="attribute" type="attribute"/>
+            <xs:element name="complexAttribute" type="complexAttribute"/>
+            <xs:element name="complexProperty" type="complexProperty"/>
+            <xs:element name="objectProperty" type="objectProperty"/>
+            <xs:element name="featureProperty" type="featureProperty"/>
+            <xs:element name="geometryProperty" type="geometryProperty"/>
+            <xs:element name="implicitGeometryProperty" type="implicitGeometryProperty"/>
+          </xs:choice>
+        </xs:sequence>
+        <xs:attribute name="abstract" type="xs:boolean"/>
+        <xs:attribute name="id" type="xs:ID"/>
+        <xs:attribute name="table" type="xs:string"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="complexTypeExtension">
+    <xs:sequence>
+      <xs:element name="join" type="join" minOccurs="0"/>
+    </xs:sequence>
+    <xs:attribute name="base" type="xs:string" use="required"/>
+  </xs:complexType>
+
+  <xs:complexType name="complexProperty">
+    <xs:complexContent>
+      <xs:extension base="abstractRefOrInlineTypeProperty">
+        <xs:sequence>
+          <xs:element name="type" type="complexType" minOccurs="0"/>
+        </xs:sequence>
+        <xs:attribute name="refType" type="xs:string"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="abstractRefOrInlineTypeProperty" abstract="true">
+    <xs:complexContent>
+      <xs:extension base="abstractTypeProperty">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="abstractTypeProperty" abstract="true">
+    <xs:complexContent>
+      <xs:extension base="abstractProperty">
+        <xs:sequence>
+          <xs:choice minOccurs="0">
+            <xs:element name="join" type="join"/>
+            <xs:element name="joinTable" type="joinTable"/>
+          </xs:choice>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="joinTable">
+    <xs:complexContent>
+      <xs:extension base="abstractJoin">
+        <xs:sequence>
+          <xs:element name="join" type="join"/>
+          <xs:element name="inverseJoin" type="join"/>
+        </xs:sequence>
+        <xs:attribute name="table" type="xs:string" use="required"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="objectProperty">
+    <xs:complexContent>
+      <xs:extension base="abstractRefTypeProperty">
+        <xs:sequence/>
+        <xs:attribute name="target" type="xs:string" use="required"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="abstractRefTypeProperty" abstract="true">
+    <xs:complexContent>
+      <xs:extension base="abstractTypeProperty">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="featureProperty">
+    <xs:complexContent>
+      <xs:extension base="abstractRefTypeProperty">
+        <xs:sequence/>
+        <xs:attribute name="target" type="xs:string" use="required"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="geometryProperty">
+    <xs:complexContent>
+      <xs:extension base="abstractProperty">
+        <xs:sequence>
+          <xs:choice minOccurs="0">
+            <xs:element name="join" type="join"/>
+            <xs:element name="reverseJoin" type="reverseJoin"/>
+          </xs:choice>
+        </xs:sequence>
+        <xs:attribute name="lod" type="xs:int"/>
+        <xs:attribute name="refColumn" type="xs:string"/>
+        <xs:attribute name="inlineColumn" type="xs:string"/>
+        <xs:attribute name="type" type="geometryType" use="required"/>
+        <xs:attribute name="srsDimension" type="xs:int"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="implicitGeometryProperty">
+    <xs:complexContent>
+      <xs:extension base="abstractRefTypeProperty">
+        <xs:sequence/>
+        <xs:attribute name="lod" type="xs:int" use="required"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="objectType">
+    <xs:complexContent>
+      <xs:extension base="abstractPathElement">
+        <xs:sequence>
+          <xs:element name="extension" type="objectTypeExtension" minOccurs="0"/>
+          <xs:choice minOccurs="0" maxOccurs="unbounded">
+            <xs:element name="attribute" type="attribute"/>
+            <xs:element name="complexAttribute" type="complexAttribute"/>
+            <xs:element name="complexProperty" type="complexProperty"/>
+            <xs:element name="objectProperty" type="objectProperty"/>
+            <xs:element name="featureProperty" type="featureProperty"/>
+            <xs:element name="geometryProperty" type="geometryProperty"/>
+            <xs:element name="implicitGeometryProperty" type="implicitGeometryProperty"/>
+          </xs:choice>
+        </xs:sequence>
+        <xs:attribute name="abstract" type="xs:boolean"/>
+        <xs:attribute name="id" type="xs:ID" use="required"/>
+        <xs:attribute name="table" type="xs:string" use="required"/>
+        <xs:attribute name="objectClassId" type="xs:int" use="required"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="objectTypeExtension">
+    <xs:sequence>
+      <xs:element name="join" type="join" minOccurs="0"/>
+    </xs:sequence>
+    <xs:attribute name="base" type="xs:string" use="required"/>
+  </xs:complexType>
+
+  <xs:complexType name="featureType">
+    <xs:complexContent>
+      <xs:extension base="abstractPathElement">
+        <xs:sequence>
+          <xs:element name="extension" type="featureTypeExtension" minOccurs="0"/>
+          <xs:choice minOccurs="0" maxOccurs="unbounded">
+            <xs:element name="attribute" type="attribute"/>
+            <xs:element name="complexAttribute" type="complexAttribute"/>
+            <xs:element name="complexProperty" type="complexProperty"/>
+            <xs:element name="objectProperty" type="objectProperty"/>
+            <xs:element name="featureProperty" type="featureProperty"/>
+            <xs:element name="geometryProperty" type="geometryProperty"/>
+            <xs:element name="implicitGeometryProperty" type="implicitGeometryProperty"/>
+          </xs:choice>
+          <xs:element name="adeHook" type="adeHook" minOccurs="0"/>
+        </xs:sequence>
+        <xs:attribute name="abstract" type="xs:boolean"/>
+        <xs:attribute name="id" type="xs:ID" use="required"/>
+        <xs:attribute name="table" type="xs:string" use="required"/>
+        <xs:attribute name="objectClassId" type="xs:int" use="required"/>
+        <xs:attribute name="topLevel" type="xs:boolean"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="featureTypeExtension">
+    <xs:sequence>
+      <xs:element name="join" type="join" minOccurs="0"/>
+    </xs:sequence>
+    <xs:attribute name="base" type="xs:string" use="required"/>
+  </xs:complexType>
+
+  <xs:complexType name="adeHook">
+    <xs:sequence/>
+    <xs:attribute name="name" type="xs:string" use="required"/>
+  </xs:complexType>
+
+  <xs:complexType name="propertyInjection">
+    <xs:sequence>
+      <xs:element name="join" type="join" minOccurs="0"/>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element name="attribute" type="injectedSimpleAttribute"/>
+        <xs:element name="complexAttribute" type="injectedComplexAttribute"/>
+        <xs:element name="complexProperty" type="injectedComplexProperty"/>
+        <xs:element name="objectProperty" type="injectedObjectProperty"/>
+        <xs:element name="featureProperty" type="injectedFeatureProperty"/>
+        <xs:element name="geometryProperty" type="injectedGeometryProperty"/>
+        <xs:element name="implicitGeometryProperty" type="injectedImplicitGeometryProperty"/>
+      </xs:choice>
+    </xs:sequence>
+    <xs:attribute name="table" type="xs:string" use="required"/>
+    <xs:attribute name="defaultBase" type="xs:string"/>
+  </xs:complexType>
+
+  <xs:complexType name="injectedSimpleAttribute">
+    <xs:complexContent>
+      <xs:extension base="attribute">
+        <xs:sequence/>
+        <xs:attribute name="base" type="xs:string"/>
+        <xs:attribute name="context" type="cityGMLContext"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="injectedComplexAttribute">
+    <xs:complexContent>
+      <xs:extension base="complexAttribute">
+        <xs:sequence/>
+        <xs:attribute name="base" type="xs:string"/>
+        <xs:attribute name="context" type="cityGMLContext"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="injectedComplexProperty">
+    <xs:complexContent>
+      <xs:extension base="complexProperty">
+        <xs:sequence/>
+        <xs:attribute name="base" type="xs:string"/>
+        <xs:attribute name="context" type="cityGMLContext"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="injectedObjectProperty">
+    <xs:complexContent>
+      <xs:extension base="objectProperty">
+        <xs:sequence/>
+        <xs:attribute name="base" type="xs:string"/>
+        <xs:attribute name="context" type="cityGMLContext"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="injectedFeatureProperty">
+    <xs:complexContent>
+      <xs:extension base="featureProperty">
+        <xs:sequence/>
+        <xs:attribute name="base" type="xs:string"/>
+        <xs:attribute name="context" type="cityGMLContext"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="injectedGeometryProperty">
+    <xs:complexContent>
+      <xs:extension base="geometryProperty">
+        <xs:sequence/>
+        <xs:attribute name="base" type="xs:string"/>
+        <xs:attribute name="context" type="cityGMLContext"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="injectedImplicitGeometryProperty">
+    <xs:complexContent>
+      <xs:extension base="implicitGeometryProperty">
+        <xs:sequence/>
+        <xs:attribute name="base" type="xs:string"/>
+        <xs:attribute name="context" type="cityGMLContext"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:simpleType name="cityGMLContext">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="citygml-2.0"/>
+      <xs:enumeration value="citygml-1.0"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="simpleType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="string"/>
+      <xs:enumeration value="integer"/>
+      <xs:enumeration value="double"/>
+      <xs:enumeration value="boolean"/>
+      <xs:enumeration value="date"/>
+      <xs:enumeration value="timestamp"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="tableRole">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="parent"/>
+      <xs:enumeration value="child"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="geometryType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="AbstractGeometry"/>
+      <xs:enumeration value="Envelope"/>
+      <xs:enumeration value="Point"/>
+      <xs:enumeration value="AbstractSurface"/>
+      <xs:enumeration value="Polygon"/>
+      <xs:enumeration value="TriangulatedSurface"/>
+      <xs:enumeration value="AbstractSolid"/>
+      <xs:enumeration value="GeometricComplex"/>
+      <xs:enumeration value="MultiPoint"/>
+      <xs:enumeration value="MultiCurve"/>
+      <xs:enumeration value="MultiSurface"/>
+      <xs:enumeration value="MultiSolid"/>
+    </xs:restriction>
+  </xs:simpleType>
+</xs:schema>
+

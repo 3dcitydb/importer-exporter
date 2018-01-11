@@ -33,10 +33,9 @@
         <appsubpath>!izpack.installation.folder!</appsubpath>
         <authors>
             <author name="Claus Nagel" email="cnagel@virtualcitysystems.de"/>
-            <author name="Zhihang Yao" email="zhihang.yao@tum.de"/>
+            <author name="Zhihang Yao" email="zyao@virtualcitysystems.de"/>
             <author name="György Hudra" email="ghudra@moss.de"/>
             <author name="Felix Kunde" email="felix-kunde@gmx.de"/>
-            <author name="Richard Redweik" email="richard.redweik@posteo.de"/>
             <author name="Thomas H. Kolbe" email="thomas.kolbe@tum.de"/>
         </authors>
         <url>!3dcitydb.homepage!</url>
@@ -49,10 +48,20 @@
         <variable name="DesktopShortcutCheckboxEnabled" value="true"/>
         <variable name="APP_SHORTCUT_NAME" value="!izpack.shortcut.impexp.name!"/>
         <variable name="3DCITYDB_NAME" value="!3dcitydb.name!"/>
-        <variable name="3DCITYDB_SHORTNAME" value="3DCityDB"/>
         <variable name="3DCITYDB_VER" value="v!3dcitydb.version!"/>
-        <variable name="ApplicationShortcutPath" value="shortcuts"/>
+        <variable name="ApplicationShortcutPath" value="shortcuts" />
     </variables>
+    
+    <conditions>
+        <condition type="variable" id="lang_eng">
+            <name>ISO3_LANG</name>
+            <value>eng</value>
+        </condition>
+        <condition type="variable" id="lang_deu">
+            <name>ISO3_LANG</name>
+            <value>deu</value>
+        </condition>
+    </conditions>
 
     <guiprefs width="650" height="500" resizable="no">
         <modifier key="useHeadingPanel" value="yes"/>
@@ -113,8 +122,9 @@
             <file src="!dir.resources.izpack.config!/img/uninstaller.ico" targetdir="$INSTALL_PATH/uninstaller" os="windows" override="true"/>
             <file src="!dir.resources.izpack.config!/img/impexp.png" targetdir="$INSTALL_PATH" os="unix" override="true"/>
             <file src="!dir.resources.izpack.config!/img/uninstaller.png" targetdir="$INSTALL_PATH/uninstaller" os="unix" override="true"/>
-            <!-- the following fileset is just to create an empty plugins folder -->
+            <!-- the following filesets are just to create the empty folders plugins and ade-extension -->
             <fileset dir="!dir.dest.plugins!" targetdir="$INSTALL_PATH/!dir.dest.plugins.relative!" excludes="**/*"/>
+            <fileset dir="!dir.dest.ade-extensions!" targetdir="$INSTALL_PATH/!dir.dest.ade-extensions.relative!" excludes="**/*"/>
             <fileset dir="!dir.resources.templates!" targetdir="$INSTALL_PATH/templates" override="true"/>
             <fileset dir="!dir.contribs.collada2gltf!/!dir.collada2gltf.windows!" targetdir="$INSTALL_PATH/!dir.dest.contribs.collada2gltf.relative!/!dir.collada2gltf.windows!" os="windows" override="true" />
             <fileset dir="!dir.contribs.collada2gltf!/!dir.collada2gltf.linux!" targetdir="$INSTALL_PATH/!dir.dest.contribs.collada2gltf.relative!/!dir.collada2gltf.linux!" os="unix" condition="!izpack.macinstall" override="true" />
@@ -155,6 +165,10 @@
             <description/>
             <fileset dir="!dir.dest.plugins!/!plugin.spreadsheet.generator.dir.dest.relative!" targetdir="$INSTALL_PATH/!dir.dest.plugins.relative!/!plugin.spreadsheet.generator.dir.dest.relative!" override="true"/>
         </pack>
+        <!-- >pack name="plugin.ade-manager" id="plugin.ade-manager" parent="plugins" required="no" preselected="yes">
+            <description/>
+            <fileset dir="!dir.dest.plugins!/!plugin.ade-manager.dir.dest.relative!" targetdir="$INSTALL_PATH/!dir.dest.plugins.relative!/!plugin.ade-manager.dir.dest.relative!" override="true"/>
+        </pack-->
         <pack name="plugin-api" id="plugin-api" parent="plugins" required="no" preselected="no">
             <description/>
             <fileset dir="!dir.dest.plugin.api!" targetdir="$INSTALL_PATH/!dir.dest.plugin.api.relative!" override="true"/>

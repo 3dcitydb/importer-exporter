@@ -35,13 +35,13 @@
         <createForPack name="core"/>
     </shortcut>
 
-    <shortcut name="${3DCITYDB_SHORTNAME} Uninstaller" target="$INSTALL_PATH\uninstaller\uninstaller.jar" commandLine="" workingDirectory=""
+    <shortcut name="${3DCITYDB_NAME} Uninstaller" target="$INSTALL_PATH\uninstaller\uninstaller.jar" commandLine="" workingDirectory=""
         description="Remove ${APP_SHORTCUT_NAME}" programGroup="yes" desktop="no" applications="no" startMenu="no" startup="no"
         iconFile="$INSTALL_PATH\uninstaller\uninstaller.ico" iconIndex="0">
         <createForPack name="core"/>
     </shortcut>
 
-    <shortcut name="${3DCITYDB_SHORTNAME} SQL Scripts" target="$INSTALL_PATH\3dcitydb" commandLine="" workingDirectory="$INSTALL_PATH\3dcitydb"
+    <shortcut name="${3DCITYDB_NAME} SQL Scripts" target="$INSTALL_PATH\3dcitydb" commandLine="" workingDirectory="$INSTALL_PATH\3dcitydb"
         description="${3DCITYDB_NAME} ${3DCITYDB_VER} SQL scripts for Oracle Spatial/Locator and PostgreSQL/PostGIS" programGroup="yes" desktop="no " applications="no" startMenu="no" startup="no">
         <createForPack name="3dcitydb"/>
     </shortcut>

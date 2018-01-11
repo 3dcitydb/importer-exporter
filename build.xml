@@ -64,41 +64,6 @@
 		<delete dir="${dir.dest.installer}" />
 	</target>
 
-	<target name="generate_standalone_config" depends="generate_plugin_api" description="generates a standalone config jar">
-		<!-- create the required directories -->
-		<mkdir dir="${dir.build.config}" />
-		<mkdir dir="${dir.dest.config}" />
-
-		<copy file="${dir.dest.plugin.api}/${impexp.plugin.api.jar.filename}" todir="${dir.dest.config}" />
-
-		<!-- compile the java code from ${dir.src.plugin.api} into ${dir.build.plugin.api} -->
-		<javac includeantruntime="false" srcdir="${dir.src.config}" destdir="${dir.build.config}" createMissingPackageInfoClass="false">
-			<exclude name="controller/**" />
-			<exclude name="internal/**" />
-			<exclude name="Config.java" />
-			<classpath>
-				<filelist>
-					<file name="${dir.dest.plugin.api}/${impexp.plugin.api.jar.filename}" />
-				</filelist>
-			</classpath>
-		</javac>
-
-		<!-- put everything in ${dir.build.plugin.api} into .jar file -->
-		<jar jarfile="${dir.dest.config}/${impexp.config.name.jar}" basedir="${dir.build.config}">
-			<manifest>
-				<attribute name="Built-Id" value="${user.name}-${impexp.config.name.short}-${impexp.version}" />
-				<attribute name="Built-Date" value="${TODAY}" />
-				<attribute name="Implementation-Title" value="${impexp.config.name}" />
-				<attribute name="Implementation-Version" value="${impexp.version}-b${build.number}" />
-				<attribute name="Implementation-Vendor" value="${vendor.shortinfo}" />
-			</manifest>
-		</jar>
-
-		<!-- clean up -->
-		<delete dir="${dir.build}" />
-		<delete dir="${dir.dest.plugin.api}" />
-	</target>
-
 	<target name="generate_plugin_api" depends="clean" description="generate the plugin API">
 		<!-- create the required directories -->
 		<mkdir dir="${dir.build.plugin.api}" />
@@ -118,13 +83,23 @@
 		<replace file="${dir.resources.plugin-api.javadoc}/overview_adapted.html" token="!3dcitydb.homepage!" value="${3dcitydb.homepage}" />
 
 		<!-- create javadoc from source files -->
-		<javadoc access="public" author="true" classpathref="classpath" destdir="${dir.dest.plugin.api.javadoc}" doctitle="${impexp.plugin.api.name} - ${impexp.plugin.api.version}" maxmemory="256m" nodeprecated="false" nodeprecatedlist="false" noindex="false" nonavbar="false" notree="false" overview="${dir.resources.plugin-api.javadoc}/overview_adapted.html" packagenames="org.citydb.api.*" sourcepath="${dir.src}" splitindex="true" use="true" version="true" />
+		<javadoc access="public" author="true" classpathref="classpath" destdir="${dir.dest.plugin.api.javadoc}" doctitle="${impexp.plugin.api.name} - ${impexp.plugin.api.version}" maxmemory="256m" nodeprecated="false" nodeprecatedlist="false" noindex="false" nonavbar="false" notree="false" overview="${dir.resources.plugin-api.javadoc}/overview_adapted.html" splitindex="true" use="true" version="true">
+			<sourcepath>
+				<pathelement path="${dir.src.core}" />
+				<pathelement path="${dir.src.ade.api}" />
+				<pathelement path="${dir.src.plugin.api}" />
+			</sourcepath>
+		</javadoc>
 
 		<!-- clean up -->
 		<delete file="${dir.resources.plugin-api.doc}/overview_adapted.html" />
 
 		<!-- compile the java code from ${dir.src.plugin.api} into ${dir.build.plugin.api} -->
-		<javac includeantruntime="false" classpathref="classpath" srcdir="${dir.src.plugin.api}" destdir="${dir.build.plugin.api}" createMissingPackageInfoClass="false" />
+		<javac includeantruntime="false" classpathref="classpath" destdir="${dir.build.plugin.api}" createMissingPackageInfoClass="false">
+			<src path="${dir.src.core}" />
+			<src path="${dir.src.ade.api}" />
+			<src path="${dir.src.plugin.api}" />
+		</javac>
 
 		<!-- copy LICENSE templates -->
 		<copy todir="${dir.dest.plugin.api.license}">
@@ -178,24 +153,19 @@
 		<mkdir dir="${dir.dest}" />
 
 		<!-- compile the java code from ${dir.src} into ${dir.build} -->
-		<javac includeantruntime="false" classpathref="classpath" srcdir="${dir.src}" destdir="${dir.build.base}" sourcepath="">
-			<exclude name="org/citydb/gui/**" />
-			<exclude name="org/citydb/cmd/**" />
-			<exclude name="org/citydb/plugin/**" />
-			<exclude name="org/citydb/io/**" />
-			<exclude name="org/citydb/modules/kml/**" />
-			<exclude name="org/citydb/modules/database/**" />
-			<exclude name="org/citydb/modules/preferences/**" />
-			<exclude name="org/citydb/modules/**/gui/**" />
-			<exclude name="org/citydb/modules/**/*Plugin.java" />
-			<exclude name="org/citydb/modules/citygml/**/controller/**" />
-			<exclude name="org/citydb/ImpExp.java" />
+		<javac includeantruntime="false" classpathref="classpath" destdir="${dir.build.base}" debug="true">
+			<src path="${dir.src.core}" />
+			<src path="${dir.src.ade.api}" />
 		</javac>
 
 		<!-- copy resources -->
 		<copy todir="${dir.build.base}">
-			<fileset dir="${dir.src}" includes="**/*.properties" />
-			<fileset dir="${dir.src}" includes="**/jaxb.index" />
+			<fileset dir="${dir.src.core}" includes="**/*.properties" />
+			<fileset dir="${dir.src.core}" includes="**/jaxb.index" />
+		</copy>
+
+		<copy todir="${dir.build.base}">
+			<fileset dir="${dir.resources.jar}" includes="resources/3dcitydb/*.*" />
 		</copy>
 
 		<!-- copy LICENSE templates -->
@@ -228,14 +198,21 @@
 		<mkdir dir="${dir.build.base}" />
 		<mkdir dir="${dir.dest}" />
 		<mkdir dir="${dir.dest.plugins}" />
+		<mkdir dir="${dir.dest.ade-extensions}" />
 
 		<!-- compile the java code from ${dir.src} into ${dir.build} -->
-		<javac includeantruntime="false" classpathref="classpath" srcdir="${dir.src}" destdir="${dir.build.base}" />
+		<javac includeantruntime="false" classpathref="classpath" destdir="${dir.build.base}">
+			<src path="${dir.src.core}" />
+			<src path="${dir.src.ade.api}" />
+			<src path="${dir.src.client}" />
+			<src path="${dir.src.module.kml-collada}" />
+			<src path="${dir.src.plugin.api}" />
+		</javac>
 
 		<!-- copy resources -->
 		<copy todir="${dir.build.base}">
-			<fileset dir="${dir.src}" includes="**/*.properties" />
-			<fileset dir="${dir.src}" includes="**/jaxb.index" />
+			<fileset dir="${dir.src.core}" includes="**/*.properties" />
+			<fileset dir="${dir.src.core}" includes="**/jaxb.index" />
 		</copy>
 
 		<copy todir="${dir.build.base}">
@@ -245,6 +222,11 @@
 		<!-- copy library files -->
 		<copy todir="${dir.dest.lib}" flatten="true">
 			<fileset dir="${dir.lib}" includes="**/*.jar" />
+		</copy>
+
+		<!-- copy 3D City Database files -->
+		<copy todir="${dir.dest.3dcitydb}">
+			<fileset dir="${dir.resources.3dcitydb}" includes="**/*" />
 		</copy>
 
 		<!-- copy precompiled plugins -->
@@ -323,7 +305,6 @@
 		<!-- prepare license template for setup dialog -->
 		<loadfile property="app.license" srcfile="${dir.dest.license}/LICENSE.txt" />
 		<loadfile property="apache" srcfile="${dir.dest.license}/APACHE-2.0.txt" />
-
 		<copy file="${dir.resources.izpack.config}/license/license_template" tofile="${dir.resources.izpack.config}/license/license" />
 		<replace file="${dir.resources.izpack.config}/license/license" token="!app.license!" value="${app.license}" />
 		<replace file="${dir.resources.izpack.config}/license/license" token="!apache!" value="${apache}" />
@@ -357,6 +338,9 @@
 		<replace file="${dir.resources.izpack}/izpack-install.xml" token="!dir.dest.plugins!" value="${dir.dest.plugins}" />
 		<replace file="${dir.resources.izpack}/izpack-install.xml" token="!dir.dest.plugins.relative!" value="${dir.dest.plugins.relative}" />
 		<replace file="${dir.resources.izpack}/izpack-install.xml" token="!plugin.spreadsheet.generator.dir.dest.relative!" value="${plugin.spreadsheet.generator.dir.dest.relative}" />
+		<!--replace file="${dir.resources.izpack}/izpack-install.xml" token="!plugin.ade-manager.dir.dest.relative!" value="${plugin.ade-manager.dir.dest.relative}" /-->
+		<replace file="${dir.resources.izpack}/izpack-install.xml" token="!dir.dest.ade-extensions!" value="${dir.dest.ade-extensions}" />
+		<replace file="${dir.resources.izpack}/izpack-install.xml" token="!dir.dest.ade-extensions.relative!" value="${dir.dest.ade-extensions.relative}" />
 
 		<!-- call izpack to create installation package -->
 		<IzPack input="${dir.resources.izpack}/izpack-install.xml" output="${dir.dest.installer}/${izpack.installer.name}" basedir="${dir.resources.izpack}" />

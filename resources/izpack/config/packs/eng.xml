@@ -44,9 +44,14 @@
     
     <str id="plugins" txt="Plugins"/>
     <str id="plugins.description" txt="Optional extensions for the ${APP_NAME}."/>
+    
+
 
     <str id="plugin.spreadsheet.generator" txt="Spreadsheet Generator Plugin"/>
     <str id="plugin.spreadsheet.generator.description" txt="This plugin can export thematic data of the spatial objects into tables. Supported output formats are Microsoft Excel and CSV."/>
+    
+    <str id="plugin.ade-manager" txt="ADE Manager Plugin"/>
+    <str id="plugin.ade-manager.description" txt="This plugin allows for managing CityGML ADEs for the ${3DCITYDB_NAME}."/>
     
     <str id="plugin-api" txt="Plugin development API"/>
     <str id="plugin-api.description" txt="Java API for the development of own extensions."/>    
