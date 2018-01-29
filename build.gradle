@@ -2,7 +2,7 @@ apply from: 'properties.gradle'
 
 subprojects {
     group 'org.citydb'
-    version '4.0-SNAPSHOT'
+    version '4.0'
 
     apply plugin: 'java'
 
@@ -19,6 +19,47 @@ subprojects {
             url 'http://maven.imagej.net/content/repositories/thirdparty/'
         }
         jcenter()
+    }
+
+    plugins.withType(MavenPublishPlugin) {
+        task sourcesJar(type: Jar, dependsOn: classes) {
+            classifier = 'sources'
+            from sourceSets.main.allSource
+        }
+
+        task javadocJar(type: Jar, dependsOn: javadoc) {
+            classifier = 'javadoc'
+            from javadoc.destinationDir
+        }
+
+        def createPom = {
+            name project.name
+            url project.citydbVcsUrl
+            licenses {
+                license {
+                    name 'The Apache License, Version 2.0'
+                    url 'https://www.apache.org/licenses/LICENSE-2.0.txt'
+                    distribution 'repo'
+                }
+            }
+            scm {
+                url project.impexpVcsUrl
+                connection 'scm:git:' + project.impexpGit
+            }
+        }
+
+        publishing {
+            publications {
+                mavenJava(MavenPublication) {
+                    from components.java
+                    artifact sourcesJar
+                    artifact javadocJar
+                    pom.withXml {
+                        asNode().children().last() + createPom
+                    }
+                }
+            }
+        }
     }
 }
 

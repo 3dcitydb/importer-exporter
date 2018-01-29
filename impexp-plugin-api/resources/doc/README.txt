@@ -46,17 +46,17 @@ You may obtain a copy of the License at
 
 The @name@ is a Java class library
 and API facilitating the development of extensions for the
-@impexpFullName@ software.
+@impexpName@ software.
 
 
 4. Requirements
 ---------------
 
 Plugins developed with this version of the API should only be used 
-with version @version@ of the @impexpFullName@.
+with version @version@ of the @impexpName@.
 Although we try hard to keep the API as stable as possible, we cannot
 guarantee that there will be no changes between different versions of
-the @impexpFullName@. Please always check the changelog.
+the @impexpName@. Please always check the changelog.
 
 
 5. How to use
@@ -73,14 +73,14 @@ g) On separate lines within the file, list the fully qualified binary
    names of your concrete implementation(s) of the
    "@pluginApiService@" interface.
 h) Put your JAR into the "@pluginsDir@" folder within the installation
-   directory of the @impexpFullName@.
+   directory of the @impexpName@.
 
 Steps e) to g) can usually be automated using an IDE.
 
-Please consult the documentation of the @impexpFullName@
+Please consult the documentation of the @impexpName@
 for a comprehensive description of the plugin API and its usage.
 
-The plugin support of the @impexpFullName@ is implemented
+The plugin support of the @impexpName@ is implemented
 on top of the Service Provider API introduced in Java SE 6. More details
 about this API can be, for example, found here:
 http://java.sun.com/developer/technicalArticles/javase/extensible/index.html
@@ -108,8 +108,8 @@ Official @citydbName@ website:
 Related websites:
 @citydbVcsUrl@
 @vendorWebsiteUrl@
-http://www.citygml.org/
-http://www.citygmlwiki.org/
+http://www.citygml.org
+http://www.citygmlwiki.org
 http://www.opengeospatial.org/standards/citygml
 
 

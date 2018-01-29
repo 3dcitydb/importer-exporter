@@ -5,17 +5,21 @@ ext {
     vendorName = 'Chair of Geoinformatics'
     vendorOrganisation = 'Technical University of Munich'
     vendorCountry = 'Germany'
-    vendorWebsiteUrl = 'https://www.gis.bgu.tum.de/'
+    vendorWebsiteUrl = 'https://www.gis.bgu.tum.de'
     vendorCopyright = '2013-' + date.format('yyy')
 
     // 3D City Database
+    citydbShortName = '3DCityDB'
     citydbName = '3D City Database'
-    citydbWebsiteUrl = 'http://www.3dcitydb.org/'
-    citydbVcsUrl = 'https://github.com/3dcitydb/'
+    citydbWebsiteUrl = 'http://www.3dcitydb.org'
+    citydbVcsUrl = 'https://github.com/3dcitydb'
 
     // Importer/Exporter
     impexpShortName = 'Importer/Exporter'
-    impexpFullName = citydbName + ' ' + impexpShortName
+    impexpName = citydbName + ' ' + impexpShortName
+    impexpVcsUrl = 'https://github.com/3dcitydb/importer-exporter'
+    impexpGit = impexpVcsUrl + '.git'
+    impexpIssueTrackerUrl = 'https://github.com/3dcitydb/importer-exporter/issues'
 
     // Plugin API
     pluginApiName = impexpShortName + ' Plugin API'
