@@ -1,0 +1,23 @@
+ext {
+    date = new Date()
+
+    // vendor information
+    vendorName = 'Chair of Geoinformatics'
+    vendorOrganisation = 'Technical University of Munich'
+    vendorCountry = 'Germany'
+    vendorWebsiteUrl = 'https://www.gis.bgu.tum.de/'
+    vendorCopyright = '2013-' + date.format('yyy')
+
+    // 3D City Database
+    citydbName = '3D City Database'
+    citydbWebsiteUrl = 'http://www.3dcitydb.org/'
+    citydbVcsUrl = 'https://github.com/3dcitydb/'
+
+    // Importer/Exporter
+    impexpShortName = 'Importer/Exporter'
+    impexpFullName = citydbName + ' ' + impexpShortName
+
+    // Plugin API
+    pluginApiName = impexpShortName + ' Plugin API'
+    pluginsDir = 'plugins'
+}

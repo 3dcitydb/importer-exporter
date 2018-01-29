@@ -1,6 +1,6 @@
 apply plugin: 'application'
 
-applicationName = 'Importer-Exporter'
+applicationName = '3DCityDB-Importer-Exporter'
 mainClassName = 'org.citydb.ImpExp'
 
 dependencies {
@@ -19,6 +19,17 @@ dependencies {
 startScripts {
     doLast {
         def windowsScript = getWindowsScript()
-        windowsScript.text = windowsScript.text.replaceFirst('"%JAVA_EXE%" %DEFAULT_JVM_OPTS%.*', 'start /min "" $0')
+        def unixScript = getUnixScript()
+        windowsScript.text = windowsScript.text
+                .replaceFirst('"%JAVA_EXE%" %DEFAULT_JVM_OPTS%.*', 'start /min "" $0')
+                .replaceAll('3_D_CITY_DB_IMPORTER_EXPORTER_OPTS', 'IMPORTER_EXPORTER_OPTS')
+        unixScript.text = unixScript.text
+                .replaceAll('3_D_CITY_DB_IMPORTER_EXPORTER_OPTS', 'IMPORTER_EXPORTER_OPTS')
+    }
+}
+
+distributions.main.contents {
+    into('plugin-api') {
+        from tasks.getByPath(':impexp-plugin-api:installDist')
     }
 }

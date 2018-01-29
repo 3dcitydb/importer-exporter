@@ -1,3 +1,61 @@
+import org.apache.tools.ant.filters.ReplaceTokens
+
+apply plugin: 'distribution'
+
+ext {
+    pluginApiService = 'org.citydb.plugin.Plugin'
+}
+
 dependencies {
     compile project(':impexp-core')
+}
+
+javadoc {
+    options.author true
+    options.overview "$buildDir/tmp/javadoc/overview.html"
+    options.addStringOption('doctitle', project.pluginApiName + ' - ' + project.version)
+
+    doFirst {
+        copy {
+            from 'resources/javadoc/overview.html'
+            into "$buildDir/tmp/javadoc"
+            filter(ReplaceTokens, tokens: [
+                    name: project.pluginApiName,
+                    version: project.version,
+                    impexpFullName: project.impexpFullName,
+                    citydbWebsiteUrl: project.citydbWebsiteUrl,
+                    vendorName: project.vendorName,
+                    vendorOrganisation: project.vendorOrganisation,
+                    vendorCountry: project.vendorCountry,
+                    vendorCopyright: project.vendorCopyright,
+                    vendorWebsiteUrl: project.vendorWebsiteUrl
+            ])
+        }
+    }
+}
+
+distributions.main.contents {
+    from jar
+    from('resources/doc/README.txt') {
+        filter(ReplaceTokens, tokens: [
+                name: project.pluginApiName,
+                version: project.version,
+                date: project.date.format('yyy-MM-dd'),
+                jar: jar.archiveName,
+                pluginApiService: project.pluginApiService,
+                pluginsDir: project.pluginsDir,
+                impexpFullName: project.impexpFullName,
+                citydbName: project.citydbName,
+                citydbWebsiteUrl: project.citydbWebsiteUrl,
+                citydbVcsUrl: project.citydbVcsUrl,
+                vendorName: project.vendorName,
+                vendorOrganisation: project.vendorOrganisation,
+                vendorCountry: project.vendorCountry,
+                vendorCopyright: project.vendorCopyright,
+                vendorWebsiteUrl: project.vendorWebsiteUrl
+        ])
+    }
+    into('javadoc') {
+        from javadoc
+    }
 }

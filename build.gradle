@@ -1,3 +1,5 @@
+apply from: 'properties.gradle'
+
 subprojects {
     group 'org.citydb'
     version '4.0-SNAPSHOT'
