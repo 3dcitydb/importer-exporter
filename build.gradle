@@ -21,6 +21,18 @@ subprojects {
         jcenter()
     }
 
+    jar {
+        manifest {
+            attributes('Implementation-Title': project.name,
+                    'Implementation-Version': project.version
+            )
+        }
+        into('META-INF') {
+            from "$rootDir/resources/license/APACHE-2.0.txt"
+            from "$rootDir/resources/license/LICENSE.txt"
+        }
+    }
+
     plugins.withType(MavenPublishPlugin) {
         task sourcesJar(type: Jar, dependsOn: classes) {
             classifier = 'sources'

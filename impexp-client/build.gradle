@@ -1,7 +1,13 @@
+import org.apache.tools.ant.filters.ReplaceTokens
+
 apply plugin: 'application'
 
 applicationName = '3DCityDB-Importer-Exporter'
 mainClassName = 'org.citydb.ImpExp'
+
+configurations {
+    izpack
+}
 
 dependencies {
     compile project(':impexp-core')
@@ -14,6 +20,8 @@ dependencies {
     compile ('org.citydb:swingx-all:1.6.5-2') {
         transitive = false
     }
+
+    izpack fileTree(dir: 'resources/izpack/lib', include: '*.jar')
 }
 
 startScripts {
@@ -21,15 +29,56 @@ startScripts {
         def windowsScript = getWindowsScript()
         def unixScript = getUnixScript()
         windowsScript.text = windowsScript.text
+                .replaceFirst('set APP_HOME=.*', '$0\r\nset WORKING_DIR=%CD%')
                 .replaceFirst('"%JAVA_EXE%" %DEFAULT_JVM_OPTS%.*', 'start /min "" $0')
                 .replaceAll('3_D_CITY_DB_IMPORTER_EXPORTER_OPTS', 'IMPORTER_EXPORTER_OPTS')
         unixScript.text = unixScript.text
+                .replaceFirst('APP_HOME=.*', '$0\nexport APP_HOME\nexport WORKING_DIR=\\$SAVED')
                 .replaceAll('3_D_CITY_DB_IMPORTER_EXPORTER_OPTS', 'IMPORTER_EXPORTER_OPTS')
     }
 }
 
 distributions.main.contents {
+    into('contribs') {
+        from 'contribs'
+    }
     into('plugin-api') {
         from tasks.getByPath(':impexp-plugin-api:installDist')
+    }
+    into('license') {
+        from "$rootDir/resources/license/APACHE-2.0.txt"
+        from "$rootDir/resources/license/LICENSE.txt"
+    }
+}
+
+task buildInstaller(dependsOn: installDist) {
+    def izpackDir = "$buildDir/tmp/izpack"
+    def installer = "$buildDir/distributions/$project.appInstallerFile"
+    inputs.dir 'resources/izpack'
+    outputs.file installer
+    mkdir izpackDir
+
+    doLast {
+        copy {
+            from 'resources/izpack'
+            into izpackDir
+            filter(ReplaceTokens, tokens: [
+                    license: file("$rootDir/resources/license/LICENSE.txt").text,
+                    apache: file("$rootDir/resources/license/APACHE-2.0.txt").text,
+                    appName: project.impexpName,
+                    appVersion: project.version,
+                    appSubPath: project.appInstallationDir,
+                    appShortcut: project.appShortcutName,
+                    url: project.citydbWebsiteUrl,
+                    citydbName: project.citydbName,
+                    citydbVersion: project.citydbVersion
+            ])
+        }
+
+        ant.taskdef(name: 'izpack', classname: 'com.izforge.izpack.ant.IzPackTask', classpath: configurations.izpack.asPath)
+        ant.izpack(input: "$izpackDir/izpack-install.xml",
+                output: installer,
+                basedir: izpackDir
+        )
     }
 }

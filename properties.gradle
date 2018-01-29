@@ -11,6 +11,7 @@ ext {
     // 3D City Database
     citydbShortName = '3DCityDB'
     citydbName = '3D City Database'
+    citydbVersion = '4.0'
     citydbWebsiteUrl = 'http://www.3dcitydb.org'
     citydbVcsUrl = 'https://github.com/3dcitydb'
 
@@ -24,4 +25,9 @@ ext {
     // Plugin API
     pluginApiName = impexpShortName + ' Plugin API'
     pluginsDir = 'plugins'
+
+    // IzPack
+    appInstallationDir = citydbShortName + '-Importer-Exporter'
+    appInstallerFile = appInstallationDir + '-' + project.version + '-Setup.jar'
+    appShortcutName = citydbShortName + ' Importer Exporter'
 }

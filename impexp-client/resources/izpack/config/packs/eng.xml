@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<!-- 
+ * 3D City Database - The Open Source CityGML Database
+ * http://www.3dcitydb.org/
+ * 
+ * Copyright 2013 - 2017
+ * Chair of Geoinformatics
+ * Technical University of Munich, Germany
+ * https://www.gis.bgu.tum.de/
+ * 
+ * The 3D City Database is jointly developed with the following
+ * cooperation partners:
+ * 
+ * virtualcitySYSTEMS GmbH, Berlin <http://www.virtualcitysystems.de/>
+ * M.O.S.S. Computer Grafik Systeme GmbH, Taufkirchen <http://www.moss.de/>
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *     
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+-->
+<langpack> 
+    <str id="core" txt="Core application files"/>
+    <str id="core.description" txt="The mandatory core application files of the ${APP_NAME}."/>
+    
+    <str id="3dcitydb" txt="3D City Database"/>
+    <str id="3dcitydb.description" txt="3D City Database ${3DCITYDB_VER} SQL scripts for Oracle Spatial/Locator and PostgreSQL/PostGIS."/>
+    
+    <str id="manual" txt="Documentation"/>
+    <str id="manual.description" txt="The documentation of the ${3DCITYDB_NAME} and the ${APP_NAME}."/>
+
+    <str id="3d-web-map-client" txt="3D Web Map Client"/>
+    <str id="3d-web-map-client.description" txt="Cesium-based 3D web-viewer for the visualization and interactive exploration of contents from the ${3DCITYDB_NAME}."/>
+
+    <str id="samples" txt="Sample CityGML and KML/COLLADA datasets"/>
+    <str id="samples.description" txt="Sample CityGML and KML/COLLADA datasets for testing the ${APP_NAME}."/>
+    
+    <str id="plugins" txt="Plugins"/>
+    <str id="plugins.description" txt="Optional extensions for the ${APP_NAME}."/>
+    
+
+
+    <str id="plugin.spreadsheet.generator" txt="Spreadsheet Generator Plugin"/>
+    <str id="plugin.spreadsheet.generator.description" txt="This plugin can export thematic data of the spatial objects into tables. Supported output formats are Microsoft Excel and CSV."/>
+    
+    <str id="plugin.ade-manager" txt="ADE Manager Plugin"/>
+    <str id="plugin.ade-manager.description" txt="This plugin allows for managing CityGML ADEs for the ${3DCITYDB_NAME}."/>
+    
+    <str id="plugin-api" txt="Plugin development API"/>
+    <str id="plugin-api.description" txt="Java API for the development of own extensions."/>    
+</langpack>

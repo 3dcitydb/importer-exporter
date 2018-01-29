@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<!-- 
+ * 3D City Database - The Open Source CityGML Database
+ * http://www.3dcitydb.org/
+ * 
+ * Copyright 2013 - 2017
+ * Chair of Geoinformatics
+ * Technical University of Munich, Germany
+ * https://www.gis.bgu.tum.de/
+ * 
+ * The 3D City Database is jointly developed with the following
+ * cooperation partners:
+ * 
+ * virtualcitySYSTEMS GmbH, Berlin <http://www.virtualcitysystems.de/>
+ * M.O.S.S. Computer Grafik Systeme GmbH, Taufkirchen <http://www.moss.de/>
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *     
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+-->
+<shortcuts>
+    <skipIfNotSupported/>
+    <programGroup defaultName="${3DCITYDB_NAME}" location="applications"/>
+    <shortcut name="${APP_SHORTCUT_NAME}" target="$INSTALL_PATH/3DCityDB-Importer-Exporter.sh" commandLine="" workingDirectory="$INSTALL_PATH"
+        description="${APP_SHORTCUT_NAME} starten" initialState="minimized" programGroup="yes" desktop="yes" applications="no" startMenu="no" startup="no"
+        type="Application" encoding="UTF-8" terminal="true" KdeSubstUID="false" createForAll="yes"
+        iconFile="$INSTALL_PATH\impexp.png" iconIndex="0">
+        <createForPack name="core"/>
+    </shortcut>
+
+    <shortcut name="${3DCITYDB_NAME} Uninstaller" target="java" commandLine="-jar &quot;$INSTALL_PATH/uninstaller/uninstaller.jar&quot;" workingDirectory=""
+        description="${APP_SHORTCUT_NAME} entfernen" programGroup="yes" desktop="no" applications="no" startMenu="no" startup="no"
+        iconFile="$INSTALL_PATH\uninstaller\uninstaller.png" iconIndex="0" type="Application" encoding="UTF-8" terminal="false" KdeSubstUID="false" createForAll="yes">
+        <createForPack name="core"/>
+    </shortcut>
+
+</shortcuts>

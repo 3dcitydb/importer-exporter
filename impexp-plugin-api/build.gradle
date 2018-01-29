@@ -39,22 +39,6 @@ javadoc {
     }
 }
 
-jar {
-    manifest {
-        attributes('Implementation-Title': project.name,
-                'Implementation-Version': project.version
-        )
-    }
-    into('META-INF') {
-        from "$rootDir/resources/license/APACHE-2.0.txt"
-        from("$rootDir/resources/license/LICENSE.txt") {
-            filter(ReplaceTokens, tokens: [
-                    name: project.pluginApiName
-            ])
-        }
-    }
-}
-
 distributions.main.contents {
     from('resources/doc/README.txt') {
         filter(ReplaceTokens, tokens: [
@@ -83,11 +67,7 @@ distributions.main.contents {
     }
     into('license') {
         from "$rootDir/resources/license/APACHE-2.0.txt"
-        from("$rootDir/resources/license/LICENSE.txt") {
-            filter(ReplaceTokens, tokens: [
-                    name: project.pluginApiName
-            ])
-        }
+        from "$rootDir/resources/license/LICENSE.txt"
     }
 }
 
