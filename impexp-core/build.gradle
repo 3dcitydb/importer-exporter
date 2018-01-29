@@ -1,0 +1,14 @@
+dependencies {
+    compile 'org.citydb:sqlbuilder:2.0.0'
+    compile 'org.citygml4j:citygml4j:2.6.1'
+    compile 'org.geotools:gt-epsg-extension:18.2'
+    compile 'org.geotools:gt-epsg-hsql:18.2'
+    compile 'org.geotools:gt-referencing:18.2'
+    compile 'com.h2database:h2:1.4.196'
+    compile 'org.locationtech.jts:jts-core:1.15.0'
+    compile 'org.postgresql:postgresql:42.2.0'
+    compile 'net.postgis:postgis-jdbc:2.2.1'
+    compile 'org.apache.tomcat:tomcat-jdbc:9.0.4'
+    compile 'org.apache.tomcat:tomcat-juli:9.0.4'
+    compile fileTree(dir: 'lib', include: '*.jar')
+}

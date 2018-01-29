@@ -1,0 +1,5 @@
+rootProject.name = 'impexp'
+include 'impexp-core'
+include 'impexp-plugin-api'
+include 'impexp-client'
+include 'impexp-kml-collada-plugin'

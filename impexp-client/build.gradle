@@ -1,0 +1,24 @@
+apply plugin: 'application'
+
+applicationName = 'Importer-Exporter'
+mainClassName = 'org.citydb.ImpExp'
+
+dependencies {
+    compile project(':impexp-core')
+    compile project(':impexp-plugin-api')
+    compile project(':impexp-kml-collada-plugin')
+    compile 'args4j:args4j:2.33'
+    compile ('org.citydb:swingx-ws:1.1.0') {
+        transitive = false
+    }
+    compile ('org.citydb:swingx-all:1.6.5-2') {
+        transitive = false
+    }
+}
+
+startScripts {
+    doLast {
+        def windowsScript = getWindowsScript()
+        windowsScript.text = windowsScript.text.replaceFirst('"%JAVA_EXE%" %DEFAULT_JVM_OPTS%.*', 'start /min "" $0')
+    }
+}

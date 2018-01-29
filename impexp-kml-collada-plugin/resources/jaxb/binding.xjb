@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jaxb:bindings version="2.1" xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+	xmlns:namespace="http://jaxb2-commons.dev.java.net/namespace-prefix"
+	xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+	<jaxb:bindings schemaLocation="kml-collada.xsd" node="/xs:schema">
+		<jaxb:globalBindings generateIsSetMethod="true" />
+	</jaxb:bindings>
+
+	<!-- Specific settings for the kml mapping file -->
+	<jaxb:bindings schemaLocation="KML/2.2/ogckml22.xsd" node="/xs:schema">
+		<jaxb:bindings>
+			<namespace:prefix name="kml" />
+		</jaxb:bindings>
+		<jaxb:bindings node="xs:element[@name='Snippet']">
+			<jaxb:class name="SnippetElement" />
+		</jaxb:bindings>
+		<jaxb:bindings node="xs:element[@name='Scale']">
+			<jaxb:class name="ScaleElement" />
+		</jaxb:bindings>
+	</jaxb:bindings>
+
+	<!-- Specific settings for the collada mapping file -->
+	<jaxb:bindings schemaLocation="COLLADA/1.4/collada_schema_1_4.xsd"
+		node="/xs:schema">
+		<jaxb:bindings node="xs:element[@name='skin']">
+			<jaxb:bindings node=".//xs:complexType/xs:attribute[@name='source']">
+				<jaxb:property name="sourceAttr" />
+			</jaxb:bindings>
+		</jaxb:bindings>
+		<jaxb:bindings node="xs:element[@name='morph']">
+			<jaxb:bindings node=".//xs:complexType/xs:attribute[@name='source']">
+				<jaxb:property name="sourceAttr" />
+			</jaxb:bindings>
+		</jaxb:bindings>
+	</jaxb:bindings>
+
+</jaxb:bindings>
