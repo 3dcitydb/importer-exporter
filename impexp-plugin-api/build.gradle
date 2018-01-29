@@ -34,14 +34,28 @@ javadoc {
     }
 }
 
+jar {
+    manifest {
+        attributes('Implementation-Title': project.name,
+                'Implementation-Version': project.version
+        )
+    }
+    into('META-INF') {
+        from "$rootDir/resources/license/APACHE-2.0.txt"
+        from("$rootDir/resources/license/LICENSE.txt") {
+            filter(ReplaceTokens, tokens: [
+                    name: project.pluginApiName
+            ])
+        }
+    }
+}
+
 distributions.main.contents {
-    from jar
     from('resources/doc/README.txt') {
         filter(ReplaceTokens, tokens: [
                 name: project.pluginApiName,
                 version: project.version,
                 date: project.date.format('yyy-MM-dd'),
-                jar: jar.archiveName,
                 pluginApiService: project.pluginApiService,
                 pluginsDir: project.pluginsDir,
                 impexpFullName: project.impexpFullName,
@@ -55,7 +69,19 @@ distributions.main.contents {
                 vendorWebsiteUrl: project.vendorWebsiteUrl
         ])
     }
+    into('lib') {
+        from jar
+        from tasks.getByPath(':impexp-core:jar')
+    }
     into('javadoc') {
         from javadoc
+    }
+    into('license') {
+        from "$rootDir/resources/license/APACHE-2.0.txt"
+        from("$rootDir/resources/license/LICENSE.txt") {
+            filter(ReplaceTokens, tokens: [
+                    name: project.pluginApiName
+            ])
+        }
     }
 }

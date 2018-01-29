@@ -63,7 +63,7 @@ the @impexpFullName@. Please always check the changelog.
 -------------
 
 a) Make sure you are using Java 8 or higher.
-b) Put the "@jar@" on your classpath.
+b) Put the JARs in the "lib" folder on your classpath.
 c) Implement the "@pluginApiService@" interface.
 d) Implement further extension interfaces required by your plugin.
 e) Compile your plugin sources and create a JAR package.
@@ -72,7 +72,7 @@ f) Create a "META-INF/services/@pluginApiService@" file
 g) On separate lines within the file, list the fully qualified binary 
    names of your concrete implementation(s) of the
    "@pluginApiService@" interface.
-h) Put the JAR into the "@pluginsDir@" directory within the installation
+h) Put your JAR into the "@pluginsDir@" folder within the installation
    directory of the @impexpFullName@.
 
 Steps e) to g) can usually be automated using an IDE.
