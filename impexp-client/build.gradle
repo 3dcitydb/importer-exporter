@@ -2,7 +2,7 @@ import org.apache.tools.ant.filters.ReplaceTokens
 
 apply plugin: 'application'
 
-applicationName = '3DCityDB-Importer-Exporter'
+applicationName = project.appName
 mainClassName = 'org.citydb.ImpExp'
 
 configurations {
@@ -25,6 +25,7 @@ dependencies {
 }
 
 startScripts {
+    defaultJvmOpts = ['-Xms1G']
     doLast {
         def windowsScript = getWindowsScript()
         def unixScript = getUnixScript()
@@ -39,6 +40,24 @@ startScripts {
 }
 
 distributions.main.contents {
+    from('resources/doc/README.txt') {
+        filter(ReplaceTokens, tokens: [
+                name: project.impexpName,
+                version: project.version,
+                date: project.date.format('yyy-MM-dd'),
+                citydbName: project.citydbName,
+                citydbVersion: project.citydbVersion,
+                jar: jar.archiveName,
+                appName: project.appName,
+                citydbWebsiteUrl: project.citydbWebsiteUrl,
+                citydbVcsUrl: project.citydbVcsUrl,
+                vendorName: project.vendorName,
+                vendorOrganisation: project.vendorOrganisation,
+                vendorCountry: project.vendorCountry,
+                vendorCopyright: project.vendorCopyright,
+                vendorWebsiteUrl: project.vendorWebsiteUrl
+        ])
+    }
     into('contribs') {
         from 'contribs'
     }
@@ -67,11 +86,12 @@ task buildInstaller(dependsOn: installDist) {
                     apache: file("$rootDir/resources/license/APACHE-2.0.txt").text,
                     appName: project.impexpName,
                     appVersion: project.version,
-                    appSubPath: project.appInstallationDir,
+                    appSubPath: project.appInstallDir,
                     appShortcut: project.appShortcutName,
                     url: project.citydbWebsiteUrl,
                     citydbName: project.citydbName,
-                    citydbVersion: project.citydbVersion
+                    citydbVersion: project.citydbVersion,
+                    installDir: "$buildDir/install/$project.appName".toString()
             ])
         }
 

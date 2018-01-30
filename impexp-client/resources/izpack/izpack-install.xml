@@ -86,17 +86,17 @@
 
     <resources>
         <res id="LicencePanel.licence" src="config/license/license.txt"/>
-        <res id="InfoPanel.info" src="!dir.dest!/README.txt"/>
-        <res id="Heading.image" src="!dir.resources.izpack.config!/img/header.png"/>
-        <res id="installer.langsel.img" src="!dir.resources.izpack.config!/img/splash.png"/>
-        <res id="CustomLangpack.xml_eng" src="!dir.resources.izpack.config!/panel/eng.xml"/>
-        <res id="CustomLangpack.xml_deu" src="!dir.resources.izpack.config!/panel/deu.xml"/>
-        <res id="packsLang.xml_eng" src="!dir.resources.izpack.config!/packs/eng.xml"/>
-        <res id="packsLang.xml_deu" src="!dir.resources.izpack.config!/packs/deu.xml"/>
-        <res id="shortcutSpec.xml" src="!dir.resources.izpack.config!/shortcut/default.xml"/>
-        <res id="shortcutSpec.xml_deu" src="!dir.resources.izpack.config!/shortcut/default_deu.xml"/>
-        <res id="Unix_shortcutSpec.xml" src="!dir.resources.izpack.config!/shortcut/unix.xml"/>
-        <res id="Unix_shortcutSpec.xml_deu" src="!dir.resources.izpack.config!/shortcut/unix_deu.xml"/>
+        <res id="InfoPanel.info" src="@installDir@/README.txt"/>
+        <res id="Heading.image" src="config/img/header.png"/>
+        <res id="installer.langsel.img" src="config/img/splash.png"/>
+        <res id="CustomLangpack.xml_eng" src="config/panel/eng.xml"/>
+        <res id="CustomLangpack.xml_deu" src="config/panel/deu.xml"/>
+        <res id="packsLang.xml_eng" src="config/packs/eng.xml"/>
+        <res id="packsLang.xml_deu" src="config/packs/deu.xml"/>
+        <res id="shortcutSpec.xml" src="config/shortcut/default.xml"/>
+        <res id="shortcutSpec.xml_deu" src="config/shortcut/default_deu.xml"/>
+        <res id="Unix_shortcutSpec.xml" src="config/shortcut/unix.xml"/>
+        <res id="Unix_shortcutSpec.xml_deu" src="config/shortcut/unix_deu.xml"/>
     </resources>
 
     <panels>
@@ -118,10 +118,10 @@
             <file src="!dir.dest!/3DCityDB-Importer-Exporter.bat" targetdir="$INSTALL_PATH" os="windows" override="true"/>
             <file src="!dir.dest!/3DCityDB-Importer-Exporter.sh" targetdir="$INSTALL_PATH" os="unix" condition="!izpack.macinstall" override="true"/>
             <file src="!dir.dest!/3DCityDB-Importer-Exporter.command" targetdir="$INSTALL_PATH" os="mac" override="true"/>
-            <file src="!dir.resources.izpack.config!/img/impexp.ico" targetdir="$INSTALL_PATH" os="windows" override="true"/>
-            <file src="!dir.resources.izpack.config!/img/uninstaller.ico" targetdir="$INSTALL_PATH/uninstaller" os="windows" override="true"/>
-            <file src="!dir.resources.izpack.config!/img/impexp.png" targetdir="$INSTALL_PATH" os="unix" override="true"/>
-            <file src="!dir.resources.izpack.config!/img/uninstaller.png" targetdir="$INSTALL_PATH/uninstaller" os="unix" override="true"/>
+            <file src="config/img/impexp.ico" targetdir="$INSTALL_PATH" os="windows" override="true"/>
+            <file src="config/img/uninstaller.ico" targetdir="$INSTALL_PATH/uninstaller" os="windows" override="true"/>
+            <file src="config/img/impexp.png" targetdir="$INSTALL_PATH" os="unix" override="true"/>
+            <file src="config/img/uninstaller.png" targetdir="$INSTALL_PATH/uninstaller" os="unix" override="true"/>
             <!-- the following filesets are just to create the empty folders plugins and ade-extension -->
             <fileset dir="!dir.dest.plugins!" targetdir="$INSTALL_PATH/!dir.dest.plugins.relative!" excludes="**/*"/>
             <fileset dir="!dir.dest.ade-extensions!" targetdir="$INSTALL_PATH/!dir.dest.ade-extensions.relative!" excludes="**/*"/>
