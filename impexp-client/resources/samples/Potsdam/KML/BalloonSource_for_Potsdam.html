@@ -1,0 +1,71 @@
+<![CDATA[
+<table width =400>
+  <tr>
+    <td bgcolor="#00305f"><b><a href="http://www.potsdam.de" target="_blank"><img src="http://virtualcitysystems.de/fileadmin/logos/potsdam_400px.jpg" alt="Landeshauptstadt Potsdam" title="Landeshauptstadt Potsdam" border="0"/></a></b></td>
+  </tr>
+    <tr>
+    <td><hr /></td>
+  </tr>
+  <tr>
+    <td bgcolor="#FFFFFF"><b>Address:</b></td>
+  </tr>
+  <tr>
+    <td bgcolor="#FFFFFF"><3DCityDB>ADDRESS/[FIRST]STREET</3DCityDB> <3DCityDB>ADDRESS/[FIRST]HOUSE_NUMBER</3DCityDB></td>
+  </tr>
+  <tr>
+    <td bgcolor="#FFFFFF"><!-- <3DCityDB>ADDRESS/[FIRST]ZIP_CODE</3DCityDB>, -->
+      <3DCityDB>ADDRESS/[FIRST]CITY</3DCityDB></td>
+  </tr>
+  <tr>
+    <td bgcolor="#FFFFFF"><br></td>
+  </tr>
+  <tr>
+    <td bgcolor="#FFFFFF"><b>Envelope:</b> <3DCityDB>CITYOBJECT/ENVELOPE</3DCityDB></td>
+  </tr>
+  <tr>
+    <td bgcolor="#FFFFFF"><br></td>
+  </tr>
+  <tr>
+    <td bgcolor="#FFFFFF"><b>Measured height:</b> <3DCityDB>BUILDING/MEASURED_HEIGHT</3DCityDB> mm</td>
+  </tr>
+  <tr>
+    <td bgcolor="#FFFFFF"><b>Building function:</b> <3DCityDB>BUILDING/FUNCTION</3DCityDB></td>
+  </tr>
+  <tr>
+    <td bgcolor="#FFFFFF"><b>Existing generic attributes (mouseOver for values):</b>
+      <script type="text/javascript">
+function ga_value_as_tooltip(counter, attrname, datatype, strval, intval, realval)
+{
+  document.write("<span title=\"");
+  switch (datatype) {
+    case 1: document.write(strval);
+            break;
+    case 2: document.write(intval);
+            break;
+    case 3: document.write(realval);
+            break;
+    default: document.write("unknown");
+  };
+  document.write("\">" + attrname + "</span>");
+
+  if (counter < <3DCityDB>CITYOBJECT_GENERICATTRIB/[COUNT]ATTRNAME</3DCityDB>) {
+    document.write(", ");
+  }
+}
+
+<3DCityDB>FOREACH CITYOBJECT_GENERICATTRIB/ATTRNAME,DATATYPE,STRVAL,INTVAL,REALVAL</3DCityDB>
+  ga_value_as_tooltip(%0, "%1", %2, "%3", "%4", "%5");
+<3DCityDB>END FOREACH</3DCityDB>
+
+</script></td>
+  
+    <td><hr/></td>
+  </tr>
+
+  <tr>
+    <td bgcolor="#00305f">.</td>
+  </tr>
+</table>
+<!--
+]]>
+-->

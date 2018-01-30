@@ -45,8 +45,6 @@
     <str id="plugins" txt="Plugins"/>
     <str id="plugins.description" txt="Optionale Erweiterungen für den ${APP_NAME}."/>
 
-
-
     <str id="plugin.spreadsheet.generator" txt="Spreadsheet Generator Plugin"/>
     <str id="plugin.spreadsheet.generator.description" txt="Dieses Plugin ermöglicht den Export von Sachdaten der Geoobjekte in tabellarischer Form. Als Ausgabeformate werden Microsoft Excel und CSV unterstützt."/>
     

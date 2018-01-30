@@ -24,11 +24,8 @@ ext {
 
     // Plugin API
     pluginApiName = impexpShortName + ' Plugin API'
-    pluginsDir = 'plugins'
 
     // IzPack
     appName = citydbShortName + '-Importer-Exporter'
-    appInstallDir = appName
-    appInstallerFile = appName + '-' + project.version + '-Setup.jar'
     appShortcutName = citydbShortName + ' Importer Exporter'
 }

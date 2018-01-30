@@ -46,7 +46,7 @@ distributions.main.contents {
                 version: project.version,
                 date: project.date.format('yyy-MM-dd'),
                 pluginApiService: project.pluginApiService,
-                pluginsDir: project.pluginsDir,
+                pluginsDir: 'plugins',
                 impexpName: project.impexpName,
                 citydbName: project.citydbName,
                 citydbWebsiteUrl: project.citydbWebsiteUrl,

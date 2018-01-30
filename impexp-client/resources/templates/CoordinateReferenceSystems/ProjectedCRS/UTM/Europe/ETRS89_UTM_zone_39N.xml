@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<referenceSystems>
+  <referenceSystem>
+    <srid>25839</srid>
+    <srsName>urn:ogc:def:crs:EPSG:7.7:25839</srsName>
+    <description>ETRS89 / UTM zone 39N</description>
+  </referenceSystem>
+</referenceSystems>

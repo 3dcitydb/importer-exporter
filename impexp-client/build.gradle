@@ -31,11 +31,11 @@ startScripts {
         def unixScript = getUnixScript()
         windowsScript.text = windowsScript.text
                 .replaceFirst('set APP_HOME=.*', '$0\r\nset WORKING_DIR=%CD%')
-                .replaceFirst('"%JAVA_EXE%" %DEFAULT_JVM_OPTS%.*', 'start /min "" $0')
-                .replaceAll('3_D_CITY_DB_IMPORTER_EXPORTER_OPTS', 'IMPORTER_EXPORTER_OPTS')
+                .replaceFirst('"%JAVA_EXE%" %DEFAULT_JVM_OPTS%.*', 'start /min cmd /c "$0"')
+                .replaceAll('3_D_CITY_DB_', '')
         unixScript.text = unixScript.text
                 .replaceFirst('APP_HOME=.*', '$0\nexport APP_HOME\nexport WORKING_DIR=\\$SAVED')
-                .replaceAll('3_D_CITY_DB_IMPORTER_EXPORTER_OPTS', 'IMPORTER_EXPORTER_OPTS')
+                .replaceAll('3_D_CITY_DB_', '')
     }
 }
 
@@ -58,11 +58,29 @@ distributions.main.contents {
                 vendorWebsiteUrl: project.vendorWebsiteUrl
         ])
     }
+    into('3dcitydb') {
+        from 'resources/3dcitydb'
+    }
+    into('3d-web-map-client') {
+        from 'resources/3d-web-map-client'
+    }
+    into('manual') {
+        from 'resources/manual'
+    }
     into('contribs') {
         from 'contribs'
     }
+    into('plugins') {
+        from 'resources/plugins'
+    }
     into('plugin-api') {
         from tasks.getByPath(':impexp-plugin-api:installDist')
+    }
+    into('templates') {
+        from 'resources/templates'
+    }
+    into('samples') {
+        from 'resources/samples'
     }
     into('license') {
         from "$rootDir/resources/license/APACHE-2.0.txt"
@@ -71,28 +89,45 @@ distributions.main.contents {
 }
 
 task buildInstaller(dependsOn: installDist) {
-    def izpackDir = "$buildDir/tmp/izpack"
-    def installer = "$buildDir/distributions/$project.appInstallerFile"
+    def installDir = installDist.destinationDir.toString()
+    def izpackDir = "$buildDir/tmp/izpack".toString()
+    def installer = "$buildDir/distributions/$project.appName-" + project.version + '-Setup.jar'
     inputs.dir 'resources/izpack'
     outputs.file installer
-    mkdir izpackDir
 
     doLast {
+        mkdir izpackDir
+        mkdir "$installDir/ade-extensions"
+
         copy {
             from 'resources/izpack'
             into izpackDir
-            filter(ReplaceTokens, tokens: [
-                    license: file("$rootDir/resources/license/LICENSE.txt").text,
-                    apache: file("$rootDir/resources/license/APACHE-2.0.txt").text,
-                    appName: project.impexpName,
-                    appVersion: project.version,
-                    appSubPath: project.appInstallDir,
-                    appShortcut: project.appShortcutName,
-                    url: project.citydbWebsiteUrl,
-                    citydbName: project.citydbName,
-                    citydbVersion: project.citydbVersion,
-                    installDir: "$buildDir/install/$project.appName".toString()
-            ])
+            filesMatching(['izpack-install.xml', '**/license.txt']) {
+                filter(ReplaceTokens, tokens: [
+                        license: file("$rootDir/resources/license/LICENSE.txt").text,
+                        apache: file("$rootDir/resources/license/APACHE-2.0.txt").text,
+                        appName: project.impexpName,
+                        appVersion: project.version,
+                        appSubPath: '3DCityDB-Importer-Exporter',
+                        appShortcut: project.appShortcutName,
+                        url: project.citydbWebsiteUrl,
+                        citydbName: project.citydbName,
+                        citydbVersion: project.citydbVersion,
+                        izpackDir: izpackDir,
+                        installDir: installDir,
+                        pluginApiDir: 'plugin-api',
+                        pluginsDir: 'plugins',
+                        contribsDir: 'contribs',
+                        citydbDir: '3dcitydb',
+                        startScriptsDir: 'bin',
+                        adeExtensionsDir: 'ade-extensions',
+                        templatesDir: 'templates',
+                        manualDir: 'manual',
+                        webMapClientDir: '3d-web-map-client',
+                        samplesDir: 'samples',
+                        spreadSheetPluginDir: 'spreadsheet_generator'
+                ])
+            }
         }
 
         ant.taskdef(name: 'izpack', classname: 'com.izforge.izpack.ant.IzPackTask', classpath: configurations.izpack.asPath)

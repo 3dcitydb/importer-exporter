@@ -114,56 +114,52 @@
     <packs>
         <pack name="core" id="core" required="yes" preselected="yes">
             <description/>
-            <fileset dir="!dir.dest!" targetdir="$INSTALL_PATH" excludes="!dir.dest.plugin.api.relative!/ !dir.dest.plugins.relative!/ !dir.dest.contribs.relative!/ *.bat *.sh *.command" override="true"/>
-            <file src="!dir.dest!/3DCityDB-Importer-Exporter.bat" targetdir="$INSTALL_PATH" os="windows" override="true"/>
-            <file src="!dir.dest!/3DCityDB-Importer-Exporter.sh" targetdir="$INSTALL_PATH" os="unix" condition="!izpack.macinstall" override="true"/>
-            <file src="!dir.dest!/3DCityDB-Importer-Exporter.command" targetdir="$INSTALL_PATH" os="mac" override="true"/>
-            <file src="config/img/impexp.ico" targetdir="$INSTALL_PATH" os="windows" override="true"/>
+            <fileset dir="@installDir@" targetdir="$INSTALL_PATH" excludes="@pluginApiDir@/ @pluginsDir@/ @contribsDir@/ @citydbDir@/ @startScriptsDir@/ @manualDir@/ @samplesDir@/ @webMapClientDir@/" override="true"/>
+            <file src="@installDir@/@startScriptsDir@/3DCityDB-Importer-Exporter.bat" targetdir="$INSTALL_PATH/@startScriptsDir@" os="windows" override="true"/>
+            <file src="@installDir@/@startScriptsDir@/3DCityDB-Importer-Exporter" targetdir="$INSTALL_PATH/@startScriptsDir@" os="unix" override="true"/>
+            <file src="config/img/impexp.ico" targetdir="$INSTALL_PATH/@startScriptsDir@" os="windows" override="true"/>
             <file src="config/img/uninstaller.ico" targetdir="$INSTALL_PATH/uninstaller" os="windows" override="true"/>
-            <file src="config/img/impexp.png" targetdir="$INSTALL_PATH" os="unix" override="true"/>
+            <file src="config/img/impexp.png" targetdir="$INSTALL_PATH/@startScriptsDir@" os="unix" override="true"/>
             <file src="config/img/uninstaller.png" targetdir="$INSTALL_PATH/uninstaller" os="unix" override="true"/>
-            <!-- the following filesets are just to create the empty folders plugins and ade-extension -->
-            <fileset dir="!dir.dest.plugins!" targetdir="$INSTALL_PATH/!dir.dest.plugins.relative!" excludes="**/*"/>
-            <fileset dir="!dir.dest.ade-extensions!" targetdir="$INSTALL_PATH/!dir.dest.ade-extensions.relative!" excludes="**/*"/>
-            <fileset dir="!dir.resources.templates!" targetdir="$INSTALL_PATH/templates" override="true"/>
-            <fileset dir="!dir.contribs.collada2gltf!/!dir.collada2gltf.windows!" targetdir="$INSTALL_PATH/!dir.dest.contribs.collada2gltf.relative!/!dir.collada2gltf.windows!" os="windows" override="true" />
-            <fileset dir="!dir.contribs.collada2gltf!/!dir.collada2gltf.linux!" targetdir="$INSTALL_PATH/!dir.dest.contribs.collada2gltf.relative!/!dir.collada2gltf.linux!" os="unix" condition="!izpack.macinstall" override="true" />
-            <fileset dir="!dir.contribs.collada2gltf!/!dir.collada2gltf.mac!" targetdir="$INSTALL_PATH/!dir.dest.contribs.collada2gltf.relative!/!dir.collada2gltf.mac!" os="mac" override="true" />
-            <executable targetfile="$INSTALL_PATH/3DCityDB-Importer-Exporter.sh" condition="!izpack.macinstall" stage="never">
+            <fileset dir="@installDir@/@templatesDir@" targetdir="$INSTALL_PATH/@templatesDir@" override="true"/>
+            <fileset dir="@installDir@/@contribsDir@/collada2gltf/windows_v1.0_x64_draft" targetdir="$INSTALL_PATH/@contribsDir@/collada2gltf/windows_v1.0_x64_draft" os="windows" override="true" />
+            <fileset dir="@installDir@/@contribsDir@/collada2gltf/linux_v1.0_x64_draft" targetdir="$INSTALL_PATH/@contribsDir@/collada2gltf/linux_v1.0_x64_draft" os="unix" condition="!izpack.macinstall" override="true" />
+            <fileset dir="@installDir@/@contribsDir@/collada2gltf/mac_v1.0_x64_draft" targetdir="$INSTALL_PATH/@contribsDir@/collada2gltf/mac_v1.0_x64_draft" os="mac" override="true" />
+            <!-- the following filesets are just to create empty folders -->
+            <fileset dir="@installDir@/@pluginsDir@" targetdir="$INSTALL_PATH/@pluginsDir@" excludes="**/*"/>
+            <fileset dir="@installDir@/@adeExtensionsDir@" targetdir="$INSTALL_PATH/@adeExtensionsDir@" excludes="**/*"/>
+            <executable targetfile="$INSTALL_PATH/@startScriptsDir@/3DCityDB-Importer-Exporter" stage="never">
                 <os family="unix"/>
             </executable>
-            <executable targetfile="$INSTALL_PATH/3DCityDB-Importer-Exporter.command" stage="never">
-                <os family="mac"/>
-            </executable>
-            <executable targetfile="$INSTALL_PATH/!dir.dest.contribs.collada2gltf.relative!/!dir.collada2gltf.linux!/collada2gltf" condition="!izpack.macinstall" stage="never">
+            <executable targetfile="$INSTALL_PATH/@contribsDir@/collada2gltf/linux_v1.0_x64_draft/collada2gltf" condition="!izpack.macinstall" stage="never">
                 <os family="unix"/>
             </executable>
-            <executable targetfile="$INSTALL_PATH/!dir.dest.contribs.collada2gltf.relative!/!dir.collada2gltf.mac!/collada2gltf" stage="never">
+            <executable targetfile="$INSTALL_PATH/@contribsDir@/collada2gltf/mac_v1.0_x64_draft/collada2gltf" stage="never">
                 <os family="mac"/>
             </executable>
         </pack>
         <pack name="3dcitydb" id="3dcitydb" required="no" preselected="yes">
             <description/>
-            <fileset dir="!dir.resources.3dcitydb!" targetdir="$INSTALL_PATH/3dcitydb" override="true"/>
+            <fileset dir="@installDir@/@citydbDir@" targetdir="$INSTALL_PATH/@citydbDir@" override="true"/>
         </pack>
         <pack name="manual" id="manual" required="no" preselected="yes">
             <description/>
-            <fileset dir="!dir.resources.manual!" targetdir="$INSTALL_PATH/manual" override="true"/>
+            <fileset dir="@installDir@/@manualDir@" targetdir="$INSTALL_PATH/@manualDir@" override="true"/>
         </pack>
         <pack name="3d-web-map-client" id="3d-web-map-client" required="no" preselected="yes">
         	<description/>
-        	<fileset dir="!dir.resources.3d-web-map-client!" targetdir="$INSTALL_PATH/3d-web-map-client" override="true"/>
+        	<fileset dir="@installDir@/@webMapClientDir@" targetdir="$INSTALL_PATH/@webMapClientDir@" override="true"/>
         </pack>
         <pack name="samples" id="samples" required="no" preselected="yes">
             <description/>
-            <fileset dir="!dir.samples!" targetdir="$INSTALL_PATH/samples" override="true"/>
+            <fileset dir="@installDir@/@samplesDir@" targetdir="$INSTALL_PATH/@samplesDir@" override="true"/>
         </pack>
         <pack name="plugins" id="plugins" required="no" preselected="no">
             <description/>
         </pack>
         <pack name="plugin.spreadsheet.generator" id="plugin.spreadsheet.generator" parent="plugins" required="no" preselected="no">
             <description/>
-            <fileset dir="!dir.dest.plugins!/!plugin.spreadsheet.generator.dir.dest.relative!" targetdir="$INSTALL_PATH/!dir.dest.plugins.relative!/!plugin.spreadsheet.generator.dir.dest.relative!" override="true"/>
+            <fileset dir="@installDir@/@pluginsDir@/@spreadSheetPluginDir@" targetdir="$INSTALL_PATH//@pluginsDir@/@spreadSheetPluginDir@" override="true"/>
         </pack>
         <!-- >pack name="plugin.ade-manager" id="plugin.ade-manager" parent="plugins" required="no" preselected="yes">
             <description/>
@@ -171,7 +167,7 @@
         </pack-->
         <pack name="plugin-api" id="plugin-api" parent="plugins" required="no" preselected="no">
             <description/>
-            <fileset dir="!dir.dest.plugin.api!" targetdir="$INSTALL_PATH/!dir.dest.plugin.api.relative!" override="true"/>
+            <fileset dir="@installDir@/@pluginApiDir@" targetdir="$INSTALL_PATH/@pluginApiDir@" override="true"/>
         </pack>
     </packs>
 
