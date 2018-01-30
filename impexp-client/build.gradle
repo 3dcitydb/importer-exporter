@@ -59,28 +59,28 @@ distributions.main.contents {
         ])
     }
     into('3dcitydb') {
-        from 'resources/3dcitydb'
+        from "$rootDir/resources/3dcitydb"
     }
     into('3d-web-map-client') {
-        from 'resources/3d-web-map-client'
+        from "$rootDir/resources/3d-web-map-client"
     }
     into('manual') {
-        from 'resources/manual'
+        from "$rootDir/resources/manual"
     }
     into('contribs') {
         from 'contribs'
     }
     into('plugins') {
-        from 'resources/plugins'
+        from "$rootDir/resources/plugins"
     }
     into('plugin-api') {
         from tasks.getByPath(':impexp-plugin-api:installDist')
     }
     into('templates') {
-        from 'resources/templates'
+        from "$rootDir/resources/templates"
     }
     into('samples') {
-        from 'resources/samples'
+        from "$rootDir/resources/samples"
     }
     into('license') {
         from "$rootDir/resources/license/APACHE-2.0.txt"
