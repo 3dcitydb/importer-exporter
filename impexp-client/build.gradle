@@ -102,7 +102,7 @@ task buildInstaller(dependsOn: installDist) {
         copy {
             from 'resources/izpack'
             into izpackDir
-            filesMatching(['izpack-install.xml', '**/license.txt']) {
+            filesMatching(['**/*.xml', '**/license.txt']) {
                 filter(ReplaceTokens, tokens: [
                         license: file("$rootDir/resources/license/LICENSE.txt").text,
                         apache: file("$rootDir/resources/license/APACHE-2.0.txt").text,

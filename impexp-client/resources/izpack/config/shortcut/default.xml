@@ -29,29 +29,29 @@
 <shortcuts>
     <skipIfNotSupported/>
     <programGroup defaultName="${3DCITYDB_NAME}" location="applications"/>
-    <shortcut name="${APP_SHORTCUT_NAME}" target="$INSTALL_PATH\3DCityDB-Importer-Exporter.bat" commandLine="" workingDirectory="$INSTALL_PATH"
+    <shortcut name="${APP_SHORTCUT_NAME}" target="$INSTALL_PATH\@startScriptsDir@\3DCityDB-Importer-Exporter.bat" commandLine="" workingDirectory="$INSTALL_PATH\@startScriptsDir@"
         description="Start ${APP_SHORTCUT_NAME}" initialState="minimized" programGroup="yes" desktop="yes" applications="no" startMenu="no" startup="no"
-        iconFile="$INSTALL_PATH\bin\impexp.ico" iconIndex="0">
+        iconFile="$INSTALL_PATH\@startScriptsDir@\impexp.ico" iconIndex="0">
         <createForPack name="core"/>
     </shortcut>
 
-    <shortcut name="${3DCITYDB_NAME} Uninstaller" target="$INSTALL_PATH\uninstaller\uninstaller.jar" commandLine="" workingDirectory=""
+    <shortcut name="${APP_SHORTCUT_NAME} Uninstaller" target="$INSTALL_PATH\uninstaller\uninstaller.jar" commandLine="" workingDirectory=""
         description="Remove ${APP_SHORTCUT_NAME}" programGroup="yes" desktop="no" applications="no" startMenu="no" startup="no"
         iconFile="$INSTALL_PATH\uninstaller\uninstaller.ico" iconIndex="0">
         <createForPack name="core"/>
     </shortcut>
 
-    <shortcut name="${3DCITYDB_NAME} SQL Scripts" target="$INSTALL_PATH\3dcitydb" commandLine="" workingDirectory="$INSTALL_PATH\3dcitydb"
+    <shortcut name="${3DCITYDB_NAME} SQL Scripts" target="$INSTALL_PATH\@citydbDir@" commandLine="" workingDirectory="$INSTALL_PATH\@citydbDir@"
         description="${3DCITYDB_NAME} ${3DCITYDB_VER} SQL scripts for Oracle Spatial/Locator and PostgreSQL/PostGIS" programGroup="yes" desktop="no " applications="no" startMenu="no" startup="no">
         <createForPack name="3dcitydb"/>
     </shortcut>
 
-    <shortcut name="Documentation" target="$INSTALL_PATH\manual" commandLine="" workingDirectory="$INSTALL_PATH\manual"
+    <shortcut name="Documentation" target="$INSTALL_PATH\@manualDir@" commandLine="" workingDirectory="$INSTALL_PATH\@manualDir@"
         description="The documentation of the ${3DCITYDB_NAME} and the ${APP_SHORTCUT_NAME}" programGroup="yes" desktop="no " applications="no" startMenu="no" startup="no">
         <createForPack name="manual"/>
     </shortcut>
 
-    <shortcut name="Sample datasets" target="$INSTALL_PATH\samples" commandLine="" workingDirectory="$INSTALL_PATH\samples"
+    <shortcut name="Sample datasets" target="$INSTALL_PATH\@samplesDir@" commandLine="" workingDirectory="$INSTALL_PATH\@samplesDir@"
         description="Sample CityGML and KML/COLLADA datasets" programGroup="yes" desktop="no " applications="no" startMenu="no" startup="no">
         <createForPack name="samples"/>
     </shortcut>
