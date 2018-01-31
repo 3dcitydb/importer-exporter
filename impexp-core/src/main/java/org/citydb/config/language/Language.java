@@ -39,11 +39,11 @@ public class Language {
 		if (!existsLanguagePack(locale))
 			locale = Locale.ENGLISH;
 		
-		I18N = ResourceBundle.getBundle("languages.language", locale);
+		I18N = ResourceBundle.getBundle("i18n.language", locale);
 	}
 	
 	public static boolean existsLanguagePack(Locale locale) {
-		return Language.class.getResource("/languages/language_" + locale.getLanguage() + ".properties") != null;
+		return Language.class.getResource("/i18n/language_" + locale.getLanguage() + ".properties") != null;
 	}
 
 }

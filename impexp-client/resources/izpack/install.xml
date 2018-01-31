@@ -31,72 +31,58 @@
         <appname>@appName@</appname>
         <appversion>v@appVersion@</appversion>
         <appsubpath>@appSubPath@</appsubpath>
+        <url>@url@</url>
         <authors>
             <author name="Claus Nagel" email="cnagel@virtualcitysystems.de"/>
             <author name="Zhihang Yao" email="zyao@virtualcitysystems.de"/>
             <author name="György Hudra" email="ghudra@moss.de"/>
             <author name="Felix Kunde" email="felix-kunde@gmx.de"/>
             <author name="Thomas H. Kolbe" email="thomas.kolbe@tum.de"/>
-        </authors>
-        <url>@url@</url>
+        </authors>        
         <uninstaller write="yes" path="$INSTALL_PATH/uninstaller"/>
         <javaversion>1.8</javaversion>
         <writeinstallationinformation>no</writeinstallationinformation>
     </info>
+    
+    <locale>
+        <langpack iso3="eng"/>
+        <langpack iso3="deu"/>
+    </locale>
 
     <variables>
-        <variable name="DesktopShortcutCheckboxEnabled" value="true"/>
         <variable name="APP_SHORTCUT_NAME" value="@appShortcut@"/>
         <variable name="3DCITYDB_NAME" value="@citydbName@"/>
         <variable name="3DCITYDB_VER" value="v@citydbVersion@"/>
-        <variable name="ApplicationShortcutPath" value="shortcuts" />
+        <variable name="DesktopShortcutCheckboxEnabled" value="true"/>
+        <variable name="ApplicationShortcutPath" value="shortcuts"/>
     </variables>
-    
-    <conditions>
-        <condition type="variable" id="lang_eng">
-            <name>ISO3_LANG</name>
-            <value>eng</value>
-        </condition>
-        <condition type="variable" id="lang_deu">
-            <name>ISO3_LANG</name>
-            <value>deu</value>
-        </condition>
-    </conditions>
 
-    <guiprefs width="650" height="500" resizable="no">
-        <modifier key="useHeadingPanel" value="yes"/>
-        <modifier key="useButtonIcons" value="yes"/>
-        <modifier key="useLabelIcons" value="yes"/>
+    <guiprefs width="650" height="500" resizable="yes">
+        <modifier key="layoutAnchor" value="NORTH"/>
         <modifier key="labelGap" value="2"/>
         <modifier key="paragraphYGap" value="10"/>
-        <modifier key="headingPanelCounter" value="text"/>
-        <modifier key="headingLineCount" value="3"/>
-        <modifier key="layoutAnchor" value="NORTH"/>
+        <modifier key="useHeadingPanel" value="yes"/>
+        <modifier key="headingLineCount" value="3"/>        
         <modifier key="headingFontSize" value="1.2"/>
         <modifier key="headingBackgroundColor" value="0x00ffffff"/>
         <modifier key="headingPanelCounter" value="text"/>
         <modifier key="headingPanelCounterPos" value="inHeading"/>
         <modifier key="langDisplayType" value="native"/>
     </guiprefs>
-
-    <locale>
-        <langpack iso3="eng"/>
-        <langpack iso3="deu"/>
-    </locale>
-
+    
     <resources>
-        <res id="LicencePanel.licence" src="config/license/license.txt"/>
-        <res id="InfoPanel.info" src="@installDir@/README.txt"/>
-        <res id="Heading.image" src="config/img/header.png"/>
-        <res id="installer.langsel.img" src="config/img/splash.png"/>
-        <res id="CustomLangpack.xml_eng" src="config/panel/eng.xml"/>
-        <res id="CustomLangpack.xml_deu" src="config/panel/deu.xml"/>
-        <res id="packsLang.xml_eng" src="config/packs/eng.xml"/>
-        <res id="packsLang.xml_deu" src="config/packs/deu.xml"/>
-        <res id="shortcutSpec.xml" src="config/shortcut/default.xml"/>
-        <res id="shortcutSpec.xml_deu" src="config/shortcut/default_deu.xml"/>
-        <res id="Unix_shortcutSpec.xml" src="config/shortcut/unix.xml"/>
-        <res id="Unix_shortcutSpec.xml_deu" src="config/shortcut/unix_deu.xml"/>
+        <res id="installer.langsel.img" src="images/splash.png"/>
+        <res id="Heading.image" src="images/header.png"/>
+        <res id="CustomLangpack.xml" src="i18n/panelLang.xml"/>
+        <res id="CustomLangpack.xml_deu" src="i18n/panelLang_deu.xml"/>
+        <res id="packsLang.xml" src="i18n/packsLang.xml"/>
+        <res id="packsLang.xml_deu" src="i18n/packsLang_deu.xml"/>
+        <res id="InfoPanel.info" src="@installDir@/README.txt"/>        
+        <res id="LicencePanel.licence" src="license/license.txt"/>
+        <res id="shortcutSpec.xml" src="shortcuts/shortcutDefault.xml"/>
+        <res id="shortcutSpec.xml_deu" src="shortcuts/shortcutDefault_deu.xml"/>
+        <res id="Unix_shortcutSpec.xml" src="shortcuts/shortcutUnix.xml"/>
+        <res id="Unix_shortcutSpec.xml_deu" src="shortcuts/shortcutUnix_deu.xml"/>
     </resources>
 
     <panels>
@@ -114,24 +100,32 @@
     <packs>
         <pack name="core" id="core" required="yes" preselected="yes">
             <description/>
-            <fileset dir="@installDir@" targetdir="$INSTALL_PATH" excludes="@pluginApiDir@/ @pluginsDir@/ @contribsDir@/ @citydbDir@/ @startScriptsDir@/ @manualDir@/ @samplesDir@/ @webMapClientDir@/" override="true"/>
-            <file src="@installDir@/@startScriptsDir@/3DCityDB-Importer-Exporter.bat" targetdir="$INSTALL_PATH/@startScriptsDir@" os="windows" override="true"/>
-            <file src="@installDir@/@startScriptsDir@/3DCityDB-Importer-Exporter" targetdir="$INSTALL_PATH/@startScriptsDir@" os="unix" override="true"/>
-            <file src="config/img/impexp.ico" targetdir="$INSTALL_PATH/@startScriptsDir@" os="windows" override="true"/>
-            <file src="config/img/uninstaller.ico" targetdir="$INSTALL_PATH/uninstaller" os="windows" override="true"/>
-            <file src="config/img/impexp.png" targetdir="$INSTALL_PATH/@startScriptsDir@" os="unix" override="true"/>
-            <file src="config/img/uninstaller.png" targetdir="$INSTALL_PATH/uninstaller" os="unix" override="true"/>
+            <fileset dir="@installDir@" targetdir="$INSTALL_PATH"
+                excludes="@pluginApiDir@/ @pluginsDir@/ @contribsDir@/ @citydbDir@/ @startScriptsDir@/ @manualDir@/ @samplesDir@/ @webMapClientDir@/"
+                override="true"/>
+            <file src="@installDir@/@startScriptsDir@/3DCityDB-Importer-Exporter.bat" targetdir="$INSTALL_PATH/@startScriptsDir@" os="windows"
+                override="true"/>
+            <file src="@installDir@/@startScriptsDir@/3DCityDB-Importer-Exporter" targetdir="$INSTALL_PATH/@startScriptsDir@" os="unix"
+                override="true"/>
+            <file src="images/impexp.ico" targetdir="$INSTALL_PATH/@startScriptsDir@" os="windows" override="true"/>
+            <file src="images/uninstaller.ico" targetdir="$INSTALL_PATH/uninstaller" os="windows" override="true"/>
+            <file src="images/impexp.png" targetdir="$INSTALL_PATH/@startScriptsDir@" os="unix" override="true"/>
+            <file src="images/uninstaller.png" targetdir="$INSTALL_PATH/uninstaller" os="unix" override="true"/>
             <fileset dir="@installDir@/@templatesDir@" targetdir="$INSTALL_PATH/@templatesDir@" override="true"/>
-            <fileset dir="@installDir@/@contribsDir@/collada2gltf/windows_v1.0_x64_draft" targetdir="$INSTALL_PATH/@contribsDir@/collada2gltf/windows_v1.0_x64_draft" os="windows" override="true" />
-            <fileset dir="@installDir@/@contribsDir@/collada2gltf/linux_v1.0_x64_draft" targetdir="$INSTALL_PATH/@contribsDir@/collada2gltf/linux_v1.0_x64_draft" os="unix" condition="!izpack.macinstall" override="true" />
-            <fileset dir="@installDir@/@contribsDir@/collada2gltf/mac_v1.0_x64_draft" targetdir="$INSTALL_PATH/@contribsDir@/collada2gltf/mac_v1.0_x64_draft" os="mac" override="true" />
+            <fileset dir="@installDir@/@contribsDir@/collada2gltf/windows_v1.0_x64_draft"
+                targetdir="$INSTALL_PATH/@contribsDir@/collada2gltf/windows_v1.0_x64_draft" os="windows" override="true"/>
+            <fileset dir="@installDir@/@contribsDir@/collada2gltf/linux_v1.0_x64_draft"
+                targetdir="$INSTALL_PATH/@contribsDir@/collada2gltf/linux_v1.0_x64_draft" os="unix" condition="!izpack.macinstall" override="true"/>
+            <fileset dir="@installDir@/@contribsDir@/collada2gltf/mac_v1.0_x64_draft"
+                targetdir="$INSTALL_PATH/@contribsDir@/collada2gltf/mac_v1.0_x64_draft" os="mac" override="true"/>
             <!-- the following filesets are just to create empty folders -->
             <fileset dir="@installDir@/@pluginsDir@" targetdir="$INSTALL_PATH/@pluginsDir@" excludes="**/*"/>
             <fileset dir="@installDir@/@adeExtensionsDir@" targetdir="$INSTALL_PATH/@adeExtensionsDir@" excludes="**/*"/>
             <executable targetfile="$INSTALL_PATH/@startScriptsDir@/3DCityDB-Importer-Exporter" stage="never">
                 <os family="unix"/>
             </executable>
-            <executable targetfile="$INSTALL_PATH/@contribsDir@/collada2gltf/linux_v1.0_x64_draft/collada2gltf" condition="!izpack.macinstall" stage="never">
+            <executable targetfile="$INSTALL_PATH/@contribsDir@/collada2gltf/linux_v1.0_x64_draft/collada2gltf" condition="!izpack.macinstall"
+                stage="never">
                 <os family="unix"/>
             </executable>
             <executable targetfile="$INSTALL_PATH/@contribsDir@/collada2gltf/mac_v1.0_x64_draft/collada2gltf" stage="never">
@@ -147,8 +141,8 @@
             <fileset dir="@installDir@/@manualDir@" targetdir="$INSTALL_PATH/@manualDir@" override="true"/>
         </pack>
         <pack name="3d-web-map-client" id="3d-web-map-client" required="no" preselected="yes">
-        	<description/>
-        	<fileset dir="@installDir@/@webMapClientDir@" targetdir="$INSTALL_PATH/@webMapClientDir@" override="true"/>
+            <description/>
+            <fileset dir="@installDir@/@webMapClientDir@" targetdir="$INSTALL_PATH/@webMapClientDir@" override="true"/>
         </pack>
         <pack name="samples" id="samples" required="no" preselected="yes">
             <description/>
@@ -159,12 +153,9 @@
         </pack>
         <pack name="plugin.spreadsheet.generator" id="plugin.spreadsheet.generator" parent="plugins" required="no" preselected="no">
             <description/>
-            <fileset dir="@installDir@/@pluginsDir@/@spreadSheetPluginDir@" targetdir="$INSTALL_PATH//@pluginsDir@/@spreadSheetPluginDir@" override="true"/>
+            <fileset dir="@installDir@/@pluginsDir@/@spreadSheetPluginDir@" targetdir="$INSTALL_PATH//@pluginsDir@/@spreadSheetPluginDir@"
+                override="true"/>
         </pack>
-        <!-- >pack name="plugin.ade-manager" id="plugin.ade-manager" parent="plugins" required="no" preselected="yes">
-            <description/>
-            <fileset dir="!dir.dest.plugins!/!plugin.ade-manager.dir.dest.relative!" targetdir="$INSTALL_PATH/!dir.dest.plugins.relative!/!plugin.ade-manager.dir.dest.relative!" override="true"/>
-        </pack-->
         <pack name="plugin-api" id="plugin-api" parent="plugins" required="no" preselected="no">
             <description/>
             <fileset dir="@installDir@/@pluginApiDir@" targetdir="$INSTALL_PATH/@pluginApiDir@" override="true"/>

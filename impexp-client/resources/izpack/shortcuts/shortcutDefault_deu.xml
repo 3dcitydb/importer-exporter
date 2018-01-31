@@ -42,22 +42,22 @@
     </shortcut>
     
     <shortcut name="${3DCITYDB_NAME} SQL Skripte" target="$INSTALL_PATH\@citydbDir@" commandLine="" workingDirectory="$INSTALL_PATH\@citydbDir@"
-        description="SQL Skripte der ${3DCITYDB_NAME} ${3DCITYDB_VER} für Oracle Spatial/Locator und PostgreSQL/PostGIS" programGroup="yes" desktop="no " applications="no" startMenu="no" startup="no">
+        description="SQL Skripte der ${3DCITYDB_NAME} ${3DCITYDB_VER} für Oracle Spatial/Locator und PostgreSQL/PostGIS" programGroup="yes" desktop="no" applications="no" startMenu="no" startup="no">
         <createForPack name="3dcitydb"/>
     </shortcut>
     
     <shortcut name="Dokumentation" target="$INSTALL_PATH\@manualDir@" commandLine="" workingDirectory="$INSTALL_PATH\@manualDir@"
-        description="Die Dokumentation der ${3DCITYDB_NAME} und des ${APP_SHORTCUT_NAME}" programGroup="yes" desktop="no " applications="no" startMenu="no" startup="no">
+        description="Die Dokumentation der ${3DCITYDB_NAME} und des ${APP_SHORTCUT_NAME}" programGroup="yes" desktop="no" applications="no" startMenu="no" startup="no">
         <createForPack name="manual"/>
     </shortcut>
     
     <shortcut name="Beispieldaten" target="$INSTALL_PATH\@samplesDir@" commandLine="" workingDirectory="$INSTALL_PATH\@samplesDir@"
-        description="CityGML und KML/COLLADA Beispieldaten" programGroup="yes" desktop="no " applications="no" startMenu="no" startup="no">
+        description="CityGML und KML/COLLADA Beispieldaten" programGroup="yes" desktop="no" applications="no" startMenu="no" startup="no">
         <createForPack name="samples"/>
     </shortcut>
     
     <shortcut name="Vorlagen" target="$INSTALL_PATH\templates" commandLine="" workingDirectory="$INSTALL_PATH\templates"
-        description="Vorlagen für den ${APP_SHORTCUT_NAME}" programGroup="yes" desktop="no " applications="no" startMenu="no" startup="no">
+        description="Vorlagen für den ${APP_SHORTCUT_NAME}" programGroup="yes" desktop="no" applications="no" startMenu="no" startup="no">
         <createForPack name="samples"/>
     </shortcut>
 </shortcuts>

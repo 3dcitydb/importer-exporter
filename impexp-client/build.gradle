@@ -92,20 +92,18 @@ task buildInstaller(dependsOn: installDist) {
     def installDir = installDist.destinationDir.toString()
     def izpackDir = "$buildDir/tmp/izpack".toString()
     def installer = "$buildDir/distributions/$project.appName-" + project.version + '-Setup.jar'
+
     inputs.dir 'resources/izpack'
     outputs.file installer
 
     doLast {
-        mkdir izpackDir
         mkdir "$installDir/ade-extensions"
 
         copy {
             from 'resources/izpack'
             into izpackDir
-            filesMatching(['**/*.xml', '**/license.txt']) {
+            filesMatching('**/*.xml') {
                 filter(ReplaceTokens, tokens: [
-                        license: file("$rootDir/resources/license/LICENSE.txt").text,
-                        apache: file("$rootDir/resources/license/APACHE-2.0.txt").text,
                         appName: project.impexpName,
                         appVersion: project.version,
                         appSubPath: '3DCityDB-Importer-Exporter',
@@ -113,7 +111,6 @@ task buildInstaller(dependsOn: installDist) {
                         url: project.citydbWebsiteUrl,
                         citydbName: project.citydbName,
                         citydbVersion: project.citydbVersion,
-                        izpackDir: izpackDir,
                         installDir: installDir,
                         pluginApiDir: 'plugin-api',
                         pluginsDir: 'plugins',
@@ -128,10 +125,16 @@ task buildInstaller(dependsOn: installDist) {
                         spreadSheetPluginDir: 'spreadsheet_generator'
                 ])
             }
+            filesMatching('**/license.txt') {
+                filter(ReplaceTokens, tokens: [
+                        license: file("$rootDir/resources/license/LICENSE.txt").text,
+                        apache: file("$rootDir/resources/license/APACHE-2.0.txt").text
+                ])
+            }
         }
 
         ant.taskdef(name: 'izpack', classname: 'com.izforge.izpack.ant.IzPackTask', classpath: configurations.izpack.asPath)
-        ant.izpack(input: "$izpackDir/izpack-install.xml",
+        ant.izpack(input: "$izpackDir/install.xml",
                 output: installer,
                 basedir: izpackDir
         )

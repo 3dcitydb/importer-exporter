@@ -487,7 +487,7 @@ public class ImpExp {
 		if (!Language.existsLanguagePack(new Locale(lang.value())))
 			lang = LanguageType.EN;
 
-		Language.I18N = ResourceBundle.getBundle("languages.language", new Locale(lang.value()));
+		Language.I18N = ResourceBundle.getBundle("i18n.language", new Locale(lang.value()));
 		config.getProject().getGlobal().setLanguage(lang);
 
 		// start application

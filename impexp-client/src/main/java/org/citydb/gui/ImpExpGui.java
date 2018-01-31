@@ -436,7 +436,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 				return;
 
 			Locale locale = new Locale(lang.value());
-			Language.I18N = ResourceBundle.getBundle("languages.language", locale);
+			Language.I18N = ResourceBundle.getBundle("i18n.language", locale);
 			currentLang = lang;
 
 			setDatabaseStatus(dbPool.isConnected());
