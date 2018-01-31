@@ -27,9 +27,33 @@
  */
 package org.citydb.modules.database.gui.preferences;
 
-import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
+import org.citydb.ImpExpConstants;
+import org.citydb.config.Config;
+import org.citydb.config.ConfigUtil;
+import org.citydb.config.language.Language;
+import org.citydb.config.project.database.DatabaseSrs;
+import org.citydb.config.project.database.DatabaseSrsList;
+import org.citydb.config.project.global.LogLevel;
+import org.citydb.database.connection.DatabaseConnectionPool;
+import org.citydb.event.Event;
+import org.citydb.event.EventHandler;
+import org.citydb.event.global.DatabaseConnectionStateEvent;
+import org.citydb.event.global.EventType;
+import org.citydb.gui.factory.PopupMenuDecorator;
+import org.citydb.gui.factory.SrsComboBoxFactory;
+import org.citydb.gui.factory.SrsComboBoxFactory.SrsComboBox;
+import org.citydb.gui.preferences.AbstractPreferencesComponent;
+import org.citydb.gui.util.GuiUtil;
+import org.citydb.log.Logger;
+import org.citydb.plugin.extension.view.ViewController;
+import org.citydb.registry.ObjectRegistry;
+
+import javax.swing.*;
+import javax.swing.border.TitledBorder;
+import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.dnd.DnDConstants;
@@ -49,42 +73,6 @@ import java.text.DecimalFormat;
 import java.text.MessageFormat;
 import java.text.ParseException;
 import java.util.List;
-
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.JButton;
-import javax.swing.JFileChooser;
-import javax.swing.JFormattedTextField;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-import javax.swing.JTextPane;
-import javax.swing.border.TitledBorder;
-import javax.swing.filechooser.FileNameExtensionFilter;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-
-import org.citydb.config.Config;
-import org.citydb.config.ConfigUtil;
-import org.citydb.config.internal.Internal;
-import org.citydb.config.language.Language;
-import org.citydb.config.project.database.DatabaseSrs;
-import org.citydb.config.project.database.DatabaseSrsList;
-import org.citydb.config.project.global.LogLevel;
-import org.citydb.database.connection.DatabaseConnectionPool;
-import org.citydb.event.Event;
-import org.citydb.event.EventHandler;
-import org.citydb.event.global.DatabaseConnectionStateEvent;
-import org.citydb.event.global.EventType;
-import org.citydb.gui.factory.PopupMenuDecorator;
-import org.citydb.gui.factory.SrsComboBoxFactory;
-import org.citydb.gui.factory.SrsComboBoxFactory.SrsComboBox;
-import org.citydb.gui.preferences.AbstractPreferencesComponent;
-import org.citydb.gui.util.GuiUtil;
-import org.citydb.log.Logger;
-import org.citydb.plugin.extension.view.ViewController;
-import org.citydb.registry.ObjectRegistry;
 
 @SuppressWarnings("serial")
 public class SrsPanel extends AbstractPreferencesComponent implements EventHandler, DropTargetListener {
@@ -288,7 +276,7 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 		// influence focus policy
 		checkButton.setFocusCycleRoot(false);
 
-		srsComboBoxListener = new ActionListener() {			
+		srsComboBoxListener = new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				displaySelectedValues();
 			}
@@ -365,7 +353,7 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 					srid = Integer.parseInt(sridText.getText().trim());
 				} catch (NumberFormatException nfe) {
 					//
-				}			
+				}
 
 				try {
 					DatabaseSrs tmp = DatabaseSrs.createDefaultSrs();
@@ -714,7 +702,7 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 		if (!fileText.getText().trim().isEmpty())
 			chooser.setCurrentDirectory(new File(fileText.getText()));
 		else
-			chooser.setCurrentDirectory(new File(Internal.SRS_TEMPLATES_PATH));
+			chooser.setCurrentDirectory(ImpExpConstants.IMPEXP_HOME.resolve(ImpExpConstants.SRS_TEMPLATES_DIR).toFile());
 
 		int result = chooser.showOpenDialog(getTopLevelAncestor());
 		if (result == JFileChooser.CANCEL_OPTION) 

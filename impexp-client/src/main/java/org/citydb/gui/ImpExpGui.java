@@ -27,59 +27,7 @@
  */
 package org.citydb.gui;
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.GraphicsConfiguration;
-import java.awt.GraphicsDevice;
-import java.awt.GraphicsEnvironment;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.Rectangle;
-import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FilterOutputStream;
-import java.io.OutputStream;
-import java.io.PrintStream;
-import java.io.UnsupportedEncodingException;
-import java.nio.charset.Charset;
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.MissingResourceException;
-import java.util.ResourceBundle;
-
-import javax.swing.BorderFactory;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
-import javax.swing.JTabbedPane;
-import javax.swing.JTextArea;
-import javax.swing.UIManager;
-import javax.swing.border.Border;
-import javax.swing.border.CompoundBorder;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.PopupMenuEvent;
-import javax.swing.event.PopupMenuListener;
-import javax.swing.plaf.basic.BasicSplitPaneDivider;
-import javax.swing.plaf.basic.BasicSplitPaneUI;
-import javax.swing.text.DefaultCaret;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-
+import org.citydb.ImpExpConstants;
 import org.citydb.ade.ADEExtensionManager;
 import org.citydb.config.Config;
 import org.citydb.config.ConfigUtil;
@@ -117,6 +65,37 @@ import org.citydb.plugin.extension.view.components.ComponentFactory;
 import org.citydb.registry.ObjectRegistry;
 import org.citydb.util.Util;
 
+import javax.swing.*;
+import javax.swing.border.Border;
+import javax.swing.border.CompoundBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
+import javax.swing.plaf.basic.BasicSplitPaneDivider;
+import javax.swing.plaf.basic.BasicSplitPaneUI;
+import javax.swing.text.DefaultCaret;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.io.ByteArrayOutputStream;
+import java.io.FilterOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.MissingResourceException;
+import java.util.ResourceBundle;
+
 @SuppressWarnings("serial")
 public final class ImpExpGui extends JFrame implements ViewController, EventHandler {
 	private final Logger log = Logger.getInstance();
@@ -146,7 +125,6 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 
 	private List<View> views;
 	private PreferencesPlugin preferencesPlugin;
-	private DatabasePlugin databasePlugin;
 
 	private PrintStream out;
 
@@ -210,7 +188,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		console = new JPanel();
 		consoleLabel = new JLabel();
 		consoleText.setAutoscrolls(true);
-		consoleText.setFont(new Font(Font.MONOSPACED, 0, UIManager.getFont("Label.font").getSize()));
+		consoleText.setFont(new Font(Font.MONOSPACED, Font.PLAIN, UIManager.getFont("Label.font").getSize()));
 		consoleText.setEditable(false);
 		consoleWindow = new ConsoleWindow(console, config, this);
 		consolePopup = new ConsolePopupMenuWrapper(PopupMenuDecorator.getInstance().decorateAndGet(consoleText));
@@ -231,9 +209,9 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		menu = new JTabbedPane();
 
 		// retrieve all views
-		views = new ArrayList<View>();
+		views = new ArrayList<>();
 		preferencesPlugin = pluginManager.getInternalPlugin(PreferencesPlugin.class);
-		databasePlugin = pluginManager.getInternalPlugin(DatabasePlugin.class);
+		DatabasePlugin databasePlugin = pluginManager.getInternalPlugin(DatabasePlugin.class);
 		views.add(pluginManager.getInternalPlugin(CityGMLImportPlugin.class).getView());
 		views.add(pluginManager.getInternalPlugin(CityGMLExportPlugin.class).getView());
 		views.add(pluginManager.getInternalPlugin(KMLExportPlugin.class).getView());
@@ -280,12 +258,10 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		// settings specific to Mac OS X
 		if (OSXAdapter.IS_MAC_OS_X) {
 			try {
-				OSXAdapter.setQuitHandler(this, getClass().getDeclaredMethod("shutdown", (Class[])null));
-				OSXAdapter.setAboutHandler(menuBar, menuBar.getClass().getDeclaredMethod("printInfo", (Class[])null));
-				OSXAdapter.setPreferencesHandler(this, getClass().getDeclaredMethod("showPreferences", (Class[])null));
-			} catch (SecurityException e) {
-				//
-			} catch (NoSuchMethodException e) {
+				OSXAdapter.setQuitHandler(this, getClass().getDeclaredMethod("shutdown"));
+				OSXAdapter.setAboutHandler(menuBar, menuBar.getClass().getDeclaredMethod("printInfo"));
+				OSXAdapter.setPreferencesHandler(this, getClass().getDeclaredMethod("showPreferences"));
+			} catch (SecurityException | NoSuchMethodException e) {
 				//
 			}
 		}
@@ -354,11 +330,10 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
 		GraphicsDevice[] gs = ge.getScreenDevices();
 
-		for (int j = 0; j < gs.length; j++) { 
-			GraphicsDevice gd = gs[j];
+		for (GraphicsDevice gd : gs) {
 			GraphicsConfiguration[] gc = gd.getConfigurations();
-			for (int i=0; i < gc.length; i++)
-				virtualBounds = virtualBounds.union(gc[i].getBounds());
+			for (GraphicsConfiguration aGc : gc)
+				virtualBounds = virtualBounds.union(aGc.getBounds());
 		}
 
 		Integer x = size.getX();
@@ -467,7 +442,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 
 	@Override
 	public int warnMessage(String title, String text) {
-		return JOptionPane.showConfirmDialog(this, text, title, JOptionPane.WARNING_MESSAGE);
+		return JOptionPane.showConfirmDialog(this, text, title, JOptionPane.OK_CANCEL_OPTION);
 	}
 
 	public void enableConsoleWindow(boolean enable, boolean resizeMain) {
@@ -507,43 +482,27 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 	}
 
 	public boolean saveProjectSettings() {
-		String configPath = ConfigUtil.createConfigPath(config.getInternal().getConfigPath());
-
-		if (configPath == null) {
-			String text = Language.I18N.getString("common.dialog.error.io.configPath");
-			Object[] args = new Object[]{ config.getInternal().getConfigPath() };
-			String result = MessageFormat.format(text, args);
-
-			errorMessage(Language.I18N.getString("common.dialog.error.io.title"), result);
+		Path configDir = getConfigDir();
+		if (configDir == null)
 			return false;
-		}
-
-		File projectFile = new File(configPath + File.separator + config.getInternal().getConfigProject());
 
 		try {
-			ConfigUtil.marshal(config.getProject(), projectFile, jaxbProjectContext);
+			Path projectFile = configDir.resolve(ImpExpConstants.PROJECT_FILE);
+			ConfigUtil.marshal(config.getProject(), projectFile.toFile(), jaxbProjectContext);
+			return true;
 		} catch (JAXBException jaxbE) {
-			errorMessage(Language.I18N.getString("common.dialog.error.io.title"), 
+			errorMessage(Language.I18N.getString("common.dialog.error.io.title"),
 					Language.I18N.getString("common.dialog.error.io.general"));
 			return false;
 		}
-
-		return true;
 	}
 
-	private boolean saveGUISettings() {
-		String configPath = ConfigUtil.createConfigPath(config.getInternal().getConfigPath());
+	private void saveGUISettings() {
+		Path configDir = getConfigDir();
+		if (configDir == null)
+			return;
 
-		if (configPath == null) {
-			String text = Language.I18N.getString("common.dialog.error.io.configPath");
-			Object[] args = new Object[]{ config.getInternal().getConfigPath() };
-			String result = MessageFormat.format(text, args);
-
-			errorMessage(Language.I18N.getString("common.dialog.error.io.title"), result);
-			return false;
-		}
-
-		File guiFile = new File(configPath + File.separator + config.getInternal().getConfigGui());
+		Path guiFile = configDir.resolve(ImpExpConstants.GUI_FILE);
 
 		// set window size
 		Rectangle rect = getBounds();
@@ -558,14 +517,29 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		consoleWindow.setSettings();
 
 		try {
-			ConfigUtil.marshal(config.getGui(), guiFile, jaxbGuiContext);
+			ConfigUtil.marshal(config.getGui(), guiFile.toFile(), jaxbGuiContext);
 		} catch (JAXBException jaxbE) {
 			errorMessage(Language.I18N.getString("common.dialog.error.io.title"), 
 					Language.I18N.getString("common.dialog.error.io.general"));
-			return false;
+		}
+	}
+
+	private Path getConfigDir() {
+		Path configDir = ImpExpConstants.IMPEXP_DATA_DIR.resolve(ImpExpConstants.CONFIG_DIR);
+		if (!Files.exists(configDir)) {
+			try {
+				Files.createDirectories(configDir);
+			} catch (IOException e) {
+				String text = Language.I18N.getString("common.dialog.error.io.configPath");
+				Object[] args = new Object[]{ configDir.toString() };
+				String result = MessageFormat.format(text, args);
+
+				errorMessage(Language.I18N.getString("common.dialog.error.io.title"), result);
+				return null;
+			}
 		}
 
-		return true;
+		return configDir;
 	}
 
 	@Override
@@ -649,7 +623,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 	}
 
 	@Override
-	public void handleEvent(Event event) throws Exception {
+	public void handleEvent(Event event) {
 		setDatabaseStatus(((DatabaseConnectionStateEvent)event).isConnected());
 	}
 
@@ -658,7 +632,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		private final JTextArea ta;
 		private final Charset encoding;
 
-		public JTextAreaOutputStream (JTextArea ta, OutputStream stream, Charset encoding) {
+		JTextAreaOutputStream(JTextArea ta, OutputStream stream, Charset encoding) {
 			super(stream);
 			this.ta = ta;
 			this.encoding = encoding;
@@ -698,17 +672,12 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 	private final class ConsolePopupMenuWrapper {
 		private JMenuItem clear;	
 
-		public ConsolePopupMenuWrapper(JPopupMenu popupMenu) {
+		ConsolePopupMenuWrapper(JPopupMenu popupMenu) {
 			clear = new JMenuItem();	
 
 			popupMenu.addSeparator();
 			popupMenu.add(clear);
-
-			clear.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					clearConsole();
-				}
-			});
+			clear.addActionListener(e -> clearConsole());
 
 			popupMenu.addPopupMenuListener(new PopupMenuListener() {
 

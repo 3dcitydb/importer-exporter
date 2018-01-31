@@ -90,13 +90,12 @@ distributions.main.contents {
 
 task buildInstaller(dependsOn: installDist) {
     def installDir = installDist.destinationDir.toString()
+    def distDir = distZip.destinationDir.toString()
     def izpackDir = "$buildDir/tmp/izpack".toString()
-    def installer = "$buildDir/distributions/$project.appName-" + project.version + '-Setup.jar'
-
-    inputs.dir 'resources/izpack'
-    outputs.file installer
+    def installer = "$distDir/$project.appName-" + project.version + '-Setup.jar'
 
     doLast {
+        mkdir distDir
         mkdir "$installDir/ade-extensions"
 
         copy {

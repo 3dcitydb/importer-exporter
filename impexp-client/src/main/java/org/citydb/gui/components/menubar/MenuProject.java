@@ -27,24 +27,7 @@
  */
 package org.citydb.gui.components.menubar;
 
-import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
-
-import javax.swing.JFileChooser;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.KeyStroke;
-import javax.swing.filechooser.FileNameExtensionFilter;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-
+import org.citydb.ImpExpConstants;
 import org.citydb.config.Config;
 import org.citydb.config.ConfigUtil;
 import org.citydb.config.language.Language;
@@ -64,6 +47,19 @@ import org.citydb.plugin.extension.config.ConfigExtension;
 import org.citydb.plugin.extension.config.PluginConfigEvent;
 import org.citydb.registry.ObjectRegistry;
 
+import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+
 @SuppressWarnings("serial")
 public class MenuProject extends JMenu {
 	private final Logger LOG = Logger.getInstance();
@@ -82,7 +78,7 @@ public class MenuProject extends JMenu {
 	private String exportPath;
 	private String importPath;
 
-	public MenuProject(PluginManager pluginService, JAXBContext ctx, ImpExpGui mainView, Config config) {
+	MenuProject(PluginManager pluginService, JAXBContext ctx, ImpExpGui mainView, Config config) {
 		this.pluginService = pluginService;
 		this.config = config;
 		this.ctx = ctx;
@@ -99,65 +95,60 @@ public class MenuProject extends JMenu {
 		xsdProject = new JMenuItem();
 		lastUsed = new JMenu();
 
-		openProject.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				File file = loadDialog(Language.I18N.getString("menu.project.open.label"));
+		openProject.addActionListener(e -> {
+            File file = loadDialog(Language.I18N.getString("menu.project.open.label"));
 
-				if (file != null) {
-					openProject(file);
+            if (file != null) {
+                openProject(file);
 
-					addLastUsedProject(file.getAbsolutePath());
-					lastUsed.setEnabled(true);
-					setLastUsedList();
-					lastUsed.repaint();
-				}				
-			}
-		});
+                addLastUsedProject(file.getAbsolutePath());
+                lastUsed.setEnabled(true);
+                setLastUsedList();
+                lastUsed.repaint();
+            }
+        });
 
-		saveProject.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				// set settings on internal plugins
-				for (InternalPlugin plugin : pluginService.getInternalPlugins())
-					plugin.setSettings();
+		saveProject.addActionListener(e -> {
+            // set settings on internal plugins
+            for (InternalPlugin plugin : pluginService.getInternalPlugins())
+                plugin.setSettings();
 
-				// fire event to external plugins
-				for (ConfigExtension<? extends PluginConfig> plugin : pluginService.getExternalConfigExtensions())
-					plugin.handleEvent(PluginConfigEvent.PRE_SAVE_CONFIG);
+            // fire event to external plugins
+            for (ConfigExtension<? extends PluginConfig> plugin : pluginService.getExternalConfigExtensions())
+                plugin.handleEvent(PluginConfigEvent.PRE_SAVE_CONFIG);
 
-				if (mainView.saveProjectSettings())
-					LOG.info("Settings successfully saved to config file '" + 
-							new File(config.getInternal().getConfigPath()).getAbsolutePath() + File.separator + config.getInternal().getConfigProject() + "'.");
+            if (mainView.saveProjectSettings())
+                LOG.info("Settings successfully saved to config file '"
+                        + ImpExpConstants.IMPEXP_DATA_DIR
+                                .resolve(ImpExpConstants.PROJECT_FILE)
+                                .resolve(ImpExpConstants.PROJECT_FILE) + "'.");
+        });
 
-			}
-		});
+		saveProjectAs.addActionListener(e -> {
+            File file = saveDialog(Language.I18N.getString("menu.project.saveAs.label"), true);
 
-		saveProjectAs.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				File file = saveDialog(Language.I18N.getString("menu.project.saveAs.label"), true);
+            if (file != null) {
+                LOG.info("Saving project settings as file '" + file.toString() + "'.");
+                try {
+                    // set settings on internal plugins
+                    for (InternalPlugin plugin : pluginService.getInternalPlugins())
+                        plugin.setSettings();
 
-				if (file != null) {
-					LOG.info("Saving project settings as file '" + file.toString() + "'.");
-					try {
-						// set settings on internal plugins
-						for (InternalPlugin plugin : pluginService.getInternalPlugins())
-							plugin.setSettings();
+                    // fire event to external plugins
+                    for (ConfigExtension<? extends PluginConfig> plugin : pluginService.getExternalConfigExtensions())
+                        plugin.handleEvent(PluginConfigEvent.PRE_SAVE_CONFIG);
 
-						// fire event to external plugins
-						for (ConfigExtension<? extends PluginConfig> plugin : pluginService.getExternalConfigExtensions())
-							plugin.handleEvent(PluginConfigEvent.PRE_SAVE_CONFIG);
+                    ConfigUtil.marshal(config.getProject(), file, ctx);
 
-						ConfigUtil.marshal(config.getProject(), file, ctx);
-
-						addLastUsedProject(file.getAbsolutePath());
-						lastUsed.setEnabled(true);
-						setLastUsedList();
-						lastUsed.repaint();
-					} catch (JAXBException e1) {
-						LOG.error("Failed to save project settings: " + e1.getMessage());
-					}
-				}				
-			}
-		});
+                    addLastUsedProject(file.getAbsolutePath());
+                    lastUsed.setEnabled(true);
+                    setLastUsedList();
+                    lastUsed.repaint();
+                } catch (JAXBException e1) {
+                    LOG.error("Failed to save project settings: " + e1.getMessage());
+                }
+            }
+        });
 
 		defaults.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {				
@@ -191,20 +182,18 @@ public class MenuProject extends JMenu {
 			}
 		});
 
-		xsdProject.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				File path = saveDialog(Language.I18N.getString("menu.project.saveXSDas.label"), false);
+		xsdProject.addActionListener(e -> {
+            File path = saveDialog(Language.I18N.getString("menu.project.saveXSDas.label"), false);
 
-				if (path != null) {
-					LOG.info("Saving project XSD at location '" + path.toString() + "'.");
-					try {
-						ConfigUtil.generateSchema(ctx, path);
-					} catch (IOException e1) {
-						LOG.error("Failed to save project settings: " + e1.getMessage());
-					}
-				}				
-			}
-		});
+            if (path != null) {
+                LOG.info("Saving project XSD at location '" + path.toString() + "'.");
+                try {
+                    ConfigUtil.generateSchema(ctx, path);
+                } catch (IOException e1) {
+                    LOG.error("Failed to save project settings: " + e1.getMessage());
+                }
+            }
+        });
 
 		add(openProject);
 		add(saveProject);
@@ -312,8 +301,8 @@ public class MenuProject extends JMenu {
 
 			final File file = new File(path + File.separator + name);
 
-			String descString = null;
-			if (path.length() > 80 && path.indexOf(File.separator) != -1) {
+			String descString;
+			if (path.length() > 80 && path.contains(File.separator)) {
 				String first = path.substring(0, path.indexOf(File.separator));
 				String last = path.substring(path.lastIndexOf(File.separator), path.length());
 
@@ -324,23 +313,21 @@ public class MenuProject extends JMenu {
 			item.setText(descString);
 			lastUsed.add(item);
 
-			item.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					boolean success = openProject(file);
-					if (!success) {
-						config.getGui().getRecentlyUsedProjectFiles().remove(fileName);
-						lastUsed.remove(item);
-						if (lastUsed.getItemCount() == 0)
-							lastUsed.setEnabled(false);
-					} else {
-						importPath = file.getPath();
-						addLastUsedProject(fileName);
-						setLastUsedList();
-					}
+			item.addActionListener(e -> {
+                boolean success = openProject(file);
+                if (!success) {
+                    config.getGui().getRecentlyUsedProjectFiles().remove(fileName);
+                    lastUsed.remove(item);
+                    if (lastUsed.getItemCount() == 0)
+                        lastUsed.setEnabled(false);
+                } else {
+                    importPath = file.getPath();
+                    addLastUsedProject(fileName);
+                    setLastUsedList();
+                }
 
-					lastUsed.repaint();
-				}
-			});
+                lastUsed.repaint();
+            });
 		}
 	}
 

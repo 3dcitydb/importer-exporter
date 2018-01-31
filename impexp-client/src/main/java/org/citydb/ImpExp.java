@@ -27,31 +27,11 @@
  */
 package org.citydb;
 
-import java.awt.Color;
-import java.awt.Toolkit;
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.net.ProxySelector;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.List;
-import java.util.Locale;
-import java.util.ResourceBundle;
-import java.util.stream.Stream;
-
-import javax.swing.SwingUtilities;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-
 import org.citydb.ade.ADEExtension;
 import org.citydb.ade.ADEExtensionManager;
 import org.citydb.cli.ImpExpCli;
 import org.citydb.config.Config;
+import org.citydb.config.ConfigConstants;
 import org.citydb.config.ConfigUtil;
 import org.citydb.config.gui.Gui;
 import org.citydb.config.internal.Internal;
@@ -94,10 +74,28 @@ import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 import org.kohsuke.args4j.ParserProperties;
 
+import javax.swing.*;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import java.awt.*;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.net.ProxySelector;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
+import java.util.Locale;
+import java.util.ResourceBundle;
+import java.util.stream.Stream;
+
 public class ImpExp {
 
 	@Option(name="-config", usage="config file containing project settings", metaVar="fileName")
-	private File configFile;
+	private Path configFile;
 
 	@Option(name="-version", usage="print product version and exit")
 	private boolean version;
@@ -128,15 +126,13 @@ public class ImpExp {
 
 	private final Logger log = Logger.getInstance();
 	private JAXBContext kmlContext, colladaContext, projectContext, guiContext;
-	private Config config;
-
 	private PluginManager pluginManager = PluginManager.getInstance();
 	private ADEExtensionManager adeManager = ADEExtensionManager.getInstance();
-	
-	private SplashScreen splashScreen;
-	private boolean useSplashScreen;	
+	private Config config;
 
-	private List<String> errMsgs = new ArrayList<String>();
+	private SplashScreen splashScreen;
+	private boolean useSplashScreen;
+	private List<String> errMsgs = new ArrayList<>();
 
 	public static void main(String[] args) {
 		new ImpExp().doMain(args);
@@ -156,7 +152,7 @@ public class ImpExp {
 			for (ADEExtension extension : extensions) {
 				if (extension.getBasePath() == null)
 					extension.setBasePath(Paths.get("."));
-				
+
 				adeManager.loadExtension(extension);
 			}
 		}
@@ -213,22 +209,15 @@ public class ImpExp {
 				printUsage(parser, System.out);
 				System.exit(1);
 			}
-		}
-
-		// initialize look&feel and splash screen
-		if (!shell) {
+		} else {
+			// initialize look&feel and splash screen
 			setLookAndFeel();
 
 			if (!noSplash) {
 				useSplashScreen = true;
-				splashScreen = new SplashScreen(4, 3, 480, Color.BLACK);
+				splashScreen = new SplashScreen(7, 3, 480, Color.BLACK);
 				splashScreen.setMessage("Version \"" + this.getClass().getPackage().getImplementationVersion() + "\"");
-
-				SwingUtilities.invokeLater(new Runnable() {
-					public void run() {
-						splashScreen.setVisible(true);
-					}
-				});		
+				SwingUtilities.invokeLater(() -> splashScreen.setVisible(true));
 
 				try {
 					Thread.sleep(1000);
@@ -246,10 +235,11 @@ public class ImpExp {
 		printInfoMessage("Loading plugins");
 		URLClassLoader externalLoader = new URLClassLoader(ImpExp.class.getClassLoader());
 		try {
-			if (Files.exists(Paths.get(Internal.PLUGINS_PATH))) {
-				try (Stream<Path> stream = Files.walk(Paths.get(Internal.PLUGINS_PATH))
+			Path pluginsDir = ImpExpConstants.IMPEXP_HOME.resolve(ImpExpConstants.PLUGINS_DIR);
+			if (Files.exists(pluginsDir)) {
+				try (Stream<Path> stream = Files.walk(pluginsDir)
 						.filter(path -> path.getFileName().toString().toLowerCase().endsWith(".jar"))) {
-					stream.forEach(path -> externalLoader.addPath(path));
+					stream.forEach(externalLoader::addPath);
 				}
 			}
 
@@ -260,11 +250,11 @@ public class ImpExp {
 		}
 
 		// get plugin config classes
-		List<Class<?>> projectConfigClasses = new ArrayList<Class<?>>();
+		List<Class<?>> projectConfigClasses = new ArrayList<>();
 		projectConfigClasses.add(Project.class);
 		for (ConfigExtension<? extends PluginConfig> plugin : pluginManager.getExternalConfigExtensions()) {
 			try {
-				projectConfigClasses.add(plugin.getClass().getMethod("getConfig", new Class<?>[]{}).getReturnType());
+				projectConfigClasses.add(plugin.getClass().getMethod("getConfig").getReturnType());
 			} catch (SecurityException | NoSuchMethodException e) {
 				log.error("Failed to instantiate config for plugin " + plugin.getClass().getName());
 				log.error("Please check the following error message: " + e.getMessage());
@@ -297,8 +287,8 @@ public class ImpExp {
 
 		// create JAXB contexts
 		try {
-			kmlContext = JAXBContext.newInstance("net.opengis.kml._2", Thread.currentThread().getContextClassLoader());
-			colladaContext = JAXBContext.newInstance("org.collada._2005._11.colladaschema", Thread.currentThread().getContextClassLoader());
+			kmlContext = JAXBContext.newInstance("net.opengis.kml._2", this.getClass().getClassLoader());
+			colladaContext = JAXBContext.newInstance("org.collada._2005._11.colladaschema", this.getClass().getClassLoader());
 			projectContext = JAXBContext.newInstance(projectConfigClasses.toArray(new Class<?>[]{}));
 			guiContext = JAXBContext.newInstance(Gui.class);
 		} catch (JAXBException e) {
@@ -312,7 +302,7 @@ public class ImpExp {
 		printInfoMessage("Loading database schema mapping");
 		SchemaMapping schemaMapping = null;
 		try {
-			schemaMapping = SchemaMappingUtil.getInstance().unmarshal(Internal.CITYDB_SCHEMA_MAPPING_FILE);
+			schemaMapping = SchemaMappingUtil.getInstance().unmarshal(ConfigConstants.CITYDB_SCHEMA_MAPPING_FILE);
 			registry.register(SchemaMapping.class.getName(), schemaMapping);		
 		} catch (JAXBException | SchemaMappingException | SchemaMappingValidationException e) {
 			log.error("Failed to process 3DCityDB schema mapping file.");
@@ -324,10 +314,11 @@ public class ImpExp {
 		// load ADE extensions	
 		printInfoMessage("Loading ADE extensions");
 		try {
-			if (Files.exists(Paths.get(Internal.ADE_EXTENSIONS_PATH))) {
-				try (Stream<Path> stream = Files.walk(Paths.get(Internal.ADE_EXTENSIONS_PATH))
+			Path adeExtensionsDir = ImpExpConstants.IMPEXP_HOME.resolve(ImpExpConstants.ADE_EXTENSIONS_DIR);
+			if (Files.exists(adeExtensionsDir)) {
+				try (Stream<Path> stream = Files.walk(adeExtensionsDir)
 						.filter(path -> path.getFileName().toString().toLowerCase().endsWith(".jar"))) {
-					stream.forEach(path -> externalLoader.addPath(path));
+					stream.forEach(externalLoader::addPath);
 				}
 			}
 
@@ -356,7 +347,7 @@ public class ImpExp {
 			for (ADEContext adeContext : adeManager.getADEContexts())
 				context.registerADEContext(adeContext);
 			
-			// create JAXB builder and register in object registry
+			// create CityGML builder and register with object registry
 			CityGMLBuilder cityGMLBuilder = context.createCityGMLBuilder(externalLoader);			
 			registry.setCityGMLBuilder(cityGMLBuilder);
 		} catch (CityGMLBuilderException | ADEException e) {
@@ -368,54 +359,45 @@ public class ImpExp {
 		
 		// initialize config
 		printInfoMessage("Loading project settings");		
-		String confPath = null;
-		String projectFileName = null;
-
 		if (configFile != null) {
-			if (!configFile.exists()) {
+			if (!configFile.isAbsolute())
+				configFile = ImpExpConstants.WORKING_DIR.resolve(configFile);
+
+			if (!Files.exists(configFile)) {
 				log.error("Failed to find config file '" + configFile + "'");
 				log.error("Aborting...");
 				System.exit(1);
-			} else if (!configFile.canRead() || !configFile.canWrite()) {
+			} else if (!Files.isReadable(configFile) || !Files.isWritable(configFile)) {
 				log.error("Insufficient access rights to config file '" + configFile + "'");
 				log.error("Aborting...");
 				System.exit(1);
 			}
-
-			projectFileName = configFile.getName();
-			confPath = configFile.getParent();
-			if (confPath == null)
-				confPath = System.getProperty("user.home");
-		} else {
-			confPath = config.getInternal().getConfigPath();
-			projectFileName = config.getInternal().getConfigProject();
-		}
-
-		config.getInternal().setConfigPath(confPath);
-		config.getInternal().setConfigProject(projectFileName);
-		File projectFile = new File(confPath, projectFileName);
+		} else
+			configFile = ImpExpConstants.IMPEXP_DATA_DIR
+					.resolve(ImpExpConstants.CONFIG_DIR).resolve(ImpExpConstants.PROJECT_FILE);
 
 		// with v3.3, the config path has been changed to not include the version number.
 		// if the project file cannot be found, we thus check the old path used in v3.0 to v3.2
-		if (!projectFile.exists()) {
-			File oldConfPath = new File(Internal.USER_PATH + "-3.0", "config");
-			File oldProjectFile = new File(oldConfPath, projectFileName);
-			if (oldProjectFile.exists()) {
-				log.warn("Failed to read project settings file '" + projectFile + '\'');
-				log.warn("Loading settings from previous file '" + oldProjectFile + "\' instead");
-				projectFile = oldProjectFile;
+		if (!Files.exists(configFile)) {
+			Path legacyConfigFile = Paths.get(ImpExpConstants.IMPEXP_DATA_DIR + "-3.0",
+					ImpExpConstants.CONFIG_DIR, ImpExpConstants.PROJECT_FILE);
+
+			if (Files.exists(legacyConfigFile)) {
+				log.warn("Failed to read project settings file '" + configFile + "'");
+				log.warn("Loading settings from previous file '" + legacyConfigFile + "' instead");
+				configFile = legacyConfigFile;
 			}
 		}
 
-		Project configProject = config.getProject();
+		Project project = config.getProject();
 		try {
-			Object object = ConfigUtil.unmarshal(projectFile, projectContext);
+			Object object = ConfigUtil.unmarshal(configFile.toFile(), projectContext);
 			if (!(object instanceof Project))
 				throw new JAXBException("Failed to interpret project file");
 			
-			configProject = (Project)object;
+			project = (Project)object;
 		} catch (IOException | JAXBException e) {
-			String errMsg = "Failed to read project settings file '" + projectFile + '\'';
+			String errMsg = "Failed to read project settings file '" + configFile + '\'';
 			if (shell) {
 				log.error(errMsg);
 				log.error("Aborting...");
@@ -423,13 +405,14 @@ public class ImpExp {
 			} else
 				errMsgs.add(errMsg);
 		} finally {
-			config.setProject(configProject);
+			config.setProject(project);
 		}
 
 		if (!shell) {
-			File guiFile = new File(confPath, config.getInternal().getConfigGui());
+			Path guiFile = ImpExpConstants.IMPEXP_DATA_DIR
+					.resolve(ImpExpConstants.CONFIG_DIR).resolve(ImpExpConstants.GUI_FILE);
 			try {
-				Object object = ConfigUtil.unmarshal(guiFile, guiContext);
+				Object object = ConfigUtil.unmarshal(guiFile.toFile(), guiContext);
 				if (object instanceof Gui)
 					config.setGui((Gui)object);
 			} catch (JAXBException | IOException e) {
@@ -457,10 +440,10 @@ public class ImpExp {
 			} else {
 				Calendar cal = Calendar.getInstance();
 				DecimalFormat df = new DecimalFormat("00");
-				StringBuilder date = new StringBuilder()
-						.append(cal.get(Calendar.YEAR)).append('-').append(df.format(cal.get(Calendar.MONTH) + 1)).append('-').append(df.format(cal.get(Calendar.DATE)));
-
-				log.writeToFile("*** Starting new log file session on " + date.toString());
+				log.writeToFile("*** Starting new log file session on "
+						+ String.valueOf(cal.get(Calendar.YEAR)) + '-'
+						+ df.format(cal.get(Calendar.MONTH) + 1) + '-'
+						+ df.format(cal.get(Calendar.DATE)));
 				config.getInternal().setCurrentLogPath(logPath);
 			}
 		}
@@ -470,11 +453,10 @@ public class ImpExp {
 			StringBuilder msg = new StringBuilder("*** Command line arguments: ");
 			if (args.length == 0)
 				msg.append("no arguments passed");
-			else 
-				for (String arg : args) {
-					msg.append(arg);
-					msg.append(' ');
-				}
+			else {
+				for (String arg : args)
+					msg.append(arg).append(' ');
+			}
 
 			log.writeToFile(msg.toString());
 		}
@@ -525,14 +507,7 @@ public class ImpExp {
 
 			// initialize gui
 			printInfoMessage("Starting graphical user interface");
-
-			SwingUtilities.invokeLater(new Runnable() {
-				public void run() {
-					mainView.invoke(projectContext,
-							guiContext,
-							errMsgs);
-				}
-			});
+			SwingUtilities.invokeLater(() -> mainView.invoke(projectContext, guiContext, errMsgs));
 
 			try {
 				// clean up heap space
@@ -566,7 +541,7 @@ public class ImpExp {
 		}
 	}
 
-	public void setLookAndFeel() {
+	private void setLookAndFeel() {
 		try {
 			// set look & feel
 			javax.swing.UIManager.setLookAndFeel(javax.swing.UIManager.getSystemLookAndFeelClassName());

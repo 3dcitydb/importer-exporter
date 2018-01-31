@@ -27,10 +27,9 @@
  */
 package org.citydb.config.internal;
 
-import java.io.File;
-import java.net.URL;
-
 import org.citydb.citygml.importer.util.AffineTransformer;
+
+import java.io.File;
 
 public class Internal {	
 	public static final String DEFAULT_DELIMITER = "--/\\--";
@@ -45,18 +44,11 @@ public class Internal {
 	public static final String UNIQUE_TEXTURE_FILENAME_PREFIX = "tex_";
 	
 	// path names and files
-	public static final URL CITYDB_SCHEMA_MAPPING_FILE = Internal.class.getResource("/database/schema/3dcitydb-schema.xml");
-	public static final String USER_PATH = System.getProperty("user.home") + File.separator + "3dcitydb" + File.separator + "importer-exporter";	
-	public static final String PLUGINS_PATH = System.getProperty("user.dir") + File.separator + "plugins";
-	public static final String ADE_EXTENSIONS_PATH = System.getProperty("user.dir") + File.separator + "ade-extensions";
-	public static final String SRS_TEMPLATES_PATH = System.getProperty("user.dir") + File.separator + "templates" + File.separator + "CoordinateReferenceSystems";
+	public static final String USER_PATH = System.getProperty("user.home") + File.separator + "3dcitydb" + File.separator + "importer-exporter";
 	public static final String DEFAULT_LOG_PATH = USER_PATH + File.separator + "log";
 	public static final String DEFAULT_IMPORT_LOG_PATH = DEFAULT_LOG_PATH + File.separator + "imported-features";
 	
-	private String configPath =  USER_PATH + File.separator + "config";
 	private String currentLogPath = "";
-	private String configProject = "project.xml";
-	private String configGui = "gui.xml";
 	private String importPath = "";
 	private File[] importFiles;
 	private File currentImportFile;
@@ -122,26 +114,6 @@ public class Internal {
 
 	public void setExportTextureFilePath(String exportTextureFilePath) {
 		this.exportTextureFilePath = exportTextureFilePath;
-	}
-
-	public String getConfigProject() {
-		return configProject;
-	}
-
-	public void setConfigProject(String configProject) {
-		this.configProject = configProject;
-	}
-
-	public String getConfigGui() {
-		return configGui;
-	}
-
-	public String getConfigPath() {
-		return configPath;
-	}
-
-	public void setConfigPath(String configPath) {
-		this.configPath = configPath;
 	}
 
 	public boolean isTransformCoordinates() {

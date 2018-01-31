@@ -27,10 +27,11 @@
  */
 package org.citydb.config;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import org.citydb.config.project.Project;
+import org.citydb.config.project.ProjectSchemaWriter;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -39,26 +40,14 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.UnmarshallerHandler;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
-
-import org.citydb.config.project.Project;
-import org.citydb.config.project.ProjectSchemaWriter;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
 public class ConfigUtil {
 
-	public static String createConfigPath(String configPath) {
-		File createPath = new File(configPath);
-		boolean success = true;
-
-		if (!createPath.exists())
-			success = createPath.mkdirs();
-
-		return success ? createPath.getAbsolutePath() : null;
-	}
-
-	public static void marshal(Object object, File file, JAXBContext ctx) throws JAXBException {		
+	public static void marshal(Object object, File file, JAXBContext ctx) throws JAXBException {
 		Marshaller m = ctx.createMarshaller();	
 		m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT,Boolean.TRUE);
 
