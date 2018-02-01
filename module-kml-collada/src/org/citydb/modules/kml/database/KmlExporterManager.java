@@ -332,7 +332,7 @@ public class KmlExporterManager {
 
 							kmlMarshaller.marshal(kmlFactory.createNetworkLink(networkLinkType), buffer);
 						}
-						placemark.setStyleUrl(".." + File.separator + ".." + File.separator + ".." + File.separator + ".." + File.separator + mainFilename + placemark.getStyleUrl());
+						placemark.setStyleUrl("../../../../" + mainFilename + placemark.getStyleUrl());
 						document.getAbstractFeatureGroup().add(kmlFactory.createPlacemark(placemark));
 					}
 					else {
