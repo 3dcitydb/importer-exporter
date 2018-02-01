@@ -848,7 +848,7 @@ public class KmlExporter implements EventHandler {
 			regionType.setLod(lodType);
 
 			LinkType linkType = kmlFactory.createLinkType();
-			linkType.setHref("Tiles" + File.separator + tile.getX() + File.separator + tile.getY() + File.separator + tilenameForDisplayForm);
+			linkType.setHref("Tiles/" + tile.getX() + "/" + tile.getY() + "/" + tilenameForDisplayForm);
 			linkType.setViewRefreshMode(ViewRefreshModeEnumType.fromValue(config.getProject().getKmlExporter().getViewRefreshMode()));
 			linkType.setViewFormat("");
 			if (linkType.getViewRefreshMode() == ViewRefreshModeEnumType.ON_STOP)
