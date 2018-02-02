@@ -43,11 +43,6 @@ public class Internal {
 	public static final String EXPORT_STUB = "exportStub";
 	public static final String UNIQUE_TEXTURE_FILENAME_PREFIX = "tex_";
 	
-	// path names and files
-	public static final String USER_PATH = System.getProperty("user.home") + File.separator + "3dcitydb" + File.separator + "importer-exporter";
-	public static final String DEFAULT_LOG_PATH = USER_PATH + File.separator + "log";
-	public static final String DEFAULT_IMPORT_LOG_PATH = DEFAULT_LOG_PATH + File.separator + "imported-features";
-	
 	private String currentLogPath = "";
 	private String importPath = "";
 	private File[] importFiles;

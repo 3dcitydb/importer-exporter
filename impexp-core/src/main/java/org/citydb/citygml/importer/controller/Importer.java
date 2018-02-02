@@ -27,21 +27,6 @@
  */
 package org.citydb.citygml.importer.controller;
 
-import java.io.File;
-import java.io.IOException;
-import java.sql.SQLException;
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import javax.xml.bind.ValidationEvent;
-import javax.xml.bind.ValidationEventHandler;
-import javax.xml.namespace.QName;
-
 import org.citydb.citygml.common.database.cache.CacheTableManager;
 import org.citydb.citygml.common.database.uid.UIDCacheManager;
 import org.citydb.citygml.common.database.uid.UIDCacheType;
@@ -60,11 +45,12 @@ import org.citydb.citygml.importer.filter.CityGMLFilterBuilder;
 import org.citydb.citygml.importer.filter.type.FeatureTypeFilter;
 import org.citydb.citygml.importer.util.AffineTransformer;
 import org.citydb.citygml.importer.util.DirectoryScanner;
-import org.citydb.citygml.importer.util.ImportLogger;
 import org.citydb.citygml.importer.util.DirectoryScanner.CityGMLFilenameFilter;
+import org.citydb.citygml.importer.util.ImportLogger;
 import org.citydb.concurrent.PoolSizeAdaptationStrategy;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
+import org.citydb.config.ConfigConstants;
 import org.citydb.config.internal.Internal;
 import org.citydb.config.language.Language;
 import org.citydb.config.project.database.Database;
@@ -111,6 +97,20 @@ import org.citygml4j.xml.io.reader.CityGMLReadException;
 import org.citygml4j.xml.io.reader.CityGMLReader;
 import org.citygml4j.xml.io.reader.FeatureReadMode;
 import org.citygml4j.xml.io.reader.XMLChunk;
+
+import javax.xml.bind.ValidationEvent;
+import javax.xml.bind.ValidationEventHandler;
+import javax.xml.namespace.QName;
+import java.io.File;
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Importer implements EventHandler {
 	private final Logger log = Logger.getInstance();
@@ -326,7 +326,8 @@ public class Importer implements EventHandler {
 				// create import logger
 				if (importerConfig.getImportLog().isSetLogImportedFeatures()) {
 					try {
-						String logPath = importerConfig.getImportLog().isSetLogPath() ? importerConfig.getImportLog().getLogPath() : Internal.DEFAULT_IMPORT_LOG_PATH;
+						String logPath = importerConfig.getImportLog().isSetLogPath() ? importerConfig.getImportLog().getLogPath()
+								: ConfigConstants.IMPEXP_DATA_DIR.resolve(ConfigConstants.IMPORT_LOG_DIR).toString();
 						importLogger = new ImportLogger(logPath, file, databaseConfig.getActiveConnection());
 						log.info("Log file of imported top-level features: " + importLogger.getLogFilePath().toString());
 					} catch (IOException e) {

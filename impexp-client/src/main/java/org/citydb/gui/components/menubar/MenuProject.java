@@ -29,6 +29,7 @@ package org.citydb.gui.components.menubar;
 
 import org.citydb.ImpExpConstants;
 import org.citydb.config.Config;
+import org.citydb.config.ConfigConstants;
 import org.citydb.config.ConfigUtil;
 import org.citydb.config.language.Language;
 import org.citydb.config.project.Project;
@@ -47,11 +48,15 @@ import org.citydb.plugin.extension.config.ConfigExtension;
 import org.citydb.plugin.extension.config.PluginConfigEvent;
 import org.citydb.registry.ObjectRegistry;
 
-import javax.swing.*;
+import javax.swing.JFileChooser;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.KeyStroke;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
-import java.awt.*;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
@@ -119,7 +124,7 @@ public class MenuProject extends JMenu {
 
             if (mainView.saveProjectSettings())
                 LOG.info("Settings successfully saved to config file '"
-                        + ImpExpConstants.IMPEXP_DATA_DIR
+                        + ConfigConstants.IMPEXP_DATA_DIR
                                 .resolve(ImpExpConstants.PROJECT_SETTINGS_FILE)
                                 .resolve(ImpExpConstants.PROJECT_SETTINGS_FILE) + "'.");
         });

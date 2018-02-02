@@ -7,7 +7,7 @@ import java.nio.file.Paths;
 public class ImpExpConstants {
     public static final Path IMPEXP_HOME;
     public static final Path WORKING_DIR;
-    public static final Path IMPEXP_DATA_DIR;
+
     public static final String SRS_TEMPLATES_DIR = "templates" + File.separator + "CoordinateReferenceSystems";
     public static final String PLUGINS_DIR = "plugins";
     public static final String ADE_EXTENSIONS_DIR = "ade-extensions";
@@ -26,6 +26,5 @@ public class ImpExpConstants {
 
         IMPEXP_HOME = Paths.get(impexpHomeEnv).normalize().toAbsolutePath();
         WORKING_DIR = Paths.get(workingDirEnv).normalize().toAbsolutePath();
-        IMPEXP_DATA_DIR = Paths.get(System.getProperty("user.home"), "3dcitydb", "importer-exporter");
     }
 }

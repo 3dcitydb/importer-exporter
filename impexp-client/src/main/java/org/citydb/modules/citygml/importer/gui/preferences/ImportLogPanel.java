@@ -27,11 +27,13 @@
  */
 package org.citydb.modules.citygml.importer.gui.preferences;
 
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.File;
+import org.citydb.config.Config;
+import org.citydb.config.ConfigConstants;
+import org.citydb.config.language.Language;
+import org.citydb.config.project.importer.ImportLog;
+import org.citydb.gui.factory.PopupMenuDecorator;
+import org.citydb.gui.preferences.AbstractPreferencesComponent;
+import org.citydb.gui.util.GuiUtil;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -40,14 +42,11 @@ import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.border.TitledBorder;
-
-import org.citydb.config.Config;
-import org.citydb.config.internal.Internal;
-import org.citydb.config.language.Language;
-import org.citydb.config.project.importer.ImportLog;
-import org.citydb.gui.factory.PopupMenuDecorator;
-import org.citydb.gui.preferences.AbstractPreferencesComponent;
-import org.citydb.gui.util.GuiUtil;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
 
 @SuppressWarnings("serial")
 public class ImportLogPanel extends AbstractPreferencesComponent {
@@ -131,8 +130,9 @@ public class ImportLogPanel extends AbstractPreferencesComponent {
 		if (log.isSetLogPath())
 			logPath.setText(log.getLogPath());
 		else {
-			logPath.setText(Internal.DEFAULT_IMPORT_LOG_PATH);
-			log.setLogPath(Internal.DEFAULT_IMPORT_LOG_PATH);
+			String defaultImportPath = ConfigConstants.IMPEXP_DATA_DIR.resolve(ConfigConstants.IMPORT_LOG_DIR).toString();
+			logPath.setText(defaultImportPath);
+			log.setLogPath(defaultImportPath);
 		}
 		
 		setEnabledLocalCachePath();
@@ -146,8 +146,9 @@ public class ImportLogPanel extends AbstractPreferencesComponent {
 		if (!logPath.getText().isEmpty())
 			log.setLogPath(logPath.getText());
 		else {
-			logPath.setText(Internal.DEFAULT_IMPORT_LOG_PATH);
-			log.setLogPath(Internal.DEFAULT_IMPORT_LOG_PATH);
+			String defaultImportPath = ConfigConstants.IMPEXP_DATA_DIR.resolve(ConfigConstants.IMPORT_LOG_DIR).toString();
+			logPath.setText(defaultImportPath);
+			log.setLogPath(defaultImportPath);
 		}
 	}
 	

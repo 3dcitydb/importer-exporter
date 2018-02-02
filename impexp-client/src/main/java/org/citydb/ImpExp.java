@@ -34,7 +34,6 @@ import org.citydb.config.Config;
 import org.citydb.config.ConfigConstants;
 import org.citydb.config.ConfigUtil;
 import org.citydb.config.gui.Gui;
-import org.citydb.config.internal.Internal;
 import org.citydb.config.language.Language;
 import org.citydb.config.project.Project;
 import org.citydb.config.project.global.LanguageType;
@@ -74,10 +73,11 @@ import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 import org.kohsuke.args4j.ParserProperties;
 
-import javax.swing.*;
+import javax.swing.SwingUtilities;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Toolkit;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.net.ProxySelector;
@@ -373,13 +373,13 @@ public class ImpExp {
 				System.exit(1);
 			}
 		} else
-			configFile = ImpExpConstants.IMPEXP_DATA_DIR
+			configFile = ConfigConstants.IMPEXP_DATA_DIR
 					.resolve(ImpExpConstants.CONFIG_DIR).resolve(ImpExpConstants.PROJECT_SETTINGS_FILE);
 
 		// with v3.3, the config path has been changed to not include the version number.
 		// if the project file cannot be found, we thus check the old path used in v3.0 to v3.2
 		if (!Files.exists(configFile)) {
-			Path legacyConfigFile = Paths.get(ImpExpConstants.IMPEXP_DATA_DIR + "-3.0",
+			Path legacyConfigFile = Paths.get(ConfigConstants.IMPEXP_DATA_DIR + "-3.0",
 					ImpExpConstants.CONFIG_DIR, ImpExpConstants.PROJECT_SETTINGS_FILE);
 
 			if (Files.exists(legacyConfigFile)) {
@@ -409,7 +409,7 @@ public class ImpExp {
 		}
 
 		if (!shell) {
-			Path guiFile = ImpExpConstants.IMPEXP_DATA_DIR
+			Path guiFile = ConfigConstants.IMPEXP_DATA_DIR
 					.resolve(ImpExpConstants.CONFIG_DIR).resolve(ImpExpConstants.GUI_SETTINGS_FILE);
 			try {
 				Object object = ConfigUtil.unmarshal(guiFile.toFile(), guiContext);
@@ -430,7 +430,8 @@ public class ImpExp {
 					logging.getFile().getAlternativeLogPath().trim().length() == 0)
 				logging.getFile().setUseAlternativeLogPath(false);
 
-			String logPath = logging.getFile().isSetUseAlternativeLogPath() ? logging.getFile().getAlternativeLogPath() : Internal.DEFAULT_LOG_PATH;
+			String logPath = logging.getFile().isSetUseAlternativeLogPath() ? logging.getFile().getAlternativeLogPath()
+					: ConfigConstants.IMPEXP_DATA_DIR.resolve(ConfigConstants.LOG_DIR).toString();
 
 			boolean success = log.appendLogFile(logPath, true);
 			if (!success) {

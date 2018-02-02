@@ -27,11 +27,16 @@
  */
 package org.citydb.modules.preferences.gui.preferences;
 
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.File;
+import org.citydb.config.Config;
+import org.citydb.config.ConfigConstants;
+import org.citydb.config.language.Language;
+import org.citydb.config.project.global.LogLevel;
+import org.citydb.config.project.global.Logging;
+import org.citydb.gui.ImpExpGui;
+import org.citydb.gui.factory.PopupMenuDecorator;
+import org.citydb.gui.preferences.AbstractPreferencesComponent;
+import org.citydb.gui.util.GuiUtil;
+import org.citydb.log.Logger;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -42,17 +47,11 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.border.TitledBorder;
-
-import org.citydb.config.Config;
-import org.citydb.config.internal.Internal;
-import org.citydb.config.language.Language;
-import org.citydb.config.project.global.LogLevel;
-import org.citydb.config.project.global.Logging;
-import org.citydb.gui.ImpExpGui;
-import org.citydb.gui.factory.PopupMenuDecorator;
-import org.citydb.gui.preferences.AbstractPreferencesComponent;
-import org.citydb.gui.util.GuiUtil;
-import org.citydb.log.Logger;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
 
 @SuppressWarnings("serial")
 public class LoggingPanel extends AbstractPreferencesComponent {
@@ -255,8 +254,8 @@ public class LoggingPanel extends AbstractPreferencesComponent {
 
 		// change log file
 		if (isModified && useLogFile.isSelected()) {
-			String logPath = useLogPath.isSelected() ? 
-					logging.getFile().getAlternativeLogPath() : Internal.DEFAULT_LOG_PATH;
+			String logPath = useLogPath.isSelected() ? logging.getFile().getAlternativeLogPath()
+					: ConfigConstants.IMPEXP_DATA_DIR.resolve(ConfigConstants.LOG_DIR).toString();
 
 					if (!logPath.equals(config.getInternal().getCurrentLogPath())) {
 						boolean success = LOG.appendLogFile(logPath, true);

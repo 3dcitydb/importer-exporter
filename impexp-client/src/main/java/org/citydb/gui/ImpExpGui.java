@@ -30,6 +30,7 @@ package org.citydb.gui;
 import org.citydb.ImpExpConstants;
 import org.citydb.ade.ADEExtensionManager;
 import org.citydb.config.Config;
+import org.citydb.config.ConfigConstants;
 import org.citydb.config.ConfigUtil;
 import org.citydb.config.gui.window.MainWindow;
 import org.citydb.config.gui.window.WindowSize;
@@ -65,7 +66,18 @@ import org.citydb.plugin.extension.view.components.ComponentFactory;
 import org.citydb.registry.ObjectRegistry;
 import org.citydb.util.Util;
 
-import javax.swing.*;
+import javax.swing.BorderFactory;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.JTabbedPane;
+import javax.swing.JTextArea;
+import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
 import javax.swing.event.ChangeEvent;
@@ -77,7 +89,17 @@ import javax.swing.plaf.basic.BasicSplitPaneUI;
 import javax.swing.text.DefaultCaret;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.GraphicsConfiguration;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.Rectangle;
+import java.awt.Toolkit;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.ByteArrayOutputStream;
@@ -525,7 +547,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 	}
 
 	private Path getConfigDir() {
-		Path configDir = ImpExpConstants.IMPEXP_DATA_DIR.resolve(ImpExpConstants.CONFIG_DIR);
+		Path configDir = ConfigConstants.IMPEXP_DATA_DIR.resolve(ImpExpConstants.CONFIG_DIR);
 		if (!Files.exists(configDir)) {
 			try {
 				Files.createDirectories(configDir);
