@@ -1,3 +1,28 @@
+plugins {
+    id "com.jfrog.bintray" version "1.8.0"
+}
+
+apply plugin: 'maven-publish'
+
 dependencies {
     compile 'org.citygml4j:citygml4j:2.6.1'
+}
+
+bintray {
+    user = project.hasProperty('bintrayUser') ? project.property('bintrayUser') : System.getenv('BINTRAY_USER')
+    key = project.hasProperty('bintrayApiKey') ? project.property('bintrayApiKey') : System.getenv('BINTRAY_API_KEY')
+
+    publications = ['mavenJava']
+    pkg {
+        repo = 'maven'
+        userOrg = '3dcitydb'
+        name = project.name
+        websiteUrl = project.citydbVcsUrl
+        vcsUrl = project.impexpGit
+        issueTrackerUrl = project.impexpIssueTrackerUrl
+        licenses = ['Apache-2.0']
+        version {
+            name = project.version
+        }
+    }
 }

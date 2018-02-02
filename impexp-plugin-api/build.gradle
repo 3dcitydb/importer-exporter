@@ -1,14 +1,8 @@
-import org.apache.tools.ant.filters.ReplaceTokens
-
 plugins {
     id "com.jfrog.bintray" version "1.8.0"
 }
 
 apply plugin: 'maven-publish'
-
-ext {
-    pluginApiService = 'org.citydb.plugin.Plugin'
-}
 
 dependencies {
     compile project(':impexp-core')
@@ -26,7 +20,6 @@ bintray {
         websiteUrl = project.citydbVcsUrl
         vcsUrl = project.impexpGit
         issueTrackerUrl = project.impexpIssueTrackerUrl
-        labels = ['3dcitydb', 'importer-exporter', 'plugin-api']
         licenses = ['Apache-2.0']
         version {
             name = project.version
