@@ -53,7 +53,7 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.namespace.QName;
 
-import org.citydb.ImpExpConstants;
+import org.citydb.util.ClientConstants;
 import org.citydb.ade.ADEExtensionManager;
 import org.citydb.concurrent.PoolSizeAdaptationStrategy;
 import org.citydb.concurrent.SingleWorkerPool;
@@ -243,7 +243,7 @@ public class KmlExporter implements EventHandler {
 		if (config.getProject().getKmlExporter().isCreateGltfModel()) {
 			Path collada2gltf = Paths.get(config.getProject().getKmlExporter().getPathOfGltfConverter());
 			if (!collada2gltf.isAbsolute())
-				collada2gltf = ImpExpConstants.IMPEXP_HOME.resolve(collada2gltf);
+				collada2gltf = ClientConstants.IMPEXP_HOME.resolve(collada2gltf);
 
 			if (!Files.exists(collada2gltf))
 				throw new KmlExportException("Failed to find the COLLADA2glTF tool at the provided path " + collada2gltf + ".");

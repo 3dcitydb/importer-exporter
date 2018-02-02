@@ -27,20 +27,13 @@
  */
 package org.citydb.citygml.importer.database.content;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Types;
-import java.util.concurrent.locks.ReentrantLock;
-
 import org.citydb.citygml.common.database.xlink.DBXlinkLibraryObject;
 import org.citydb.citygml.common.database.xlink.DBXlinkSurfaceGeometry;
 import org.citydb.citygml.importer.CityGMLImportException;
 import org.citydb.citygml.importer.util.ConcurrentLockManager;
 import org.citydb.config.Config;
+import org.citydb.util.CoreConstants;
 import org.citydb.config.geometry.GeometryObject;
-import org.citydb.config.internal.Internal;
 import org.citydb.database.schema.SequenceEnum;
 import org.citydb.database.schema.TableEnum;
 import org.citydb.database.schema.mapping.MappingConstants;
@@ -48,6 +41,13 @@ import org.citydb.util.Util;
 import org.citygml4j.model.citygml.core.ImplicitGeometry;
 import org.citygml4j.model.gml.geometry.AbstractGeometry;
 import org.citygml4j.model.gml.geometry.GeometryProperty;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Types;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class DBImplicitGeometry implements DBImporter {
 	private final ConcurrentLockManager lockManager = ConcurrentLockManager.getInstance(DBImplicitGeometry.class);
@@ -117,7 +117,7 @@ public class DBImplicitGeometry implements DBImporter {
 			} else if (property.isSetGeometry()) {
 				relativeGeometry = property.getGeometry();
 				gmlId = relativeGeometry.getId();
-				updateTable = !relativeGeometry.hasLocalProperty(Internal.GEOMETRY_ORIGINAL);
+				updateTable = !relativeGeometry.hasLocalProperty(CoreConstants.GEOMETRY_ORIGINAL);
 			}
 		}
 

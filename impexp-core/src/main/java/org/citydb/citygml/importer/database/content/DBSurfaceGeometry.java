@@ -27,14 +27,6 @@
  */
 package org.citydb.citygml.importer.database.content;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Types;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.citydb.citygml.common.database.xlink.DBXlinkLinearRing;
 import org.citydb.citygml.common.database.xlink.DBXlinkSolidGeometry;
 import org.citydb.citygml.common.database.xlink.DBXlinkSurfaceGeometry;
@@ -42,8 +34,8 @@ import org.citydb.citygml.importer.CityGMLImportException;
 import org.citydb.citygml.importer.util.LocalTextureCoordinatesResolver;
 import org.citydb.citygml.importer.util.RingValidator;
 import org.citydb.config.Config;
+import org.citydb.util.CoreConstants;
 import org.citydb.config.geometry.GeometryObject;
-import org.citydb.config.internal.Internal;
 import org.citydb.config.project.database.DatabaseType;
 import org.citydb.database.connection.DatabaseConnectionPool;
 import org.citydb.database.schema.SequenceEnum;
@@ -85,6 +77,14 @@ import org.citygml4j.model.gml.geometry.primitives.TriangulatedSurface;
 import org.citygml4j.util.child.ChildInfo;
 import org.citygml4j.util.gmlid.DefaultGMLIdManager;
 import org.citygml4j.util.walker.GeometryWalker;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Types;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DBSurfaceGeometry implements DBImporter {
 	private final Connection batchConn;
@@ -165,7 +165,7 @@ public class DBSurfaceGeometry implements DBImporter {
 		}
 
 		if (surfaceGeometry.isSetId())
-			surfaceGeometry.setLocalProperty(Internal.OBJECT_ORIGINAL_GMLID, surfaceGeometry.getId());		
+			surfaceGeometry.setLocalProperty(CoreConstants.OBJECT_ORIGINAL_GMLID, surfaceGeometry.getId());
 
 		long surfaceGeometryId = pkManager.nextId();
 		doImport(surfaceGeometry, surfaceGeometryId, 0, surfaceGeometryId, false, false, false, cityObjectId);
@@ -205,23 +205,23 @@ public class DBSurfaceGeometry implements DBImporter {
 		importer.updateGeometryCounter(surfaceGeometryType);
 
 		if (!isCopy)
-			isCopy = surfaceGeometry.hasLocalProperty(Internal.GEOMETRY_ORIGINAL);
+			isCopy = surfaceGeometry.hasLocalProperty(CoreConstants.GEOMETRY_ORIGINAL);
 
 		if (!isXlink)
-			isXlink = surfaceGeometry.hasLocalProperty(Internal.GEOMETRY_XLINK);
+			isXlink = surfaceGeometry.hasLocalProperty(CoreConstants.GEOMETRY_XLINK);
 
 		// gml:id handling
 		String origGmlId, gmlId;
 		origGmlId = gmlId = surfaceGeometry.getId();
 		if (gmlId == null || replaceGmlId) {
-			if (!surfaceGeometry.hasLocalProperty(Internal.GEOMETRY_ORIGINAL)) {
+			if (!surfaceGeometry.hasLocalProperty(CoreConstants.GEOMETRY_ORIGINAL)) {
 				if (!surfaceGeometry.hasLocalProperty("replaceGmlId")) {
 					gmlId = DefaultGMLIdManager.getInstance().generateUUID();					
 					surfaceGeometry.setId(gmlId);
 					surfaceGeometry.setLocalProperty("replaceGmlId", true);
 				}
 			} else {
-				AbstractGeometry original = (AbstractGeometry)surfaceGeometry.getLocalProperty(Internal.GEOMETRY_ORIGINAL);
+				AbstractGeometry original = (AbstractGeometry)surfaceGeometry.getLocalProperty(CoreConstants.GEOMETRY_ORIGINAL);
 				if (!original.hasLocalProperty("replaceGmlId")) {
 					gmlId = DefaultGMLIdManager.getInstance().generateUUID();					
 					original.setId(gmlId);

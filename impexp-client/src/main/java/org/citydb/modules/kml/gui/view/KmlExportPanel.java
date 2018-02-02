@@ -67,7 +67,7 @@ import javax.swing.border.TitledBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.xml.bind.JAXBContext;
 
-import org.citydb.ImpExpConstants;
+import org.citydb.util.ClientConstants;
 import org.citydb.config.Config;
 import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.language.Language;
@@ -881,7 +881,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 			if (config.getProject().getKmlExporter().isCreateGltfModel()) {
 				Path collada2gltf = Paths.get(config.getProject().getKmlExporter().getPathOfGltfConverter());
 				if (!collada2gltf.isAbsolute())
-					collada2gltf = ImpExpConstants.IMPEXP_HOME.resolve(collada2gltf);
+					collada2gltf = ClientConstants.IMPEXP_HOME.resolve(collada2gltf);
 
 				if (!Files.exists(collada2gltf)) {
 					String text = Language.I18N.getString("kmlExport.dialog.error.collada2gltf.notExists");

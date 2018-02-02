@@ -27,16 +27,6 @@
  */
 package org.citydb.citygml.importer.database.content;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.sql.Types;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.List;
-
 import org.citydb.citygml.common.database.xlink.DBXlinkBasic;
 import org.citydb.citygml.importer.CityGMLImportException;
 import org.citydb.citygml.importer.util.AttributeValueJoiner;
@@ -44,8 +34,8 @@ import org.citydb.citygml.importer.util.LocalAppearanceChecker;
 import org.citydb.citygml.importer.util.LocalGeometryXlinkResolver;
 import org.citydb.citygml.importer.util.LocalTextureCoordinatesResolver;
 import org.citydb.config.Config;
+import org.citydb.util.CoreConstants;
 import org.citydb.config.geometry.GeometryObject;
-import org.citydb.config.internal.Internal;
 import org.citydb.config.project.importer.CreationDateMode;
 import org.citydb.config.project.importer.TerminationDateMode;
 import org.citydb.database.connection.DatabaseConnectionPool;
@@ -64,6 +54,16 @@ import org.citygml4j.model.gml.feature.AbstractFeature;
 import org.citygml4j.model.gml.feature.BoundingShape;
 import org.citygml4j.util.bbox.BoundingBoxOptions;
 import org.citygml4j.util.gmlid.DefaultGMLIdManager;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.sql.Types;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.List;
 
 public class DBCityObject implements DBImporter {
 	private final Connection batchConn;
@@ -171,7 +171,7 @@ public class DBCityObject implements DBImporter {
 	protected long doImport(AbstractGML object, AbstractObjectType<?> objectType) throws CityGMLImportException, SQLException {
 		boolean isFeature = object instanceof AbstractFeature;
 		boolean isCityObject = object instanceof AbstractCityObject;
-		boolean isTopLevel = object.getLocalProperty(Internal.IS_TOP_LEVEL) == Boolean.TRUE;
+		boolean isTopLevel = object.getLocalProperty(CoreConstants.IS_TOP_LEVEL) == Boolean.TRUE;
 
 		// primary id
 		long objectId = importer.getNextSequenceValue(SequenceEnum.CITYOBJECT_ID_SEQ.getName());
@@ -183,7 +183,7 @@ public class DBCityObject implements DBImporter {
 		// gml:id
 		String origGmlId = object.getId();
 		if (origGmlId != null)
-			object.setLocalProperty(Internal.OBJECT_ORIGINAL_GMLID, origGmlId);
+			object.setLocalProperty(CoreConstants.OBJECT_ORIGINAL_GMLID, origGmlId);
 
 		if (replaceGmlId) {
 			String gmlId = DefaultGMLIdManager.getInstance().generateUUID();

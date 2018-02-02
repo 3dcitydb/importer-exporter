@@ -28,7 +28,7 @@
 package org.citydb.modules.citygml.importer.gui.preferences;
 
 import org.citydb.config.Config;
-import org.citydb.config.ConfigConstants;
+import org.citydb.util.CoreConstants;
 import org.citydb.config.language.Language;
 import org.citydb.config.project.importer.ImportLog;
 import org.citydb.gui.factory.PopupMenuDecorator;
@@ -130,7 +130,7 @@ public class ImportLogPanel extends AbstractPreferencesComponent {
 		if (log.isSetLogPath())
 			logPath.setText(log.getLogPath());
 		else {
-			String defaultImportPath = ConfigConstants.IMPEXP_DATA_DIR.resolve(ConfigConstants.IMPORT_LOG_DIR).toString();
+			String defaultImportPath = CoreConstants.IMPEXP_DATA_DIR.resolve(CoreConstants.IMPORT_LOG_DIR).toString();
 			logPath.setText(defaultImportPath);
 			log.setLogPath(defaultImportPath);
 		}
@@ -146,7 +146,7 @@ public class ImportLogPanel extends AbstractPreferencesComponent {
 		if (!logPath.getText().isEmpty())
 			log.setLogPath(logPath.getText());
 		else {
-			String defaultImportPath = ConfigConstants.IMPEXP_DATA_DIR.resolve(ConfigConstants.IMPORT_LOG_DIR).toString();
+			String defaultImportPath = CoreConstants.IMPEXP_DATA_DIR.resolve(CoreConstants.IMPORT_LOG_DIR).toString();
 			logPath.setText(defaultImportPath);
 			log.setLogPath(defaultImportPath);
 		}

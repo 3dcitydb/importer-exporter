@@ -31,7 +31,6 @@ import org.citydb.ade.ADEExtension;
 import org.citydb.ade.ADEExtensionManager;
 import org.citydb.cli.ImpExpCli;
 import org.citydb.config.Config;
-import org.citydb.config.ConfigConstants;
 import org.citydb.config.ConfigUtil;
 import org.citydb.config.gui.Gui;
 import org.citydb.config.language.Language;
@@ -39,6 +38,8 @@ import org.citydb.config.project.Project;
 import org.citydb.config.project.global.LanguageType;
 import org.citydb.config.project.global.Logging;
 import org.citydb.config.project.plugin.PluginConfig;
+import org.citydb.util.CoreConstants;
+import org.citydb.util.ClientConstants;
 import org.citydb.database.DatabaseController;
 import org.citydb.database.schema.mapping.SchemaMapping;
 import org.citydb.database.schema.mapping.SchemaMappingException;
@@ -235,7 +236,7 @@ public class ImpExp {
 		printInfoMessage("Loading plugins");
 		URLClassLoader externalLoader = new URLClassLoader(ImpExp.class.getClassLoader());
 		try {
-			Path pluginsDir = ImpExpConstants.IMPEXP_HOME.resolve(ImpExpConstants.PLUGINS_DIR);
+			Path pluginsDir = ClientConstants.IMPEXP_HOME.resolve(ClientConstants.PLUGINS_DIR);
 			if (Files.exists(pluginsDir)) {
 				try (Stream<Path> stream = Files.walk(pluginsDir)
 						.filter(path -> path.getFileName().toString().toLowerCase().endsWith(".jar"))) {
@@ -302,7 +303,7 @@ public class ImpExp {
 		printInfoMessage("Loading database schema mapping");
 		SchemaMapping schemaMapping = null;
 		try {
-			schemaMapping = SchemaMappingUtil.getInstance().unmarshal(ConfigConstants.CITYDB_SCHEMA_MAPPING_FILE);
+			schemaMapping = SchemaMappingUtil.getInstance().unmarshal(CoreConstants.CITYDB_SCHEMA_MAPPING_FILE);
 			registry.register(SchemaMapping.class.getName(), schemaMapping);		
 		} catch (JAXBException | SchemaMappingException | SchemaMappingValidationException e) {
 			log.error("Failed to process 3DCityDB schema mapping file.");
@@ -314,7 +315,7 @@ public class ImpExp {
 		// load ADE extensions	
 		printInfoMessage("Loading ADE extensions");
 		try {
-			Path adeExtensionsDir = ImpExpConstants.IMPEXP_HOME.resolve(ImpExpConstants.ADE_EXTENSIONS_DIR);
+			Path adeExtensionsDir = ClientConstants.IMPEXP_HOME.resolve(ClientConstants.ADE_EXTENSIONS_DIR);
 			if (Files.exists(adeExtensionsDir)) {
 				try (Stream<Path> stream = Files.walk(adeExtensionsDir)
 						.filter(path -> path.getFileName().toString().toLowerCase().endsWith(".jar"))) {
@@ -361,7 +362,7 @@ public class ImpExp {
 		printInfoMessage("Loading project settings");		
 		if (configFile != null) {
 			if (!configFile.isAbsolute())
-				configFile = ImpExpConstants.WORKING_DIR.resolve(configFile);
+				configFile = ClientConstants.WORKING_DIR.resolve(configFile);
 
 			if (!Files.exists(configFile)) {
 				log.error("Failed to find config file '" + configFile + "'");
@@ -373,14 +374,14 @@ public class ImpExp {
 				System.exit(1);
 			}
 		} else
-			configFile = ConfigConstants.IMPEXP_DATA_DIR
-					.resolve(ImpExpConstants.CONFIG_DIR).resolve(ImpExpConstants.PROJECT_SETTINGS_FILE);
+			configFile = CoreConstants.IMPEXP_DATA_DIR
+					.resolve(ClientConstants.CONFIG_DIR).resolve(ClientConstants.PROJECT_SETTINGS_FILE);
 
 		// with v3.3, the config path has been changed to not include the version number.
 		// if the project file cannot be found, we thus check the old path used in v3.0 to v3.2
 		if (!Files.exists(configFile)) {
-			Path legacyConfigFile = Paths.get(ConfigConstants.IMPEXP_DATA_DIR + "-3.0",
-					ImpExpConstants.CONFIG_DIR, ImpExpConstants.PROJECT_SETTINGS_FILE);
+			Path legacyConfigFile = Paths.get(CoreConstants.IMPEXP_DATA_DIR + "-3.0",
+					ClientConstants.CONFIG_DIR, ClientConstants.PROJECT_SETTINGS_FILE);
 
 			if (Files.exists(legacyConfigFile)) {
 				log.warn("Failed to read project settings file '" + configFile + "'");
@@ -409,8 +410,8 @@ public class ImpExp {
 		}
 
 		if (!shell) {
-			Path guiFile = ConfigConstants.IMPEXP_DATA_DIR
-					.resolve(ImpExpConstants.CONFIG_DIR).resolve(ImpExpConstants.GUI_SETTINGS_FILE);
+			Path guiFile = CoreConstants.IMPEXP_DATA_DIR
+					.resolve(ClientConstants.CONFIG_DIR).resolve(ClientConstants.GUI_SETTINGS_FILE);
 			try {
 				Object object = ConfigUtil.unmarshal(guiFile.toFile(), guiContext);
 				if (object instanceof Gui)
@@ -431,7 +432,7 @@ public class ImpExp {
 				logging.getFile().setUseAlternativeLogPath(false);
 
 			String logPath = logging.getFile().isSetUseAlternativeLogPath() ? logging.getFile().getAlternativeLogPath()
-					: ConfigConstants.IMPEXP_DATA_DIR.resolve(ConfigConstants.LOG_DIR).toString();
+					: CoreConstants.IMPEXP_DATA_DIR.resolve(ClientConstants.LOG_DIR).toString();
 
 			boolean success = log.appendLogFile(logPath, true);
 			if (!success) {

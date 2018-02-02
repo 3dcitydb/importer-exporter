@@ -27,26 +27,26 @@
  */
 package org.citydb.citygml.importer.util;
 
-import java.util.List;
-
-import org.citydb.config.internal.Internal;
+import org.citydb.util.CoreConstants;
 import org.citydb.log.Logger;
 import org.citygml4j.model.gml.geometry.AbstractGeometry;
 import org.citygml4j.model.gml.geometry.primitives.DirectPositionList;
 import org.citygml4j.model.gml.geometry.primitives.LinearRing;
 
+import java.util.List;
+
 public class RingValidator {
 	private final Logger log = Logger.getInstance();
 
 	public boolean validate(LinearRing ring) {
-		if (ring.hasLocalProperty(Internal.GEOMETRY_INVALID))
+		if (ring.hasLocalProperty(CoreConstants.GEOMETRY_INVALID))
 			return false;
 
 		List<Double> coords = ring.toList3d();
 
 		// no or too few coordinates
 		if (coords == null || coords.isEmpty() || coords.size() / 3 < 4) {
-			ring.setLocalProperty(Internal.GEOMETRY_INVALID, "Too few coordinates");
+			ring.setLocalProperty(CoreConstants.GEOMETRY_INVALID, "Too few coordinates");
 			log.error(new StringBuilder(getGeometrySignature(ring))
 					.append(": Linear ring contains less than 4 coordinates and will not be imported.").toString());
 			return false;

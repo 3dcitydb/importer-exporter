@@ -27,16 +27,11 @@
  */
 package org.citydb.citygml.importer.database.content;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Types;
-
 import org.citydb.citygml.importer.CityGMLImportException;
 import org.citydb.citygml.importer.util.AttributeValueJoiner;
 import org.citydb.config.Config;
+import org.citydb.util.CoreConstants;
 import org.citydb.config.geometry.GeometryObject;
-import org.citydb.config.internal.Internal;
 import org.citydb.database.schema.SequenceEnum;
 import org.citydb.database.schema.TableEnum;
 import org.citydb.database.schema.mapping.FeatureType;
@@ -52,6 +47,11 @@ import org.citygml4j.model.xal.PostalCodeNumber;
 import org.citygml4j.model.xal.Thoroughfare;
 import org.citygml4j.model.xal.ThoroughfareName;
 import org.citygml4j.util.gmlid.DefaultGMLIdManager;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Types;
 
 /*
  * PLEASE NOTE:
@@ -226,7 +226,7 @@ public class DBAddress implements DBImporter {
 
 		// gml:id
 		if (address.isSetId())
-			address.setLocalProperty(Internal.OBJECT_ORIGINAL_GMLID, address.getId());
+			address.setLocalProperty(CoreConstants.OBJECT_ORIGINAL_GMLID, address.getId());
 
 		if (replaceGmlId) {
 			String gmlId = DefaultGMLIdManager.getInstance().generateUUID();

@@ -27,31 +27,29 @@
  */
 package org.citydb.citygml.exporter.database.content;
 
-import java.io.File;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import org.citydb.citygml.common.database.cache.CacheTable;
 import org.citydb.citygml.common.database.xlink.DBXlinkTextureFile;
 import org.citydb.citygml.exporter.CityGMLExportException;
 import org.citydb.citygml.exporter.util.AttributeValueSplitter;
 import org.citydb.citygml.exporter.util.AttributeValueSplitter.SplitValue;
 import org.citydb.config.Config;
+import org.citydb.util.CoreConstants;
 import org.citydb.config.geometry.GeometryObject;
-import org.citydb.config.internal.Internal;
 import org.citydb.database.schema.TableEnum;
 import org.citydb.database.schema.mapping.FeatureType;
 import org.citydb.log.Logger;
 import org.citydb.query.Query;
 import org.citydb.query.builder.QueryBuildException;
 import org.citydb.query.builder.sql.AppearanceFilterBuilder;
+import org.citydb.sqlbuilder.expression.IntegerLiteral;
+import org.citydb.sqlbuilder.expression.PlaceHolder;
+import org.citydb.sqlbuilder.schema.Table;
+import org.citydb.sqlbuilder.select.PredicateToken;
+import org.citydb.sqlbuilder.select.Select;
+import org.citydb.sqlbuilder.select.join.JoinFactory;
+import org.citydb.sqlbuilder.select.operator.comparison.ComparisonFactory;
+import org.citydb.sqlbuilder.select.operator.comparison.ComparisonName;
+import org.citydb.sqlbuilder.select.projection.Function;
 import org.citydb.util.Util;
 import org.citygml4j.geometry.Matrix;
 import org.citygml4j.model.citygml.appearance.AbstractSurfaceData;
@@ -72,15 +70,16 @@ import org.citygml4j.model.gml.geometry.primitives.Point;
 import org.citygml4j.model.gml.geometry.primitives.PointProperty;
 import org.citygml4j.util.gmlid.DefaultGMLIdManager;
 
-import org.citydb.sqlbuilder.expression.IntegerLiteral;
-import org.citydb.sqlbuilder.expression.PlaceHolder;
-import org.citydb.sqlbuilder.schema.Table;
-import org.citydb.sqlbuilder.select.PredicateToken;
-import org.citydb.sqlbuilder.select.Select;
-import org.citydb.sqlbuilder.select.join.JoinFactory;
-import org.citydb.sqlbuilder.select.operator.comparison.ComparisonFactory;
-import org.citydb.sqlbuilder.select.operator.comparison.ComparisonName;
-import org.citydb.sqlbuilder.select.projection.Function;
+import java.io.File;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class AbstractAppearanceExporter extends AbstractTypeExporter {
 	private final Logger log = Logger.getInstance();
@@ -310,7 +309,7 @@ public class AbstractAppearanceExporter extends AbstractTypeExporter {
 				String imageURI = rs.getString(23);
 				if (uniqueFileNames) {
 					String extension = Util.getFileExtension(imageURI);
-					imageURI = Internal.UNIQUE_TEXTURE_FILENAME_PREFIX + texImageId + (extension != null ? "." + extension : "");
+					imageURI = CoreConstants.UNIQUE_TEXTURE_FILENAME_PREFIX + texImageId + (extension != null ? "." + extension : "");
 				}
 
 				String fileName = new File(imageURI).getName();
@@ -330,7 +329,7 @@ public class AbstractAppearanceExporter extends AbstractTypeExporter {
 						if (!lazyExport)
 							exporter.propagateXlink(xlink);
 						else
-							abstractTexture.setLocalProperty(Internal.TEXTURE_IMAGE_XLINK, xlink);
+							abstractTexture.setLocalProperty(CoreConstants.TEXTURE_IMAGE_XLINK, xlink);
 
 					} else {
 						log.warn(new StringBuilder(exporter.getObjectSignature(exporter.getFeatureType(objectClassId), surfaceDataId))

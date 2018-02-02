@@ -50,7 +50,7 @@ import org.citydb.citygml.importer.util.ImportLogger;
 import org.citydb.concurrent.PoolSizeAdaptationStrategy;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
-import org.citydb.config.ConfigConstants;
+import org.citydb.util.CoreConstants;
 import org.citydb.config.internal.Internal;
 import org.citydb.config.language.Language;
 import org.citydb.config.project.database.Database;
@@ -327,7 +327,7 @@ public class Importer implements EventHandler {
 				if (importerConfig.getImportLog().isSetLogImportedFeatures()) {
 					try {
 						String logPath = importerConfig.getImportLog().isSetLogPath() ? importerConfig.getImportLog().getLogPath()
-								: ConfigConstants.IMPEXP_DATA_DIR.resolve(ConfigConstants.IMPORT_LOG_DIR).toString();
+								: CoreConstants.IMPEXP_DATA_DIR.resolve(CoreConstants.IMPORT_LOG_DIR).toString();
 						importLogger = new ImportLogger(logPath, file, databaseConfig.getActiveConnection());
 						log.info("Log file of imported top-level features: " + importLogger.getLogFilePath().toString());
 					} catch (IOException e) {

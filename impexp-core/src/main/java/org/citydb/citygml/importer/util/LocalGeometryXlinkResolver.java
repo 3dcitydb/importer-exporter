@@ -27,14 +27,8 @@
  */
 package org.citydb.citygml.importer.util;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Stack;
-
 import org.citydb.citygml.importer.database.content.CityGMLImportManager;
-import org.citydb.config.internal.Internal;
+import org.citydb.util.CoreConstants;
 import org.citydb.log.Logger;
 import org.citygml4j.builder.copy.CopyBuilder;
 import org.citygml4j.builder.copy.ShallowCopyBuilder;
@@ -48,6 +42,12 @@ import org.citygml4j.model.gml.geometry.AbstractGeometry;
 import org.citygml4j.model.gml.geometry.GeometryProperty;
 import org.citygml4j.util.child.ChildInfo;
 import org.citygml4j.util.walker.GMLWalker;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Stack;
 
 public class LocalGeometryXlinkResolver {
 	private final Logger log = Logger.getInstance();
@@ -168,10 +168,10 @@ public class LocalGeometryXlinkResolver {
 
 								geometryProperty.setGeometry(copy);
 								geometryProperty.unsetHref();								
-								copy.setLocalProperty(Internal.GEOMETRY_XLINK, true);
-								copy.setLocalProperty(Internal.GEOMETRY_ORIGINAL, geometry);
+								copy.setLocalProperty(CoreConstants.GEOMETRY_XLINK, true);
+								copy.setLocalProperty(CoreConstants.GEOMETRY_ORIGINAL, geometry);
 
-								geometry.setLocalProperty(Internal.GEOMETRY_XLINK, true);
+								geometry.setLocalProperty(CoreConstants.GEOMETRY_XLINK, true);
 
 								targets.remove(target);
 								for (int i = 0; i < parents; ++i)

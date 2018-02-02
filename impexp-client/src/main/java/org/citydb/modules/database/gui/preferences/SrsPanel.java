@@ -27,7 +27,7 @@
  */
 package org.citydb.modules.database.gui.preferences;
 
-import org.citydb.ImpExpConstants;
+import org.citydb.util.ClientConstants;
 import org.citydb.config.Config;
 import org.citydb.config.ConfigUtil;
 import org.citydb.config.language.Language;
@@ -702,7 +702,7 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 		if (!fileText.getText().trim().isEmpty())
 			chooser.setCurrentDirectory(new File(fileText.getText()));
 		else
-			chooser.setCurrentDirectory(ImpExpConstants.IMPEXP_HOME.resolve(ImpExpConstants.SRS_TEMPLATES_DIR).toFile());
+			chooser.setCurrentDirectory(ClientConstants.IMPEXP_HOME.resolve(ClientConstants.SRS_TEMPLATES_DIR).toFile());
 
 		int result = chooser.showOpenDialog(getTopLevelAncestor());
 		if (result == JFileChooser.CANCEL_OPTION) 

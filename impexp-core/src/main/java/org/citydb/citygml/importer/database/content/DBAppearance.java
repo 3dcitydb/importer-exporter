@@ -27,19 +27,12 @@
  */
 package org.citydb.citygml.importer.database.content;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Types;
-import java.util.List;
-import java.util.Map.Entry;
-
 import org.citydb.citygml.common.database.xlink.DBXlinkBasic;
 import org.citydb.citygml.importer.CityGMLImportException;
 import org.citydb.citygml.importer.util.AttributeValueJoiner;
 import org.citydb.citygml.importer.util.LocalTextureCoordinatesResolver;
 import org.citydb.config.Config;
-import org.citydb.config.internal.Internal;
+import org.citydb.util.CoreConstants;
 import org.citydb.database.schema.SequenceEnum;
 import org.citydb.database.schema.TableEnum;
 import org.citydb.database.schema.mapping.FeatureType;
@@ -50,6 +43,13 @@ import org.citygml4j.model.citygml.texturedsurface._AbstractAppearance;
 import org.citygml4j.model.gml.basicTypes.Code;
 import org.citygml4j.model.gml.geometry.primitives.AbstractSurface;
 import org.citygml4j.util.gmlid.DefaultGMLIdManager;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Types;
+import java.util.List;
+import java.util.Map.Entry;
 
 public class DBAppearance implements DBImporter {
 	private final CityGMLImportManager importer;
@@ -98,7 +98,7 @@ public class DBAppearance implements DBImporter {
 		// gml:id
 		String origGmlId = appearance.getId();
 		if (origGmlId != null)
-			appearance.setLocalProperty(Internal.OBJECT_ORIGINAL_GMLID, origGmlId);
+			appearance.setLocalProperty(CoreConstants.OBJECT_ORIGINAL_GMLID, origGmlId);
 		
 		if (replaceGmlId) {
 			String gmlId = DefaultGMLIdManager.getInstance().generateUUID();

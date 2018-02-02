@@ -1,23 +1,5 @@
 package org.citydb.citygml.exporter.database.content;
 
-import java.io.Reader;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.IdentityHashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-
 import org.citydb.ade.ADEExtension;
 import org.citydb.ade.ADEExtensionManager;
 import org.citydb.ade.exporter.ADEExportManager;
@@ -38,8 +20,8 @@ import org.citydb.citygml.exporter.writer.FeatureWriteException;
 import org.citydb.citygml.exporter.writer.FeatureWriter;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
+import org.citydb.util.CoreConstants;
 import org.citydb.config.geometry.GeometryObject;
-import org.citydb.config.internal.Internal;
 import org.citydb.config.project.exporter.Exporter;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.schema.TableEnum;
@@ -57,6 +39,10 @@ import org.citydb.query.Query;
 import org.citydb.query.filter.lod.LodFilter;
 import org.citydb.query.filter.projection.CombinedProjectionFilter;
 import org.citydb.query.filter.projection.ProjectionFilter;
+import org.citydb.sqlbuilder.expression.IntegerLiteral;
+import org.citydb.sqlbuilder.schema.Column;
+import org.citydb.sqlbuilder.select.ProjectionToken;
+import org.citydb.sqlbuilder.select.projection.Function;
 import org.citydb.util.Util;
 import org.citygml4j.builder.jaxb.CityGMLBuilder;
 import org.citygml4j.builder.jaxb.CityGMLBuilderException;
@@ -108,10 +94,22 @@ import org.citygml4j.util.gmlid.DefaultGMLIdManager;
 import org.citygml4j.xml.io.reader.MissingADESchemaException;
 import org.w3c.dom.Document;
 
-import org.citydb.sqlbuilder.expression.IntegerLiteral;
-import org.citydb.sqlbuilder.schema.Column;
-import org.citydb.sqlbuilder.select.ProjectionToken;
-import org.citydb.sqlbuilder.select.projection.Function;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.Reader;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.IdentityHashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 
 public class CityGMLExportManager implements CityGMLExportHelper {
 	private final Logger log = Logger.getInstance();
@@ -211,7 +209,7 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 				throw new CityGMLExportException("ADE extension for object " + getObjectSignature(objectType, objectId) + " is disabled. Skipping export.");
 		
 			if (exportStub)
-				object.setLocalProperty(Internal.EXPORT_STUB, true);
+				object.setLocalProperty(CoreConstants.EXPORT_STUB, true);
 		}
 
 		boolean success = false;
@@ -407,7 +405,7 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 
 	protected void delegateToADEExporter(AbstractGML object, long objectId, AbstractObjectType<?> objectType, ProjectionFilter projectionFilter) throws CityGMLExportException, SQLException {
 		// delegate export of ADE object to an ADE exporter
-		if (object instanceof ADEModelObject && !object.hasLocalProperty(Internal.EXPORT_STUB))
+		if (object instanceof ADEModelObject && !object.hasLocalProperty(CoreConstants.EXPORT_STUB))
 			getADEExportManager(objectType.getSchema()).exportObject((ADEModelObject)object, objectId, objectType, projectionFilter);
 	}
 

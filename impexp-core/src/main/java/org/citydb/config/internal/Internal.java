@@ -32,17 +32,6 @@ import org.citydb.citygml.importer.util.AffineTransformer;
 import java.io.File;
 
 public class Internal {	
-	public static final String DEFAULT_DELIMITER = "--/\\--";
-	public static final String OBJECT_ORIGINAL_GMLID = "origGMLId";
-	public static final String IS_TOP_LEVEL = "isTopLevel";
-	public static final String GEOMETRY_XLINK = "isXlink";
-	public static final String GEOMETRY_ORIGINAL = "origGeom";
-	public static final String GEOMETRY_INVALID = "geomInvalid";
-	public static final String TEXTURE_IMAGE_XLINK = "textureXlink";
-	public static final String FOREIGN_KEYS_SET = "foreignKeys";
-	public static final String EXPORT_STUB = "exportStub";
-	public static final String UNIQUE_TEXTURE_FILENAME_PREFIX = "tex_";
-	
 	private String currentLogPath = "";
 	private String importPath = "";
 	private File[] importFiles;

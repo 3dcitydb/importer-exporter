@@ -1,19 +1,5 @@
 package org.citydb.citygml.importer.database.content;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.IdentityHashMap;
-import java.util.List;
-import java.util.Map.Entry;
-
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-
 import org.citydb.ade.ADEExtension;
 import org.citydb.ade.ADEExtensionManager;
 import org.citydb.ade.importer.ADEImportManager;
@@ -33,11 +19,11 @@ import org.citydb.citygml.importer.database.TableHelper;
 import org.citydb.citygml.importer.util.ADEPropertyCollector;
 import org.citydb.citygml.importer.util.AffineTransformer;
 import org.citydb.citygml.importer.util.AttributeValueJoiner;
-import org.citydb.citygml.importer.util.LocalTextureCoordinatesResolver;
 import org.citydb.citygml.importer.util.ImportLogger.ImportLogEntry;
+import org.citydb.citygml.importer.util.LocalTextureCoordinatesResolver;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
-import org.citydb.config.internal.Internal;
+import org.citydb.util.CoreConstants;
 import org.citydb.config.project.importer.Importer;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.schema.TableEnum;
@@ -100,6 +86,19 @@ import org.citygml4j.model.module.citygml.CityGMLVersion;
 import org.citygml4j.util.xml.SAXWriter;
 import org.citygml4j.xml.CityGMLNamespaceContext;
 import org.xml.sax.SAXException;
+
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map.Entry;
 
 public class CityGMLImportManager implements CityGMLImportHelper {
 	private final Logger log = Logger.getInstance();
@@ -277,7 +276,7 @@ public class CityGMLImportManager implements CityGMLImportHelper {
 	@Override
 	public long importObject(AbstractGML object, ForeignKeys foreignKeys) throws CityGMLImportException, SQLException {
 		if (foreignKeys != null)
-			object.setLocalProperty(Internal.FOREIGN_KEYS_SET, foreignKeys);
+			object.setLocalProperty(CoreConstants.FOREIGN_KEYS_SET, foreignKeys);
 
 		return importObject(object);
 	}
@@ -287,7 +286,7 @@ public class CityGMLImportManager implements CityGMLImportHelper {
 		if (object instanceof ADEModelObject) {
 			ADEModelObject adeObject = (ADEModelObject)object;
 
-			ForeignKeys foreignKeys = (ForeignKeys)object.getLocalProperty(Internal.FOREIGN_KEYS_SET);
+			ForeignKeys foreignKeys = (ForeignKeys)object.getLocalProperty(CoreConstants.FOREIGN_KEYS_SET);
 			if (foreignKeys == null)
 				foreignKeys = ForeignKeys.EMPTY_SET;
 
@@ -469,8 +468,8 @@ public class CityGMLImportManager implements CityGMLImportHelper {
 
 	@Override
 	public String getObjectSignature(AbstractGML object) {
-		return getObjectSignature(object, object.hasLocalProperty(Internal.OBJECT_ORIGINAL_GMLID) ? 
-				(String)object.getLocalProperty(Internal.OBJECT_ORIGINAL_GMLID) : object.getId());
+		return getObjectSignature(object, object.hasLocalProperty(CoreConstants.OBJECT_ORIGINAL_GMLID) ?
+				(String)object.getLocalProperty(CoreConstants.OBJECT_ORIGINAL_GMLID) : object.getId());
 	}
 
 	@Override
@@ -524,8 +523,8 @@ public class CityGMLImportManager implements CityGMLImportHelper {
 		updateObjectCounter(object, type.getObjectClassId(), id);
 
 		// create import log entry for top-level features
-		if (object.getLocalProperty(Internal.IS_TOP_LEVEL) == Boolean.TRUE && importLogEntries != null)
-			importLogEntries.add(new ImportLogEntry(type.getPath(), id, (String)object.getLocalProperty(Internal.OBJECT_ORIGINAL_GMLID)));
+		if (object.getLocalProperty(CoreConstants.IS_TOP_LEVEL) == Boolean.TRUE && importLogEntries != null)
+			importLogEntries.add(new ImportLogEntry(type.getPath(), id, (String)object.getLocalProperty(CoreConstants.OBJECT_ORIGINAL_GMLID)));
 	}
 
 	protected void updateGeometryCounter(GMLClass type) {

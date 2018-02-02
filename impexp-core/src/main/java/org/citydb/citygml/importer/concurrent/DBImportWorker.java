@@ -27,11 +27,6 @@
  */
 package org.citydb.citygml.importer.concurrent;
 
-import java.io.IOException;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.concurrent.locks.ReentrantLock;
-
 import org.citydb.citygml.common.database.uid.UIDCacheManager;
 import org.citydb.citygml.common.database.xlink.DBXlink;
 import org.citydb.citygml.importer.CityGMLImportException;
@@ -42,7 +37,7 @@ import org.citydb.citygml.importer.util.ImportLogger.ImportLogEntry;
 import org.citydb.concurrent.Worker;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
-import org.citydb.config.internal.Internal;
+import org.citydb.util.CoreConstants;
 import org.citydb.config.project.database.Workspace;
 import org.citydb.config.project.global.LogLevel;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
@@ -64,6 +59,11 @@ import org.citygml4j.model.citygml.appearance.Appearance;
 import org.citygml4j.model.citygml.core.AbstractCityObject;
 import org.citygml4j.model.gml.base.AbstractGML;
 import org.citygml4j.util.bbox.BoundingBoxOptions;
+
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class DBImportWorker extends Worker<CityGML> implements EventHandler {
 	private final ReentrantLock runLock = new ReentrantLock();
@@ -245,7 +245,7 @@ public class DBImportWorker extends Worker<CityGML> implements EventHandler {
 			if (work instanceof Appearance) {
 				// global appearances
 				Appearance appearance = (Appearance)work;
-				appearance.setLocalProperty(Internal.IS_TOP_LEVEL, true);
+				appearance.setLocalProperty(CoreConstants.IS_TOP_LEVEL, true);
 				id = importer.importGlobalAppearance(appearance);
 			} 
 
@@ -259,7 +259,7 @@ public class DBImportWorker extends Worker<CityGML> implements EventHandler {
 				if (!filter.getSelectionFilter().isSatisfiedBy(cityObject))
 					return;			
 
-				cityObject.setLocalProperty(Internal.IS_TOP_LEVEL, true);
+				cityObject.setLocalProperty(CoreConstants.IS_TOP_LEVEL, true);
 				id = importer.importObject(cityObject);
 
 				// import local appearances

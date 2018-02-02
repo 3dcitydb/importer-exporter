@@ -1,11 +1,11 @@
 package org.citydb.citygml.importer.util;
 
+import org.citydb.util.CoreConstants;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.StringJoiner;
 import java.util.function.Function;
-
-import org.citydb.config.internal.Internal;
 
 public class AttributeValueJoiner {
 	private StringJoiner[] joiner;
@@ -35,7 +35,7 @@ public class AttributeValueJoiner {
 
 	@SafeVarargs
 	public final <T> AttributeValueJoiner join(List<T> values, Function<T, String>... mapper) {
-		return join(Internal.DEFAULT_DELIMITER, values, mapper);
+		return join(CoreConstants.DEFAULT_DELIMITER, values, mapper);
 	}
 
 	public <T> String join(String delimiter, List<T> values) {
@@ -43,7 +43,7 @@ public class AttributeValueJoiner {
 	}
 
 	public <T> String join(List<T> values) {
-		return join(Internal.DEFAULT_DELIMITER, values, Object::toString).result(0);
+		return join(CoreConstants.DEFAULT_DELIMITER, values, Object::toString).result(0);
 	}
 
 	public String result(int i) {

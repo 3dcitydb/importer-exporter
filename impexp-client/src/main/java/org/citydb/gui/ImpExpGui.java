@@ -27,10 +27,10 @@
  */
 package org.citydb.gui;
 
-import org.citydb.ImpExpConstants;
+import org.citydb.util.ClientConstants;
 import org.citydb.ade.ADEExtensionManager;
 import org.citydb.config.Config;
-import org.citydb.config.ConfigConstants;
+import org.citydb.util.CoreConstants;
 import org.citydb.config.ConfigUtil;
 import org.citydb.config.gui.window.MainWindow;
 import org.citydb.config.gui.window.WindowSize;
@@ -509,7 +509,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 			return false;
 
 		try {
-			Path projectFile = configDir.resolve(ImpExpConstants.PROJECT_SETTINGS_FILE);
+			Path projectFile = configDir.resolve(ClientConstants.PROJECT_SETTINGS_FILE);
 			ConfigUtil.marshal(config.getProject(), projectFile.toFile(), jaxbProjectContext);
 			return true;
 		} catch (JAXBException jaxbE) {
@@ -524,7 +524,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		if (configDir == null)
 			return;
 
-		Path guiFile = configDir.resolve(ImpExpConstants.GUI_SETTINGS_FILE);
+		Path guiFile = configDir.resolve(ClientConstants.GUI_SETTINGS_FILE);
 
 		// set window size
 		Rectangle rect = getBounds();
@@ -547,7 +547,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 	}
 
 	private Path getConfigDir() {
-		Path configDir = ConfigConstants.IMPEXP_DATA_DIR.resolve(ImpExpConstants.CONFIG_DIR);
+		Path configDir = CoreConstants.IMPEXP_DATA_DIR.resolve(ClientConstants.CONFIG_DIR);
 		if (!Files.exists(configDir)) {
 			try {
 				Files.createDirectories(configDir);

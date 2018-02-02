@@ -1,13 +1,13 @@
 package org.citydb.citygml.exporter.util;
 
+import org.citydb.util.CoreConstants;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import org.citydb.config.internal.Internal;
-
 public class AttributeValueSplitter {
-	private final Pattern defaultPattern = Pattern.compile(Internal.DEFAULT_DELIMITER.replaceAll("\\\\", "\\\\\\\\"));	
+	private final Pattern defaultPattern = Pattern.compile(CoreConstants.DEFAULT_DELIMITER.replaceAll("\\\\", "\\\\\\\\"));
 	private List<SplitValue> results = new ArrayList<>();	
 
 	public List<SplitValue> split(Pattern pattern, String... values) {

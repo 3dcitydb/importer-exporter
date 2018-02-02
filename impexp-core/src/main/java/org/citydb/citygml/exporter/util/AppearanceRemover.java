@@ -1,11 +1,8 @@
 package org.citydb.citygml.exporter.util;
 
-import java.util.HashSet;
-import java.util.Iterator;
-
 import org.citydb.citygml.common.database.xlink.DBXlink;
 import org.citydb.concurrent.WorkerPool;
-import org.citydb.config.internal.Internal;
+import org.citydb.util.CoreConstants;
 import org.citygml4j.model.citygml.appearance.AbstractSurfaceData;
 import org.citygml4j.model.citygml.appearance.Appearance;
 import org.citygml4j.model.citygml.appearance.AppearanceProperty;
@@ -19,6 +16,9 @@ import org.citygml4j.model.gml.geometry.aggregates.MultiSurface;
 import org.citygml4j.model.gml.geometry.primitives.AbstractSurface;
 import org.citygml4j.util.walker.FeatureWalker;
 import org.citygml4j.util.walker.GMLWalker;
+
+import java.util.HashSet;
+import java.util.Iterator;
 
 public class AppearanceRemover {
 	private final WorkerPool<DBXlink> xlinkPool;
@@ -99,8 +99,8 @@ public class AppearanceRemover {
 						}
 
 						if (texture.isSetTarget()) {
-							if (texture.hasLocalProperty(Internal.TEXTURE_IMAGE_XLINK))
-								xlinkPool.addWork((DBXlink)texture.getLocalProperty(Internal.TEXTURE_IMAGE_XLINK));
+							if (texture.hasLocalProperty(CoreConstants.TEXTURE_IMAGE_XLINK))
+								xlinkPool.addWork((DBXlink)texture.getLocalProperty(CoreConstants.TEXTURE_IMAGE_XLINK));
 						} else
 							remove = true;
 
@@ -126,8 +126,8 @@ public class AppearanceRemover {
 						}
 
 						if (texture.isSetTarget()) {
-							if (texture.hasLocalProperty(Internal.TEXTURE_IMAGE_XLINK))
-								xlinkPool.addWork((DBXlink)texture.getLocalProperty(Internal.TEXTURE_IMAGE_XLINK));
+							if (texture.hasLocalProperty(CoreConstants.TEXTURE_IMAGE_XLINK))
+								xlinkPool.addWork((DBXlink)texture.getLocalProperty(CoreConstants.TEXTURE_IMAGE_XLINK));
 						} else
 							remove = true;
 					}

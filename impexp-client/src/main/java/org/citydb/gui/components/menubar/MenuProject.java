@@ -27,9 +27,9 @@
  */
 package org.citydb.gui.components.menubar;
 
-import org.citydb.ImpExpConstants;
+import org.citydb.util.ClientConstants;
 import org.citydb.config.Config;
-import org.citydb.config.ConfigConstants;
+import org.citydb.util.CoreConstants;
 import org.citydb.config.ConfigUtil;
 import org.citydb.config.language.Language;
 import org.citydb.config.project.Project;
@@ -124,9 +124,9 @@ public class MenuProject extends JMenu {
 
             if (mainView.saveProjectSettings())
                 LOG.info("Settings successfully saved to config file '"
-                        + ConfigConstants.IMPEXP_DATA_DIR
-                                .resolve(ImpExpConstants.PROJECT_SETTINGS_FILE)
-                                .resolve(ImpExpConstants.PROJECT_SETTINGS_FILE) + "'.");
+                        + CoreConstants.IMPEXP_DATA_DIR
+                                .resolve(ClientConstants.PROJECT_SETTINGS_FILE)
+                                .resolve(ClientConstants.PROJECT_SETTINGS_FILE) + "'.");
         });
 
 		saveProjectAs.addActionListener(e -> {
