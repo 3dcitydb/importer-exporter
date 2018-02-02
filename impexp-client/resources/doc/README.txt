@@ -112,42 +112,68 @@ folder.
 6. Running the application
 --------------------------
 
-For running the @name@ use the provided starter
-scripts. The starter scripts can be found in the "bin" folder of the
-installation folder. During setup you can choose to additionally create
-shortcuts for the starter scripts on your desktop and in the start menu
-of your preferred OS.
-   
-Depending on the platform, please run one the following starter scripts:
-- @appName@.bat    (Microsoft Windows family)
-- @appName@        (UNIX/Linux family)
+For running the @name@ use one of the
+following two options:
 
-On most platforms, double-clicking the starter script or its shortcut
-runs the @name@.
-   
-PLEASE NOTE:
-The starter scripts set the initial heap size of the Java Virtual
-Machine (JVM) to 1GB using the -Xms parameter of the JVM. This value
-has been chosen to be reasonable for most platforms. Please edit the
-starter scripts in case you need to adapt these default values (e.g., in
-order to increase the available main memory).
-   
-For some UNIX/Linux distributions, you will have to run the starter
-script from within a shell environment. Please open your favorite shell
-and first check whether execution rights are correctly set for the
-starter script.
-   
-Change to the "bin" folder and enter the following to make the starter
-script executable for the owner of the file:
-   
-    chmod u+x @appName@
-     
-Afterwards, simply run the starter script by the following command:
-   
-    ./@appName@
+a) Recommended:
+   Use the start scripts to launch the application. The start scripts
+   are located in the "bin" folder of the installation directory.
+   During setup you can additionally choose to create shortcuts for the
+   start scripts on your desktop and in the start menu of your
+   preferred OS.
+
+   Please execute the start script suitable for your platform:
+   - @appName@.bat   (Microsoft Windows family)
+   - @appName@       (UNIX/Linux family, macOS)
+
+   On most platforms, double-clicking the start script or its shortcut
+   runs the @name@.
+
+   PLEASE NOTE:
+   The start scripts set the initial heap size of the Java Virtual
+   Machine (JVM) to 1GB using the -Xms parameter of the JVM. This value
+   has been chosen to be reasonable for most platforms. Please edit the
+   start scripts in case you need to adapt these default values (e.g.,
+   in order to increase the available main memory).
+
+   For some UNIX/Linux distributions, you will have to run the start
+   script from within a shell environment. Please open your favorite shell
+   and first check whether execution rights are correctly set for the
+   start script.
+
+   Change to the "bin" folder and enter the following to make the start
+   script executable for the owner of the file:
+
+       chmod u+x @appName@
+
+   Afterwards, simply run the start script by the following command:
+
+       ./@appName@
+
+b) Alternatively, you can directly run the @jar@
+   from within a shell environment without using the start scripts. The
+   runnable JAR archive is located in the "lib" subfolder of the
+   installation folder.
+
+   Open a shell, change to the installation folder and type the following:
+
+       java -jar lib/@jar@ [-options]
+
+   Make sure to define reasonable values for the available main memory.
+   Otherwise you might quickly run into main memory issues due
+   to restrictive JVM default values.
+
+   This is also the recommended way to run the program in CLI mode without
+   a graphical user interface. Simply add the "-shell" program argument to
+   the above shell command:
+
+       java -jar lib/@jar@ -shell [-options]
+
+   Type "java -jar lib/@jar@" -help' to get a list of the
+   available program arguments.
 
   
-7. Cooperation partners and supporters  
+7. Cooperation partners and supporters
 --------------------------------------
 
 The @name@ v@version@ has been developed by

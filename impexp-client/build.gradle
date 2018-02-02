@@ -24,6 +24,14 @@ dependencies {
     izpack fileTree(dir: 'resources/izpack/lib', include: '*.jar')
 }
 
+jar {
+    manifest {
+        attributes('Main-Class': mainClassName,
+                'Class-Path': configurations.runtimeClasspath.collect{ it.name }.join(' ')
+        )
+    }
+}
+
 startScripts {
     defaultJvmOpts = ['-Xms1G']
     doLast {
