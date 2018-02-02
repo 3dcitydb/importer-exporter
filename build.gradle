@@ -4,7 +4,7 @@ apply from: 'properties.gradle'
 
 subprojects {
     group 'org.citydb'
-    version '4.0-SNAPSHOT'
+    version '4.0.0-SNAPSHOT'
 
     apply plugin: 'java'
 
