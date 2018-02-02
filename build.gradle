@@ -99,7 +99,7 @@ subprojects {
         }
     }
 
-    task publishRelease(dependsOn: clean, group: 'release')
+    task publishRelease(group: 'release')
 }
 
 task wrapper(type: Wrapper) {
