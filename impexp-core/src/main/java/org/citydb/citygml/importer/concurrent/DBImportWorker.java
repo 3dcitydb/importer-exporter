@@ -32,12 +32,12 @@ import org.citydb.citygml.common.database.xlink.DBXlink;
 import org.citydb.citygml.importer.CityGMLImportException;
 import org.citydb.citygml.importer.database.content.CityGMLImportManager;
 import org.citydb.citygml.importer.filter.CityGMLFilter;
+import org.citydb.citygml.importer.util.AffineTransformer;
 import org.citydb.citygml.importer.util.ImportLogger;
 import org.citydb.citygml.importer.util.ImportLogger.ImportLogEntry;
 import org.citydb.concurrent.Worker;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
-import org.citydb.util.CoreConstants;
 import org.citydb.config.project.database.Workspace;
 import org.citydb.config.project.global.LogLevel;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
@@ -53,6 +53,7 @@ import org.citydb.event.global.GeometryCounterEvent;
 import org.citydb.event.global.InterruptEvent;
 import org.citydb.event.global.ObjectCounterEvent;
 import org.citydb.log.Logger;
+import org.citydb.util.CoreConstants;
 import org.citygml4j.builder.jaxb.CityGMLBuilder;
 import org.citygml4j.model.citygml.CityGML;
 import org.citygml4j.model.citygml.appearance.Appearance;
@@ -87,6 +88,7 @@ public class DBImportWorker extends Worker<CityGML> implements EventHandler {
 			WorkerPool<DBXlink> xlinkPool,
 			UIDCacheManager uidCacheManager,
 			CityGMLFilter filter,
+			AffineTransformer affineTransformer,
 			ImportLogger importLogger,
 			Config config,
 			EventDispatcher eventDispatcher) throws SQLException {
@@ -105,7 +107,7 @@ public class DBImportWorker extends Worker<CityGML> implements EventHandler {
 			databaseAdapter.getWorkspaceManager().gotoWorkspace(connection, workspace);
 		}
 
-		init(databaseAdapter, schemaMapping, cityGMLBuilder, xlinkPool, uidCacheManager, config);
+		init(databaseAdapter, schemaMapping, cityGMLBuilder, xlinkPool, uidCacheManager, affineTransformer, config);
 	}
 
 	public DBImportWorker(Connection connection,
@@ -115,6 +117,7 @@ public class DBImportWorker extends Worker<CityGML> implements EventHandler {
 			WorkerPool<DBXlink> xlinkPool,
 			UIDCacheManager uidCacheManager,
 			CityGMLFilter filter,
+			AffineTransformer affineTransformer,
 			ImportLogger importLogger,
 			Config config,
 			EventDispatcher eventDispatcher) throws SQLException {
@@ -124,7 +127,7 @@ public class DBImportWorker extends Worker<CityGML> implements EventHandler {
 		this.eventDispatcher = eventDispatcher;
 
 		globalTransaction = true;
-		init(databaseAdapter, schemaMapping, cityGMLBuilder, xlinkPool, uidCacheManager, config);
+		init(databaseAdapter, schemaMapping, cityGMLBuilder, xlinkPool, uidCacheManager, affineTransformer, config);
 	}
 
 	private void init(AbstractDatabaseAdapter databaseAdapter, 
@@ -132,13 +135,15 @@ public class DBImportWorker extends Worker<CityGML> implements EventHandler {
 			CityGMLBuilder cityGMLBuilder,
 			WorkerPool<DBXlink> xlinkPool,
 			UIDCacheManager uidCacheManager,
+			AffineTransformer affineTransformer,
 			Config config) throws SQLException {
 		importer = new CityGMLImportManager(connection, 
 				databaseAdapter,
 				schemaMapping,
 				cityGMLBuilder,
 				xlinkPool,
-				uidCacheManager, 
+				uidCacheManager,
+				affineTransformer,
 				config);
 
 		Integer commitAfterProp = config.getProject().getDatabase().getUpdateBatching().getFeatureBatchValue();

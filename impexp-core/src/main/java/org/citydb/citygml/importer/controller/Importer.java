@@ -247,14 +247,14 @@ public class Importer implements EventHandler {
 		}
 
 		// affine transformation
-		AffineTransformation affineTransformation = importerConfig.getAffineTransformation();
-		if (affineTransformation.isSetUseAffineTransformation()) {
+		AffineTransformer affineTransformer = null;
+		if (importerConfig.getAffineTransformation().isSetUseAffineTransformation()) {
 			log.info("Applying affine coordinates transformation.");
 
 			try {
-				internalConfig.setAffineTransformer(new AffineTransformer(config));
+				affineTransformer = new AffineTransformer(config);
 			} catch (Exception e) {
-				throw new CityGMLImportException("The provided homogeneous transformation matrix is singular.", e);
+				throw new CityGMLImportException("Failed to create affine transformer.", e);
 			}
 		}
 
@@ -404,6 +404,7 @@ public class Importer implements EventHandler {
 								tmpXlinkPool, 
 								uidCacheManager, 
 								filter,
+								affineTransformer,
 								importLogger,
 								config, 
 								eventDispatcher),

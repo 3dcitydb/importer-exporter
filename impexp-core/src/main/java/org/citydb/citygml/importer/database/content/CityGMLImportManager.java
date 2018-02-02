@@ -137,7 +137,8 @@ public class CityGMLImportManager implements CityGMLImportHelper {
 			SchemaMapping schemaMapping,
 			CityGMLBuilder cityGMLBuilder,
 			WorkerPool<DBXlink> xlinkPool,
-			UIDCacheManager uidCacheManager, 
+			UIDCacheManager uidCacheManager,
+			AffineTransformer affineTransformer,
 			Config config) throws SQLException {
 		this.connection = connection;
 		this.databaseAdapter = databaseAdapter;
@@ -164,7 +165,7 @@ public class CityGMLImportManager implements CityGMLImportHelper {
 			importLogEntries = new ArrayList<>();
 
 		if (config.getProject().getImporter().getAffineTransformation().isSetUseAffineTransformation())
-			affineTransformer = config.getInternal().getAffineTransformer();
+			this.affineTransformer = affineTransformer;
 
 		if (config.getProject().getImporter().getAddress().isSetImportXAL()) {
 			cityGMLVersion = CityGMLVersion.DEFAULT;
