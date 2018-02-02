@@ -42,3 +42,5 @@ bintray {
         }
     }
 }
+
+publishRelease.dependsOn bintrayUpload

@@ -4,7 +4,7 @@ apply from: 'properties.gradle'
 
 subprojects {
     group 'org.citydb'
-    version '4.0'
+    version '4.0-SNAPSHOT'
 
     apply plugin: 'java'
 
@@ -98,6 +98,8 @@ subprojects {
             }
         }
     }
+
+    task publishRelease(dependsOn: clean, group: 'release')
 }
 
 task wrapper(type: Wrapper) {

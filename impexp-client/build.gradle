@@ -94,7 +94,7 @@ distributions.main.contents {
     }
 }
 
-task buildInstaller(dependsOn: installDist) {
+task buildInstaller(dependsOn: installDist, group: 'distribution') {
     def installDir = installDist.destinationDir.toString()
     def distDir = distZip.destinationDir.toString()
     def izpackDir = "$buildDir/tmp/izpack".toString()
@@ -145,3 +145,5 @@ task buildInstaller(dependsOn: installDist) {
         )
     }
 }
+
+publishRelease.dependsOn buildInstaller
