@@ -22,9 +22,6 @@ ext {
     impexpGit = impexpVcsUrl + '.git'
     impexpIssueTrackerUrl = 'https://github.com/3dcitydb/importer-exporter/issues'
 
-    // Plugin API
-    pluginApiName = impexpShortName + ' Plugin API'
-
     // IzPack
     appName = citydbShortName + '-Importer-Exporter'
     appShortcutName = citydbShortName + ' Importer Exporter'

@@ -14,29 +14,6 @@ dependencies {
     compile project(':impexp-core')
 }
 
-javadoc {
-    options.overview "$buildDir/tmp/javadoc/overview.html"
-    options.addStringOption('doctitle', project.pluginApiName + ' - ' + project.version)
-
-    doFirst {
-        copy {
-            from 'resources/javadoc/overview.html'
-            into "$buildDir/tmp/javadoc"
-            filter(ReplaceTokens, tokens: [
-                    name: project.pluginApiName,
-                    version: project.version,
-                    impexpName: project.impexpName,
-                    citydbWebsiteUrl: project.citydbWebsiteUrl,
-                    vendorName: project.vendorName,
-                    vendorOrganisation: project.vendorOrganisation,
-                    vendorCountry: project.vendorCountry,
-                    vendorCopyright: project.vendorCopyright,
-                    vendorWebsiteUrl: project.vendorWebsiteUrl
-            ])
-        }
-    }
-}
-
 bintray {
     user = project.hasProperty('bintrayUser') ? project.property('bintrayUser') : System.getenv('BINTRAY_USER')
     key = project.hasProperty('bintrayApiKey') ? project.property('bintrayApiKey') : System.getenv('BINTRAY_API_KEY')

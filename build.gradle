@@ -1,3 +1,5 @@
+import org.apache.tools.ant.filters.ReplaceTokens
+
 apply from: 'properties.gradle'
 
 subprojects {
@@ -19,6 +21,29 @@ subprojects {
             url 'http://maven.imagej.net/content/repositories/thirdparty/'
         }
         jcenter()
+    }
+
+    javadoc {
+        options.overview "$buildDir/tmp/javadoc/overview.html"
+        options.addStringOption('doctitle', project.name + ' - ' + project.version)
+
+        doFirst {
+            copy {
+                from "$rootDir/resources/javadoc/overview.html"
+                into "$buildDir/tmp/javadoc"
+                filter(ReplaceTokens, tokens: [
+                        name: project.name,
+                        version: project.version,
+                        impexpName: project.impexpName,
+                        citydbWebsiteUrl: project.citydbWebsiteUrl,
+                        vendorName: project.vendorName,
+                        vendorOrganisation: project.vendorOrganisation,
+                        vendorCountry: project.vendorCountry,
+                        vendorCopyright: project.vendorCopyright,
+                        vendorWebsiteUrl: project.vendorWebsiteUrl
+                ])
+            }
+        }
     }
 
     jar {
