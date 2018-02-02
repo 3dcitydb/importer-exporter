@@ -29,6 +29,7 @@ package org.citydb.database.connection;
 
 import java.sql.SQLException;
 
+import org.citydb.config.project.database.DatabaseConfigurationException;
 import org.citydb.database.version.DatabaseVersionException;
 
 public interface ConnectionViewHandler {

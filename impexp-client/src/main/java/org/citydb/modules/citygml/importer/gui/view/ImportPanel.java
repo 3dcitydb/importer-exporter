@@ -85,7 +85,7 @@ import org.citydb.config.project.global.LogLevel;
 import org.citydb.config.project.importer.ImportFilter;
 import org.citydb.config.project.query.filter.selection.SimpleSelectionFilterMode;
 import org.citydb.database.DatabaseController;
-import org.citydb.database.connection.DatabaseConfigurationException;
+import org.citydb.config.project.database.DatabaseConfigurationException;
 import org.citydb.database.schema.mapping.SchemaMapping;
 import org.citydb.database.version.DatabaseVersionException;
 import org.citydb.event.Event;

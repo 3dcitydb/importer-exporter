@@ -1,20 +1,17 @@
 package org.citydb.config;
 
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.XMLFilterImpl;
+
+import javax.xml.namespace.NamespaceContext;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.Set;
-
-import javax.xml.namespace.NamespaceContext;
-
-import org.citydb.database.schema.mapping.SchemaMapping;
-import org.citydb.registry.ObjectRegistry;
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
-import org.xml.sax.helpers.XMLFilterImpl;
 
 public class ConfigNamespaceFilter extends XMLFilterImpl implements NamespaceContext {
 	private final HashMap<String, String> prefixToUri;
@@ -27,13 +24,6 @@ public class ConfigNamespaceFilter extends XMLFilterImpl implements NamespaceCon
 		super(reader);
 		prefixToUri = new HashMap<String, String>();
 		uriToPrefix = new HashMap<String, Set<String>>();
-
-		// bind default namespaces
-		SchemaMapping schemaMapping = (SchemaMapping)ObjectRegistry.getInstance().lookup(SchemaMapping.class.getName());
-		if (schemaMapping != null) {
-			for (Entry<String, String> entry : schemaMapping.getNamespaceContext().entrySet())
-				bindNamespace(entry.getKey(), entry.getValue());
-		}
 	}
 
 	public ConfigNamespaceFilter() {

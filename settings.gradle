@@ -1,7 +1,7 @@
 rootProject.name = 'impexp'
 include 'impexp-core'
+include 'impexp-config'
 include 'impexp-plugin-api'
 include 'impexp-client'
-include 'impexp-kml-collada-plugin'
 include 'impexp-client-common'
-
+include 'impexp-kml-collada-plugin'

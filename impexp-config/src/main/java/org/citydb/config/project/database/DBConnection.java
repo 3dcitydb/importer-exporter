@@ -37,7 +37,6 @@ import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
 import org.citydb.config.language.Language;
-import org.citydb.database.connection.DatabaseConfigurationException;
 
 @XmlType(name="ConnectionType", propOrder={
 		"description",

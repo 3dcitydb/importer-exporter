@@ -44,7 +44,7 @@ import org.citydb.citygml.importer.controller.XMLValidator;
 import org.citydb.config.Config;
 import org.citydb.config.project.database.DBConnection;
 import org.citydb.config.project.database.DatabaseSrs;
-import org.citydb.database.connection.DatabaseConfigurationException;
+import org.citydb.config.project.database.DatabaseConfigurationException;
 import org.citydb.database.connection.DatabaseConnectionPool;
 import org.citydb.database.connection.DatabaseConnectionWarning;
 import org.citydb.database.schema.mapping.SchemaMapping;

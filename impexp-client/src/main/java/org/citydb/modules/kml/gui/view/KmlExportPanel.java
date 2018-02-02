@@ -85,7 +85,7 @@ import org.citydb.config.project.query.filter.selection.id.ResourceIdOperator;
 import org.citydb.config.project.query.filter.selection.spatial.BBOXOperator;
 import org.citydb.config.project.query.filter.type.FeatureTypeFilter;
 import org.citydb.database.DatabaseController;
-import org.citydb.database.connection.DatabaseConfigurationException;
+import org.citydb.config.project.database.DatabaseConfigurationException;
 import org.citydb.database.schema.mapping.SchemaMapping;
 import org.citydb.database.version.DatabaseVersionException;
 import org.citydb.event.Event;

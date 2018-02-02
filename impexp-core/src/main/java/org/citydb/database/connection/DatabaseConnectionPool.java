@@ -49,6 +49,7 @@ import org.citydb.config.Config;
 import org.citydb.config.language.Language;
 import org.citydb.config.project.database.DBConnection;
 import org.citydb.config.project.database.Database;
+import org.citydb.config.project.database.DatabaseConfigurationException;
 import org.citydb.config.project.database.DatabaseSrs;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.adapter.DatabaseAdapterFactory;

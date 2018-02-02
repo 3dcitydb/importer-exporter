@@ -40,7 +40,7 @@ import org.citydb.config.project.database.DatabaseSrs;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.connection.ConnectionState;
 import org.citydb.database.connection.ConnectionViewHandler;
-import org.citydb.database.connection.DatabaseConfigurationException;
+import org.citydb.config.project.database.DatabaseConfigurationException;
 import org.citydb.database.connection.DatabaseConnectionDetails;
 import org.citydb.database.connection.DatabaseConnectionPool;
 import org.citydb.database.connection.DatabaseConnectionWarning;

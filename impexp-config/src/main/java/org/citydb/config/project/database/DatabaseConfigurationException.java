@@ -25,7 +25,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.citydb.database.connection;
+package org.citydb.config.project.database;
 
 @SuppressWarnings("serial")
 public class DatabaseConfigurationException extends Exception {

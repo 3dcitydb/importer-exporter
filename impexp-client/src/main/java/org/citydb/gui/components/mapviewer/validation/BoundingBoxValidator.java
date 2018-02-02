@@ -51,7 +51,7 @@ import org.citydb.config.project.database.Database;
 import org.citydb.config.project.database.Database.PredefinedSrsName;
 import org.citydb.config.project.database.DatabaseSrs;
 import org.citydb.database.DatabaseController;
-import org.citydb.database.connection.DatabaseConfigurationException;
+import org.citydb.config.project.database.DatabaseConfigurationException;
 import org.citydb.database.version.DatabaseVersionException;
 import org.citydb.gui.components.mapviewer.MapWindow;
 import org.citydb.gui.factory.SrsComboBoxFactory;

@@ -1,0 +1,3 @@
+dependencies {
+    compile 'org.citygml4j:citygml4j:2.6.1'
+}
