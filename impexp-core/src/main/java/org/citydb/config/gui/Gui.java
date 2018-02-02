@@ -135,27 +135,5 @@ public class Gui {
 	public int getMaxLastUsedEntries() {
 		return maxLastUsedEntries;
 	}
-	
-	public boolean isShowWarning(ConnectionWarningType warningType) {
-		switch (warningType) {
-		case OUTDATED_DATABASE_VERSION:
-			return isShowOutdatedDatabaseVersionWarning();
-		case UNSUPPORTED_ADE:
-			return isShowUnsupportedADEWarning();
-		}
-		
-		return true;
-	}
-	
-	public void setShowWarning(ConnectionWarningType warningType, boolean showWarning) {
-		switch (warningType) {
-		case OUTDATED_DATABASE_VERSION:
-			setShowOutdatedDatabaseVersionWarning(showWarning);
-			break;
-		case UNSUPPORTED_ADE:
-			setShowUnsupportedADEWarning(showWarning);
-			break;
-		}
-	}
 
 }

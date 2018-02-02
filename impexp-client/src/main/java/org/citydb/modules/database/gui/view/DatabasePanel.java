@@ -618,7 +618,17 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 
 				option = viewController.warnMessage(Language.I18N.getString("db.dialog.warn.title"), result);
 			} else {
-				if (config.getGui().isShowWarning((ConnectionWarningType)warning.getType())) {
+				boolean showWarning = false;
+				switch ((ConnectionWarningType)warning.getType()) {
+					case OUTDATED_DATABASE_VERSION:
+						showWarning = config.getGui().isShowOutdatedDatabaseVersionWarning();
+						break;
+					case UNSUPPORTED_ADE:
+						showWarning = config.getGui().isShowUnsupportedADEWarning();
+						break;
+				}
+
+				if (showWarning) {
 					JPanel confirmPanel = new JPanel(new GridBagLayout());
 					JCheckBox confirmDialogNoShow = new JCheckBox(Language.I18N.getString("common.dialog.msg.noShow"));
 					confirmDialogNoShow.setIconTextGap(10);
@@ -627,8 +637,16 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 
 					option = JOptionPane.showConfirmDialog(viewController.getTopFrame(), confirmPanel, Language.I18N.getString("db.dialog.warn.title"), JOptionPane.WARNING_MESSAGE);
 					
-					if (confirmDialogNoShow.isSelected())
-						config.getGui().setShowWarning((ConnectionWarningType)warning.getType(), false);
+					if (confirmDialogNoShow.isSelected()) {
+						switch ((ConnectionWarningType)warning.getType()) {
+							case OUTDATED_DATABASE_VERSION:
+								config.getGui().setShowOutdatedDatabaseVersionWarning(false);
+								break;
+							case UNSUPPORTED_ADE:
+								config.getGui().setShowUnsupportedADEWarning(false);
+								break;
+						}
+					}
 				}
 			}
 		}

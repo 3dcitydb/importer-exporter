@@ -27,8 +27,6 @@
  */
 package org.citydb.config.internal;
 
-import org.citydb.citygml.importer.util.AffineTransformer;
-
 import java.io.File;
 
 public class Internal {	
@@ -42,7 +40,6 @@ public class Internal {
 
 	// internal variables
 	private String currentGmlIdCodespace = null;
-	private AffineTransformer affineTransformer;
 
 	// internal flags
 	private boolean transformCoordinates = false;
@@ -124,14 +121,6 @@ public class Internal {
 		this.currentGmlIdCodespace = currentGmlIdCodespace;
 	}
 	
-	public AffineTransformer getAffineTransformer() {
-		return affineTransformer;
-	}
-
-	public void setAffineTransformer(AffineTransformer affineTransformer) {
-		this.affineTransformer = affineTransformer;
-	}
-
 	public boolean isExportGlobalAppearances() {
 		return exportGlobalAppearances;
 	}
