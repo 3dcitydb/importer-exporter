@@ -13,6 +13,7 @@ configurations {
 dependencies {
     compile project(':impexp-core')
     compile project(':impexp-plugin-api')
+    compile project(':impexp-client-common')
     compile 'org.citydb:texture-atlas-creator:1.4.0'
     compile 'java3d:j3d-core:1.5.2'
     compile 'java3d:j3d-core-utils:1.5.2'

@@ -33,6 +33,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -50,6 +53,7 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.namespace.QName;
 
+import org.citydb.ImpExpConstants;
 import org.citydb.ade.ADEExtensionManager;
 import org.citydb.concurrent.PoolSizeAdaptationStrategy;
 import org.citydb.concurrent.SingleWorkerPool;
@@ -237,12 +241,14 @@ public class KmlExporter implements EventHandler {
 
 		// check collada2gltf tool
 		if (config.getProject().getKmlExporter().isCreateGltfModel()) {
-			File file = new File(config.getProject().getKmlExporter().getPathOfGltfConverter());
+			Path collada2gltf = Paths.get(config.getProject().getKmlExporter().getPathOfGltfConverter());
+			if (!collada2gltf.isAbsolute())
+				collada2gltf = ImpExpConstants.IMPEXP_HOME.resolve(collada2gltf);
 
-			if (!file.exists())
-				throw new KmlExportException("Failed to find the COLLADA2glTF tool at the provided path " + file.getAbsolutePath() + ".");
-			else if (!file.canExecute())
-				throw new KmlExportException("Failed to execute the COLLADA2glTF tool at " + file.getAbsolutePath() + ".");
+			if (!Files.exists(collada2gltf))
+				throw new KmlExportException("Failed to find the COLLADA2glTF tool at the provided path " + collada2gltf + ".");
+			else if (!Files.isExecutable(collada2gltf))
+				throw new KmlExportException("Failed to execute the COLLADA2glTF tool at " + collada2gltf + ".");
 		}
 
 		// build query from filter settings

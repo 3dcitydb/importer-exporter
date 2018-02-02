@@ -487,7 +487,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 			return false;
 
 		try {
-			Path projectFile = configDir.resolve(ImpExpConstants.PROJECT_FILE);
+			Path projectFile = configDir.resolve(ImpExpConstants.PROJECT_SETTINGS_FILE);
 			ConfigUtil.marshal(config.getProject(), projectFile.toFile(), jaxbProjectContext);
 			return true;
 		} catch (JAXBException jaxbE) {
@@ -502,7 +502,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		if (configDir == null)
 			return;
 
-		Path guiFile = configDir.resolve(ImpExpConstants.GUI_FILE);
+		Path guiFile = configDir.resolve(ImpExpConstants.GUI_SETTINGS_FILE);
 
 		// set window size
 		Rectangle rect = getBounds();

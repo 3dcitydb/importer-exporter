@@ -120,8 +120,8 @@ public class MenuProject extends JMenu {
             if (mainView.saveProjectSettings())
                 LOG.info("Settings successfully saved to config file '"
                         + ImpExpConstants.IMPEXP_DATA_DIR
-                                .resolve(ImpExpConstants.PROJECT_FILE)
-                                .resolve(ImpExpConstants.PROJECT_FILE) + "'.");
+                                .resolve(ImpExpConstants.PROJECT_SETTINGS_FILE)
+                                .resolve(ImpExpConstants.PROJECT_SETTINGS_FILE) + "'.");
         });
 
 		saveProjectAs.addActionListener(e -> {

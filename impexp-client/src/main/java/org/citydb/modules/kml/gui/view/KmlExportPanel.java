@@ -40,6 +40,9 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.List;
@@ -64,6 +67,7 @@ import javax.swing.border.TitledBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.xml.bind.JAXBContext;
 
+import org.citydb.ImpExpConstants;
 import org.citydb.config.Config;
 import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.language.Language;
@@ -875,17 +879,19 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 
 			// check collada2gltf tool
 			if (config.getProject().getKmlExporter().isCreateGltfModel()) {
-				File file = new File(config.getProject().getKmlExporter().getPathOfGltfConverter());
+				Path collada2gltf = Paths.get(config.getProject().getKmlExporter().getPathOfGltfConverter());
+				if (!collada2gltf.isAbsolute())
+					collada2gltf = ImpExpConstants.IMPEXP_HOME.resolve(collada2gltf);
 
-				if (!file.exists()) {
+				if (!Files.exists(collada2gltf)) {
 					String text = Language.I18N.getString("kmlExport.dialog.error.collada2gltf.notExists");
-					Object[] args = new Object[]{ file.getAbsolutePath() };
+					Object[] args = new Object[]{ collada2gltf.toString() };
 					String result = MessageFormat.format(text, args);
 					viewController.errorMessage(Language.I18N.getString("kmlExport.dialog.error.collada2gltf"), result);
 					return;
-				} else if (!file.canExecute()) {
+				} else if (!Files.isExecutable(collada2gltf)) {
 					String text = Language.I18N.getString("kmlExport.dialog.error.collada2gltf.notExecutable");
-					Object[] args = new Object[]{ file.getAbsolutePath() };
+					Object[] args = new Object[]{ collada2gltf.toString() };
 					String result = MessageFormat.format(text, args);
 					viewController.errorMessage(Language.I18N.getString("kmlExport.dialog.error.collada2gltf"), result);
 					return;

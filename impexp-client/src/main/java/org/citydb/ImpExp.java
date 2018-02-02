@@ -374,13 +374,13 @@ public class ImpExp {
 			}
 		} else
 			configFile = ImpExpConstants.IMPEXP_DATA_DIR
-					.resolve(ImpExpConstants.CONFIG_DIR).resolve(ImpExpConstants.PROJECT_FILE);
+					.resolve(ImpExpConstants.CONFIG_DIR).resolve(ImpExpConstants.PROJECT_SETTINGS_FILE);
 
 		// with v3.3, the config path has been changed to not include the version number.
 		// if the project file cannot be found, we thus check the old path used in v3.0 to v3.2
 		if (!Files.exists(configFile)) {
 			Path legacyConfigFile = Paths.get(ImpExpConstants.IMPEXP_DATA_DIR + "-3.0",
-					ImpExpConstants.CONFIG_DIR, ImpExpConstants.PROJECT_FILE);
+					ImpExpConstants.CONFIG_DIR, ImpExpConstants.PROJECT_SETTINGS_FILE);
 
 			if (Files.exists(legacyConfigFile)) {
 				log.warn("Failed to read project settings file '" + configFile + "'");
@@ -410,7 +410,7 @@ public class ImpExp {
 
 		if (!shell) {
 			Path guiFile = ImpExpConstants.IMPEXP_DATA_DIR
-					.resolve(ImpExpConstants.CONFIG_DIR).resolve(ImpExpConstants.GUI_FILE);
+					.resolve(ImpExpConstants.CONFIG_DIR).resolve(ImpExpConstants.GUI_SETTINGS_FILE);
 			try {
 				Object object = ConfigUtil.unmarshal(guiFile.toFile(), guiContext);
 				if (object instanceof Gui)

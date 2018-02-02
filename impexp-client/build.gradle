@@ -11,6 +11,7 @@ configurations {
 
 dependencies {
     compile project(':impexp-core')
+    compile project(':impexp-client-common')
     compile project(':impexp-plugin-api')
     compile project(':impexp-kml-collada-plugin')
     compile 'args4j:args4j:2.33'
