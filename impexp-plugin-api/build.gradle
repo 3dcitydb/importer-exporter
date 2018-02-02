@@ -16,7 +16,6 @@ dependencies {
 }
 
 javadoc {
-    options.author true
     options.overview "$buildDir/tmp/javadoc/overview.html"
     options.addStringOption('doctitle', project.pluginApiName + ' - ' + project.version)
 
