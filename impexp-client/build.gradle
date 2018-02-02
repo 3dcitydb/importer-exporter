@@ -82,9 +82,6 @@ distributions.main.contents {
     into('plugins') {
         from "$rootDir/resources/plugins"
     }
-    into('plugin-api') {
-        from tasks.getByPath(':impexp-plugin-api:installDist')
-    }
     into('templates') {
         from "$rootDir/resources/templates"
     }

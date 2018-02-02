@@ -26,31 +26,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
 -->
-<langpack> 
+<langpack>
     <str id="core" txt="Anwendungsdaten"/>
     <str id="core.description" txt="Die erforderlichen Anwendungsdaten des ${APP_NAME}."/>
-            
+
     <str id="3dcitydb" txt="3D City Database"/>
     <str id="3dcitydb.description" txt="SQL Skripte der ${3DCITYDB_NAME} ${3DCITYDB_VER} für Oracle Spatial/Locator und PostgreSQL/PostGIS."/>
-    
+
     <str id="manual" txt="Dokumentation"/>
     <str id="manual.description" txt="Die Dokumentation der ${3DCITYDB_NAME} und des ${APP_NAME}."/>
-    
+
     <str id="3d-web-map-client" txt="3D Web Map Client"/>
-    <str id="3d-web-map-client.description" txt="Cesium-basierter 3D Web-Viewer für die Visualisierung und interaktive Exploration von Inhalten der ${3DCITYDB_NAME}."/>
-    
+    <str id="3d-web-map-client.description"
+        txt="Cesium-basierter 3D Web-Viewer für die Visualisierung und interaktive Exploration von Inhalten der ${3DCITYDB_NAME}."/>
+
     <str id="samples" txt="CityGML und KML/COLLADA Beispieldaten"/>
     <str id="samples.description" txt="CityGML und KML/COLLADA Beispieldaten zum Testen des ${APP_NAME}."/>
-       
+
     <str id="plugins" txt="Plugins"/>
     <str id="plugins.description" txt="Optionale Erweiterungen für den ${APP_NAME}."/>
 
     <str id="plugin.spreadsheet.generator" txt="Spreadsheet Generator Plugin"/>
-    <str id="plugin.spreadsheet.generator.description" txt="Dieses Plugin ermöglicht den Export von Sachdaten der Geoobjekte in tabellarischer Form. Als Ausgabeformate werden Microsoft Excel und CSV unterstützt."/>
-    
+    <str id="plugin.spreadsheet.generator.description"
+        txt="Dieses Plugin ermöglicht den Export von Sachdaten der Geoobjekte in tabellarischer Form. Als Ausgabeformate werden Microsoft Excel und CSV unterstützt."/>
+
     <str id="plugin.ade-manager" txt="ADE Manager Plugin"/>
     <str id="plugin.ade-manager.description" txt="Dieses Plugin ermöglicht das Management von CityGML ADEs für die ${3DCITYDB_NAME}."/>
-    
-    <str id="plugin-api" txt="API für die Plugin-Entwicklung"/>
-    <str id="plugin-api.description" txt="Java-Programmierschnittstelle für die Entwicklung eigener Erweiterungen."/>
 </langpack>

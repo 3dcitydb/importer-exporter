@@ -38,12 +38,12 @@
             <author name="György Hudra" email="ghudra@moss.de"/>
             <author name="Felix Kunde" email="felix-kunde@gmx.de"/>
             <author name="Thomas H. Kolbe" email="thomas.kolbe@tum.de"/>
-        </authors>        
+        </authors>
         <uninstaller write="yes" path="$INSTALL_PATH/uninstaller"/>
         <javaversion>1.8</javaversion>
         <writeinstallationinformation>no</writeinstallationinformation>
     </info>
-    
+
     <locale>
         <langpack iso3="eng"/>
         <langpack iso3="deu"/>
@@ -62,14 +62,14 @@
         <modifier key="labelGap" value="2"/>
         <modifier key="paragraphYGap" value="10"/>
         <modifier key="useHeadingPanel" value="yes"/>
-        <modifier key="headingLineCount" value="3"/>        
+        <modifier key="headingLineCount" value="3"/>
         <modifier key="headingFontSize" value="1.2"/>
         <modifier key="headingBackgroundColor" value="0x00ffffff"/>
         <modifier key="headingPanelCounter" value="text"/>
         <modifier key="headingPanelCounterPos" value="inHeading"/>
         <modifier key="langDisplayType" value="native"/>
     </guiprefs>
-    
+
     <resources>
         <res id="installer.langsel.img" src="images/splash.png"/>
         <res id="Heading.image" src="images/header.png"/>
@@ -77,7 +77,7 @@
         <res id="CustomLangpack.xml_deu" src="i18n/panelLang_deu.xml"/>
         <res id="packsLang.xml" src="i18n/packsLang.xml"/>
         <res id="packsLang.xml_deu" src="i18n/packsLang_deu.xml"/>
-        <res id="InfoPanel.info" src="@installDir@/README.txt"/>        
+        <res id="InfoPanel.info" src="@installDir@/README.txt"/>
         <res id="LicencePanel.licence" src="license/license.txt"/>
         <res id="shortcutSpec.xml" src="shortcuts/shortcutDefault.xml"/>
         <res id="shortcutSpec.xml_deu" src="shortcuts/shortcutDefault_deu.xml"/>
@@ -101,8 +101,7 @@
         <pack name="core" id="core" required="yes" preselected="yes">
             <description/>
             <fileset dir="@installDir@" targetdir="$INSTALL_PATH"
-                excludes="@pluginApiDir@/ @pluginsDir@/ @contribsDir@/ @citydbDir@/ @startScriptsDir@/ @manualDir@/ @samplesDir@/ @webMapClientDir@/"
-                override="true"/>
+                excludes="@pluginsDir@/ @contribsDir@/ @citydbDir@/ @startScriptsDir@/ @manualDir@/ @samplesDir@/ @webMapClientDir@/" override="true"/>
             <file src="@installDir@/@startScriptsDir@/3DCityDB-Importer-Exporter.bat" targetdir="$INSTALL_PATH/@startScriptsDir@" os="windows"
                 override="true"/>
             <file src="@installDir@/@startScriptsDir@/3DCityDB-Importer-Exporter" targetdir="$INSTALL_PATH/@startScriptsDir@" os="unix"
@@ -155,10 +154,6 @@
             <description/>
             <fileset dir="@installDir@/@pluginsDir@/@spreadSheetPluginDir@" targetdir="$INSTALL_PATH//@pluginsDir@/@spreadSheetPluginDir@"
                 override="true"/>
-        </pack>
-        <pack name="plugin-api" id="plugin-api" parent="plugins" required="no" preselected="no">
-            <description/>
-            <fileset dir="@installDir@/@pluginApiDir@" targetdir="$INSTALL_PATH/@pluginApiDir@" override="true"/>
         </pack>
     </packs>
 

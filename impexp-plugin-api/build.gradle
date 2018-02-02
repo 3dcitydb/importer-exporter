@@ -4,7 +4,6 @@ plugins {
     id "com.jfrog.bintray" version "1.8.0"
 }
 
-apply plugin: 'distribution'
 apply plugin: 'maven-publish'
 
 ext {
@@ -35,38 +34,6 @@ javadoc {
                     vendorWebsiteUrl: project.vendorWebsiteUrl
             ])
         }
-    }
-}
-
-distributions.main.contents {
-    from('resources/doc/README.txt') {
-        filter(ReplaceTokens, tokens: [
-                name: project.pluginApiName,
-                version: project.version,
-                date: project.date.format('yyy-MM-dd'),
-                pluginApiService: project.pluginApiService,
-                pluginsDir: 'plugins',
-                impexpName: project.impexpName,
-                citydbName: project.citydbName,
-                citydbWebsiteUrl: project.citydbWebsiteUrl,
-                citydbVcsUrl: project.citydbVcsUrl,
-                vendorName: project.vendorName,
-                vendorOrganisation: project.vendorOrganisation,
-                vendorCountry: project.vendorCountry,
-                vendorCopyright: project.vendorCopyright,
-                vendorWebsiteUrl: project.vendorWebsiteUrl
-        ])
-    }
-    into('lib') {
-        from jar
-        from tasks.getByPath(':impexp-core:jar')
-    }
-    into('javadoc') {
-        from javadoc
-    }
-    into('license') {
-        from "$rootDir/resources/license/APACHE-2.0.txt"
-        from "$rootDir/resources/license/LICENSE.txt"
     }
 }
 

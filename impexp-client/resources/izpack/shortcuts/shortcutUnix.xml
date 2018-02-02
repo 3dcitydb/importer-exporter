@@ -29,16 +29,17 @@
 <shortcuts>
     <skipIfNotSupported/>
     <programGroup defaultName="${3DCITYDB_NAME}" location="applications"/>
-    <shortcut name="${APP_SHORTCUT_NAME}" target="$INSTALL_PATH/@startScriptsDir@/3DCityDB-Importer-Exporter" commandLine="" workingDirectory="$INSTALL_PATH/@startScriptsDir@"
-        description="Start ${APP_SHORTCUT_NAME}" initialState="minimized" programGroup="yes" desktop="yes" applications="no" startMenu="no" startup="no"
-        type="Application" encoding="UTF-8" terminal="true" KdeSubstUID="false" createForAll="yes"
-        iconFile="$INSTALL_PATH/@startScriptsDir@/impexp.png" iconIndex="0">
+    <shortcut name="${APP_SHORTCUT_NAME}" target="$INSTALL_PATH/@startScriptsDir@/3DCityDB-Importer-Exporter" commandLine=""
+        workingDirectory="$INSTALL_PATH/@startScriptsDir@" description="Start ${APP_SHORTCUT_NAME}" initialState="minimized" programGroup="yes"
+        desktop="yes" applications="no" startMenu="no" startup="no" type="Application" encoding="UTF-8" terminal="true" KdeSubstUID="false"
+        createForAll="yes" iconFile="$INSTALL_PATH/@startScriptsDir@/impexp.png" iconIndex="0">
         <createForPack name="core"/>
     </shortcut>
 
-    <shortcut name="${APP_SHORTCUT_NAME} Uninstaller" target="java" commandLine="-jar &quot;$INSTALL_PATH/uninstaller/uninstaller.jar&quot;" workingDirectory=""
-        description="Remove ${APP_SHORTCUT_NAME}" programGroup="yes" desktop="no" applications="no" startMenu="no" startup="no"
-        iconFile="$INSTALL_PATH\uninstaller\uninstaller.png" iconIndex="0" type="Application" encoding="UTF-8" terminal="false" KdeSubstUID="false" createForAll="yes">
+    <shortcut name="${APP_SHORTCUT_NAME} Uninstaller" target="java" commandLine="-jar &quot;$INSTALL_PATH/uninstaller/uninstaller.jar&quot;"
+        workingDirectory="" description="Remove ${APP_SHORTCUT_NAME}" programGroup="yes" desktop="no" applications="no" startMenu="no" startup="no"
+        iconFile="$INSTALL_PATH\uninstaller\uninstaller.png" iconIndex="0" type="Application" encoding="UTF-8" terminal="false" KdeSubstUID="false"
+        createForAll="yes">
         <createForPack name="core"/>
     </shortcut>
 
