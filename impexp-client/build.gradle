@@ -145,5 +145,3 @@ task buildInstaller(dependsOn: installDist, group: 'distribution') {
         )
     }
 }
-
-publishRelease.dependsOn buildInstaller

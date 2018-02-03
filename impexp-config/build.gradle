@@ -26,5 +26,3 @@ bintray {
         }
     }
 }
-
-publishRelease.dependsOn bintrayUpload
