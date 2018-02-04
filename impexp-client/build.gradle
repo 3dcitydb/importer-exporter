@@ -1,6 +1,9 @@
 import org.apache.tools.ant.filters.ReplaceTokens
 
-apply plugin: 'application'
+plugins {
+    id 'application'
+    id 'com.jfrog.bintray' version '1.8.0'
+}
 
 applicationName = project.appName
 mainClassName = 'org.citydb.ImpExp'
@@ -150,5 +153,24 @@ task buildInstaller(dependsOn: installDist, group: 'distribution') {
                 output: installer,
                 basedir: izpackDir
         )
+    }
+}
+
+bintray {
+    user = project.hasProperty('bintrayUser') ? project.property('bintrayUser') : System.getenv('BINTRAY_USER')
+    key = project.hasProperty('bintrayApiKey') ? project.property('bintrayApiKey') : System.getenv('BINTRAY_API_KEY')
+
+    publications = ['mavenJava']
+    pkg {
+        repo = 'maven'
+        userOrg = '3dcitydb'
+        name = project.name
+        websiteUrl = project.citydbVcsUrl
+        vcsUrl = project.impexpGit
+        issueTrackerUrl = project.impexpIssueTrackerUrl
+        licenses = ['Apache-2.0']
+        version {
+            name = project.version
+        }
     }
 }

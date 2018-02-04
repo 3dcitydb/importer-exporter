@@ -7,6 +7,7 @@ subprojects {
     version '4.0.0-SNAPSHOT'
 
     apply plugin: 'java'
+    apply plugin: 'maven-publish'
 
     sourceCompatibility = 1.8
 
@@ -14,7 +15,7 @@ subprojects {
         maven {
             url 'http://download.osgeo.org/webdav/geotools/'
         }
-        maven{
+        maven {
             url 'https://dl.bintray.com/3dcitydb/maven'
         }
         maven {
@@ -60,42 +61,40 @@ subprojects {
         }
     }
 
-    plugins.withType(MavenPublishPlugin) {
-        task sourcesJar(type: Jar, dependsOn: classes) {
-            classifier = 'sources'
-            from sourceSets.main.allSource
-        }
+    task sourcesJar(type: Jar, dependsOn: classes) {
+        classifier = 'sources'
+        from sourceSets.main.allSource
+    }
 
-        task javadocJar(type: Jar, dependsOn: javadoc) {
-            classifier = 'javadoc'
-            from javadoc.destinationDir
-        }
+    task javadocJar(type: Jar, dependsOn: javadoc) {
+        classifier = 'javadoc'
+        from javadoc.destinationDir
+    }
 
-        def createPom = {
-            name project.name
-            url project.citydbVcsUrl
-            licenses {
-                license {
-                    name 'The Apache License, Version 2.0'
-                    url 'https://www.apache.org/licenses/LICENSE-2.0.txt'
-                    distribution 'repo'
-                }
-            }
-            scm {
-                url project.impexpVcsUrl
-                connection 'scm:git:' + project.impexpGit
+    def createPom = {
+        name project.name
+        url project.citydbVcsUrl
+        licenses {
+            license {
+                name 'The Apache License, Version 2.0'
+                url 'https://www.apache.org/licenses/LICENSE-2.0.txt'
+                distribution 'repo'
             }
         }
+        scm {
+            url project.impexpVcsUrl
+            connection 'scm:git:' + project.impexpGit
+        }
+    }
 
-        publishing {
-            publications {
-                mavenJava(MavenPublication) {
-                    from components.java
-                    artifact sourcesJar
-                    artifact javadocJar
-                    pom.withXml {
-                        asNode().children().last() + createPom
-                    }
+    publishing {
+        publications {
+            mavenJava(MavenPublication) {
+                from components.java
+                artifact sourcesJar
+                artifact javadocJar
+                pom.withXml {
+                    asNode().children().last() + createPom
                 }
             }
         }
