@@ -33,8 +33,6 @@ import java.util.EventListener;
  * The listener that's notified when the checking in a TreeCheckingModel
  * changes.
  * 
- * @see it.cnr.imaa.essi.lablib.gui.checkboxtree.TreeCheckingModel
- * @see it.cnr.imaa.essi.lablib.gui.checkboxtree.CheckboxTree
  * @author Enrico Boldrini
  */
 public interface TreeCheckingListener extends EventListener {

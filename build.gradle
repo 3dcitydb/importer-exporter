@@ -24,8 +24,10 @@ subprojects {
     }
 
     javadoc {
+        include 'org/citydb/**'
         options.overview "$buildDir/tmp/javadoc/overview.html"
         options.addStringOption('doctitle', project.name + ' - ' + project.version)
+        options.addStringOption('Xdoclint:none', '-quiet')
 
         doFirst {
             copy {

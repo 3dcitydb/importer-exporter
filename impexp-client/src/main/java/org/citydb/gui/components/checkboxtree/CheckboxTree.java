@@ -185,8 +185,6 @@ public class CheckboxTree extends JTree {
          * 
          * @param x the <code>TreeCellRenderer</code> that is to render each
          *        cell
-         * @beaninfo bound: true description: The TreeCellRenderer that will be
-         *           used to draw each cell.
          */
     public void setCellRenderer(CheckboxTreeCellRenderer x) {
 	super.setCellRenderer(x);
@@ -199,8 +197,6 @@ public class CheckboxTree extends JTree {
          * 
          * @param x the <code>TreeCellRenderer</code> that is to render each
          *        cell
-         * @beaninfo bound: true description: The TreeCellRenderer that will be
-         *           used to draw each cell.
          */
     @Override
     @Deprecated
