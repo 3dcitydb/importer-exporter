@@ -39,11 +39,11 @@ public class Language {
 		if (!existsLanguagePack(locale))
 			locale = Locale.ENGLISH;
 		
-		I18N = ResourceBundle.getBundle("i18n.language", locale);
+		I18N = ResourceBundle.getBundle("org.citydb.config.language.language", locale);
 	}
 	
 	public static boolean existsLanguagePack(Locale locale) {
-		return Language.class.getResource("/i18n/language_" + locale.getLanguage() + ".properties") != null;
+		return Language.class.getResource("/org/citydb/config/language/language_" + locale.getLanguage() + ".properties") != null;
 	}
 
 }

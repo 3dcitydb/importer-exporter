@@ -76,9 +76,9 @@ public class DefaultWaypointPainter implements Painter<JXMapViewer> {
 
 		public SingleWaypointRenderer() {
 			try {
-				precise = ImageIO.read(getClass().getResource("/images/map/waypoint_precise.png"));
-				approximate = ImageIO.read(getClass().getResource("/images/map/waypoint_approximate.png"));
-				reverse = ImageIO.read(getClass().getResource("/images/map/waypoint_reverse.png"));
+				precise = ImageIO.read(getClass().getResource("/org/citydb/gui/images/map/waypoint_precise.png"));
+				approximate = ImageIO.read(getClass().getResource("/org/citydb/gui/images/map/waypoint_approximate.png"));
+				reverse = ImageIO.read(getClass().getResource("/org/citydb/gui/images/map/waypoint_reverse.png"));
 			} catch (Exception ex) {
 				Util.logStackTrace(ex);
 			}

@@ -213,13 +213,13 @@ public class MapWindow extends JDialog implements EventHandler {
 
 	private void init() {
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/images/map/map_icon.png")));
+		setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/org/citydb/gui/images/map/map_icon.png")));
 
 		setLayout(new GridBagLayout());
 		getContentPane().setBackground(Color.WHITE);
 
 		Color borderColor = new Color(0, 0, 0, 150);
-		loadIcon = new ImageIcon(getClass().getResource("/images/map/loader.gif"));
+		loadIcon = new ImageIcon(getClass().getResource("/org/citydb/gui/images/map/loader.gif"));
 
 		map = new Map(config);
 		JPanel top = new JPanel();
@@ -271,7 +271,7 @@ public class MapWindow extends JDialog implements EventHandler {
 
 		bboxTitel = new JLabel();
 		bboxTitel.setFont(bbox.getFont().deriveFont(Font.BOLD));
-		bboxTitel.setIcon(new ImageIcon(getClass().getResource("/images/map/selection.png")));
+		bboxTitel.setIcon(new ImageIcon(getClass().getResource("/org/citydb/gui/images/map/selection.png")));
 		bboxTitel.setIconTextGap(5);
 
 		final JPanel bboxFields = new JPanel();
@@ -323,13 +323,13 @@ public class MapWindow extends JDialog implements EventHandler {
 		clearBBox = new JButton();
 
 		copyBBox = new JButton();
-		ImageIcon copyIcon = new ImageIcon(getClass().getResource("/images/common/bbox_copy.png")); 
+		ImageIcon copyIcon = new ImageIcon(getClass().getResource("/org/citydb/gui/images/common/bbox_copy.png"));
 		copyBBox.setIcon(copyIcon);
 		copyBBox.setPreferredSize(new Dimension(copyIcon.getIconWidth() + 6, copyIcon.getIconHeight() + 6));
 		copyBBox.setEnabled(false);
 
 		pasteBBox = new JButton();
-		ImageIcon pasteIcon = new ImageIcon(getClass().getResource("/images/common/bbox_paste.png")); 
+		ImageIcon pasteIcon = new ImageIcon(getClass().getResource("/org/citydb/gui/images/common/bbox_paste.png"));
 		pasteBBox.setIcon(pasteIcon);
 		pasteBBox.setPreferredSize(new Dimension(copyIcon.getIconWidth() + 6, copyIcon.getIconHeight() + 6));
 		pasteBBox.setEnabled(clipboardHandler.containsPossibleBoundingBox());
@@ -355,7 +355,7 @@ public class MapWindow extends JDialog implements EventHandler {
 
 		reverseTitle = new JLabel();
 		reverseTitle.setFont(reverseTitle.getFont().deriveFont(Font.BOLD));
-		reverseTitle.setIcon(new ImageIcon(getClass().getResource("/images/map/waypoint_small.png")));
+		reverseTitle.setIcon(new ImageIcon(getClass().getResource("/org/citydb/gui/images/map/waypoint_small.png")));
 
 		reverseTitle.setIconTextGap(5);
 		reverseSearchProgress = new JLabel();
@@ -386,7 +386,7 @@ public class MapWindow extends JDialog implements EventHandler {
 
 		googleMapsTitle = new JLabel();
 		googleMapsTitle.setFont(googleMapsTitle.getFont().deriveFont(Font.BOLD));
-		googleMapsTitle.setIcon(new ImageIcon(getClass().getResource("/images/map/google_maps.png")));
+		googleMapsTitle.setIcon(new ImageIcon(getClass().getResource("/org/citydb/gui/images/map/google_maps.png")));
 
 		googleMapsButton = new JButton();
 		googleMapsButton.setEnabled(Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Action.BROWSE));
@@ -401,7 +401,7 @@ public class MapWindow extends JDialog implements EventHandler {
 
 		helpTitle = new JLabel();
 		helpTitle.setFont(help.getFont().deriveFont(Font.BOLD));
-		helpTitle.setIcon(new ImageIcon(getClass().getResource("/images/map/help.png")));
+		helpTitle.setIcon(new ImageIcon(getClass().getResource("/org/citydb/gui/images/map/help.png")));
 		helpTitle.setIconTextGap(5);		
 		helpText = new JLabel();
 

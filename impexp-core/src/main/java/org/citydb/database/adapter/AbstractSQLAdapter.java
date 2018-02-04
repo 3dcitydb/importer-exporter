@@ -88,8 +88,7 @@ public abstract class AbstractSQLAdapter {
 		if (databaseOperations == null) {
 			try {
 				databaseOperations = new Properties();
-				databaseOperations.load(getClass().getResourceAsStream("/database/operations/operations_"
-						+ databaseAdapter.getDatabaseType().name().toLowerCase() + ".properties"));
+				databaseOperations.load(getClass().getResourceAsStream("operations.properties"));
 			} catch (IOException e) {
 				throw new IllegalStateException("Failed to load operations properties file.", e);
 			}

@@ -295,7 +295,7 @@ public class BoundingBoxValidator {
 
 		private void init() {
 			setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-			setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/images/map/map_icon.png")));
+			setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/org/citydb/gui/images/map/map_icon.png")));
 			setLayout(new GridBagLayout());
 			setBackground(Color.WHITE);			
 		}
@@ -313,7 +313,7 @@ public class BoundingBoxValidator {
 
 			JLabel title = new JLabel(Language.I18N.getString("map.boundingBox.label"));
 			title.setFont(title.getFont().deriveFont(Font.BOLD));
-			title.setIcon(new ImageIcon(getClass().getResource("/images/map/selection.png")));
+			title.setIcon(new ImageIcon(getClass().getResource("/org/citydb/gui/images/map/selection.png")));
 			title.setIconTextGap(5);
 
 			JLabel lowerLabel = new JLabel("Xmin / Ymin");
@@ -477,12 +477,12 @@ public class BoundingBoxValidator {
 
 		private void init() {
 			setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
-			setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/images/map/map_icon.png")));
+			setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/org/citydb/gui/images/map/map_icon.png")));
 			setLayout(new GridBagLayout());
 			setBackground(Color.WHITE);	
 
 			messageLabel = new JLabel();
-			messageLabel.setIcon(new ImageIcon(getClass().getResource("/images/map/loader.gif")));
+			messageLabel.setIcon(new ImageIcon(getClass().getResource("/org/citydb/gui/images/map/loader.gif")));
 			messageLabel.setIconTextGap(10);
 
 			button = new JButton(Language.I18N.getString("common.button.ok"));
@@ -512,7 +512,7 @@ public class BoundingBoxValidator {
 		private void setErrorMessage(String message) {
 			message = message.replaceAll("\\n", "<br/>");
 			setTitle(Language.I18N.getString("map.dialog.title.transform.error"));
-			messageLabel.setIcon(new ImageIcon(getClass().getResource("/images/map/error.png")));
+			messageLabel.setIcon(new ImageIcon(getClass().getResource("/org/citydb/gui/images/map/error.png")));
 			messageLabel.setIconTextGap(10);
 			messageLabel.setVerticalTextPosition(JLabel.TOP);
 			messageLabel.setText("<html>" + message + "</html>");

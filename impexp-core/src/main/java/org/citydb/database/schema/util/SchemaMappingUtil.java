@@ -165,9 +165,9 @@ public class SchemaMappingUtil {
 
 	private Schema readSchema() throws JAXBException {
 		try {
-			return SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI).newSchema(SchemaMappingUtil.class.getResource("/database/schema/3dcitydb-schema.xsd"));
+			return SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI).newSchema(SchemaMappingUtil.class.getResource("/org/citydb/database/schema/3dcitydb-schema.xsd"));
 		} catch (SAXException e) {
-			throw new JAXBException("Failed to parse the schema mapping XSD schema. Could not find '/database/schema/3dcitydb-schema.xsd' on the classpath.", e);
+			throw new JAXBException("Failed to parse the schema mapping XSD schema. Could not find '/org/citydb/database/schema/3dcitydb-schema.xsd' on the classpath.", e);
 		}
 	}
 }

@@ -471,7 +471,7 @@ public class ImpExp {
 		if (!Language.existsLanguagePack(new Locale(lang.value())))
 			lang = LanguageType.EN;
 
-		Language.I18N = ResourceBundle.getBundle("i18n.language", new Locale(lang.value()));
+		Language.I18N = ResourceBundle.getBundle("org.citydb.config.language.language", new Locale(lang.value()));
 		config.getProject().getGlobal().setLanguage(lang);
 
 		// start application
@@ -548,7 +548,7 @@ public class ImpExp {
 			// set look & feel
 			javax.swing.UIManager.setLookAndFeel(javax.swing.UIManager.getSystemLookAndFeelClassName());
 			if (OSXAdapter.IS_MAC_OS_X) {
-				OSXAdapter.setDockIconImage(Toolkit.getDefaultToolkit().getImage(ImpExp.class.getResource("/images/common/logo_small.png")));
+				OSXAdapter.setDockIconImage(Toolkit.getDefaultToolkit().getImage(ImpExp.class.getResource("/org/citydb/gui/images/common/logo_small.png")));
 				System.setProperty("apple.laf.useScreenMenuBar", "true");
 			}
 
