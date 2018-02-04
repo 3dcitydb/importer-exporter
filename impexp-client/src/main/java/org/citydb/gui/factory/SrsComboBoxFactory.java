@@ -38,7 +38,7 @@ import javax.swing.JList;
 import javax.swing.ListCellRenderer;
 
 import org.citydb.config.Config;
-import org.citydb.config.language.Language;
+import org.citydb.config.i18n.Language;
 import org.citydb.config.project.database.DatabaseSrs;
 import org.citydb.database.connection.DatabaseConnectionPool;
 import org.citydb.event.Event;

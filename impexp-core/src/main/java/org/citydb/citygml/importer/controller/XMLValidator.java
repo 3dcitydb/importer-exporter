@@ -43,7 +43,7 @@ import org.citydb.citygml.importer.util.DirectoryScanner;
 import org.citydb.citygml.importer.util.DirectoryScanner.CityGMLFilenameFilter;
 import org.citydb.config.Config;
 import org.citydb.config.internal.Internal;
-import org.citydb.config.language.Language;
+import org.citydb.config.i18n.Language;
 import org.citydb.config.project.global.LogLevel;
 import org.citydb.event.Event;
 import org.citydb.event.EventDispatcher;

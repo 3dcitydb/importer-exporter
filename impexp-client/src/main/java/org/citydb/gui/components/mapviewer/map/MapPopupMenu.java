@@ -41,7 +41,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingWorker;
 
-import org.citydb.config.language.Language;
+import org.citydb.config.i18n.Language;
 import org.citydb.event.EventDispatcher;
 import org.citydb.gui.components.mapviewer.geocoder.Geocoder;
 import org.citydb.gui.components.mapviewer.geocoder.GeocoderResponse;

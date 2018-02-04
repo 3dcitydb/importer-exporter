@@ -27,7 +27,7 @@
  */
 package org.citydb.modules.citygml.exporter.gui.preferences;
 
-import org.citydb.config.language.Language;
+import org.citydb.config.i18n.Language;
 import org.citydb.gui.preferences.DefaultPreferencesEntry;
 import org.citydb.gui.preferences.NullComponent;
 

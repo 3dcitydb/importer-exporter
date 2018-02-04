@@ -60,7 +60,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import org.citydb.config.Config;
-import org.citydb.config.language.Language;
+import org.citydb.config.i18n.Language;
 import org.citydb.config.project.global.Proxies;
 import org.citydb.config.project.global.ProxyConfig;
 import org.citydb.event.Event;

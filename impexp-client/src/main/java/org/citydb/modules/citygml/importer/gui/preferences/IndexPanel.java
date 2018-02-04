@@ -37,7 +37,7 @@ import javax.swing.JRadioButton;
 import javax.swing.border.TitledBorder;
 
 import org.citydb.config.Config;
-import org.citydb.config.language.Language;
+import org.citydb.config.i18n.Language;
 import org.citydb.config.project.importer.Index;
 import org.citydb.config.project.importer.IndexMode;
 import org.citydb.gui.preferences.AbstractPreferencesComponent;

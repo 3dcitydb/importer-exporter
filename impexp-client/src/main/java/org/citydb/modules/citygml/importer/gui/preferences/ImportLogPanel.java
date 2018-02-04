@@ -29,7 +29,7 @@ package org.citydb.modules.citygml.importer.gui.preferences;
 
 import org.citydb.config.Config;
 import org.citydb.util.CoreConstants;
-import org.citydb.config.language.Language;
+import org.citydb.config.i18n.Language;
 import org.citydb.config.project.importer.ImportLog;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.preferences.AbstractPreferencesComponent;

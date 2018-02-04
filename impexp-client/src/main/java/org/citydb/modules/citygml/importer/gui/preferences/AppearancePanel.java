@@ -44,7 +44,7 @@ import javax.swing.UIManager;
 import javax.swing.border.TitledBorder;
 
 import org.citydb.config.Config;
-import org.citydb.config.language.Language;
+import org.citydb.config.i18n.Language;
 import org.citydb.config.project.importer.ImportAppearance;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.preferences.AbstractPreferencesComponent;

@@ -33,7 +33,7 @@ import javax.swing.Icon;
 import javax.xml.bind.JAXBContext;
 
 import org.citydb.config.Config;
-import org.citydb.config.language.Language;
+import org.citydb.config.i18n.Language;
 import org.citydb.plugin.extension.view.View;
 import org.citydb.plugin.extension.view.ViewController;
 

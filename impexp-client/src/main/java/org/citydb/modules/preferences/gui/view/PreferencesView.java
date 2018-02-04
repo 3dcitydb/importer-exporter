@@ -32,7 +32,7 @@ import java.awt.Component;
 import javax.swing.Icon;
 
 import org.citydb.config.Config;
-import org.citydb.config.language.Language;
+import org.citydb.config.i18n.Language;
 import org.citydb.gui.ImpExpGui;
 import org.citydb.plugin.extension.view.View;
 

@@ -34,7 +34,7 @@ import org.citydb.util.CoreConstants;
 import org.citydb.config.ConfigUtil;
 import org.citydb.config.gui.window.MainWindow;
 import org.citydb.config.gui.window.WindowSize;
-import org.citydb.config.language.Language;
+import org.citydb.config.i18n.Language;
 import org.citydb.config.project.global.LanguageType;
 import org.citydb.database.connection.DatabaseConnectionPool;
 import org.citydb.event.Event;
@@ -433,7 +433,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 				return;
 
 			Locale locale = new Locale(lang.value());
-			Language.I18N = ResourceBundle.getBundle("org.citydb.config.language.language", locale);
+			Language.I18N = ResourceBundle.getBundle("org.citydb.config.i18n.language", locale);
 			currentLang = lang;
 
 			setDatabaseStatus(dbPool.isConnected());

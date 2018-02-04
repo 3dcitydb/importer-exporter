@@ -46,7 +46,7 @@ import javax.swing.SwingUtilities;
 
 import org.citydb.config.Config;
 import org.citydb.config.geometry.BoundingBox;
-import org.citydb.config.language.Language;
+import org.citydb.config.i18n.Language;
 import org.citydb.config.project.database.Database;
 import org.citydb.config.project.database.Database.PredefinedSrsName;
 import org.citydb.config.project.database.DatabaseSrs;

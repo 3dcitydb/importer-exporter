@@ -33,7 +33,7 @@ import org.citydb.cli.ImpExpCli;
 import org.citydb.config.Config;
 import org.citydb.config.ConfigUtil;
 import org.citydb.config.gui.Gui;
-import org.citydb.config.language.Language;
+import org.citydb.config.i18n.Language;
 import org.citydb.config.project.Project;
 import org.citydb.config.project.global.LanguageType;
 import org.citydb.config.project.global.Logging;
@@ -471,7 +471,7 @@ public class ImpExp {
 		if (!Language.existsLanguagePack(new Locale(lang.value())))
 			lang = LanguageType.EN;
 
-		Language.I18N = ResourceBundle.getBundle("org.citydb.config.language.language", new Locale(lang.value()));
+		Language.I18N = ResourceBundle.getBundle("org.citydb.config.i18n.language", new Locale(lang.value()));
 		config.getProject().getGlobal().setLanguage(lang);
 
 		// start application

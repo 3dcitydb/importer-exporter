@@ -43,7 +43,7 @@ import javax.swing.JTextField;
 import javax.swing.border.TitledBorder;
 
 import org.citydb.config.Config;
-import org.citydb.config.language.Language;
+import org.citydb.config.i18n.Language;
 import org.citydb.config.project.general.Path;
 import org.citydb.config.project.general.PathMode;
 import org.citydb.gui.factory.PopupMenuDecorator;

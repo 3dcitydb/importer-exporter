@@ -31,7 +31,7 @@ import org.citydb.util.ClientConstants;
 import org.citydb.config.Config;
 import org.citydb.util.CoreConstants;
 import org.citydb.config.ConfigUtil;
-import org.citydb.config.language.Language;
+import org.citydb.config.i18n.Language;
 import org.citydb.config.project.Project;
 import org.citydb.config.project.global.Logging;
 import org.citydb.config.project.plugin.PluginConfig;

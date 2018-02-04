@@ -47,7 +47,7 @@ import javax.swing.border.TitledBorder;
 
 import org.citydb.config.Config;
 import org.citydb.config.geometry.BoundingBox;
-import org.citydb.config.language.Language;
+import org.citydb.config.i18n.Language;
 import org.citydb.config.project.importer.ImportFilter;
 import org.citydb.config.project.query.filter.counter.CounterFilter;
 import org.citydb.config.project.query.filter.selection.SimpleSelectionFilterMode;

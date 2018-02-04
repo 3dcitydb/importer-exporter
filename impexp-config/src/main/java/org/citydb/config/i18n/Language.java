@@ -25,7 +25,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.citydb.config.language;
+package org.citydb.config.i18n;
 
 import java.util.Locale;
 import java.util.ResourceBundle;
@@ -39,11 +39,11 @@ public class Language {
 		if (!existsLanguagePack(locale))
 			locale = Locale.ENGLISH;
 		
-		I18N = ResourceBundle.getBundle("org.citydb.config.language.language", locale);
+		I18N = ResourceBundle.getBundle("org.citydb.config.i18n.language", locale);
 	}
 	
 	public static boolean existsLanguagePack(Locale locale) {
-		return Language.class.getResource("/org/citydb/config/language/language_" + locale.getLanguage() + ".properties") != null;
+		return Language.class.getResource("/org/citydb/config/i18n/language_" + locale.getLanguage() + ".properties") != null;
 	}
 
 }

@@ -43,7 +43,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
 import org.citydb.config.Config;
-import org.citydb.config.language.Language;
+import org.citydb.config.i18n.Language;
 import org.citydb.gui.components.mapviewer.MapWindow;
 import org.citydb.gui.util.GuiUtil;
 import org.jdesktop.swingx.JXMapKit;

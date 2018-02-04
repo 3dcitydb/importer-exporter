@@ -46,7 +46,7 @@ import org.apache.tomcat.jdbc.pool.PoolProperties;
 import org.citydb.ade.ADEExtension;
 import org.citydb.ade.ADEExtensionManager;
 import org.citydb.config.Config;
-import org.citydb.config.language.Language;
+import org.citydb.config.i18n.Language;
 import org.citydb.config.project.database.DBConnection;
 import org.citydb.config.project.database.Database;
 import org.citydb.config.project.database.DatabaseConfigurationException;

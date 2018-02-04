@@ -32,7 +32,7 @@ import java.awt.Insets;
 
 import javax.swing.JMenuItem;
 
-import org.citydb.config.language.Language;
+import org.citydb.config.i18n.Language;
 
 public class GuiUtil {
 

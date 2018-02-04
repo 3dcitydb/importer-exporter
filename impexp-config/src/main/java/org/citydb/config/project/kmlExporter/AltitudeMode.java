@@ -31,7 +31,7 @@ import javax.xml.bind.annotation.XmlEnum;
 import javax.xml.bind.annotation.XmlEnumValue;
 import javax.xml.bind.annotation.XmlType;
 
-import org.citydb.config.language.Language;
+import org.citydb.config.i18n.Language;
 
 @XmlType(name="AltitudeMode")
 @XmlEnum

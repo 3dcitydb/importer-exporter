@@ -49,7 +49,7 @@ import org.citydb.citygml.common.database.xlink.DBXlinkTextureFile;
 import org.citydb.citygml.common.database.xlink.DBXlinkTextureParam;
 import org.citydb.citygml.common.database.xlink.DBXlinkTextureParamEnum;
 import org.citydb.concurrent.WorkerPool;
-import org.citydb.config.language.Language;
+import org.citydb.config.i18n.Language;
 import org.citydb.config.project.global.LogLevel;
 import org.citydb.event.Event;
 import org.citydb.event.EventDispatcher;

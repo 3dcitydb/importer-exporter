@@ -49,7 +49,7 @@ import javax.swing.border.TitledBorder;
 // import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.citydb.config.Config;
-import org.citydb.config.language.Language;
+import org.citydb.config.i18n.Language;
 import org.citydb.config.project.kmlExporter.AltitudeMode;
 import org.citydb.config.project.kmlExporter.DisplayForm;
 import org.citydb.config.project.kmlExporter.PointAndCurve;

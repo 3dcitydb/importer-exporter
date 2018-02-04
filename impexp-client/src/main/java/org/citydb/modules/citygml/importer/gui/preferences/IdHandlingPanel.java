@@ -42,7 +42,7 @@ import javax.swing.UIManager;
 import javax.swing.border.TitledBorder;
 
 import org.citydb.config.Config;
-import org.citydb.config.language.Language;
+import org.citydb.config.i18n.Language;
 import org.citydb.config.project.importer.CodeSpaceMode;
 import org.citydb.config.project.importer.ImportGmlId;
 import org.citydb.config.project.importer.UUIDMode;

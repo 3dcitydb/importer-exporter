@@ -30,7 +30,7 @@ package org.citydb.modules.database.gui.preferences;
 import org.citydb.util.ClientConstants;
 import org.citydb.config.Config;
 import org.citydb.config.ConfigUtil;
-import org.citydb.config.language.Language;
+import org.citydb.config.i18n.Language;
 import org.citydb.config.project.database.DatabaseSrs;
 import org.citydb.config.project.database.DatabaseSrsList;
 import org.citydb.config.project.global.LogLevel;

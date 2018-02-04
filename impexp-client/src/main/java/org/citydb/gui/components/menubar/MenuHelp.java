@@ -35,7 +35,7 @@ import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
 
 import org.citydb.config.Config;
-import org.citydb.config.language.Language;
+import org.citydb.config.i18n.Language;
 import org.citydb.gui.ImpExpGui;
 import org.citydb.gui.util.GuiUtil;
 

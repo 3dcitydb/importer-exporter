@@ -40,7 +40,7 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathFactory;
 
-import org.citydb.config.language.Language;
+import org.citydb.config.i18n.Language;
 import org.citydb.gui.components.mapviewer.MapWindow;
 import org.jdesktop.swingx.mapviewer.GeoPosition;
 import org.w3c.dom.Document;

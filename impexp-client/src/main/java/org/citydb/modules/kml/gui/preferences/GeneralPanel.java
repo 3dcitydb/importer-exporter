@@ -46,13 +46,12 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 import org.citydb.config.Config;
-import org.citydb.config.language.Language;
+import org.citydb.config.i18n.Language;
 import org.citydb.config.project.kmlExporter.KmlExporter;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.preferences.AbstractPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.plugin.extension.view.ViewController;
-import org.citydb.registry.ObjectRegistry;
 
 import net.opengis.kml._2.ViewRefreshModeEnumType;
 

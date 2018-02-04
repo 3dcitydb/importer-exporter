@@ -80,7 +80,7 @@ import org.citydb.citygml.importer.controller.Importer;
 import org.citydb.citygml.importer.controller.XMLValidator;
 import org.citydb.config.Config;
 import org.citydb.config.geometry.BoundingBox;
-import org.citydb.config.language.Language;
+import org.citydb.config.i18n.Language;
 import org.citydb.config.project.global.LogLevel;
 import org.citydb.config.project.importer.ImportFilter;
 import org.citydb.config.project.query.filter.selection.SimpleSelectionFilterMode;

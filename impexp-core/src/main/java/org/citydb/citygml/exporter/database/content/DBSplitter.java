@@ -41,7 +41,7 @@ import org.citydb.citygml.common.database.cache.model.CacheTableModelEnum;
 import org.citydb.citygml.common.database.uid.UIDCache;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
-import org.citydb.config.language.Language;
+import org.citydb.config.i18n.Language;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.connection.DatabaseConnectionPool;
 import org.citydb.database.schema.mapping.AbstractObjectType;
