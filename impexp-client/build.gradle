@@ -127,7 +127,6 @@ task buildInstaller(dependsOn: installDist, group: 'distribution') {
                         citydbName: project.citydbName,
                         citydbVersion: project.citydbVersion,
                         installDir: installDir,
-                        pluginApiDir: 'plugin-api',
                         pluginsDir: 'plugins',
                         contribsDir: 'contribs',
                         citydbDir: '3dcitydb',
@@ -137,7 +136,7 @@ task buildInstaller(dependsOn: installDist, group: 'distribution') {
                         manualDir: 'manual',
                         webMapClientDir: '3d-web-map-client',
                         samplesDir: 'samples',
-                        spreadSheetPluginDir: 'spreadsheet_generator'
+                        spreadSheetPluginDir: 'plugin-spreadsheet-generator'
                 ])
             }
             filesMatching('**/license.txt') {
