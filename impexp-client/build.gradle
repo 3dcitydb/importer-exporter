@@ -60,6 +60,7 @@ startScripts {
 
 distributions.main.contents {
     from('resources/doc/README.txt') {
+        filteringCharset = 'UTF-8'
         filter(ReplaceTokens, tokens: [
                 name: project.impexpName,
                 version: project.version,
@@ -118,6 +119,7 @@ task buildInstaller(dependsOn: installDist, group: 'distribution') {
             from 'resources/izpack'
             into izpackDir
             filesMatching('**/*.xml') {
+                filteringCharset = 'UTF-8'
                 filter(ReplaceTokens, tokens: [
                         appName: project.impexpName,
                         appVersion: project.version,
@@ -140,6 +142,7 @@ task buildInstaller(dependsOn: installDist, group: 'distribution') {
                 ])
             }
             filesMatching('**/license.txt') {
+                filteringCharset = 'UTF-8'
                 filter(ReplaceTokens, tokens: [
                         license: file("$rootDir/resources/license/LICENSE.txt").text,
                         apache: file("$rootDir/resources/license/APACHE-2.0.txt").text

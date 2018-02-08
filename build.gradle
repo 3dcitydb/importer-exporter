@@ -34,6 +34,7 @@ subprojects {
             copy {
                 from "$rootDir/resources/javadoc/overview.html"
                 into "$buildDir/tmp/javadoc"
+                filteringCharset = 'UTF-8'
                 filter(ReplaceTokens, tokens: [
                         name: project.name,
                         version: project.version,
