@@ -10,6 +10,7 @@ subprojects {
     apply plugin: 'maven-publish'
 
     sourceCompatibility = 1.8
+    compileJava.options.encoding = 'UTF-8'
 
     repositories {
         maven {
