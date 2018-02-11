@@ -31,34 +31,7 @@ dependencies {
     doc 'org.swinglabs.swingx:swingx-mavensupport:1.6.5-1'
 }
 
-javadoc {
-    classpath += configurations.doc
-}
-
-jar {
-    manifest {
-        attributes('Main-Class': mainClassName,
-                'Class-Path': configurations.runtimeClasspath.collect{ it.name }.join(' ')
-        )
-    }
-}
-
-startScripts {
-    defaultJvmOpts = ['-Xms1G']
-    doLast {
-        def windowsScript = getWindowsScript()
-        def unixScript = getUnixScript()
-        windowsScript.text = windowsScript.text
-                .replaceFirst('set APP_HOME=.*', '$0\r\nset WORKING_DIR=%CD%')
-                .replaceFirst('"%JAVA_EXE%" %DEFAULT_JVM_OPTS%.*', 'start /min cmd /c "$0"')
-                .replaceAll('3_D_CITY_DB_', '')
-        unixScript.text = unixScript.text
-                .replaceFirst('APP_HOME=.*', '$0\nexport APP_HOME\nexport WORKING_DIR=\\$SAVED')
-                .replaceAll('3_D_CITY_DB_', '')
-    }
-}
-
-distributions.main.contents {
+task processReadme(type: Copy) {
     from('resources/doc/README.txt') {
         filteringCharset = 'UTF-8'
         filter(ReplaceTokens, tokens: [
@@ -78,6 +51,41 @@ distributions.main.contents {
                 vendorWebsiteUrl: project.vendorWebsiteUrl
         ])
     }
+    into "$buildDir/tmp/doc"
+}
+
+javadoc {
+    classpath += configurations.doc
+}
+
+jar {
+    manifest {
+        attributes('Main-Class': mainClassName,
+                'Class-Path': configurations.runtimeClasspath.collect{ it.name }.join(' ')
+        )
+        into('META-INF') {
+            from processReadme
+        }
+    }
+}
+
+startScripts {
+    defaultJvmOpts = ['-Xms1G']
+    doLast {
+        def windowsScript = getWindowsScript()
+        def unixScript = getUnixScript()
+        windowsScript.text = windowsScript.text
+                .replaceFirst('set APP_HOME=.*', '$0\r\nset WORKING_DIR=%CD%')
+                .replaceFirst('"%JAVA_EXE%" %DEFAULT_JVM_OPTS%.*', 'start /min cmd /c "$0"')
+                .replaceAll('3_D_CITY_DB_', '')
+        unixScript.text = unixScript.text
+                .replaceFirst('APP_HOME=.*', '$0\nexport APP_HOME\nexport WORKING_DIR=\\$SAVED')
+                .replaceAll('3_D_CITY_DB_', '')
+    }
+}
+
+distributions.main.contents {
+    from processReadme
     into('3dcitydb') {
         from "$rootDir/resources/3dcitydb"
     }

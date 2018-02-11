@@ -80,7 +80,7 @@ public class ReadMeDialog extends JDialog {
 
 				try {
 					BufferedReader in = new BufferedReader(
-							new InputStreamReader(this.getClass().getResourceAsStream("/README.txt"), "UTF-8"));
+							new InputStreamReader(this.getClass().getResourceAsStream("/META-INF/README.txt"), "UTF-8"));
 
 					// read address template
 					StringBuilder builder = new StringBuilder();
