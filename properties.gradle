@@ -6,7 +6,7 @@ ext {
     vendorOrganisation = 'Technical University of Munich'
     vendorCountry = 'Germany'
     vendorWebsiteUrl = 'https://www.gis.bgu.tum.de'
-    vendorCopyright = '2013-' + date.format('yyy')
+    vendorCopyright = '2013-' + date.format('yyyy')
 
     // 3D City Database
     citydbShortName = '3DCityDB'
