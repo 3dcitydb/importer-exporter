@@ -33,20 +33,21 @@ subprojects {
 
         doFirst {
             copy {
-                from "$rootDir/resources/javadoc/overview.html"
+                from("$rootDir/resources/javadoc/overview.html") {
+                    filteringCharset = 'UTF-8'
+                    filter(ReplaceTokens, tokens: [
+                            name: project.name,
+                            version: project.version,
+                            impexpName: project.impexpName,
+                            citydbWebsiteUrl: project.citydbWebsiteUrl,
+                            vendorName: project.vendorName,
+                            vendorOrganisation: project.vendorOrganisation,
+                            vendorCountry: project.vendorCountry,
+                            vendorCopyright: project.vendorCopyright,
+                            vendorWebsiteUrl: project.vendorWebsiteUrl
+                    ])
+                }
                 into "$buildDir/tmp/javadoc"
-                filteringCharset = 'UTF-8'
-                filter(ReplaceTokens, tokens: [
-                        name: project.name,
-                        version: project.version,
-                        impexpName: project.impexpName,
-                        citydbWebsiteUrl: project.citydbWebsiteUrl,
-                        vendorName: project.vendorName,
-                        vendorOrganisation: project.vendorOrganisation,
-                        vendorCountry: project.vendorCountry,
-                        vendorCopyright: project.vendorCopyright,
-                        vendorWebsiteUrl: project.vendorWebsiteUrl
-                ])
             }
         }
     }
