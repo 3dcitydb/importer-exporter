@@ -25,6 +25,16 @@ subprojects {
         jcenter()
     }
 
+    task processLicense(type: Copy) {
+        from("$rootDir/resources/license/LICENSE.txt") {
+            filteringCharset = 'UTF-8'
+            filter(ReplaceTokens, tokens: [
+                    name: project.impexpName
+            ])
+        }
+        into "$buildDir/tmp/license"
+    }
+
     javadoc {
         include 'org/citydb/**'
         options.overview "$buildDir/tmp/javadoc/overview.html"
@@ -60,7 +70,7 @@ subprojects {
         }
         into('META-INF') {
             from "$rootDir/resources/license/APACHE-2.0.txt"
-            from "$rootDir/resources/license/LICENSE.txt"
+            from processLicense
         }
     }
 

@@ -109,7 +109,7 @@ distributions.main.contents {
     }
     into('license') {
         from "$rootDir/resources/license/APACHE-2.0.txt"
-        from "$rootDir/resources/license/LICENSE.txt"
+        from processLicense
     }
 }
 
@@ -152,7 +152,7 @@ task buildInstaller(dependsOn: installDist, group: 'distribution') {
             filesMatching('**/license.txt') {
                 filteringCharset = 'UTF-8'
                 filter(ReplaceTokens, tokens: [
-                        license: file("$rootDir/resources/license/LICENSE.txt").text,
+                        license: file("$installDir/license/LICENSE.txt").text,
                         apache: file("$rootDir/resources/license/APACHE-2.0.txt").text
                 ])
             }
