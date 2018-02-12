@@ -27,16 +27,15 @@
  */
 package org.citydb.plugin;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.ServiceLoader;
-
 import org.citydb.config.project.plugin.PluginConfig;
 import org.citydb.plugin.extension.config.ConfigExtension;
 import org.citydb.plugin.extension.menu.MenuExtension;
 import org.citydb.plugin.extension.preferences.PreferencesExtension;
 import org.citydb.plugin.extension.view.ViewExtension;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.ServiceLoader;
 
 public class PluginManager {
 	private static PluginManager instance;
@@ -44,8 +43,8 @@ public class PluginManager {
 	private final List<Plugin> externalPlugins;
 
 	private PluginManager() {
-		internalPlugins = new ArrayList<InternalPlugin>();
-		externalPlugins = new ArrayList<Plugin>();
+		internalPlugins = new ArrayList<>();
+		externalPlugins = new ArrayList<>();
 	}
 	
 	public static synchronized PluginManager getInstance() {
@@ -57,15 +56,25 @@ public class PluginManager {
 
 	public void loadPlugins(ClassLoader loader) {
 		ServiceLoader<Plugin> pluginLoader = ServiceLoader.load(Plugin.class, loader);
-		for (Iterator<Plugin> iter = pluginLoader.iterator(); iter.hasNext(); )
-			registerExternalPlugin(iter.next());
+		for (Plugin plugin : pluginLoader)
+			registerExternalPlugin(plugin);
 	}
 
 	public void registerInternalPlugin(InternalPlugin plugin) {
+		for (Plugin internalPlugin : internalPlugins) {
+			if (internalPlugin.getClass() == plugin.getClass())
+				return;
+		}
+
 		internalPlugins.add(plugin);
 	}
 
 	public void registerExternalPlugin(Plugin plugin) {
+		for (Plugin externalPlugin : externalPlugins) {
+			if (externalPlugin.getClass() == plugin.getClass())
+				return;
+		}
+
 		externalPlugins.add(plugin);
 	}
 
@@ -87,7 +96,7 @@ public class PluginManager {
 	}
 
 	public List<ViewExtension> getExternalViewExtensions() {
-		List<ViewExtension> viewExtensions = new ArrayList<ViewExtension>();
+		List<ViewExtension> viewExtensions = new ArrayList<>();
 		for (Plugin plugin : externalPlugins) {
 			if (plugin instanceof ViewExtension) {
 				ViewExtension viewExtension = (ViewExtension)plugin;
@@ -101,7 +110,7 @@ public class PluginManager {
 	}
 
 	public List<PreferencesExtension> getExternalPreferencesExtensions() {
-		List<PreferencesExtension> preferencesExtensions = new ArrayList<PreferencesExtension>();
+		List<PreferencesExtension> preferencesExtensions = new ArrayList<>();
 		for (Plugin plugin : externalPlugins) {
 			if (plugin instanceof PreferencesExtension) {
 				PreferencesExtension preferencesExtension = (PreferencesExtension)plugin;
@@ -115,7 +124,7 @@ public class PluginManager {
 	}
 
 	public List<MenuExtension> getExternalMenuExtensions() {
-		List<MenuExtension> menuExtensions = new ArrayList<MenuExtension>();
+		List<MenuExtension> menuExtensions = new ArrayList<>();
 		for (Plugin plugin : externalPlugins) {
 			if (plugin instanceof MenuExtension) {
 				MenuExtension menuExtension = (MenuExtension)plugin;
@@ -130,7 +139,7 @@ public class PluginManager {
 	
 	@SuppressWarnings("unchecked")
 	public List<ConfigExtension<? extends PluginConfig>> getExternalConfigExtensions() {
-		List<ConfigExtension<? extends PluginConfig>> configExtensions = new ArrayList<ConfigExtension<? extends PluginConfig>>();
+		List<ConfigExtension<? extends PluginConfig>> configExtensions = new ArrayList<>();
 		for (Plugin plugin : externalPlugins)
 			if (plugin instanceof ConfigExtension<?>)
 				configExtensions.add((ConfigExtension<? extends PluginConfig>)plugin);
@@ -139,7 +148,7 @@ public class PluginManager {
 	}
 
 	public List<Plugin> getPlugins() {
-		List<Plugin> plugins = new ArrayList<Plugin>(externalPlugins);
+		List<Plugin> plugins = new ArrayList<>(externalPlugins);
 		plugins.addAll(internalPlugins);
 
 		return plugins;
