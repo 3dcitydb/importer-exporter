@@ -3,11 +3,11 @@ import org.apache.tools.ant.filters.ReplaceTokens
 apply from: 'properties.gradle'
 
 subprojects {
-    group 'org.citydb'
-    version '4.0.0-SNAPSHOT'
-
     apply plugin: 'java'
     apply plugin: 'maven-publish'
+
+    group 'org.citydb'
+    version '4.0.0-SNAPSHOT'
 
     sourceCompatibility = 1.8
     compileJava.options.encoding = 'UTF-8'
