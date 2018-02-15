@@ -14,13 +14,13 @@ subprojects {
 
     repositories {
         maven {
-            url 'http://download.osgeo.org/webdav/geotools/'
+            url 'http://download.osgeo.org/webdav/geotools'
         }
         maven {
             url 'https://dl.bintray.com/3dcitydb/maven'
         }
         maven {
-            url 'https://maven.imagej.net/content/repositories/thirdparty/'
+            url 'https://maven.imagej.net/content/repositories/thirdparty'
         }
         jcenter()
     }
