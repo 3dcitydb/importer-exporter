@@ -31,9 +31,10 @@ dependencies {
 
 task generateJaxb {
     outputs.dir genSrcDir
-    mkdir genSrcDir
 
     doLast {
+        mkdir genSrcDir
+
         System.setProperty('javax.xml.accessExternalSchema', 'file')
         ant.taskdef(name: 'xjc', classname: 'com.sun.tools.xjc.XJC2Task', classpath: configurations.jaxb.asPath)
         ant.xjc(destdir: genSrcDir,
