@@ -29,7 +29,7 @@ dependencies {
     jaxb 'org.slf4j:slf4j-simple:1.7.25'
 }
 
-task generateJaxb {
+task generateJaxb(group: 'jaxb') {
     outputs.dir genSrcDir
 
     doLast {
@@ -50,7 +50,7 @@ task generateJaxb {
     }
 }
 
-task cleanJaxb(type: Delete) {
+task cleanJaxb(type: Delete, group: 'jaxb') {
     delete 'src-gen'
 }
 
