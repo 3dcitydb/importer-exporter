@@ -37,7 +37,7 @@ task processReadme(type: Copy) {
         filter(ReplaceTokens, tokens: [
                 name: project.impexpName,
                 version: project.version,
-                date: project.date.format('yyy-MM-dd'),
+                date: project.date.format('yyyy-MM-dd'),
                 citydbName: project.citydbName,
                 citydbVersion: project.citydbVersion,
                 jar: jar.archiveName,

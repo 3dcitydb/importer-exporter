@@ -1,4 +1,3 @@
-rootProject.name = 'impexp'
 include 'impexp-core'
 include 'impexp-config'
 include 'impexp-plugin-api'
