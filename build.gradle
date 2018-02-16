@@ -65,7 +65,8 @@ subprojects {
     jar {
         manifest {
             attributes('Implementation-Title': project.name,
-                    'Implementation-Version': project.version
+                    'Implementation-Version': project.version,
+                    'Implementation-Vendor': project.vendorName + ', ' + project.vendorOrganisation
             )
         }
         into('META-INF') {

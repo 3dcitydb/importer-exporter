@@ -98,10 +98,10 @@ public class ImpExp {
 	@Option(name="-config", usage="config file containing project settings", metaVar="fileName")
 	private Path configFile;
 
-	@Option(name="-version", usage="print product version and exit")
+	@Option(name="-version", aliases={"-v"}, usage="print product version and exit")
 	private boolean version;
 
-	@Option(name="-h", aliases={"-help"}, usage="print this help message and exit")
+	@Option(name="-help", aliases={"-h"}, usage="print this help message and exit")
 	private boolean help;
 
 	@Option(name="-shell", usage="to execute in a shell environment,\nwithout graphical user interface")
