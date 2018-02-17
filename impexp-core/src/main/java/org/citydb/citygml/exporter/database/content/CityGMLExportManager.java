@@ -20,7 +20,6 @@ import org.citydb.citygml.exporter.writer.FeatureWriteException;
 import org.citydb.citygml.exporter.writer.FeatureWriter;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
-import org.citydb.util.CoreConstants;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.config.project.exporter.Exporter;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
@@ -43,6 +42,7 @@ import org.citydb.sqlbuilder.expression.IntegerLiteral;
 import org.citydb.sqlbuilder.schema.Column;
 import org.citydb.sqlbuilder.select.ProjectionToken;
 import org.citydb.sqlbuilder.select.projection.Function;
+import org.citydb.util.CoreConstants;
 import org.citydb.util.Util;
 import org.citygml4j.builder.jaxb.CityGMLBuilder;
 import org.citygml4j.builder.jaxb.CityGMLBuilderException;
@@ -480,11 +480,6 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 	@Override
 	public Exporter getExportConfig() {
 		return config.getProject().getExporter();
-	}
-
-	@Override
-	public String getTableNameWithSchema(String tableName) {
-		return new StringBuilder(databaseAdapter.getConnectionDetails().getSchema()).append('.').append(tableName).toString();
 	}
 
 	@Override

@@ -69,7 +69,6 @@ public class DBImplicitGeometry implements DBExporter {
 		this.exporter = exporter;
 
 		String getLength = exporter.getDatabaseAdapter().getSQLAdapter().resolveDatabaseOperationName("blob.get_length");
-		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 
 		try {
 			md5 = MessageDigest.getInstance("MD5");
@@ -77,7 +76,7 @@ public class DBImplicitGeometry implements DBExporter {
 			throw new CityGMLExportException(e);
 		}
 		
-		Table table = new Table(TableEnum.IMPLICIT_GEOMETRY.getName(), schema);
+		Table table = new Table(TableEnum.IMPLICIT_GEOMETRY.getName());
 		Select select = new Select().addProjection(table.getColumn("id"), table.getColumn("mime_type"), table.getColumn("reference_to_library"),
 				new Function(getLength, "db_library_object_length", table.getColumn("library_object")),
 				table.getColumn("relative_brep_id"), table.getColumn("relative_other_geom"))

@@ -27,16 +27,8 @@
  */
 package org.citydb.database.adapter.oracle;
 
-import java.sql.Array;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Struct;
-import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-
+import oracle.jdbc.OracleTypes;
+import oracle.spatial.geometry.JGeometry;
 import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.config.geometry.Position;
@@ -51,8 +43,15 @@ import org.citydb.database.connection.DatabaseMetaData.Versioning;
 import org.citydb.database.version.DatabaseVersion;
 import org.citydb.util.Util;
 
-import oracle.jdbc.OracleTypes;
-import oracle.spatial.geometry.JGeometry;
+import java.sql.Array;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Struct;
+import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class UtilAdapter extends AbstractUtilAdapter {
 	private final DatabaseSrs WGS843D_SRS = new DatabaseSrs(4979, "", "", "", DatabaseSrsType.GEOGRAPHIC3D, true);
@@ -196,11 +195,10 @@ public class UtilAdapter extends AbstractUtilAdapter {
 	}
 
 	@Override
-	protected String[] createDatabaseReport(String schema, Connection connection) throws SQLException {
+	protected String[] createDatabaseReport(Connection connection) throws SQLException {
 		try {
 			interruptableCallableStatement = connection.prepareCall("{? = call " + databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_stat.table_contents") + "(?)}");
 			interruptableCallableStatement.registerOutParameter(1, OracleTypes.ARRAY, "STRARRAY");
-			interruptableCallableStatement.setString(2, schema);
 			interruptableCallableStatement.executeUpdate();
 
 			Array result = interruptableCallableStatement.getArray(1);
@@ -226,13 +224,13 @@ public class UtilAdapter extends AbstractUtilAdapter {
 	}
 
 	@Override
-	protected BoundingBox calcBoundingBox(String schema, List<Integer> objectClassIds, Connection connection) throws SQLException {
+	protected BoundingBox calcBoundingBox(List<Integer> objectClassIds, Connection connection) throws SQLException {
 		BoundingBox bbox = null;
 		ResultSet rs = null;
 
 		try {
 			StringBuilder query = new StringBuilder()
-			.append("select sdo_aggr_mbr(citydb_util.to_2d(ENVELOPE, (select srid from ").append(schema).append(".database_srs))) from ").append(schema).append(".CITYOBJECT where ENVELOPE is not NULL");
+			.append("select sdo_aggr_mbr(citydb_util.to_2d(ENVELOPE, (select srid from database_srs))) from CITYOBJECT where ENVELOPE is not NULL");
 
 			if (!objectClassIds.isEmpty()) 
 				query.append(" and OBJECTCLASS_ID in (").append(Util.collection2string(objectClassIds, ", ")).append(") ");
@@ -353,12 +351,11 @@ public class UtilAdapter extends AbstractUtilAdapter {
 	}
 
 	@Override
-	protected IndexStatusInfo manageIndexes(String operation, IndexType type, String schema, Connection connection) throws SQLException {
+	protected IndexStatusInfo manageIndexes(String operation, IndexType type, Connection connection) throws SQLException {
 		try {
 			String call = "{? = call " + databaseAdapter.getSQLAdapter().resolveDatabaseOperationName(operation) + "(?)}";
 			interruptableCallableStatement = connection.prepareCall(call);
 			interruptableCallableStatement.registerOutParameter(1, OracleTypes.ARRAY, "STRARRAY");
-			interruptableCallableStatement.setString(2, schema);
 			interruptableCallableStatement.executeUpdate();
 
 			Array result = interruptableCallableStatement.getArray(1);
@@ -384,7 +381,7 @@ public class UtilAdapter extends AbstractUtilAdapter {
 	}
 
 	@Override
-	protected boolean updateTableStats(IndexType type, String schema, Connection connection) throws SQLException {
+	protected boolean updateTableStats(IndexType type, Connection connection) throws SQLException {
 		return false;
 	}
 

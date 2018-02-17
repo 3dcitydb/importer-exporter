@@ -79,10 +79,9 @@ public class DBBridgeOpening extends AbstractFeatureExporter<AbstractOpening> {
 		CombinedProjectionFilter projectionFilter = exporter.getCombinedProjectionFilter(TableEnum.BRIDGE_OPENING.getName());
 		bridgeModule = exporter.getTargetCityGMLVersion().getCityGMLModule(CityGMLModuleType.BRIDGE).getNamespaceURI();
 		lodFilter = exporter.getLodFilter();
-		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 
-		table = new Table(TableEnum.BRIDGE_OPENING.getName(), schema);
-		Table address = new Table(TableEnum.ADDRESS.getName(), schema);
+		table = new Table(TableEnum.BRIDGE_OPENING.getName());
+		Table address = new Table(TableEnum.ADDRESS.getName());
 
 		select = new Select().addProjection(table.getColumn("id"), table.getColumn("objectclass_id"));
 		if (projectionFilter.containsProperty("lod3MultiSurface", bridgeModule)) select.addProjection(table.getColumn("lod3_multi_surface_id"));

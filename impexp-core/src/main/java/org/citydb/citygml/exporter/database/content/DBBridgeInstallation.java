@@ -82,9 +82,8 @@ public class DBBridgeInstallation extends AbstractFeatureExporter<AbstractCityOb
 		CombinedProjectionFilter projectionFilter = exporter.getCombinedProjectionFilter(TableEnum.BRIDGE_INSTALLATION.getName());
 		bridgeModule = exporter.getTargetCityGMLVersion().getCityGMLModule(CityGMLModuleType.BRIDGE).getNamespaceURI();
 		lodFilter = exporter.getLodFilter();
-		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 
-		table = new Table(TableEnum.BRIDGE_INSTALLATION.getName(), schema);
+		table = new Table(TableEnum.BRIDGE_INSTALLATION.getName());
 		select = new Select().addProjection(table.getColumn("id"), table.getColumn("objectclass_id"));
 		if (projectionFilter.containsProperty("class", bridgeModule)) select.addProjection(table.getColumn("class"), table.getColumn("class_codespace"));
 		if (projectionFilter.containsProperty("function", bridgeModule)) select.addProjection(table.getColumn("function"), table.getColumn("function_codespace"));

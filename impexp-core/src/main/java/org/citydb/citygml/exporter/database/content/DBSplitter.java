@@ -92,7 +92,6 @@ public class DBSplitter {
 
 	private final AbstractDatabaseAdapter databaseAdapter;
 	private final Connection connection;
-	private final String schema;
 	private final SchemaMapping schemaMapping;
 	private final SQLQueryBuilder builder;
 
@@ -117,7 +116,6 @@ public class DBSplitter {
 
 		databaseAdapter = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter();
 		connection = DatabaseConnectionPool.getInstance().getConnection();
-		schema = databaseAdapter.getConnectionDetails().getSchema();
 
 		// try and change workspace for connection
 		if (databaseAdapter.hasVersioningSupport()) {
@@ -144,7 +142,6 @@ public class DBSplitter {
 		builder = new SQLQueryBuilder(
 				schemaMapping, 
 				databaseAdapter, 
-				schema,
 				buildProperties);
 	}
 
@@ -328,9 +325,9 @@ public class DBSplitter {
 				select.addOrderBy(new OrderByToken((Column)select.getProjection().get(0)));
 
 			// join group members
-			Table cityObject = new Table("cityobject", schema);
-			Table cityObjectGroup = new Table("cityobjectgroup", schema);
-			Table groupToCityObject = new Table("group_to_cityobject", schema);
+			Table cityObject = new Table("cityobject");
+			Table cityObjectGroup = new Table("cityobjectgroup");
+			Table groupToCityObject = new Table("group_to_cityobject");
 			LiteralList idLiteralList = new LiteralList(cityObjectGroups.keySet().stream().toArray(Long[]::new));
 
 			select.addSelection(LogicalOperationFactory.AND(
@@ -442,10 +439,10 @@ public class DBSplitter {
 			CacheTable globalAppTempTable = cacheTableManager.getCacheTable(CacheTableModelEnum.GLOBAL_APPEARANCE);
 			globalAppTempTable.createIndexes();
 
-			Table appearance = new Table("appearance", schema);
-			Table appearToSurfaceData = new Table("appear_to_surface_data", schema);
-			Table surfaceData = new Table("surface_data", schema);
-			Table textureParam = new Table("textureparam", schema);
+			Table appearance = new Table("appearance");
+			Table appearToSurfaceData = new Table("appear_to_surface_data");
+			Table surfaceData = new Table("surface_data");
+			Table textureParam = new Table("textureparam");
 			Table tempTable = new Table(globalAppTempTable.getTableName());
 
 			Select select = new Select()

@@ -66,11 +66,10 @@ public class DBTunnelHollowSpace implements DBImporter {
 	public DBTunnelHollowSpace(Connection batchConn, Config config, CityGMLImportManager importer) throws CityGMLImportException, SQLException {
 		this.importer = importer;
 
-		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
 		hasObjectClassIdColumn = importer.getDatabaseAdapter().getConnectionMetaData().getCityDBVersion().compareTo(4, 0, 0) >= 0;
 
 		StringBuilder stmt = new StringBuilder()
-				.append("insert into ").append(schema).append(".tunnel_hollow_space (id, class, class_codespace, function, function_codespace, usage, usage_codespace, tunnel_id, ")
+				.append("insert into tunnel_hollow_space (id, class, class_codespace, function, function_codespace, usage, usage_codespace, tunnel_id, ")
 				.append("lod4_multi_surface_id, lod4_solid_id")
 				.append(hasObjectClassIdColumn ? ", objectclass_id) " : ") ")
 				.append("values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?")

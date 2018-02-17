@@ -49,13 +49,13 @@ public class BlobExportAdapter {
 		this.blobType = blobType;		
 	}
 
-	public byte[] getInByteArray(long id, String schema, String objectName) throws SQLException {
+	public byte[] getInByteArray(long id, String objectName) throws SQLException {
 		ResultSet rs = null;
 
 		try {
 			if (psExport == null)
 				psExport = connection.prepareStatement(blobType == BlobType.TEXTURE_IMAGE ?
-						"select TEX_IMAGE_DATA from " + schema + ".TEX_IMAGE where ID=?" : "select LIBRARY_OBJECT from " + schema + ".IMPLICIT_GEOMETRY where ID=?");
+						"select TEX_IMAGE_DATA from TEX_IMAGE where ID=?" : "select LIBRARY_OBJECT from IMPLICIT_GEOMETRY where ID=?");
 
 			// try and read texture image attribute from SURFACE_DATA table
 			psExport.setLong(1, id);
@@ -83,13 +83,13 @@ public class BlobExportAdapter {
 		}
 	}
 
-	public boolean getInFile(long id, String schema, String objectName, String fileName) throws SQLException {
+	public boolean getInFile(long id, String objectName, String fileName) throws SQLException {
 		FileOutputStream out = null;
 
 		try {
 			out = new FileOutputStream(fileName);
 
-			byte[] buf = getInByteArray(id, schema, objectName);
+			byte[] buf = getInByteArray(id, objectName);
 			if (buf != null) {
 				out.write(buf);
 				return true;

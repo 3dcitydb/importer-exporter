@@ -82,10 +82,9 @@ public class DBTransportationComplex extends AbstractFeatureExporter<Transportat
 		CombinedProjectionFilter trafficAreaProjectionFilter = exporter.getCombinedProjectionFilter(TableEnum.TRAFFIC_AREA.getName());
 		transportationModule = exporter.getTargetCityGMLVersion().getCityGMLModule(CityGMLModuleType.TRANSPORTATION).getNamespaceURI();
 		lodFilter = exporter.getLodFilter();
-		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 
-		table = new Table(TableEnum.TRANSPORTATION_COMPLEX.getName(), schema);
-		Table trafficArea = new Table(TableEnum.TRAFFIC_AREA.getName(), schema);
+		table = new Table(TableEnum.TRANSPORTATION_COMPLEX.getName());
+		Table trafficArea = new Table(TableEnum.TRAFFIC_AREA.getName());
 
 		select = new Select().addProjection(table.getColumn("id"), table.getColumn("objectclass_id"));
 		if (projectionFilter.containsProperty("class", transportationModule)) select.addProjection(table.getColumn("class"), table.getColumn("class_codespace"));

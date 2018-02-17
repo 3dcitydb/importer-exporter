@@ -55,10 +55,8 @@ public class DBTrafficArea implements DBImporter {
 	public DBTrafficArea(Connection batchConn, Config config, CityGMLImportManager importer) throws CityGMLImportException, SQLException {
 		this.importer = importer;
 
-		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
-
 		StringBuilder stmt = new StringBuilder()
-				.append("insert into ").append(schema).append(".traffic_area (id, objectclass_id, class, class_codespace, function, function_codespace, usage, usage_codespace, ")
+				.append("insert into traffic_area (id, objectclass_id, class, class_codespace, function, function_codespace, usage, usage_codespace, ")
 				.append("surface_material, surface_material_codespace, lod2_multi_surface_id, lod3_multi_surface_id, lod4_multi_surface_id, ")
 				.append("transportation_complex_id) values ")
 				.append("(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");

@@ -127,11 +127,10 @@ public class DBCityObject implements DBExporter {
 
 		exportAppearance = config.getProject().getExporter().getAppearances().isSetExportAppearance();
 		gmlSrsName = query.getTargetSRS().getGMLSrsName();
-		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 
-		Table cityObject = new Table(TableEnum.CITYOBJECT.getName(), schema);
-		Table externalReference = new Table(TableEnum.EXTERNAL_REFERENCE.getName(), schema);
-		Table generalization = new Table(TableEnum.GENERALIZATION.getName(), schema);
+		Table cityObject = new Table(TableEnum.CITYOBJECT.getName());
+		Table externalReference = new Table(TableEnum.EXTERNAL_REFERENCE.getName());
+		Table generalization = new Table(TableEnum.GENERALIZATION.getName());
 		Select select = new Select();
 
 		select.addProjection(cityObject.getColumn("gmlid"), exporter.getGeometryColumn(cityObject.getColumn("envelope")),

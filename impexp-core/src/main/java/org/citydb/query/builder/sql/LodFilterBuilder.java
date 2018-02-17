@@ -50,14 +50,11 @@ import org.citydb.sqlbuilder.select.operator.set.SetOperationFactory;
 import org.citydb.sqlbuilder.select.operator.set.SetOperationName;
 
 public class LodFilterBuilder {
-	private final String schemaName;
 	private final Matcher lodMatcher;
 	private final FeatureType cityObject;
 	private final List<AppSchema> disabledADESchemas;
 
-	protected LodFilterBuilder(SchemaMapping schemaMapping, String schemaName) {
-		this.schemaName = schemaName;
-
+	protected LodFilterBuilder(SchemaMapping schemaMapping) {
 		cityObject = schemaMapping.getFeatureType("_CityObject", CoreModule.v2_0_0.getNamespaceURI());
 		lodMatcher = Pattern.compile("(?i)^lod([0-4]).*", Pattern.UNICODE_CHARACTER_CLASS).matcher("");		
 		disabledADESchemas = ADEExtensionManager.getInstance().getDisabledSchemas(schemaMapping);
@@ -139,7 +136,7 @@ public class LodFilterBuilder {
 
 	private List<LodFilterQueryContext> buildLodQueryContexts(FeatureType type, Table targetTable) {
 		List<LodFilterQueryContext> contexts = new ArrayList<>();
-		LodFilterQueryContext context = new LodFilterQueryContext(type, schemaName, targetTable);
+		LodFilterQueryContext context = new LodFilterQueryContext(type, targetTable);
 		Table currentTable = context.getTable();
 
 		while (type != null) {
@@ -153,7 +150,7 @@ public class LodFilterBuilder {
 							// found multiple hierarchies within the same type
 							// create new query context
 							contexts.add(context);
-							context = new LodFilterQueryContext(type, schemaName, type.getTable() == null ? currentTable : null);
+							context = new LodFilterQueryContext(type, type.getTable() == null ? currentTable : null);
 						}
 
 						context.setHierachical(true);
@@ -166,14 +163,14 @@ public class LodFilterBuilder {
 				AbstractExtension<FeatureType> extension = type.getExtension();
 				if (extension.isSetJoin()) {
 					org.citydb.database.schema.mapping.Join join = extension.getJoin();
-					currentTable = new Table(join.getTable(), schemaName);
+					currentTable = new Table(join.getTable());
 				}
 
 				type = extension.getBase();
 
 				// create new query context
 				contexts.add(context);
-				context = new LodFilterQueryContext(type, schemaName, currentTable);			
+				context = new LodFilterQueryContext(type, currentTable);
 			} else
 				break;			
 		}
@@ -360,7 +357,7 @@ public class LodFilterBuilder {
 								AbstractExtension<FeatureType> extension = toType.getExtension();
 								if (extension.isSetJoin()) {
 									org.citydb.database.schema.mapping.Join join = (org.citydb.database.schema.mapping.Join)extension.getJoin();
-									Table tmp = new Table(join.getTable(), schemaName);									
+									Table tmp = new Table(join.getTable());
 									subContext.addParentJoin(JoinFactory.simple(tmp, join.getToColumn(), ComparisonName.EQUAL_TO, toTable.getColumn(join.getFromColumn())));
 									toTable = tmp;
 								}
@@ -386,7 +383,7 @@ public class LodFilterBuilder {
 
 								else if (abstractJoin instanceof JoinTable) {
 									JoinTable joinTable = (JoinTable)abstractJoin;
-									Table intermediate = new Table(joinTable.getTable(), schemaName);
+									Table intermediate = new Table(joinTable.getTable());
 									subContext.addParentJoin(JoinFactory.simple(intermediate, joinTable.getInverseJoin().getFromColumn(), ComparisonName.EQUAL_TO, toTable.getColumn(joinTable.getInverseJoin().getToColumn())));
 									subContext.addParentJoin(JoinFactory.simple(fromTable, joinTable.getJoin().getToColumn(), ComparisonName.EQUAL_TO, intermediate.getColumn(joinTable.getJoin().getFromColumn())));
 								}
@@ -406,7 +403,7 @@ public class LodFilterBuilder {
 
 							else if (abstractJoin instanceof JoinTable) {
 								JoinTable joinTable = (JoinTable)abstractJoin;
-								Table intermediate = new Table(joinTable.getTable(), schemaName);
+								Table intermediate = new Table(joinTable.getTable());
 								subContext.setParentCondition(ComparisonFactory.equalTo(intermediate.getColumn(joinTable.getJoin().getFromColumn()), fromTable.getColumn(joinTable.getJoin().getToColumn())));
 								subContext.addParentJoin(JoinFactory.simple(intermediate, joinTable.getInverseJoin().getFromColumn(), ComparisonName.EQUAL_TO, toTable.getColumn(joinTable.getInverseJoin().getToColumn())));
 							}

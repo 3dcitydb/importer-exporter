@@ -44,10 +44,8 @@ public class DBOpeningToThemSurface implements DBImporter {
 	public DBOpeningToThemSurface(Connection batchConn, Config config, CityGMLImportManager importer) throws SQLException {
 		this.importer = importer;
 
-		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
-
 		StringBuilder stmt = new StringBuilder()
-				.append("insert into ").append(schema).append(".opening_to_them_surface (opening_id, thematic_surface_id) values ")
+				.append("insert into opening_to_them_surface (opening_id, thematic_surface_id) values ")
 				.append("(?, ?)");
 		psOpeningToThemSurface = batchConn.prepareStatement(stmt.toString());
 	}

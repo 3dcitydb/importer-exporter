@@ -44,10 +44,8 @@ public class DBAddressToBridge implements DBImporter {
 	public DBAddressToBridge(Connection batchConn, Config config, CityGMLImportManager importer) throws SQLException {
 		this.importer = importer;
 
-		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
-
 		StringBuilder stmt = new StringBuilder()
-				.append("insert into ").append(schema).append(".address_to_bridge (bridge_id, address_id) values ")
+				.append("insert into address_to_bridge (bridge_id, address_id) values ")
 				.append("(?, ?)");
 		psAddressToBridge = batchConn.prepareStatement(stmt.toString());
 	}

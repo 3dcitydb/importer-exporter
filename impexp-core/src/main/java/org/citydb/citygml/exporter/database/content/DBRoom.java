@@ -83,10 +83,9 @@ public class DBRoom extends AbstractFeatureExporter<Room> {
 		CombinedProjectionFilter projectionFilter = exporter.getCombinedProjectionFilter(TableEnum.ROOM.getName());
 		buildingModule = exporter.getTargetCityGMLVersion().getCityGMLModule(CityGMLModuleType.BUILDING).getNamespaceURI();
 		lodFilter = exporter.getLodFilter();
-		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 		hasObjectClassIdColumn = exporter.getDatabaseAdapter().getConnectionMetaData().getCityDBVersion().compareTo(4, 0, 0) >= 0;
 
-		table = new Table(TableEnum.ROOM.getName(), schema);
+		table = new Table(TableEnum.ROOM.getName());
 		select = new Select().addProjection(table.getColumn("id"));
 		if (hasObjectClassIdColumn) select.addProjection(table.getColumn("objectclass_id"));
 		if (projectionFilter.containsProperty("class", buildingModule)) select.addProjection(table.getColumn("class"), table.getColumn("class_codespace"));

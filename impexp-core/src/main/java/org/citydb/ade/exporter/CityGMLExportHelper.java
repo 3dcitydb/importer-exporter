@@ -44,7 +44,6 @@ public interface CityGMLExportHelper {
 	public boolean isFailOnError();
 	public Exporter getExportConfig();
 	
-	public String getTableNameWithSchema(String tableName);
 	public ProjectionToken getGeometryColumn(Column column);
 	public ProjectionToken getGeometryColumn(Column column, String asName);
 	public String getGeometryColumn(String columnName);

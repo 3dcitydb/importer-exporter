@@ -44,10 +44,8 @@ public class DBAppearToSurfaceData implements DBImporter {
 	public DBAppearToSurfaceData(Connection batchConn, Config config, CityGMLImportManager importer) throws SQLException {
 		this.importer = importer;
 
-		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
-
 		StringBuilder stmt = new StringBuilder()
-				.append("insert into ").append(schema).append(".appear_to_surface_data (surface_data_id, appearance_id) values ")
+				.append("insert into appear_to_surface_data (surface_data_id, appearance_id) values ")
 				.append("(?, ?)");
 		psAppearToSurfaceData = batchConn.prepareStatement(stmt.toString());
 	}

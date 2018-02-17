@@ -23,7 +23,6 @@ import org.citydb.sqlbuilder.select.projection.ConstantColumn;
 
 public class LodFilterQueryContext {
 	private final FeatureType type;
-	private final String schema;
 	private final Table table;
 
 	private HashMap<String, Table> injectionTables;
@@ -36,10 +35,9 @@ public class LodFilterQueryContext {
 	private boolean isHierachical = false;
 	private Column targetColumn;
 
-	protected LodFilterQueryContext(FeatureType type, String schema, Table table) {
+	protected LodFilterQueryContext(FeatureType type, Table table) {
 		this.type = type;
-		this.schema = schema;
-		this.table = table == null ? new Table(type.getTable(), schema) : table;
+		this.table = table == null ? new Table(type.getTable()) : table;
 		targetColumn = this.table.getColumn(MappingConstants.ID);
 	}
 
@@ -134,7 +132,7 @@ public class LodFilterQueryContext {
 			injectionTables = new HashMap<>();
 
 		if (table == null) {
-			table = new Table(tableName, schema);
+			table = new Table(tableName);
 			injectionTables.put(tableName, table);
 		}
 

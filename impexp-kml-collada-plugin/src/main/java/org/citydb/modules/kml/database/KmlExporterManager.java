@@ -387,8 +387,6 @@ public class KmlExporterManager {
 		OutputStreamWriter fileWriter = null;
 		SAXEventBuffer buffer = new SAXEventBuffer();
 
-		String schemaName = databaseAdapter.getConnectionDetails().getSchema();
-
 		Marshaller kmlMarshaller = jaxbKmlContext.createMarshaller();
 		if (useTiling && config.getProject().getKmlExporter().isOneFilePerObject()) {
 			kmlMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
@@ -526,7 +524,7 @@ public class KmlExporterManager {
 				Iterator<String> iterator = keySet.iterator();
 				while (iterator.hasNext()) {
 					String imageFilename = iterator.next();
-					byte[] ordImageBytes = textureExportAdapter.getInByteArray(colladaBundle.getUnsupportedTexImageIds().get(imageFilename), schemaName, imageFilename);
+					byte[] ordImageBytes = textureExportAdapter.getInByteArray(colladaBundle.getUnsupportedTexImageIds().get(imageFilename), imageFilename);
 					zipEntry = imageFilename.startsWith("..") ?
 							new ZipEntry(imageFilename.substring(3)): // skip .. and File.separator
 								new ZipEntry(colladaBundle.getId() + "/" + imageFilename);
@@ -600,7 +598,7 @@ public class KmlExporterManager {
 				while (iterator.hasNext()) {
 					String imageFilename = iterator.next();
 					String fileName = buildingDirectory + File.separator + imageFilename;
-					textureExportAdapter.getInFile(colladaBundle.getUnsupportedTexImageIds().get(imageFilename), schemaName, imageFilename, fileName);
+					textureExportAdapter.getInFile(colladaBundle.getUnsupportedTexImageIds().get(imageFilename), imageFilename, fileName);
 				}
 			}
 

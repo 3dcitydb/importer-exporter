@@ -33,7 +33,6 @@ import org.citydb.citygml.exporter.CityGMLExportException;
 import org.citydb.citygml.exporter.util.AttributeValueSplitter;
 import org.citydb.citygml.exporter.util.AttributeValueSplitter.SplitValue;
 import org.citydb.config.Config;
-import org.citydb.util.CoreConstants;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.database.schema.TableEnum;
 import org.citydb.database.schema.mapping.FeatureType;
@@ -50,6 +49,7 @@ import org.citydb.sqlbuilder.select.join.JoinFactory;
 import org.citydb.sqlbuilder.select.operator.comparison.ComparisonFactory;
 import org.citydb.sqlbuilder.select.operator.comparison.ComparisonName;
 import org.citydb.sqlbuilder.select.projection.Function;
+import org.citydb.util.CoreConstants;
 import org.citydb.util.Util;
 import org.citygml4j.geometry.Matrix;
 import org.citygml4j.model.citygml.appearance.AbstractSurfaceData;
@@ -116,7 +116,6 @@ public class AbstractAppearanceExporter extends AbstractTypeExporter {
 
 		texturePath = config.getInternal().getExportTextureFilePath();
 		pathSeparator = config.getProject().getExporter().getAppearances().getTexturePath().isAbsolute() ? File.separator : "/";
-		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 		String getLength = exporter.getDatabaseAdapter().getSQLAdapter().resolveDatabaseOperationName("blob.get_length");
 
 		useXLink = config.getProject().getExporter().getXlink().getFeature().isModeXLink();
@@ -125,10 +124,10 @@ public class AbstractAppearanceExporter extends AbstractTypeExporter {
 			gmlIdPrefix = config.getProject().getExporter().getXlink().getFeature().getIdPrefix();
 		}
 
-		table = new Table(TableEnum.APPEARANCE.getName(), schema);
-		Table appearToSurfaceData = new Table(TableEnum.APPEAR_TO_SURFACE_DATA.getName(), schema);
-		Table surfaceData = new Table(TableEnum.SURFACE_DATA.getName(), schema);
-		Table texImage = new Table(TableEnum.TEX_IMAGE.getName(), schema);
+		table = new Table(TableEnum.APPEARANCE.getName());
+		Table appearToSurfaceData = new Table(TableEnum.APPEAR_TO_SURFACE_DATA.getName());
+		Table surfaceData = new Table(TableEnum.SURFACE_DATA.getName());
+		Table texImage = new Table(TableEnum.TEX_IMAGE.getName());
 
 		select = new Select().addProjection(table.getColumn("id"), table.getColumn("gmlid"), table.getColumn("name"),table.getColumn("name_codespace"), table.getColumn("description"), table.getColumn("theme"),
 				surfaceData.getColumn("id"), surfaceData.getColumn("objectclass_id"), surfaceData.getColumn("gmlid"),surfaceData.getColumn("name"), surfaceData.getColumn("name_codespace"), surfaceData.getColumn("description"),

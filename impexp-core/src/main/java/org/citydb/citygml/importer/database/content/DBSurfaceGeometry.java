@@ -96,7 +96,6 @@ public class DBSurfaceGeometry implements DBImporter {
 	private DBAppearance appearanceImporter;
 	private PrimaryKeyManager pkManager;
 
-	private String schema;
 	private int dbSrid;
 	private boolean replaceGmlId;
 	private boolean importAppearance;
@@ -118,7 +117,6 @@ public class DBSurfaceGeometry implements DBImporter {
 		applyTransformation = config.getProject().getImporter().getAffineTransformation().isSetUseAffineTransformation();
 		nullGeometryType = importer.getDatabaseAdapter().getGeometryConverter().getNullGeometryType();
 		nullGeometryTypeName = importer.getDatabaseAdapter().getGeometryConverter().getNullGeometryTypeName();
-		schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
 		String gmlIdCodespace = config.getInternal().getCurrentGmlIdCodespace();
 		if (gmlIdCodespace != null && gmlIdCodespace.length() > 0)
 			gmlIdCodespace = "'" + gmlIdCodespace + "', ";
@@ -126,7 +124,7 @@ public class DBSurfaceGeometry implements DBImporter {
 			gmlIdCodespace = null;		
 
 		StringBuilder stmt = new StringBuilder()
-				.append("insert into ").append(schema).append(".surface_geometry (id, gmlid, ").append(gmlIdCodespace != null ? "gmlid_codespace, " : "")
+				.append("insert into surface_geometry (id, gmlid, ").append(gmlIdCodespace != null ? "gmlid_codespace, " : "")
 				.append("parent_id, root_id, is_solid, is_composite, is_triangulated, is_xlink, is_reverse, geometry, solid_geometry, implicit_geometry, cityobject_id) values ")
 				.append("(?, ?, ").append(gmlIdCodespace != null ? gmlIdCodespace : "").append("?, ?, ?, ?, ?, ?, ?, ?, ");
 
@@ -1303,7 +1301,6 @@ public class DBSurfaceGeometry implements DBImporter {
 			ResultSet rs = null;
 			try {
 				psNextSeqValues.setInt(1, count);
-				psNextSeqValues.setString(2, schema);
 				rs = psNextSeqValues.executeQuery();
 
 				ids = new long[count];

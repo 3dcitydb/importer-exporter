@@ -66,9 +66,8 @@ public class DBTextureParam implements DBExporter {
 	public DBTextureParam(boolean isGlobal, Connection connection, CacheTable cacheTable, Config config, CityGMLExportManager exporter) throws SQLException {
 		this.exporter = exporter;
 		
-		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
-		Table textureParam = new Table(TableEnum.TEXTUREPARAM.getName(), schema);
-		Table surfaceGeometry = new Table(TableEnum.SURFACE_GEOMETRY.getName(), schema);
+		Table textureParam = new Table(TableEnum.TEXTUREPARAM.getName());
+		Table surfaceGeometry = new Table(TableEnum.SURFACE_GEOMETRY.getName());
 		Select select = new Select().addProjection(textureParam.getColumn("world_to_texture"), textureParam.getColumn("texture_coordinates"),
 				surfaceGeometry.getColumn("gmlid"), surfaceGeometry.getColumn("is_reverse "))
 				.addSelection(ComparisonFactory.equalTo(textureParam.getColumn("surface_data_id"), new PlaceHolder<>()));

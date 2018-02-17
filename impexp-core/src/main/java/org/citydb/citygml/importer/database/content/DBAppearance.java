@@ -66,7 +66,6 @@ public class DBAppearance implements DBImporter {
 		this.importer = importer;
 
 		replaceGmlId = config.getProject().getImporter().getGmlId().isUUIDModeReplace();
-		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
 		String gmlIdCodespace = config.getInternal().getCurrentGmlIdCodespace();
 
 		if (gmlIdCodespace != null && gmlIdCodespace.length() > 0)
@@ -75,7 +74,7 @@ public class DBAppearance implements DBImporter {
 			gmlIdCodespace = null;		
 
 		StringBuilder stmt = new StringBuilder()
-				.append("insert into ").append(schema).append(".appearance (id, gmlid, ").append(gmlIdCodespace != null ? "gmlid_codespace, " : "")
+				.append("insert into appearance (id, gmlid, ").append(gmlIdCodespace != null ? "gmlid_codespace, " : "")
 				.append("name, name_codespace, description, theme, citymodel_id, cityobject_id) values ")
 				.append("(?, ?, ").append(gmlIdCodespace != null ? gmlIdCodespace : "").append("?, ?, ?, ?, ?, ?)");
 		psAppearance = batchConn.prepareStatement(stmt.toString());

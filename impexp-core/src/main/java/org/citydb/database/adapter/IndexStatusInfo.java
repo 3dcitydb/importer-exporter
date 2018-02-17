@@ -78,12 +78,11 @@ public class IndexStatusInfo {
 						obj.status = IndexStatus.ERROR;
 
 					obj.name = parts[1].toUpperCase();
-					obj.schema = parts[2];
-					obj.table = parts[3].toUpperCase();
-					obj.column = parts[4].toUpperCase();
+					obj.table = parts[2].toUpperCase();
+					obj.column = parts[3].toUpperCase();
 
-					if (parts.length > 5 && !parts[5].equals("0"))
-						obj.errorMessage = parts[5];
+					if (parts.length > 4 && !parts[4].equals("0"))
+						obj.errorMessage = parts[4];
 					else
 						obj.errorMessage = "";
 					
@@ -148,7 +147,6 @@ public class IndexStatusInfo {
 	
 	public static final class IndexInfoObject {
 		private String name;
-		private String schema;
 		private String table;
 		private String column;
 		private IndexStatus status;
@@ -156,10 +154,6 @@ public class IndexStatusInfo {
 
 		public String getName() {
 			return name;
-		}
-
-		public String getSchema() {
-			return schema;
 		}
 		
 		public String getTable() {
@@ -183,7 +177,7 @@ public class IndexStatusInfo {
 		}
 		
 		public String toString() {
-			return new StringBuilder().append(name).append(" on ").append(schema).append(".").append(table).append("(").append(column).append(")").toString();
+			return new StringBuilder().append(name).append(" on ").append(table).append("(").append(column).append(")").toString();
 		}
 	}
 

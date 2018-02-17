@@ -51,14 +51,13 @@ public class DBGmlIdResolver {
 	public DBGmlIdResolver(Connection commitConn, AbstractDatabaseAdapter databaseAdapter, UIDCacheManager uidCacheManager) throws SQLException {
 		this.conn = commitConn;
 		this.uidCacheManager = uidCacheManager;
-		String schema = databaseAdapter.getConnectionDetails().getSchema();
 
 		StringBuilder geomStmt = new StringBuilder()
-		.append("select ID from ").append(schema).append(".SURFACE_GEOMETRY where ROOT_ID=? and GMLID=?");
+		.append("select ID from SURFACE_GEOMETRY where ROOT_ID=? and GMLID=?");
 		psSurfaceGeometryId = conn.prepareStatement(geomStmt.toString());
 		
 		StringBuilder objStmt = new StringBuilder()
-		.append("select ID, OBJECTCLASS_ID from ").append(schema).append(".CITYOBJECT where GMLID=?");
+		.append("select ID, OBJECTCLASS_ID from CITYOBJECT where GMLID=?");
 		psCityObjectId = conn.prepareStatement(objStmt.toString());
 	}
 	

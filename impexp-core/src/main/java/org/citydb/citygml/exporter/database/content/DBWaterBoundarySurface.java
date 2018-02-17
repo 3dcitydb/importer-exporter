@@ -68,9 +68,8 @@ public class DBWaterBoundarySurface extends AbstractFeatureExporter<AbstractWate
 		CombinedProjectionFilter projectionFilter = exporter.getCombinedProjectionFilter(TableEnum.WATERBOUNDARY_SURFACE.getName());
 		waterBodyModule = exporter.getTargetCityGMLVersion().getCityGMLModule(CityGMLModuleType.WATER_BODY).getNamespaceURI();
 		lodFilter = exporter.getLodFilter();
-		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();		
 
-		table = new Table(TableEnum.WATERBOUNDARY_SURFACE.getName(), schema);
+		table = new Table(TableEnum.WATERBOUNDARY_SURFACE.getName());
 		select = new Select().addProjection(table.getColumn("id"), table.getColumn("objectclass_id"));
 		if (projectionFilter.containsProperty("waterLevel", waterBodyModule)) select.addProjection(table.getColumn("water_level"), table.getColumn("water_level_codespace"));
 		if (projectionFilter.containsProperty("lod2Surface", waterBodyModule)) select.addProjection(table.getColumn("lod2_surface_id"));

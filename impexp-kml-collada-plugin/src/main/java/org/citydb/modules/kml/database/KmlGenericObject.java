@@ -236,7 +236,7 @@ public abstract class KmlGenericObject {
 		defaultX3dMaterial.setSpecularColor(getX3dColorFromString("1.0 1.0 1.0"));
 		defaultX3dMaterial.setEmissiveColor(getX3dColorFromString("0.0 0.0 0.0"));
 
-		queries = new Queries(databaseAdapter, kmlExporterManager.getDatabaseAdapter().getConnectionDetails().getSchema());
+		queries = new Queries(databaseAdapter);
 		imageReader = new ImageReader();
 	}
 
@@ -1758,7 +1758,6 @@ public abstract class KmlGenericObject {
 	}
 
 	protected void fillGenericObjectForCollada(ResultSet _rs, boolean generateTextureAtlas, AffineTransformer transformer) throws SQLException {
-		String schema = kmlExporterManager.getDatabaseAdapter().getConnectionDetails().getSchema();
 		HashSet<String> exportedGmlIds = new HashSet<String>();
 
 		String selectedTheme = config.getProject().getKmlExporter().getAppearanceTheme();
@@ -1928,7 +1927,7 @@ public abstract class KmlGenericObject {
 								texImageUri = "_" + texImageUri.substring(fileSeparatorIndex + 1); // for example: _tex4712047.jpeg
 
 								if ((getUnsupportedTexImageId(texImageUri) == -1) && (getTexImage(texImageUri) == null)) { 
-									byte[] imageBytes = textureExportAdapter.getInByteArray(textureImageId, schema, texImageUri);
+									byte[] imageBytes = textureExportAdapter.getInByteArray(textureImageId, texImageUri);
 									if (imageBytes != null) {
 										imageReader.setSupportRGB(generateTextureAtlas);
 
@@ -2246,7 +2245,6 @@ public abstract class KmlGenericObject {
 	}
 
 	protected void addBalloonContents(PlacemarkType placemark, long id) {
-		String schemaName = kmlExporterManager.getDatabaseAdapter().getConnectionDetails().getSchema();
 		try {
 			switch (getBalloonSettings().getBalloonContentMode()) {
 			case GEN_ATTRIB:
@@ -2255,19 +2253,19 @@ public abstract class KmlGenericObject {
 					if (getBalloonTemplateHandler() == null) { // just in case
 						setBalloonTemplateHandler(new BalloonTemplateHandler(balloonTemplate, databaseAdapter));
 					}
-					placemark.setDescription(getBalloonTemplateHandler().getBalloonContent(balloonTemplate, id, currentLod, connection, schemaName));
+					placemark.setDescription(getBalloonTemplateHandler().getBalloonContent(balloonTemplate, id, currentLod, connection));
 				}
 				break;
 			case GEN_ATTRIB_AND_FILE:
 				balloonTemplate = getBalloonContentFromGenericAttribute(id);
 				if (balloonTemplate != null) {
-					placemark.setDescription(getBalloonTemplateHandler().getBalloonContent(balloonTemplate, id, currentLod, connection, schemaName));
+					placemark.setDescription(getBalloonTemplateHandler().getBalloonContent(balloonTemplate, id, currentLod, connection));
 					break;
 				}
 			case FILE :
 				if (getBalloonTemplateHandler() != null) {
-					getBalloonTemplateHandler().getBalloonContent(id, currentLod, connection, schemaName);
-					placemark.setDescription(getBalloonTemplateHandler().getBalloonContent(id, currentLod, connection, schemaName));
+					getBalloonTemplateHandler().getBalloonContent(id, currentLod, connection);
+					placemark.setDescription(getBalloonTemplateHandler().getBalloonContent(id, currentLod, connection));
 				}
 				break;
 			}

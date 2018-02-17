@@ -27,15 +27,6 @@
  */
 package org.citydb.database.adapter.postgis;
 
-import java.sql.Array;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Types;
-import java.util.List;
-
 import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.config.geometry.Position;
@@ -52,6 +43,15 @@ import org.citydb.util.Util;
 import org.postgis.Geometry;
 import org.postgis.PGbox2d;
 import org.postgis.PGgeometry;
+
+import java.sql.Array;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Types;
+import java.util.List;
 
 public class UtilAdapter extends AbstractUtilAdapter {
 	private final DatabaseSrs WGS843D_SRS = new DatabaseSrs(4326, "", "", "", DatabaseSrsType.GEOGRAPHIC2D, true);
@@ -193,11 +193,10 @@ public class UtilAdapter extends AbstractUtilAdapter {
 	}
 
 	@Override
-	protected String[] createDatabaseReport(String schema, Connection connection) throws SQLException {
+	protected String[] createDatabaseReport(Connection connection) throws SQLException {
 		try {
 			interruptableCallableStatement = connection.prepareCall("{? = call " + databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_stat.table_contents") + "(?)}");
 			interruptableCallableStatement.registerOutParameter(1, Types.ARRAY);
-			interruptableCallableStatement.setString(2, schema);
 			interruptableCallableStatement.executeUpdate();
 
 			Array result = interruptableCallableStatement.getArray(1);
@@ -223,13 +222,13 @@ public class UtilAdapter extends AbstractUtilAdapter {
 	}
 
 	@Override
-	protected BoundingBox calcBoundingBox(String schema, List<Integer> objectClassIds, Connection connection) throws SQLException {
+	protected BoundingBox calcBoundingBox(List<Integer> objectClassIds, Connection connection) throws SQLException {
 		BoundingBox bbox = null;
 		ResultSet rs = null;
 
 		try {		
 			StringBuilder query = new StringBuilder()
-			.append("select ST_Extent(envelope) from ").append(schema).append(".cityobject where envelope is not null");
+			.append("select ST_Extent(envelope) from cityobject where envelope is not null");
 
 			if (!objectClassIds.isEmpty())
 				query.append(" and OBJECTCLASS_ID in (").append(Util.collection2string(objectClassIds, ", ")).append(") ");
@@ -346,12 +345,11 @@ public class UtilAdapter extends AbstractUtilAdapter {
 	}
 
 	@Override
-	protected IndexStatusInfo manageIndexes(String operation, IndexType type, String schema, Connection connection) throws SQLException {
+	protected IndexStatusInfo manageIndexes(String operation, IndexType type, Connection connection) throws SQLException {
 		try {
 			String call = "{? = call " + databaseAdapter.getSQLAdapter().resolveDatabaseOperationName(operation) + "(?)}";
 			interruptableCallableStatement = connection.prepareCall(call);
 			interruptableCallableStatement.registerOutParameter(1, Types.ARRAY);
-			interruptableCallableStatement.setString(2, schema);
 			interruptableCallableStatement.executeUpdate();
 
 			Array result = interruptableCallableStatement.getArray(1);
@@ -377,7 +375,7 @@ public class UtilAdapter extends AbstractUtilAdapter {
 	}
 
 	@Override
-	protected boolean updateTableStats(IndexType type, String schema, Connection connection) throws SQLException {
+	protected boolean updateTableStats(IndexType type, Connection connection) throws SQLException {
 		PreparedStatement pStmt = null;
 		ResultSet rs = null;
 
@@ -391,7 +389,7 @@ public class UtilAdapter extends AbstractUtilAdapter {
 				String attributeName = rs.getString(2);
 
 				StringBuilder vacuumStmt = new StringBuilder("VACUUM ANALYZE ")
-				.append(schema).append(".").append(tableName).append(" (").append(attributeName).append(")");
+				.append(tableName).append(" (").append(attributeName).append(")");
 
 				interruptableStatement = connection.createStatement();
 				interruptableStatement.executeUpdate(vacuumStmt.toString());

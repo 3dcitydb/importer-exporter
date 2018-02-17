@@ -86,20 +86,19 @@ public class DBReliefFeature extends AbstractFeatureExporter<ReliefFeature> {
 		CombinedProjectionFilter componentProjectionFilter = exporter.getCombinedProjectionFilter(TableEnum.RELIEF_COMPONENT.getName());
 		reliefModule = exporter.getTargetCityGMLVersion().getCityGMLModule(CityGMLModuleType.RELIEF).getNamespaceURI();
 		lodFilter = exporter.getLodFilter();
-		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 		hasObjectClassIdColumn = exporter.getDatabaseAdapter().getConnectionMetaData().getCityDBVersion().compareTo(4, 0, 0) >= 0;
 		useXLink = config.getProject().getExporter().getXlink().getFeature().isModeXLink();
 
-		table = new Table(TableEnum.RELIEF_FEATURE.getName(), schema);
-		Table reliefComponent = new Table(TableEnum.RELIEF_COMPONENT.getName(), schema);
+		table = new Table(TableEnum.RELIEF_FEATURE.getName());
+		Table reliefComponent = new Table(TableEnum.RELIEF_COMPONENT.getName());
 
 		select = new Select().addProjection(table.getColumn("id"), table.getColumn("lod", "rf_lod"));
 		if (hasObjectClassIdColumn) select.addProjection(table.getColumn("objectclass_id"));
 		if (projectionFilter.containsProperty("reliefComponent", reliefModule)) {
-			Table reliefFeatToRelComp = new Table(TableEnum.RELIEF_FEAT_TO_REL_COMP.getName(), schema);
-			Table tinRelief = new Table(TableEnum.TIN_RELIEF.getName(), schema);
-			Table massPointRelief = new Table(TableEnum.MASSPOINT_RELIEF.getName(), schema);
-			Table breakLineRelief = new Table(TableEnum.BREAKLINE_RELIEF.getName(), schema);
+			Table reliefFeatToRelComp = new Table(TableEnum.RELIEF_FEAT_TO_REL_COMP.getName());
+			Table tinRelief = new Table(TableEnum.TIN_RELIEF.getName());
+			Table massPointRelief = new Table(TableEnum.MASSPOINT_RELIEF.getName());
+			Table breakLineRelief = new Table(TableEnum.BREAKLINE_RELIEF.getName());
 			select.addJoin(JoinFactory.inner(reliefFeatToRelComp, "relief_feature_id", ComparisonName.EQUAL_TO, table.getColumn("id")))
 			.addJoin(JoinFactory.inner(reliefComponent, "id", ComparisonName.EQUAL_TO, reliefFeatToRelComp.getColumn("relief_component_id")))
 			.addJoin(JoinFactory.left(tinRelief, "id", ComparisonName.EQUAL_TO, reliefComponent.getColumn("id")))

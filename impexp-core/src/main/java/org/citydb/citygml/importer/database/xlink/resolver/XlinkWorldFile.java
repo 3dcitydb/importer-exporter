@@ -57,10 +57,9 @@ public class XlinkWorldFile implements DBXlinkResolver {
 		this.resolverManager = resolverManager;
 
 		dbSrid = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter().getConnectionMetaData().getReferenceSystem().getSrid();
-		String schema = resolverManager.getDatabaseAdapter().getConnectionDetails().getSchema();
 
 		StringBuilder stmt = new StringBuilder()
-		.append("update ").append(schema).append(".SURFACE_DATA set GT_ORIENTATION=?, GT_REFERENCE_POINT=? where ID=?");
+		.append("update SURFACE_DATA set GT_ORIENTATION=?, GT_REFERENCE_POINT=? where ID=?");
         psUpdate = batchConn.prepareStatement(stmt.toString());
 	}
 

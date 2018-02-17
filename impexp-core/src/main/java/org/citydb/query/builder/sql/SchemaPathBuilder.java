@@ -1,11 +1,5 @@
 package org.citydb.query.builder.sql;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Set;
-import java.util.Stack;
-
 import org.citydb.database.adapter.AbstractSQLAdapter;
 import org.citydb.database.schema.mapping.AbstractExtension;
 import org.citydb.database.schema.mapping.AbstractJoin;
@@ -38,7 +32,6 @@ import org.citydb.database.schema.path.predicate.logical.LogicalPredicateName;
 import org.citydb.query.builder.QueryBuildException;
 import org.citydb.query.filter.selection.expression.LiteralType;
 import org.citydb.query.filter.selection.expression.TimestampLiteral;
-
 import org.citydb.sqlbuilder.expression.AbstractSQLLiteral;
 import org.citydb.sqlbuilder.expression.DoubleLiteral;
 import org.citydb.sqlbuilder.expression.Expression;
@@ -60,9 +53,14 @@ import org.citydb.sqlbuilder.select.operator.logical.BinaryLogicalOperator;
 import org.citydb.sqlbuilder.select.operator.logical.LogicalOperationName;
 import org.citydb.sqlbuilder.select.projection.Function;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Set;
+import java.util.Stack;
+
 public class SchemaPathBuilder {
 	private final AbstractSQLAdapter sqlAdapter;
-	private final String schemaName;
 	private final BuildProperties buildProperties;
 	private final DefaultAliasGenerator aliasGenerator;
 
@@ -71,9 +69,8 @@ public class SchemaPathBuilder {
 	private AbstractNode<?> currentNode;
 	private boolean matchCase;
 
-	protected SchemaPathBuilder(AbstractSQLAdapter sqlAdapter, String schemaName, BuildProperties buildProperties) {
+	protected SchemaPathBuilder(AbstractSQLAdapter sqlAdapter, BuildProperties buildProperties) {
 		this.sqlAdapter = sqlAdapter;
-		this.schemaName = schemaName;
 		this.buildProperties = buildProperties;
 
 		aliasGenerator = new DefaultAliasGenerator();
@@ -101,7 +98,7 @@ public class SchemaPathBuilder {
 		aliasGenerator.reset();
 
 		tableContext = new Stack<HashMap<String, Table>>();
-		currentTable = new Table(head.getPathElement().getTable(), schemaName, aliasGenerator);
+		currentTable = new Table(head.getPathElement().getTable(), aliasGenerator);
 		currentNode = head;
 
 		this.matchCase = matchCase;
@@ -333,7 +330,7 @@ public class SchemaPathBuilder {
 
 			Table junctionTable = tableContext.peek().get(joinTable.getTable());
 			if (junctionTable == null)
-				junctionTable = new Table(joinTable.getTable(), schemaName, aliasGenerator);
+				junctionTable = new Table(joinTable.getTable(), aliasGenerator);
 
 			tableContext.push(new HashMap<String, Table>());
 			tableContext.peek().put(currentTable.getName(), currentTable);
@@ -379,7 +376,7 @@ public class SchemaPathBuilder {
 		}
 
 		if (toTable == null)
-			toTable = new Table(joinTable, schemaName, aliasGenerator);
+			toTable = new Table(joinTable, aliasGenerator);
 
 		select.addJoin(JoinFactory.simple(toTable, join.getToColumn(), ComparisonName.EQUAL_TO, currentTable.getColumn(join.getFromColumn())));
 

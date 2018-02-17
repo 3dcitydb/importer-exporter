@@ -44,10 +44,8 @@ public class DBReliefFeatToRelComp implements DBImporter {
 	public DBReliefFeatToRelComp(Connection batchConn, Config config, CityGMLImportManager importer) throws SQLException {
 		this.importer = importer;
 
-		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
-
 		StringBuilder stmt = new StringBuilder()
-				.append("insert into ").append(schema).append(".relief_feat_to_rel_comp (relief_component_id, relief_feature_id) values ")
+				.append("insert into relief_feat_to_rel_comp (relief_component_id, relief_feature_id) values ")
 				.append("(?, ?)");
 		psReliefFeatToRelComp = batchConn.prepareStatement(stmt.toString());
 	}

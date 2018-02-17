@@ -79,10 +79,9 @@ public class DBOpening extends AbstractFeatureExporter<AbstractOpening> {
 		CombinedProjectionFilter projectionFilter = exporter.getCombinedProjectionFilter(TableEnum.OPENING.getName());
 		buildingModule = exporter.getTargetCityGMLVersion().getCityGMLModule(CityGMLModuleType.BUILDING).getNamespaceURI();
 		lodFilter = exporter.getLodFilter();
-		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 
-		table = new Table(TableEnum.OPENING.getName(), schema);
-		Table address = new Table(TableEnum.ADDRESS.getName(), schema);
+		table = new Table(TableEnum.OPENING.getName());
+		Table address = new Table(TableEnum.ADDRESS.getName());
 
 		select = new Select().addProjection(table.getColumn("id"), table.getColumn("objectclass_id"));
 		if (projectionFilter.containsProperty("lod3MultiSurface", buildingModule)) select.addProjection(table.getColumn("lod3_multi_surface_id"));

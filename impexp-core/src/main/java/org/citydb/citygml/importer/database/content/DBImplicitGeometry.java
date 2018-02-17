@@ -66,17 +66,15 @@ public class DBImplicitGeometry implements DBImporter {
 		this.batchConn = batchConn;
 		this.importer = importer;
 
-		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
-
 		StringBuilder insertStmt = new StringBuilder()
-				.append("insert into ").append(schema).append(".implicit_geometry (id, reference_to_library) values ")
+				.append("insert into implicit_geometry (id, reference_to_library) values ")
 				.append("(?, ?)");
 
 		StringBuilder updateStmt = new StringBuilder()
-				.append("update ").append(schema).append(".implicit_geometry set mime_type=?, relative_brep_id=?, relative_other_geom=? where id=?");
+				.append("update implicit_geometry set mime_type=?, relative_brep_id=?, relative_other_geom=? where id=?");
 
 		StringBuilder selectStmt = new StringBuilder()
-				.append("select ID from ").append(schema).append(".implicit_geometry where reference_to_library=?");
+				.append("select ID from implicit_geometry where reference_to_library=?");
 
 		psImplicitGeometry = batchConn.prepareStatement(insertStmt.toString());
 		psUpdateImplicitGeometry = batchConn.prepareStatement(updateStmt.toString());

@@ -54,11 +54,10 @@ public class DBReliefFeature implements DBImporter {
 	public DBReliefFeature(Connection batchConn, Config config, CityGMLImportManager importer) throws CityGMLImportException, SQLException {
 		this.importer = importer;
 
-		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
 		hasObjectClassIdColumn = importer.getDatabaseAdapter().getConnectionMetaData().getCityDBVersion().compareTo(4, 0, 0) >= 0;
 
 		StringBuilder stmt = new StringBuilder()
-				.append("insert into ").append(schema).append(".relief_feature (id, lod")
+				.append("insert into relief_feature (id, lod")
 				.append(hasObjectClassIdColumn ? ", objectclass_id) " : ") ")
 				.append("values (?, ?")
 				.append(hasObjectClassIdColumn ? ", ?)" : ")");

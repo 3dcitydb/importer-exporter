@@ -58,11 +58,10 @@ public class XlinkSolidGeometry implements DBXlinkResolver {
 		this.batchConn = batchConn;
 		this.resolverManager = resolverManager;
 
-		String schema = resolverManager.getDatabaseAdapter().getConnectionDetails().getSchema();
 		dbSrid = resolverManager.getDatabaseAdapter().getConnectionMetaData().getReferenceSystem().getSrid();
-		psSelectSurfGeom = batchConn.prepareStatement(resolverManager.getDatabaseAdapter().getSQLAdapter().getHierarchicalGeometryQuery(schema));
+		psSelectSurfGeom = batchConn.prepareStatement(resolverManager.getDatabaseAdapter().getSQLAdapter().getHierarchicalGeometryQuery());
 
-		StringBuilder stmt = new StringBuilder("update ").append(schema).append(".SURFACE_GEOMETRY set SOLID_GEOMETRY=");
+		StringBuilder stmt = new StringBuilder("update SURFACE_GEOMETRY set SOLID_GEOMETRY=");
 		if (resolverManager.getDatabaseAdapter().getDatabaseType() == DatabaseType.POSTGIS) {
 			// the current PostGIS JDBC driver lacks support for geometry objects of type PolyhedralSurface
 			// thus, we have to use the database function ST_GeomFromEWKT to insert such geometries

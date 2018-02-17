@@ -34,11 +34,9 @@ import org.citydb.database.schema.SequenceEnum;
 
 public class Queries {
 	private AbstractDatabaseAdapter databaseAdapter;
-	private String schema;
 
-	public Queries(AbstractDatabaseAdapter databaseAdapter, String schema) {
+	public Queries(AbstractDatabaseAdapter databaseAdapter) {
 		this.databaseAdapter = databaseAdapter;
-		this.schema = schema;
 	}
 
 	// ----------------------------------------------------------------------
@@ -57,14 +55,14 @@ public class Queries {
 			.append("sd.tex_image_id, ti.tex_image_uri, tp.texture_coordinates, coalesce(a.theme, '<unknown>') theme ");
 		}
 
-		query.append("FROM ").append(schema).append(".surface_geometry sg ");
+		query.append("FROM surface_geometry sg ");
 
 		if (exportAppearance) {
-			query.append("LEFT JOIN ").append(schema).append(".textureparam tp ON tp.surface_geometry_id = sg.id ")
-			.append("LEFT JOIN ").append(schema).append(".surface_data sd ON sd.id = tp.surface_data_id ")
-			.append("LEFT JOIN ").append(schema).append(".tex_image ti ON ti.id = sd.tex_image_id ")
-			.append("LEFT JOIN ").append(schema).append(".appear_to_surface_data a2sd ON a2sd.surface_data_id = sd.id ")
-			.append("LEFT JOIN ").append(schema).append(".appearance a ON a2sd.appearance_id = a.id ");
+			query.append("LEFT JOIN textureparam tp ON tp.surface_geometry_id = sg.id ")
+			.append("LEFT JOIN surface_data sd ON sd.id = tp.surface_data_id ")
+			.append("LEFT JOIN tex_image ti ON ti.id = sd.tex_image_id ")
+			.append("LEFT JOIN appear_to_surface_data a2sd ON a2sd.surface_data_id = sd.id ")
+			.append("LEFT JOIN appearance a ON a2sd.appearance_id = a.id ");
 		}
 
 		query.append("WHERE sg.root_id = ? ")
@@ -79,7 +77,7 @@ public class Queries {
 
 	public String getIds() {
 		StringBuilder query = new StringBuilder()
-		.append("SELECT co.id, co.gmlid, co.objectclass_id, co.envelope FROM ").append(schema).append(".CITYOBJECT co WHERE ");
+		.append("SELECT co.id, co.gmlid, co.objectclass_id, co.envelope FROM CITYOBJECT co WHERE ");
 
 		switch (databaseAdapter.getDatabaseType()) {
 		case ORACLE:
@@ -98,12 +96,12 @@ public class Queries {
 		case ORACLE:
 			return new StringBuilder("SELECT ")
 			.append("SDO_GEOM.SDO_MAX_MBR_ORDINATE(co.envelope, 3) - SDO_GEOM.SDO_MIN_MBR_ORDINATE(co.envelope, 3) AS envelope_measured_height ")
-			.append("FROM ").append(schema).append(".CITYOBJECT co ")
+			.append("FROM CITYOBJECT co ")
 			.append("WHERE co.id = ?").toString();
 		case POSTGIS:
 			return new StringBuilder("SELECT ")
 			.append("ST_ZMax(Box3D(co.envelope)) - ST_ZMin(Box3D(co.envelope)) AS envelope_measured_height ")
-			.append("FROM ").append(schema).append(".CITYOBJECT co ")
+			.append("FROM CITYOBJECT co ")
 			.append("WHERE co.id = ?").toString();
 		default:
 			return null;
@@ -112,25 +110,25 @@ public class Queries {
 
 	public String getStringAttributeById() {
 		return new StringBuilder("SELECT coga.strval ")
-		.append("FROM ").append(schema).append(".CITYOBJECT_GENERICATTRIB coga ")
+		.append("FROM CITYOBJECT_GENERICATTRIB coga ")
 		.append("WHERE coga.cityobject_id = ? AND coga.attrname = ? ").toString();
 	}
 
 	public String getIdByGmlId() {
-		return new StringBuilder("SELECT id FROM ").append(schema).append(".CITYOBJECT WHERE gmlid = ?").toString();
+		return new StringBuilder("SELECT id FROM CITYOBJECT WHERE gmlid = ?").toString();
 	}
 
 	public String getIdAndObjectClassByGmlId() {
-		return new StringBuilder("SELECT id, objectclass_id FROM ").append(schema).append(".CITYOBJECT WHERE gmlid = ?").toString();
+		return new StringBuilder("SELECT id, objectclass_id FROM CITYOBJECT WHERE gmlid = ?").toString();
 	}
 
 	public String getGmlIdAndObjectClassById() {
-		return new StringBuilder("SELECT gmlid, objectclass_id FROM ").append(schema).append(".CITYOBJECT WHERE id = ?").toString();
+		return new StringBuilder("SELECT gmlid, objectclass_id FROM CITYOBJECT WHERE id = ?").toString();
 	}
 
 	public String insertGEOffset() {
-		return new StringBuilder("INSERT INTO ").append(schema).append(".CITYOBJECT_GENERICATTRIB (ID, ATTRNAME, DATATYPE, STRVAL, CITYOBJECT_ID) ")
-				.append("VALUES (").append(databaseAdapter.getSQLAdapter().getNextSequenceValue(SequenceEnum.CITYOBJECT_GENERICATTRIB_ID_SEQ.getName(), schema)).append(", ?, 1, ?, ?)").toString();
+		return new StringBuilder("INSERT INTO CITYOBJECT_GENERICATTRIB (ID, ATTRNAME, DATATYPE, STRVAL, CITYOBJECT_ID) ")
+				.append("VALUES (").append(databaseAdapter.getSQLAdapter().getNextSequenceValue(SequenceEnum.CITYOBJECT_GENERICATTRIB_ID_SEQ.getName())).append(", ?, 1, ?, ?)").toString();
 	}
 	
 	public String transformGeometryToDBSrs() {
@@ -146,7 +144,7 @@ public class Queries {
 	// ----------------------------------------------------------------------
 
 	public String getBuildingPartsFromBuilding() {
-		return new StringBuilder("SELECT id FROM ").append(schema).append(".BUILDING WHERE building_root_id = ?").toString();
+		return new StringBuilder("SELECT id FROM BUILDING WHERE building_root_id = ?").toString();
 	}
 
 	private String getBuildingPartFootprint(int lod, Lod0FootprintMode lod0FootprintMode) {
@@ -154,15 +152,15 @@ public class Queries {
 
 		if (lod == 0) {
 			if (lod0FootprintMode == Lod0FootprintMode.FOOTPRINT) {
-				query.append("SELECT sg.geometry FROM ").append(schema).append(".surface_geometry sg, ")
-				.append(schema).append(".building b ")
+				query.append("SELECT sg.geometry FROM surface_geometry sg, ")
+				.append("building b ")
 				.append("WHERE b.lod0_footprint_id = sg.root_id ")
 				.append("AND sg.geometry IS NOT NULL AND b.id = ?");
 			}
 
 			else if (lod0FootprintMode == Lod0FootprintMode.ROOFPRINT || lod0FootprintMode == Lod0FootprintMode.ROOFPRINT_PRIOR_FOOTPRINT) {
-				query.append("SELECT sg.geometry FROM ").append(schema).append(".surface_geometry sg, ")
-				.append(schema).append(".building b ")
+				query.append("SELECT sg.geometry FROM surface_geometry sg, ")
+				.append("building b ")
 				.append("WHERE b.lod0_roofprint_id = sg.root_id ")
 				.append("AND sg.geometry IS NOT NULL AND b.id = ?");
 			}
@@ -172,7 +170,7 @@ public class Queries {
 			switch (databaseAdapter.getDatabaseType()) {
 			case ORACLE:
 				return getBuildingPartAggregateGeometriesForLOD1().replace("<TOLERANCE>", "0.001")
-						.replace("<2D_SRID>", "(SELECT SRID FROM " + schema + ".DATABASE_SRS)")
+						.replace("<2D_SRID>", "(SELECT SRID FROM DATABASE_SRS)")
 						.replace("<LoD>", "1")
 						.replace("<GROUP_BY_1>", "256")
 						.replace("<GROUP_BY_2>", "64")
@@ -186,8 +184,8 @@ public class Queries {
 		}
 
 		else {
-			query.append("SELECT sg.geometry FROM ").append(schema).append(".surface_geometry sg, ")
-			.append(schema).append(".thematic_surface ts ")
+			query.append("SELECT sg.geometry FROM surface_geometry sg, ")
+			.append("thematic_surface ts ")
 			.append("WHERE ts.building_id = ? AND ts.objectclass_id = 35 ")
 			.append("AND sg.root_id = ts.lod").append(lod).append("_multi_surface_id AND sg.geometry IS NOT NULL ");
 		}
@@ -201,7 +199,7 @@ public class Queries {
 		if (lod > 1) {
 			// exterior thematic surfaces
 			query.append("(SELECT tmp.* FROM (SELECT ts.lod").append(lod).append("_multi_surface_id, ts.objectclass_id ") 
-			.append("FROM ").append(schema).append(".thematic_surface ts ")
+			.append("FROM thematic_surface ts ")
 			.append("WHERE ts.building_id = ? ")
 			.append("AND ts.lod").append(lod).append("_multi_surface_id is not null ")
 			.append(") tmp) ");
@@ -210,15 +208,15 @@ public class Queries {
 				// exterior thematic surfaces of building installations
 				query.append("UNION ALL ")
 				.append("(SELECT tmp.* FROM (SELECT ts.lod").append(lod).append("_multi_surface_id, ts.objectclass_id ") 
-				.append("FROM ").append(schema).append(".thematic_surface ts ")
-				.append("JOIN ").append(schema).append(".building_installation bi ON ts.building_installation_id = bi.id ")
+				.append("FROM thematic_surface ts ")
+				.append("JOIN building_installation bi ON ts.building_installation_id = bi.id ")
 				.append("WHERE bi.building_id = ? ")
 				.append("AND ts.lod").append(lod).append("_multi_surface_id is not null ")
 				.append(") tmp) ")
 				// exterior building installations
 				.append("UNION ALL ")
 				.append("(SELECT tmp.* FROM (SELECT bi.lod").append(lod).append("_brep_id, 0 as objectclass_id ")
-				.append("FROM ").append(schema).append(".building_installation bi ")
+				.append("FROM building_installation bi ")
 				.append("WHERE bi.building_id = ? ")
 				.append("AND bi.lod").append(lod).append("_brep_id is not null ")
 				.append(") tmp) ");
@@ -229,19 +227,19 @@ public class Queries {
 			// openings in exterior thematic surfaces
 			query.append("UNION ALL ")
 			.append("(SELECT tmp.* FROM (SELECT o.lod").append(lod).append("_multi_surface_id, ts.objectclass_id ")
-			.append("FROM ").append(schema).append(".opening o ")
-			.append("JOIN ").append(schema).append(".opening_to_them_surface o2ts ON o2ts.opening_id = o.id ")
-			.append("JOIN ").append(schema).append(".thematic_surface ts ON ts.id = o2ts.thematic_surface_id ")
+			.append("FROM opening o ")
+			.append("JOIN opening_to_them_surface o2ts ON o2ts.opening_id = o.id ")
+			.append("JOIN thematic_surface ts ON ts.id = o2ts.thematic_surface_id ")
 			.append("WHERE ts.building_id = ? ")
 			.append("AND o.lod").append(lod).append("_multi_surface_id is not null ")
 			.append(") tmp) ")
 			// openings in exterior thematic surfaces of building installations
 			.append("UNION ALL ")
 			.append("(SELECT tmp.* FROM (SELECT o.lod").append(lod).append("_multi_surface_id, ts.objectclass_id ")
-			.append("FROM ").append(schema).append(".opening o ")
-			.append("JOIN ").append(schema).append(".opening_to_them_surface o2ts ON o2ts.opening_id = o.id ")
-			.append("JOIN ").append(schema).append(".thematic_surface ts ON ts.id = o2ts.thematic_surface_id ")
-			.append("JOIN ").append(schema).append(".building_installation bi ON ts.building_installation_id = bi.id ")
+			.append("FROM opening o ")
+			.append("JOIN opening_to_them_surface o2ts ON o2ts.opening_id = o.id ")
+			.append("JOIN thematic_surface ts ON ts.id = o2ts.thematic_surface_id ")
+			.append("JOIN building_installation bi ON ts.building_installation_id = bi.id ")
 			.append("WHERE bi.building_id = ? ")
 			.append("AND o.lod").append(lod).append("_multi_surface_id is not null ")
 			.append(") tmp) ");
@@ -251,67 +249,67 @@ public class Queries {
 			// interior thematic surfaces of building installations
 			query.append("UNION ALL ")
 			.append("(SELECT tmp.* FROM (SELECT ts.lod").append(lod).append("_multi_surface_id, ts.objectclass_id ") 
-			.append("FROM ").append(schema).append(".thematic_surface ts ")
-			.append("JOIN ").append(schema).append(".building_installation bi ON ts.building_installation_id = bi.id ")
-			.append("JOIN ").append(schema).append(".room r ON bi.room_id = r.id ")
+			.append("FROM thematic_surface ts ")
+			.append("JOIN building_installation bi ON ts.building_installation_id = bi.id ")
+			.append("JOIN room r ON bi.room_id = r.id ")
 			.append("WHERE r.building_id = ? ")
 			.append("AND ts.lod").append(lod).append("_multi_surface_id is not null ")
 			.append(") tmp) ")
 			// interior thematic surfaces of rooms
 			.append("UNION ALL ")
 			.append("(SELECT tmp.* FROM (SELECT ts.lod").append(lod).append("_multi_surface_id, ts.objectclass_id ") 
-			.append("FROM ").append(schema).append(".thematic_surface ts ")
-			.append("JOIN ").append(schema).append(".room r ON ts.room_id = r.id ")
+			.append("FROM thematic_surface ts ")
+			.append("JOIN room r ON ts.room_id = r.id ")
 			.append("WHERE r.building_id = ? ")
 			.append("AND ts.lod").append(lod).append("_multi_surface_id is not null ")
 			.append(") tmp) ")
 			// openings of interior thematic surfaces of building installations
 			.append("UNION ALL ")
 			.append("(SELECT tmp.* FROM (SELECT o.lod").append(lod).append("_multi_surface_id, ts.objectclass_id ")
-			.append("FROM ").append(schema).append(".opening o ")
-			.append("JOIN ").append(schema).append(".opening_to_them_surface o2ts ON o2ts.opening_id = o.id ")
-			.append("JOIN ").append(schema).append(".thematic_surface ts ON ts.id = o2ts.thematic_surface_id ")
-			.append("JOIN ").append(schema).append(".building_installation bi ON ts.building_installation_id = bi.id ")
-			.append("JOIN ").append(schema).append(".room r ON bi.room_id = r.id ")
+			.append("FROM opening o ")
+			.append("JOIN opening_to_them_surface o2ts ON o2ts.opening_id = o.id ")
+			.append("JOIN thematic_surface ts ON ts.id = o2ts.thematic_surface_id ")
+			.append("JOIN building_installation bi ON ts.building_installation_id = bi.id ")
+			.append("JOIN room r ON bi.room_id = r.id ")
 			.append("WHERE r.building_id = ? ")
 			.append("AND o.lod").append(lod).append("_multi_surface_id is not null ")
 			.append(") tmp) ")
 			// openings of interior thematic surfaces of rooms
 			.append("UNION ALL ")
 			.append("(SELECT tmp.* FROM (SELECT o.lod").append(lod).append("_multi_surface_id, ts.objectclass_id ")
-			.append("FROM ").append(schema).append(".opening o ")
-			.append("JOIN ").append(schema).append(".opening_to_them_surface o2ts ON o2ts.opening_id = o.id ")
-			.append("JOIN ").append(schema).append(".thematic_surface ts ON ts.id = o2ts.thematic_surface_id ")
-			.append("JOIN ").append(schema).append(".room r ON ts.room_id = r.id ")
+			.append("FROM opening o ")
+			.append("JOIN opening_to_them_surface o2ts ON o2ts.opening_id = o.id ")
+			.append("JOIN thematic_surface ts ON ts.id = o2ts.thematic_surface_id ")
+			.append("JOIN room r ON ts.room_id = r.id ")
 			.append("WHERE r.building_id = ? ")
 			.append("AND o.lod").append(lod).append("_multi_surface_id is not null ")
 			.append(") tmp) ")
 			// building furniture
 			.append("UNION ALL ")
 			.append("(SELECT tmp.* FROM (SELECT bf.lod4_brep_id, 0 as objectclass_id ")
-			.append("FROM ").append(schema).append(".building_furniture bf ")
-			.append("JOIN ").append(schema).append(".room r ON bf.room_id = r.id ")
+			.append("FROM building_furniture bf ")
+			.append("JOIN room r ON bf.room_id = r.id ")
 			.append("WHERE r.building_id = ? ")
 			.append("AND bf.lod4_brep_id is not null ")
 			.append(") tmp) ")
 			// rooms
 			.append("UNION ALL ")
 			.append("(SELECT tmp.* FROM (SELECT r.lod4_solid_id, 0 as objectclass_id ")
-			.append("FROM ").append(schema).append(".room r ")
+			.append("FROM room r ")
 			.append("WHERE r.building_id = ? ")
 			.append("AND r.lod4_solid_id is not null ")
 			.append(") tmp) ")
 			.append("UNION ALL ")
 			.append("(SELECT tmp.* FROM (SELECT r.lod4_multi_surface_id, 0 as objectclass_id ")
-			.append("FROM ").append(schema).append(".room r ")
+			.append("FROM room r ")
 			.append("WHERE r.building_id = ? ")
 			.append("AND r.lod4_multi_surface_id is not null ")
 			.append(") tmp) ")
 			// interior building installations
 			.append("UNION ALL ")
 			.append("(SELECT tmp.* FROM (SELECT bi.lod").append(lod).append("_brep_id, 0 as objectclass_id ")
-			.append("FROM ").append(schema).append(".building_installation bi ")
-			.append("JOIN ").append(schema).append(".room r ON bi.room_id = r.id ")
+			.append("FROM building_installation bi ")
+			.append("JOIN room r ON bi.room_id = r.id ")
 			.append("WHERE r.building_id = ? ")
 			.append("AND bi.lod").append(lod).append("_brep_id is not null ")
 			.append(") tmp) ");
@@ -322,13 +320,13 @@ public class Queries {
 
 		// building geometry
 		query.append("(SELECT tmp.* FROM (SELECT b.lod").append(lod).append("_solid_id, 0 as objectclass_id ")
-		.append("FROM ").append(schema).append(".building b ")
+		.append("FROM building b ")
 		.append("WHERE b.id = ? ")
 		.append("AND b.lod").append(lod).append("_solid_id is not null ")
 		.append(") tmp) ")
 		.append("UNION ALL ")
 		.append("(SELECT tmp.* FROM (SELECT b.lod").append(lod).append("_multi_surface_id, 0 as objectclass_id ")
-		.append("FROM ").append(schema).append(".building b ")
+		.append("FROM building b ")
 		.append("WHERE b.id = ? ")
 		.append("AND b.lod").append(lod).append("_multi_surface_id is not null ")
 		.append(") tmp) ")
@@ -348,23 +346,23 @@ public class Queries {
 			.append("SELECT * FROM (")
 			.append("SELECT * FROM (")
 			.append("SELECT citydb_util.to_2d(sg.geometry, <2D_SRID>) AS simple_geom ")
-			.append("FROM ").append(schema).append(".SURFACE_GEOMETRY sg ")
+			.append("FROM SURFACE_GEOMETRY sg ")
 			.append("WHERE ")
 			.append("sg.root_id IN( ")
 			.append("SELECT geom.gid FROM (SELECT b.lod<LoD>_multi_surface_id as gid ")
-			.append("FROM ").append(schema).append(".BUILDING b ")
+			.append("FROM BUILDING b ")
 			.append("WHERE ")
 			.append("b.id = ? ")
 			.append("AND b.lod<LoD>_multi_surface_id IS NOT NULL ")
 			.append("UNION ")
 			.append("SELECT b.lod<LoD>_solid_id as gid ")
-			.append("FROM ").append(schema).append(".BUILDING b ")
+			.append("FROM BUILDING b ")
 			.append("WHERE ")
 			.append("b.id = ? ")
 			.append("AND b.lod<LoD>_solid_id IS NOT NULL ")
 			.append("UNION ")
 			.append("SELECT ts.lod<LoD>_multi_surface_id as gid ")
-			.append("FROM ").append(schema).append(".THEMATIC_SURFACE ts ")
+			.append("FROM THEMATIC_SURFACE ts ")
 			.append("WHERE ")
 			.append("ts.building_id = ? ")
 			.append("AND ts.lod<LoD>_multi_surface_id IS NOT NULL) geom ")
@@ -385,21 +383,21 @@ public class Queries {
 			.append("SELECT * FROM (")
 			.append("SELECT * FROM (")
 			.append("SELECT ST_Force2D(sg.geometry) AS simple_geom ")
-			.append("FROM ").append(schema).append(".SURFACE_GEOMETRY sg ")
+			.append("FROM SURFACE_GEOMETRY sg ")
 			.append("WHERE ")
 			.append("sg.root_id IN( ")
 			.append("SELECT b.lod<LoD>_multi_surface_id ")
-			.append("FROM ").append(schema).append(".BUILDING b ")
+			.append("FROM BUILDING b ")
 			.append("WHERE b.id = ? ")
 			.append("AND b.lod<LoD>_multi_surface_id IS NOT NULL ")
 			.append("UNION ")
 			.append("SELECT b.lod<LoD>_solid_id ")
-			.append("FROM ").append(schema).append(".BUILDING b ")
+			.append("FROM BUILDING b ")
 			.append("WHERE b.id = ? ")
 			.append("AND b.lod<LoD>_solid_id IS NOT NULL ")
 			.append("UNION ")
 			.append("SELECT ts.lod<LoD>_multi_surface_id ")
-			.append("FROM ").append(schema).append(".THEMATIC_SURFACE ts ")
+			.append("FROM THEMATIC_SURFACE ts ")
 			.append("WHERE ts.building_id = ? ")
 			.append("AND ts.lod<LoD>_multi_surface_id IS NOT NULL ")
 			.append(") ")
@@ -423,17 +421,17 @@ public class Queries {
 			.append("SELECT * FROM (")
 			.append("SELECT * FROM (")
 			.append("SELECT citydb_util.to_2d(sg.geometry, <2D_SRID>) AS simple_geom ")
-			.append("FROM ").append(schema).append(".SURFACE_GEOMETRY sg ")
+			.append("FROM SURFACE_GEOMETRY sg ")
 			.append("WHERE ")
 			.append("sg.root_id IN( ")
 			.append("SELECT geom.gid FROM (SELECT b.lod<LoD>_multi_surface_id as gid ")
-			.append("FROM ").append(schema).append(".BUILDING b ")
+			.append("FROM BUILDING b ")
 			.append("WHERE ")
 			.append("b.id = ? ")
 			.append("AND b.lod<LoD>_multi_surface_id IS NOT NULL ")
 			.append("UNION ")
 			.append("SELECT b.lod<LoD>_solid_id as gid ")
-			.append("FROM ").append(schema).append(".BUILDING b ")
+			.append("FROM BUILDING b ")
 			.append("WHERE ")
 			.append("b.id = ? ")
 			.append("AND b.lod<LoD>_solid_id IS NOT NULL) geom ")
@@ -454,16 +452,16 @@ public class Queries {
 			.append("SELECT * FROM (")
 			.append("SELECT * FROM (")
 			.append("SELECT ST_Force2D(sg.geometry) AS simple_geom ")
-			.append("FROM ").append(schema).append(".SURFACE_GEOMETRY sg ")
+			.append("FROM SURFACE_GEOMETRY sg ")
 			.append("WHERE ")
 			.append("sg.root_id IN( ")
 			.append("SELECT b.lod<LoD>_multi_surface_id ")
-			.append("FROM ").append(schema).append(".BUILDING b ")
+			.append("FROM BUILDING b ")
 			.append("WHERE b.id = ? ")
 			.append("AND b.lod<LoD>_multi_surface_id IS NOT NULL ")
 			.append("UNION ")
 			.append("SELECT b.lod<LoD>_solid_id ")
-			.append("FROM ").append(schema).append(".BUILDING b ")
+			.append("FROM BUILDING b ")
 			.append("WHERE b.id = ? ")
 			.append("AND b.lod<LoD>_solid_id IS NOT NULL ")
 			.append(") ")
@@ -487,17 +485,17 @@ public class Queries {
 			.append("SELECT * FROM (")
 			.append("SELECT * FROM (")
 			.append("SELECT sg.geometry AS simple_geom ")
-			.append("FROM ").append(schema).append(".SURFACE_GEOMETRY sg ")
+			.append("FROM SURFACE_GEOMETRY sg ")
 			.append("WHERE ")
 			.append("sg.root_id IN( ")
 			.append("SELECT geom.gid FROM (SELECT b.lod0_footprint_id as gid ")
-			.append("FROM ").append(schema).append(".BUILDING b ")
+			.append("FROM BUILDING b ")
 			.append("WHERE ")
 			.append("b.id = ? ")
 			.append("AND b.lod0_footprint_id IS NOT NULL ")
 			.append("UNION ")
 			.append("SELECT b.lod0_roofprint_id as gid ")
-			.append("FROM ").append(schema).append(".BUILDING b ")
+			.append("FROM BUILDING b ")
 			.append("WHERE ")
 			.append("b.id = ? ")
 			.append("AND b.lod0_roofprint_id IS NOT NULL) geom ")
@@ -518,16 +516,16 @@ public class Queries {
 			.append("SELECT * FROM (")
 			.append("SELECT * FROM (")
 			.append("SELECT sg.geometry AS simple_geom ")
-			.append("FROM ").append(schema).append(".SURFACE_GEOMETRY sg ")
+			.append("FROM SURFACE_GEOMETRY sg ")
 			.append("WHERE ")
 			.append("sg.root_id IN( ")
 			.append("SELECT b.lod0_footprint_id ")
-			.append("FROM ").append(schema).append(".BUILDING b ")
+			.append("FROM BUILDING b ")
 			.append("WHERE b.id = ? ")
 			.append("AND b.lod0_footprint_id IS NOT NULL ")
 			.append("UNION ")
 			.append("SELECT b.lod0_roofprint_id ")
-			.append("FROM ").append(schema).append(".BUILDING b ")
+			.append("FROM BUILDING b ")
 			.append("WHERE b.id = ? ")
 			.append("AND b.lod0_roofprint_id IS NOT NULL ")
 			.append(") ")
@@ -585,7 +583,7 @@ public class Queries {
 	// ----------------------------------------------------------------------
 
 	public String getBridgePartsFromBridge() { 
-		return new StringBuilder("SELECT id FROM ").append(schema).append(".BRIDGE WHERE bridge_root_id = ?").toString();
+		return new StringBuilder("SELECT id FROM BRIDGE WHERE bridge_root_id = ?").toString();
 	}
 
 	private String getBridgePartFootprint(int lod) {
@@ -595,7 +593,7 @@ public class Queries {
 			switch (databaseAdapter.getDatabaseType()) {
 			case ORACLE:
 				return getBridgePartAggregateGeometriesForLOD1().replace("<TOLERANCE>", "0.001")
-						.replace("<2D_SRID>", "(SELECT SRID FROM " + schema + ".DATABASE_SRS)")
+						.replace("<2D_SRID>", "(SELECT SRID FROM DATABASE_SRS)")
 						.replace("<LoD>", "1")
 						.replace("<GROUP_BY_1>", "256")
 						.replace("<GROUP_BY_2>", "64")
@@ -609,8 +607,8 @@ public class Queries {
 		}
 
 		else {
-			query.append("SELECT sg.geometry FROM ").append(schema).append(".surface_geometry sg, ")
-			.append(schema).append(".bridge_thematic_surface ts ")
+			query.append("SELECT sg.geometry FROM surface_geometry sg, ")
+			.append("bridge_thematic_surface ts ")
 			.append("WHERE ts.bridge_id = ? AND ts.objectclass_id = 73 ")
 			.append("AND sg.root_id = ts.lod").append(lod).append("_multi_surface_id AND sg.geometry IS NOT NULL ");
 		}
@@ -624,7 +622,7 @@ public class Queries {
 		if (lod > 1) {
 			// exterior thematic surfaces
 			query.append("(SELECT tmp.* FROM (SELECT ts.lod").append(lod).append("_multi_surface_id, ts.objectclass_id ") 
-			.append("FROM ").append(schema).append(".bridge_thematic_surface ts ")
+			.append("FROM bridge_thematic_surface ts ")
 			.append("WHERE ts.bridge_id = ? ")
 			.append("AND ts.lod").append(lod).append("_multi_surface_id is not null ")
 			.append(") tmp) ");
@@ -633,23 +631,23 @@ public class Queries {
 				// exterior thematic surfaces of bridge construction elements
 				query.append("UNION ALL ")
 				.append("(SELECT tmp.* FROM (SELECT ts.lod").append(lod).append("_multi_surface_id, ts.objectclass_id ") 
-				.append("FROM ").append(schema).append(".bridge_thematic_surface ts ")
-				.append("JOIN ").append(schema).append(".bridge_constr_element bc ON ts.bridge_constr_element_id = bc.id ")
+				.append("FROM bridge_thematic_surface ts ")
+				.append("JOIN bridge_constr_element bc ON ts.bridge_constr_element_id = bc.id ")
 				.append("WHERE bc.bridge_id = ? ")
 				.append("AND ts.lod").append(lod).append("_multi_surface_id is not null ")
 				.append(") tmp) ")				
 				// exterior thematic surfaces of bridge installations
 				.append("UNION ALL ")
 				.append("(SELECT tmp.* FROM (SELECT ts.lod").append(lod).append("_multi_surface_id, ts.objectclass_id ") 
-				.append("FROM ").append(schema).append(".bridge_thematic_surface ts ")
-				.append("JOIN ").append(schema).append(".bridge_installation bi ON ts.bridge_installation_id = bi.id ")
+				.append("FROM bridge_thematic_surface ts ")
+				.append("JOIN bridge_installation bi ON ts.bridge_installation_id = bi.id ")
 				.append("WHERE bi.bridge_id = ? ")
 				.append("AND ts.lod").append(lod).append("_multi_surface_id is not null ")
 				.append(") tmp) ")
 				// exterior building installations
 				.append("UNION ALL ")
 				.append("(SELECT tmp.* FROM (SELECT bi.lod").append(lod).append("_brep_id, 0 as objectclass_id ")
-				.append("FROM ").append(schema).append(".bridge_installation bi ")
+				.append("FROM bridge_installation bi ")
 				.append("WHERE bi.bridge_id = ? ")
 				.append("AND bi.lod").append(lod).append("_brep_id is not null ")
 				.append(") tmp) ");
@@ -660,29 +658,29 @@ public class Queries {
 			// openings in exterior thematic surfaces
 			query.append("UNION ALL ")
 			.append("(SELECT tmp.* FROM (SELECT o.lod").append(lod).append("_multi_surface_id, ts.objectclass_id ")
-			.append("FROM ").append(schema).append(".bridge_opening o ")
-			.append("JOIN ").append(schema).append(".bridge_open_to_them_srf o2ts ON o2ts.bridge_opening_id = o.id ")
-			.append("JOIN ").append(schema).append(".bridge_thematic_surface ts ON ts.id = o2ts.bridge_thematic_surface_id ")
+			.append("FROM bridge_opening o ")
+			.append("JOIN bridge_open_to_them_srf o2ts ON o2ts.bridge_opening_id = o.id ")
+			.append("JOIN bridge_thematic_surface ts ON ts.id = o2ts.bridge_thematic_surface_id ")
 			.append("WHERE ts.bridge_id = ? ")
 			.append("AND o.lod").append(lod).append("_multi_surface_id is not null ")
 			.append(") tmp) ")
 			// openings in exterior thematic surfaces of bridge construction elements		
 			.append("UNION ALL ")
 			.append("(SELECT tmp.* FROM (SELECT o.lod").append(lod).append("_multi_surface_id, ts.objectclass_id ")
-			.append("FROM ").append(schema).append(".bridge_opening o ")
-			.append("JOIN ").append(schema).append(".bridge_open_to_them_srf o2ts ON o2ts.bridge_opening_id = o.id ")
-			.append("JOIN ").append(schema).append(".bridge_thematic_surface ts ON ts.id = o2ts.bridge_thematic_surface_id ")
-			.append("JOIN ").append(schema).append(".bridge_constr_element bc ON ts.bridge_constr_element_id = bc.id ")
+			.append("FROM bridge_opening o ")
+			.append("JOIN bridge_open_to_them_srf o2ts ON o2ts.bridge_opening_id = o.id ")
+			.append("JOIN bridge_thematic_surface ts ON ts.id = o2ts.bridge_thematic_surface_id ")
+			.append("JOIN bridge_constr_element bc ON ts.bridge_constr_element_id = bc.id ")
 			.append("WHERE bc.bridge_id = ? ")
 			.append("AND o.lod").append(lod).append("_multi_surface_id is not null ")
 			.append(") tmp) ")
 			// openings in exterior thematic surfaces of building installations
 			.append("UNION ALL ")
 			.append("(SELECT tmp.* FROM (SELECT o.lod").append(lod).append("_multi_surface_id, ts.objectclass_id ")
-			.append("FROM ").append(schema).append(".bridge_opening o ")
-			.append("JOIN ").append(schema).append(".bridge_open_to_them_srf o2ts ON o2ts.bridge_opening_id = o.id ")
-			.append("JOIN ").append(schema).append(".bridge_thematic_surface ts ON ts.id = o2ts.bridge_thematic_surface_id ")
-			.append("JOIN ").append(schema).append(".bridge_installation bi ON ts.bridge_installation_id = bi.id ")
+			.append("FROM bridge_opening o ")
+			.append("JOIN bridge_open_to_them_srf o2ts ON o2ts.bridge_opening_id = o.id ")
+			.append("JOIN bridge_thematic_surface ts ON ts.id = o2ts.bridge_thematic_surface_id ")
+			.append("JOIN bridge_installation bi ON ts.bridge_installation_id = bi.id ")
 			.append("WHERE bi.bridge_id = ? ")
 			.append("AND o.lod").append(lod).append("_multi_surface_id is not null ")
 			.append(") tmp) ");
@@ -692,67 +690,67 @@ public class Queries {
 			// interior thematic surfaces of bridge installations
 			query.append("UNION ALL ")
 			.append("(SELECT tmp.* FROM (SELECT ts.lod").append(lod).append("_multi_surface_id, ts.objectclass_id ") 
-			.append("FROM ").append(schema).append(".bridge_thematic_surface ts ")
-			.append("JOIN ").append(schema).append(".bridge_installation bi ON ts.bridge_installation_id = bi.id ")
-			.append("JOIN ").append(schema).append(".bridge_room r ON bi.bridge_room_id = r.id ")
+			.append("FROM bridge_thematic_surface ts ")
+			.append("JOIN bridge_installation bi ON ts.bridge_installation_id = bi.id ")
+			.append("JOIN bridge_room r ON bi.bridge_room_id = r.id ")
 			.append("WHERE r.bridge_id = ? ")
 			.append("AND ts.lod").append(lod).append("_multi_surface_id is not null ")
 			.append(") tmp) ")
 			// interior thematic surfaces of rooms
 			.append("UNION ALL ")
 			.append("(SELECT tmp.* FROM (SELECT ts.lod").append(lod).append("_multi_surface_id, ts.objectclass_id ") 
-			.append("FROM ").append(schema).append(".bridge_thematic_surface ts ")
-			.append("JOIN ").append(schema).append(".bridge_room r ON ts.bridge_room_id = r.id ")
+			.append("FROM bridge_thematic_surface ts ")
+			.append("JOIN bridge_room r ON ts.bridge_room_id = r.id ")
 			.append("WHERE r.bridge_id = ? ")
 			.append("AND ts.lod").append(lod).append("_multi_surface_id is not null ")
 			.append(") tmp) ")
 			// openings of interior thematic surfaces of bridge installations
 			.append("UNION ALL ")
 			.append("(SELECT tmp.* FROM (SELECT o.lod").append(lod).append("_multi_surface_id, ts.objectclass_id ")
-			.append("FROM ").append(schema).append(".bridge_opening o ")
-			.append("JOIN ").append(schema).append(".bridge_open_to_them_srf o2ts ON o2ts.bridge_opening_id = o.id ")
-			.append("JOIN ").append(schema).append(".bridge_thematic_surface ts ON ts.id = o2ts.bridge_thematic_surface_id ")
-			.append("JOIN ").append(schema).append(".bridge_installation bi ON ts.bridge_installation_id = bi.id ")
-			.append("JOIN ").append(schema).append(".bridge_room r ON bi.bridge_room_id = r.id ")
+			.append("FROM bridge_opening o ")
+			.append("JOIN bridge_open_to_them_srf o2ts ON o2ts.bridge_opening_id = o.id ")
+			.append("JOIN bridge_thematic_surface ts ON ts.id = o2ts.bridge_thematic_surface_id ")
+			.append("JOIN bridge_installation bi ON ts.bridge_installation_id = bi.id ")
+			.append("JOIN bridge_room r ON bi.bridge_room_id = r.id ")
 			.append("WHERE r.bridge_id = ? ")
 			.append("AND o.lod").append(lod).append("_multi_surface_id is not null ")
 			.append(") tmp) ")
 			// openings of interior thematic surfaces of bridge rooms
 			.append("UNION ALL ")
 			.append("(SELECT tmp.* FROM (SELECT o.lod").append(lod).append("_multi_surface_id, ts.objectclass_id ")
-			.append("FROM ").append(schema).append(".bridge_opening o ")
-			.append("JOIN ").append(schema).append(".bridge_open_to_them_srf o2ts ON o2ts.bridge_opening_id = o.id ")
-			.append("JOIN ").append(schema).append(".bridge_thematic_surface ts ON ts.id = o2ts.bridge_thematic_surface_id ")
-			.append("JOIN ").append(schema).append(".bridge_room r ON ts.bridge_room_id = r.id ")
+			.append("FROM bridge_opening o ")
+			.append("JOIN bridge_open_to_them_srf o2ts ON o2ts.bridge_opening_id = o.id ")
+			.append("JOIN bridge_thematic_surface ts ON ts.id = o2ts.bridge_thematic_surface_id ")
+			.append("JOIN bridge_room r ON ts.bridge_room_id = r.id ")
 			.append("WHERE r.bridge_id = ? ")
 			.append("AND o.lod").append(lod).append("_multi_surface_id is not null ")
 			.append(") tmp) ")
 			// bridge furniture
 			.append("UNION ALL ")
 			.append("(SELECT tmp.* FROM (SELECT bf.lod4_brep_id, 0 as objectclass_id ")
-			.append("FROM ").append(schema).append(".bridge_furniture bf ")
-			.append("JOIN ").append(schema).append(".bridge_room r ON bf.bridge_room_id = r.id ")
+			.append("FROM bridge_furniture bf ")
+			.append("JOIN bridge_room r ON bf.bridge_room_id = r.id ")
 			.append("WHERE r.bridge_id = ? ")
 			.append("AND bf.lod4_brep_id is not null ")
 			.append(") tmp) ")
 			// bridge rooms
 			.append("UNION ALL ")
 			.append("(SELECT tmp.* FROM (SELECT r.lod4_solid_id, 0 as objectclass_id ")
-			.append("FROM ").append(schema).append(".bridge_room r ")
+			.append("FROM bridge_room r ")
 			.append("WHERE r.bridge_id = ? ")
 			.append("AND r.lod4_solid_id is not null ")
 			.append(") tmp) ")
 			.append("UNION ALL ")
 			.append("(SELECT tmp.* FROM (SELECT r.lod4_multi_surface_id, 0 as objectclass_id ")
-			.append("FROM ").append(schema).append(".bridge_room r ")
+			.append("FROM bridge_room r ")
 			.append("WHERE r.bridge_id = ? ")
 			.append("AND r.lod4_multi_surface_id is not null ")
 			.append(") tmp) ")
 			// interior bridge installations
 			.append("UNION ALL ")
 			.append("(SELECT tmp.* FROM (SELECT bi.lod").append(lod).append("_brep_id, 0 as objectclass_id ")
-			.append("FROM ").append(schema).append(".bridge_installation bi ")
-			.append("JOIN ").append(schema).append(".bridge_room r ON bi.bridge_room_id = r.id ")
+			.append("FROM bridge_installation bi ")
+			.append("JOIN bridge_room r ON bi.bridge_room_id = r.id ")
 			.append("WHERE r.bridge_id = ? ")
 			.append("AND bi.lod").append(lod).append("_brep_id is not null ")
 			.append(") tmp) ");
@@ -763,13 +761,13 @@ public class Queries {
 
 		// bridge geometry
 		query.append("(SELECT tmp.* FROM (SELECT b.lod").append(lod).append("_solid_id, 0 as objectclass_id ")
-		.append("FROM ").append(schema).append(".bridge b ")
+		.append("FROM bridge b ")
 		.append("WHERE b.id = ? ")
 		.append("AND b.lod").append(lod).append("_solid_id is not null ")
 		.append(") tmp) ")
 		.append("UNION ALL ")
 		.append("(SELECT tmp.* FROM (SELECT b.lod").append(lod).append("_multi_surface_id, 0 as objectclass_id ")
-		.append("FROM ").append(schema).append(".bridge b ")
+		.append("FROM bridge b ")
 		.append("WHERE b.id = ? ")
 		.append("AND b.lod").append(lod).append("_multi_surface_id is not null ")
 		.append(") tmp) ");
@@ -778,7 +776,7 @@ public class Queries {
 			// exterior bridge construction elements
 			query.append("UNION ALL ")
 			.append("(SELECT tmp.* FROM (SELECT bc.lod").append(lod).append("_brep_id, 0 as objectclass_id ")
-			.append("FROM ").append(schema).append(".bridge_constr_element bc ")
+			.append("FROM bridge_constr_element bc ")
 			.append("WHERE bc.bridge_id = ? ")
 			.append("AND bc.lod").append(lod).append("_brep_id is not null ")
 			.append(") tmp) ");
@@ -799,23 +797,23 @@ public class Queries {
 			.append("SELECT * FROM (")
 			.append("SELECT * FROM (")
 			.append("SELECT citydb_util.to_2d(sg.geometry, <2D_SRID>) AS simple_geom ")
-			.append("FROM ").append(schema).append(".SURFACE_GEOMETRY sg ")
+			.append("FROM SURFACE_GEOMETRY sg ")
 			.append("WHERE ")
 			.append("sg.root_id IN( ")
 			.append("SELECT geom.gid FROM (SELECT b.lod<LoD>_multi_surface_id as gid ")
-			.append("FROM ").append(schema).append(".BRIDGE b ")
+			.append("FROM BRIDGE b ")
 			.append("WHERE ")
 			.append("b.id = ? ")
 			.append("AND b.lod<LoD>_multi_surface_id IS NOT NULL ")
 			.append("UNION ")
 			.append("SELECT b.lod<LoD>_solid_id as gid ")
-			.append("FROM ").append(schema).append(".BRIDGE b ")
+			.append("FROM BRIDGE b ")
 			.append("WHERE ")
 			.append("b.id = ? ")
 			.append("AND b.lod<LoD>_solid_id IS NOT NULL ")
 			.append("UNION ")
 			.append("SELECT ts.lod<LoD>_multi_surface_id as gid ")
-			.append("FROM ").append(schema).append(".bridge_thematic_surface ts ")
+			.append("FROM bridge_thematic_surface ts ")
 			.append("WHERE ")
 			.append("ts.bridge_id = ? ")
 			.append("AND ts.lod<LoD>_multi_surface_id IS NOT NULL) geom ")
@@ -836,21 +834,21 @@ public class Queries {
 			.append("SELECT * FROM (")
 			.append("SELECT * FROM (")
 			.append("SELECT ST_Force2D(sg.geometry) AS simple_geom ")
-			.append("FROM ").append(schema).append(".SURFACE_GEOMETRY sg ")
+			.append("FROM SURFACE_GEOMETRY sg ")
 			.append("WHERE ")
 			.append("sg.root_id IN( ")
 			.append("SELECT b.lod<LoD>_multi_surface_id ")
-			.append("FROM ").append(schema).append(".bridge b ")
+			.append("FROM bridge b ")
 			.append("WHERE b.id = ? ")
 			.append("AND b.lod<LoD>_multi_surface_id IS NOT NULL ")
 			.append("UNION ")
 			.append("SELECT b.lod<LoD>_solid_id ")
-			.append("FROM ").append(schema).append(".bridge b ")
+			.append("FROM bridge b ")
 			.append("WHERE b.id = ? ")
 			.append("AND b.lod<LoD>_solid_id IS NOT NULL ")
 			.append("UNION ")
 			.append("SELECT ts.lod<LoD>_multi_surface_id ")
-			.append("FROM ").append(schema).append(".bridge_thematic_surface ts ")
+			.append("FROM bridge_thematic_surface ts ")
 			.append("WHERE ts.bridge_id = ? ")
 			.append("AND ts.lod<LoD>_multi_surface_id IS NOT NULL ")
 			.append(") ")
@@ -874,17 +872,17 @@ public class Queries {
 			.append("SELECT * FROM (")
 			.append("SELECT * FROM (")
 			.append("SELECT citydb_util.to_2d(sg.geometry, <2D_SRID>) AS simple_geom ")
-			.append("FROM ").append(schema).append(".SURFACE_GEOMETRY sg ")
+			.append("FROM SURFACE_GEOMETRY sg ")
 			.append("WHERE ")
 			.append("sg.root_id IN( ")
 			.append("SELECT geom.gid FROM (SELECT b.lod<LoD>_multi_surface_id as gid ")
-			.append("FROM ").append(schema).append(".bridge b ")
+			.append("FROM bridge b ")
 			.append("WHERE ")
 			.append("b.id = ? ")
 			.append("AND b.lod<LoD>_multi_surface_id IS NOT NULL ")
 			.append("UNION ")
 			.append("SELECT b.lod<LoD>_solid_id as gid ")
-			.append("FROM ").append(schema).append(".bridge b ")
+			.append("FROM bridge b ")
 			.append("WHERE ")
 			.append("b.id = ? ")
 			.append("AND b.lod<LoD>_solid_id IS NOT NULL) geom ")
@@ -905,16 +903,16 @@ public class Queries {
 			.append("SELECT * FROM (")
 			.append("SELECT * FROM (")
 			.append("SELECT ST_Force2D(sg.geometry) AS simple_geom ")
-			.append("FROM ").append(schema).append(".SURFACE_GEOMETRY sg ")
+			.append("FROM SURFACE_GEOMETRY sg ")
 			.append("WHERE ")
 			.append("sg.root_id IN( ")
 			.append("SELECT b.lod<LoD>_multi_surface_id ")
-			.append("FROM ").append(schema).append(".bridge b ")
+			.append("FROM bridge b ")
 			.append("WHERE b.id = ? ")
 			.append("AND b.lod<LoD>_multi_surface_id IS NOT NULL ")
 			.append("UNION ")
 			.append("SELECT b.lod<LoD>_solid_id ")
-			.append("FROM ").append(schema).append(".bridge b ")
+			.append("FROM bridge b ")
 			.append("WHERE b.id = ? ")
 			.append("AND b.lod<LoD>_solid_id IS NOT NULL ")
 			.append(") ")
@@ -966,7 +964,7 @@ public class Queries {
 	// ----------------------------------------------------------------------
 
 	public String getTunnelPartsFromTunnel() { 
-		return new StringBuilder("SELECT id FROM ").append(schema).append(".TUNNEL WHERE tunnel_root_id = ?").toString();
+		return new StringBuilder("SELECT id FROM TUNNEL WHERE tunnel_root_id = ?").toString();
 	}
 
 	private String getTunnelPartFootprint(int lod) {
@@ -976,7 +974,7 @@ public class Queries {
 			switch (databaseAdapter.getDatabaseType()) {
 			case ORACLE:
 				return getTunnelPartAggregateGeometriesForLOD1().replace("<TOLERANCE>", "0.001")
-						.replace("<2D_SRID>", "(SELECT SRID FROM " + schema + ".DATABASE_SRS)")
+						.replace("<2D_SRID>", "(SELECT SRID FROM DATABASE_SRS)")
 						.replace("<LoD>", "1")
 						.replace("<GROUP_BY_1>", "256")
 						.replace("<GROUP_BY_2>", "64")
@@ -990,8 +988,8 @@ public class Queries {
 		}
 
 		else {
-			query.append("SELECT sg.geometry FROM ").append(schema).append(".surface_geometry sg, ")
-			.append(schema).append(".tunnel_thematic_surface ts ")
+			query.append("SELECT sg.geometry FROM surface_geometry sg, ")
+			.append("tunnel_thematic_surface ts ")
 			.append("WHERE ts.tunnel_id = ? AND ts.objectclass_id = 94 ")
 			.append("AND sg.root_id = ts.lod").append(lod).append("_multi_surface_id AND sg.geometry IS NOT NULL ");
 		}
@@ -1005,7 +1003,7 @@ public class Queries {
 		if (lod > 1) {
 			// exterior thematic surfaces
 			query.append("(SELECT tmp.* FROM (SELECT ts.lod").append(lod).append("_multi_surface_id, ts.objectclass_id ") 
-			.append("FROM ").append(schema).append(".tunnel_thematic_surface ts ")
+			.append("FROM tunnel_thematic_surface ts ")
 			.append("WHERE ts.tunnel_id = ? ")
 			.append("AND ts.lod").append(lod).append("_multi_surface_id is not null ")
 			.append(") tmp) ");
@@ -1014,15 +1012,15 @@ public class Queries {
 				// exterior thematic surfaces of tunnel installations
 				query.append("UNION ALL ")
 				.append("(SELECT tmp.* FROM (SELECT ts.lod").append(lod).append("_multi_surface_id, ts.objectclass_id ") 
-				.append("FROM ").append(schema).append(".tunnel_thematic_surface ts ")
-				.append("JOIN ").append(schema).append(".tunnel_installation tui ON ts.tunnel_installation_id = tui.id ")
+				.append("FROM tunnel_thematic_surface ts ")
+				.append("JOIN tunnel_installation tui ON ts.tunnel_installation_id = tui.id ")
 				.append("WHERE tui.tunnel_id = ? ")
 				.append("AND ts.lod").append(lod).append("_multi_surface_id is not null ")
 				.append(") tmp) ")
 				// exterior building installations
 				.append("UNION ALL ")
 				.append("(SELECT tmp.* FROM (SELECT tui.lod").append(lod).append("_brep_id, 0 as objectclass_id ")
-				.append("FROM ").append(schema).append(".tunnel_installation tui ")
+				.append("FROM tunnel_installation tui ")
 				.append("WHERE tui.tunnel_id = ? ")
 				.append("AND tui.lod").append(lod).append("_brep_id is not null ")
 				.append(") tmp) ");
@@ -1033,19 +1031,19 @@ public class Queries {
 			// openings in exterior thematic surfaces
 			query.append("UNION ALL ")
 			.append("(SELECT tmp.* FROM (SELECT o.lod").append(lod).append("_multi_surface_id, ts.objectclass_id ")
-			.append("FROM ").append(schema).append(".tunnel_opening o ")
-			.append("JOIN ").append(schema).append(".tunnel_open_to_them_srf o2ts ON o2ts.tunnel_opening_id = o.id ")
-			.append("JOIN ").append(schema).append(".tunnel_thematic_surface ts ON ts.id = o2ts.tunnel_thematic_surface_id ")
+			.append("FROM tunnel_opening o ")
+			.append("JOIN tunnel_open_to_them_srf o2ts ON o2ts.tunnel_opening_id = o.id ")
+			.append("JOIN tunnel_thematic_surface ts ON ts.id = o2ts.tunnel_thematic_surface_id ")
 			.append("WHERE ts.tunnel_id = ? ")
 			.append("AND o.lod").append(lod).append("_multi_surface_id is not null ")
 			.append(") tmp) ")
 			// openings in exterior thematic surfaces of tunnel installations
 			.append("UNION ALL ")
 			.append("(SELECT tmp.* FROM (SELECT o.lod").append(lod).append("_multi_surface_id, ts.objectclass_id ")
-			.append("FROM ").append(schema).append(".tunnel_opening o ")
-			.append("JOIN ").append(schema).append(".tunnel_open_to_them_srf o2ts ON o2ts.tunnel_opening_id = o.id ")
-			.append("JOIN ").append(schema).append(".tunnel_thematic_surface ts ON ts.id = o2ts.tunnel_thematic_surface_id ")
-			.append("JOIN ").append(schema).append(".tunnel_installation tui ON ts.tunnel_installation_id = tui.id ")
+			.append("FROM tunnel_opening o ")
+			.append("JOIN tunnel_open_to_them_srf o2ts ON o2ts.tunnel_opening_id = o.id ")
+			.append("JOIN tunnel_thematic_surface ts ON ts.id = o2ts.tunnel_thematic_surface_id ")
+			.append("JOIN tunnel_installation tui ON ts.tunnel_installation_id = tui.id ")
 			.append("WHERE tui.tunnel_id = ? ")
 			.append("AND o.lod").append(lod).append("_multi_surface_id is not null ")
 			.append(") tmp) ");
@@ -1055,67 +1053,67 @@ public class Queries {
 			// interior thematic surfaces of tunnel installations
 			query.append("UNION ALL ")
 			.append("(SELECT tmp.* FROM (SELECT ts.lod").append(lod).append("_multi_surface_id, ts.objectclass_id ") 
-			.append("FROM ").append(schema).append(".tunnel_thematic_surface ts ")
-			.append("JOIN ").append(schema).append(".tunnel_installation tui ON ts.tunnel_installation_id = tui.id ")
-			.append("JOIN ").append(schema).append(".tunnel_hollow_space hs ON tui.tunnel_hollow_space_id = hs.id ")
+			.append("FROM tunnel_thematic_surface ts ")
+			.append("JOIN tunnel_installation tui ON ts.tunnel_installation_id = tui.id ")
+			.append("JOIN tunnel_hollow_space hs ON tui.tunnel_hollow_space_id = hs.id ")
 			.append("WHERE hs.tunnel_id = ? ")
 			.append("AND ts.lod").append(lod).append("_multi_surface_id is not null ")
 			.append(") tmp) ")
 			// interior thematic surfaces of hollow spaces
 			.append("UNION ALL ")
 			.append("(SELECT tmp.* FROM (SELECT ts.lod").append(lod).append("_multi_surface_id, ts.objectclass_id ") 
-			.append("FROM ").append(schema).append(".tunnel_thematic_surface ts ")
-			.append("JOIN ").append(schema).append(".tunnel_hollow_space hs ON ts.tunnel_hollow_space_id = hs.id ")
+			.append("FROM tunnel_thematic_surface ts ")
+			.append("JOIN tunnel_hollow_space hs ON ts.tunnel_hollow_space_id = hs.id ")
 			.append("WHERE hs.tunnel_id = ? ")
 			.append("AND ts.lod").append(lod).append("_multi_surface_id is not null ")
 			.append(") tmp) ")
 			// openings of interior thematic surfaces of tunnel installations
 			.append("UNION ALL ")
 			.append("(SELECT tmp.* FROM (SELECT o.lod").append(lod).append("_multi_surface_id, ts.objectclass_id ")
-			.append("FROM ").append(schema).append(".tunnel_opening o ")
-			.append("JOIN ").append(schema).append(".tunnel_open_to_them_srf o2ts ON o2ts.tunnel_opening_id = o.id ")
-			.append("JOIN ").append(schema).append(".tunnel_thematic_surface ts ON ts.id = o2ts.tunnel_thematic_surface_id ")
-			.append("JOIN ").append(schema).append(".tunnel_installation tui ON ts.tunnel_installation_id = tui.id ")
-			.append("JOIN ").append(schema).append(".tunnel_hollow_space hs ON tui.tunnel_hollow_space_id = hs.id ")
+			.append("FROM tunnel_opening o ")
+			.append("JOIN tunnel_open_to_them_srf o2ts ON o2ts.tunnel_opening_id = o.id ")
+			.append("JOIN tunnel_thematic_surface ts ON ts.id = o2ts.tunnel_thematic_surface_id ")
+			.append("JOIN tunnel_installation tui ON ts.tunnel_installation_id = tui.id ")
+			.append("JOIN tunnel_hollow_space hs ON tui.tunnel_hollow_space_id = hs.id ")
 			.append("WHERE hs.tunnel_id = ? ")
 			.append("AND o.lod").append(lod).append("_multi_surface_id is not null ")
 			.append(") tmp) ")
 			// openings of interior thematic surfaces of hollow spaces
 			.append("UNION ALL ")
 			.append("(SELECT tmp.* FROM (SELECT o.lod").append(lod).append("_multi_surface_id, ts.objectclass_id ")
-			.append("FROM ").append(schema).append(".tunnel_opening o ")
-			.append("JOIN ").append(schema).append(".tunnel_open_to_them_srf o2ts ON o2ts.tunnel_opening_id = o.id ")
-			.append("JOIN ").append(schema).append(".tunnel_thematic_surface ts ON ts.id = o2ts.tunnel_thematic_surface_id ")
-			.append("JOIN ").append(schema).append(".tunnel_hollow_space hs ON ts.tunnel_hollow_space_id = hs.id ")
+			.append("FROM tunnel_opening o ")
+			.append("JOIN tunnel_open_to_them_srf o2ts ON o2ts.tunnel_opening_id = o.id ")
+			.append("JOIN tunnel_thematic_surface ts ON ts.id = o2ts.tunnel_thematic_surface_id ")
+			.append("JOIN tunnel_hollow_space hs ON ts.tunnel_hollow_space_id = hs.id ")
 			.append("WHERE hs.tunnel_id = ? ")
 			.append("AND o.lod").append(lod).append("_multi_surface_id is not null ")
 			.append(") tmp) ")
 			// tunnel furniture
 			.append("UNION ALL ")
 			.append("(SELECT tmp.* FROM (SELECT tf.lod4_brep_id, 0 as objectclass_id ")
-			.append("FROM ").append(schema).append(".tunnel_furniture tf ")
-			.append("JOIN ").append(schema).append(".tunnel_hollow_space hs ON tbf.tunnel_hollow_space_id = hs.id ")
+			.append("FROM tunnel_furniture tf ")
+			.append("JOIN tunnel_hollow_space hs ON tbf.tunnel_hollow_space_id = hs.id ")
 			.append("WHERE hs.tunnel_id = ? ")
 			.append("AND tf.lod4_brep_id is not null ")
 			.append(") tmp) ")
 			// hollow spaces
 			.append("UNION ALL ")
 			.append("(SELECT tmp.* FROM (SELECT hs.lod4_solid_id, 0 as objectclass_id ")
-			.append("FROM ").append(schema).append(".tunnel_hollow_space hs ")
+			.append("FROM tunnel_hollow_space hs ")
 			.append("WHERE hs.tunnel_id = ? ")
 			.append("AND hs.lod4_solid_id is not null ")
 			.append(") tmp) ")
 			.append("UNION ALL ")
 			.append("(SELECT tmp.* FROM (SELECT r.lod4_multi_surface_id, 0 as objectclass_id ")
-			.append("FROM ").append(schema).append(".tunnel_hollow_space hs ")
+			.append("FROM tunnel_hollow_space hs ")
 			.append("WHERE hs.tunnel_id = ? ")
 			.append("AND r.lod4_multi_surface_id is not null ")
 			.append(") tmp) ")
 			// interior tunnel installations
 			.append("UNION ALL ")
 			.append("(SELECT tmp.* FROM (SELECT tui.lod").append(lod).append("_brep_id, 0 as objectclass_id ")
-			.append("FROM ").append(schema).append(".tunnel_installation tui ")
-			.append("JOIN ").append(schema).append(".tunnel_hollow_space hs ON tui.tunnel_hollow_space_id = hs.id ")
+			.append("FROM tunnel_installation tui ")
+			.append("JOIN tunnel_hollow_space hs ON tui.tunnel_hollow_space_id = hs.id ")
 			.append("WHERE hs.tunnel_id = ? ")
 			.append("AND tui.lod").append(lod).append("_brep_id is not null ")
 			.append(") tmp) ");
@@ -1126,13 +1124,13 @@ public class Queries {
 
 		// tunnel geometry
 		query.append("(SELECT tmp.* FROM (SELECT lod").append(lod).append("_solid_id, 0 as objectclass_id ")
-		.append("FROM ").append(schema).append(".tunnel t ")
+		.append("FROM tunnel t ")
 		.append("WHERE t.id = ? ")
 		.append("AND lod").append(lod).append("_solid_id is not null ")
 		.append(") tmp) ")
 		.append("UNION ALL ")
 		.append("(SELECT tmp.* FROM (SELECT t.lod").append(lod).append("_multi_surface_id, 0 as objectclass_id ")
-		.append("FROM ").append(schema).append(".tunnel t ")
+		.append("FROM tunnel t ")
 		.append("WHERE t.id = ? ")
 		.append("AND t.lod").append(lod).append("_multi_surface_id is not null ")
 		.append(") tmp) ")
@@ -1152,23 +1150,23 @@ public class Queries {
 			.append("SELECT * FROM (")
 			.append("SELECT * FROM (")
 			.append("SELECT citydb_util.to_2d(sg.geometry, <2D_SRID>) AS simple_geom ")
-			.append("FROM ").append(schema).append(".SURFACE_GEOMETRY sg ")
+			.append("FROM SURFACE_GEOMETRY sg ")
 			.append("WHERE ")
 			.append("sg.root_id IN( ")
 			.append("SELECT geom.gid FROM (SELECT t.lod<LoD>_multi_surface_id as gid ")
-			.append("FROM ").append(schema).append(".TUNNEL t ")
+			.append("FROM TUNNEL t ")
 			.append("WHERE ")
 			.append("t.id = ? ")
 			.append("AND t.lod<LoD>_multi_surface_id IS NOT NULL ")
 			.append("UNION ")
 			.append("SELECT t.lod<LoD>_solid_id as gid ")
-			.append("FROM ").append(schema).append(".TUNNEL t ")
+			.append("FROM TUNNEL t ")
 			.append("WHERE ")
 			.append("t.id = ? ")
 			.append("AND t.lod<LoD>_solid_id IS NOT NULL ")
 			.append("UNION ")
 			.append("SELECT ts.lod<LoD>_multi_surface_id as gid ")
-			.append("FROM ").append(schema).append(".TUNNEL_THEMATIC_SURFACE ts ")
+			.append("FROM TUNNEL_THEMATIC_SURFACE ts ")
 			.append("WHERE ")
 			.append("ts.tunnel_id = ? ")
 			.append("AND ts.lod<LoD>_multi_surface_id IS NOT NULL) geom ")
@@ -1189,21 +1187,21 @@ public class Queries {
 			.append("SELECT * FROM (")
 			.append("SELECT * FROM (")
 			.append("SELECT ST_Force2D(sg.geometry) AS simple_geom ")
-			.append("FROM ").append(schema).append(".SURFACE_GEOMETRY sg ")
+			.append("FROM SURFACE_GEOMETRY sg ")
 			.append("WHERE ")
 			.append("sg.root_id IN( ")
 			.append("SELECT t.lod<LoD>_multi_surface_id ")
-			.append("FROM ").append(schema).append(".TUNNEL t ")
+			.append("FROM TUNNEL t ")
 			.append("WHERE t.id = ? ")
 			.append("AND t.lod<LoD>_multi_surface_id IS NOT NULL ")
 			.append("UNION ")
 			.append("SELECT t.lod<LoD>_solid_id ")
-			.append("FROM ").append(schema).append(".TUNNEL t ")
+			.append("FROM TUNNEL t ")
 			.append("WHERE t.id = ? ")
 			.append("AND t.lod<LoD>_solid_id IS NOT NULL ")
 			.append("UNION ")
 			.append("SELECT ts.lod<LoD>_multi_surface_id ")
-			.append("FROM ").append(schema).append(".TUNNEL_THEMATIC_SURFACE ts ")
+			.append("FROM TUNNEL_THEMATIC_SURFACE ts ")
 			.append("WHERE ts.tunnel_id = ? ")
 			.append("AND ts.lod<LoD>_multi_surface_id IS NOT NULL ")
 			.append(") ")
@@ -1227,17 +1225,17 @@ public class Queries {
 			.append("SELECT * FROM (")
 			.append("SELECT * FROM (")
 			.append("SELECT citydb_util.to_2d(sg.geometry, <2D_SRID>) AS simple_geom ")
-			.append("FROM ").append(schema).append(".SURFACE_GEOMETRY sg ")
+			.append("FROM SURFACE_GEOMETRY sg ")
 			.append("WHERE ")
 			.append("sg.root_id IN( ")
 			.append("SELECT geom.gid FROM (SELECT t.lod<LoD>_multi_surface_id as gid ")
-			.append("FROM ").append(schema).append(".TUNNEL t ")
+			.append("FROM TUNNEL t ")
 			.append("WHERE ")
 			.append("t.id = ? ")
 			.append("AND t.lod<LoD>_multi_surface_id IS NOT NULL ")
 			.append("UNION ")
 			.append("SELECT t.lod<LoD>_solid_id as gid ")
-			.append("FROM ").append(schema).append(".TUNNEL t ")
+			.append("FROM TUNNEL t ")
 			.append("WHERE ")
 			.append("t.id = ? ")
 			.append("AND t.lod<LoD>_solid_id IS NOT NULL) geom ")
@@ -1258,16 +1256,16 @@ public class Queries {
 			.append("SELECT * FROM (")
 			.append("SELECT * FROM (")
 			.append("SELECT ST_Force2D(sg.geometry) AS simple_geom ")
-			.append("FROM ").append(schema).append(".SURFACE_GEOMETRY sg ")
+			.append("FROM SURFACE_GEOMETRY sg ")
 			.append("WHERE ")
 			.append("sg.root_id IN( ")
 			.append("SELECT t.lod<LoD>_multi_surface_id ")
-			.append("FROM ").append(schema).append(".TUNNEL t ")
+			.append("FROM TUNNEL t ")
 			.append("WHERE t.id = ? ")
 			.append("AND t.lod<LoD>_multi_surface_id IS NOT NULL ")
 			.append("UNION ")
 			.append("SELECT t.lod<LoD>_solid_id ")
-			.append("FROM ").append(schema).append(".TUNNEL t ")
+			.append("FROM TUNNEL t ")
 			.append("WHERE t.id = ? ")
 			.append("AND t.lod<LoD>_solid_id IS NOT NULL ")
 			.append(") ")
@@ -1319,8 +1317,8 @@ public class Queries {
 	// ----------------------------------------------------------------------
 	public String getCityObjectGroupFootprint() {
 		return new StringBuilder("SELECT sg.geometry ")
-		.append("FROM ").append(schema).append(".SURFACE_GEOMETRY sg, ")
-		.append(schema).append(".CITYOBJECTGROUP cog ")
+		.append("FROM SURFACE_GEOMETRY sg, ")
+		.append("CITYOBJECTGROUP cog ")
 		.append("WHERE ")
 		.append("cog.id = ? ")
 		.append("AND sg.root_id = cog.brep_id ")
@@ -1329,9 +1327,9 @@ public class Queries {
 
 	public String getCityObjectGroupMembers() {
 		return new StringBuilder("SELECT co.id, co.gmlid, co.envelope, co.objectclass_id ")
-		.append("FROM ").append(schema).append(".CITYOBJECT co ")
+		.append("FROM CITYOBJECT co ")
 		.append("WHERE co.ID IN (SELECT g2co.cityobject_id ")
-		.append("FROM ").append(schema).append(".GROUP_TO_CITYOBJECT g2co ")
+		.append("FROM GROUP_TO_CITYOBJECT g2co ")
 		.append("WHERE g2co.cityobjectgroup_id = ?) ")
 		.append("ORDER BY co.objectclass_id").toString();
 	}
@@ -1339,9 +1337,9 @@ public class Queries {
 	public String getCityObjectGroupMembersInBBOX() {
 		StringBuilder query = new StringBuilder()
 		.append("SELECT co.id, co.gmlid, co.objectclass_id, co.envelope ")
-		.append("FROM ").append(schema).append(".CITYOBJECT co ")
+		.append("FROM CITYOBJECT co ")
 		.append("WHERE co.ID IN (SELECT g2co.cityobject_id ")
-		.append("FROM ").append(schema).append(".GROUP_TO_CITYOBJECT g2co ")
+		.append("FROM GROUP_TO_CITYOBJECT g2co ")
 		.append("WHERE g2co.cityobjectgroup_id = ?) ")
 		.append("AND ");
 
@@ -1364,8 +1362,8 @@ public class Queries {
 	public String getSolitaryVegetationObjectBasisData(int lodToExportFrom) {
 		return new StringBuilder("SELECT ig.relative_brep_id, svo.lod").append(lodToExportFrom).append("_implicit_ref_point, ")
 				.append("svo.lod").append(lodToExportFrom).append("_implicit_transformation, svo.lod").append(lodToExportFrom).append("_brep_id ")
-				.append("FROM ").append(schema).append(".SOLITARY_VEGETAT_OBJECT svo ")
-				.append("LEFT JOIN ").append(schema).append(".IMPLICIT_GEOMETRY ig ON ig.id = svo.lod").append(lodToExportFrom).append("_implicit_rep_id ") 
+				.append("FROM SOLITARY_VEGETAT_OBJECT svo ")
+				.append("LEFT JOIN IMPLICIT_GEOMETRY ig ON ig.id = svo.lod").append(lodToExportFrom).append("_implicit_rep_id ") 
 				.append("WHERE svo.id = ?").toString();
 	}
 
@@ -1401,15 +1399,15 @@ public class Queries {
 		case DisplayForm.FOOTPRINT:
 		case DisplayForm.EXTRUDED:
 			query.append("(SELECT tmp.* FROM (SELECT sg.geometry ")
-			.append("FROM ").append(schema).append(".surface_geometry sg ")
-			.append("JOIN ").append(schema).append(".PLANT_COVER pc ON sg.root_id = pc.lod").append(lodToExportFrom).append("_multi_surface_id ")
+			.append("FROM surface_geometry sg ")
+			.append("JOIN PLANT_COVER pc ON sg.root_id = pc.lod").append(lodToExportFrom).append("_multi_surface_id ")
 			.append("WHERE pc.id = ? ")
 			.append("AND sg.geometry IS NOT NULL ")
 			.append(") tmp) ")
 			.append("UNION ALL ")
 			.append("(SELECT tmp.* FROM (SELECT sg.geometry ")
-			.append("FROM ").append(schema).append(".surface_geometry sg ")
-			.append("JOIN ").append(schema).append(".PLANT_COVER pc ON sg.root_id = pc.lod").append(lodToExportFrom).append("multi_solid_id ")
+			.append("FROM surface_geometry sg ")
+			.append("JOIN PLANT_COVER pc ON sg.root_id = pc.lod").append(lodToExportFrom).append("multi_solid_id ")
 			.append("WHERE pc.id = ?")
 			.append("AND sg.geometry IS NOT NULL ")
 			.append(") tmp) ")
@@ -1417,13 +1415,13 @@ public class Queries {
 			break;
 		default:
 			query.append("(SELECT tmp.* FROM (SELECT pc.lod").append(lodToExportFrom).append("_multi_surface_id, '8' as objectclass_id ")
-			.append("FROM ").append(schema).append(".PLANT_COVER pc ")
+			.append("FROM PLANT_COVER pc ")
 			.append("WHERE pc.id = ? ")
 			.append("AND pc.lod").append(lodToExportFrom).append("_multi_surface_id is not null")
 			.append(") tmp) ")
 			.append("UNION ALL ")
 			.append("(SELECT tmp.* FROM (SELECT pc.lod").append(lodToExportFrom).append("multi_solid_id, '8' as objectclass_id ")
-			.append("FROM ").append(schema).append(".PLANT_COVER pc ")
+			.append("FROM PLANT_COVER pc ")
 			.append("WHERE pc.id = ? ")
 			.append("AND pc.lod").append(lodToExportFrom).append("multi_solid_id is not null")
 			.append(") tmp) ")
@@ -1440,8 +1438,8 @@ public class Queries {
 	public String getGenericCityObjectBasisData(int lodToExportFrom) {
 		return new StringBuilder("SELECT ig.relative_brep_id, gco.lod").append(lodToExportFrom).append("_implicit_ref_point, ")
 				.append("gco.lod").append(lodToExportFrom).append("_implicit_transformation, gco.lod").append(lodToExportFrom).append("_brep_id ")
-				.append("FROM ").append(schema).append(".GENERIC_CITYOBJECT gco ")
-				.append("LEFT JOIN ").append(schema).append(".IMPLICIT_GEOMETRY ig ON ig.id = gco.lod").append(lodToExportFrom).append("_implicit_rep_id ") 
+				.append("FROM GENERIC_CITYOBJECT gco ")
+				.append("LEFT JOIN IMPLICIT_GEOMETRY ig ON ig.id = gco.lod").append(lodToExportFrom).append("_implicit_rep_id ") 
 				.append("WHERE gco.id = ?").toString();
 	}
 
@@ -1470,7 +1468,7 @@ public class Queries {
 		StringBuilder query = new StringBuilder();
 
 		query.append("SELECT gco.lod").append(lodToExportFrom).append("_other_geom ")
-		.append("FROM ").append(schema).append(".generic_cityobject gco ")
+		.append("FROM generic_cityobject gco ")
 		.append("WHERE gco.id = ? ")
 		.append("AND gco.lod").append(lodToExportFrom).append("_other_geom IS NOT NULL");
 
@@ -1484,8 +1482,8 @@ public class Queries {
 	public String getCityFurnitureBasisData(int lodToExportFrom) {
 		return new StringBuilder("SELECT ig.relative_brep_id, cf.lod").append(lodToExportFrom).append("_implicit_ref_point, ")
 				.append("cf.lod").append(lodToExportFrom).append("_implicit_transformation, cf.lod").append(lodToExportFrom).append("_brep_id ")
-				.append("FROM ").append(schema).append(".CITY_FURNITURE cf ")
-				.append("LEFT JOIN ").append(schema).append(".IMPLICIT_GEOMETRY ig ON ig.id = cf.lod").append(lodToExportFrom).append("_implicit_rep_id ") 
+				.append("FROM CITY_FURNITURE cf ")
+				.append("LEFT JOIN IMPLICIT_GEOMETRY ig ON ig.id = cf.lod").append(lodToExportFrom).append("_implicit_rep_id ") 
 				.append("WHERE cf.id = ?").toString();
 	}
 
@@ -1518,28 +1516,28 @@ public class Queries {
 		StringBuilder query = new StringBuilder();
 
 		if (lod == 0) {
-			query.append("SELECT sg.geometry FROM ").append(schema).append(".surface_geometry sg, ")
-			.append(schema).append(".waterbody wb ")
+			query.append("SELECT sg.geometry FROM surface_geometry sg, ")
+			.append("waterbody wb ")
 			.append("WHERE wb.lod0_multi_surface_id = sg.root_id ")
 			.append("AND sg.geometry IS NOT NULL AND wb.id = ?");
 		} 
 
 		else if (lod == 1) {
-			query.append("SELECT sg.geometry FROM ").append(schema).append(".surface_geometry sg, ")
-			.append(schema).append(".waterbody wb ")
+			query.append("SELECT sg.geometry FROM surface_geometry sg, ")
+			.append("waterbody wb ")
 			.append("WHERE wb.lod1_multi_surface_id = sg.root_id ")
 			.append("AND sg.geometry IS NOT NULL AND wb.id = ? ")
 			.append("UNION ")
-			.append("SELECT sg.geometry FROM ").append(schema).append(".surface_geometry sg, ")
-			.append(schema).append(".waterbody wb ")
+			.append("SELECT sg.geometry FROM surface_geometry sg, ")
+			.append("waterbody wb ")
 			.append("WHERE wb.lod1_solid_id = sg.root_id ")
 			.append("AND sg.geometry IS NOT NULL AND wb.id = ? ");
 		}
 
 		else {
-			query.append("SELECT sg.geometry FROM ").append(schema).append(".surface_geometry sg, ")
-			.append(schema).append(".waterbod_to_waterbnd_srf wb2wbs, ")
-			.append(schema).append(".waterboundary_surface wbs ")
+			query.append("SELECT sg.geometry FROM surface_geometry sg, ")
+			.append("waterbod_to_waterbnd_srf wb2wbs, ")
+			.append("waterboundary_surface wbs ")
 			.append("WHERE wb2wbs.waterbody_id = ? ")
 			.append("AND wbs.id = wb2wbs.waterboundary_surface_id ")
 			.append("AND wbs.objectclass_id = 12 ")
@@ -1557,13 +1555,13 @@ public class Queries {
 
 		if (lod == 1) {
 			query.append("(SELECT tmp.* FROM (SELECT wb.lod1_multi_surface_id, 0 as objectclass_id ")
-			.append("FROM ").append(schema).append(".WATERBODY wb ")
+			.append("FROM WATERBODY wb ")
 			.append("WHERE wb.id = ? ")
 			.append("AND wb.lod1_multi_surface_id is not null ")
 			.append(") tmp) ")
 			.append("UNION ALL ")
 			.append("(SELECT tmp.* FROM (SELECT wb.lod1_solid_id, 0 as objectclass_id ")
-			.append("FROM ").append(schema).append(".WATERBODY wb ")
+			.append("FROM WATERBODY wb ")
 			.append("WHERE wb.id = ? ")
 			.append("AND wb.lod1_solid_id is not null ")
 			.append(") tmp) ");			
@@ -1571,14 +1569,14 @@ public class Queries {
 
 		else {
 			query.append("(SELECT tmp.* FROM (SELECT wbs.lod").append(lod).append("_surface_id, wbs.objectclass_id ")
-			.append("FROM ").append(schema).append(".waterboundary_surface wbs ")
-			.append("JOIN ").append(schema).append(".waterbod_to_waterbnd_srf wb2wbs ON wb2wbs.waterboundary_surface_id = wbs.id ")
+			.append("FROM waterboundary_surface wbs ")
+			.append("JOIN waterbod_to_waterbnd_srf wb2wbs ON wb2wbs.waterboundary_surface_id = wbs.id ")
 			.append("WHERE wb2wbs.waterbody_id = ? ")
 			.append("AND wbs.lod").append(lod).append("_surface_id is not null ")
 			.append(") tmp) ")
 			.append("UNION ALL ")
 			.append("(SELECT tmp.* FROM (SELECT wb.lod").append(lod).append("_solid_id, 0 as objectclass_id ")
-			.append("FROM ").append(schema).append(".WATERBODY wb ")
+			.append("FROM WATERBODY wb ")
 			.append("WHERE wb.id = ? ")
 			.append("AND wb.lod").append(lod).append("_solid_id is not null ")
 			.append(") tmp) ");	
@@ -1614,14 +1612,14 @@ public class Queries {
 		case DisplayForm.FOOTPRINT:
 		case DisplayForm.EXTRUDED:
 			query.append("SELECT sg.geometry ")
-			.append("FROM ").append(schema).append(".surface_geometry sg ")
-			.append("JOIN ").append(schema).append(".LAND_USE lu ON sg.root_id = lu.lod").append(lodToExportFrom).append("_multi_surface_id ")
+			.append("FROM surface_geometry sg ")
+			.append("JOIN LAND_USE lu ON sg.root_id = lu.lod").append(lodToExportFrom).append("_multi_surface_id ")
 			.append("WHERE lu.id = ? ")
 			.append("AND sg.geometry IS NOT NULL");
 			break;
 		default:
 			query.append("SELECT lu.lod").append(lodToExportFrom).append("_multi_surface_id, '4' as objectclass_id ")
-			.append("FROM ").append(schema).append(".LAND_USE lu ON  ")
+			.append("FROM LAND_USE lu ON  ")
 			.append("WHERE lu.id = ? ")
 			.append("AND lu.lod").append(lodToExportFrom).append("_multi_surface_id is not null");
 		}
@@ -1639,7 +1637,7 @@ public class Queries {
 		query.append("select sub.* from (");
 
 		if (lod == 0) {
-			query.append("(SELECT tc.lod0_network FROM ").append(schema).append(".transportation_complex tc ")
+			query.append("(SELECT tc.lod0_network FROM transportation_complex tc ")
 			.append("WHERE tc.id = ? ")
 			.append("AND tc.lod0_network IS NOT NULL")
 			.append(") tmp) ");
@@ -1648,8 +1646,8 @@ public class Queries {
 		else {
 			if (lod > 1) {
 				query.append("(SELECT tmp.* FROM (SELECT sg.geometry ")
-				.append("FROM ").append(schema).append(".surface_geometry sg ")
-				.append("JOIN ").append(schema).append(".traffic_area ta on sg.root_id = ta.lod").append(lod).append("_multi_surface_id ")
+				.append("FROM surface_geometry sg ")
+				.append("JOIN traffic_area ta on sg.root_id = ta.lod").append(lod).append("_multi_surface_id ")
 				.append("WHERE ta.transportation_complex_id = ? ")
 				.append("AND sg.geometry IS NOT NULL ")
 				.append(") tmp) ")
@@ -1657,8 +1655,8 @@ public class Queries {
 			}
 
 			query.append("(SELECT tmp.* FROM (SELECT sg.geometry ")
-			.append("FROM ").append(schema).append(".surface_geometry sg ")
-			.append("JOIN ").append(schema).append(".transportation_complex tc ON sg.root_id = tc.lod").append(lod).append("_multi_surface_id ")
+			.append("FROM surface_geometry sg ")
+			.append("JOIN transportation_complex tc ON sg.root_id = tc.lod").append(lod).append("_multi_surface_id ")
 			.append("WHERE tc.id = ? ")
 			.append("AND sg.geometry IS NOT NULL ")
 			.append(") tmp) ");
@@ -1675,7 +1673,7 @@ public class Queries {
 
 		if (lod > 1) {
 			query.append("(SELECT tmp.* FROM (SELECT ta.lod").append(lod).append("_multi_surface_id, ta.objectclass_id ")
-			.append("FROM ").append(schema).append(".traffic_area ta ")
+			.append("FROM traffic_area ta ")
 			.append("WHERE ta.transportation_complex_id = ? ")
 			.append("AND ta.lod").append(lod).append("_multi_surface_id is not null ")
 			.append(") tmp) ")
@@ -1683,7 +1681,7 @@ public class Queries {
 		}
 
 		query.append("(SELECT tmp.* FROM (SELECT tc.lod").append(lod).append("_multi_surface_id, 0 as objectclass_id ")
-		.append("FROM ").append(schema).append(".transportation_complex tc ")
+		.append("FROM transportation_complex tc ")
 		.append("WHERE tc.id = ? ")
 		.append("AND tc.lod").append(lod).append("_multi_surface_id is not null ")
 		.append(") tmp) ");
@@ -1718,19 +1716,19 @@ public class Queries {
 		case DisplayForm.FOOTPRINT:
 		case DisplayForm.EXTRUDED:
 			query.append("SELECT sg.geometry ")
-			.append("FROM ").append(schema).append(".surface_geometry sg ")
-			.append("JOIN ").append(schema).append(".tin_relief tr ON sg.root_id = tr.surface_geometry_id ")
-			.append("JOIN ").append(schema).append(".relief_feat_to_rel_comp rf2rc ON rf2rc.relief_component_id = tr.id ")
-			.append("JOIN ").append(schema).append(".relief_feature rf ON rf.id = rf2rc.relief_feature_id ")
+			.append("FROM surface_geometry sg ")
+			.append("JOIN tin_relief tr ON sg.root_id = tr.surface_geometry_id ")
+			.append("JOIN relief_feat_to_rel_comp rf2rc ON rf2rc.relief_component_id = tr.id ")
+			.append("JOIN relief_feature rf ON rf.id = rf2rc.relief_feature_id ")
 			.append("WHERE rf.id = ? ")
 			.append("AND rf.lod = ").append(lod).append(" ")
 			.append("AND sg.geometry IS NOT NULL");
 			break;
 		default:
 			query.append("SELECT tr.surface_geometry_id, 0 as objectclass_id ")
-			.append("FROM ").append(schema).append(".tin_relief tr ")
-			.append("JOIN ").append(schema).append(".relief_feat_to_rel_comp rf2rc ON rf2rc.relief_component_id = tr.id ")
-			.append("JOIN ").append(schema).append(".relief_feature rf ON rf.id = rf2rc.relief_feature_id ")
+			.append("FROM tin_relief tr ")
+			.append("JOIN relief_feat_to_rel_comp rf2rc ON rf2rc.relief_component_id = tr.id ")
+			.append("JOIN relief_feature rf ON rf.id = rf2rc.relief_feature_id ")
 			.append("WHERE rf.id = ? ")
 			.append("AND rf.lod = ").append(lod).append(" ")
 			.append("AND tr.surface_geometry_id is not null");

@@ -72,10 +72,9 @@ public class DBBridgeOpening implements DBImporter {
 		this.importer = importer;
 
 		affineTransformation = config.getProject().getImporter().getAffineTransformation().isSetUseAffineTransformation();
-		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
 
 		StringBuilder stmt = new StringBuilder()
-				.append("insert into ").append(schema).append(".bridge_opening (id, objectclass_id, address_id, lod3_multi_surface_id, lod4_multi_surface_id, ")
+				.append("insert into bridge_opening (id, objectclass_id, address_id, lod3_multi_surface_id, lod4_multi_surface_id, ")
 				.append("lod3_implicit_rep_id, lod4_implicit_rep_id, ")
 				.append("lod3_implicit_ref_point, lod4_implicit_ref_point, ")
 				.append("lod3_implicit_transformation, lod4_implicit_transformation) values ")

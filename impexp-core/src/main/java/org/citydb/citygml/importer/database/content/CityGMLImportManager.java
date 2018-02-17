@@ -23,7 +23,6 @@ import org.citydb.citygml.importer.util.ImportLogger.ImportLogEntry;
 import org.citydb.citygml.importer.util.LocalTextureCoordinatesResolver;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
-import org.citydb.util.CoreConstants;
 import org.citydb.config.project.importer.Importer;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.schema.TableEnum;
@@ -32,6 +31,7 @@ import org.citydb.database.schema.mapping.FeatureType;
 import org.citydb.database.schema.mapping.ObjectType;
 import org.citydb.database.schema.mapping.SchemaMapping;
 import org.citydb.log.Logger;
+import org.citydb.util.CoreConstants;
 import org.citydb.util.Util;
 import org.citygml4j.builder.jaxb.CityGMLBuilder;
 import org.citygml4j.builder.jaxb.marshal.JAXBMarshaller;
@@ -423,11 +423,6 @@ public class CityGMLImportManager implements CityGMLImportHelper {
 	public void executeBatch(AbstractObjectType<?> type) throws CityGMLImportException, SQLException {
 		for (String dependency : tableHelper.getCommitOrder(type.getTable()))
 			doExecuteBatch(dependency);
-	}
-
-	@Override
-	public String getTableNameWithSchema(String tableName) {
-		return new StringBuilder(databaseAdapter.getConnectionDetails().getSchema()).append('.').append(tableName).toString();
 	}
 
 	@Override

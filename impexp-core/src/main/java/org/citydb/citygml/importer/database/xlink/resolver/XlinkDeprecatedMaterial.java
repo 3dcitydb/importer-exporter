@@ -44,18 +44,17 @@ public class XlinkDeprecatedMaterial implements DBXlinkResolver {
 
 	public XlinkDeprecatedMaterial(Connection batchConn, DBXlinkResolverManager resolverManager) throws SQLException {
 		this.resolverManager = resolverManager;
-		String schema = resolverManager.getDatabaseAdapter().getConnectionDetails().getSchema();
 
 		StringBuilder surfaceStmt = new StringBuilder()
-		.append("insert into ").append(schema).append(".SURFACE_DATA (select ?, GMLID, GMLID_CODESPACE, NAME, NAME_CODESPACE, DESCRIPTION, IS_FRONT, TYPE, ")
+		.append("insert into SURFACE_DATA (select ?, GMLID, GMLID_CODESPACE, NAME, NAME_CODESPACE, DESCRIPTION, IS_FRONT, TYPE, ")
 		.append("X3D_SHININESS, X3D_TRANSPARENCY, X3D_AMBIENT_INTENSITY, X3D_SPECULAR_COLOR, X3D_DIFFUSE_COLOR, X3D_EMISSIVE_COLOR, X3D_IS_SMOOTH, ")
 		.append("TEX_IMAGE_URI, TEX_IMAGE, TEX_MIME_TYPE, TEX_TEXTURE_TYPE, TEX_WRAP_MODE, TEX_BORDER_COLOR, GT_PREFER_WORLDFILE, GT_ORIENTATION, GT_REFERENCE_POINT ")
-		.append("from ").append(schema).append(".SURFACE_DATA where ID=?)");
+		.append("from SURFACE_DATA where ID=?)");
 		psSurfaceData = batchConn.prepareStatement(surfaceStmt.toString());
 		
 		StringBuilder texStmt = new StringBuilder()
-		.append("insert into ").append(schema).append(".TEXTUREPARAM (select ?, IS_TEXTURE_PARAMETRIZATION, WORLD_TO_TEXTURE, TEXTURE_COORDINATES, ? ")
-		.append("from ").append(schema).append(".TEXTUREPARAM where SURFACE_DATA_ID=?)");
+		.append("insert into TEXTUREPARAM (select ?, IS_TEXTURE_PARAMETRIZATION, WORLD_TO_TEXTURE, TEXTURE_COORDINATES, ? ")
+		.append("from TEXTUREPARAM where SURFACE_DATA_ID=?)");
 		psTextureParam = batchConn.prepareStatement(texStmt.toString());
 	}
 

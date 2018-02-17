@@ -84,18 +84,17 @@ public class DBTunnelThematicSurface extends AbstractFeatureExporter<AbstractBou
 		CombinedProjectionFilter openingProjectionFilter = exporter.getCombinedProjectionFilter(TableEnum.TUNNEL_OPENING.getName());
 		tunnelModule = exporter.getTargetCityGMLVersion().getCityGMLModule(CityGMLModuleType.TUNNEL).getNamespaceURI();
 		lodFilter = exporter.getLodFilter();
-		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 		useXLink = config.getProject().getExporter().getXlink().getFeature().isModeXLink();
 
-		table = new Table(TableEnum.TUNNEL_THEMATIC_SURFACE.getName(), schema);
-		Table opening = new Table(TableEnum.TUNNEL_OPENING.getName(), schema);
+		table = new Table(TableEnum.TUNNEL_THEMATIC_SURFACE.getName());
+		Table opening = new Table(TableEnum.TUNNEL_OPENING.getName());
 
 		select = new Select().addProjection(table.getColumn("id", "tsid"), table.getColumn("objectclass_id"));
 		if (boundarySurfaceProjectionFilter.containsProperty("lod2MultiSurface", tunnelModule)) select.addProjection(table.getColumn("lod2_multi_surface_id"));
 		if (boundarySurfaceProjectionFilter.containsProperty("lod3MultiSurface", tunnelModule)) select.addProjection(table.getColumn("lod3_multi_surface_id"));
 		if (boundarySurfaceProjectionFilter.containsProperty("lod4MultiSurface", tunnelModule)) select.addProjection(table.getColumn("lod4_multi_surface_id"));
 		if (boundarySurfaceProjectionFilter.containsProperty("opening", tunnelModule)) {
-			Table openingToThemSurface = new Table(TableEnum.TUNNEL_OPEN_TO_THEM_SRF.getName(), schema);
+			Table openingToThemSurface = new Table(TableEnum.TUNNEL_OPEN_TO_THEM_SRF.getName());
 			select.addJoin(JoinFactory.left(openingToThemSurface, "tunnel_thematic_surface_id", ComparisonName.EQUAL_TO, table.getColumn("id")))
 			.addJoin(JoinFactory.left(opening, "id", ComparisonName.EQUAL_TO, openingToThemSurface.getColumn("tunnel_opening_id")))
 			.addProjection(opening.getColumn("id", "opid"), opening.getColumn("objectclass_id", "opobjectclass_id"));

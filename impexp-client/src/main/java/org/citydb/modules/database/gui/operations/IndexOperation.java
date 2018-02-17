@@ -249,17 +249,16 @@ public class IndexOperation extends DatabaseOperationView {
 			});
 
 			try {
-				String schema = dbConnectionPool.getActiveDatabaseAdapter().getConnectionDetails().getSchema();
-				
+
 				for (IndexType type : IndexType.values()) {
 					IndexStatusInfo indexStatus = null;
 
 					if (type == IndexType.SPATIAL && spatial.isSelected()) {
 						LOG.all(LogLevel.INFO, "Activating spatial indexes...");
-						indexStatus = dbConnectionPool.getActiveDatabaseAdapter().getUtil().createSpatialIndexes(schema);
+						indexStatus = dbConnectionPool.getActiveDatabaseAdapter().getUtil().createSpatialIndexes();
 					} else if (type == IndexType.NORMAL && normal.isSelected()) {
 						LOG.all(LogLevel.INFO, "Activating normal indexes...");
-						indexStatus = dbConnectionPool.getActiveDatabaseAdapter().getUtil().createNormalIndexes(schema);
+						indexStatus = dbConnectionPool.getActiveDatabaseAdapter().getUtil().createNormalIndexes();
 					}
 
 					if (indexStatus != null) {				
@@ -337,17 +336,15 @@ public class IndexOperation extends DatabaseOperationView {
 			});
 
 			try {
-				String schema = dbConnectionPool.getActiveDatabaseAdapter().getConnectionDetails().getSchema();
-				
 				for (IndexType type : IndexType.values()) {
 					IndexStatusInfo indexStatus = null;
 
 					if (type == IndexType.SPATIAL && spatial.isSelected()) {
 						LOG.all(LogLevel.INFO, "Deactivating spatial indexes...");
-						indexStatus = dbConnectionPool.getActiveDatabaseAdapter().getUtil().dropSpatialIndexes(schema);
+						indexStatus = dbConnectionPool.getActiveDatabaseAdapter().getUtil().dropSpatialIndexes();
 					} else if (type == IndexType.NORMAL && normal.isSelected()) {
 						LOG.all(LogLevel.INFO, "Deactivating normal indexes...");
-						indexStatus = dbConnectionPool.getActiveDatabaseAdapter().getUtil().dropNormalIndexes(schema);
+						indexStatus = dbConnectionPool.getActiveDatabaseAdapter().getUtil().dropNormalIndexes();
 					}
 
 					if (indexStatus != null) {				
@@ -425,17 +422,15 @@ public class IndexOperation extends DatabaseOperationView {
 			});
 
 			try {
-				String schema = dbConnectionPool.getActiveDatabaseAdapter().getConnectionDetails().getSchema();
-				
 				for (IndexType type : IndexType.values()) {
 					IndexStatusInfo indexStatus = null;
 
 					if (type == IndexType.SPATIAL && spatial.isSelected()) {
 						LOG.all(LogLevel.INFO, "Checking spatial indexes...");
-						indexStatus = dbConnectionPool.getActiveDatabaseAdapter().getUtil().getStatusSpatialIndexes(schema);
+						indexStatus = dbConnectionPool.getActiveDatabaseAdapter().getUtil().getStatusSpatialIndexes();
 					} else if (type == IndexType.NORMAL && normal.isSelected()) {
 						LOG.all(LogLevel.INFO, "Checking normal indexes...");
-						indexStatus = dbConnectionPool.getActiveDatabaseAdapter().getUtil().getStatusNormalIndexes(schema);
+						indexStatus = dbConnectionPool.getActiveDatabaseAdapter().getUtil().getStatusNormalIndexes();
 					}
 
 					if (indexStatus != null) {
@@ -515,17 +510,16 @@ public class IndexOperation extends DatabaseOperationView {
 			});
 			
 			try {
-				String schema = dbConnectionPool.getActiveDatabaseAdapter().getConnectionDetails().getSchema();
 				boolean statsUpdated = true;
 				
 				for (IndexType type : IndexType.values()) {
 					if (statsUpdated) {
 						if (type == IndexType.SPATIAL && spatial.isSelected()) {
 							LOG.all(LogLevel.INFO, "Updating table statistics for columns with spatial index...");
-							statsUpdated = dbConnectionPool.getActiveDatabaseAdapter().getUtil().updateTableStatsSpatialColumns(schema);
+							statsUpdated = dbConnectionPool.getActiveDatabaseAdapter().getUtil().updateTableStatsSpatialColumns();
 						} else if (type == IndexType.NORMAL && normal.isSelected()) {
 							LOG.all(LogLevel.INFO, "Updating table statistics for columns with normal index...");
-							statsUpdated = dbConnectionPool.getActiveDatabaseAdapter().getUtil().updateTableStatsNormalColumns(schema);
+							statsUpdated = dbConnectionPool.getActiveDatabaseAdapter().getUtil().updateTableStatsNormalColumns();
 						}
 					}
 				}

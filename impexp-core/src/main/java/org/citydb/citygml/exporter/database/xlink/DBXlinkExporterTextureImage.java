@@ -47,7 +47,6 @@ public class DBXlinkExporterTextureImage implements DBXlinkExporter {
 	private final DBXlinkExporterManager xlinkExporterManager;
 
 	private BlobExportAdapter textureImageExportAdapter;
-	private String schema;
 	private String localPath;
 	private String texturePath;
 	private boolean texturePathIsLocal;
@@ -59,7 +58,6 @@ public class DBXlinkExporterTextureImage implements DBXlinkExporter {
 	public DBXlinkExporterTextureImage(Connection connection, Config config, DBXlinkExporterManager xlinkExporterManager) throws SQLException {
 		this.xlinkExporterManager = xlinkExporterManager;
 
-		schema = xlinkExporterManager.getDatabaseAdapter().getConnectionDetails().getSchema();
 		localPath = config.getInternal().getExportPath();
 		texturePathIsLocal = config.getProject().getExporter().getAppearances().getTexturePath().isRelative();
 		texturePath = config.getInternal().getExportTextureFilePath();
@@ -122,7 +120,7 @@ public class DBXlinkExporterTextureImage implements DBXlinkExporter {
 
 		// load image data into file
 		xlinkExporterManager.propagateEvent(counter);
-		return textureImageExportAdapter.getInFile(xlink.getId(), schema, fileName, fileURI);
+		return textureImageExportAdapter.getInFile(xlink.getId(), fileName, fileURI);
 	}
 
 	@Override

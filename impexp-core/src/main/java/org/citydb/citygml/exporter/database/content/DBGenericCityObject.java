@@ -76,10 +76,9 @@ public class DBGenericCityObject extends AbstractFeatureExporter<GenericCityObje
 		CombinedProjectionFilter projectionFilter = exporter.getCombinedProjectionFilter(TableEnum.GENERIC_CITYOBJECT.getName());
 		genericsModule = exporter.getTargetCityGMLVersion().getCityGMLModule(CityGMLModuleType.GENERICS).getNamespaceURI();
 		lodFilter = exporter.getLodFilter();
-		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 		hasObjectClassIdColumn = exporter.getDatabaseAdapter().getConnectionMetaData().getCityDBVersion().compareTo(4, 0, 0) >= 0;
 
-		table = new Table(TableEnum.GENERIC_CITYOBJECT.getName(), schema);
+		table = new Table(TableEnum.GENERIC_CITYOBJECT.getName());
 		select = new Select().addProjection(table.getColumn("id"));
 		if (hasObjectClassIdColumn) select.addProjection(table.getColumn("objectclass_id"));
 		if (projectionFilter.containsProperty("class", genericsModule)) select.addProjection(table.getColumn("class"), table.getColumn("class_codespace"));

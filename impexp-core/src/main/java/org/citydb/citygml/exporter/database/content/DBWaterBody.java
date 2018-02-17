@@ -89,12 +89,11 @@ public class DBWaterBody extends AbstractFeatureExporter<WaterBody> {
 		CombinedProjectionFilter boundarySurfaceProjectionFilter = exporter.getCombinedProjectionFilter(TableEnum.WATERBOUNDARY_SURFACE.getName());
 		waterBodyModule = exporter.getTargetCityGMLVersion().getCityGMLModule(CityGMLModuleType.WATER_BODY).getNamespaceURI();
 		lodFilter = exporter.getLodFilter();
-		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();		
 		hasObjectClassIdColumn = exporter.getDatabaseAdapter().getConnectionMetaData().getCityDBVersion().compareTo(4, 0, 0) >= 0;
 		useXLink = config.getProject().getExporter().getXlink().getFeature().isModeXLink();
 
-		table = new Table(TableEnum.WATERBODY.getName(), schema);
-		Table waterBoundarySurface = new Table(TableEnum.WATERBOUNDARY_SURFACE.getName(), schema);
+		table = new Table(TableEnum.WATERBODY.getName());
+		Table waterBoundarySurface = new Table(TableEnum.WATERBOUNDARY_SURFACE.getName());
 
 		select = new Select().addProjection(table.getColumn("id"));
 		if (hasObjectClassIdColumn) select.addProjection(table.getColumn("objectclass_id"));
@@ -110,7 +109,7 @@ public class DBWaterBody extends AbstractFeatureExporter<WaterBody> {
 		if (projectionFilter.containsProperty("lod3Solid", waterBodyModule)) select.addProjection(table.getColumn("lod3_solid_id"));
 		if (projectionFilter.containsProperty("lod4Solid", waterBodyModule)) select.addProjection(table.getColumn("lod4_solid_id"));
 		if (projectionFilter.containsProperty("boundedBy", waterBodyModule)) {
-			Table waterBodToWaterBndSrf = new Table(TableEnum.WATERBOD_TO_WATERBND_SRF.getName(), schema);
+			Table waterBodToWaterBndSrf = new Table(TableEnum.WATERBOD_TO_WATERBND_SRF.getName());
 			select.addJoin(JoinFactory.left(waterBodToWaterBndSrf, "waterbody_id", ComparisonName.EQUAL_TO, table.getColumn("id")))
 			.addJoin(JoinFactory.left(waterBoundarySurface, "id", ComparisonName.EQUAL_TO, waterBodToWaterBndSrf.getColumn("waterboundary_surface_id")))
 			.addProjection(waterBoundarySurface.getColumn("id", "ws_id"), waterBoundarySurface.getColumn("objectclass_id", "ws_objectclass_id"));

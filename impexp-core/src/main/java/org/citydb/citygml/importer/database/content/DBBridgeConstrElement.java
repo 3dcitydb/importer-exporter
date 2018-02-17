@@ -77,11 +77,10 @@ public class DBBridgeConstrElement implements DBImporter {
 		affineTransformation = config.getProject().getImporter().getAffineTransformation().isSetUseAffineTransformation();
 		nullGeometryType = importer.getDatabaseAdapter().getGeometryConverter().getNullGeometryType();
 		nullGeometryTypeName = importer.getDatabaseAdapter().getGeometryConverter().getNullGeometryTypeName();
-		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
 		hasObjectClassIdColumn = importer.getDatabaseAdapter().getConnectionMetaData().getCityDBVersion().compareTo(4, 0, 0) >= 0;
 
 		StringBuilder stmt = new StringBuilder()
-				.append("insert into ").append(schema).append(".bridge_constr_element (id, class, class_codespace, function, function_codespace, usage, usage_codespace, bridge_id, ")
+				.append("insert into bridge_constr_element (id, class, class_codespace, function, function_codespace, usage, usage_codespace, bridge_id, ")
 				.append("lod1_terrain_intersection, lod2_terrain_intersection, lod3_terrain_intersection, lod4_terrain_intersection, ")
 				.append("lod1_brep_id, lod2_brep_id, lod3_brep_id, lod4_brep_id, lod1_other_geom, lod2_other_geom, lod3_other_geom, lod4_other_geom, ")
 				.append("lod1_implicit_rep_id, lod2_implicit_rep_id, lod3_implicit_rep_id, lod4_implicit_rep_id, ")

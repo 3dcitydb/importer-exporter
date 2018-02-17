@@ -75,10 +75,9 @@ public class DBBuildingFurniture extends AbstractFeatureExporter<BuildingFurnitu
 		CombinedProjectionFilter projectionFilter = exporter.getCombinedProjectionFilter(TableEnum.BUILDING_FURNITURE.getName());
 		buildingModule = exporter.getTargetCityGMLVersion().getCityGMLModule(CityGMLModuleType.BUILDING).getNamespaceURI();
 		lodFilter = exporter.getLodFilter();
-		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 		hasObjectClassIdColumn = exporter.getDatabaseAdapter().getConnectionMetaData().getCityDBVersion().compareTo(4, 0, 0) >= 0;
 
-		table = new Table(TableEnum.BUILDING_FURNITURE.getName(), schema);
+		table = new Table(TableEnum.BUILDING_FURNITURE.getName());
 		select = new Select().addProjection(table.getColumn("id"));
 		if (hasObjectClassIdColumn) select.addProjection(table.getColumn("objectclass_id"));
 		if (projectionFilter.containsProperty("class", buildingModule)) select.addProjection(table.getColumn("class"), table.getColumn("class_codespace"));

@@ -44,10 +44,8 @@ public class DBTunnelOpenToThemSrf implements DBImporter {
 	public DBTunnelOpenToThemSrf(Connection batchConn, Config config, CityGMLImportManager importer) throws SQLException {
 		this.importer = importer;
 
-		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
-
 		StringBuilder stmt = new StringBuilder()
-				.append("insert into ").append(schema).append(".tunnel_open_to_them_srf (tunnel_opening_id, tunnel_thematic_surface_id) values ")
+				.append("insert into tunnel_open_to_them_srf (tunnel_opening_id, tunnel_thematic_surface_id) values ")
 				.append("(?, ?)");
 		psTunnelOpenToThemSrf = batchConn.prepareStatement(stmt.toString());
 	}

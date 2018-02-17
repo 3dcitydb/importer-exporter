@@ -83,10 +83,9 @@ public class DBTunnelHollowSpace extends AbstractFeatureExporter<HollowSpace> {
 		CombinedProjectionFilter projectionFilter = exporter.getCombinedProjectionFilter(TableEnum.TUNNEL_HOLLOW_SPACE.getName());
 		tunnelModule = exporter.getTargetCityGMLVersion().getCityGMLModule(CityGMLModuleType.TUNNEL).getNamespaceURI();
 		lodFilter = exporter.getLodFilter();
-		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 		hasObjectClassIdColumn = exporter.getDatabaseAdapter().getConnectionMetaData().getCityDBVersion().compareTo(4, 0, 0) >= 0;
 
-		table = new Table(TableEnum.TUNNEL_HOLLOW_SPACE.getName(), schema);
+		table = new Table(TableEnum.TUNNEL_HOLLOW_SPACE.getName());
 		select = new Select().addProjection(table.getColumn("id"));
 		if (hasObjectClassIdColumn) select.addProjection(table.getColumn("objectclass_id"));
 		if (projectionFilter.containsProperty("class", tunnelModule)) select.addProjection(table.getColumn("class"), table.getColumn("class_codespace"));

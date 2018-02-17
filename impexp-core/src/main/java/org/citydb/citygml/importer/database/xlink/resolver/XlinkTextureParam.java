@@ -46,10 +46,9 @@ public class XlinkTextureParam implements DBXlinkResolver {
 
 	public XlinkTextureParam(Connection batchConn, DBXlinkResolverManager resolverManager) throws SQLException {
 		this.resolverManager = resolverManager;
-		String schemaName = resolverManager.getDatabaseAdapter().getConnectionDetails().getSchema();
 
 		StringBuilder stmt = new StringBuilder()
-		.append("insert into ").append(schemaName).append(".TEXTUREPARAM (SURFACE_GEOMETRY_ID, IS_TEXTURE_PARAMETRIZATION, WORLD_TO_TEXTURE, SURFACE_DATA_ID) values ")
+		.append("insert into TEXTUREPARAM (SURFACE_GEOMETRY_ID, IS_TEXTURE_PARAMETRIZATION, WORLD_TO_TEXTURE, SURFACE_DATA_ID) values ")
 		.append("(?, ?, ?, ?)");
 		psTextureParam = batchConn.prepareStatement(stmt.toString());
 	}

@@ -76,10 +76,9 @@ public class DBSolitaryVegetatObject extends AbstractFeatureExporter<SolitaryVeg
 		CombinedProjectionFilter projectionFilter = exporter.getCombinedProjectionFilter(TableEnum.SOLITARY_VEGETAT_OBJECT.getName());
 		vegetationModule = exporter.getTargetCityGMLVersion().getCityGMLModule(CityGMLModuleType.VEGETATION).getNamespaceURI();
 		lodFilter = exporter.getLodFilter();
-		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 		hasObjectClassIdColumn = exporter.getDatabaseAdapter().getConnectionMetaData().getCityDBVersion().compareTo(4, 0, 0) >= 0;
 
-		table = new Table(TableEnum.SOLITARY_VEGETAT_OBJECT.getName(), schema);
+		table = new Table(TableEnum.SOLITARY_VEGETAT_OBJECT.getName());
 		select = new Select().addProjection(table.getColumn("id"));
 		if (hasObjectClassIdColumn) select.addProjection(table.getColumn("objectclass_id"));
 		if (projectionFilter.containsProperty("class", vegetationModule)) select.addProjection(table.getColumn("class"), table.getColumn("class_codespace"));

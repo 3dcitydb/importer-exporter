@@ -100,7 +100,6 @@ public class DBAddress implements DBImporter {
 		this.importer = importer;
 
 		importXALSource = config.getProject().getImporter().getAddress().isSetImportXAL();
-		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
 		hasGmlIdColumn = importer.getDatabaseAdapter().getConnectionMetaData().getCityDBVersion().compareTo(3, 1, 0) >= 0;
 		replaceGmlId = config.getProject().getImporter().getGmlId().isUUIDModeReplace();
 		String gmlIdCodespace = null;
@@ -114,7 +113,7 @@ public class DBAddress implements DBImporter {
 		}
 
 		StringBuilder stmt = new StringBuilder()
-				.append("insert into ").append(schema).append(".address (id, ").append(hasGmlIdColumn ? "gmlid, " : "").append(gmlIdCodespace != null ? "gmlid_codespace, " : "")
+				.append("insert into address (id, ").append(hasGmlIdColumn ? "gmlid, " : "").append(gmlIdCodespace != null ? "gmlid_codespace, " : "")
 				.append("street, house_number, po_box, zip_code, city, country, multi_point, xal_source) values ")
 				.append("(?, ").append(hasGmlIdColumn ? "?, " : "").append(gmlIdCodespace != null ? gmlIdCodespace : "").append("?, ?, ?, ?, ?, ?, ?, ?)");
 		psAddress = batchConn.prepareStatement(stmt.toString());

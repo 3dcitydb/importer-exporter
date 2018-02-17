@@ -90,19 +90,18 @@ public class DBBridgeThematicSurface extends AbstractFeatureExporter<AbstractBou
 		CombinedProjectionFilter openingProjectionFilter = exporter.getCombinedProjectionFilter(TableEnum.BRIDGE_OPENING.getName());
 		bridgeModule = exporter.getTargetCityGMLVersion().getCityGMLModule(CityGMLModuleType.BRIDGE).getNamespaceURI();
 		lodFilter = exporter.getLodFilter();
-		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 		useXLink = config.getProject().getExporter().getXlink().getFeature().isModeXLink();
 
-		table = new Table(TableEnum.BRIDGE_THEMATIC_SURFACE.getName(), schema);
-		Table opening = new Table(TableEnum.BRIDGE_OPENING.getName(), schema);
-		Table address = new Table(TableEnum.ADDRESS.getName(), schema);
+		table = new Table(TableEnum.BRIDGE_THEMATIC_SURFACE.getName());
+		Table opening = new Table(TableEnum.BRIDGE_OPENING.getName());
+		Table address = new Table(TableEnum.ADDRESS.getName());
 
 		select = new Select().addProjection(table.getColumn("id", "tsid"), table.getColumn("objectclass_id"));
 		if (boundarySurfaceProjectionFilter.containsProperty("lod2MultiSurface", bridgeModule)) select.addProjection(table.getColumn("lod2_multi_surface_id"));
 		if (boundarySurfaceProjectionFilter.containsProperty("lod3MultiSurface", bridgeModule)) select.addProjection(table.getColumn("lod3_multi_surface_id"));
 		if (boundarySurfaceProjectionFilter.containsProperty("lod4MultiSurface", bridgeModule)) select.addProjection(table.getColumn("lod4_multi_surface_id"));
 		if (boundarySurfaceProjectionFilter.containsProperty("opening", bridgeModule)) {
-			Table openingToThemSurface = new Table(TableEnum.BRIDGE_OPEN_TO_THEM_SRF.getName(), schema);
+			Table openingToThemSurface = new Table(TableEnum.BRIDGE_OPEN_TO_THEM_SRF.getName());
 			select.addJoin(JoinFactory.left(openingToThemSurface, "bridge_thematic_surface_id", ComparisonName.EQUAL_TO, table.getColumn("id")))
 			.addJoin(JoinFactory.left(opening, "id", ComparisonName.EQUAL_TO, openingToThemSurface.getColumn("bridge_opening_id")))
 			.addProjection(opening.getColumn("id", "opid"), opening.getColumn("objectclass_id", "opobjectclass_id"));

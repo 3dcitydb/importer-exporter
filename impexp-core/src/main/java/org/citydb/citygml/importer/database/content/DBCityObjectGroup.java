@@ -63,11 +63,10 @@ public class DBCityObjectGroup implements DBImporter {
 		this.batchConn = batchConn;
 		this.importer = importer;
 
-		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
 		hasObjectClassIdColumn = importer.getDatabaseAdapter().getConnectionMetaData().getCityDBVersion().compareTo(4, 0, 0) >= 0;
 
 		StringBuilder stmt = new StringBuilder()
-				.append("insert into ").append(schema).append(".cityobjectgroup (id, class, class_codespace, function, function_codespace, usage, usage_codespace, ")
+				.append("insert into cityobjectgroup (id, class, class_codespace, function, function_codespace, usage, usage_codespace, ")
 				.append("brep_id, other_geom")
 				.append(hasObjectClassIdColumn ? ", objectclass_id) " : ") ")
 				.append("values (?, ?, ?, ?, ?, ?, ?, ?, ?")

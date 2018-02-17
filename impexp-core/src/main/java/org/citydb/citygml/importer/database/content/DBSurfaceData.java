@@ -100,7 +100,6 @@ public class DBSurfaceData implements DBImporter {
 		affineTransformation = config.getProject().getImporter().getAffineTransformation().isSetUseAffineTransformation();
 		nullGeometryType = importer.getDatabaseAdapter().getGeometryConverter().getNullGeometryType();
 		nullGeometryTypeName = importer.getDatabaseAdapter().getGeometryConverter().getNullGeometryTypeName();
-		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
 
 		String gmlIdCodespace = config.getInternal().getCurrentGmlIdCodespace();
 		if (gmlIdCodespace != null && gmlIdCodespace.length() > 0)
@@ -109,19 +108,19 @@ public class DBSurfaceData implements DBImporter {
 			gmlIdCodespace = null;		
 
 		StringBuilder x3dStmt = new StringBuilder()
-				.append("insert into ").append(schema).append(".surface_data (id, gmlid, ").append(gmlIdCodespace != null ? "gmlid_codespace, " : "").append("name, name_codespace, description, is_front, objectclass_id, ")
+				.append("insert into surface_data (id, gmlid, ").append(gmlIdCodespace != null ? "gmlid_codespace, " : "").append("name, name_codespace, description, is_front, objectclass_id, ")
 				.append("x3d_shininess, x3d_transparency, x3d_ambient_intensity, x3d_specular_color, x3d_diffuse_color, x3d_emissive_color, x3d_is_smooth) values ")
 				.append("(?, ?, ").append(gmlIdCodespace != null ? gmlIdCodespace : "").append("?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 		psX3DMaterial = batchConn.prepareStatement(x3dStmt.toString());
 
 		StringBuilder paraStmt = new StringBuilder()
-				.append("insert into ").append(schema).append(".surface_data (id, gmlid, ").append(gmlIdCodespace != null ? "gmlid_codespace, " : "").append("name, name_codespace, description, is_front, objectclass_id, ")
+				.append("insert into surface_data (id, gmlid, ").append(gmlIdCodespace != null ? "gmlid_codespace, " : "").append("name, name_codespace, description, is_front, objectclass_id, ")
 				.append("tex_texture_type, tex_wrap_mode, tex_border_color) values ")
 				.append("(?, ?, ").append(gmlIdCodespace != null ? gmlIdCodespace : "").append("?, ?, ?, ?, ?, ?, ?, ?)");
 		psParaTex = batchConn.prepareStatement(paraStmt.toString());
 
 		StringBuilder geoStmt = new StringBuilder()
-				.append("insert into ").append(schema).append(".surface_data (id, gmlid, ").append(gmlIdCodespace != null ? "gmlid_codespace, " : "").append("name, name_codespace, description, is_front, objectclass_id, ")
+				.append("insert into surface_data (id, gmlid, ").append(gmlIdCodespace != null ? "gmlid_codespace, " : "").append("name, name_codespace, description, is_front, objectclass_id, ")
 				.append("tex_texture_type, tex_wrap_mode, tex_border_color, ")
 				.append("gt_prefer_worldfile, gt_orientation, gt_reference_point) values ")
 				.append("(?, ?, ").append(gmlIdCodespace != null ? gmlIdCodespace : "").append("?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");

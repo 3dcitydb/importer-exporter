@@ -72,10 +72,9 @@ public class DBTransportationComplex implements DBImporter {
 
 		nullGeometryType = importer.getDatabaseAdapter().getGeometryConverter().getNullGeometryType();
 		nullGeometryTypeName = importer.getDatabaseAdapter().getGeometryConverter().getNullGeometryTypeName();
-		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
 
 		StringBuilder stmt = new StringBuilder()
-				.append("insert into ").append(schema).append(".transportation_complex (id, objectclass_id, class, class_codespace, function, function_codespace, usage, usage_codespace, ")
+				.append("insert into transportation_complex (id, objectclass_id, class, class_codespace, function, function_codespace, usage, usage_codespace, ")
 				.append("lod0_network, lod1_multi_surface_id, lod2_multi_surface_id, lod3_multi_surface_id, lod4_multi_surface_id) values ")
 				.append("(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 		psTransComplex = batchConn.prepareStatement(stmt.toString());

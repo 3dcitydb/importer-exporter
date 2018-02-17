@@ -20,19 +20,17 @@ import org.citydb.sqlbuilder.select.Select;
 public class SQLQueryBuilder {
 	private final SchemaMapping schemaMapping;
 	private final AbstractDatabaseAdapter databaseAdapter;
-	private final String schemaName;
 
 	private final BuildProperties buildProperties;
 
-	public SQLQueryBuilder(SchemaMapping schemaMapping, AbstractDatabaseAdapter databaseAdapter, String schemaName, BuildProperties buildProperties) {
+	public SQLQueryBuilder(SchemaMapping schemaMapping, AbstractDatabaseAdapter databaseAdapter, BuildProperties buildProperties) {
 		this.schemaMapping = schemaMapping;
 		this.databaseAdapter = databaseAdapter;
-		this.schemaName = schemaName;
 		this.buildProperties = buildProperties;
 	}
 
-	public SQLQueryBuilder(SchemaMapping schemaMapping, AbstractDatabaseAdapter databaseAdapter, String schemaName) {
-		this(schemaMapping, databaseAdapter, schemaName, BuildProperties.defaults());
+	public SQLQueryBuilder(SchemaMapping schemaMapping, AbstractDatabaseAdapter databaseAdapter) {
+		this(schemaMapping, databaseAdapter, BuildProperties.defaults());
 	}
 
 	public Select buildQuery(Query query) throws QueryBuildException {
@@ -64,14 +62,14 @@ public class SQLQueryBuilder {
 			// are all subtypes of the root node of the schema path
 
 			Predicate predicate = query.getSelection().getPredicate();
-			PredicateBuilder predicateBuilder = new PredicateBuilder(query, objectclassIds, schemaMapping, databaseAdapter, schemaName, buildProperties);
+			PredicateBuilder predicateBuilder = new PredicateBuilder(query, objectclassIds, schemaMapping, databaseAdapter, buildProperties);
 			select = predicateBuilder.buildPredicate(predicate);	
 		} else {
 			FeatureType superType = schemaMapping.getCommonSuperType(typeFilter.getFeatureTypes());			
 			SchemaPath schemaPath = new SchemaPath();
 			schemaPath.setFirstNode(superType);
 
-			SchemaPathBuilder builder = new SchemaPathBuilder(databaseAdapter.getSQLAdapter(), schemaName, buildProperties);
+			SchemaPathBuilder builder = new SchemaPathBuilder(databaseAdapter.getSQLAdapter(), buildProperties);
 			SQLQueryContext context = builder.buildSchemaPath(schemaPath, objectclassIds, true, true);
 			select = context.select;
 		}
@@ -80,7 +78,7 @@ public class SQLQueryBuilder {
 		if (query.isSetLodFilter()) {
 			LodFilter lodFilter = query.getLodFilter();
 			if (lodFilter.getFilterMode() != LodFilterMode.OR || !lodFilter.areAllEnabled()) {
-				LodFilterBuilder lodFilterBuilder = new LodFilterBuilder(schemaMapping, schemaName);
+				LodFilterBuilder lodFilterBuilder = new LodFilterBuilder(schemaMapping);
 				lodFilterBuilder.buildLodFilter(query.getLodFilter(), typeFilter, query.getTargetVersion(), select);
 			}
 		}
@@ -93,7 +91,7 @@ public class SQLQueryBuilder {
 	}
 
 	public SQLQueryContext buildSchemaPath(SchemaPath schemaPath, boolean addProjection) throws QueryBuildException {
-		SchemaPathBuilder builder = new SchemaPathBuilder(databaseAdapter.getSQLAdapter(), schemaName, buildProperties);
+		SchemaPathBuilder builder = new SchemaPathBuilder(databaseAdapter.getSQLAdapter(), buildProperties);
 		FeatureTypeFilter typeFilter = new FeatureTypeFilter(false);
 
 		try {

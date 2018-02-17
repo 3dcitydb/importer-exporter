@@ -131,13 +131,13 @@ public class SQLAdapter extends AbstractSQLAdapter {
 	}
 	
 	@Override
-	public String getNextSequenceValue(String sequence, String schema) {
-		return new StringBuilder("nextval('").append(schema).append(".").append(sequence).append("')").toString();
+	public String getNextSequenceValue(String sequence) {
+		return new StringBuilder("nextval('").append(sequence).append("')").toString();
 	}
 	
 	@Override
-	public String getCurrentSequenceValue(String sequence, String schema) {
-		return new StringBuilder("currval('").append(schema).append(".").append(sequence).append("')").toString();
+	public String getCurrentSequenceValue(String sequence) {
+		return new StringBuilder("currval('").append(sequence).append("')").toString();
 	}
 	
 	@Override
@@ -174,21 +174,21 @@ public class SQLAdapter extends AbstractSQLAdapter {
 	}
 
 	@Override
-	public String getHierarchicalGeometryQuery(String schema) {
+	public String getHierarchicalGeometryQuery() {
 		StringBuilder query = new StringBuilder()
 		.append("WITH RECURSIVE geometry_rec (id, gmlid, parent_id, root_id, is_solid, is_composite, is_triangulated, is_xlink, is_reverse, geometry, implicit_geometry, solid_geometry, cityobject_id, level) ")
 		.append("AS (SELECT sg.id, sg.gmlid, sg.parent_id, sg.root_id, sg.is_solid, sg.is_composite, sg.is_triangulated, sg.is_xlink, sg.is_reverse, sg.geometry, sg.implicit_geometry, sg.solid_geometry, sg.cityobject_id, 1 AS level ")
-		.append("FROM ").append(schema).append(".surface_geometry sg WHERE sg.id=? UNION ALL ")
+		.append("FROM surface_geometry sg WHERE sg.id=? UNION ALL ")
 		.append("SELECT sg.id, sg.gmlid, sg.parent_id, sg.root_id, sg.is_solid, sg.is_composite, sg.is_triangulated, sg.is_xlink, sg.is_reverse, sg.geometry, sg.implicit_geometry, sg.solid_geometry, sg.cityobject_id, g.level + 1 AS level ")
-		.append("FROM ").append(schema).append(".surface_geometry sg, geometry_rec g WHERE sg.parent_id=g.id) ")
+		.append("FROM surface_geometry sg, geometry_rec g WHERE sg.parent_id=g.id) ")
 		.append("SELECT id, gmlid, parent_id, root_id, is_solid, is_composite, is_triangulated, is_xlink, is_reverse, geometry, implicit_geometry, ST_AsEWKT(solid_geometry) as solid_geometry, cityobject_id, level FROM geometry_rec");
 				
 		return query.toString();
 	}
 
 	@Override
-	public BlobImportAdapter getBlobImportAdapter(Connection connection, BlobType type, String schema) throws SQLException {
-		return new BlobImportAdapter(connection, type, schema);
+	public BlobImportAdapter getBlobImportAdapter(Connection connection, BlobType type) throws SQLException {
+		return new BlobImportAdapter(connection, type);
 	}
 
 	@Override

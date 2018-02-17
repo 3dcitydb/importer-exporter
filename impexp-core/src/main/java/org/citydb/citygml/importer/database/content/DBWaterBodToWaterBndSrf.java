@@ -44,10 +44,8 @@ public class DBWaterBodToWaterBndSrf implements DBImporter {
 	public DBWaterBodToWaterBndSrf(Connection batchConn, Config config, CityGMLImportManager importer) throws SQLException {
 		this.importer = importer;
 
-		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
-
 		StringBuilder stmt = new StringBuilder()
-				.append("insert into ").append(schema).append(".waterbod_to_waterbnd_srf (waterboundary_surface_id, waterbody_id) values ")
+				.append("insert into waterbod_to_waterbnd_srf (waterboundary_surface_id, waterbody_id) values ")
 				.append("(?, ?)");
 		psWaterBodToWaterBndSrf = batchConn.prepareStatement(stmt.toString());
 	}

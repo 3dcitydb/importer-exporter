@@ -50,16 +50,15 @@ public class XlinkGroupToCityObject implements DBXlinkResolver {
 	public XlinkGroupToCityObject(Connection batchConn, CacheTable cacheTable, DBXlinkResolverManager resolverManager) throws SQLException {
 		this.resolverManager = resolverManager;
 
-		String schema = resolverManager.getDatabaseAdapter().getConnectionDetails().getSchema();
 		cityObjectGroupType = resolverManager.getFeatureType(23);
 
 		StringBuilder selectStmt = new StringBuilder("select GROUP_ID from ").append(cacheTable.getTableName()).append(" where GROUP_ID=? and IS_PARENT=?");
 		psSelectTmp = cacheTable.getConnection().prepareStatement(selectStmt.toString());
 		
-		StringBuilder insertStmt = new StringBuilder("insert into ").append(schema).append(".GROUP_TO_CITYOBJECT (CITYOBJECT_ID, CITYOBJECTGROUP_ID, ROLE) values (?, ?, ?)");
+		StringBuilder insertStmt = new StringBuilder("insert into GROUP_TO_CITYOBJECT (CITYOBJECT_ID, CITYOBJECTGROUP_ID, ROLE) values (?, ?, ?)");
 		psGroupMemberToCityObject = batchConn.prepareStatement(insertStmt.toString());
 		
-		StringBuilder updateStmt = new StringBuilder("update ").append(schema).append(".CITYOBJECTGROUP set PARENT_CITYOBJECT_ID=? where ID=?");
+		StringBuilder updateStmt = new StringBuilder("update CITYOBJECTGROUP set PARENT_CITYOBJECT_ID=? where ID=?");
 		psGroupParentToCityObject = batchConn.prepareStatement(updateStmt.toString());
 	}
 

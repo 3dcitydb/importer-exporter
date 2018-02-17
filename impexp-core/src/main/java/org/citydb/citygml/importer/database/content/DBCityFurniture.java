@@ -72,11 +72,10 @@ public class DBCityFurniture implements DBImporter {
 		affineTransformation = config.getProject().getImporter().getAffineTransformation().isSetUseAffineTransformation();
 		nullGeometryType = importer.getDatabaseAdapter().getGeometryConverter().getNullGeometryType();
 		nullGeometryTypeName = importer.getDatabaseAdapter().getGeometryConverter().getNullGeometryTypeName();
-		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
 		hasObjectClassIdColumn = importer.getDatabaseAdapter().getConnectionMetaData().getCityDBVersion().compareTo(4, 0, 0) >= 0;
 
 		StringBuilder stmt = new StringBuilder()
-				.append("insert into ").append(schema).append(".city_furniture (id, class, class_codespace, function, function_codespace, usage, usage_codespace, ")
+				.append("insert into city_furniture (id, class, class_codespace, function, function_codespace, usage, usage_codespace, ")
 				.append("lod1_terrain_intersection, lod2_terrain_intersection, lod3_terrain_intersection, lod4_terrain_intersection, ")
 				.append("lod1_brep_id, lod2_brep_id, lod3_brep_id, lod4_brep_id, ")
 				.append("lod1_other_geom, lod2_other_geom, lod3_other_geom, lod4_other_geom, ")

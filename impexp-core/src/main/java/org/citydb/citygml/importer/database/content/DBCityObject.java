@@ -132,7 +132,6 @@ public class DBCityObject implements DBImporter {
 		else
 			updatingPerson = null;
 
-		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
 		appearanceChecker = new LocalAppearanceChecker();
 		bboxOptions = BoundingBoxOptions.defaults()				
 				.useExistingEnvelopes(true)
@@ -140,7 +139,7 @@ public class DBCityObject implements DBImporter {
 				.useReferencePointAsFallbackForImplicitGeometries(true);
 
 		StringBuilder stmt = new StringBuilder()
-				.append("insert into ").append(schema).append(".cityobject (id, objectclass_id, gmlid, ").append(gmlIdCodespace != null ? "gmlid_codespace, " : "").append("name, name_codespace, description, envelope, creation_date, termination_date, ")
+				.append("insert into cityobject (id, objectclass_id, gmlid, ").append(gmlIdCodespace != null ? "gmlid_codespace, " : "").append("name, name_codespace, description, envelope, creation_date, termination_date, ")
 				.append("relative_to_terrain, relative_to_water, last_modification_date, updating_person, reason_for_update, lineage, xml_source) values ")
 				.append("(?, ?, ?, ").append(gmlIdCodespace != null ? gmlIdCodespace : "").append("?, ?, ?, ?, ?, ?, ?, ?, current_timestamp, ")
 				.append(updatingPerson).append(", ")

@@ -106,12 +106,10 @@ public class DBBridge extends AbstractFeatureExporter<AbstractBridge> {
 		CombinedProjectionFilter projectionFilter = exporter.getCombinedProjectionFilter(TableEnum.BRIDGE.getName());
 		bridgeModule = exporter.getTargetCityGMLVersion().getCityGMLModule(CityGMLModuleType.BRIDGE).getNamespaceURI();
 		lodFilter = exporter.getLodFilter();
-		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
-
 		hasObjectClassIdColumn = exporter.getDatabaseAdapter().getConnectionMetaData().getCityDBVersion().compareTo(4, 0, 0) >= 0;
 
-		table = new Table(TableEnum.BRIDGE.getName(), schema);
-		Table address = new Table(TableEnum.ADDRESS.getName(), schema);
+		table = new Table(TableEnum.BRIDGE.getName());
+		Table address = new Table(TableEnum.ADDRESS.getName());
 
 		select = new Select().addProjection(table.getColumn("id"), table.getColumn("bridge_parent_id"));
 		if (hasObjectClassIdColumn) select.addProjection(table.getColumn("objectclass_id"));
@@ -137,7 +135,7 @@ public class DBBridge extends AbstractFeatureExporter<AbstractBridge> {
 		if (projectionFilter.containsProperty("lod3MultiSurface", bridgeModule)) select.addProjection(table.getColumn("lod3_multi_surface_id"));
 		if (projectionFilter.containsProperty("lod4MultiSurface", bridgeModule)) select.addProjection(table.getColumn("lod4_multi_surface_id"));
 		if (projectionFilter.containsProperty("address", bridgeModule)) {
-			Table addressToBridge = new Table(TableEnum.ADDRESS_TO_BRIDGE.getName(), schema);
+			Table addressToBridge = new Table(TableEnum.ADDRESS_TO_BRIDGE.getName());
 			select.addJoin(JoinFactory.left(addressToBridge, "bridge_id", ComparisonName.EQUAL_TO, table.getColumn("id")))
 			.addJoin(JoinFactory.left(address, "id", ComparisonName.EQUAL_TO, addressToBridge.getColumn("address_id")))
 			.addProjection(address.getColumn("id", "addr_id"), address.getColumn("street"), address.getColumn("house_number"), address.getColumn("po_box"), address.getColumn("zip_code"), address.getColumn("city"),

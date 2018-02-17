@@ -31,7 +31,6 @@ public interface CityGMLImportHelper {
 	public AbstractDatabaseAdapter getDatabaseAdapter();
 	public void executeBatch(String tableName) throws CityGMLImportException, SQLException;
 	public void executeBatch(AbstractObjectType<?> type) throws CityGMLImportException, SQLException;
-	public String getTableNameWithSchema(String tableName);
 	public long getNextSequenceValue(String sequence) throws SQLException;
 	public AttributeValueJoiner getAttributeValueJoiner();
 	

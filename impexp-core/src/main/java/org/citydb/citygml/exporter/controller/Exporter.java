@@ -153,9 +153,6 @@ public class Exporter implements EventHandler {
 				!databaseAdapter.getWorkspaceManager().existsWorkspace(workspace, true))
 			return false;
 
-		// get schema
-		String schema = databaseAdapter.getConnectionDetails().getSchema();
-
 		// build query from filter settings
 		Query query = null;
 		try {
@@ -192,14 +189,14 @@ public class Exporter implements EventHandler {
 		// check and log index status
 		try {
 			if ((query.isSetTiling() || (query.isSetSelection() && query.getSelection().containsSpatialOperators()))
-					&& !databaseAdapter.getUtil().isIndexEnabled("CITYOBJECT", "ENVELOPE", schema)) {
+					&& !databaseAdapter.getUtil().isIndexEnabled("CITYOBJECT", "ENVELOPE")) {
 				log.error("Spatial indexes are not activated.");
 				log.error("Please use the database tab to activate the spatial indexes.");
 				return false;
 			}
 
 			for (IndexType type : IndexType.values())
-				databaseAdapter.getUtil().getIndexStatus(type, schema).printStatusToConsole();
+				databaseAdapter.getUtil().getIndexStatus(type).printStatusToConsole();
 		} catch (SQLException e) {
 			throw new CityGMLExportException("Database error while querying index status.", e);
 		}
@@ -207,7 +204,7 @@ public class Exporter implements EventHandler {
 		// check whether database contains global appearances and set internal flag
 		try {
 			config.getInternal().setExportGlobalAppearances(config.getProject().getExporter().getAppearances().isSetExportAppearance() && 
-					databaseAdapter.getUtil().getNumGlobalAppearances(workspace, schema) > 0);
+					databaseAdapter.getUtil().getNumGlobalAppearances(workspace) > 0);
 		} catch (SQLException e) {
 			throw new CityGMLExportException("Database error while querying the number of global appearances.", e);
 		}

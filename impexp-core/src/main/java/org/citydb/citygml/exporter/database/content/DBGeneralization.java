@@ -70,7 +70,6 @@ public class DBGeneralization implements DBExporter {
 		builder = new SQLQueryBuilder(
 				exporter.getSchemaMapping(), 
 				exporter.getDatabaseAdapter(),
-				exporter.getDatabaseAdapter().getConnectionDetails().getSchema(),
 				buildProperties);
 
 		generalizationQuery = new Query(query);

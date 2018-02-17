@@ -45,15 +45,13 @@ public class SpatialOperatorBuilder {
 	private final Set<Integer> objectclassIds;
 	private final SchemaMapping schemaMapping;
 	private final AbstractDatabaseAdapter databaseAdapter;
-	private final String schemaName;
 
-	protected SpatialOperatorBuilder(Query query, SchemaPathBuilder schemaPathBuilder, Set<Integer> objectclassIds, SchemaMapping schemaMapping, AbstractDatabaseAdapter databaseAdapter, String schemaName) {
+	protected SpatialOperatorBuilder(Query query, SchemaPathBuilder schemaPathBuilder, Set<Integer> objectclassIds, SchemaMapping schemaMapping, AbstractDatabaseAdapter databaseAdapter) {
 		this.query = query;
 		this.schemaPathBuilder = schemaPathBuilder;
 		this.objectclassIds = objectclassIds;
 		this.schemaMapping = schemaMapping;
 		this.databaseAdapter = databaseAdapter;
-		this.schemaName = schemaName;
 	}
 
 	protected SQLQueryContext buildSpatialOperator(AbstractSpatialOperator operator, boolean negate) throws QueryBuildException {
@@ -123,7 +121,7 @@ public class SpatialOperatorBuilder {
 
 			GeometryObject bbox = spatialDescription.toEnvelope();
 			boolean all = operator.getOperatorName() == SpatialOperatorName.DISJOINT || operator.getOperatorName() == SpatialOperatorName.WITHIN;
-			Table surfaceGeometry = new Table(MappingConstants.SURFACE_GEOMETRY, schemaName, schemaPathBuilder.geAliasGenerator());
+			Table surfaceGeometry = new Table(MappingConstants.SURFACE_GEOMETRY, schemaPathBuilder.geAliasGenerator());
 			Table cityObject = getCityObjectTable(queryContext.select);
 
 			Select inner = new Select()
@@ -226,7 +224,7 @@ public class SpatialOperatorBuilder {
 			coords[bbox.getDimension()] += value;
 			coords[bbox.getDimension() + 1] += value;
 
-			Table surfaceGeometry = new Table(MappingConstants.SURFACE_GEOMETRY, schemaName, schemaPathBuilder.geAliasGenerator());
+			Table surfaceGeometry = new Table(MappingConstants.SURFACE_GEOMETRY, schemaPathBuilder.geAliasGenerator());
 			Table cityObject = getCityObjectTable(queryContext.select);
 
 			Select inner = new Select()

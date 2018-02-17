@@ -68,11 +68,10 @@ public class DBTunnelFurniture implements DBImporter {
 		this.importer = importer;
 
 		affineTransformation = config.getProject().getImporter().getAffineTransformation().isSetUseAffineTransformation();
-		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
 		hasObjectClassIdColumn = importer.getDatabaseAdapter().getConnectionMetaData().getCityDBVersion().compareTo(4, 0, 0) >= 0;
 
 		StringBuilder stmt = new StringBuilder()
-				.append("insert into ").append(schema).append(".tunnel_furniture (id, class, class_codespace, function, function_codespace, usage, usage_codespace, tunnel_hollow_space_id, ")
+				.append("insert into tunnel_furniture (id, class, class_codespace, function, function_codespace, usage, usage_codespace, tunnel_hollow_space_id, ")
 				.append("lod4_brep_id, lod4_other_geom, ")
 				.append("lod4_implicit_rep_id, lod4_implicit_ref_point, lod4_implicit_transformation")
 				.append(hasObjectClassIdColumn ? ", objectclass_id) " : ") ")

@@ -66,11 +66,10 @@ public class DBRoom implements DBImporter {
 	public DBRoom(Connection batchConn, Config config, CityGMLImportManager importer) throws CityGMLImportException, SQLException {
 		this.importer = importer;
 
-		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
 		hasObjectClassIdColumn = importer.getDatabaseAdapter().getConnectionMetaData().getCityDBVersion().compareTo(4, 0, 0) >= 0;
 
 		StringBuilder stmt = new StringBuilder()
-				.append("insert into ").append(schema).append(".room (id, class, class_codespace, function, function_codespace, usage, usage_codespace, building_id, ")
+				.append("insert into room (id, class, class_codespace, function, function_codespace, usage, usage_codespace, building_id, ")
 				.append("lod4_multi_surface_id, lod4_solid_id")
 				.append(hasObjectClassIdColumn ? ", objectclass_id) " : ") ")
 				.append("values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?")

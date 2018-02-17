@@ -41,12 +41,12 @@ public class BlobImportAdapter {
 	private PreparedStatement psUpdate;
 	private BlobType blobType;
 
-	public BlobImportAdapter(Connection connection, BlobType blobType, String schema) throws SQLException {
+	public BlobImportAdapter(Connection connection, BlobType blobType) throws SQLException {
 		this.connection = connection;
 		this.blobType = blobType;
 
 		psUpdate = connection.prepareStatement(blobType == BlobType.TEXTURE_IMAGE ?
-				"update " + schema + ".TEX_IMAGE set TEX_IMAGE_DATA=? where ID=?" : "update " + schema + ".IMPLICIT_GEOMETRY set LIBRARY_OBJECT=? where ID=?");
+				"update TEX_IMAGE set TEX_IMAGE_DATA=? where ID=?" : "update IMPLICIT_GEOMETRY set LIBRARY_OBJECT=? where ID=?");
 		}
 
 	public boolean insert(long id, InputStream in, String fileName) throws SQLException {

@@ -131,13 +131,13 @@ public class SQLAdapter extends AbstractSQLAdapter {
 	}
 
 	@Override
-	public String getNextSequenceValue(String sequence, String schema) {
-		return new StringBuilder(schema).append(".").append(sequence).append(".nextval").toString();
+	public String getNextSequenceValue(String sequence) {
+		return new StringBuilder(sequence).append(".nextval").toString();
 	}
 
 	@Override
-	public String getCurrentSequenceValue(String sequence, String schema) {
-		return new StringBuilder(schema).append(".").append(sequence).append(".currval").toString();
+	public String getCurrentSequenceValue(String sequence) {
+		return new StringBuilder(sequence).append(".currval").toString();
 	}
 
 	@Override
@@ -174,13 +174,13 @@ public class SQLAdapter extends AbstractSQLAdapter {
 	}
 
 	@Override
-	public String getHierarchicalGeometryQuery(String schema) {
-		return new StringBuilder("select sg.*, LEVEL from ").append(schema).append(".SURFACE_GEOMETRY sg start with sg.ID=? connect by prior sg.ID=sg.PARENT_ID").toString();
+	public String getHierarchicalGeometryQuery() {
+		return new StringBuilder("select sg.*, LEVEL from SURFACE_GEOMETRY sg start with sg.ID=? connect by prior sg.ID=sg.PARENT_ID").toString();
 	}
 
 	@Override
-	public BlobImportAdapter getBlobImportAdapter(Connection connection, BlobType type, String schema) throws SQLException {
-		return new BlobImportAdapter(connection, type, schema);
+	public BlobImportAdapter getBlobImportAdapter(Connection connection, BlobType type) throws SQLException {
+		return new BlobImportAdapter(connection, type);
 	}
 
 	@Override

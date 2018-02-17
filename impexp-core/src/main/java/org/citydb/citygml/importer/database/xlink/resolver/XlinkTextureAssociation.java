@@ -51,22 +51,19 @@ public class XlinkTextureAssociation implements DBXlinkResolver {
 	private PreparedStatement psSelectParts;
 	private PreparedStatement psSelectContent;
 	private int batchCounter;
-	
-	private String schema;
 
 	public XlinkTextureAssociation(Connection batchConn, CacheTable cacheTable, DBXlinkResolverManager resolverManager) throws SQLException {
 		this.resolverManager = resolverManager;
-		schema = resolverManager.getDatabaseAdapter().getConnectionDetails().getSchema();
 
 		StringBuilder insertStmt = new StringBuilder()
-		.append("insert into ").append(schema).append(".TEXTUREPARAM (SURFACE_GEOMETRY_ID, IS_TEXTURE_PARAMETRIZATION, WORLD_TO_TEXTURE, TEXTURE_COORDINATES, SURFACE_DATA_ID) values ")
+		.append("insert into TEXTUREPARAM (SURFACE_GEOMETRY_ID, IS_TEXTURE_PARAMETRIZATION, WORLD_TO_TEXTURE, TEXTURE_COORDINATES, SURFACE_DATA_ID) values ")
 		.append("(?, 1, ?, ?, ?)");
 		psTextureParam = batchConn.prepareStatement(insertStmt.toString());
 		
 		psSelectParts = cacheTable.getConnection().prepareStatement("select SURFACE_DATA_ID, SURFACE_GEOMETRY_ID from " + cacheTable.getTableName() + " where GMLID=?");
 		
 		StringBuilder selectStmt = new StringBuilder()
-		.append("select WORLD_TO_TEXTURE, TEXTURE_COORDINATES from ").append(schema).append(".TEXTUREPARAM where SURFACE_DATA_ID=? and SURFACE_GEOMETRY_ID=?");
+		.append("select WORLD_TO_TEXTURE, TEXTURE_COORDINATES from TEXTUREPARAM where SURFACE_DATA_ID=? and SURFACE_GEOMETRY_ID=?");
 		psSelectContent = batchConn.prepareStatement(selectStmt.toString());
 	}
 

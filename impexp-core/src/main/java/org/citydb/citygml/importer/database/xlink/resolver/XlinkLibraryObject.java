@@ -47,8 +47,7 @@ public class XlinkLibraryObject implements DBXlinkResolver {
 		this.resolverManager = resolverManager;
 		
 		blobImportAdapter = resolverManager.getDatabaseAdapter().getSQLAdapter().getBlobImportAdapter(
-				externalFileConn, BlobType.LIBRARY_OBJECT, 
-				resolverManager.getDatabaseAdapter().getConnectionDetails().getSchema());
+				externalFileConn, BlobType.LIBRARY_OBJECT);
 	}
 
 	public boolean insert(DBXlinkLibraryObject xlink) throws SQLException {

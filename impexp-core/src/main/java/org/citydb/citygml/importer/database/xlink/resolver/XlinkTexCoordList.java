@@ -55,7 +55,6 @@ public class XlinkTexCoordList implements DBXlinkResolver {
 	public XlinkTexCoordList(Connection batchConn, CacheTable texCoords, CacheTable linearRings, DBXlinkResolverManager resolverManager) throws SQLException {
 		this.batchConn = batchConn;
 		this.resolverManager = resolverManager;
-		String schema = resolverManager.getDatabaseAdapter().getConnectionDetails().getSchema();
 
 		psSelectTexCoords = texCoords.getConnection().prepareStatement(new StringBuilder()
 		.append("select GMLID, TEXTURE_COORDINATES from ").append(texCoords.getTableName()).append(" ")
@@ -69,7 +68,7 @@ public class XlinkTexCoordList implements DBXlinkResolver {
 		.append("select GMLID, RING_NO from ").append(linearRings.getTableName()).append(" where PARENT_ID = ?").toString());
 
 		StringBuilder stmt = new StringBuilder()
-		.append("insert into ").append(schema).append(".TEXTUREPARAM (SURFACE_GEOMETRY_ID, IS_TEXTURE_PARAMETRIZATION, TEXTURE_COORDINATES, SURFACE_DATA_ID) values ")
+		.append("insert into TEXTUREPARAM (SURFACE_GEOMETRY_ID, IS_TEXTURE_PARAMETRIZATION, TEXTURE_COORDINATES, SURFACE_DATA_ID) values ")
 		.append("(?, 1, ?, ?)");
 		psTextureParam = batchConn.prepareStatement(stmt.toString());
 	}

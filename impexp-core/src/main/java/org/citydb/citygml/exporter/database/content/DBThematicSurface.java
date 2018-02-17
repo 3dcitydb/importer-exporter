@@ -89,19 +89,18 @@ public class DBThematicSurface extends AbstractFeatureExporter<AbstractBoundaryS
 		CombinedProjectionFilter openingProjectionFilter = exporter.getCombinedProjectionFilter(TableEnum.OPENING.getName());
 		buildingModule = exporter.getTargetCityGMLVersion().getCityGMLModule(CityGMLModuleType.BUILDING).getNamespaceURI();		
 		lodFilter = exporter.getLodFilter();
-		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 		useXLink = config.getProject().getExporter().getXlink().getFeature().isModeXLink();
 
-		table = new Table(TableEnum.THEMATIC_SURFACE.getName(), schema);
-		Table opening = new Table(TableEnum.OPENING.getName(), schema);
-		Table address = new Table(TableEnum.ADDRESS.getName(), schema);
+		table = new Table(TableEnum.THEMATIC_SURFACE.getName());
+		Table opening = new Table(TableEnum.OPENING.getName());
+		Table address = new Table(TableEnum.ADDRESS.getName());
 
 		select = new Select().addProjection(table.getColumn("id", "tsid"), table.getColumn("objectclass_id"));
 		if (boundarySurfaceProjectionFilter.containsProperty("lod2MultiSurface", buildingModule)) select.addProjection(table.getColumn("lod2_multi_surface_id"));
 		if (boundarySurfaceProjectionFilter.containsProperty("lod3MultiSurface", buildingModule)) select.addProjection(table.getColumn("lod3_multi_surface_id"));
 		if (boundarySurfaceProjectionFilter.containsProperty("lod4MultiSurface", buildingModule)) select.addProjection(table.getColumn("lod4_multi_surface_id"));
 		if (boundarySurfaceProjectionFilter.containsProperty("opening", buildingModule)) {
-			Table openingToThemSurface = new Table(TableEnum.OPENING_TO_THEM_SURFACE.getName(), schema);
+			Table openingToThemSurface = new Table(TableEnum.OPENING_TO_THEM_SURFACE.getName());
 			select.addJoin(JoinFactory.left(openingToThemSurface, "thematic_surface_id", ComparisonName.EQUAL_TO, table.getColumn("id")))
 			.addJoin(JoinFactory.left(opening, "id", ComparisonName.EQUAL_TO, openingToThemSurface.getColumn("opening_id")))
 			.addProjection(opening.getColumn("id", "opid"), opening.getColumn("objectclass_id", "opobjectclass_id"));
@@ -234,7 +233,9 @@ public class DBThematicSurface extends AbstractFeatureExporter<AbstractBoundaryS
 
 						boundarySurface.setLocalProperty("projection", boundarySurfaceProjectionFilter);
 						boundarySurfaces.put(boundarySurfaceId, boundarySurface);						
-					} else 						boundarySurfaceProjectionFilter = (ProjectionFilter)boundarySurface.getLocalProperty("projection");				}
+					} else 
+						boundarySurfaceProjectionFilter = (ProjectionFilter)boundarySurface.getLocalProperty("projection");
+				}
 
 				// continue if openings shall not be exported
 				if (!lodFilter.containsLodGreaterThanOrEuqalTo(3)

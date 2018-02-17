@@ -43,8 +43,6 @@ public class XlinkBasic implements DBXlinkResolver {
 
 	private HashMap<String, PreparedStatement> psMap;
 	private HashMap<String, Integer> psBatchCounterMap;
-	
-	private String schema;
 
 	public XlinkBasic(Connection batchConn, DBXlinkResolverManager resolverManager) throws SQLException {
 		this.batchConn = batchConn;
@@ -52,7 +50,6 @@ public class XlinkBasic implements DBXlinkResolver {
 
 		psMap = new HashMap<String, PreparedStatement>();
 		psBatchCounterMap = new HashMap<String, Integer>();
-		schema = resolverManager.getDatabaseAdapter().getConnectionDetails().getSchema();
 	}
 
 	public boolean insert(DBXlinkBasic xlink) throws SQLException {
@@ -84,13 +81,13 @@ public class XlinkBasic implements DBXlinkResolver {
 		if (ps == null) {
 			if (xlink.getToColumn() == null) {
 				ps = batchConn.prepareStatement(new StringBuilder("update ")
-						.append(schema).append(".").append(xlink.getTable())
+						.append(xlink.getTable())
 						.append(" set ").append(xlink.getFromColumn()).append("=? where ID=?").toString());
 			}
 			
 			else {
 				ps = batchConn.prepareStatement(new StringBuilder("insert into ")
-						.append(schema).append(".").append(xlink.getTable())
+						.append(xlink.getTable())
 						.append(" (").append(xlink.getToColumn()).append(", ").append(xlink.getFromColumn()).append(") ")
 						.append("values (?, ?)").toString());
 			}

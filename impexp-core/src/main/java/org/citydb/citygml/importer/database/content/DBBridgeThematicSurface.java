@@ -61,10 +61,8 @@ public class DBBridgeThematicSurface implements DBImporter {
 	public DBBridgeThematicSurface(Connection batchConn, Config config, CityGMLImportManager importer) throws CityGMLImportException, SQLException {
 		this.importer = importer;
 
-		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
-
 		StringBuilder stmt = new StringBuilder()
-				.append("insert into ").append(schema).append(".bridge_thematic_surface (id, objectclass_id, bridge_id, bridge_room_id, bridge_installation_id, bridge_constr_element_id, ")
+				.append("insert into bridge_thematic_surface (id, objectclass_id, bridge_id, bridge_room_id, bridge_installation_id, bridge_constr_element_id, ")
 				.append("lod2_multi_surface_id, lod3_multi_surface_id, lod4_multi_surface_id) values ")
 				.append("(?, ?, ?, ?, ?, ?, ?, ?, ?)");
 		psThematicSurface = batchConn.prepareStatement(stmt.toString());

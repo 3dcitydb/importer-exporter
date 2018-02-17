@@ -78,10 +78,9 @@ public class DBCityObjectGroup extends AbstractTypeExporter {
 
 		CombinedProjectionFilter projectionFilter = exporter.getCombinedProjectionFilter(TableEnum.CITYOBJECTGROUP.getName());
 		groupModule = exporter.getTargetCityGMLVersion().getCityGMLModule(CityGMLModuleType.CITY_OBJECT_GROUP).getNamespaceURI();
-		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 		hasObjectClassIdColumn = exporter.getDatabaseAdapter().getConnectionMetaData().getCityDBVersion().compareTo(4, 0, 0) >= 0;
 
-		table = new Table(TableEnum.CITYOBJECTGROUP.getName(), schema);
+		table = new Table(TableEnum.CITYOBJECTGROUP.getName());
 		select = new Select().addProjection(table.getColumn("id"));
 		if (hasObjectClassIdColumn) select.addProjection(table.getColumn("objectclass_id"));
 		if (projectionFilter.containsProperty("class", groupModule)) select.addProjection(table.getColumn("class"), table.getColumn("class_codespace"));
@@ -89,13 +88,13 @@ public class DBCityObjectGroup extends AbstractTypeExporter {
 		if (projectionFilter.containsProperty("usage", groupModule)) select.addProjection(table.getColumn("usage"), table.getColumn("usage_codespace"));
 		if (projectionFilter.containsProperty("geometry", groupModule)) select.addProjection(table.getColumn("brep_id"), exporter.getGeometryColumn(table.getColumn("other_geom")));
 		if (projectionFilter.containsProperty("parent", groupModule)) {
-			Table cityObject = new Table(TableEnum.CITYOBJECT.getName(), schema);
+			Table cityObject = new Table(TableEnum.CITYOBJECT.getName());
 			select.addJoin(JoinFactory.left(cityObject, "id", ComparisonName.EQUAL_TO, table.getColumn("parent_cityobject_id")))
 			.addProjection(table.getColumn("parent_cityobject_id"), cityObject.getColumn("gmlid", "parent_gmlid"));
 		}
 		if (projectionFilter.containsProperty("groupMember", groupModule)) {
-			Table cityObject = new Table(TableEnum.CITYOBJECT.getName(), schema);
-			Table groupToCityObject = new Table(TableEnum.GROUP_TO_CITYOBJECT.getName(), schema);
+			Table cityObject = new Table(TableEnum.CITYOBJECT.getName());
+			Table groupToCityObject = new Table(TableEnum.GROUP_TO_CITYOBJECT.getName());
 			select.addJoin(JoinFactory.left(groupToCityObject, "cityobjectgroup_id", ComparisonName.EQUAL_TO, table.getColumn("id")))
 			.addJoin(JoinFactory.left(cityObject, "id", ComparisonName.EQUAL_TO, groupToCityObject.getColumn("cityobject_id")))
 			.addProjection(groupToCityObject.getColumn("cityobject_id"), groupToCityObject.getColumn("role"), cityObject.getColumn("gmlid", "member_gmlid"));

@@ -71,9 +71,9 @@ public abstract class AbstractSQLAdapter {
 	public abstract boolean requiresPseudoTableInSelect();
 	public abstract String getPseudoTableName();
 	public abstract boolean spatialPredicateRequiresNoIndexHint();
-	public abstract String getHierarchicalGeometryQuery(String schema);
-	public abstract String getNextSequenceValue(String sequence, String schema);
-	public abstract String getCurrentSequenceValue(String sequence, String schema);
+	public abstract String getHierarchicalGeometryQuery();
+	public abstract String getNextSequenceValue(String sequence);
+	public abstract String getCurrentSequenceValue(String sequence);
 	public abstract String getNextSequenceValuesQuery(String sequence);
 	public abstract int getMaximumNumberOfItemsForInOperator();
 
@@ -81,7 +81,7 @@ public abstract class AbstractSQLAdapter {
 	public abstract PredicateToken getDistancePredicate(SpatialOperatorName operator, Column targetColumn, GeometryObject geometry, double distance, boolean negate);
 	public abstract Function getAggregateExtentFunction(Column envelope);
 	
-	public abstract BlobImportAdapter getBlobImportAdapter(Connection connection, BlobType type, String schema) throws SQLException;
+	public abstract BlobImportAdapter getBlobImportAdapter(Connection connection, BlobType type) throws SQLException;
 	public abstract BlobExportAdapter getBlobExportAdapter(Connection connection, BlobType type);
 
 	public String resolveDatabaseOperationName(String operation) {

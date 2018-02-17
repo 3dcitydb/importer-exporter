@@ -74,12 +74,11 @@ public class DBReliefComponent extends AbstractFeatureExporter<AbstractReliefCom
 
 		CombinedProjectionFilter projectionFilter = exporter.getCombinedProjectionFilter(TableEnum.RELIEF_COMPONENT.getName());
 		reliefModule = exporter.getTargetCityGMLVersion().getCityGMLModule(CityGMLModuleType.RELIEF).getNamespaceURI();
-		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 
-		table = new Table(TableEnum.RELIEF_COMPONENT.getName(), schema);
-		Table tinRelief = new Table(TableEnum.TIN_RELIEF.getName(), schema);
-		Table massPointRelief = new Table(TableEnum.MASSPOINT_RELIEF.getName(), schema);
-		Table breakLineRelief = new Table(TableEnum.BREAKLINE_RELIEF.getName(), schema);
+		table = new Table(TableEnum.RELIEF_COMPONENT.getName());
+		Table tinRelief = new Table(TableEnum.TIN_RELIEF.getName());
+		Table massPointRelief = new Table(TableEnum.MASSPOINT_RELIEF.getName());
+		Table breakLineRelief = new Table(TableEnum.BREAKLINE_RELIEF.getName());
 
 		select = new Select().addProjection(table.getColumn("id"), table.getColumn("objectclass_id"), table.getColumn("lod"))
 				.addJoin(JoinFactory.left(tinRelief, "id", ComparisonName.EQUAL_TO, table.getColumn("id")))

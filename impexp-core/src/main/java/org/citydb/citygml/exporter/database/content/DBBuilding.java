@@ -107,12 +107,10 @@ public class DBBuilding extends AbstractFeatureExporter<AbstractBuilding> {
 		CombinedProjectionFilter projectionFilter = exporter.getCombinedProjectionFilter(TableEnum.BUILDING.getName());
 		buildingModule = exporter.getTargetCityGMLVersion().getCityGMLModule(CityGMLModuleType.BUILDING).getNamespaceURI();		
 		lodFilter = exporter.getLodFilter();
-		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
-
 		hasObjectClassIdColumn = exporter.getDatabaseAdapter().getConnectionMetaData().getCityDBVersion().compareTo(4, 0, 0) >= 0;
 
-		table = new Table(TableEnum.BUILDING.getName(), schema);
-		Table address = new Table(TableEnum.ADDRESS.getName(), schema);
+		table = new Table(TableEnum.BUILDING.getName());
+		Table address = new Table(TableEnum.ADDRESS.getName());
 
 		select = new Select().addProjection(table.getColumn("id"), table.getColumn("building_parent_id"));
 		if (hasObjectClassIdColumn) select.addProjection(table.getColumn("objectclass_id"));
@@ -145,7 +143,7 @@ public class DBBuilding extends AbstractFeatureExporter<AbstractBuilding> {
 		if (projectionFilter.containsProperty("lod3MultiSurface", buildingModule)) select.addProjection(table.getColumn("lod3_multi_surface_id"));
 		if (projectionFilter.containsProperty("lod4MultiSurface", buildingModule)) select.addProjection(table.getColumn("lod4_multi_surface_id"));
 		if (projectionFilter.containsProperty("address", buildingModule)) {
-			Table addressToBuilding = new Table(TableEnum.ADDRESS_TO_BUILDING.getName(), schema);
+			Table addressToBuilding = new Table(TableEnum.ADDRESS_TO_BUILDING.getName());
 			select.addJoin(JoinFactory.left(addressToBuilding, "building_id", ComparisonName.EQUAL_TO, table.getColumn("id")))
 			.addJoin(JoinFactory.left(address, "id", ComparisonName.EQUAL_TO, addressToBuilding.getColumn("address_id")))
 			.addProjection(address.getColumn("id", "addr_id"), address.getColumn("street"), address.getColumn("house_number"), address.getColumn("po_box"), address.getColumn("zip_code"), address.getColumn("city"),

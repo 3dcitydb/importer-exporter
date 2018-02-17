@@ -72,27 +72,26 @@ public class DBReliefComponent implements DBImporter {
 
 		nullGeometryType = importer.getDatabaseAdapter().getGeometryConverter().getNullGeometryType();
 		nullGeometryTypeName = importer.getDatabaseAdapter().getGeometryConverter().getNullGeometryTypeName();
-		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
 		hasObjectClassIdColumn = importer.getDatabaseAdapter().getConnectionMetaData().getCityDBVersion().compareTo(4, 0, 0) >= 0;
 
 		StringBuilder componentStmt = new StringBuilder()
-				.append("insert into ").append(schema).append(".relief_component (id, objectclass_id, lod, extent) values ")
+				.append("insert into relief_component (id, objectclass_id, lod, extent) values ")
 				.append("(?, ?, ?, ?)");
 
 		StringBuilder tinStmt = new StringBuilder()
-				.append("insert into ").append(schema).append(".tin_relief (id, max_length, max_length_unit, stop_lines, break_lines, control_points, surface_geometry_id")
+				.append("insert into tin_relief (id, max_length, max_length_unit, stop_lines, break_lines, control_points, surface_geometry_id")
 				.append(hasObjectClassIdColumn ? ", objectclass_id) " : ") ")
 				.append("values (?, ?, ?, ?, ?, ?, ?")
 				.append(hasObjectClassIdColumn ? ", ?)" : ")");
 
 		StringBuilder masspointStmt = new StringBuilder()
-				.append("insert into ").append(schema).append(".masspoint_relief (id, relief_points")
+				.append("insert into masspoint_relief (id, relief_points")
 				.append(hasObjectClassIdColumn ? ", objectclass_id) " : ") ")
 				.append("values (?, ?")
 				.append(hasObjectClassIdColumn ? ", ?)" : ")");
 
 		StringBuilder breaklineStmt = new StringBuilder()
-				.append("insert into ").append(schema).append(".breakline_relief (id, ridge_or_valley_lines, break_lines")
+				.append("insert into breakline_relief (id, ridge_or_valley_lines, break_lines")
 				.append(hasObjectClassIdColumn ? ", objectclass_id) " : ") ")
 				.append("values (?, ?, ?")
 				.append(hasObjectClassIdColumn ? ", ?)" : ")");

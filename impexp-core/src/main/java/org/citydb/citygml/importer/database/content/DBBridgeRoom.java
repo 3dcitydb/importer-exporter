@@ -65,11 +65,10 @@ public class DBBridgeRoom implements DBImporter {
 	public DBBridgeRoom(Connection batchConn, Config config, CityGMLImportManager importer) throws CityGMLImportException, SQLException {
 		this.importer = importer;
 
-		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
 		hasObjectClassIdColumn = importer.getDatabaseAdapter().getConnectionMetaData().getCityDBVersion().compareTo(4, 0, 0) >= 0;
 
 		StringBuilder stmt = new StringBuilder()
-				.append("insert into ").append(schema).append(".bridge_room (id, class, class_codespace, function, function_codespace, usage, usage_codespace, bridge_id, ")
+				.append("insert into bridge_room (id, class, class_codespace, function, function_codespace, usage, usage_codespace, bridge_id, ")
 				.append("lod4_multi_surface_id, lod4_solid_id")
 				.append(hasObjectClassIdColumn ? ", objectclass_id) " : ") ")
 				.append("values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?")

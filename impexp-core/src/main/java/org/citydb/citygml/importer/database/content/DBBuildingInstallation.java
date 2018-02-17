@@ -77,10 +77,9 @@ public class DBBuildingInstallation implements DBImporter {
 		affineTransformation = config.getProject().getImporter().getAffineTransformation().isSetUseAffineTransformation();
 		nullGeometryType = importer.getDatabaseAdapter().getGeometryConverter().getNullGeometryType();
 		nullGeometryTypeName = importer.getDatabaseAdapter().getGeometryConverter().getNullGeometryTypeName();
-		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
 
 		StringBuilder stmt = new StringBuilder()
-				.append("insert into ").append(schema).append(".building_installation (id, objectclass_id, class, class_codespace, function, function_codespace, usage, usage_codespace, building_id, room_id, ")
+				.append("insert into building_installation (id, objectclass_id, class, class_codespace, function, function_codespace, usage, usage_codespace, building_id, room_id, ")
 				.append("lod2_brep_id, lod3_brep_id, lod4_brep_id, lod2_other_geom, lod3_other_geom, lod4_other_geom, ")
 				.append("lod2_implicit_rep_id, lod3_implicit_rep_id, lod4_implicit_rep_id, ")
 				.append("lod2_implicit_ref_point, lod3_implicit_ref_point, lod4_implicit_ref_point, ")

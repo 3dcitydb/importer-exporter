@@ -51,8 +51,7 @@ public class XlinkTextureImage implements DBXlinkResolver {
 		
 		counter = new CounterEvent(CounterType.TEXTURE_IMAGE, 1, this);
 		textureImportAdapter = resolverManager.getDatabaseAdapter().getSQLAdapter().getBlobImportAdapter(
-				externalFileConn, BlobType.TEXTURE_IMAGE, 
-				resolverManager.getDatabaseAdapter().getConnectionDetails().getSchema());
+				externalFileConn, BlobType.TEXTURE_IMAGE);
 	}
 
 	public boolean insert(DBXlinkTextureFile xlink) throws SQLException {

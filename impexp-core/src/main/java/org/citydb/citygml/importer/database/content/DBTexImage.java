@@ -61,7 +61,6 @@ public class DBTexImage implements DBImporter {
 
 		localPath = config.getInternal().getImportPath();
 		replacePathSeparator = File.separatorChar == '/';
-		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
 		importTextureImage = config.getProject().getImporter().getAppearances().isSetImportTextureFiles();
 
 		try {
@@ -71,7 +70,7 @@ public class DBTexImage implements DBImporter {
 		}
 
 		psInsertStmt = connection.prepareStatement(new StringBuilder()
-				.append("insert into ").append(schema).append(".tex_image (id, tex_image_uri, tex_mime_type, tex_mime_type_codespace) values ")
+				.append("insert into tex_image (id, tex_image_uri, tex_mime_type, tex_mime_type_codespace) values ")
 				.append("(?, ?, ?, ?)").toString());
 	}
 

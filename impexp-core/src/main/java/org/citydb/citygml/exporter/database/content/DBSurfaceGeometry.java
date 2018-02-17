@@ -86,7 +86,6 @@ public class DBSurfaceGeometry implements DBExporter {
 
 	public DBSurfaceGeometry(Connection connection, CacheTable cacheTable, CityGMLExportManager exporter, Config config) throws SQLException {
 		this.exporter = exporter;
-		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 
 		exportAppearance = config.getInternal().isExportGlobalAppearances();
 		if (exportAppearance) {
@@ -95,7 +94,7 @@ public class DBSurfaceGeometry implements DBExporter {
 			if (commitAfterProp != null && commitAfterProp > 0 && commitAfterProp <= exporter.getDatabaseAdapter().getMaxBatchSize())
 				commitAfter = commitAfterProp;
 
-			Table table = new Table(TableEnum.TEXTUREPARAM.getName(), schema);
+			Table table = new Table(TableEnum.TEXTUREPARAM.getName());
 			Select select = new Select().addProjection(new ConstantColumn(new PlaceHolder<>()));
 			if (exporter.getDatabaseAdapter().getSQLAdapter().requiresPseudoTableInSelect()) select.setPseudoTable(exporter.getDatabaseAdapter().getSQLAdapter().getPseudoTableName());
 			select.addSelection(ComparisonFactory.exists(new Select().addProjection(new ConstantColumn(1).withFromTable(table))
@@ -110,7 +109,7 @@ public class DBSurfaceGeometry implements DBExporter {
 			gmlIdPrefix = config.getProject().getExporter().getXlink().getGeometry().getIdPrefix();
 		}
 
-		Table table = new Table(TableEnum.SURFACE_GEOMETRY.getName(), schema);
+		Table table = new Table(TableEnum.SURFACE_GEOMETRY.getName());
 		Select select = new Select().addProjection(table.getColumn("id"), table.getColumn("gmlid"), table.getColumn("parent_id"), table.getColumn("is_solid"), table.getColumn("is_composite"),
 				table.getColumn("is_triangulated"), table.getColumn("is_xlink"), table.getColumn("is_reverse"),
 				exporter.getGeometryColumn(table.getColumn("geometry")), table.getColumn("implicit_geometry"))

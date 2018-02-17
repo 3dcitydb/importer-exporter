@@ -1,15 +1,15 @@
 package org.citydb.citygml.exporter.database.content;
 
+import org.citydb.sqlbuilder.schema.Table;
+import org.citydb.sqlbuilder.select.Select;
+import org.citydb.sqlbuilder.select.join.JoinFactory;
+import org.citydb.sqlbuilder.select.operator.comparison.ComparisonName;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-
-import org.citydb.sqlbuilder.schema.Table;
-import org.citydb.sqlbuilder.select.Select;
-import org.citydb.sqlbuilder.select.join.JoinFactory;
-import org.citydb.sqlbuilder.select.operator.comparison.ComparisonName;
 
 public abstract class AbstractTypeExporter implements DBExporter {
 	protected final CityGMLExportManager exporter;	
@@ -22,7 +22,7 @@ public abstract class AbstractTypeExporter implements DBExporter {
 	
 	protected void addJoinsToADEHookTables(Set<String> adeHookTables, Table fromTable) {
 		for (String adeHookTable : adeHookTables) {
-			Table table = new Table(adeHookTable, exporter.getDatabaseAdapter().getConnectionDetails().getSchema());
+			Table table = new Table(adeHookTable);
 			select.addProjection(table.getColumn("id", adeHookTable))
 			.addJoin(JoinFactory.left(table, "id", ComparisonName.EQUAL_TO, fromTable.getColumn("id")));
 		}

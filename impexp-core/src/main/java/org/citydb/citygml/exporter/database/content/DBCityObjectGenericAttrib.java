@@ -60,9 +60,7 @@ public class DBCityObjectGenericAttrib implements DBExporter {
 	private HashMap<Long, GenericAttributeSet> attributeSets;
 
 	public DBCityObjectGenericAttrib(Connection connection, CityGMLExportManager exporter) throws SQLException {
-		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
-
-		Table table = new Table(TableEnum.CITYOBJECT_GENERICATTRIB.getName(), schema);
+		Table table = new Table(TableEnum.CITYOBJECT_GENERICATTRIB.getName());
 		Select select = new Select();
 
 		select.addProjection(table.getColumn("id"), table.getColumn("parent_genattrib_id"),
@@ -71,7 +69,7 @@ public class DBCityObjectGenericAttrib implements DBExporter {
 		.addSelection(ComparisonFactory.equalTo(table.getColumn("cityobject_id"), new PlaceHolder<>()));
 		ps = connection.prepareStatement(select.toString());
 
-		attributeSets = new HashMap<Long, GenericAttributeSet>();
+		attributeSets = new HashMap<>();
 	}
 
 	protected void doExport(AbstractCityObject cityObject, long cityObjectId, ProjectionFilter projectionFilter) throws SQLException {

@@ -61,21 +61,19 @@ public class DBCityObjectGenericAttrib implements DBImporter {
 		this.batchConn = batchConn;
 		this.importer = importer;
 
-		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
-
 		StringBuilder stmt = new StringBuilder()
-				.append("insert into ").append(schema).append(".cityobject_genericattrib (id, parent_genattrib_id, root_genattrib_id, attrname, datatype, genattribset_codespace, cityobject_id) values ")
+				.append("insert into cityobject_genericattrib (id, parent_genattrib_id, root_genattrib_id, attrname, datatype, genattribset_codespace, cityobject_id) values ")
 				.append("(?, ?, ?, ?, ?, ?, ?)");
 		psGenericAttributeSet = batchConn.prepareStatement(stmt.toString());		
 
 		stmt = new StringBuilder()
-				.append("insert into ").append(schema).append(".cityobject_genericattrib (id, attrname, datatype, strval, intval, realval, urival, dateval, unit, cityobject_id, parent_genattrib_id, root_genattrib_id) values ")
-				.append("(").append(importer.getDatabaseAdapter().getSQLAdapter().getNextSequenceValue(SequenceEnum.CITYOBJECT_GENERICATTRIB_ID_SEQ.getName(), schema))
+				.append("insert into cityobject_genericattrib (id, attrname, datatype, strval, intval, realval, urival, dateval, unit, cityobject_id, parent_genattrib_id, root_genattrib_id) values ")
+				.append("(").append(importer.getDatabaseAdapter().getSQLAdapter().getNextSequenceValue(SequenceEnum.CITYOBJECT_GENERICATTRIB_ID_SEQ.getName()))
 				.append(", ?, ?, ?, ?, ?, ?, ?, ?, ?, ");
 
 		psGenericAttributeMember = batchConn.prepareStatement(new StringBuilder(stmt).append("?, ?)").toString());		
 		psAtomicGenericAttribute = batchConn.prepareStatement(new StringBuilder(stmt).append("null, ")
-				.append(importer.getDatabaseAdapter().getSQLAdapter().getCurrentSequenceValue(SequenceEnum.CITYOBJECT_GENERICATTRIB_ID_SEQ.getName(), schema)).append(")").toString());
+				.append(importer.getDatabaseAdapter().getSQLAdapter().getCurrentSequenceValue(SequenceEnum.CITYOBJECT_GENERICATTRIB_ID_SEQ.getName())).append(")").toString());
 	}
 
 	public void doImport(AbstractGenericAttribute genericAttribute, long cityObjectId) throws CityGMLImportException, SQLException {

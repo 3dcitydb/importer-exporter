@@ -48,10 +48,8 @@ public class DBTextureParam implements DBImporter {
 		this.batchConn = batchConn;
 		this.importer = importer;
 
-		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
-
 		StringBuilder texCoordListStmt = new StringBuilder()
-				.append("insert into ").append(schema).append(".textureparam (surface_geometry_id, is_texture_parametrization, world_to_texture, texture_coordinates, surface_data_id) values ")
+				.append("insert into textureparam (surface_geometry_id, is_texture_parametrization, world_to_texture, texture_coordinates, surface_data_id) values ")
 				.append("(?, ?, ?, ?, ?)");
 		psTextureParam = batchConn.prepareStatement(texCoordListStmt.toString());
 	}

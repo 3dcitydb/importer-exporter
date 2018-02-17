@@ -72,9 +72,8 @@ public class DBTrafficArea extends AbstractFeatureExporter<AbstractTransportatio
 		CombinedProjectionFilter projectionFilter = exporter.getCombinedProjectionFilter(TableEnum.TRAFFIC_AREA.getName());
 		transportationModule = exporter.getTargetCityGMLVersion().getCityGMLModule(CityGMLModuleType.TRANSPORTATION).getNamespaceURI();
 		lodFilter = exporter.getLodFilter();
-		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 
-		table = new Table(TableEnum.TRAFFIC_AREA.getName(), schema);
+		table = new Table(TableEnum.TRAFFIC_AREA.getName());
 		select = new Select().addProjection(table.getColumn("id"), table.getColumn("objectclass_id"));
 		if (projectionFilter.containsProperty("class", transportationModule)) select.addProjection(table.getColumn("class"), table.getColumn("class_codespace"));
 		if (projectionFilter.containsProperty("function", transportationModule)) select.addProjection(table.getColumn("function"), table.getColumn("function_codespace"));

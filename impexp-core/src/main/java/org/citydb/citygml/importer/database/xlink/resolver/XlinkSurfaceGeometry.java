@@ -72,17 +72,16 @@ public class XlinkSurfaceGeometry implements DBXlinkResolver {
 
 		psMap = new HashMap<String, PreparedStatement>();
 		psBatchCounterMap = new HashMap<String, Integer>();
-		String schema = resolverManager.getDatabaseAdapter().getConnectionDetails().getSchema();
-		
+
 		psSelectTmpSurfGeom = cacheTable.getConnection().prepareStatement(new StringBuilder("select ID from ").append(cacheTable.getTableName()).append(" where PARENT_ID=? or ROOT_ID=?").toString());
-		psSelectSurfGeom = batchConn.prepareStatement(resolverManager.getDatabaseAdapter().getSQLAdapter().getHierarchicalGeometryQuery(schema));
+		psSelectSurfGeom = batchConn.prepareStatement(resolverManager.getDatabaseAdapter().getSQLAdapter().getHierarchicalGeometryQuery());
 		
 		StringBuilder updateStmt = new StringBuilder()
-		.append("update ").append(schema).append(".SURFACE_GEOMETRY set IS_XLINK=1 where ID=?");
+		.append("update SURFACE_GEOMETRY set IS_XLINK=1 where ID=?");
 		psUpdateSurfGeom = batchConn.prepareStatement(updateStmt.toString());
 		
 		StringBuilder parentStmt = new StringBuilder()
-		.append("insert into ").append(schema).append(".SURFACE_GEOMETRY (ID, GMLID, PARENT_ID, ROOT_ID, IS_SOLID, IS_COMPOSITE, IS_TRIANGULATED, IS_XLINK, IS_REVERSE, GEOMETRY, SOLID_GEOMETRY, CITYOBJECT_ID) values ")
+		.append("insert into SURFACE_GEOMETRY (ID, GMLID, PARENT_ID, ROOT_ID, IS_SOLID, IS_COMPOSITE, IS_TRIANGULATED, IS_XLINK, IS_REVERSE, GEOMETRY, SOLID_GEOMETRY, CITYOBJECT_ID) values ")
 		.append("(?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ");
 		
 		if (resolverManager.getDatabaseAdapter().getDatabaseType() == DatabaseType.POSTGIS) {
@@ -97,8 +96,8 @@ public class XlinkSurfaceGeometry implements DBXlinkResolver {
 		psParentElem = batchConn.prepareStatement(parentStmt.toString());
 		
 		StringBuilder memberStmt = new StringBuilder()
-		.append("insert into ").append(schema).append(".SURFACE_GEOMETRY (ID, GMLID, PARENT_ID, ROOT_ID, IS_SOLID, IS_COMPOSITE, IS_TRIANGULATED, IS_XLINK, IS_REVERSE, GEOMETRY, CITYOBJECT_ID) values ")
-		.append("(").append(resolverManager.getDatabaseAdapter().getSQLAdapter().getNextSequenceValue(SequenceEnum.SURFACE_GEOMETRY_ID_SEQ.getName(), schema))
+		.append("insert into SURFACE_GEOMETRY (ID, GMLID, PARENT_ID, ROOT_ID, IS_SOLID, IS_COMPOSITE, IS_TRIANGULATED, IS_XLINK, IS_REVERSE, GEOMETRY, CITYOBJECT_ID) values ")
+		.append("(").append(resolverManager.getDatabaseAdapter().getSQLAdapter().getNextSequenceValue(SequenceEnum.SURFACE_GEOMETRY_ID_SEQ.getName()))
 		.append(", ?, ?, ?, 0, 0, 0, 1, ?, ?, ?)");
 		psMemberElem = batchConn.prepareStatement(memberStmt.toString());
 	}

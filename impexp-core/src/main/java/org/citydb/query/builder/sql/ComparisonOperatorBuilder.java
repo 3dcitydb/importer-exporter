@@ -47,13 +47,11 @@ public class ComparisonOperatorBuilder {
 	private final SchemaPathBuilder schemaPathBuilder;
 	private final AbstractSQLAdapter sqlAdapter;
 	private final Set<Integer> objectclassIds;
-	private final String schemaName;
 
-	protected ComparisonOperatorBuilder(SchemaPathBuilder schemaPathBuilder, Set<Integer> objectclassIds, AbstractSQLAdapter sqlAdapter, String schemaName) {
+	protected ComparisonOperatorBuilder(SchemaPathBuilder schemaPathBuilder, Set<Integer> objectclassIds, AbstractSQLAdapter sqlAdapter) {
 		this.schemaPathBuilder = schemaPathBuilder;
 		this.objectclassIds = objectclassIds;
 		this.sqlAdapter = sqlAdapter;
-		this.schemaName = schemaName;
 	}
 
 	protected SQLQueryContext buildComparisonOperator(AbstractComparisonOperator operator, boolean negate) throws QueryBuildException {
@@ -316,7 +314,7 @@ public class ComparisonOperatorBuilder {
 					throw new QueryBuildException("Failed to build null operator for property '" + property + "'.");
 
 				// create select based on join information 
-				Table table = new Table(toTable, schemaName, schemaPathBuilder.geAliasGenerator());
+				Table table = new Table(toTable, schemaPathBuilder.geAliasGenerator());
 				Select select = new Select()
 						.addProjection(new ConstantColumn(1).withFromTable(table))
 						.addSelection(ComparisonFactory.equalTo(table.getColumn(toColumn), queryContext.toTable.getColumn(fromColumn)));

@@ -40,21 +40,19 @@ public class SequenceHelper {
 	private final Connection connection;
 	private final AbstractDatabaseAdapter databaseAdapter;
 
-	private String schema;
 	private HashMap<String, PreparedStatement> psIdMap;
 
 	public SequenceHelper(Connection connection, AbstractDatabaseAdapter databaseAdapter, Config config) throws SQLException {
 		this.connection = connection;
 		this.databaseAdapter = databaseAdapter;
 
-		schema = databaseAdapter.getConnectionDetails().getSchema();
 		psIdMap = new HashMap<String, PreparedStatement>();
 	}
 	
 	public long getNextSequenceValue(String sequence) throws SQLException {
 		PreparedStatement stmt = psIdMap.get(sequence);
 		if (stmt == null) {
-			StringBuilder query = new StringBuilder("select ").append(databaseAdapter.getSQLAdapter().getNextSequenceValue(sequence, schema));
+			StringBuilder query = new StringBuilder("select ").append(databaseAdapter.getSQLAdapter().getNextSequenceValue(sequence));
 			if (databaseAdapter.getSQLAdapter().requiresPseudoTableInSelect())
 				query.append(" from ").append(databaseAdapter.getSQLAdapter().getPseudoTableName());
 

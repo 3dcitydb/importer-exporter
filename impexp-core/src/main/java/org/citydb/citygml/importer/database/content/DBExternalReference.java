@@ -48,11 +48,9 @@ public class DBExternalReference implements DBImporter {
 	public DBExternalReference(Connection batchConn, Config config, CityGMLImportManager importer) throws SQLException {
 		this.importer = importer;
 
-		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
-
 		StringBuilder stmt = new StringBuilder()
-				.append("insert into ").append(schema).append(".external_reference (id, infosys, name, uri, cityobject_id) values ")
-				.append("(").append(importer.getDatabaseAdapter().getSQLAdapter().getNextSequenceValue(SequenceEnum.EXTERNAL_REFERENCE_ID_SEQ.getName(), schema))
+				.append("insert into external_reference (id, infosys, name, uri, cityobject_id) values ")
+				.append("(").append(importer.getDatabaseAdapter().getSQLAdapter().getNextSequenceValue(SequenceEnum.EXTERNAL_REFERENCE_ID_SEQ.getName()))
 				.append(", ?, ?, ?, ?)");
 		psExternalReference = batchConn.prepareStatement(stmt.toString());
 	}

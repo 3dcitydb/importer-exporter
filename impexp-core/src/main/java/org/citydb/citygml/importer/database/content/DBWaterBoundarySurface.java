@@ -55,10 +55,8 @@ public class DBWaterBoundarySurface implements DBImporter {
 	public DBWaterBoundarySurface(Connection batchConn, Config config, CityGMLImportManager importer) throws CityGMLImportException, SQLException {
 		this.importer = importer;
 
-		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
-
 		StringBuilder stmt = new StringBuilder()
-				.append("insert into ").append(schema).append(".waterboundary_surface (id, objectclass_id, water_level, water_level_codespace, ")
+				.append("insert into waterboundary_surface (id, objectclass_id, water_level, water_level_codespace, ")
 				.append("lod2_surface_id, lod3_surface_id, lod4_surface_id) values ")
 				.append("(?, ?, ?, ?, ?, ?, ?)");
 		psWaterBoundarySurface = batchConn.prepareStatement(stmt.toString());

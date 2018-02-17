@@ -178,8 +178,7 @@ public class ReportOperation extends DatabaseOperationView {
 			String[] report = null;
 			String dbSqlEx = null;
 			try {
-				String schema = dbConnectionPool.getActiveDatabaseAdapter().getConnectionDetails().getSchema();
-				report = dbConnectionPool.getActiveDatabaseAdapter().getUtil().createDatabaseReport(workspace, schema);
+				report = dbConnectionPool.getActiveDatabaseAdapter().getUtil().createDatabaseReport(workspace);
 
 				if (report != null) {
 					for(String line : report) {

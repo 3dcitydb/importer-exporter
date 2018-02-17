@@ -41,10 +41,9 @@ public class XlinkSurfaceDataToTexImage implements DBXlinkResolver {
 
 	public XlinkSurfaceDataToTexImage(Connection batchConn, DBXlinkResolverManager resolverManager) throws SQLException {
 		this.resolverManager = resolverManager;
-		String schema = resolverManager.getDatabaseAdapter().getConnectionDetails().getSchema();
 
 		StringBuilder stmt = new StringBuilder()
-		.append("update ").append(schema).append(".SURFACE_DATA set TEX_IMAGE_ID=? where ID=?");
+		.append("update SURFACE_DATA set TEX_IMAGE_ID=? where ID=?");
 		psUpdate = batchConn.prepareStatement(stmt.toString());
 	}
 

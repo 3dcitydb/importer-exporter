@@ -75,7 +75,6 @@ public class KmlSplitter {
 	private Connection connection;
 	private DatabaseSrs dbSrs;
 
-	private String schema;
 	private SchemaMapping schemaMapping;
 	private SQLQueryBuilder builder;
 
@@ -100,15 +99,12 @@ public class KmlSplitter {
 					database.getWorkspaces().getKmlExportWorkspace());
 		}
 
-		schema = databaseAdapter.getConnectionDetails().getSchema();
-
 		BuildProperties buildProperties = BuildProperties.defaults()
 				.addProjectionColumn(MappingConstants.GMLID);
 
 		builder = new SQLQueryBuilder(
 				schemaMapping,
 				databaseAdapter,
-				schema,
 				buildProperties);
 	}
 
@@ -226,8 +222,8 @@ public class KmlSplitter {
 			dbWorkerPool.addWork(splitter);
 
 			if (splitter.getCityGMLClass() == CityGMLClass.CITY_OBJECT_GROUP) {
-				Table cityObject = new Table("cityobject", schema);
-				Table groupToCityObject = new Table("group_to_cityobject", schema);
+				Table cityObject = new Table("cityobject");
+				Table groupToCityObject = new Table("group_to_cityobject");
 				PlaceHolder<Long> groupId = new PlaceHolder<>(id);
 
 				Select select = new Select()
