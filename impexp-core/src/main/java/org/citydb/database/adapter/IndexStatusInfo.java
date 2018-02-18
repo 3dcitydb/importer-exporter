@@ -65,7 +65,7 @@ public class IndexStatusInfo {
 			for (String indexInfo : query) {
 				String[] parts = indexInfo.split(":");
 
-				if (parts.length > 4) {
+				if (parts.length > 3) {
 					IndexInfoObject obj = new IndexInfoObject();				
 
 					if (parts[0].equals("VALID"))

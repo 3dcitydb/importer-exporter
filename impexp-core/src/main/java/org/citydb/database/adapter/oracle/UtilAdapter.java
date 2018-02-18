@@ -197,7 +197,7 @@ public class UtilAdapter extends AbstractUtilAdapter {
 	@Override
 	protected String[] createDatabaseReport(Connection connection) throws SQLException {
 		try {
-			interruptableCallableStatement = connection.prepareCall("{? = call " + databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_stat.table_contents") + "(?)}");
+			interruptableCallableStatement = connection.prepareCall("{? = call " + databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_stat.table_contents") + "()}");
 			interruptableCallableStatement.registerOutParameter(1, OracleTypes.ARRAY, "STRARRAY");
 			interruptableCallableStatement.executeUpdate();
 
@@ -353,7 +353,7 @@ public class UtilAdapter extends AbstractUtilAdapter {
 	@Override
 	protected IndexStatusInfo manageIndexes(String operation, IndexType type, Connection connection) throws SQLException {
 		try {
-			String call = "{? = call " + databaseAdapter.getSQLAdapter().resolveDatabaseOperationName(operation) + "(?)}";
+			String call = "{? = call " + databaseAdapter.getSQLAdapter().resolveDatabaseOperationName(operation) + "()}";
 			interruptableCallableStatement = connection.prepareCall(call);
 			interruptableCallableStatement.registerOutParameter(1, OracleTypes.ARRAY, "STRARRAY");
 			interruptableCallableStatement.executeUpdate();
