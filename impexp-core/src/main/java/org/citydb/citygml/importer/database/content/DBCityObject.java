@@ -30,11 +30,9 @@ package org.citydb.citygml.importer.database.content;
 import org.citydb.citygml.common.database.xlink.DBXlinkBasic;
 import org.citydb.citygml.importer.CityGMLImportException;
 import org.citydb.citygml.importer.util.AttributeValueJoiner;
-import org.citydb.citygml.importer.util.LocalAppearanceChecker;
 import org.citydb.citygml.importer.util.LocalGeometryXlinkResolver;
-import org.citydb.citygml.importer.util.LocalTextureCoordinatesResolver;
+import org.citydb.citygml.importer.util.LocalAppearanceHandler;
 import org.citydb.config.Config;
-import org.citydb.util.CoreConstants;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.config.project.importer.CreationDateMode;
 import org.citydb.config.project.importer.TerminationDateMode;
@@ -42,6 +40,7 @@ import org.citydb.database.connection.DatabaseConnectionPool;
 import org.citydb.database.schema.SequenceEnum;
 import org.citydb.database.schema.TableEnum;
 import org.citydb.database.schema.mapping.AbstractObjectType;
+import org.citydb.util.CoreConstants;
 import org.citydb.util.Util;
 import org.citygml4j.model.citygml.core.AbstractCityObject;
 import org.citygml4j.model.citygml.core.ExternalObject;
@@ -73,7 +72,6 @@ public class DBCityObject implements DBImporter {
 	private DBCityObjectGenericAttrib genericAttributeImporter;
 	private DBExternalReference externalReferenceImporter;
 	private LocalGeometryXlinkResolver resolver;
-	private LocalAppearanceChecker appearanceChecker;
 	private AttributeValueJoiner valueJoiner;
 	private int batchCounter;
 
@@ -133,8 +131,7 @@ public class DBCityObject implements DBImporter {
 			updatingPerson = null;
 
 		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
-		appearanceChecker = new LocalAppearanceChecker();
-		bboxOptions = BoundingBoxOptions.defaults()				
+		bboxOptions = BoundingBoxOptions.defaults()
 				.useExistingEnvelopes(true)
 				.assignResultToFeatures(true)
 				.useReferencePointAsFallbackForImplicitGeometries(true);
@@ -353,20 +350,16 @@ public class DBCityObject implements DBImporter {
 				}
 			}		
 
-			// reset local texture coordinates resolver
+			// handle local appearances
 			if (importAppearance) {
-				LocalTextureCoordinatesResolver resolver = importer.getLocalTextureCoordinatesResolver();
+				LocalAppearanceHandler handler = importer.getLocalAppearanceHandler();
 
-				if (isTopLevel) {	
-					// reset local texture coordinates resolver
-					resolver.reset();
+				// reset handler for top-level features
+				if (isTopLevel)
+					handler.reset();
 
-					// check whether we have at least one local appearance
-					resolver.setActive(appearanceChecker.hasLocalAppearance(cityObject));
-				}
-
-				if (cityObject.isSetAppearance() && resolver.isActive())
-					resolver.registerAppearances(cityObject, objectId);
+				if (cityObject.isSetAppearance())
+					handler.registerAppearances(cityObject, objectId);
 			}
 		}
 

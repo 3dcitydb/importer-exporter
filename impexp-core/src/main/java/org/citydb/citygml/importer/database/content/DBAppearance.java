@@ -30,7 +30,7 @@ package org.citydb.citygml.importer.database.content;
 import org.citydb.citygml.common.database.xlink.DBXlinkBasic;
 import org.citydb.citygml.importer.CityGMLImportException;
 import org.citydb.citygml.importer.util.AttributeValueJoiner;
-import org.citydb.citygml.importer.util.LocalTextureCoordinatesResolver;
+import org.citydb.citygml.importer.util.LocalAppearanceHandler;
 import org.citydb.config.Config;
 import org.citydb.util.CoreConstants;
 import org.citydb.database.schema.SequenceEnum;
@@ -186,18 +186,18 @@ public class DBAppearance implements DBImporter {
 	}
 
 	protected void importLocalAppearance() throws CityGMLImportException, SQLException {
-		LocalTextureCoordinatesResolver resolver = importer.getLocalTextureCoordinatesResolver();
+		LocalAppearanceHandler handler = importer.getLocalAppearanceHandler();
 
-		if (resolver != null) {			
-			if (resolver.isActive()) {				
-				for (Entry<Long, List<Appearance>> entry : resolver.getAppearances().entrySet()) {
+		if (handler != null) {
+			if (handler.hasAppearances()) {
+				for (Entry<Long, List<Appearance>> entry : handler.getAppearances().entrySet()) {
 					for (Appearance appearance : entry.getValue())
 						doImport(appearance, entry.getKey(), true);
 				}
 			}
 
-			// reset local texture coordinates resolver
-			resolver.reset();
+			// reset appearance handler
+			handler.reset();
 		}
 	}
 
