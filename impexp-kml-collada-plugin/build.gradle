@@ -23,7 +23,7 @@ dependencies {
     compile 'java3d:j3d-core-utils:1.5.2'
     compile 'java3d:vecmath:1.5.2'
 
-    jaxb 'com.sun.xml.bind:jaxb-jxc:2.2.7'
+    jaxb 'com.sun.xml.bind:jaxb-xjc:2.2.7'
     jaxb 'org.jvnet.jaxb2_commons:jaxb2-basics:0.11.1'
     jaxb 'org.jvnet.jaxb2_commons:jaxb2-namespace-prefix:1.3'
     jaxb 'org.slf4j:slf4j-simple:1.7.25'
