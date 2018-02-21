@@ -33,7 +33,7 @@ import java.sql.SQLException;
 import java.sql.Types;
 
 import org.citydb.citygml.importer.CityGMLImportException;
-import org.citydb.citygml.importer.util.LocalTextureCoordinatesResolver.SurfaceGeometryTarget;
+import org.citydb.citygml.importer.util.LocalAppearanceHandler.SurfaceGeometryTarget;
 import org.citydb.config.Config;
 import org.citydb.database.schema.TableEnum;
 

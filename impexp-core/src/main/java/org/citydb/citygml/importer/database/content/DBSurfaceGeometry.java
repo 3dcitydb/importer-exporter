@@ -31,7 +31,7 @@ import org.citydb.citygml.common.database.xlink.DBXlinkLinearRing;
 import org.citydb.citygml.common.database.xlink.DBXlinkSolidGeometry;
 import org.citydb.citygml.common.database.xlink.DBXlinkSurfaceGeometry;
 import org.citydb.citygml.importer.CityGMLImportException;
-import org.citydb.citygml.importer.util.LocalTextureCoordinatesResolver;
+import org.citydb.citygml.importer.util.LocalAppearanceHandler;
 import org.citydb.citygml.importer.util.RingValidator;
 import org.citydb.config.Config;
 import org.citydb.util.CoreConstants;
@@ -105,7 +105,7 @@ public class DBSurfaceGeometry implements DBImporter {
 	private int batchCounter;
 	private int nullGeometryType;
 	private String nullGeometryTypeName;
-	private LocalTextureCoordinatesResolver localTexCoordResolver;
+	private LocalAppearanceHandler localAppearanceHandler;
 	private RingValidator ringValidator;
 
 	public DBSurfaceGeometry(Connection batchConn, Config config, CityGMLImportManager importer) throws CityGMLImportException, SQLException {
@@ -144,7 +144,7 @@ public class DBSurfaceGeometry implements DBImporter {
 		psNextSeqValues = batchConn.prepareStatement(importer.getDatabaseAdapter().getSQLAdapter().getNextSequenceValuesQuery(SequenceEnum.SURFACE_GEOMETRY_ID_SEQ.getName()));
 
 		appearanceImporter = importer.getImporter(DBAppearance.class);
-		localTexCoordResolver = importer.getLocalTextureCoordinatesResolver();
+		localAppearanceHandler = importer.getLocalAppearanceHandler();
 		geometryConverter = importer.getGeometryConverter();
 
 		pkManager = new PrimaryKeyManager();
@@ -249,8 +249,8 @@ public class DBSurfaceGeometry implements DBImporter {
 			// be referenced by a <textureCoordinates> element. since we cannot store
 			// the gml:id of linear rings in the database, we have to remember its id
 			if (importAppearance && !isCopy && linearRing.isSetId()) {
-				if (localTexCoordResolver != null && localTexCoordResolver.isActive())
-					localTexCoordResolver.registerLinearRing(linearRing.getId(), surfaceGeometryId, reverse);
+				if (localAppearanceHandler != null && localAppearanceHandler.hasParameterizedTextures())
+					localAppearanceHandler.registerLinearRing(linearRing.getId(), surfaceGeometryId, reverse);
 
 				// the ring could also be the target of a global appearance
 				importer.propagateXlink(new DBXlinkLinearRing(
@@ -328,8 +328,8 @@ public class DBSurfaceGeometry implements DBImporter {
 					// the gml:id of linear rings in the database, we have to remember its id
 					if (importAppearance && !isCopy) {
 						if (exteriorLinearRing.isSetId()) {
-							if (localTexCoordResolver != null && localTexCoordResolver.isActive())
-								localTexCoordResolver.registerLinearRing(exteriorLinearRing.getId(), surfaceGeometryId, reverse);
+							if (localAppearanceHandler != null && localAppearanceHandler.hasParameterizedTextures())
+								localAppearanceHandler.registerLinearRing(exteriorLinearRing.getId(), surfaceGeometryId, reverse);
 
 							// the ring could also be the target of a global appearance
 							importer.propagateXlink(new DBXlinkLinearRing(
@@ -359,8 +359,8 @@ public class DBSurfaceGeometry implements DBImporter {
 								// also remember the gml:id of interior rings in case it is
 								// referenced by a <textureCoordinates> element
 								if (importAppearance && !isCopy && interiorLinearRing.isSetId()) {
-									if (localTexCoordResolver != null && localTexCoordResolver.isActive())
-										localTexCoordResolver.registerLinearRing(interiorLinearRing.getId(), surfaceGeometryId, reverse);
+									if (localAppearanceHandler != null && localAppearanceHandler.hasParameterizedTextures())
+										localAppearanceHandler.registerLinearRing(interiorLinearRing.getId(), surfaceGeometryId, reverse);
 
 									// the ring could also be the target of a global appearance
 									importer.propagateXlink(new DBXlinkLinearRing(

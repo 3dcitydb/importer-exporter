@@ -237,6 +237,9 @@ public class ConfigQueryBuilder {
 		// support for legacy KML export filter
 		Query query = new Query();
 
+		// always use CityGML 2.0 as target version
+		query.setTargetVersion(CityGMLVersion.v2_0_0);
+
 		SimpleSelectionFilter exportFilter = queryConfig.getFilter();
 		PredicateBuilder predicateBuilder = new PredicateBuilder(query, schemaMapping, namespaceContext, databaseAdapter);
 

@@ -42,8 +42,8 @@ import org.citydb.citygml.common.database.xlink.DBXlinkTextureParam;
 import org.citydb.citygml.common.database.xlink.DBXlinkTextureParamEnum;
 import org.citydb.citygml.importer.CityGMLImportException;
 import org.citydb.citygml.importer.util.AttributeValueJoiner;
-import org.citydb.citygml.importer.util.LocalTextureCoordinatesResolver;
-import org.citydb.citygml.importer.util.LocalTextureCoordinatesResolver.SurfaceGeometryTarget;
+import org.citydb.citygml.importer.util.LocalAppearanceHandler;
+import org.citydb.citygml.importer.util.LocalAppearanceHandler.SurfaceGeometryTarget;
 import org.citydb.config.Config;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.database.connection.DatabaseConnectionPool;
@@ -80,7 +80,7 @@ public class DBSurfaceData implements DBImporter {
 	private DBTextureParam textureParamImporter;
 	private DBTexImage textureImageImporter;
 	private DBAppearToSurfaceData appearToSurfaceDataImporter;
-	private LocalTextureCoordinatesResolver localTexCoordResolver;
+	private LocalAppearanceHandler localAppearanceHandler;
 	private AttributeValueJoiner valueJoiner;
 	private int batchCounter;
 
@@ -130,7 +130,7 @@ public class DBSurfaceData implements DBImporter {
 		textureParamImporter = importer.getImporter(DBTextureParam.class);
 		textureImageImporter = importer.getImporter(DBTexImage.class);
 		appearToSurfaceDataImporter = importer.getImporter(DBAppearToSurfaceData.class);
-		localTexCoordResolver = importer.getLocalTextureCoordinatesResolver();
+		localAppearanceHandler = importer.getLocalAppearanceHandler();
 		valueJoiner = importer.getAttributeValueJoiner();
 	}
 
@@ -434,9 +434,9 @@ public class DBSurfaceData implements DBImporter {
 
 									boolean isResolved = false;
 									if (isLocalAppearance) {
-										// announce texture coordinates to local appearance resolver. this will return false
+										// announce texture coordinates to local appearance handler. this will return false
 										// in case there is no corresponding linear ring
-										isResolved = localTexCoordResolver.setTextureCoordinates(ringId, texCoord.getValue());
+										isResolved = localAppearanceHandler.setTextureCoordinates(ringId, texCoord.getValue());
 									}
 
 									if (!isResolved) {
@@ -456,7 +456,7 @@ public class DBSurfaceData implements DBImporter {
 								}
 
 								if (isLocalAppearance) {
-									for (SurfaceGeometryTarget tmp : localTexCoordResolver.getLocalContext()) {
+									for (SurfaceGeometryTarget tmp : localAppearanceHandler.getLocalContext()) {
 										if (!tmp.isComplete()) {
 											importer.logOrThrowErrorMessage(new StringBuilder(featureSignature).append(": Not all rings in target geometry '").append(targetURI).append("' receive texture coordinates. Skipping target.").toString());
 											continue;
@@ -473,7 +473,7 @@ public class DBSurfaceData implements DBImporter {
 										}
 									}
 
-									localTexCoordResolver.clearLocalContext();
+									localAppearanceHandler.clearLocalContext();
 								}
 							}
 

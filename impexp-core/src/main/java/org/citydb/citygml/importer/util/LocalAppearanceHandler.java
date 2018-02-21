@@ -37,18 +37,20 @@ import org.citydb.citygml.importer.database.content.CityGMLImportManager;
 import org.citydb.config.geometry.GeometryObject;
 import org.citygml4j.model.citygml.appearance.Appearance;
 import org.citygml4j.model.citygml.appearance.AppearanceProperty;
+import org.citygml4j.model.citygml.appearance.ParameterizedTexture;
+import org.citygml4j.model.citygml.appearance.SurfaceDataProperty;
 import org.citygml4j.model.citygml.core.AbstractCityObject;
 
-public class LocalTextureCoordinatesResolver {
+public class LocalAppearanceHandler {
 	private final CityGMLImportManager importer;
 	
 	private final HashMap<Long, List<Appearance>> appearances;
 	private final HashMap<Long, SurfaceGeometryTarget> targets;
 	private final HashMap<String, LinearRing> rings;
 	private final HashSet<SurfaceGeometryTarget> localContext;
-	private boolean isActive;
+	private boolean hasParameterizedTextures;
 
-	public LocalTextureCoordinatesResolver(CityGMLImportManager importer) {
+	public LocalAppearanceHandler(CityGMLImportManager importer) {
 		this.importer = importer;
 		
 		appearances = new HashMap<>();
@@ -62,15 +64,7 @@ public class LocalTextureCoordinatesResolver {
 		targets.clear();
 		rings.clear();
 		localContext.clear();
-		isActive = false;
-	}
-
-	public boolean isActive() {
-		return isActive;
-	}
-
-	public void setActive(boolean isActive) {
-		this.isActive = isActive;
+		hasParameterizedTextures = false;
 	}
 	
 	public void registerAppearances(AbstractCityObject cityObject, long cityObjectId) throws CityGMLImportException {
@@ -84,6 +78,14 @@ public class LocalTextureCoordinatesResolver {
 					// unlink parent to be able to free memory
 					appearance.unsetParent();
 					appearances.add(appearance);
+
+					// check whether we have to deal with textures
+					if (!hasParameterizedTextures) {
+						for (SurfaceDataProperty surfaceDataProperty : appearance.getSurfaceDataMember()) {
+							if (surfaceDataProperty.getSurfaceData() instanceof ParameterizedTexture)
+								hasParameterizedTextures = true;
+						}
+					}
 				} else {					
 					String href = property.getHref();
 					if (href != null && href.length() != 0)
@@ -95,13 +97,21 @@ public class LocalTextureCoordinatesResolver {
 				this.appearances.put(cityObjectId, appearances);
 		}
 	}
+
+	public boolean hasAppearances() {
+		return !appearances.isEmpty();
+	}
 	
 	public HashMap<Long, List<Appearance>> getAppearances() {
 		return appearances;
 	}
 
+	public boolean hasParameterizedTextures() {
+		return hasParameterizedTextures;
+	}
+
 	public void registerLinearRing(String ringId, long surfaceGeometryId, boolean isReverse) {
-		if (!isActive || rings.containsKey(ringId))
+		if (!hasParameterizedTextures || rings.containsKey(ringId))
 			return;
 
 		SurfaceGeometryTarget target = targets.get(surfaceGeometryId);

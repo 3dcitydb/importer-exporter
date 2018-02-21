@@ -20,10 +20,9 @@ import org.citydb.citygml.importer.util.ADEPropertyCollector;
 import org.citydb.citygml.importer.util.AffineTransformer;
 import org.citydb.citygml.importer.util.AttributeValueJoiner;
 import org.citydb.citygml.importer.util.ImportLogger.ImportLogEntry;
-import org.citydb.citygml.importer.util.LocalTextureCoordinatesResolver;
+import org.citydb.citygml.importer.util.LocalAppearanceHandler;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
-import org.citydb.util.CoreConstants;
 import org.citydb.config.project.importer.Importer;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.schema.TableEnum;
@@ -32,6 +31,7 @@ import org.citydb.database.schema.mapping.FeatureType;
 import org.citydb.database.schema.mapping.ObjectType;
 import org.citydb.database.schema.mapping.SchemaMapping;
 import org.citydb.log.Logger;
+import org.citydb.util.CoreConstants;
 import org.citydb.util.Util;
 import org.citygml4j.builder.jaxb.CityGMLBuilder;
 import org.citygml4j.builder.jaxb.marshal.JAXBMarshaller;
@@ -122,7 +122,7 @@ public class CityGMLImportManager implements CityGMLImportHelper {
 	private final AttributeValueJoiner attributeValueJoiner;
 
 	private ADEPropertyCollector propertyCollector;
-	private LocalTextureCoordinatesResolver localTexCoordResolver;
+	private LocalAppearanceHandler localAppearanceHandler;
 	private List<ImportLogEntry> importLogEntries;
 	private AffineTransformer affineTransformer;
 	private CityGMLVersion cityGMLVersion;
@@ -159,7 +159,7 @@ public class CityGMLImportManager implements CityGMLImportHelper {
 		attributeValueJoiner = new AttributeValueJoiner();
 
 		if (config.getProject().getImporter().getAppearances().isSetImportAppearance())
-			localTexCoordResolver = new LocalTextureCoordinatesResolver(this);
+			localAppearanceHandler = new LocalAppearanceHandler(this);
 
 		if (config.getProject().getImporter().getImportLog().isSetLogImportedFeatures())
 			importLogEntries = new ArrayList<>();
@@ -495,8 +495,8 @@ public class CityGMLImportManager implements CityGMLImportHelper {
 		getImporter(DBAppearance.class).importLocalAppearance();
 	}
 
-	public LocalTextureCoordinatesResolver getLocalTextureCoordinatesResolver() {
-		return localTexCoordResolver;
+	public LocalAppearanceHandler getLocalAppearanceHandler() {
+		return localAppearanceHandler;
 	}
 
 	public AffineTransformer getAffineTransformer() {
