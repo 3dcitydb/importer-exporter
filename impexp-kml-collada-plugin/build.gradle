@@ -54,8 +54,6 @@ task cleanJaxb(type: Delete, group: 'jaxb') {
     delete 'src-gen'
 }
 
-compileJava.dependsOn(generateJaxb)
-
 bintray {
     user = project.hasProperty('bintrayUser') ? project.property('bintrayUser') : System.getenv('BINTRAY_USER')
     key = project.hasProperty('bintrayApiKey') ? project.property('bintrayApiKey') : System.getenv('BINTRAY_API_KEY')
