@@ -19,7 +19,7 @@
 		</xs:documentation>
 	</xs:annotation>
 	<!-- import needed for xml:base attribute-->
-	<xs:import namespace="http://www.w3.org/XML/1998/namespace" schemaLocation="../../GML/3.1.1/xml/xml.xsd"/>
+	<xs:import namespace="http://www.w3.org/XML/1998/namespace" schemaLocation="../../gml/3.1.1/xml/xml.xsd"/>
 	<!-- Root Element -->
 	<xs:element name="COLLADA">
 		<xs:annotation>

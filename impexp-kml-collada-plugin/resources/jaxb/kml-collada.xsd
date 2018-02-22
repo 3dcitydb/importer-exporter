@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xs:schema xmlns="http://www.3dcitydb.org/kml_collada/profile" xmlns:xs="http://www.w3.org/2001/XMLSchema"
     targetNamespace="http://www.3dcitydb.org/kml_collada/profile" elementFormDefault="qualified" attributeFormDefault="unqualified">
-    <xs:import namespace="http://www.opengis.net/kml/2.2" schemaLocation="KML/2.2/ogckml22.xsd"/>
-    <xs:import namespace="http://www.collada.org/2005/11/COLLADASchema" schemaLocation="COLLADA/1.4/collada_schema_1_4.xsd"/>
+    <xs:import namespace="http://www.opengis.net/kml/2.2" schemaLocation="kml/2.2/ogckml22.xsd"/>
+    <xs:import namespace="http://www.collada.org/2005/11/COLLADASchema" schemaLocation="collada/1.4/collada_schema_1_4.xsd"/>
 </xs:schema>

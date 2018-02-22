@@ -8,7 +8,7 @@
 	</jaxb:bindings>
 
 	<!-- Specific settings for the kml mapping file -->
-	<jaxb:bindings schemaLocation="KML/2.2/ogckml22.xsd" node="/xs:schema">
+	<jaxb:bindings schemaLocation="kml/2.2/ogckml22.xsd" node="/xs:schema">
 		<jaxb:bindings>
 			<namespace:prefix name="kml" />
 		</jaxb:bindings>
@@ -21,7 +21,7 @@
 	</jaxb:bindings>
 
 	<!-- Specific settings for the collada mapping file -->
-	<jaxb:bindings schemaLocation="COLLADA/1.4/collada_schema_1_4.xsd"
+	<jaxb:bindings schemaLocation="collada/1.4/collada_schema_1_4.xsd"
 		node="/xs:schema">
 		<jaxb:bindings node="xs:element[@name='skin']">
 			<jaxb:bindings node=".//xs:complexType/xs:attribute[@name='source']">
