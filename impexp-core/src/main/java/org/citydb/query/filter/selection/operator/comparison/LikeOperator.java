@@ -12,7 +12,8 @@ public class LikeOperator extends AbstractComparisonOperator {
 	private String wildCard = "";
 	private String singleCharacter = "";
 	private String escapeCharacter = "";
-	
+	private boolean matchCase = true;
+
 	public LikeOperator(Expression leftOperand, Expression rightOperand) throws FilterException {
 		setLeftOperand(leftOperand);
 		setRightOperand(rightOperand);
@@ -90,6 +91,14 @@ public class LikeOperator extends AbstractComparisonOperator {
 		this.escapeCharacter = escapeCharacter;
 	}
 
+	public boolean isMatchCase() {
+		return matchCase;
+	}
+
+	public void setMatchCase(boolean matchCase) {
+		this.matchCase = matchCase;
+	}
+
 	@Override
 	public ComparisonOperatorName getOperatorName() {
 		return ComparisonOperatorName.LIKE;
@@ -101,6 +110,7 @@ public class LikeOperator extends AbstractComparisonOperator {
 		copy.wildCard = wildCard;
 		copy.singleCharacter = singleCharacter;
 		copy.escapeCharacter = escapeCharacter;
+		copy.matchCase = matchCase;
 		
 		return copy;
 	}

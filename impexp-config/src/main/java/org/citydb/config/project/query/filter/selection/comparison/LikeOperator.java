@@ -16,6 +16,8 @@ public class LikeOperator extends AbstractComparisonOperator {
 	private String singleCharacter = ".";
 	@XmlAttribute
 	private String escapeCharacter = "\\";
+	@XmlAttribute
+	private Boolean matchCase = true;
 	@XmlElement(required = true)
 	private String literal;
 	
@@ -53,6 +55,14 @@ public class LikeOperator extends AbstractComparisonOperator {
 
 	public void setEscapeCharacter(String escapeCharacter) {
 		this.escapeCharacter = escapeCharacter;
+	}
+
+	public boolean isMatchCase() {
+		return matchCase;
+	}
+
+	public void setMatchCase(boolean matchCase) {
+		this.matchCase = matchCase;
 	}
 
 	public boolean isSetLiteral() {

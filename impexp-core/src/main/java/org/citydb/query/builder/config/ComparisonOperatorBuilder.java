@@ -173,6 +173,7 @@ public class ComparisonOperatorBuilder {
 		operator.setWildCard(wildCard);
 		operator.setSingleCharacter(singleCharacter);
 		operator.setEscapeCharacter(escapeCharacter);
+		operator.setMatchCase(operatorConfig.isMatchCase());
 
 		return operator;
 	}

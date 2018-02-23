@@ -128,9 +128,8 @@ public class ComparisonOperatorBuilder {
 		}
 
 		// implicit conversion from timestamp to date
-		if (literal.getLiteralType() == LiteralType.TIMESTAMP && ((TimestampLiteral)literal).isDate()) {
+		if (literal.getLiteralType() == LiteralType.TIMESTAMP && ((TimestampLiteral)literal).isDate())
 			leftOperand = new Function(sqlAdapter.resolveDatabaseOperationName("timestamp.to_date"), leftOperand);
-		}
 
 		// finally, create equivalent sql operation
 		switch (operator.getOperatorName()) {
@@ -220,7 +219,7 @@ public class ComparisonOperatorBuilder {
 			throw new QueryBuildException("Only combinations of ValueReference and Literal are supported as operands of a like operator.");
 
 		// build the value reference
-		SQLQueryContext queryContext = schemaPathBuilder.buildSchemaPath(valueReference.getSchemaPath(), objectclassIds);
+		SQLQueryContext queryContext = schemaPathBuilder.buildSchemaPath(valueReference.getSchemaPath(), objectclassIds, operator.isMatchCase());
 
 		// check for type mismatch of literal
 		SimpleAttribute attribute = (SimpleAttribute)valueReference.getTarget();
@@ -241,16 +240,24 @@ public class ComparisonOperatorBuilder {
 		if (escapeCharacter == null || escapeCharacter.length() > 1)
 			throw new QueryBuildException("An escape character must be defined by a single character.");
 
-		String value = literal.getValue();
-
 		// replace wild cards
-		value = replaceWildCards(value, wildCard.charAt(0), singleCharacter.charAt(0), escapeCharacter.charAt(0));
+		String value = replaceWildCards(literal.getValue(), wildCard.charAt(0), singleCharacter.charAt(0), escapeCharacter.charAt(0));
+
+		// map operands
+		org.citydb.sqlbuilder.expression.Expression rightOperand = new PlaceHolder<>(value);
+		org.citydb.sqlbuilder.expression.Expression leftOperand = queryContext.targetColumn;
+
+		// consider match case
+		if (!operator.isMatchCase() && ((PlaceHolder<?>)rightOperand).getValue() instanceof String) {
+			rightOperand = new Function(sqlAdapter.resolveDatabaseOperationName("string.upper"), rightOperand);
+			leftOperand = new Function(sqlAdapter.resolveDatabaseOperationName("string.upper"), leftOperand);
+		}
 
 		// finally, create equivalent sql operation
-		queryContext.select.addSelection(ComparisonFactory.like(queryContext.targetColumn, 
-				new PlaceHolder<>(value), 
-				value.contains(escapeCharacter) ? new org.citydb.sqlbuilder.expression.StringLiteral(escapeCharacter) : null, 
-						negate));
+		queryContext.select.addSelection(ComparisonFactory.like(leftOperand,
+				rightOperand,
+				value.contains(escapeCharacter) ? new org.citydb.sqlbuilder.expression.StringLiteral(escapeCharacter) : null,
+				negate));
 
 		return queryContext;
 	}
@@ -281,8 +288,7 @@ public class ComparisonOperatorBuilder {
 		}
 
 		else if (property.getElementType() == PathElementType.COMPLEX_ATTRIBUTE || PathElementType.TYPE_PROPERTIES.contains(property.getElementType())) {
-			AbstractJoin abstractJoin = property.getElementType() == PathElementType.COMPLEX_ATTRIBUTE ? ((ComplexAttribute)property).getJoin() : 
-				((AbstractTypeProperty<?>)property).getJoin();
+			AbstractJoin abstractJoin = property.getJoin();
 
 			if (abstractJoin != null) {
 				// for complex properties that involve a join, we check whether
@@ -293,10 +299,10 @@ public class ComparisonOperatorBuilder {
 				SQLQueryContext queryContext = schemaPathBuilder.buildSchemaPath(schemaPath, objectclassIds);
 
 				// derive join information
-				String toTable = null;
-				String toColumn = null;
-				String fromColumn = null;
-				List<Condition> conditions = null;
+				String toTable;
+				String toColumn;
+				String fromColumn;
+				List<Condition> conditions;
 				
 				if (abstractJoin instanceof Join) {
 					Join join = (Join)abstractJoin;
@@ -350,7 +356,7 @@ public class ComparisonOperatorBuilder {
 					// found a type whose properties are stored inline the same table.
 					// checking whether the complex property is null therefore requires checking
 					// whether all its properties are null.					
-					List<? extends AbstractProperty> innerProperties = null;
+					List<? extends AbstractProperty> innerProperties;
 
 					if (property.getElementType() == PathElementType.COMPLEX_ATTRIBUTE) {
 						innerProperties = ((ComplexAttribute)property).getType().getAttributes();
