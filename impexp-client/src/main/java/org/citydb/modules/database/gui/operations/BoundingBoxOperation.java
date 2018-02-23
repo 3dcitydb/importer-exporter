@@ -27,28 +27,6 @@
  */
 package org.citydb.modules.database.gui.operations;
 
-import java.awt.Component;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-import java.sql.SQLException;
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.locks.ReentrantLock;
-
-import javax.swing.Icon;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
-import javax.xml.namespace.QName;
-
 import org.citydb.ade.ADEExtension;
 import org.citydb.ade.ADEExtensionManager;
 import org.citydb.config.Config;
@@ -69,6 +47,19 @@ import org.citydb.plugin.extension.view.ViewController;
 import org.citydb.plugin.extension.view.components.BoundingBoxPanel;
 import org.citydb.registry.ObjectRegistry;
 import org.citygml4j.model.module.citygml.CoreModule;
+
+import javax.swing.*;
+import javax.xml.namespace.QName;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.sql.SQLException;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class BoundingBoxOperation extends DatabaseOperationView {
 	private final ReentrantLock mainLock = new ReentrantLock();
@@ -102,7 +93,7 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 		
 		viewController = parent.getViewController();
 		dbConnectionPool = DatabaseConnectionPool.getInstance();
-		schemaMapping = (SchemaMapping)ObjectRegistry.getInstance().lookup(SchemaMapping.class.getName());
+		schemaMapping = ObjectRegistry.getInstance().getSchemaMapping();
 		adeManager = ADEExtensionManager.getInstance();
 
 		cityObject = schemaMapping.getFeatureType("_CityObject", CoreModule.v2_0_0.getNamespaceURI());

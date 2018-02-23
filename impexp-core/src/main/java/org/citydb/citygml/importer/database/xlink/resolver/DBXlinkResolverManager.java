@@ -27,16 +27,6 @@
  */
 package org.citydb.citygml.importer.database.xlink.resolver;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.HashMap;
-
 import org.citydb.citygml.common.database.cache.CacheTable;
 import org.citydb.citygml.common.database.cache.CacheTableManager;
 import org.citydb.citygml.common.database.cache.model.CacheTableModelEnum;
@@ -55,6 +45,16 @@ import org.citydb.database.schema.mapping.SchemaMapping;
 import org.citydb.event.Event;
 import org.citydb.event.EventDispatcher;
 import org.citydb.registry.ObjectRegistry;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.HashMap;
 
 public class DBXlinkResolverManager {
 	private final Connection connection;
@@ -90,7 +90,7 @@ public class DBXlinkResolverManager {
 		sequenceHelper = new SequenceHelper(batchConn, databaseAdapter, config);
 		
         replacePathSeparator = File.separatorChar == '/';
-     	schemaMapping = (SchemaMapping)ObjectRegistry.getInstance().lookup(SchemaMapping.class.getName());
+     	schemaMapping = ObjectRegistry.getInstance().getSchemaMapping();
 	}
 
 	public DBXlinkResolver getDBXlinkResolver(DBXlinkResolverEnum dbResolverType) throws SQLException {

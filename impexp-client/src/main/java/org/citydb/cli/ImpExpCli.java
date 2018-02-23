@@ -27,15 +27,6 @@
  */
 package org.citydb.cli;
 
-import java.io.File;
-import java.io.FilenameFilter;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import javax.xml.bind.JAXBContext;
-
 import org.citydb.citygml.exporter.CityGMLExportException;
 import org.citydb.citygml.exporter.controller.Exporter;
 import org.citydb.citygml.importer.CityGMLImportException;
@@ -43,8 +34,8 @@ import org.citydb.citygml.importer.controller.Importer;
 import org.citydb.citygml.importer.controller.XMLValidator;
 import org.citydb.config.Config;
 import org.citydb.config.project.database.DBConnection;
-import org.citydb.config.project.database.DatabaseSrs;
 import org.citydb.config.project.database.DatabaseConfigurationException;
+import org.citydb.config.project.database.DatabaseSrs;
 import org.citydb.database.connection.DatabaseConnectionPool;
 import org.citydb.database.connection.DatabaseConnectionWarning;
 import org.citydb.database.schema.mapping.SchemaMapping;
@@ -56,6 +47,13 @@ import org.citydb.modules.kml.controller.KmlExporter;
 import org.citydb.registry.ObjectRegistry;
 import org.citydb.util.Util;
 import org.citygml4j.builder.jaxb.CityGMLBuilder;
+
+import javax.xml.bind.JAXBContext;
+import java.io.File;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class ImpExpCli {
 	private final Logger LOG = Logger.getInstance();
@@ -75,12 +73,12 @@ public class ImpExpCli {
 
 		dbPool = DatabaseConnectionPool.getInstance();
 		cityGMLBuilder = ObjectRegistry.getInstance().getCityGMLBuilder();
-		schemaMapping = (SchemaMapping)ObjectRegistry.getInstance().lookup(SchemaMapping.class.getName());
+		schemaMapping = ObjectRegistry.getInstance().getSchemaMapping();
 	}
 
 	public void doImport(String importFiles) {
 		// prepare list of files to be validated
-		List<File> files = getFiles(importFiles, ";");
+		List<File> files = getFiles(importFiles);
 		if (files.size() == 0) {
 			LOG.error("Invalid list of files to be imported");
 			LOG.error("Aborting...");
@@ -99,7 +97,7 @@ public class ImpExpCli {
 		EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
 		Importer importer = new Importer(cityGMLBuilder, schemaMapping, config, eventDispatcher);
 
-		boolean success = false;
+		boolean success;
 		try {
 			success = importer.doProcess();
 		} catch (CityGMLImportException e) {
@@ -130,7 +128,7 @@ public class ImpExpCli {
 
 	public void doValidate(String validateFiles) {
 		// prepare list of files to be validated
-		List<File> files = getFiles(validateFiles, ";");
+		List<File> files = getFiles(validateFiles);
 		if (files.size() == 0) {
 			LOG.error("Invalid list of files to be validated");
 			LOG.error("Aborting...");
@@ -288,10 +286,10 @@ public class ImpExpCli {
 		}
 	}
 
-	private List<File> getFiles(String fileNames, String delim) {
-		List<File> files = new ArrayList<File>();
+	private List<File> getFiles(String fileNames) {
+		List<File> files = new ArrayList<>();
 
-		for (String part : fileNames.split(delim)) {
+		for (String part : fileNames.split(";")) {
 			if (part == null || part.trim().isEmpty())
 				continue;
 
@@ -310,11 +308,7 @@ public class ImpExpCli {
 				continue;
 			}
 
-			File[] wildcardList = file.listFiles(new FilenameFilter() {
-				public boolean accept(File dir, String name) {
-					return (name.matches(fileName));
-				}
-			});
+			File[] wildcardList = file.listFiles((dir, name) -> (name.matches(fileName)));
 
 			if (wildcardList != null && wildcardList.length != 0)
 				files.addAll(Arrays.asList(wildcardList));

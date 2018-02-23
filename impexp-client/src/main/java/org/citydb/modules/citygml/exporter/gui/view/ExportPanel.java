@@ -27,50 +27,17 @@
  */
 package org.citydb.modules.citygml.exporter.gui.view;
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.UnsupportedFlavorException;
-import java.awt.dnd.DnDConstants;
-import java.awt.dnd.DropTarget;
-import java.awt.dnd.DropTargetDragEvent;
-import java.awt.dnd.DropTargetDropEvent;
-import java.awt.dnd.DropTargetEvent;
-import java.awt.dnd.DropTargetListener;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.File;
-import java.io.IOException;
-import java.sql.SQLException;
-import java.text.SimpleDateFormat;
-import java.util.List;
-import java.util.concurrent.locks.ReentrantLock;
-
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JFileChooser;
-import javax.swing.JFormattedTextField;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
-import javax.swing.border.TitledBorder;
-import javax.swing.filechooser.FileNameExtensionFilter;
-
 import org.citydb.citygml.exporter.CityGMLExportException;
 import org.citydb.citygml.exporter.controller.Exporter;
 import org.citydb.config.Config;
 import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.database.Database;
+import org.citydb.config.project.database.DatabaseConfigurationException;
 import org.citydb.config.project.exporter.SimpleQuery;
 import org.citydb.config.project.global.LogLevel;
 import org.citydb.config.project.query.filter.selection.SimpleSelectionFilterMode;
 import org.citydb.database.DatabaseController;
-import org.citydb.config.project.database.DatabaseConfigurationException;
 import org.citydb.database.schema.mapping.SchemaMapping;
 import org.citydb.database.version.DatabaseVersionException;
 import org.citydb.event.Event;
@@ -91,6 +58,27 @@ import org.citydb.util.Util;
 import org.citygml4j.builder.jaxb.CityGMLBuilder;
 import org.jdesktop.swingx.JXTextField;
 import org.jdesktop.swingx.prompt.PromptSupport.FocusBehavior;
+
+import javax.swing.*;
+import javax.swing.border.TitledBorder;
+import javax.swing.filechooser.FileNameExtensionFilter;
+import java.awt.*;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.dnd.DnDConstants;
+import java.awt.dnd.DropTarget;
+import java.awt.dnd.DropTargetDragEvent;
+import java.awt.dnd.DropTargetDropEvent;
+import java.awt.dnd.DropTargetEvent;
+import java.awt.dnd.DropTargetListener;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.IOException;
+import java.sql.SQLException;
+import java.text.SimpleDateFormat;
+import java.util.List;
+import java.util.concurrent.locks.ReentrantLock;
 
 @SuppressWarnings("serial")
 public class ExportPanel extends JPanel implements DropTargetListener, EventHandler {
@@ -372,7 +360,7 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 			});
 
 			// get schema mapping
-			final SchemaMapping schemaMapping = (SchemaMapping)ObjectRegistry.getInstance().lookup(SchemaMapping.class.getName());
+			final SchemaMapping schemaMapping = ObjectRegistry.getInstance().getSchemaMapping();
 
 			Exporter exporter = new Exporter(cityGMLBuilder, schemaMapping, config, eventDispatcher);
 

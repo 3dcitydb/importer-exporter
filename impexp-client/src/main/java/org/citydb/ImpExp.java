@@ -38,8 +38,6 @@ import org.citydb.config.project.Project;
 import org.citydb.config.project.global.LanguageType;
 import org.citydb.config.project.global.Logging;
 import org.citydb.config.project.plugin.PluginConfig;
-import org.citydb.util.CoreConstants;
-import org.citydb.util.ClientConstants;
 import org.citydb.database.DatabaseController;
 import org.citydb.database.schema.mapping.SchemaMapping;
 import org.citydb.database.schema.mapping.SchemaMappingException;
@@ -62,6 +60,8 @@ import org.citydb.plugin.PluginConfigController;
 import org.citydb.plugin.PluginManager;
 import org.citydb.plugin.extension.config.ConfigExtension;
 import org.citydb.registry.ObjectRegistry;
+import org.citydb.util.ClientConstants;
+import org.citydb.util.CoreConstants;
 import org.citydb.util.InternalProxySelector;
 import org.citydb.util.Util.URLClassLoader;
 import org.citygml4j.CityGMLContext;
@@ -74,11 +74,10 @@ import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 import org.kohsuke.args4j.ParserProperties;
 
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
-import java.awt.Color;
-import java.awt.Toolkit;
+import java.awt.*;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.net.ProxySelector;
@@ -304,7 +303,7 @@ public class ImpExp {
 		SchemaMapping schemaMapping = null;
 		try {
 			schemaMapping = SchemaMappingUtil.getInstance().unmarshal(CoreConstants.CITYDB_SCHEMA_MAPPING_FILE);
-			registry.register(SchemaMapping.class.getName(), schemaMapping);		
+			registry.setSchemaMapping(schemaMapping);
 		} catch (JAXBException | SchemaMappingException | SchemaMappingValidationException e) {
 			log.error("Failed to process 3DCityDB schema mapping file.");
 			log.error("Cause: " + e.getMessage());

@@ -27,9 +27,42 @@
  */
 package org.citydb.modules.citygml.importer.gui.view;
 
-import java.awt.Color;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
+import org.citydb.citygml.importer.CityGMLImportException;
+import org.citydb.citygml.importer.controller.Importer;
+import org.citydb.citygml.importer.controller.XMLValidator;
+import org.citydb.config.Config;
+import org.citydb.config.geometry.BoundingBox;
+import org.citydb.config.i18n.Language;
+import org.citydb.config.project.database.DatabaseConfigurationException;
+import org.citydb.config.project.global.LogLevel;
+import org.citydb.config.project.importer.ImportFilter;
+import org.citydb.config.project.query.filter.selection.SimpleSelectionFilterMode;
+import org.citydb.database.DatabaseController;
+import org.citydb.database.schema.mapping.SchemaMapping;
+import org.citydb.database.version.DatabaseVersionException;
+import org.citydb.event.Event;
+import org.citydb.event.EventDispatcher;
+import org.citydb.event.EventHandler;
+import org.citydb.event.global.DatabaseConnectionStateEvent;
+import org.citydb.event.global.EventType;
+import org.citydb.event.global.InterruptEvent;
+import org.citydb.gui.components.dialog.ImportStatusDialog;
+import org.citydb.gui.components.dialog.XMLValidationStatusDialog;
+import org.citydb.gui.factory.PopupMenuDecorator;
+import org.citydb.gui.util.GuiUtil;
+import org.citydb.log.Logger;
+import org.citydb.plugin.extension.view.ViewController;
+import org.citydb.registry.ObjectRegistry;
+import org.citygml4j.builder.jaxb.CityGMLBuilder;
+import org.jdesktop.swingx.JXTextField;
+import org.jdesktop.swingx.prompt.PromptSupport.FocusBehavior;
+
+import javax.swing.*;
+import javax.swing.border.TitledBorder;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.filechooser.FileNameExtensionFilter;
+import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
@@ -51,59 +84,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.concurrent.locks.ReentrantLock;
-
-import javax.swing.Action;
-import javax.swing.ActionMap;
-import javax.swing.BorderFactory;
-import javax.swing.DefaultListModel;
-import javax.swing.InputMap;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JFileChooser;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.KeyStroke;
-import javax.swing.ListSelectionModel;
-import javax.swing.SwingUtilities;
-import javax.swing.TransferHandler;
-import javax.swing.UIManager;
-import javax.swing.border.TitledBorder;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.filechooser.FileNameExtensionFilter;
-
-import org.citydb.citygml.importer.CityGMLImportException;
-import org.citydb.citygml.importer.controller.Importer;
-import org.citydb.citygml.importer.controller.XMLValidator;
-import org.citydb.config.Config;
-import org.citydb.config.geometry.BoundingBox;
-import org.citydb.config.i18n.Language;
-import org.citydb.config.project.global.LogLevel;
-import org.citydb.config.project.importer.ImportFilter;
-import org.citydb.config.project.query.filter.selection.SimpleSelectionFilterMode;
-import org.citydb.database.DatabaseController;
-import org.citydb.config.project.database.DatabaseConfigurationException;
-import org.citydb.database.schema.mapping.SchemaMapping;
-import org.citydb.database.version.DatabaseVersionException;
-import org.citydb.event.Event;
-import org.citydb.event.EventDispatcher;
-import org.citydb.event.EventHandler;
-import org.citydb.event.global.DatabaseConnectionStateEvent;
-import org.citydb.event.global.EventType;
-import org.citydb.event.global.InterruptEvent;
-import org.citydb.gui.components.dialog.ImportStatusDialog;
-import org.citydb.gui.components.dialog.XMLValidationStatusDialog;
-import org.citydb.gui.factory.PopupMenuDecorator;
-import org.citydb.gui.util.GuiUtil;
-import org.citydb.log.Logger;
-import org.citydb.plugin.extension.view.ViewController;
-import org.citydb.registry.ObjectRegistry;
-import org.citygml4j.builder.jaxb.CityGMLBuilder;
-import org.jdesktop.swingx.JXTextField;
-import org.jdesktop.swingx.prompt.PromptSupport.FocusBehavior;
 
 @SuppressWarnings("serial")
 public class ImportPanel extends JPanel implements EventHandler {
@@ -419,7 +399,7 @@ public class ImportPanel extends JPanel implements EventHandler {
 			});
 
 			// get schema mapping
-			final SchemaMapping schemaMapping = (SchemaMapping)ObjectRegistry.getInstance().lookup(SchemaMapping.class.getName());
+			final SchemaMapping schemaMapping = ObjectRegistry.getInstance().getSchemaMapping();
 
 			Importer importer = new Importer(cityGMLBuilder, schemaMapping, config, eventDispatcher);
 

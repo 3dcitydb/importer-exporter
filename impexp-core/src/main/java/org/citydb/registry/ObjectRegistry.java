@@ -30,6 +30,7 @@ package org.citydb.registry;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.citydb.database.DatabaseController;
+import org.citydb.database.schema.mapping.SchemaMapping;
 import org.citydb.event.EventDispatcher;
 import org.citygml4j.builder.jaxb.CityGMLBuilder;
 
@@ -40,6 +41,7 @@ public class ObjectRegistry {
 	private EventDispatcher eventDispatcher;
 	private DatabaseController databaseController;
 	private CityGMLBuilder cityGMLBuilder;
+	private SchemaMapping schemaMapping;
 	
 	private ObjectRegistry() {
 		// just to thwart instantiation
@@ -54,7 +56,7 @@ public class ObjectRegistry {
 
 	public void register(String name, Object object) {
 		if (properties == null)
-			properties = new ConcurrentHashMap<String, Object>();
+			properties = new ConcurrentHashMap<>();
 
 		properties.put(name, object);
 	}
@@ -99,6 +101,17 @@ public class ObjectRegistry {
 
 		this.cityGMLBuilder = cityGMLBuilder;
 	}
+
+	public SchemaMapping getSchemaMapping() {
+		return schemaMapping;
+	}
+
+	public void setSchemaMapping(SchemaMapping schemaMapping) {
+		if (this.schemaMapping != null)
+			throw new IllegalArgumentException("Schema mapping is already registered with the object registry.");
+
+		this.schemaMapping = schemaMapping;
+	}
 	
 	public void cleanup() {
 		if (properties != null)
@@ -107,6 +120,7 @@ public class ObjectRegistry {
 		eventDispatcher = null;
 		databaseController = null;
 		cityGMLBuilder = null;
+		schemaMapping = null;
 	}
 
 }

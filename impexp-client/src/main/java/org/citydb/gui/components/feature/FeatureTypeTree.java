@@ -1,14 +1,5 @@
 package org.citydb.gui.components.feature;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreePath;
-import javax.xml.namespace.QName;
-
 import org.citydb.ade.ADEExtension;
 import org.citydb.ade.ADEExtensionManager;
 import org.citydb.database.schema.mapping.AppSchema;
@@ -31,6 +22,14 @@ import org.citygml4j.model.module.citygml.TunnelModule;
 import org.citygml4j.model.module.citygml.VegetationModule;
 import org.citygml4j.model.module.citygml.WaterBodyModule;
 
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreePath;
+import javax.xml.namespace.QName;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
 @SuppressWarnings("serial")
 public class FeatureTypeTree extends CheckboxTree {
 	private final SchemaMapping schemaMapping;
@@ -41,7 +40,7 @@ public class FeatureTypeTree extends CheckboxTree {
 	private CityGMLVersion version;
 
 	public FeatureTypeTree(boolean withADESupport) {
-		schemaMapping = (SchemaMapping)ObjectRegistry.getInstance().lookup(SchemaMapping.class.getName());
+		schemaMapping = ObjectRegistry.getInstance().getSchemaMapping();
 		adeManager = ADEExtensionManager.getInstance();
 
 		populate(withADESupport);
@@ -152,7 +151,7 @@ public class FeatureTypeTree extends CheckboxTree {
 	}
 
 	private boolean canBeEnabled(FeatureType featureType) {
-		return version != null ? featureType.isAvailableForCityGML(version) : true;
+		return version == null || featureType.isAvailableForCityGML(version);
 	}
 
 	private void propagateBottomUp(DefaultMutableTreeNode node, boolean isSelection, boolean enable) {
