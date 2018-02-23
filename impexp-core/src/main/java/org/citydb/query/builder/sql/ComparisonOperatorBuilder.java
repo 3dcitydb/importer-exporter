@@ -248,7 +248,7 @@ public class ComparisonOperatorBuilder {
 		org.citydb.sqlbuilder.expression.Expression leftOperand = queryContext.targetColumn;
 
 		// consider match case
-		if (!operator.isMatchCase() && ((PlaceHolder<?>)rightOperand).getValue() instanceof String) {
+		if (!operator.isMatchCase()) {
 			rightOperand = new Function(sqlAdapter.resolveDatabaseOperationName("string.upper"), rightOperand);
 			leftOperand = new Function(sqlAdapter.resolveDatabaseOperationName("string.upper"), leftOperand);
 		}
