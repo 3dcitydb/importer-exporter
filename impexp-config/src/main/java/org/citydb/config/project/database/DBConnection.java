@@ -70,7 +70,9 @@ public class DBConnection implements Comparable<DBConnection> {
 	@XmlElement(required=true)
 	private String password = "";
 	private Boolean savePassword = false;
-	
+
+	@XmlAttribute
+    private Integer loginTimeout = 60;
 	@XmlAttribute
 	private Integer initialSize = 0;
 	@XmlAttribute
@@ -235,6 +237,18 @@ public class DBConnection implements Comparable<DBConnection> {
 	public void setType(DatabaseType type) {
 		this.type = type;
 	}
+
+	public Integer getLoginTimeout() {
+	    return loginTimeout;
+    }
+
+    public boolean isSetLoginTimeout() {
+	    return loginTimeout != null;
+    }
+
+    public void setLoginTimeout(Integer loginTimeout) {
+	    this.loginTimeout = loginTimeout;
+    }
 
 	public Integer getInitialSize() {
 		return initialSize;

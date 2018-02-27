@@ -80,7 +80,7 @@ public abstract class AbstractUtilAdapter {
 		Connection conn = null;
 
 		try {
-			conn = databaseAdapter.connectionPool.getConnectionWithTimeout();
+			conn = databaseAdapter.connectionPool.getConnection();
 
 			// get vendor specific meta data
 			java.sql.DatabaseMetaData vendorMetaData = conn.getMetaData();			

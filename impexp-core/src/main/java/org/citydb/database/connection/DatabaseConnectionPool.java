@@ -32,13 +32,6 @@ import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.FutureTask;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.apache.tomcat.jdbc.pool.DataSource;
@@ -65,7 +58,7 @@ import org.citygml4j.util.gmlid.DefaultGMLIdManager;
 
 public class DatabaseConnectionPool {
 	private static DatabaseConnectionPool instance;
-	private final int LOGIN_TIMEOUT = 120;
+	private final int DEFAULT_LOGIN_TIMEOUT = 60;
 
 	private final String poolName = DefaultGMLIdManager.getInstance().generateUUID();
 	private final EventDispatcher eventDispatcher;
@@ -144,6 +137,7 @@ public class DatabaseConnectionPool {
 
 		// create new data source
 		dataSource = new DataSource(properties);
+		dataSource.setLoginTimeout(conn.isSetLoginTimeout() ? conn.getLoginTimeout() : DEFAULT_LOGIN_TIMEOUT);
 
 		try {
 			// create connection pool
@@ -196,42 +190,6 @@ public class DatabaseConnectionPool {
 
 	public AbstractDatabaseAdapter getActiveDatabaseAdapter() {
 		return databaseAdapter;
-	}
-
-	public Connection getConnectionWithTimeout() throws SQLException {
-		if (!isConnected())
-			throw new SQLException("Database is not connected.");
-
-		ExecutorService service = Executors.newFixedThreadPool(1, new ThreadFactory() {
-			public Thread newThread(Runnable r) {
-				Thread t = new Thread(r);
-				t.setDaemon(true);
-				return t;
-			}
-		});
-
-		FutureTask<Connection> connectTask = new FutureTask<Connection>(new Callable<Connection>() {
-			public Connection call() throws SQLException {
-				return dataSource.getConnection();
-			}
-		});
-
-		Connection connection = null;
-		service.execute(connectTask);
-
-		try {
-			connection = connectTask.get(LOGIN_TIMEOUT, TimeUnit.SECONDS);
-			service.shutdown();
-		} catch (Exception e) {
-			service.shutdownNow();
-
-			if (e instanceof ExecutionException)
-				throw (SQLException)e.getCause();
-			else 
-				throw new SQLException("A connection to the database could not be established.\nThe database did not respond for " + LOGIN_TIMEOUT + " seconds.");
-		}
-
-		return connection;
 	}
 
 	public Connection getConnection() throws SQLException {
