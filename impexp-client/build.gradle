@@ -113,6 +113,12 @@ distributions.main.contents {
     }
 }
 
+installDist {
+    doLast {
+        mkdir "$destinationDir/ade-extensions"
+    }
+}
+
 task buildInstaller(dependsOn: installDist, group: 'distribution') {
     def installDir = installDist.destinationDir.toString()
     def distDir = distZip.destinationDir.toString()
@@ -121,7 +127,6 @@ task buildInstaller(dependsOn: installDist, group: 'distribution') {
 
     doLast {
         mkdir distDir
-        mkdir "$installDir/ade-extensions"
 
         copy {
             from 'resources/izpack'
