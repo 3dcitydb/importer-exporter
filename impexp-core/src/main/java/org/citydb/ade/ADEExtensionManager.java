@@ -58,8 +58,18 @@ public class ADEExtensionManager {
 
 	public void loadExtensions(ClassLoader loader) {
 		ServiceLoader<ADEExtension> adeLoader = ServiceLoader.load(ADEExtension.class, loader);
-		for (Iterator<ADEExtension> iter = adeLoader.iterator(); iter.hasNext(); )
-			loadExtension(iter.next());
+		for (ADEExtension adeExtension : adeLoader) {
+			boolean isLoaded = false;
+			for (ADEExtension tmp : extensions.values()) {
+				if (tmp.getClass() == adeExtension.getClass()) {
+					isLoaded = true;
+					break;
+				}
+			}
+
+			if (!isLoaded)
+				loadExtension(adeExtension);
+		}
 	}
 
 	public void loadExtension(ADEExtension extension) {
@@ -271,12 +281,7 @@ public class ADEExtensionManager {
 		if (this.exceptions == null)
 			this.exceptions = new HashMap<>();
 
-		List<ADEExtensionException> exceptions = this.exceptions.get(extension.getClass().getName());
-		if (exceptions == null) {
-			exceptions = new ArrayList<>();
-			this.exceptions.put(extension.getClass().getName(), exceptions);
-		}
-
+		List<ADEExtensionException> exceptions = this.exceptions.computeIfAbsent(extension.getClass().getName(), k -> new ArrayList<>());
 		exceptions.add(exception);
 	}
 
