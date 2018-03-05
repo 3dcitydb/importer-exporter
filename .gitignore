@@ -13,6 +13,3 @@ bin/
 *.iml
 *.iws
 out/
-
-# samples
-samples/output/
