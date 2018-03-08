@@ -1,5 +1,9 @@
 package org.citydb.config;
 
+import org.citygml4j.model.module.Module;
+import org.citygml4j.model.module.Modules;
+import org.citygml4j.model.module.ade.ADEModule;
+import org.citygml4j.model.module.citygml.CityGMLVersion;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
@@ -24,6 +28,14 @@ public class ConfigNamespaceFilter extends XMLFilterImpl implements NamespaceCon
 		super(reader);
 		prefixToUri = new HashMap<String, String>();
 		uriToPrefix = new HashMap<String, Set<String>>();
+
+		// bind default CityGML namespaces
+		for (Module module : CityGMLVersion.DEFAULT.getModules())
+			bindNamespace(module.getNamespacePrefix(), module.getNamespaceURI());
+
+		// bind default ADE namespaces
+		for (ADEModule adeModule : Modules.getADEModules())
+			bindNamespace(adeModule.getNamespacePrefix(), adeModule.getNamespaceURI());
 	}
 
 	public ConfigNamespaceFilter() {
