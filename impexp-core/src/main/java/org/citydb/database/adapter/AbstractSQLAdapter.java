@@ -74,7 +74,7 @@ public abstract class AbstractSQLAdapter {
 	public abstract String getHierarchicalGeometryQuery(String schema);
 	public abstract String getNextSequenceValue(String sequence, String schema);
 	public abstract String getCurrentSequenceValue(String sequence, String schema);
-	public abstract String getNextSequenceValuesQuery(String sequence);
+	public abstract String getNextSequenceValuesQuery(String sequence, String schema);
 	public abstract int getMaximumNumberOfItemsForInOperator();
 
 	public abstract PredicateToken getBinarySpatialPredicate(SpatialOperatorName operator, Column targetColumn, GeometryObject geometry, boolean negate);	

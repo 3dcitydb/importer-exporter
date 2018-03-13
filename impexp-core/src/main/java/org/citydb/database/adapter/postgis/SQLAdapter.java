@@ -141,11 +141,11 @@ public class SQLAdapter extends AbstractSQLAdapter {
 	}
 	
 	@Override
-	public String getNextSequenceValuesQuery(String sequence) {
+	public String getNextSequenceValuesQuery(String sequence, String schema) {
 		return new StringBuilder("select ")
 		.append(resolveDatabaseOperationName("citydb_util.get_seq_values")).append("(")
-		.append("'").append(sequence).append("'").append(",")
-		.append("?").append(",").append("?").append(")").toString();
+		.append("'").append(schema).append(".").append(sequence).append("'").append(",")
+		.append("?").append(")").toString();
 	}
 
 	@Override

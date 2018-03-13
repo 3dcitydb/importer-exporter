@@ -141,7 +141,7 @@ public class DBSurfaceGeometry implements DBImporter {
 		stmt.append("?, ?)");
 
 		psGeomElem = batchConn.prepareStatement(stmt.toString());
-		psNextSeqValues = batchConn.prepareStatement(importer.getDatabaseAdapter().getSQLAdapter().getNextSequenceValuesQuery(SequenceEnum.SURFACE_GEOMETRY_ID_SEQ.getName()));
+		psNextSeqValues = batchConn.prepareStatement(importer.getDatabaseAdapter().getSQLAdapter().getNextSequenceValuesQuery(SequenceEnum.SURFACE_GEOMETRY_ID_SEQ.getName(), schema));
 
 		appearanceImporter = importer.getImporter(DBAppearance.class);
 		localAppearanceHandler = importer.getLocalAppearanceHandler();
@@ -1303,7 +1303,6 @@ public class DBSurfaceGeometry implements DBImporter {
 			ResultSet rs = null;
 			try {
 				psNextSeqValues.setInt(1, count);
-				psNextSeqValues.setString(2, schema);
 				rs = psNextSeqValues.executeQuery();
 
 				ids = new long[count];

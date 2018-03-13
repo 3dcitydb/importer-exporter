@@ -175,7 +175,7 @@ public class SQLAdapter extends AbstractSQLAdapter {
 	}
 
 	@Override
-	public String getNextSequenceValuesQuery(String sequence) {
+	public String getNextSequenceValuesQuery(String sequence, String schema) {
 		// not required for cache tables
 		return "";
 	}
