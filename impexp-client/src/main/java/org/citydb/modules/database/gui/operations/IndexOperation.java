@@ -576,12 +576,8 @@ public class IndexOperation extends DatabaseOperationView {
 
 	@Override
 	public void handleDatabaseConnectionStateEvent(DatabaseConnectionStateEvent event) {
-		boolean isConnected = event.isConnected();
-		
-		if (isConnected)
+		if (event.isConnected())
 			isStatsSupported = dbConnectionPool.getActiveDatabaseAdapter().hasTableStatsSupport();
-		
-		setEnabled(isConnected);
 	}
 
 }
