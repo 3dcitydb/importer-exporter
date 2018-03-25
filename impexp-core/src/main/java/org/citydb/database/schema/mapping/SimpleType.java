@@ -19,7 +19,9 @@ public enum SimpleType {
     @XmlEnumValue("date")
     DATE("date"),
     @XmlEnumValue("timestamp")
-    TIMESTAMP("timestamp");
+    TIMESTAMP("timestamp"),
+    @XmlEnumValue("clob")
+    CLOB("clob");
     
     private final String value;
 

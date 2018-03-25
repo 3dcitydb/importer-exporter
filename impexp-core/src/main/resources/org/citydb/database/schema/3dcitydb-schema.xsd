@@ -480,6 +480,7 @@
       <xs:enumeration value="boolean"/>
       <xs:enumeration value="date"/>
       <xs:enumeration value="timestamp"/>
+      <xs:enumeration value="clob"/>
     </xs:restriction>
   </xs:simpleType>
 

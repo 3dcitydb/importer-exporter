@@ -441,29 +441,30 @@ public class SchemaPathBuilder {
 	
 	protected AbstractSQLLiteral<?> convertToSQLLiteral(String value, SimpleType type) throws QueryBuildException {
 		AbstractSQLLiteral<?> literal = null;
-		
+
 		switch (type) {
-		case INTEGER:
-			try {
-				literal = new IntegerLiteral(Integer.parseInt(value));
-			} catch (NumberFormatException e) {
-				throw new QueryBuildException("Failed to convert '" + value + "' to an integer literal.", e);
-			}
-			break;
-		case DOUBLE:
-			try {
-				literal = new DoubleLiteral(Double.parseDouble(value));
-			} catch (NumberFormatException e) {
-				throw new QueryBuildException("Failed to convert '" + value + "' to a double literal.", e);
-			}
-			break;
-		case STRING:
-			literal = new StringLiteral(value);
-			break;
-		case BOOLEAN:
-		case DATE:
-		case TIMESTAMP:
-			throw new QueryBuildException(type + " values are not supported as join conditions.");
+			case INTEGER:
+				try {
+					literal = new IntegerLiteral(Integer.parseInt(value));
+				} catch (NumberFormatException e) {
+					throw new QueryBuildException("Failed to convert '" + value + "' to an integer literal.", e);
+				}
+				break;
+			case DOUBLE:
+				try {
+					literal = new DoubleLiteral(Double.parseDouble(value));
+				} catch (NumberFormatException e) {
+					throw new QueryBuildException("Failed to convert '" + value + "' to a double literal.", e);
+				}
+				break;
+			case STRING:
+				literal = new StringLiteral(value);
+				break;
+			case BOOLEAN:
+			case DATE:
+			case TIMESTAMP:
+			case CLOB:
+				throw new QueryBuildException(type + " values are not supported as join conditions.");
 		}
 		
 		return literal;

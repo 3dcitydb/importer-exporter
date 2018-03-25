@@ -209,47 +209,57 @@ public class ComparisonOperatorBuilder {
 		AbstractLiteral<?> literal = null;
 
 		switch (attribute.getType()) {
-		case STRING:
-			literal = new StringLiteral(literalValue);
-			break;
-		case DOUBLE:
-			try {
-				literal = new DoubleLiteral(Double.parseDouble(literalValue));
-			} catch (NumberFormatException e) {
-				//
-			}			
-			break;
-		case INTEGER:
-			try {
-				literal = new IntegerLiteral(Integer.parseInt(literalValue));
-			} catch (NumberFormatException e) {
-				//
-			}	
-			break;
-		case BOOLEAN:
-			if ("true".equalsIgnoreCase(literalValue))
-				literal = new BooleanLiteral(true);
-			else if ("false".equalsIgnoreCase(literalValue))
-				literal = new BooleanLiteral(false);
-			break;
-		case DATE:
-			try {
-				literal = new DateLiteral(DatatypeConverter.parseDateTime(literalValue));
-				((DateLiteral)literal).setXMLLiteral(literalValue);
-			} catch (IllegalArgumentException e) {
-				//
-			}
-			break;
-		case TIMESTAMP:
-			try {
-				XMLGregorianCalendar cal = DatatypeFactory.newInstance().newXMLGregorianCalendar(literalValue);
-				literal = new TimestampLiteral(cal.toGregorianCalendar());
-				((TimestampLiteral)literal).setXMLLiteral(literalValue);
-				((TimestampLiteral)literal).setDate(cal.getXMLSchemaType() == DatatypeConstants.DATE);
-			} catch (DatatypeConfigurationException | IllegalArgumentException e) {
-				//
-			}
-			break;
+			case STRING:
+				literal = new StringLiteral(literalValue);
+				break;
+			case DOUBLE:
+				try {
+					literal = new DoubleLiteral(Double.parseDouble(literalValue));
+				} catch (NumberFormatException e) {
+					//
+				}
+				break;
+			case INTEGER:
+				try {
+					literal = new IntegerLiteral(Integer.parseInt(literalValue));
+				} catch (NumberFormatException e) {
+					//
+				}
+				break;
+			case BOOLEAN:
+				try {
+					if ("true".equals(literalValue.toLowerCase()))
+						literal = new BooleanLiteral(true);
+					else if ("false".equals(literalValue.toLowerCase()))
+						literal = new BooleanLiteral(false);
+					else {
+						long value = Integer.parseInt(literalValue);
+						literal = new BooleanLiteral(value == 1);
+					}
+				} catch (Exception e) {
+					//
+				}
+				break;
+			case DATE:
+				try {
+					literal = new DateLiteral(DatatypeConverter.parseDateTime(literalValue));
+					((DateLiteral)literal).setXMLLiteral(literalValue);
+				} catch (IllegalArgumentException e) {
+					//
+				}
+				break;
+			case TIMESTAMP:
+				try {
+					XMLGregorianCalendar cal = DatatypeFactory.newInstance().newXMLGregorianCalendar(literalValue);
+					literal = new TimestampLiteral(cal.toGregorianCalendar());
+					((TimestampLiteral)literal).setXMLLiteral(literalValue);
+					((TimestampLiteral)literal).setDate(cal.getXMLSchemaType() == DatatypeConstants.DATE);
+				} catch (DatatypeConfigurationException | IllegalArgumentException e) {
+					//
+				}
+				break;
+			case CLOB:
+				throw new QueryBuildException("CLOB columns are not supported in comparison operations.");
 		}
 
 		if (literal == null)
