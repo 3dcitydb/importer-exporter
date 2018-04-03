@@ -57,8 +57,8 @@ import org.citydb.util.CoreConstants;
 import org.citygml4j.builder.jaxb.CityGMLBuilder;
 import org.citygml4j.model.citygml.CityGML;
 import org.citygml4j.model.citygml.appearance.Appearance;
-import org.citygml4j.model.citygml.core.AbstractCityObject;
 import org.citygml4j.model.gml.base.AbstractGML;
+import org.citygml4j.model.gml.feature.AbstractFeature;
 import org.citygml4j.util.bbox.BoundingBoxOptions;
 
 import java.io.IOException;
@@ -254,25 +254,25 @@ public class DBImportWorker extends Worker<CityGML> implements EventHandler {
 				id = importer.importGlobalAppearance(appearance);
 			} 
 
-			else if (work instanceof AbstractCityObject) {
-				AbstractCityObject cityObject = (AbstractCityObject)work;
+			else if (work instanceof AbstractFeature) {
+				AbstractFeature feature = (AbstractFeature)work;
 
-				// compute bounding box for cityobject
-				cityObject.calcBoundedBy(bboxOptions);
+				// compute bounding box
+				feature.calcBoundedBy(bboxOptions);
 
-				// check filter
-				if (!filter.getSelectionFilter().isSatisfiedBy(cityObject))
+				// check import filter
+				if (!filter.getSelectionFilter().isSatisfiedBy(feature))
 					return;			
 
-				cityObject.setLocalProperty(CoreConstants.IS_TOP_LEVEL, true);
-				id = importer.importObject(cityObject);
+				feature.setLocalProperty(CoreConstants.IS_TOP_LEVEL, true);
+				id = importer.importObject(feature);
 
 				// import local appearances
 				if (id != 0)
 					importer.importLocalAppearance();
 				else
 					importer.logOrThrowErrorMessage(new StringBuilder("Failed to import object ")
-							.append(importer.getObjectSignature(cityObject)).append(".").toString());
+							.append(importer.getObjectSignature(feature)).append(".").toString());
 			}
 
 			else {

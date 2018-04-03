@@ -1,7 +1,5 @@
 package org.citydb.citygml.importer.filter.selection.spatial;
 
-import java.sql.SQLException;
-
 import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.config.geometry.Position;
@@ -10,7 +8,9 @@ import org.citydb.config.project.query.filter.selection.spatial.BBOXOperator;
 import org.citydb.config.project.query.filter.selection.spatial.SimpleBBOXMode;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.query.filter.FilterException;
-import org.citygml4j.model.citygml.core.AbstractCityObject;
+import org.citygml4j.model.gml.feature.AbstractFeature;
+
+import java.sql.SQLException;
 
 public class SimpleBBOXFilter {
 	private BoundingBox bbox;
@@ -59,11 +59,11 @@ public class SimpleBBOXFilter {
 				targetSrs
 				);	}
 
-	public boolean isSatisfiedBy(AbstractCityObject cityObject) throws FilterException {
-		if (!cityObject.isSetBoundedBy() || !cityObject.getBoundedBy().isSetEnvelope())
+	public boolean isSatisfiedBy(AbstractFeature feature) throws FilterException {
+		if (!feature.isSetBoundedBy() || !feature.getBoundedBy().isSetEnvelope())
 			return false;
 
-		org.citygml4j.geometry.BoundingBox candidate = cityObject.getBoundedBy().getEnvelope().toBoundingBox();
+		org.citygml4j.geometry.BoundingBox candidate = feature.getBoundedBy().getEnvelope().toBoundingBox();
 		if (candidate == null)
 			return false;
 

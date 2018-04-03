@@ -4,7 +4,7 @@ import org.citydb.citygml.importer.filter.selection.comparison.LikeFilter;
 import org.citydb.citygml.importer.filter.selection.id.ResourceIdFilter;
 import org.citydb.citygml.importer.filter.selection.spatial.SimpleBBOXFilter;
 import org.citydb.query.filter.FilterException;
-import org.citygml4j.model.citygml.core.AbstractCityObject;
+import org.citygml4j.model.gml.feature.AbstractFeature;
 
 public class SelectionFilter {
 	private ResourceIdFilter resourceIdFilter;
@@ -47,14 +47,14 @@ public class SelectionFilter {
 		this.bboxFilter = bboxFilter;
 	}
 
-	public boolean isSatisfiedBy(AbstractCityObject cityObject) throws FilterException {
-		if (resourceIdFilter != null && !resourceIdFilter.isSatisfiedBy(cityObject))
+	public boolean isSatisfiedBy(AbstractFeature feature) throws FilterException {
+		if (resourceIdFilter != null && !resourceIdFilter.isSatisfiedBy(feature))
 			return false;
 
-		if (gmlNameFilter != null && !gmlNameFilter.isSatisfiedBy(cityObject))
+		if (gmlNameFilter != null && !gmlNameFilter.isSatisfiedBy(feature))
 			return false;
 
-		if (bboxFilter != null && !bboxFilter.isSatisfiedBy(cityObject))
+		if (bboxFilter != null && !bboxFilter.isSatisfiedBy(feature))
 			return false;			
 
 		return true;
