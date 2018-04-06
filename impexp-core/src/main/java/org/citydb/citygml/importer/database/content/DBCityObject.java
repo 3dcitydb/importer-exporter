@@ -168,7 +168,7 @@ public class DBCityObject implements DBImporter {
 	protected long doImport(AbstractGML object, AbstractObjectType<?> objectType) throws CityGMLImportException, SQLException {
 		boolean isFeature = object instanceof AbstractFeature;
 		boolean isCityObject = object instanceof AbstractCityObject;
-		boolean isTopLevel = object.getLocalProperty(CoreConstants.IS_TOP_LEVEL) == Boolean.TRUE;
+		boolean isGlobal = !object.isSetParent();
 
 		// primary id
 		long objectId = importer.getNextSequenceValue(SequenceEnum.CITYOBJECT_ID_SEQ.getName());
@@ -300,7 +300,7 @@ public class DBCityObject implements DBImporter {
 			psCityObject.setNull(11, Types.VARCHAR);
 
 		// resolve local xlinks to geometry objects
-		if (isTopLevel) {
+		if (isGlobal) {
 			boolean success = resolver.resolveGeometryXlinks(object);
 			if (!success) {
 				importer.logOrThrowErrorMessage(new StringBuilder(importer.getObjectSignature(object, origGmlId))
@@ -355,7 +355,7 @@ public class DBCityObject implements DBImporter {
 				LocalAppearanceHandler handler = importer.getLocalAppearanceHandler();
 
 				// reset handler for top-level features
-				if (isTopLevel)
+				if (isGlobal)
 					handler.reset();
 
 				if (cityObject.isSetAppearance())

@@ -27,11 +27,6 @@
  */
 package org.citydb.citygml.importer.util;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-
 import org.citydb.citygml.importer.CityGMLImportException;
 import org.citydb.citygml.importer.database.content.CityGMLImportManager;
 import org.citydb.config.geometry.GeometryObject;
@@ -40,6 +35,11 @@ import org.citygml4j.model.citygml.appearance.AppearanceProperty;
 import org.citygml4j.model.citygml.appearance.ParameterizedTexture;
 import org.citygml4j.model.citygml.appearance.SurfaceDataProperty;
 import org.citygml4j.model.citygml.core.AbstractCityObject;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 
 public class LocalAppearanceHandler {
 	private final CityGMLImportManager importer;
@@ -111,7 +111,7 @@ public class LocalAppearanceHandler {
 	}
 
 	public void registerLinearRing(String ringId, long surfaceGeometryId, boolean isReverse) {
-		if (!hasParameterizedTextures || rings.containsKey(ringId))
+		if (rings.containsKey(ringId))
 			return;
 
 		SurfaceGeometryTarget target = targets.get(surfaceGeometryId);
