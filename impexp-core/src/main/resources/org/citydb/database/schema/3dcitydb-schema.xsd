@@ -271,6 +271,7 @@
     <xs:complexContent>
       <xs:extension base="abstractTypeProperty">
         <xs:sequence/>
+        <xs:attribute name="relationType" type="relationType"/>
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
@@ -488,6 +489,14 @@
     <xs:restriction base="xs:string">
       <xs:enumeration value="parent"/>
       <xs:enumeration value="child"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="relationType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="association"/>
+      <xs:enumeration value="aggregation"/>
+      <xs:enumeration value="composition"/>
     </xs:restriction>
   </xs:simpleType>
 
