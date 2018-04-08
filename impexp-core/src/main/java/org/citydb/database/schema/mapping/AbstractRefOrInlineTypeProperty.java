@@ -14,4 +14,9 @@ public abstract class AbstractRefOrInlineTypeProperty<T extends AbstractType<T>>
     
     public abstract void setRefType(T type);
     public abstract void setInlineType(T type);
+
+    @Override
+    public RelationType getRelationType() {
+        return RelationType.COMPOSITION;
+    }
 }

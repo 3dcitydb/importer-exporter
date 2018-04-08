@@ -301,7 +301,7 @@ public class Util {
 		TreeMap<String, Long> mapping = new TreeMap<>();
 		for (Entry<Integer, Long> entry : objectCounter.entrySet()) {
 			int objectClassId = entry.getKey();
-			String typeName = objectClassId != MappingConstants.IMPLICIT_GEOMETRY_OBJECTCLASS_ID ? schemaMapping.getFeatureType(objectClassId).toString()
+			String typeName = objectClassId != MappingConstants.IMPLICIT_GEOMETRY_OBJECTCLASS_ID ? schemaMapping.getAbstractObjectType(objectClassId).toString()
 					: new StringBuilder(CoreModule.v2_0_0.getNamespacePrefix()).append(":").append(MappingConstants.IMPLICIT_GEOMETRY_PATH).toString();
 			
 			mapping.put(typeName, entry.getValue());

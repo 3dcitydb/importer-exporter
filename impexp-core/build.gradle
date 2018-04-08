@@ -5,7 +5,7 @@ plugins {
 dependencies {
     compile project(':impexp-config')
     compile 'org.citydb:sqlbuilder:2.0.0'
-    compile 'org.citygml4j:citygml4j:2.6.1'
+    compile 'org.citygml4j:citygml4j:2.6.2'
     compile 'org.geotools:gt-epsg-extension:18.2'
     compile 'org.geotools:gt-epsg-hsql:18.2'
     compile 'org.geotools:gt-referencing:18.2'

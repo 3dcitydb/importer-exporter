@@ -84,14 +84,17 @@ public abstract class AbstractObjectType<T extends AbstractObjectType<T>> extend
 		return false;
 	}
 
+	@Override
 	public int getObjectClassId() {
 		return objectClassId != null ? objectClassId.intValue() : 0;
 	}
 
+	@Override
 	public boolean isSetObjectClass() {
 		return objectClassId != null;
 	}
 
+	@Override
 	public void setObjectClassId(int objectClassId) {
 		if (objectClassId >= 0)
 			this.objectClassId = objectClassId;

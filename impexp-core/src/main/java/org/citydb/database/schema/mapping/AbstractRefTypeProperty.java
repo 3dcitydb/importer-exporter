@@ -1,9 +1,12 @@
 package org.citydb.database.schema.mapping;
 
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlType;
 
 @XmlType(name = "abstractRefTypeProperty")
 public abstract class AbstractRefTypeProperty<T extends AbstractType<T>> extends AbstractTypeProperty<T> {
+    @XmlAttribute
+    protected RelationType relationType;
 
 	protected AbstractRefTypeProperty() {
 	}
@@ -12,5 +15,18 @@ public abstract class AbstractRefTypeProperty<T extends AbstractType<T>> extends
     	super(path, schema);
     }
     
-    public abstract void setType(T type);    
+    public abstract void setType(T type);
+
+    @Override
+    public RelationType getRelationType() {
+        return relationType != null ? relationType : RelationType.ASSOCIATION;
+    }
+
+    public boolean isSetRelationType() {
+        return relationType != null;
+    }
+
+    public void setRelationType(RelationType relationType) {
+        this.relationType = relationType;
+    }
 }

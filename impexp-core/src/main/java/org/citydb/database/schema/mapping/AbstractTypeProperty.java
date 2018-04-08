@@ -23,7 +23,8 @@ public abstract class AbstractTypeProperty<T extends AbstractType<T>> extends Ab
 	
     public abstract T getType();
     public abstract boolean isSetType();
-    
+    public abstract RelationType getRelationType();
+
     @Override
     public AbstractJoin getJoin() {
         return join;

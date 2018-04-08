@@ -265,8 +265,12 @@ public class CityGMLImportManager implements CityGMLImportHelper {
 				id = getImporter(DBAddress.class).doImport((Address)object);
 
 			// generic fallback for any ADE object
-			else if (object instanceof AbstractGML)
-				id = getImporter(DBCityObject.class).doImport((AbstractGML)object);
+			else if (object != null)
+				id = getImporter(DBCityObject.class).doImport(object);
+
+			// import local appearances
+			if (id != 0 && !object.isSetParent())
+				getImporter(DBAppearance.class).importLocalAppearance();
 
 			return id;
 		} catch (CityGMLImportException e) {
@@ -491,10 +495,6 @@ public class CityGMLImportManager implements CityGMLImportHelper {
 		return hasADESupport;
 	}
 
-	public void importLocalAppearance() throws CityGMLImportException, SQLException {
-		getImporter(DBAppearance.class).importLocalAppearance();
-	}
-
 	public LocalAppearanceHandler getLocalAppearanceHandler() {
 		return localAppearanceHandler;
 	}
@@ -524,7 +524,7 @@ public class CityGMLImportManager implements CityGMLImportHelper {
 		updateObjectCounter(object, type.getObjectClassId(), id);
 
 		// create import log entry for top-level features
-		if (object.getLocalProperty(CoreConstants.IS_TOP_LEVEL) == Boolean.TRUE && importLogEntries != null)
+		if (!object.isSetParent() && importLogEntries != null)
 			importLogEntries.add(new ImportLogEntry(type.getPath(), id, (String)object.getLocalProperty(CoreConstants.OBJECT_ORIGINAL_GMLID)));
 	}
 

@@ -53,12 +53,11 @@ import org.citydb.event.global.GeometryCounterEvent;
 import org.citydb.event.global.InterruptEvent;
 import org.citydb.event.global.ObjectCounterEvent;
 import org.citydb.log.Logger;
-import org.citydb.util.CoreConstants;
 import org.citygml4j.builder.jaxb.CityGMLBuilder;
 import org.citygml4j.model.citygml.CityGML;
 import org.citygml4j.model.citygml.appearance.Appearance;
-import org.citygml4j.model.citygml.core.AbstractCityObject;
 import org.citygml4j.model.gml.base.AbstractGML;
+import org.citygml4j.model.gml.feature.AbstractFeature;
 import org.citygml4j.util.bbox.BoundingBoxOptions;
 
 import java.io.IOException;
@@ -250,35 +249,27 @@ public class DBImportWorker extends Worker<CityGML> implements EventHandler {
 			if (work instanceof Appearance) {
 				// global appearances
 				Appearance appearance = (Appearance)work;
-				appearance.setLocalProperty(CoreConstants.IS_TOP_LEVEL, true);
 				id = importer.importGlobalAppearance(appearance);
 			} 
 
-			else if (work instanceof AbstractCityObject) {
-				AbstractCityObject cityObject = (AbstractCityObject)work;
+			else if (work instanceof AbstractFeature) {
+				AbstractFeature feature = (AbstractFeature)work;
 
-				// compute bounding box for cityobject
-				cityObject.calcBoundedBy(bboxOptions);
+				// compute bounding box
+				feature.calcBoundedBy(bboxOptions);
 
-				// check filter
-				if (!filter.getSelectionFilter().isSatisfiedBy(cityObject))
+				// check import filter
+				if (!filter.getSelectionFilter().isSatisfiedBy(feature))
 					return;			
 
-				cityObject.setLocalProperty(CoreConstants.IS_TOP_LEVEL, true);
-				id = importer.importObject(cityObject);
-
-				// import local appearances
-				if (id != 0)
-					importer.importLocalAppearance();
-				else
-					importer.logOrThrowErrorMessage(new StringBuilder("Failed to import object ")
-							.append(importer.getObjectSignature(cityObject)).append(".").toString());
+				id = importer.importObject(feature);
+				if (id == 0)
+					importer.logOrThrowErrorMessage("Failed to import object " + importer.getObjectSignature(feature) + ".");
 			}
 
 			else {
-				String msg = new StringBuilder()
-						.append(work instanceof AbstractGML ? importer.getObjectSignature((AbstractGML)work) : work.getCityGMLClass())
-						.append(": Unsupported top-level object type. Skipping import.").toString();
+				String msg = (work instanceof AbstractGML ? importer.getObjectSignature((AbstractGML) work) : work.getCityGMLClass()) +
+						": Unsupported top-level object type. Skipping import.";
 
 				if (!importer.isFailOnError())
 					Logger.getInstance().error(msg);

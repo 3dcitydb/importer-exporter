@@ -316,7 +316,7 @@ public class SimpleXPathParser {
 		Object leftOperand = evaluatePredicateToken(leftToken, namespaceContext);
 		Object rightOperand = evaluatePredicateToken(rightToken, namespaceContext);
 
-		if (!(leftOperand instanceof EqualToPredicate) && !(rightOperand instanceof AbstractNodePredicate))
+		if (!(leftOperand instanceof EqualToPredicate) || !(rightOperand instanceof AbstractNodePredicate))
 			throw new XPathException("Only equality tests of the form child=value can be logically combined using the 'and' or 'or' operators.");
 
 		return new BinaryLogicalPredicate((EqualToPredicate)leftOperand, name, (AbstractNodePredicate)rightOperand);
@@ -392,72 +392,74 @@ public class SimpleXPathParser {
 		return null;
 	}
 
-	private AbstractLiteral<?> implicitTypeConversion(AbstractLiteral<?> literal, SimpleType type) {
+	private AbstractLiteral<?> implicitTypeConversion(AbstractLiteral<?> literal, SimpleType type) throws XPathException {
 		switch (type) {
-		case DOUBLE:
-			if (literal.getLiteralType() == LiteralType.LONG)
-				literal = new DoubleLiteral(((LongLiteral)literal).getValue().doubleValue());
-			else if (literal.getLiteralType() == LiteralType.STRING) {
-				try {
-					literal = new DoubleLiteral(Double.parseDouble(((StringLiteral)literal).getValue()));
-				} catch (NumberFormatException e) {
-					//
+			case DOUBLE:
+				if (literal.getLiteralType() == LiteralType.LONG)
+					literal = new DoubleLiteral(((LongLiteral)literal).getValue().doubleValue());
+				else if (literal.getLiteralType() == LiteralType.STRING) {
+					try {
+						literal = new DoubleLiteral(Double.parseDouble(((StringLiteral)literal).getValue()));
+					} catch (NumberFormatException e) {
+						//
+					}
 				}
-			}
-			break;
-		case INTEGER:
-			if (literal.getLiteralType() == LiteralType.DOUBLE) {
-				double value = ((DoubleLiteral)literal).getValue();
-				if (value == (long)value)
-					literal = new LongLiteral((long)value);
-			} else if (literal.getLiteralType() == LiteralType.STRING) {
-				try {
-					literal = new LongLiteral(Long.parseLong(((StringLiteral)literal).getValue()));
-				} catch (NumberFormatException e) {
-					//
+				break;
+			case INTEGER:
+				if (literal.getLiteralType() == LiteralType.DOUBLE) {
+					double value = ((DoubleLiteral)literal).getValue();
+					if (value == (long)value)
+						literal = new LongLiteral((long)value);
+				} else if (literal.getLiteralType() == LiteralType.STRING) {
+					try {
+						literal = new LongLiteral(Long.parseLong(((StringLiteral)literal).getValue()));
+					} catch (NumberFormatException e) {
+						//
+					}
 				}
-			}
-			break;
-		case STRING:
-			if (literal.getLiteralType() == LiteralType.LONG)
-				literal = new StringLiteral(((LongLiteral)literal).getValue().toString());
-			else if (literal.getLiteralType() == LiteralType.DOUBLE)
-				literal = new StringLiteral(String.valueOf(((DoubleLiteral)literal).getValue()));
-			break;
-		case BOOLEAN:
-			if (literal.getLiteralType() == LiteralType.STRING) {
-				String value = ((StringLiteral)literal).getValue();
-				if ("true".equals(value))
-					literal = new BooleanLiteral(true);
-				else if ("false".equals(value))
-					literal = new BooleanLiteral(false);
-			}
-			break;
-		case DATE:
-			if (literal.getLiteralType() == LiteralType.STRING) {
-				try {
+				break;
+			case STRING:
+				if (literal.getLiteralType() == LiteralType.LONG)
+					literal = new StringLiteral(((LongLiteral)literal).getValue().toString());
+				else if (literal.getLiteralType() == LiteralType.DOUBLE)
+					literal = new StringLiteral(String.valueOf(((DoubleLiteral)literal).getValue()));
+				break;
+			case BOOLEAN:
+				if (literal.getLiteralType() == LiteralType.STRING) {
 					String value = ((StringLiteral)literal).getValue();
-					literal = new DateLiteral(DatatypeConverter.parseDateTime(value));
-					((DateLiteral)literal).setXMLLiteral(value);
-				} catch (IllegalArgumentException e) {
-					//
+					if ("true".equals(value))
+						literal = new BooleanLiteral(true);
+					else if ("false".equals(value))
+						literal = new BooleanLiteral(false);
 				}
-			}
-			break;
-		case TIMESTAMP:
-			if (literal.getLiteralType() == LiteralType.STRING) {
-				String value = ((StringLiteral)literal).getValue();
-				
-				try {
-					XMLGregorianCalendar cal = DatatypeFactory.newInstance().newXMLGregorianCalendar(value);
-					literal = new TimestampLiteral(cal.toGregorianCalendar());
-					((TimestampLiteral)literal).setXMLLiteral(value);
-					((TimestampLiteral)literal).setDate(cal.getXMLSchemaType() == DatatypeConstants.DATE);
-				} catch (DatatypeConfigurationException | IllegalArgumentException e) {
-					//
+				break;
+			case DATE:
+				if (literal.getLiteralType() == LiteralType.STRING) {
+					try {
+						String value = ((StringLiteral)literal).getValue();
+						literal = new DateLiteral(DatatypeConverter.parseDateTime(value));
+						((DateLiteral)literal).setXMLLiteral(value);
+					} catch (IllegalArgumentException e) {
+						//
+					}
 				}
-			}
-			break;
+				break;
+			case TIMESTAMP:
+				if (literal.getLiteralType() == LiteralType.STRING) {
+					String value = ((StringLiteral)literal).getValue();
+
+					try {
+						XMLGregorianCalendar cal = DatatypeFactory.newInstance().newXMLGregorianCalendar(value);
+						literal = new TimestampLiteral(cal.toGregorianCalendar());
+						((TimestampLiteral)literal).setXMLLiteral(value);
+						((TimestampLiteral)literal).setDate(cal.getXMLSchemaType() == DatatypeConstants.DATE);
+					} catch (DatatypeConfigurationException | IllegalArgumentException e) {
+						//
+					}
+				}
+				break;
+			case CLOB:
+				throw new XPathException("CLOB columns are not supported in XPath expressions.");
 		}
 
 		return literal;

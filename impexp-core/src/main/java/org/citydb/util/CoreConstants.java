@@ -11,7 +11,6 @@ public class CoreConstants {
 
     public static final String DEFAULT_DELIMITER = "--/\\--";
     public static final String OBJECT_ORIGINAL_GMLID = "origGMLId";
-    public static final String IS_TOP_LEVEL = "isTopLevel";
     public static final String GEOMETRY_XLINK = "isXlink";
     public static final String GEOMETRY_ORIGINAL = "origGeom";
     public static final String GEOMETRY_INVALID = "geomInvalid";

@@ -1,12 +1,12 @@
 package org.citydb.citygml.importer.filter.selection.comparison;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import org.citydb.config.project.query.filter.selection.comparison.LikeOperator;
 import org.citydb.query.filter.FilterException;
-import org.citygml4j.model.citygml.core.AbstractCityObject;
 import org.citygml4j.model.gml.basicTypes.Code;
+import org.citygml4j.model.gml.feature.AbstractFeature;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class LikeFilter {
 	private final String literal;
@@ -35,9 +35,8 @@ public class LikeFilter {
 		matcher = Pattern.compile(replaceWildCards(), Pattern.UNICODE_CHARACTER_CLASS | Pattern.MULTILINE).matcher("");
 	}
 	
-	public boolean isSatisfiedBy(AbstractCityObject cityObject) {
-		// TODO: add support for wild cards
-		for (Code code : cityObject.getName()) {
+	public boolean isSatisfiedBy(AbstractFeature feature) {
+		for (Code code : feature.getName()) {
 			if (code.isSetValue()) {
 				if (matcher.reset(code.getValue()).matches())
 					return true;

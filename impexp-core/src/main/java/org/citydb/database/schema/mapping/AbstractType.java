@@ -1,12 +1,11 @@
 package org.citydb.database.schema.mapping;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElements;
 import javax.xml.bind.annotation.XmlTransient;
+import java.util.ArrayList;
+import java.util.List;
 
 @XmlTransient
 public abstract class AbstractType<T extends AbstractType<T>> extends AbstractPathElement {
@@ -55,6 +54,10 @@ public abstract class AbstractType<T extends AbstractType<T>> extends AbstractPa
 	public abstract String getTable();
 	public abstract boolean isSetTable();
 	public abstract void setTable(String table);
+
+	public abstract int getObjectClassId();
+	public abstract boolean isSetObjectClass();
+	public abstract void setObjectClassId(int objectClassId);
 
 	public abstract AbstractExtension<T> getExtension();
 	public abstract boolean isSetExtension();

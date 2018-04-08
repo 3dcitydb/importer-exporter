@@ -143,9 +143,9 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 		this.config = config;		
 
 		databaseController = ObjectRegistry.getInstance().getDatabaseController();
-		ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(EventType.DATABASE_CONNECTION_STATE, this);
 
-		initGui();		
+		initGui();
+		ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(EventType.DATABASE_CONNECTION_STATE, this);
 	}
 
 	private boolean isModified() {
