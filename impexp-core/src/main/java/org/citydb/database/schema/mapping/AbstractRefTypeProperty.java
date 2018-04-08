@@ -22,7 +22,6 @@ public abstract class AbstractRefTypeProperty<T extends AbstractType<T>> extends
         return relationType != null ? relationType : RelationType.ASSOCIATION;
     }
 
-    @Override
     public void setRelationType(RelationType relationType) {
         this.relationType = relationType;
     }

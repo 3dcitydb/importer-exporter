@@ -19,9 +19,4 @@ public abstract class AbstractRefOrInlineTypeProperty<T extends AbstractType<T>>
     public RelationType getRelationType() {
         return RelationType.COMPOSITION;
     }
-
-    @Override
-    public void setRelationType(RelationType relationType) {
-        // nothing to do here
-    }
 }
