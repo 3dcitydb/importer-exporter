@@ -203,6 +203,7 @@
         <xs:attribute name="abstract" type="xs:boolean"/>
         <xs:attribute name="id" type="xs:ID"/>
         <xs:attribute name="table" type="xs:string"/>
+        <xs:attribute name="objectClassId" type="xs:int"/>
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
