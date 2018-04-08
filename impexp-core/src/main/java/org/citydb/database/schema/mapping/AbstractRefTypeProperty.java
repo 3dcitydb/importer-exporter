@@ -22,6 +22,10 @@ public abstract class AbstractRefTypeProperty<T extends AbstractType<T>> extends
         return relationType != null ? relationType : RelationType.ASSOCIATION;
     }
 
+    public boolean isSetRelationType() {
+        return relationType != null;
+    }
+
     public void setRelationType(RelationType relationType) {
         this.relationType = relationType;
     }
