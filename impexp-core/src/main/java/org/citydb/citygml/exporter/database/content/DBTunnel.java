@@ -27,21 +27,6 @@
  */
 package org.citydb.citygml.exporter.database.content;
 
-import java.sql.Connection;
-import java.sql.Date;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.GregorianCalendar;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map.Entry;
-import java.util.Set;
-
 import org.citydb.citygml.exporter.CityGMLExportException;
 import org.citydb.citygml.exporter.util.AttributeValueSplitter;
 import org.citydb.citygml.exporter.util.AttributeValueSplitter.SplitValue;
@@ -52,6 +37,8 @@ import org.citydb.query.filter.lod.LodFilter;
 import org.citydb.query.filter.lod.LodIterator;
 import org.citydb.query.filter.projection.CombinedProjectionFilter;
 import org.citydb.query.filter.projection.ProjectionFilter;
+import org.citydb.sqlbuilder.schema.Table;
+import org.citydb.sqlbuilder.select.Select;
 import org.citygml4j.model.citygml.core.AbstractCityObject;
 import org.citygml4j.model.citygml.tunnel.AbstractBoundarySurface;
 import org.citygml4j.model.citygml.tunnel.AbstractTunnel;
@@ -73,8 +60,19 @@ import org.citygml4j.model.gml.geometry.primitives.AbstractSolid;
 import org.citygml4j.model.gml.geometry.primitives.SolidProperty;
 import org.citygml4j.model.module.citygml.CityGMLModuleType;
 
-import org.citydb.sqlbuilder.schema.Table;
-import org.citydb.sqlbuilder.select.Select;
+import java.sql.Connection;
+import java.sql.Date;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.Set;
 
 public class DBTunnel extends AbstractFeatureExporter<AbstractTunnel> {
 	private DBSurfaceGeometry geometryExporter;
@@ -219,20 +217,14 @@ public class DBTunnel extends AbstractFeatureExporter<AbstractTunnel> {
 
 				if (projectionFilter.containsProperty("yearOfConstruction", tunnelModule)) {
 					Date yearOfConstruction = rs.getDate("year_of_construction");				
-					if (!rs.wasNull()) {						
-						GregorianCalendar calendar = new GregorianCalendar();
-						calendar.setTime(yearOfConstruction);
-						tunnel.setYearOfConstruction(calendar);
-					}
+					if (!rs.wasNull())
+						tunnel.setYearOfConstruction(yearOfConstruction.toLocalDate());
 				}
 
 				if (projectionFilter.containsProperty("yearOfDemolition", tunnelModule)) {
 					Date yearOfDemolition = rs.getDate("year_of_demolition");
-					if (!rs.wasNull()) {
-						GregorianCalendar calendar = new GregorianCalendar();
-						calendar.setTime(yearOfDemolition);
-						tunnel.setYearOfDemolition(calendar);
-					}
+					if (!rs.wasNull())
+						tunnel.setYearOfDemolition(yearOfDemolition.toLocalDate());
 				}
 
 				// bldg:boundedBy

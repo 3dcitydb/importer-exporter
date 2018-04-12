@@ -30,8 +30,8 @@ package org.citydb.citygml.importer.database.content;
 import org.citydb.citygml.common.database.xlink.DBXlinkBasic;
 import org.citydb.citygml.importer.CityGMLImportException;
 import org.citydb.citygml.importer.util.AttributeValueJoiner;
-import org.citydb.citygml.importer.util.LocalGeometryXlinkResolver;
 import org.citydb.citygml.importer.util.LocalAppearanceHandler;
+import org.citydb.citygml.importer.util.LocalGeometryXlinkResolver;
 import org.citydb.config.Config;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.config.project.importer.CreationDateMode;
@@ -59,9 +59,9 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.Types;
+import java.time.LocalTime;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.List;
 
 public class DBCityObject implements DBImporter {
@@ -261,31 +261,30 @@ public class DBCityObject implements DBImporter {
 		}
 
 		// core:creationDate 
-		Date creationDate = null;
+		ZonedDateTime creationDate = null;
 		if (isCityObject && (creationDateMode == CreationDateMode.INHERIT || creationDateMode == CreationDateMode.COMPLEMENT)) {
-			GregorianCalendar gc = Util.getCreationDate((AbstractCityObject)object, creationDateMode == CreationDateMode.INHERIT);
-			if (gc != null)
-				creationDate = gc.getTime();
+			creationDate = Util.getCreationDate((AbstractCityObject) object, creationDateMode == CreationDateMode.INHERIT);
+			if (creationDate != null)
+				creationDate = creationDate.with(LocalTime.now());
 		}
 
 		if (creationDate == null)
-			creationDate = new Date();
+			creationDate = ZonedDateTime.now();
 
-		psCityObject.setTimestamp(8, new Timestamp(creationDate.getTime()));
+		psCityObject.setTimestamp(8, Timestamp.valueOf(creationDate.toLocalDateTime()));
 
 		// core:terminationDate
-		Date terminationDate = null;
+		ZonedDateTime terminationDate = null;
 		if (isCityObject && (terminationDateMode == TerminationDateMode.INHERIT || terminationDateMode == TerminationDateMode.COMPLEMENT)) {
-			GregorianCalendar gc = Util.getTerminationDate((AbstractCityObject)object, terminationDateMode == TerminationDateMode.INHERIT);
-			if (gc != null)
-				terminationDate = gc.getTime();
+			terminationDate = Util.getTerminationDate((AbstractCityObject) object, terminationDateMode == TerminationDateMode.INHERIT);
+			if (terminationDate != null)
+				terminationDate = terminationDate.with(LocalTime.now());
 		}
 
-		if (terminationDate == null) {
+		if (terminationDate == null)
 			psCityObject.setNull(9, Types.TIMESTAMP);
-		} else {
-			psCityObject.setTimestamp(9, new Timestamp(terminationDate.getTime()));
-		}
+		else
+			psCityObject.setTimestamp(9, Timestamp.valueOf(terminationDate.toLocalDateTime()));
 
 		// core:relativeToTerrain
 		if (isCityObject && ((AbstractCityObject)object).isSetRelativeToTerrain())

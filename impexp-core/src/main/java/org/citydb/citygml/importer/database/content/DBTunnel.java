@@ -160,14 +160,14 @@ public class DBTunnel implements DBImporter {
 
 		// tun:yearOfConstruction
 		if (tunnel.isSetYearOfConstruction()) {
-			psTunnel.setDate(10, new Date(tunnel.getYearOfConstruction().getTime().getTime()));
+			psTunnel.setDate(10, Date.valueOf(tunnel.getYearOfConstruction()));
 		} else {
 			psTunnel.setNull(10, Types.DATE);
 		}
 
 		// tun:yearOfDemolition
 		if (tunnel.isSetYearOfDemolition()) {
-			psTunnel.setDate(11, new Date(tunnel.getYearOfDemolition().getTime().getTime()));
+			psTunnel.setDate(11, Date.valueOf(tunnel.getYearOfDemolition()));
 		} else {
 			psTunnel.setNull(11, Types.DATE);
 		}

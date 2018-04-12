@@ -27,26 +27,6 @@
  */
 package org.citydb.util;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.lang.reflect.Modifier;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.nio.file.Path;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.GregorianCalendar;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.StringJoiner;
-import java.util.TreeMap;
-import java.util.concurrent.TimeUnit;
-import java.util.regex.PatternSyntaxException;
-
 import org.citydb.ade.ADEExtension;
 import org.citydb.ade.ADEExtensionManager;
 import org.citydb.config.project.database.Workspace;
@@ -140,6 +120,26 @@ import org.citygml4j.model.gml.feature.AbstractFeature;
 import org.citygml4j.model.gml.feature.AbstractFeatureCollection;
 import org.citygml4j.model.module.citygml.CityGMLVersion;
 import org.citygml4j.model.module.citygml.CoreModule;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.lang.reflect.Modifier;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.file.Path;
+import java.text.SimpleDateFormat;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.StringJoiner;
+import java.util.TreeMap;
+import java.util.concurrent.TimeUnit;
+import java.util.regex.PatternSyntaxException;
 
 public class Util {
 	private static final HashMap<Class<? extends AbstractGML>, Integer> objectClassIds = new HashMap<>();
@@ -448,7 +448,7 @@ public class Util {
 		return success;
 	}
 
-	public static GregorianCalendar getCreationDate(AbstractCityObject cityObject, boolean checkParents) {
+	public static ZonedDateTime getCreationDate(AbstractCityObject cityObject, boolean checkParents) {
 		if (cityObject == null)
 			return null;
 
@@ -472,7 +472,7 @@ public class Util {
 		return null;
 	}
 
-	public static GregorianCalendar getTerminationDate(AbstractCityObject cityObject, boolean checkParents) {
+	public static ZonedDateTime getTerminationDate(AbstractCityObject cityObject, boolean checkParents) {
 		if (cityObject == null)
 			return null;
 

@@ -27,17 +27,6 @@
  */
 package org.citydb.citygml.exporter.database.content;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
-import java.util.GregorianCalendar;
-import java.util.HashSet;
-
-import javax.xml.parsers.ParserConfigurationException;
-
 import org.citydb.citygml.exporter.CityGMLExportException;
 import org.citydb.citygml.exporter.util.AttributeValueSplitter;
 import org.citydb.citygml.exporter.util.AttributeValueSplitter.SplitValue;
@@ -52,6 +41,12 @@ import org.citydb.query.Query;
 import org.citydb.query.filter.FilterException;
 import org.citydb.query.filter.projection.ProjectionFilter;
 import org.citydb.query.filter.tiling.Tile;
+import org.citydb.sqlbuilder.expression.PlaceHolder;
+import org.citydb.sqlbuilder.schema.Table;
+import org.citydb.sqlbuilder.select.Select;
+import org.citydb.sqlbuilder.select.join.JoinFactory;
+import org.citydb.sqlbuilder.select.operator.comparison.ComparisonFactory;
+import org.citydb.sqlbuilder.select.operator.comparison.ComparisonName;
 import org.citygml4j.geometry.BoundingBox;
 import org.citygml4j.geometry.Point;
 import org.citygml4j.model.citygml.ade.generic.ADEGenericElement;
@@ -70,12 +65,15 @@ import org.citygml4j.model.gml.geometry.primitives.Envelope;
 import org.citygml4j.model.module.citygml.CityGMLModuleType;
 import org.citygml4j.model.module.gml.GMLCoreModule;
 
-import org.citydb.sqlbuilder.expression.PlaceHolder;
-import org.citydb.sqlbuilder.schema.Table;
-import org.citydb.sqlbuilder.select.Select;
-import org.citydb.sqlbuilder.select.join.JoinFactory;
-import org.citydb.sqlbuilder.select.operator.comparison.ComparisonFactory;
-import org.citydb.sqlbuilder.select.operator.comparison.ComparisonName;
+import javax.xml.parsers.ParserConfigurationException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+import java.time.ZoneId;
+import java.util.HashSet;
 
 public class DBCityObject implements DBExporter {
 	private final Query query;
@@ -228,21 +226,15 @@ public class DBCityObject implements DBExporter {
 					// core:creationDate
 					if (projectionFilter.containsProperty("creationDate", coreModule)) {
 						Timestamp creationDate = rs.getTimestamp("creation_date");
-						if (!rs.wasNull()) {
-							GregorianCalendar calendar = new GregorianCalendar();
-							calendar.setTime(creationDate);
-							((AbstractCityObject)object).setCreationDate(calendar);
-						}
+						if (!rs.wasNull())
+							((AbstractCityObject)object).setCreationDate(creationDate.toLocalDateTime().atZone(ZoneId.systemDefault()));
 					}
 
 					// core:terminationDate
 					if (projectionFilter.containsProperty("terminationDate", coreModule)) {
 						Timestamp terminationDate = rs.getTimestamp("termination_date");
-						if (terminationDate != null) {
-							GregorianCalendar calendar = new GregorianCalendar();
-							calendar.setTime(terminationDate);
-							((AbstractCityObject)object).setTerminationDate(calendar);
-						}
+						if (terminationDate != null)
+							((AbstractCityObject)object).setTerminationDate(terminationDate.toLocalDateTime().atZone(ZoneId.systemDefault()));
 					}
 
 					// core:relativeToTerrain

@@ -27,22 +27,6 @@
  */
 package org.citydb.citygml.exporter.database.content;
 
-import java.sql.Connection;
-import java.sql.Date;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.GregorianCalendar;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.regex.Pattern;
-
 import org.citydb.citygml.exporter.CityGMLExportException;
 import org.citydb.citygml.exporter.util.AttributeValueSplitter;
 import org.citydb.citygml.exporter.util.AttributeValueSplitter.SplitValue;
@@ -53,6 +37,10 @@ import org.citydb.query.filter.lod.LodFilter;
 import org.citydb.query.filter.lod.LodIterator;
 import org.citydb.query.filter.projection.CombinedProjectionFilter;
 import org.citydb.query.filter.projection.ProjectionFilter;
+import org.citydb.sqlbuilder.schema.Table;
+import org.citydb.sqlbuilder.select.Select;
+import org.citydb.sqlbuilder.select.join.JoinFactory;
+import org.citydb.sqlbuilder.select.operator.comparison.ComparisonName;
 import org.citygml4j.model.citygml.building.AbstractBoundarySurface;
 import org.citygml4j.model.citygml.building.AbstractBuilding;
 import org.citygml4j.model.citygml.building.BoundarySurfaceProperty;
@@ -79,10 +67,20 @@ import org.citygml4j.model.gml.geometry.primitives.SolidProperty;
 import org.citygml4j.model.gml.measures.Length;
 import org.citygml4j.model.module.citygml.CityGMLModuleType;
 
-import org.citydb.sqlbuilder.schema.Table;
-import org.citydb.sqlbuilder.select.Select;
-import org.citydb.sqlbuilder.select.join.JoinFactory;
-import org.citydb.sqlbuilder.select.operator.comparison.ComparisonName;
+import java.sql.Connection;
+import java.sql.Date;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.regex.Pattern;
 
 public class DBBuilding extends AbstractFeatureExporter<AbstractBuilding> {
 	private DBSurfaceGeometry geometryExporter;
@@ -257,20 +255,14 @@ public class DBBuilding extends AbstractFeatureExporter<AbstractBuilding> {
 
 						if (projectionFilter.containsProperty("yearOfConstruction", buildingModule)) {
 							Date yearOfConstruction = rs.getDate("year_of_construction");				
-							if (!rs.wasNull()) {						
-								GregorianCalendar calendar = new GregorianCalendar();
-								calendar.setTime(yearOfConstruction);
-								building.setYearOfConstruction(calendar);
-							}
+							if (!rs.wasNull())
+								building.setYearOfConstruction(yearOfConstruction.toLocalDate());
 						}
 
 						if (projectionFilter.containsProperty("yearOfDemolition", buildingModule)) {
 							Date yearOfDemolition = rs.getDate("year_of_demolition");
-							if (!rs.wasNull()) {
-								GregorianCalendar calendar = new GregorianCalendar();
-								calendar.setTime(yearOfDemolition);
-								building.setYearOfDemolition(calendar);
-							}
+							if (!rs.wasNull())
+								building.setYearOfDemolition(yearOfDemolition.toLocalDate());
 						}
 
 						if (projectionFilter.containsProperty("roofType", buildingModule)) {
