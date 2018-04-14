@@ -1,5 +1,13 @@
 package org.citydb.database.schema.mapping;
 
+import org.citygml4j.model.module.citygml.CityGMLVersion;
+
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementWrapper;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
+import javax.xml.bind.annotation.XmlType;
+import javax.xml.namespace.QName;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -8,15 +16,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlElementWrapper;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlTransient;
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.namespace.QName;
-
-import org.citygml4j.model.module.citygml.CityGMLVersion;
 
 @XmlRootElement
 @XmlType(name = "schemaMapping", propOrder = {
@@ -181,6 +180,20 @@ public class SchemaMapping {
 		return new ArrayList<>(objectTypes);
 	}
 
+	public Set<ObjectType> listObjectTypesByTable(String tableName, boolean skipAbstractTypes) {
+		Set<ObjectType> result = new HashSet<>();
+		for (ObjectType objectType : objectTypes) {
+			if (objectType.getTable().equalsIgnoreCase(tableName)) {
+				if (!objectType.isAbstract() || !skipAbstractTypes)
+					result.add(objectType);
+
+				result.addAll(objectType.listSubTypes(skipAbstractTypes));
+			}
+		}
+
+		return result;
+	}
+
 	public ObjectType getObjectType(String name, String namespaceURI) {
 		AppSchema schema = getSchema(namespaceURI);		
 		if (schema != null) {
@@ -257,6 +270,23 @@ public class SchemaMapping {
 					result.add(featureType);
 				
 				result.addAll(featureType.listSubTypes(skipAbstractTypes));
+			}
+		}
+
+		if (result.isEmpty()) {
+			for (PropertyInjection propertyInjection : propertyInjections) {
+				if (propertyInjection.getTable().equalsIgnoreCase(tableName)) {
+				    Set<FeatureType> baseTypes = new HashSet<>();
+				    for (InjectedProperty property : propertyInjection.properties)
+				        baseTypes.add(property.getBase());
+
+					for (FeatureType featureType : baseTypes) {
+                        if (!featureType.isAbstract() || !skipAbstractTypes)
+                            result.add(featureType);
+
+                        result.addAll(featureType.listSubTypes(skipAbstractTypes));
+                    }
+				}
 			}
 		}
 
@@ -356,7 +386,15 @@ public class SchemaMapping {
 
 		return types;
 	}
-	
+
+	public Set<? extends AbstractObjectType<?>> listAbstractObjectTypesByTable(String tableName, boolean skipAbstractTypes) {
+		Set<? extends AbstractObjectType<?>> types = listFeatureTypesByTable(tableName, skipAbstractTypes);
+		if (types.isEmpty())
+			types = listObjectTypesByTable(tableName, skipAbstractTypes);
+
+		return types;
+	}
+
 	public List<AbstractType<?>> getAbstractTypes() {
 		List<AbstractType<?>> types = new ArrayList<>(featureTypes);
 		types.addAll(objectTypes);

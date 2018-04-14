@@ -457,7 +457,7 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 	@Override
 	public CombinedProjectionFilter getCombinedProjectionFilter(String tableName) {
 		List<ProjectionFilter> filters = new ArrayList<>();			
-		schemaMapping.listFeatureTypesByTable(tableName, true).forEach(type -> filters.add(query.getProjectionFilter(type)));
+		schemaMapping.listAbstractObjectTypesByTable(tableName, true).forEach(type -> filters.add(query.getProjectionFilter(type)));
 
 		return new CombinedProjectionFilter(filters);
 	}
