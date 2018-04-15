@@ -163,7 +163,7 @@ public class DBThematicSurface extends AbstractFeatureExporter<AbstractBoundaryS
 			while (rs.next()) {
 				long boundarySurfaceId = rs.getLong("tsid");
 
-				if (boundarySurfaceId != currentBoundarySurfaceId) {
+				if (boundarySurfaceId != currentBoundarySurfaceId || boundarySurface == null) {
 					currentBoundarySurfaceId = boundarySurfaceId;
 
 					boundarySurface = boundarySurfaces.get(boundarySurfaceId);
@@ -234,7 +234,9 @@ public class DBThematicSurface extends AbstractFeatureExporter<AbstractBoundaryS
 
 						boundarySurface.setLocalProperty("projection", boundarySurfaceProjectionFilter);
 						boundarySurfaces.put(boundarySurfaceId, boundarySurface);						
-					} else 						boundarySurfaceProjectionFilter = (ProjectionFilter)boundarySurface.getLocalProperty("projection");				}
+					} else 
+						boundarySurfaceProjectionFilter = (ProjectionFilter)boundarySurface.getLocalProperty("projection");
+				}
 
 				// continue if openings shall not be exported
 				if (!lodFilter.containsLodGreaterThanOrEuqalTo(3)

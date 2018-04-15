@@ -188,7 +188,7 @@ public class DBBuilding extends AbstractFeatureExporter<AbstractBuilding> {
 			while (rs.next()) {
 				long buildingId = rs.getLong("id");
 
-				if (buildingId != currentBuildingId) {
+				if (buildingId != currentBuildingId || building == null) {
 					currentBuildingId = buildingId;
 
 					building = buildings.get(buildingId);

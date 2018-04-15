@@ -181,7 +181,7 @@ public class DBBridge extends AbstractFeatureExporter<AbstractBridge> {
 			while (rs.next()) {
 				long bridgeId = rs.getLong("id");
 
-				if (bridgeId != currentBridgeId) {
+				if (bridgeId != currentBridgeId || bridge == null) {
 					currentBridgeId = bridgeId;
 
 					bridge = bridges.get(bridgeId);
