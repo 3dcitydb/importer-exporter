@@ -27,15 +27,15 @@
  */
 package org.citydb.citygml.importer.database.xlink.resolver;
 
+import org.citydb.citygml.common.database.uid.UIDCacheEntry;
+import org.citydb.citygml.common.database.xlink.DBXlinkBasic;
+import org.citydb.database.schema.TableEnum;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map.Entry;
-
-import org.citydb.citygml.common.database.uid.UIDCacheEntry;
-import org.citydb.citygml.common.database.xlink.DBXlinkBasic;
-import org.citydb.database.schema.TableEnum;
 
 public class XlinkBasic implements DBXlinkResolver {
 	private final Connection batchConn;
@@ -46,12 +46,12 @@ public class XlinkBasic implements DBXlinkResolver {
 	
 	private String schema;
 
-	public XlinkBasic(Connection batchConn, DBXlinkResolverManager resolverManager) throws SQLException {
+	public XlinkBasic(Connection batchConn, DBXlinkResolverManager resolverManager) {
 		this.batchConn = batchConn;
 		this.resolverManager = resolverManager;
 
-		psMap = new HashMap<String, PreparedStatement>();
-		psBatchCounterMap = new HashMap<String, Integer>();
+		psMap = new HashMap<>();
+		psBatchCounterMap = new HashMap<>();
 		schema = resolverManager.getDatabaseAdapter().getConnectionDetails().getSchema();
 	}
 
@@ -64,8 +64,14 @@ public class XlinkBasic implements DBXlinkResolver {
 		String key = getKey(xlink);
 		PreparedStatement ps = getPreparedStatement(xlink, key);
 		if (ps != null) {
-			ps.setLong(1, entry.getId());
-			ps.setLong(2, xlink.getId());
+
+			if (xlink.isReverse()) {
+				ps.setLong(1, xlink.getId());
+				ps.setLong(2, entry.getId());
+			} else {
+				ps.setLong(1, entry.getId());
+				ps.setLong(2, xlink.getId());
+			}
 
 			ps.addBatch();
 			int counter = psBatchCounterMap.get(key);
@@ -82,17 +88,15 @@ public class XlinkBasic implements DBXlinkResolver {
 	private PreparedStatement getPreparedStatement(DBXlinkBasic xlink, String key) throws SQLException {
 		PreparedStatement ps = psMap.get(key);
 		if (ps == null) {
-			if (xlink.getToColumn() == null) {
-				ps = batchConn.prepareStatement(new StringBuilder("update ")
-						.append(schema).append(".").append(xlink.getTable())
-						.append(" set ").append(xlink.getFromColumn()).append("=? where ID=?").toString());
+			if (xlink.isBidirectional()) {
+				ps = batchConn.prepareStatement("insert into " + schema + "." + xlink.getTable() +
+						" (" + xlink.getToColumn() + ", " + xlink.getFromColumn() + ") " +
+						"values (?, ?)");
 			}
-			
+
 			else {
-				ps = batchConn.prepareStatement(new StringBuilder("insert into ")
-						.append(schema).append(".").append(xlink.getTable())
-						.append(" (").append(xlink.getToColumn()).append(", ").append(xlink.getFromColumn()).append(") ")
-						.append("values (?, ?)").toString());
+				ps = batchConn.prepareStatement("update " + schema + "." + xlink.getTable() +
+						" set " + (xlink.isForward() ? xlink.getFromColumn() : xlink.getToColumn()) + "=? where ID=?");
 			}
 			
 			if (ps != null) {
