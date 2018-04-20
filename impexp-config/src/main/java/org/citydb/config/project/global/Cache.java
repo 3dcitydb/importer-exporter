@@ -43,7 +43,7 @@ public class Cache {
 	private String localPath;
 
 	public Cache() {
-		File tmp = new File(System.getProperty("java.io.tmpdir"), "3dcitydb.tmp");
+		File tmp = new File(System.getProperty("java.io.tmpdir"), "3dcitydb");
 		if ((tmp.exists() || tmp.mkdir()) && tmp.canWrite())
 			localPath = tmp.getAbsolutePath();
 	}
