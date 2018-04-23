@@ -136,7 +136,7 @@ public class DBTransportationComplex extends AbstractFeatureExporter<Transportat
 			while (rs.next()) {
 				long complexId = rs.getLong("id");
 
-				if (complexId != currentComplexId) {
+				if (complexId != currentComplexId || complex == null) {
 					currentComplexId = complexId;
 
 					complex = complexes.get(complexId);

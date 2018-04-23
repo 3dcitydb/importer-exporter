@@ -124,7 +124,7 @@ public class DBOpening extends AbstractFeatureExporter<AbstractOpening> {
 			while (rs.next()) {
 				long openingId = rs.getLong("id");
 
-				if (openingId != currentOpeningId) {
+				if (openingId != currentOpeningId || opening == null) {
 					currentOpeningId = openingId;
 
 					opening = openings.get(openingId);

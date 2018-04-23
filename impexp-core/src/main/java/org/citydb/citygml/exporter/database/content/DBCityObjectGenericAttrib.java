@@ -27,16 +27,12 @@
  */
 package org.citydb.citygml.exporter.database.content;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.util.GregorianCalendar;
-import java.util.HashMap;
-
 import org.citydb.database.schema.TableEnum;
 import org.citydb.query.filter.projection.ProjectionFilter;
+import org.citydb.sqlbuilder.expression.PlaceHolder;
+import org.citydb.sqlbuilder.schema.Table;
+import org.citydb.sqlbuilder.select.Select;
+import org.citydb.sqlbuilder.select.operator.comparison.ComparisonFactory;
 import org.citydb.util.Util;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.core.AbstractCityObject;
@@ -50,10 +46,12 @@ import org.citygml4j.model.citygml.generics.StringAttribute;
 import org.citygml4j.model.citygml.generics.UriAttribute;
 import org.citygml4j.model.gml.basicTypes.Measure;
 
-import org.citydb.sqlbuilder.expression.PlaceHolder;
-import org.citydb.sqlbuilder.schema.Table;
-import org.citydb.sqlbuilder.select.Select;
-import org.citydb.sqlbuilder.select.operator.comparison.ComparisonFactory;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.HashMap;
 
 public class DBCityObjectGenericAttrib implements DBExporter {
 	private PreparedStatement ps;
@@ -132,9 +130,7 @@ public class DBCityObjectGenericAttrib implements DBExporter {
 					Timestamp dateVal = rs.getTimestamp(9);
 					if (!rs.wasNull()) {
 						genericAttribute = new DateAttribute();
-						GregorianCalendar calendar = new GregorianCalendar();
-						calendar.setTime(dateVal);	
-						((DateAttribute)genericAttribute).setValue(calendar);
+						((DateAttribute)genericAttribute).setValue(dateVal.toLocalDateTime().toLocalDate());
 					}
 					break;
 				case MEASURE_ATTRIBUTE:

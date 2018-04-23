@@ -117,6 +117,7 @@
       <xs:extension base="abstractPathElement">
         <xs:sequence/>
         <xs:attribute name="minOccurs" type="xs:int"/>
+        <xs:attribute name="maxOccurs" type="xs:int"/>
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>

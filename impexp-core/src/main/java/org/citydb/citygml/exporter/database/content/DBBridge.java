@@ -27,21 +27,6 @@
  */
 package org.citydb.citygml.exporter.database.content;
 
-import java.sql.Connection;
-import java.sql.Date;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.GregorianCalendar;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map.Entry;
-import java.util.Set;
-
 import org.citydb.citygml.exporter.CityGMLExportException;
 import org.citydb.citygml.exporter.util.AttributeValueSplitter;
 import org.citydb.citygml.exporter.util.AttributeValueSplitter.SplitValue;
@@ -52,6 +37,10 @@ import org.citydb.query.filter.lod.LodFilter;
 import org.citydb.query.filter.lod.LodIterator;
 import org.citydb.query.filter.projection.CombinedProjectionFilter;
 import org.citydb.query.filter.projection.ProjectionFilter;
+import org.citydb.sqlbuilder.schema.Table;
+import org.citydb.sqlbuilder.select.Select;
+import org.citydb.sqlbuilder.select.join.JoinFactory;
+import org.citydb.sqlbuilder.select.operator.comparison.ComparisonName;
 import org.citygml4j.model.citygml.bridge.AbstractBoundarySurface;
 import org.citygml4j.model.citygml.bridge.AbstractBridge;
 import org.citygml4j.model.citygml.bridge.BoundarySurfaceProperty;
@@ -77,10 +66,19 @@ import org.citygml4j.model.gml.geometry.primitives.AbstractSolid;
 import org.citygml4j.model.gml.geometry.primitives.SolidProperty;
 import org.citygml4j.model.module.citygml.CityGMLModuleType;
 
-import org.citydb.sqlbuilder.schema.Table;
-import org.citydb.sqlbuilder.select.Select;
-import org.citydb.sqlbuilder.select.join.JoinFactory;
-import org.citydb.sqlbuilder.select.operator.comparison.ComparisonName;
+import java.sql.Connection;
+import java.sql.Date;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.Set;
 
 public class DBBridge extends AbstractFeatureExporter<AbstractBridge> {
 	private DBSurfaceGeometry geometryExporter;
@@ -183,7 +181,7 @@ public class DBBridge extends AbstractFeatureExporter<AbstractBridge> {
 			while (rs.next()) {
 				long bridgeId = rs.getLong("id");
 
-				if (bridgeId != currentBridgeId) {
+				if (bridgeId != currentBridgeId || bridge == null) {
 					currentBridgeId = bridgeId;
 
 					bridge = bridges.get(bridgeId);
@@ -250,20 +248,14 @@ public class DBBridge extends AbstractFeatureExporter<AbstractBridge> {
 
 						if (projectionFilter.containsProperty("yearOfConstruction", bridgeModule)) {
 							Date yearOfConstruction = rs.getDate("year_of_construction");				
-							if (!rs.wasNull()) {						
-								GregorianCalendar calendar = new GregorianCalendar();
-								calendar.setTime(yearOfConstruction);
-								bridge.setYearOfConstruction(calendar);
-							}
+							if (!rs.wasNull())
+								bridge.setYearOfConstruction(yearOfConstruction.toLocalDate());
 						}
 
 						if (projectionFilter.containsProperty("yearOfDemolition", bridgeModule)) {
 							Date yearOfDemolition = rs.getDate("year_of_demolition");
-							if (!rs.wasNull()) {
-								GregorianCalendar calendar = new GregorianCalendar();
-								calendar.setTime(yearOfDemolition);
-								bridge.setYearOfDemolition(calendar);
-							}
+							if (!rs.wasNull())
+								bridge.setYearOfDemolition(yearOfDemolition.toLocalDate());
 						}
 
 						if (projectionFilter.containsProperty("isMovable", bridgeModule)) {

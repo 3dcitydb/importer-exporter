@@ -168,7 +168,7 @@ public class DBBridgeThematicSurface extends AbstractFeatureExporter<AbstractBou
 			while (rs.next()) {
 				long boundarySurfaceId = rs.getLong("tsid");
 
-				if (boundarySurfaceId != currentBoundarySurfaceId) {
+				if (boundarySurfaceId != currentBoundarySurfaceId || boundarySurface == null) {
 					currentBoundarySurfaceId = boundarySurfaceId;
 
 					boundarySurface = boundarySurfaces.get(boundarySurfaceId);

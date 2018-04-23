@@ -45,6 +45,10 @@ public class DBXlinkBasic implements DBXlink {
 	public DBXlinkBasic(String table, long id, String gmlId, String fromColumn) {
 		this(id, table, fromColumn, null, gmlId);
 	}
+
+	public DBXlinkBasic(String table, String gmlId, long id, String toColumn) {
+		this(id, table, null, toColumn, gmlId);
+	}
 	
 	public DBXlinkBasic(String table, long id, String fromColumn, String gmlId, String toColumn) {
 		this(id, table, fromColumn, toColumn, gmlId);
@@ -88,6 +92,18 @@ public class DBXlinkBasic implements DBXlink {
 
 	public void setToColumn(String toColumn) {
 		this.toColumn = toColumn;
+	}
+
+	public boolean isForward() {
+		return fromColumn != null && toColumn == null;
+	}
+
+	public boolean isReverse() {
+		return fromColumn == null && toColumn != null;
+	}
+
+	public boolean isBidirectional() {
+		return fromColumn != null && toColumn != null;
 	}
 
 	@Override

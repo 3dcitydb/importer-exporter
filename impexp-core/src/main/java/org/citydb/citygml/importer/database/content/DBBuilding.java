@@ -166,14 +166,14 @@ public class DBBuilding implements DBImporter {
 
 		// bldg:yearOfConstruction
 		if (building.isSetYearOfConstruction()) {
-			psBuilding.setDate(10, new Date(building.getYearOfConstruction().getTime().getTime()));
+			psBuilding.setDate(10, Date.valueOf(building.getYearOfConstruction()));
 		} else {
 			psBuilding.setNull(10, Types.DATE);
 		}
 
 		// bldg:yearOfDemolition
 		if (building.isSetYearOfDemolition()) {
-			psBuilding.setDate(11, new Date(building.getYearOfDemolition().getTime().getTime()));
+			psBuilding.setDate(11, Date.valueOf(building.getYearOfDemolition()));
 		} else {
 			psBuilding.setNull(11, Types.DATE);
 		}

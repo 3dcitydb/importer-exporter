@@ -27,12 +27,6 @@
  */
 package org.citydb.citygml.importer.database.content;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.sql.Types;
-
 import org.citydb.citygml.importer.CityGMLImportException;
 import org.citydb.config.Config;
 import org.citydb.config.geometry.GeometryObject;
@@ -47,6 +41,12 @@ import org.citygml4j.model.citygml.generics.IntAttribute;
 import org.citygml4j.model.citygml.generics.MeasureAttribute;
 import org.citygml4j.model.citygml.generics.StringAttribute;
 import org.citygml4j.model.citygml.generics.UriAttribute;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.sql.Types;
 
 public class DBCityObjectGenericAttrib implements DBImporter {
 	private final Connection batchConn;
@@ -188,7 +188,7 @@ public class DBCityObjectGenericAttrib implements DBImporter {
 
 				DateAttribute dateAttribute = (DateAttribute)genericAttribute;
 				if (dateAttribute.isSetValue())
-					ps.setTimestamp(7, new Timestamp(dateAttribute.getValue().getTime().getTime()));
+					ps.setTimestamp(7, Timestamp.valueOf(dateAttribute.getValue().atStartOfDay()));
 				else
 					ps.setNull(7, Types.TIMESTAMP);
 

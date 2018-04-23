@@ -169,14 +169,14 @@ public class DBBridge implements DBImporter {
 
 		// brid:yearOfConstruction
 		if (bridge.isSetYearOfConstruction()) {
-			psBridge.setDate(10, new Date(bridge.getYearOfConstruction().getTime().getTime()));
+			psBridge.setDate(10, Date.valueOf(bridge.getYearOfConstruction()));
 		} else {
 			psBridge.setNull(10, Types.DATE);
 		}
 
 		// brid:yearOfDemolition
 		if (bridge.isSetYearOfDemolition()) {
-			psBridge.setDate(11, new Date(bridge.getYearOfDemolition().getTime().getTime()));
+			psBridge.setDate(11, Date.valueOf(bridge.getYearOfDemolition()));
 		} else {
 			psBridge.setNull(11, Types.DATE);
 		}

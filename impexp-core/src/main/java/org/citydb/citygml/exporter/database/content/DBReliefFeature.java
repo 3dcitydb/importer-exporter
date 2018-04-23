@@ -142,7 +142,7 @@ public class DBReliefFeature extends AbstractFeatureExporter<ReliefFeature> {
 			while (rs.next()) {	
 				long reliefFeatureId = rs.getLong("id");
 
-				if (reliefFeatureId != currentReliefFeatureId) {
+				if (reliefFeatureId != currentReliefFeatureId || reliefFeature == null) {
 					currentReliefFeatureId = reliefFeatureId;
 
 					reliefFeature = reliefFeatures.get(reliefFeatureId);

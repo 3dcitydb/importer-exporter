@@ -147,7 +147,7 @@ public class DBWaterBody extends AbstractFeatureExporter<WaterBody> {
 			while (rs.next()) {
 				long waterBodyId = rs.getLong("id");
 
-				if (waterBodyId != currentWaterBodyId) {
+				if (waterBodyId != currentWaterBodyId || waterBody == null) {
 					currentWaterBodyId = waterBodyId;
 
 					waterBody = waterBodies.get(waterBodyId);

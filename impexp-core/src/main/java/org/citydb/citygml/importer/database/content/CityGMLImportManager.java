@@ -393,6 +393,11 @@ public class CityGMLImportManager implements CityGMLImportHelper {
 	}
 
 	@Override
+	public void propagateReverseObjectXlink(String toTable, String gmlId, long objectId, String propertyColumn) {
+		xlinkPool.addWork(new DBXlinkBasic(toTable, gmlId, objectId, propertyColumn));
+	}
+
+	@Override
 	public void propagateSurfaceGeometryXlink(String xlink, AbstractObjectType<?> objectType, long objectId, String propertyColumn) {
 		xlinkPool.addWork(new DBXlinkSurfaceGeometry(objectType.getObjectClassId(), objectId, xlink, propertyColumn));
 	}

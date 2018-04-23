@@ -20,7 +20,6 @@ import org.citydb.citygml.exporter.writer.FeatureWriteException;
 import org.citydb.citygml.exporter.writer.FeatureWriter;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
-import org.citydb.util.CoreConstants;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.config.project.exporter.Exporter;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
@@ -43,6 +42,7 @@ import org.citydb.sqlbuilder.expression.IntegerLiteral;
 import org.citydb.sqlbuilder.schema.Column;
 import org.citydb.sqlbuilder.select.ProjectionToken;
 import org.citydb.sqlbuilder.select.projection.Function;
+import org.citydb.util.CoreConstants;
 import org.citydb.util.Util;
 import org.citygml4j.builder.jaxb.CityGMLBuilder;
 import org.citygml4j.builder.jaxb.CityGMLBuilderException;
@@ -180,16 +180,7 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 	}
 
 	@Override
-	public AbstractGML exportObject(long objectId, int objectClassId) throws CityGMLExportException, SQLException {
-		AbstractObjectType<?> objectType = getAbstractObjectType(objectClassId);
-		if (objectType == null)
-			throw new CityGMLExportException("Failed to determine object type for " + getObjectSignature(objectClassId, objectId) + ". Skipping export.");
-
-		return exportObject(objectId, objectType, false);
-	}
-
-	@Override
-	public <T extends AbstractGML> T createObjectStub(long objectId, int objectClassId, Class<T> type) throws CityGMLExportException, SQLException {
+	public <T extends AbstractGML> T createObject(long objectId, int objectClassId, Class<T> type) throws CityGMLExportException, SQLException {
 		AbstractObjectType<?> objectType = getAbstractObjectType(objectClassId);
 		if (objectType == null)
 			throw new CityGMLExportException("Failed to determine object type for " + getObjectSignature(objectClassId, objectId) + ". Skipping export.");
@@ -430,6 +421,15 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 	}
 
 	@Override
+	public void exportAsFeatureMember(AbstractFeature feature, long id) throws CityGMLExportException {
+		if (!query.getFeatureTypeFilter().isAllowedFeatureType(getFeatureType(feature)))
+			feature.setLocalProperty(CoreConstants.EXPORT_AS_ADDITIONAL_OBJECT, true);
+
+		writeFeatureMember(feature, id);
+		updateExportCounter(feature);
+	}
+
+	@Override
 	public GMLConverter getGMLConverter() {
 		if (gmlConverter == null) {		
 			gmlConverter = new GMLConverter(query.isSetTargetSRS() ? query.getTargetSRS().getGMLSrsName() :
@@ -457,7 +457,7 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 	@Override
 	public CombinedProjectionFilter getCombinedProjectionFilter(String tableName) {
 		List<ProjectionFilter> filters = new ArrayList<>();			
-		schemaMapping.listFeatureTypesByTable(tableName, true).forEach(type -> filters.add(query.getProjectionFilter(type)));
+		schemaMapping.listAbstractObjectTypesByTable(tableName, true).forEach(type -> filters.add(query.getProjectionFilter(type)));
 
 		return new CombinedProjectionFilter(filters);
 	}
