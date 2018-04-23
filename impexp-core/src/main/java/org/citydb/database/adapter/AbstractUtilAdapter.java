@@ -64,7 +64,7 @@ public abstract class AbstractUtilAdapter {
 	}
 	
 	protected abstract void getCityDBVersion(DatabaseMetaData metaData, Connection connection) throws SQLException;
-	protected abstract void getDatabaseMetaData(DatabaseMetaData metaData, Connection connection) throws SQLException;
+	protected abstract void getDatabaseMetaData(DatabaseMetaData metaData, String schema, Connection connection) throws SQLException;
 	protected abstract void getSrsInfo(DatabaseSrs srs, Connection connection) throws SQLException;
 	protected abstract String[] createDatabaseReport(String schema, Connection connection) throws SQLException;
 	protected abstract BoundingBox calcBoundingBox(String schema, List<Integer> classIds, Connection connection) throws SQLException;
@@ -88,7 +88,7 @@ public abstract class AbstractUtilAdapter {
 			// get 3dcitydb specific meta data
 			DatabaseMetaData metaData = new DatabaseMetaData();
 			getCityDBVersion(metaData, conn);
-			getDatabaseMetaData(metaData, conn);
+			getDatabaseMetaData(metaData, databaseAdapter.getConnectionDetails().getSchema(), conn);
 			metaData.setDatabaseProductName(vendorMetaData.getDatabaseProductName());
 			metaData.setDatabaseProductVersion(vendorMetaData.getDatabaseProductVersion());
 			metaData.setDatabaseMajorVersion(vendorMetaData.getDatabaseMajorVersion());

@@ -52,6 +52,7 @@ import org.citydb.util.Util;
 import org.postgis.Geometry;
 import org.postgis.PGbox2d;
 import org.postgis.PGgeometry;
+import org.postgresql.util.PSQLException;
 
 public class UtilAdapter extends AbstractUtilAdapter {
 	private final DatabaseSrs WGS843D_SRS = new DatabaseSrs(4326, "", "", "", DatabaseSrsType.GEOGRAPHIC2D, true);
@@ -101,13 +102,15 @@ public class UtilAdapter extends AbstractUtilAdapter {
 	}
 
 	@Override
-	protected void getDatabaseMetaData(DatabaseMetaData metaData, Connection connection) throws SQLException {
-		Statement statement = null;
+	protected void getDatabaseMetaData(DatabaseMetaData metaData, String schema, Connection connection) throws SQLException {
+		PreparedStatement preparedStatement = null;
 		ResultSet rs = null;
 
 		try {
-			statement = connection.createStatement();
-			rs = statement.executeQuery("select * from " + databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_util.db_metadata") + "()");
+			//statement = connection.createStatement();
+			preparedStatement = connection.prepareStatement("select * from " + databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_util.db_metadata") + "(?)");
+			preparedStatement.setString(1, schema);
+			rs = preparedStatement.executeQuery();
 			if (rs.next()) {
 				DatabaseSrs srs = metaData.getReferenceSystem();
 				srs.setSrid(rs.getInt("SCHEMA_SRID"));
@@ -120,7 +123,11 @@ public class UtilAdapter extends AbstractUtilAdapter {
 				metaData.setVersioning(Versioning.NOT_SUPPORTED);
 			} else
 				throw new SQLException("Failed to retrieve metadata information from database.");
-		} finally {
+		}
+		catch (PSQLException psqlEx) {
+			throw new SQLException("No 3DCityDB instance found in given database schema.");
+		}
+		finally {
 			if (rs != null) {
 				try {
 					rs.close();
@@ -131,14 +138,14 @@ public class UtilAdapter extends AbstractUtilAdapter {
 				rs = null;
 			}
 
-			if (statement != null) {
+			if (preparedStatement != null) {
 				try {
-					statement.close();
+					preparedStatement.close();
 				} catch (SQLException e) {
 					throw e;
 				}
 
-				statement = null;
+				preparedStatement = null;
 			}
 		}
 	}

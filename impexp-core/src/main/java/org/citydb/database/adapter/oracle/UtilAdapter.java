@@ -104,13 +104,14 @@ public class UtilAdapter extends AbstractUtilAdapter {
 	}
 
 	@Override
-	protected void getDatabaseMetaData(DatabaseMetaData metaData, Connection connection) throws SQLException {
-		Statement statement = null;
+	protected void getDatabaseMetaData(DatabaseMetaData metaData, String schema, Connection connection) throws SQLException {
+		PreparedStatement preparedStatement = null;
 		ResultSet rs = null;
 
 		try {
-			statement = connection.createStatement();
-			rs = statement.executeQuery("select * from table(" + databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_util.db_metadata") + ")");
+			preparedStatement = connection.prepareStatement("select * from table(" + databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_util.db_metadata") + "(?))");
+			preparedStatement.setString(1, schema);
+			rs = preparedStatement.executeQuery();
 			if (rs.next()) {
 				DatabaseSrs srs = metaData.getReferenceSystem();
 				srs.setSrid(rs.getInt("SCHEMA_SRID"));
@@ -134,14 +135,14 @@ public class UtilAdapter extends AbstractUtilAdapter {
 				rs = null;
 			}
 
-			if (statement != null) {
+			if (preparedStatement != null) {
 				try {
-					statement.close();
+					preparedStatement.close();
 				} catch (SQLException e) {
 					throw e;
 				}
 
-				statement = null;
+				preparedStatement = null;
 			}
 		}
 	}
