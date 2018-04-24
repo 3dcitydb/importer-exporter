@@ -27,32 +27,36 @@
  */
 package org.citydb.database.connection;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 import org.citydb.config.project.database.DatabaseSrs;
 import org.citydb.config.project.global.LogLevel;
 import org.citydb.database.version.DatabaseVersion;
 import org.citydb.log.Logger;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 public class DatabaseMetaData {
-	private final Logger log = Logger.getInstance();	
-	
+	private final Logger log = Logger.getInstance();
+	private final DatabaseConnectionDetails connectionDetails;
+
 	// database related information
-	private DatabaseVersion virtualcityDBVersion;
 	private DatabaseVersion cityDBVersion;
 	private String databaseProductName;
 	private String databaseProductString;
 	private int databaseMajorVersion;
 	private int databaseMinorVersion;
-	
+
 	// 3DCityDB related information
 	private DatabaseSrs srs =  DatabaseSrs.createDefaultSrs();
 	private Versioning versioning = Versioning.OFF;
-	
+
 	// ADE metadata
 	private List<ADEMetadata> ades;
+
+	public DatabaseMetaData(DatabaseConnectionDetails connectionDetails) {
+		this.connectionDetails = connectionDetails;
+	}
 	
 	public void reset() {
 		databaseProductName = null;
@@ -62,14 +66,6 @@ public class DatabaseMetaData {
 		srs = DatabaseSrs.createDefaultSrs();
 		versioning = Versioning.OFF;
 		ades = null;
-	}
-
-	public DatabaseVersion getVirtualCityDBVersion() {
-		return virtualcityDBVersion;
-	}
-	
-	public void setVirtualCityDBVersion(DatabaseVersion virtualcityDBVersion) {
-		this.virtualcityDBVersion = virtualcityDBVersion;
 	}
 
 	public DatabaseVersion getCityDBVersion() {
@@ -159,11 +155,13 @@ public class DatabaseMetaData {
 	public void printToConsole() {
         log.all(LogLevel.INFO, "3D City Database: " + getCityDBVersion());
 		log.all(LogLevel.INFO, "DBMS: " + getDatabaseProductName() + " " + getDatabaseProductVersion());
+		log.all(LogLevel.INFO, "Connection: " + connectionDetails.toConnectString());
+		log.all(LogLevel.INFO, "Schema: " + connectionDetails.getSchema());
 		log.all(LogLevel.INFO, "SRID: " + srs.getSrid() + " (" + srs.getType() + ')');
 		log.all(LogLevel.INFO, "SRS: " + srs.getDatabaseSrsName());
 		log.all(LogLevel.INFO, "gml:srsName: " + srs.getGMLSrsName());
 		log.all(LogLevel.INFO, "Versioning: " + versioning);
-		
+
 		if (hasRegisteredADEs()) {
 			for (ADEMetadata ade : ades) {
 				if (ade.isSupported())

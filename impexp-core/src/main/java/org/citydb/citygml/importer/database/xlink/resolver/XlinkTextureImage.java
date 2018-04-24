@@ -27,17 +27,17 @@
  */
 package org.citydb.citygml.importer.database.xlink.resolver;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.sql.Connection;
-import java.sql.SQLException;
-
 import org.citydb.citygml.common.database.xlink.DBXlinkTextureFile;
 import org.citydb.database.adapter.BlobImportAdapter;
 import org.citydb.database.adapter.BlobType;
 import org.citydb.event.global.CounterEvent;
 import org.citydb.event.global.CounterType;
 import org.citydb.log.Logger;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.sql.Connection;
+import java.sql.SQLException;
 
 public class XlinkTextureImage implements DBXlinkResolver {
 	private final Logger LOG = Logger.getInstance();
@@ -51,8 +51,7 @@ public class XlinkTextureImage implements DBXlinkResolver {
 		
 		counter = new CounterEvent(CounterType.TEXTURE_IMAGE, 1, this);
 		textureImportAdapter = resolverManager.getDatabaseAdapter().getSQLAdapter().getBlobImportAdapter(
-				externalFileConn, BlobType.TEXTURE_IMAGE, 
-				resolverManager.getDatabaseAdapter().getConnectionDetails().getSchema());
+				externalFileConn, BlobType.TEXTURE_IMAGE);
 	}
 
 	public boolean insert(DBXlinkTextureFile xlink) throws SQLException {

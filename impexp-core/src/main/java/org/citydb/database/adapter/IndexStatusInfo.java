@@ -66,16 +66,22 @@ public class IndexStatusInfo {
 				String[] parts = indexInfo.split(":");
 
 				if (parts.length > 4) {
-					IndexInfoObject obj = new IndexInfoObject();				
+					IndexInfoObject obj = new IndexInfoObject();
 
-					if (parts[0].equals("VALID"))
-						obj.status = IndexStatus.VALID;
-					else if (parts[0].equals("DROPPED"))
-						obj.status = IndexStatus.DROPPED;
-					else if (parts[0].equals("INVALID"))
-						obj.status = IndexStatus.INVALID;
-					else
-						obj.status = IndexStatus.ERROR;
+					switch (parts[0]) {
+						case "VALID":
+							obj.status = IndexStatus.VALID;
+							break;
+						case "DROPPED":
+							obj.status = IndexStatus.DROPPED;
+							break;
+						case "INVALID":
+							obj.status = IndexStatus.INVALID;
+							break;
+						default:
+							obj.status = IndexStatus.ERROR;
+							break;
+					}
 
 					obj.name = parts[1].toUpperCase();
 					obj.schema = parts[2];
@@ -183,7 +189,7 @@ public class IndexStatusInfo {
 		}
 		
 		public String toString() {
-			return new StringBuilder().append(name).append(" on ").append(schema).append(".").append(table).append("(").append(column).append(")").toString();
+			return name + " on " + schema + "." + table + "(" + column + ")";
 		}
 	}
 

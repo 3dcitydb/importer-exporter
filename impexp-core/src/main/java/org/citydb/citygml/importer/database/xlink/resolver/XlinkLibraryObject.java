@@ -27,15 +27,15 @@
  */
 package org.citydb.citygml.importer.database.xlink.resolver;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.sql.Connection;
-import java.sql.SQLException;
-
 import org.citydb.citygml.common.database.xlink.DBXlinkLibraryObject;
 import org.citydb.database.adapter.BlobImportAdapter;
 import org.citydb.database.adapter.BlobType;
 import org.citydb.log.Logger;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.sql.Connection;
+import java.sql.SQLException;
 
 public class XlinkLibraryObject implements DBXlinkResolver {
 	private final Logger LOG = Logger.getInstance();
@@ -47,8 +47,7 @@ public class XlinkLibraryObject implements DBXlinkResolver {
 		this.resolverManager = resolverManager;
 		
 		blobImportAdapter = resolverManager.getDatabaseAdapter().getSQLAdapter().getBlobImportAdapter(
-				externalFileConn, BlobType.LIBRARY_OBJECT, 
-				resolverManager.getDatabaseAdapter().getConnectionDetails().getSchema());
+				externalFileConn, BlobType.LIBRARY_OBJECT);
 	}
 
 	public boolean insert(DBXlinkLibraryObject xlink) throws SQLException {

@@ -27,6 +27,16 @@
  */
 package org.citydb.citygml.importer.database.xlink.resolver;
 
+import org.citydb.citygml.common.database.cache.CacheTable;
+import org.citydb.citygml.common.database.uid.UIDCacheEntry;
+import org.citydb.citygml.common.database.xlink.DBXlinkSurfaceGeometry;
+import org.citydb.config.geometry.GeometryObject;
+import org.citydb.config.project.database.DatabaseType;
+import org.citydb.database.schema.SequenceEnum;
+import org.citydb.database.schema.mapping.AbstractObjectType;
+import org.citydb.database.schema.mapping.MappingConstants;
+import org.citydb.util.Util;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -37,16 +47,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.concurrent.locks.ReentrantLock;
-
-import org.citydb.citygml.common.database.cache.CacheTable;
-import org.citydb.citygml.common.database.uid.UIDCacheEntry;
-import org.citydb.citygml.common.database.xlink.DBXlinkSurfaceGeometry;
-import org.citydb.config.geometry.GeometryObject;
-import org.citydb.config.project.database.DatabaseType;
-import org.citydb.database.schema.SequenceEnum;
-import org.citydb.database.schema.mapping.AbstractObjectType;
-import org.citydb.database.schema.mapping.MappingConstants;
-import org.citydb.util.Util;
 
 public class XlinkSurfaceGeometry implements DBXlinkResolver {
 	private static final ReentrantLock mainLock = new ReentrantLock();
@@ -75,7 +75,7 @@ public class XlinkSurfaceGeometry implements DBXlinkResolver {
 		String schema = resolverManager.getDatabaseAdapter().getConnectionDetails().getSchema();
 		
 		psSelectTmpSurfGeom = cacheTable.getConnection().prepareStatement(new StringBuilder("select ID from ").append(cacheTable.getTableName()).append(" where PARENT_ID=? or ROOT_ID=?").toString());
-		psSelectSurfGeom = batchConn.prepareStatement(resolverManager.getDatabaseAdapter().getSQLAdapter().getHierarchicalGeometryQuery(schema));
+		psSelectSurfGeom = batchConn.prepareStatement(resolverManager.getDatabaseAdapter().getSQLAdapter().getHierarchicalGeometryQuery());
 		
 		StringBuilder updateStmt = new StringBuilder()
 		.append("update ").append(schema).append(".SURFACE_GEOMETRY set IS_XLINK=1 where ID=?");
@@ -98,7 +98,7 @@ public class XlinkSurfaceGeometry implements DBXlinkResolver {
 		
 		StringBuilder memberStmt = new StringBuilder()
 		.append("insert into ").append(schema).append(".SURFACE_GEOMETRY (ID, GMLID, PARENT_ID, ROOT_ID, IS_SOLID, IS_COMPOSITE, IS_TRIANGULATED, IS_XLINK, IS_REVERSE, GEOMETRY, CITYOBJECT_ID) values ")
-		.append("(").append(resolverManager.getDatabaseAdapter().getSQLAdapter().getNextSequenceValue(SequenceEnum.SURFACE_GEOMETRY_ID_SEQ.getName(), schema))
+		.append("(").append(resolverManager.getDatabaseAdapter().getSQLAdapter().getNextSequenceValue(SequenceEnum.SURFACE_GEOMETRY_ID_SEQ.getName()))
 		.append(", ?, ?, ?, 0, 0, 0, 1, ?, ?, ?)");
 		psMemberElem = batchConn.prepareStatement(memberStmt.toString());
 	}

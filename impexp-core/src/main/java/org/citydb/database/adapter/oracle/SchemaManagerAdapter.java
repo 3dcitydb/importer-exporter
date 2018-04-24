@@ -40,7 +40,7 @@ public class SchemaManagerAdapter extends AbstractSchemaManagerAdapter {
 		try (PreparedStatement stmt = connection.prepareStatement("select count(*) from all_users where username = upper(?)")) {
 			stmt.setString(1, schema);
 			try (ResultSet rs = stmt.executeQuery()) {
-				return rs.next() ? rs.getInt(1) > 0 : false;
+				return rs.next() && rs.getInt(1) > 0;
 			}
 		} catch (SQLException e) {
 			return false;
@@ -56,8 +56,8 @@ public class SchemaManagerAdapter extends AbstractSchemaManagerAdapter {
 			while (rs.next()) {
 				String schema = rs.getString(1);
 				try (Statement check = connection.createStatement();
-						ResultSet checkRs = check.executeQuery(new StringBuilder("select 1 from ")
-								.append(schema).append(".database_srs where rownum = 1").toString())) {
+						ResultSet checkRs = check.executeQuery("select 1 from " +
+								schema + ".database_srs where rownum = 1")) {
 					if (checkRs.next())
 						schemas.add(schema);
 				} catch (SQLException e) {

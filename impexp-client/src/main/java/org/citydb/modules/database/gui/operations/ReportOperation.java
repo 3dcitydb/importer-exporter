@@ -27,21 +27,6 @@
  */
 package org.citydb.modules.database.gui.operations;
 
-import java.awt.Component;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.sql.SQLException;
-import java.text.MessageFormat;
-import java.util.concurrent.locks.ReentrantLock;
-
-import javax.swing.Icon;
-import javax.swing.JButton;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
-
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.database.DBOperationType;
 import org.citydb.config.project.database.Workspace;
@@ -50,6 +35,14 @@ import org.citydb.gui.components.dialog.StatusDialog;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.log.Logger;
 import org.citydb.plugin.extension.view.ViewController;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.sql.SQLException;
+import java.text.MessageFormat;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class ReportOperation extends DatabaseOperationView {
 	private final ReentrantLock mainLock = new ReentrantLock();
@@ -178,8 +171,7 @@ public class ReportOperation extends DatabaseOperationView {
 			String[] report = null;
 			String dbSqlEx = null;
 			try {
-				String schema = dbConnectionPool.getActiveDatabaseAdapter().getConnectionDetails().getSchema();
-				report = dbConnectionPool.getActiveDatabaseAdapter().getUtil().createDatabaseReport(workspace, schema);
+				report = dbConnectionPool.getActiveDatabaseAdapter().getUtil().createDatabaseReport(workspace);
 
 				if (report != null) {
 					for(String line : report) {

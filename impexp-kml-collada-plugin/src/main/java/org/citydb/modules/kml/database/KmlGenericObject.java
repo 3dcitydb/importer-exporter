@@ -27,38 +27,18 @@
  */
 package org.citydb.modules.kml.database;
 
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
-import java.awt.Transparency;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.math.BigInteger;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import java.util.StringTokenizer;
-
-import javax.vecmath.Point3d;
-import javax.vecmath.Vector3f;
-import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeConstants;
-import javax.xml.datatype.DatatypeFactory;
-import javax.xml.datatype.XMLGregorianCalendar;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-
+import com.sun.j3d.utils.geometry.GeometryInfo;
+import com.sun.j3d.utils.geometry.NormalGenerator;
+import net.opengis.kml._2.AltitudeModeEnumType;
+import net.opengis.kml._2.BoundaryType;
+import net.opengis.kml._2.LinearRingType;
+import net.opengis.kml._2.LinkType;
+import net.opengis.kml._2.LocationType;
+import net.opengis.kml._2.ModelType;
+import net.opengis.kml._2.MultiGeometryType;
+import net.opengis.kml._2.OrientationType;
+import net.opengis.kml._2.PlacemarkType;
+import net.opengis.kml._2.PolygonType;
 import org.citydb.config.Config;
 import org.citydb.config.geometry.ElementType;
 import org.citydb.config.geometry.GeometryObject;
@@ -133,19 +113,34 @@ import org.collada._2005._11.colladaschema.VisualScene;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import com.sun.j3d.utils.geometry.GeometryInfo;
-import com.sun.j3d.utils.geometry.NormalGenerator;
-
-import net.opengis.kml._2.AltitudeModeEnumType;
-import net.opengis.kml._2.BoundaryType;
-import net.opengis.kml._2.LinearRingType;
-import net.opengis.kml._2.LinkType;
-import net.opengis.kml._2.LocationType;
-import net.opengis.kml._2.ModelType;
-import net.opengis.kml._2.MultiGeometryType;
-import net.opengis.kml._2.OrientationType;
-import net.opengis.kml._2.PlacemarkType;
-import net.opengis.kml._2.PolygonType;
+import javax.vecmath.Point3d;
+import javax.vecmath.Vector3f;
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeConstants;
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.XMLGregorianCalendar;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.math.BigInteger;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.util.StringTokenizer;
 
 public abstract class KmlGenericObject {
 	protected final int GEOMETRY_AMOUNT_WARNING = 10000;
@@ -1758,7 +1753,6 @@ public abstract class KmlGenericObject {
 	}
 
 	protected void fillGenericObjectForCollada(ResultSet _rs, boolean generateTextureAtlas, AffineTransformer transformer) throws SQLException {
-		String schema = kmlExporterManager.getDatabaseAdapter().getConnectionDetails().getSchema();
 		HashSet<String> exportedGmlIds = new HashSet<String>();
 
 		String selectedTheme = config.getProject().getKmlExporter().getAppearanceTheme();
@@ -1928,7 +1922,7 @@ public abstract class KmlGenericObject {
 								texImageUri = "_" + texImageUri.substring(fileSeparatorIndex + 1); // for example: _tex4712047.jpeg
 
 								if ((getUnsupportedTexImageId(texImageUri) == -1) && (getTexImage(texImageUri) == null)) { 
-									byte[] imageBytes = textureExportAdapter.getInByteArray(textureImageId, schema, texImageUri);
+									byte[] imageBytes = textureExportAdapter.getInByteArray(textureImageId, texImageUri);
 									if (imageBytes != null) {
 										imageReader.setSupportRGB(generateTextureAtlas);
 

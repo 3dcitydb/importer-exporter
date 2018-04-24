@@ -70,12 +70,12 @@ public class DBCityObjectGenericAttrib implements DBImporter {
 
 		stmt = new StringBuilder()
 				.append("insert into ").append(schema).append(".cityobject_genericattrib (id, attrname, datatype, strval, intval, realval, urival, dateval, unit, cityobject_id, parent_genattrib_id, root_genattrib_id) values ")
-				.append("(").append(importer.getDatabaseAdapter().getSQLAdapter().getNextSequenceValue(SequenceEnum.CITYOBJECT_GENERICATTRIB_ID_SEQ.getName(), schema))
+				.append("(").append(importer.getDatabaseAdapter().getSQLAdapter().getNextSequenceValue(SequenceEnum.CITYOBJECT_GENERICATTRIB_ID_SEQ.getName()))
 				.append(", ?, ?, ?, ?, ?, ?, ?, ?, ?, ");
 
 		psGenericAttributeMember = batchConn.prepareStatement(new StringBuilder(stmt).append("?, ?)").toString());		
 		psAtomicGenericAttribute = batchConn.prepareStatement(new StringBuilder(stmt).append("null, ")
-				.append(importer.getDatabaseAdapter().getSQLAdapter().getCurrentSequenceValue(SequenceEnum.CITYOBJECT_GENERICATTRIB_ID_SEQ.getName(), schema)).append(")").toString());
+				.append(importer.getDatabaseAdapter().getSQLAdapter().getCurrentSequenceValue(SequenceEnum.CITYOBJECT_GENERICATTRIB_ID_SEQ.getName())).append(")").toString());
 	}
 
 	public void doImport(AbstractGenericAttribute genericAttribute, long cityObjectId) throws CityGMLImportException, SQLException {

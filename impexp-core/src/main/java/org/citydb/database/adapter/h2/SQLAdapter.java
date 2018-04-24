@@ -111,23 +111,12 @@ public class SQLAdapter extends AbstractSQLAdapter {
 
 	@Override
 	public String getCreateUnloggedTable(String tableName, String columns) {
-		StringBuilder builder = new StringBuilder()
-		.append("create table ")
-		.append(tableName).append(" ")
-		.append(columns);
-
-		return builder.toString();
+		return "create table " + tableName + " " + columns;
 	}
 
 	@Override
 	public String getCreateUnloggedTableAsSelectFrom(String targetTableName, String sourceTableName) {
-		StringBuilder builder = new StringBuilder()
-		.append("create table ")
-		.append(targetTableName).append(" ")
-		.append("as select * from ")
-		.append(sourceTableName);
-
-		return builder.toString();
+		return "create table " + targetTableName + " " + "as select * from " + sourceTableName;
 	}
 
 	@Override
@@ -157,31 +146,31 @@ public class SQLAdapter extends AbstractSQLAdapter {
 	}
 
 	@Override
-	public String getHierarchicalGeometryQuery(String schema) {
+	public String getHierarchicalGeometryQuery() {
 		// not required for cache tables
 		return "";
 	}
 
 	@Override
-	public String getNextSequenceValue(String sequence, String schema) {
+	public String getNextSequenceValue(String sequence) {
 		// not required for cache tables
 		return "";
 	}
 
 	@Override
-	public String getCurrentSequenceValue(String sequence, String schema) {
+	public String getCurrentSequenceValue(String sequence) {
 		// not required for cache tables
 		return "";
 	}
 
 	@Override
-	public String getNextSequenceValuesQuery(String sequence, String schema) {
+	public String getNextSequenceValuesQuery(String sequence) {
 		// not required for cache tables
 		return "";
 	}
 
 	@Override
-	public BlobImportAdapter getBlobImportAdapter(Connection connection, BlobType type, String schema) throws SQLException {
+	public BlobImportAdapter getBlobImportAdapter(Connection connection, BlobType type) throws SQLException {
 		// not required for cache tables
 		return null;
 	}

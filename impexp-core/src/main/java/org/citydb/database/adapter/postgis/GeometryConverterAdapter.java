@@ -478,7 +478,7 @@ public class GeometryConverterAdapter extends AbstractGeometryConverterAdapter {
 
 				coordinates[0][i++] = geomObj.getCoordinates()[0][0];
 				coordinates[0][i++] = geomObj.getCoordinates()[0][1];
-				coordinates[0][i++] = geomObj.getCoordinates()[0][2];
+				coordinates[0][i] = geomObj.getCoordinates()[0][2];
 			} else {
 				coordinates[0][i++] = geomObj.getCoordinates()[0][0];
 				coordinates[0][i++] = geomObj.getCoordinates()[0][1];
@@ -493,7 +493,7 @@ public class GeometryConverterAdapter extends AbstractGeometryConverterAdapter {
 				coordinates[0][i++] = geomObj.getCoordinates()[0][3];
 
 				coordinates[0][i++] = geomObj.getCoordinates()[0][0];
-				coordinates[0][i++] = geomObj.getCoordinates()[0][1];
+				coordinates[0][i] = geomObj.getCoordinates()[0][1];
 			}
 
 			break;

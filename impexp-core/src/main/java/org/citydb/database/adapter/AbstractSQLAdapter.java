@@ -27,6 +27,14 @@
  */
 package org.citydb.database.adapter;
 
+import org.citydb.config.geometry.GeometryObject;
+import org.citydb.query.filter.selection.operator.spatial.SpatialOperatorName;
+import org.citydb.sqlbuilder.SQLStatement;
+import org.citydb.sqlbuilder.expression.PlaceHolder;
+import org.citydb.sqlbuilder.schema.Column;
+import org.citydb.sqlbuilder.select.PredicateToken;
+import org.citydb.sqlbuilder.select.projection.Function;
+
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.Date;
@@ -35,15 +43,6 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
-
-import org.citydb.config.geometry.GeometryObject;
-import org.citydb.query.filter.selection.operator.spatial.SpatialOperatorName;
-
-import org.citydb.sqlbuilder.SQLStatement;
-import org.citydb.sqlbuilder.expression.PlaceHolder;
-import org.citydb.sqlbuilder.schema.Column;
-import org.citydb.sqlbuilder.select.PredicateToken;
-import org.citydb.sqlbuilder.select.projection.Function;
 
 public abstract class AbstractSQLAdapter {
 	protected final AbstractDatabaseAdapter databaseAdapter;
@@ -71,17 +70,18 @@ public abstract class AbstractSQLAdapter {
 	public abstract boolean requiresPseudoTableInSelect();
 	public abstract String getPseudoTableName();
 	public abstract boolean spatialPredicateRequiresNoIndexHint();
-	public abstract String getHierarchicalGeometryQuery(String schema);
-	public abstract String getNextSequenceValue(String sequence, String schema);
-	public abstract String getCurrentSequenceValue(String sequence, String schema);
-	public abstract String getNextSequenceValuesQuery(String sequence, String schema);
+
+	public abstract String getHierarchicalGeometryQuery();
+	public abstract String getNextSequenceValue(String sequence);
+	public abstract String getCurrentSequenceValue(String sequence);
+	public abstract String getNextSequenceValuesQuery(String sequence);
 	public abstract int getMaximumNumberOfItemsForInOperator();
 
 	public abstract PredicateToken getBinarySpatialPredicate(SpatialOperatorName operator, Column targetColumn, GeometryObject geometry, boolean negate);	
 	public abstract PredicateToken getDistancePredicate(SpatialOperatorName operator, Column targetColumn, GeometryObject geometry, double distance, boolean negate);
 	public abstract Function getAggregateExtentFunction(Column envelope);
 	
-	public abstract BlobImportAdapter getBlobImportAdapter(Connection connection, BlobType type, String schema) throws SQLException;
+	public abstract BlobImportAdapter getBlobImportAdapter(Connection connection, BlobType type) throws SQLException;
 	public abstract BlobExportAdapter getBlobExportAdapter(Connection connection, BlobType type);
 
 	public String resolveDatabaseOperationName(String operation) {

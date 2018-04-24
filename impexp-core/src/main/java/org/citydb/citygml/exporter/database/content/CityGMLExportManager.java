@@ -422,7 +422,7 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 
 	@Override
 	public void exportAsFeatureMember(AbstractFeature feature, long id) throws CityGMLExportException {
-		if (!query.getFeatureTypeFilter().isAllowedFeatureType(getFeatureType(feature)))
+		if (!query.getFeatureTypeFilter().containsFeatureType(getFeatureType(feature)))
 			feature.setLocalProperty(CoreConstants.EXPORT_AS_ADDITIONAL_OBJECT, true);
 
 		writeFeatureMember(feature, id);

@@ -130,7 +130,7 @@ public class Queries {
 
 	public String insertGEOffset() {
 		return new StringBuilder("INSERT INTO ").append(schema).append(".CITYOBJECT_GENERICATTRIB (ID, ATTRNAME, DATATYPE, STRVAL, CITYOBJECT_ID) ")
-				.append("VALUES (").append(databaseAdapter.getSQLAdapter().getNextSequenceValue(SequenceEnum.CITYOBJECT_GENERICATTRIB_ID_SEQ.getName(), schema)).append(", ?, 1, ?, ?)").toString();
+				.append("VALUES (").append(databaseAdapter.getSQLAdapter().getNextSequenceValue(SequenceEnum.CITYOBJECT_GENERICATTRIB_ID_SEQ.getName())).append(", ?, 1, ?, ?)").toString();
 	}
 	
 	public String transformGeometryToDBSrs() {

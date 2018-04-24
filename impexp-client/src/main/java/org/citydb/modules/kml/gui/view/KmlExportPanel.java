@@ -528,8 +528,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 				Workspace workspace = new Workspace();
 				workspace.setName(workspaceText.getText().trim());
 				workspace.setTimestamp(timestampText.getText().trim());
-				for (String theme : databaseController.getActiveDatabaseAdapter().getUtil().getAppearanceThemeList(workspace, 
-						databaseController.getActiveDatabaseAdapter().getConnectionDetails().getSchema())) {
+				for (String theme : databaseController.getActiveDatabaseAdapter().getUtil().getAppearanceThemeList(workspace)) {
 					if (theme == null) continue; 
 					themeComboBox.addItem(theme);
 					if (theme.equals(kmlExporter.getAppearanceTheme())) {
@@ -1124,8 +1123,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 					}
 
 					// fetching themes
-					String schema = databaseController.getActiveDatabaseAdapter().getConnectionDetails().getSchema();
-					for (String theme : databaseController.getActiveDatabaseAdapter().getUtil().getAppearanceThemeList(workspace, schema)) {
+					for (String theme : databaseController.getActiveDatabaseAdapter().getUtil().getAppearanceThemeList(workspace)) {
 						if (theme == null) continue; 
 						themeComboBox.addItem(theme);
 						if (theme.equals(config.getProject().getKmlExporter().getAppearanceTheme())) {
