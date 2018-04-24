@@ -82,7 +82,7 @@ public abstract class AbstractUtilAdapter {
             java.sql.DatabaseMetaData vendorMetaData = conn.getMetaData();
 
             // get 3dcitydb specific meta data
-            DatabaseMetaData metaData = new DatabaseMetaData();
+            DatabaseMetaData metaData = new DatabaseMetaData(databaseAdapter.getConnectionDetails());
             getCityDBVersion(metaData, conn);
             getDatabaseMetaData(metaData, conn);
             metaData.setDatabaseProductName(vendorMetaData.getDatabaseProductName());
