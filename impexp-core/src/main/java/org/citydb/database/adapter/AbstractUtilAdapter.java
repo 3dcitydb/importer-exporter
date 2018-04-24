@@ -190,7 +190,8 @@ public abstract class AbstractUtilAdapter {
 		return ades;
 	}
 
-	public String[] createDatabaseReport(Workspace workspace, String schema) throws SQLException {
+	public String[] createDatabaseReport(Workspace workspace) throws SQLException {
+		String schema = databaseAdapter.getConnectionDetails().getSchema();
 		Connection conn = null;
 
 		try {
@@ -211,7 +212,8 @@ public abstract class AbstractUtilAdapter {
 		}
 	}
 
-	public BoundingBox calcBoundingBox(Workspace workspace, String schema, List<Integer> objectClassIds) throws SQLException {
+	public BoundingBox calcBoundingBox(Workspace workspace, List<Integer> objectClassIds) throws SQLException {
+		String schema = databaseAdapter.getConnectionDetails().getSchema();
 		Connection conn = null;
 
 		try {
@@ -232,7 +234,7 @@ public abstract class AbstractUtilAdapter {
 		}
 	}
 
-	public BoundingBox createBoundingBoxes(Workspace workspace, String schema, List<Integer> objectClassIds, boolean onlyIfNull) throws SQLException {
+	public BoundingBox createBoundingBoxes(Workspace workspace, List<Integer> objectClassIds, boolean onlyIfNull) throws SQLException {
 		BoundingBox bbox = null;
 		Connection conn = null;
 
@@ -264,46 +266,47 @@ public abstract class AbstractUtilAdapter {
 		return bbox;
 	}
 	
-	public IndexStatusInfo dropSpatialIndexes(String schema) throws SQLException {
-		return dropIndexes(IndexType.SPATIAL, schema);
+	public IndexStatusInfo dropSpatialIndexes() throws SQLException {
+		return dropIndexes(IndexType.SPATIAL);
 	}
 
-	public IndexStatusInfo dropNormalIndexes(String schema) throws SQLException {
-		return dropIndexes(IndexType.NORMAL, schema);
+	public IndexStatusInfo dropNormalIndexes() throws SQLException {
+		return dropIndexes(IndexType.NORMAL);
 	}
 
-	public IndexStatusInfo createSpatialIndexes(String schema) throws SQLException {
-		return createIndexes(IndexType.SPATIAL, schema);
+	public IndexStatusInfo createSpatialIndexes() throws SQLException {
+		return createIndexes(IndexType.SPATIAL);
 	}
 
-	public IndexStatusInfo createNormalIndexes(String schema) throws SQLException {
-		return createIndexes(IndexType.NORMAL, schema);
+	public IndexStatusInfo createNormalIndexes() throws SQLException {
+		return createIndexes(IndexType.NORMAL);
 	}
 
-	public IndexStatusInfo getStatusSpatialIndexes(String schema) throws SQLException {
-		return getIndexStatus(IndexType.SPATIAL, schema);
+	public IndexStatusInfo getStatusSpatialIndexes() throws SQLException {
+		return getIndexStatus(IndexType.SPATIAL);
 	}
 
-	public IndexStatusInfo getStatusNormalIndexes(String schema) throws SQLException {
-		return getIndexStatus(IndexType.NORMAL, schema);
+	public IndexStatusInfo getStatusNormalIndexes() throws SQLException {
+		return getIndexStatus(IndexType.NORMAL);
 	}
 
-	public IndexStatusInfo getIndexStatus(IndexType type, String schema) throws SQLException {
+	public IndexStatusInfo getIndexStatus(IndexType type) throws SQLException {
 		String operation = type == IndexType.SPATIAL ? "citydb_idx.status_spatial_indexes" : "citydb_idx.status_normal_indexes";
-		return manageIndexes(operation, type, schema);
+		return manageIndexes(operation, type);
 	}
 
-	private IndexStatusInfo createIndexes(IndexType type, String schema) throws SQLException {
+	private IndexStatusInfo createIndexes(IndexType type) throws SQLException {
 		String operation = type == IndexType.SPATIAL ? "citydb_idx.create_spatial_indexes" : "citydb_idx.create_normal_indexes";
-		return manageIndexes(operation, type, schema);
+		return manageIndexes(operation, type);
 	}
 
-	private IndexStatusInfo dropIndexes(IndexType type, String schema) throws SQLException {
+	private IndexStatusInfo dropIndexes(IndexType type) throws SQLException {
 		String operation = type == IndexType.SPATIAL ? "citydb_idx.drop_spatial_indexes" : "citydb_idx.drop_normal_indexes";
-		return manageIndexes(operation, type, schema);
+		return manageIndexes(operation, type);
 	}
 
-	private IndexStatusInfo manageIndexes(String operation, IndexType type, String schema) throws SQLException {
+	private IndexStatusInfo manageIndexes(String operation, IndexType type) throws SQLException {
+		String schema = databaseAdapter.getConnectionDetails().getSchema();
 		Connection conn = null;
 
 		try {
@@ -321,15 +324,16 @@ public abstract class AbstractUtilAdapter {
 		}
 	}
 
-	public boolean updateTableStatsSpatialColumns(String schema) throws SQLException {
-		return updateTableStats(IndexType.SPATIAL, schema);
+	public boolean updateTableStatsSpatialColumns() throws SQLException {
+		return updateTableStats(IndexType.SPATIAL);
 	}
 
-	public boolean updateTableStatsNormalColumns(String schema) throws SQLException {
-		return updateTableStats(IndexType.NORMAL, schema);
+	public boolean updateTableStatsNormalColumns() throws SQLException {
+		return updateTableStats(IndexType.NORMAL);
 	}
 
-	private boolean updateTableStats(IndexType type, String schema) throws SQLException {
+	private boolean updateTableStats(IndexType type) throws SQLException {
+		String schema = databaseAdapter.getConnectionDetails().getSchema();
 		Connection conn = null;
 
 		try {
@@ -348,10 +352,7 @@ public abstract class AbstractUtilAdapter {
 	}
 
 	public boolean isIndexEnabled(String tableName, String columnName) throws SQLException {
-		return isIndexEnabled(tableName, columnName, databaseAdapter.getSchemaManager().getDefaultSchema());
-	}
-
-	public boolean isIndexEnabled(String tableName, String columnName, String schema) throws SQLException {
+		String schema = databaseAdapter.getConnectionDetails().getSchema();
 		boolean isIndexed = false;
 		Connection conn = null;
 
@@ -450,7 +451,8 @@ public abstract class AbstractUtilAdapter {
 		}
 	}
 
-	public List<String> getAppearanceThemeList(Workspace workspace, String schema) throws SQLException {
+	public List<String> getAppearanceThemeList(Workspace workspace) throws SQLException {
+		String schema = databaseAdapter.getConnectionDetails().getSchema();
 		final String THEME_UNKNOWN = "<unknown>";
 
 		Connection conn = null;
@@ -511,7 +513,8 @@ public abstract class AbstractUtilAdapter {
 		return appearanceThemes;
 	}
 
-	public int getNumGlobalAppearances(Workspace workspace, String schema) throws SQLException {
+	public int getNumGlobalAppearances(Workspace workspace) throws SQLException {
+		String schema = databaseAdapter.getConnectionDetails().getSchema();
 		Connection conn = null;
 		Statement stmt = null;
 		ResultSet rs = null;

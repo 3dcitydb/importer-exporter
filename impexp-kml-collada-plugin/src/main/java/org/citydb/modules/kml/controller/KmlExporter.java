@@ -27,33 +27,29 @@
  */
 package org.citydb.modules.kml.controller;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
-
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.namespace.QName;
-
-import org.citydb.util.ClientConstants;
+import net.opengis.kml._2.BalloonStyleType;
+import net.opengis.kml._2.BasicLinkType;
+import net.opengis.kml._2.DocumentType;
+import net.opengis.kml._2.FolderType;
+import net.opengis.kml._2.IconStyleType;
+import net.opengis.kml._2.KmlType;
+import net.opengis.kml._2.LabelStyleType;
+import net.opengis.kml._2.LatLonAltBoxType;
+import net.opengis.kml._2.LineStringType;
+import net.opengis.kml._2.LineStyleType;
+import net.opengis.kml._2.LinkType;
+import net.opengis.kml._2.LodType;
+import net.opengis.kml._2.LookAtType;
+import net.opengis.kml._2.NetworkLinkType;
+import net.opengis.kml._2.ObjectFactory;
+import net.opengis.kml._2.PairType;
+import net.opengis.kml._2.PlacemarkType;
+import net.opengis.kml._2.PolyStyleType;
+import net.opengis.kml._2.RegionType;
+import net.opengis.kml._2.StyleMapType;
+import net.opengis.kml._2.StyleStateEnumType;
+import net.opengis.kml._2.StyleType;
+import net.opengis.kml._2.ViewRefreshModeEnumType;
 import org.citydb.ade.ADEExtensionManager;
 import org.citydb.concurrent.PoolSizeAdaptationStrategy;
 import org.citydb.concurrent.SingleWorkerPool;
@@ -111,6 +107,7 @@ import org.citydb.query.filter.selection.operator.logical.LogicalOperationFactor
 import org.citydb.query.filter.tiling.Tile;
 import org.citydb.query.filter.tiling.Tiling;
 import org.citydb.query.filter.type.FeatureTypeFilter;
+import org.citydb.util.ClientConstants;
 import org.citydb.util.Util;
 import org.citydb.writer.XMLWriterWorkerFactory;
 import org.citygml4j.model.citygml.CityGML;
@@ -122,29 +119,30 @@ import org.citygml4j.util.xml.SAXFragmentWriter.WriteMode;
 import org.citygml4j.util.xml.SAXWriter;
 import org.xml.sax.SAXException;
 
-import net.opengis.kml._2.BalloonStyleType;
-import net.opengis.kml._2.BasicLinkType;
-import net.opengis.kml._2.DocumentType;
-import net.opengis.kml._2.FolderType;
-import net.opengis.kml._2.IconStyleType;
-import net.opengis.kml._2.KmlType;
-import net.opengis.kml._2.LabelStyleType;
-import net.opengis.kml._2.LatLonAltBoxType;
-import net.opengis.kml._2.LineStringType;
-import net.opengis.kml._2.LineStyleType;
-import net.opengis.kml._2.LinkType;
-import net.opengis.kml._2.LodType;
-import net.opengis.kml._2.LookAtType;
-import net.opengis.kml._2.NetworkLinkType;
-import net.opengis.kml._2.ObjectFactory;
-import net.opengis.kml._2.PairType;
-import net.opengis.kml._2.PlacemarkType;
-import net.opengis.kml._2.PolyStyleType;
-import net.opengis.kml._2.RegionType;
-import net.opengis.kml._2.StyleMapType;
-import net.opengis.kml._2.StyleStateEnumType;
-import net.opengis.kml._2.StyleType;
-import net.opengis.kml._2.ViewRefreshModeEnumType;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.xml.namespace.QName;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 public class KmlExporter implements EventHandler {
 	private final Logger log = Logger.getInstance();
@@ -205,14 +203,11 @@ public class KmlExporter implements EventHandler {
 				!databaseAdapter.getWorkspaceManager().existsWorkspace(workspace, true))
 			return false;
 
-		// get schema
-		String schema = databaseAdapter.getConnectionDetails().getSchema();
-
 		// check whether spatial indexes are enabled
 		log.info("Checking for spatial indexes on geometry columns of involved tables...");
 		try {
-			if (!databaseAdapter.getUtil().isIndexEnabled("CITYOBJECT", "ENVELOPE", schema) || 
-					!databaseAdapter.getUtil().isIndexEnabled("SURFACE_GEOMETRY", "GEOMETRY", schema)) {
+			if (!databaseAdapter.getUtil().isIndexEnabled("CITYOBJECT", "ENVELOPE") ||
+					!databaseAdapter.getUtil().isIndexEnabled("SURFACE_GEOMETRY", "GEOMETRY")) {
 				log.error("Spatial indexes are not activated.");
 				log.error("Please use the database tab to activate the spatial indexes.");
 				return false;
@@ -228,7 +223,7 @@ public class KmlExporter implements EventHandler {
 				// displayForms Could be e.g. Footprint, Extruded, Geometry and COLLADA
 				for (DisplayForm displayForm : config.getProject().getKmlExporter().getBuildingDisplayForms()) {
 					if (displayForm.getForm() == DisplayForm.COLLADA && displayForm.isActive()) {
-						if (!databaseAdapter.getUtil().getAppearanceThemeList(workspace, schema).contains(selectedTheme)) {
+						if (!databaseAdapter.getUtil().getAppearanceThemeList(workspace).contains(selectedTheme)) {
 							log.error("Database does not contain appearance theme \"" + selectedTheme + "\"");
 							return false;
 						}

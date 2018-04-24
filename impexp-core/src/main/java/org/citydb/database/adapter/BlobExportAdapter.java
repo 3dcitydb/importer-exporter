@@ -27,6 +27,8 @@
  */
 package org.citydb.database.adapter;
 
+import org.citydb.log.Logger;
+
 import java.io.ByteArrayInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -35,21 +37,21 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import org.citydb.log.Logger;
-
 public class BlobExportAdapter {
 	protected final Logger LOG = Logger.getInstance();
 	protected final Connection connection;
+	private final String schema;
 
 	private PreparedStatement psExport;
 	private BlobType blobType;
 
-	public BlobExportAdapter(Connection connection, BlobType blobType) {
+	public BlobExportAdapter(Connection connection, BlobType blobType, String schema) {
 		this.connection = connection;
-		this.blobType = blobType;		
+		this.blobType = blobType;
+		this.schema = schema;
 	}
 
-	public byte[] getInByteArray(long id, String schema, String objectName) throws SQLException {
+	public byte[] getInByteArray(long id, String objectName) throws SQLException {
 		ResultSet rs = null;
 
 		try {
@@ -83,13 +85,13 @@ public class BlobExportAdapter {
 		}
 	}
 
-	public boolean getInFile(long id, String schema, String objectName, String fileName) throws SQLException {
+	public boolean getInFile(long id, String objectName, String fileName) throws SQLException {
 		FileOutputStream out = null;
 
 		try {
 			out = new FileOutputStream(fileName);
 
-			byte[] buf = getInByteArray(id, schema, objectName);
+			byte[] buf = getInByteArray(id, objectName);
 			if (buf != null) {
 				out.write(buf);
 				return true;

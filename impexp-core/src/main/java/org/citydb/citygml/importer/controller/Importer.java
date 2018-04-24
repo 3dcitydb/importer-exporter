@@ -50,9 +50,8 @@ import org.citydb.citygml.importer.util.ImportLogger;
 import org.citydb.concurrent.PoolSizeAdaptationStrategy;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
-import org.citydb.util.CoreConstants;
-import org.citydb.config.internal.Internal;
 import org.citydb.config.i18n.Language;
+import org.citydb.config.internal.Internal;
 import org.citydb.config.project.database.Database;
 import org.citydb.config.project.database.Workspace;
 import org.citydb.config.project.global.LogLevel;
@@ -82,6 +81,7 @@ import org.citydb.event.global.StatusDialogProgressBar;
 import org.citydb.event.global.StatusDialogTitle;
 import org.citydb.log.Logger;
 import org.citydb.query.filter.FilterException;
+import org.citydb.util.CoreConstants;
 import org.citydb.util.Util;
 import org.citygml4j.builder.jaxb.CityGMLBuilder;
 import org.citygml4j.builder.jaxb.CityGMLBuilderException;
@@ -174,22 +174,19 @@ public class Importer implements EventHandler {
 				!databaseAdapter.getWorkspaceManager().existsWorkspace(workspace, true))
 			return false;
 
-		// get schema
-		String schema = databaseAdapter.getConnectionDetails().getSchema();
-
 		// deactivate database indexes
 		if (shouldRun && (indexConfig.isSpatialIndexModeDeactivate() || indexConfig.isSpatialIndexModeDeactivateActivate() 
 				|| indexConfig.isNormalIndexModeDeactivate() || indexConfig.isNormalIndexModeDeactivateActivate())) {
 			try {
 				if (shouldRun && (indexConfig.isSpatialIndexModeDeactivate() || indexConfig.isSpatialIndexModeDeactivateActivate()))
-					manageIndexes(false, true, schema);
+					manageIndexes(false, true);
 				else
-					databaseAdapter.getUtil().getIndexStatus(IndexType.SPATIAL, schema).printStatusToConsole();
+					databaseAdapter.getUtil().getIndexStatus(IndexType.SPATIAL).printStatusToConsole();
 
 				if (shouldRun && (indexConfig.isNormalIndexModeDeactivate() || indexConfig.isNormalIndexModeDeactivateActivate()))
-					manageIndexes(false, false, schema);
+					manageIndexes(false, false);
 				else
-					databaseAdapter.getUtil().getIndexStatus(IndexType.NORMAL, schema).printStatusToConsole();
+					databaseAdapter.getUtil().getIndexStatus(IndexType.NORMAL).printStatusToConsole();
 
 			} catch (SQLException e) {
 				throw new CityGMLImportException("Database error while deactivating indexes.", e);
@@ -197,7 +194,7 @@ public class Importer implements EventHandler {
 		} else {
 			try {
 				for (IndexType type : IndexType.values())
-					databaseAdapter.getUtil().getIndexStatus(type, schema).printStatusToConsole();
+					databaseAdapter.getUtil().getIndexStatus(type).printStatusToConsole();
 			} catch (SQLException e) {
 				throw new CityGMLImportException("Database error while querying index status.", e);
 			}
@@ -577,10 +574,10 @@ public class Importer implements EventHandler {
 			if (indexConfig.isSpatialIndexModeDeactivateActivate() || indexConfig.isNormalIndexModeDeactivateActivate()) {
 				try {
 					if (indexConfig.isSpatialIndexModeDeactivateActivate())
-						manageIndexes(true, true, schema);
+						manageIndexes(true, true);
 
 					if (indexConfig.isNormalIndexModeDeactivateActivate())
-						manageIndexes(true, false, schema);
+						manageIndexes(true, false);
 
 				} catch (SQLException e) {
 					log.error("Database error while activating indexes: " + e.getMessage());
@@ -598,7 +595,7 @@ public class Importer implements EventHandler {
 
 		// show processed geometries
 		if (!geometryCounter.isEmpty())
-			log.info("Processed geometry objects: " + geometryCounter.values().stream().reduce(0l, Long::sum));
+			log.info("Processed geometry objects: " + geometryCounter.values().stream().reduce(0L, Long::sum));
 
 		if (shouldRun)
 			log.info("Total import time: " + Util.formatElapsedTime(System.currentTimeMillis() - start) + ".");
@@ -606,15 +603,15 @@ public class Importer implements EventHandler {
 		return shouldRun;
 	}
 
-	private void manageIndexes(boolean enable, boolean workOnSpatialIndexes, String schema) throws SQLException {
+	private void manageIndexes(boolean enable, boolean workOnSpatialIndexes) throws SQLException {
 		AbstractUtilAdapter utilAdapter = databaseAdapter.getUtil();
 		log.info((enable ? "Activating " : "Deactivating ") + (workOnSpatialIndexes ? "spatial" : "normal") + " indexes...");
 
 		IndexStatusInfo indexStatus = null;
 		if (enable) {
-			indexStatus = workOnSpatialIndexes ? utilAdapter.createSpatialIndexes(schema) : utilAdapter.createNormalIndexes(schema);
+			indexStatus = workOnSpatialIndexes ? utilAdapter.createSpatialIndexes() : utilAdapter.createNormalIndexes();
 		} else {
-			indexStatus = workOnSpatialIndexes ? utilAdapter.dropSpatialIndexes(schema) : utilAdapter.dropNormalIndexes(schema);	
+			indexStatus = workOnSpatialIndexes ? utilAdapter.dropSpatialIndexes() : utilAdapter.dropNormalIndexes();
 		}
 
 		if (indexStatus != null) {

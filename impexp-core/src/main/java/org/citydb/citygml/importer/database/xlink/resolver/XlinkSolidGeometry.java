@@ -60,7 +60,7 @@ public class XlinkSolidGeometry implements DBXlinkResolver {
 
 		String schema = resolverManager.getDatabaseAdapter().getConnectionDetails().getSchema();
 		dbSrid = resolverManager.getDatabaseAdapter().getConnectionMetaData().getReferenceSystem().getSrid();
-		psSelectSurfGeom = batchConn.prepareStatement(resolverManager.getDatabaseAdapter().getSQLAdapter().getHierarchicalGeometryQuery(schema));
+		psSelectSurfGeom = batchConn.prepareStatement(resolverManager.getDatabaseAdapter().getSQLAdapter().getHierarchicalGeometryQuery());
 
 		StringBuilder stmt = new StringBuilder("update ").append(schema).append(".SURFACE_GEOMETRY set SOLID_GEOMETRY=");
 		if (resolverManager.getDatabaseAdapter().getDatabaseType() == DatabaseType.POSTGIS) {

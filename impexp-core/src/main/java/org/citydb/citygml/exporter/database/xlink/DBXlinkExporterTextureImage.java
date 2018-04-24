@@ -27,12 +27,6 @@
  */
 package org.citydb.citygml.exporter.database.xlink;
 
-import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.sql.Connection;
-import java.sql.SQLException;
-
 import org.citydb.citygml.common.database.xlink.DBXlinkTextureFile;
 import org.citydb.config.Config;
 import org.citydb.database.adapter.BlobExportAdapter;
@@ -42,12 +36,17 @@ import org.citydb.event.global.CounterType;
 import org.citydb.log.Logger;
 import org.citydb.util.Util;
 
+import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.sql.Connection;
+import java.sql.SQLException;
+
 public class DBXlinkExporterTextureImage implements DBXlinkExporter {
 	private final Logger LOG = Logger.getInstance();
 	private final DBXlinkExporterManager xlinkExporterManager;
 
 	private BlobExportAdapter textureImageExportAdapter;
-	private String schema;
 	private String localPath;
 	private String texturePath;
 	private boolean texturePathIsLocal;
@@ -59,7 +58,6 @@ public class DBXlinkExporterTextureImage implements DBXlinkExporter {
 	public DBXlinkExporterTextureImage(Connection connection, Config config, DBXlinkExporterManager xlinkExporterManager) throws SQLException {
 		this.xlinkExporterManager = xlinkExporterManager;
 
-		schema = xlinkExporterManager.getDatabaseAdapter().getConnectionDetails().getSchema();
 		localPath = config.getInternal().getExportPath();
 		texturePathIsLocal = config.getProject().getExporter().getAppearances().getTexturePath().isRelative();
 		texturePath = config.getInternal().getExportTextureFilePath();
@@ -122,7 +120,7 @@ public class DBXlinkExporterTextureImage implements DBXlinkExporter {
 
 		// load image data into file
 		xlinkExporterManager.propagateEvent(counter);
-		return textureImageExportAdapter.getInFile(xlink.getId(), schema, fileName, fileURI);
+		return textureImageExportAdapter.getInFile(xlink.getId(), fileName, fileURI);
 	}
 
 	@Override

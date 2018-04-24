@@ -27,12 +27,12 @@
  */
 package org.citydb.database.adapter;
 
+import org.citydb.log.Logger;
+
 import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-
-import org.citydb.log.Logger;
 
 public class BlobImportAdapter {
 	protected final Logger LOG = Logger.getInstance();
@@ -47,7 +47,7 @@ public class BlobImportAdapter {
 
 		psUpdate = connection.prepareStatement(blobType == BlobType.TEXTURE_IMAGE ?
 				"update " + schema + ".TEX_IMAGE set TEX_IMAGE_DATA=? where ID=?" : "update " + schema + ".IMPLICIT_GEOMETRY set LIBRARY_OBJECT=? where ID=?");
-		}
+	}
 
 	public boolean insert(long id, InputStream in, String fileName) throws SQLException {
 		try {

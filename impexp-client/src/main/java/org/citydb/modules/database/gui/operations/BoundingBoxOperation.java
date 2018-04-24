@@ -293,9 +293,8 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 			});
 
 			try {
-				String schema = dbConnectionPool.getActiveDatabaseAdapter().getConnectionDetails().getSchema();
 				FeatureType featureType = (FeatureType)featureComboBox.getSelectedItem();
-				BoundingBox bbox = dbConnectionPool.getActiveDatabaseAdapter().getUtil().calcBoundingBox(workspace, schema, getObjectClassIds(featureType, true));
+				BoundingBox bbox = dbConnectionPool.getActiveDatabaseAdapter().getUtil().calcBoundingBox(workspace, getObjectClassIds(featureType, true));
 
 				if (bbox != null) {
 					if (bbox.getLowerCorner().getX() != Double.MAX_VALUE && 
@@ -412,9 +411,8 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 			});
 
 			try {
-				String schema = dbConnectionPool.getActiveDatabaseAdapter().getConnectionDetails().getSchema();
 				List<Integer> objectClassIds = getObjectClassIds(featureType, false);
-				BoundingBox bbox = dbConnectionPool.getActiveDatabaseAdapter().getUtil().createBoundingBoxes(workspace, schema, objectClassIds, mode == BoundingBoxMode.PARTIAL ? true : false);
+				BoundingBox bbox = dbConnectionPool.getActiveDatabaseAdapter().getUtil().createBoundingBoxes(workspace, objectClassIds, mode == BoundingBoxMode.PARTIAL ? true : false);
 
 				if (bbox != null) {
 					if (bbox.getLowerCorner().getX() != Double.MAX_VALUE && 

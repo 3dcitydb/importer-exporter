@@ -27,24 +27,6 @@
  */
 package org.citydb.modules.database.gui.operations;
 
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.sql.SQLException;
-import java.text.MessageFormat;
-import java.util.concurrent.locks.ReentrantLock;
-
-import javax.swing.Box;
-import javax.swing.Icon;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
-
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.database.DBOperationType;
@@ -60,6 +42,14 @@ import org.citydb.gui.components.dialog.StatusDialog;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.log.Logger;
 import org.citydb.plugin.extension.view.ViewController;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.sql.SQLException;
+import java.text.MessageFormat;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class IndexOperation extends DatabaseOperationView {
 	private final ReentrantLock mainLock = new ReentrantLock();
@@ -249,17 +239,15 @@ public class IndexOperation extends DatabaseOperationView {
 			});
 
 			try {
-				String schema = dbConnectionPool.getActiveDatabaseAdapter().getConnectionDetails().getSchema();
-				
 				for (IndexType type : IndexType.values()) {
 					IndexStatusInfo indexStatus = null;
 
 					if (type == IndexType.SPATIAL && spatial.isSelected()) {
 						LOG.all(LogLevel.INFO, "Activating spatial indexes...");
-						indexStatus = dbConnectionPool.getActiveDatabaseAdapter().getUtil().createSpatialIndexes(schema);
+						indexStatus = dbConnectionPool.getActiveDatabaseAdapter().getUtil().createSpatialIndexes();
 					} else if (type == IndexType.NORMAL && normal.isSelected()) {
 						LOG.all(LogLevel.INFO, "Activating normal indexes...");
-						indexStatus = dbConnectionPool.getActiveDatabaseAdapter().getUtil().createNormalIndexes(schema);
+						indexStatus = dbConnectionPool.getActiveDatabaseAdapter().getUtil().createNormalIndexes();
 					}
 
 					if (indexStatus != null) {				
@@ -337,17 +325,15 @@ public class IndexOperation extends DatabaseOperationView {
 			});
 
 			try {
-				String schema = dbConnectionPool.getActiveDatabaseAdapter().getConnectionDetails().getSchema();
-				
 				for (IndexType type : IndexType.values()) {
 					IndexStatusInfo indexStatus = null;
 
 					if (type == IndexType.SPATIAL && spatial.isSelected()) {
 						LOG.all(LogLevel.INFO, "Deactivating spatial indexes...");
-						indexStatus = dbConnectionPool.getActiveDatabaseAdapter().getUtil().dropSpatialIndexes(schema);
+						indexStatus = dbConnectionPool.getActiveDatabaseAdapter().getUtil().dropSpatialIndexes();
 					} else if (type == IndexType.NORMAL && normal.isSelected()) {
 						LOG.all(LogLevel.INFO, "Deactivating normal indexes...");
-						indexStatus = dbConnectionPool.getActiveDatabaseAdapter().getUtil().dropNormalIndexes(schema);
+						indexStatus = dbConnectionPool.getActiveDatabaseAdapter().getUtil().dropNormalIndexes();
 					}
 
 					if (indexStatus != null) {				
@@ -425,17 +411,15 @@ public class IndexOperation extends DatabaseOperationView {
 			});
 
 			try {
-				String schema = dbConnectionPool.getActiveDatabaseAdapter().getConnectionDetails().getSchema();
-				
 				for (IndexType type : IndexType.values()) {
 					IndexStatusInfo indexStatus = null;
 
 					if (type == IndexType.SPATIAL && spatial.isSelected()) {
 						LOG.all(LogLevel.INFO, "Checking spatial indexes...");
-						indexStatus = dbConnectionPool.getActiveDatabaseAdapter().getUtil().getStatusSpatialIndexes(schema);
+						indexStatus = dbConnectionPool.getActiveDatabaseAdapter().getUtil().getStatusSpatialIndexes();
 					} else if (type == IndexType.NORMAL && normal.isSelected()) {
 						LOG.all(LogLevel.INFO, "Checking normal indexes...");
-						indexStatus = dbConnectionPool.getActiveDatabaseAdapter().getUtil().getStatusNormalIndexes(schema);
+						indexStatus = dbConnectionPool.getActiveDatabaseAdapter().getUtil().getStatusNormalIndexes();
 					}
 
 					if (indexStatus != null) {
@@ -515,17 +499,16 @@ public class IndexOperation extends DatabaseOperationView {
 			});
 			
 			try {
-				String schema = dbConnectionPool.getActiveDatabaseAdapter().getConnectionDetails().getSchema();
 				boolean statsUpdated = true;
 				
 				for (IndexType type : IndexType.values()) {
 					if (statsUpdated) {
 						if (type == IndexType.SPATIAL && spatial.isSelected()) {
 							LOG.all(LogLevel.INFO, "Updating table statistics for columns with spatial index...");
-							statsUpdated = dbConnectionPool.getActiveDatabaseAdapter().getUtil().updateTableStatsSpatialColumns(schema);
+							statsUpdated = dbConnectionPool.getActiveDatabaseAdapter().getUtil().updateTableStatsSpatialColumns();
 						} else if (type == IndexType.NORMAL && normal.isSelected()) {
 							LOG.all(LogLevel.INFO, "Updating table statistics for columns with normal index...");
-							statsUpdated = dbConnectionPool.getActiveDatabaseAdapter().getUtil().updateTableStatsNormalColumns(schema);
+							statsUpdated = dbConnectionPool.getActiveDatabaseAdapter().getUtil().updateTableStatsNormalColumns();
 						}
 					}
 				}

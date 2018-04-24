@@ -27,12 +27,6 @@
  */
 package org.citydb.citygml.exporter.database.xlink;
 
-import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.sql.Connection;
-import java.sql.SQLException;
-
 import org.citydb.citygml.common.database.xlink.DBXlinkLibraryObject;
 import org.citydb.config.Config;
 import org.citydb.database.adapter.BlobExportAdapter;
@@ -40,17 +34,21 @@ import org.citydb.database.adapter.BlobType;
 import org.citydb.log.Logger;
 import org.citydb.util.Util;
 
+import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.sql.Connection;
+import java.sql.SQLException;
+
 public class DBXlinkExporterLibraryObject implements DBXlinkExporter {
 	private final Logger LOG = Logger.getInstance();
 
 	private BlobExportAdapter blobExportAdapter;
-	private String schema;
 	private String localPath;
 
 	public DBXlinkExporterLibraryObject(Connection connection, Config config, DBXlinkExporterManager xlinkExporterManager) throws SQLException {
 		localPath = config.getInternal().getExportPath();
-		schema = xlinkExporterManager.getDatabaseAdapter().getConnectionDetails().getSchema();
-		
+
 		blobExportAdapter = xlinkExporterManager.getDatabaseAdapter().getSQLAdapter().getBlobExportAdapter(connection, BlobType.LIBRARY_OBJECT);
 	}
 
@@ -91,7 +89,7 @@ public class DBXlinkExporterLibraryObject implements DBXlinkExporter {
 		}
 
 		// read blob into file
-		return blobExportAdapter.getInFile(xlink.getId(), schema, fileName, fileURI);
+		return blobExportAdapter.getInFile(xlink.getId(), fileName, fileURI);
 	}
 
 	@Override

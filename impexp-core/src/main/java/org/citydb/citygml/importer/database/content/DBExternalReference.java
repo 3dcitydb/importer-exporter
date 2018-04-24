@@ -52,7 +52,7 @@ public class DBExternalReference implements DBImporter {
 
 		StringBuilder stmt = new StringBuilder()
 				.append("insert into ").append(schema).append(".external_reference (id, infosys, name, uri, cityobject_id) values ")
-				.append("(").append(importer.getDatabaseAdapter().getSQLAdapter().getNextSequenceValue(SequenceEnum.EXTERNAL_REFERENCE_ID_SEQ.getName(), schema))
+				.append("(").append(importer.getDatabaseAdapter().getSQLAdapter().getNextSequenceValue(SequenceEnum.EXTERNAL_REFERENCE_ID_SEQ.getName()))
 				.append(", ?, ?, ?, ?)");
 		psExternalReference = batchConn.prepareStatement(stmt.toString());
 	}

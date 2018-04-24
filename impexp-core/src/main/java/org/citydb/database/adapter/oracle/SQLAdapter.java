@@ -27,9 +27,6 @@
  */
 package org.citydb.database.adapter.oracle;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.adapter.AbstractSQLAdapter;
@@ -37,7 +34,6 @@ import org.citydb.database.adapter.BlobExportAdapter;
 import org.citydb.database.adapter.BlobImportAdapter;
 import org.citydb.database.adapter.BlobType;
 import org.citydb.query.filter.selection.operator.spatial.SpatialOperatorName;
-
 import org.citydb.sqlbuilder.expression.IntegerLiteral;
 import org.citydb.sqlbuilder.expression.PlaceHolder;
 import org.citydb.sqlbuilder.expression.StringLiteral;
@@ -45,6 +41,9 @@ import org.citydb.sqlbuilder.schema.Column;
 import org.citydb.sqlbuilder.select.PredicateToken;
 import org.citydb.sqlbuilder.select.operator.comparison.ComparisonFactory;
 import org.citydb.sqlbuilder.select.projection.Function;
+
+import java.sql.Connection;
+import java.sql.SQLException;
 
 public class SQLAdapter extends AbstractSQLAdapter {
 	
@@ -131,13 +130,15 @@ public class SQLAdapter extends AbstractSQLAdapter {
 	}
 
 	@Override
-	public String getNextSequenceValue(String sequence, String schema) {
-		return new StringBuilder(schema).append(".").append(sequence).append(".nextval").toString();
+	public String getNextSequenceValue(String sequence) {
+		return new StringBuilder(databaseAdapter.getConnectionDetails().getSchema()).append(".").append(sequence)
+				.append(".nextval").toString();
 	}
 
 	@Override
-	public String getCurrentSequenceValue(String sequence, String schema) {
-		return new StringBuilder(schema).append(".").append(sequence).append(".currval").toString();
+	public String getCurrentSequenceValue(String sequence) {
+		return new StringBuilder(databaseAdapter.getConnectionDetails().getSchema()).append(".").append(sequence)
+				.append(".currval").toString();
 	}
 
 	@Override
@@ -174,18 +175,19 @@ public class SQLAdapter extends AbstractSQLAdapter {
 	}
 
 	@Override
-	public String getHierarchicalGeometryQuery(String schema) {
-		return new StringBuilder("select sg.*, LEVEL from ").append(schema).append(".SURFACE_GEOMETRY sg start with sg.ID=? connect by prior sg.ID=sg.PARENT_ID").toString();
+	public String getHierarchicalGeometryQuery() {
+		return new StringBuilder("select sg.*, LEVEL from ").append(databaseAdapter.getConnectionDetails().getSchema())
+				.append(".SURFACE_GEOMETRY sg start with sg.ID=? connect by prior sg.ID=sg.PARENT_ID").toString();
 	}
 
 	@Override
-	public BlobImportAdapter getBlobImportAdapter(Connection connection, BlobType type, String schema) throws SQLException {
-		return new BlobImportAdapter(connection, type, schema);
+	public BlobImportAdapter getBlobImportAdapter(Connection connection, BlobType type) throws SQLException {
+		return new BlobImportAdapter(connection, type, databaseAdapter.getConnectionDetails().getSchema());
 	}
 
 	@Override
 	public BlobExportAdapter getBlobExportAdapter(Connection connection, BlobType type) {
-		return new BlobExportAdapter(connection, type);
+		return new BlobExportAdapter(connection, type, databaseAdapter.getConnectionDetails().getSchema());
 	}
 
 	@Override

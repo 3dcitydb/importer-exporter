@@ -27,27 +27,16 @@
  */
 package org.citydb.modules.kml.database;
 
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.StringWriter;
-import java.nio.charset.Charset;
-import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
-
-import javax.imageio.ImageIO;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-
+import net.opengis.kml._2.DocumentType;
+import net.opengis.kml._2.KmlType;
+import net.opengis.kml._2.LatLonAltBoxType;
+import net.opengis.kml._2.LinkType;
+import net.opengis.kml._2.LodType;
+import net.opengis.kml._2.NetworkLinkType;
+import net.opengis.kml._2.ObjectFactory;
+import net.opengis.kml._2.PlacemarkType;
+import net.opengis.kml._2.RegionType;
+import net.opengis.kml._2.ViewRefreshModeEnumType;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
 import org.citydb.config.project.kmlExporter.DisplayForm;
@@ -64,16 +53,25 @@ import org.citydb.query.Query;
 import org.citydb.util.Util;
 import org.citygml4j.util.xml.SAXEventBuffer;
 
-import net.opengis.kml._2.DocumentType;
-import net.opengis.kml._2.KmlType;
-import net.opengis.kml._2.LatLonAltBoxType;
-import net.opengis.kml._2.LinkType;
-import net.opengis.kml._2.LodType;
-import net.opengis.kml._2.NetworkLinkType;
-import net.opengis.kml._2.ObjectFactory;
-import net.opengis.kml._2.PlacemarkType;
-import net.opengis.kml._2.RegionType;
-import net.opengis.kml._2.ViewRefreshModeEnumType;
+import javax.imageio.ImageIO;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.StringWriter;
+import java.nio.charset.Charset;
+import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 public class KmlExporterManager {
 	private final JAXBContext jaxbKmlContext;
@@ -387,8 +385,6 @@ public class KmlExporterManager {
 		OutputStreamWriter fileWriter = null;
 		SAXEventBuffer buffer = new SAXEventBuffer();
 
-		String schemaName = databaseAdapter.getConnectionDetails().getSchema();
-
 		Marshaller kmlMarshaller = jaxbKmlContext.createMarshaller();
 		if (useTiling && config.getProject().getKmlExporter().isOneFilePerObject()) {
 			kmlMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
@@ -526,7 +522,7 @@ public class KmlExporterManager {
 				Iterator<String> iterator = keySet.iterator();
 				while (iterator.hasNext()) {
 					String imageFilename = iterator.next();
-					byte[] ordImageBytes = textureExportAdapter.getInByteArray(colladaBundle.getUnsupportedTexImageIds().get(imageFilename), schemaName, imageFilename);
+					byte[] ordImageBytes = textureExportAdapter.getInByteArray(colladaBundle.getUnsupportedTexImageIds().get(imageFilename), imageFilename);
 					zipEntry = imageFilename.startsWith("..") ?
 							new ZipEntry(imageFilename.substring(3)): // skip .. and File.separator
 								new ZipEntry(colladaBundle.getId() + "/" + imageFilename);
@@ -600,7 +596,7 @@ public class KmlExporterManager {
 				while (iterator.hasNext()) {
 					String imageFilename = iterator.next();
 					String fileName = buildingDirectory + File.separator + imageFilename;
-					textureExportAdapter.getInFile(colladaBundle.getUnsupportedTexImageIds().get(imageFilename), schemaName, imageFilename, fileName);
+					textureExportAdapter.getInFile(colladaBundle.getUnsupportedTexImageIds().get(imageFilename), imageFilename, fileName);
 				}
 			}
 

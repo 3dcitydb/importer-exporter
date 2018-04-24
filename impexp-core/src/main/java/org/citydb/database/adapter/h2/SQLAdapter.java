@@ -157,19 +157,19 @@ public class SQLAdapter extends AbstractSQLAdapter {
 	}
 
 	@Override
-	public String getHierarchicalGeometryQuery(String schema) {
+	public String getHierarchicalGeometryQuery() {
 		// not required for cache tables
 		return "";
 	}
 
 	@Override
-	public String getNextSequenceValue(String sequence, String schema) {
+	public String getNextSequenceValue(String sequence) {
 		// not required for cache tables
 		return "";
 	}
 
 	@Override
-	public String getCurrentSequenceValue(String sequence, String schema) {
+	public String getCurrentSequenceValue(String sequence) {
 		// not required for cache tables
 		return "";
 	}
@@ -181,7 +181,7 @@ public class SQLAdapter extends AbstractSQLAdapter {
 	}
 
 	@Override
-	public BlobImportAdapter getBlobImportAdapter(Connection connection, BlobType type, String schema) throws SQLException {
+	public BlobImportAdapter getBlobImportAdapter(Connection connection, BlobType type) throws SQLException {
 		// not required for cache tables
 		return null;
 	}
