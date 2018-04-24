@@ -40,7 +40,6 @@ public class DatabaseMetaData {
 	private final Logger log = Logger.getInstance();	
 	
 	// database related information
-	private DatabaseVersion virtualcityDBVersion;
 	private DatabaseVersion cityDBVersion;
 	private String databaseProductName;
 	private String databaseProductString;
@@ -62,14 +61,6 @@ public class DatabaseMetaData {
 		srs = DatabaseSrs.createDefaultSrs();
 		versioning = Versioning.OFF;
 		ades = null;
-	}
-
-	public DatabaseVersion getVirtualCityDBVersion() {
-		return virtualcityDBVersion;
-	}
-	
-	public void setVirtualCityDBVersion(DatabaseVersion virtualcityDBVersion) {
-		this.virtualcityDBVersion = virtualcityDBVersion;
 	}
 
 	public DatabaseVersion getCityDBVersion() {
