@@ -111,23 +111,12 @@ public class SQLAdapter extends AbstractSQLAdapter {
 
 	@Override
 	public String getCreateUnloggedTable(String tableName, String columns) {
-		StringBuilder builder = new StringBuilder()
-		.append("create table ")
-		.append(tableName).append(" ")
-		.append(columns);
-
-		return builder.toString();
+		return "create table " + tableName + " " + columns;
 	}
 
 	@Override
 	public String getCreateUnloggedTableAsSelectFrom(String targetTableName, String sourceTableName) {
-		StringBuilder builder = new StringBuilder()
-		.append("create table ")
-		.append(targetTableName).append(" ")
-		.append("as select * from ")
-		.append(sourceTableName);
-
-		return builder.toString();
+		return "create table " + targetTableName + " " + "as select * from " + sourceTableName;
 	}
 
 	@Override

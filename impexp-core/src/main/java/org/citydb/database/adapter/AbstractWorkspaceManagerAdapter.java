@@ -27,11 +27,11 @@
  */
 package org.citydb.database.adapter;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-
 import org.citydb.config.project.database.Workspace;
 import org.citydb.log.Logger;
+
+import java.sql.Connection;
+import java.sql.SQLException;
 
 public abstract class AbstractWorkspaceManagerAdapter {
 	private final Logger LOG = Logger.getInstance();
@@ -58,10 +58,7 @@ public abstract class AbstractWorkspaceManagerAdapter {
 	}
 
 	public boolean existsWorkspace(Workspace workspace, boolean logResult) {
-		Connection conn = null;
-
-		try {
-			conn = databaseAdapter.connectionPool.getConnection();
+		try (Connection conn = databaseAdapter.connectionPool.getConnection()) {
 			boolean exists = gotoWorkspace(conn, workspace);
 			if (logResult) {
 				if (!exists)
@@ -73,16 +70,6 @@ public abstract class AbstractWorkspaceManagerAdapter {
 			return exists;
 		} catch (SQLException e) {
 			return false;
-		} finally {
-			if (conn != null) {
-				try {
-					conn.close();
-				} catch (SQLException e) {
-					//;
-				}
-
-				conn = null;
-			}
 		}
 	}
 

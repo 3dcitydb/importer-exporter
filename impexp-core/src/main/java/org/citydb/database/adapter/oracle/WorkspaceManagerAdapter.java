@@ -27,13 +27,13 @@
  */
 package org.citydb.database.adapter.oracle;
 
-import java.sql.CallableStatement;
-import java.sql.Connection;
-import java.sql.SQLException;
-
 import org.citydb.config.project.database.Workspace;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.adapter.AbstractWorkspaceManagerAdapter;
+
+import java.sql.CallableStatement;
+import java.sql.Connection;
+import java.sql.SQLException;
 
 public class WorkspaceManagerAdapter extends AbstractWorkspaceManagerAdapter {
 	private final String defaultWorkspaceName = "LIVE";
@@ -64,34 +64,22 @@ public class WorkspaceManagerAdapter extends AbstractWorkspaceManagerAdapter {
 
 		workspaceName = workspaceName.trim();
 		timestamp = timestamp.trim();
-		CallableStatement stmt = null;
 
 		if (!workspaceName.equals(defaultWorkspaceName) && (workspaceName.length() == 0 || workspaceName.toUpperCase().equals(defaultWorkspaceName)))
 			workspaceName = defaultWorkspaceName;
 
-		try {
-			stmt = connection.prepareCall("{call dbms_wm.GotoWorkspace('" + workspaceName + "')}");
-			stmt.executeQuery();
+		try (CallableStatement workspaceStmt = connection.prepareCall("{call dbms_wm.GotoWorkspace('" + workspaceName + "')}")) {
+			workspaceStmt.executeQuery();
 
 			if (timestamp.length() > 0) {
-				stmt.close();
-				stmt = connection.prepareCall("{call dbms_wm.GotoDate('" + timestamp + "', 'DD.MM.YYYY')}");
-				stmt.executeQuery();
+				try (CallableStatement timestampStmt = connection.prepareCall("{call dbms_wm.GotoDate('" + timestamp + "', 'DD.MM.YYYY')}")) {
+					workspaceStmt.executeQuery();
+				}
 			}
 
 			return true;
 		} catch (SQLException e) {
 			return false;
-		} finally {
-			if (stmt != null) {
-				try {
-					stmt.close();
-				} catch (SQLException e) {
-					//
-				}
-
-				stmt = null;
-			}
 		}
 	}
 

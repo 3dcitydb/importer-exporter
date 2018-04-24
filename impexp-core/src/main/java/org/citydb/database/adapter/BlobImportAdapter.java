@@ -35,7 +35,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 public class BlobImportAdapter {
-	protected final Logger LOG = Logger.getInstance();
+	protected final Logger log = Logger.getInstance();
 	protected final Connection connection;
 
 	private PreparedStatement psUpdate;
@@ -58,7 +58,7 @@ public class BlobImportAdapter {
 			
 			return true;
 		} catch (SQLException e) {
-			LOG.error("SQL error while importing " + (blobType == BlobType.TEXTURE_IMAGE ? "texture" : "library object") + " file '" + fileName + "': " + e.getMessage());
+			log.error("SQL error while importing " + (blobType == BlobType.TEXTURE_IMAGE ? "texture" : "library object") + " file '" + fileName + "': " + e.getMessage());
 			return false;
 		}
 	}

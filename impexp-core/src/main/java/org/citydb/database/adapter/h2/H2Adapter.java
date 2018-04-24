@@ -65,7 +65,7 @@ public class H2Adapter extends AbstractDatabaseAdapter {
 
 	@Override
 	public String getJDBCUrl(String server, int port, String database) {
-		return "jdbc:h2:" + server + ";MULTI_THREADED=TRUE;LOG=0;LOCK_MODE=3;UNDO_LOG=0;MV_STORE=FALSE";
+		return "jdbc:h2:" + server + ";MULTI_THREADED=TRUE;log=0;LOCK_MODE=3;UNDO_LOG=0;MV_STORE=FALSE";
 	}
 
 	@Override

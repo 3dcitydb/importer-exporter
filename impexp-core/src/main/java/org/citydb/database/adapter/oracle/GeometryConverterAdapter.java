@@ -494,7 +494,7 @@ public class GeometryConverterAdapter extends AbstractGeometryConverterAdapter {
 
 			coordinates[i++] = geomObj.getCoordinates()[0][0];
 			coordinates[i++] = geomObj.getCoordinates()[0][1];
-			coordinates[i++] = geomObj.getCoordinates()[0][2];
+			coordinates[i] = geomObj.getCoordinates()[0][2];
 		} else {
 			coordinates[i++] = geomObj.getCoordinates()[0][0];
 			coordinates[i++] = geomObj.getCoordinates()[0][1];
@@ -509,7 +509,7 @@ public class GeometryConverterAdapter extends AbstractGeometryConverterAdapter {
 			coordinates[i++] = geomObj.getCoordinates()[0][3];
 
 			coordinates[i++] = geomObj.getCoordinates()[0][0];
-			coordinates[i++] = geomObj.getCoordinates()[0][1];
+			coordinates[i] = geomObj.getCoordinates()[0][1];
 		}
 
 		return JGeometry.createLinearPolygon(coordinates, geomObj.getDimension(), geomObj.getSrid());
