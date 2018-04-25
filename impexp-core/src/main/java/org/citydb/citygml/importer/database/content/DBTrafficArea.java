@@ -57,12 +57,11 @@ public class DBTrafficArea implements DBImporter {
 
 		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
 
-		StringBuilder stmt = new StringBuilder()
-				.append("insert into ").append(schema).append(".traffic_area (id, objectclass_id, class, class_codespace, function, function_codespace, usage, usage_codespace, ")
-				.append("surface_material, surface_material_codespace, lod2_multi_surface_id, lod3_multi_surface_id, lod4_multi_surface_id, ")
-				.append("transportation_complex_id) values ")
-				.append("(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-		psTrafficArea = batchConn.prepareStatement(stmt.toString());
+		String stmt = "insert into " + schema + ".traffic_area (id, objectclass_id, class, class_codespace, function, function_codespace, usage, usage_codespace, " +
+				"surface_material, surface_material_codespace, lod2_multi_surface_id, lod3_multi_surface_id, lod4_multi_surface_id, " +
+				"transportation_complex_id) values " +
+				"(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+		psTrafficArea = batchConn.prepareStatement(stmt);
 
 		surfaceGeometryImporter = importer.getImporter(DBSurfaceGeometry.class);
 		cityObjectImporter = importer.getImporter(DBCityObject.class);

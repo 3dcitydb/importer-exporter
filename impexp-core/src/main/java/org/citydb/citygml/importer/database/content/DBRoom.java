@@ -32,6 +32,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
 
+import org.citydb.citygml.common.database.xlink.DBXlinkBasic;
 import org.citydb.citygml.common.database.xlink.DBXlinkSurfaceGeometry;
 import org.citydb.citygml.importer.CityGMLImportException;
 import org.citydb.citygml.importer.util.AttributeValueJoiner;
@@ -69,13 +70,12 @@ public class DBRoom implements DBImporter {
 		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
 		hasObjectClassIdColumn = importer.getDatabaseAdapter().getConnectionMetaData().getCityDBVersion().compareTo(4, 0, 0) >= 0;
 
-		StringBuilder stmt = new StringBuilder()
-				.append("insert into ").append(schema).append(".room (id, class, class_codespace, function, function_codespace, usage, usage_codespace, building_id, ")
-				.append("lod4_multi_surface_id, lod4_solid_id")
-				.append(hasObjectClassIdColumn ? ", objectclass_id) " : ") ")
-				.append("values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?")
-				.append(hasObjectClassIdColumn ? ", ?)" : ")");
-		psRoom = batchConn.prepareStatement(stmt.toString());
+		String stmt = "insert into " + schema + ".room (id, class, class_codespace, function, function_codespace, usage, usage_codespace, building_id, " +
+				"lod4_multi_surface_id, lod4_solid_id" +
+				(hasObjectClassIdColumn ? ", objectclass_id) " : ") ") +
+				"values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?" +
+				(hasObjectClassIdColumn ? ", ?)" : ")");
+		psRoom = batchConn.prepareStatement(stmt);
 
 		surfaceGeometryImporter = importer.getImporter(DBSurfaceGeometry.class);
 		cityObjectImporter = importer.getImporter(DBCityObject.class);
@@ -204,8 +204,13 @@ public class DBRoom implements DBImporter {
 					property.unsetBoundarySurface();
 				} else {
 					String href = property.getHref();
-					if (href != null && href.length() != 0)
-						importer.logOrThrowUnsupportedXLinkMessage(room, AbstractBoundarySurface.class, href);
+					if (href != null && href.length() != 0) {
+						importer.propagateXlink(new DBXlinkBasic(
+								TableEnum.THEMATIC_SURFACE.getName(),
+								href,
+								roomId,
+								"room_id"));
+					}
 				}
 			}
 		}
@@ -220,8 +225,13 @@ public class DBRoom implements DBImporter {
 					property.unsetIntBuildingInstallation();
 				} else {
 					String href = property.getHref();
-					if (href != null && href.length() != 0)
-						importer.logOrThrowUnsupportedXLinkMessage(room, IntBuildingInstallation.class, href);
+					if (href != null && href.length() != 0) {
+						importer.propagateXlink(new DBXlinkBasic(
+								TableEnum.BUILDING_INSTALLATION.getName(),
+								href,
+								roomId,
+								"room_id"));
+					}
 				}
 			}
 		}
@@ -236,8 +246,13 @@ public class DBRoom implements DBImporter {
 					property.unsetBuildingFurniture();
 				} else {
 					String href = property.getHref();
-					if (href != null && href.length() != 0)
-						importer.logOrThrowUnsupportedXLinkMessage(room, BuildingFurniture.class, href);
+					if (href != null && href.length() != 0) {
+						importer.propagateXlink(new DBXlinkBasic(
+								TableEnum.BUILDING_INSTALLATION.getName(),
+								href,
+								roomId,
+								"room_id"));
+					}
 				}
 			}
 		}

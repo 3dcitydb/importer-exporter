@@ -169,7 +169,7 @@ public class GeometryConverter {
 		GeometryObject pointGeom = null;
 
 		if (geometricComplex != null && geometricComplex.isSetElement()) {
-			List<List<Double>> pointList = new ArrayList<List<Double>>();
+			List<List<Double>> pointList = new ArrayList<>();
 
 			for (GeometricPrimitiveProperty primitiveProperty : geometricComplex.getElement()) {
 				if (primitiveProperty.isSetGeometricPrimitive()) {
@@ -198,7 +198,7 @@ public class GeometryConverter {
 		GeometryObject multiPointGeom = null;
 
 		if (multiPoint != null) {
-			List<List<Double>> pointList = new ArrayList<List<Double>>();
+			List<List<Double>> pointList = new ArrayList<>();
 
 			if (multiPoint.isSetPointMember()) {
 				for (PointProperty pointProperty : multiPoint.getPointMember())
@@ -228,7 +228,7 @@ public class GeometryConverter {
 		GeometryObject multiPointGeom = null;
 
 		if (controlPoint != null) {
-			List<List<Double>> pointList = new ArrayList<List<Double>>();
+			List<List<Double>> pointList = new ArrayList<>();
 
 			if (controlPoint.isSetPosList()) {
 				List<Double> coords = controlPoint.getPosList().toList3d();
@@ -265,7 +265,7 @@ public class GeometryConverter {
 		GeometryObject curveGeom = null;
 
 		if (curve != null) {
-			List<Double> pointList = new ArrayList<Double>();
+			List<Double> pointList = new ArrayList<>();
 			generatePointList(curve, pointList, false);
 			if (!pointList.isEmpty())
 				curveGeom = GeometryObject.createCurve(convertPrimitive(pointList), 3, dbSrid);
@@ -278,13 +278,13 @@ public class GeometryConverter {
 		GeometryObject multiCurveGeom = null;
 
 		if (multiCurve != null) {
-			List<List<Double>> pointList = new ArrayList<List<Double>>();
+			List<List<Double>> pointList = new ArrayList<>();
 
 			if (multiCurve.isSetCurveMember()) {
 				for (CurveProperty curveProperty : multiCurve.getCurveMember()) {
 					if (curveProperty.isSetCurve()) {
 						AbstractCurve curve = curveProperty.getCurve();
-						List<Double> points = new ArrayList<Double>(); 
+						List<Double> points = new ArrayList<>();
 						generatePointList(curve, points, false);
 
 						if (!points.isEmpty())
@@ -294,7 +294,7 @@ public class GeometryConverter {
 			} else if (multiCurve.isSetCurveMembers()) {
 				CurveArrayProperty curveArrayProperty = multiCurve.getCurveMembers();
 				for (AbstractCurve curve : curveArrayProperty.getCurve()) {
-					List<Double> points = new ArrayList<Double>(); 
+					List<Double> points = new ArrayList<>();
 					generatePointList(curve, points, false);
 
 					if (!points.isEmpty())
@@ -313,12 +313,12 @@ public class GeometryConverter {
 		GeometryObject curveGeom = null;
 
 		if (geometricComplex != null && geometricComplex.isSetElement()) {
-			List<List<Double>> pointList = new ArrayList<List<Double>>();
+			List<List<Double>> pointList = new ArrayList<>();
 
 			for (GeometricPrimitiveProperty primitiveProperty : geometricComplex.getElement()) {
 				if (primitiveProperty.isSetGeometricPrimitive()) {
 					AbstractGeometricPrimitive primitive = primitiveProperty.getGeometricPrimitive();
-					List<Double> points = new ArrayList<Double>();
+					List<Double> points = new ArrayList<>();
 
 					switch (primitive.getGMLClass()) {
 					case LINE_STRING:
@@ -352,11 +352,11 @@ public class GeometryConverter {
 		GeometryObject multiCurveGeom = null;
 
 		if (propertyList != null && !propertyList.isEmpty()) {
-			List<List<Double>> pointList = new ArrayList<List<Double>>();
+			List<List<Double>> pointList = new ArrayList<>();
 
 			for (LineStringSegmentArrayProperty property : propertyList) {
 				if (property.isSetLineStringSegment()) {
-					List<Double> points = new ArrayList<Double>();
+					List<Double> points = new ArrayList<>();
 
 					for (LineStringSegment segment : property.getLineStringSegment()) {
 						List<Double> coords = segment.toList3d();
@@ -442,7 +442,7 @@ public class GeometryConverter {
 				CurveSegmentArrayProperty arrayProperty = curve.getSegments();
 
 				if (arrayProperty.isSetCurveSegment()) {
-					List<Double> points = new ArrayList<Double>();
+					List<Double> points = new ArrayList<>();
 
 					for (AbstractCurveSegment abstractCurveSegment : arrayProperty.getCurveSegment())
 						if (abstractCurveSegment.getGMLClass() == GMLClass.LINE_STRING_SEGMENT) {
@@ -500,7 +500,7 @@ public class GeometryConverter {
 
 		int i = 0;
 		for (Double point : pointList)
-			result[i++] = point.doubleValue();
+			result[i++] = point;
 
 		return result;
 	}
@@ -516,7 +516,7 @@ public class GeometryConverter {
 
 			int j = 0;
 			for (Double coord : points)
-				coords[j++] = coord.doubleValue();
+				coords[j++] = coord;
 
 			result[i++] = coords;					
 		}
@@ -532,7 +532,7 @@ public class GeometryConverter {
 		return getPolygon(polygon, false);
 	}
 
-	private GeometryObject getPolygon(Polygon polygon, boolean is2d) throws CityGMLImportException {
+	private GeometryObject getPolygon(Polygon polygon, boolean is2d) {
 		GeometryObject polygonGeom = null;
 
 		if (polygon != null) {
@@ -668,7 +668,7 @@ public class GeometryConverter {
 
 				int i = 0;
 				for (Integer ringNo : rings)
-					exteriorRings[i++] = ringNo.intValue();
+					exteriorRings[i++] = ringNo;
 
 				solidGeom = GeometryObject.createSolid(convertAggregate(pointList), exteriorRings, dbSrid);
 			}

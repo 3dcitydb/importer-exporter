@@ -70,9 +70,9 @@ public class DBTexImage implements DBImporter {
 			throw new SQLException(e);
 		}
 
-		psInsertStmt = connection.prepareStatement(new StringBuilder()
-				.append("insert into ").append(schema).append(".tex_image (id, tex_image_uri, tex_mime_type, tex_mime_type_codespace) values ")
-				.append("(?, ?, ?, ?)").toString());
+		String stmt = "insert into " + schema + ".tex_image (id, tex_image_uri, tex_mime_type, tex_mime_type_codespace) values " +
+				"(?, ?, ?, ?)";
+		psInsertStmt = connection.prepareStatement(stmt);
 	}
 
 	public long doImport(AbstractTexture abstractTexture, long surfaceDataId) throws CityGMLImportException, SQLException {

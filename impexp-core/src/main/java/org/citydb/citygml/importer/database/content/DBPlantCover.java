@@ -60,14 +60,13 @@ public class DBPlantCover implements DBImporter {
 		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
 		hasObjectClassIdColumn = importer.getDatabaseAdapter().getConnectionMetaData().getCityDBVersion().compareTo(4, 0, 0) >= 0;
 
-		StringBuilder stmt = new StringBuilder()
-				.append("insert into ").append(schema).append(".plant_cover (id, class, class_codespace, function, function_codespace, usage, usage_codespace, average_height, average_height_unit, ")
-				.append("lod1_multi_surface_id, lod2_multi_surface_id, lod3_multi_surface_id, lod4_multi_surface_id, ")
-				.append("lod1_multi_solid_id, lod2_multi_solid_id, lod3_multi_solid_id, lod4_multi_solid_id")
-				.append(hasObjectClassIdColumn ? ", objectclass_id) " : ") ")
-				.append("(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?")
-				.append(hasObjectClassIdColumn ? ", ?)" : ")");
-		psPlantCover = batchConn.prepareStatement(stmt.toString());
+		String stmt = "insert into " + schema + ".plant_cover (id, class, class_codespace, function, function_codespace, usage, usage_codespace, average_height, average_height_unit, " +
+				"lod1_multi_surface_id, lod2_multi_surface_id, lod3_multi_surface_id, lod4_multi_surface_id, " +
+				"lod1_multi_solid_id, lod2_multi_solid_id, lod3_multi_solid_id, lod4_multi_solid_id" +
+				(hasObjectClassIdColumn ? ", objectclass_id) " : ") ") +
+				"(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?" +
+				(hasObjectClassIdColumn ? ", ?)" : ")");
+		psPlantCover = batchConn.prepareStatement(stmt);
 
 		surfaceGeometryImporter = importer.getImporter(DBSurfaceGeometry.class);
 		cityObjectImporter = importer.getImporter(DBCityObject.class);

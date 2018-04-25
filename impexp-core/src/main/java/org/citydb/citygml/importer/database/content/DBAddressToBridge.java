@@ -46,10 +46,9 @@ public class DBAddressToBridge implements DBImporter {
 
 		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
 
-		StringBuilder stmt = new StringBuilder()
-				.append("insert into ").append(schema).append(".address_to_bridge (bridge_id, address_id) values ")
-				.append("(?, ?)");
-		psAddressToBridge = batchConn.prepareStatement(stmt.toString());
+		String stmt = "insert into " + schema + ".address_to_bridge (bridge_id, address_id) values " +
+				"(?, ?)";
+		psAddressToBridge = batchConn.prepareStatement(stmt);
 	}
 
 	protected void doImport(long addressId, long bridgeId) throws CityGMLImportException, SQLException {

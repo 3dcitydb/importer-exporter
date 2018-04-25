@@ -46,10 +46,9 @@ public class DBBridgeOpenToThemSrf implements DBImporter {
 
 		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
 
-		StringBuilder stmt = new StringBuilder()
-				.append("insert into ").append(schema).append(".bridge_open_to_them_srf (bridge_opening_id, bridge_thematic_surface_id) values ")
-				.append("(?, ?)");
-		psBridgeOpenToThemSrf = batchConn.prepareStatement(stmt.toString());
+		String stmt = "insert into " + schema + ".bridge_open_to_them_srf (bridge_opening_id, bridge_thematic_surface_id) values " +
+				"(?, ?)";
+		psBridgeOpenToThemSrf = batchConn.prepareStatement(stmt);
 	}
 
 	protected void doImport(long openingId, long thematicSurfaceId) throws CityGMLImportException, SQLException {

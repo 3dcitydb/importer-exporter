@@ -62,11 +62,10 @@ public class DBTunnelThematicSurface implements DBImporter {
 
 		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
 
-		StringBuilder stmt = new StringBuilder()
-				.append("insert into ").append(schema).append(".tunnel_thematic_surface (id, objectclass_id, tunnel_id, tunnel_hollow_space_id, tunnel_installation_id, ")
-				.append("lod2_multi_surface_id, lod3_multi_surface_id, lod4_multi_surface_id) values ")
-				.append("(?, ?, ?, ?, ?, ?, ?, ?)");
-		psThematicSurface = batchConn.prepareStatement(stmt.toString());
+		String stmt = "insert into " + schema + ".tunnel_thematic_surface (id, objectclass_id, tunnel_id, tunnel_hollow_space_id, tunnel_installation_id, " +
+				"lod2_multi_surface_id, lod3_multi_surface_id, lod4_multi_surface_id) values " +
+				"(?, ?, ?, ?, ?, ?, ?, ?)";
+		psThematicSurface = batchConn.prepareStatement(stmt);
 
 		surfaceGeometryImporter = importer.getImporter(DBSurfaceGeometry.class);
 		cityObjectImporter = importer.getImporter(DBCityObject.class);

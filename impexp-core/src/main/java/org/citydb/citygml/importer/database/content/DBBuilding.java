@@ -87,16 +87,15 @@ public class DBBuilding implements DBImporter {
 		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
 		hasObjectClassIdColumn = importer.getDatabaseAdapter().getConnectionMetaData().getCityDBVersion().compareTo(4, 0, 0) >= 0;
 
-		StringBuilder stmt = new StringBuilder()
-				.append("insert into ").append(schema).append(".building (id, building_parent_id, building_root_id, class, class_codespace, function, function_codespace, usage, usage_codespace, year_of_construction, year_of_demolition, ")
-				.append("roof_type, roof_type_codespace, measured_height, measured_height_unit, storeys_above_ground, storeys_below_ground, storey_heights_above_ground, storey_heights_ag_unit, storey_heights_below_ground, storey_heights_bg_unit, ")
-				.append("lod1_terrain_intersection, lod2_terrain_intersection, lod3_terrain_intersection, lod4_terrain_intersection, lod2_multi_curve, lod3_multi_curve, lod4_multi_curve, ")
-				.append("lod0_footprint_id, lod0_roofprint_id, lod1_multi_surface_id, lod2_multi_surface_id, lod3_multi_surface_id, lod4_multi_surface_id, ")
-				.append("lod1_solid_id, lod2_solid_id, lod3_solid_id, lod4_solid_id")
-				.append(hasObjectClassIdColumn ? ", objectclass_id) " : ") ")
-				.append("values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?")
-				.append(hasObjectClassIdColumn ? ", ?)" : ")");
-		psBuilding = batchConn.prepareStatement(stmt.toString());
+		String stmt = "insert into " + schema + ".building (id, building_parent_id, building_root_id, class, class_codespace, function, function_codespace, usage, usage_codespace, year_of_construction, year_of_demolition, " +
+				"roof_type, roof_type_codespace, measured_height, measured_height_unit, storeys_above_ground, storeys_below_ground, storey_heights_above_ground, storey_heights_ag_unit, storey_heights_below_ground, storey_heights_bg_unit, " +
+				"lod1_terrain_intersection, lod2_terrain_intersection, lod3_terrain_intersection, lod4_terrain_intersection, lod2_multi_curve, lod3_multi_curve, lod4_multi_curve, " +
+				"lod0_footprint_id, lod0_roofprint_id, lod1_multi_surface_id, lod2_multi_surface_id, lod3_multi_surface_id, lod4_multi_surface_id, " +
+				"lod1_solid_id, lod2_solid_id, lod3_solid_id, lod4_solid_id" +
+				(hasObjectClassIdColumn ? ", objectclass_id) " : ") ") +
+				"values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?" +
+				(hasObjectClassIdColumn ? ", ?)" : ")");
+		psBuilding = batchConn.prepareStatement(stmt);
 
 		surfaceGeometryImporter = importer.getImporter(DBSurfaceGeometry.class);
 		cityObjectImporter = importer.getImporter(DBCityObject.class);
@@ -433,8 +432,13 @@ public class DBBuilding implements DBImporter {
 					property.unsetBoundarySurface();
 				} else {
 					String href = property.getHref();
-					if (href != null && href.length() != 0)
-						importer.logOrThrowUnsupportedXLinkMessage(building, AbstractBoundarySurface.class, href);
+					if (href != null && href.length() != 0) {
+						importer.propagateXlink(new DBXlinkBasic(
+								TableEnum.THEMATIC_SURFACE.getName(),
+								href,
+								buildingId,
+								"building_id"));
+					}
 				}
 			}
 		}
@@ -449,8 +453,13 @@ public class DBBuilding implements DBImporter {
 					property.unsetBuildingInstallation();
 				} else {
 					String href = property.getHref();
-					if (href != null && href.length() != 0)
-						importer.logOrThrowUnsupportedXLinkMessage(building, BuildingInstallation.class, href);
+					if (href != null && href.length() != 0) {
+						importer.propagateXlink(new DBXlinkBasic(
+								TableEnum.BUILDING_INSTALLATION.getName(),
+								href,
+								buildingId,
+								"building_id"));
+					}
 				}
 			}
 		}
@@ -465,8 +474,13 @@ public class DBBuilding implements DBImporter {
 					property.unsetIntBuildingInstallation();
 				} else {
 					String href = property.getHref();
-					if (href != null && href.length() != 0)
-						importer.logOrThrowUnsupportedXLinkMessage(building, IntBuildingInstallation.class, href);
+					if (href != null && href.length() != 0) {
+						importer.propagateXlink(new DBXlinkBasic(
+								TableEnum.BUILDING_INSTALLATION.getName(),
+								href,
+								buildingId,
+								"building_id"));
+					}
 				}
 			}
 		}
@@ -481,8 +495,13 @@ public class DBBuilding implements DBImporter {
 					property.unsetRoom();
 				} else {
 					String href = property.getHref();
-					if (href != null && href.length() != 0)
-						importer.logOrThrowUnsupportedXLinkMessage(building, Room.class, href);
+					if (href != null && href.length() != 0) {
+						importer.propagateXlink(new DBXlinkBasic(
+								TableEnum.ROOM.getName(),
+								href,
+								buildingId,
+								"building_id"));
+					}
 				}
 			}
 		}

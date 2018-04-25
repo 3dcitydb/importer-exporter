@@ -73,14 +73,13 @@ public class DBWaterBody implements DBImporter {
 		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
 		hasObjectClassIdColumn = importer.getDatabaseAdapter().getConnectionMetaData().getCityDBVersion().compareTo(4, 0, 0) >= 0;
 
-		StringBuilder stmt = new StringBuilder()
-				.append("insert into ").append(schema).append(".waterbody (id, class, class_codespace, function, function_codespace, usage, usage_codespace, ")
-				.append("lod0_multi_curve, lod1_multi_curve, lod0_multi_surface_id, lod1_multi_surface_id, ")
-				.append("lod1_solid_id, lod2_solid_id, lod3_solid_id, lod4_solid_id")
-				.append(hasObjectClassIdColumn ? ", objectclass_id) " : ") ")
-				.append("values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?")
-				.append(hasObjectClassIdColumn ? ", ?)" : ")");
-		psWaterBody = batchConn.prepareStatement(stmt.toString());
+		String stmt = "insert into " + schema + ".waterbody (id, class, class_codespace, function, function_codespace, usage, usage_codespace, " +
+				"lod0_multi_curve, lod1_multi_curve, lod0_multi_surface_id, lod1_multi_surface_id, " +
+				"lod1_solid_id, lod2_solid_id, lod3_solid_id, lod4_solid_id" +
+				(hasObjectClassIdColumn ? ", objectclass_id) " : ") ") +
+				"values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?" +
+				(hasObjectClassIdColumn ? ", ?)" : ")");
+		psWaterBody = batchConn.prepareStatement(stmt);
 
 		surfaceGeometryImporter = importer.getImporter(DBSurfaceGeometry.class);
 		cityObjectImporter = importer.getImporter(DBCityObject.class);

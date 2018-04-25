@@ -90,15 +90,14 @@ public class DBBridge implements DBImporter {
 		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
 		hasObjectClassIdColumn = importer.getDatabaseAdapter().getConnectionMetaData().getCityDBVersion().compareTo(4, 0, 0) >= 0;
 
-		StringBuilder stmt = new StringBuilder()
-				.append("insert into ").append(schema).append(".bridge (id, bridge_parent_id, bridge_root_id, class, class_codespace, function, function_codespace, usage, usage_codespace, year_of_construction, year_of_demolition, is_movable, ")
-				.append("lod1_terrain_intersection, lod2_terrain_intersection, lod3_terrain_intersection, lod4_terrain_intersection, lod2_multi_curve, lod3_multi_curve, lod4_multi_curve, ")
-				.append("lod1_multi_surface_id, lod2_multi_surface_id, lod3_multi_surface_id, lod4_multi_surface_id, ")
-				.append("lod1_solid_id, lod2_solid_id, lod3_solid_id, lod4_solid_id")
-				.append(hasObjectClassIdColumn ? ", objectclass_id) " : ") ")
-				.append("values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?")
-				.append(hasObjectClassIdColumn ? ", ?)" : ")");
-		psBridge = batchConn.prepareStatement(stmt.toString());
+		String stmt = "insert into " + schema + ".bridge (id, bridge_parent_id, bridge_root_id, class, class_codespace, function, function_codespace, usage, usage_codespace, year_of_construction, year_of_demolition, is_movable, " +
+				"lod1_terrain_intersection, lod2_terrain_intersection, lod3_terrain_intersection, lod4_terrain_intersection, lod2_multi_curve, lod3_multi_curve, lod4_multi_curve, " +
+				"lod1_multi_surface_id, lod2_multi_surface_id, lod3_multi_surface_id, lod4_multi_surface_id, " +
+				"lod1_solid_id, lod2_solid_id, lod3_solid_id, lod4_solid_id" +
+				(hasObjectClassIdColumn ? ", objectclass_id) " : ") ") +
+				"values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?" +
+				(hasObjectClassIdColumn ? ", ?)" : ")");
+		psBridge = batchConn.prepareStatement(stmt);
 
 		surfaceGeometryImporter = importer.getImporter(DBSurfaceGeometry.class);
 		cityObjectImporter = importer.getImporter(DBCityObject.class);
@@ -316,7 +315,6 @@ public class DBBridge implements DBImporter {
 					solidProperty.unsetSolid();
 				} else {
 					String href = solidProperty.getHref();
-
 					if (href != null && href.length() != 0) {
 						importer.propagateXlink(new DBXlinkSurfaceGeometry(
 								featureType.getObjectClassId(), 
@@ -351,8 +349,13 @@ public class DBBridge implements DBImporter {
 					property.unsetBoundarySurface();
 				} else {
 					String href = property.getHref();
-					if (href != null && href.length() != 0)
-						importer.logOrThrowUnsupportedXLinkMessage(bridge, AbstractBoundarySurface.class, href);
+					if (href != null && href.length() != 0) {
+						importer.propagateXlink(new DBXlinkBasic(
+								TableEnum.BRIDGE_THEMATIC_SURFACE.getName(),
+								href,
+								bridgeId,
+								"bridge_id"));
+					}
 				}
 			}
 		}
@@ -367,8 +370,13 @@ public class DBBridge implements DBImporter {
 					property.unsetBridgeConstructionElement();
 				} else {
 					String href = property.getHref();
-					if (href != null && href.length() != 0)
-						importer.logOrThrowUnsupportedXLinkMessage(bridge, BridgeConstructionElement.class, href);
+					if (href != null && href.length() != 0) {
+						importer.propagateXlink(new DBXlinkBasic(
+								TableEnum.BRIDGE_CONSTR_ELEMENT.getName(),
+								href,
+								bridgeId,
+								"bridge_id"));
+					}
 				}
 			}
 		}
@@ -383,8 +391,13 @@ public class DBBridge implements DBImporter {
 					property.unsetBridgeInstallation();
 				} else {
 					String href = property.getHref();
-					if (href != null && href.length() != 0)
-						importer.logOrThrowUnsupportedXLinkMessage(bridge, BridgeInstallation.class, href);
+					if (href != null && href.length() != 0) {
+						importer.propagateXlink(new DBXlinkBasic(
+								TableEnum.BRIDGE_INSTALLATION.getName(),
+								href,
+								bridgeId,
+								"bridge_id"));
+					}
 				}
 			}
 		}
@@ -399,8 +412,13 @@ public class DBBridge implements DBImporter {
 					property.unsetIntBridgeInstallation();
 				} else {
 					String href = property.getHref();
-					if (href != null && href.length() != 0)
-						importer.logOrThrowUnsupportedXLinkMessage(bridge, IntBridgeInstallation.class, href);
+					if (href != null && href.length() != 0) {
+						importer.propagateXlink(new DBXlinkBasic(
+								TableEnum.BRIDGE_INSTALLATION.getName(),
+								href,
+								bridgeId,
+								"bridge_id"));
+					}
 				}
 			}
 		}
@@ -415,8 +433,13 @@ public class DBBridge implements DBImporter {
 					property.unsetBridgeRoom();
 				} else {
 					String href = property.getHref();
-					if (href != null && href.length() != 0)
-						importer.logOrThrowUnsupportedXLinkMessage(bridge, BridgeRoom.class, href);
+					if (href != null && href.length() != 0) {
+						importer.propagateXlink(new DBXlinkBasic(
+								TableEnum.BRIDGE_ROOM.getName(),
+								href,
+								bridgeId,
+								"bridge_id"));
+					}
 				}
 			}
 		}

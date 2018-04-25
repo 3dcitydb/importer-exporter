@@ -46,10 +46,9 @@ public class DBAddressToBuilding implements DBImporter {
 
 		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
 
-		StringBuilder stmt = new StringBuilder()
-				.append("insert into ").append(schema).append(".address_to_building (building_id, address_id) values ")
-				.append("(?, ?)");
-		psAddressToBuilding = batchConn.prepareStatement(stmt.toString());
+		String stmt = "insert into " + schema + ".address_to_building (building_id, address_id) values " +
+				"(?, ?)";
+		psAddressToBuilding = batchConn.prepareStatement(stmt);
 	}
 
 	protected void doImport(long addressId, long buildingId) throws CityGMLImportException, SQLException {

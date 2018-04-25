@@ -34,12 +34,12 @@ import org.citydb.citygml.importer.CityGMLImportException;
 import org.citydb.citygml.importer.util.LocalAppearanceHandler;
 import org.citydb.citygml.importer.util.RingValidator;
 import org.citydb.config.Config;
-import org.citydb.util.CoreConstants;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.config.project.database.DatabaseType;
 import org.citydb.database.connection.DatabaseConnectionPool;
 import org.citydb.database.schema.SequenceEnum;
 import org.citydb.database.schema.TableEnum;
+import org.citydb.util.CoreConstants;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.texturedsurface._AbstractAppearance;
 import org.citygml4j.model.citygml.texturedsurface._AppearanceProperty;
@@ -154,13 +154,13 @@ public class DBSurfaceGeometry implements DBImporter {
 	protected long doImport(AbstractGeometry surfaceGeometry, long cityObjectId) throws CityGMLImportException, SQLException {
 		// check whether we can deal with the geometry
 		if (!geometryConverter.isSurfaceGeometry(surfaceGeometry)) {
-			importer.logOrThrowErrorMessage(new StringBuilder("Unsupported geometry type ").append(importer.getObjectSignature(surfaceGeometry)).toString());
+			importer.logOrThrowErrorMessage("Unsupported geometry type " + importer.getObjectSignature(surfaceGeometry));
 			return 0;
 		}
 
 		boolean success = pkManager.retrieveIds(surfaceGeometry);
 		if (!success) {
-			importer.logOrThrowErrorMessage(new StringBuilder("Failed to acquire primary key values for surface geometry from database.").toString());
+			importer.logOrThrowErrorMessage("Failed to acquire primary key values for surface geometry from database.");
 			return 0;
 		}
 
@@ -264,7 +264,7 @@ public class DBSurfaceGeometry implements DBImporter {
 
 			int i = 0;
 			for (Double point : points)
-				coordinates[i++] = point.doubleValue();
+				coordinates[i++] = point;
 
 			GeometryObject geomObj = GeometryObject.createPolygon(coordinates, 3, dbSrid);
 			Object obj = importer.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(geomObj, batchConn);
@@ -308,7 +308,7 @@ public class DBSurfaceGeometry implements DBImporter {
 			Polygon polygon = (Polygon)surfaceGeometry;
 
 			if (polygon.isSetExterior()) {
-				List<List<Double>> pointList = new ArrayList<List<Double>>();
+				List<List<Double>> pointList = new ArrayList<>();
 				AbstractRing exteriorAbstractRing = polygon.getExterior().getRing();
 				if (exteriorAbstractRing instanceof LinearRing) {
 					LinearRing exteriorLinearRing = (LinearRing)exteriorAbstractRing;
@@ -371,8 +371,8 @@ public class DBSurfaceGeometry implements DBImporter {
 								}
 							} else {
 								// invalid ring...
-								importer.logOrThrowErrorMessage(new StringBuilder(importer.getObjectSignature(polygon, origGmlId))
-										.append(": Only gml:LinearRing elements are supported as interior rings.").toString());
+								importer.logOrThrowErrorMessage(importer.getObjectSignature(polygon, origGmlId) +
+										": Only gml:LinearRing elements are supported as interior rings.");
 								return;
 							}
 						}
@@ -385,7 +385,7 @@ public class DBSurfaceGeometry implements DBImporter {
 
 						int j = 0;
 						for (Double coord : coordsList) {
-							coords[j] = coord.doubleValue();
+							coords[j] = coord;
 							j++;
 						}
 
@@ -430,8 +430,8 @@ public class DBSurfaceGeometry implements DBImporter {
 					addBatch();
 				} else {
 					// invalid ring...
-					importer.logOrThrowErrorMessage(new StringBuilder(importer.getObjectSignature(polygon, origGmlId))
-							.append(": Only gml:LinearRing elements are supported as exterior rings.").toString());
+					importer.logOrThrowErrorMessage(importer.getObjectSignature(polygon, origGmlId) +
+							": Only gml:LinearRing elements are supported as exterior rings.");
 					return;
 				}
 			}
@@ -474,8 +474,8 @@ public class DBSurfaceGeometry implements DBImporter {
 						doImport(abstractSurface, surfaceGeometryId, parentId, rootId, reverse, isXlink, isCopy, cityObjectId);
 						break;
 					default:
-						importer.logOrThrowErrorMessage(new StringBuilder(importer.getObjectSignature(orientableSurface, origGmlId))
-								.append(": ").append(abstractSurface.getGMLClass()).append(" is not supported as the base surface.").toString());
+						importer.logOrThrowErrorMessage(importer.getObjectSignature(orientableSurface, origGmlId) +
+								": " + abstractSurface.getGMLClass() + " is not supported as the base surface.");
 					}
 
 				} else {
@@ -488,9 +488,9 @@ public class DBSurfaceGeometry implements DBImporter {
 								reverse,
 								href,
 								cityObjectId));
-					}
 
-					mapping = href.replaceAll("^#", "");
+						mapping = href.replaceAll("^#", "");
+					}
 				}
 
 				// do mapping
@@ -559,8 +559,8 @@ public class DBSurfaceGeometry implements DBImporter {
 						doImport(abstractSurface, surfaceGeometryId, parentId, rootId, reverse, isXlink, isCopy, cityObjectId);
 						break;
 					default:
-						importer.logOrThrowErrorMessage(new StringBuilder(importer.getObjectSignature(texturedSurface, origGmlId))
-								.append(": ").append(abstractSurface.getGMLClass()).append(" is not supported as the base surface.").toString());
+						importer.logOrThrowErrorMessage(importer.getObjectSignature(texturedSurface, origGmlId) +
+								": " + abstractSurface.getGMLClass() + " is not supported as the base surface.");
 					}
 
 				} else {
@@ -581,16 +581,16 @@ public class DBSurfaceGeometry implements DBImporter {
 							importer.putGeometryUID(origGmlId, -1, -1, negativeOrientation, targetURI);
 
 						// well, regarding appearances we cannot work on remote geometries so far...
-						importer.logOrThrowErrorMessage(new StringBuilder(importer.getObjectSignature(texturedSurface, origGmlId))
-								.append(": Texture information for referenced geometry objects are not supported.").toString());
+						importer.logOrThrowErrorMessage(importer.getObjectSignature(texturedSurface, origGmlId) +
+								": Texture information for referenced geometry objects are not supported.");
 					}
 
 					return;
 				}
 			} else {
 				// we cannot continue without having a base surface...
-				importer.logOrThrowErrorMessage(new StringBuilder(importer.getObjectSignature(texturedSurface, origGmlId))
-						.append(": Failed to find base surface of textured surface.").toString());
+				importer.logOrThrowErrorMessage(importer.getObjectSignature(texturedSurface, origGmlId) +
+						": Failed to find base surface of textured surface.");
 				return;
 			}
 
@@ -603,8 +603,8 @@ public class DBSurfaceGeometry implements DBImporter {
 						// arbitrary depth?
 						if (appearance.getCityGMLClass() == CityGMLClass._SIMPLE_TEXTURE &&
 								abstractSurface.getGMLClass() != GMLClass.POLYGON) {
-							importer.logOrThrowErrorMessage(new StringBuilder(importer.getObjectSignature(texturedSurface, origGmlId))
-									.append(": Texture coordinates are only supported for base surfaces of type gml:Polygon.").toString());
+							importer.logOrThrowErrorMessage(importer.getObjectSignature(texturedSurface, origGmlId) +
+									": Texture coordinates are only supported for base surfaces of type gml:Polygon.");
 							continue;
 						}
 
@@ -676,8 +676,8 @@ public class DBSurfaceGeometry implements DBImporter {
 							doImport(abstractSurface, surfaceGeometryId, parentId, rootId, reverse, isXlink, isCopy, cityObjectId);
 							break;
 						default:
-							importer.logOrThrowErrorMessage(new StringBuilder(importer.getObjectSignature(compositeSurface, origGmlId))
-									.append(": ").append(abstractSurface.getGMLClass()).append(" is not supported as member surface.").toString());
+							importer.logOrThrowErrorMessage(importer.getObjectSignature(compositeSurface, origGmlId) +
+									": " + abstractSurface.getGMLClass() + " is not supported as member surface.");
 						}
 
 					} else {
@@ -899,8 +899,8 @@ public class DBSurfaceGeometry implements DBImporter {
 
 			// interior is not supported!
 			if (solid.isSetInterior()) {
-				importer.logOrThrowErrorMessage(new StringBuilder(importer.getObjectSignature(solid, origGmlId))
-						.append(": Interior solids are not supported.").toString());
+				importer.logOrThrowErrorMessage(importer.getObjectSignature(solid, origGmlId) +
+						": Interior solids are not supported.");
 			}
 		}
 
@@ -1091,8 +1091,8 @@ public class DBSurfaceGeometry implements DBImporter {
 							doImport(abstractSurface, surfaceGeometryId, parentId, rootId, reverse, isXlink, isCopy, cityObjectId);
 							break;
 						default:
-							importer.logOrThrowErrorMessage(new StringBuilder(importer.getObjectSignature(multiSurface, origGmlId))
-									.append(": ").append(abstractSurface.getGMLClass()).append(" is not supported as member surface.").toString());
+							importer.logOrThrowErrorMessage(importer.getObjectSignature(multiSurface, origGmlId) +
+									": " + abstractSurface.getGMLClass() + " is not supported as member surface.");
 						}
 
 					} else {
@@ -1131,8 +1131,8 @@ public class DBSurfaceGeometry implements DBImporter {
 							doImport(abstractSurface, surfaceGeometryId, parentId, rootId, reverse, isXlink, isCopy, cityObjectId);
 							break;
 						default:
-							importer.logOrThrowErrorMessage(new StringBuilder(importer.getObjectSignature(multiSurface, origGmlId))
-									.append(abstractSurface.getGMLClass()).append(" is not supported as member surface.").toString());
+							importer.logOrThrowErrorMessage(importer.getObjectSignature(multiSurface, origGmlId) +
+									abstractSurface.getGMLClass() + " is not supported as member surface.");
 							return;
 						}
 					}
@@ -1300,12 +1300,9 @@ public class DBSurfaceGeometry implements DBImporter {
 				return false;
 
 			// retrieve sequence values
-			ResultSet rs = null;
-			try {
-				psNextSeqValues.setInt(1, count);
-				psNextSeqValues.setString(2, schema);
-				rs = psNextSeqValues.executeQuery();
-
+			psNextSeqValues.setInt(1, count);
+			psNextSeqValues.setString(2, schema);
+			try (ResultSet rs = psNextSeqValues.executeQuery()) {
 				ids = new long[count];
 				int i = 0;
 
@@ -1313,14 +1310,6 @@ public class DBSurfaceGeometry implements DBImporter {
 					ids[i++] = rs.getLong(1);
 
 				return true;
-			} finally {
-				if (rs != null) {
-					try {
-						rs.close();
-					} catch (SQLException e) {
-						//
-					}
-				}
 			}
 		}
 

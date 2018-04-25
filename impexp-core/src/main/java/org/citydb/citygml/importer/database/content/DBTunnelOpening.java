@@ -69,13 +69,12 @@ public class DBTunnelOpening implements DBImporter {
 		affineTransformation = config.getProject().getImporter().getAffineTransformation().isSetUseAffineTransformation();
 		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
 
-		StringBuilder stmt = new StringBuilder()
-				.append("insert into ").append(schema).append(".tunnel_opening (id, objectclass_id, lod3_multi_surface_id, lod4_multi_surface_id, ")
-				.append("lod3_implicit_rep_id, lod4_implicit_rep_id, ")
-				.append("lod3_implicit_ref_point, lod4_implicit_ref_point, ")
-				.append("lod3_implicit_transformation, lod4_implicit_transformation) values ")
-				.append("(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-		psOpening = batchConn.prepareStatement(stmt.toString());
+		String stmt = "insert into " + schema + ".tunnel_opening (id, objectclass_id, lod3_multi_surface_id, lod4_multi_surface_id, " +
+				"lod3_implicit_rep_id, lod4_implicit_rep_id, " +
+				"lod3_implicit_ref_point, lod4_implicit_ref_point, " +
+				"lod3_implicit_transformation, lod4_implicit_transformation) values " +
+				"(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+		psOpening = batchConn.prepareStatement(stmt);
 
 		surfaceGeometryImporter = importer.getImporter(DBSurfaceGeometry.class);
 		implicitGeometryImporter = importer.getImporter(DBImplicitGeometry.class);

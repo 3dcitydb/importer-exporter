@@ -106,26 +106,23 @@ public class DBSurfaceData implements DBImporter {
 		if (gmlIdCodespace != null && gmlIdCodespace.length() > 0)
 			gmlIdCodespace = "'" + gmlIdCodespace + "', ";
 		else
-			gmlIdCodespace = null;		
+			gmlIdCodespace = null;
 
-		StringBuilder x3dStmt = new StringBuilder()
-				.append("insert into ").append(schema).append(".surface_data (id, gmlid, ").append(gmlIdCodespace != null ? "gmlid_codespace, " : "").append("name, name_codespace, description, is_front, objectclass_id, ")
-				.append("x3d_shininess, x3d_transparency, x3d_ambient_intensity, x3d_specular_color, x3d_diffuse_color, x3d_emissive_color, x3d_is_smooth) values ")
-				.append("(?, ?, ").append(gmlIdCodespace != null ? gmlIdCodespace : "").append("?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-		psX3DMaterial = batchConn.prepareStatement(x3dStmt.toString());
+		String x3dStmt = "insert into " + schema + ".surface_data (id, gmlid, " + (gmlIdCodespace != null ? "gmlid_codespace, " : "") + "name, name_codespace, description, is_front, objectclass_id, " +
+				"x3d_shininess, x3d_transparency, x3d_ambient_intensity, x3d_specular_color, x3d_diffuse_color, x3d_emissive_color, x3d_is_smooth) values " +
+				"(?, ?, " + (gmlIdCodespace != null ? gmlIdCodespace : "") + "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+		psX3DMaterial = batchConn.prepareStatement(x3dStmt);
 
-		StringBuilder paraStmt = new StringBuilder()
-				.append("insert into ").append(schema).append(".surface_data (id, gmlid, ").append(gmlIdCodespace != null ? "gmlid_codespace, " : "").append("name, name_codespace, description, is_front, objectclass_id, ")
-				.append("tex_texture_type, tex_wrap_mode, tex_border_color) values ")
-				.append("(?, ?, ").append(gmlIdCodespace != null ? gmlIdCodespace : "").append("?, ?, ?, ?, ?, ?, ?, ?)");
-		psParaTex = batchConn.prepareStatement(paraStmt.toString());
+		String paraStmt = "insert into " + schema + ".surface_data (id, gmlid, " + (gmlIdCodespace != null ? "gmlid_codespace, " : "") + "name, name_codespace, description, is_front, objectclass_id, " +
+				"tex_texture_type, tex_wrap_mode, tex_border_color) values " +
+				"(?, ?, " + (gmlIdCodespace != null ? gmlIdCodespace : "") + "?, ?, ?, ?, ?, ?, ?, ?)";
+		psParaTex = batchConn.prepareStatement(paraStmt);
 
-		StringBuilder geoStmt = new StringBuilder()
-				.append("insert into ").append(schema).append(".surface_data (id, gmlid, ").append(gmlIdCodespace != null ? "gmlid_codespace, " : "").append("name, name_codespace, description, is_front, objectclass_id, ")
-				.append("tex_texture_type, tex_wrap_mode, tex_border_color, ")
-				.append("gt_prefer_worldfile, gt_orientation, gt_reference_point) values ")
-				.append("(?, ?, ").append(gmlIdCodespace != null ? gmlIdCodespace : "").append("?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-		psGeoTex = batchConn.prepareStatement(geoStmt.toString());
+		String geoStmt = "insert into " + schema + ".surface_data (id, gmlid, " + (gmlIdCodespace != null ? "gmlid_codespace, " : "") + "name, name_codespace, description, is_front, objectclass_id, " +
+				"tex_texture_type, tex_wrap_mode, tex_border_color, " +
+				"gt_prefer_worldfile, gt_orientation, gt_reference_point) values " +
+				"(?, ?, " + (gmlIdCodespace != null ? gmlIdCodespace : "") + "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+		psGeoTex = batchConn.prepareStatement(geoStmt);
 
 		textureParamImporter = importer.getImporter(DBTextureParam.class);
 		textureImageImporter = importer.getImporter(DBTexImage.class);
@@ -148,8 +145,8 @@ public class DBSurfaceData implements DBImporter {
 		else if (surfaceData instanceof GeoreferencedTexture)
 			psSurfaceData = psGeoTex;
 		else {
-			importer.logOrThrowErrorMessage(new StringBuilder(importer.getObjectSignature(surfaceData))
-					.append(": Unsupported surface data type.").toString());
+			importer.logOrThrowErrorMessage(importer.getObjectSignature(surfaceData) +
+					": Unsupported surface data type.");
 			return 0;
 		}
 
@@ -273,7 +270,7 @@ public class DBSurfaceData implements DBImporter {
 
 						// check for duplicate targets
 						if (!duplicateTargets.add(target.replaceAll("^#", ""))) {
-							log.debug(new StringBuilder(featureSignature).append(": Skipping duplicate target '").append(target).append("'.").toString());
+							log.debug(featureSignature + ": Skipping duplicate target '" + target + "'.");
 							continue;
 						}
 
@@ -334,7 +331,7 @@ public class DBSurfaceData implements DBImporter {
 
 						// check for duplicate targets
 						if (!duplicateTargets.add(targetURI.replaceAll("^#", ""))) {
-							log.debug(new StringBuilder(featureSignature).append(": Skipping duplicate target '").append(targetURI).append("'.").toString());
+							log.debug(featureSignature + ": Skipping duplicate target '" + targetURI + "'.");
 							continue;
 						}
 
@@ -403,7 +400,7 @@ public class DBSurfaceData implements DBImporter {
 
 									// check for duplicate references to the same geometry object
 									if (!duplicateTargets.add(ringId)) {
-										log.debug(new StringBuilder(featureSignature).append(": Skipping duplicate target ring '").append(ringId).append("'.").toString());
+										log.debug(featureSignature + ": Skipping duplicate target ring '" + ringId + "'.");
 										continue;
 									}
 
@@ -413,18 +410,18 @@ public class DBSurfaceData implements DBImporter {
 											!texCoord.getValue().get(1).equals(texCoord.getValue().get(nrOfCoord - 1))) {
 										texCoord.getValue().add(texCoord.getValue().get(0));
 										texCoord.getValue().add(texCoord.getValue().get(1));
-										log.debug(new StringBuilder(featureSignature).append(": Fixed unclosed texture coordinates for ring '").append(ringId).append("'.").toString());										
+										log.debug(featureSignature + ": Fixed unclosed texture coordinates for ring '" + ringId + "'.");
 									}
 
 									// check for minimum number of texture coordinates
 									if (texCoord.getValue().size() < 8) {
-										importer.logOrThrowErrorMessage(new StringBuilder(featureSignature).append(": Less than four texture coordinates for ring '").append(ringId).append("'.").toString());
+										importer.logOrThrowErrorMessage(featureSignature + ": Less than four texture coordinates for ring '" + ringId + "'.");
 										continue;
 									}
 
 									// check for even number of texture coordinates
 									if ((texCoord.getValue().size() & 1) == 1) {
-										String msg = new StringBuilder(featureSignature).append(": Odd number of texture coordinates for ring '").append(ringId).append("'.").toString();
+										String msg = featureSignature + ": Odd number of texture coordinates for ring '" + ringId + "'.";
 										if (!importer.isFailOnError()) {
 											log.error(msg);
 											continue;
@@ -458,7 +455,7 @@ public class DBSurfaceData implements DBImporter {
 								if (isLocalAppearance) {
 									for (SurfaceGeometryTarget tmp : localAppearanceHandler.getLocalContext()) {
 										if (!tmp.isComplete()) {
-											importer.logOrThrowErrorMessage(new StringBuilder(featureSignature).append(": Not all rings in target geometry '").append(targetURI).append("' receive texture coordinates. Skipping target.").toString());
+											importer.logOrThrowErrorMessage(featureSignature + ": Not all rings in target geometry '" + targetURI + "' receive texture coordinates. Skipping target.");
 											continue;
 										}
 
@@ -548,7 +545,7 @@ public class DBSurfaceData implements DBImporter {
 
 							// check for duplicate targets
 							if (!duplicateTargets.add(target.replaceAll("^#", ""))) {
-								log.debug(new StringBuilder(featureSignature).append(": Skipping duplicate target '").append(target).append("'.").toString());
+								log.debug(featureSignature + ": Skipping duplicate target '" + target + "'.");
 								continue;
 							}
 

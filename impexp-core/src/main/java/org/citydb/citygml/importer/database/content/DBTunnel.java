@@ -33,6 +33,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
 
+import org.citydb.citygml.common.database.xlink.DBXlinkBasic;
 import org.citydb.citygml.common.database.xlink.DBXlinkSurfaceGeometry;
 import org.citydb.citygml.importer.CityGMLImportException;
 import org.citydb.citygml.importer.util.AttributeValueJoiner;
@@ -83,15 +84,14 @@ public class DBTunnel implements DBImporter {
 		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
 		hasObjectClassIdColumn = importer.getDatabaseAdapter().getConnectionMetaData().getCityDBVersion().compareTo(4, 0, 0) >= 0;
 
-		StringBuilder stmt = new StringBuilder()
-				.append("insert into ").append(schema).append(".tunnel (id, tunnel_parent_id, tunnel_root_id, class, class_codespace, function, function_codespace, usage, usage_codespace, year_of_construction, year_of_demolition, ")
-				.append("lod1_terrain_intersection, lod2_terrain_intersection, lod3_terrain_intersection, lod4_terrain_intersection, lod2_multi_curve, lod3_multi_curve, lod4_multi_curve, ")
-				.append("lod1_multi_surface_id, lod2_multi_surface_id, lod3_multi_surface_id, lod4_multi_surface_id, ")
-				.append("lod1_solid_id, lod2_solid_id, lod3_solid_id, lod4_solid_id")
-				.append(hasObjectClassIdColumn ? ", objectclass_id) " : ") ")
-				.append("values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?")
-				.append(hasObjectClassIdColumn ? ", ?)" : ")");
-		psTunnel = batchConn.prepareStatement(stmt.toString());
+		String stmt = "insert into " + schema + ".tunnel (id, tunnel_parent_id, tunnel_root_id, class, class_codespace, function, function_codespace, usage, usage_codespace, year_of_construction, year_of_demolition, " +
+				"lod1_terrain_intersection, lod2_terrain_intersection, lod3_terrain_intersection, lod4_terrain_intersection, lod2_multi_curve, lod3_multi_curve, lod4_multi_curve, " +
+				"lod1_multi_surface_id, lod2_multi_surface_id, lod3_multi_surface_id, lod4_multi_surface_id, " +
+				"lod1_solid_id, lod2_solid_id, lod3_solid_id, lod4_solid_id" +
+				(hasObjectClassIdColumn ? ", objectclass_id) " : ") ") +
+				"values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?" +
+				(hasObjectClassIdColumn ? ", ?)" : ")");
+		psTunnel = batchConn.prepareStatement(stmt);
 
 		surfaceGeometryImporter = importer.getImporter(DBSurfaceGeometry.class);
 		cityObjectImporter = importer.getImporter(DBCityObject.class);
@@ -335,8 +335,13 @@ public class DBTunnel implements DBImporter {
 					property.unsetBoundarySurface();
 				} else {
 					String href = property.getHref();
-					if (href != null && href.length() != 0)
-						importer.logOrThrowUnsupportedXLinkMessage(tunnel, AbstractBoundarySurface.class, href);
+					if (href != null && href.length() != 0) {
+						importer.propagateXlink(new DBXlinkBasic(
+								TableEnum.TUNNEL_THEMATIC_SURFACE.getName(),
+								href,
+								tunnelId,
+								"tunnel_id"));
+					}
 				}
 			}
 		}
@@ -351,8 +356,13 @@ public class DBTunnel implements DBImporter {
 					property.unsetTunnelInstallation();
 				} else {
 					String href = property.getHref();
-					if (href != null && href.length() != 0)
-						importer.logOrThrowUnsupportedXLinkMessage(tunnel, TunnelInstallation.class, href);
+					if (href != null && href.length() != 0) {
+						importer.propagateXlink(new DBXlinkBasic(
+								TableEnum.TUNNEL_INSTALLATION.getName(),
+								href,
+								tunnelId,
+								"tunnel_id"));
+					}
 				}
 			}
 		}
@@ -368,8 +378,13 @@ public class DBTunnel implements DBImporter {
 				} else {
 					// xlink
 					String href = property.getHref();
-					if (href != null && href.length() != 0)
-						importer.logOrThrowUnsupportedXLinkMessage(tunnel, IntTunnelInstallation.class, href);
+					if (href != null && href.length() != 0) {
+						importer.propagateXlink(new DBXlinkBasic(
+								TableEnum.TUNNEL_INSTALLATION.getName(),
+								href,
+								tunnelId,
+								"tunnel_id"));
+					}
 				}
 			}
 		}
@@ -384,8 +399,13 @@ public class DBTunnel implements DBImporter {
 					property.unsetHollowSpace();
 				} else {
 					String href = property.getHref();
-					if (href != null && href.length() != 0)
-						importer.logOrThrowUnsupportedXLinkMessage(tunnel, HollowSpace.class, href);
+					if (href != null && href.length() != 0) {
+						importer.propagateXlink(new DBXlinkBasic(
+								TableEnum.TUNNEL_HOLLOW_SPACE.getName(),
+								href,
+								tunnelId,
+								"tunnel_id"));
+					}
 				}
 			}
 		}

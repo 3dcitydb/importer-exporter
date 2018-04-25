@@ -57,12 +57,11 @@ public class DBReliefFeature implements DBImporter {
 		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
 		hasObjectClassIdColumn = importer.getDatabaseAdapter().getConnectionMetaData().getCityDBVersion().compareTo(4, 0, 0) >= 0;
 
-		StringBuilder stmt = new StringBuilder()
-				.append("insert into ").append(schema).append(".relief_feature (id, lod")
-				.append(hasObjectClassIdColumn ? ", objectclass_id) " : ") ")
-				.append("values (?, ?")
-				.append(hasObjectClassIdColumn ? ", ?)" : ")");
-		psReliefFeature = batchConn.prepareStatement(stmt.toString());
+		String stmt = "insert into " + schema + ".relief_feature (id, lod" +
+				(hasObjectClassIdColumn ? ", objectclass_id) " : ") ") +
+				"values (?, ?" +
+				(hasObjectClassIdColumn ? ", ?)" : ")");
+		psReliefFeature = batchConn.prepareStatement(stmt);
 
 		cityObjectImporter = importer.getImporter(DBCityObject.class);
 		reliefComponentImporter = importer.getImporter(DBReliefComponent.class);
@@ -98,8 +97,8 @@ public class DBReliefFeature implements DBImporter {
 
 				if (component != null) {
 					if (component instanceof RasterRelief)
-						importer.logOrThrowErrorMessage(new StringBuilder(importer.getObjectSignature(reliefFeature))
-								.append(": Raster relief components are not supported.").toString());
+						importer.logOrThrowErrorMessage(importer.getObjectSignature(reliefFeature) +
+								": Raster relief components are not supported.");
 					else
 						reliefComponentImporter.doImport(component, reliefFeature, reliefFeatureId);
 

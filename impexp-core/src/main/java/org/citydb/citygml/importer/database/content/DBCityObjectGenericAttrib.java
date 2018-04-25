@@ -73,9 +73,9 @@ public class DBCityObjectGenericAttrib implements DBImporter {
 				.append("(").append(importer.getDatabaseAdapter().getSQLAdapter().getNextSequenceValue(SequenceEnum.CITYOBJECT_GENERICATTRIB_ID_SEQ.getName()))
 				.append(", ?, ?, ?, ?, ?, ?, ?, ?, ?, ");
 
-		psGenericAttributeMember = batchConn.prepareStatement(new StringBuilder(stmt).append("?, ?)").toString());		
-		psAtomicGenericAttribute = batchConn.prepareStatement(new StringBuilder(stmt).append("null, ")
-				.append(importer.getDatabaseAdapter().getSQLAdapter().getCurrentSequenceValue(SequenceEnum.CITYOBJECT_GENERICATTRIB_ID_SEQ.getName())).append(")").toString());
+		psGenericAttributeMember = batchConn.prepareStatement(stmt + "?, ?)");
+		psAtomicGenericAttribute = batchConn.prepareStatement(stmt + "null, " +
+				importer.getDatabaseAdapter().getSQLAdapter().getCurrentSequenceValue(SequenceEnum.CITYOBJECT_GENERICATTRIB_ID_SEQ.getName()) + ")");
 	}
 
 	public void doImport(AbstractGenericAttribute genericAttribute, long cityObjectId) throws CityGMLImportException, SQLException {

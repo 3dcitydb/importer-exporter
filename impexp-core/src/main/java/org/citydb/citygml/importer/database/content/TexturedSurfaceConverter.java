@@ -86,8 +86,8 @@ public class TexturedSurfaceConverter {
 		else if (_appearance instanceof _SimpleTexture)
 			abstractSurfaceData = new ParameterizedTexture();
 		else {
-			importer.logOrThrowErrorMessage(new StringBuilder(importer.getObjectSignature(_appearance))
-					.append(": Failed to interpret textured surface.").toString());
+			importer.logOrThrowErrorMessage(importer.getObjectSignature(_appearance) +
+					": Failed to interpret textured surface.");
 			return;
 		}
 
@@ -173,13 +173,13 @@ public class TexturedSurfaceConverter {
 						LinearRing exteriorLinearRing = (LinearRing)polygon.getExterior().getRing();
 
 						if (exteriorLinearRing != null) {
-							List<Double> points = ((LinearRing)exteriorLinearRing).toList3d();
+							List<Double> points = exteriorLinearRing.toList3d();
 
 							if (points != null && points.size() != 0) {
 								// we need two texture coordinates per geometry point
 								int noTexPoints = points.size() * 2 / 3;
 								int index = _texCoords.size() >= noTexPoints ? noTexPoints : _texCoords.size();
-								List<Double> texCoord = new ArrayList<Double>(_texCoords.subList(0, index));
+								List<Double> texCoord = new ArrayList<>(_texCoords.subList(0, index));
 
 								if (texCoord.size() > 0) {
 									TextureCoordinates texCoords = new TextureCoordinates();
@@ -197,7 +197,7 @@ public class TexturedSurfaceConverter {
 						List<AbstractRingProperty> abstractRingPropertyList = polygon.getInterior();
 						for (AbstractRingProperty abstractRingProperty : abstractRingPropertyList) {
 							LinearRing interiorLinearRing = (LinearRing)abstractRingProperty.getRing();
-							List<Double> interiorPoints = ((LinearRing)interiorLinearRing).toList3d();
+							List<Double> interiorPoints = interiorLinearRing.toList3d();
 
 							if (interiorPoints == null || interiorPoints.size() == 0)
 								continue;
@@ -205,7 +205,7 @@ public class TexturedSurfaceConverter {
 							// we need two texture coordinates per geometry point
 							int noTexPoints = interiorPoints.size() * 2 / 3;
 							int index = _texCoords.size() >= noTexPoints ? noTexPoints : _texCoords.size();
-							List<Double> texCoord = new ArrayList<Double>(_texCoords.subList(0, index));
+							List<Double> texCoord = new ArrayList<>(_texCoords.subList(0, index));
 
 							if (texCoord.size() > 0) {
 								TextureCoordinates texCoords = new TextureCoordinates();
