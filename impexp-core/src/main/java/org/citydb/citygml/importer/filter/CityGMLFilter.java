@@ -10,7 +10,7 @@ public class CityGMLFilter {
 	private SelectionFilter selectionFilter;
 	private CounterFilter counterFilter;
 	
-	protected CityGMLFilter(SchemaMapping schemaMapping) {
+	public CityGMLFilter(SchemaMapping schemaMapping) {
 		featureTypeFilter = new FeatureTypeFilter(schemaMapping);
 		selectionFilter = new SelectionFilter();
 	}
