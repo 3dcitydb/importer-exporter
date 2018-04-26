@@ -39,7 +39,9 @@ public enum DBOperationType {
     @XmlEnumValue("boundingBox")
     BOUNDING_BOX("boundingBox"),
     @XmlEnumValue("indexes")
-    INDEXES("indexes");
+    INDEXES("indexes"),
+    @XmlEnumValue("ade")
+    ADE("ade");
 
     private final String value;
 
