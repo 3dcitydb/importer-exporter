@@ -123,7 +123,7 @@ public class SpatialOperatorBuilder {
 
 			GeometryObject bbox = spatialDescription.toEnvelope();
 			boolean all = operator.getOperatorName() == SpatialOperatorName.DISJOINT || operator.getOperatorName() == SpatialOperatorName.WITHIN;
-			Table surfaceGeometry = new Table(MappingConstants.SURFACE_GEOMETRY, schemaName, schemaPathBuilder.geAliasGenerator());
+			Table surfaceGeometry = new Table(MappingConstants.SURFACE_GEOMETRY, schemaName, schemaPathBuilder.getAliasGenerator());
 			Table cityObject = getCityObjectTable(queryContext.select);
 
 			Select inner = new Select()
@@ -226,7 +226,7 @@ public class SpatialOperatorBuilder {
 			coords[bbox.getDimension()] += value;
 			coords[bbox.getDimension() + 1] += value;
 
-			Table surfaceGeometry = new Table(MappingConstants.SURFACE_GEOMETRY, schemaName, schemaPathBuilder.geAliasGenerator());
+			Table surfaceGeometry = new Table(MappingConstants.SURFACE_GEOMETRY, schemaName, schemaPathBuilder.getAliasGenerator());
 			Table cityObject = getCityObjectTable(queryContext.select);
 
 			Select inner = new Select()

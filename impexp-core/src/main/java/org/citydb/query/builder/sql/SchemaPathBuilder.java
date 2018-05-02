@@ -79,7 +79,7 @@ public class SchemaPathBuilder {
 		aliasGenerator = new DefaultAliasGenerator();
 	}
 
-	protected AliasGenerator geAliasGenerator() {
+	protected AliasGenerator getAliasGenerator() {
 		return aliasGenerator;
 	}
 
