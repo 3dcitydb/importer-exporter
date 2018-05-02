@@ -9,15 +9,26 @@ import org.citydb.query.filter.FilterException;
 
 import javax.xml.namespace.QName;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 public class FeatureTypeFilter {
 	private final SchemaMapping schemaMapping;
 	private final Set<QName> typeNames = new HashSet<>();
 	private final Set<FeatureType> featureTypes = new HashSet<>();
-	
+
 	public FeatureTypeFilter(SchemaMapping schemaMapping) {
 		this.schemaMapping = schemaMapping;
+	}
+
+	public FeatureTypeFilter(QName typeName, SchemaMapping schemaMapping) {
+		this(schemaMapping);
+		addFeatureType(typeName);
+	}
+
+	public FeatureTypeFilter(List<QName> typeNames, SchemaMapping schemaMapping) {
+		this(schemaMapping);
+		typeNames.forEach(this::addFeatureType);
 	}
 	
 	public FeatureTypeFilter(org.citydb.config.project.query.filter.type.FeatureTypeFilter typeFilter, SchemaMapping schemaMapping) throws FilterException {
@@ -25,20 +36,22 @@ public class FeatureTypeFilter {
 			throw new FilterException("The feature type filter must not be null.");
 
 		this.schemaMapping = schemaMapping;
-		typeNames.addAll(typeFilter.getTypeNames());
+		typeFilter.getTypeNames().forEach(this::addFeatureType);
+	}
 
-		for (QName typeName : typeNames) {
-			FeatureType featureType = schemaMapping.getFeatureType(typeName);
-			if (featureType != null)
-				featureTypes.add(featureType);
-		}
+	public void addFeatureType(QName typeName) {
+		typeNames.add(typeName);
+
+		FeatureType featureType = schemaMapping.getFeatureType(typeName);
+		if (featureType != null)
+			featureTypes.add(featureType);
 	}
 	
-	public boolean isSatisfiedBy(QName name, boolean alllowFlatHierarchies) {
+	public boolean isSatisfiedBy(QName name, boolean allowFlatHierarchies) {
 		if (typeNames.isEmpty() || typeNames.contains(name))
 			return true;
 
-		if (alllowFlatHierarchies) {
+		if (allowFlatHierarchies) {
 			// if flat hierarchies shall be supported, we check whether the
 			// feature to be tested can be represented as nested feature
 			// of at least one of the features given in the filter settings.

@@ -17,7 +17,7 @@ public class FeatureTypeFilter {
 	private final ADEExtensionManager adeManager;
 	
 	public FeatureTypeFilter(boolean useStrictMode) {
-		featureTypes = new HashSet<FeatureType>();
+		featureTypes = new HashSet<>();
 		this.useStrictMode = useStrictMode;
 		
 		adeManager = ADEExtensionManager.getInstance();
