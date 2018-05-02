@@ -418,12 +418,22 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 	}
 
 	@Override
-	public void exportAsFeatureMember(AbstractFeature feature, long id) throws CityGMLExportException {
-		if (!query.getFeatureTypeFilter().containsFeatureType(getFeatureType(feature)))
-			feature.setLocalProperty(CoreConstants.EXPORT_AS_ADDITIONAL_OBJECT, true);
+	public boolean exportAsGlobalFeature(AbstractFeature feature, long id) throws CityGMLExportException {
+		if (featureWriter.supportsFlatHierarchies()) {
+			if (!query.getFeatureTypeFilter().containsFeatureType(getFeatureType(feature)))
+				feature.setLocalProperty(CoreConstants.EXPORT_AS_ADDITIONAL_OBJECT, true);
 
-		writeFeatureMember(feature, id);
-		updateExportCounter(feature);
+			writeFeatureMember(feature, id);
+			updateExportCounter(feature);
+			return true;
+		}
+
+		return false;
+	}
+
+	@Override
+	public boolean supportsExportOfGlobalFeatures() {
+		return featureWriter.supportsFlatHierarchies();
 	}
 
 	@Override
