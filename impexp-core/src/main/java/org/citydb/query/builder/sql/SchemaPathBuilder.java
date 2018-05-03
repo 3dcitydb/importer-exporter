@@ -381,7 +381,7 @@ public class SchemaPathBuilder {
 		if (toTable == null)
 			toTable = new Table(joinTable, schemaName, aliasGenerator);
 
-		select.addJoin(JoinFactory.simple(toTable, join.getToColumn(), ComparisonName.EQUAL_TO, currentTable.getColumn(join.getFromColumn())));
+		select.addJoin(JoinFactory.inner(toTable, join.getToColumn(), ComparisonName.EQUAL_TO, currentTable.getColumn(join.getFromColumn())));
 
 		if (join.isSetConditions()) {
 			for (Condition condition : join.getConditions()) {

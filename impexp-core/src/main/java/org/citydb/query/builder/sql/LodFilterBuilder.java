@@ -361,7 +361,7 @@ public class LodFilterBuilder {
 								if (extension.isSetJoin()) {
 									org.citydb.database.schema.mapping.Join join = (org.citydb.database.schema.mapping.Join)extension.getJoin();
 									Table tmp = new Table(join.getTable(), schemaName);									
-									subContext.addParentJoin(JoinFactory.simple(tmp, join.getToColumn(), ComparisonName.EQUAL_TO, toTable.getColumn(join.getFromColumn())));
+									subContext.addParentJoin(JoinFactory.inner(tmp, join.getToColumn(), ComparisonName.EQUAL_TO, toTable.getColumn(join.getFromColumn())));
 									toTable = tmp;
 								}
 
@@ -381,14 +381,14 @@ public class LodFilterBuilder {
 
 								if (abstractJoin instanceof org.citydb.database.schema.mapping.Join) {
 									org.citydb.database.schema.mapping.Join join = (org.citydb.database.schema.mapping.Join)abstractJoin;
-									subContext.addParentJoin(JoinFactory.simple(fromTable, join.getFromColumn(), ComparisonName.EQUAL_TO, toTable.getColumn(join.getToColumn())));
+									subContext.addParentJoin(JoinFactory.inner(fromTable, join.getFromColumn(), ComparisonName.EQUAL_TO, toTable.getColumn(join.getToColumn())));
 								} 
 
 								else if (abstractJoin instanceof JoinTable) {
 									JoinTable joinTable = (JoinTable)abstractJoin;
 									Table intermediate = new Table(joinTable.getTable(), schemaName);
-									subContext.addParentJoin(JoinFactory.simple(intermediate, joinTable.getInverseJoin().getFromColumn(), ComparisonName.EQUAL_TO, toTable.getColumn(joinTable.getInverseJoin().getToColumn())));
-									subContext.addParentJoin(JoinFactory.simple(fromTable, joinTable.getJoin().getToColumn(), ComparisonName.EQUAL_TO, intermediate.getColumn(joinTable.getJoin().getFromColumn())));
+									subContext.addParentJoin(JoinFactory.inner(intermediate, joinTable.getInverseJoin().getFromColumn(), ComparisonName.EQUAL_TO, toTable.getColumn(joinTable.getInverseJoin().getToColumn())));
+									subContext.addParentJoin(JoinFactory.inner(fromTable, joinTable.getJoin().getToColumn(), ComparisonName.EQUAL_TO, intermediate.getColumn(joinTable.getJoin().getFromColumn())));
 								}
 							}							
 
@@ -408,7 +408,7 @@ public class LodFilterBuilder {
 								JoinTable joinTable = (JoinTable)abstractJoin;
 								Table intermediate = new Table(joinTable.getTable(), schemaName);
 								subContext.setParentCondition(ComparisonFactory.equalTo(intermediate.getColumn(joinTable.getJoin().getFromColumn()), fromTable.getColumn(joinTable.getJoin().getToColumn())));
-								subContext.addParentJoin(JoinFactory.simple(intermediate, joinTable.getInverseJoin().getFromColumn(), ComparisonName.EQUAL_TO, toTable.getColumn(joinTable.getInverseJoin().getToColumn())));
+								subContext.addParentJoin(JoinFactory.inner(intermediate, joinTable.getInverseJoin().getFromColumn(), ComparisonName.EQUAL_TO, toTable.getColumn(joinTable.getInverseJoin().getToColumn())));
 							}
 						}
 
