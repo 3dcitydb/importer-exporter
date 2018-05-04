@@ -1,27 +1,5 @@
 package org.citydb.database.schema.util;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
-import java.io.Writer;
-import java.net.URL;
-
-import javax.xml.XMLConstants;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
-import javax.xml.bind.ValidationEvent;
-import javax.xml.bind.ValidationEventHandler;
-import javax.xml.validation.Schema;
-import javax.xml.validation.SchemaFactory;
-
 import org.citydb.database.schema.mapping.AppSchemaAdapter;
 import org.citydb.database.schema.mapping.ComplexAttributeTypeAdapter;
 import org.citydb.database.schema.mapping.ComplexTypeAdapter;
@@ -33,6 +11,28 @@ import org.citydb.database.schema.mapping.SchemaMappingException;
 import org.citydb.database.schema.mapping.SchemaMappingValidationException;
 import org.citydb.database.schema.mapping.UnmarshalListener;
 import org.xml.sax.SAXException;
+
+import javax.xml.XMLConstants;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
+import javax.xml.bind.ValidationEvent;
+import javax.xml.bind.ValidationEventHandler;
+import javax.xml.validation.Schema;
+import javax.xml.validation.SchemaFactory;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStreamWriter;
+import java.io.Reader;
+import java.io.StringReader;
+import java.io.UnsupportedEncodingException;
+import java.io.Writer;
+import java.net.URL;
 
 public class SchemaMappingUtil {
 	private static SchemaMappingUtil instance;
@@ -49,7 +49,7 @@ public class SchemaMappingUtil {
 		return instance;
 	}	
 
-	public SchemaMapping unmarshal(SchemaMapping schemaMapping, InputStream inputStream) throws SchemaMappingException, SchemaMappingValidationException, JAXBException {		
+	private SchemaMapping unmarshal(SchemaMapping schemaMapping, Object input) throws SchemaMappingException, SchemaMappingValidationException, JAXBException {
 		Unmarshaller um = context.createUnmarshaller();
 		um.setAdapter(new AppSchemaAdapter(schemaMapping));
 		um.setAdapter(new ComplexAttributeTypeAdapter(schemaMapping));
@@ -71,7 +71,11 @@ public class SchemaMappingUtil {
 		// unmarshal schema mapping
 		Object result = null;
 		try {
-			result = um.unmarshal(inputStream);
+			if (input instanceof InputStream)
+				result = um.unmarshal((InputStream) input);
+			else if (input instanceof Reader)
+				result = um.unmarshal((Reader) input);
+
 			if (!(result instanceof SchemaMapping))
 				throw new SchemaMappingException("Failed to unmarshal input resource into a schema mapping.");
 
@@ -87,15 +91,19 @@ public class SchemaMappingUtil {
 
 			throw e;
 		}		
-	}	
+	}
+
+	public SchemaMapping unmarshal(SchemaMapping schemaMapping, InputStream inputStream) throws SchemaMappingException, SchemaMappingValidationException, JAXBException {
+		return unmarshal(schemaMapping, (Object) inputStream);
+	}
 
 	public SchemaMapping unmarshal(InputStream inputStream) throws SchemaMappingException, SchemaMappingValidationException, JAXBException {
-		return unmarshal(null, inputStream);
+		return unmarshal(null, (Object) inputStream);
 	}
 
 	public SchemaMapping unmarshal(SchemaMapping schemaMapping, URL resource) throws SchemaMappingException, SchemaMappingValidationException, JAXBException {
-		try {
-			return unmarshal(schemaMapping, resource.openStream());
+		try (InputStream inputStream = resource.openStream()) {
+			return unmarshal(schemaMapping, inputStream);
 		} catch (IOException e) {
 			throw new JAXBException("Failed to open schema mapping resource at URL '" + resource.toString() + "'.");
 		}
@@ -106,9 +114,9 @@ public class SchemaMappingUtil {
 	}
 
 	public SchemaMapping unmarshal(SchemaMapping schemaMapping, File file) throws SchemaMappingException, SchemaMappingValidationException, JAXBException {
-		try {
-			return unmarshal(schemaMapping, new FileInputStream(file));
-		} catch (FileNotFoundException e) {
+		try (InputStream inputStream = new FileInputStream(file)) {
+			return unmarshal(schemaMapping, inputStream);
+		} catch (IOException e) {
 			throw new JAXBException("Failed to open schema mapping resource from file '" + file.getAbsolutePath() + "'.");
 		}
 	}
@@ -116,7 +124,19 @@ public class SchemaMappingUtil {
 	public SchemaMapping unmarshal(File file) throws SchemaMappingException, SchemaMappingValidationException, JAXBException {
 		return unmarshal(null, file);
 	}
-	
+
+	public SchemaMapping unmarshal(SchemaMapping schemaMapping, String xml) throws SchemaMappingException, SchemaMappingValidationException, JAXBException {
+		try (Reader reader = new StringReader(xml)) {
+			return unmarshal(schemaMapping, reader);
+		} catch (IOException e) {
+			throw new JAXBException("Failed to open schema mapping resource from XML string.");
+		}
+	}
+
+	public SchemaMapping unmarshal(String xml) throws SchemaMappingException, SchemaMappingValidationException, JAXBException {
+		return unmarshal(null, xml);
+	}
+
 	public void marshal(SchemaMapping schemaMapping, Writer writer, boolean prettyPrint) throws SchemaMappingException, SchemaMappingValidationException, JAXBException {
 		Marshaller m = context.createMarshaller();
 		m.setListener(new MarshalListener());
@@ -154,12 +174,12 @@ public class SchemaMappingUtil {
 	}
 	
 	public void marshal(SchemaMapping schemaMapping, File file) throws SchemaMappingException, SchemaMappingValidationException, JAXBException {
-		try {
-			marshal(schemaMapping, new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), "UTF-8")));
-		} catch (FileNotFoundException e) {
-			throw new JAXBException("Failed to open schema mapping resource from file '" + file.getAbsolutePath() + "'.");
+		try (Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), "UTF-8"))) {
+			marshal(schemaMapping, writer);
 		} catch (UnsupportedEncodingException e) {
 			throw new JAXBException("Failed to marshal schema mapping.", e);
+		} catch (IOException e) {
+			throw new JAXBException("Failed to open schema mapping resource from file '" + file.getAbsolutePath() + "'.");
 		}
 	}
 
