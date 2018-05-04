@@ -70,14 +70,13 @@ public class DBBridgeFurniture implements DBImporter {
 		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
 		hasObjectClassIdColumn = importer.getDatabaseAdapter().getConnectionMetaData().getCityDBVersion().compareTo(4, 0, 0) >= 0;
 
-		StringBuilder stmt = new StringBuilder()
-				.append("insert into ").append(schema).append(".bridge_furniture (id, class, class_codespace, function, function_codespace, usage, usage_codespace, bridge_room_id, ")
-				.append("lod4_brep_id, lod4_other_geom, ")
-				.append("lod4_implicit_rep_id, lod4_implicit_ref_point, lod4_implicit_transformation")
-				.append(hasObjectClassIdColumn ? ", objectclass_id) " : ") ")
-				.append("values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?")
-				.append(hasObjectClassIdColumn ? ", ?)" : ")");
-		psBridgeFurniture = batchConn.prepareStatement(stmt.toString());
+		String stmt = "insert into " + schema + ".bridge_furniture (id, class, class_codespace, function, function_codespace, usage, usage_codespace, bridge_room_id, " +
+				"lod4_brep_id, lod4_other_geom, " +
+				"lod4_implicit_rep_id, lod4_implicit_ref_point, lod4_implicit_transformation" +
+				(hasObjectClassIdColumn ? ", objectclass_id) " : ") ") +
+				"values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?" +
+				(hasObjectClassIdColumn ? ", ?)" : ")");
+		psBridgeFurniture = batchConn.prepareStatement(stmt);
 
 		surfaceGeometryImporter = importer.getImporter(DBSurfaceGeometry.class);
 		cityObjectImporter = importer.getImporter(DBCityObject.class);

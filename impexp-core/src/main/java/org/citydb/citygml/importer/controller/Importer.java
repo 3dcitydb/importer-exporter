@@ -257,7 +257,7 @@ public class Importer implements EventHandler {
 		// build CityGML filter
 		CityGMLFilter filter = null;
 		try {
-			CityGMLFilterBuilder builder = new CityGMLFilterBuilder(databaseAdapter);
+			CityGMLFilterBuilder builder = new CityGMLFilterBuilder(schemaMapping, databaseAdapter);
 			filter = builder.buildCityGMLFilter(config.getProject().getImporter().getFilter());
 		} catch (FilterException e) {
 			throw new CityGMLImportException("Failed to build the import filter.", e);
@@ -271,7 +271,7 @@ public class Importer implements EventHandler {
 				if (module != null && module.getType() == CityGMLModuleType.APPEARANCE && name.getLocalPart().equals("Appearance"))
 					return importerConfig.getAppearances().isSetImportAppearance();				
 				else
-					return typeFilter.isSatisfiedBy(name);
+					return typeFilter.isSatisfiedBy(name, true);
 			}
 		};
 

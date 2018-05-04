@@ -72,13 +72,12 @@ public class DBAppearance implements DBImporter {
 		if (gmlIdCodespace != null && gmlIdCodespace.length() > 0)
 			gmlIdCodespace = "'" + gmlIdCodespace + "', ";
 		else
-			gmlIdCodespace = null;		
+			gmlIdCodespace = null;
 
-		StringBuilder stmt = new StringBuilder()
-				.append("insert into ").append(schema).append(".appearance (id, gmlid, ").append(gmlIdCodespace != null ? "gmlid_codespace, " : "")
-				.append("name, name_codespace, description, theme, citymodel_id, cityobject_id) values ")
-				.append("(?, ?, ").append(gmlIdCodespace != null ? gmlIdCodespace : "").append("?, ?, ?, ?, ?, ?)");
-		psAppearance = batchConn.prepareStatement(stmt.toString());
+		String stmt = "insert into " + schema + ".appearance (id, gmlid, " + (gmlIdCodespace != null ? "gmlid_codespace, " : "") +
+				"name, name_codespace, description, theme, citymodel_id, cityobject_id) values " +
+				"(?, ?, " + (gmlIdCodespace != null ? gmlIdCodespace : "") + "?, ?, ?, ?, ?, ?)";
+		psAppearance = batchConn.prepareStatement(stmt);
 
 		surfaceDataImporter = importer.getImporter(DBSurfaceData.class);
 		texturedSurfaceConverter = new TexturedSurfaceConverter(this, config, importer);

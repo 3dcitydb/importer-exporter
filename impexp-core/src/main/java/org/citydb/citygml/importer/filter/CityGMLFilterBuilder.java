@@ -10,17 +10,20 @@ import org.citydb.config.project.query.filter.selection.SimpleSelectionFilter;
 import org.citydb.config.project.query.filter.selection.SimpleSelectionFilterMode;
 import org.citydb.config.project.query.filter.selection.comparison.LikeOperator;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
+import org.citydb.database.schema.mapping.SchemaMapping;
 import org.citydb.query.filter.FilterException;
 
 public class CityGMLFilterBuilder {
+	private final SchemaMapping schemaMapping;
 	private final AbstractDatabaseAdapter databaseAdapter;
 	
-	public CityGMLFilterBuilder(AbstractDatabaseAdapter databaseAdapter) {
+	public CityGMLFilterBuilder(SchemaMapping schemaMapping, AbstractDatabaseAdapter databaseAdapter) {
+		this.schemaMapping = schemaMapping;
 		this.databaseAdapter = databaseAdapter;
 	}
 
 	public CityGMLFilter buildCityGMLFilter(ImportFilter filterConfig) throws FilterException {
-		CityGMLFilter filter = new CityGMLFilter();
+		CityGMLFilter filter = new CityGMLFilter(schemaMapping);
 		SimpleSelectionFilter selectionConfig = filterConfig.getFilter();
 		
 		if (filterConfig.getMode() == SimpleSelectionFilterMode.SIMPLE) {
@@ -38,7 +41,7 @@ public class CityGMLFilterBuilder {
 						|| filterConfig.getFeatureTypeFilter().getTypeNames().isEmpty())
 					throw new FilterException("The feature type filter must not be empty.");
 				
-				filter.setFeatureTypeFilter(new FeatureTypeFilter(filterConfig.getFeatureTypeFilter()));
+				filter.setFeatureTypeFilter(new FeatureTypeFilter(filterConfig.getFeatureTypeFilter(), schemaMapping));
 			}
 			
 			// counter filter

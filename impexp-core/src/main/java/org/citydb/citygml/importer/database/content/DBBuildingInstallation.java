@@ -32,6 +32,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
 
+import org.citydb.citygml.common.database.xlink.DBXlinkBasic;
 import org.citydb.citygml.common.database.xlink.DBXlinkSurfaceGeometry;
 import org.citydb.citygml.importer.CityGMLImportException;
 import org.citydb.citygml.importer.util.AttributeValueJoiner;
@@ -79,14 +80,13 @@ public class DBBuildingInstallation implements DBImporter {
 		nullGeometryTypeName = importer.getDatabaseAdapter().getGeometryConverter().getNullGeometryTypeName();
 		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
 
-		StringBuilder stmt = new StringBuilder()
-				.append("insert into ").append(schema).append(".building_installation (id, objectclass_id, class, class_codespace, function, function_codespace, usage, usage_codespace, building_id, room_id, ")
-				.append("lod2_brep_id, lod3_brep_id, lod4_brep_id, lod2_other_geom, lod3_other_geom, lod4_other_geom, ")
-				.append("lod2_implicit_rep_id, lod3_implicit_rep_id, lod4_implicit_rep_id, ")
-				.append("lod2_implicit_ref_point, lod3_implicit_ref_point, lod4_implicit_ref_point, ")
-				.append("lod2_implicit_transformation, lod3_implicit_transformation, lod4_implicit_transformation) values ")
-				.append("(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-		psBuildingInstallation = batchConn.prepareStatement(stmt.toString());
+		String stmt = "insert into " + schema + ".building_installation (id, objectclass_id, class, class_codespace, function, function_codespace, usage, usage_codespace, building_id, room_id, " +
+				"lod2_brep_id, lod3_brep_id, lod4_brep_id, lod2_other_geom, lod3_other_geom, lod4_other_geom, " +
+				"lod2_implicit_rep_id, lod3_implicit_rep_id, lod4_implicit_rep_id, " +
+				"lod2_implicit_ref_point, lod3_implicit_ref_point, lod4_implicit_ref_point, " +
+				"lod2_implicit_transformation, lod3_implicit_transformation, lod4_implicit_transformation) values " +
+				"(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+		psBuildingInstallation = batchConn.prepareStatement(stmt);
 
 		surfaceGeometryImporter = importer.getImporter(DBSurfaceGeometry.class);
 		implicitGeometryImporter = importer.getImporter(DBImplicitGeometry.class);
@@ -283,8 +283,13 @@ public class DBBuildingInstallation implements DBImporter {
 					property.unsetBoundarySurface();
 				} else {
 					String href = property.getHref();
-					if (href != null && href.length() != 0)
-						importer.logOrThrowUnsupportedXLinkMessage(buildingInstallation, AbstractBoundarySurface.class, href);
+					if (href != null && href.length() != 0) {
+						importer.propagateXlink(new DBXlinkBasic(
+								TableEnum.THEMATIC_SURFACE.getName(),
+								href,
+								buildingInstallationId,
+								"building_installation_id"));
+					}
 				}
 			}
 		}
@@ -461,8 +466,13 @@ public class DBBuildingInstallation implements DBImporter {
 					property.unsetBoundarySurface();
 				} else {
 					String href = property.getHref();
-					if (href != null && href.length() != 0)
-						importer.logOrThrowUnsupportedXLinkMessage(intBuildingInstallation, AbstractBoundarySurface.class, href);
+					if (href != null && href.length() != 0) {
+						importer.propagateXlink(new DBXlinkBasic(
+								TableEnum.THEMATIC_SURFACE.getName(),
+								href,
+								intBuildingInstallationId,
+								"building_installation_id"));
+					}
 				}
 			}
 		}

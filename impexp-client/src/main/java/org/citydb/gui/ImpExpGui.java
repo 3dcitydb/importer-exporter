@@ -27,6 +27,7 @@
  */
 package org.citydb.gui;
 
+import org.citydb.config.gui.Gui;
 import org.citydb.util.ClientConstants;
 import org.citydb.ade.ADEExtensionManager;
 import org.citydb.config.Config;
@@ -100,6 +101,8 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.ByteArrayOutputStream;
@@ -692,14 +695,28 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 	}
 
 	private final class ConsolePopupMenuWrapper {
-		private JMenuItem clear;	
+		private JMenuItem clear;
+		private JMenuItem detach;
 
 		ConsolePopupMenuWrapper(JPopupMenu popupMenu) {
-			clear = new JMenuItem();	
+			clear = new JMenuItem();
+			detach = new JMenuItem();
 
 			popupMenu.addSeparator();
 			popupMenu.add(clear);
+			popupMenu.addSeparator();
+			popupMenu.add(detach);
+
 			clear.addActionListener(e -> clearConsole());
+
+			detach.addActionListener(e -> {
+				boolean status = !config.getGui().getConsoleWindow().isDetached();
+				config.getGui().getConsoleWindow().setDetached(status);
+				enableConsoleWindow(status, true);
+
+				detach.setText(!status ? Language.I18N.getString("console.label.detach") :
+						Language.I18N.getString("console.label.attach"));
+			});
 
 			popupMenu.addPopupMenuListener(new PopupMenuListener() {
 
@@ -723,6 +740,8 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 
 		private void doTranslation() {
 			clear.setText(Language.I18N.getString("main.console.popup.clear"));
+			detach.setText(config.getGui().getConsoleWindow().isDetached() ?
+					Language.I18N.getString("console.label.attach") : Language.I18N.getString("console.label.detach"));
 		}
 	}
 }

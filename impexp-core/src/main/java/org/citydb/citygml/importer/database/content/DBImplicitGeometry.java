@@ -32,11 +32,11 @@ import org.citydb.citygml.common.database.xlink.DBXlinkSurfaceGeometry;
 import org.citydb.citygml.importer.CityGMLImportException;
 import org.citydb.citygml.importer.util.ConcurrentLockManager;
 import org.citydb.config.Config;
-import org.citydb.util.CoreConstants;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.database.schema.SequenceEnum;
 import org.citydb.database.schema.TableEnum;
 import org.citydb.database.schema.mapping.MappingConstants;
+import org.citydb.util.CoreConstants;
 import org.citydb.util.Util;
 import org.citygml4j.model.citygml.core.ImplicitGeometry;
 import org.citygml4j.model.gml.geometry.AbstractGeometry;
@@ -68,19 +68,13 @@ public class DBImplicitGeometry implements DBImporter {
 
 		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
 
-		StringBuilder insertStmt = new StringBuilder()
-				.append("insert into ").append(schema).append(".implicit_geometry (id, reference_to_library) values ")
-				.append("(?, ?)");
+		String insertStmt = "insert into " + schema + ".implicit_geometry (id, reference_to_library) values (?, ?)";
+		String updateStmt = "update " + schema + ".implicit_geometry set mime_type=?, relative_brep_id=?, relative_other_geom=? where id=?";
+		String selectStmt = "select ID from " + schema + ".implicit_geometry where reference_to_library=?";
 
-		StringBuilder updateStmt = new StringBuilder()
-				.append("update ").append(schema).append(".implicit_geometry set mime_type=?, relative_brep_id=?, relative_other_geom=? where id=?");
-
-		StringBuilder selectStmt = new StringBuilder()
-				.append("select ID from ").append(schema).append(".implicit_geometry where reference_to_library=?");
-
-		psImplicitGeometry = batchConn.prepareStatement(insertStmt.toString());
-		psUpdateImplicitGeometry = batchConn.prepareStatement(updateStmt.toString());
-		psSelectLibraryObject = batchConn.prepareStatement(selectStmt.toString());
+		psImplicitGeometry = batchConn.prepareStatement(insertStmt);
+		psUpdateImplicitGeometry = batchConn.prepareStatement(updateStmt);
+		psSelectLibraryObject = batchConn.prepareStatement(selectStmt);
 
 		surfaceGeometryImporter = importer.getImporter(DBSurfaceGeometry.class);
 		geometryConverter = importer.getGeometryConverter();
@@ -106,8 +100,8 @@ public class DBImplicitGeometry implements DBImporter {
 			if (property.isSetHref()) {
 				gmlId = property.getHref();
 				if (Util.isRemoteXlink(gmlId)) {
-					importer.logOrThrowErrorMessage(new StringBuilder(importer.getObjectSignature(implicitGeometry))
-							.append(": XLink reference '").append(gmlId).append("' to remote relative GML geometry is not supported.").toString());
+					importer.logOrThrowErrorMessage(importer.getObjectSignature(implicitGeometry) +
+							": XLink reference '" + gmlId + "' to remote relative GML geometry is not supported.");
 					return 0;
 				}				
 

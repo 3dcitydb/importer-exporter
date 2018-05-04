@@ -32,6 +32,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
 
+import org.citydb.citygml.common.database.xlink.DBXlinkBasic;
 import org.citydb.citygml.common.database.xlink.DBXlinkSurfaceGeometry;
 import org.citydb.citygml.importer.CityGMLImportException;
 import org.citydb.citygml.importer.util.AttributeValueJoiner;
@@ -74,11 +75,10 @@ public class DBTransportationComplex implements DBImporter {
 		nullGeometryTypeName = importer.getDatabaseAdapter().getGeometryConverter().getNullGeometryTypeName();
 		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
 
-		StringBuilder stmt = new StringBuilder()
-				.append("insert into ").append(schema).append(".transportation_complex (id, objectclass_id, class, class_codespace, function, function_codespace, usage, usage_codespace, ")
-				.append("lod0_network, lod1_multi_surface_id, lod2_multi_surface_id, lod3_multi_surface_id, lod4_multi_surface_id) values ")
-				.append("(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-		psTransComplex = batchConn.prepareStatement(stmt.toString());
+		String stmt = "insert into " + schema + ".transportation_complex (id, objectclass_id, class, class_codespace, function, function_codespace, usage, usage_codespace, " +
+				"lod0_network, lod1_multi_surface_id, lod2_multi_surface_id, lod3_multi_surface_id, lod4_multi_surface_id) values " +
+				"(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+		psTransComplex = batchConn.prepareStatement(stmt);
 
 		surfaceGeometryImporter = importer.getImporter(DBSurfaceGeometry.class);
 		cityObjectImporter = importer.getImporter(DBCityObject.class);
@@ -238,8 +238,13 @@ public class DBTransportationComplex implements DBImporter {
 					property.unsetAuxiliaryTrafficArea();
 				} else {
 					String href = property.getHref();
-					if (href != null && href.length() != 0)
-						importer.logOrThrowUnsupportedXLinkMessage(transportationComplex, AuxiliaryTrafficArea.class, href);
+					if (href != null && href.length() != 0) {
+						importer.propagateXlink(new DBXlinkBasic(
+								TableEnum.TRAFFIC_AREA.getName(),
+								href,
+								transportationComplexId,
+								"transportation_complex_id"));
+					}
 				}
 			}
 		}
@@ -254,8 +259,13 @@ public class DBTransportationComplex implements DBImporter {
 					property.unsetTrafficArea();
 				} else {
 					String href = property.getHref();
-					if (href != null && href.length() != 0)
-						importer.logOrThrowUnsupportedXLinkMessage(transportationComplex, TrafficArea.class, href);
+					if (href != null && href.length() != 0) {
+						importer.propagateXlink(new DBXlinkBasic(
+								TableEnum.TRAFFIC_AREA.getName(),
+								href,
+								transportationComplexId,
+								"transportation_complex_id"));
+					}
 				}
 			}
 		}

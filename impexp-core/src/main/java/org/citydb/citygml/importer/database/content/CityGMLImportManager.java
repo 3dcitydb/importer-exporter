@@ -436,7 +436,7 @@ public class CityGMLImportManager implements CityGMLImportHelper {
 
 	@Override
 	public String getTableNameWithSchema(String tableName) {
-		return new StringBuilder(databaseAdapter.getConnectionDetails().getSchema()).append('.').append(tableName).toString();
+		return databaseAdapter.getConnectionDetails().getSchema() + '.' + tableName;
 	}
 
 	@Override
@@ -463,9 +463,9 @@ public class CityGMLImportManager implements CityGMLImportHelper {
 
 	@Override
 	public void logOrThrowUnsupportedGeometryMessage(AbstractGML from, AbstractGeometry geometry) throws CityGMLImportException {
-		logOrThrowErrorMessage(new StringBuilder(getObjectSignature(from))
-				.append(": Unsupported geometry type ")
-				.append("gml:").append(geometry.getGMLClass()).append(".").toString());
+		logOrThrowErrorMessage(getObjectSignature(from) +
+				": Unsupported geometry type " +
+				"gml:" + geometry.getGMLClass() + ".");
 	}
 
 	@Override
@@ -719,17 +719,17 @@ public class CityGMLImportManager implements CityGMLImportHelper {
 	private ADEImportManager getADEImportManager(ADEModelObject object) throws CityGMLImportException, SQLException {		
 		ADEExtension extension = adeManager.getExtensionByObject(object);
 		if (!extension.isEnabled()) {
-			throw new CityGMLImportException(new StringBuilder("ADE extension for object ")
-					.append(object instanceof AbstractGML ? getObjectSignature((AbstractGML)object) : object.getClass().getName())
-					.append(" is disabled. Skipping import.").toString());
+			throw new CityGMLImportException("ADE extension for object " +
+					(object instanceof AbstractGML ? getObjectSignature((AbstractGML) object) : object.getClass().getName()) +
+					" is disabled. Skipping import.");
 		}
 
 		ADEImportManager adeImporter = adeImporters.get(extension);
 		if (adeImporter == null) {
 			adeImporter = extension.createADEImportManager();
 			if (adeImporter == null)
-				throw new CityGMLImportException(new StringBuilder("Failed to create ADE importer for '")
-						.append(extension.getMetadata().getIdentifier()).append("'").toString());
+				throw new CityGMLImportException("Failed to create ADE importer for '" +
+						extension.getMetadata().getIdentifier() + "'");
 
 			adeImporter.init(connection, this);
 			adeImporters.put(extension, adeImporter);

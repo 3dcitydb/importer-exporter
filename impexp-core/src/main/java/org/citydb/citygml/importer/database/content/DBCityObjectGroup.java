@@ -27,11 +27,6 @@
  */
 package org.citydb.citygml.importer.database.content;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Types;
-
 import org.citydb.citygml.common.database.xlink.DBXlinkGroupToCityObject;
 import org.citydb.citygml.common.database.xlink.DBXlinkSurfaceGeometry;
 import org.citydb.citygml.importer.CityGMLImportException;
@@ -45,6 +40,11 @@ import org.citygml4j.model.citygml.cityobjectgroup.CityObjectGroupMember;
 import org.citygml4j.model.gml.basicTypes.Code;
 import org.citygml4j.model.gml.geometry.AbstractGeometry;
 import org.citygml4j.model.gml.geometry.GeometryProperty;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Types;
 
 public class DBCityObjectGroup implements DBImporter {
 	private final Connection batchConn;
@@ -66,13 +66,12 @@ public class DBCityObjectGroup implements DBImporter {
 		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
 		hasObjectClassIdColumn = importer.getDatabaseAdapter().getConnectionMetaData().getCityDBVersion().compareTo(4, 0, 0) >= 0;
 
-		StringBuilder stmt = new StringBuilder()
-				.append("insert into ").append(schema).append(".cityobjectgroup (id, class, class_codespace, function, function_codespace, usage, usage_codespace, ")
-				.append("brep_id, other_geom")
-				.append(hasObjectClassIdColumn ? ", objectclass_id) " : ") ")
-				.append("values (?, ?, ?, ?, ?, ?, ?, ?, ?")
-				.append(hasObjectClassIdColumn ? ", ?)" : ")");
-		psCityObjectGroup = batchConn.prepareStatement(stmt.toString());
+		String stmt = "insert into " + schema + ".cityobjectgroup (id, class, class_codespace, function, function_codespace, usage, usage_codespace, " +
+				"brep_id, other_geom" +
+				(hasObjectClassIdColumn ? ", objectclass_id) " : ") ") +
+				"values (?, ?, ?, ?, ?, ?, ?, ?, ?" +
+				(hasObjectClassIdColumn ? ", ?)" : ")");
+		psCityObjectGroup = batchConn.prepareStatement(stmt);
 
 		surfaceGeometryImporter = importer.getImporter(DBSurfaceGeometry.class);
 		cityObjectImporter = importer.getImporter(DBCityObject.class);
@@ -172,8 +171,8 @@ public class DBCityObjectGroup implements DBImporter {
 		// grp:groupParent
 		if (cityObjectGroup.isSetGroupParent()) {
 			if (cityObjectGroup.getGroupParent().isSetCityObject()) {
-				importer.logOrThrowErrorMessage(new StringBuilder(importer.getObjectSignature(cityObjectGroup))
-						.append(": XML read error while parsing group parent.").toString());
+				importer.logOrThrowErrorMessage(importer.getObjectSignature(cityObjectGroup) +
+						": XML read error while parsing group parent.");
 			} else {			
 				String href = cityObjectGroup.getGroupParent().getHref();
 				if (href != null && href.length() != 0) {
@@ -189,8 +188,8 @@ public class DBCityObjectGroup implements DBImporter {
 		if (cityObjectGroup.isSetGroupMember()) {
 			for (CityObjectGroupMember groupMember : cityObjectGroup.getGroupMember()) {
 				if (groupMember.isSetObject()) {
-					importer.logOrThrowErrorMessage(new StringBuilder(importer.getObjectSignature(cityObjectGroup))
-							.append(": XML read error while parsing group members.").toString());
+					importer.logOrThrowErrorMessage(importer.getObjectSignature(cityObjectGroup) +
+							": XML read error while parsing group members.");
 				} else {
 					String href = groupMember.getHref();
 					if (href != null && href.length() != 0) {

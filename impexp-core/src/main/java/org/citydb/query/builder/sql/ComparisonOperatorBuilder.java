@@ -322,7 +322,7 @@ public class ComparisonOperatorBuilder {
 					throw new QueryBuildException("Failed to build null operator for property '" + property + "'.");
 
 				// create select based on join information 
-				Table table = new Table(toTable, schemaName, schemaPathBuilder.geAliasGenerator());
+				Table table = new Table(toTable, schemaName, schemaPathBuilder.getAliasGenerator());
 				Select select = new Select()
 						.addProjection(new ConstantColumn(1).withFromTable(table))
 						.addSelection(ComparisonFactory.equalTo(table.getColumn(toColumn), queryContext.toTable.getColumn(fromColumn)));

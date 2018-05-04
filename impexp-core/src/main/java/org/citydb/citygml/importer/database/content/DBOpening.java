@@ -74,13 +74,12 @@ public class DBOpening implements DBImporter {
 		affineTransformation = config.getProject().getImporter().getAffineTransformation().isSetUseAffineTransformation();
 		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
 
-		StringBuilder stmt = new StringBuilder()
-				.append("insert into ").append(schema).append(".opening (id, objectclass_id, address_id, lod3_multi_surface_id, lod4_multi_surface_id, ")
-				.append("lod3_implicit_rep_id, lod4_implicit_rep_id, ")
-				.append("lod3_implicit_ref_point, lod4_implicit_ref_point, ")
-				.append("lod3_implicit_transformation, lod4_implicit_transformation) values ")
-				.append("(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-		psOpening = batchConn.prepareStatement(stmt.toString());
+		String stmt = "insert into " + schema + ".opening (id, objectclass_id, address_id, lod3_multi_surface_id, lod4_multi_surface_id, " +
+				"lod3_implicit_rep_id, lod4_implicit_rep_id, " +
+				"lod3_implicit_ref_point, lod4_implicit_ref_point, " +
+				"lod3_implicit_transformation, lod4_implicit_transformation) values " +
+				"(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+		psOpening = batchConn.prepareStatement(stmt);
 
 		surfaceGeometryImporter = importer.getImporter(DBSurfaceGeometry.class);
 		implicitGeometryImporter = importer.getImporter(DBImplicitGeometry.class);
@@ -116,12 +115,12 @@ public class DBOpening implements DBImporter {
 			Door door = (Door)opening;
 
 			if (door.isSetAddress() && !door.getAddress().isEmpty()) {
-				// unfortunately, we can just represent one address in database...
+				// unfortunately, we can just represent one address in the database...
 				AddressProperty property = door.getAddress().get(0);
 				Address address = property.getAddress();
 
 				if (address != null) {
-					addressImporter.doImport(address);
+					addressId = addressImporter.doImport(address);
 					property.unsetAddress();
 				} else {
 					String href = property.getHref();

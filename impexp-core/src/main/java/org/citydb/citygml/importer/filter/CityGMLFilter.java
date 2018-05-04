@@ -3,14 +3,15 @@ package org.citydb.citygml.importer.filter;
 import org.citydb.citygml.importer.filter.selection.SelectionFilter;
 import org.citydb.citygml.importer.filter.type.FeatureTypeFilter;
 import org.citydb.config.project.query.filter.counter.CounterFilter;
+import org.citydb.database.schema.mapping.SchemaMapping;
 
 public class CityGMLFilter {
 	private FeatureTypeFilter featureTypeFilter;
 	private SelectionFilter selectionFilter;
 	private CounterFilter counterFilter;
 	
-	public CityGMLFilter() {
-		featureTypeFilter = new FeatureTypeFilter();
+	public CityGMLFilter(SchemaMapping schemaMapping) {
+		featureTypeFilter = new FeatureTypeFilter(schemaMapping);
 		selectionFilter = new SelectionFilter();
 	}
 

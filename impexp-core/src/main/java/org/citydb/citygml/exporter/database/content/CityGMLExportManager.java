@@ -107,7 +107,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -148,7 +147,7 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 			WorkerPool<DBXlink> xlinkPool,
 			UIDCacheManager uidCacheManager,
 			CacheTableManager cacheTableManager,
-			Config config) throws CityGMLExportException, SQLException {
+			Config config) throws CityGMLExportException {
 		this.connection = connection;
 		this.query = query;
 		this.databaseAdapter = databaseAdapter;
@@ -203,7 +202,7 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 				object.setLocalProperty(CoreConstants.EXPORT_STUB, true);
 		}
 
-		boolean success = false;
+		boolean success;
 
 		// top-level feature types
 		if (object instanceof AbstractBuilding)
@@ -289,7 +288,7 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 	@SuppressWarnings("unchecked")
 	@Override
 	public <T extends AbstractFeature> Collection<T> exportNestedCityGMLObjects(FeatureProperty featureProperty, long parentId, Class<T> featureClass) throws CityGMLExportException, SQLException {
-		Collection<? extends AbstractFeature> features = null;
+		Collection<? extends AbstractFeature> features;
 		FeatureType featureType = featureProperty.getType();
 
 		// building module
@@ -386,10 +385,8 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 			features = Collections.emptyList();
 
 		// filter instances according to the provided feature class
-		for (Iterator<? extends AbstractFeature> iter = features.iterator(); iter.hasNext(); ) {
-			if (!featureClass.isInstance(iter.next()))
-				iter.remove();
-		}
+		if (!features.isEmpty())
+			features.removeIf(abstractFeature -> !featureClass.isInstance(abstractFeature));
 
 		return (Collection<T>)features;
 	}
@@ -421,12 +418,22 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 	}
 
 	@Override
-	public void exportAsFeatureMember(AbstractFeature feature, long id) throws CityGMLExportException {
-		if (!query.getFeatureTypeFilter().containsFeatureType(getFeatureType(feature)))
-			feature.setLocalProperty(CoreConstants.EXPORT_AS_ADDITIONAL_OBJECT, true);
+	public boolean exportAsGlobalFeature(AbstractFeature feature, long id) throws CityGMLExportException {
+		if (featureWriter.supportsFlatHierarchies()) {
+			if (!query.getFeatureTypeFilter().containsFeatureType(getFeatureType(feature)))
+				feature.setLocalProperty(CoreConstants.EXPORT_AS_ADDITIONAL_OBJECT, true);
 
-		writeFeatureMember(feature, id);
-		updateExportCounter(feature);
+			writeFeatureMember(feature, id);
+			updateExportCounter(feature);
+			return true;
+		}
+
+		return false;
+	}
+
+	@Override
+	public boolean supportsExportOfGlobalFeatures() {
+		return featureWriter.supportsFlatHierarchies();
 	}
 
 	@Override
@@ -484,7 +491,7 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 
 	@Override
 	public String getTableNameWithSchema(String tableName) {
-		return new StringBuilder(databaseAdapter.getConnectionDetails().getSchema()).append('.').append(tableName).toString();
+		return databaseAdapter.getConnectionDetails().getSchema() + '.' + tableName;
 	}
 
 	@Override
@@ -504,15 +511,15 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 	@Override
 	public String getGeometryColumn(String columnName) {
 		return (!config.getInternal().isTransformCoordinates()) ? 
-				columnName : new StringBuilder(databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_srs.transform_or_null"))
-				.append("(").append(columnName).append(", ").append(query.getTargetSRS().getSrid()).append(") as ").append(columnName.replaceFirst(".*?\\.", "")).toString();
+				columnName : databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_srs.transform_or_null") +
+				"(" + columnName + ", " + query.getTargetSRS().getSrid() + ") as " + columnName.replaceFirst(".*?\\.", "");
 	}
 
 	@Override
 	public String getGeometryColumn(String columnName, String asName) {
 		return (!config.getInternal().isTransformCoordinates()) ? 
-				columnName : new StringBuilder(databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_srs.transform_or_null"))
-				.append("(").append(columnName).append(", ").append(query.getTargetSRS().getSrid()).append(") as ").append(asName).toString();
+				columnName : databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_srs.transform_or_null") +
+				"(" + columnName + ", " + query.getTargetSRS().getSrid() + ") as " + asName;
 	}
 
 	@Override
@@ -526,15 +533,12 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 	@Override
 	public String getObjectSignature(int objectClassId, long id) {
 		AbstractObjectType<?> objectType = schemaMapping.getAbstractObjectType(objectClassId);
-		return objectType != null ? getObjectSignature(objectType, id) 
-				: new StringBuilder("city object (id : ").append(id).append(" )").toString();
+		return objectType != null ? getObjectSignature(objectType, id) : "city object (id : " + id + " )";
 	}
 
 	@Override
 	public String getObjectSignature(AbstractObjectType<?> objectType, long id) {
-		return new StringBuilder(objectType.getSchema().getXMLPrefix())
-				.append(":").append(objectType.getPath())
-				.append(" (id: ").append(id).append(")").toString();
+		return objectType.getSchema().getXMLPrefix() + ":" + objectType.getPath() + " (id: " + id + ")";
 	}
 
 	@Override
@@ -572,7 +576,7 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 		return query.getLodFilter().preservesGeometry() || lodGeometryChecker.satisfiesLodFilter(cityObject);
 	}
 
-	protected <T extends AbstractGML> T createObject(int objectClassId, Class<T> type) throws CityGMLExportException {
+	protected <T extends AbstractGML> T createObject(int objectClassId, Class<T> type) {
 		AbstractGML object = Util.createObject(objectClassId, query.getTargetVersion());
 		return type.isInstance(object) ? type.cast(object) : null;
 	}
@@ -582,7 +586,7 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 
 		if (feature.isSetId()) {
 			if (config.getProject().getExporter().getXlink().getFeature().isSetAppendId())
-				gmlId = new StringBuilder(gmlId).append("-").append(feature.getId()).toString();
+				gmlId = gmlId + "-" + feature.getId();
 
 			if (config.getProject().getExporter().getXlink().getFeature().isSetKeepGmlIdAsExternalReference()
 					&& feature instanceof AbstractCityObject) {
@@ -641,13 +645,11 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 	}
 
 	public String getGeometrySignature(GMLClass geometryClass, long id) {
-		return new StringBuilder("gml:")
-				.append(geometryClass)
-				.append(" (ID: ").append(id).append(")").toString();
+		return "gml:" + geometryClass + " (ID: " + id + ")";
 	}
 
 	protected String getPropertyName(AbstractProperty property) {
-		return new StringBuilder(property.getSchema().getXMLPrefix()).append(":").append(property.getPath()).toString();
+		return property.getSchema().getXMLPrefix() + ":" + property.getPath();
 	}
 
 	public void setFailOnError(boolean failOnError) {
@@ -712,16 +714,14 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 	}
 
 	protected Object unmarshal(Reader reader) {
-		Object object = null;
+		Object object;
 
 		try {
 			Unmarshaller unmarshaller = cityGMLBuilder.getJAXBContext().createUnmarshaller();
 			object = unmarshaller.unmarshal(reader);
 			if (object != null)
 				object = jaxbUnmarshaller.unmarshal(object);
-		} catch (JAXBException e) {
-			object = null;
-		} catch (MissingADESchemaException e) {
+		} catch (JAXBException | MissingADESchemaException e) {
 			object = null;
 		}
 
@@ -763,9 +763,9 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 	private ADEExportManager getADEExportManager(AppSchema schema) throws CityGMLExportException, SQLException {		
 		ADEExtension adeExtension = adeManager.getExtensionBySchema(schema);
 		if (adeExtension == null || !adeExtension.isEnabled()) {
-			throw new CityGMLExportException(new StringBuilder("ADE extension for schema ")
-					.append(schema.getNamespace(query.getTargetVersion()).getURI())
-					.append(" is disabled. Skipping export.").toString());
+			throw new CityGMLExportException("ADE extension for schema " +
+					schema.getNamespace(query.getTargetVersion()).getURI() +
+					" is disabled. Skipping export.");
 		}
 
 		return getADEExportManager(adeExtension);
@@ -774,8 +774,8 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 	private ADEExportManager getADEExportManager(String tableName) throws CityGMLExportException, SQLException {		
 		ADEExtension adeExtension = adeManager.getExtensionByTableName(tableName);
 		if (adeExtension == null || !adeExtension.isEnabled()) {
-			throw new CityGMLExportException(new StringBuilder("ADE extension for table '")
-					.append(tableName).append("' is disabled. Skipping export.").toString());
+			throw new CityGMLExportException("ADE extension for table '" +
+					tableName + "' is disabled. Skipping export.");
 		}
 
 		return getADEExportManager(adeExtension);
@@ -786,8 +786,8 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 		if (adeExporter == null) {
 			adeExporter = extension.createADEExportManager();
 			if (adeExporter == null)
-				throw new CityGMLExportException(new StringBuilder("Failed to create ADE exporter for '")
-						.append(extension.getMetadata().getIdentifier()).append("'").toString());
+				throw new CityGMLExportException("Failed to create ADE exporter for '" +
+						extension.getMetadata().getIdentifier() + "'");
 
 			adeExporter.init(connection, this);
 			adeExporters.put(extension, adeExporter);

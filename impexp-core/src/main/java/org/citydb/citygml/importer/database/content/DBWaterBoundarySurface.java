@@ -57,11 +57,10 @@ public class DBWaterBoundarySurface implements DBImporter {
 
 		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
 
-		StringBuilder stmt = new StringBuilder()
-				.append("insert into ").append(schema).append(".waterboundary_surface (id, objectclass_id, water_level, water_level_codespace, ")
-				.append("lod2_surface_id, lod3_surface_id, lod4_surface_id) values ")
-				.append("(?, ?, ?, ?, ?, ?, ?)");
-		psWaterBoundarySurface = batchConn.prepareStatement(stmt.toString());
+		String stmt = "insert into " + schema + ".waterboundary_surface (id, objectclass_id, water_level, water_level_codespace, " +
+				"lod2_surface_id, lod3_surface_id, lod4_surface_id) values " +
+				"(?, ?, ?, ?, ?, ?, ?)";
+		psWaterBoundarySurface = batchConn.prepareStatement(stmt);
 
 		surfaceGeometryImporter = importer.getImporter(DBSurfaceGeometry.class);
 		cityObjectImporter = importer.getImporter(DBCityObject.class);

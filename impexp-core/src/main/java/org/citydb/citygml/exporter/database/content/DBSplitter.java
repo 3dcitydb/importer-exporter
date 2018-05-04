@@ -338,7 +338,7 @@ public class DBSplitter {
 							SetOperationFactory.union(
 									new Select()
 									.addProjection(cityObject.getColumn(MappingConstants.ID))
-									.addJoin(JoinFactory.simple(cityObject, MappingConstants.ID, ComparisonName.EQUAL_TO, groupToCityObject.getColumn("cityobject_id")))
+									.addJoin(JoinFactory.inner(cityObject, MappingConstants.ID, ComparisonName.EQUAL_TO, groupToCityObject.getColumn("cityobject_id")))
 									.addSelection(ComparisonFactory.in(groupToCityObject.getColumn("cityobjectgroup_id"), idLiteralList)),
 									new Select()
 									.addProjection(cityObjectGroup.getColumn("parent_cityobject_id"))

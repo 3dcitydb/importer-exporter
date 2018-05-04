@@ -113,11 +113,10 @@ public class DBAddress implements DBImporter {
 				gmlIdCodespace = null;
 		}
 
-		StringBuilder stmt = new StringBuilder()
-				.append("insert into ").append(schema).append(".address (id, ").append(hasGmlIdColumn ? "gmlid, " : "").append(gmlIdCodespace != null ? "gmlid_codespace, " : "")
-				.append("street, house_number, po_box, zip_code, city, country, multi_point, xal_source) values ")
-				.append("(?, ").append(hasGmlIdColumn ? "?, " : "").append(gmlIdCodespace != null ? gmlIdCodespace : "").append("?, ?, ?, ?, ?, ?, ?, ?)");
-		psAddress = batchConn.prepareStatement(stmt.toString());
+		String stmt = "insert into " + schema + ".address (id, " + (hasGmlIdColumn ? "gmlid, " : "") + (gmlIdCodespace != null ? "gmlid_codespace, " : "") +
+				"street, house_number, po_box, zip_code, city, country, multi_point, xal_source) values " +
+				"(?, " + (hasGmlIdColumn ? "?, " : "") + (gmlIdCodespace != null ? gmlIdCodespace : "") + "?, ?, ?, ?, ?, ?, ?, ?)";
+		psAddress = batchConn.prepareStatement(stmt);
 
 		addressToBuildingImporter = importer.getImporter(DBAddressToBuilding.class);
 		addressToBridgeImporter = importer.getImporter(DBAddressToBridge.class);
@@ -221,8 +220,8 @@ public class DBAddress implements DBImporter {
 				xalSource = importer.marshalObject(addressDetails, XALModuleType.CORE);
 
 		} else 
-			importer.logOrThrowErrorMessage(new StringBuilder(importer.getObjectSignature(address))
-					.append(": Failed to interpret xAL address element.").toString());
+			importer.logOrThrowErrorMessage(importer.getObjectSignature(address) +
+					": Failed to interpret xAL address element.");
 
 		// gml:id
 		if (address.isSetId())

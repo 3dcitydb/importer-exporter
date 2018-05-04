@@ -239,7 +239,7 @@ public class KmlSplitter {
 						cityObject.getColumn(MappingConstants.ID),
 						new Select()
 						.addProjection(cityObject.getColumn(MappingConstants.ID))
-						.addJoin(JoinFactory.simple(cityObject, MappingConstants.ID, ComparisonName.EQUAL_TO, groupToCityObject.getColumn("cityobject_id")))
+						.addJoin(JoinFactory.inner(cityObject, MappingConstants.ID, ComparisonName.EQUAL_TO, groupToCityObject.getColumn("cityobject_id")))
 						.addSelection(ComparisonFactory.equalTo(groupToCityObject.getColumn("cityobjectgroup_id"), groupId))
 						));
 

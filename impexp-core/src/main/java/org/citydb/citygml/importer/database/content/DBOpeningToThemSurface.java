@@ -46,10 +46,9 @@ public class DBOpeningToThemSurface implements DBImporter {
 
 		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
 
-		StringBuilder stmt = new StringBuilder()
-				.append("insert into ").append(schema).append(".opening_to_them_surface (opening_id, thematic_surface_id) values ")
-				.append("(?, ?)");
-		psOpeningToThemSurface = batchConn.prepareStatement(stmt.toString());
+		String stmt = "insert into " + schema + ".opening_to_them_surface (opening_id, thematic_surface_id) values " +
+				"(?, ?)";
+		psOpeningToThemSurface = batchConn.prepareStatement(stmt);
 	}
 
 	protected void doImport(long openingId, long thematicSurfaceId) throws CityGMLImportException, SQLException {

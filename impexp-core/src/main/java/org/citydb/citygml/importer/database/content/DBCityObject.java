@@ -75,7 +75,6 @@ public class DBCityObject implements DBImporter {
 	private AttributeValueJoiner valueJoiner;
 	private int batchCounter;
 
-	private String reasonForUpdate;
 	private String importFileName;
 	private int dbSrid;
 	private boolean replaceGmlId;
@@ -96,7 +95,7 @@ public class DBCityObject implements DBImporter {
 		affineTransformation = config.getProject().getImporter().getAffineTransformation().isSetUseAffineTransformation();
 		dbSrid = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter().getConnectionMetaData().getReferenceSystem().getSrid();
 		importAppearance = config.getProject().getImporter().getAppearances().isSetImportAppearance();
-		reasonForUpdate = config.getProject().getImporter().getContinuation().getReasonForUpdate();
+		String reasonForUpdate = config.getProject().getImporter().getContinuation().getReasonForUpdate();
 		String lineage = config.getProject().getImporter().getContinuation().getLineage();
 		creationDateMode = config.getProject().getImporter().getContinuation().getCreationDateMode();
 		terminationDateMode = config.getProject().getImporter().getContinuation().getTerminationDateMode();
@@ -136,14 +135,13 @@ public class DBCityObject implements DBImporter {
 				.assignResultToFeatures(true)
 				.useReferencePointAsFallbackForImplicitGeometries(true);
 
-		StringBuilder stmt = new StringBuilder()
-				.append("insert into ").append(schema).append(".cityobject (id, objectclass_id, gmlid, ").append(gmlIdCodespace != null ? "gmlid_codespace, " : "").append("name, name_codespace, description, envelope, creation_date, termination_date, ")
-				.append("relative_to_terrain, relative_to_water, last_modification_date, updating_person, reason_for_update, lineage, xml_source) values ")
-				.append("(?, ?, ?, ").append(gmlIdCodespace != null ? gmlIdCodespace : "").append("?, ?, ?, ?, ?, ?, ?, ?, current_timestamp, ")
-				.append(updatingPerson).append(", ")
-				.append(reasonForUpdate).append(", ")
-				.append(lineage).append(", null)");
-		psCityObject = batchConn.prepareStatement(stmt.toString());
+		String stmt = "insert into " + schema + ".cityobject (id, objectclass_id, gmlid, " + (gmlIdCodespace != null ? "gmlid_codespace, " : "") + "name, name_codespace, description, envelope, creation_date, termination_date, " +
+				"relative_to_terrain, relative_to_water, last_modification_date, updating_person, reason_for_update, lineage, xml_source) values " +
+				"(?, ?, ?, " + (gmlIdCodespace != null ? gmlIdCodespace : "") + "?, ?, ?, ?, ?, ?, ?, ?, current_timestamp, " +
+				updatingPerson + ", " +
+				reasonForUpdate + ", " +
+				lineage + ", null)";
+		psCityObject = batchConn.prepareStatement(stmt);
 
 		genericAttributeImporter = importer.getImporter(DBCityObjectGenericAttrib.class);
 		externalReferenceImporter = importer.getImporter(DBExternalReference.class);
@@ -302,9 +300,9 @@ public class DBCityObject implements DBImporter {
 		if (isGlobal) {
 			boolean success = resolver.resolveGeometryXlinks(object);
 			if (!success) {
-				importer.logOrThrowErrorMessage(new StringBuilder(importer.getObjectSignature(object, origGmlId))
-						.append(": Skipping import due to circular reference of the following geometry XLinks:\n")
-						.append(String.join("\n", resolver.getCircularReferences())).toString());
+				importer.logOrThrowErrorMessage(importer.getObjectSignature(object, origGmlId) +
+						": Skipping import due to circular reference of the following geometry XLinks:\n" +
+						String.join("\n", resolver.getCircularReferences()));
 				return 0;
 			}
 		}
@@ -333,8 +331,8 @@ public class DBCityObject implements DBImporter {
 			if (cityObject.isSetGeneralizesTo()) {
 				for (GeneralizationRelation generalizesTo : cityObject.getGeneralizesTo()) {
 					if (generalizesTo.isSetCityObject()) {
-						importer.logOrThrowErrorMessage(new StringBuilder(importer.getObjectSignature(object))
-								.append(": Failed to correctly process generalizesTo element.").toString());
+						importer.logOrThrowErrorMessage(importer.getObjectSignature(object) +
+								": Failed to correctly process generalizesTo element.");
 					} else {
 						String href = generalizesTo.getHref();
 						if (href != null && href.length() != 0) {

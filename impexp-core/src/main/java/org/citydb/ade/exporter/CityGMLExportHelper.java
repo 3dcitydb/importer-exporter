@@ -30,7 +30,8 @@ public interface CityGMLExportHelper {
 	public <T extends AbstractFeature> Collection<T> exportNestedCityGMLObjects(FeatureProperty featureProperty, long parentId, Class<T> featureClass) throws CityGMLExportException, SQLException;
 	public SurfaceGeometry exportSurfaceGeometry(long surfaceGeometryId) throws CityGMLExportException, SQLException;
 	public ImplicitGeometry exportImplicitGeometry(long id, GeometryObject referencePoint, String transformationMatrix) throws CityGMLExportException, SQLException;
-	public void exportAsFeatureMember(AbstractFeature feature, long id) throws CityGMLExportException;
+	public boolean exportAsGlobalFeature(AbstractFeature feature, long id) throws CityGMLExportException;
+	public boolean supportsExportOfGlobalFeatures();
 	public GMLConverter getGMLConverter();
 	
 	public AbstractDatabaseAdapter getDatabaseAdapter();

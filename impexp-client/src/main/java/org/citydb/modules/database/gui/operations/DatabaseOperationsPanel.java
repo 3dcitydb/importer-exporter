@@ -105,10 +105,11 @@ public class DatabaseOperationsPanel extends JPanel implements EventHandler {
 		c.gridwidth = 4;
 		add(operationsTab, c);
 
-		operations = new DatabaseOperationView[3];
+		operations = new DatabaseOperationView[4];
 		operations[0] = new ReportOperation(this);
 		operations[1] = new BoundingBoxOperation(this, config);
 		operations[2] = new IndexOperation(this, config);
+		operations[3] = new ADEInfoOperation(this);
 
 		for (int i = 0; i < operations.length; ++i)
 			operationsTab.insertTab(null, operations[i].getIcon(), null, operations[i].getToolTip(), i);

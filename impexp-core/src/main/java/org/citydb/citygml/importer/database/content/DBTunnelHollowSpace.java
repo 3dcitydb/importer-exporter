@@ -32,6 +32,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
 
+import org.citydb.citygml.common.database.xlink.DBXlinkBasic;
 import org.citydb.citygml.common.database.xlink.DBXlinkSurfaceGeometry;
 import org.citydb.citygml.importer.CityGMLImportException;
 import org.citydb.citygml.importer.util.AttributeValueJoiner;
@@ -69,13 +70,12 @@ public class DBTunnelHollowSpace implements DBImporter {
 		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
 		hasObjectClassIdColumn = importer.getDatabaseAdapter().getConnectionMetaData().getCityDBVersion().compareTo(4, 0, 0) >= 0;
 
-		StringBuilder stmt = new StringBuilder()
-				.append("insert into ").append(schema).append(".tunnel_hollow_space (id, class, class_codespace, function, function_codespace, usage, usage_codespace, tunnel_id, ")
-				.append("lod4_multi_surface_id, lod4_solid_id")
-				.append(hasObjectClassIdColumn ? ", objectclass_id) " : ") ")
-				.append("values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?")
-				.append(hasObjectClassIdColumn ? ", ?)" : ")");
-		psHollowSpace = batchConn.prepareStatement(stmt.toString());
+		String stmt = "insert into " + schema + ".tunnel_hollow_space (id, class, class_codespace, function, function_codespace, usage, usage_codespace, tunnel_id, " +
+				"lod4_multi_surface_id, lod4_solid_id" +
+				(hasObjectClassIdColumn ? ", objectclass_id) " : ") ") +
+				"values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?" +
+				(hasObjectClassIdColumn ? ", ?)" : ")");
+		psHollowSpace = batchConn.prepareStatement(stmt);
 
 		surfaceGeometryImporter = importer.getImporter(DBSurfaceGeometry.class);
 		cityObjectImporter = importer.getImporter(DBCityObject.class);
@@ -206,8 +206,13 @@ public class DBTunnelHollowSpace implements DBImporter {
 					property.unsetBoundarySurface();
 				} else {
 					String href = property.getHref();
-					if (href != null && href.length() != 0)
-						importer.logOrThrowUnsupportedXLinkMessage(hollowSpace, AbstractBoundarySurface.class, href);
+					if (href != null && href.length() != 0) {
+						importer.propagateXlink(new DBXlinkBasic(
+								TableEnum.TUNNEL_THEMATIC_SURFACE.getName(),
+								href,
+								hollowSpaceId,
+								"tunnel_hollow_space_id"));
+					}
 				}
 			}
 		}
@@ -222,8 +227,13 @@ public class DBTunnelHollowSpace implements DBImporter {
 					property.unsetIntTunnelInstallation();
 				} else {
 					String href = property.getHref();
-					if (href != null && href.length() != 0)
-						importer.logOrThrowUnsupportedXLinkMessage(hollowSpace, IntTunnelInstallation.class, href);
+					if (href != null && href.length() != 0) {
+						importer.propagateXlink(new DBXlinkBasic(
+								TableEnum.TUNNEL_INSTALLATION.getName(),
+								href,
+								hollowSpaceId,
+								"tunnel_hollow_space_id"));
+					}
 				}
 			}
 		}
@@ -238,8 +248,13 @@ public class DBTunnelHollowSpace implements DBImporter {
 					property.unsetTunnelFurniture();
 				} else {
 					String href = property.getHref();
-					if (href != null && href.length() != 0)
-						importer.logOrThrowUnsupportedXLinkMessage(hollowSpace, TunnelFurniture.class, href);
+					if (href != null && href.length() != 0) {
+						importer.propagateXlink(new DBXlinkBasic(
+								TableEnum.TUNNEL_FURNITURE.getName(),
+								href,
+								hollowSpaceId,
+								"tunnel_hollow_space_id"));
+					}
 				}
 			}
 		}

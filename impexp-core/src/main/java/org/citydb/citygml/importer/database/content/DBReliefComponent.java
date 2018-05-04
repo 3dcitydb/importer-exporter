@@ -27,11 +27,6 @@
  */
 package org.citydb.citygml.importer.database.content;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Types;
-
 import org.citydb.citygml.importer.CityGMLImportException;
 import org.citydb.config.Config;
 import org.citydb.config.geometry.GeometryObject;
@@ -47,6 +42,11 @@ import org.citygml4j.model.citygml.relief.TinProperty;
 import org.citygml4j.model.gml.GMLClass;
 import org.citygml4j.model.gml.geometry.primitives.Tin;
 import org.citygml4j.model.gml.geometry.primitives.TriangulatedSurface;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Types;
 
 public class DBReliefComponent implements DBImporter {
 	private final Connection batchConn;
@@ -75,32 +75,27 @@ public class DBReliefComponent implements DBImporter {
 		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
 		hasObjectClassIdColumn = importer.getDatabaseAdapter().getConnectionMetaData().getCityDBVersion().compareTo(4, 0, 0) >= 0;
 
-		StringBuilder componentStmt = new StringBuilder()
-				.append("insert into ").append(schema).append(".relief_component (id, objectclass_id, lod, extent) values ")
-				.append("(?, ?, ?, ?)");
+		String componentStmt = "insert into " + schema + ".relief_component (id, objectclass_id, lod, extent) values " +
+				"(?, ?, ?, ?)";
+		psReliefComponent = batchConn.prepareStatement(componentStmt);
 
-		StringBuilder tinStmt = new StringBuilder()
-				.append("insert into ").append(schema).append(".tin_relief (id, max_length, max_length_unit, stop_lines, break_lines, control_points, surface_geometry_id")
-				.append(hasObjectClassIdColumn ? ", objectclass_id) " : ") ")
-				.append("values (?, ?, ?, ?, ?, ?, ?")
-				.append(hasObjectClassIdColumn ? ", ?)" : ")");
+		String tinStmt = "insert into " + schema + ".tin_relief (id, max_length, max_length_unit, stop_lines, break_lines, control_points, surface_geometry_id" +
+				(hasObjectClassIdColumn ? ", objectclass_id) " : ") ") +
+				"values (?, ?, ?, ?, ?, ?, ?" +
+				(hasObjectClassIdColumn ? ", ?)" : ")");
+		psTinRelief = batchConn.prepareStatement(tinStmt);
 
-		StringBuilder masspointStmt = new StringBuilder()
-				.append("insert into ").append(schema).append(".masspoint_relief (id, relief_points")
-				.append(hasObjectClassIdColumn ? ", objectclass_id) " : ") ")
-				.append("values (?, ?")
-				.append(hasObjectClassIdColumn ? ", ?)" : ")");
+		String masspointStmt = "insert into " + schema + ".masspoint_relief (id, relief_points" +
+				(hasObjectClassIdColumn ? ", objectclass_id) " : ") ") +
+				"values (?, ?" +
+				(hasObjectClassIdColumn ? ", ?)" : ")");
+		psMassPointRelief = batchConn.prepareStatement(masspointStmt);
 
-		StringBuilder breaklineStmt = new StringBuilder()
-				.append("insert into ").append(schema).append(".breakline_relief (id, ridge_or_valley_lines, break_lines")
-				.append(hasObjectClassIdColumn ? ", objectclass_id) " : ") ")
-				.append("values (?, ?, ?")
-				.append(hasObjectClassIdColumn ? ", ?)" : ")");
-
-		psReliefComponent = batchConn.prepareStatement(componentStmt.toString());
-		psTinRelief = batchConn.prepareStatement(tinStmt.toString());
-		psMassPointRelief = batchConn.prepareStatement(masspointStmt.toString());
-		psBreaklineRelief = batchConn.prepareStatement(breaklineStmt.toString());
+		String breaklineStmt = "insert into " + schema + ".breakline_relief (id, ridge_or_valley_lines, break_lines" +
+				(hasObjectClassIdColumn ? ", objectclass_id) " : ") ") +
+				"values (?, ?, ?" +
+				(hasObjectClassIdColumn ? ", ?)" : ")");
+		psBreaklineRelief = batchConn.prepareStatement(breaklineStmt);
 
 		surfaceGeometryImporter = importer.getImporter(DBSurfaceGeometry.class);
 		cityObjectImporter = importer.getImporter(DBCityObject.class);
