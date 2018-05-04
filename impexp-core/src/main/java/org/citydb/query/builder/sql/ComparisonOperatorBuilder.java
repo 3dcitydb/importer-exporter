@@ -11,11 +11,13 @@ import org.citydb.database.schema.mapping.AbstractType;
 import org.citydb.database.schema.mapping.AbstractTypeProperty;
 import org.citydb.database.schema.mapping.ComplexAttribute;
 import org.citydb.database.schema.mapping.Condition;
+import org.citydb.database.schema.mapping.InjectedProperty;
 import org.citydb.database.schema.mapping.Join;
 import org.citydb.database.schema.mapping.JoinTable;
 import org.citydb.database.schema.mapping.MappingConstants;
 import org.citydb.database.schema.mapping.PathElementType;
 import org.citydb.database.schema.mapping.SimpleAttribute;
+import org.citydb.database.schema.path.AbstractNode;
 import org.citydb.database.schema.path.InvalidSchemaPathException;
 import org.citydb.database.schema.path.SchemaPath;
 import org.citydb.query.builder.QueryBuildException;
@@ -38,6 +40,7 @@ import org.citydb.sqlbuilder.expression.PlaceHolder;
 import org.citydb.sqlbuilder.schema.Table;
 import org.citydb.sqlbuilder.select.PredicateToken;
 import org.citydb.sqlbuilder.select.Select;
+import org.citydb.sqlbuilder.select.join.JoinName;
 import org.citydb.sqlbuilder.select.operator.comparison.ComparisonFactory;
 import org.citydb.sqlbuilder.select.operator.logical.LogicalOperationFactory;
 import org.citydb.sqlbuilder.select.projection.ConstantColumn;
@@ -273,10 +276,29 @@ public class ComparisonOperatorBuilder {
 		SchemaPath schemaPath = valueReference.getSchemaPath().copy();
 		PredicateToken token = buildIsNullPredicate((AbstractProperty)valueReference.getTarget(), schemaPath, negate);
 
-		// finally, create equivalent sql operation
+		// create equivalent sql operation
 		SQLQueryContext queryContext = schemaPathBuilder.buildSchemaPath(schemaPath, objectclassIds);
 		queryContext.select.addSelection(token);
-		
+
+		// if the target property is an injected ADE property, we need to change the join for
+		// the injection table from an inner join to a left join
+		List<org.citydb.sqlbuilder.select.join.Join> joins = queryContext.select.getJoins();
+		if (!joins.isEmpty()) {
+			AbstractNode<?> node = schemaPath.getLastNode();
+			while (node.getPathElement() instanceof AbstractProperty) {
+				if (node.getPathElement() instanceof InjectedProperty) {
+					InjectedProperty property = (InjectedProperty) node.getPathElement();
+					org.citydb.sqlbuilder.select.join.Join join = joins.get(joins.size() - 1);
+					if (join.getToColumn().getTable().getName().equalsIgnoreCase(property.getBaseJoin().getTable())) {
+						join.setJoinName(JoinName.LEFT_JOIN);
+						break;
+					}
+				}
+
+				node = node.parent();
+			}
+		}
+
 		return queryContext;
 	}
 	
