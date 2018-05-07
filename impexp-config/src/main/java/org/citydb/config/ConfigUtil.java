@@ -55,7 +55,9 @@ public class ConfigUtil {
 	}
 
 	public static Object unmarshal(File file, JAXBContext ctx) throws JAXBException, IOException {
-		return unmarshal(new FileInputStream(file), ctx);
+		try (FileInputStream inputStream = new FileInputStream(file)) {
+			return unmarshal(inputStream, ctx);
+		}
 	}
 	
 	public static Object unmarshal(InputStream inputStream, JAXBContext ctx) throws JAXBException, IOException {
