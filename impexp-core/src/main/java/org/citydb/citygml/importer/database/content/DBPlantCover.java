@@ -64,7 +64,7 @@ public class DBPlantCover implements DBImporter {
 				"lod1_multi_surface_id, lod2_multi_surface_id, lod3_multi_surface_id, lod4_multi_surface_id, " +
 				"lod1_multi_solid_id, lod2_multi_solid_id, lod3_multi_solid_id, lod4_multi_solid_id" +
 				(hasObjectClassIdColumn ? ", objectclass_id) " : ") ") +
-				"(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?" +
+				"values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?" +
 				(hasObjectClassIdColumn ? ", ?)" : ")");
 		psPlantCover = batchConn.prepareStatement(stmt);
 
