@@ -487,7 +487,6 @@ public class IndexOperation extends DatabaseOperationView {
 				}
 			});
 
-
 			dialog.getButton().addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					SwingUtilities.invokeLater(new Runnable() {

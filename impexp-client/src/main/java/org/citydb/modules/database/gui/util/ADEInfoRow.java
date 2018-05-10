@@ -3,7 +3,7 @@ package org.citydb.modules.database.gui.util;
 import javax.swing.*;
 
 public class ADEInfoRow {
-    public static final ADEInfoRow DUMMY = new ADEInfoRow(null, "n/a", "n/a", false, false);
+    public static final ADEInfoRow NO_ADES_ENTRY = new ADEInfoRow(null, "n/a", "n/a", false, false);
     private static final ImageIcon isSupported;
     private static final ImageIcon isNotSupported;
 
@@ -13,8 +13,8 @@ public class ADEInfoRow {
     }
 
     private final String id;
-    private final String name;
-    private final String version;
+    private String name;
+    private String version;
     private boolean databaseSupport;
     private boolean impexpSupport;
 
@@ -49,11 +49,19 @@ public class ADEInfoRow {
         return name;
     }
 
+    public void setName(String name) {
+        this.name = name;
+    }
+
     public String getVersion() {
         return version;
     }
 
-    public boolean isDatabaseSupport() {
+    public void setVersion(String version) {
+        this.version = version;
+    }
+
+    public boolean hasDatabaseSupport() {
         return databaseSupport;
     }
 
@@ -61,7 +69,7 @@ public class ADEInfoRow {
         this.databaseSupport = databaseSupport;
     }
 
-    public boolean isImpexpSupport() {
+    public boolean hasImpexpSupport() {
         return impexpSupport;
     }
 

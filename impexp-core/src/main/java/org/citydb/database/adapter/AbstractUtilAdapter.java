@@ -34,10 +34,15 @@ import org.citydb.config.project.database.Workspace;
 import org.citydb.database.adapter.IndexStatusInfo.IndexType;
 import org.citydb.database.connection.ADEMetadata;
 import org.citydb.database.connection.DatabaseMetaData;
+import org.citydb.database.schema.mapping.SchemaMapping;
+import org.citydb.database.schema.mapping.SchemaMappingException;
+import org.citydb.database.schema.mapping.SchemaMappingValidationException;
+import org.citydb.database.schema.util.SchemaMappingUtil;
 import org.geotools.referencing.CRS;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
+import javax.xml.bind.JAXBException;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -128,6 +133,15 @@ public abstract class AbstractUtilAdapter {
         }
 
         return ades;
+    }
+
+    public SchemaMapping getADESchemaMapping(String adeId, SchemaMapping schemaMapping) throws SQLException, JAXBException, SchemaMappingException, SchemaMappingValidationException {
+        try (Connection conn = databaseAdapter.connectionPool.getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery("select xml_schemamapping_file from " +
+                     databaseAdapter.getConnectionDetails().getSchema() + ".ade where adeid = '" + adeId + "'")) {
+            return rs.next() ? SchemaMappingUtil.getInstance().unmarshal(schemaMapping, rs.getString(1)) : null;
+        }
     }
 
     public String[] createDatabaseReport(Workspace workspace) throws SQLException {

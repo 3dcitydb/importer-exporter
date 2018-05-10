@@ -27,30 +27,14 @@
  */
 package org.citydb.gui.components.menubar;
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.SwingUtilities;
-
 import org.citydb.config.i18n.Language;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.util.GuiUtil;
+
+import javax.swing.*;
+import java.awt.*;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 
 @SuppressWarnings("serial")
 public class ReadMeDialog extends JDialog {
@@ -116,14 +100,6 @@ public class ReadMeDialog extends JDialog {
 		setResizable(true);
 		pack();
 
-		button.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				SwingUtilities.invokeLater(new Runnable() {
-					public void run() {
-						dispose();
-					}
-				});
-			}
-		});
+		button.addActionListener(l -> dispose());
 	}
 }

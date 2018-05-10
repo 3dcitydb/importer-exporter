@@ -1,7 +1,5 @@
 package org.citydb.modules.database.gui.util;
 
-import org.citydb.config.i18n.Language;
-
 import javax.swing.table.AbstractTableModel;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,12 +20,16 @@ public class ADETableModel extends AbstractTableModel {
 
     @Override
     public Class<?> getColumnClass(int columnIndex) {
-        return ADEInfoRow.DUMMY.getValueAt(columnIndex).getClass();
+        return ADEInfoRow.NO_ADES_ENTRY.getValueAt(columnIndex).getClass();
     }
 
     @Override
     public int getRowCount() {
         return data.size();
+    }
+
+    public ADEInfoRow getRow(int rowIndex) {
+        return rowIndex >= 0 && rowIndex < data.size() ? data.get(rowIndex) : ADEInfoRow.NO_ADES_ENTRY;
     }
 
     public void addRow(ADEInfoRow data) {
