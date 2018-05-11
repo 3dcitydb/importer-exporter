@@ -43,7 +43,6 @@ import org.citydb.util.Util;
 import org.postgis.Geometry;
 import org.postgis.PGbox2d;
 import org.postgis.PGgeometry;
-import org.postgresql.util.PSQLException;
 
 import java.sql.Array;
 import java.sql.Connection;

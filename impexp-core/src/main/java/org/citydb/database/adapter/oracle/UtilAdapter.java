@@ -27,17 +27,8 @@
  */
 package org.citydb.database.adapter.oracle;
 
-import java.sql.Array;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.SQLSyntaxErrorException;
-import java.sql.Statement;
-import java.sql.Struct;
-import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-
+import oracle.jdbc.OracleTypes;
+import oracle.spatial.geometry.JGeometry;
 import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.config.geometry.Position;
@@ -52,8 +43,15 @@ import org.citydb.database.connection.DatabaseMetaData.Versioning;
 import org.citydb.database.version.DatabaseVersion;
 import org.citydb.util.Util;
 
-import oracle.jdbc.OracleTypes;
-import oracle.spatial.geometry.JGeometry;
+import java.sql.Array;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Struct;
+import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class UtilAdapter extends AbstractUtilAdapter {
     private final DatabaseSrs WGS843D_SRS = new DatabaseSrs(4979, "", "", "", DatabaseSrsType.GEOGRAPHIC3D, true);
