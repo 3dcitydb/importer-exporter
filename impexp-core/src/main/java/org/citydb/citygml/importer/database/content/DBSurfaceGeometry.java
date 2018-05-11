@@ -1301,7 +1301,6 @@ public class DBSurfaceGeometry implements DBImporter {
 
 			// retrieve sequence values
 			psNextSeqValues.setInt(1, count);
-			psNextSeqValues.setString(2, schema);
 			try (ResultSet rs = psNextSeqValues.executeQuery()) {
 				ids = new long[count];
 				int i = 0;

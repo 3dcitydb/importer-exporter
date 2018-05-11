@@ -127,12 +127,13 @@ public class SQLAdapter extends AbstractSQLAdapter {
     }
 
     @Override
-    public String getNextSequenceValuesQuery(String sequence) {
-        return "select * from table(" +
+	public String getNextSequenceValuesQuery(String sequence) {
+		return "select * from table(" +
                 resolveDatabaseOperationName("citydb_util.get_seq_values") + "(" +
-                "'" + sequence + "'" + "," +
-                "?" + "," + "?" + "))";
-    }
+                "'" + databaseAdapter.getConnectionDetails().getSchema() +
+                "." + sequence + "'" + "," +
+                "?" + "))";
+	}
 
     @Override
     public String getUnloggedIndexProperty() {

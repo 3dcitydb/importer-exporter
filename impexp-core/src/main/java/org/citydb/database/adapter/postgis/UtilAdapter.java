@@ -79,23 +79,28 @@ public class UtilAdapter extends AbstractUtilAdapter {
 
     @Override
     protected void getDatabaseMetaData(DatabaseMetaData metaData, Connection connection) throws SQLException {
-        try (Statement statement = connection.createStatement();
-             ResultSet rs = statement.executeQuery("select * from " +
-                     databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_util.db_metadata") + "()")) {
-            if (rs.next()) {
-                DatabaseSrs srs = metaData.getReferenceSystem();
-                srs.setSrid(rs.getInt("SCHEMA_SRID"));
-                srs.setGMLSrsName(rs.getString("SCHEMA_GML_SRS_NAME"));
-                srs.setDatabaseSrsName(rs.getString("COORD_REF_SYS_NAME"));
-                srs.setType(getSrsType(rs.getString("COORD_REF_SYS_KIND")));
-                srs.setWkText(rs.getString("WKTEXT"));
-                srs.setSupported(true);
+		try (PreparedStatement psQuery = connection.prepareStatement("select * from " + databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_util.db_metadata") + "(?)")) {
+			psQuery.setString(1, databaseAdapter.getConnectionDetails().getSchema());
+			
+			try (ResultSet rs = psQuery.executeQuery()) {
+				if (rs.next()) {
+					DatabaseSrs srs = metaData.getReferenceSystem();
+					srs.setSrid(rs.getInt("SCHEMA_SRID"));
+					srs.setGMLSrsName(rs.getString("SCHEMA_GML_SRS_NAME"));
+					srs.setDatabaseSrsName(rs.getString("COORD_REF_SYS_NAME"));
+					srs.setType(getSrsType(rs.getString("COORD_REF_SYS_KIND")));
+					srs.setWkText(rs.getString("WKTEXT"));
+					srs.setSupported(true);
 
-                metaData.setVersioning(Versioning.NOT_SUPPORTED);
-            } else
-                throw new SQLException("Failed to retrieve metadata information from database.");
-        }
-    }
+					metaData.setVersioning(Versioning.NOT_SUPPORTED);
+				} else
+					throw new SQLException("Failed to retrieve metadata information from database.");
+			} catch (SQLException e) {
+				throw new SQLException("No 3DCityDB instance found in given database schema.", e);
+			}
+		}
+	}
+
 
     @Override
     protected void getSrsInfo(DatabaseSrs srs, Connection connection) throws SQLException {

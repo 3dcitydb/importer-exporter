@@ -78,26 +78,31 @@ public class UtilAdapter extends AbstractUtilAdapter {
             throw new SQLException("Failed to retrieve version information from the 3D City Database instance.", e);
         }
     }
+    
+	@Override
+	protected void getDatabaseMetaData(DatabaseMetaData metaData, Connection connection) throws SQLException {
+		try (PreparedStatement psQuery = connection.prepareStatement("select * from table(" + databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_util.db_metadata") + "(?))")) {
+			psQuery.setString(1, databaseAdapter.getConnectionDetails().getSchema());
+			
+			try (ResultSet rs = psQuery.executeQuery()) {
+				if (rs.next()) {
+					DatabaseSrs srs = metaData.getReferenceSystem();
+					srs.setSrid(rs.getInt("SCHEMA_SRID"));
+					srs.setGMLSrsName(rs.getString("SCHEMA_GML_SRS_NAME"));
+					srs.setDatabaseSrsName(rs.getString("COORD_REF_SYS_NAME"));
+					srs.setType(getSrsType(rs.getString("COORD_REF_SYS_KIND")));
+					srs.setWkText(fixWKT(rs.getString("WKTEXT")));
+					srs.setSupported(true);
 
-    @Override
-    protected void getDatabaseMetaData(DatabaseMetaData metaData, Connection connection) throws SQLException {
-        try (Statement statement = connection.createStatement();
-             ResultSet rs = statement.executeQuery("select * from table(" +
-                     databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_util.db_metadata") + ")")) {
-            if (rs.next()) {
-                DatabaseSrs srs = metaData.getReferenceSystem();
-                srs.setSrid(rs.getInt("SCHEMA_SRID"));
-                srs.setGMLSrsName(rs.getString("SCHEMA_GML_SRS_NAME"));
-                srs.setDatabaseSrsName(rs.getString("COORD_REF_SYS_NAME"));
-                srs.setType(getSrsType(rs.getString("COORD_REF_SYS_KIND")));
-                srs.setWkText(fixWKT(rs.getString("WKTEXT")));
-                srs.setSupported(true);
+					metaData.setVersioning(Versioning.valueOf(rs.getString("VERSIONING")));
+				} else
+					throw new SQLException("Failed to retrieve metadata information from database.");
+			} catch (SQLException e) {
+				throw new SQLException("No 3DCityDB instance found in given database schema.", e);
+			}
+		}
+	}
 
-                metaData.setVersioning(Versioning.valueOf(rs.getString("VERSIONING")));
-            } else
-                throw new SQLException("Failed to retrieve metadata information from database.");
-        }
-    }
 
     @Override
     protected void getSrsInfo(DatabaseSrs srs, Connection connection) throws SQLException {

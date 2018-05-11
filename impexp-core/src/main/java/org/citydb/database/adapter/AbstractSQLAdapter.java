@@ -70,6 +70,7 @@ public abstract class AbstractSQLAdapter {
 	public abstract boolean requiresPseudoTableInSelect();
 	public abstract String getPseudoTableName();
 	public abstract boolean spatialPredicateRequiresNoIndexHint();
+
 	public abstract String getHierarchicalGeometryQuery();
 	public abstract String getNextSequenceValue(String sequence);
 	public abstract String getCurrentSequenceValue(String sequence);
