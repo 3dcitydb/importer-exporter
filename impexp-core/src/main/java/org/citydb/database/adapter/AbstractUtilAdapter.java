@@ -54,7 +54,6 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 public abstract class AbstractUtilAdapter {
-
     protected final AbstractDatabaseAdapter databaseAdapter;
     protected final ConcurrentHashMap<Integer, DatabaseSrs> srsInfoMap;
     private final ConcurrentHashMap<Integer, CoordinateReferenceSystem> srsDefMap;

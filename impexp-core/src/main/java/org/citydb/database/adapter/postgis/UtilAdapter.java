@@ -55,7 +55,6 @@ import java.sql.Types;
 import java.util.List;
 
 public class UtilAdapter extends AbstractUtilAdapter {
-
     private final DatabaseSrs WGS843D_SRS = new DatabaseSrs(4326, "", "", "", DatabaseSrsType.GEOGRAPHIC2D, true);
 
     protected UtilAdapter(AbstractDatabaseAdapter databaseAdapter) {
@@ -97,9 +96,8 @@ public class UtilAdapter extends AbstractUtilAdapter {
 					metaData.setVersioning(Versioning.NOT_SUPPORTED);
 				} else
 					throw new SQLException("Failed to retrieve metadata information from database.");
-			}
-			catch (PSQLException sqlEx) {
-				throw new SQLException("No 3DCityDB instance found in given database schema.");
+			} catch (SQLException e) {
+				throw new SQLException("No 3DCityDB instance found in given database schema.", e);
 			}
 		}
 	}

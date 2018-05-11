@@ -56,7 +56,6 @@ import oracle.jdbc.OracleTypes;
 import oracle.spatial.geometry.JGeometry;
 
 public class UtilAdapter extends AbstractUtilAdapter {
-
     private final DatabaseSrs WGS843D_SRS = new DatabaseSrs(4979, "", "", "", DatabaseSrsType.GEOGRAPHIC3D, true);
     private final ConcurrentHashMap<Integer, Integer> srs2DMap;
 
@@ -100,9 +99,8 @@ public class UtilAdapter extends AbstractUtilAdapter {
 					metaData.setVersioning(Versioning.valueOf(rs.getString("VERSIONING")));
 				} else
 					throw new SQLException("Failed to retrieve metadata information from database.");
-			}			
-			catch (SQLSyntaxErrorException sqlEx) {
-				throw new SQLException("No 3DCityDB instance found in given database schema.");
+			} catch (SQLException e) {
+				throw new SQLException("No 3DCityDB instance found in given database schema.", e);
 			}
 		}
 	}
