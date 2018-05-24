@@ -81,8 +81,13 @@ public class UtilAdapter extends AbstractUtilAdapter {
     
 	@Override
 	protected void getDatabaseMetaData(DatabaseMetaData metaData, Connection connection) throws SQLException {
-		try (PreparedStatement psQuery = connection.prepareStatement("select * from table(" + databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_util.db_metadata") + "(?))")) {
-			psQuery.setString(1, databaseAdapter.getConnectionDetails().getSchema());
+        StringBuilder query = new StringBuilder("select * from table(").append(databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_util.db_metadata"));
+        boolean requiresSchema = metaData.getCityDBVersion().compareTo(4, 0, 0) < 0;
+        query.append(requiresSchema ? "())" : "(?))");
+
+		try (PreparedStatement psQuery = connection.prepareStatement(query.toString())) {
+            if (!requiresSchema)
+                psQuery.setString(1, databaseAdapter.getConnectionDetails().getSchema());
 			
 			try (ResultSet rs = psQuery.executeQuery()) {
 				if (rs.next()) {

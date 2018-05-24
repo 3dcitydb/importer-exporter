@@ -128,11 +128,21 @@ public class SQLAdapter extends AbstractSQLAdapter {
 
     @Override
 	public String getNextSequenceValuesQuery(String sequence) {
-		return "select * from table(" +
-                resolveDatabaseOperationName("citydb_util.get_seq_values") + "(" +
-                "'" + databaseAdapter.getConnectionDetails().getSchema() +
-                "." + sequence + "'" + "," +
-                "?" + "))";
+        boolean requiresSchema = databaseAdapter.getConnectionMetaData().getCityDBVersion().compareTo(4, 0, 0) < 0;
+        StringBuilder query = new StringBuilder("select * from table(")
+                .append(resolveDatabaseOperationName("citydb_util.get_seq_values")).append("(");
+
+        if (requiresSchema) {
+            query.append("'").append(sequence).append("'").append(",")
+                    .append("?,")
+                    .append("'").append(databaseAdapter.getConnectionDetails().getSchema()).append("'");
+        } else {
+            query.append("'").append(databaseAdapter.getConnectionDetails().getSchema()).append(".")
+                    .append(sequence).append("'").append(",")
+                    .append("?");
+        }
+
+        return query.append("))").toString();
 	}
 
     @Override
