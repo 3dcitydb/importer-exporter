@@ -200,9 +200,4 @@ public class SQLAdapter extends AbstractSQLAdapter {
 		return null;
 	}
 
-	@Override
-	public Array createIdArray(Connection connection, Long... ids) throws SQLException {
-		// not required for cache tables
-		return null;
-	}
 }

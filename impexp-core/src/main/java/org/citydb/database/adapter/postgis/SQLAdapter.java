@@ -247,9 +247,4 @@ public class SQLAdapter extends AbstractSQLAdapter {
         return new Function("st_extent", envelope);
     }
 
-    @Override
-    public Array createIdArray(Connection connection, Long... ids) throws SQLException {
-        return connection.createArrayOf("INTEGER", ids);
-    }
-
 }

@@ -74,8 +74,6 @@ public abstract class AbstractSQLAdapter {
 	public abstract String getCreateUnloggedTableAsSelectFrom(String targetTableName, String sourceTableName);
 	public abstract String getUnloggedIndexProperty();
 
-	public abstract Array createIdArray(Connection connection, Long... ids) throws SQLException;
-
 	public abstract boolean requiresPseudoTableInSelect();
 	public abstract String getPseudoTableName();
 	public abstract boolean spatialPredicateRequiresNoIndexHint();

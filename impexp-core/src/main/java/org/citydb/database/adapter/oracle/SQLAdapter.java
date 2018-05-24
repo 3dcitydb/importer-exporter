@@ -240,8 +240,4 @@ public class SQLAdapter extends AbstractSQLAdapter {
                 new Function("citydb_util.to_2d", envelope, new IntegerLiteral(databaseAdapter.getConnectionMetaData().getReferenceSystem().getSrid())));
     }
 
-    @Override
-    public Array createIdArray(Connection connection, Long... ids) throws SQLException {
-        return connection.unwrap(OracleConnection.class).createOracleArray("ID_ARRAY", ids);
-    }
 }
