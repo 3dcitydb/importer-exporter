@@ -27,6 +27,7 @@
  */
 package org.citydb.database.adapter.oracle;
 
+import oracle.jdbc.driver.OracleConnection;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.adapter.AbstractSQLAdapter;
@@ -42,6 +43,7 @@ import org.citydb.sqlbuilder.select.PredicateToken;
 import org.citydb.sqlbuilder.select.operator.comparison.ComparisonFactory;
 import org.citydb.sqlbuilder.select.projection.Function;
 
+import java.sql.Array;
 import java.sql.Connection;
 import java.sql.SQLException;
 
@@ -238,4 +240,8 @@ public class SQLAdapter extends AbstractSQLAdapter {
                 new Function("citydb_util.to_2d", envelope, new IntegerLiteral(databaseAdapter.getConnectionMetaData().getReferenceSystem().getSrid())));
     }
 
+    @Override
+    public Array createIdArray(Connection connection, Long... ids) throws SQLException {
+        return connection.unwrap(OracleConnection.class).createOracleArray("ID_ARRAY", ids);
+    }
 }

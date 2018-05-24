@@ -28,6 +28,7 @@
 package org.citydb.database.adapter;
 
 import org.citydb.config.geometry.GeometryObject;
+import org.citydb.database.version.DatabaseVersion;
 import org.citydb.query.filter.selection.operator.spatial.SpatialOperatorName;
 import org.citydb.sqlbuilder.SQLStatement;
 import org.citydb.sqlbuilder.expression.PlaceHolder;
@@ -35,14 +36,20 @@ import org.citydb.sqlbuilder.schema.Column;
 import org.citydb.sqlbuilder.select.PredicateToken;
 import org.citydb.sqlbuilder.select.projection.Function;
 
-import java.io.IOException;
+import java.sql.Array;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
+import java.util.TreeMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public abstract class AbstractSQLAdapter {
 	protected final AbstractDatabaseAdapter databaseAdapter;
@@ -67,6 +74,8 @@ public abstract class AbstractSQLAdapter {
 	public abstract String getCreateUnloggedTableAsSelectFrom(String targetTableName, String sourceTableName);
 	public abstract String getUnloggedIndexProperty();
 
+	public abstract Array createIdArray(Connection connection, Long... ids) throws SQLException;
+
 	public abstract boolean requiresPseudoTableInSelect();
 	public abstract String getPseudoTableName();
 	public abstract boolean spatialPredicateRequiresNoIndexHint();
@@ -84,19 +93,70 @@ public abstract class AbstractSQLAdapter {
 	public abstract BlobImportAdapter getBlobImportAdapter(Connection connection, BlobType type) throws SQLException;
 	public abstract BlobExportAdapter getBlobExportAdapter(Connection connection, BlobType type);
 
-	public String resolveDatabaseOperationName(String operation) {
+	public String resolveDatabaseOperationName(String key) {
 		if (databaseOperations == null) {
 			try {
 				databaseOperations = new Properties();
 				databaseOperations.load(getClass().getResourceAsStream("operations.properties"));
-			} catch (IOException e) {
-				throw new IllegalStateException("Failed to load operations properties file.", e);
+			} catch (Exception e) {
+				throw new IllegalStateException("Failed to load database operations property file.", e);
 			}
 		}
 
-		return databaseOperations.getProperty(operation);
+		String result = databaseOperations.getProperty(key);
+
+		// check whether we have operations for different database versions
+		if (result != null && result.contains(",")) {
+			String[] values = result.split(",");
+			result = null;
+
+		    if (databaseAdapter.getConnectionMetaData() != null) {
+				DatabaseVersion dbVersion = databaseAdapter.getConnectionMetaData().getCityDBVersion();
+				Matcher matcher = Pattern.compile("^v(\\d+)(?:\\.(\\d+))?$").matcher("");
+				Map<DatabaseVersion, String> operations = new TreeMap<>(Collections.reverseOrder());
+
+                for (String value : values) {
+                    String[] items = value.split("=");
+
+                    if (items.length == 2) {
+                    	matcher.reset(items[0]);
+                    	if (matcher.matches()) {
+							String major = matcher.group(1);
+							String minor = matcher.group(2);
+
+							DatabaseVersion version = new DatabaseVersion(Integer.valueOf(major), minor != null ? Integer.valueOf(minor) : 0, 0);
+							operations.put(version, items[1]);
+						} else
+							throw new IllegalStateException("Failed to parse versions for database operation key '" + key + "'.");
+                    } else
+						throw new IllegalStateException("Failed to parse versions for database operation key '" + key + "'.");
+                }
+
+                DatabaseVersion upperBound = null;
+				for (Map.Entry<DatabaseVersion, String> entry : operations.entrySet()) {
+                	DatabaseVersion lowerBound = entry.getKey();
+
+                	if (dbVersion.compareTo(lowerBound) >= 0
+						&& (upperBound == null || dbVersion.compareTo(upperBound) < 0)) {
+                		result = entry.getValue();
+                		break;
+					}
+
+                	upperBound = lowerBound;
+				}
+            }
+		}
+
+        if (result == null)
+            throw new IllegalArgumentException("No mapping found for database operation key '" + key + "'.");
+
+        // replace tokens
+		if (result.contains("${schema}"))
+			result = result.replace("${schema}", databaseAdapter.getConnectionDetails().getSchema());
+
+		return result;
 	}
-	
+
 	public PreparedStatement prepareStatement(SQLStatement statement, Connection connection) throws SQLException {
 		PreparedStatement preparedStatement = connection.prepareStatement(statement.toString());
 		fillPlaceHolders(statement, preparedStatement, connection);

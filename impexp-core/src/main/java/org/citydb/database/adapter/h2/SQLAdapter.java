@@ -27,6 +27,7 @@
  */
 package org.citydb.database.adapter.h2;
 
+import java.sql.Array;
 import java.sql.Connection;
 import java.sql.SQLException;
 
@@ -199,4 +200,9 @@ public class SQLAdapter extends AbstractSQLAdapter {
 		return null;
 	}
 
+	@Override
+	public Array createIdArray(Connection connection, Long... ids) throws SQLException {
+		// not required for cache tables
+		return null;
+	}
 }

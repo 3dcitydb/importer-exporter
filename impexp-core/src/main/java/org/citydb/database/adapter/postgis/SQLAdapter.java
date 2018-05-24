@@ -44,6 +44,7 @@ import org.citydb.sqlbuilder.select.operator.comparison.ComparisonFactory;
 import org.citydb.sqlbuilder.select.operator.logical.LogicalOperationFactory;
 import org.citydb.sqlbuilder.select.projection.Function;
 
+import java.sql.Array;
 import java.sql.Connection;
 import java.sql.SQLException;
 
@@ -244,6 +245,11 @@ public class SQLAdapter extends AbstractSQLAdapter {
     @Override
     public Function getAggregateExtentFunction(Column envelope) {
         return new Function("st_extent", envelope);
+    }
+
+    @Override
+    public Array createIdArray(Connection connection, Long... ids) throws SQLException {
+        return connection.createArrayOf("INTEGER", ids);
     }
 
 }
