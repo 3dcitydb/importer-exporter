@@ -283,7 +283,7 @@ public class UtilAdapter extends AbstractUtilAdapter {
     @Override
     protected boolean updateTableStats(IndexType type, String schema, Connection connection) throws SQLException {
         try (PreparedStatement pStmt = connection.prepareStatement("SELECT (obj).table_name, (obj).attribute_name " +
-                "FROM index_table WHERE (obj).type = ?")) {
+                "FROM " + schema + ".index_table WHERE (obj).type = ?")) {
             pStmt.setInt(1, type == IndexType.SPATIAL ? 1 : 0);
 
             try (ResultSet rs = pStmt.executeQuery()) {
