@@ -174,11 +174,10 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 
 		sridText.addPropertyChangeListener(new PropertyChangeListener() {
 			public void propertyChange(PropertyChangeEvent evt) {
-				if (sridText.getValue() != null) {
-					if (((Number)sridText.getValue()).intValue() < 0)
-						sridText.setValue(0);
-					else if (((Number)sridText.getValue()).intValue() > Integer.MAX_VALUE)
-						sridText.setValue(Integer.MAX_VALUE);
+				int srid = ((Number) sridText.getValue()).intValue();
+				if (srid < 0 || srid == Integer.MAX_VALUE) {
+					srid = 0;
+					sridText.setValue(srid);
 				}
 			}
 		});
