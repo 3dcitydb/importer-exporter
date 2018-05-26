@@ -129,7 +129,7 @@ public class GeometryConverter {
 				}
 			}
 
-			return hasUnsupportedGeometry;
+			return !hasUnsupportedGeometry;
 		default:
 			return false;
 		}
