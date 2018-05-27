@@ -43,10 +43,14 @@ import org.citygml4j.model.gml.geometry.AbstractGeometry;
 import org.citygml4j.model.gml.geometry.GeometryProperty;
 import org.citygml4j.model.gml.geometry.aggregates.MultiCurve;
 import org.citygml4j.model.gml.geometry.aggregates.MultiCurveProperty;
+import org.citygml4j.model.gml.geometry.aggregates.MultiGeometry;
 import org.citygml4j.model.gml.geometry.aggregates.MultiPoint;
 import org.citygml4j.model.gml.geometry.aggregates.MultiPointProperty;
+import org.citygml4j.model.gml.geometry.aggregates.MultiSolid;
+import org.citygml4j.model.gml.geometry.aggregates.MultiSurface;
 import org.citygml4j.model.gml.geometry.complexes.CompositeCurve;
 import org.citygml4j.model.gml.geometry.complexes.CompositeSolid;
+import org.citygml4j.model.gml.geometry.complexes.CompositeSurface;
 import org.citygml4j.model.gml.geometry.complexes.GeometricComplex;
 import org.citygml4j.model.gml.geometry.complexes.GeometricComplexProperty;
 import org.citygml4j.model.gml.geometry.primitives.AbstractCurve;
@@ -54,6 +58,7 @@ import org.citygml4j.model.gml.geometry.primitives.AbstractCurveSegment;
 import org.citygml4j.model.gml.geometry.primitives.AbstractGeometricPrimitive;
 import org.citygml4j.model.gml.geometry.primitives.AbstractRing;
 import org.citygml4j.model.gml.geometry.primitives.AbstractRingProperty;
+import org.citygml4j.model.gml.geometry.primitives.AbstractSurface;
 import org.citygml4j.model.gml.geometry.primitives.ControlPoint;
 import org.citygml4j.model.gml.geometry.primitives.Curve;
 import org.citygml4j.model.gml.geometry.primitives.CurveArrayProperty;
@@ -74,6 +79,8 @@ import org.citygml4j.model.gml.geometry.primitives.Polygon;
 import org.citygml4j.model.gml.geometry.primitives.PolygonProperty;
 import org.citygml4j.model.gml.geometry.primitives.Sign;
 import org.citygml4j.model.gml.geometry.primitives.Solid;
+import org.citygml4j.model.gml.geometry.primitives.SurfaceProperty;
+import org.citygml4j.model.gml.geometry.primitives.Tin;
 import org.citygml4j.util.walker.GeometryWalker;
 
 public class GeometryConverter {
@@ -101,8 +108,8 @@ public class GeometryConverter {
 			affineTransformer = importer.getAffineTransformer();
 	}
 
-	public boolean isSurfaceGeometry(AbstractGeometry abstractGeometry) {
-		switch (abstractGeometry.getGMLClass()) {
+	public boolean isSurfaceGeometry(AbstractGeometry geometry) {
+		switch (geometry.getGMLClass()) {
 		case LINEAR_RING:
 		case POLYGON:
 		case ORIENTABLE_SURFACE:
@@ -118,11 +125,33 @@ public class GeometryConverter {
 		case MULTI_SOLID:
 			return true;
 		case GEOMETRIC_COMPLEX:
-			GeometricComplex complex = (GeometricComplex)abstractGeometry;
+			GeometricComplex complex = (GeometricComplex) geometry;
 			boolean hasUnsupportedGeometry = false;
-			for (GeometricPrimitiveProperty primitiveProperty : complex.getElement()) {
-				if (primitiveProperty.isSetGeometricPrimitive()) {
-					if (!isSurfaceGeometry(primitiveProperty.getGeometricPrimitive())) {
+			for (GeometricPrimitiveProperty property : complex.getElement()) {
+				if (property.isSetGeometricPrimitive()) {
+					if (!isSurfaceGeometry(property.getGeometricPrimitive())) {
+						hasUnsupportedGeometry = true;
+						break;
+					}
+				}
+			}
+
+			return !hasUnsupportedGeometry;
+		case MULTI_GEOMETRY:
+			MultiGeometry multiGeometry = (MultiGeometry) geometry;
+			hasUnsupportedGeometry = false;
+			for (GeometryProperty<?> property : multiGeometry.getGeometryMember()) {
+				if (property.isSetGeometry()) {
+					if (!isSurfaceGeometry(property.getGeometry())) {
+						hasUnsupportedGeometry = true;
+						break;
+					}
+				}
+			}
+
+			if (multiGeometry.isSetGeometryMembers()) {
+				for (AbstractGeometry member : multiGeometry.getGeometryMembers().getGeometry()) {
+					if (!isSurfaceGeometry(member)) {
 						hasUnsupportedGeometry = true;
 						break;
 					}
@@ -711,6 +740,46 @@ public class GeometryConverter {
 		}
 
 		return compositeSolidGeom;
+	}
+
+	public MultiSurface convertToMultiSurface(MultiGeometry multiGeometry) {
+		MultiSurface multiSurface = new MultiSurface();
+		multiSurface.setId(multiGeometry.getId());
+
+		List<SurfaceProperty> properties = multiSurface.getSurfaceMember();
+		multiGeometry.accept(new GeometryWalker() {
+			public void visit(AbstractSurface surface) {
+				properties.add(new SurfaceProperty(surface));
+			}
+
+			public void visit(MultiSurface multiSurface) {
+				List<SurfaceProperty> tmp = new ArrayList<>(multiSurface.getSurfaceMember());
+				if (multiSurface.isSetSurfaceMembers()) {
+					for (AbstractSurface surface : multiSurface.getSurfaceMembers().getSurface())
+						tmp.add(new SurfaceProperty(surface));
+				}
+
+				if (multiSurface.isSetId()) {
+					// mapping a MultiSurface to a CompositeSurface is not correct in terms
+					// of spatial theory. However, a MultiSurface might be referenced by
+					// appearance objects and thus the mapping is required to keep this information
+					CompositeSurface compositeSurface = new CompositeSurface();
+					compositeSurface.setId(multiSurface.getId());
+					compositeSurface.setSurfaceMember(tmp);
+					properties.add(new SurfaceProperty(compositeSurface));
+				} else
+					properties.addAll(tmp);
+			}
+
+			public <T extends AbstractGeometry> void visit(GeometryProperty<T> property) {
+				if (!property.isSetGeometry() && property.isSetHref())
+					properties.add(new SurfaceProperty(property.getHref()));
+				else
+					super.visit(property);
+			}
+		});
+
+		return multiSurface;
 	}
 
 	private boolean containsPointPrimitives(GeometricComplex geometricComplex, boolean exclusive) {

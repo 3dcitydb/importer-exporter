@@ -46,6 +46,7 @@ import org.citygml4j.model.citygml.texturedsurface._AppearanceProperty;
 import org.citygml4j.model.citygml.texturedsurface._TexturedSurface;
 import org.citygml4j.model.gml.GMLClass;
 import org.citygml4j.model.gml.geometry.AbstractGeometry;
+import org.citygml4j.model.gml.geometry.aggregates.MultiGeometry;
 import org.citygml4j.model.gml.geometry.aggregates.MultiPolygon;
 import org.citygml4j.model.gml.geometry.aggregates.MultiSolid;
 import org.citygml4j.model.gml.geometry.aggregates.MultiSurface;
@@ -1232,6 +1233,12 @@ public class DBSurfaceGeometry implements DBImporter {
 				}
 			}
 		}
+
+		// MultiGeometry
+		else if (surfaceGeometryType == GMLClass.MULTI_GEOMETRY) {
+			MultiSurface multiSurface = geometryConverter.convertToMultiSurface((MultiGeometry) surfaceGeometry);
+			doImport(multiSurface, surfaceGeometryId, parentId, rootId, reverse, isXlink, isCopy, cityObjectId);
+		}
 	}
 
 	private void addBatch() throws CityGMLImportException, SQLException {
@@ -1278,6 +1285,7 @@ public class DBSurfaceGeometry implements DBImporter {
 			case MULTI_POLYGON:
 			case MULTI_SURFACE:
 			case MULTI_SOLID:
+			case MULTI_GEOMETRY:
 				count++;
 			default:
 				break;
