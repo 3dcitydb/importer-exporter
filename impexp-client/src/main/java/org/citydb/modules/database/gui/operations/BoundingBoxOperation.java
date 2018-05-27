@@ -36,6 +36,7 @@ import org.citydb.config.project.database.DBOperationType;
 import org.citydb.config.project.database.DatabaseSrs;
 import org.citydb.config.project.database.Workspace;
 import org.citydb.database.connection.DatabaseConnectionPool;
+import org.citydb.database.schema.mapping.AbstractPathElement;
 import org.citydb.database.schema.mapping.FeatureType;
 import org.citydb.database.schema.mapping.SchemaMapping;
 import org.citydb.event.global.DatabaseConnectionStateEvent;
@@ -51,13 +52,11 @@ import org.citygml4j.model.module.citygml.CoreModule;
 import javax.swing.*;
 import javax.xml.namespace.QName;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -111,14 +110,12 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 		createMissingButton = new JButton();
 		calculateButton = new JButton();
 
-		featureComboBox = new JComboBox<FeatureType>();
+		featureComboBox = new JComboBox<>();
 		updateFeatureSelection();
 
 		JPanel featureBox = new JPanel();
 		featureBox.setLayout(new GridBagLayout());
-		GridBagConstraints c = GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.BOTH,10,5,0,5);
-		c.gridwidth = 2;
-		component.add(featureBox, c);
+		component.add(featureBox, GuiUtil.setConstraints(0,0,2,1,1.0,0.0,GridBagConstraints.BOTH,10,5,0,5));
 		featureBox.add(featureLabel, GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.BOTH,0,0,0,5));
 		featureBox.add(featureComboBox, GuiUtil.setConstraints(1,0,1.0,0.0,GridBagConstraints.BOTH,0,5,0,0));
 
@@ -129,55 +126,32 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 
 		JPanel createBboxPanel = new JPanel();
 		createBboxPanel.setLayout(new GridBagLayout());
-		component.add(createBboxPanel, GuiUtil.setConstraints(1,1,0.0,1.0,GridBagConstraints.BOTH,10,0,0,5));
+		component.add(createBboxPanel, GuiUtil.setConstraints(1,1,0.0,0.0,GridBagConstraints.BOTH,10,0,0,5));
 		createBboxPanel.add(createMissingButton, GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.HORIZONTAL,5,0,0,0));
 		createBboxPanel.add(createAllButton, GuiUtil.setConstraints(0,1,0.0,1.0,GridBagConstraints.NORTH, GridBagConstraints.HORIZONTAL,5,0,0,0));
+		component.add(calculateButton, GuiUtil.setConstraints(0,2,2,1,0.0,0.0,GridBagConstraints.NONE,10,5,10,5));
 
-		c = GuiUtil.setConstraints(0,2,0.0,0.0,GridBagConstraints.NONE,10,0,5,5);
-		c.gridwidth = 2;
-		component.add(calculateButton, c);
-
-		featureComboBox.addItemListener(new ItemListener() {
-			public void itemStateChanged(ItemEvent e) {
-				if (e.getStateChange() == ItemEvent.SELECTED)
-					setEnabledBoundingBoxCalculation(true);
-			}
+		featureComboBox.addItemListener(e -> {
+			if (e.getStateChange() == ItemEvent.SELECTED)
+				setEnabledBoundingBoxCalculation(true);
 		});
 
-		createAllButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				Thread thread = new Thread() {
-					public void run() {
-						createBoundingBox(BoundingBoxMode.FULL);
-					}
-				};
-				thread.setDaemon(true);
-				thread.start();
-			}
+		createAllButton.addActionListener(e -> {
+			Thread thread = new Thread(() -> createBoundingBox(BoundingBoxMode.FULL));
+			thread.setDaemon(true);
+			thread.start();
 		});
 
-		createMissingButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				Thread thread = new Thread() {
-					public void run() {
-						createBoundingBox(BoundingBoxMode.PARTIAL);
-					}
-				};
-				thread.setDaemon(true);
-				thread.start();
-			}
+		createMissingButton.addActionListener(e -> {
+			Thread thread = new Thread(() -> createBoundingBox(BoundingBoxMode.PARTIAL));
+			thread.setDaemon(true);
+			thread.start();
 		});
 
-		calculateButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {			
-				Thread thread = new Thread() {
-					public void run() {
-						calcBoundingBox();
-					}
-				};
-				thread.setDaemon(true);
-				thread.start();
-			}
+		calculateButton.addActionListener(e -> {
+			Thread thread = new Thread(this::calcBoundingBox);
+			thread.setDaemon(true);
+			thread.start();
 		});
 	}
 
@@ -275,22 +249,13 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 					Language.I18N.getString("db.dialog.bbox.details"), 
 					true);
 
-			SwingUtilities.invokeLater(new Runnable() {
-				public void run() {
-					bboxDialog.setLocationRelativeTo(viewController.getTopFrame());
-					bboxDialog.setVisible(true);
-				}
+			SwingUtilities.invokeLater(() -> {
+				bboxDialog.setLocationRelativeTo(viewController.getTopFrame());
+				bboxDialog.setVisible(true);
 			});
 
-			bboxDialog.getButton().addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					SwingUtilities.invokeLater(new Runnable() {
-						public void run() {
-							dbConnectionPool.getActiveDatabaseAdapter().getUtil().interruptDatabaseOperation();
-						}
-					});
-				}
-			});
+			bboxDialog.getButton().addActionListener(e -> SwingUtilities.invokeLater(
+					() -> dbConnectionPool.getActiveDatabaseAdapter().getUtil().interruptDatabaseOperation()));
 
 			try {
 				FeatureType featureType = (FeatureType)featureComboBox.getSelectedItem();
@@ -326,18 +291,10 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 				} else
 					log.warn("Calculation of bounding box aborted.");
 
-				SwingUtilities.invokeLater(new Runnable() {
-					public void run() {
-						bboxDialog.dispose();
-					}
-				});
+				SwingUtilities.invokeLater(bboxDialog::dispose);
 
 			} catch (SQLException sqlEx) {
-				SwingUtilities.invokeLater(new Runnable() {
-					public void run() {
-						bboxDialog.dispose();
-					}
-				});
+				SwingUtilities.invokeLater(bboxDialog::dispose);
 
 				bboxPanel.clearBoundingBox();
 
@@ -393,26 +350,17 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 					Language.I18N.getString("db.dialog.setbbox.details"), 
 					true);
 
-			SwingUtilities.invokeLater(new Runnable() {
-				public void run() {
-					bboxDialog.setLocationRelativeTo(viewController.getTopFrame());
-					bboxDialog.setVisible(true);
-				}
+			SwingUtilities.invokeLater(() -> {
+				bboxDialog.setLocationRelativeTo(viewController.getTopFrame());
+				bboxDialog.setVisible(true);
 			});
 
-			bboxDialog.getButton().addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					SwingUtilities.invokeLater(new Runnable() {
-						public void run() {
-							dbConnectionPool.getActiveDatabaseAdapter().getUtil().interruptDatabaseOperation();
-						}
-					});
-				}
-			});
+			bboxDialog.getButton().addActionListener(e -> SwingUtilities.invokeLater(
+					() -> dbConnectionPool.getActiveDatabaseAdapter().getUtil().interruptDatabaseOperation()));
 
 			try {
 				List<Integer> objectClassIds = getObjectClassIds(featureType, false);
-				BoundingBox bbox = dbConnectionPool.getActiveDatabaseAdapter().getUtil().createBoundingBoxes(workspace, objectClassIds, mode == BoundingBoxMode.PARTIAL ? true : false);
+				BoundingBox bbox = dbConnectionPool.getActiveDatabaseAdapter().getUtil().createBoundingBoxes(workspace, objectClassIds, mode == BoundingBoxMode.PARTIAL);
 
 				if (bbox != null) {
 					if (bbox.getLowerCorner().getX() != Double.MAX_VALUE && 
@@ -444,18 +392,10 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 				} else
 					log.warn("Creation of bounding boxes aborted.");
 
-				SwingUtilities.invokeLater(new Runnable() {
-					public void run() {
-						bboxDialog.dispose();
-					}
-				});
+				SwingUtilities.invokeLater(bboxDialog::dispose);
 
 			} catch (SQLException sqlEx) {
-				SwingUtilities.invokeLater(new Runnable() {
-					public void run() {
-						bboxDialog.dispose();
-					}
-				});
+				SwingUtilities.invokeLater(bboxDialog::dispose);
 
 				bboxPanel.clearBoundingBox();
 
@@ -485,7 +425,7 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 		
 		featureComboBox.addItem(cityObject);
 		schemaMapping.listTopLevelFeatureTypes(true).stream()
-		.sorted((a, b) -> a.getPath().compareTo(b.getPath()))
+		.sorted(Comparator.comparing(AbstractPathElement::getPath))
 		.forEach(featureType -> {
 			ADEExtension extension = adeManager.getExtensionByObjectClassId(featureType.getObjectClassId());
 			if (extension == null || extension.isEnabled())
@@ -513,12 +453,10 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 			bboxPanel.clearBoundingBox();
 		else {
 			isCreateBboxSupported = dbConnectionPool.getActiveDatabaseAdapter().getConnectionMetaData().getCityDBVersion().compareTo(3, 1, 0) >= 0;
-			SwingUtilities.invokeLater(new Runnable() {
-				public void run() {
-					FeatureType selected = (FeatureType)featureComboBox.getSelectedItem();
-					updateFeatureSelection();
-					featureComboBox.setSelectedItem(selected);
-				}
+			SwingUtilities.invokeLater(() -> {
+				FeatureType selected = (FeatureType)featureComboBox.getSelectedItem();
+				updateFeatureSelection();
+				featureComboBox.setSelectedItem(selected);
 			});
 		}
 	}

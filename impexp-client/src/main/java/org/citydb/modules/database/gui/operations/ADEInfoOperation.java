@@ -107,8 +107,8 @@ public class ADEInfoOperation extends DatabaseOperationView {
 
         infoButton = new JButton();
 
-        component.add(tablePanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 5, 5, 5, 5));
-        component.add(infoButton, GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.NONE, 10, 5, 5, 5));
+        component.add(tablePanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 10, 5, 5, 5));
+        component.add(infoButton, GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.NONE, 10, 5, 10, 5));
 
         adeTable.getSelectionModel().addListSelectionListener(l -> {
             if (!infoButton.isEnabled()) {

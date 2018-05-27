@@ -143,10 +143,6 @@ public class BoundingBoxPanelImpl extends BoundingBoxPanel implements EventHandl
 		// input fields
 		JPanel inputFieldsPanel = new JPanel();
 		inputFieldsPanel.setLayout(new GridBagLayout());
-		xmin.setPreferredSize(xmax.getPreferredSize());
-		xmax.setPreferredSize(xmin.getPreferredSize());
-		ymin.setPreferredSize(ymax.getPreferredSize());
-		ymax.setPreferredSize(ymin.getPreferredSize());
 		inputFieldsPanel.add(xminLabel, GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.NONE,0,0,0,5));
 		inputFieldsPanel.add(xmin, GuiUtil.setConstraints(1,0,1.0,0.0,GridBagConstraints.HORIZONTAL,0,5,0,5));
 		inputFieldsPanel.add(xmaxLabel, GuiUtil.setConstraints(2,0,0.0,0.0,GridBagConstraints.NONE,0,10,0,5));

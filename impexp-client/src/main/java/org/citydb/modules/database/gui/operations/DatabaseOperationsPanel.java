@@ -100,26 +100,23 @@ public class DatabaseOperationsPanel extends JPanel implements EventHandler {
 		add(timestamp, GuiUtil.setConstraints(3,0,0.0,0.0,GridBagConstraints.HORIZONTAL,0,5,5,0));
 		timestamp.setMinimumSize(timestamp.getPreferredSize());
 
-		operationsTab = new JTabbedPane();
-		GridBagConstraints c = GuiUtil.setConstraints(0,2,1.0,1.0,GridBagConstraints.BOTH,5,0,0,0);
-		c.gridwidth = 4;
-		add(operationsTab, c);
+		operationsTab = new JTabbedPane(JTabbedPane.TOP, JTabbedPane.SCROLL_TAB_LAYOUT);
+		add(operationsTab, GuiUtil.setConstraints(0,2,4,1,1.0,1.0,GridBagConstraints.BOTH,5,0,0,0));
 
-		operations = new DatabaseOperationView[4];
-		operations[0] = new ReportOperation(this);
-		operations[1] = new BoundingBoxOperation(this, config);
-		operations[2] = new IndexOperation(this, config);
-		operations[3] = new ADEInfoOperation(this);
+		operations = new DatabaseOperationView[]{
+				new ReportOperation(this),
+				new BoundingBoxOperation(this, config),
+				new IndexOperation(this, config),
+				new ADEInfoOperation(this)
+		};
 
 		for (int i = 0; i < operations.length; ++i)
 			operationsTab.insertTab(null, operations[i].getIcon(), null, operations[i].getToolTip(), i);
 
-		operationsTab.addChangeListener(new ChangeListener() {
-			public void stateChanged(ChangeEvent e) {			
-				int index = operationsTab.getSelectedIndex();
-				for (int i = 0; i < operationsTab.getTabCount(); ++i)
-					operationsTab.setComponentAt(i, index == i ? operations[index].getViewComponent() : null);
-			}
+		operationsTab.addChangeListener(e -> {
+			int index = operationsTab.getSelectedIndex();
+			for (int i = 0; i < operationsTab.getTabCount(); i++)
+				operationsTab.setComponentAt(i, index == i ? operations[index].getViewComponent() : null);
 		});
 
 		PopupMenuDecorator.getInstance().decorate(workspace, timestamp);
@@ -158,16 +155,16 @@ public class DatabaseOperationsPanel extends JPanel implements EventHandler {
 		db.getWorkspaces().getOperationWorkspace().setName(workspace.getText().trim());
 		db.getWorkspaces().getOperationWorkspace().setTimestamp(timestamp.getText().trim());
 
-		for (int i = 0; i < operations.length; ++i)
-			operations[i].setSettings();
+		for (DatabaseOperationView operation : operations)
+			operation.setSettings();
 	}
 
 	public void setEnabled(boolean enable) {		
 		setEnabledWorkspace(enable);
 
 		operationsTab.setEnabled(enable);
-		for (int i = 0; i < operations.length; ++i)
-			operations[i].setEnabled(enable);
+		for (DatabaseOperationView operation : operations)
+			operation.setEnabled(enable);
 	}
 	
 	public void setEnabledWorkspace(boolean enable) {
@@ -213,8 +210,8 @@ public class DatabaseOperationsPanel extends JPanel implements EventHandler {
 	@Override
 	public void handleEvent(Event event) throws Exception {
 		DatabaseConnectionStateEvent state = (DatabaseConnectionStateEvent)event;
-		for (int i = 0; i < operations.length; ++i)
-			operations[i].handleDatabaseConnectionStateEvent(state);
+		for (DatabaseOperationView operation : operations)
+			operation.handleDatabaseConnectionStateEvent(state);
 	}
 
 }

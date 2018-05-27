@@ -38,8 +38,6 @@ import org.citydb.plugin.extension.view.ViewController;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.concurrent.locks.ReentrantLock;
@@ -68,18 +66,12 @@ public class ReportOperation extends DatabaseOperationView {
 		component.setLayout(new GridBagLayout());
 
 		reportButton = new JButton();		
-		component.add(reportButton, GuiUtil.setConstraints(0,0,0,0,GridBagConstraints.NONE,0,5,0,5));
+		component.add(reportButton, GuiUtil.setConstraints(0,0,0,0,GridBagConstraints.NONE,10,5,10,5));
 
-		reportButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				Thread thread = new Thread() {
-					public void run() {
-						doOperation();
-					}
-				};
-				thread.setDaemon(true);
-				thread.start();
-			}
+		reportButton.addActionListener(e -> {
+			Thread thread = new Thread(this::doOperation);
+			thread.setDaemon(true);
+			thread.start();
 		});
 	}
 
@@ -151,28 +143,16 @@ public class ReportOperation extends DatabaseOperationView {
 					Language.I18N.getString("db.dialog.report.details"), 
 					true);
 
-			SwingUtilities.invokeLater(new Runnable() {
-				public void run() {
-					reportDialog.setLocationRelativeTo(viewController.getTopFrame());
-					reportDialog.setVisible(true);
-				}
+			SwingUtilities.invokeLater(() -> {
+				reportDialog.setLocationRelativeTo(viewController.getTopFrame());
+				reportDialog.setVisible(true);
 			});
 
-			reportDialog.getButton().addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					SwingUtilities.invokeLater(new Runnable() {
-						public void run() {
-							dbConnectionPool.getActiveDatabaseAdapter().getUtil().interruptDatabaseOperation();
-						}
-					});
-				}
-			});
+			reportDialog.getButton().addActionListener(e -> SwingUtilities.invokeLater(() ->
+					dbConnectionPool.getActiveDatabaseAdapter().getUtil().interruptDatabaseOperation()));
 
-			String[] report = null;
-			String dbSqlEx = null;
 			try {
-				report = dbConnectionPool.getActiveDatabaseAdapter().getUtil().createDatabaseReport(workspace);
-
+				String[] report = dbConnectionPool.getActiveDatabaseAdapter().getUtil().createDatabaseReport(workspace);
 				if (report != null) {
 					for(String line : report) {
 						if (line != null) {
@@ -186,20 +166,12 @@ public class ReportOperation extends DatabaseOperationView {
 				} else
 					LOG.warn("Generation of database report aborted.");
 
-				SwingUtilities.invokeLater(new Runnable() {
-					public void run() {
-						reportDialog.dispose();
-					}
-				});
+				SwingUtilities.invokeLater(reportDialog::dispose);
 
 			} catch (SQLException sqlEx) {
-				SwingUtilities.invokeLater(new Runnable() {
-					public void run() {
-						reportDialog.dispose();
-					}
-				});
+				SwingUtilities.invokeLater(reportDialog::dispose);
 
-				dbSqlEx = sqlEx.getMessage().trim();
+				String dbSqlEx = sqlEx.getMessage().trim();
 				String text = Language.I18N.getString("db.dialog.error.report");
 				Object[] args = new Object[]{ dbSqlEx };
 				String result = MessageFormat.format(text, args);

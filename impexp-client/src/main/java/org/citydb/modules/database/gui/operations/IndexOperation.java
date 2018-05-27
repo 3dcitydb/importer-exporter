@@ -45,8 +45,6 @@ import org.citydb.plugin.extension.view.ViewController;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.concurrent.locks.ReentrantLock;
@@ -104,58 +102,42 @@ public class IndexOperation extends DatabaseOperationView {
 		buttonsPanel.add(tableStats);
 
 		component.add(checkBox, GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.NONE,5,5,0,5));
-		component.add(buttonsPanel, GuiUtil.setConstraints(0,1,1,0,GridBagConstraints.NONE,10,5,5,5));
+		component.add(buttonsPanel, GuiUtil.setConstraints(0,1,1,0,GridBagConstraints.NONE,10,5,10,5));
 		
-		activate.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				Thread thread = new Thread() {
-					public void run() {
-						if (spatial.isSelected() || normal.isSelected())
-							createIndex();
-					}
-				};
-				thread.setDaemon(true);
-				thread.start();
-			}
+		activate.addActionListener(e -> {
+			Thread thread = new Thread(() -> {
+				if (spatial.isSelected() || normal.isSelected())
+					createIndex();
+			});
+			thread.setDaemon(true);
+			thread.start();
 		});
 
-		deactivate.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				Thread thread = new Thread() {
-					public void run() {
-						if (spatial.isSelected() || normal.isSelected())
-							dropIndex();
-					}
-				};
-				thread.setDaemon(true);
-				thread.start();
-			}
+		deactivate.addActionListener(e -> {
+			Thread thread = new Thread(() -> {
+				if (spatial.isSelected() || normal.isSelected())
+					dropIndex();
+			});
+			thread.setDaemon(true);
+			thread.start();
 		});
 
-		query.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				Thread thread = new Thread() {
-					public void run() {
-						if (spatial.isSelected() || normal.isSelected())
-							queryStatus();
-					}
-				};
-				thread.setDaemon(true);
-				thread.start();
-			}
+		query.addActionListener(e -> {
+			Thread thread = new Thread(() -> {
+				if (spatial.isSelected() || normal.isSelected())
+					queryStatus();
+			});
+			thread.setDaemon(true);
+			thread.start();
 		});
 		
-		tableStats.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				Thread thread = new Thread() {
-					public void run() {
-						if (spatial.isSelected() || normal.isSelected())
-							updateTableStatsOnColumn();
-					}
-				};
-				thread.setDaemon(true);
-				thread.start();
-			}
+		tableStats.addActionListener(e -> {
+			Thread thread = new Thread(() -> {
+				if (spatial.isSelected() || normal.isSelected())
+					updateTableStatsOnColumn();
+			});
+			thread.setDaemon(true);
+			thread.start();
 		});
 	}
 
@@ -231,11 +213,9 @@ public class IndexOperation extends DatabaseOperationView {
 					Language.I18N.getString("db.dialog.index.activate.detail"), 
 					false);			
 
-			SwingUtilities.invokeLater(new Runnable() {
-				public void run() {
-					dialog.setLocationRelativeTo(viewController.getTopFrame());
-					dialog.setVisible(true);
-				}
+			SwingUtilities.invokeLater(() -> {
+				dialog.setLocationRelativeTo(viewController.getTopFrame());
+				dialog.setVisible(true);
 			});
 
 			try {
@@ -262,19 +242,11 @@ public class IndexOperation extends DatabaseOperationView {
 					}
 				}
 
-				SwingUtilities.invokeLater(new Runnable() {
-					public void run() {
-						dialog.dispose();
-					}
-				});
+				SwingUtilities.invokeLater(dialog::dispose);
 
 				LOG.all(LogLevel.INFO, "Activating indexes successfully finished.");
 			} catch (SQLException sqlEx) {
-				SwingUtilities.invokeLater(new Runnable() {
-					public void run() {
-						dialog.dispose();
-					}
-				});
+				SwingUtilities.invokeLater(dialog::dispose);
 
 				String dbSqlEx = sqlEx.getMessage().trim();
 
@@ -317,11 +289,9 @@ public class IndexOperation extends DatabaseOperationView {
 					Language.I18N.getString("db.dialog.index.deactivate.detail"), 
 					false);
 
-			SwingUtilities.invokeLater(new Runnable() {
-				public void run() {
-					dialog.setLocationRelativeTo(viewController.getTopFrame());
-					dialog.setVisible(true);
-				}
+			SwingUtilities.invokeLater(() -> {
+				dialog.setLocationRelativeTo(viewController.getTopFrame());
+				dialog.setVisible(true);
 			});
 
 			try {
@@ -348,19 +318,11 @@ public class IndexOperation extends DatabaseOperationView {
 					}
 				}
 
-				SwingUtilities.invokeLater(new Runnable() {
-					public void run() {
-						dialog.dispose();
-					}
-				});
+				SwingUtilities.invokeLater(dialog::dispose);
 
 				LOG.all(LogLevel.INFO, "Deactivating indexes successfully finished.");
 			} catch (SQLException sqlEx) {
-				SwingUtilities.invokeLater(new Runnable() {
-					public void run() {
-						dialog.dispose();
-					}
-				});
+				SwingUtilities.invokeLater(dialog::dispose);
 
 				String dbSqlEx = sqlEx.getMessage().trim();
 
@@ -403,11 +365,9 @@ public class IndexOperation extends DatabaseOperationView {
 					null, 
 					true);		
 
-			SwingUtilities.invokeLater(new Runnable() {
-				public void run() {
-					dialog.setLocationRelativeTo(viewController.getTopFrame());
-					dialog.setVisible(true);
-				}
+			SwingUtilities.invokeLater(() -> {
+				dialog.setLocationRelativeTo(viewController.getTopFrame());
+				dialog.setVisible(true);
 			});
 
 			try {
@@ -429,19 +389,11 @@ public class IndexOperation extends DatabaseOperationView {
 					}
 				}
 
-				SwingUtilities.invokeLater(new Runnable() {
-					public void run() {
-						dialog.dispose();
-					}
-				});
+				SwingUtilities.invokeLater(dialog::dispose);
 
 				LOG.all(LogLevel.INFO, "Querying index status successfully finished.");
 			} catch (SQLException sqlEx) {
-				SwingUtilities.invokeLater(new Runnable() {
-					public void run() {
-						dialog.dispose();
-					}
-				});
+				SwingUtilities.invokeLater(dialog::dispose);
 
 				String sqlExMsg = sqlEx.getMessage().trim();
 				String text = Language.I18N.getString("db.dialog.index.query.error");
@@ -480,22 +432,13 @@ public class IndexOperation extends DatabaseOperationView {
 					Language.I18N.getString("db.dialog.index.tableStats.detail"), 
 					true);		
 
-			SwingUtilities.invokeLater(new Runnable() {
-				public void run() {
-					dialog.setLocationRelativeTo(viewController.getTopFrame());
-					dialog.setVisible(true);
-				}
+			SwingUtilities.invokeLater(() -> {
+				dialog.setLocationRelativeTo(viewController.getTopFrame());
+				dialog.setVisible(true);
 			});
 
-			dialog.getButton().addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					SwingUtilities.invokeLater(new Runnable() {
-						public void run() {
-							dbConnectionPool.getActiveDatabaseAdapter().getUtil().interruptDatabaseOperation();
-						}
-					});
-				}
-			});
+			dialog.getButton().addActionListener(e -> SwingUtilities.invokeLater(() ->
+					dbConnectionPool.getActiveDatabaseAdapter().getUtil().interruptDatabaseOperation()));
 			
 			try {
 				boolean statsUpdated = true;
@@ -512,11 +455,7 @@ public class IndexOperation extends DatabaseOperationView {
 					}
 				}
 
-				SwingUtilities.invokeLater(new Runnable() {
-					public void run() {
-						dialog.dispose();
-					}
-				});
+				SwingUtilities.invokeLater(dialog::dispose);
 
 				if (statsUpdated)
 					LOG.all(LogLevel.INFO, "Table statistics successfully updated.");
@@ -528,11 +467,7 @@ public class IndexOperation extends DatabaseOperationView {
 				}
 					
 			} catch (SQLException sqlEx) {
-				SwingUtilities.invokeLater(new Runnable() {
-					public void run() {
-						dialog.dispose();
-					}
-				});
+				SwingUtilities.invokeLater(dialog::dispose);
 
 				String sqlExMsg = sqlEx.getMessage().trim();
 				String text = Language.I18N.getString("db.dialog.index.tableStats.error");
