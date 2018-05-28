@@ -256,8 +256,8 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 
 		JPanel schemaPanel = new JPanel();
 		schemaPanel.setLayout(new GridBagLayout());
-		schemaPanel.add(schemaCombo, GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.BOTH,0,0,0,5));
-		schemaPanel.add(schemaButton, GuiUtil.setConstraints(1,0,0.0,0.0,GridBagConstraints.BOTH,0,5,0,0));		
+		schemaPanel.add(schemaCombo, GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.HORIZONTAL,0,0,0,5));
+		schemaPanel.add(schemaButton, GuiUtil.setConstraints(1,0,0.0,0.0,GridBagConstraints.HORIZONTAL,0,5,0,0));
 		connectionDetails.add(schemaPanel, GuiUtil.setConstraints(1,7,1.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
 
 		connectionButtons = new JPanel();

@@ -77,7 +77,7 @@ import java.util.List;
 @SuppressWarnings("serial")
 public class SrsPanel extends AbstractPreferencesComponent implements EventHandler, DropTargetListener {
 	private static final int BORDER_THICKNESS = 5;
-	private final Logger LOG = Logger.getInstance();
+	private final Logger log = Logger.getInstance();
 	private final DatabaseConnectionPool dbPool;
 	private final ViewController viewController;
 
@@ -175,10 +175,8 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 		sridText.addPropertyChangeListener(new PropertyChangeListener() {
 			public void propertyChange(PropertyChangeEvent evt) {
 				int srid = ((Number) sridText.getValue()).intValue();
-				if (srid < 0 || srid == Integer.MAX_VALUE) {
-					srid = 0;
-					sridText.setValue(srid);
-				}
+				if (srid < 0 || srid == Integer.MAX_VALUE)
+					sridText.setValue(0);
 			}
 		});
 
@@ -322,7 +320,7 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 		applyButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				setSettings();
-				LOG.info("Settings successfully applied.");
+				log.info("Settings successfully applied.");
 			}
 		});
 
@@ -349,8 +347,9 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 				int srid = 0;
 
 				try {
-					srid = Integer.parseInt(sridText.getText().trim());
-				} catch (NumberFormatException nfe) {
+					sridText.commitEdit();
+					srid = ((Number) sridText.getValue()).intValue();
+				} catch (ParseException pe) {
 					//
 				}
 
@@ -359,13 +358,13 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 					tmp.setSrid(srid);
 					dbPool.getActiveDatabaseAdapter().getUtil().getSrsInfo(tmp);
 					if (tmp.isSupported()) {
-						LOG.all(LogLevel.INFO, "SRID " + srid + " is supported.");
-						LOG.all(LogLevel.INFO, "Database name: " + tmp.getDatabaseSrsName());
-						LOG.all(LogLevel.INFO, "SRS type: " + tmp.getType());
+						log.all(LogLevel.INFO, "SRID " + srid + " is supported.");
+						log.all(LogLevel.INFO, "Database name: " + tmp.getDatabaseSrsName());
+						log.all(LogLevel.INFO, "SRS type: " + tmp.getType());
 					} else
-						LOG.all(LogLevel.WARN, "SRID " + srid + " is NOT supported.");
+						log.all(LogLevel.WARN, "SRID " + srid + " is NOT supported.");
 				} catch (SQLException sqlEx) {
-					LOG.error("Error while checking user-defined SRSs: " + sqlEx.getMessage().trim());
+					log.error("Error while checking user-defined SRSs: " + sqlEx.getMessage().trim());
 				}
 			}
 		});
@@ -441,11 +440,11 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 				dbPool.getActiveDatabaseAdapter().getUtil().getSrsInfo(refSys);
 
 				if (refSys.isSupported())
-					LOG.debug("SRID " + refSys.getSrid() + " is supported.");
+					log.debug("SRID " + refSys.getSrid() + " is supported.");
 				else
-					LOG.warn("SRID " + refSys.getSrid() + " is NOT supported.");
+					log.warn("SRID " + refSys.getSrid() + " is NOT supported.");
 			} catch (SQLException sqlEx) {
-				LOG.error("Error while checking user-defined SRSs: " + sqlEx.getMessage().trim());
+				log.error("Error while checking user-defined SRSs: " + sqlEx.getMessage().trim());
 			}
 		}
 
@@ -548,10 +547,10 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 			else
 				msg += "Adding reference systems from file '";
 
-			LOG.info(msg + file.getAbsolutePath() + "'.");
+			log.info(msg + file.getAbsolutePath() + "'.");
 
 			if (!file.exists() || !file.isFile() || !file.canRead()) {
-				LOG.error("Failed to open reference system file.");
+				log.error("Failed to open reference system file.");
 				viewController.errorMessage(Language.I18N.getString("common.dialog.error.io.title"), 
 						MessageFormat.format(Language.I18N.getString("common.dialog.file.read.error"), Language.I18N.getString("pref.db.srs.error.read.msg")));
 				return;
@@ -564,7 +563,7 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 					config.getProject().getDatabase().getReferenceSystems().clear();
 
 				if (dbPool.isConnected())
-					LOG.info("Checking whether reference systems are supported by database profile.");
+					log.info("Checking whether reference systems are supported by database profile.");
 
 				for (DatabaseSrs refSys : refSyss.getItems()) {
 					msg = "Adding reference system '" + refSys.getDescription() + "' (SRID: " + refSys.getSrid() + ").";
@@ -578,32 +577,32 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 								msg += " (supported)";
 
 						} catch (SQLException sqlEx) {
-							LOG.error("Error while checking user-defined SRSs: " + sqlEx.getMessage().trim());
+							log.error("Error while checking user-defined SRSs: " + sqlEx.getMessage().trim());
 						}
 					}
 
 					config.getProject().getDatabase().getReferenceSystems().add(refSys);
-					LOG.info(msg);
+					log.info(msg);
 				}
 
 				updateSrsComboBoxes(true);
 				displaySelectedValues();
 
-				LOG.info("Reference systems successfully imported from file '" + file.getAbsolutePath() + "'.");
+				log.info("Reference systems successfully imported from file '" + file.getAbsolutePath() + "'.");
 			} else
-				LOG.error("Could not find reference system definitions in file '" + file.getAbsolutePath() + "'.");
+				log.error("Could not find reference system definitions in file '" + file.getAbsolutePath() + "'.");
 
 		} catch (JAXBException jaxb) {
 			String msg = jaxb.getMessage();
 			if (msg == null && jaxb.getLinkedException() != null)
 				msg = jaxb.getLinkedException().getMessage();
 
-			LOG.error("Failed to parse file: " + msg);
+			log.error("Failed to parse file: " + msg);
 			viewController.errorMessage(Language.I18N.getString("common.dialog.error.io.title"), 
 					MessageFormat.format(Language.I18N.getString("common.dialog.file.read.error"), msg));
 		} catch (IOException e) {
 			String msg = e.getMessage();
-			LOG.error("Failed to access file: " + msg);
+			log.error("Failed to access file: " + msg);
 			viewController.errorMessage(Language.I18N.getString("common.dialog.error.io.title"), 
 					MessageFormat.format(Language.I18N.getString("common.dialog.file.read.error"), msg));			
 		} finally {
@@ -616,7 +615,7 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 			setSettings();
 
 			if (config.getProject().getDatabase().getReferenceSystems().isEmpty()) {
-				LOG.error("There are no user-defined reference systems to be exported.");
+				log.error("There are no user-defined reference systems to be exported.");
 				return;
 			}
 
@@ -625,7 +624,7 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 
 			String fileName = fileText.getText().trim();
 			if (fileName.length() == 0) {
-				LOG.error("Please specify the export file for the reference systems.");
+				log.error("Please specify the export file for the reference systems.");
 				viewController.errorMessage(Language.I18N.getString("common.dialog.error.io.title"), Language.I18N.getString("pref.db.srs.error.write.msg"));
 				return;
 			}
@@ -636,7 +635,7 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 			}
 
 			File file = new File(fileName);
-			LOG.info("Writing reference systems to file '" + file.getAbsolutePath() + "'.");
+			log.info("Writing reference systems to file '" + file.getAbsolutePath() + "'.");
 
 			DatabaseSrsList refSys = new DatabaseSrsList();
 			for (DatabaseSrs tmp : config.getProject().getDatabase().getReferenceSystems()) {
@@ -644,17 +643,17 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 				copy.setId(null);				
 				refSys.addItem(copy);
 
-				LOG.info("Writing reference system '" + tmp.getDescription() + "' (SRID: " + tmp.getSrid() + ").");
+				log.info("Writing reference system '" + tmp.getDescription() + "' (SRID: " + tmp.getSrid() + ").");
 			}
 
 			ConfigUtil.marshal(refSys, file, getJAXBContext());			
-			LOG.info("Reference systems successfully written to file '" + file.getAbsolutePath() + "'.");
+			log.info("Reference systems successfully written to file '" + file.getAbsolutePath() + "'.");
 		} catch (JAXBException jaxb) {
 			String msg = jaxb.getMessage();
 			if (msg == null && jaxb.getLinkedException() != null)
 				msg = jaxb.getLinkedException().getMessage();
 
-			LOG.error("Failed to write file: " + msg);
+			log.error("Failed to write file: " + msg);
 			viewController.errorMessage(Language.I18N.getString("common.dialog.error.io.title"), 
 					MessageFormat.format(Language.I18N.getString("common.dialog.file.write.error"), msg));
 		} finally {
