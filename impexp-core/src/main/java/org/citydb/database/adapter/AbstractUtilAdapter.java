@@ -72,6 +72,7 @@ public abstract class AbstractUtilAdapter {
     protected abstract void getCityDBVersion(DatabaseMetaData metaData, Connection connection) throws SQLException;
     protected abstract void getDatabaseMetaData(DatabaseMetaData metaData, Connection connection) throws SQLException;
     protected abstract void getSrsInfo(DatabaseSrs srs, Connection connection) throws SQLException;
+    protected abstract void changeSrs(DatabaseSrs srs, boolean doTransform, String schema, Connection connection) throws SQLException;
     protected abstract String[] createDatabaseReport(String schema, Connection connection) throws SQLException;
     protected abstract BoundingBox calcBoundingBox(String schema, List<Integer> classIds, Connection connection) throws SQLException;
     protected abstract BoundingBox createBoundingBoxes(List<Integer> classIds, boolean onlyIfNull, Connection connection) throws SQLException;
@@ -114,17 +115,8 @@ public abstract class AbstractUtilAdapter {
 
     public void changeSrs(DatabaseSrs srs, boolean doTransform, String schema) throws SQLException {
         try (Connection conn = databaseAdapter.connectionPool.getConnection()) {
-
             if (srs.getSrid() != databaseAdapter.getConnectionMetaData().getReferenceSystem().getSrid()) {
-                interruptableCallableStatement = conn.prepareCall("{call " +
-                        databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_srs.change_schema_srid") +
-                        "(?, ?, ?, ?)}");
-
-                interruptableCallableStatement.setInt(1, srs.getSrid());
-                interruptableCallableStatement.setString(2, srs.getGMLSrsName());
-                interruptableCallableStatement.setInt(3, doTransform ? 1 : 0);
-                interruptableCallableStatement.setString(4, schema);
-                interruptableCallableStatement.execute();
+                changeSrs(srs, doTransform, schema, conn);
             } else {
                 try (PreparedStatement ps  = conn.prepareStatement("update " +
                         databaseAdapter.getConnectionDetails().getSchema() + ".database_srs set gml_srs_name = ?")) {
@@ -132,16 +124,6 @@ public abstract class AbstractUtilAdapter {
                     ps.execute();
                 }
             }
-        } catch (SQLException e) {
-            if (!isInterrupted)
-                throw e;
-        } finally {
-            if (interruptableCallableStatement != null) {
-                interruptableCallableStatement.close();
-                interruptableCallableStatement = null;
-            }
-
-            isInterrupted = false;
         }
     }
 
