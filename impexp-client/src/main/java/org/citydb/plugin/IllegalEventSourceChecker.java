@@ -33,16 +33,16 @@ import org.citydb.event.EventHandler;
 import org.citydb.event.global.EventType;
 import org.citydb.gui.ImpExpGui;
 
-public class IllegalPluginEventChecker implements EventHandler {
-	private static IllegalPluginEventChecker instance;
+public class IllegalEventSourceChecker implements EventHandler {
+	private static IllegalEventSourceChecker instance;
 	
-	private IllegalPluginEventChecker() {
+	private IllegalEventSourceChecker() {
 		// just to thwart instantiation
 	}
 	
-	public static synchronized IllegalPluginEventChecker getInstance() {
+	public static synchronized IllegalEventSourceChecker getInstance() {
 		if (instance == null)
-			instance = new IllegalPluginEventChecker();
+			instance = new IllegalEventSourceChecker();
 		
 		return instance;
 	}
@@ -50,10 +50,10 @@ public class IllegalPluginEventChecker implements EventHandler {
 	@Override
 	public void handleEvent(Event event) throws Exception {
 		if (event.getEventType() == EventType.DATABASE_CONNECTION_STATE && event.getSource() != DatabaseConnectionPool.getInstance())
-			throw new IllegalArgumentException("Events of type " + EventType.DATABASE_CONNECTION_STATE + " may not be triggered by plugins.");
+			throw new IllegalArgumentException("Illegal source for event of type " + EventType.DATABASE_CONNECTION_STATE + ".");
 
 		else if (event.getEventType() == EventType.SWITCH_LOCALE && !(event.getSource() instanceof ImpExpGui))
-			throw new IllegalArgumentException("Events of type " + EventType.SWITCH_LOCALE + " may not be triggered by plugins.");
+			throw new IllegalArgumentException("Illegal source for event of type " + EventType.SWITCH_LOCALE + ".");
 	}
 	
 }

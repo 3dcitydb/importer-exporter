@@ -54,7 +54,7 @@ import org.citydb.modules.citygml.importer.CityGMLImportPlugin;
 import org.citydb.modules.database.DatabasePlugin;
 import org.citydb.modules.kml.KMLExportPlugin;
 import org.citydb.modules.preferences.PreferencesPlugin;
-import org.citydb.plugin.IllegalPluginEventChecker;
+import org.citydb.plugin.IllegalEventSourceChecker;
 import org.citydb.plugin.Plugin;
 import org.citydb.plugin.PluginConfigController;
 import org.citydb.plugin.PluginManager;
@@ -278,7 +278,7 @@ public class ImpExp {
 		registry.setDatabaseController(databaseController);
 
 		// register illegal plugin event checker with event dispatcher
-		IllegalPluginEventChecker checker = IllegalPluginEventChecker.getInstance();
+		IllegalEventSourceChecker checker = IllegalEventSourceChecker.getInstance();
 		eventDispatcher.addEventHandler(EventType.DATABASE_CONNECTION_STATE, checker);
 		eventDispatcher.addEventHandler(EventType.SWITCH_LOCALE, checker);
 

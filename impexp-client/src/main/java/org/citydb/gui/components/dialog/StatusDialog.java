@@ -84,7 +84,7 @@ public class StatusDialog extends JDialog implements EventHandler {
 		eventDispatcher.addEventHandler(EventType.STATUS_DIALOG_TITLE, this);
 		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
 
-		initGUI(windowTitle, statusTitle, statusMessage, statusDetails, setButton);
+		initGUI(statusTitle, statusMessage, statusDetails, setButton);
 	}
 
 	public StatusDialog(JFrame frame, 
@@ -95,11 +95,10 @@ public class StatusDialog extends JDialog implements EventHandler {
 			boolean setButton) {
 		super(frame, windowTitle, true);
 
-		initGUI(windowTitle, statusTitle, statusMessage, statusDetails, setButton);
+		initGUI(statusTitle, statusMessage, statusDetails, setButton);
 	}
 
-	private void initGUI(String windowTitle, 
-			String statusTitle, 
+	private void initGUI(String statusTitle,
 			String statusMessage, 
 			String statusDetails, 
 			boolean setButton) {

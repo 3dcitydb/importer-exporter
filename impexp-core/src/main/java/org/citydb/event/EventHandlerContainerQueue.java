@@ -27,6 +27,8 @@
  */
 package org.citydb.event;
 
+import org.citydb.log.Logger;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -50,9 +52,7 @@ public class EventHandlerContainerQueue {
 
 	public boolean removeEventHandler(EventHandler handler) {
 		if (handler != null) {
-			for (Iterator<EventHandlerContainer> iter = containerQueue.iterator(); iter.hasNext(); ) {
-				EventHandlerContainer container = iter.next();
-
+			for (EventHandlerContainer container : containerQueue) {
 				if (handler == container.getEventHandler()) {
 					containerQueue.remove(container);
 					return true;
@@ -80,7 +80,7 @@ public class EventHandlerContainerQueue {
 			try {
 				handler.handleEvent(event);
 			} catch (Exception e) {
-				e.printStackTrace();
+				Logger.getInstance().error(e.getMessage());
 				break;
 			}
 			
@@ -103,7 +103,7 @@ public class EventHandlerContainerQueue {
 	}
 	
 	public List<EventHandler> getHandlers() {
-		List<EventHandler> handlers = new ArrayList<EventHandler>();		
+		List<EventHandler> handlers = new ArrayList<>();
 		Iterator<EventHandlerContainer> iter = containerQueue.iterator();
 		
 		while (iter.hasNext()) {

@@ -27,13 +27,12 @@
  */
 package org.citydb.event;
 
+import org.citydb.concurrent.SingleWorkerPool;
+
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
-
-import org.citydb.concurrent.SingleWorkerPool;
 
 public class EventDispatcher {
 	private SingleWorkerPool<Event> eventDispatcherThread;
@@ -41,8 +40,8 @@ public class EventDispatcher {
 	private ReentrantLock mainLock;
 
 	public EventDispatcher(int eventQueueSize) {
-		containerQueueMap = new ConcurrentHashMap<Enum<?>, EventHandlerContainerQueue>();
-		eventDispatcherThread = new SingleWorkerPool<Event>(
+		containerQueueMap = new ConcurrentHashMap<>();
+		eventDispatcherThread = new SingleWorkerPool<>(
 				"event_dispatcher",
 				new EventWorkerFactory(this),
 				eventQueueSize,
@@ -114,14 +113,12 @@ public class EventDispatcher {
 
 	public List<EventHandler> getRegisteredHandlers(Enum<?> type) {
 		return containerQueueMap.containsKey(type) ?
-				containerQueueMap.get(type).getHandlers() : new ArrayList<EventHandler>();
+				containerQueueMap.get(type).getHandlers() : new ArrayList<>();
 	}
 
 	public void reset() {
-		for (Iterator<EventHandlerContainerQueue> iter = containerQueueMap.values().iterator(); iter.hasNext(); ) {
-			EventHandlerContainerQueue containerQueue = iter.next();
+		for (EventHandlerContainerQueue containerQueue : containerQueueMap.values())
 			containerQueue.clear();
-		}
 	}
 
 	public void flushEvents() throws InterruptedException {
