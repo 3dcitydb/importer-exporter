@@ -40,6 +40,8 @@ public enum DBOperationType {
     BOUNDING_BOX("boundingBox"),
     @XmlEnumValue("indexes")
     INDEXES("indexes"),
+    @XmlEnumValue("srs")
+    SRS("srs"),
     @XmlEnumValue("ade")
     ADE("ade");
 

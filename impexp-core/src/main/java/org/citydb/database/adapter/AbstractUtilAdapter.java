@@ -45,6 +45,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import javax.xml.bind.JAXBException;
 import java.sql.CallableStatement;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -59,7 +60,7 @@ public abstract class AbstractUtilAdapter {
     private final ConcurrentHashMap<Integer, CoordinateReferenceSystem> srsDefMap;
 
     protected CallableStatement interruptableCallableStatement;
-    protected Statement interruptableStatement;
+    protected PreparedStatement interruptablePreparedStatement;
     protected volatile boolean isInterrupted;
 
     protected AbstractUtilAdapter(AbstractDatabaseAdapter databaseAdapter) {
@@ -108,6 +109,39 @@ public abstract class AbstractUtilAdapter {
 
             // put database srs info on internal map
             srsInfoMap.put(srs.getSrid(), srs);
+        }
+    }
+
+    public void changeSrs(DatabaseSrs srs, boolean doTransform, String schema) throws SQLException {
+        try (Connection conn = databaseAdapter.connectionPool.getConnection()) {
+
+            if (srs.getSrid() != databaseAdapter.getConnectionMetaData().getReferenceSystem().getSrid()) {
+                interruptableCallableStatement = conn.prepareCall("{call " +
+                        databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_srs.change_schema_srid") +
+                        "(?, ?, ?, ?)}");
+
+                interruptableCallableStatement.setInt(1, srs.getSrid());
+                interruptableCallableStatement.setString(2, srs.getGMLSrsName());
+                interruptableCallableStatement.setInt(3, doTransform ? 1 : 0);
+                interruptableCallableStatement.setString(4, schema);
+                interruptableCallableStatement.execute();
+            } else {
+                try (PreparedStatement ps  = conn.prepareStatement("update " +
+                        databaseAdapter.getConnectionDetails().getSchema() + ".database_srs set gml_srs_name = ?")) {
+                    ps.setString(1, srs.getGMLSrsName());
+                    ps.execute();
+                }
+            }
+        } catch (SQLException e) {
+            if (!isInterrupted)
+                throw e;
+        } finally {
+            if (interruptableCallableStatement != null) {
+                interruptableCallableStatement.close();
+                interruptableCallableStatement = null;
+            }
+
+            isInterrupted = false;
         }
     }
 
@@ -358,8 +392,8 @@ public abstract class AbstractUtilAdapter {
         }
 
         try {
-            if (interruptableStatement != null)
-                interruptableStatement.cancel();
+            if (interruptablePreparedStatement != null)
+                interruptablePreparedStatement.cancel();
         } catch (SQLException e) {
             //
         }

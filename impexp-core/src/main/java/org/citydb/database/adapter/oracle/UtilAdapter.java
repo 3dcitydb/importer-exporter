@@ -170,9 +170,9 @@ public class UtilAdapter extends AbstractUtilAdapter {
         BoundingBox bbox = null;
 
         try {
-            interruptableStatement = connection.createStatement();
+            interruptablePreparedStatement = connection.prepareStatement(query.toString());
 
-            try (ResultSet rs = interruptableStatement.executeQuery(query.toString())) {
+            try (ResultSet rs = interruptablePreparedStatement.executeQuery()) {
                 if (rs.next()) {
                     Struct struct = (Struct) rs.getObject(1);
                     if (!rs.wasNull() && struct != null) {
@@ -193,9 +193,9 @@ public class UtilAdapter extends AbstractUtilAdapter {
             if (!isInterrupted)
                 throw e;
         } finally {
-            if (interruptableStatement != null) {
-                interruptableStatement.close();
-                interruptableStatement = null;
+            if (interruptablePreparedStatement != null) {
+                interruptablePreparedStatement.close();
+                interruptablePreparedStatement = null;
             }
 
             isInterrupted = false;
@@ -243,17 +243,15 @@ public class UtilAdapter extends AbstractUtilAdapter {
                     else
                         bbox.update(lowerCorner, upperCorner);
                 }
-
-                interruptableCallableStatement.close();
             }
 
         } catch (SQLException e) {
             if (!isInterrupted)
                 throw e;
         } finally {
-            if (interruptableStatement != null) {
-                interruptableStatement.close();
-                interruptableStatement = null;
+            if (interruptableCallableStatement != null) {
+                interruptableCallableStatement.close();
+                interruptableCallableStatement = null;
             }
 
             isInterrupted = false;

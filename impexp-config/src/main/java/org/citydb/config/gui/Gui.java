@@ -47,6 +47,7 @@ import java.util.List;
 		"showPreferencesConfirmDialog",
 		"showOutdatedDatabaseVersionWarning",
 		"showUnsupportedADEWarning",
+		"showChangeSridWarning",
 		"recentlyUsedProjects"
 })
 public class Gui {
@@ -56,6 +57,7 @@ public class Gui {
 	private boolean showPreferencesConfirmDialog = true;
 	private boolean showOutdatedDatabaseVersionWarning = true;
 	private boolean showUnsupportedADEWarning = true;
+	private boolean showChangeSridWarning = true;
 	@XmlElementWrapper(name="recentlyUsedProjects")
 	@XmlElement(name="fileName")
 	private List<String> recentlyUsedProjects;
@@ -119,6 +121,14 @@ public class Gui {
 
 	public void setShowUnsupportedADEWarning(boolean showUnsupportedADEWarning) {
 		this.showUnsupportedADEWarning = showUnsupportedADEWarning;
+	}
+
+	public boolean isShowChangeSridWarning() {
+		return showChangeSridWarning;
+	}
+
+	public void setShowChangeSridWarning(boolean showChangeSridWarning) {
+		this.showChangeSridWarning = showChangeSridWarning;
 	}
 
 	public List<String> getRecentlyUsedProjectFiles() {

@@ -28,7 +28,6 @@
 package org.citydb.database.connection;
 
 import org.citydb.config.project.database.DatabaseSrs;
-import org.citydb.config.project.global.LogLevel;
 import org.citydb.database.version.DatabaseVersion;
 import org.citydb.log.Logger;
 
@@ -153,19 +152,19 @@ public class DatabaseMetaData {
 	}
 
 	public void printToConsole() {
-        log.all(LogLevel.INFO, "3D City Database: " + getCityDBVersion());
-		log.all(LogLevel.INFO, "DBMS: " + getDatabaseProductName() + " " + getDatabaseProductVersion());
-		log.all(LogLevel.INFO, "Connection: " + connectionDetails.toConnectString());
-		log.all(LogLevel.INFO, "Schema: " + connectionDetails.getSchema());
-		log.all(LogLevel.INFO, "SRID: " + srs.getSrid() + " (" + srs.getType() + ')');
-		log.all(LogLevel.INFO, "SRS: " + srs.getDatabaseSrsName());
-		log.all(LogLevel.INFO, "gml:srsName: " + srs.getGMLSrsName());
-		log.all(LogLevel.INFO, "Versioning: " + versioning);
+        log.info("3D City Database: " + getCityDBVersion());
+		log.info("DBMS: " + getDatabaseProductName() + " " + getDatabaseProductVersion());
+		log.info("Connection: " + connectionDetails.toConnectString());
+		log.info("Schema: " + connectionDetails.getSchema());
+		log.info("SRID: " + srs.getSrid() + " (" + srs.getType() + ')');
+		log.info("SRS: " + srs.getDatabaseSrsName());
+		log.info("gml:srsName: " + srs.getGMLSrsName());
+		log.info("Versioning: " + versioning);
 
 		if (hasRegisteredADEs()) {
 			for (ADEMetadata ade : ades) {
 				if (ade.isSupported())
-					log.all(LogLevel.INFO, "CityGML ADE: " + ade);
+					log.info("CityGML ADE: " + ade);
 			}
 		}
 	}

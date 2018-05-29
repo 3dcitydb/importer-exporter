@@ -31,7 +31,6 @@ import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.database.DBOperationType;
 import org.citydb.config.project.database.DatabaseType;
-import org.citydb.config.project.global.LogLevel;
 import org.citydb.database.adapter.IndexStatusInfo;
 import org.citydb.database.adapter.IndexStatusInfo.IndexInfoObject;
 import org.citydb.database.adapter.IndexStatusInfo.IndexStatus;
@@ -223,10 +222,10 @@ public class IndexOperation extends DatabaseOperationView {
 					IndexStatusInfo indexStatus = null;
 
 					if (type == IndexType.SPATIAL && spatial.isSelected()) {
-						LOG.all(LogLevel.INFO, "Activating spatial indexes...");
+						LOG.info("Activating spatial indexes...");
 						indexStatus = dbConnectionPool.getActiveDatabaseAdapter().getUtil().createSpatialIndexes();
 					} else if (type == IndexType.NORMAL && normal.isSelected()) {
-						LOG.all(LogLevel.INFO, "Activating normal indexes...");
+						LOG.info("Activating normal indexes...");
 						indexStatus = dbConnectionPool.getActiveDatabaseAdapter().getUtil().createNormalIndexes();
 					}
 
@@ -237,14 +236,14 @@ public class IndexOperation extends DatabaseOperationView {
 								if (index.hasErrorMessage())
 								LOG.error("Error cause: " + index.getErrorMessage());
 							} else
-								LOG.all(LogLevel.INFO, "SUCCESS: " + index.toString());
+								LOG.info("SUCCESS: " + index.toString());
 						}
 					}
 				}
 
 				SwingUtilities.invokeLater(dialog::dispose);
 
-				LOG.all(LogLevel.INFO, "Activating indexes successfully finished.");
+				LOG.info("Activating indexes successfully finished.");
 			} catch (SQLException sqlEx) {
 				SwingUtilities.invokeLater(dialog::dispose);
 
@@ -299,10 +298,10 @@ public class IndexOperation extends DatabaseOperationView {
 					IndexStatusInfo indexStatus = null;
 
 					if (type == IndexType.SPATIAL && spatial.isSelected()) {
-						LOG.all(LogLevel.INFO, "Deactivating spatial indexes...");
+						LOG.info("Deactivating spatial indexes...");
 						indexStatus = dbConnectionPool.getActiveDatabaseAdapter().getUtil().dropSpatialIndexes();
 					} else if (type == IndexType.NORMAL && normal.isSelected()) {
-						LOG.all(LogLevel.INFO, "Deactivating normal indexes...");
+						LOG.info("Deactivating normal indexes...");
 						indexStatus = dbConnectionPool.getActiveDatabaseAdapter().getUtil().dropNormalIndexes();
 					}
 
@@ -313,14 +312,14 @@ public class IndexOperation extends DatabaseOperationView {
 								if (index.hasErrorMessage())
 								LOG.error("Error cause: " + index.getErrorMessage());
 							} else
-								LOG.all(LogLevel.INFO, "SUCCESS: " + index.toString());
+								LOG.info("SUCCESS: " + index.toString());
 						}
 					}
 				}
 
 				SwingUtilities.invokeLater(dialog::dispose);
 
-				LOG.all(LogLevel.INFO, "Deactivating indexes successfully finished.");
+				LOG.info("Deactivating indexes successfully finished.");
 			} catch (SQLException sqlEx) {
 				SwingUtilities.invokeLater(dialog::dispose);
 
@@ -375,23 +374,23 @@ public class IndexOperation extends DatabaseOperationView {
 					IndexStatusInfo indexStatus = null;
 
 					if (type == IndexType.SPATIAL && spatial.isSelected()) {
-						LOG.all(LogLevel.INFO, "Checking spatial indexes...");
+						LOG.info("Checking spatial indexes...");
 						indexStatus = dbConnectionPool.getActiveDatabaseAdapter().getUtil().getStatusSpatialIndexes();
 					} else if (type == IndexType.NORMAL && normal.isSelected()) {
-						LOG.all(LogLevel.INFO, "Checking normal indexes...");
+						LOG.info("Checking normal indexes...");
 						indexStatus = dbConnectionPool.getActiveDatabaseAdapter().getUtil().getStatusNormalIndexes();
 					}
 
 					if (indexStatus != null) {
 						for (IndexInfoObject index : indexStatus.getIndexObjects()) {
-							LOG.all(LogLevel.INFO, (index.getStatus() == IndexStatus.VALID ? "ON" : "OFF") + ": " + index.toString());
+							LOG.info((index.getStatus() == IndexStatus.VALID ? "ON" : "OFF") + ": " + index.toString());
 						}
 					}
 				}
 
 				SwingUtilities.invokeLater(dialog::dispose);
 
-				LOG.all(LogLevel.INFO, "Querying index status successfully finished.");
+				LOG.info("Querying index status successfully finished.");
 			} catch (SQLException sqlEx) {
 				SwingUtilities.invokeLater(dialog::dispose);
 
@@ -446,10 +445,10 @@ public class IndexOperation extends DatabaseOperationView {
 				for (IndexType type : IndexType.values()) {
 					if (statsUpdated) {
 						if (type == IndexType.SPATIAL && spatial.isSelected()) {
-							LOG.all(LogLevel.INFO, "Updating table statistics for columns with spatial index...");
+							LOG.info("Updating table statistics for columns with spatial index...");
 							statsUpdated = dbConnectionPool.getActiveDatabaseAdapter().getUtil().updateTableStatsSpatialColumns();
 						} else if (type == IndexType.NORMAL && normal.isSelected()) {
-							LOG.all(LogLevel.INFO, "Updating table statistics for columns with normal index...");
+							LOG.info("Updating table statistics for columns with normal index...");
 							statsUpdated = dbConnectionPool.getActiveDatabaseAdapter().getUtil().updateTableStatsNormalColumns();
 						}
 					}
@@ -458,7 +457,7 @@ public class IndexOperation extends DatabaseOperationView {
 				SwingUtilities.invokeLater(dialog::dispose);
 
 				if (statsUpdated)
-					LOG.all(LogLevel.INFO, "Table statistics successfully updated.");
+					LOG.info("Table statistics successfully updated.");
 				else {
 					if (dbConnectionPool.getActiveDatabaseAdapter().getDatabaseType() == DatabaseType.POSTGIS)
 						LOG.warn("Updating table statistics aborted.");

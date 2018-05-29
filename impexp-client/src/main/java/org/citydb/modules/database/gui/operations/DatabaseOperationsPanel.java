@@ -107,6 +107,7 @@ public class DatabaseOperationsPanel extends JPanel implements EventHandler {
 				new ReportOperation(this),
 				new BoundingBoxOperation(this, config),
 				new IndexOperation(this, config),
+				new SrsOperation(this, config),
 				new ADEInfoOperation(this)
 		};
 

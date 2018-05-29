@@ -27,26 +27,28 @@
  */
 package org.citydb.modules.database.gui.preferences;
 
-import org.citydb.util.ClientConstants;
 import org.citydb.config.Config;
 import org.citydb.config.ConfigUtil;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.database.DatabaseSrs;
 import org.citydb.config.project.database.DatabaseSrsList;
-import org.citydb.config.project.global.LogLevel;
 import org.citydb.database.connection.DatabaseConnectionPool;
 import org.citydb.event.Event;
+import org.citydb.event.EventDispatcher;
 import org.citydb.event.EventHandler;
 import org.citydb.event.global.DatabaseConnectionStateEvent;
 import org.citydb.event.global.EventType;
+import org.citydb.event.global.PropertyChangeEvent;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.factory.SrsComboBoxFactory;
 import org.citydb.gui.factory.SrsComboBoxFactory.SrsComboBox;
 import org.citydb.gui.preferences.AbstractPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.log.Logger;
+import org.citydb.modules.database.gui.operations.SrsOperation;
 import org.citydb.plugin.extension.view.ViewController;
 import org.citydb.registry.ObjectRegistry;
+import org.citydb.util.ClientConstants;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
@@ -62,10 +64,7 @@ import java.awt.dnd.DropTargetDragEvent;
 import java.awt.dnd.DropTargetDropEvent;
 import java.awt.dnd.DropTargetEvent;
 import java.awt.dnd.DropTargetListener;
-import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -117,7 +116,10 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 		this.viewController = viewController;
 
 		dbPool = DatabaseConnectionPool.getInstance();
-		ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(EventType.DATABASE_CONNECTION_STATE, this);
+
+		EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
+		eventDispatcher.addEventHandler(EventType.DATABASE_CONNECTION_STATE, this);
+		eventDispatcher.addEventHandler(EventType.PROPERTY_CHANGE_EVENT, this);
 
 		initGui();
 	}
@@ -126,7 +128,7 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 	public boolean isModified() {
 		DatabaseSrs refSys = srsComboBox.getSelectedItem();
 
-		try { sridText.commitEdit(); } catch (ParseException e) { }
+		try { sridText.commitEdit(); } catch (ParseException ignored) { }
 		if (((Number)sridText.getValue()).intValue() != refSys.getSrid()) return true;
 
 		if (!gmlSrsNameText.getText().equals(refSys.getGMLSrsName())) return true;
@@ -172,12 +174,10 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 
 		PopupMenuDecorator.getInstance().decorate(sridText, gmlSrsNameText, descriptionText, fileText, dbSrsTypeText, dbSrsNameText);
 
-		sridText.addPropertyChangeListener(new PropertyChangeListener() {
-			public void propertyChange(PropertyChangeEvent evt) {
-				int srid = ((Number) sridText.getValue()).intValue();
-				if (srid < 0 || srid == Integer.MAX_VALUE)
-					sridText.setValue(0);
-			}
+		sridText.addPropertyChangeListener(e -> {
+			int srid = ((Number) sridText.getValue()).intValue();
+			if (srid < 0 || srid == Integer.MAX_VALUE)
+				sridText.setValue(0);
 		});
 
 		setLayout(new GridBagLayout());
@@ -270,14 +270,7 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 			}
 		}
 
-		// influence focus policy
-		checkButton.setFocusCycleRoot(false);
-
-		srsComboBoxListener = new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				displaySelectedValues();
-			}
-		};
+		srsComboBoxListener = e -> displaySelectedValues();
 
 		DropTarget dropTarget = new DropTarget(fileText, this);
 		fileText.setDropTarget(dropTarget);
@@ -285,113 +278,84 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 
 		srsComboBox.addActionListener(srsComboBoxListener);
 
-		newButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				if (requestChange()) {
-					DatabaseSrs refSys = DatabaseSrs.createDefaultSrs();
-					refSys.setDescription(getNewRefSysDescription());
-					refSys.setSupported(!dbPool.isConnected());
+		newButton.addActionListener(e -> {
+			if (requestChange()) {
+				DatabaseSrs refSys = DatabaseSrs.createDefaultSrs();
+				refSys.setDescription(getNewRefSysDescription());
+				refSys.setSupported(!dbPool.isConnected());
 
-					config.getProject().getDatabase().addReferenceSystem(refSys);
-					updateSrsComboBoxes(false);
-					srsComboBox.setSelectedItem(refSys);
+				config.getProject().getDatabase().addReferenceSystem(refSys);
+				updateSrsComboBoxes(false);
+				srsComboBox.setSelectedItem(refSys);
 
-					displaySelectedValues();
-				}
+				displaySelectedValues();
 			}
 		});
 
-		copyButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				if (requestChange()) {
-					DatabaseSrs orig = srsComboBox.getSelectedItem();
-					DatabaseSrs copy = new DatabaseSrs(orig);
-					copy.setDescription(getCopyOfDescription(orig));
+		copyButton.addActionListener(e -> {
+			if (requestChange()) {
+				DatabaseSrs orig = srsComboBox.getSelectedItem();
+				DatabaseSrs copy = new DatabaseSrs(orig);
+				copy.setDescription(getCopyOfDescription(orig));
 
-					config.getProject().getDatabase().addReferenceSystem(copy);
-					updateSrsComboBoxes(false);
-					srsComboBox.setSelectedItem(copy);
+				config.getProject().getDatabase().addReferenceSystem(copy);
+				updateSrsComboBoxes(false);
+				srsComboBox.setSelectedItem(copy);
 
-					displaySelectedValues();
-				}
+				displaySelectedValues();
 			}
 		});
 
-		applyButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				setSettings();
-				log.info("Settings successfully applied.");
+		applyButton.addActionListener(e -> {
+			setSettings();
+			log.info("Settings successfully applied.");
+		});
+
+		deleteButton.addActionListener(e -> {
+			DatabaseSrs refSys = srsComboBox.getSelectedItem();
+			int index = srsComboBox.getSelectedIndex();
+
+			String text = Language.I18N.getString("pref.db.srs.dialog.delete.msg");
+			Object[] args = new Object[]{refSys.getDescription()};
+			String formattedMsg = MessageFormat.format(text, args);
+
+			if (JOptionPane.showConfirmDialog(getTopLevelAncestor(), formattedMsg, Language.I18N.getString("pref.db.srs.dialog.delete.title"), JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+				config.getProject().getDatabase().getReferenceSystems().remove(refSys);
+				updateSrsComboBoxes(false);
+				srsComboBox.setSelectedIndex(index < srsComboBox.getItemCount() ? index : index - 1);
+				displaySelectedValues();
 			}
 		});
 
-		deleteButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				DatabaseSrs refSys = srsComboBox.getSelectedItem();
-				int index = srsComboBox.getSelectedIndex();
+		checkButton.addActionListener(e -> {
+			int srid = 0;
 
-				String text = Language.I18N.getString("pref.db.srs.dialog.delete.msg");
-				Object[] args = new Object[]{refSys.getDescription()};
-				String formattedMsg = MessageFormat.format(text, args);
+			try {
+				sridText.commitEdit();
+				srid = ((Number) sridText.getValue()).intValue();
+			} catch (ParseException pe) {
+				//
+			}
 
-				if (JOptionPane.showConfirmDialog(getTopLevelAncestor(), formattedMsg, Language.I18N.getString("pref.db.srs.dialog.delete.title"), JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-					config.getProject().getDatabase().getReferenceSystems().remove(refSys);
-					updateSrsComboBoxes(false);
-					srsComboBox.setSelectedIndex(index < srsComboBox.getItemCount() ? index : index - 1);
-					displaySelectedValues();
-				}
+			try {
+				DatabaseSrs tmp = DatabaseSrs.createDefaultSrs();
+				tmp.setSrid(srid);
+				dbPool.getActiveDatabaseAdapter().getUtil().getSrsInfo(tmp);
+				if (tmp.isSupported()) {
+					log.info("SRID " + srid + " is supported.");
+					log.info("Database name: " + tmp.getDatabaseSrsName());
+					log.info("SRS type: " + tmp.getType());
+				} else
+					log.warn("SRID " + srid + " is NOT supported.");
+			} catch (SQLException sqlEx) {
+				log.error("Error while checking user-defined SRSs: " + sqlEx.getMessage().trim());
 			}
 		});
 
-		checkButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				int srid = 0;
-
-				try {
-					sridText.commitEdit();
-					srid = ((Number) sridText.getValue()).intValue();
-				} catch (ParseException pe) {
-					//
-				}
-
-				try {
-					DatabaseSrs tmp = DatabaseSrs.createDefaultSrs();
-					tmp.setSrid(srid);
-					dbPool.getActiveDatabaseAdapter().getUtil().getSrsInfo(tmp);
-					if (tmp.isSupported()) {
-						log.all(LogLevel.INFO, "SRID " + srid + " is supported.");
-						log.all(LogLevel.INFO, "Database name: " + tmp.getDatabaseSrsName());
-						log.all(LogLevel.INFO, "SRS type: " + tmp.getType());
-					} else
-						log.all(LogLevel.WARN, "SRID " + srid + " is NOT supported.");
-				} catch (SQLException sqlEx) {
-					log.error("Error while checking user-defined SRSs: " + sqlEx.getMessage().trim());
-				}
-			}
-		});
-
-		browseFileButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				browseReferenceSystemFile(Language.I18N.getString("pref.db.srs.label.file"));
-			}
-		});
-
-		addFileButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				importReferenceSystems(false);
-			}
-		});
-
-		replaceWithFileButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				importReferenceSystems(true);
-			}
-		});
-
-		saveFileButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				exportReferenceSystems();
-			}
-		});
+		browseFileButton.addActionListener(e -> browseReferenceSystemFile(Language.I18N.getString("pref.db.srs.label.file")));
+		addFileButton.addActionListener(e -> importReferenceSystems(false));
+		replaceWithFileButton.addActionListener(e -> importReferenceSystems(true));
+		saveFileButton.addActionListener(e -> exportReferenceSystems());
 	}
 
 	@Override
@@ -480,7 +444,7 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 		descriptionText.setEditable(isDBSrs);
 		applyButton.setEnabled(isDBSrs);		
 		deleteButton.setEnabled(isDBSrs);
-		copyButton.setEnabled(!dbPool.isConnected() ? isDBSrs : true);
+		copyButton.setEnabled(dbPool.isConnected() || isDBSrs);
 	}
 
 	private String wrap(String in,int len) {
@@ -711,7 +675,15 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 
 	@Override
 	public void handleEvent(Event event) throws Exception {
-		boolean isConnected = ((DatabaseConnectionStateEvent)event).isConnected();
+		boolean isConnected = false;
+
+		if (event.getEventType() == EventType.DATABASE_CONNECTION_STATE)
+			isConnected = ((DatabaseConnectionStateEvent)event).isConnected();
+		else if (event.getEventType() == EventType.PROPERTY_CHANGE_EVENT
+				&& ((PropertyChangeEvent)event).getPropertyName().equals(SrsOperation.DB_SRS_CHANGED_PROPERTY))
+			isConnected = true;
+		else
+			return;
 
 		if (!isConnected) {
 			DatabaseSrs tmp = DatabaseSrs.createDefaultSrs();
@@ -758,9 +730,7 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 					}
 
 					dtde.getDropTargetContext().dropComplete(true);	
-				} catch (UnsupportedFlavorException e1) {
-					//
-				} catch (IOException e2) {
+				} catch (UnsupportedFlavorException | IOException e) {
 					//
 				}
 			}

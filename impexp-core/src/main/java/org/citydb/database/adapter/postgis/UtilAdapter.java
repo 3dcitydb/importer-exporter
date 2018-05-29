@@ -166,9 +166,9 @@ public class UtilAdapter extends AbstractUtilAdapter {
         BoundingBox bbox = null;
 
         try {
-            interruptableStatement = connection.createStatement();
+            interruptablePreparedStatement = connection.prepareStatement(query.toString());
 
-            try (ResultSet rs = interruptableStatement.executeQuery(query.toString())) {
+            try (ResultSet rs = interruptablePreparedStatement.executeQuery()) {
                 if (rs.next()) {
                     PGbox2d geom = (PGbox2d) rs.getObject(1);
                     if (!rs.wasNull() && geom != null) {
@@ -186,9 +186,9 @@ public class UtilAdapter extends AbstractUtilAdapter {
             if (!isInterrupted)
                 throw e;
         } finally {
-            if (interruptableStatement != null) {
-                interruptableStatement.close();
-                interruptableStatement = null;
+            if (interruptablePreparedStatement != null) {
+                interruptablePreparedStatement.close();
+                interruptablePreparedStatement = null;
             }
 
             isInterrupted = false;
@@ -235,17 +235,15 @@ public class UtilAdapter extends AbstractUtilAdapter {
                     else
                         bbox.update(lowerCorner, upperCorner);
                 }
-
-                interruptableCallableStatement.close();
             }
 
         } catch (SQLException e) {
             if (!isInterrupted)
                 throw e;
         } finally {
-            if (interruptableStatement != null) {
-                interruptableStatement.close();
-                interruptableStatement = null;
+            if (interruptableCallableStatement != null) {
+                interruptableCallableStatement.close();
+                interruptableCallableStatement = null;
             }
 
             isInterrupted = false;
@@ -291,9 +289,9 @@ public class UtilAdapter extends AbstractUtilAdapter {
                     String tableName = rs.getString(1);
                     String attributeName = rs.getString(2);
 
-                    interruptableStatement = connection.createStatement();
-                    interruptableStatement.executeUpdate("VACUUM ANALYZE " +
+                    interruptablePreparedStatement = connection.prepareStatement("VACUUM ANALYZE " +
                             schema + "." + tableName + " (" + attributeName + ")");
+                    interruptablePreparedStatement.executeUpdate();
                 }
 
                 return true;
@@ -302,9 +300,9 @@ public class UtilAdapter extends AbstractUtilAdapter {
             if (!isInterrupted)
                 throw e;
         } finally {
-            if (interruptableStatement != null) {
-                interruptableStatement.close();
-                interruptableStatement = null;
+            if (interruptablePreparedStatement != null) {
+                interruptablePreparedStatement.close();
+                interruptablePreparedStatement = null;
             }
 
             isInterrupted = false;

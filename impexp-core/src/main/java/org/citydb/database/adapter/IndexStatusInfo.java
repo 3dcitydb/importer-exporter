@@ -27,11 +27,10 @@
  */
 package org.citydb.database.adapter;
 
+import org.citydb.log.Logger;
+
 import java.util.ArrayList;
 import java.util.List;
-
-import org.citydb.config.project.global.LogLevel;
-import org.citydb.log.Logger;
 
 public class IndexStatusInfo {
 	private final Logger LOG = Logger.getInstance();
@@ -149,7 +148,7 @@ public class IndexStatusInfo {
 		else
 			msg.append("partly enabled (").append(on).append(" / ").append(all).append(").");
 		
-		LOG.all(LogLevel.INFO, msg.toString());
+		LOG.info(msg.toString());
 	}
 	
 	public static final class IndexInfoObject {

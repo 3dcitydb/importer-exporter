@@ -80,30 +80,29 @@ public class Logger {
 		int m = cal.get(Calendar.MINUTE);
 		int s = cal.get(Calendar.SECOND);
 
-		StringBuffer prefix = new StringBuffer()
-		.append("[")
-		.append(df.format(h))
-		.append(":")
-		.append(df.format(m))
-		.append(":")
-		.append(df.format(s))
-		.append(" ")
-		.append(type.value())
-		.append("] ");
+		String prefix = "[" +
+				df.format(h) +
+				":" +
+				df.format(m) +
+				":" +
+				df.format(s) +
+				" " +
+				type.value() +
+				"] ";
 
-		return prefix.toString();
+		return prefix;
 	}
 
 	public void log(LogLevel type, String msg) {
-		StringBuffer buffer = new StringBuffer(getPrefix(type));
-		buffer.append(msg);
+		StringBuilder builder = new StringBuilder(getPrefix(type));
+		builder.append(msg);
 
 		if (isLogToConsole && consoleLogLevel.ordinal() >= type.ordinal())
-			System.out.println(buffer.toString());
+			System.out.println(builder.toString());
 
 		if (isLogToFile && fileLogLevel.ordinal() >= type.ordinal()) {
 			try {
-				logFile.write(buffer.toString());
+				logFile.write(builder.toString());
 				logFile.newLine();
 				logFile.flush();
 			} catch (IOException e) {
@@ -129,14 +128,14 @@ public class Logger {
 	}
 
 	public void all(LogLevel type, String message) {
-		StringBuffer buffer = new StringBuffer(getPrefix(type));
-		buffer.append(message);
+		StringBuilder builder = new StringBuilder(getPrefix(type));
+		builder.append(message);
 
 		if (isLogToConsole && consoleLogLevel.ordinal() >= type.ordinal())
-			System.out.println(buffer.toString());
+			System.out.println(builder.toString());
 
 		if (fileLogLevel.ordinal() >= type.ordinal())
-			writeToFile(buffer.toString());
+			writeToFile(builder.toString());
 	}
 
 	public void print(String msg) {
@@ -214,15 +213,14 @@ public class Logger {
 		int d = cal.get(Calendar.DATE);
 		int y = cal.get(Calendar.YEAR);
 
-		StringBuffer defaultLog = new StringBuffer("log_3dcitydb_impexp_");
-		defaultLog.append(y);
-		defaultLog.append('-');
-		defaultLog.append(df.format(m));
-		defaultLog.append('-');
-		defaultLog.append(df.format(d));
-		defaultLog.append(".log");
+		String defaultLog = "log_3dcitydb_impexp_" + y +
+				'-' +
+				df.format(m) +
+				'-' +
+				df.format(d) +
+				".log";
 
-		return defaultLog.toString();
+		return defaultLog;
 	}
 
 }

@@ -362,7 +362,7 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 		infoButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				viewController.clearConsole();
-				log.all(LogLevel.INFO, "Connected to database profile '" + databaseController.getActiveDatabaseAdapter().getConnectionDetails().getDescription() + "'.");
+				log.info("Connected to database profile '" + databaseController.getActiveDatabaseAdapter().getConnectionDetails().getDescription() + "'.");
 				databaseController.getActiveDatabaseAdapter().getConnectionMetaData().printToConsole();
 			}
 		});

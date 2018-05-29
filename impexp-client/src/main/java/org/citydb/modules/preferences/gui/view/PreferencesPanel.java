@@ -244,8 +244,8 @@ public class PreferencesPanel extends JPanel implements TreeSelectionListener {
 	}
 
 	public void doTranslation() {
-		restoreButton.setText(Language.I18N.getString("pref.button.restore"));
-		standardButton.setText(Language.I18N.getString("pref.button.standard"));
+		restoreButton.setText(Language.I18N.getString("common.button.restore"));
+		standardButton.setText(Language.I18N.getString("common.button.standard"));
 		applyButton.setText(Language.I18N.getString("common.button.apply"));
 		noticeLabel.setText(Language.I18N.getString("common.pref.menu.expand.label"));
 
