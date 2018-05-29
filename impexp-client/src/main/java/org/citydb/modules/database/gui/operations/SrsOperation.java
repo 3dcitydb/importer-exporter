@@ -43,6 +43,7 @@ import org.citydb.plugin.extension.view.ViewController;
 import org.citydb.registry.ObjectRegistry;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.sql.SQLException;
@@ -392,7 +393,7 @@ public class SrsOperation extends DatabaseOperationView {
 
 		private SrsNameEditor() {
 			component = new JTextField();
-			component.setBorder(BorderFactory.createEmptyBorder());
+			component.setBorder(new EmptyBorder(0, 2, 0,2));
 		}
 
 		public void setText(String value) {
