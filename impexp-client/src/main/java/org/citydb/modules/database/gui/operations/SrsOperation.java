@@ -36,16 +36,16 @@ import org.citydb.database.connection.DatabaseMetaData;
 import org.citydb.event.global.DatabaseConnectionStateEvent;
 import org.citydb.event.global.PropertyChangeEvent;
 import org.citydb.gui.components.dialog.StatusDialog;
+import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.factory.SrsComboBoxFactory;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.log.Logger;
+import org.citydb.modules.database.gui.util.SrsNameComboBox;
 import org.citydb.plugin.extension.view.ViewController;
 import org.citydb.registry.ObjectRegistry;
 
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.event.ActionListener;
 import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.text.MessageFormat;
@@ -65,8 +65,7 @@ public class SrsOperation extends DatabaseOperationView {
 	private JLabel sridLabel;
 	private JFormattedTextField sridText;
 	private JLabel srsNameLabel;
-	private JComboBox<String> srsNameComboBox;
-	private SrsNameEditor srsNameEditor;
+	private SrsNameComboBox srsNameComboBox;
 	private JButton checkSridButton;
 	private JButton editSridButton;
 	private JLabel geometriesLabel;
@@ -92,20 +91,14 @@ public class SrsOperation extends DatabaseOperationView {
 		srsNameLabel = new JLabel();
 		geometriesLabel = new JLabel();
 
-		DecimalFormat tileFormat = new DecimalFormat("##########");
-		tileFormat.setMaximumIntegerDigits(10);
-		tileFormat.setMinimumIntegerDigits(1);
-		sridText = new JFormattedTextField(tileFormat);
+		DecimalFormat sridFormat = new DecimalFormat("##########");
+		sridFormat.setMaximumIntegerDigits(10);
+		sridFormat.setMinimumIntegerDigits(1);
+		sridText = new JFormattedTextField(sridFormat);
 		sridText.setValue(0);
 		sridText.setText("");
 
-		srsNameEditor = new SrsNameEditor();
-		srsNameComboBox = new JComboBox<>();
-		srsNameComboBox.setEditor(srsNameEditor);
-		srsNameComboBox.addItem("urn:ogc:def:crs:EPSG::<SRID>");
-		srsNameComboBox.addItem("urn:ogc:def:crs,crs:EPSG::<SRID>,crs:EPSG::<HEIGHT_SRID>");
-		srsNameComboBox.addItem("EPSG:<SRID>");
-
+		srsNameComboBox = new SrsNameComboBox();
 		checkSridButton = new JButton();
 		editSridButton = new JButton();
 
@@ -142,10 +135,17 @@ public class SrsOperation extends DatabaseOperationView {
 		component.add(dbContentPanel, GuiUtil.setConstraints(1, 2, 0, 0, GridBagConstraints.BOTH, 0, 5, 5, 5));
 		component.add(buttonsPanel, GuiUtil.setConstraints(0, 3, 4, 1, 0, 0, GridBagConstraints.NONE, 5, 5, 10, 5));
 
+		PopupMenuDecorator.getInstance().decorate(sridText, srsNameComboBox.getEditor().getEditorComponent());
+
 		sridText.addPropertyChangeListener(e -> {
-			int srid = ((Number) sridText.getValue()).intValue();
-			if (srid < 0 || srid == Integer.MAX_VALUE)
-				sridText.setValue(0);
+			if (e.getPropertyName().equals("value")) {
+				int srid = ((Number) sridText.getValue()).intValue();
+				if (srid < 0 || srid == Integer.MAX_VALUE)
+					srid = 0;
+
+				sridText.setValue(srid);
+				srsNameComboBox.updateSrid(srid);
+			}
 		});
 
 		editSridButton.addActionListener(l -> {
@@ -170,7 +170,7 @@ public class SrsOperation extends DatabaseOperationView {
 			if (dbConnectionPool.isConnected()) {
 				DatabaseSrs srs = dbConnectionPool.getActiveDatabaseAdapter().getConnectionMetaData().getReferenceSystem();
 				sridText.setValue(srs.getSrid());
-				srsNameEditor.setText(srs.getGMLSrsName());
+				srsNameComboBox.setText(srs.getGMLSrsName());
 			}
 		});
 
@@ -237,8 +237,6 @@ public class SrsOperation extends DatabaseOperationView {
 		applyButton.setEnabled(enable);
 
 		sridText.setEditable(false);
-		srsNameComboBox.setEditable(enable);
-		srsNameComboBox.setSelectedItem(null);
 	}
 
 	@Override
@@ -272,7 +270,7 @@ public class SrsOperation extends DatabaseOperationView {
 		try {
 			DatabaseSrs dbSrs = dbConnectionPool.getActiveDatabaseAdapter().getConnectionMetaData().getReferenceSystem();
 			DatabaseSrs srs = checkSrid();
-			srs.setGMLSrsName(srsNameEditor.getText());
+			srs.setGMLSrsName(srsNameComboBox.getText());
 			boolean changeSrid = srs.getSrid() != dbSrs.getSrid();
 
 			if (!changeSrid && srs.getGMLSrsName().equals(dbSrs.getGMLSrsName())) {
@@ -388,57 +386,15 @@ public class SrsOperation extends DatabaseOperationView {
 		}
 	}
 
-	private class SrsNameEditor implements ComboBoxEditor {
-		private final JTextField component;
-
-		private SrsNameEditor() {
-			component = new JTextField();
-			component.setBorder(new EmptyBorder(0, 2, 0,2));
-		}
-
-		public void setText(String value) {
-			component.setText(value);
-		}
-
-		public String getText() {
-			return component.getText();
-		}
-
-		@Override
-		public Component getEditorComponent() {
-			return component;
-		}
-
-		@Override
-		public void setItem(Object anObject) {
-			if (anObject != null)
-				component.setText(anObject.toString().replace("<SRID>", String.valueOf(sridText.getValue())));
-		}
-
-		@Override
-		public Object getItem() {
-			return component.getText();
-		}
-
-		@Override
-		public void selectAll() { }
-
-		@Override
-		public void addActionListener(ActionListener ignored) { }
-
-		@Override
-		public void removeActionListener(ActionListener ignored) { }
-	}
-
 	@Override
 	public void handleDatabaseConnectionStateEvent(DatabaseConnectionStateEvent event) {
 		if (event.isConnected()) {
 			DatabaseSrs srs = dbConnectionPool.getActiveDatabaseAdapter().getConnectionMetaData().getReferenceSystem();
 			sridText.setValue(srs.getSrid());
-			srsNameEditor.setText(srs.getGMLSrsName());
+			srsNameComboBox.setText(srs.getGMLSrsName());
 		} else {
 			sridText.setText("");
-			srsNameEditor.setText("");
+			srsNameComboBox.setText("");
 		}
 	}
 }

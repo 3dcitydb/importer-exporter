@@ -46,6 +46,7 @@ import org.citydb.gui.preferences.AbstractPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.log.Logger;
 import org.citydb.modules.database.gui.operations.SrsOperation;
+import org.citydb.modules.database.gui.util.SrsNameComboBox;
 import org.citydb.plugin.extension.view.ViewController;
 import org.citydb.registry.ObjectRegistry;
 import org.citydb.util.ClientConstants;
@@ -84,7 +85,7 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 	private JLabel sridLabel;
 	private JFormattedTextField sridText;
 	private JLabel srsNameLabel;
-	private JTextField gmlSrsNameText;
+	private SrsNameComboBox srsNameComboBox;
 	private JLabel descriptionLabel;
 	private JTextField descriptionText;
 	private JLabel dbSrsTypeLabel;
@@ -126,13 +127,14 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 
 	@Override
 	public boolean isModified() {
-		DatabaseSrs refSys = srsComboBox.getSelectedItem();
-
 		try { sridText.commitEdit(); } catch (ParseException ignored) { }
-		if (((Number)sridText.getValue()).intValue() != refSys.getSrid()) return true;
 
-		if (!gmlSrsNameText.getText().equals(refSys.getGMLSrsName())) return true;
-		if (!descriptionText.getText().equals(refSys.getDescription())) return true;
+		DatabaseSrs refSys = srsComboBox.getSelectedItem();
+		if (refSys != null) {
+			if (((Number) sridText.getValue()).intValue() != refSys.getSrid()) return true;
+			if (!srsNameComboBox.getText().equals(refSys.getGMLSrsName())) return true;
+			if (!descriptionText.getText().equals(refSys.getDescription())) return true;
+		}
 
 		return false;
 	}
@@ -147,7 +149,7 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 		sridText = new JFormattedTextField(tileFormat);
 
 		srsNameLabel = new JLabel();
-		gmlSrsNameText = new JTextField();
+		srsNameComboBox = new SrsNameComboBox();
 		descriptionLabel = new JLabel();
 		descriptionText = new JTextField();
 		newButton = new JButton();
@@ -172,12 +174,18 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 		srsComboBoxFactory = SrsComboBoxFactory.getInstance(config);
 		srsComboBox = srsComboBoxFactory.createSrsComboBox(false);
 
-		PopupMenuDecorator.getInstance().decorate(sridText, gmlSrsNameText, descriptionText, fileText, dbSrsTypeText, dbSrsNameText);
+		PopupMenuDecorator.getInstance().decorate(sridText, srsNameComboBox.getEditor().getEditorComponent(),
+				descriptionText, fileText, dbSrsTypeText, dbSrsNameText);
 
 		sridText.addPropertyChangeListener(e -> {
-			int srid = ((Number) sridText.getValue()).intValue();
-			if (srid < 0 || srid == Integer.MAX_VALUE)
-				sridText.setValue(0);
+			if (e.getPropertyName().equals("value")) {
+				int srid = ((Number) sridText.getValue()).intValue();
+				if (srid < 0 || srid == Integer.MAX_VALUE)
+					srid = 0;
+
+				sridText.setValue(srid);
+				srsNameComboBox.updateSrid(srid);
+			}
 		});
 
 		setLayout(new GridBagLayout());
@@ -190,27 +198,23 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 			JPanel srsPanel = new JPanel();
 			srsPanel.setLayout(new GridBagLayout());
 
-			gmlSrsNameText.setPreferredSize(gmlSrsNameText.getPreferredSize());
-			descriptionText.setPreferredSize(gmlSrsNameText.getPreferredSize());
-			srsComboBox.setPreferredSize(gmlSrsNameText.getPreferredSize());
-
 			srsPanel.add(sridLabel, GuiUtil.setConstraints(0,0,0,0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,0,BORDER_THICKNESS));
 			srsPanel.add(sridText, GuiUtil.setConstraints(1,0,1,0,GridBagConstraints.HORIZONTAL,0,BORDER_THICKNESS,0,BORDER_THICKNESS));
 			srsPanel.add(checkButton, GuiUtil.setConstraints(2,0,0,0,GridBagConstraints.HORIZONTAL,0,BORDER_THICKNESS,0,BORDER_THICKNESS));
 
 			srsPanel.add(srsNameLabel, GuiUtil.setConstraints(0,1,0,0,GridBagConstraints.BOTH,BORDER_THICKNESS,BORDER_THICKNESS,0,BORDER_THICKNESS));
-			srsPanel.add(gmlSrsNameText, GuiUtil.setConstraints(1,1,2,1,1,0,GridBagConstraints.HORIZONTAL,BORDER_THICKNESS,BORDER_THICKNESS,0,BORDER_THICKNESS));
+			srsPanel.add(srsNameComboBox, GuiUtil.setConstraints(1,1,2,1,1,0,GridBagConstraints.HORIZONTAL,BORDER_THICKNESS,BORDER_THICKNESS,0,BORDER_THICKNESS));
 
 			srsPanel.add(descriptionLabel, GuiUtil.setConstraints(0,2,0,0,GridBagConstraints.BOTH,BORDER_THICKNESS,BORDER_THICKNESS,0,BORDER_THICKNESS));
 			srsPanel.add(descriptionText, GuiUtil.setConstraints(1,2,2,1,1,0,GridBagConstraints.HORIZONTAL,BORDER_THICKNESS,BORDER_THICKNESS,0,BORDER_THICKNESS));
 
 			dbSrsTypeText.setEditable(false);
-			dbSrsTypeText.setBorder(sridText.getBorder()); 
+			dbSrsTypeText.setBorder(sridText.getBorder());
 			dbSrsTypeText.setBackground(srsPanel.getBackground());
 			dbSrsTypeText.setMargin(sridText.getMargin());
 
 			dbSrsNameText.setEditable(false);
-			dbSrsNameText.setBorder(sridText.getBorder()); 
+			dbSrsNameText.setBorder(sridText.getBorder());
 			dbSrsNameText.setBackground(srsPanel.getBackground());
 			dbSrsNameText.setMargin(sridText.getMargin());
 
@@ -270,12 +274,11 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 			}
 		}
 
-		srsComboBoxListener = e -> displaySelectedValues();
-
 		DropTarget dropTarget = new DropTarget(fileText, this);
 		fileText.setDropTarget(dropTarget);
 		impExpPanel.setDropTarget(dropTarget);
 
+		srsComboBoxListener = e -> displaySelectedValues();
 		srsComboBox.addActionListener(srsComboBoxListener);
 
 		newButton.addActionListener(e -> {
@@ -295,14 +298,16 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 		copyButton.addActionListener(e -> {
 			if (requestChange()) {
 				DatabaseSrs orig = srsComboBox.getSelectedItem();
-				DatabaseSrs copy = new DatabaseSrs(orig);
-				copy.setDescription(getCopyOfDescription(orig));
+				if (orig != null) {
+					DatabaseSrs copy = new DatabaseSrs(orig);
+					copy.setDescription(getCopyOfDescription(orig));
 
-				config.getProject().getDatabase().addReferenceSystem(copy);
-				updateSrsComboBoxes(false);
-				srsComboBox.setSelectedItem(copy);
+					config.getProject().getDatabase().addReferenceSystem(copy);
+					updateSrsComboBoxes(false);
+					srsComboBox.setSelectedItem(copy);
 
-				displaySelectedValues();
+					displaySelectedValues();
+				}
 			}
 		});
 
@@ -313,17 +318,19 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 
 		deleteButton.addActionListener(e -> {
 			DatabaseSrs refSys = srsComboBox.getSelectedItem();
-			int index = srsComboBox.getSelectedIndex();
+			if (refSys != null) {
+				int index = srsComboBox.getSelectedIndex();
 
-			String text = Language.I18N.getString("pref.db.srs.dialog.delete.msg");
-			Object[] args = new Object[]{refSys.getDescription()};
-			String formattedMsg = MessageFormat.format(text, args);
+				String text = Language.I18N.getString("pref.db.srs.dialog.delete.msg");
+				Object[] args = new Object[]{refSys.getDescription()};
+				String formattedMsg = MessageFormat.format(text, args);
 
-			if (JOptionPane.showConfirmDialog(getTopLevelAncestor(), formattedMsg, Language.I18N.getString("pref.db.srs.dialog.delete.title"), JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-				config.getProject().getDatabase().getReferenceSystems().remove(refSys);
-				updateSrsComboBoxes(false);
-				srsComboBox.setSelectedIndex(index < srsComboBox.getItemCount() ? index : index - 1);
-				displaySelectedValues();
+				if (JOptionPane.showConfirmDialog(getTopLevelAncestor(), formattedMsg, Language.I18N.getString("pref.db.srs.dialog.delete.title"), JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+					config.getProject().getDatabase().getReferenceSystems().remove(refSys);
+					updateSrsComboBoxes(false);
+					srsComboBox.setSelectedIndex(index < srsComboBox.getItemCount() ? index : index - 1);
+					displaySelectedValues();
+				}
 			}
 		});
 
@@ -396,29 +403,31 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 	@Override
 	public void setSettings() {
 		DatabaseSrs refSys = srsComboBox.getSelectedItem();
-		int prev = refSys.getSrid();
+		if (refSys != null) {
+			int prev = refSys.getSrid();
 
-		refSys.setSrid(((Number)sridText.getValue()).intValue());
-		if (dbPool.isConnected() && prev != refSys.getSrid()) {
-			try {
-				dbPool.getActiveDatabaseAdapter().getUtil().getSrsInfo(refSys);
+			refSys.setSrid(((Number) sridText.getValue()).intValue());
+			if (dbPool.isConnected() && prev != refSys.getSrid()) {
+				try {
+					dbPool.getActiveDatabaseAdapter().getUtil().getSrsInfo(refSys);
 
-				if (refSys.isSupported())
-					log.debug("SRID " + refSys.getSrid() + " is supported.");
-				else
-					log.warn("SRID " + refSys.getSrid() + " is NOT supported.");
-			} catch (SQLException sqlEx) {
-				log.error("Error while checking user-defined SRSs: " + sqlEx.getMessage().trim());
+					if (refSys.isSupported())
+						log.debug("SRID " + refSys.getSrid() + " is supported.");
+					else
+						log.warn("SRID " + refSys.getSrid() + " is NOT supported.");
+				} catch (SQLException sqlEx) {
+					log.error("Error while checking user-defined SRSs: " + sqlEx.getMessage().trim());
+				}
 			}
+
+			refSys.setGMLSrsName(srsNameComboBox.getText().trim());
+			refSys.setDescription(descriptionText.getText().trim());
+			if (refSys.getDescription().length() == 0)
+				refSys.setDescription(getNewRefSysDescription());
+
+			updateSrsComboBoxes(true);
+			displaySelectedValues();
 		}
-
-		refSys.setGMLSrsName(gmlSrsNameText.getText().trim());
-		refSys.setDescription(descriptionText.getText().trim());
-		if (refSys.getDescription().length() == 0)
-			refSys.setDescription(getNewRefSysDescription());
-
-		updateSrsComboBoxes(true);				
-		displaySelectedValues();
 	}
 
 	@Override
@@ -432,22 +441,25 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 			return;
 
 		sridText.setValue(refSys.getSrid());
-		gmlSrsNameText.setText(refSys.getGMLSrsName());
+		if (refSys.getSrid() == 0)
+			sridText.setText("");
+
+		srsNameComboBox.setText(refSys.getGMLSrsName());
 		descriptionText.setText(refSys.toString());
 		srsComboBox.setToolTipText(refSys.getDescription());
-		dbSrsNameText.setText(wrap(refSys.getDatabaseSrsName(), 40));
+		dbSrsNameText.setText(wrap(refSys.getDatabaseSrsName(), 80));
 		dbSrsTypeText.setText(refSys.getType().toString());
-		
-		boolean isDBSrs = !srsComboBox.isDBReferenceSystemSelected();
-		sridText.setEditable(isDBSrs);
-		gmlSrsNameText.setEditable(isDBSrs);
-		descriptionText.setEditable(isDBSrs);
-		applyButton.setEnabled(isDBSrs);		
-		deleteButton.setEnabled(isDBSrs);
-		copyButton.setEnabled(dbPool.isConnected() || isDBSrs);
+
+		boolean isEditable = !srsComboBox.isDBReferenceSystemSelected();
+		sridText.setEditable(isEditable);
+		srsNameComboBox.setEnabled(isEditable);
+		descriptionText.setEditable(isEditable);
+		applyButton.setEnabled(isEditable);
+		deleteButton.setEnabled(isEditable);
+		copyButton.setEnabled(dbPool.isConnected() || isEditable);
 	}
 
-	private String wrap(String in,int len) {
+	private String wrap(String in, int len) {
 		if (in == null || in.length() <= len)
 			return in;
 
@@ -627,9 +639,9 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 
 	private boolean requestChange() {
 		if (isModified()) {
-			String text = Language.I18N.getString("pref.db.srs.apply.msg");
-			Object[] args = new Object[]{srsComboBox.getSelectedItem().getDescription()};
-			String formattedMsg = MessageFormat.format(text, args);
+			DatabaseSrs refSys = srsComboBox.getSelectedItem();
+			String description = refSys != null ? refSys.getDescription() : "";
+			String formattedMsg = MessageFormat.format(Language.I18N.getString("pref.db.srs.apply.msg"), description);
 
 			int res = JOptionPane.showConfirmDialog(getTopLevelAncestor(), formattedMsg, 
 					Language.I18N.getString("pref.db.srs.apply.title"), JOptionPane.YES_NO_CANCEL_OPTION);
@@ -675,7 +687,7 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 
 	@Override
 	public void handleEvent(Event event) throws Exception {
-		boolean isConnected = false;
+		boolean isConnected;
 
 		if (event.getEventType() == EventType.DATABASE_CONNECTION_STATE)
 			isConnected = ((DatabaseConnectionStateEvent)event).isConnected();

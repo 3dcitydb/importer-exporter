@@ -27,9 +27,9 @@
  */
 package org.citydb.plugin.extension.view.components;
 
-import javax.swing.JComboBox;
-
 import org.citydb.config.project.database.DatabaseSrs;
+
+import javax.swing.*;
 
 @SuppressWarnings("serial")
 public abstract class DatabaseSrsComboBox extends JComboBox<DatabaseSrs> {
@@ -40,13 +40,12 @@ public abstract class DatabaseSrsComboBox extends JComboBox<DatabaseSrs> {
 	@Override
 	public DatabaseSrs getSelectedItem() {
 		Object object = super.getSelectedItem();
-		return (object instanceof DatabaseSrs) ? (DatabaseSrs)object : null;
+		return (object instanceof DatabaseSrs) ? (DatabaseSrs) object : null;
 	}
 	
 	@Override
 	public DatabaseSrs getItemAt(int index) {
-		Object object = super.getItemAt(index);
-		return (object instanceof DatabaseSrs) ? (DatabaseSrs)object : null;
+		return super.getItemAt(index);
 	}
 	
 	@Override
