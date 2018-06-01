@@ -36,7 +36,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 
 import org.citydb.event.EventDispatcher;
 import org.citydb.gui.components.mapviewer.map.event.BoundingBoxSelectionEvent;
@@ -129,8 +129,8 @@ public class BBoxSelectionPainter extends MouseAdapter implements Painter<JXMapV
 			checkOutOfBounds(e.getPoint());
 
 			if (outOfBounds && isThreadRunning.compareAndSet(false, true)) {
-				Thread t = new Thread() {
-					public void run() {
+				new SwingWorker<Void, Void>() {
+					protected Void doInBackground() {
 						while (outOfBounds && selectedArea != null && start != null) {
 							Point2D center = map.getCenter();
 							Rectangle bounds = map.getBounds();
@@ -163,10 +163,10 @@ public class BBoxSelectionPainter extends MouseAdapter implements Painter<JXMapV
 						}
 
 						isThreadRunning.set(false);
+
+						return null;
 					}
-				};
-				t.setDaemon(true);
-				t.start();
+				}.execute();
 			}
 
 			map.repaint();

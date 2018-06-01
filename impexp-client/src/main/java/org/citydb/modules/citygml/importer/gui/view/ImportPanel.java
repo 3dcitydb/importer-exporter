@@ -153,52 +153,34 @@ public class ImportPanel extends JPanel implements EventHandler {
 
 		PopupMenuDecorator.getInstance().decorate(fileList, workspaceText);
 
-		browseButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				loadFile(Language.I18N.getString("main.tabbedPane.import"));
-			}
-		});
+		browseButton.addActionListener(e -> loadFile(Language.I18N.getString("main.tabbedPane.import")));
 
 		removeButton.setActionCommand((String)TransferHandler.getCutAction().getValue(Action.NAME));
-		removeButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				String action = (String)e.getActionCommand();
-				Action a = fileList.getActionMap().get(action);
-				if (a != null)
-					a.actionPerformed(new ActionEvent(fileList, ActionEvent.ACTION_PERFORMED, null));
-			}
+		removeButton.addActionListener(e -> {
+			String action = (String)e.getActionCommand();
+			Action a = fileList.getActionMap().get(action);
+			if (a != null)
+				a.actionPerformed(new ActionEvent(fileList, ActionEvent.ACTION_PERFORMED, null));
 		});
 		removeButton.setEnabled(false);
 
-		importButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				Thread thread = new Thread() {
-					public void run() {
-						doImport();
-					}
-				};
-				thread.setDaemon(true);
-				thread.start();
+		importButton.addActionListener(e -> new SwingWorker<Void, Void>() {
+			protected Void doInBackground() {
+				doImport();
+				return null;
 			}
-		});
+		}.execute());
 
-		validateButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				Thread thread = new Thread() {
-					public void run() {
-						doValidate();
-					}
-				};
-				thread.setDaemon(true);
-				thread.start();
+		validateButton.addActionListener(e -> new SwingWorker<Void, Void>() {
+			protected Void doInBackground() {
+				doValidate();
+				return null;
 			}
-		});
+		}.execute());
 
-		fileList.addListSelectionListener(new ListSelectionListener() {
-			public void valueChanged(ListSelectionEvent e) {
-				if (!e.getValueIsAdjusting())
-					removeButton.setEnabled(true);
-			}
+		fileList.addListSelectionListener(e -> {
+			if (!e.getValueIsAdjusting())
+				removeButton.setEnabled(true);
 		});
 
 		setLayout(new GridBagLayout());

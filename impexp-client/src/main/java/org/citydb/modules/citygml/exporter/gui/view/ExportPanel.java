@@ -127,25 +127,16 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 
 		workspaceText.setEnabled(true);
 		timestampText.setEnabled(true);
-		browseButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				saveFile(Language.I18N.getString("main.tabbedPane.export"));
-			}
-		});
+		browseButton.addActionListener(e -> saveFile(Language.I18N.getString("main.tabbedPane.export")));
 
 		PopupMenuDecorator.getInstance().decorate(workspaceText, timestampText, browseText);
 
-		exportButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				Thread thread = new Thread() {
-					public void run() {
-						doExport();
-					}
-				};
-				thread.setDaemon(true);
-				thread.start();
+		exportButton.addActionListener(e -> new SwingWorker<Void, Void>() {
+			protected Void doInBackground() {
+				doExport();
+				return null;
 			}
-		});
+		}.execute());
 
 		setLayout(new GridBagLayout());
 

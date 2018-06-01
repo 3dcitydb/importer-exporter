@@ -83,7 +83,6 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -374,11 +373,6 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 	}
 
 	public void setEnabledWorkspace(boolean enable) {
-		//		((TitledBorder)versioningPanel.getBorder()).setTitleColor(enable ? 
-		//				UIManager.getColor("TitledBorder.titleColor"):
-		//					UIManager.getColor("Label.disabledForeground"));
-		//		versioningPanel.repaint();
-
 		workspaceLabel.setEnabled(enable);
 		workspaceText.setEnabled(enable);
 		timestampLabel.setEnabled(enable);
@@ -537,7 +531,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 				}
 				themeComboBox.setEnabled(true);
 			}
-			catch (SQLException sqlEx) { }
+			catch (SQLException ignored) { }
 		}
 		else {
 			themeComboBox.setEnabled(false);
@@ -708,35 +702,20 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 				upperLevelVisibility = df.getVisibleFrom();
 			}
 		}
-
 	}
 
 	private void addListeners() {
 		enableEvents(AWTEvent.WINDOW_EVENT_MASK);
 
-		exportButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				Thread thread = new Thread() {
-					public void run() {
-						doExport();
-					}
-				};
-				thread.setDaemon(true);
-				thread.start();
+		exportButton.addActionListener(e -> new SwingWorker<Void, Void>() {
+			protected Void doInBackground() {
+				doExport();
+				return null;
 			}
-		});
+		}.execute());
 
-		browseButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				saveFile();
-			}
-		});
-
-		ActionListener filterListener = new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				setFilterEnabledValues();
-			}
-		};
+		browseButton.addActionListener(e -> saveFile());
+		ActionListener filterListener = e -> setFilterEnabledValues();
 
 		singleBuildingRadioButton.addActionListener(filterListener);
 		boundingBoxRadioButton.addActionListener(filterListener);
@@ -745,45 +724,16 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		manualTilingRadioButton.addActionListener(filterListener);
 		automaticTilingRadioButton.addActionListener(filterListener);
 
-		lodComboBox.addItemListener(new ItemListener() {
-			public void itemStateChanged(ItemEvent e) {
-				if (e.getStateChange() == ItemEvent.SELECTED)
-					setVisibilityEnabledValues();
-			}
+		lodComboBox.addItemListener(e -> {
+			if (e.getStateChange() == ItemEvent.SELECTED)
+				setVisibilityEnabledValues();
 		});
 		
-		footprintCheckbox.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				setVisibilityEnabledValues();
-			}
-		});
-
-		extrudedCheckbox.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				setVisibilityEnabledValues();
-			}
-		});
-
-		geometryCheckbox.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				setVisibilityEnabledValues();
-			}
-		});
-
-		colladaCheckbox.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				setVisibilityEnabledValues();
-			}
-		});
-
-		fetchThemesButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				ThemeUpdater themeUpdater = new ThemeUpdater();
-				themeUpdater.setDaemon(true);
-				themeUpdater.start();
-			}
-		});
-
+		footprintCheckbox.addActionListener(e -> setVisibilityEnabledValues());
+		extrudedCheckbox.addActionListener(e -> setVisibilityEnabledValues());
+		geometryCheckbox.addActionListener(e -> setVisibilityEnabledValues());
+		colladaCheckbox.addActionListener(e -> setVisibilityEnabledValues());
+		fetchThemesButton.addActionListener(e -> new ThemeUpdater().execute());
 	}
 
 	private void doExport() {
@@ -1082,8 +1032,8 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		setEnabledWorkspace(!state.isConnected() || (state.isConnected() && databaseController.getActiveDatabaseAdapter().hasVersioningSupport()));
 	}
 
-	private class ThemeUpdater extends Thread {
-		public void run() {
+	private class ThemeUpdater extends SwingWorker<Void, Void> {
+		protected Void doInBackground() {
 			Thread.currentThread().setName(this.getClass().getSimpleName());
 			fetchThemesButton.setEnabled(false);
 
@@ -1119,7 +1069,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 							!databaseController.getActiveDatabaseAdapter().getWorkspaceManager().equalsDefaultWorkspaceName(workspace.getName()) &&
 							!databaseController.getActiveDatabaseAdapter().getWorkspaceManager().existsWorkspace(workspace, true)) {
 						themeComboBox.setEnabled(false);
-						return;
+						return null;
 					}
 
 					// fetching themes
@@ -1138,6 +1088,8 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 			} finally {
 				fetchThemesButton.setEnabled(true);
 			}
+
+			return null;
 		}
 	}
 
