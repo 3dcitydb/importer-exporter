@@ -136,23 +136,26 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 				setEnabledBoundingBoxCalculation(true);
 		});
 
-		createAllButton.addActionListener(e -> {
-			Thread thread = new Thread(() -> createBoundingBox(BoundingBoxMode.FULL));
-			thread.setDaemon(true);
-			thread.start();
-		});
+		createAllButton.addActionListener(e -> new SwingWorker<Void, Void>() {
+			protected Void doInBackground() {
+				createBoundingBox(BoundingBoxMode.FULL);
+				return null;
+			}
+		}.execute());
 
-		createMissingButton.addActionListener(e -> {
-			Thread thread = new Thread(() -> createBoundingBox(BoundingBoxMode.PARTIAL));
-			thread.setDaemon(true);
-			thread.start();
-		});
+		createMissingButton.addActionListener(e -> new SwingWorker<Void, Void>() {
+			protected Void doInBackground() {
+				createBoundingBox(BoundingBoxMode.PARTIAL);
+				return null;
+			}
+		}.execute());
 
-		calculateButton.addActionListener(e -> {
-			Thread thread = new Thread(this::calcBoundingBox);
-			thread.setDaemon(true);
-			thread.start();
-		});
+		calculateButton.addActionListener(e -> new SwingWorker<Void, Void>() {
+			protected Void doInBackground() {
+				calcBoundingBox();
+				return null;
+			}
+		}.execute());
 	}
 
 	@Override
@@ -249,13 +252,13 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 					Language.I18N.getString("db.dialog.bbox.details"), 
 					true);
 
+			bboxDialog.getButton().addActionListener(e -> SwingUtilities.invokeLater(
+					() -> dbConnectionPool.getActiveDatabaseAdapter().getUtil().interruptDatabaseOperation()));
+
 			SwingUtilities.invokeLater(() -> {
 				bboxDialog.setLocationRelativeTo(viewController.getTopFrame());
 				bboxDialog.setVisible(true);
 			});
-
-			bboxDialog.getButton().addActionListener(e -> SwingUtilities.invokeLater(
-					() -> dbConnectionPool.getActiveDatabaseAdapter().getUtil().interruptDatabaseOperation()));
 
 			try {
 				FeatureType featureType = (FeatureType)featureComboBox.getSelectedItem();
@@ -350,13 +353,13 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 					Language.I18N.getString("db.dialog.setbbox.details"), 
 					true);
 
+			bboxDialog.getButton().addActionListener(e -> SwingUtilities.invokeLater(
+					() -> dbConnectionPool.getActiveDatabaseAdapter().getUtil().interruptDatabaseOperation()));
+
 			SwingUtilities.invokeLater(() -> {
 				bboxDialog.setLocationRelativeTo(viewController.getTopFrame());
 				bboxDialog.setVisible(true);
 			});
-
-			bboxDialog.getButton().addActionListener(e -> SwingUtilities.invokeLater(
-					() -> dbConnectionPool.getActiveDatabaseAdapter().getUtil().interruptDatabaseOperation()));
 
 			try {
 				List<Integer> objectClassIds = getObjectClassIds(featureType, false);

@@ -103,41 +103,33 @@ public class IndexOperation extends DatabaseOperationView {
 		component.add(checkBox, GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.NONE,5,5,0,5));
 		component.add(buttonsPanel, GuiUtil.setConstraints(0,1,1,0,GridBagConstraints.NONE,10,5,10,5));
 		
-		activate.addActionListener(e -> {
-			Thread thread = new Thread(() -> {
-				if (spatial.isSelected() || normal.isSelected())
-					createIndex();
-			});
-			thread.setDaemon(true);
-			thread.start();
-		});
+		activate.addActionListener(e -> new SwingWorker<Void, Void>() {
+			protected Void doInBackground() {
+				createIndex();
+				return null;
+			}
+		}.execute());
 
-		deactivate.addActionListener(e -> {
-			Thread thread = new Thread(() -> {
-				if (spatial.isSelected() || normal.isSelected())
-					dropIndex();
-			});
-			thread.setDaemon(true);
-			thread.start();
-		});
+		deactivate.addActionListener(e -> new SwingWorker<Void, Void>() {
+			protected Void doInBackground() {
+				dropIndex();
+				return null;
+			}
+		}.execute());
 
-		query.addActionListener(e -> {
-			Thread thread = new Thread(() -> {
-				if (spatial.isSelected() || normal.isSelected())
-					queryStatus();
-			});
-			thread.setDaemon(true);
-			thread.start();
-		});
-		
-		tableStats.addActionListener(e -> {
-			Thread thread = new Thread(() -> {
-				if (spatial.isSelected() || normal.isSelected())
-					updateTableStatsOnColumn();
-			});
-			thread.setDaemon(true);
-			thread.start();
-		});
+		query.addActionListener(e -> new SwingWorker<Void, Void>() {
+			protected Void doInBackground() {
+				queryStatus();
+				return null;
+			}
+		}.execute());
+
+		tableStats.addActionListener(e -> new SwingWorker<Void, Void>() {
+			protected Void doInBackground() {
+				updateTableStatsOnColumn();
+				return null;
+			}
+		}.execute());
 	}
 
 	@Override
@@ -210,7 +202,10 @@ public class IndexOperation extends DatabaseOperationView {
 					Language.I18N.getString("db.dialog.index.activate"), 
 					null, 
 					Language.I18N.getString("db.dialog.index.activate.detail"), 
-					false);			
+					true);
+
+			dialog.getButton().addActionListener(e -> SwingUtilities.invokeLater(
+					() -> dbConnectionPool.getActiveDatabaseAdapter().getUtil().interruptDatabaseOperation()));
 
 			SwingUtilities.invokeLater(() -> {
 				dialog.setLocationRelativeTo(viewController.getTopFrame());
@@ -286,7 +281,10 @@ public class IndexOperation extends DatabaseOperationView {
 					Language.I18N.getString("db.dialog.index.deactivate"), 
 					null, 
 					Language.I18N.getString("db.dialog.index.deactivate.detail"), 
-					false);
+					true);
+
+			dialog.getButton().addActionListener(e -> SwingUtilities.invokeLater(
+					() -> dbConnectionPool.getActiveDatabaseAdapter().getUtil().interruptDatabaseOperation()));
 
 			SwingUtilities.invokeLater(() -> {
 				dialog.setLocationRelativeTo(viewController.getTopFrame());
@@ -362,7 +360,10 @@ public class IndexOperation extends DatabaseOperationView {
 					Language.I18N.getString("db.dialog.index.query.title"), 
 					null,
 					null, 
-					true);		
+					true);
+
+			dialog.getButton().addActionListener(e -> SwingUtilities.invokeLater(
+					() -> dbConnectionPool.getActiveDatabaseAdapter().getUtil().interruptDatabaseOperation()));
 
 			SwingUtilities.invokeLater(() -> {
 				dialog.setLocationRelativeTo(viewController.getTopFrame());
@@ -429,15 +430,15 @@ public class IndexOperation extends DatabaseOperationView {
 					Language.I18N.getString("db.dialog.index.tableStats.title"), 
 					null,
 					Language.I18N.getString("db.dialog.index.tableStats.detail"), 
-					true);		
+					true);
+
+			dialog.getButton().addActionListener(e -> SwingUtilities.invokeLater(() ->
+					dbConnectionPool.getActiveDatabaseAdapter().getUtil().interruptDatabaseOperation()));
 
 			SwingUtilities.invokeLater(() -> {
 				dialog.setLocationRelativeTo(viewController.getTopFrame());
 				dialog.setVisible(true);
 			});
-
-			dialog.getButton().addActionListener(e -> SwingUtilities.invokeLater(() ->
-					dbConnectionPool.getActiveDatabaseAdapter().getUtil().interruptDatabaseOperation()));
 			
 			try {
 				boolean statsUpdated = true;

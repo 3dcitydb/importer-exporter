@@ -27,52 +27,18 @@
  */
 package org.citydb.modules.database.gui.view;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.sql.SQLException;
-import java.text.DecimalFormat;
-import java.text.MessageFormat;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.locks.ReentrantLock;
-
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JFormattedTextField;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JPasswordField;
-import javax.swing.JScrollPane;
-import javax.swing.JTextField;
-import javax.swing.SwingWorker;
-import javax.swing.UIManager;
-import javax.swing.border.TitledBorder;
-
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.database.DBConnection;
 import org.citydb.config.project.database.Database;
+import org.citydb.config.project.database.DatabaseConfigurationException;
 import org.citydb.config.project.database.DatabaseSrs;
 import org.citydb.config.project.database.DatabaseType;
-import org.citydb.config.project.global.LogLevel;
 import org.citydb.database.DatabaseController;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.adapter.DatabaseAdapterFactory;
 import org.citydb.database.connection.ConnectionState;
 import org.citydb.database.connection.ConnectionViewHandler;
-import org.citydb.config.project.database.DatabaseConfigurationException;
 import org.citydb.database.connection.DatabaseConnectionWarning;
 import org.citydb.database.connection.DatabaseConnectionWarning.ConnectionWarningType;
 import org.citydb.database.version.DatabaseVersionException;
@@ -92,6 +58,17 @@ import org.citydb.util.Util;
 import org.jdesktop.swingx.JXTextField;
 import org.jdesktop.swingx.combobox.JXTextFieldComboBoxEditor;
 import org.jdesktop.swingx.prompt.PromptSupport.FocusBehavior;
+
+import javax.swing.*;
+import javax.swing.border.TitledBorder;
+import java.awt.*;
+import java.awt.event.ItemEvent;
+import java.sql.SQLException;
+import java.text.DecimalFormat;
+import java.text.MessageFormat;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.locks.ReentrantLock;
 
 @SuppressWarnings("serial")
 public class DatabasePanel extends JPanel implements ConnectionViewHandler, EventHandler, ViewListener {
@@ -295,120 +272,10 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 		for (DatabaseType type : DatabaseType.values())
 			databaseTypeCombo.addItem(type);
 
-		portText.addPropertyChangeListener(new PropertyChangeListener() {
-			public void propertyChange(PropertyChangeEvent evt) {
-				if (portText.getValue() != null) {
-					if (((Number)portText.getValue()).intValue() < 0) {
-						switch ((DatabaseType)databaseTypeCombo.getSelectedItem()) {
-						case ORACLE:
-							portText.setValue(1521);
-							break;
-						case POSTGIS:
-							portText.setValue(5432);
-							break;
-						}
-					}
-				}
-			}
-		});
-
-		applyButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				apply();
-			}
-		});
-
-		newButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				if (requestChange())
-					newConn();
-			}
-		});
-
-		copyButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				if (requestChange())
-					copy();
-			}
-		});
-
-		deleteButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				if (requestDelete())
-					delete();
-			}
-		});
-
-		connectButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				Thread thread = new Thread() {
-					public void run() {
-						if (!databaseController.isConnected()) {
-							try {
-								connect(true);
-							} catch (DatabaseConfigurationException | DatabaseVersionException | SQLException e) {
-								//
-							}
-						} else {
-							disconnect();
-						}
-					}
-				};
-				thread.setDaemon(true);
-				thread.start();
-			}
-		});
-
-		infoButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				viewController.clearConsole();
-				log.info("Connected to database profile '" + databaseController.getActiveDatabaseAdapter().getConnectionDetails().getDescription() + "'.");
-				databaseController.getActiveDatabaseAdapter().getConnectionMetaData().printToConsole();
-			}
-		});
-
-		schemaButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				new SwingWorker<Void, Void>() {
-					protected Void doInBackground() throws Exception {
-						try {
-							commitConnectionDetails();
-							DBConnection connection = (DBConnection)connCombo.getSelectedItem();
-							connection.validate();
-							
-							AbstractDatabaseAdapter adapter = DatabaseAdapterFactory.getInstance().createDatabaseAdapter(connection.getDatabaseType());
-							List<String> schemas = adapter.getSchemaManager().fetchSchemasFromDatabase(connection);
-
-							if (schemas != null && !schemas.isEmpty()) {
-								String schema = (String)schemaCombo.getSelectedItem();	
-								schemaCombo.removeAllItems();
-								schemas.forEach(schemaCombo::addItem);
-								schemaCombo.setSelectedItem(schema);
-								schemaCombo.setPopupVisible(true);
-							}
-						} catch (SQLException e) {
-							printError(e, true);
-						} catch (DatabaseConfigurationException e) {
-							printError(e, true);
-						}
-
-						return null;
-					}
-				}.execute();
-			}
-		});
-
-		connCombo.addItemListener(new ItemListener() {
-			public void itemStateChanged(ItemEvent e) {
-				if (e.getStateChange() == ItemEvent.SELECTED)
-					selectConnection();
-			}
-		});
-
-		databaseTypeCombo.addItemListener(new ItemListener() {
-			public void itemStateChanged(ItemEvent e) {
-				if (e.getStateChange() == ItemEvent.SELECTED) {
-					switch ((DatabaseType)e.getItem()) {
+		portText.addPropertyChangeListener(evt -> {
+			if (portText.getValue() != null) {
+				if (((Number)portText.getValue()).intValue() < 0) {
+					switch ((DatabaseType)databaseTypeCombo.getSelectedItem()) {
 					case ORACLE:
 						portText.setValue(1521);
 						break;
@@ -416,6 +283,90 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 						portText.setValue(5432);
 						break;
 					}
+				}
+			}
+		});
+
+		applyButton.addActionListener(e -> apply());
+
+		newButton.addActionListener(e -> {
+			if (requestChange())
+				newConn();
+		});
+
+		copyButton.addActionListener(e -> {
+			if (requestChange())
+				copy();
+		});
+
+		deleteButton.addActionListener(e -> {
+			if (requestDelete())
+				delete();
+		});
+
+		connectButton.addActionListener(e -> new SwingWorker<Void, Void>() {
+			protected Void doInBackground() {
+				if (!databaseController.isConnected()) {
+					try {
+						connect(true);
+					} catch (DatabaseConfigurationException | DatabaseVersionException | SQLException e) {
+						//
+					}
+				} else {
+					disconnect();
+				}
+
+				return null;
+			}
+		}.execute());
+
+		infoButton.addActionListener(e -> {
+			viewController.clearConsole();
+			log.info("Connected to database profile '" + databaseController.getActiveDatabaseAdapter().getConnectionDetails().getDescription() + "'.");
+			databaseController.getActiveDatabaseAdapter().getConnectionMetaData().printToConsole();
+		});
+
+		schemaButton.addActionListener(e -> new SwingWorker<Void, Void>() {
+			protected Void doInBackground() throws Exception {
+				try {
+					commitConnectionDetails();
+					DBConnection connection = (DBConnection)connCombo.getSelectedItem();
+					connection.validate();
+
+					AbstractDatabaseAdapter adapter = DatabaseAdapterFactory.getInstance().createDatabaseAdapter(connection.getDatabaseType());
+					List<String> schemas = adapter.getSchemaManager().fetchSchemasFromDatabase(connection);
+
+					if (schemas != null && !schemas.isEmpty()) {
+						String schema = (String)schemaCombo.getSelectedItem();
+						schemaCombo.removeAllItems();
+						schemas.forEach(schemaCombo::addItem);
+						schemaCombo.setSelectedItem(schema);
+						schemaCombo.setPopupVisible(true);
+					}
+				} catch (SQLException e) {
+					printError(e, true);
+				} catch (DatabaseConfigurationException e) {
+					printError(e, true);
+				}
+
+				return null;
+			}
+		}.execute());
+
+		connCombo.addItemListener(e -> {
+			if (e.getStateChange() == ItemEvent.SELECTED)
+				selectConnection();
+		});
+
+		databaseTypeCombo.addItemListener(e -> {
+			if (e.getStateChange() == ItemEvent.SELECTED) {
+				switch ((DatabaseType)e.getItem()) {
+				case ORACLE:
+					portText.setValue(1521);
+					break;
+				case POSTGIS:
+					portText.setValue(5432);
+					break;
 				}
 			}
 		});
@@ -635,7 +586,7 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 					confirmPanel.add(new JLabel(warning.getFormattedMessage()), GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.BOTH,0,0,0,0));
 					confirmPanel.add(confirmDialogNoShow, GuiUtil.setConstraints(0,2,1.0,0.0,GridBagConstraints.BOTH,10,0,0,0));
 
-					option = JOptionPane.showConfirmDialog(viewController.getTopFrame(), confirmPanel, Language.I18N.getString("db.dialog.warn.title"), JOptionPane.WARNING_MESSAGE);
+					option = JOptionPane.showConfirmDialog(viewController.getTopFrame(), confirmPanel, Language.I18N.getString("db.dialog.warn.title"), JOptionPane.OK_CANCEL_OPTION);
 					
 					if (confirmDialogNoShow.isSelected()) {
 						switch ((ConnectionWarningType)warning.getType()) {

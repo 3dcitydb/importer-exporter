@@ -68,11 +68,12 @@ public class ReportOperation extends DatabaseOperationView {
 		reportButton = new JButton();		
 		component.add(reportButton, GuiUtil.setConstraints(0,0,0,0,GridBagConstraints.NONE,10,5,10,5));
 
-		reportButton.addActionListener(e -> {
-			Thread thread = new Thread(this::doOperation);
-			thread.setDaemon(true);
-			thread.start();
-		});
+		reportButton.addActionListener(e -> new SwingWorker<Void, Void>() {
+			protected Void doInBackground() {
+				doOperation();
+				return null;
+			}
+		}.execute());
 	}
 
 	@Override
@@ -143,13 +144,13 @@ public class ReportOperation extends DatabaseOperationView {
 					Language.I18N.getString("db.dialog.report.details"), 
 					true);
 
+			reportDialog.getButton().addActionListener(e -> SwingUtilities.invokeLater(() ->
+					dbConnectionPool.getActiveDatabaseAdapter().getUtil().interruptDatabaseOperation()));
+
 			SwingUtilities.invokeLater(() -> {
 				reportDialog.setLocationRelativeTo(viewController.getTopFrame());
 				reportDialog.setVisible(true);
 			});
-
-			reportDialog.getButton().addActionListener(e -> SwingUtilities.invokeLater(() ->
-					dbConnectionPool.getActiveDatabaseAdapter().getUtil().interruptDatabaseOperation()));
 
 			try {
 				String[] report = dbConnectionPool.getActiveDatabaseAdapter().getUtil().createDatabaseReport(workspace);

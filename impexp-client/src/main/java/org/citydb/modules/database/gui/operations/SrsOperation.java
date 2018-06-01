@@ -141,6 +141,10 @@ public class SrsOperation extends DatabaseOperationView {
 
 		PopupMenuDecorator.getInstance().decorate(sridText, srsNameComboBox.getEditor().getEditorComponent());
 
+		// influence focus behavior
+		checkSridButton.setFocusable(false);
+		editSridButton.setFocusable(false);
+
 		sridText.addPropertyChangeListener(e -> {
 			if (e.getPropertyName().equals("value")) {
 				int srid = ((Number) sridText.getValue()).intValue();
@@ -178,14 +182,12 @@ public class SrsOperation extends DatabaseOperationView {
 			}
 		});
 
-		applyButton.addActionListener(l -> {
-			new SwingWorker<Void, Void>() {
-				protected Void doInBackground() {
-					doOperation();
-					return null;
-				}
-			}.execute();
-		});
+		applyButton.addActionListener(l -> new SwingWorker<Void, Void>() {
+			protected Void doInBackground() {
+				doOperation();
+				return null;
+			}
+		}.execute());
 	}
 
 	@Override
@@ -333,13 +335,13 @@ public class SrsOperation extends DatabaseOperationView {
 					true);
 
 			if (changeSrid) {
+				srsDialog.getButton().addActionListener(e -> SwingUtilities.invokeLater(
+						() -> dbConnectionPool.getActiveDatabaseAdapter().getUtil().interruptDatabaseOperation()));
+
 				SwingUtilities.invokeLater(() -> {
 					srsDialog.setLocationRelativeTo(viewController.getTopFrame());
 					srsDialog.setVisible(true);
 				});
-
-				srsDialog.getButton().addActionListener(e -> SwingUtilities.invokeLater(
-						() -> dbConnectionPool.getActiveDatabaseAdapter().getUtil().interruptDatabaseOperation()));
 			}
 
 			try {

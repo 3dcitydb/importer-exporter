@@ -120,9 +120,12 @@ public class ADEInfoOperation extends DatabaseOperationView {
         ActionListener infoListener = l -> {
             ADEInfoRow adeInfo = adeTableModel.getRow(adeTable.getSelectedRow());
             if (adeInfo != ADEInfoRow.NO_ADES_ENTRY) {
-                Thread thread = new Thread(() -> displayADEInfo(adeInfo));
-                thread.setDaemon(true);
-                thread.start();
+                new SwingWorker<Void, Void>() {
+                    protected Void doInBackground() {
+                        displayADEInfo(adeInfo);
+                        return null;
+                    }
+                }.execute();
             }
         };
 
