@@ -39,11 +39,10 @@ public class SrsNameComboBox extends JComboBox<String> {
         return editor;
     }
 
-    @Override
-    public void setEnabled(boolean enable) {
-        super.setEnabled(enable);
+    public void setEditorEditable(boolean value) {
+        super.setEnabled(value);
         editor.component.setEnabled(true);
-        editor.component.setEditable(enable);
+        editor.component.setEditable(value);
     }
 
     public final class SrsNameEditor implements ComboBoxEditor {

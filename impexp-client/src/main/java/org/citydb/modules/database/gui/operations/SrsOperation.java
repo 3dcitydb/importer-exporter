@@ -31,6 +31,8 @@ import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.database.DBOperationType;
 import org.citydb.config.project.database.DatabaseSrs;
+import org.citydb.config.project.database.DatabaseType;
+import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.connection.DatabaseConnectionPool;
 import org.citydb.database.connection.DatabaseMetaData;
 import org.citydb.event.global.DatabaseConnectionStateEvent;
@@ -73,6 +75,8 @@ public class SrsOperation extends DatabaseOperationView {
 	private JRadioButton metadataButton;
 	private JButton restoreButton;
 	private JButton applyButton;
+
+	private boolean isSupported;
 
 	public SrsOperation(DatabaseOperationsPanel parent, Config config) {
 		this.config = config;
@@ -224,12 +228,12 @@ public class SrsOperation extends DatabaseOperationView {
 
 	@Override
 	public void setEnabled(boolean enable) {
+		enable &= isSupported;
+
 		sridLabel.setEnabled(enable);
-		sridText.setEnabled(enable);
 		checkSridButton.setEnabled(false);
 		editSridButton.setEnabled(enable);
 		srsNameLabel.setEnabled(enable);
-		srsNameComboBox.setEnabled(enable);
 		geometriesLabel.setEnabled(false);
 		transformButton.setEnabled(false);
 		metadataButton.setEnabled(false);
@@ -237,6 +241,7 @@ public class SrsOperation extends DatabaseOperationView {
 		applyButton.setEnabled(enable);
 
 		sridText.setEditable(false);
+		srsNameComboBox.setEditorEditable(enable);
 	}
 
 	@Override
@@ -389,9 +394,15 @@ public class SrsOperation extends DatabaseOperationView {
 	@Override
 	public void handleDatabaseConnectionStateEvent(DatabaseConnectionStateEvent event) {
 		if (event.isConnected()) {
-			DatabaseSrs srs = dbConnectionPool.getActiveDatabaseAdapter().getConnectionMetaData().getReferenceSystem();
+			AbstractDatabaseAdapter databaseAdapter = dbConnectionPool.getActiveDatabaseAdapter();
+
+			DatabaseSrs srs = databaseAdapter.getConnectionMetaData().getReferenceSystem();
 			sridText.setValue(srs.getSrid());
 			srsNameComboBox.setText(srs.getGMLSrsName());
+
+			isSupported = !(databaseAdapter.getConnectionDetails().getDatabaseType() == DatabaseType.ORACLE
+					&& (!databaseAdapter.getConnectionDetails().getUser().equalsIgnoreCase(
+							databaseAdapter.getConnectionDetails().getSchema())));
 		} else {
 			sridText.setText("");
 			srsNameComboBox.setText("");

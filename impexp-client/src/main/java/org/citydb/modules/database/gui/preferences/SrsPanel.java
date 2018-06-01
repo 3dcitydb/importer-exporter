@@ -452,7 +452,7 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 
 		boolean isEditable = !srsComboBox.isDBReferenceSystemSelected();
 		sridText.setEditable(isEditable);
-		srsNameComboBox.setEnabled(isEditable);
+		srsNameComboBox.setEditorEditable(isEditable);
 		descriptionText.setEditable(isEditable);
 		applyButton.setEnabled(isEditable);
 		deleteButton.setEnabled(isEditable);
