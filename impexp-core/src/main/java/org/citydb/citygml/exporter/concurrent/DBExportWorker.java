@@ -87,6 +87,7 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 
 		AbstractDatabaseAdapter databaseAdapter = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter();
 		connection = DatabaseConnectionPool.getInstance().getConnection();
+		connection.setAutoCommit(false);
 
 		// try and change workspace the connections if needed
 		if (databaseAdapter.hasVersioningSupport()) {

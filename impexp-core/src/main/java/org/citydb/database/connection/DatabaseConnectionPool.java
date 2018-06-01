@@ -27,13 +27,6 @@
  */
 package org.citydb.database.connection;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.text.MessageFormat;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
-
 import org.apache.tomcat.jdbc.pool.DataSource;
 import org.apache.tomcat.jdbc.pool.PoolProperties;
 import org.citydb.ade.ADEExtension;
@@ -55,6 +48,13 @@ import org.citydb.event.global.DatabaseConnectionStateEvent;
 import org.citydb.registry.ObjectRegistry;
 import org.citydb.util.Util;
 import org.citygml4j.util.gmlid.DefaultGMLIdManager;
+
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.text.MessageFormat;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class DatabaseConnectionPool {
 	private static DatabaseConnectionPool instance;
@@ -106,31 +106,31 @@ public class DatabaseConnectionPool {
 		properties.setDefaultAutoCommit(true);
 
 		// set user-definable pool properties	
-		if (conn.getMaxActive() != null) properties.setMaxActive(conn.getMaxActive().intValue());
-		if (conn.getMaxIdle() != null) properties.setMaxIdle(conn.getMaxIdle().intValue());
-		if (conn.getMinIdle() != null) properties.setMinIdle(conn.getMinIdle().intValue());
-		if (conn.getInitialSize() != null) properties.setInitialSize(conn.getInitialSize().intValue());
-		if (conn.getMaxWait() != null) properties.setMaxWait(conn.getMaxWait().intValue());
-		if (conn.getTestOnBorrow() != null) properties.setTestOnBorrow(conn.getTestOnBorrow().booleanValue());
-		if (conn.getTestOnReturn() != null) properties.setTestOnReturn(conn.getTestOnReturn().booleanValue());
-		if (conn.getTestWhileIdle() != null) properties.setTestWhileIdle(conn.getTestWhileIdle().booleanValue());
+		if (conn.getMaxActive() != null) properties.setMaxActive(conn.getMaxActive());
+		if (conn.getMaxIdle() != null) properties.setMaxIdle(conn.getMaxIdle());
+		if (conn.getMinIdle() != null) properties.setMinIdle(conn.getMinIdle());
+		if (conn.getInitialSize() != null) properties.setInitialSize(conn.getInitialSize());
+		if (conn.getMaxWait() != null) properties.setMaxWait(conn.getMaxWait());
+		if (conn.getTestOnBorrow() != null) properties.setTestOnBorrow(conn.getTestOnBorrow());
+		if (conn.getTestOnReturn() != null) properties.setTestOnReturn(conn.getTestOnReturn());
+		if (conn.getTestWhileIdle() != null) properties.setTestWhileIdle(conn.getTestWhileIdle());
 		if (conn.getValidationQuery() != null) properties.setValidationQuery(conn.getValidationQuery());
 		if (conn.getValidatorClassName() != null) properties.setValidatorClassName(conn.getValidatorClassName());
-		if (conn.getTimeBetweenEvictionRunsMillis() != null) properties.setTimeBetweenEvictionRunsMillis(conn.getTimeBetweenEvictionRunsMillis().intValue());
-		if (conn.getNumTestsPerEvictionRun() != null) properties.setNumTestsPerEvictionRun(conn.getNumTestsPerEvictionRun().intValue());
-		if (conn.getMinEvictableIdleTimeMillis() != null) properties.setMinEvictableIdleTimeMillis(conn.getMinEvictableIdleTimeMillis().intValue());
-		if (conn.getRemoveAbandoned() != null) properties.setRemoveAbandoned(conn.getRemoveAbandoned().booleanValue());
-		if (conn.getRemoveAbandonedTimeout() != null) properties.setRemoveAbandonedTimeout(conn.getRemoveAbandonedTimeout().intValue());
-		if (conn.getLogAbandoned() != null) properties.setLogAbandoned(conn.getLogAbandoned().booleanValue());
+		if (conn.getTimeBetweenEvictionRunsMillis() != null) properties.setTimeBetweenEvictionRunsMillis(conn.getTimeBetweenEvictionRunsMillis());
+		if (conn.getNumTestsPerEvictionRun() != null) properties.setNumTestsPerEvictionRun(conn.getNumTestsPerEvictionRun());
+		if (conn.getMinEvictableIdleTimeMillis() != null) properties.setMinEvictableIdleTimeMillis(conn.getMinEvictableIdleTimeMillis());
+		if (conn.getRemoveAbandoned() != null) properties.setRemoveAbandoned(conn.getRemoveAbandoned());
+		if (conn.getRemoveAbandonedTimeout() != null) properties.setRemoveAbandonedTimeout(conn.getRemoveAbandonedTimeout());
+		if (conn.getLogAbandoned() != null) properties.setLogAbandoned(conn.getLogAbandoned());
 		if (conn.getConnectionProperties() != null) properties.setConnectionProperties(conn.getConnectionProperties());
 		if (conn.getInitSQL() != null) properties.setInitSQL(conn.getInitSQL());
-		if (conn.getValidationInterval() != null) properties.setValidationInterval(conn.getValidationInterval().longValue());
-		if (conn.getJmxEnabled() != null) properties.setJmxEnabled(conn.getJmxEnabled().booleanValue());
-		if (conn.getFairQueue() != null) properties.setFairQueue(conn.getFairQueue().booleanValue());
-		if (conn.getAbandonWhenPercentageFull() != null) properties.setAbandonWhenPercentageFull(conn.getAbandonWhenPercentageFull().intValue());
-		if (conn.getMaxAge() != null) properties.setMaxAge(conn.getMaxAge().longValue());
-		if (conn.getUseEquals() != null) properties.setUseEquals(conn.getUseEquals().booleanValue());
-		if (conn.getSuspectTimeout() != null) properties.setSuspectTimeout(conn.getSuspectTimeout().intValue());
+		if (conn.getValidationInterval() != null) properties.setValidationInterval(conn.getValidationInterval());
+		if (conn.getJmxEnabled() != null) properties.setJmxEnabled(conn.getJmxEnabled());
+		if (conn.getFairQueue() != null) properties.setFairQueue(conn.getFairQueue());
+		if (conn.getAbandonWhenPercentageFull() != null) properties.setAbandonWhenPercentageFull(conn.getAbandonWhenPercentageFull());
+		if (conn.getMaxAge() != null) properties.setMaxAge(conn.getMaxAge());
+		if (conn.getUseEquals() != null) properties.setUseEquals(conn.getUseEquals());
+		if (conn.getSuspectTimeout() != null) properties.setSuspectTimeout(conn.getSuspectTimeout());
 
 		// pool maintenance
 		properties.setJdbcInterceptors("StatementFinalizer");
@@ -180,7 +180,7 @@ public class DatabaseConnectionPool {
 				databaseAdapter.getUtil().getSrsInfo(refSys);			
 
 		} catch (DatabaseVersionException | SQLException e) {
-			try { disconnect(); } catch (Exception ex) { }
+			try { disconnect(); } catch (Exception ignored) { }
 			throw e;
 		}
 
@@ -196,7 +196,10 @@ public class DatabaseConnectionPool {
 		if (!isConnected())
 			throw new SQLException("Database is not connected.");
 
-		return dataSource.getConnection();
+		Connection connection = dataSource.getConnection();
+		connection.setAutoCommit(true);
+
+		return connection;
 	}
 
 	public synchronized boolean isConnected() {
@@ -260,8 +263,8 @@ public class DatabaseConnectionPool {
 		List<ADEMetadata> unsupported = ades.stream().filter(ade -> !ade.isSupported()).collect(Collectors.toList());
 		if (!unsupported.isEmpty()) {
 			String message = "The following CityGML ADEs are registered in the database but are not supported:\n" + Util.collection2string(unsupported, "\n");
-			String text = Language.I18N.getString("db.dialog.warn.ade.unsupported");
-			String formattedMessage = MessageFormat.format(text, new Object[]{ Util.collection2string(unsupported, "<br>") });
+			String formattedMessage = MessageFormat.format(Language.I18N.getString("db.dialog.warn.ade.unsupported"),
+					Util.collection2string(unsupported, "<br>"));
 			warning = new DatabaseConnectionWarning(message, formattedMessage, Database.CITYDB_PRODUCT_NAME, ConnectionWarningType.UNSUPPORTED_ADE);
 		}
 

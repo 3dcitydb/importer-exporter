@@ -163,7 +163,6 @@ public abstract class AbstractUtilAdapter {
         String schema = databaseAdapter.getConnectionDetails().getSchema();
 
         try (Connection conn = databaseAdapter.connectionPool.getConnection()) {
-            conn.setAutoCommit(true);
             if (databaseAdapter.hasVersioningSupport())
                 databaseAdapter.getWorkspaceManager().gotoWorkspace(conn, workspace);
 
@@ -175,7 +174,6 @@ public abstract class AbstractUtilAdapter {
         String schema = databaseAdapter.getConnectionDetails().getSchema();
 
         try (Connection conn = databaseAdapter.connectionPool.getConnection()) {
-            conn.setAutoCommit(true);
             if (databaseAdapter.hasVersioningSupport())
                 databaseAdapter.getWorkspaceManager().gotoWorkspace(conn, workspace);
 
@@ -248,7 +246,6 @@ public abstract class AbstractUtilAdapter {
         String schema = databaseAdapter.getConnectionDetails().getSchema();
 
         try (Connection conn = databaseAdapter.connectionPool.getConnection()) {
-            conn.setAutoCommit(true);
             return manageIndexes(operation, type, schema, conn);
         }
     }
@@ -265,7 +262,6 @@ public abstract class AbstractUtilAdapter {
         String schema = databaseAdapter.getConnectionDetails().getSchema();
 
         try (Connection conn = databaseAdapter.connectionPool.getConnection()) {
-            conn.setAutoCommit(true);
             return updateTableStats(type, schema, conn);
         }
     }

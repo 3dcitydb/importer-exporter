@@ -63,6 +63,7 @@ public class DBExportXlinkWorker extends Worker<DBXlink> implements EventHandler
 
 		DatabaseConnectionPool connectionPool = DatabaseConnectionPool.getInstance();
 		connection = connectionPool.getConnection();
+		connection.setAutoCommit(false);
 
 		// try and change workspace for the connection if needed
 		if (connectionPool.getActiveDatabaseAdapter().hasVersioningSupport()) {
