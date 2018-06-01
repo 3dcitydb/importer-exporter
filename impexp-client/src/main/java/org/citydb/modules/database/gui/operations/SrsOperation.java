@@ -366,8 +366,8 @@ public class SrsOperation extends DatabaseOperationView {
 						new PropertyChangeEvent(DB_SRS_CHANGED_PROPERTY, false, true, this));
 
 				// print result
-				log.info("SRID: " + srs.getSrid() + " (" + srs.getType() + ')');
-				log.info("gml:srsName: " + srs.getGMLSrsName());
+				log.info("SRID: " + dbSrs.getSrid() + " (" + dbSrs.getType() + ')');
+				log.info("gml:srsName: " + dbSrs.getGMLSrsName());
 
 				log.info("Changing database " + (changeSrid ? "reference system" : "gml:srsName") + " successfully finished.");
 				SwingUtilities.invokeLater(srsDialog::dispose);
