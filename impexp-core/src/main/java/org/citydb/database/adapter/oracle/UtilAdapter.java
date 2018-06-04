@@ -132,20 +132,14 @@ public class UtilAdapter extends AbstractUtilAdapter {
 
     @Override
     public void changeSrs(DatabaseSrs srs, boolean doTransform, String schema, Connection connection) throws SQLException {
-        StringBuilder stmt = new StringBuilder("{call ").append(databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_srs.change_schema_srid"));
-        boolean lacksSchema = databaseAdapter.getConnectionMetaData().getCityDBVersion().compareTo(4, 0, 0) < 0;
-        stmt.append(lacksSchema ? "(?, ?, ?)}" : "(?, ?, ?, ?)}");
-
         try {
-            interruptableCallableStatement = connection.prepareCall(stmt.toString());
+            interruptableCallableStatement = connection.prepareCall("{call " +
+                    databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_srs.change_schema_srid") +
+                    "(?, ?, ?)}");
 
             interruptableCallableStatement.setInt(1, srs.getSrid());
             interruptableCallableStatement.setString(2, srs.getGMLSrsName());
             interruptableCallableStatement.setInt(3, doTransform ? 1 : 0);
-
-            if (!lacksSchema)
-                interruptableCallableStatement.setString(4, schema);
-
             interruptableCallableStatement.execute();
         } catch (SQLException e) {
             if (!isInterrupted)
