@@ -34,15 +34,15 @@ import java.sql.Statement;
 import org.citydb.database.adapter.AbstractSQLAdapter;
 
 
-public class CacheTableIdList extends CacheTableModel {
-	private static CacheTableIdList instance;
+public class CacheTableGlobalAppearance extends CacheTableModel {
+	private static CacheTableGlobalAppearance instance;
 
-	private CacheTableIdList() {
+	private CacheTableGlobalAppearance() {
 	}
 
-	public synchronized static CacheTableIdList getInstance() {
+	public synchronized static CacheTableGlobalAppearance getInstance() {
 		if (instance == null)
-			instance = new CacheTableIdList();
+			instance = new CacheTableGlobalAppearance();
 
 		return instance;
 	}
@@ -65,7 +65,7 @@ public class CacheTableIdList extends CacheTableModel {
 
 	@Override
 	public CacheTableModelEnum getType() {
-		return CacheTableModelEnum.ID_LIST;
+		return CacheTableModelEnum.GLOBAL_APPEARANCE;
 	}
 
 	@Override

@@ -35,7 +35,7 @@ import org.citydb.citygml.common.database.cache.model.CacheTableBasic;
 import org.citydb.citygml.common.database.cache.model.CacheTableDeprecatedMaterial;
 import org.citydb.citygml.common.database.cache.model.CacheTableFeatureGmlId;
 import org.citydb.citygml.common.database.cache.model.CacheTableGeometryGmlId;
-import org.citydb.citygml.common.database.cache.model.CacheTableIdList;
+import org.citydb.citygml.common.database.cache.model.CacheTableGlobalAppearance;
 import org.citydb.citygml.common.database.cache.model.CacheTableGroupToCityObject;
 import org.citydb.citygml.common.database.cache.model.CacheTableLibraryObject;
 import org.citydb.citygml.common.database.cache.model.CacheTableLinearRing;
@@ -115,8 +115,8 @@ public class CacheTable extends AbstractCacheTable {
 		case SURFACE_DATA_TO_TEX_IMAGE:
 			this.model = CacheTableSurfaceDataToTexImage.getInstance();
 			break;
-		case ID_LIST:
-			this.model = CacheTableIdList.getInstance();
+		case GLOBAL_APPEARANCE:
+			this.model = CacheTableGlobalAppearance.getInstance();
 			break;
 		default:
 			throw new IllegalArgumentException("Unsupported cache table type " + model);

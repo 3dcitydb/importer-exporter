@@ -804,7 +804,7 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 			if (type == DBSurfaceGeometry.class) {
 				CacheTable cacheTable = null;
 				if (config.getInternal().isExportGlobalAppearances()) {
-					cacheTable = cacheTableManager.getCacheTable(CacheTableModelEnum.ID_LIST);
+					cacheTable = cacheTableManager.getCacheTable(CacheTableModelEnum.GLOBAL_APPEARANCE);
 					if (cacheTable == null)
 						logOrThrowErrorMessage("Failed to access temporary table for global appearances.");
 				}
@@ -909,7 +909,7 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 			else if (type == DBGlobalAppearance.class) {
 				CacheTable cacheTable = null;
 				if (config.getInternal().isExportGlobalAppearances()) {
-					cacheTable = cacheTableManager.getCacheTable(CacheTableModelEnum.ID_LIST);
+					cacheTable = cacheTableManager.getCacheTable(CacheTableModelEnum.GLOBAL_APPEARANCE);
 					if (cacheTable == null)
 						logOrThrowErrorMessage("Failed to access temporary table for global appearances.");
 				}
