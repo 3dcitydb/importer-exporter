@@ -118,7 +118,7 @@ public class CacheTableManager {
 	}
 
 	public BranchCacheTable createBranchCacheTable(CacheTableModelEnum model) throws SQLException {
-		BranchCacheTable branchCacheTable = gerOrCreateBranchCacheTable(model, cacheAdapter, cacheConnection);		
+		BranchCacheTable branchCacheTable = getOrCreateBranchCacheTable(model, cacheAdapter, cacheConnection);
 		if (!branchCacheTable.isCreated())
 			branchCacheTable.create();
 
@@ -126,7 +126,7 @@ public class CacheTableManager {
 	}
 
 	public BranchCacheTable createAndIndexBranchCacheTable(CacheTableModelEnum model) throws SQLException {
-		BranchCacheTable branchCacheTable = gerOrCreateBranchCacheTable(model, cacheAdapter, cacheConnection);
+		BranchCacheTable branchCacheTable = getOrCreateBranchCacheTable(model, cacheAdapter, cacheConnection);
 		if (!branchCacheTable.isCreated())
 			branchCacheTable.createAndIndex();
 
@@ -203,7 +203,7 @@ public class CacheTableManager {
 		return cacheTable;
 	}
 
-	private BranchCacheTable gerOrCreateBranchCacheTable(CacheTableModelEnum model, AbstractDatabaseAdapter adapter, Connection connection) {
+	private BranchCacheTable getOrCreateBranchCacheTable(CacheTableModelEnum model, AbstractDatabaseAdapter adapter, Connection connection) {
 		BranchCacheTable branchCacheTable = branchCacheTables.get(model);
 		if (branchCacheTable == null) {
 			BranchCacheTable tmp = new BranchCacheTable(model, connection, adapter.getSQLAdapter());
