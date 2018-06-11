@@ -128,7 +128,7 @@ public class DBSplitter {
 
 		// create temporary table for global appearances if needed
 		if (config.getInternal().isExportGlobalAppearances()) {
-			CacheTable temp = cacheTableManager.createCacheTableInDatabase(CacheTableModelEnum.GLOBAL_APPEARANCE);
+			CacheTable temp = cacheTableManager.createCacheTableInDatabase(CacheTableModelEnum.ID_LIST);
 
 			// try and change workspace for temporary table
 			if (databaseAdapter.hasVersioningSupport()) {
@@ -439,7 +439,7 @@ public class DBSplitter {
 		ResultSet rs = null;
 
 		try {
-			CacheTable globalAppTempTable = cacheTableManager.getCacheTable(CacheTableModelEnum.GLOBAL_APPEARANCE);
+			CacheTable globalAppTempTable = cacheTableManager.getCacheTable(CacheTableModelEnum.ID_LIST);
 			globalAppTempTable.createIndexes();
 
 			Table appearance = new Table("appearance", schema);
