@@ -27,11 +27,6 @@
  */
 package org.citydb.modules.kml.database;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
 import org.citydb.config.geometry.BoundingBox;
@@ -55,15 +50,19 @@ import org.citydb.query.builder.sql.BuildProperties;
 import org.citydb.query.builder.sql.SQLQueryBuilder;
 import org.citydb.query.filter.FilterException;
 import org.citydb.query.filter.tiling.Tile;
-import org.citydb.util.Util;
-import org.citygml4j.model.citygml.CityGMLClass;
-
 import org.citydb.sqlbuilder.expression.PlaceHolder;
 import org.citydb.sqlbuilder.schema.Table;
 import org.citydb.sqlbuilder.select.Select;
 import org.citydb.sqlbuilder.select.join.JoinFactory;
 import org.citydb.sqlbuilder.select.operator.comparison.ComparisonFactory;
 import org.citydb.sqlbuilder.select.operator.comparison.ComparisonName;
+import org.citydb.util.Util;
+import org.citygml4j.model.citygml.CityGMLClass;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 public class KmlSplitter {
 	private final WorkerPool<KmlSplittingResult> dbWorkerPool;
@@ -108,7 +107,6 @@ public class KmlSplitter {
 		builder = new SQLQueryBuilder(
 				schemaMapping,
 				databaseAdapter,
-				schema,
 				buildProperties);
 	}
 

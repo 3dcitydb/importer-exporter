@@ -27,14 +27,6 @@
  */
 package org.citydb.citygml.exporter.database.content;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map.Entry;
-
 import org.citydb.citygml.common.database.cache.CacheTable;
 import org.citydb.citygml.common.database.cache.CacheTableManager;
 import org.citydb.citygml.common.database.cache.model.CacheTableModelEnum;
@@ -62,10 +54,6 @@ import org.citydb.query.filter.FilterException;
 import org.citydb.query.filter.selection.Predicate;
 import org.citydb.query.filter.selection.SelectionFilter;
 import org.citydb.query.filter.type.FeatureTypeFilter;
-import org.citygml4j.model.module.citygml.AppearanceModule;
-import org.citygml4j.model.module.citygml.CityObjectGroupModule;
-import org.citygml4j.model.module.citygml.CoreModule;
-
 import org.citydb.sqlbuilder.expression.LiteralList;
 import org.citydb.sqlbuilder.schema.Column;
 import org.citydb.sqlbuilder.schema.Table;
@@ -79,6 +67,17 @@ import org.citydb.sqlbuilder.select.operator.comparison.ComparisonName;
 import org.citydb.sqlbuilder.select.operator.logical.LogicalOperationFactory;
 import org.citydb.sqlbuilder.select.operator.set.SetOperationFactory;
 import org.citydb.sqlbuilder.select.projection.Function;
+import org.citygml4j.model.module.citygml.AppearanceModule;
+import org.citygml4j.model.module.citygml.CityObjectGroupModule;
+import org.citygml4j.model.module.citygml.CoreModule;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map.Entry;
 
 public class DBSplitter {
 	private final Logger log = Logger.getInstance();
@@ -144,7 +143,6 @@ public class DBSplitter {
 		builder = new SQLQueryBuilder(
 				schemaMapping, 
 				databaseAdapter, 
-				schema,
 				buildProperties);
 	}
 

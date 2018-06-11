@@ -1,7 +1,5 @@
 package org.citydb.query.builder.sql;
 
-import java.util.Set;
-
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.schema.mapping.FeatureType;
 import org.citydb.database.schema.mapping.SchemaMapping;
@@ -13,9 +11,10 @@ import org.citydb.query.filter.lod.LodFilter;
 import org.citydb.query.filter.lod.LodFilterMode;
 import org.citydb.query.filter.selection.Predicate;
 import org.citydb.query.filter.type.FeatureTypeFilter;
+import org.citydb.sqlbuilder.select.Select;
 import org.citygml4j.model.module.citygml.CoreModule;
 
-import org.citydb.sqlbuilder.select.Select;
+import java.util.Set;
 
 public class SQLQueryBuilder {
 	private final SchemaMapping schemaMapping;
@@ -24,15 +23,15 @@ public class SQLQueryBuilder {
 
 	private final BuildProperties buildProperties;
 
-	public SQLQueryBuilder(SchemaMapping schemaMapping, AbstractDatabaseAdapter databaseAdapter, String schemaName, BuildProperties buildProperties) {
+	public SQLQueryBuilder(SchemaMapping schemaMapping, AbstractDatabaseAdapter databaseAdapter, BuildProperties buildProperties) {
 		this.schemaMapping = schemaMapping;
 		this.databaseAdapter = databaseAdapter;
-		this.schemaName = schemaName;
+		this.schemaName = databaseAdapter.getConnectionDetails().getSchema();
 		this.buildProperties = buildProperties;
 	}
 
-	public SQLQueryBuilder(SchemaMapping schemaMapping, AbstractDatabaseAdapter databaseAdapter, String schemaName) {
-		this(schemaMapping, databaseAdapter, schemaName, BuildProperties.defaults());
+	public SQLQueryBuilder(SchemaMapping schemaMapping, AbstractDatabaseAdapter databaseAdapter) {
+		this(schemaMapping, databaseAdapter, BuildProperties.defaults());
 	}
 
 	public Select buildQuery(Query query) throws QueryBuildException {
