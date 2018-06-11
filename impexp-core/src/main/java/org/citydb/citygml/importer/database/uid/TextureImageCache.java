@@ -39,7 +39,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.citydb.citygml.common.database.cache.BranchCacheTable;
 import org.citydb.citygml.common.database.cache.CacheTable;
 import org.citydb.citygml.common.database.cache.CacheTableManager;
-import org.citydb.citygml.common.database.cache.model.CacheTableModelEnum;
+import org.citydb.citygml.common.database.cache.model.CacheTableModel;
 import org.citydb.citygml.common.database.uid.UIDCacheEntry;
 import org.citydb.citygml.common.database.uid.UIDCachingModel;
 
@@ -47,7 +47,7 @@ public class TextureImageCache
 
 implements UIDCachingModel {
 	private final int partitions;
-	private final CacheTableModelEnum cacheTableModel;
+	private final CacheTableModel cacheTableModel;
 	private final CacheTableManager cacheTableManager;
 
 	private final ReentrantLock mainLock = new ReentrantLock(true);
@@ -67,7 +67,7 @@ implements UIDCachingModel {
 		this.partitions = partitions;
 		this.batchSize = batchSize;
 
-		cacheTableModel = CacheTableModelEnum.TEXTURE_FILE_ID;
+		cacheTableModel = CacheTableModel.TEXTURE_FILE_ID;
 		backUpTables = new CacheTable[partitions];
 		psLookupIds = new PreparedStatement[partitions];
 		psDrains = new PreparedStatement[partitions];

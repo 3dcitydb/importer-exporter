@@ -27,18 +27,15 @@
  */
 package org.citydb.citygml.common.database.cache.model;
 
+import org.citydb.database.adapter.AbstractSQLAdapter;
+
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import org.citydb.database.adapter.AbstractSQLAdapter;
 
-
-public class CacheTableTextureCoordList extends CacheTableModel {
+public class CacheTableTextureCoordList extends AbstractCacheTableModel {
 	public static CacheTableTextureCoordList instance = null;
-	
-	private CacheTableTextureCoordList() {		
-	}
 	
 	public synchronized static CacheTableTextureCoordList getInstance() {
 		if (instance == null)
@@ -49,38 +46,27 @@ public class CacheTableTextureCoordList extends CacheTableModel {
 
 	@Override
 	public void createIndexes(Connection conn, String tableName, String properties) throws SQLException {
-		Statement stmt = null;
-
-		try {
-			stmt = conn.createStatement();
-			
+		try (Statement stmt = conn.createStatement()) {
 			stmt.executeUpdate("create index idx_" + tableName + " on " + tableName + " (ID) " + properties);
 			stmt.executeUpdate("create index idx2_" + tableName + " on " + tableName + " (GMLID) " + properties);
 			stmt.executeUpdate("create index idx3_" + tableName + " on " + tableName + " (TARGET_ID) " + properties);
-		} finally {
-			if (stmt != null) {
-				stmt.close();
-				stmt = null;
-			}
 		}
 	}
 
 	@Override
-	public CacheTableModelEnum getType() {
-		return CacheTableModelEnum.TEXTURE_COORD_LIST;
+	public CacheTableModel getType() {
+		return CacheTableModel.TEXTURE_COORD_LIST;
 	}
 	
 	@Override
 	protected String getColumns(AbstractSQLAdapter sqlAdapter) {
-		StringBuilder builder = new StringBuilder("(")
-		.append("ID ").append(sqlAdapter.getInteger()).append(", ")
-		.append("GMLID ").append(sqlAdapter.getCharacterVarying(256)).append(", ")
-		.append("TEXPARAM_GMLID ").append(sqlAdapter.getCharacterVarying(256)).append(", ")
-		.append("TEXTURE_COORDINATES ").append(sqlAdapter.getPolygon2D()).append(", ")
-		.append("TARGET_ID ").append(sqlAdapter.getInteger())
-		.append(")");
-		
-		return builder.toString();
+		return "(" +
+				"ID " + sqlAdapter.getInteger() + ", " +
+				"GMLID " + sqlAdapter.getCharacterVarying(256) + ", " +
+				"TEXPARAM_GMLID " + sqlAdapter.getCharacterVarying(256) + ", " +
+				"TEXTURE_COORDINATES " + sqlAdapter.getPolygon2D() + ", " +
+				"TARGET_ID " + sqlAdapter.getInteger() +
+				")";
 	}
 
 }

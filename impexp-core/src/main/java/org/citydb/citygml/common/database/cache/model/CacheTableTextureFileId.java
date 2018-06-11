@@ -27,19 +27,16 @@
  */
 package org.citydb.citygml.common.database.cache.model;
 
+import org.citydb.database.adapter.AbstractSQLAdapter;
+
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import org.citydb.database.adapter.AbstractSQLAdapter;
 
 
-
-public class CacheTableTextureFileId extends CacheTableModel {
+public class CacheTableTextureFileId extends AbstractCacheTableModel {
 	public static CacheTableTextureFileId instance = null;
-	
-	private CacheTableTextureFileId() {		
-	}
 	
 	public synchronized static CacheTableTextureFileId getInstance() {
 		if (instance == null)
@@ -50,32 +47,21 @@ public class CacheTableTextureFileId extends CacheTableModel {
 	
 	@Override
 	public void createIndexes(Connection conn, String tableName, String properties) throws SQLException {
-		Statement stmt = null;
-
-		try {
-			stmt = conn.createStatement();
-			
+		try (Statement stmt = conn.createStatement()) {
 			stmt.executeUpdate("create index idx_" + tableName + " on " + tableName + " (FILE_URI) " + properties);
-		} finally {
-			if (stmt != null) {
-				stmt.close();
-				stmt = null;
-			}
 		}
 	}
 
 	@Override
-	public CacheTableModelEnum getType() {
-		return CacheTableModelEnum.TEXTURE_FILE_ID;
+	public CacheTableModel getType() {
+		return CacheTableModel.TEXTURE_FILE_ID;
 	}
 	
 	@Override
 	protected String getColumns(AbstractSQLAdapter sqlAdapter) {
-		StringBuilder builder = new StringBuilder("(")
-		.append("FILE_URI ").append(sqlAdapter.getCharacterVarying(32)).append(", ")
-		.append("ID ").append(sqlAdapter.getInteger())
-		.append(")");
-		
-		return builder.toString();
+		return "(" +
+				"FILE_URI " + sqlAdapter.getCharacterVarying(32) + ", " +
+				"ID " + sqlAdapter.getInteger() +
+				")";
 	}
 }

@@ -39,8 +39,8 @@ import org.citydb.citygml.common.database.cache.model.CacheTableGlobalAppearance
 import org.citydb.citygml.common.database.cache.model.CacheTableGroupToCityObject;
 import org.citydb.citygml.common.database.cache.model.CacheTableLibraryObject;
 import org.citydb.citygml.common.database.cache.model.CacheTableLinearRing;
+import org.citydb.citygml.common.database.cache.model.AbstractCacheTableModel;
 import org.citydb.citygml.common.database.cache.model.CacheTableModel;
-import org.citydb.citygml.common.database.cache.model.CacheTableModelEnum;
 import org.citydb.citygml.common.database.cache.model.CacheTableSolidGeometry;
 import org.citydb.citygml.common.database.cache.model.CacheTableSurfaceDataToTexImage;
 import org.citydb.citygml.common.database.cache.model.CacheTableSurfaceGeometry;
@@ -54,7 +54,7 @@ import org.citydb.database.adapter.AbstractSQLAdapter;
 import org.citygml4j.util.gmlid.DefaultGMLIdManager;
 
 public class CacheTable extends AbstractCacheTable {	
-	private final CacheTableModel model;
+	private final AbstractCacheTableModel model;
 	private final ReentrantLock mainLock = new ReentrantLock();
 	private final String tableName;
 	private final boolean isStandAlone;
@@ -63,7 +63,7 @@ public class CacheTable extends AbstractCacheTable {
 	private volatile boolean isCreated = false;
 	private volatile boolean isIndexed = false;
 
-	protected CacheTable(CacheTableModelEnum model, Connection connection, AbstractSQLAdapter sqlAdapter, boolean isStandAlone) {
+	protected CacheTable(CacheTableModel model, Connection connection, AbstractSQLAdapter sqlAdapter, boolean isStandAlone) {
 		super(connection, sqlAdapter);
 		
 		switch (model) {
@@ -126,7 +126,7 @@ public class CacheTable extends AbstractCacheTable {
 		tableName = generateUniqueTableName();
 	}
 
-	protected CacheTable(CacheTableModelEnum model, Connection connection, AbstractSQLAdapter sqlAdapter) {
+	protected CacheTable(CacheTableModel model, Connection connection, AbstractSQLAdapter sqlAdapter) {
 		this(model, connection, sqlAdapter, true);
 	}
 	
@@ -321,7 +321,7 @@ public class CacheTable extends AbstractCacheTable {
 	}
 
 	@Override
-	public CacheTableModelEnum getModelType() {
+	public CacheTableModel getModelType() {
 		return model.getType();
 	}
 	

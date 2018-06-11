@@ -27,18 +27,14 @@
  */
 package org.citydb.citygml.common.database.cache.model;
 
+import org.citydb.database.adapter.AbstractSQLAdapter;
+
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import org.citydb.database.adapter.AbstractSQLAdapter;
-
-
-public class CacheTableGlobalAppearance extends CacheTableModel {
+public class CacheTableGlobalAppearance extends AbstractCacheTableModel {
 	private static CacheTableGlobalAppearance instance;
-
-	private CacheTableGlobalAppearance() {
-	}
 
 	public synchronized static CacheTableGlobalAppearance getInstance() {
 		if (instance == null)
@@ -49,31 +45,20 @@ public class CacheTableGlobalAppearance extends CacheTableModel {
 
 	@Override
 	public void createIndexes(Connection conn, String tableName, String properties) throws SQLException {
-		Statement stmt = null;
-
-		try {
-			stmt = conn.createStatement();
-
+		try (Statement stmt = conn.createStatement()) {
 			stmt.executeUpdate("create unique index idx_" + tableName + " on " + tableName + " (ID) " + properties);
-		} finally {
-			if (stmt != null) {
-				stmt.close();
-				stmt = null;
-			}
 		}
 	}
 
 	@Override
-	public CacheTableModelEnum getType() {
-		return CacheTableModelEnum.GLOBAL_APPEARANCE;
+	public CacheTableModel getType() {
+		return CacheTableModel.GLOBAL_APPEARANCE;
 	}
 
 	@Override
 	protected String getColumns(AbstractSQLAdapter sqlAdapter) {
-		StringBuilder builder = new StringBuilder("(")
-		.append("ID ").append(sqlAdapter.getInteger())
-		.append(")");
-		
-		return builder.toString();
+		return "(" +
+				"ID " + sqlAdapter.getInteger() +
+				")";
 	}
 }

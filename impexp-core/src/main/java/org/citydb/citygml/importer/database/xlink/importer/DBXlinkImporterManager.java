@@ -32,7 +32,7 @@ import java.util.HashMap;
 
 import org.citydb.citygml.common.database.cache.CacheTable;
 import org.citydb.citygml.common.database.cache.CacheTableManager;
-import org.citydb.citygml.common.database.cache.model.CacheTableModelEnum;
+import org.citydb.citygml.common.database.cache.model.CacheTableModel;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.event.Event;
 import org.citydb.event.EventDispatcher;
@@ -58,43 +58,43 @@ public class DBXlinkImporterManager {
 
 			switch (xlinkType) {
 			case SURFACE_GEOMETRY:
-				tempTable = cacheTableManager.createCacheTable(CacheTableModelEnum.SURFACE_GEOMETRY);
+				tempTable = cacheTableManager.createCacheTable(CacheTableModel.SURFACE_GEOMETRY);
 				break;
 			case LINEAR_RING:
-				tempTable = cacheTableManager.createCacheTable(CacheTableModelEnum.LINEAR_RING);
+				tempTable = cacheTableManager.createCacheTable(CacheTableModel.LINEAR_RING);
 				break;
 			case XLINK_BASIC:
-				tempTable = cacheTableManager.createCacheTable(CacheTableModelEnum.BASIC);
+				tempTable = cacheTableManager.createCacheTable(CacheTableModel.BASIC);
 				break;
 			case XLINK_TEXTURE_COORD_LIST:
-				tempTable = cacheTableManager.createCacheTable(CacheTableModelEnum.TEXTURE_COORD_LIST);
+				tempTable = cacheTableManager.createCacheTable(CacheTableModel.TEXTURE_COORD_LIST);
 				break;
 			case XLINK_TEXTUREPARAM:
-				tempTable = cacheTableManager.createCacheTable(CacheTableModelEnum.TEXTUREPARAM);
+				tempTable = cacheTableManager.createCacheTable(CacheTableModel.TEXTUREPARAM);
 				break;
 			case TEXTUREASSOCIATION_TARGET:
-				tempTable = cacheTableManager.createCacheTable(CacheTableModelEnum.TEXTUREASSOCIATION_TARGET);
+				tempTable = cacheTableManager.createCacheTable(CacheTableModel.TEXTUREASSOCIATION_TARGET);
 				break;
 			case XLINK_TEXTUREASSOCIATION:
-				tempTable = cacheTableManager.createCacheTable(CacheTableModelEnum.TEXTUREASSOCIATION);
+				tempTable = cacheTableManager.createCacheTable(CacheTableModel.TEXTUREASSOCIATION);
 				break;
 			case TEXTURE_FILE:
-				tempTable = cacheTableManager.createCacheTable(CacheTableModelEnum.TEXTURE_FILE);
+				tempTable = cacheTableManager.createCacheTable(CacheTableModel.TEXTURE_FILE);
 				break;
 			case SURFACE_DATA_TO_TEX_IMAGE:
-				tempTable = cacheTableManager.createCacheTable(CacheTableModelEnum.SURFACE_DATA_TO_TEX_IMAGE);
+				tempTable = cacheTableManager.createCacheTable(CacheTableModel.SURFACE_DATA_TO_TEX_IMAGE);
 				break;
 			case LIBRARY_OBJECT:
-				tempTable = cacheTableManager.createCacheTable(CacheTableModelEnum.LIBRARY_OBJECT);
+				tempTable = cacheTableManager.createCacheTable(CacheTableModel.LIBRARY_OBJECT);
 				break;
 			case XLINK_DEPRECATED_MATERIAL:
-				tempTable = cacheTableManager.createCacheTable(CacheTableModelEnum.DEPRECATED_MATERIAL);
+				tempTable = cacheTableManager.createCacheTable(CacheTableModel.DEPRECATED_MATERIAL);
 				break;
 			case GROUP_TO_CITYOBJECT:
-				tempTable = cacheTableManager.createCacheTable(CacheTableModelEnum.GROUP_TO_CITYOBJECT);
+				tempTable = cacheTableManager.createCacheTable(CacheTableModel.GROUP_TO_CITYOBJECT);
 				break;
 			case SOLID_GEOMETRY:
-				tempTable = cacheTableManager.createCacheTable(CacheTableModelEnum.SOLID_GEOMETRY);
+				tempTable = cacheTableManager.createCacheTable(CacheTableModel.SOLID_GEOMETRY);
 				break;
 			}
 

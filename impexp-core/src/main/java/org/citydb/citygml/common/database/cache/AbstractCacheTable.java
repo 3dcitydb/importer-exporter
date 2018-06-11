@@ -30,7 +30,7 @@ package org.citydb.citygml.common.database.cache;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import org.citydb.citygml.common.database.cache.model.CacheTableModelEnum;
+import org.citydb.citygml.common.database.cache.model.CacheTableModel;
 import org.citydb.database.adapter.AbstractSQLAdapter;
 
 public abstract class AbstractCacheTable {
@@ -48,7 +48,7 @@ public abstract class AbstractCacheTable {
 		return connection;
 	}
 	
-	public abstract CacheTableModelEnum getModelType();
+	public abstract CacheTableModel getModelType();
 	public abstract boolean isCreated();
 	protected abstract void create() throws SQLException;
 	protected abstract void createAndIndex() throws SQLException;
