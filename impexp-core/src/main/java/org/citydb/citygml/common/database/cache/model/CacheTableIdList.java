@@ -25,32 +25,40 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.citydb.citygml.common.database.cache;
+package org.citydb.citygml.common.database.cache.model;
+
+import org.citydb.database.adapter.AbstractSQLAdapter;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Statement;
 
-import org.citydb.citygml.common.database.cache.model.CacheTableModel;
-import org.citydb.database.adapter.AbstractSQLAdapter;
+public class CacheTableIdList extends AbstractCacheTableModel {
+	private static CacheTableIdList instance;
 
-public abstract class AbstractCacheTable {
-	protected static long ID;
-	protected final Connection connection;
-	protected final AbstractSQLAdapter sqlAdapter;
-	
-	protected AbstractCacheTable(Connection connection, AbstractSQLAdapter sqlAdapter) {
-		ID++;
-		this.connection = connection;
-		this.sqlAdapter = sqlAdapter;
+	public synchronized static CacheTableIdList getInstance() {
+		if (instance == null)
+			instance = new CacheTableIdList();
+
+		return instance;
 	}
-	
-	public Connection getConnection() {
-		return connection;
+
+	@Override
+	public void createIndexes(Connection conn, String tableName, String properties) throws SQLException {
+		try (Statement stmt = conn.createStatement()) {
+			stmt.executeUpdate("create unique index idx_" + tableName + " on " + tableName + " (ID) " + properties);
+		}
 	}
-	
-	public abstract CacheTableModel getModelType();
-	public abstract boolean isCreated();
-	public abstract void create() throws SQLException;
-	public abstract void createAndIndex() throws SQLException;
-	public abstract void drop() throws SQLException;
+
+	@Override
+	public CacheTableModel getType() {
+		return CacheTableModel.ID_LIST;
+	}
+
+	@Override
+	protected String getColumns(AbstractSQLAdapter sqlAdapter) {
+		return "(" +
+				"ID " + sqlAdapter.getInteger() +
+				")";
+	}
 }
