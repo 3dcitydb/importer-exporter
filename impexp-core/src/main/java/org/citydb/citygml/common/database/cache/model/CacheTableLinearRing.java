@@ -27,17 +27,14 @@
  */
 package org.citydb.citygml.common.database.cache.model;
 
+import org.citydb.database.adapter.AbstractSQLAdapter;
+
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import org.citydb.database.adapter.AbstractSQLAdapter;
-
-public class CacheTableLinearRing extends CacheTableModel {
+public class CacheTableLinearRing extends AbstractCacheTableModel {
 	public static CacheTableLinearRing instance = null;
-
-	private CacheTableLinearRing() {		
-	}
 
 	public synchronized static CacheTableLinearRing getInstance() {
 		if (instance == null)
@@ -48,37 +45,26 @@ public class CacheTableLinearRing extends CacheTableModel {
 	
 	@Override
 	public void createIndexes(Connection conn, String tableName, String properties) throws SQLException {
-		Statement stmt = null;
-
-		try {
-			stmt = conn.createStatement();
-			
+		try (Statement stmt = conn.createStatement()) {
 			stmt.executeUpdate("create index idx_" + tableName + " on " + tableName + " (GMLID) " + properties);
 			stmt.executeUpdate("create index idx2_" + tableName + " on " + tableName + " (PARENT_ID) " + properties);
 			stmt.executeUpdate("create index idx3_" + tableName + " on " + tableName + " (RING_NO) " + properties);
-		} finally {
-			if (stmt != null) {
-				stmt.close();
-				stmt = null;
-			}
 		}
 	}
 
 	@Override
-	public CacheTableModelEnum getType() {
-		return CacheTableModelEnum.LINEAR_RING;
+	public CacheTableModel getType() {
+		return CacheTableModel.LINEAR_RING;
 	}
 
 	@Override
 	protected String getColumns(AbstractSQLAdapter sqlAdapter) {
-		StringBuilder builder = new StringBuilder("(")
-		.append("GMLID ").append(sqlAdapter.getCharacterVarying(256)).append(", ")
-		.append("PARENT_ID ").append(sqlAdapter.getInteger()).append(", ")
-		.append("RING_NO ").append(sqlAdapter.getInteger()).append(", ")
-		.append("REVERSE ").append(sqlAdapter.getNumeric(1, 0))
-		.append(")");
-		
-		return builder.toString();
+		return "(" +
+				"GMLID " + sqlAdapter.getCharacterVarying(256) + ", " +
+				"PARENT_ID " + sqlAdapter.getInteger() + ", " +
+				"RING_NO " + sqlAdapter.getInteger() + ", " +
+				"REVERSE " + sqlAdapter.getNumeric(1, 0) +
+				")";
 	}
 
 }

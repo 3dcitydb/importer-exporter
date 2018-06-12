@@ -6,7 +6,7 @@ import org.citydb.ade.exporter.ADEExportManager;
 import org.citydb.ade.exporter.CityGMLExportHelper;
 import org.citydb.citygml.common.database.cache.CacheTable;
 import org.citydb.citygml.common.database.cache.CacheTableManager;
-import org.citydb.citygml.common.database.cache.model.CacheTableModelEnum;
+import org.citydb.citygml.common.database.cache.model.CacheTableModel;
 import org.citydb.citygml.common.database.uid.UIDCache;
 import org.citydb.citygml.common.database.uid.UIDCacheManager;
 import org.citydb.citygml.common.database.uid.UIDCacheType;
@@ -804,7 +804,7 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 			if (type == DBSurfaceGeometry.class) {
 				CacheTable cacheTable = null;
 				if (config.getInternal().isExportGlobalAppearances()) {
-					cacheTable = cacheTableManager.getCacheTable(CacheTableModelEnum.GLOBAL_APPEARANCE);
+					cacheTable = cacheTableManager.getCacheTable(CacheTableModel.GLOBAL_APPEARANCE);
 					if (cacheTable == null)
 						logOrThrowErrorMessage("Failed to access temporary table for global appearances.");
 				}
@@ -909,7 +909,7 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 			else if (type == DBGlobalAppearance.class) {
 				CacheTable cacheTable = null;
 				if (config.getInternal().isExportGlobalAppearances()) {
-					cacheTable = cacheTableManager.getCacheTable(CacheTableModelEnum.GLOBAL_APPEARANCE);
+					cacheTable = cacheTableManager.getCacheTable(CacheTableModel.GLOBAL_APPEARANCE);
 					if (cacheTable == null)
 						logOrThrowErrorMessage("Failed to access temporary table for global appearances.");
 				}

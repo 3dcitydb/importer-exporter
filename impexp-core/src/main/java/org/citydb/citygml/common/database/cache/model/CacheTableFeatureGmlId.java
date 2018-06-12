@@ -27,18 +27,14 @@
  */
 package org.citydb.citygml.common.database.cache.model;
 
+import org.citydb.database.adapter.AbstractSQLAdapter;
+
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import org.citydb.database.adapter.AbstractSQLAdapter;
-
-
-public class CacheTableFeatureGmlId extends CacheTableModel {
+public class CacheTableFeatureGmlId extends AbstractCacheTableModel {
 	private static CacheTableFeatureGmlId instance;
-
-	private CacheTableFeatureGmlId() {
-	}
 
 	public synchronized static CacheTableFeatureGmlId getInstance() {
 		if (instance == null)
@@ -48,35 +44,24 @@ public class CacheTableFeatureGmlId extends CacheTableModel {
 	}
 	
 	@Override
-	public CacheTableModelEnum getType() {
-		return CacheTableModelEnum.GMLID_FEATURE;
+	public CacheTableModel getType() {
+		return CacheTableModel.GMLID_FEATURE;
 	}
 
 	@Override
 	public void createIndexes(Connection conn, String tableName, String properties) throws SQLException {
-		Statement stmt = null;
-
-		try {
-			stmt = conn.createStatement();
-
+		try (Statement stmt = conn.createStatement()) {
 			stmt.executeUpdate("create index idx_" + tableName + " on " + tableName + " (GMLID) " + properties);
-		} finally {
-			if (stmt != null) {
-				stmt.close();
-				stmt = null;
-			}
 		}
 	}
 
 	@Override
 	protected String getColumns(AbstractSQLAdapter sqlAdapter) {
-		StringBuilder builder = new StringBuilder("(")
-		.append("GMLID ").append(sqlAdapter.getCharacterVarying(256)).append(", ")
-		.append("ID ").append(sqlAdapter.getInteger()).append(", ")
-		.append("MAPPING ").append(sqlAdapter.getCharacterVarying(256)).append(", ")
-		.append("OBJECTCLASS_ID ").append(sqlAdapter.getInteger())
-		.append(")");
-
-		return builder.toString();
+		return "(" +
+				"GMLID " + sqlAdapter.getCharacterVarying(256) + ", " +
+				"ID " + sqlAdapter.getInteger() + ", " +
+				"MAPPING " + sqlAdapter.getCharacterVarying(256) + ", " +
+				"OBJECTCLASS_ID " + sqlAdapter.getInteger() +
+				")";
 	}
 }

@@ -29,13 +29,8 @@ package org.citydb.citygml.common.database.cache.model;
 
 import org.citydb.database.adapter.AbstractSQLAdapter;
 
-
-
-public class CacheTableDeprecatedMaterial extends CacheTableModel {
+public class CacheTableDeprecatedMaterial extends AbstractCacheTableModel {
 	public static CacheTableDeprecatedMaterial instance = null;
-	
-	private CacheTableDeprecatedMaterial() {		
-	}
 	
 	public synchronized static CacheTableDeprecatedMaterial getInstance() {
 		if (instance == null)
@@ -45,18 +40,16 @@ public class CacheTableDeprecatedMaterial extends CacheTableModel {
 	}
 
 	@Override
-	public CacheTableModelEnum getType() {
-		return CacheTableModelEnum.DEPRECATED_MATERIAL;
+	public CacheTableModel getType() {
+		return CacheTableModel.DEPRECATED_MATERIAL;
 	}
 	
 	@Override
 	protected String getColumns(AbstractSQLAdapter sqlAdapter) {
-		StringBuilder builder = new StringBuilder("(")
-		.append("ID ").append(sqlAdapter.getInteger()).append(", ")
-		.append("GMLID ").append(sqlAdapter.getCharacterVarying(256)).append(", ")
-		.append("SURFACE_GEOMETRY_ID ").append(sqlAdapter.getInteger())
-		.append(")");
-		
-		return builder.toString();
+		return "(" +
+				"ID " + sqlAdapter.getInteger() + ", " +
+				"GMLID " + sqlAdapter.getCharacterVarying(256) + ", " +
+				"SURFACE_GEOMETRY_ID " + sqlAdapter.getInteger() +
+				")";
 	}
 }

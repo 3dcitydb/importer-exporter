@@ -39,14 +39,14 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.citydb.citygml.common.database.cache.BranchCacheTable;
 import org.citydb.citygml.common.database.cache.CacheTable;
 import org.citydb.citygml.common.database.cache.CacheTableManager;
-import org.citydb.citygml.common.database.cache.model.CacheTableModelEnum;
+import org.citydb.citygml.common.database.cache.model.CacheTableModel;
 import org.citydb.citygml.common.database.uid.UIDCacheEntry;
 import org.citydb.citygml.common.database.uid.UIDCachingModel;
 
 public class FeatureGmlIdCache implements UIDCachingModel {
 	private final ReentrantLock mainLock = new ReentrantLock(true);
 	private final int partitions;
-	private final CacheTableModelEnum cacheTableModel;
+	private final CacheTableModel cacheTableModel;
 	private final CacheTableManager cacheTableManager;
 
 	private BranchCacheTable branchTable;
@@ -65,7 +65,7 @@ public class FeatureGmlIdCache implements UIDCachingModel {
 		this.partitions = partitions;
 		this.batchSize = batchSize;
 
-		cacheTableModel = CacheTableModelEnum.GMLID_FEATURE;
+		cacheTableModel = CacheTableModel.GMLID_FEATURE;
 		backUpTables = new CacheTable[partitions];
 		psLookupDbIds = new PreparedStatement[partitions];
 		psLookupGmlIds = new PreparedStatement[partitions];

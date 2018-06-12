@@ -29,11 +29,8 @@ package org.citydb.citygml.common.database.cache.model;
 
 import org.citydb.database.adapter.AbstractSQLAdapter;
 
-public class CacheTableTextureAssociation extends CacheTableModel {
+public class CacheTableTextureAssociation extends AbstractCacheTableModel {
 	public static CacheTableTextureAssociation instance = null;
-	
-	private CacheTableTextureAssociation() {		
-	}
 	
 	public synchronized static CacheTableTextureAssociation getInstance() {
 		if (instance == null)
@@ -43,18 +40,16 @@ public class CacheTableTextureAssociation extends CacheTableModel {
 	}
 
 	@Override
-	public CacheTableModelEnum getType() {
-		return CacheTableModelEnum.TEXTUREASSOCIATION;
+	public CacheTableModel getType() {
+		return CacheTableModel.TEXTUREASSOCIATION;
 	}
 	
 	@Override
 	protected String getColumns(AbstractSQLAdapter sqlAdapter) {
-		StringBuilder builder = new StringBuilder("(")
-		.append("ID ").append(sqlAdapter.getInteger()).append(", ")
-		.append("GMLID ").append(sqlAdapter.getCharacterVarying(256)).append(", ")
-		.append("TARGET_URI ").append(sqlAdapter.getCharacterVarying(256))
-		.append(")");
-		
-		return builder.toString();
+		return "(" +
+				"ID " + sqlAdapter.getInteger() + ", " +
+				"GMLID " + sqlAdapter.getCharacterVarying(256) + ", " +
+				"TARGET_URI " + sqlAdapter.getCharacterVarying(256) +
+				")";
 	}
 }

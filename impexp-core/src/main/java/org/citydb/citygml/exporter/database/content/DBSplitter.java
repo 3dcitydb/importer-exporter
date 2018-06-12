@@ -29,7 +29,7 @@ package org.citydb.citygml.exporter.database.content;
 
 import org.citydb.citygml.common.database.cache.CacheTable;
 import org.citydb.citygml.common.database.cache.CacheTableManager;
-import org.citydb.citygml.common.database.cache.model.CacheTableModelEnum;
+import org.citydb.citygml.common.database.cache.model.CacheTableModel;
 import org.citydb.citygml.common.database.uid.UIDCache;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
@@ -127,7 +127,7 @@ public class DBSplitter {
 
 		// create temporary table for global appearances if needed
 		if (config.getInternal().isExportGlobalAppearances()) {
-			CacheTable temp = cacheTableManager.createCacheTableInDatabase(CacheTableModelEnum.GLOBAL_APPEARANCE);
+			CacheTable temp = cacheTableManager.createCacheTableInDatabase(CacheTableModel.GLOBAL_APPEARANCE);
 
 			// try and change workspace for temporary table
 			if (databaseAdapter.hasVersioningSupport()) {
@@ -437,7 +437,7 @@ public class DBSplitter {
 		ResultSet rs = null;
 
 		try {
-			CacheTable globalAppTempTable = cacheTableManager.getCacheTable(CacheTableModelEnum.GLOBAL_APPEARANCE);
+			CacheTable globalAppTempTable = cacheTableManager.getCacheTable(CacheTableModel.GLOBAL_APPEARANCE);
 			globalAppTempTable.createIndexes();
 
 			Table appearance = new Table("appearance", schema);

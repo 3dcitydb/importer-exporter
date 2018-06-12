@@ -33,23 +33,23 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
-import org.citydb.citygml.common.database.cache.model.CacheTableModelEnum;
+import org.citydb.citygml.common.database.cache.model.CacheTableModel;
 import org.citydb.database.adapter.AbstractSQLAdapter;
 
 public class BranchCacheTable extends AbstractCacheTable {
 	private final CacheTable main;
-	private final CacheTableModelEnum model;
+	private final CacheTableModel model;
 	private final ReentrantLock mainLock = new ReentrantLock();
 
 	private volatile boolean isCreated = false;
 	private List<CacheTable> branches;
 
-	protected BranchCacheTable(CacheTableModelEnum model, Connection connection, AbstractSQLAdapter sqlAdapter) {
+	protected BranchCacheTable(CacheTableModel model, Connection connection, AbstractSQLAdapter sqlAdapter) {
 		super(connection, sqlAdapter);
 		this.model = model;
 
 		main = new CacheTable(model, connection, sqlAdapter, false);
-		branches = new ArrayList<CacheTable>();
+		branches = new ArrayList<>();
 	}
 
 	@Override
@@ -135,7 +135,7 @@ public class BranchCacheTable extends AbstractCacheTable {
 	}
 
 	public List<CacheTable> getBranchTables() {
-		return new ArrayList<CacheTable>(branches);
+		return new ArrayList<>(branches);
 	}
 
 	@Override
@@ -165,7 +165,7 @@ public class BranchCacheTable extends AbstractCacheTable {
 	}
 
 	@Override
-	public CacheTableModelEnum getModelType() {
+	public CacheTableModel getModelType() {
 		return model;
 	}
 

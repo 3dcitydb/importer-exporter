@@ -27,18 +27,14 @@
  */
 package org.citydb.citygml.common.database.cache.model;
 
+import org.citydb.database.adapter.AbstractSQLAdapter;
+
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import org.citydb.database.adapter.AbstractSQLAdapter;
-
-
-public class CacheTableTextureAssociationTarget extends CacheTableModel {
+public class CacheTableTextureAssociationTarget extends AbstractCacheTableModel {
 	public static CacheTableTextureAssociationTarget instance = null;
-	
-	private CacheTableTextureAssociationTarget() {		
-	}
 	
 	public synchronized static CacheTableTextureAssociationTarget getInstance() {
 		if (instance == null)
@@ -49,33 +45,22 @@ public class CacheTableTextureAssociationTarget extends CacheTableModel {
 
 	@Override
 	public void createIndexes(Connection conn, String tableName, String properties) throws SQLException {
-		Statement stmt = null;
-
-		try {
-			stmt = conn.createStatement();
-			
+		try (Statement stmt = conn.createStatement()) {
 			stmt.executeUpdate("create index idx_" + tableName + " on " + tableName + " (GMLID) " + properties);
-		} finally {
-			if (stmt != null) {
-				stmt.close();
-				stmt = null;
-			}
 		}
 	}
 
 	@Override
-	public CacheTableModelEnum getType() {
-		return CacheTableModelEnum.TEXTUREASSOCIATION_TARGET;
+	public CacheTableModel getType() {
+		return CacheTableModel.TEXTUREASSOCIATION_TARGET;
 	}
 	
 	@Override
 	protected String getColumns(AbstractSQLAdapter sqlAdapter) {
-		StringBuilder builder = new StringBuilder("(")
-		.append("SURFACE_DATA_ID ").append(sqlAdapter.getInteger()).append(", ")
-		.append("SURFACE_GEOMETRY_ID ").append(sqlAdapter.getInteger()).append(", ")
-		.append("GMLID ").append(sqlAdapter.getCharacterVarying(256))
-		.append(")");
-		
-		return builder.toString();
+		return "(" +
+				"SURFACE_DATA_ID " + sqlAdapter.getInteger() + ", " +
+				"SURFACE_GEOMETRY_ID " + sqlAdapter.getInteger() + ", " +
+				"GMLID " + sqlAdapter.getCharacterVarying(256) +
+				")";
 	}
 }

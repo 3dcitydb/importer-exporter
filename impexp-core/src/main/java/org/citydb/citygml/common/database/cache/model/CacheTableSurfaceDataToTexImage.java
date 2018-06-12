@@ -29,11 +29,8 @@ package org.citydb.citygml.common.database.cache.model;
 
 import org.citydb.database.adapter.AbstractSQLAdapter;
 
-public class CacheTableSurfaceDataToTexImage extends CacheTableModel {
+public class CacheTableSurfaceDataToTexImage extends AbstractCacheTableModel {
 	public static CacheTableSurfaceDataToTexImage instance = null;
-
-	private CacheTableSurfaceDataToTexImage() {		
-	}
 
 	public synchronized static CacheTableSurfaceDataToTexImage getInstance() {
 		if (instance == null)
@@ -43,18 +40,16 @@ public class CacheTableSurfaceDataToTexImage extends CacheTableModel {
 	}
 
 	@Override
-	public CacheTableModelEnum getType() {
-		return CacheTableModelEnum.SURFACE_DATA_TO_TEX_IMAGE;
+	public CacheTableModel getType() {
+		return CacheTableModel.SURFACE_DATA_TO_TEX_IMAGE;
 	}
 
 	@Override
 	protected String getColumns(AbstractSQLAdapter sqlAdapter) {
-		StringBuilder builder = new StringBuilder("(")
-		.append("FROM_ID ").append(sqlAdapter.getInteger()).append(", ")
-		.append("TO_ID ").append(sqlAdapter.getInteger())
-		.append(")");
-		
-		return builder.toString();
+		return "(" +
+				"FROM_ID " + sqlAdapter.getInteger() + ", " +
+				"TO_ID " + sqlAdapter.getInteger() +
+				")";
 	}
 
 }

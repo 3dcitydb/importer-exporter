@@ -29,11 +29,8 @@ package org.citydb.citygml.common.database.cache.model;
 
 import org.citydb.database.adapter.AbstractSQLAdapter;
 
-public class CacheTableSolidGeometry extends CacheTableModel {
+public class CacheTableSolidGeometry extends AbstractCacheTableModel {
 	public static CacheTableSolidGeometry instance = null;
-	
-	private CacheTableSolidGeometry() {		
-	}
 	
 	public synchronized static CacheTableSolidGeometry getInstance() {
 		if (instance == null)
@@ -43,17 +40,15 @@ public class CacheTableSolidGeometry extends CacheTableModel {
 	}
 
 	@Override
-	public CacheTableModelEnum getType() {
-		return CacheTableModelEnum.SOLID_GEOMETRY;
+	public CacheTableModel getType() {
+		return CacheTableModel.SOLID_GEOMETRY;
 	}
 	
 	@Override
 	protected String getColumns(AbstractSQLAdapter sqlAdapter) {
-		StringBuilder builder = new StringBuilder("(")
-		.append("ID ").append(sqlAdapter.getInteger())
-		.append(")");
-		
-		return builder.toString();
+		return "(" +
+				"ID " + sqlAdapter.getInteger() +
+				")";
 	}
 
 }

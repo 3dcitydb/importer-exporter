@@ -27,20 +27,20 @@
  */
 package org.citydb.citygml.common.database.cache;
 
-import java.io.File;
-import java.io.IOException;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.util.concurrent.ConcurrentHashMap;
-
-import org.citydb.citygml.common.database.cache.model.CacheTableModelEnum;
+import org.citydb.citygml.common.database.cache.model.CacheTableModel;
 import org.citydb.config.Config;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.adapter.h2.H2Adapter;
 import org.citydb.database.connection.DatabaseConnectionPool;
 import org.citydb.log.Logger;
 import org.citygml4j.util.gmlid.DefaultGMLIdManager;
+
+import java.io.File;
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class CacheTableManager {
 	private final Logger LOG = Logger.getInstance();
@@ -52,8 +52,8 @@ public class CacheTableManager {
 	private AbstractDatabaseAdapter databaseAdapter;
 	private Connection databaseConnection;
 
-	private ConcurrentHashMap<CacheTableModelEnum, CacheTable> cacheTables;
-	private ConcurrentHashMap<CacheTableModelEnum, BranchCacheTable> branchCacheTables;
+	private ConcurrentHashMap<CacheTableModel, CacheTable> cacheTables;
+	private ConcurrentHashMap<CacheTableModel, BranchCacheTable> branchCacheTables;
 
 	public CacheTableManager(int concurrencyLevel, Config config) throws SQLException, IOException {
 		if (config.getProject().getGlobal().getCache().isUseDatabase()) {
@@ -83,8 +83,8 @@ public class CacheTableManager {
 
 		cacheConnection.setAutoCommit(false);
 
-		cacheTables = new ConcurrentHashMap<CacheTableModelEnum, CacheTable>(CacheTableModelEnum.values().length, 0.75f, concurrencyLevel);
-		branchCacheTables = new ConcurrentHashMap<CacheTableModelEnum, BranchCacheTable>(CacheTableModelEnum.values().length, 0.75f, concurrencyLevel);
+		cacheTables = new ConcurrentHashMap<>(CacheTableModel.values().length, 0.75f, concurrencyLevel);
+		branchCacheTables = new ConcurrentHashMap<>(CacheTableModel.values().length, 0.75f, concurrencyLevel);
 		this.config = config;
 	}
 
@@ -92,16 +92,16 @@ public class CacheTableManager {
 		return cacheAdapter;
 	}
 
-	public CacheTable createCacheTable(CacheTableModelEnum model) throws SQLException {
+	public CacheTable createCacheTable(CacheTableModel model) throws SQLException {
 		return createCacheTable(model, cacheConnection, cacheAdapter);		
 	}
 
-	public CacheTable createCacheTableInDatabase(CacheTableModelEnum model) throws SQLException {
+	public CacheTable createCacheTableInDatabase(CacheTableModel model) throws SQLException {
 		initDatabaseConnection();
 		return createCacheTable(model, databaseConnection, databaseAdapter);
 	}
 
-	private CacheTable createCacheTable(CacheTableModelEnum model, Connection connection, AbstractDatabaseAdapter adapter) throws SQLException {
+	private CacheTable createCacheTable(CacheTableModel model, Connection connection, AbstractDatabaseAdapter adapter) throws SQLException {
 		CacheTable cacheTable = getOrCreateCacheTable(model, adapter, connection);		
 		if (!cacheTable.isCreated())
 			cacheTable.create();
@@ -109,7 +109,7 @@ public class CacheTableManager {
 		return cacheTable;
 	}
 
-	public CacheTable createAndIndexCacheTable(CacheTableModelEnum model) throws SQLException {
+	public CacheTable createAndIndexCacheTable(CacheTableModel model) throws SQLException {
 		CacheTable cacheTable = getOrCreateCacheTable(model, cacheAdapter, cacheConnection);
 		if (!cacheTable.isCreated())
 			cacheTable.createAndIndex();
@@ -117,7 +117,7 @@ public class CacheTableManager {
 		return cacheTable;
 	}
 
-	public BranchCacheTable createBranchCacheTable(CacheTableModelEnum model) throws SQLException {
+	public BranchCacheTable createBranchCacheTable(CacheTableModel model) throws SQLException {
 		BranchCacheTable branchCacheTable = getOrCreateBranchCacheTable(model, cacheAdapter, cacheConnection);
 		if (!branchCacheTable.isCreated())
 			branchCacheTable.create();
@@ -125,7 +125,7 @@ public class CacheTableManager {
 		return branchCacheTable;
 	}
 
-	public BranchCacheTable createAndIndexBranchCacheTable(CacheTableModelEnum model) throws SQLException {
+	public BranchCacheTable createAndIndexBranchCacheTable(CacheTableModel model) throws SQLException {
 		BranchCacheTable branchCacheTable = getOrCreateBranchCacheTable(model, cacheAdapter, cacheConnection);
 		if (!branchCacheTable.isCreated())
 			branchCacheTable.createAndIndex();
@@ -133,11 +133,11 @@ public class CacheTableManager {
 		return branchCacheTable;
 	}
 
-	public CacheTable getCacheTable(CacheTableModelEnum type) {		
+	public CacheTable getCacheTable(CacheTableModel type) {
 		return cacheTables.get(type);
 	}
 
-	public boolean existsCacheTable(CacheTableModelEnum type) {
+	public boolean existsCacheTable(CacheTableModel type) {
 		CacheTable cacheTable = cacheTables.get(type);
 		return (cacheTable != null && cacheTable.isCreated());
 	}
@@ -191,7 +191,7 @@ public class CacheTableManager {
 		}
 	}
 
-	private CacheTable getOrCreateCacheTable(CacheTableModelEnum model, AbstractDatabaseAdapter adapter, Connection connection) {
+	private CacheTable getOrCreateCacheTable(CacheTableModel model, AbstractDatabaseAdapter adapter, Connection connection) {
 		CacheTable cacheTable = cacheTables.get(model);
 		if (cacheTable == null) {
 			CacheTable tmp = new CacheTable(model, connection, adapter.getSQLAdapter());
@@ -203,7 +203,7 @@ public class CacheTableManager {
 		return cacheTable;
 	}
 
-	private BranchCacheTable getOrCreateBranchCacheTable(CacheTableModelEnum model, AbstractDatabaseAdapter adapter, Connection connection) {
+	private BranchCacheTable getOrCreateBranchCacheTable(CacheTableModel model, AbstractDatabaseAdapter adapter, Connection connection) {
 		BranchCacheTable branchCacheTable = branchCacheTables.get(model);
 		if (branchCacheTable == null) {
 			BranchCacheTable tmp = new BranchCacheTable(model, connection, adapter.getSQLAdapter());

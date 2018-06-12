@@ -30,11 +30,8 @@ package org.citydb.citygml.common.database.cache.model;
 import org.citydb.database.adapter.AbstractSQLAdapter;
 
 
-public class CacheTableTextureParam extends CacheTableModel {
+public class CacheTableTextureParam extends AbstractCacheTableModel {
 	public static CacheTableTextureParam instance = null;
-	
-	private CacheTableTextureParam() {		
-	}
 	
 	public synchronized static CacheTableTextureParam getInstance() {
 		if (instance == null)
@@ -44,22 +41,20 @@ public class CacheTableTextureParam extends CacheTableModel {
 	}
 
 	@Override
-	public CacheTableModelEnum getType() {
-		return CacheTableModelEnum.TEXTUREPARAM;
+	public CacheTableModel getType() {
+		return CacheTableModel.TEXTUREPARAM;
 	}
 	
 	@Override
 	protected String getColumns(AbstractSQLAdapter sqlAdapter) {
-		StringBuilder builder = new StringBuilder("(")
-		.append("ID ").append(sqlAdapter.getInteger()).append(", ")
-		.append("GMLID ").append(sqlAdapter.getCharacterVarying(256)).append(", ")
-		.append("TYPE ").append(sqlAdapter.getNumeric(3)).append(", ")
-		.append("IS_TEXTURE_PARAMETERIZATION ").append(sqlAdapter.getNumeric(1, 0)).append(", ")
-		.append("TEXPARAM_GMLID ").append(sqlAdapter.getCharacterVarying(256)).append(", ")
-		.append("WORLD_TO_TEXTURE ").append(sqlAdapter.getCharacterVarying(1000))
-		.append(")");
-		
-		return builder.toString();
+		return "(" +
+				"ID " + sqlAdapter.getInteger() + ", " +
+				"GMLID " + sqlAdapter.getCharacterVarying(256) + ", " +
+				"TYPE " + sqlAdapter.getNumeric(3) + ", " +
+				"IS_TEXTURE_PARAMETERIZATION " + sqlAdapter.getNumeric(1, 0) + ", " +
+				"TEXPARAM_GMLID " + sqlAdapter.getCharacterVarying(256) + ", " +
+				"WORLD_TO_TEXTURE " + sqlAdapter.getCharacterVarying(1000) +
+				")";
 	}
 
 }

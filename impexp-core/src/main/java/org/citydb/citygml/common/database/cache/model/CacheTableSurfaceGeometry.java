@@ -27,18 +27,14 @@
  */
 package org.citydb.citygml.common.database.cache.model;
 
+import org.citydb.database.adapter.AbstractSQLAdapter;
+
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import org.citydb.database.adapter.AbstractSQLAdapter;
-
-
-public class CacheTableSurfaceGeometry extends CacheTableModel {
+public class CacheTableSurfaceGeometry extends AbstractCacheTableModel {
 	public static CacheTableSurfaceGeometry instance = null;
-	
-	private CacheTableSurfaceGeometry() {		
-	}
 	
 	public synchronized static CacheTableSurfaceGeometry getInstance() {
 		if (instance == null)
@@ -49,40 +45,29 @@ public class CacheTableSurfaceGeometry extends CacheTableModel {
 
 	@Override
 	public void createIndexes(Connection conn, String tableName, String properties) throws SQLException {
-		Statement stmt = null;
-
-		try {
-			stmt = conn.createStatement();
-			
+		try (Statement stmt = conn.createStatement()) {
 			stmt.executeUpdate("create index idx_" + tableName + " on " + tableName + " (PARENT_ID) " + properties);
 			stmt.executeUpdate("create index idx2_" + tableName + " on " + tableName + " (ROOT_ID) " + properties);
-		} finally {
-			if (stmt != null) {
-				stmt.close();
-				stmt = null;
-			}
 		}
 	}
 	
 	@Override
-	public CacheTableModelEnum getType() {
-		return CacheTableModelEnum.SURFACE_GEOMETRY;
+	public CacheTableModel getType() {
+		return CacheTableModel.SURFACE_GEOMETRY;
 	}
 	
 	@Override
 	protected String getColumns(AbstractSQLAdapter sqlAdapter) {
-		StringBuilder builder = new StringBuilder("(")
-		.append("ID ").append(sqlAdapter.getInteger()).append(", ")
-		.append("PARENT_ID ").append(sqlAdapter.getInteger()).append(", ")
-		.append("ROOT_ID ").append(sqlAdapter.getInteger()).append(", ")
-		.append("REVERSE ").append(sqlAdapter.getNumeric(1, 0)).append(", ")
-		.append("GMLID ").append(sqlAdapter.getCharacterVarying(256)).append(", ")
-		.append("CITYOBJECT_ID ").append(sqlAdapter.getInteger()).append(", ")
-		.append("OBJECTCLASS_ID ").append(sqlAdapter.getInteger()).append(", ")
-		.append("FROM_COLUMN ").append(sqlAdapter.getCharacterVarying(64))
-		.append(")");
-		
-		return builder.toString();
+		return "(" +
+				"ID " + sqlAdapter.getInteger() + ", " +
+				"PARENT_ID " + sqlAdapter.getInteger() + ", " +
+				"ROOT_ID " + sqlAdapter.getInteger() + ", " +
+				"REVERSE " + sqlAdapter.getNumeric(1, 0) + ", " +
+				"GMLID " + sqlAdapter.getCharacterVarying(256) + ", " +
+				"CITYOBJECT_ID " + sqlAdapter.getInteger() + ", " +
+				"OBJECTCLASS_ID " + sqlAdapter.getInteger() + ", " +
+				"FROM_COLUMN " + sqlAdapter.getCharacterVarying(64) +
+				")";
 	}
 
 }

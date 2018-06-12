@@ -29,13 +29,8 @@ package org.citydb.citygml.common.database.cache.model;
 
 import org.citydb.database.adapter.AbstractSQLAdapter;
 
-
-
-public class CacheTableLibraryObject extends CacheTableModel {
+public class CacheTableLibraryObject extends AbstractCacheTableModel {
 	public static CacheTableLibraryObject instance = null;
-	
-	private CacheTableLibraryObject() {		
-	}
 	
 	public synchronized static CacheTableLibraryObject getInstance() {
 		if (instance == null)
@@ -45,17 +40,15 @@ public class CacheTableLibraryObject extends CacheTableModel {
 	}
 
 	@Override
-	public CacheTableModelEnum getType() {
-		return CacheTableModelEnum.LIBRARY_OBJECT;
+	public CacheTableModel getType() {
+		return CacheTableModel.LIBRARY_OBJECT;
 	}
 	
 	@Override
 	protected String getColumns(AbstractSQLAdapter sqlAdapter) {
-		StringBuilder builder = new StringBuilder("(")
-		.append("ID ").append(sqlAdapter.getInteger()).append(", ")
-		.append("FILE_URI ").append(sqlAdapter.getCharacterVarying(1000))
-		.append(")");
-		
-		return builder.toString();
+		return "(" +
+				"ID " + sqlAdapter.getInteger() + ", " +
+				"FILE_URI " + sqlAdapter.getCharacterVarying(1000) +
+				")";
 	}
 }
