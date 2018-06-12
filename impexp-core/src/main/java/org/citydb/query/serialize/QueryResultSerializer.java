@@ -20,7 +20,7 @@ public class QueryResultSerializer {
     private final AbstractDatabaseAdapter databaseAdapter;
     private final SQLQueryBuilder queryBuilder;
 
-    public QueryResultSerializer(SchemaMapping schemaMapping, AbstractDatabaseAdapter databaseAdapter) throws QuerySerializeException {
+    public QueryResultSerializer(SchemaMapping schemaMapping, AbstractDatabaseAdapter databaseAdapter) {
         this.databaseAdapter = databaseAdapter;
         queryBuilder = new SQLQueryBuilder(schemaMapping, databaseAdapter);
     }
