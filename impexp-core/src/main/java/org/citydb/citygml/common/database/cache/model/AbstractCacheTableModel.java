@@ -51,9 +51,9 @@ public abstract class AbstractCacheTableModel {
         }
     }
 
-    public void createAsSelectFrom(Connection conn, String tableName, String sourceTableName, AbstractSQLAdapter sqlAdapter) throws SQLException {
+    public void createAsSelect(Connection conn, String tableName, String select, AbstractSQLAdapter sqlAdapter) throws SQLException {
         try (Statement stmt = conn.createStatement()) {
-            stmt.executeUpdate(sqlAdapter.getCreateUnloggedTableAsSelectFrom(tableName, sourceTableName));
+            stmt.executeUpdate(sqlAdapter.getCreateUnloggedTableAsSelect(tableName, select));
             conn.commit();
         }
     }

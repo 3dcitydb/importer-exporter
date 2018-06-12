@@ -115,8 +115,8 @@ public class SQLAdapter extends AbstractSQLAdapter {
     }
 
     @Override
-    public String getCreateUnloggedTableAsSelectFrom(String targetTableName, String sourceTableName) {
-        return "create unlogged table " + targetTableName + " " + "as select * from " + sourceTableName;
+    public String getCreateUnloggedTableAsSelect(String tableName, String select) {
+        return "create unlogged table " + tableName + " as " + select;
     }
 
     @Override

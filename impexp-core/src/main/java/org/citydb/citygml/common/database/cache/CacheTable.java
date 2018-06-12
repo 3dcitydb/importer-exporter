@@ -27,10 +27,7 @@
  */
 package org.citydb.citygml.common.database.cache;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.concurrent.locks.ReentrantLock;
-
+import org.citydb.citygml.common.database.cache.model.AbstractCacheTableModel;
 import org.citydb.citygml.common.database.cache.model.CacheTableBasic;
 import org.citydb.citygml.common.database.cache.model.CacheTableDeprecatedMaterial;
 import org.citydb.citygml.common.database.cache.model.CacheTableFeatureGmlId;
@@ -39,7 +36,6 @@ import org.citydb.citygml.common.database.cache.model.CacheTableGlobalAppearance
 import org.citydb.citygml.common.database.cache.model.CacheTableGroupToCityObject;
 import org.citydb.citygml.common.database.cache.model.CacheTableLibraryObject;
 import org.citydb.citygml.common.database.cache.model.CacheTableLinearRing;
-import org.citydb.citygml.common.database.cache.model.AbstractCacheTableModel;
 import org.citydb.citygml.common.database.cache.model.CacheTableModel;
 import org.citydb.citygml.common.database.cache.model.CacheTableSolidGeometry;
 import org.citydb.citygml.common.database.cache.model.CacheTableSurfaceDataToTexImage;
@@ -52,6 +48,10 @@ import org.citydb.citygml.common.database.cache.model.CacheTableTextureFileId;
 import org.citydb.citygml.common.database.cache.model.CacheTableTextureParam;
 import org.citydb.database.adapter.AbstractSQLAdapter;
 import org.citygml4j.util.gmlid.DefaultGMLIdManager;
+
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class CacheTable extends AbstractCacheTable {	
 	private final AbstractCacheTableModel model;
@@ -148,7 +148,7 @@ public class CacheTable extends AbstractCacheTable {
 		}
 	}
 	
-	protected void createAsSelectFrom(String sourceTableName) throws SQLException {
+	protected void createAsSelect(String select) throws SQLException {
 		if (isCreated)
 			return;
 
@@ -157,7 +157,7 @@ public class CacheTable extends AbstractCacheTable {
 
 		try {
 			if (!isCreated) {
-				model.createAsSelectFrom(connection, tableName, sourceTableName, sqlAdapter);
+				model.createAsSelect(connection, tableName, select, sqlAdapter);
 				isCreated = true;
 			}
 		} finally {
@@ -239,7 +239,7 @@ public class CacheTable extends AbstractCacheTable {
 		try {
 			if (isCreated && mirrorTable == null) {
 				mirrorTable = new CacheTable(model.getType(), connection, sqlAdapter, false);
-				mirrorTable.createAsSelectFrom(tableName);
+				mirrorTable.createAsSelect("select * from " + tableName);
 			}
 
 			return mirrorTable;

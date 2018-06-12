@@ -110,12 +110,12 @@ public class SQLAdapter extends AbstractSQLAdapter {
 
     @Override
     public String getCreateUnloggedTable(String tableName, String columns) {
-        return "create table " + tableName + " " + columns + " " + "nologging";
+        return "create table " + tableName + " " + columns + " nologging";
     }
 
     @Override
-    public String getCreateUnloggedTableAsSelectFrom(String targetTableName, String sourceTableName) {
-        return "create table " + targetTableName + " " + "nologging " + "as select * from " + sourceTableName;
+    public String getCreateUnloggedTableAsSelect(String tableName, String select) {
+        return "create table " + tableName + " nologging as " + select;
     }
 
     @Override
