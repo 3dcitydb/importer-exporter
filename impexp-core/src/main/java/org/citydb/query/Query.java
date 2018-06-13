@@ -15,7 +15,8 @@ import org.citydb.query.filter.tiling.Tiling;
 import org.citydb.query.filter.type.FeatureTypeFilter;
 import org.citygml4j.model.module.citygml.CityGMLVersion;
 
-import java.util.Collection;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -167,8 +168,8 @@ public class Query {
 		return !materializedQueries.isEmpty();
 	}
 
-	public Collection<CacheTable> getMaterializedQueries() {
-		return materializedQueries;
+	public List<CacheTable> getMaterializedQueries() {
+		return new ArrayList<>(materializedQueries);
 	}
 
 	public void addMaterializedQuery(CacheTable cacheTable) throws FilterException {
