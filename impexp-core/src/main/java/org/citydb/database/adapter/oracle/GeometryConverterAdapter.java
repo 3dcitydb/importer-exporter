@@ -27,21 +27,22 @@
  */
 package org.citydb.database.adapter.oracle;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Struct;
-import java.sql.Types;
-import java.util.ArrayList;
-import java.util.List;
-
+import oracle.jdbc.driver.OracleConnection;
+import oracle.spatial.geometry.J3D_Geometry;
+import oracle.spatial.geometry.JGeometry;
 import org.citydb.config.geometry.ElementType;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.adapter.AbstractGeometryConverterAdapter;
 
-import oracle.jdbc.driver.OracleConnection;
-import oracle.spatial.geometry.J3D_Geometry;
-import oracle.spatial.geometry.JGeometry;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Struct;
+import java.sql.Types;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class GeometryConverterAdapter extends AbstractGeometryConverterAdapter {
 
@@ -295,46 +296,66 @@ public class GeometryConverterAdapter extends AbstractGeometryConverterAdapter {
 
 	@Override
 	public Object getDatabaseObject(GeometryObject geomObj, Connection connection) throws SQLException {
+		try {
+			return JGeometry.storeJS(connection.unwrap(OracleConnection.class), convertToJGeometry(geomObj));
+		} catch (Exception e) {
+			throw new SQLException(e.getMessage(), e);
+		}
+	}
+
+	@Override
+	public String getDatabaseTypeString(GeometryObject geomObj) throws SQLException {
+		JGeometry geometry = convertToJGeometry(geomObj);
+
+		return "MDSYS.SDO_GEOMETRY(" +
+				geometry.getDimensions() + "00" + geometry.getType() + "," +
+				geometry.getSRID() + "," +
+				"NULL," +
+				"MDSYS.SDO_ELEM_INFO_ARRAY(" +
+				Arrays.stream(geometry.getElemInfo()).mapToObj(String::valueOf).collect(Collectors.joining(", ")) +
+				")," +
+				"MDSYS.SDO_ORDINATE_ARRAY(" +
+				Arrays.stream(geometry.getOrdinatesArray()).mapToObj(String::valueOf).collect(Collectors.joining(", ")) +
+				"))";
+	}
+
+	private JGeometry convertToJGeometry(GeometryObject geomObj) throws SQLException {
 		JGeometry geometry = null;
 
 		switch (geomObj.getGeometryType()) {
-		case POLYGON:
-			geometry = convertPolygonToJGeometry(geomObj);
-			break;
-		case LINE_STRING:
-			geometry = convertCurveToJGeometry(geomObj);
-			break;
-		case POINT:
-			geometry = convertPointToJGeometry(geomObj);
-			break;
-		case MULTI_LINE_STRING:
-			geometry = convertMultiCurveToJGeometry(geomObj);
-			break;
-		case MULTI_POINT:
-			geometry = convertMultiPointToJGeometry(geomObj);
-			break;
-		case ENVELOPE:
-			geometry = convertEnvelopeToJGeometry(geomObj);
-			break;
-		case MULTI_POLYGON:
-			geometry = convertMultiPolygonToJGeometry(geomObj);
-			break;
-		case SOLID:
-			geometry = convertSolidToJGeometry(geomObj);
-			break;
-		case COMPOSITE_SOLID:
-			geometry = convertCompositeSolidToJGeometry(geomObj);
-			break;
+			case POLYGON:
+				geometry = convertPolygonToJGeometry(geomObj);
+				break;
+			case LINE_STRING:
+				geometry = convertCurveToJGeometry(geomObj);
+				break;
+			case POINT:
+				geometry = convertPointToJGeometry(geomObj);
+				break;
+			case MULTI_LINE_STRING:
+				geometry = convertMultiCurveToJGeometry(geomObj);
+				break;
+			case MULTI_POINT:
+				geometry = convertMultiPointToJGeometry(geomObj);
+				break;
+			case ENVELOPE:
+				geometry = convertEnvelopeToJGeometry(geomObj);
+				break;
+			case MULTI_POLYGON:
+				geometry = convertMultiPolygonToJGeometry(geomObj);
+				break;
+			case SOLID:
+				geometry = convertSolidToJGeometry(geomObj);
+				break;
+			case COMPOSITE_SOLID:
+				geometry = convertCompositeSolidToJGeometry(geomObj);
+				break;
 		}
 
 		if (geometry == null)
 			throw new SQLException("Failed to convert geometry to internal database representation.");
 
-		try {
-			return JGeometry.storeJS(connection.unwrap(OracleConnection.class), geometry);
-		} catch (Exception e) {
-			throw new SQLException(e.getMessage(), e);
-		}
+		return geometry;
 	}
 
 	private JGeometry convertPointToJGeometry(GeometryObject geomObj) {

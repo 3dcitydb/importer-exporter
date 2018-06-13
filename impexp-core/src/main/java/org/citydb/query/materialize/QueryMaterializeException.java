@@ -21,24 +21,24 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-package org.citydb.query.serialize;
+package org.citydb.query.materialize;
 
-public class QuerySerializeException extends Exception {
+public class QueryMaterializeException extends Exception {
 	private static final long serialVersionUID = -3716015045363231263L;
 
-	public QuerySerializeException() {
+	public QueryMaterializeException() {
 		super();
 	}
 	
-	public QuerySerializeException(String message) {
+	public QueryMaterializeException(String message) {
 		super(message);
 	}
 	
-	public QuerySerializeException(Throwable cause) {
+	public QueryMaterializeException(Throwable cause) {
 		super(cause);
 	}
 	
-	public QuerySerializeException(String message, Throwable cause) {
+	public QueryMaterializeException(String message, Throwable cause) {
 		super(message, cause);
 	}
 	

@@ -431,6 +431,11 @@ public class GeometryConverterAdapter extends AbstractGeometryConverterAdapter {
 		return geometry;
 	}
 
+	@Override
+	public String getDatabaseTypeString(GeometryObject geomObj) throws SQLException {
+		return "ST_GeomFromEWKT('" + convertToEWKT(geomObj) + "')";
+	}
+
 	private String convertToEWKT(GeometryObject geomObj) {
 		double[][] coordinates = geomObj.getCoordinates();
 		int dimension = geomObj.getDimension();

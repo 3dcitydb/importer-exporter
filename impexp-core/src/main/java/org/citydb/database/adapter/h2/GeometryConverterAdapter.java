@@ -184,6 +184,11 @@ public class GeometryConverterAdapter extends AbstractGeometryConverterAdapter {
 		return geometry;		
 	}
 
+	@Override
+	public String getDatabaseTypeString(GeometryObject geomObj) throws SQLException {
+		return null;
+	}
+
 	private Polygon convertPolygonToJTS(GeometryObject geomObj) {
 		double[][] coordinates = geomObj.getCoordinates();
 		int dimension = geomObj.getDimension();
