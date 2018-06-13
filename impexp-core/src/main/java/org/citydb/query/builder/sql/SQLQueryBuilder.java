@@ -1,7 +1,9 @@
 package org.citydb.query.builder.sql;
 
+import org.citydb.citygml.common.database.cache.CacheTable;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.schema.mapping.FeatureType;
+import org.citydb.database.schema.mapping.MappingConstants;
 import org.citydb.database.schema.mapping.SchemaMapping;
 import org.citydb.database.schema.path.SchemaPath;
 import org.citydb.query.Query;
@@ -11,7 +13,12 @@ import org.citydb.query.filter.lod.LodFilter;
 import org.citydb.query.filter.lod.LodFilterMode;
 import org.citydb.query.filter.selection.Predicate;
 import org.citydb.query.filter.type.FeatureTypeFilter;
+import org.citydb.sqlbuilder.schema.Column;
+import org.citydb.sqlbuilder.schema.Table;
+import org.citydb.sqlbuilder.select.ProjectionToken;
 import org.citydb.sqlbuilder.select.Select;
+import org.citydb.sqlbuilder.select.join.JoinFactory;
+import org.citydb.sqlbuilder.select.operator.comparison.ComparisonName;
 import org.citygml4j.model.module.citygml.CoreModule;
 
 import java.util.Set;
@@ -73,6 +80,25 @@ public class SQLQueryBuilder {
 			SchemaPathBuilder builder = new SchemaPathBuilder(databaseAdapter.getSQLAdapter(), schemaName, buildProperties);
 			SQLQueryContext context = builder.buildSchemaPath(schemaPath, objectclassIds, true, true);
 			select = context.select;
+		}
+
+		// join materialized queries
+		if (query.hasMaterializedQueries()) {
+			Column idColumn = null;
+			for (ProjectionToken token : select.getProjection()) {
+				if (token instanceof Column && ((Column) token).getName().equalsIgnoreCase(MappingConstants.ID)) {
+					idColumn = (Column) token;
+					break;
+				}
+			}
+
+			if (idColumn == null)
+				throw new QueryBuildException("Failed to build query due to missing ID column in materialized query.");
+
+			for (CacheTable cacheTable : query.getMaterializedQueries()) {
+				Table queryTable = new Table(cacheTable.getTableName());
+				select.addJoin(JoinFactory.inner(queryTable, MappingConstants.ID, ComparisonName.EQUAL_TO, idColumn));
+			}
 		}
 
 		// lod filter

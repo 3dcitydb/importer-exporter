@@ -17,25 +17,30 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 public class QueryMaterializer {
+    private final SchemaMapping schemaMapping;
     private final AbstractDatabaseAdapter databaseAdapter;
-    private final SQLQueryBuilder queryBuilder;
 
     public QueryMaterializer(SchemaMapping schemaMapping, AbstractDatabaseAdapter databaseAdapter) {
+        this.schemaMapping = schemaMapping;
         this.databaseAdapter = databaseAdapter;
-        queryBuilder = new SQLQueryBuilder(schemaMapping, databaseAdapter);
     }
 
-    public CacheTable materialize(Query query) throws QueryBuildException, QueryMaterializeException {
+    public CacheTable materializeQuery(Select select) throws QueryMaterializeException {
         try {
-            Connection connection = DatabaseConnectionPool.getInstance().getConnection();
-            connection.setAutoCommit(false);
-
-            // build select and make sure we only query the ID column
-            Select select = queryBuilder.buildQuery(query);
+            // make sure we only query the ID column
+            boolean hasIdColumn = false;
             for (ProjectionToken token : select.getProjection()) {
-                if (token instanceof Column && !((Column) token).getName().equals(MappingConstants.ID))
+                if (token instanceof Column && ((Column) token).getName().equalsIgnoreCase(MappingConstants.ID))
+                    hasIdColumn = true;
+                else
                     select.removeProjection(token);
             }
+
+            if (!hasIdColumn)
+                throw new QueryMaterializeException("Failed to materialize query due to missing ID column.");
+
+            Connection connection = DatabaseConnectionPool.getInstance().getConnection();
+            connection.setAutoCommit(false);
 
             // convert select statement to string
             String stmt = databaseAdapter.getSQLAdapter().serializeStatement(select);
@@ -49,5 +54,10 @@ public class QueryMaterializer {
         } catch (SQLException e) {
             throw new QueryMaterializeException("Failed to materialize query in cache table.", e);
         }
+    }
+
+    public CacheTable materializeQuery(Query query) throws QueryBuildException, QueryMaterializeException {
+        SQLQueryBuilder queryBuilder = new SQLQueryBuilder(schemaMapping, databaseAdapter);
+        return materializeQuery(queryBuilder.buildQuery(query));
     }
 }
