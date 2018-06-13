@@ -498,7 +498,8 @@ public class Exporter implements EventHandler {
 						try {
 							uidCacheManager.shutdownAll();
 						} catch (SQLException e) {
-							throw new CityGMLExportException("Failed to clean gml:id caches.", e);
+							log.error("Failed to clean gml:id caches.");
+							log.error("Cause: " + e.getMessage());
 						}
 					}
 
@@ -508,7 +509,8 @@ public class Exporter implements EventHandler {
 							cacheTableManager.dropAll();
 							cacheTableManager = null;
 						} catch (SQLException e) {
-							throw new CityGMLExportException("Failed to clean temporary cache.", e);
+							log.error("Failed to clean temporary cache.");
+							log.error("Cause: " + e.getMessage());
 						}					
 					}
 				}
@@ -522,7 +524,7 @@ public class Exporter implements EventHandler {
 
 				// show processed geometries
 				if (!geometryCounter.isEmpty())
-					log.info("Processed geometry objects: " + geometryCounter.values().stream().reduce(0l, Long::sum));
+					log.info("Processed geometry objects: " + geometryCounter.values().stream().reduce(0L, Long::sum));
 
 				objectCounter.clear();
 				geometryCounter.clear();
@@ -538,7 +540,7 @@ public class Exporter implements EventHandler {
 			}
 
 			if (!totalGeometryCounter.isEmpty())
-				log.info("Total processed objects: " + totalGeometryCounter.values().stream().reduce(0l, Long::sum));
+				log.info("Total processed objects: " + totalGeometryCounter.values().stream().reduce(0L, Long::sum));
 		}
 
 		if (shouldRun)

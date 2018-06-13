@@ -189,6 +189,7 @@ public class DBSplitter {
 			if (config.getInternal().isExportGlobalAppearances() && elementCounter > 0)
 				queryGlobalAppearance();
 
+			eventDispatcher.triggerEvent(new StatusDialogProgressBar(true, this));
 		} finally {
 			if (connection != null)
 				connection.close();
