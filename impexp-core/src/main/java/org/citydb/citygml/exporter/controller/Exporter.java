@@ -226,7 +226,7 @@ public class Exporter implements EventHandler {
 				// transform tiling extent to database srs
 				tiling.transformExtent(databaseAdapter.getConnectionMetaData().getReferenceSystem(), databaseAdapter);
 				predicate = query.isSetSelection() ? query.getSelection().getPredicate() : null;
-				tilingOptions = tiling.getTilingOptions() instanceof TilingOptions ? (TilingOptions)tiling.getTilingOptions() : new TilingOptions();
+				tilingOptions = tiling.getTilingOptions() instanceof TilingOptions ? (TilingOptions) tiling.getTilingOptions() : new TilingOptions();
 			} catch (FilterException e) {
 				throw new CityGMLExportException("Failed to transform tiling extent.", e);
 			}

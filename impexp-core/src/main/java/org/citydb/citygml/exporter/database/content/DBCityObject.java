@@ -41,6 +41,7 @@ import org.citydb.query.Query;
 import org.citydb.query.filter.FilterException;
 import org.citydb.query.filter.projection.ProjectionFilter;
 import org.citydb.query.filter.tiling.Tile;
+import org.citydb.query.filter.tiling.Tiling;
 import org.citydb.sqlbuilder.expression.PlaceHolder;
 import org.citydb.sqlbuilder.schema.Table;
 import org.citydb.sqlbuilder.select.Select;
@@ -105,18 +106,19 @@ public class DBCityObject implements DBExporter {
 		this.exporter = exporter;
 		this.query = query;
 
-		generalizesTos = new HashSet<Long>();
-		externalReferences = new HashSet<Long>();
+		generalizesTos = new HashSet<>();
+		externalReferences = new HashSet<>();
 
 		coreModule = exporter.getTargetCityGMLVersion().getCityGMLModule(CityGMLModuleType.CORE).getNamespaceURI();
 		appearanceModule = exporter.getTargetCityGMLVersion().getCityGMLModule(CityGMLModuleType.APPEARANCE).getNamespaceURI();
 		gmlModule = GMLCoreModule.v3_1_1.getNamespaceURI();
 
-		useTiling = query.isSetTiling() && query.getTiling().getTilingOptions() instanceof TilingOptions;
+		useTiling = query.isSetTiling();
 		if (useTiling) {
-			tilingOptions = (TilingOptions)query.getTiling().getTilingOptions();
+			Tiling tiling = query.getTiling();
+			tilingOptions = tiling.getTilingOptions() instanceof TilingOptions ? (TilingOptions) tiling.getTilingOptions() : new TilingOptions();
 			setTileInfoAsGenericAttribute = tilingOptions.isIncludeTileAsGenericAttribute();
-			activeTile = query.getTiling().getActiveTile();
+			activeTile = tiling.getActiveTile();
 		}
 
 		useCityDBADE = config.getProject().getExporter().getCityDBADE().isExportMetadata();
@@ -320,7 +322,7 @@ public class DBCityObject implements DBExporter {
 										externalObject.setName(name);
 									if (uri != null)
 										externalObject.setUri(uri);
-								} else if (name == null && uri == null)
+								} else
 									externalObject.setUri("");
 
 								externalReference.setExternalObject(externalObject);
@@ -348,23 +350,23 @@ public class DBCityObject implements DBExporter {
 
 						switch (tilingOptions.getGenericAttributeValue()) {
 						case XMIN_YMIN:
-							value = new StringBuilder(String.valueOf(minX)).append(' ').append(String.valueOf(minY)).toString();
+							value = String.valueOf(minX) + ' ' + String.valueOf(minY);
 							break;
 						case XMAX_YMIN:
-							value = new StringBuilder(String.valueOf(maxX)).append(' ').append(String.valueOf(minY)).toString();
+							value = String.valueOf(maxX) + ' ' + String.valueOf(minY);
 							break;
 						case XMIN_YMAX:
-							value = new StringBuilder(String.valueOf(minX)).append(' ').append(String.valueOf(maxY)).toString();
+							value = String.valueOf(minX) + ' ' + String.valueOf(maxY);
 							break;
 						case XMAX_YMAX:
-							value = new StringBuilder(String.valueOf(maxX)).append(' ').append(String.valueOf(maxY)).toString();
+							value = String.valueOf(maxX) + ' ' + String.valueOf(maxY);
 							break;
 						case XMIN_YMIN_XMAX_YMAX:
-							value = new StringBuilder(String.valueOf(minX)).append(' ').append(String.valueOf(minY)).append(' ')
-							.append(String.valueOf(maxX)).append(' ').append(String.valueOf(maxY)).toString();
+							value = String.valueOf(minX) + ' ' + String.valueOf(minY) + ' ' +
+									String.valueOf(maxX) + ' ' + String.valueOf(maxY);
 							break;
 						default:
-							value = new StringBuilder(String.valueOf(activeTile.getX())).append(' ').append(String.valueOf(activeTile.getY())).toString();
+							value = String.valueOf(activeTile.getX()) + ' ' + String.valueOf(activeTile.getY());
 						} 
 
 						StringAttribute genericStringAttrib = new StringAttribute();
