@@ -225,9 +225,6 @@ public class Exporter implements EventHandler {
         int columns = useTiling ? tiling.getColumns() : 1;
 
         if (useTiling) {
-            predicate = query.isSetSelection() ? query.getSelection().getPredicate() : null;
-            tilingOptions = tiling.getTilingOptions() instanceof TilingOptions ? (TilingOptions) tiling.getTilingOptions() : new TilingOptions();
-
             try {
                 // transform tiling extent to database srs
                 tiling.transformExtent(databaseAdapter.getConnectionMetaData().getReferenceSystem(), databaseAdapter);
@@ -248,6 +245,9 @@ public class Exporter implements EventHandler {
                     throw new CityGMLExportException("Failed to materialize query.", e);
                 }
             }
+
+            predicate = query.isSetSelection() ? query.getSelection().getPredicate() : null;
+            tilingOptions = tiling.getTilingOptions() instanceof TilingOptions ? (TilingOptions) tiling.getTilingOptions() : new TilingOptions();
         }
 
         // prepare files and folders
