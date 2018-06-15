@@ -34,7 +34,6 @@ import org.citydb.citygml.common.database.cache.model.CacheTableFeatureGmlId;
 import org.citydb.citygml.common.database.cache.model.CacheTableGeometryGmlId;
 import org.citydb.citygml.common.database.cache.model.CacheTableGlobalAppearance;
 import org.citydb.citygml.common.database.cache.model.CacheTableGroupToCityObject;
-import org.citydb.citygml.common.database.cache.model.CacheTableIdList;
 import org.citydb.citygml.common.database.cache.model.CacheTableLibraryObject;
 import org.citydb.citygml.common.database.cache.model.CacheTableLinearRing;
 import org.citydb.citygml.common.database.cache.model.CacheTableModel;
@@ -66,76 +65,73 @@ public class CacheTable extends AbstractCacheTable {
 
 	protected CacheTable(CacheTableModel model, Connection connection, AbstractSQLAdapter sqlAdapter, boolean isStandAlone) {
 		super(connection, sqlAdapter);
-
+		
 		switch (model) {
-			case BASIC:
-				this.model = CacheTableBasic.getInstance();
-				break;
-			case DEPRECATED_MATERIAL:
-				this.model = CacheTableDeprecatedMaterial.getInstance();
-				break;
-			case TEXTURE_FILE:
-				this.model = CacheTableTextureFile.getInstance();
-				break;
-			case TEXTURE_FILE_ID:
-				this.model = CacheTableTextureFileId.getInstance();
-				break;
-			case LIBRARY_OBJECT:
-				this.model = CacheTableLibraryObject.getInstance();
-				break;
-			case GMLID_FEATURE:
-				this.model = CacheTableFeatureGmlId.getInstance();
-				break;
-			case GMLID_GEOMETRY:
-				this.model = CacheTableGeometryGmlId.getInstance();
-				break;
-			case GROUP_TO_CITYOBJECT:
-				this.model = CacheTableGroupToCityObject.getInstance();
-				break;
-			case SURFACE_GEOMETRY:
-				this.model = CacheTableSurfaceGeometry.getInstance();
-				break;
-			case SOLID_GEOMETRY:
-				this.model = CacheTableSolidGeometry.getInstance();
-				break;
-			case LINEAR_RING:
-				this.model = CacheTableLinearRing.getInstance();
-				break;
-			case TEXTUREASSOCIATION:
-				this.model = CacheTableTextureAssociation.getInstance();
-				break;
-			case TEXTUREASSOCIATION_TARGET:
-				this.model = CacheTableTextureAssociationTarget.getInstance();
-				break;
-			case TEXTURE_COORD_LIST:
-				this.model = CacheTableTextureCoordList.getInstance();
-				break;
-			case TEXTUREPARAM:
-				this.model = CacheTableTextureParam.getInstance();
-				break;
-			case SURFACE_DATA_TO_TEX_IMAGE:
-				this.model = CacheTableSurfaceDataToTexImage.getInstance();
-				break;
-			case GLOBAL_APPEARANCE:
-				this.model = CacheTableGlobalAppearance.getInstance();
-				break;
-			case ID_LIST:
-				this.model = CacheTableIdList.getInstance();
-				break;
-			default:
-				throw new IllegalArgumentException("Unsupported cache table type " + model);
+		case BASIC:
+			this.model = CacheTableBasic.getInstance();
+			break;
+		case DEPRECATED_MATERIAL:
+			this.model = CacheTableDeprecatedMaterial.getInstance();
+			break;
+		case TEXTURE_FILE:
+			this.model = CacheTableTextureFile.getInstance();
+			break;
+		case TEXTURE_FILE_ID:
+			this.model = CacheTableTextureFileId.getInstance();
+			break;
+		case LIBRARY_OBJECT:
+			this.model = CacheTableLibraryObject.getInstance();
+			break;
+		case GMLID_FEATURE:
+			this.model = CacheTableFeatureGmlId.getInstance();
+			break;
+		case GMLID_GEOMETRY:
+			this.model = CacheTableGeometryGmlId.getInstance();
+			break;
+		case GROUP_TO_CITYOBJECT:
+			this.model = CacheTableGroupToCityObject.getInstance();
+			break;
+		case SURFACE_GEOMETRY:
+			this.model = CacheTableSurfaceGeometry.getInstance();
+			break;
+		case SOLID_GEOMETRY:
+			this.model = CacheTableSolidGeometry.getInstance();
+			break;
+		case LINEAR_RING:
+			this.model = CacheTableLinearRing.getInstance();
+			break;
+		case TEXTUREASSOCIATION:
+			this.model = CacheTableTextureAssociation.getInstance();
+			break;
+		case TEXTUREASSOCIATION_TARGET:
+			this.model = CacheTableTextureAssociationTarget.getInstance();
+			break;
+		case TEXTURE_COORD_LIST:
+			this.model = CacheTableTextureCoordList.getInstance();
+			break;
+		case TEXTUREPARAM:
+			this.model = CacheTableTextureParam.getInstance();
+			break;
+		case SURFACE_DATA_TO_TEX_IMAGE:
+			this.model = CacheTableSurfaceDataToTexImage.getInstance();
+			break;
+		case GLOBAL_APPEARANCE:
+			this.model = CacheTableGlobalAppearance.getInstance();
+			break;
+		default:
+			throw new IllegalArgumentException("Unsupported cache table type " + model);
 		}
 
 		this.isStandAlone = isStandAlone;
 		tableName = generateUniqueTableName();
 	}
 
-	public CacheTable(CacheTableModel model, Connection connection, AbstractSQLAdapter sqlAdapter) {
+	protected CacheTable(CacheTableModel model, Connection connection, AbstractSQLAdapter sqlAdapter) {
 		this(model, connection, sqlAdapter, true);
 	}
 	
 	@Override
-	public void create() throws SQLException {
+	protected void create() throws SQLException {		
 		if (isCreated)
 			return;
 
@@ -151,8 +147,8 @@ public class CacheTable extends AbstractCacheTable {
 			lock.unlock();
 		}
 	}
-
-	public void createAsSelect(String select) throws SQLException {
+	
+	protected void createAsSelect(String select) throws SQLException {
 		if (isCreated)
 			return;
 
@@ -170,7 +166,7 @@ public class CacheTable extends AbstractCacheTable {
 	}
 	
 	@Override
-	public void createAndIndex() throws SQLException {
+	protected void createAndIndex() throws SQLException {
 		final ReentrantLock lock = this.mainLock;
 		lock.lock();
 
@@ -296,7 +292,7 @@ public class CacheTable extends AbstractCacheTable {
 	}
 	
 	@Override
-	public void drop() throws SQLException {
+	protected void drop() throws SQLException {
 		if (!isStandAlone)
 			throw new IllegalStateException("Drop may not be called on a child of a compound table.");
 

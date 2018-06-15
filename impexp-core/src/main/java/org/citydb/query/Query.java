@@ -1,10 +1,9 @@
 package org.citydb.query;
 
-import org.citydb.citygml.common.database.cache.CacheTable;
-import org.citydb.citygml.common.database.cache.model.CacheTableModel;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.citydb.config.project.database.DatabaseSrs;
 import org.citydb.database.schema.mapping.AbstractObjectType;
-import org.citydb.query.filter.FilterException;
 import org.citydb.query.filter.apperance.AppearanceFilter;
 import org.citydb.query.filter.counter.CounterFilter;
 import org.citydb.query.filter.lod.LodFilter;
@@ -14,11 +13,6 @@ import org.citydb.query.filter.selection.SelectionFilter;
 import org.citydb.query.filter.tiling.Tiling;
 import org.citydb.query.filter.type.FeatureTypeFilter;
 import org.citygml4j.model.module.citygml.CityGMLVersion;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class Query {
 	private CityGMLVersion targetVersion;
@@ -30,11 +24,9 @@ public class Query {
 	private SelectionFilter selection;
 	private AppearanceFilter appearanceFilter;
 	private Tiling tiling;
-	private ConcurrentLinkedQueue<CacheTable> materializedQueries;
 
 	public Query() {
 		projectionFilters = new ConcurrentHashMap<>();
-		materializedQueries = new ConcurrentLinkedQueue<>();
 	}
 
 	public Query(Query other) {
@@ -164,22 +156,6 @@ public class Query {
 		return false;
 	}
 
-	public boolean hasMaterializedQueries() {
-		return !materializedQueries.isEmpty();
-	}
-
-	public List<CacheTable> getMaterializedQueries() {
-		return new ArrayList<>(materializedQueries);
-	}
-
-	public void addMaterializedQuery(CacheTable cacheTable) throws FilterException {
-		if (cacheTable.getModelType() != CacheTableModel.ID_LIST)
-			throw new FilterException("Only cache tables of type " + CacheTableModel.ID_LIST +
-					"may be used as materialized queries.");
-
-		materializedQueries.add(cacheTable);
-	}
-
 	public void copyFrom(Query query) {
 		targetVersion = query.targetVersion;
 		targetSRS = query.targetSRS;
@@ -188,7 +164,6 @@ public class Query {
 		projectionFilters = query.projectionFilters;
 		selection = query.selection;
 		tiling = query.tiling;
-		materializedQueries = query.materializedQueries;
 	}
 
 }

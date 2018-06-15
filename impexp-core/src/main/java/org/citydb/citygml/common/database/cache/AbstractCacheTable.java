@@ -50,7 +50,7 @@ public abstract class AbstractCacheTable {
 	
 	public abstract CacheTableModel getModelType();
 	public abstract boolean isCreated();
-	public abstract void create() throws SQLException;
-	public abstract void createAndIndex() throws SQLException;
-	public abstract void drop() throws SQLException;
+	protected abstract void create() throws SQLException;
+	protected abstract void createAndIndex() throws SQLException;
+	protected abstract void drop() throws SQLException;	
 }
