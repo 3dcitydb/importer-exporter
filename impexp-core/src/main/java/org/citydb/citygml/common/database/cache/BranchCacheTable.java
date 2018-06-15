@@ -44,7 +44,7 @@ public class BranchCacheTable extends AbstractCacheTable {
 	private volatile boolean isCreated = false;
 	private List<CacheTable> branches;
 
-	protected BranchCacheTable(CacheTableModel model, Connection connection, AbstractSQLAdapter sqlAdapter) {
+	public BranchCacheTable(CacheTableModel model, Connection connection, AbstractSQLAdapter sqlAdapter) {
 		super(connection, sqlAdapter);
 		this.model = model;
 
@@ -53,7 +53,7 @@ public class BranchCacheTable extends AbstractCacheTable {
 	}
 
 	@Override
-	protected void create() throws SQLException {
+	public void create() throws SQLException {
 		if (isCreated)
 			return;
 
@@ -71,7 +71,7 @@ public class BranchCacheTable extends AbstractCacheTable {
 	}
 
 	@Override
-	protected void createAndIndex() throws SQLException {
+	public void createAndIndex() throws SQLException {
 		if (isCreated)
 			return;
 
@@ -144,7 +144,7 @@ public class BranchCacheTable extends AbstractCacheTable {
 	}
 
 	@Override
-	protected void drop() throws SQLException {
+	public void drop() throws SQLException {
 		if (!isCreated)
 			return;
 
