@@ -2,7 +2,7 @@ package org.citydb.citygml.deleter.concurrent;
 
 import java.sql.SQLException;
 
-import org.citydb.citygml.deleter.database.BundledDBConnection;
+import org.citydb.citygml.deleter.util.BundledDBConnection;
 import org.citydb.citygml.exporter.database.content.DBSplittingResult;
 import org.citydb.concurrent.Worker;
 import org.citydb.concurrent.WorkerFactory;

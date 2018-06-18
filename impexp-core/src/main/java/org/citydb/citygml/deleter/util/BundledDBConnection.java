@@ -1,4 +1,4 @@
-package org.citydb.citygml.deleter.database;
+package org.citydb.citygml.deleter.util;
 
 import java.sql.Connection;
 import java.sql.SQLException;

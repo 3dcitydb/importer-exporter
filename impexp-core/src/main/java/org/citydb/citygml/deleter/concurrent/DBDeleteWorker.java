@@ -7,7 +7,7 @@ import java.sql.Types;
 import java.util.HashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
-import org.citydb.citygml.deleter.database.BundledDBConnection;
+import org.citydb.citygml.deleter.util.BundledDBConnection;
 import org.citydb.citygml.exporter.database.content.DBSplittingResult;
 import org.citydb.concurrent.Worker;
 import org.citydb.config.project.global.LogLevel;

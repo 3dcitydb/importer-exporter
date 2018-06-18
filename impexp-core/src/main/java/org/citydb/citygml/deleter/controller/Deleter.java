@@ -15,8 +15,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.citydb.citygml.deleter.CityGMLDeleteException;
 import org.citydb.citygml.deleter.concurrent.DBDeleteWorkerFactory;
-import org.citydb.citygml.deleter.database.BundledDBConnection;
 import org.citydb.citygml.deleter.database.DBSplitter;
+import org.citydb.citygml.deleter.util.BundledDBConnection;
 import org.citydb.citygml.exporter.database.content.DBSplittingResult;
 import org.citydb.concurrent.PoolSizeAdaptationStrategy;
 import org.citydb.concurrent.WorkerPool;
