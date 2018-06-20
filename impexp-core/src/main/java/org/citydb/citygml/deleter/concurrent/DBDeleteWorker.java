@@ -1,7 +1,6 @@
 package org.citydb.citygml.deleter.concurrent;
 
 import java.sql.CallableStatement;
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.HashMap;
@@ -27,7 +26,7 @@ public class DBDeleteWorker extends Worker<DBSplittingResult> implements EventHa
 	private final ReentrantLock mainLock = new ReentrantLock();
 	private final Logger LOG = Logger.getInstance();
 	private final EventDispatcher eventDispatcher;	
-	private final CallableStatement deleteCall;	
+	private final CallableStatement stmt;	
 	private final BundledDBConnection bundledConnection;	
 	private volatile boolean shouldRun = true;
 	
@@ -36,8 +35,9 @@ public class DBDeleteWorker extends Worker<DBSplittingResult> implements EventHa
 		this.eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
 		this.bundledConnection = bundledConnection;
 		AbstractDatabaseAdapter databaseAdapter = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter();
-		Connection connection = bundledConnection.getOrCreateConnection();
-		deleteCall = connection.prepareCall("{? = call " + databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_delete.delete_cityobject") + "(?)}");
+		stmt = bundledConnection.getOrCreateConnection().prepareCall("{? = call "
+				+ databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_delete.delete_cityobject")
+				+ "(?)}");
 	}
 	
 	@Override
@@ -100,11 +100,11 @@ public class DBDeleteWorker extends Worker<DBSplittingResult> implements EventHa
 		boolean accept = false;  
 		
 		try {
-			deleteCall.registerOutParameter(1, Types.INTEGER);
-			deleteCall.setInt(2, (int)objectId);
-			deleteCall.executeUpdate();	
+			stmt.registerOutParameter(1, Types.INTEGER);
+			stmt.setInt(2, (int)objectId);
+			stmt.executeUpdate();	
 			
-			int deletedObjectId = deleteCall.getInt(1);
+			int deletedObjectId = stmt.getInt(1);
 			if (deletedObjectId == objectId) {
 				LOG.debug(objectclassName + " (RowID = " + objectId + ") deleted");
 				accept = true;
@@ -124,8 +124,8 @@ public class DBDeleteWorker extends Worker<DBSplittingResult> implements EventHa
 
 	public void shutdown() {
 		try {
-			if (deleteCall != null)
-				deleteCall.close();
+			if (stmt != null)
+				stmt.close();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} 
