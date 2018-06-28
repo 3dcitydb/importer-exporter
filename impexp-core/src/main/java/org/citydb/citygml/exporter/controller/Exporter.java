@@ -65,6 +65,7 @@ import org.citydb.event.global.GeometryCounterEvent;
 import org.citydb.event.global.InterruptEvent;
 import org.citydb.event.global.ObjectCounterEvent;
 import org.citydb.event.global.StatusDialogMessage;
+import org.citydb.event.global.StatusDialogProgressBar;
 import org.citydb.event.global.StatusDialogTitle;
 import org.citydb.log.Logger;
 import org.citydb.query.Query;
@@ -472,6 +473,7 @@ public class Exporter implements EventHandler {
 						throw new CityGMLExportException("Failed to shutdown worker pools.", e);
 					}
 
+					eventDispatcher.triggerEvent(new StatusDialogProgressBar(true, this));
 					eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("export.dialog.finish.msg"), this));
 				} finally {
 					// close writer
