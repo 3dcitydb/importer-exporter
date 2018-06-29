@@ -42,6 +42,7 @@ import org.citydb.config.project.resources.Resources;
 		"address",
 		"appearances",
 		"xlink",
+		"xslTransformation",
 		"resources"
 })
 public class Exporter {
@@ -52,6 +53,7 @@ public class Exporter {
 	private ExportAddress address;
 	private ExportAppearance appearances;
 	private XLink xlink;
+	private XSLTransformation xslTransformation;
 	private Resources resources;
 	@XmlTransient
 	private ExportCityDBADE citydbADE;
@@ -63,6 +65,7 @@ public class Exporter {
 		address = new ExportAddress();
 		appearances = new ExportAppearance();
 		xlink = new XLink();
+		xslTransformation = new XSLTransformation();
 		resources = new Resources();
 		citydbADE = new ExportCityDBADE();
 	}
@@ -131,6 +134,15 @@ public class Exporter {
 	public void setXlink(XLink xlink) {
 		if (xlink != null)
 			this.xlink = xlink;
+	}
+
+	public XSLTransformation getXSLTransformation() {
+		return xslTransformation;
+	}
+
+	public void setXSLTransformation(XSLTransformation xslTransformation) {
+		if (xslTransformation != null)
+			this.xslTransformation = xslTransformation;
 	}
 
 	public Resources getResources() {

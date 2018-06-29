@@ -1,7 +1,5 @@
 package org.citydb.citygml.exporter.writer;
 
-import java.io.Writer;
-
 import org.citydb.config.Config;
 import org.citydb.database.schema.mapping.FeatureType;
 import org.citydb.database.schema.mapping.MappingConstants;
@@ -13,14 +11,25 @@ import org.citygml4j.model.module.ade.ADEModule;
 import org.citygml4j.model.module.citygml.CityGMLModule;
 import org.citygml4j.model.module.citygml.CityGMLModuleType;
 import org.citygml4j.model.module.citygml.CityGMLVersion;
+import org.citygml4j.util.internal.xml.TransformerChainFactory;
 import org.citygml4j.util.xml.SAXWriter;
+
+import javax.xml.transform.Templates;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.sax.SAXTransformerFactory;
+import javax.xml.transform.stream.StreamSource;
+import java.io.File;
+import java.io.Writer;
+import java.util.List;
 
 public class CityGMLWriterFactory implements FeatureWriterFactory {
 	private final CityGMLVersion version;
 
 	private SAXWriter saxWriter;
+	private TransformerChainFactory transformerChainFactory;
 
-	public CityGMLWriterFactory(Query query, Config config) {
+	public CityGMLWriterFactory(Query query, Config config) throws FeatureWriteException {
 		version = query.getTargetVersion();
 
 		// prepare SAX writer
@@ -64,6 +73,25 @@ public class CityGMLWriterFactory implements FeatureWriterFactory {
 			}
 		}
 
+		// build XSLT transformer chain
+		if (config.getProject().getExporter().getXSLTransformation().isEnabled()
+				&& config.getProject().getExporter().getXSLTransformation().isSetStylesheets()) {
+			try {
+				List<String> stylesheets = config.getProject().getExporter().getXSLTransformation().getStylesheets();
+				SAXTransformerFactory factory = (SAXTransformerFactory) TransformerFactory.newInstance();
+				Templates[] templates = new Templates[stylesheets.size()];
+
+				for (int i = 0; i < stylesheets.size(); i++) {
+					Templates template = factory.newTemplates(new StreamSource(new File(stylesheets.get(i))));
+					templates[i] = template;
+				}
+
+				transformerChainFactory = new TransformerChainFactory(templates);
+			} catch (TransformerConfigurationException e) {
+				throw new FeatureWriteException("Failed to configure the XSL transformation.", e);
+			}
+		}
+
 		// add CityDB ADE namespace and schema location if required
 		if (config.getProject().getExporter().getCityDBADE().isExportMetadata()) {
 			saxWriter.setPrefix(MappingConstants.CITYDB_ADE_NAMESPACE_PREFIX, MappingConstants.CITYDB_ADE_NAMESPACE_URI);
@@ -77,7 +105,7 @@ public class CityGMLWriterFactory implements FeatureWriterFactory {
 		saxWriter.setOutput(writer);
 
 		// create CityGML writer and write XML header
-		CityGMLWriter featureWriter = new CityGMLWriter(saxWriter, version);
+		CityGMLWriter featureWriter = new CityGMLWriter(saxWriter, version, transformerChainFactory);
 		featureWriter.writeStartDocument();
 
 		return featureWriter;

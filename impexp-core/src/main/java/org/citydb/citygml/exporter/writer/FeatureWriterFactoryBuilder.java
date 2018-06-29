@@ -5,7 +5,7 @@ import org.citydb.query.Query;
 
 public class FeatureWriterFactoryBuilder {
 
-	public static FeatureWriterFactory buildFactory(Query query, Config config) {
+	public static FeatureWriterFactory buildFactory(Query query, Config config) throws FeatureWriteException {
 		return new CityGMLWriterFactory(query, config);
 	}
 	

@@ -171,7 +171,12 @@ public class Exporter implements EventHandler {
 		}
 
 		// create feature writer factory
-		FeatureWriterFactory writerFactory = FeatureWriterFactoryBuilder.buildFactory(query, config);
+		FeatureWriterFactory writerFactory;
+		try {
+			writerFactory = FeatureWriterFactoryBuilder.buildFactory(query, config);
+		} catch (FeatureWriteException e) {
+			throw new CityGMLExportException("Failed to build the feature writer factory.", e);
+		}
 
 		// set target reference system for export
 		DatabaseSrs targetSRS = query.getTargetSRS();
