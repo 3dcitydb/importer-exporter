@@ -164,7 +164,7 @@ public class CityGMLImportManager implements CityGMLImportHelper {
 		if (config.getProject().getImporter().getImportLog().isSetLogImportedFeatures())
 			importLogEntries = new ArrayList<>();
 
-		if (config.getProject().getImporter().getAffineTransformation().isSetUseAffineTransformation())
+		if (config.getProject().getImporter().getAffineTransformation().isEnabled())
 			this.affineTransformer = affineTransformer;
 
 		if (config.getProject().getImporter().getAddress().isSetImportXAL()) {

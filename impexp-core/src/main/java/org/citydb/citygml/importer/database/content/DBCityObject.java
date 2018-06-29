@@ -92,7 +92,7 @@ public class DBCityObject implements DBImporter {
 		String gmlIdCodespace = config.getInternal().getCurrentGmlIdCodespace();
 		replaceGmlId = config.getProject().getImporter().getGmlId().isUUIDModeReplace();
 		rememberGmlId = config.getProject().getImporter().getGmlId().isSetKeepGmlIdAsExternalReference();
-		affineTransformation = config.getProject().getImporter().getAffineTransformation().isSetUseAffineTransformation();
+		affineTransformation = config.getProject().getImporter().getAffineTransformation().isEnabled();
 		dbSrid = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter().getConnectionMetaData().getReferenceSystem().getSrid();
 		importAppearance = config.getProject().getImporter().getAppearances().isSetImportAppearance();
 		String reasonForUpdate = config.getProject().getImporter().getContinuation().getReasonForUpdate();

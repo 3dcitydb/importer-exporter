@@ -244,7 +244,7 @@ public class Importer implements EventHandler {
 
 		// affine transformation
 		AffineTransformer affineTransformer = null;
-		if (importerConfig.getAffineTransformation().isSetUseAffineTransformation()) {
+		if (importerConfig.getAffineTransformation().isEnabled()) {
 			log.info("Applying affine coordinates transformation.");
 
 			try {

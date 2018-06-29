@@ -46,7 +46,6 @@ import org.citygml4j.model.gml.geometry.aggregates.MultiCurveProperty;
 import org.citygml4j.model.gml.geometry.aggregates.MultiGeometry;
 import org.citygml4j.model.gml.geometry.aggregates.MultiPoint;
 import org.citygml4j.model.gml.geometry.aggregates.MultiPointProperty;
-import org.citygml4j.model.gml.geometry.aggregates.MultiSolid;
 import org.citygml4j.model.gml.geometry.aggregates.MultiSurface;
 import org.citygml4j.model.gml.geometry.complexes.CompositeCurve;
 import org.citygml4j.model.gml.geometry.complexes.CompositeSolid;
@@ -80,7 +79,6 @@ import org.citygml4j.model.gml.geometry.primitives.PolygonProperty;
 import org.citygml4j.model.gml.geometry.primitives.Sign;
 import org.citygml4j.model.gml.geometry.primitives.Solid;
 import org.citygml4j.model.gml.geometry.primitives.SurfaceProperty;
-import org.citygml4j.model.gml.geometry.primitives.Tin;
 import org.citygml4j.util.walker.GeometryWalker;
 
 public class GeometryConverter {
@@ -103,7 +101,7 @@ public class GeometryConverter {
 	public GeometryConverter(Config config, CityGMLImportManager importer) {
 		this(importer.getDatabaseAdapter());
 
-		affineTransformation = config.getProject().getImporter().getAffineTransformation().isSetUseAffineTransformation();
+		affineTransformation = config.getProject().getImporter().getAffineTransformation().isEnabled();
 		if (affineTransformation)
 			affineTransformer = importer.getAffineTransformer();
 	}

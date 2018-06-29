@@ -59,8 +59,6 @@ import org.jdesktop.swingx.prompt.PromptSupport.FocusBehavior;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
@@ -345,7 +343,7 @@ public class ImportPanel extends JPanel implements EventHandler {
 			}
 
 			// affine transformation
-			if (config.getProject().getImporter().getAffineTransformation().isSetUseAffineTransformation()) {
+			if (config.getProject().getImporter().getAffineTransformation().isEnabled()) {
 				if (JOptionPane.showConfirmDialog(
 						viewController.getTopFrame(), 
 						Language.I18N.getString("import.dialog.warning.affineTransformation"),

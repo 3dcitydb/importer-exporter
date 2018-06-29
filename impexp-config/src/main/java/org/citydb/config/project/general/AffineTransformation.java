@@ -35,26 +35,19 @@ import javax.xml.bind.annotation.XmlType;
 })
 public class AffineTransformation {
 	@XmlAttribute(required=true)
-	private Boolean useAffineTransformation = false;
+	private boolean isEnabled = false;
 	private TransformationMatrix transformationMatrix;
 
 	public AffineTransformation() {
 		transformationMatrix = new TransformationMatrix();
 	}
 
-	public boolean isSetUseAffineTransformation() {
-		if (useAffineTransformation != null)
-			return useAffineTransformation.booleanValue();
-
-		return false;
+	public boolean isEnabled() {
+		return isEnabled;
 	}
 
-	public Boolean getUseAffineTransformation() {
-		return useAffineTransformation;
-	}
-
-	public void setUseAffineTransformation(Boolean useAffineTransformation) {
-		this.useAffineTransformation = useAffineTransformation;
+	public void setEnabled(boolean isEnabled) {
+		this.isEnabled = isEnabled;
 	}
 
 	public TransformationMatrix getTransformationMatrix() {

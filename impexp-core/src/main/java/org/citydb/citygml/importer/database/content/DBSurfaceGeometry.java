@@ -116,7 +116,7 @@ public class DBSurfaceGeometry implements DBImporter {
 		replaceGmlId = config.getProject().getImporter().getGmlId().isUUIDModeReplace();
 		dbSrid = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter().getConnectionMetaData().getReferenceSystem().getSrid();
 		importAppearance = config.getProject().getImporter().getAppearances().isSetImportAppearance();
-		applyTransformation = config.getProject().getImporter().getAffineTransformation().isSetUseAffineTransformation();
+		applyTransformation = config.getProject().getImporter().getAffineTransformation().isEnabled();
 		nullGeometryType = importer.getDatabaseAdapter().getGeometryConverter().getNullGeometryType();
 		nullGeometryTypeName = importer.getDatabaseAdapter().getGeometryConverter().getNullGeometryTypeName();
 		schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();

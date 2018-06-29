@@ -78,7 +78,7 @@ public class GeometryPanel extends AbstractPreferencesComponent {
 	public boolean isModified() {
 		AffineTransformation affineTransformation = config.getProject().getImporter().getAffineTransformation();
 
-		if (useAffineTransformation.isSelected() != affineTransformation.isSetUseAffineTransformation()) return true;
+		if (useAffineTransformation.isSelected() != affineTransformation.isEnabled()) return true;
 		
 		Matrix matrix = toMatrix3x4(affineTransformation.getTransformationMatrix());
 		boolean isModified = false;
@@ -244,7 +244,7 @@ public class GeometryPanel extends AbstractPreferencesComponent {
 	public void loadSettings() {
 		AffineTransformation affineTransformation = config.getProject().getImporter().getAffineTransformation();
 			
-		useAffineTransformation.setSelected(affineTransformation.isSetUseAffineTransformation());
+		useAffineTransformation.setSelected(affineTransformation.isEnabled());
 
 		Matrix matrix = toMatrix3x4(affineTransformation.getTransformationMatrix());
 		double[][] values = matrix.getArray();
@@ -260,7 +260,7 @@ public class GeometryPanel extends AbstractPreferencesComponent {
 	public void setSettings() {
 		AffineTransformation affineTransformation = config.getProject().getImporter().getAffineTransformation();
 		
-		affineTransformation.setUseAffineTransformation(useAffineTransformation.isSelected());
+		affineTransformation.setEnabled(useAffineTransformation.isSelected());
 		
 		List<Double> values = new ArrayList<Double>();
 		for (int i = 0; i < matrixField.length; i++)
@@ -271,7 +271,7 @@ public class GeometryPanel extends AbstractPreferencesComponent {
 		
 		// disable affine transformation if transformation matrix equals identity matrix
 		if (toMatrix3x4(affineTransformation.getTransformationMatrix()).eq(Matrix.identity(3, 4)))
-			affineTransformation.setUseAffineTransformation(false);
+			affineTransformation.setEnabled(false);
 	}
 	
 	@Override

@@ -66,7 +66,7 @@ public class DBTunnelOpening implements DBImporter {
 		this.batchConn = batchConn;
 		this.importer = importer;
 
-		affineTransformation = config.getProject().getImporter().getAffineTransformation().isSetUseAffineTransformation();
+		affineTransformation = config.getProject().getImporter().getAffineTransformation().isEnabled();
 		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
 
 		String stmt = "insert into " + schema + ".tunnel_opening (id, objectclass_id, lod3_multi_surface_id, lod4_multi_surface_id, " +
