@@ -95,11 +95,11 @@ public class CityGMLWriter implements FeatureWriter {
 				if (transformerChainFactory == null)
 					marshaller.marshal(jaxbElement, buffer);
 				else {
-					TransformerChain transformerChain = transformerChainFactory.buildChain();
-					transformerChain.tail().setResult(new SAXResult(buffer));
-					transformerChain.head().startDocument();
-					marshaller.marshal(jaxbElement, transformerChain.head());
-					transformerChain.head().endDocument();
+					TransformerChain chain = transformerChainFactory.buildChain();
+					chain.tail().setResult(new SAXResult(buffer));
+					chain.head().startDocument();
+					marshaller.marshal(jaxbElement, chain.head());
+					chain.head().endDocument();
 				}
 			}
 
