@@ -31,6 +31,7 @@ import javax.xml.bind.annotation.XmlType;
 
 import org.citydb.config.project.general.AffineTransformation;
 import org.citydb.config.project.general.Path;
+import org.citydb.config.project.general.XSLTransformation;
 
 @XmlType(name="ImportType", propOrder={
 		"filter",
@@ -42,6 +43,7 @@ import org.citydb.config.project.general.Path;
 		"affineTransformation",
 		"indexes",
 		"xmlValidation",
+		"xslTransformation",
 		"importLog",
 		"resources"
 })
@@ -55,6 +57,7 @@ public class Importer {
 	private AffineTransformation affineTransformation;
 	private Index indexes;
 	private XMLValidation xmlValidation;
+	private XSLTransformation xslTransformation;
 	private ImportLog importLog;
 	private ImportResources resources;
 
@@ -68,6 +71,7 @@ public class Importer {
 		affineTransformation = new AffineTransformation();
 		indexes = new Index();
 		xmlValidation = new XMLValidation();
+		xslTransformation = new XSLTransformation();
 		importLog = new ImportLog();
 		resources = new ImportResources();
 	}
@@ -142,6 +146,15 @@ public class Importer {
 	public void setXMLValidation(XMLValidation xmlValidation) {
 		if (xmlValidation != null)
 			this.xmlValidation = xmlValidation;
+	}
+
+	public XSLTransformation getXSLTransformation() {
+		return xslTransformation;
+	}
+
+	public void setXSLTransformation(XSLTransformation xslTransformation) {
+		if (xslTransformation != null)
+			this.xslTransformation = xslTransformation;
 	}
 
 	public AffineTransformation getAffineTransformation() {

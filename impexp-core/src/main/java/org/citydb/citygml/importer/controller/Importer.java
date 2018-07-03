@@ -96,10 +96,16 @@ import org.citygml4j.xml.io.reader.CityGMLReadException;
 import org.citygml4j.xml.io.reader.CityGMLReader;
 import org.citygml4j.xml.io.reader.FeatureReadMode;
 import org.citygml4j.xml.io.reader.XMLChunk;
+import org.citygml4j.xml.io.writer.CityGMLWriteException;
 
 import javax.xml.bind.ValidationEvent;
 import javax.xml.bind.ValidationEventHandler;
 import javax.xml.namespace.QName;
+import javax.xml.transform.Templates;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.sax.SAXTransformerFactory;
+import javax.xml.transform.stream.StreamSource;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -242,6 +248,25 @@ public class Importer implements EventHandler {
 			in.setValidationEventHandler(validationHandler);
 		}
 
+		// build XSLT transformer chain
+		if (importerConfig.getXSLTransformation().isEnabled()
+				&& importerConfig.getXSLTransformation().isSetStylesheets()) {
+			try {
+				List<String> stylesheets = config.getProject().getImporter().getXSLTransformation().getStylesheets();
+				SAXTransformerFactory factory = (SAXTransformerFactory) TransformerFactory.newInstance();
+				Templates[] templates = new Templates[stylesheets.size()];
+
+				for (int i = 0; i < stylesheets.size(); i++) {
+					Templates template = factory.newTemplates(new StreamSource(new File(stylesheets.get(i))));
+					templates[i] = template;
+				}
+
+				in.setTransformationTemplates(templates);
+			} catch (CityGMLWriteException | TransformerConfigurationException e) {
+				throw new CityGMLImportException("Failed to configure the XSL transformation.", e);
+			}
+		}
+
 		// affine transformation
 		AffineTransformer affineTransformer = null;
 		if (importerConfig.getAffineTransformation().isEnabled()) {
@@ -265,14 +290,12 @@ public class Importer implements EventHandler {
 
 		// prepare feature filter
 		final FeatureTypeFilter typeFilter = filter.getFeatureTypeFilter();
-		CityGMLInputFilter inputFilter = new CityGMLInputFilter() {
-			public boolean accept(QName name) {				
-				Module module = Modules.getModule(name.getNamespaceURI());
-				if (module != null && module.getType() == CityGMLModuleType.APPEARANCE && name.getLocalPart().equals("Appearance"))
-					return importerConfig.getAppearances().isSetImportAppearance();				
-				else
-					return typeFilter.isSatisfiedBy(name, true);
-			}
+		CityGMLInputFilter inputFilter = name -> {
+			Module module = Modules.getModule(name.getNamespaceURI());
+			if (module != null && module.getType() == CityGMLModuleType.APPEARANCE && name.getLocalPart().equals("Appearance"))
+				return importerConfig.getAppearances().isSetImportAppearance();
+			else
+				return typeFilter.isSatisfiedBy(name, true);
 		};
 
 		CacheTableManager cacheTableManager = null;
@@ -380,7 +403,7 @@ public class Importer implements EventHandler {
 
 				// creating worker pools needed for data import
 				// this pool is for registering xlinks
-				tmpXlinkPool = new WorkerPool<DBXlink>(
+				tmpXlinkPool = new WorkerPool<>(
 						"xlink_importer_pool",
 						minThreads,
 						maxThreads,
@@ -390,25 +413,25 @@ public class Importer implements EventHandler {
 						false);
 
 				// this pool basically works on the data import
-				dbWorkerPool = new WorkerPool<CityGML>(
+				dbWorkerPool = new WorkerPool<>(
 						"db_importer_pool",
 						minThreads,
 						maxThreads,
 						PoolSizeAdaptationStrategy.AGGRESSIVE,
 						new DBImportWorkerFactory(schemaMapping,
 								cityGMLBuilder,
-								tmpXlinkPool, 
-								uidCacheManager, 
+								tmpXlinkPool,
+								uidCacheManager,
 								filter,
 								affineTransformer,
 								importLogger,
-								config, 
+								config,
 								eventDispatcher),
 						queueSize,
 						false);
 
 				// this worker pool unmarshals the input file and passes xml chunks to the dbworker pool
-				featureWorkerPool = new WorkerPool<XMLChunk>(
+				featureWorkerPool = new WorkerPool<>(
 						"citygml_parser_pool",
 						minThreads,
 						maxThreads,
@@ -468,15 +491,15 @@ public class Importer implements EventHandler {
 				if (shouldRun) {
 					// get an xlink resolver pool
 					log.info("Resolving XLink references.");
-					xlinkResolverPool = new WorkerPool<DBXlink>(
+					xlinkResolverPool = new WorkerPool<>(
 							"xlink_resolver_pool",
 							minThreads,
 							maxThreads,
 							PoolSizeAdaptationStrategy.AGGRESSIVE,
-							new DBImportXlinkResolverWorkerFactory(tmpXlinkPool, 
-									uidCacheManager, 
-									cacheTableManager, 
-									config, 
+							new DBImportXlinkResolverWorkerFactory(tmpXlinkPool,
+									uidCacheManager,
+									cacheTableManager,
+									config,
 									eventDispatcher),
 							queueSize,
 							false);

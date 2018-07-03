@@ -1,4 +1,4 @@
-package org.citydb.config.project.exporter;
+package org.citydb.config.project.general;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
