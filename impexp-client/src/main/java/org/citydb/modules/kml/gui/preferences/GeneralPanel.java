@@ -35,6 +35,7 @@ import java.io.File;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 
+import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -43,6 +44,7 @@ import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 
 import org.citydb.config.Config;
@@ -87,6 +89,8 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 	private JButton gltfConverterBrowseButton = new JButton("");
 	private JCheckBox notCreateColladaCheckbox = new JCheckBox();
 	private JCheckBox embedTexturesInGltfCheckbox = new JCheckBox();
+	private JRadioButton exportGltfV1 = new JRadioButton();
+	private JRadioButton exportGltfV2 = new JRadioButton();
 	
 	public GeneralPanel(ViewController viewController, Config config) {
 		super(config);
@@ -141,6 +145,8 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		if (!gltfConverterBrowseText.getText().equals(kmlExporter.getPathOfGltfConverter())) return true;
 		if (notCreateColladaCheckbox.isSelected() != kmlExporter.isNotCreateColladaFiles()) return true;
 		if (embedTexturesInGltfCheckbox.isSelected() != kmlExporter.isEmbedTexturesInGltfFiles()) return true;
+		if (exportGltfV1.isSelected() != kmlExporter.isExportGltfV1()) return true;
+		if (exportGltfV2.isSelected() != kmlExporter.isExportGltfV2()) return true;
 		
 		return false;
 	}
@@ -165,12 +171,19 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		createGltfCheckbox.setIconTextGap(10);
 		notCreateColladaCheckbox.setIconTextGap(10);
 		embedTexturesInGltfCheckbox.setIconTextGap(10);
+		exportGltfV1.setIconTextGap(10);
+		exportGltfV2.setIconTextGap(10);
 		gltfConverterBrowseText.setPreferredSize(gltfConverterBrowseText.getSize());
 		collada2gltfConverterPanel.add(createGltfCheckbox, GuiUtil.setConstraints(0,0,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,0,BORDER_THICKNESS));
 		collada2gltfConverterPanel.add(gltfConverterBrowseText, GuiUtil.setConstraints(0,1,1.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS*6,0,BORDER_THICKNESS));
 		collada2gltfConverterPanel.add(gltfConverterBrowseButton, GuiUtil.setConstraints(1,1,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,0,BORDER_THICKNESS));
 		collada2gltfConverterPanel.add(notCreateColladaCheckbox, GuiUtil.setConstraints(0,2,1.0,1.0,GridBagConstraints.BOTH,BORDER_THICKNESS,BORDER_THICKNESS*5,0,BORDER_THICKNESS));
 		collada2gltfConverterPanel.add(embedTexturesInGltfCheckbox, GuiUtil.setConstraints(0,3,1.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS*5,0,BORDER_THICKNESS));
+		collada2gltfConverterPanel.add(exportGltfV1, GuiUtil.setConstraints(0,4,1.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS*5,0,BORDER_THICKNESS));
+		collada2gltfConverterPanel.add(exportGltfV2, GuiUtil.setConstraints(0,5,1.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS*5,0,BORDER_THICKNESS));
+		ButtonGroup exportGltfVersions = new ButtonGroup();
+		exportGltfVersions.add(exportGltfV1);
+		exportGltfVersions.add(exportGltfV2);
 		
 		JPanel generalPanel = new JPanel();
 		add(generalPanel, GuiUtil.setConstraints(0,1,1.0,0.0,GridBagConstraints.BOTH,BORDER_THICKNESS,0,BORDER_THICKNESS,0));
@@ -335,6 +348,8 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		gltfConverterBrowseButton.setText(Language.I18N.getString("common.button.browse"));
 		notCreateColladaCheckbox.setText(Language.I18N.getString("pref.kmlexport.label.notCreateColladaFiles"));
 		embedTexturesInGltfCheckbox.setText(Language.I18N.getString("pref.kmlexport.label.embedTexturesInGltfFiles"));
+		exportGltfV1.setText(Language.I18N.getString("pref.kmlexport.label.exportGltfV1"));
+		exportGltfV2.setText(Language.I18N.getString("pref.kmlexport.label.exportGltfV2"));
 	}
 
 	@Override
@@ -357,6 +372,8 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		gltfConverterBrowseText.setText(kmlExporter.getPathOfGltfConverter());
 		notCreateColladaCheckbox.setSelected(kmlExporter.isNotCreateColladaFiles());
 		embedTexturesInGltfCheckbox.setSelected(kmlExporter.isEmbedTexturesInGltfFiles());
+		exportGltfV1.setSelected(kmlExporter.isExportGltfV1());
+		exportGltfV2.setSelected(kmlExporter.isExportGltfV2());
 		
 		setEnabledComponents();
 	}
@@ -398,6 +415,8 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		kmlExporter.setPathOfGltfConverter(gltfConverterBrowseText.getText());
 		kmlExporter.setNotCreateColladaFiles(notCreateColladaCheckbox.isSelected());
 		kmlExporter.setEmbedTexturesInGltfFiles(embedTexturesInGltfCheckbox.isSelected());
+		kmlExporter.setExportGltfV1(exportGltfV1.isSelected());
+		kmlExporter.setExportGltfV2(exportGltfV2.isSelected());
 	}
 
 	private void setEnabledComponents() {
@@ -420,6 +439,8 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		gltfConverterBrowseButton.setEnabled(createGltfCheckbox.isSelected());			
 		notCreateColladaCheckbox.setEnabled(createGltfCheckbox.isSelected());
 		embedTexturesInGltfCheckbox.setEnabled(createGltfCheckbox.isSelected());
+		exportGltfV1.setEnabled(createGltfCheckbox.isSelected());
+		exportGltfV2.setEnabled(createGltfCheckbox.isSelected());
 	}
 	
 	private void browseGltfConverterFile(String title) {

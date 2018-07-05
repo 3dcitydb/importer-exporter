@@ -80,6 +80,7 @@ import org.citydb.config.project.resources.Resources;
 
 		"lod0FootprintMode",
 		"exportAsKmz",
+		"exportGltfV1",
 		"showBoundingBox",
 		"showTileBorders",
 		"exportEmptyTiles",
@@ -180,6 +181,7 @@ public class KmlExporter {
 	private boolean notCreateColladaFiles;
 	private boolean embedTexturesInGltfFiles;
 	private boolean exportAsKmz;
+	private boolean exportGltfV1;
 	private String appearanceTheme;
 	private AltitudeMode altitudeMode;
 	private AltitudeOffsetMode altitudeOffsetMode;
@@ -233,6 +235,7 @@ public class KmlExporter {
 
 		setLod0FootprintMode(Lod0FootprintMode.FOOTPRINT);
 		exportAsKmz = false;
+		exportGltfV1 = true;
 		showBoundingBox = false;
 		showTileBorders = false;
 		exportEmptyTiles = true;
@@ -250,11 +253,11 @@ public class KmlExporter {
 		pathOfGltfConverter = "contribs" + File.separator + "collada2gltf";
 		String osName = System.getProperty("os.name").toLowerCase(Locale.ENGLISH);
 		if (osName.indexOf("windows") != -1)
-			pathOfGltfConverter += File.separator + "windows_v1.0_x64_draft" + File.separator + "collada2gltf.exe";
+			pathOfGltfConverter += File.separator + "COLLADA2GLTF-v2.1.2-windows-Release-x64" + File.separator + "COLLADA2GLTF-bin.exe";
 		else if (osName.indexOf("mac") != -1)
-			pathOfGltfConverter += File.separator + "mac_v1.0_x64_draft" + File.separator + "collada2gltf";				
+			pathOfGltfConverter += File.separator + "COLLADA2GLTF-v2.1.2-mac" + File.separator + "COLLADA2GLTF-bin";
 		else if (osName.indexOf("nux") != -1)
-			pathOfGltfConverter += File.separator + "linux_v1.0_x64_draft" + File.separator + "collada2gltf";				
+			pathOfGltfConverter += File.separator + "COLLADA2GLTF-v2.1.2-linux" + File.separator + "COLLADA2GLTF-bin";
 
 		setAppearanceTheme(THEME_NONE);
 		setAltitudeMode(AltitudeMode.ABSOLUTE);
@@ -408,6 +411,22 @@ public class KmlExporter {
 		return exportAsKmz;
 	}
 
+	public boolean isExportGltfV1() {
+		return exportGltfV1;
+	}
+
+	public void setExportGltfV1(boolean exportGltfV1) {
+		this.exportGltfV1 = exportGltfV1;
+	}
+
+	public boolean isExportGltfV2() {
+		return !exportGltfV1;
+	}
+
+	public void setExportGltfV2(boolean exportGltfV2) {
+		this.exportGltfV1 = !exportGltfV2;
+	}
+	
 	public void setCreateGltfModel(boolean createGltfModel) {
 		this.createGltfModel = createGltfModel;
 	}
