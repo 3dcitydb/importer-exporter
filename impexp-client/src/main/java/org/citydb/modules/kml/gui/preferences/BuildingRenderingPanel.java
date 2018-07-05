@@ -1047,19 +1047,21 @@ public class BuildingRenderingPanel extends AbstractPreferencesComponent {
 			df.setRgba4(DisplayForm.DEFAULT_FILL_HIGHLIGHTED_COLOR);
 			df.setRgba5(DisplayForm.DEFAULT_LINE_HIGHLIGHTED_COLOR);
 		}
+		
+		ColladaOptions colladaOptionsDefault = new ColladaOptions();
 
-		colladaOptions.setIgnoreSurfaceOrientation(false);
-		colladaOptions.setGenerateSurfaceNormals(false);
-		colladaOptions.setCropImages(false);
-		colladaOptions.setGenerateTextureAtlases(true);
-		colladaOptions.setTextureAtlasPots(true);
-		colladaOptions.setPackingAlgorithm(TextureAtlasCreator.BASIC); 
+		colladaOptions.setIgnoreSurfaceOrientation(colladaOptionsDefault.isIgnoreSurfaceOrientation());
+		colladaOptions.setGenerateSurfaceNormals(colladaOptionsDefault.isGenerateSurfaceNormals());
+		colladaOptions.setCropImages(colladaOptionsDefault.isCropImages());
+		colladaOptions.setGenerateTextureAtlases(colladaOptionsDefault.isGenerateTextureAtlases());
+		colladaOptions.setTextureAtlasPots(colladaOptionsDefault.isTextureAtlasPots());
+		colladaOptions.setPackingAlgorithm(colladaOptionsDefault.getPackingAlgorithm()); // TextureAtlasCreator.BASIC
 
-		colladaOptions.setScaleImages(false);
-		colladaOptions.setImageScaleFactor(1);
+		colladaOptions.setScaleImages(colladaOptionsDefault.isScaleImages());
+		colladaOptions.setImageScaleFactor(colladaOptionsDefault.getImageScaleFactor());
 
-		colladaOptions.setGroupObjects(false);
-		colladaOptions.setGroupSize(1);
+		colladaOptions.setGroupObjects(colladaOptionsDefault.isGroupObjects());
+		colladaOptions.setGroupSize(colladaOptionsDefault.getGroupSize());
 
 		loadSettings(); // update GUI
 	}
