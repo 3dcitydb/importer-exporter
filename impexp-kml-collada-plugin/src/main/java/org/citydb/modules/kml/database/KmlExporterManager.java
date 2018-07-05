@@ -585,8 +585,9 @@ public class KmlExporterManager {
 			fos.close();
 
 			// ----------------- create glTF without embedded textures-----------------
+			boolean exportGltfV1 = config.getProject().getKmlExporter().isExportGltfV1();
 			if (config.getProject().getKmlExporter().isCreateGltfModel() && !config.getProject().getKmlExporter().isEmbedTexturesInGltfFiles()) {
-				convertColladaToglTF(colladaBundle, buildingDirectory, colladaModelFile, gltfModelFile);
+				convertColladaToglTF(colladaBundle, buildingDirectory, colladaModelFile, gltfModelFile, exportGltfV1);
 			}	        
 
 			// ----------------- image saving -----------------
@@ -616,7 +617,7 @@ public class KmlExporterManager {
 
 			// ----------------- create glTF with embedded textures-----------------
 			if (config.getProject().getKmlExporter().isCreateGltfModel() && config.getProject().getKmlExporter().isEmbedTexturesInGltfFiles()) {
-				convertColladaToglTF(colladaBundle, buildingDirectory, colladaModelFile, gltfModelFile);
+				convertColladaToglTF(colladaBundle, buildingDirectory, colladaModelFile, gltfModelFile, exportGltfV1);
 				if (config.getProject().getKmlExporter().isNotCreateColladaFiles() && gltfModelFile.exists()) {
 					Set<String> keySet = colladaBundle.getTexImages().keySet();
 					Iterator<String> iterator = keySet.iterator();
@@ -648,11 +649,11 @@ public class KmlExporterManager {
 		}
 	}
 
-	private void convertColladaToglTF(ColladaBundle colladaBundle, File buildingDirectory, File colladaModelFile, File gltfModelFile) {
+	private void convertColladaToglTF(ColladaBundle colladaBundle, File buildingDirectory, File colladaModelFile, File gltfModelFile, boolean exportGltfV1) {
 		String collada2gltfPath = config.getProject().getKmlExporter().getPathOfGltfConverter();
 		File collada2gltfFile = new File(collada2gltfPath);
 		if (collada2gltfFile.exists()) {
-			ProcessBuilder pb = new ProcessBuilder(collada2gltfFile.getAbsolutePath(), "-f", colladaBundle.getGmlId() + ".dae", "-e", "true");
+			ProcessBuilder pb = new ProcessBuilder(collada2gltfFile.getAbsolutePath(), "-i", colladaBundle.getGmlId() + ".dae", "-o", gltfModelFile.getAbsolutePath(), "-v", exportGltfV1 ? "1.0" : "2.0");
 			pb.directory(buildingDirectory);
 			try {
 				Process process = pb.start();
