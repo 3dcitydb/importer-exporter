@@ -55,10 +55,10 @@ public class ColladaOptions {
 
 	public ColladaOptions() {
 		ignoreSurfaceOrientation = false;
-		generateSurfaceNormals = false;
+		generateSurfaceNormals = true;
 		cropImages = false;
 		generateTextureAtlases = true;
-		packingAlgorithm = 5; // TextureAtlasGenerator.TPIM
+		packingAlgorithm = 1; // TextureAtlasGenerator.TPIM
 		textureAtlasPots = true;
 		scaleImages = false;
 		imageScaleFactor = 1.0;
