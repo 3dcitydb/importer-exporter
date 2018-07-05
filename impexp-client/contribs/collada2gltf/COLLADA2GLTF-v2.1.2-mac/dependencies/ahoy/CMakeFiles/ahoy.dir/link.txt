@@ -1,0 +1,2 @@
+/usr/bin/ar qc libahoy.a  CMakeFiles/ahoy.dir/src/Parser.cpp.o CMakeFiles/ahoy.dir/src/TypedOption.cpp.o
+/usr/bin/ranlib libahoy.a

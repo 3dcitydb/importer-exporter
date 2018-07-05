@@ -1,0 +1,3 @@
+file(REMOVE_RECURSE
+  "libCOLLADA2GLTF.a"
+)

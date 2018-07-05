@@ -1,0 +1,16 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+../dependencies/OpenCOLLADA/modules/COLLADASaxFrameworkLoader/COLLADAFramework/COLLADABaseUtils/../../../../OpenCOLLADA/Externals/UTF/include/ConvertUTF.h
+
+/Users/sonnguyen/Downloads/COLLADA2GLTF/dependencies/OpenCOLLADA/OpenCOLLADA/Externals/UTF/src/ConvertUTF.c
+ConvertUTF.h
+/Users/sonnguyen/Downloads/COLLADA2GLTF/dependencies/OpenCOLLADA/OpenCOLLADA/Externals/UTF/src/ConvertUTF.h
+stdio.h
+-
+
