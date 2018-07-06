@@ -9,6 +9,7 @@ public class ClientConstants {
     public static final Path WORKING_DIR;
 
     public static final String SRS_TEMPLATES_DIR = "templates" + File.separator + "CoordinateReferenceSystems";
+    public static final String XSLT_TEMPLATES_DIR = "templates" + File.separator + "XSLTransformations";
     public static final String PLUGINS_DIR = "plugins";
     public static final String ADE_EXTENSIONS_DIR = "ade-extensions";
     public static final String LOG_DIR = "log";

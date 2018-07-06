@@ -3,6 +3,7 @@ package org.citydb.citygml.exporter.writer;
 import org.citydb.config.Config;
 import org.citydb.database.schema.mapping.FeatureType;
 import org.citydb.database.schema.mapping.MappingConstants;
+import org.citydb.log.Logger;
 import org.citydb.query.Query;
 import org.citygml4j.model.module.Module;
 import org.citygml4j.model.module.ModuleContext;
@@ -24,6 +25,7 @@ import java.io.Writer;
 import java.util.List;
 
 public class CityGMLWriterFactory implements FeatureWriterFactory {
+	private final Logger log = Logger.getInstance();
 	private final CityGMLVersion version;
 
 	private SAXWriter saxWriter;
@@ -77,6 +79,8 @@ public class CityGMLWriterFactory implements FeatureWriterFactory {
 		if (config.getProject().getExporter().getXSLTransformation().isEnabled()
 				&& config.getProject().getExporter().getXSLTransformation().isSetStylesheets()) {
 			try {
+				log.info("Applying XSL transformations on export data.");
+
 				List<String> stylesheets = config.getProject().getExporter().getXSLTransformation().getStylesheets();
 				SAXTransformerFactory factory = (SAXTransformerFactory) TransformerFactory.newInstance();
 				Templates[] templates = new Templates[stylesheets.size()];

@@ -27,18 +27,14 @@
  */
 package org.citydb.modules.citygml.importer.gui.preferences;
 
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
+import org.citydb.config.Config;
+import org.citydb.config.i18n.Language;
+import org.citydb.config.project.general.AffineTransformation;
+import org.citydb.config.project.general.TransformationMatrix;
+import org.citydb.gui.factory.PopupMenuDecorator;
+import org.citydb.gui.preferences.AbstractPreferencesComponent;
+import org.citydb.gui.util.GuiUtil;
+import org.citygml4j.geometry.Matrix;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -48,15 +44,16 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
 import javax.swing.border.TitledBorder;
-
-import org.citydb.config.Config;
-import org.citydb.config.i18n.Language;
-import org.citydb.config.project.general.AffineTransformation;
-import org.citydb.config.project.general.TransformationMatrix;
-import org.citydb.gui.factory.PopupMenuDecorator;
-import org.citydb.gui.preferences.AbstractPreferencesComponent;
-import org.citydb.gui.util.GuiUtil;
-import org.citygml4j.geometry.Matrix;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 
 @SuppressWarnings("serial")
 public class GeometryPanel extends AbstractPreferencesComponent {	
@@ -84,7 +81,7 @@ public class GeometryPanel extends AbstractPreferencesComponent {
 		boolean isModified = false;
 		for (int i = 0; i < matrixField.length; i++) {
 			for (int j = 0; j < matrixField[i].length; j++) {
-				try { matrixField[i][j].commitEdit(); } catch (ParseException e) { };
+				try { matrixField[i][j].commitEdit(); } catch (ParseException ignored) { }
 				if (!isModified)
 					isModified = ((Number)matrixField[i][j].getValue()).doubleValue() != matrix.get(i, j);
 			}
@@ -166,40 +163,32 @@ public class GeometryPanel extends AbstractPreferencesComponent {
 			}
 		}
 
-		identityMatrixButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				Matrix matrix = Matrix.identity(3, 4);
-				double[][] values = matrix.getArray();
+		identityMatrixButton.addActionListener(e -> {
+			Matrix matrix = Matrix.identity(3, 4);
+			double[][] values = matrix.getArray();
 
-				for (int i = 0; i < values.length; i++) {
-					for (int j = 0; j < values[i].length; j++) {
-						matrixField[i][j].setValue(values[i][j]);
-					}
+			for (int i = 0; i < values.length; i++) {
+				for (int j = 0; j < values[i].length; j++) {
+					matrixField[i][j].setValue(values[i][j]);
 				}
 			}
 		});
 		
-		swapXYMatrixButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				Matrix matrix = new Matrix(3, 4, 0.0);
-				matrix.set(0, 1, 1.0);
-				matrix.set(1, 0, 1.0);
-				matrix.set(2, 2, 1.0);
-				double[][] values = matrix.getArray();
-				
-				for (int i = 0; i < values.length; i++) {
-					for (int j = 0; j < values[i].length; j++) {
-						matrixField[i][j].setValue(values[i][j]);
-					}
+		swapXYMatrixButton.addActionListener(e -> {
+			Matrix matrix = new Matrix(3, 4, 0.0);
+			matrix.set(0, 1, 1.0);
+			matrix.set(1, 0, 1.0);
+			matrix.set(2, 2, 1.0);
+			double[][] values = matrix.getArray();
+
+			for (int i = 0; i < values.length; i++) {
+				for (int j = 0; j < values[i].length; j++) {
+					matrixField[i][j].setValue(values[i][j]);
 				}
 			}
 		});
 		
-		useAffineTransformation.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				setEnabledTransformation();
-			}
-		});
+		useAffineTransformation.addActionListener(e -> setEnabledTransformation());
 	}
 
 	private void setEnabledBorderTitle() {
@@ -262,16 +251,19 @@ public class GeometryPanel extends AbstractPreferencesComponent {
 		
 		affineTransformation.setEnabled(useAffineTransformation.isSelected());
 		
-		List<Double> values = new ArrayList<Double>();
-		for (int i = 0; i < matrixField.length; i++)
-			for (int j = 0; j < matrixField[i].length; j++)
-				values.add(((Number)matrixField[i][j].getValue()).doubleValue());
+		List<Double> values = new ArrayList<>();
+		for (JFormattedTextField[] fields : matrixField)
+			for (JFormattedTextField field : fields)
+				values.add(((Number) field.getValue()).doubleValue());
 		
 		affineTransformation.getTransformationMatrix().setValue(values);
 		
 		// disable affine transformation if transformation matrix equals identity matrix
-		if (toMatrix3x4(affineTransformation.getTransformationMatrix()).eq(Matrix.identity(3, 4)))
+		if (toMatrix3x4(affineTransformation.getTransformationMatrix()).eq(Matrix.identity(3, 4))) {
 			affineTransformation.setEnabled(false);
+			useAffineTransformation.setSelected(false);
+			setEnabledTransformation();
+		}
 	}
 	
 	@Override
