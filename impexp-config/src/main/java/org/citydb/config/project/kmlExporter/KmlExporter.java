@@ -255,9 +255,9 @@ public class KmlExporter {
 		if (osName.indexOf("windows") != -1)
 			pathOfGltfConverter += File.separator + "COLLADA2GLTF-v2.1.2-windows-Release-x64" + File.separator + "COLLADA2GLTF-bin.exe";
 		else if (osName.indexOf("mac") != -1)
-			pathOfGltfConverter += File.separator + "COLLADA2GLTF-v2.1.2-mac" + File.separator + "COLLADA2GLTF-bin";
+			pathOfGltfConverter += File.separator + "COLLADA2GLTF-v2.1.3-osx" + File.separator + "COLLADA2GLTF-bin";
 		else if (osName.indexOf("nux") != -1)
-			pathOfGltfConverter += File.separator + "COLLADA2GLTF-v2.1.2-linux" + File.separator + "COLLADA2GLTF-bin";
+			pathOfGltfConverter += File.separator + "COLLADA2GLTF-v2.1.3-linux" + File.separator + "COLLADA2GLTF-bin";
 
 		setAppearanceTheme(THEME_NONE);
 		setAltitudeMode(AltitudeMode.ABSOLUTE);
