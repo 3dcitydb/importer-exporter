@@ -657,7 +657,7 @@ public class KmlExporterManager {
 		String collada2gltfPath = config.getProject().getKmlExporter().getPathOfGltfConverter();
 		File collada2gltfFile = new File(collada2gltfPath);
 		if (collada2gltfFile.exists()) {
-			setPermissions(colladaModelFile);
+			setPermissions(collada2gltfFile);
 			ProcessBuilder pb = new ProcessBuilder(collada2gltfFile.getAbsolutePath(), "-i", colladaBundle.getGmlId() + ".dae", "-o", gltfModelFile.getAbsolutePath(), "-v", exportGltfV1 ? "1.0" : "2.0");
 			pb.directory(buildingDirectory);
 			try {
@@ -673,9 +673,9 @@ public class KmlExporterManager {
 			}
 		}
 	}
-	
+
 	private void setPermissions(File file) {
-		if (!Files.isExecutable(file.toPath())) {
+		if (!file.canExecute()) {
 			Logger.getInstance().info("Acquiring permission to execute the COLLADA2GLTF binary");
 
 			// file permissions 755
