@@ -31,6 +31,7 @@ import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
 import org.citydb.config.project.general.Path;
+import org.citydb.config.project.general.XSLTransformation;
 import org.citydb.config.project.query.Query;
 import org.citydb.config.project.resources.Resources;
 
