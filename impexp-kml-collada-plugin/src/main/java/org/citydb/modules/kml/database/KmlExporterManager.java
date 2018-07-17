@@ -65,8 +65,12 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.StringWriter;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.attribute.PosixFilePermission;
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -653,6 +657,7 @@ public class KmlExporterManager {
 		String collada2gltfPath = config.getProject().getKmlExporter().getPathOfGltfConverter();
 		File collada2gltfFile = new File(collada2gltfPath);
 		if (collada2gltfFile.exists()) {
+			setPermissions(colladaModelFile);
 			ProcessBuilder pb = new ProcessBuilder(collada2gltfFile.getAbsolutePath(), "-i", colladaBundle.getGmlId() + ".dae", "-o", gltfModelFile.getAbsolutePath(), "-v", exportGltfV1 ? "1.0" : "2.0");
 			pb.directory(buildingDirectory);
 			try {
@@ -666,7 +671,29 @@ public class KmlExporterManager {
 					colladaModelFile.delete();
 				}
 			}
-		}		
+		}
+	}
+	
+	private void setPermissions(File file) {
+		if (!file.canExecute()) {
+			Logger.getInstance().info("Acquiring permission to execute the COLLADA2GLTF binary...");
+
+			// file permissions 755
+			Set<PosixFilePermission> permissions = new HashSet<PosixFilePermission>();
+			permissions.add(PosixFilePermission.OWNER_READ);
+			permissions.add(PosixFilePermission.OWNER_WRITE);
+			permissions.add(PosixFilePermission.OWNER_EXECUTE);
+			permissions.add(PosixFilePermission.GROUP_READ);
+			permissions.add(PosixFilePermission.GROUP_EXECUTE);
+			permissions.add(PosixFilePermission.OTHERS_READ);
+			permissions.add(PosixFilePermission.OTHERS_EXECUTE);
+
+			try {
+				Files.setPosixFilePermissions(Paths.get(file.getAbsolutePath()), permissions);
+			} catch (IOException e) {
+				Logger.getInstance().debug("Could not change permission to execute the COLLADA2GLTF binary!");
+			}
+		}
 	}
 }
 
