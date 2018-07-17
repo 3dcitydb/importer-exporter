@@ -155,6 +155,11 @@
             <fileset dir="@installDir@/@pluginsDir@/@spreadSheetPluginDir@" targetdir="$INSTALL_PATH//@pluginsDir@/@spreadSheetPluginDir@"
                 override="true"/>
         </pack>
+        <pack name="plugin.ade-manager" id="plugin.ade-manager" parent="plugins" required="no" preselected="no">
+            <description/>
+            <fileset dir="@installDir@/@pluginsDir@/@adeManagerPluginDir@" targetdir="$INSTALL_PATH//@pluginsDir@/@adeManagerPluginDir@"
+                override="true"/>
+        </pack>        
     </packs>
 
     <native type="izpack" name="ShellLink.dll"/>
