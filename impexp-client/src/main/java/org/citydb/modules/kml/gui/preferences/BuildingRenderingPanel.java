@@ -1048,20 +1048,7 @@ public class BuildingRenderingPanel extends AbstractPreferencesComponent {
 			df.setRgba5(DisplayForm.DEFAULT_LINE_HIGHLIGHTED_COLOR);
 		}
 		
-		ColladaOptions colladaOptionsDefault = new ColladaOptions();
-
-		colladaOptions.setIgnoreSurfaceOrientation(colladaOptionsDefault.isIgnoreSurfaceOrientation());
-		colladaOptions.setGenerateSurfaceNormals(colladaOptionsDefault.isGenerateSurfaceNormals());
-		colladaOptions.setCropImages(colladaOptionsDefault.isCropImages());
-		colladaOptions.setGenerateTextureAtlases(colladaOptionsDefault.isGenerateTextureAtlases());
-		colladaOptions.setTextureAtlasPots(colladaOptionsDefault.isTextureAtlasPots());
-		colladaOptions.setPackingAlgorithm(colladaOptionsDefault.getPackingAlgorithm()); // TextureAtlasCreator.BASIC
-
-		colladaOptions.setScaleImages(colladaOptionsDefault.isScaleImages());
-		colladaOptions.setImageScaleFactor(colladaOptionsDefault.getImageScaleFactor());
-
-		colladaOptions.setGroupObjects(colladaOptionsDefault.isGroupObjects());
-		colladaOptions.setGroupSize(colladaOptionsDefault.getGroupSize());
+		ColladaOptions.resetSettings(colladaOptions);
 
 		loadSettings(); // update GUI
 	}

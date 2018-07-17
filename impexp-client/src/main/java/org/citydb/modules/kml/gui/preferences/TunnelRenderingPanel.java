@@ -1027,18 +1027,7 @@ public class TunnelRenderingPanel extends AbstractPreferencesComponent {
 			df.setRgba5(DisplayForm.DEFAULT_LINE_HIGHLIGHTED_COLOR);
 		}
 
-		colladaOptions.setIgnoreSurfaceOrientation(false);
-		colladaOptions.setGenerateSurfaceNormals(false);
-		colladaOptions.setCropImages(false);
-		colladaOptions.setGenerateTextureAtlases(true);
-		colladaOptions.setTextureAtlasPots(true);
-		colladaOptions.setPackingAlgorithm(TextureAtlasCreator.BASIC); 
-
-		colladaOptions.setScaleImages(false);
-		colladaOptions.setImageScaleFactor(1);
-
-		colladaOptions.setGroupObjects(false);
-		colladaOptions.setGroupSize(1);
+		ColladaOptions.resetSettings(colladaOptions);
 
 		loadSettings(); // update GUI
 	}

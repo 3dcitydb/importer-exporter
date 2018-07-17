@@ -65,6 +65,23 @@ public class ColladaOptions {
 		groupObjects = false;
 		groupSize = 1;
 	}
+	
+	public static void resetSettings(ColladaOptions old) {
+		ColladaOptions colladaOptionsDefault = new ColladaOptions();
+
+		old.setIgnoreSurfaceOrientation(colladaOptionsDefault.isIgnoreSurfaceOrientation());
+		old.setGenerateSurfaceNormals(colladaOptionsDefault.isGenerateSurfaceNormals());
+		old.setCropImages(colladaOptionsDefault.isCropImages());
+		old.setGenerateTextureAtlases(colladaOptionsDefault.isGenerateTextureAtlases());
+		old.setTextureAtlasPots(colladaOptionsDefault.isTextureAtlasPots());
+		old.setPackingAlgorithm(colladaOptionsDefault.getPackingAlgorithm()); // TextureAtlasCreator.BASIC
+
+		old.setScaleImages(colladaOptionsDefault.isScaleImages());
+		old.setImageScaleFactor(colladaOptionsDefault.getImageScaleFactor());
+
+		old.setGroupObjects(colladaOptionsDefault.isGroupObjects());
+		old.setGroupSize(colladaOptionsDefault.getGroupSize());
+	}
 
 	public void setIgnoreSurfaceOrientation(boolean ignoreSurfaceOrientation) {
 		this.ignoreSurfaceOrientation = ignoreSurfaceOrientation;
