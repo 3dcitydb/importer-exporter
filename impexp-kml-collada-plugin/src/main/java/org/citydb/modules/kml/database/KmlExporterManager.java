@@ -675,8 +675,8 @@ public class KmlExporterManager {
 	}
 	
 	private void setPermissions(File file) {
-		if (!file.canExecute()) {
-			Logger.getInstance().info("Acquiring permission to execute the COLLADA2GLTF binary...");
+		if (!Files.isExecutable(file.toPath())) {
+			Logger.getInstance().info("Acquiring permission to execute the COLLADA2GLTF binary");
 
 			// file permissions 755
 			Set<PosixFilePermission> permissions = new HashSet<PosixFilePermission>();
