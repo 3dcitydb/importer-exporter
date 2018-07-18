@@ -84,12 +84,16 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.PosixFilePermission;
 import java.sql.SQLException;
 import java.text.MessageFormat;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 
 @SuppressWarnings("serial")
@@ -817,11 +821,28 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 					viewController.errorMessage(Language.I18N.getString("kmlExport.dialog.error.collada2gltf"), result);
 					return;
 				} else if (!Files.isExecutable(collada2gltf)) {
-					String text = Language.I18N.getString("kmlExport.dialog.error.collada2gltf.notExecutable");
-					Object[] args = new Object[]{ collada2gltf.toString() };
-					String result = MessageFormat.format(text, args);
-					viewController.errorMessage(Language.I18N.getString("kmlExport.dialog.error.collada2gltf"), result);
-					return;
+					// grant permission to COLLADA2GLTF binaries
+					log.info("Acquiring permission to execute the COLLADA2GLTF binary");
+
+					// file permissions 755
+					Set<PosixFilePermission> permissions = new HashSet<PosixFilePermission>();
+					permissions.add(PosixFilePermission.OWNER_READ);
+					permissions.add(PosixFilePermission.OWNER_WRITE);
+					permissions.add(PosixFilePermission.OWNER_EXECUTE);
+					permissions.add(PosixFilePermission.GROUP_READ);
+					permissions.add(PosixFilePermission.GROUP_EXECUTE);
+					permissions.add(PosixFilePermission.OTHERS_READ);
+					permissions.add(PosixFilePermission.OTHERS_EXECUTE);
+
+					try {
+						Files.setPosixFilePermissions(Paths.get(config.getProject().getKmlExporter().getPathOfGltfConverter()), permissions);
+					} catch (IOException e) {
+						String text = Language.I18N.getString("kmlExport.dialog.error.collada2gltf.notExecutable");
+						Object[] args = new Object[] { collada2gltf.toString() };
+						String result = MessageFormat.format(text, args);
+						viewController.errorMessage(Language.I18N.getString("kmlExport.dialog.error.collada2gltf"), result);
+						return;
+					}
 				}
 			}
 

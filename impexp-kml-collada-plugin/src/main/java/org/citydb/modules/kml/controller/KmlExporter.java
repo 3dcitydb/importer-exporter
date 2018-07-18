@@ -133,15 +133,12 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.attribute.PosixFilePermission;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.zip.ZipEntry;
@@ -245,26 +242,8 @@ public class KmlExporter implements EventHandler {
 
 			if (!Files.exists(collada2gltf))
 				throw new KmlExportException("Failed to find the COLLADA2glTF tool at the provided path " + collada2gltf + ".");
-			else if (!Files.isExecutable(collada2gltf)) {
-				// grant permission to COLLADA2GLTF binaries
-				log.info("Acquiring permission to execute the COLLADA2GLTF binary");
-
-				// file permissions 755
-				Set<PosixFilePermission> permissions = new HashSet<PosixFilePermission>();
-				permissions.add(PosixFilePermission.OWNER_READ);
-				permissions.add(PosixFilePermission.OWNER_WRITE);
-				permissions.add(PosixFilePermission.OWNER_EXECUTE);
-				permissions.add(PosixFilePermission.GROUP_READ);
-				permissions.add(PosixFilePermission.GROUP_EXECUTE);
-				permissions.add(PosixFilePermission.OTHERS_READ);
-				permissions.add(PosixFilePermission.OTHERS_EXECUTE);
-
-				try {
-					Files.setPosixFilePermissions(Paths.get(config.getProject().getKmlExporter().getPathOfGltfConverter()), permissions);
-				} catch (IOException e) {
-					throw new KmlExportException("Failed to execute the COLLADA2glTF tool at " + collada2gltf + ".");
-				}
-			}
+			else if (!Files.isExecutable(collada2gltf))
+				throw new KmlExportException("Failed to execute the COLLADA2glTF tool at " + collada2gltf + ".");
 		}
 
 		// build query from filter settings
