@@ -78,18 +78,22 @@ import javax.swing.*;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import java.awt.*;
+import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.net.ProxySelector;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.PosixFilePermission;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.stream.Stream;
 
 public class ImpExp {
@@ -472,7 +476,7 @@ public class ImpExp {
 
 		Language.I18N = ResourceBundle.getBundle("org.citydb.config.i18n.language", new Locale(lang.value()));
 		config.getProject().getGlobal().setLanguage(lang);
-
+				
 		// start application
 		if (!shell) {
 			// create main view instance
