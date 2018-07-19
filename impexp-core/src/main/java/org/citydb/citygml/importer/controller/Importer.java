@@ -252,6 +252,8 @@ public class Importer implements EventHandler {
 		if (importerConfig.getXSLTransformation().isEnabled()
 				&& importerConfig.getXSLTransformation().isSetStylesheets()) {
 			try {
+				log.info("Applying XSL transformations on input data.");
+
 				List<String> stylesheets = config.getProject().getImporter().getXSLTransformation().getStylesheets();
 				SAXTransformerFactory factory = (SAXTransformerFactory) TransformerFactory.newInstance();
 				Templates[] templates = new Templates[stylesheets.size()];

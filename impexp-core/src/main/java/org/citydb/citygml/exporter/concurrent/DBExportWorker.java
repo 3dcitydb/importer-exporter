@@ -198,11 +198,9 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 				
 				// update export counter
 				exporter.updateExportCounter(topLevelObject);
-				++exportCounter;
-			} else
-				return;
+			}
 
-			if (exportCounter == 20) {
+			if (++exportCounter == 20) {
 				eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, exportCounter, this));
 				eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.UPDATE, exportCounter, this));
 				exportCounter = 0;

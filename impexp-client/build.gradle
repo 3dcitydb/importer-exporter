@@ -151,7 +151,8 @@ task buildInstaller(dependsOn: installDist, group: 'distribution') {
                         manualDir: 'manual',
                         webMapClientDir: '3d-web-map-client',
                         samplesDir: 'samples',
-                        spreadSheetPluginDir: 'plugin-spreadsheet-generator'
+                        spreadSheetPluginDir: 'plugin-spreadsheet-generator',
+                        adeManagerPluginDir: 'plugin-ade-manager'
                 ])
             }
             filesMatching('**/license.txt') {

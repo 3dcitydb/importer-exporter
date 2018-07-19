@@ -30,6 +30,7 @@ package org.citydb.modules.citygml.exporter.gui.preferences;
 import org.citydb.config.Config;
 import org.citydb.gui.preferences.AbstractPreferences;
 import org.citydb.gui.preferences.DefaultPreferencesEntry;
+import org.citydb.modules.citygml.common.gui.preferences.XSLTransformationPanel;
 
 public class CityGMLExportPreferences extends AbstractPreferences {
 	
@@ -42,6 +43,7 @@ public class CityGMLExportPreferences extends AbstractPreferences {
 		root.addChildEntry(new DefaultPreferencesEntry(new AddressPanel(config)));
 		root.addChildEntry(new DefaultPreferencesEntry(new AppearancePanel(config)));
 		root.addChildEntry(new DefaultPreferencesEntry(new XLinkPanel(config)));
+		root.addChildEntry(new DefaultPreferencesEntry(new XSLTransformationPanel(true, config)));
 		root.addChildEntry(new DefaultPreferencesEntry(new ResourcesPanel(config)));
 	}
 
