@@ -50,6 +50,7 @@ import org.citydb.modules.kml.util.BalloonTemplateHandler;
 import org.citydb.modules.kml.util.CityObject4JSON;
 import org.citydb.modules.kml.util.ExportTracker;
 import org.citydb.query.Query;
+import org.citydb.util.ClientConstants;
 import org.citydb.util.Util;
 import org.citygml4j.util.xml.SAXEventBuffer;
 
@@ -651,17 +652,16 @@ public class KmlExporterManager {
 
 	private void convertColladaToglTF(ColladaBundle colladaBundle, File buildingDirectory, File colladaModelFile, File gltfModelFile, boolean exportGltfV1) {
 		String collada2gltfPath = config.getProject().getKmlExporter().getPathOfGltfConverter();
-		File collada2gltfFile = new File(collada2gltfPath);
+		File collada2gltfFile = new File(ClientConstants.IMPEXP_HOME.resolve(collada2gltfPath).toString());
 		if (collada2gltfFile.exists()) {
 			ProcessBuilder pb = new ProcessBuilder(collada2gltfFile.getAbsolutePath(), "-i", colladaBundle.getGmlId() + ".dae", "-o", gltfModelFile.getAbsolutePath(), "-m", "true", "-v", exportGltfV1 ? "1.0" : "2.0");
 			pb.directory(buildingDirectory);
 			try {
 				Process process = pb.start();
 				process.waitFor();
-			} catch (IOException|InterruptedException e) {
+			} catch (IOException | InterruptedException e) {
 				Logger.getInstance().debug("Unexpected errors occurred while converting collada to glTF for city object '" + colladaBundle.getGmlId() + "' with output path: '" + gltfModelFile.getAbsolutePath() + "'");
-			}
-			finally {
+			} finally {
 				if (config.getProject().getKmlExporter().isNotCreateColladaFiles() && gltfModelFile.exists()) {
 					colladaModelFile.delete();
 				}
