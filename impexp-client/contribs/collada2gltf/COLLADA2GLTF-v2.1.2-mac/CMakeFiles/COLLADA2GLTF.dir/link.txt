@@ -1,2 +1,0 @@
-/usr/bin/ar qc libCOLLADA2GLTF.a  CMakeFiles/COLLADA2GLTF.dir/src/COLLADA2GLTFWriter.cpp.o CMakeFiles/COLLADA2GLTF.dir/src/COLLADA2GLTFExtrasHandler.cpp.o
-/usr/bin/ranlib libCOLLADA2GLTF.a
