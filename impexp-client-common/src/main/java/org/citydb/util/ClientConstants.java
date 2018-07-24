@@ -12,6 +12,7 @@ public class ClientConstants {
     public static final String XSLT_TEMPLATES_DIR = "templates" + File.separator + "XSLTransformations";
     public static final String PLUGINS_DIR = "plugins";
     public static final String ADE_EXTENSIONS_DIR = "ade-extensions";
+    public static final String COLLADA2GLTF_DIR = "contribs" + File.separator + "collada2gltf";
     public static final String LOG_DIR = "log";
     public static final String CONFIG_DIR = "config";
     public static final String PROJECT_SETTINGS_FILE = "project.xml";
