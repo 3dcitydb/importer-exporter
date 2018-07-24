@@ -32,6 +32,9 @@ import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 
@@ -56,6 +59,7 @@ import org.citydb.gui.util.GuiUtil;
 import org.citydb.plugin.extension.view.ViewController;
 
 import net.opengis.kml._2.ViewRefreshModeEnumType;
+import org.citydb.util.ClientConstants;
 
 @SuppressWarnings("serial")
 public class GeneralPanel extends AbstractPreferencesComponent {
@@ -447,11 +451,15 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		JFileChooser chooser = new JFileChooser();
 		chooser.setDialogTitle(title);
 		chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-		
-		if (!gltfConverterBrowseText.getText().trim().isEmpty())
-			chooser.setCurrentDirectory(new File(gltfConverterBrowseText.getText()));
-		else
-			chooser.setCurrentDirectory(new File("contribs" + File.separator + "collada2gltf"));
+
+		if (!gltfConverterBrowseText.getText().trim().isEmpty()) {
+			Path path = Paths.get(gltfConverterBrowseText.getText());
+			if (!path.isAbsolute())
+				path = ClientConstants.IMPEXP_HOME.resolve(path);
+
+			chooser.setCurrentDirectory(path.toFile());
+		} else
+			chooser.setCurrentDirectory(ClientConstants.IMPEXP_HOME.resolve(ClientConstants.COLLADA2GLTF_DIR).toFile());
 		
 		int result = chooser.showOpenDialog(getTopLevelAncestor());
 		if (result == JFileChooser.CANCEL_OPTION) 
