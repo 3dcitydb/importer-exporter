@@ -147,7 +147,7 @@ public class KmlSplitter {
 			}
 
 			if (query.isSetTiling())
-				Logger.getInstance().debug(objectCount + " candidate objects found for Tile_" + activeTile.getX() + "_" + activeTile.getX() + ".");
+				Logger.getInstance().debug(objectCount + " candidate objects found for Tile_" + activeTile.getX() + "_" + activeTile.getY() + ".");
 		} finally {
 			if (rs != null) {
 				try { rs.close(); }	catch (SQLException sqlEx) { throw sqlEx; }
