@@ -1621,7 +1621,7 @@ public class Queries {
 			break;
 		default:
 			query.append("SELECT lu.lod").append(lodToExportFrom).append("_multi_surface_id, '4' as objectclass_id ")
-			.append("FROM ").append(schema).append(".LAND_USE lu ON  ")
+			.append("FROM ").append(schema).append(".LAND_USE lu ")
 			.append("WHERE lu.id = ? ")
 			.append("AND lu.lod").append(lodToExportFrom).append("_multi_surface_id is not null");
 		}
