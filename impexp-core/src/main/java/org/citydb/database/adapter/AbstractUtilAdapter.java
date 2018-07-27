@@ -81,6 +81,7 @@ public abstract class AbstractUtilAdapter {
     protected abstract int get2DSrid(DatabaseSrs srs, Connection connection) throws SQLException;
     protected abstract IndexStatusInfo manageIndexes(String operation, IndexType type, String schema, Connection connection) throws SQLException;
     protected abstract boolean updateTableStats(IndexType type, String schema, Connection connection) throws SQLException;
+    protected abstract boolean containsGlobalAppearances(Connection connection) throws SQLException;
     public abstract DatabaseSrs getWGS843D();
 
     public DatabaseMetaData getDatabaseInfo() throws SQLException {
@@ -342,20 +343,14 @@ public abstract class AbstractUtilAdapter {
         }
     }
 
-    public int getNumGlobalAppearances(Workspace workspace) throws SQLException {
+    public boolean containsGlobalAppearances(Workspace workspace) throws SQLException {
         try (Connection conn = databaseAdapter.connectionPool.getConnection()) {
             if (databaseAdapter.hasVersioningSupport())
                 databaseAdapter.getWorkspaceManager().gotoWorkspace(conn, workspace);
 
-            try (Statement stmt = conn.createStatement();
-                 ResultSet rs = stmt.executeQuery("select count(id) from " +
-                         databaseAdapter.getConnectionDetails().getSchema() +
-                         ".appearance where cityobject_id is null")) {
-                if (rs.next())
-                    return rs.getInt(1);
-                else
-                    throw new SQLException("Failed to discover number of global appearances.");
-            }
+            return containsGlobalAppearances(conn);
+        } catch (SQLException e) {
+            throw new SQLException("Failed to discover number of global appearances.", e);
         }
     }
 
