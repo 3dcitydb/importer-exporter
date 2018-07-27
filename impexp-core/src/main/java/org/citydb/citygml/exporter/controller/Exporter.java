@@ -210,7 +210,7 @@ public class Exporter implements EventHandler {
 		// check whether database contains global appearances and set internal flag
 		try {
 			config.getInternal().setExportGlobalAppearances(config.getProject().getExporter().getAppearances().isSetExportAppearance() && 
-					databaseAdapter.getUtil().getNumGlobalAppearances(workspace) > 0);
+					databaseAdapter.getUtil().containsGlobalAppearances(workspace));
 		} catch (SQLException e) {
 			throw new CityGMLExportException("Database error while querying the number of global appearances.", e);
 		}

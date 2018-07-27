@@ -431,6 +431,16 @@ public class UtilAdapter extends AbstractUtilAdapter {
         return WGS843D_SRS;
     }
 
+    @Override
+    protected boolean containsGlobalAppearances(Connection connection) throws SQLException {
+        try (Statement stmt = connection.createStatement();
+             ResultSet rs = stmt.executeQuery("select 1 from "
+                     + databaseAdapter.getConnectionDetails().getSchema() + ".appearance" +
+                     " where cityobject_id is null and rownum = 1")) {
+            return rs.next();
+        }
+    }
+
     private DatabaseSrsType getSrsType(String srsType) {
         if ("PROJECTED".equals(srsType))
             return DatabaseSrsType.PROJECTED;
