@@ -94,6 +94,7 @@ public class DBLandUse extends AbstractFeatureExporter<LandUse> {
 		
 		cityObjectExporter = exporter.getExporter(DBCityObject.class);
 		geometryExporter = exporter.getExporter(DBSurfaceGeometry.class);
+		valueSplitter = exporter.getAttributeValueSplitter();
 	}
 
 	@Override
