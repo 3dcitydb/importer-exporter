@@ -35,11 +35,15 @@ public class Config {
 	private Project project;
 	private Gui gui;
 	private Internal internal;
+
+	public Config(Project project, Gui gui, Internal internal) {
+		this.project = project;
+		this.gui = gui;
+		this.internal = internal;
+	}
 	
 	public Config() {
-		project = new Project();
-		gui = new Gui();
-		internal = new Internal();
+		this(new Project(), new Gui(), new Internal());
 	}
 
 	public Project getProject() {

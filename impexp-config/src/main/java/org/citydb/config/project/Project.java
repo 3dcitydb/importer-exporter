@@ -27,14 +27,6 @@
  */
 package org.citydb.config.project;
 
-import java.util.HashMap;
-
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlTransient;
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-
 import org.citydb.config.ConfigNamespaceFilter;
 import org.citydb.config.project.database.Database;
 import org.citydb.config.project.exporter.Exporter;
@@ -42,6 +34,13 @@ import org.citydb.config.project.global.Global;
 import org.citydb.config.project.importer.Importer;
 import org.citydb.config.project.kmlExporter.KmlExporter;
 import org.citydb.config.project.plugin.PluginConfig;
+
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
+import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import java.util.HashMap;
 
 @XmlRootElement
 @XmlType(name="ProjectType", propOrder={
@@ -67,13 +66,17 @@ public class Project {
 	@XmlTransient
 	private ConfigNamespaceFilter namespaceFilter;
 
+	public Project(Database database, Importer importer, Exporter exporter, KmlExporter kmlExporter, Global global) {
+		this.database = database;
+		this.importer = importer;
+		this.exporter = exporter;
+		this.kmlExporter = kmlExporter;
+		this.global = global;
+		extensions = new HashMap<>();
+	}
+
 	public Project() {
-		database = new Database();
-		importer = new Importer();
-		exporter = new Exporter();
-		kmlExporter = new KmlExporter();
-		global = new Global();
-		extensions = new HashMap<Class<? extends PluginConfig>, PluginConfig>();
+		this(new Database(), new Importer(), new Exporter(), new KmlExporter(), new Global());
 	}
 
 	public Database getDatabase() {
