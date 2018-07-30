@@ -111,23 +111,23 @@
             <file src="images/impexp.png" targetdir="$INSTALL_PATH/@startScriptsDir@" os="unix" override="true"/>
             <file src="images/uninstaller.png" targetdir="$INSTALL_PATH/uninstaller" os="unix" override="true"/>
             <fileset dir="@installDir@/@templatesDir@" targetdir="$INSTALL_PATH/@templatesDir@" override="true"/>
-            <fileset dir="@installDir@/@contribsDir@/collada2gltf/windows_v1.0_x64_draft"
-                targetdir="$INSTALL_PATH/@contribsDir@/collada2gltf/windows_v1.0_x64_draft" os="windows" override="true"/>
-            <fileset dir="@installDir@/@contribsDir@/collada2gltf/linux_v1.0_x64_draft"
-                targetdir="$INSTALL_PATH/@contribsDir@/collada2gltf/linux_v1.0_x64_draft" os="unix" condition="!izpack.macinstall" override="true"/>
-            <fileset dir="@installDir@/@contribsDir@/collada2gltf/mac_v1.0_x64_draft"
-                targetdir="$INSTALL_PATH/@contribsDir@/collada2gltf/mac_v1.0_x64_draft" os="mac" override="true"/>
+            <fileset dir="@installDir@/@contribsDir@/collada2gltf/COLLADA2GLTF-v2.1.3-windows-Release-x64"
+                targetdir="$INSTALL_PATH/@contribsDir@/collada2gltf/COLLADA2GLTF-v2.1.3-windows-Release-x64" os="windows" override="true"/>
+            <fileset dir="@installDir@/@contribsDir@/collada2gltf/COLLADA2GLTF-v2.1.3-linux"
+                targetdir="$INSTALL_PATH/@contribsDir@/collada2gltf/COLLADA2GLTF-v2.1.3-linux" os="unix" condition="!izpack.macinstall" override="true"/>
+            <fileset dir="@installDir@/@contribsDir@/collada2gltf/COLLADA2GLTF-v2.1.3-osx"
+                targetdir="$INSTALL_PATH/@contribsDir@/collada2gltf/COLLADA2GLTF-v2.1.3-osx" os="mac" override="true"/>
             <!-- the following filesets are just to create empty folders -->
             <fileset dir="@installDir@/@pluginsDir@" targetdir="$INSTALL_PATH/@pluginsDir@" excludes="**/*"/>
             <fileset dir="@installDir@/@adeExtensionsDir@" targetdir="$INSTALL_PATH/@adeExtensionsDir@" excludes="**/*"/>
             <executable targetfile="$INSTALL_PATH/@startScriptsDir@/3DCityDB-Importer-Exporter" stage="never">
                 <os family="unix"/>
             </executable>
-            <executable targetfile="$INSTALL_PATH/@contribsDir@/collada2gltf/linux_v1.0_x64_draft/collada2gltf" condition="!izpack.macinstall"
+            <executable targetfile="$INSTALL_PATH/@contribsDir@/collada2gltf/COLLADA2GLTF-v2.1.3-linux/COLLADA2GLTF-bin" condition="!izpack.macinstall"
                 stage="never">
                 <os family="unix"/>
             </executable>
-            <executable targetfile="$INSTALL_PATH/@contribsDir@/collada2gltf/mac_v1.0_x64_draft/collada2gltf" stage="never">
+            <executable targetfile="$INSTALL_PATH/@contribsDir@/collada2gltf/COLLADA2GLTF-v2.1.3-osx/COLLADA2GLTF-bin" stage="never">
                 <os family="mac"/>
             </executable>
         </pack>
