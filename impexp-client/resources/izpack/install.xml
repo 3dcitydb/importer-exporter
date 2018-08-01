@@ -58,7 +58,7 @@
         <variable name="ApplicationShortcutPath" value="shortcuts"/>
     </variables>
 
-    <guiprefs width="650" height="500" resizable="yes">
+    <guiprefs width="680" height="500" resizable="yes">
         <modifier key="layoutAnchor" value="NORTH"/>
         <modifier key="labelGap" value="2"/>
         <modifier key="paragraphYGap" value="10"/>
