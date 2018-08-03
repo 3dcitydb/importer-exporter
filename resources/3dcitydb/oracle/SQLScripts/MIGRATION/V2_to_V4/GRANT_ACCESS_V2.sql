@@ -1,7 +1,7 @@
 -- 3D City Database - The Open Source CityGML Database
 -- http://www.3dcitydb.org/
 -- 
--- Copyright 2013 - 2017
+-- Copyright 2013 - 2018
 -- Chair of Geoinformatics
 -- Technical University of Munich, Germany
 -- https://www.gis.bgu.tum.de/
@@ -25,53 +25,18 @@
 -- limitations under the License.
 --
 
-@@TABLES.sql
+SET SERVEROUTPUT ON
+SET FEEDBACK ON
+SET VER OFF
 
-CREATE TABLE RASTER_RELIEF 
-(
-  ID NUMBER NOT NULL 
-, OBJECTCLASS_ID NUMBER NOT NULL
-, URI VARCHAR2(4000) 
-, COVERAGE_ID NUMBER 
-, CONSTRAINT RASTER_RELIEF_PK PRIMARY KEY 
-  (
-    ID 
-  )
-  ENABLE 
-);
-	
-CREATE TABLE GRID_COVERAGE
-(
-  ID NUMBER NOT NULL 
-, RASTERPROPERTY MDSYS.SDO_GEORASTER NOT NULL 
-, CONSTRAINT GRID_COVERAGE_PK PRIMARY KEY 
-  (
-    ID 
-  )
-  ENABLE 
-);
-	
-CREATE TABLE GRID_COVERAGE_RDT 
-(
-  RASTERID NUMBER 
-, PYRAMIDLEVEL NUMBER 
-, BANDBLOCKNUMBER NUMBER 
-, ROWBLOCKNUMBER NUMBER 
-, COLUMNBLOCKNUMBER NUMBER 
-, BLOCKMBR MDSYS.SDO_GEOMETRY 
-, RASTERBLOCK BLOB 
-, CONSTRAINT GRID_COVERAGE_RDT_PK PRIMARY KEY 
-  (
-	RASTERID 
-  , PYRAMIDLEVEL 
-  , BANDBLOCKNUMBER 
-  , ROWBLOCKNUMBER 
-  , COLUMNBLOCKNUMBER 
-  )
-  ENABLE 
-) 
-LOB (RASTERBLOCK) STORE AS SECUREFILE 
-( 
-  ENABLE STORAGE IN ROW 
-  CACHE  
-);
+DEFINE V4USER=&1;
+
+DECLARE
+    schema_name_user VARCHAR2(30) := upper('&V4USER');
+BEGIN
+	FOR R IN (SELECT table_name FROM user_tables) LOOP
+		EXECUTE IMMEDIATE 'grant select on '||R.table_name||' to "'||schema_name_user||'"';
+		dbms_output.put_line('grant select on '||R.table_name||' to "'||schema_name_user||'"');
+	END LOOP;
+END;
+/
