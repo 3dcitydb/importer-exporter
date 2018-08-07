@@ -32,6 +32,7 @@ SET client_min_messages TO WARNING;
 \set SCHEMA_NAME :schema_name
 \set TMP_DELETE_FILE :tmp_delete_file
 \set TMP_ENVELOPE_FILE :tmp_envelope_file
+\set TMP_STAT_FILE :tmp_stat_file
 
 \echo 'Creating 3DCityDB schema "':SCHEMA_NAME'" ...'
 
@@ -63,6 +64,7 @@ SELECT version as citydb_version from citydb_pkg.citydb_version();
 \i ../../SCHEMA/OBJECTCLASS/OBJCLASS.sql
 \i :TMP_ENVELOPE_FILE
 \i :TMP_DELETE_FILE
+\i :TMP_STAT_FILE
 
 \echo
 \echo 'Created 3DCityDB schema "':SCHEMA_NAME'".'

@@ -155,11 +155,10 @@ public class UtilAdapter extends AbstractUtilAdapter {
     }
 
     @Override
-    protected String[] createDatabaseReport(String schema, Connection connection) throws SQLException {
+    protected String[] createDatabaseReport(Connection connection) throws SQLException {
         try {
-            interruptableCallableStatement = connection.prepareCall("{? = call " + databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_stat.table_contents") + "(?)}");
+            interruptableCallableStatement = connection.prepareCall("{? = call " + databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_stat.table_contents") + "}");
             interruptableCallableStatement.registerOutParameter(1, OracleTypes.ARRAY, "STRARRAY");
-            interruptableCallableStatement.setString(2, schema);
             interruptableCallableStatement.executeUpdate();
 
             Array result = interruptableCallableStatement.getArray(1);

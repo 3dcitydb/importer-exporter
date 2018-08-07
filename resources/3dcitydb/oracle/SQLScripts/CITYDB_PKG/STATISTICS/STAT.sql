@@ -32,8 +32,8 @@
 ******************************************************************/
 CREATE OR REPLACE PACKAGE citydb_stat
 AS
-  FUNCTION table_content(table_name VARCHAR2, schema_name VARCHAR2 := USER) RETURN NUMBER;
-  FUNCTION table_contents(schema_name VARCHAR2 := USER) RETURN STRARRAY;
+  FUNCTION table_content(table_name VARCHAR2) RETURN NUMBER;
+  FUNCTION table_contents RETURN STRARRAY;
 END citydb_stat;
 /
 
@@ -47,13 +47,12 @@ AS
   * @RETURN INTEGER number of entries in table
   ******************************************************************/
   FUNCTION table_content(
-    table_name VARCHAR2,
-    schema_name VARCHAR2 := USER
+    table_name VARCHAR2
   ) RETURN NUMBER
   IS
     cnt NUMBER;  
   BEGIN
-    EXECUTE IMMEDIATE 'SELECT count(*) FROM ' || schema_name || '.' || table_name INTO cnt;
+    EXECUTE IMMEDIATE 'SELECT count(*) FROM ' || table_name INTO cnt;
     RETURN cnt;
   END;
 
@@ -63,13 +62,12 @@ AS
   * @param schema_name name of schema
   * @RETURN TEXT[] database report as text array
   ******************************************************************/
-  FUNCTION table_contents(schema_name VARCHAR2 := USER) RETURN STRARRAY
+  FUNCTION table_contents RETURN STRARRAY
   IS
     report_header STRARRAY := STRARRAY();
     report STRARRAY := STRARRAY();
     ws VARCHAR2(30);
     reportDate DATE;
-    owner_name VARCHAR2(20);
   BEGIN
     SELECT SYSDATE INTO reportDate FROM DUAL;  
     report_header.extend; report_header(report_header.count) := ('Database Report on 3D City Model - Report date: ' || TO_CHAR(reportDate, 'DD.MM.YYYY HH24:MI:SS'));
@@ -80,8 +78,6 @@ AS
     report_header.extend; report_header(report_header.count) := ('Current workspace: ' || ws);
     report_header.extend; report_header(report_header.count) := '';  
 
-    owner_name := upper(schema_name);
-
     SELECT CAST(COLLECT(tab.t) AS STRARRAY) INTO report FROM (
       SELECT CASE WHEN at.table_name LIKE '%\_LT' ESCAPE '\' THEN
         (SELECT '#' || upper(table_name) ||
@@ -90,8 +86,8 @@ AS
                  WHEN length(table_name) > 14 AND length(table_name) < 23 THEN '\t\t'
                  WHEN length(table_name) > 22 THEN '\t' 
             END)
-            || citydb_stat.table_content(view_name, owner_name) FROM all_views 
-            WHERE owner = owner_name AND view_name = substr(at.table_name, 1, length(at.table_name)-3))
+            || citydb_stat.table_content(view_name) FROM user_views
+            WHERE view_name = substr(at.table_name, 1, length(at.table_name)-3))
       ELSE
         (SELECT '#' || upper(table_name) ||
            (CASE WHEN length(table_name) < 7 THEN '\t\t\t\t'
@@ -99,12 +95,11 @@ AS
                  WHEN length(table_name) > 14 AND length(table_name) < 23 THEN '\t\t'
                  WHEN length(table_name) > 22 THEN '\t' 
             END)
-            || citydb_stat.table_content(table_name, owner_name) FROM all_tables
-            WHERE owner = owner_name AND table_name = at.table_name) 
+            || citydb_stat.table_content(table_name) FROM user_tables
+            WHERE table_name = at.table_name)
       END AS t
-    FROM all_tables at
-      WHERE owner = owner_name
-        AND at.table_name NOT IN ('DATABASE_SRS', 'OBJECTCLASS', 'INDEX_TABLE', 'ADE', 'SCHEMA', 'SCHEMA_TO_OBJECTCLASS', 'SCHEMA_REFERENCING', 'AGGREGATION_INFO')
+    FROM user_tables at
+      WHERE at.table_name NOT IN ('DATABASE_SRS', 'OBJECTCLASS', 'INDEX_TABLE', 'ADE', 'SCHEMA', 'SCHEMA_TO_OBJECTCLASS', 'SCHEMA_REFERENCING', 'AGGREGATION_INFO')
         AND at.table_name NOT LIKE '%\_AUX' ESCAPE '\'
         AND at.table_name NOT LIKE '%TMP\_%' ESCAPE '\'
         AND at.table_name NOT LIKE '%MDRT%'

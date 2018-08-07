@@ -73,7 +73,7 @@ public abstract class AbstractUtilAdapter {
     protected abstract void getDatabaseMetaData(DatabaseMetaData metaData, Connection connection) throws SQLException;
     protected abstract void getSrsInfo(DatabaseSrs srs, Connection connection) throws SQLException;
     protected abstract void changeSrs(DatabaseSrs srs, boolean doTransform, String schema, Connection connection) throws SQLException;
-    protected abstract String[] createDatabaseReport(String schema, Connection connection) throws SQLException;
+    protected abstract String[] createDatabaseReport(Connection connection) throws SQLException;
     protected abstract BoundingBox calcBoundingBox(String schema, List<Integer> classIds, Connection connection) throws SQLException;
     protected abstract BoundingBox createBoundingBoxes(List<Integer> classIds, boolean onlyIfNull, Connection connection) throws SQLException;
     @Deprecated protected abstract BoundingBox transformBoundingBox(BoundingBox bbox, DatabaseSrs sourceSrs, DatabaseSrs targetSrs, Connection connection) throws SQLException;
@@ -161,13 +161,11 @@ public abstract class AbstractUtilAdapter {
     }
 
     public String[] createDatabaseReport(Workspace workspace) throws SQLException {
-        String schema = databaseAdapter.getConnectionDetails().getSchema();
-
         try (Connection conn = databaseAdapter.connectionPool.getConnection()) {
             if (databaseAdapter.hasVersioningSupport())
                 databaseAdapter.getWorkspaceManager().gotoWorkspace(conn, workspace);
 
-            return createDatabaseReport(schema, conn);
+            return createDatabaseReport(conn);
         }
     }
 
