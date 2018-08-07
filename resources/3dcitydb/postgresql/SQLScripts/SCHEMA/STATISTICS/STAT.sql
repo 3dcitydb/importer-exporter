@@ -29,8 +29,8 @@
 * CONTENT
 *
 * FUNCTIONS:
-*   table_content(table_name TEXT, schema_name TEXT DEFAULT 'citydb') RETURNS INTEGER
-*   table_contents(schema_name TEXT DEFAULT 'citydb') RETURNS TEXT[]
+*   table_content(table_name TEXT) RETURNS INTEGER
+*   table_contents() RETURNS TEXT[]
 ******************************************************************/
 
 /*****************************************************************
