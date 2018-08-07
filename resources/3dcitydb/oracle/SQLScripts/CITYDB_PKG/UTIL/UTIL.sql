@@ -92,7 +92,6 @@ AS
   FUNCTION versioning_db(schema_name VARCHAR2 := USER) RETURN VARCHAR2;
   PROCEDURE db_info(schema_name VARCHAR2 := USER, schema_srid OUT INTEGER, schema_gml_srs_name OUT VARCHAR2, versioning OUT VARCHAR2);
   FUNCTION db_metadata(schema_name VARCHAR2 := USER) RETURN DB_INFO_TABLE;
-  FUNCTION get_short_name(table_name VARCHAR2, schema_name VARCHAR2 := USER) RETURN VARCHAR2;
   FUNCTION split(list VARCHAR2, delim VARCHAR2 := ',') RETURN STRARRAY;
   FUNCTION min(a NUMBER, b NUMBER) RETURN NUMBER;
   FUNCTION get_seq_values(seq_name VARCHAR2, seq_count NUMBER) RETURN ID_ARRAY;
@@ -102,7 +101,7 @@ AS
   FUNCTION construct_solid(geom_root_id NUMBER) RETURN SDO_GEOMETRY;
   FUNCTION to_2d(geom MDSYS.SDO_GEOMETRY, srid NUMBER) RETURN MDSYS.SDO_GEOMETRY;
   FUNCTION sdo2geojson3d(p_geometry in sdo_geometry, p_decimal_places in pls_integer default 2, p_compress_tags in pls_integer default 0, p_relative2mbr in pls_integer default 0) RETURN CLOB DETERMINISTIC;
-  FUNCTION ST_Affine(p_geometry IN mdsys.sdo_geometry, p_a IN NUMBER, p_b IN NUMBER, p_c IN NUMBER, p_d IN NUMBER, p_e IN NUMBER, p_f IN NUMBER, p_g IN NUMBER, p_h IN NUMBER, p_i IN NUMBER, p_xoff IN NUMBER, p_yoff IN NUMBER, p_zoff IN NUMBER) RETURN mdsys.sdo_geometry deterministic;
+  FUNCTION ST_Affine(p_geometry IN mdsys.sdo_geometry, p_a IN NUMBER, p_b IN NUMBER, p_c IN NUMBER, p_d IN NUMBER, p_e IN NUMBER, p_f IN NUMBER, p_g IN NUMBER, p_h IN NUMBER, p_i IN NUMBER, p_xoff IN NUMBER, p_yoff IN NUMBER, p_zoff IN NUMBER) RETURN mdsys.sdo_geometry DETERMINISTIC;
   PROCEDURE drop_tmp_tables(schema_name VARCHAR2 := USER);
 END citydb_util;
 /
@@ -279,24 +278,6 @@ AS
     info_tmp.versioning := versioning_db(schema_name);
     info_ret(info_ret.count) := info_tmp;
     RETURN info_ret;
-  END;
-
-  /*****************************************************************
-  * get_short_name
-  *
-  * @param table_name name of table that needs to be shortened
-  * @param schema_name name of schema to query short name
-  *
-  * @RETURN INTEGER SET list of sequence values from given sequence
-  ******************************************************************/
-  FUNCTION get_short_name(
-    table_name VARCHAR2,
-    schema_name VARCHAR2 := USER
-    ) RETURN VARCHAR2
-  IS
-  BEGIN
-    -- TODO: query a table that stores the short version of a table (maybe objectclass?)
-    RETURN substr(lower(table_name), 1, 12);
   END;
 
   /*****************************************************************
