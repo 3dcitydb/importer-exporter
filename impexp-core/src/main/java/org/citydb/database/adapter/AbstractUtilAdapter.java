@@ -69,8 +69,8 @@ public abstract class AbstractUtilAdapter {
         srsDefMap = new ConcurrentHashMap<>();
     }
 
-    protected abstract void getCityDBVersion(DatabaseMetaData metaData, Connection connection) throws SQLException;
-    protected abstract void getDatabaseMetaData(DatabaseMetaData metaData, Connection connection) throws SQLException;
+    protected abstract void getCityDBVersion(DatabaseMetaData metaData, String schema, Connection connection) throws SQLException;
+    protected abstract void getDatabaseMetaData(DatabaseMetaData metaData, String schema, Connection connection) throws SQLException;
     protected abstract void getSrsInfo(DatabaseSrs srs, Connection connection) throws SQLException;
     protected abstract void changeSrs(DatabaseSrs srs, boolean doTransform, String schema, Connection connection) throws SQLException;
     protected abstract String[] createDatabaseReport(String schema, Connection connection) throws SQLException;
@@ -84,15 +84,15 @@ public abstract class AbstractUtilAdapter {
     protected abstract boolean containsGlobalAppearances(Connection connection) throws SQLException;
     public abstract DatabaseSrs getWGS843D();
 
-    public DatabaseMetaData getDatabaseInfo() throws SQLException {
+    public DatabaseMetaData getDatabaseInfo(String schema) throws SQLException {
         try (Connection conn = databaseAdapter.connectionPool.getConnection()) {
             // get vendor specific meta data
             java.sql.DatabaseMetaData vendorMetaData = conn.getMetaData();
 
             // get 3dcitydb specific meta data
             DatabaseMetaData metaData = new DatabaseMetaData(databaseAdapter.getConnectionDetails());
-            getCityDBVersion(metaData, conn);
-            getDatabaseMetaData(metaData, conn);
+            getCityDBVersion(metaData, schema, conn);
+            getDatabaseMetaData(metaData, schema, conn);
             metaData.setDatabaseProductName(vendorMetaData.getDatabaseProductName());
             metaData.setDatabaseProductVersion(vendorMetaData.getDatabaseProductVersion());
             metaData.setDatabaseMajorVersion(vendorMetaData.getDatabaseMajorVersion());

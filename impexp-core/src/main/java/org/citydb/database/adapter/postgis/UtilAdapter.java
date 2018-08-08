@@ -61,7 +61,7 @@ public class UtilAdapter extends AbstractUtilAdapter {
     }
 
     @Override
-    protected void getCityDBVersion(DatabaseMetaData metaData, Connection connection) throws SQLException {
+    protected void getCityDBVersion(DatabaseMetaData metaData, String schema, Connection connection) throws SQLException {
         try (Statement statement = connection.createStatement();
              ResultSet rs = statement.executeQuery("select * from " +
                      databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_util.citydb_version") + "()")) {
@@ -78,7 +78,7 @@ public class UtilAdapter extends AbstractUtilAdapter {
     }
 
     @Override
-    protected void getDatabaseMetaData(DatabaseMetaData metaData, Connection connection) throws SQLException {
+    protected void getDatabaseMetaData(DatabaseMetaData metaData, String schema, Connection connection) throws SQLException {
         StringBuilder query = new StringBuilder("select * from ").append(databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_util.db_metadata"));
         boolean requiresSchema = metaData.getCityDBVersion().compareTo(4, 0, 0) < 0;
         query.append(requiresSchema ? "()" : "(?)");

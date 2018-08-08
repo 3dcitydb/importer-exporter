@@ -33,7 +33,7 @@ public class SchemaManagerAdapter extends AbstractSchemaManagerAdapter {
 		if (schema == null)
 			throw new IllegalArgumentException("Schema name may not be null.");
 
-		schema = schema.trim();
+		schema = formatSchema(schema);
 		if (!schema.equals(defaultSchema) && (schema.length() == 0 || defaultSchema.equals(schema)))
 			schema = defaultSchema;
 
@@ -60,6 +60,11 @@ public class SchemaManagerAdapter extends AbstractSchemaManagerAdapter {
 
 			return schemas;
 		}
+	}
+
+	@Override
+	public String formatSchema(String schema) {
+		return schema != null ? schema.trim() : null;
 	}
 
 }

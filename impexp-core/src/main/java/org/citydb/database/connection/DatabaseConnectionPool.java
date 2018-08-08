@@ -149,13 +149,14 @@ public class DatabaseConnectionPool {
 
 			// check database schema
 			if (connectionDetails.isSetSchema()) {
+				connectionDetails.setSchema(databaseAdapter.getSchemaManager().formatSchema(connectionDetails.getSchema()));
 				if (!databaseAdapter.getSchemaManager().existsSchema(connectionDetails.getSchema()))
 					throw new SQLException("The database schema '" + connectionDetails.getSchema() + "' does not exist.");
 			} else
 				connectionDetails.setSchema(databaseAdapter.getSchemaManager().getDefaultSchema());
 			
 			// retrieve connection metadata
-			databaseAdapter.setConnectionMetaData(databaseAdapter.getUtil().getDatabaseInfo());
+			databaseAdapter.setConnectionMetaData(databaseAdapter.getUtil().getDatabaseInfo(connectionDetails.getSchema()));
 
 			// check for supported database version
 			List<DatabaseConnectionWarning> warnings = versionChecker.checkVersionSupport(databaseAdapter);

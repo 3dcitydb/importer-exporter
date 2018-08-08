@@ -352,7 +352,7 @@ public class SrsOperation extends DatabaseOperationView {
 
 				// change database SRS
 				if (changeSrid) {
-					DatabaseMetaData metaData = dbConnectionPool.getActiveDatabaseAdapter().getUtil().getDatabaseInfo();
+					DatabaseMetaData metaData = dbConnectionPool.getActiveDatabaseAdapter().getUtil().getDatabaseInfo(schema);
 					dbSrs.setSrid(metaData.getReferenceSystem().getSrid());
 					dbSrs.setGMLSrsName(metaData.getReferenceSystem().getGMLSrsName());
 					dbSrs.setDatabaseSrsName(metaData.getReferenceSystem().getDatabaseSrsName());

@@ -63,9 +63,9 @@ public class UtilAdapter extends AbstractUtilAdapter {
     }
 
     @Override
-    protected void getCityDBVersion(DatabaseMetaData metaData, Connection connection) throws SQLException {
+    protected void getCityDBVersion(DatabaseMetaData metaData, String schema, Connection connection) throws SQLException {
         try (Statement statement = connection.createStatement();
-             ResultSet rs = statement.executeQuery("select * from table(" +
+             ResultSet rs = statement.executeQuery("select * from table(" + schema + "." +
                      databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_util.citydb_version") + ")")) {
             if (rs.next()) {
                 String productVersion = rs.getString("VERSION");
@@ -80,8 +80,9 @@ public class UtilAdapter extends AbstractUtilAdapter {
     }
     
 	@Override
-	protected void getDatabaseMetaData(DatabaseMetaData metaData, Connection connection) throws SQLException {
-        StringBuilder query = new StringBuilder("select * from table(").append(databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_util.db_metadata"));
+	protected void getDatabaseMetaData(DatabaseMetaData metaData, String schema, Connection connection) throws SQLException {
+        StringBuilder query = new StringBuilder("select * from table(").append(schema).append(".")
+                .append(databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_util.db_metadata"));
         boolean requiresSchema = metaData.getCityDBVersion().compareTo(4, 0, 0) < 0;
         query.append(requiresSchema ? "())" : "(?))");
 
@@ -158,7 +159,7 @@ public class UtilAdapter extends AbstractUtilAdapter {
     protected String[] createDatabaseReport(String schema, Connection connection) throws SQLException {
         try {
             interruptableCallableStatement = connection.prepareCall("{? = call " + databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_stat.table_contents") + "(?)}");
-            interruptableCallableStatement.registerOutParameter(1, OracleTypes.ARRAY, "STRARRAY");
+            interruptableCallableStatement.registerOutParameter(1, OracleTypes.ARRAY, schema + ".STRARRAY");
             interruptableCallableStatement.setString(2, schema);
             interruptableCallableStatement.executeUpdate();
 
@@ -182,7 +183,7 @@ public class UtilAdapter extends AbstractUtilAdapter {
     @Override
     protected BoundingBox calcBoundingBox(String schema, List<Integer> objectClassIds, Connection connection) throws SQLException {
         StringBuilder query = new StringBuilder()
-                .append("select sdo_aggr_mbr(citydb_util.to_2d(ENVELOPE, (select srid from ")
+                .append("select sdo_aggr_mbr(").append(schema).append(".citydb_util.to_2d(ENVELOPE, (select srid from ")
                 .append(schema).append(".database_srs))) from ").append(schema)
                 .append(".CITYOBJECT where ENVELOPE is not NULL");
 
@@ -289,7 +290,7 @@ public class UtilAdapter extends AbstractUtilAdapter {
         try {
             String call = "{? = call " + databaseAdapter.getSQLAdapter().resolveDatabaseOperationName(operation) + "(?)}";
             interruptableCallableStatement = connection.prepareCall(call);
-            interruptableCallableStatement.registerOutParameter(1, OracleTypes.ARRAY, "STRARRAY");
+            interruptableCallableStatement.registerOutParameter(1, OracleTypes.ARRAY, schema + ".STRARRAY");
             interruptableCallableStatement.setString(2, schema);
             interruptableCallableStatement.executeUpdate();
 

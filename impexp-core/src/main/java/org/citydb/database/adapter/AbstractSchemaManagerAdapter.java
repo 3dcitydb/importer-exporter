@@ -21,6 +21,7 @@ public abstract class AbstractSchemaManagerAdapter {
 	public abstract boolean equalsDefaultSchema(String schema);
 	public abstract boolean existsSchema(Connection connection, String schema);
 	public abstract List<String> fetchSchemasFromDatabase(Connection connection) throws SQLException;
+	public abstract String formatSchema(String schema);
 
 	public boolean existsSchema(String schema) {
 		return existsSchema(schema, false);

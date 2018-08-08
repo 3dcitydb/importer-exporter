@@ -237,7 +237,8 @@ public class SQLAdapter extends AbstractSQLAdapter {
     @Override
     public Function getAggregateExtentFunction(Column envelope) {
         return new Function("sdo_aggr_mbr",
-                new Function("citydb_util.to_2d", envelope, new IntegerLiteral(databaseAdapter.getConnectionMetaData().getReferenceSystem().getSrid())));
+                new Function(databaseAdapter.getConnectionDetails().getSchema() + ".citydb_util.to_2d",
+                        envelope, new IntegerLiteral(databaseAdapter.getConnectionMetaData().getReferenceSystem().getSrid())));
     }
 
 }

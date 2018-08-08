@@ -19,7 +19,7 @@ public class SchemaManagerAdapter extends AbstractSchemaManagerAdapter {
 	
 	@Override
 	public String getDefaultSchema() {
-		return databaseAdapter.getConnectionDetails().getUser();
+		return formatSchema(databaseAdapter.getConnectionDetails().getUser());
 	}
 	
 	@Override
@@ -33,11 +33,11 @@ public class SchemaManagerAdapter extends AbstractSchemaManagerAdapter {
 			throw new IllegalArgumentException("Schema name may not be null.");
 
 		String defaultSchema = getDefaultSchema();
-		schema = schema.trim();
+		schema = formatSchema(schema);
 		if (!schema.equals(defaultSchema) && (schema.length() == 0 || defaultSchema.equalsIgnoreCase(schema)))
 			schema = defaultSchema;
 		
-		try (PreparedStatement stmt = connection.prepareStatement("select count(*) from all_users where username = upper(?)")) {
+		try (PreparedStatement stmt = connection.prepareStatement("select count(*) from all_users where username = ?")) {
 			stmt.setString(1, schema);
 			try (ResultSet rs = stmt.executeQuery()) {
 				return rs.next() && rs.getInt(1) > 0;
@@ -69,4 +69,8 @@ public class SchemaManagerAdapter extends AbstractSchemaManagerAdapter {
 		}
 	}
 
+	@Override
+	public String formatSchema(String schema) {
+		return schema != null ? schema.trim().toUpperCase() : null;
+	}
 }

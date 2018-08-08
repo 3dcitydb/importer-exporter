@@ -1,18 +1,6 @@
 package org.citydb.citygml.deleter.controller;
 
-import java.math.BigDecimal;
-import java.sql.CallableStatement;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.concurrent.atomic.AtomicBoolean;
-
+import oracle.jdbc.OracleTypes;
 import org.citydb.citygml.deleter.CityGMLDeleteException;
 import org.citydb.citygml.deleter.concurrent.DBDeleteWorkerFactory;
 import org.citydb.citygml.deleter.database.DBSplitter;
@@ -35,10 +23,22 @@ import org.citydb.query.builder.QueryBuildException;
 import org.citydb.registry.ObjectRegistry;
 import org.citydb.util.Util;
 
-import oracle.jdbc.OracleTypes;
+import java.math.BigDecimal;
+import java.sql.CallableStatement;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Deleter implements EventHandler {
 	private final Logger log = Logger.getInstance();
+	private final DatabaseConnectionPool dbPool;
 	private final SchemaMapping schemaMapping;
 	private final EventDispatcher eventDispatcher;
 	private DBSplitter dbSplitter;
@@ -49,7 +49,8 @@ public class Deleter implements EventHandler {
 	private Query query;
 	private BundledDBConnection bundledConnection;
 	
-	public Deleter(Query query) {				
+	public Deleter(Query query) {
+		this.dbPool = DatabaseConnectionPool.getInstance();
 		this.schemaMapping = ObjectRegistry.getInstance().getSchemaMapping();
 		this.eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
 		this.objectCounter = new HashMap<>();
@@ -119,7 +120,7 @@ public class Deleter implements EventHandler {
 				//
 			}
 			
-			DatabaseConnectionPool.getInstance().purge();	
+			dbPool.purge();
 		}		
 		
 		// show exported features
@@ -138,23 +139,25 @@ public class Deleter implements EventHandler {
 	}
 	
 	public boolean cleanupGlobalAppearances() throws CityGMLDeleteException {
-		String dbSchema = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter().getConnectionDetails().getSchema();	
-		DatabaseType databaseType = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter().getDatabaseType();	
+		String dbSchema = dbPool.getActiveDatabaseAdapter().getConnectionDetails().getSchema();
+		DatabaseType databaseType = dbPool.getActiveDatabaseAdapter().getDatabaseType();
 		Connection connection = null;
 		Statement cleanupStmt = null;
 		int sum = 0;
 		
 		try {
-			connection = DatabaseConnectionPool.getInstance().getConnection();	
+			connection = dbPool.getConnection();
+			String operation = dbPool.getActiveDatabaseAdapter().getSQLAdapter().resolveDatabaseOperationName("citydb_delete.cleanup_global_appearances");
+
 			if (databaseType == DatabaseType.ORACLE) {		
-				cleanupStmt = connection.prepareCall("{? = call " + dbSchema + ".citydb_delete.cleanup_global_appearances()}");
-				((CallableStatement)cleanupStmt).registerOutParameter(1, OracleTypes.ARRAY, dbSchema.trim().toUpperCase() + ".ID_ARRAY");
+				cleanupStmt = connection.prepareCall("{? = call " + operation + "()}");
+				((CallableStatement)cleanupStmt).registerOutParameter(1, OracleTypes.ARRAY, dbSchema + ".ID_ARRAY");
 				((CallableStatement)cleanupStmt).execute();			
 				BigDecimal[] results = (BigDecimal[]) ((CallableStatement)cleanupStmt).getArray(1).getArray();           
 				sum = results.length;
 			}
 			else if (databaseType == DatabaseType.POSTGIS) {						
-				cleanupStmt = connection.prepareStatement("select " + dbSchema + ".cleanup_global_appearances()");
+				cleanupStmt = connection.prepareStatement("select " + operation + "()");
 				ResultSet rs = ((PreparedStatement)cleanupStmt).executeQuery();	
 				while (rs.next()) {
 					sum++;
@@ -181,7 +184,7 @@ public class Deleter implements EventHandler {
 					//
 				}
 			}
-			DatabaseConnectionPool.getInstance().purge();	
+			dbPool.purge();
 		}
 		
 		log.info("Cleaned up global appearances: " + sum);
@@ -190,15 +193,14 @@ public class Deleter implements EventHandler {
 	}
 	
 	public boolean cleanupSchema() throws CityGMLDeleteException {
-		String dbSchema = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter().getConnectionDetails().getSchema();
-		DatabaseType databaseType = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter().getDatabaseType();	
 		Connection connection = null;
 		CallableStatement cleanupStmt = null;;
 		
 		try {
-			connection = DatabaseConnectionPool.getInstance().getConnection();	
-			cleanupStmt = connection.prepareCall("{call " + dbSchema + "."
-					+ (databaseType == DatabaseType.ORACLE ? "citydb_delete." : "") + "cleanup_schema()}");
+			connection = dbPool.getConnection();
+			cleanupStmt = connection.prepareCall("{call " +
+					dbPool.getActiveDatabaseAdapter().getSQLAdapter().resolveDatabaseOperationName("citydb_delete.cleanup_schema") +
+					"()}");
 			cleanupStmt.execute();	
 		} catch (SQLException e) {
 			throw new CityGMLDeleteException("Failed to cleanup data schema.", e);
@@ -219,7 +221,7 @@ public class Deleter implements EventHandler {
 					//
 				}
 			}			
-			DatabaseConnectionPool.getInstance().purge();			
+			dbPool.purge();
 		}
 
 		return shouldRun;
