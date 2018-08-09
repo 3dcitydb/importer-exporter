@@ -25,23 +25,28 @@
 -- limitations under the License.
 --
 
-\pset footer off
-SET client_min_messages TO WARNING;
-\set ON_ERROR_STOP ON
+SET SERVEROUTPUT ON
+SET FEEDBACK ON
+SET VER OFF
 
-\set RO_USERNAME :ro_username
-\set SCHEMA_NAME :schema_name
+-- parse arguments
+DEFINE USERNAME=&1;
+DEFINE SCHEMA_NAME=&2;
 
-\echo
-\echo 'Granting read-only priviliges on schema "':SCHEMA_NAME'" to user "':RO_USERNAME'" ...'
+SELECT 'Revoking access priviliges on schema "' || upper('&SCHEMA_NAME') || '" from "' || upper('&USERNAME') || '" ...' as message from DUAL;
 
-GRANT CONNECT, TEMP ON DATABASE :"DBNAME" TO :"RO_USERNAME";
-GRANT USAGE ON SCHEMA :"SCHEMA_NAME" TO :"RO_USERNAME";
-GRANT SELECT ON ALL TABLES IN SCHEMA :"SCHEMA_NAME" TO :"RO_USERNAME";
-GRANT USAGE ON SCHEMA citydb_pkg TO :"RO_USERNAME";
-GRANT SELECT ON ALL TABLES IN SCHEMA citydb_pkg TO :"RO_USERNAME";
-GRANT USAGE ON SCHEMA public TO :"RO_USERNAME";
-GRANT SELECT ON ALL TABLES IN SCHEMA public TO :"RO_USERNAME";
+DECLARE
+  target_schema VARCHAR2(30) := upper('&SCHEMA_NAME');
+  user_name VARCHAR2(30) := upper('&USERNAME');
+BEGIN
+  -- REVOKE ACCESS
+  FOR rec IN (SELECT table_name, privilege FROM dba_tab_privs WHERE grantee = user_name AND owner = target_schema) LOOP
+    EXECUTE IMMEDIATE 'revoke '||rec.privilege||' on '||target_schema||'."'||rec.table_name||'" from "'||user_name||'"';
+  END LOOP;
+END;
+/
 
-\echo
-\echo 'Read-only priviliges successfully granted.'
+SELECT 'Access priviliges successfully revoked.' as message from DUAL;
+
+QUIT;
+/
