@@ -13,8 +13,8 @@ dependencies {
     compile 'org.locationtech.jts:jts-core:1.15.0'
     compile 'org.postgresql:postgresql:42.2.0'
     compile 'net.postgis:postgis-jdbc:2.2.1'
-    compile 'org.apache.tomcat:tomcat-jdbc:9.0.4'
-    compile 'org.apache.tomcat:tomcat-juli:9.0.4'
+    compile 'org.apache.tomcat:tomcat-jdbc:9.0.10'
+    compile 'org.apache.tomcat:tomcat-juli:9.0.10'
     compile fileTree(dir: 'lib', include: '*.jar')
 }
 
