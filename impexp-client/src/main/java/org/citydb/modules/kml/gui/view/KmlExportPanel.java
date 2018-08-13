@@ -849,10 +849,8 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 			if (!databaseController.isConnected()) {
 				try {
 					databaseController.connect(true);
-					if (!databaseController.isConnected())
-						return;
 				} catch (DatabaseConfigurationException | DatabaseVersionException | SQLException e) {
-					// 
+					return;
 				}				
 			}
 

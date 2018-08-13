@@ -326,10 +326,8 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 			if (!databaseController.isConnected()) {
 				try {
 					databaseController.connect(true);
-					if (!databaseController.isConnected())
-						return;
 				} catch (DatabaseConfigurationException | DatabaseVersionException | SQLException e) {
-					//
+					return;
 				}
 			}
 
