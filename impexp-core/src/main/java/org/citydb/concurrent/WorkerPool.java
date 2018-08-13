@@ -227,11 +227,7 @@ public class WorkerPool<T> {
 			final ReentrantLock lock = this.lock;
 			lock.lock();
 			try {
-				if (count == 0)
-					return null;
-
-				E work = extract();
-				return work;
+				return count == 0 ? extract() : null;
 			} finally {
 				lock.unlock();
 			}
@@ -243,10 +239,8 @@ public class WorkerPool<T> {
 			lock.lockInterruptibly();
 			try {
 				for (;;) {
-					if (count != 0) {
-						E work = extract();
-						return work;
-					}
+					if (count != 0)
+						return extract();
 
 					if (nanos <= 0)
 						return null;
@@ -282,8 +276,7 @@ public class WorkerPool<T> {
 					throw ie;
 				}
 
-				E work = extract();
-				return work;
+				return extract();
 			} finally {
 				lock.unlock();
 			}
@@ -436,8 +429,8 @@ public class WorkerPool<T> {
 
 		// setting up work queue and workers map
 		this.queueSize = queueSize;
-		workQueue = new WorkQueue<T>(queueSize, fair);
-		workers = new ConcurrentHashMap<Worker<T>, Object>(maximumPoolSize);
+		workQueue = new WorkQueue<>(queueSize, fair);
+		workers = new ConcurrentHashMap<>(maximumPoolSize);
 	}
 
 	public WorkerPool(String poolName,
@@ -709,8 +702,6 @@ public class WorkerPool<T> {
 
 		try {
 			joinWorkerThreads();
-		} catch (InterruptedException ie) {
-			throw ie;
 		} finally {
 			runState = TERMINATED;
 		}
@@ -851,7 +842,7 @@ public class WorkerPool<T> {
 	}
 
 	public List<T> drainWorkQueue() {
-		List<T> workList = new ArrayList<T>();
+		List<T> workList = new ArrayList<>();
 		workQueue.drainTo(workList);
 
 		return workList;
