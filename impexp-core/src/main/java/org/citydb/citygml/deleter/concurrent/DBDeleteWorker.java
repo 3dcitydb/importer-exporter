@@ -43,22 +43,6 @@ public class DBDeleteWorker extends Worker<DBSplittingResult> implements EventHa
 	@Override
 	public void interrupt() {
 		shouldRun = false;
-		bundledConnection.setShouldRollback(true);
-		workerThread.interrupt();
-	}
-
-	@Override
-	public void interruptIfIdle() {
-		final ReentrantLock runLock = this.mainLock;
-		shouldRun = false;
-
-		if (runLock.tryLock()) {
-			try {
-				workerThread.interrupt();
-			} finally {
-				runLock.unlock();
-			}
-		}
 	}
 
 	@Override

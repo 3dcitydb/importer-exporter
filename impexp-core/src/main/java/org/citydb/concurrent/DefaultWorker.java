@@ -36,21 +36,6 @@ public abstract class DefaultWorker<T> extends Worker<T> {
 	@Override
 	public void interrupt() {
 		shouldRun = false;
-		workerThread.interrupt();
-	}
-
-	@Override
-	public void interruptIfIdle() {
-		final ReentrantLock runLock = this.mainLock;
-		shouldRun = false;
-
-		if (runLock.tryLock()) {
-			try {
-				workerThread.interrupt();
-			} finally {
-				runLock.unlock();
-			}
-		}
 	}
 
 	@Override

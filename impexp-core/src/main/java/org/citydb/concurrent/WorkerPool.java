@@ -27,6 +27,9 @@
  */
 package org.citydb.concurrent;
 
+import org.citydb.event.Event;
+import org.citydb.log.Logger;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -36,9 +39,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
-
-import org.citydb.event.Event;
-import org.citydb.log.Logger;
 
 public class WorkerPool<T> {
 	private final ReentrantLock mainLock = new ReentrantLock();
@@ -59,7 +59,7 @@ public class WorkerPool<T> {
 	private ClassLoader contextClassLoader;
 	private ClassLoader defaultClassLoader;
 
-	private PoolSizeAdaptationStrategy adaptationStrategy = PoolSizeAdaptationStrategy.AGGRESSIVE;
+	private PoolSizeAdaptationStrategy adaptationStrategy;
 	private volatile int corePoolSize;
 	private volatile int maximumPoolSize;
 	private final int queueSize;
@@ -82,6 +82,7 @@ public class WorkerPool<T> {
 		private int takeIndex;
 		private int count;
 		private volatile boolean blockAndFlush;
+		private volatile boolean isInterrupted;
 
 		public WorkQueue(int capacity) {
 			this(capacity, false);
@@ -251,6 +252,9 @@ public class WorkerPool<T> {
 						return null;
 
 					try {
+						if (isInterrupted)
+							throw new InterruptedException("Work queue has been interrupted.");
+
 						nanos = notEmpty.awaitNanos(nanos);
 					} catch (InterruptedException ie) {
 						notEmpty.signal();
@@ -267,8 +271,12 @@ public class WorkerPool<T> {
 			lock.lockInterruptibly();
 			try {
 				try {
-					while (count == 0)
+					while (count == 0) {
+						if (isInterrupted)
+							throw new InterruptedException("Work queue has been interrupted.");
+
 						notEmpty.await();
+					}
 				} catch (InterruptedException ie) {
 					notEmpty.signal();
 					throw ie;
@@ -507,7 +515,7 @@ public class WorkerPool<T> {
 								// remove all workers but one
 								Iterator<Entry<Worker<T>, Object>> it = workers.entrySet().iterator();
 								while (it.hasNext() && poolSize > 1) {
-									it.next().getKey().interruptIfIdle();
+									it.next().getKey().interrupt();
 									it.remove();
 									--poolSize;
 								}
@@ -519,7 +527,7 @@ public class WorkerPool<T> {
 							if (poolSize < corePoolSize && poolSize > 1) {
 								// remove one worker
 								Iterator<Entry<Worker<T>, Object>> it = workers.entrySet().iterator();
-								it.next().getKey().interruptIfIdle();
+								it.next().getKey().interrupt();
 								it.remove();
 								--poolSize;
 								--corePoolSize;
@@ -652,7 +660,12 @@ public class WorkerPool<T> {
 				// re-try
 			}
 
-			interruptWorkersIfIdle();
+			interruptWorkers();
+
+			// interrupt threads waiting for work
+			workQueue.isInterrupted = true;
+			workQueue.notEmpty.signalAll();
+
 			runState = TERMINATED;
 		} finally {
 			queueLock.unlock();
@@ -684,7 +697,11 @@ public class WorkerPool<T> {
 				// re-try
 			}
 
-			interruptWorkersIfIdle();
+			interruptWorkers();
+
+			// interrupt threads waiting for work
+			workQueue.isInterrupted = true;
+			workQueue.notEmpty.signalAll();
 		} finally {
 			queueLock.unlock();
 			mainLock.unlock();
@@ -705,13 +722,23 @@ public class WorkerPool<T> {
 
 		List<T> workList = drainWorkQueue();
 
-		final ReentrantLock mainLock = this.mainLock;	
+		final ReentrantLock mainLock = this.mainLock;
+		final ReentrantLock queueLock = workQueue.lock;
 		mainLock.lock();
 		try {
 			if (runState < SHUTDOWN)
 				runState = SHUTDOWN;
 
 			interruptWorkers();
+
+			queueLock.lock();
+			try {
+				// interrupt threads waiting for work
+				workQueue.isInterrupted = true;
+				workQueue.notEmpty.signalAll();
+			} finally {
+				queueLock.unlock();
+			}
 
 			runState = TERMINATED;
 			clearWorkers();
@@ -750,7 +777,11 @@ public class WorkerPool<T> {
 				workQueue.blockAndFlush = false;
 				workQueue.flushed.signalAll();
 
-				interruptWorkersIfIdle();
+				interruptWorkers();
+
+				// interrupt threads waiting for work
+				workQueue.isInterrupted = true;
+				workQueue.notEmpty.signalAll();
 			} finally {
 				queueLock.unlock();
 			}
@@ -760,7 +791,8 @@ public class WorkerPool<T> {
 			} catch (InterruptedException ie) {
 				//
 			}
-			
+
+			workQueue.isInterrupted = false;
 			int poolSize = this.poolSize;
 			clearWorkers();
 			for (int i = 0; i < poolSize; i++)
@@ -802,17 +834,6 @@ public class WorkerPool<T> {
 		try {
 			for (Worker<T> worker : workers.keySet())
 				worker.workerThread.join();
-		} finally {
-			mainLock.unlock();
-		}
-	}
-
-	private void interruptWorkersIfIdle() {
-		final ReentrantLock mainLock = this.mainLock;
-		mainLock.lock();
-		try {
-			for (Worker<T> worker : workers.keySet())
-				worker.interruptIfIdle();
 		} finally {
 			mainLock.unlock();
 		}
@@ -861,7 +882,7 @@ public class WorkerPool<T> {
 			if (extra > 0 && poolSize > maximumPoolSize) {
 				Iterator<Entry<Worker<T>, Object>> it = workers.entrySet().iterator();
 				while (it.hasNext() && extra-- > 0 && poolSize > maximumPoolSize) {
-					it.next().getKey().interruptIfIdle();
+					it.next().getKey().interrupt();
 					it.remove();
 					--poolSize;
 				}

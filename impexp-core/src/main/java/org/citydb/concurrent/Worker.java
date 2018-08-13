@@ -35,6 +35,5 @@ public abstract class Worker<T> implements Runnable {
 	protected T firstWork;
 	protected Object eventChannel;
 	
-	public abstract void interruptIfIdle();
 	public abstract void interrupt();
 }

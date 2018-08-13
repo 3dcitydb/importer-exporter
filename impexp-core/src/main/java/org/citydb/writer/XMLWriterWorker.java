@@ -27,8 +27,6 @@
  */
 package org.citydb.writer;
 
-import java.util.concurrent.locks.ReentrantLock;
-
 import org.citydb.concurrent.Worker;
 import org.citydb.config.project.global.LogLevel;
 import org.citydb.event.EventDispatcher;
@@ -36,6 +34,8 @@ import org.citydb.event.global.InterruptEvent;
 import org.citygml4j.util.xml.SAXEventBuffer;
 import org.citygml4j.util.xml.SAXWriter;
 import org.xml.sax.SAXException;
+
+import java.util.concurrent.locks.ReentrantLock;
 
 public class XMLWriterWorker extends Worker<SAXEventBuffer> {
 	private final ReentrantLock runLock = new ReentrantLock();	
@@ -53,23 +53,12 @@ public class XMLWriterWorker extends Worker<SAXEventBuffer> {
 	@Override
 	public void interrupt() {
 		shouldRun = false;
-		workerThread.interrupt();
-	}
-
-	@Override
-	public void interruptIfIdle() {
-		final ReentrantLock runLock = this.runLock;
-		shouldRun = false;
 
 		if (runLock.tryLock()) {
 			try {
-				try {
-					saxWriter.flush();
-				} catch (SAXException e) {
-					eventDispatcher.triggerSyncEvent(new InterruptEvent("Failed to write XML content.", LogLevel.ERROR, e, eventChannel, this));
-				}
-				
-				workerThread.interrupt();
+				saxWriter.flush();
+			} catch (SAXException e) {
+				eventDispatcher.triggerSyncEvent(new InterruptEvent("Failed to write XML content.", LogLevel.ERROR, e, eventChannel, this));
 			} finally {
 				runLock.unlock();
 			}

@@ -53,23 +53,12 @@ public class CityJSONWriterWorker extends Worker<AbstractCityObjectType> {
 	@Override
 	public void interrupt() {
 		shouldRun = false;
-		workerThread.interrupt();
-	}
-
-	@Override
-	public void interruptIfIdle() {
-		final ReentrantLock runLock = this.runLock;
-		shouldRun = false;
 
 		if (runLock.tryLock()) {
 			try {
-				try {
-					writer.flush();
-				} catch (CityJSONWriteException e) {
-					eventDispatcher.triggerSyncEvent(new InterruptEvent("Failed to write CityJSON content.", LogLevel.ERROR, e, eventChannel, this));
-				}
-				
-				workerThread.interrupt();
+				writer.flush();
+			} catch (CityJSONWriteException e) {
+				eventDispatcher.triggerSyncEvent(new InterruptEvent("Failed to write CityJSON content.", LogLevel.ERROR, e, eventChannel, this));
 			} finally {
 				runLock.unlock();
 			}

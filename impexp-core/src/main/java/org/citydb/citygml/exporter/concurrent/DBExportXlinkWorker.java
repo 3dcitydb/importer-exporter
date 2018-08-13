@@ -79,21 +79,6 @@ public class DBExportXlinkWorker extends Worker<DBXlink> implements EventHandler
 	@Override
 	public void interrupt() {
 		shouldRun = false;
-		workerThread.interrupt();
-	}
-
-	@Override
-	public void interruptIfIdle() {
-		final ReentrantLock runLock = this.runLock;
-		shouldRun = false;
-
-		if (runLock.tryLock()) {
-			try {
-				workerThread.interrupt();
-			} finally {
-				runLock.unlock();
-			}
-		}
 	}
 
 	@Override
