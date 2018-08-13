@@ -42,6 +42,7 @@ import org.citydb.database.schema.TableEnum;
 import org.citydb.database.schema.mapping.AbstractObjectType;
 import org.citydb.util.CoreConstants;
 import org.citydb.util.Util;
+import org.citygml4j.geometry.BoundingBox;
 import org.citygml4j.model.citygml.core.AbstractCityObject;
 import org.citygml4j.model.citygml.core.ExternalObject;
 import org.citygml4j.model.citygml.core.ExternalReference;
@@ -235,10 +236,9 @@ public class DBCityObject implements DBImporter {
 		if (isFeature)
 			boundedBy = ((AbstractFeature)object).calcBoundedBy(bboxOptions);
 
-		if (boundedBy != null && boundedBy.isSetEnvelope()) {			
-			List<Double> points = new ArrayList<Double>(6);
-			points.addAll(boundedBy.getEnvelope().getLowerCorner().getValue());
-			points.addAll(boundedBy.getEnvelope().getUpperCorner().getValue());
+		if (boundedBy != null && boundedBy.isSetEnvelope()) {
+			BoundingBox bbox = boundedBy.getEnvelope().toBoundingBox();
+			List<Double> points = bbox.toList();
 
 			if (affineTransformation)
 				importer.getAffineTransformer().transformCoordinates(points);
