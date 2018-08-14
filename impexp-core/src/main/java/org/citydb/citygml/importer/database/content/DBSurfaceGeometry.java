@@ -216,17 +216,18 @@ public class DBSurfaceGeometry implements DBImporter {
 		origGmlId = gmlId = surfaceGeometry.getId();
 		if (gmlId == null || replaceGmlId) {
 			if (!surfaceGeometry.hasLocalProperty(CoreConstants.GEOMETRY_ORIGINAL)) {
-				if (!surfaceGeometry.hasLocalProperty("replaceGmlId")) {
+				if (!surfaceGeometry.hasLocalProperty("origGmlId")) {
 					gmlId = DefaultGMLIdManager.getInstance().generateUUID();					
 					surfaceGeometry.setId(gmlId);
-					surfaceGeometry.setLocalProperty("replaceGmlId", true);
-				}
+					surfaceGeometry.setLocalProperty("origGmlId", origGmlId);
+				} else
+					origGmlId = (String) surfaceGeometry.getLocalProperty("origGmlId");
 			} else {
-				AbstractGeometry original = (AbstractGeometry)surfaceGeometry.getLocalProperty(CoreConstants.GEOMETRY_ORIGINAL);
-				if (!original.hasLocalProperty("replaceGmlId")) {
+				AbstractGeometry original = (AbstractGeometry) surfaceGeometry.getLocalProperty(CoreConstants.GEOMETRY_ORIGINAL);
+				if (!original.hasLocalProperty("origGmlId")) {
 					gmlId = DefaultGMLIdManager.getInstance().generateUUID();					
 					original.setId(gmlId);
-					original.setLocalProperty("replaceGmlId", true);
+					original.setLocalProperty("origGmlId", origGmlId);
 				} else
 					gmlId = original.getId();
 
