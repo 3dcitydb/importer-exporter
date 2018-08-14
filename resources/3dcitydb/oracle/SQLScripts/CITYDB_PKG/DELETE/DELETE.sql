@@ -25,200 +25,200 @@
 -- limitations under the License.
 --
 
--- Automatically generated database script (Creation Date: 2018-08-06 10:10:48)
--- cleanup_global_appearances
--- cleanup_schema
--- del_address
--- del_addresss
--- del_appearance
--- del_appearances
--- del_breakline_relief
--- del_breakline_reliefs
--- del_bridge
--- del_bridge_constr_element
--- del_bridge_constr_elements
--- del_bridge_furniture
--- del_bridge_furnitures
--- del_bridge_installation
--- del_bridge_installations
--- del_bridge_opening
--- del_bridge_openings
--- del_bridge_room
--- del_bridge_rooms
--- del_bridge_thematic_surface
--- del_bridge_thematic_surfaces
--- del_bridges
--- del_building
--- del_building_furniture
--- del_building_furnitures
--- del_building_installation
--- del_building_installations
--- del_buildings
--- del_city_furniture
--- del_city_furnitures
--- del_citymodel
--- del_citymodels
--- del_cityobject
--- del_cityobject_genericattrib
--- del_cityobject_genericattribs
--- del_cityobjectgroup
--- del_cityobjectgroups
--- del_cityobjects
--- del_cityobjects_by_lineage
--- del_external_reference
--- del_external_references
--- del_generic_cityobject
--- del_generic_cityobjects
--- del_implicit_geometry
--- del_implicit_geometrys
--- del_land_use
--- del_land_uses
--- del_masspoint_relief
--- del_masspoint_reliefs
--- del_opening
--- del_openings
--- del_plant_cover
--- del_plant_covers
--- del_relief_component
--- del_relief_components
--- del_relief_feature
--- del_relief_features
--- del_room
--- del_rooms
--- del_solitary_vegetat_object
--- del_solitary_vegetat_objects
--- del_surface_data
--- del_surface_datas
--- del_surface_geometry
--- del_surface_geometrys
--- del_tex_image
--- del_tex_images
--- del_thematic_surface
--- del_thematic_surfaces
--- del_tin_relief
--- del_tin_reliefs
--- del_traffic_area
--- del_traffic_areas
--- del_transportation_complex
--- del_transportation_complexs
--- del_tunnel
--- del_tunnel_furniture
--- del_tunnel_furnitures
--- del_tunnel_hollow_space
--- del_tunnel_hollow_spaces
--- del_tunnel_installation
--- del_tunnel_installations
--- del_tunnel_opening
--- del_tunnel_openings
--- del_tunnel_thematic_surface
--- del_tunnel_thematic_surfaces
--- del_tunnels
--- del_waterbody
--- del_waterbodys
--- del_waterboundary_surface
--- del_waterboundary_surfaces
+-- Automatically generated database script (Creation Date: 2018-08-13 17:49:17)
+-- FUNCTION cleanup_appearances(only_global int := 1) RETURN ID_ARRAY
+-- FUNCTION del_address(pid NUMBER) RETURN NUMBER
+-- FUNCTION del_address(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+-- FUNCTION del_appearance(pid NUMBER) RETURN NUMBER
+-- FUNCTION del_appearance(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+-- FUNCTION del_breakline_relief(pid NUMBER) RETURN NUMBER
+-- FUNCTION del_breakline_relief(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+-- FUNCTION del_bridge(pid NUMBER) RETURN NUMBER
+-- FUNCTION del_bridge(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+-- FUNCTION del_bridge_constr_element(pid NUMBER) RETURN NUMBER
+-- FUNCTION del_bridge_constr_element(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+-- FUNCTION del_bridge_furniture(pid NUMBER) RETURN NUMBER
+-- FUNCTION del_bridge_furniture(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+-- FUNCTION del_bridge_installation(pid NUMBER) RETURN NUMBER
+-- FUNCTION del_bridge_installation(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+-- FUNCTION del_bridge_opening(pid NUMBER) RETURN NUMBER
+-- FUNCTION del_bridge_opening(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+-- FUNCTION del_bridge_room(pid NUMBER) RETURN NUMBER
+-- FUNCTION del_bridge_room(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+-- FUNCTION del_bridge_thematic_surface(pid NUMBER) RETURN NUMBER
+-- FUNCTION del_bridge_thematic_surface(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+-- FUNCTION del_building(pid NUMBER) RETURN NUMBER
+-- FUNCTION del_building(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+-- FUNCTION del_building_furniture(pid NUMBER) RETURN NUMBER
+-- FUNCTION del_building_furniture(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+-- FUNCTION del_building_installation(pid NUMBER) RETURN NUMBER
+-- FUNCTION del_building_installation(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+-- FUNCTION del_city_furniture(pid NUMBER) RETURN NUMBER
+-- FUNCTION del_city_furniture(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+-- FUNCTION del_citymodel(pid NUMBER) RETURN NUMBER
+-- FUNCTION del_citymodel(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+-- FUNCTION del_cityobject(pid NUMBER) RETURN NUMBER
+-- FUNCTION del_cityobject(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+-- FUNCTION del_cityobject_genericattrib(pid NUMBER) RETURN NUMBER
+-- FUNCTION del_cityobject_genericattrib(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+-- FUNCTION del_cityobjectgroup(pid NUMBER) RETURN NUMBER
+-- FUNCTION del_cityobjectgroup(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+-- FUNCTION del_cityobjects_by_lineage(lineage_value varchar2, objectclass_id int := 0) RETURN ID_ARRAY
+-- FUNCTION del_external_reference(pid NUMBER) RETURN NUMBER
+-- FUNCTION del_external_reference(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+-- FUNCTION del_generic_cityobject(pid NUMBER) RETURN NUMBER
+-- FUNCTION del_generic_cityobject(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+-- FUNCTION del_implicit_geometry(pid NUMBER) RETURN NUMBER
+-- FUNCTION del_implicit_geometry(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+-- FUNCTION del_land_use(pid NUMBER) RETURN NUMBER
+-- FUNCTION del_land_use(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+-- FUNCTION del_masspoint_relief(pid NUMBER) RETURN NUMBER
+-- FUNCTION del_masspoint_relief(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+-- FUNCTION del_opening(pid NUMBER) RETURN NUMBER
+-- FUNCTION del_opening(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+-- FUNCTION del_plant_cover(pid NUMBER) RETURN NUMBER
+-- FUNCTION del_plant_cover(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+-- FUNCTION del_relief_component(pid NUMBER) RETURN NUMBER
+-- FUNCTION del_relief_component(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+-- FUNCTION del_relief_feature(pid NUMBER) RETURN NUMBER
+-- FUNCTION del_relief_feature(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+-- FUNCTION del_room(pid NUMBER) RETURN NUMBER
+-- FUNCTION del_room(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+-- FUNCTION del_solitary_vegetat_object(pid NUMBER) RETURN NUMBER
+-- FUNCTION del_solitary_vegetat_object(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+-- FUNCTION del_surface_data(pid NUMBER) RETURN NUMBER
+-- FUNCTION del_surface_data(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+-- FUNCTION del_surface_geometry(pid NUMBER) RETURN NUMBER
+-- FUNCTION del_surface_geometry(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+-- FUNCTION del_tex_image(pid NUMBER) RETURN NUMBER
+-- FUNCTION del_tex_image(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+-- FUNCTION del_thematic_surface(pid NUMBER) RETURN NUMBER
+-- FUNCTION del_thematic_surface(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+-- FUNCTION del_tin_relief(pid NUMBER) RETURN NUMBER
+-- FUNCTION del_tin_relief(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+-- FUNCTION del_traffic_area(pid NUMBER) RETURN NUMBER
+-- FUNCTION del_traffic_area(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+-- FUNCTION del_transportation_complex(pid NUMBER) RETURN NUMBER
+-- FUNCTION del_transportation_complex(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+-- FUNCTION del_tunnel(pid NUMBER) RETURN NUMBER
+-- FUNCTION del_tunnel(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+-- FUNCTION del_tunnel_furniture(pid NUMBER) RETURN NUMBER
+-- FUNCTION del_tunnel_furniture(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+-- FUNCTION del_tunnel_hollow_space(pid NUMBER) RETURN NUMBER
+-- FUNCTION del_tunnel_hollow_space(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+-- FUNCTION del_tunnel_installation(pid NUMBER) RETURN NUMBER
+-- FUNCTION del_tunnel_installation(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+-- FUNCTION del_tunnel_opening(pid NUMBER) RETURN NUMBER
+-- FUNCTION del_tunnel_opening(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+-- FUNCTION del_tunnel_thematic_surface(pid NUMBER) RETURN NUMBER
+-- FUNCTION del_tunnel_thematic_surface(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+-- FUNCTION del_waterbody(pid NUMBER) RETURN NUMBER
+-- FUNCTION del_waterbody(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+-- FUNCTION del_waterboundary_surface(pid NUMBER) RETURN NUMBER
+-- FUNCTION del_waterboundary_surface(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+-- PROCEDURE cleanup_schema
 
 ------------------------------------------
 CREATE OR REPLACE PACKAGE citydb_delete
 AS
-  FUNCTION cleanup_global_appearances RETURN ID_ARRAY;
-  PROCEDURE cleanup_schema;
+  FUNCTION cleanup_appearances(only_global int := 1) RETURN ID_ARRAY;
   FUNCTION del_address(pid NUMBER) RETURN NUMBER;
-  FUNCTION del_addresss(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
+  FUNCTION del_address(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
   FUNCTION del_appearance(pid NUMBER) RETURN NUMBER;
-  FUNCTION del_appearances(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
+  FUNCTION del_appearance(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
   FUNCTION del_breakline_relief(pid NUMBER) RETURN NUMBER;
-  FUNCTION del_breakline_reliefs(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
+  FUNCTION del_breakline_relief(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
   FUNCTION del_bridge(pid NUMBER) RETURN NUMBER;
+  FUNCTION del_bridge(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
   FUNCTION del_bridge_constr_element(pid NUMBER) RETURN NUMBER;
-  FUNCTION del_bridge_constr_elements(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
+  FUNCTION del_bridge_constr_element(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
   FUNCTION del_bridge_furniture(pid NUMBER) RETURN NUMBER;
-  FUNCTION del_bridge_furnitures(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
+  FUNCTION del_bridge_furniture(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
   FUNCTION del_bridge_installation(pid NUMBER) RETURN NUMBER;
-  FUNCTION del_bridge_installations(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
+  FUNCTION del_bridge_installation(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
   FUNCTION del_bridge_opening(pid NUMBER) RETURN NUMBER;
-  FUNCTION del_bridge_openings(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
+  FUNCTION del_bridge_opening(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
   FUNCTION del_bridge_room(pid NUMBER) RETURN NUMBER;
-  FUNCTION del_bridge_rooms(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
+  FUNCTION del_bridge_room(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
   FUNCTION del_bridge_thematic_surface(pid NUMBER) RETURN NUMBER;
-  FUNCTION del_bridge_thematic_surfaces(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
-  FUNCTION del_bridges(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
+  FUNCTION del_bridge_thematic_surface(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
   FUNCTION del_building(pid NUMBER) RETURN NUMBER;
+  FUNCTION del_building(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
   FUNCTION del_building_furniture(pid NUMBER) RETURN NUMBER;
-  FUNCTION del_building_furnitures(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
+  FUNCTION del_building_furniture(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
   FUNCTION del_building_installation(pid NUMBER) RETURN NUMBER;
-  FUNCTION del_building_installations(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
-  FUNCTION del_buildings(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
+  FUNCTION del_building_installation(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
   FUNCTION del_city_furniture(pid NUMBER) RETURN NUMBER;
-  FUNCTION del_city_furnitures(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
+  FUNCTION del_city_furniture(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
   FUNCTION del_citymodel(pid NUMBER) RETURN NUMBER;
-  FUNCTION del_citymodels(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
+  FUNCTION del_citymodel(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
   FUNCTION del_cityobject(pid NUMBER) RETURN NUMBER;
+  FUNCTION del_cityobject(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
   FUNCTION del_cityobject_genericattrib(pid NUMBER) RETURN NUMBER;
-  FUNCTION del_cityobject_genericattribs(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
+  FUNCTION del_cityobject_genericattrib(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
   FUNCTION del_cityobjectgroup(pid NUMBER) RETURN NUMBER;
-  FUNCTION del_cityobjectgroups(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
-  FUNCTION del_cityobjects(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
+  FUNCTION del_cityobjectgroup(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
   FUNCTION del_cityobjects_by_lineage(lineage_value varchar2, objectclass_id int := 0) RETURN ID_ARRAY;
   FUNCTION del_external_reference(pid NUMBER) RETURN NUMBER;
-  FUNCTION del_external_references(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
+  FUNCTION del_external_reference(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
   FUNCTION del_generic_cityobject(pid NUMBER) RETURN NUMBER;
-  FUNCTION del_generic_cityobjects(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
+  FUNCTION del_generic_cityobject(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
   FUNCTION del_implicit_geometry(pid NUMBER) RETURN NUMBER;
-  FUNCTION del_implicit_geometrys(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
+  FUNCTION del_implicit_geometry(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
   FUNCTION del_land_use(pid NUMBER) RETURN NUMBER;
-  FUNCTION del_land_uses(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
+  FUNCTION del_land_use(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
   FUNCTION del_masspoint_relief(pid NUMBER) RETURN NUMBER;
-  FUNCTION del_masspoint_reliefs(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
+  FUNCTION del_masspoint_relief(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
   FUNCTION del_opening(pid NUMBER) RETURN NUMBER;
-  FUNCTION del_openings(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
+  FUNCTION del_opening(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
   FUNCTION del_plant_cover(pid NUMBER) RETURN NUMBER;
-  FUNCTION del_plant_covers(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
+  FUNCTION del_plant_cover(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
   FUNCTION del_relief_component(pid NUMBER) RETURN NUMBER;
-  FUNCTION del_relief_components(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
+  FUNCTION del_relief_component(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
   FUNCTION del_relief_feature(pid NUMBER) RETURN NUMBER;
-  FUNCTION del_relief_features(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
+  FUNCTION del_relief_feature(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
   FUNCTION del_room(pid NUMBER) RETURN NUMBER;
-  FUNCTION del_rooms(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
+  FUNCTION del_room(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
   FUNCTION del_solitary_vegetat_object(pid NUMBER) RETURN NUMBER;
-  FUNCTION del_solitary_vegetat_objects(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
+  FUNCTION del_solitary_vegetat_object(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
   FUNCTION del_surface_data(pid NUMBER) RETURN NUMBER;
-  FUNCTION del_surface_datas(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
+  FUNCTION del_surface_data(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
   FUNCTION del_surface_geometry(pid NUMBER) RETURN NUMBER;
-  FUNCTION del_surface_geometrys(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
+  FUNCTION del_surface_geometry(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
   FUNCTION del_tex_image(pid NUMBER) RETURN NUMBER;
-  FUNCTION del_tex_images(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
+  FUNCTION del_tex_image(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
   FUNCTION del_thematic_surface(pid NUMBER) RETURN NUMBER;
-  FUNCTION del_thematic_surfaces(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
+  FUNCTION del_thematic_surface(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
   FUNCTION del_tin_relief(pid NUMBER) RETURN NUMBER;
-  FUNCTION del_tin_reliefs(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
+  FUNCTION del_tin_relief(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
   FUNCTION del_traffic_area(pid NUMBER) RETURN NUMBER;
-  FUNCTION del_traffic_areas(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
+  FUNCTION del_traffic_area(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
   FUNCTION del_transportation_complex(pid NUMBER) RETURN NUMBER;
-  FUNCTION del_transportation_complexs(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
+  FUNCTION del_transportation_complex(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
   FUNCTION del_tunnel(pid NUMBER) RETURN NUMBER;
+  FUNCTION del_tunnel(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
   FUNCTION del_tunnel_furniture(pid NUMBER) RETURN NUMBER;
-  FUNCTION del_tunnel_furnitures(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
+  FUNCTION del_tunnel_furniture(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
   FUNCTION del_tunnel_hollow_space(pid NUMBER) RETURN NUMBER;
-  FUNCTION del_tunnel_hollow_spaces(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
+  FUNCTION del_tunnel_hollow_space(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
   FUNCTION del_tunnel_installation(pid NUMBER) RETURN NUMBER;
-  FUNCTION del_tunnel_installations(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
+  FUNCTION del_tunnel_installation(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
   FUNCTION del_tunnel_opening(pid NUMBER) RETURN NUMBER;
-  FUNCTION del_tunnel_openings(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
+  FUNCTION del_tunnel_opening(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
   FUNCTION del_tunnel_thematic_surface(pid NUMBER) RETURN NUMBER;
-  FUNCTION del_tunnel_thematic_surfaces(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
-  FUNCTION del_tunnels(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
+  FUNCTION del_tunnel_thematic_surface(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
   FUNCTION del_waterbody(pid NUMBER) RETURN NUMBER;
-  FUNCTION del_waterbodys(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
+  FUNCTION del_waterbody(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
   FUNCTION del_waterboundary_surface(pid NUMBER) RETURN NUMBER;
-  FUNCTION del_waterboundary_surfaces(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
+  FUNCTION del_waterboundary_surface(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
+  PROCEDURE cleanup_schema;
 END citydb_delete;
 /
 
 ------------------------------------------
 CREATE OR REPLACE PACKAGE BODY citydb_delete
 AS 
-  FUNCTION cleanup_global_appearances RETURN ID_ARRAY
+  FUNCTION cleanup_appearances(only_global int := 1) RETURN ID_ARRAY
   IS
     deleted_ids ID_ARRAY := ID_ARRAY();
     surface_data_ids ID_ARRAY;
@@ -238,10 +238,11 @@ AS
       t.surface_data_id IS NULL;
 
     IF surface_data_ids IS NOT EMPTY THEN
-      dummy_ids := del_surface_datas(surface_data_ids);
+      dummy_ids := del_surface_data(surface_data_ids);
     END IF;
 
-    SELECT
+    IF only_global=1 THEN
+      SELECT
         a.id
       BULK COLLECT INTO
         appearance_ids
@@ -253,71 +254,25 @@ AS
       WHERE
         a.cityobject_id IS NULL
         AND asd.appearance_id IS NULL;
+    ELSE
+      SELECT
+        a.id
+      BULK COLLECT INTO
+        appearance_ids
+      FROM
+        appearance a
+      LEFT OUTER JOIN
+        appear_to_surface_data asd
+        ON a.id=asd.appearance_id
+      WHERE
+        asd.appearance_id IS NULL;
+    END IF;
 
     IF appearance_ids IS NOT EMPTY THEN
-      deleted_ids := del_appearances(appearance_ids);
+      deleted_ids := del_appearance(appearance_ids);
     END IF;
 
     RETURN deleted_ids;
-  END;
-  ------------------------------------------
-
-  PROCEDURE cleanup_schema
-  IS
-    dummy_str strarray;
-    seq_value number;
-  BEGIN
-
-    dummy_str := citydb_idx.drop_spatial_indexes();
-
-    for uc in (
-      select constraint_name, table_name from user_constraints where constraint_type = 'R'
-    )
-    LOOP
-      execute immediate 'alter table '||uc.table_name||' disable constraint '||uc.constraint_name||'';
-    END loop;
-
-    for ut in (
-      select table_name FROM user_tables
-      WHERE table_name NOT IN ('DATABASE_SRS', 'OBJECTCLASS', 'INDEX_TABLE', 'ADE', 'SCHEMA', 'SCHEMA_TO_OBJECTCLASS', 'SCHEMA_REFERENCING', 'AGGREGATION_INFO')
-      AND table_name NOT LIKE '%\_AUX' ESCAPE '\'
-      AND table_name NOT LIKE '%TMP\_%' ESCAPE '\'
-      AND table_name NOT LIKE '%MDRT%'
-      AND table_name NOT LIKE '%MDXT%'
-      AND table_name NOT LIKE '%MDNT%'
-    )
-    LOOP
-      execute immediate 'truncate table '||ut.table_name||'';
-    END loop;
-
-    for uc in (
-      select constraint_name, table_name from user_constraints where constraint_type = 'R'
-    )
-    LOOP
-      execute immediate 'alter table '||uc.table_name||' enable constraint '||uc.constraint_name||'';
-    END loop;
-
-    for us in (
-      select sequence_name from user_sequences
-      WHERE sequence_name NOT IN ('INDEX_TABLE_SEQ', 'ADE_SEQ', 'SCHEMA_SEQ')
-      AND sequence_name NOT LIKE '%\_AUX' ESCAPE '\'
-      AND sequence_name NOT LIKE '%TMP\_%' ESCAPE '\'
-      AND sequence_name NOT LIKE '%MDRS%'
-      AND sequence_name NOT LIKE '%MDXS%'
-      AND sequence_name NOT LIKE '%MDNS%'
-    )
-    LOOP
-      execute immediate 'select ' || us.sequence_name || '.nextval from dual' into seq_value;
-      if (seq_value = 1) then
-        execute immediate 'select ' || us.sequence_name || '.nextval from dual' into seq_value;
-      end if;
-      execute immediate 'alter sequence ' || us.sequence_name || ' increment by ' || (seq_value-1)*-1;
-      execute immediate 'select ' || us.sequence_name || '.nextval from dual' into seq_value;
-      execute immediate 'alter sequence ' || us.sequence_name || ' increment by 1';
-    END LOOP;
-
-    dummy_str := citydb_idx.create_spatial_indexes();
-
   END;
   ------------------------------------------
 
@@ -326,7 +281,7 @@ AS
     deleted_id NUMBER;
     dummy_ids ID_ARRAY;
   BEGIN
-    dummy_ids := del_addresss(ID_ARRAY(pid));
+    dummy_ids := del_address(ID_ARRAY(pid));
 
     IF dummy_ids IS NOT EMPTY THEN
       deleted_id := dummy_ids(1);
@@ -340,7 +295,7 @@ AS
   END;
   ------------------------------------------
 
-  FUNCTION del_addresss(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+  FUNCTION del_address(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
   IS
     object_id number;
     objectclass_id number;
@@ -380,7 +335,7 @@ AS
     deleted_id NUMBER;
     dummy_ids ID_ARRAY;
   BEGIN
-    dummy_ids := del_appearances(ID_ARRAY(pid));
+    dummy_ids := del_appearance(ID_ARRAY(pid));
 
     IF dummy_ids IS NOT EMPTY THEN
       deleted_id := dummy_ids(1);
@@ -394,7 +349,7 @@ AS
   END;
   ------------------------------------------
 
-  FUNCTION del_appearances(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+  FUNCTION del_appearance(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
   IS
     object_id number;
     objectclass_id number;
@@ -435,7 +390,7 @@ AS
       WHERE n1.surface_data_id IS NULL;
 
       IF object_ids IS NOT EMPTY THEN
-        dummy_ids := del_surface_datas(object_ids);
+        dummy_ids := del_surface_data(object_ids);
       END IF;
     END IF;
 
@@ -469,7 +424,7 @@ AS
     deleted_id NUMBER;
     dummy_ids ID_ARRAY;
   BEGIN
-    dummy_ids := del_breakline_reliefs(ID_ARRAY(pid));
+    dummy_ids := del_breakline_relief(ID_ARRAY(pid));
 
     IF dummy_ids IS NOT EMPTY THEN
       deleted_id := dummy_ids(1);
@@ -483,7 +438,7 @@ AS
   END;
   ------------------------------------------
 
-  FUNCTION del_breakline_reliefs(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+  FUNCTION del_breakline_relief(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
   IS
     object_id number;
     objectclass_id number;
@@ -512,7 +467,7 @@ AS
     IF caller <> 1 THEN
       -- delete relief_component
       IF deleted_ids IS NOT EMPTY THEN
-        dummy_ids := del_relief_components(deleted_ids, 2);
+        dummy_ids := del_relief_component(deleted_ids, 2);
       END IF;
     END IF;
 
@@ -530,7 +485,7 @@ AS
     deleted_id NUMBER;
     dummy_ids ID_ARRAY;
   BEGIN
-    dummy_ids := del_bridges(ID_ARRAY(pid));
+    dummy_ids := del_bridge(ID_ARRAY(pid));
 
     IF dummy_ids IS NOT EMPTY THEN
       deleted_id := dummy_ids(1);
@@ -541,6 +496,227 @@ AS
     EXCEPTION
       WHEN NO_DATA_FOUND THEN
         RETURN deleted_id;
+  END;
+  ------------------------------------------
+
+  FUNCTION del_bridge(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+  IS
+    object_id number;
+    objectclass_id number;
+    object_ids ID_ARRAY := ID_ARRAY();
+    deleted_child_ids ID_ARRAY := ID_ARRAY();
+    deleted_ids ID_ARRAY := ID_ARRAY();
+    dummy_ids ID_ARRAY := ID_ARRAY();
+    cur sys_refcursor;
+    address_ids0 ID_ARRAY := ID_ARRAY();
+    surface_geometry_ids1 ID_ARRAY := ID_ARRAY();
+    surface_geometry_ids2 ID_ARRAY := ID_ARRAY();
+    surface_geometry_ids3 ID_ARRAY := ID_ARRAY();
+    surface_geometry_ids4 ID_ARRAY := ID_ARRAY();
+    surface_geometry_ids5 ID_ARRAY := ID_ARRAY();
+    surface_geometry_ids6 ID_ARRAY := ID_ARRAY();
+    surface_geometry_ids7 ID_ARRAY := ID_ARRAY();
+    surface_geometry_ids8 ID_ARRAY := ID_ARRAY();
+    surface_geometry_ids9 ID_ARRAY := ID_ARRAY();
+  BEGIN
+    -- delete referenced parts
+    SELECT
+      t.id
+    BULK COLLECT INTO
+      object_ids
+    FROM
+      bridge t,
+      TABLE(pids) a
+    WHERE
+      t.bridge_parent_id = a.COLUMN_VALUE
+      AND t.id <> a.COLUMN_VALUE;
+
+    IF object_ids IS NOT EMPTY THEN
+      dummy_ids := del_bridge(object_ids);
+    END IF;
+
+    -- delete referenced parts
+    SELECT
+      t.id
+    BULK COLLECT INTO
+      object_ids
+    FROM
+      bridge t,
+      TABLE(pids) a
+    WHERE
+      t.bridge_root_id = a.COLUMN_VALUE
+      AND t.id <> a.COLUMN_VALUE;
+
+    IF object_ids IS NOT EMPTY THEN
+      dummy_ids := del_bridge(object_ids);
+    END IF;
+
+    -- delete references to addresss
+    DELETE FROM
+      address_to_bridge t
+    WHERE EXISTS (
+      SELECT
+        1
+      FROM
+        TABLE(pids) a
+      WHERE
+        a.COLUMN_VALUE = t.bridge_id
+    )
+    RETURNING
+      address_id
+    BULK COLLECT INTO
+      address_ids0;
+
+    -- delete address(s)
+    IF address_ids0 IS NOT EMPTY THEN
+      SELECT DISTINCT
+        a.COLUMN_VALUE
+      BULK COLLECT INTO
+        object_ids
+      FROM
+        TABLE(address_ids0) a
+      LEFT JOIN
+        address_to_bridge n1
+        ON n1.address_id  = a.COLUMN_VALUE
+      LEFT JOIN
+        address_to_building n2
+        ON n2.address_id  = a.COLUMN_VALUE
+      LEFT JOIN
+        bridge_opening n3
+        ON n3.address_id  = a.COLUMN_VALUE
+      LEFT JOIN
+        opening n4
+        ON n4.address_id  = a.COLUMN_VALUE
+      WHERE n1.address_id IS NULL
+        AND n2.address_id IS NULL
+        AND n3.address_id IS NULL
+        AND n4.address_id IS NULL;
+
+      IF object_ids IS NOT EMPTY THEN
+        dummy_ids := del_address(object_ids);
+      END IF;
+    END IF;
+
+    --delete bridge_constr_elements
+    SELECT
+      t.id
+    BULK COLLECT INTO
+      object_ids
+    FROM
+      bridge_constr_element t,
+      TABLE(pids) a
+    WHERE
+      t.bridge_id = a.COLUMN_VALUE;
+
+    IF object_ids IS NOT EMPTY THEN
+      dummy_ids := del_bridge_constr_element(object_ids);
+    END IF;
+
+    --delete bridge_installations
+    SELECT
+      t.id
+    BULK COLLECT INTO
+      object_ids
+    FROM
+      bridge_installation t,
+      TABLE(pids) a
+    WHERE
+      t.bridge_id = a.COLUMN_VALUE;
+
+    IF object_ids IS NOT EMPTY THEN
+      dummy_ids := del_bridge_installation(object_ids);
+    END IF;
+
+    --delete bridge_rooms
+    SELECT
+      t.id
+    BULK COLLECT INTO
+      object_ids
+    FROM
+      bridge_room t,
+      TABLE(pids) a
+    WHERE
+      t.bridge_id = a.COLUMN_VALUE;
+
+    IF object_ids IS NOT EMPTY THEN
+      dummy_ids := del_bridge_room(object_ids);
+    END IF;
+
+    --delete bridge_thematic_surfaces
+    SELECT
+      t.id
+    BULK COLLECT INTO
+      object_ids
+    FROM
+      bridge_thematic_surface t,
+      TABLE(pids) a
+    WHERE
+      t.bridge_id = a.COLUMN_VALUE;
+
+    IF object_ids IS NOT EMPTY THEN
+      dummy_ids := del_bridge_thematic_surface(object_ids);
+    END IF;
+
+    -- delete bridges
+    DELETE FROM
+      bridge t
+    WHERE EXISTS (
+      SELECT
+        a.COLUMN_VALUE
+      FROM
+        TABLE(pids) a
+      WHERE
+        a.COLUMN_VALUE = t.id
+      )
+    RETURNING
+      id,
+      lod1_multi_surface_id,
+      lod1_solid_id,
+      lod2_multi_surface_id,
+      lod2_solid_id,
+      lod3_multi_surface_id,
+      lod3_solid_id,
+      lod4_multi_surface_id,
+      lod4_solid_id
+    BULK COLLECT INTO
+      deleted_ids,
+      surface_geometry_ids2,
+      surface_geometry_ids3,
+      surface_geometry_ids4,
+      surface_geometry_ids5,
+      surface_geometry_ids6,
+      surface_geometry_ids7,
+      surface_geometry_ids8,
+      surface_geometry_ids9;
+
+    -- collect all surface_geometryids into one nested table
+    surface_geometry_ids1 := surface_geometry_ids1 MULTISET UNION ALL surface_geometry_ids2;
+    surface_geometry_ids1 := surface_geometry_ids1 MULTISET UNION ALL surface_geometry_ids3;
+    surface_geometry_ids1 := surface_geometry_ids1 MULTISET UNION ALL surface_geometry_ids4;
+    surface_geometry_ids1 := surface_geometry_ids1 MULTISET UNION ALL surface_geometry_ids5;
+    surface_geometry_ids1 := surface_geometry_ids1 MULTISET UNION ALL surface_geometry_ids6;
+    surface_geometry_ids1 := surface_geometry_ids1 MULTISET UNION ALL surface_geometry_ids7;
+    surface_geometry_ids1 := surface_geometry_ids1 MULTISET UNION ALL surface_geometry_ids8;
+    surface_geometry_ids1 := surface_geometry_ids1 MULTISET UNION ALL surface_geometry_ids9;
+
+    -- delete surface_geometry(s)
+    IF surface_geometry_ids1 IS NOT EMPTY THEN
+      dummy_ids := del_surface_geometry(surface_geometry_ids1);
+    END IF;
+
+    IF caller <> 1 THEN
+      -- delete cityobject
+      IF deleted_ids IS NOT EMPTY THEN
+        dummy_ids := del_cityobject(deleted_ids, 2);
+      END IF;
+    END IF;
+
+    IF deleted_child_ids IS NOT EMPTY THEN
+      deleted_ids := deleted_child_ids;
+    END IF;
+
+    RETURN deleted_ids;
+
   END;
   ------------------------------------------
 
@@ -549,7 +725,7 @@ AS
     deleted_id NUMBER;
     dummy_ids ID_ARRAY;
   BEGIN
-    dummy_ids := del_bridge_constr_elements(ID_ARRAY(pid));
+    dummy_ids := del_bridge_constr_element(ID_ARRAY(pid));
 
     IF dummy_ids IS NOT EMPTY THEN
       deleted_id := dummy_ids(1);
@@ -563,7 +739,7 @@ AS
   END;
   ------------------------------------------
 
-  FUNCTION del_bridge_constr_elements(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+  FUNCTION del_bridge_constr_element(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
   IS
     object_id number;
     objectclass_id number;
@@ -629,7 +805,7 @@ AS
 
     -- delete surface_geometry(s)
     IF surface_geometry_ids0 IS NOT EMPTY THEN
-      dummy_ids := del_surface_geometrys(surface_geometry_ids0);
+      dummy_ids := del_surface_geometry(surface_geometry_ids0);
     END IF;
 
     -- delete implicit_geometry(s)
@@ -782,14 +958,14 @@ AS
         AND n35.lod4_implicit_rep_id IS NULL;
 
       IF object_ids IS NOT EMPTY THEN
-        dummy_ids := del_implicit_geometrys(object_ids);
+        dummy_ids := del_implicit_geometry(object_ids);
       END IF;
     END IF;
 
     IF caller <> 1 THEN
       -- delete cityobject
       IF deleted_ids IS NOT EMPTY THEN
-        dummy_ids := del_cityobjects(deleted_ids, 2);
+        dummy_ids := del_cityobject(deleted_ids, 2);
       END IF;
     END IF;
 
@@ -807,7 +983,7 @@ AS
     deleted_id NUMBER;
     dummy_ids ID_ARRAY;
   BEGIN
-    dummy_ids := del_bridge_furnitures(ID_ARRAY(pid));
+    dummy_ids := del_bridge_furniture(ID_ARRAY(pid));
 
     IF dummy_ids IS NOT EMPTY THEN
       deleted_id := dummy_ids(1);
@@ -821,7 +997,7 @@ AS
   END;
   ------------------------------------------
 
-  FUNCTION del_bridge_furnitures(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+  FUNCTION del_bridge_furniture(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
   IS
     object_id number;
     objectclass_id number;
@@ -863,7 +1039,7 @@ AS
 
     -- delete surface_geometry(s)
     IF surface_geometry_ids0 IS NOT EMPTY THEN
-      dummy_ids := del_surface_geometrys(surface_geometry_ids0);
+      dummy_ids := del_surface_geometry(surface_geometry_ids0);
     END IF;
 
     -- delete implicit_geometry(s)
@@ -1016,14 +1192,14 @@ AS
         AND n35.lod4_implicit_rep_id IS NULL;
 
       IF object_ids IS NOT EMPTY THEN
-        dummy_ids := del_implicit_geometrys(object_ids);
+        dummy_ids := del_implicit_geometry(object_ids);
       END IF;
     END IF;
 
     IF caller <> 1 THEN
       -- delete cityobject
       IF deleted_ids IS NOT EMPTY THEN
-        dummy_ids := del_cityobjects(deleted_ids, 2);
+        dummy_ids := del_cityobject(deleted_ids, 2);
       END IF;
     END IF;
 
@@ -1041,7 +1217,7 @@ AS
     deleted_id NUMBER;
     dummy_ids ID_ARRAY;
   BEGIN
-    dummy_ids := del_bridge_installations(ID_ARRAY(pid));
+    dummy_ids := del_bridge_installation(ID_ARRAY(pid));
 
     IF dummy_ids IS NOT EMPTY THEN
       deleted_id := dummy_ids(1);
@@ -1055,7 +1231,7 @@ AS
   END;
   ------------------------------------------
 
-  FUNCTION del_bridge_installations(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+  FUNCTION del_bridge_installation(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
   IS
     object_id number;
     objectclass_id number;
@@ -1085,7 +1261,7 @@ AS
       t.bridge_installation_id = a.COLUMN_VALUE;
 
     IF object_ids IS NOT EMPTY THEN
-      dummy_ids := del_bridge_thematic_surfaces(object_ids);
+      dummy_ids := del_bridge_thematic_surface(object_ids);
     END IF;
 
     -- delete bridge_installations
@@ -1128,7 +1304,7 @@ AS
 
     -- delete surface_geometry(s)
     IF surface_geometry_ids0 IS NOT EMPTY THEN
-      dummy_ids := del_surface_geometrys(surface_geometry_ids0);
+      dummy_ids := del_surface_geometry(surface_geometry_ids0);
     END IF;
 
     -- delete implicit_geometry(s)
@@ -1281,14 +1457,14 @@ AS
         AND n35.lod4_implicit_rep_id IS NULL;
 
       IF object_ids IS NOT EMPTY THEN
-        dummy_ids := del_implicit_geometrys(object_ids);
+        dummy_ids := del_implicit_geometry(object_ids);
       END IF;
     END IF;
 
     IF caller <> 1 THEN
       -- delete cityobject
       IF deleted_ids IS NOT EMPTY THEN
-        dummy_ids := del_cityobjects(deleted_ids, 2);
+        dummy_ids := del_cityobject(deleted_ids, 2);
       END IF;
     END IF;
 
@@ -1306,7 +1482,7 @@ AS
     deleted_id NUMBER;
     dummy_ids ID_ARRAY;
   BEGIN
-    dummy_ids := del_bridge_openings(ID_ARRAY(pid));
+    dummy_ids := del_bridge_opening(ID_ARRAY(pid));
 
     IF dummy_ids IS NOT EMPTY THEN
       deleted_id := dummy_ids(1);
@@ -1320,7 +1496,7 @@ AS
   END;
   ------------------------------------------
 
-  FUNCTION del_bridge_openings(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+  FUNCTION del_bridge_opening(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
   IS
     object_id number;
     objectclass_id number;
@@ -1401,13 +1577,13 @@ AS
         AND n4.address_id IS NULL;
 
       IF object_ids IS NOT EMPTY THEN
-        dummy_ids := del_addresss(object_ids);
+        dummy_ids := del_address(object_ids);
       END IF;
     END IF;
 
     -- delete surface_geometry(s)
     IF surface_geometry_ids2 IS NOT EMPTY THEN
-      dummy_ids := del_surface_geometrys(surface_geometry_ids2);
+      dummy_ids := del_surface_geometry(surface_geometry_ids2);
     END IF;
 
     -- delete implicit_geometry(s)
@@ -1560,14 +1736,14 @@ AS
         AND n35.lod4_implicit_rep_id IS NULL;
 
       IF object_ids IS NOT EMPTY THEN
-        dummy_ids := del_implicit_geometrys(object_ids);
+        dummy_ids := del_implicit_geometry(object_ids);
       END IF;
     END IF;
 
     IF caller <> 1 THEN
       -- delete cityobject
       IF deleted_ids IS NOT EMPTY THEN
-        dummy_ids := del_cityobjects(deleted_ids, 2);
+        dummy_ids := del_cityobject(deleted_ids, 2);
       END IF;
     END IF;
 
@@ -1585,7 +1761,7 @@ AS
     deleted_id NUMBER;
     dummy_ids ID_ARRAY;
   BEGIN
-    dummy_ids := del_bridge_rooms(ID_ARRAY(pid));
+    dummy_ids := del_bridge_room(ID_ARRAY(pid));
 
     IF dummy_ids IS NOT EMPTY THEN
       deleted_id := dummy_ids(1);
@@ -1599,7 +1775,7 @@ AS
   END;
   ------------------------------------------
 
-  FUNCTION del_bridge_rooms(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+  FUNCTION del_bridge_room(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
   IS
     object_id number;
     objectclass_id number;
@@ -1624,7 +1800,7 @@ AS
       t.bridge_room_id = a.COLUMN_VALUE;
 
     IF object_ids IS NOT EMPTY THEN
-      dummy_ids := del_bridge_furnitures(object_ids);
+      dummy_ids := del_bridge_furniture(object_ids);
     END IF;
 
     --delete bridge_installations
@@ -1639,7 +1815,7 @@ AS
       t.bridge_room_id = a.COLUMN_VALUE;
 
     IF object_ids IS NOT EMPTY THEN
-      dummy_ids := del_bridge_installations(object_ids);
+      dummy_ids := del_bridge_installation(object_ids);
     END IF;
 
     --delete bridge_thematic_surfaces
@@ -1654,7 +1830,7 @@ AS
       t.bridge_room_id = a.COLUMN_VALUE;
 
     IF object_ids IS NOT EMPTY THEN
-      dummy_ids := del_bridge_thematic_surfaces(object_ids);
+      dummy_ids := del_bridge_thematic_surface(object_ids);
     END IF;
 
     -- delete bridge_rooms
@@ -1683,13 +1859,13 @@ AS
 
     -- delete surface_geometry(s)
     IF surface_geometry_ids0 IS NOT EMPTY THEN
-      dummy_ids := del_surface_geometrys(surface_geometry_ids0);
+      dummy_ids := del_surface_geometry(surface_geometry_ids0);
     END IF;
 
     IF caller <> 1 THEN
       -- delete cityobject
       IF deleted_ids IS NOT EMPTY THEN
-        dummy_ids := del_cityobjects(deleted_ids, 2);
+        dummy_ids := del_cityobject(deleted_ids, 2);
       END IF;
     END IF;
 
@@ -1707,7 +1883,7 @@ AS
     deleted_id NUMBER;
     dummy_ids ID_ARRAY;
   BEGIN
-    dummy_ids := del_bridge_thematic_surfaces(ID_ARRAY(pid));
+    dummy_ids := del_bridge_thematic_surface(ID_ARRAY(pid));
 
     IF dummy_ids IS NOT EMPTY THEN
       deleted_id := dummy_ids(1);
@@ -1721,7 +1897,7 @@ AS
   END;
   ------------------------------------------
 
-  FUNCTION del_bridge_thematic_surfaces(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+  FUNCTION del_bridge_thematic_surface(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
   IS
     object_id number;
     objectclass_id number;
@@ -1754,7 +1930,7 @@ AS
 
     -- delete bridge_opening(s)
     IF bridge_opening_ids0 IS NOT EMPTY THEN
-      dummy_ids := del_bridge_openings(bridge_opening_ids0);
+      dummy_ids := del_bridge_opening(bridge_opening_ids0);
     END IF;
 
     -- delete bridge_thematic_surfaces
@@ -1786,13 +1962,13 @@ AS
 
     -- delete surface_geometry(s)
     IF surface_geometry_ids1 IS NOT EMPTY THEN
-      dummy_ids := del_surface_geometrys(surface_geometry_ids1);
+      dummy_ids := del_surface_geometry(surface_geometry_ids1);
     END IF;
 
     IF caller <> 1 THEN
       -- delete cityobject
       IF deleted_ids IS NOT EMPTY THEN
-        dummy_ids := del_cityobjects(deleted_ids, 2);
+        dummy_ids := del_cityobject(deleted_ids, 2);
       END IF;
     END IF;
 
@@ -1805,7 +1981,26 @@ AS
   END;
   ------------------------------------------
 
-  FUNCTION del_bridges(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+  FUNCTION del_building(pid NUMBER) RETURN NUMBER
+  IS
+    deleted_id NUMBER;
+    dummy_ids ID_ARRAY;
+  BEGIN
+    dummy_ids := del_building(ID_ARRAY(pid));
+
+    IF dummy_ids IS NOT EMPTY THEN
+      deleted_id := dummy_ids(1);
+    END IF;
+
+    RETURN deleted_id;
+
+    EXCEPTION
+      WHEN NO_DATA_FOUND THEN
+        RETURN deleted_id;
+  END;
+  ------------------------------------------
+
+  FUNCTION del_building(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
   IS
     object_id number;
     objectclass_id number;
@@ -1824,6 +2019,8 @@ AS
     surface_geometry_ids7 ID_ARRAY := ID_ARRAY();
     surface_geometry_ids8 ID_ARRAY := ID_ARRAY();
     surface_geometry_ids9 ID_ARRAY := ID_ARRAY();
+    surface_geometry_ids10 ID_ARRAY := ID_ARRAY();
+    surface_geometry_ids11 ID_ARRAY := ID_ARRAY();
   BEGIN
     -- delete referenced parts
     SELECT
@@ -1831,14 +2028,14 @@ AS
     BULK COLLECT INTO
       object_ids
     FROM
-      bridge t,
+      building t,
       TABLE(pids) a
     WHERE
-      t.bridge_parent_id = a.COLUMN_VALUE
+      t.building_parent_id = a.COLUMN_VALUE
       AND t.id <> a.COLUMN_VALUE;
 
     IF object_ids IS NOT EMPTY THEN
-      dummy_ids := del_bridges(object_ids);
+      dummy_ids := del_building(object_ids);
     END IF;
 
     -- delete referenced parts
@@ -1847,26 +2044,26 @@ AS
     BULK COLLECT INTO
       object_ids
     FROM
-      bridge t,
+      building t,
       TABLE(pids) a
     WHERE
-      t.bridge_root_id = a.COLUMN_VALUE
+      t.building_root_id = a.COLUMN_VALUE
       AND t.id <> a.COLUMN_VALUE;
 
     IF object_ids IS NOT EMPTY THEN
-      dummy_ids := del_bridges(object_ids);
+      dummy_ids := del_building(object_ids);
     END IF;
 
     -- delete references to addresss
     DELETE FROM
-      address_to_bridge t
+      address_to_building t
     WHERE EXISTS (
       SELECT
         1
       FROM
         TABLE(pids) a
       WHERE
-        a.COLUMN_VALUE = t.bridge_id
+        a.COLUMN_VALUE = t.building_id
     )
     RETURNING
       address_id
@@ -1899,73 +2096,58 @@ AS
         AND n4.address_id IS NULL;
 
       IF object_ids IS NOT EMPTY THEN
-        dummy_ids := del_addresss(object_ids);
+        dummy_ids := del_address(object_ids);
       END IF;
     END IF;
 
-    --delete bridge_constr_elements
+    --delete building_installations
     SELECT
       t.id
     BULK COLLECT INTO
       object_ids
     FROM
-      bridge_constr_element t,
+      building_installation t,
       TABLE(pids) a
     WHERE
-      t.bridge_id = a.COLUMN_VALUE;
+      t.building_id = a.COLUMN_VALUE;
 
     IF object_ids IS NOT EMPTY THEN
-      dummy_ids := del_bridge_constr_elements(object_ids);
+      dummy_ids := del_building_installation(object_ids);
     END IF;
 
-    --delete bridge_installations
+    --delete rooms
     SELECT
       t.id
     BULK COLLECT INTO
       object_ids
     FROM
-      bridge_installation t,
+      room t,
       TABLE(pids) a
     WHERE
-      t.bridge_id = a.COLUMN_VALUE;
+      t.building_id = a.COLUMN_VALUE;
 
     IF object_ids IS NOT EMPTY THEN
-      dummy_ids := del_bridge_installations(object_ids);
+      dummy_ids := del_room(object_ids);
     END IF;
 
-    --delete bridge_rooms
+    --delete thematic_surfaces
     SELECT
       t.id
     BULK COLLECT INTO
       object_ids
     FROM
-      bridge_room t,
+      thematic_surface t,
       TABLE(pids) a
     WHERE
-      t.bridge_id = a.COLUMN_VALUE;
+      t.building_id = a.COLUMN_VALUE;
 
     IF object_ids IS NOT EMPTY THEN
-      dummy_ids := del_bridge_rooms(object_ids);
+      dummy_ids := del_thematic_surface(object_ids);
     END IF;
 
-    --delete bridge_thematic_surfaces
-    SELECT
-      t.id
-    BULK COLLECT INTO
-      object_ids
-    FROM
-      bridge_thematic_surface t,
-      TABLE(pids) a
-    WHERE
-      t.bridge_id = a.COLUMN_VALUE;
-
-    IF object_ids IS NOT EMPTY THEN
-      dummy_ids := del_bridge_thematic_surfaces(object_ids);
-    END IF;
-
-    -- delete bridges
+    -- delete buildings
     DELETE FROM
-      bridge t
+      building t
     WHERE EXISTS (
       SELECT
         a.COLUMN_VALUE
@@ -1976,6 +2158,8 @@ AS
       )
     RETURNING
       id,
+      lod0_footprint_id,
+      lod0_roofprint_id,
       lod1_multi_surface_id,
       lod1_solid_id,
       lod2_multi_surface_id,
@@ -1993,7 +2177,9 @@ AS
       surface_geometry_ids6,
       surface_geometry_ids7,
       surface_geometry_ids8,
-      surface_geometry_ids9;
+      surface_geometry_ids9,
+      surface_geometry_ids10,
+      surface_geometry_ids11;
 
     -- collect all surface_geometryids into one nested table
     surface_geometry_ids1 := surface_geometry_ids1 MULTISET UNION ALL surface_geometry_ids2;
@@ -2004,16 +2190,18 @@ AS
     surface_geometry_ids1 := surface_geometry_ids1 MULTISET UNION ALL surface_geometry_ids7;
     surface_geometry_ids1 := surface_geometry_ids1 MULTISET UNION ALL surface_geometry_ids8;
     surface_geometry_ids1 := surface_geometry_ids1 MULTISET UNION ALL surface_geometry_ids9;
+    surface_geometry_ids1 := surface_geometry_ids1 MULTISET UNION ALL surface_geometry_ids10;
+    surface_geometry_ids1 := surface_geometry_ids1 MULTISET UNION ALL surface_geometry_ids11;
 
     -- delete surface_geometry(s)
     IF surface_geometry_ids1 IS NOT EMPTY THEN
-      dummy_ids := del_surface_geometrys(surface_geometry_ids1);
+      dummy_ids := del_surface_geometry(surface_geometry_ids1);
     END IF;
 
     IF caller <> 1 THEN
       -- delete cityobject
       IF deleted_ids IS NOT EMPTY THEN
-        dummy_ids := del_cityobjects(deleted_ids, 2);
+        dummy_ids := del_cityobject(deleted_ids, 2);
       END IF;
     END IF;
 
@@ -2026,31 +2214,12 @@ AS
   END;
   ------------------------------------------
 
-  FUNCTION del_building(pid NUMBER) RETURN NUMBER
-  IS
-    deleted_id NUMBER;
-    dummy_ids ID_ARRAY;
-  BEGIN
-    dummy_ids := del_buildings(ID_ARRAY(pid));
-
-    IF dummy_ids IS NOT EMPTY THEN
-      deleted_id := dummy_ids(1);
-    END IF;
-
-    RETURN deleted_id;
-
-    EXCEPTION
-      WHEN NO_DATA_FOUND THEN
-        RETURN deleted_id;
-  END;
-  ------------------------------------------
-
   FUNCTION del_building_furniture(pid NUMBER) RETURN NUMBER
   IS
     deleted_id NUMBER;
     dummy_ids ID_ARRAY;
   BEGIN
-    dummy_ids := del_building_furnitures(ID_ARRAY(pid));
+    dummy_ids := del_building_furniture(ID_ARRAY(pid));
 
     IF dummy_ids IS NOT EMPTY THEN
       deleted_id := dummy_ids(1);
@@ -2064,7 +2233,7 @@ AS
   END;
   ------------------------------------------
 
-  FUNCTION del_building_furnitures(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+  FUNCTION del_building_furniture(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
   IS
     object_id number;
     objectclass_id number;
@@ -2106,7 +2275,7 @@ AS
 
     -- delete surface_geometry(s)
     IF surface_geometry_ids0 IS NOT EMPTY THEN
-      dummy_ids := del_surface_geometrys(surface_geometry_ids0);
+      dummy_ids := del_surface_geometry(surface_geometry_ids0);
     END IF;
 
     -- delete implicit_geometry(s)
@@ -2259,14 +2428,14 @@ AS
         AND n35.lod4_implicit_rep_id IS NULL;
 
       IF object_ids IS NOT EMPTY THEN
-        dummy_ids := del_implicit_geometrys(object_ids);
+        dummy_ids := del_implicit_geometry(object_ids);
       END IF;
     END IF;
 
     IF caller <> 1 THEN
       -- delete cityobject
       IF deleted_ids IS NOT EMPTY THEN
-        dummy_ids := del_cityobjects(deleted_ids, 2);
+        dummy_ids := del_cityobject(deleted_ids, 2);
       END IF;
     END IF;
 
@@ -2284,7 +2453,7 @@ AS
     deleted_id NUMBER;
     dummy_ids ID_ARRAY;
   BEGIN
-    dummy_ids := del_building_installations(ID_ARRAY(pid));
+    dummy_ids := del_building_installation(ID_ARRAY(pid));
 
     IF dummy_ids IS NOT EMPTY THEN
       deleted_id := dummy_ids(1);
@@ -2298,7 +2467,7 @@ AS
   END;
   ------------------------------------------
 
-  FUNCTION del_building_installations(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+  FUNCTION del_building_installation(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
   IS
     object_id number;
     objectclass_id number;
@@ -2328,7 +2497,7 @@ AS
       t.building_installation_id = a.COLUMN_VALUE;
 
     IF object_ids IS NOT EMPTY THEN
-      dummy_ids := del_thematic_surfaces(object_ids);
+      dummy_ids := del_thematic_surface(object_ids);
     END IF;
 
     -- delete building_installations
@@ -2371,7 +2540,7 @@ AS
 
     -- delete surface_geometry(s)
     IF surface_geometry_ids0 IS NOT EMPTY THEN
-      dummy_ids := del_surface_geometrys(surface_geometry_ids0);
+      dummy_ids := del_surface_geometry(surface_geometry_ids0);
     END IF;
 
     -- delete implicit_geometry(s)
@@ -2524,228 +2693,14 @@ AS
         AND n35.lod4_implicit_rep_id IS NULL;
 
       IF object_ids IS NOT EMPTY THEN
-        dummy_ids := del_implicit_geometrys(object_ids);
+        dummy_ids := del_implicit_geometry(object_ids);
       END IF;
     END IF;
 
     IF caller <> 1 THEN
       -- delete cityobject
       IF deleted_ids IS NOT EMPTY THEN
-        dummy_ids := del_cityobjects(deleted_ids, 2);
-      END IF;
-    END IF;
-
-    IF deleted_child_ids IS NOT EMPTY THEN
-      deleted_ids := deleted_child_ids;
-    END IF;
-
-    RETURN deleted_ids;
-
-  END;
-  ------------------------------------------
-
-  FUNCTION del_buildings(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
-  IS
-    object_id number;
-    objectclass_id number;
-    object_ids ID_ARRAY := ID_ARRAY();
-    deleted_child_ids ID_ARRAY := ID_ARRAY();
-    deleted_ids ID_ARRAY := ID_ARRAY();
-    dummy_ids ID_ARRAY := ID_ARRAY();
-    cur sys_refcursor;
-    address_ids0 ID_ARRAY := ID_ARRAY();
-    surface_geometry_ids1 ID_ARRAY := ID_ARRAY();
-    surface_geometry_ids2 ID_ARRAY := ID_ARRAY();
-    surface_geometry_ids3 ID_ARRAY := ID_ARRAY();
-    surface_geometry_ids4 ID_ARRAY := ID_ARRAY();
-    surface_geometry_ids5 ID_ARRAY := ID_ARRAY();
-    surface_geometry_ids6 ID_ARRAY := ID_ARRAY();
-    surface_geometry_ids7 ID_ARRAY := ID_ARRAY();
-    surface_geometry_ids8 ID_ARRAY := ID_ARRAY();
-    surface_geometry_ids9 ID_ARRAY := ID_ARRAY();
-    surface_geometry_ids10 ID_ARRAY := ID_ARRAY();
-    surface_geometry_ids11 ID_ARRAY := ID_ARRAY();
-  BEGIN
-    -- delete referenced parts
-    SELECT
-      t.id
-    BULK COLLECT INTO
-      object_ids
-    FROM
-      building t,
-      TABLE(pids) a
-    WHERE
-      t.building_parent_id = a.COLUMN_VALUE
-      AND t.id <> a.COLUMN_VALUE;
-
-    IF object_ids IS NOT EMPTY THEN
-      dummy_ids := del_buildings(object_ids);
-    END IF;
-
-    -- delete referenced parts
-    SELECT
-      t.id
-    BULK COLLECT INTO
-      object_ids
-    FROM
-      building t,
-      TABLE(pids) a
-    WHERE
-      t.building_root_id = a.COLUMN_VALUE
-      AND t.id <> a.COLUMN_VALUE;
-
-    IF object_ids IS NOT EMPTY THEN
-      dummy_ids := del_buildings(object_ids);
-    END IF;
-
-    -- delete references to addresss
-    DELETE FROM
-      address_to_building t
-    WHERE EXISTS (
-      SELECT
-        1
-      FROM
-        TABLE(pids) a
-      WHERE
-        a.COLUMN_VALUE = t.building_id
-    )
-    RETURNING
-      address_id
-    BULK COLLECT INTO
-      address_ids0;
-
-    -- delete address(s)
-    IF address_ids0 IS NOT EMPTY THEN
-      SELECT DISTINCT
-        a.COLUMN_VALUE
-      BULK COLLECT INTO
-        object_ids
-      FROM
-        TABLE(address_ids0) a
-      LEFT JOIN
-        address_to_bridge n1
-        ON n1.address_id  = a.COLUMN_VALUE
-      LEFT JOIN
-        address_to_building n2
-        ON n2.address_id  = a.COLUMN_VALUE
-      LEFT JOIN
-        bridge_opening n3
-        ON n3.address_id  = a.COLUMN_VALUE
-      LEFT JOIN
-        opening n4
-        ON n4.address_id  = a.COLUMN_VALUE
-      WHERE n1.address_id IS NULL
-        AND n2.address_id IS NULL
-        AND n3.address_id IS NULL
-        AND n4.address_id IS NULL;
-
-      IF object_ids IS NOT EMPTY THEN
-        dummy_ids := del_addresss(object_ids);
-      END IF;
-    END IF;
-
-    --delete building_installations
-    SELECT
-      t.id
-    BULK COLLECT INTO
-      object_ids
-    FROM
-      building_installation t,
-      TABLE(pids) a
-    WHERE
-      t.building_id = a.COLUMN_VALUE;
-
-    IF object_ids IS NOT EMPTY THEN
-      dummy_ids := del_building_installations(object_ids);
-    END IF;
-
-    --delete rooms
-    SELECT
-      t.id
-    BULK COLLECT INTO
-      object_ids
-    FROM
-      room t,
-      TABLE(pids) a
-    WHERE
-      t.building_id = a.COLUMN_VALUE;
-
-    IF object_ids IS NOT EMPTY THEN
-      dummy_ids := del_rooms(object_ids);
-    END IF;
-
-    --delete thematic_surfaces
-    SELECT
-      t.id
-    BULK COLLECT INTO
-      object_ids
-    FROM
-      thematic_surface t,
-      TABLE(pids) a
-    WHERE
-      t.building_id = a.COLUMN_VALUE;
-
-    IF object_ids IS NOT EMPTY THEN
-      dummy_ids := del_thematic_surfaces(object_ids);
-    END IF;
-
-    -- delete buildings
-    DELETE FROM
-      building t
-    WHERE EXISTS (
-      SELECT
-        a.COLUMN_VALUE
-      FROM
-        TABLE(pids) a
-      WHERE
-        a.COLUMN_VALUE = t.id
-      )
-    RETURNING
-      id,
-      lod0_footprint_id,
-      lod0_roofprint_id,
-      lod1_multi_surface_id,
-      lod1_solid_id,
-      lod2_multi_surface_id,
-      lod2_solid_id,
-      lod3_multi_surface_id,
-      lod3_solid_id,
-      lod4_multi_surface_id,
-      lod4_solid_id
-    BULK COLLECT INTO
-      deleted_ids,
-      surface_geometry_ids2,
-      surface_geometry_ids3,
-      surface_geometry_ids4,
-      surface_geometry_ids5,
-      surface_geometry_ids6,
-      surface_geometry_ids7,
-      surface_geometry_ids8,
-      surface_geometry_ids9,
-      surface_geometry_ids10,
-      surface_geometry_ids11;
-
-    -- collect all surface_geometryids into one nested table
-    surface_geometry_ids1 := surface_geometry_ids1 MULTISET UNION ALL surface_geometry_ids2;
-    surface_geometry_ids1 := surface_geometry_ids1 MULTISET UNION ALL surface_geometry_ids3;
-    surface_geometry_ids1 := surface_geometry_ids1 MULTISET UNION ALL surface_geometry_ids4;
-    surface_geometry_ids1 := surface_geometry_ids1 MULTISET UNION ALL surface_geometry_ids5;
-    surface_geometry_ids1 := surface_geometry_ids1 MULTISET UNION ALL surface_geometry_ids6;
-    surface_geometry_ids1 := surface_geometry_ids1 MULTISET UNION ALL surface_geometry_ids7;
-    surface_geometry_ids1 := surface_geometry_ids1 MULTISET UNION ALL surface_geometry_ids8;
-    surface_geometry_ids1 := surface_geometry_ids1 MULTISET UNION ALL surface_geometry_ids9;
-    surface_geometry_ids1 := surface_geometry_ids1 MULTISET UNION ALL surface_geometry_ids10;
-    surface_geometry_ids1 := surface_geometry_ids1 MULTISET UNION ALL surface_geometry_ids11;
-
-    -- delete surface_geometry(s)
-    IF surface_geometry_ids1 IS NOT EMPTY THEN
-      dummy_ids := del_surface_geometrys(surface_geometry_ids1);
-    END IF;
-
-    IF caller <> 1 THEN
-      -- delete cityobject
-      IF deleted_ids IS NOT EMPTY THEN
-        dummy_ids := del_cityobjects(deleted_ids, 2);
+        dummy_ids := del_cityobject(deleted_ids, 2);
       END IF;
     END IF;
 
@@ -2763,7 +2718,7 @@ AS
     deleted_id NUMBER;
     dummy_ids ID_ARRAY;
   BEGIN
-    dummy_ids := del_city_furnitures(ID_ARRAY(pid));
+    dummy_ids := del_city_furniture(ID_ARRAY(pid));
 
     IF dummy_ids IS NOT EMPTY THEN
       deleted_id := dummy_ids(1);
@@ -2777,7 +2732,7 @@ AS
   END;
   ------------------------------------------
 
-  FUNCTION del_city_furnitures(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+  FUNCTION del_city_furniture(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
   IS
     object_id number;
     objectclass_id number;
@@ -2843,7 +2798,7 @@ AS
 
     -- delete surface_geometry(s)
     IF surface_geometry_ids0 IS NOT EMPTY THEN
-      dummy_ids := del_surface_geometrys(surface_geometry_ids0);
+      dummy_ids := del_surface_geometry(surface_geometry_ids0);
     END IF;
 
     -- delete implicit_geometry(s)
@@ -2996,14 +2951,14 @@ AS
         AND n35.lod4_implicit_rep_id IS NULL;
 
       IF object_ids IS NOT EMPTY THEN
-        dummy_ids := del_implicit_geometrys(object_ids);
+        dummy_ids := del_implicit_geometry(object_ids);
       END IF;
     END IF;
 
     IF caller <> 1 THEN
       -- delete cityobject
       IF deleted_ids IS NOT EMPTY THEN
-        dummy_ids := del_cityobjects(deleted_ids, 2);
+        dummy_ids := del_cityobject(deleted_ids, 2);
       END IF;
     END IF;
 
@@ -3021,7 +2976,7 @@ AS
     deleted_id NUMBER;
     dummy_ids ID_ARRAY;
   BEGIN
-    dummy_ids := del_citymodels(ID_ARRAY(pid));
+    dummy_ids := del_citymodel(ID_ARRAY(pid));
 
     IF dummy_ids IS NOT EMPTY THEN
       deleted_id := dummy_ids(1);
@@ -3035,7 +2990,7 @@ AS
   END;
   ------------------------------------------
 
-  FUNCTION del_citymodels(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+  FUNCTION del_citymodel(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
   IS
     object_id number;
     objectclass_id number;
@@ -3058,7 +3013,7 @@ AS
       t.citymodel_id = a.COLUMN_VALUE;
 
     IF object_ids IS NOT EMPTY THEN
-      dummy_ids := del_appearances(object_ids);
+      dummy_ids := del_appearance(object_ids);
     END IF;
 
     -- delete references to cityobjects
@@ -3095,7 +3050,7 @@ AS
         AND n2.cityobject_id IS NULL;
 
       IF object_ids IS NOT EMPTY THEN
-        dummy_ids := del_cityobjects(object_ids);
+        dummy_ids := del_cityobject(object_ids);
       END IF;
     END IF;
 
@@ -3129,7 +3084,7 @@ AS
     deleted_id NUMBER;
     dummy_ids ID_ARRAY;
   BEGIN
-    dummy_ids := del_cityobjects(ID_ARRAY(pid));
+    dummy_ids := del_cityobject(ID_ARRAY(pid));
 
     IF dummy_ids IS NOT EMPTY THEN
       deleted_id := dummy_ids(1);
@@ -3140,6 +3095,390 @@ AS
     EXCEPTION
       WHEN NO_DATA_FOUND THEN
         RETURN deleted_id;
+  END;
+  ------------------------------------------
+
+  FUNCTION del_cityobject(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+  IS
+    object_id number;
+    objectclass_id number;
+    object_ids ID_ARRAY := ID_ARRAY();
+    deleted_child_ids ID_ARRAY := ID_ARRAY();
+    deleted_ids ID_ARRAY := ID_ARRAY();
+    dummy_ids ID_ARRAY := ID_ARRAY();
+    cur sys_refcursor;
+  BEGIN
+    --delete appearances
+    SELECT
+      t.id
+    BULK COLLECT INTO
+      object_ids
+    FROM
+      appearance t,
+      TABLE(pids) a
+    WHERE
+      t.cityobject_id = a.COLUMN_VALUE;
+
+    IF object_ids IS NOT EMPTY THEN
+      dummy_ids := del_appearance(object_ids);
+    END IF;
+
+    --delete cityobject_genericattribs
+    SELECT
+      t.id
+    BULK COLLECT INTO
+      object_ids
+    FROM
+      cityobject_genericattrib t,
+      TABLE(pids) a
+    WHERE
+      t.cityobject_id = a.COLUMN_VALUE;
+
+    IF object_ids IS NOT EMPTY THEN
+      dummy_ids := del_cityobject_genericattrib(object_ids);
+    END IF;
+
+    --delete external_references
+    SELECT
+      t.id
+    BULK COLLECT INTO
+      object_ids
+    FROM
+      external_reference t,
+      TABLE(pids) a
+    WHERE
+      t.cityobject_id = a.COLUMN_VALUE;
+
+    IF object_ids IS NOT EMPTY THEN
+      dummy_ids := del_external_reference(object_ids);
+    END IF;
+
+    IF caller <> 2 THEN
+      OPEN cur FOR
+        SELECT
+          co.id, co.objectclass_id
+        FROM
+          cityobject co, TABLE(pids) a
+        WHERE
+          a.COLUMN_VALUE = co.id;
+      LOOP
+        FETCH cur into object_id, objectclass_id;
+        EXIT WHEN cur%notfound;
+        CASE
+          -- delete land_use
+          WHEN objectclass_id = 4 THEN
+            dummy_ids := del_land_use(ID_ARRAY(object_id), 1);
+          -- delete generic_cityobject
+          WHEN objectclass_id = 5 THEN
+            dummy_ids := del_generic_cityobject(ID_ARRAY(object_id), 1);
+          -- delete solitary_vegetat_object
+          WHEN objectclass_id = 7 THEN
+            dummy_ids := del_solitary_vegetat_object(ID_ARRAY(object_id), 1);
+          -- delete plant_cover
+          WHEN objectclass_id = 8 THEN
+            dummy_ids := del_plant_cover(ID_ARRAY(object_id), 1);
+          -- delete waterbody
+          WHEN objectclass_id = 9 THEN
+            dummy_ids := del_waterbody(ID_ARRAY(object_id), 1);
+          -- delete waterboundary_surface
+          WHEN objectclass_id = 10 THEN
+            dummy_ids := del_waterboundary_surface(ID_ARRAY(object_id), 1);
+          -- delete waterboundary_surface
+          WHEN objectclass_id = 11 THEN
+            dummy_ids := del_waterboundary_surface(ID_ARRAY(object_id), 1);
+          -- delete waterboundary_surface
+          WHEN objectclass_id = 12 THEN
+            dummy_ids := del_waterboundary_surface(ID_ARRAY(object_id), 1);
+          -- delete waterboundary_surface
+          WHEN objectclass_id = 13 THEN
+            dummy_ids := del_waterboundary_surface(ID_ARRAY(object_id), 1);
+          -- delete relief_feature
+          WHEN objectclass_id = 14 THEN
+            dummy_ids := del_relief_feature(ID_ARRAY(object_id), 1);
+          -- delete relief_component
+          WHEN objectclass_id = 15 THEN
+            dummy_ids := del_relief_component(ID_ARRAY(object_id), 1);
+          -- delete tin_relief
+          WHEN objectclass_id = 16 THEN
+            dummy_ids := del_tin_relief(ID_ARRAY(object_id), 0);
+          -- delete masspoint_relief
+          WHEN objectclass_id = 17 THEN
+            dummy_ids := del_masspoint_relief(ID_ARRAY(object_id), 0);
+          -- delete breakline_relief
+          WHEN objectclass_id = 18 THEN
+            dummy_ids := del_breakline_relief(ID_ARRAY(object_id), 0);
+          -- delete city_furniture
+          WHEN objectclass_id = 21 THEN
+            dummy_ids := del_city_furniture(ID_ARRAY(object_id), 1);
+          -- delete cityobjectgroup
+          WHEN objectclass_id = 23 THEN
+            dummy_ids := del_cityobjectgroup(ID_ARRAY(object_id), 1);
+          -- delete building
+          WHEN objectclass_id = 24 THEN
+            dummy_ids := del_building(ID_ARRAY(object_id), 1);
+          -- delete building
+          WHEN objectclass_id = 25 THEN
+            dummy_ids := del_building(ID_ARRAY(object_id), 1);
+          -- delete building
+          WHEN objectclass_id = 26 THEN
+            dummy_ids := del_building(ID_ARRAY(object_id), 1);
+          -- delete building_installation
+          WHEN objectclass_id = 27 THEN
+            dummy_ids := del_building_installation(ID_ARRAY(object_id), 1);
+          -- delete building_installation
+          WHEN objectclass_id = 28 THEN
+            dummy_ids := del_building_installation(ID_ARRAY(object_id), 1);
+          -- delete thematic_surface
+          WHEN objectclass_id = 29 THEN
+            dummy_ids := del_thematic_surface(ID_ARRAY(object_id), 1);
+          -- delete thematic_surface
+          WHEN objectclass_id = 30 THEN
+            dummy_ids := del_thematic_surface(ID_ARRAY(object_id), 1);
+          -- delete thematic_surface
+          WHEN objectclass_id = 31 THEN
+            dummy_ids := del_thematic_surface(ID_ARRAY(object_id), 1);
+          -- delete thematic_surface
+          WHEN objectclass_id = 32 THEN
+            dummy_ids := del_thematic_surface(ID_ARRAY(object_id), 1);
+          -- delete thematic_surface
+          WHEN objectclass_id = 33 THEN
+            dummy_ids := del_thematic_surface(ID_ARRAY(object_id), 1);
+          -- delete thematic_surface
+          WHEN objectclass_id = 34 THEN
+            dummy_ids := del_thematic_surface(ID_ARRAY(object_id), 1);
+          -- delete thematic_surface
+          WHEN objectclass_id = 35 THEN
+            dummy_ids := del_thematic_surface(ID_ARRAY(object_id), 1);
+          -- delete thematic_surface
+          WHEN objectclass_id = 36 THEN
+            dummy_ids := del_thematic_surface(ID_ARRAY(object_id), 1);
+          -- delete opening
+          WHEN objectclass_id = 37 THEN
+            dummy_ids := del_opening(ID_ARRAY(object_id), 1);
+          -- delete opening
+          WHEN objectclass_id = 38 THEN
+            dummy_ids := del_opening(ID_ARRAY(object_id), 1);
+          -- delete opening
+          WHEN objectclass_id = 39 THEN
+            dummy_ids := del_opening(ID_ARRAY(object_id), 1);
+          -- delete building_furniture
+          WHEN objectclass_id = 40 THEN
+            dummy_ids := del_building_furniture(ID_ARRAY(object_id), 1);
+          -- delete room
+          WHEN objectclass_id = 41 THEN
+            dummy_ids := del_room(ID_ARRAY(object_id), 1);
+          -- delete transportation_complex
+          WHEN objectclass_id = 42 THEN
+            dummy_ids := del_transportation_complex(ID_ARRAY(object_id), 1);
+          -- delete transportation_complex
+          WHEN objectclass_id = 43 THEN
+            dummy_ids := del_transportation_complex(ID_ARRAY(object_id), 1);
+          -- delete transportation_complex
+          WHEN objectclass_id = 44 THEN
+            dummy_ids := del_transportation_complex(ID_ARRAY(object_id), 1);
+          -- delete transportation_complex
+          WHEN objectclass_id = 45 THEN
+            dummy_ids := del_transportation_complex(ID_ARRAY(object_id), 1);
+          -- delete transportation_complex
+          WHEN objectclass_id = 46 THEN
+            dummy_ids := del_transportation_complex(ID_ARRAY(object_id), 1);
+          -- delete traffic_area
+          WHEN objectclass_id = 47 THEN
+            dummy_ids := del_traffic_area(ID_ARRAY(object_id), 1);
+          -- delete traffic_area
+          WHEN objectclass_id = 48 THEN
+            dummy_ids := del_traffic_area(ID_ARRAY(object_id), 1);
+          -- delete appearance
+          WHEN objectclass_id = 50 THEN
+            dummy_ids := del_appearance(ID_ARRAY(object_id), 0);
+          -- delete surface_data
+          WHEN objectclass_id = 51 THEN
+            dummy_ids := del_surface_data(ID_ARRAY(object_id), 0);
+          -- delete surface_data
+          WHEN objectclass_id = 52 THEN
+            dummy_ids := del_surface_data(ID_ARRAY(object_id), 0);
+          -- delete surface_data
+          WHEN objectclass_id = 53 THEN
+            dummy_ids := del_surface_data(ID_ARRAY(object_id), 0);
+          -- delete surface_data
+          WHEN objectclass_id = 54 THEN
+            dummy_ids := del_surface_data(ID_ARRAY(object_id), 0);
+          -- delete surface_data
+          WHEN objectclass_id = 55 THEN
+            dummy_ids := del_surface_data(ID_ARRAY(object_id), 0);
+          -- delete citymodel
+          WHEN objectclass_id = 57 THEN
+            dummy_ids := del_citymodel(ID_ARRAY(object_id), 0);
+          -- delete address
+          WHEN objectclass_id = 58 THEN
+            dummy_ids := del_address(ID_ARRAY(object_id), 0);
+          -- delete implicit_geometry
+          WHEN objectclass_id = 59 THEN
+            dummy_ids := del_implicit_geometry(ID_ARRAY(object_id), 0);
+          -- delete thematic_surface
+          WHEN objectclass_id = 60 THEN
+            dummy_ids := del_thematic_surface(ID_ARRAY(object_id), 1);
+          -- delete thematic_surface
+          WHEN objectclass_id = 61 THEN
+            dummy_ids := del_thematic_surface(ID_ARRAY(object_id), 1);
+          -- delete bridge
+          WHEN objectclass_id = 62 THEN
+            dummy_ids := del_bridge(ID_ARRAY(object_id), 1);
+          -- delete bridge
+          WHEN objectclass_id = 63 THEN
+            dummy_ids := del_bridge(ID_ARRAY(object_id), 1);
+          -- delete bridge
+          WHEN objectclass_id = 64 THEN
+            dummy_ids := del_bridge(ID_ARRAY(object_id), 1);
+          -- delete bridge_installation
+          WHEN objectclass_id = 65 THEN
+            dummy_ids := del_bridge_installation(ID_ARRAY(object_id), 1);
+          -- delete bridge_installation
+          WHEN objectclass_id = 66 THEN
+            dummy_ids := del_bridge_installation(ID_ARRAY(object_id), 1);
+          -- delete bridge_thematic_surface
+          WHEN objectclass_id = 67 THEN
+            dummy_ids := del_bridge_thematic_surface(ID_ARRAY(object_id), 1);
+          -- delete bridge_thematic_surface
+          WHEN objectclass_id = 68 THEN
+            dummy_ids := del_bridge_thematic_surface(ID_ARRAY(object_id), 1);
+          -- delete bridge_thematic_surface
+          WHEN objectclass_id = 69 THEN
+            dummy_ids := del_bridge_thematic_surface(ID_ARRAY(object_id), 1);
+          -- delete bridge_thematic_surface
+          WHEN objectclass_id = 70 THEN
+            dummy_ids := del_bridge_thematic_surface(ID_ARRAY(object_id), 1);
+          -- delete bridge_thematic_surface
+          WHEN objectclass_id = 71 THEN
+            dummy_ids := del_bridge_thematic_surface(ID_ARRAY(object_id), 1);
+          -- delete bridge_thematic_surface
+          WHEN objectclass_id = 72 THEN
+            dummy_ids := del_bridge_thematic_surface(ID_ARRAY(object_id), 1);
+          -- delete bridge_thematic_surface
+          WHEN objectclass_id = 73 THEN
+            dummy_ids := del_bridge_thematic_surface(ID_ARRAY(object_id), 1);
+          -- delete bridge_thematic_surface
+          WHEN objectclass_id = 74 THEN
+            dummy_ids := del_bridge_thematic_surface(ID_ARRAY(object_id), 1);
+          -- delete bridge_thematic_surface
+          WHEN objectclass_id = 75 THEN
+            dummy_ids := del_bridge_thematic_surface(ID_ARRAY(object_id), 1);
+          -- delete bridge_thematic_surface
+          WHEN objectclass_id = 76 THEN
+            dummy_ids := del_bridge_thematic_surface(ID_ARRAY(object_id), 1);
+          -- delete bridge_opening
+          WHEN objectclass_id = 77 THEN
+            dummy_ids := del_bridge_opening(ID_ARRAY(object_id), 1);
+          -- delete bridge_opening
+          WHEN objectclass_id = 78 THEN
+            dummy_ids := del_bridge_opening(ID_ARRAY(object_id), 1);
+          -- delete bridge_opening
+          WHEN objectclass_id = 79 THEN
+            dummy_ids := del_bridge_opening(ID_ARRAY(object_id), 1);
+          -- delete bridge_furniture
+          WHEN objectclass_id = 80 THEN
+            dummy_ids := del_bridge_furniture(ID_ARRAY(object_id), 1);
+          -- delete bridge_room
+          WHEN objectclass_id = 81 THEN
+            dummy_ids := del_bridge_room(ID_ARRAY(object_id), 1);
+          -- delete bridge_constr_element
+          WHEN objectclass_id = 82 THEN
+            dummy_ids := del_bridge_constr_element(ID_ARRAY(object_id), 1);
+          -- delete tunnel
+          WHEN objectclass_id = 83 THEN
+            dummy_ids := del_tunnel(ID_ARRAY(object_id), 1);
+          -- delete tunnel
+          WHEN objectclass_id = 84 THEN
+            dummy_ids := del_tunnel(ID_ARRAY(object_id), 1);
+          -- delete tunnel
+          WHEN objectclass_id = 85 THEN
+            dummy_ids := del_tunnel(ID_ARRAY(object_id), 1);
+          -- delete tunnel_installation
+          WHEN objectclass_id = 86 THEN
+            dummy_ids := del_tunnel_installation(ID_ARRAY(object_id), 1);
+          -- delete tunnel_installation
+          WHEN objectclass_id = 87 THEN
+            dummy_ids := del_tunnel_installation(ID_ARRAY(object_id), 1);
+          -- delete tunnel_thematic_surface
+          WHEN objectclass_id = 88 THEN
+            dummy_ids := del_tunnel_thematic_surface(ID_ARRAY(object_id), 1);
+          -- delete tunnel_thematic_surface
+          WHEN objectclass_id = 89 THEN
+            dummy_ids := del_tunnel_thematic_surface(ID_ARRAY(object_id), 1);
+          -- delete tunnel_thematic_surface
+          WHEN objectclass_id = 90 THEN
+            dummy_ids := del_tunnel_thematic_surface(ID_ARRAY(object_id), 1);
+          -- delete tunnel_thematic_surface
+          WHEN objectclass_id = 91 THEN
+            dummy_ids := del_tunnel_thematic_surface(ID_ARRAY(object_id), 1);
+          -- delete tunnel_thematic_surface
+          WHEN objectclass_id = 92 THEN
+            dummy_ids := del_tunnel_thematic_surface(ID_ARRAY(object_id), 1);
+          -- delete tunnel_thematic_surface
+          WHEN objectclass_id = 93 THEN
+            dummy_ids := del_tunnel_thematic_surface(ID_ARRAY(object_id), 1);
+          -- delete tunnel_thematic_surface
+          WHEN objectclass_id = 94 THEN
+            dummy_ids := del_tunnel_thematic_surface(ID_ARRAY(object_id), 1);
+          -- delete tunnel_thematic_surface
+          WHEN objectclass_id = 95 THEN
+            dummy_ids := del_tunnel_thematic_surface(ID_ARRAY(object_id), 1);
+          -- delete tunnel_thematic_surface
+          WHEN objectclass_id = 96 THEN
+            dummy_ids := del_tunnel_thematic_surface(ID_ARRAY(object_id), 1);
+          -- delete tunnel_thematic_surface
+          WHEN objectclass_id = 97 THEN
+            dummy_ids := del_tunnel_thematic_surface(ID_ARRAY(object_id), 1);
+          -- delete tunnel_opening
+          WHEN objectclass_id = 98 THEN
+            dummy_ids := del_tunnel_opening(ID_ARRAY(object_id), 1);
+          -- delete tunnel_opening
+          WHEN objectclass_id = 99 THEN
+            dummy_ids := del_tunnel_opening(ID_ARRAY(object_id), 1);
+          -- delete tunnel_opening
+          WHEN objectclass_id = 100 THEN
+            dummy_ids := del_tunnel_opening(ID_ARRAY(object_id), 1);
+          -- delete tunnel_furniture
+          WHEN objectclass_id = 101 THEN
+            dummy_ids := del_tunnel_furniture(ID_ARRAY(object_id), 1);
+          -- delete tunnel_hollow_space
+          WHEN objectclass_id = 102 THEN
+            dummy_ids := del_tunnel_hollow_space(ID_ARRAY(object_id), 1);
+          ELSE
+            dummy_ids := NULL;
+        END CASE;
+
+        IF dummy_ids IS NOT EMPTY THEN
+          IF dummy_ids(1) = object_id THEN
+            deleted_child_ids := deleted_child_ids MULTISET UNION ALL dummy_ids;
+          END IF;
+        END IF;
+      END LOOP;
+      CLOSE cur;
+    END IF;
+  
+    -- delete cityobjects
+    DELETE FROM
+      cityobject t
+    WHERE EXISTS (
+      SELECT
+        a.COLUMN_VALUE
+      FROM
+        TABLE(pids) a
+      WHERE
+        a.COLUMN_VALUE = t.id
+      )
+    RETURNING
+      id
+    BULK COLLECT INTO
+      deleted_ids;
+
+    IF deleted_child_ids IS NOT EMPTY THEN
+      deleted_ids := deleted_child_ids;
+    END IF;
+
+    RETURN deleted_ids;
+
   END;
   ------------------------------------------
 
@@ -3148,7 +3487,7 @@ AS
     deleted_id NUMBER;
     dummy_ids ID_ARRAY;
   BEGIN
-    dummy_ids := del_cityobject_genericattribs(ID_ARRAY(pid));
+    dummy_ids := del_cityobject_genericattrib(ID_ARRAY(pid));
 
     IF dummy_ids IS NOT EMPTY THEN
       deleted_id := dummy_ids(1);
@@ -3162,7 +3501,7 @@ AS
   END;
   ------------------------------------------
 
-  FUNCTION del_cityobject_genericattribs(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+  FUNCTION del_cityobject_genericattrib(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
   IS
     object_id number;
     objectclass_id number;
@@ -3187,7 +3526,7 @@ AS
       AND t.id <> a.COLUMN_VALUE;
 
     IF object_ids IS NOT EMPTY THEN
-      dummy_ids := del_cityobject_genericattribs(object_ids);
+      dummy_ids := del_cityobject_genericattrib(object_ids);
     END IF;
 
     -- delete referenced parts
@@ -3203,7 +3542,7 @@ AS
       AND t.id <> a.COLUMN_VALUE;
 
     IF object_ids IS NOT EMPTY THEN
-      dummy_ids := del_cityobject_genericattribs(object_ids);
+      dummy_ids := del_cityobject_genericattrib(object_ids);
     END IF;
 
     -- delete cityobject_genericattribs
@@ -3229,7 +3568,7 @@ AS
 
     -- delete surface_geometry(s)
     IF surface_geometry_ids0 IS NOT EMPTY THEN
-      dummy_ids := del_surface_geometrys(surface_geometry_ids0);
+      dummy_ids := del_surface_geometry(surface_geometry_ids0);
     END IF;
 
     IF deleted_child_ids IS NOT EMPTY THEN
@@ -3246,7 +3585,7 @@ AS
     deleted_id NUMBER;
     dummy_ids ID_ARRAY;
   BEGIN
-    dummy_ids := del_cityobjectgroups(ID_ARRAY(pid));
+    dummy_ids := del_cityobjectgroup(ID_ARRAY(pid));
 
     IF dummy_ids IS NOT EMPTY THEN
       deleted_id := dummy_ids(1);
@@ -3260,7 +3599,7 @@ AS
   END;
   ------------------------------------------
 
-  FUNCTION del_cityobjectgroups(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+  FUNCTION del_cityobjectgroup(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
   IS
     object_id number;
     objectclass_id number;
@@ -3307,7 +3646,7 @@ AS
         AND n2.cityobject_id IS NULL;
 
       IF object_ids IS NOT EMPTY THEN
-        dummy_ids := del_cityobjects(object_ids);
+        dummy_ids := del_cityobject(object_ids);
       END IF;
     END IF;
 
@@ -3334,399 +3673,15 @@ AS
 
     -- delete surface_geometry(s)
     IF surface_geometry_ids1 IS NOT EMPTY THEN
-      dummy_ids := del_surface_geometrys(surface_geometry_ids1);
+      dummy_ids := del_surface_geometry(surface_geometry_ids1);
     END IF;
 
     IF caller <> 1 THEN
       -- delete cityobject
       IF deleted_ids IS NOT EMPTY THEN
-        dummy_ids := del_cityobjects(deleted_ids, 2);
+        dummy_ids := del_cityobject(deleted_ids, 2);
       END IF;
     END IF;
-
-    IF deleted_child_ids IS NOT EMPTY THEN
-      deleted_ids := deleted_child_ids;
-    END IF;
-
-    RETURN deleted_ids;
-
-  END;
-  ------------------------------------------
-
-  FUNCTION del_cityobjects(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
-  IS
-    object_id number;
-    objectclass_id number;
-    object_ids ID_ARRAY := ID_ARRAY();
-    deleted_child_ids ID_ARRAY := ID_ARRAY();
-    deleted_ids ID_ARRAY := ID_ARRAY();
-    dummy_ids ID_ARRAY := ID_ARRAY();
-    cur sys_refcursor;
-  BEGIN
-    --delete appearances
-    SELECT
-      t.id
-    BULK COLLECT INTO
-      object_ids
-    FROM
-      appearance t,
-      TABLE(pids) a
-    WHERE
-      t.cityobject_id = a.COLUMN_VALUE;
-
-    IF object_ids IS NOT EMPTY THEN
-      dummy_ids := del_appearances(object_ids);
-    END IF;
-
-    --delete cityobject_genericattribs
-    SELECT
-      t.id
-    BULK COLLECT INTO
-      object_ids
-    FROM
-      cityobject_genericattrib t,
-      TABLE(pids) a
-    WHERE
-      t.cityobject_id = a.COLUMN_VALUE;
-
-    IF object_ids IS NOT EMPTY THEN
-      dummy_ids := del_cityobject_genericattribs(object_ids);
-    END IF;
-
-    --delete external_references
-    SELECT
-      t.id
-    BULK COLLECT INTO
-      object_ids
-    FROM
-      external_reference t,
-      TABLE(pids) a
-    WHERE
-      t.cityobject_id = a.COLUMN_VALUE;
-
-    IF object_ids IS NOT EMPTY THEN
-      dummy_ids := del_external_references(object_ids);
-    END IF;
-
-    IF caller <> 2 THEN
-      OPEN cur FOR
-        SELECT
-          co.id, co.objectclass_id
-        FROM
-          cityobject co, TABLE(pids) a
-        WHERE
-          a.COLUMN_VALUE = co.id;
-      LOOP
-        FETCH cur into object_id, objectclass_id;
-        EXIT WHEN cur%notfound;
-        CASE
-          -- delete land_use
-          WHEN objectclass_id = 4 THEN
-            dummy_ids := del_land_uses(ID_ARRAY(object_id), 1);
-          -- delete generic_cityobject
-          WHEN objectclass_id = 5 THEN
-            dummy_ids := del_generic_cityobjects(ID_ARRAY(object_id), 1);
-          -- delete solitary_vegetat_object
-          WHEN objectclass_id = 7 THEN
-            dummy_ids := del_solitary_vegetat_objects(ID_ARRAY(object_id), 1);
-          -- delete plant_cover
-          WHEN objectclass_id = 8 THEN
-            dummy_ids := del_plant_covers(ID_ARRAY(object_id), 1);
-          -- delete waterbody
-          WHEN objectclass_id = 9 THEN
-            dummy_ids := del_waterbodys(ID_ARRAY(object_id), 1);
-          -- delete waterboundary_surface
-          WHEN objectclass_id = 10 THEN
-            dummy_ids := del_waterboundary_surfaces(ID_ARRAY(object_id), 1);
-          -- delete waterboundary_surface
-          WHEN objectclass_id = 11 THEN
-            dummy_ids := del_waterboundary_surfaces(ID_ARRAY(object_id), 1);
-          -- delete waterboundary_surface
-          WHEN objectclass_id = 12 THEN
-            dummy_ids := del_waterboundary_surfaces(ID_ARRAY(object_id), 1);
-          -- delete waterboundary_surface
-          WHEN objectclass_id = 13 THEN
-            dummy_ids := del_waterboundary_surfaces(ID_ARRAY(object_id), 1);
-          -- delete relief_feature
-          WHEN objectclass_id = 14 THEN
-            dummy_ids := del_relief_features(ID_ARRAY(object_id), 1);
-          -- delete relief_component
-          WHEN objectclass_id = 15 THEN
-            dummy_ids := del_relief_components(ID_ARRAY(object_id), 1);
-          -- delete tin_relief
-          WHEN objectclass_id = 16 THEN
-            dummy_ids := del_tin_reliefs(ID_ARRAY(object_id), 0);
-          -- delete masspoint_relief
-          WHEN objectclass_id = 17 THEN
-            dummy_ids := del_masspoint_reliefs(ID_ARRAY(object_id), 0);
-          -- delete breakline_relief
-          WHEN objectclass_id = 18 THEN
-            dummy_ids := del_breakline_reliefs(ID_ARRAY(object_id), 0);
-          -- delete city_furniture
-          WHEN objectclass_id = 21 THEN
-            dummy_ids := del_city_furnitures(ID_ARRAY(object_id), 1);
-          -- delete cityobjectgroup
-          WHEN objectclass_id = 23 THEN
-            dummy_ids := del_cityobjectgroups(ID_ARRAY(object_id), 1);
-          -- delete building
-          WHEN objectclass_id = 24 THEN
-            dummy_ids := del_buildings(ID_ARRAY(object_id), 1);
-          -- delete building
-          WHEN objectclass_id = 25 THEN
-            dummy_ids := del_buildings(ID_ARRAY(object_id), 1);
-          -- delete building
-          WHEN objectclass_id = 26 THEN
-            dummy_ids := del_buildings(ID_ARRAY(object_id), 1);
-          -- delete building_installation
-          WHEN objectclass_id = 27 THEN
-            dummy_ids := del_building_installations(ID_ARRAY(object_id), 1);
-          -- delete building_installation
-          WHEN objectclass_id = 28 THEN
-            dummy_ids := del_building_installations(ID_ARRAY(object_id), 1);
-          -- delete thematic_surface
-          WHEN objectclass_id = 29 THEN
-            dummy_ids := del_thematic_surfaces(ID_ARRAY(object_id), 1);
-          -- delete thematic_surface
-          WHEN objectclass_id = 30 THEN
-            dummy_ids := del_thematic_surfaces(ID_ARRAY(object_id), 1);
-          -- delete thematic_surface
-          WHEN objectclass_id = 31 THEN
-            dummy_ids := del_thematic_surfaces(ID_ARRAY(object_id), 1);
-          -- delete thematic_surface
-          WHEN objectclass_id = 32 THEN
-            dummy_ids := del_thematic_surfaces(ID_ARRAY(object_id), 1);
-          -- delete thematic_surface
-          WHEN objectclass_id = 33 THEN
-            dummy_ids := del_thematic_surfaces(ID_ARRAY(object_id), 1);
-          -- delete thematic_surface
-          WHEN objectclass_id = 34 THEN
-            dummy_ids := del_thematic_surfaces(ID_ARRAY(object_id), 1);
-          -- delete thematic_surface
-          WHEN objectclass_id = 35 THEN
-            dummy_ids := del_thematic_surfaces(ID_ARRAY(object_id), 1);
-          -- delete thematic_surface
-          WHEN objectclass_id = 36 THEN
-            dummy_ids := del_thematic_surfaces(ID_ARRAY(object_id), 1);
-          -- delete opening
-          WHEN objectclass_id = 37 THEN
-            dummy_ids := del_openings(ID_ARRAY(object_id), 1);
-          -- delete opening
-          WHEN objectclass_id = 38 THEN
-            dummy_ids := del_openings(ID_ARRAY(object_id), 1);
-          -- delete opening
-          WHEN objectclass_id = 39 THEN
-            dummy_ids := del_openings(ID_ARRAY(object_id), 1);
-          -- delete building_furniture
-          WHEN objectclass_id = 40 THEN
-            dummy_ids := del_building_furnitures(ID_ARRAY(object_id), 1);
-          -- delete room
-          WHEN objectclass_id = 41 THEN
-            dummy_ids := del_rooms(ID_ARRAY(object_id), 1);
-          -- delete transportation_complex
-          WHEN objectclass_id = 42 THEN
-            dummy_ids := del_transportation_complexs(ID_ARRAY(object_id), 1);
-          -- delete transportation_complex
-          WHEN objectclass_id = 43 THEN
-            dummy_ids := del_transportation_complexs(ID_ARRAY(object_id), 1);
-          -- delete transportation_complex
-          WHEN objectclass_id = 44 THEN
-            dummy_ids := del_transportation_complexs(ID_ARRAY(object_id), 1);
-          -- delete transportation_complex
-          WHEN objectclass_id = 45 THEN
-            dummy_ids := del_transportation_complexs(ID_ARRAY(object_id), 1);
-          -- delete transportation_complex
-          WHEN objectclass_id = 46 THEN
-            dummy_ids := del_transportation_complexs(ID_ARRAY(object_id), 1);
-          -- delete traffic_area
-          WHEN objectclass_id = 47 THEN
-            dummy_ids := del_traffic_areas(ID_ARRAY(object_id), 1);
-          -- delete traffic_area
-          WHEN objectclass_id = 48 THEN
-            dummy_ids := del_traffic_areas(ID_ARRAY(object_id), 1);
-          -- delete appearance
-          WHEN objectclass_id = 50 THEN
-            dummy_ids := del_appearances(ID_ARRAY(object_id), 0);
-          -- delete surface_data
-          WHEN objectclass_id = 51 THEN
-            dummy_ids := del_surface_datas(ID_ARRAY(object_id), 0);
-          -- delete surface_data
-          WHEN objectclass_id = 52 THEN
-            dummy_ids := del_surface_datas(ID_ARRAY(object_id), 0);
-          -- delete surface_data
-          WHEN objectclass_id = 53 THEN
-            dummy_ids := del_surface_datas(ID_ARRAY(object_id), 0);
-          -- delete surface_data
-          WHEN objectclass_id = 54 THEN
-            dummy_ids := del_surface_datas(ID_ARRAY(object_id), 0);
-          -- delete surface_data
-          WHEN objectclass_id = 55 THEN
-            dummy_ids := del_surface_datas(ID_ARRAY(object_id), 0);
-          -- delete citymodel
-          WHEN objectclass_id = 57 THEN
-            dummy_ids := del_citymodels(ID_ARRAY(object_id), 0);
-          -- delete address
-          WHEN objectclass_id = 58 THEN
-            dummy_ids := del_addresss(ID_ARRAY(object_id), 0);
-          -- delete implicit_geometry
-          WHEN objectclass_id = 59 THEN
-            dummy_ids := del_implicit_geometrys(ID_ARRAY(object_id), 0);
-          -- delete thematic_surface
-          WHEN objectclass_id = 60 THEN
-            dummy_ids := del_thematic_surfaces(ID_ARRAY(object_id), 1);
-          -- delete thematic_surface
-          WHEN objectclass_id = 61 THEN
-            dummy_ids := del_thematic_surfaces(ID_ARRAY(object_id), 1);
-          -- delete bridge
-          WHEN objectclass_id = 62 THEN
-            dummy_ids := del_bridges(ID_ARRAY(object_id), 1);
-          -- delete bridge
-          WHEN objectclass_id = 63 THEN
-            dummy_ids := del_bridges(ID_ARRAY(object_id), 1);
-          -- delete bridge
-          WHEN objectclass_id = 64 THEN
-            dummy_ids := del_bridges(ID_ARRAY(object_id), 1);
-          -- delete bridge_installation
-          WHEN objectclass_id = 65 THEN
-            dummy_ids := del_bridge_installations(ID_ARRAY(object_id), 1);
-          -- delete bridge_installation
-          WHEN objectclass_id = 66 THEN
-            dummy_ids := del_bridge_installations(ID_ARRAY(object_id), 1);
-          -- delete bridge_thematic_surface
-          WHEN objectclass_id = 67 THEN
-            dummy_ids := del_bridge_thematic_surfaces(ID_ARRAY(object_id), 1);
-          -- delete bridge_thematic_surface
-          WHEN objectclass_id = 68 THEN
-            dummy_ids := del_bridge_thematic_surfaces(ID_ARRAY(object_id), 1);
-          -- delete bridge_thematic_surface
-          WHEN objectclass_id = 69 THEN
-            dummy_ids := del_bridge_thematic_surfaces(ID_ARRAY(object_id), 1);
-          -- delete bridge_thematic_surface
-          WHEN objectclass_id = 70 THEN
-            dummy_ids := del_bridge_thematic_surfaces(ID_ARRAY(object_id), 1);
-          -- delete bridge_thematic_surface
-          WHEN objectclass_id = 71 THEN
-            dummy_ids := del_bridge_thematic_surfaces(ID_ARRAY(object_id), 1);
-          -- delete bridge_thematic_surface
-          WHEN objectclass_id = 72 THEN
-            dummy_ids := del_bridge_thematic_surfaces(ID_ARRAY(object_id), 1);
-          -- delete bridge_thematic_surface
-          WHEN objectclass_id = 73 THEN
-            dummy_ids := del_bridge_thematic_surfaces(ID_ARRAY(object_id), 1);
-          -- delete bridge_thematic_surface
-          WHEN objectclass_id = 74 THEN
-            dummy_ids := del_bridge_thematic_surfaces(ID_ARRAY(object_id), 1);
-          -- delete bridge_thematic_surface
-          WHEN objectclass_id = 75 THEN
-            dummy_ids := del_bridge_thematic_surfaces(ID_ARRAY(object_id), 1);
-          -- delete bridge_thematic_surface
-          WHEN objectclass_id = 76 THEN
-            dummy_ids := del_bridge_thematic_surfaces(ID_ARRAY(object_id), 1);
-          -- delete bridge_opening
-          WHEN objectclass_id = 77 THEN
-            dummy_ids := del_bridge_openings(ID_ARRAY(object_id), 1);
-          -- delete bridge_opening
-          WHEN objectclass_id = 78 THEN
-            dummy_ids := del_bridge_openings(ID_ARRAY(object_id), 1);
-          -- delete bridge_opening
-          WHEN objectclass_id = 79 THEN
-            dummy_ids := del_bridge_openings(ID_ARRAY(object_id), 1);
-          -- delete bridge_furniture
-          WHEN objectclass_id = 80 THEN
-            dummy_ids := del_bridge_furnitures(ID_ARRAY(object_id), 1);
-          -- delete bridge_room
-          WHEN objectclass_id = 81 THEN
-            dummy_ids := del_bridge_rooms(ID_ARRAY(object_id), 1);
-          -- delete bridge_constr_element
-          WHEN objectclass_id = 82 THEN
-            dummy_ids := del_bridge_constr_elements(ID_ARRAY(object_id), 1);
-          -- delete tunnel
-          WHEN objectclass_id = 83 THEN
-            dummy_ids := del_tunnels(ID_ARRAY(object_id), 1);
-          -- delete tunnel
-          WHEN objectclass_id = 84 THEN
-            dummy_ids := del_tunnels(ID_ARRAY(object_id), 1);
-          -- delete tunnel
-          WHEN objectclass_id = 85 THEN
-            dummy_ids := del_tunnels(ID_ARRAY(object_id), 1);
-          -- delete tunnel_installation
-          WHEN objectclass_id = 86 THEN
-            dummy_ids := del_tunnel_installations(ID_ARRAY(object_id), 1);
-          -- delete tunnel_installation
-          WHEN objectclass_id = 87 THEN
-            dummy_ids := del_tunnel_installations(ID_ARRAY(object_id), 1);
-          -- delete tunnel_thematic_surface
-          WHEN objectclass_id = 88 THEN
-            dummy_ids := del_tunnel_thematic_surfaces(ID_ARRAY(object_id), 1);
-          -- delete tunnel_thematic_surface
-          WHEN objectclass_id = 89 THEN
-            dummy_ids := del_tunnel_thematic_surfaces(ID_ARRAY(object_id), 1);
-          -- delete tunnel_thematic_surface
-          WHEN objectclass_id = 90 THEN
-            dummy_ids := del_tunnel_thematic_surfaces(ID_ARRAY(object_id), 1);
-          -- delete tunnel_thematic_surface
-          WHEN objectclass_id = 91 THEN
-            dummy_ids := del_tunnel_thematic_surfaces(ID_ARRAY(object_id), 1);
-          -- delete tunnel_thematic_surface
-          WHEN objectclass_id = 92 THEN
-            dummy_ids := del_tunnel_thematic_surfaces(ID_ARRAY(object_id), 1);
-          -- delete tunnel_thematic_surface
-          WHEN objectclass_id = 93 THEN
-            dummy_ids := del_tunnel_thematic_surfaces(ID_ARRAY(object_id), 1);
-          -- delete tunnel_thematic_surface
-          WHEN objectclass_id = 94 THEN
-            dummy_ids := del_tunnel_thematic_surfaces(ID_ARRAY(object_id), 1);
-          -- delete tunnel_thematic_surface
-          WHEN objectclass_id = 95 THEN
-            dummy_ids := del_tunnel_thematic_surfaces(ID_ARRAY(object_id), 1);
-          -- delete tunnel_thematic_surface
-          WHEN objectclass_id = 96 THEN
-            dummy_ids := del_tunnel_thematic_surfaces(ID_ARRAY(object_id), 1);
-          -- delete tunnel_thematic_surface
-          WHEN objectclass_id = 97 THEN
-            dummy_ids := del_tunnel_thematic_surfaces(ID_ARRAY(object_id), 1);
-          -- delete tunnel_opening
-          WHEN objectclass_id = 98 THEN
-            dummy_ids := del_tunnel_openings(ID_ARRAY(object_id), 1);
-          -- delete tunnel_opening
-          WHEN objectclass_id = 99 THEN
-            dummy_ids := del_tunnel_openings(ID_ARRAY(object_id), 1);
-          -- delete tunnel_opening
-          WHEN objectclass_id = 100 THEN
-            dummy_ids := del_tunnel_openings(ID_ARRAY(object_id), 1);
-          -- delete tunnel_furniture
-          WHEN objectclass_id = 101 THEN
-            dummy_ids := del_tunnel_furnitures(ID_ARRAY(object_id), 1);
-          -- delete tunnel_hollow_space
-          WHEN objectclass_id = 102 THEN
-            dummy_ids := del_tunnel_hollow_spaces(ID_ARRAY(object_id), 1);
-          ELSE
-            dummy_ids := NULL;
-        END CASE;
-
-        IF dummy_ids IS NOT EMPTY THEN
-          IF dummy_ids(1) = object_id THEN
-            deleted_child_ids := deleted_child_ids MULTISET UNION ALL dummy_ids;
-          END IF;
-        END IF;
-      END LOOP;
-      CLOSE cur;
-    END IF;
-  
-    -- delete cityobjects
-    DELETE FROM
-      cityobject t
-    WHERE EXISTS (
-      SELECT
-        a.COLUMN_VALUE
-      FROM
-        TABLE(pids) a
-      WHERE
-        a.COLUMN_VALUE = t.id
-      )
-    RETURNING
-      id
-    BULK COLLECT INTO
-      deleted_ids;
 
     IF deleted_child_ids IS NOT EMPTY THEN
       deleted_ids := deleted_child_ids;
@@ -3765,7 +3720,7 @@ AS
     IF deleted_ids IS NOT EMPTY THEN
       FOR i in 1..deleted_ids.count
       LOOP
-        dummy_ids := del_cityobjects(ID_ARRAY(deleted_ids(i)), 1);
+        dummy_ids := del_cityobject(ID_ARRAY(deleted_ids(i)), 1);
       END LOOP;
     END IF;
 
@@ -3778,7 +3733,7 @@ AS
     deleted_id NUMBER;
     dummy_ids ID_ARRAY;
   BEGIN
-    dummy_ids := del_external_references(ID_ARRAY(pid));
+    dummy_ids := del_external_reference(ID_ARRAY(pid));
 
     IF dummy_ids IS NOT EMPTY THEN
       deleted_id := dummy_ids(1);
@@ -3792,7 +3747,7 @@ AS
   END;
   ------------------------------------------
 
-  FUNCTION del_external_references(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+  FUNCTION del_external_reference(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
   IS
     object_id number;
     objectclass_id number;
@@ -3832,7 +3787,7 @@ AS
     deleted_id NUMBER;
     dummy_ids ID_ARRAY;
   BEGIN
-    dummy_ids := del_generic_cityobjects(ID_ARRAY(pid));
+    dummy_ids := del_generic_cityobject(ID_ARRAY(pid));
 
     IF dummy_ids IS NOT EMPTY THEN
       deleted_id := dummy_ids(1);
@@ -3846,7 +3801,7 @@ AS
   END;
   ------------------------------------------
 
-  FUNCTION del_generic_cityobjects(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+  FUNCTION del_generic_cityobject(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
   IS
     object_id number;
     objectclass_id number;
@@ -3920,7 +3875,7 @@ AS
 
     -- delete surface_geometry(s)
     IF surface_geometry_ids0 IS NOT EMPTY THEN
-      dummy_ids := del_surface_geometrys(surface_geometry_ids0);
+      dummy_ids := del_surface_geometry(surface_geometry_ids0);
     END IF;
 
     -- delete implicit_geometry(s)
@@ -4073,14 +4028,14 @@ AS
         AND n35.lod4_implicit_rep_id IS NULL;
 
       IF object_ids IS NOT EMPTY THEN
-        dummy_ids := del_implicit_geometrys(object_ids);
+        dummy_ids := del_implicit_geometry(object_ids);
       END IF;
     END IF;
 
     IF caller <> 1 THEN
       -- delete cityobject
       IF deleted_ids IS NOT EMPTY THEN
-        dummy_ids := del_cityobjects(deleted_ids, 2);
+        dummy_ids := del_cityobject(deleted_ids, 2);
       END IF;
     END IF;
 
@@ -4098,7 +4053,7 @@ AS
     deleted_id NUMBER;
     dummy_ids ID_ARRAY;
   BEGIN
-    dummy_ids := del_implicit_geometrys(ID_ARRAY(pid));
+    dummy_ids := del_implicit_geometry(ID_ARRAY(pid));
 
     IF dummy_ids IS NOT EMPTY THEN
       deleted_id := dummy_ids(1);
@@ -4112,7 +4067,7 @@ AS
   END;
   ------------------------------------------
 
-  FUNCTION del_implicit_geometrys(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+  FUNCTION del_implicit_geometry(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
   IS
     object_id number;
     objectclass_id number;
@@ -4147,7 +4102,7 @@ AS
 
     -- delete surface_geometry(s)
     IF surface_geometry_ids0 IS NOT EMPTY THEN
-      dummy_ids := del_surface_geometrys(surface_geometry_ids0);
+      dummy_ids := del_surface_geometry(surface_geometry_ids0);
     END IF;
 
     IF deleted_child_ids IS NOT EMPTY THEN
@@ -4164,7 +4119,7 @@ AS
     deleted_id NUMBER;
     dummy_ids ID_ARRAY;
   BEGIN
-    dummy_ids := del_land_uses(ID_ARRAY(pid));
+    dummy_ids := del_land_use(ID_ARRAY(pid));
 
     IF dummy_ids IS NOT EMPTY THEN
       deleted_id := dummy_ids(1);
@@ -4178,7 +4133,7 @@ AS
   END;
   ------------------------------------------
 
-  FUNCTION del_land_uses(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+  FUNCTION del_land_use(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
   IS
     object_id number;
     objectclass_id number;
@@ -4229,13 +4184,13 @@ AS
 
     -- delete surface_geometry(s)
     IF surface_geometry_ids0 IS NOT EMPTY THEN
-      dummy_ids := del_surface_geometrys(surface_geometry_ids0);
+      dummy_ids := del_surface_geometry(surface_geometry_ids0);
     END IF;
 
     IF caller <> 1 THEN
       -- delete cityobject
       IF deleted_ids IS NOT EMPTY THEN
-        dummy_ids := del_cityobjects(deleted_ids, 2);
+        dummy_ids := del_cityobject(deleted_ids, 2);
       END IF;
     END IF;
 
@@ -4253,7 +4208,7 @@ AS
     deleted_id NUMBER;
     dummy_ids ID_ARRAY;
   BEGIN
-    dummy_ids := del_masspoint_reliefs(ID_ARRAY(pid));
+    dummy_ids := del_masspoint_relief(ID_ARRAY(pid));
 
     IF dummy_ids IS NOT EMPTY THEN
       deleted_id := dummy_ids(1);
@@ -4267,7 +4222,7 @@ AS
   END;
   ------------------------------------------
 
-  FUNCTION del_masspoint_reliefs(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+  FUNCTION del_masspoint_relief(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
   IS
     object_id number;
     objectclass_id number;
@@ -4296,7 +4251,7 @@ AS
     IF caller <> 1 THEN
       -- delete relief_component
       IF deleted_ids IS NOT EMPTY THEN
-        dummy_ids := del_relief_components(deleted_ids, 2);
+        dummy_ids := del_relief_component(deleted_ids, 2);
       END IF;
     END IF;
 
@@ -4314,7 +4269,7 @@ AS
     deleted_id NUMBER;
     dummy_ids ID_ARRAY;
   BEGIN
-    dummy_ids := del_openings(ID_ARRAY(pid));
+    dummy_ids := del_opening(ID_ARRAY(pid));
 
     IF dummy_ids IS NOT EMPTY THEN
       deleted_id := dummy_ids(1);
@@ -4328,7 +4283,7 @@ AS
   END;
   ------------------------------------------
 
-  FUNCTION del_openings(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+  FUNCTION del_opening(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
   IS
     object_id number;
     objectclass_id number;
@@ -4409,13 +4364,13 @@ AS
         AND n4.address_id IS NULL;
 
       IF object_ids IS NOT EMPTY THEN
-        dummy_ids := del_addresss(object_ids);
+        dummy_ids := del_address(object_ids);
       END IF;
     END IF;
 
     -- delete surface_geometry(s)
     IF surface_geometry_ids2 IS NOT EMPTY THEN
-      dummy_ids := del_surface_geometrys(surface_geometry_ids2);
+      dummy_ids := del_surface_geometry(surface_geometry_ids2);
     END IF;
 
     -- delete implicit_geometry(s)
@@ -4568,14 +4523,14 @@ AS
         AND n35.lod4_implicit_rep_id IS NULL;
 
       IF object_ids IS NOT EMPTY THEN
-        dummy_ids := del_implicit_geometrys(object_ids);
+        dummy_ids := del_implicit_geometry(object_ids);
       END IF;
     END IF;
 
     IF caller <> 1 THEN
       -- delete cityobject
       IF deleted_ids IS NOT EMPTY THEN
-        dummy_ids := del_cityobjects(deleted_ids, 2);
+        dummy_ids := del_cityobject(deleted_ids, 2);
       END IF;
     END IF;
 
@@ -4593,7 +4548,7 @@ AS
     deleted_id NUMBER;
     dummy_ids ID_ARRAY;
   BEGIN
-    dummy_ids := del_plant_covers(ID_ARRAY(pid));
+    dummy_ids := del_plant_cover(ID_ARRAY(pid));
 
     IF dummy_ids IS NOT EMPTY THEN
       deleted_id := dummy_ids(1);
@@ -4607,7 +4562,7 @@ AS
   END;
   ------------------------------------------
 
-  FUNCTION del_plant_covers(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+  FUNCTION del_plant_cover(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
   IS
     object_id number;
     objectclass_id number;
@@ -4670,13 +4625,13 @@ AS
 
     -- delete surface_geometry(s)
     IF surface_geometry_ids0 IS NOT EMPTY THEN
-      dummy_ids := del_surface_geometrys(surface_geometry_ids0);
+      dummy_ids := del_surface_geometry(surface_geometry_ids0);
     END IF;
 
     IF caller <> 1 THEN
       -- delete cityobject
       IF deleted_ids IS NOT EMPTY THEN
-        dummy_ids := del_cityobjects(deleted_ids, 2);
+        dummy_ids := del_cityobject(deleted_ids, 2);
       END IF;
     END IF;
 
@@ -4694,7 +4649,7 @@ AS
     deleted_id NUMBER;
     dummy_ids ID_ARRAY;
   BEGIN
-    dummy_ids := del_relief_components(ID_ARRAY(pid));
+    dummy_ids := del_relief_component(ID_ARRAY(pid));
 
     IF dummy_ids IS NOT EMPTY THEN
       deleted_id := dummy_ids(1);
@@ -4708,7 +4663,7 @@ AS
   END;
   ------------------------------------------
 
-  FUNCTION del_relief_components(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+  FUNCTION del_relief_component(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
   IS
     object_id number;
     objectclass_id number;
@@ -4732,13 +4687,13 @@ AS
         CASE
           -- delete tin_relief
           WHEN objectclass_id = 16 THEN
-            dummy_ids := del_tin_reliefs(ID_ARRAY(object_id), 1);
+            dummy_ids := del_tin_relief(ID_ARRAY(object_id), 1);
           -- delete masspoint_relief
           WHEN objectclass_id = 17 THEN
-            dummy_ids := del_masspoint_reliefs(ID_ARRAY(object_id), 1);
+            dummy_ids := del_masspoint_relief(ID_ARRAY(object_id), 1);
           -- delete breakline_relief
           WHEN objectclass_id = 18 THEN
-            dummy_ids := del_breakline_reliefs(ID_ARRAY(object_id), 1);
+            dummy_ids := del_breakline_relief(ID_ARRAY(object_id), 1);
           ELSE
             dummy_ids := NULL;
         END CASE;
@@ -4771,7 +4726,7 @@ AS
     IF caller <> 1 THEN
       -- delete cityobject
       IF deleted_ids IS NOT EMPTY THEN
-        dummy_ids := del_cityobjects(deleted_ids, 2);
+        dummy_ids := del_cityobject(deleted_ids, 2);
       END IF;
     END IF;
 
@@ -4789,7 +4744,7 @@ AS
     deleted_id NUMBER;
     dummy_ids ID_ARRAY;
   BEGIN
-    dummy_ids := del_relief_features(ID_ARRAY(pid));
+    dummy_ids := del_relief_feature(ID_ARRAY(pid));
 
     IF dummy_ids IS NOT EMPTY THEN
       deleted_id := dummy_ids(1);
@@ -4803,7 +4758,7 @@ AS
   END;
   ------------------------------------------
 
-  FUNCTION del_relief_features(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+  FUNCTION del_relief_feature(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
   IS
     object_id number;
     objectclass_id number;
@@ -4844,7 +4799,7 @@ AS
       WHERE n1.relief_component_id IS NULL;
 
       IF object_ids IS NOT EMPTY THEN
-        dummy_ids := del_relief_components(object_ids);
+        dummy_ids := del_relief_component(object_ids);
       END IF;
     END IF;
 
@@ -4867,7 +4822,7 @@ AS
     IF caller <> 1 THEN
       -- delete cityobject
       IF deleted_ids IS NOT EMPTY THEN
-        dummy_ids := del_cityobjects(deleted_ids, 2);
+        dummy_ids := del_cityobject(deleted_ids, 2);
       END IF;
     END IF;
 
@@ -4885,7 +4840,7 @@ AS
     deleted_id NUMBER;
     dummy_ids ID_ARRAY;
   BEGIN
-    dummy_ids := del_rooms(ID_ARRAY(pid));
+    dummy_ids := del_room(ID_ARRAY(pid));
 
     IF dummy_ids IS NOT EMPTY THEN
       deleted_id := dummy_ids(1);
@@ -4899,7 +4854,7 @@ AS
   END;
   ------------------------------------------
 
-  FUNCTION del_rooms(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+  FUNCTION del_room(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
   IS
     object_id number;
     objectclass_id number;
@@ -4924,7 +4879,7 @@ AS
       t.room_id = a.COLUMN_VALUE;
 
     IF object_ids IS NOT EMPTY THEN
-      dummy_ids := del_building_furnitures(object_ids);
+      dummy_ids := del_building_furniture(object_ids);
     END IF;
 
     --delete building_installations
@@ -4939,7 +4894,7 @@ AS
       t.room_id = a.COLUMN_VALUE;
 
     IF object_ids IS NOT EMPTY THEN
-      dummy_ids := del_building_installations(object_ids);
+      dummy_ids := del_building_installation(object_ids);
     END IF;
 
     --delete thematic_surfaces
@@ -4954,7 +4909,7 @@ AS
       t.room_id = a.COLUMN_VALUE;
 
     IF object_ids IS NOT EMPTY THEN
-      dummy_ids := del_thematic_surfaces(object_ids);
+      dummy_ids := del_thematic_surface(object_ids);
     END IF;
 
     -- delete rooms
@@ -4983,13 +4938,13 @@ AS
 
     -- delete surface_geometry(s)
     IF surface_geometry_ids0 IS NOT EMPTY THEN
-      dummy_ids := del_surface_geometrys(surface_geometry_ids0);
+      dummy_ids := del_surface_geometry(surface_geometry_ids0);
     END IF;
 
     IF caller <> 1 THEN
       -- delete cityobject
       IF deleted_ids IS NOT EMPTY THEN
-        dummy_ids := del_cityobjects(deleted_ids, 2);
+        dummy_ids := del_cityobject(deleted_ids, 2);
       END IF;
     END IF;
 
@@ -5007,7 +4962,7 @@ AS
     deleted_id NUMBER;
     dummy_ids ID_ARRAY;
   BEGIN
-    dummy_ids := del_solitary_vegetat_objects(ID_ARRAY(pid));
+    dummy_ids := del_solitary_vegetat_object(ID_ARRAY(pid));
 
     IF dummy_ids IS NOT EMPTY THEN
       deleted_id := dummy_ids(1);
@@ -5021,7 +4976,7 @@ AS
   END;
   ------------------------------------------
 
-  FUNCTION del_solitary_vegetat_objects(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+  FUNCTION del_solitary_vegetat_object(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
   IS
     object_id number;
     objectclass_id number;
@@ -5087,7 +5042,7 @@ AS
 
     -- delete surface_geometry(s)
     IF surface_geometry_ids0 IS NOT EMPTY THEN
-      dummy_ids := del_surface_geometrys(surface_geometry_ids0);
+      dummy_ids := del_surface_geometry(surface_geometry_ids0);
     END IF;
 
     -- delete implicit_geometry(s)
@@ -5240,14 +5195,14 @@ AS
         AND n35.lod4_implicit_rep_id IS NULL;
 
       IF object_ids IS NOT EMPTY THEN
-        dummy_ids := del_implicit_geometrys(object_ids);
+        dummy_ids := del_implicit_geometry(object_ids);
       END IF;
     END IF;
 
     IF caller <> 1 THEN
       -- delete cityobject
       IF deleted_ids IS NOT EMPTY THEN
-        dummy_ids := del_cityobjects(deleted_ids, 2);
+        dummy_ids := del_cityobject(deleted_ids, 2);
       END IF;
     END IF;
 
@@ -5265,7 +5220,7 @@ AS
     deleted_id NUMBER;
     dummy_ids ID_ARRAY;
   BEGIN
-    dummy_ids := del_surface_datas(ID_ARRAY(pid));
+    dummy_ids := del_surface_data(ID_ARRAY(pid));
 
     IF dummy_ids IS NOT EMPTY THEN
       deleted_id := dummy_ids(1);
@@ -5279,7 +5234,7 @@ AS
   END;
   ------------------------------------------
 
-  FUNCTION del_surface_datas(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+  FUNCTION del_surface_data(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
   IS
     object_id number;
     objectclass_id number;
@@ -5326,7 +5281,7 @@ AS
       WHERE n1.tex_image_id IS NULL;
 
       IF object_ids IS NOT EMPTY THEN
-        dummy_ids := del_tex_images(object_ids);
+        dummy_ids := del_tex_image(object_ids);
       END IF;
     END IF;
 
@@ -5344,7 +5299,7 @@ AS
     deleted_id NUMBER;
     dummy_ids ID_ARRAY;
   BEGIN
-    dummy_ids := del_surface_geometrys(ID_ARRAY(pid));
+    dummy_ids := del_surface_geometry(ID_ARRAY(pid));
 
     IF dummy_ids IS NOT EMPTY THEN
       deleted_id := dummy_ids(1);
@@ -5358,7 +5313,7 @@ AS
   END;
   ------------------------------------------
 
-  FUNCTION del_surface_geometrys(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+  FUNCTION del_surface_geometry(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
   IS
     object_id number;
     objectclass_id number;
@@ -5381,7 +5336,7 @@ AS
       AND t.id <> a.COLUMN_VALUE;
 
     IF object_ids IS NOT EMPTY THEN
-      dummy_ids := del_surface_geometrys(object_ids);
+      dummy_ids := del_surface_geometry(object_ids);
     END IF;
 
     -- delete referenced parts
@@ -5397,7 +5352,7 @@ AS
       AND t.id <> a.COLUMN_VALUE;
 
     IF object_ids IS NOT EMPTY THEN
-      dummy_ids := del_surface_geometrys(object_ids);
+      dummy_ids := del_surface_geometry(object_ids);
     END IF;
 
     -- delete surface_geometrys
@@ -5430,7 +5385,7 @@ AS
     deleted_id NUMBER;
     dummy_ids ID_ARRAY;
   BEGIN
-    dummy_ids := del_tex_images(ID_ARRAY(pid));
+    dummy_ids := del_tex_image(ID_ARRAY(pid));
 
     IF dummy_ids IS NOT EMPTY THEN
       deleted_id := dummy_ids(1);
@@ -5444,7 +5399,7 @@ AS
   END;
   ------------------------------------------
 
-  FUNCTION del_tex_images(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+  FUNCTION del_tex_image(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
   IS
     object_id number;
     objectclass_id number;
@@ -5484,7 +5439,7 @@ AS
     deleted_id NUMBER;
     dummy_ids ID_ARRAY;
   BEGIN
-    dummy_ids := del_thematic_surfaces(ID_ARRAY(pid));
+    dummy_ids := del_thematic_surface(ID_ARRAY(pid));
 
     IF dummy_ids IS NOT EMPTY THEN
       deleted_id := dummy_ids(1);
@@ -5498,7 +5453,7 @@ AS
   END;
   ------------------------------------------
 
-  FUNCTION del_thematic_surfaces(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+  FUNCTION del_thematic_surface(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
   IS
     object_id number;
     objectclass_id number;
@@ -5531,7 +5486,7 @@ AS
 
     -- delete opening(s)
     IF opening_ids0 IS NOT EMPTY THEN
-      dummy_ids := del_openings(opening_ids0);
+      dummy_ids := del_opening(opening_ids0);
     END IF;
 
     -- delete thematic_surfaces
@@ -5563,13 +5518,13 @@ AS
 
     -- delete surface_geometry(s)
     IF surface_geometry_ids1 IS NOT EMPTY THEN
-      dummy_ids := del_surface_geometrys(surface_geometry_ids1);
+      dummy_ids := del_surface_geometry(surface_geometry_ids1);
     END IF;
 
     IF caller <> 1 THEN
       -- delete cityobject
       IF deleted_ids IS NOT EMPTY THEN
-        dummy_ids := del_cityobjects(deleted_ids, 2);
+        dummy_ids := del_cityobject(deleted_ids, 2);
       END IF;
     END IF;
 
@@ -5587,7 +5542,7 @@ AS
     deleted_id NUMBER;
     dummy_ids ID_ARRAY;
   BEGIN
-    dummy_ids := del_tin_reliefs(ID_ARRAY(pid));
+    dummy_ids := del_tin_relief(ID_ARRAY(pid));
 
     IF dummy_ids IS NOT EMPTY THEN
       deleted_id := dummy_ids(1);
@@ -5601,7 +5556,7 @@ AS
   END;
   ------------------------------------------
 
-  FUNCTION del_tin_reliefs(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+  FUNCTION del_tin_relief(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
   IS
     object_id number;
     objectclass_id number;
@@ -5636,13 +5591,13 @@ AS
 
     -- delete surface_geometry(s)
     IF surface_geometry_ids0 IS NOT EMPTY THEN
-      dummy_ids := del_surface_geometrys(surface_geometry_ids0);
+      dummy_ids := del_surface_geometry(surface_geometry_ids0);
     END IF;
 
     IF caller <> 1 THEN
       -- delete relief_component
       IF deleted_ids IS NOT EMPTY THEN
-        dummy_ids := del_relief_components(deleted_ids, 2);
+        dummy_ids := del_relief_component(deleted_ids, 2);
       END IF;
     END IF;
 
@@ -5660,7 +5615,7 @@ AS
     deleted_id NUMBER;
     dummy_ids ID_ARRAY;
   BEGIN
-    dummy_ids := del_traffic_areas(ID_ARRAY(pid));
+    dummy_ids := del_traffic_area(ID_ARRAY(pid));
 
     IF dummy_ids IS NOT EMPTY THEN
       deleted_id := dummy_ids(1);
@@ -5674,7 +5629,7 @@ AS
   END;
   ------------------------------------------
 
-  FUNCTION del_traffic_areas(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+  FUNCTION del_traffic_area(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
   IS
     object_id number;
     objectclass_id number;
@@ -5717,13 +5672,13 @@ AS
 
     -- delete surface_geometry(s)
     IF surface_geometry_ids0 IS NOT EMPTY THEN
-      dummy_ids := del_surface_geometrys(surface_geometry_ids0);
+      dummy_ids := del_surface_geometry(surface_geometry_ids0);
     END IF;
 
     IF caller <> 1 THEN
       -- delete cityobject
       IF deleted_ids IS NOT EMPTY THEN
-        dummy_ids := del_cityobjects(deleted_ids, 2);
+        dummy_ids := del_cityobject(deleted_ids, 2);
       END IF;
     END IF;
 
@@ -5741,7 +5696,7 @@ AS
     deleted_id NUMBER;
     dummy_ids ID_ARRAY;
   BEGIN
-    dummy_ids := del_transportation_complexs(ID_ARRAY(pid));
+    dummy_ids := del_transportation_complex(ID_ARRAY(pid));
 
     IF dummy_ids IS NOT EMPTY THEN
       deleted_id := dummy_ids(1);
@@ -5755,7 +5710,7 @@ AS
   END;
   ------------------------------------------
 
-  FUNCTION del_transportation_complexs(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+  FUNCTION del_transportation_complex(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
   IS
     object_id number;
     objectclass_id number;
@@ -5782,7 +5737,7 @@ AS
       t.transportation_complex_id = a.COLUMN_VALUE;
 
     IF object_ids IS NOT EMPTY THEN
-      dummy_ids := del_traffic_areas(object_ids);
+      dummy_ids := del_traffic_area(object_ids);
     END IF;
 
     -- delete transportation_complexs
@@ -5817,13 +5772,13 @@ AS
 
     -- delete surface_geometry(s)
     IF surface_geometry_ids0 IS NOT EMPTY THEN
-      dummy_ids := del_surface_geometrys(surface_geometry_ids0);
+      dummy_ids := del_surface_geometry(surface_geometry_ids0);
     END IF;
 
     IF caller <> 1 THEN
       -- delete cityobject
       IF deleted_ids IS NOT EMPTY THEN
-        dummy_ids := del_cityobjects(deleted_ids, 2);
+        dummy_ids := del_cityobject(deleted_ids, 2);
       END IF;
     END IF;
 
@@ -5841,7 +5796,7 @@ AS
     deleted_id NUMBER;
     dummy_ids ID_ARRAY;
   BEGIN
-    dummy_ids := del_tunnels(ID_ARRAY(pid));
+    dummy_ids := del_tunnel(ID_ARRAY(pid));
 
     IF dummy_ids IS NOT EMPTY THEN
       deleted_id := dummy_ids(1);
@@ -5852,6 +5807,165 @@ AS
     EXCEPTION
       WHEN NO_DATA_FOUND THEN
         RETURN deleted_id;
+  END;
+  ------------------------------------------
+
+  FUNCTION del_tunnel(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+  IS
+    object_id number;
+    objectclass_id number;
+    object_ids ID_ARRAY := ID_ARRAY();
+    deleted_child_ids ID_ARRAY := ID_ARRAY();
+    deleted_ids ID_ARRAY := ID_ARRAY();
+    dummy_ids ID_ARRAY := ID_ARRAY();
+    cur sys_refcursor;
+    surface_geometry_ids0 ID_ARRAY := ID_ARRAY();
+    surface_geometry_ids1 ID_ARRAY := ID_ARRAY();
+    surface_geometry_ids2 ID_ARRAY := ID_ARRAY();
+    surface_geometry_ids3 ID_ARRAY := ID_ARRAY();
+    surface_geometry_ids4 ID_ARRAY := ID_ARRAY();
+    surface_geometry_ids5 ID_ARRAY := ID_ARRAY();
+    surface_geometry_ids6 ID_ARRAY := ID_ARRAY();
+    surface_geometry_ids7 ID_ARRAY := ID_ARRAY();
+    surface_geometry_ids8 ID_ARRAY := ID_ARRAY();
+  BEGIN
+    -- delete referenced parts
+    SELECT
+      t.id
+    BULK COLLECT INTO
+      object_ids
+    FROM
+      tunnel t,
+      TABLE(pids) a
+    WHERE
+      t.tunnel_parent_id = a.COLUMN_VALUE
+      AND t.id <> a.COLUMN_VALUE;
+
+    IF object_ids IS NOT EMPTY THEN
+      dummy_ids := del_tunnel(object_ids);
+    END IF;
+
+    -- delete referenced parts
+    SELECT
+      t.id
+    BULK COLLECT INTO
+      object_ids
+    FROM
+      tunnel t,
+      TABLE(pids) a
+    WHERE
+      t.tunnel_root_id = a.COLUMN_VALUE
+      AND t.id <> a.COLUMN_VALUE;
+
+    IF object_ids IS NOT EMPTY THEN
+      dummy_ids := del_tunnel(object_ids);
+    END IF;
+
+    --delete tunnel_hollow_spaces
+    SELECT
+      t.id
+    BULK COLLECT INTO
+      object_ids
+    FROM
+      tunnel_hollow_space t,
+      TABLE(pids) a
+    WHERE
+      t.tunnel_id = a.COLUMN_VALUE;
+
+    IF object_ids IS NOT EMPTY THEN
+      dummy_ids := del_tunnel_hollow_space(object_ids);
+    END IF;
+
+    --delete tunnel_installations
+    SELECT
+      t.id
+    BULK COLLECT INTO
+      object_ids
+    FROM
+      tunnel_installation t,
+      TABLE(pids) a
+    WHERE
+      t.tunnel_id = a.COLUMN_VALUE;
+
+    IF object_ids IS NOT EMPTY THEN
+      dummy_ids := del_tunnel_installation(object_ids);
+    END IF;
+
+    --delete tunnel_thematic_surfaces
+    SELECT
+      t.id
+    BULK COLLECT INTO
+      object_ids
+    FROM
+      tunnel_thematic_surface t,
+      TABLE(pids) a
+    WHERE
+      t.tunnel_id = a.COLUMN_VALUE;
+
+    IF object_ids IS NOT EMPTY THEN
+      dummy_ids := del_tunnel_thematic_surface(object_ids);
+    END IF;
+
+    -- delete tunnels
+    DELETE FROM
+      tunnel t
+    WHERE EXISTS (
+      SELECT
+        a.COLUMN_VALUE
+      FROM
+        TABLE(pids) a
+      WHERE
+        a.COLUMN_VALUE = t.id
+      )
+    RETURNING
+      id,
+      lod1_multi_surface_id,
+      lod1_solid_id,
+      lod2_multi_surface_id,
+      lod2_solid_id,
+      lod3_multi_surface_id,
+      lod3_solid_id,
+      lod4_multi_surface_id,
+      lod4_solid_id
+    BULK COLLECT INTO
+      deleted_ids,
+      surface_geometry_ids1,
+      surface_geometry_ids2,
+      surface_geometry_ids3,
+      surface_geometry_ids4,
+      surface_geometry_ids5,
+      surface_geometry_ids6,
+      surface_geometry_ids7,
+      surface_geometry_ids8;
+
+    -- collect all surface_geometryids into one nested table
+    surface_geometry_ids0 := surface_geometry_ids0 MULTISET UNION ALL surface_geometry_ids1;
+    surface_geometry_ids0 := surface_geometry_ids0 MULTISET UNION ALL surface_geometry_ids2;
+    surface_geometry_ids0 := surface_geometry_ids0 MULTISET UNION ALL surface_geometry_ids3;
+    surface_geometry_ids0 := surface_geometry_ids0 MULTISET UNION ALL surface_geometry_ids4;
+    surface_geometry_ids0 := surface_geometry_ids0 MULTISET UNION ALL surface_geometry_ids5;
+    surface_geometry_ids0 := surface_geometry_ids0 MULTISET UNION ALL surface_geometry_ids6;
+    surface_geometry_ids0 := surface_geometry_ids0 MULTISET UNION ALL surface_geometry_ids7;
+    surface_geometry_ids0 := surface_geometry_ids0 MULTISET UNION ALL surface_geometry_ids8;
+
+    -- delete surface_geometry(s)
+    IF surface_geometry_ids0 IS NOT EMPTY THEN
+      dummy_ids := del_surface_geometry(surface_geometry_ids0);
+    END IF;
+
+    IF caller <> 1 THEN
+      -- delete cityobject
+      IF deleted_ids IS NOT EMPTY THEN
+        dummy_ids := del_cityobject(deleted_ids, 2);
+      END IF;
+    END IF;
+
+    IF deleted_child_ids IS NOT EMPTY THEN
+      deleted_ids := deleted_child_ids;
+    END IF;
+
+    RETURN deleted_ids;
+
   END;
   ------------------------------------------
 
@@ -5860,7 +5974,7 @@ AS
     deleted_id NUMBER;
     dummy_ids ID_ARRAY;
   BEGIN
-    dummy_ids := del_tunnel_furnitures(ID_ARRAY(pid));
+    dummy_ids := del_tunnel_furniture(ID_ARRAY(pid));
 
     IF dummy_ids IS NOT EMPTY THEN
       deleted_id := dummy_ids(1);
@@ -5874,7 +5988,7 @@ AS
   END;
   ------------------------------------------
 
-  FUNCTION del_tunnel_furnitures(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+  FUNCTION del_tunnel_furniture(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
   IS
     object_id number;
     objectclass_id number;
@@ -5916,7 +6030,7 @@ AS
 
     -- delete surface_geometry(s)
     IF surface_geometry_ids0 IS NOT EMPTY THEN
-      dummy_ids := del_surface_geometrys(surface_geometry_ids0);
+      dummy_ids := del_surface_geometry(surface_geometry_ids0);
     END IF;
 
     -- delete implicit_geometry(s)
@@ -6069,14 +6183,14 @@ AS
         AND n35.lod4_implicit_rep_id IS NULL;
 
       IF object_ids IS NOT EMPTY THEN
-        dummy_ids := del_implicit_geometrys(object_ids);
+        dummy_ids := del_implicit_geometry(object_ids);
       END IF;
     END IF;
 
     IF caller <> 1 THEN
       -- delete cityobject
       IF deleted_ids IS NOT EMPTY THEN
-        dummy_ids := del_cityobjects(deleted_ids, 2);
+        dummy_ids := del_cityobject(deleted_ids, 2);
       END IF;
     END IF;
 
@@ -6094,7 +6208,7 @@ AS
     deleted_id NUMBER;
     dummy_ids ID_ARRAY;
   BEGIN
-    dummy_ids := del_tunnel_hollow_spaces(ID_ARRAY(pid));
+    dummy_ids := del_tunnel_hollow_space(ID_ARRAY(pid));
 
     IF dummy_ids IS NOT EMPTY THEN
       deleted_id := dummy_ids(1);
@@ -6108,7 +6222,7 @@ AS
   END;
   ------------------------------------------
 
-  FUNCTION del_tunnel_hollow_spaces(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+  FUNCTION del_tunnel_hollow_space(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
   IS
     object_id number;
     objectclass_id number;
@@ -6133,7 +6247,7 @@ AS
       t.tunnel_hollow_space_id = a.COLUMN_VALUE;
 
     IF object_ids IS NOT EMPTY THEN
-      dummy_ids := del_tunnel_furnitures(object_ids);
+      dummy_ids := del_tunnel_furniture(object_ids);
     END IF;
 
     --delete tunnel_installations
@@ -6148,7 +6262,7 @@ AS
       t.tunnel_hollow_space_id = a.COLUMN_VALUE;
 
     IF object_ids IS NOT EMPTY THEN
-      dummy_ids := del_tunnel_installations(object_ids);
+      dummy_ids := del_tunnel_installation(object_ids);
     END IF;
 
     --delete tunnel_thematic_surfaces
@@ -6163,7 +6277,7 @@ AS
       t.tunnel_hollow_space_id = a.COLUMN_VALUE;
 
     IF object_ids IS NOT EMPTY THEN
-      dummy_ids := del_tunnel_thematic_surfaces(object_ids);
+      dummy_ids := del_tunnel_thematic_surface(object_ids);
     END IF;
 
     -- delete tunnel_hollow_spaces
@@ -6192,13 +6306,13 @@ AS
 
     -- delete surface_geometry(s)
     IF surface_geometry_ids0 IS NOT EMPTY THEN
-      dummy_ids := del_surface_geometrys(surface_geometry_ids0);
+      dummy_ids := del_surface_geometry(surface_geometry_ids0);
     END IF;
 
     IF caller <> 1 THEN
       -- delete cityobject
       IF deleted_ids IS NOT EMPTY THEN
-        dummy_ids := del_cityobjects(deleted_ids, 2);
+        dummy_ids := del_cityobject(deleted_ids, 2);
       END IF;
     END IF;
 
@@ -6216,7 +6330,7 @@ AS
     deleted_id NUMBER;
     dummy_ids ID_ARRAY;
   BEGIN
-    dummy_ids := del_tunnel_installations(ID_ARRAY(pid));
+    dummy_ids := del_tunnel_installation(ID_ARRAY(pid));
 
     IF dummy_ids IS NOT EMPTY THEN
       deleted_id := dummy_ids(1);
@@ -6230,7 +6344,7 @@ AS
   END;
   ------------------------------------------
 
-  FUNCTION del_tunnel_installations(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+  FUNCTION del_tunnel_installation(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
   IS
     object_id number;
     objectclass_id number;
@@ -6260,7 +6374,7 @@ AS
       t.tunnel_installation_id = a.COLUMN_VALUE;
 
     IF object_ids IS NOT EMPTY THEN
-      dummy_ids := del_tunnel_thematic_surfaces(object_ids);
+      dummy_ids := del_tunnel_thematic_surface(object_ids);
     END IF;
 
     -- delete tunnel_installations
@@ -6303,7 +6417,7 @@ AS
 
     -- delete surface_geometry(s)
     IF surface_geometry_ids0 IS NOT EMPTY THEN
-      dummy_ids := del_surface_geometrys(surface_geometry_ids0);
+      dummy_ids := del_surface_geometry(surface_geometry_ids0);
     END IF;
 
     -- delete implicit_geometry(s)
@@ -6456,14 +6570,14 @@ AS
         AND n35.lod4_implicit_rep_id IS NULL;
 
       IF object_ids IS NOT EMPTY THEN
-        dummy_ids := del_implicit_geometrys(object_ids);
+        dummy_ids := del_implicit_geometry(object_ids);
       END IF;
     END IF;
 
     IF caller <> 1 THEN
       -- delete cityobject
       IF deleted_ids IS NOT EMPTY THEN
-        dummy_ids := del_cityobjects(deleted_ids, 2);
+        dummy_ids := del_cityobject(deleted_ids, 2);
       END IF;
     END IF;
 
@@ -6481,7 +6595,7 @@ AS
     deleted_id NUMBER;
     dummy_ids ID_ARRAY;
   BEGIN
-    dummy_ids := del_tunnel_openings(ID_ARRAY(pid));
+    dummy_ids := del_tunnel_opening(ID_ARRAY(pid));
 
     IF dummy_ids IS NOT EMPTY THEN
       deleted_id := dummy_ids(1);
@@ -6495,7 +6609,7 @@ AS
   END;
   ------------------------------------------
 
-  FUNCTION del_tunnel_openings(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+  FUNCTION del_tunnel_opening(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
   IS
     object_id number;
     objectclass_id number;
@@ -6545,7 +6659,7 @@ AS
 
     -- delete surface_geometry(s)
     IF surface_geometry_ids0 IS NOT EMPTY THEN
-      dummy_ids := del_surface_geometrys(surface_geometry_ids0);
+      dummy_ids := del_surface_geometry(surface_geometry_ids0);
     END IF;
 
     -- delete implicit_geometry(s)
@@ -6698,14 +6812,14 @@ AS
         AND n35.lod4_implicit_rep_id IS NULL;
 
       IF object_ids IS NOT EMPTY THEN
-        dummy_ids := del_implicit_geometrys(object_ids);
+        dummy_ids := del_implicit_geometry(object_ids);
       END IF;
     END IF;
 
     IF caller <> 1 THEN
       -- delete cityobject
       IF deleted_ids IS NOT EMPTY THEN
-        dummy_ids := del_cityobjects(deleted_ids, 2);
+        dummy_ids := del_cityobject(deleted_ids, 2);
       END IF;
     END IF;
 
@@ -6723,7 +6837,7 @@ AS
     deleted_id NUMBER;
     dummy_ids ID_ARRAY;
   BEGIN
-    dummy_ids := del_tunnel_thematic_surfaces(ID_ARRAY(pid));
+    dummy_ids := del_tunnel_thematic_surface(ID_ARRAY(pid));
 
     IF dummy_ids IS NOT EMPTY THEN
       deleted_id := dummy_ids(1);
@@ -6737,7 +6851,7 @@ AS
   END;
   ------------------------------------------
 
-  FUNCTION del_tunnel_thematic_surfaces(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+  FUNCTION del_tunnel_thematic_surface(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
   IS
     object_id number;
     objectclass_id number;
@@ -6770,7 +6884,7 @@ AS
 
     -- delete tunnel_opening(s)
     IF tunnel_opening_ids0 IS NOT EMPTY THEN
-      dummy_ids := del_tunnel_openings(tunnel_opening_ids0);
+      dummy_ids := del_tunnel_opening(tunnel_opening_ids0);
     END IF;
 
     -- delete tunnel_thematic_surfaces
@@ -6802,172 +6916,13 @@ AS
 
     -- delete surface_geometry(s)
     IF surface_geometry_ids1 IS NOT EMPTY THEN
-      dummy_ids := del_surface_geometrys(surface_geometry_ids1);
+      dummy_ids := del_surface_geometry(surface_geometry_ids1);
     END IF;
 
     IF caller <> 1 THEN
       -- delete cityobject
       IF deleted_ids IS NOT EMPTY THEN
-        dummy_ids := del_cityobjects(deleted_ids, 2);
-      END IF;
-    END IF;
-
-    IF deleted_child_ids IS NOT EMPTY THEN
-      deleted_ids := deleted_child_ids;
-    END IF;
-
-    RETURN deleted_ids;
-
-  END;
-  ------------------------------------------
-
-  FUNCTION del_tunnels(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
-  IS
-    object_id number;
-    objectclass_id number;
-    object_ids ID_ARRAY := ID_ARRAY();
-    deleted_child_ids ID_ARRAY := ID_ARRAY();
-    deleted_ids ID_ARRAY := ID_ARRAY();
-    dummy_ids ID_ARRAY := ID_ARRAY();
-    cur sys_refcursor;
-    surface_geometry_ids0 ID_ARRAY := ID_ARRAY();
-    surface_geometry_ids1 ID_ARRAY := ID_ARRAY();
-    surface_geometry_ids2 ID_ARRAY := ID_ARRAY();
-    surface_geometry_ids3 ID_ARRAY := ID_ARRAY();
-    surface_geometry_ids4 ID_ARRAY := ID_ARRAY();
-    surface_geometry_ids5 ID_ARRAY := ID_ARRAY();
-    surface_geometry_ids6 ID_ARRAY := ID_ARRAY();
-    surface_geometry_ids7 ID_ARRAY := ID_ARRAY();
-    surface_geometry_ids8 ID_ARRAY := ID_ARRAY();
-  BEGIN
-    -- delete referenced parts
-    SELECT
-      t.id
-    BULK COLLECT INTO
-      object_ids
-    FROM
-      tunnel t,
-      TABLE(pids) a
-    WHERE
-      t.tunnel_parent_id = a.COLUMN_VALUE
-      AND t.id <> a.COLUMN_VALUE;
-
-    IF object_ids IS NOT EMPTY THEN
-      dummy_ids := del_tunnels(object_ids);
-    END IF;
-
-    -- delete referenced parts
-    SELECT
-      t.id
-    BULK COLLECT INTO
-      object_ids
-    FROM
-      tunnel t,
-      TABLE(pids) a
-    WHERE
-      t.tunnel_root_id = a.COLUMN_VALUE
-      AND t.id <> a.COLUMN_VALUE;
-
-    IF object_ids IS NOT EMPTY THEN
-      dummy_ids := del_tunnels(object_ids);
-    END IF;
-
-    --delete tunnel_hollow_spaces
-    SELECT
-      t.id
-    BULK COLLECT INTO
-      object_ids
-    FROM
-      tunnel_hollow_space t,
-      TABLE(pids) a
-    WHERE
-      t.tunnel_id = a.COLUMN_VALUE;
-
-    IF object_ids IS NOT EMPTY THEN
-      dummy_ids := del_tunnel_hollow_spaces(object_ids);
-    END IF;
-
-    --delete tunnel_installations
-    SELECT
-      t.id
-    BULK COLLECT INTO
-      object_ids
-    FROM
-      tunnel_installation t,
-      TABLE(pids) a
-    WHERE
-      t.tunnel_id = a.COLUMN_VALUE;
-
-    IF object_ids IS NOT EMPTY THEN
-      dummy_ids := del_tunnel_installations(object_ids);
-    END IF;
-
-    --delete tunnel_thematic_surfaces
-    SELECT
-      t.id
-    BULK COLLECT INTO
-      object_ids
-    FROM
-      tunnel_thematic_surface t,
-      TABLE(pids) a
-    WHERE
-      t.tunnel_id = a.COLUMN_VALUE;
-
-    IF object_ids IS NOT EMPTY THEN
-      dummy_ids := del_tunnel_thematic_surfaces(object_ids);
-    END IF;
-
-    -- delete tunnels
-    DELETE FROM
-      tunnel t
-    WHERE EXISTS (
-      SELECT
-        a.COLUMN_VALUE
-      FROM
-        TABLE(pids) a
-      WHERE
-        a.COLUMN_VALUE = t.id
-      )
-    RETURNING
-      id,
-      lod1_multi_surface_id,
-      lod1_solid_id,
-      lod2_multi_surface_id,
-      lod2_solid_id,
-      lod3_multi_surface_id,
-      lod3_solid_id,
-      lod4_multi_surface_id,
-      lod4_solid_id
-    BULK COLLECT INTO
-      deleted_ids,
-      surface_geometry_ids1,
-      surface_geometry_ids2,
-      surface_geometry_ids3,
-      surface_geometry_ids4,
-      surface_geometry_ids5,
-      surface_geometry_ids6,
-      surface_geometry_ids7,
-      surface_geometry_ids8;
-
-    -- collect all surface_geometryids into one nested table
-    surface_geometry_ids0 := surface_geometry_ids0 MULTISET UNION ALL surface_geometry_ids1;
-    surface_geometry_ids0 := surface_geometry_ids0 MULTISET UNION ALL surface_geometry_ids2;
-    surface_geometry_ids0 := surface_geometry_ids0 MULTISET UNION ALL surface_geometry_ids3;
-    surface_geometry_ids0 := surface_geometry_ids0 MULTISET UNION ALL surface_geometry_ids4;
-    surface_geometry_ids0 := surface_geometry_ids0 MULTISET UNION ALL surface_geometry_ids5;
-    surface_geometry_ids0 := surface_geometry_ids0 MULTISET UNION ALL surface_geometry_ids6;
-    surface_geometry_ids0 := surface_geometry_ids0 MULTISET UNION ALL surface_geometry_ids7;
-    surface_geometry_ids0 := surface_geometry_ids0 MULTISET UNION ALL surface_geometry_ids8;
-
-    -- delete surface_geometry(s)
-    IF surface_geometry_ids0 IS NOT EMPTY THEN
-      dummy_ids := del_surface_geometrys(surface_geometry_ids0);
-    END IF;
-
-    IF caller <> 1 THEN
-      -- delete cityobject
-      IF deleted_ids IS NOT EMPTY THEN
-        dummy_ids := del_cityobjects(deleted_ids, 2);
+        dummy_ids := del_cityobject(deleted_ids, 2);
       END IF;
     END IF;
 
@@ -6985,7 +6940,7 @@ AS
     deleted_id NUMBER;
     dummy_ids ID_ARRAY;
   BEGIN
-    dummy_ids := del_waterbodys(ID_ARRAY(pid));
+    dummy_ids := del_waterbody(ID_ARRAY(pid));
 
     IF dummy_ids IS NOT EMPTY THEN
       deleted_id := dummy_ids(1);
@@ -6999,7 +6954,7 @@ AS
   END;
   ------------------------------------------
 
-  FUNCTION del_waterbodys(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+  FUNCTION del_waterbody(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
   IS
     object_id number;
     objectclass_id number;
@@ -7035,7 +6990,20 @@ AS
 
     -- delete waterboundary_surface(s)
     IF waterboundary_surface_ids0 IS NOT EMPTY THEN
-      dummy_ids := del_waterboundary_surfaces(waterboundary_surface_ids0);
+      SELECT DISTINCT
+        a.COLUMN_VALUE
+      BULK COLLECT INTO
+        object_ids
+      FROM
+        TABLE(waterboundary_surface_ids0) a
+      LEFT JOIN
+        waterbod_to_waterbnd_srf n1
+        ON n1.waterboundary_surface_id  = a.COLUMN_VALUE
+      WHERE n1.waterboundary_surface_id IS NULL;
+
+      IF object_ids IS NOT EMPTY THEN
+        dummy_ids := del_waterboundary_surface(object_ids);
+      END IF;
     END IF;
 
     -- delete waterbodys
@@ -7076,13 +7044,13 @@ AS
 
     -- delete surface_geometry(s)
     IF surface_geometry_ids1 IS NOT EMPTY THEN
-      dummy_ids := del_surface_geometrys(surface_geometry_ids1);
+      dummy_ids := del_surface_geometry(surface_geometry_ids1);
     END IF;
 
     IF caller <> 1 THEN
       -- delete cityobject
       IF deleted_ids IS NOT EMPTY THEN
-        dummy_ids := del_cityobjects(deleted_ids, 2);
+        dummy_ids := del_cityobject(deleted_ids, 2);
       END IF;
     END IF;
 
@@ -7100,7 +7068,7 @@ AS
     deleted_id NUMBER;
     dummy_ids ID_ARRAY;
   BEGIN
-    dummy_ids := del_waterboundary_surfaces(ID_ARRAY(pid));
+    dummy_ids := del_waterboundary_surface(ID_ARRAY(pid));
 
     IF dummy_ids IS NOT EMPTY THEN
       deleted_id := dummy_ids(1);
@@ -7114,7 +7082,7 @@ AS
   END;
   ------------------------------------------
 
-  FUNCTION del_waterboundary_surfaces(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
+  FUNCTION del_waterboundary_surface(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
   IS
     object_id number;
     objectclass_id number;
@@ -7157,13 +7125,13 @@ AS
 
     -- delete surface_geometry(s)
     IF surface_geometry_ids0 IS NOT EMPTY THEN
-      dummy_ids := del_surface_geometrys(surface_geometry_ids0);
+      dummy_ids := del_surface_geometry(surface_geometry_ids0);
     END IF;
 
     IF caller <> 1 THEN
       -- delete cityobject
       IF deleted_ids IS NOT EMPTY THEN
-        dummy_ids := del_cityobjects(deleted_ids, 2);
+        dummy_ids := del_cityobject(deleted_ids, 2);
       END IF;
     END IF;
 
@@ -7172,6 +7140,65 @@ AS
     END IF;
 
     RETURN deleted_ids;
+
+  END;
+  ------------------------------------------
+
+  PROCEDURE cleanup_schema
+  IS
+    dummy_str strarray;
+    seq_value number;
+  BEGIN
+
+    dummy_str := citydb_idx.drop_spatial_indexes();
+
+    for uc in (
+      select constraint_name, table_name from user_constraints where constraint_type = 'R'
+    )
+    LOOP
+      execute immediate 'alter table '||uc.table_name||' disable constraint '||uc.constraint_name||'';
+    END loop;
+
+    for ut in (
+      select table_name FROM user_tables
+      WHERE table_name NOT IN ('DATABASE_SRS', 'OBJECTCLASS', 'INDEX_TABLE', 'ADE', 'SCHEMA', 'SCHEMA_TO_OBJECTCLASS', 'SCHEMA_REFERENCING', 'AGGREGATION_INFO')
+      AND table_name NOT LIKE '%\_AUX' ESCAPE '\'
+      AND table_name NOT LIKE '%TMP\_%' ESCAPE '\'
+      AND table_name NOT LIKE '%MDRT%'
+      AND table_name NOT LIKE '%MDXT%'
+      AND table_name NOT LIKE '%MDNT%'
+    )
+    LOOP
+      execute immediate 'truncate table '||ut.table_name||'';
+    END loop;
+
+    for uc in (
+      select constraint_name, table_name from user_constraints where constraint_type = 'R'
+    )
+    LOOP
+      execute immediate 'alter table '||uc.table_name||' enable constraint '||uc.constraint_name||'';
+    END loop;
+
+    for us in (
+      select sequence_name from user_sequences
+      WHERE sequence_name NOT IN ('INDEX_TABLE_SEQ', 'ADE_SEQ', 'SCHEMA_SEQ')
+      AND sequence_name NOT LIKE '%\_AUX' ESCAPE '\'
+      AND sequence_name NOT LIKE '%TMP\_%' ESCAPE '\'
+      AND sequence_name NOT LIKE '%MDRS%'
+      AND sequence_name NOT LIKE '%MDXS%'
+      AND sequence_name NOT LIKE '%MDNS%'
+    )
+    LOOP
+      execute immediate 'select ' || us.sequence_name || '.nextval from dual' into seq_value;
+      if (seq_value = 1) then
+        execute immediate 'select ' || us.sequence_name || '.nextval from dual' into seq_value;
+      end if;
+      execute immediate 'alter sequence ' || us.sequence_name || ' increment by ' || (seq_value-1)*-1;
+      execute immediate 'select ' || us.sequence_name || '.nextval from dual' into seq_value;
+      execute immediate 'alter sequence ' || us.sequence_name || ' increment by 1';
+    END LOOP;
+
+    dummy_str := citydb_idx.create_spatial_indexes();
 
   END;
   ------------------------------------------
