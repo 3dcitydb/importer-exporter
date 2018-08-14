@@ -206,8 +206,13 @@ public class UtilAdapter extends AbstractUtilAdapter {
 
                         lowerCorner.setX(points[0]);
                         lowerCorner.setY(points[1]);
-                        upperCorner.setX(points[2]);
-                        upperCorner.setY(points[3]);
+                        if (points.length >= 4) {
+                            upperCorner.setX(points[2]);
+                            upperCorner.setY(points[3]);
+                        } else {
+                            upperCorner.setX(points[0]);
+                            upperCorner.setY(points[1]);
+                        }
                     }
                 }
 
