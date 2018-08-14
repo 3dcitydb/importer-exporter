@@ -121,13 +121,8 @@ public class KmlSplitter {
 		// create query statement
 		Select select = builder.buildQuery(query);
 
-		PreparedStatement stmt = null;
-		ResultSet rs = null;
-
-		try {
-			stmt = databaseAdapter.getSQLAdapter().prepareStatement(select, connection);
-			rs = stmt.executeQuery();
-
+		try (PreparedStatement stmt = databaseAdapter.getSQLAdapter().prepareStatement(select, connection);
+			 ResultSet rs = stmt.executeQuery()) {
 			int objectCount = 0;
 
 			while (rs.next() && shouldRun) {
@@ -148,32 +143,15 @@ public class KmlSplitter {
 
 			if (query.isSetTiling())
 				Logger.getInstance().debug(objectCount + " candidate objects found for Tile_" + activeTile.getX() + "_" + activeTile.getY() + ".");
-		} finally {
-			if (rs != null) {
-				try { rs.close(); }	catch (SQLException sqlEx) { throw sqlEx; }
-				rs = null;
-			}
-
-			if (stmt != null) {
-				try { stmt.close(); } catch (SQLException sqlEx) { throw sqlEx; }
-				stmt = null;
-			}
 		}
 	}
 
 	public void startQuery() throws SQLException, QueryBuildException, FilterException {
 		try {
 			queryObjects();
-		}
-		finally {
-			if (connection != null) {
-				try {
-					connection.close();
-				}
-				catch (SQLException sqlEx) {}
-
-				connection = null;
-			}
+		} finally {
+			if (connection != null)
+				connection.close();
 		}
 	}
 
@@ -241,12 +219,8 @@ public class KmlSplitter {
 						.addSelection(ComparisonFactory.equalTo(groupToCityObject.getColumn("cityobjectgroup_id"), groupId))
 						));
 
-				ResultSet rs = null;
-				PreparedStatement stmt = null;
-				try {
-					stmt = databaseAdapter.getSQLAdapter().prepareStatement(select, connection);
-					rs = stmt.executeQuery();
-
+				try (PreparedStatement stmt = databaseAdapter.getSQLAdapter().prepareStatement(select, connection);
+					 ResultSet rs = stmt.executeQuery()) {
 					while (rs.next() && shouldRun) {
 						long _id = rs.getLong(MappingConstants.ID);
 						String _gmlId = rs.getString(MappingConstants.GMLID);
@@ -259,16 +233,6 @@ public class KmlSplitter {
 
 						// Recursion in CityObjectGroup
 						addWorkToQueue(_id,  _gmlId, _objectClassId, _envelope, activeTile, true);
-					}
-				} finally {
-					if (rs != null) {
-						try { rs.close(); }	catch (SQLException sqlEx) { throw sqlEx; }
-						rs = null;
-					}
-
-					if (stmt != null) {
-						try { stmt.close(); } catch (SQLException sqlEx) { throw sqlEx; }
-						stmt = null;
 					}
 				}
 			}

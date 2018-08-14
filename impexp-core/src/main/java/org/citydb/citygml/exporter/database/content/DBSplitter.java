@@ -218,13 +218,8 @@ public class DBSplitter {
 		}
 
 		// issue query
-		PreparedStatement stmt = null;
-		ResultSet rs = null;
-
-		try {
-			stmt = databaseAdapter.getSQLAdapter().prepareStatement(select, connection);
-			rs = stmt.executeQuery();
-
+		try (PreparedStatement stmt = databaseAdapter.getSQLAdapter().prepareStatement(select, connection);
+			 ResultSet rs = stmt.executeQuery()) {
 			if (rs.next()) {
 				if (calculateNumberMatched) {
 					long hits = rs.getLong("hits");
@@ -281,13 +276,6 @@ public class DBSplitter {
 				} while (rs.next() && shouldRun);
 			} else
 				log.info("No top-level feature matches the request.");
-
-		} finally {
-			if (rs != null)
-				rs.close();
-
-			if (stmt != null)
-				stmt.close();
 		}
 	}
 
@@ -329,7 +317,7 @@ public class DBSplitter {
 			Table cityObject = new Table("cityobject", schema);
 			Table cityObjectGroup = new Table("cityobjectgroup", schema);
 			Table groupToCityObject = new Table("group_to_cityobject", schema);
-			LiteralList idLiteralList = new LiteralList(cityObjectGroups.keySet().stream().toArray(Long[]::new));
+			LiteralList idLiteralList = new LiteralList(cityObjectGroups.keySet().toArray(new Long[0]));
 
 			select.addSelection(LogicalOperationFactory.AND(
 					ComparisonFactory.in((Column)select.getProjection().get(0), 
@@ -355,31 +343,27 @@ public class DBSplitter {
 			}
 
 			// issue query
-			PreparedStatement stmt = null;
-			ResultSet rs = null;
 
-			try {
-				stmt = databaseAdapter.getSQLAdapter().prepareStatement(select, connection);
-				rs = stmt.executeQuery();
-
+			try (PreparedStatement stmt = databaseAdapter.getSQLAdapter().prepareStatement(select, connection);
+				 ResultSet rs = stmt.executeQuery()) {
 				if (rs.next()) {
 					if (calculateNumberMatched) {
 						hits = rs.getInt("hits");
 						log.info("Found " + hits + " additional group member(s).");
 						eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.INIT, hits + cityObjectGroups.size(), this));
 					}
-					
+
 					do {
 						long id = rs.getLong("id");
 						int objectClassId = rs.getInt("objectclass_id");
-						
+
 						AbstractObjectType<?> objectType = schemaMapping.getAbstractObjectType(objectClassId);
 						if (objectType == null) {
 							log.error("Failed to map object class id '" + objectClassId + "' to an object type (ID: " + id + ").");
 							continue;
 						}
 
-						if (objectType.isEqualToOrSubTypeOf(cityObjectGroupType)) {						
+						if (objectType.isEqualToOrSubTypeOf(cityObjectGroupType)) {
 							if (!cityObjectGroups.containsKey(id)) {
 								String gmlId = rs.getString("gmlid");
 								cityObjectGroups.put(id, objectType);
@@ -397,12 +381,6 @@ public class DBSplitter {
 						dbWorkerPool.addWork(splitter);
 					} while (rs.next() && shouldRun);
 				}
-			} finally {
-				if (rs != null)
-					rs.close();
-
-				if (stmt != null)
-					stmt.close();
 			}
 
 			// wait for jobs to be done...
@@ -433,49 +411,45 @@ public class DBSplitter {
 		log.info("Processing global appearance features.");
 		eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("export.dialog.globalApp.msg"), this));
 
-		PreparedStatement stmt = null;
-		ResultSet rs = null;
 
-		try {
-			CacheTable globalAppTempTable = cacheTableManager.getCacheTable(CacheTableModel.GLOBAL_APPEARANCE);
-			globalAppTempTable.createIndexes();
+		CacheTable globalAppTempTable = cacheTableManager.getCacheTable(CacheTableModel.GLOBAL_APPEARANCE);
+		globalAppTempTable.createIndexes();
 
-			Table appearance = new Table("appearance", schema);
-			Table appearToSurfaceData = new Table("appear_to_surface_data", schema);
-			Table surfaceData = new Table("surface_data", schema);
-			Table textureParam = new Table("textureparam", schema);
-			Table tempTable = new Table(globalAppTempTable.getTableName());
+		Table appearance = new Table("appearance", schema);
+		Table appearToSurfaceData = new Table("appear_to_surface_data", schema);
+		Table surfaceData = new Table("surface_data", schema);
+		Table textureParam = new Table("textureparam", schema);
+		Table tempTable = new Table(globalAppTempTable.getTableName());
 
-			Select select = new Select()
-					.addProjection(appearance.getColumn(MappingConstants.ID)).setDistinct(true)
-					.addJoin(JoinFactory.inner(appearToSurfaceData, "appearance_id", ComparisonName.EQUAL_TO, appearance.getColumn(MappingConstants.ID)))
-					.addJoin(JoinFactory.inner(surfaceData, MappingConstants.ID, ComparisonName.EQUAL_TO, appearToSurfaceData.getColumn("surface_data_id")))
-					.addJoin(JoinFactory.inner(textureParam, "surface_data_id", ComparisonName.EQUAL_TO, surfaceData.getColumn(MappingConstants.ID)))
-					.addJoin(JoinFactory.inner(tempTable, MappingConstants.ID, ComparisonName.EQUAL_TO, textureParam.getColumn("surface_geometry_id")))
-					.addSelection(ComparisonFactory.isNull(appearance.getColumn("cityobject_id")));
+		Select select = new Select()
+				.addProjection(appearance.getColumn(MappingConstants.ID)).setDistinct(true)
+				.addJoin(JoinFactory.inner(appearToSurfaceData, "appearance_id", ComparisonName.EQUAL_TO, appearance.getColumn(MappingConstants.ID)))
+				.addJoin(JoinFactory.inner(surfaceData, MappingConstants.ID, ComparisonName.EQUAL_TO, appearToSurfaceData.getColumn("surface_data_id")))
+				.addJoin(JoinFactory.inner(textureParam, "surface_data_id", ComparisonName.EQUAL_TO, surfaceData.getColumn(MappingConstants.ID)))
+				.addJoin(JoinFactory.inner(tempTable, MappingConstants.ID, ComparisonName.EQUAL_TO, textureParam.getColumn("surface_geometry_id")))
+				.addSelection(ComparisonFactory.isNull(appearance.getColumn("cityobject_id")));
 
-			// add appearance theme filter
-			if (query.isSetAppearanceFilter()) {
-				PredicateToken predicate = new AppearanceFilterBuilder(databaseAdapter).buildAppearanceFilter(query.getAppearanceFilter(), appearance.getColumn("theme"));
-				select.addSelection(predicate);
-			}
+		// add appearance theme filter
+		if (query.isSetAppearanceFilter()) {
+			PredicateToken predicate = new AppearanceFilterBuilder(databaseAdapter).buildAppearanceFilter(query.getAppearanceFilter(), appearance.getColumn("theme"));
+			select.addSelection(predicate);
+		}
 
-			// add hits counter
-			if (calculateNumberMatched) {
-				Table table = new Table(select);
-				select = new Select()
-						.addProjection(table.getColumn(MappingConstants.ID))
-						.addProjection(new Function("count(1) over", "hits"));
-			}
+		// add hits counter
+		if (calculateNumberMatched) {
+			Table table = new Table(select);
+			select = new Select()
+					.addProjection(table.getColumn(MappingConstants.ID))
+					.addProjection(new Function("count(1) over", "hits"));
+		}
 
-			stmt = databaseAdapter.getSQLAdapter().prepareStatement(select, globalAppTempTable.getConnection());
-			rs = stmt.executeQuery();
-
+		try (PreparedStatement stmt = databaseAdapter.getSQLAdapter().prepareStatement(select, globalAppTempTable.getConnection());
+			 ResultSet rs = stmt.executeQuery()) {
 			if (rs.next()) {
 				if (calculateNumberMatched) {
 					long hits = rs.getLong("hits");
 					log.info("Found " + hits + " global appearance feature(s).");
-					eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.INIT, (int)hits, this));
+					eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.INIT, (int) hits, this));
 				}
 
 				FeatureType appearanceType = schemaMapping.getFeatureType("Appearance", AppearanceModule.v2_0_0.getNamespaceURI());
@@ -488,13 +462,6 @@ public class DBSplitter {
 					dbWorkerPool.addWork(splitter);
 				} while (rs.next() && shouldRun);
 			}
-
-		} finally {
-			if (rs != null)
-				rs.close();
-
-			if (stmt != null)
-				stmt.close();
 		}
 	}
 
