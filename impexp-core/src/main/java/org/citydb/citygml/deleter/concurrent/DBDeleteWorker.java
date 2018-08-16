@@ -27,13 +27,12 @@ public class DBDeleteWorker extends Worker<DBSplittingResult> implements EventHa
 	private final Logger LOG = Logger.getInstance();
 	private final EventDispatcher eventDispatcher;	
 	private final CallableStatement stmt;	
-	private final BundledDBConnection bundledConnection;	
 	private volatile boolean shouldRun = true;
+	private volatile boolean shouldWork = true;
 	
 	public DBDeleteWorker(EventDispatcher eventDispatcher, BundledDBConnection bundledConnection) throws SQLException {
 		this.eventDispatcher = eventDispatcher;
 		this.eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
-		this.bundledConnection = bundledConnection;
 		AbstractDatabaseAdapter databaseAdapter = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter();
 		stmt = bundledConnection.getOrCreateConnection().prepareCall("{? = call "
 				+ databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_delete.delete_cityobject")
@@ -78,6 +77,9 @@ public class DBDeleteWorker extends Worker<DBSplittingResult> implements EventHa
 	}
 	
 	public void doWork(DBSplittingResult work) {
+		if (!shouldWork)
+			return;
+		
 		long objectId = work.getId();
 		int objectclassId = work.getObjectType().getObjectClassId();
 		String objectclassName = work.getObjectType().getPath(); 
@@ -99,8 +101,7 @@ public class DBDeleteWorker extends Worker<DBSplittingResult> implements EventHa
 		} catch (SQLException e) {
 			eventDispatcher.triggerEvent(new InterruptEvent(
 					"Failed to delete " + objectclassName + " (RowID = " + objectId + "). Abort and rollback transactions.",
-					LogLevel.WARN, e, eventChannel, this));
-			bundledConnection.setShouldRollback(true);		
+					LogLevel.WARN, e, eventChannel, this));	
 		} finally {
 			updateDeleteContext(objectclassId, accept);
 		}		
@@ -128,7 +129,7 @@ public class DBDeleteWorker extends Worker<DBSplittingResult> implements EventHa
 	@Override
 	public void handleEvent(Event event) throws Exception {
 		if (event.getChannel() == eventChannel) 
-			shouldRun = false;		 			
+			shouldWork = false;		 			
 	}
 
 }
