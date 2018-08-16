@@ -119,8 +119,6 @@ public class Deleter implements EventHandler {
 			} catch (InterruptedException e) {
 				//
 			}
-			
-			dbPool.purge();
 		}		
 		
 		// show exported features
@@ -184,7 +182,6 @@ public class Deleter implements EventHandler {
 					//
 				}
 			}
-			dbPool.purge();
 		}
 		
 		log.info("Cleaned up global appearances: " + sum);
@@ -221,7 +218,6 @@ public class Deleter implements EventHandler {
 					//
 				}
 			}			
-			dbPool.purge();
 		}
 
 		return shouldRun;
