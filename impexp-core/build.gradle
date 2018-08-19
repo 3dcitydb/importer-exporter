@@ -6,9 +6,9 @@ dependencies {
     compile project(':impexp-config')
     compile 'org.citydb:sqlbuilder:2.1.1'
     compile 'org.citygml4j:citygml4j:2.7.0'
-    compile 'org.geotools:gt-epsg-extension:18.2'
-    compile 'org.geotools:gt-epsg-hsql:18.2'
-    compile 'org.geotools:gt-referencing:18.2'
+    compile 'org.geotools:gt-epsg-extension:19.2'
+    compile 'org.geotools:gt-epsg-hsql:19.2'
+    compile 'org.geotools:gt-referencing:19.2'
     compile 'com.h2database:h2:1.4.197'
     compile 'org.locationtech.jts:jts-core:1.15.1'
     compile 'org.postgresql:postgresql:42.2.4'
