@@ -28,57 +28,27 @@
 package org.citydb.citygml.importer.database.content;
 
 import org.citydb.citygml.importer.CityGMLImportException;
-import org.citydb.citygml.importer.util.AttributeValueJoiner;
 import org.citydb.config.Config;
-import org.citydb.util.CoreConstants;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.database.schema.SequenceEnum;
 import org.citydb.database.schema.TableEnum;
 import org.citydb.database.schema.mapping.FeatureType;
+import org.citydb.util.CoreConstants;
 import org.citygml4j.model.citygml.core.Address;
 import org.citygml4j.model.module.xal.XALModuleType;
-import org.citygml4j.model.xal.AddressDetails;
-import org.citygml4j.model.xal.Country;
 import org.citygml4j.model.xal.CountryName;
-import org.citygml4j.model.xal.DependentLocality;
-import org.citygml4j.model.xal.Locality;
 import org.citygml4j.model.xal.LocalityName;
+import org.citygml4j.model.xal.PostBoxNumber;
 import org.citygml4j.model.xal.PostalCodeNumber;
-import org.citygml4j.model.xal.Thoroughfare;
 import org.citygml4j.model.xal.ThoroughfareName;
+import org.citygml4j.model.xal.ThoroughfareNumber;
 import org.citygml4j.util.gmlid.DefaultGMLIdManager;
+import org.citygml4j.util.walker.XALWalker;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
-
-/*
- * PLEASE NOTE:
- * Currently, only addresses according to the following schema are supported and interpreted:
- * (taken from CityGML spec, OGC Doc No. 08-007r1) 
- * 		<Address>	
- * 			<xalAddress>
- * 				<!-- Bussardweg 7, 76356 Weingarten, Germany -->
- * 				<xAL:AddressDetails>
- * 					<xAL:Country>
- * 						<xAL:CountryName>Germany</xAL:CountryName>
- * 						<xAL:Locality Type="City">
- * 							<xAL:LocalityName>Weingarten</xAL:LocalityName>
- * 							<xAL:Thoroughfare Type="Street">
- * 								<xAL:ThoroughfareNumber>7</xAL:ThoroughfareNumber>
- * 								<xAL:ThoroughfareName>Bussardweg</xAL:ThoroughfareName>
- * 							</xAL:Thoroughfare>
- * 							<xAL:PostalCode>
- * 								<xAL:PostalCodeNumber>76356</xAL:PostalCodeNumber>
- * 							</xAL:PostalCode>
- * 						</xAL:Locality>
- * 					</xAL:Country>
- * 				</xAL:AddressDetails>
- * 			</xalAddress>
- * 		</Address>		
- * Additionally, <PostBox> elements are interpreted, if being modelled as child element of <Locality>
- */
 
 public class DBAddress implements DBImporter {	
 	private final Connection batchConn;
@@ -88,7 +58,7 @@ public class DBAddress implements DBImporter {
 	private DBAddressToBuilding addressToBuildingImporter;
 	private DBAddressToBridge addressToBridgeImporter;
 	private GeometryConverter geometryConverter;
-	private AttributeValueJoiner valueJoiner;
+	private XALAddressWalker addressWalker;
 
 	private int batchCounter;
 	private boolean importXALSource;
@@ -121,107 +91,18 @@ public class DBAddress implements DBImporter {
 		addressToBuildingImporter = importer.getImporter(DBAddressToBuilding.class);
 		addressToBridgeImporter = importer.getImporter(DBAddressToBridge.class);
 		geometryConverter = importer.getGeometryConverter();
-		valueJoiner = importer.getAttributeValueJoiner();
+		addressWalker = new XALAddressWalker();
 	}
 
 	protected long doImport(Address address) throws CityGMLImportException, SQLException {
-		long addressId = importer.getNextSequenceValue(SequenceEnum.ADDRESS_ID_SEQ.getName());
+		if (!address.isSetXalAddress() || !address.getXalAddress().isSetAddressDetails())
+			importer.logOrThrowErrorMessage(importer.getObjectSignature(address) + ": Failed to interpret xAL address element.");
 
 		FeatureType featureType = importer.getFeatureType(address);
 		if (featureType == null)
 			throw new SQLException("Failed to retrieve feature type.");
 
-		String streetAttr, houseNoAttr, poBoxAttr, zipCodeAttr, cityAttr, countryAttr, xalSource;
-		streetAttr = houseNoAttr = poBoxAttr = zipCodeAttr = cityAttr = countryAttr = xalSource = null;
-		GeometryObject multiPoint = null;		
-
-		// retrieve address information from xAL address
-		if (address.isSetXalAddress() && address.getXalAddress().isSetAddressDetails()) {
-			AddressDetails addressDetails = address.getXalAddress().getAddressDetails();
-
-			// try and parse <country> child element
-			if (addressDetails.isSetCountry()) {			
-				Country country = addressDetails.getCountry();
-
-				// country name
-				if (country.isSetCountryName())
-					countryAttr = valueJoiner.join(",", country.getCountryName(), CountryName::getContent).result(0);
-
-				// locality
-				if (country.isSetLocality()) {
-					Locality locality = country.getLocality();
-
-					// check whether we deal with a city or a town
-					if (locality.isSetType() 
-							&& (locality.getType().toUpperCase().equals("CITY") || locality.getType().toUpperCase().equals("TOWN"))) {
-
-						// city name
-						if (locality.isSetLocalityName())
-							cityAttr = valueJoiner.join(",", locality.getLocalityName(), LocalityName::getContent).result(0);
-
-						// thoroughfare - just streets are supported
-						if (locality.isSetThoroughfare()) {
-							Thoroughfare thoroughfare = locality.getThoroughfare();
-
-							// check whether we deal with a street
-							if (thoroughfare.isSetType() 
-									&& (thoroughfare.getType().toUpperCase().equals("STREET") || thoroughfare.getType().toUpperCase().equals("ROAD"))) {
-
-								// street name
-								if (thoroughfare.isSetThoroughfareName())
-									streetAttr = valueJoiner.join(",", thoroughfare.getThoroughfareName(), ThoroughfareName::getContent).result(0);
-
-								// house number - we do not support number ranges so far...						
-								if (thoroughfare.isSetThoroughfareNumberOrThoroughfareNumberRange())
-									houseNoAttr = valueJoiner.join(",", thoroughfare.getThoroughfareNumberOrThoroughfareNumberRange(),
-											v -> v.isSetThoroughfareNumber() ? v.getThoroughfareNumber().getContent() : null).result(0);
-							}
-						}
-
-						// dependent locality
-						if (streetAttr == null && houseNoAttr == null && locality.isSetDependentLocality()) {
-							DependentLocality dependentLocality = locality.getDependentLocality();
-
-							if (dependentLocality.isSetType() 
-									&& dependentLocality.getType().toUpperCase().equals("DISTRICT")
-									&& dependentLocality.isSetThoroughfare()) {
-
-								Thoroughfare thoroughfare = dependentLocality.getThoroughfare();
-
-								// street name
-								if (streetAttr == null && thoroughfare.isSetThoroughfareName())
-									streetAttr = valueJoiner.join(",", thoroughfare.getThoroughfareName(), ThoroughfareName::getContent).result(0);
-
-								// house number - we do not support number ranges so far...						
-								if (houseNoAttr == null && thoroughfare.isSetThoroughfareNumberOrThoroughfareNumberRange())
-									houseNoAttr = valueJoiner.join(",", thoroughfare.getThoroughfareNumberOrThoroughfareNumberRange(),
-											v -> v.isSetThoroughfareNumber() ? v.getThoroughfareNumber().getContent() : null).result(0);
-							}
-						}
-
-						// postal code
-						if (locality.isSetPostalCode() && locality.getPostalCode().isSetPostalCodeNumber())
-							zipCodeAttr = valueJoiner.join(",", locality.getPostalCode().getPostalCodeNumber(), 
-									PostalCodeNumber::getContent).result(0);
-
-						// post box
-						if (locality.isSetPostBox() && locality.getPostBox().isSetPostBoxNumber())
-							poBoxAttr = locality.getPostBox().getPostBoxNumber().getContent();
-					}
-				}
-
-				// multiPoint geometry
-				if (address.isSetMultiPoint())
-					multiPoint = geometryConverter.getMultiPoint(address.getMultiPoint());
-			}
-
-			// get XML representation of <xal:AddressDetails>
-			if (importXALSource)
-				xalSource = importer.marshalObject(addressDetails, XALModuleType.CORE);
-
-		} else 
-			importer.logOrThrowErrorMessage(importer.getObjectSignature(address) +
-					": Failed to interpret xAL address element.");
+		long addressId = importer.getNextSequenceValue(SequenceEnum.ADDRESS_ID_SEQ.getName());
 
 		// gml:id
 		if (address.isSetId())
@@ -248,12 +129,20 @@ public class DBAddress implements DBImporter {
 		if (hasGmlIdColumn)
 			psAddress.setString(index++, address.getId());
 
-		psAddress.setString(index++, streetAttr);
-		psAddress.setString(index++, houseNoAttr);
-		psAddress.setString(index++, poBoxAttr);
-		psAddress.setString(index++, zipCodeAttr);
-		psAddress.setString(index++, cityAttr);
-		psAddress.setString(index++, countryAttr);
+		// get address details
+		addressWalker.reset();
+		address.getXalAddress().getAddressDetails().accept(addressWalker);
+		psAddress.setString(index++, addressWalker.street != null ? addressWalker.street.toString() : null);
+		psAddress.setString(index++, addressWalker.houseNo != null ? addressWalker.houseNo.toString() : null);
+		psAddress.setString(index++, addressWalker.poBox != null ? addressWalker.poBox.toString() : null);
+		psAddress.setString(index++, addressWalker.zipCode != null ? addressWalker.zipCode.toString() : null);
+		psAddress.setString(index++, addressWalker.city != null ? addressWalker.city.toString() : null);
+		psAddress.setString(index++, addressWalker.country != null ? addressWalker.country.toString() : null);
+
+		// multiPoint geometry
+		GeometryObject multiPoint = null;
+		if (address.isSetMultiPoint())
+			multiPoint = geometryConverter.getMultiPoint(address.getMultiPoint());
 
 		if (multiPoint != null) {
 			Object multiPointObj = importer.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(multiPoint, batchConn);
@@ -261,6 +150,11 @@ public class DBAddress implements DBImporter {
 		} else
 			psAddress.setNull(index++, importer.getDatabaseAdapter().getGeometryConverter().getNullGeometryType(),
 					importer.getDatabaseAdapter().getGeometryConverter().getNullGeometryTypeName());
+
+		// get XML representation of <xal:AddressDetails>
+		String xalSource = null;
+		if (importXALSource)
+			xalSource = importer.marshalObject(address.getXalAddress().getAddressDetails(), XALModuleType.CORE);
 
 		if (xalSource != null && !xalSource.isEmpty())
 			psAddress.setString(index++, xalSource);
@@ -286,6 +180,81 @@ public class DBAddress implements DBImporter {
 	public void importBridgeAddress(Address address, long parentId) throws CityGMLImportException, SQLException {
 		long addressId = doImport(address);
 		addressToBridgeImporter.doImport(addressId, parentId);
+	}
+
+	private final class XALAddressWalker extends XALWalker {
+		private StringBuilder street;
+		private StringBuilder houseNo;
+		private StringBuilder poBox;
+		private StringBuilder zipCode;
+		private StringBuilder city;
+		private StringBuilder country;
+
+		@Override
+		public void reset() {
+			super.reset();
+			street = houseNo = poBox = zipCode = city = country = null;
+		}
+
+		@Override
+		public void visit(CountryName countryName) {
+			if (country == null)
+				country = new StringBuilder(countryName.getContent());
+			else
+				country.append(",").append(countryName.getContent());
+
+			super.visit(countryName);
+		}
+
+		@Override
+		public void visit(LocalityName localityName) {
+			if (city == null)
+				city = new StringBuilder(localityName.getContent());
+			else
+				city.append(",").append(localityName.getContent());
+
+			super.visit(localityName);
+		}
+
+		@Override
+		public void visit(PostalCodeNumber postalCodeNumber) {
+			if (zipCode == null)
+				zipCode = new StringBuilder(postalCodeNumber.getContent());
+			else
+				zipCode.append(",").append(postalCodeNumber.getContent());
+
+			super.visit(postalCodeNumber);
+		}
+
+		@Override
+		public void visit(ThoroughfareName thoroughfareName) {
+			if (street == null)
+				street = new StringBuilder(thoroughfareName.getContent());
+			else
+				street.append(",").append(thoroughfareName.getContent());
+
+			super.visit(thoroughfareName);
+		}
+
+		@Override
+		public void visit(ThoroughfareNumber thoroughfareNumber) {
+			if (houseNo == null)
+				houseNo = new StringBuilder(thoroughfareNumber.getContent());
+			else
+				houseNo.append(",").append(thoroughfareNumber.getContent());
+
+			super.visit(thoroughfareNumber);
+		}
+
+		@Override
+		public void visit(PostBoxNumber postBoxNumber) {
+			if (poBox == null)
+				poBox = new StringBuilder(postBoxNumber.getContent());
+			else
+				poBox.append(",").append(postBoxNumber.getContent());
+
+			super.visit(postBoxNumber);
+		}
 	}
 
 	@Override
