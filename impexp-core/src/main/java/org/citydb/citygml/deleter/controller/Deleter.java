@@ -145,7 +145,7 @@ public class Deleter implements EventHandler {
 		
 		try {
 			connection = dbPool.getConnection();
-			String operation = dbPool.getActiveDatabaseAdapter().getSQLAdapter().resolveDatabaseOperationName("citydb_delete.cleanup_global_appearances");
+			String operation = dbPool.getActiveDatabaseAdapter().getSQLAdapter().resolveDatabaseOperationName("citydb_delete.cleanup_appearances");
 
 			if (databaseType == DatabaseType.ORACLE) {		
 				cleanupStmt = connection.prepareCall("{? = call " + operation + "()}");
