@@ -85,36 +85,28 @@ subprojects {
         from javadoc.destinationDir
     }
 
-    def createPom = {
-        name project.name
-        url project.citydbVcsUrl
-        licenses {
-            license {
-                name 'The Apache License, Version 2.0'
-                url 'https://www.apache.org/licenses/LICENSE-2.0.txt'
-                distribution 'repo'
-            }
-        }
-        scm {
-            url project.impexpVcsUrl
-            connection 'scm:git:' + project.impexpGit
-        }
-    }
-
     publishing {
         publications {
             mavenJava(MavenPublication) {
                 from components.java
                 artifact sourcesJar
                 artifact javadocJar
-                pom.withXml {
-                    asNode().children().last() + createPom
+                pom {
+                    name = project.name
+                    url = project.citydbVcsUrl
+                    licenses {
+                        license {
+                            name = 'The Apache License, Version 2.0'
+                            url = 'https://www.apache.org/licenses/LICENSE-2.0.txt'
+                            distribution = 'repo'
+                        }
+                    }
+                    scm {
+                        url = project.impexpVcsUrl
+                        connection = 'scm:git:' + project.impexpGit
+                    }
                 }
             }
         }
     }
-}
-
-task wrapper(type: Wrapper) {
-    gradleVersion = '4.7'
 }
