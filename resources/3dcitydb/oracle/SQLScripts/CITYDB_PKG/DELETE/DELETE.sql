@@ -25,8 +25,9 @@
 -- limitations under the License.
 --
 
--- Automatically generated database script (Creation Date: 2018-08-13 17:49:17)
+-- Automatically generated database script (Creation Date: 2018-08-15 16:36:05)
 -- FUNCTION cleanup_appearances(only_global int := 1) RETURN ID_ARRAY
+-- FUNCTION cleanup_table(tab_name varchar2) RETURN ID_ARRAY
 -- FUNCTION del_address(pid NUMBER) RETURN NUMBER
 -- FUNCTION del_address(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY
 -- FUNCTION del_appearance(pid NUMBER) RETURN NUMBER
@@ -122,6 +123,7 @@
 CREATE OR REPLACE PACKAGE citydb_delete
 AS
   FUNCTION cleanup_appearances(only_global int := 1) RETURN ID_ARRAY;
+  FUNCTION cleanup_table(tab_name varchar2) RETURN ID_ARRAY;
   FUNCTION del_address(pid NUMBER) RETURN NUMBER;
   FUNCTION del_address(pids ID_ARRAY, caller int := 0) RETURN ID_ARRAY;
   FUNCTION del_appearance(pid NUMBER) RETURN NUMBER;
@@ -271,6 +273,73 @@ AS
     IF appearance_ids IS NOT EMPTY THEN
       deleted_ids := del_appearance(appearance_ids);
     END IF;
+
+    RETURN deleted_ids;
+  END;
+  ------------------------------------------
+
+  FUNCTION cleanup_table(tab_name varchar2) RETURN ID_ARRAY
+  IS
+    where_clause VARCHAR2(2000);
+    query_ddl VARCHAR2(4000);
+    counter NUMBER;
+    table_alias VARCHAR2(10);
+    del_func_name VARCHAR2(30);
+    deleted_id NUMBER;
+    cur sys_refcursor;
+    rec_id NUMBER;
+    deleted_ids ID_ARRAY := ID_ARRAY();
+  BEGIN
+    counter := 0;
+    del_func_name := 'del_' || tab_name;
+    query_ddl := 'SELECT id FROM ' || tab_name || ' WHERE id IN (' || 'SELECT a.id FROM ' || tab_name || ' a';
+
+    FOR rec IN (
+      SELECT
+        c2.table_name AS root_table_name,
+        c.table_name AS fk_table_name,
+        a.column_name AS fk_column_name
+      FROM
+        user_constraints c
+      JOIN
+        user_cons_columns a
+        ON a.constraint_name = c.constraint_name
+        AND a.table_name = c.table_name
+      JOIN
+        user_constraints c2
+        ON c2.constraint_name = c.r_constraint_name
+      WHERE
+        c2.table_name = upper(tab_name)
+        AND c.table_name <> c2.table_name
+        AND c.constraint_type = 'R'
+      ORDER BY
+        fk_table_name,
+        fk_column_name
+    ) LOOP
+      counter := counter + 1;
+      table_alias := 'n' || counter;
+      IF counter = 1 THEN
+        where_clause := ' WHERE ' || table_alias || '.' || rec.fk_column_name || ' IS NULL';
+      ELSE
+        where_clause := where_clause || ' AND ' || table_alias || '.' || rec.fk_column_name || ' IS NULL';
+      END IF;
+
+      query_ddl := query_ddl || ' LEFT JOIN ' || rec.fk_table_name || ' ' || table_alias || ' ON ' 
+        || table_alias || '.' || rec.fk_column_name || ' = a.id';
+    END LOOP;
+
+    query_ddl := query_ddl || where_clause || ')';
+
+    OPEN cur FOR query_ddl;
+    LOOP
+      FETCH cur INTO rec_id;
+      EXIT WHEN cur%notfound;
+      BEGIN
+        EXECUTE IMMEDIATE 'BEGIN :val := citydb_delete.' || del_func_name || '(' || rec_id || '); END;' using out deleted_id;
+        deleted_ids.extend;
+        deleted_ids(deleted_ids.count) := deleted_id;
+      END;
+    END LOOP;  
 
     RETURN deleted_ids;
   END;
@@ -7148,9 +7217,11 @@ AS
   IS
     dummy_str strarray;
     seq_value number;
+    schema_name VARCHAR2(30);
   BEGIN
 
-    dummy_str := citydb_idx.drop_spatial_indexes();
+    schema_name := sys_context('userenv', 'current_schema');
+    dummy_str := citydb_idx.drop_spatial_indexes(schema_name);
 
     for uc in (
       select constraint_name, table_name from user_constraints where constraint_type = 'R'
@@ -7198,7 +7269,7 @@ AS
       execute immediate 'alter sequence ' || us.sequence_name || ' increment by 1';
     END LOOP;
 
-    dummy_str := citydb_idx.create_spatial_indexes();
+    dummy_str := citydb_idx.create_spatial_indexes(schema_name);
 
   END;
   ------------------------------------------
