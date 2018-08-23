@@ -36,40 +36,22 @@ public class ConcurrentLockManager {
 	private final ConcurrentHashMap<String, ReentrantLock> locks;
 
 	private ConcurrentLockManager() {
-		locks = new ConcurrentHashMap<String, ReentrantLock>();
+		locks = new ConcurrentHashMap<>();
 	}
 
 	public static synchronized ConcurrentLockManager getInstance(Class<?> className) {
 		if (instances == null)
-			instances = new HashMap<String, ConcurrentLockManager>();
+			instances = new HashMap<>();
 
-		ConcurrentLockManager instance = instances.get(className.getName());
-		if (instance == null) {
-			instance = new ConcurrentLockManager();
-			instances.put(className.getName(), instance);
-		}
-
-		return instance;
+		return instances.computeIfAbsent(className.getName(), v -> new ConcurrentLockManager());
 	}
 
-	public ReentrantLock putAndGetLock(String key) {
-		ReentrantLock entry = locks.get(key);
-		if (entry == null) {
-			ReentrantLock lock = new ReentrantLock();
-			entry = locks.putIfAbsent(key, lock);
-			if (entry == null)
-				entry = lock;
-		}
-
-		return entry;
+	public ReentrantLock getLock(String key) {
+		return locks.computeIfAbsent(key, v -> new ReentrantLock());
 	}
 
 	public void releaseLock(String key) {
 		locks.remove(key);
 	}
 
-	public synchronized void clear() {
-		if (instances != null)
-			instances.values().removeIf(v -> v == this);	
-	}
 }

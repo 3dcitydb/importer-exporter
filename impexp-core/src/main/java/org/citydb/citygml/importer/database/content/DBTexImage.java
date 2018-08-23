@@ -86,7 +86,7 @@ public class DBTexImage implements DBImporter {
 
 		// synchronize concurrent processing of the same texture image
 		// different texture images however may be processed concurrently
-		ReentrantLock lock = lockManager.putAndGetLock(md5URI);
+		ReentrantLock lock = lockManager.getLock(md5URI);
 		lock.lock();
 
 		try {
@@ -181,7 +181,6 @@ public class DBTexImage implements DBImporter {
 	@Override
 	public void close() throws CityGMLImportException, SQLException {
 		psInsertStmt.close();
-		lockManager.clear();
 	}
 
 }

@@ -117,7 +117,7 @@ public class DBImplicitGeometry implements DBImporter {
 
 		// synchronize concurrent processing of the same implicit geometry
 		// different implicit geometries however may be processed concurrently
-		ReentrantLock lock = lockManager.putAndGetLock(gmlId != null ? gmlId : libraryURI);
+		ReentrantLock lock = lockManager.getLock(gmlId != null ? gmlId : libraryURI);
 		lock.lock();
 
 		ResultSet rs = null;
@@ -241,7 +241,6 @@ public class DBImplicitGeometry implements DBImporter {
 		psImplicitGeometry.close();
 		psUpdateImplicitGeometry.close();
 		psSelectLibraryObject.close();
-		lockManager.clear();
 	}
 
 }
