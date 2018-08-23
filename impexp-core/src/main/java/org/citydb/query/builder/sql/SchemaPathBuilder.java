@@ -1,11 +1,5 @@
 package org.citydb.query.builder.sql;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Set;
-import java.util.Stack;
-
 import org.citydb.database.adapter.AbstractSQLAdapter;
 import org.citydb.database.schema.mapping.AbstractExtension;
 import org.citydb.database.schema.mapping.AbstractJoin;
@@ -38,7 +32,6 @@ import org.citydb.database.schema.path.predicate.logical.LogicalPredicateName;
 import org.citydb.query.builder.QueryBuildException;
 import org.citydb.query.filter.selection.expression.LiteralType;
 import org.citydb.query.filter.selection.expression.TimestampLiteral;
-
 import org.citydb.sqlbuilder.expression.AbstractSQLLiteral;
 import org.citydb.sqlbuilder.expression.DoubleLiteral;
 import org.citydb.sqlbuilder.expression.Expression;
@@ -49,7 +42,6 @@ import org.citydb.sqlbuilder.expression.StringLiteral;
 import org.citydb.sqlbuilder.schema.AliasGenerator;
 import org.citydb.sqlbuilder.schema.Column;
 import org.citydb.sqlbuilder.schema.DefaultAliasGenerator;
-import org.citydb.sqlbuilder.schema.GlobalAliasGenerator;
 import org.citydb.sqlbuilder.schema.Table;
 import org.citydb.sqlbuilder.select.PredicateToken;
 import org.citydb.sqlbuilder.select.Select;
@@ -59,6 +51,12 @@ import org.citydb.sqlbuilder.select.operator.comparison.ComparisonName;
 import org.citydb.sqlbuilder.select.operator.logical.BinaryLogicalOperator;
 import org.citydb.sqlbuilder.select.operator.logical.LogicalOperationName;
 import org.citydb.sqlbuilder.select.projection.Function;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Set;
+import java.util.Stack;
 
 public class SchemaPathBuilder {
 	private final AbstractSQLAdapter sqlAdapter;
@@ -160,7 +158,7 @@ public class SchemaPathBuilder {
 		}
 
 		// update alias generator
-		GlobalAliasGenerator.getInstance().updateAlias(aliasGenerator);
+		buildProperties.aliasGenerator.updateFrom(aliasGenerator);
 		
 		return queryContext;
 	}

@@ -1,15 +1,20 @@
 package org.citydb.query.builder.sql;
 
+import org.citydb.sqlbuilder.schema.AliasGenerator;
+import org.citydb.sqlbuilder.schema.DefaultAliasGenerator;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 public class BuildProperties {
+	protected final DefaultAliasGenerator aliasGenerator;
 	private boolean useDistinct;
 	private List<String> projectionColumns;
 
 	private BuildProperties() {
 		// just to thwart instantiation
+		aliasGenerator = new DefaultAliasGenerator();
 	}
 	
 	public static BuildProperties defaults() {
@@ -18,6 +23,7 @@ public class BuildProperties {
 	
 	public BuildProperties reset() {
 		projectionColumns = null;
+		aliasGenerator.reset();
 		return this;
 	}
 
@@ -49,6 +55,10 @@ public class BuildProperties {
 	
 	public List<String> getAdditionalProjectionColumns() {
 		return projectionColumns != null ? new ArrayList<>(projectionColumns) : Collections.emptyList();
+	}
+
+	public AliasGenerator getAliasGenerator() {
+		return aliasGenerator;
 	}
 	
 }

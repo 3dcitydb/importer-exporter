@@ -1,13 +1,5 @@
 package org.citydb.query.builder.sql;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import org.citydb.ade.ADEExtensionManager;
 import org.citydb.database.schema.mapping.AbstractExtension;
 import org.citydb.database.schema.mapping.AbstractJoin;
@@ -29,13 +21,9 @@ import org.citydb.query.filter.lod.LodFilter;
 import org.citydb.query.filter.lod.LodFilterMode;
 import org.citydb.query.filter.lod.LodIterator;
 import org.citydb.query.filter.type.FeatureTypeFilter;
-import org.citygml4j.model.module.citygml.CityGMLVersion;
-import org.citygml4j.model.module.citygml.CoreModule;
-
 import org.citydb.sqlbuilder.expression.IntegerLiteral;
 import org.citydb.sqlbuilder.expression.SubQueryExpression;
 import org.citydb.sqlbuilder.schema.Column;
-import org.citydb.sqlbuilder.schema.GlobalAliasGenerator;
 import org.citydb.sqlbuilder.schema.Table;
 import org.citydb.sqlbuilder.select.PredicateToken;
 import org.citydb.sqlbuilder.select.ProjectionToken;
@@ -48,6 +36,16 @@ import org.citydb.sqlbuilder.select.operator.logical.LogicalOperationFactory;
 import org.citydb.sqlbuilder.select.operator.logical.LogicalOperationName;
 import org.citydb.sqlbuilder.select.operator.set.SetOperationFactory;
 import org.citydb.sqlbuilder.select.operator.set.SetOperationName;
+import org.citygml4j.model.module.citygml.CityGMLVersion;
+import org.citygml4j.model.module.citygml.CoreModule;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class LodFilterBuilder {
 	private final String schemaName;
@@ -76,9 +74,6 @@ public class LodFilterBuilder {
 
 		if (table == null)
 			throw new QueryBuildException("Failed to retrieve cityobject table for building the LoD filter.");
-
-		if (GlobalAliasGenerator.getInstance().currentAlias().equals(table.getAlias()))
-			GlobalAliasGenerator.getInstance().nextAlias();
 
 		for (FeatureType type : typeFilter.getFeatureTypes(targetVersion)) {
 			boolean isNested = hasNestedTypesWithLodProperties(type);
