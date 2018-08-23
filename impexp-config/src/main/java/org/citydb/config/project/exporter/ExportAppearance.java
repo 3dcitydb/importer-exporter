@@ -44,7 +44,7 @@ public class ExportAppearance {
 	private Boolean exportTextureFiles = true;
 	@XmlElement(defaultValue="false")
 	private Boolean overwriteTextureFiles = true;
-	private Boolean uniqueTextureFileNames = false;
+	private Boolean uniqueTextureFileNames = true;
 	private TexturePath texturePath;
 
 	public ExportAppearance() {
