@@ -9,9 +9,9 @@ import org.citydb.query.filter.selection.expression.ValueReference;
 public class LikeOperator extends AbstractComparisonOperator {
 	private Expression leftOperand;
 	private Expression rightOperand;
-	private String wildCard = "";
-	private String singleCharacter = "";
-	private String escapeCharacter = "";
+	private String wildCard = "*";
+	private String singleCharacter = ".";
+	private String escapeCharacter = "\\";
 	private boolean matchCase = true;
 
 	public LikeOperator(Expression leftOperand, Expression rightOperand) throws FilterException {
@@ -63,10 +63,8 @@ public class LikeOperator extends AbstractComparisonOperator {
 	}
 
 	public void setWildCard(String wildCard) {
-		if (wildCard == null)
-			wildCard = "";
-		
-		this.wildCard = wildCard;
+		if (wildCard != null)
+			this.wildCard = wildCard;
 	}
 
 	public String getSingleCharacter() {
@@ -74,10 +72,8 @@ public class LikeOperator extends AbstractComparisonOperator {
 	}
 
 	public void setSingleCharacter(String singleCharacter) {
-		if (singleCharacter == null)
-			singleCharacter = "";
-		
-		this.singleCharacter = singleCharacter;
+		if (singleCharacter != null)
+			this.singleCharacter = singleCharacter;
 	}
 
 	public String getEscapeCharacter() {
@@ -85,10 +81,8 @@ public class LikeOperator extends AbstractComparisonOperator {
 	}
 
 	public void setEscapeCharacter(String escapeCharacter) {
-		if (escapeCharacter == null)
-			escapeCharacter = "";
-		
-		this.escapeCharacter = escapeCharacter;
+		if (escapeCharacter != null)
+			this.escapeCharacter = escapeCharacter;
 	}
 
 	public boolean isMatchCase() {
