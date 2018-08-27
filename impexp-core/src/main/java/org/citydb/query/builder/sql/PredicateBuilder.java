@@ -1,14 +1,5 @@
 package org.citydb.query.builder.sql;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.schema.mapping.AbstractProperty;
 import org.citydb.database.schema.mapping.SchemaMapping;
@@ -23,7 +14,7 @@ import org.citydb.query.filter.selection.operator.logical.BinaryLogicalOperator;
 import org.citydb.query.filter.selection.operator.logical.LogicalOperatorName;
 import org.citydb.query.filter.selection.operator.logical.NotOperator;
 import org.citydb.query.filter.selection.operator.spatial.AbstractSpatialOperator;
-
+import org.citydb.query.filter.selection.operator.sql.SelectOperator;
 import org.citydb.sqlbuilder.schema.Column;
 import org.citydb.sqlbuilder.schema.Table;
 import org.citydb.sqlbuilder.select.PredicateToken;
@@ -32,16 +23,27 @@ import org.citydb.sqlbuilder.select.Select;
 import org.citydb.sqlbuilder.select.operator.set.SetOperationName;
 import org.citydb.sqlbuilder.select.operator.set.SetOperator;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 public class PredicateBuilder {
 	private final ComparisonOperatorBuilder comparisonBuilder;
 	private final SpatialOperatorBuilder spatialBuilder;
 	private final IdOperatorBuilder idBuilder;
+	private final SelectOperatorBuilder selectBuilder;
 
-	protected PredicateBuilder(Query query, Set<Integer> objectclassIds, SchemaMapping schemaMapping, AbstractDatabaseAdapter databaseAdapter, String schemaName, BuildProperties buildProperties) {
+	protected PredicateBuilder(Query query, Set<Integer> objectClassIds, SchemaMapping schemaMapping, AbstractDatabaseAdapter databaseAdapter, String schemaName, BuildProperties buildProperties) {
 		SchemaPathBuilder schemaPathBuilder = new SchemaPathBuilder(databaseAdapter.getSQLAdapter(), schemaName, buildProperties);
-		comparisonBuilder = new ComparisonOperatorBuilder(schemaPathBuilder, objectclassIds, databaseAdapter.getSQLAdapter(), schemaName);
-		spatialBuilder = new SpatialOperatorBuilder(query, schemaPathBuilder, objectclassIds, schemaMapping, databaseAdapter, schemaName);
-		idBuilder = new IdOperatorBuilder(query, schemaPathBuilder, objectclassIds, schemaMapping, databaseAdapter.getSQLAdapter());
+		comparisonBuilder = new ComparisonOperatorBuilder(schemaPathBuilder, objectClassIds, databaseAdapter.getSQLAdapter(), schemaName);
+		spatialBuilder = new SpatialOperatorBuilder(query, schemaPathBuilder, objectClassIds, schemaMapping, databaseAdapter, schemaName);
+		idBuilder = new IdOperatorBuilder(query, schemaPathBuilder, objectClassIds, schemaMapping, databaseAdapter.getSQLAdapter());
+		selectBuilder = new SelectOperatorBuilder(objectClassIds, buildProperties);
 	}
 
 	protected Select buildPredicate(Predicate predicate) throws QueryBuildException {
@@ -63,6 +65,9 @@ public class PredicateBuilder {
 			break;
 		case ID_OPERATOR:
 			queryContext = buildIdOperator((AbstractIdOperator)predicate, negate);
+			break;
+		case SQL_OPERATOR:
+			queryContext = selectBuilder.buildSelectOperator((SelectOperator)predicate, negate);
 			break;
 		}
 

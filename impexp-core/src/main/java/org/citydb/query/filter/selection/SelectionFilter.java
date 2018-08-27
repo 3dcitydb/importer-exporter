@@ -1,8 +1,5 @@
 package org.citydb.query.filter.selection;
 
-import java.util.EnumSet;
-import java.util.Iterator;
-
 import org.citydb.database.schema.mapping.FeatureType;
 import org.citydb.database.schema.path.InvalidSchemaPathException;
 import org.citydb.database.schema.path.SchemaPath;
@@ -17,6 +14,9 @@ import org.citydb.query.filter.selection.operator.spatial.BinarySpatialOperator;
 import org.citydb.query.filter.selection.operator.spatial.DistanceOperator;
 import org.citydb.query.filter.selection.operator.spatial.SpatialOperatorName;
 import org.citygml4j.model.module.gml.GMLCoreModule;
+
+import java.util.EnumSet;
+import java.util.Iterator;
 
 public class SelectionFilter {
 	private Predicate predicate;
@@ -77,16 +77,13 @@ public class SelectionFilter {
 
 	private boolean reduceToGenericSpatialFilter(Predicate predicate, ValueReference valueReference) throws FilterException {
 		switch (predicate.getPredicateName()) {
-		case COMPARISON_OPERATOR:
-		case ID_OPERATOR:
-			return false;
-		case SPATIAL_OPERATOR:
-			return reduceToGenericSpatialFilter((AbstractSpatialOperator)predicate, valueReference);
-		case LOGICAL_OPERATOR:
-			return reduceToGenericSpatialFilter((AbstractLogicalOperator)predicate, valueReference);
+			case SPATIAL_OPERATOR:
+				return reduceToGenericSpatialFilter((AbstractSpatialOperator) predicate, valueReference);
+			case LOGICAL_OPERATOR:
+				return reduceToGenericSpatialFilter((AbstractLogicalOperator) predicate, valueReference);
+			default:
+				return false;
 		}
-
-		return false;
 	}
 
 	private boolean reduceToGenericSpatialFilter(AbstractLogicalOperator logicalOperator, ValueReference valueReference) throws FilterException {
@@ -101,11 +98,9 @@ public class SelectionFilter {
 					iter.remove();
 			}
 
-			if (!binaryLogicalOperator.getOperands().isEmpty())
-				return true;
-		}	
+			return !binaryLogicalOperator.getOperands().isEmpty();
+		}
 
-		return false;
 	}
 
 	private boolean reduceToGenericSpatialFilter(AbstractSpatialOperator spatialOperator, ValueReference valueReference) throws FilterException {

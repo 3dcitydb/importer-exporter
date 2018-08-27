@@ -1,7 +1,5 @@
 package org.citydb.query.builder.config;
 
-import javax.xml.namespace.NamespaceContext;
-
 import org.citydb.config.ConfigNamespaceFilter;
 import org.citydb.config.project.query.filter.selection.AbstractPredicate;
 import org.citydb.config.project.query.filter.selection.comparison.AbstractComparisonOperator;
@@ -10,6 +8,7 @@ import org.citydb.config.project.query.filter.selection.logical.AbstractBinaryLo
 import org.citydb.config.project.query.filter.selection.logical.AbstractLogicalOperator;
 import org.citydb.config.project.query.filter.selection.logical.NotOperator;
 import org.citydb.config.project.query.filter.selection.spatial.AbstractSpatialOperator;
+import org.citydb.config.project.query.filter.selection.sql.SelectOperator;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.schema.mapping.SchemaMapping;
 import org.citydb.database.schema.util.SimpleXPathParser;
@@ -20,10 +19,13 @@ import org.citydb.query.filter.selection.operator.logical.BinaryLogicalOperator;
 import org.citydb.query.filter.selection.operator.logical.LogicalOperationFactory;
 import org.citydb.query.filter.selection.operator.logical.LogicalOperatorName;
 
+import javax.xml.namespace.NamespaceContext;
+
 public class PredicateBuilder {
-	private final ComparisonOperatorBuilder comparisonOperatorBuilder;
-	private final SpatialOperatorBuilder spatialOperatorBuilder;
-	private final IdOperatorBuilder idOperatorBuilder;
+	private final ComparisonOperatorBuilder comparisonBuilder;
+	private final SpatialOperatorBuilder spatialBuilder;
+	private final IdOperatorBuilder idBuilder;
+	private final SelectOperatorBuilder selectBuilder;
 	private final SimpleXPathParser xPathParser;
 	
 	protected PredicateBuilder(Query query, SchemaMapping schemaMapping, NamespaceContext namespaceContext, AbstractDatabaseAdapter databaseAdapter) {
@@ -31,9 +33,10 @@ public class PredicateBuilder {
 			namespaceContext = new ConfigNamespaceFilter();
 		
 		xPathParser = new SimpleXPathParser(schemaMapping);
-		comparisonOperatorBuilder = new ComparisonOperatorBuilder(query, xPathParser, schemaMapping, namespaceContext);
-		spatialOperatorBuilder = new SpatialOperatorBuilder(query, xPathParser, schemaMapping, namespaceContext, databaseAdapter);
-		idOperatorBuilder = new IdOperatorBuilder();		
+		comparisonBuilder = new ComparisonOperatorBuilder(query, xPathParser, schemaMapping, namespaceContext);
+		spatialBuilder = new SpatialOperatorBuilder(query, xPathParser, schemaMapping, namespaceContext, databaseAdapter);
+		idBuilder = new IdOperatorBuilder();
+		selectBuilder = new SelectOperatorBuilder();
 	}
 
 	protected Predicate buildPredicate(AbstractPredicate predicateConfig) throws QueryBuildException {
@@ -41,17 +44,20 @@ public class PredicateBuilder {
 		
 		switch (predicateConfig.getPredicateName()) {
 		case COMPARISON_OPERATOR:
-			predicate = comparisonOperatorBuilder.buildComparisonOperator((AbstractComparisonOperator)predicateConfig);
+			predicate = comparisonBuilder.buildComparisonOperator((AbstractComparisonOperator)predicateConfig);
 			break;
 		case SPATIAL_OPERATOR:
-			predicate = spatialOperatorBuilder.buildSpatialOperator((AbstractSpatialOperator)predicateConfig);
+			predicate = spatialBuilder.buildSpatialOperator((AbstractSpatialOperator)predicateConfig);
 			break;
 		case LOGICAL_OPERATOR:
 			predicate = buildLogicalOperator((AbstractLogicalOperator)predicateConfig);
 			break;
 		case ID_OPERATOR:
-			predicate = idOperatorBuilder.buildResourceIdOperator((ResourceIdOperator)predicateConfig);
-			break;			
+			predicate = idBuilder.buildResourceIdOperator((ResourceIdOperator)predicateConfig);
+			break;
+		case SQL_OPERATOR:
+			predicate = selectBuilder.buildSelectOperator((SelectOperator)predicateConfig);
+			break;
 		}
 		
 		return predicate;
@@ -71,7 +77,7 @@ public class PredicateBuilder {
 			if (binaryOperatorConfig.numberOfOperands() == 1)
 				return buildPredicate(binaryOperatorConfig.getOperands().get(0));
 			
-			BinaryLogicalOperator logicalOperator = null;
+			BinaryLogicalOperator logicalOperator;
 			switch (logicalOperatorConfig.getOperatorName()) {
 			case AND:
 				logicalOperator = new BinaryLogicalOperator(LogicalOperatorName.AND);
@@ -80,7 +86,7 @@ public class PredicateBuilder {
 				logicalOperator = new BinaryLogicalOperator(LogicalOperatorName.OR);
 				break;
 			default:
-				break;
+				return null;
 			}
 			
 			for (AbstractPredicate predicateConfig : binaryOperatorConfig.getOperands())

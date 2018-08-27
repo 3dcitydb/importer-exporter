@@ -30,7 +30,7 @@ public class IdOperatorBuilder {
 	private final SchemaMapping schemaMapping;
 	private final AbstractSQLAdapter sqlAdapter;
 
-	public IdOperatorBuilder(Query query, SchemaPathBuilder schemaPathBuilder, Set<Integer> objectclassIds, SchemaMapping schemaMapping, AbstractSQLAdapter sqlAdapter) {
+	protected IdOperatorBuilder(Query query, SchemaPathBuilder schemaPathBuilder, Set<Integer> objectclassIds, SchemaMapping schemaMapping, AbstractSQLAdapter sqlAdapter) {
 		this.query = query;
 		this.schemaPathBuilder = schemaPathBuilder;
 		this.objectclassIds = objectclassIds;
