@@ -98,7 +98,7 @@ public class SchemaPathBuilder {
 		SQLQueryContext queryContext = new SQLQueryContext(select);
 		aliasGenerator.reset();
 
-		tableContext = new Stack<HashMap<String, Table>>();
+		tableContext = new Stack<>();
 		currentTable = new Table(head.getPathElement().getTable(), schemaName, aliasGenerator);
 		currentNode = head;
 
@@ -123,7 +123,7 @@ public class SchemaPathBuilder {
 			case COMPLEX_TYPE:
 				AbstractType<?> type = (AbstractType<?>)pathElement;
 				if (type.isSetTable()) {			
-					tableContext.push(new HashMap<String, Table>());
+					tableContext.push(new HashMap<>());
 					tableContext.peek().put(currentTable.getName(), currentTable);
 
 					// correct table context in case of ADE subtypes
@@ -198,7 +198,7 @@ public class SchemaPathBuilder {
 			if (objectClassIds.size() == 1)
 				select.addSelection(ComparisonFactory.equalTo(objectClassId, new IntegerLiteral(objectClassIds.iterator().next())));
 			else
-				select.addSelection(ComparisonFactory.in(objectClassId, new LiteralList(objectClassIds.toArray(new Integer[objectClassIds.size()]))));	
+				select.addSelection(ComparisonFactory.in(objectClassId, new LiteralList(objectClassIds.toArray(new Integer[0]))));
 		}
 	}
 
@@ -321,32 +321,25 @@ public class SchemaPathBuilder {
 	private void addJoin(Select select, AbstractJoin abstractJoin) throws QueryBuildException {		
 		if (abstractJoin instanceof Join) {
 			Join join = (Join)abstractJoin;
-			String toTable = resolveTableToken(join, currentTable);
-			addJoin(select, join, toTable, false);	
+			String toTable = resolveTableToken(join.getTable(), currentTable);
+			addJoin(select, join.getFromColumn(), toTable, join.getToColumn(), join.getConditions(), false);
 		}
 
 		else if (abstractJoin instanceof JoinTable) {
 			JoinTable joinTable = (JoinTable)abstractJoin;
 			Table fromTable = currentTable;
 
-			Table junctionTable = tableContext.peek().get(joinTable.getTable());
-			if (junctionTable == null)
-				junctionTable = new Table(joinTable.getTable(), schemaName, aliasGenerator);
-
-			tableContext.push(new HashMap<String, Table>());
+			tableContext.push(new HashMap<>());
 			tableContext.peek().put(currentTable.getName(), currentTable);
 
-			for (Join join : joinTable.getJoins()) {
-				currentTable = junctionTable;
-				String toTable = resolveTableToken(join, fromTable);
+			// join intermediate table
+			Join join = joinTable.getJoin();
+			addJoin(select, join.getToColumn(), joinTable.getTable(), join.getFromColumn(), join.getConditions(), true);
 
-				// create new context if required
-				if (join.getTable().equals(MappingConstants.TARGET_TABLE_TOKEN) 
-						&& fromTable.getName().equals(toTable))
-					tableContext.push(new HashMap<String, Table>());
-
-				addJoin(select, join, toTable, true);
-			}
+			// join target table
+			Join inverseJoin = joinTable.getInverseJoin();
+			String toTable = resolveTableToken(inverseJoin.getTable(), fromTable);
+			addJoin(select, inverseJoin.getFromColumn(), toTable, inverseJoin.getToColumn(), inverseJoin.getConditions(), true);
 		}
 
 		else if (abstractJoin instanceof ReverseJoin) {
@@ -364,25 +357,21 @@ public class SchemaPathBuilder {
 		}
 	}
 
-	private void addJoin(Select select, Join join, String joinTable, boolean force) throws QueryBuildException {
-		Table toTable = null;
-
-		// check whether we already have joined with target table
-		if (!currentTable.getName().equals(joinTable)) {
-			toTable = tableContext.peek().get(joinTable);
-			if (!force && toTable != null) {
+	private void addJoin(Select select, String fromColumn, String joinTable, String toColumn, List<Condition> conditions, boolean force) throws QueryBuildException {
+		// check whether we already have joined the target table
+		if (!force && !currentTable.getName().equals(joinTable)) {
+			Table toTable = tableContext.peek().get(joinTable);
+			if (toTable != null) {
 				currentTable = toTable;
 				return;
 			}
 		}
 
-		if (toTable == null)
-			toTable = new Table(joinTable, schemaName, aliasGenerator);
+		Table toTable = new Table(joinTable, schemaName, aliasGenerator);
+		select.addJoin(JoinFactory.inner(toTable, toColumn, ComparisonName.EQUAL_TO, currentTable.getColumn(fromColumn)));
 
-		select.addJoin(JoinFactory.inner(toTable, join.getToColumn(), ComparisonName.EQUAL_TO, currentTable.getColumn(join.getFromColumn())));
-
-		if (join.isSetConditions()) {
-			for (Condition condition : join.getConditions()) {
+		if (conditions != null) {
+			for (Condition condition : conditions) {
 				String value = condition.getValue();
 
 				// resolve token in condition statement
@@ -390,7 +379,7 @@ public class SchemaPathBuilder {
 					if (currentNode.child() == null)
 						continue;
 
-					AbstractPathElement target = (AbstractPathElement)currentNode.child().getPathElement();
+					AbstractPathElement target = currentNode.child().getPathElement();
 					if (!PathElementType.OBJECT_TYPES.contains(target.getElementType()))
 						throw new QueryBuildException("Failed to replace '" + MappingConstants.TARGET_OBJECTCLASS_ID_TOKEN + "' token due to missing target object type.");
 
@@ -468,12 +457,10 @@ public class SchemaPathBuilder {
 		return literal;
 	}
 
-	private String resolveTableToken(Join join, Table fromTable) {
-		String toTable = join.getTable();
-
+	private String resolveTableToken(String toTable, Table fromTable) {
 		if (toTable.equals(MappingConstants.TARGET_TABLE_TOKEN)) {
 			if (currentNode.child() != null) {	
-				AbstractPathElement target = (AbstractPathElement)currentNode.child().getPathElement();
+				AbstractPathElement target = currentNode.child().getPathElement();
 				switch (target.getElementType()) {
 				case FEATURE_TYPE:
 				case OBJECT_TYPE:
