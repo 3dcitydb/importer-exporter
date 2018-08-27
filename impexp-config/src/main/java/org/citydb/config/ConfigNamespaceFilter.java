@@ -26,8 +26,8 @@ public class ConfigNamespaceFilter extends XMLFilterImpl implements NamespaceCon
 
 	public ConfigNamespaceFilter(XMLReader reader) {
 		super(reader);
-		prefixToUri = new HashMap<String, String>();
-		uriToPrefix = new HashMap<String, Set<String>>();
+		prefixToUri = new HashMap<>();
+		uriToPrefix = new HashMap<>();
 
 		// bind default CityGML namespaces
 		for (Module module : CityGMLVersion.DEFAULT.getModules())
@@ -36,6 +36,9 @@ public class ConfigNamespaceFilter extends XMLFilterImpl implements NamespaceCon
 		// bind default ADE namespaces
 		for (ADEModule adeModule : Modules.getADEModules())
 			bindNamespace(adeModule.getNamespacePrefix(), adeModule.getNamespaceURI());
+
+		// bind 3DCityDB ADE namespace
+		bindNamespace("citydb", "http://www.3dcitydb.org/citygml-ade/3.0");
 	}
 
 	public ConfigNamespaceFilter() {
@@ -44,8 +47,7 @@ public class ConfigNamespaceFilter extends XMLFilterImpl implements NamespaceCon
 
 	private void bindNamespace(String prefix, String uri) {
 		prefixToUri.put(prefix, uri);
-		if (uriToPrefix.get(uri) == null)
-			uriToPrefix.put(uri, new HashSet<String>());
+		uriToPrefix.computeIfAbsent(uri, k -> new HashSet<>());
 
 		uriToPrefix.get(uri).add(prefix);
 	}
