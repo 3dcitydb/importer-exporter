@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<schemaMapping xmlns="http://www.3dcitydb.org/database/schema/3.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.3dcitydb.org/database/schema/3.0 3dcitydb-schema.xsd">
+<schemaMapping xmlns="http://www.3dcitydb.org/database/schema/1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.3dcitydb.org/database/schema/1.0 3dcitydb-schema.xsd">
 
   <applicationSchemas>
     <schema id="core" xmlPrefix="core">

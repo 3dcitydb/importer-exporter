@@ -5,11 +5,11 @@ import java.util.HashMap;
 import org.citygml4j.model.module.citygml.CityGMLVersion;
 
 public class MappingConstants {
-	public static final String CITYDB_SCHEMA_NAMESPACE_URI = "http://www.3dcitydb.org/database/schema/3.0";
+	public static final String CITYDB_SCHEMA_NAMESPACE_URI = "http://www.3dcitydb.org/database/schema/1.0";
 	
 	public static final String CITYDB_ADE_NAMESPACE_URI = "http://www.3dcitydb.org/citygml-ade/3.0";
 	public static final String CITYDB_ADE_NAMESPACE_PREFIX = "citydb";
-	public static final HashMap<CityGMLVersion, String> CITYDB_ADE_SCHEMA_LOCATIONS = new HashMap<CityGMLVersion, String>(2, 1f);
+	public static final HashMap<CityGMLVersion, String> CITYDB_ADE_SCHEMA_LOCATIONS = new HashMap<>(2, 1f);
 	
 	static {
 		CITYDB_ADE_SCHEMA_LOCATIONS.put(CityGMLVersion.v2_0_0, "http://www.virtualcitysystems.de/3dcitydb/citygml-ade/3.0/3dcitydb-ade-citygml-2.0.xsd");

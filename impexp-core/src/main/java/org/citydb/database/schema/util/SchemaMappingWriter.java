@@ -14,7 +14,7 @@ public class SchemaMappingWriter {
 
 	public static void main(String[] args) throws Exception {
 		final File file = new File("src/main/resources/org/citydb/database/schema/3dcitydb-schema.xsd");
-		System.out.print("Generting XML schema in " + file.getAbsolutePath() + "...");
+		System.out.print("Generting XML schema in " + file.getAbsolutePath() + "... ");
 		
 		JAXBContext ctx = JAXBContext.newInstance(SchemaMapping.class);
 		ctx.generateSchema(new SchemaOutputResolver() {
