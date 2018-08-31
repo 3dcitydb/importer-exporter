@@ -27,23 +27,20 @@
  */
 package org.citydb.log;
 
+import org.citydb.config.project.global.LogLevel;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.text.DecimalFormat;
-import java.util.Calendar;
-
-import org.citydb.config.project.global.LogLevel;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class Logger {
 	private static Logger instance = new Logger();
 
 	private LogLevel consoleLogLevel = LogLevel.INFO;
 	private LogLevel fileLogLevel = LogLevel.INFO;
-
-	private Calendar cal;
-	private DecimalFormat df = new DecimalFormat("00");
 
 	private boolean isLogToConsole = true;
 	private boolean isLogToFile = false;
@@ -74,23 +71,11 @@ public class Logger {
 	}
 
 	private String getPrefix(LogLevel type) {
-		cal = Calendar.getInstance();
-
-		int h = cal.get(Calendar.HOUR_OF_DAY);
-		int m = cal.get(Calendar.MINUTE);
-		int s = cal.get(Calendar.SECOND);
-
-		String prefix = "[" +
-				df.format(h) +
-				":" +
-				df.format(m) +
-				":" +
-				df.format(s) +
+		return "[" +
+				LocalDateTime.now().withNano(0).format(DateTimeFormatter.ISO_LOCAL_TIME) +
 				" " +
 				type.value() +
 				"] ";
-
-		return prefix;
 	}
 
 	public void log(LogLevel type, String msg) {
@@ -207,20 +192,9 @@ public class Logger {
 	}
 
 	private String getDefaultLogFile() {
-		cal = Calendar.getInstance();
-
-		int m = cal.get(Calendar.MONTH) + 1;
-		int d = cal.get(Calendar.DATE);
-		int y = cal.get(Calendar.YEAR);
-
-		String defaultLog = "log_3dcitydb_impexp_" + y +
-				'-' +
-				df.format(m) +
-				'-' +
-				df.format(d) +
+		return "log_3dcitydb_impexp_" +
+				LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE) +
 				".log";
-
-		return defaultLog;
 	}
 
 }
