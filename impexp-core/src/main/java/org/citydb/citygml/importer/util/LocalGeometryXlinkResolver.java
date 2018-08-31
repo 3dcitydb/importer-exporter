@@ -28,8 +28,8 @@
 package org.citydb.citygml.importer.util;
 
 import org.citydb.citygml.importer.database.content.CityGMLImportManager;
-import org.citydb.util.CoreConstants;
 import org.citydb.log.Logger;
+import org.citydb.util.CoreConstants;
 import org.citygml4j.builder.copy.CopyBuilder;
 import org.citygml4j.builder.copy.ShallowCopyBuilder;
 import org.citygml4j.model.citygml.ade.generic.ADEGenericElement;
@@ -71,9 +71,9 @@ public class LocalGeometryXlinkResolver {
 		resolver = new ResolverWalker();
 		
 		childInfo = new ChildInfo();
-		targets = new HashSet<String>();
-		geometries = new HashMap<String, AbstractGeometry>();
-		circularTargets = new Stack<String>();	
+		targets = new HashSet<>();
+		geometries = new HashMap<>();
+		circularTargets = new Stack<>();
 	}
 	
 	public LocalGeometryXlinkResolver(CityGMLImportManager importer) {
@@ -119,24 +119,23 @@ public class LocalGeometryXlinkResolver {
 	}
 
 	public List<String> getCircularReferences() {
-		return new ArrayList<String>(circularTargets);
+		return new ArrayList<>(circularTargets);
 	}
 
 	private class ResolverWalker extends GMLWalker {
 		private boolean hasCircularReference = false;
 		private ResolverState state;
 
-		@SuppressWarnings("unchecked")
 		@Override
-		public <T extends AbstractGeometry> void visit(GeometryProperty<T> geometryProperty) {
-			if (!geometryProperty.isSetGeometry() && geometryProperty.isSetHref()) {
+		public <T extends AbstractGeometry> void visit(GeometryProperty<T> property) {
+			if (!property.isSetGeometry() && property.isSetHref()) {
 				if (state == ResolverState.RESOLVE_XLINKS && shouldWalk()) {
-					final String target = clipGMLId(geometryProperty.getHref());
+					final String target = clipGMLId(property.getHref());
 					final AbstractGeometry geometry = geometries.get(target);
 
 					if (geometry != null) {
 						// check whether the type of the referenced geometry is allowed
-						if (geometryProperty.getAssociableClass().isInstance(geometry)) {
+						if (property.getAssociableClass().isInstance(geometry)) {
 
 							// check whether we have already seen this target while 
 							// iterating through the geometry tree.
@@ -144,14 +143,14 @@ public class LocalGeometryXlinkResolver {
 								setShouldWalk(false);
 								hasCircularReference = true;
 								circularTargets.clear();
-								circularTargets.push(geometryProperty.getHref());
+								circularTargets.push(property.getHref());
 
 								return;
 							}
 
 							// iterate through all parent geometries and get their
 							// gml:ids to be able to detect circular references
-							Child child = (Child)geometryProperty;
+							Child child = property;
 							int parents = 0;
 
 							while ((child = childInfo.getParentGeometry(child)) != null) {
@@ -164,10 +163,10 @@ public class LocalGeometryXlinkResolver {
 
 							if (!hasCircularReference) {
 								// ok, we can replace the link by a shallow copy of the object
-								T copy = (T)geometry.copy(copyBuilder);
+								T copy = property.getAssociableClass().cast(geometry.copy(copyBuilder));
 
-								geometryProperty.setGeometry(copy);
-								geometryProperty.unsetHref();								
+								property.setGeometry(copy);
+								property.unsetHref();
 								copy.setLocalProperty(CoreConstants.GEOMETRY_XLINK, true);
 								copy.setLocalProperty(CoreConstants.GEOMETRY_ORIGINAL, geometry);
 
@@ -178,26 +177,26 @@ public class LocalGeometryXlinkResolver {
 									circularTargets.pop();
 							} else {
 								// ups, circular reference detected
-								if (!circularTargets.peek().equals(geometryProperty.getHref()))
-									circularTargets.push(geometryProperty.getHref());
+								if (!circularTargets.peek().equals(property.getHref()))
+									circularTargets.push(property.getHref());
 							}
 						} else {
 							if (importer != null) {
-								log.error(new StringBuilder(importer.getObjectSignature(rootObject))
-										.append(": Incompatible type of geometry referenced by '")
-										.append(target).append("'.").toString());
+								log.error(importer.getObjectSignature(rootObject) +
+										": Incompatible type of geometry referenced by '" +
+										target + "'.");
 							}
 							
-							geometryProperty.unsetHref();
+							property.unsetHref();
 						}
 					}
 				}
 
 				else if (state == ResolverState.GET_XLINKS)				
-					targets.add(clipGMLId(geometryProperty.getHref()));
+					targets.add(clipGMLId(property.getHref()));
 			}
 
-			super.visit(geometryProperty);			
+			super.visit(property);
 		}
 
 		@Override
@@ -209,7 +208,6 @@ public class LocalGeometryXlinkResolver {
 		@Override
 		public void visit(ADEGenericElement adeGenericElement) {
 			// we do not support generic ADEs...
-			return;
 		}
 
 		@Override
