@@ -27,9 +27,7 @@
  */
 package org.citydb.modules.preferences.gui.preferences;
 
-import org.citydb.util.ClientConstants;
 import org.citydb.config.Config;
-import org.citydb.util.CoreConstants;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.global.LogLevel;
 import org.citydb.config.project.global.Logging;
@@ -38,6 +36,8 @@ import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.preferences.AbstractPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.log.Logger;
+import org.citydb.util.ClientConstants;
+import org.citydb.util.CoreConstants;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -56,7 +56,7 @@ import java.io.File;
 
 @SuppressWarnings("serial")
 public class LoggingPanel extends AbstractPreferencesComponent {
-	private final Logger LOG = Logger.getInstance();
+	private final Logger log = Logger.getInstance();
 
 	private JPanel block1;
 	private JPanel block2;
@@ -206,7 +206,6 @@ public class LoggingPanel extends AbstractPreferencesComponent {
 
 		wrapTextConsole.setSelected(logging.getConsole().isWrapText());
 		mainView.getConsole().setLineWrap(wrapTextConsole.isSelected());
-		mainView.getConsole().setWrapStyleWord(wrapTextConsole.isSelected());
 		mainView.getConsole().repaint();
 
 		useLogFile.setSelected(logging.getFile().isSet());
@@ -242,16 +241,15 @@ public class LoggingPanel extends AbstractPreferencesComponent {
 
 		LogLevel consoleLogLevel = (LogLevel)logLevelConsoleCombo.getSelectedItem();
 		logging.getConsole().setLogLevel(consoleLogLevel);
-		LOG.setDefaultConsoleLogLevel(consoleLogLevel);
+		log.setDefaultConsoleLogLevel(consoleLogLevel);
 
 		logging.getConsole().setWrapText(wrapTextConsole.isSelected());
 		mainView.getConsole().setLineWrap(wrapTextConsole.isSelected());
-		mainView.getConsole().setWrapStyleWord(wrapTextConsole.isSelected());
 		mainView.getConsole().repaint();
 
 		LogLevel fileLogLevel = (LogLevel)logLevelFileCombo.getSelectedItem();
 		logging.getFile().setLogLevel(fileLogLevel);
-		LOG.setDefaultFileLogLevel(fileLogLevel);
+		log.setDefaultFileLogLevel(fileLogLevel);
 
 		// change log file
 		if (isModified && useLogFile.isSelected()) {
@@ -259,7 +257,7 @@ public class LoggingPanel extends AbstractPreferencesComponent {
 					: CoreConstants.IMPEXP_DATA_DIR.resolve(ClientConstants.LOG_DIR).toString();
 
 					if (!logPath.equals(config.getInternal().getCurrentLogPath())) {
-						boolean success = LOG.appendLogFile(logPath, true);
+						boolean success = log.appendLogFile(logPath, true);
 
 						if (!success) {
 							useLogFile.setSelected(false);
@@ -267,12 +265,12 @@ public class LoggingPanel extends AbstractPreferencesComponent {
 							logging.getFile().setActive(false);
 							logging.getFile().setUseAlternativeLogPath(false);
 
-							LOG.detachLogFile();
+							log.detachLogFile();
 						} else
 							config.getInternal().setCurrentLogPath(logPath);
 					}
 		} else if (isModified && !useLogFile.isSelected()) {
-			LOG.detachLogFile();
+			log.detachLogFile();
 			config.getInternal().setCurrentLogPath("");
 		}
 	}

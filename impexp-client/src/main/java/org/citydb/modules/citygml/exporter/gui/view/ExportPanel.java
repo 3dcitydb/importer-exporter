@@ -359,7 +359,7 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 						public void run() {
 							eventDispatcher.triggerEvent(new InterruptEvent(
 									"User abort of database export.", 
-									LogLevel.INFO, 
+									LogLevel.WARN,
 									Event.GLOBAL_CHANNEL,
 									this));
 						}

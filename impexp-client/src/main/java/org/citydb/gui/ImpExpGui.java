@@ -34,6 +34,7 @@ import org.citydb.config.gui.window.MainWindow;
 import org.citydb.config.gui.window.WindowSize;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.global.LanguageType;
+import org.citydb.config.project.global.LogLevel;
 import org.citydb.database.connection.DatabaseConnectionPool;
 import org.citydb.event.Event;
 import org.citydb.event.EventDispatcher;
@@ -41,6 +42,7 @@ import org.citydb.event.EventHandler;
 import org.citydb.event.global.DatabaseConnectionStateEvent;
 import org.citydb.event.global.EventType;
 import org.citydb.event.global.SwitchLocaleEvent;
+import org.citydb.gui.components.console.ConsoleTextPane;
 import org.citydb.gui.components.console.ConsoleWindow;
 import org.citydb.gui.components.menubar.MenuBar;
 import org.citydb.gui.factory.DefaultComponentFactory;
@@ -66,7 +68,17 @@ import org.citydb.util.ClientConstants;
 import org.citydb.util.CoreConstants;
 import org.citydb.util.Util;
 
-import javax.swing.*;
+import javax.swing.BorderFactory;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.JTabbedPane;
+import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
 import javax.swing.event.ChangeEvent;
@@ -75,19 +87,26 @@ import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import javax.swing.plaf.basic.BasicSplitPaneDivider;
 import javax.swing.plaf.basic.BasicSplitPaneUI;
-import javax.swing.text.DefaultCaret;
+import javax.swing.text.Style;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyleContext;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.GraphicsConfiguration;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.Rectangle;
+import java.awt.Toolkit;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.ByteArrayOutputStream;
-import java.io.FilterOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.PrintStream;
-import java.io.UnsupportedEncodingException;
-import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.MessageFormat;
@@ -119,7 +138,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 	private JLabel consoleLabel;
 	private ConsolePopupMenuWrapper consolePopup;
 	private ConsoleWindow consoleWindow;
-	private JTextArea consoleText;
+	private ConsoleTextPane consoleText;
 
 	private int tmpConsoleWidth;
 	private int activePosition;
@@ -127,7 +146,8 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 	private List<View> views;
 	private PreferencesPlugin preferencesPlugin;
 
-	private PrintStream out;
+	private PrintStream out = System.out;
+	private PrintStream err = System.err;
 
 	// internal state
 	private LanguageType currentLang = null;
@@ -142,7 +162,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		eventDispatcher.addEventHandler(EventType.DATABASE_CONNECTION_STATE, this);
 
 		// required for preferences plugin
-		consoleText = new JTextArea();
+		consoleText = new ConsoleTextPane();
 	}
 
 	public void invoke(JAXBContext jaxbProjectContext,
@@ -377,26 +397,24 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 	}
 
 	private void initConsole() {
-		Charset encoding;
+		PrintStream out = consoleText.getConsolePrintStream();
+		log.setDefaultOutputStream(out);
+		System.setOut(out);
 
-		try {
-			encoding = Charset.forName("UTF-8");
-		} catch (Exception e) {
-			encoding = Charset.defaultCharset();
-		}
+		StyleContext context = new StyleContext();
+		Style debugStyle = context.addStyle(LogLevel.WARN.value(), null);
+		StyleConstants.setForeground(debugStyle, new Color(0, 0, 238));
+		log.setOutputStream(LogLevel.DEBUG, consoleText.getConsolePrintStream(debugStyle));
 
-		// let standard out point to console
-		JTextAreaOutputStream consoleWriter = new JTextAreaOutputStream(consoleText, new ByteArrayOutputStream(), encoding);
-		PrintStream writer;
+		Style warnStyle = context.addStyle(LogLevel.WARN.value(), null);
+		StyleConstants.setForeground(warnStyle, new Color(166, 111, 0));
+		log.setOutputStream(LogLevel.WARN, consoleText.getConsolePrintStream(warnStyle));
 
-		try {
-			writer = new PrintStream(consoleWriter, true, encoding.displayName());
-		} catch (UnsupportedEncodingException e) {
-			writer = new PrintStream(consoleWriter);
-		}
-
-		out = System.out;
-		System.setOut(writer);
+		Style errorStyle = context.addStyle(LogLevel.ERROR.value(), null);
+		StyleConstants.setForeground(errorStyle, new Color(205, 0, 0));
+		PrintStream err = consoleText.getConsolePrintStream(errorStyle);
+		log.setOutputStream(LogLevel.ERROR, err);
+		System.setErr(err);
 
 		// show console window if required
 		if (config.getGui().getConsoleWindow().isDetached()) {
@@ -568,7 +586,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		return DefaultComponentFactory.getInstance(this, config);
 	}
 
-	public JTextArea getConsole() {
+	public ConsoleTextPane getConsole() {
 		return consoleText;
 	}
 
@@ -597,6 +615,10 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 	public void shutdown() {
 		try {
 			System.setOut(out);
+			System.setErr(err);
+			log.setDefaultOutputStream(out);
+			log.setOutputStream(LogLevel.ERROR, err);
+
 			eventDispatcher.shutdownNow();
 			consoleWindow.dispose();
 
@@ -626,48 +648,6 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 	@Override
 	public void handleEvent(Event event) {
 		setDatabaseStatus(((DatabaseConnectionStateEvent)event).isConnected());
-	}
-
-	private class JTextAreaOutputStream extends FilterOutputStream {
-		private final int MAX_DOC_LENGTH = 10000;
-		private final JTextArea ta;
-		private final Charset encoding;
-
-		JTextAreaOutputStream(JTextArea ta, OutputStream stream, Charset encoding) {
-			super(stream);
-			this.ta = ta;
-			this.encoding = encoding;
-
-			DefaultCaret caret = (DefaultCaret)ta.getCaret();
-			caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
-		}
-
-		@Override
-		public void write(final byte[] b) {
-			try {
-				ta.append(new String(b, encoding));
-			} catch (Error e) {
-				//
-			}
-
-			flush();
-		}
-
-		@Override
-		public void write(final byte b[], final int off, final int len) {
-			try {
-				ta.append(new String(b, off, len, encoding));
-			} catch (Error e) {
-				//
-			} 
-
-			flush();
-		}
-
-		public void flush() {
-			if (ta.getLineCount() > MAX_DOC_LENGTH)
-				ta.setText("...truncating console output after " + MAX_DOC_LENGTH + " log messages...\n");
-		}
 	}
 
 	private final class ConsolePopupMenuWrapper {

@@ -36,6 +36,7 @@ import java.awt.event.KeyEvent;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JComponent;
+import javax.swing.JFormattedTextField;
 import javax.swing.JList;
 import javax.swing.JMenuItem;
 import javax.swing.JPasswordField;
@@ -114,7 +115,9 @@ public class StandardEditingPopupMenu extends AbstractStandardPopupMenu implemen
 			if (c instanceof JTextComponent) {
 				JTextComponent text = (JTextComponent)c;
 				text.requestFocus();
-				text.setText(text.getText());
+				if (c instanceof JFormattedTextField)
+					text.setText(text.getText());
+
 				text.selectAll();
 			}
 		}

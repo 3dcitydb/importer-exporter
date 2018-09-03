@@ -36,15 +36,24 @@ import org.citydb.gui.util.GuiUtil;
 import org.citydb.log.Logger;
 import org.citydb.plugin.extension.view.ViewController;
 
-import javax.swing.*;
-import java.awt.*;
+import javax.swing.Icon;
+import javax.swing.JButton;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
+import java.awt.Component;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ReportOperation extends DatabaseOperationView {
 	private final ReentrantLock mainLock = new ReentrantLock();
-	private final Logger LOG = Logger.getInstance();
+	private final Logger log = Logger.getInstance();
 	private final DatabaseOperationsPanel parent;
 	private final ViewController viewController;
 	private final DatabaseConnectionPool dbConnectionPool;
@@ -133,7 +142,7 @@ public class ReportOperation extends DatabaseOperationView {
 			viewController.clearConsole();
 			viewController.setStatusText(Language.I18N.getString("main.status.database.report.label"));
 
-			LOG.info("Generating database report...");			
+			log.info("Generating database report...");
 			if (dbConnectionPool.getActiveDatabaseAdapter().hasVersioningSupport() && !parent.existsWorkspace())
 				return;
 
@@ -154,18 +163,26 @@ public class ReportOperation extends DatabaseOperationView {
 
 			try {
 				String[] report = dbConnectionPool.getActiveDatabaseAdapter().getUtil().createDatabaseReport(workspace);
+				Pattern pattern = Pattern.compile("^(#[^\\s]+)\\s+(\\d+).*$");
+				Matcher matcher = pattern.matcher("");
+
 				if (report != null) {
-					for(String line : report) {
-						if (line != null) {
-							line = line.replaceAll("\\\\n", "\\\n");
-							line = line.replaceAll("\\\\t", "\\\t");
-							LOG.print(line);
+					for (String line : report) {
+						matcher.reset(line);
+						if (matcher.matches()) {
+							StringBuilder formatted = new StringBuilder(matcher.group(1));
+							while (formatted.length() < 30)
+								formatted.append(' ');
+
+							line = formatted.append("  ").append(matcher.group(2)).toString();
 						}
+
+						log.print(line);
 					}
 
-					LOG.info("Database report successfully generated.");
+					log.info("Database report successfully generated.");
 				} else
-					LOG.warn("Generation of database report aborted.");
+					log.warn("Generation of database report aborted.");
 
 				SwingUtilities.invokeLater(reportDialog::dispose);
 
@@ -183,7 +200,7 @@ public class ReportOperation extends DatabaseOperationView {
 						Language.I18N.getString("common.dialog.error.db.title"),
 						JOptionPane.ERROR_MESSAGE);
 
-				LOG.error("SQL error: " + dbSqlEx);
+				log.error("SQL error: " + dbSqlEx);
 			} finally {			
 				viewController.setStatusText(Language.I18N.getString("main.status.ready.label"));
 			}

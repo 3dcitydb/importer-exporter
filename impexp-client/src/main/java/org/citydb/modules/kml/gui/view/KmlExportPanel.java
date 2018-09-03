@@ -880,7 +880,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 						public void run() {
 							eventDispatcher.triggerEvent(new InterruptEvent(
 									"User abort of database export.", 
-									LogLevel.INFO, 
+									LogLevel.WARN,
 									Event.GLOBAL_CHANNEL,
 									this));
 						}
