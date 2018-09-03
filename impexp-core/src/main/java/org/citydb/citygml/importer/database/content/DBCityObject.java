@@ -62,7 +62,6 @@ import java.sql.Timestamp;
 import java.sql.Types;
 import java.time.LocalTime;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 public class DBCityObject implements DBImporter {

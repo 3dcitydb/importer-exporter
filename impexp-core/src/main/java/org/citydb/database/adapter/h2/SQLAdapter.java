@@ -27,10 +27,6 @@
  */
 package org.citydb.database.adapter.h2;
 
-import java.sql.Array;
-import java.sql.Connection;
-import java.sql.SQLException;
-
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.adapter.AbstractSQLAdapter;
@@ -38,10 +34,12 @@ import org.citydb.database.adapter.BlobExportAdapter;
 import org.citydb.database.adapter.BlobImportAdapter;
 import org.citydb.database.adapter.BlobType;
 import org.citydb.query.filter.selection.operator.spatial.SpatialOperatorName;
-
 import org.citydb.sqlbuilder.schema.Column;
 import org.citydb.sqlbuilder.select.PredicateToken;
 import org.citydb.sqlbuilder.select.projection.Function;
+
+import java.sql.Connection;
+import java.sql.SQLException;
 
 public class SQLAdapter extends AbstractSQLAdapter {
 	
