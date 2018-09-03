@@ -27,15 +27,7 @@
  */
 package org.citydb.modules.kml.database;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.List;
-
-import javax.vecmath.Point3d;
-import javax.xml.bind.JAXBException;
-
+import net.opengis.kml._2.PlacemarkType;
 import org.citydb.config.Config;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.config.project.kmlExporter.Balloon;
@@ -53,9 +45,16 @@ import org.citydb.util.Util;
 import org.citygml4j.geometry.Matrix;
 import org.citygml4j.geometry.Point;
 
-import net.opengis.kml._2.PlacemarkType;
+import javax.vecmath.Point3d;
+import javax.xml.bind.JAXBException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.List;
 
 public class SolitaryVegetationObject extends KmlGenericObject{
+	private final Logger log = Logger.getInstance();
 
 	public static final String STYLE_BASIS_NAME = "Vegetation";
 
@@ -130,7 +129,7 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 					try { psQuery.close(); } catch (SQLException sqle) {}
 					rs = null;
 				} catch (Exception e) {
-					Logger.getInstance().error("SQL error while querying the highest available LOD: " + e.getMessage());
+					log.error("SQL error while querying the highest available LOD: " + e.getMessage());
 					try { if (rs != null) rs.close(); } catch (SQLException sqle) {} 
 					try { if (psQuery != null) psQuery.close(); } catch (SQLException sqle) {}
 					try { connection.commit(); } catch (SQLException sqle) {}
@@ -148,7 +147,7 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 					else
 						fromMessage = " from any LoD";
 				}
-				Logger.getInstance().info("Could not display object " + work.getGmlId() + " as " + work.getDisplayForm().getName() + fromMessage + ".");
+				log.info("Could not display object " + work.getGmlId() + " as " + work.getDisplayForm().getName() + fromMessage + ".");
 			}
 
 			else { // result not empty
@@ -239,7 +238,7 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 					fillGenericObjectForCollada(rs, config.getProject().getKmlExporter().getVegetationColladaOptions().isGenerateTextureAtlases(), transformer);
 
 					if (currentgmlId != work.getGmlId() && getGeometryAmount() > GEOMETRY_AMOUNT_WARNING)
-						Logger.getInstance().info("Object " + work.getGmlId() + " has more than " + GEOMETRY_AMOUNT_WARNING + " geometries. This may take a while to process...");
+						log.info("Object " + work.getGmlId() + " has more than " + GEOMETRY_AMOUNT_WARNING + " geometries. This may take a while to process...");
 
 					List<Point3d> anchorCandidates = getOrigins();
 					double zOffset = getZOffsetFromConfigOrDB(work.getId());
@@ -254,17 +253,17 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 						if (work.getDisplayForm().isHighlightingEnabled()) 
 							kmlExporterManager.print(createPlacemarksForHighlighting(rs, work, transformer), work, getBalloonSettings().isBalloonContentInSeparateFile());
 					} catch (Exception ioe) {
-						Util.logStackTrace(ioe);
+						log.logStackTrace(ioe);
 					}
 
 					break;
 				}				
 			}
 		} catch (SQLException sqlEx) {
-			Logger.getInstance().error("SQL error while querying city object " + work.getGmlId() + ": " + sqlEx.getMessage());
+			log.error("SQL error while querying city object " + work.getGmlId() + ": " + sqlEx.getMessage());
 			return;
 		} catch (JAXBException jaxbEx) {
-			Logger.getInstance().error("XML error while working on city object " + work.getGmlId() + ": " + jaxbEx.getMessage());
+			log.error("XML error while working on city object " + work.getGmlId() + ": " + jaxbEx.getMessage());
 			return;
 		} finally {
 			if (rs != null)

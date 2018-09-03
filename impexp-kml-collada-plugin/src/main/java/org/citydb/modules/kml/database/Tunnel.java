@@ -27,16 +27,8 @@
  */
 package org.citydb.modules.kml.database;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.vecmath.Point3d;
-import javax.xml.bind.JAXBException;
-
+import net.opengis.kml._2.MultiGeometryType;
+import net.opengis.kml._2.PlacemarkType;
 import org.citydb.config.Config;
 import org.citydb.config.project.kmlExporter.Balloon;
 import org.citydb.config.project.kmlExporter.ColladaOptions;
@@ -48,12 +40,18 @@ import org.citydb.event.EventDispatcher;
 import org.citydb.log.Logger;
 import org.citydb.modules.kml.util.BalloonTemplateHandler;
 import org.citydb.query.Query;
-import org.citydb.util.Util;
 
-import net.opengis.kml._2.MultiGeometryType;
-import net.opengis.kml._2.PlacemarkType;
+import javax.vecmath.Point3d;
+import javax.xml.bind.JAXBException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Tunnel extends KmlGenericObject{
+	private final Logger log = Logger.getInstance();
 
 	public static final String STYLE_BASIS_NAME = "Tunnel"; // "TUNNEL"
 
@@ -114,7 +112,7 @@ public class Tunnel extends KmlGenericObject{
 					placemarks.addAll(placemarkBPart);
 			}
 		} catch (SQLException sqlEx) {
-			Logger.getInstance().error("SQL error while getting tunnel parts for tunnel " + work.getGmlId() + ": " + sqlEx.getMessage());
+			log.error("SQL error while getting tunnel parts for tunnel " + work.getGmlId() + ": " + sqlEx.getMessage());
 			return;
 		} finally {
 			try { if (rs != null) rs.close(); } catch (SQLException sqle) {} 
@@ -131,7 +129,7 @@ public class Tunnel extends KmlGenericObject{
 				else
 					fromMessage = " from any LoD";
 			}
-			Logger.getInstance().info("Could not display object " + work.getGmlId() + " as " + work.getDisplayForm().getName() + fromMessage + ".");
+			log.info("Could not display object " + work.getGmlId() + " as " + work.getDisplayForm().getName() + fromMessage + ".");
 		}
 		
 		else {
@@ -191,7 +189,7 @@ public class Tunnel extends KmlGenericObject{
 							if (rs.isBeforeFirst())
 								break;
 						} catch (SQLException e) {
-							Logger.getInstance().error("SQL error while querying the highest available LOD: " + e.getMessage());
+							log.error("SQL error while querying the highest available LOD: " + e.getMessage());
 							try { connection.commit(); } catch (SQLException sqle) {}
 						} finally {
 							try { if (rs != null) rs.close(); } catch (SQLException sqle) {} 
@@ -212,7 +210,7 @@ public class Tunnel extends KmlGenericObject{
 
 						rs = psQuery.executeQuery();
 					} catch (SQLException e) {
-						Logger.getInstance().error("SQL error while querying geometries in LOD " + currentLod + ": " + e.getMessage());
+						log.error("SQL error while querying geometries in LOD " + currentLod + ": " + e.getMessage());
 						try { if (psQuery != null) psQuery.close(); } catch (SQLException sqle) {}
 						try { connection.commit(); } catch (SQLException sqle) {}
 						rs = null;
@@ -246,7 +244,7 @@ public class Tunnel extends KmlGenericObject{
 						try { psQuery.close(); } catch (SQLException sqle) {}
 						rs = null;
 					} catch (SQLException e) {
-						Logger.getInstance().error("SQL error while querying geometries in LOD " + currentLod + ": " + e.getMessage());
+						log.error("SQL error while querying geometries in LOD " + currentLod + ": " + e.getMessage());
 						try { if (rs != null) rs.close(); } catch (SQLException sqle) {} 
 						try { if (psQuery != null) psQuery.close(); } catch (SQLException sqle) {}
 						try { connection.commit(); } catch (SQLException sqle) {}
@@ -283,7 +281,7 @@ public class Tunnel extends KmlGenericObject{
 							try { psQuery.close(); } catch (SQLException sqle) {}
 							rs = null;
 						} catch (SQLException e) {
-							Logger.getInstance().error("SQL error while aggregating geometries in LOD " + currentLod + ": " + e.getMessage());
+							log.error("SQL error while aggregating geometries in LOD " + currentLod + ": " + e.getMessage());
 							try { if (rs != null) rs.close(); } catch (SQLException sqle) {} 
 							try { if (psQuery != null) psQuery.close(); } catch (SQLException sqle) {}
 							try { connection.commit(); } catch (SQLException sqle) {}
@@ -350,7 +348,7 @@ public class Tunnel extends KmlGenericObject{
 					setId(work.getId());
 
 					if (currentgmlId != work.getGmlId() && getGeometryAmount() > GEOMETRY_AMOUNT_WARNING)
-						Logger.getInstance().info("Object " + work.getGmlId() + " has more than " + GEOMETRY_AMOUNT_WARNING + " geometries. This may take a while to process...");
+						log.info("Object " + work.getGmlId() + " has more than " + GEOMETRY_AMOUNT_WARNING + " geometries. This may take a while to process...");
 
 					List<Point3d> anchorCandidates = getOrigins(); // setOrigins() called mainly for the side-effect
 					double zOffset = getZOffsetFromConfigOrDB(work.getId());
@@ -371,12 +369,12 @@ public class Tunnel extends KmlGenericObject{
 						return dummy;
 					}
 					catch (Exception ioe) {
-						Util.logStackTrace(ioe);
+						log.logStackTrace(ioe);
 					}
 				}
 			}
 		} catch (SQLException sqlEx) {
-			Logger.getInstance().error("SQL error while querying city object " + work.getGmlId() + ": " + sqlEx.getMessage());
+			log.error("SQL error while querying city object " + work.getGmlId() + ": " + sqlEx.getMessage());
 			return null;
 		} finally {
 			if (rs != null)

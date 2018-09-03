@@ -1,11 +1,5 @@
 package org.citydb.citygml.deleter.concurrent;
 
-import java.sql.CallableStatement;
-import java.sql.SQLException;
-import java.sql.Types;
-import java.util.HashMap;
-import java.util.concurrent.locks.ReentrantLock;
-
 import org.citydb.citygml.deleter.util.BundledDBConnection;
 import org.citydb.citygml.exporter.database.content.DBSplittingResult;
 import org.citydb.concurrent.Worker;
@@ -22,9 +16,15 @@ import org.citydb.event.global.ProgressBarEventType;
 import org.citydb.event.global.StatusDialogProgressBar;
 import org.citydb.log.Logger;
 
+import java.sql.CallableStatement;
+import java.sql.SQLException;
+import java.sql.Types;
+import java.util.HashMap;
+import java.util.concurrent.locks.ReentrantLock;
+
 public class DBDeleteWorker extends Worker<DBSplittingResult> implements EventHandler {
 	private final ReentrantLock mainLock = new ReentrantLock();
-	private final Logger LOG = Logger.getInstance();
+	private final Logger log = Logger.getInstance();
 	private final EventDispatcher eventDispatcher;	
 	private final CallableStatement stmt;	
 	private volatile boolean shouldRun = true;
@@ -92,11 +92,11 @@ public class DBDeleteWorker extends Worker<DBSplittingResult> implements EventHa
 			
 			int deletedObjectId = stmt.getInt(1);
 			if (deletedObjectId == objectId) {
-				LOG.debug(objectclassName + " (RowID = " + objectId + ") deleted");
+				log.debug(objectclassName + " (RowID = " + objectId + ") deleted");
 				accept = true;
 			} 				
 			else {
-				LOG.warn(objectclassName + " (RowID = " + objectId + ") has not been found in the database.");
+				log.warn(objectclassName + " (RowID = " + objectId + ") has not been found in the database.");
 			}
 		} catch (SQLException e) {
 			eventDispatcher.triggerEvent(new InterruptEvent(
@@ -112,7 +112,7 @@ public class DBDeleteWorker extends Worker<DBSplittingResult> implements EventHa
 			if (stmt != null)
 				stmt.close();
 		} catch (SQLException e) {
-			e.printStackTrace();
+			log.logStackTrace(e);
 		} 
 		
 		eventDispatcher.removeEventHandler(this);

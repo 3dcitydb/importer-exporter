@@ -552,7 +552,7 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 
 		log.error("Connection to database could not be established.");
 		log.error("Check the following stack trace for details:");
-		Util.logStackTrace(e);
+		log.logStackTrace(e);
 
 		viewController.setStatusText(Language.I18N.getString("main.status.ready.label"));	
 	}

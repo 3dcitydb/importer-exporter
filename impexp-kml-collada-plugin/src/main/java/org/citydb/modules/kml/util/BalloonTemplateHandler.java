@@ -27,6 +27,12 @@
  */
 package org.citydb.modules.kml.util;
 
+import org.citydb.config.geometry.GeometryObject;
+import org.citydb.database.adapter.AbstractDatabaseAdapter;
+import org.citydb.log.Logger;
+import org.citydb.util.Util;
+import org.citygml4j.model.citygml.CityGMLClass;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -44,14 +50,9 @@ import java.util.ListIterator;
 import java.util.Set;
 import java.util.StringTokenizer;
 
-import org.citydb.config.geometry.GeometryObject;
-import org.citydb.database.adapter.AbstractDatabaseAdapter;
-import org.citydb.log.Logger;
-import org.citydb.util.Util;
-import org.citygml4j.model.citygml.CityGMLClass;
-
 @SuppressWarnings("serial")
 public class BalloonTemplateHandler {
+	private final Logger log = Logger.getInstance();
 
 	// Constants
 	public static final String START_TAG = "<3DCityDB>";
@@ -1152,11 +1153,11 @@ public class BalloonTemplateHandler {
 			f.read(buffer);
 		}
 		catch (FileNotFoundException fnfe) {
-			Logger.getInstance().warn("Exception when trying to read file: " + templateFile.getAbsolutePath() + "\nFile not found.");
+			log.warn("Exception when trying to read file: " + templateFile.getAbsolutePath() + "\nFile not found.");
 		} 
 		catch (Exception e) {
-			Logger.getInstance().warn("Exception when trying to read file: " + templateFile.getAbsolutePath() + "\n");
-			Util.logStackTrace(e);
+			log.warn("Exception when trying to read file: " + templateFile.getAbsolutePath() + "\n");
+			log.logStackTrace(e);
 		} 
 		finally {
 			if (f != null) try { f.close(); } catch (Exception ignored) { }
@@ -1166,8 +1167,8 @@ public class BalloonTemplateHandler {
 			fillStatementAndHtmlChunkList(template);
 		}
 		catch (Exception e) {
-			Logger.getInstance().warn("Following message applies to file: " + templateFile.getAbsolutePath());
-			Logger.getInstance().warn(e.getMessage());
+			log.warn("Following message applies to file: " + templateFile.getAbsolutePath());
+			log.warn(e.getMessage());
 		}
 	}
 
@@ -1181,7 +1182,7 @@ public class BalloonTemplateHandler {
 			fillStatementAndHtmlChunkList(templateString);
 		}
 		catch (Exception e) {
-			Logger.getInstance().warn(e.getMessage());
+			log.warn(e.getMessage());
 		}
 	}
 
@@ -1201,8 +1202,8 @@ public class BalloonTemplateHandler {
 			balloonContent = getBalloonContent(id, lod, connection, schemaName);
 		}
 		catch (Exception e) {
-			Logger.getInstance().warn("Following message applies to generic attribute 'Balloon_Content' for cityobject with id = " + id);
-			Logger.getInstance().warn(e.getMessage());
+			log.warn("Following message applies to generic attribute 'Balloon_Content' for cityobject with id = " + id);
+			log.warn(e.getMessage());
 		}
 		statementList = statementListBackup;
 		htmlChunkList = htmlChunkListBackup;
@@ -1463,7 +1464,7 @@ public class BalloonTemplateHandler {
 				}
 			}
 			catch (Exception e) {
-				Logger.getInstance().warn("Exception when executing balloon statement: " + statement.rawStatement + " --> " + e.getMessage());
+				log.warn("Exception when executing balloon statement: " + statement.rawStatement + " --> " + e.getMessage());
 			}
 			finally {
 				try {
@@ -1535,7 +1536,7 @@ public class BalloonTemplateHandler {
 			}
 		}
 		catch (Exception e) {
-			Logger.getInstance().warn(e.getMessage());
+			log.warn(e.getMessage());
 		}
 		finally {
 			try {

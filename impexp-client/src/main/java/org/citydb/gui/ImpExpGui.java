@@ -67,7 +67,6 @@ import org.citydb.plugin.extension.view.components.ComponentFactory;
 import org.citydb.registry.ObjectRegistry;
 import org.citydb.util.ClientConstants;
 import org.citydb.util.CoreConstants;
-import org.citydb.util.Util;
 
 import javax.swing.BorderFactory;
 import javax.swing.JFrame;
@@ -630,7 +629,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 
 			log.info("Application successfully terminated");
 		} catch (Throwable e) {
-			Util.logStackTrace(e);
+			log.logStackTrace(e);
 			log.info("Application did not terminate normally");
 		}
 	}

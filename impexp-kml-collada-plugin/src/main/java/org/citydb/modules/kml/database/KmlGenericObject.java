@@ -122,7 +122,9 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import java.awt.*;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.Transparency;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -143,6 +145,7 @@ import java.util.Set;
 import java.util.StringTokenizer;
 
 public abstract class KmlGenericObject {
+	private final Logger log = Logger.getInstance();
 	protected final int GEOMETRY_AMOUNT_WARNING = 10000;
 	private final double TOLERANCE = Math.pow(10, -7);
 	private final double PRECISION = Math.pow(10, 7);
@@ -635,7 +638,7 @@ public abstract class KmlGenericObject {
 					doubleSided.setTextContent(ignoreSurfaceOrientation ? "1": "0");
 					geTechnique.getAny().add(doubleSided);
 				} catch (ParserConfigurationException e) {
-					Util.logStackTrace(e);
+					log.logStackTrace(e);
 				}
 
 				Extra extra = colladaFactory.createExtra();
@@ -765,7 +768,7 @@ public abstract class KmlGenericObject {
 					}
 					else { // should never happen
 						triangles.getP().add(texCoordsCounter); // wrong data is better than triangles out of sync
-						Logger.getInstance().log(LogLevel.DEBUG, 
+						log.log(LogLevel.DEBUG,
 								"texCoords not found for (" + vertexInfo.getX() + ", " + vertexInfo.getY() + ", "
 										+ vertexInfo.getZ() + "). TOLERANCE = " + TOLERANCE);
 					}
@@ -1143,7 +1146,7 @@ public abstract class KmlGenericObject {
 			}
 			catch (Exception e) {
 				newTexImages.put(texImageUri, texImage);
-				Logger.getInstance().debug("City object '" + gmlId + "': " + "A texture coordinate lies outside the range [0, 1] for the texutre image '"  + texImageUri + "'; This image can therefore not be cropped" );				
+				log.debug("City object '" + gmlId + "': " + "A texture coordinate lies outside the range [0, 1] for the texutre image '"  + texImageUri + "'; This image can therefore not be cropped" );
 			}
 			
 			// step 3: update the vertex coordinates according to the cropped images
@@ -1692,7 +1695,7 @@ public abstract class KmlGenericObject {
 					multiGeometry.getAbstractGeometryGroup().add(kmlFactory.createPolygon(polygon));
 				}
 			} catch (SQLException e) {
-				Logger.getInstance().error("SQL error while querying surface geometries: " + e.getMessage());
+				log.error("SQL error while querying surface geometries: " + e.getMessage());
 			} finally {
 				if (rs != null)
 					try { rs.close(); } catch (SQLException e) {}
@@ -1979,7 +1982,7 @@ public abstract class KmlGenericObject {
 					}
 				}
 			} catch (SQLException e) {
-				Logger.getInstance().error("SQL error while querying surface geometries: " + e.getMessage());
+				log.error("SQL error while querying surface geometries: " + e.getMessage());
 			} finally {
 				if (rs != null)
 					try { rs.close(); } catch (SQLException e) {}
@@ -2199,7 +2202,7 @@ public abstract class KmlGenericObject {
 					}
 				}
 			} catch (SQLException e) {
-				Logger.getInstance().error("SQL error while querying surface geometries: " + e.getMessage());
+				log.error("SQL error while querying surface geometries: " + e.getMessage());
 			} finally {
 				if (rs != null)
 					try { rs.close(); } catch (SQLException e) {}
@@ -2409,7 +2412,7 @@ public abstract class KmlGenericObject {
 					coords = geomObj.getCoordinates(0);
 				}
 
-				Logger.getInstance().info("Getting zOffset from Google's elevation API for " + getGmlId() + " with " + candidates.size() + " points.");
+				log.info("Getting zOffset from Google's elevation API for " + getGmlId() + " with " + candidates.size() + " points.");
 				zOffset = elevationServiceHandler.getZOffset(coords);
 
 				// save result in DB for next time
@@ -2496,7 +2499,7 @@ public abstract class KmlGenericObject {
 			DatabaseSrs targetSrs = dbSrs.is3D() ? databaseAdapter.getUtil().getWGS843D() : Database.PREDEFINED_SRS.get(Database.PredefinedSrsName.WGS84_2D);
 			convertedGeomObj = databaseAdapter.getUtil().transform(geomObj, targetSrs);
 		} catch (SQLException e) {
-			Logger.getInstance().warn("SQL exception when converting geometry to WGS84: " + e.getMessage());
+			log.warn("SQL exception when converting geometry to WGS84: " + e.getMessage());
 			throw e;
 		}
 

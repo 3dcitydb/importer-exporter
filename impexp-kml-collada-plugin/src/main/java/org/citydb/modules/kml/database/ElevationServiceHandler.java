@@ -27,22 +27,21 @@
  */
 package org.citydb.modules.kml.database;
 
+import org.citydb.log.Logger;
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
+
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 import java.math.BigDecimal;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-
-import org.citydb.log.Logger;
-import org.citydb.util.Util;
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.DefaultHandler;
-
 public class ElevationServiceHandler {
+	private final Logger log = Logger.getInstance();
 
 	private static final ReentrantLock runLock = new ReentrantLock();
 
@@ -84,7 +83,7 @@ public class ElevationServiceHandler {
 				saxParser = factory.newSAXParser();
 			}
 			catch (Throwable t) {
-				Util.logStackTrace(t);
+				log.logStackTrace(t);
 			}
 		}
 
@@ -114,7 +113,7 @@ public class ElevationServiceHandler {
 
 		if (!status.equalsIgnoreCase(OK)) {
 			if (status.length() > 0) {
-				Logger.getInstance().warn("Elevation API returned " + status);
+				log.warn("Elevation API returned " + status);
 			}
 			throw new Exception("Elevation API returned " + status);
 		}
@@ -158,13 +157,13 @@ public class ElevationServiceHandler {
 				// for debugging purposes
 //				Thread.currentThread().setName(this.getClass().getSimpleName());
 //				SimpleDateFormat dateFormatter = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss.SSS");
-//				Logger.getInstance().info("ElevationServiceCaller started at " + dateFormatter.format(new Date(System.currentTimeMillis())));
+//				log.info("ElevationServiceCaller started at " + dateFormatter.format(new Date(System.currentTimeMillis())));
 
 				URL elevationService = new URL(elevationString);
 				saxParser.parse(elevationService.openStream(), this);
 			}
 			catch (Throwable t) {
-				Logger.getInstance().error("Could not access Elevation API. Please check your network settings.");
+				log.error("Could not access Elevation API. Please check your network settings.");
 			}
 		}
 

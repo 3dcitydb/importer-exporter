@@ -34,6 +34,7 @@ import java.util.List;
 
 import javax.imageio.ImageIO;
 
+import org.citydb.log.Logger;
 import org.citydb.util.Util;
 import org.jdesktop.swingx.JXMapViewer;
 import org.jdesktop.swingx.mapviewer.Waypoint;
@@ -80,7 +81,7 @@ public class DefaultWaypointPainter implements Painter<JXMapViewer> {
 				approximate = ImageIO.read(getClass().getResource("/org/citydb/gui/images/map/waypoint_approximate.png"));
 				reverse = ImageIO.read(getClass().getResource("/org/citydb/gui/images/map/waypoint_reverse.png"));
 			} catch (Exception ex) {
-				Util.logStackTrace(ex);
+				Logger.getInstance().logStackTrace(ex);
 			}
 		}
 

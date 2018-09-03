@@ -33,7 +33,6 @@ import org.citydb.config.project.database.Workspace;
 import org.citydb.config.project.query.filter.version.CityGMLVersionType;
 import org.citydb.database.schema.mapping.MappingConstants;
 import org.citydb.database.schema.mapping.SchemaMapping;
-import org.citydb.log.Logger;
 import org.citygml4j.model.citygml.CityGML;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.ade.binding.ADEModelObject;
@@ -121,9 +120,6 @@ import org.citygml4j.model.gml.feature.AbstractFeatureCollection;
 import org.citygml4j.model.module.citygml.CityGMLVersion;
 import org.citygml4j.model.module.citygml.CoreModule;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.PrintStream;
 import java.lang.reflect.Modifier;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -510,17 +506,6 @@ public class Util {
 			return CityGMLVersionType.v1_0_0;
 		else
 			return CityGMLVersionType.v2_0_0;
-	}
-	
-	public static void logStackTrace(Throwable t) {
-		try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-			t.printStackTrace(new PrintStream(baos));
-			baos.flush();
-			Logger.getInstance().error(new String(baos.toByteArray()));
-		} catch (IOException e) {
-			Logger.getInstance().error("Failed to print stack trace. Check the console instead.");
-			e.printStackTrace();
-		}
 	}
 	
 	public static class URLClassLoader extends java.net.URLClassLoader {

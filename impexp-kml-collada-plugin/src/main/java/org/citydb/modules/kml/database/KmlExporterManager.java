@@ -51,7 +51,6 @@ import org.citydb.modules.kml.util.CityObject4JSON;
 import org.citydb.modules.kml.util.ExportTracker;
 import org.citydb.query.Query;
 import org.citydb.util.ClientConstants;
-import org.citydb.util.Util;
 import org.citygml4j.util.xml.SAXEventBuffer;
 
 import javax.imageio.ImageIO;
@@ -75,6 +74,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 public class KmlExporterManager {
+	private final Logger log = Logger.getInstance();
 	private final JAXBContext jaxbKmlContext;
 	private final JAXBContext jaxbColladaContext;
 	private final AbstractDatabaseAdapter databaseAdapter;
@@ -213,7 +213,7 @@ public class KmlExporterManager {
 									// export temporarily as kml, it will be later added to kmz if needed
 									directory = new File(path, TEMP_FOLDER);
 									if (!directory.exists()) {
-										Logger.getInstance().info("Creating temporary folder...");
+										log.info("Creating temporary folder...");
 										directory.mkdir();
 									}
 								}
@@ -239,7 +239,7 @@ public class KmlExporterManager {
 									outputStream.close();
 								}
 								catch (IOException ioe) {
-									Util.logStackTrace(ioe);
+									log.logStackTrace(ioe);
 								}
 							}
 
@@ -374,7 +374,7 @@ public class KmlExporterManager {
 			}      		       		
 		}
 		catch (IOException ioe) {
-			Util.logStackTrace(ioe);
+			log.logStackTrace(ioe);
 		}
 	}
 
@@ -454,7 +454,7 @@ public class KmlExporterManager {
 					}
 				}
 				catch (IOException ioe) {
-					Util.logStackTrace(ioe);
+					log.logStackTrace(ioe);
 				}
 
 				// the network link pointing to the file
@@ -566,7 +566,7 @@ public class KmlExporterManager {
 				// export temporarily as kml, it will be later added to kmz if needed
 				File tempFolder = new File(path, TEMP_FOLDER);
 				if (!tempFolder.exists()) {
-					Logger.getInstance().info("Creating temporary folder...");
+					log.info("Creating temporary folder...");
 					tempFolder.mkdir();
 				}
 				path = path + File.separator + TEMP_FOLDER;
@@ -644,7 +644,7 @@ public class KmlExporterManager {
 					outputStream.close();
 				}
 				catch (IOException ioe) {
-					Util.logStackTrace(ioe);
+					log.logStackTrace(ioe);
 				}
 			}
 		}
@@ -660,7 +660,7 @@ public class KmlExporterManager {
 				Process process = pb.start();
 				process.waitFor();
 			} catch (IOException | InterruptedException e) {
-				Logger.getInstance().debug("Unexpected errors occurred while converting collada to glTF for city object '" + colladaBundle.getGmlId() + "' with output path: '" + gltfModelFile.getAbsolutePath() + "'");
+				log.debug("Unexpected errors occurred while converting collada to glTF for city object '" + colladaBundle.getGmlId() + "' with output path: '" + gltfModelFile.getAbsolutePath() + "'");
 			} finally {
 				if (config.getProject().getKmlExporter().isNotCreateColladaFiles() && gltfModelFile.exists()) {
 					colladaModelFile.delete();

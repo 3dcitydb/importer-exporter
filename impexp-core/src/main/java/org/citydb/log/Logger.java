@@ -33,6 +33,8 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -134,6 +136,12 @@ public class Logger {
 				//
 			}
 		}
+	}
+
+	public void logStackTrace(Throwable t) {
+		StringWriter writer = new StringWriter();
+		t.printStackTrace(new PrintWriter(writer, true));
+		log(LogLevel.ERROR, writer.toString());
 	}
 	
 	public void logToConsole(boolean isLogToConsole) {

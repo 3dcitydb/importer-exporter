@@ -27,14 +27,7 @@
  */
 package org.citydb.modules.kml.concurrent;
 
-import java.io.File;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.EnumMap;
-import java.util.concurrent.locks.ReentrantLock;
-
-import javax.xml.bind.JAXBContext;
-
+import net.opengis.kml._2.ObjectFactory;
 import org.citydb.concurrent.Worker;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
@@ -51,6 +44,7 @@ import org.citydb.database.schema.mapping.FeatureType;
 import org.citydb.database.schema.mapping.SchemaMapping;
 import org.citydb.event.EventDispatcher;
 import org.citydb.event.global.ObjectCounterEvent;
+import org.citydb.log.Logger;
 import org.citydb.modules.kml.database.Bridge;
 import org.citydb.modules.kml.database.Building;
 import org.citydb.modules.kml.database.CityFurniture;
@@ -76,7 +70,12 @@ import org.citydb.util.Util;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.util.xml.SAXEventBuffer;
 
-import net.opengis.kml._2.ObjectFactory;
+import javax.xml.bind.JAXBContext;
+import java.io.File;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.EnumMap;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class KmlExportWorker extends Worker<KmlSplittingResult> {
 	private final ReentrantLock runLock = new ReentrantLock();
@@ -554,7 +553,7 @@ public class KmlExportWorker extends Worker<KmlSplittingResult> {
 					objectGroup.getBalloonSettings().isBalloonContentInSeparateFile());
 		}
 		catch (Exception e) {
-			Util.logStackTrace(e);
+			Logger.getInstance().logStackTrace(e);
 		}
 	}
 

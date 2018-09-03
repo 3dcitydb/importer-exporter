@@ -1,9 +1,5 @@
 package org.citydb.citygml.deleter.database;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import org.citydb.citygml.exporter.database.content.DBSplittingResult;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
@@ -24,6 +20,11 @@ import org.citydb.sqlbuilder.schema.Table;
 import org.citydb.sqlbuilder.select.OrderByToken;
 import org.citydb.sqlbuilder.select.Select;
 import org.citydb.sqlbuilder.select.projection.Function;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 public class DBSplitter {
 	private final Logger log = Logger.getInstance();
@@ -81,7 +82,7 @@ public class DBSplitter {
 				try {
 					dbWorkerPool.join();
 				} catch (InterruptedException e) {
-					e.printStackTrace();
+					log.logStackTrace(e);
 				}
 			}
 		} finally {

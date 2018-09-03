@@ -27,16 +27,10 @@
  */
 package org.citydb.modules.kml.database;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.vecmath.Point3d;
-import javax.xml.bind.JAXBException;
-
+import net.opengis.kml._2.AltitudeModeEnumType;
+import net.opengis.kml._2.LineStringType;
+import net.opengis.kml._2.PlacemarkType;
+import net.opengis.kml._2.PointType;
 import org.citydb.config.Config;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.config.geometry.GeometryType;
@@ -50,14 +44,18 @@ import org.citydb.event.global.GeometryCounterEvent;
 import org.citydb.log.Logger;
 import org.citydb.modules.kml.util.BalloonTemplateHandler;
 import org.citydb.query.Query;
-import org.citydb.util.Util;
 
-import net.opengis.kml._2.AltitudeModeEnumType;
-import net.opengis.kml._2.LineStringType;
-import net.opengis.kml._2.PlacemarkType;
-import net.opengis.kml._2.PointType;
+import javax.vecmath.Point3d;
+import javax.xml.bind.JAXBException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Transportation extends KmlGenericObject{
+	private final Logger log = Logger.getInstance();
 
 	public static final String STYLE_BASIS_NAME = "Transportation";
 
@@ -126,7 +124,7 @@ public class Transportation extends KmlGenericObject{
 					else
 						currentLod--;
 				} catch (Exception e) {
-					Logger.getInstance().error("SQL error while querying the highest available LOD: " + e.getMessage());
+					log.error("SQL error while querying the highest available LOD: " + e.getMessage());
 					try { connection.commit(); } catch (SQLException sqle) {}
 				} finally {
 					if (!found) {
@@ -145,7 +143,7 @@ public class Transportation extends KmlGenericObject{
 					else
 						fromMessage = " from any LoD";
 				}
-				Logger.getInstance().info("Could not display object " + work.getGmlId() + " as " + work.getDisplayForm().getName() + fromMessage + ".");
+				log.info("Could not display object " + work.getGmlId() + " as " + work.getDisplayForm().getName() + fromMessage + ".");
 			}
 			else { // result not empty
 				kmlExporterManager.updateFeatureTracker(work);
@@ -211,7 +209,7 @@ public class Transportation extends KmlGenericObject{
 						setId(work.getId());
 
 						if (currentgmlId != work.getGmlId() && getGeometryAmount() > GEOMETRY_AMOUNT_WARNING)
-							Logger.getInstance().info("Object " + work.getGmlId() + " has more than " + GEOMETRY_AMOUNT_WARNING + " geometries. This may take a while to process...");
+							log.info("Object " + work.getGmlId() + " has more than " + GEOMETRY_AMOUNT_WARNING + " geometries. This may take a while to process...");
 
 						List<Point3d> anchorCandidates = getOrigins(); // setOrigins() called mainly for the side-effect
 						double zOffset = getZOffsetFromConfigOrDB(work.getId());
@@ -226,7 +224,7 @@ public class Transportation extends KmlGenericObject{
 							if (work.getDisplayForm().isHighlightingEnabled())
 								kmlExporterManager.print(createPlacemarksForHighlighting(rs, work), work, getBalloonSettings().isBalloonContentInSeparateFile());
 						} catch (Exception ioe) {
-							Util.logStackTrace(ioe);
+							log.logStackTrace(ioe);
 						}
 
 						break;
@@ -234,10 +232,10 @@ public class Transportation extends KmlGenericObject{
 				}				
 			}
 		} catch (SQLException sqlEx) {
-			Logger.getInstance().error("SQL error while querying city object " + work.getGmlId() + ": " + sqlEx.getMessage());
+			log.error("SQL error while querying city object " + work.getGmlId() + ": " + sqlEx.getMessage());
 			return;
 		} catch (JAXBException jaxbEx) {
-			Logger.getInstance().error("XML error while working on city object " + work.getGmlId() + ": " + jaxbEx.getMessage());
+			log.error("XML error while working on city object " + work.getGmlId() + ": " + jaxbEx.getMessage());
 			return;
 		} finally {
 			if (rs != null)

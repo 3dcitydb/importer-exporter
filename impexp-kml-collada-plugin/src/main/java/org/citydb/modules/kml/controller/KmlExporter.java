@@ -1431,7 +1431,7 @@ public class KmlExporter implements EventHandler {
 				bytes[i] = (byte) Integer.parseInt(hex.substring(2*i, 2*i+2), 16);
 			}
 		} catch ( Exception e ) {
-			Util.logStackTrace(e);
+			log.logStackTrace(e);
 			return null;
 		}
 		return bytes;
