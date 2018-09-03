@@ -34,7 +34,6 @@ import org.citydb.config.gui.window.MainWindow;
 import org.citydb.config.gui.window.WindowSize;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.global.LanguageType;
-import org.citydb.config.project.global.LogLevel;
 import org.citydb.database.connection.DatabaseConnectionPool;
 import org.citydb.event.Event;
 import org.citydb.event.EventDispatcher;
@@ -44,11 +43,13 @@ import org.citydb.event.global.EventType;
 import org.citydb.event.global.SwitchLocaleEvent;
 import org.citydb.gui.components.console.ConsoleTextPane;
 import org.citydb.gui.components.console.ConsoleWindow;
+import org.citydb.gui.components.console.StyledConsoleLogger;
 import org.citydb.gui.components.menubar.MenuBar;
 import org.citydb.gui.factory.DefaultComponentFactory;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.gui.util.OSXAdapter;
+import org.citydb.log.DefaultConsoleLogger;
 import org.citydb.log.Logger;
 import org.citydb.modules.citygml.exporter.CityGMLExportPlugin;
 import org.citydb.modules.citygml.importer.CityGMLImportPlugin;
@@ -87,9 +88,6 @@ import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import javax.swing.plaf.basic.BasicSplitPaneDivider;
 import javax.swing.plaf.basic.BasicSplitPaneUI;
-import javax.swing.text.Style;
-import javax.swing.text.StyleConstants;
-import javax.swing.text.StyleContext;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import java.awt.Color;
@@ -107,6 +105,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.MessageFormat;
@@ -139,6 +138,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 	private ConsolePopupMenuWrapper consolePopup;
 	private ConsoleWindow consoleWindow;
 	private ConsoleTextPane consoleText;
+	private StyledConsoleLogger consoleLogger;
 
 	private int tmpConsoleWidth;
 	private int activePosition;
@@ -397,24 +397,11 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 	}
 
 	private void initConsole() {
-		PrintStream out = consoleText.getConsolePrintStream();
-		log.setDefaultOutputStream(out);
-		System.setOut(out);
+		consoleLogger = new StyledConsoleLogger(consoleText, StandardCharsets.UTF_8);
+		log.setConsoleLogger(consoleLogger);
 
-		StyleContext context = new StyleContext();
-		Style debugStyle = context.addStyle(LogLevel.WARN.value(), null);
-		StyleConstants.setForeground(debugStyle, new Color(0, 0, 238));
-		log.setOutputStream(LogLevel.DEBUG, consoleText.getConsolePrintStream(debugStyle));
-
-		Style warnStyle = context.addStyle(LogLevel.WARN.value(), null);
-		StyleConstants.setForeground(warnStyle, new Color(166, 111, 0));
-		log.setOutputStream(LogLevel.WARN, consoleText.getConsolePrintStream(warnStyle));
-
-		Style errorStyle = context.addStyle(LogLevel.ERROR.value(), null);
-		StyleConstants.setForeground(errorStyle, new Color(205, 0, 0));
-		PrintStream err = consoleText.getConsolePrintStream(errorStyle);
-		log.setOutputStream(LogLevel.ERROR, err);
-		System.setErr(err);
+		System.setOut(consoleLogger.out());
+		System.setErr(consoleLogger.err());
 
 		// show console window if required
 		if (config.getGui().getConsoleWindow().isDetached()) {
@@ -590,6 +577,10 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		return consoleText;
 	}
 
+	public StyledConsoleLogger getStyledConsoleLogger() {
+		return consoleLogger;
+	}
+
 	public void disconnectFromDatabase() {
 		ObjectRegistry.getInstance().getDatabaseController().disconnect();
 	}
@@ -616,8 +607,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		try {
 			System.setOut(out);
 			System.setErr(err);
-			log.setDefaultOutputStream(out);
-			log.setOutputStream(LogLevel.ERROR, err);
+			log.setConsoleLogger(new DefaultConsoleLogger());
 
 			eventDispatcher.shutdownNow();
 			consoleWindow.dispose();

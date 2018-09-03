@@ -33,17 +33,13 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.EnumMap;
 
 public class Logger {
 	private static Logger instance = new Logger();
 
-	private final EnumMap<LogLevel, PrintStream> outputStreams;
-	private PrintStream defaultOutputStream = System.out;
-
+	private ConsoleLogger consoleLogger;
 	private LogLevel consoleLevel = LogLevel.INFO;
 	private LogLevel fileLevel = LogLevel.INFO;
 
@@ -52,18 +48,16 @@ public class Logger {
 	private BufferedWriter logFile;
 
 	private Logger() {
-		// just to thwart instantiation
-		outputStreams = new EnumMap<>(LogLevel.class);
-
-		// set output stream for each log level
-		outputStreams.put(LogLevel.DEBUG, defaultOutputStream);
-		outputStreams.put(LogLevel.INFO, defaultOutputStream);
-		outputStreams.put(LogLevel.WARN, defaultOutputStream);
-		outputStreams.put(LogLevel.ERROR, System.err);
+		consoleLogger = new DefaultConsoleLogger();
 	}
 
 	public static Logger getInstance() {
 		return instance;
+	}
+
+	public void setConsoleLogger(ConsoleLogger consoleLogger) {
+		if (consoleLogger != null)
+			this.consoleLogger = consoleLogger;
 	}
 
 	public void setDefaultConsoleLogLevel(LogLevel level) {
@@ -82,18 +76,6 @@ public class Logger {
 		return fileLevel;
 	}
 
-	public void setDefaultOutputStream(PrintStream stream) {
-		if (stream != null) {
-			outputStreams.replaceAll((key, value) -> value == defaultOutputStream ? stream : value);
-			defaultOutputStream = stream;
-		}
-	}
-
-	public void setOutputStream(LogLevel level, PrintStream stream) {
-		if (stream != null)
-			outputStreams.put(level, stream);
-	}
-
 	private String getPrefix(LogLevel level) {
 		return "[" +
 				LocalDateTime.now().withNano(0).format(DateTimeFormatter.ISO_LOCAL_TIME) +
@@ -106,7 +88,7 @@ public class Logger {
 		msg = getPrefix(level) + msg;
 
 		if (isLogToConsole && consoleLevel.ordinal() >= level.ordinal())
-			outputStreams.getOrDefault(level, defaultOutputStream).println(msg);
+			consoleLogger.log(level, msg);
 
 		if (isLogToFile && fileLevel.ordinal() >= level.ordinal()) {
 			try {
@@ -135,19 +117,9 @@ public class Logger {
 		log(LogLevel.ERROR, msg);
 	}
 
-	public void all(LogLevel level, String msg) {
-		msg = getPrefix(level) + msg;
-
-		if (isLogToConsole && consoleLevel.ordinal() >= level.ordinal())
-			outputStreams.getOrDefault(level, defaultOutputStream).println(msg);
-
-		if (fileLevel.ordinal() >= level.ordinal())
-			writeToFile(msg);
-	}
-
 	public void print(String msg) {
 		if (isLogToConsole)
-			defaultOutputStream.println(msg);
+			consoleLogger.log(msg);
 
 		writeToFile(msg);
 	}
