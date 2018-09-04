@@ -543,7 +543,7 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 	public void printError(SQLException e, boolean showErrorDialog) {
 		if (showErrorDialog) {
 			String text = Language.I18N.getString("db.dialog.error.openConn");
-			Object[] args = new Object[]{ e.getMessage() };
+			Object[] args = new Object[]{ e.getMessage().replaceAll("\\n", "") };
 			String result = MessageFormat.format(text, args);					
 
 			viewController.errorMessage(Language.I18N.getString("common.dialog.error.db.title"), result);
