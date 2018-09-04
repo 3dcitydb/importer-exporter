@@ -51,6 +51,8 @@ the @citydbName@ version @citydbVersion@. It allows for high-performance
 importing and exporting spatial data for a virtual 3D city model.
 
 * Full support for CityGML versions 2.0.0 and 1.0.0
+* Support for CityGML Application Domain Extensions (ADEs) through
+  software extensions
 * Support for Oracle Spatial, Oracle Locator, and PostGIS
 * Reading/writing CityGML instance documents of arbitrary file size
 * Export of KML/COLLADA/glTF models including tiling schemas for 
@@ -68,7 +70,6 @@ importing and exporting spatial data for a virtual 3D city model.
 * XML validation of CityGML instance documents
 * Multithreaded programming facilitating high-performance CityGML 
   processing
-* Proxy support for HTTP, HTTPS, and SOCKS protocols
 
 The @name@ comes with both a Graphical
 User Interface (GUI) and a Command Line Interface (CLI). The CLI 
@@ -82,31 +83,31 @@ third party applications.
 * Java JRE or JDK >= 1.8
 * @citydbName@ version @citydbVersion@ on
   - Oracle Spatial DBMS >= 10G R2 with Spatial or Locator option
-  - PostgreSQL DBMS >= 9.1 with PostGIS extension >= 2.0
+  - PostgreSQL DBMS >= 9.3 with PostGIS extension >= 2.0
   
 The @name@ can be run on any platform 
 providing appropriate Java support. It has been tested on the 
 following platforms:
-  - Microsoft Windows XP, Vista, Windows 7, 8, 8.1, 10
-  - Apple Mac OS X 10.9, 10.11
-  - Ubuntu 14, 15
+  - Microsoft Windows XP, Vista, Windows 7, 8, 10
+  - Apple Mac OS X 10.9, 10.11, macOS 10.12, 10.13
+  - Ubuntu 14 - 18
 
 
 5. (Un)Installation
 -------------------
 
-It is recommended to use the universal installer to unpack the 
-@name@ application files to your local 
-computer. The universal installer will guide you through the steps of the
+It is recommended to use the universal installer to setup the
+@name@ application on your local computer.
+The universal installer will guide you through the steps of the
 installation process. Afterwards, you can immediately run the application 
 (see next section).
 
 When you successfully install the @name@,
 an uninstaller is automatically generated in the 'uninstaller' subfolder
-of the installation folder. Please use this uninstaller in order to remove 
+of the installation directory. Please use this uninstaller in order to remove
 the @name@ application files from your
 computer. Alternatively, you can simply delete the entire installation
-folder.
+directory.
 
 
 6. Running the application
@@ -133,7 +134,7 @@ a) Recommended:
    The start scripts set the initial heap size of the Java Virtual
    Machine (JVM) to 1GB using the -Xms parameter of the JVM. This value
    has been chosen to be reasonable for most platforms. Please edit the
-   start scripts in case you need to adapt these default values (e.g.,
+   start scripts in case you need to adapt the default values (e.g.,
    in order to increase the available main memory).
 
    For some UNIX/Linux distributions, you will have to run the start

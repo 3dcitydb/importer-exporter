@@ -86,7 +86,7 @@ of the cooperation partners:
 ----------------------
 
 * Oracle DBMS >= 10g R2 with Spatial or Locator option
-* PostgreSQL DBMS >= 9.3 with PostGIS extension >= 2.1
+* PostgreSQL DBMS >= 9.3 with PostGIS extension >= 2.0
 
 
 5. Database setup
