@@ -57,6 +57,18 @@ Contributing
 * To contribute code for fixing filed issues create a pull request with the issue id.
 * To propose a new feature create a GitHub issue and open a discussion.
 
+Installing and running
+----------------------
+The easiest way to get the Importer/Exporter running on your computer is to download an installer from the [releases section](https://github.com/3dcitydb/importer-exporter/releases). The installers are named `3DCityDB-Importer-Exporter-<version>-Setup.jar` and are packaged as executable JAR file. So double-clicking the JAR file should run the installer. Make sure Java 8 (or higher) is installed on your machine. The installer will guide you through the steps of the installation process.
+
+After installation, start scripts are available in the `bin` subfolder of the installation directory. During setup you can additionally choose to create shortcuts on your desktop and in the start menu of your preferred OS.
+
+Simply execute the start script suitable for your platform:
+   - `3DCityDB-Importer-Exporter.bat` (Microsoft Windows family)
+   - `3DCityDB-Importer-Exporter` (UNIX/Linux family, macOS)
+
+On most platforms, double-clicking the start script or its shortcut launches the application.
+
 Cooperation partners and supporters  
 -----------------------------------
 
