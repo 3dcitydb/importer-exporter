@@ -59,7 +59,7 @@ Contributing
 
 Installing and running
 ----------------------
-The easiest way to get the Importer/Exporter running on your computer is to download an installer from the [releases section](https://github.com/3dcitydb/importer-exporter/releases). The installers are named `3DCityDB-Importer-Exporter-<version>-Setup.jar` and are packaged as executable JAR file. So double-clicking the JAR file should run the installer. Make sure Java 8 (or higher) is installed on your machine. The installer will guide you through the steps of the installation process.
+The easiest way to get the Importer/Exporter running on your computer is to download an installer from the [releases section](https://github.com/3dcitydb/importer-exporter/releases). The installers are named `3DCityDB-Importer-Exporter-<version>-Setup.jar` and are packaged as executable JAR file. So double-clicking the JAR file should run the installer. The installer will guide you through the steps of the installation process.
 
 After installation, start scripts are available in the `bin` subfolder of the installation directory. During setup you can additionally choose to create shortcuts on your desktop and in the start menu of your preferred OS.
 
@@ -68,6 +68,22 @@ Simply execute the start script suitable for your platform:
    - `3DCityDB-Importer-Exporter` (UNIX/Linux family, macOS)
 
 On most platforms, double-clicking the start script or its shortcut launches the application.
+
+Building
+--------
+The Importer/Exporter uses [Gradle](https://gradle.org/) as build system. To build the application from source, clone the repository to your local machine and run the following command from the root of the repository. 
+
+    > gradlew installDist
+    
+The script automatically downloads all required dependencies for building and running the Importer/Exporter. So make sure you are connected to the internet. The build process runs on all major operating systems and only requires a Java 8 JDK or higher to run.
+
+If the build was successful, you will find the Importer/Exporter package under `impexp-client/build/install`. To launch the application, simply use the starter scripts in the `bin` subfolder.
+
+You may also choose to build an installer for the Importer/Exporter with the following command.
+
+    > gradlew buildInstaller
+
+The installer package will be available under `impexp-client/build/distributions`.
 
 Cooperation partners and supporters  
 -----------------------------------
