@@ -4,6 +4,8 @@
 The 3D City Database Importer/Exporter is a Java based front-end for the [3D City Database](https://github.com/3dcitydb/3dcitydb). It allows for high-performance loading and extracting 3D city model data.
 
 * Full support for CityGML versions 2.0.0 and 1.0.0
+* Support for CityGML Application Domain Extensions (ADEs) through
+  software extensions
 * Support for Oracle Spatial, Oracle Locator, and PostGIS
 * Reading/writing CityGML instance documents of arbitrary file size
 * Export of KML/COLLADA/glTF models including tiling schemas for 
@@ -41,7 +43,7 @@ System requirements
 * Java JRE or JDK >= 1.8
 * [3D City Databse](https://github.com/3dcitydb/3dcitydb) on
   - Oracle DBMS >= 10G R2 with Spatial or Locator option
-  - PostgreSQL DBMS >= 9.1 with PostGIS extension >= 2.0
+  - PostgreSQL DBMS >= 9.3 with PostGIS extension >= 2.0
   
 The 3D City Database Importer/Exporter can be run on any platform providing appropriate Java support. 
 
