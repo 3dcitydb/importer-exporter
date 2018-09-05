@@ -148,15 +148,15 @@
             <description/>
             <fileset dir="@installDir@/@samplesDir@" targetdir="$INSTALL_PATH/@samplesDir@" override="true"/>
         </pack>
-        <pack name="plugins" id="plugins" required="no" preselected="no">
+        <pack name="plugins" id="plugins" required="no" preselected="yes" expand="yes">
             <description/>
         </pack>
-        <pack name="plugin.spreadsheet.generator" id="plugin.spreadsheet.generator" parent="plugins" required="no" preselected="no">
+        <pack name="plugin.spreadsheet.generator" id="plugin.spreadsheet.generator" parent="plugins" required="no" preselected="yes">
             <description/>
             <fileset dir="@installDir@/@pluginsDir@/@spreadSheetPluginDir@" targetdir="$INSTALL_PATH//@pluginsDir@/@spreadSheetPluginDir@"
                 override="true"/>
         </pack>
-        <pack name="plugin.ade-manager" id="plugin.ade-manager" parent="plugins" required="no" preselected="no">
+        <pack name="plugin.ade-manager" id="plugin.ade-manager" parent="plugins" required="no" preselected="yes">
             <description/>
             <fileset dir="@installDir@/@pluginsDir@/@adeManagerPluginDir@" targetdir="$INSTALL_PATH//@pluginsDir@/@adeManagerPluginDir@"
                 override="true"/>
