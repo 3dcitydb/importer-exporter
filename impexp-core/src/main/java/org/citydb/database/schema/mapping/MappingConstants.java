@@ -12,8 +12,8 @@ public class MappingConstants {
 	public static final HashMap<CityGMLVersion, String> CITYDB_ADE_SCHEMA_LOCATIONS = new HashMap<>(2, 1f);
 	
 	static {
-		CITYDB_ADE_SCHEMA_LOCATIONS.put(CityGMLVersion.v2_0_0, "http://www.virtualcitysystems.de/3dcitydb/citygml-ade/3.0/3dcitydb-ade-citygml-2.0.xsd");
-		CITYDB_ADE_SCHEMA_LOCATIONS.put(CityGMLVersion.v1_0_0, "http://www.virtualcitysystems.de/3dcitydb/citygml-ade/3.0/3dcitydb-ade-citygml-1.0.xsd");
+		CITYDB_ADE_SCHEMA_LOCATIONS.put(CityGMLVersion.v2_0_0, "https://www.3dcitydb.org/3dcitydb/citygml-ade/3.0/3dcitydb-ade-citygml-2.0.xsd");
+		CITYDB_ADE_SCHEMA_LOCATIONS.put(CityGMLVersion.v1_0_0, "https://www.3dcitydb.org/3dcitydb/citygml-ade/3.0/3dcitydb-ade-citygml-1.0.xsd");
 	}
 	
 	public static final String TARGET_TABLE_TOKEN = "${target.table}";
