@@ -73,7 +73,7 @@ public class StyledConsoleLogger implements ConsoleLogger {
                 if (textPane.getCaretPosition() != doc.getLength())
                     textPane.setCaretPosition(doc.getLength());
 
-                doc.insertString(doc.getLength(), new String(msg.getBytes(), encoding) + "\n", style);
+                doc.insertString(doc.getLength(), msg + "\n", style);
             } catch (Throwable e) {
                 //
             }
