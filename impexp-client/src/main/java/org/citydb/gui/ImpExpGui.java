@@ -162,6 +162,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 
 		// required for preferences plugin
 		consoleText = new ConsoleTextPane();
+		consoleLogger = new StyledConsoleLogger(consoleText, StandardCharsets.UTF_8);
 	}
 
 	public void invoke(JAXBContext jaxbProjectContext,
@@ -396,7 +397,6 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 	}
 
 	private void initConsole() {
-		consoleLogger = new StyledConsoleLogger(consoleText, StandardCharsets.UTF_8);
 		log.setConsoleLogger(consoleLogger);
 
 		System.setOut(consoleLogger.out());
