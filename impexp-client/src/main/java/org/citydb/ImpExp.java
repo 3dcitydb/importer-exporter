@@ -215,7 +215,7 @@ public class ImpExp {
 
 			if (!noSplash) {
 				useSplashScreen = true;
-				splashScreen = new SplashScreen(7, 3, 480, Color.BLACK);
+				splashScreen = new SplashScreen(7, 3, 477, Color.BLACK);
 				splashScreen.setMessage("Version \"" + this.getClass().getPackage().getImplementationVersion() + "\"");
 				SwingUtilities.invokeLater(() -> splashScreen.setVisible(true));
 

@@ -85,7 +85,7 @@ public class SplashScreen extends JWindow {
 		progressBar.setMaximum(numberOfSteps);
 		progressBar.setVisible(false);
 		
-		GridBagConstraints c = GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.HORIZONTAL, 5 + messageY, 5 + messageX, 5, 5);
+		GridBagConstraints c = GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.HORIZONTAL, 5 + messageY, 5 + messageX, 0, 5);
 		c.anchor = GridBagConstraints.NORTH;
 		dynamicContent.add(message, c);
 		
