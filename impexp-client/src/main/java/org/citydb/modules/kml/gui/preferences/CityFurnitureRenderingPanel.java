@@ -27,39 +27,24 @@
  */
 package org.citydb.modules.kml.gui.preferences;
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
+import org.citydb.config.Config;
+import org.citydb.config.i18n.Language;
+import org.citydb.config.project.kmlExporter.ColladaOptions;
+import org.citydb.config.project.kmlExporter.DisplayForm;
+import org.citydb.gui.components.common.AlphaButton;
+import org.citydb.gui.factory.PopupMenuDecorator;
+import org.citydb.gui.preferences.AbstractPreferencesComponent;
+import org.citydb.gui.util.GuiUtil;
+import org.citydb.textureAtlas.TextureAtlasCreator;
+
+import javax.swing.*;
+import javax.swing.border.TitledBorder;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-
-import javax.swing.BorderFactory;
-import javax.swing.ButtonGroup;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JColorChooser;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JSpinner;
-import javax.swing.JTextField;
-import javax.swing.SpinnerModel;
-import javax.swing.SpinnerNumberModel;
-import javax.swing.border.TitledBorder;
-
-import org.citydb.config.Config;
-import org.citydb.config.i18n.Language;
-import org.citydb.config.project.kmlExporter.ColladaOptions;
-import org.citydb.config.project.kmlExporter.DisplayForm;
-import org.citydb.gui.factory.PopupMenuDecorator;
-import org.citydb.gui.preferences.AbstractPreferencesComponent;
-import org.citydb.gui.util.GuiUtil;
-import org.citydb.textureAtlas.TextureAtlasCreator;
 
 @SuppressWarnings("serial")
 public class CityFurnitureRenderingPanel extends AbstractPreferencesComponent {
@@ -72,13 +57,13 @@ public class CityFurnitureRenderingPanel extends AbstractPreferencesComponent {
 	private JPanel footprintPanel;
 	private JCheckBox footprintHighlightingCheckbox = new JCheckBox();
 	private JLabel footprintFillColorLabel = new JLabel();
-	private JButton footprintFillColorButton = new JButton(" ");
+	private JButton footprintFillColorButton = new AlphaButton();
 	private JLabel footprintLineColorLabel = new JLabel();
-	private JButton footprintLineColorButton = new JButton(" ");
+	private JButton footprintLineColorButton = new AlphaButton();
 	private JLabel footprintHLFillColorLabel = new JLabel();
-	private JButton footprintHLFillColorButton = new JButton(" ");
+	private JButton footprintHLFillColorButton = new AlphaButton();
 	private JLabel footprintHLLineColorLabel = new JLabel();
-	private JButton footprintHLLineColorButton = new JButton(" ");
+	private JButton footprintHLLineColorButton = new AlphaButton();
 	private JLabel footprintAlphaLabel = new JLabel();
 	private JSpinner footprintAlphaSpinner;
 
@@ -86,24 +71,16 @@ public class CityFurnitureRenderingPanel extends AbstractPreferencesComponent {
 	private JLabel geometryAlphaLabel = new JLabel();
 	private JSpinner geometryAlphaSpinner;
 	private JLabel geometryWallFillColorLabel = new JLabel();
-	private JButton geometryWallFillColorButton = new JButton(" ");
-/*
-	private JLabel geometryRoofFillColorLabel = new JLabel();
-	private JButton geometryRoofFillColorButton = new JButton(" ");
-*/
+	private JButton geometryWallFillColorButton = new AlphaButton();
 	private JLabel geometryWallLineColorLabel = new JLabel();
-	private JButton geometryWallLineColorButton = new JButton(" ");
-/*
-	private JLabel geometryRoofLineColorLabel = new JLabel();
-	private JButton geometryRoofLineColorButton = new JButton(" ");
-*/
+	private JButton geometryWallLineColorButton = new AlphaButton();
 	private JCheckBox geometryHighlightingCheckbox = new JCheckBox();
 	private JLabel geometryHLSurfaceDistanceLabel = new JLabel();
 	private JTextField geometryHLSurfaceDistanceText = new JTextField("", 3);
 	private JLabel geometryHLFillColorLabel = new JLabel();
-	private JButton geometryHLFillColorButton = new JButton(" ");
+	private JButton geometryHLFillColorButton = new AlphaButton();
 	private JLabel geometryHLLineColorLabel = new JLabel();
-	private JButton geometryHLLineColorButton = new JButton(" ");
+	private JButton geometryHLLineColorButton = new AlphaButton();
 	
 	private JPanel colladaPanel;
 	private JCheckBox ignoreSurfaceOrientationCheckbox = new JCheckBox();
@@ -117,16 +94,16 @@ public class CityFurnitureRenderingPanel extends AbstractPreferencesComponent {
 	private JLabel colladaAlphaLabel = new JLabel();
 	private JSpinner colladaAlphaSpinner;
 	private JLabel colladaWallFillColorLabel = new JLabel();
-	private JButton colladaWallFillColorButton = new JButton(" ");	
+	private JButton colladaWallFillColorButton = new AlphaButton();
 	private JRadioButton groupObjectsRButton = new JRadioButton();
 	private JTextField groupSizeText = new JTextField("", 3);
 	private JRadioButton colladaHighlightingRButton = new JRadioButton();
 	private JLabel colladaHLSurfaceDistanceLabel = new JLabel();
 	private JTextField colladaHLSurfaceDistanceText = new JTextField("", 3);
 	private JLabel colladaHLFillColorLabel = new JLabel();
-	private JButton colladaHLFillColorButton = new JButton(" ");
+	private JButton colladaHLFillColorButton = new AlphaButton();
 	private JLabel colladaHLLineColorLabel = new JLabel();
-	private JButton colladaHLLineColorButton = new JButton(" ");
+	private JButton colladaHLLineColorButton = new AlphaButton();
 
 	private HashMap<String, Integer> packingAlgorithms = new HashMap<String, Integer>();  
 	private JComboBox packingAlgorithmsComboBox = new JComboBox();
@@ -233,7 +210,6 @@ public class CityFurnitureRenderingPanel extends AbstractPreferencesComponent {
 		footprintFillColorButton.setPreferredSize(footprintAlphaSpinner.getPreferredSize());
 		footprintFillColorButton.setBackground(new Color(DisplayForm.DEFAULT_FILL_COLOR, true));
 		footprintFillColorButton.setContentAreaFilled(false);
-		footprintFillColorButton.setOpaque(true);
 		footprintPanel.add(footprintFillColorButton, GuiUtil.setConstraints(1,1,0.25,1.0,GridBagConstraints.HORIZONTAL,BORDER_THICKNESS,0,2*BORDER_THICKNESS,0));
 		
 		GridBagConstraints flcl = GuiUtil.setConstraints(2,1,0.25,1.0,GridBagConstraints.NONE,BORDER_THICKNESS,BORDER_THICKNESS,2*BORDER_THICKNESS,BORDER_THICKNESS);
@@ -243,7 +219,6 @@ public class CityFurnitureRenderingPanel extends AbstractPreferencesComponent {
 		footprintLineColorButton.setPreferredSize(footprintAlphaSpinner.getPreferredSize());
 		footprintLineColorButton.setBackground(new Color(DisplayForm.DEFAULT_LINE_COLOR, true));
 		footprintLineColorButton.setContentAreaFilled(false);
-		footprintLineColorButton.setOpaque(true);
 		footprintPanel.add(footprintLineColorButton, GuiUtil.setConstraints(3,1,0.25,1.0,GridBagConstraints.HORIZONTAL,BORDER_THICKNESS,0,2*BORDER_THICKNESS,BORDER_THICKNESS));
 
 		GridBagConstraints fhlcb = GuiUtil.setConstraints(0,2,0.5,1.0,GridBagConstraints.NONE,0,BORDER_THICKNESS,2*BORDER_THICKNESS,0);
@@ -259,7 +234,6 @@ public class CityFurnitureRenderingPanel extends AbstractPreferencesComponent {
 		footprintHLFillColorButton.setPreferredSize(footprintAlphaSpinner.getPreferredSize());
 		footprintHLFillColorButton.setBackground(new Color(DisplayForm.DEFAULT_FILL_HIGHLIGHTED_COLOR, true));
 		footprintHLFillColorButton.setContentAreaFilled(false);
-		footprintHLFillColorButton.setOpaque(true);
 		footprintPanel.add(footprintHLFillColorButton, GuiUtil.setConstraints(1,3,0.25,1.0,GridBagConstraints.HORIZONTAL,0,0,2*BORDER_THICKNESS,0));
 
 		GridBagConstraints fhllcl = GuiUtil.setConstraints(2,3,0.25,1.0,GridBagConstraints.NONE,0,BORDER_THICKNESS,2*BORDER_THICKNESS,BORDER_THICKNESS);
@@ -269,7 +243,6 @@ public class CityFurnitureRenderingPanel extends AbstractPreferencesComponent {
 		footprintHLLineColorButton.setPreferredSize(footprintAlphaSpinner.getPreferredSize());
 		footprintHLLineColorButton.setBackground(new Color(DisplayForm.DEFAULT_LINE_HIGHLIGHTED_COLOR, true));
 		footprintHLLineColorButton.setContentAreaFilled(false);
-		footprintHLLineColorButton.setOpaque(true);
 		footprintPanel.add(footprintHLLineColorButton, GuiUtil.setConstraints(3,3,0.25,1.0,GridBagConstraints.HORIZONTAL,0,0,2*BORDER_THICKNESS,BORDER_THICKNESS));
 
 		geometryPanel = new JPanel();
@@ -293,7 +266,6 @@ public class CityFurnitureRenderingPanel extends AbstractPreferencesComponent {
 		geometryWallFillColorButton.setPreferredSize(geometryAlphaSpinner.getPreferredSize());
 		geometryWallFillColorButton.setBackground(new Color(DisplayForm.DEFAULT_WALL_FILL_COLOR, true));
 		geometryWallFillColorButton.setContentAreaFilled(false);
-		geometryWallFillColorButton.setOpaque(true);
 		geometryPanel.add(geometryWallFillColorButton, GuiUtil.setConstraints(1,1,0.25,1.0,GridBagConstraints.HORIZONTAL,BORDER_THICKNESS,0,2*BORDER_THICKNESS,0));
 		
 		GridBagConstraints grcl = GuiUtil.setConstraints(2,1,0.25,1.0,GridBagConstraints.NONE,BORDER_THICKNESS,BORDER_THICKNESS,2*BORDER_THICKNESS,BORDER_THICKNESS);
@@ -303,29 +275,8 @@ public class CityFurnitureRenderingPanel extends AbstractPreferencesComponent {
 		geometryWallLineColorButton.setPreferredSize(geometryAlphaSpinner.getPreferredSize());
 		geometryWallLineColorButton.setBackground(new Color(DisplayForm.DEFAULT_WALL_LINE_COLOR, true));
 		geometryWallLineColorButton.setContentAreaFilled(false);
-		geometryWallLineColorButton.setOpaque(true);
 		geometryPanel.add(geometryWallLineColorButton, GuiUtil.setConstraints(3,1,0.25,1.0,GridBagConstraints.HORIZONTAL,BORDER_THICKNESS,0,2*BORDER_THICKNESS,BORDER_THICKNESS));
-/*
-		GridBagConstraints grfcl = GuiUtil.setConstraints(0,2,0.25,1.0,GridBagConstraints.NONE,0,BORDER_THICKNESS,2*BORDER_THICKNESS,BORDER_THICKNESS);
-		grfcl.anchor = GridBagConstraints.EAST;
-		geometryPanel.add(geometryRoofFillColorLabel, grfcl);
 
-		geometryRoofFillColorButton.setPreferredSize(geometryAlphaSpinner.getPreferredSize());
-		geometryRoofFillColorButton.setBackground(new Color(DisplayForm.DEFAULT_ROOF_FILL_COLOR, true));
-		geometryRoofFillColorButton.setContentAreaFilled(false);
-		geometryRoofFillColorButton.setOpaque(true);
-		geometryPanel.add(geometryRoofFillColorButton, GuiUtil.setConstraints(1,2,0.25,1.0,GridBagConstraints.HORIZONTAL,0,0,2*BORDER_THICKNESS,0));
-
-		GridBagConstraints grlcl = GuiUtil.setConstraints(2,2,0.25,1.0,GridBagConstraints.NONE,0,BORDER_THICKNESS,2*BORDER_THICKNESS,BORDER_THICKNESS);
-		grlcl.anchor = GridBagConstraints.EAST;
-		geometryPanel.add(geometryRoofLineColorLabel, grlcl);
-		
-		geometryRoofLineColorButton.setPreferredSize(geometryAlphaSpinner.getPreferredSize());
-		geometryRoofLineColorButton.setBackground(new Color(DisplayForm.DEFAULT_ROOF_LINE_COLOR, true));
-		geometryRoofLineColorButton.setContentAreaFilled(false);
-		geometryRoofLineColorButton.setOpaque(true);
-		geometryPanel.add(geometryRoofLineColorButton, GuiUtil.setConstraints(3,2,0.25,1.0,GridBagConstraints.HORIZONTAL,0,0,2*BORDER_THICKNESS,BORDER_THICKNESS));
-*/
 		geometryHighlightingCheckbox.setIconTextGap(10);
 		GridBagConstraints ghcb = GuiUtil.setConstraints(0,2,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,2*BORDER_THICKNESS,0);
 		ghcb.gridwidth = 2;
@@ -338,7 +289,6 @@ public class CityFurnitureRenderingPanel extends AbstractPreferencesComponent {
 		geometryHLFillColorButton.setPreferredSize(geometryAlphaSpinner.getPreferredSize());
 		geometryHLFillColorButton.setBackground(new Color(DisplayForm.DEFAULT_FILL_HIGHLIGHTED_COLOR, true));
 		geometryHLFillColorButton.setContentAreaFilled(false);
-		geometryHLFillColorButton.setOpaque(true);
 		geometryPanel.add(geometryHLFillColorButton, GuiUtil.setConstraints(1,3,0.25,1.0,GridBagConstraints.HORIZONTAL,0,0,2*BORDER_THICKNESS,0));
 
 		GridBagConstraints ghllcl = GuiUtil.setConstraints(2,3,0.25,1.0,GridBagConstraints.NONE,0,BORDER_THICKNESS,2*BORDER_THICKNESS,BORDER_THICKNESS);
@@ -348,7 +298,6 @@ public class CityFurnitureRenderingPanel extends AbstractPreferencesComponent {
 		geometryHLLineColorButton.setPreferredSize(geometryAlphaSpinner.getPreferredSize());
 		geometryHLLineColorButton.setBackground(new Color(DisplayForm.DEFAULT_LINE_HIGHLIGHTED_COLOR, true));
 		geometryHLLineColorButton.setContentAreaFilled(false);
-		geometryHLLineColorButton.setOpaque(true);
 		geometryPanel.add(geometryHLLineColorButton, GuiUtil.setConstraints(3,3,0.25,1.0,GridBagConstraints.HORIZONTAL,0,0,2*BORDER_THICKNESS,BORDER_THICKNESS));
 
 		GridBagConstraints ghdl = GuiUtil.setConstraints(0,4,0.0,1.0,GridBagConstraints.NONE,0,2*BORDER_THICKNESS,2*BORDER_THICKNESS,BORDER_THICKNESS);
@@ -422,7 +371,6 @@ public class CityFurnitureRenderingPanel extends AbstractPreferencesComponent {
 		colladaWallFillColorButton.setPreferredSize(geometryAlphaSpinner.getPreferredSize());
 		colladaWallFillColorButton.setBackground(new Color(DisplayForm.DEFAULT_COLLADA_WALL_FILL_COLOR, true));
 		colladaWallFillColorButton.setContentAreaFilled(false);
-		colladaWallFillColorButton.setOpaque(true);
 		colladaColorSubPanel.add(colladaWallFillColorButton, GuiUtil.setConstraints(3,0,0.25,1.0,GridBagConstraints.HORIZONTAL,BORDER_THICKNESS,0,BORDER_THICKNESS,0));
 		
 		// highlighting settings (just for collada and Google Earch)
@@ -452,7 +400,6 @@ public class CityFurnitureRenderingPanel extends AbstractPreferencesComponent {
 		colladaHLFillColorButton.setPreferredSize(geometryAlphaSpinner.getPreferredSize());
 		colladaHLFillColorButton.setBackground(new Color(DisplayForm.DEFAULT_FILL_HIGHLIGHTED_COLOR, true));
 		colladaHLFillColorButton.setContentAreaFilled(false);
-		colladaHLFillColorButton.setOpaque(true);
 		colladaHLSubPanel.add(colladaHLFillColorButton, GuiUtil.setConstraints(1,0,0.25,1.0,GridBagConstraints.HORIZONTAL,0,0,2*BORDER_THICKNESS,0));
 
 		GridBagConstraints chllcl = GuiUtil.setConstraints(2,0,0.25,1.0,GridBagConstraints.NONE,0,BORDER_THICKNESS,2*BORDER_THICKNESS,BORDER_THICKNESS);
@@ -462,7 +409,6 @@ public class CityFurnitureRenderingPanel extends AbstractPreferencesComponent {
 		colladaHLLineColorButton.setPreferredSize(geometryAlphaSpinner.getPreferredSize());
 		colladaHLLineColorButton.setBackground(new Color(DisplayForm.DEFAULT_LINE_HIGHLIGHTED_COLOR, true));
 		colladaHLLineColorButton.setContentAreaFilled(false);
-		colladaHLLineColorButton.setOpaque(true);
 		colladaHLSubPanel.add(colladaHLLineColorButton, GuiUtil.setConstraints(3,0,0.25,1.0,GridBagConstraints.HORIZONTAL,0,0,2*BORDER_THICKNESS,BORDER_THICKNESS));
 		
 		GridBagConstraints chldl = GuiUtil.setConstraints(0,1,0.0,1.0,GridBagConstraints.NONE,0,2*BORDER_THICKNESS,2*BORDER_THICKNESS,BORDER_THICKNESS);

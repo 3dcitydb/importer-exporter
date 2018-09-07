@@ -27,35 +27,23 @@
  */
 package org.citydb.modules.kml.gui.preferences;
 
-import java.awt.Color;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
-import javax.swing.BorderFactory;
-import javax.swing.ButtonGroup;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JColorChooser;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JSpinner;
-import javax.swing.SpinnerModel;
-import javax.swing.SpinnerNumberModel;
-import javax.swing.border.TitledBorder;
-// import javax.swing.filechooser.FileNameExtensionFilter;
-
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.kmlExporter.AltitudeMode;
 import org.citydb.config.project.kmlExporter.DisplayForm;
 import org.citydb.config.project.kmlExporter.PointAndCurve;
 import org.citydb.config.project.kmlExporter.PointDisplayMode;
+import org.citydb.gui.components.common.AlphaButton;
 import org.citydb.gui.preferences.AbstractPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
+
+import javax.swing.*;
+import javax.swing.border.TitledBorder;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+// import javax.swing.filechooser.FileNameExtensionFilter;
 
 // import org.citydb.config.project.general.Path;
 // import org.citydb.config.project.general.PathMode;
@@ -69,19 +57,19 @@ public class PointAndCurveRenderingPanel extends AbstractPreferencesComponent {
 	private JLabel pointAltitudeModeLabel = new JLabel();
 	private JComboBox pointAltitudeModeComboBox = new JComboBox();
 	private JLabel pointIconColorLabel = new JLabel();
-	private JButton pointIconColorButton = new JButton(" ");
+	private JButton pointIconColorButton = new AlphaButton();
 	private JLabel pointIconScaleLabel = new JLabel();
 	private JSpinner pointIconScaleSpinner;	
 	
 	private JLabel pointCrossLineThicknessLabel = new JLabel();
 	private JSpinner pointCrossLineThicknessSpinner;
 	private JLabel pointCrossLineNormalColorLabel = new JLabel();
-	private JButton pointCrossLineNormalColorButton = new JButton(" ");
+	private JButton pointCrossLineNormalColorButton = new AlphaButton();
 	private JCheckBox pointCrossLineHighlightingCheckbox = new JCheckBox();
 	private JLabel pointCrossLineHighlightingThicknessLabel = new JLabel();
 	private JSpinner pointCrossLineHighlightingThicknessSpinner;
 	private JLabel pointCrossLineHighlightingColorLabel = new JLabel();
-	private JButton pointCrossLineHighlightingColorButton = new JButton(" ");
+	private JButton pointCrossLineHighlightingColorButton = new AlphaButton();
 	
 	
 	private JRadioButton iconRButton = new JRadioButton();
@@ -91,10 +79,10 @@ public class PointAndCurveRenderingPanel extends AbstractPreferencesComponent {
 	private JLabel pointCubeLengthOfSideLabel = new JLabel();
 	private JSpinner pointCubeLengthOfSideSpinner;
 	private JLabel pointCubeFillColorLabel = new JLabel();
-	private JButton pointCubeFillColorButton = new JButton(" ");
+	private JButton pointCubeFillColorButton = new AlphaButton();
 	private JCheckBox pointCubeHighlightingCheckbox = new JCheckBox();
 	private JLabel pointCubeHighlightingColorLabel = new JLabel();
-	private JButton pointCubeHighlightingColorButton = new JButton(" ");
+	private JButton pointCubeHighlightingColorButton = new AlphaButton();
 
 	private JPanel curvePanel;
 	private JLabel curveAltitudeModeLabel = new JLabel();
@@ -102,12 +90,12 @@ public class PointAndCurveRenderingPanel extends AbstractPreferencesComponent {
 	private JLabel curveThicknessLabel = new JLabel();
 	private JSpinner curveThicknessSpinner;
 	private JLabel curveNormalColorLabel = new JLabel();
-	private JButton curveNormalColorButton = new JButton(" ");
+	private JButton curveNormalColorButton = new AlphaButton();
 	private JCheckBox curveHighlightingCheckbox = new JCheckBox();
 	private JLabel curveHighlightingThicknessLabel = new JLabel();
 	private JSpinner curveHighlightingThicknessSpinner;
 	private JLabel curveHighlightingColorLabel = new JLabel();
-	private JButton curveHighlightingColorButton = new JButton(" ");
+	private JButton curveHighlightingColorButton = new AlphaButton();
 
 
 	public PointAndCurveRenderingPanel(Config config) {
@@ -220,7 +208,6 @@ public class PointAndCurveRenderingPanel extends AbstractPreferencesComponent {
         pointCrossLineNormalColorButton.setPreferredSize(pointCrossLineThicknessSpinner.getPreferredSize());
         pointCrossLineNormalColorButton.setBackground(new Color(DisplayForm.DEFAULT_LINE_COLOR, true));
         pointCrossLineNormalColorButton.setContentAreaFilled(false);
-        pointCrossLineNormalColorButton.setOpaque(true);
         GridBagConstraints pcb = GuiUtil.setConstraints(2,4,0.25,1.0,GridBagConstraints.NONE,0,0,BORDER_THICKNESS,0);
         pcb.anchor = GridBagConstraints.WEST;
         pointPanel.add(pointCrossLineNormalColorButton, pcb);
@@ -241,7 +228,6 @@ public class PointAndCurveRenderingPanel extends AbstractPreferencesComponent {
         pointCrossLineHighlightingColorButton.setPreferredSize(pointCrossLineThicknessSpinner.getPreferredSize());
         pointCrossLineHighlightingColorButton.setBackground(new Color(DisplayForm.DEFAULT_LINE_HIGHLIGHTED_COLOR, true));
         pointCrossLineHighlightingColorButton.setContentAreaFilled(false);
-        pointCrossLineHighlightingColorButton.setOpaque(true);
         GridBagConstraints phlcb = GuiUtil.setConstraints(2,7,0.25,1.0,GridBagConstraints.NONE,0,0,BORDER_THICKNESS,0);
         phlcb.anchor = GridBagConstraints.WEST;
         pointPanel.add(pointCrossLineHighlightingColorButton, phlcb);       
@@ -250,7 +236,6 @@ public class PointAndCurveRenderingPanel extends AbstractPreferencesComponent {
 		pointPanel.add(pointIconColorLabel, GuiUtil.setConstraints(1,9,0,0,GridBagConstraints.HORIZONTAL,0,BORDER_THICKNESS,BORDER_THICKNESS,0));
         pointIconColorButton.setPreferredSize(pointCrossLineThicknessSpinner.getPreferredSize());
         pointIconColorButton.setContentAreaFilled(false);
-        pointIconColorButton.setOpaque(true);
         GridBagConstraints picb = GuiUtil.setConstraints(2,9,0.25,1.0,GridBagConstraints.NONE,0,0,BORDER_THICKNESS,0);
         picb.anchor = GridBagConstraints.WEST;
         pointPanel.add(pointIconColorButton, picb);
@@ -275,7 +260,6 @@ public class PointAndCurveRenderingPanel extends AbstractPreferencesComponent {
         pointCubeFillColorButton.setPreferredSize(pointCrossLineThicknessSpinner.getPreferredSize());
         pointCubeFillColorButton.setBackground(new Color(DisplayForm.DEFAULT_FILL_COLOR, true));
         pointCubeFillColorButton.setContentAreaFilled(false);
-        pointCubeFillColorButton.setOpaque(true);
         GridBagConstraints pcfcb = GuiUtil.setConstraints(2,13,0.25,1.0,GridBagConstraints.NONE,0,0,BORDER_THICKNESS,0);
         pcfcb.anchor = GridBagConstraints.WEST;
         pointPanel.add(pointCubeFillColorButton, pcfcb);
@@ -289,7 +273,6 @@ public class PointAndCurveRenderingPanel extends AbstractPreferencesComponent {
         pointCubeHighlightingColorButton.setPreferredSize(pointCrossLineThicknessSpinner.getPreferredSize());
         pointCubeHighlightingColorButton.setBackground(new Color(DisplayForm.DEFAULT_FILL_HIGHLIGHTED_COLOR, true));
         pointCubeHighlightingColorButton.setContentAreaFilled(false);
-        pointCubeHighlightingColorButton.setOpaque(true);
         GridBagConstraints pchcb = GuiUtil.setConstraints(2,15,0.25,1.0,GridBagConstraints.NONE,0,0,BORDER_THICKNESS,0);
         pchcb.anchor = GridBagConstraints.WEST;
         pointPanel.add(pointCubeHighlightingColorButton, pchcb);
@@ -319,7 +302,6 @@ public class PointAndCurveRenderingPanel extends AbstractPreferencesComponent {
 		curveNormalColorButton.setPreferredSize(curveThicknessSpinner.getPreferredSize());
 		curveNormalColorButton.setBackground(new Color(DisplayForm.DEFAULT_LINE_COLOR, true));
 		curveNormalColorButton.setContentAreaFilled(false);
-		curveNormalColorButton.setOpaque(true);
         GridBagConstraints ccb = GuiUtil.setConstraints(1,3,0.25,1.0,GridBagConstraints.NONE,0,0,BORDER_THICKNESS,0);
         ccb.anchor = GridBagConstraints.WEST;
         curveDisplayFormPanel.add(curveNormalColorButton, ccb);
@@ -340,7 +322,6 @@ public class PointAndCurveRenderingPanel extends AbstractPreferencesComponent {
 		curveHighlightingColorButton.setPreferredSize(curveThicknessSpinner.getPreferredSize());
 		curveHighlightingColorButton.setBackground(new Color(DisplayForm.DEFAULT_LINE_HIGHLIGHTED_COLOR, true));
 		curveHighlightingColorButton.setContentAreaFilled(false);
-		curveHighlightingColorButton.setOpaque(true);
         GridBagConstraints chlcb = GuiUtil.setConstraints(1,6,0.25,1.0,GridBagConstraints.NONE,0,0,BORDER_THICKNESS,0);
         chlcb.anchor = GridBagConstraints.WEST;
         curveDisplayFormPanel.add(curveHighlightingColorButton, chlcb);

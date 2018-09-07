@@ -27,30 +27,20 @@
  */
 package org.citydb.modules.kml.gui.preferences;
 
-import java.awt.Color;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
+import org.citydb.config.Config;
+import org.citydb.config.i18n.Language;
+import org.citydb.config.project.kmlExporter.DisplayForm;
+import org.citydb.gui.components.common.AlphaButton;
+import org.citydb.gui.preferences.AbstractPreferencesComponent;
+import org.citydb.gui.util.GuiUtil;
+
+import javax.swing.*;
+import javax.swing.border.TitledBorder;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JColorChooser;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JSpinner;
-import javax.swing.SpinnerModel;
-import javax.swing.SpinnerNumberModel;
-import javax.swing.border.TitledBorder;
-
-import org.citydb.config.Config;
-import org.citydb.config.i18n.Language;
-import org.citydb.config.project.kmlExporter.DisplayForm;
-import org.citydb.gui.preferences.AbstractPreferencesComponent;
-import org.citydb.gui.util.GuiUtil;
 
 @SuppressWarnings("serial")
 public class CityObjectGroupRenderingPanel extends AbstractPreferencesComponent {
@@ -63,13 +53,13 @@ public class CityObjectGroupRenderingPanel extends AbstractPreferencesComponent 
 	private JPanel footprintPanel;
 	private JCheckBox footprintHighlightingCheckbox = new JCheckBox();
 	private JLabel footprintFillColorLabel = new JLabel();
-	private JButton footprintFillColorButton = new JButton(" ");
+	private JButton footprintFillColorButton = new AlphaButton();
 	private JLabel footprintLineColorLabel = new JLabel();
-	private JButton footprintLineColorButton = new JButton(" ");
+	private JButton footprintLineColorButton = new AlphaButton();
 	private JLabel footprintHLFillColorLabel = new JLabel();
-	private JButton footprintHLFillColorButton = new JButton(" ");
+	private JButton footprintHLFillColorButton = new AlphaButton();
 	private JLabel footprintHLLineColorLabel = new JLabel();
-	private JButton footprintHLLineColorButton = new JButton(" ");
+	private JButton footprintHLLineColorButton = new AlphaButton();
 	private JLabel footprintAlphaLabel = new JLabel();
 	private JSpinner footprintAlphaSpinner;
 
@@ -137,7 +127,6 @@ public class CityObjectGroupRenderingPanel extends AbstractPreferencesComponent 
 		footprintFillColorButton.setPreferredSize(footprintAlphaSpinner.getPreferredSize());
 		footprintFillColorButton.setBackground(new Color(DisplayForm.DEFAULT_FILL_COLOR, true));
 		footprintFillColorButton.setContentAreaFilled(false);
-		footprintFillColorButton.setOpaque(true);
 		footprintPanel.add(footprintFillColorButton, GuiUtil.setConstraints(1,1,0.25,1.0,GridBagConstraints.HORIZONTAL,BORDER_THICKNESS,0,2*BORDER_THICKNESS,0));
 		
 		GridBagConstraints flcl = GuiUtil.setConstraints(2,1,0.25,1.0,GridBagConstraints.NONE,BORDER_THICKNESS,BORDER_THICKNESS,2*BORDER_THICKNESS,BORDER_THICKNESS);
@@ -147,7 +136,6 @@ public class CityObjectGroupRenderingPanel extends AbstractPreferencesComponent 
 		footprintLineColorButton.setPreferredSize(footprintAlphaSpinner.getPreferredSize());
 		footprintLineColorButton.setBackground(new Color(DisplayForm.DEFAULT_LINE_COLOR, true));
 		footprintLineColorButton.setContentAreaFilled(false);
-		footprintLineColorButton.setOpaque(true);
 		footprintPanel.add(footprintLineColorButton, GuiUtil.setConstraints(3,1,0.25,1.0,GridBagConstraints.HORIZONTAL,BORDER_THICKNESS,0,2*BORDER_THICKNESS,BORDER_THICKNESS));
 
 		GridBagConstraints fhlcb = GuiUtil.setConstraints(0,2,0.5,1.0,GridBagConstraints.NONE,0,BORDER_THICKNESS,2*BORDER_THICKNESS,0);
@@ -163,7 +151,6 @@ public class CityObjectGroupRenderingPanel extends AbstractPreferencesComponent 
 		footprintHLFillColorButton.setPreferredSize(footprintAlphaSpinner.getPreferredSize());
 		footprintHLFillColorButton.setBackground(new Color(DisplayForm.DEFAULT_FILL_HIGHLIGHTED_COLOR, true));
 		footprintHLFillColorButton.setContentAreaFilled(false);
-		footprintHLFillColorButton.setOpaque(true);
 		footprintPanel.add(footprintHLFillColorButton, GuiUtil.setConstraints(1,3,0.25,1.0,GridBagConstraints.HORIZONTAL,0,0,2*BORDER_THICKNESS,0));
 
 		GridBagConstraints fhllcl = GuiUtil.setConstraints(2,3,0.25,1.0,GridBagConstraints.NONE,0,BORDER_THICKNESS,2*BORDER_THICKNESS,BORDER_THICKNESS);
@@ -173,7 +160,6 @@ public class CityObjectGroupRenderingPanel extends AbstractPreferencesComponent 
 		footprintHLLineColorButton.setPreferredSize(footprintAlphaSpinner.getPreferredSize());
 		footprintHLLineColorButton.setBackground(new Color(DisplayForm.DEFAULT_LINE_HIGHLIGHTED_COLOR, true));
 		footprintHLLineColorButton.setContentAreaFilled(false);
-		footprintHLLineColorButton.setOpaque(true);
 		footprintPanel.add(footprintHLLineColorButton, GuiUtil.setConstraints(3,3,0.25,1.0,GridBagConstraints.HORIZONTAL,0,0,2*BORDER_THICKNESS,BORDER_THICKNESS));
 
 
