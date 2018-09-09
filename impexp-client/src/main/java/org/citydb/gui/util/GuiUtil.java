@@ -27,12 +27,10 @@
  */
 package org.citydb.gui.util;
 
-import java.awt.GridBagConstraints;
-import java.awt.Insets;
-
-import javax.swing.JMenuItem;
-
 import org.citydb.config.i18n.Language;
+
+import javax.swing.*;
+import java.awt.*;
 
 public class GuiUtil {
 
@@ -82,6 +80,30 @@ public class GuiUtil {
 		} catch (NumberFormatException e) {
 			//
 		}
+	}
+
+	public static Color hexToColor(String hex) {
+		if (hex != null && hex.matches("^#[0-9a-fA-F]{6,8}")) {
+			hex = hex.replace("#", "");
+			int r, g, b, a = 255;
+
+			switch (hex.length()) {
+				case 8:
+					a = Integer.valueOf(hex.substring(0, 2), 16);
+					hex = hex.substring(2);
+				case 6:
+					r = Integer.valueOf(hex.substring(0, 2), 16);
+					g = Integer.valueOf(hex.substring(2, 4), 16);
+					b = Integer.valueOf(hex.substring(4, 6), 16);
+					return new Color(r, g, b, a);
+			}
+		}
+
+		return null;
+	}
+
+	public static String colorToHex(Color color) {
+		return color != null ? "#" + Integer.toHexString(color.getRGB()) : null;
 	}
 
 }

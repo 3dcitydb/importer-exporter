@@ -1,15 +1,16 @@
 package org.citydb.gui.components.console;
 
+import org.citydb.config.gui.style.LogLevelStyle;
 import org.citydb.config.project.global.LogLevel;
+import org.citydb.gui.util.GuiUtil;
 import org.citydb.log.ConsoleLogger;
 
-import javax.swing.JTextPane;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyleContext;
 import javax.swing.text.StyledDocument;
-import java.awt.Color;
+import java.awt.*;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
@@ -31,19 +32,12 @@ public class StyledConsoleLogger implements ConsoleLogger {
         doc = textPane.getStyledDocument();
         context = new StyleContext();
 
-        Style info = context.addStyle(LogLevel.INFO.value(), null);
+        // add default styles for each log level
+        for (LogLevel level : LogLevel.values())
+            context.addStyle(level.value(), null);
 
-        Style debug = context.addStyle(LogLevel.DEBUG.value(), null);
-        StyleConstants.setForeground(debug, new Color(0, 0, 238));
-
-        Style warn = context.addStyle(LogLevel.WARN.value(), null);
-        StyleConstants.setForeground(warn, new Color(166, 111, 0));
-
-        Style error = context.addStyle(LogLevel.ERROR.value(), null);
-        StyleConstants.setForeground(error, new Color(205, 0, 0));
-
-        out = getStyledPrintStream(info);
-        err = getStyledPrintStream(error);
+        out = getStyledPrintStream(context.getStyle(LogLevel.INFO.value()));
+        err = getStyledPrintStream(context.getStyle(LogLevel.ERROR.value()));
     }
 
     public Style getStyle(LogLevel level) {
@@ -52,6 +46,22 @@ public class StyledConsoleLogger implements ConsoleLogger {
 
     public void setStyle(LogLevel level, Style style) {
         context.addStyle(level.value(), style);
+    }
+
+    public void applyLogLevelStyle(LogLevel level, LogLevelStyle logLevelStyle) {
+        Style style = context.getStyle(level.value());
+
+        Color foreground = GuiUtil.hexToColor(logLevelStyle.getForeground());
+        if (foreground != null)
+            StyleConstants.setForeground(style, foreground);
+        else
+            style.removeAttribute(StyleConstants.Foreground);
+
+        Color background = GuiUtil.hexToColor(logLevelStyle.getBackground());
+        if (background != null)
+            StyleConstants.setBackground(style, background);
+        else
+            style.removeAttribute(StyleConstants.Background);
     }
 
     @Override

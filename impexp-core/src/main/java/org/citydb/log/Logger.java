@@ -78,7 +78,7 @@ public class Logger {
 		return fileLevel;
 	}
 
-	private String getPrefix(LogLevel level) {
+	public String getPrefix(LogLevel level) {
 		return "[" +
 				LocalDateTime.now().withNano(0).format(DateTimeFormatter.ISO_LOCAL_TIME) +
 				" " +
