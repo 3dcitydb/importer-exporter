@@ -163,21 +163,23 @@ public class ReportOperation extends DatabaseOperationView {
 
 			try {
 				String[] report = dbConnectionPool.getActiveDatabaseAdapter().getUtil().createDatabaseReport(workspace);
-				Pattern pattern = Pattern.compile("^(#[^\\s]+)\\s+(\\d+).*$");
+				Pattern pattern = Pattern.compile("^(#[^\\s\\\\]+)[^\\d]+(\\d+).*$");
 				Matcher matcher = pattern.matcher("");
 
 				if (report != null) {
 					for (String line : report) {
-						matcher.reset(line);
-						if (matcher.matches()) {
-							StringBuilder formatted = new StringBuilder(matcher.group(1));
-							while (formatted.length() < 30)
-								formatted.append(' ');
+						if (line != null) {
+							matcher.reset(line);
+							if (matcher.matches()) {
+								StringBuilder formatted = new StringBuilder(matcher.group(1));
+								while (formatted.length() < 30)
+									formatted.append(' ');
 
-							line = formatted.append("  ").append(matcher.group(2)).toString();
+								line = formatted.append("  ").append(matcher.group(2)).toString();
+							}
+
+							log.print(line);
 						}
-
-						log.print(line);
 					}
 
 					log.info("Database report successfully generated.");
