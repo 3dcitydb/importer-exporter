@@ -195,6 +195,7 @@ Claus Nagel <cnagel@virtualcitysystems.de>
 Zhihang Yao <zyao@virtualcitysystems.de>
 György Hudra <ghudra@moss.de>
 Felix Kunde <felix-kunde@gmx.de>
+Son H. Nguyen <son.nguyen@tum.de>
 Thomas H. Kolbe <thomas.kolbe@tum.de>
 
 Version @version@ is based on earlier versions of the
@@ -217,6 +218,7 @@ Official @citydbName@ website:
 
 Related websites:
 @citydbVcsUrl@
+https://github.com/tum-gis/3dcitydb-docker-postgis
 @vendorWebsiteUrl@
 http://www.citygml.org
 http://www.citygmlwiki.org
