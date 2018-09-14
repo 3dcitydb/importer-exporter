@@ -81,8 +81,9 @@ the "plugin-spreadsheet-generator-3.0.0" subfolder and all its contents.
 6. Developers
 -------------
 
-Zhihang Yao <zhihang.yao@tuml.de>
-Thomas H. Kolbe <thomas.kolbe@tu-berlin.de>
+Zhihang Yao <zhihang.yao@tum.de>
+Son H. Nguyen <son.nguyen@tum.de>
+Thomas H. Kolbe <thomas.kolbe@tum.de>
 (and of the previous version)
 Babak Naderi <b.naderi@mailbox.tu-berlin.de>
 Javier Herreruela <javier.herreruela@tu-berlin.de>
@@ -92,6 +93,7 @@ Javier Herreruela <javier.herreruela@tu-berlin.de>
 ----------
 
 zhihang.yao@tum.de
+son.nguyen@tum.de
 thomas.kolbe@tum.de
 
 
