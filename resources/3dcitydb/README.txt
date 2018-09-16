@@ -1,4 +1,4 @@
-﻿3D City Database - The Open Source CityGML Database
+3D City Database - The Open Source CityGML Database
 
 Version 4.0.0
 
