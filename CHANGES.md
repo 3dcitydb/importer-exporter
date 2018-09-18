@@ -1,7 +1,7 @@
 Change Log
 ==========
 
-### 4.0 - tba
+### 4.0 - 2018-09-18
 
 ##### Additions
 * Added new extension mechanism to support arbitrary CityGML ADEs.
