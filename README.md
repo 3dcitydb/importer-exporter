@@ -34,9 +34,9 @@ Note that releases of the software before version 3.3.0 continue to be licensed 
 
 Latest release
 --------------
-The latest stable release of the 3D City Database Importer/Exporter is 3.3.2.
+The latest stable release of the 3D City Database Importer/Exporter is 4.0.
 
-Download a Java-based executable installer for the software [here](https://github.com/3dcitydb/importer-exporter/releases/download/v3.3.2/3DCityDB-Importer-Exporter-3.3.2-Setup.jar). Previous releases are available from the [releases section](https://github.com/3dcitydb/importer-exporter/releases).
+Download a Java-based executable installer for the software [here](https://github.com/3dcitydb/importer-exporter/releases/download/v4.0.0/3DCityDB-Importer-Exporter-4.0.0-Setup.jar). Previous releases are available from the [releases section](https://github.com/3dcitydb/importer-exporter/releases).
 
 System requirements
 -------------------
@@ -47,7 +47,7 @@ System requirements
   
 The 3D City Database Importer/Exporter can be run on any platform providing appropriate Java support. 
 
-Documentation and Literature
+Documentation and literature
 ----------------------------
 A complete and comprehensive documentation on the 3D City Database and the Importer/Exporter tool is installed with the software and is available [online](http://www.3dcitydb.org/3dcitydb/documentation/).
 
