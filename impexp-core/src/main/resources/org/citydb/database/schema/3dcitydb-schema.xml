@@ -57,8 +57,8 @@
       <namespace context="citygml-1.0">http://www.opengis.net/gml</namespace>
     </schema>
     <schema id="citydb" xmlPrefix="citydb">
-      <namespace context="citygml-2.0">http://www.3dcitydb.org/citygml-ade/3.0</namespace>
-      <namespace context="citygml-1.0">http://www.3dcitydb.org/citygml-ade/3.0</namespace>
+      <namespace context="citygml-2.0">http://www.3dcitydb.org/citygml-ade/3.0/citygml/2.0</namespace>
+      <namespace context="citygml-1.0">http://www.3dcitydb.org/citygml-ade/3.0/citygml/1.0</namespace>
     </schema>
   </applicationSchemas>
 

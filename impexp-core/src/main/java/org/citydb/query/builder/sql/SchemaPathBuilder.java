@@ -27,6 +27,7 @@
  */
 package org.citydb.query.builder.sql;
 
+import org.citydb.ade.model.module.CityDBADE200Module;
 import org.citydb.database.adapter.AbstractSQLAdapter;
 import org.citydb.database.schema.mapping.AbstractExtension;
 import org.citydb.database.schema.mapping.AbstractJoin;
@@ -196,7 +197,7 @@ public class SchemaPathBuilder {
 
 		// retrieve table and column of id property
 		Table fromTable = currentTable;
-		AbstractProperty property = featureType.getProperty(MappingConstants.ID, MappingConstants.CITYDB_ADE_NAMESPACE_URI, true);	
+		AbstractProperty property = featureType.getProperty(MappingConstants.ID, CityDBADE200Module.v3_0.getNamespaceURI(), true);
 		if (property == null)
 			throw new QueryBuildException("Fatal database schema error: Failed to find '" + MappingConstants.ID + "' property.");
 

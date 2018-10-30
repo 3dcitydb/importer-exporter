@@ -27,21 +27,8 @@
  */
 package org.citydb.database.schema.mapping;
 
-import java.util.HashMap;
-
-import org.citygml4j.model.module.citygml.CityGMLVersion;
-
 public class MappingConstants {
 	public static final String CITYDB_SCHEMA_NAMESPACE_URI = "http://www.3dcitydb.org/database/schema/1.0";
-	
-	public static final String CITYDB_ADE_NAMESPACE_URI = "http://www.3dcitydb.org/citygml-ade/3.0";
-	public static final String CITYDB_ADE_NAMESPACE_PREFIX = "citydb";
-	public static final HashMap<CityGMLVersion, String> CITYDB_ADE_SCHEMA_LOCATIONS = new HashMap<>(2, 1f);
-	
-	static {
-		CITYDB_ADE_SCHEMA_LOCATIONS.put(CityGMLVersion.v2_0_0, "https://www.3dcitydb.org/3dcitydb/citygml-ade/3.0/3dcitydb-ade-citygml-2.0.xsd");
-		CITYDB_ADE_SCHEMA_LOCATIONS.put(CityGMLVersion.v1_0_0, "https://www.3dcitydb.org/3dcitydb/citygml-ade/3.0/3dcitydb-ade-citygml-1.0.xsd");
-	}
 	
 	public static final String TARGET_TABLE_TOKEN = "${target.table}";
 	public static final String TARGET_OBJECTCLASS_ID_TOKEN = "${target.objectclass_id}";

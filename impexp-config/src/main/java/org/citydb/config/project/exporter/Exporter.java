@@ -27,18 +27,18 @@
  */
 package org.citydb.config.project.exporter;
 
-import javax.xml.bind.annotation.XmlTransient;
-import javax.xml.bind.annotation.XmlType;
-
 import org.citydb.config.project.general.Path;
 import org.citydb.config.project.general.XSLTransformation;
 import org.citydb.config.project.query.Query;
 import org.citydb.config.project.resources.Resources;
 
+import javax.xml.bind.annotation.XmlType;
+
 @XmlType(name="ExportType", propOrder={
 		"query",
 		"genericQuery",
 		"path",
+		"continuation",
 		"cityObjectGroup",
 		"address",
 		"appearances",
@@ -50,14 +50,13 @@ public class Exporter {
 	private SimpleQuery query;
 	private Query genericQuery;
 	private Path path;
+	private Continuation continuation;
 	private ExportCityObjectGroup cityObjectGroup;
 	private ExportAddress address;
 	private ExportAppearance appearances;
 	private XLink xlink;
 	private XSLTransformation xslTransformation;
 	private Resources resources;
-	@XmlTransient
-	private ExportCityDBADE citydbADE;
 
 	public Exporter() {
 		query = new SimpleQuery();
@@ -68,7 +67,7 @@ public class Exporter {
 		xlink = new XLink();
 		xslTransformation = new XSLTransformation();
 		resources = new Resources();
-		citydbADE = new ExportCityDBADE();
+		continuation = new Continuation();
 	}
 
 	public SimpleQuery getQuery() {
@@ -99,6 +98,15 @@ public class Exporter {
 	public void setPath(Path path) {
 		if (path != null)
 			this.path = path;
+	}
+
+	public Continuation getContinuation() {
+		return continuation;
+	}
+
+	public void setContinuation(Continuation continuation) {
+		if (continuation != null)
+			this.continuation = continuation;
 	}
 
 	public ExportAddress getAddress() {
@@ -153,14 +161,6 @@ public class Exporter {
 	public void setResources(Resources system) {
 		if (system != null)
 			this.resources = system;
-	}
-
-	public ExportCityDBADE getCityDBADE() {
-		return citydbADE;
-	}
-
-	public void setCityDBADE(ExportCityDBADE citydbADE) {
-		this.citydbADE = citydbADE;
 	}
 
 }

@@ -27,6 +27,12 @@
  */
 package org.citydb.citygml.exporter.database.content;
 
+import org.citydb.ade.model.LastModificationDateProperty;
+import org.citydb.ade.model.LineageProperty;
+import org.citydb.ade.model.ReasonForUpdateProperty;
+import org.citydb.ade.model.UpdatingPersonProperty;
+import org.citydb.ade.model.module.CityDBADE100Module;
+import org.citydb.ade.model.module.CityDBADE200Module;
 import org.citydb.citygml.exporter.CityGMLExportException;
 import org.citydb.citygml.exporter.util.AttributeValueSplitter;
 import org.citydb.citygml.exporter.util.AttributeValueSplitter.SplitValue;
@@ -36,7 +42,6 @@ import org.citydb.config.project.exporter.TilingOptions;
 import org.citydb.database.schema.TableEnum;
 import org.citydb.database.schema.mapping.AbstractObjectType;
 import org.citydb.database.schema.mapping.FeatureType;
-import org.citydb.database.schema.mapping.MappingConstants;
 import org.citydb.query.Query;
 import org.citydb.query.filter.FilterException;
 import org.citydb.query.filter.projection.ProjectionFilter;
@@ -50,7 +55,6 @@ import org.citydb.sqlbuilder.select.operator.comparison.ComparisonFactory;
 import org.citydb.sqlbuilder.select.operator.comparison.ComparisonName;
 import org.citygml4j.geometry.BoundingBox;
 import org.citygml4j.geometry.Point;
-import org.citygml4j.model.citygml.ade.generic.ADEGenericElement;
 import org.citygml4j.model.citygml.core.AbstractCityObject;
 import org.citygml4j.model.citygml.core.ExternalObject;
 import org.citygml4j.model.citygml.core.ExternalReference;
@@ -64,15 +68,14 @@ import org.citygml4j.model.gml.feature.AbstractFeature;
 import org.citygml4j.model.gml.feature.BoundingShape;
 import org.citygml4j.model.gml.geometry.primitives.Envelope;
 import org.citygml4j.model.module.citygml.CityGMLModuleType;
+import org.citygml4j.model.module.citygml.CityGMLVersion;
 import org.citygml4j.model.module.gml.GMLCoreModule;
 
-import javax.xml.parsers.ParserConfigurationException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
 import java.time.ZoneId;
 import java.util.HashSet;
 
@@ -92,8 +95,7 @@ public class DBCityObject implements DBExporter {
 	private Tile activeTile;
 	private TilingOptions tilingOptions;
 
-	private boolean useCityDBADE;
-	private SimpleDateFormat datetimeFormatter;
+	private boolean exportCityDBMetadata;
 	private AttributeValueSplitter valueSplitter;
 
 	private HashSet<Long> generalizesTos;
@@ -101,6 +103,7 @@ public class DBCityObject implements DBExporter {
 	private String coreModule;
 	private String appearanceModule;
 	private String gmlModule;
+	private String cityDBADEModule;
 
 	public DBCityObject(Connection connection, Query query, CityGMLExportManager exporter, Config config) throws CityGMLExportException, SQLException {
 		this.exporter = exporter;
@@ -121,9 +124,11 @@ public class DBCityObject implements DBExporter {
 			activeTile = tiling.getActiveTile();
 		}
 
-		useCityDBADE = config.getProject().getExporter().getCityDBADE().isExportMetadata();
-		if (useCityDBADE)
-			datetimeFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+		exportCityDBMetadata = config.getProject().getExporter().getContinuation().isExportCityDBMetadata();
+		if (exportCityDBMetadata) {
+			cityDBADEModule = exporter.getTargetCityGMLVersion() == CityGMLVersion.v2_0_0 ?
+					CityDBADE200Module.v3_0.getNamespaceURI() : CityDBADE100Module.v3_0.getNamespaceURI();
+		}
 
 		exportAppearance = config.getProject().getExporter().getAppearances().isSetExportAppearance();
 		gmlSrsName = query.getTargetSRS().getGMLSrsName();
@@ -142,7 +147,7 @@ public class DBCityObject implements DBExporter {
 		.addJoin(JoinFactory.left(externalReference, "cityobject_id", ComparisonName.EQUAL_TO, cityObject.getColumn("id")))
 		.addJoin(JoinFactory.left(generalization, "cityobject_id", ComparisonName.EQUAL_TO, cityObject.getColumn("id")))
 		.addSelection(ComparisonFactory.equalTo(cityObject.getColumn("id"), new PlaceHolder<>()));
-		if (useCityDBADE) select.addProjection(cityObject.getColumn("last_modification_date"), cityObject.getColumn("updating_person"), cityObject.getColumn("reason_for_update"), cityObject.getColumn("lineage"));
+		if (exportCityDBMetadata) select.addProjection(cityObject.getColumn("last_modification_date"), cityObject.getColumn("updating_person"), cityObject.getColumn("reason_for_update"), cityObject.getColumn("lineage"));
 		ps = connection.prepareStatement(select.toString());
 
 		generalizesToExporter = exporter.getExporter(DBGeneralization.class);
@@ -254,46 +259,38 @@ public class DBCityObject implements DBExporter {
 					}
 
 					// 3DCityDB ADE metadata
-					if (useCityDBADE && isTopLevel) {
-						try {
-							if (projectionFilter.containsProperty("lastModificationDate", MappingConstants.CITYDB_ADE_NAMESPACE_URI)) {
-								Timestamp lastModificationDate = rs.getTimestamp("last_modification_date");
-								if (!rs.wasNull()) {
-									ADEGenericElement adeElement = exporter.createADEGenericElement(MappingConstants.CITYDB_ADE_NAMESPACE_URI, "lastModificationDate");
-									adeElement.getContent().setTextContent(datetimeFormatter.format(lastModificationDate));
-									((AbstractCityObject)object).addGenericApplicationPropertyOfCityObject(adeElement);
-								}
+					if (exportCityDBMetadata && isTopLevel) {
+						if (projectionFilter.containsProperty("lastModificationDate", cityDBADEModule)) {
+							Timestamp lastModificationDate = rs.getTimestamp("last_modification_date");
+							if (!rs.wasNull()) {
+								LastModificationDateProperty property = new LastModificationDateProperty(
+										lastModificationDate.toLocalDateTime().atZone(ZoneId.systemDefault()));
+								((AbstractCityObject) object).addGenericApplicationPropertyOfCityObject(property);
 							}
+						}
 
-							if (projectionFilter.containsProperty("updatingPerson", MappingConstants.CITYDB_ADE_NAMESPACE_URI)) {
-								String updatingPerson = rs.getString("updating_person");
-								if (!rs.wasNull()) {
-									ADEGenericElement adeElement = exporter.createADEGenericElement(MappingConstants.CITYDB_ADE_NAMESPACE_URI, "updatingPerson");
-									adeElement.getContent().setTextContent(updatingPerson);
-									((AbstractCityObject)object).addGenericApplicationPropertyOfCityObject(adeElement);
-								}
+						if (projectionFilter.containsProperty("updatingPerson", cityDBADEModule)) {
+							String updatingPerson = rs.getString("updating_person");
+							if (!rs.wasNull()) {
+								UpdatingPersonProperty property = new UpdatingPersonProperty(updatingPerson);
+								((AbstractCityObject) object).addGenericApplicationPropertyOfCityObject(property);
 							}
+						}
 
-							if (projectionFilter.containsProperty("reasonForUpdate", MappingConstants.CITYDB_ADE_NAMESPACE_URI)) {
-								String reasonForUpdate = rs.getString("reason_for_update");
-								if (!rs.wasNull()) {
-									ADEGenericElement adeElement = exporter.createADEGenericElement(MappingConstants.CITYDB_ADE_NAMESPACE_URI, "reasonForUpdate");
-									adeElement.getContent().setTextContent(reasonForUpdate);
-									((AbstractCityObject)object).addGenericApplicationPropertyOfCityObject(adeElement);
-								}
+						if (projectionFilter.containsProperty("reasonForUpdate", cityDBADEModule)) {
+							String reasonForUpdate = rs.getString("reason_for_update");
+							if (!rs.wasNull()) {
+								ReasonForUpdateProperty property = new ReasonForUpdateProperty(reasonForUpdate);
+								((AbstractCityObject) object).addGenericApplicationPropertyOfCityObject(property);
 							}
+						}
 
-							if (projectionFilter.containsProperty("lineage", MappingConstants.CITYDB_ADE_NAMESPACE_URI)) {
-								String lineage = rs.getString("lineage");
-								if (!rs.wasNull()) {
-									ADEGenericElement adeElement = exporter.createADEGenericElement(MappingConstants.CITYDB_ADE_NAMESPACE_URI, "lineage");
-									adeElement.getContent().setTextContent(lineage);
-									((AbstractCityObject)object).addGenericApplicationPropertyOfCityObject(adeElement);
-								}
+						if (projectionFilter.containsProperty("lineage", cityDBADEModule)) {
+							String lineage = rs.getString("lineage");
+							if (!rs.wasNull()) {
+								LineageProperty property = new LineageProperty(lineage);
+								((AbstractCityObject) object).addGenericApplicationPropertyOfCityObject(property);
 							}
-						}  catch (ParserConfigurationException e) {
-							exporter.logOrThrowErrorMessage("Failed to create ADE content for city object metadata.");
-							useCityDBADE = false;
 						}
 					}
 

@@ -29,13 +29,25 @@ package org.citydb.registry;
 
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.citydb.ade.CityDBADEContext;
 import org.citydb.database.DatabaseController;
 import org.citydb.database.schema.mapping.SchemaMapping;
 import org.citydb.event.EventDispatcher;
+import org.citygml4j.CityGMLContext;
 import org.citygml4j.builder.jaxb.CityGMLBuilder;
+import org.citygml4j.model.citygml.ade.ADEException;
 
 public class ObjectRegistry {
 	private static ObjectRegistry instance;
+
+	static {
+		try {
+			// register the citygml4j module for handling the 3DCityDB ADE
+			CityGMLContext.getInstance().registerADEContext(new CityDBADEContext());
+		} catch (ADEException e) {
+			throw new IllegalStateException("Failed to register the 3DCityDB ADE with citygml4j.", e);
+		}
+	}
 
 	private ConcurrentHashMap<String, Object> properties;
 	private EventDispatcher eventDispatcher;

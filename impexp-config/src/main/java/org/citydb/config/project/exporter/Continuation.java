@@ -30,17 +30,17 @@ package org.citydb.config.project.exporter;
 import javax.xml.bind.annotation.XmlType;
 
 @XmlType(name="ExportCityDBADEType", propOrder={
-		"exportMetadata"
+		"exportCityDBMetadata"
 })
-public class ExportCityDBADE {
-	private boolean exportMetadata = false;
+public class Continuation {
+	private boolean exportCityDBMetadata = false;
 	
-	public boolean isExportMetadata() {
-		return exportMetadata;
+	public boolean isExportCityDBMetadata() {
+		return exportCityDBMetadata;
 	}
 	
-	public void setExportMetadata(boolean exportMetadata) {
-		this.exportMetadata = exportMetadata;
+	public void setExportCityDBMetadata(boolean exportCityDBMetadata) {
+		this.exportCityDBMetadata = exportCityDBMetadata;
 	}
 	
 }
