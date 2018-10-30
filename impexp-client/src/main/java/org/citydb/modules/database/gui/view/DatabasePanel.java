@@ -167,6 +167,7 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 		editor.getEditorComponent().setFocusBehavior(FocusBehavior.SHOW_PROMPT);
 		schemaCombo.setEditor(editor);
 		schemaCombo.setEditable(true);
+		schemaCombo.setBorder(UIManager.getLookAndFeel().getDefaults().getBorder("TextField.border"));
 
 		applyButton = new JButton();
 		newButton = new JButton();

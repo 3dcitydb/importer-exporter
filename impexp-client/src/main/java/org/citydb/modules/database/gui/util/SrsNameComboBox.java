@@ -38,6 +38,7 @@ public class SrsNameComboBox extends JComboBox<String> {
         editor = new SrsNameEditor();
         setEditor(editor);
         setEditable(true);
+        setBorder(UIManager.getLookAndFeel().getDefaults().getBorder("TextField.border"));
 
         addItem("urn:ogc:def:crs:EPSG::<SRID>");
         addItem("urn:ogc:def:crs,crs:EPSG::<SRID>,crs:EPSG::<HEIGHT_SRID>");
