@@ -111,6 +111,15 @@ public class DBCityObject implements DBImporter {
 				importer.getDatabaseAdapter().getConnectionDetails().getUser() :
 				config.getProject().getImporter().getContinuation().getUpdatingPerson();
 
+		if (reasonForUpdate != null && reasonForUpdate.trim().isEmpty())
+			reasonForUpdate = null;
+
+		if (lineage != null && lineage.trim().isEmpty())
+			lineage = null;
+
+		if (updatingPerson != null && updatingPerson.trim().isEmpty())
+			updatingPerson = null;
+
 		String gmlIdCodespace = config.getInternal().getCurrentGmlIdCodespace();
 		if (gmlIdCodespace != null)
 			gmlIdCodespace = "'" + gmlIdCodespace + "', ";

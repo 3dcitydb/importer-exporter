@@ -58,7 +58,7 @@ public class Continuation {
 	}
 	
 	public String getLineage() {
-		return lineage != null && !lineage.trim().isEmpty() ? lineage.trim() : null;
+		return lineage;
 	}
 
 	public void setLineage(String lineage) {
@@ -82,7 +82,7 @@ public class Continuation {
 	}
 
 	public String getUpdatingPerson() {
-		return updatingPerson != null && !updatingPerson.trim().isEmpty() ? updatingPerson.trim() : null;
+		return updatingPerson;
 	}
 
 	public void setUpdatingPerson(String updatingPerson) {
@@ -90,7 +90,7 @@ public class Continuation {
 	}
 
 	public String getReasonForUpdate() {
-		return reasonForUpdate != null && !reasonForUpdate.trim().isEmpty() ? reasonForUpdate.trim() : null;
+		return reasonForUpdate;
 	}
 
 	public void setReasonForUpdate(String reasonForUpdate) {

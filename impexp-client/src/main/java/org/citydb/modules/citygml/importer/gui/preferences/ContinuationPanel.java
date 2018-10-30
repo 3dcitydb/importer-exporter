@@ -27,19 +27,6 @@
  */
 package org.citydb.modules.citygml.importer.gui.preferences;
 
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
-import javax.swing.BorderFactory;
-import javax.swing.ButtonGroup;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JTextField;
-import javax.swing.border.TitledBorder;
-
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.importer.Continuation;
@@ -49,6 +36,18 @@ import org.citydb.config.project.importer.UpdatingPersonMode;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.preferences.AbstractPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
+
+import javax.swing.BorderFactory;
+import javax.swing.ButtonGroup;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.JTextField;
+import javax.swing.border.TitledBorder;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 @SuppressWarnings("serial")
 public class ContinuationPanel extends AbstractPreferencesComponent {
@@ -249,10 +248,18 @@ public class ContinuationPanel extends AbstractPreferencesComponent {
 	@Override
 	public void setSettings() {
 		Continuation continuation = config.getProject().getImporter().getContinuation();
-		
-		continuation.setLineage(lineageText.getText());
-		continuation.setReasonForUpdate(reasonForUpdateText.getText());
-		continuation.setUpdatingPerson(updatingPersonText.getText());
+
+		String lineage = lineageText.getText().trim();
+		continuation.setLineage(lineage);
+		lineageText.setText(lineage);
+
+		String reasonForUpdate = reasonForUpdateText.getText().trim();
+		continuation.setReasonForUpdate(reasonForUpdate);
+		reasonForUpdateText.setText(reasonForUpdate);
+
+		String updatingPerson = updatingPersonText.getText().trim();
+		continuation.setUpdatingPerson(updatingPerson);
+		updatingPersonText.setText(updatingPerson);
 		
 		if (updatingPersonDBAccount.isSelected())
 			continuation.setUpdatingPersonMode(UpdatingPersonMode.DATABASE);
