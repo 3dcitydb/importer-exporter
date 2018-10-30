@@ -32,10 +32,10 @@ import org.citydb.citygml.importer.CityGMLImportException;
 import org.citydb.citygml.importer.util.AttributeValueJoiner;
 import org.citydb.citygml.importer.util.LocalAppearanceHandler;
 import org.citydb.config.Config;
-import org.citydb.util.CoreConstants;
 import org.citydb.database.schema.SequenceEnum;
 import org.citydb.database.schema.TableEnum;
 import org.citydb.database.schema.mapping.FeatureType;
+import org.citydb.util.CoreConstants;
 import org.citygml4j.model.citygml.appearance.AbstractSurfaceData;
 import org.citygml4j.model.citygml.appearance.Appearance;
 import org.citygml4j.model.citygml.appearance.SurfaceDataProperty;
@@ -67,12 +67,10 @@ public class DBAppearance implements DBImporter {
 
 		replaceGmlId = config.getProject().getImporter().getGmlId().isUUIDModeReplace();
 		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
-		String gmlIdCodespace = config.getInternal().getCurrentGmlIdCodespace();
 
-		if (gmlIdCodespace != null && gmlIdCodespace.length() > 0)
+		String gmlIdCodespace = config.getInternal().getCurrentGmlIdCodespace();
+		if (gmlIdCodespace != null)
 			gmlIdCodespace = "'" + gmlIdCodespace + "', ";
-		else
-			gmlIdCodespace = null;
 
 		String stmt = "insert into " + schema + ".appearance (id, gmlid, " + (gmlIdCodespace != null ? "gmlid_codespace, " : "") +
 				"name, name_codespace, description, theme, citymodel_id, cityobject_id) values " +

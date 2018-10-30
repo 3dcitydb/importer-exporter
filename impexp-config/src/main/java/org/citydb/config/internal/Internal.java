@@ -30,13 +30,13 @@ package org.citydb.config.internal;
 import java.io.File;
 
 public class Internal {	
-	private String currentLogPath = "";
-	private String importPath = "";
+	private String currentLogPath;
+	private String importPath;
 	private File[] importFiles;
 	private File currentImportFile;
-	private String exportPath = "";
-	private String exportFileName = "";
-	private String exportTextureFilePath = "";
+	private String exportPath;
+	private String exportFileName;
+	private String exportTextureFilePath;
 
 	// internal variables
 	private String currentGmlIdCodespace = null;
@@ -118,7 +118,8 @@ public class Internal {
 	}
 
 	public void setCurrentGmlIdCodespace(String currentGmlIdCodespace) {
-		this.currentGmlIdCodespace = currentGmlIdCodespace;
+		if (currentGmlIdCodespace != null && !currentGmlIdCodespace.trim().isEmpty())
+			this.currentGmlIdCodespace = currentGmlIdCodespace.trim();
 	}
 	
 	public boolean isExportGlobalAppearances() {

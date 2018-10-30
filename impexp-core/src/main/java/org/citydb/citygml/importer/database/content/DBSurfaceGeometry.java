@@ -120,11 +120,10 @@ public class DBSurfaceGeometry implements DBImporter {
 		nullGeometryType = importer.getDatabaseAdapter().getGeometryConverter().getNullGeometryType();
 		nullGeometryTypeName = importer.getDatabaseAdapter().getGeometryConverter().getNullGeometryTypeName();
 		schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
+
 		String gmlIdCodespace = config.getInternal().getCurrentGmlIdCodespace();
-		if (gmlIdCodespace != null && gmlIdCodespace.length() > 0)
+		if (gmlIdCodespace != null)
 			gmlIdCodespace = "'" + gmlIdCodespace + "', ";
-		else
-			gmlIdCodespace = null;		
 
 		StringBuilder stmt = new StringBuilder()
 				.append("insert into ").append(schema).append(".surface_geometry (id, gmlid, ").append(gmlIdCodespace != null ? "gmlid_codespace, " : "")

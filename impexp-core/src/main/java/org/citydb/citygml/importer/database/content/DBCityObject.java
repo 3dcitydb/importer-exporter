@@ -27,6 +27,9 @@
  */
 package org.citydb.citygml.importer.database.content;
 
+import org.citydb.ade.model.LineageProperty;
+import org.citydb.ade.model.ReasonForUpdateProperty;
+import org.citydb.ade.model.UpdatingPersonProperty;
 import org.citydb.citygml.common.database.xlink.DBXlinkBasic;
 import org.citydb.citygml.importer.CityGMLImportException;
 import org.citydb.citygml.importer.util.AttributeValueJoiner;
@@ -43,6 +46,7 @@ import org.citydb.database.schema.mapping.AbstractObjectType;
 import org.citydb.util.CoreConstants;
 import org.citydb.util.Util;
 import org.citygml4j.geometry.BoundingBox;
+import org.citygml4j.model.citygml.ade.ADEComponent;
 import org.citygml4j.model.citygml.core.AbstractCityObject;
 import org.citygml4j.model.citygml.core.ExternalObject;
 import org.citygml4j.model.citygml.core.ExternalReference;
@@ -81,6 +85,11 @@ public class DBCityObject implements DBImporter {
 	private boolean rememberGmlId;
 	private boolean importAppearance;
 	private boolean affineTransformation;
+
+	private boolean importCityDBMetadata;
+	private String updatingPerson;
+	private String reasonForUpdate;
+	private String lineage;
 	private CreationDateMode creationDateMode;
 	private TerminationDateMode terminationDateMode;
 	private BoundingBoxOptions bboxOptions;
@@ -89,45 +98,27 @@ public class DBCityObject implements DBImporter {
 		this.batchConn = batchConn;	
 		this.importer = importer;
 
-		String gmlIdCodespace = config.getInternal().getCurrentGmlIdCodespace();
-		replaceGmlId = config.getProject().getImporter().getGmlId().isUUIDModeReplace();
-		rememberGmlId = config.getProject().getImporter().getGmlId().isSetKeepGmlIdAsExternalReference();
 		affineTransformation = config.getProject().getImporter().getAffineTransformation().isEnabled();
 		dbSrid = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter().getConnectionMetaData().getReferenceSystem().getSrid();
 		importAppearance = config.getProject().getImporter().getAppearances().isSetImportAppearance();
-		String reasonForUpdate = config.getProject().getImporter().getContinuation().getReasonForUpdate();
-		String lineage = config.getProject().getImporter().getContinuation().getLineage();
 		creationDateMode = config.getProject().getImporter().getContinuation().getCreationDateMode();
 		terminationDateMode = config.getProject().getImporter().getContinuation().getTerminationDateMode();
 
-		if (gmlIdCodespace != null && gmlIdCodespace.length() > 0)
-			gmlIdCodespace = "'" + gmlIdCodespace + "', ";
-		else
-			gmlIdCodespace = null;
+		importCityDBMetadata = config.getProject().getImporter().getContinuation().isImportCityDBMetadata();
+		reasonForUpdate = config.getProject().getImporter().getContinuation().getReasonForUpdate();
+		lineage = config.getProject().getImporter().getContinuation().getLineage();
+		updatingPerson = config.getProject().getImporter().getContinuation().isUpdatingPersonModeDatabase() ?
+				importer.getDatabaseAdapter().getConnectionDetails().getUser() :
+				config.getProject().getImporter().getContinuation().getUpdatingPerson();
 
+		String gmlIdCodespace = config.getInternal().getCurrentGmlIdCodespace();
+		if (gmlIdCodespace != null)
+			gmlIdCodespace = "'" + gmlIdCodespace + "', ";
+
+		replaceGmlId = config.getProject().getImporter().getGmlId().isUUIDModeReplace();
+		rememberGmlId = config.getProject().getImporter().getGmlId().isSetKeepGmlIdAsExternalReference();
 		if (replaceGmlId && rememberGmlId)
 			importFileName = config.getInternal().getCurrentImportFile().getAbsolutePath();
-
-		String updatingPerson = null;
-		if (config.getProject().getImporter().getContinuation().isUpdatingPersonModeDatabase())
-			updatingPerson = importer.getDatabaseAdapter().getConnectionDetails().getUser();
-		else
-			updatingPerson = config.getProject().getImporter().getContinuation().getUpdatingPerson();
-
-		if (reasonForUpdate != null && reasonForUpdate.length() > 0)
-			reasonForUpdate = "'" + reasonForUpdate + "'";
-		else
-			reasonForUpdate = null;
-
-		if (lineage != null && lineage.length() > 0)
-			lineage = "'" + lineage + "'";
-		else
-			lineage = null;
-
-		if (updatingPerson != null && updatingPerson.length() > 0)
-			updatingPerson = "'" + updatingPerson + "'";
-		else
-			updatingPerson = null;
 
 		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
 		bboxOptions = BoundingBoxOptions.defaults()
@@ -135,12 +126,10 @@ public class DBCityObject implements DBImporter {
 				.assignResultToFeatures(true)
 				.useReferencePointAsFallbackForImplicitGeometries(true);
 
-		String stmt = "insert into " + schema + ".cityobject (id, objectclass_id, gmlid, " + (gmlIdCodespace != null ? "gmlid_codespace, " : "") + "name, name_codespace, description, envelope, creation_date, termination_date, " +
-				"relative_to_terrain, relative_to_water, last_modification_date, updating_person, reason_for_update, lineage, xml_source) values " +
-				"(?, ?, ?, " + (gmlIdCodespace != null ? gmlIdCodespace : "") + "?, ?, ?, ?, ?, ?, ?, ?, current_timestamp, " +
-				updatingPerson + ", " +
-				reasonForUpdate + ", " +
-				lineage + ", null)";
+		String stmt = "insert into " + schema + ".cityobject (id, objectclass_id, gmlid, " + (gmlIdCodespace != null ? "gmlid_codespace, " : "") +
+				"name, name_codespace, description, envelope, creation_date, termination_date, relative_to_terrain, relative_to_water, " +
+				"last_modification_date, updating_person, reason_for_update, lineage) values " +
+				"(?, ?, ?, " + (gmlIdCodespace != null ? gmlIdCodespace : "") + "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 		psCityObject = batchConn.prepareStatement(stmt);
 
 		genericAttributeImporter = importer.getImporter(DBCityObjectGenericAttrib.class);
@@ -167,6 +156,7 @@ public class DBCityObject implements DBImporter {
 		boolean isFeature = object instanceof AbstractFeature;
 		boolean isCityObject = object instanceof AbstractCityObject;
 		boolean isGlobal = !object.isSetParent();
+		ZonedDateTime now = ZonedDateTime.now();
 
 		// primary id
 		long objectId = importer.getNextSequenceValue(SequenceEnum.CITYOBJECT_ID_SEQ.getName());
@@ -257,7 +247,7 @@ public class DBCityObject implements DBImporter {
 					importer.getDatabaseAdapter().getGeometryConverter().getNullGeometryTypeName());
 		}
 
-		// core:creationDate 
+		// core:creationDate
 		ZonedDateTime creationDate = null;
 		if (isCityObject && (creationDateMode == CreationDateMode.INHERIT || creationDateMode == CreationDateMode.COMPLEMENT)) {
 			creationDate = Util.getCreationDate((AbstractCityObject) object, creationDateMode == CreationDateMode.INHERIT);
@@ -266,7 +256,7 @@ public class DBCityObject implements DBImporter {
 		}
 
 		if (creationDate == null)
-			creationDate = ZonedDateTime.now();
+			creationDate = now;
 
 		psCityObject.setTimestamp(8, Timestamp.valueOf(creationDate.toLocalDateTime()));
 
@@ -294,6 +284,34 @@ public class DBCityObject implements DBImporter {
 			psCityObject.setString(11, ((AbstractCityObject)object).getRelativeToWater().getValue());
 		else
 			psCityObject.setNull(11, Types.VARCHAR);
+
+		// 3DCityDB metadata
+		String updatingPerson = this.updatingPerson;
+		String reasonForUpdate = this.reasonForUpdate;
+		String lineage = this.lineage;
+
+		if (isCityObject && importCityDBMetadata) {
+			for (ADEComponent adeComponent : ((AbstractCityObject) object).getGenericApplicationPropertyOfCityObject()) {
+				if (adeComponent instanceof UpdatingPersonProperty)
+					updatingPerson = ((UpdatingPersonProperty) adeComponent).getValue();
+				else if (adeComponent instanceof ReasonForUpdateProperty)
+					reasonForUpdate = ((ReasonForUpdateProperty) adeComponent).getValue();
+				else if (adeComponent instanceof LineageProperty)
+					lineage = ((LineageProperty) adeComponent).getValue();
+			}
+		}
+
+		// citydb:lastModificationDate
+		psCityObject.setTimestamp(12, Timestamp.valueOf(now.toLocalDateTime()));
+
+		// citydb:updatingPerson
+		psCityObject.setString(13, updatingPerson);
+
+		// citydb:reasonForUpdate
+		psCityObject.setString(14, reasonForUpdate);
+
+		// citydb:lineage
+		psCityObject.setString(15, lineage);
 
 		// resolve local xlinks to geometry objects
 		if (isGlobal) {

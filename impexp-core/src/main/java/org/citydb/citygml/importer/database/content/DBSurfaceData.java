@@ -103,10 +103,8 @@ public class DBSurfaceData implements DBImporter {
 		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
 
 		String gmlIdCodespace = config.getInternal().getCurrentGmlIdCodespace();
-		if (gmlIdCodespace != null && gmlIdCodespace.length() > 0)
+		if (gmlIdCodespace != null)
 			gmlIdCodespace = "'" + gmlIdCodespace + "', ";
-		else
-			gmlIdCodespace = null;
 
 		String x3dStmt = "insert into " + schema + ".surface_data (id, gmlid, " + (gmlIdCodespace != null ? "gmlid_codespace, " : "") + "name, name_codespace, description, is_front, objectclass_id, " +
 				"x3d_shininess, x3d_transparency, x3d_ambient_intensity, x3d_specular_color, x3d_diffuse_color, x3d_emissive_color, x3d_is_smooth) values " +

@@ -77,10 +77,8 @@ public class DBAddress implements DBImporter {
 
 		if (hasGmlIdColumn) {
 			gmlIdCodespace = config.getInternal().getCurrentGmlIdCodespace();
-			if (gmlIdCodespace != null && gmlIdCodespace.length() > 0)
+			if (gmlIdCodespace != null)
 				gmlIdCodespace = "'" + gmlIdCodespace + "', ";
-			else
-				gmlIdCodespace = null;
 		}
 
 		String stmt = "insert into " + schema + ".address (id, " + (hasGmlIdColumn ? "gmlid, " : "") + (gmlIdCodespace != null ? "gmlid_codespace, " : "") +

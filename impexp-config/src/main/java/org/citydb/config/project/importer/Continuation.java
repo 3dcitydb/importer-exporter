@@ -35,17 +35,19 @@ import javax.xml.bind.annotation.XmlType;
 		"updatingPersonMode",
 		"updatingPerson",
 		"reasonForUpdate",
+		"importCityDBMetadata",
 		"creationDateMode",
 		"terminationDateMode"
 		})
 public class Continuation {
 	@XmlElement(required=true)
-	private String lineage = "";
+	private String lineage;
 	@XmlElement(required=true)
 	private UpdatingPersonMode updatingPersonMode = UpdatingPersonMode.DATABASE;
-	private String updatingPerson = "";
+	private String updatingPerson;
 	@XmlElement(required=true)
-	private String reasonForUpdate = "";
+	private String reasonForUpdate;
+	private boolean importCityDBMetadata = false;
 	@XmlElement(required=true)
 	private CreationDateMode creationDateMode = CreationDateMode.REPLACE;
 	@XmlElement(required=true)
@@ -56,7 +58,7 @@ public class Continuation {
 	}
 	
 	public String getLineage() {
-		return lineage;
+		return lineage != null && !lineage.trim().isEmpty() ? lineage.trim() : null;
 	}
 
 	public void setLineage(String lineage) {
@@ -80,7 +82,7 @@ public class Continuation {
 	}
 
 	public String getUpdatingPerson() {
-		return updatingPerson;
+		return updatingPerson != null && !updatingPerson.trim().isEmpty() ? updatingPerson.trim() : null;
 	}
 
 	public void setUpdatingPerson(String updatingPerson) {
@@ -88,11 +90,19 @@ public class Continuation {
 	}
 
 	public String getReasonForUpdate() {
-		return reasonForUpdate;
+		return reasonForUpdate != null && !reasonForUpdate.trim().isEmpty() ? reasonForUpdate.trim() : null;
 	}
 
 	public void setReasonForUpdate(String reasonForUpdate) {
 		this.reasonForUpdate = reasonForUpdate;
+	}
+
+	public boolean isImportCityDBMetadata() {
+		return importCityDBMetadata;
+	}
+
+	public void setImportCityDBMetadata(boolean importCityDBMetadata) {
+		this.importCityDBMetadata = importCityDBMetadata;
 	}
 
 	public boolean isCreationDateModeInherit() {
