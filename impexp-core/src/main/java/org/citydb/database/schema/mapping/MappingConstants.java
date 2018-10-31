@@ -38,8 +38,13 @@ public class MappingConstants {
 	public static final String ROOT_ID = "root_id";
 	public static final String GMLID = "gmlid";
 	public static final String ENVELOPE = "envelope";
+	public static final String LAST_MODIFICATION_DATE = "last_modification_date";
+	public static final String UPDATING_PERSON = "updating_person";
+	public static final String REASON_FOR_UPDATE = "reason_for_update";
+	public static final String LINEAGE = "lineage";
 	public static final String IS_XLINK = "is_xlink";
 	public static final String OBJECTCLASS_ID = "objectclass_id";
+
 	public static final String SURFACE_GEOMETRY = "surface_geometry";
 	public static final String CITYOBJECT = "cityobject";
 	public static final String GEOMETRY = "geometry";
