@@ -196,8 +196,6 @@ public class FilterPanel extends JPanel {
 					row4col2.add(panel2, GuiUtil.setConstraints(0,3,1.0,0.0,GridBagConstraints.HORIZONTAL,0,lmargin,0,0));
 					panel2.setLayout(new GridBagLayout());
 					{
-						coStartText.setPreferredSize(coEndText.getPreferredSize());
-						coEndText.setPreferredSize(coStartText.getPreferredSize());
 						panel2.add(coStartLabel, GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.NONE,0,0,0,5));
 						panel2.add(coStartText, GuiUtil.setConstraints(1,0,1.0,0.0,GridBagConstraints.HORIZONTAL,0,5,0,5));
 						panel2.add(coEndLabel, GuiUtil.setConstraints(2,0,0.0,0.0,GridBagConstraints.NONE,0,10,0,5));
