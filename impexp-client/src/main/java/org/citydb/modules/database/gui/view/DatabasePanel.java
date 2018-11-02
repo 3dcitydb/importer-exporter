@@ -153,7 +153,6 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 		df.setMaximumIntegerDigits(5);
 		df.setMinimumIntegerDigits(1);
 		portText = new JFormattedTextField(df);
-		portText.setColumns(5);
 		databaseText = new JTextField();
 		portText.setColumns(10);
 		databaseText = new JTextField();		
