@@ -5,22 +5,26 @@ import org.citydb.config.i18n.Language;
 import org.citydb.config.project.exporter.SimpleQuery;
 import org.citydb.config.project.query.filter.selection.sql.SelectOperator;
 import org.citydb.gui.util.GuiUtil;
+import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
+import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
+import org.fife.ui.rsyntaxtextarea.Theme;
+import org.fife.ui.rtextarea.RTextScrollPane;
 
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.io.IOException;
+import java.io.InputStream;
 
 public class SQLFilterView extends FilterView {
     private JPanel component;
-    private JTextArea sqlText;
-    private JScrollPane scrollPane;
+    private RSyntaxTextArea sqlText;
+    private RTextScrollPane scrollPane;
     private JButton addButton;
     private JButton removeButton;
 
@@ -45,11 +49,18 @@ public class SQLFilterView extends FilterView {
         buttons.add(addButton, GuiUtil.setConstraints(0,0,1,0,GridBagConstraints.HORIZONTAL,0,0,5,0));
         buttons.add(removeButton, GuiUtil.setConstraints(0,1,1,0,GridBagConstraints.HORIZONTAL,0,0,0,0));
 
-        sqlText = new JTextArea("", 5, 1);
-        sqlText.setTabSize(2);
-        rowHeight = sqlText.getFont().getSize() + 5;
+        sqlText = new RSyntaxTextArea("", 5, 1);
+        try (InputStream in = getClass().getResourceAsStream("/org/fife/ui/rsyntaxtextarea/themes/idea.xml")) {
+            Theme.load(in).apply(sqlText);
+        } catch (IOException e) {
+            throw new IllegalStateException("Failed to initialize SQL editor.", e);
+        }
 
-        scrollPane = new JScrollPane(sqlText);
+        sqlText.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_SQL);
+        sqlText.setAutoIndentEnabled(true);
+        sqlText.setHighlightCurrentLine(false);
+        rowHeight = sqlText.getFont().getSize() + 5;
+        scrollPane = new RTextScrollPane(sqlText);
 
         component.add(scrollPane, GuiUtil.setConstraints(0,0,1,1,GridBagConstraints.BOTH,10,5,10,5));
         component.add(buttons, GuiUtil.setConstraints(1,0,0,0,GridBagConstraints.NORTH,GridBagConstraints.NONE,10,5,10,5));
