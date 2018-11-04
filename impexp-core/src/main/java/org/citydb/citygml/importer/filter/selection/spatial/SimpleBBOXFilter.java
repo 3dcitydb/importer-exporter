@@ -31,8 +31,8 @@ import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.config.geometry.Position;
 import org.citydb.config.project.database.DatabaseSrs;
-import org.citydb.config.project.query.filter.selection.spatial.BBOXOperator;
-import org.citydb.config.project.query.filter.selection.spatial.SimpleBBOXMode;
+import org.citydb.config.project.query.simple.SimpleBBOXMode;
+import org.citydb.config.project.query.simple.SimpleBBOXOperator;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.query.filter.FilterException;
 import org.citygml4j.model.gml.feature.AbstractFeature;
@@ -43,12 +43,12 @@ public class SimpleBBOXFilter {
 	private BoundingBox bbox;
 	private SimpleBBOXMode mode;
 
-	public SimpleBBOXFilter(BBOXOperator bboxOperator, SimpleBBOXMode mode) throws FilterException {
+	public SimpleBBOXFilter(SimpleBBOXOperator bboxOperator) throws FilterException {
 		if (bboxOperator == null || !bboxOperator.isSetEnvelope())
 			throw new FilterException("The bbox operator must not be null.");
 
-		bbox = (BoundingBox)bboxOperator.getEnvelope();
-		this.mode = mode;
+		bbox = bboxOperator.getEnvelope();
+		this.mode = bboxOperator.getBboxMode();
 	}
 
 	public void transform(DatabaseSrs targetSrs, AbstractDatabaseAdapter databaseAdapter) throws FilterException {

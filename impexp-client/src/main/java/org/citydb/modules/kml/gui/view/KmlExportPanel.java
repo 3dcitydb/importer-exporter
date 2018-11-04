@@ -40,7 +40,7 @@ import org.citydb.config.project.kmlExporter.KmlExporter;
 import org.citydb.config.project.kmlExporter.KmlTilingMode;
 import org.citydb.config.project.kmlExporter.KmlTilingOptions;
 import org.citydb.config.project.kmlExporter.SimpleKmlQuery;
-import org.citydb.config.project.query.filter.selection.SimpleSelectionFilterMode;
+import org.citydb.config.project.kmlExporter.SimpleKmlQueryMode;
 import org.citydb.config.project.query.filter.selection.id.ResourceIdOperator;
 import org.citydb.config.project.query.filter.selection.spatial.BBOXOperator;
 import org.citydb.config.project.query.filter.type.FeatureTypeFilter;
@@ -75,11 +75,30 @@ import org.citygml4j.model.module.citygml.VegetationModule;
 import org.jdesktop.swingx.JXTextField;
 import org.jdesktop.swingx.prompt.PromptSupport.FocusBehavior;
 
-import javax.swing.*;
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.ButtonGroup;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.JScrollPane;
+import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
 import javax.swing.border.TitledBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.xml.bind.JAXBContext;
-import java.awt.*;
+import java.awt.AWTEvent;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -102,7 +121,6 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 
 	protected static final int BORDER_THICKNESS = 5;
 	protected static final int MAX_TEXTFIELD_HEIGHT = 20;
-	protected static final int MAX_LABEL_WIDTH = 60;
 	private static final int PREFERRED_WIDTH = 560;
 	private static final int PREFERRED_HEIGHT = 780;
 
@@ -112,7 +130,6 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 	private final DatabaseController databaseController;
 	private final Config config;
 
-	private JPanel browsePanel;
 	private JTextField browseText = new JTextField("");
 	private JButton browseButton = new JButton("");
 
@@ -127,12 +144,12 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 	private JPanel filterPanel;
 	private JRadioButton singleBuildingRadioButton = new JRadioButton("");
 	private JLabel gmlIdLabel = new JLabel("gml:id");
-	private JTextField gmlIdText = new JTextField("");
+	private JTextField gmlIdText = new JTextField();
 
 	private JRadioButton boundingBoxRadioButton = new JRadioButton("");
 	private BoundingBoxPanel bboxComponent;
 
-	private JPanel tilingPanel;
+	private JLabel tilingLabel = new JLabel();
 	private ButtonGroup tilingButtonGroup = new ButtonGroup();
 	private JRadioButton noTilingRadioButton = new JRadioButton("");
 	private JRadioButton automaticTilingRadioButton = new JRadioButton("");
@@ -153,16 +170,16 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 	private JCheckBox colladaCheckbox = new JCheckBox();
 
 	private JLabel visibleFromFootprintLabel = new JLabel();
-	private JTextField footprintVisibleFromText = new JTextField("", 3);
+	private JTextField footprintVisibleFromText = new JTextField("", 10);
 	private JLabel pixelsFootprintLabel = new JLabel();
 	private JLabel visibleFromExtrudedLabel = new JLabel();
-	private JTextField extrudedVisibleFromText = new JTextField("", 3);
+	private JTextField extrudedVisibleFromText = new JTextField("", 10);
 	private JLabel pixelsExtrudedLabel = new JLabel();
 	private JLabel visibleFromGeometryLabel = new JLabel();
-	private JTextField geometryVisibleFromText = new JTextField("", 3);
+	private JTextField geometryVisibleFromText = new JTextField("", 10);
 	private JLabel pixelsGeometryLabel = new JLabel();
 	private JLabel visibleFromColladaLabel = new JLabel();
-	private JTextField colladaVisibleFromText = new JTextField("", 3);
+	private JTextField colladaVisibleFromText = new JTextField("", 10);
 	private JLabel pixelsColladaLabel = new JLabel();
 
 	private JLabel themeLabel = new JLabel();
@@ -187,8 +204,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 	}
 
 	private void initGui() {
-
-		browsePanel = new JPanel();
+		JPanel browsePanel = new JPanel();
 		browsePanel.setLayout(new GridBagLayout());
 		browsePanel.add(browseText, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,BORDER_THICKNESS,BORDER_THICKNESS,BORDER_THICKNESS,BORDER_THICKNESS));
 		browsePanel.add(browseButton, GuiUtil.setConstraints(1,0,0.0,0.0,GridBagConstraints.NONE,BORDER_THICKNESS,BORDER_THICKNESS,BORDER_THICKNESS,BORDER_THICKNESS));
@@ -241,22 +257,16 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		manualTilingRadioButton.setIconTextGap(10);
 		automaticTilingRadioButton.setSelected(true);
 
-		tilingPanel = new JPanel();
+		JPanel tilingPanel = new JPanel();
 		tilingPanel.setLayout(new GridBagLayout());
-		tilingPanel.setBorder(BorderFactory.createTitledBorder(""));
-
-		tilingPanel.add(noTilingRadioButton, GuiUtil.setConstraints(0,0,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS * 2,BORDER_THICKNESS,0));
-		tilingPanel.add(automaticTilingRadioButton, GuiUtil.setConstraints(1,0,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS * 2,BORDER_THICKNESS,0));
-		tilingPanel.add(manualTilingRadioButton, GuiUtil.setConstraints(2,0,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS * 2,BORDER_THICKNESS,0));
-		tilingPanel.add(rowsLabel, GuiUtil.setConstraints(3,0,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS * 6,BORDER_THICKNESS,0));
-		tilingPanel.add(rowsText, GuiUtil.setConstraints(4,0,0.5,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,BORDER_THICKNESS,0));
-		tilingPanel.add(columnsLabel, GuiUtil.setConstraints(5,0,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS * 3,BORDER_THICKNESS,0));
-		tilingPanel.add(columnsText, GuiUtil.setConstraints(6,0,0.5,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,BORDER_THICKNESS,BORDER_THICKNESS * 2));
-
-		Box tilingParentPanel = Box.createHorizontalBox();
-		tilingParentPanel.add(Box.createRigidArea(new Dimension(BORDER_THICKNESS, 0)));
-		tilingParentPanel.add(tilingPanel);
-		tilingParentPanel.add(Box.createRigidArea(new Dimension(BORDER_THICKNESS, 0)));
+		tilingPanel.add(tilingLabel, GuiUtil.setConstraints(0,0,0.0,1.0,GridBagConstraints.HORIZONTAL,0,lmargin,BORDER_THICKNESS,0));
+		tilingPanel.add(noTilingRadioButton, GuiUtil.setConstraints(1,0,0.0,1.0,GridBagConstraints.HORIZONTAL,0,BORDER_THICKNESS * 4,BORDER_THICKNESS,0));
+		tilingPanel.add(automaticTilingRadioButton, GuiUtil.setConstraints(2,0,0.0,1.0,GridBagConstraints.HORIZONTAL,0,BORDER_THICKNESS * 2,BORDER_THICKNESS,0));
+		tilingPanel.add(manualTilingRadioButton, GuiUtil.setConstraints(3,0,0.0,1.0,GridBagConstraints.HORIZONTAL,0,BORDER_THICKNESS * 2,BORDER_THICKNESS,0));
+		tilingPanel.add(rowsLabel, GuiUtil.setConstraints(4,0,0.0,1.0,GridBagConstraints.HORIZONTAL,0,BORDER_THICKNESS * 6,BORDER_THICKNESS,0));
+		tilingPanel.add(rowsText, GuiUtil.setConstraints(5,0,0.5,1.0,GridBagConstraints.HORIZONTAL,0,BORDER_THICKNESS * 2,BORDER_THICKNESS,0));
+		tilingPanel.add(columnsLabel, GuiUtil.setConstraints(6,0,0.0,1.0,GridBagConstraints.HORIZONTAL,0,BORDER_THICKNESS * 3,BORDER_THICKNESS,0));
+		tilingPanel.add(columnsText, GuiUtil.setConstraints(7,0,0.5,1.0,GridBagConstraints.HORIZONTAL,0,BORDER_THICKNESS * 2,BORDER_THICKNESS,BORDER_THICKNESS));
 
 		filterContentPanel.add(singleBuildingRadioPanel);
 		filterContentPanel.add(singleBuildingPanel);
@@ -264,7 +274,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		filterContentPanel.add(boundingBoxRadioPanel);
 		filterContentPanel.add(boundingBoxPanel);
 		filterContentPanel.add(Box.createRigidArea(new Dimension(0, BORDER_THICKNESS)));
-		filterContentPanel.add(tilingParentPanel);
+		filterContentPanel.add(tilingPanel);
 		filterContentPanel.add(Box.createRigidArea(new Dimension(0, BORDER_THICKNESS)));
 
 		filterPanel = new JPanel();
@@ -276,14 +286,12 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		exportFromLODPanel.setLayout(new GridBagLayout());
 		exportFromLODPanel.setBorder(BorderFactory.createTitledBorder(""));
 
-		for (int index = 0; index < 5; index++) {
+		for (int index = 0; index < 5; index++)
 			lodComboBox.insertItemAt("LoD" + index, index);
-		}
+
 		lodComboBox.insertItemAt(Language.I18N.getString("kmlExport.label.highestLODAvailable"), lodComboBox.getItemCount());
 		lodComboBox.setSelectedIndex(2);
-		GridBagConstraints lcb = GuiUtil.setConstraints(0,0,0.0,1.0,GridBagConstraints.HORIZONTAL,BORDER_THICKNESS + footprintCheckbox.getPreferredSize().height,BORDER_THICKNESS,BORDER_THICKNESS,BORDER_THICKNESS);
-		lcb.anchor = GridBagConstraints.NORTH;
-		exportFromLODPanel.add(lodComboBox, lcb);
+		exportFromLODPanel.add(lodComboBox, GuiUtil.setConstraints(0,0,0.0,1.0,GridBagConstraints.NORTH,GridBagConstraints.HORIZONTAL,BORDER_THICKNESS + footprintCheckbox.getPreferredSize().height,BORDER_THICKNESS,BORDER_THICKNESS,BORDER_THICKNESS));
 		lodComboBox.setMinimumSize(lodComboBox.getPreferredSize());
 		exportFromLODPanel.setMinimumSize(exportFromLODPanel.getPreferredSize());
 
@@ -292,47 +300,37 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		displayAsPanel.setBorder(BorderFactory.createTitledBorder(""));
 
 		footprintCheckbox.setIconTextGap(10);
-		displayAsPanel.add(footprintCheckbox, GuiUtil.setConstraints(0,0,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,0,0));
-		GridBagConstraints vffl = GuiUtil.setConstraints(2,0,0.0,1.0,GridBagConstraints.NONE,0,BORDER_THICKNESS,0,0);
-		vffl.anchor = GridBagConstraints.EAST;
-		displayAsPanel.add(visibleFromFootprintLabel, vffl);
-		displayAsPanel.add(footprintVisibleFromText, GuiUtil.setConstraints(3,0,0.25,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,0,0));
-		displayAsPanel.add(pixelsFootprintLabel, GuiUtil.setConstraints(4,0,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,0,BORDER_THICKNESS));
+		displayAsPanel.add(footprintCheckbox, GuiUtil.setConstraints(0,0,1,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,0,0));
+		displayAsPanel.add(visibleFromFootprintLabel, GuiUtil.setConstraints(1,0,0.0,1.0,GridBagConstraints.EAST,GridBagConstraints.NONE,0,BORDER_THICKNESS,0,0));
+		displayAsPanel.add(footprintVisibleFromText, GuiUtil.setConstraints(2,0,0,1.0,GridBagConstraints.HORIZONTAL,0,BORDER_THICKNESS,0,0));
+		displayAsPanel.add(pixelsFootprintLabel, GuiUtil.setConstraints(3,0,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,0,BORDER_THICKNESS));
 
 		extrudedCheckbox.setIconTextGap(10);
-		displayAsPanel.add(extrudedCheckbox, GuiUtil.setConstraints(0,1,0.0,1.0,GridBagConstraints.BOTH,2,BORDER_THICKNESS,0,0));
-		GridBagConstraints vfel = GuiUtil.setConstraints(2,1,0.0,1.0,GridBagConstraints.NONE,0,BORDER_THICKNESS,0,0);
-		vfel.anchor = GridBagConstraints.EAST;
-		displayAsPanel.add(visibleFromExtrudedLabel, vfel);
-		displayAsPanel.add(extrudedVisibleFromText, GuiUtil.setConstraints(3,1,0.25,1.0,GridBagConstraints.BOTH,2,BORDER_THICKNESS,0,0));
-		displayAsPanel.add(pixelsExtrudedLabel, GuiUtil.setConstraints(4,1,0.0,1.0,GridBagConstraints.BOTH,2,BORDER_THICKNESS,0,BORDER_THICKNESS));
+		displayAsPanel.add(extrudedCheckbox, GuiUtil.setConstraints(0,1,1.0,1.0,GridBagConstraints.BOTH,2,BORDER_THICKNESS,0,0));
+		displayAsPanel.add(visibleFromExtrudedLabel, GuiUtil.setConstraints(1,1,0.0,1.0,GridBagConstraints.EAST,GridBagConstraints.NONE,0,BORDER_THICKNESS,0,0));
+		displayAsPanel.add(extrudedVisibleFromText, GuiUtil.setConstraints(2,1,0,1.0,GridBagConstraints.HORIZONTAL,2,BORDER_THICKNESS,0,0));
+		displayAsPanel.add(pixelsExtrudedLabel, GuiUtil.setConstraints(3,1,0.0,1.0,GridBagConstraints.BOTH,2,BORDER_THICKNESS,0,BORDER_THICKNESS));
 
 		geometryCheckbox.setIconTextGap(10);
-		displayAsPanel.add(geometryCheckbox, GuiUtil.setConstraints(0,2,0.0,1.0,GridBagConstraints.BOTH,2,BORDER_THICKNESS,0,0));
-		GridBagConstraints vfgl = GuiUtil.setConstraints(2,2,0.0,1.0,GridBagConstraints.NONE,0,BORDER_THICKNESS,0,0);
-		vfgl.anchor = GridBagConstraints.EAST;
-		displayAsPanel.add(visibleFromGeometryLabel, vfgl);
-		displayAsPanel.add(geometryVisibleFromText, GuiUtil.setConstraints(3,2,0.25,1.0,GridBagConstraints.BOTH,2,BORDER_THICKNESS,0,0));
-		displayAsPanel.add(pixelsGeometryLabel, GuiUtil.setConstraints(4,2,0.0,1.0,GridBagConstraints.BOTH,2,BORDER_THICKNESS,0,BORDER_THICKNESS));
+		displayAsPanel.add(geometryCheckbox, GuiUtil.setConstraints(0,2,1.0,1.0,GridBagConstraints.BOTH,2,BORDER_THICKNESS,0,0));
+		displayAsPanel.add(visibleFromGeometryLabel, GuiUtil.setConstraints(1,2,0.0,1.0,GridBagConstraints.EAST,GridBagConstraints.NONE,0,BORDER_THICKNESS,0,0));
+		displayAsPanel.add(geometryVisibleFromText, GuiUtil.setConstraints(2,2,0,1.0,GridBagConstraints.HORIZONTAL,2,BORDER_THICKNESS,0,0));
+		displayAsPanel.add(pixelsGeometryLabel, GuiUtil.setConstraints(3,2,0.0,1.0,GridBagConstraints.BOTH,2,BORDER_THICKNESS,0,BORDER_THICKNESS));
 
 		colladaCheckbox.setIconTextGap(10);
-		displayAsPanel.add(colladaCheckbox, GuiUtil.setConstraints(0,3,0.0,1.0,GridBagConstraints.BOTH,2,BORDER_THICKNESS,0,0));
-		GridBagConstraints vfcl = GuiUtil.setConstraints(2,3,0.0,1.0,GridBagConstraints.NONE,0,BORDER_THICKNESS,0,0);
-		vfcl.anchor = GridBagConstraints.EAST;
-		displayAsPanel.add(visibleFromColladaLabel, vfcl);
-		displayAsPanel.add(colladaVisibleFromText, GuiUtil.setConstraints(3,3,0.25,1.0,GridBagConstraints.BOTH,2,BORDER_THICKNESS,0,0));
-		displayAsPanel.add(pixelsColladaLabel, GuiUtil.setConstraints(4,3,0.0,1.0,GridBagConstraints.BOTH,2,BORDER_THICKNESS,0,BORDER_THICKNESS));
+		displayAsPanel.add(colladaCheckbox, GuiUtil.setConstraints(0,3,1.0,1.0,GridBagConstraints.BOTH,2,BORDER_THICKNESS,0,0));
+		displayAsPanel.add(visibleFromColladaLabel, GuiUtil.setConstraints(1,3,0.0,1.0,GridBagConstraints.EAST,GridBagConstraints.NONE,0,BORDER_THICKNESS,0,0));
+		displayAsPanel.add(colladaVisibleFromText, GuiUtil.setConstraints(2,3,0,1.0,GridBagConstraints.HORIZONTAL,2,BORDER_THICKNESS,0,0));
+		displayAsPanel.add(pixelsColladaLabel, GuiUtil.setConstraints(3,3,0.0,1.0,GridBagConstraints.BOTH,2,BORDER_THICKNESS,0,BORDER_THICKNESS));
 
-		displayAsPanel.add(themeLabel, GuiUtil.setConstraints(0,4,0.0,1.0,GridBagConstraints.BOTH,BORDER_THICKNESS,32,BORDER_THICKNESS,0));
-		//		themeComboBox.setMinimumSize(new Dimension(80, (int)themeComboBox.getPreferredSize().getHeight()));
-		//		themeComboBox.setPreferredSize(new Dimension(80, (int)fetchThemesButton.getPreferredSize().getHeight()));
-		GridBagConstraints tcb = GuiUtil.setConstraints(1,4,1.0,1.0,GridBagConstraints.BOTH,BORDER_THICKNESS,BORDER_THICKNESS,BORDER_THICKNESS,0);
-		tcb.gridwidth = 1;
-		displayAsPanel.add(themeComboBox, tcb);
-		GridBagConstraints fb = GuiUtil.setConstraints(2,4,0.0,1.0,GridBagConstraints.BOTH,BORDER_THICKNESS,BORDER_THICKNESS,BORDER_THICKNESS,BORDER_THICKNESS);
-		fb.gridwidth = 3;
-		displayAsPanel.add(fetchThemesButton, fb);
-
+		JPanel appearancePanel = new JPanel();
+		lmargin = colladaCheckbox.getPreferredSize().width + 11;
+		appearancePanel.setLayout(new GridBagLayout());
+		appearancePanel.add(themeLabel, GuiUtil.setConstraints(0,0,0.0,1.0,GridBagConstraints.BOTH,BORDER_THICKNESS,0,BORDER_THICKNESS,0));
+		appearancePanel.add(themeComboBox, GuiUtil.setConstraints(1,0,1.0,1.0,GridBagConstraints.HORIZONTAL,BORDER_THICKNESS,BORDER_THICKNESS * 2,BORDER_THICKNESS,0));
+		appearancePanel.add(fetchThemesButton, GuiUtil.setConstraints(2,0,0.0,1.0,GridBagConstraints.HORIZONTAL,BORDER_THICKNESS,BORDER_THICKNESS * 2,BORDER_THICKNESS,BORDER_THICKNESS));
+		themeComboBox.setPreferredSize(new Dimension(50, themeComboBox.getPreferredSize().height));
+		displayAsPanel.add(appearancePanel, GuiUtil.setConstraints(0,4,4,1,1.0,1.0,GridBagConstraints.HORIZONTAL,0,lmargin,0,0));
 
 		JPanel exportAndDisplayPanel = new JPanel();
 		exportAndDisplayPanel.setLayout(new GridBagLayout());
@@ -385,8 +383,6 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 
 	// localized Labels und Strings
 	public void doTranslation() {
-
-		//		browsePanel.setBorder(BorderFactory.createTitledBorder("Output path and filename"));
 		browseButton.setText(Language.I18N.getString("common.button.browse"));
 
 		((TitledBorder)versioningPanel.getBorder()).setTitle(Language.I18N.getString("common.border.versioning"));
@@ -398,7 +394,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		singleBuildingRadioButton.setText(Language.I18N.getString("kmlExport.label.singleBuilding"));
 		boundingBoxRadioButton.setText(Language.I18N.getString("filter.border.boundingBox"));
 
-		((TitledBorder) tilingPanel.getBorder()).setTitle(Language.I18N.getString("pref.export.boundingBox.border.tiling"));
+		tilingLabel.setText(Language.I18N.getString("pref.export.boundingBox.border.tiling"));
 		noTilingRadioButton.setText(Language.I18N.getString("kmlExport.label.noTiling"));
 		manualTilingRadioButton.setText(Language.I18N.getString("kmlExport.label.manual"));
 		rowsLabel.setText(Language.I18N.getString("pref.export.boundingBox.label.rows"));
@@ -406,16 +402,15 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		automaticTilingRadioButton.setText(Language.I18N.getString("kmlExport.label.automatic"));
 
 		((TitledBorder)exportFromLODPanel.getBorder()).setTitle(Language.I18N.getString("kmlExport.label.fromLOD"));
-		/**/
 		int selectedIndex = lodComboBox.getSelectedIndex();
-		if (!lodComboBox.getItemAt(lodComboBox.getItemCount() - 1).toString().endsWith("4")) {
+		if (!lodComboBox.getItemAt(lodComboBox.getItemCount() - 1).endsWith("4"))
 			lodComboBox.removeItemAt(lodComboBox.getItemCount() - 1);
-		}
+
 		lodComboBox.insertItemAt(Language.I18N.getString("kmlExport.label.highestLODAvailable"), lodComboBox.getItemCount());
 		lodComboBox.setSelectedIndex(selectedIndex);
 		lodComboBox.setMinimumSize(lodComboBox.getPreferredSize());
 		exportFromLODPanel.setMinimumSize(exportFromLODPanel.getPreferredSize());
-		/**/
+
 		((TitledBorder)displayAsPanel.getBorder()).setTitle(Language.I18N.getString("kmlExport.label.displayAs"));
 		footprintCheckbox.setText(Language.I18N.getString("kmlExport.label.footprint"));
 		extrudedCheckbox.setText(Language.I18N.getString("kmlExport.label.extruded"));
@@ -435,7 +430,6 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		fetchThemesButton.setText(Language.I18N.getString("pref.kmlexport.label.fetchTheme"));
 
 		featureClassesLabel.setText(Language.I18N.getString("filter.border.featureClass"));
-
 		exportButton.setText(Language.I18N.getString("export.button.export"));
 	}
 
@@ -446,7 +440,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 
 		// filter
 		SimpleKmlQuery query = config.getProject().getKmlExporter().getQuery();
-		if (query.getMode() == SimpleSelectionFilterMode.SIMPLE)
+		if (query.getMode() == SimpleKmlQueryMode.SINGLE)
 			singleBuildingRadioButton.setSelected(true);
 		else
 			boundingBoxRadioButton.setSelected(true);
@@ -457,14 +451,14 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		typeTree.setSelected(featureTypeFilter.getTypeNames());
 
 		// gml:id filter
-		ResourceIdOperator gmlIdFilter = query.getFilter().getGmlIdFilter();
+		ResourceIdOperator gmlIdFilter = query.getAttributeFilter().getGmlIdFilter();
 		gmlIdText.setText(String.join(",", gmlIdFilter.getResourceIds()));
 
 		// bbox filter
-		BBOXOperator bboxFilter = query.getFilter().getBboxFilter();
+		BBOXOperator bboxFilter = query.getBboxFilter();
 		BoundingBox bbox = bboxFilter.getEnvelope();
 		if (bbox != null)
-			bboxComponent.setBoundingBox((BoundingBox)bboxFilter.getEnvelope());
+			bboxComponent.setBoundingBox(bboxFilter.getEnvelope());
 
 		// tiling
 		KmlTilingOptions tilingOptions = query.getTilingOptions();
@@ -551,7 +545,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 
 		// filter
 		SimpleKmlQuery query = config.getProject().getKmlExporter().getQuery();
-		query.setMode(singleBuildingRadioButton.isSelected() ? SimpleSelectionFilterMode.SIMPLE : SimpleSelectionFilterMode.COMPLEX);
+		query.setMode(singleBuildingRadioButton.isSelected() ? SimpleKmlQueryMode.SINGLE : SimpleKmlQueryMode.BBOX);
 
 		// feature type filter
 		FeatureTypeFilter featureTypeFilter = query.getFeatureTypeFilter();
@@ -559,7 +553,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		featureTypeFilter.setTypeNames(typeTree.getSelectedTypeNames());
 
 		// gml:id filter
-		ResourceIdOperator gmlIdFilter = query.getFilter().getGmlIdFilter();
+		ResourceIdOperator gmlIdFilter = query.getAttributeFilter().getGmlIdFilter();
 		gmlIdFilter.reset();
 		if (gmlIdText.getText().trim().length() > 0) {
 			String trimmed = gmlIdText.getText().replaceAll("\\s+", "");
@@ -567,7 +561,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		}
 
 		// bbox filter
-		query.getFilter().getBboxFilter().setEnvelope(bboxComponent.getBoundingBox());
+		query.getBboxFilter().setEnvelope(bboxComponent.getBoundingBox());
 
 		// tiling
 		KmlTilingOptions tilingOptions = query.getTilingOptions();
@@ -607,28 +601,25 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		setDisplayFormSettings(kmlExporter.getBridgeDisplayForms());
 		setDisplayFormSettings(kmlExporter.getTunnelDisplayForms());
 
-		kmlExporter.setAppearanceTheme(themeComboBox.getSelectedItem().toString());
+		kmlExporter.setAppearanceTheme((String) themeComboBox.getSelectedItem());
 	}
 
 	private void setDisplayFormSettings(List<DisplayForm> displayForms) {
 		DisplayForm df = new DisplayForm(DisplayForm.COLLADA, -1, -1);
-		int indexOfDf = displayForms.indexOf(df); 
+		int indexOfDf = displayForms.indexOf(df);
 		if (indexOfDf != -1) {
 			df = displayForms.get(indexOfDf);
-		}
-		else { // should never happen
+		} else { // should never happen
 			displayForms.add(df);
 		}
 		if (colladaCheckbox.isSelected() && config.getProject().getKmlExporter().getLodToExportFrom()>0) {
 			int levelVisibility = 0;
 			try {
 				levelVisibility = Integer.parseInt(colladaVisibleFromText.getText().trim());
-			}
-			catch (NumberFormatException nfe) {}
+			} catch (NumberFormatException ignored) {}
 			df.setActive(true);
 			df.setVisibleFrom(levelVisibility);
-		}
-		else {
+		} else {
 			df.setActive(false);
 		}
 
@@ -636,20 +627,17 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		indexOfDf = displayForms.indexOf(df); 
 		if (indexOfDf != -1) {
 			df = displayForms.get(indexOfDf);
-		}
-		else { // should never happen
+		} else { // should never happen
 			displayForms.add(df);
 		}
 		if (geometryCheckbox.isSelected() && config.getProject().getKmlExporter().getLodToExportFrom()>0) {
 			int levelVisibility = 0;
 			try {
 				levelVisibility = Integer.parseInt(geometryVisibleFromText.getText().trim());
-			}
-			catch (NumberFormatException nfe) {}
+			} catch (NumberFormatException ignored) {}
 			df.setActive(true);
 			df.setVisibleFrom(levelVisibility);
-		}
-		else {
+		} else {
 			df.setActive(false);
 		}
 
@@ -657,20 +645,17 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		indexOfDf = displayForms.indexOf(df); 
 		if (indexOfDf != -1) {
 			df = displayForms.get(indexOfDf);
-		}
-		else { // should never happen
+		} else { // should never happen
 			displayForms.add(df);
 		}
 		if (extrudedCheckbox.isSelected() && config.getProject().getKmlExporter().getLodToExportFrom()>0) {
 			int levelVisibility = 0;
 			try {
 				levelVisibility = Integer.parseInt(extrudedVisibleFromText.getText().trim());
-			}
-			catch (NumberFormatException nfe) {}
+			} catch (NumberFormatException ignored) {}
 			df.setActive(true);
 			df.setVisibleFrom(levelVisibility);
-		}
-		else {
+		} else {
 			df.setActive(false);
 		}
 
@@ -678,20 +663,17 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		indexOfDf = displayForms.indexOf(df); 
 		if (indexOfDf != -1) {
 			df = displayForms.get(indexOfDf);
-		}
-		else { // should never happen
+		} else { // should never happen
 			displayForms.add(df);
 		}
 		if (footprintCheckbox.isSelected()) {
 			int levelVisibility = 0;
 			try {
 				levelVisibility = Integer.parseInt(footprintVisibleFromText.getText().trim());
-			}
-			catch (NumberFormatException nfe) {}
+			} catch (NumberFormatException ignored) {}
 			df.setActive(true);
 			df.setVisibleFrom(levelVisibility);
-		}
-		else {
+		} else {
 			df.setActive(false);
 		}
 
@@ -766,8 +748,8 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 			}
 
 			// gmlId
-			if (query.getMode() == SimpleSelectionFilterMode.SIMPLE
-					&& !query.getFilter().getGmlIdFilter().isSetResourceIds()) {
+			if (query.getMode() == SimpleKmlQueryMode.SINGLE
+					&& !query.getAttributeFilter().getGmlIdFilter().isSetResourceIds()) {
 				viewController.errorMessage(Language.I18N.getString("export.dialog.error.incorrectData"), 
 						Language.I18N.getString("common.dialog.error.incorrectData.gmlId"));
 				return;
@@ -785,9 +767,9 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 			final EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
 
 			// BoundingBox check
-			if (query.getMode() == SimpleSelectionFilterMode.COMPLEX
-					&& query.getFilter().isSetBboxFilter()) {
-				BoundingBox bbox = (BoundingBox)query.getFilter().getBboxFilter().getEnvelope();
+			if (query.getMode() == SimpleKmlQueryMode.BBOX
+					&& query.isSetBboxFilter()) {
+				BoundingBox bbox = query.getBboxFilter().getEnvelope();
 				Double xMin = bbox.getLowerCorner().getX();
 				Double yMin = bbox.getLowerCorner().getY();
 				Double xMax = bbox.getUpperCorner().getX();
@@ -801,7 +783,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 			}
 
 			// Feature classes check
-			if (query.getMode() == SimpleSelectionFilterMode.COMPLEX
+			if (query.getMode() == SimpleKmlQueryMode.BBOX
 					&& (!query.isSetFeatureTypeFilter() || query.getFeatureTypeFilter().getTypeNames().isEmpty())) {
 				viewController.errorMessage(Language.I18N.getString("export.dialog.error.incorrectData"),
 						Language.I18N.getString("common.dialog.error.incorrectData.featureClass"));
@@ -825,7 +807,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 					log.info("Acquiring permission to execute the COLLADA2GLTF binary");
 
 					// file permissions 755
-					Set<PosixFilePermission> permissions = new HashSet<PosixFilePermission>();
+					Set<PosixFilePermission> permissions = new HashSet<>();
 					permissions.add(PosixFilePermission.OWNER_READ);
 					permissions.add(PosixFilePermission.OWNER_WRITE);
 					permissions.add(PosixFilePermission.OWNER_EXECUTE);
@@ -862,11 +844,9 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 					Language.I18N.getString("export.dialog.msg"),
 					true);
 
-			SwingUtilities.invokeLater(new Runnable() {
-				public void run() {
-					exportDialog.setLocationRelativeTo(viewController.getTopFrame());
-					exportDialog.setVisible(true);
-				}
+			SwingUtilities.invokeLater(() -> {
+				exportDialog.setLocationRelativeTo(viewController.getTopFrame());
+				exportDialog.setVisible(true);
 			});
 			
 			// get schema mapping
@@ -907,11 +887,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 				//
 			}
 
-			SwingUtilities.invokeLater(new Runnable() {
-				public void run() {
-					exportDialog.dispose();
-				}
-			});
+			SwingUtilities.invokeLater(exportDialog::dispose);
 
 			// cleanup
 			kmlExporter.cleanup();
@@ -937,13 +913,10 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		typeTree.setPathsEnabled(boundingBoxRadioButton.isSelected());
 		typeTree.repaint();
 
+		tilingLabel.setEnabled(boundingBoxRadioButton.isSelected());
 		noTilingRadioButton.setEnabled(boundingBoxRadioButton.isSelected());
 		automaticTilingRadioButton.setEnabled(boundingBoxRadioButton.isSelected());
 		manualTilingRadioButton.setEnabled(boundingBoxRadioButton.isSelected());
-		((TitledBorder) tilingPanel.getBorder()).setTitleColor(boundingBoxRadioButton.isSelected() ? 
-				UIManager.getColor("Label.foreground"):
-					UIManager.getColor("Label.disabledForeground"));
-		tilingPanel.repaint();
 
 		rowsLabel.setEnabled(manualTilingRadioButton.isEnabled()&& manualTilingRadioButton.isSelected());
 		rowsText.setEnabled(manualTilingRadioButton.isEnabled()&& manualTilingRadioButton.isSelected());
@@ -951,11 +924,9 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		columnsText.setEnabled(manualTilingRadioButton.isEnabled()&& manualTilingRadioButton.isSelected());
 
 		setVisibilityEnabledValues();
-
 	}
 
 	private void setVisibilityEnabledValues() {
-
 		extrudedCheckbox.setEnabled(DisplayForm.isAchievableFromLoD(DisplayForm.EXTRUDED, lodComboBox.getSelectedIndex()));
 		geometryCheckbox.setEnabled(DisplayForm.isAchievableFromLoD(DisplayForm.GEOMETRY, lodComboBox.getSelectedIndex()));
 		colladaCheckbox.setEnabled(DisplayForm.isAchievableFromLoD(DisplayForm.COLLADA, lodComboBox.getSelectedIndex()));
@@ -991,13 +962,6 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 			typeTree.setPathEnabled("PlantCover", VegetationModule.v2_0_0.getNamespaceURI(), enable);
 			typeTree.repaint();
 		}
-	}
-
-	public static void centerOnScreen(Component component) {
-		Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
-		int x = (screen.width - component.getSize().width)/2;
-		int y = (screen.height - component.getSize().height)/2;
-		component.setBounds(x, y, component.getSize().width, component.getSize().height);
 	}
 
 	public Dimension getPreferredSize() {
@@ -1044,11 +1008,10 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		themeComboBox.removeAllItems();
 		themeComboBox.addItem(KmlExporter.THEME_NONE);
 		themeComboBox.setSelectedItem(KmlExporter.THEME_NONE);
-		if (!state.isConnected()) {
+		if (!state.isConnected())
 			themeComboBox.setEnabled(false);
-		}
 
-		setEnabledWorkspace(!state.isConnected() || (state.isConnected() && databaseController.getActiveDatabaseAdapter().hasVersioningSupport()));
+		setEnabledWorkspace(!state.isConnected() || databaseController.getActiveDatabaseAdapter().hasVersioningSupport());
 	}
 
 	private class ThemeUpdater extends SwingWorker<Void, Void> {

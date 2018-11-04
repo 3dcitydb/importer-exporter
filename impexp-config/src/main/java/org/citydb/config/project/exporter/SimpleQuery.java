@@ -27,24 +27,25 @@
  */
 package org.citydb.config.project.exporter;
 
+import org.citydb.config.project.database.DatabaseSrs;
+import org.citydb.config.project.query.filter.counter.CounterFilter;
+import org.citydb.config.project.query.filter.lod.LodFilter;
+import org.citydb.config.project.query.filter.type.FeatureTypeFilter;
+import org.citydb.config.project.query.filter.version.CityGMLVersionType;
+import org.citydb.config.project.query.simple.SimpleBBOXOperator;
+import org.citydb.config.project.query.simple.SimpleSelectionFilter;
+
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.XmlType;
 
-import org.citydb.config.project.database.DatabaseSrs;
-import org.citydb.config.project.query.filter.counter.CounterFilter;
-import org.citydb.config.project.query.filter.lod.LodFilter;
-import org.citydb.config.project.query.filter.selection.SimpleSelectionFilter;
-import org.citydb.config.project.query.filter.selection.SimpleSelectionFilterMode;
-import org.citydb.config.project.query.filter.type.FeatureTypeFilter;
-import org.citydb.config.project.query.filter.version.CityGMLVersionType;
-
 @XmlType(name="SimpleExportQueryType", propOrder={
 		"featureTypeFilter",
-		"filter",
+		"selectionFilter",
 		"counterFilter",
 		"lodFilter",
+		"bboxFilter",
 		"tilingOptions"
 })
 public class SimpleQuery {
@@ -54,15 +55,13 @@ public class SimpleQuery {
 	@XmlAttribute
 	protected DatabaseSrs targetSRS;
 	@XmlAttribute
-	private SimpleSelectionFilterMode mode = SimpleSelectionFilterMode.COMPLEX;
-	@XmlAttribute
 	private boolean useTypeNames;
+	@XmlAttribute
+	private boolean useSelectionFilter;
 	@XmlAttribute
 	private boolean useCountFilter;
 	@XmlAttribute
 	private boolean useLodFilter;
-	@XmlAttribute
-	private boolean useGmlNameFilter;
 	@XmlAttribute
 	private boolean useBboxFilter;
 	@XmlAttribute
@@ -70,18 +69,22 @@ public class SimpleQuery {
 	
 	@XmlElement(name = "typeNames")
 	protected FeatureTypeFilter featureTypeFilter;
-	private SimpleSelectionFilter filter;
+	@XmlElement(name = "selection")
+	private SimpleSelectionFilter selectionFilter;
 	@XmlElement(name = "count")
 	protected CounterFilter counterFilter;
 	@XmlElement(name = "lods")
 	protected LodFilter lodFilter;
+	@XmlElement(name = "bbox", required = true)
+	private SimpleBBOXOperator bboxFilter;
 	private TilingOptions tilingOptions;
 
 	public SimpleQuery() {
 		featureTypeFilter = new FeatureTypeFilter();
-		filter = new SimpleSelectionFilter();
+		selectionFilter = new SimpleSelectionFilter();
 		counterFilter = new CounterFilter();
 		lodFilter = new LodFilter();
+		bboxFilter = new SimpleBBOXOperator();
 		tilingOptions = new TilingOptions();
 	}
 	
@@ -104,21 +107,25 @@ public class SimpleQuery {
 	public void setTargetSRS(DatabaseSrs targetSRS) {
 		this.targetSRS = targetSRS;
 	}
-	
-	public SimpleSelectionFilterMode getMode() {
-		return mode;
-	}
 
-	public void setMode(SimpleSelectionFilterMode mode) {
-		this.mode = mode;
-	}
-	
 	public boolean isUseTypeNames() {
 		return useTypeNames;
 	}
 
 	public void setUseTypeNames(boolean useTypeNames) {
 		this.useTypeNames = useTypeNames;
+	}
+
+	public boolean isUseSelectionFilter() {
+		return useSelectionFilter;
+	}
+
+	public void setUseSelectionFilter(boolean useSelectionFilter) {
+		this.useSelectionFilter = useSelectionFilter;
+	}
+
+	public boolean isUseLodFilter() {
+		return useLodFilter;
 	}
 
 	public boolean isUseCountFilter() {
@@ -129,20 +136,8 @@ public class SimpleQuery {
 		this.useCountFilter = useCountFilter;
 	}
 
-	public boolean isUseLodFilter() {
-		return useLodFilter;
-	}
-
 	public void setUseLodFilter(boolean useLodFilter) {
 		this.useLodFilter = useLodFilter;
-	}
-
-	public boolean isUseGmlNameFilter() {
-		return useGmlNameFilter;
-	}
-
-	public void setUseGmlNameFilter(boolean useGmlNameFilter) {
-		this.useGmlNameFilter = useGmlNameFilter;
 	}
 
 	public boolean isUseBboxFilter() {
@@ -173,12 +168,16 @@ public class SimpleQuery {
 		this.featureTypeFilter = featureTypeFilter;
 	}
 	
-	public SimpleSelectionFilter getFilter() {
-		return filter;
+	public SimpleSelectionFilter getSelectionFilter() {
+		return selectionFilter;
 	}
 
-	public void setFilter(SimpleSelectionFilter filter) {
-		this.filter = filter;
+	public boolean isSetSelectionFilter() {
+		return selectionFilter != null;
+	}
+
+	public void setSelectionFilter(SimpleSelectionFilter selectionFilter) {
+		this.selectionFilter = selectionFilter;
 	}
 	
 	public CounterFilter getCounterFilter() {
@@ -203,6 +202,18 @@ public class SimpleQuery {
 
 	public void setLodFilter(LodFilter lodFilter) {
 		this.lodFilter = lodFilter;
+	}
+
+	public SimpleBBOXOperator getBboxFilter() {
+		return bboxFilter;
+	}
+
+	public boolean isSetBboxFilter() {
+		return bboxFilter != null;
+	}
+
+	public void setBboxFilter(SimpleBBOXOperator bboxFilter) {
+		this.bboxFilter = bboxFilter;
 	}
 	
 	public TilingOptions getTilingOptions() {

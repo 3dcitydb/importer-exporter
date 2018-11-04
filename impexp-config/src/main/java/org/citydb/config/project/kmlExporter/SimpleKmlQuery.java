@@ -27,14 +27,9 @@
  */
 package org.citydb.config.project.kmlExporter;
 
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.namespace.QName;
-
-import org.citydb.config.project.query.filter.selection.SimpleSelectionFilter;
-import org.citydb.config.project.query.filter.selection.SimpleSelectionFilterMode;
+import org.citydb.config.project.query.filter.selection.spatial.BBOXOperator;
 import org.citydb.config.project.query.filter.type.FeatureTypeFilter;
+import org.citydb.config.project.query.simple.SimpleAttributeFilter;
 import org.citygml4j.model.module.citygml.BridgeModule;
 import org.citygml4j.model.module.citygml.BuildingModule;
 import org.citygml4j.model.module.citygml.CityFurnitureModule;
@@ -47,23 +42,33 @@ import org.citygml4j.model.module.citygml.TunnelModule;
 import org.citygml4j.model.module.citygml.VegetationModule;
 import org.citygml4j.model.module.citygml.WaterBodyModule;
 
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlType;
+import javax.xml.namespace.QName;
+
 @XmlType(name="SimpleKmlExportQueryType", propOrder={
 		"featureTypeFilter",
-		"filter",
+		"attributeFilter",
+		"bboxFilter",
 		"tilingOptions"
 })
 public class SimpleKmlQuery {
 	@XmlAttribute
-	private SimpleSelectionFilterMode mode = SimpleSelectionFilterMode.COMPLEX;
+	private SimpleKmlQueryMode mode = SimpleKmlQueryMode.BBOX;
 
 	@XmlElement(name = "typeNames")
 	protected FeatureTypeFilter featureTypeFilter;
-	private SimpleSelectionFilter filter;
+	@XmlElement(name = "attributes")
+	private SimpleAttributeFilter attributeFilter;
+	@XmlElement(name = "bbox", required = true)
+	private BBOXOperator bboxFilter;
 	private KmlTilingOptions tilingOptions;
 
 	public SimpleKmlQuery() {
 		featureTypeFilter = new FeatureTypeFilter();
-		filter = new SimpleSelectionFilter();
+		attributeFilter = new SimpleAttributeFilter();
+		bboxFilter = new BBOXOperator();
 		tilingOptions = new KmlTilingOptions();
 
 		// add CityGML types per default
@@ -85,11 +90,11 @@ public class SimpleKmlQuery {
 		featureTypeFilter.addTypeName(new QName(WaterBodyModule.v2_0_0.getNamespaceURI(), "WaterBody"));
 	}
 
-	public SimpleSelectionFilterMode getMode() {
+	public SimpleKmlQueryMode getMode() {
 		return mode;
 	}
 
-	public void setMode(SimpleSelectionFilterMode mode) {
+	public void setMode(SimpleKmlQueryMode mode) {
 		this.mode = mode;
 	}
 
@@ -105,12 +110,28 @@ public class SimpleKmlQuery {
 		this.featureTypeFilter = featureTypeFilter;
 	}
 
-	public SimpleSelectionFilter getFilter() {
-		return filter;
+	public SimpleAttributeFilter getAttributeFilter() {
+		return attributeFilter;
 	}
 
-	public void setFilter(SimpleSelectionFilter filter) {
-		this.filter = filter;
+	public boolean isSetAttributeFilter() {
+		return attributeFilter != null;
+	}
+
+	public void setAttributeFilter(SimpleAttributeFilter attributeFilter) {
+		this.attributeFilter = attributeFilter;
+	}
+
+	public BBOXOperator getBboxFilter() {
+		return bboxFilter;
+	}
+
+	public boolean isSetBboxFilter() {
+		return bboxFilter != null;
+	}
+
+	public void setBboxFilter(BBOXOperator bboxFilter) {
+		this.bboxFilter = bboxFilter;
 	}
 
 	public KmlTilingOptions getTilingOptions() {

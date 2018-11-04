@@ -35,7 +35,7 @@ import org.citydb.config.project.resources.Resources;
 import javax.xml.bind.annotation.XmlType;
 
 @XmlType(name="ExportType", propOrder={
-		"query",
+		"simpleQuery",
 		"genericQuery",
 		"path",
 		"continuation",
@@ -47,7 +47,7 @@ import javax.xml.bind.annotation.XmlType;
 		"resources"
 })
 public class Exporter {
-	private SimpleQuery query;
+	private SimpleQuery simpleQuery;
 	private Query genericQuery;
 	private Path path;
 	private Continuation continuation;
@@ -59,7 +59,7 @@ public class Exporter {
 	private Resources resources;
 
 	public Exporter() {
-		query = new SimpleQuery();
+		simpleQuery = new SimpleQuery();
 		path = new Path();
 		cityObjectGroup = new ExportCityObjectGroup();
 		address = new ExportAddress();
@@ -70,13 +70,13 @@ public class Exporter {
 		continuation = new Continuation();
 	}
 
-	public SimpleQuery getQuery() {
-		return query;
+	public SimpleQuery getSimpleQuery() {
+		return simpleQuery;
 	}
 
-	public void setQuery(SimpleQuery query) {
+	public void setSimpleQuery(SimpleQuery query) {
 		if (query != null)
-			this.query = query;
+			this.simpleQuery = query;
 	}
 
 	public Query getGenericQuery() {

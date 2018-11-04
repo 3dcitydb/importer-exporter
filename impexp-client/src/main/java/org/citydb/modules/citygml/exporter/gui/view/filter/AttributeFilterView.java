@@ -1,0 +1,119 @@
+package org.citydb.modules.citygml.exporter.gui.view.filter;
+
+import org.citydb.config.Config;
+import org.citydb.config.i18n.Language;
+import org.citydb.config.project.exporter.SimpleQuery;
+import org.citydb.config.project.query.filter.selection.comparison.LikeOperator;
+import org.citydb.config.project.query.filter.selection.id.ResourceIdOperator;
+import org.citydb.gui.factory.PopupMenuDecorator;
+import org.citydb.gui.util.GuiUtil;
+import org.citydb.util.Util;
+
+import javax.swing.Icon;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import java.awt.Component;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+
+public class AttributeFilterView extends FilterView {
+    private JPanel component;
+
+    private JLabel gmlIdLabel;
+    private JTextField gmlIdText;
+    private JLabel gmlNameLabel;
+    private JTextField gmlNameText;
+
+    public AttributeFilterView(Config config) {
+        super(config);
+        init();
+    }
+
+    private void init() {
+        component = new JPanel();
+        component.setLayout(new GridBagLayout());
+
+        gmlIdLabel = new JLabel();
+        gmlIdText = new JTextField();
+        gmlNameLabel = new JLabel();
+        gmlNameText = new JTextField();
+
+        // gml:id filter
+        component.add(gmlIdLabel, GuiUtil.setConstraints(0,0,0,0,GridBagConstraints.HORIZONTAL,10,5,5,5));
+        component.add(gmlIdText, GuiUtil.setConstraints(1,0,1,0,GridBagConstraints.HORIZONTAL,10,5,5,5));
+
+        // gml:name filter
+        component.add(gmlNameLabel, GuiUtil.setConstraints(0,1,0,0,GridBagConstraints.HORIZONTAL,0,5,10,5));
+        component.add(gmlNameText, GuiUtil.setConstraints(1,1,1,0,GridBagConstraints.HORIZONTAL,0,5,10,5));
+
+        PopupMenuDecorator.getInstance().decorate(gmlNameText, gmlIdText);
+    }
+
+
+    @Override
+    public void doTranslation() {
+        gmlIdLabel.setText(Language.I18N.getString("filter.label.gmlId"));
+        gmlNameLabel.setText(Language.I18N.getString("filter.label.gmlName"));
+    }
+
+    @Override
+    public void setEnabled(boolean enable) {
+        gmlIdLabel.setEnabled(enable);
+        gmlIdText.setEnabled(enable);
+        gmlNameLabel.setEnabled(enable);
+        gmlNameText.setEnabled(enable);
+    }
+
+    @Override
+    public String getLocalizedTitle() {
+        return Language.I18N.getString("filter.border.attributes");
+    }
+
+    @Override
+    public Component getViewComponent() {
+        return component;
+    }
+
+    @Override
+    public String getToolTip() {
+        return null;
+    }
+
+    @Override
+    public Icon getIcon() {
+        return null;
+    }
+
+    @Override
+    public void loadSettings() {
+        SimpleQuery query = config.getProject().getExporter().getSimpleQuery();
+
+        // gml:id filter
+        ResourceIdOperator gmlIdFilter = query.getSelectionFilter().getGmlIdFilter();
+        gmlIdText.setText(String.join(",", gmlIdFilter.getResourceIds()));
+
+        // gml:name
+        LikeOperator gmlNameFilter = query.getSelectionFilter().getGmlNameFilter();
+        gmlNameText.setText(gmlNameFilter.getLiteral());
+    }
+
+    @Override
+    public void setSettings() {
+        SimpleQuery query = config.getProject().getExporter().getSimpleQuery();
+
+        // gml:id filter
+        ResourceIdOperator gmlIdFilter = query.getSelectionFilter().getGmlIdFilter();
+        gmlIdFilter.reset();
+        if (!gmlIdText.getText().trim().isEmpty()) {
+            String trimmed = gmlIdText.getText().replaceAll("\\s+", "");
+            gmlIdFilter.setResourceIds(Util.string2string(trimmed, ","));
+        }
+
+        // gml:name
+        LikeOperator gmlNameFilter = query.getSelectionFilter().getGmlNameFilter();
+        gmlNameFilter.reset();
+        if (!gmlNameText.getText().trim().isEmpty())
+            gmlNameFilter.setLiteral(gmlNameText.getText().trim());
+    }
+}

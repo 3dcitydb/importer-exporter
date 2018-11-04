@@ -69,7 +69,7 @@ import javax.swing.tree.TreeSelectionModel;
  * Then you can set the checking propagation style:
  * 
  * <pre>
- * CheckboxTree.getCheckingModel().setCheckingMode(TreeCheckingModel.CheckingMode.SIMPLE);
+ * CheckboxTree.getCheckingModel().setCheckingMode(TreeCheckingModel.CheckingMode.SINGLE);
  * CheckboxTree.getCheckingModel().setCheckingMode(TreeCheckingModel.CheckingMode.PROPAGATE);
  * CheckboxTree.getCheckingModel().setCheckingMode(TreeCheckingModel.CheckingMode.PROPAGATE_PRESERVING_CHECK);
  * CheckboxTree.getCheckingModel().setCheckingMode(TreeCheckingModel.CheckingMode.PROPAGATE_PRESERVING_UNCHECK);

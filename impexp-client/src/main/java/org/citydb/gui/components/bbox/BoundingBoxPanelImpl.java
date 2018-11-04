@@ -109,10 +109,10 @@ public class BoundingBoxPanelImpl extends BoundingBoxPanel implements EventHandl
 		xmax.setFocusLostBehavior(JFormattedTextField.COMMIT);
 		ymax.setFocusLostBehavior(JFormattedTextField.COMMIT);
 
-		xminLabel = new JLabel("Xmin");
-		xmaxLabel = new JLabel("Xmax");
-		yminLabel = new JLabel("Ymin");
-		ymaxLabel = new JLabel("Ymax");
+		xminLabel = new JLabel("<html>x<sub>min</sub></html>");
+		xmaxLabel = new JLabel("<html>x<sub>max</sub></html>");
+		yminLabel = new JLabel("<html>y<sub>min</sub></html>");
+		ymaxLabel = new JLabel("<html>y<sub>max</sub></html>");
 
 		// buttons and srs combo box
 		JPanel actionPanel = new JPanel();
@@ -137,7 +137,7 @@ public class BoundingBoxPanelImpl extends BoundingBoxPanel implements EventHandl
 		actionPanel.add(copy, GuiUtil.setConstraints(1,0,0.0,0.0,GridBagConstraints.HORIZONTAL,0,0,0,5));
 		actionPanel.add(paste, GuiUtil.setConstraints(2,0,0.0,0.0,GridBagConstraints.HORIZONTAL,0,0,0,5));
 		actionPanel.add(srsLabel, GuiUtil.setConstraints(3,0,0.0,0.0,GridBagConstraints.HORIZONTAL,0,40,0,5));			
-		actionPanel.add(srsComboBox, GuiUtil.setConstraints(4,0,1.0,1.0,GridBagConstraints.BOTH,0,5,0,0));
+		actionPanel.add(srsComboBox, GuiUtil.setConstraints(4,0,1.0,1.0,GridBagConstraints.HORIZONTAL,0,5,0,0));
 		srsComboBox.setPreferredSize(new Dimension(50, srsComboBox.getPreferredSize().height));
 				
 		// input fields
@@ -147,10 +147,10 @@ public class BoundingBoxPanelImpl extends BoundingBoxPanel implements EventHandl
 		inputFieldsPanel.add(xmin, GuiUtil.setConstraints(1,0,1.0,0.0,GridBagConstraints.HORIZONTAL,0,5,0,5));
 		inputFieldsPanel.add(xmaxLabel, GuiUtil.setConstraints(2,0,0.0,0.0,GridBagConstraints.NONE,0,10,0,5));
 		inputFieldsPanel.add(xmax, GuiUtil.setConstraints(3,0,1.0,0.0,GridBagConstraints.HORIZONTAL,0,5,0,0));
-		inputFieldsPanel.add(yminLabel, GuiUtil.setConstraints(0,1,0.0,0.0,GridBagConstraints.NONE,2,0,0,5));
-		inputFieldsPanel.add(ymin, GuiUtil.setConstraints(1,1,1.0,0.0,GridBagConstraints.HORIZONTAL,2,5,0,5));
-		inputFieldsPanel.add(ymaxLabel, GuiUtil.setConstraints(2,1,0.0,0.0,GridBagConstraints.NONE,2,10,0,5));
-		inputFieldsPanel.add(ymax, GuiUtil.setConstraints(3,1,1.0,0.0,GridBagConstraints.HORIZONTAL,2,5,0,0));
+		inputFieldsPanel.add(yminLabel, GuiUtil.setConstraints(0,1,0.0,0.0,GridBagConstraints.NONE,5,0,0,5));
+		inputFieldsPanel.add(ymin, GuiUtil.setConstraints(1,1,1.0,0.0,GridBagConstraints.HORIZONTAL,5,5,0,5));
+		inputFieldsPanel.add(ymaxLabel, GuiUtil.setConstraints(2,1,0.0,0.0,GridBagConstraints.NONE,5,10,0,5));
+		inputFieldsPanel.add(ymax, GuiUtil.setConstraints(3,1,1.0,0.0,GridBagConstraints.HORIZONTAL,5,5,0,0));
 
 		setLayout(new GridBagLayout());
 		add(actionPanel, GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.HORIZONTAL,0,0,0,0));

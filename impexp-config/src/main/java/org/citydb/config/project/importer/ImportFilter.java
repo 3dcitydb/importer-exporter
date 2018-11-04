@@ -27,43 +27,46 @@
  */
 package org.citydb.config.project.importer;
 
+import org.citydb.config.project.query.filter.counter.CounterFilter;
+import org.citydb.config.project.query.filter.type.FeatureTypeFilter;
+import org.citydb.config.project.query.simple.SimpleBBOXOperator;
+import org.citydb.config.project.query.simple.SimpleAttributeFilter;
+
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
-import org.citydb.config.project.query.filter.counter.CounterFilter;
-import org.citydb.config.project.query.filter.selection.SimpleSelectionFilter;
-import org.citydb.config.project.query.filter.selection.SimpleSelectionFilterMode;
-import org.citydb.config.project.query.filter.type.FeatureTypeFilter;
-
 @XmlType(name="SimpleImportFilterType", propOrder={
 		"featureTypeFilter",
-		"filter",
-		"counterFilter"
+		"attributeFilter",
+		"counterFilter",
+		"bboxFilter"
+
 })
 public class ImportFilter {
 	@XmlAttribute
 	private boolean useTypeNames;
 	@XmlAttribute
-	private SimpleSelectionFilterMode mode = SimpleSelectionFilterMode.COMPLEX;
+	private boolean useAttributeFilter;
 	@XmlAttribute
 	private boolean useCountFilter;
-	@XmlAttribute
-	private boolean useGmlNameFilter;
 	@XmlAttribute
 	private boolean useBboxFilter;
 	
 	@XmlElement(name = "typeNames")
 	private FeatureTypeFilter featureTypeFilter;
-	@XmlElement(name="simpleFilter")
-	private SimpleSelectionFilter filter;
+	@XmlElement(name="attributes")
+	private SimpleAttributeFilter attributeFilter;
 	@XmlElement(name = "count")
 	private CounterFilter counterFilter;
+	@XmlElement(name = "bbox", required = true)
+	private SimpleBBOXOperator bboxFilter;
 
 	public ImportFilter() {
 		featureTypeFilter = new FeatureTypeFilter();
-		filter = new SimpleSelectionFilter();
+		attributeFilter = new SimpleAttributeFilter();
 		counterFilter = new CounterFilter();
+		bboxFilter = new SimpleBBOXOperator();
 	}
 	
 	public boolean isUseTypeNames() {
@@ -73,13 +76,13 @@ public class ImportFilter {
 	public void setUseTypeNames(boolean useTypeNames) {
 		this.useTypeNames = useTypeNames;
 	}
-	
-	public SimpleSelectionFilterMode getMode() {
-		return mode;
+
+	public boolean isUseAttributeFilter() {
+		return useAttributeFilter;
 	}
 
-	public void setMode(SimpleSelectionFilterMode mode) {
-		this.mode = mode;
+	public void setUseAttributeFilter(boolean useAttributeFilter) {
+		this.useAttributeFilter = useAttributeFilter;
 	}
 
 	public boolean isUseCountFilter() {
@@ -88,14 +91,6 @@ public class ImportFilter {
 
 	public void setUseCountFilter(boolean useCountFilter) {
 		this.useCountFilter = useCountFilter;
-	}
-
-	public boolean isUseGmlNameFilter() {
-		return useGmlNameFilter;
-	}
-
-	public void setUseGmlNameFilter(boolean useGmlNameFilter) {
-		this.useGmlNameFilter = useGmlNameFilter;
 	}
 
 	public boolean isUseBboxFilter() {
@@ -118,16 +113,16 @@ public class ImportFilter {
 		this.featureTypeFilter = featureTypeFilter;
 	}
 
-	public SimpleSelectionFilter getFilter() {
-		return filter;
+	public SimpleAttributeFilter getAttributeFilter() {
+		return attributeFilter;
 	}
 	
-	public boolean isSetFilter() {
-		return filter != null;
+	public boolean isSetAttributeFilter() {
+		return attributeFilter != null;
 	}
 
-	public void setFilter(SimpleSelectionFilter filter) {
-		this.filter = filter;
+	public void setAttributeFilter(SimpleAttributeFilter attributeFilter) {
+		this.attributeFilter = attributeFilter;
 	}
 	
 	public CounterFilter getCounterFilter() {
@@ -140,6 +135,18 @@ public class ImportFilter {
 
 	public void setCounterFilter(CounterFilter counterFilter) {
 		this.counterFilter = counterFilter;
+	}
+
+	public SimpleBBOXOperator getBboxFilter() {
+		return bboxFilter;
+	}
+
+	public boolean isSetBboxFilter() {
+		return bboxFilter != null;
+	}
+
+	public void setBboxFilter(SimpleBBOXOperator bboxFilter) {
+		this.bboxFilter = bboxFilter;
 	}
 	
 }

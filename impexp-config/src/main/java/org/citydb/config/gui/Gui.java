@@ -27,6 +27,7 @@
  */
 package org.citydb.config.gui;
 
+import org.citydb.config.gui.components.SQLExportFilterComponent;
 import org.citydb.config.gui.window.ConsoleWindow;
 import org.citydb.config.gui.window.MainWindow;
 import org.citydb.config.gui.window.MapWindow;
@@ -44,6 +45,7 @@ import java.util.List;
 		"main",
 		"console",
 		"map",
+		"sqlExportFilter",
 		"showPreferencesConfirmDialog",
 		"showOutdatedDatabaseVersionWarning",
 		"showUnsupportedADEWarning",
@@ -54,6 +56,7 @@ public class Gui {
 	private MainWindow main; 
 	private ConsoleWindow console;
 	private MapWindow map;
+	private SQLExportFilterComponent sqlExportFilter;
 	private boolean showPreferencesConfirmDialog = true;
 	private boolean showOutdatedDatabaseVersionWarning = true;
 	private boolean showUnsupportedADEWarning = true;
@@ -69,7 +72,8 @@ public class Gui {
 		main = new MainWindow();
 		console = new ConsoleWindow();
 		map = new MapWindow();
-		recentlyUsedProjects = new ArrayList<String>(maxLastUsedEntries + 1);
+		sqlExportFilter = new SQLExportFilterComponent();
+		recentlyUsedProjects = new ArrayList<>(maxLastUsedEntries + 1);
 	}
 
 	public MainWindow getMainWindow() {
@@ -97,6 +101,15 @@ public class Gui {
 	public void setMapWindow(MapWindow map) {
 		if (map != null)
 			this.map = map;
+	}
+
+	public void setSQLExportFilterComponent(SQLExportFilterComponent sqlExportFilter) {
+		if (sqlExportFilter != null)
+			this.sqlExportFilter = sqlExportFilter;
+	}
+
+	public SQLExportFilterComponent getSQLExportFilterComponent() {
+		return sqlExportFilter;
 	}
 
 	public boolean isShowPreferencesConfirmDialog() {

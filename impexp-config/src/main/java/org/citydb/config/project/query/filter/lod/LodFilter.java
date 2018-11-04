@@ -75,11 +75,11 @@ public class LodFilter {
 	}
 
 	public boolean isSetSearchDepth() {
-		return searchDepth != null && searchDepth.intValue() >= 0;
+		return searchDepth != null && searchDepth >= 0;
 	}
 	
 	public int getSearchDepth() {
-		return isSetSearchDepth() ? searchDepth.intValue() : 1;
+		return isSetSearchDepth() ? searchDepth : 1;
 	}
 	
 	public void setSearchDepth(int searchDepth) {

@@ -27,11 +27,6 @@
  */
 package org.citydb.query.builder.config;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.xml.namespace.NamespaceContext;
-
 import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.geometry.GeometryType;
 import org.citydb.config.project.exporter.SimpleQuery;
@@ -39,13 +34,13 @@ import org.citydb.config.project.exporter.TilingOptions;
 import org.citydb.config.project.kmlExporter.KmlTilingOptions;
 import org.citydb.config.project.kmlExporter.SimpleKmlQuery;
 import org.citydb.config.project.query.filter.selection.AbstractPredicate;
-import org.citydb.config.project.query.filter.selection.SimpleSelectionFilter;
-import org.citydb.config.project.query.filter.selection.SimpleSelectionFilterMode;
 import org.citydb.config.project.query.filter.selection.comparison.LikeOperator;
-import org.citydb.config.project.query.filter.selection.spatial.BBOXOperator;
-import org.citydb.config.project.query.filter.selection.spatial.SimpleBBOXMode;
 import org.citydb.config.project.query.filter.selection.spatial.WithinOperator;
 import org.citydb.config.project.query.filter.tiling.Tiling;
+import org.citydb.config.project.kmlExporter.SimpleKmlQueryMode;
+import org.citydb.config.project.query.simple.SimpleBBOXMode;
+import org.citydb.config.project.query.simple.SimpleBBOXOperator;
+import org.citydb.config.project.query.simple.SimpleSelectionFilter;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.schema.mapping.SchemaMapping;
 import org.citydb.query.Query;
@@ -60,6 +55,10 @@ import org.citydb.query.filter.type.FeatureTypeFilter;
 import org.citydb.util.Util;
 import org.citygml4j.model.module.citygml.CityGMLVersion;
 import org.citygml4j.model.module.citygml.CoreModule;
+
+import javax.xml.namespace.NamespaceContext;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ConfigQueryBuilder {
 	private final SchemaMapping schemaMapping;
@@ -151,7 +150,6 @@ public class ConfigQueryBuilder {
 		else
 			query.setTargetSRS(databaseAdapter.getConnectionMetaData().getReferenceSystem());
 
-		SimpleSelectionFilter exportFilter = queryConfig.getFilter();
 		PredicateBuilder predicateBuilder = new PredicateBuilder(query, schemaMapping, namespaceContext, databaseAdapter);
 
 		// lod filter
@@ -161,99 +159,95 @@ public class ConfigQueryBuilder {
 		}
 
 		// simple filter settings
-		if (queryConfig.getMode() == SimpleSelectionFilterMode.SIMPLE) {			
-			// set feature type filter
+		List<Predicate> predicates = new ArrayList<>();
+
+		// feature type filter
+		if (queryConfig.isUseTypeNames()) {
+			if (queryConfig.isSetFeatureTypeFilter() && !queryConfig.getFeatureTypeFilter().isEmpty()) {
+				FeatureTypeFilterBuilder featureTypeFilterBuilder = new FeatureTypeFilterBuilder(query, schemaMapping);
+				query.setFeatureTypeFilter(featureTypeFilterBuilder.buildFeatureTypeFilter(queryConfig.getFeatureTypeFilter(), version));
+			} else
+				throw new QueryBuildException("The feature type filter must not be empty.");
+		} else {
 			try {
 				query.setFeatureTypeFilter(new FeatureTypeFilter(schemaMapping.getFeatureType("_CityObject", CoreModule.v2_0_0.getNamespaceURI())));
 			} catch (FilterException e) {
 				throw new QueryBuildException("Failed to build the export filter.", e);
 			}
-
-			// gml:id filter
-			if (exportFilter.isSetGmlIdFilter())
-				query.setSelection(new SelectionFilter(predicateBuilder.buildPredicate(exportFilter.getGmlIdFilter())));
 		}
 
-		// complex filter settings
-		else {
-			List<Predicate> predicates = new ArrayList<>();
+		if (queryConfig.isUseSelectionFilter() && queryConfig.isSetSelectionFilter()) {
+			SimpleSelectionFilter selectionFilter = queryConfig.getSelectionFilter();
 
-			// feature type filter
-			if (queryConfig.isUseTypeNames()) {
-				if (queryConfig.isSetFeatureTypeFilter() && !queryConfig.getFeatureTypeFilter().isEmpty()) {
-					FeatureTypeFilterBuilder featureTypeFilterBuilder = new FeatureTypeFilterBuilder(query, schemaMapping);
-					query.setFeatureTypeFilter(featureTypeFilterBuilder.buildFeatureTypeFilter(queryConfig.getFeatureTypeFilter(), version));
-				} else
-					throw new QueryBuildException("The feature type filter must not be empty.");
-			} else {
-				try {
-					query.setFeatureTypeFilter(new FeatureTypeFilter(schemaMapping.getFeatureType("_CityObject", CoreModule.v2_0_0.getNamespaceURI())));
-				} catch (FilterException e) {
-					throw new QueryBuildException("Failed to build the export filter.", e);
+			if (!selectionFilter.isUseSQLFilter()) {
+				// gml:id filter
+				if (selectionFilter.isSetGmlIdFilter() && selectionFilter.getGmlIdFilter().isSetResourceIds())
+					predicates.add(predicateBuilder.buildPredicate(selectionFilter.getGmlIdFilter()));
+
+				// gml:name filter
+				if (selectionFilter.isSetGmlNameFilter() && selectionFilter.getGmlNameFilter().isSetLiteral()) {
+					LikeOperator gmlNameFilter = selectionFilter.getGmlNameFilter();
+					gmlNameFilter.setLiteral(gmlNameFilter.getLiteral());
+					gmlNameFilter.setValueReference("gml:name");
+					predicates.add(predicateBuilder.buildPredicate(gmlNameFilter));
+				}
+			} else if (selectionFilter.getSQLFilter().isSetValue()) {
+				// SQL filter
+				SelectOperatorBuilder selectOperatorBuilder = new SelectOperatorBuilder();
+				predicates.add(selectOperatorBuilder.buildSelectOperator(selectionFilter.getSQLFilter()));
+			}
+		}
+
+		// counter filter
+		if (queryConfig.isUseCountFilter() && queryConfig.isSetCounterFilter()) {
+			try {
+				CounterFilterBuilder counterFilterBuilder = new CounterFilterBuilder();
+				query.setCounterFilter(counterFilterBuilder.buildCounterFilter(queryConfig.getCounterFilter()));
+			} catch (FilterException e) {
+				throw new QueryBuildException("Failed to build the export filter.", e);
+			}
+		}
+
+		// bbox filter
+		if (queryConfig.isUseBboxFilter() && queryConfig.isSetBboxFilter()) {
+			if (!queryConfig.getBboxFilter().isSetEnvelope())
+				throw new QueryBuildException("The bounding box filter requires an " + GeometryType.ENVELOPE + " as spatial operand.");
+
+			// tiling
+			if (queryConfig.isUseTiling()) {
+				TilingOptions tilingOptions = queryConfig.getTilingOptions();
+
+				Tiling tiling = new Tiling();
+				tiling.setExtent((BoundingBox) queryConfig.getBboxFilter().getEnvelope());
+				tiling.setRows(tilingOptions.getRows());
+				tiling.setColumns(tilingOptions.getColumns());
+				tiling.setTilingOptions(tilingOptions);
+
+				TilingFilterBuilder tilingFilterBuilder = new TilingFilterBuilder(databaseAdapter);
+				query.setTiling(tilingFilterBuilder.buildTilingFilter(tiling));
+			}
+
+			// bbox
+			else {
+				if (queryConfig.getBboxFilter().getBboxMode() == SimpleBBOXMode.BBOX) {
+					SimpleBBOXOperator bbox = queryConfig.getBboxFilter();
+					bbox.setValueReference("gml:boundedBy");
+					predicates.add(predicateBuilder.buildPredicate(bbox));
+				} else if (queryConfig.getBboxFilter().getBboxMode() == SimpleBBOXMode.WITHIN) {
+					WithinOperator within = new WithinOperator();
+					within.setValueReference(queryConfig.getBboxFilter().getValueReference());
+					within.setSpatialOperand(queryConfig.getBboxFilter().getEnvelope());
+					predicates.add(predicateBuilder.buildPredicate(within));
 				}
 			}
+		}
 
-			// gml:name filter
-			if (queryConfig.isUseGmlNameFilter() && exportFilter.isSetGmlNameFilter()) {
-				LikeOperator gmlNameFilter = exportFilter.getGmlNameFilter();
-				gmlNameFilter.setLiteral(gmlNameFilter.getLiteral());
-				gmlNameFilter.setValueReference("gml:name");
-				predicates.add(predicateBuilder.buildPredicate(gmlNameFilter));
-			}
-
-			// counter filter
-			if (queryConfig.isUseCountFilter() && queryConfig.isSetCounterFilter()) {
-				try {
-					CounterFilterBuilder counterFilterBuilder = new CounterFilterBuilder();
-					query.setCounterFilter(counterFilterBuilder.buildCounterFilter(queryConfig.getCounterFilter()));
-				} catch (FilterException e) {
-					throw new QueryBuildException("Failed to build the export filter.", e);
-				}
-			}
-
-			// bbox filter
-			if (queryConfig.isUseBboxFilter() && exportFilter.isSetBboxFilter()) {
-				if (!exportFilter.getBboxFilter().isSetEnvelope())
-					throw new QueryBuildException("The bounding box filter requires an " + GeometryType.ENVELOPE + " as spatial operand.");
-
-				// tiling
-				if (queryConfig.isUseTiling()) {
-					TilingOptions tilingOptions = queryConfig.getTilingOptions();
-
-					Tiling tiling = new Tiling();
-					tiling.setExtent((BoundingBox)exportFilter.getBboxFilter().getEnvelope());
-					tiling.setRows(tilingOptions.getRows());
-					tiling.setColumns(tilingOptions.getColumns());
-					tiling.setTilingOptions(tilingOptions);
-
-					TilingFilterBuilder tilingFilterBuilder = new TilingFilterBuilder(databaseAdapter);
-					query.setTiling(tilingFilterBuilder.buildTilingFilter(tiling));
-				}
-
-				// bbox
-				else {				
-					if (exportFilter.getBboxMode() == SimpleBBOXMode.BBOX) {
-						BBOXOperator bbox = exportFilter.getBboxFilter();
-						bbox.setValueReference("gml:boundedBy");					
-						predicates.add(predicateBuilder.buildPredicate(bbox));
-					}
-
-					else if (exportFilter.getBboxMode() == SimpleBBOXMode.WITHIN) {
-						WithinOperator within = new WithinOperator();
-						within.setValueReference(exportFilter.getBboxFilter().getValueReference());
-						within.setSpatialOperand(exportFilter.getBboxFilter().getEnvelope());
-						predicates.add(predicateBuilder.buildPredicate(within));
-					}
-				}				
-			}
-
-			if (!predicates.isEmpty()) {
-				try {
-					BinaryLogicalOperator predicate = new BinaryLogicalOperator(LogicalOperatorName.AND, predicates);
-					query.setSelection(new SelectionFilter(predicate));
-				} catch (FilterException e) {
-					throw new QueryBuildException("Failed to build the export filter.", e);
-				}				
+		if (!predicates.isEmpty()) {
+			try {
+				BinaryLogicalOperator predicate = new BinaryLogicalOperator(LogicalOperatorName.AND, predicates);
+				query.setSelection(new SelectionFilter(predicate));
+			} catch (FilterException e) {
+				throw new QueryBuildException("Failed to build the export filter.", e);
 			}
 		}
 
@@ -267,11 +261,10 @@ public class ConfigQueryBuilder {
 		// always use CityGML 2.0 as target version
 		query.setTargetVersion(CityGMLVersion.v2_0_0);
 
-		SimpleSelectionFilter exportFilter = queryConfig.getFilter();
 		PredicateBuilder predicateBuilder = new PredicateBuilder(query, schemaMapping, namespaceContext, databaseAdapter);
 
 		// simple filter settings
-		if (queryConfig.getMode() == SimpleSelectionFilterMode.SIMPLE) {			
+		if (queryConfig.getMode() == SimpleKmlQueryMode.SINGLE) {
 			// set feature type filter
 			try {
 				query.setFeatureTypeFilter(new FeatureTypeFilter(schemaMapping.getFeatureType("_CityObject", CoreModule.v2_0_0.getNamespaceURI())));
@@ -280,14 +273,12 @@ public class ConfigQueryBuilder {
 			}
 
 			// gml:id filter
-			if (exportFilter.isSetGmlIdFilter())
-				query.setSelection(new SelectionFilter(predicateBuilder.buildPredicate(exportFilter.getGmlIdFilter())));
+			if (queryConfig.isSetAttributeFilter() && queryConfig.getAttributeFilter().isSetGmlIdFilter())
+				query.setSelection(new SelectionFilter(predicateBuilder.buildPredicate(queryConfig.getAttributeFilter().getGmlIdFilter())));
 		}
 
 		// complex filter settings
 		else {
-			List<Predicate> predicates = new ArrayList<>();
-
 			// feature type filter
 			if (queryConfig.isSetFeatureTypeFilter()) {
 				if (queryConfig.getFeatureTypeFilter().isEmpty())
@@ -304,29 +295,20 @@ public class ConfigQueryBuilder {
 			}
 
 			// bbox filter
-			if (exportFilter.isSetBboxFilter()) {
-				if (!exportFilter.getBboxFilter().isSetEnvelope())
+			if (queryConfig.isSetBboxFilter()) {
+				if (!queryConfig.getBboxFilter().isSetEnvelope())
 					throw new QueryBuildException("The bounding box filter requires an " + GeometryType.ENVELOPE + " as spatial operand.");
 
 				KmlTilingOptions tilingOptions = queryConfig.getTilingOptions();
 
 				Tiling tiling = new Tiling();
-				tiling.setExtent((BoundingBox)exportFilter.getBboxFilter().getEnvelope());
+				tiling.setExtent(queryConfig.getBboxFilter().getEnvelope());
 				tiling.setRows(tilingOptions.getRows());
 				tiling.setColumns(tilingOptions.getColumns());
 				tiling.setTilingOptions(tilingOptions);
 
 				TilingFilterBuilder tilingFilterBuilder = new TilingFilterBuilder(databaseAdapter);
 				query.setTiling(tilingFilterBuilder.buildTilingFilter(tiling));				
-			}
-
-			if (!predicates.isEmpty()) {
-				try {
-					BinaryLogicalOperator predicate = new BinaryLogicalOperator(LogicalOperatorName.AND, predicates);
-					query.setSelection(new SelectionFilter(predicate));
-				} catch (FilterException e) {
-					throw new QueryBuildException("Failed to build the export filter.", e);
-				}				
 			}
 		}
 

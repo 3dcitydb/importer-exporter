@@ -27,16 +27,16 @@
  */
 package org.citydb.modules.citygml.exporter.gui.preferences;
 
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.text.DecimalFormat;
-import java.text.ParseException;
+import org.citydb.config.Config;
+import org.citydb.config.i18n.Language;
+import org.citydb.config.project.exporter.SimpleQuery;
+import org.citydb.config.project.exporter.TileNameSuffixMode;
+import org.citydb.config.project.exporter.TileSuffixMode;
+import org.citydb.config.project.exporter.TilingOptions;
+import org.citydb.config.project.query.simple.SimpleBBOXMode;
+import org.citydb.gui.factory.PopupMenuDecorator;
+import org.citydb.gui.preferences.AbstractPreferencesComponent;
+import org.citydb.gui.util.GuiUtil;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -50,17 +50,16 @@ import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
 import javax.swing.border.TitledBorder;
-
-import org.citydb.config.Config;
-import org.citydb.config.i18n.Language;
-import org.citydb.config.project.exporter.SimpleQuery;
-import org.citydb.config.project.exporter.TileNameSuffixMode;
-import org.citydb.config.project.exporter.TileSuffixMode;
-import org.citydb.config.project.exporter.TilingOptions;
-import org.citydb.config.project.query.filter.selection.spatial.SimpleBBOXMode;
-import org.citydb.gui.factory.PopupMenuDecorator;
-import org.citydb.gui.preferences.AbstractPreferencesComponent;
-import org.citydb.gui.util.GuiUtil;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.text.DecimalFormat;
+import java.text.ParseException;
 
 @SuppressWarnings("serial")
 public class BoundingBoxPanel extends AbstractPreferencesComponent {
@@ -96,12 +95,12 @@ public class BoundingBoxPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public boolean isModified() {
-		SimpleQuery query = config.getProject().getExporter().getQuery();
+		SimpleQuery query = config.getProject().getExporter().getSimpleQuery();
 		try { rowsText.commitEdit(); } catch (ParseException e) { }
 		try { columnsText.commitEdit(); } catch (ParseException e) { }
 		
-		if (expBBRadioIntersect.isSelected() && query.getFilter().getBboxMode() != SimpleBBOXMode.BBOX) return true;
-		if (expBBRadioInside.isSelected() && query.getFilter().getBboxMode() != SimpleBBOXMode.WITHIN) return true;
+		if (expBBRadioIntersect.isSelected() && query.getBboxFilter().getBboxMode() != SimpleBBOXMode.BBOX) return true;
+		if (expBBRadioInside.isSelected() && query.getBboxFilter().getBboxMode() != SimpleBBOXMode.WITHIN) return true;
 
 		TilingOptions tilingOptions = query.getTilingOptions();
 		if (query.isUseTiling() != useTiling.isSelected()) return true;
@@ -337,11 +336,11 @@ public class BoundingBoxPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void loadSettings() {
-		SimpleQuery query = config.getProject().getExporter().getQuery();
+		SimpleQuery query = config.getProject().getExporter().getSimpleQuery();
 		useTiling.setSelected(query.isUseTiling());
 
 		// bbox mode
-		if (query.getFilter().getBboxMode() == SimpleBBOXMode.WITHIN)
+		if (query.getBboxFilter().getBboxMode() == SimpleBBOXMode.WITHIN)
 			expBBRadioInside.setSelected(true);
 		else
 			expBBRadioIntersect.setSelected(true);
@@ -361,11 +360,11 @@ public class BoundingBoxPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void setSettings() {
-		SimpleQuery query = config.getProject().getExporter().getQuery();
+		SimpleQuery query = config.getProject().getExporter().getSimpleQuery();
 		query.setUseTiling(useTiling.isSelected());
 
 		// bbox mode
-		query.getFilter().setBboxMode(expBBRadioInside.isSelected() ? SimpleBBOXMode.WITHIN : SimpleBBOXMode.BBOX);
+		query.getBboxFilter().setBboxMode(expBBRadioInside.isSelected() ? SimpleBBOXMode.WITHIN : SimpleBBOXMode.BBOX);
 
 		if (tilePathName.getText() == null || tilePathName.getText().trim().length() == 0)
 			tilePathName.setText("tile");

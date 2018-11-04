@@ -25,42 +25,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.citydb.config.project.query.filter.selection.sql;
+package org.citydb.config.project.query.simple;
 
-import org.citydb.config.project.query.filter.selection.AbstractPredicate;
-import org.citydb.config.project.query.filter.selection.PredicateName;
-
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlEnum;
+import javax.xml.bind.annotation.XmlEnumValue;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlRootElement(name="sql")
-@XmlType(name="SelectOperatorType", propOrder={
-        "value"
-})
-public class SelectOperator extends AbstractPredicate {
-    @XmlElement(name = "select", required = true)
-    private String value;
+@XmlType(name="SimpleBBOXModeType")
+@XmlEnum
+public enum SimpleBBOXMode {
+	@XmlEnumValue("within")
+    WITHIN("within"),
+    @XmlEnumValue("overlap")
+    BBOX("overlap");
 
-    public String getValue() {
+    private final String value;
+
+    SimpleBBOXMode(String v) {
+        value = v;
+    }
+
+    public String value() {
         return value;
     }
 
-    public boolean isSetValue() {
-        return value != null && !value.trim().isEmpty();
-    }
+    public static SimpleBBOXMode fromValue(String v) {
+        for (SimpleBBOXMode c: SimpleBBOXMode.values()) {
+            if (c.value.equals(v)) {
+                return c;
+            }
+        }
 
-    public void setValue(String value) {
-        this.value = value;
-    }
-
-    @Override
-    public void reset() {
-        value = null;
-    }
-
-    @Override
-    public PredicateName getPredicateName() {
-        return PredicateName.SQL_OPERATOR;
+        return BBOX;
     }
 }

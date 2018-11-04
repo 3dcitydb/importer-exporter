@@ -27,30 +27,6 @@
  */
 package org.citydb.modules.citygml.exporter.gui.view;
 
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-import java.beans.PropertyChangeListener;
-import java.text.DecimalFormat;
-import java.util.stream.IntStream;
-
-import javax.swing.BorderFactory;
-import javax.swing.ButtonGroup;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JFormattedTextField;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JSpinner;
-import javax.swing.JTextField;
-import javax.swing.SpinnerListModel;
-import javax.swing.UIManager;
-import javax.swing.border.TitledBorder;
-
 import org.citydb.config.Config;
 import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.i18n.Language;
@@ -59,9 +35,6 @@ import org.citydb.config.project.query.filter.counter.CounterFilter;
 import org.citydb.config.project.query.filter.lod.LodFilter;
 import org.citydb.config.project.query.filter.lod.LodFilterMode;
 import org.citydb.config.project.query.filter.lod.LodSearchMode;
-import org.citydb.config.project.query.filter.selection.SimpleSelectionFilterMode;
-import org.citydb.config.project.query.filter.selection.comparison.LikeOperator;
-import org.citydb.config.project.query.filter.selection.id.ResourceIdOperator;
 import org.citydb.config.project.query.filter.selection.spatial.BBOXOperator;
 import org.citydb.config.project.query.filter.type.FeatureTypeFilter;
 import org.citydb.event.Event;
@@ -72,44 +45,71 @@ import org.citydb.gui.components.checkboxtree.DefaultCheckboxTreeCellRenderer;
 import org.citydb.gui.components.feature.FeatureTypeTree;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.util.GuiUtil;
+import org.citydb.modules.citygml.exporter.gui.view.filter.AttributeFilterView;
+import org.citydb.modules.citygml.exporter.gui.view.filter.FilterView;
+import org.citydb.modules.citygml.exporter.gui.view.filter.SQLFilterView;
 import org.citydb.plugin.extension.view.ViewController;
 import org.citydb.plugin.extension.view.components.BoundingBoxPanel;
 import org.citydb.registry.ObjectRegistry;
 import org.citydb.util.Util;
 import org.citygml4j.model.module.citygml.CityGMLVersion;
+import org.jdesktop.swingx.JXTitledSeparator;
+
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JFormattedTextField;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSpinner;
+import javax.swing.JTabbedPane;
+import javax.swing.JTextArea;
+import javax.swing.SpinnerListModel;
+import java.awt.CardLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.text.DecimalFormat;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 @SuppressWarnings("serial")
 public class FilterPanel extends JPanel implements EventHandler {
 	private final Config config;
 
-	private JCheckBox gmlNameFilter;
-	private JRadioButton gmlIdFilter;
-	private JRadioButton complexFilter;
-	private JTextField gmlNameText;
-	private JTextField gmlIdText;
-	private JCheckBox cityObjectFilter;
-	private JCheckBox boundingBoxFilter;
-	private JCheckBox featureClassFilter;
-	private JFormattedTextField coStartText;
-	private JFormattedTextField coEndText;
-	private FeatureTypeTree typeTree;
+	private JPanel mainPanel;
 
-	private BoundingBoxPanel bboxPanel;
+	private JCheckBox useSelectionFilter;
+	private JCheckBox useLodFilter;
+	private JCheckBox useCounterFilter;
+	private JCheckBox useBBoxFilter;
+	private JCheckBox useFeatureFilter;
 
-	private JLabel gmlNameLabel;
-	private JLabel gmlIdLabel;
-	private JLabel coStartLabel;
-	private JLabel coEndLabel;
-	private JPanel lodPanel;
-	private JPanel row3col2;
-	private JPanel row4col2;
+	private JXTitledSeparator counterSeparator;
+	private JXTitledSeparator lodSeparator;
+	private JXTitledSeparator bboxSeparator;
+	private JXTitledSeparator featureSeparator;
 
-	private JCheckBox lodFilter;
+	private JTabbedPane filterTab;
+	private FilterView[] filters;
+
+	private JLabel counterStartLabel;
+	private JLabel counterEndLabel;
+	private JFormattedTextField counterStartText;
+	private JFormattedTextField counterEndText;
+
 	private JCheckBox[] lods;
 	private JLabel lodModeLabel;
 	private JComboBox<LodFilterMode> lodMode;
 	private JLabel lodDepthLabel;
 	private JSpinner lodDepth;
+
+	private BoundingBoxPanel bboxPanel;
+	private FeatureTypeTree featureTree;
 
 	public FilterPanel(ViewController viewController, Config config) {
 		this.config = config;
@@ -119,320 +119,250 @@ public class FilterPanel extends JPanel implements EventHandler {
 	}
 
 	private void initGui(ViewController viewController) {
-		gmlIdFilter = new JRadioButton();
-		complexFilter = new JRadioButton();
-		ButtonGroup filterRadio = new ButtonGroup();
-		filterRadio.add(gmlIdFilter);
-		filterRadio.add(complexFilter);
+		useSelectionFilter = new JCheckBox();
+		useCounterFilter = new JCheckBox();
+		useLodFilter = new JCheckBox();
+		useBBoxFilter = new JCheckBox();
+		useFeatureFilter = new JCheckBox();
 
-		gmlIdLabel = new JLabel();
-		gmlIdText = new JTextField();
+		counterSeparator = new JXTitledSeparator();
+		lodSeparator = new JXTitledSeparator();
+		bboxSeparator = new JXTitledSeparator();
+		featureSeparator = new JXTitledSeparator();
 
-		gmlNameFilter = new JCheckBox();
-		gmlNameLabel = new JLabel();
-		gmlNameText = new JTextField();
-
-		cityObjectFilter = new JCheckBox();
-		coStartLabel = new JLabel();
-		coEndLabel = new JLabel();
-
+		counterStartLabel = new JLabel();
+		counterEndLabel = new JLabel();
 		DecimalFormat counterFormat = new DecimalFormat("###################");
 		counterFormat.setMaximumIntegerDigits(19);
-		coStartText = new JFormattedTextField(counterFormat);
-		coEndText = new JFormattedTextField(counterFormat);
+		counterStartText = new JFormattedTextField(counterFormat);
+		counterEndText = new JFormattedTextField(counterFormat);
+		counterStartText.setFocusLostBehavior(JFormattedTextField.COMMIT);
+		counterEndText.setFocusLostBehavior(JFormattedTextField.COMMIT);
 
-		coStartText.setFocusLostBehavior(JFormattedTextField.COMMIT);
-		coEndText.setFocusLostBehavior(JFormattedTextField.COMMIT);
-
-		boundingBoxFilter = new JCheckBox();
-		bboxPanel = viewController.getComponentFactory().createBoundingBoxPanel();
-
-		lodFilter = new JCheckBox(); 
 		lodModeLabel = new JLabel();
 		lodDepthLabel = new JLabel();
-
-		String[] values = new String[101];
-		values[0] = "*";
-		IntStream.range(0, 100).forEach(i -> values[i + 1] = String.valueOf(i));		
-		lodDepth = new JSpinner(new SpinnerListModel(values));		
+		lodDepth = new JSpinner(new SpinnerListModel(Stream.concat(Stream.of("*"),
+				IntStream.rangeClosed(0, 10).mapToObj(String::valueOf)).collect(Collectors.toList())));
 
 		lodMode = new JComboBox<>();
 		for (LodFilterMode mode : LodFilterMode.values())
 			lodMode.addItem(mode);
 
-		PopupMenuDecorator.getInstance().decorate(gmlNameText, gmlIdText, coStartText, coEndText);
+		bboxPanel = viewController.getComponentFactory().createBoundingBoxPanel();
 
-		featureClassFilter = new JCheckBox();
-		typeTree = new FeatureTypeTree(Util.toCityGMLVersion(config.getProject().getExporter().getQuery().getVersion()));
-		typeTree.setRowHeight((int)(new JCheckBox().getPreferredSize().getHeight()) - 4);		
-		typeTree.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createEtchedBorder(), 
+		featureTree = new FeatureTypeTree(Util.toCityGMLVersion(config.getProject().getExporter().getSimpleQuery().getVersion()));
+		featureTree.setRowHeight((int)(new JCheckBox().getPreferredSize().getHeight()) - 4);
+		featureTree.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createEtchedBorder(),
 				BorderFactory.createEmptyBorder(0, 0, 4, 4)));
 
 		// get rid of standard icons
-		DefaultCheckboxTreeCellRenderer renderer = (DefaultCheckboxTreeCellRenderer)typeTree.getCellRenderer();
+		DefaultCheckboxTreeCellRenderer renderer = (DefaultCheckboxTreeCellRenderer) featureTree.getCellRenderer();
 		renderer.setLeafIcon(null);
 		renderer.setOpenIcon(null);
 		renderer.setClosedIcon(null);
 
 		//layout
 		setLayout(new GridBagLayout());
+
+
+
+
+		mainPanel = new JPanel(new CardLayout());
+		add(mainPanel, GuiUtil.setConstraints(0,0,1,0,GridBagConstraints.HORIZONTAL,0,0,0,0));
+
+		JButton switchButton = new JButton("switch");
+		add(switchButton, GuiUtil.setConstraints(0,1,0,0,GridBagConstraints.EAST, GridBagConstraints.NONE,5,5,5,5));
+		switchButton.addActionListener(l -> {
+			CardLayout layout = (CardLayout) mainPanel.getLayout();
+			layout.next(mainPanel);
+		});
+
+		JPanel xmlPanel = new JPanel();
+		xmlPanel.setLayout(new GridBagLayout());
+		{
+			JTextArea xmlText = new JTextArea("", 10, 1);
+			JScrollPane scrollPane = new JScrollPane(xmlText);
+			xmlPanel.add(scrollPane, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.BOTH, 10, 5, 10, 5));
+		}
+
+		JPanel guiPanel = new JPanel();
+		mainPanel.add(guiPanel, "guiPanel");
+		mainPanel.add(xmlPanel, "xmlPanel");
+
+
+		guiPanel.setLayout(new GridBagLayout());
+		{
+			JPanel filterRow = new JPanel();
+			guiPanel.add(filterRow, GuiUtil.setConstraints(0,0,1,0,GridBagConstraints.BOTH,0,0,0,0));
+			filterRow.setLayout(new GridBagLayout());
+			{
+				filterTab = new JTabbedPane(JTabbedPane.TOP, JTabbedPane.SCROLL_TAB_LAYOUT);
+
+				filterRow.add(useSelectionFilter, GuiUtil.setConstraints(0,0,0,0,GridBagConstraints.NORTH,GridBagConstraints.NONE,5,0,5,5));
+				filterRow.add(filterTab, GuiUtil.setConstraints(1,0,1,0,GridBagConstraints.HORIZONTAL,5,0,5,0));
+
+				filters = new FilterView[] {
+						new AttributeFilterView(config),
+						new SQLFilterView(config)
+				};
+
+				for (int i = 0; i < filters.length; ++i)
+					filterTab.insertTab(null, filters[i].getIcon(), null, filters[i].getToolTip(), i);
+
+				filterTab.addChangeListener(e -> {
+					int index = filterTab.getSelectedIndex();
+					for (int i = 0; i < filterTab.getTabCount(); i++)
+						filterTab.setComponentAt(i, index == i ? filters[index].getViewComponent() : null);
+				});
+			}
+		}
 		{
 			JPanel lodRow = new JPanel();
-			add(lodRow, GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.HORIZONTAL,0,0,0,0));
+			guiPanel.add(lodRow, GuiUtil.setConstraints(0,1,1,0,GridBagConstraints.HORIZONTAL,0,0,0,0));
 			lodRow.setLayout(new GridBagLayout());
 			{
-				lodPanel = new JPanel();		
+				JPanel lodPanel = new JPanel();
 
-				lodRow.add(lodFilter, GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.NONE,5,0,5,5));
-				lodRow.add(lodPanel, GuiUtil.setConstraints(1,0,1.0,0.0,GridBagConstraints.HORIZONTAL,5,0,5,0));
+				lodRow.add(useLodFilter, GuiUtil.setConstraints(0,0,0,0,GridBagConstraints.NONE,5,0,0,5));
+				lodRow.add(lodSeparator, GuiUtil.setConstraints(1,0,1,0,GridBagConstraints.HORIZONTAL,5,0,0,5));
+				lodRow.add(lodPanel, GuiUtil.setConstraints(1,1,1,0,GridBagConstraints.HORIZONTAL,0,0,5,5));
 
-				lodPanel.setBorder(BorderFactory.createTitledBorder(""));
 				lodPanel.setLayout(new GridBagLayout());
 				{
 					lods = new JCheckBox[5];
 					for (int lod = 0; lod < lods.length; lod++) {
 						lods[lod] = new JCheckBox("LoD" + lod);
 						lods[lod].setIconTextGap(10);
-						lodPanel.add(lods[lod], GuiUtil.setConstraints(lod,0,0.0,0.0,GridBagConstraints.NONE,0,5,5,10));
+						lodPanel.add(lods[lod], GuiUtil.setConstraints(lod,0,0,0,GridBagConstraints.NONE,0,0,0,15));
 					}
 
-					lodPanel.add(lodModeLabel, GuiUtil.setConstraints(5,0,0.0,0.0,GridBagConstraints.NONE,0,20,5,5));
-					lodPanel.add(lodMode, GuiUtil.setConstraints(6,0,0.5,1.0,GridBagConstraints.HORIZONTAL,0,5,5,5));
-					lodPanel.add(lodDepthLabel, GuiUtil.setConstraints(7,0,0.0,0.0,GridBagConstraints.NONE,0,20,5,5));
-					lodPanel.add(lodDepth, GuiUtil.setConstraints(8,0,0.5,0.0,GridBagConstraints.HORIZONTAL,0,5,5,5));
+					lodPanel.add(lodModeLabel, GuiUtil.setConstraints(5,0,0,0,GridBagConstraints.NONE,0,20,0,5));
+					lodPanel.add(lodMode, GuiUtil.setConstraints(6,0,0.5,1,GridBagConstraints.HORIZONTAL,0,5,0,5));
+					lodPanel.add(lodDepthLabel, GuiUtil.setConstraints(7,0,0,0,GridBagConstraints.NONE,0,20,0,5));
+					lodPanel.add(lodDepth, GuiUtil.setConstraints(8,0,0.5,0,GridBagConstraints.HORIZONTAL,0,5,0,0));
 				}
 			}
-		}
-
-		{
-			JPanel row3 = new JPanel();
-			add(row3, GuiUtil.setConstraints(0,1,1.0,0.0,GridBagConstraints.HORIZONTAL,0,0,0,0));
-			row3.setLayout(new GridBagLayout());
-			{
-				GridBagConstraints c = GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.NONE,5,0,5,5);
-				c.anchor = GridBagConstraints.NORTH;
-				row3.add(gmlIdFilter, c);
-				row3col2 = new JPanel();
-				row3.add(row3col2, GuiUtil.setConstraints(1,0,1.0,0.0,GridBagConstraints.HORIZONTAL,5,0,5,0));
-				row3col2.setBorder(BorderFactory.createTitledBorder(""));
-				row3col2.setLayout(new GridBagLayout());
-				{
-					row3col2.add(gmlIdLabel, GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.NONE,0,5,5,5));
-					row3col2.add(gmlIdText, GuiUtil.setConstraints(1,0,1.0,0.0,GridBagConstraints.HORIZONTAL,0,5,5,5));
-				}
-			}
-
 		}
 		{
-			JPanel row4 = new JPanel();
-			add(row4, GuiUtil.setConstraints(0,2,1.0,0.0,GridBagConstraints.BOTH,0,0,0,0));
-			row4.setLayout(new GridBagLayout());
+			JPanel counterFilterRow = new JPanel();
+			guiPanel.add(counterFilterRow, GuiUtil.setConstraints(0,2,1,0,GridBagConstraints.BOTH,0,0,0,0));
+			counterFilterRow.setLayout(new GridBagLayout());
 			{
-				GridBagConstraints c = GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.NONE,5,0,5,5);
-				c.anchor = GridBagConstraints.NORTH;
-				row4.add(complexFilter, c);
-				row4col2 = new JPanel();
+				JPanel counterPanel = new JPanel();
 
-				row4.add(row4col2, GuiUtil.setConstraints(1,0,1.0,1.0,GridBagConstraints.BOTH,5,0,5,0));
-				row4col2.setBorder(BorderFactory.createTitledBorder(""));
-				row4col2.setLayout(new GridBagLayout());
+				counterFilterRow.add(useCounterFilter, GuiUtil.setConstraints(0,0,0,0,GridBagConstraints.NONE,5,0,0,5));
+				counterFilterRow.add(counterSeparator, GuiUtil.setConstraints(1,0,1,0,GridBagConstraints.HORIZONTAL,5,0,0,5));
+				counterFilterRow.add(counterPanel, GuiUtil.setConstraints(1,1,1,0,GridBagConstraints.HORIZONTAL,0,0,5,5));
+
+				counterPanel.setLayout(new GridBagLayout());
 				{
-					// gml:name filter
-					gmlNameFilter.setIconTextGap(10);
-					row4col2.add(gmlNameFilter, GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.HORIZONTAL,0,5,0,5));
-					int lmargin = (int)(gmlNameFilter.getPreferredSize().getWidth()) + 11;
+					counterPanel.add(counterStartLabel, GuiUtil.setConstraints(0,0,0,0,GridBagConstraints.NONE,0,0,0,5));
+					counterPanel.add(counterStartText, GuiUtil.setConstraints(1,0,1,0,GridBagConstraints.HORIZONTAL,0,5,0,5));
+					counterPanel.add(counterEndLabel, GuiUtil.setConstraints(2,0,0,0,GridBagConstraints.NONE,0,10,0,5));
+					counterPanel.add(counterEndText, GuiUtil.setConstraints(3,0,1,0,GridBagConstraints.HORIZONTAL,0,5,0,0));
+				}
+			}
+		}
+		{
+			JPanel bboxFilterRow = new JPanel();
+			guiPanel.add(bboxFilterRow, GuiUtil.setConstraints(0,3,1,0,GridBagConstraints.BOTH,0,0,0,0));
+			bboxFilterRow.setLayout(new GridBagLayout());
+			{
+				bboxFilterRow.add(useBBoxFilter, GuiUtil.setConstraints(0,0,0,0,GridBagConstraints.NONE,5,0,0,5));
+				bboxFilterRow.add(bboxSeparator, GuiUtil.setConstraints(1,0,1,0,GridBagConstraints.HORIZONTAL,5,0,0,5));
+				bboxFilterRow.add(bboxPanel, GuiUtil.setConstraints(1,1,1,0,GridBagConstraints.HORIZONTAL,0,0,5,5));
+			}
+		}
+		{
+			JPanel featureClassRow = new JPanel();
+			guiPanel.add(featureClassRow, GuiUtil.setConstraints(0,4,1,0,GridBagConstraints.HORIZONTAL,0,0,0,0));
+			featureClassRow.setLayout(new GridBagLayout());
+			{
+				JPanel featureClassPanel = new JPanel();
 
-					// content
-					JPanel panel4 = new JPanel();
-					row4col2.add(panel4, GuiUtil.setConstraints(0,1,1.0,0.0,GridBagConstraints.HORIZONTAL,0,lmargin,0,0));
-					panel4.setLayout(new GridBagLayout());
-					{
-						panel4.add(gmlNameLabel, GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.NONE,0,0,0,5));
-						panel4.add(gmlNameText, GuiUtil.setConstraints(1,0,1.0,0.0,GridBagConstraints.HORIZONTAL,0,5,0,5));						
-					}
+				featureClassRow.add(useFeatureFilter, GuiUtil.setConstraints(0,0,0,0,GridBagConstraints.NONE,5,0,0,5));
+				featureClassRow.add(featureSeparator, GuiUtil.setConstraints(1,0,1,0,GridBagConstraints.HORIZONTAL,5,0,0,5));
+				featureClassRow.add(featureClassPanel, GuiUtil.setConstraints(1,1,1,0,GridBagConstraints.HORIZONTAL,0,0,5,5));
 
-					// CityObject
-					// checkbox
-					cityObjectFilter.setIconTextGap(10);					
-					row4col2.add(cityObjectFilter, GuiUtil.setConstraints(0,2,1.0,0.0,GridBagConstraints.HORIZONTAL,5,5,0,5));
-
-					// content
-					JPanel panel2 = new JPanel();
-					row4col2.add(panel2, GuiUtil.setConstraints(0,3,1.0,0.0,GridBagConstraints.HORIZONTAL,0,lmargin,0,0));
-					panel2.setLayout(new GridBagLayout());
-					{
-						panel2.add(coStartLabel, GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.NONE,0,0,0,5));
-						panel2.add(coStartText, GuiUtil.setConstraints(1,0,1.0,0.0,GridBagConstraints.HORIZONTAL,0,5,0,5));
-						panel2.add(coEndLabel, GuiUtil.setConstraints(2,0,0.0,0.0,GridBagConstraints.NONE,0,10,0,5));
-						panel2.add(coEndText, GuiUtil.setConstraints(3,0,1.0,0.0,GridBagConstraints.HORIZONTAL,0,5,0,5));		
-					}
-
-					// bounding box filter
-					boundingBoxFilter.setIconTextGap(10);
-					row4col2.add(boundingBoxFilter, GuiUtil.setConstraints(0,4,1.0,0.0,GridBagConstraints.HORIZONTAL,5,5,0,5));				
-					row4col2.add(bboxPanel, GuiUtil.setConstraints(0,5,1.0,0.0,GridBagConstraints.HORIZONTAL,0,lmargin,0,5));
-
-					// feature class filter
-					featureClassFilter.setIconTextGap(10);
-					row4col2.add(featureClassFilter, GuiUtil.setConstraints(0,6,1.0,0.0,GridBagConstraints.HORIZONTAL,5,5,0,5));
-
-					// content
-					JPanel panel8 = new JPanel();
-					row4col2.add(panel8, GuiUtil.setConstraints(0,7,1.0,1.0,GridBagConstraints.BOTH,0,lmargin,5,0));
-					panel8.setLayout(new GridBagLayout());
-					{
-						panel8.add(typeTree, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,0,0,0,5));	
-					}
+				featureClassPanel.setLayout(new GridBagLayout());
+				{
+					featureClassPanel.add(featureTree, GuiUtil.setConstraints(0,0,1,1,GridBagConstraints.BOTH,0,0,0,0));
 				}
 			}
 		}
 
-		coStartText.addPropertyChangeListener(new PropertyChangeListener() {			
-			public void propertyChange(java.beans.PropertyChangeEvent evt) {
-				if (coStartText.getValue() != null && ((Number)coStartText.getValue()).longValue() < 0)
-					coStartText.setValue(null);
+		useSelectionFilter.addActionListener(e -> setEnabledFilterTab());
+		useCounterFilter.addActionListener(e -> setEnabledCounterFilter());
+		useLodFilter.addActionListener(e -> setEnabledLodFilter());
+		useBBoxFilter.addActionListener(e -> setEnabledBBoxFilter());
+		useFeatureFilter.addActionListener(e -> setEnabledFeatureFilter());
+
+		lodSeparator.addMouseListener(new MouseAdapter() {
+			public void mouseClicked(MouseEvent e) {
+				useLodFilter.doClick();
 			}
 		});
 
-		coEndText.addPropertyChangeListener(new PropertyChangeListener() {			
-			public void propertyChange(java.beans.PropertyChangeEvent evt) {
-				if (coEndText.getValue() != null && ((Number)coEndText.getValue()).longValue() < 0)
-					coEndText.setValue(null);
+		counterSeparator.addMouseListener(new MouseAdapter() {
+			public void mouseClicked(MouseEvent e) {
+				useCounterFilter.doClick();
 			}
 		});
 
-		ActionListener filterSettingsListener = new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				setEnabledFilterSettings();
-			}
-		};
-
-		ActionListener gmlNameListener = new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				setEnabledGmlNameFilter();
-			}
-		};
-
-		ActionListener countListener = new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				setEnabledCountFilter();
-			}
-		};
-
-		ActionListener bboxListener = new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				setEnabledBBox();				
-			}
-		};
-
-		ActionListener classListener = new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				setEnabledClassFilter();
-			}
-		};
-
-		gmlIdFilter.addActionListener(filterSettingsListener);
-		complexFilter.addActionListener(filterSettingsListener);		
-		gmlNameFilter.addActionListener(gmlNameListener);
-		cityObjectFilter.addActionListener(countListener);
-		boundingBoxFilter.addActionListener(bboxListener);
-		featureClassFilter.addActionListener(classListener);
-
-		lodFilter.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				setEnabledLodFilter();
+		bboxSeparator.addMouseListener(new MouseAdapter() {
+			public void mouseClicked(MouseEvent e) {
+				useBBoxFilter.doClick();
 			}
 		});
 
-		for (int lod = 0; lod < lods.length; lod++) {
-			lods[lod].addItemListener(new ItemListener() {
-				public void itemStateChanged(ItemEvent e) {
-					setEnabledLodFilterMode();
-				}
-			});
-		}
+		featureSeparator.addMouseListener(new MouseAdapter() {
+			public void mouseClicked(MouseEvent e) {
+				useFeatureFilter.doClick();
+			}
+		});
 
-		PopupMenuDecorator.getInstance().decorate(typeTree);
+		counterStartText.addPropertyChangeListener(e -> {
+			if (counterStartText.getValue() != null && ((Number) counterStartText.getValue()).longValue() < 0)
+				counterStartText.setValue(null);
+		});
+
+		counterEndText.addPropertyChangeListener(e -> {
+			if (counterEndText.getValue() != null && ((Number) counterEndText.getValue()).longValue() < 0)
+				counterEndText.setValue(null);
+		});
+
+		for (JCheckBox lod : lods)
+			lod.addItemListener(e -> setEnabledLodFilterMode());
+
 		PopupMenuDecorator.getInstance().decorateCheckBoxGroup(lods);
+		PopupMenuDecorator.getInstance().decorate(featureTree);
+		PopupMenuDecorator.getInstance().decorate(counterStartText, counterEndText);
 	}
 
-	private void setEnabledFilterSettings() {
-		((TitledBorder)row3col2.getBorder()).setTitleColor(gmlIdFilter.isSelected() ? 
-				UIManager.getColor("TitledBorder.titleColor"):
-					UIManager.getColor("Label.disabledForeground"));
-		row3col2.repaint();
-
-		((TitledBorder)row4col2.getBorder()).setTitleColor(complexFilter.isSelected() ? 
-				UIManager.getColor("TitledBorder.titleColor"):
-					UIManager.getColor("Label.disabledForeground"));
-		row4col2.repaint();
-
-		gmlIdText.setEnabled(gmlIdFilter.isSelected());
-		gmlIdLabel.setEnabled(gmlIdFilter.isSelected());
-
-		gmlNameFilter.setEnabled(complexFilter.isSelected());
-		boolean enable = complexFilter.isSelected() && gmlNameFilter.isSelected();
-		gmlNameLabel.setEnabled(enable);
-		gmlNameText.setEnabled(enable);
-
-		cityObjectFilter.setEnabled(complexFilter.isSelected());
-		enable = complexFilter.isSelected() && cityObjectFilter.isSelected();
-		coStartLabel.setEnabled(enable);
-		coEndLabel.setEnabled(enable);
-		coStartText.setEnabled(enable);
-		coEndText.setEnabled(enable);
-
-		boundingBoxFilter.setEnabled(complexFilter.isSelected());
-		enable = complexFilter.isSelected() && boundingBoxFilter.isSelected();
-		bboxPanel.setEnabled(enable);
-
-		featureClassFilter.setEnabled(complexFilter.isSelected());
-		typeTree.setPathsEnabled(complexFilter.isSelected() && featureClassFilter.isSelected());
-		typeTree.repaint();
-
-		setEnabledLodFilter();
-	}
-
-	private void setEnabledGmlNameFilter() {
-		gmlNameLabel.setEnabled(gmlNameFilter.isSelected());
-		gmlNameText.setEnabled(gmlNameFilter.isSelected());
-	}
-
-	private void setEnabledCountFilter() {
-		coStartLabel.setEnabled(cityObjectFilter.isSelected());
-		coEndLabel.setEnabled(cityObjectFilter.isSelected());
-		coStartText.setEnabled(cityObjectFilter.isSelected());
-		coEndText.setEnabled(cityObjectFilter.isSelected());
-	}
-
-	private void setEnabledBBox() {
-		bboxPanel.setEnabled(boundingBoxFilter.isSelected());
+	private void setEnabledFilterTab() {
+		for (FilterView filter : filters)
+			filter.setEnabled(useSelectionFilter.isSelected());
 	}
 
 	private void setEnabledLodFilter() {
-		((TitledBorder)lodPanel.getBorder()).setTitleColor(lodFilter.isSelected() ? 
-				UIManager.getColor("TitledBorder.titleColor"):
-					UIManager.getColor("Label.disabledForeground"));
-		lodPanel.repaint();
+		for (JCheckBox lod : lods)
+			lod.setEnabled(useLodFilter.isSelected());
 
-		for (int lod = 0; lod < lods.length; lod++)
-			lods[lod].setEnabled(lodFilter.isSelected());
-
-		if (lodFilter.isSelected())
+		if (useLodFilter.isSelected())
 			setEnabledLodFilterMode();
 		else {
 			lodModeLabel.setEnabled(false);
 			lodMode.setEnabled(false);
 		}
 
-		lodDepthLabel.setEnabled(lodFilter.isSelected());
-		lodDepth.setEnabled(lodFilter.isSelected());
+		lodDepthLabel.setEnabled(useLodFilter.isSelected());
+		lodDepth.setEnabled(useLodFilter.isSelected());
 	}
 
 	private void setEnabledLodFilterMode() {
 		int selected = 0;
-		for (int lod = 0; lod < lods.length; lod++) {
-			if (lods[lod].isSelected())
+		for (JCheckBox lod : lods) {
+			if (lod.isSelected())
 				selected++;
 		}
 
@@ -440,45 +370,47 @@ public class FilterPanel extends JPanel implements EventHandler {
 		lodMode.setEnabled(selected > 1);
 	}
 
-	private void setEnabledClassFilter() {
-		typeTree.setPathsEnabled(featureClassFilter.isSelected());
-		typeTree.repaint();
+	private void setEnabledCounterFilter() {
+		counterStartLabel.setEnabled(useCounterFilter.isSelected());
+		counterEndLabel.setEnabled(useCounterFilter.isSelected());
+		counterStartText.setEnabled(useCounterFilter.isSelected());
+		counterEndText.setEnabled(useCounterFilter.isSelected());
+	}
+
+	private void setEnabledBBoxFilter() {
+		bboxPanel.setEnabled(useBBoxFilter.isSelected());
+	}
+
+	private void setEnabledFeatureFilter() {
+		featureTree.setPathsEnabled(useFeatureFilter.isSelected());
+		featureTree.repaint();
 	}
 
 	public void doTranslation() {
-		gmlNameLabel.setText(Language.I18N.getString("filter.label.gmlName"));
-		gmlIdLabel.setText(Language.I18N.getString("filter.label.gmlId"));
-		coStartLabel.setText(Language.I18N.getString("filter.label.counter.start"));
-		coEndLabel.setText(Language.I18N.getString("filter.label.counter.end"));	
-		((TitledBorder)row3col2.getBorder()).setTitle(Language.I18N.getString("filter.border.gmlId"));
-		((TitledBorder)row4col2.getBorder()).setTitle(Language.I18N.getString("filter.border.complexFilter"));
-		cityObjectFilter.setText(Language.I18N.getString("filter.border.counter"));
-		gmlNameFilter.setText(Language.I18N.getString("filter.border.gmlName"));
-		boundingBoxFilter.setText(Language.I18N.getString("filter.border.boundingBox"));
-		featureClassFilter.setText(Language.I18N.getString("filter.border.featureClass"));
-		((TitledBorder)lodPanel.getBorder()).setTitle(Language.I18N.getString("filter.border.lod"));
+		lodSeparator.setTitle(Language.I18N.getString("filter.border.lod"));
+		counterSeparator.setTitle(Language.I18N.getString("filter.border.counter"));
+		bboxSeparator.setTitle(Language.I18N.getString("filter.border.boundingBox"));
+		featureSeparator.setTitle(Language.I18N.getString("filter.border.featureClass"));
+
 		lodModeLabel.setText(Language.I18N.getString("filter.label.lod.mode"));
 		lodDepthLabel.setText(Language.I18N.getString("filter.label.lod.depth"));
+		counterStartLabel.setText(Language.I18N.getString("filter.label.counter.start"));
+		counterEndLabel.setText(Language.I18N.getString("filter.label.counter.end"));
+
+		for (int i = 0; i < filters.length; ++i) {
+			filterTab.setTitleAt(i, filters[i].getLocalizedTitle());
+			filters[i].doTranslation();
+		}
 	}
 
 	public void loadSettings() {
-		SimpleQuery query = config.getProject().getExporter().getQuery();
+		SimpleQuery query = config.getProject().getExporter().getSimpleQuery();
 
-		if (query.getMode() == SimpleSelectionFilterMode.COMPLEX)
-			complexFilter.setSelected(true);
-		else
-			gmlIdFilter.setSelected(true);
-
-		featureClassFilter.setSelected(query.isUseTypeNames());
-		lodFilter.setSelected(query.isUseLodFilter());
-		cityObjectFilter.setSelected(query.isUseCountFilter());
-		gmlNameFilter.setSelected(query.isUseGmlNameFilter());
-		boundingBoxFilter.setSelected(query.isUseBboxFilter());
-
-		// feature type filter
-		FeatureTypeFilter featureTypeFilter = query.getFeatureTypeFilter();
-		typeTree.getCheckingModel().clearChecking();
-		typeTree.setSelected(featureTypeFilter.getTypeNames());
+		useSelectionFilter.setSelected(query.isUseSelectionFilter());
+		useLodFilter.setSelected(query.isUseLodFilter());
+		useCounterFilter.setSelected(query.isUseCountFilter());
+		useBBoxFilter.setSelected(query.isUseBboxFilter());
+		useFeatureFilter.setSelected(query.isUseTypeNames());
 
 		// lod filter
 		LodFilter lodFilter = query.getLodFilter();
@@ -490,45 +422,47 @@ public class FilterPanel extends JPanel implements EventHandler {
 			lodDepth.setValue("*");
 		else {
 			int searchDepth = lodFilter.getSearchDepth();
-			lodDepth.setValue(searchDepth >= 0 && searchDepth < 100 ? String.valueOf(searchDepth) : "1");
+			lodDepth.setValue(searchDepth >= 0 && searchDepth < 10 ? String.valueOf(searchDepth) : "1");
 		}
-		
-		// gml:id filter
-		ResourceIdOperator gmlIdFilter = query.getFilter().getGmlIdFilter();
-		gmlIdText.setText(String.join(",", gmlIdFilter.getResourceIds()));
-
-		// gml:name
-		LikeOperator gmlNameFilter = query.getFilter().getGmlNameFilter();
-		gmlNameText.setText(gmlNameFilter.getLiteral());
 
 		// counter filter
 		CounterFilter counterFilter = query.getCounterFilter();
-		coStartText.setValue(counterFilter.getLowerLimit());
-		coEndText.setValue(counterFilter.getUpperLimit());
+		counterStartText.setValue(counterFilter.getLowerLimit());
+		counterEndText.setValue(counterFilter.getUpperLimit());
 
 		// bbox filter
-		BBOXOperator bboxFilter = query.getFilter().getBboxFilter();
+		BBOXOperator bboxFilter = query.getBboxFilter();
 		BoundingBox bbox = bboxFilter.getEnvelope();
 		if (bbox != null)
-			bboxPanel.setBoundingBox((BoundingBox)bboxFilter.getEnvelope());
-
-		setEnabledLodFilterMode();
-		setEnabledFilterSettings();
-	}
-
-	public void setSettings() {
-		SimpleQuery query = config.getProject().getExporter().getQuery();
-		query.setMode(complexFilter.isSelected() ? SimpleSelectionFilterMode.COMPLEX : SimpleSelectionFilterMode.SIMPLE);
-		query.setUseTypeNames(featureClassFilter.isSelected());
-		query.setUseLodFilter(lodFilter.isSelected());
-		query.setUseCountFilter(cityObjectFilter.isSelected());
-		query.setUseGmlNameFilter(gmlNameFilter.isSelected());
-		query.setUseBboxFilter(boundingBoxFilter.isSelected());
+			bboxPanel.setBoundingBox(bboxFilter.getEnvelope());
 
 		// feature type filter
 		FeatureTypeFilter featureTypeFilter = query.getFeatureTypeFilter();
-		featureTypeFilter.reset();
-		featureTypeFilter.setTypeNames(typeTree.getSelectedTypeNames());
+		featureTree.getCheckingModel().clearChecking();
+		featureTree.setSelected(featureTypeFilter.getTypeNames());
+
+		setEnabledFilterTab();
+		setEnabledCounterFilter();
+		setEnabledLodFilter();
+		setEnabledBBoxFilter();
+		setEnabledFeatureFilter();
+
+		// load filter settings
+		for (FilterView filter : filters)
+			filter.loadSettings();
+
+		filterTab.setSelectedIndex(-1);
+		filterTab.setSelectedIndex(query.getSelectionFilter().isUseSQLFilter() ? 1 : 0);
+	}
+
+	public void setSettings() {
+		SimpleQuery query = config.getProject().getExporter().getSimpleQuery();
+
+		query.setUseSelectionFilter(useSelectionFilter.isSelected());
+		query.setUseCountFilter(useCounterFilter.isSelected());
+		query.setUseLodFilter(useLodFilter.isSelected());
+		query.setUseBboxFilter(useBBoxFilter.isSelected());
+		query.setUseTypeNames(useFeatureFilter.isSelected());
 
 		// lod filter
 		LodFilter lodFilter = query.getLodFilter();
@@ -548,42 +482,37 @@ public class FilterPanel extends JPanel implements EventHandler {
 				lodFilter.setSearchDepth(1);
 			}
 		}
-		
-		// gml:id filter
-		ResourceIdOperator gmlIdFilter = query.getFilter().getGmlIdFilter();
-		gmlIdFilter.reset();
-		if (gmlIdText.getText().trim().length() > 0) {
-			String trimmed = gmlIdText.getText().replaceAll("\\s+", "");
-			gmlIdFilter.setResourceIds(Util.string2string(trimmed, ","));
-		}
-
-		// gml:name
-		LikeOperator gmlNameFilter = query.getFilter().getGmlNameFilter();
-		gmlNameFilter.reset();
-		if (gmlNameText.getText().trim().length() > 0)
-			gmlNameFilter.setLiteral(gmlNameText.getText().trim());
 
 		// counter filter
 		CounterFilter counterFilter = query.getCounterFilter();
 		counterFilter.reset();
-		if (coStartText.isEditValid() && coStartText.getValue() != null
-				&& coEndText.isEditValid() && coEndText.getValue() != null) {
-			counterFilter.setLowerLimit(((Number)coStartText.getValue()).longValue());
-			counterFilter.setUpperLimit(((Number)coEndText.getValue()).longValue());
+		if (counterStartText.isEditValid() && counterStartText.getValue() != null
+				&& counterEndText.isEditValid() && counterEndText.getValue() != null) {
+			counterFilter.setLowerLimit(((Number) counterStartText.getValue()).longValue());
+			counterFilter.setUpperLimit(((Number) counterEndText.getValue()).longValue());
 		} else {
 			counterFilter.setLowerLimit(null);
 			counterFilter.setUpperLimit(null);
 		}
 
 		// bbox filter
-		query.getFilter().getBboxFilter().setEnvelope(bboxPanel.getBoundingBox());
+		query.getBboxFilter().setEnvelope(bboxPanel.getBoundingBox());
+
+		// feature type filter
+		FeatureTypeFilter featureTypeFilter = query.getFeatureTypeFilter();
+		featureTypeFilter.reset();
+		featureTypeFilter.setTypeNames(featureTree.getSelectedTypeNames());
+
+		query.getSelectionFilter().setUseSQLFilter(filterTab.getSelectedIndex() == 1);
+		for (FilterView filter : filters)
+			filter.setSettings();
 	}
 
 	@Override
 	public void handleEvent(Event event) throws Exception {
 		PropertyChangeEvent e = (PropertyChangeEvent)event;
 		if (e.getPropertyName().equals("citygml.version"))
-			typeTree.updateCityGMLVersion((CityGMLVersion)e.getNewValue(), featureClassFilter.isSelected());
+			featureTree.updateCityGMLVersion((CityGMLVersion)e.getNewValue(), useFeatureFilter.isSelected());
 	}
 
 }

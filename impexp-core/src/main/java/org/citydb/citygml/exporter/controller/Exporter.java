@@ -164,7 +164,7 @@ public class Exporter implements EventHandler {
 				log.info("IGNORING filter settings in export dialog.");
 				query = queryBuilder.buildQuery(config.getProject().getExporter().getGenericQuery(), config.getProject().getNamespaceFilter());
 			} else
-				query = queryBuilder.buildQuery(config.getProject().getExporter().getQuery(), config.getProject().getNamespaceFilter());
+				query = queryBuilder.buildQuery(config.getProject().getExporter().getSimpleQuery(), config.getProject().getNamespaceFilter());
 
 		} catch (QueryBuildException e) {
 			throw new CityGMLExportException("Failed to build the export query expression.", e);

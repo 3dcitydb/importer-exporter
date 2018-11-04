@@ -27,21 +27,20 @@
  */
 package org.citydb.modules.citygml.importer.gui.preferences;
 
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
+import org.citydb.config.Config;
+import org.citydb.config.i18n.Language;
+import org.citydb.config.project.importer.ImportFilter;
+import org.citydb.config.project.query.simple.SimpleBBOXMode;
+import org.citydb.gui.preferences.AbstractPreferencesComponent;
+import org.citydb.gui.util.GuiUtil;
 
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.border.TitledBorder;
-
-import org.citydb.config.Config;
-import org.citydb.config.i18n.Language;
-import org.citydb.config.project.importer.ImportFilter;
-import org.citydb.config.project.query.filter.selection.spatial.SimpleBBOXMode;
-import org.citydb.gui.preferences.AbstractPreferencesComponent;
-import org.citydb.gui.util.GuiUtil;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 
 @SuppressWarnings("serial")
 public class BoundingBoxPanel extends AbstractPreferencesComponent {
@@ -58,8 +57,8 @@ public class BoundingBoxPanel extends AbstractPreferencesComponent {
 	public boolean isModified() {
 		ImportFilter filter = config.getProject().getImporter().getFilter();
 		
-		if (impBBRadioIntersect.isSelected() && filter.getFilter().getBboxMode() != SimpleBBOXMode.BBOX) return true;
-		if (impBBRadioInside.isSelected() && filter.getFilter().getBboxMode() != SimpleBBOXMode.WITHIN) return true;
+		if (impBBRadioIntersect.isSelected() && filter.getBboxFilter().getBboxMode() != SimpleBBOXMode.BBOX) return true;
+		if (impBBRadioInside.isSelected() && filter.getBboxFilter().getBboxMode() != SimpleBBOXMode.WITHIN) return true;
 		return false;
 	}
 
@@ -97,7 +96,7 @@ public class BoundingBoxPanel extends AbstractPreferencesComponent {
 	public void loadSettings() {
 		ImportFilter filter = config.getProject().getImporter().getFilter();
 
-		if (filter.getFilter().getBboxMode() == SimpleBBOXMode.WITHIN)
+		if (filter.getBboxFilter().getBboxMode() == SimpleBBOXMode.WITHIN)
 			impBBRadioInside.setSelected(true);
 		else
 			impBBRadioIntersect.setSelected(true);
@@ -106,7 +105,7 @@ public class BoundingBoxPanel extends AbstractPreferencesComponent {
 	@Override
 	public void setSettings() {
 		ImportFilter filter = config.getProject().getImporter().getFilter();
-		filter.getFilter().setBboxMode(impBBRadioInside.isSelected() ? SimpleBBOXMode.WITHIN : SimpleBBOXMode.BBOX);
+		filter.getBboxFilter().setBboxMode(impBBRadioInside.isSelected() ? SimpleBBOXMode.WITHIN : SimpleBBOXMode.BBOX);
 	}
 	
 	@Override

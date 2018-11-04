@@ -40,8 +40,8 @@ public class CounterFilterBuilder {
 		if (!counterFilterConfig.isSetUpperLimit())
 			throw new FilterException("Upper counter limit must not be null.");
 		
-		long upperLimit = counterFilterConfig.getUpperLimit().longValue();
-		long lowerLimit = counterFilterConfig.isSetLowerLimit() ? counterFilterConfig.getLowerLimit().longValue() : 1;
+		long upperLimit = counterFilterConfig.getUpperLimit();
+		long lowerLimit = counterFilterConfig.isSetLowerLimit() ? counterFilterConfig.getLowerLimit() : 1;
 		
 		return new CounterFilter(lowerLimit, upperLimit);
 	}

@@ -36,7 +36,6 @@ import org.citydb.config.i18n.Language;
 import org.citydb.config.project.database.DatabaseConfigurationException;
 import org.citydb.config.project.global.LogLevel;
 import org.citydb.config.project.importer.ImportFilter;
-import org.citydb.config.project.query.filter.selection.SimpleSelectionFilterMode;
 import org.citydb.database.DatabaseController;
 import org.citydb.database.schema.mapping.SchemaMapping;
 import org.citydb.database.version.DatabaseVersionException;
@@ -57,10 +56,30 @@ import org.citygml4j.builder.jaxb.CityGMLBuilder;
 import org.jdesktop.swingx.JXTextField;
 import org.jdesktop.swingx.prompt.PromptSupport.FocusBehavior;
 
-import javax.swing.*;
+import javax.swing.Action;
+import javax.swing.ActionMap;
+import javax.swing.BorderFactory;
+import javax.swing.DefaultListModel;
+import javax.swing.InputMap;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JFileChooser;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.KeyStroke;
+import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
+import javax.swing.TransferHandler;
+import javax.swing.UIManager;
 import javax.swing.border.TitledBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
-import java.awt.*;
+import java.awt.Color;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
@@ -116,7 +135,7 @@ public class ImportPanel extends JPanel implements EventHandler {
 	}
 
 	private void initGui() {
-		fileList = new JList<String>();		
+		fileList = new JList<>();
 		browseButton = new JButton();
 		removeButton = new JButton();
 		filterPanel = new FilterPanel(viewController, config);
@@ -128,7 +147,7 @@ public class ImportPanel extends JPanel implements EventHandler {
 
 		DropCutCopyPasteHandler handler = new DropCutCopyPasteHandler();
 
-		fileListModel = new DefaultListModel<String>();
+		fileListModel = new DefaultListModel<>();
 		fileList.setModel(fileListModel);
 		fileList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 		fileList.setTransferHandler(handler);
@@ -143,9 +162,9 @@ public class ImportPanel extends JPanel implements EventHandler {
 		actionMap.put(TransferHandler.getPasteAction().getValue(Action.NAME), TransferHandler.getPasteAction());
 
 		InputMap inputMap = fileList.getInputMap();
-		inputMap.put(KeyStroke.getKeyStroke('X', InputEvent.CTRL_MASK), TransferHandler.getCutAction().getValue(Action.NAME));
-		inputMap.put(KeyStroke.getKeyStroke('C', InputEvent.CTRL_MASK), TransferHandler.getCopyAction().getValue(Action.NAME));
-		inputMap.put(KeyStroke.getKeyStroke('V', InputEvent.CTRL_MASK), TransferHandler.getPasteAction().getValue(Action.NAME));
+		inputMap.put(KeyStroke.getKeyStroke('X', InputEvent.CTRL_DOWN_MASK), TransferHandler.getCutAction().getValue(Action.NAME));
+		inputMap.put(KeyStroke.getKeyStroke('C', InputEvent.CTRL_DOWN_MASK), TransferHandler.getCopyAction().getValue(Action.NAME));
+		inputMap.put(KeyStroke.getKeyStroke('V', InputEvent.CTRL_DOWN_MASK), TransferHandler.getPasteAction().getValue(Action.NAME));
 		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0), TransferHandler.getCutAction().getValue(Action.NAME));
 		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, 0), TransferHandler.getCutAction().getValue(Action.NAME));
 
@@ -155,7 +174,7 @@ public class ImportPanel extends JPanel implements EventHandler {
 
 		removeButton.setActionCommand((String)TransferHandler.getCutAction().getValue(Action.NAME));
 		removeButton.addActionListener(e -> {
-			String action = (String)e.getActionCommand();
+			String action = e.getActionCommand();
 			Action a = fileList.getActionMap().get(action);
 			if (a != null)
 				a.actionPerformed(new ActionEvent(fileList, ActionEvent.ACTION_PERFORMED, null));
@@ -249,7 +268,7 @@ public class ImportPanel extends JPanel implements EventHandler {
 	public void setSettings() {
 		File[] importFiles = new File[fileListModel.size()]; 
 		for (int i = 0; i < fileListModel.size(); ++i)
-			importFiles[i] = new File(fileListModel.get(i).toString());
+			importFiles[i] = new File(fileListModel.get(i));
 
 		config.getInternal().setImportFiles(importFiles);		
 		config.getProject().getDatabase().getWorkspaces().getImportWorkspace().setName(workspaceText.getText().trim());
@@ -274,53 +293,32 @@ public class ImportPanel extends JPanel implements EventHandler {
 				return;
 			}
 
-			// gmlId
-			if (filter.getMode() == SimpleSelectionFilterMode.SIMPLE
-					&& !filter.getFilter().getGmlIdFilter().isSetResourceIds()) {
-				viewController.errorMessage(Language.I18N.getString("import.dialog.error.incorrectData"), 
-						Language.I18N.getString("common.dialog.error.incorrectData.gmlId"));
+			// attribute filter
+			if (filter.isUseAttributeFilter()
+					&& !filter.getAttributeFilter().getGmlIdFilter().isSetResourceIds()
+					&& !filter.getAttributeFilter().getGmlNameFilter().isSetLiteral()) {
+				viewController.errorMessage(Language.I18N.getString("import.dialog.error.incorrectData"),
+						Language.I18N.getString("common.dialog.error.incorrectData.attributes"));
 				return;
 			}
 
-			// cityObject
-			if (filter.getMode() == SimpleSelectionFilterMode.COMPLEX
-					&& filter.isUseCountFilter()) {
-				Long coStart = filter.getCounterFilter().getLowerLimit();
-				Long coEnd = filter.getCounterFilter().getUpperLimit();
+			// counter filter
+			if (filter.isUseCountFilter()) {
+				Long lowerLimit = filter.getCounterFilter().getLowerLimit();
+				Long upperLimit = filter.getCounterFilter().getUpperLimit();
 
-				if (coStart == null || coEnd == null) {
+				if (lowerLimit == null || upperLimit == null
+						|| lowerLimit <= 0 || upperLimit <= 0
+						|| upperLimit < lowerLimit) {
 					viewController.errorMessage(Language.I18N.getString("import.dialog.error.incorrectData"), 
 							Language.I18N.getString("import.dialog.error.incorrectData.range"));
 					return;
 				}
-
-				if ((coStart != null && coStart <= 0) || (coEnd != null && coEnd <= 0)) {
-					viewController.errorMessage(Language.I18N.getString("import.dialog.error.incorrectData"),
-							Language.I18N.getString("import.dialog.error.incorrectData.range"));
-					return;
-				}
-
-				if (coEnd != null && coEnd < coStart) {
-					viewController.errorMessage(Language.I18N.getString("import.dialog.error.incorrectData"),
-							Language.I18N.getString("import.dialog.error.incorrectData.range"));
-					return;
-				}
 			}
 
-			// gmlName
-			if (filter.getMode() == SimpleSelectionFilterMode.COMPLEX
-					&& filter.isUseGmlNameFilter()
-					&& (!filter.getFilter().getGmlNameFilter().isSetLiteral()
-							|| filter.getFilter().getGmlNameFilter().getLiteral().trim().equals(""))) {
-				viewController.errorMessage(Language.I18N.getString("import.dialog.error.incorrectData"),
-						Language.I18N.getString("common.dialog.error.incorrectData.gmlName"));
-				return;
-			}
-
-			// BoundingBox
-			if (filter.getMode() == SimpleSelectionFilterMode.COMPLEX
-					&& filter.isUseBboxFilter()) {
-				BoundingBox bbox = (BoundingBox)filter.getFilter().getBboxFilter().getEnvelope();
+			// bounding box
+			if (filter.isUseBboxFilter()) {
+				BoundingBox bbox = filter.getBboxFilter().getEnvelope();
 				Double xMin = bbox.getLowerCorner().getX();
 				Double yMin = bbox.getLowerCorner().getY();
 				Double xMax = bbox.getUpperCorner().getX();
@@ -334,9 +332,7 @@ public class ImportPanel extends JPanel implements EventHandler {
 			}
 
 			// feature types
-			if (filter.getMode() == SimpleSelectionFilterMode.COMPLEX 
-					&& filter.isUseTypeNames()
-					&& filter.getFeatureTypeFilter().getTypeNames().isEmpty()) {
+			if (filter.isUseTypeNames() && filter.getFeatureTypeFilter().getTypeNames().isEmpty()) {
 				viewController.errorMessage(Language.I18N.getString("import.dialog.error.incorrectData"),
 						Language.I18N.getString("common.dialog.error.incorrectData.featureClass"));
 				return;
@@ -369,11 +365,9 @@ public class ImportPanel extends JPanel implements EventHandler {
 					Language.I18N.getString("import.dialog.window"), 
 					Language.I18N.getString("import.dialog.msg"));
 
-			SwingUtilities.invokeLater(new Runnable() {
-				public void run() {
-					importDialog.setLocationRelativeTo(viewController.getTopFrame());
-					importDialog.setVisible(true);
-				}
+			SwingUtilities.invokeLater(() -> {
+				importDialog.setLocationRelativeTo(viewController.getTopFrame());
+				importDialog.setVisible(true);
 			});
 
 			// get schema mapping
@@ -410,15 +404,11 @@ public class ImportPanel extends JPanel implements EventHandler {
 
 			try {
 				eventDispatcher.flushEvents();
-			} catch (InterruptedException e1) {
+			} catch (InterruptedException e) {
 				//
 			}
 
-			SwingUtilities.invokeLater(new Runnable() {
-				public void run() {
-					importDialog.dispose();
-				}
-			});
+			SwingUtilities.invokeLater(importDialog::dispose);
 
 			// cleanup
 			importer.cleanup();
@@ -463,11 +453,9 @@ public class ImportPanel extends JPanel implements EventHandler {
 					true, 
 					eventDispatcher);
 
-			SwingUtilities.invokeLater(new Runnable() {
-				public void run() {
-					validatorDialog.setLocationRelativeTo(viewController.getTopFrame());
-					validatorDialog.setVisible(true);
-				}
+			SwingUtilities.invokeLater(() -> {
+				validatorDialog.setLocationRelativeTo(viewController.getTopFrame());
+				validatorDialog.setVisible(true);
 			});
 
 			XMLValidator validator = new XMLValidator(config, eventDispatcher);
@@ -490,15 +478,11 @@ public class ImportPanel extends JPanel implements EventHandler {
 
 			try {
 				eventDispatcher.flushEvents();
-			} catch (InterruptedException e1) {
+			} catch (InterruptedException e) {
 				//
 			}
 
-			SwingUtilities.invokeLater(new Runnable() {
-				public void run() {
-					validatorDialog.dispose();
-				}
-			});
+			SwingUtilities.invokeLater(validatorDialog::dispose);
 
 			// cleanup
 			validator.cleanup();
@@ -533,7 +517,7 @@ public class ImportPanel extends JPanel implements EventHandler {
 				chooser.setCurrentDirectory(new File(config.getProject().getImporter().getPath().getStandardPath()));
 			}
 		} else
-			chooser.setCurrentDirectory(new File(fileListModel.get(0).toString()));
+			chooser.setCurrentDirectory(new File(fileListModel.get(0)));
 
 		int result = chooser.showOpenDialog(getTopLevelAncestor());
 		if (result == JFileChooser.CANCEL_OPTION) 
@@ -557,7 +541,7 @@ public class ImportPanel extends JPanel implements EventHandler {
 			if (info.isDrop())
 				return false;
 
-			List<String> fileNames = new ArrayList<String>();
+			List<String> fileNames = new ArrayList<>();
 			try {
 				String value = (String)info.getTransferable().getTransferData(DataFlavor.stringFlavor);
 				StringTokenizer t = new StringTokenizer(value, System.getProperty("line.separator"));
@@ -574,9 +558,7 @@ public class ImportPanel extends JPanel implements EventHandler {
 					addFileNames(fileNames);
 					return true;
 				}
-			} catch (UnsupportedFlavorException ufe) {
-				//
-			} catch (IOException ioe) {
+			} catch (UnsupportedFlavorException | IOException ufe) {
 				//
 			}
 
@@ -590,7 +572,7 @@ public class ImportPanel extends JPanel implements EventHandler {
 
 			StringBuilder builder = new StringBuilder();
 			for (int i = 0; i < indices.length; i++) {
-				builder.append((String)fileList.getModel().getElementAt(indices[i]));
+				builder.append(fileList.getModel().getElementAt(indices[i]));
 				if (i < indices.length - 1)
 					builder.append(newLine);
 			}
@@ -638,7 +620,7 @@ public class ImportPanel extends JPanel implements EventHandler {
 					try {
 						dtde.acceptDrop(DnDConstants.ACTION_COPY_OR_MOVE);
 
-						List<String> fileNames = new ArrayList<String>();
+						List<String> fileNames = new ArrayList<>();
 						for (File file : (List<File>)dtde.getTransferable().getTransferData(DataFlavor.javaFileListFlavor))
 							if (file.exists())
 								fileNames.add(file.getCanonicalPath());
@@ -653,9 +635,7 @@ public class ImportPanel extends JPanel implements EventHandler {
 						}
 
 						dtde.getDropTargetContext().dropComplete(true);	
-					} catch (UnsupportedFlavorException e1) {
-						//
-					} catch (IOException e2) {
+					} catch (UnsupportedFlavorException | IOException e) {
 						//
 					}
 				}
@@ -668,7 +648,7 @@ public class ImportPanel extends JPanel implements EventHandler {
 				fileListModel.add(index++, fileName);
 
 			config.getProject().getImporter().getPath().setLastUsedPath(
-					new File(fileListModel.getElementAt(0).toString()).getAbsolutePath());
+					new File(fileListModel.getElementAt(0)).getAbsolutePath());
 		}
 
 		@Override
@@ -690,6 +670,6 @@ public class ImportPanel extends JPanel implements EventHandler {
 	@Override
 	public void handleEvent(Event event) throws Exception {
 		DatabaseConnectionStateEvent state = (DatabaseConnectionStateEvent)event;
-		setEnabledWorkspace(!state.isConnected() || (state.isConnected() && databaseController.getActiveDatabaseAdapter().hasVersioningSupport()));
+		setEnabledWorkspace(!state.isConnected() || databaseController.getActiveDatabaseAdapter().hasVersioningSupport());
 	}
 }

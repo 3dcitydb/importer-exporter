@@ -36,7 +36,7 @@ import org.citydb.config.project.database.Database;
 import org.citydb.config.project.database.DatabaseConfigurationException;
 import org.citydb.config.project.exporter.SimpleQuery;
 import org.citydb.config.project.global.LogLevel;
-import org.citydb.config.project.query.filter.selection.SimpleSelectionFilterMode;
+import org.citydb.config.project.query.simple.SimpleSelectionFilter;
 import org.citydb.database.DatabaseController;
 import org.citydb.database.schema.mapping.SchemaMapping;
 import org.citydb.database.version.DatabaseVersionException;
@@ -59,10 +59,22 @@ import org.citygml4j.builder.jaxb.CityGMLBuilder;
 import org.jdesktop.swingx.JXTextField;
 import org.jdesktop.swingx.prompt.PromptSupport.FocusBehavior;
 
-import javax.swing.*;
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JFileChooser;
+import javax.swing.JFormattedTextField;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
 import javax.swing.border.TitledBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.dnd.DnDConstants;
@@ -205,7 +217,7 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 		browseText.setText(config.getInternal().getExportFileName());
 		workspaceText.setText(config.getProject().getDatabase().getWorkspaces().getExportWorkspace().getName());
 		timestampText.setText(config.getProject().getDatabase().getWorkspaces().getExportWorkspace().getTimestamp());
-		srsComboBox.setSelectedItem(config.getProject().getExporter().getQuery().getTargetSRS());
+		srsComboBox.setSelectedItem(config.getProject().getExporter().getSimpleQuery().getTargetSRS());
 
 		filterPanel.loadSettings();
 	}
@@ -214,7 +226,7 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 		config.getInternal().setExportFileName(browseText.getText());
 		config.getProject().getDatabase().getWorkspaces().getExportWorkspace().setName(workspaceText.getText().trim());
 		config.getProject().getDatabase().getWorkspaces().getExportWorkspace().setTimestamp(timestampText.getText().trim());
-		config.getProject().getExporter().getQuery().setTargetSRS(srsComboBox.getSelectedItem());
+		config.getProject().getExporter().getSimpleQuery().setTargetSRS(srsComboBox.getSelectedItem());
 
 		filterPanel.setSettings();
 	}
@@ -227,7 +239,7 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 			viewContoller.clearConsole();
 			setSettings();
 
-			SimpleQuery query = config.getProject().getExporter().getQuery();
+			SimpleQuery query = config.getProject().getExporter().getSimpleQuery();
 			Database db = config.getProject().getDatabase();
 
 			// check all input values...
@@ -244,47 +256,23 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 				return;
 			}
 
-			// gmlId
-			if (query.getMode() == SimpleSelectionFilterMode.SIMPLE
-					&& !query.getFilter().getGmlIdFilter().isSetResourceIds()) {
-				viewContoller.errorMessage(Language.I18N.getString("export.dialog.error.incorrectData"), 
-						Language.I18N.getString("common.dialog.error.incorrectData.gmlId"));
-				return;
-			}
-
-			// cityObject
-			if (query.getMode() == SimpleSelectionFilterMode.COMPLEX
-					&& query.isUseCountFilter()) {
-				Long coStart = query.getCounterFilter().getLowerLimit();
-				Long coEnd = query.getCounterFilter().getUpperLimit();
-
-				if (coStart == null || coEnd == null) {
-					viewContoller.errorMessage(Language.I18N.getString("export.dialog.error.incorrectData"), 
-							Language.I18N.getString("export.dialog.error.incorrectData.range"));
+			// simple selection filter
+			if (query.isUseSelectionFilter()) {
+				SimpleSelectionFilter selectionFilter = query.getSelectionFilter();
+				if (!selectionFilter.isUseSQLFilter()
+						&& !selectionFilter.getGmlIdFilter().isSetResourceIds()
+						&& !selectionFilter.getGmlNameFilter().isSetLiteral()) {
+					viewContoller.errorMessage(Language.I18N.getString("export.dialog.error.incorrectData"),
+							Language.I18N.getString("export.dialog.error.incorrectData.attributes"));
 					return;
 				}
 
-				if ((coStart != null && coStart <= 0) || (coEnd != null && coEnd <= 0)) {
-					viewContoller.errorMessage(Language.I18N.getString("export.dialog.error.incorrectData"), 
-							Language.I18N.getString("export.dialog.error.incorrectData.range"));
+				else if (selectionFilter.isUseSQLFilter()
+						&& !selectionFilter.getSQLFilter().isSetValue()) {
+					viewContoller.errorMessage(Language.I18N.getString("export.dialog.error.incorrectData"),
+							Language.I18N.getString("export.dialog.error.incorrectData.sql"));
 					return;
 				}
-
-				if (coEnd != null && coEnd < coStart) {
-					viewContoller.errorMessage(Language.I18N.getString("export.dialog.error.incorrectData"), 
-							Language.I18N.getString("export.dialog.error.incorrectData.range"));
-					return;
-				}
-			}
-
-			// gmlName
-			if (query.getMode() == SimpleSelectionFilterMode.COMPLEX
-					&& query.isUseGmlNameFilter()
-					&& (!query.getFilter().getGmlNameFilter().isSetLiteral()
-							|| query.getFilter().getGmlNameFilter().getLiteral().trim().equals(""))) {
-				viewContoller.errorMessage(Language.I18N.getString("export.dialog.error.incorrectData"),
-						Language.I18N.getString("common.dialog.error.incorrectData.gmlName"));
-				return;
 			}
 
 			// lod filter
@@ -294,11 +282,24 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 				return;
 			}
 
+			// counter filter
+			if (query.isUseCountFilter()) {
+				Long lowerLimit = query.getCounterFilter().getLowerLimit();
+				Long upperLimit = query.getCounterFilter().getUpperLimit();
+
+				if (lowerLimit == null || upperLimit == null
+						|| lowerLimit <= 0 || upperLimit <= 0
+						|| upperLimit < lowerLimit) {
+					viewContoller.errorMessage(Language.I18N.getString("export.dialog.error.incorrectData"), 
+							Language.I18N.getString("export.dialog.error.incorrectData.range"));
+					return;
+				}
+			}
+
 			// tiled bounding box
 			int tileAmount = 0;
-			if (query.getMode() == SimpleSelectionFilterMode.COMPLEX
-					&& query.isUseBboxFilter()) {
-				BoundingBox bbox = (BoundingBox)query.getFilter().getBboxFilter().getEnvelope();
+			if (query.isUseBboxFilter()) {
+				BoundingBox bbox = query.getBboxFilter().getEnvelope();
 				Double xMin = bbox.getLowerCorner().getX();
 				Double yMin = bbox.getLowerCorner().getY();
 				Double xMax = bbox.getUpperCorner().getX();
@@ -315,9 +316,7 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 			}
 
 			// feature types
-			if (query.getMode() == SimpleSelectionFilterMode.COMPLEX 
-					&& query.isUseTypeNames()
-					&& query.getFeatureTypeFilter().getTypeNames().isEmpty()) {
+			if (query.isUseTypeNames() && query.getFeatureTypeFilter().getTypeNames().isEmpty()) {
 				viewContoller.errorMessage(Language.I18N.getString("export.dialog.error.incorrectData"),
 						Language.I18N.getString("common.dialog.error.incorrectData.featureClass"));
 				return;
@@ -341,11 +340,9 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 					Language.I18N.getString("export.dialog.msg"),
 					tileAmount > 1);
 
-			SwingUtilities.invokeLater(new Runnable() {
-				public void run() {
-					exportDialog.setLocationRelativeTo(viewContoller.getTopFrame());
-					exportDialog.setVisible(true);
-				}
+			SwingUtilities.invokeLater(() -> {
+				exportDialog.setLocationRelativeTo(viewContoller.getTopFrame());
+				exportDialog.setVisible(true);
 			});
 
 			// get schema mapping
@@ -386,11 +383,7 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 				//
 			}
 
-			SwingUtilities.invokeLater(new Runnable() {
-				public void run() {
-					exportDialog.dispose();
-				}
-			});
+			SwingUtilities.invokeLater(exportDialog::dispose);
 
 			// cleanup
 			exporter.cleanup();
@@ -465,9 +458,7 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 					}
 
 					dtde.getDropTargetContext().dropComplete(true);	
-				} catch (UnsupportedFlavorException e1) {
-					//
-				} catch (IOException e2) {
+				} catch (UnsupportedFlavorException | IOException e) {
 					//
 				}
 			}
@@ -482,7 +473,7 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 	@Override
 	public void handleEvent(Event event) throws Exception {
 		DatabaseConnectionStateEvent state = (DatabaseConnectionStateEvent)event;
-		setEnabledWorkspace(!state.isConnected() || (state.isConnected() && databaseController.getActiveDatabaseAdapter().hasVersioningSupport()));
+		setEnabledWorkspace(!state.isConnected() || databaseController.getActiveDatabaseAdapter().hasVersioningSupport());
 	}
 
 }
