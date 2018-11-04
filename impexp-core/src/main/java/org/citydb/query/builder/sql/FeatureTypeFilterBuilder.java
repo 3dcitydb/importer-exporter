@@ -27,14 +27,14 @@
  */
 package org.citydb.query.builder.sql;
 
+import org.citydb.database.schema.mapping.FeatureType;
+import org.citydb.query.filter.type.FeatureTypeFilter;
+import org.citygml4j.model.module.citygml.CityGMLVersion;
+
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import org.citydb.database.schema.mapping.FeatureType;
-import org.citydb.query.filter.type.FeatureTypeFilter;
-import org.citygml4j.model.module.citygml.CityGMLVersion;
 
 public class FeatureTypeFilterBuilder {
 
@@ -53,7 +53,7 @@ public class FeatureTypeFilterBuilder {
 				return Collections.emptySet();
 		}
 
-		Set<Integer> ids = new HashSet<Integer>(featureTypes.size());
+		Set<Integer> ids = new HashSet<>(featureTypes.size());
 		for (FeatureType featureType : featureTypes)
 			ids.add(featureType.getObjectClassId());
 

@@ -63,7 +63,7 @@ public class SQLQueryBuilder {
 
 	public Select buildQuery(Query query) throws QueryBuildException {
 		// TODO: we need some consistency check for the Query element (possibly query.isValid())?
-		Select select = null;
+		Select select;
 
 		// feature type filter
 		FeatureTypeFilter typeFilter = query.getFeatureTypeFilter();

@@ -27,13 +27,9 @@
  */
 package org.citydb.query.builder.sql;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-
 import org.citydb.database.adapter.AbstractSQLAdapter;
 import org.citydb.database.schema.mapping.FeatureType;
+import org.citydb.database.schema.mapping.MappingConstants;
 import org.citydb.database.schema.mapping.SchemaMapping;
 import org.citydb.database.schema.path.InvalidSchemaPathException;
 import org.citydb.database.schema.path.SchemaPath;
@@ -41,26 +37,30 @@ import org.citydb.query.Query;
 import org.citydb.query.builder.QueryBuildException;
 import org.citydb.query.filter.selection.expression.ValueReference;
 import org.citydb.query.filter.selection.operator.id.ResourceIdOperator;
-import org.citygml4j.model.module.gml.GMLCoreModule;
-
 import org.citydb.sqlbuilder.expression.LiteralList;
 import org.citydb.sqlbuilder.expression.PlaceHolder;
 import org.citydb.sqlbuilder.select.PredicateToken;
 import org.citydb.sqlbuilder.select.operator.comparison.ComparisonFactory;
 import org.citydb.sqlbuilder.select.operator.logical.BinaryLogicalOperator;
 import org.citydb.sqlbuilder.select.operator.logical.LogicalOperationName;
+import org.citygml4j.model.module.gml.GMLCoreModule;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 
 public class IdOperatorBuilder {
 	private final Query query;
 	private final SchemaPathBuilder schemaPathBuilder;
-	private final Set<Integer> objectclassIds;
+	private final Set<Integer> objectClassIds;
 	private final SchemaMapping schemaMapping;
 	private final AbstractSQLAdapter sqlAdapter;
 
-	protected IdOperatorBuilder(Query query, SchemaPathBuilder schemaPathBuilder, Set<Integer> objectclassIds, SchemaMapping schemaMapping, AbstractSQLAdapter sqlAdapter) {
+	protected IdOperatorBuilder(Query query, SchemaPathBuilder schemaPathBuilder, Set<Integer> objectClassIds, SchemaMapping schemaMapping, AbstractSQLAdapter sqlAdapter) {
 		this.query = query;
 		this.schemaPathBuilder = schemaPathBuilder;
-		this.objectclassIds = objectclassIds;
+		this.objectClassIds = objectClassIds;
 		this.schemaMapping = schemaMapping;
 		this.sqlAdapter = sqlAdapter;
 	}
@@ -68,33 +68,33 @@ public class IdOperatorBuilder {
 	@SuppressWarnings("unchecked")
 	protected SQLQueryContext buildResourceIdOperator(ResourceIdOperator operator, boolean negate) throws QueryBuildException {
 		FeatureType superType = schemaMapping.getCommonSuperType(query.getFeatureTypeFilter().getFeatureTypes());		
-		ValueReference valueReference = null;
+		ValueReference valueReference;
 
 		try {
 			SchemaPath path = new SchemaPath(superType);	
-			path.appendChild(superType.getProperty("id", GMLCoreModule.v3_1_1.getNamespaceURI(), true));
+			path.appendChild(superType.getProperty(MappingConstants.ID, GMLCoreModule.v3_1_1.getNamespaceURI(), true));
 			valueReference = new ValueReference(path);
 		} catch (InvalidSchemaPathException e) {
 			throw new QueryBuildException(e.getMessage());
 		}
 
 		// build the value reference
-		SQLQueryContext queryContext = schemaPathBuilder.buildSchemaPath(valueReference.getSchemaPath(), objectclassIds);
-		List<PredicateToken> predicates = new ArrayList<PredicateToken>();
+		SQLQueryContext queryContext = schemaPathBuilder.buildSchemaPath(valueReference.getSchemaPath(), objectClassIds);
+		List<PredicateToken> predicates = new ArrayList<>();
 
 		if (operator.getResourceIds().size() == 1) {
-			queryContext.select.addSelection(ComparisonFactory.equalTo(queryContext.targetColumn, new PlaceHolder<String>(operator.getResourceIds().iterator().next())));
+			queryContext.select.addSelection(ComparisonFactory.equalTo(queryContext.targetColumn, new PlaceHolder<>(operator.getResourceIds().iterator().next())));
 		} else {
-			List<PlaceHolder<String>> placeHolders = new ArrayList<PlaceHolder<String>>();
+			List<PlaceHolder<String>> placeHolders = new ArrayList<>();
 			int maxItems = sqlAdapter.getMaximumNumberOfItemsForInOperator();
 			int i = 0;
 
 			Iterator<String> iter = operator.getResourceIds().iterator();
 			while (iter.hasNext()) {
-				placeHolders.add(new PlaceHolder<String>(iter.next()));
+				placeHolders.add(new PlaceHolder<>(iter.next()));
 
 				if (++i == maxItems || !iter.hasNext()) {
-					predicates.add(ComparisonFactory.in(queryContext.targetColumn, new LiteralList(placeHolders.toArray(new PlaceHolder[placeHolders.size()])), negate));
+					predicates.add(ComparisonFactory.in(queryContext.targetColumn, new LiteralList(placeHolders.toArray(new PlaceHolder[0])), negate));
 					placeHolders.clear();
 					i = 0;
 				}

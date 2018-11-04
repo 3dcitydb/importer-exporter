@@ -27,21 +27,20 @@
  */
 package org.citydb.query.builder.sql;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.query.builder.QueryBuildException;
 import org.citydb.query.filter.apperance.AppearanceFilter;
-
 import org.citydb.sqlbuilder.expression.LiteralList;
 import org.citydb.sqlbuilder.expression.PlaceHolder;
 import org.citydb.sqlbuilder.schema.Column;
 import org.citydb.sqlbuilder.select.PredicateToken;
 import org.citydb.sqlbuilder.select.operator.comparison.ComparisonFactory;
 import org.citydb.sqlbuilder.select.operator.logical.LogicalOperationFactory;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
 
 public class AppearanceFilterBuilder {
 	private final AbstractDatabaseAdapter databaseAdapter;
@@ -66,16 +65,16 @@ public class AppearanceFilterBuilder {
 		if (themes.size() == 1) {
 			predicates.add(ComparisonFactory.equalTo(themeColumn, new PlaceHolder<>(themes.iterator().next())));
 		} else {
-			List<PlaceHolder<String>> placeHolders = new ArrayList<PlaceHolder<String>>();
+			List<PlaceHolder<String>> placeHolders = new ArrayList<>();
 			int maxItems = databaseAdapter.getSQLAdapter().getMaximumNumberOfItemsForInOperator();
 			int i = 0;
 			
 			Iterator<String> iter = themes.iterator();
 			while (iter.hasNext()) {
-				placeHolders.add(new PlaceHolder<String>(iter.next()));
+				placeHolders.add(new PlaceHolder<>(iter.next()));
 
 				if (++i == maxItems || !iter.hasNext()) {
-					predicates.add(ComparisonFactory.in(themeColumn, new LiteralList(placeHolders.toArray(new PlaceHolder[placeHolders.size()]))));
+					predicates.add(ComparisonFactory.in(themeColumn, new LiteralList(placeHolders.toArray(new PlaceHolder[0]))));
 					placeHolders.clear();
 					i = 0;
 				}

@@ -27,10 +27,6 @@
  */
 package org.citydb.query.builder.sql;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
 import org.citydb.database.adapter.AbstractSQLAdapter;
 import org.citydb.database.schema.mapping.AbstractJoin;
 import org.citydb.database.schema.mapping.AbstractProperty;
@@ -61,7 +57,6 @@ import org.citydb.query.filter.selection.operator.comparison.BinaryComparisonOpe
 import org.citydb.query.filter.selection.operator.comparison.ComparisonOperatorName;
 import org.citydb.query.filter.selection.operator.comparison.LikeOperator;
 import org.citydb.query.filter.selection.operator.comparison.NullOperator;
-
 import org.citydb.sqlbuilder.expression.AbstractSQLLiteral;
 import org.citydb.sqlbuilder.expression.PlaceHolder;
 import org.citydb.sqlbuilder.schema.Table;
@@ -72,6 +67,10 @@ import org.citydb.sqlbuilder.select.operator.comparison.ComparisonFactory;
 import org.citydb.sqlbuilder.select.operator.logical.LogicalOperationFactory;
 import org.citydb.sqlbuilder.select.projection.ConstantColumn;
 import org.citydb.sqlbuilder.select.projection.Function;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 public class ComparisonOperatorBuilder {
 	private final SchemaPathBuilder schemaPathBuilder;

@@ -27,16 +27,9 @@
  */
 package org.citydb.query.builder.sql;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-
 import org.citydb.database.schema.mapping.FeatureType;
 import org.citydb.database.schema.mapping.InjectedProperty;
 import org.citydb.database.schema.mapping.MappingConstants;
-
 import org.citydb.sqlbuilder.schema.Column;
 import org.citydb.sqlbuilder.schema.Table;
 import org.citydb.sqlbuilder.select.PredicateToken;
@@ -47,6 +40,12 @@ import org.citydb.sqlbuilder.select.operator.comparison.ComparisonFactory;
 import org.citydb.sqlbuilder.select.operator.comparison.ComparisonName;
 import org.citydb.sqlbuilder.select.operator.logical.LogicalOperationFactory;
 import org.citydb.sqlbuilder.select.projection.ConstantColumn;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 
 public class LodFilterQueryContext {
 	private final FeatureType type;

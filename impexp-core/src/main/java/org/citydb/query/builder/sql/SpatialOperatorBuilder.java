@@ -27,14 +27,6 @@
  */
 package org.citydb.query.builder.sql;
 
-import java.sql.SQLException;
-import java.util.Set;
-
-import javax.measure.converter.ConversionException;
-import javax.measure.converter.UnitConverter;
-import javax.measure.unit.SI;
-import javax.measure.unit.Unit;
-
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.config.project.database.DatabaseSrs;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
@@ -54,10 +46,6 @@ import org.citydb.query.filter.selection.operator.spatial.Distance;
 import org.citydb.query.filter.selection.operator.spatial.DistanceOperator;
 import org.citydb.query.filter.selection.operator.spatial.DistanceUnit;
 import org.citydb.query.filter.selection.operator.spatial.SpatialOperatorName;
-import org.citygml4j.model.module.gml.GMLCoreModule;
-import org.opengis.referencing.FactoryException;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-
 import org.citydb.sqlbuilder.schema.Column;
 import org.citydb.sqlbuilder.schema.Table;
 import org.citydb.sqlbuilder.select.PredicateToken;
@@ -65,6 +53,16 @@ import org.citydb.sqlbuilder.select.ProjectionToken;
 import org.citydb.sqlbuilder.select.Select;
 import org.citydb.sqlbuilder.select.operator.comparison.ComparisonFactory;
 import org.citydb.sqlbuilder.select.operator.logical.LogicalOperationFactory;
+import org.citygml4j.model.module.gml.GMLCoreModule;
+import org.opengis.referencing.FactoryException;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+
+import javax.measure.converter.ConversionException;
+import javax.measure.converter.UnitConverter;
+import javax.measure.unit.SI;
+import javax.measure.unit.Unit;
+import java.sql.SQLException;
+import java.util.Set;
 
 public class SpatialOperatorBuilder {
 	private final Query query;
@@ -174,9 +172,9 @@ public class SpatialOperatorBuilder {
 		// add optimizer hint if required
 		if (databaseAdapter.getSQLAdapter().spatialPredicateRequiresNoIndexHint()
 				&& queryContext.getTargetColumn().getName().equalsIgnoreCase(MappingConstants.ENVELOPE)) {
-			queryContext.select.setOptimizerString(new StringBuilder("/*+ no_index(")
-					.append(queryContext.getTargetColumn().getTable().getAlias())
-					.append(" cityobject_objectclass_fkx) */").toString());
+			queryContext.select.setOptimizerString("/*+ no_index(" +
+					queryContext.getTargetColumn().getTable().getAlias() +
+					" cityobject_objectclass_fkx) */");
 		}
 
 		return queryContext;
@@ -186,7 +184,7 @@ public class SpatialOperatorBuilder {
 		if (!SpatialOperatorName.DISTANCE_OPERATORS.contains(operator.getOperatorName()))
 			throw new QueryBuildException(operator.getOperatorName() + " is not a distance operator.");
 
-		ValueReference valueReference = null;
+		ValueReference valueReference;
 		GeometryObject spatialDescription = operator.getSpatialDescription();
 		Distance distance = operator.getDistance();
 
@@ -211,9 +209,9 @@ public class SpatialOperatorBuilder {
 		}
 
 		// convert distance value into unit of srs
-		Unit<?> srsUnit = null;
+		Unit<?> srsUnit;
 		DistanceUnit distanceUnit = distance.isSetUnit() ? distance.getUnit() : DistanceUnit.METER;
-		UnitConverter converter = null;
+		UnitConverter converter;
 
 		try {
 			CoordinateReferenceSystem crs = databaseAdapter.getUtil().decodeDatabaseSrs(targetSrs);
@@ -277,9 +275,9 @@ public class SpatialOperatorBuilder {
 		// add optimizer hint if required
 		if (databaseAdapter.getSQLAdapter().spatialPredicateRequiresNoIndexHint()
 				&& queryContext.getTargetColumn().getName().equalsIgnoreCase(MappingConstants.ENVELOPE)) {
-			queryContext.select.setOptimizerString(new StringBuilder("/*+ no_index(")
-					.append(queryContext.getTargetColumn().getTable().getAlias())
-					.append(" cityobject_objectclass_fkx) */").toString());
+			queryContext.select.setOptimizerString("/*+ no_index(" +
+					queryContext.getTargetColumn().getTable().getAlias() +
+					" cityobject_objectclass_fkx) */");
 		}
 
 		return queryContext;

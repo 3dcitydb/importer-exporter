@@ -279,7 +279,7 @@ public class LodFilterBuilder {
 				if (!lodFilter.isEnabled(lod))
 					continue;
 
-				geometryColumns.get(lod).add(table.getColumn(new StringBuilder("lod").append(lod).append("_implicit_rep_id").toString()));
+				geometryColumns.get(lod).add(table.getColumn("lod" + lod + "_implicit_rep_id"));
 			}
 
 			if (property instanceof InjectedProperty)
@@ -341,7 +341,7 @@ public class LodFilterBuilder {
 			// we do not consider the nested type, if one of its subtypes is a 
 			// top-level feature. The rationale here is that a top-level feature does
 			// not contribute to the LoD of another top-level feature
-			if (candidates.stream().anyMatch(c -> c.isTopLevel()))
+			if (candidates.stream().anyMatch(FeatureType::isTopLevel))
 				continue;
 
 			Set<FeatureType> visitedTypes = new HashSet<>();
@@ -381,7 +381,7 @@ public class LodFilterBuilder {
 							if (toType.isSetExtension()) {
 								AbstractExtension<FeatureType> extension = toType.getExtension();
 								if (extension.isSetJoin()) {
-									org.citydb.database.schema.mapping.Join join = (org.citydb.database.schema.mapping.Join)extension.getJoin();
+									org.citydb.database.schema.mapping.Join join = extension.getJoin();
 									Table tmp = new Table(join.getTable(), schemaName);									
 									subContext.addParentJoin(JoinFactory.inner(tmp, join.getToColumn(), ComparisonName.EQUAL_TO, toTable.getColumn(join.getFromColumn())));
 									toTable = tmp;

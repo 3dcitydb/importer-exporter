@@ -28,7 +28,6 @@
 package org.citydb.query.builder.sql;
 
 import org.citydb.database.schema.path.SchemaPath;
-
 import org.citydb.sqlbuilder.schema.Column;
 import org.citydb.sqlbuilder.schema.Table;
 import org.citydb.sqlbuilder.select.Select;

@@ -70,7 +70,7 @@ public class PredicateBuilder {
 		comparisonBuilder = new ComparisonOperatorBuilder(schemaPathBuilder, objectClassIds, databaseAdapter.getSQLAdapter(), schemaName);
 		spatialBuilder = new SpatialOperatorBuilder(query, schemaPathBuilder, objectClassIds, schemaMapping, databaseAdapter, schemaName);
 		idBuilder = new IdOperatorBuilder(query, schemaPathBuilder, objectClassIds, schemaMapping, databaseAdapter.getSQLAdapter());
-		selectBuilder = new SelectOperatorBuilder(objectClassIds, buildProperties);
+		selectBuilder = new SelectOperatorBuilder(query, schemaPathBuilder, objectClassIds, schemaMapping);
 	}
 
 	protected Select buildPredicate(Predicate predicate) throws QueryBuildException {
