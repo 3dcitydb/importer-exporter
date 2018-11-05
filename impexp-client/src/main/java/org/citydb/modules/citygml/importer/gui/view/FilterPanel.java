@@ -66,7 +66,7 @@ public class FilterPanel extends JPanel {
 	private JCheckBox useBBoxFilter;
 	private JCheckBox useFeatureFilter;
 
-	private JXTitledSeparator filterSeparator;
+	private JXTitledSeparator attributeFilterSeparator;
 	private JXTitledSeparator counterSeparator;
 	private JXTitledSeparator bboxSeparator;
 	private JXTitledSeparator featureSeparator;
@@ -96,7 +96,7 @@ public class FilterPanel extends JPanel {
 		useBBoxFilter = new JCheckBox();
 		useFeatureFilter = new JCheckBox();
 
-		filterSeparator = new JXTitledSeparator();
+		attributeFilterSeparator = new JXTitledSeparator();
 		counterSeparator = new JXTitledSeparator();
 		bboxSeparator = new JXTitledSeparator();
 		featureSeparator = new JXTitledSeparator();
@@ -138,7 +138,7 @@ public class FilterPanel extends JPanel {
 				JPanel filterPanel = new JPanel();
 
 				filterRow.add(useAttributeFilter, GuiUtil.setConstraints(0,0,0,0,GridBagConstraints.NORTH,GridBagConstraints.NONE,5,0,0,5));
-				filterRow.add(filterSeparator, GuiUtil.setConstraints(1,0,1,0,GridBagConstraints.HORIZONTAL,5,0,0,5));
+				filterRow.add(attributeFilterSeparator, GuiUtil.setConstraints(1,0,1,0,GridBagConstraints.HORIZONTAL,5,0,0,5));
 				filterRow.add(filterPanel, GuiUtil.setConstraints(1,1,1,0,GridBagConstraints.HORIZONTAL,0,0,5,5));
 
 				filterPanel.setLayout(new GridBagLayout());
@@ -206,7 +206,7 @@ public class FilterPanel extends JPanel {
 		useBBoxFilter.addActionListener(e -> setEnabledBBoxFilter());
 		useFeatureFilter.addActionListener(e -> setEnabledFeatureFilter());
 
-		filterSeparator.addMouseListener(new MouseAdapter() {
+		attributeFilterSeparator.addMouseListener(new MouseAdapter() {
 			public void mouseClicked(MouseEvent e) {
 				useAttributeFilter.doClick();
 			}
@@ -268,7 +268,7 @@ public class FilterPanel extends JPanel {
 	}
 
 	public void doTranslation() {
-		filterSeparator.setTitle(Language.I18N.getString("filter.border.attributes"));
+		attributeFilterSeparator.setTitle(Language.I18N.getString("filter.border.attributes"));
 		counterSeparator.setTitle(Language.I18N.getString("filter.border.counter"));
 		bboxSeparator.setTitle(Language.I18N.getString("filter.border.boundingBox"));
 		featureSeparator.setTitle(Language.I18N.getString("filter.border.featureClass"));
