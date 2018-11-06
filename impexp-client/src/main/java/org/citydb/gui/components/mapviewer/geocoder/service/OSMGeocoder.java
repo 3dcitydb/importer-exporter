@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import org.citydb.config.gui.window.GeocodingServiceName;
 import org.citydb.config.i18n.Language;
 import org.citydb.gui.components.mapviewer.geocoder.GeocoderResult;
 import org.citydb.gui.components.mapviewer.geocoder.Location;
@@ -121,4 +122,8 @@ public class OSMGeocoder implements GeocodingService {
         return connection;
     }
 
+    @Override
+    public GeocodingServiceName getName() {
+        return GeocodingServiceName.OSM_NOMINATIM;
+    }
 }

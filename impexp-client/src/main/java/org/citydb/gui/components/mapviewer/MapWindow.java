@@ -29,6 +29,7 @@ package org.citydb.gui.components.mapviewer;
 
 import org.citydb.config.Config;
 import org.citydb.config.geometry.BoundingBox;
+import org.citydb.config.gui.window.GeocodingServiceName;
 import org.citydb.config.gui.window.WindowSize;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.database.Database;
@@ -43,7 +44,10 @@ import org.citydb.gui.components.mapviewer.geocoder.Geocoder;
 import org.citydb.gui.components.mapviewer.geocoder.GeocoderResult;
 import org.citydb.gui.components.mapviewer.geocoder.Location;
 import org.citydb.gui.components.mapviewer.geocoder.LocationType;
+import org.citydb.gui.components.mapviewer.geocoder.service.GeocodingService;
 import org.citydb.gui.components.mapviewer.geocoder.service.GeocodingServiceException;
+import org.citydb.gui.components.mapviewer.geocoder.service.GoogleGeocoder;
+import org.citydb.gui.components.mapviewer.geocoder.service.OSMGeocoder;
 import org.citydb.gui.components.mapviewer.map.DefaultWaypoint;
 import org.citydb.gui.components.mapviewer.map.DefaultWaypoint.WaypointType;
 import org.citydb.gui.components.mapviewer.map.Map;
@@ -63,11 +67,37 @@ import org.jdesktop.swingx.mapviewer.AbstractTileFactory;
 import org.jdesktop.swingx.mapviewer.GeoPosition;
 import org.jdesktop.swingx.mapviewer.TileFactory;
 
-import javax.swing.*;
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JComponent;
+import javax.swing.JDialog;
+import javax.swing.JFormattedTextField;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JTextPane;
+import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
+import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.text.html.HTMLDocument;
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Desktop;
 import java.awt.Desktop.Action;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.Rectangle;
+import java.awt.Toolkit;
+import java.awt.event.ItemEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
@@ -136,6 +166,9 @@ public class MapWindow extends JDialog implements EventHandler {
 	private JLabel googleMapsTitle;
 	private JButton googleMapsButton;
 
+	private JLabel geocoderTitle;
+	private JComboBox<GeocodingServiceName> geocoderCombo;
+
 	private BoundingBoxListener listener;
 	private BBoxPopupMenu[] bboxPopups;
 	private JFrame mainFrame;
@@ -166,6 +199,18 @@ public class MapWindow extends JDialog implements EventHandler {
 
 		instance.applyButton.setVisible(false);
 		instance.setSizeOnScreen();
+
+		// update geocoder
+		GeocodingService service = null;
+		try {
+			service = instance.getGeocodingService(config.getGui().getMapWindow().getGeocoder());
+		} catch (GeocodingServiceException e) {
+			service = new OSMGeocoder();
+			config.getGui().getMapWindow().setGeocoder(GeocodingServiceName.OSM_NOMINATIM);
+		} finally {
+			Geocoder.getInstance().setGeocodingService(service);
+			instance.geocoderCombo.setSelectedItem(config.getGui().getMapWindow().getGeocoder());
+		}
 
 		return instance;
 	}
@@ -349,6 +394,22 @@ public class MapWindow extends JDialog implements EventHandler {
 		reverse.add(reverseText, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 10, 0, 0, 0));
 		reverse.add(reverseInfo, GuiUtil.setConstraints(0, 2, 0, 0, GridBagConstraints.HORIZONTAL, 10, 0, 0, 0));
 
+		// Geocoder picker
+		JPanel geocoder = new JPanel();
+		geocoder.setBorder(componentBorder);
+		geocoder.setLayout(new GridBagLayout());
+
+		geocoderTitle = new JLabel();
+		geocoderTitle.setFont(geocoderTitle.getFont().deriveFont(Font.BOLD));
+		geocoderTitle.setIcon(new ImageIcon(getClass().getResource("/org/citydb/gui/images/map/magnifier.png")));
+
+		geocoderCombo = new JComboBox<>();
+		for (GeocodingServiceName serviceName : GeocodingServiceName.values())
+			geocoderCombo.addItem(serviceName);
+
+		geocoder.add(geocoderTitle, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 0, 2, 0));
+		geocoder.add(geocoderCombo, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.HORIZONTAL, 10, 0, 0, 0));
+
 		// Google maps
 		JPanel googleMaps = new JPanel();
 		googleMaps.setBorder(componentBorder);
@@ -379,10 +440,11 @@ public class MapWindow extends JDialog implements EventHandler {
 		help.add(helpText, GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.BOTH, 10, 0, 0, 0));
 
 		left.add(bbox, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 5, 0, 5, 0));		
-		left.add(reverse, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 5, 0, 5, 0));		
-		left.add(googleMaps, GuiUtil.setConstraints(0, 2, 1, 0, GridBagConstraints.BOTH, 5, 0, 5, 0));		
-		left.add(help, GuiUtil.setConstraints(0, 3, 1, 0, GridBagConstraints.BOTH, 5, 0, 5, 0));		
-		left.add(Box.createVerticalGlue(), GuiUtil.setConstraints(0, 4, 0, 1, GridBagConstraints.VERTICAL, 5, 0, 2, 0));
+		left.add(reverse, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 5, 0, 5, 0));
+		left.add(geocoder, GuiUtil.setConstraints(0, 2, 1, 0, GridBagConstraints.BOTH, 5, 0, 5, 0));
+		left.add(googleMaps, GuiUtil.setConstraints(0, 3, 1, 0, GridBagConstraints.BOTH, 5, 0, 5, 0));
+		left.add(help, GuiUtil.setConstraints(0, 4, 1, 0, GridBagConstraints.BOTH, 5, 0, 5, 0));
+		left.add(Box.createVerticalGlue(), GuiUtil.setConstraints(0, 5, 0, 1, GridBagConstraints.VERTICAL, 5, 0, 2, 0));
 
 		left.setMinimumSize(left.getPreferredSize());
 		left.setPreferredSize(left.getMinimumSize());
@@ -548,6 +610,23 @@ public class MapWindow extends JDialog implements EventHandler {
 		});
 
 		cancelButton.addActionListener(e -> dispose());
+
+		geocoderCombo.addItemListener(l -> {
+			if (l.getStateChange() == ItemEvent.SELECTED
+					&& geocoderCombo.getSelectedItem() != config.getGui().getMapWindow().getGeocoder()) {
+				try {
+					GeocodingService service = getGeocodingService((GeocodingServiceName) geocoderCombo.getSelectedItem());
+					Geocoder.getInstance().setGeocodingService(service);
+				} catch (GeocodingServiceException e) {
+					SwingUtilities.invokeLater(() -> {
+						JOptionPane.showMessageDialog(this, e.getMessage(),
+								Language.I18N.getString("map.error.geocoder.title"), JOptionPane.ERROR_MESSAGE);
+					});
+
+					geocoderCombo.setSelectedItem(config.getGui().getMapWindow().getGeocoder());
+				}
+			}
+		});
 
 		googleMapsButton.addActionListener(e -> {
 			Rectangle view = map.getMapKit().getMainMap().getViewportBounds();
@@ -758,6 +837,26 @@ public class MapWindow extends JDialog implements EventHandler {
 		}.execute();
 	}
 
+	private GeocodingService getGeocodingService(GeocodingServiceName serviceName) throws GeocodingServiceException {
+		GeocodingService service = null;
+
+		if (serviceName == GeocodingServiceName.OSM_NOMINATIM)
+			service = new OSMGeocoder();
+		else if (serviceName == GeocodingServiceName.GOOGLE_GEOCODING_API) {
+			if (config.getProject().getGlobal().getApiKeys().isSetGoogleGeocoding())
+				service = new GoogleGeocoder(config.getProject().getGlobal().getApiKeys().getGoogleGeocoding());
+			else {
+				Logger.getInstance().error("Failed to initialize geocoder '" + serviceName.toString() + "' due to missing API key.");
+				throw new GeocodingServiceException(MessageFormat.format(Language.I18N.getString("map.error.geocoder.apikey"), serviceName));
+			}
+		}
+
+		if (service != null)
+			config.getGui().getMapWindow().setGeocoder(serviceName);
+
+		return service;
+	}
+
 	private void setSizeOnScreen() {
 		WindowSize size = config.getGui().getMapWindow().getSize();
 
@@ -813,6 +912,7 @@ public class MapWindow extends JDialog implements EventHandler {
 		pasteBBox.setToolTipText(Language.I18N.getString("common.tooltip.boundingBox.paste"));
 		reverseTitle.setText(Language.I18N.getString("map.reverseGeocoder.label"));
 		reverseInfo.setText("<html>" + Language.I18N.getString("map.reverseGeocoder.hint.label") + "</html>");
+		geocoderTitle.setText(Language.I18N.getString("map.geocoder.label"));
 		helpTitle.setText(Language.I18N.getString("map.help.label"));
 		helpText.setText("<html>" + Language.I18N.getString("map.help.hint") + "</html>");
 		googleMapsButton.setText(Language.I18N.getString("map.google.label"));

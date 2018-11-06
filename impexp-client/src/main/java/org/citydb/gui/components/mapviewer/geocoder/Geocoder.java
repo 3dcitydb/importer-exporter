@@ -27,6 +27,7 @@
  */
 package org.citydb.gui.components.mapviewer.geocoder;
 
+import org.citydb.config.gui.window.GeocodingServiceName;
 import org.citydb.gui.components.mapviewer.MapWindow;
 import org.citydb.gui.components.mapviewer.geocoder.service.GeocodingService;
 import org.citydb.gui.components.mapviewer.geocoder.service.GeocodingServiceException;
@@ -68,8 +69,13 @@ public class Geocoder {
 		return result != null ? result : new GeocoderResult();
 	}
 
+	public GeocodingServiceName getGeocodingServiceName() {
+		return service.getName();
+	}
+
 	public void setGeocodingService(GeocodingService service) {
-		this.service = service;
+		if (service != null)
+			this.service = service;
 	}
 
 	private GeocoderResult parseLatLon(String search) {

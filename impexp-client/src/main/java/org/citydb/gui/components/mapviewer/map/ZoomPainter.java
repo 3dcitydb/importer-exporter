@@ -26,6 +26,12 @@
  * limitations under the License.
  */
 package org.citydb.gui.components.mapviewer.map;
+
+import org.jdesktop.swingx.JXMapViewer;
+import org.jdesktop.swingx.mapviewer.GeoPosition;
+import org.jdesktop.swingx.painter.Painter;
+
+import javax.swing.SwingUtilities;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
@@ -33,12 +39,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
 import java.util.HashSet;
-
-import javax.swing.SwingUtilities;
-
-import org.jdesktop.swingx.JXMapViewer;
-import org.jdesktop.swingx.mapviewer.GeoPosition;
-import org.jdesktop.swingx.painter.Painter;
 
 public class ZoomPainter extends MouseAdapter implements Painter<JXMapViewer> {
 	private final JXMapViewer map;

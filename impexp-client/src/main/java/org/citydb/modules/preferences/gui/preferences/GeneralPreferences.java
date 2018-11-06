@@ -42,6 +42,7 @@ public class GeneralPreferences extends AbstractPreferences {
 		root.addChildEntry(new DefaultPreferencesEntry(new CachePanel(config)));
 		root.addChildEntry(new DefaultPreferencesEntry(new PathPanel(config)));
 		root.addChildEntry(new DefaultPreferencesEntry(new ProxyPanel(config)));
+		root.addChildEntry(new DefaultPreferencesEntry(new APIKeysPanel(config)));
 		root.addChildEntry(new DefaultPreferencesEntry(loggingPanel));
 		root.addChildEntry(new DefaultPreferencesEntry(new LanguagePanel(mainView, config)));
 	}

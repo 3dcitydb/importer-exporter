@@ -33,18 +33,21 @@ import javax.xml.bind.annotation.XmlType;
 		"cache",
 		"logging",
 		"language",
-		"proxies"
+		"proxies",
+		"apiKeys"
 		})
 public class Global {
 	private Cache cache;
 	private Logging logging;
 	private LanguageType language = LanguageType.fromValue(System.getProperty("user.language"));
 	private Proxies proxies;
+	private APIKeys apiKeys;
 
 	public Global() {
 		cache = new Cache();
 		logging = new Logging();
 		proxies = new Proxies();
+		apiKeys = new APIKeys();
 	}
 	
 	public Cache getCache() {
@@ -70,7 +73,8 @@ public class Global {
 	}
 
 	public void setLanguage(LanguageType language) {
-		this.language = language;
+		if (language != null)
+			this.language = language;
 	}
 
 	public Proxies getProxies() {
@@ -78,6 +82,16 @@ public class Global {
 	}
 
 	public void setProxies(Proxies proxies) {
-		this.proxies = proxies;
+		if (proxies != null)
+			this.proxies = proxies;
+	}
+
+	public APIKeys getApiKeys() {
+		return apiKeys;
+	}
+
+	public void setApiKeys(APIKeys apiKeys) {
+		if (apiKeys != null)
+			this.apiKeys = apiKeys;
 	}
 }

@@ -27,6 +27,7 @@
  */
 package org.citydb.gui.components.mapviewer.geocoder.service;
 
+import org.citydb.config.gui.window.GeocodingServiceName;
 import org.citydb.config.i18n.Language;
 import org.citydb.gui.components.mapviewer.geocoder.GeocoderResult;
 import org.citydb.gui.components.mapviewer.geocoder.Location;
@@ -53,6 +54,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class GoogleGeocoder implements GeocodingService {
+    private final String apiKey;
+
+    public GoogleGeocoder(String apiKey) {
+        this.apiKey = apiKey;
+    }
 
     @Override
     public GeocoderResult geocode(String address) throws GeocodingServiceException {
@@ -68,14 +74,13 @@ public class GoogleGeocoder implements GeocodingService {
         String serviceCall;
         try {
             serviceCall = "https://maps.googleapis.com/maps/api/geocode/xml?" +
-                    operation + '=' + URLEncoder.encode(requestString, StandardCharsets.UTF_8.displayName());
+                    operation + '=' + URLEncoder.encode(requestString, StandardCharsets.UTF_8.displayName()) +
+                    "&key=" + apiKey;
 
             // add language parameter
             String language = Language.I18N.getLocale().getLanguage();
             if (!language.isEmpty())
                 serviceCall += "&language=" + language;
-
-            // TODO: add API key
 
         } catch (UnsupportedEncodingException e) {
             throw new GeocodingServiceException("Failed to construct the geocoding service call.", e);
@@ -164,4 +169,8 @@ public class GoogleGeocoder implements GeocodingService {
         }
     }
 
+    @Override
+    public GeocodingServiceName getName() {
+        return GeocodingServiceName.GOOGLE_GEOCODING_API;
+    }
 }

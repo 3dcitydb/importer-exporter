@@ -27,14 +27,21 @@
  */
 package org.citydb.gui.components.mapviewer.validation;
 
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.sql.SQLException;
+import org.citydb.config.Config;
+import org.citydb.config.geometry.BoundingBox;
+import org.citydb.config.i18n.Language;
+import org.citydb.config.project.database.Database;
+import org.citydb.config.project.database.Database.PredefinedSrsName;
+import org.citydb.config.project.database.DatabaseConfigurationException;
+import org.citydb.config.project.database.DatabaseSrs;
+import org.citydb.database.DatabaseController;
+import org.citydb.database.version.DatabaseVersionException;
+import org.citydb.gui.components.mapviewer.MapWindow;
+import org.citydb.gui.factory.SrsComboBoxFactory;
+import org.citydb.gui.factory.SrsComboBoxFactory.SrsComboBox;
+import org.citydb.gui.util.GuiUtil;
+import org.citydb.log.Logger;
+import org.citydb.registry.ObjectRegistry;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -43,22 +50,14 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
-
-import org.citydb.config.Config;
-import org.citydb.config.geometry.BoundingBox;
-import org.citydb.config.i18n.Language;
-import org.citydb.config.project.database.Database;
-import org.citydb.config.project.database.Database.PredefinedSrsName;
-import org.citydb.config.project.database.DatabaseSrs;
-import org.citydb.database.DatabaseController;
-import org.citydb.config.project.database.DatabaseConfigurationException;
-import org.citydb.database.version.DatabaseVersionException;
-import org.citydb.gui.components.mapviewer.MapWindow;
-import org.citydb.gui.factory.SrsComboBoxFactory;
-import org.citydb.gui.factory.SrsComboBoxFactory.SrsComboBox;
-import org.citydb.gui.util.GuiUtil;
-import org.citydb.log.Logger;
-import org.citydb.registry.ObjectRegistry;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.sql.SQLException;
 
 public class BoundingBoxValidator {
 	private final Logger LOG = Logger.getInstance();
@@ -344,7 +343,6 @@ public class BoundingBoxValidator {
 				c.anchor = GridBagConstraints.EAST;
 				bboxPanel.add(new JLabel(Language.I18N.getString("pref.db.srs.label.description")), c);				
 				bboxPanel.add(description, GuiUtil.setConstraints(1,3,1.0,0.0,GridBagConstraints.HORIZONTAL,5,20,0,5));
-
 
 				c = GuiUtil.setConstraints(0,4,0.0,0.0,GridBagConstraints.NONE,5,5,0,5);
 				c.anchor = GridBagConstraints.EAST;
