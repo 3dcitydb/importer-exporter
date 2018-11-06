@@ -27,20 +27,18 @@
  */
 package org.citydb.gui.components.mapviewer.map;
 
-import java.awt.Graphics2D;
-import java.awt.image.BufferedImage;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.imageio.ImageIO;
-
 import org.citydb.log.Logger;
-import org.citydb.util.Util;
 import org.jdesktop.swingx.JXMapViewer;
 import org.jdesktop.swingx.mapviewer.Waypoint;
 import org.jdesktop.swingx.mapviewer.WaypointPainter;
 import org.jdesktop.swingx.mapviewer.WaypointRenderer;
 import org.jdesktop.swingx.painter.Painter;
+
+import javax.imageio.ImageIO;
+import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DefaultWaypointPainter implements Painter<JXMapViewer> {
 	private WaypointPainter<JXMapViewer> painter;

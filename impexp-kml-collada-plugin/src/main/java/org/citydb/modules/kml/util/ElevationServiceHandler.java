@@ -27,6 +27,7 @@
  */
 package org.citydb.modules.kml.util;
 
+import org.citydb.config.Config;
 import org.citydb.log.Logger;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
@@ -41,23 +42,23 @@ import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class ElevationServiceHandler {
+	private static final ReentrantLock runLock = new ReentrantLock();
 	private final Logger log = Logger.getInstance();
 
-	private static final ReentrantLock runLock = new ReentrantLock();
+	private final String apiKey;
+	private final String STATUS = "status";
+	private final String LAT = "lat";
+	private final String LNG = "lng";
+	private final String ELEVATION = "elevation";
+	private final String OK = "OK";
+	private final String ERROR_MESSAGE = "error_message";
 
-	private static final String STATUS = "status";
-	private static final String LAT = "lat";
-	private static final String LNG = "lng";
-	private static final String ELEVATION = "elevation";
-	private static final String OK = "OK";
-	private static final String ERROR_MESSAGE = "error_message";
+	private final double TOLERANCE = 0.000001;
+	private final int POINTS_IN_A_URL = 55;
 
-	private static final double TOLERANCE = 0.000001;
-	private static final int POINTS_IN_A_URL = 55;
-
-	SAXParser saxParser = null;
+	SAXParser saxParser;
 	String currentElement = "";
-	StringBuilder textBuffer = null;
+	StringBuilder textBuffer;
 
 	String status = "";
 	double elevation = 0;
@@ -71,9 +72,12 @@ public class ElevationServiceHandler {
 	double lastLat = 0;
 	double lastLong = 0;
 
-	
-	public double getZOffset(double[] candidateCoords) throws Exception {
+	public ElevationServiceHandler(Config config) {
+		apiKey = config.getProject().getGlobal().getApiKeys().isSetGoogleElevation() ?
+				config.getProject().getGlobal().getApiKeys().getGoogleElevation() : "";
+	}
 
+	public double getZOffset(double[] candidateCoords) throws Exception {
 		double zOffset = 0;
 		location = -1;
 		minElevation = Double.MAX_VALUE;
@@ -89,21 +93,24 @@ public class ElevationServiceHandler {
 			}
 		}
 
-		List<String> elevationStringList = new ArrayList<String>();
+		List<String> elevationStringList = new ArrayList<>();
 		int index = 0;
-		while (index < candidateCoords.length) { 
-			String elevationString = "https://maps.googleapis.com/maps/api/elevation/xml?locations=";
+		while (index < candidateCoords.length) {
+			StringBuilder builder = new StringBuilder("https://maps.googleapis.com/maps/api/elevation/xml?")
+					.append("&key=").append(apiKey).append("&locations=");
+
 			for (int i = 0; i < POINTS_IN_A_URL; i++) { // URL length must be under 2048
 				String latitude = new BigDecimal(candidateCoords[index+1]).toPlainString();
 				if (latitude.length() > 15) latitude = latitude.substring(0, 15);
 				String longitude = new BigDecimal(candidateCoords[index]).toPlainString();
 				if (longitude.length() > 15) longitude = longitude.substring(0, 15);
 
-				elevationString = elevationString + latitude + "," + longitude + "|";
+				builder.append(latitude).append(",").append(longitude).append("|");
 				index = index + 3;
 				if (index >= candidateCoords.length) break;
 			}
-			elevationString = elevationString.substring(0, elevationString.length()-1); // remove last pipe
+
+			String elevationString = builder.toString().substring(0, builder.length()-1); // remove last pipe
 			elevationStringList.add(elevationString);
 		}
 
@@ -115,9 +122,9 @@ public class ElevationServiceHandler {
 
 		if (!status.equalsIgnoreCase(OK)) {
 			if (status.length() > 0) {
-				log.warn("Elevation API returned " + status);
+				log.error("Elevation API returned " + status);
 				if (errorMessage != null)
-					log.warn(errorMessage);
+					log.error(errorMessage);
 			}
 			throw new Exception("Elevation API returned " + status);
 		}
@@ -142,14 +149,13 @@ public class ElevationServiceHandler {
 			// pause interval: 100 millis should be enough, but experience says it is not!
 			Thread.sleep(200);
 		}
-		catch (Exception e) {}
+		catch (Exception ignored) {}
 		finally {
 			runLock.unlock();
 		}
 	}
 	
 	private class ElevationServiceCaller extends DefaultHandler implements Runnable {
-
 		private String elevationString;
 
 		private ElevationServiceCaller (String elevationString) {
@@ -224,8 +230,7 @@ public class ElevationServiceHandler {
 		} 
 
 
-		public void characters(char buf[], int offset, int len) throws SAXException
-		{
+		public void characters(char buf[], int offset, int len) throws SAXException {
 			String s = new String(buf, offset, len);
 			if (textBuffer == null) {
 				textBuffer = new StringBuilder(s);

@@ -59,6 +59,7 @@ import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.database.Database;
 import org.citydb.config.project.database.Workspace;
+import org.citydb.config.project.kmlExporter.AltitudeOffsetMode;
 import org.citydb.config.project.kmlExporter.Balloon;
 import org.citydb.config.project.kmlExporter.BalloonContentMode;
 import org.citydb.config.project.kmlExporter.DisplayForm;
@@ -202,6 +203,15 @@ public class KmlExporter implements EventHandler {
 				!databaseAdapter.getWorkspaceManager().equalsDefaultWorkspaceName(workspace.getName()) &&
 				!databaseAdapter.getWorkspaceManager().existsWorkspace(workspace, true))
 			return false;
+
+		// check API key when using the elevation API
+		if (config.getProject().getKmlExporter().getAltitudeOffsetMode() == AltitudeOffsetMode.GENERIC_ATTRIBUTE
+			&& config.getProject().getKmlExporter().isCallGElevationService()
+			&& !config.getProject().getGlobal().getApiKeys().isSetGoogleElevation()) {
+			log.error("The Google Elevation API cannot be used due to a missing API key.");
+			log.error("Please enter an API key or change the export preferences.");
+			return false;
+		}
 
 		// check whether spatial indexes are enabled
 		log.info("Checking for spatial indexes on geometry columns of involved tables...");

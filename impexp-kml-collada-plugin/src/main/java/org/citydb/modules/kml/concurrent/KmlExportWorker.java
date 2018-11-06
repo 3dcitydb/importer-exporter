@@ -137,7 +137,7 @@ public class KmlExportWorker extends Worker<KmlSplittingResult> {
 				eventDispatcher,
 				config);
 
-		elevationServiceHandler = new ElevationServiceHandler();
+		elevationServiceHandler = new ElevationServiceHandler(config);
 
 		FeatureTypeFilter typeFilter = query.getFeatureTypeFilter();
 		ColladaOptions colladaOptions = null; 

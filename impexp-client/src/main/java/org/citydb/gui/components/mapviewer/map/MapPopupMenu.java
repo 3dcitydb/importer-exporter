@@ -27,6 +27,7 @@
  */
 package org.citydb.gui.components.mapviewer.map;
 
+import org.citydb.config.gui.window.GeocodingServiceName;
 import org.citydb.config.i18n.Language;
 import org.citydb.event.EventDispatcher;
 import org.citydb.gui.components.mapviewer.geocoder.Geocoder;
@@ -42,10 +43,11 @@ import org.jdesktop.swingx.JXMapViewer;
 import org.jdesktop.swingx.mapviewer.GeoPosition;
 import org.jdesktop.swingx.mapviewer.TileFactory;
 
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
+import javax.swing.SwingWorker;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.HashSet;
@@ -121,27 +123,28 @@ public class MapPopupMenu extends JPopupMenu {
 						GeocoderResult result = get();
 
 						if (result.isSetLocations()) {
-							int index;
-							for (index = 0; index < result.getLocations().size(); ++index) {
-								Location tmp = result.getLocations().get(index);
+							int i;
+							for (i = 0; i < result.getLocations().size(); ++i) {
+								Location location = result.getLocations().get(i);
 
-								Point2D southWest = map.convertGeoPositionToPoint(tmp.getViewPort().getSouthWest());
+								if (Geocoder.getInstance().getGeocodingServiceName() == GeocodingServiceName.GOOGLE_GEOCODING_API) {
+									List<?> types = location.getAttribute("types", List.class);
+									if (types != null && types.contains("postal_code"))
+										continue;
+								}
+
+								Point2D southWest = map.convertGeoPositionToPoint(location.getViewPort().getSouthWest());
 								Rectangle2D sizeOnScreen = new Rectangle.Double(southWest.getX(), southWest.getY(), 0, 0);
-								sizeOnScreen.add(map.convertGeoPositionToPoint(tmp.getViewPort().getNorthEast()));
-
-								// TODO: only test this if service = google (retrieve from geocoder)
-								//List<?> types = tmp.getAttribute("types", List.class);
-								//if (types.contains("postal_code"))
-								//	continue;
+								sizeOnScreen.add(map.convertGeoPositionToPoint(location.getViewPort().getNorthEast()));
 
 								if (sizeOnScreen.getHeight() * sizeOnScreen.getWidth() >= 500)
 									break;
 							}
 
-							if (index == result.getLocations().size())
-								--index;
+							if (i == result.getLocations().size())
+								--i;
 
-							final Location location = result.getLocations().get(index);
+							final Location location = result.getLocations().get(i);
 							Set<GeoPosition> set = new HashSet<>(2);
 							set.add(location.getPosition());
 							set.add(position);

@@ -27,27 +27,25 @@
  */
 package org.citydb.modules.kml.gui.preferences;
 
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
-import javax.swing.BorderFactory;
-import javax.swing.ButtonGroup;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JTextField;
-import javax.swing.border.TitledBorder;
-
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.kmlExporter.AltitudeMode;
 import org.citydb.config.project.kmlExporter.AltitudeOffsetMode;
 import org.citydb.gui.preferences.AbstractPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
+
+import javax.swing.BorderFactory;
+import javax.swing.ButtonGroup;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.JTextField;
+import javax.swing.border.TitledBorder;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 
 @SuppressWarnings("serial")
 public class AltitudePanel extends AbstractPreferencesComponent {
@@ -56,7 +54,7 @@ public class AltitudePanel extends AbstractPreferencesComponent {
 	protected static final int MAX_TEXTFIELD_HEIGHT = 20;
 
 	private JPanel modePanel; 
-	private JComboBox modeComboBox = new JComboBox();
+	private JComboBox<AltitudeMode> modeComboBox = new JComboBox<>();
 	
 	private JRadioButton noOffsetRadioButton = new JRadioButton("");
 	private JRadioButton constantOffsetRadioButton = new JRadioButton("");
@@ -64,6 +62,7 @@ public class AltitudePanel extends AbstractPreferencesComponent {
 	private JRadioButton bottomZeroRadioButton = new JRadioButton("");
 	private JRadioButton genericAttributeRadioButton = new JRadioButton("");
 	private JCheckBox callGElevationService = new JCheckBox();
+	private JLabel callGElevationServiceHint = new JLabel();
 	private JCheckBox useOriginalZCoords = new JCheckBox();
 	private JPanel offsetPanel; 
 
@@ -142,45 +141,23 @@ public class AltitudePanel extends AbstractPreferencesComponent {
 		bottomZeroRadioButton.setIconTextGap(10);
 		offsetRadioGroup.add(genericAttributeRadioButton);
 		genericAttributeRadioButton.setIconTextGap(10);
+		callGElevationService.setIconTextGap(10);
 
-		GridBagConstraints norb = GuiUtil.setConstraints(0,0,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,0,BORDER_THICKNESS);
-		norb.gridwidth = 2;
-		offsetPanel.add(noOffsetRadioButton, norb);
+		offsetPanel.add(noOffsetRadioButton, GuiUtil.setConstraints(0,0,2,1,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,0,BORDER_THICKNESS));
 		offsetPanel.add(constantOffsetRadioButton, GuiUtil.setConstraints(0,1,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,0,BORDER_THICKNESS));
 		offsetPanel.add(constantOffsetText, GuiUtil.setConstraints(1,1,1.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,0,BORDER_THICKNESS));
 		offsetPanel.add(bottomZeroRadioButton, GuiUtil.setConstraints(0,2,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,0,BORDER_THICKNESS));
-		GridBagConstraints garb = GuiUtil.setConstraints(0,3,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,0,BORDER_THICKNESS);
-		garb.gridwidth = 2;
-		offsetPanel.add(genericAttributeRadioButton, garb);
-		GridBagConstraints cgesl = GuiUtil.setConstraints(0,4,0.0,1.0,GridBagConstraints.BOTH,0,28,0,BORDER_THICKNESS);
-		cgesl.gridwidth = 2;
-		offsetPanel.add(callGElevationService, cgesl);
+		offsetPanel.add(genericAttributeRadioButton, GuiUtil.setConstraints(0,3,2,1,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,0,BORDER_THICKNESS));
 
+		int lmargin = genericAttributeRadioButton.getPreferredSize().width + 6;
+		offsetPanel.add(callGElevationService, GuiUtil.setConstraints(0,4,2,1,0.0,1.0,GridBagConstraints.BOTH,0,lmargin,0,BORDER_THICKNESS));
+		lmargin += callGElevationService.getPreferredSize().width + 6;
+		offsetPanel.add(callGElevationServiceHint, GuiUtil.setConstraints(0,5,2,1,0.0,1.0,GridBagConstraints.BOTH,0,lmargin,0,BORDER_THICKNESS));
 
-		noOffsetRadioButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				setEnabledComponents();
-			}
-		});
-
-		constantOffsetRadioButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				setEnabledComponents();
-			}
-		});
-
-		bottomZeroRadioButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				setEnabledComponents();
-			}
-		});
-		
-		genericAttributeRadioButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				setEnabledComponents();
-			}
-		});
-
+		noOffsetRadioButton.addActionListener(e -> setEnabledComponents());
+		constantOffsetRadioButton.addActionListener(e -> setEnabledComponents());
+		bottomZeroRadioButton.addActionListener(e -> setEnabledComponents());
+		genericAttributeRadioButton.addActionListener(e -> setEnabledComponents());
 	}
 
 	@Override
@@ -199,6 +176,7 @@ public class AltitudePanel extends AbstractPreferencesComponent {
 		bottomZeroRadioButton.setText(Language.I18N.getString("pref.kmlexport.altitude.label.bottomZero"));
 		genericAttributeRadioButton.setText(Language.I18N.getString("pref.kmlexport.altitude.label.genericAttributeOffset"));
 		callGElevationService.setText(Language.I18N.getString("pref.kmlexport.altitude.label.callGElevationService"));
+		callGElevationServiceHint.setText(Language.I18N.getString("pref.kmlexport.altitude.label.callGElevationService.hint"));
 		useOriginalZCoords.setText(Language.I18N.getString("pref.kmlexport.altitude.label.useOriginalZCoords"));
 	}
 
@@ -264,6 +242,7 @@ public class AltitudePanel extends AbstractPreferencesComponent {
 	private void setEnabledComponents() {
 		constantOffsetText.setEnabled(constantOffsetRadioButton.isSelected());
 		callGElevationService.setEnabled(genericAttributeRadioButton.isSelected());
+		callGElevationServiceHint.setEnabled(genericAttributeRadioButton.isSelected());
 	}
 
 }

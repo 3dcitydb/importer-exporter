@@ -27,6 +27,7 @@
  */
 package org.citydb.gui.components.mapviewer.geocoder.service;
 
+import org.citydb.config.gui.window.GeocodingServiceName;
 import org.citydb.config.i18n.Language;
 import org.citydb.gui.components.mapviewer.geocoder.GeocoderResult;
 import org.citydb.gui.components.mapviewer.geocoder.Location;
@@ -53,6 +54,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class GoogleGeocoder implements GeocodingService {
+    private final String apiKey;
+
+    public GoogleGeocoder(String apiKey) {
+        this.apiKey = apiKey;
+    }
 
     @Override
     public GeocoderResult geocode(String address) throws GeocodingServiceException {
@@ -68,14 +74,13 @@ public class GoogleGeocoder implements GeocodingService {
         String serviceCall;
         try {
             serviceCall = "https://maps.googleapis.com/maps/api/geocode/xml?" +
-                    operation + '=' + URLEncoder.encode(requestString, StandardCharsets.UTF_8.displayName());
+                    operation + '=' + URLEncoder.encode(requestString, StandardCharsets.UTF_8.displayName()) +
+                    "&key=" + apiKey;
 
             // add language parameter
             String language = Language.I18N.getLocale().getLanguage();
             if (!language.isEmpty())
                 serviceCall += "&language=" + language;
-
-            // TODO: add API key
 
         } catch (UnsupportedEncodingException e) {
             throw new GeocodingServiceException("Failed to construct the geocoding service call.", e);
@@ -91,7 +96,7 @@ public class GoogleGeocoder implements GeocodingService {
             Node statusNode = (Node) xpath.evaluate("/GeocodeResponse/status", response, XPathConstants.NODE);
             String status = statusNode.getTextContent();
 
-            if ("OK".equals(status)) {
+            if ("OK".equalsIgnoreCase(status)) {
                 NodeList resultNodeList = (NodeList) xpath.evaluate("/GeocodeResponse/result", response, XPathConstants.NODESET);
                 for (int j = 0; j < resultNodeList.getLength(); ++j) {
                     Location location = new Location();
@@ -126,7 +131,7 @@ public class GoogleGeocoder implements GeocodingService {
 
                     geocodingResult.addLocation(location);
                 }
-            } else if (!"ZERO_RESULTS".equals(status)) {
+            } else if (!"ZERO_RESULTS".equalsIgnoreCase(status)) {
                 GeocodingServiceException e = new GeocodingServiceException("The geocoding service responded with the status " + status + ".");
                 Node errorMessage = (Node) xpath.evaluate("/GeocodeResponse/error_message", response, XPathConstants.NODE);
                 if (errorMessage != null)
@@ -151,10 +156,10 @@ public class GoogleGeocoder implements GeocodingService {
             for (int i = 0; i < nodeList.getLength(); ++i) {
                 Node node = nodeList.item(i);
 
-                if ("lat".equals(node.getNodeName()))
+                if ("lat".equalsIgnoreCase(node.getNodeName()))
                     lat = Double.parseDouble(node.getTextContent());
 
-                if ("lng".equals(node.getNodeName()))
+                if ("lng".equalsIgnoreCase(node.getNodeName()))
                     lon = Double.parseDouble(node.getTextContent());
             }
 
@@ -164,4 +169,8 @@ public class GoogleGeocoder implements GeocodingService {
         }
     }
 
+    @Override
+    public GeocodingServiceName getName() {
+        return GeocodingServiceName.GOOGLE_GEOCODING_API;
+    }
 }

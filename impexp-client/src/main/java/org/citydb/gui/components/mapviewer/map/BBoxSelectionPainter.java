@@ -26,6 +26,16 @@
  * limitations under the License.
  */
 package org.citydb.gui.components.mapviewer.map;
+
+import org.citydb.event.EventDispatcher;
+import org.citydb.gui.components.mapviewer.map.event.BoundingBoxSelectionEvent;
+import org.citydb.registry.ObjectRegistry;
+import org.jdesktop.swingx.JXMapViewer;
+import org.jdesktop.swingx.mapviewer.GeoPosition;
+import org.jdesktop.swingx.painter.Painter;
+
+import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -35,15 +45,6 @@ import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import javax.swing.*;
-
-import org.citydb.event.EventDispatcher;
-import org.citydb.gui.components.mapviewer.map.event.BoundingBoxSelectionEvent;
-import org.citydb.registry.ObjectRegistry;
-import org.jdesktop.swingx.JXMapViewer;
-import org.jdesktop.swingx.mapviewer.GeoPosition;
-import org.jdesktop.swingx.painter.Painter;
 
 public class BBoxSelectionPainter extends MouseAdapter implements Painter<JXMapViewer> {
 	private final JXMapViewer map;
@@ -100,7 +101,7 @@ public class BBoxSelectionPainter extends MouseAdapter implements Painter<JXMapV
 	}
 
 	private boolean isVisibleOnScreen(Rectangle2D bbox) {
-		return bbox != null ? !createDrawArea(bbox, map.getTileFactory().getInfo().getMinimumZoomLevel()).isEmpty() : false;		
+		return bbox != null && !createDrawArea(bbox, map.getTileFactory().getInfo().getMinimumZoomLevel()).isEmpty();
 	}
 
 	@Override

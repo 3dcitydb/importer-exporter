@@ -26,21 +26,6 @@
  * limitations under the License.
  */
 package org.citydb.gui.components.mapviewer.map;
-import java.awt.Color;
-import java.awt.Cursor;
-import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionListener;
-
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.ImageIcon;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
 
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
@@ -53,6 +38,25 @@ import org.jdesktop.swingx.JXMapViewer.MouseWheelZoomStyle;
 import org.jdesktop.swingx.mapviewer.AbstractTileFactory;
 import org.jdesktop.swingx.mapviewer.GeoPosition;
 import org.jdesktop.swingx.painter.CompoundPainter;
+
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.ImageIcon;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
+import java.awt.Color;
+import java.awt.Cursor;
+import java.awt.Desktop;
+import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionListener;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 public class Map {
 	private JXMapKit mapKit;
@@ -153,8 +157,10 @@ public class Map {
 		label = new JLabel("[n/a]");
 		label.setForeground(Color.WHITE);
 		label.setPreferredSize(new Dimension(200, label.getPreferredSize().height));
-		JLabel copyright = new JLabel("<html><body>Map data &copy; 'OpenStreetMap' <i>(and)</i> contributors, CC-BY-SA</html></body>");
+		JLabel copyright = new JLabel("<html><body>&copy; <u>OpenStreetMap</u> contributors</html></body>");
+		copyright.setBackground(borderColor);
 		copyright.setForeground(Color.WHITE);
+		copyright.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
 		footer.add(label, GuiUtil.setConstraints(0, 0, 0, 1, GridBagConstraints.HORIZONTAL, 2, 2, 2, 2));
 		gridBagConstraints = GuiUtil.setConstraints(1, 0, 1, 1, GridBagConstraints.NONE, 2, 2, 2, 105);
@@ -227,6 +233,16 @@ public class Map {
 		
 		hintsLabel.addMouseListener(hintsMouseAdapter);
 		hints.addMouseListener(hintsMouseAdapter);
+
+		copyright.addMouseListener(new MouseAdapter() {
+			public void mouseClicked(MouseEvent e) {
+				try {
+					Desktop.getDesktop().browse(new URI("https://osm.org/copyright"));
+				} catch (IOException | URISyntaxException ignored) {
+					//
+				}
+			}
+		});
 
 		// just to disable double-click action
 		headerMenu.addMouseListener(new MouseAdapter() {});

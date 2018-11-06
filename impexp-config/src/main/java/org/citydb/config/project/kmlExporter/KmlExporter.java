@@ -252,19 +252,19 @@ public class KmlExporter {
 
 		pathOfGltfConverter = "contribs" + File.separator + "collada2gltf";
 		String osName = System.getProperty("os.name").toLowerCase(Locale.ENGLISH);
-		if (osName.indexOf("windows") != -1)
+		if (osName.contains("windows"))
 			pathOfGltfConverter += File.separator + "COLLADA2GLTF-v2.1.3-windows-Release-x64" + File.separator + "COLLADA2GLTF-bin.exe";
-		else if (osName.indexOf("mac") != -1)
+		else if (osName.contains("mac"))
 			pathOfGltfConverter += File.separator + "COLLADA2GLTF-v2.1.3-osx" + File.separator + "COLLADA2GLTF-bin";
-		else if (osName.indexOf("nux") != -1)
+		else if (osName.contains("nux"))
 			pathOfGltfConverter += File.separator + "COLLADA2GLTF-v2.1.3-linux" + File.separator + "COLLADA2GLTF-bin";
 
 		setAppearanceTheme(THEME_NONE);
 		setAltitudeMode(AltitudeMode.ABSOLUTE);
-		setAltitudeOffsetMode(AltitudeOffsetMode.GENERIC_ATTRIBUTE);
+		setAltitudeOffsetMode(AltitudeOffsetMode.NO_OFFSET);
 		altitudeOffsetValue = 0;
-		callGElevationService = true;
-		setUseOriginalZCoords(false);
+		callGElevationService = false;
+		setUseOriginalZCoords(true);
 
 		idPrefixes = new IdPrefixes();
 		resources = new Resources();
