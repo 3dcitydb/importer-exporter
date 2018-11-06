@@ -91,7 +91,7 @@ public class GoogleGeocoder implements GeocodingService {
             Node statusNode = (Node) xpath.evaluate("/GeocodeResponse/status", response, XPathConstants.NODE);
             String status = statusNode.getTextContent();
 
-            if ("OK".equals(status)) {
+            if ("OK".equalsIgnoreCase(status)) {
                 NodeList resultNodeList = (NodeList) xpath.evaluate("/GeocodeResponse/result", response, XPathConstants.NODESET);
                 for (int j = 0; j < resultNodeList.getLength(); ++j) {
                     Location location = new Location();
@@ -126,7 +126,7 @@ public class GoogleGeocoder implements GeocodingService {
 
                     geocodingResult.addLocation(location);
                 }
-            } else if (!"ZERO_RESULTS".equals(status)) {
+            } else if (!"ZERO_RESULTS".equalsIgnoreCase(status)) {
                 GeocodingServiceException e = new GeocodingServiceException("The geocoding service responded with the status " + status + ".");
                 Node errorMessage = (Node) xpath.evaluate("/GeocodeResponse/error_message", response, XPathConstants.NODE);
                 if (errorMessage != null)
@@ -151,10 +151,10 @@ public class GoogleGeocoder implements GeocodingService {
             for (int i = 0; i < nodeList.getLength(); ++i) {
                 Node node = nodeList.item(i);
 
-                if ("lat".equals(node.getNodeName()))
+                if ("lat".equalsIgnoreCase(node.getNodeName()))
                     lat = Double.parseDouble(node.getTextContent());
 
-                if ("lng".equals(node.getNodeName()))
+                if ("lng".equalsIgnoreCase(node.getNodeName()))
                     lon = Double.parseDouble(node.getTextContent());
             }
 
