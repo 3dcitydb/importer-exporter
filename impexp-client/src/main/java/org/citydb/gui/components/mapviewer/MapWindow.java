@@ -846,8 +846,8 @@ public class MapWindow extends JDialog implements EventHandler {
 			if (config.getProject().getGlobal().getApiKeys().isSetGoogleGeocoding())
 				service = new GoogleGeocoder(config.getProject().getGlobal().getApiKeys().getGoogleGeocoding());
 			else {
-				Logger.getInstance().error("Failed to initialize geocoder '" + serviceName.toString() + "' due to missing API key.");
-				throw new GeocodingServiceException(MessageFormat.format(Language.I18N.getString("map.error.geocoder.apikey"), serviceName));
+				Logger.getInstance().error("Failed to initialize geocoder '" + serviceName.toString() + "' due to a missing API key.");
+				throw new GeocodingServiceException(MessageFormat.format(Language.I18N.getString("map.error.geocoder.apiKey"), serviceName));
 			}
 		}
 

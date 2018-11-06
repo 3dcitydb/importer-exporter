@@ -35,6 +35,7 @@ import org.citydb.config.project.database.Database;
 import org.citydb.config.project.database.DatabaseConfigurationException;
 import org.citydb.config.project.database.Workspace;
 import org.citydb.config.project.global.LogLevel;
+import org.citydb.config.project.kmlExporter.AltitudeOffsetMode;
 import org.citydb.config.project.kmlExporter.DisplayForm;
 import org.citydb.config.project.kmlExporter.KmlExporter;
 import org.citydb.config.project.kmlExporter.KmlTilingMode;
@@ -75,11 +76,33 @@ import org.citygml4j.model.module.citygml.VegetationModule;
 import org.jdesktop.swingx.JXTextField;
 import org.jdesktop.swingx.prompt.PromptSupport.FocusBehavior;
 
-import javax.swing.*;
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.ButtonGroup;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.JScrollPane;
+import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
+import javax.swing.UIManager;
 import javax.swing.border.TitledBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.xml.bind.JAXBContext;
-import java.awt.*;
+import java.awt.AWTEvent;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -778,6 +801,17 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 			if (activeDisplayFormsAmount == 0) {
 				viewController.errorMessage(Language.I18N.getString("export.dialog.error.incorrectData"), 
 						Language.I18N.getString("kmlExport.dialog.error.incorrectData.displayForms"));
+				return;
+			}
+
+			// check API key when using the elevation API
+			if (config.getProject().getKmlExporter().getAltitudeOffsetMode() == AltitudeOffsetMode.GENERIC_ATTRIBUTE
+					&& config.getProject().getKmlExporter().isCallGElevationService()
+					&& !config.getProject().getGlobal().getApiKeys().isSetGoogleElevation()) {
+				log.error("The Google Elevation API cannot be used due to a missing API key.");
+				log.error("Please enter an API key or change the export preferences.");
+				viewController.errorMessage(Language.I18N.getString("kmlExport.dialog.error.elevation"),
+						Language.I18N.getString("kmlExport.dialog.error.elevation.apiKey"));
 				return;
 			}
 

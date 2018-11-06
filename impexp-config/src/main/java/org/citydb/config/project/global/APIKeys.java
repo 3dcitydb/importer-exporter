@@ -4,11 +4,11 @@ import javax.xml.bind.annotation.XmlType;
 
 @XmlType(name="APIKeysType", propOrder={
         "googleGeocoding",
-        "googleMapsElevation"
+        "googleElevation"
 })
 public class APIKeys {
     private String googleGeocoding = "";
-    private String googleMapsElevation = "";
+    private String googleElevation = "";
 
     public boolean isSetGoogleGeocoding() {
         return googleGeocoding != null && !googleGeocoding.trim().isEmpty();
@@ -22,15 +22,15 @@ public class APIKeys {
         this.googleGeocoding = googleGeocoding;
     }
 
-    public boolean isSetGoogleMapsElevation() {
-        return googleMapsElevation != null && !googleMapsElevation.trim().isEmpty();
+    public boolean isSetGoogleElevation() {
+        return googleElevation != null && !googleElevation.trim().isEmpty();
     }
 
-    public String getGoogleMapsElevation() {
-        return googleMapsElevation;
+    public String getGoogleElevation() {
+        return googleElevation;
     }
 
-    public void setGoogleMapsElevation(String googleMapsElevation) {
-        this.googleMapsElevation = googleMapsElevation;
+    public void setGoogleElevation(String googleElevation) {
+        this.googleElevation = googleElevation;
     }
 }

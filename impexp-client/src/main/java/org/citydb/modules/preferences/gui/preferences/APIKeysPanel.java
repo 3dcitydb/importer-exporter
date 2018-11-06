@@ -30,7 +30,7 @@ public class APIKeysPanel extends AbstractPreferencesComponent {
         APIKeys apiKeys = config.getProject().getGlobal().getApiKeys();
 
         if (!googleGeocodingText.getText().equals(apiKeys.getGoogleGeocoding())) return true;
-        if (!googleElevationText.getText().equals(apiKeys.getGoogleMapsElevation())) return true;
+        if (!googleElevationText.getText().equals(apiKeys.getGoogleElevation())) return true;
 
         return false;
     }
@@ -60,16 +60,16 @@ public class APIKeysPanel extends AbstractPreferencesComponent {
 
     @Override
     public void doTranslation() {
-        ((TitledBorder)google.getBorder()).setTitle(Language.I18N.getString("pref.general.apikeys.google.border"));
-        googleGeocodingLabel.setText(Language.I18N.getString("pref.general.apikeys.google.geocoding.label"));
-        googleElevationLabel.setText(Language.I18N.getString("pref.general.apikeys.google.elevation.label"));
+        ((TitledBorder)google.getBorder()).setTitle(Language.I18N.getString("pref.general.apiKeys.google.border"));
+        googleGeocodingLabel.setText(Language.I18N.getString("pref.general.apiKeys.google.geocoding.label"));
+        googleElevationLabel.setText(Language.I18N.getString("pref.general.apiKeys.google.elevation.label"));
     }
 
     @Override
     public void loadSettings() {
         APIKeys apiKeys = config.getProject().getGlobal().getApiKeys();
         googleGeocodingText.setText(apiKeys.getGoogleGeocoding());
-        googleElevationText.setText(apiKeys.getGoogleMapsElevation());
+        googleElevationText.setText(apiKeys.getGoogleElevation());
     }
 
     @Override
@@ -81,13 +81,13 @@ public class APIKeysPanel extends AbstractPreferencesComponent {
         googleGeocodingText.setText(googleGeocoding);
 
         String googleElevation = googleElevationText.getText().trim();
-        apiKeys.setGoogleMapsElevation(googleElevation);
+        apiKeys.setGoogleElevation(googleElevation);
         googleElevationText.setText(googleElevation);
     }
 
     @Override
     public String getTitle() {
-        return Language.I18N.getString("pref.tree.general.apikeys");
+        return Language.I18N.getString("pref.tree.general.apiKeys");
     }
 
 }
