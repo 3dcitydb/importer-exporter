@@ -50,7 +50,7 @@ import org.citydb.modules.kml.database.Building;
 import org.citydb.modules.kml.database.CityFurniture;
 import org.citydb.modules.kml.database.CityObjectGroup;
 import org.citydb.modules.kml.database.ColladaBundle;
-import org.citydb.modules.kml.database.ElevationServiceHandler;
+import org.citydb.modules.kml.util.ElevationServiceHandler;
 import org.citydb.modules.kml.database.GenericCityObject;
 import org.citydb.modules.kml.database.KmlExporterManager;
 import org.citydb.modules.kml.database.KmlGenericObject;

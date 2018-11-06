@@ -28,39 +28,42 @@
 package org.citydb.gui.components.mapviewer.map.event;
 
 import org.citydb.event.Event;
-import org.citydb.gui.components.mapviewer.geocoder.GeocoderResponse;
 import org.citydb.gui.components.mapviewer.geocoder.Location;
+import org.citydb.gui.components.mapviewer.geocoder.service.GeocodingServiceException;
 
 public class ReverseGeocoderEvent extends Event {
 	private final ReverseGeocoderStatus status;
 	private final Location location;
-	private final GeocoderResponse response;
+	private final GeocodingServiceException exception;
 	
 	public enum ReverseGeocoderStatus {
 		SEARCHING,
+		NO_RESULT,
 		RESULT,
 		ERROR
 	}	
 	
-	public ReverseGeocoderEvent(Object source) {
+	public ReverseGeocoderEvent(ReverseGeocoderStatus status, Object source) {
 		super(MapEvents.REVERSE_GEOCODER, GLOBAL_CHANNEL, source);
-		this.status = ReverseGeocoderStatus.SEARCHING;
+		this.status = status == ReverseGeocoderStatus.SEARCHING || status == ReverseGeocoderStatus.NO_RESULT ?
+				status : ReverseGeocoderStatus.NO_RESULT;
+
 		location = null;
-		response = null;
+		exception = null;
 	}
 	
 	public ReverseGeocoderEvent(Location location, Object source) {
 		super(MapEvents.REVERSE_GEOCODER, GLOBAL_CHANNEL, source);
 		this.status = ReverseGeocoderStatus.RESULT;
 		this.location = location;
-		response = null;
+		exception = null;
 	}
 	
-	public ReverseGeocoderEvent(GeocoderResponse response, Object source) {
+	public ReverseGeocoderEvent(GeocodingServiceException exception, Object source) {
 		super(MapEvents.REVERSE_GEOCODER, GLOBAL_CHANNEL, source);
 		this.status = ReverseGeocoderStatus.ERROR;
 		location = null;
-		this.response = response;
+		this.exception = exception;
 	}
 
 	public ReverseGeocoderStatus getStatus() {
@@ -71,8 +74,8 @@ public class ReverseGeocoderEvent extends Event {
 		return location;
 	}
 
-	public GeocoderResponse getResponse() {
-		return response;
+	public GeocodingServiceException getException() {
+		return exception;
 	}
 	
 }

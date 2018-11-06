@@ -27,28 +27,20 @@
  */
 package org.citydb.gui.components.mapviewer.geocoder;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.jdesktop.swingx.mapviewer.GeoPosition;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class Location {
-	private List<ResultType> resultTypes;
 	private LocationType locationType = LocationType.UNKNOWN;
 	private String formattedAddress;
 	private GeoPosition position;
 	private ViewPort viewPort;
+	private Map<String, Object> attributes;
 
 	public Location() {
-		resultTypes = new ArrayList<ResultType>();
-	}
-	
-	public void addResultType(ResultType type) {
-		resultTypes.add(type);
-	}
-	
-	public List<ResultType> getResultTypes() {
-		return resultTypes;
+		attributes = new HashMap<>();
 	}
 	
 	public LocationType getLocationType() {
@@ -81,6 +73,30 @@ public class Location {
 
 	public ViewPort getViewPort() {
 		return viewPort;
+	}
+
+	public void addAttribute(String name, Object value) {
+		attributes.put(name, value);
+	}
+
+	public Map<String, Object> getAttributes() {
+		return attributes;
+	}
+
+	public boolean hasAttribute(String name) {
+		return attributes.containsKey(name);
+	}
+
+	public Object getAttribute(String name) {
+		return attributes.get(name);
+	}
+
+	public <T> T getAttribute(String name, Class<T> type) {
+		Object attribute = attributes.get(name);
+		if (type.isInstance(attribute))
+			return type.cast(attribute);
+
+		return null;
 	}
 	
 	@Override

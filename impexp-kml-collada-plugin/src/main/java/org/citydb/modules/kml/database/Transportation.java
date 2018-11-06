@@ -43,6 +43,7 @@ import org.citydb.event.EventDispatcher;
 import org.citydb.event.global.GeometryCounterEvent;
 import org.citydb.log.Logger;
 import org.citydb.modules.kml.util.BalloonTemplateHandler;
+import org.citydb.modules.kml.util.ElevationServiceHandler;
 import org.citydb.query.Query;
 
 import javax.vecmath.Point3d;

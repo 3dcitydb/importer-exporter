@@ -27,62 +27,6 @@
  */
 package org.citydb.gui.components.mapviewer;
 
-import java.awt.Color;
-import java.awt.Desktop;
-import java.awt.Desktop.Action;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.Rectangle;
-import java.awt.Toolkit;
-import java.awt.datatransfer.FlavorEvent;
-import java.awt.datatransfer.FlavorListener;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.awt.geom.Point2D;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URLEncoder;
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
-import java.text.MessageFormat;
-import java.text.ParseException;
-import java.util.HashSet;
-import java.util.Locale;
-import java.util.concurrent.ExecutionException;
-
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JDialog;
-import javax.swing.JFormattedTextField;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JMenuItem;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JTextPane;
-import javax.swing.SwingUtilities;
-import javax.swing.SwingWorker;
-import javax.swing.UIManager;
-import javax.swing.border.Border;
-import javax.swing.text.html.HTMLDocument;
-
 import org.citydb.config.Config;
 import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.gui.window.WindowSize;
@@ -96,11 +40,10 @@ import org.citydb.event.global.EventType;
 import org.citydb.gui.components.bbox.BoundingBoxClipboardHandler;
 import org.citydb.gui.components.bbox.BoundingBoxListener;
 import org.citydb.gui.components.mapviewer.geocoder.Geocoder;
-import org.citydb.gui.components.mapviewer.geocoder.GeocoderResponse;
+import org.citydb.gui.components.mapviewer.geocoder.GeocoderResult;
 import org.citydb.gui.components.mapviewer.geocoder.Location;
 import org.citydb.gui.components.mapviewer.geocoder.LocationType;
-import org.citydb.gui.components.mapviewer.geocoder.ResponseType;
-import org.citydb.gui.components.mapviewer.geocoder.StatusCode;
+import org.citydb.gui.components.mapviewer.geocoder.service.GeocodingServiceException;
 import org.citydb.gui.components.mapviewer.map.DefaultWaypoint;
 import org.citydb.gui.components.mapviewer.map.DefaultWaypoint.WaypointType;
 import org.citydb.gui.components.mapviewer.map.Map;
@@ -120,9 +63,36 @@ import org.jdesktop.swingx.mapviewer.AbstractTileFactory;
 import org.jdesktop.swingx.mapviewer.GeoPosition;
 import org.jdesktop.swingx.mapviewer.TileFactory;
 
+import javax.swing.*;
+import javax.swing.border.Border;
+import javax.swing.text.html.HTMLDocument;
+import java.awt.*;
+import java.awt.Desktop.Action;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.awt.geom.Point2D;
+import java.beans.PropertyChangeListener;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.text.MessageFormat;
+import java.text.ParseException;
+import java.util.HashSet;
+import java.util.Locale;
+import java.util.concurrent.ExecutionException;
+
 @SuppressWarnings("serial")
 public class MapWindow extends JDialog implements EventHandler {
-	private final Logger LOG = Logger.getInstance();
+	private final Logger log = Logger.getInstance();
 	private static MapWindow instance = null;
 	public static DecimalFormat LAT_LON_FORMATTER = new DecimalFormat("##0.0000000", DecimalFormatSymbols.getInstance(Locale.ENGLISH));
 
@@ -190,7 +160,7 @@ public class MapWindow extends JDialog implements EventHandler {
 		doTranslation();
 	}
 
-	public static final synchronized MapWindow getInstance(ViewController viewController, Config config) {
+	public static synchronized MapWindow getInstance(ViewController viewController, Config config) {
 		if (instance == null)
 			instance = new MapWindow(viewController, config);
 
@@ -200,7 +170,7 @@ public class MapWindow extends JDialog implements EventHandler {
 		return instance;
 	}
 
-	public static final synchronized MapWindow getInstance(ViewController viewController, BoundingBoxListener listener, Config config) {
+	public static synchronized MapWindow getInstance(ViewController viewController, BoundingBoxListener listener, Config config) {
 		instance = getInstance(viewController, config);
 
 		if (listener != null) {
@@ -240,7 +210,7 @@ public class MapWindow extends JDialog implements EventHandler {
 		top.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, borderColor));
 
 		goButton = new JButton();
-		searchBox = new JComboBox<Location>();
+		searchBox = new JComboBox<>();
 		searchResult = new JLabel();
 		searchResult.setPreferredSize(new Dimension(searchResult.getPreferredSize().width, loadIcon.getIconHeight()));
 
@@ -418,45 +388,33 @@ public class MapWindow extends JDialog implements EventHandler {
 		left.setPreferredSize(left.getMinimumSize());
 
 		// actions
-		goButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				if (searchBox.getSelectedItem() != null)
-					geocode(searchBox.getSelectedItem().toString());
-			}
+		goButton.addActionListener(e -> {
+			if (searchBox.getSelectedItem() != null)
+				geocode(searchBox.getSelectedItem().toString());
 		});
 
-		searchBox.getEditor().addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				geocode(e.getActionCommand());
-			}
-		});
+		searchBox.getEditor().addActionListener(e -> geocode(e.getActionCommand()));
 
-		searchBox.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				if (updateSearchBox && !"comboBoxEdited".equals(e.getActionCommand())) {
-					Object selectedItem = searchBox.getSelectedItem();
-					if (selectedItem instanceof Location) {
-						Location location = (Location)selectedItem;
-						map.getMapKit().getMainMap().setZoom(1);
+		searchBox.addActionListener(e -> {
+			if (updateSearchBox && !"comboBoxEdited".equals(e.getActionCommand())) {
+				Object selectedItem = searchBox.getSelectedItem();
+				if (selectedItem instanceof Location) {
+					Location location = (Location)selectedItem;
+					map.getMapKit().getMainMap().setZoom(1);
 
-						HashSet<GeoPosition> viewPort = new HashSet<GeoPosition>(2);
-						viewPort.add(location.getViewPort().getSouthWest());
-						viewPort.add(location.getViewPort().getNorthEast());
-						map.getMapKit().getMainMap().calculateZoomFrom(viewPort);
+					HashSet<GeoPosition> viewPort = new HashSet<>(2);
+					viewPort.add(location.getViewPort().getSouthWest());
+					viewPort.add(location.getViewPort().getNorthEast());
+					map.getMapKit().getMainMap().calculateZoomFrom(viewPort);
 
-						WaypointType type = location.getLocationType() == LocationType.ROOFTOP ? 
-								WaypointType.PRECISE : WaypointType.APPROXIMATE;
-						map.getWaypointPainter().showWaypoints(new DefaultWaypoint(location.getPosition(), type));
-					}
+					WaypointType type = location.getLocationType() == LocationType.PRECISE ?
+							WaypointType.PRECISE : WaypointType.APPROXIMATE;
+					map.getWaypointPainter().showWaypoints(new DefaultWaypoint(location.getPosition(), type));
 				}
 			}
 		});
 
-		clearBBox.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				clearBoundingBox();
-			}
-		});
+		clearBBox.addActionListener(e -> clearBoundingBox());
 
 		KeyAdapter showBBoxAdapter = new KeyAdapter() {
 			public void keyPressed(KeyEvent e) {
@@ -470,23 +428,9 @@ public class MapWindow extends JDialog implements EventHandler {
 		maxX.addKeyListener(showBBoxAdapter);
 		maxY.addKeyListener(showBBoxAdapter);
 
-		showBBox.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				showBoundingBox();
-			}
-		});
-
-		copyBBox.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				copyBoundingBoxToClipboard();
-			}
-		});
-
-		pasteBBox.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				pasteBoundingBoxFromClipboard();
-			}
-		});		
+		showBBox.addActionListener(e -> showBoundingBox());
+		copyBBox.addActionListener(e -> copyBoundingBoxToClipboard());
+		pasteBBox.addActionListener(e -> pasteBoundingBoxFromClipboard());
 
 		PopupMenuDecorator popupMenuDecorator = PopupMenuDecorator.getInstance();
 		popupMenuDecorator.decorate((JComponent)searchBox.getEditor().getEditorComponent(), reverseText);
@@ -501,39 +445,35 @@ public class MapWindow extends JDialog implements EventHandler {
 		bboxPopups[3] = new BBoxPopupMenu(popupMenuDecorator.decorateAndGet(maxY), true);
 		bboxPopups[4] = new BBoxPopupMenu(popupMenu, false);
 
-		Toolkit.getDefaultToolkit().getSystemClipboard().addFlavorListener(new FlavorListener() {
-			public void flavorsChanged(FlavorEvent e) {
-				boolean enable = clipboardHandler.containsPossibleBoundingBox();
+		Toolkit.getDefaultToolkit().getSystemClipboard().addFlavorListener(e -> {
+			boolean enable = clipboardHandler.containsPossibleBoundingBox();
 
-				pasteBBox.setEnabled(enable);
-				for (int i = 0; i < bboxPopups.length; ++i)
-					bboxPopups[i].paste.setEnabled(enable);
-			}
+			pasteBBox.setEnabled(enable);
+			for (BBoxPopupMenu bboxPopup : bboxPopups)
+				bboxPopup.paste.setEnabled(enable);
 		});
 
-		PropertyChangeListener valueChangedListener = new PropertyChangeListener() {
-			public void propertyChange(PropertyChangeEvent evt) {
-				if (evt.getPropertyName().equals("value")) {					
-					if (evt.getOldValue() instanceof Number && evt.getNewValue() instanceof Number) {
-						String oldValue = LAT_LON_FORMATTER.format(((Number)evt.getOldValue()).doubleValue());
-						String newValue = LAT_LON_FORMATTER.format(((Number)evt.getNewValue()).doubleValue());
-						if (oldValue.equals(newValue))
-							return;
-					}
+		PropertyChangeListener valueChangedListener = evt -> {
+			if (evt.getPropertyName().equals("value")) {
+				if (evt.getOldValue() instanceof Number && evt.getNewValue() instanceof Number) {
+					String oldValue = LAT_LON_FORMATTER.format(((Number)evt.getOldValue()).doubleValue());
+					String newValue = LAT_LON_FORMATTER.format(((Number)evt.getNewValue()).doubleValue());
+					if (oldValue.equals(newValue))
+						return;
+				}
 
-					try {
-						minX.commitEdit();
-						minY.commitEdit();
-						maxX.commitEdit();
-						maxY.commitEdit();
+				try {
+					minX.commitEdit();
+					minY.commitEdit();
+					maxX.commitEdit();
+					maxY.commitEdit();
 
-						GeoPosition southWest = new GeoPosition(((Number)minY.getValue()).doubleValue(), ((Number)minX.getValue()).doubleValue());
-						GeoPosition northEast = new GeoPosition(((Number)maxY.getValue()).doubleValue(), ((Number)maxX.getValue()).doubleValue());
+					GeoPosition southWest = new GeoPosition(((Number)minY.getValue()).doubleValue(), ((Number)minX.getValue()).doubleValue());
+					GeoPosition northEast = new GeoPosition(((Number)maxY.getValue()).doubleValue(), ((Number)maxX.getValue()).doubleValue());
 
-						setEnabledApplyBoundingBox(map.getSelectionPainter().isVisibleOnScreen(southWest, northEast));
-					} catch (ParseException e) {
-						//
-					}
+					setEnabledApplyBoundingBox(map.getSelectionPainter().isVisibleOnScreen(southWest, northEast));
+				} catch (ParseException e) {
+					//
 				}
 			}
 		};
@@ -577,88 +517,74 @@ public class MapWindow extends JDialog implements EventHandler {
 			}
 		});
 
-		applyButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				double xmin = ((Number)minX.getValue()).doubleValue();
-				double xmax = ((Number)maxX.getValue()).doubleValue();
-				double ymin = ((Number)minY.getValue()).doubleValue();
-				double ymax = ((Number)maxY.getValue()).doubleValue();
+		applyButton.addActionListener(e -> {
+			double xmin = ((Number)minX.getValue()).doubleValue();
+			double xmax = ((Number)maxX.getValue()).doubleValue();
+			double ymin = ((Number)minY.getValue()).doubleValue();
+			double ymax = ((Number)maxY.getValue()).doubleValue();
 
-				final BoundingBox bbox = new BoundingBox();
-				bbox.getLowerCorner().setX(Math.min(xmin, xmax));
-				bbox.getLowerCorner().setY(Math.min(ymin, ymax));
-				bbox.getUpperCorner().setX(Math.max(xmin, xmax));
-				bbox.getUpperCorner().setY(Math.max(ymin, ymax));		
+			final BoundingBox bbox1 = new BoundingBox();
+			bbox1.getLowerCorner().setX(Math.min(xmin, xmax));
+			bbox1.getLowerCorner().setY(Math.min(ymin, ymax));
+			bbox1.getUpperCorner().setX(Math.max(xmin, xmax));
+			bbox1.getUpperCorner().setY(Math.max(ymin, ymax));
 
-				DatabaseSrs wgs84 = null;
-				for (DatabaseSrs srs : config.getProject().getDatabase().getReferenceSystems()) {
-					if (srs.getSrid() == Database.PREDEFINED_SRS.get(PredefinedSrsName.WGS84_2D).getSrid()) {
-						wgs84 = srs;
-						break;
-					}
+			DatabaseSrs wgs84 = null;
+			for (DatabaseSrs srs : config.getProject().getDatabase().getReferenceSystems()) {
+				if (srs.getSrid() == Database.PREDEFINED_SRS.get(PredefinedSrsName.WGS84_2D).getSrid()) {
+					wgs84 = srs;
+					break;
 				}
-
-				bbox.setSrs(wgs84);
-
-				Thread t = new Thread() {
-					public void run() {
-						listener.setBoundingBox(bbox);
-					}
-				};
-				t.setDaemon(true);
-				t.start();
-
-				copyBoundingBoxToClipboard();
-				dispose();
 			}
+
+			bbox1.setSrs(wgs84);
+
+			Thread t = new Thread(() -> listener.setBoundingBox(bbox1));
+			t.setDaemon(true);
+			t.start();
+
+			copyBoundingBoxToClipboard();
+			dispose();
 		});
 
-		cancelButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				dispose();
-			}
-		});
+		cancelButton.addActionListener(e -> dispose());
 
-		googleMapsButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				Rectangle view = map.getMapKit().getMainMap().getViewportBounds();
-				TileFactory fac = map.getMapKit().getMainMap().getTileFactory();
-				int zoom = map.getMapKit().getMainMap().getZoom();
+		googleMapsButton.addActionListener(e -> {
+			Rectangle view = map.getMapKit().getMainMap().getViewportBounds();
+			TileFactory fac = map.getMapKit().getMainMap().getTileFactory();
+			int zoom = map.getMapKit().getMainMap().getZoom();
 
-				GeoPosition centerPoint = fac.pixelToGeo(new Point2D.Double(view.getCenterX(), view.getCenterY()), zoom);			
-				GeoPosition southWest = fac.pixelToGeo(new Point2D.Double(view.getMinX(), view.getMaxY()), zoom);
-				GeoPosition northEast = fac.pixelToGeo(new Point2D.Double(view.getMaxX(), view.getMinY()), zoom);
+			GeoPosition centerPoint = fac.pixelToGeo(new Point2D.Double(view.getCenterX(), view.getCenterY()), zoom);
+			GeoPosition southWest = fac.pixelToGeo(new Point2D.Double(view.getMinX(), view.getMaxY()), zoom);
+			GeoPosition northEast = fac.pixelToGeo(new Point2D.Double(view.getMaxX(), view.getMinY()), zoom);
 
-				final StringBuilder url = new StringBuilder();
-				url.append("http://maps.google.de/maps?");
+			final StringBuilder url = new StringBuilder();
+			url.append("http://maps.google.de/maps?");
 
-				if (searchBox.getSelectedItem() instanceof Location) {
-					String query = ((Location)searchBox.getSelectedItem()).getFormattedAddress();
+			if (searchBox.getSelectedItem() instanceof Location) {
+				String query = ((Location)searchBox.getSelectedItem()).getFormattedAddress();
 
-					try {
-						url.append("&q=").append(URLEncoder.encode(query, "UTF-8"));
-					} catch (UnsupportedEncodingException e1) {
-						// 
-					}
+				try {
+					url.append("&q=").append(URLEncoder.encode(query, StandardCharsets.UTF_8.displayName()));
+				} catch (UnsupportedEncodingException e1) {
+					//
 				}
-
-				url.append("&ll=").append(centerPoint.getLatitude()).append(",").append(centerPoint.getLongitude());
-				url.append("&spn=").append((northEast.getLatitude() - southWest.getLatitude()) / 2).append(",").append((northEast.getLongitude() - southWest.getLongitude()) / 2);
-				url.append("&sspn=").append(northEast.getLatitude() - southWest.getLatitude()).append(",").append(northEast.getLongitude() - southWest.getLongitude());
-				url.append("&t=m");
-
-				SwingUtilities.invokeLater(new Runnable() {
-					public void run() {
-						try {
-							Desktop.getDesktop().browse(new URI(url.toString()));
-						} catch (IOException e1) {
-							LOG.error("Failed to launch default browser.");
-						} catch (URISyntaxException e1) {
-							// 
-						}
-					}
-				});
 			}
+
+			url.append("&ll=").append(centerPoint.getLatitude()).append(",").append(centerPoint.getLongitude());
+			url.append("&spn=").append((northEast.getLatitude() - southWest.getLatitude()) / 2).append(",").append((northEast.getLongitude() - southWest.getLongitude()) / 2);
+			url.append("&sspn=").append(northEast.getLatitude() - southWest.getLatitude()).append(",").append(northEast.getLongitude() - southWest.getLongitude());
+			url.append("&t=m");
+
+			SwingUtilities.invokeLater(() -> {
+				try {
+					Desktop.getDesktop().browse(new URI(url.toString()));
+				} catch (IOException e1) {
+					log.error("Failed to launch default browser.");
+				} catch (URISyntaxException e1) {
+					//
+				}
+			});
 		});
 	}
 
@@ -690,9 +616,7 @@ public class MapWindow extends JDialog implements EventHandler {
 						maxY.setValue(bbox.getUpperCorner().getY());
 						showBoundingBox();
 					}
-				} catch (InterruptedException e) {
-					//
-				} catch (ExecutionException e) {
+				} catch (InterruptedException | ExecutionException e) {
 					//
 				}
 			}
@@ -700,8 +624,8 @@ public class MapWindow extends JDialog implements EventHandler {
 	}
 
 	public boolean isBoundingBoxVisible(BoundingBox bbox) {
-		GeoPosition southWest = new GeoPosition(bbox.getLowerCorner().getY().doubleValue(), bbox.getLowerCorner().getX().doubleValue());
-		GeoPosition northEast = new GeoPosition(bbox.getUpperCorner().getY().doubleValue(), bbox.getUpperCorner().getX().doubleValue());
+		GeoPosition southWest = new GeoPosition(bbox.getLowerCorner().getY(), bbox.getLowerCorner().getX());
+		GeoPosition northEast = new GeoPosition(bbox.getUpperCorner().getY(), bbox.getUpperCorner().getX());
 
 		return map.getSelectionPainter().isVisibleOnScreen(southWest, northEast);
 	}
@@ -747,7 +671,7 @@ public class MapWindow extends JDialog implements EventHandler {
 			GeoPosition northEast = new GeoPosition(((Number)maxY.getValue()).doubleValue(), ((Number)maxX.getValue()).doubleValue());
 
 			if (map.getSelectionPainter().setBoundingBox(southWest, northEast)) {
-				HashSet<GeoPosition> positions = new HashSet<GeoPosition>();
+				HashSet<GeoPosition> positions = new HashSet<>();
 				positions.add(southWest);
 				positions.add(northEast);
 				map.getMapKit().setZoom(1);
@@ -782,69 +706,53 @@ public class MapWindow extends JDialog implements EventHandler {
 
 	private void setEnabledApplyBoundingBox(boolean enable) {
 		applyButton.setEnabled(enable);
-		copyBBox.setEnabled(enable);		
-		for (int i = 0; i < bboxPopups.length; ++i)
-			bboxPopups[i].copy.setEnabled(enable);
+		copyBBox.setEnabled(enable);
+		for (BBoxPopupMenu bboxPopup : bboxPopups)
+			bboxPopup.copy.setEnabled(enable);
 	}
 
-	private void geocode(final String searchString) {
+	private void geocode(final String address) {
 		searchResult.setIcon(loadIcon);
 		searchResult.setText("");
 		searchResult.repaint();
 
 		final long time = System.currentTimeMillis();
-		new SwingWorker<GeocoderResponse, Void>() {
-			protected GeocoderResponse doInBackground() throws Exception {
-				GeocoderResponse response = Geocoder.parseLatLon(searchString);
-				if (response == null)
-					response = Geocoder.geocode(searchString);
-
-				return response;
+		new SwingWorker<GeocoderResult, Void>() {
+			protected GeocoderResult doInBackground() throws Exception {
+				return Geocoder.getInstance().geocode(address);
 			}
 
 			protected void done() {
 				try {
-					GeocoderResponse response = get();
-					String resultMsg;
-					if (response.getStatus() == StatusCode.OK) {
-						searchBox.removeAllItems();
-						for (Location tmp : response.getLocations())
-							searchBox.addItem(tmp);
+					GeocoderResult result = get();
 
-						searchBox.setSelectedItem(response.getLocations()[0]);
+					searchBox.removeAllItems();
+					if (result.isSetLocations()) {
+						for (Location location : result.getLocations())
+							searchBox.addItem(location);
 
-						if (response.getType() == ResponseType.LAT_LON)
-							resultMsg = Language.I18N.getString("map.geocoder.search.latLon");
-						else {
-							String text = Language.I18N.getString("map.geocoder.search.result");
-							Object[] args = new Object[]{ response.getLocations().length };
-							resultMsg = MessageFormat.format(text, args);
-						}
-					} else if (response.getStatus() == StatusCode.ZERO_RESULTS) {
-						String text = Language.I18N.getString("map.geocoder.search.result");
-						Object[] args = new Object[]{ 0 };
-						resultMsg = MessageFormat.format(text, args);
-					} else {
-						switch (response.getStatus()) {
-						case OVER_QUERY_LIMIT:
-							resultMsg = Language.I18N.getString("map.geocoder.search.overLimit");
-							break;		
-						case REQUEST_DENIED:
-							resultMsg = Language.I18N.getString("map.geocoder.search.denied");
-							break;		
-						default:
-							LOG.error("Fatal service response from geocoder: " + response.getException().getMessage());
-							resultMsg = Language.I18N.getString("map.geocoder.search.fatal");
-						}					
+						searchBox.setSelectedItem(result.getLocations().get(0));
 					}
 
-					resultMsg += " (" + ((System.currentTimeMillis() - time) / 1000.0) + " " + Language.I18N.getString("map.geocoder.search.sec") + ")";
+					String text = Language.I18N.getString("map.geocoder.search.result");
+					Object[] args = new Object[]{result.getLocations().size()};
+					String resultMsg = MessageFormat.format(text, args)
+							+ " (" + ((System.currentTimeMillis() - time) / 1000.0) + " s)";
+
 					searchResult.setText(resultMsg);
+				} catch (InterruptedException | ExecutionException e) {
+					if (e.getCause() instanceof GeocodingServiceException) {
+						GeocodingServiceException exception = (GeocodingServiceException) e.getCause();
+						searchResult.setText("The geocoder failed due to an error. Check the console log.");
+						log.error("The geocoder failed due to an error.");
+						for (String message : exception.getMessages())
+							log.error(message);
+					} else {
+						log.error("An error occured while calling the geocoding service.");
+						log.error("Caused by: " + e.getMessage());
+					}
+				} finally {
 					searchResult.setIcon(null);
-				} catch (InterruptedException e) {
-					//
-				} catch (ExecutionException e) {
-					//
 				}
 			}
 		}.execute();
@@ -909,9 +817,9 @@ public class MapWindow extends JDialog implements EventHandler {
 		helpText.setText("<html>" + Language.I18N.getString("map.help.hint") + "</html>");
 		googleMapsButton.setText(Language.I18N.getString("map.google.label"));
 
-		map.doTranslation();		
-		for (int i = 0; i < bboxPopups.length; ++i)
-			bboxPopups[i].doTranslation();
+		map.doTranslation();
+		for (BBoxPopupMenu bboxPopup : bboxPopups)
+			bboxPopup.doTranslation();
 	}
 
 	@Override
@@ -924,17 +832,15 @@ public class MapWindow extends JDialog implements EventHandler {
 			BoundingBoxSelectionEvent e = (BoundingBoxSelectionEvent)event;
 			final GeoPosition[] bbox = e.getBoundingBox();
 
-			SwingUtilities.invokeLater(new Runnable() {
-				public void run() {
-					// avoid property listener on text fields to be fired
-					// before setting the last value
-					maxY.setValue(null);
+			SwingUtilities.invokeLater(() -> {
+				// avoid property listener on text fields to be fired
+				// before setting the last value
+				maxY.setValue(null);
 
-					minX.setValue(bbox[0].getLatitude());
-					minY.setValue(bbox[0].getLongitude());
-					maxX.setValue(bbox[1].getLatitude());
-					maxY.setValue(bbox[1].getLongitude());	
-				}
+				minX.setValue(bbox[0].getLatitude());
+				minY.setValue(bbox[0].getLongitude());
+				maxX.setValue(bbox[1].getLatitude());
+				maxY.setValue(bbox[1].getLongitude());
 			});
 		}
 
@@ -942,89 +848,53 @@ public class MapWindow extends JDialog implements EventHandler {
 			MapBoundsSelectionEvent e = (MapBoundsSelectionEvent)event;
 			final GeoPosition[] bbox = e.getBoundingBox();
 
-			SwingUtilities.invokeLater(new Runnable() {
-				public void run() {
-					// avoid property listener on text fields to be fired
-					// before setting the last value
-					maxY.setValue(null);
+			SwingUtilities.invokeLater(() -> {
+				// avoid property listener on text fields to be fired
+				// before setting the last value
+				maxY.setValue(null);
 
-					minX.setValue(bbox[0].getLongitude());
-					minY.setValue(bbox[0].getLatitude());
-					maxX.setValue(bbox[1].getLongitude());
-					maxY.setValue(bbox[1].getLatitude());
-					map.getSelectionPainter().setBoundingBox(bbox[0], bbox[1]);	
-				}
-			});	
+				minX.setValue(bbox[0].getLongitude());
+				minY.setValue(bbox[0].getLatitude());
+				maxX.setValue(bbox[1].getLongitude());
+				maxY.setValue(bbox[1].getLatitude());
+				map.getSelectionPainter().setBoundingBox(bbox[0], bbox[1]);
+			});
 		}
 
 		else if (event.getEventType() == MapEvents.REVERSE_GEOCODER) {
 			ReverseGeocoderEvent e = (ReverseGeocoderEvent)event;
 
-			if (e.getStatus() == ReverseGeocoderStatus.SEARCHING) {
-				SwingUtilities.invokeLater(new Runnable() {
-					public void run() {
-						reverseSearchProgress.setIcon(loadIcon);						
-					}
-				});
+			SwingUtilities.invokeLater(() -> {
+				if (e.getStatus() == ReverseGeocoderStatus.SEARCHING) {
+					reverseSearchProgress.setIcon(loadIcon);
 
-			} else if (e.getStatus() == ReverseGeocoderStatus.RESULT) {
-				final Location location = e.getLocation();
-				final StringBuilder result = new StringBuilder();
+				} else if (e.getStatus() == ReverseGeocoderStatus.RESULT) {
+					Location location = e.getLocation();
+					reverseText.setText(location.getFormattedAddress());
+					reverseText.setVisible(true);
+					reverseInfo.setVisible(false);
+					reverseSearchProgress.setIcon(null);
 
-				String[] tokens = location.getFormattedAddress().split(", ");
-				for (int i = 0; i < tokens.length; ++i) {
-					if (i == 0) 
-						result.append("<b>").append(tokens[i]).append("</b>");
-					else
-						result.append(tokens[i]);
+					location.setFormattedAddress(location.getPosition().getLatitude() + ", " + location.getPosition().getLongitude());
+					updateSearchBox = false;
+					searchBox.setSelectedItem(location);
+					updateSearchBox = true;
 
-					if (i < tokens.length - 1)
-						result.append("<br>");
+				} else {
+					reverseText.setVisible(false);
+					reverseInfo.setVisible(true);
+					reverseSearchProgress.setIcon(null);
+
+					if (e.getStatus() == ReverseGeocoderStatus.ERROR) {
+						reverseInfo.setText("<html>The geocoder failed due to an error. Check the console log.</html>");
+						GeocodingServiceException exception = e.getException();
+						log.error("The geocoder failed due to an error.");
+						for (String message : exception.getMessages())
+							log.error(message);
+					} else
+						reverseInfo.setText("<html>No address found at this location.</html>");
 				}
-
-				SwingUtilities.invokeLater(new Runnable() {
-					public void run() {
-						reverseText.setText(result.toString());
-						reverseText.setVisible(true);
-						reverseInfo.setVisible(false);
-						reverseSearchProgress.setIcon(null);
-
-						location.setFormattedAddress(location.getPosition().getLatitude() + ", " + location.getPosition().getLongitude());
-						updateSearchBox = false;
-						searchBox.setSelectedItem(location);
-						updateSearchBox = true;
-					}
-				});
-
-			} else if (e.getStatus() == ReverseGeocoderStatus.ERROR) {
-				GeocoderResponse response = e.getResponse();
-				final String info;
-
-				switch (response.getStatus()) {
-				case ZERO_RESULTS:
-					info = Language.I18N.getString("map.reverseGeocoder.search.noResult");
-					break;
-				case OVER_QUERY_LIMIT:
-					info = Language.I18N.getString("map.geocoder.search.overLimit");
-					break;		
-				case REQUEST_DENIED:
-					info = Language.I18N.getString("map.geocoder.search.denied");
-					break;		
-				default:
-					LOG.error("Fatal service response from reverse geocoder: " + response.getException().getMessage());
-					info = Language.I18N.getString("map.geocoder.search.fatal");
-				}
-
-				SwingUtilities.invokeLater(new Runnable() {
-					public void run() {
-						reverseInfo.setText(info);
-						reverseText.setVisible(false);
-						reverseInfo.setVisible(true);
-						reverseSearchProgress.setIcon(null);
-					}
-				});
-
-			}
+			});
 		}
 	}
 
@@ -1032,7 +902,7 @@ public class MapWindow extends JDialog implements EventHandler {
 		private JMenuItem copy;	
 		private JMenuItem paste;
 
-		public BBoxPopupMenu(JPopupMenu popupMenu, boolean addSeparator) {
+		BBoxPopupMenu(JPopupMenu popupMenu, boolean addSeparator) {
 			copy = new JMenuItem();	
 			paste = new JMenuItem();
 
@@ -1043,17 +913,8 @@ public class MapWindow extends JDialog implements EventHandler {
 			popupMenu.add(copy);
 			popupMenu.add(paste);
 
-			copy.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					copyBoundingBoxToClipboard();
-				}
-			});
-
-			paste.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					pasteBoundingBoxFromClipboard();
-				}
-			});
+			copy.addActionListener(e -> copyBoundingBoxToClipboard());
+			paste.addActionListener(e -> pasteBoundingBoxFromClipboard());
 		}
 
 		private void doTranslation() {
