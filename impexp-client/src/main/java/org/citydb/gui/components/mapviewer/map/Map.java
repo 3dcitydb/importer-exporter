@@ -152,7 +152,7 @@ public class Map {
 		label = new JLabel("[n/a]");
 		label.setForeground(Color.WHITE);
 		label.setPreferredSize(new Dimension(200, label.getPreferredSize().height));
-		JLabel copyright = new JLabel("<html><body>&copy; OpenStreetMap contributors</html></body>");
+		JLabel copyright = new JLabel("<html><body>&copy; <u>OpenStreetMap</u> contributors</html></body>");
 		copyright.setBackground(borderColor);
 		copyright.setForeground(Color.WHITE);
 		copyright.setCursor(new Cursor(Cursor.HAND_CURSOR));
