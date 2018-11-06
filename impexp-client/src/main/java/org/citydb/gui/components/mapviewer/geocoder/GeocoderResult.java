@@ -27,42 +27,23 @@
  */
 package org.citydb.gui.components.mapviewer.geocoder;
 
-public class GeocoderResponse {	
-	private final ResponseType type;
-	private StatusCode status = StatusCode.ERROR;
-	private Exception exception;
-	private Location[] locations;
+import java.util.ArrayList;
+import java.util.List;
 
-	public GeocoderResponse(ResponseType type) {
-		this.type = type;
-	}
-	
-	public ResponseType getType() {
-		return type;
-	}
+public class GeocoderResult {
+	private List<Location> locations = new ArrayList<>();
 
-	public StatusCode getStatus() {
-		return status;
-	}
-
-	public void setStatus(StatusCode status) {
-		this.status = status;
-	}
-
-	public Exception getException() {
-		return exception;
-	}
-
-	public void setException(Exception exception) {
-		this.exception = exception;
-	}
-
-	public Location[] getLocations() {
+	public List<Location> getLocations() {
 		return locations;
 	}
 
-	public void setLocations(Location[] locations) {
-		this.locations = locations;
+	public boolean isSetLocations() {
+		return !locations.isEmpty();
+	}
+
+	public void addLocation(Location location) {
+		if (location != null)
+			locations.add(location);
 	}
 
 }
