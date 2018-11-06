@@ -44,6 +44,7 @@ import org.citydb.database.adapter.BlobExportAdapter;
 import org.citydb.event.EventDispatcher;
 import org.citydb.log.Logger;
 import org.citydb.modules.kml.util.BalloonTemplateHandler;
+import org.citydb.modules.kml.util.ElevationServiceHandler;
 import org.citydb.query.Query;
 
 public class CityObjectGroup extends KmlGenericObject{

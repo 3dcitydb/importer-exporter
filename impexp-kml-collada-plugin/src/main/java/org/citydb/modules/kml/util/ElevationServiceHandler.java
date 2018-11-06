@@ -25,7 +25,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.citydb.modules.kml.database;
+package org.citydb.modules.kml.util;
 
 import org.citydb.log.Logger;
 import org.xml.sax.Attributes;
@@ -50,6 +50,7 @@ public class ElevationServiceHandler {
 	private static final String LNG = "lng";
 	private static final String ELEVATION = "elevation";
 	private static final String OK = "OK";
+	private static final String ERROR_MESSAGE = "error_message";
 
 	private static final double TOLERANCE = 0.000001;
 	private static final int POINTS_IN_A_URL = 55;
@@ -60,6 +61,7 @@ public class ElevationServiceHandler {
 
 	String status = "";
 	double elevation = 0;
+	String errorMessage;
 
 	double minElevation = Double.MAX_VALUE;
 	int location = -1;
@@ -90,7 +92,7 @@ public class ElevationServiceHandler {
 		List<String> elevationStringList = new ArrayList<String>();
 		int index = 0;
 		while (index < candidateCoords.length) { 
-			String elevationString = "http://maps.google.com/maps/api/elevation/xml?sensor=false&locations=";
+			String elevationString = "https://maps.googleapis.com/maps/api/elevation/xml?locations=";
 			for (int i = 0; i < POINTS_IN_A_URL; i++) { // URL length must be under 2048
 				String latitude = new BigDecimal(candidateCoords[index+1]).toPlainString();
 				if (latitude.length() > 15) latitude = latitude.substring(0, 15);
@@ -114,6 +116,8 @@ public class ElevationServiceHandler {
 		if (!status.equalsIgnoreCase(OK)) {
 			if (status.length() > 0) {
 				log.warn("Elevation API returned " + status);
+				if (errorMessage != null)
+					log.warn(errorMessage);
 			}
 			throw new Exception("Elevation API returned " + status);
 		}
@@ -210,6 +214,9 @@ public class ElevationServiceHandler {
 						minElevationLat = lastLat;
 						minElevationLong = lastLong;
 					}
+				}
+				else if (currentElement.equalsIgnoreCase(ERROR_MESSAGE)) {
+					errorMessage = value;
 				}
 			}
 
