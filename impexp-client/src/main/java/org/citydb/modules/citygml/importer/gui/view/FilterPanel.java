@@ -34,8 +34,9 @@ import org.citydb.config.project.importer.ImportFilter;
 import org.citydb.config.project.query.filter.counter.CounterFilter;
 import org.citydb.config.project.query.filter.selection.comparison.LikeOperator;
 import org.citydb.config.project.query.filter.selection.id.ResourceIdOperator;
-import org.citydb.config.project.query.filter.selection.spatial.BBOXOperator;
 import org.citydb.config.project.query.filter.type.FeatureTypeFilter;
+import org.citydb.config.project.query.simple.SimpleBBOXMode;
+import org.citydb.config.project.query.simple.SimpleBBOXOperator;
 import org.citydb.gui.components.checkboxtree.DefaultCheckboxTreeCellRenderer;
 import org.citydb.gui.components.feature.FeatureTypeTree;
 import org.citydb.gui.factory.PopupMenuDecorator;
@@ -45,14 +46,8 @@ import org.citydb.plugin.extension.view.components.BoundingBoxPanel;
 import org.citydb.util.Util;
 import org.jdesktop.swingx.JXTitledSeparator;
 
-import javax.swing.BorderFactory;
-import javax.swing.JCheckBox;
-import javax.swing.JFormattedTextField;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.text.DecimalFormat;
@@ -82,6 +77,9 @@ public class FilterPanel extends JPanel {
 	private JFormattedTextField counterEndText;
 
 	private BoundingBoxPanel bboxPanel;
+	private JLabel bboxMode;
+	private JRadioButton bboxOverlaps;
+	private JRadioButton bboxWithin;
 	private FeatureTypeTree featureTree;
 
 	public FilterPanel(ViewController viewController, Config config) {
@@ -116,6 +114,13 @@ public class FilterPanel extends JPanel {
 		counterEndText.setFocusLostBehavior(JFormattedTextField.COMMIT);
 
 		bboxPanel = viewController.getComponentFactory().createBoundingBoxPanel();
+		bboxMode = new JLabel();
+		bboxOverlaps = new JRadioButton();
+		bboxWithin = new JRadioButton();
+
+		ButtonGroup bboxModeGroup = new ButtonGroup();
+		bboxModeGroup.add(bboxOverlaps);
+		bboxModeGroup.add(bboxWithin);
 
 		featureTree = new FeatureTypeTree();
 		featureTree.setRowHeight((int)(new JCheckBox().getPreferredSize().getHeight()) - 4);
@@ -180,7 +185,18 @@ public class FilterPanel extends JPanel {
 			{
 				bboxFilterRow.add(useBBoxFilter, GuiUtil.setConstraints(0,0,0,0,GridBagConstraints.NONE,5,0,0,5));
 				bboxFilterRow.add(bboxSeparator, GuiUtil.setConstraints(1,0,1,0,GridBagConstraints.HORIZONTAL,5,0,0,5));
-				bboxFilterRow.add(bboxPanel, GuiUtil.setConstraints(1,1,1,0,GridBagConstraints.HORIZONTAL,0,0,5,5));
+				bboxFilterRow.add(bboxPanel, GuiUtil.setConstraints(1,1,1,0,GridBagConstraints.HORIZONTAL,0,0,0,5));
+			}
+
+			JPanel bboxModePanel = new JPanel();
+			bboxModePanel.setLayout(new GridBagLayout());
+			{
+				bboxOverlaps.setIconTextGap(10);
+				bboxWithin.setIconTextGap(10);
+				bboxModePanel.add(bboxMode, GuiUtil.setConstraints(0,0,0,0,GridBagConstraints.HORIZONTAL,0,0,0,5));
+				bboxModePanel.add(bboxOverlaps, GuiUtil.setConstraints(1,0,0,0,GridBagConstraints.HORIZONTAL,0,15,0,5));
+				bboxModePanel.add(bboxWithin, GuiUtil.setConstraints(2,0,1,0,GridBagConstraints.HORIZONTAL,0,5,0,0));
+				bboxPanel.addComponent(bboxModePanel);
 			}
 		}
 		{
@@ -260,6 +276,9 @@ public class FilterPanel extends JPanel {
 
 	private void setEnabledBBoxFilter() {
 		bboxPanel.setEnabled(useBBoxFilter.isSelected());
+		bboxMode.setEnabled(useBBoxFilter.isSelected());
+		bboxOverlaps.setEnabled(useBBoxFilter.isSelected());
+		bboxWithin.setEnabled(useBBoxFilter.isSelected());
 	}
 
 	private void setEnabledFeatureFilter() {
@@ -277,6 +296,9 @@ public class FilterPanel extends JPanel {
 		gmlNameLabel.setText(Language.I18N.getString("filter.label.gmlName"));
 		counterStartLabel.setText(Language.I18N.getString("filter.label.counter.start"));
 		counterEndLabel.setText(Language.I18N.getString("filter.label.counter.end"));
+		bboxMode.setText(Language.I18N.getString("filter.label.boundingBox.mode"));
+		bboxOverlaps.setText(Language.I18N.getString("filter.label.boundingBox.overlaps"));
+		bboxWithin.setText(Language.I18N.getString("filter.label.boundingBox.within"));
 	}
 
 	public void loadSettings() {
@@ -301,10 +323,15 @@ public class FilterPanel extends JPanel {
 		counterEndText.setValue(counterFilter.getUpperLimit());
 
 		// bbox filter
-		BBOXOperator bboxFilter = filter.getBboxFilter();
+		SimpleBBOXOperator bboxFilter = filter.getBboxFilter();
 		BoundingBox bbox = bboxFilter.getEnvelope();
 		if (bbox != null)
 			bboxPanel.setBoundingBox(bboxFilter.getEnvelope());
+
+		if (bboxFilter.getBboxMode() == SimpleBBOXMode.WITHIN)
+			bboxWithin.setSelected(true);
+		else
+			bboxOverlaps.setSelected(true);
 
 		// feature type filter
 		FeatureTypeFilter featureTypeFilter = filter.getFeatureTypeFilter();
@@ -353,6 +380,7 @@ public class FilterPanel extends JPanel {
 
 		// bbox filter
 		filter.getBboxFilter().setEnvelope(bboxPanel.getBoundingBox());
+		filter.getBboxFilter().setBboxMode(bboxOverlaps.isSelected() ? SimpleBBOXMode.BBOX : SimpleBBOXMode.WITHIN);
 
 		// feature type filter
 		FeatureTypeFilter featureTypeFilter = filter.getFeatureTypeFilter();

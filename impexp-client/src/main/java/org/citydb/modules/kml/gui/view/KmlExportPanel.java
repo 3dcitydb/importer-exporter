@@ -76,33 +76,11 @@ import org.citygml4j.model.module.citygml.VegetationModule;
 import org.jdesktop.swingx.JXTextField;
 import org.jdesktop.swingx.prompt.PromptSupport.FocusBehavior;
 
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.ButtonGroup;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JFileChooser;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JScrollPane;
-import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
-import javax.swing.SwingWorker;
-import javax.swing.UIManager;
+import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.xml.bind.JAXBContext;
-import java.awt.AWTEvent;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Toolkit;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -143,8 +121,6 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 	private JLabel timestampLabel = new JLabel();
 	private JTextField timestampText = new JTextField("");
 
-	private ButtonGroup filterButtonGroup = new ButtonGroup();
-
 	private JPanel filterPanel;
 	private JRadioButton singleBuildingRadioButton = new JRadioButton("");
 	private JLabel gmlIdLabel = new JLabel("gml:id");
@@ -154,7 +130,6 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 	private BoundingBoxPanel bboxComponent;
 
 	private JLabel tilingLabel = new JLabel();
-	private ButtonGroup tilingButtonGroup = new ButtonGroup();
 	private JRadioButton noTilingRadioButton = new JRadioButton("");
 	private JRadioButton automaticTilingRadioButton = new JRadioButton("");
 	private JRadioButton manualTilingRadioButton = new JRadioButton("");
@@ -224,10 +199,12 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		versioningPanel.add(timestampLabel, GuiUtil.setConstraints(2,0,0.0,0.0,GridBagConstraints.HORIZONTAL,0,BORDER_THICKNESS * 2,BORDER_THICKNESS,BORDER_THICKNESS));
 		versioningPanel.add(timestampText, GuiUtil.setConstraints(3,0,1.0,0.0,GridBagConstraints.HORIZONTAL,0,BORDER_THICKNESS,BORDER_THICKNESS,BORDER_THICKNESS));
 
-		Box filterContentPanel = Box.createVerticalBox();
+		ButtonGroup filterButtonGroup = new ButtonGroup();
 		filterButtonGroup.add(singleBuildingRadioButton);
-		singleBuildingRadioButton.setIconTextGap(10);
 		filterButtonGroup.add(boundingBoxRadioButton);
+
+		Box filterContentPanel = Box.createVerticalBox();
+		singleBuildingRadioButton.setIconTextGap(10);
 		boundingBoxRadioButton.setIconTextGap(10);
 		boundingBoxRadioButton.setSelected(true);
 		int lmargin = (int)(singleBuildingRadioButton.getPreferredSize().getWidth()) + 6;
@@ -253,32 +230,35 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 
 		boundingBoxPanel.add(bboxComponent, GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.HORIZONTAL,2,lmargin,0,BORDER_THICKNESS));
 
+		ButtonGroup tilingButtonGroup = new ButtonGroup();
 		tilingButtonGroup.add(noTilingRadioButton);
-		noTilingRadioButton.setIconTextGap(10);
 		tilingButtonGroup.add(automaticTilingRadioButton);
-		automaticTilingRadioButton.setIconTextGap(10);
 		tilingButtonGroup.add(manualTilingRadioButton);
+
+		noTilingRadioButton.setIconTextGap(10);
+		automaticTilingRadioButton.setIconTextGap(10);
 		manualTilingRadioButton.setIconTextGap(10);
 		automaticTilingRadioButton.setSelected(true);
 
 		JPanel tilingPanel = new JPanel();
 		tilingPanel.setLayout(new GridBagLayout());
-		tilingPanel.add(tilingLabel, GuiUtil.setConstraints(0,0,0.0,1.0,GridBagConstraints.HORIZONTAL,0,lmargin,BORDER_THICKNESS,0));
-		tilingPanel.add(noTilingRadioButton, GuiUtil.setConstraints(1,0,0.0,1.0,GridBagConstraints.HORIZONTAL,0,BORDER_THICKNESS * 4,BORDER_THICKNESS,0));
-		tilingPanel.add(automaticTilingRadioButton, GuiUtil.setConstraints(2,0,0.0,1.0,GridBagConstraints.HORIZONTAL,0,BORDER_THICKNESS * 2,BORDER_THICKNESS,0));
-		tilingPanel.add(manualTilingRadioButton, GuiUtil.setConstraints(3,0,0.0,1.0,GridBagConstraints.HORIZONTAL,0,BORDER_THICKNESS * 2,BORDER_THICKNESS,0));
-		tilingPanel.add(rowsLabel, GuiUtil.setConstraints(4,0,0.0,1.0,GridBagConstraints.HORIZONTAL,0,BORDER_THICKNESS * 6,BORDER_THICKNESS,0));
-		tilingPanel.add(rowsText, GuiUtil.setConstraints(5,0,0.5,1.0,GridBagConstraints.HORIZONTAL,0,BORDER_THICKNESS * 2,BORDER_THICKNESS,0));
-		tilingPanel.add(columnsLabel, GuiUtil.setConstraints(6,0,0.0,1.0,GridBagConstraints.HORIZONTAL,0,BORDER_THICKNESS * 3,BORDER_THICKNESS,0));
-		tilingPanel.add(columnsText, GuiUtil.setConstraints(7,0,0.5,1.0,GridBagConstraints.HORIZONTAL,0,BORDER_THICKNESS * 2,BORDER_THICKNESS,BORDER_THICKNESS));
+		tilingPanel.add(tilingLabel, GuiUtil.setConstraints(0,0,0.0,1.0,GridBagConstraints.HORIZONTAL,0,0,0,0));
+		tilingPanel.add(noTilingRadioButton, GuiUtil.setConstraints(1,0,0.0,1.0,GridBagConstraints.HORIZONTAL,0,BORDER_THICKNESS * 4,0,0));
+		tilingPanel.add(automaticTilingRadioButton, GuiUtil.setConstraints(2,0,0.0,1.0,GridBagConstraints.HORIZONTAL,0,BORDER_THICKNESS * 2,0,0));
+		tilingPanel.add(manualTilingRadioButton, GuiUtil.setConstraints(3,0,0.0,1.0,GridBagConstraints.HORIZONTAL,0,BORDER_THICKNESS * 2,0,0));
+		tilingPanel.add(rowsLabel, GuiUtil.setConstraints(4,0,0.0,1.0,GridBagConstraints.HORIZONTAL,0,BORDER_THICKNESS * 6,0,0));
+		tilingPanel.add(rowsText, GuiUtil.setConstraints(5,0,0.5,1.0,GridBagConstraints.HORIZONTAL,0,BORDER_THICKNESS * 2,0,0));
+		tilingPanel.add(columnsLabel, GuiUtil.setConstraints(6,0,0.0,1.0,GridBagConstraints.HORIZONTAL,0,BORDER_THICKNESS * 3,0,0));
+		tilingPanel.add(columnsText, GuiUtil.setConstraints(7,0,0.5,1.0,GridBagConstraints.HORIZONTAL,0,BORDER_THICKNESS * 2,0,0));
+
+		// add tiling content to bbox panel
+		bboxComponent.addComponent(tilingPanel);
 
 		filterContentPanel.add(singleBuildingRadioPanel);
 		filterContentPanel.add(singleBuildingPanel);
 		filterContentPanel.add(Box.createRigidArea(new Dimension(0, BORDER_THICKNESS)));
 		filterContentPanel.add(boundingBoxRadioPanel);
 		filterContentPanel.add(boundingBoxPanel);
-		filterContentPanel.add(Box.createRigidArea(new Dimension(0, BORDER_THICKNESS)));
-		filterContentPanel.add(tilingPanel);
 		filterContentPanel.add(Box.createRigidArea(new Dimension(0, BORDER_THICKNESS)));
 
 		filterPanel = new JPanel();

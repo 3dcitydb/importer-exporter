@@ -27,9 +27,9 @@
  */
 package org.citydb.plugin.extension.view.components;
 
-import javax.swing.JPanel;
-
 import org.citydb.config.geometry.BoundingBox;
+
+import javax.swing.*;
 
 @SuppressWarnings("serial")
 public abstract class BoundingBoxPanel extends JPanel {
@@ -41,4 +41,5 @@ public abstract class BoundingBoxPanel extends JPanel {
 	public abstract void showMapButton(boolean show);
 	public abstract void showCopyBoundingBoxButton(boolean show);
 	public abstract void showPasteBoundingBoxButton(boolean show);
+	public abstract void addComponent(JComponent component);
 }
