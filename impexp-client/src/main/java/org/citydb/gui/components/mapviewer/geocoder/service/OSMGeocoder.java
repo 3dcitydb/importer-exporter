@@ -53,7 +53,7 @@ public class OSMGeocoder implements GeocodingService {
             return geocodingResult;
         } catch (IOException e) {
             throw new GeocodingServiceException("Failed to invoke the geocoding service.", e);
-        } catch (Exception e) {
+        } catch (Throwable e) {
             throw new GeocodingServiceException("Failed to parse the geocoding service response.", e);
         }
     }
@@ -79,12 +79,12 @@ public class OSMGeocoder implements GeocodingService {
             return geocodingResult;
         } catch (IOException e) {
             throw new GeocodingServiceException("Failed to invoke the geocoding service.", e);
-        } catch (Exception e) {
+        } catch (Throwable e) {
             throw new GeocodingServiceException("Failed to parse the geocoding service response.", e);
         }
     }
 
-    private Location parsePlace(JsonElement element) throws Exception {
+    private Location parsePlace(JsonElement element) {
         Location location = null;
 
         if (element.isJsonObject()) {
