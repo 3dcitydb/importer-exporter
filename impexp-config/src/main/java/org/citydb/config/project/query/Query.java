@@ -27,12 +27,6 @@
  */
 package org.citydb.config.project.query;
 
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlIDREF;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlType;
-
 import org.citydb.config.project.database.DatabaseSrs;
 import org.citydb.config.project.query.filter.appearance.AppearanceFilter;
 import org.citydb.config.project.query.filter.counter.CounterFilter;
@@ -41,6 +35,12 @@ import org.citydb.config.project.query.filter.projection.ProjectionFilter;
 import org.citydb.config.project.query.filter.selection.SelectionFilter;
 import org.citydb.config.project.query.filter.tiling.Tiling;
 import org.citydb.config.project.query.filter.type.FeatureTypeFilter;
+
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlIDREF;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlType;
 
 @XmlRootElement(name="query")
 @XmlType(name="QueryType", propOrder={
@@ -55,7 +55,11 @@ import org.citydb.config.project.query.filter.type.FeatureTypeFilter;
 public class Query {
 	@XmlIDREF
 	@XmlAttribute
-	private DatabaseSrs targetSRS;
+	private DatabaseSrs targetSrs;
+	@XmlAttribute
+	private Integer targetSrid;
+	@XmlAttribute
+	private String targetSrsName;
 	@XmlElement(name = "typeNames")
 	private FeatureTypeFilter featureTypeFilter;
 	@XmlElement(name="propertyNames")
@@ -70,16 +74,33 @@ public class Query {
 	private AppearanceFilter appearanceFilter;
 	private Tiling tiling;
 	
-	public DatabaseSrs getTargetSRS() {
-		return targetSRS;
+	public DatabaseSrs getTargetSrs() {
+		if (targetSrs != null)
+			return targetSrs;
+		else if (targetSrid != null) {
+			DatabaseSrs srs = new DatabaseSrs(targetSrid);
+			srs.setGMLSrsName(targetSrsName);
+			srs.setDescription(targetSrsName);
+			srs.setSupported(true);
+			return srs;
+		} else
+			return null;
 	}
 	
-	public boolean isSetTargetSRS() {
-		return targetSRS != null;
+	public boolean isSetTargetSrs() {
+		return targetSrs != null || targetSrid != null;
 	}
 	
-	public void setTargetSRS(DatabaseSrs targetSRS) {
-		this.targetSRS = targetSRS;
+	public void setTargetSrs(DatabaseSrs targetSrs) {
+		this.targetSrs = targetSrs;
+		targetSrid = null;
+		targetSrsName = null;
+	}
+
+	public void setTargetSrs(int targetSrid, String targetSrsName) {
+		this.targetSrid = targetSrid;
+		this.targetSrsName = targetSrsName;
+		targetSrs = null;
 	}
 
 	public FeatureTypeFilter getFeatureTypeFilter() {

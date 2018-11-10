@@ -340,13 +340,13 @@ public class MapWindow extends JDialog implements EventHandler {
 		copyBBox = new JButton();
 		ImageIcon copyIcon = new ImageIcon(getClass().getResource("/org/citydb/gui/images/common/bbox_copy.png"));
 		copyBBox.setIcon(copyIcon);
-		copyBBox.setPreferredSize(new Dimension(copyIcon.getIconWidth() + 6, copyIcon.getIconHeight() + 6));
+		copyBBox.setMargin(new Insets(1, 1, 1, 1));
 		copyBBox.setEnabled(false);
 
 		pasteBBox = new JButton();
 		ImageIcon pasteIcon = new ImageIcon(getClass().getResource("/org/citydb/gui/images/common/bbox_paste.png"));
 		pasteBBox.setIcon(pasteIcon);
-		pasteBBox.setPreferredSize(new Dimension(copyIcon.getIconWidth() + 6, copyIcon.getIconHeight() + 6));
+		pasteBBox.setMargin(new Insets(1, 1, 1, 1));
 		pasteBBox.setEnabled(clipboardHandler.containsPossibleBoundingBox());
 
 		bboxButtons.add(showBBox, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 0));

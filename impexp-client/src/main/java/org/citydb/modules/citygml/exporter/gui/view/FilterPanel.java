@@ -50,6 +50,7 @@ import org.citydb.gui.util.GuiUtil;
 import org.citydb.modules.citygml.exporter.gui.view.filter.AttributeFilterView;
 import org.citydb.modules.citygml.exporter.gui.view.filter.FilterView;
 import org.citydb.modules.citygml.exporter.gui.view.filter.SQLFilterView;
+import org.citydb.modules.citygml.exporter.gui.view.filter.XMLFilterView;
 import org.citydb.plugin.extension.view.ViewController;
 import org.citydb.plugin.extension.view.components.BoundingBoxPanel;
 import org.citydb.registry.ObjectRegistry;
@@ -57,8 +58,22 @@ import org.citydb.util.Util;
 import org.citygml4j.model.module.citygml.CityGMLVersion;
 import org.jdesktop.swingx.JXTitledSeparator;
 
-import javax.swing.*;
-import java.awt.*;
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.ButtonGroup;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JFormattedTextField;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.JSpinner;
+import javax.swing.JTabbedPane;
+import javax.swing.SpinnerListModel;
+import javax.xml.bind.JAXBContext;
+import java.awt.CardLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.text.DecimalFormat;
@@ -83,6 +98,7 @@ public class FilterPanel extends JPanel implements EventHandler {
 	private JXTitledSeparator bboxSeparator;
 	private JXTitledSeparator featureSeparator;
 
+	private FilterView xmlFilter;
 	private JTabbedPane filterTab;
 	private FilterView[] filters;
 
@@ -109,14 +125,14 @@ public class FilterPanel extends JPanel implements EventHandler {
 
 	private FeatureTypeTree featureTree;
 
-	public FilterPanel(ViewController viewController, Config config) {
+	public FilterPanel(ViewController viewController, JAXBContext projectContext, Config config) {
 		this.config = config;
 
 		ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(EventType.PROPERTY_CHANGE_EVENT, this);		
-		initGui(viewController);
+		initGui(viewController, projectContext);
 	}
 
-	private void initGui(ViewController viewController) {
+	private void initGui(ViewController viewController, JAXBContext projectContext) {
 		useSelectionFilter = new JCheckBox();
 		useCounterFilter = new JCheckBox();
 		useLodFilter = new JCheckBox();
@@ -179,33 +195,14 @@ public class FilterPanel extends JPanel implements EventHandler {
 		renderer.setClosedIcon(null);
 
 		//layout
-		setLayout(new GridBagLayout());
-
-
-
-
 		mainPanel = new JPanel(new CardLayout());
-		add(mainPanel, GuiUtil.setConstraints(0,0,1,0,GridBagConstraints.HORIZONTAL,0,0,0,0));
-
-		JButton switchButton = new JButton("switch");
-		add(switchButton, GuiUtil.setConstraints(0,1,0,0,GridBagConstraints.EAST, GridBagConstraints.NONE,5,5,5,5));
-		switchButton.addActionListener(l -> {
-			CardLayout layout = (CardLayout) mainPanel.getLayout();
-			layout.next(mainPanel);
-		});
-
-		JPanel xmlPanel = new JPanel();
-		xmlPanel.setLayout(new GridBagLayout());
-		{
-			JTextArea xmlText = new JTextArea("", 10, 1);
-			JScrollPane scrollPane = new JScrollPane(xmlText);
-			xmlPanel.add(scrollPane, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.BOTH, 10, 5, 10, 5));
-		}
+		setLayout(new GridBagLayout());
+		add(mainPanel, GuiUtil.setConstraints(0,0,1,1,GridBagConstraints.BOTH,0,0,0,0));
 
 		JPanel guiPanel = new JPanel();
-		mainPanel.add(guiPanel, "guiPanel");
-		mainPanel.add(xmlPanel, "xmlPanel");
-
+		xmlFilter = new XMLFilterView(this, projectContext, config);
+		mainPanel.add(guiPanel, "simple");
+		mainPanel.add(xmlFilter.getViewComponent(), "advanced");
 
 		guiPanel.setLayout(new GridBagLayout());
 		{
@@ -323,6 +320,9 @@ public class FilterPanel extends JPanel implements EventHandler {
 					featureClassPanel.add(featureTree, GuiUtil.setConstraints(0,0,1,1,GridBagConstraints.BOTH,0,0,0,0));
 				}
 			}
+		}
+		{
+			guiPanel.add(Box.createVerticalGlue(), GuiUtil.setConstraints(0,5,1,1,GridBagConstraints.BOTH,0,0,0,0));
 		}
 
 		useSelectionFilter.addActionListener(e -> setEnabledFilterTab());
@@ -443,6 +443,11 @@ public class FilterPanel extends JPanel implements EventHandler {
 			field.setValue(0);
 	}
 
+	void showFilterDialog(boolean showSimple) {
+		CardLayout layout = (CardLayout) mainPanel.getLayout();
+		layout.show(mainPanel, showSimple ? "simple" : "advanced");
+	}
+
 	public void doTranslation() {
 		lodSeparator.setTitle(Language.I18N.getString("filter.border.lod"));
 		counterSeparator.setTitle(Language.I18N.getString("filter.border.counter"));
@@ -464,6 +469,8 @@ public class FilterPanel extends JPanel implements EventHandler {
 			filterTab.setTitleAt(i, filters[i].getLocalizedTitle());
 			filters[i].doTranslation();
 		}
+
+		xmlFilter.doTranslation();
 	}
 
 	public void loadSettings() {
@@ -530,7 +537,7 @@ public class FilterPanel extends JPanel implements EventHandler {
 		filterTab.setSelectedIndex(query.getSelectionFilter().isUseSQLFilter() ? 1 : 0);
 	}
 
-	public void setSettings() {
+	public void setSimpleQuerySettings() {
 		SimpleQuery query = config.getProject().getExporter().getSimpleQuery();
 
 		query.setUseSelectionFilter(useSelectionFilter.isSelected());
@@ -588,6 +595,10 @@ public class FilterPanel extends JPanel implements EventHandler {
 		query.getSelectionFilter().setUseSQLFilter(filterTab.getSelectedIndex() == 1);
 		for (FilterView filter : filters)
 			filter.setSettings();
+	}
+
+	public void setSettings() {
+		setSimpleQuerySettings();
 	}
 
 	@Override

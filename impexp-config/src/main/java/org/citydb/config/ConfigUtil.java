@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 public class ConfigUtil {
+	public static final String CITYDB_CONFIG_NAMESPACE_URI = "http://www.3dcitydb.org/importer-exporter/config";
 
 	public static void marshal(Object object, File file, JAXBContext ctx) throws JAXBException {
 		Marshaller m = ctx.createMarshaller();	

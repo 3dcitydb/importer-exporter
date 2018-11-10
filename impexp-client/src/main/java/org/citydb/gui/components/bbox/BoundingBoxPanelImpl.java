@@ -106,17 +106,17 @@ public class BoundingBoxPanelImpl extends BoundingBoxPanel implements EventHandl
         map = new JButton();
         ImageIcon mapIcon = new ImageIcon(getClass().getResource("/org/citydb/gui/images/common/map_select.png"));
         map.setIcon(mapIcon);
-        map.setPreferredSize(new Dimension(mapIcon.getIconWidth() + 6, mapIcon.getIconHeight() + 6));
+        map.setMargin(new Insets(1, 1, 1, 1));
 
         copy = new JButton();
         ImageIcon copyIcon = new ImageIcon(getClass().getResource("/org/citydb/gui/images/common/bbox_copy.png"));
         copy.setIcon(copyIcon);
-        copy.setPreferredSize(new Dimension(copyIcon.getIconWidth() + 6, copyIcon.getIconHeight() + 6));
+        copy.setMargin(new Insets(1, 1, 1, 1));
 
         paste = new JButton();
         ImageIcon pasteIcon = new ImageIcon(getClass().getResource("/org/citydb/gui/images/common/bbox_paste.png"));
         paste.setIcon(pasteIcon);
-        paste.setPreferredSize(new Dimension(pasteIcon.getIconWidth() + 6, pasteIcon.getIconHeight() + 6));
+        paste.setMargin(new Insets(1, 1, 1, 1));
 
         actionPanel.add(map, GuiUtil.setConstraints(0, 0, 0.0, 0.0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 5));
         actionPanel.add(copy, GuiUtil.setConstraints(1, 0, 0.0, 0.0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 5));

@@ -59,25 +59,21 @@ public class DatabaseSrsList {
 		return items.add(item);
 	}
 
-	public void addDefaultItems() {		
-		HashMap<PredefinedSrsName, Boolean> addSRS = new HashMap<PredefinedSrsName, Boolean>(Database.PREDEFINED_SRS.size());
+	public void addDefaultItems() {
+		HashMap<PredefinedSrsName, Boolean> addSrs = new HashMap<>(Database.PREDEFINED_SRS.size());
 		for (PredefinedSrsName name : PredefinedSrsName.values())
-			addSRS.put(name, Boolean.TRUE);
+			addSrs.put(name, Boolean.TRUE);
 						
 		for (DatabaseSrs refSys : items) {
-			Iterator<Entry<PredefinedSrsName, DatabaseSrs>> iter = Database.PREDEFINED_SRS.entrySet().iterator();
-			while (iter.hasNext()) {
-				Entry<PredefinedSrsName, DatabaseSrs> entry = iter.next();
-				if (addSRS.get(entry.getKey()) && refSys.getSrid() == entry.getValue().getSrid()) {
-					addSRS.put(entry.getKey(), Boolean.FALSE);
+			for (Entry<PredefinedSrsName, DatabaseSrs> entry : Database.PREDEFINED_SRS.entrySet()) {
+				if (addSrs.get(entry.getKey()) && refSys.getSrid() == entry.getValue().getSrid()) {
+					addSrs.put(entry.getKey(), Boolean.FALSE);
 					break;
 				}
 			}
 		}
-		
-		Iterator<Entry<PredefinedSrsName, Boolean>> iter = addSRS.entrySet().iterator();
-		while (iter.hasNext()) {
-			Entry<PredefinedSrsName, Boolean> entry = iter.next();
+
+		for (Entry<PredefinedSrsName, Boolean> entry : addSrs.entrySet()) {
 			if (entry.getValue())
 				items.add(Database.PREDEFINED_SRS.get(entry.getKey()));
 		}

@@ -114,7 +114,7 @@ public class SpatialOperatorBuilder {
 		try {
 			spatialOperand = spatialOperandParser.parseOperand(bboxConfig.getEnvelope());
 		} catch (GeometryParseException e) {
-			throw new QueryBuildException("Failed to parse the spatial reference system of bbox operator.", e);
+			throw new QueryBuildException("Failed to parse the envelope of the bbox operator.", e);
 		}
 
 		return SpatialOperationFactory.bbox(valueReference, spatialOperand);

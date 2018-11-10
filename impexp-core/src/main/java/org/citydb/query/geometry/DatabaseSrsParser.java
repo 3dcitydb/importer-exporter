@@ -40,11 +40,11 @@ public class DatabaseSrsParser extends SrsNameParser {
 		this.config = config;
 	}
 
-	public DatabaseSrs getDefaultSRS() {
+	public DatabaseSrs getDefaultSrs() {
 		return databaseAdapter.getConnectionMetaData().getReferenceSystem();
 	}
 
-	public DatabaseSrs getDatabaseSRS(String srsName) throws SrsParseException {
+	public DatabaseSrs getDatabaseSrs(String srsName) throws SrsParseException {
 		if (srsName.equals(databaseAdapter.getConnectionMetaData().getReferenceSystem().getGMLSrsName()))
 			return databaseAdapter.getConnectionMetaData().getReferenceSystem();
 
@@ -53,21 +53,21 @@ public class DatabaseSrsParser extends SrsNameParser {
 			return databaseAdapter.getConnectionMetaData().getReferenceSystem();
 
 		// check whether SRS is supported by database
-		DatabaseSrs targetSRS = null;
+		DatabaseSrs targetSrs = null;
 		for (DatabaseSrs srs: config.getProject().getDatabase().getReferenceSystems()) {
 			if (srs.getSrid() == epsgCode) {
 				if (!srs.isSupported())
 					throw new SrsParseException("The CRS '" + srsName + "' is advertised but not supported by the database.");
 
-				targetSRS = srs;
+				targetSrs = srs;
 				break;
 			}
 		}
 
-		if (targetSRS == null)
+		if (targetSrs == null)
 			throw new SrsParseException("The CRS '" + srsName + "' is not advertised.");
 
-		return targetSRS;
+		return targetSrs;
 	}
 
 }

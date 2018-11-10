@@ -497,7 +497,7 @@ public class ImpExp {
 
 			// register internal plugins
 			pluginManager.registerInternalPlugin(new CityGMLImportPlugin(mainView, config));		
-			pluginManager.registerInternalPlugin(new CityGMLExportPlugin(mainView, config));		
+			pluginManager.registerInternalPlugin(new CityGMLExportPlugin(mainView, projectContext, config));
 			pluginManager.registerInternalPlugin(new KMLExportPlugin(mainView, kmlContext, colladaContext, config));
 			pluginManager.registerInternalPlugin(databasePlugin);
 			pluginManager.registerInternalPlugin(new PreferencesPlugin(mainView, config));

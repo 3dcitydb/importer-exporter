@@ -53,7 +53,7 @@ public class SimpleQuery {
 	protected CityGMLVersionType version;
 	@XmlIDREF
 	@XmlAttribute
-	protected DatabaseSrs targetSRS;
+	protected DatabaseSrs targetSrs;
 	@XmlAttribute
 	private boolean useTypeNames;
 	@XmlAttribute
@@ -96,16 +96,16 @@ public class SimpleQuery {
 		this.version = version;
 	}
 
-	public DatabaseSrs getTargetSRS() {
-		return targetSRS;
+	public DatabaseSrs getTargetSrs() {
+		return targetSrs;
 	}
 	
-	public boolean isSetTargetSRS() {
-		return targetSRS != null;
+	public boolean isSetTargetSrs() {
+		return targetSrs != null;
 	}
 	
-	public void setTargetSRS(DatabaseSrs targetSRS) {
-		this.targetSRS = targetSRS;
+	public void setTargetSrs(DatabaseSrs targetSrs) {
+		this.targetSrs = targetSrs;
 	}
 
 	public boolean isUseTypeNames() {

@@ -233,10 +233,10 @@ public class ImportPanel extends JPanel implements EventHandler {
 		view.add(filterPanel, GuiUtil.setConstraints(0,2,1.0,1.0,GridBagConstraints.NORTH,GridBagConstraints.HORIZONTAL,0,5,0,5));
 
 		JPanel buttonPanel = new JPanel();
-		add(buttonPanel, GuiUtil.setConstraints(0,3,1.0,0.0,GridBagConstraints.BOTH,5,5,5,5));	
+		add(buttonPanel, GuiUtil.setConstraints(0,2,1.0,0.0,GridBagConstraints.BOTH,5,5,5,5));
 		buttonPanel.setLayout(new GridBagLayout());
 		buttonPanel.add(importButton, GuiUtil.setConstraints(0,0,2,1,1.0,0.0,GridBagConstraints.NONE,5,5,5,5));				
-		buttonPanel.add(validateButton, GuiUtil.setConstraints(1,0,0.0,0.0,GridBagConstraints.EAST,GridBagConstraints.NONE,5,5,5,0));
+		buttonPanel.add(validateButton, GuiUtil.setConstraints(1,0,0.0,0.0,GridBagConstraints.EAST,GridBagConstraints.NONE,5,5,5,5));
 	}
 
 	public void setEnabledWorkspace(boolean enable) {

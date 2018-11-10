@@ -175,13 +175,13 @@ public class SimpleGMLParser {
 	}
 
 	private GeometryObject parseEnvelope(Envelope envelope) throws SrsParseException {
-		GeometryObject geometryObject = null;
+		GeometryObject geometryObject;
 
 		BoundingBox bbox = envelope.toBoundingBox();
-		DatabaseSrs targetSRS = envelope.isSetSrsName() ? srsNameParser.getDatabaseSRS(envelope.getSrsName()) : srsNameParser.getDefaultSRS();
+		DatabaseSrs targetSrs = envelope.isSetSrsName() ? srsNameParser.getDatabaseSrs(envelope.getSrsName()) : srsNameParser.getDefaultSrs();
 
 		// we assume the dim of the target SRS as default value
-		int dimension = envelope.isSetSrsDimension() ? envelope.getSrsDimension() : (targetSRS.is3D() ? 3 : 2);		
+		int dimension = envelope.isSetSrsDimension() ? envelope.getSrsDimension() : (targetSrs.is3D() ? 3 : 2);
 
 		if (dimension == 2) {
 			double[] coordinates = new double[4];
@@ -189,7 +189,7 @@ public class SimpleGMLParser {
 			coordinates[1] = bbox.getLowerCorner().getY();
 			coordinates[2] = bbox.getUpperCorner().getX();
 			coordinates[3] = bbox.getUpperCorner().getY();
-			geometryObject = GeometryObject.createEnvelope(coordinates, dimension, targetSRS.getSrid());
+			geometryObject = GeometryObject.createEnvelope(coordinates, dimension, targetSrs.getSrid());
 		} else {
 			double[] coordinates = new double[6];
 			coordinates[0] = bbox.getLowerCorner().getX();
@@ -198,7 +198,7 @@ public class SimpleGMLParser {
 			coordinates[3] = bbox.getUpperCorner().getX();
 			coordinates[4] = bbox.getUpperCorner().getY();
 			coordinates[5] = bbox.getUpperCorner().getZ();
-			geometryObject = GeometryObject.createEnvelope(coordinates, dimension, targetSRS.getSrid());
+			geometryObject = GeometryObject.createEnvelope(coordinates, dimension, targetSrs.getSrid());
 		}
 
 		return geometryObject;
@@ -206,28 +206,28 @@ public class SimpleGMLParser {
 
 	private GeometryObject parsePoint(Point point) throws SrsParseException {
 		GeometryObject geometryObject = null;
-		DatabaseSrs targetSRS = point.isSetSrsName() ? srsNameParser.getDatabaseSRS(point.getSrsName()) : srsNameParser.getDefaultSRS();
+		DatabaseSrs targetSrs = point.isSetSrsName() ? srsNameParser.getDatabaseSrs(point.getSrsName()) : srsNameParser.getDefaultSrs();
 
 		// we assume the dim of the target SRS as default value
-		int dimension = point.isSetSrsDimension() ? point.getSrsDimension() : (targetSRS.is3D() ? 3 : 2);		
+		int dimension = point.isSetSrsDimension() ? point.getSrsDimension() : (targetSrs.is3D() ? 3 : 2);
 
 		if (point.isSetPos() && point.getPos().isSetSrsDimension() && point.getPos().getSrsDimension() == 3)
 			dimension = 3;
 
 		List<Double> values = point.toList3d();
 		if (values != null && !values.isEmpty())
-			geometryObject = GeometryObject.createPoint(convertPrimitive(values, dimension), dimension, targetSRS.getSrid());
+			geometryObject = GeometryObject.createPoint(convertPrimitive(values, dimension), dimension, targetSrs.getSrid());
 
 		return geometryObject;
 	}
 
 	private GeometryObject parseMultiPoint(MultiPoint multiPoint) throws GeometryParseException, SrsParseException {
 		GeometryObject geometryObject = null;
-		DatabaseSrs targetSRS = multiPoint.isSetSrsName() ? srsNameParser.getDatabaseSRS(multiPoint.getSrsName()) : srsNameParser.getDefaultSRS();
+		DatabaseSrs targetSrs = multiPoint.isSetSrsName() ? srsNameParser.getDatabaseSrs(multiPoint.getSrsName()) : srsNameParser.getDefaultSrs();
 
 		// we assume the dim of the target SRS as default value
-		int dimension = multiPoint.isSetSrsDimension() ? multiPoint.getSrsDimension() : (targetSRS.is3D() ? 3 : 2);		
-		List<List<Double>> pointList = new ArrayList<List<Double>>();
+		int dimension = multiPoint.isSetSrsDimension() ? multiPoint.getSrsDimension() : (targetSrs.is3D() ? 3 : 2);
+		List<List<Double>> pointList = new ArrayList<>();
 
 		if (multiPoint.isSetPointMember()) {
 			for (PointProperty pointProperty : multiPoint.getPointMember()) {
@@ -252,7 +252,7 @@ public class SimpleGMLParser {
 		}
 
 		if (!pointList.isEmpty())
-			geometryObject = GeometryObject.createMultiPoint(convertAggregate(pointList, dimension), dimension, targetSRS.getSrid());
+			geometryObject = GeometryObject.createMultiPoint(convertAggregate(pointList, dimension), dimension, targetSrs.getSrid());
 
 		return geometryObject;
 	}
@@ -261,10 +261,10 @@ public class SimpleGMLParser {
 		GeometryObject geometryObject = null;
 		SrsDimensionInfo dimInfo = getSrsDimensionInfo(lineString);
 
-		List<Double> pointList = new ArrayList<Double>();
+		List<Double> pointList = new ArrayList<>();
 		generatePointList(lineString, pointList, dimInfo, false);
-		if (pointList != null && !pointList.isEmpty())
-			geometryObject = GeometryObject.createCurve(convertPrimitive(pointList, dimInfo.is2d ? 2 : 3), dimInfo.is2d ? 2 : 3, dimInfo.targetSRS.getSrid());
+		if (!pointList.isEmpty())
+			geometryObject = GeometryObject.createCurve(convertPrimitive(pointList, dimInfo.is2d ? 2 : 3), dimInfo.is2d ? 2 : 3, dimInfo.targetSrs.getSrid());
 
 		return geometryObject;
 	}
@@ -273,10 +273,10 @@ public class SimpleGMLParser {
 		GeometryObject geometryObject = null;
 		SrsDimensionInfo dimInfo = getSrsDimensionInfo(multiLineString);
 
-		List<List<Double>> pointList = new ArrayList<List<Double>>();
+		List<List<Double>> pointList = new ArrayList<>();
 		for (LineStringProperty lineStringProperty : multiLineString.getLineStringMember()) {
 			if (lineStringProperty.isSetLineString()) {
-				List<Double> points = new ArrayList<Double>();
+				List<Double> points = new ArrayList<>();
 				generatePointList(lineStringProperty.getLineString(), points, dimInfo, false);
 
 				if (!points.isEmpty())
@@ -286,7 +286,7 @@ public class SimpleGMLParser {
 		}
 
 		if (!pointList.isEmpty())
-			geometryObject = GeometryObject.createMultiCurve(convertAggregate(pointList, dimInfo.is2d ? 2 : 3), dimInfo.is2d ? 2 : 3, dimInfo.targetSRS.getSrid());
+			geometryObject = GeometryObject.createMultiCurve(convertAggregate(pointList, dimInfo.is2d ? 2 : 3), dimInfo.is2d ? 2 : 3, dimInfo.targetSrs.getSrid());
 
 		return geometryObject;
 	}
@@ -295,10 +295,10 @@ public class SimpleGMLParser {
 		GeometryObject geometryObject = null;
 		SrsDimensionInfo dimInfo = getSrsDimensionInfo(curve);
 
-		List<Double> pointList = new ArrayList<Double>();
+		List<Double> pointList = new ArrayList<>();
 		generatePointList(curve, pointList, dimInfo, false);
-		if (pointList != null && !pointList.isEmpty())
-			geometryObject = GeometryObject.createCurve(convertPrimitive(pointList, dimInfo.is2d ? 2 : 3), dimInfo.is2d ? 2 : 3, dimInfo.targetSRS.getSrid());
+		if (!pointList.isEmpty())
+			geometryObject = GeometryObject.createCurve(convertPrimitive(pointList, dimInfo.is2d ? 2 : 3), dimInfo.is2d ? 2 : 3, dimInfo.targetSrs.getSrid());
 
 		return geometryObject;
 	}
@@ -307,12 +307,12 @@ public class SimpleGMLParser {
 		GeometryObject geometryObject = null;
 		SrsDimensionInfo dimInfo = getSrsDimensionInfo(multiCurve);
 
-		List<List<Double>> pointList = new ArrayList<List<Double>>();
+		List<List<Double>> pointList = new ArrayList<>();
 		if (multiCurve.isSetCurveMember()) {
 			for (CurveProperty curveProperty : multiCurve.getCurveMember()) {
 				if (curveProperty.isSetCurve()) {
 					AbstractCurve curve = curveProperty.getCurve();
-					List<Double> points = new ArrayList<Double>(); 
+					List<Double> points = new ArrayList<>();
 					generatePointList(curve, points, dimInfo, false);
 
 					if (!points.isEmpty())
@@ -325,7 +325,7 @@ public class SimpleGMLParser {
 		else if (multiCurve.isSetCurveMembers()) {
 			CurveArrayProperty curveArrayProperty = multiCurve.getCurveMembers();
 			for (AbstractCurve curve : curveArrayProperty.getCurve()) {
-				List<Double> points = new ArrayList<Double>(); 
+				List<Double> points = new ArrayList<>();
 				generatePointList(curve, points, dimInfo, false);
 
 				if (!points.isEmpty())
@@ -334,7 +334,7 @@ public class SimpleGMLParser {
 		}
 
 		if (!pointList.isEmpty())
-			geometryObject = GeometryObject.createMultiCurve(convertAggregate(pointList, dimInfo.is2d ? 2 : 3), dimInfo.is2d ? 2 : 3, dimInfo.targetSRS.getSrid());
+			geometryObject = GeometryObject.createMultiCurve(convertAggregate(pointList, dimInfo.is2d ? 2 : 3), dimInfo.is2d ? 2 : 3, dimInfo.targetSrs.getSrid());
 
 		return geometryObject;
 	}
@@ -343,10 +343,10 @@ public class SimpleGMLParser {
 		GeometryObject geometryObject = null;
 		SrsDimensionInfo dimInfo = getSrsDimensionInfo(polygon);
 
-		List<List<Double>> pointList = new ArrayList<List<Double>>();
+		List<List<Double>> pointList = new ArrayList<>();
 		generatePointList(polygon, pointList, dimInfo, false);
-		if (pointList != null && !pointList.isEmpty())
-			geometryObject = GeometryObject.createPolygon(convertAggregate(pointList, dimInfo.is2d ? 2 : 3), dimInfo.is2d ? 2 : 3, dimInfo.targetSRS.getSrid());
+		if (!pointList.isEmpty())
+			geometryObject = GeometryObject.createPolygon(convertAggregate(pointList, dimInfo.is2d ? 2 : 3), dimInfo.is2d ? 2 : 3, dimInfo.targetSrs.getSrid());
 
 		return geometryObject;
 	}
@@ -355,13 +355,13 @@ public class SimpleGMLParser {
 		GeometryObject geometryObject = null;
 		SrsDimensionInfo dimInfo = getSrsDimensionInfo(multiPolygon);
 
-		List<List<Double>> pointList = new ArrayList<List<Double>>();
-		List<Integer> exteriorRings = new ArrayList<Integer>();
+		List<List<Double>> pointList = new ArrayList<>();
+		List<Integer> exteriorRings = new ArrayList<>();
 		int exteriorRing = 0;
 
 		for (PolygonProperty polygonProperty : multiPolygon.getPolygonMember()) {
 			if (polygonProperty.isSetPolygon()) {
-				List<List<Double>> tmp = new ArrayList<List<Double>>();
+				List<List<Double>> tmp = new ArrayList<>();
 				generatePointList(polygonProperty.getPolygon(), tmp, dimInfo, false);
 
 				if (!tmp.isEmpty()) {
@@ -378,7 +378,7 @@ public class SimpleGMLParser {
 			for (int i = 0; i < exteriorRings.size(); i++)
 				tmp[i] = exteriorRings.get(i);
 
-			geometryObject = GeometryObject.createMultiPolygon(convertAggregate(pointList, dimInfo.is2d ? 2 : 3), tmp, dimInfo.is2d ? 2 : 3, dimInfo.targetSRS.getSrid());
+			geometryObject = GeometryObject.createMultiPolygon(convertAggregate(pointList, dimInfo.is2d ? 2 : 3), tmp, dimInfo.is2d ? 2 : 3, dimInfo.targetSrs.getSrid());
 		}		
 
 		return geometryObject;
@@ -388,10 +388,10 @@ public class SimpleGMLParser {
 		GeometryObject geometryObject = null;
 		SrsDimensionInfo dimInfo = getSrsDimensionInfo(surface);
 
-		List<List<Double>> pointList = new ArrayList<List<Double>>();
+		List<List<Double>> pointList = new ArrayList<>();
 		generatePointList(surface, pointList, dimInfo, false);
-		if (pointList != null && !pointList.isEmpty())
-			geometryObject = GeometryObject.createPolygon(convertAggregate(pointList, dimInfo.is2d ? 2 : 3), dimInfo.is2d ? 2 : 3, dimInfo.targetSRS.getSrid());
+		if (!pointList.isEmpty())
+			geometryObject = GeometryObject.createPolygon(convertAggregate(pointList, dimInfo.is2d ? 2 : 3), dimInfo.is2d ? 2 : 3, dimInfo.targetSrs.getSrid());
 
 		return geometryObject;
 	}
@@ -400,14 +400,14 @@ public class SimpleGMLParser {
 		GeometryObject geometryObject = null;
 		SrsDimensionInfo dimInfo = getSrsDimensionInfo(multiSurface);
 
-		List<List<Double>> pointList = new ArrayList<List<Double>>();
-		List<Integer> exteriorRings = new ArrayList<Integer>();
+		List<List<Double>> pointList = new ArrayList<>();
+		List<Integer> exteriorRings = new ArrayList<>();
 		int exteriorRing = 0;
 
 		if (multiSurface.isSetSurfaceMember()) {
 			for (SurfaceProperty surfaceProperty : multiSurface.getSurfaceMember()) {
 				if (surfaceProperty.isSetSurface()) {
-					List<List<Double>> tmp = new ArrayList<List<Double>>();
+					List<List<Double>> tmp = new ArrayList<>();
 					generatePointList(surfaceProperty.getSurface(), tmp, dimInfo, false);
 
 					if (!tmp.isEmpty()) {
@@ -426,7 +426,7 @@ public class SimpleGMLParser {
 			for (int i = 0; i < exteriorRings.size(); i++)
 				tmp[i] = exteriorRings.get(i);
 
-			geometryObject = GeometryObject.createMultiPolygon(convertAggregate(pointList, dimInfo.is2d ? 2 : 3), tmp, dimInfo.is2d ? 2 : 3, dimInfo.targetSRS.getSrid());
+			geometryObject = GeometryObject.createMultiPolygon(convertAggregate(pointList, dimInfo.is2d ? 2 : 3), tmp, dimInfo.is2d ? 2 : 3, dimInfo.targetSrs.getSrid());
 		}
 
 		return geometryObject;
@@ -442,10 +442,10 @@ public class SimpleGMLParser {
 
 		// get and set srs
 		if (abstractRing.isSetSrsName()) {
-			DatabaseSrs srs = srsNameParser.getDatabaseSRS(abstractRing.getSrsName());
-			if (dimInfo.targetSRS == null)
-				dimInfo.targetSRS = srs;
-			else if (dimInfo.targetSRS.getSrid() != srs.getSrid())
+			DatabaseSrs srs = srsNameParser.getDatabaseSrs(abstractRing.getSrsName());
+			if (dimInfo.targetSrs == null)
+				dimInfo.targetSrs = srs;
+			else if (dimInfo.targetSrs.getSrid() != srs.getSrid())
 				throw new GeometryParseException("Mixing different spatial reference systems in one geometry operand is not allowed.");
 		}
 
@@ -473,10 +473,10 @@ public class SimpleGMLParser {
 
 		else if (abstractRing instanceof Ring) {
 			Ring ring = (Ring)abstractRing;
-			pointList = new ArrayList<Double>();
+			pointList = new ArrayList<>();
 
 			for (CurveProperty curveMember : ring.getCurveMember()) {
-				List<Double> tmp = new ArrayList<Double>();
+				List<Double> tmp = new ArrayList<>();
 				generatePointList(curveMember.getCurve(), tmp, dimInfo, false);
 
 				if (!pointList.isEmpty()) {
@@ -506,10 +506,10 @@ public class SimpleGMLParser {
 
 		// get and set srs
 		if (abstractSurface.isSetSrsName()) {
-			DatabaseSrs srs = srsNameParser.getDatabaseSRS(abstractSurface.getSrsName());
-			if (dimInfo.targetSRS == null)
-				dimInfo.targetSRS = srs;
-			else if (dimInfo.targetSRS.getSrid() != srs.getSrid())
+			DatabaseSrs srs = srsNameParser.getDatabaseSrs(abstractSurface.getSrsName());
+			if (dimInfo.targetSrs == null)
+				dimInfo.targetSrs = srs;
+			else if (dimInfo.targetSrs.getSrid() != srs.getSrid())
 				throw new GeometryParseException("Mixing different spatial reference systems in one geometry operand is not allowed.");
 		}
 
@@ -590,10 +590,10 @@ public class SimpleGMLParser {
 
 		// get and set srs
 		if (abstractCurve.isSetSrsName()) {
-			DatabaseSrs srs = srsNameParser.getDatabaseSRS(abstractCurve.getSrsName());
-			if (dimInfo.targetSRS == null)
-				dimInfo.targetSRS = srs;
-			else if (dimInfo.targetSRS.getSrid() != srs.getSrid())
+			DatabaseSrs srs = srsNameParser.getDatabaseSrs(abstractCurve.getSrsName());
+			if (dimInfo.targetSrs == null)
+				dimInfo.targetSrs = srs;
+			else if (dimInfo.targetSrs.getSrid() != srs.getSrid())
 				throw new GeometryParseException("Mixing different spatial reference systems in one geometry operand is not allowed.");
 		}
 
@@ -622,7 +622,7 @@ public class SimpleGMLParser {
 				CurveSegmentArrayProperty arrayProperty = curve.getSegments();
 
 				if (arrayProperty.isSetCurveSegment()) {
-					List<Double> points = new ArrayList<Double>();
+					List<Double> points = new ArrayList<>();
 
 					for (AbstractCurveSegment abstractCurveSegment : arrayProperty.getCurveSegment())
 						if (abstractCurveSegment.getGMLClass() == GMLClass.LINE_STRING_SEGMENT) {
@@ -684,10 +684,10 @@ public class SimpleGMLParser {
 	private void setSrsDimension(DirectPositionList posList, SrsDimensionInfo dimInfo, int parentDimension) throws GeometryParseException, SrsParseException {
 		// get and set srs
 		if (posList.isSetSrsName()) {
-			DatabaseSrs srs = srsNameParser.getDatabaseSRS(posList.getSrsName());
-			if (dimInfo.targetSRS == null)
-				dimInfo.targetSRS = srs;
-			else if (dimInfo.targetSRS.getSrid() != srs.getSrid())
+			DatabaseSrs srs = srsNameParser.getDatabaseSrs(posList.getSrsName());
+			if (dimInfo.targetSrs == null)
+				dimInfo.targetSrs = srs;
+			else if (dimInfo.targetSrs.getSrid() != srs.getSrid())
 				throw new GeometryParseException("Mixing different spatial reference systems in one geometry operand is not allowed.");
 		}
 
@@ -729,14 +729,14 @@ public class SimpleGMLParser {
 
 		if (dimension == 2) {
 			for (int i = 0, j = 0; i < pointList.size(); i += 3) {
-				result[j++] = pointList.get(i).doubleValue();
-				result[j++] = pointList.get(i + 1).doubleValue();
+				result[j++] = pointList.get(i);
+				result[j++] = pointList.get(i + 1);
 			}
 		} else {
 			for (int i = 0, j = 0; i < pointList.size(); i += 3) {
-				result[j++] = pointList.get(i).doubleValue();
-				result[j++] = pointList.get(i + 1).doubleValue();
-				result[j++] = pointList.get(i + 2).doubleValue();
+				result[j++] = pointList.get(i);
+				result[j++] = pointList.get(i + 1);
+				result[j++] = pointList.get(i + 2);
 			}
 		}
 
@@ -755,8 +755,8 @@ public class SimpleGMLParser {
 
 	private SrsDimensionInfo getSrsDimensionInfo(SRSReferenceGroup srsReference) throws SrsParseException {
 		SrsDimensionInfo dimInfo = new SrsDimensionInfo();
-		dimInfo.targetSRS = srsReference.isSetSrsName() ? srsNameParser.getDatabaseSRS(srsReference.getSrsName()) : srsNameParser.getDefaultSRS();
-		dimInfo.defaultDimension = srsReference.isSetSrsDimension() ? srsReference.getSrsDimension() : (dimInfo.targetSRS.is3D() ? 3 : 2);
+		dimInfo.targetSrs = srsReference.isSetSrsName() ? srsNameParser.getDatabaseSrs(srsReference.getSrsName()) : srsNameParser.getDefaultSrs();
+		dimInfo.defaultDimension = srsReference.isSetSrsDimension() ? srsReference.getSrsDimension() : (dimInfo.targetSrs.is3D() ? 3 : 2);
 		dimInfo.is2d = dimInfo.defaultDimension == 2;
 
 		return dimInfo;
@@ -765,6 +765,6 @@ public class SimpleGMLParser {
 	private final class SrsDimensionInfo {
 		int defaultDimension;
 		boolean is2d;
-		DatabaseSrs targetSRS;
+		DatabaseSrs targetSrs;
 	}
 }

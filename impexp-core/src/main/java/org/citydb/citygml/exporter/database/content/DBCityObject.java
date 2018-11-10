@@ -131,7 +131,7 @@ public class DBCityObject implements DBExporter {
 		}
 
 		exportAppearance = config.getProject().getExporter().getAppearances().isSetExportAppearance();
-		gmlSrsName = query.getTargetSRS().getGMLSrsName();
+		gmlSrsName = query.getTargetSrs().getGMLSrsName();
 		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 
 		Table cityObject = new Table(TableEnum.CITYOBJECT.getName(), schema);
@@ -216,7 +216,7 @@ public class DBCityObject implements DBExporter {
 							if (!activeTile.isOnTile(new org.citydb.config.geometry.Point(
 									(bbox.getLowerCorner().getX() + bbox.getUpperCorner().getX()) / 2.0,
 									(bbox.getLowerCorner().getY() + bbox.getUpperCorner().getY()) / 2.0,
-									query.getTargetSRS()), 
+									query.getTargetSrs()),
 									exporter.getDatabaseAdapter()))
 								return false;
 						} catch (FilterException e) {

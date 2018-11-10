@@ -37,6 +37,7 @@ import org.citydb.util.ClientConstants;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
@@ -49,6 +50,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
+import java.awt.Insets;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.dnd.DnDConstants;
@@ -284,18 +286,26 @@ public class XSLTransformationPanel extends AbstractPreferencesComponent {
             label = new JLabel(Language.I18N.getString("common.pref.xslt.label.stylesheets"));
             stylesheet = new JTextField();
             browseButton = new JButton(Language.I18N.getString("common.button.browse"));
-            addButton = new JButton("+");
-            removeButton = new JButton("-");
+            browseButton.setMargin(new Insets(0, browseButton.getInsets().left, 0, browseButton.getInsets().right));
 
-            removeButton.setPreferredSize(addButton.getPreferredSize());
+            addButton = new JButton();
+            ImageIcon add = new ImageIcon(getClass().getResource("/org/citydb/gui/images/common/add.png"));
+            addButton.setIcon(add);
+            addButton.setMargin(new Insets(0, 0, 0, 0));
+
+            removeButton = new JButton();
+            ImageIcon remove = new ImageIcon(getClass().getResource("/org/citydb/gui/images/common/remove.png"));
+            removeButton.setIcon(remove);
+            removeButton.setMargin(new Insets(0, 0, 0, 0));
+
             stylesheet.setPreferredSize(stylesheet.getPreferredSize());
 
             panel.add(label, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 5, 5));
-            panel.add(stylesheet, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, 5, 5));
-            panel.add(browseButton, GuiUtil.setConstraints(2, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 5, 5, 5));
-            panel.add(addButton, GuiUtil.setConstraints(3, 0, 0, 0, GridBagConstraints.BOTH, 0, 10, 5, 5));
+            panel.add(stylesheet, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.BOTH, 0, 5, 5, 5));
+            panel.add(browseButton, GuiUtil.setConstraints(2, 0, 0, 0, GridBagConstraints.VERTICAL, 0, 5, 5, 5));
+            panel.add(addButton, GuiUtil.setConstraints(3, 0, 0, 0, GridBagConstraints.NONE, 0, 10, 5, 5));
             panel.add(!first ? removeButton : Box.createRigidArea(removeButton.getPreferredSize()),
-                    GuiUtil.setConstraints(4, 0, 0, 0, GridBagConstraints.BOTH, 0, 0, 5, 0));
+                    GuiUtil.setConstraints(4, 0, 0, 0, GridBagConstraints.NONE, 0, 0, 5, 0));
 
             addButton.addActionListener(l -> {
                 add();

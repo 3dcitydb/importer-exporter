@@ -67,11 +67,11 @@ public class DBOperation {
 		this.boundingBoxTypeName = boundingBoxTypeName;
 	}
 
-	public DatabaseSrs getBoundingBoxSRS() {
+	public DatabaseSrs getBoundingBoxSrs() {
 		return boundingBoxSrs;
 	}
 
-	public void setBoundingBoxSRS(DatabaseSrs boundingBoxSrs) {
+	public void setBoundingBoxSrs(DatabaseSrs boundingBoxSrs) {
 		this.boundingBoxSrs = boundingBoxSrs;
 	}
 

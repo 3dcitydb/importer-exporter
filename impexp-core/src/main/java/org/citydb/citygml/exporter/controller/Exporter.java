@@ -88,7 +88,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -155,16 +155,13 @@ public class Exporter implements EventHandler {
 			return false;
 
 		// build query from filter settings
-		Query query = null;
+		Query query;
 		try {
 			ConfigQueryBuilder queryBuilder = new ConfigQueryBuilder(schemaMapping, databaseAdapter);
-
-			if (config.getProject().getExporter().isSetGenericQuery()) {
-				log.info("Found generic filter settings in config file.");
-				log.info("IGNORING filter settings in export dialog.");
-				query = queryBuilder.buildQuery(config.getProject().getExporter().getGenericQuery(), config.getProject().getNamespaceFilter());
-			} else
+			if (config.getProject().getExporter().isUseSimpleQuery())
 				query = queryBuilder.buildQuery(config.getProject().getExporter().getSimpleQuery(), config.getProject().getNamespaceFilter());
+			else
+				query = queryBuilder.buildQuery(config.getProject().getExporter().getQuery(), config.getProject().getNamespaceFilter());
 
 		} catch (QueryBuildException e) {
 			throw new CityGMLExportException("Failed to build the export query expression.", e);
@@ -179,13 +176,13 @@ public class Exporter implements EventHandler {
 		}
 
 		// set target reference system for export
-		DatabaseSrs targetSRS = query.getTargetSRS();
-		config.getInternal().setTransformCoordinates(targetSRS.isSupported() && 
-				targetSRS.getSrid() != databaseAdapter.getConnectionMetaData().getReferenceSystem().getSrid());
+		DatabaseSrs targetSrs = query.getTargetSrs();
+		config.getInternal().setTransformCoordinates(targetSrs.isSupported() &&
+				targetSrs.getSrid() != databaseAdapter.getConnectionMetaData().getReferenceSystem().getSrid());
 
 		if (config.getInternal().isTransformCoordinates()) {
-			if (targetSRS.is3D() == databaseAdapter.getConnectionMetaData().getReferenceSystem().is3D()) {
-				log.info("Transforming geometry representation to reference system '" + targetSRS.getDescription() + "' (SRID: " + targetSRS.getSrid() + ").");
+			if (targetSrs.is3D() == databaseAdapter.getConnectionMetaData().getReferenceSystem().is3D()) {
+				log.info("Transforming geometry representation to reference system '" + targetSrs.getDescription() + "' (SRID: " + targetSrs.getSrid() + ").");
 				log.warn("Transformation is NOT applied to height reference system.");
 			} else {
 				throw new CityGMLExportException("Dimensionality of reference system for geometry transformation does not match.");
@@ -261,10 +258,10 @@ public class Exporter implements EventHandler {
 				FeatureWriter writer = null;
 
 				try {
-					File file = null;
+					File file;
 
 					if (useTiling) {
-						Tile tile = null;
+						Tile tile;
 
 						try {
 							tile = tiling.getTileAt(i, j);
@@ -282,7 +279,7 @@ public class Exporter implements EventHandler {
 
 						// create suffix for folderName and fileName
 						TileSuffixMode suffixMode = tilingOptions.getTilePathSuffix();
-						String suffix = "";
+						String suffix;
 
 						double minX = tile.getExtent().getLowerCorner().getX();
 						double minY = tile.getExtent().getLowerCorner().getY();
@@ -332,7 +329,7 @@ public class Exporter implements EventHandler {
 
 					// checking export path for texture images
 					if (config.getProject().getExporter().getAppearances().isSetExportAppearance()) {
-						String textureExportPath = null;
+						String textureExportPath;
 						boolean isRelative = config.getProject().getExporter().getAppearances().getTexturePath().isRelative();
 
 						if (isRelative)
@@ -371,8 +368,8 @@ public class Exporter implements EventHandler {
 
 					// create output writer
 					try {
-						writer = writerFactory.createFeatureWriter(new OutputStreamWriter(new FileOutputStream(file), "UTF-8"));
-					} catch (UnsupportedEncodingException | FileNotFoundException | FeatureWriteException e) {
+						writer = writerFactory.createFeatureWriter(new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8));
+					} catch (FileNotFoundException | FeatureWriteException e) {
 						throw new CityGMLExportException("Failed to open file '" + fileName + "' for writing.", e);
 					}
 
@@ -413,7 +410,7 @@ public class Exporter implements EventHandler {
 
 					// create worker pools
 					// here we have an open issue: queue sizes are fix...
-					xlinkExporterPool = new WorkerPool<DBXlink>(
+					xlinkExporterPool = new WorkerPool<>(
 							"xlink_exporter_pool",
 							1,
 							Math.max(1, config.getProject().getExporter().getResources().getThreadPool().getDefaultPool().getMaxThreads() / 2),
@@ -422,7 +419,7 @@ public class Exporter implements EventHandler {
 							300,
 							false);
 
-					dbWorkerPool = new WorkerPool<DBSplittingResult>(
+					dbWorkerPool = new WorkerPool<>(
 							"db_exporter_pool",
 							config.getProject().getExporter().getResources().getThreadPool().getDefaultPool().getMinThreads(),
 							config.getProject().getExporter().getResources().getThreadPool().getDefaultPool().getMaxThreads(),
@@ -529,7 +526,7 @@ public class Exporter implements EventHandler {
 
 				// show processed geometries
 				if (!geometryCounter.isEmpty())
-					log.info("Processed geometry objects: " + geometryCounter.values().stream().reduce(0l, Long::sum));
+					log.info("Processed geometry objects: " + geometryCounter.values().stream().reduce(0L, Long::sum));
 
 				objectCounter.clear();
 				geometryCounter.clear();
@@ -545,7 +542,7 @@ public class Exporter implements EventHandler {
 			}
 
 			if (!totalGeometryCounter.isEmpty())
-				log.info("Total processed objects: " + totalGeometryCounter.values().stream().reduce(0l, Long::sum));
+				log.info("Total processed objects: " + totalGeometryCounter.values().stream().reduce(0L, Long::sum));
 		}
 
 		if (shouldRun)

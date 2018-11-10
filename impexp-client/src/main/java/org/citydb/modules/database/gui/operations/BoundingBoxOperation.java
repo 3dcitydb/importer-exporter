@@ -218,7 +218,7 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 	public void loadSettings() {
 		FeatureType featureType = schemaMapping.getFeatureType(config.getProject().getDatabase().getOperation().getBoundingBoxTypeName()); 
 		featureComboBox.setSelectedItem(featureType != null ? featureType : cityObject);
-		bboxPanel.getSrsComboBox().setSelectedItem(config.getProject().getDatabase().getOperation().getBoundingBoxSRS());
+		bboxPanel.getSrsComboBox().setSelectedItem(config.getProject().getDatabase().getOperation().getBoundingBoxSrs());
 	}
 
 	@Override
@@ -226,7 +226,7 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 		FeatureType featureType = (FeatureType)featureComboBox.getSelectedItem();
 		QName typeName = new QName(featureType.getSchema().getNamespaces().get(0).getURI(), featureType.getPath());		
 		config.getProject().getDatabase().getOperation().setBoundingBoxTypeName((typeName));
-		config.getProject().getDatabase().getOperation().setBoundingBoxSRS(bboxPanel.getSrsComboBox().getSelectedItem());
+		config.getProject().getDatabase().getOperation().setBoundingBoxSrs(bboxPanel.getSrsComboBox().getSelectedItem());
 	}
 
 	private void calcBoundingBox() {

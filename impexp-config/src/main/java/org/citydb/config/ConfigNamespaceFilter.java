@@ -48,7 +48,6 @@ public class ConfigNamespaceFilter extends XMLFilterImpl implements NamespaceCon
 	private final HashMap<String, String> prefixToUri;
 	private final HashMap<String, Set<String>> uriToPrefix;
 
-	private final String CITYDB_CONFIG_NAMESPACE_URI = "http://www.3dcitydb.org/importer-exporter/config";
 	private final String OLD_CITYDB_CONFIG_NAMESPACE_URI = "http://www.gis.tu-berlin.de/3dcitydb-impexp/config";
 
 	public ConfigNamespaceFilter(XMLReader reader) {
@@ -120,11 +119,11 @@ public class ConfigNamespaceFilter extends XMLFilterImpl implements NamespaceCon
 	@Override
 	public void startPrefixMapping(String prefix, String uri) throws SAXException {
 		if (uri == null || uri.isEmpty())
-			uri = CITYDB_CONFIG_NAMESPACE_URI;
+			uri = ConfigUtil.CITYDB_CONFIG_NAMESPACE_URI;
 
 		// support config files from previous releases 
 		else if (uri.startsWith(OLD_CITYDB_CONFIG_NAMESPACE_URI))
-			uri = CITYDB_CONFIG_NAMESPACE_URI;
+			uri = ConfigUtil.CITYDB_CONFIG_NAMESPACE_URI;
 
 		super.startPrefixMapping(prefix, uri);
 		bindNamespace(prefix, uri);
@@ -133,11 +132,11 @@ public class ConfigNamespaceFilter extends XMLFilterImpl implements NamespaceCon
 	@Override
 	public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
 		if (uri == null || uri.isEmpty())
-			uri = CITYDB_CONFIG_NAMESPACE_URI;
+			uri = ConfigUtil.CITYDB_CONFIG_NAMESPACE_URI;
 
 		// support config files from previous releases 
 		else if (uri.startsWith(OLD_CITYDB_CONFIG_NAMESPACE_URI))
-			uri = CITYDB_CONFIG_NAMESPACE_URI;
+			uri = ConfigUtil.CITYDB_CONFIG_NAMESPACE_URI;
 
 		super.startElement(uri, localName, qName, atts);
 	}

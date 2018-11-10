@@ -29,8 +29,10 @@ package org.citydb.gui.util;
 
 import org.citydb.config.i18n.Language;
 
-import javax.swing.*;
-import java.awt.*;
+import javax.swing.JMenuItem;
+import java.awt.Color;
+import java.awt.GridBagConstraints;
+import java.awt.Insets;
 
 public class GuiUtil {
 
@@ -61,6 +63,15 @@ public class GuiUtil {
 				insetTop, insetLeft, insetBottom, insetRight);
 		constraint.gridwidth = gridwidth;
 		constraint.gridheight = gridheight;
+		return constraint;
+	}
+
+	public static GridBagConstraints setConstraints(int gridx, int gridy, int gridwidth, int gridheight,
+			double weightx, double weighty, int anchor, int fill,
+			int insetTop, int insetLeft, int insetBottom, int insetRight) {
+		GridBagConstraints constraint = setConstraints(gridx, gridy, gridwidth, gridheight, weightx, weighty, fill,
+				insetTop, insetLeft, insetBottom, insetRight);
+		constraint.anchor = anchor;
 		return constraint;
 	}
 

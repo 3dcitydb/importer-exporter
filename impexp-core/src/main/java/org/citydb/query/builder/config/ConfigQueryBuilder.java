@@ -73,10 +73,10 @@ public class ConfigQueryBuilder {
 		Query query = new Query();
 
 		// target SRS
-		if (queryConfig.isSetTargetSRS())
-			query.setTargetSRS(queryConfig.getTargetSRS());
+		if (queryConfig.isSetTargetSrs())
+			query.setTargetSrs(queryConfig.getTargetSrs());
 		else
-			query.setTargetSRS(databaseAdapter.getConnectionMetaData().getReferenceSystem());
+			query.setTargetSrs(databaseAdapter.getConnectionMetaData().getReferenceSystem());
 
 		// feature type filter
 		if (queryConfig.isSetFeatureTypeFilter() && !queryConfig.getFeatureTypeFilter().isEmpty()) {
@@ -145,10 +145,10 @@ public class ConfigQueryBuilder {
 		query.setTargetVersion(version);
 
 		// target SRS
-		if (queryConfig.isSetTargetSRS())
-			query.setTargetSRS(queryConfig.getTargetSRS());
+		if (queryConfig.isSetTargetSrs())
+			query.setTargetSrs(queryConfig.getTargetSrs());
 		else
-			query.setTargetSRS(databaseAdapter.getConnectionMetaData().getReferenceSystem());
+			query.setTargetSrs(databaseAdapter.getConnectionMetaData().getReferenceSystem());
 
 		PredicateBuilder predicateBuilder = new PredicateBuilder(query, schemaMapping, namespaceContext, databaseAdapter);
 

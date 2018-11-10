@@ -4,6 +4,7 @@ import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.exporter.SimpleQuery;
 import org.citydb.config.project.query.filter.selection.sql.SelectOperator;
+import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.util.GuiUtil;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
@@ -11,6 +12,7 @@ import org.fife.ui.rsyntaxtextarea.Theme;
 import org.fife.ui.rtextarea.RTextScrollPane;
 
 import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
@@ -18,6 +20,7 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -40,14 +43,15 @@ public class SQLFilterView extends FilterView {
         component = new JPanel();
         component.setLayout(new GridBagLayout());
 
-        addButton = new JButton("+");
-        removeButton = new JButton("-");
-        removeButton.setPreferredSize(addButton.getPreferredSize());
+        addButton = new JButton();
+        ImageIcon add = new ImageIcon(getClass().getResource("/org/citydb/gui/images/common/add.png"));
+        addButton.setIcon(add);
+        addButton.setMargin(new Insets(0, 0, 0, 0));
 
-        JPanel buttons = new JPanel();
-        buttons.setLayout(new GridBagLayout());
-        buttons.add(addButton, GuiUtil.setConstraints(0,0,1,0,GridBagConstraints.HORIZONTAL,0,0,5,0));
-        buttons.add(removeButton, GuiUtil.setConstraints(0,1,1,0,GridBagConstraints.HORIZONTAL,0,0,0,0));
+        removeButton = new JButton();
+        ImageIcon remove = new ImageIcon(getClass().getResource("/org/citydb/gui/images/common/remove.png"));
+        removeButton.setIcon(remove);
+        removeButton.setMargin(new Insets(0, 0, 0, 0));
 
         sqlText = new RSyntaxTextArea("", 5, 1);
         try (InputStream in = getClass().getResourceAsStream("/org/fife/ui/rsyntaxtextarea/themes/idea.xml")) {
@@ -58,12 +62,18 @@ public class SQLFilterView extends FilterView {
 
         sqlText.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_SQL);
         sqlText.setAutoIndentEnabled(true);
-        sqlText.setHighlightCurrentLine(false);
+        sqlText.setHighlightCurrentLine(true);
+        sqlText.setTabSize(2);
         rowHeight = sqlText.getFont().getSize() + 5;
         scrollPane = new RTextScrollPane(sqlText);
 
-        component.add(scrollPane, GuiUtil.setConstraints(0,0,1,1,GridBagConstraints.BOTH,10,5,10,5));
-        component.add(buttons, GuiUtil.setConstraints(1,0,0,0,GridBagConstraints.NORTH,GridBagConstraints.NONE,10,5,10,5));
+        JPanel buttons = new JPanel();
+        buttons.setLayout(new GridBagLayout());
+        buttons.add(addButton, GuiUtil.setConstraints(0,0,0,0,GridBagConstraints.NONE,0,5,5,5));
+        buttons.add(removeButton, GuiUtil.setConstraints(0,1,0,0,GridBagConstraints.NONE,0,5,0,5));
+
+        component.add(scrollPane, GuiUtil.setConstraints(0,0,1,1,GridBagConstraints.BOTH,10,5,10,0));
+        component.add(buttons, GuiUtil.setConstraints(1,0,0,0,GridBagConstraints.NORTH,GridBagConstraints.NONE,10,0,10,0));
 
         addButton.addActionListener(e -> {
             Dimension size = scrollPane.getPreferredSize();
@@ -92,11 +102,14 @@ public class SQLFilterView extends FilterView {
                     removeButton.setEnabled(false);
             }
         });
+
+        PopupMenuDecorator.getInstance().decorate(sqlText);
     }
 
     @Override
     public void doTranslation() {
-
+        addButton.setToolTipText(Language.I18N.getString("filter.label.sql.increase"));
+        removeButton.setToolTipText(Language.I18N.getString("filter.label.sql.decrease"));
     }
 
     @Override

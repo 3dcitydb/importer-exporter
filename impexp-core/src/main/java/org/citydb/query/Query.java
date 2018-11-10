@@ -43,7 +43,7 @@ import org.citygml4j.model.module.citygml.CityGMLVersion;
 
 public class Query {
 	private CityGMLVersion targetVersion;
-	private DatabaseSrs targetSRS;
+	private DatabaseSrs targetSrs;
 	private FeatureTypeFilter featureTypeFilter;
 	private CounterFilter counterFilter;
 	private LodFilter lodFilter;
@@ -72,16 +72,16 @@ public class Query {
 		this.targetVersion = targetVersion;
 	}
 
-	public boolean isSetTargetSRS() {
-		return targetSRS != null;
+	public boolean isSetTargetSrs() {
+		return targetSrs != null;
 	}
 
-	public DatabaseSrs getTargetSRS() {
-		return targetSRS;
+	public DatabaseSrs getTargetSrs() {
+		return targetSrs;
 	}
 
-	public void setTargetSRS(DatabaseSrs targetSRS) {
-		this.targetSRS = targetSRS;
+	public void setTargetSrs(DatabaseSrs targetSrs) {
+		this.targetSrs = targetSrs;
 	}
 
 	public boolean isSetFeatureTypeFilter() {
@@ -185,7 +185,7 @@ public class Query {
 
 	public void copyFrom(Query query) {
 		targetVersion = query.targetVersion;
-		targetSRS = query.targetSRS;
+		targetSrs = query.targetSrs;
 		featureTypeFilter = query.featureTypeFilter;
 		lodFilter = query.lodFilter;
 		projectionFilters = query.projectionFilters;

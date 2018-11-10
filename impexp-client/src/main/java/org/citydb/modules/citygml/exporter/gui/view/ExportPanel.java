@@ -71,6 +71,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.border.TitledBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.xml.bind.JAXBContext;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -114,7 +115,10 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 	private JLabel srsComboBoxLabel;
 	private DatabaseSrsComboBox srsComboBox;
 
-	public ExportPanel(ViewController viewController, Config config) {
+	private JButton switchFilterModeButton;
+	private boolean useSimpleFilter;
+
+	public ExportPanel(ViewController viewController, JAXBContext projectContext, Config config) {
 		this.viewContoller = viewController;
 		this.config = config;
 
@@ -122,10 +126,10 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 		cityGMLBuilder = ObjectRegistry.getInstance().getCityGMLBuilder();		
 		ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(EventType.DATABASE_CONNECTION_STATE, this);
 
-		initGui();
+		initGui(projectContext);
 	}
 
-	private void initGui() {
+	private void initGui(JAXBContext projectContext) {
 		browseText = new JTextField();
 		browseButton = new JButton();
 		workspaceText = new JXTextField();
@@ -134,8 +138,9 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 		timestampText = new JFormattedTextField(new SimpleDateFormat("dd.MM.yyyy"));
 		timestampText.setFocusLostBehavior(JFormattedTextField.COMMIT);
 		timestampText.setColumns(10);
-		filterPanel = new FilterPanel(viewContoller, config);
+		filterPanel = new FilterPanel(viewContoller, projectContext, config);
 		exportButton = new JButton();
+		switchFilterModeButton = new JButton();
 
 		workspaceText.setEnabled(true);
 		timestampText.setEnabled(true);
@@ -184,22 +189,32 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 		operations.add(srsComboBoxLabel, GuiUtil.setConstraints(0,1,0.0,0.0,GridBagConstraints.HORIZONTAL,0,5,5,5));
 		operations.add(srsComboBox, GuiUtil.setConstraints(1,1,3,1,1.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
 
-		view.add(filterPanel, GuiUtil.setConstraints(0,3,1.0,1.0,GridBagConstraints.NORTH,GridBagConstraints.HORIZONTAL,0,5,0,5));
+		view.add(filterPanel, GuiUtil.setConstraints(0,3,1.0,1.0,GridBagConstraints.NORTH,GridBagConstraints.BOTH,0,5,0,5));
 
 		JPanel buttons = new JPanel();
+		buttons.setLayout(new GridBagLayout());
 		add(buttons, GuiUtil.setConstraints(0,4,1.0,0.0,GridBagConstraints.BOTH,5,5,5,5));
-		buttons.add(exportButton);
+		buttons.add(exportButton, GuiUtil.setConstraints(0,0,2,1,1.0,0.0,GridBagConstraints.NONE,5,5,5,5));
+		buttons.add(switchFilterModeButton, GuiUtil.setConstraints(1,0,0.0,0.0,GridBagConstraints.EAST,GridBagConstraints.NONE,5,5,5,5));
 
 		DropTarget dropTarget = new DropTarget(browseText, this);
 		browseText.setDropTarget(dropTarget);
 		setDropTarget(dropTarget);
+
+		switchFilterModeButton.addActionListener(e -> switchFilterMode());
 	}
 
-	public void setEnabledWorkspace(boolean enable) {
+	private void setEnabledWorkspace(boolean enable) {
 		workspaceLabel.setEnabled(enable);
 		workspaceText.setEnabled(enable);
 		timestampLabel.setEnabled(enable);
 		timestampText.setEnabled(enable);
+	}
+
+	private void switchFilterMode() {
+		useSimpleFilter = !useSimpleFilter;
+		filterPanel.showFilterDialog(useSimpleFilter);
+		switchFilterModeButton.setText(Language.I18N.getString(useSimpleFilter ? "filter.label.mode.xml" : "filter.label.mode.simple"));
 	}
 
 	public void doTranslation() {
@@ -209,7 +224,7 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 		timestampLabel.setText(Language.I18N.getString("common.label.timestamp"));
 		browseButton.setText(Language.I18N.getString("common.button.browse"));
 		exportButton.setText(Language.I18N.getString("export.button.export"));
-		srsComboBoxLabel.setText(Language.I18N.getString("common.label.boundingBox.crs"));
+		switchFilterModeButton.setText(Language.I18N.getString(useSimpleFilter ? "filter.label.mode.xml" : "filter.label.mode.simple"));
 		filterPanel.doTranslation();
 	}
 
@@ -217,18 +232,21 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 		browseText.setText(config.getInternal().getExportFileName());
 		workspaceText.setText(config.getProject().getDatabase().getWorkspaces().getExportWorkspace().getName());
 		timestampText.setText(config.getProject().getDatabase().getWorkspaces().getExportWorkspace().getTimestamp());
-		srsComboBox.setSelectedItem(config.getProject().getExporter().getSimpleQuery().getTargetSRS());
+		srsComboBox.setSelectedItem(config.getProject().getExporter().getSimpleQuery().getTargetSrs());
 
 		filterPanel.loadSettings();
+		useSimpleFilter = config.getProject().getExporter().isUseSimpleQuery();
+		filterPanel.showFilterDialog(useSimpleFilter);
 	}
 
 	public void setSettings() {
 		config.getInternal().setExportFileName(browseText.getText());
 		config.getProject().getDatabase().getWorkspaces().getExportWorkspace().setName(workspaceText.getText().trim());
 		config.getProject().getDatabase().getWorkspaces().getExportWorkspace().setTimestamp(timestampText.getText().trim());
-		config.getProject().getExporter().getSimpleQuery().setTargetSRS(srsComboBox.getSelectedItem());
+		config.getProject().getExporter().getSimpleQuery().setTargetSrs(srsComboBox.getSelectedItem());
 
 		filterPanel.setSettings();
+		config.getProject().getExporter().setUseSimpleQuery(useSimpleFilter);
 	}
 
 	private void doExport() {
@@ -239,87 +257,88 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 			viewContoller.clearConsole();
 			setSettings();
 
-			SimpleQuery query = config.getProject().getExporter().getSimpleQuery();
-			Database db = config.getProject().getDatabase();
-
-			// check all input values...
-			if (config.getInternal().getExportFileName().trim().equals("")) {
-				viewContoller.errorMessage(Language.I18N.getString("export.dialog.error.incompleteData"), 
-						Language.I18N.getString("export.dialog.error.incompleteData.dataset"));
-				return;
-			}
-
-			// workspace timestamp
-			if (!Util.checkWorkspaceTimestamp(db.getWorkspaces().getExportWorkspace())) {
-				viewContoller.errorMessage(Language.I18N.getString("export.dialog.error.incorrectData"), 
-						Language.I18N.getString("common.dialog.error.incorrectData.date"));
-				return;
-			}
-
-			// simple selection filter
-			if (query.isUseSelectionFilter()) {
-				SimpleSelectionFilter selectionFilter = query.getSelectionFilter();
-				if (!selectionFilter.isUseSQLFilter()
-						&& !selectionFilter.getGmlIdFilter().isSetResourceIds()
-						&& !selectionFilter.getGmlNameFilter().isSetLiteral()) {
-					viewContoller.errorMessage(Language.I18N.getString("export.dialog.error.incorrectData"),
-							Language.I18N.getString("export.dialog.error.incorrectData.attributes"));
-					return;
-				}
-
-				else if (selectionFilter.isUseSQLFilter()
-						&& !selectionFilter.getSQLFilter().isSetValue()) {
-					viewContoller.errorMessage(Language.I18N.getString("export.dialog.error.incorrectData"),
-							Language.I18N.getString("export.dialog.error.incorrectData.sql"));
-					return;
-				}
-			}
-
-			// lod filter
-			if (query.isUseLodFilter() && !query.getLodFilter().isSetAnyLod()) {
-				viewContoller.errorMessage(Language.I18N.getString("export.dialog.error.lod"),
-						Language.I18N.getString("export.dialog.error.lod.noneSelected"));
-				return;
-			}
-
-			// counter filter
-			if (query.isUseCountFilter()) {
-				Long lowerLimit = query.getCounterFilter().getLowerLimit();
-				Long upperLimit = query.getCounterFilter().getUpperLimit();
-
-				if (lowerLimit == null || upperLimit == null
-						|| lowerLimit <= 0 || upperLimit <= 0
-						|| upperLimit < lowerLimit) {
-					viewContoller.errorMessage(Language.I18N.getString("export.dialog.error.incorrectData"), 
-							Language.I18N.getString("export.dialog.error.incorrectData.range"));
-					return;
-				}
-			}
-
-			// tiled bounding box
 			int tileAmount = 0;
-			if (query.isUseBboxFilter()) {
-				BoundingBox bbox = query.getBboxFilter().getEnvelope();
-				Double xMin = bbox.getLowerCorner().getX();
-				Double yMin = bbox.getLowerCorner().getY();
-				Double xMax = bbox.getUpperCorner().getX();
-				Double yMax = bbox.getUpperCorner().getY();
 
-				if (xMin == null || yMin == null || xMax == null || yMax == null) {
-					viewContoller.errorMessage(Language.I18N.getString("export.dialog.error.incorrectData"),
-							Language.I18N.getString("common.dialog.error.incorrectData.bbox"));
+			if (config.getProject().getExporter().isUseSimpleQuery()) {
+				SimpleQuery query = config.getProject().getExporter().getSimpleQuery();
+				Database db = config.getProject().getDatabase();
+
+				// check all input values...
+				if (config.getInternal().getExportFileName().trim().equals("")) {
+					viewContoller.errorMessage(Language.I18N.getString("export.dialog.error.incompleteData"),
+							Language.I18N.getString("export.dialog.error.incompleteData.dataset"));
 					return;
 				}
 
-				if (query.isUseTiling())
-					tileAmount = query.getTilingOptions().getRows() * query.getTilingOptions().getColumns();
-			}
+				// workspace timestamp
+				if (!Util.checkWorkspaceTimestamp(db.getWorkspaces().getExportWorkspace())) {
+					viewContoller.errorMessage(Language.I18N.getString("export.dialog.error.incorrectData"),
+							Language.I18N.getString("common.dialog.error.incorrectData.date"));
+					return;
+				}
 
-			// feature types
-			if (query.isUseTypeNames() && query.getFeatureTypeFilter().getTypeNames().isEmpty()) {
-				viewContoller.errorMessage(Language.I18N.getString("export.dialog.error.incorrectData"),
-						Language.I18N.getString("common.dialog.error.incorrectData.featureClass"));
-				return;
+				// simple selection filter
+				if (query.isUseSelectionFilter()) {
+					SimpleSelectionFilter selectionFilter = query.getSelectionFilter();
+					if (!selectionFilter.isUseSQLFilter()
+							&& !selectionFilter.getGmlIdFilter().isSetResourceIds()
+							&& !selectionFilter.getGmlNameFilter().isSetLiteral()) {
+						viewContoller.errorMessage(Language.I18N.getString("export.dialog.error.incorrectData"),
+								Language.I18N.getString("export.dialog.error.incorrectData.attributes"));
+						return;
+					} else if (selectionFilter.isUseSQLFilter()
+							&& !selectionFilter.getSQLFilter().isSetValue()) {
+						viewContoller.errorMessage(Language.I18N.getString("export.dialog.error.incorrectData"),
+								Language.I18N.getString("export.dialog.error.incorrectData.sql"));
+						return;
+					}
+				}
+
+				// lod filter
+				if (query.isUseLodFilter() && !query.getLodFilter().isSetAnyLod()) {
+					viewContoller.errorMessage(Language.I18N.getString("export.dialog.error.lod"),
+							Language.I18N.getString("export.dialog.error.lod.noneSelected"));
+					return;
+				}
+
+				// counter filter
+				if (query.isUseCountFilter()) {
+					Long lowerLimit = query.getCounterFilter().getLowerLimit();
+					Long upperLimit = query.getCounterFilter().getUpperLimit();
+
+					if (lowerLimit == null || upperLimit == null
+							|| lowerLimit <= 0 || upperLimit <= 0
+							|| upperLimit < lowerLimit) {
+						viewContoller.errorMessage(Language.I18N.getString("export.dialog.error.incorrectData"),
+								Language.I18N.getString("export.dialog.error.incorrectData.range"));
+						return;
+					}
+				}
+
+				// tiled bounding box
+				if (query.isUseBboxFilter()) {
+					BoundingBox bbox = query.getBboxFilter().getEnvelope();
+					Double xMin = bbox.getLowerCorner().getX();
+					Double yMin = bbox.getLowerCorner().getY();
+					Double xMax = bbox.getUpperCorner().getX();
+					Double yMax = bbox.getUpperCorner().getY();
+
+					if (xMin == null || yMin == null || xMax == null || yMax == null) {
+						viewContoller.errorMessage(Language.I18N.getString("export.dialog.error.incorrectData"),
+								Language.I18N.getString("common.dialog.error.incorrectData.bbox"));
+						return;
+					}
+
+					if (query.isUseTiling())
+						tileAmount = query.getTilingOptions().getRows() * query.getTilingOptions().getColumns();
+				}
+
+				// feature types
+				if (query.isUseTypeNames() && query.getFeatureTypeFilter().getTypeNames().isEmpty()) {
+					viewContoller.errorMessage(Language.I18N.getString("export.dialog.error.incorrectData"),
+							Language.I18N.getString("common.dialog.error.incorrectData.featureClass"));
+					return;
+				}
 			}
 
 			if (!databaseController.isConnected()) {

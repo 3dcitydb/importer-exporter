@@ -27,12 +27,12 @@
  */
 package org.citydb.config.geometry;
 
+import org.citydb.config.project.database.DatabaseSrs;
+
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlType;
-
-import org.citydb.config.project.database.DatabaseSrs;
 
 @XmlType(name="AbstractGeometryType")
 @XmlSeeAlso({
@@ -49,7 +49,7 @@ public abstract class AbstractGeometry {
 	@XmlAttribute(name="srsRef", required=false)
 	private DatabaseSrs srs;
 	@XmlAttribute
-	private String srsName;
+	private Integer srid;
 	
 	public abstract boolean is3D();
 	public abstract boolean isValid();
@@ -57,31 +57,33 @@ public abstract class AbstractGeometry {
 	public abstract BoundingBox toBoundingBox();
 	
 	public DatabaseSrs getSrs() {
-		return srs;
+		if (srs != null)
+			return srs;
+		else if (srid != null) {
+			DatabaseSrs srs = new DatabaseSrs(srid);
+			srs.setSupported(true);
+			return srs;
+		} else
+			return null;
 	}
 
 	public boolean isSetSrs() {
-		return srs != null;
+		return srs != null || srid != null;
 	}
 
 	public void setSrs(DatabaseSrs srs) {
 		this.srs = srs;
+		srid = null;
 	}
-	
-	public String getSrsName() {
-		return srsName;
+
+	public void setSrs(int srid) {
+		this.srid = srid;
+		srs = null;
 	}
-	
-	public boolean isSetSrsName() {
-		return srsName != null;
-	}
-	
-	public void setSrsName(String srsName) {
-		this.srsName = srsName;
-	}
-	
-	public void unsetSrsName() {
-		srsName = null;
+
+	public void unsetSrs() {
+		srs = null;
+		srid = null;
 	}
 	
 }

@@ -27,8 +27,6 @@
  */
 package org.citydb.modules.citygml.exporter;
 
-import java.util.Locale;
-
 import org.citydb.config.Config;
 import org.citydb.modules.citygml.exporter.gui.preferences.CityGMLExportPreferences;
 import org.citydb.modules.citygml.exporter.gui.view.CityGMLExportView;
@@ -39,12 +37,15 @@ import org.citydb.plugin.extension.view.View;
 import org.citydb.plugin.extension.view.ViewController;
 import org.citydb.plugin.extension.view.ViewExtension;
 
+import javax.xml.bind.JAXBContext;
+import java.util.Locale;
+
 public class CityGMLExportPlugin implements InternalPlugin, ViewExtension, PreferencesExtension {
 	private CityGMLExportView view;
 	private CityGMLExportPreferences preferences;
 	
-	public CityGMLExportPlugin(ViewController viewController, Config config) {
-		view = new CityGMLExportView(viewController, config);
+	public CityGMLExportPlugin(ViewController viewController, JAXBContext projectContext, Config config) {
+		view = new CityGMLExportView(viewController, projectContext, config);
 		preferences = new CityGMLExportPreferences(config);
 	}
 		

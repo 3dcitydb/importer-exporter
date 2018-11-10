@@ -32,11 +32,12 @@ import org.citydb.config.project.general.XSLTransformation;
 import org.citydb.config.project.query.Query;
 import org.citydb.config.project.resources.Resources;
 
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlType;
 
 @XmlType(name="ExportType", propOrder={
+		"query",
 		"simpleQuery",
-		"genericQuery",
 		"path",
 		"continuation",
 		"cityObjectGroup",
@@ -47,8 +48,10 @@ import javax.xml.bind.annotation.XmlType;
 		"resources"
 })
 public class Exporter {
+	@XmlAttribute
+	private boolean useSimpleQuery = true;
+	private Query query;
 	private SimpleQuery simpleQuery;
-	private Query genericQuery;
 	private Path path;
 	private Continuation continuation;
 	private ExportCityObjectGroup cityObjectGroup;
@@ -59,6 +62,7 @@ public class Exporter {
 	private Resources resources;
 
 	public Exporter() {
+		query = new Query();
 		simpleQuery = new SimpleQuery();
 		path = new Path();
 		cityObjectGroup = new ExportCityObjectGroup();
@@ -70,6 +74,23 @@ public class Exporter {
 		continuation = new Continuation();
 	}
 
+	public boolean isUseSimpleQuery() {
+		return useSimpleQuery;
+	}
+
+	public void setUseSimpleQuery(boolean useSimpleQuery) {
+		this.useSimpleQuery = useSimpleQuery;
+	}
+
+	public Query getQuery() {
+		return query;
+	}
+
+	public void setQuery(Query query) {
+		if (query != null)
+			this.query = query;
+	}
+
 	public SimpleQuery getSimpleQuery() {
 		return simpleQuery;
 	}
@@ -77,18 +98,6 @@ public class Exporter {
 	public void setSimpleQuery(SimpleQuery query) {
 		if (query != null)
 			this.simpleQuery = query;
-	}
-
-	public Query getGenericQuery() {
-		return genericQuery;
-	}
-	
-	public boolean isSetGenericQuery() {
-		return genericQuery != null;
-	}
-
-	public void setGenericQuery(Query genericQuery) {
-		this.genericQuery = genericQuery;
 	}
 
 	public Path getPath() {
