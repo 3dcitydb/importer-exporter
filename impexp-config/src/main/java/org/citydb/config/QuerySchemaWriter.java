@@ -1,6 +1,7 @@
 package org.citydb.config;
 
 import org.citydb.config.project.Project;
+import org.citydb.config.project.query.Query;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.SchemaOutputResolver;
@@ -11,13 +12,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-public class ConfigSchemaWriter {
+public class QuerySchemaWriter {
 
 	public static void main(String[] args) throws Exception {
-		Path configFile = Paths.get("src/main/resources/org/citydb/config/schema/project.xsd");
+		Path configFile = Paths.get("src/main/resources/org/citydb/config/schema/query.xsd");
 		System.out.print("Generting XML schema in " + configFile.toAbsolutePath() + "... ");
 		
-		JAXBContext context = JAXBContext.newInstance(Project.class);
+		JAXBContext context = JAXBContext.newInstance(Query.class);
 		context.generateSchema(new SchemaOutputResolver() {
 			@Override
 			public Result createOutput(String namespaceUri, String suggestedFileName) throws IOException {

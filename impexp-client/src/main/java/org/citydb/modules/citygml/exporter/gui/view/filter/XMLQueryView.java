@@ -284,7 +284,7 @@ public class XMLQueryView extends FilterView {
 
             if (validate) {
                 SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-                Schema schema = schemaFactory.newSchema(getClass().getResource("/org/citydb/config/schema/project.xsd"));
+                Schema schema = schemaFactory.newSchema(getClass().getResource("/org/citydb/config/schema/query.xsd"));
 
                 unmarshaller.setSchema(schema);
                 unmarshaller.setEventHandler(event -> {
