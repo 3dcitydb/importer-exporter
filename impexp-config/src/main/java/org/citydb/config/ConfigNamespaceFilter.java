@@ -28,8 +28,7 @@
 package org.citydb.config;
 
 import org.citygml4j.model.module.Module;
-import org.citygml4j.model.module.Modules;
-import org.citygml4j.model.module.ade.ADEModule;
+import org.citygml4j.model.module.ModuleContext;
 import org.citygml4j.model.module.citygml.CityGMLVersion;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
@@ -55,16 +54,13 @@ public class ConfigNamespaceFilter extends XMLFilterImpl implements NamespaceCon
 		prefixToUri = new HashMap<>();
 		uriToPrefix = new HashMap<>();
 
-		// bind default CityGML namespaces
-		for (Module module : CityGMLVersion.DEFAULT.getModules())
+		// bind default CityGML and ADE namespaces
+		ModuleContext modules = new ModuleContext(CityGMLVersion.DEFAULT);
+		for (Module module : modules.getModules())
 			bindNamespace(module.getNamespacePrefix(), module.getNamespaceURI());
 
-		// bind default ADE namespaces
-		for (ADEModule adeModule : Modules.getADEModules())
-			bindNamespace(adeModule.getNamespacePrefix(), adeModule.getNamespaceURI());
-
 		// bind 3DCityDB ADE namespace
-		bindNamespace("citydb", "http://www.3dcitydb.org/citygml-ade/3.0");
+		bindNamespace("citydb", "http://www.3dcitydb.org/citygml-ade/3.0/citygml/2.0");
 	}
 
 	public ConfigNamespaceFilter() {

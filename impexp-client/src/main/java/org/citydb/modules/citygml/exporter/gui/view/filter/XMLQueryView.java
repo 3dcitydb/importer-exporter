@@ -14,6 +14,7 @@ import org.citydb.config.project.query.filter.lod.LodFilter;
 import org.citydb.config.project.query.filter.projection.ProjectionFilter;
 import org.citydb.config.project.query.filter.selection.AbstractPredicate;
 import org.citydb.config.project.query.filter.selection.SelectionFilter;
+import org.citydb.config.project.query.filter.selection.comparison.LikeOperator;
 import org.citydb.config.project.query.filter.selection.logical.AndOperator;
 import org.citydb.config.project.query.filter.selection.spatial.BBOXOperator;
 import org.citydb.config.project.query.filter.selection.spatial.WithinOperator;
@@ -200,8 +201,11 @@ public class XMLQueryView extends FilterView {
                 if (selectionFilter.isSetGmlIdFilter() && selectionFilter.getGmlIdFilter().isSetResourceIds())
                     predicates.add(selectionFilter.getGmlIdFilter());
 
-                if (selectionFilter.isSetGmlNameFilter() && selectionFilter.getGmlNameFilter().isSetLiteral())
-                    predicates.add(selectionFilter.getGmlNameFilter());
+                if (selectionFilter.isSetGmlNameFilter() && selectionFilter.getGmlNameFilter().isSetLiteral()) {
+                    LikeOperator nameFilter = selectionFilter.getGmlNameFilter();
+                    nameFilter.setValueReference("gml:name");
+                    predicates.add(nameFilter);
+                }
             } else if (selectionFilter.isSetSQLFilter() && selectionFilter.getSQLFilter().isSetValue())
                 predicates.add(selectionFilter.getSQLFilter());
         }
