@@ -50,7 +50,7 @@ import org.citydb.gui.util.GuiUtil;
 import org.citydb.modules.citygml.exporter.gui.view.filter.AttributeFilterView;
 import org.citydb.modules.citygml.exporter.gui.view.filter.FilterView;
 import org.citydb.modules.citygml.exporter.gui.view.filter.SQLFilterView;
-import org.citydb.modules.citygml.exporter.gui.view.filter.XMLFilterView;
+import org.citydb.modules.citygml.exporter.gui.view.filter.XMLQueryView;
 import org.citydb.plugin.extension.view.ViewController;
 import org.citydb.plugin.extension.view.components.BoundingBoxPanel;
 import org.citydb.registry.ObjectRegistry;
@@ -98,7 +98,7 @@ public class FilterPanel extends JPanel implements EventHandler {
 	private JXTitledSeparator bboxSeparator;
 	private JXTitledSeparator featureSeparator;
 
-	private FilterView xmlFilter;
+	private XMLQueryView xmlQuery;
 	private JTabbedPane filterTab;
 	private FilterView[] filters;
 
@@ -200,9 +200,9 @@ public class FilterPanel extends JPanel implements EventHandler {
 		add(mainPanel, GuiUtil.setConstraints(0,0,1,1,GridBagConstraints.BOTH,0,0,0,0));
 
 		JPanel guiPanel = new JPanel();
-		xmlFilter = new XMLFilterView(this, projectContext, config);
+		xmlQuery = new XMLQueryView(this, projectContext, config);
 		mainPanel.add(guiPanel, "simple");
-		mainPanel.add(xmlFilter.getViewComponent(), "advanced");
+		mainPanel.add(xmlQuery.getViewComponent(), "advanced");
 
 		guiPanel.setLayout(new GridBagLayout());
 		{
@@ -470,7 +470,7 @@ public class FilterPanel extends JPanel implements EventHandler {
 			filters[i].doTranslation();
 		}
 
-		xmlFilter.doTranslation();
+		xmlQuery.doTranslation();
 	}
 
 	public void loadSettings() {
@@ -535,6 +535,9 @@ public class FilterPanel extends JPanel implements EventHandler {
 
 		filterTab.setSelectedIndex(-1);
 		filterTab.setSelectedIndex(query.getSelectionFilter().isUseSQLFilter() ? 1 : 0);
+
+		// load xml query
+		xmlQuery.loadSettings();
 	}
 
 	public void setSimpleQuerySettings() {
@@ -599,6 +602,7 @@ public class FilterPanel extends JPanel implements EventHandler {
 
 	public void setSettings() {
 		setSimpleQuerySettings();
+		xmlQuery.setSettings();
 	}
 
 	@Override

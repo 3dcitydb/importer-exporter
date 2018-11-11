@@ -34,8 +34,10 @@ import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.database.Database;
 import org.citydb.config.project.database.DatabaseConfigurationException;
+import org.citydb.config.project.database.DatabaseSrs;
 import org.citydb.config.project.exporter.SimpleQuery;
 import org.citydb.config.project.global.LogLevel;
+import org.citydb.config.project.query.Query;
 import org.citydb.config.project.query.simple.SimpleSelectionFilter;
 import org.citydb.database.DatabaseController;
 import org.citydb.database.schema.mapping.SchemaMapping;
@@ -229,24 +231,52 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 	}
 
 	public void loadSettings() {
+		useSimpleFilter = config.getProject().getExporter().isUseSimpleQuery();
 		browseText.setText(config.getInternal().getExportFileName());
 		workspaceText.setText(config.getProject().getDatabase().getWorkspaces().getExportWorkspace().getName());
 		timestampText.setText(config.getProject().getDatabase().getWorkspaces().getExportWorkspace().getTimestamp());
-		srsComboBox.setSelectedItem(config.getProject().getExporter().getSimpleQuery().getTargetSrs());
+
+		Query query = config.getProject().getExporter().getQuery();
+		DatabaseSrs targetSrs = query.getTargetSrs();
+
+		if (query.isSetTargetSrs()) {
+			boolean keepTargetSrs = true;
+			for (int i = 0; i < srsComboBox.getItemCount(); i++) {
+				DatabaseSrs item = srsComboBox.getItemAt(i);
+				if (targetSrs.getSrid() == item.getSrid() && targetSrs.getGMLSrsName().equals(item.getGMLSrsName())) {
+					targetSrs = item;
+					keepTargetSrs = false;
+					break;
+				}
+			}
+
+			if (keepTargetSrs)
+				query.setTargetSrs(targetSrs.getSrid(), targetSrs.getGMLSrsName());
+			else
+				query.unsetTargetSrs();
+		}
+
+		if (useSimpleFilter)
+			targetSrs = config.getProject().getExporter().getSimpleQuery().getTargetSrs();
+
+		srsComboBox.setSelectedItem(targetSrs);
 
 		filterPanel.loadSettings();
-		useSimpleFilter = config.getProject().getExporter().isUseSimpleQuery();
 		filterPanel.showFilterDialog(useSimpleFilter);
 	}
 
 	public void setSettings() {
+		config.getProject().getExporter().setUseSimpleQuery(useSimpleFilter);
 		config.getInternal().setExportFileName(browseText.getText());
 		config.getProject().getDatabase().getWorkspaces().getExportWorkspace().setName(workspaceText.getText().trim());
 		config.getProject().getDatabase().getWorkspaces().getExportWorkspace().setTimestamp(timestampText.getText().trim());
-		config.getProject().getExporter().getSimpleQuery().setTargetSrs(srsComboBox.getSelectedItem());
 
 		filterPanel.setSettings();
-		config.getProject().getExporter().setUseSimpleQuery(useSimpleFilter);
+
+		DatabaseSrs targetSrs = srsComboBox.getSelectedItem();
+		config.getProject().getExporter().getSimpleQuery().setTargetSrs(targetSrs);
+		if (!config.getProject().getExporter().getQuery().isSetTargetSrs())
+			config.getProject().getExporter().getQuery().setTargetSrs(targetSrs);
 	}
 
 	private void doExport() {

@@ -72,6 +72,8 @@ public class Project {
 		this.exporter = exporter;
 		this.kmlExporter = kmlExporter;
 		this.global = global;
+
+		namespaceFilter = new ConfigNamespaceFilter();
 		extensions = new HashMap<>();
 	}
 

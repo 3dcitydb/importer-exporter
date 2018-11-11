@@ -45,10 +45,16 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
+import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
+import javax.xml.namespace.NamespaceContext;
 import javax.xml.namespace.QName;
+import javax.xml.validation.Schema;
+import javax.xml.validation.SchemaFactory;
 import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -56,11 +62,12 @@ import java.awt.Insets;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 
-public class XMLFilterView extends FilterView {
+public class XMLQueryView extends FilterView {
     private final Logger log = Logger.getInstance();
     private final FilterPanel filterPanel;
     private final JAXBContext projectContext;
@@ -74,7 +81,7 @@ public class XMLFilterView extends FilterView {
     private JButton duplicateButton;
     private JButton validateButton;
 
-    public XMLFilterView(FilterPanel filterPanel, JAXBContext projectContext, Config config) {
+    public XMLQueryView(FilterPanel filterPanel, JAXBContext projectContext, Config config) {
         super(config);
         this.filterPanel = filterPanel;
         this.projectContext = projectContext;
@@ -127,8 +134,9 @@ public class XMLFilterView extends FilterView {
         component.add(scrollPane, GuiUtil.setConstraints(0,0,1,1,GridBagConstraints.BOTH,10,5,5,0));
         component.add(buttons, GuiUtil.setConstraints(1,0,0,0,GridBagConstraints.NORTH,GridBagConstraints.NONE,10,0,5,5));
 
-        newButton.addActionListener(e -> setEmptyQuery());
-        duplicateButton.addActionListener(e -> setSimpleSettings());
+        newButton.addActionListener(e -> SwingUtilities.invokeLater(this::setEmptyQuery));
+        duplicateButton.addActionListener(e -> SwingUtilities.invokeLater(this::setSimpleSettings));
+        validateButton.addActionListener(e -> SwingUtilities.invokeLater(this::validate));
 
         PopupMenuDecorator.getInstance().decorate(xmlText);
     }
@@ -142,7 +150,12 @@ public class XMLFilterView extends FilterView {
         query.setProjectionFilter(new ProjectionFilter());
         query.setSelectionFilter(new SelectionFilter());
         query.setTiling(new Tiling());
-        xmlText.setText(marshalQuery(query, CityGMLVersion.v2_0_0));
+
+        CityGMLNamespaceContext namespaceContext = new CityGMLNamespaceContext();
+        namespaceContext.setPrefixes(new ModuleContext(CityGMLVersion.v2_0_0));
+        namespaceContext.setDefaultNamespace(ConfigUtil.CITYDB_CONFIG_NAMESPACE_URI);
+
+        xmlText.setText(marshalQuery(query, namespaceContext));
     }
 
     private void setSimpleSettings() {
@@ -240,18 +253,61 @@ public class XMLFilterView extends FilterView {
             query.setSelectionFilter(selectionFilter);
         }
 
-        xmlText.setText(marshalQuery(query, version));
+        CityGMLNamespaceContext namespaceContext = new CityGMLNamespaceContext();
+        namespaceContext.setPrefixes(new ModuleContext(version));
+        namespaceContext.setDefaultNamespace(ConfigUtil.CITYDB_CONFIG_NAMESPACE_URI);
+
+        xmlText.setText(marshalQuery(query, namespaceContext));
     }
 
-    private String marshalQuery(Query query, CityGMLVersion version) {
+    private void validate() {
+        log.info("Validating XML query.");
+
+        if (xmlText.getText().trim().isEmpty()) {
+            log.warn("No XML query element defined. Aborting validation.");
+            return;
+        }
+
+        Query query = unmarshalQuery(true);
+        if (query == null) {
+            log.error("Failed to unmarshal XML query.");
+            return;
+        }
+
+        System.out.println(query);
+    }
+
+    private Query unmarshalQuery(boolean validate) {
+        try {
+            Boolean[] success = {true};
+            Unmarshaller unmarshaller = projectContext.createUnmarshaller();
+
+            if (validate) {
+                SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+                Schema schema = schemaFactory.newSchema(getClass().getResource("/org/citydb/config/schema/project.xsd"));
+
+                unmarshaller.setSchema(schema);
+                unmarshaller.setEventHandler(event -> {
+                    success[0] = false;
+                    log.error("Invalid content at [" + event.getLocator().getLineNumber() + ", " +
+                            event.getLocator().getColumnNumber() + "]: " +
+                            event.getMessage());
+                    return true;
+                });
+            }
+
+            Object object = unmarshaller.unmarshal(new StringReader(xmlText.getText()));
+            return success[0] && object instanceof Query ? (Query) object : null;
+        } catch (JAXBException | SAXException e) {
+            return null;
+        }
+    }
+
+    private String marshalQuery(Query query, NamespaceContext namespaceContext) {
         try {
             StringWriter content = new StringWriter();
             SAXWriter saxWriter = new SAXWriter(new BufferedWriter(content));
             saxWriter.setIndentString("\t");
-
-            CityGMLNamespaceContext namespaceContext = new CityGMLNamespaceContext();
-            namespaceContext.setPrefixes(new ModuleContext(version));
-            namespaceContext.setDefaultNamespace(ConfigUtil.CITYDB_CONFIG_NAMESPACE_URI);
 
             Marshaller marshaller = projectContext.createMarshaller();
             marshaller.setProperty(Marshaller.JAXB_FRAGMENT, true);
@@ -260,7 +316,8 @@ public class XMLFilterView extends FilterView {
 
             marshaller.setProperty("com.sun.xml.bind.namespacePrefixMapper", new NamespacePrefixMapper() {
                 public String getPreferredPrefix(String namespaceUri, String suggestion, boolean requirePrefix) {
-                    return namespaceContext.getPrefix(namespaceUri);
+                    String prefix = namespaceContext.getPrefix(namespaceUri);
+                    return prefix != null ? prefix : suggestion;
                 }
             });
 
@@ -269,8 +326,6 @@ public class XMLFilterView extends FilterView {
 
             return content.toString();
         } catch (JAXBException | IOException | SAXException e) {
-            log.error("Failed to marshal XML query element.");
-            log.error("Cause: " + e.getMessage());
             return "";
         }
     }
@@ -309,12 +364,14 @@ public class XMLFilterView extends FilterView {
 
     @Override
     public void loadSettings() {
-
+        Query query = config.getProject().getExporter().getQuery();
+        xmlText.setText(marshalQuery(query, config.getProject().getNamespaceFilter()));
     }
 
     @Override
     public void setSettings() {
-
+        Query query = unmarshalQuery(false);
+        config.getProject().getExporter().setQuery(query != null ? query : new Query());
     }
 
     private boolean isDefaultDatabaseSrs(DatabaseSrs srs) {

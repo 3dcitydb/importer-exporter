@@ -97,6 +97,12 @@ public class Query {
 		targetSrsName = null;
 	}
 
+	public void unsetTargetSrs() {
+		targetSrs = null;
+		targetSrid = null;
+		targetSrsName = null;
+	}
+
 	public void setTargetSrs(int targetSrid, String targetSrsName) {
 		this.targetSrid = targetSrid;
 		this.targetSrsName = targetSrsName;
