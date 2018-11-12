@@ -200,7 +200,7 @@ public class FilterPanel extends JPanel implements EventHandler {
 		add(mainPanel, GuiUtil.setConstraints(0,0,1,1,GridBagConstraints.BOTH,0,0,0,0));
 
 		JPanel guiPanel = new JPanel();
-		xmlQuery = new XMLQueryView(this, projectContext, config);
+		xmlQuery = new XMLQueryView(this, viewController, projectContext, config);
 		mainPanel.add(guiPanel, "simple");
 		mainPanel.add(xmlQuery.getViewComponent(), "advanced");
 

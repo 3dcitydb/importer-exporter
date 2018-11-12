@@ -284,10 +284,9 @@ public class MenuProject extends JMenu {
 
 	private void addLastUsedProject(String fileName) {
 		List<String> lastUsedList = config.getGui().getRecentlyUsedProjectFiles();
-		if (lastUsedList.contains(fileName))
-			lastUsedList.remove(fileName);
-
+		lastUsedList.remove(fileName);
 		lastUsedList.add(0, fileName);
+
 		if (lastUsedList.size() > config.getGui().getMaxLastUsedEntries())
 			config.getGui().setRecentlyUsedProjectFiles(lastUsedList.subList(0, config.getGui().getMaxLastUsedEntries()));
 	}

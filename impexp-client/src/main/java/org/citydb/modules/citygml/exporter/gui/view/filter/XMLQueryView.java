@@ -29,6 +29,7 @@ import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.log.Logger;
 import org.citydb.modules.citygml.exporter.gui.view.FilterPanel;
+import org.citydb.plugin.extension.view.ViewController;
 import org.citydb.registry.ObjectRegistry;
 import org.citydb.util.Util;
 import org.citygml4j.model.module.ModuleContext;
@@ -75,6 +76,7 @@ import java.util.List;
 public class XMLQueryView extends FilterView {
     private final Logger log = Logger.getInstance();
     private final FilterPanel filterPanel;
+    private final ViewController viewController;
     private final JAXBContext projectContext;
     private final SchemaMapping schemaMapping;
     private final DatabaseConnectionPool connectionPool;
@@ -86,9 +88,10 @@ public class XMLQueryView extends FilterView {
     private JButton duplicateButton;
     private JButton validateButton;
 
-    public XMLQueryView(FilterPanel filterPanel, JAXBContext projectContext, Config config) {
+    public XMLQueryView(FilterPanel filterPanel, ViewController viewController, JAXBContext projectContext, Config config) {
         super(config);
         this.filterPanel = filterPanel;
+        this.viewController = viewController;
         this.projectContext = projectContext;
 
         schemaMapping = ObjectRegistry.getInstance().getSchemaMapping();
@@ -105,7 +108,7 @@ public class XMLQueryView extends FilterView {
         try (InputStream in = getClass().getResourceAsStream("/org/fife/ui/rsyntaxtextarea/themes/idea.xml")) {
             Theme.load(in).apply(xmlText);
         } catch (IOException e) {
-            throw new IllegalStateException("Failed to initialize SQL editor.", e);
+            throw new IllegalStateException("Failed to initialize XML editor.", e);
         }
 
         xmlText.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_XML);
@@ -269,6 +272,7 @@ public class XMLQueryView extends FilterView {
     }
 
     private void validate() {
+        viewController.clearConsole();
         log.info("Validating XML query.");
 
         String query = xmlText.getText().trim();

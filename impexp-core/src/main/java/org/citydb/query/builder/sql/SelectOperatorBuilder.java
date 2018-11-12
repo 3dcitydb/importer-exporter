@@ -37,11 +37,8 @@ import org.citydb.query.Query;
 import org.citydb.query.builder.QueryBuildException;
 import org.citydb.query.filter.selection.expression.ValueReference;
 import org.citydb.query.filter.selection.operator.sql.SelectOperator;
-import org.citydb.sqlbuilder.schema.Table;
-import org.citydb.sqlbuilder.select.join.JoinFactory;
-import org.citydb.sqlbuilder.select.operator.comparison.ComparisonFactory;
-import org.citydb.sqlbuilder.select.operator.comparison.ComparisonName;
-import org.citydb.sqlbuilder.select.operator.logical.LogicalOperationFactory;
+import org.citydb.sqlbuilder.expression.LiteralSelectExpression;
+import org.citydb.sqlbuilder.select.operator.comparison.InOperator;
 
 import java.util.Set;
 
@@ -72,17 +69,8 @@ public class SelectOperatorBuilder {
 
         // build the value reference
         SQLQueryContext queryContext = schemaPathBuilder.buildSchemaPath(valueReference.getSchemaPath(), objectClassIds);
-
-        Table selectAsTable = new Table("(" + operator.getSelect() + ")", schemaPathBuilder.getAliasGenerator());
-        if (!negate)
-            queryContext.select.addJoin(JoinFactory.inner(selectAsTable, MappingConstants.ID, ComparisonName.EQUAL_TO, queryContext.targetColumn));
-        else {
-            queryContext.select.addJoin(JoinFactory.full(selectAsTable, MappingConstants.ID, ComparisonName.EQUAL_TO, queryContext.targetColumn))
-                    .addSelection(LogicalOperationFactory.OR(
-                            ComparisonFactory.isNull(queryContext.targetColumn),
-                            ComparisonFactory.isNull(selectAsTable.getColumn(MappingConstants.ID))
-                    ));
-        }
+        LiteralSelectExpression subQuery = new LiteralSelectExpression(operator.getSelect());
+        queryContext.select.addSelection(new InOperator(queryContext.targetColumn, subQuery, negate));
 
         return queryContext;
     }
