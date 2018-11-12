@@ -27,9 +27,9 @@
  */
 package org.citydb.config.project.kmlExporter;
 
+import org.citydb.config.project.query.filter.selection.id.ResourceIdOperator;
 import org.citydb.config.project.query.filter.selection.spatial.BBOXOperator;
 import org.citydb.config.project.query.filter.type.FeatureTypeFilter;
-import org.citydb.config.project.query.simple.SimpleAttributeFilter;
 import org.citygml4j.model.module.citygml.BridgeModule;
 import org.citygml4j.model.module.citygml.BuildingModule;
 import org.citygml4j.model.module.citygml.CityFurnitureModule;
@@ -49,7 +49,7 @@ import javax.xml.namespace.QName;
 
 @XmlType(name="SimpleKmlExportQueryType", propOrder={
 		"featureTypeFilter",
-		"attributeFilter",
+		"gmlIdFilter",
 		"bboxFilter",
 		"tilingOptions"
 })
@@ -59,15 +59,15 @@ public class SimpleKmlQuery {
 
 	@XmlElement(name = "typeNames")
 	protected FeatureTypeFilter featureTypeFilter;
-	@XmlElement(name = "attributes")
-	private SimpleAttributeFilter attributeFilter;
+	@XmlElement(name = "gmlIds")
+	private ResourceIdOperator gmlIdFilter;
 	@XmlElement(name = "bbox", required = true)
 	private BBOXOperator bboxFilter;
 	private KmlTilingOptions tilingOptions;
 
 	public SimpleKmlQuery() {
 		featureTypeFilter = new FeatureTypeFilter();
-		attributeFilter = new SimpleAttributeFilter();
+		gmlIdFilter = new ResourceIdOperator();
 		bboxFilter = new BBOXOperator();
 		tilingOptions = new KmlTilingOptions();
 
@@ -110,16 +110,16 @@ public class SimpleKmlQuery {
 		this.featureTypeFilter = featureTypeFilter;
 	}
 
-	public SimpleAttributeFilter getAttributeFilter() {
-		return attributeFilter;
+	public ResourceIdOperator getGmlIdFilter() {
+		return gmlIdFilter;
 	}
 
-	public boolean isSetAttributeFilter() {
-		return attributeFilter != null;
+	public boolean isSetGmlIdFilter() {
+		return gmlIdFilter != null;
 	}
 
-	public void setAttributeFilter(SimpleAttributeFilter attributeFilter) {
-		this.attributeFilter = attributeFilter;
+	public void setGmlIdFilter(ResourceIdOperator gmlIdFilter) {
+		this.gmlIdFilter = gmlIdFilter;
 	}
 
 	public BBOXOperator getBboxFilter() {

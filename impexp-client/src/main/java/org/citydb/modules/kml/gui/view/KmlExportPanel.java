@@ -76,11 +76,31 @@ import org.citygml4j.model.module.citygml.VegetationModule;
 import org.jdesktop.swingx.JXTextField;
 import org.jdesktop.swingx.prompt.PromptSupport.FocusBehavior;
 
-import javax.swing.*;
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.ButtonGroup;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.JScrollPane;
+import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
+import javax.swing.UIManager;
 import javax.swing.border.TitledBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.xml.bind.JAXBContext;
-import java.awt.*;
+import java.awt.AWTEvent;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -440,7 +460,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		typeTree.setSelected(featureTypeFilter.getTypeNames());
 
 		// gml:id filter
-		ResourceIdOperator gmlIdFilter = query.getAttributeFilter().getGmlIdFilter();
+		ResourceIdOperator gmlIdFilter = query.getGmlIdFilter();
 		gmlIdText.setText(String.join(",", gmlIdFilter.getResourceIds()));
 
 		// bbox filter
@@ -542,7 +562,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		featureTypeFilter.setTypeNames(typeTree.getSelectedTypeNames());
 
 		// gml:id filter
-		ResourceIdOperator gmlIdFilter = query.getAttributeFilter().getGmlIdFilter();
+		ResourceIdOperator gmlIdFilter = query.getGmlIdFilter();
 		gmlIdFilter.reset();
 		if (gmlIdText.getText().trim().length() > 0) {
 			String trimmed = gmlIdText.getText().replaceAll("\\s+", "");
@@ -738,7 +758,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 
 			// gmlId
 			if (query.getMode() == SimpleKmlQueryMode.SINGLE
-					&& !query.getAttributeFilter().getGmlIdFilter().isSetResourceIds()) {
+					&& !query.getGmlIdFilter().isSetResourceIds()) {
 				viewController.errorMessage(Language.I18N.getString("export.dialog.error.incorrectData"), 
 						Language.I18N.getString("common.dialog.error.incorrectData.gmlId"));
 				return;

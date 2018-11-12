@@ -272,8 +272,8 @@ public class ConfigQueryBuilder {
 			}
 
 			// gml:id filter
-			if (queryConfig.isSetAttributeFilter() && queryConfig.getAttributeFilter().isSetGmlIdFilter())
-				query.setSelection(new SelectionFilter(predicateBuilder.buildPredicate(queryConfig.getAttributeFilter().getGmlIdFilter())));
+			if (queryConfig.isSetGmlIdFilter() && queryConfig.getGmlIdFilter().isSetResourceIds())
+				query.setSelection(new SelectionFilter(predicateBuilder.buildPredicate(queryConfig.getGmlIdFilter())));
 		}
 
 		// complex filter settings
