@@ -243,7 +243,7 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 			boolean keepTargetSrs = true;
 			for (int i = 0; i < srsComboBox.getItemCount(); i++) {
 				DatabaseSrs item = srsComboBox.getItemAt(i);
-				if (targetSrs.getSrid() == item.getSrid() && targetSrs.getGMLSrsName().equals(item.getGMLSrsName())) {
+				if (item.getSrid() == targetSrs.getSrid() && item.getGMLSrsName().equals(targetSrs.getGMLSrsName())) {
 					targetSrs = item;
 					keepTargetSrs = false;
 					break;

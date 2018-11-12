@@ -40,7 +40,9 @@ import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
 import org.fife.ui.rsyntaxtextarea.Theme;
 import org.fife.ui.rtextarea.RTextScrollPane;
+import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -54,8 +56,10 @@ import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.namespace.QName;
+import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
+import javax.xml.validation.Validator;
 import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -267,42 +271,52 @@ public class XMLQueryView extends FilterView {
     private void validate() {
         log.info("Validating XML query.");
 
-        if (xmlText.getText().trim().isEmpty()) {
+        String query = xmlText.getText().trim();
+        if (query.isEmpty()) {
             log.warn("No XML query element defined. Aborting validation.");
             return;
         }
 
-        Query query = unmarshalQuery(true);
-        if (query == null) {
-            log.error("Failed to unmarshal XML query.");
-            return;
+        int[] errors = {0};
+        try {
+            SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+            Schema schema = schemaFactory.newSchema(getClass().getResource("/org/citydb/config/schema/query.xsd"));
+
+            Validator validator = schema.newValidator();
+            validator.setErrorHandler(new ErrorHandler() {
+                public void warning(SAXParseException exception) {
+                    error(exception);
+                }
+
+                public void fatalError(SAXParseException exception) {
+                    error(exception);
+                }
+
+                public void error(SAXParseException exception) {
+                    errors[0]++;
+                    log.error("Invalid content at [" + exception.getLineNumber() + "," +
+                            exception.getColumnNumber() + "]: " + exception.getMessage());
+                }
+            });
+
+            validator.validate(new StreamSource(new StringReader(query)));
+        } catch (SAXException | IOException e) {
+            log.error("Validation aborted due to fatal errors.");
         }
 
-        System.out.println(query);
+        if (errors[0] > 0)
+            log.warn(errors[0] + " error(s) reported while validating the XML query.");
+        else
+            log.info("The XML query is valid.");
     }
 
-    private Query unmarshalQuery(boolean validate) {
+    private Query unmarshalQuery() {
         try {
-            Boolean[] success = {true};
             Unmarshaller unmarshaller = projectContext.createUnmarshaller();
+            Object object = unmarshaller.unmarshal(new StringReader(xmlText.getText().trim()));
 
-            if (validate) {
-                SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-                Schema schema = schemaFactory.newSchema(getClass().getResource("/org/citydb/config/schema/query.xsd"));
-
-                unmarshaller.setSchema(schema);
-                unmarshaller.setEventHandler(event -> {
-                    success[0] = false;
-                    log.error("Invalid content at [" + event.getLocator().getLineNumber() + ", " +
-                            event.getLocator().getColumnNumber() + "]: " +
-                            event.getMessage());
-                    return true;
-                });
-            }
-
-            Object object = unmarshaller.unmarshal(new StringReader(xmlText.getText()));
-            return success[0] && object instanceof Query ? (Query) object : null;
-        } catch (JAXBException | SAXException e) {
+            return object instanceof Query ? (Query) object : null;
+        } catch (JAXBException  e) {
             return null;
         }
     }
@@ -374,7 +388,7 @@ public class XMLQueryView extends FilterView {
 
     @Override
     public void setSettings() {
-        Query query = unmarshalQuery(false);
+        Query query = unmarshalQuery();
         config.getProject().getExporter().setQuery(query != null ? query : new Query());
     }
 
