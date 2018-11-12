@@ -33,11 +33,11 @@ import org.citydb.config.project.exporter.SimpleQuery;
 import org.citydb.config.project.exporter.TilingOptions;
 import org.citydb.config.project.kmlExporter.KmlTilingOptions;
 import org.citydb.config.project.kmlExporter.SimpleKmlQuery;
+import org.citydb.config.project.kmlExporter.SimpleKmlQueryMode;
 import org.citydb.config.project.query.filter.selection.AbstractPredicate;
 import org.citydb.config.project.query.filter.selection.comparison.LikeOperator;
 import org.citydb.config.project.query.filter.selection.spatial.WithinOperator;
 import org.citydb.config.project.query.filter.tiling.Tiling;
-import org.citydb.config.project.kmlExporter.SimpleKmlQueryMode;
 import org.citydb.config.project.query.simple.SimpleBBOXMode;
 import org.citydb.config.project.query.simple.SimpleBBOXOperator;
 import org.citydb.config.project.query.simple.SimpleSelectionFilter;
@@ -87,7 +87,7 @@ public class ConfigQueryBuilder {
 				query.setFeatureTypeFilter(new FeatureTypeFilter(schemaMapping.getFeatureType("_CityObject", CoreModule.v2_0_0.getNamespaceURI())));
 				query.setTargetVersion(CityGMLVersion.v2_0_0);
 			} catch (FilterException e) {
-				throw new QueryBuildException("Failed to build the export filter.", e);
+				throw new QueryBuildException("Failed to build the feature type filter.", e);
 			}
 		}
 
@@ -97,14 +97,18 @@ public class ConfigQueryBuilder {
 				CounterFilterBuilder counterFilterBuilder = new CounterFilterBuilder();
 				query.setCounterFilter(counterFilterBuilder.buildCounterFilter(queryConfig.getCounterFilter()));
 			} catch (FilterException e) {
-				throw new QueryBuildException("Failed to build the export filter.", e);
+				throw new QueryBuildException("Failed to build the counter filter.", e);
 			}
 		}
 
 		// lod filter
 		if (queryConfig.isSetLodFilter()) {
-			LodFilterBuilder lodFilterBuilder = new LodFilterBuilder();
-			query.setLodFilter(lodFilterBuilder.buildLodFilter(queryConfig.getLodFilter()));
+			try {
+				LodFilterBuilder lodFilterBuilder = new LodFilterBuilder();
+				query.setLodFilter(lodFilterBuilder.buildLodFilter(queryConfig.getLodFilter()));
+			} catch (FilterException e) {
+				throw new QueryBuildException("Failed to build the LoD filter.", e);
+			}
 		}
 
 		// projection filter
@@ -154,8 +158,12 @@ public class ConfigQueryBuilder {
 
 		// lod filter
 		if (queryConfig.isUseLodFilter() && queryConfig.isSetLodFilter()) {
-			LodFilterBuilder lodFilterBuilder = new LodFilterBuilder();
-			query.setLodFilter(lodFilterBuilder.buildLodFilter(queryConfig.getLodFilter()));
+			try {
+				LodFilterBuilder lodFilterBuilder = new LodFilterBuilder();
+				query.setLodFilter(lodFilterBuilder.buildLodFilter(queryConfig.getLodFilter()));
+			} catch (FilterException e) {
+				throw new QueryBuildException("Failed to build the LoD filter.", e);
+			}
 		}
 
 		// simple filter settings
@@ -172,7 +180,7 @@ public class ConfigQueryBuilder {
 			try {
 				query.setFeatureTypeFilter(new FeatureTypeFilter(schemaMapping.getFeatureType("_CityObject", CoreModule.v2_0_0.getNamespaceURI())));
 			} catch (FilterException e) {
-				throw new QueryBuildException("Failed to build the export filter.", e);
+				throw new QueryBuildException("Failed to build the feature type filter.", e);
 			}
 		}
 
@@ -204,7 +212,7 @@ public class ConfigQueryBuilder {
 				CounterFilterBuilder counterFilterBuilder = new CounterFilterBuilder();
 				query.setCounterFilter(counterFilterBuilder.buildCounterFilter(queryConfig.getCounterFilter()));
 			} catch (FilterException e) {
-				throw new QueryBuildException("Failed to build the export filter.", e);
+				throw new QueryBuildException("Failed to build the counter filter.", e);
 			}
 		}
 

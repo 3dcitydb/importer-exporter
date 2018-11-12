@@ -50,7 +50,10 @@ public class Tiling {
 	public Tiling(BoundingBox extent, int rows, int columns) throws FilterException {
 		if (extent == null)
 			throw new FilterException("The spatial tiling extent must not be null.");
-		
+
+		if (!extent.isValid())
+			throw new FilterException("The bounding box extent is invalid.");
+
 		if (extent.getSrs() != null && !extent.getSrs().isSupported())
 			throw new FilterException("The reference system " + extent.getSrs().getDescription() + " of the tiling extent is not supported.");
 

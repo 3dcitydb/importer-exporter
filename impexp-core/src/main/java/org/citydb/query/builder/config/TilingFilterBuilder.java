@@ -84,7 +84,7 @@ public class TilingFilterBuilder {
 
 			return tiling;
 		} catch (FilterException e) {
-			throw new QueryBuildException("Failed to build tiling filter.", e);
+			throw new QueryBuildException("Failed to build the tiling filter.", e);
 		}
 	}
 }

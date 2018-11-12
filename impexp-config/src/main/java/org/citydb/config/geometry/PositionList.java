@@ -27,11 +27,11 @@
  */
 package org.citydb.config.geometry;
 
-import java.util.List;
-
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlValue;
+import java.util.List;
+import java.util.Objects;
 
 @XmlType(name = "PositionListType")
 public class PositionList {
@@ -64,7 +64,9 @@ public class PositionList {
 	}
 
 	public boolean isValid() {
-		return coords.getValues() != null && !coords.getValues().isEmpty() && coords.getValues().size() % getDimension() == 0;
+		return coords.getValues() != null
+				&& coords.getValues().size() % getDimension() == 0
+				&& coords.getValues().stream().noneMatch(Objects::isNull);
 	}
 	
 }

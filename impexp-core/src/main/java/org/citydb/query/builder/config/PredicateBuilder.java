@@ -67,6 +67,9 @@ public class PredicateBuilder {
 	}
 
 	protected Predicate buildPredicate(AbstractPredicate predicateConfig) throws QueryBuildException {
+		if (predicateConfig == null)
+			throw new QueryBuildException("No valid filter predicate provided.");
+
 		Predicate predicate = null;
 		
 		switch (predicateConfig.getPredicateName()) {

@@ -48,15 +48,15 @@ public class AppearanceFilter {
 	}
 		
 	public boolean isIncludeNullTheme() {
-		return includeNullTheme != null ? includeNullTheme.booleanValue() : false;
+		return includeNullTheme != null && includeNullTheme;
 	}
 
 	public void setIncludeNullTheme(boolean includeNullTheme) {
 		this.includeNullTheme = includeNullTheme;
 	}
 
-	public boolean isSetThemes() {
-		return !themes.isEmpty();
+	public boolean containsThemes() {
+		return isIncludeNullTheme() || !themes.isEmpty();
 	}
 
 	public List<String> getThemes() {

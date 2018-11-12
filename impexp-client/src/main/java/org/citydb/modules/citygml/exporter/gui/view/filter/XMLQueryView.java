@@ -329,7 +329,7 @@ public class XMLQueryView extends FilterView {
         try {
             StringWriter content = new StringWriter();
             SAXWriter saxWriter = new SAXWriter(new BufferedWriter(content));
-            saxWriter.setIndentString("\t");
+            saxWriter.setIndentString("  ");
 
             Marshaller marshaller = projectContext.createMarshaller();
             marshaller.setProperty(Marshaller.JAXB_FRAGMENT, true);

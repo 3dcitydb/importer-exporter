@@ -28,6 +28,7 @@
 package org.citydb.query.builder.config;
 
 import org.citydb.config.project.query.filter.lod.LodSearchMode;
+import org.citydb.query.filter.FilterException;
 import org.citydb.query.filter.lod.LodFilter;
 import org.citydb.query.filter.lod.LodFilterMode;
 
@@ -37,7 +38,10 @@ public class LodFilterBuilder {
 
 	}
 
-	public LodFilter buildLodFilter(org.citydb.config.project.query.filter.lod.LodFilter lodFilterConfig) {
+	public LodFilter buildLodFilter(org.citydb.config.project.query.filter.lod.LodFilter lodFilterConfig) throws FilterException {
+		if (!lodFilterConfig.isSetAnyLod())
+			throw new FilterException("No LoD level provided for LoD filter.");
+
 		LodFilter lodFilter = new LodFilter(LodFilterMode.OR);
 
 		switch (lodFilterConfig.getMode()) {
