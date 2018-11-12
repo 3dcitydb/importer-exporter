@@ -103,12 +103,8 @@ public class ConfigQueryBuilder {
 
 		// lod filter
 		if (queryConfig.isSetLodFilter()) {
-			try {
-				LodFilterBuilder lodFilterBuilder = new LodFilterBuilder();
-				query.setLodFilter(lodFilterBuilder.buildLodFilter(queryConfig.getLodFilter()));
-			} catch (FilterException e) {
-				throw new QueryBuildException("Failed to build the LoD filter.", e);
-			}
+			LodFilterBuilder lodFilterBuilder = new LodFilterBuilder();
+			query.setLodFilter(lodFilterBuilder.buildLodFilter(queryConfig.getLodFilter()));
 		}
 
 		// projection filter
@@ -158,12 +154,8 @@ public class ConfigQueryBuilder {
 
 		// lod filter
 		if (queryConfig.isUseLodFilter() && queryConfig.isSetLodFilter()) {
-			try {
-				LodFilterBuilder lodFilterBuilder = new LodFilterBuilder();
-				query.setLodFilter(lodFilterBuilder.buildLodFilter(queryConfig.getLodFilter()));
-			} catch (FilterException e) {
-				throw new QueryBuildException("Failed to build the LoD filter.", e);
-			}
+			LodFilterBuilder lodFilterBuilder = new LodFilterBuilder();
+			query.setLodFilter(lodFilterBuilder.buildLodFilter(queryConfig.getLodFilter()));
 		}
 
 		// simple filter settings
