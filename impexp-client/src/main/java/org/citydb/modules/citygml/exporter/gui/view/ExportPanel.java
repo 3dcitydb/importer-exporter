@@ -312,7 +312,8 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 					SimpleSelectionFilter selectionFilter = query.getSelectionFilter();
 					if (!selectionFilter.isUseSQLFilter()
 							&& !selectionFilter.getGmlIdFilter().isSetResourceIds()
-							&& !selectionFilter.getGmlNameFilter().isSetLiteral()) {
+							&& !selectionFilter.getGmlNameFilter().isSetLiteral()
+							&& !selectionFilter.getLineageFilter().isSetLiteral()) {
 						viewContoller.errorMessage(Language.I18N.getString("export.dialog.error.incorrectData"),
 								Language.I18N.getString("export.dialog.error.incorrectData.attributes"));
 						return;

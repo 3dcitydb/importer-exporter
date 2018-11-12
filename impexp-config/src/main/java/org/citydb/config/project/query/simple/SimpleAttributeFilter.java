@@ -35,17 +35,21 @@ import javax.xml.bind.annotation.XmlType;
 
 @XmlType(name="SimpleAttributeFilterType", propOrder={
 		"gmlIdFilter",
-		"gmlNameFilter"
+		"gmlNameFilter",
+		"lineageFilter"
 })
 public class SimpleAttributeFilter {
-	@XmlElement(name = "gmlIds", required = true)
+	@XmlElement(name = "gmlIds")
 	private ResourceIdOperator gmlIdFilter;
-	@XmlElement(name = "gmlName", required = true)
+	@XmlElement(name = "gmlName")
 	private LikeOperator gmlNameFilter;
+	@XmlElement(name = "lineage")
+	private LikeOperator lineageFilter;
 
 	public SimpleAttributeFilter() {
 		gmlIdFilter = new ResourceIdOperator();
 		gmlNameFilter = new LikeOperator();
+		lineageFilter = new LikeOperator();
 	}
 	
 	public ResourceIdOperator getGmlIdFilter() {
@@ -70,6 +74,18 @@ public class SimpleAttributeFilter {
 
 	public void setGmlNameFilter(LikeOperator gmlNameFilter) {
 		this.gmlNameFilter = gmlNameFilter;
+	}
+
+	public LikeOperator getLineageFilter() {
+		return lineageFilter;
+	}
+
+	public boolean isSetLineageFilter() {
+		return lineageFilter != null;
+	}
+
+	public void setLineageFilter(LikeOperator lineageFilter) {
+		this.lineageFilter = lineageFilter;
 	}
 
 }

@@ -190,6 +190,14 @@ public class ConfigQueryBuilder {
 					gmlNameFilter.setValueReference("gml:name");
 					predicates.add(predicateBuilder.buildPredicate(gmlNameFilter));
 				}
+
+				// citydb:lineage filter
+				if (selectionFilter.isSetLineageFilter() && selectionFilter.getLineageFilter().isSetLiteral()) {
+					LikeOperator lineageFilter = selectionFilter.getLineageFilter();
+					lineageFilter.setLiteral(lineageFilter.getLiteral());
+					lineageFilter.setValueReference("citydb:lineage");
+					predicates.add(predicateBuilder.buildPredicate(lineageFilter));
+				}
 			} else if (selectionFilter.getSQLFilter().isSetValue()) {
 				// SQL filter
 				SelectOperatorBuilder selectOperatorBuilder = new SelectOperatorBuilder();

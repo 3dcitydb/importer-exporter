@@ -213,6 +213,12 @@ public class XMLQueryView extends FilterView {
                     nameFilter.setValueReference("gml:name");
                     predicates.add(nameFilter);
                 }
+
+                if (selectionFilter.isSetLineageFilter() && selectionFilter.getLineageFilter().isSetLiteral()) {
+                    LikeOperator lineageFilter = selectionFilter.getLineageFilter();
+                    lineageFilter.setValueReference("citydb:lineage");
+                    predicates.add(lineageFilter);
+                }
             } else if (selectionFilter.isSetSQLFilter() && selectionFilter.getSQLFilter().isSetValue())
                 predicates.add(selectionFilter.getSQLFilter());
         }

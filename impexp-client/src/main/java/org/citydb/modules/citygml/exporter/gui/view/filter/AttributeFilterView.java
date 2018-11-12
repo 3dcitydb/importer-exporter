@@ -24,6 +24,8 @@ public class AttributeFilterView extends FilterView {
     private JTextField gmlIdText;
     private JLabel gmlNameLabel;
     private JTextField gmlNameText;
+    private JLabel lineageLabel;
+    private JTextField lineageText;
 
     public AttributeFilterView(Config config) {
         super(config);
@@ -38,16 +40,22 @@ public class AttributeFilterView extends FilterView {
         gmlIdText = new JTextField();
         gmlNameLabel = new JLabel();
         gmlNameText = new JTextField();
+        lineageLabel = new JLabel();
+        lineageText = new JTextField();
 
         // gml:id filter
         component.add(gmlIdLabel, GuiUtil.setConstraints(0,0,0,0,GridBagConstraints.HORIZONTAL,10,5,5,5));
         component.add(gmlIdText, GuiUtil.setConstraints(1,0,1,0,GridBagConstraints.HORIZONTAL,10,5,5,5));
 
         // gml:name filter
-        component.add(gmlNameLabel, GuiUtil.setConstraints(0,1,0,0,GridBagConstraints.HORIZONTAL,0,5,10,5));
-        component.add(gmlNameText, GuiUtil.setConstraints(1,1,1,0,GridBagConstraints.HORIZONTAL,0,5,10,5));
+        component.add(gmlNameLabel, GuiUtil.setConstraints(0,1,0,0,GridBagConstraints.HORIZONTAL,0,5,5,5));
+        component.add(gmlNameText, GuiUtil.setConstraints(1,1,1,0,GridBagConstraints.HORIZONTAL,0,5,5,5));
 
-        PopupMenuDecorator.getInstance().decorate(gmlNameText, gmlIdText);
+        // citydb:lineage filter
+        component.add(lineageLabel, GuiUtil.setConstraints(0,2,0,0,GridBagConstraints.HORIZONTAL,0,5,10,5));
+        component.add(lineageText, GuiUtil.setConstraints(1,2,1,0,GridBagConstraints.HORIZONTAL,0,5,10,5));
+
+        PopupMenuDecorator.getInstance().decorate(gmlNameText, gmlIdText, lineageText);
     }
 
 
@@ -55,6 +63,7 @@ public class AttributeFilterView extends FilterView {
     public void doTranslation() {
         gmlIdLabel.setText(Language.I18N.getString("filter.label.gmlId"));
         gmlNameLabel.setText(Language.I18N.getString("filter.label.gmlName"));
+        lineageLabel.setText(Language.I18N.getString("filter.label.lineage"));
     }
 
     @Override
@@ -63,6 +72,8 @@ public class AttributeFilterView extends FilterView {
         gmlIdText.setEnabled(enable);
         gmlNameLabel.setEnabled(enable);
         gmlNameText.setEnabled(enable);
+        lineageLabel.setEnabled(enable);
+        lineageText.setEnabled(enable);
     }
 
     @Override
@@ -96,6 +107,10 @@ public class AttributeFilterView extends FilterView {
         // gml:name
         LikeOperator gmlNameFilter = query.getSelectionFilter().getGmlNameFilter();
         gmlNameText.setText(gmlNameFilter.getLiteral());
+
+        // citydb:lineage
+        LikeOperator lineageFilter = query.getSelectionFilter().getLineageFilter();
+        lineageText.setText(lineageFilter.getLiteral());
     }
 
     @Override
@@ -115,5 +130,11 @@ public class AttributeFilterView extends FilterView {
         gmlNameFilter.reset();
         if (!gmlNameText.getText().trim().isEmpty())
             gmlNameFilter.setLiteral(gmlNameText.getText().trim());
+
+        // citydb:lineage
+        LikeOperator lineageFilter = query.getSelectionFilter().getLineageFilter();
+        lineageFilter.reset();
+        if (!lineageText.getText().trim().isEmpty())
+            lineageFilter.setLiteral(lineageText.getText().trim());
     }
 }
