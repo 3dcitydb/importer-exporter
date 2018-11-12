@@ -27,7 +27,6 @@
  */
 package org.citydb.query.builder.config;
 
-import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.geometry.GeometryType;
 import org.citydb.config.project.exporter.SimpleQuery;
 import org.citydb.config.project.exporter.TilingOptions;
@@ -218,7 +217,7 @@ public class ConfigQueryBuilder {
 				TilingOptions tilingOptions = queryConfig.getTilingOptions();
 
 				Tiling tiling = new Tiling();
-				tiling.setExtent((BoundingBox) queryConfig.getBboxFilter().getEnvelope());
+				tiling.setExtent(queryConfig.getBboxFilter().getEnvelope());
 				tiling.setRows(tilingOptions.getRows());
 				tiling.setColumns(tilingOptions.getColumns());
 				tiling.setTilingOptions(tilingOptions);
