@@ -38,6 +38,10 @@ public class SelectOperator implements Operator {
         this.select = select;
     }
 
+    public boolean isSetSelect() {
+        return select != null;
+    }
+
     public String getSelect() {
         return select;
     }
