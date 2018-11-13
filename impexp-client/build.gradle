@@ -112,11 +112,8 @@ distributions.main.contents {
         from "$rootDir/resources/license/APACHE-2.0.txt"
         from processLicense
     }
-}
-
-installDist {
-    doLast {
-        mkdir "$destinationDir/ade-extensions"
+    from(file("$buildDir/tmp/dir")) {
+        mkdir "$buildDir/tmp/dir/ade-extensions"
     }
 }
 
