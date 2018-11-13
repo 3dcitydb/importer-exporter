@@ -825,7 +825,7 @@ public class MapWindow extends JDialog implements EventHandler {
 						searchResult.setText("The geocoder failed due to an error. Check the console log.");
 						log.error("The geocoder failed due to an error.");
 						for (String message : exception.getMessages())
-							log.error(message);
+							log.error("Cause: " + message);
 					} else {
 						log.error("An error occured while calling the geocoding service.");
 						log.error("Caused by: " + e.getMessage());
@@ -990,7 +990,7 @@ public class MapWindow extends JDialog implements EventHandler {
 						GeocodingServiceException exception = e.getException();
 						log.error("The geocoder failed due to an error.");
 						for (String message : exception.getMessages())
-							log.error(message);
+							log.error("Cause: " + message);
 					} else
 						reverseInfo.setText("<html>No address found at this location.</html>");
 				}
