@@ -140,6 +140,8 @@ public class GoogleGeocoder implements GeocodingService {
             return geocodingResult;
         } catch (IOException e) {
             throw new GeocodingServiceException("Failed to invoke the geocoding service.", e);
+        } catch (GeocodingServiceException e) {
+            throw e;
         } catch (Throwable e) {
             throw new GeocodingServiceException("Failed to parse the geocoding service response.", e);
         }
