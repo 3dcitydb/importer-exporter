@@ -124,8 +124,8 @@ public class XMLQueryView extends FilterView {
         newButton.setMargin(new Insets(0, 0, 0, 0));
 
         duplicateButton = new JButton();
-        ImageIcon remove = new ImageIcon(getClass().getResource("/org/citydb/gui/images/common/filter_duplicate.png"));
-        duplicateButton.setIcon(remove);
+        ImageIcon duplicate = new ImageIcon(getClass().getResource("/org/citydb/gui/images/common/filter_duplicate.png"));
+        duplicateButton.setIcon(duplicate);
         duplicateButton.setMargin(new Insets(0, 0, 0, 0));
 
         validateButton = new JButton();
