@@ -171,10 +171,9 @@ public class SQLFilterView extends FilterView {
 
         SelectOperator sql = query.getSelectionFilter().getSQLFilter();
         sql.reset();
-        if (!sqlText.getText().trim().isEmpty()) {
-            String value = sqlText.getText().trim().replaceAll(";", " ");
-            sql.setValue(value);
-        }
+        String value = sqlText.getText().trim();
+        if (!value.isEmpty())
+            sql.setValue(value.replaceAll(";", " "));
 
         config.getGui().getSQLExportFilterComponent().setAdditionalRows(additionalRows);
     }

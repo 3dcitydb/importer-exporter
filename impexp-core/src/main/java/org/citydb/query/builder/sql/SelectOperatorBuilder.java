@@ -41,41 +41,23 @@ import org.citydb.sqlbuilder.expression.LiteralSelectExpression;
 import org.citydb.sqlbuilder.select.operator.comparison.InOperator;
 
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class SelectOperatorBuilder {
     private final Query query;
     private final SchemaPathBuilder schemaPathBuilder;
     private final Set<Integer> objectClassIds;
     private final SchemaMapping schemaMapping;
-    private final Matcher matcher;
-
-    private final String[] invalidTokens = {
-            "del_.*?\\(.*?\\)",
-            "delete_.*?\\(.*?\\)",
-            "cleanup_.*?\\(.*?\\)"
-    };
-
 
     protected SelectOperatorBuilder(Query query, SchemaPathBuilder schemaPathBuilder, Set<Integer> objectclassIds, SchemaMapping schemaMapping) {
         this.query = query;
         this.schemaPathBuilder = schemaPathBuilder;
         this.schemaMapping = schemaMapping;
         this.objectClassIds = objectclassIds;
-
-        matcher = Pattern.compile("((?:" + String.join(")|(?:", invalidTokens) + "))",
-                Pattern.UNICODE_CHARACTER_CLASS | Pattern.MULTILINE).matcher("");
     }
 
     protected SQLQueryContext buildSelectOperator(SelectOperator operator, boolean negate) throws QueryBuildException {
         if (!operator.isSetSelect())
             throw new QueryBuildException("No select statement provided for the SQL operator.");
-
-        // test for invalid tokens
-        matcher.reset(operator.getSelect());
-        if (matcher.find())
-            throw new QueryBuildException("Invalid token in SQL statement: '" + matcher.group(1) + "'.");
 
         FeatureType superType = schemaMapping.getCommonSuperType(query.getFeatureTypeFilter().getFeatureTypes());
         ValueReference valueReference;

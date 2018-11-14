@@ -28,18 +28,26 @@
 package org.citydb.query.builder.config;
 
 import org.citydb.query.builder.QueryBuildException;
+import org.citydb.query.builder.util.SQLTokenParser;
 import org.citydb.query.filter.selection.Predicate;
 import org.citydb.query.filter.selection.operator.sql.SelectOperator;
 
+import java.util.List;
+
 public class SelectOperatorBuilder {
+    private final SQLTokenParser tokenParser;
 
     protected SelectOperatorBuilder() {
-
+        tokenParser = new SQLTokenParser();
     }
 
     protected Predicate buildSelectOperator(org.citydb.config.project.query.filter.selection.sql.SelectOperator selectConfig) throws QueryBuildException {
         if (!selectConfig.isSetValue())
             throw new QueryBuildException("No select statement provided for the SQL filter.");
+
+        List<String> invalidTokens = tokenParser.getInvalidTokens(selectConfig.getValue());
+        if (!invalidTokens.isEmpty())
+            throw new QueryBuildException("Invalid token in SQL statement: '" + invalidTokens.get(0) + "'.");
 
         return new SelectOperator(selectConfig.getValue());
     }
