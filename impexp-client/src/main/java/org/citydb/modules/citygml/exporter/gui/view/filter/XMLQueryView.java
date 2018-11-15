@@ -321,14 +321,23 @@ public class XMLQueryView extends FilterView {
     }
 
     private Query unmarshalQuery() {
+        Query query = null;
+
         try {
             Unmarshaller unmarshaller = projectContext.createUnmarshaller();
             Object object = unmarshaller.unmarshal(new StringReader(xmlText.getText().trim()));
-
-            return object instanceof Query ? (Query) object : null;
+            if (object instanceof Query)
+                query = (Query) object;
         } catch (JAXBException  e) {
-            return null;
+           //
         }
+
+        if (query == null) {
+            query = new Query();
+            query.setLocalProperty("unmarshallingFailed", true);
+        }
+
+        return query;
     }
 
     private String marshalQuery(Query query, NamespaceContext namespaceContext) {
@@ -399,7 +408,7 @@ public class XMLQueryView extends FilterView {
     @Override
     public void setSettings() {
         Query query = unmarshalQuery();
-        config.getProject().getExporter().setQuery(query != null ? query : new Query());
+        config.getProject().getExporter().setQuery(query);
     }
 
     private boolean isDefaultDatabaseSrs(DatabaseSrs srs) {

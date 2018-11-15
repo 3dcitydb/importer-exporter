@@ -40,7 +40,9 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+import java.util.HashMap;
 
 @XmlRootElement(name="query")
 @XmlType(name="QueryType", propOrder={
@@ -73,6 +75,9 @@ public class Query {
 	@XmlElement(name = "appearance")
 	private AppearanceFilter appearanceFilter;
 	private Tiling tiling;
+
+	@XmlTransient
+	private HashMap<String, Object> localProperties;
 	
 	public DatabaseSrs getTargetSrs() {
 		if (targetSrs != null)
@@ -191,6 +196,21 @@ public class Query {
 
 	public void setTiling(Tiling tiling) {
 		this.tiling = tiling;
+	}
+
+	public Object getLocalProperty(String name) {
+		return localProperties != null ? localProperties.get(name) : null;
+	}
+
+	public void setLocalProperty(String name, Object value) {
+		if (localProperties == null)
+			localProperties = new HashMap<>();
+
+		localProperties.put(name, value);
+	}
+
+	public boolean hasLocalProperty(String name) {
+		return localProperties != null && localProperties.containsKey(name);
 	}
 	
 }

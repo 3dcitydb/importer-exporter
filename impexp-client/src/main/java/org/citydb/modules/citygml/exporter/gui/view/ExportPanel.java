@@ -98,7 +98,7 @@ import java.util.concurrent.locks.ReentrantLock;
 @SuppressWarnings("serial")
 public class ExportPanel extends JPanel implements DropTargetListener, EventHandler {
 	private final ReentrantLock mainLock = new ReentrantLock();
-	private final Logger LOG = Logger.getInstance();
+	private final Logger log = Logger.getInstance();
 	private final CityGMLBuilder cityGMLBuilder;
 	private final ViewController viewContoller;
 	private final DatabaseController databaseController;
@@ -370,6 +370,13 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 							Language.I18N.getString("common.dialog.error.incorrectData.featureClass"));
 					return;
 				}
+			} else {
+				Query query = config.getProject().getExporter().getQuery();
+				if (query.hasLocalProperty("unmarshallingFailed")) {
+					viewContoller.errorMessage(Language.I18N.getString("export.dialog.error.incorrectData"),
+							Language.I18N.getString("common.dialog.error.incorrectData.xmlQuery"));
+					return;
+				}
 			}
 
 			if (!databaseController.isConnected()) {
@@ -381,7 +388,7 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 			}
 
 			viewContoller.setStatusText(Language.I18N.getString("main.status.export.label"));
-			LOG.info("Initializing database export...");
+			log.info("Initializing database export...");
 
 			// initialize event dispatcher
 			final EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
@@ -418,11 +425,11 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 			try {
 				success = exporter.doProcess();
 			} catch (CityGMLExportException e) {
-				LOG.error(e.getMessage());
+				log.error(e.getMessage());
 
 				Throwable cause = e.getCause();
 				while (cause != null) {
-					LOG.error("Cause: " + cause.getMessage());
+					log.error("Cause: " + cause.getMessage());
 					cause = cause.getCause();
 				}
 			}
@@ -439,9 +446,9 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 			exporter.cleanup();
 
 			if (success) {
-				LOG.info("Database export successfully finished.");
+				log.info("Database export successfully finished.");
 			} else {
-				LOG.warn("Database export aborted.");
+				log.warn("Database export aborted.");
 			}
 
 			viewContoller.setStatusText(Language.I18N.getString("main.status.ready.label"));
