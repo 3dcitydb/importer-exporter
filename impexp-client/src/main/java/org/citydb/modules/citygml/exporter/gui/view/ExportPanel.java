@@ -226,6 +226,7 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 		timestampLabel.setText(Language.I18N.getString("common.label.timestamp"));
 		browseButton.setText(Language.I18N.getString("common.button.browse"));
 		exportButton.setText(Language.I18N.getString("export.button.export"));
+		srsComboBoxLabel.setText(Language.I18N.getString("common.label.boundingBox.crs"));
 		switchFilterModeButton.setText(Language.I18N.getString(useSimpleFilter ? "filter.label.mode.xml" : "filter.label.mode.simple"));
 		filterPanel.doTranslation();
 	}
@@ -289,23 +290,22 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 
 			int tileAmount = 0;
 
+			if (config.getInternal().getExportFileName().trim().equals("")) {
+				viewContoller.errorMessage(Language.I18N.getString("export.dialog.error.incompleteData"),
+						Language.I18N.getString("export.dialog.error.incompleteData.dataset"));
+				return;
+			}
+
+			// workspace timestamp
+			Database db = config.getProject().getDatabase();
+			if (!Util.checkWorkspaceTimestamp(db.getWorkspaces().getExportWorkspace())) {
+				viewContoller.errorMessage(Language.I18N.getString("export.dialog.error.incorrectData"),
+						Language.I18N.getString("common.dialog.error.incorrectData.date"));
+				return;
+			}
+
 			if (config.getProject().getExporter().isUseSimpleQuery()) {
 				SimpleQuery query = config.getProject().getExporter().getSimpleQuery();
-				Database db = config.getProject().getDatabase();
-
-				// check all input values...
-				if (config.getInternal().getExportFileName().trim().equals("")) {
-					viewContoller.errorMessage(Language.I18N.getString("export.dialog.error.incompleteData"),
-							Language.I18N.getString("export.dialog.error.incompleteData.dataset"));
-					return;
-				}
-
-				// workspace timestamp
-				if (!Util.checkWorkspaceTimestamp(db.getWorkspaces().getExportWorkspace())) {
-					viewContoller.errorMessage(Language.I18N.getString("export.dialog.error.incorrectData"),
-							Language.I18N.getString("common.dialog.error.incorrectData.date"));
-					return;
-				}
 
 				// simple selection filter
 				if (query.isUseSelectionFilter()) {
