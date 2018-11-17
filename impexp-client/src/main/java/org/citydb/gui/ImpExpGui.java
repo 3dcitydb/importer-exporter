@@ -78,6 +78,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
@@ -549,17 +550,17 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 
 	@Override
 	public void setStatusText(String message) {
-		statusText.setText(message);
+		SwingUtilities.invokeLater(() -> statusText.setText(message));
 	}
 
 	@Override
 	public void clearConsole() {
-		consoleText.setText("");
+		SwingUtilities.invokeLater(() -> consoleText.setText(""));
 	}
 
 	@Override
 	public void setDefaultStatus() {
-		statusText.setText(Language.I18N.getString("main.status.ready.label"));
+		SwingUtilities.invokeLater(() -> statusText.setText(Language.I18N.getString("main.status.ready.label")));
 	}
 
 	@Override
