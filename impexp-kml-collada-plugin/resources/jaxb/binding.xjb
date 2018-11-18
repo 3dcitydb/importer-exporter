@@ -21,8 +21,7 @@
 	</jaxb:bindings>
 
 	<!-- Specific settings for the collada mapping file -->
-	<jaxb:bindings schemaLocation="collada/1.4/collada_schema_1_4.xsd"
-		node="/xs:schema">
+	<jaxb:bindings schemaLocation="collada/1.4/collada_schema_1_4.xsd" node="/xs:schema">
 		<jaxb:bindings node="xs:element[@name='skin']">
 			<jaxb:bindings node=".//xs:complexType/xs:attribute[@name='source']">
 				<jaxb:property name="sourceAttr" />

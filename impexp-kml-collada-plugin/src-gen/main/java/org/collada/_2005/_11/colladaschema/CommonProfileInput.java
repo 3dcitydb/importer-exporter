@@ -1,8 +1,8 @@
 //
-// Diese Datei wurde mit der JavaTM Architecture for XML Binding(JAXB) Reference Implementation, v2.2.7 generiert 
-// Siehe <a href="http://java.sun.com/xml/jaxb">http://java.sun.com/xml/jaxb</a> 
+// Diese Datei wurde mit der JavaTM Architecture for XML Binding(JAXB) Reference Implementation, v2.3.1 generiert 
+// Siehe <a href="https://javaee.github.io/jaxb-v2/">https://javaee.github.io/jaxb-v2/</a> 
 // Änderungen an dieser Datei gehen bei einer Neukompilierung des Quellschemas verloren. 
-// Generiert: 2018.02.22 um 11:14:03 PM CET 
+// Generiert: 2018.11.18 um 03:45:53 PM CET 
 //
 
 
@@ -18,33 +18,33 @@ import javax.xml.bind.annotation.XmlType;
  * <p>Das folgende Schemafragment gibt den erwarteten Content an, der in dieser Klasse enthalten ist.
  * <p>
  * <pre>
- * &lt;simpleType name="Common_profile_input">
- *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}NMTOKEN">
- *     &lt;enumeration value="BINORMAL"/>
- *     &lt;enumeration value="COLOR"/>
- *     &lt;enumeration value="CONTINUITY"/>
- *     &lt;enumeration value="IMAGE"/>
- *     &lt;enumeration value="IN_TANGENT"/>
- *     &lt;enumeration value="INPUT"/>
- *     &lt;enumeration value="INTERPOLATION"/>
- *     &lt;enumeration value="INV_BIND_MATRIX"/>
- *     &lt;enumeration value="JOINT"/>
- *     &lt;enumeration value="LINEAR_STEPS"/>
- *     &lt;enumeration value="MORPH_TARGET"/>
- *     &lt;enumeration value="MORPH_WEIGHT"/>
- *     &lt;enumeration value="NORMAL"/>
- *     &lt;enumeration value="OUTPUT"/>
- *     &lt;enumeration value="OUT_TANGENT"/>
- *     &lt;enumeration value="POSITION"/>
- *     &lt;enumeration value="TANGENT"/>
- *     &lt;enumeration value="TEXBINORMAL"/>
- *     &lt;enumeration value="TEXCOORD"/>
- *     &lt;enumeration value="TEXTANGENT"/>
- *     &lt;enumeration value="UV"/>
- *     &lt;enumeration value="VERTEX"/>
- *     &lt;enumeration value="WEIGHT"/>
- *   &lt;/restriction>
- * &lt;/simpleType>
+ * &lt;simpleType name="Common_profile_input"&gt;
+ *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}NMTOKEN"&gt;
+ *     &lt;enumeration value="BINORMAL"/&gt;
+ *     &lt;enumeration value="COLOR"/&gt;
+ *     &lt;enumeration value="CONTINUITY"/&gt;
+ *     &lt;enumeration value="IMAGE"/&gt;
+ *     &lt;enumeration value="IN_TANGENT"/&gt;
+ *     &lt;enumeration value="INPUT"/&gt;
+ *     &lt;enumeration value="INTERPOLATION"/&gt;
+ *     &lt;enumeration value="INV_BIND_MATRIX"/&gt;
+ *     &lt;enumeration value="JOINT"/&gt;
+ *     &lt;enumeration value="LINEAR_STEPS"/&gt;
+ *     &lt;enumeration value="MORPH_TARGET"/&gt;
+ *     &lt;enumeration value="MORPH_WEIGHT"/&gt;
+ *     &lt;enumeration value="NORMAL"/&gt;
+ *     &lt;enumeration value="OUTPUT"/&gt;
+ *     &lt;enumeration value="OUT_TANGENT"/&gt;
+ *     &lt;enumeration value="POSITION"/&gt;
+ *     &lt;enumeration value="TANGENT"/&gt;
+ *     &lt;enumeration value="TEXBINORMAL"/&gt;
+ *     &lt;enumeration value="TEXCOORD"/&gt;
+ *     &lt;enumeration value="TEXTANGENT"/&gt;
+ *     &lt;enumeration value="UV"/&gt;
+ *     &lt;enumeration value="VERTEX"/&gt;
+ *     &lt;enumeration value="WEIGHT"/&gt;
+ *   &lt;/restriction&gt;
+ * &lt;/simpleType&gt;
  * </pre>
  * 
  */

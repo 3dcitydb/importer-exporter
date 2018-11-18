@@ -1,8 +1,8 @@
 //
-// Diese Datei wurde mit der JavaTM Architecture for XML Binding(JAXB) Reference Implementation, v2.2.7 generiert 
-// Siehe <a href="http://java.sun.com/xml/jaxb">http://java.sun.com/xml/jaxb</a> 
+// Diese Datei wurde mit der JavaTM Architecture for XML Binding(JAXB) Reference Implementation, v2.3.1 generiert 
+// Siehe <a href="https://javaee.github.io/jaxb-v2/">https://javaee.github.io/jaxb-v2/</a> 
 // Änderungen an dieser Datei gehen bei einer Neukompilierung des Quellschemas verloren. 
-// Generiert: 2018.02.22 um 11:14:03 PM CET 
+// Generiert: 2018.11.18 um 03:45:53 PM CET 
 //
 
 
@@ -29,37 +29,37 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * <p>Das folgende Schemafragment gibt den erwarteten Content an, der in dieser Klasse enthalten ist.
  * 
  * <pre>
- * &lt;complexType>
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element ref="{http://www.collada.org/2005/11/COLLADASchema}asset" minOccurs="0"/>
- *         &lt;choice>
- *           &lt;sequence>
- *             &lt;element ref="{http://www.collada.org/2005/11/COLLADASchema}source" maxOccurs="unbounded"/>
- *             &lt;choice>
- *               &lt;sequence>
- *                 &lt;element ref="{http://www.collada.org/2005/11/COLLADASchema}sampler" maxOccurs="unbounded"/>
- *                 &lt;element ref="{http://www.collada.org/2005/11/COLLADASchema}channel" maxOccurs="unbounded"/>
- *                 &lt;element ref="{http://www.collada.org/2005/11/COLLADASchema}animation" maxOccurs="unbounded" minOccurs="0"/>
- *               &lt;/sequence>
- *               &lt;element ref="{http://www.collada.org/2005/11/COLLADASchema}animation" maxOccurs="unbounded"/>
- *             &lt;/choice>
- *           &lt;/sequence>
- *           &lt;sequence>
- *             &lt;element ref="{http://www.collada.org/2005/11/COLLADASchema}sampler" maxOccurs="unbounded"/>
- *             &lt;element ref="{http://www.collada.org/2005/11/COLLADASchema}channel" maxOccurs="unbounded"/>
- *             &lt;element ref="{http://www.collada.org/2005/11/COLLADASchema}animation" maxOccurs="unbounded" minOccurs="0"/>
- *           &lt;/sequence>
- *           &lt;element ref="{http://www.collada.org/2005/11/COLLADASchema}animation" maxOccurs="unbounded"/>
- *         &lt;/choice>
- *         &lt;element ref="{http://www.collada.org/2005/11/COLLADASchema}extra" maxOccurs="unbounded" minOccurs="0"/>
- *       &lt;/sequence>
- *       &lt;attribute name="id" type="{http://www.w3.org/2001/XMLSchema}ID" />
- *       &lt;attribute name="name" type="{http://www.w3.org/2001/XMLSchema}NCName" />
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;element ref="{http://www.collada.org/2005/11/COLLADASchema}asset" minOccurs="0"/&gt;
+ *         &lt;choice&gt;
+ *           &lt;sequence&gt;
+ *             &lt;element ref="{http://www.collada.org/2005/11/COLLADASchema}source" maxOccurs="unbounded"/&gt;
+ *             &lt;choice&gt;
+ *               &lt;sequence&gt;
+ *                 &lt;element ref="{http://www.collada.org/2005/11/COLLADASchema}sampler" maxOccurs="unbounded"/&gt;
+ *                 &lt;element ref="{http://www.collada.org/2005/11/COLLADASchema}channel" maxOccurs="unbounded"/&gt;
+ *                 &lt;element ref="{http://www.collada.org/2005/11/COLLADASchema}animation" maxOccurs="unbounded" minOccurs="0"/&gt;
+ *               &lt;/sequence&gt;
+ *               &lt;element ref="{http://www.collada.org/2005/11/COLLADASchema}animation" maxOccurs="unbounded"/&gt;
+ *             &lt;/choice&gt;
+ *           &lt;/sequence&gt;
+ *           &lt;sequence&gt;
+ *             &lt;element ref="{http://www.collada.org/2005/11/COLLADASchema}sampler" maxOccurs="unbounded"/&gt;
+ *             &lt;element ref="{http://www.collada.org/2005/11/COLLADASchema}channel" maxOccurs="unbounded"/&gt;
+ *             &lt;element ref="{http://www.collada.org/2005/11/COLLADASchema}animation" maxOccurs="unbounded" minOccurs="0"/&gt;
+ *           &lt;/sequence&gt;
+ *           &lt;element ref="{http://www.collada.org/2005/11/COLLADASchema}animation" maxOccurs="unbounded"/&gt;
+ *         &lt;/choice&gt;
+ *         &lt;element ref="{http://www.collada.org/2005/11/COLLADASchema}extra" maxOccurs="unbounded" minOccurs="0"/&gt;
+ *       &lt;/sequence&gt;
+ *       &lt;attribute name="id" type="{http://www.w3.org/2001/XMLSchema}ID" /&gt;
+ *       &lt;attribute name="name" type="{http://www.w3.org/2001/XMLSchema}NCName" /&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  * 
  * 
@@ -72,12 +72,12 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 public class Animation {
 
     @XmlElementRefs({
-        @XmlElementRef(name = "sampler", namespace = "http://www.collada.org/2005/11/COLLADASchema", type = Sampler.class, required = false),
-        @XmlElementRef(name = "animation", namespace = "http://www.collada.org/2005/11/COLLADASchema", type = Animation.class, required = false),
         @XmlElementRef(name = "asset", namespace = "http://www.collada.org/2005/11/COLLADASchema", type = Asset.class, required = false),
         @XmlElementRef(name = "source", namespace = "http://www.collada.org/2005/11/COLLADASchema", type = Source.class, required = false),
-        @XmlElementRef(name = "extra", namespace = "http://www.collada.org/2005/11/COLLADASchema", type = Extra.class, required = false),
-        @XmlElementRef(name = "channel", namespace = "http://www.collada.org/2005/11/COLLADASchema", type = Channel.class, required = false)
+        @XmlElementRef(name = "sampler", namespace = "http://www.collada.org/2005/11/COLLADASchema", type = Sampler.class, required = false),
+        @XmlElementRef(name = "channel", namespace = "http://www.collada.org/2005/11/COLLADASchema", type = Channel.class, required = false),
+        @XmlElementRef(name = "animation", namespace = "http://www.collada.org/2005/11/COLLADASchema", type = Animation.class, required = false),
+        @XmlElementRef(name = "extra", namespace = "http://www.collada.org/2005/11/COLLADASchema", type = Extra.class, required = false)
     })
     protected List<Object> content;
     @XmlAttribute(name = "id")
@@ -118,12 +118,12 @@ public class Animation {
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link Sampler }
-     * {@link Animation }
      * {@link Asset }
      * {@link Source }
-     * {@link Extra }
+     * {@link Sampler }
      * {@link Channel }
+     * {@link Animation }
+     * {@link Extra }
      * 
      * 
      */
