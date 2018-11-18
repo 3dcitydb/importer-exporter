@@ -50,9 +50,9 @@ import org.citygml4j.builder.jaxb.CityGMLBuilder;
 
 import javax.xml.bind.JAXBContext;
 import java.io.File;
+import java.nio.file.Path;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class ImpExpCli {
@@ -78,7 +78,7 @@ public class ImpExpCli {
 
 	public void doImport(String importFiles) {
 		// prepare list of files to be validated
-		List<File> files = getFiles(importFiles);
+		List<Path> files = getFiles(importFiles);
 		if (files.size() == 0) {
 			LOG.error("Invalid list of files to be imported");
 			LOG.error("Aborting...");
@@ -93,7 +93,7 @@ public class ImpExpCli {
 
 		LOG.info("Initializing database import...");
 
-		config.getInternal().setImportFiles(files.toArray(new File[0]));
+		config.getInternal().setImportFiles(files);
 		EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
 		Importer importer = new Importer(cityGMLBuilder, schemaMapping, config, eventDispatcher);
 
@@ -128,7 +128,7 @@ public class ImpExpCli {
 
 	public void doValidate(String validateFiles) {
 		// prepare list of files to be validated
-		List<File> files = getFiles(validateFiles);
+		List<Path> files = getFiles(validateFiles);
 		if (files.size() == 0) {
 			LOG.error("Invalid list of files to be validated");
 			LOG.error("Aborting...");
@@ -137,7 +137,7 @@ public class ImpExpCli {
 
 		LOG.info("Initializing XML validation...");
 
-		config.getInternal().setImportFiles(files.toArray(new File[0]));
+		config.getInternal().setImportFiles(files);
 		EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
 		XMLValidator validator = new XMLValidator(config, eventDispatcher);
 		boolean success = validator.doProcess();
@@ -286,8 +286,8 @@ public class ImpExpCli {
 		}
 	}
 
-	private List<File> getFiles(String fileNames) {
-		List<File> files = new ArrayList<>();
+	private List<Path> getFiles(String fileNames) {
+		List<Path> files = new ArrayList<>();
 
 		for (String part : fileNames.split(";")) {
 			if (part == null || part.trim().isEmpty())
@@ -295,7 +295,7 @@ public class ImpExpCli {
 
 			File file = new File(part.trim());
 			if (file.isDirectory()) {
-				files.add(file);
+				files.add(file.toPath());
 				continue;
 			}
 
@@ -310,8 +310,10 @@ public class ImpExpCli {
 
 			File[] wildcardList = file.listFiles((dir, name) -> (name.matches(fileName)));
 
-			if (wildcardList != null && wildcardList.length != 0)
-				files.addAll(Arrays.asList(wildcardList));
+			if (wildcardList != null && wildcardList.length != 0) {
+				for (File item : wildcardList)
+					files.add(item.toPath());
+			}
 		}
 
 		return files;

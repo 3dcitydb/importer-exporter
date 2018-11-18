@@ -27,13 +27,13 @@
  */
 package org.citydb.config.internal;
 
-import java.io.File;
+import java.nio.file.Path;
+import java.util.List;
 
 public class Internal {	
 	private String currentLogPath;
-	private String importPath;
-	private File[] importFiles;
-	private File currentImportFile;
+	private List<Path> importFiles;
+	private InputFile currentImportFile;
 	private String exportPath;
 	private String exportFileName;
 	private String exportTextureFilePath;
@@ -57,14 +57,6 @@ public class Internal {
 		this.exportPath = exportPath;
 	}
 
-	public String getImportPath() {
-		return importPath;
-	}
-
-	public void setImportPath(String importPath) {
-		this.importPath = importPath;
-	}
-
 	public String getExportFileName() {
 		return exportFileName;
 	}
@@ -73,19 +65,19 @@ public class Internal {
 		this.exportFileName = exportFileName;
 	}
 
-	public File[] getImportFiles() {
+	public List<Path> getImportFiles() {
 		return importFiles;
 	}
 
-	public void setImportFiles(File[] importFiles) {
+	public void setImportFiles(List<Path> importFiles) {
 		this.importFiles = importFiles;
 	}
 
-	public File getCurrentImportFile() {
+	public InputFile getCurrentImportFile() {
 		return currentImportFile;
 	}
 
-	public void setCurrentImportFile(File currentImportFile) {
+	public void setCurrentImportFile(InputFile currentImportFile) {
 		this.currentImportFile = currentImportFile;
 	}
 

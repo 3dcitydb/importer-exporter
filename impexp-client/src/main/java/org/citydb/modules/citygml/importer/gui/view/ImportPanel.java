@@ -96,16 +96,18 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.StringTokenizer;
 import java.util.concurrent.locks.ReentrantLock;
 
 @SuppressWarnings("serial")
 public class ImportPanel extends JPanel implements EventHandler {
 	private final ReentrantLock mainLock = new ReentrantLock();
-	private final Logger LOG = Logger.getInstance();
+	private final Logger log = Logger.getInstance();
 	private final CityGMLBuilder cityGMLBuilder;
 	private final ViewController viewController;
 	private final DatabaseController databaseController;
@@ -266,9 +268,9 @@ public class ImportPanel extends JPanel implements EventHandler {
 	}
 
 	public void setSettings() {
-		File[] importFiles = new File[fileListModel.size()]; 
+		List<Path> importFiles = new ArrayList<>();
 		for (int i = 0; i < fileListModel.size(); ++i)
-			importFiles[i] = new File(fileListModel.get(i));
+			importFiles.add(Paths.get(fileListModel.get(i)));
 
 		config.getInternal().setImportFiles(importFiles);		
 		config.getProject().getDatabase().getWorkspaces().getImportWorkspace().setName(workspaceText.getText().trim());
@@ -287,7 +289,7 @@ public class ImportPanel extends JPanel implements EventHandler {
 			ImportFilter filter = config.getProject().getImporter().getFilter();
 
 			// check all input values...
-			if (config.getInternal().getImportFiles() == null || config.getInternal().getImportFiles().length == 0) {
+			if (config.getInternal().getImportFiles() == null || config.getInternal().getImportFiles().isEmpty()) {
 				viewController.errorMessage(Language.I18N.getString("import.dialog.error.incompleteData"), 
 						Language.I18N.getString("import.dialog.error.incompleteData.dataset"));
 				return;
@@ -357,7 +359,7 @@ public class ImportPanel extends JPanel implements EventHandler {
 			}
 
 			viewController.setStatusText(Language.I18N.getString("main.status.import.label"));
-			LOG.info("Initializing database import...");
+			log.info("Initializing database import...");
 
 			// initialize event dispatcher
 			final EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
@@ -393,11 +395,11 @@ public class ImportPanel extends JPanel implements EventHandler {
 			try {
 				success = importer.doProcess();
 			} catch (CityGMLImportException e) {
-				LOG.error(e.getMessage());
+				log.error(e.getMessage());
 
 				Throwable cause = e.getCause();
 				while (cause != null) {
-					LOG.error("Cause: " + cause.getMessage());
+					log.error("Cause: " + cause.getMessage());
 					cause = cause.getCause();
 				}
 			}
@@ -414,9 +416,9 @@ public class ImportPanel extends JPanel implements EventHandler {
 			importer.cleanup();
 
 			if (success) {
-				LOG.info("Database import successfully finished.");
+				log.info("Database import successfully finished.");
 			} else {
-				LOG.warn("Database import aborted.");
+				log.warn("Database import aborted.");
 			}
 
 			viewController.setStatusText(Language.I18N.getString("main.status.ready.label"));
@@ -434,14 +436,14 @@ public class ImportPanel extends JPanel implements EventHandler {
 			setSettings();
 
 			// check for input files...
-			if (config.getInternal().getImportFiles() == null || config.getInternal().getImportFiles().length == 0) {
+			if (config.getInternal().getImportFiles() == null || config.getInternal().getImportFiles().isEmpty()) {
 				viewController.errorMessage(Language.I18N.getString("validate.dialog.error.incompleteData"),
 						Language.I18N.getString("validate.dialog.error.incompleteData.dataset"));
 				return;
 			}
 
 			viewController.setStatusText(Language.I18N.getString("main.status.validate.label"));
-			LOG.info("Initializing XML validation...");
+			log.info("Initializing XML validation...");
 
 			// initialize event dispatcher
 			final EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
@@ -466,7 +468,7 @@ public class ImportPanel extends JPanel implements EventHandler {
 						public void run() {
 							eventDispatcher.triggerEvent(new InterruptEvent(
 									"User abort of XML validation.", 
-									LogLevel.INFO, 
+									LogLevel.WARN,
 									Event.GLOBAL_CHANNEL,
 									this));
 						}
@@ -488,9 +490,9 @@ public class ImportPanel extends JPanel implements EventHandler {
 			validator.cleanup();
 
 			if (success) {
-				LOG.info("XML validation finished.");
+				log.info("XML validation finished.");
 			} else {
-				LOG.warn("XML validation aborted.");
+				log.warn("XML validation aborted.");
 			}
 
 			viewController.setStatusText(Language.I18N.getString("main.status.ready.label"));
@@ -507,15 +509,15 @@ public class ImportPanel extends JPanel implements EventHandler {
 
 		FileNameExtensionFilter filter = new FileNameExtensionFilter("CityGML Files (*.gml, *.xml)", "xml", "gml");
 		chooser.addChoosableFileFilter(filter);
+		chooser.addChoosableFileFilter(new FileNameExtensionFilter("CityGML ZIP Files (*.zip)", "zip"));
+		chooser.addChoosableFileFilter(new FileNameExtensionFilter("CityGML Compressed Files (*.gz, *.gzip)", "gz", "gzip"));
 		chooser.addChoosableFileFilter(chooser.getAcceptAllFileFilter());
 		chooser.setFileFilter(filter);
 
 		if (fileListModel.isEmpty()) {
-			if (config.getProject().getImporter().getPath().isSetLastUsedMode()) {
-				chooser.setCurrentDirectory(new File(config.getProject().getImporter().getPath().getLastUsedPath()));
-			} else {
-				chooser.setCurrentDirectory(new File(config.getProject().getImporter().getPath().getStandardPath()));
-			}
+			chooser.setCurrentDirectory(config.getProject().getImporter().getPath().isSetLastUsedMode() ?
+					new File(config.getProject().getImporter().getPath().getLastUsedPath()) :
+					new File(config.getProject().getImporter().getPath().getStandardPath()));
 		} else
 			chooser.setCurrentDirectory(new File(fileListModel.get(0)));
 
@@ -544,14 +546,13 @@ public class ImportPanel extends JPanel implements EventHandler {
 			List<String> fileNames = new ArrayList<>();
 			try {
 				String value = (String)info.getTransferable().getTransferData(DataFlavor.stringFlavor);
-				StringTokenizer t = new StringTokenizer(value, System.getProperty("line.separator"));
 
-				while (t.hasMoreTokens()) {
-					File file = new File(t.nextToken());
-					if (file.exists())
-						fileNames.add(file.getCanonicalPath());
+				for (String token : value.split(System.getProperty("line.separator"))) {
+					Path file = Paths.get(token);
+					if (Files.exists(file))
+						fileNames.add(file.toAbsolutePath().toString());
 					else
-						LOG.warn("Failed to paste from clipboard: '" + file.getAbsolutePath() + "' is not a file.");
+						log.warn("Failed to paste from clipboard: '" + file.toAbsolutePath() + "' is not a file.");
 				}
 
 				if (!fileNames.isEmpty()) {
@@ -625,7 +626,7 @@ public class ImportPanel extends JPanel implements EventHandler {
 							if (file.exists())
 								fileNames.add(file.getCanonicalPath());
 							else
-								LOG.warn("Failed to drop from clipboard: '" + file.getAbsolutePath() + "' is not a file.");
+								log.warn("Failed to drop from clipboard: '" + file.getAbsolutePath() + "' is not a file.");
 
 						if (!fileNames.isEmpty()) {
 							if (dtde.getDropAction() != DnDConstants.ACTION_COPY)

@@ -27,7 +27,21 @@
  */
 package org.citydb.citygml.importer.database.content;
 
-import java.io.File;
+import org.citydb.citygml.common.database.xlink.DBXlinkTextureFile;
+import org.citydb.citygml.importer.CityGMLImportException;
+import org.citydb.citygml.importer.util.ConcurrentLockManager;
+import org.citydb.config.Config;
+import org.citydb.config.internal.InputFile;
+import org.citydb.config.internal.InputFileType;
+import org.citydb.database.schema.SequenceEnum;
+import org.citydb.database.schema.TableEnum;
+import org.citygml4j.model.citygml.CityGMLClass;
+import org.citygml4j.model.citygml.appearance.AbstractTexture;
+import org.citygml4j.model.citygml.appearance.GeoreferencedTexture;
+
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
@@ -35,32 +49,22 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.concurrent.locks.ReentrantLock;
 
-import org.citydb.citygml.common.database.xlink.DBXlinkTextureFile;
-import org.citydb.citygml.importer.CityGMLImportException;
-import org.citydb.citygml.importer.util.ConcurrentLockManager;
-import org.citydb.config.Config;
-import org.citydb.database.schema.SequenceEnum;
-import org.citydb.database.schema.TableEnum;
-import org.citygml4j.model.citygml.CityGMLClass;
-import org.citygml4j.model.citygml.appearance.AbstractTexture;
-import org.citygml4j.model.citygml.appearance.GeoreferencedTexture;
-
 public class DBTexImage implements DBImporter {
 	private final ConcurrentLockManager lockManager = ConcurrentLockManager.getInstance(DBTexImage.class);
 	private final CityGMLImportManager importer;
 	private PreparedStatement psInsertStmt;	
 
 	private MessageDigest md5;
-	private String localPath;
-	private boolean replacePathSeparator;
+	private InputFile inputFile;
+	private boolean replaceSeparator;
 	private boolean importTextureImage;
 	private int batchCounter;
 
 	public DBTexImage(Connection connection, Config config, CityGMLImportManager importer) throws SQLException {
 		this.importer = importer;
 
-		localPath = config.getInternal().getImportPath();
-		replacePathSeparator = File.separatorChar == '/';
+		inputFile = config.getInternal().getCurrentImportFile();
+		replaceSeparator = inputFile.getSeparator().equals("/");
 		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
 		importTextureImage = config.getProject().getImporter().getAppearances().isSetImportTextureFiles();
 
@@ -146,28 +150,36 @@ public class DBTexImage implements DBImporter {
 
 	private String toHexString(byte[] bytes) {
 		StringBuilder hexString = new StringBuilder();
-		for (int i = 0; i < bytes.length; i++)
-			hexString.append(Integer.toString((bytes[i] & 0xff) + 0x100, 16).substring(1));
+		for (byte b : bytes)
+			hexString.append(Integer.toString((b & 0xff) + 0x100, 16).substring(1));
 
 		return hexString.toString();
 	}
 
-	private String getFileName(String fileURI) {
-		String name = fileURI;
+	private String getFileName(String imageURI) {
+		String copy = imageURI;
+		if (replaceSeparator)
+			imageURI = imageURI.replace("\\", "/");
 
-		if (replacePathSeparator)
-			fileURI = fileURI.replace("\\", "/");
-
-		File imageFile = new File(fileURI);
-		if (!imageFile.isAbsolute()) {
-			fileURI = localPath + File.separator + imageFile.getPath();
-			imageFile = new File(fileURI);
+		try {
+			Path path = inputFile.resolve(imageURI);
+			if (Files.exists(path))
+				return path.getFileName().toString();
+		} catch (InvalidPathException e) {
+			//
 		}
 
-		if (imageFile.exists())
-			name = imageFile.getName();
+		if (inputFile.getType() == InputFileType.ARCHIVE) {
+			try {
+				Path path = inputFile.getFile().getParent().resolve(imageURI);
+				if (Files.exists(path))
+					return path.getFileName().toString();
+			} catch (InvalidPathException e) {
+				//
+			}
+		}
 
-		return name;
+		return copy;
 	}
 
 	@Override

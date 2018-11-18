@@ -127,7 +127,7 @@ public class DBCityObject implements DBImporter {
 		replaceGmlId = config.getProject().getImporter().getGmlId().isUUIDModeReplace();
 		rememberGmlId = config.getProject().getImporter().getGmlId().isSetKeepGmlIdAsExternalReference();
 		if (replaceGmlId && rememberGmlId)
-			importFileName = config.getInternal().getCurrentImportFile().getAbsolutePath();
+			importFileName = config.getInternal().getCurrentImportFile().getFile().toString();
 
 		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
 		bboxOptions = BoundingBoxOptions.defaults()

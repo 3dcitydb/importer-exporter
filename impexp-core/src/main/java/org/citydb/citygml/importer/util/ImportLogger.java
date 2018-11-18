@@ -27,8 +27,9 @@
  */
 package org.citydb.citygml.importer.util;
 
+import org.citydb.config.project.database.DBConnection;
+
 import java.io.BufferedWriter;
-import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -39,8 +40,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.concurrent.locks.ReentrantLock;
 
-import org.citydb.config.project.database.DBConnection;
-
 public class ImportLogger {
 	private static int counter;
 	private final ReentrantLock lock = new ReentrantLock();
@@ -49,7 +48,7 @@ public class ImportLogger {
 	private BufferedWriter writer;
 	private Date date;
 
-	public ImportLogger(String logDir, File importFile, DBConnection connection) throws IOException {
+	public ImportLogger(String logDir, Path importFile, DBConnection connection) throws IOException {
 		Path path = Paths.get(logDir, connection.getDescription().replaceAll("[^a-zA-Z0-9\\.\\-]", "_"));
 		if (!Files.exists(path))
 			Files.createDirectories(path);
@@ -69,14 +68,14 @@ public class ImportLogger {
 		return logFile;
 	}
 
-	private void writeHeader(File fileName, DBConnection connection) throws IOException {
+	private void writeHeader(Path fileName, DBConnection connection) throws IOException {
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss.SSS");
 
 		writer.write('#' + this.getClass().getPackage().getImplementationTitle() + ", version \"" +
 				this.getClass().getPackage().getImplementationVersion() + "\"");
 		writer.newLine();		
 		writer.write("#Imported top-level features from file: ");
-		writer.write(fileName.getAbsolutePath());
+		writer.write(fileName.toAbsolutePath().toString());
 		writer.newLine();
 		writer.write("#Database connection string: ");
 		writer.write(connection.toConnectString());

@@ -37,6 +37,8 @@ import org.citydb.citygml.common.database.xlink.DBXlink;
 import org.citydb.citygml.importer.database.SequenceHelper;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
+import org.citydb.config.internal.InputFile;
+import org.citydb.config.internal.InputFileType;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.schema.mapping.AbstractObjectType;
 import org.citydb.database.schema.mapping.FeatureType;
@@ -46,12 +48,13 @@ import org.citydb.event.Event;
 import org.citydb.event.EventDispatcher;
 import org.citydb.registry.ObjectRegistry;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.HashMap;
@@ -62,13 +65,13 @@ public class DBXlinkResolverManager {
 	private final SchemaMapping schemaMapping;
 	private final WorkerPool<DBXlink> tmpXlinkPool;
 	private final CacheTableManager cacheTableManager;
-	private final Config config;
 	private final EventDispatcher eventDispatcher;
 
 	private HashMap<DBXlinkResolverEnum, DBXlinkResolver> dbWriterMap;
 	private DBGmlIdResolver dbGmlIdResolver;
 	private SequenceHelper sequenceHelper;
-	private boolean replacePathSeparator;
+	private InputFile inputFile;
+	private boolean replaceSeparator;
 
 	public DBXlinkResolverManager(
 			Connection batchConn,
@@ -82,14 +85,14 @@ public class DBXlinkResolverManager {
 		this.databaseAdapter = databaseAdapter;
 		this.tmpXlinkPool = tmpXlinkPool;
 		this.cacheTableManager = cacheTableManager;
-		this.config = config;
 		this.eventDispatcher = eventDispatcher;
 
-		dbWriterMap = new HashMap<DBXlinkResolverEnum, DBXlinkResolver>();
+		dbWriterMap = new HashMap<>();
 		dbGmlIdResolver = new DBGmlIdResolver(batchConn, databaseAdapter, uidCacheManager);
 		sequenceHelper = new SequenceHelper(batchConn, databaseAdapter, config);
-		
-        replacePathSeparator = File.separatorChar == '/';
+
+		inputFile = config.getInternal().getCurrentImportFile();
+		replaceSeparator = inputFile.getSeparator().equals("/");
      	schemaMapping = ObjectRegistry.getInstance().getSchemaMapping();
 	}
 
@@ -203,23 +206,44 @@ public class DBXlinkResolverManager {
 		return cacheTableManager.getDatabaseAdapter();
 	}
 	
-	public InputStream openStream(String fileURI) throws IOException {        
+	public InputStream openStream(String fileURI) throws IOException {
+		String copy = fileURI;
+		if (replaceSeparator)
+			fileURI = fileURI.replace("\\", "/");
+
+		Path file = null;
 		try {
-			return new URL(fileURI).openStream();
-		} catch (MalformedURLException e) {
-			if (replacePathSeparator)
-				fileURI = fileURI.replace("\\", "/");
+			Path tmp = inputFile.resolve(fileURI);
+			if (Files.exists(tmp))
+				file = tmp;
+		} catch (InvalidPathException ignored) {
+			//
+		}
 
-			File file = new File(fileURI);
-			if (!file.isAbsolute())
-				file = new File(config.getInternal().getImportPath(), file.getPath());
+		if (file == null && inputFile.getType() == InputFileType.ARCHIVE) {
+			try {
+				Path tmp = inputFile.getFile().getParent().resolve(fileURI);
+				if (Files.exists(tmp))
+					file = tmp;
+			} catch (InvalidPathException ignored) {
+				//
+			}
+		}
 
-			// skip zero byte file
-			if (file.isFile() && file.length() == 0)
+		if (file != null) {
+			if (Files.size(file) == 0)
 				throw new IOException("Zero byte file.");
 
-			return new FileInputStream(file);
+			return Files.newInputStream(file);
 		}
+
+		try {
+			return new URL(copy).openStream();
+		} catch (MalformedURLException ignored) {
+			//
+		}
+
+		throw new IOException("Failed to open file.");
 	}
 	
 	public void executeBatch() throws SQLException {

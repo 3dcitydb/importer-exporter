@@ -27,6 +27,7 @@
  */
 package org.citydb.citygml.importer.controller;
 
+import org.apache.tika.exception.TikaException;
 import org.citydb.citygml.common.database.cache.CacheTableManager;
 import org.citydb.citygml.common.database.uid.UIDCacheManager;
 import org.citydb.citygml.common.database.uid.UIDCacheType;
@@ -40,17 +41,19 @@ import org.citydb.citygml.importer.database.uid.FeatureGmlIdCache;
 import org.citydb.citygml.importer.database.uid.GeometryGmlIdCache;
 import org.citydb.citygml.importer.database.uid.TextureImageCache;
 import org.citydb.citygml.importer.database.xlink.resolver.DBXlinkSplitter;
+import org.citydb.citygml.importer.file.DirectoryScanner;
 import org.citydb.citygml.importer.filter.CityGMLFilter;
 import org.citydb.citygml.importer.filter.CityGMLFilterBuilder;
 import org.citydb.citygml.importer.filter.type.FeatureTypeFilter;
 import org.citydb.citygml.importer.util.AffineTransformer;
-import org.citydb.citygml.importer.util.DirectoryScanner;
-import org.citydb.citygml.importer.util.DirectoryScanner.CityGMLFilenameFilter;
 import org.citydb.citygml.importer.util.ImportLogger;
 import org.citydb.concurrent.PoolSizeAdaptationStrategy;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
+import org.citydb.config.internal.ArchiveInputFile;
+import org.citydb.config.internal.InputFile;
+import org.citydb.config.internal.InputFileType;
 import org.citydb.config.internal.Internal;
 import org.citydb.config.project.database.Database;
 import org.citydb.config.project.database.Workspace;
@@ -108,6 +111,8 @@ import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.stream.StreamSource;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -207,15 +212,21 @@ public class Importer implements EventHandler {
 		}
 
 		// build list of import files
-		log.info("Creating list of CityGML files to be imported...");	
-		directoryScanner = new DirectoryScanner(true);
-		directoryScanner.addFilenameFilter(new CityGMLFilenameFilter());
-		List<File> importFiles = directoryScanner.getFiles(internalConfig.getImportFiles());
-
-		if (importFiles.size() == 0) {
-			log.warn("Failed to find CityGML files at the specified locations.");
-			return false;
+		List<InputFile> importFiles;
+		try {
+			log.info("Creating list of CityGML files to be imported...");
+			directoryScanner = new DirectoryScanner(true);
+			importFiles = directoryScanner.listFiles(internalConfig.getImportFiles(), directoryScanner.getDefaultFileEndings());
+			if (importFiles.isEmpty()) {
+				log.warn("Failed to find CityGML files at the specified locations.");
+				return false;
+			}
+		} catch (TikaException | IOException e) {
+			throw new CityGMLImportException("Fatal error while searching for CityGML files.", e);
 		}
+
+		if (!shouldRun)
+			return false;
 
 		int fileCounter = 0;
 		int remainingFiles = importFiles.size();
@@ -272,9 +283,8 @@ public class Importer implements EventHandler {
 		// affine transformation
 		AffineTransformer affineTransformer = null;
 		if (importerConfig.getAffineTransformation().isEnabled()) {
-			log.info("Applying affine coordinates transformation.");
-
 			try {
+				log.info("Applying affine coordinates transformation.");
 				affineTransformer = new AffineTransformer(config);
 			} catch (Exception e) {
 				throw new CityGMLImportException("Failed to create affine transformer.", e);
@@ -282,7 +292,7 @@ public class Importer implements EventHandler {
 		}
 
 		// build CityGML filter
-		CityGMLFilter filter = null;
+		CityGMLFilter filter;
 		try {
 			CityGMLFilterBuilder builder = new CityGMLFilterBuilder(schemaMapping, databaseAdapter);
 			filter = builder.buildCityGMLFilter(config.getProject().getImporter().getFilter());
@@ -313,29 +323,29 @@ public class Importer implements EventHandler {
 		long start = System.currentTimeMillis();
 
 		while (shouldRun && fileCounter < importFiles.size()) {
-			try {
-				// check whether we reached the counter limit
-				if (filter.isSetCounterFilter() && elementCounter > filter.getCounterFilter().getUpperLimit())
-					break;
+			// check whether we reached the counter limit
+			if (filter.isSetCounterFilter() && elementCounter > filter.getCounterFilter().getUpperLimit())
+				break;
 
-				File file = importFiles.get(fileCounter++);
-				internalConfig.setImportPath(file.getParent());
+			try (InputFile file = importFiles.get(fileCounter++)) {
 				internalConfig.setCurrentImportFile(file);
+				Path contentFile = file.getType() != InputFileType.ARCHIVE ?
+						file.getFile() : Paths.get(file.getFile().toString(), ((ArchiveInputFile) file).getContentFile());
 
-				eventDispatcher.triggerEvent(new StatusDialogTitle(file.getName(), this));
+				eventDispatcher.triggerEvent(new StatusDialogTitle(contentFile.getFileName().toString(), this));
 				eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("import.dialog.cityObj.msg"), this));
 				eventDispatcher.triggerEvent(new StatusDialogProgressBar(true, this));
 				eventDispatcher.triggerEvent(new CounterEvent(CounterType.FILE, --remainingFiles, this));
-				log.info("Importing file: " + file.toString());	
+				log.info("Importing file: " + contentFile.toString());
 
 				// set gml:id codespace starting from version 3.1
 				if (databaseAdapter.getConnectionMetaData().getCityDBVersion().compareTo(3, 1, 0) >= 0) {
 					if (gmlIdConfig.isSetNoneCodeSpaceMode())
 						internalConfig.setCurrentGmlIdCodespace(null);
 					else if (gmlIdConfig.isSetRelativeCodeSpaceMode())
-						internalConfig.setCurrentGmlIdCodespace(file.getName());
+						internalConfig.setCurrentGmlIdCodespace(file.getFile().getFileName().toString());
 					else if (gmlIdConfig.isSetAbsoluteCodeSpaceMode())
-						internalConfig.setCurrentGmlIdCodespace(file.getAbsolutePath());
+						internalConfig.setCurrentGmlIdCodespace(file.getFile().toString());
 					else if (gmlIdConfig.isSetUserCodeSpaceMode()) {
 						String codespace = gmlIdConfig.getCodeSpace();
 						if (codespace != null && codespace.length() > 0)
@@ -349,7 +359,7 @@ public class Importer implements EventHandler {
 					try {
 						String logPath = importerConfig.getImportLog().isSetLogPath() ? importerConfig.getImportLog().getLogPath()
 								: CoreConstants.IMPEXP_DATA_DIR.resolve(CoreConstants.IMPORT_LOG_DIR).toString();
-						importLogger = new ImportLogger(logPath, file, databaseConfig.getActiveConnection());
+						importLogger = new ImportLogger(logPath, contentFile, databaseConfig.getActiveConnection());
 						log.info("Log file of imported top-level features: " + importLogger.getLogFilePath().toString());
 					} catch (IOException e) {
 						throw new CityGMLImportException("Failed to create log file for imported top-level features. Aborting.", e);
@@ -456,7 +466,8 @@ public class Importer implements EventHandler {
 				// ok, preparation done. start parsing the input file
 				CityGMLReader reader = null;
 				try {
-					reader = in.createFilteredCityGMLReader(in.createCityGMLReader(file), inputFilter);	
+					reader = in.createFilteredCityGMLReader(
+							in.createCityGMLReader(file.getFile().toString(), file.openStream()), inputFilter);
 
 					while (shouldRun && reader.hasNext()) {
 						XMLChunk chunk = reader.nextChunk();
@@ -473,7 +484,7 @@ public class Importer implements EventHandler {
 
 						featureWorkerPool.addWork(chunk);
 					}					
-				} catch (CityGMLReadException e) {
+				} catch (CityGMLReadException | IOException e) {
 					throw new CityGMLImportException("Failed to parse CityGML file. Aborting.", e);
 				}
 
@@ -543,6 +554,8 @@ public class Importer implements EventHandler {
 					log.warn(xmlValidationErrorCounter + " error(s) encountered while validating the document.");
 
 				xmlValidationErrorCounter = 0;
+			} catch (IOException e) {
+				throw new CityGMLImportException("Failed to process import file.", e);
 			} finally {
 				// clean up
 				if (featureWorkerPool != null && !featureWorkerPool.isTerminated())
@@ -576,7 +589,6 @@ public class Importer implements EventHandler {
 					try {
 						log.info("Cleaning temporary cache.");
 						cacheTableManager.dropAll();
-						cacheTableManager = null;
 					} catch (SQLException e) {
 						log.error("SQL error while cleaning temporary cache: " + e.getMessage());
 						shouldRun = false;
@@ -589,6 +601,7 @@ public class Importer implements EventHandler {
 					} catch (IOException e) {
 						log.error("Failed to finish logging of imported top-level features.");
 						log.warn("The feature import log is most likely corrupt.");
+						shouldRun = false;
 					}
 				}
 			}
@@ -632,7 +645,7 @@ public class Importer implements EventHandler {
 		AbstractUtilAdapter utilAdapter = databaseAdapter.getUtil();
 		log.info((enable ? "Activating " : "Deactivating ") + (workOnSpatialIndexes ? "spatial" : "normal") + " indexes...");
 
-		IndexStatusInfo indexStatus = null;
+		IndexStatusInfo indexStatus;
 		if (enable) {
 			indexStatus = workOnSpatialIndexes ? utilAdapter.createSpatialIndexes() : utilAdapter.createNormalIndexes();
 		} else {
@@ -696,7 +709,7 @@ public class Importer implements EventHandler {
 					log.log(interruptEvent.getLogLevelType(), msg);
 
 				if (directoryScanner != null)
-					directoryScanner.stopScanning();
+					directoryScanner.cancel();
 			}
 		}
 	}
