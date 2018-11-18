@@ -288,7 +288,6 @@ public class DBSurfaceData implements DBImporter {
 			long texImageId = 0;
 			if (absTex.isSetImageURI()) {
 				texImageId = textureImageImporter.doImport(absTex, surfaceDataId);
-
 				if (texImageId != 0) {
 					importer.propagateXlink(new DBXlinkSurfaceDataToTexImage(
 							surfaceDataId, 
@@ -352,7 +351,7 @@ public class DBSurfaceData implements DBImporter {
 								if (isLocalAppearance) {
 									// check whether we can query the target from the in-memory gml:id cache
 									long surfaceGeometryId = importer.getGeometryIdFromMemory(targetURI.replaceAll("^#", ""));
-									isResolved = surfaceGeometryId != 0;
+									isResolved = surfaceGeometryId > 0;
 
 									if (isResolved) {
 										textureParamImporter.doImport(worldToTextureString, surfaceDataId, surfaceGeometryId);
@@ -551,7 +550,7 @@ public class DBSurfaceData implements DBImporter {
 							if (isLocalAppearance) {
 								// check whether we can query the target from the in-memory gml:id cache
 								long surfaceGeometryId = importer.getGeometryIdFromMemory(target.replaceAll("^#", ""));
-								isResolved = surfaceGeometryId != 0;
+								isResolved = surfaceGeometryId > 0;
 								if (isResolved)
 									textureParamImporter.doImport(surfaceDataId, surfaceGeometryId);								
 							}

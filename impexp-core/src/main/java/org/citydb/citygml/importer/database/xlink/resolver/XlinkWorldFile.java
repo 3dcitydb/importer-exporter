@@ -81,7 +81,7 @@ public class XlinkWorldFile implements DBXlinkResolver {
 		if (index != -1) {
 			String name = imageFileURI.substring(0, index + 1);
 			String extension = imageFileURI.substring(index + 1, imageFileURI.length());
-			if (extension != null && extension.length() == 3)
+			if (extension.length() == 3)
 				candidates.add(name + extension.substring(0, 1) + extension.substring(2, 3) + 'w');
 		}
 		

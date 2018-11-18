@@ -38,7 +38,6 @@ import org.citydb.citygml.importer.database.SequenceHelper;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
 import org.citydb.config.internal.InputFile;
-import org.citydb.config.internal.InputFileType;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.schema.mapping.AbstractObjectType;
 import org.citydb.database.schema.mapping.FeatureType;
@@ -55,6 +54,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.HashMap;
@@ -207,43 +207,23 @@ public class DBXlinkResolverManager {
 	}
 	
 	public InputStream openStream(String fileURI) throws IOException {
-		String copy = fileURI;
-		if (replaceSeparator)
-			fileURI = fileURI.replace("\\", "/");
-
-		Path file = null;
 		try {
-			Path tmp = inputFile.resolve(fileURI);
-			if (Files.exists(tmp))
-				file = tmp;
-		} catch (InvalidPathException ignored) {
-			//
-		}
-
-		if (file == null && inputFile.getType() == InputFileType.ARCHIVE) {
-			try {
-				Path tmp = inputFile.getFile().getParent().resolve(fileURI);
-				if (Files.exists(tmp))
-					file = tmp;
-			} catch (InvalidPathException ignored) {
-				//
-			}
-		}
-
-		if (file != null) {
-			if (Files.size(file) == 0)
-				throw new IOException("Zero byte file.");
-
-			return Files.newInputStream(file);
-		}
-
-		try {
-			return new URL(copy).openStream();
+			return new URL(fileURI).openStream();
 		} catch (MalformedURLException ignored) {
 			//
 		}
 
-		throw new IOException("Failed to open file.");
+		Path file = null;
+		try {
+			file = Paths.get(fileURI);
+		} catch (InvalidPathException ignored) {
+			//
+		}
+
+		if (file == null || !file.isAbsolute())
+			file = inputFile.resolve(fileURI);
+
+		return Files.newInputStream(file);
 	}
 	
 	public void executeBatch() throws SQLException {
