@@ -1,8 +1,8 @@
 //
-// Diese Datei wurde mit der JavaTM Architecture for XML Binding(JAXB) Reference Implementation, v2.2.7 generiert 
-// Siehe <a href="http://java.sun.com/xml/jaxb">http://java.sun.com/xml/jaxb</a> 
+// Diese Datei wurde mit der JavaTM Architecture for XML Binding(JAXB) Reference Implementation, v2.3.1 generiert 
+// Siehe <a href="https://javaee.github.io/jaxb-v2/">https://javaee.github.io/jaxb-v2/</a> 
 // Änderungen an dieser Datei gehen bei einer Neukompilierung des Quellschemas verloren. 
-// Generiert: 2018.02.22 um 11:14:03 PM CET 
+// Generiert: 2018.11.18 um 03:45:53 PM CET 
 //
 
 
@@ -19,18 +19,18 @@ import javax.xml.bind.annotation.XmlType;
  * <p>Das folgende Schemafragment gibt den erwarteten Content an, der in dieser Klasse enthalten ist.
  * <p>
  * <pre>
- * &lt;simpleType name="gles_texcombiner_operatorRGB_enums">
- *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}token">
- *     &lt;enumeration value="REPLACE"/>
- *     &lt;enumeration value="MODULATE"/>
- *     &lt;enumeration value="ADD"/>
- *     &lt;enumeration value="ADD_SIGNED"/>
- *     &lt;enumeration value="INTERPOLATE"/>
- *     &lt;enumeration value="SUBTRACT"/>
- *     &lt;enumeration value="DOT3_RGB"/>
- *     &lt;enumeration value="DOT3_RGBA"/>
- *   &lt;/restriction>
- * &lt;/simpleType>
+ * &lt;simpleType name="gles_texcombiner_operatorRGB_enums"&gt;
+ *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}token"&gt;
+ *     &lt;enumeration value="REPLACE"/&gt;
+ *     &lt;enumeration value="MODULATE"/&gt;
+ *     &lt;enumeration value="ADD"/&gt;
+ *     &lt;enumeration value="ADD_SIGNED"/&gt;
+ *     &lt;enumeration value="INTERPOLATE"/&gt;
+ *     &lt;enumeration value="SUBTRACT"/&gt;
+ *     &lt;enumeration value="DOT3_RGB"/&gt;
+ *     &lt;enumeration value="DOT3_RGBA"/&gt;
+ *   &lt;/restriction&gt;
+ * &lt;/simpleType&gt;
  * </pre>
  * 
  */

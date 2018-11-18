@@ -1,8 +1,8 @@
 //
-// Diese Datei wurde mit der JavaTM Architecture for XML Binding(JAXB) Reference Implementation, v2.2.7 generiert 
-// Siehe <a href="http://java.sun.com/xml/jaxb">http://java.sun.com/xml/jaxb</a> 
+// Diese Datei wurde mit der JavaTM Architecture for XML Binding(JAXB) Reference Implementation, v2.3.1 generiert 
+// Siehe <a href="https://javaee.github.io/jaxb-v2/">https://javaee.github.io/jaxb-v2/</a> 
 // Änderungen an dieser Datei gehen bei einer Neukompilierung des Quellschemas verloren. 
-// Generiert: 2018.02.22 um 11:14:03 PM CET 
+// Generiert: 2018.11.18 um 03:45:53 PM CET 
 //
 
 
@@ -29,37 +29,37 @@ import org.w3._2005.atom.Link;
  * <p>Das folgende Schemafragment gibt den erwarteten Content an, der in dieser Klasse enthalten ist.
  * 
  * <pre>
- * &lt;complexType name="AbstractFeatureType">
- *   &lt;complexContent>
- *     &lt;extension base="{http://www.opengis.net/kml/2.2}AbstractObjectType">
- *       &lt;sequence>
- *         &lt;element ref="{http://www.opengis.net/kml/2.2}name" minOccurs="0"/>
- *         &lt;element ref="{http://www.opengis.net/kml/2.2}visibility" minOccurs="0"/>
- *         &lt;element ref="{http://www.opengis.net/kml/2.2}open" minOccurs="0"/>
- *         &lt;element ref="{http://www.w3.org/2005/Atom}author" minOccurs="0"/>
- *         &lt;element ref="{http://www.w3.org/2005/Atom}link" minOccurs="0"/>
- *         &lt;element ref="{http://www.opengis.net/kml/2.2}address" minOccurs="0"/>
- *         &lt;element ref="{urn:oasis:names:tc:ciq:xsdschema:xAL:2.0}AddressDetails" minOccurs="0"/>
- *         &lt;element ref="{http://www.opengis.net/kml/2.2}phoneNumber" minOccurs="0"/>
- *         &lt;choice>
- *           &lt;element ref="{http://www.opengis.net/kml/2.2}snippet" minOccurs="0"/>
- *         &lt;/choice>
- *         &lt;element ref="{http://www.opengis.net/kml/2.2}description" minOccurs="0"/>
- *         &lt;element ref="{http://www.opengis.net/kml/2.2}AbstractViewGroup" minOccurs="0"/>
- *         &lt;element ref="{http://www.opengis.net/kml/2.2}AbstractTimePrimitiveGroup" minOccurs="0"/>
- *         &lt;element ref="{http://www.opengis.net/kml/2.2}styleUrl" minOccurs="0"/>
- *         &lt;element ref="{http://www.opengis.net/kml/2.2}AbstractStyleSelectorGroup" maxOccurs="unbounded" minOccurs="0"/>
- *         &lt;element ref="{http://www.opengis.net/kml/2.2}Region" minOccurs="0"/>
- *         &lt;choice>
- *           &lt;element ref="{http://www.opengis.net/kml/2.2}Metadata" minOccurs="0"/>
- *           &lt;element ref="{http://www.opengis.net/kml/2.2}ExtendedData" minOccurs="0"/>
- *         &lt;/choice>
- *         &lt;element ref="{http://www.opengis.net/kml/2.2}AbstractFeatureSimpleExtensionGroup" maxOccurs="unbounded" minOccurs="0"/>
- *         &lt;element ref="{http://www.opengis.net/kml/2.2}AbstractFeatureObjectExtensionGroup" maxOccurs="unbounded" minOccurs="0"/>
- *       &lt;/sequence>
- *     &lt;/extension>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="AbstractFeatureType"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;extension base="{http://www.opengis.net/kml/2.2}AbstractObjectType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;element ref="{http://www.opengis.net/kml/2.2}name" minOccurs="0"/&gt;
+ *         &lt;element ref="{http://www.opengis.net/kml/2.2}visibility" minOccurs="0"/&gt;
+ *         &lt;element ref="{http://www.opengis.net/kml/2.2}open" minOccurs="0"/&gt;
+ *         &lt;element ref="{http://www.w3.org/2005/Atom}author" minOccurs="0"/&gt;
+ *         &lt;element ref="{http://www.w3.org/2005/Atom}link" minOccurs="0"/&gt;
+ *         &lt;element ref="{http://www.opengis.net/kml/2.2}address" minOccurs="0"/&gt;
+ *         &lt;element ref="{urn:oasis:names:tc:ciq:xsdschema:xAL:2.0}AddressDetails" minOccurs="0"/&gt;
+ *         &lt;element ref="{http://www.opengis.net/kml/2.2}phoneNumber" minOccurs="0"/&gt;
+ *         &lt;choice&gt;
+ *           &lt;element ref="{http://www.opengis.net/kml/2.2}snippet" minOccurs="0"/&gt;
+ *         &lt;/choice&gt;
+ *         &lt;element ref="{http://www.opengis.net/kml/2.2}description" minOccurs="0"/&gt;
+ *         &lt;element ref="{http://www.opengis.net/kml/2.2}AbstractViewGroup" minOccurs="0"/&gt;
+ *         &lt;element ref="{http://www.opengis.net/kml/2.2}AbstractTimePrimitiveGroup" minOccurs="0"/&gt;
+ *         &lt;element ref="{http://www.opengis.net/kml/2.2}styleUrl" minOccurs="0"/&gt;
+ *         &lt;element ref="{http://www.opengis.net/kml/2.2}AbstractStyleSelectorGroup" maxOccurs="unbounded" minOccurs="0"/&gt;
+ *         &lt;element ref="{http://www.opengis.net/kml/2.2}Region" minOccurs="0"/&gt;
+ *         &lt;choice&gt;
+ *           &lt;element ref="{http://www.opengis.net/kml/2.2}Metadata" minOccurs="0"/&gt;
+ *           &lt;element ref="{http://www.opengis.net/kml/2.2}ExtendedData" minOccurs="0"/&gt;
+ *         &lt;/choice&gt;
+ *         &lt;element ref="{http://www.opengis.net/kml/2.2}AbstractFeatureSimpleExtensionGroup" maxOccurs="unbounded" minOccurs="0"/&gt;
+ *         &lt;element ref="{http://www.opengis.net/kml/2.2}AbstractFeatureObjectExtensionGroup" maxOccurs="unbounded" minOccurs="0"/&gt;
+ *       &lt;/sequence&gt;
+ *     &lt;/extension&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  * 
  * 
@@ -87,9 +87,9 @@ import org.w3._2005.atom.Link;
     "abstractFeatureObjectExtensionGroup"
 })
 @XmlSeeAlso({
+    AbstractContainerType.class,
     PlacemarkType.class,
     NetworkLinkType.class,
-    AbstractContainerType.class,
     AbstractOverlayType.class
 })
 public abstract class AbstractFeatureType
@@ -126,7 +126,6 @@ public abstract class AbstractFeatureType
     @XmlElement(name = "ExtendedData")
     protected ExtendedDataType extendedData;
     @XmlElement(name = "AbstractFeatureSimpleExtensionGroup")
-    @XmlSchemaType(name = "anySimpleType")
     protected List<Object> abstractFeatureSimpleExtensionGroup;
     @XmlElement(name = "AbstractFeatureObjectExtensionGroup")
     protected List<AbstractObjectType> abstractFeatureObjectExtensionGroup;
@@ -416,8 +415,8 @@ public abstract class AbstractFeatureType
      * 
      * @return
      *     possible object is
-     *     {@link JAXBElement }{@code <}{@link CameraType }{@code >}
      *     {@link JAXBElement }{@code <}{@link LookAtType }{@code >}
+     *     {@link JAXBElement }{@code <}{@link CameraType }{@code >}
      *     {@link JAXBElement }{@code <}{@link AbstractViewType }{@code >}
      *     
      */
@@ -430,8 +429,8 @@ public abstract class AbstractFeatureType
      * 
      * @param value
      *     allowed object is
-     *     {@link JAXBElement }{@code <}{@link CameraType }{@code >}
      *     {@link JAXBElement }{@code <}{@link LookAtType }{@code >}
+     *     {@link JAXBElement }{@code <}{@link CameraType }{@code >}
      *     {@link JAXBElement }{@code <}{@link AbstractViewType }{@code >}
      *     
      */
@@ -449,8 +448,8 @@ public abstract class AbstractFeatureType
      * @return
      *     possible object is
      *     {@link JAXBElement }{@code <}{@link TimeStampType }{@code >}
-     *     {@link JAXBElement }{@code <}{@link AbstractTimePrimitiveType }{@code >}
      *     {@link JAXBElement }{@code <}{@link TimeSpanType }{@code >}
+     *     {@link JAXBElement }{@code <}{@link AbstractTimePrimitiveType }{@code >}
      *     
      */
     public JAXBElement<? extends AbstractTimePrimitiveType> getAbstractTimePrimitiveGroup() {
@@ -463,8 +462,8 @@ public abstract class AbstractFeatureType
      * @param value
      *     allowed object is
      *     {@link JAXBElement }{@code <}{@link TimeStampType }{@code >}
-     *     {@link JAXBElement }{@code <}{@link AbstractTimePrimitiveType }{@code >}
      *     {@link JAXBElement }{@code <}{@link TimeSpanType }{@code >}
+     *     {@link JAXBElement }{@code <}{@link AbstractTimePrimitiveType }{@code >}
      *     
      */
     public void setAbstractTimePrimitiveGroup(JAXBElement<? extends AbstractTimePrimitiveType> value) {
@@ -521,9 +520,9 @@ public abstract class AbstractFeatureType
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link JAXBElement }{@code <}{@link AbstractStyleSelectorType }{@code >}
      * {@link JAXBElement }{@code <}{@link StyleMapType }{@code >}
      * {@link JAXBElement }{@code <}{@link StyleType }{@code >}
+     * {@link JAXBElement }{@code <}{@link AbstractStyleSelectorType }{@code >}
      * 
      * 
      */

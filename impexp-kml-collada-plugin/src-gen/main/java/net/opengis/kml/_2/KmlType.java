@@ -1,8 +1,8 @@
 //
-// Diese Datei wurde mit der JavaTM Architecture for XML Binding(JAXB) Reference Implementation, v2.2.7 generiert 
-// Siehe <a href="http://java.sun.com/xml/jaxb">http://java.sun.com/xml/jaxb</a> 
+// Diese Datei wurde mit der JavaTM Architecture for XML Binding(JAXB) Reference Implementation, v2.3.1 generiert 
+// Siehe <a href="https://javaee.github.io/jaxb-v2/">https://javaee.github.io/jaxb-v2/</a> 
 // Änderungen an dieser Datei gehen bei einer Neukompilierung des Quellschemas verloren. 
-// Generiert: 2018.02.22 um 11:14:03 PM CET 
+// Generiert: 2018.11.18 um 03:45:53 PM CET 
 //
 
 
@@ -16,7 +16,6 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementRef;
-import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 
 
@@ -26,19 +25,19 @@ import javax.xml.bind.annotation.XmlType;
  * <p>Das folgende Schemafragment gibt den erwarteten Content an, der in dieser Klasse enthalten ist.
  * 
  * <pre>
- * &lt;complexType name="KmlType">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element ref="{http://www.opengis.net/kml/2.2}NetworkLinkControl" minOccurs="0"/>
- *         &lt;element ref="{http://www.opengis.net/kml/2.2}AbstractFeatureGroup" minOccurs="0"/>
- *         &lt;element ref="{http://www.opengis.net/kml/2.2}KmlSimpleExtensionGroup" maxOccurs="unbounded" minOccurs="0"/>
- *         &lt;element ref="{http://www.opengis.net/kml/2.2}KmlObjectExtensionGroup" maxOccurs="unbounded" minOccurs="0"/>
- *       &lt;/sequence>
- *       &lt;attribute name="hint" type="{http://www.w3.org/2001/XMLSchema}string" />
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="KmlType"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;element ref="{http://www.opengis.net/kml/2.2}NetworkLinkControl" minOccurs="0"/&gt;
+ *         &lt;element ref="{http://www.opengis.net/kml/2.2}AbstractFeatureGroup" minOccurs="0"/&gt;
+ *         &lt;element ref="{http://www.opengis.net/kml/2.2}KmlSimpleExtensionGroup" maxOccurs="unbounded" minOccurs="0"/&gt;
+ *         &lt;element ref="{http://www.opengis.net/kml/2.2}KmlObjectExtensionGroup" maxOccurs="unbounded" minOccurs="0"/&gt;
+ *       &lt;/sequence&gt;
+ *       &lt;attribute name="hint" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  * 
  * 
@@ -57,7 +56,6 @@ public class KmlType {
     @XmlElementRef(name = "AbstractFeatureGroup", namespace = "http://www.opengis.net/kml/2.2", type = JAXBElement.class, required = false)
     protected JAXBElement<? extends AbstractFeatureType> abstractFeatureGroup;
     @XmlElement(name = "KmlSimpleExtensionGroup")
-    @XmlSchemaType(name = "anySimpleType")
     protected List<Object> kmlSimpleExtensionGroup;
     @XmlElement(name = "KmlObjectExtensionGroup")
     protected List<AbstractObjectType> kmlObjectExtensionGroup;
@@ -97,16 +95,16 @@ public class KmlType {
      * 
      * @return
      *     possible object is
+     *     {@link JAXBElement }{@code <}{@link FolderType }{@code >}
+     *     {@link JAXBElement }{@code <}{@link DocumentType }{@code >}
      *     {@link JAXBElement }{@code <}{@link AbstractContainerType }{@code >}
      *     {@link JAXBElement }{@code <}{@link NetworkLinkType }{@code >}
-     *     {@link JAXBElement }{@code <}{@link AbstractOverlayType }{@code >}
-     *     {@link JAXBElement }{@code <}{@link ScreenOverlayType }{@code >}
-     *     {@link JAXBElement }{@code <}{@link GroundOverlayType }{@code >}
-     *     {@link JAXBElement }{@code <}{@link AbstractFeatureType }{@code >}
-     *     {@link JAXBElement }{@code <}{@link PhotoOverlayType }{@code >}
-     *     {@link JAXBElement }{@code <}{@link DocumentType }{@code >}
-     *     {@link JAXBElement }{@code <}{@link FolderType }{@code >}
      *     {@link JAXBElement }{@code <}{@link PlacemarkType }{@code >}
+     *     {@link JAXBElement }{@code <}{@link ScreenOverlayType }{@code >}
+     *     {@link JAXBElement }{@code <}{@link PhotoOverlayType }{@code >}
+     *     {@link JAXBElement }{@code <}{@link GroundOverlayType }{@code >}
+     *     {@link JAXBElement }{@code <}{@link AbstractOverlayType }{@code >}
+     *     {@link JAXBElement }{@code <}{@link AbstractFeatureType }{@code >}
      *     
      */
     public JAXBElement<? extends AbstractFeatureType> getAbstractFeatureGroup() {
@@ -118,16 +116,16 @@ public class KmlType {
      * 
      * @param value
      *     allowed object is
+     *     {@link JAXBElement }{@code <}{@link FolderType }{@code >}
+     *     {@link JAXBElement }{@code <}{@link DocumentType }{@code >}
      *     {@link JAXBElement }{@code <}{@link AbstractContainerType }{@code >}
      *     {@link JAXBElement }{@code <}{@link NetworkLinkType }{@code >}
-     *     {@link JAXBElement }{@code <}{@link AbstractOverlayType }{@code >}
-     *     {@link JAXBElement }{@code <}{@link ScreenOverlayType }{@code >}
-     *     {@link JAXBElement }{@code <}{@link GroundOverlayType }{@code >}
-     *     {@link JAXBElement }{@code <}{@link AbstractFeatureType }{@code >}
-     *     {@link JAXBElement }{@code <}{@link PhotoOverlayType }{@code >}
-     *     {@link JAXBElement }{@code <}{@link DocumentType }{@code >}
-     *     {@link JAXBElement }{@code <}{@link FolderType }{@code >}
      *     {@link JAXBElement }{@code <}{@link PlacemarkType }{@code >}
+     *     {@link JAXBElement }{@code <}{@link ScreenOverlayType }{@code >}
+     *     {@link JAXBElement }{@code <}{@link PhotoOverlayType }{@code >}
+     *     {@link JAXBElement }{@code <}{@link GroundOverlayType }{@code >}
+     *     {@link JAXBElement }{@code <}{@link AbstractOverlayType }{@code >}
+     *     {@link JAXBElement }{@code <}{@link AbstractFeatureType }{@code >}
      *     
      */
     public void setAbstractFeatureGroup(JAXBElement<? extends AbstractFeatureType> value) {

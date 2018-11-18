@@ -1,8 +1,8 @@
 //
-// Diese Datei wurde mit der JavaTM Architecture for XML Binding(JAXB) Reference Implementation, v2.2.7 generiert 
-// Siehe <a href="http://java.sun.com/xml/jaxb">http://java.sun.com/xml/jaxb</a> 
+// Diese Datei wurde mit der JavaTM Architecture for XML Binding(JAXB) Reference Implementation, v2.3.1 generiert 
+// Siehe <a href="https://javaee.github.io/jaxb-v2/">https://javaee.github.io/jaxb-v2/</a> 
 // Änderungen an dieser Datei gehen bei einer Neukompilierung des Quellschemas verloren. 
-// Generiert: 2018.02.22 um 11:14:03 PM CET 
+// Generiert: 2018.11.18 um 03:45:53 PM CET 
 //
 
 
@@ -31,10 +31,10 @@ import javax.xml.namespace.QName;
 @XmlRegistry
 public class ObjectFactory {
 
-    private final static QName _Author_QNAME = new QName("http://www.w3.org/2005/Atom", "author");
-    private final static QName _Uri_QNAME = new QName("http://www.w3.org/2005/Atom", "uri");
     private final static QName _Name_QNAME = new QName("http://www.w3.org/2005/Atom", "name");
+    private final static QName _Uri_QNAME = new QName("http://www.w3.org/2005/Atom", "uri");
     private final static QName _Email_QNAME = new QName("http://www.w3.org/2005/Atom", "email");
+    private final static QName _Author_QNAME = new QName("http://www.w3.org/2005/Atom", "author");
 
     /**
      * Create a new ObjectFactory that can be used to create new instances of schema derived classes for package: org.w3._2005.atom
@@ -60,26 +60,12 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link AtomPersonConstruct }{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link String }{@code >}
      * 
-     */
-    @XmlElementDecl(namespace = "http://www.w3.org/2005/Atom", name = "author")
-    public JAXBElement<AtomPersonConstruct> createAuthor(AtomPersonConstruct value) {
-        return new JAXBElement<AtomPersonConstruct>(_Author_QNAME, AtomPersonConstruct.class, null, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link String }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.w3.org/2005/Atom", name = "uri")
-    public JAXBElement<String> createUri(String value) {
-        return new JAXBElement<String>(_Uri_QNAME, String.class, null, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link String }{@code >}}
-     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link String }{@code >}
      */
     @XmlElementDecl(namespace = "http://www.w3.org/2005/Atom", name = "name")
     public JAXBElement<String> createName(String value) {
@@ -87,12 +73,42 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link String }{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link String }{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link String }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.w3.org/2005/Atom", name = "uri")
+    public JAXBElement<String> createUri(String value) {
+        return new JAXBElement<String>(_Uri_QNAME, String.class, null, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link String }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link String }{@code >}
      */
     @XmlElementDecl(namespace = "http://www.w3.org/2005/Atom", name = "email")
     public JAXBElement<String> createEmail(String value) {
         return new JAXBElement<String>(_Email_QNAME, String.class, null, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link AtomPersonConstruct }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link AtomPersonConstruct }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.w3.org/2005/Atom", name = "author")
+    public JAXBElement<AtomPersonConstruct> createAuthor(AtomPersonConstruct value) {
+        return new JAXBElement<AtomPersonConstruct>(_Author_QNAME, AtomPersonConstruct.class, null, value);
     }
 
 }

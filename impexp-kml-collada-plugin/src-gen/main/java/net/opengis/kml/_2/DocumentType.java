@@ -1,8 +1,8 @@
 //
-// Diese Datei wurde mit der JavaTM Architecture for XML Binding(JAXB) Reference Implementation, v2.2.7 generiert 
-// Siehe <a href="http://java.sun.com/xml/jaxb">http://java.sun.com/xml/jaxb</a> 
+// Diese Datei wurde mit der JavaTM Architecture for XML Binding(JAXB) Reference Implementation, v2.3.1 generiert 
+// Siehe <a href="https://javaee.github.io/jaxb-v2/">https://javaee.github.io/jaxb-v2/</a> 
 // Änderungen an dieser Datei gehen bei einer Neukompilierung des Quellschemas verloren. 
-// Generiert: 2018.02.22 um 11:14:03 PM CET 
+// Generiert: 2018.11.18 um 03:45:53 PM CET 
 //
 
 
@@ -15,7 +15,6 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementRef;
-import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 
 
@@ -25,18 +24,18 @@ import javax.xml.bind.annotation.XmlType;
  * <p>Das folgende Schemafragment gibt den erwarteten Content an, der in dieser Klasse enthalten ist.
  * 
  * <pre>
- * &lt;complexType name="DocumentType">
- *   &lt;complexContent>
- *     &lt;extension base="{http://www.opengis.net/kml/2.2}AbstractContainerType">
- *       &lt;sequence>
- *         &lt;element ref="{http://www.opengis.net/kml/2.2}Schema" maxOccurs="unbounded" minOccurs="0"/>
- *         &lt;element ref="{http://www.opengis.net/kml/2.2}AbstractFeatureGroup" maxOccurs="unbounded" minOccurs="0"/>
- *         &lt;element ref="{http://www.opengis.net/kml/2.2}DocumentSimpleExtensionGroup" maxOccurs="unbounded" minOccurs="0"/>
- *         &lt;element ref="{http://www.opengis.net/kml/2.2}DocumentObjectExtensionGroup" maxOccurs="unbounded" minOccurs="0"/>
- *       &lt;/sequence>
- *     &lt;/extension>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="DocumentType"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;extension base="{http://www.opengis.net/kml/2.2}AbstractContainerType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;element ref="{http://www.opengis.net/kml/2.2}Schema" maxOccurs="unbounded" minOccurs="0"/&gt;
+ *         &lt;element ref="{http://www.opengis.net/kml/2.2}AbstractFeatureGroup" maxOccurs="unbounded" minOccurs="0"/&gt;
+ *         &lt;element ref="{http://www.opengis.net/kml/2.2}DocumentSimpleExtensionGroup" maxOccurs="unbounded" minOccurs="0"/&gt;
+ *         &lt;element ref="{http://www.opengis.net/kml/2.2}DocumentObjectExtensionGroup" maxOccurs="unbounded" minOccurs="0"/&gt;
+ *       &lt;/sequence&gt;
+ *     &lt;/extension&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  * 
  * 
@@ -57,7 +56,6 @@ public class DocumentType
     @XmlElementRef(name = "AbstractFeatureGroup", namespace = "http://www.opengis.net/kml/2.2", type = JAXBElement.class, required = false)
     protected List<JAXBElement<? extends AbstractFeatureType>> abstractFeatureGroup;
     @XmlElement(name = "DocumentSimpleExtensionGroup")
-    @XmlSchemaType(name = "anySimpleType")
     protected List<Object> documentSimpleExtensionGroup;
     @XmlElement(name = "DocumentObjectExtensionGroup")
     protected List<AbstractObjectType> documentObjectExtensionGroup;
@@ -117,16 +115,16 @@ public class DocumentType
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
+     * {@link JAXBElement }{@code <}{@link FolderType }{@code >}
+     * {@link JAXBElement }{@code <}{@link DocumentType }{@code >}
      * {@link JAXBElement }{@code <}{@link AbstractContainerType }{@code >}
      * {@link JAXBElement }{@code <}{@link NetworkLinkType }{@code >}
-     * {@link JAXBElement }{@code <}{@link AbstractOverlayType }{@code >}
-     * {@link JAXBElement }{@code <}{@link ScreenOverlayType }{@code >}
-     * {@link JAXBElement }{@code <}{@link GroundOverlayType }{@code >}
-     * {@link JAXBElement }{@code <}{@link AbstractFeatureType }{@code >}
-     * {@link JAXBElement }{@code <}{@link PhotoOverlayType }{@code >}
-     * {@link JAXBElement }{@code <}{@link DocumentType }{@code >}
-     * {@link JAXBElement }{@code <}{@link FolderType }{@code >}
      * {@link JAXBElement }{@code <}{@link PlacemarkType }{@code >}
+     * {@link JAXBElement }{@code <}{@link ScreenOverlayType }{@code >}
+     * {@link JAXBElement }{@code <}{@link PhotoOverlayType }{@code >}
+     * {@link JAXBElement }{@code <}{@link GroundOverlayType }{@code >}
+     * {@link JAXBElement }{@code <}{@link AbstractOverlayType }{@code >}
+     * {@link JAXBElement }{@code <}{@link AbstractFeatureType }{@code >}
      * 
      * 
      */

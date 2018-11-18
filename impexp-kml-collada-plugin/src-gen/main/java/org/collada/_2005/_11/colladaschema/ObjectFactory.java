@@ -1,8 +1,8 @@
 //
-// Diese Datei wurde mit der JavaTM Architecture for XML Binding(JAXB) Reference Implementation, v2.2.7 generiert 
-// Siehe <a href="http://java.sun.com/xml/jaxb">http://java.sun.com/xml/jaxb</a> 
+// Diese Datei wurde mit der JavaTM Architecture for XML Binding(JAXB) Reference Implementation, v2.3.1 generiert 
+// Siehe <a href="https://javaee.github.io/jaxb-v2/">https://javaee.github.io/jaxb-v2/</a> 
 // Änderungen an dieser Datei gehen bei einer Neukompilierung des Quellschemas verloren. 
-// Generiert: 2018.02.22 um 11:14:03 PM CET 
+// Generiert: 2018.11.18 um 03:45:53 PM CET 
 //
 
 
@@ -33,160 +33,152 @@ import javax.xml.namespace.QName;
 @XmlRegistry
 public class ObjectFactory {
 
-    private final static QName _Translate_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "translate");
-    private final static QName _ProfileGLES_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "profile_GLES");
-    private final static QName _FxProfileAbstract_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "fx_profile_abstract");
-    private final static QName _InstanceLight_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "instance_light");
-    private final static QName _Scale_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "scale");
-    private final static QName _InstanceForceField_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "instance_force_field");
-    private final static QName _GlHookAbstract_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "gl_hook_abstract");
-    private final static QName _InstancePhysicsMaterial_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "instance_physics_material");
-    private final static QName _ProfileCG_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "profile_CG");
-    private final static QName _InstanceNode_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "instance_node");
-    private final static QName _ProfileCOMMON_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "profile_COMMON");
-    private final static QName _ProfileGLSL_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "profile_GLSL");
-    private final static QName _InstanceCamera_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "instance_camera");
     private final static QName _P_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "p");
-    private final static QName _CameraOpticsTechniqueCommonOrthographicZfar_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "zfar");
-    private final static QName _CameraOpticsTechniqueCommonOrthographicAspectRatio_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "aspect_ratio");
-    private final static QName _CameraOpticsTechniqueCommonOrthographicYmag_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "ymag");
-    private final static QName _CameraOpticsTechniqueCommonOrthographicXmag_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "xmag");
-    private final static QName _CameraOpticsTechniqueCommonOrthographicZnear_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "znear");
-    private final static QName _CgNewarrayTypeInt3X1_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "int3x1");
-    private final static QName _CgNewarrayTypeInt3X2_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "int3x2");
-    private final static QName _CgNewarrayTypeInt3X3_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "int3x3");
-    private final static QName _CgNewarrayTypeUsertype_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "usertype");
-    private final static QName _CgNewarrayTypeHalf1X4_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "half1x4");
-    private final static QName _CgNewarrayTypeHalf1X3_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "half1x3");
-    private final static QName _CgNewarrayTypeHalf1X2_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "half1x2");
-    private final static QName _CgNewarrayTypeHalf2_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "half2");
-    private final static QName _CgNewarrayTypeHalf1X1_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "half1x1");
-    private final static QName _CgNewarrayTypeHalf1_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "half1");
-    private final static QName _CgNewarrayTypeFixed_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "fixed");
-    private final static QName _CgNewarrayTypeHalf4_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "half4");
-    private final static QName _CgNewarrayTypeHalf3_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "half3");
-    private final static QName _CgNewarrayTypeFloat_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "float");
-    private final static QName _CgNewarrayTypeInt3X4_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "int3x4");
-    private final static QName _CgNewarrayTypeFixed3X2_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "fixed3x2");
-    private final static QName _CgNewarrayTypeFixed3X1_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "fixed3x1");
-    private final static QName _CgNewarrayTypeFixed3X4_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "fixed3x4");
-    private final static QName _CgNewarrayTypeFixed3X3_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "fixed3x3");
-    private final static QName _CgNewarrayTypeFloat3X4_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "float3x4");
-    private final static QName _CgNewarrayTypeFloat3X3_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "float3x3");
-    private final static QName _CgNewarrayTypeBool2X4_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "bool2x4");
-    private final static QName _CgNewarrayTypeFloat3X2_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "float3x2");
-    private final static QName _CgNewarrayTypeFloat3X1_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "float3x1");
-    private final static QName _CgNewarrayTypeBool2X2_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "bool2x2");
-    private final static QName _CgNewarrayTypeBool2X3_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "bool2x3");
-    private final static QName _CgNewarrayTypeConnectParam_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "connect_param");
-    private final static QName _CgNewarrayTypeBool2X1_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "bool2x1");
-    private final static QName _CgNewarrayTypeInt_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "int");
-    private final static QName _CgNewarrayTypeInt4X1_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "int4x1");
-    private final static QName _CgNewarrayTypeInt4X2_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "int4x2");
-    private final static QName _CgNewarrayTypeHalf4X2_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "half4x2");
-    private final static QName _CgNewarrayTypeHalf4X1_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "half4x1");
-    private final static QName _CgNewarrayTypeHalf4X4_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "half4x4");
-    private final static QName _CgNewarrayTypeSamplerRECT_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "samplerRECT");
-    private final static QName _CgNewarrayTypeHalf4X3_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "half4x3");
-    private final static QName _CgNewarrayTypeBool_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "bool");
-    private final static QName _CgNewarrayTypeString_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "string");
-    private final static QName _CgNewarrayTypeArray_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "array");
-    private final static QName _CgNewarrayTypeInt4X3_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "int4x3");
-    private final static QName _CgNewarrayTypeFixed2X3_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "fixed2x3");
-    private final static QName _CgNewarrayTypeInt4X4_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "int4x4");
-    private final static QName _CgNewarrayTypeFixed2X2_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "fixed2x2");
-    private final static QName _CgNewarrayTypeFixed2X4_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "fixed2x4");
-    private final static QName _CgNewarrayTypeFloat4X3_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "float4x3");
-    private final static QName _CgNewarrayTypeFloat4X2_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "float4x2");
-    private final static QName _CgNewarrayTypeBool3X3_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "bool3x3");
-    private final static QName _CgNewarrayTypeFloat4X1_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "float4x1");
-    private final static QName _CgNewarrayTypeFixed2X1_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "fixed2x1");
-    private final static QName _CgNewarrayTypeBool3X4_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "bool3x4");
-    private final static QName _CgNewarrayTypeBool3X1_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "bool3x1");
-    private final static QName _CgNewarrayTypeBool3X2_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "bool3x2");
-    private final static QName _CgNewarrayTypeFloat4X4_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "float4x4");
-    private final static QName _CgNewarrayTypeSurface_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "surface");
-    private final static QName _CgNewarrayTypeInt1X2_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "int1x2");
-    private final static QName _CgNewarrayTypeInt1X3_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "int1x3");
-    private final static QName _CgNewarrayTypeInt1X4_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "int1x4");
-    private final static QName _CgNewarrayTypeSampler3D_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "sampler3D");
-    private final static QName _CgNewarrayTypeEnum_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "enum");
-    private final static QName _CgNewarrayTypeSamplerCUBE_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "samplerCUBE");
-    private final static QName _CgNewarrayTypeInt1X1_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "int1x1");
-    private final static QName _CgNewarrayTypeHalf3X3_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "half3x3");
-    private final static QName _CgNewarrayTypeHalf3X2_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "half3x2");
-    private final static QName _CgNewarrayTypeHalf3X1_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "half3x1");
-    private final static QName _CgNewarrayTypeFixed2_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "fixed2");
-    private final static QName _CgNewarrayTypeFixed3_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "fixed3");
-    private final static QName _CgNewarrayTypeHalf3X4_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "half3x4");
-    private final static QName _CgNewarrayTypeFixed1_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "fixed1");
-    private final static QName _CgNewarrayTypeFloat1X2_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "float1x2");
-    private final static QName _CgNewarrayTypeFloat1X1_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "float1x1");
-    private final static QName _CgNewarrayTypeHalf_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "half");
-    private final static QName _CgNewarrayTypeSampler2D_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "sampler2D");
-    private final static QName _CgNewarrayTypeInt4_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "int4");
-    private final static QName _CgNewarrayTypeInt3_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "int3");
-    private final static QName _CgNewarrayTypeBool3_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "bool3");
-    private final static QName _CgNewarrayTypeFixed1X4_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "fixed1x4");
-    private final static QName _CgNewarrayTypeBool2_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "bool2");
-    private final static QName _CgNewarrayTypeFixed1X3_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "fixed1x3");
-    private final static QName _CgNewarrayTypeInt2_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "int2");
-    private final static QName _CgNewarrayTypeBool4_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "bool4");
-    private final static QName _CgNewarrayTypeInt1_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "int1");
-    private final static QName _CgNewarrayTypeBool4X4_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "bool4x4");
-    private final static QName _CgNewarrayTypeBool1_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "bool1");
-    private final static QName _CgNewarrayTypeBool4X2_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "bool4x2");
-    private final static QName _CgNewarrayTypeFloat1X4_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "float1x4");
-    private final static QName _CgNewarrayTypeFixed1X2_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "fixed1x2");
-    private final static QName _CgNewarrayTypeBool4X3_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "bool4x3");
-    private final static QName _CgNewarrayTypeFloat1X3_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "float1x3");
-    private final static QName _CgNewarrayTypeFixed1X1_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "fixed1x1");
-    private final static QName _CgNewarrayTypeBool4X1_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "bool4x1");
-    private final static QName _CgNewarrayTypeFloat1_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "float1");
-    private final static QName _CgNewarrayTypeFloat2_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "float2");
-    private final static QName _CgNewarrayTypeFloat3_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "float3");
-    private final static QName _CgNewarrayTypeFloat4_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "float4");
-    private final static QName _CgNewarrayTypeInt2X1_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "int2x1");
-    private final static QName _CgNewarrayTypeSampler1D_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "sampler1D");
-    private final static QName _CgNewarrayTypeInt2X2_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "int2x2");
-    private final static QName _CgNewarrayTypeInt2X3_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "int2x3");
-    private final static QName _CgNewarrayTypeInt2X4_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "int2x4");
-    private final static QName _CgNewarrayTypeHalf2X4_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "half2x4");
-    private final static QName _CgNewarrayTypeHalf2X3_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "half2x3");
-    private final static QName _CgNewarrayTypeHalf2X2_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "half2x2");
-    private final static QName _CgNewarrayTypeHalf2X1_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "half2x1");
-    private final static QName _CgNewarrayTypeSamplerDEPTH_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "samplerDEPTH");
-    private final static QName _CgNewarrayTypeFloat2X1_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "float2x1");
-    private final static QName _CgNewarrayTypeFixed4_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "fixed4");
-    private final static QName _CgNewarrayTypeFixed4X4_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "fixed4x4");
-    private final static QName _CgNewarrayTypeFixed4X1_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "fixed4x1");
-    private final static QName _CgNewarrayTypeFixed4X3_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "fixed4x3");
-    private final static QName _CgNewarrayTypeFixed4X2_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "fixed4x2");
-    private final static QName _CgNewarrayTypeFloat2X4_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "float2x4");
-    private final static QName _CgNewarrayTypeFloat2X3_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "float2x3");
-    private final static QName _CgNewarrayTypeFloat2X2_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "float2x2");
-    private final static QName _CgNewarrayTypeBool1X3_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "bool1x3");
-    private final static QName _CgNewarrayTypeBool1X4_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "bool1x4");
-    private final static QName _CgNewarrayTypeBool1X1_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "bool1x1");
-    private final static QName _CgNewarrayTypeBool1X2_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "bool1x2");
+    private final static QName _FxProfileAbstract_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "fx_profile_abstract");
+    private final static QName _Scale_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "scale");
+    private final static QName _Translate_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "translate");
+    private final static QName _InstanceCamera_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "instance_camera");
+    private final static QName _InstanceLight_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "instance_light");
+    private final static QName _InstanceNode_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "instance_node");
+    private final static QName _InstanceForceField_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "instance_force_field");
+    private final static QName _InstancePhysicsMaterial_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "instance_physics_material");
+    private final static QName _GlHookAbstract_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "gl_hook_abstract");
+    private final static QName _ProfileGLSL_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "profile_GLSL");
+    private final static QName _ProfileCOMMON_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "profile_COMMON");
+    private final static QName _ProfileCG_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "profile_CG");
+    private final static QName _ProfileGLES_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "profile_GLES");
     private final static QName _PolygonsPh_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "ph");
+    private final static QName _CgSetuserTypeBool_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "bool");
+    private final static QName _CgSetuserTypeBool1_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "bool1");
+    private final static QName _CgSetuserTypeBool2_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "bool2");
+    private final static QName _CgSetuserTypeBool3_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "bool3");
+    private final static QName _CgSetuserTypeBool4_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "bool4");
+    private final static QName _CgSetuserTypeBool1X1_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "bool1x1");
+    private final static QName _CgSetuserTypeBool1X2_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "bool1x2");
+    private final static QName _CgSetuserTypeBool1X3_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "bool1x3");
+    private final static QName _CgSetuserTypeBool1X4_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "bool1x4");
+    private final static QName _CgSetuserTypeBool2X1_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "bool2x1");
+    private final static QName _CgSetuserTypeBool2X2_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "bool2x2");
+    private final static QName _CgSetuserTypeBool2X3_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "bool2x3");
+    private final static QName _CgSetuserTypeBool2X4_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "bool2x4");
+    private final static QName _CgSetuserTypeBool3X1_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "bool3x1");
+    private final static QName _CgSetuserTypeBool3X2_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "bool3x2");
+    private final static QName _CgSetuserTypeBool3X3_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "bool3x3");
+    private final static QName _CgSetuserTypeBool3X4_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "bool3x4");
+    private final static QName _CgSetuserTypeBool4X1_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "bool4x1");
+    private final static QName _CgSetuserTypeBool4X2_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "bool4x2");
+    private final static QName _CgSetuserTypeBool4X3_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "bool4x3");
+    private final static QName _CgSetuserTypeBool4X4_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "bool4x4");
+    private final static QName _CgSetuserTypeFloat_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "float");
+    private final static QName _CgSetuserTypeFloat1_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "float1");
+    private final static QName _CgSetuserTypeFloat2_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "float2");
+    private final static QName _CgSetuserTypeFloat3_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "float3");
+    private final static QName _CgSetuserTypeFloat4_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "float4");
+    private final static QName _CgSetuserTypeFloat1X1_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "float1x1");
+    private final static QName _CgSetuserTypeFloat1X2_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "float1x2");
+    private final static QName _CgSetuserTypeFloat1X3_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "float1x3");
+    private final static QName _CgSetuserTypeFloat1X4_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "float1x4");
+    private final static QName _CgSetuserTypeFloat2X1_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "float2x1");
+    private final static QName _CgSetuserTypeFloat2X2_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "float2x2");
+    private final static QName _CgSetuserTypeFloat2X3_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "float2x3");
+    private final static QName _CgSetuserTypeFloat2X4_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "float2x4");
+    private final static QName _CgSetuserTypeFloat3X1_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "float3x1");
+    private final static QName _CgSetuserTypeFloat3X2_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "float3x2");
+    private final static QName _CgSetuserTypeFloat3X3_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "float3x3");
+    private final static QName _CgSetuserTypeFloat3X4_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "float3x4");
+    private final static QName _CgSetuserTypeFloat4X1_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "float4x1");
+    private final static QName _CgSetuserTypeFloat4X2_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "float4x2");
+    private final static QName _CgSetuserTypeFloat4X3_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "float4x3");
+    private final static QName _CgSetuserTypeFloat4X4_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "float4x4");
+    private final static QName _CgSetuserTypeInt_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "int");
+    private final static QName _CgSetuserTypeInt1_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "int1");
+    private final static QName _CgSetuserTypeInt2_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "int2");
+    private final static QName _CgSetuserTypeInt3_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "int3");
+    private final static QName _CgSetuserTypeInt4_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "int4");
+    private final static QName _CgSetuserTypeInt1X1_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "int1x1");
+    private final static QName _CgSetuserTypeInt1X2_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "int1x2");
+    private final static QName _CgSetuserTypeInt1X3_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "int1x3");
+    private final static QName _CgSetuserTypeInt1X4_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "int1x4");
+    private final static QName _CgSetuserTypeInt2X1_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "int2x1");
+    private final static QName _CgSetuserTypeInt2X2_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "int2x2");
+    private final static QName _CgSetuserTypeInt2X3_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "int2x3");
+    private final static QName _CgSetuserTypeInt2X4_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "int2x4");
+    private final static QName _CgSetuserTypeInt3X1_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "int3x1");
+    private final static QName _CgSetuserTypeInt3X2_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "int3x2");
+    private final static QName _CgSetuserTypeInt3X3_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "int3x3");
+    private final static QName _CgSetuserTypeInt3X4_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "int3x4");
+    private final static QName _CgSetuserTypeInt4X1_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "int4x1");
+    private final static QName _CgSetuserTypeInt4X2_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "int4x2");
+    private final static QName _CgSetuserTypeInt4X3_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "int4x3");
+    private final static QName _CgSetuserTypeInt4X4_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "int4x4");
+    private final static QName _CgSetuserTypeHalf_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "half");
+    private final static QName _CgSetuserTypeHalf1_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "half1");
+    private final static QName _CgSetuserTypeHalf2_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "half2");
+    private final static QName _CgSetuserTypeHalf3_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "half3");
+    private final static QName _CgSetuserTypeHalf4_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "half4");
+    private final static QName _CgSetuserTypeHalf1X1_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "half1x1");
+    private final static QName _CgSetuserTypeHalf1X2_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "half1x2");
+    private final static QName _CgSetuserTypeHalf1X3_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "half1x3");
+    private final static QName _CgSetuserTypeHalf1X4_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "half1x4");
+    private final static QName _CgSetuserTypeHalf2X1_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "half2x1");
+    private final static QName _CgSetuserTypeHalf2X2_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "half2x2");
+    private final static QName _CgSetuserTypeHalf2X3_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "half2x3");
+    private final static QName _CgSetuserTypeHalf2X4_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "half2x4");
+    private final static QName _CgSetuserTypeHalf3X1_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "half3x1");
+    private final static QName _CgSetuserTypeHalf3X2_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "half3x2");
+    private final static QName _CgSetuserTypeHalf3X3_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "half3x3");
+    private final static QName _CgSetuserTypeHalf3X4_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "half3x4");
+    private final static QName _CgSetuserTypeHalf4X1_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "half4x1");
+    private final static QName _CgSetuserTypeHalf4X2_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "half4x2");
+    private final static QName _CgSetuserTypeHalf4X3_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "half4x3");
+    private final static QName _CgSetuserTypeHalf4X4_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "half4x4");
+    private final static QName _CgSetuserTypeFixed_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "fixed");
+    private final static QName _CgSetuserTypeFixed1_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "fixed1");
+    private final static QName _CgSetuserTypeFixed2_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "fixed2");
+    private final static QName _CgSetuserTypeFixed3_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "fixed3");
+    private final static QName _CgSetuserTypeFixed4_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "fixed4");
+    private final static QName _CgSetuserTypeFixed1X1_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "fixed1x1");
+    private final static QName _CgSetuserTypeFixed1X2_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "fixed1x2");
+    private final static QName _CgSetuserTypeFixed1X3_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "fixed1x3");
+    private final static QName _CgSetuserTypeFixed1X4_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "fixed1x4");
+    private final static QName _CgSetuserTypeFixed2X1_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "fixed2x1");
+    private final static QName _CgSetuserTypeFixed2X2_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "fixed2x2");
+    private final static QName _CgSetuserTypeFixed2X3_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "fixed2x3");
+    private final static QName _CgSetuserTypeFixed2X4_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "fixed2x4");
+    private final static QName _CgSetuserTypeFixed3X1_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "fixed3x1");
+    private final static QName _CgSetuserTypeFixed3X2_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "fixed3x2");
+    private final static QName _CgSetuserTypeFixed3X3_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "fixed3x3");
+    private final static QName _CgSetuserTypeFixed3X4_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "fixed3x4");
+    private final static QName _CgSetuserTypeFixed4X1_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "fixed4x1");
+    private final static QName _CgSetuserTypeFixed4X2_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "fixed4x2");
+    private final static QName _CgSetuserTypeFixed4X3_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "fixed4x3");
+    private final static QName _CgSetuserTypeFixed4X4_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "fixed4x4");
+    private final static QName _CgSetuserTypeSurface_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "surface");
+    private final static QName _CgSetuserTypeSampler1D_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "sampler1D");
+    private final static QName _CgSetuserTypeSampler2D_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "sampler2D");
+    private final static QName _CgSetuserTypeSampler3D_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "sampler3D");
+    private final static QName _CgSetuserTypeSamplerRECT_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "samplerRECT");
+    private final static QName _CgSetuserTypeSamplerCUBE_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "samplerCUBE");
+    private final static QName _CgSetuserTypeSamplerDEPTH_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "samplerDEPTH");
+    private final static QName _CgSetuserTypeString_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "string");
+    private final static QName _CgSetuserTypeEnum_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "enum");
+    private final static QName _CgSetuserTypeArray_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "array");
+    private final static QName _CgSetuserTypeUsertype_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "usertype");
+    private final static QName _CgSetuserTypeConnectParam_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "connect_param");
     private final static QName _PolygonsPhH_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "h");
-    private final static QName _CameraOpticsTechniqueCommonPerspectiveYfov_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "yfov");
     private final static QName _CameraOpticsTechniqueCommonPerspectiveXfov_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "xfov");
+    private final static QName _CameraOpticsTechniqueCommonPerspectiveYfov_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "yfov");
+    private final static QName _CameraOpticsTechniqueCommonPerspectiveAspectRatio_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "aspect_ratio");
+    private final static QName _CameraOpticsTechniqueCommonPerspectiveZnear_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "znear");
+    private final static QName _CameraOpticsTechniqueCommonPerspectiveZfar_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "zfar");
+    private final static QName _CameraOpticsTechniqueCommonOrthographicXmag_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "xmag");
+    private final static QName _CameraOpticsTechniqueCommonOrthographicYmag_QNAME = new QName("http://www.collada.org/2005/11/COLLADASchema", "ymag");
 
     /**
      * Create a new ObjectFactory that can be used to create new instances of schema derived classes for package: org.collada._2005._11.colladaschema
      * 
      */
     public ObjectFactory() {
-    }
-
-    /**
-     * Create an instance of {@link BindMaterial }
-     * 
-     */
-    public BindMaterial createBindMaterial() {
-        return new BindMaterial();
     }
 
     /**
@@ -198,27 +190,19 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link PhysicsMaterial }
-     * 
-     */
-    public PhysicsMaterial createPhysicsMaterial() {
-        return new PhysicsMaterial();
-    }
-
-    /**
-     * Create an instance of {@link Polygons }
-     * 
-     */
-    public Polygons createPolygons() {
-        return new Polygons();
-    }
-
-    /**
      * Create an instance of {@link Source }
      * 
      */
     public Source createSource() {
         return new Source();
+    }
+
+    /**
+     * Create an instance of {@link Camera }
+     * 
+     */
+    public Camera createCamera() {
+        return new Camera();
     }
 
     /**
@@ -238,19 +222,59 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link InstanceMaterial }
+     * Create an instance of {@link Polygons }
      * 
      */
-    public InstanceMaterial createInstanceMaterial() {
-        return new InstanceMaterial();
+    public Polygons createPolygons() {
+        return new Polygons();
     }
 
     /**
-     * Create an instance of {@link Camera }
+     * Create an instance of {@link Spline }
      * 
      */
-    public Camera createCamera() {
-        return new Camera();
+    public Spline createSpline() {
+        return new Spline();
+    }
+
+    /**
+     * Create an instance of {@link Light }
+     * 
+     */
+    public Light createLight() {
+        return new Light();
+    }
+
+    /**
+     * Create an instance of {@link InstanceEffect }
+     * 
+     */
+    public InstanceEffect createInstanceEffect() {
+        return new InstanceEffect();
+    }
+
+    /**
+     * Create an instance of {@link BindMaterial }
+     * 
+     */
+    public BindMaterial createBindMaterial() {
+        return new BindMaterial();
+    }
+
+    /**
+     * Create an instance of {@link PhysicsMaterial }
+     * 
+     */
+    public PhysicsMaterial createPhysicsMaterial() {
+        return new PhysicsMaterial();
+    }
+
+    /**
+     * Create an instance of {@link RigidBody }
+     * 
+     */
+    public RigidBody createRigidBody() {
+        return new RigidBody();
     }
 
     /**
@@ -278,38 +302,6 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link Light }
-     * 
-     */
-    public Light createLight() {
-        return new Light();
-    }
-
-    /**
-     * Create an instance of {@link Spline }
-     * 
-     */
-    public Spline createSpline() {
-        return new Spline();
-    }
-
-    /**
-     * Create an instance of {@link InstanceEffect }
-     * 
-     */
-    public InstanceEffect createInstanceEffect() {
-        return new InstanceEffect();
-    }
-
-    /**
-     * Create an instance of {@link RigidBody }
-     * 
-     */
-    public RigidBody createRigidBody() {
-        return new RigidBody();
-    }
-
-    /**
      * Create an instance of {@link VisualScene }
      * 
      */
@@ -326,35 +318,19 @@ public class ObjectFactory {
     }
 
     /**
+     * Create an instance of {@link InstanceMaterial }
+     * 
+     */
+    public InstanceMaterial createInstanceMaterial() {
+        return new InstanceMaterial();
+    }
+
+    /**
      * Create an instance of {@link GlesTextureUnit }
      * 
      */
     public GlesTextureUnit createGlesTextureUnit() {
         return new GlesTextureUnit();
-    }
-
-    /**
-     * Create an instance of {@link FxSurfaceInitCubeCommon }
-     * 
-     */
-    public FxSurfaceInitCubeCommon createFxSurfaceInitCubeCommon() {
-        return new FxSurfaceInitCubeCommon();
-    }
-
-    /**
-     * Create an instance of {@link FxSurfaceInitVolumeCommon }
-     * 
-     */
-    public FxSurfaceInitVolumeCommon createFxSurfaceInitVolumeCommon() {
-        return new FxSurfaceInitVolumeCommon();
-    }
-
-    /**
-     * Create an instance of {@link CommonFloatOrParamType }
-     * 
-     */
-    public CommonFloatOrParamType createCommonFloatOrParamType() {
-        return new CommonFloatOrParamType();
     }
 
     /**
@@ -382,11 +358,11 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link FxSurfaceInitPlanarCommon }
+     * Create an instance of {@link CommonFloatOrParamType }
      * 
      */
-    public FxSurfaceInitPlanarCommon createFxSurfaceInitPlanarCommon() {
-        return new FxSurfaceInitPlanarCommon();
+    public CommonFloatOrParamType createCommonFloatOrParamType() {
+        return new CommonFloatOrParamType();
     }
 
     /**
@@ -403,6 +379,86 @@ public class ObjectFactory {
      */
     public GlslSurfaceType.Generator createGlslSurfaceTypeGenerator() {
         return new GlslSurfaceType.Generator();
+    }
+
+    /**
+     * Create an instance of {@link FxSurfaceInitCubeCommon }
+     * 
+     */
+    public FxSurfaceInitCubeCommon createFxSurfaceInitCubeCommon() {
+        return new FxSurfaceInitCubeCommon();
+    }
+
+    /**
+     * Create an instance of {@link FxSurfaceInitVolumeCommon }
+     * 
+     */
+    public FxSurfaceInitVolumeCommon createFxSurfaceInitVolumeCommon() {
+        return new FxSurfaceInitVolumeCommon();
+    }
+
+    /**
+     * Create an instance of {@link FxSurfaceInitPlanarCommon }
+     * 
+     */
+    public FxSurfaceInitPlanarCommon createFxSurfaceInitPlanarCommon() {
+        return new FxSurfaceInitPlanarCommon();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLES }
+     * 
+     */
+    public ProfileGLES createProfileGLES() {
+        return new ProfileGLES();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLES.Technique }
+     * 
+     */
+    public ProfileGLES.Technique createProfileGLESTechnique() {
+        return new ProfileGLES.Technique();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLES.Technique.Pass }
+     * 
+     */
+    public ProfileGLES.Technique.Pass createProfileGLESTechniquePass() {
+        return new ProfileGLES.Technique.Pass();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLES.Technique.Pass.StencilOp }
+     * 
+     */
+    public ProfileGLES.Technique.Pass.StencilOp createProfileGLESTechniquePassStencilOp() {
+        return new ProfileGLES.Technique.Pass.StencilOp();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLES.Technique.Pass.StencilFunc }
+     * 
+     */
+    public ProfileGLES.Technique.Pass.StencilFunc createProfileGLESTechniquePassStencilFunc() {
+        return new ProfileGLES.Technique.Pass.StencilFunc();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLES.Technique.Pass.BlendFunc }
+     * 
+     */
+    public ProfileGLES.Technique.Pass.BlendFunc createProfileGLESTechniquePassBlendFunc() {
+        return new ProfileGLES.Technique.Pass.BlendFunc();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLES.Technique.Pass.AlphaFunc }
+     * 
+     */
+    public ProfileGLES.Technique.Pass.AlphaFunc createProfileGLESTechniquePassAlphaFunc() {
+        return new ProfileGLES.Technique.Pass.AlphaFunc();
     }
 
     /**
@@ -534,62 +590,6 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link ProfileGLES }
-     * 
-     */
-    public ProfileGLES createProfileGLES() {
-        return new ProfileGLES();
-    }
-
-    /**
-     * Create an instance of {@link ProfileGLES.Technique }
-     * 
-     */
-    public ProfileGLES.Technique createProfileGLESTechnique() {
-        return new ProfileGLES.Technique();
-    }
-
-    /**
-     * Create an instance of {@link ProfileGLES.Technique.Pass }
-     * 
-     */
-    public ProfileGLES.Technique.Pass createProfileGLESTechniquePass() {
-        return new ProfileGLES.Technique.Pass();
-    }
-
-    /**
-     * Create an instance of {@link ProfileGLES.Technique.Pass.StencilOp }
-     * 
-     */
-    public ProfileGLES.Technique.Pass.StencilOp createProfileGLESTechniquePassStencilOp() {
-        return new ProfileGLES.Technique.Pass.StencilOp();
-    }
-
-    /**
-     * Create an instance of {@link ProfileGLES.Technique.Pass.StencilFunc }
-     * 
-     */
-    public ProfileGLES.Technique.Pass.StencilFunc createProfileGLESTechniquePassStencilFunc() {
-        return new ProfileGLES.Technique.Pass.StencilFunc();
-    }
-
-    /**
-     * Create an instance of {@link ProfileGLES.Technique.Pass.BlendFunc }
-     * 
-     */
-    public ProfileGLES.Technique.Pass.BlendFunc createProfileGLESTechniquePassBlendFunc() {
-        return new ProfileGLES.Technique.Pass.BlendFunc();
-    }
-
-    /**
-     * Create an instance of {@link ProfileGLES.Technique.Pass.AlphaFunc }
-     * 
-     */
-    public ProfileGLES.Technique.Pass.AlphaFunc createProfileGLESTechniquePassAlphaFunc() {
-        return new ProfileGLES.Technique.Pass.AlphaFunc();
-    }
-
-    /**
      * Create an instance of {@link ProfileCOMMON }
      * 
      */
@@ -603,94 +603,6 @@ public class ObjectFactory {
      */
     public ProfileCOMMON.Technique createProfileCOMMONTechnique() {
         return new ProfileCOMMON.Technique();
-    }
-
-    /**
-     * Create an instance of {@link VisualScene.EvaluateScene }
-     * 
-     */
-    public VisualScene.EvaluateScene createVisualSceneEvaluateScene() {
-        return new VisualScene.EvaluateScene();
-    }
-
-    /**
-     * Create an instance of {@link RigidBody.TechniqueCommon }
-     * 
-     */
-    public RigidBody.TechniqueCommon createRigidBodyTechniqueCommon() {
-        return new RigidBody.TechniqueCommon();
-    }
-
-    /**
-     * Create an instance of {@link RigidBody.TechniqueCommon.Shape }
-     * 
-     */
-    public RigidBody.TechniqueCommon.Shape createRigidBodyTechniqueCommonShape() {
-        return new RigidBody.TechniqueCommon.Shape();
-    }
-
-    /**
-     * Create an instance of {@link Light.TechniqueCommon }
-     * 
-     */
-    public Light.TechniqueCommon createLightTechniqueCommon() {
-        return new Light.TechniqueCommon();
-    }
-
-    /**
-     * Create an instance of {@link InstanceRigidBody.TechniqueCommon }
-     * 
-     */
-    public InstanceRigidBody.TechniqueCommon createInstanceRigidBodyTechniqueCommon() {
-        return new InstanceRigidBody.TechniqueCommon();
-    }
-
-    /**
-     * Create an instance of {@link InstanceRigidBody.TechniqueCommon.Shape }
-     * 
-     */
-    public InstanceRigidBody.TechniqueCommon.Shape createInstanceRigidBodyTechniqueCommonShape() {
-        return new InstanceRigidBody.TechniqueCommon.Shape();
-    }
-
-    /**
-     * Create an instance of {@link RigidConstraint.TechniqueCommon }
-     * 
-     */
-    public RigidConstraint.TechniqueCommon createRigidConstraintTechniqueCommon() {
-        return new RigidConstraint.TechniqueCommon();
-    }
-
-    /**
-     * Create an instance of {@link RigidConstraint.TechniqueCommon.Spring }
-     * 
-     */
-    public RigidConstraint.TechniqueCommon.Spring createRigidConstraintTechniqueCommonSpring() {
-        return new RigidConstraint.TechniqueCommon.Spring();
-    }
-
-    /**
-     * Create an instance of {@link RigidConstraint.TechniqueCommon.Limits }
-     * 
-     */
-    public RigidConstraint.TechniqueCommon.Limits createRigidConstraintTechniqueCommonLimits() {
-        return new RigidConstraint.TechniqueCommon.Limits();
-    }
-
-    /**
-     * Create an instance of {@link Camera.Optics }
-     * 
-     */
-    public Camera.Optics createCameraOptics() {
-        return new Camera.Optics();
-    }
-
-    /**
-     * Create an instance of {@link Camera.Optics.TechniqueCommon }
-     * 
-     */
-    public Camera.Optics.TechniqueCommon createCameraOpticsTechniqueCommon() {
-        return new Camera.Optics.TechniqueCommon();
     }
 
     /**
@@ -734,43 +646,91 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link InstanceController }
+     * Create an instance of {@link VisualScene.EvaluateScene }
      * 
      */
-    public InstanceController createInstanceController() {
-        return new InstanceController();
+    public VisualScene.EvaluateScene createVisualSceneEvaluateScene() {
+        return new VisualScene.EvaluateScene();
     }
 
     /**
-     * Create an instance of {@link org.collada._2005._11.colladaschema.Param }
+     * Create an instance of {@link InstanceRigidBody.TechniqueCommon }
      * 
      */
-    public org.collada._2005._11.colladaschema.Param createParam() {
-        return new org.collada._2005._11.colladaschema.Param();
+    public InstanceRigidBody.TechniqueCommon createInstanceRigidBodyTechniqueCommon() {
+        return new InstanceRigidBody.TechniqueCommon();
     }
 
     /**
-     * Create an instance of {@link BindMaterial.TechniqueCommon }
+     * Create an instance of {@link InstanceRigidBody.TechniqueCommon.Shape }
      * 
      */
-    public BindMaterial.TechniqueCommon createBindMaterialTechniqueCommon() {
-        return new BindMaterial.TechniqueCommon();
+    public InstanceRigidBody.TechniqueCommon.Shape createInstanceRigidBodyTechniqueCommonShape() {
+        return new InstanceRigidBody.TechniqueCommon.Shape();
     }
 
     /**
-     * Create an instance of {@link org.collada._2005._11.colladaschema.Technique }
+     * Create an instance of {@link RigidConstraint.TechniqueCommon }
      * 
      */
-    public org.collada._2005._11.colladaschema.Technique createTechnique() {
-        return new org.collada._2005._11.colladaschema.Technique();
+    public RigidConstraint.TechniqueCommon createRigidConstraintTechniqueCommon() {
+        return new RigidConstraint.TechniqueCommon();
     }
 
     /**
-     * Create an instance of {@link Extra }
+     * Create an instance of {@link RigidConstraint.TechniqueCommon.Spring }
      * 
      */
-    public Extra createExtra() {
-        return new Extra();
+    public RigidConstraint.TechniqueCommon.Spring createRigidConstraintTechniqueCommonSpring() {
+        return new RigidConstraint.TechniqueCommon.Spring();
+    }
+
+    /**
+     * Create an instance of {@link RigidConstraint.TechniqueCommon.Limits }
+     * 
+     */
+    public RigidConstraint.TechniqueCommon.Limits createRigidConstraintTechniqueCommonLimits() {
+        return new RigidConstraint.TechniqueCommon.Limits();
+    }
+
+    /**
+     * Create an instance of {@link RigidBody.TechniqueCommon }
+     * 
+     */
+    public RigidBody.TechniqueCommon createRigidBodyTechniqueCommon() {
+        return new RigidBody.TechniqueCommon();
+    }
+
+    /**
+     * Create an instance of {@link RigidBody.TechniqueCommon.Shape }
+     * 
+     */
+    public RigidBody.TechniqueCommon.Shape createRigidBodyTechniqueCommonShape() {
+        return new RigidBody.TechniqueCommon.Shape();
+    }
+
+    /**
+     * Create an instance of {@link Light.TechniqueCommon }
+     * 
+     */
+    public Light.TechniqueCommon createLightTechniqueCommon() {
+        return new Light.TechniqueCommon();
+    }
+
+    /**
+     * Create an instance of {@link Camera.Optics }
+     * 
+     */
+    public Camera.Optics createCameraOptics() {
+        return new Camera.Optics();
+    }
+
+    /**
+     * Create an instance of {@link Camera.Optics.TechniqueCommon }
+     * 
+     */
+    public Camera.Optics.TechniqueCommon createCameraOpticsTechniqueCommon() {
+        return new Camera.Optics.TechniqueCommon();
     }
 
     /**
@@ -790,67 +750,19 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link LibraryPhysicsMaterials }
+     * Create an instance of {@link LibraryAnimations }
      * 
      */
-    public LibraryPhysicsMaterials createLibraryPhysicsMaterials() {
-        return new LibraryPhysicsMaterials();
+    public LibraryAnimations createLibraryAnimations() {
+        return new LibraryAnimations();
     }
 
     /**
-     * Create an instance of {@link PhysicsMaterial.TechniqueCommon }
+     * Create an instance of {@link Animation }
      * 
      */
-    public PhysicsMaterial.TechniqueCommon createPhysicsMaterialTechniqueCommon() {
-        return new PhysicsMaterial.TechniqueCommon();
-    }
-
-    /**
-     * Create an instance of {@link Plane }
-     * 
-     */
-    public Plane createPlane() {
-        return new Plane();
-    }
-
-    /**
-     * Create an instance of {@link Rotate }
-     * 
-     */
-    public Rotate createRotate() {
-        return new Rotate();
-    }
-
-    /**
-     * Create an instance of {@link InputLocalOffset }
-     * 
-     */
-    public InputLocalOffset createInputLocalOffset() {
-        return new InputLocalOffset();
-    }
-
-    /**
-     * Create an instance of {@link Polygons.Ph }
-     * 
-     */
-    public Polygons.Ph createPolygonsPh() {
-        return new Polygons.Ph();
-    }
-
-    /**
-     * Create an instance of {@link Channel }
-     * 
-     */
-    public Channel createChannel() {
-        return new Channel();
-    }
-
-    /**
-     * Create an instance of {@link Lookat }
-     * 
-     */
-    public Lookat createLookat() {
-        return new Lookat();
+    public Animation createAnimation() {
+        return new Animation();
     }
 
     /**
@@ -902,19 +814,83 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link TargetableFloat3 }
+     * Create an instance of {@link org.collada._2005._11.colladaschema.Technique }
      * 
      */
-    public TargetableFloat3 createTargetableFloat3() {
-        return new TargetableFloat3();
+    public org.collada._2005._11.colladaschema.Technique createTechnique() {
+        return new org.collada._2005._11.colladaschema.Technique();
     }
 
     /**
-     * Create an instance of {@link Triangles }
+     * Create an instance of {@link Sampler }
      * 
      */
-    public Triangles createTriangles() {
-        return new Triangles();
+    public Sampler createSampler() {
+        return new Sampler();
+    }
+
+    /**
+     * Create an instance of {@link InputLocal }
+     * 
+     */
+    public InputLocal createInputLocal() {
+        return new InputLocal();
+    }
+
+    /**
+     * Create an instance of {@link Channel }
+     * 
+     */
+    public Channel createChannel() {
+        return new Channel();
+    }
+
+    /**
+     * Create an instance of {@link Extra }
+     * 
+     */
+    public Extra createExtra() {
+        return new Extra();
+    }
+
+    /**
+     * Create an instance of {@link LibraryAnimationClips }
+     * 
+     */
+    public LibraryAnimationClips createLibraryAnimationClips() {
+        return new LibraryAnimationClips();
+    }
+
+    /**
+     * Create an instance of {@link AnimationClip }
+     * 
+     */
+    public AnimationClip createAnimationClip() {
+        return new AnimationClip();
+    }
+
+    /**
+     * Create an instance of {@link InstanceWithExtra }
+     * 
+     */
+    public InstanceWithExtra createInstanceWithExtra() {
+        return new InstanceWithExtra();
+    }
+
+    /**
+     * Create an instance of {@link LibraryCameras }
+     * 
+     */
+    public LibraryCameras createLibraryCameras() {
+        return new LibraryCameras();
+    }
+
+    /**
+     * Create an instance of {@link Camera.Imager }
+     * 
+     */
+    public Camera.Imager createCameraImager() {
+        return new Camera.Imager();
     }
 
     /**
@@ -958,190 +934,6 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link Polylist }
-     * 
-     */
-    public Polylist createPolylist() {
-        return new Polylist();
-    }
-
-    /**
-     * Create an instance of {@link InstanceMaterial.Bind }
-     * 
-     */
-    public InstanceMaterial.Bind createInstanceMaterialBind() {
-        return new InstanceMaterial.Bind();
-    }
-
-    /**
-     * Create an instance of {@link InstanceMaterial.BindVertexInput }
-     * 
-     */
-    public InstanceMaterial.BindVertexInput createInstanceMaterialBindVertexInput() {
-        return new InstanceMaterial.BindVertexInput();
-    }
-
-    /**
-     * Create an instance of {@link InstanceWithExtra }
-     * 
-     */
-    public InstanceWithExtra createInstanceWithExtra() {
-        return new InstanceWithExtra();
-    }
-
-    /**
-     * Create an instance of {@link AnimationClip }
-     * 
-     */
-    public AnimationClip createAnimationClip() {
-        return new AnimationClip();
-    }
-
-    /**
-     * Create an instance of {@link Image }
-     * 
-     */
-    public Image createImage() {
-        return new Image();
-    }
-
-    /**
-     * Create an instance of {@link LibraryCameras }
-     * 
-     */
-    public LibraryCameras createLibraryCameras() {
-        return new LibraryCameras();
-    }
-
-    /**
-     * Create an instance of {@link Camera.Imager }
-     * 
-     */
-    public Camera.Imager createCameraImager() {
-        return new Camera.Imager();
-    }
-
-    /**
-     * Create an instance of {@link RigidConstraint.RefAttachment }
-     * 
-     */
-    public RigidConstraint.RefAttachment createRigidConstraintRefAttachment() {
-        return new RigidConstraint.RefAttachment();
-    }
-
-    /**
-     * Create an instance of {@link RigidConstraint.Attachment }
-     * 
-     */
-    public RigidConstraint.Attachment createRigidConstraintAttachment() {
-        return new RigidConstraint.Attachment();
-    }
-
-    /**
-     * Create an instance of {@link LibraryPhysicsScenes }
-     * 
-     */
-    public LibraryPhysicsScenes createLibraryPhysicsScenes() {
-        return new LibraryPhysicsScenes();
-    }
-
-    /**
-     * Create an instance of {@link InstancePhysicsModel }
-     * 
-     */
-    public InstancePhysicsModel createInstancePhysicsModel() {
-        return new InstancePhysicsModel();
-    }
-
-    /**
-     * Create an instance of {@link InstanceRigidConstraint }
-     * 
-     */
-    public InstanceRigidConstraint createInstanceRigidConstraint() {
-        return new InstanceRigidConstraint();
-    }
-
-    /**
-     * Create an instance of {@link PhysicsScene.TechniqueCommon }
-     * 
-     */
-    public PhysicsScene.TechniqueCommon createPhysicsSceneTechniqueCommon() {
-        return new PhysicsScene.TechniqueCommon();
-    }
-
-    /**
-     * Create an instance of {@link Animation }
-     * 
-     */
-    public Animation createAnimation() {
-        return new Animation();
-    }
-
-    /**
-     * Create an instance of {@link Sampler }
-     * 
-     */
-    public Sampler createSampler() {
-        return new Sampler();
-    }
-
-    /**
-     * Create an instance of {@link InputLocal }
-     * 
-     */
-    public InputLocal createInputLocal() {
-        return new InputLocal();
-    }
-
-    /**
-     * Create an instance of {@link Ellipsoid }
-     * 
-     */
-    public Ellipsoid createEllipsoid() {
-        return new Ellipsoid();
-    }
-
-    /**
-     * Create an instance of {@link Node }
-     * 
-     */
-    public Node createNode() {
-        return new Node();
-    }
-
-    /**
-     * Create an instance of {@link Matrix }
-     * 
-     */
-    public Matrix createMatrix() {
-        return new Matrix();
-    }
-
-    /**
-     * Create an instance of {@link Skew }
-     * 
-     */
-    public Skew createSkew() {
-        return new Skew();
-    }
-
-    /**
-     * Create an instance of {@link InstanceGeometry }
-     * 
-     */
-    public InstanceGeometry createInstanceGeometry() {
-        return new InstanceGeometry();
-    }
-
-    /**
-     * Create an instance of {@link Linestrips }
-     * 
-     */
-    public Linestrips createLinestrips() {
-        return new Linestrips();
-    }
-
-    /**
      * Create an instance of {@link LibraryGeometries }
      * 
      */
@@ -1182,6 +974,46 @@ public class ObjectFactory {
     }
 
     /**
+     * Create an instance of {@link InputLocalOffset }
+     * 
+     */
+    public InputLocalOffset createInputLocalOffset() {
+        return new InputLocalOffset();
+    }
+
+    /**
+     * Create an instance of {@link Linestrips }
+     * 
+     */
+    public Linestrips createLinestrips() {
+        return new Linestrips();
+    }
+
+    /**
+     * Create an instance of {@link Polygons.Ph }
+     * 
+     */
+    public Polygons.Ph createPolygonsPh() {
+        return new Polygons.Ph();
+    }
+
+    /**
+     * Create an instance of {@link Polylist }
+     * 
+     */
+    public Polylist createPolylist() {
+        return new Polylist();
+    }
+
+    /**
+     * Create an instance of {@link Triangles }
+     * 
+     */
+    public Triangles createTriangles() {
+        return new Triangles();
+    }
+
+    /**
      * Create an instance of {@link Trifans }
      * 
      */
@@ -1214,11 +1046,11 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link LibraryLights }
+     * Create an instance of {@link LibraryEffects }
      * 
      */
-    public LibraryLights createLibraryLights() {
-        return new LibraryLights();
+    public LibraryEffects createLibraryEffects() {
+        return new LibraryEffects();
     }
 
     /**
@@ -1238,6 +1070,14 @@ public class ObjectFactory {
     }
 
     /**
+     * Create an instance of {@link Image }
+     * 
+     */
+    public Image createImage() {
+        return new Image();
+    }
+
+    /**
      * Create an instance of {@link FxNewparamCommon }
      * 
      */
@@ -1246,67 +1086,19 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link InstanceEffect.TechniqueHint }
+     * Create an instance of {@link LibraryForceFields }
      * 
      */
-    public InstanceEffect.TechniqueHint createInstanceEffectTechniqueHint() {
-        return new InstanceEffect.TechniqueHint();
+    public LibraryForceFields createLibraryForceFields() {
+        return new LibraryForceFields();
     }
 
     /**
-     * Create an instance of {@link InstanceEffect.Setparam }
+     * Create an instance of {@link ForceField }
      * 
      */
-    public InstanceEffect.Setparam createInstanceEffectSetparam() {
-        return new InstanceEffect.Setparam();
-    }
-
-    /**
-     * Create an instance of {@link LibraryEffects }
-     * 
-     */
-    public LibraryEffects createLibraryEffects() {
-        return new LibraryEffects();
-    }
-
-    /**
-     * Create an instance of {@link LibraryAnimations }
-     * 
-     */
-    public LibraryAnimations createLibraryAnimations() {
-        return new LibraryAnimations();
-    }
-
-    /**
-     * Create an instance of {@link Capsule }
-     * 
-     */
-    public Capsule createCapsule() {
-        return new Capsule();
-    }
-
-    /**
-     * Create an instance of {@link PhysicsModel }
-     * 
-     */
-    public PhysicsModel createPhysicsModel() {
-        return new PhysicsModel();
-    }
-
-    /**
-     * Create an instance of {@link Accessor }
-     * 
-     */
-    public Accessor createAccessor() {
-        return new Accessor();
-    }
-
-    /**
-     * Create an instance of {@link Box }
-     * 
-     */
-    public Box createBox() {
-        return new Box();
+    public ForceField createForceField() {
+        return new ForceField();
     }
 
     /**
@@ -1318,19 +1110,11 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link LibraryPhysicsModels }
+     * Create an instance of {@link LibraryLights }
      * 
      */
-    public LibraryPhysicsModels createLibraryPhysicsModels() {
-        return new LibraryPhysicsModels();
-    }
-
-    /**
-     * Create an instance of {@link Sphere }
-     * 
-     */
-    public Sphere createSphere() {
-        return new Sphere();
+    public LibraryLights createLibraryLights() {
+        return new LibraryLights();
     }
 
     /**
@@ -1350,19 +1134,19 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link LibraryAnimationClips }
+     * Create an instance of {@link InstanceEffect.TechniqueHint }
      * 
      */
-    public LibraryAnimationClips createLibraryAnimationClips() {
-        return new LibraryAnimationClips();
+    public InstanceEffect.TechniqueHint createInstanceEffectTechniqueHint() {
+        return new InstanceEffect.TechniqueHint();
     }
 
     /**
-     * Create an instance of {@link ForceField }
+     * Create an instance of {@link InstanceEffect.Setparam }
      * 
      */
-    public ForceField createForceField() {
-        return new ForceField();
+    public InstanceEffect.Setparam createInstanceEffectSetparam() {
+        return new InstanceEffect.Setparam();
     }
 
     /**
@@ -1374,19 +1158,163 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link TaperedCylinder }
+     * Create an instance of {@link Node }
      * 
      */
-    public TaperedCylinder createTaperedCylinder() {
-        return new TaperedCylinder();
+    public Node createNode() {
+        return new Node();
     }
 
     /**
-     * Create an instance of {@link LibraryForceFields }
+     * Create an instance of {@link Lookat }
      * 
      */
-    public LibraryForceFields createLibraryForceFields() {
-        return new LibraryForceFields();
+    public Lookat createLookat() {
+        return new Lookat();
+    }
+
+    /**
+     * Create an instance of {@link Matrix }
+     * 
+     */
+    public Matrix createMatrix() {
+        return new Matrix();
+    }
+
+    /**
+     * Create an instance of {@link Rotate }
+     * 
+     */
+    public Rotate createRotate() {
+        return new Rotate();
+    }
+
+    /**
+     * Create an instance of {@link TargetableFloat3 }
+     * 
+     */
+    public TargetableFloat3 createTargetableFloat3() {
+        return new TargetableFloat3();
+    }
+
+    /**
+     * Create an instance of {@link Skew }
+     * 
+     */
+    public Skew createSkew() {
+        return new Skew();
+    }
+
+    /**
+     * Create an instance of {@link InstanceController }
+     * 
+     */
+    public InstanceController createInstanceController() {
+        return new InstanceController();
+    }
+
+    /**
+     * Create an instance of {@link org.collada._2005._11.colladaschema.Param }
+     * 
+     */
+    public org.collada._2005._11.colladaschema.Param createParam() {
+        return new org.collada._2005._11.colladaschema.Param();
+    }
+
+    /**
+     * Create an instance of {@link BindMaterial.TechniqueCommon }
+     * 
+     */
+    public BindMaterial.TechniqueCommon createBindMaterialTechniqueCommon() {
+        return new BindMaterial.TechniqueCommon();
+    }
+
+    /**
+     * Create an instance of {@link InstanceGeometry }
+     * 
+     */
+    public InstanceGeometry createInstanceGeometry() {
+        return new InstanceGeometry();
+    }
+
+    /**
+     * Create an instance of {@link LibraryPhysicsMaterials }
+     * 
+     */
+    public LibraryPhysicsMaterials createLibraryPhysicsMaterials() {
+        return new LibraryPhysicsMaterials();
+    }
+
+    /**
+     * Create an instance of {@link PhysicsMaterial.TechniqueCommon }
+     * 
+     */
+    public PhysicsMaterial.TechniqueCommon createPhysicsMaterialTechniqueCommon() {
+        return new PhysicsMaterial.TechniqueCommon();
+    }
+
+    /**
+     * Create an instance of {@link LibraryPhysicsModels }
+     * 
+     */
+    public LibraryPhysicsModels createLibraryPhysicsModels() {
+        return new LibraryPhysicsModels();
+    }
+
+    /**
+     * Create an instance of {@link PhysicsModel }
+     * 
+     */
+    public PhysicsModel createPhysicsModel() {
+        return new PhysicsModel();
+    }
+
+    /**
+     * Create an instance of {@link RigidConstraint.RefAttachment }
+     * 
+     */
+    public RigidConstraint.RefAttachment createRigidConstraintRefAttachment() {
+        return new RigidConstraint.RefAttachment();
+    }
+
+    /**
+     * Create an instance of {@link RigidConstraint.Attachment }
+     * 
+     */
+    public RigidConstraint.Attachment createRigidConstraintAttachment() {
+        return new RigidConstraint.Attachment();
+    }
+
+    /**
+     * Create an instance of {@link InstancePhysicsModel }
+     * 
+     */
+    public InstancePhysicsModel createInstancePhysicsModel() {
+        return new InstancePhysicsModel();
+    }
+
+    /**
+     * Create an instance of {@link InstanceRigidConstraint }
+     * 
+     */
+    public InstanceRigidConstraint createInstanceRigidConstraint() {
+        return new InstanceRigidConstraint();
+    }
+
+    /**
+     * Create an instance of {@link LibraryPhysicsScenes }
+     * 
+     */
+    public LibraryPhysicsScenes createLibraryPhysicsScenes() {
+        return new LibraryPhysicsScenes();
+    }
+
+    /**
+     * Create an instance of {@link PhysicsScene.TechniqueCommon }
+     * 
+     */
+    public PhysicsScene.TechniqueCommon createPhysicsSceneTechniqueCommon() {
+        return new PhysicsScene.TechniqueCommon();
     }
 
     /**
@@ -1406,11 +1334,59 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link TaperedCapsule }
+     * Create an instance of {@link Accessor }
      * 
      */
-    public TaperedCapsule createTaperedCapsule() {
-        return new TaperedCapsule();
+    public Accessor createAccessor() {
+        return new Accessor();
+    }
+
+    /**
+     * Create an instance of {@link InstanceMaterial.Bind }
+     * 
+     */
+    public InstanceMaterial.Bind createInstanceMaterialBind() {
+        return new InstanceMaterial.Bind();
+    }
+
+    /**
+     * Create an instance of {@link InstanceMaterial.BindVertexInput }
+     * 
+     */
+    public InstanceMaterial.BindVertexInput createInstanceMaterialBindVertexInput() {
+        return new InstanceMaterial.BindVertexInput();
+    }
+
+    /**
+     * Create an instance of {@link Box }
+     * 
+     */
+    public Box createBox() {
+        return new Box();
+    }
+
+    /**
+     * Create an instance of {@link Plane }
+     * 
+     */
+    public Plane createPlane() {
+        return new Plane();
+    }
+
+    /**
+     * Create an instance of {@link Sphere }
+     * 
+     */
+    public Sphere createSphere() {
+        return new Sphere();
+    }
+
+    /**
+     * Create an instance of {@link Ellipsoid }
+     * 
+     */
+    public Ellipsoid createEllipsoid() {
+        return new Ellipsoid();
     }
 
     /**
@@ -1422,75 +1398,43 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link FxStenciltargetCommon }
+     * Create an instance of {@link TaperedCylinder }
      * 
      */
-    public FxStenciltargetCommon createFxStenciltargetCommon() {
-        return new FxStenciltargetCommon();
+    public TaperedCylinder createTaperedCylinder() {
+        return new TaperedCylinder();
     }
 
     /**
-     * Create an instance of {@link CgConnectParam }
+     * Create an instance of {@link Capsule }
      * 
      */
-    public CgConnectParam createCgConnectParam() {
-        return new CgConnectParam();
+    public Capsule createCapsule() {
+        return new Capsule();
     }
 
     /**
-     * Create an instance of {@link CgNewparam }
+     * Create an instance of {@link TaperedCapsule }
      * 
      */
-    public CgNewparam createCgNewparam() {
-        return new CgNewparam();
+    public TaperedCapsule createTaperedCapsule() {
+        return new TaperedCapsule();
     }
 
     /**
-     * Create an instance of {@link CgSamplerDEPTH }
+     * Create an instance of {@link InputGlobal }
      * 
      */
-    public CgSamplerDEPTH createCgSamplerDEPTH() {
-        return new CgSamplerDEPTH();
+    public InputGlobal createInputGlobal() {
+        return new InputGlobal();
     }
 
     /**
-     * Create an instance of {@link FxSampler1DCommon }
+     * Create an instance of {@link TargetableFloat }
      * 
      */
-    public FxSampler1DCommon createFxSampler1DCommon() {
-        return new FxSampler1DCommon();
-    }
-
-    /**
-     * Create an instance of {@link FxCleardepthCommon }
-     * 
-     */
-    public FxCleardepthCommon createFxCleardepthCommon() {
-        return new FxCleardepthCommon();
-    }
-
-    /**
-     * Create an instance of {@link FxSamplerCUBECommon }
-     * 
-     */
-    public FxSamplerCUBECommon createFxSamplerCUBECommon() {
-        return new FxSamplerCUBECommon();
-    }
-
-    /**
-     * Create an instance of {@link CgSamplerRECT }
-     * 
-     */
-    public CgSamplerRECT createCgSamplerRECT() {
-        return new CgSamplerRECT();
-    }
-
-    /**
-     * Create an instance of {@link GlesNewparam }
-     * 
-     */
-    public GlesNewparam createGlesNewparam() {
-        return new GlesNewparam();
+    public TargetableFloat createTargetableFloat() {
+        return new TargetableFloat();
     }
 
     /**
@@ -1502,139 +1446,11 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link FxDepthtargetCommon }
+     * Create an instance of {@link FxSurfaceInitFromCommon }
      * 
      */
-    public FxDepthtargetCommon createFxDepthtargetCommon() {
-        return new FxDepthtargetCommon();
-    }
-
-    /**
-     * Create an instance of {@link FxColortargetCommon }
-     * 
-     */
-    public FxColortargetCommon createFxColortargetCommon() {
-        return new FxColortargetCommon();
-    }
-
-    /**
-     * Create an instance of {@link CgSetuserType }
-     * 
-     */
-    public CgSetuserType createCgSetuserType() {
-        return new CgSetuserType();
-    }
-
-    /**
-     * Create an instance of {@link CgSetparam }
-     * 
-     */
-    public CgSetparam createCgSetparam() {
-        return new CgSetparam();
-    }
-
-    /**
-     * Create an instance of {@link GlslNewarrayType }
-     * 
-     */
-    public GlslNewarrayType createGlslNewarrayType() {
-        return new GlslNewarrayType();
-    }
-
-    /**
-     * Create an instance of {@link CgSamplerCUBE }
-     * 
-     */
-    public CgSamplerCUBE createCgSamplerCUBE() {
-        return new CgSamplerCUBE();
-    }
-
-    /**
-     * Create an instance of {@link GlesTexturePipeline }
-     * 
-     */
-    public GlesTexturePipeline createGlesTexturePipeline() {
-        return new GlesTexturePipeline();
-    }
-
-    /**
-     * Create an instance of {@link GlslSetparam }
-     * 
-     */
-    public GlslSetparam createGlslSetparam() {
-        return new GlslSetparam();
-    }
-
-    /**
-     * Create an instance of {@link FxSampler3DCommon }
-     * 
-     */
-    public FxSampler3DCommon createFxSampler3DCommon() {
-        return new FxSampler3DCommon();
-    }
-
-    /**
-     * Create an instance of {@link CommonNewparamType }
-     * 
-     */
-    public CommonNewparamType createCommonNewparamType() {
-        return new CommonNewparamType();
-    }
-
-    /**
-     * Create an instance of {@link FxSamplerDEPTHCommon }
-     * 
-     */
-    public FxSamplerDEPTHCommon createFxSamplerDEPTHCommon() {
-        return new FxSamplerDEPTHCommon();
-    }
-
-    /**
-     * Create an instance of {@link GlesTexcombinerCommandType }
-     * 
-     */
-    public GlesTexcombinerCommandType createGlesTexcombinerCommandType() {
-        return new GlesTexcombinerCommandType();
-    }
-
-    /**
-     * Create an instance of {@link FxClearstencilCommon }
-     * 
-     */
-    public FxClearstencilCommon createFxClearstencilCommon() {
-        return new FxClearstencilCommon();
-    }
-
-    /**
-     * Create an instance of {@link CommonTransparentType }
-     * 
-     */
-    public CommonTransparentType createCommonTransparentType() {
-        return new CommonTransparentType();
-    }
-
-    /**
-     * Create an instance of {@link GlesTexcombinerArgumentRGBType }
-     * 
-     */
-    public GlesTexcombinerArgumentRGBType createGlesTexcombinerArgumentRGBType() {
-        return new GlesTexcombinerArgumentRGBType();
-    }
-
-    /**
-     * Create an instance of {@link GlesTexcombinerCommandRGBType }
-     * 
-     */
-    public GlesTexcombinerCommandRGBType createGlesTexcombinerCommandRGBType() {
-        return new GlesTexcombinerCommandRGBType();
-    }
-
-    /**
-     * Create an instance of {@link GlesTexcombinerCommandAlphaType }
-     * 
-     */
-    public GlesTexcombinerCommandAlphaType createGlesTexcombinerCommandAlphaType() {
-        return new GlesTexcombinerCommandAlphaType();
+    public FxSurfaceInitFromCommon createFxSurfaceInitFromCommon() {
+        return new FxSurfaceInitFromCommon();
     }
 
     /**
@@ -1646,83 +1462,11 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link GlslSetarrayType }
+     * Create an instance of {@link FxSampler1DCommon }
      * 
      */
-    public GlslSetarrayType createGlslSetarrayType() {
-        return new GlslSetarrayType();
-    }
-
-    /**
-     * Create an instance of {@link GlSamplerDEPTH }
-     * 
-     */
-    public GlSamplerDEPTH createGlSamplerDEPTH() {
-        return new GlSamplerDEPTH();
-    }
-
-    /**
-     * Create an instance of {@link GlesSamplerState }
-     * 
-     */
-    public GlesSamplerState createGlesSamplerState() {
-        return new GlesSamplerState();
-    }
-
-    /**
-     * Create an instance of {@link FxCodeProfile }
-     * 
-     */
-    public FxCodeProfile createFxCodeProfile() {
-        return new FxCodeProfile();
-    }
-
-    /**
-     * Create an instance of {@link GlSampler2D }
-     * 
-     */
-    public GlSampler2D createGlSampler2D() {
-        return new GlSampler2D();
-    }
-
-    /**
-     * Create an instance of {@link CgNewarrayType }
-     * 
-     */
-    public CgNewarrayType createCgNewarrayType() {
-        return new CgNewarrayType();
-    }
-
-    /**
-     * Create an instance of {@link CgSampler3D }
-     * 
-     */
-    public CgSampler3D createCgSampler3D() {
-        return new CgSampler3D();
-    }
-
-    /**
-     * Create an instance of {@link GlSampler3D }
-     * 
-     */
-    public GlSampler3D createGlSampler3D() {
-        return new GlSampler3D();
-    }
-
-    /**
-     * Create an instance of {@link GlSamplerRECT }
-     * 
-     */
-    public GlSamplerRECT createGlSamplerRECT() {
-        return new GlSamplerRECT();
-    }
-
-    /**
-     * Create an instance of {@link GlesTexenvCommandType }
-     * 
-     */
-    public GlesTexenvCommandType createGlesTexenvCommandType() {
-        return new GlesTexenvCommandType();
+    public FxSampler1DCommon createFxSampler1DCommon() {
+        return new FxSampler1DCommon();
     }
 
     /**
@@ -1734,11 +1478,123 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link GlesTextureConstantType }
+     * Create an instance of {@link FxSampler3DCommon }
      * 
      */
-    public GlesTextureConstantType createGlesTextureConstantType() {
-        return new GlesTextureConstantType();
+    public FxSampler3DCommon createFxSampler3DCommon() {
+        return new FxSampler3DCommon();
+    }
+
+    /**
+     * Create an instance of {@link FxSamplerCUBECommon }
+     * 
+     */
+    public FxSamplerCUBECommon createFxSamplerCUBECommon() {
+        return new FxSamplerCUBECommon();
+    }
+
+    /**
+     * Create an instance of {@link FxSamplerRECTCommon }
+     * 
+     */
+    public FxSamplerRECTCommon createFxSamplerRECTCommon() {
+        return new FxSamplerRECTCommon();
+    }
+
+    /**
+     * Create an instance of {@link FxSamplerDEPTHCommon }
+     * 
+     */
+    public FxSamplerDEPTHCommon createFxSamplerDEPTHCommon() {
+        return new FxSamplerDEPTHCommon();
+    }
+
+    /**
+     * Create an instance of {@link FxColortargetCommon }
+     * 
+     */
+    public FxColortargetCommon createFxColortargetCommon() {
+        return new FxColortargetCommon();
+    }
+
+    /**
+     * Create an instance of {@link FxDepthtargetCommon }
+     * 
+     */
+    public FxDepthtargetCommon createFxDepthtargetCommon() {
+        return new FxDepthtargetCommon();
+    }
+
+    /**
+     * Create an instance of {@link FxStenciltargetCommon }
+     * 
+     */
+    public FxStenciltargetCommon createFxStenciltargetCommon() {
+        return new FxStenciltargetCommon();
+    }
+
+    /**
+     * Create an instance of {@link FxClearcolorCommon }
+     * 
+     */
+    public FxClearcolorCommon createFxClearcolorCommon() {
+        return new FxClearcolorCommon();
+    }
+
+    /**
+     * Create an instance of {@link FxCleardepthCommon }
+     * 
+     */
+    public FxCleardepthCommon createFxCleardepthCommon() {
+        return new FxCleardepthCommon();
+    }
+
+    /**
+     * Create an instance of {@link FxClearstencilCommon }
+     * 
+     */
+    public FxClearstencilCommon createFxClearstencilCommon() {
+        return new FxClearstencilCommon();
+    }
+
+    /**
+     * Create an instance of {@link FxIncludeCommon }
+     * 
+     */
+    public FxIncludeCommon createFxIncludeCommon() {
+        return new FxIncludeCommon();
+    }
+
+    /**
+     * Create an instance of {@link FxCodeProfile }
+     * 
+     */
+    public FxCodeProfile createFxCodeProfile() {
+        return new FxCodeProfile();
+    }
+
+    /**
+     * Create an instance of {@link GlSampler1D }
+     * 
+     */
+    public GlSampler1D createGlSampler1D() {
+        return new GlSampler1D();
+    }
+
+    /**
+     * Create an instance of {@link GlSampler2D }
+     * 
+     */
+    public GlSampler2D createGlSampler2D() {
+        return new GlSampler2D();
+    }
+
+    /**
+     * Create an instance of {@link GlSampler3D }
+     * 
+     */
+    public GlSampler3D createGlSampler3D() {
+        return new GlSampler3D();
     }
 
     /**
@@ -1747,6 +1603,78 @@ public class ObjectFactory {
      */
     public GlSamplerCUBE createGlSamplerCUBE() {
         return new GlSamplerCUBE();
+    }
+
+    /**
+     * Create an instance of {@link GlSamplerRECT }
+     * 
+     */
+    public GlSamplerRECT createGlSamplerRECT() {
+        return new GlSamplerRECT();
+    }
+
+    /**
+     * Create an instance of {@link GlSamplerDEPTH }
+     * 
+     */
+    public GlSamplerDEPTH createGlSamplerDEPTH() {
+        return new GlSamplerDEPTH();
+    }
+
+    /**
+     * Create an instance of {@link GlslNewarrayType }
+     * 
+     */
+    public GlslNewarrayType createGlslNewarrayType() {
+        return new GlslNewarrayType();
+    }
+
+    /**
+     * Create an instance of {@link GlslSetarrayType }
+     * 
+     */
+    public GlslSetarrayType createGlslSetarrayType() {
+        return new GlslSetarrayType();
+    }
+
+    /**
+     * Create an instance of {@link GlslNewparam }
+     * 
+     */
+    public GlslNewparam createGlslNewparam() {
+        return new GlslNewparam();
+    }
+
+    /**
+     * Create an instance of {@link GlslSetparamSimple }
+     * 
+     */
+    public GlslSetparamSimple createGlslSetparamSimple() {
+        return new GlslSetparamSimple();
+    }
+
+    /**
+     * Create an instance of {@link GlslSetparam }
+     * 
+     */
+    public GlslSetparam createGlslSetparam() {
+        return new GlslSetparam();
+    }
+
+    /**
+     * Create an instance of {@link CommonTransparentType }
+     * 
+     */
+    public CommonTransparentType createCommonTransparentType() {
+        return new CommonTransparentType();
+    }
+
+    /**
+     * Create an instance of {@link CommonNewparamType }
+     * 
+     */
+    public CommonNewparamType createCommonNewparamType() {
+        return new CommonNewparamType();
     }
 
     /**
@@ -1766,75 +1694,51 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link GlslSetparamSimple }
+     * Create an instance of {@link CgSampler3D }
      * 
      */
-    public GlslSetparamSimple createGlslSetparamSimple() {
-        return new GlslSetparamSimple();
+    public CgSampler3D createCgSampler3D() {
+        return new CgSampler3D();
     }
 
     /**
-     * Create an instance of {@link GlesTexcombinerArgumentAlphaType }
+     * Create an instance of {@link CgSamplerCUBE }
      * 
      */
-    public GlesTexcombinerArgumentAlphaType createGlesTexcombinerArgumentAlphaType() {
-        return new GlesTexcombinerArgumentAlphaType();
+    public CgSamplerCUBE createCgSamplerCUBE() {
+        return new CgSamplerCUBE();
     }
 
     /**
-     * Create an instance of {@link TargetableFloat }
+     * Create an instance of {@link CgSamplerRECT }
      * 
      */
-    public TargetableFloat createTargetableFloat() {
-        return new TargetableFloat();
+    public CgSamplerRECT createCgSamplerRECT() {
+        return new CgSamplerRECT();
     }
 
     /**
-     * Create an instance of {@link FxSurfaceInitFromCommon }
+     * Create an instance of {@link CgSamplerDEPTH }
      * 
      */
-    public FxSurfaceInitFromCommon createFxSurfaceInitFromCommon() {
-        return new FxSurfaceInitFromCommon();
+    public CgSamplerDEPTH createCgSamplerDEPTH() {
+        return new CgSamplerDEPTH();
     }
 
     /**
-     * Create an instance of {@link InputGlobal }
+     * Create an instance of {@link CgConnectParam }
      * 
      */
-    public InputGlobal createInputGlobal() {
-        return new InputGlobal();
+    public CgConnectParam createCgConnectParam() {
+        return new CgConnectParam();
     }
 
     /**
-     * Create an instance of {@link FxClearcolorCommon }
+     * Create an instance of {@link CgNewarrayType }
      * 
      */
-    public FxClearcolorCommon createFxClearcolorCommon() {
-        return new FxClearcolorCommon();
-    }
-
-    /**
-     * Create an instance of {@link FxSamplerRECTCommon }
-     * 
-     */
-    public FxSamplerRECTCommon createFxSamplerRECTCommon() {
-        return new FxSamplerRECTCommon();
-    }
-
-    /**
-     * Create an instance of {@link GlslNewparam }
-     * 
-     */
-    public GlslNewparam createGlslNewparam() {
-        return new GlslNewparam();
-    }
-
-    /**
-     * Create an instance of {@link FxIncludeCommon }
-     * 
-     */
-    public FxIncludeCommon createFxIncludeCommon() {
-        return new FxIncludeCommon();
+    public CgNewarrayType createCgNewarrayType() {
+        return new CgNewarrayType();
     }
 
     /**
@@ -1846,11 +1750,19 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link GlSampler1D }
+     * Create an instance of {@link CgSetuserType }
      * 
      */
-    public GlSampler1D createGlSampler1D() {
-        return new GlSampler1D();
+    public CgSetuserType createCgSetuserType() {
+        return new CgSetuserType();
+    }
+
+    /**
+     * Create an instance of {@link CgNewparam }
+     * 
+     */
+    public CgNewparam createCgNewparam() {
+        return new CgNewparam();
     }
 
     /**
@@ -1862,11 +1774,155 @@ public class ObjectFactory {
     }
 
     /**
+     * Create an instance of {@link CgSetparam }
+     * 
+     */
+    public CgSetparam createCgSetparam() {
+        return new CgSetparam();
+    }
+
+    /**
+     * Create an instance of {@link GlesTextureConstantType }
+     * 
+     */
+    public GlesTextureConstantType createGlesTextureConstantType() {
+        return new GlesTextureConstantType();
+    }
+
+    /**
+     * Create an instance of {@link GlesTexenvCommandType }
+     * 
+     */
+    public GlesTexenvCommandType createGlesTexenvCommandType() {
+        return new GlesTexenvCommandType();
+    }
+
+    /**
+     * Create an instance of {@link GlesTexcombinerArgumentRGBType }
+     * 
+     */
+    public GlesTexcombinerArgumentRGBType createGlesTexcombinerArgumentRGBType() {
+        return new GlesTexcombinerArgumentRGBType();
+    }
+
+    /**
+     * Create an instance of {@link GlesTexcombinerArgumentAlphaType }
+     * 
+     */
+    public GlesTexcombinerArgumentAlphaType createGlesTexcombinerArgumentAlphaType() {
+        return new GlesTexcombinerArgumentAlphaType();
+    }
+
+    /**
+     * Create an instance of {@link GlesTexcombinerCommandRGBType }
+     * 
+     */
+    public GlesTexcombinerCommandRGBType createGlesTexcombinerCommandRGBType() {
+        return new GlesTexcombinerCommandRGBType();
+    }
+
+    /**
+     * Create an instance of {@link GlesTexcombinerCommandAlphaType }
+     * 
+     */
+    public GlesTexcombinerCommandAlphaType createGlesTexcombinerCommandAlphaType() {
+        return new GlesTexcombinerCommandAlphaType();
+    }
+
+    /**
+     * Create an instance of {@link GlesTexcombinerCommandType }
+     * 
+     */
+    public GlesTexcombinerCommandType createGlesTexcombinerCommandType() {
+        return new GlesTexcombinerCommandType();
+    }
+
+    /**
+     * Create an instance of {@link GlesTexturePipeline }
+     * 
+     */
+    public GlesTexturePipeline createGlesTexturePipeline() {
+        return new GlesTexturePipeline();
+    }
+
+    /**
+     * Create an instance of {@link GlesSamplerState }
+     * 
+     */
+    public GlesSamplerState createGlesSamplerState() {
+        return new GlesSamplerState();
+    }
+
+    /**
+     * Create an instance of {@link GlesNewparam }
+     * 
+     */
+    public GlesNewparam createGlesNewparam() {
+        return new GlesNewparam();
+    }
+
+    /**
      * Create an instance of {@link GlesTextureUnit.Texcoord }
      * 
      */
     public GlesTextureUnit.Texcoord createGlesTextureUnitTexcoord() {
         return new GlesTextureUnit.Texcoord();
+    }
+
+    /**
+     * Create an instance of {@link CgSurfaceType.Generator.Name }
+     * 
+     */
+    public CgSurfaceType.Generator.Name createCgSurfaceTypeGeneratorName() {
+        return new CgSurfaceType.Generator.Name();
+    }
+
+    /**
+     * Create an instance of {@link CommonColorOrTextureType.Color }
+     * 
+     */
+    public CommonColorOrTextureType.Color createCommonColorOrTextureTypeColor() {
+        return new CommonColorOrTextureType.Color();
+    }
+
+    /**
+     * Create an instance of {@link CommonColorOrTextureType.Param }
+     * 
+     */
+    public CommonColorOrTextureType.Param createCommonColorOrTextureTypeParam() {
+        return new CommonColorOrTextureType.Param();
+    }
+
+    /**
+     * Create an instance of {@link CommonColorOrTextureType.Texture }
+     * 
+     */
+    public CommonColorOrTextureType.Texture createCommonColorOrTextureTypeTexture() {
+        return new CommonColorOrTextureType.Texture();
+    }
+
+    /**
+     * Create an instance of {@link CommonFloatOrParamType.Float }
+     * 
+     */
+    public CommonFloatOrParamType.Float createCommonFloatOrParamTypeFloat() {
+        return new CommonFloatOrParamType.Float();
+    }
+
+    /**
+     * Create an instance of {@link CommonFloatOrParamType.Param }
+     * 
+     */
+    public CommonFloatOrParamType.Param createCommonFloatOrParamTypeParam() {
+        return new CommonFloatOrParamType.Param();
+    }
+
+    /**
+     * Create an instance of {@link GlslSurfaceType.Generator.Name }
+     * 
+     */
+    public GlslSurfaceType.Generator.Name createGlslSurfaceTypeGeneratorName() {
+        return new GlslSurfaceType.Generator.Name();
     }
 
     /**
@@ -1910,54 +1966,6 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link CommonFloatOrParamType.Float }
-     * 
-     */
-    public CommonFloatOrParamType.Float createCommonFloatOrParamTypeFloat() {
-        return new CommonFloatOrParamType.Float();
-    }
-
-    /**
-     * Create an instance of {@link CommonFloatOrParamType.Param }
-     * 
-     */
-    public CommonFloatOrParamType.Param createCommonFloatOrParamTypeParam() {
-        return new CommonFloatOrParamType.Param();
-    }
-
-    /**
-     * Create an instance of {@link CgSurfaceType.Generator.Name }
-     * 
-     */
-    public CgSurfaceType.Generator.Name createCgSurfaceTypeGeneratorName() {
-        return new CgSurfaceType.Generator.Name();
-    }
-
-    /**
-     * Create an instance of {@link CommonColorOrTextureType.Color }
-     * 
-     */
-    public CommonColorOrTextureType.Color createCommonColorOrTextureTypeColor() {
-        return new CommonColorOrTextureType.Color();
-    }
-
-    /**
-     * Create an instance of {@link CommonColorOrTextureType.Param }
-     * 
-     */
-    public CommonColorOrTextureType.Param createCommonColorOrTextureTypeParam() {
-        return new CommonColorOrTextureType.Param();
-    }
-
-    /**
-     * Create an instance of {@link CommonColorOrTextureType.Texture }
-     * 
-     */
-    public CommonColorOrTextureType.Texture createCommonColorOrTextureTypeTexture() {
-        return new CommonColorOrTextureType.Texture();
-    }
-
-    /**
      * Create an instance of {@link FxSurfaceInitPlanarCommon.All }
      * 
      */
@@ -1966,11 +1974,643 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link GlslSurfaceType.Generator.Name }
+     * Create an instance of {@link ProfileGLES.Technique.Setparam }
      * 
      */
-    public GlslSurfaceType.Generator.Name createGlslSurfaceTypeGeneratorName() {
-        return new GlslSurfaceType.Generator.Name();
+    public ProfileGLES.Technique.Setparam createProfileGLESTechniqueSetparam() {
+        return new ProfileGLES.Technique.Setparam();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLES.Technique.Pass.ClearColor }
+     * 
+     */
+    public ProfileGLES.Technique.Pass.ClearColor createProfileGLESTechniquePassClearColor() {
+        return new ProfileGLES.Technique.Pass.ClearColor();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLES.Technique.Pass.ClearStencil }
+     * 
+     */
+    public ProfileGLES.Technique.Pass.ClearStencil createProfileGLESTechniquePassClearStencil() {
+        return new ProfileGLES.Technique.Pass.ClearStencil();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLES.Technique.Pass.ClearDepth }
+     * 
+     */
+    public ProfileGLES.Technique.Pass.ClearDepth createProfileGLESTechniquePassClearDepth() {
+        return new ProfileGLES.Technique.Pass.ClearDepth();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLES.Technique.Pass.ClipPlane }
+     * 
+     */
+    public ProfileGLES.Technique.Pass.ClipPlane createProfileGLESTechniquePassClipPlane() {
+        return new ProfileGLES.Technique.Pass.ClipPlane();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLES.Technique.Pass.ColorMask }
+     * 
+     */
+    public ProfileGLES.Technique.Pass.ColorMask createProfileGLESTechniquePassColorMask() {
+        return new ProfileGLES.Technique.Pass.ColorMask();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLES.Technique.Pass.CullFace }
+     * 
+     */
+    public ProfileGLES.Technique.Pass.CullFace createProfileGLESTechniquePassCullFace() {
+        return new ProfileGLES.Technique.Pass.CullFace();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLES.Technique.Pass.DepthFunc }
+     * 
+     */
+    public ProfileGLES.Technique.Pass.DepthFunc createProfileGLESTechniquePassDepthFunc() {
+        return new ProfileGLES.Technique.Pass.DepthFunc();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLES.Technique.Pass.DepthMask }
+     * 
+     */
+    public ProfileGLES.Technique.Pass.DepthMask createProfileGLESTechniquePassDepthMask() {
+        return new ProfileGLES.Technique.Pass.DepthMask();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLES.Technique.Pass.DepthRange }
+     * 
+     */
+    public ProfileGLES.Technique.Pass.DepthRange createProfileGLESTechniquePassDepthRange() {
+        return new ProfileGLES.Technique.Pass.DepthRange();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLES.Technique.Pass.FogColor }
+     * 
+     */
+    public ProfileGLES.Technique.Pass.FogColor createProfileGLESTechniquePassFogColor() {
+        return new ProfileGLES.Technique.Pass.FogColor();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLES.Technique.Pass.FogDensity }
+     * 
+     */
+    public ProfileGLES.Technique.Pass.FogDensity createProfileGLESTechniquePassFogDensity() {
+        return new ProfileGLES.Technique.Pass.FogDensity();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLES.Technique.Pass.FogMode }
+     * 
+     */
+    public ProfileGLES.Technique.Pass.FogMode createProfileGLESTechniquePassFogMode() {
+        return new ProfileGLES.Technique.Pass.FogMode();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLES.Technique.Pass.FogStart }
+     * 
+     */
+    public ProfileGLES.Technique.Pass.FogStart createProfileGLESTechniquePassFogStart() {
+        return new ProfileGLES.Technique.Pass.FogStart();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLES.Technique.Pass.FogEnd }
+     * 
+     */
+    public ProfileGLES.Technique.Pass.FogEnd createProfileGLESTechniquePassFogEnd() {
+        return new ProfileGLES.Technique.Pass.FogEnd();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLES.Technique.Pass.FrontFace }
+     * 
+     */
+    public ProfileGLES.Technique.Pass.FrontFace createProfileGLESTechniquePassFrontFace() {
+        return new ProfileGLES.Technique.Pass.FrontFace();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLES.Technique.Pass.TexturePipeline }
+     * 
+     */
+    public ProfileGLES.Technique.Pass.TexturePipeline createProfileGLESTechniquePassTexturePipeline() {
+        return new ProfileGLES.Technique.Pass.TexturePipeline();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLES.Technique.Pass.LogicOp }
+     * 
+     */
+    public ProfileGLES.Technique.Pass.LogicOp createProfileGLESTechniquePassLogicOp() {
+        return new ProfileGLES.Technique.Pass.LogicOp();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLES.Technique.Pass.LightAmbient }
+     * 
+     */
+    public ProfileGLES.Technique.Pass.LightAmbient createProfileGLESTechniquePassLightAmbient() {
+        return new ProfileGLES.Technique.Pass.LightAmbient();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLES.Technique.Pass.LightDiffuse }
+     * 
+     */
+    public ProfileGLES.Technique.Pass.LightDiffuse createProfileGLESTechniquePassLightDiffuse() {
+        return new ProfileGLES.Technique.Pass.LightDiffuse();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLES.Technique.Pass.LightSpecular }
+     * 
+     */
+    public ProfileGLES.Technique.Pass.LightSpecular createProfileGLESTechniquePassLightSpecular() {
+        return new ProfileGLES.Technique.Pass.LightSpecular();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLES.Technique.Pass.LightPosition }
+     * 
+     */
+    public ProfileGLES.Technique.Pass.LightPosition createProfileGLESTechniquePassLightPosition() {
+        return new ProfileGLES.Technique.Pass.LightPosition();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLES.Technique.Pass.LightConstantAttenuation }
+     * 
+     */
+    public ProfileGLES.Technique.Pass.LightConstantAttenuation createProfileGLESTechniquePassLightConstantAttenuation() {
+        return new ProfileGLES.Technique.Pass.LightConstantAttenuation();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLES.Technique.Pass.LightLinearAttenutation }
+     * 
+     */
+    public ProfileGLES.Technique.Pass.LightLinearAttenutation createProfileGLESTechniquePassLightLinearAttenutation() {
+        return new ProfileGLES.Technique.Pass.LightLinearAttenutation();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLES.Technique.Pass.LightQuadraticAttenuation }
+     * 
+     */
+    public ProfileGLES.Technique.Pass.LightQuadraticAttenuation createProfileGLESTechniquePassLightQuadraticAttenuation() {
+        return new ProfileGLES.Technique.Pass.LightQuadraticAttenuation();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLES.Technique.Pass.LightSpotCutoff }
+     * 
+     */
+    public ProfileGLES.Technique.Pass.LightSpotCutoff createProfileGLESTechniquePassLightSpotCutoff() {
+        return new ProfileGLES.Technique.Pass.LightSpotCutoff();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLES.Technique.Pass.LightSpotDirection }
+     * 
+     */
+    public ProfileGLES.Technique.Pass.LightSpotDirection createProfileGLESTechniquePassLightSpotDirection() {
+        return new ProfileGLES.Technique.Pass.LightSpotDirection();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLES.Technique.Pass.LightSpotExponent }
+     * 
+     */
+    public ProfileGLES.Technique.Pass.LightSpotExponent createProfileGLESTechniquePassLightSpotExponent() {
+        return new ProfileGLES.Technique.Pass.LightSpotExponent();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLES.Technique.Pass.LightModelAmbient }
+     * 
+     */
+    public ProfileGLES.Technique.Pass.LightModelAmbient createProfileGLESTechniquePassLightModelAmbient() {
+        return new ProfileGLES.Technique.Pass.LightModelAmbient();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLES.Technique.Pass.LineWidth }
+     * 
+     */
+    public ProfileGLES.Technique.Pass.LineWidth createProfileGLESTechniquePassLineWidth() {
+        return new ProfileGLES.Technique.Pass.LineWidth();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLES.Technique.Pass.MaterialAmbient }
+     * 
+     */
+    public ProfileGLES.Technique.Pass.MaterialAmbient createProfileGLESTechniquePassMaterialAmbient() {
+        return new ProfileGLES.Technique.Pass.MaterialAmbient();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLES.Technique.Pass.MaterialDiffuse }
+     * 
+     */
+    public ProfileGLES.Technique.Pass.MaterialDiffuse createProfileGLESTechniquePassMaterialDiffuse() {
+        return new ProfileGLES.Technique.Pass.MaterialDiffuse();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLES.Technique.Pass.MaterialEmission }
+     * 
+     */
+    public ProfileGLES.Technique.Pass.MaterialEmission createProfileGLESTechniquePassMaterialEmission() {
+        return new ProfileGLES.Technique.Pass.MaterialEmission();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLES.Technique.Pass.MaterialShininess }
+     * 
+     */
+    public ProfileGLES.Technique.Pass.MaterialShininess createProfileGLESTechniquePassMaterialShininess() {
+        return new ProfileGLES.Technique.Pass.MaterialShininess();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLES.Technique.Pass.MaterialSpecular }
+     * 
+     */
+    public ProfileGLES.Technique.Pass.MaterialSpecular createProfileGLESTechniquePassMaterialSpecular() {
+        return new ProfileGLES.Technique.Pass.MaterialSpecular();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLES.Technique.Pass.ModelViewMatrix }
+     * 
+     */
+    public ProfileGLES.Technique.Pass.ModelViewMatrix createProfileGLESTechniquePassModelViewMatrix() {
+        return new ProfileGLES.Technique.Pass.ModelViewMatrix();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLES.Technique.Pass.PointDistanceAttenuation }
+     * 
+     */
+    public ProfileGLES.Technique.Pass.PointDistanceAttenuation createProfileGLESTechniquePassPointDistanceAttenuation() {
+        return new ProfileGLES.Technique.Pass.PointDistanceAttenuation();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLES.Technique.Pass.PointFadeThresholdSize }
+     * 
+     */
+    public ProfileGLES.Technique.Pass.PointFadeThresholdSize createProfileGLESTechniquePassPointFadeThresholdSize() {
+        return new ProfileGLES.Technique.Pass.PointFadeThresholdSize();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLES.Technique.Pass.PointSize }
+     * 
+     */
+    public ProfileGLES.Technique.Pass.PointSize createProfileGLESTechniquePassPointSize() {
+        return new ProfileGLES.Technique.Pass.PointSize();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLES.Technique.Pass.PointSizeMin }
+     * 
+     */
+    public ProfileGLES.Technique.Pass.PointSizeMin createProfileGLESTechniquePassPointSizeMin() {
+        return new ProfileGLES.Technique.Pass.PointSizeMin();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLES.Technique.Pass.PointSizeMax }
+     * 
+     */
+    public ProfileGLES.Technique.Pass.PointSizeMax createProfileGLESTechniquePassPointSizeMax() {
+        return new ProfileGLES.Technique.Pass.PointSizeMax();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLES.Technique.Pass.PolygonOffset }
+     * 
+     */
+    public ProfileGLES.Technique.Pass.PolygonOffset createProfileGLESTechniquePassPolygonOffset() {
+        return new ProfileGLES.Technique.Pass.PolygonOffset();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLES.Technique.Pass.ProjectionMatrix }
+     * 
+     */
+    public ProfileGLES.Technique.Pass.ProjectionMatrix createProfileGLESTechniquePassProjectionMatrix() {
+        return new ProfileGLES.Technique.Pass.ProjectionMatrix();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLES.Technique.Pass.Scissor }
+     * 
+     */
+    public ProfileGLES.Technique.Pass.Scissor createProfileGLESTechniquePassScissor() {
+        return new ProfileGLES.Technique.Pass.Scissor();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLES.Technique.Pass.ShadeModel }
+     * 
+     */
+    public ProfileGLES.Technique.Pass.ShadeModel createProfileGLESTechniquePassShadeModel() {
+        return new ProfileGLES.Technique.Pass.ShadeModel();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLES.Technique.Pass.StencilMask }
+     * 
+     */
+    public ProfileGLES.Technique.Pass.StencilMask createProfileGLESTechniquePassStencilMask() {
+        return new ProfileGLES.Technique.Pass.StencilMask();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLES.Technique.Pass.AlphaTestEnable }
+     * 
+     */
+    public ProfileGLES.Technique.Pass.AlphaTestEnable createProfileGLESTechniquePassAlphaTestEnable() {
+        return new ProfileGLES.Technique.Pass.AlphaTestEnable();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLES.Technique.Pass.BlendEnable }
+     * 
+     */
+    public ProfileGLES.Technique.Pass.BlendEnable createProfileGLESTechniquePassBlendEnable() {
+        return new ProfileGLES.Technique.Pass.BlendEnable();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLES.Technique.Pass.ClipPlaneEnable }
+     * 
+     */
+    public ProfileGLES.Technique.Pass.ClipPlaneEnable createProfileGLESTechniquePassClipPlaneEnable() {
+        return new ProfileGLES.Technique.Pass.ClipPlaneEnable();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLES.Technique.Pass.ColorLogicOpEnable }
+     * 
+     */
+    public ProfileGLES.Technique.Pass.ColorLogicOpEnable createProfileGLESTechniquePassColorLogicOpEnable() {
+        return new ProfileGLES.Technique.Pass.ColorLogicOpEnable();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLES.Technique.Pass.ColorMaterialEnable }
+     * 
+     */
+    public ProfileGLES.Technique.Pass.ColorMaterialEnable createProfileGLESTechniquePassColorMaterialEnable() {
+        return new ProfileGLES.Technique.Pass.ColorMaterialEnable();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLES.Technique.Pass.CullFaceEnable }
+     * 
+     */
+    public ProfileGLES.Technique.Pass.CullFaceEnable createProfileGLESTechniquePassCullFaceEnable() {
+        return new ProfileGLES.Technique.Pass.CullFaceEnable();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLES.Technique.Pass.DepthTestEnable }
+     * 
+     */
+    public ProfileGLES.Technique.Pass.DepthTestEnable createProfileGLESTechniquePassDepthTestEnable() {
+        return new ProfileGLES.Technique.Pass.DepthTestEnable();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLES.Technique.Pass.DitherEnable }
+     * 
+     */
+    public ProfileGLES.Technique.Pass.DitherEnable createProfileGLESTechniquePassDitherEnable() {
+        return new ProfileGLES.Technique.Pass.DitherEnable();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLES.Technique.Pass.FogEnable }
+     * 
+     */
+    public ProfileGLES.Technique.Pass.FogEnable createProfileGLESTechniquePassFogEnable() {
+        return new ProfileGLES.Technique.Pass.FogEnable();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLES.Technique.Pass.TexturePipelineEnable }
+     * 
+     */
+    public ProfileGLES.Technique.Pass.TexturePipelineEnable createProfileGLESTechniquePassTexturePipelineEnable() {
+        return new ProfileGLES.Technique.Pass.TexturePipelineEnable();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLES.Technique.Pass.LightEnable }
+     * 
+     */
+    public ProfileGLES.Technique.Pass.LightEnable createProfileGLESTechniquePassLightEnable() {
+        return new ProfileGLES.Technique.Pass.LightEnable();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLES.Technique.Pass.LightingEnable }
+     * 
+     */
+    public ProfileGLES.Technique.Pass.LightingEnable createProfileGLESTechniquePassLightingEnable() {
+        return new ProfileGLES.Technique.Pass.LightingEnable();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLES.Technique.Pass.LightModelTwoSideEnable }
+     * 
+     */
+    public ProfileGLES.Technique.Pass.LightModelTwoSideEnable createProfileGLESTechniquePassLightModelTwoSideEnable() {
+        return new ProfileGLES.Technique.Pass.LightModelTwoSideEnable();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLES.Technique.Pass.LineSmoothEnable }
+     * 
+     */
+    public ProfileGLES.Technique.Pass.LineSmoothEnable createProfileGLESTechniquePassLineSmoothEnable() {
+        return new ProfileGLES.Technique.Pass.LineSmoothEnable();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLES.Technique.Pass.MultisampleEnable }
+     * 
+     */
+    public ProfileGLES.Technique.Pass.MultisampleEnable createProfileGLESTechniquePassMultisampleEnable() {
+        return new ProfileGLES.Technique.Pass.MultisampleEnable();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLES.Technique.Pass.NormalizeEnable }
+     * 
+     */
+    public ProfileGLES.Technique.Pass.NormalizeEnable createProfileGLESTechniquePassNormalizeEnable() {
+        return new ProfileGLES.Technique.Pass.NormalizeEnable();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLES.Technique.Pass.PointSmoothEnable }
+     * 
+     */
+    public ProfileGLES.Technique.Pass.PointSmoothEnable createProfileGLESTechniquePassPointSmoothEnable() {
+        return new ProfileGLES.Technique.Pass.PointSmoothEnable();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLES.Technique.Pass.PolygonOffsetFillEnable }
+     * 
+     */
+    public ProfileGLES.Technique.Pass.PolygonOffsetFillEnable createProfileGLESTechniquePassPolygonOffsetFillEnable() {
+        return new ProfileGLES.Technique.Pass.PolygonOffsetFillEnable();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLES.Technique.Pass.RescaleNormalEnable }
+     * 
+     */
+    public ProfileGLES.Technique.Pass.RescaleNormalEnable createProfileGLESTechniquePassRescaleNormalEnable() {
+        return new ProfileGLES.Technique.Pass.RescaleNormalEnable();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLES.Technique.Pass.SampleAlphaToCoverageEnable }
+     * 
+     */
+    public ProfileGLES.Technique.Pass.SampleAlphaToCoverageEnable createProfileGLESTechniquePassSampleAlphaToCoverageEnable() {
+        return new ProfileGLES.Technique.Pass.SampleAlphaToCoverageEnable();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLES.Technique.Pass.SampleAlphaToOneEnable }
+     * 
+     */
+    public ProfileGLES.Technique.Pass.SampleAlphaToOneEnable createProfileGLESTechniquePassSampleAlphaToOneEnable() {
+        return new ProfileGLES.Technique.Pass.SampleAlphaToOneEnable();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLES.Technique.Pass.SampleCoverageEnable }
+     * 
+     */
+    public ProfileGLES.Technique.Pass.SampleCoverageEnable createProfileGLESTechniquePassSampleCoverageEnable() {
+        return new ProfileGLES.Technique.Pass.SampleCoverageEnable();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLES.Technique.Pass.ScissorTestEnable }
+     * 
+     */
+    public ProfileGLES.Technique.Pass.ScissorTestEnable createProfileGLESTechniquePassScissorTestEnable() {
+        return new ProfileGLES.Technique.Pass.ScissorTestEnable();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLES.Technique.Pass.StencilTestEnable }
+     * 
+     */
+    public ProfileGLES.Technique.Pass.StencilTestEnable createProfileGLESTechniquePassStencilTestEnable() {
+        return new ProfileGLES.Technique.Pass.StencilTestEnable();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLES.Technique.Pass.StencilOp.Fail }
+     * 
+     */
+    public ProfileGLES.Technique.Pass.StencilOp.Fail createProfileGLESTechniquePassStencilOpFail() {
+        return new ProfileGLES.Technique.Pass.StencilOp.Fail();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLES.Technique.Pass.StencilOp.Zfail }
+     * 
+     */
+    public ProfileGLES.Technique.Pass.StencilOp.Zfail createProfileGLESTechniquePassStencilOpZfail() {
+        return new ProfileGLES.Technique.Pass.StencilOp.Zfail();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLES.Technique.Pass.StencilOp.Zpass }
+     * 
+     */
+    public ProfileGLES.Technique.Pass.StencilOp.Zpass createProfileGLESTechniquePassStencilOpZpass() {
+        return new ProfileGLES.Technique.Pass.StencilOp.Zpass();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLES.Technique.Pass.StencilFunc.Func }
+     * 
+     */
+    public ProfileGLES.Technique.Pass.StencilFunc.Func createProfileGLESTechniquePassStencilFuncFunc() {
+        return new ProfileGLES.Technique.Pass.StencilFunc.Func();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLES.Technique.Pass.StencilFunc.Ref }
+     * 
+     */
+    public ProfileGLES.Technique.Pass.StencilFunc.Ref createProfileGLESTechniquePassStencilFuncRef() {
+        return new ProfileGLES.Technique.Pass.StencilFunc.Ref();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLES.Technique.Pass.StencilFunc.Mask }
+     * 
+     */
+    public ProfileGLES.Technique.Pass.StencilFunc.Mask createProfileGLESTechniquePassStencilFuncMask() {
+        return new ProfileGLES.Technique.Pass.StencilFunc.Mask();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLES.Technique.Pass.BlendFunc.Src }
+     * 
+     */
+    public ProfileGLES.Technique.Pass.BlendFunc.Src createProfileGLESTechniquePassBlendFuncSrc() {
+        return new ProfileGLES.Technique.Pass.BlendFunc.Src();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLES.Technique.Pass.BlendFunc.Dest }
+     * 
+     */
+    public ProfileGLES.Technique.Pass.BlendFunc.Dest createProfileGLESTechniquePassBlendFuncDest() {
+        return new ProfileGLES.Technique.Pass.BlendFunc.Dest();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLES.Technique.Pass.AlphaFunc.Func }
+     * 
+     */
+    public ProfileGLES.Technique.Pass.AlphaFunc.Func createProfileGLESTechniquePassAlphaFuncFunc() {
+        return new ProfileGLES.Technique.Pass.AlphaFunc.Func();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLES.Technique.Pass.AlphaFunc.Value }
+     * 
+     */
+    public ProfileGLES.Technique.Pass.AlphaFunc.Value createProfileGLESTechniquePassAlphaFuncValue() {
+        return new ProfileGLES.Technique.Pass.AlphaFunc.Value();
     }
 
     /**
@@ -3014,646 +3654,6 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link ProfileGLES.Technique.Setparam }
-     * 
-     */
-    public ProfileGLES.Technique.Setparam createProfileGLESTechniqueSetparam() {
-        return new ProfileGLES.Technique.Setparam();
-    }
-
-    /**
-     * Create an instance of {@link ProfileGLES.Technique.Pass.ClearColor }
-     * 
-     */
-    public ProfileGLES.Technique.Pass.ClearColor createProfileGLESTechniquePassClearColor() {
-        return new ProfileGLES.Technique.Pass.ClearColor();
-    }
-
-    /**
-     * Create an instance of {@link ProfileGLES.Technique.Pass.ClearStencil }
-     * 
-     */
-    public ProfileGLES.Technique.Pass.ClearStencil createProfileGLESTechniquePassClearStencil() {
-        return new ProfileGLES.Technique.Pass.ClearStencil();
-    }
-
-    /**
-     * Create an instance of {@link ProfileGLES.Technique.Pass.ClearDepth }
-     * 
-     */
-    public ProfileGLES.Technique.Pass.ClearDepth createProfileGLESTechniquePassClearDepth() {
-        return new ProfileGLES.Technique.Pass.ClearDepth();
-    }
-
-    /**
-     * Create an instance of {@link ProfileGLES.Technique.Pass.ClipPlane }
-     * 
-     */
-    public ProfileGLES.Technique.Pass.ClipPlane createProfileGLESTechniquePassClipPlane() {
-        return new ProfileGLES.Technique.Pass.ClipPlane();
-    }
-
-    /**
-     * Create an instance of {@link ProfileGLES.Technique.Pass.ColorMask }
-     * 
-     */
-    public ProfileGLES.Technique.Pass.ColorMask createProfileGLESTechniquePassColorMask() {
-        return new ProfileGLES.Technique.Pass.ColorMask();
-    }
-
-    /**
-     * Create an instance of {@link ProfileGLES.Technique.Pass.CullFace }
-     * 
-     */
-    public ProfileGLES.Technique.Pass.CullFace createProfileGLESTechniquePassCullFace() {
-        return new ProfileGLES.Technique.Pass.CullFace();
-    }
-
-    /**
-     * Create an instance of {@link ProfileGLES.Technique.Pass.DepthFunc }
-     * 
-     */
-    public ProfileGLES.Technique.Pass.DepthFunc createProfileGLESTechniquePassDepthFunc() {
-        return new ProfileGLES.Technique.Pass.DepthFunc();
-    }
-
-    /**
-     * Create an instance of {@link ProfileGLES.Technique.Pass.DepthMask }
-     * 
-     */
-    public ProfileGLES.Technique.Pass.DepthMask createProfileGLESTechniquePassDepthMask() {
-        return new ProfileGLES.Technique.Pass.DepthMask();
-    }
-
-    /**
-     * Create an instance of {@link ProfileGLES.Technique.Pass.DepthRange }
-     * 
-     */
-    public ProfileGLES.Technique.Pass.DepthRange createProfileGLESTechniquePassDepthRange() {
-        return new ProfileGLES.Technique.Pass.DepthRange();
-    }
-
-    /**
-     * Create an instance of {@link ProfileGLES.Technique.Pass.FogColor }
-     * 
-     */
-    public ProfileGLES.Technique.Pass.FogColor createProfileGLESTechniquePassFogColor() {
-        return new ProfileGLES.Technique.Pass.FogColor();
-    }
-
-    /**
-     * Create an instance of {@link ProfileGLES.Technique.Pass.FogDensity }
-     * 
-     */
-    public ProfileGLES.Technique.Pass.FogDensity createProfileGLESTechniquePassFogDensity() {
-        return new ProfileGLES.Technique.Pass.FogDensity();
-    }
-
-    /**
-     * Create an instance of {@link ProfileGLES.Technique.Pass.FogMode }
-     * 
-     */
-    public ProfileGLES.Technique.Pass.FogMode createProfileGLESTechniquePassFogMode() {
-        return new ProfileGLES.Technique.Pass.FogMode();
-    }
-
-    /**
-     * Create an instance of {@link ProfileGLES.Technique.Pass.FogStart }
-     * 
-     */
-    public ProfileGLES.Technique.Pass.FogStart createProfileGLESTechniquePassFogStart() {
-        return new ProfileGLES.Technique.Pass.FogStart();
-    }
-
-    /**
-     * Create an instance of {@link ProfileGLES.Technique.Pass.FogEnd }
-     * 
-     */
-    public ProfileGLES.Technique.Pass.FogEnd createProfileGLESTechniquePassFogEnd() {
-        return new ProfileGLES.Technique.Pass.FogEnd();
-    }
-
-    /**
-     * Create an instance of {@link ProfileGLES.Technique.Pass.FrontFace }
-     * 
-     */
-    public ProfileGLES.Technique.Pass.FrontFace createProfileGLESTechniquePassFrontFace() {
-        return new ProfileGLES.Technique.Pass.FrontFace();
-    }
-
-    /**
-     * Create an instance of {@link ProfileGLES.Technique.Pass.TexturePipeline }
-     * 
-     */
-    public ProfileGLES.Technique.Pass.TexturePipeline createProfileGLESTechniquePassTexturePipeline() {
-        return new ProfileGLES.Technique.Pass.TexturePipeline();
-    }
-
-    /**
-     * Create an instance of {@link ProfileGLES.Technique.Pass.LogicOp }
-     * 
-     */
-    public ProfileGLES.Technique.Pass.LogicOp createProfileGLESTechniquePassLogicOp() {
-        return new ProfileGLES.Technique.Pass.LogicOp();
-    }
-
-    /**
-     * Create an instance of {@link ProfileGLES.Technique.Pass.LightAmbient }
-     * 
-     */
-    public ProfileGLES.Technique.Pass.LightAmbient createProfileGLESTechniquePassLightAmbient() {
-        return new ProfileGLES.Technique.Pass.LightAmbient();
-    }
-
-    /**
-     * Create an instance of {@link ProfileGLES.Technique.Pass.LightDiffuse }
-     * 
-     */
-    public ProfileGLES.Technique.Pass.LightDiffuse createProfileGLESTechniquePassLightDiffuse() {
-        return new ProfileGLES.Technique.Pass.LightDiffuse();
-    }
-
-    /**
-     * Create an instance of {@link ProfileGLES.Technique.Pass.LightSpecular }
-     * 
-     */
-    public ProfileGLES.Technique.Pass.LightSpecular createProfileGLESTechniquePassLightSpecular() {
-        return new ProfileGLES.Technique.Pass.LightSpecular();
-    }
-
-    /**
-     * Create an instance of {@link ProfileGLES.Technique.Pass.LightPosition }
-     * 
-     */
-    public ProfileGLES.Technique.Pass.LightPosition createProfileGLESTechniquePassLightPosition() {
-        return new ProfileGLES.Technique.Pass.LightPosition();
-    }
-
-    /**
-     * Create an instance of {@link ProfileGLES.Technique.Pass.LightConstantAttenuation }
-     * 
-     */
-    public ProfileGLES.Technique.Pass.LightConstantAttenuation createProfileGLESTechniquePassLightConstantAttenuation() {
-        return new ProfileGLES.Technique.Pass.LightConstantAttenuation();
-    }
-
-    /**
-     * Create an instance of {@link ProfileGLES.Technique.Pass.LightLinearAttenutation }
-     * 
-     */
-    public ProfileGLES.Technique.Pass.LightLinearAttenutation createProfileGLESTechniquePassLightLinearAttenutation() {
-        return new ProfileGLES.Technique.Pass.LightLinearAttenutation();
-    }
-
-    /**
-     * Create an instance of {@link ProfileGLES.Technique.Pass.LightQuadraticAttenuation }
-     * 
-     */
-    public ProfileGLES.Technique.Pass.LightQuadraticAttenuation createProfileGLESTechniquePassLightQuadraticAttenuation() {
-        return new ProfileGLES.Technique.Pass.LightQuadraticAttenuation();
-    }
-
-    /**
-     * Create an instance of {@link ProfileGLES.Technique.Pass.LightSpotCutoff }
-     * 
-     */
-    public ProfileGLES.Technique.Pass.LightSpotCutoff createProfileGLESTechniquePassLightSpotCutoff() {
-        return new ProfileGLES.Technique.Pass.LightSpotCutoff();
-    }
-
-    /**
-     * Create an instance of {@link ProfileGLES.Technique.Pass.LightSpotDirection }
-     * 
-     */
-    public ProfileGLES.Technique.Pass.LightSpotDirection createProfileGLESTechniquePassLightSpotDirection() {
-        return new ProfileGLES.Technique.Pass.LightSpotDirection();
-    }
-
-    /**
-     * Create an instance of {@link ProfileGLES.Technique.Pass.LightSpotExponent }
-     * 
-     */
-    public ProfileGLES.Technique.Pass.LightSpotExponent createProfileGLESTechniquePassLightSpotExponent() {
-        return new ProfileGLES.Technique.Pass.LightSpotExponent();
-    }
-
-    /**
-     * Create an instance of {@link ProfileGLES.Technique.Pass.LightModelAmbient }
-     * 
-     */
-    public ProfileGLES.Technique.Pass.LightModelAmbient createProfileGLESTechniquePassLightModelAmbient() {
-        return new ProfileGLES.Technique.Pass.LightModelAmbient();
-    }
-
-    /**
-     * Create an instance of {@link ProfileGLES.Technique.Pass.LineWidth }
-     * 
-     */
-    public ProfileGLES.Technique.Pass.LineWidth createProfileGLESTechniquePassLineWidth() {
-        return new ProfileGLES.Technique.Pass.LineWidth();
-    }
-
-    /**
-     * Create an instance of {@link ProfileGLES.Technique.Pass.MaterialAmbient }
-     * 
-     */
-    public ProfileGLES.Technique.Pass.MaterialAmbient createProfileGLESTechniquePassMaterialAmbient() {
-        return new ProfileGLES.Technique.Pass.MaterialAmbient();
-    }
-
-    /**
-     * Create an instance of {@link ProfileGLES.Technique.Pass.MaterialDiffuse }
-     * 
-     */
-    public ProfileGLES.Technique.Pass.MaterialDiffuse createProfileGLESTechniquePassMaterialDiffuse() {
-        return new ProfileGLES.Technique.Pass.MaterialDiffuse();
-    }
-
-    /**
-     * Create an instance of {@link ProfileGLES.Technique.Pass.MaterialEmission }
-     * 
-     */
-    public ProfileGLES.Technique.Pass.MaterialEmission createProfileGLESTechniquePassMaterialEmission() {
-        return new ProfileGLES.Technique.Pass.MaterialEmission();
-    }
-
-    /**
-     * Create an instance of {@link ProfileGLES.Technique.Pass.MaterialShininess }
-     * 
-     */
-    public ProfileGLES.Technique.Pass.MaterialShininess createProfileGLESTechniquePassMaterialShininess() {
-        return new ProfileGLES.Technique.Pass.MaterialShininess();
-    }
-
-    /**
-     * Create an instance of {@link ProfileGLES.Technique.Pass.MaterialSpecular }
-     * 
-     */
-    public ProfileGLES.Technique.Pass.MaterialSpecular createProfileGLESTechniquePassMaterialSpecular() {
-        return new ProfileGLES.Technique.Pass.MaterialSpecular();
-    }
-
-    /**
-     * Create an instance of {@link ProfileGLES.Technique.Pass.ModelViewMatrix }
-     * 
-     */
-    public ProfileGLES.Technique.Pass.ModelViewMatrix createProfileGLESTechniquePassModelViewMatrix() {
-        return new ProfileGLES.Technique.Pass.ModelViewMatrix();
-    }
-
-    /**
-     * Create an instance of {@link ProfileGLES.Technique.Pass.PointDistanceAttenuation }
-     * 
-     */
-    public ProfileGLES.Technique.Pass.PointDistanceAttenuation createProfileGLESTechniquePassPointDistanceAttenuation() {
-        return new ProfileGLES.Technique.Pass.PointDistanceAttenuation();
-    }
-
-    /**
-     * Create an instance of {@link ProfileGLES.Technique.Pass.PointFadeThresholdSize }
-     * 
-     */
-    public ProfileGLES.Technique.Pass.PointFadeThresholdSize createProfileGLESTechniquePassPointFadeThresholdSize() {
-        return new ProfileGLES.Technique.Pass.PointFadeThresholdSize();
-    }
-
-    /**
-     * Create an instance of {@link ProfileGLES.Technique.Pass.PointSize }
-     * 
-     */
-    public ProfileGLES.Technique.Pass.PointSize createProfileGLESTechniquePassPointSize() {
-        return new ProfileGLES.Technique.Pass.PointSize();
-    }
-
-    /**
-     * Create an instance of {@link ProfileGLES.Technique.Pass.PointSizeMin }
-     * 
-     */
-    public ProfileGLES.Technique.Pass.PointSizeMin createProfileGLESTechniquePassPointSizeMin() {
-        return new ProfileGLES.Technique.Pass.PointSizeMin();
-    }
-
-    /**
-     * Create an instance of {@link ProfileGLES.Technique.Pass.PointSizeMax }
-     * 
-     */
-    public ProfileGLES.Technique.Pass.PointSizeMax createProfileGLESTechniquePassPointSizeMax() {
-        return new ProfileGLES.Technique.Pass.PointSizeMax();
-    }
-
-    /**
-     * Create an instance of {@link ProfileGLES.Technique.Pass.PolygonOffset }
-     * 
-     */
-    public ProfileGLES.Technique.Pass.PolygonOffset createProfileGLESTechniquePassPolygonOffset() {
-        return new ProfileGLES.Technique.Pass.PolygonOffset();
-    }
-
-    /**
-     * Create an instance of {@link ProfileGLES.Technique.Pass.ProjectionMatrix }
-     * 
-     */
-    public ProfileGLES.Technique.Pass.ProjectionMatrix createProfileGLESTechniquePassProjectionMatrix() {
-        return new ProfileGLES.Technique.Pass.ProjectionMatrix();
-    }
-
-    /**
-     * Create an instance of {@link ProfileGLES.Technique.Pass.Scissor }
-     * 
-     */
-    public ProfileGLES.Technique.Pass.Scissor createProfileGLESTechniquePassScissor() {
-        return new ProfileGLES.Technique.Pass.Scissor();
-    }
-
-    /**
-     * Create an instance of {@link ProfileGLES.Technique.Pass.ShadeModel }
-     * 
-     */
-    public ProfileGLES.Technique.Pass.ShadeModel createProfileGLESTechniquePassShadeModel() {
-        return new ProfileGLES.Technique.Pass.ShadeModel();
-    }
-
-    /**
-     * Create an instance of {@link ProfileGLES.Technique.Pass.StencilMask }
-     * 
-     */
-    public ProfileGLES.Technique.Pass.StencilMask createProfileGLESTechniquePassStencilMask() {
-        return new ProfileGLES.Technique.Pass.StencilMask();
-    }
-
-    /**
-     * Create an instance of {@link ProfileGLES.Technique.Pass.AlphaTestEnable }
-     * 
-     */
-    public ProfileGLES.Technique.Pass.AlphaTestEnable createProfileGLESTechniquePassAlphaTestEnable() {
-        return new ProfileGLES.Technique.Pass.AlphaTestEnable();
-    }
-
-    /**
-     * Create an instance of {@link ProfileGLES.Technique.Pass.BlendEnable }
-     * 
-     */
-    public ProfileGLES.Technique.Pass.BlendEnable createProfileGLESTechniquePassBlendEnable() {
-        return new ProfileGLES.Technique.Pass.BlendEnable();
-    }
-
-    /**
-     * Create an instance of {@link ProfileGLES.Technique.Pass.ClipPlaneEnable }
-     * 
-     */
-    public ProfileGLES.Technique.Pass.ClipPlaneEnable createProfileGLESTechniquePassClipPlaneEnable() {
-        return new ProfileGLES.Technique.Pass.ClipPlaneEnable();
-    }
-
-    /**
-     * Create an instance of {@link ProfileGLES.Technique.Pass.ColorLogicOpEnable }
-     * 
-     */
-    public ProfileGLES.Technique.Pass.ColorLogicOpEnable createProfileGLESTechniquePassColorLogicOpEnable() {
-        return new ProfileGLES.Technique.Pass.ColorLogicOpEnable();
-    }
-
-    /**
-     * Create an instance of {@link ProfileGLES.Technique.Pass.ColorMaterialEnable }
-     * 
-     */
-    public ProfileGLES.Technique.Pass.ColorMaterialEnable createProfileGLESTechniquePassColorMaterialEnable() {
-        return new ProfileGLES.Technique.Pass.ColorMaterialEnable();
-    }
-
-    /**
-     * Create an instance of {@link ProfileGLES.Technique.Pass.CullFaceEnable }
-     * 
-     */
-    public ProfileGLES.Technique.Pass.CullFaceEnable createProfileGLESTechniquePassCullFaceEnable() {
-        return new ProfileGLES.Technique.Pass.CullFaceEnable();
-    }
-
-    /**
-     * Create an instance of {@link ProfileGLES.Technique.Pass.DepthTestEnable }
-     * 
-     */
-    public ProfileGLES.Technique.Pass.DepthTestEnable createProfileGLESTechniquePassDepthTestEnable() {
-        return new ProfileGLES.Technique.Pass.DepthTestEnable();
-    }
-
-    /**
-     * Create an instance of {@link ProfileGLES.Technique.Pass.DitherEnable }
-     * 
-     */
-    public ProfileGLES.Technique.Pass.DitherEnable createProfileGLESTechniquePassDitherEnable() {
-        return new ProfileGLES.Technique.Pass.DitherEnable();
-    }
-
-    /**
-     * Create an instance of {@link ProfileGLES.Technique.Pass.FogEnable }
-     * 
-     */
-    public ProfileGLES.Technique.Pass.FogEnable createProfileGLESTechniquePassFogEnable() {
-        return new ProfileGLES.Technique.Pass.FogEnable();
-    }
-
-    /**
-     * Create an instance of {@link ProfileGLES.Technique.Pass.TexturePipelineEnable }
-     * 
-     */
-    public ProfileGLES.Technique.Pass.TexturePipelineEnable createProfileGLESTechniquePassTexturePipelineEnable() {
-        return new ProfileGLES.Technique.Pass.TexturePipelineEnable();
-    }
-
-    /**
-     * Create an instance of {@link ProfileGLES.Technique.Pass.LightEnable }
-     * 
-     */
-    public ProfileGLES.Technique.Pass.LightEnable createProfileGLESTechniquePassLightEnable() {
-        return new ProfileGLES.Technique.Pass.LightEnable();
-    }
-
-    /**
-     * Create an instance of {@link ProfileGLES.Technique.Pass.LightingEnable }
-     * 
-     */
-    public ProfileGLES.Technique.Pass.LightingEnable createProfileGLESTechniquePassLightingEnable() {
-        return new ProfileGLES.Technique.Pass.LightingEnable();
-    }
-
-    /**
-     * Create an instance of {@link ProfileGLES.Technique.Pass.LightModelTwoSideEnable }
-     * 
-     */
-    public ProfileGLES.Technique.Pass.LightModelTwoSideEnable createProfileGLESTechniquePassLightModelTwoSideEnable() {
-        return new ProfileGLES.Technique.Pass.LightModelTwoSideEnable();
-    }
-
-    /**
-     * Create an instance of {@link ProfileGLES.Technique.Pass.LineSmoothEnable }
-     * 
-     */
-    public ProfileGLES.Technique.Pass.LineSmoothEnable createProfileGLESTechniquePassLineSmoothEnable() {
-        return new ProfileGLES.Technique.Pass.LineSmoothEnable();
-    }
-
-    /**
-     * Create an instance of {@link ProfileGLES.Technique.Pass.MultisampleEnable }
-     * 
-     */
-    public ProfileGLES.Technique.Pass.MultisampleEnable createProfileGLESTechniquePassMultisampleEnable() {
-        return new ProfileGLES.Technique.Pass.MultisampleEnable();
-    }
-
-    /**
-     * Create an instance of {@link ProfileGLES.Technique.Pass.NormalizeEnable }
-     * 
-     */
-    public ProfileGLES.Technique.Pass.NormalizeEnable createProfileGLESTechniquePassNormalizeEnable() {
-        return new ProfileGLES.Technique.Pass.NormalizeEnable();
-    }
-
-    /**
-     * Create an instance of {@link ProfileGLES.Technique.Pass.PointSmoothEnable }
-     * 
-     */
-    public ProfileGLES.Technique.Pass.PointSmoothEnable createProfileGLESTechniquePassPointSmoothEnable() {
-        return new ProfileGLES.Technique.Pass.PointSmoothEnable();
-    }
-
-    /**
-     * Create an instance of {@link ProfileGLES.Technique.Pass.PolygonOffsetFillEnable }
-     * 
-     */
-    public ProfileGLES.Technique.Pass.PolygonOffsetFillEnable createProfileGLESTechniquePassPolygonOffsetFillEnable() {
-        return new ProfileGLES.Technique.Pass.PolygonOffsetFillEnable();
-    }
-
-    /**
-     * Create an instance of {@link ProfileGLES.Technique.Pass.RescaleNormalEnable }
-     * 
-     */
-    public ProfileGLES.Technique.Pass.RescaleNormalEnable createProfileGLESTechniquePassRescaleNormalEnable() {
-        return new ProfileGLES.Technique.Pass.RescaleNormalEnable();
-    }
-
-    /**
-     * Create an instance of {@link ProfileGLES.Technique.Pass.SampleAlphaToCoverageEnable }
-     * 
-     */
-    public ProfileGLES.Technique.Pass.SampleAlphaToCoverageEnable createProfileGLESTechniquePassSampleAlphaToCoverageEnable() {
-        return new ProfileGLES.Technique.Pass.SampleAlphaToCoverageEnable();
-    }
-
-    /**
-     * Create an instance of {@link ProfileGLES.Technique.Pass.SampleAlphaToOneEnable }
-     * 
-     */
-    public ProfileGLES.Technique.Pass.SampleAlphaToOneEnable createProfileGLESTechniquePassSampleAlphaToOneEnable() {
-        return new ProfileGLES.Technique.Pass.SampleAlphaToOneEnable();
-    }
-
-    /**
-     * Create an instance of {@link ProfileGLES.Technique.Pass.SampleCoverageEnable }
-     * 
-     */
-    public ProfileGLES.Technique.Pass.SampleCoverageEnable createProfileGLESTechniquePassSampleCoverageEnable() {
-        return new ProfileGLES.Technique.Pass.SampleCoverageEnable();
-    }
-
-    /**
-     * Create an instance of {@link ProfileGLES.Technique.Pass.ScissorTestEnable }
-     * 
-     */
-    public ProfileGLES.Technique.Pass.ScissorTestEnable createProfileGLESTechniquePassScissorTestEnable() {
-        return new ProfileGLES.Technique.Pass.ScissorTestEnable();
-    }
-
-    /**
-     * Create an instance of {@link ProfileGLES.Technique.Pass.StencilTestEnable }
-     * 
-     */
-    public ProfileGLES.Technique.Pass.StencilTestEnable createProfileGLESTechniquePassStencilTestEnable() {
-        return new ProfileGLES.Technique.Pass.StencilTestEnable();
-    }
-
-    /**
-     * Create an instance of {@link ProfileGLES.Technique.Pass.StencilOp.Fail }
-     * 
-     */
-    public ProfileGLES.Technique.Pass.StencilOp.Fail createProfileGLESTechniquePassStencilOpFail() {
-        return new ProfileGLES.Technique.Pass.StencilOp.Fail();
-    }
-
-    /**
-     * Create an instance of {@link ProfileGLES.Technique.Pass.StencilOp.Zfail }
-     * 
-     */
-    public ProfileGLES.Technique.Pass.StencilOp.Zfail createProfileGLESTechniquePassStencilOpZfail() {
-        return new ProfileGLES.Technique.Pass.StencilOp.Zfail();
-    }
-
-    /**
-     * Create an instance of {@link ProfileGLES.Technique.Pass.StencilOp.Zpass }
-     * 
-     */
-    public ProfileGLES.Technique.Pass.StencilOp.Zpass createProfileGLESTechniquePassStencilOpZpass() {
-        return new ProfileGLES.Technique.Pass.StencilOp.Zpass();
-    }
-
-    /**
-     * Create an instance of {@link ProfileGLES.Technique.Pass.StencilFunc.Func }
-     * 
-     */
-    public ProfileGLES.Technique.Pass.StencilFunc.Func createProfileGLESTechniquePassStencilFuncFunc() {
-        return new ProfileGLES.Technique.Pass.StencilFunc.Func();
-    }
-
-    /**
-     * Create an instance of {@link ProfileGLES.Technique.Pass.StencilFunc.Ref }
-     * 
-     */
-    public ProfileGLES.Technique.Pass.StencilFunc.Ref createProfileGLESTechniquePassStencilFuncRef() {
-        return new ProfileGLES.Technique.Pass.StencilFunc.Ref();
-    }
-
-    /**
-     * Create an instance of {@link ProfileGLES.Technique.Pass.StencilFunc.Mask }
-     * 
-     */
-    public ProfileGLES.Technique.Pass.StencilFunc.Mask createProfileGLESTechniquePassStencilFuncMask() {
-        return new ProfileGLES.Technique.Pass.StencilFunc.Mask();
-    }
-
-    /**
-     * Create an instance of {@link ProfileGLES.Technique.Pass.BlendFunc.Src }
-     * 
-     */
-    public ProfileGLES.Technique.Pass.BlendFunc.Src createProfileGLESTechniquePassBlendFuncSrc() {
-        return new ProfileGLES.Technique.Pass.BlendFunc.Src();
-    }
-
-    /**
-     * Create an instance of {@link ProfileGLES.Technique.Pass.BlendFunc.Dest }
-     * 
-     */
-    public ProfileGLES.Technique.Pass.BlendFunc.Dest createProfileGLESTechniquePassBlendFuncDest() {
-        return new ProfileGLES.Technique.Pass.BlendFunc.Dest();
-    }
-
-    /**
-     * Create an instance of {@link ProfileGLES.Technique.Pass.AlphaFunc.Func }
-     * 
-     */
-    public ProfileGLES.Technique.Pass.AlphaFunc.Func createProfileGLESTechniquePassAlphaFuncFunc() {
-        return new ProfileGLES.Technique.Pass.AlphaFunc.Func();
-    }
-
-    /**
-     * Create an instance of {@link ProfileGLES.Technique.Pass.AlphaFunc.Value }
-     * 
-     */
-    public ProfileGLES.Technique.Pass.AlphaFunc.Value createProfileGLESTechniquePassAlphaFuncValue() {
-        return new ProfileGLES.Technique.Pass.AlphaFunc.Value();
-    }
-
-    /**
      * Create an instance of {@link ProfileCOMMON.Technique.Constant }
      * 
      */
@@ -3686,67 +3686,35 @@ public class ObjectFactory {
     }
 
     /**
+     * Create an instance of {@link ProfileGLSL.Technique.Pass.Shader.CompilerTarget }
+     * 
+     */
+    public ProfileGLSL.Technique.Pass.Shader.CompilerTarget createProfileGLSLTechniquePassShaderCompilerTarget() {
+        return new ProfileGLSL.Technique.Pass.Shader.CompilerTarget();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLSL.Technique.Pass.Shader.Name }
+     * 
+     */
+    public ProfileGLSL.Technique.Pass.Shader.Name createProfileGLSLTechniquePassShaderName() {
+        return new ProfileGLSL.Technique.Pass.Shader.Name();
+    }
+
+    /**
+     * Create an instance of {@link ProfileGLSL.Technique.Pass.Shader.Bind.Param }
+     * 
+     */
+    public ProfileGLSL.Technique.Pass.Shader.Bind.Param createProfileGLSLTechniquePassShaderBindParam() {
+        return new ProfileGLSL.Technique.Pass.Shader.Bind.Param();
+    }
+
+    /**
      * Create an instance of {@link VisualScene.EvaluateScene.Render }
      * 
      */
     public VisualScene.EvaluateScene.Render createVisualSceneEvaluateSceneRender() {
         return new VisualScene.EvaluateScene.Render();
-    }
-
-    /**
-     * Create an instance of {@link RigidBody.TechniqueCommon.Dynamic }
-     * 
-     */
-    public RigidBody.TechniqueCommon.Dynamic createRigidBodyTechniqueCommonDynamic() {
-        return new RigidBody.TechniqueCommon.Dynamic();
-    }
-
-    /**
-     * Create an instance of {@link RigidBody.TechniqueCommon.MassFrame }
-     * 
-     */
-    public RigidBody.TechniqueCommon.MassFrame createRigidBodyTechniqueCommonMassFrame() {
-        return new RigidBody.TechniqueCommon.MassFrame();
-    }
-
-    /**
-     * Create an instance of {@link RigidBody.TechniqueCommon.Shape.Hollow }
-     * 
-     */
-    public RigidBody.TechniqueCommon.Shape.Hollow createRigidBodyTechniqueCommonShapeHollow() {
-        return new RigidBody.TechniqueCommon.Shape.Hollow();
-    }
-
-    /**
-     * Create an instance of {@link Light.TechniqueCommon.Ambient }
-     * 
-     */
-    public Light.TechniqueCommon.Ambient createLightTechniqueCommonAmbient() {
-        return new Light.TechniqueCommon.Ambient();
-    }
-
-    /**
-     * Create an instance of {@link Light.TechniqueCommon.Directional }
-     * 
-     */
-    public Light.TechniqueCommon.Directional createLightTechniqueCommonDirectional() {
-        return new Light.TechniqueCommon.Directional();
-    }
-
-    /**
-     * Create an instance of {@link Light.TechniqueCommon.Point }
-     * 
-     */
-    public Light.TechniqueCommon.Point createLightTechniqueCommonPoint() {
-        return new Light.TechniqueCommon.Point();
-    }
-
-    /**
-     * Create an instance of {@link Light.TechniqueCommon.Spot }
-     * 
-     */
-    public Light.TechniqueCommon.Spot createLightTechniqueCommonSpot() {
-        return new Light.TechniqueCommon.Spot();
     }
 
     /**
@@ -3822,6 +3790,62 @@ public class ObjectFactory {
     }
 
     /**
+     * Create an instance of {@link RigidBody.TechniqueCommon.Dynamic }
+     * 
+     */
+    public RigidBody.TechniqueCommon.Dynamic createRigidBodyTechniqueCommonDynamic() {
+        return new RigidBody.TechniqueCommon.Dynamic();
+    }
+
+    /**
+     * Create an instance of {@link RigidBody.TechniqueCommon.MassFrame }
+     * 
+     */
+    public RigidBody.TechniqueCommon.MassFrame createRigidBodyTechniqueCommonMassFrame() {
+        return new RigidBody.TechniqueCommon.MassFrame();
+    }
+
+    /**
+     * Create an instance of {@link RigidBody.TechniqueCommon.Shape.Hollow }
+     * 
+     */
+    public RigidBody.TechniqueCommon.Shape.Hollow createRigidBodyTechniqueCommonShapeHollow() {
+        return new RigidBody.TechniqueCommon.Shape.Hollow();
+    }
+
+    /**
+     * Create an instance of {@link Light.TechniqueCommon.Ambient }
+     * 
+     */
+    public Light.TechniqueCommon.Ambient createLightTechniqueCommonAmbient() {
+        return new Light.TechniqueCommon.Ambient();
+    }
+
+    /**
+     * Create an instance of {@link Light.TechniqueCommon.Directional }
+     * 
+     */
+    public Light.TechniqueCommon.Directional createLightTechniqueCommonDirectional() {
+        return new Light.TechniqueCommon.Directional();
+    }
+
+    /**
+     * Create an instance of {@link Light.TechniqueCommon.Point }
+     * 
+     */
+    public Light.TechniqueCommon.Point createLightTechniqueCommonPoint() {
+        return new Light.TechniqueCommon.Point();
+    }
+
+    /**
+     * Create an instance of {@link Light.TechniqueCommon.Spot }
+     * 
+     */
+    public Light.TechniqueCommon.Spot createLightTechniqueCommonSpot() {
+        return new Light.TechniqueCommon.Spot();
+    }
+
+    /**
      * Create an instance of {@link Camera.Optics.TechniqueCommon.Orthographic }
      * 
      */
@@ -3838,149 +3862,12 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link ProfileGLSL.Technique.Pass.Shader.CompilerTarget }
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link BigInteger }{@code >}{@code >}
      * 
-     */
-    public ProfileGLSL.Technique.Pass.Shader.CompilerTarget createProfileGLSLTechniquePassShaderCompilerTarget() {
-        return new ProfileGLSL.Technique.Pass.Shader.CompilerTarget();
-    }
-
-    /**
-     * Create an instance of {@link ProfileGLSL.Technique.Pass.Shader.Name }
-     * 
-     */
-    public ProfileGLSL.Technique.Pass.Shader.Name createProfileGLSLTechniquePassShaderName() {
-        return new ProfileGLSL.Technique.Pass.Shader.Name();
-    }
-
-    /**
-     * Create an instance of {@link ProfileGLSL.Technique.Pass.Shader.Bind.Param }
-     * 
-     */
-    public ProfileGLSL.Technique.Pass.Shader.Bind.Param createProfileGLSLTechniquePassShaderBindParam() {
-        return new ProfileGLSL.Technique.Pass.Shader.Bind.Param();
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link TargetableFloat3 }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "translate")
-    public JAXBElement<TargetableFloat3> createTranslate(TargetableFloat3 value) {
-        return new JAXBElement<TargetableFloat3>(_Translate_QNAME, TargetableFloat3 .class, null, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link ProfileGLES }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "profile_GLES", substitutionHeadNamespace = "http://www.collada.org/2005/11/COLLADASchema", substitutionHeadName = "fx_profile_abstract")
-    public JAXBElement<ProfileGLES> createProfileGLES(ProfileGLES value) {
-        return new JAXBElement<ProfileGLES>(_ProfileGLES_QNAME, ProfileGLES.class, null, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link Object }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fx_profile_abstract")
-    public JAXBElement<Object> createFxProfileAbstract(Object value) {
-        return new JAXBElement<Object>(_FxProfileAbstract_QNAME, Object.class, null, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link InstanceWithExtra }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "instance_light")
-    public JAXBElement<InstanceWithExtra> createInstanceLight(InstanceWithExtra value) {
-        return new JAXBElement<InstanceWithExtra>(_InstanceLight_QNAME, InstanceWithExtra.class, null, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link TargetableFloat3 }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "scale")
-    public JAXBElement<TargetableFloat3> createScale(TargetableFloat3 value) {
-        return new JAXBElement<TargetableFloat3>(_Scale_QNAME, TargetableFloat3 .class, null, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link InstanceWithExtra }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "instance_force_field")
-    public JAXBElement<InstanceWithExtra> createInstanceForceField(InstanceWithExtra value) {
-        return new JAXBElement<InstanceWithExtra>(_InstanceForceField_QNAME, InstanceWithExtra.class, null, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link Object }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "gl_hook_abstract")
-    public JAXBElement<Object> createGlHookAbstract(Object value) {
-        return new JAXBElement<Object>(_GlHookAbstract_QNAME, Object.class, null, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link InstanceWithExtra }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "instance_physics_material")
-    public JAXBElement<InstanceWithExtra> createInstancePhysicsMaterial(InstanceWithExtra value) {
-        return new JAXBElement<InstanceWithExtra>(_InstancePhysicsMaterial_QNAME, InstanceWithExtra.class, null, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link ProfileCG }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "profile_CG", substitutionHeadNamespace = "http://www.collada.org/2005/11/COLLADASchema", substitutionHeadName = "fx_profile_abstract")
-    public JAXBElement<ProfileCG> createProfileCG(ProfileCG value) {
-        return new JAXBElement<ProfileCG>(_ProfileCG_QNAME, ProfileCG.class, null, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link InstanceWithExtra }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "instance_node")
-    public JAXBElement<InstanceWithExtra> createInstanceNode(InstanceWithExtra value) {
-        return new JAXBElement<InstanceWithExtra>(_InstanceNode_QNAME, InstanceWithExtra.class, null, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link ProfileCOMMON }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "profile_COMMON", substitutionHeadNamespace = "http://www.collada.org/2005/11/COLLADASchema", substitutionHeadName = "fx_profile_abstract")
-    public JAXBElement<ProfileCOMMON> createProfileCOMMON(ProfileCOMMON value) {
-        return new JAXBElement<ProfileCOMMON>(_ProfileCOMMON_QNAME, ProfileCOMMON.class, null, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link ProfileGLSL }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "profile_GLSL", substitutionHeadNamespace = "http://www.collada.org/2005/11/COLLADASchema", substitutionHeadName = "fx_profile_abstract")
-    public JAXBElement<ProfileGLSL> createProfileGLSL(ProfileGLSL value) {
-        return new JAXBElement<ProfileGLSL>(_ProfileGLSL_QNAME, ProfileGLSL.class, null, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link InstanceWithExtra }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "instance_camera")
-    public JAXBElement<InstanceWithExtra> createInstanceCamera(InstanceWithExtra value) {
-        return new JAXBElement<InstanceWithExtra>(_InstanceCamera_QNAME, InstanceWithExtra.class, null, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link BigInteger }{@code >}{@code >}}
-     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link BigInteger }{@code >}{@code >}
      */
     @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "p")
     public JAXBElement<List<BigInteger>> createP(List<BigInteger> value) {
@@ -3988,1106 +3875,181 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link TargetableFloat }{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link Object }{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link Object }{@code >}
      */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "zfar", scope = Camera.Optics.TechniqueCommon.Orthographic.class)
-    public JAXBElement<TargetableFloat> createCameraOpticsTechniqueCommonOrthographicZfar(TargetableFloat value) {
-        return new JAXBElement<TargetableFloat>(_CameraOpticsTechniqueCommonOrthographicZfar_QNAME, TargetableFloat.class, Camera.Optics.TechniqueCommon.Orthographic.class, value);
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fx_profile_abstract")
+    public JAXBElement<Object> createFxProfileAbstract(Object value) {
+        return new JAXBElement<Object>(_FxProfileAbstract_QNAME, Object.class, null, value);
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link TargetableFloat }{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link TargetableFloat3 }{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link TargetableFloat3 }{@code >}
      */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "aspect_ratio", scope = Camera.Optics.TechniqueCommon.Orthographic.class)
-    public JAXBElement<TargetableFloat> createCameraOpticsTechniqueCommonOrthographicAspectRatio(TargetableFloat value) {
-        return new JAXBElement<TargetableFloat>(_CameraOpticsTechniqueCommonOrthographicAspectRatio_QNAME, TargetableFloat.class, Camera.Optics.TechniqueCommon.Orthographic.class, value);
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "scale")
+    public JAXBElement<TargetableFloat3> createScale(TargetableFloat3 value) {
+        return new JAXBElement<TargetableFloat3>(_Scale_QNAME, TargetableFloat3 .class, null, value);
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link TargetableFloat }{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link TargetableFloat3 }{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link TargetableFloat3 }{@code >}
      */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "ymag", scope = Camera.Optics.TechniqueCommon.Orthographic.class)
-    public JAXBElement<TargetableFloat> createCameraOpticsTechniqueCommonOrthographicYmag(TargetableFloat value) {
-        return new JAXBElement<TargetableFloat>(_CameraOpticsTechniqueCommonOrthographicYmag_QNAME, TargetableFloat.class, Camera.Optics.TechniqueCommon.Orthographic.class, value);
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "translate")
+    public JAXBElement<TargetableFloat3> createTranslate(TargetableFloat3 value) {
+        return new JAXBElement<TargetableFloat3>(_Translate_QNAME, TargetableFloat3 .class, null, value);
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link TargetableFloat }{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link InstanceWithExtra }{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link InstanceWithExtra }{@code >}
      */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "xmag", scope = Camera.Optics.TechniqueCommon.Orthographic.class)
-    public JAXBElement<TargetableFloat> createCameraOpticsTechniqueCommonOrthographicXmag(TargetableFloat value) {
-        return new JAXBElement<TargetableFloat>(_CameraOpticsTechniqueCommonOrthographicXmag_QNAME, TargetableFloat.class, Camera.Optics.TechniqueCommon.Orthographic.class, value);
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "instance_camera")
+    public JAXBElement<InstanceWithExtra> createInstanceCamera(InstanceWithExtra value) {
+        return new JAXBElement<InstanceWithExtra>(_InstanceCamera_QNAME, InstanceWithExtra.class, null, value);
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link TargetableFloat }{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link InstanceWithExtra }{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link InstanceWithExtra }{@code >}
      */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "znear", scope = Camera.Optics.TechniqueCommon.Orthographic.class)
-    public JAXBElement<TargetableFloat> createCameraOpticsTechniqueCommonOrthographicZnear(TargetableFloat value) {
-        return new JAXBElement<TargetableFloat>(_CameraOpticsTechniqueCommonOrthographicZnear_QNAME, TargetableFloat.class, Camera.Optics.TechniqueCommon.Orthographic.class, value);
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "instance_light")
+    public JAXBElement<InstanceWithExtra> createInstanceLight(InstanceWithExtra value) {
+        return new JAXBElement<InstanceWithExtra>(_InstanceLight_QNAME, InstanceWithExtra.class, null, value);
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link InstanceWithExtra }{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link InstanceWithExtra }{@code >}
      */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int3x1", scope = CgNewarrayType.class)
-    public JAXBElement<List<Integer>> createCgNewarrayTypeInt3X1(List<Integer> value) {
-        return new JAXBElement<List<Integer>>(_CgNewarrayTypeInt3X1_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<Integer> ) value));
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "instance_node")
+    public JAXBElement<InstanceWithExtra> createInstanceNode(InstanceWithExtra value) {
+        return new JAXBElement<InstanceWithExtra>(_InstanceNode_QNAME, InstanceWithExtra.class, null, value);
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link InstanceWithExtra }{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link InstanceWithExtra }{@code >}
      */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int3x2", scope = CgNewarrayType.class)
-    public JAXBElement<List<Integer>> createCgNewarrayTypeInt3X2(List<Integer> value) {
-        return new JAXBElement<List<Integer>>(_CgNewarrayTypeInt3X2_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<Integer> ) value));
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "instance_force_field")
+    public JAXBElement<InstanceWithExtra> createInstanceForceField(InstanceWithExtra value) {
+        return new JAXBElement<InstanceWithExtra>(_InstanceForceField_QNAME, InstanceWithExtra.class, null, value);
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link InstanceWithExtra }{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link InstanceWithExtra }{@code >}
      */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int3x3", scope = CgNewarrayType.class)
-    public JAXBElement<List<Integer>> createCgNewarrayTypeInt3X3(List<Integer> value) {
-        return new JAXBElement<List<Integer>>(_CgNewarrayTypeInt3X3_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<Integer> ) value));
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "instance_physics_material")
+    public JAXBElement<InstanceWithExtra> createInstancePhysicsMaterial(InstanceWithExtra value) {
+        return new JAXBElement<InstanceWithExtra>(_InstancePhysicsMaterial_QNAME, InstanceWithExtra.class, null, value);
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link CgSetuserType }{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link Object }{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link Object }{@code >}
      */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "usertype", scope = CgNewarrayType.class)
-    public JAXBElement<CgSetuserType> createCgNewarrayTypeUsertype(CgSetuserType value) {
-        return new JAXBElement<CgSetuserType>(_CgNewarrayTypeUsertype_QNAME, CgSetuserType.class, CgNewarrayType.class, value);
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "gl_hook_abstract")
+    public JAXBElement<Object> createGlHookAbstract(Object value) {
+        return new JAXBElement<Object>(_GlHookAbstract_QNAME, Object.class, null, value);
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link ProfileGLSL }{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link ProfileGLSL }{@code >}
      */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half1x4", scope = CgNewarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeHalf1X4(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeHalf1X4_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "profile_GLSL", substitutionHeadNamespace = "http://www.collada.org/2005/11/COLLADASchema", substitutionHeadName = "fx_profile_abstract")
+    public JAXBElement<ProfileGLSL> createProfileGLSL(ProfileGLSL value) {
+        return new JAXBElement<ProfileGLSL>(_ProfileGLSL_QNAME, ProfileGLSL.class, null, value);
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link ProfileCOMMON }{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link ProfileCOMMON }{@code >}
      */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half1x3", scope = CgNewarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeHalf1X3(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeHalf1X3_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "profile_COMMON", substitutionHeadNamespace = "http://www.collada.org/2005/11/COLLADASchema", substitutionHeadName = "fx_profile_abstract")
+    public JAXBElement<ProfileCOMMON> createProfileCOMMON(ProfileCOMMON value) {
+        return new JAXBElement<ProfileCOMMON>(_ProfileCOMMON_QNAME, ProfileCOMMON.class, null, value);
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link ProfileCG }{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link ProfileCG }{@code >}
      */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half1x2", scope = CgNewarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeHalf1X2(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeHalf1X2_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "profile_CG", substitutionHeadNamespace = "http://www.collada.org/2005/11/COLLADASchema", substitutionHeadName = "fx_profile_abstract")
+    public JAXBElement<ProfileCG> createProfileCG(ProfileCG value) {
+        return new JAXBElement<ProfileCG>(_ProfileCG_QNAME, ProfileCG.class, null, value);
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link ProfileGLES }{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link ProfileGLES }{@code >}
      */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half2", scope = CgNewarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeHalf2(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeHalf2_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "profile_GLES", substitutionHeadNamespace = "http://www.collada.org/2005/11/COLLADASchema", substitutionHeadName = "fx_profile_abstract")
+    public JAXBElement<ProfileGLES> createProfileGLES(ProfileGLES value) {
+        return new JAXBElement<ProfileGLES>(_ProfileGLES_QNAME, ProfileGLES.class, null, value);
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link Polygons.Ph }{@code >}
      * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half1x1", scope = CgNewarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeHalf1X1(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeHalf1X1_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link java.lang.Float }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half1", scope = CgNewarrayType.class)
-    public JAXBElement<java.lang.Float> createCgNewarrayTypeHalf1(java.lang.Float value) {
-        return new JAXBElement<java.lang.Float>(_CgNewarrayTypeHalf1_QNAME, java.lang.Float.class, CgNewarrayType.class, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link java.lang.Float }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed", scope = CgNewarrayType.class)
-    public JAXBElement<java.lang.Float> createCgNewarrayTypeFixed(java.lang.Float value) {
-        return new JAXBElement<java.lang.Float>(_CgNewarrayTypeFixed_QNAME, java.lang.Float.class, CgNewarrayType.class, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half4", scope = CgNewarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeHalf4(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeHalf4_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half3", scope = CgNewarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeHalf3(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeHalf3_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link java.lang.Float }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float", scope = CgNewarrayType.class)
-    public JAXBElement<java.lang.Float> createCgNewarrayTypeFloat(java.lang.Float value) {
-        return new JAXBElement<java.lang.Float>(_CgNewarrayTypeFloat_QNAME, java.lang.Float.class, CgNewarrayType.class, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int3x4", scope = CgNewarrayType.class)
-    public JAXBElement<List<Integer>> createCgNewarrayTypeInt3X4(List<Integer> value) {
-        return new JAXBElement<List<Integer>>(_CgNewarrayTypeInt3X4_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<Integer> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed3x2", scope = CgNewarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeFixed3X2(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFixed3X2_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed3x1", scope = CgNewarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeFixed3X1(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFixed3X1_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed3x4", scope = CgNewarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeFixed3X4(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFixed3X4_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed3x3", scope = CgNewarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeFixed3X3(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFixed3X3_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float3x4", scope = CgNewarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeFloat3X4(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFloat3X4_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float3x3", scope = CgNewarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeFloat3X3(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFloat3X3_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool2x4", scope = CgNewarrayType.class)
-    public JAXBElement<List<Boolean>> createCgNewarrayTypeBool2X4(List<Boolean> value) {
-        return new JAXBElement<List<Boolean>>(_CgNewarrayTypeBool2X4_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<Boolean> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float3x2", scope = CgNewarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeFloat3X2(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFloat3X2_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float3x1", scope = CgNewarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeFloat3X1(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFloat3X1_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool2x2", scope = CgNewarrayType.class)
-    public JAXBElement<List<Boolean>> createCgNewarrayTypeBool2X2(List<Boolean> value) {
-        return new JAXBElement<List<Boolean>>(_CgNewarrayTypeBool2X2_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<Boolean> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool2x3", scope = CgNewarrayType.class)
-    public JAXBElement<List<Boolean>> createCgNewarrayTypeBool2X3(List<Boolean> value) {
-        return new JAXBElement<List<Boolean>>(_CgNewarrayTypeBool2X3_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<Boolean> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link CgConnectParam }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "connect_param", scope = CgNewarrayType.class)
-    public JAXBElement<CgConnectParam> createCgNewarrayTypeConnectParam(CgConnectParam value) {
-        return new JAXBElement<CgConnectParam>(_CgNewarrayTypeConnectParam_QNAME, CgConnectParam.class, CgNewarrayType.class, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool2x1", scope = CgNewarrayType.class)
-    public JAXBElement<List<Boolean>> createCgNewarrayTypeBool2X1(List<Boolean> value) {
-        return new JAXBElement<List<Boolean>>(_CgNewarrayTypeBool2X1_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<Boolean> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link Integer }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int", scope = CgNewarrayType.class)
-    public JAXBElement<Integer> createCgNewarrayTypeInt(Integer value) {
-        return new JAXBElement<Integer>(_CgNewarrayTypeInt_QNAME, Integer.class, CgNewarrayType.class, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int4x1", scope = CgNewarrayType.class)
-    public JAXBElement<List<Integer>> createCgNewarrayTypeInt4X1(List<Integer> value) {
-        return new JAXBElement<List<Integer>>(_CgNewarrayTypeInt4X1_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<Integer> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int4x2", scope = CgNewarrayType.class)
-    public JAXBElement<List<Integer>> createCgNewarrayTypeInt4X2(List<Integer> value) {
-        return new JAXBElement<List<Integer>>(_CgNewarrayTypeInt4X2_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<Integer> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half4x2", scope = CgNewarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeHalf4X2(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeHalf4X2_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half4x1", scope = CgNewarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeHalf4X1(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeHalf4X1_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half4x4", scope = CgNewarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeHalf4X4(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeHalf4X4_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link CgSamplerRECT }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "samplerRECT", scope = CgNewarrayType.class)
-    public JAXBElement<CgSamplerRECT> createCgNewarrayTypeSamplerRECT(CgSamplerRECT value) {
-        return new JAXBElement<CgSamplerRECT>(_CgNewarrayTypeSamplerRECT_QNAME, CgSamplerRECT.class, CgNewarrayType.class, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half4x3", scope = CgNewarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeHalf4X3(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeHalf4X3_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link Boolean }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool", scope = CgNewarrayType.class)
-    public JAXBElement<Boolean> createCgNewarrayTypeBool(Boolean value) {
-        return new JAXBElement<Boolean>(_CgNewarrayTypeBool_QNAME, Boolean.class, CgNewarrayType.class, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link String }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "string", scope = CgNewarrayType.class)
-    public JAXBElement<String> createCgNewarrayTypeString(String value) {
-        return new JAXBElement<String>(_CgNewarrayTypeString_QNAME, String.class, CgNewarrayType.class, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link CgNewarrayType }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "array", scope = CgNewarrayType.class)
-    public JAXBElement<CgNewarrayType> createCgNewarrayTypeArray(CgNewarrayType value) {
-        return new JAXBElement<CgNewarrayType>(_CgNewarrayTypeArray_QNAME, CgNewarrayType.class, CgNewarrayType.class, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int4x3", scope = CgNewarrayType.class)
-    public JAXBElement<List<Integer>> createCgNewarrayTypeInt4X3(List<Integer> value) {
-        return new JAXBElement<List<Integer>>(_CgNewarrayTypeInt4X3_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<Integer> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed2x3", scope = CgNewarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeFixed2X3(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFixed2X3_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int4x4", scope = CgNewarrayType.class)
-    public JAXBElement<List<Integer>> createCgNewarrayTypeInt4X4(List<Integer> value) {
-        return new JAXBElement<List<Integer>>(_CgNewarrayTypeInt4X4_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<Integer> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed2x2", scope = CgNewarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeFixed2X2(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFixed2X2_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed2x4", scope = CgNewarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeFixed2X4(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFixed2X4_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float4x3", scope = CgNewarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeFloat4X3(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFloat4X3_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float4x2", scope = CgNewarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeFloat4X2(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFloat4X2_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool3x3", scope = CgNewarrayType.class)
-    public JAXBElement<List<Boolean>> createCgNewarrayTypeBool3X3(List<Boolean> value) {
-        return new JAXBElement<List<Boolean>>(_CgNewarrayTypeBool3X3_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<Boolean> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float4x1", scope = CgNewarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeFloat4X1(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFloat4X1_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed2x1", scope = CgNewarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeFixed2X1(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFixed2X1_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool3x4", scope = CgNewarrayType.class)
-    public JAXBElement<List<Boolean>> createCgNewarrayTypeBool3X4(List<Boolean> value) {
-        return new JAXBElement<List<Boolean>>(_CgNewarrayTypeBool3X4_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<Boolean> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool3x1", scope = CgNewarrayType.class)
-    public JAXBElement<List<Boolean>> createCgNewarrayTypeBool3X1(List<Boolean> value) {
-        return new JAXBElement<List<Boolean>>(_CgNewarrayTypeBool3X1_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<Boolean> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool3x2", scope = CgNewarrayType.class)
-    public JAXBElement<List<Boolean>> createCgNewarrayTypeBool3X2(List<Boolean> value) {
-        return new JAXBElement<List<Boolean>>(_CgNewarrayTypeBool3X2_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<Boolean> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float4x4", scope = CgNewarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeFloat4X4(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFloat4X4_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link CgSurfaceType }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "surface", scope = CgNewarrayType.class)
-    public JAXBElement<CgSurfaceType> createCgNewarrayTypeSurface(CgSurfaceType value) {
-        return new JAXBElement<CgSurfaceType>(_CgNewarrayTypeSurface_QNAME, CgSurfaceType.class, CgNewarrayType.class, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int1x2", scope = CgNewarrayType.class)
-    public JAXBElement<List<Integer>> createCgNewarrayTypeInt1X2(List<Integer> value) {
-        return new JAXBElement<List<Integer>>(_CgNewarrayTypeInt1X2_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<Integer> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int1x3", scope = CgNewarrayType.class)
-    public JAXBElement<List<Integer>> createCgNewarrayTypeInt1X3(List<Integer> value) {
-        return new JAXBElement<List<Integer>>(_CgNewarrayTypeInt1X3_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<Integer> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int1x4", scope = CgNewarrayType.class)
-    public JAXBElement<List<Integer>> createCgNewarrayTypeInt1X4(List<Integer> value) {
-        return new JAXBElement<List<Integer>>(_CgNewarrayTypeInt1X4_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<Integer> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link CgSampler3D }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "sampler3D", scope = CgNewarrayType.class)
-    public JAXBElement<CgSampler3D> createCgNewarrayTypeSampler3D(CgSampler3D value) {
-        return new JAXBElement<CgSampler3D>(_CgNewarrayTypeSampler3D_QNAME, CgSampler3D.class, CgNewarrayType.class, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link String }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "enum", scope = CgNewarrayType.class)
-    public JAXBElement<String> createCgNewarrayTypeEnum(String value) {
-        return new JAXBElement<String>(_CgNewarrayTypeEnum_QNAME, String.class, CgNewarrayType.class, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link CgSamplerCUBE }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "samplerCUBE", scope = CgNewarrayType.class)
-    public JAXBElement<CgSamplerCUBE> createCgNewarrayTypeSamplerCUBE(CgSamplerCUBE value) {
-        return new JAXBElement<CgSamplerCUBE>(_CgNewarrayTypeSamplerCUBE_QNAME, CgSamplerCUBE.class, CgNewarrayType.class, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int1x1", scope = CgNewarrayType.class)
-    public JAXBElement<List<Integer>> createCgNewarrayTypeInt1X1(List<Integer> value) {
-        return new JAXBElement<List<Integer>>(_CgNewarrayTypeInt1X1_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<Integer> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half3x3", scope = CgNewarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeHalf3X3(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeHalf3X3_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half3x2", scope = CgNewarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeHalf3X2(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeHalf3X2_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half3x1", scope = CgNewarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeHalf3X1(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeHalf3X1_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed2", scope = CgNewarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeFixed2(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFixed2_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed3", scope = CgNewarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeFixed3(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFixed3_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half3x4", scope = CgNewarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeHalf3X4(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeHalf3X4_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link java.lang.Float }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed1", scope = CgNewarrayType.class)
-    public JAXBElement<java.lang.Float> createCgNewarrayTypeFixed1(java.lang.Float value) {
-        return new JAXBElement<java.lang.Float>(_CgNewarrayTypeFixed1_QNAME, java.lang.Float.class, CgNewarrayType.class, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float1x2", scope = CgNewarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeFloat1X2(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFloat1X2_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float1x1", scope = CgNewarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeFloat1X1(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFloat1X1_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link java.lang.Float }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half", scope = CgNewarrayType.class)
-    public JAXBElement<java.lang.Float> createCgNewarrayTypeHalf(java.lang.Float value) {
-        return new JAXBElement<java.lang.Float>(_CgNewarrayTypeHalf_QNAME, java.lang.Float.class, CgNewarrayType.class, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link CgSampler2D }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "sampler2D", scope = CgNewarrayType.class)
-    public JAXBElement<CgSampler2D> createCgNewarrayTypeSampler2D(CgSampler2D value) {
-        return new JAXBElement<CgSampler2D>(_CgNewarrayTypeSampler2D_QNAME, CgSampler2D.class, CgNewarrayType.class, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int4", scope = CgNewarrayType.class)
-    public JAXBElement<List<Integer>> createCgNewarrayTypeInt4(List<Integer> value) {
-        return new JAXBElement<List<Integer>>(_CgNewarrayTypeInt4_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<Integer> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int3", scope = CgNewarrayType.class)
-    public JAXBElement<List<Integer>> createCgNewarrayTypeInt3(List<Integer> value) {
-        return new JAXBElement<List<Integer>>(_CgNewarrayTypeInt3_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<Integer> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool3", scope = CgNewarrayType.class)
-    public JAXBElement<List<Boolean>> createCgNewarrayTypeBool3(List<Boolean> value) {
-        return new JAXBElement<List<Boolean>>(_CgNewarrayTypeBool3_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<Boolean> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed1x4", scope = CgNewarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeFixed1X4(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFixed1X4_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool2", scope = CgNewarrayType.class)
-    public JAXBElement<List<Boolean>> createCgNewarrayTypeBool2(List<Boolean> value) {
-        return new JAXBElement<List<Boolean>>(_CgNewarrayTypeBool2_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<Boolean> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed1x3", scope = CgNewarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeFixed1X3(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFixed1X3_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int2", scope = CgNewarrayType.class)
-    public JAXBElement<List<Integer>> createCgNewarrayTypeInt2(List<Integer> value) {
-        return new JAXBElement<List<Integer>>(_CgNewarrayTypeInt2_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<Integer> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool4", scope = CgNewarrayType.class)
-    public JAXBElement<List<Boolean>> createCgNewarrayTypeBool4(List<Boolean> value) {
-        return new JAXBElement<List<Boolean>>(_CgNewarrayTypeBool4_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<Boolean> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link Integer }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int1", scope = CgNewarrayType.class)
-    public JAXBElement<Integer> createCgNewarrayTypeInt1(Integer value) {
-        return new JAXBElement<Integer>(_CgNewarrayTypeInt1_QNAME, Integer.class, CgNewarrayType.class, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool4x4", scope = CgNewarrayType.class)
-    public JAXBElement<List<Boolean>> createCgNewarrayTypeBool4X4(List<Boolean> value) {
-        return new JAXBElement<List<Boolean>>(_CgNewarrayTypeBool4X4_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<Boolean> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link Boolean }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool1", scope = CgNewarrayType.class)
-    public JAXBElement<Boolean> createCgNewarrayTypeBool1(Boolean value) {
-        return new JAXBElement<Boolean>(_CgNewarrayTypeBool1_QNAME, Boolean.class, CgNewarrayType.class, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool4x2", scope = CgNewarrayType.class)
-    public JAXBElement<List<Boolean>> createCgNewarrayTypeBool4X2(List<Boolean> value) {
-        return new JAXBElement<List<Boolean>>(_CgNewarrayTypeBool4X2_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<Boolean> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float1x4", scope = CgNewarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeFloat1X4(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFloat1X4_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed1x2", scope = CgNewarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeFixed1X2(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFixed1X2_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool4x3", scope = CgNewarrayType.class)
-    public JAXBElement<List<Boolean>> createCgNewarrayTypeBool4X3(List<Boolean> value) {
-        return new JAXBElement<List<Boolean>>(_CgNewarrayTypeBool4X3_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<Boolean> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float1x3", scope = CgNewarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeFloat1X3(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFloat1X3_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed1x1", scope = CgNewarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeFixed1X1(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFixed1X1_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool4x1", scope = CgNewarrayType.class)
-    public JAXBElement<List<Boolean>> createCgNewarrayTypeBool4X1(List<Boolean> value) {
-        return new JAXBElement<List<Boolean>>(_CgNewarrayTypeBool4X1_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<Boolean> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link java.lang.Float }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float1", scope = CgNewarrayType.class)
-    public JAXBElement<java.lang.Float> createCgNewarrayTypeFloat1(java.lang.Float value) {
-        return new JAXBElement<java.lang.Float>(_CgNewarrayTypeFloat1_QNAME, java.lang.Float.class, CgNewarrayType.class, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float2", scope = CgNewarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeFloat2(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFloat2_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float3", scope = CgNewarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeFloat3(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFloat3_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float4", scope = CgNewarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeFloat4(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFloat4_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int2x1", scope = CgNewarrayType.class)
-    public JAXBElement<List<Integer>> createCgNewarrayTypeInt2X1(List<Integer> value) {
-        return new JAXBElement<List<Integer>>(_CgNewarrayTypeInt2X1_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<Integer> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link CgSampler1D }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "sampler1D", scope = CgNewarrayType.class)
-    public JAXBElement<CgSampler1D> createCgNewarrayTypeSampler1D(CgSampler1D value) {
-        return new JAXBElement<CgSampler1D>(_CgNewarrayTypeSampler1D_QNAME, CgSampler1D.class, CgNewarrayType.class, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int2x2", scope = CgNewarrayType.class)
-    public JAXBElement<List<Integer>> createCgNewarrayTypeInt2X2(List<Integer> value) {
-        return new JAXBElement<List<Integer>>(_CgNewarrayTypeInt2X2_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<Integer> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int2x3", scope = CgNewarrayType.class)
-    public JAXBElement<List<Integer>> createCgNewarrayTypeInt2X3(List<Integer> value) {
-        return new JAXBElement<List<Integer>>(_CgNewarrayTypeInt2X3_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<Integer> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int2x4", scope = CgNewarrayType.class)
-    public JAXBElement<List<Integer>> createCgNewarrayTypeInt2X4(List<Integer> value) {
-        return new JAXBElement<List<Integer>>(_CgNewarrayTypeInt2X4_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<Integer> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half2x4", scope = CgNewarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeHalf2X4(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeHalf2X4_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half2x3", scope = CgNewarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeHalf2X3(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeHalf2X3_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half2x2", scope = CgNewarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeHalf2X2(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeHalf2X2_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half2x1", scope = CgNewarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeHalf2X1(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeHalf2X1_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link CgSamplerDEPTH }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "samplerDEPTH", scope = CgNewarrayType.class)
-    public JAXBElement<CgSamplerDEPTH> createCgNewarrayTypeSamplerDEPTH(CgSamplerDEPTH value) {
-        return new JAXBElement<CgSamplerDEPTH>(_CgNewarrayTypeSamplerDEPTH_QNAME, CgSamplerDEPTH.class, CgNewarrayType.class, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float2x1", scope = CgNewarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeFloat2X1(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFloat2X1_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed4", scope = CgNewarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeFixed4(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFixed4_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed4x4", scope = CgNewarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeFixed4X4(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFixed4X4_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed4x1", scope = CgNewarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeFixed4X1(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFixed4X1_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed4x3", scope = CgNewarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeFixed4X3(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFixed4X3_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed4x2", scope = CgNewarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeFixed4X2(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFixed4X2_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float2x4", scope = CgNewarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeFloat2X4(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFloat2X4_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float2x3", scope = CgNewarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeFloat2X3(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFloat2X3_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float2x2", scope = CgNewarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeFloat2X2(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFloat2X2_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool1x3", scope = CgNewarrayType.class)
-    public JAXBElement<List<Boolean>> createCgNewarrayTypeBool1X3(List<Boolean> value) {
-        return new JAXBElement<List<Boolean>>(_CgNewarrayTypeBool1X3_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<Boolean> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool1x4", scope = CgNewarrayType.class)
-    public JAXBElement<List<Boolean>> createCgNewarrayTypeBool1X4(List<Boolean> value) {
-        return new JAXBElement<List<Boolean>>(_CgNewarrayTypeBool1X4_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<Boolean> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool1x1", scope = CgNewarrayType.class)
-    public JAXBElement<List<Boolean>> createCgNewarrayTypeBool1X1(List<Boolean> value) {
-        return new JAXBElement<List<Boolean>>(_CgNewarrayTypeBool1X1_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<Boolean> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool1x2", scope = CgNewarrayType.class)
-    public JAXBElement<List<Boolean>> createCgNewarrayTypeBool1X2(List<Boolean> value) {
-        return new JAXBElement<List<Boolean>>(_CgNewarrayTypeBool1X2_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<Boolean> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link Polygons.Ph }{@code >}}
-     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link Polygons.Ph }{@code >}
      */
     @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "ph", scope = Polygons.class)
     public JAXBElement<Polygons.Ph> createPolygonsPh(Polygons.Ph value) {
@@ -5095,1484 +4057,5186 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link Boolean }{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link Boolean }{@code >}
      */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int3x1", scope = CgSetarrayType.class)
-    public JAXBElement<List<Integer>> createCgSetarrayTypeInt3X1(List<Integer> value) {
-        return new JAXBElement<List<Integer>>(_CgNewarrayTypeInt3X1_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<Integer> ) value));
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool", scope = CgSetuserType.class)
+    public JAXBElement<Boolean> createCgSetuserTypeBool(Boolean value) {
+        return new JAXBElement<Boolean>(_CgSetuserTypeBool_QNAME, Boolean.class, CgSetuserType.class, value);
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link Boolean }{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link Boolean }{@code >}
      */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int3x2", scope = CgSetarrayType.class)
-    public JAXBElement<List<Integer>> createCgSetarrayTypeInt3X2(List<Integer> value) {
-        return new JAXBElement<List<Integer>>(_CgNewarrayTypeInt3X2_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<Integer> ) value));
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool1", scope = CgSetuserType.class)
+    public JAXBElement<Boolean> createCgSetuserTypeBool1(Boolean value) {
+        return new JAXBElement<Boolean>(_CgSetuserTypeBool1_QNAME, Boolean.class, CgSetuserType.class, value);
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
      */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int3x3", scope = CgSetarrayType.class)
-    public JAXBElement<List<Integer>> createCgSetarrayTypeInt3X3(List<Integer> value) {
-        return new JAXBElement<List<Integer>>(_CgNewarrayTypeInt3X3_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<Integer> ) value));
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool2", scope = CgSetuserType.class)
+    public JAXBElement<List<Boolean>> createCgSetuserTypeBool2(List<Boolean> value) {
+        return new JAXBElement<List<Boolean>>(_CgSetuserTypeBool2_QNAME, ((Class) List.class), CgSetuserType.class, ((List<Boolean> ) value));
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link CgSetuserType }{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
      */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "usertype", scope = CgSetarrayType.class)
-    public JAXBElement<CgSetuserType> createCgSetarrayTypeUsertype(CgSetuserType value) {
-        return new JAXBElement<CgSetuserType>(_CgNewarrayTypeUsertype_QNAME, CgSetuserType.class, CgSetarrayType.class, value);
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool3", scope = CgSetuserType.class)
+    public JAXBElement<List<Boolean>> createCgSetuserTypeBool3(List<Boolean> value) {
+        return new JAXBElement<List<Boolean>>(_CgSetuserTypeBool3_QNAME, ((Class) List.class), CgSetuserType.class, ((List<Boolean> ) value));
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
      */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half1x4", scope = CgSetarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeHalf1X4(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeHalf1X4_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool4", scope = CgSetuserType.class)
+    public JAXBElement<List<Boolean>> createCgSetuserTypeBool4(List<Boolean> value) {
+        return new JAXBElement<List<Boolean>>(_CgSetuserTypeBool4_QNAME, ((Class) List.class), CgSetuserType.class, ((List<Boolean> ) value));
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
      */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half1x3", scope = CgSetarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeHalf1X3(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeHalf1X3_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool1x1", scope = CgSetuserType.class)
+    public JAXBElement<List<Boolean>> createCgSetuserTypeBool1X1(List<Boolean> value) {
+        return new JAXBElement<List<Boolean>>(_CgSetuserTypeBool1X1_QNAME, ((Class) List.class), CgSetuserType.class, ((List<Boolean> ) value));
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
      */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half1x2", scope = CgSetarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeHalf1X2(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeHalf1X2_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool1x2", scope = CgSetuserType.class)
+    public JAXBElement<List<Boolean>> createCgSetuserTypeBool1X2(List<Boolean> value) {
+        return new JAXBElement<List<Boolean>>(_CgSetuserTypeBool1X2_QNAME, ((Class) List.class), CgSetuserType.class, ((List<Boolean> ) value));
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
      */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half2", scope = CgSetarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeHalf2(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeHalf2_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool1x3", scope = CgSetuserType.class)
+    public JAXBElement<List<Boolean>> createCgSetuserTypeBool1X3(List<Boolean> value) {
+        return new JAXBElement<List<Boolean>>(_CgSetuserTypeBool1X3_QNAME, ((Class) List.class), CgSetuserType.class, ((List<Boolean> ) value));
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
      */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half1x1", scope = CgSetarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeHalf1X1(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeHalf1X1_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool1x4", scope = CgSetuserType.class)
+    public JAXBElement<List<Boolean>> createCgSetuserTypeBool1X4(List<Boolean> value) {
+        return new JAXBElement<List<Boolean>>(_CgSetuserTypeBool1X4_QNAME, ((Class) List.class), CgSetuserType.class, ((List<Boolean> ) value));
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link java.lang.Float }{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
      */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half1", scope = CgSetarrayType.class)
-    public JAXBElement<java.lang.Float> createCgSetarrayTypeHalf1(java.lang.Float value) {
-        return new JAXBElement<java.lang.Float>(_CgNewarrayTypeHalf1_QNAME, java.lang.Float.class, CgSetarrayType.class, value);
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool2x1", scope = CgSetuserType.class)
+    public JAXBElement<List<Boolean>> createCgSetuserTypeBool2X1(List<Boolean> value) {
+        return new JAXBElement<List<Boolean>>(_CgSetuserTypeBool2X1_QNAME, ((Class) List.class), CgSetuserType.class, ((List<Boolean> ) value));
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link java.lang.Float }{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
      */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed", scope = CgSetarrayType.class)
-    public JAXBElement<java.lang.Float> createCgSetarrayTypeFixed(java.lang.Float value) {
-        return new JAXBElement<java.lang.Float>(_CgNewarrayTypeFixed_QNAME, java.lang.Float.class, CgSetarrayType.class, value);
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool2x2", scope = CgSetuserType.class)
+    public JAXBElement<List<Boolean>> createCgSetuserTypeBool2X2(List<Boolean> value) {
+        return new JAXBElement<List<Boolean>>(_CgSetuserTypeBool2X2_QNAME, ((Class) List.class), CgSetuserType.class, ((List<Boolean> ) value));
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
      */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half4", scope = CgSetarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeHalf4(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeHalf4_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool2x3", scope = CgSetuserType.class)
+    public JAXBElement<List<Boolean>> createCgSetuserTypeBool2X3(List<Boolean> value) {
+        return new JAXBElement<List<Boolean>>(_CgSetuserTypeBool2X3_QNAME, ((Class) List.class), CgSetuserType.class, ((List<Boolean> ) value));
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
      */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half3", scope = CgSetarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeHalf3(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeHalf3_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool2x4", scope = CgSetuserType.class)
+    public JAXBElement<List<Boolean>> createCgSetuserTypeBool2X4(List<Boolean> value) {
+        return new JAXBElement<List<Boolean>>(_CgSetuserTypeBool2X4_QNAME, ((Class) List.class), CgSetuserType.class, ((List<Boolean> ) value));
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link java.lang.Float }{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
      */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float", scope = CgSetarrayType.class)
-    public JAXBElement<java.lang.Float> createCgSetarrayTypeFloat(java.lang.Float value) {
-        return new JAXBElement<java.lang.Float>(_CgNewarrayTypeFloat_QNAME, java.lang.Float.class, CgSetarrayType.class, value);
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool3x1", scope = CgSetuserType.class)
+    public JAXBElement<List<Boolean>> createCgSetuserTypeBool3X1(List<Boolean> value) {
+        return new JAXBElement<List<Boolean>>(_CgSetuserTypeBool3X1_QNAME, ((Class) List.class), CgSetuserType.class, ((List<Boolean> ) value));
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
      */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int3x4", scope = CgSetarrayType.class)
-    public JAXBElement<List<Integer>> createCgSetarrayTypeInt3X4(List<Integer> value) {
-        return new JAXBElement<List<Integer>>(_CgNewarrayTypeInt3X4_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<Integer> ) value));
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool3x2", scope = CgSetuserType.class)
+    public JAXBElement<List<Boolean>> createCgSetuserTypeBool3X2(List<Boolean> value) {
+        return new JAXBElement<List<Boolean>>(_CgSetuserTypeBool3X2_QNAME, ((Class) List.class), CgSetuserType.class, ((List<Boolean> ) value));
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
      */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed3x2", scope = CgSetarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeFixed3X2(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFixed3X2_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool3x3", scope = CgSetuserType.class)
+    public JAXBElement<List<Boolean>> createCgSetuserTypeBool3X3(List<Boolean> value) {
+        return new JAXBElement<List<Boolean>>(_CgSetuserTypeBool3X3_QNAME, ((Class) List.class), CgSetuserType.class, ((List<Boolean> ) value));
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
      */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed3x1", scope = CgSetarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeFixed3X1(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFixed3X1_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool3x4", scope = CgSetuserType.class)
+    public JAXBElement<List<Boolean>> createCgSetuserTypeBool3X4(List<Boolean> value) {
+        return new JAXBElement<List<Boolean>>(_CgSetuserTypeBool3X4_QNAME, ((Class) List.class), CgSetuserType.class, ((List<Boolean> ) value));
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
      */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed3x4", scope = CgSetarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeFixed3X4(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFixed3X4_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool4x1", scope = CgSetuserType.class)
+    public JAXBElement<List<Boolean>> createCgSetuserTypeBool4X1(List<Boolean> value) {
+        return new JAXBElement<List<Boolean>>(_CgSetuserTypeBool4X1_QNAME, ((Class) List.class), CgSetuserType.class, ((List<Boolean> ) value));
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
      */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed3x3", scope = CgSetarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeFixed3X3(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFixed3X3_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool4x2", scope = CgSetuserType.class)
+    public JAXBElement<List<Boolean>> createCgSetuserTypeBool4X2(List<Boolean> value) {
+        return new JAXBElement<List<Boolean>>(_CgSetuserTypeBool4X2_QNAME, ((Class) List.class), CgSetuserType.class, ((List<Boolean> ) value));
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
      */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float3x4", scope = CgSetarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeFloat3X4(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFloat3X4_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool4x3", scope = CgSetuserType.class)
+    public JAXBElement<List<Boolean>> createCgSetuserTypeBool4X3(List<Boolean> value) {
+        return new JAXBElement<List<Boolean>>(_CgSetuserTypeBool4X3_QNAME, ((Class) List.class), CgSetuserType.class, ((List<Boolean> ) value));
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
      */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float3x3", scope = CgSetarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeFloat3X3(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFloat3X3_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool4x4", scope = CgSetuserType.class)
+    public JAXBElement<List<Boolean>> createCgSetuserTypeBool4X4(List<Boolean> value) {
+        return new JAXBElement<List<Boolean>>(_CgSetuserTypeBool4X4_QNAME, ((Class) List.class), CgSetuserType.class, ((List<Boolean> ) value));
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link java.lang.Float }{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link java.lang.Float }{@code >}
      */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool2x4", scope = CgSetarrayType.class)
-    public JAXBElement<List<Boolean>> createCgSetarrayTypeBool2X4(List<Boolean> value) {
-        return new JAXBElement<List<Boolean>>(_CgNewarrayTypeBool2X4_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<Boolean> ) value));
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float", scope = CgSetuserType.class)
+    public JAXBElement<java.lang.Float> createCgSetuserTypeFloat(java.lang.Float value) {
+        return new JAXBElement<java.lang.Float>(_CgSetuserTypeFloat_QNAME, java.lang.Float.class, CgSetuserType.class, value);
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link java.lang.Float }{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link java.lang.Float }{@code >}
      */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float3x2", scope = CgSetarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeFloat3X2(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFloat3X2_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float1", scope = CgSetuserType.class)
+    public JAXBElement<java.lang.Float> createCgSetuserTypeFloat1(java.lang.Float value) {
+        return new JAXBElement<java.lang.Float>(_CgSetuserTypeFloat1_QNAME, java.lang.Float.class, CgSetuserType.class, value);
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
      */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float3x1", scope = CgSetarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeFloat3X1(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFloat3X1_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float2", scope = CgSetuserType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeFloat2(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFloat2_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
      */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool2x2", scope = CgSetarrayType.class)
-    public JAXBElement<List<Boolean>> createCgSetarrayTypeBool2X2(List<Boolean> value) {
-        return new JAXBElement<List<Boolean>>(_CgNewarrayTypeBool2X2_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<Boolean> ) value));
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float3", scope = CgSetuserType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeFloat3(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFloat3_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
      */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool2x3", scope = CgSetarrayType.class)
-    public JAXBElement<List<Boolean>> createCgSetarrayTypeBool2X3(List<Boolean> value) {
-        return new JAXBElement<List<Boolean>>(_CgNewarrayTypeBool2X3_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<Boolean> ) value));
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float4", scope = CgSetuserType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeFloat4(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFloat4_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
      */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool2x1", scope = CgSetarrayType.class)
-    public JAXBElement<List<Boolean>> createCgSetarrayTypeBool2X1(List<Boolean> value) {
-        return new JAXBElement<List<Boolean>>(_CgNewarrayTypeBool2X1_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<Boolean> ) value));
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float1x1", scope = CgSetuserType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeFloat1X1(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFloat1X1_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link Integer }{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
      */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int", scope = CgSetarrayType.class)
-    public JAXBElement<Integer> createCgSetarrayTypeInt(Integer value) {
-        return new JAXBElement<Integer>(_CgNewarrayTypeInt_QNAME, Integer.class, CgSetarrayType.class, value);
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float1x2", scope = CgSetuserType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeFloat1X2(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFloat1X2_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
      */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int4x1", scope = CgSetarrayType.class)
-    public JAXBElement<List<Integer>> createCgSetarrayTypeInt4X1(List<Integer> value) {
-        return new JAXBElement<List<Integer>>(_CgNewarrayTypeInt4X1_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<Integer> ) value));
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float1x3", scope = CgSetuserType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeFloat1X3(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFloat1X3_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
      */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int4x2", scope = CgSetarrayType.class)
-    public JAXBElement<List<Integer>> createCgSetarrayTypeInt4X2(List<Integer> value) {
-        return new JAXBElement<List<Integer>>(_CgNewarrayTypeInt4X2_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<Integer> ) value));
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float1x4", scope = CgSetuserType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeFloat1X4(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFloat1X4_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
      */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half4x2", scope = CgSetarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeHalf4X2(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeHalf4X2_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float2x1", scope = CgSetuserType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeFloat2X1(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFloat2X1_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
      */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half4x1", scope = CgSetarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeHalf4X1(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeHalf4X1_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float2x2", scope = CgSetuserType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeFloat2X2(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFloat2X2_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
      */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half4x4", scope = CgSetarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeHalf4X4(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeHalf4X4_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float2x3", scope = CgSetuserType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeFloat2X3(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFloat2X3_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link CgSamplerRECT }{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
      */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "samplerRECT", scope = CgSetarrayType.class)
-    public JAXBElement<CgSamplerRECT> createCgSetarrayTypeSamplerRECT(CgSamplerRECT value) {
-        return new JAXBElement<CgSamplerRECT>(_CgNewarrayTypeSamplerRECT_QNAME, CgSamplerRECT.class, CgSetarrayType.class, value);
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float2x4", scope = CgSetuserType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeFloat2X4(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFloat2X4_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
      */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half4x3", scope = CgSetarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeHalf4X3(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeHalf4X3_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float3x1", scope = CgSetuserType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeFloat3X1(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFloat3X1_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link Boolean }{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float3x2", scope = CgSetuserType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeFloat3X2(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFloat3X2_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float3x3", scope = CgSetuserType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeFloat3X3(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFloat3X3_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float3x4", scope = CgSetuserType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeFloat3X4(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFloat3X4_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float4x1", scope = CgSetuserType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeFloat4X1(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFloat4X1_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float4x2", scope = CgSetuserType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeFloat4X2(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFloat4X2_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float4x3", scope = CgSetuserType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeFloat4X3(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFloat4X3_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float4x4", scope = CgSetuserType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeFloat4X4(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFloat4X4_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link Integer }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link Integer }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int", scope = CgSetuserType.class)
+    public JAXBElement<Integer> createCgSetuserTypeInt(Integer value) {
+        return new JAXBElement<Integer>(_CgSetuserTypeInt_QNAME, Integer.class, CgSetuserType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link Integer }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link Integer }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int1", scope = CgSetuserType.class)
+    public JAXBElement<Integer> createCgSetuserTypeInt1(Integer value) {
+        return new JAXBElement<Integer>(_CgSetuserTypeInt1_QNAME, Integer.class, CgSetuserType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int2", scope = CgSetuserType.class)
+    public JAXBElement<List<Integer>> createCgSetuserTypeInt2(List<Integer> value) {
+        return new JAXBElement<List<Integer>>(_CgSetuserTypeInt2_QNAME, ((Class) List.class), CgSetuserType.class, ((List<Integer> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int3", scope = CgSetuserType.class)
+    public JAXBElement<List<Integer>> createCgSetuserTypeInt3(List<Integer> value) {
+        return new JAXBElement<List<Integer>>(_CgSetuserTypeInt3_QNAME, ((Class) List.class), CgSetuserType.class, ((List<Integer> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int4", scope = CgSetuserType.class)
+    public JAXBElement<List<Integer>> createCgSetuserTypeInt4(List<Integer> value) {
+        return new JAXBElement<List<Integer>>(_CgSetuserTypeInt4_QNAME, ((Class) List.class), CgSetuserType.class, ((List<Integer> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int1x1", scope = CgSetuserType.class)
+    public JAXBElement<List<Integer>> createCgSetuserTypeInt1X1(List<Integer> value) {
+        return new JAXBElement<List<Integer>>(_CgSetuserTypeInt1X1_QNAME, ((Class) List.class), CgSetuserType.class, ((List<Integer> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int1x2", scope = CgSetuserType.class)
+    public JAXBElement<List<Integer>> createCgSetuserTypeInt1X2(List<Integer> value) {
+        return new JAXBElement<List<Integer>>(_CgSetuserTypeInt1X2_QNAME, ((Class) List.class), CgSetuserType.class, ((List<Integer> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int1x3", scope = CgSetuserType.class)
+    public JAXBElement<List<Integer>> createCgSetuserTypeInt1X3(List<Integer> value) {
+        return new JAXBElement<List<Integer>>(_CgSetuserTypeInt1X3_QNAME, ((Class) List.class), CgSetuserType.class, ((List<Integer> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int1x4", scope = CgSetuserType.class)
+    public JAXBElement<List<Integer>> createCgSetuserTypeInt1X4(List<Integer> value) {
+        return new JAXBElement<List<Integer>>(_CgSetuserTypeInt1X4_QNAME, ((Class) List.class), CgSetuserType.class, ((List<Integer> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int2x1", scope = CgSetuserType.class)
+    public JAXBElement<List<Integer>> createCgSetuserTypeInt2X1(List<Integer> value) {
+        return new JAXBElement<List<Integer>>(_CgSetuserTypeInt2X1_QNAME, ((Class) List.class), CgSetuserType.class, ((List<Integer> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int2x2", scope = CgSetuserType.class)
+    public JAXBElement<List<Integer>> createCgSetuserTypeInt2X2(List<Integer> value) {
+        return new JAXBElement<List<Integer>>(_CgSetuserTypeInt2X2_QNAME, ((Class) List.class), CgSetuserType.class, ((List<Integer> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int2x3", scope = CgSetuserType.class)
+    public JAXBElement<List<Integer>> createCgSetuserTypeInt2X3(List<Integer> value) {
+        return new JAXBElement<List<Integer>>(_CgSetuserTypeInt2X3_QNAME, ((Class) List.class), CgSetuserType.class, ((List<Integer> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int2x4", scope = CgSetuserType.class)
+    public JAXBElement<List<Integer>> createCgSetuserTypeInt2X4(List<Integer> value) {
+        return new JAXBElement<List<Integer>>(_CgSetuserTypeInt2X4_QNAME, ((Class) List.class), CgSetuserType.class, ((List<Integer> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int3x1", scope = CgSetuserType.class)
+    public JAXBElement<List<Integer>> createCgSetuserTypeInt3X1(List<Integer> value) {
+        return new JAXBElement<List<Integer>>(_CgSetuserTypeInt3X1_QNAME, ((Class) List.class), CgSetuserType.class, ((List<Integer> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int3x2", scope = CgSetuserType.class)
+    public JAXBElement<List<Integer>> createCgSetuserTypeInt3X2(List<Integer> value) {
+        return new JAXBElement<List<Integer>>(_CgSetuserTypeInt3X2_QNAME, ((Class) List.class), CgSetuserType.class, ((List<Integer> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int3x3", scope = CgSetuserType.class)
+    public JAXBElement<List<Integer>> createCgSetuserTypeInt3X3(List<Integer> value) {
+        return new JAXBElement<List<Integer>>(_CgSetuserTypeInt3X3_QNAME, ((Class) List.class), CgSetuserType.class, ((List<Integer> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int3x4", scope = CgSetuserType.class)
+    public JAXBElement<List<Integer>> createCgSetuserTypeInt3X4(List<Integer> value) {
+        return new JAXBElement<List<Integer>>(_CgSetuserTypeInt3X4_QNAME, ((Class) List.class), CgSetuserType.class, ((List<Integer> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int4x1", scope = CgSetuserType.class)
+    public JAXBElement<List<Integer>> createCgSetuserTypeInt4X1(List<Integer> value) {
+        return new JAXBElement<List<Integer>>(_CgSetuserTypeInt4X1_QNAME, ((Class) List.class), CgSetuserType.class, ((List<Integer> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int4x2", scope = CgSetuserType.class)
+    public JAXBElement<List<Integer>> createCgSetuserTypeInt4X2(List<Integer> value) {
+        return new JAXBElement<List<Integer>>(_CgSetuserTypeInt4X2_QNAME, ((Class) List.class), CgSetuserType.class, ((List<Integer> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int4x3", scope = CgSetuserType.class)
+    public JAXBElement<List<Integer>> createCgSetuserTypeInt4X3(List<Integer> value) {
+        return new JAXBElement<List<Integer>>(_CgSetuserTypeInt4X3_QNAME, ((Class) List.class), CgSetuserType.class, ((List<Integer> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int4x4", scope = CgSetuserType.class)
+    public JAXBElement<List<Integer>> createCgSetuserTypeInt4X4(List<Integer> value) {
+        return new JAXBElement<List<Integer>>(_CgSetuserTypeInt4X4_QNAME, ((Class) List.class), CgSetuserType.class, ((List<Integer> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link java.lang.Float }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link java.lang.Float }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half", scope = CgSetuserType.class)
+    public JAXBElement<java.lang.Float> createCgSetuserTypeHalf(java.lang.Float value) {
+        return new JAXBElement<java.lang.Float>(_CgSetuserTypeHalf_QNAME, java.lang.Float.class, CgSetuserType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link java.lang.Float }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link java.lang.Float }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half1", scope = CgSetuserType.class)
+    public JAXBElement<java.lang.Float> createCgSetuserTypeHalf1(java.lang.Float value) {
+        return new JAXBElement<java.lang.Float>(_CgSetuserTypeHalf1_QNAME, java.lang.Float.class, CgSetuserType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half2", scope = CgSetuserType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeHalf2(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeHalf2_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half3", scope = CgSetuserType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeHalf3(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeHalf3_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half4", scope = CgSetuserType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeHalf4(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeHalf4_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half1x1", scope = CgSetuserType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeHalf1X1(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeHalf1X1_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half1x2", scope = CgSetuserType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeHalf1X2(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeHalf1X2_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half1x3", scope = CgSetuserType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeHalf1X3(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeHalf1X3_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half1x4", scope = CgSetuserType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeHalf1X4(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeHalf1X4_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half2x1", scope = CgSetuserType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeHalf2X1(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeHalf2X1_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half2x2", scope = CgSetuserType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeHalf2X2(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeHalf2X2_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half2x3", scope = CgSetuserType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeHalf2X3(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeHalf2X3_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half2x4", scope = CgSetuserType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeHalf2X4(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeHalf2X4_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half3x1", scope = CgSetuserType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeHalf3X1(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeHalf3X1_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half3x2", scope = CgSetuserType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeHalf3X2(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeHalf3X2_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half3x3", scope = CgSetuserType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeHalf3X3(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeHalf3X3_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half3x4", scope = CgSetuserType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeHalf3X4(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeHalf3X4_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half4x1", scope = CgSetuserType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeHalf4X1(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeHalf4X1_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half4x2", scope = CgSetuserType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeHalf4X2(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeHalf4X2_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half4x3", scope = CgSetuserType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeHalf4X3(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeHalf4X3_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half4x4", scope = CgSetuserType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeHalf4X4(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeHalf4X4_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link java.lang.Float }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link java.lang.Float }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed", scope = CgSetuserType.class)
+    public JAXBElement<java.lang.Float> createCgSetuserTypeFixed(java.lang.Float value) {
+        return new JAXBElement<java.lang.Float>(_CgSetuserTypeFixed_QNAME, java.lang.Float.class, CgSetuserType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link java.lang.Float }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link java.lang.Float }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed1", scope = CgSetuserType.class)
+    public JAXBElement<java.lang.Float> createCgSetuserTypeFixed1(java.lang.Float value) {
+        return new JAXBElement<java.lang.Float>(_CgSetuserTypeFixed1_QNAME, java.lang.Float.class, CgSetuserType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed2", scope = CgSetuserType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeFixed2(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFixed2_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed3", scope = CgSetuserType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeFixed3(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFixed3_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed4", scope = CgSetuserType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeFixed4(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFixed4_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed1x1", scope = CgSetuserType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeFixed1X1(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFixed1X1_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed1x2", scope = CgSetuserType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeFixed1X2(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFixed1X2_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed1x3", scope = CgSetuserType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeFixed1X3(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFixed1X3_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed1x4", scope = CgSetuserType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeFixed1X4(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFixed1X4_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed2x1", scope = CgSetuserType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeFixed2X1(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFixed2X1_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed2x2", scope = CgSetuserType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeFixed2X2(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFixed2X2_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed2x3", scope = CgSetuserType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeFixed2X3(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFixed2X3_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed2x4", scope = CgSetuserType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeFixed2X4(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFixed2X4_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed3x1", scope = CgSetuserType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeFixed3X1(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFixed3X1_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed3x2", scope = CgSetuserType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeFixed3X2(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFixed3X2_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed3x3", scope = CgSetuserType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeFixed3X3(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFixed3X3_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed3x4", scope = CgSetuserType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeFixed3X4(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFixed3X4_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed4x1", scope = CgSetuserType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeFixed4X1(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFixed4X1_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed4x2", scope = CgSetuserType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeFixed4X2(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFixed4X2_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed4x3", scope = CgSetuserType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeFixed4X3(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFixed4X3_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed4x4", scope = CgSetuserType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeFixed4X4(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFixed4X4_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link CgSurfaceType }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link CgSurfaceType }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "surface", scope = CgSetuserType.class)
+    public JAXBElement<CgSurfaceType> createCgSetuserTypeSurface(CgSurfaceType value) {
+        return new JAXBElement<CgSurfaceType>(_CgSetuserTypeSurface_QNAME, CgSurfaceType.class, CgSetuserType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link CgSampler1D }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link CgSampler1D }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "sampler1D", scope = CgSetuserType.class)
+    public JAXBElement<CgSampler1D> createCgSetuserTypeSampler1D(CgSampler1D value) {
+        return new JAXBElement<CgSampler1D>(_CgSetuserTypeSampler1D_QNAME, CgSampler1D.class, CgSetuserType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link CgSampler2D }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link CgSampler2D }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "sampler2D", scope = CgSetuserType.class)
+    public JAXBElement<CgSampler2D> createCgSetuserTypeSampler2D(CgSampler2D value) {
+        return new JAXBElement<CgSampler2D>(_CgSetuserTypeSampler2D_QNAME, CgSampler2D.class, CgSetuserType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link CgSampler3D }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link CgSampler3D }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "sampler3D", scope = CgSetuserType.class)
+    public JAXBElement<CgSampler3D> createCgSetuserTypeSampler3D(CgSampler3D value) {
+        return new JAXBElement<CgSampler3D>(_CgSetuserTypeSampler3D_QNAME, CgSampler3D.class, CgSetuserType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link CgSamplerRECT }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link CgSamplerRECT }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "samplerRECT", scope = CgSetuserType.class)
+    public JAXBElement<CgSamplerRECT> createCgSetuserTypeSamplerRECT(CgSamplerRECT value) {
+        return new JAXBElement<CgSamplerRECT>(_CgSetuserTypeSamplerRECT_QNAME, CgSamplerRECT.class, CgSetuserType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link CgSamplerCUBE }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link CgSamplerCUBE }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "samplerCUBE", scope = CgSetuserType.class)
+    public JAXBElement<CgSamplerCUBE> createCgSetuserTypeSamplerCUBE(CgSamplerCUBE value) {
+        return new JAXBElement<CgSamplerCUBE>(_CgSetuserTypeSamplerCUBE_QNAME, CgSamplerCUBE.class, CgSetuserType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link CgSamplerDEPTH }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link CgSamplerDEPTH }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "samplerDEPTH", scope = CgSetuserType.class)
+    public JAXBElement<CgSamplerDEPTH> createCgSetuserTypeSamplerDEPTH(CgSamplerDEPTH value) {
+        return new JAXBElement<CgSamplerDEPTH>(_CgSetuserTypeSamplerDEPTH_QNAME, CgSamplerDEPTH.class, CgSetuserType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link String }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link String }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "string", scope = CgSetuserType.class)
+    public JAXBElement<String> createCgSetuserTypeString(String value) {
+        return new JAXBElement<String>(_CgSetuserTypeString_QNAME, String.class, CgSetuserType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link String }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link String }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "enum", scope = CgSetuserType.class)
+    public JAXBElement<String> createCgSetuserTypeEnum(String value) {
+        return new JAXBElement<String>(_CgSetuserTypeEnum_QNAME, String.class, CgSetuserType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link CgSetarrayType }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link CgSetarrayType }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "array", scope = CgSetuserType.class)
+    public JAXBElement<CgSetarrayType> createCgSetuserTypeArray(CgSetarrayType value) {
+        return new JAXBElement<CgSetarrayType>(_CgSetuserTypeArray_QNAME, CgSetarrayType.class, CgSetuserType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link CgSetuserType }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link CgSetuserType }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "usertype", scope = CgSetuserType.class)
+    public JAXBElement<CgSetuserType> createCgSetuserTypeUsertype(CgSetuserType value) {
+        return new JAXBElement<CgSetuserType>(_CgSetuserTypeUsertype_QNAME, CgSetuserType.class, CgSetuserType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link CgConnectParam }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link CgConnectParam }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "connect_param", scope = CgSetuserType.class)
+    public JAXBElement<CgConnectParam> createCgSetuserTypeConnectParam(CgConnectParam value) {
+        return new JAXBElement<CgConnectParam>(_CgSetuserTypeConnectParam_QNAME, CgConnectParam.class, CgSetuserType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link Boolean }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link Boolean }{@code >}
      */
     @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool", scope = CgSetarrayType.class)
     public JAXBElement<Boolean> createCgSetarrayTypeBool(Boolean value) {
-        return new JAXBElement<Boolean>(_CgNewarrayTypeBool_QNAME, Boolean.class, CgSetarrayType.class, value);
+        return new JAXBElement<Boolean>(_CgSetuserTypeBool_QNAME, Boolean.class, CgSetarrayType.class, value);
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link String }{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link Boolean }{@code >}
      * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "string", scope = CgSetarrayType.class)
-    public JAXBElement<String> createCgSetarrayTypeString(String value) {
-        return new JAXBElement<String>(_CgNewarrayTypeString_QNAME, String.class, CgSetarrayType.class, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link CgSetarrayType }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "array", scope = CgSetarrayType.class)
-    public JAXBElement<CgSetarrayType> createCgSetarrayTypeArray(CgSetarrayType value) {
-        return new JAXBElement<CgSetarrayType>(_CgNewarrayTypeArray_QNAME, CgSetarrayType.class, CgSetarrayType.class, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int4x3", scope = CgSetarrayType.class)
-    public JAXBElement<List<Integer>> createCgSetarrayTypeInt4X3(List<Integer> value) {
-        return new JAXBElement<List<Integer>>(_CgNewarrayTypeInt4X3_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<Integer> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed2x3", scope = CgSetarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeFixed2X3(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFixed2X3_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int4x4", scope = CgSetarrayType.class)
-    public JAXBElement<List<Integer>> createCgSetarrayTypeInt4X4(List<Integer> value) {
-        return new JAXBElement<List<Integer>>(_CgNewarrayTypeInt4X4_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<Integer> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed2x2", scope = CgSetarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeFixed2X2(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFixed2X2_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed2x4", scope = CgSetarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeFixed2X4(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFixed2X4_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float4x3", scope = CgSetarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeFloat4X3(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFloat4X3_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float4x2", scope = CgSetarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeFloat4X2(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFloat4X2_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool3x3", scope = CgSetarrayType.class)
-    public JAXBElement<List<Boolean>> createCgSetarrayTypeBool3X3(List<Boolean> value) {
-        return new JAXBElement<List<Boolean>>(_CgNewarrayTypeBool3X3_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<Boolean> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float4x1", scope = CgSetarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeFloat4X1(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFloat4X1_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed2x1", scope = CgSetarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeFixed2X1(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFixed2X1_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool3x4", scope = CgSetarrayType.class)
-    public JAXBElement<List<Boolean>> createCgSetarrayTypeBool3X4(List<Boolean> value) {
-        return new JAXBElement<List<Boolean>>(_CgNewarrayTypeBool3X4_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<Boolean> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool3x1", scope = CgSetarrayType.class)
-    public JAXBElement<List<Boolean>> createCgSetarrayTypeBool3X1(List<Boolean> value) {
-        return new JAXBElement<List<Boolean>>(_CgNewarrayTypeBool3X1_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<Boolean> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool3x2", scope = CgSetarrayType.class)
-    public JAXBElement<List<Boolean>> createCgSetarrayTypeBool3X2(List<Boolean> value) {
-        return new JAXBElement<List<Boolean>>(_CgNewarrayTypeBool3X2_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<Boolean> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float4x4", scope = CgSetarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeFloat4X4(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFloat4X4_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link CgSurfaceType }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "surface", scope = CgSetarrayType.class)
-    public JAXBElement<CgSurfaceType> createCgSetarrayTypeSurface(CgSurfaceType value) {
-        return new JAXBElement<CgSurfaceType>(_CgNewarrayTypeSurface_QNAME, CgSurfaceType.class, CgSetarrayType.class, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int1x2", scope = CgSetarrayType.class)
-    public JAXBElement<List<Integer>> createCgSetarrayTypeInt1X2(List<Integer> value) {
-        return new JAXBElement<List<Integer>>(_CgNewarrayTypeInt1X2_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<Integer> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int1x3", scope = CgSetarrayType.class)
-    public JAXBElement<List<Integer>> createCgSetarrayTypeInt1X3(List<Integer> value) {
-        return new JAXBElement<List<Integer>>(_CgNewarrayTypeInt1X3_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<Integer> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int1x4", scope = CgSetarrayType.class)
-    public JAXBElement<List<Integer>> createCgSetarrayTypeInt1X4(List<Integer> value) {
-        return new JAXBElement<List<Integer>>(_CgNewarrayTypeInt1X4_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<Integer> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link CgSampler3D }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "sampler3D", scope = CgSetarrayType.class)
-    public JAXBElement<CgSampler3D> createCgSetarrayTypeSampler3D(CgSampler3D value) {
-        return new JAXBElement<CgSampler3D>(_CgNewarrayTypeSampler3D_QNAME, CgSampler3D.class, CgSetarrayType.class, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link String }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "enum", scope = CgSetarrayType.class)
-    public JAXBElement<String> createCgSetarrayTypeEnum(String value) {
-        return new JAXBElement<String>(_CgNewarrayTypeEnum_QNAME, String.class, CgSetarrayType.class, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link CgSamplerCUBE }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "samplerCUBE", scope = CgSetarrayType.class)
-    public JAXBElement<CgSamplerCUBE> createCgSetarrayTypeSamplerCUBE(CgSamplerCUBE value) {
-        return new JAXBElement<CgSamplerCUBE>(_CgNewarrayTypeSamplerCUBE_QNAME, CgSamplerCUBE.class, CgSetarrayType.class, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int1x1", scope = CgSetarrayType.class)
-    public JAXBElement<List<Integer>> createCgSetarrayTypeInt1X1(List<Integer> value) {
-        return new JAXBElement<List<Integer>>(_CgNewarrayTypeInt1X1_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<Integer> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half3x3", scope = CgSetarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeHalf3X3(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeHalf3X3_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half3x2", scope = CgSetarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeHalf3X2(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeHalf3X2_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half3x1", scope = CgSetarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeHalf3X1(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeHalf3X1_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed2", scope = CgSetarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeFixed2(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFixed2_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed3", scope = CgSetarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeFixed3(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFixed3_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half3x4", scope = CgSetarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeHalf3X4(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeHalf3X4_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link java.lang.Float }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed1", scope = CgSetarrayType.class)
-    public JAXBElement<java.lang.Float> createCgSetarrayTypeFixed1(java.lang.Float value) {
-        return new JAXBElement<java.lang.Float>(_CgNewarrayTypeFixed1_QNAME, java.lang.Float.class, CgSetarrayType.class, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float1x2", scope = CgSetarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeFloat1X2(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFloat1X2_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float1x1", scope = CgSetarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeFloat1X1(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFloat1X1_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link java.lang.Float }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half", scope = CgSetarrayType.class)
-    public JAXBElement<java.lang.Float> createCgSetarrayTypeHalf(java.lang.Float value) {
-        return new JAXBElement<java.lang.Float>(_CgNewarrayTypeHalf_QNAME, java.lang.Float.class, CgSetarrayType.class, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link CgSampler2D }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "sampler2D", scope = CgSetarrayType.class)
-    public JAXBElement<CgSampler2D> createCgSetarrayTypeSampler2D(CgSampler2D value) {
-        return new JAXBElement<CgSampler2D>(_CgNewarrayTypeSampler2D_QNAME, CgSampler2D.class, CgSetarrayType.class, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int4", scope = CgSetarrayType.class)
-    public JAXBElement<List<Integer>> createCgSetarrayTypeInt4(List<Integer> value) {
-        return new JAXBElement<List<Integer>>(_CgNewarrayTypeInt4_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<Integer> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int3", scope = CgSetarrayType.class)
-    public JAXBElement<List<Integer>> createCgSetarrayTypeInt3(List<Integer> value) {
-        return new JAXBElement<List<Integer>>(_CgNewarrayTypeInt3_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<Integer> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool3", scope = CgSetarrayType.class)
-    public JAXBElement<List<Boolean>> createCgSetarrayTypeBool3(List<Boolean> value) {
-        return new JAXBElement<List<Boolean>>(_CgNewarrayTypeBool3_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<Boolean> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed1x4", scope = CgSetarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeFixed1X4(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFixed1X4_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool2", scope = CgSetarrayType.class)
-    public JAXBElement<List<Boolean>> createCgSetarrayTypeBool2(List<Boolean> value) {
-        return new JAXBElement<List<Boolean>>(_CgNewarrayTypeBool2_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<Boolean> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed1x3", scope = CgSetarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeFixed1X3(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFixed1X3_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int2", scope = CgSetarrayType.class)
-    public JAXBElement<List<Integer>> createCgSetarrayTypeInt2(List<Integer> value) {
-        return new JAXBElement<List<Integer>>(_CgNewarrayTypeInt2_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<Integer> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool4", scope = CgSetarrayType.class)
-    public JAXBElement<List<Boolean>> createCgSetarrayTypeBool4(List<Boolean> value) {
-        return new JAXBElement<List<Boolean>>(_CgNewarrayTypeBool4_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<Boolean> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link Integer }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int1", scope = CgSetarrayType.class)
-    public JAXBElement<Integer> createCgSetarrayTypeInt1(Integer value) {
-        return new JAXBElement<Integer>(_CgNewarrayTypeInt1_QNAME, Integer.class, CgSetarrayType.class, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool4x4", scope = CgSetarrayType.class)
-    public JAXBElement<List<Boolean>> createCgSetarrayTypeBool4X4(List<Boolean> value) {
-        return new JAXBElement<List<Boolean>>(_CgNewarrayTypeBool4X4_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<Boolean> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link Boolean }{@code >}}
-     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link Boolean }{@code >}
      */
     @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool1", scope = CgSetarrayType.class)
     public JAXBElement<Boolean> createCgSetarrayTypeBool1(Boolean value) {
-        return new JAXBElement<Boolean>(_CgNewarrayTypeBool1_QNAME, Boolean.class, CgSetarrayType.class, value);
+        return new JAXBElement<Boolean>(_CgSetuserTypeBool1_QNAME, Boolean.class, CgSetarrayType.class, value);
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
      */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool4x2", scope = CgSetarrayType.class)
-    public JAXBElement<List<Boolean>> createCgSetarrayTypeBool4X2(List<Boolean> value) {
-        return new JAXBElement<List<Boolean>>(_CgNewarrayTypeBool4X2_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<Boolean> ) value));
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool2", scope = CgSetarrayType.class)
+    public JAXBElement<List<Boolean>> createCgSetarrayTypeBool2(List<Boolean> value) {
+        return new JAXBElement<List<Boolean>>(_CgSetuserTypeBool2_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<Boolean> ) value));
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
      */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float1x4", scope = CgSetarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeFloat1X4(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFloat1X4_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool3", scope = CgSetarrayType.class)
+    public JAXBElement<List<Boolean>> createCgSetarrayTypeBool3(List<Boolean> value) {
+        return new JAXBElement<List<Boolean>>(_CgSetuserTypeBool3_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<Boolean> ) value));
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
      */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed1x2", scope = CgSetarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeFixed1X2(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFixed1X2_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool4", scope = CgSetarrayType.class)
+    public JAXBElement<List<Boolean>> createCgSetarrayTypeBool4(List<Boolean> value) {
+        return new JAXBElement<List<Boolean>>(_CgSetuserTypeBool4_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<Boolean> ) value));
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
      * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool4x3", scope = CgSetarrayType.class)
-    public JAXBElement<List<Boolean>> createCgSetarrayTypeBool4X3(List<Boolean> value) {
-        return new JAXBElement<List<Boolean>>(_CgNewarrayTypeBool4X3_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<Boolean> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float1x3", scope = CgSetarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeFloat1X3(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFloat1X3_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed1x1", scope = CgSetarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeFixed1X1(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFixed1X1_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool4x1", scope = CgSetarrayType.class)
-    public JAXBElement<List<Boolean>> createCgSetarrayTypeBool4X1(List<Boolean> value) {
-        return new JAXBElement<List<Boolean>>(_CgNewarrayTypeBool4X1_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<Boolean> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link java.lang.Float }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float1", scope = CgSetarrayType.class)
-    public JAXBElement<java.lang.Float> createCgSetarrayTypeFloat1(java.lang.Float value) {
-        return new JAXBElement<java.lang.Float>(_CgNewarrayTypeFloat1_QNAME, java.lang.Float.class, CgSetarrayType.class, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float2", scope = CgSetarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeFloat2(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFloat2_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float3", scope = CgSetarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeFloat3(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFloat3_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float4", scope = CgSetarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeFloat4(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFloat4_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int2x1", scope = CgSetarrayType.class)
-    public JAXBElement<List<Integer>> createCgSetarrayTypeInt2X1(List<Integer> value) {
-        return new JAXBElement<List<Integer>>(_CgNewarrayTypeInt2X1_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<Integer> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link CgSampler1D }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "sampler1D", scope = CgSetarrayType.class)
-    public JAXBElement<CgSampler1D> createCgSetarrayTypeSampler1D(CgSampler1D value) {
-        return new JAXBElement<CgSampler1D>(_CgNewarrayTypeSampler1D_QNAME, CgSampler1D.class, CgSetarrayType.class, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int2x2", scope = CgSetarrayType.class)
-    public JAXBElement<List<Integer>> createCgSetarrayTypeInt2X2(List<Integer> value) {
-        return new JAXBElement<List<Integer>>(_CgNewarrayTypeInt2X2_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<Integer> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int2x3", scope = CgSetarrayType.class)
-    public JAXBElement<List<Integer>> createCgSetarrayTypeInt2X3(List<Integer> value) {
-        return new JAXBElement<List<Integer>>(_CgNewarrayTypeInt2X3_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<Integer> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int2x4", scope = CgSetarrayType.class)
-    public JAXBElement<List<Integer>> createCgSetarrayTypeInt2X4(List<Integer> value) {
-        return new JAXBElement<List<Integer>>(_CgNewarrayTypeInt2X4_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<Integer> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half2x4", scope = CgSetarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeHalf2X4(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeHalf2X4_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half2x3", scope = CgSetarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeHalf2X3(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeHalf2X3_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half2x2", scope = CgSetarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeHalf2X2(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeHalf2X2_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half2x1", scope = CgSetarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeHalf2X1(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeHalf2X1_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link CgSamplerDEPTH }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "samplerDEPTH", scope = CgSetarrayType.class)
-    public JAXBElement<CgSamplerDEPTH> createCgSetarrayTypeSamplerDEPTH(CgSamplerDEPTH value) {
-        return new JAXBElement<CgSamplerDEPTH>(_CgNewarrayTypeSamplerDEPTH_QNAME, CgSamplerDEPTH.class, CgSetarrayType.class, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float2x1", scope = CgSetarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeFloat2X1(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFloat2X1_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed4", scope = CgSetarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeFixed4(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFixed4_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed4x4", scope = CgSetarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeFixed4X4(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFixed4X4_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed4x1", scope = CgSetarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeFixed4X1(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFixed4X1_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed4x3", scope = CgSetarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeFixed4X3(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFixed4X3_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed4x2", scope = CgSetarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeFixed4X2(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFixed4X2_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float2x4", scope = CgSetarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeFloat2X4(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFloat2X4_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float2x3", scope = CgSetarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeFloat2X3(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFloat2X3_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float2x2", scope = CgSetarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeFloat2X2(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFloat2X2_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool1x3", scope = CgSetarrayType.class)
-    public JAXBElement<List<Boolean>> createCgSetarrayTypeBool1X3(List<Boolean> value) {
-        return new JAXBElement<List<Boolean>>(_CgNewarrayTypeBool1X3_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<Boolean> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool1x4", scope = CgSetarrayType.class)
-    public JAXBElement<List<Boolean>> createCgSetarrayTypeBool1X4(List<Boolean> value) {
-        return new JAXBElement<List<Boolean>>(_CgNewarrayTypeBool1X4_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<Boolean> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}}
-     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
      */
     @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool1x1", scope = CgSetarrayType.class)
     public JAXBElement<List<Boolean>> createCgSetarrayTypeBool1X1(List<Boolean> value) {
-        return new JAXBElement<List<Boolean>>(_CgNewarrayTypeBool1X1_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<Boolean> ) value));
+        return new JAXBElement<List<Boolean>>(_CgSetuserTypeBool1X1_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<Boolean> ) value));
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
      */
     @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool1x2", scope = CgSetarrayType.class)
     public JAXBElement<List<Boolean>> createCgSetarrayTypeBool1X2(List<Boolean> value) {
-        return new JAXBElement<List<Boolean>>(_CgNewarrayTypeBool1X2_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<Boolean> ) value));
+        return new JAXBElement<List<Boolean>>(_CgSetuserTypeBool1X2_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<Boolean> ) value));
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link Boolean }{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
      */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool", scope = GlslNewarrayType.class)
-    public JAXBElement<Boolean> createGlslNewarrayTypeBool(Boolean value) {
-        return new JAXBElement<Boolean>(_CgNewarrayTypeBool_QNAME, Boolean.class, GlslNewarrayType.class, value);
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool1x3", scope = CgSetarrayType.class)
+    public JAXBElement<List<Boolean>> createCgSetarrayTypeBool1X3(List<Boolean> value) {
+        return new JAXBElement<List<Boolean>>(_CgSetuserTypeBool1X3_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<Boolean> ) value));
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link GlslSurfaceType }{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
      */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "surface", scope = GlslNewarrayType.class)
-    public JAXBElement<GlslSurfaceType> createGlslNewarrayTypeSurface(GlslSurfaceType value) {
-        return new JAXBElement<GlslSurfaceType>(_CgNewarrayTypeSurface_QNAME, GlslSurfaceType.class, GlslNewarrayType.class, value);
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool1x4", scope = CgSetarrayType.class)
+    public JAXBElement<List<Boolean>> createCgSetarrayTypeBool1X4(List<Boolean> value) {
+        return new JAXBElement<List<Boolean>>(_CgSetuserTypeBool1X4_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<Boolean> ) value));
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
      */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float2", scope = GlslNewarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createGlslNewarrayTypeFloat2(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFloat2_QNAME, ((Class) List.class), GlslNewarrayType.class, ((List<java.lang.Float> ) value));
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool2x1", scope = CgSetarrayType.class)
+    public JAXBElement<List<Boolean>> createCgSetarrayTypeBool2X1(List<Boolean> value) {
+        return new JAXBElement<List<Boolean>>(_CgSetuserTypeBool2X1_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<Boolean> ) value));
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
      */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float3", scope = GlslNewarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createGlslNewarrayTypeFloat3(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFloat3_QNAME, ((Class) List.class), GlslNewarrayType.class, ((List<java.lang.Float> ) value));
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool2x2", scope = CgSetarrayType.class)
+    public JAXBElement<List<Boolean>> createCgSetarrayTypeBool2X2(List<Boolean> value) {
+        return new JAXBElement<List<Boolean>>(_CgSetuserTypeBool2X2_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<Boolean> ) value));
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link java.lang.Float }{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
      */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float", scope = GlslNewarrayType.class)
-    public JAXBElement<java.lang.Float> createGlslNewarrayTypeFloat(java.lang.Float value) {
-        return new JAXBElement<java.lang.Float>(_CgNewarrayTypeFloat_QNAME, java.lang.Float.class, GlslNewarrayType.class, value);
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool2x3", scope = CgSetarrayType.class)
+    public JAXBElement<List<Boolean>> createCgSetarrayTypeBool2X3(List<Boolean> value) {
+        return new JAXBElement<List<Boolean>>(_CgSetuserTypeBool2X3_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<Boolean> ) value));
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
      */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float4", scope = GlslNewarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createGlslNewarrayTypeFloat4(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFloat4_QNAME, ((Class) List.class), GlslNewarrayType.class, ((List<java.lang.Float> ) value));
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool2x4", scope = CgSetarrayType.class)
+    public JAXBElement<List<Boolean>> createCgSetarrayTypeBool2X4(List<Boolean> value) {
+        return new JAXBElement<List<Boolean>>(_CgSetuserTypeBool2X4_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<Boolean> ) value));
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link GlSampler1D }{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
      */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "sampler1D", scope = GlslNewarrayType.class)
-    public JAXBElement<GlSampler1D> createGlslNewarrayTypeSampler1D(GlSampler1D value) {
-        return new JAXBElement<GlSampler1D>(_CgNewarrayTypeSampler1D_QNAME, GlSampler1D.class, GlslNewarrayType.class, value);
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool3x1", scope = CgSetarrayType.class)
+    public JAXBElement<List<Boolean>> createCgSetarrayTypeBool3X1(List<Boolean> value) {
+        return new JAXBElement<List<Boolean>>(_CgSetuserTypeBool3X1_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<Boolean> ) value));
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link GlSampler2D }{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
      */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "sampler2D", scope = GlslNewarrayType.class)
-    public JAXBElement<GlSampler2D> createGlslNewarrayTypeSampler2D(GlSampler2D value) {
-        return new JAXBElement<GlSampler2D>(_CgNewarrayTypeSampler2D_QNAME, GlSampler2D.class, GlslNewarrayType.class, value);
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool3x2", scope = CgSetarrayType.class)
+    public JAXBElement<List<Boolean>> createCgSetarrayTypeBool3X2(List<Boolean> value) {
+        return new JAXBElement<List<Boolean>>(_CgSetuserTypeBool3X2_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<Boolean> ) value));
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link Integer }{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
      */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int", scope = GlslNewarrayType.class)
-    public JAXBElement<Integer> createGlslNewarrayTypeInt(Integer value) {
-        return new JAXBElement<Integer>(_CgNewarrayTypeInt_QNAME, Integer.class, GlslNewarrayType.class, value);
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool3x3", scope = CgSetarrayType.class)
+    public JAXBElement<List<Boolean>> createCgSetarrayTypeBool3X3(List<Boolean> value) {
+        return new JAXBElement<List<Boolean>>(_CgSetuserTypeBool3X3_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<Boolean> ) value));
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link GlSampler3D }{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
      */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "sampler3D", scope = GlslNewarrayType.class)
-    public JAXBElement<GlSampler3D> createGlslNewarrayTypeSampler3D(GlSampler3D value) {
-        return new JAXBElement<GlSampler3D>(_CgNewarrayTypeSampler3D_QNAME, GlSampler3D.class, GlslNewarrayType.class, value);
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool3x4", scope = CgSetarrayType.class)
+    public JAXBElement<List<Boolean>> createCgSetarrayTypeBool3X4(List<Boolean> value) {
+        return new JAXBElement<List<Boolean>>(_CgSetuserTypeBool3X4_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<Boolean> ) value));
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link String }{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
      */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "enum", scope = GlslNewarrayType.class)
-    public JAXBElement<String> createGlslNewarrayTypeEnum(String value) {
-        return new JAXBElement<String>(_CgNewarrayTypeEnum_QNAME, String.class, GlslNewarrayType.class, value);
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool4x1", scope = CgSetarrayType.class)
+    public JAXBElement<List<Boolean>> createCgSetarrayTypeBool4X1(List<Boolean> value) {
+        return new JAXBElement<List<Boolean>>(_CgSetuserTypeBool4X1_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<Boolean> ) value));
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link GlSamplerCUBE }{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
      */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "samplerCUBE", scope = GlslNewarrayType.class)
-    public JAXBElement<GlSamplerCUBE> createGlslNewarrayTypeSamplerCUBE(GlSamplerCUBE value) {
-        return new JAXBElement<GlSamplerCUBE>(_CgNewarrayTypeSamplerCUBE_QNAME, GlSamplerCUBE.class, GlslNewarrayType.class, value);
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool4x2", scope = CgSetarrayType.class)
+    public JAXBElement<List<Boolean>> createCgSetarrayTypeBool4X2(List<Boolean> value) {
+        return new JAXBElement<List<Boolean>>(_CgSetuserTypeBool4X2_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<Boolean> ) value));
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
      */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int4", scope = GlslNewarrayType.class)
-    public JAXBElement<List<Integer>> createGlslNewarrayTypeInt4(List<Integer> value) {
-        return new JAXBElement<List<Integer>>(_CgNewarrayTypeInt4_QNAME, ((Class) List.class), GlslNewarrayType.class, ((List<Integer> ) value));
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool4x3", scope = CgSetarrayType.class)
+    public JAXBElement<List<Boolean>> createCgSetarrayTypeBool4X3(List<Boolean> value) {
+        return new JAXBElement<List<Boolean>>(_CgSetuserTypeBool4X3_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<Boolean> ) value));
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
      */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int3", scope = GlslNewarrayType.class)
-    public JAXBElement<List<Integer>> createGlslNewarrayTypeInt3(List<Integer> value) {
-        return new JAXBElement<List<Integer>>(_CgNewarrayTypeInt3_QNAME, ((Class) List.class), GlslNewarrayType.class, ((List<Integer> ) value));
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool4x4", scope = CgSetarrayType.class)
+    public JAXBElement<List<Boolean>> createCgSetarrayTypeBool4X4(List<Boolean> value) {
+        return new JAXBElement<List<Boolean>>(_CgSetuserTypeBool4X4_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<Boolean> ) value));
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link GlslNewarrayType }{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link java.lang.Float }{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link java.lang.Float }{@code >}
      */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "array", scope = GlslNewarrayType.class)
-    public JAXBElement<GlslNewarrayType> createGlslNewarrayTypeArray(GlslNewarrayType value) {
-        return new JAXBElement<GlslNewarrayType>(_CgNewarrayTypeArray_QNAME, GlslNewarrayType.class, GlslNewarrayType.class, value);
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float", scope = CgSetarrayType.class)
+    public JAXBElement<java.lang.Float> createCgSetarrayTypeFloat(java.lang.Float value) {
+        return new JAXBElement<java.lang.Float>(_CgSetuserTypeFloat_QNAME, java.lang.Float.class, CgSetarrayType.class, value);
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link java.lang.Float }{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link java.lang.Float }{@code >}
      */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool3", scope = GlslNewarrayType.class)
-    public JAXBElement<List<Boolean>> createGlslNewarrayTypeBool3(List<Boolean> value) {
-        return new JAXBElement<List<Boolean>>(_CgNewarrayTypeBool3_QNAME, ((Class) List.class), GlslNewarrayType.class, ((List<Boolean> ) value));
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float1", scope = CgSetarrayType.class)
+    public JAXBElement<java.lang.Float> createCgSetarrayTypeFloat1(java.lang.Float value) {
+        return new JAXBElement<java.lang.Float>(_CgSetuserTypeFloat1_QNAME, java.lang.Float.class, CgSetarrayType.class, value);
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
      */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool2", scope = GlslNewarrayType.class)
-    public JAXBElement<List<Boolean>> createGlslNewarrayTypeBool2(List<Boolean> value) {
-        return new JAXBElement<List<Boolean>>(_CgNewarrayTypeBool2_QNAME, ((Class) List.class), GlslNewarrayType.class, ((List<Boolean> ) value));
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float2", scope = CgSetarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeFloat2(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFloat2_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
      */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int2", scope = GlslNewarrayType.class)
-    public JAXBElement<List<Integer>> createGlslNewarrayTypeInt2(List<Integer> value) {
-        return new JAXBElement<List<Integer>>(_CgNewarrayTypeInt2_QNAME, ((Class) List.class), GlslNewarrayType.class, ((List<Integer> ) value));
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float3", scope = CgSetarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeFloat3(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFloat3_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link GlSamplerRECT }{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
      */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "samplerRECT", scope = GlslNewarrayType.class)
-    public JAXBElement<GlSamplerRECT> createGlslNewarrayTypeSamplerRECT(GlSamplerRECT value) {
-        return new JAXBElement<GlSamplerRECT>(_CgNewarrayTypeSamplerRECT_QNAME, GlSamplerRECT.class, GlslNewarrayType.class, value);
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float4", scope = CgSetarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeFloat4(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFloat4_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
      */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool4", scope = GlslNewarrayType.class)
-    public JAXBElement<List<Boolean>> createGlslNewarrayTypeBool4(List<Boolean> value) {
-        return new JAXBElement<List<Boolean>>(_CgNewarrayTypeBool4_QNAME, ((Class) List.class), GlslNewarrayType.class, ((List<Boolean> ) value));
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float1x1", scope = CgSetarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeFloat1X1(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFloat1X1_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
      */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float3x3", scope = GlslNewarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createGlslNewarrayTypeFloat3X3(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFloat3X3_QNAME, ((Class) List.class), GlslNewarrayType.class, ((List<java.lang.Float> ) value));
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float1x2", scope = CgSetarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeFloat1X2(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFloat1X2_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link GlSamplerDEPTH }{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
      */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "samplerDEPTH", scope = GlslNewarrayType.class)
-    public JAXBElement<GlSamplerDEPTH> createGlslNewarrayTypeSamplerDEPTH(GlSamplerDEPTH value) {
-        return new JAXBElement<GlSamplerDEPTH>(_CgNewarrayTypeSamplerDEPTH_QNAME, GlSamplerDEPTH.class, GlslNewarrayType.class, value);
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float1x3", scope = CgSetarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeFloat1X3(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFloat1X3_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
      */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float2x2", scope = GlslNewarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createGlslNewarrayTypeFloat2X2(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFloat2X2_QNAME, ((Class) List.class), GlslNewarrayType.class, ((List<java.lang.Float> ) value));
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float1x4", scope = CgSetarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeFloat1X4(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFloat1X4_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
      */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float4x4", scope = GlslNewarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createGlslNewarrayTypeFloat4X4(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFloat4X4_QNAME, ((Class) List.class), GlslNewarrayType.class, ((List<java.lang.Float> ) value));
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float2x1", scope = CgSetarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeFloat2X1(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFloat2X1_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link Boolean }{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float2x2", scope = CgSetarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeFloat2X2(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFloat2X2_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float2x3", scope = CgSetarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeFloat2X3(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFloat2X3_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float2x4", scope = CgSetarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeFloat2X4(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFloat2X4_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float3x1", scope = CgSetarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeFloat3X1(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFloat3X1_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float3x2", scope = CgSetarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeFloat3X2(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFloat3X2_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float3x3", scope = CgSetarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeFloat3X3(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFloat3X3_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float3x4", scope = CgSetarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeFloat3X4(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFloat3X4_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float4x1", scope = CgSetarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeFloat4X1(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFloat4X1_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float4x2", scope = CgSetarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeFloat4X2(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFloat4X2_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float4x3", scope = CgSetarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeFloat4X3(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFloat4X3_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float4x4", scope = CgSetarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeFloat4X4(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFloat4X4_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link Integer }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link Integer }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int", scope = CgSetarrayType.class)
+    public JAXBElement<Integer> createCgSetarrayTypeInt(Integer value) {
+        return new JAXBElement<Integer>(_CgSetuserTypeInt_QNAME, Integer.class, CgSetarrayType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link Integer }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link Integer }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int1", scope = CgSetarrayType.class)
+    public JAXBElement<Integer> createCgSetarrayTypeInt1(Integer value) {
+        return new JAXBElement<Integer>(_CgSetuserTypeInt1_QNAME, Integer.class, CgSetarrayType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int2", scope = CgSetarrayType.class)
+    public JAXBElement<List<Integer>> createCgSetarrayTypeInt2(List<Integer> value) {
+        return new JAXBElement<List<Integer>>(_CgSetuserTypeInt2_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<Integer> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int3", scope = CgSetarrayType.class)
+    public JAXBElement<List<Integer>> createCgSetarrayTypeInt3(List<Integer> value) {
+        return new JAXBElement<List<Integer>>(_CgSetuserTypeInt3_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<Integer> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int4", scope = CgSetarrayType.class)
+    public JAXBElement<List<Integer>> createCgSetarrayTypeInt4(List<Integer> value) {
+        return new JAXBElement<List<Integer>>(_CgSetuserTypeInt4_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<Integer> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int1x1", scope = CgSetarrayType.class)
+    public JAXBElement<List<Integer>> createCgSetarrayTypeInt1X1(List<Integer> value) {
+        return new JAXBElement<List<Integer>>(_CgSetuserTypeInt1X1_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<Integer> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int1x2", scope = CgSetarrayType.class)
+    public JAXBElement<List<Integer>> createCgSetarrayTypeInt1X2(List<Integer> value) {
+        return new JAXBElement<List<Integer>>(_CgSetuserTypeInt1X2_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<Integer> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int1x3", scope = CgSetarrayType.class)
+    public JAXBElement<List<Integer>> createCgSetarrayTypeInt1X3(List<Integer> value) {
+        return new JAXBElement<List<Integer>>(_CgSetuserTypeInt1X3_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<Integer> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int1x4", scope = CgSetarrayType.class)
+    public JAXBElement<List<Integer>> createCgSetarrayTypeInt1X4(List<Integer> value) {
+        return new JAXBElement<List<Integer>>(_CgSetuserTypeInt1X4_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<Integer> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int2x1", scope = CgSetarrayType.class)
+    public JAXBElement<List<Integer>> createCgSetarrayTypeInt2X1(List<Integer> value) {
+        return new JAXBElement<List<Integer>>(_CgSetuserTypeInt2X1_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<Integer> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int2x2", scope = CgSetarrayType.class)
+    public JAXBElement<List<Integer>> createCgSetarrayTypeInt2X2(List<Integer> value) {
+        return new JAXBElement<List<Integer>>(_CgSetuserTypeInt2X2_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<Integer> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int2x3", scope = CgSetarrayType.class)
+    public JAXBElement<List<Integer>> createCgSetarrayTypeInt2X3(List<Integer> value) {
+        return new JAXBElement<List<Integer>>(_CgSetuserTypeInt2X3_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<Integer> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int2x4", scope = CgSetarrayType.class)
+    public JAXBElement<List<Integer>> createCgSetarrayTypeInt2X4(List<Integer> value) {
+        return new JAXBElement<List<Integer>>(_CgSetuserTypeInt2X4_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<Integer> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int3x1", scope = CgSetarrayType.class)
+    public JAXBElement<List<Integer>> createCgSetarrayTypeInt3X1(List<Integer> value) {
+        return new JAXBElement<List<Integer>>(_CgSetuserTypeInt3X1_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<Integer> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int3x2", scope = CgSetarrayType.class)
+    public JAXBElement<List<Integer>> createCgSetarrayTypeInt3X2(List<Integer> value) {
+        return new JAXBElement<List<Integer>>(_CgSetuserTypeInt3X2_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<Integer> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int3x3", scope = CgSetarrayType.class)
+    public JAXBElement<List<Integer>> createCgSetarrayTypeInt3X3(List<Integer> value) {
+        return new JAXBElement<List<Integer>>(_CgSetuserTypeInt3X3_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<Integer> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int3x4", scope = CgSetarrayType.class)
+    public JAXBElement<List<Integer>> createCgSetarrayTypeInt3X4(List<Integer> value) {
+        return new JAXBElement<List<Integer>>(_CgSetuserTypeInt3X4_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<Integer> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int4x1", scope = CgSetarrayType.class)
+    public JAXBElement<List<Integer>> createCgSetarrayTypeInt4X1(List<Integer> value) {
+        return new JAXBElement<List<Integer>>(_CgSetuserTypeInt4X1_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<Integer> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int4x2", scope = CgSetarrayType.class)
+    public JAXBElement<List<Integer>> createCgSetarrayTypeInt4X2(List<Integer> value) {
+        return new JAXBElement<List<Integer>>(_CgSetuserTypeInt4X2_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<Integer> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int4x3", scope = CgSetarrayType.class)
+    public JAXBElement<List<Integer>> createCgSetarrayTypeInt4X3(List<Integer> value) {
+        return new JAXBElement<List<Integer>>(_CgSetuserTypeInt4X3_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<Integer> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int4x4", scope = CgSetarrayType.class)
+    public JAXBElement<List<Integer>> createCgSetarrayTypeInt4X4(List<Integer> value) {
+        return new JAXBElement<List<Integer>>(_CgSetuserTypeInt4X4_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<Integer> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link java.lang.Float }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link java.lang.Float }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half", scope = CgSetarrayType.class)
+    public JAXBElement<java.lang.Float> createCgSetarrayTypeHalf(java.lang.Float value) {
+        return new JAXBElement<java.lang.Float>(_CgSetuserTypeHalf_QNAME, java.lang.Float.class, CgSetarrayType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link java.lang.Float }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link java.lang.Float }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half1", scope = CgSetarrayType.class)
+    public JAXBElement<java.lang.Float> createCgSetarrayTypeHalf1(java.lang.Float value) {
+        return new JAXBElement<java.lang.Float>(_CgSetuserTypeHalf1_QNAME, java.lang.Float.class, CgSetarrayType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half2", scope = CgSetarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeHalf2(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeHalf2_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half3", scope = CgSetarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeHalf3(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeHalf3_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half4", scope = CgSetarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeHalf4(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeHalf4_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half1x1", scope = CgSetarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeHalf1X1(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeHalf1X1_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half1x2", scope = CgSetarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeHalf1X2(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeHalf1X2_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half1x3", scope = CgSetarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeHalf1X3(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeHalf1X3_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half1x4", scope = CgSetarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeHalf1X4(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeHalf1X4_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half2x1", scope = CgSetarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeHalf2X1(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeHalf2X1_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half2x2", scope = CgSetarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeHalf2X2(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeHalf2X2_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half2x3", scope = CgSetarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeHalf2X3(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeHalf2X3_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half2x4", scope = CgSetarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeHalf2X4(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeHalf2X4_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half3x1", scope = CgSetarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeHalf3X1(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeHalf3X1_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half3x2", scope = CgSetarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeHalf3X2(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeHalf3X2_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half3x3", scope = CgSetarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeHalf3X3(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeHalf3X3_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half3x4", scope = CgSetarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeHalf3X4(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeHalf3X4_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half4x1", scope = CgSetarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeHalf4X1(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeHalf4X1_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half4x2", scope = CgSetarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeHalf4X2(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeHalf4X2_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half4x3", scope = CgSetarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeHalf4X3(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeHalf4X3_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half4x4", scope = CgSetarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeHalf4X4(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeHalf4X4_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link java.lang.Float }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link java.lang.Float }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed", scope = CgSetarrayType.class)
+    public JAXBElement<java.lang.Float> createCgSetarrayTypeFixed(java.lang.Float value) {
+        return new JAXBElement<java.lang.Float>(_CgSetuserTypeFixed_QNAME, java.lang.Float.class, CgSetarrayType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link java.lang.Float }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link java.lang.Float }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed1", scope = CgSetarrayType.class)
+    public JAXBElement<java.lang.Float> createCgSetarrayTypeFixed1(java.lang.Float value) {
+        return new JAXBElement<java.lang.Float>(_CgSetuserTypeFixed1_QNAME, java.lang.Float.class, CgSetarrayType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed2", scope = CgSetarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeFixed2(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFixed2_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed3", scope = CgSetarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeFixed3(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFixed3_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed4", scope = CgSetarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeFixed4(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFixed4_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed1x1", scope = CgSetarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeFixed1X1(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFixed1X1_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed1x2", scope = CgSetarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeFixed1X2(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFixed1X2_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed1x3", scope = CgSetarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeFixed1X3(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFixed1X3_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed1x4", scope = CgSetarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeFixed1X4(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFixed1X4_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed2x1", scope = CgSetarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeFixed2X1(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFixed2X1_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed2x2", scope = CgSetarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeFixed2X2(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFixed2X2_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed2x3", scope = CgSetarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeFixed2X3(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFixed2X3_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed2x4", scope = CgSetarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeFixed2X4(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFixed2X4_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed3x1", scope = CgSetarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeFixed3X1(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFixed3X1_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed3x2", scope = CgSetarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeFixed3X2(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFixed3X2_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed3x3", scope = CgSetarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeFixed3X3(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFixed3X3_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed3x4", scope = CgSetarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeFixed3X4(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFixed3X4_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed4x1", scope = CgSetarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeFixed4X1(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFixed4X1_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed4x2", scope = CgSetarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeFixed4X2(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFixed4X2_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed4x3", scope = CgSetarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeFixed4X3(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFixed4X3_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed4x4", scope = CgSetarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgSetarrayTypeFixed4X4(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFixed4X4_QNAME, ((Class) List.class), CgSetarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link CgSurfaceType }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link CgSurfaceType }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "surface", scope = CgSetarrayType.class)
+    public JAXBElement<CgSurfaceType> createCgSetarrayTypeSurface(CgSurfaceType value) {
+        return new JAXBElement<CgSurfaceType>(_CgSetuserTypeSurface_QNAME, CgSurfaceType.class, CgSetarrayType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link CgSampler1D }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link CgSampler1D }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "sampler1D", scope = CgSetarrayType.class)
+    public JAXBElement<CgSampler1D> createCgSetarrayTypeSampler1D(CgSampler1D value) {
+        return new JAXBElement<CgSampler1D>(_CgSetuserTypeSampler1D_QNAME, CgSampler1D.class, CgSetarrayType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link CgSampler2D }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link CgSampler2D }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "sampler2D", scope = CgSetarrayType.class)
+    public JAXBElement<CgSampler2D> createCgSetarrayTypeSampler2D(CgSampler2D value) {
+        return new JAXBElement<CgSampler2D>(_CgSetuserTypeSampler2D_QNAME, CgSampler2D.class, CgSetarrayType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link CgSampler3D }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link CgSampler3D }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "sampler3D", scope = CgSetarrayType.class)
+    public JAXBElement<CgSampler3D> createCgSetarrayTypeSampler3D(CgSampler3D value) {
+        return new JAXBElement<CgSampler3D>(_CgSetuserTypeSampler3D_QNAME, CgSampler3D.class, CgSetarrayType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link CgSamplerRECT }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link CgSamplerRECT }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "samplerRECT", scope = CgSetarrayType.class)
+    public JAXBElement<CgSamplerRECT> createCgSetarrayTypeSamplerRECT(CgSamplerRECT value) {
+        return new JAXBElement<CgSamplerRECT>(_CgSetuserTypeSamplerRECT_QNAME, CgSamplerRECT.class, CgSetarrayType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link CgSamplerCUBE }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link CgSamplerCUBE }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "samplerCUBE", scope = CgSetarrayType.class)
+    public JAXBElement<CgSamplerCUBE> createCgSetarrayTypeSamplerCUBE(CgSamplerCUBE value) {
+        return new JAXBElement<CgSamplerCUBE>(_CgSetuserTypeSamplerCUBE_QNAME, CgSamplerCUBE.class, CgSetarrayType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link CgSamplerDEPTH }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link CgSamplerDEPTH }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "samplerDEPTH", scope = CgSetarrayType.class)
+    public JAXBElement<CgSamplerDEPTH> createCgSetarrayTypeSamplerDEPTH(CgSamplerDEPTH value) {
+        return new JAXBElement<CgSamplerDEPTH>(_CgSetuserTypeSamplerDEPTH_QNAME, CgSamplerDEPTH.class, CgSetarrayType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link String }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link String }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "string", scope = CgSetarrayType.class)
+    public JAXBElement<String> createCgSetarrayTypeString(String value) {
+        return new JAXBElement<String>(_CgSetuserTypeString_QNAME, String.class, CgSetarrayType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link String }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link String }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "enum", scope = CgSetarrayType.class)
+    public JAXBElement<String> createCgSetarrayTypeEnum(String value) {
+        return new JAXBElement<String>(_CgSetuserTypeEnum_QNAME, String.class, CgSetarrayType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link CgSetarrayType }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link CgSetarrayType }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "array", scope = CgSetarrayType.class)
+    public JAXBElement<CgSetarrayType> createCgSetarrayTypeArray(CgSetarrayType value) {
+        return new JAXBElement<CgSetarrayType>(_CgSetuserTypeArray_QNAME, CgSetarrayType.class, CgSetarrayType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link CgSetuserType }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link CgSetuserType }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "usertype", scope = CgSetarrayType.class)
+    public JAXBElement<CgSetuserType> createCgSetarrayTypeUsertype(CgSetuserType value) {
+        return new JAXBElement<CgSetuserType>(_CgSetuserTypeUsertype_QNAME, CgSetuserType.class, CgSetarrayType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link Boolean }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link Boolean }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool", scope = CgNewarrayType.class)
+    public JAXBElement<Boolean> createCgNewarrayTypeBool(Boolean value) {
+        return new JAXBElement<Boolean>(_CgSetuserTypeBool_QNAME, Boolean.class, CgNewarrayType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link Boolean }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link Boolean }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool1", scope = CgNewarrayType.class)
+    public JAXBElement<Boolean> createCgNewarrayTypeBool1(Boolean value) {
+        return new JAXBElement<Boolean>(_CgSetuserTypeBool1_QNAME, Boolean.class, CgNewarrayType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool2", scope = CgNewarrayType.class)
+    public JAXBElement<List<Boolean>> createCgNewarrayTypeBool2(List<Boolean> value) {
+        return new JAXBElement<List<Boolean>>(_CgSetuserTypeBool2_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<Boolean> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool3", scope = CgNewarrayType.class)
+    public JAXBElement<List<Boolean>> createCgNewarrayTypeBool3(List<Boolean> value) {
+        return new JAXBElement<List<Boolean>>(_CgSetuserTypeBool3_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<Boolean> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool4", scope = CgNewarrayType.class)
+    public JAXBElement<List<Boolean>> createCgNewarrayTypeBool4(List<Boolean> value) {
+        return new JAXBElement<List<Boolean>>(_CgSetuserTypeBool4_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<Boolean> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool1x1", scope = CgNewarrayType.class)
+    public JAXBElement<List<Boolean>> createCgNewarrayTypeBool1X1(List<Boolean> value) {
+        return new JAXBElement<List<Boolean>>(_CgSetuserTypeBool1X1_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<Boolean> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool1x2", scope = CgNewarrayType.class)
+    public JAXBElement<List<Boolean>> createCgNewarrayTypeBool1X2(List<Boolean> value) {
+        return new JAXBElement<List<Boolean>>(_CgSetuserTypeBool1X2_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<Boolean> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool1x3", scope = CgNewarrayType.class)
+    public JAXBElement<List<Boolean>> createCgNewarrayTypeBool1X3(List<Boolean> value) {
+        return new JAXBElement<List<Boolean>>(_CgSetuserTypeBool1X3_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<Boolean> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool1x4", scope = CgNewarrayType.class)
+    public JAXBElement<List<Boolean>> createCgNewarrayTypeBool1X4(List<Boolean> value) {
+        return new JAXBElement<List<Boolean>>(_CgSetuserTypeBool1X4_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<Boolean> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool2x1", scope = CgNewarrayType.class)
+    public JAXBElement<List<Boolean>> createCgNewarrayTypeBool2X1(List<Boolean> value) {
+        return new JAXBElement<List<Boolean>>(_CgSetuserTypeBool2X1_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<Boolean> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool2x2", scope = CgNewarrayType.class)
+    public JAXBElement<List<Boolean>> createCgNewarrayTypeBool2X2(List<Boolean> value) {
+        return new JAXBElement<List<Boolean>>(_CgSetuserTypeBool2X2_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<Boolean> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool2x3", scope = CgNewarrayType.class)
+    public JAXBElement<List<Boolean>> createCgNewarrayTypeBool2X3(List<Boolean> value) {
+        return new JAXBElement<List<Boolean>>(_CgSetuserTypeBool2X3_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<Boolean> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool2x4", scope = CgNewarrayType.class)
+    public JAXBElement<List<Boolean>> createCgNewarrayTypeBool2X4(List<Boolean> value) {
+        return new JAXBElement<List<Boolean>>(_CgSetuserTypeBool2X4_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<Boolean> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool3x1", scope = CgNewarrayType.class)
+    public JAXBElement<List<Boolean>> createCgNewarrayTypeBool3X1(List<Boolean> value) {
+        return new JAXBElement<List<Boolean>>(_CgSetuserTypeBool3X1_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<Boolean> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool3x2", scope = CgNewarrayType.class)
+    public JAXBElement<List<Boolean>> createCgNewarrayTypeBool3X2(List<Boolean> value) {
+        return new JAXBElement<List<Boolean>>(_CgSetuserTypeBool3X2_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<Boolean> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool3x3", scope = CgNewarrayType.class)
+    public JAXBElement<List<Boolean>> createCgNewarrayTypeBool3X3(List<Boolean> value) {
+        return new JAXBElement<List<Boolean>>(_CgSetuserTypeBool3X3_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<Boolean> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool3x4", scope = CgNewarrayType.class)
+    public JAXBElement<List<Boolean>> createCgNewarrayTypeBool3X4(List<Boolean> value) {
+        return new JAXBElement<List<Boolean>>(_CgSetuserTypeBool3X4_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<Boolean> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool4x1", scope = CgNewarrayType.class)
+    public JAXBElement<List<Boolean>> createCgNewarrayTypeBool4X1(List<Boolean> value) {
+        return new JAXBElement<List<Boolean>>(_CgSetuserTypeBool4X1_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<Boolean> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool4x2", scope = CgNewarrayType.class)
+    public JAXBElement<List<Boolean>> createCgNewarrayTypeBool4X2(List<Boolean> value) {
+        return new JAXBElement<List<Boolean>>(_CgSetuserTypeBool4X2_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<Boolean> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool4x3", scope = CgNewarrayType.class)
+    public JAXBElement<List<Boolean>> createCgNewarrayTypeBool4X3(List<Boolean> value) {
+        return new JAXBElement<List<Boolean>>(_CgSetuserTypeBool4X3_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<Boolean> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool4x4", scope = CgNewarrayType.class)
+    public JAXBElement<List<Boolean>> createCgNewarrayTypeBool4X4(List<Boolean> value) {
+        return new JAXBElement<List<Boolean>>(_CgSetuserTypeBool4X4_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<Boolean> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link java.lang.Float }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link java.lang.Float }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float", scope = CgNewarrayType.class)
+    public JAXBElement<java.lang.Float> createCgNewarrayTypeFloat(java.lang.Float value) {
+        return new JAXBElement<java.lang.Float>(_CgSetuserTypeFloat_QNAME, java.lang.Float.class, CgNewarrayType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link java.lang.Float }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link java.lang.Float }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float1", scope = CgNewarrayType.class)
+    public JAXBElement<java.lang.Float> createCgNewarrayTypeFloat1(java.lang.Float value) {
+        return new JAXBElement<java.lang.Float>(_CgSetuserTypeFloat1_QNAME, java.lang.Float.class, CgNewarrayType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float2", scope = CgNewarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeFloat2(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFloat2_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float3", scope = CgNewarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeFloat3(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFloat3_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float4", scope = CgNewarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeFloat4(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFloat4_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float1x1", scope = CgNewarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeFloat1X1(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFloat1X1_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float1x2", scope = CgNewarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeFloat1X2(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFloat1X2_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float1x3", scope = CgNewarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeFloat1X3(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFloat1X3_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float1x4", scope = CgNewarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeFloat1X4(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFloat1X4_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float2x1", scope = CgNewarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeFloat2X1(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFloat2X1_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float2x2", scope = CgNewarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeFloat2X2(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFloat2X2_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float2x3", scope = CgNewarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeFloat2X3(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFloat2X3_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float2x4", scope = CgNewarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeFloat2X4(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFloat2X4_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float3x1", scope = CgNewarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeFloat3X1(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFloat3X1_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float3x2", scope = CgNewarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeFloat3X2(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFloat3X2_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float3x3", scope = CgNewarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeFloat3X3(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFloat3X3_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float3x4", scope = CgNewarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeFloat3X4(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFloat3X4_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float4x1", scope = CgNewarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeFloat4X1(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFloat4X1_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float4x2", scope = CgNewarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeFloat4X2(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFloat4X2_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float4x3", scope = CgNewarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeFloat4X3(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFloat4X3_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float4x4", scope = CgNewarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeFloat4X4(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFloat4X4_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link Integer }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link Integer }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int", scope = CgNewarrayType.class)
+    public JAXBElement<Integer> createCgNewarrayTypeInt(Integer value) {
+        return new JAXBElement<Integer>(_CgSetuserTypeInt_QNAME, Integer.class, CgNewarrayType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link Integer }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link Integer }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int1", scope = CgNewarrayType.class)
+    public JAXBElement<Integer> createCgNewarrayTypeInt1(Integer value) {
+        return new JAXBElement<Integer>(_CgSetuserTypeInt1_QNAME, Integer.class, CgNewarrayType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int2", scope = CgNewarrayType.class)
+    public JAXBElement<List<Integer>> createCgNewarrayTypeInt2(List<Integer> value) {
+        return new JAXBElement<List<Integer>>(_CgSetuserTypeInt2_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<Integer> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int3", scope = CgNewarrayType.class)
+    public JAXBElement<List<Integer>> createCgNewarrayTypeInt3(List<Integer> value) {
+        return new JAXBElement<List<Integer>>(_CgSetuserTypeInt3_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<Integer> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int4", scope = CgNewarrayType.class)
+    public JAXBElement<List<Integer>> createCgNewarrayTypeInt4(List<Integer> value) {
+        return new JAXBElement<List<Integer>>(_CgSetuserTypeInt4_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<Integer> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int1x1", scope = CgNewarrayType.class)
+    public JAXBElement<List<Integer>> createCgNewarrayTypeInt1X1(List<Integer> value) {
+        return new JAXBElement<List<Integer>>(_CgSetuserTypeInt1X1_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<Integer> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int1x2", scope = CgNewarrayType.class)
+    public JAXBElement<List<Integer>> createCgNewarrayTypeInt1X2(List<Integer> value) {
+        return new JAXBElement<List<Integer>>(_CgSetuserTypeInt1X2_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<Integer> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int1x3", scope = CgNewarrayType.class)
+    public JAXBElement<List<Integer>> createCgNewarrayTypeInt1X3(List<Integer> value) {
+        return new JAXBElement<List<Integer>>(_CgSetuserTypeInt1X3_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<Integer> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int1x4", scope = CgNewarrayType.class)
+    public JAXBElement<List<Integer>> createCgNewarrayTypeInt1X4(List<Integer> value) {
+        return new JAXBElement<List<Integer>>(_CgSetuserTypeInt1X4_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<Integer> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int2x1", scope = CgNewarrayType.class)
+    public JAXBElement<List<Integer>> createCgNewarrayTypeInt2X1(List<Integer> value) {
+        return new JAXBElement<List<Integer>>(_CgSetuserTypeInt2X1_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<Integer> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int2x2", scope = CgNewarrayType.class)
+    public JAXBElement<List<Integer>> createCgNewarrayTypeInt2X2(List<Integer> value) {
+        return new JAXBElement<List<Integer>>(_CgSetuserTypeInt2X2_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<Integer> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int2x3", scope = CgNewarrayType.class)
+    public JAXBElement<List<Integer>> createCgNewarrayTypeInt2X3(List<Integer> value) {
+        return new JAXBElement<List<Integer>>(_CgSetuserTypeInt2X3_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<Integer> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int2x4", scope = CgNewarrayType.class)
+    public JAXBElement<List<Integer>> createCgNewarrayTypeInt2X4(List<Integer> value) {
+        return new JAXBElement<List<Integer>>(_CgSetuserTypeInt2X4_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<Integer> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int3x1", scope = CgNewarrayType.class)
+    public JAXBElement<List<Integer>> createCgNewarrayTypeInt3X1(List<Integer> value) {
+        return new JAXBElement<List<Integer>>(_CgSetuserTypeInt3X1_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<Integer> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int3x2", scope = CgNewarrayType.class)
+    public JAXBElement<List<Integer>> createCgNewarrayTypeInt3X2(List<Integer> value) {
+        return new JAXBElement<List<Integer>>(_CgSetuserTypeInt3X2_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<Integer> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int3x3", scope = CgNewarrayType.class)
+    public JAXBElement<List<Integer>> createCgNewarrayTypeInt3X3(List<Integer> value) {
+        return new JAXBElement<List<Integer>>(_CgSetuserTypeInt3X3_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<Integer> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int3x4", scope = CgNewarrayType.class)
+    public JAXBElement<List<Integer>> createCgNewarrayTypeInt3X4(List<Integer> value) {
+        return new JAXBElement<List<Integer>>(_CgSetuserTypeInt3X4_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<Integer> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int4x1", scope = CgNewarrayType.class)
+    public JAXBElement<List<Integer>> createCgNewarrayTypeInt4X1(List<Integer> value) {
+        return new JAXBElement<List<Integer>>(_CgSetuserTypeInt4X1_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<Integer> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int4x2", scope = CgNewarrayType.class)
+    public JAXBElement<List<Integer>> createCgNewarrayTypeInt4X2(List<Integer> value) {
+        return new JAXBElement<List<Integer>>(_CgSetuserTypeInt4X2_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<Integer> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int4x3", scope = CgNewarrayType.class)
+    public JAXBElement<List<Integer>> createCgNewarrayTypeInt4X3(List<Integer> value) {
+        return new JAXBElement<List<Integer>>(_CgSetuserTypeInt4X3_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<Integer> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int4x4", scope = CgNewarrayType.class)
+    public JAXBElement<List<Integer>> createCgNewarrayTypeInt4X4(List<Integer> value) {
+        return new JAXBElement<List<Integer>>(_CgSetuserTypeInt4X4_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<Integer> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link java.lang.Float }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link java.lang.Float }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half", scope = CgNewarrayType.class)
+    public JAXBElement<java.lang.Float> createCgNewarrayTypeHalf(java.lang.Float value) {
+        return new JAXBElement<java.lang.Float>(_CgSetuserTypeHalf_QNAME, java.lang.Float.class, CgNewarrayType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link java.lang.Float }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link java.lang.Float }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half1", scope = CgNewarrayType.class)
+    public JAXBElement<java.lang.Float> createCgNewarrayTypeHalf1(java.lang.Float value) {
+        return new JAXBElement<java.lang.Float>(_CgSetuserTypeHalf1_QNAME, java.lang.Float.class, CgNewarrayType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half2", scope = CgNewarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeHalf2(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeHalf2_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half3", scope = CgNewarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeHalf3(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeHalf3_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half4", scope = CgNewarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeHalf4(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeHalf4_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half1x1", scope = CgNewarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeHalf1X1(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeHalf1X1_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half1x2", scope = CgNewarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeHalf1X2(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeHalf1X2_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half1x3", scope = CgNewarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeHalf1X3(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeHalf1X3_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half1x4", scope = CgNewarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeHalf1X4(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeHalf1X4_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half2x1", scope = CgNewarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeHalf2X1(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeHalf2X1_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half2x2", scope = CgNewarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeHalf2X2(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeHalf2X2_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half2x3", scope = CgNewarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeHalf2X3(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeHalf2X3_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half2x4", scope = CgNewarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeHalf2X4(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeHalf2X4_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half3x1", scope = CgNewarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeHalf3X1(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeHalf3X1_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half3x2", scope = CgNewarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeHalf3X2(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeHalf3X2_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half3x3", scope = CgNewarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeHalf3X3(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeHalf3X3_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half3x4", scope = CgNewarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeHalf3X4(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeHalf3X4_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half4x1", scope = CgNewarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeHalf4X1(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeHalf4X1_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half4x2", scope = CgNewarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeHalf4X2(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeHalf4X2_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half4x3", scope = CgNewarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeHalf4X3(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeHalf4X3_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half4x4", scope = CgNewarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeHalf4X4(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeHalf4X4_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link java.lang.Float }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link java.lang.Float }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed", scope = CgNewarrayType.class)
+    public JAXBElement<java.lang.Float> createCgNewarrayTypeFixed(java.lang.Float value) {
+        return new JAXBElement<java.lang.Float>(_CgSetuserTypeFixed_QNAME, java.lang.Float.class, CgNewarrayType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link java.lang.Float }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link java.lang.Float }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed1", scope = CgNewarrayType.class)
+    public JAXBElement<java.lang.Float> createCgNewarrayTypeFixed1(java.lang.Float value) {
+        return new JAXBElement<java.lang.Float>(_CgSetuserTypeFixed1_QNAME, java.lang.Float.class, CgNewarrayType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed2", scope = CgNewarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeFixed2(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFixed2_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed3", scope = CgNewarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeFixed3(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFixed3_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed4", scope = CgNewarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeFixed4(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFixed4_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed1x1", scope = CgNewarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeFixed1X1(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFixed1X1_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed1x2", scope = CgNewarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeFixed1X2(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFixed1X2_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed1x3", scope = CgNewarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeFixed1X3(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFixed1X3_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed1x4", scope = CgNewarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeFixed1X4(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFixed1X4_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed2x1", scope = CgNewarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeFixed2X1(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFixed2X1_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed2x2", scope = CgNewarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeFixed2X2(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFixed2X2_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed2x3", scope = CgNewarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeFixed2X3(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFixed2X3_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed2x4", scope = CgNewarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeFixed2X4(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFixed2X4_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed3x1", scope = CgNewarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeFixed3X1(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFixed3X1_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed3x2", scope = CgNewarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeFixed3X2(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFixed3X2_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed3x3", scope = CgNewarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeFixed3X3(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFixed3X3_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed3x4", scope = CgNewarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeFixed3X4(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFixed3X4_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed4x1", scope = CgNewarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeFixed4X1(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFixed4X1_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed4x2", scope = CgNewarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeFixed4X2(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFixed4X2_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed4x3", scope = CgNewarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeFixed4X3(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFixed4X3_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed4x4", scope = CgNewarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createCgNewarrayTypeFixed4X4(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFixed4X4_QNAME, ((Class) List.class), CgNewarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link CgSurfaceType }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link CgSurfaceType }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "surface", scope = CgNewarrayType.class)
+    public JAXBElement<CgSurfaceType> createCgNewarrayTypeSurface(CgSurfaceType value) {
+        return new JAXBElement<CgSurfaceType>(_CgSetuserTypeSurface_QNAME, CgSurfaceType.class, CgNewarrayType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link CgSampler1D }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link CgSampler1D }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "sampler1D", scope = CgNewarrayType.class)
+    public JAXBElement<CgSampler1D> createCgNewarrayTypeSampler1D(CgSampler1D value) {
+        return new JAXBElement<CgSampler1D>(_CgSetuserTypeSampler1D_QNAME, CgSampler1D.class, CgNewarrayType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link CgSampler2D }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link CgSampler2D }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "sampler2D", scope = CgNewarrayType.class)
+    public JAXBElement<CgSampler2D> createCgNewarrayTypeSampler2D(CgSampler2D value) {
+        return new JAXBElement<CgSampler2D>(_CgSetuserTypeSampler2D_QNAME, CgSampler2D.class, CgNewarrayType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link CgSampler3D }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link CgSampler3D }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "sampler3D", scope = CgNewarrayType.class)
+    public JAXBElement<CgSampler3D> createCgNewarrayTypeSampler3D(CgSampler3D value) {
+        return new JAXBElement<CgSampler3D>(_CgSetuserTypeSampler3D_QNAME, CgSampler3D.class, CgNewarrayType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link CgSamplerRECT }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link CgSamplerRECT }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "samplerRECT", scope = CgNewarrayType.class)
+    public JAXBElement<CgSamplerRECT> createCgNewarrayTypeSamplerRECT(CgSamplerRECT value) {
+        return new JAXBElement<CgSamplerRECT>(_CgSetuserTypeSamplerRECT_QNAME, CgSamplerRECT.class, CgNewarrayType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link CgSamplerCUBE }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link CgSamplerCUBE }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "samplerCUBE", scope = CgNewarrayType.class)
+    public JAXBElement<CgSamplerCUBE> createCgNewarrayTypeSamplerCUBE(CgSamplerCUBE value) {
+        return new JAXBElement<CgSamplerCUBE>(_CgSetuserTypeSamplerCUBE_QNAME, CgSamplerCUBE.class, CgNewarrayType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link CgSamplerDEPTH }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link CgSamplerDEPTH }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "samplerDEPTH", scope = CgNewarrayType.class)
+    public JAXBElement<CgSamplerDEPTH> createCgNewarrayTypeSamplerDEPTH(CgSamplerDEPTH value) {
+        return new JAXBElement<CgSamplerDEPTH>(_CgSetuserTypeSamplerDEPTH_QNAME, CgSamplerDEPTH.class, CgNewarrayType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link String }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link String }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "string", scope = CgNewarrayType.class)
+    public JAXBElement<String> createCgNewarrayTypeString(String value) {
+        return new JAXBElement<String>(_CgSetuserTypeString_QNAME, String.class, CgNewarrayType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link String }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link String }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "enum", scope = CgNewarrayType.class)
+    public JAXBElement<String> createCgNewarrayTypeEnum(String value) {
+        return new JAXBElement<String>(_CgSetuserTypeEnum_QNAME, String.class, CgNewarrayType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link CgNewarrayType }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link CgNewarrayType }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "array", scope = CgNewarrayType.class)
+    public JAXBElement<CgNewarrayType> createCgNewarrayTypeArray(CgNewarrayType value) {
+        return new JAXBElement<CgNewarrayType>(_CgSetuserTypeArray_QNAME, CgNewarrayType.class, CgNewarrayType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link CgSetuserType }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link CgSetuserType }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "usertype", scope = CgNewarrayType.class)
+    public JAXBElement<CgSetuserType> createCgNewarrayTypeUsertype(CgSetuserType value) {
+        return new JAXBElement<CgSetuserType>(_CgSetuserTypeUsertype_QNAME, CgSetuserType.class, CgNewarrayType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link CgConnectParam }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link CgConnectParam }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "connect_param", scope = CgNewarrayType.class)
+    public JAXBElement<CgConnectParam> createCgNewarrayTypeConnectParam(CgConnectParam value) {
+        return new JAXBElement<CgConnectParam>(_CgSetuserTypeConnectParam_QNAME, CgConnectParam.class, CgNewarrayType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link Boolean }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link Boolean }{@code >}
      */
     @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool", scope = GlslSetarrayType.class)
     public JAXBElement<Boolean> createGlslSetarrayTypeBool(Boolean value) {
-        return new JAXBElement<Boolean>(_CgNewarrayTypeBool_QNAME, Boolean.class, GlslSetarrayType.class, value);
+        return new JAXBElement<Boolean>(_CgSetuserTypeBool_QNAME, Boolean.class, GlslSetarrayType.class, value);
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link GlslSurfaceType }{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
      * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "surface", scope = GlslSetarrayType.class)
-    public JAXBElement<GlslSurfaceType> createGlslSetarrayTypeSurface(GlslSurfaceType value) {
-        return new JAXBElement<GlslSurfaceType>(_CgNewarrayTypeSurface_QNAME, GlslSurfaceType.class, GlslSetarrayType.class, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float2", scope = GlslSetarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createGlslSetarrayTypeFloat2(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFloat2_QNAME, ((Class) List.class), GlslSetarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float3", scope = GlslSetarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createGlslSetarrayTypeFloat3(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFloat3_QNAME, ((Class) List.class), GlslSetarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link java.lang.Float }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float", scope = GlslSetarrayType.class)
-    public JAXBElement<java.lang.Float> createGlslSetarrayTypeFloat(java.lang.Float value) {
-        return new JAXBElement<java.lang.Float>(_CgNewarrayTypeFloat_QNAME, java.lang.Float.class, GlslSetarrayType.class, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float4", scope = GlslSetarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createGlslSetarrayTypeFloat4(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFloat4_QNAME, ((Class) List.class), GlslSetarrayType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link GlSampler1D }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "sampler1D", scope = GlslSetarrayType.class)
-    public JAXBElement<GlSampler1D> createGlslSetarrayTypeSampler1D(GlSampler1D value) {
-        return new JAXBElement<GlSampler1D>(_CgNewarrayTypeSampler1D_QNAME, GlSampler1D.class, GlslSetarrayType.class, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link GlSampler2D }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "sampler2D", scope = GlslSetarrayType.class)
-    public JAXBElement<GlSampler2D> createGlslSetarrayTypeSampler2D(GlSampler2D value) {
-        return new JAXBElement<GlSampler2D>(_CgNewarrayTypeSampler2D_QNAME, GlSampler2D.class, GlslSetarrayType.class, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link Integer }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int", scope = GlslSetarrayType.class)
-    public JAXBElement<Integer> createGlslSetarrayTypeInt(Integer value) {
-        return new JAXBElement<Integer>(_CgNewarrayTypeInt_QNAME, Integer.class, GlslSetarrayType.class, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link GlSampler3D }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "sampler3D", scope = GlslSetarrayType.class)
-    public JAXBElement<GlSampler3D> createGlslSetarrayTypeSampler3D(GlSampler3D value) {
-        return new JAXBElement<GlSampler3D>(_CgNewarrayTypeSampler3D_QNAME, GlSampler3D.class, GlslSetarrayType.class, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link String }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "enum", scope = GlslSetarrayType.class)
-    public JAXBElement<String> createGlslSetarrayTypeEnum(String value) {
-        return new JAXBElement<String>(_CgNewarrayTypeEnum_QNAME, String.class, GlslSetarrayType.class, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link GlSamplerCUBE }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "samplerCUBE", scope = GlslSetarrayType.class)
-    public JAXBElement<GlSamplerCUBE> createGlslSetarrayTypeSamplerCUBE(GlSamplerCUBE value) {
-        return new JAXBElement<GlSamplerCUBE>(_CgNewarrayTypeSamplerCUBE_QNAME, GlSamplerCUBE.class, GlslSetarrayType.class, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int4", scope = GlslSetarrayType.class)
-    public JAXBElement<List<Integer>> createGlslSetarrayTypeInt4(List<Integer> value) {
-        return new JAXBElement<List<Integer>>(_CgNewarrayTypeInt4_QNAME, ((Class) List.class), GlslSetarrayType.class, ((List<Integer> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int3", scope = GlslSetarrayType.class)
-    public JAXBElement<List<Integer>> createGlslSetarrayTypeInt3(List<Integer> value) {
-        return new JAXBElement<List<Integer>>(_CgNewarrayTypeInt3_QNAME, ((Class) List.class), GlslSetarrayType.class, ((List<Integer> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link GlslSetarrayType }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "array", scope = GlslSetarrayType.class)
-    public JAXBElement<GlslSetarrayType> createGlslSetarrayTypeArray(GlslSetarrayType value) {
-        return new JAXBElement<GlslSetarrayType>(_CgNewarrayTypeArray_QNAME, GlslSetarrayType.class, GlslSetarrayType.class, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool3", scope = GlslSetarrayType.class)
-    public JAXBElement<List<Boolean>> createGlslSetarrayTypeBool3(List<Boolean> value) {
-        return new JAXBElement<List<Boolean>>(_CgNewarrayTypeBool3_QNAME, ((Class) List.class), GlslSetarrayType.class, ((List<Boolean> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}}
-     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
      */
     @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool2", scope = GlslSetarrayType.class)
     public JAXBElement<List<Boolean>> createGlslSetarrayTypeBool2(List<Boolean> value) {
-        return new JAXBElement<List<Boolean>>(_CgNewarrayTypeBool2_QNAME, ((Class) List.class), GlslSetarrayType.class, ((List<Boolean> ) value));
+        return new JAXBElement<List<Boolean>>(_CgSetuserTypeBool2_QNAME, ((Class) List.class), GlslSetarrayType.class, ((List<Boolean> ) value));
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
      */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int2", scope = GlslSetarrayType.class)
-    public JAXBElement<List<Integer>> createGlslSetarrayTypeInt2(List<Integer> value) {
-        return new JAXBElement<List<Integer>>(_CgNewarrayTypeInt2_QNAME, ((Class) List.class), GlslSetarrayType.class, ((List<Integer> ) value));
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool3", scope = GlslSetarrayType.class)
+    public JAXBElement<List<Boolean>> createGlslSetarrayTypeBool3(List<Boolean> value) {
+        return new JAXBElement<List<Boolean>>(_CgSetuserTypeBool3_QNAME, ((Class) List.class), GlslSetarrayType.class, ((List<Boolean> ) value));
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link GlSamplerRECT }{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
      * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "samplerRECT", scope = GlslSetarrayType.class)
-    public JAXBElement<GlSamplerRECT> createGlslSetarrayTypeSamplerRECT(GlSamplerRECT value) {
-        return new JAXBElement<GlSamplerRECT>(_CgNewarrayTypeSamplerRECT_QNAME, GlSamplerRECT.class, GlslSetarrayType.class, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}}
-     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
      */
     @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool4", scope = GlslSetarrayType.class)
     public JAXBElement<List<Boolean>> createGlslSetarrayTypeBool4(List<Boolean> value) {
-        return new JAXBElement<List<Boolean>>(_CgNewarrayTypeBool4_QNAME, ((Class) List.class), GlslSetarrayType.class, ((List<Boolean> ) value));
+        return new JAXBElement<List<Boolean>>(_CgSetuserTypeBool4_QNAME, ((Class) List.class), GlslSetarrayType.class, ((List<Boolean> ) value));
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link java.lang.Float }{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link java.lang.Float }{@code >}
      */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float3x3", scope = GlslSetarrayType.class)
-    public JAXBElement<List<java.lang.Float>> createGlslSetarrayTypeFloat3X3(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFloat3X3_QNAME, ((Class) List.class), GlslSetarrayType.class, ((List<java.lang.Float> ) value));
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float", scope = GlslSetarrayType.class)
+    public JAXBElement<java.lang.Float> createGlslSetarrayTypeFloat(java.lang.Float value) {
+        return new JAXBElement<java.lang.Float>(_CgSetuserTypeFloat_QNAME, java.lang.Float.class, GlslSetarrayType.class, value);
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link GlSamplerDEPTH }{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
      */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "samplerDEPTH", scope = GlslSetarrayType.class)
-    public JAXBElement<GlSamplerDEPTH> createGlslSetarrayTypeSamplerDEPTH(GlSamplerDEPTH value) {
-        return new JAXBElement<GlSamplerDEPTH>(_CgNewarrayTypeSamplerDEPTH_QNAME, GlSamplerDEPTH.class, GlslSetarrayType.class, value);
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float2", scope = GlslSetarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createGlslSetarrayTypeFloat2(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFloat2_QNAME, ((Class) List.class), GlslSetarrayType.class, ((List<java.lang.Float> ) value));
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float3", scope = GlslSetarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createGlslSetarrayTypeFloat3(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFloat3_QNAME, ((Class) List.class), GlslSetarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float4", scope = GlslSetarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createGlslSetarrayTypeFloat4(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFloat4_QNAME, ((Class) List.class), GlslSetarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
      */
     @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float2x2", scope = GlslSetarrayType.class)
     public JAXBElement<List<java.lang.Float>> createGlslSetarrayTypeFloat2X2(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFloat2X2_QNAME, ((Class) List.class), GlslSetarrayType.class, ((List<java.lang.Float> ) value));
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFloat2X2_QNAME, ((Class) List.class), GlslSetarrayType.class, ((List<java.lang.Float> ) value));
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float3x3", scope = GlslSetarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createGlslSetarrayTypeFloat3X3(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFloat3X3_QNAME, ((Class) List.class), GlslSetarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
      */
     @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float4x4", scope = GlslSetarrayType.class)
     public JAXBElement<List<java.lang.Float>> createGlslSetarrayTypeFloat4X4(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFloat4X4_QNAME, ((Class) List.class), GlslSetarrayType.class, ((List<java.lang.Float> ) value));
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFloat4X4_QNAME, ((Class) List.class), GlslSetarrayType.class, ((List<java.lang.Float> ) value));
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link BigInteger }{@code >}{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link Integer }{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link Integer }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int", scope = GlslSetarrayType.class)
+    public JAXBElement<Integer> createGlslSetarrayTypeInt(Integer value) {
+        return new JAXBElement<Integer>(_CgSetuserTypeInt_QNAME, Integer.class, GlslSetarrayType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int2", scope = GlslSetarrayType.class)
+    public JAXBElement<List<Integer>> createGlslSetarrayTypeInt2(List<Integer> value) {
+        return new JAXBElement<List<Integer>>(_CgSetuserTypeInt2_QNAME, ((Class) List.class), GlslSetarrayType.class, ((List<Integer> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int3", scope = GlslSetarrayType.class)
+    public JAXBElement<List<Integer>> createGlslSetarrayTypeInt3(List<Integer> value) {
+        return new JAXBElement<List<Integer>>(_CgSetuserTypeInt3_QNAME, ((Class) List.class), GlslSetarrayType.class, ((List<Integer> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int4", scope = GlslSetarrayType.class)
+    public JAXBElement<List<Integer>> createGlslSetarrayTypeInt4(List<Integer> value) {
+        return new JAXBElement<List<Integer>>(_CgSetuserTypeInt4_QNAME, ((Class) List.class), GlslSetarrayType.class, ((List<Integer> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link GlslSurfaceType }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link GlslSurfaceType }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "surface", scope = GlslSetarrayType.class)
+    public JAXBElement<GlslSurfaceType> createGlslSetarrayTypeSurface(GlslSurfaceType value) {
+        return new JAXBElement<GlslSurfaceType>(_CgSetuserTypeSurface_QNAME, GlslSurfaceType.class, GlslSetarrayType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link GlSampler1D }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link GlSampler1D }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "sampler1D", scope = GlslSetarrayType.class)
+    public JAXBElement<GlSampler1D> createGlslSetarrayTypeSampler1D(GlSampler1D value) {
+        return new JAXBElement<GlSampler1D>(_CgSetuserTypeSampler1D_QNAME, GlSampler1D.class, GlslSetarrayType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link GlSampler2D }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link GlSampler2D }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "sampler2D", scope = GlslSetarrayType.class)
+    public JAXBElement<GlSampler2D> createGlslSetarrayTypeSampler2D(GlSampler2D value) {
+        return new JAXBElement<GlSampler2D>(_CgSetuserTypeSampler2D_QNAME, GlSampler2D.class, GlslSetarrayType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link GlSampler3D }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link GlSampler3D }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "sampler3D", scope = GlslSetarrayType.class)
+    public JAXBElement<GlSampler3D> createGlslSetarrayTypeSampler3D(GlSampler3D value) {
+        return new JAXBElement<GlSampler3D>(_CgSetuserTypeSampler3D_QNAME, GlSampler3D.class, GlslSetarrayType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link GlSamplerCUBE }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link GlSamplerCUBE }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "samplerCUBE", scope = GlslSetarrayType.class)
+    public JAXBElement<GlSamplerCUBE> createGlslSetarrayTypeSamplerCUBE(GlSamplerCUBE value) {
+        return new JAXBElement<GlSamplerCUBE>(_CgSetuserTypeSamplerCUBE_QNAME, GlSamplerCUBE.class, GlslSetarrayType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link GlSamplerRECT }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link GlSamplerRECT }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "samplerRECT", scope = GlslSetarrayType.class)
+    public JAXBElement<GlSamplerRECT> createGlslSetarrayTypeSamplerRECT(GlSamplerRECT value) {
+        return new JAXBElement<GlSamplerRECT>(_CgSetuserTypeSamplerRECT_QNAME, GlSamplerRECT.class, GlslSetarrayType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link GlSamplerDEPTH }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link GlSamplerDEPTH }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "samplerDEPTH", scope = GlslSetarrayType.class)
+    public JAXBElement<GlSamplerDEPTH> createGlslSetarrayTypeSamplerDEPTH(GlSamplerDEPTH value) {
+        return new JAXBElement<GlSamplerDEPTH>(_CgSetuserTypeSamplerDEPTH_QNAME, GlSamplerDEPTH.class, GlslSetarrayType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link String }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link String }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "enum", scope = GlslSetarrayType.class)
+    public JAXBElement<String> createGlslSetarrayTypeEnum(String value) {
+        return new JAXBElement<String>(_CgSetuserTypeEnum_QNAME, String.class, GlslSetarrayType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link GlslSetarrayType }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link GlslSetarrayType }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "array", scope = GlslSetarrayType.class)
+    public JAXBElement<GlslSetarrayType> createGlslSetarrayTypeArray(GlslSetarrayType value) {
+        return new JAXBElement<GlslSetarrayType>(_CgSetuserTypeArray_QNAME, GlslSetarrayType.class, GlslSetarrayType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link Boolean }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link Boolean }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool", scope = GlslNewarrayType.class)
+    public JAXBElement<Boolean> createGlslNewarrayTypeBool(Boolean value) {
+        return new JAXBElement<Boolean>(_CgSetuserTypeBool_QNAME, Boolean.class, GlslNewarrayType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool2", scope = GlslNewarrayType.class)
+    public JAXBElement<List<Boolean>> createGlslNewarrayTypeBool2(List<Boolean> value) {
+        return new JAXBElement<List<Boolean>>(_CgSetuserTypeBool2_QNAME, ((Class) List.class), GlslNewarrayType.class, ((List<Boolean> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool3", scope = GlslNewarrayType.class)
+    public JAXBElement<List<Boolean>> createGlslNewarrayTypeBool3(List<Boolean> value) {
+        return new JAXBElement<List<Boolean>>(_CgSetuserTypeBool3_QNAME, ((Class) List.class), GlslNewarrayType.class, ((List<Boolean> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool4", scope = GlslNewarrayType.class)
+    public JAXBElement<List<Boolean>> createGlslNewarrayTypeBool4(List<Boolean> value) {
+        return new JAXBElement<List<Boolean>>(_CgSetuserTypeBool4_QNAME, ((Class) List.class), GlslNewarrayType.class, ((List<Boolean> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link java.lang.Float }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link java.lang.Float }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float", scope = GlslNewarrayType.class)
+    public JAXBElement<java.lang.Float> createGlslNewarrayTypeFloat(java.lang.Float value) {
+        return new JAXBElement<java.lang.Float>(_CgSetuserTypeFloat_QNAME, java.lang.Float.class, GlslNewarrayType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float2", scope = GlslNewarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createGlslNewarrayTypeFloat2(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFloat2_QNAME, ((Class) List.class), GlslNewarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float3", scope = GlslNewarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createGlslNewarrayTypeFloat3(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFloat3_QNAME, ((Class) List.class), GlslNewarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float4", scope = GlslNewarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createGlslNewarrayTypeFloat4(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFloat4_QNAME, ((Class) List.class), GlslNewarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float2x2", scope = GlslNewarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createGlslNewarrayTypeFloat2X2(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFloat2X2_QNAME, ((Class) List.class), GlslNewarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float3x3", scope = GlslNewarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createGlslNewarrayTypeFloat3X3(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFloat3X3_QNAME, ((Class) List.class), GlslNewarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float4x4", scope = GlslNewarrayType.class)
+    public JAXBElement<List<java.lang.Float>> createGlslNewarrayTypeFloat4X4(List<java.lang.Float> value) {
+        return new JAXBElement<List<java.lang.Float>>(_CgSetuserTypeFloat4X4_QNAME, ((Class) List.class), GlslNewarrayType.class, ((List<java.lang.Float> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link Integer }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link Integer }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int", scope = GlslNewarrayType.class)
+    public JAXBElement<Integer> createGlslNewarrayTypeInt(Integer value) {
+        return new JAXBElement<Integer>(_CgSetuserTypeInt_QNAME, Integer.class, GlslNewarrayType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int2", scope = GlslNewarrayType.class)
+    public JAXBElement<List<Integer>> createGlslNewarrayTypeInt2(List<Integer> value) {
+        return new JAXBElement<List<Integer>>(_CgSetuserTypeInt2_QNAME, ((Class) List.class), GlslNewarrayType.class, ((List<Integer> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int3", scope = GlslNewarrayType.class)
+    public JAXBElement<List<Integer>> createGlslNewarrayTypeInt3(List<Integer> value) {
+        return new JAXBElement<List<Integer>>(_CgSetuserTypeInt3_QNAME, ((Class) List.class), GlslNewarrayType.class, ((List<Integer> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int4", scope = GlslNewarrayType.class)
+    public JAXBElement<List<Integer>> createGlslNewarrayTypeInt4(List<Integer> value) {
+        return new JAXBElement<List<Integer>>(_CgSetuserTypeInt4_QNAME, ((Class) List.class), GlslNewarrayType.class, ((List<Integer> ) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link GlslSurfaceType }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link GlslSurfaceType }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "surface", scope = GlslNewarrayType.class)
+    public JAXBElement<GlslSurfaceType> createGlslNewarrayTypeSurface(GlslSurfaceType value) {
+        return new JAXBElement<GlslSurfaceType>(_CgSetuserTypeSurface_QNAME, GlslSurfaceType.class, GlslNewarrayType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link GlSampler1D }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link GlSampler1D }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "sampler1D", scope = GlslNewarrayType.class)
+    public JAXBElement<GlSampler1D> createGlslNewarrayTypeSampler1D(GlSampler1D value) {
+        return new JAXBElement<GlSampler1D>(_CgSetuserTypeSampler1D_QNAME, GlSampler1D.class, GlslNewarrayType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link GlSampler2D }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link GlSampler2D }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "sampler2D", scope = GlslNewarrayType.class)
+    public JAXBElement<GlSampler2D> createGlslNewarrayTypeSampler2D(GlSampler2D value) {
+        return new JAXBElement<GlSampler2D>(_CgSetuserTypeSampler2D_QNAME, GlSampler2D.class, GlslNewarrayType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link GlSampler3D }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link GlSampler3D }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "sampler3D", scope = GlslNewarrayType.class)
+    public JAXBElement<GlSampler3D> createGlslNewarrayTypeSampler3D(GlSampler3D value) {
+        return new JAXBElement<GlSampler3D>(_CgSetuserTypeSampler3D_QNAME, GlSampler3D.class, GlslNewarrayType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link GlSamplerCUBE }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link GlSamplerCUBE }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "samplerCUBE", scope = GlslNewarrayType.class)
+    public JAXBElement<GlSamplerCUBE> createGlslNewarrayTypeSamplerCUBE(GlSamplerCUBE value) {
+        return new JAXBElement<GlSamplerCUBE>(_CgSetuserTypeSamplerCUBE_QNAME, GlSamplerCUBE.class, GlslNewarrayType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link GlSamplerRECT }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link GlSamplerRECT }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "samplerRECT", scope = GlslNewarrayType.class)
+    public JAXBElement<GlSamplerRECT> createGlslNewarrayTypeSamplerRECT(GlSamplerRECT value) {
+        return new JAXBElement<GlSamplerRECT>(_CgSetuserTypeSamplerRECT_QNAME, GlSamplerRECT.class, GlslNewarrayType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link GlSamplerDEPTH }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link GlSamplerDEPTH }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "samplerDEPTH", scope = GlslNewarrayType.class)
+    public JAXBElement<GlSamplerDEPTH> createGlslNewarrayTypeSamplerDEPTH(GlSamplerDEPTH value) {
+        return new JAXBElement<GlSamplerDEPTH>(_CgSetuserTypeSamplerDEPTH_QNAME, GlSamplerDEPTH.class, GlslNewarrayType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link String }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link String }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "enum", scope = GlslNewarrayType.class)
+    public JAXBElement<String> createGlslNewarrayTypeEnum(String value) {
+        return new JAXBElement<String>(_CgSetuserTypeEnum_QNAME, String.class, GlslNewarrayType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link GlslNewarrayType }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link GlslNewarrayType }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "array", scope = GlslNewarrayType.class)
+    public JAXBElement<GlslNewarrayType> createGlslNewarrayTypeArray(GlslNewarrayType value) {
+        return new JAXBElement<GlslNewarrayType>(_CgSetuserTypeArray_QNAME, GlslNewarrayType.class, GlslNewarrayType.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link BigInteger }{@code >}{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link BigInteger }{@code >}{@code >}
      */
     @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "h", scope = Polygons.Ph.class)
     public JAXBElement<List<BigInteger>> createPolygonsPhH(List<BigInteger> value) {
@@ -6580,1088 +9244,12 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int3x1", scope = CgSetuserType.class)
-    public JAXBElement<List<Integer>> createCgSetuserTypeInt3X1(List<Integer> value) {
-        return new JAXBElement<List<Integer>>(_CgNewarrayTypeInt3X1_QNAME, ((Class) List.class), CgSetuserType.class, ((List<Integer> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int3x2", scope = CgSetuserType.class)
-    public JAXBElement<List<Integer>> createCgSetuserTypeInt3X2(List<Integer> value) {
-        return new JAXBElement<List<Integer>>(_CgNewarrayTypeInt3X2_QNAME, ((Class) List.class), CgSetuserType.class, ((List<Integer> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int3x3", scope = CgSetuserType.class)
-    public JAXBElement<List<Integer>> createCgSetuserTypeInt3X3(List<Integer> value) {
-        return new JAXBElement<List<Integer>>(_CgNewarrayTypeInt3X3_QNAME, ((Class) List.class), CgSetuserType.class, ((List<Integer> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link CgSetuserType }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "usertype", scope = CgSetuserType.class)
-    public JAXBElement<CgSetuserType> createCgSetuserTypeUsertype(CgSetuserType value) {
-        return new JAXBElement<CgSetuserType>(_CgNewarrayTypeUsertype_QNAME, CgSetuserType.class, CgSetuserType.class, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half1x4", scope = CgSetuserType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeHalf1X4(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeHalf1X4_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half1x3", scope = CgSetuserType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeHalf1X3(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeHalf1X3_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half1x2", scope = CgSetuserType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeHalf1X2(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeHalf1X2_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half2", scope = CgSetuserType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeHalf2(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeHalf2_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half1x1", scope = CgSetuserType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeHalf1X1(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeHalf1X1_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link java.lang.Float }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half1", scope = CgSetuserType.class)
-    public JAXBElement<java.lang.Float> createCgSetuserTypeHalf1(java.lang.Float value) {
-        return new JAXBElement<java.lang.Float>(_CgNewarrayTypeHalf1_QNAME, java.lang.Float.class, CgSetuserType.class, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link java.lang.Float }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed", scope = CgSetuserType.class)
-    public JAXBElement<java.lang.Float> createCgSetuserTypeFixed(java.lang.Float value) {
-        return new JAXBElement<java.lang.Float>(_CgNewarrayTypeFixed_QNAME, java.lang.Float.class, CgSetuserType.class, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half4", scope = CgSetuserType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeHalf4(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeHalf4_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half3", scope = CgSetuserType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeHalf3(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeHalf3_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link java.lang.Float }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float", scope = CgSetuserType.class)
-    public JAXBElement<java.lang.Float> createCgSetuserTypeFloat(java.lang.Float value) {
-        return new JAXBElement<java.lang.Float>(_CgNewarrayTypeFloat_QNAME, java.lang.Float.class, CgSetuserType.class, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int3x4", scope = CgSetuserType.class)
-    public JAXBElement<List<Integer>> createCgSetuserTypeInt3X4(List<Integer> value) {
-        return new JAXBElement<List<Integer>>(_CgNewarrayTypeInt3X4_QNAME, ((Class) List.class), CgSetuserType.class, ((List<Integer> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed3x2", scope = CgSetuserType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeFixed3X2(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFixed3X2_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed3x1", scope = CgSetuserType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeFixed3X1(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFixed3X1_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed3x4", scope = CgSetuserType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeFixed3X4(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFixed3X4_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed3x3", scope = CgSetuserType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeFixed3X3(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFixed3X3_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float3x4", scope = CgSetuserType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeFloat3X4(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFloat3X4_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float3x3", scope = CgSetuserType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeFloat3X3(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFloat3X3_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool2x4", scope = CgSetuserType.class)
-    public JAXBElement<List<Boolean>> createCgSetuserTypeBool2X4(List<Boolean> value) {
-        return new JAXBElement<List<Boolean>>(_CgNewarrayTypeBool2X4_QNAME, ((Class) List.class), CgSetuserType.class, ((List<Boolean> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float3x2", scope = CgSetuserType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeFloat3X2(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFloat3X2_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float3x1", scope = CgSetuserType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeFloat3X1(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFloat3X1_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool2x2", scope = CgSetuserType.class)
-    public JAXBElement<List<Boolean>> createCgSetuserTypeBool2X2(List<Boolean> value) {
-        return new JAXBElement<List<Boolean>>(_CgNewarrayTypeBool2X2_QNAME, ((Class) List.class), CgSetuserType.class, ((List<Boolean> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool2x3", scope = CgSetuserType.class)
-    public JAXBElement<List<Boolean>> createCgSetuserTypeBool2X3(List<Boolean> value) {
-        return new JAXBElement<List<Boolean>>(_CgNewarrayTypeBool2X3_QNAME, ((Class) List.class), CgSetuserType.class, ((List<Boolean> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link CgConnectParam }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "connect_param", scope = CgSetuserType.class)
-    public JAXBElement<CgConnectParam> createCgSetuserTypeConnectParam(CgConnectParam value) {
-        return new JAXBElement<CgConnectParam>(_CgNewarrayTypeConnectParam_QNAME, CgConnectParam.class, CgSetuserType.class, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool2x1", scope = CgSetuserType.class)
-    public JAXBElement<List<Boolean>> createCgSetuserTypeBool2X1(List<Boolean> value) {
-        return new JAXBElement<List<Boolean>>(_CgNewarrayTypeBool2X1_QNAME, ((Class) List.class), CgSetuserType.class, ((List<Boolean> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link Integer }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int", scope = CgSetuserType.class)
-    public JAXBElement<Integer> createCgSetuserTypeInt(Integer value) {
-        return new JAXBElement<Integer>(_CgNewarrayTypeInt_QNAME, Integer.class, CgSetuserType.class, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int4x1", scope = CgSetuserType.class)
-    public JAXBElement<List<Integer>> createCgSetuserTypeInt4X1(List<Integer> value) {
-        return new JAXBElement<List<Integer>>(_CgNewarrayTypeInt4X1_QNAME, ((Class) List.class), CgSetuserType.class, ((List<Integer> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int4x2", scope = CgSetuserType.class)
-    public JAXBElement<List<Integer>> createCgSetuserTypeInt4X2(List<Integer> value) {
-        return new JAXBElement<List<Integer>>(_CgNewarrayTypeInt4X2_QNAME, ((Class) List.class), CgSetuserType.class, ((List<Integer> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half4x2", scope = CgSetuserType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeHalf4X2(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeHalf4X2_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half4x1", scope = CgSetuserType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeHalf4X1(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeHalf4X1_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half4x4", scope = CgSetuserType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeHalf4X4(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeHalf4X4_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link CgSamplerRECT }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "samplerRECT", scope = CgSetuserType.class)
-    public JAXBElement<CgSamplerRECT> createCgSetuserTypeSamplerRECT(CgSamplerRECT value) {
-        return new JAXBElement<CgSamplerRECT>(_CgNewarrayTypeSamplerRECT_QNAME, CgSamplerRECT.class, CgSetuserType.class, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half4x3", scope = CgSetuserType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeHalf4X3(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeHalf4X3_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link Boolean }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool", scope = CgSetuserType.class)
-    public JAXBElement<Boolean> createCgSetuserTypeBool(Boolean value) {
-        return new JAXBElement<Boolean>(_CgNewarrayTypeBool_QNAME, Boolean.class, CgSetuserType.class, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link String }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "string", scope = CgSetuserType.class)
-    public JAXBElement<String> createCgSetuserTypeString(String value) {
-        return new JAXBElement<String>(_CgNewarrayTypeString_QNAME, String.class, CgSetuserType.class, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link CgSetarrayType }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "array", scope = CgSetuserType.class)
-    public JAXBElement<CgSetarrayType> createCgSetuserTypeArray(CgSetarrayType value) {
-        return new JAXBElement<CgSetarrayType>(_CgNewarrayTypeArray_QNAME, CgSetarrayType.class, CgSetuserType.class, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int4x3", scope = CgSetuserType.class)
-    public JAXBElement<List<Integer>> createCgSetuserTypeInt4X3(List<Integer> value) {
-        return new JAXBElement<List<Integer>>(_CgNewarrayTypeInt4X3_QNAME, ((Class) List.class), CgSetuserType.class, ((List<Integer> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed2x3", scope = CgSetuserType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeFixed2X3(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFixed2X3_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int4x4", scope = CgSetuserType.class)
-    public JAXBElement<List<Integer>> createCgSetuserTypeInt4X4(List<Integer> value) {
-        return new JAXBElement<List<Integer>>(_CgNewarrayTypeInt4X4_QNAME, ((Class) List.class), CgSetuserType.class, ((List<Integer> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed2x2", scope = CgSetuserType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeFixed2X2(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFixed2X2_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed2x4", scope = CgSetuserType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeFixed2X4(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFixed2X4_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float4x3", scope = CgSetuserType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeFloat4X3(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFloat4X3_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float4x2", scope = CgSetuserType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeFloat4X2(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFloat4X2_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool3x3", scope = CgSetuserType.class)
-    public JAXBElement<List<Boolean>> createCgSetuserTypeBool3X3(List<Boolean> value) {
-        return new JAXBElement<List<Boolean>>(_CgNewarrayTypeBool3X3_QNAME, ((Class) List.class), CgSetuserType.class, ((List<Boolean> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float4x1", scope = CgSetuserType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeFloat4X1(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFloat4X1_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed2x1", scope = CgSetuserType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeFixed2X1(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFixed2X1_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool3x4", scope = CgSetuserType.class)
-    public JAXBElement<List<Boolean>> createCgSetuserTypeBool3X4(List<Boolean> value) {
-        return new JAXBElement<List<Boolean>>(_CgNewarrayTypeBool3X4_QNAME, ((Class) List.class), CgSetuserType.class, ((List<Boolean> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool3x1", scope = CgSetuserType.class)
-    public JAXBElement<List<Boolean>> createCgSetuserTypeBool3X1(List<Boolean> value) {
-        return new JAXBElement<List<Boolean>>(_CgNewarrayTypeBool3X1_QNAME, ((Class) List.class), CgSetuserType.class, ((List<Boolean> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool3x2", scope = CgSetuserType.class)
-    public JAXBElement<List<Boolean>> createCgSetuserTypeBool3X2(List<Boolean> value) {
-        return new JAXBElement<List<Boolean>>(_CgNewarrayTypeBool3X2_QNAME, ((Class) List.class), CgSetuserType.class, ((List<Boolean> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float4x4", scope = CgSetuserType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeFloat4X4(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFloat4X4_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link CgSurfaceType }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "surface", scope = CgSetuserType.class)
-    public JAXBElement<CgSurfaceType> createCgSetuserTypeSurface(CgSurfaceType value) {
-        return new JAXBElement<CgSurfaceType>(_CgNewarrayTypeSurface_QNAME, CgSurfaceType.class, CgSetuserType.class, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int1x2", scope = CgSetuserType.class)
-    public JAXBElement<List<Integer>> createCgSetuserTypeInt1X2(List<Integer> value) {
-        return new JAXBElement<List<Integer>>(_CgNewarrayTypeInt1X2_QNAME, ((Class) List.class), CgSetuserType.class, ((List<Integer> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int1x3", scope = CgSetuserType.class)
-    public JAXBElement<List<Integer>> createCgSetuserTypeInt1X3(List<Integer> value) {
-        return new JAXBElement<List<Integer>>(_CgNewarrayTypeInt1X3_QNAME, ((Class) List.class), CgSetuserType.class, ((List<Integer> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int1x4", scope = CgSetuserType.class)
-    public JAXBElement<List<Integer>> createCgSetuserTypeInt1X4(List<Integer> value) {
-        return new JAXBElement<List<Integer>>(_CgNewarrayTypeInt1X4_QNAME, ((Class) List.class), CgSetuserType.class, ((List<Integer> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link CgSampler3D }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "sampler3D", scope = CgSetuserType.class)
-    public JAXBElement<CgSampler3D> createCgSetuserTypeSampler3D(CgSampler3D value) {
-        return new JAXBElement<CgSampler3D>(_CgNewarrayTypeSampler3D_QNAME, CgSampler3D.class, CgSetuserType.class, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link String }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "enum", scope = CgSetuserType.class)
-    public JAXBElement<String> createCgSetuserTypeEnum(String value) {
-        return new JAXBElement<String>(_CgNewarrayTypeEnum_QNAME, String.class, CgSetuserType.class, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link CgSamplerCUBE }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "samplerCUBE", scope = CgSetuserType.class)
-    public JAXBElement<CgSamplerCUBE> createCgSetuserTypeSamplerCUBE(CgSamplerCUBE value) {
-        return new JAXBElement<CgSamplerCUBE>(_CgNewarrayTypeSamplerCUBE_QNAME, CgSamplerCUBE.class, CgSetuserType.class, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int1x1", scope = CgSetuserType.class)
-    public JAXBElement<List<Integer>> createCgSetuserTypeInt1X1(List<Integer> value) {
-        return new JAXBElement<List<Integer>>(_CgNewarrayTypeInt1X1_QNAME, ((Class) List.class), CgSetuserType.class, ((List<Integer> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half3x3", scope = CgSetuserType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeHalf3X3(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeHalf3X3_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half3x2", scope = CgSetuserType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeHalf3X2(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeHalf3X2_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half3x1", scope = CgSetuserType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeHalf3X1(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeHalf3X1_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed2", scope = CgSetuserType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeFixed2(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFixed2_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed3", scope = CgSetuserType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeFixed3(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFixed3_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half3x4", scope = CgSetuserType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeHalf3X4(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeHalf3X4_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link java.lang.Float }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed1", scope = CgSetuserType.class)
-    public JAXBElement<java.lang.Float> createCgSetuserTypeFixed1(java.lang.Float value) {
-        return new JAXBElement<java.lang.Float>(_CgNewarrayTypeFixed1_QNAME, java.lang.Float.class, CgSetuserType.class, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float1x2", scope = CgSetuserType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeFloat1X2(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFloat1X2_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float1x1", scope = CgSetuserType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeFloat1X1(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFloat1X1_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link java.lang.Float }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half", scope = CgSetuserType.class)
-    public JAXBElement<java.lang.Float> createCgSetuserTypeHalf(java.lang.Float value) {
-        return new JAXBElement<java.lang.Float>(_CgNewarrayTypeHalf_QNAME, java.lang.Float.class, CgSetuserType.class, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link CgSampler2D }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "sampler2D", scope = CgSetuserType.class)
-    public JAXBElement<CgSampler2D> createCgSetuserTypeSampler2D(CgSampler2D value) {
-        return new JAXBElement<CgSampler2D>(_CgNewarrayTypeSampler2D_QNAME, CgSampler2D.class, CgSetuserType.class, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int4", scope = CgSetuserType.class)
-    public JAXBElement<List<Integer>> createCgSetuserTypeInt4(List<Integer> value) {
-        return new JAXBElement<List<Integer>>(_CgNewarrayTypeInt4_QNAME, ((Class) List.class), CgSetuserType.class, ((List<Integer> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int3", scope = CgSetuserType.class)
-    public JAXBElement<List<Integer>> createCgSetuserTypeInt3(List<Integer> value) {
-        return new JAXBElement<List<Integer>>(_CgNewarrayTypeInt3_QNAME, ((Class) List.class), CgSetuserType.class, ((List<Integer> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool3", scope = CgSetuserType.class)
-    public JAXBElement<List<Boolean>> createCgSetuserTypeBool3(List<Boolean> value) {
-        return new JAXBElement<List<Boolean>>(_CgNewarrayTypeBool3_QNAME, ((Class) List.class), CgSetuserType.class, ((List<Boolean> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed1x4", scope = CgSetuserType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeFixed1X4(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFixed1X4_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool2", scope = CgSetuserType.class)
-    public JAXBElement<List<Boolean>> createCgSetuserTypeBool2(List<Boolean> value) {
-        return new JAXBElement<List<Boolean>>(_CgNewarrayTypeBool2_QNAME, ((Class) List.class), CgSetuserType.class, ((List<Boolean> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed1x3", scope = CgSetuserType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeFixed1X3(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFixed1X3_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int2", scope = CgSetuserType.class)
-    public JAXBElement<List<Integer>> createCgSetuserTypeInt2(List<Integer> value) {
-        return new JAXBElement<List<Integer>>(_CgNewarrayTypeInt2_QNAME, ((Class) List.class), CgSetuserType.class, ((List<Integer> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool4", scope = CgSetuserType.class)
-    public JAXBElement<List<Boolean>> createCgSetuserTypeBool4(List<Boolean> value) {
-        return new JAXBElement<List<Boolean>>(_CgNewarrayTypeBool4_QNAME, ((Class) List.class), CgSetuserType.class, ((List<Boolean> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link Integer }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int1", scope = CgSetuserType.class)
-    public JAXBElement<Integer> createCgSetuserTypeInt1(Integer value) {
-        return new JAXBElement<Integer>(_CgNewarrayTypeInt1_QNAME, Integer.class, CgSetuserType.class, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool4x4", scope = CgSetuserType.class)
-    public JAXBElement<List<Boolean>> createCgSetuserTypeBool4X4(List<Boolean> value) {
-        return new JAXBElement<List<Boolean>>(_CgNewarrayTypeBool4X4_QNAME, ((Class) List.class), CgSetuserType.class, ((List<Boolean> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link Boolean }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool1", scope = CgSetuserType.class)
-    public JAXBElement<Boolean> createCgSetuserTypeBool1(Boolean value) {
-        return new JAXBElement<Boolean>(_CgNewarrayTypeBool1_QNAME, Boolean.class, CgSetuserType.class, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool4x2", scope = CgSetuserType.class)
-    public JAXBElement<List<Boolean>> createCgSetuserTypeBool4X2(List<Boolean> value) {
-        return new JAXBElement<List<Boolean>>(_CgNewarrayTypeBool4X2_QNAME, ((Class) List.class), CgSetuserType.class, ((List<Boolean> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float1x4", scope = CgSetuserType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeFloat1X4(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFloat1X4_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed1x2", scope = CgSetuserType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeFixed1X2(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFixed1X2_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool4x3", scope = CgSetuserType.class)
-    public JAXBElement<List<Boolean>> createCgSetuserTypeBool4X3(List<Boolean> value) {
-        return new JAXBElement<List<Boolean>>(_CgNewarrayTypeBool4X3_QNAME, ((Class) List.class), CgSetuserType.class, ((List<Boolean> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float1x3", scope = CgSetuserType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeFloat1X3(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFloat1X3_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed1x1", scope = CgSetuserType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeFixed1X1(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFixed1X1_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool4x1", scope = CgSetuserType.class)
-    public JAXBElement<List<Boolean>> createCgSetuserTypeBool4X1(List<Boolean> value) {
-        return new JAXBElement<List<Boolean>>(_CgNewarrayTypeBool4X1_QNAME, ((Class) List.class), CgSetuserType.class, ((List<Boolean> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link java.lang.Float }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float1", scope = CgSetuserType.class)
-    public JAXBElement<java.lang.Float> createCgSetuserTypeFloat1(java.lang.Float value) {
-        return new JAXBElement<java.lang.Float>(_CgNewarrayTypeFloat1_QNAME, java.lang.Float.class, CgSetuserType.class, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float2", scope = CgSetuserType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeFloat2(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFloat2_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float3", scope = CgSetuserType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeFloat3(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFloat3_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float4", scope = CgSetuserType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeFloat4(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFloat4_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int2x1", scope = CgSetuserType.class)
-    public JAXBElement<List<Integer>> createCgSetuserTypeInt2X1(List<Integer> value) {
-        return new JAXBElement<List<Integer>>(_CgNewarrayTypeInt2X1_QNAME, ((Class) List.class), CgSetuserType.class, ((List<Integer> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link CgSampler1D }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "sampler1D", scope = CgSetuserType.class)
-    public JAXBElement<CgSampler1D> createCgSetuserTypeSampler1D(CgSampler1D value) {
-        return new JAXBElement<CgSampler1D>(_CgNewarrayTypeSampler1D_QNAME, CgSampler1D.class, CgSetuserType.class, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int2x2", scope = CgSetuserType.class)
-    public JAXBElement<List<Integer>> createCgSetuserTypeInt2X2(List<Integer> value) {
-        return new JAXBElement<List<Integer>>(_CgNewarrayTypeInt2X2_QNAME, ((Class) List.class), CgSetuserType.class, ((List<Integer> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int2x3", scope = CgSetuserType.class)
-    public JAXBElement<List<Integer>> createCgSetuserTypeInt2X3(List<Integer> value) {
-        return new JAXBElement<List<Integer>>(_CgNewarrayTypeInt2X3_QNAME, ((Class) List.class), CgSetuserType.class, ((List<Integer> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Integer }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "int2x4", scope = CgSetuserType.class)
-    public JAXBElement<List<Integer>> createCgSetuserTypeInt2X4(List<Integer> value) {
-        return new JAXBElement<List<Integer>>(_CgNewarrayTypeInt2X4_QNAME, ((Class) List.class), CgSetuserType.class, ((List<Integer> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half2x4", scope = CgSetuserType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeHalf2X4(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeHalf2X4_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half2x3", scope = CgSetuserType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeHalf2X3(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeHalf2X3_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half2x2", scope = CgSetuserType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeHalf2X2(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeHalf2X2_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "half2x1", scope = CgSetuserType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeHalf2X1(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeHalf2X1_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link CgSamplerDEPTH }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "samplerDEPTH", scope = CgSetuserType.class)
-    public JAXBElement<CgSamplerDEPTH> createCgSetuserTypeSamplerDEPTH(CgSamplerDEPTH value) {
-        return new JAXBElement<CgSamplerDEPTH>(_CgNewarrayTypeSamplerDEPTH_QNAME, CgSamplerDEPTH.class, CgSetuserType.class, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float2x1", scope = CgSetuserType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeFloat2X1(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFloat2X1_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed4", scope = CgSetuserType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeFixed4(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFixed4_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed4x4", scope = CgSetuserType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeFixed4X4(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFixed4X4_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed4x1", scope = CgSetuserType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeFixed4X1(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFixed4X1_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed4x3", scope = CgSetuserType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeFixed4X3(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFixed4X3_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "fixed4x2", scope = CgSetuserType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeFixed4X2(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFixed4X2_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float2x4", scope = CgSetuserType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeFloat2X4(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFloat2X4_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float2x3", scope = CgSetuserType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeFloat2X3(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFloat2X3_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link java.lang.Float }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "float2x2", scope = CgSetuserType.class)
-    public JAXBElement<List<java.lang.Float>> createCgSetuserTypeFloat2X2(List<java.lang.Float> value) {
-        return new JAXBElement<List<java.lang.Float>>(_CgNewarrayTypeFloat2X2_QNAME, ((Class) List.class), CgSetuserType.class, ((List<java.lang.Float> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool1x3", scope = CgSetuserType.class)
-    public JAXBElement<List<Boolean>> createCgSetuserTypeBool1X3(List<Boolean> value) {
-        return new JAXBElement<List<Boolean>>(_CgNewarrayTypeBool1X3_QNAME, ((Class) List.class), CgSetuserType.class, ((List<Boolean> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool1x4", scope = CgSetuserType.class)
-    public JAXBElement<List<Boolean>> createCgSetuserTypeBool1X4(List<Boolean> value) {
-        return new JAXBElement<List<Boolean>>(_CgNewarrayTypeBool1X4_QNAME, ((Class) List.class), CgSetuserType.class, ((List<Boolean> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool1x1", scope = CgSetuserType.class)
-    public JAXBElement<List<Boolean>> createCgSetuserTypeBool1X1(List<Boolean> value) {
-        return new JAXBElement<List<Boolean>>(_CgNewarrayTypeBool1X1_QNAME, ((Class) List.class), CgSetuserType.class, ((List<Boolean> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link List }{@code <}{@link Boolean }{@code >}{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "bool1x2", scope = CgSetuserType.class)
-    public JAXBElement<List<Boolean>> createCgSetuserTypeBool1X2(List<Boolean> value) {
-        return new JAXBElement<List<Boolean>>(_CgNewarrayTypeBool1X2_QNAME, ((Class) List.class), CgSetuserType.class, ((List<Boolean> ) value));
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link TargetableFloat }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "zfar", scope = Camera.Optics.TechniqueCommon.Perspective.class)
-    public JAXBElement<TargetableFloat> createCameraOpticsTechniqueCommonPerspectiveZfar(TargetableFloat value) {
-        return new JAXBElement<TargetableFloat>(_CameraOpticsTechniqueCommonOrthographicZfar_QNAME, TargetableFloat.class, Camera.Optics.TechniqueCommon.Perspective.class, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link TargetableFloat }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "aspect_ratio", scope = Camera.Optics.TechniqueCommon.Perspective.class)
-    public JAXBElement<TargetableFloat> createCameraOpticsTechniqueCommonPerspectiveAspectRatio(TargetableFloat value) {
-        return new JAXBElement<TargetableFloat>(_CameraOpticsTechniqueCommonOrthographicAspectRatio_QNAME, TargetableFloat.class, Camera.Optics.TechniqueCommon.Perspective.class, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link TargetableFloat }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "yfov", scope = Camera.Optics.TechniqueCommon.Perspective.class)
-    public JAXBElement<TargetableFloat> createCameraOpticsTechniqueCommonPerspectiveYfov(TargetableFloat value) {
-        return new JAXBElement<TargetableFloat>(_CameraOpticsTechniqueCommonPerspectiveYfov_QNAME, TargetableFloat.class, Camera.Optics.TechniqueCommon.Perspective.class, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link TargetableFloat }{@code >}}
-     * 
+     * Create an instance of {@link JAXBElement }{@code <}{@link TargetableFloat }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link TargetableFloat }{@code >}
      */
     @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "xfov", scope = Camera.Optics.TechniqueCommon.Perspective.class)
     public JAXBElement<TargetableFloat> createCameraOpticsTechniqueCommonPerspectiveXfov(TargetableFloat value) {
@@ -7669,12 +9257,120 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link TargetableFloat }{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link TargetableFloat }{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link TargetableFloat }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "yfov", scope = Camera.Optics.TechniqueCommon.Perspective.class)
+    public JAXBElement<TargetableFloat> createCameraOpticsTechniqueCommonPerspectiveYfov(TargetableFloat value) {
+        return new JAXBElement<TargetableFloat>(_CameraOpticsTechniqueCommonPerspectiveYfov_QNAME, TargetableFloat.class, Camera.Optics.TechniqueCommon.Perspective.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link TargetableFloat }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link TargetableFloat }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "aspect_ratio", scope = Camera.Optics.TechniqueCommon.Perspective.class)
+    public JAXBElement<TargetableFloat> createCameraOpticsTechniqueCommonPerspectiveAspectRatio(TargetableFloat value) {
+        return new JAXBElement<TargetableFloat>(_CameraOpticsTechniqueCommonPerspectiveAspectRatio_QNAME, TargetableFloat.class, Camera.Optics.TechniqueCommon.Perspective.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link TargetableFloat }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link TargetableFloat }{@code >}
      */
     @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "znear", scope = Camera.Optics.TechniqueCommon.Perspective.class)
     public JAXBElement<TargetableFloat> createCameraOpticsTechniqueCommonPerspectiveZnear(TargetableFloat value) {
-        return new JAXBElement<TargetableFloat>(_CameraOpticsTechniqueCommonOrthographicZnear_QNAME, TargetableFloat.class, Camera.Optics.TechniqueCommon.Perspective.class, value);
+        return new JAXBElement<TargetableFloat>(_CameraOpticsTechniqueCommonPerspectiveZnear_QNAME, TargetableFloat.class, Camera.Optics.TechniqueCommon.Perspective.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link TargetableFloat }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link TargetableFloat }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "zfar", scope = Camera.Optics.TechniqueCommon.Perspective.class)
+    public JAXBElement<TargetableFloat> createCameraOpticsTechniqueCommonPerspectiveZfar(TargetableFloat value) {
+        return new JAXBElement<TargetableFloat>(_CameraOpticsTechniqueCommonPerspectiveZfar_QNAME, TargetableFloat.class, Camera.Optics.TechniqueCommon.Perspective.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link TargetableFloat }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link TargetableFloat }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "xmag", scope = Camera.Optics.TechniqueCommon.Orthographic.class)
+    public JAXBElement<TargetableFloat> createCameraOpticsTechniqueCommonOrthographicXmag(TargetableFloat value) {
+        return new JAXBElement<TargetableFloat>(_CameraOpticsTechniqueCommonOrthographicXmag_QNAME, TargetableFloat.class, Camera.Optics.TechniqueCommon.Orthographic.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link TargetableFloat }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link TargetableFloat }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "ymag", scope = Camera.Optics.TechniqueCommon.Orthographic.class)
+    public JAXBElement<TargetableFloat> createCameraOpticsTechniqueCommonOrthographicYmag(TargetableFloat value) {
+        return new JAXBElement<TargetableFloat>(_CameraOpticsTechniqueCommonOrthographicYmag_QNAME, TargetableFloat.class, Camera.Optics.TechniqueCommon.Orthographic.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link TargetableFloat }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link TargetableFloat }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "aspect_ratio", scope = Camera.Optics.TechniqueCommon.Orthographic.class)
+    public JAXBElement<TargetableFloat> createCameraOpticsTechniqueCommonOrthographicAspectRatio(TargetableFloat value) {
+        return new JAXBElement<TargetableFloat>(_CameraOpticsTechniqueCommonPerspectiveAspectRatio_QNAME, TargetableFloat.class, Camera.Optics.TechniqueCommon.Orthographic.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link TargetableFloat }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link TargetableFloat }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "znear", scope = Camera.Optics.TechniqueCommon.Orthographic.class)
+    public JAXBElement<TargetableFloat> createCameraOpticsTechniqueCommonOrthographicZnear(TargetableFloat value) {
+        return new JAXBElement<TargetableFloat>(_CameraOpticsTechniqueCommonPerspectiveZnear_QNAME, TargetableFloat.class, Camera.Optics.TechniqueCommon.Orthographic.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link TargetableFloat }{@code >}
+     * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link TargetableFloat }{@code >}
+     */
+    @XmlElementDecl(namespace = "http://www.collada.org/2005/11/COLLADASchema", name = "zfar", scope = Camera.Optics.TechniqueCommon.Orthographic.class)
+    public JAXBElement<TargetableFloat> createCameraOpticsTechniqueCommonOrthographicZfar(TargetableFloat value) {
+        return new JAXBElement<TargetableFloat>(_CameraOpticsTechniqueCommonPerspectiveZfar_QNAME, TargetableFloat.class, Camera.Optics.TechniqueCommon.Orthographic.class, value);
     }
 
 }

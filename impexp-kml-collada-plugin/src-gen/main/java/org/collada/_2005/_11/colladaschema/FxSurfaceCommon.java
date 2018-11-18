@@ -1,8 +1,8 @@
 //
-// Diese Datei wurde mit der JavaTM Architecture for XML Binding(JAXB) Reference Implementation, v2.2.7 generiert 
-// Siehe <a href="http://java.sun.com/xml/jaxb">http://java.sun.com/xml/jaxb</a> 
+// Diese Datei wurde mit der JavaTM Architecture for XML Binding(JAXB) Reference Implementation, v2.3.1 generiert 
+// Siehe <a href="https://javaee.github.io/jaxb-v2/">https://javaee.github.io/jaxb-v2/</a> 
 // Änderungen an dieser Datei gehen bei einer Neukompilierung des Quellschemas verloren. 
-// Generiert: 2018.02.22 um 11:14:03 PM CET 
+// Generiert: 2018.11.18 um 03:45:53 PM CET 
 //
 
 
@@ -32,25 +32,25 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * <p>Das folgende Schemafragment gibt den erwarteten Content an, der in dieser Klasse enthalten ist.
  * 
  * <pre>
- * &lt;complexType name="fx_surface_common">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;group ref="{http://www.collada.org/2005/11/COLLADASchema}fx_surface_init_common" minOccurs="0"/>
- *         &lt;element name="format" type="{http://www.w3.org/2001/XMLSchema}token" minOccurs="0"/>
- *         &lt;element name="format_hint" type="{http://www.collada.org/2005/11/COLLADASchema}fx_surface_format_hint_common" minOccurs="0"/>
- *         &lt;choice minOccurs="0">
- *           &lt;element name="size" type="{http://www.collada.org/2005/11/COLLADASchema}int3"/>
- *           &lt;element name="viewport_ratio" type="{http://www.collada.org/2005/11/COLLADASchema}float2"/>
- *         &lt;/choice>
- *         &lt;element name="mip_levels" type="{http://www.w3.org/2001/XMLSchema}unsignedInt" minOccurs="0"/>
- *         &lt;element name="mipmap_generate" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
- *         &lt;element ref="{http://www.collada.org/2005/11/COLLADASchema}extra" maxOccurs="unbounded" minOccurs="0"/>
- *       &lt;/sequence>
- *       &lt;attribute name="type" use="required" type="{http://www.collada.org/2005/11/COLLADASchema}fx_surface_type_enum" />
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="fx_surface_common"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;group ref="{http://www.collada.org/2005/11/COLLADASchema}fx_surface_init_common" minOccurs="0"/&gt;
+ *         &lt;element name="format" type="{http://www.w3.org/2001/XMLSchema}token" minOccurs="0"/&gt;
+ *         &lt;element name="format_hint" type="{http://www.collada.org/2005/11/COLLADASchema}fx_surface_format_hint_common" minOccurs="0"/&gt;
+ *         &lt;choice minOccurs="0"&gt;
+ *           &lt;element name="size" type="{http://www.collada.org/2005/11/COLLADASchema}int3"/&gt;
+ *           &lt;element name="viewport_ratio" type="{http://www.collada.org/2005/11/COLLADASchema}float2"/&gt;
+ *         &lt;/choice&gt;
+ *         &lt;element name="mip_levels" type="{http://www.w3.org/2001/XMLSchema}unsignedInt" minOccurs="0"/&gt;
+ *         &lt;element name="mipmap_generate" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/&gt;
+ *         &lt;element ref="{http://www.collada.org/2005/11/COLLADASchema}extra" maxOccurs="unbounded" minOccurs="0"/&gt;
+ *       &lt;/sequence&gt;
+ *       &lt;attribute name="type" use="required" type="{http://www.collada.org/2005/11/COLLADASchema}fx_surface_type_enum" /&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  * 
  * 

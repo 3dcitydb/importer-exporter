@@ -1,8 +1,8 @@
 //
-// Diese Datei wurde mit der JavaTM Architecture for XML Binding(JAXB) Reference Implementation, v2.2.7 generiert 
-// Siehe <a href="http://java.sun.com/xml/jaxb">http://java.sun.com/xml/jaxb</a> 
+// Diese Datei wurde mit der JavaTM Architecture for XML Binding(JAXB) Reference Implementation, v2.3.1 generiert 
+// Siehe <a href="https://javaee.github.io/jaxb-v2/">https://javaee.github.io/jaxb-v2/</a> 
 // Änderungen an dieser Datei gehen bei einer Neukompilierung des Quellschemas verloren. 
-// Generiert: 2018.02.22 um 11:14:03 PM CET 
+// Generiert: 2018.11.18 um 03:45:53 PM CET 
 //
 
 
@@ -18,18 +18,18 @@ import javax.xml.bind.annotation.XmlType;
  * <p>Das folgende Schemafragment gibt den erwarteten Content an, der in dieser Klasse enthalten ist.
  * <p>
  * <pre>
- * &lt;simpleType name="gl_stencil_op_type">
- *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
- *     &lt;enumeration value="KEEP"/>
- *     &lt;enumeration value="ZERO"/>
- *     &lt;enumeration value="REPLACE"/>
- *     &lt;enumeration value="INCR"/>
- *     &lt;enumeration value="DECR"/>
- *     &lt;enumeration value="INVERT"/>
- *     &lt;enumeration value="INCR_WRAP"/>
- *     &lt;enumeration value="DECR_WRAP"/>
- *   &lt;/restriction>
- * &lt;/simpleType>
+ * &lt;simpleType name="gl_stencil_op_type"&gt;
+ *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string"&gt;
+ *     &lt;enumeration value="KEEP"/&gt;
+ *     &lt;enumeration value="ZERO"/&gt;
+ *     &lt;enumeration value="REPLACE"/&gt;
+ *     &lt;enumeration value="INCR"/&gt;
+ *     &lt;enumeration value="DECR"/&gt;
+ *     &lt;enumeration value="INVERT"/&gt;
+ *     &lt;enumeration value="INCR_WRAP"/&gt;
+ *     &lt;enumeration value="DECR_WRAP"/&gt;
+ *   &lt;/restriction&gt;
+ * &lt;/simpleType&gt;
  * </pre>
  * 
  */
