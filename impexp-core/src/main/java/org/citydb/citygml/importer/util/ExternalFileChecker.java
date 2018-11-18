@@ -61,4 +61,7 @@ public class ExternalFileChecker {
         return new AbstractMap.SimpleEntry<>(path, file.getFileName().toString());
     }
 
+    public InputFile getInputFile() {
+        return inputFile;
+    }
 }

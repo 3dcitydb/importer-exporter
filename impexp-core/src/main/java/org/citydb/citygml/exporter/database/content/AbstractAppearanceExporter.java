@@ -33,7 +33,6 @@ import org.citydb.citygml.exporter.CityGMLExportException;
 import org.citydb.citygml.exporter.util.AttributeValueSplitter;
 import org.citydb.citygml.exporter.util.AttributeValueSplitter.SplitValue;
 import org.citydb.config.Config;
-import org.citydb.util.CoreConstants;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.database.schema.TableEnum;
 import org.citydb.database.schema.mapping.FeatureType;
@@ -50,6 +49,7 @@ import org.citydb.sqlbuilder.select.join.JoinFactory;
 import org.citydb.sqlbuilder.select.operator.comparison.ComparisonFactory;
 import org.citydb.sqlbuilder.select.operator.comparison.ComparisonName;
 import org.citydb.sqlbuilder.select.projection.Function;
+import org.citydb.util.CoreConstants;
 import org.citydb.util.Util;
 import org.citygml4j.geometry.Matrix;
 import org.citygml4j.model.citygml.appearance.AbstractSurfaceData;
@@ -323,8 +323,7 @@ public class AbstractAppearanceExporter extends AbstractTypeExporter {
 					if (dbImageSize > 0) {
 						DBXlinkTextureFile xlink = new DBXlinkTextureFile(
 								texImageId,
-								fileName,
-								false);
+								fileName);
 
 						if (!lazyExport)
 							exporter.propagateXlink(xlink);

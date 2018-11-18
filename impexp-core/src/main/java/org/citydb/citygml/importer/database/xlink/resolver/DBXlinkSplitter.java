@@ -27,11 +27,6 @@
  */
 package org.citydb.citygml.importer.database.xlink.resolver;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.text.MessageFormat;
-
 import org.citydb.citygml.common.database.cache.CacheTable;
 import org.citydb.citygml.common.database.cache.CacheTableManager;
 import org.citydb.citygml.common.database.cache.model.CacheTableModel;
@@ -60,6 +55,11 @@ import org.citydb.event.global.ProgressBarEventType;
 import org.citydb.event.global.StatusDialogMessage;
 import org.citydb.event.global.StatusDialogProgressBar;
 import org.citydb.log.Logger;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.text.MessageFormat;
 
 public class DBXlinkSplitter implements EventHandler {
 	private final Logger LOG = Logger.getInstance();
@@ -375,9 +375,8 @@ public class DBXlinkSplitter implements EventHandler {
 
 					long id = rs.getLong("ID");
 					String imageURI = rs.getString("FILE_URI");
-					boolean isWorldFile = rs.getBoolean("IS_WORLD_FILE");
 
-					xlinkResolverPool.addWork(new DBXlinkTextureFile(id, imageURI, isWorldFile));
+					xlinkResolverPool.addWork(new DBXlinkTextureFile(id, imageURI));
 				}
 
 				rs.close();

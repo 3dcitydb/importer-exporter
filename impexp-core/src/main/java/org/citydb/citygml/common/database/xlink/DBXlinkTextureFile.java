@@ -28,38 +28,20 @@
 package org.citydb.citygml.common.database.xlink;
 
 public class DBXlinkTextureFile implements DBXlink {
-	private long id;
-	private String fileURI;
-	private boolean isWorldFile;
+	private final long id;
+	private final String fileURI;
 
-	public DBXlinkTextureFile(long id, String fileURI, boolean isWorldFile) {
+	public DBXlinkTextureFile(long id, String fileURI) {
 		this.id = id;
 		this.fileURI = fileURI;
-		this.isWorldFile = isWorldFile;
 	}
 
 	public long getId() {
 		return id;
 	}
 
-	public void setId(long id) {
-		this.id = id;
-	}
-
 	public String getFileURI() {
 		return fileURI;
-	}
-
-	public void setFileURI(String fileURI) {
-		this.fileURI = fileURI;
-	}
-
-	public boolean isWorldFile() {
-		return isWorldFile;
-	}
-
-	public void setWorldFile(boolean isWorldFile) {
-		this.isWorldFile = isWorldFile;
 	}
 
 	@Override

@@ -48,8 +48,7 @@ public class CacheTableTextureFile extends AbstractCacheTableModel {
 	protected String getColumns(AbstractSQLAdapter sqlAdapter) {
 		return "(" +
 				"ID " + sqlAdapter.getInteger() + ", " +
-				"FILE_URI " + sqlAdapter.getCharacterVarying(1000) + ", " +
-				"IS_WORLD_FILE " + sqlAdapter.getNumeric(1, 0) +
+				"FILE_URI " + sqlAdapter.getCharacterVarying(1000) +
 				")";
 	}
 }

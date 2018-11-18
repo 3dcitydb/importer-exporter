@@ -27,11 +27,11 @@
  */
 package org.citydb.citygml.importer.database.xlink.importer;
 
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-
 import org.citydb.citygml.common.database.cache.CacheTable;
 import org.citydb.citygml.common.database.xlink.DBXlinkTextureFile;
+
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 
 public class DBXlinkImporterTextureFile implements DBXlinkImporter {
 	private final DBXlinkImporterManager xlinkImporterManager;
@@ -42,14 +42,13 @@ public class DBXlinkImporterTextureFile implements DBXlinkImporter {
 		this.xlinkImporterManager = xlinkImporterManager;
 
 		psXlink = tempTable.getConnection().prepareStatement("insert into " + tempTable.getTableName() + 
-			" (ID, FILE_URI, IS_WORLD_FILE) values " +
-			"(?, ?, ?)");
+			" (ID, FILE_URI) values " +
+			"(?, ?)");
 	}
 
 	public boolean insert(DBXlinkTextureFile xlinkEntry) throws SQLException {
 		psXlink.setLong(1, xlinkEntry.getId());
 		psXlink.setString(2, xlinkEntry.getFileURI());
-		psXlink.setInt(3, xlinkEntry.isWorldFile() ? 1 : 0);
 
 		psXlink.addBatch();
 		if (++batchCounter == xlinkImporterManager.getCacheAdapter().getMaxBatchSize())

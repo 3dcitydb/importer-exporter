@@ -71,7 +71,6 @@ public class DBXlinkResolverManager {
 	private DBGmlIdResolver dbGmlIdResolver;
 	private SequenceHelper sequenceHelper;
 	private InputFile inputFile;
-	private boolean replaceSeparator;
 
 	public DBXlinkResolverManager(
 			Connection batchConn,
@@ -92,7 +91,6 @@ public class DBXlinkResolverManager {
 		sequenceHelper = new SequenceHelper(batchConn, databaseAdapter, config);
 
 		inputFile = config.getInternal().getCurrentImportFile();
-		replaceSeparator = inputFile.getSeparator().equals("/");
      	schemaMapping = ObjectRegistry.getInstance().getSchemaMapping();
 	}
 
@@ -133,9 +131,6 @@ public class DBXlinkResolverManager {
 				break;
 			case LIBRARY_OBJECT:
 				dbResolver = new XlinkLibraryObject(connection, this);
-				break;
-			case WORLD_FILE:
-				dbResolver = new XlinkWorldFile(connection, this);
 				break;
 			case XLINK_DEPRECATED_MATERIAL:
 				dbResolver = new XlinkDeprecatedMaterial(connection, this);

@@ -35,9 +35,7 @@ import org.citydb.config.Config;
 import org.citydb.database.schema.SequenceEnum;
 import org.citydb.database.schema.TableEnum;
 import org.citydb.log.Logger;
-import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.appearance.AbstractTexture;
-import org.citygml4j.model.citygml.appearance.GeoreferencedTexture;
 
 import java.io.IOException;
 import java.security.MessageDigest;
@@ -135,18 +133,7 @@ public class DBTexImage implements DBImporter {
 				// propagte xlink to import the texture file itself
 				importer.propagateXlink(new DBXlinkTextureFile(
 						texImageId,
-						fileInfo.getKey(),
-						false));
-
-				// do we have a world file?!
-				if (abstractTexture.getCityGMLClass() == CityGMLClass.GEOREFERENCED_TEXTURE 
-						&& !((GeoreferencedTexture)abstractTexture).isSetOrientation() 
-						&& !((GeoreferencedTexture)abstractTexture).isSetReferencePoint()) {
-					importer.propagateXlink(new DBXlinkTextureFile(
-							surfaceDataId,
-							imageURI,
-							true));
-				}
+						fileInfo.getKey()));
 			}
 		}
 

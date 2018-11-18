@@ -27,10 +27,6 @@
  */
 package org.citydb.citygml.importer.concurrent;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.concurrent.locks.ReentrantLock;
-
 import org.citydb.citygml.common.database.cache.CacheTableManager;
 import org.citydb.citygml.common.database.uid.UIDCacheManager;
 import org.citydb.citygml.common.database.xlink.DBXlink;
@@ -60,7 +56,6 @@ import org.citydb.citygml.importer.database.xlink.resolver.XlinkTexCoordList;
 import org.citydb.citygml.importer.database.xlink.resolver.XlinkTextureAssociation;
 import org.citydb.citygml.importer.database.xlink.resolver.XlinkTextureImage;
 import org.citydb.citygml.importer.database.xlink.resolver.XlinkTextureParam;
-import org.citydb.citygml.importer.database.xlink.resolver.XlinkWorldFile;
 import org.citydb.concurrent.Worker;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
@@ -74,6 +69,10 @@ import org.citydb.event.EventHandler;
 import org.citydb.event.global.EventType;
 import org.citydb.event.global.InterruptEvent;
 import org.citydb.log.Logger;
+
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class DBImportXlinkResolverWorker extends Worker<DBXlink> implements EventHandler {
 	private final Logger LOG = Logger.getInstance();
@@ -268,16 +267,9 @@ public class DBImportXlinkResolverWorker extends Worker<DBXlink> implements Even
 				break;
 			case TEXTURE_FILE:
 				DBXlinkTextureFile externalFile = (DBXlinkTextureFile)work;
-
-				if (!externalFile.isWorldFile()) {
-					XlinkTextureImage xlinkTextureImage = (XlinkTextureImage)xlinkResolverManager.getDBXlinkResolver(DBXlinkResolverEnum.TEXTURE_IMAGE);
-					if (xlinkTextureImage != null)
-						xlinkTextureImage.insert(externalFile);
-				} else {
-					XlinkWorldFile xlinkWorldFile = (XlinkWorldFile)xlinkResolverManager.getDBXlinkResolver(DBXlinkResolverEnum.WORLD_FILE);
-					if (xlinkWorldFile != null)
-						xlinkWorldFile.insert(externalFile);
-				}
+				XlinkTextureImage xlinkTextureImage = (XlinkTextureImage) xlinkResolverManager.getDBXlinkResolver(DBXlinkResolverEnum.TEXTURE_IMAGE);
+				if (xlinkTextureImage != null)
+					xlinkTextureImage.insert(externalFile);
 
 				// we generate error messages within the modules, so no need for
 				// a global warning
