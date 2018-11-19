@@ -33,7 +33,7 @@ import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.citygml.importer.file.AbstractArchiveInputFile;
 import org.citydb.config.internal.InputFile;
-import org.citydb.config.internal.InputFileType;
+import org.citydb.config.internal.FileType;
 import org.citydb.config.internal.Internal;
 import org.citydb.config.project.global.LogLevel;
 import org.citydb.event.Event;
@@ -129,7 +129,7 @@ public class XMLValidator implements EventHandler {
 		
 		while (shouldRun && fileCounter < importFiles.size()) {
 			try (InputFile file = importFiles.get(fileCounter++)) {
-				Path contentFile = file.getType() != InputFileType.ARCHIVE ?
+				Path contentFile = file.getType() != FileType.ARCHIVE ?
 						file.getFile() : Paths.get(file.getFile().toString(), ((AbstractArchiveInputFile) file).getContentFile());
 
 				eventDispatcher.triggerEvent(new StatusDialogTitle(contentFile.getFileName().toString(), this));

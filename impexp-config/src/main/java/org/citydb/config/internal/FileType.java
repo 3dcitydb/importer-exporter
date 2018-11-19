@@ -1,6 +1,6 @@
 package org.citydb.config.internal;
 
-public enum InputFileType {
+public enum FileType {
     REGULAR,
     COMPRESSED,
     ARCHIVE

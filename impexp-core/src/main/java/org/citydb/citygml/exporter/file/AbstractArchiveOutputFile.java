@@ -1,15 +1,15 @@
-package org.citydb.citygml.importer.file;
+package org.citydb.citygml.exporter.file;
 
-import org.citydb.config.internal.InputFile;
 import org.citydb.config.internal.FileType;
+import org.citydb.config.internal.OutputFile;
 
 import java.nio.file.Path;
 import java.util.Objects;
 
-public abstract class AbstractArchiveInputFile extends InputFile {
+public abstract class AbstractArchiveOutputFile extends OutputFile {
     final String contentFile;
 
-    AbstractArchiveInputFile(String contentFile, Path file) {
+    AbstractArchiveOutputFile(String contentFile, Path file) {
         super(file, FileType.ARCHIVE);
         this.contentFile = Objects.requireNonNull(contentFile, "content file must not be null.");
     }

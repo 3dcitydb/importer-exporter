@@ -1,8 +1,7 @@
-package org.citydb.citygml.importer.file;
+package org.citydb.citygml.exporter.file;
 
-import java.io.BufferedInputStream;
 import java.io.IOException;
-import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URI;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
@@ -10,20 +9,31 @@ import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
-public class ZipInputFile extends AbstractArchiveInputFile {
+public class ZipOutputFile extends AbstractArchiveOutputFile {
     private final URI zipFileUri;
     private FileSystem fileSystem;
+    private volatile boolean isInitialized;
 
-    ZipInputFile(String contentFile, Path zipFile, URI zipFileUri) {
+    ZipOutputFile(String contentFile, Path zipFile, URI zipFileUri) {
         super(contentFile, zipFile);
         this.zipFileUri = Objects.requireNonNull(zipFileUri, "zip file URI must not be null.");
     }
 
     @Override
-    public InputStream openStream() throws IOException {
-        return new BufferedInputStream(Files.newInputStream(getFileSystem().getPath(contentFile)));
+    public void init() throws IOException {
+        if (!isInitialized) {
+            Files.deleteIfExists(file);
+            getFileSystem();
+            isInitialized = true;
+        }
+    }
+
+    @Override
+    public OutputStream openStream() throws IOException {
+        return Files.newOutputStream(getFileSystem().getPath(contentFile));
     }
 
     @Override
@@ -54,7 +64,9 @@ public class ZipInputFile extends AbstractArchiveInputFile {
 
         if (fileSystem == null) {
             try {
-                fileSystem = FileSystems.newFileSystem(zipFileUri, new HashMap<>());
+                Map<String, String> env = new HashMap<>();
+                env.put("create", "true");
+                fileSystem = FileSystems.newFileSystem(zipFileUri, env);
             } catch (IOException e) {
                 throw new IllegalStateException("Failed to open zip file system '" + zipFileUri + "'.", e);
             }
@@ -62,4 +74,5 @@ public class ZipInputFile extends AbstractArchiveInputFile {
 
         return fileSystem;
     }
+
 }

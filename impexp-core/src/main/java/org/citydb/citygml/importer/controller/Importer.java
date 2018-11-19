@@ -53,7 +53,7 @@ import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.citygml.importer.file.AbstractArchiveInputFile;
 import org.citydb.config.internal.InputFile;
-import org.citydb.config.internal.InputFileType;
+import org.citydb.config.internal.FileType;
 import org.citydb.config.internal.Internal;
 import org.citydb.config.project.database.Database;
 import org.citydb.config.project.database.Workspace;
@@ -329,7 +329,7 @@ public class Importer implements EventHandler {
 
 			try (InputFile file = importFiles.get(fileCounter++)) {
 				internalConfig.setCurrentImportFile(file);
-				Path contentFile = file.getType() != InputFileType.ARCHIVE ?
+				Path contentFile = file.getType() != FileType.ARCHIVE ?
 						file.getFile() : Paths.get(file.getFile().toString(), ((AbstractArchiveInputFile) file).getContentFile());
 
 				eventDispatcher.triggerEvent(new StatusDialogTitle(contentFile.getFileName().toString(), this));

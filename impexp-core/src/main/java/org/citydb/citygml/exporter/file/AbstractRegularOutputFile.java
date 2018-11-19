@@ -1,16 +1,21 @@
-package org.citydb.citygml.importer.file;
+package org.citydb.citygml.exporter.file;
 
-import org.citydb.config.internal.InputFile;
 import org.citydb.config.internal.FileType;
+import org.citydb.config.internal.OutputFile;
 
 import java.nio.file.FileSystems;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 
-public abstract class AbstractRegularInputFile extends InputFile {
+public abstract class AbstractRegularOutputFile extends OutputFile {
 
-    AbstractRegularInputFile(Path file, boolean isCompressed) {
+    AbstractRegularOutputFile(Path file, boolean isCompressed) {
         super(file, isCompressed ? FileType.COMPRESSED : FileType.REGULAR);
+    }
+
+    @Override
+    public void init() {
+        // nothing to do here
     }
 
     @Override

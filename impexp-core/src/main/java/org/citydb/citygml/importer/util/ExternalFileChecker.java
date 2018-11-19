@@ -1,7 +1,7 @@
 package org.citydb.citygml.importer.util;
 
 import org.citydb.config.internal.InputFile;
-import org.citydb.config.internal.InputFileType;
+import org.citydb.config.internal.FileType;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -42,7 +42,7 @@ public class ExternalFileChecker {
             //
         }
 
-        if (path == null && inputFile.getType() == InputFileType.ARCHIVE) {
+        if (path == null && inputFile.getType() == FileType.ARCHIVE) {
             try {
                 file = inputFile.getFile().getParent().resolve(imageURI);
                 if (Files.exists(file))
