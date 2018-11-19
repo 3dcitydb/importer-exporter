@@ -502,7 +502,8 @@ public class Exporter implements EventHandler {
 						try {
 							uidCacheManager.shutdownAll();
 						} catch (SQLException e) {
-							throw new CityGMLExportException("Failed to clean gml:id caches.", e);
+							log.error("Failed to clean gml:id caches: " + e.getMessage());
+							shouldRun = false;
 						}
 					}
 
@@ -512,7 +513,8 @@ public class Exporter implements EventHandler {
 							cacheTableManager.dropAll();
 							cacheTableManager = null;
 						} catch (SQLException e) {
-							throw new CityGMLExportException("Failed to clean temporary cache.", e);
+							log.error("Failed to clean temporary cache: " + e.getMessage());
+							shouldRun = false;
 						}					
 					}
 				}
