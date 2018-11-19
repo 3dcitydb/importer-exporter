@@ -1,7 +1,6 @@
 package org.citydb.citygml.importer.file;
 
 import java.io.BufferedInputStream;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;

@@ -16,10 +16,6 @@ public abstract class InputFile implements AutoCloseable {
         this.type = type;
     }
 
-    protected InputFile(Path file, boolean isCompressed) {
-        this(file, isCompressed ? InputFileType.COMPRESSED : InputFileType.REGULAR);
-    }
-
     public abstract InputStream openStream() throws IOException;
     public abstract Path resolve(String path) throws InvalidPathException;
     public abstract String getSeparator();
