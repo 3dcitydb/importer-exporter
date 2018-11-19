@@ -10,7 +10,7 @@ public abstract class InputFile implements AutoCloseable {
     protected final Path file;
     protected final InputFileType type;
 
-    InputFile(Path file, InputFileType type) {
+    protected InputFile(Path file, InputFileType type) {
         Objects.requireNonNull(file, "file must not be null.");
         this.file = file.toAbsolutePath().normalize();
         this.type = type;

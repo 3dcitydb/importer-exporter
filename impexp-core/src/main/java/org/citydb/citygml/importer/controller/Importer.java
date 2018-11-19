@@ -51,7 +51,7 @@ import org.citydb.concurrent.PoolSizeAdaptationStrategy;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
-import org.citydb.config.internal.ArchiveInputFile;
+import org.citydb.citygml.importer.file.AbstractArchiveInputFile;
 import org.citydb.config.internal.InputFile;
 import org.citydb.config.internal.InputFileType;
 import org.citydb.config.internal.Internal;
@@ -330,7 +330,7 @@ public class Importer implements EventHandler {
 			try (InputFile file = importFiles.get(fileCounter++)) {
 				internalConfig.setCurrentImportFile(file);
 				Path contentFile = file.getType() != InputFileType.ARCHIVE ?
-						file.getFile() : Paths.get(file.getFile().toString(), ((ArchiveInputFile) file).getContentFile());
+						file.getFile() : Paths.get(file.getFile().toString(), ((AbstractArchiveInputFile) file).getContentFile());
 
 				eventDispatcher.triggerEvent(new StatusDialogTitle(contentFile.getFileName().toString(), this));
 				eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("import.dialog.cityObj.msg"), this));

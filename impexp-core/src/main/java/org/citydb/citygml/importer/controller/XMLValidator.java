@@ -31,7 +31,7 @@ import org.apache.tika.exception.TikaException;
 import org.citydb.citygml.importer.file.DirectoryScanner;
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
-import org.citydb.config.internal.ArchiveInputFile;
+import org.citydb.citygml.importer.file.AbstractArchiveInputFile;
 import org.citydb.config.internal.InputFile;
 import org.citydb.config.internal.InputFileType;
 import org.citydb.config.internal.Internal;
@@ -130,7 +130,7 @@ public class XMLValidator implements EventHandler {
 		while (shouldRun && fileCounter < importFiles.size()) {
 			try (InputFile file = importFiles.get(fileCounter++)) {
 				Path contentFile = file.getType() != InputFileType.ARCHIVE ?
-						file.getFile() : Paths.get(file.getFile().toString(), ((ArchiveInputFile) file).getContentFile());
+						file.getFile() : Paths.get(file.getFile().toString(), ((AbstractArchiveInputFile) file).getContentFile());
 
 				eventDispatcher.triggerEvent(new StatusDialogTitle(contentFile.getFileName().toString(), this));
 				eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("validate.dialog.validate.msg"), this));

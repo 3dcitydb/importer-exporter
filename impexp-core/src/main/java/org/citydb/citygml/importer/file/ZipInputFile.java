@@ -1,7 +1,5 @@
 package org.citydb.citygml.importer.file;
 
-import org.citydb.config.internal.ArchiveInputFile;
-
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,15 +12,13 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Objects;
 
-public class ZipInputFile extends ArchiveInputFile {
-    private final String contentFile;
+public class ZipInputFile extends AbstractArchiveInputFile {
     private final URI zipFileUri;
 
     private FileSystem fileSystem;
 
     ZipInputFile(String contentFile, Path zipFile, URI zipFileUri) {
         super(contentFile, zipFile);
-        this.contentFile = Objects.requireNonNull(contentFile, "content file name must nut be null.");
         this.zipFileUri = Objects.requireNonNull(zipFileUri, "zip file URI must not be null.");
     }
 
