@@ -47,6 +47,7 @@ import org.citydb.concurrent.PoolSizeAdaptationStrategy;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
+import org.citydb.config.internal.FileType;
 import org.citydb.config.internal.OutputFile;
 import org.citydb.config.project.database.DatabaseSrs;
 import org.citydb.config.project.database.Workspace;
@@ -365,6 +366,7 @@ public class Exporter implements EventHandler {
 					// create output writer
 					try {
 						writer = writerFactory.createFeatureWriter(new OutputStreamWriter(file.openStream(), StandardCharsets.UTF_8));
+						writer.useIndentation(file.getType() == FileType.REGULAR);
 					} catch (FeatureWriteException | IOException e) {
 						throw new CityGMLExportException("Failed to open file '" + file.getFile() + "' for writing.", e);
 					}

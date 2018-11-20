@@ -83,6 +83,11 @@ public class CityGMLWriter implements FeatureWriter {
 		writerPool.prestartCoreWorkers();
 	}
 
+	@Override
+	public void useIndentation(boolean useIndentation) {
+		saxWriter.setIndentString(useIndentation ? "  " : "");
+	}
+
 	protected void writeStartDocument() throws FeatureWriteException {
 		writeCityModel(WriteMode.HEAD);
 	}

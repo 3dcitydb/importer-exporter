@@ -9,7 +9,7 @@ import java.util.zip.GZIPOutputStream;
 public class GZipOutputFile extends AbstractRegularOutputFile {
 
     GZipOutputFile(Path file) {
-        super(file, false);
+        super(file, true);
     }
 
     @Override
