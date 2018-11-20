@@ -96,7 +96,7 @@ public class AbstractAppearanceExporter extends AbstractTypeExporter {
 	private boolean useXLink;
 	private boolean appendOldGmlId;
 	private String gmlIdPrefix;
-	private String pathSeparator;
+	private String separator;
 
 	private HashSet<Long> texImageIds;
 	private List<PlaceHolder<?>> themes;
@@ -114,8 +114,8 @@ public class AbstractAppearanceExporter extends AbstractTypeExporter {
 		noOfBuckets = config.getProject().getExporter().getAppearances().getTexturePath().getNoOfBuckets(); 
 		useBuckets = config.getProject().getExporter().getAppearances().getTexturePath().isUseBuckets() && noOfBuckets > 0;
 
-		texturePath = config.getInternal().getExportTextureFilePath();
-		pathSeparator = config.getProject().getExporter().getAppearances().getTexturePath().isAbsolute() ? File.separator : "/";
+		texturePath = config.getInternal().getExportAppearancePath();
+		separator = config.getProject().getExporter().getAppearances().getTexturePath().isAbsolute() ? File.separator : "/";
 		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 		String getLength = exporter.getDatabaseAdapter().getSQLAdapter().resolveDatabaseOperationName("blob.get_length");
 
@@ -309,14 +309,14 @@ public class AbstractAppearanceExporter extends AbstractTypeExporter {
 				String imageURI = rs.getString(23);
 				if (uniqueFileNames) {
 					String extension = Util.getFileExtension(imageURI);
-					imageURI = CoreConstants.UNIQUE_TEXTURE_FILENAME_PREFIX + texImageId + (extension != null ? "." + extension : "");
+					imageURI = CoreConstants.UNIQUE_TEXTURE_FILENAME_PREFIX + texImageId + (!extension.isEmpty() ? "." + extension : "");
 				}
 
 				String fileName = new File(imageURI).getName();
 				if (useBuckets)
-					fileName = String.valueOf(Math.abs(texImageId % noOfBuckets + 1)) + pathSeparator + fileName;
+					fileName = String.valueOf(Math.abs(texImageId % noOfBuckets + 1)) + separator + fileName;
 
-				abstractTexture.setImageURI(texturePath != null ? texturePath + pathSeparator + fileName : fileName);
+				abstractTexture.setImageURI(texturePath != null ? texturePath + separator + fileName : fileName);
 
 				// export texture image from database
 				if (exportTextureImage && (uniqueFileNames || !texImageIds.contains(texImageId))) {

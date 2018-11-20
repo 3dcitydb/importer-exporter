@@ -29,27 +29,31 @@ package org.citydb.citygml.exporter.database.xlink;
 
 import org.citydb.citygml.common.database.xlink.DBXlinkTextureFile;
 import org.citydb.config.Config;
+import org.citydb.config.internal.OutputFile;
 import org.citydb.database.adapter.BlobExportAdapter;
 import org.citydb.database.adapter.BlobType;
 import org.citydb.event.global.CounterEvent;
 import org.citydb.event.global.CounterType;
 import org.citydb.log.Logger;
-import org.citydb.util.Util;
 
 import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.SQLException;
 
 public class DBXlinkExporterTextureImage implements DBXlinkExporter {
-	private final Logger LOG = Logger.getInstance();
+	private final Logger log = Logger.getInstance();
 	private final DBXlinkExporterManager xlinkExporterManager;
 
 	private BlobExportAdapter textureImageExportAdapter;
-	private String localPath;
-	private String texturePath;
-	private boolean texturePathIsLocal;
+	private OutputFile outputFile;
+	private String appearancePath;
+	private boolean isRelativePath;
+	private String separator;
 	private boolean overwriteTextureImage;
 	private boolean useBuckets;
 	private boolean[] buckets; 
@@ -58,9 +62,10 @@ public class DBXlinkExporterTextureImage implements DBXlinkExporter {
 	public DBXlinkExporterTextureImage(Connection connection, Config config, DBXlinkExporterManager xlinkExporterManager) throws SQLException {
 		this.xlinkExporterManager = xlinkExporterManager;
 
-		localPath = config.getInternal().getExportPath();
-		texturePathIsLocal = config.getProject().getExporter().getAppearances().getTexturePath().isRelative();
-		texturePath = config.getInternal().getExportTextureFilePath();
+		outputFile = config.getInternal().getCurrentExportFile();
+		isRelativePath = config.getProject().getExporter().getAppearances().getTexturePath().isRelative();
+		appearancePath = config.getInternal().getExportAppearancePath();
+		separator = config.getProject().getExporter().getAppearances().getTexturePath().isAbsolute() ? File.separator : "/";
 		overwriteTextureImage = config.getProject().getExporter().getAppearances().isSetOverwriteTextureFiles();
 		counter = new CounterEvent(CounterType.TEXTURE_IMAGE, 1, this);
 		useBuckets = config.getProject().getExporter().getAppearances().getTexturePath().isUseBuckets() &&
@@ -73,54 +78,47 @@ public class DBXlinkExporterTextureImage implements DBXlinkExporter {
 	}
 
 	public boolean export(DBXlinkTextureFile xlink) throws SQLException {
-		String fileName = xlink.getFileURI();
+		String fileURI = xlink.getFileURI();
 
-		if (fileName == null || fileName.length() == 0) {
-			LOG.error("Database error while exporting a texture file: Attribute TEX_IMAGE_URI is empty.");
+		if (fileURI == null || fileURI.isEmpty()) {
+			log.error("Database error while exporting a texture file: Attribute TEX_IMAGE_URI is empty.");
 			return false;
 		}
 
-		// check whether we deal with a remote image uri
-		if (Util.isRemoteXlink(fileName)) {
-			URL url = null;
-
-			try {
-				url = new URL(fileName);
-			} catch (MalformedURLException e) {
-				LOG.error("Error while exporting a texture file: " + fileName + " could not be interpreted.");
-				return false;
-			}
-
-			if (url != null) {
-				File file = new File(url.getFile());
-				fileName = file.getName();
-			}
+		Path file;
+		try {
+			file = isRelativePath ?
+					outputFile.resolve(appearancePath).resolve(fileURI) :
+					Paths.get(appearancePath, fileURI);
+		} catch (InvalidPathException e) {
+			log.error("Failed to export a texture file: '" + fileURI + "' is not valid.");
+			return false;
 		}
 
-		// start export of texture to file
-		// we do not overwrite an already existing file. so no need to
-		// query the database in that case.
-		String fileURI;
-		if (texturePathIsLocal)
-			fileURI = localPath + File.separator + texturePath + File.separator + fileName;
-		else
-			fileURI = texturePath + File.separator + fileName;
-
-		File file = new File(fileURI);
-		if (!overwriteTextureImage && file.exists())
+		if (!overwriteTextureImage && Files.exists(file))
 			return false;
 
 		if (useBuckets) {
-			int bucket = Integer.valueOf(fileName.substring(0, fileName.indexOf('/'))) - 1;
-			if (!buckets[bucket]) {
-				file.getParentFile().mkdir();
-				buckets[bucket] = true;
+			try {
+				int bucket = Integer.valueOf(fileURI.substring(0, fileURI.indexOf(separator))) - 1;
+				if (!buckets[bucket]) {
+					Files.createDirectories(file.getParent());
+					buckets[bucket] = true;
+				}
+			} catch (IOException | NumberFormatException e) {
+				log.error("Failed to create texture bucket for '" + fileURI + "'.");
+				return false;
 			}
 		}
 
 		// load image data into file
-		xlinkExporterManager.propagateEvent(counter);
-		return textureImageExportAdapter.getInFile(xlink.getId(), fileName, fileURI);
+		try {
+			xlinkExporterManager.propagateEvent(counter);
+			return textureImageExportAdapter.writeToStream(xlink.getId(), fileURI, Files.newOutputStream(file));
+		} catch (IOException e) {
+			log.error("Failed to export texture file " + fileURI + ": " + e.getMessage());
+			return false;
+		}
 	}
 
 	@Override

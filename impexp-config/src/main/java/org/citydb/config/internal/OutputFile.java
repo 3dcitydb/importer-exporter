@@ -10,6 +10,5 @@ public abstract class OutputFile extends AbstractFile {
         super(file, type);
     }
 
-    public abstract void init() throws IOException;
     public abstract OutputStream openStream() throws IOException;
 }

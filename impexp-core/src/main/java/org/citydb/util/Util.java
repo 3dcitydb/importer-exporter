@@ -120,6 +120,7 @@ import org.citygml4j.model.gml.feature.AbstractFeatureCollection;
 import org.citygml4j.model.module.citygml.CityGMLVersion;
 import org.citygml4j.model.module.citygml.CoreModule;
 
+import java.io.File;
 import java.lang.reflect.Modifier;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -128,6 +129,7 @@ import java.text.SimpleDateFormat;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -254,7 +256,7 @@ public class Util {
 			return extension.getADEObjectMapper().getObjectClassId(objectClass);
 		} else {
 			Integer objectClassId = objectClassIds.get(objectClass);
-			return objectClassId != null ? objectClassId.intValue() : 0;
+			return objectClassId != null ? objectClassId : 0;
 		}
 	}
 		
@@ -298,7 +300,7 @@ public class Util {
 		for (Entry<Integer, Long> entry : objectCounter.entrySet()) {
 			int objectClassId = entry.getKey();
 			String typeName = objectClassId != MappingConstants.IMPLICIT_GEOMETRY_OBJECTCLASS_ID ? schemaMapping.getAbstractObjectType(objectClassId).toString()
-					: new StringBuilder(CoreModule.v2_0_0.getNamespacePrefix()).append(":").append(MappingConstants.IMPLICIT_GEOMETRY_PATH).toString();
+					: CoreModule.v2_0_0.getNamespacePrefix() + ":" + MappingConstants.IMPLICIT_GEOMETRY_PATH;
 			
 			mapping.put(typeName, entry.getValue());
 		}
@@ -323,11 +325,11 @@ public class Util {
 		if (input == null || input.length() == 0)
 			return null;
 
-		List<Double> values = new ArrayList<Double>();
+		List<Double> values = new ArrayList<>();
 
 		try {
 			String[] split = input.split(delimiter);
-			if (split != null && split.length != 0) {
+			if (split.length != 0) {
 				for (String s : split) {
 					Double value = null;
 
@@ -355,14 +357,12 @@ public class Util {
 		if (input == null || input.length() == 0)
 			return null;
 
-		List<String> values = new ArrayList<String>();
+		List<String> values = new ArrayList<>();
 
 		try {
 			String[] split = input.split(delimiter);
-			if (split != null && split.length != 0) {
-				for (String s : split)
-					values.add(s);
-			}
+			if (split.length != 0)
+				Collections.addAll(values, split);
 		} catch (PatternSyntaxException pE) {
 			//
 		}
@@ -394,20 +394,15 @@ public class Util {
 	}
 
 	public static String getFileExtension(String file) {
-		String ext = null;
-		int i = file.lastIndexOf('.'); 
-		if (i > 0 &&  i < file.length() - 1)
-			ext = file.substring(i + 1).toLowerCase();
-
-		return ext;
+		String fileName = new File(file).getName();
+		int i = fileName.lastIndexOf('.');
+		return i > 0 ? fileName.substring(i + 1).toLowerCase() : "";
 	}
 
 	public static String stripFileExtension(String file) {
-		int i = file.lastIndexOf('.'); 
-		if (i > 0 &&  i < file.length() - 1)
-			file = file.substring(0, i);
-
-		return file;
+		int separator = Math.max(file.lastIndexOf(File.separator), file.lastIndexOf('\\'));
+		int dot = file.lastIndexOf('.');
+		return dot > separator ? file.substring(0, dot) : file;
 	}
 
 	public static String formatElapsedTime(long millis) {
@@ -453,7 +448,7 @@ public class Util {
 
 		if (checkParents) {
 			Child child = cityObject;
-			ModelObject parent = null;
+			ModelObject parent;
 
 			while ((parent = child.getParent()) != null) {
 				if (parent instanceof AbstractCityObject && ((AbstractCityObject)parent).isSetCreationDate())
@@ -477,7 +472,7 @@ public class Util {
 
 		if (checkParents) {
 			Child child = cityObject;
-			ModelObject parent = null;
+			ModelObject parent;
 
 			while ((parent = child.getParent()) != null) {
 				if (parent instanceof AbstractCityObject && ((AbstractCityObject)parent).isSetTerminationDate())

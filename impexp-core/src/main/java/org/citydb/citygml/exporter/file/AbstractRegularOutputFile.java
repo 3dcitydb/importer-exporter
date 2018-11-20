@@ -14,11 +14,6 @@ public abstract class AbstractRegularOutputFile extends OutputFile {
     }
 
     @Override
-    public void init() {
-        // nothing to do here
-    }
-
-    @Override
     public Path resolve(String path) throws InvalidPathException {
         return file.getParent().resolve(path);
     }

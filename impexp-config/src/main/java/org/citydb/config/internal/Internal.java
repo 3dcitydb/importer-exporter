@@ -34,9 +34,9 @@ public class Internal {
 	private String currentLogPath;
 	private List<Path> importFiles;
 	private InputFile currentImportFile;
-	private String exportPath;
-	private String exportFileName;
-	private String exportTextureFilePath;
+	private Path exportFile;
+	private String exportAppearancePath;
+	private OutputFile currentExportFile;
 
 	// internal variables
 	private String currentGmlIdCodespace = null;
@@ -46,23 +46,12 @@ public class Internal {
 	private boolean exportGlobalAppearances = false;
 	private boolean registerGmlIdInCache = false;
 
-	public Internal() {
+	public String getCurrentLogPath() {
+		return currentLogPath;
 	}
 
-	public String getExportPath() {
-		return exportPath;
-	}
-
-	public void setExportPath(String exportPath) {
-		this.exportPath = exportPath;
-	}
-
-	public String getExportFileName() {
-		return exportFileName;
-	}
-
-	public void setExportFileName(String exportFileName) {
-		this.exportFileName = exportFileName;
+	public void setCurrentLogPath(String currentLogPath) {
+		this.currentLogPath = currentLogPath;
 	}
 
 	public List<Path> getImportFiles() {
@@ -81,12 +70,28 @@ public class Internal {
 		this.currentImportFile = currentImportFile;
 	}
 
-	public String getExportTextureFilePath() {
-		return exportTextureFilePath;
+	public Path getExportFile() {
+		return exportFile;
 	}
 
-	public void setExportTextureFilePath(String exportTextureFilePath) {
-		this.exportTextureFilePath = exportTextureFilePath;
+	public void setExportFile(Path exportFile) {
+		this.exportFile = exportFile;
+	}
+
+	public String getExportAppearancePath() {
+		return exportAppearancePath;
+	}
+
+	public void setExportAppearancePath(String exportAppearancePath) {
+		this.exportAppearancePath = exportAppearancePath;
+	}
+
+	public OutputFile getCurrentExportFile() {
+		return currentExportFile;
+	}
+
+	public void setCurrentExportFile(OutputFile currentExportFile) {
+		this.currentExportFile = currentExportFile;
 	}
 
 	public boolean isTransformCoordinates() {
@@ -95,14 +100,6 @@ public class Internal {
 
 	public void setTransformCoordinates(boolean transformCoordinates) {
 		this.transformCoordinates = transformCoordinates;
-	}
-
-	public String getCurrentLogPath() {
-		return currentLogPath;
-	}
-
-	public void setCurrentLogPath(String currentLogPath) {
-		this.currentLogPath = currentLogPath;
 	}
 
 	public String getCurrentGmlIdCodespace() {

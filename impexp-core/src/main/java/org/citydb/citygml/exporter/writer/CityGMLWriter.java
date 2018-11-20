@@ -143,7 +143,7 @@ public class CityGMLWriter implements FeatureWriter {
 			writerPool.shutdownAndWait();
 			writeEndDocument();
 			saxWriter.getOutputWriter().close();
-		} catch (IOException | InterruptedException e) {			
+		} catch (Throwable e) {
 			throw new FeatureWriteException("Failed to close CityGML writer.", e);
 		} finally {
 			if (!writerPool.isTerminated())

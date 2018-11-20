@@ -29,67 +29,58 @@ package org.citydb.citygml.exporter.database.xlink;
 
 import org.citydb.citygml.common.database.xlink.DBXlinkLibraryObject;
 import org.citydb.config.Config;
+import org.citydb.config.internal.OutputFile;
 import org.citydb.database.adapter.BlobExportAdapter;
 import org.citydb.database.adapter.BlobType;
 import org.citydb.log.Logger;
-import org.citydb.util.Util;
 
-import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.SQLException;
 
 public class DBXlinkExporterLibraryObject implements DBXlinkExporter {
-	private final Logger LOG = Logger.getInstance();
+	private final Logger log = Logger.getInstance();
 
 	private BlobExportAdapter blobExportAdapter;
-	private String localPath;
+	private OutputFile outputFile;
 
 	public DBXlinkExporterLibraryObject(Connection connection, Config config, DBXlinkExporterManager xlinkExporterManager) throws SQLException {
-		localPath = config.getInternal().getExportPath();
-
+		outputFile = config.getInternal().getCurrentExportFile();
 		blobExportAdapter = xlinkExporterManager.getDatabaseAdapter().getSQLAdapter().getBlobExportAdapter(connection, BlobType.LIBRARY_OBJECT);
 	}
 
 	public boolean export(DBXlinkLibraryObject xlink) throws SQLException {
-		String fileName = xlink.getFileURI();
+		String fileURI = xlink.getFileURI();
 
-		if (fileName == null || fileName.length() == 0) {
-			LOG.error("Database error while exporting a library object: Attribute REFERENCE_TO_LIBRARY is empty.");
+		if (fileURI == null || fileURI.isEmpty()) {
+			log.error("Database error while exporting a library object: Attribute REFERENCE_TO_LIBRARY is empty.");
 			return false;
 		}
 
-		// check whether we deal with a remote object uri
-		if (Util.isRemoteXlink(fileName)) {
-			URL url = null;
-
-			try {
-				url = new URL(fileName);
-			} catch (MalformedURLException e) {
-				LOG.error("Error while exporting a library object: " + fileName + " could not be interpreted.");
-				return false;
-			}
-
-			if (url != null) {
-				File file = new File(url.getFile());
-				fileName = file.getName();
-			}
+		Path file;
+		try {
+			file = outputFile.resolve(fileURI);
+		} catch (InvalidPathException e) {
+			log.error("Failed to export a library object: '" + fileURI + "' is not valid.");
+			return false;
 		}
 
-		// start export of library object to file
-		// we do not overwrite an already existing file. so no need to
-		// query the database in that case.
-		String fileURI = localPath + File.separator + fileName;
-		File file = new File(fileURI);
-		if (file.exists()) {
+		if (Files.exists(file)) {
 			// we could have an action depending on some user input
 			// so far, we silently return
 			return false;
 		}
 
 		// read blob into file
-		return blobExportAdapter.getInFile(xlink.getId(), fileName, fileURI);
+		try {
+			return blobExportAdapter.writeToStream(xlink.getId(), fileURI, Files.newOutputStream(file));
+		} catch (IOException e) {
+			log.error("Failed to export library object " + fileURI + ": " + e.getMessage());
+			return false;
+		}
 	}
 
 	@Override

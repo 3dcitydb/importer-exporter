@@ -116,7 +116,7 @@ public class KmlExporterManager {
 		this.config = config;
 
 		useTiling = query.isSetTiling();
-		mainFilename = config.getInternal().getExportFileName().trim();
+		mainFilename = config.getInternal().getExportFile().toAbsolutePath().normalize().toString();
 		if (mainFilename.lastIndexOf(File.separator) != -1) {
 			if (mainFilename.lastIndexOf(".") == -1) {
 				mainFilename = mainFilename.substring(mainFilename.lastIndexOf(File.separator) + 1);
@@ -598,7 +598,7 @@ public class KmlExporterManager {
 				while (iterator.hasNext()) {
 					String imageFilename = iterator.next();
 					String fileName = buildingDirectory + File.separator + imageFilename;
-					textureExportAdapter.getInFile(colladaBundle.getUnsupportedTexImageIds().get(imageFilename), imageFilename, fileName);
+					textureExportAdapter.writeToFile(colladaBundle.getUnsupportedTexImageIds().get(imageFilename), imageFilename, fileName);
 				}
 			}
 

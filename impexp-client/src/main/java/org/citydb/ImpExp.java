@@ -529,11 +529,9 @@ public class ImpExp {
 			else if (importFile != null)
 				cmd.doImport(importFile);
 			else if (exportFile != null) {
-				config.getInternal().setExportFileName(exportFile);
-				cmd.doExport();
+				cmd.doExport(exportFile);
 			} else if (kmlExportFile != null) {
-				config.getInternal().setExportFileName(kmlExportFile);
-				cmd.doKmlExport();
+				cmd.doKmlExport(kmlExportFile);
 			} else if (testConnection) {
 				boolean success = cmd.doTestConnection();
 				if (!success)

@@ -50,13 +50,14 @@ import org.citygml4j.builder.jaxb.CityGMLBuilder;
 
 import javax.xml.bind.JAXBContext;
 import java.io.File;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class ImpExpCli {
-	private final Logger LOG = Logger.getInstance();
+	private final Logger log = Logger.getInstance();
 	private final DatabaseConnectionPool dbPool;
 	private final SchemaMapping schemaMapping;
 	private CityGMLBuilder cityGMLBuilder;
@@ -80,18 +81,18 @@ public class ImpExpCli {
 		// prepare list of files to be validated
 		List<Path> files = getFiles(importFiles);
 		if (files.size() == 0) {
-			LOG.error("Invalid list of files to be imported");
-			LOG.error("Aborting...");
+			log.error("Invalid list of files to be imported");
+			log.error("Aborting...");
 			return;
 		}
 
 		initDBPool();
 		if (!dbPool.isConnected()) {
-			LOG.error("Aborting...");
+			log.error("Aborting...");
 			return;
 		}
 
-		LOG.info("Initializing database import...");
+		log.info("Initializing database import...");
 
 		config.getInternal().setImportFiles(files);
 		EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
@@ -101,12 +102,12 @@ public class ImpExpCli {
 		try {
 			success = importer.doProcess();
 		} catch (CityGMLImportException e) {
-			LOG.error("Aborting due to an internal error: " + e.getMessage());
+			log.error("Aborting due to an internal error: " + e.getMessage());
 			success = false;
 
 			Throwable cause = e.getCause();
 			while (cause != null) {
-				LOG.error("Cause: " + cause.getMessage());
+				log.error("Cause: " + cause.getMessage());
 				cause = cause.getCause();
 			}
 		} finally {
@@ -120,9 +121,9 @@ public class ImpExpCli {
 		}
 
 		if (success) {
-			LOG.info("Database import successfully finished.");
+			log.info("Database import successfully finished.");
 		} else {
-			LOG.warn("Database import aborted.");
+			log.warn("Database import aborted.");
 		}
 	}
 
@@ -130,12 +131,12 @@ public class ImpExpCli {
 		// prepare list of files to be validated
 		List<Path> files = getFiles(validateFiles);
 		if (files.size() == 0) {
-			LOG.error("Invalid list of files to be validated");
-			LOG.error("Aborting...");
+			log.error("Invalid list of files to be validated");
+			log.error("Aborting...");
 			return;
 		}
 
-		LOG.info("Initializing XML validation...");
+		log.info("Initializing XML validation...");
 
 		config.getInternal().setImportFiles(files);
 		EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
@@ -149,20 +150,23 @@ public class ImpExpCli {
 		}
 
 		if (success) {
-			LOG.info("XML validation finished.");
+			log.info("XML validation finished.");
 		} else {
-			LOG.warn("XML validation aborted.");
+			log.warn("XML validation aborted.");
 		}
 	}
 
-	public void doExport() {
+	public void doExport(String exportFile) {
+		if (!setExportFile(exportFile))
+			return;
+
 		initDBPool();
 		if (!dbPool.isConnected()) {
-			LOG.error("Aborting...");
+			log.error("Aborting...");
 			return;
 		}
 
-		LOG.info("Initializing database export...");
+		log.info("Initializing database export...");
 
 		EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
 		Exporter exporter = new Exporter(cityGMLBuilder, schemaMapping, config, eventDispatcher);
@@ -171,11 +175,11 @@ public class ImpExpCli {
 		try {
 			success = exporter.doProcess();
 		} catch (CityGMLExportException e) {
-			LOG.error(e.getMessage());
+			log.error(e.getMessage());
 
 			Throwable cause = e.getCause();
 			while (cause != null) {
-				LOG.error("Cause: " + cause.getMessage());
+				log.error("Cause: " + cause.getMessage());
 				cause = cause.getCause();
 			}
 		} finally {
@@ -190,20 +194,23 @@ public class ImpExpCli {
 		}
 
 		if (success) {
-			LOG.info("Database export successfully finished.");
+			log.info("Database export successfully finished.");
 		} else {
-			LOG.warn("Database export aborted.");
+			log.warn("Database export aborted.");
 		}
 	}
 
-	public void doKmlExport() {
+	public void doKmlExport(String kmlExportFile) {
+		if (!setExportFile(kmlExportFile))
+			return;
+
 		initDBPool();
 		if (!dbPool.isConnected()) {
-			LOG.error("Aborting...");
+			log.error("Aborting...");
 			return;
 		}
 
-		LOG.info("Initializing database export...");
+		log.info("Initializing database export...");
 
 		EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
 		KmlExporter kmlExporter = new KmlExporter(jaxbKmlContext, jaxbColladaContext, schemaMapping, config, eventDispatcher);
@@ -212,11 +219,11 @@ public class ImpExpCli {
 		try {
 			success = kmlExporter.doProcess();
 		} catch (KmlExportException e) {
-			LOG.error(e.getMessage());
+			log.error(e.getMessage());
 
 			Throwable cause = e.getCause();
 			while (cause != null) {
-				LOG.error("Cause: " + cause.getMessage());
+				log.error("Cause: " + cause.getMessage());
 				cause = cause.getCause();
 			}
 		} finally {
@@ -230,16 +237,28 @@ public class ImpExpCli {
 		}
 
 		if (success) {
-			LOG.info("Database export successfully finished.");
+			log.info("Database export successfully finished.");
 		} else {
-			LOG.warn("Database export aborted.");
+			log.warn("Database export aborted.");
 		}
+	}
+
+	private boolean setExportFile(String kmlExportFile) {
+		try {
+			config.getInternal().setExportFile(new File(kmlExportFile).toPath());
+		} catch (InvalidPathException e) {
+			log.error("'" + kmlExportFile + "' is not a valid file.");
+			log.error("Aborting...");
+			return false;
+		}
+
+		return true;
 	}
 
 	public boolean doTestConnection() {
 		initDBPool();
 		if (!dbPool.isConnected()) {
-			LOG.error("Aborting...");
+			log.error("Aborting...");
 			return false;
 		}
 
@@ -252,37 +271,37 @@ public class ImpExpCli {
 		DBConnection conn = config.getProject().getDatabase().getActiveConnection();
 
 		if (conn == null) {
-			LOG.error("No valid database connection found in project settings.");
+			log.error("No valid database connection found in project settings.");
 			return;
 		}
 
-		LOG.info("Connecting to database profile '" + conn.getDescription() + "'.");
+		log.info("Connecting to database profile '" + conn.getDescription() + "'.");
 		conn.setInternalPassword(conn.getPassword());
 
 		try {
 			dbPool.connect(config);
-			LOG.info("Database connection established.");
+			log.info("Database connection established.");
 			dbPool.getActiveDatabaseAdapter().getConnectionMetaData().printToConsole();
 
 			// log unsupported user-defined SRSs
 			for (DatabaseSrs refSys : config.getProject().getDatabase().getReferenceSystems()) {
 				if (!refSys.isSupported())
-					LOG.warn("Reference system '" + refSys.getDescription() + "' (SRID: " + refSys.getSrid() + ") is not supported.");
+					log.warn("Reference system '" + refSys.getDescription() + "' (SRID: " + refSys.getSrid() + ") is not supported.");
 			}
 
 			// print connection warnings
 			List<DatabaseConnectionWarning> warnings = dbPool.getActiveDatabaseAdapter().getConnectionWarnings();
 			if (!warnings.isEmpty()) {
 				for (DatabaseConnectionWarning warning : warnings)
-					LOG.warn(warning.getMessage());
+					log.warn(warning.getMessage());
 			}
 
 		} catch (DatabaseConfigurationException | SQLException e) {
-			LOG.error("Connection to database could not be established: " + e.getMessage());
+			log.error("Connection to database could not be established: " + e.getMessage());
 		} catch (DatabaseVersionException e) {
-			LOG.error(e.getMessage());
-			LOG.error("Supported versions are '" + Util.collection2string(e.getSupportedVersions(), ", ") + "'.");
-			LOG.error("Connection to database could not be established.");
+			log.error(e.getMessage());
+			log.error("Supported versions are '" + Util.collection2string(e.getSupportedVersions(), ", ") + "'.");
+			log.error("Connection to database could not be established.");
 		}
 	}
 
@@ -304,7 +323,7 @@ public class ImpExpCli {
 
 			file = new File(pathName);
 			if (!file.exists()) {
-				LOG.error("'" + file.toString() + "' does not exist");
+				log.error("'" + file.toString() + "' does not exist");
 				continue;
 			}
 

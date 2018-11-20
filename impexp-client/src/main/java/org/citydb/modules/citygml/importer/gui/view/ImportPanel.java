@@ -273,7 +273,7 @@ public class ImportPanel extends JPanel implements EventHandler {
 			try {
 				importFiles.add(fileListModel.get(i).toPath());
 			} catch (InvalidPathException e) {
-				log.error("'" + fileListModel.get(i) + "' is not a valid file.");
+				log.error("'" + fileListModel.get(i) + "' is not a valid file or folder.");
 				importFiles = Collections.emptyList();
 				break;
 			}
