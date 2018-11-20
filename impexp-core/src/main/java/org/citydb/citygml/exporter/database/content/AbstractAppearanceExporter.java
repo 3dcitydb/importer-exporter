@@ -90,7 +90,7 @@ public class AbstractAppearanceExporter extends AbstractTypeExporter {
 
 	private boolean exportTextureImage;
 	private boolean uniqueFileNames;
-	private String texturePath;
+	private String textureURI;
 	private boolean useBuckets;
 	private int noOfBuckets;
 	private boolean useXLink;
@@ -114,8 +114,8 @@ public class AbstractAppearanceExporter extends AbstractTypeExporter {
 		noOfBuckets = config.getProject().getExporter().getAppearances().getTexturePath().getNoOfBuckets(); 
 		useBuckets = config.getProject().getExporter().getAppearances().getTexturePath().isUseBuckets() && noOfBuckets > 0;
 
-		texturePath = config.getInternal().getExportTexturePath();
-		separator = new File(texturePath).isAbsolute() ? File.separator : "/";
+		textureURI = config.getInternal().getExportTextureURI();
+		separator = new File(textureURI).isAbsolute() ? File.separator : "/";
 		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 		String getLength = exporter.getDatabaseAdapter().getSQLAdapter().resolveDatabaseOperationName("blob.get_length");
 
@@ -316,7 +316,7 @@ public class AbstractAppearanceExporter extends AbstractTypeExporter {
 				if (useBuckets)
 					fileName = String.valueOf(Math.abs(texImageId % noOfBuckets + 1)) + separator + fileName;
 
-				abstractTexture.setImageURI(texturePath != null ? texturePath + separator + fileName : fileName);
+				abstractTexture.setImageURI(textureURI != null ? textureURI + separator + fileName : fileName);
 
 				// export texture image from database
 				if (exportTextureImage && (uniqueFileNames || !texImageIds.contains(texImageId))) {

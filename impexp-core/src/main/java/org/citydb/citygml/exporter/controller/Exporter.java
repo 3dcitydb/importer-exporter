@@ -86,6 +86,7 @@ import org.citygml4j.model.citygml.cityobjectgroup.CityObjectGroup;
 import org.citygml4j.model.gml.GMLClass;
 import org.citygml4j.model.module.citygml.CityGMLModuleType;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
@@ -245,6 +246,32 @@ public class Exporter implements EventHandler {
 		if (exportFile.getFileName() == null)
 			throw new CityGMLExportException("The export file '" + exportFile + "' is invalid.");
 
+		// process export folder for texture files
+		String textureFolder = null;
+		boolean textureFolderIsAbsolute = false;
+		boolean exportTextures = config.getProject().getExporter().getAppearances().isSetExportAppearance()
+				&& config.getProject().getExporter().getAppearances().isSetExportTextureFiles();
+
+		if (exportTextures) {
+			textureFolder = config.getProject().getExporter().getAppearances().getTexturePath().getPath();
+			if (textureFolder == null || textureFolder.isEmpty())
+				textureFolder = "appearance";
+
+			textureFolderIsAbsolute = new File(textureFolder).isAbsolute();
+			if (textureFolderIsAbsolute)
+				textureFolder = textureFolder.replace("\\", "/");
+
+			if (textureFolderIsAbsolute) {
+				try {
+					createTextureFolder(Paths.get(textureFolder), textureFolder);
+				} catch (InvalidPathException e) {
+					throw new CityGMLExportException("The texture files folder '" + textureFolder + "' is invalid.");
+				}
+			}
+
+			config.getInternal().setExportTextureURI(textureFolder);
+		}
+
 		int remainingTiles = rows * columns;
 		long start = System.currentTimeMillis();
 
@@ -321,46 +348,13 @@ public class Exporter implements EventHandler {
 						throw new CityGMLExportException("Failed to create output file '" + file.getFile() + "'.", e);
 					}
 
-					// checking export path for appearances
-					if (config.getProject().getExporter().getAppearances().isSetExportAppearance()) {
-						boolean isRelative = config.getProject().getExporter().getAppearances().getTexturePath().isRelative();
-						String texturePath = isRelative ?
-								config.getProject().getExporter().getAppearances().getTexturePath().getRelativePath() :
-								config.getProject().getExporter().getAppearances().getTexturePath().getAbsolutePath();
-
-						if (texturePath == null || texturePath.isEmpty())
-							texturePath = "appearance";
-
-						if (isRelative)
-							texturePath = texturePath.replace("\\", "/");
-
+					// create relative folder for texture files
+					if (exportTextures && !textureFolderIsAbsolute) {
 						try {
-							Path tmp = Paths.get(texturePath);
-							if (isRelative && tmp.isAbsolute())
-								throw new CityGMLExportException("Expected relative texture files folder but found '" + texturePath + "'.");
+							createTextureFolder(file.resolve(textureFolder), textureFolder);
 						} catch (InvalidPathException e) {
-							throw new CityGMLExportException("The texture files folder '" + texturePath + "' is invalid.");
+							throw new CityGMLExportException("The texture files folder '" + textureFolder + "' is invalid.");
 						}
-
-						Path tmp;
-						try {
-							tmp = isRelative ? file.resolve(texturePath) : Paths.get(texturePath);
-						} catch (InvalidPathException e) {
-							throw new CityGMLExportException("The texture files folder '" + texturePath + "' is invalid.");
-						}
-
-						if (Files.exists(tmp) && (Files.isRegularFile(tmp) || (Files.isDirectory(tmp) && !Files.isWritable(tmp))))
-							throw new CityGMLExportException("Failed to open texture files folder '" + texturePath + "' for writing.");
-						else if (!Files.isDirectory(tmp)) {
-							try {
-								Files.createDirectories(tmp);
-								log.info("Created texture files folder '" + texturePath + "'.");
-							} catch (IOException e) {
-								throw new CityGMLExportException("Failed to create texture files folder '" + texturePath + "'.");
-							}
-						}
-
-						config.getInternal().setExportTexturePath(texturePath);
 					}
 
 					// create output writer
@@ -561,6 +555,21 @@ public class Exporter implements EventHandler {
 			log.info("Total export time: " + Util.formatElapsedTime(System.currentTimeMillis() - start) + ".");
 
 		return shouldRun;
+	}
+
+	private void createTextureFolder(Path path, String name) throws CityGMLExportException {
+		if (Files.exists(path)
+				&& (Files.isRegularFile(path)
+				|| (Files.isDirectory(path) && !Files.isWritable(path))))
+			throw new CityGMLExportException("Failed to open texture files folder '" + name + "' for writing.");
+		else if (!Files.isDirectory(path)) {
+			try {
+				Files.createDirectories(path);
+				log.info("Created texture files folder '" + name + "'.");
+			} catch (IOException e) {
+				throw new CityGMLExportException("Failed to create texture files folder '" + name + "'.");
+			}
+		}
 	}
 
 	@Override

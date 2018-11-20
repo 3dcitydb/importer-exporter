@@ -35,7 +35,7 @@ public class Internal {
 	private List<Path> importFiles;
 	private InputFile currentImportFile;
 	private Path exportFile;
-	private String exportTexturePath;
+	private String exportTextureURI;
 	private OutputFile currentExportFile;
 
 	// internal variables
@@ -78,12 +78,12 @@ public class Internal {
 		this.exportFile = exportFile;
 	}
 
-	public String getExportTexturePath() {
-		return exportTexturePath;
+	public String getExportTextureURI() {
+		return exportTextureURI;
 	}
 
-	public void setExportTexturePath(String exportTexturePath) {
-		this.exportTexturePath = exportTexturePath;
+	public void setExportTextureURI(String exportTextureURI) {
+		this.exportTextureURI = exportTextureURI;
 	}
 
 	public OutputFile getCurrentExportFile() {

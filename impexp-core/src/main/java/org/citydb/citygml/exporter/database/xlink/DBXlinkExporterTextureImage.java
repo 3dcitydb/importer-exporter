@@ -51,8 +51,8 @@ public class DBXlinkExporterTextureImage implements DBXlinkExporter {
 
 	private BlobExportAdapter textureImageExportAdapter;
 	private OutputFile outputFile;
-	private String texturePath;
-	private boolean isRelativePath;
+	private String textureURI;
+	private boolean isAbsolutePath;
 	private String separator;
 	private boolean overwriteTextureImage;
 	private boolean useBuckets;
@@ -63,9 +63,9 @@ public class DBXlinkExporterTextureImage implements DBXlinkExporter {
 		this.xlinkExporterManager = xlinkExporterManager;
 
 		outputFile = config.getInternal().getCurrentExportFile();
-		isRelativePath = config.getProject().getExporter().getAppearances().getTexturePath().isRelative();
-		texturePath = config.getInternal().getExportTexturePath();
-		separator = new File(texturePath).isAbsolute() ? File.separator : "/";
+		textureURI = config.getInternal().getExportTextureURI();
+		isAbsolutePath = new File(textureURI).isAbsolute();
+		separator = isAbsolutePath ? File.separator : "/";
 		overwriteTextureImage = config.getProject().getExporter().getAppearances().isSetOverwriteTextureFiles();
 		counter = new CounterEvent(CounterType.TEXTURE_IMAGE, 1, this);
 		useBuckets = config.getProject().getExporter().getAppearances().getTexturePath().isUseBuckets() &&
@@ -87,9 +87,9 @@ public class DBXlinkExporterTextureImage implements DBXlinkExporter {
 
 		Path file;
 		try {
-			file = isRelativePath ?
-					outputFile.resolve(texturePath).resolve(fileURI) :
-					Paths.get(texturePath, fileURI);
+			file = isAbsolutePath ?
+					Paths.get(textureURI, fileURI) :
+					outputFile.resolve(textureURI).resolve(fileURI);
 		} catch (InvalidPathException e) {
 			log.error("Failed to export a texture file: '" + fileURI + "' is invalid.");
 			return false;
