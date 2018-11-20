@@ -96,11 +96,11 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -113,8 +113,8 @@ public class ImportPanel extends JPanel implements EventHandler {
 	private final DatabaseController databaseController;
 	private final Config config;
 
-	private JList<String> fileList;
-	private DefaultListModel<String> fileListModel;
+	private JList<File> fileList;
+	private DefaultListModel<File> fileListModel;
 	private JButton browseButton;
 	private JButton removeButton;
 	private JButton importButton;
@@ -269,8 +269,15 @@ public class ImportPanel extends JPanel implements EventHandler {
 
 	public void setSettings() {
 		List<Path> importFiles = new ArrayList<>();
-		for (int i = 0; i < fileListModel.size(); ++i)
-			importFiles.add(Paths.get(fileListModel.get(i)));
+		for (int i = 0; i < fileListModel.size(); ++i) {
+			try {
+				importFiles.add(fileListModel.get(i).toPath());
+			} catch (InvalidPathException e) {
+				log.error("'" + fileListModel.get(i) + "' is not a valid file.");
+				importFiles = Collections.emptyList();
+				break;
+			}
+		}
 
 		config.getInternal().setImportFiles(importFiles);		
 		config.getProject().getDatabase().getWorkspaces().getImportWorkspace().setName(workspaceText.getText().trim());
@@ -519,7 +526,7 @@ public class ImportPanel extends JPanel implements EventHandler {
 					new File(config.getProject().getImporter().getPath().getLastUsedPath()) :
 					new File(config.getProject().getImporter().getPath().getStandardPath()));
 		} else
-			chooser.setCurrentDirectory(new File(fileListModel.get(0)));
+			chooser.setCurrentDirectory(fileListModel.get(0));
 
 		int result = chooser.showOpenDialog(getTopLevelAncestor());
 		if (result == JFileChooser.CANCEL_OPTION) 
@@ -527,7 +534,7 @@ public class ImportPanel extends JPanel implements EventHandler {
 
 		fileListModel.clear();
 		for (File file : chooser.getSelectedFiles())
-			fileListModel.addElement(file.toString());
+			fileListModel.addElement(file);
 
 		config.getProject().getImporter().getPath().setLastUsedPath(chooser.getCurrentDirectory().getAbsolutePath());
 	}
@@ -543,20 +550,20 @@ public class ImportPanel extends JPanel implements EventHandler {
 			if (info.isDrop())
 				return false;
 
-			List<String> fileNames = new ArrayList<>();
+			List<File> files = new ArrayList<>();
 			try {
 				String value = (String)info.getTransferable().getTransferData(DataFlavor.stringFlavor);
 
 				for (String token : value.split(System.getProperty("line.separator"))) {
-					Path file = Paths.get(token);
-					if (Files.exists(file))
-						fileNames.add(file.toAbsolutePath().toString());
+					File file = new File(token);
+					if (file.exists())
+						files.add(file.getAbsoluteFile());
 					else
-						log.warn("Failed to paste from clipboard: '" + file.toAbsolutePath() + "' is not a file.");
+						log.warn("Failed to paste from clipboard: '" + file.getAbsolutePath() + "' does not exist.");
 				}
 
-				if (!fileNames.isEmpty()) {
-					addFileNames(fileNames);
+				if (!files.isEmpty()) {
+					addFiles(files);
 					return true;
 				}
 			} catch (UnsupportedFlavorException | IOException ufe) {
@@ -621,18 +628,18 @@ public class ImportPanel extends JPanel implements EventHandler {
 					try {
 						dtde.acceptDrop(DnDConstants.ACTION_COPY_OR_MOVE);
 
-						List<String> fileNames = new ArrayList<>();
+						List<File> files = new ArrayList<>();
 						for (File file : (List<File>)dtde.getTransferable().getTransferData(DataFlavor.javaFileListFlavor))
 							if (file.exists())
-								fileNames.add(file.getCanonicalPath());
+								files.add(file.getAbsoluteFile());
 							else
 								log.warn("Failed to drop from clipboard: '" + file.getAbsolutePath() + "' is not a file.");
 
-						if (!fileNames.isEmpty()) {
+						if (!files.isEmpty()) {
 							if (dtde.getDropAction() != DnDConstants.ACTION_COPY)
 								fileListModel.clear();
 
-							addFileNames(fileNames);
+							addFiles(files);
 						}
 
 						dtde.getDropTargetContext().dropComplete(true);	
@@ -643,13 +650,12 @@ public class ImportPanel extends JPanel implements EventHandler {
 			}
 		}
 
-		private void addFileNames(List<String> fileNames) {
+		private void addFiles(List<File> files) {
 			int index = fileList.getSelectedIndex() + 1;
-			for (String fileName : fileNames)
-				fileListModel.add(index++, fileName);
+			for (File file : files)
+				fileListModel.add(index++, file);
 
-			config.getProject().getImporter().getPath().setLastUsedPath(
-					new File(fileListModel.getElementAt(0)).getAbsolutePath());
+			config.getProject().getImporter().getPath().setLastUsedPath(fileListModel.getElementAt(0).getAbsolutePath());
 		}
 
 		@Override
