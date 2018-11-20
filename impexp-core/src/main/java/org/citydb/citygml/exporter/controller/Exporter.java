@@ -351,7 +351,7 @@ public class Exporter implements EventHandler {
 
 						if (Files.exists(tmp) && (Files.isRegularFile(tmp) || (Files.isDirectory(tmp) && !Files.isWritable(tmp))))
 							throw new CityGMLExportException("Failed to open texture files folder '" + texturePath + "' for writing.");
-						else {
+						else if (!Files.isDirectory(tmp)) {
 							try {
 								Files.createDirectories(tmp);
 								log.info("Created texture files folder '" + texturePath + "'.");

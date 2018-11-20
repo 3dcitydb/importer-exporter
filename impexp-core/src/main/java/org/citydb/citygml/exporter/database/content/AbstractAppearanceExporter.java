@@ -115,7 +115,7 @@ public class AbstractAppearanceExporter extends AbstractTypeExporter {
 		useBuckets = config.getProject().getExporter().getAppearances().getTexturePath().isUseBuckets() && noOfBuckets > 0;
 
 		texturePath = config.getInternal().getExportTexturePath();
-		separator = config.getProject().getExporter().getAppearances().getTexturePath().isAbsolute() ? File.separator : "/";
+		separator = new File(texturePath).isAbsolute() ? File.separator : "/";
 		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 		String getLength = exporter.getDatabaseAdapter().getSQLAdapter().resolveDatabaseOperationName("blob.get_length");
 

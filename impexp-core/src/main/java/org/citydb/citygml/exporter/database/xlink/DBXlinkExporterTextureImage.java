@@ -65,7 +65,7 @@ public class DBXlinkExporterTextureImage implements DBXlinkExporter {
 		outputFile = config.getInternal().getCurrentExportFile();
 		isRelativePath = config.getProject().getExporter().getAppearances().getTexturePath().isRelative();
 		texturePath = config.getInternal().getExportTexturePath();
-		separator = config.getProject().getExporter().getAppearances().getTexturePath().isAbsolute() ? File.separator : "/";
+		separator = new File(texturePath).isAbsolute() ? File.separator : "/";
 		overwriteTextureImage = config.getProject().getExporter().getAppearances().isSetOverwriteTextureFiles();
 		counter = new CounterEvent(CounterType.TEXTURE_IMAGE, 1, this);
 		useBuckets = config.getProject().getExporter().getAppearances().getTexturePath().isUseBuckets() &&
