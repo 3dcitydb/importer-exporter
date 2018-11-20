@@ -324,43 +324,43 @@ public class Exporter implements EventHandler {
 					// checking export path for appearances
 					if (config.getProject().getExporter().getAppearances().isSetExportAppearance()) {
 						boolean isRelative = config.getProject().getExporter().getAppearances().getTexturePath().isRelative();
-						String appearancePath = isRelative ?
+						String texturePath = isRelative ?
 								config.getProject().getExporter().getAppearances().getTexturePath().getRelativePath() :
 								config.getProject().getExporter().getAppearances().getTexturePath().getAbsolutePath();
 
-						if (appearancePath == null || appearancePath.isEmpty())
-							appearancePath = "appearance";
+						if (texturePath == null || texturePath.isEmpty())
+							texturePath = "appearance";
 
 						if (isRelative)
-							appearancePath = appearancePath.replace("\\", "/");
+							texturePath = texturePath.replace("\\", "/");
 
 						try {
-							Path tmp = Paths.get(appearancePath);
+							Path tmp = Paths.get(texturePath);
 							if (isRelative && tmp.isAbsolute())
-								throw new CityGMLExportException("Expected relative appearance folder but found '" + appearancePath + "'.");
+								throw new CityGMLExportException("Expected relative texture files folder but found '" + texturePath + "'.");
 						} catch (InvalidPathException e) {
-							throw new CityGMLExportException("The appearance folder '" + appearancePath + "' is invalid.");
+							throw new CityGMLExportException("The texture files folder '" + texturePath + "' is invalid.");
 						}
 
 						Path tmp;
 						try {
-							tmp = isRelative ? file.resolve(appearancePath) : Paths.get(appearancePath);
+							tmp = isRelative ? file.resolve(texturePath) : Paths.get(texturePath);
 						} catch (InvalidPathException e) {
-							throw new CityGMLExportException("The appearance folder '" + appearancePath + "' is invalid.");
+							throw new CityGMLExportException("The texture files folder '" + texturePath + "' is invalid.");
 						}
 
 						if (Files.exists(tmp) && (Files.isRegularFile(tmp) || (Files.isDirectory(tmp) && !Files.isWritable(tmp))))
-							throw new CityGMLExportException("Failed to open appearance folder '" + appearancePath + "' for writing.");
+							throw new CityGMLExportException("Failed to open texture files folder '" + texturePath + "' for writing.");
 						else {
 							try {
 								Files.createDirectories(tmp);
-								log.info("Created appearance folder '" + appearancePath + "'.");
+								log.info("Created texture files folder '" + texturePath + "'.");
 							} catch (IOException e) {
-								throw new CityGMLExportException("Failed to create appearance folder '" + appearancePath + "'.");
+								throw new CityGMLExportException("Failed to create texture files folder '" + texturePath + "'.");
 							}
 						}
 
-						config.getInternal().setExportAppearancePath(appearancePath);
+						config.getInternal().setExportTexturePath(texturePath);
 					}
 
 					// create output writer

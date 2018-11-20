@@ -35,7 +35,7 @@ public class Internal {
 	private List<Path> importFiles;
 	private InputFile currentImportFile;
 	private Path exportFile;
-	private String exportAppearancePath;
+	private String exportTexturePath;
 	private OutputFile currentExportFile;
 
 	// internal variables
@@ -78,12 +78,12 @@ public class Internal {
 		this.exportFile = exportFile;
 	}
 
-	public String getExportAppearancePath() {
-		return exportAppearancePath;
+	public String getExportTexturePath() {
+		return exportTexturePath;
 	}
 
-	public void setExportAppearancePath(String exportAppearancePath) {
-		this.exportAppearancePath = exportAppearancePath;
+	public void setExportTexturePath(String exportTexturePath) {
+		this.exportTexturePath = exportTexturePath;
 	}
 
 	public OutputFile getCurrentExportFile() {

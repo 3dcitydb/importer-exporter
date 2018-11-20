@@ -106,7 +106,7 @@ public class AbstractAppearanceExporter extends AbstractTypeExporter {
 	protected AbstractAppearanceExporter(boolean isGlobal, Connection connection, Query query, CacheTable cacheTable, CityGMLExportManager exporter, Config config) throws CityGMLExportException, SQLException {
 		super(exporter);
 
-		texImageIds = new HashSet<Long>();
+		texImageIds = new HashSet<>();
 		themes = Collections.emptyList();
 
 		exportTextureImage = config.getProject().getExporter().getAppearances().isSetExportTextureFiles();
@@ -114,7 +114,7 @@ public class AbstractAppearanceExporter extends AbstractTypeExporter {
 		noOfBuckets = config.getProject().getExporter().getAppearances().getTexturePath().getNoOfBuckets(); 
 		useBuckets = config.getProject().getExporter().getAppearances().getTexturePath().isUseBuckets() && noOfBuckets > 0;
 
-		texturePath = config.getInternal().getExportAppearancePath();
+		texturePath = config.getInternal().getExportTexturePath();
 		separator = config.getProject().getExporter().getAppearances().getTexturePath().isAbsolute() ? File.separator : "/";
 		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 		String getLength = exporter.getDatabaseAdapter().getSQLAdapter().resolveDatabaseOperationName("blob.get_length");
@@ -231,7 +231,7 @@ public class AbstractAppearanceExporter extends AbstractTypeExporter {
 				} else {
 					String newGmlId = DefaultGMLIdManager.getInstance().generateUUID(gmlIdPrefix);
 					if (appendOldGmlId)
-						newGmlId = new StringBuilder(newGmlId).append("-").append(gmlId).toString();
+						newGmlId = newGmlId + "-" + gmlId;
 
 					gmlId = newGmlId;
 				}
@@ -331,8 +331,8 @@ public class AbstractAppearanceExporter extends AbstractTypeExporter {
 							abstractTexture.setLocalProperty(CoreConstants.TEXTURE_IMAGE_XLINK, xlink);
 
 					} else {
-						log.warn(new StringBuilder(exporter.getObjectSignature(exporter.getFeatureType(objectClassId), surfaceDataId))
-								.append(": Skipping 0 byte texture file '").append(imageURI).append("'.").toString());
+						log.warn(exporter.getObjectSignature(exporter.getFeatureType(objectClassId), surfaceDataId) +
+								": Skipping 0 byte texture file '" + imageURI + "'.");
 					}
 
 					if (!uniqueFileNames)
@@ -389,7 +389,7 @@ public class AbstractAppearanceExporter extends AbstractTypeExporter {
 					double[] point = pointObj.getCoordinates(0);
 					Point referencePoint = new Point();
 
-					List<Double> value = new ArrayList<Double>();
+					List<Double> value = new ArrayList<>();
 					value.add(point[0]);
 					value.add(point[1]);
 
