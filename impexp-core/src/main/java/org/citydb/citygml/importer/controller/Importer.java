@@ -216,7 +216,7 @@ public class Importer implements EventHandler {
 		try {
 			log.info("Creating list of CityGML files to be imported...");
 			directoryScanner = new DirectoryScanner(true);
-			importFiles = directoryScanner.listFiles(internalConfig.getImportFiles(), directoryScanner.getDefaultFileEndings());
+			importFiles = directoryScanner.listFiles(internalConfig.getImportFiles());
 			if (importFiles.isEmpty()) {
 				log.warn("Failed to find CityGML files at the specified locations.");
 				return false;

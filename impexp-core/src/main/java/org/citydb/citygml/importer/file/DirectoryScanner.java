@@ -60,6 +60,9 @@ public class DirectoryScanner {
     }
 
     public List<InputFile> listFiles(List<Path> bases, String... fileEndings) throws IOException {
+        if (fileEndings.length == 0)
+            fileEndings = getDefaultFileEndings();
+
         Pattern pattern = Pattern.compile("(?i).+((" + Arrays.stream(fileEndings)
                 .map(Pattern::quote).collect(Collectors.joining(")|(")) + "))$");
 
