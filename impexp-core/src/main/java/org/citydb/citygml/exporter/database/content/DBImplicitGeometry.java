@@ -27,6 +27,25 @@
  */
 package org.citydb.citygml.exporter.database.content;
 
+import org.citydb.citygml.common.database.xlink.DBXlinkLibraryObject;
+import org.citydb.citygml.exporter.CityGMLExportException;
+import org.citydb.citygml.exporter.util.AttributeValueSplitter;
+import org.citydb.config.geometry.GeometryObject;
+import org.citydb.database.schema.TableEnum;
+import org.citydb.database.schema.mapping.MappingConstants;
+import org.citydb.sqlbuilder.expression.PlaceHolder;
+import org.citydb.sqlbuilder.schema.Table;
+import org.citydb.sqlbuilder.select.Select;
+import org.citydb.sqlbuilder.select.operator.comparison.ComparisonFactory;
+import org.citydb.sqlbuilder.select.projection.Function;
+import org.citydb.util.CoreConstants;
+import org.citygml4j.geometry.Matrix;
+import org.citygml4j.model.citygml.core.ImplicitGeometry;
+import org.citygml4j.model.citygml.core.TransformationMatrix4x4;
+import org.citygml4j.model.gml.basicTypes.Code;
+import org.citygml4j.model.gml.geometry.AbstractGeometry;
+import org.citygml4j.model.gml.geometry.GeometryProperty;
+
 import java.io.File;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -35,25 +54,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
-
-import org.citydb.citygml.common.database.xlink.DBXlinkLibraryObject;
-import org.citydb.citygml.exporter.CityGMLExportException;
-import org.citydb.citygml.exporter.util.AttributeValueSplitter;
-import org.citydb.config.geometry.GeometryObject;
-import org.citydb.database.schema.TableEnum;
-import org.citydb.database.schema.mapping.MappingConstants;
-import org.citygml4j.geometry.Matrix;
-import org.citygml4j.model.citygml.core.ImplicitGeometry;
-import org.citygml4j.model.citygml.core.TransformationMatrix4x4;
-import org.citygml4j.model.gml.basicTypes.Code;
-import org.citygml4j.model.gml.geometry.AbstractGeometry;
-import org.citygml4j.model.gml.geometry.GeometryProperty;
-
-import org.citydb.sqlbuilder.expression.PlaceHolder;
-import org.citydb.sqlbuilder.schema.Table;
-import org.citydb.sqlbuilder.select.Select;
-import org.citydb.sqlbuilder.select.operator.comparison.ComparisonFactory;
-import org.citydb.sqlbuilder.select.projection.Function;
 
 public class DBImplicitGeometry implements DBExporter {
 	private final CityGMLExportManager exporter;
@@ -104,12 +104,12 @@ public class DBImplicitGeometry implements DBExporter {
 
 					long dbBlobSize = rs.getLong(4);
 					if (dbBlobSize > 0) {
-						File file = new File(blobURI);
-						implicit.setLibraryObject(file.getName());
+						String fileName = new File(blobURI).getName();
+						implicit.setLibraryObject(CoreConstants.LIBRARY_OBJECTS_DIR + '/' + fileName);
 
 						exporter.propagateXlink(new DBXlinkLibraryObject(
 								id,
-								file.getName()));
+								fileName));
 					} else
 						implicit.setLibraryObject(blobURI);
 

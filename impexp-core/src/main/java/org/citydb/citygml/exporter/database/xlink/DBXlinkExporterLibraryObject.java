@@ -33,6 +33,7 @@ import org.citydb.config.internal.OutputFile;
 import org.citydb.database.adapter.BlobExportAdapter;
 import org.citydb.database.adapter.BlobType;
 import org.citydb.log.Logger;
+import org.citydb.util.CoreConstants;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -46,6 +47,7 @@ public class DBXlinkExporterLibraryObject implements DBXlinkExporter {
 
 	private BlobExportAdapter blobExportAdapter;
 	private OutputFile outputFile;
+	private boolean isFolderCreated;
 
 	public DBXlinkExporterLibraryObject(Connection connection, Config config, DBXlinkExporterManager xlinkExporterManager) throws SQLException {
 		outputFile = config.getInternal().getCurrentExportFile();
@@ -62,7 +64,7 @@ public class DBXlinkExporterLibraryObject implements DBXlinkExporter {
 
 		Path file;
 		try {
-			file = outputFile.resolve(fileURI);
+			file = outputFile.resolve(CoreConstants.LIBRARY_OBJECTS_DIR).resolve(fileURI);
 		} catch (InvalidPathException e) {
 			log.error("Failed to export a library object: '" + fileURI + "' is invalid.");
 			return false;
@@ -72,6 +74,15 @@ public class DBXlinkExporterLibraryObject implements DBXlinkExporter {
 			// we could have an action depending on some user input
 			// so far, we silently return
 			return false;
+		}
+
+		if (!isFolderCreated) {
+			try {
+				Files.createDirectories(file.getParent());
+				isFolderCreated = true;
+			} catch (IOException e) {
+				throw new SQLException("Failed to create folder for library objects.");
+			}
 		}
 
 		// read blob into file

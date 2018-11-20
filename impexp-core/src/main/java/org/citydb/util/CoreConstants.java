@@ -34,6 +34,7 @@ import java.nio.file.Paths;
 public class CoreConstants {
     public static final Path IMPEXP_DATA_DIR = Paths.get(System.getProperty("user.home"), "3dcitydb", "importer-exporter");
     public static final String IMPORT_LOG_DIR = "imported-features";
+    public static final String LIBRARY_OBJECTS_DIR = "library-objects";
     public static final URL CITYDB_SCHEMA_MAPPING_FILE = CoreConstants.class.getResource("/org/citydb/database/schema/3dcitydb-schema.xml");
 
     public static final String DEFAULT_DELIMITER = "--/\\--";
