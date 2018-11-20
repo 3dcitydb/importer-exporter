@@ -240,14 +240,17 @@ public class Exporter implements EventHandler {
 
 		// create output file factory
 		OutputFileFactory fileFactory = new OutputFileFactory();
+		Path exportFile = config.getInternal().getExportFile();
+		if (exportFile.getFileName() == null)
+			throw new CityGMLExportException("The export file '" + exportFile + "' is invalid.");
 
 		int remainingTiles = rows * columns;
 		long start = System.currentTimeMillis();
 
 		for (int i = 0; shouldRun && i < rows; i++) {
 			for (int j = 0; shouldRun && j < columns; j++) {
-				Path folder = config.getInternal().getExportFile().getParent();
-				String fileName = config.getInternal().getExportFile().getFileName().toString();
+				Path folder = exportFile.getParent();
+				String fileName = exportFile.getFileName().toString();
 
 				if (useTiling) {
 					Tile tile;
@@ -335,14 +338,14 @@ public class Exporter implements EventHandler {
 							if (isRelative && tmp.isAbsolute())
 								throw new CityGMLExportException("Expected relative appearance folder but found '" + appearancePath + "'.");
 						} catch (InvalidPathException e) {
-							throw new CityGMLExportException("The appearance folder '" + appearancePath + "' is not valid.");
+							throw new CityGMLExportException("The appearance folder '" + appearancePath + "' is invalid.");
 						}
 
 						Path tmp;
 						try {
 							tmp = isRelative ? file.resolve(appearancePath) : Paths.get(appearancePath);
 						} catch (InvalidPathException e) {
-							throw new CityGMLExportException("The appearance folder '" + appearancePath + "' is not valid.");
+							throw new CityGMLExportException("The appearance folder '" + appearancePath + "' is invalid.");
 						}
 
 						if (Files.exists(tmp) && (Files.isRegularFile(tmp) || (Files.isDirectory(tmp) && !Files.isWritable(tmp))))

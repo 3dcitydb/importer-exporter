@@ -91,7 +91,7 @@ public class DBXlinkExporterTextureImage implements DBXlinkExporter {
 					outputFile.resolve(appearancePath).resolve(fileURI) :
 					Paths.get(appearancePath, fileURI);
 		} catch (InvalidPathException e) {
-			log.error("Failed to export a texture file: '" + fileURI + "' is not valid.");
+			log.error("Failed to export a texture file: '" + fileURI + "' is invalid.");
 			return false;
 		}
 

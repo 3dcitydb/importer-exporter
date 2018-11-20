@@ -64,7 +64,7 @@ public class DBXlinkExporterLibraryObject implements DBXlinkExporter {
 		try {
 			file = outputFile.resolve(fileURI);
 		} catch (InvalidPathException e) {
-			log.error("Failed to export a library object: '" + fileURI + "' is not valid.");
+			log.error("Failed to export a library object: '" + fileURI + "' is invalid.");
 			return false;
 		}
 
