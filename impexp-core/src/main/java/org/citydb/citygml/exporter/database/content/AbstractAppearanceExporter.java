@@ -40,7 +40,6 @@ import org.citydb.log.Logger;
 import org.citydb.query.Query;
 import org.citydb.query.builder.QueryBuildException;
 import org.citydb.query.builder.sql.AppearanceFilterBuilder;
-import org.citydb.sqlbuilder.expression.IntegerLiteral;
 import org.citydb.sqlbuilder.expression.PlaceHolder;
 import org.citydb.sqlbuilder.schema.Table;
 import org.citydb.sqlbuilder.select.PredicateToken;
@@ -134,7 +133,7 @@ public class AbstractAppearanceExporter extends AbstractTypeExporter {
 				surfaceData.getColumn("id"), surfaceData.getColumn("objectclass_id"), surfaceData.getColumn("gmlid"),surfaceData.getColumn("name"), surfaceData.getColumn("name_codespace"), surfaceData.getColumn("description"),
 				surfaceData.getColumn("is_front"), surfaceData.getColumn("x3d_shininess"), surfaceData.getColumn("x3d_transparency"), surfaceData.getColumn("x3d_ambient_intensity"),
 				surfaceData.getColumn("x3d_specular_color"), surfaceData.getColumn("x3d_diffuse_color"), surfaceData.getColumn("x3d_emissive_color"), surfaceData.getColumn("x3d_is_smooth"),
-				surfaceData.getColumn("tex_image_id"), new Function("coalesce", new Function(getLength, texImage.getColumn("tex_image_data")), new IntegerLiteral(0)),
+				surfaceData.getColumn("tex_image_id"),
 				texImage.getColumn("tex_image_uri"), texImage.getColumn("tex_mime_type"), texImage.getColumn("tex_mime_type_codespace"),
 				new Function("lower", surfaceData.getColumn("tex_texture_type")), new Function("lower", surfaceData.getColumn("tex_wrap_mode")),
 				surfaceData.getColumn("tex_border_color"), surfaceData.getColumn("gt_prefer_worldfile"), surfaceData.getColumn("gt_orientation"),
@@ -306,9 +305,9 @@ public class AbstractAppearanceExporter extends AbstractTypeExporter {
 
 			long texImageId = rs.getLong(21);			
 			if (texImageId != 0) {
-				long dbImageSize = rs.getLong(22);
+				//long dbImageSize = rs.getLong(22);
 
-				String imageURI = rs.getString(23);
+				String imageURI = rs.getString(22);
 				if (uniqueFileNames) {
 					String extension = Util.getFileExtension(imageURI);
 					imageURI = CoreConstants.UNIQUE_TEXTURE_FILENAME_PREFIX + texImageId + (!extension.isEmpty() ? "." + extension : "");
@@ -322,42 +321,39 @@ public class AbstractAppearanceExporter extends AbstractTypeExporter {
 
 				// export texture image from database
 				if (exportTextureImage && (uniqueFileNames || !texImageIds.contains(texImageId))) {
-					if (dbImageSize > 0) {
-						DBXlinkTextureFile xlink = new DBXlinkTextureFile(
-								texImageId,
-								fileName);
+					DBXlinkTextureFile xlink = new DBXlinkTextureFile(
+							texImageId,
+							fileName);
 
-						if (!lazyExport)
-							exporter.propagateXlink(xlink);
-						else
-							abstractTexture.setLocalProperty(CoreConstants.TEXTURE_IMAGE_XLINK, xlink);
-
-					} else {
-						log.warn(exporter.getObjectSignature(exporter.getFeatureType(objectClassId), surfaceDataId) +
-								": Skipping 0 byte texture file '" + imageURI + "'.");
-					}
+					if (!lazyExport)
+						exporter.propagateXlink(xlink);
+					else
+						abstractTexture.setLocalProperty(CoreConstants.TEXTURE_IMAGE_XLINK, xlink);
 
 					if (!uniqueFileNames)
 						texImageIds.add(texImageId);
 				}
+			} else {
+				// skip texture elements lacking a texture image
+				return;
 			}
 
-			String mimeType = rs.getString(24);
+			String mimeType = rs.getString(23);
 			if (!rs.wasNull()) {
 				Code code = new Code(mimeType);
-				code.setCodeSpace(rs.getString(25));
+				code.setCodeSpace(rs.getString(24));
 				abstractTexture.setMimeType(code);
 			}
 
-			String textureType = rs.getString(26);
+			String textureType = rs.getString(25);
 			if (textureType != null)
 				abstractTexture.setTextureType(TextureType.fromValue(textureType));
 
-			String wrapMode = rs.getString(27);
+			String wrapMode = rs.getString(26);
 			if (wrapMode != null)
 				abstractTexture.setWrapMode(WrapMode.fromValue(wrapMode));
 
-			String borderColorString = rs.getString(28);
+			String borderColorString = rs.getString(27);
 			if (borderColorString != null) {
 				List<Double> colorList = valueSplitter.splitDoubleList(borderColorString);
 				if (colorList.size() >= 4) {
@@ -370,11 +366,11 @@ public class AbstractAppearanceExporter extends AbstractTypeExporter {
 		if (surfaceData instanceof GeoreferencedTexture) {
 			GeoreferencedTexture georeferencedTexture = (GeoreferencedTexture)surfaceData;
 
-			int preferWorldFile = rs.getInt(29);
+			int preferWorldFile = rs.getInt(28);
 			if (!rs.wasNull() && preferWorldFile == 0)
 				georeferencedTexture.setPreferWorldFile(false);
 
-			String orientationString = rs.getString(30);
+			String orientationString = rs.getString(29);
 			if (orientationString != null) {
 				List<Double> m = valueSplitter.splitDoubleList(orientationString);
 				if (m.size() >= 4) {
@@ -384,7 +380,7 @@ public class AbstractAppearanceExporter extends AbstractTypeExporter {
 				}
 			}
 
-			Object referencePointObj = rs.getObject(31);
+			Object referencePointObj = rs.getObject(30);
 			if (!rs.wasNull()) {
 				GeometryObject pointObj = exporter.getDatabaseAdapter().getGeometryConverter().getPoint(referencePointObj);
 				if (pointObj != null) {

@@ -70,7 +70,7 @@ public class BlobExportAdapter {
 
 			byte[] buf = rs.getBytes(1);
 			if (rs.wasNull() || buf.length == 0) {
-				log.error("Failed to read " + (blobType == BlobType.TEXTURE_IMAGE ? "texture" : "library object") + " file: " + objectName + ".");
+				log.error("Failed to read " + (blobType == BlobType.TEXTURE_IMAGE ? "texture" : "library object") + " file: " + objectName + " (ID = " + id + ").");
 				return null;
 			}
 
