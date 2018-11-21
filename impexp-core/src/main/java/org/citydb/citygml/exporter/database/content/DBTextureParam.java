@@ -85,16 +85,19 @@ public class DBTextureParam implements DBExporter {
 		valueSplitter = exporter.getAttributeValueSplitter();
 	}
 
-	protected void doExport(AbstractSurfaceData surfaceData, long surfaceDataId) throws SQLException {
+	protected boolean doExport(AbstractSurfaceData surfaceData, long surfaceDataId) throws SQLException {
 		ps.setLong(1, surfaceDataId);
 
 		try (ResultSet rs = ps.executeQuery()) {
-			while (rs.next()) {
+			if (!rs.next())
+				return false;
+
+			do {
 				String target = rs.getString(3);
 				if (target == null || target.length() == 0)
 					continue;
 				
-				target = new StringBuilder("#").append(target).toString();
+				target = "#" + target;
 
 				if (surfaceData instanceof X3DMaterial) {
 					((X3DMaterial)surfaceData).addTarget(target);
@@ -169,7 +172,9 @@ public class DBTextureParam implements DBExporter {
 						}
 					}
 				}
-			}
+			} while (rs.next());
+
+			return true;
 		}
 	}
 	
