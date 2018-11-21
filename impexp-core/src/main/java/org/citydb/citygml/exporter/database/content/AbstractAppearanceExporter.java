@@ -241,7 +241,9 @@ public class AbstractAppearanceExporter extends AbstractTypeExporter {
 		}
 
 		// retrieve targets
-		textureParamExporter.doExport(surfaceData, surfaceDataId);
+		boolean hasTargets = textureParamExporter.doExport(surfaceData, surfaceDataId);
+		if (!hasTargets)
+			return;
 
 		for (SplitValue splitValue : valueSplitter.split(rs.getString(10), rs.getString(11))) {
 			Code name = new Code(splitValue.result(0));
