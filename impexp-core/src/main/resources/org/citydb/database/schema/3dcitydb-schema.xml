@@ -61,7 +61,7 @@
       <namespace context="citygml-1.0">http://www.3dcitydb.org/citygml-ade/3.0/citygml/1.0</namespace>
     </schema>
   </applicationSchemas>
-  
+
   <attributeTypes>
     <attributeType id="stringAttributeType" table="cityobject_genericattrib">
       <attribute path="@name" column="attrname" type="string" minOccurs="1" schema="gen"/>
@@ -135,16 +135,16 @@
         </join>
       </complexAttribute>
     </attributeType>
-    
+
     <attributeType id="ExternalReferenceType" table="external_reference">
-        <attribute path="informationSystem" column="infosys" type="string" schema="core"/>
-        <complexAttribute path="externalObject" schema="core">
-          <attribute path="name" column="name" type="string" schema="core"/>
-          <attribute path="uri" column="uri" type="string" schema="core"/>
-        </complexAttribute>
+      <attribute path="informationSystem" column="infosys" type="string" schema="core"/>
+      <complexAttribute path="externalObject" schema="core">
+        <attribute path="name" column="name" type="string" schema="core"/>
+        <attribute path="uri" column="uri" type="string" schema="core"/>
+      </complexAttribute>
     </attributeType>
   </attributeTypes>
-  
+
   <objectTypes>
     <!-- GML module -->
     <objectType id="AbstractGMLType" path="_GML" table="cityobject" objectClassId="1" schema="gml" abstract="true">
