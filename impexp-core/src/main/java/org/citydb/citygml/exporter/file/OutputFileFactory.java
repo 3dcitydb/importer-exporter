@@ -47,8 +47,9 @@ public class OutputFileFactory {
 
         Files.deleteIfExists(file);
 
-        Map<String, String> env = new HashMap<>();
+        Map<String, Object> env = new HashMap<>();
         env.put("create", "true");
+        env.put("useTempFile", true);
         FileSystem fileSystem = FileSystems.newFileSystem(uri, env);
         String contentFile = "/" + Util.stripFileExtension(file.getFileName().toString()) + ".gml";
 
