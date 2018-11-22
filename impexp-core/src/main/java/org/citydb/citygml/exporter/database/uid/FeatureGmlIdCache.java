@@ -27,6 +27,13 @@
  */
 package org.citydb.citygml.exporter.database.uid;
 
+import org.citydb.citygml.common.database.cache.BranchCacheTable;
+import org.citydb.citygml.common.database.cache.CacheTable;
+import org.citydb.citygml.common.database.cache.CacheTableManager;
+import org.citydb.citygml.common.database.cache.model.CacheTableModel;
+import org.citydb.citygml.common.database.uid.UIDCacheEntry;
+import org.citydb.citygml.common.database.uid.UIDCachingModel;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -35,13 +42,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
-
-import org.citydb.citygml.common.database.cache.BranchCacheTable;
-import org.citydb.citygml.common.database.cache.CacheTable;
-import org.citydb.citygml.common.database.cache.CacheTableManager;
-import org.citydb.citygml.common.database.cache.model.CacheTableModel;
-import org.citydb.citygml.common.database.uid.UIDCacheEntry;
-import org.citydb.citygml.common.database.uid.UIDCachingModel;
 
 public class FeatureGmlIdCache implements UIDCachingModel {
 	private final ReentrantLock mainLock = new ReentrantLock(true);
@@ -52,7 +52,6 @@ public class FeatureGmlIdCache implements UIDCachingModel {
 	private BranchCacheTable branchTable;
 
 	private CacheTable[] backUpTables;
-	private PreparedStatement[] psLookupDbIds;
 	private PreparedStatement[] psLookupGmlIds;
 	private PreparedStatement[] psDrains;
 	private ReentrantLock[] locks;
@@ -67,7 +66,6 @@ public class FeatureGmlIdCache implements UIDCachingModel {
 
 		cacheTableModel = CacheTableModel.GMLID_FEATURE;
 		backUpTables = new CacheTable[partitions];
-		psLookupDbIds = new PreparedStatement[partitions];
 		psLookupGmlIds = new PreparedStatement[partitions];
 		psDrains = new PreparedStatement[partitions];
 		locks = new ReentrantLock[partitions];
@@ -192,10 +190,6 @@ public class FeatureGmlIdCache implements UIDCachingModel {
 			if (ps != null)
 				ps.close();
 
-		for (PreparedStatement ps : psLookupDbIds)
-			if (ps != null)
-				ps.close();
-
 		for (PreparedStatement ps : psLookupGmlIds)
 			if (ps != null)
 				ps.close();
@@ -230,7 +224,6 @@ public class FeatureGmlIdCache implements UIDCachingModel {
 					String tableName = tempTable.getTableName();
 
 					backUpTables[partition] = tempTable;
-					psLookupDbIds[partition] = conn.prepareStatement("select GMLID, TYPE from " + tableName + " where ID=?");
 					psLookupGmlIds[partition] = conn.prepareStatement("select ID, MAPPING, OBJECTCLASS_ID from " + tableName + " where GMLID=?");
 					psDrains[partition] = conn.prepareStatement("insert into " + tableName + " (GMLID, ID, MAPPING, OBJECTCLASS_ID) values (?, ?, ?, ?)");
 				}
