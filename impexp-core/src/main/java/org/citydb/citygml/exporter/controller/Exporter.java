@@ -249,10 +249,9 @@ public class Exporter implements EventHandler {
 		// process export folder for texture files
 		String textureFolder = null;
 		boolean textureFolderIsAbsolute = false;
-		boolean exportTextures = config.getProject().getExporter().getAppearances().isSetExportAppearance()
-				&& config.getProject().getExporter().getAppearances().isSetExportTextureFiles();
+		boolean exportAppearance = config.getProject().getExporter().getAppearances().isSetExportAppearance();
 
-		if (exportTextures) {
+		if (exportAppearance) {
 			textureFolder = config.getProject().getExporter().getAppearances().getTexturePath().getPath();
 			if (textureFolder == null || textureFolder.isEmpty())
 				textureFolder = "appearance";
@@ -349,7 +348,7 @@ public class Exporter implements EventHandler {
 					}
 
 					// create relative folder for texture files
-					if (exportTextures && !textureFolderIsAbsolute) {
+					if (exportAppearance && !textureFolderIsAbsolute) {
 						try {
 							createTextureFolder(file.resolve(textureFolder), textureFolder);
 						} catch (InvalidPathException e) {
