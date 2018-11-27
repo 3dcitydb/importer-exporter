@@ -434,7 +434,7 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 
 				Throwable cause = e.getCause();
 				while (cause != null) {
-					log.error("Cause: " + cause.getMessage());
+					log.error(cause.getClass().getTypeName() + ": " + cause.getMessage());
 					cause = cause.getCause();
 				}
 			}

@@ -183,7 +183,7 @@ public class XMLValidator implements EventHandler {
 				Throwable cause = interruptEvent.getCause();
 				log.error("An error occurred: " + cause.getMessage());
 				while ((cause = cause.getCause()) != null)
-					log.error("Cause: " + cause.getMessage());
+					log.error(cause.getClass().getTypeName() + ": " + cause.getMessage());
 			}
 			
 			String log = interruptEvent.getLogMessage();

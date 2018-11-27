@@ -294,7 +294,7 @@ public class ADEExtensionManager {
 					log.error("Cause: " + e.getMessage());
 					Throwable cause = e;
 					while ((cause = cause.getCause()) != null)
-						log.error("Cause: " + cause.getMessage());
+						log.error(cause.getClass().getTypeName() + ": " + cause.getMessage());
 				}
 			}
 		}

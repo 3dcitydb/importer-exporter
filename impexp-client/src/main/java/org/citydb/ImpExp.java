@@ -306,7 +306,7 @@ public class ImpExp {
 			registry.setSchemaMapping(schemaMapping);
 		} catch (JAXBException | SchemaMappingException | SchemaMappingValidationException e) {
 			log.error("Failed to process 3DCityDB schema mapping file.");
-			log.error("Cause: " + e.getMessage());
+			log.error(e.getClass().getTypeName() + ": " + e.getMessage());
 			log.error("Aborting...");
 			System.exit(1);
 		}
