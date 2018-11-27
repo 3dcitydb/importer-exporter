@@ -257,7 +257,7 @@ public class Exporter implements EventHandler {
 				textureFolder = "appearance";
 
 			textureFolderIsAbsolute = new File(textureFolder).isAbsolute();
-			if (textureFolderIsAbsolute)
+			if (!textureFolderIsAbsolute)
 				textureFolder = textureFolder.replace("\\", "/");
 
 			if (textureFolderIsAbsolute) {
