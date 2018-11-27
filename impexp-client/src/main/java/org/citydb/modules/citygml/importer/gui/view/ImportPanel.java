@@ -397,7 +397,7 @@ public class ImportPanel extends JPanel implements EventHandler {
 
 				Throwable cause = e.getCause();
 				while (cause != null) {
-					LOG.error("Cause: " + cause.getMessage());
+					LOG.error(cause.getClass().getTypeName() + ": " + cause.getMessage());
 					cause = cause.getCause();
 				}
 			}

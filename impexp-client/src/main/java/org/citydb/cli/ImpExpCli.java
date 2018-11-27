@@ -106,7 +106,7 @@ public class ImpExpCli {
 
 			Throwable cause = e.getCause();
 			while (cause != null) {
-				LOG.error("Cause: " + cause.getMessage());
+				LOG.error(cause.getClass().getTypeName() + ": " + cause.getMessage());
 				cause = cause.getCause();
 			}
 		} finally {
@@ -175,7 +175,7 @@ public class ImpExpCli {
 
 			Throwable cause = e.getCause();
 			while (cause != null) {
-				LOG.error("Cause: " + cause.getMessage());
+				LOG.error(cause.getClass().getTypeName() + ": " + cause.getMessage());
 				cause = cause.getCause();
 			}
 		} finally {
@@ -216,7 +216,7 @@ public class ImpExpCli {
 
 			Throwable cause = e.getCause();
 			while (cause != null) {
-				LOG.error("Cause: " + cause.getMessage());
+				LOG.error(cause.getClass().getTypeName() + ": " + cause.getMessage());
 				cause = cause.getCause();
 			}
 		} finally {
