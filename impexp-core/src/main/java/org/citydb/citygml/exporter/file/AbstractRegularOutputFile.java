@@ -3,9 +3,11 @@ package org.citydb.citygml.exporter.file;
 import org.citydb.config.internal.FileType;
 import org.citydb.config.internal.OutputFile;
 
-import java.nio.file.FileSystems;
-import java.nio.file.InvalidPathException;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public abstract class AbstractRegularOutputFile extends OutputFile {
 
@@ -14,13 +16,18 @@ public abstract class AbstractRegularOutputFile extends OutputFile {
     }
 
     @Override
-    public Path resolve(String path) throws InvalidPathException {
-        return file.getParent().resolve(path);
+    public String resolve(String... paths) {
+        return Paths.get(file.getParent().toString(), paths).toString();
     }
 
     @Override
-    public String getSeparator() {
-        return FileSystems.getDefault().getSeparator();
+    public void createDirectories(String path) throws IOException {
+        Files.createDirectories(file.getParent().resolve(path));
+    }
+
+    @Override
+    public OutputStream newOutputStream(String file) throws IOException {
+        return Files.newOutputStream(Paths.get(file) );
     }
 
     @Override

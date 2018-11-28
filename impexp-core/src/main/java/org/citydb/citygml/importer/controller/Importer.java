@@ -41,6 +41,7 @@ import org.citydb.citygml.importer.database.uid.FeatureGmlIdCache;
 import org.citydb.citygml.importer.database.uid.GeometryGmlIdCache;
 import org.citydb.citygml.importer.database.uid.TextureImageCache;
 import org.citydb.citygml.importer.database.xlink.resolver.DBXlinkSplitter;
+import org.citydb.citygml.importer.file.AbstractArchiveInputFile;
 import org.citydb.citygml.importer.file.DirectoryScanner;
 import org.citydb.citygml.importer.filter.CityGMLFilter;
 import org.citydb.citygml.importer.filter.CityGMLFilterBuilder;
@@ -51,9 +52,8 @@ import org.citydb.concurrent.PoolSizeAdaptationStrategy;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
-import org.citydb.citygml.importer.file.AbstractArchiveInputFile;
-import org.citydb.config.internal.InputFile;
 import org.citydb.config.internal.FileType;
+import org.citydb.config.internal.InputFile;
 import org.citydb.config.internal.Internal;
 import org.citydb.config.project.database.Database;
 import org.citydb.config.project.database.Workspace;
@@ -554,8 +554,12 @@ public class Importer implements EventHandler {
 					log.warn(xmlValidationErrorCounter + " error(s) encountered while validating the document.");
 
 				xmlValidationErrorCounter = 0;
+			} catch (CityGMLImportException e) {
+				throw e;
 			} catch (IOException e) {
 				throw new CityGMLImportException("Failed to process import file.", e);
+			} catch (Throwable e) {
+				throw new CityGMLImportException("An unexpected error occurred.", e);
 			} finally {
 				// clean up
 				if (featureWorkerPool != null && !featureWorkerPool.isTerminated())

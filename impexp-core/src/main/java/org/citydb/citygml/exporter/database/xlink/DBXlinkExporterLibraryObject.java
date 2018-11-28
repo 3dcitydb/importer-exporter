@@ -29,6 +29,7 @@ package org.citydb.citygml.exporter.database.xlink;
 
 import org.citydb.citygml.common.database.xlink.DBXlinkLibraryObject;
 import org.citydb.config.Config;
+import org.citydb.config.internal.FileType;
 import org.citydb.config.internal.OutputFile;
 import org.citydb.database.adapter.BlobExportAdapter;
 import org.citydb.database.adapter.BlobType;
@@ -36,9 +37,11 @@ import org.citydb.log.Logger;
 import org.citydb.util.CoreConstants;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.SQLException;
 
@@ -62,15 +65,16 @@ public class DBXlinkExporterLibraryObject implements DBXlinkExporter {
 			return false;
 		}
 
-		Path file;
+		Path file = null;
 		try {
-			file = outputFile.resolve(CoreConstants.LIBRARY_OBJECTS_DIR).resolve(fileURI);
+			if (outputFile.getType() != FileType.ARCHIVE)
+				file = Paths.get(outputFile.resolve(CoreConstants.LIBRARY_OBJECTS_DIR, fileURI));
 		} catch (InvalidPathException e) {
 			log.error("Failed to export a library object: '" + fileURI + "' is invalid.");
 			return false;
 		}
 
-		if (Files.exists(file)) {
+		if (file != null && Files.exists(file)) {
 			// we could have an action depending on some user input
 			// so far, we silently return
 			return false;
@@ -78,8 +82,11 @@ public class DBXlinkExporterLibraryObject implements DBXlinkExporter {
 
 		if (!isFolderCreated) {
 			try {
-				Files.createDirectories(file.getParent());
 				isFolderCreated = true;
+				if (file != null)
+					Files.createDirectories(file.getParent());
+				else
+					outputFile.createDirectories(CoreConstants.LIBRARY_OBJECTS_DIR);
 			} catch (IOException e) {
 				throw new SQLException("Failed to create folder for library objects.");
 			}
@@ -87,7 +94,11 @@ public class DBXlinkExporterLibraryObject implements DBXlinkExporter {
 
 		// read blob into file
 		try {
-			return blobExportAdapter.writeToStream(xlink.getId(), fileURI, Files.newOutputStream(file));
+			OutputStream stream = file != null ?
+					Files.newOutputStream(file) :
+					outputFile.newOutputStream(outputFile.resolve(CoreConstants.LIBRARY_OBJECTS_DIR, fileURI));
+
+			return blobExportAdapter.writeToStream(xlink.getId(), fileURI, stream);
 		} catch (IOException e) {
 			log.error("Failed to export library object " + fileURI + ": " + e.getMessage());
 			return false;

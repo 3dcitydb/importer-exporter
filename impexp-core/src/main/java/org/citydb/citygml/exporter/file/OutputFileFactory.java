@@ -1,18 +1,20 @@
 package org.citydb.citygml.exporter.file;
 
+import org.citydb.config.Config;
+import org.citydb.config.internal.FileType;
 import org.citydb.config.internal.OutputFile;
 import org.citydb.util.Util;
 
 import java.io.IOException;
-import java.net.URI;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.Map;
 
 public class OutputFileFactory {
+    private final Config config;
+
+    public OutputFileFactory(Config config) {
+        this.config = config;
+    }
 
     public OutputFile createOutputFile(Path file) throws IOException {
         file = file.toAbsolutePath().normalize();
@@ -26,7 +28,10 @@ public class OutputFileFactory {
 
         switch (extension) {
             case "zip":
-                return createZipOutputFile(file);
+                return new ZipOutputFile(Util.stripFileExtension(file.getFileName().toString()) + ".gml",
+                        file,
+                        file.getParent(),
+                        config.getProject().getExporter().getResources().getThreadPool().getDefaultPool().getMaxThreads());
             case "gzip":
             case "gz":
                 return new GZipOutputFile(file);
@@ -35,24 +40,15 @@ public class OutputFileFactory {
         }
     }
 
-    private ZipOutputFile createZipOutputFile(Path file) throws IOException {
-        URI uri = URI.create("jar:" + file.toUri());
-
-        try {
-            FileSystem fileSystem = FileSystems.getFileSystem(uri);
-            fileSystem.close();
-        } catch (Throwable ignored) {
-            //
+    public FileType getFileType(Path file) {
+        switch (Util.getFileExtension(file.getFileName().toString())) {
+            case "zip":
+                return FileType.ARCHIVE;
+            case "gzip":
+            case "gz":
+                return FileType.COMPRESSED;
+            default:
+                return FileType.REGULAR;
         }
-
-        Files.deleteIfExists(file);
-
-        Map<String, Object> env = new HashMap<>();
-        env.put("create", "true");
-        env.put("useTempFile", true);
-        FileSystem fileSystem = FileSystems.newFileSystem(uri, env);
-        String contentFile = "/" + Util.stripFileExtension(file.getFileName().toString()) + ".gml";
-
-        return new ZipOutputFile(contentFile, file, fileSystem);
     }
 }

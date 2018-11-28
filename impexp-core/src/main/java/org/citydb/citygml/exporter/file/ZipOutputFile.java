@@ -1,40 +1,67 @@
 package org.citydb.citygml.exporter.file;
 
+import org.apache.commons.compress.archivers.zip.ParallelScatterZipCreator;
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
+import org.apache.commons.compress.parallel.FileBasedScatterGatherBackingStore;
+
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.file.FileSystem;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
 import java.nio.file.Files;
-import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
-import java.util.Objects;
+import java.util.concurrent.Executors;
+import java.util.zip.ZipEntry;
 
 public class ZipOutputFile extends AbstractArchiveOutputFile {
-    private final FileSystem fileSystem;
+    private final ZipArchiveOutputStream out;
+    private final ParallelScatterZipCreator scatterZipCreator;
 
-    ZipOutputFile(String contentFile, Path zipFile, FileSystem fileSystem) {
+    ZipOutputFile(String contentFile, Path zipFile, Path tempDir, int threads) throws IOException {
         super(contentFile, zipFile);
-        this.fileSystem = Objects.requireNonNull(fileSystem, "zip file system must not be null.");
+
+        out = new ZipArchiveOutputStream(zipFile.toFile());
+        scatterZipCreator = new ParallelScatterZipCreator(
+                Executors.newFixedThreadPool(Math.max(Runtime.getRuntime().availableProcessors(), threads)),
+                () -> new FileBasedScatterGatherBackingStore(Files.createTempFile(tempDir, "zip", ".tmp").toFile()));
     }
 
     @Override
     public OutputStream openStream() throws IOException {
-        return Files.newOutputStream(fileSystem.getPath(contentFile));
+        return newOutputStream(contentFile);
     }
 
     @Override
-    public Path resolve(String path) throws InvalidPathException {
-        return fileSystem.getPath(contentFile).getParent().resolve(path);
+    public String resolve(String... paths) {
+        return String.join("/", paths).replace("\\", "/");
     }
 
     @Override
-    public String getSeparator() {
-        return fileSystem.getSeparator();
+    public OutputStream newOutputStream(String file) throws IOException {
+        ZipArchiveEntry entry = new ZipArchiveEntry(file);
+        entry.setMethod(ZipEntry.DEFLATED);
+
+        PipedInputStream in = new PipedInputStream();
+        PipedOutputStream out = new PipedOutputStream(in);
+        scatterZipCreator.addArchiveEntry(entry, () -> in);
+
+        return out;
+    }
+
+    @Override
+    public void createDirectories(String path) throws IOException {
+        // we do not need to separately create directories
     }
 
     @Override
     public void close() throws IOException {
-        if (fileSystem.isOpen())
-            fileSystem.close();
-    }
+        try {
+            scatterZipCreator.writeTo(out);
+        } catch (Exception e) {
+            //
+        }
 
+        out.close();
+    }
 }
