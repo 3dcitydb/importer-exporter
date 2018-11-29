@@ -56,14 +56,14 @@ public class DirectoryScanner {
     }
 
     public String[] getDefaultFileEndings() {
-        return new String[]{".gml", ".xml", ".gz", ".gzip", ".zip"};
+        return new String[]{"gml", "xml", "gz", "gzip", "zip"};
     }
 
     public List<InputFile> listFiles(List<Path> bases, String... fileEndings) throws IOException {
         if (fileEndings.length == 0)
             fileEndings = getDefaultFileEndings();
 
-        Pattern pattern = Pattern.compile("(?i).+((" + Arrays.stream(fileEndings)
+        Pattern pattern = Pattern.compile("(?i).+\\.((" + Arrays.stream(fileEndings)
                 .map(Pattern::quote).collect(Collectors.joining(")|(")) + "))$");
 
         List<InputFile> files = new ArrayList<>();
