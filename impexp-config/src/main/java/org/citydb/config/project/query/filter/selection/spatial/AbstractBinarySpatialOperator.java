@@ -27,12 +27,10 @@
  */
 package org.citydb.config.project.query.filter.selection.spatial;
 
-import javax.xml.bind.annotation.XmlElementRef;
-import javax.xml.bind.annotation.XmlElementRefs;
+import org.citydb.config.geometry.AbstractGeometry;
+
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlType;
-
-import org.citydb.config.geometry.AbstractGeometry;
 
 @XmlType(name="AbstractBinarySpatialOperatorType", propOrder={
 		"operand"
@@ -48,32 +46,16 @@ import org.citydb.config.geometry.AbstractGeometry;
 	AbstractDistanceOperator.class
 })
 public abstract class AbstractBinarySpatialOperator extends AbstractSpatialOperator {
-	@XmlElementRefs({
-		@XmlElementRef(type=FileReference.class),
-		@XmlElementRef(type=AbstractGeometry.class)
-	})
-	private Object operand;
+	private AbstractGeometry operand;
 	
 	public abstract SpatialOperatorName getOperatorName();
 
-	public boolean isSetFileReference() {
-		return operand instanceof FileReference;
-	}
-
-	public String getFileReference() {
-		return isSetFileReference() ? ((FileReference)operand).getValue() : null;
-	}
-
-	public void setFileReference(String file) {
-		this.operand = file;
-	}
-
 	public boolean isSetSpatialOperand() {
-		return operand instanceof AbstractGeometry;
+		return operand != null;
 	}
 
 	public AbstractGeometry getSpatialOperand() {
-		return isSetSpatialOperand() ? (AbstractGeometry)operand : null;
+		return operand;
 	}
 
 	public void setSpatialOperand(AbstractGeometry operand) {

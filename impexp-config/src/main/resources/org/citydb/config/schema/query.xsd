@@ -17,8 +17,6 @@
 
   <xs:element name="equals" type="tns:EqualsOperatorType"/>
 
-  <xs:element name="file" type="tns:fileReference"/>
-
   <xs:element name="filter" type="tns:SelectionFilterType"/>
 
   <xs:element name="intersects" type="tns:IntersectsOperatorType"/>
@@ -367,17 +365,12 @@
   <xs:complexType name="BBOXOperatorType">
     <xs:complexContent>
       <xs:extension base="tns:AbstractSpatialOperatorType">
-        <xs:choice>
-          <xs:element ref="tns:file"/>
-          <xs:element ref="tns:envelope"/>
-        </xs:choice>
+        <xs:sequence>
+          <xs:element name="operand" type="tns:BoundingBoxType" minOccurs="0"/>
+        </xs:sequence>
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
-
-  <xs:simpleType name="fileReference">
-    <xs:restriction base="xs:string"/>
-  </xs:simpleType>
 
   <xs:complexType name="BoundingBoxType">
     <xs:complexContent>
@@ -485,16 +478,9 @@
   <xs:complexType name="AbstractBinarySpatialOperatorType" abstract="true">
     <xs:complexContent>
       <xs:extension base="tns:AbstractSpatialOperatorType">
-        <xs:choice>
-          <xs:element ref="tns:file"/>
-          <xs:element ref="tns:envelope"/>
-          <xs:element ref="tns:point"/>
-          <xs:element ref="tns:multiPoint"/>
-          <xs:element ref="tns:lineString"/>
-          <xs:element ref="tns:multiLineString"/>
-          <xs:element ref="tns:polygon"/>
-          <xs:element ref="tns:multiPolygon"/>
-        </xs:choice>
+        <xs:sequence>
+          <xs:element name="operand" type="tns:AbstractGeometryType" minOccurs="0"/>
+        </xs:sequence>
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
