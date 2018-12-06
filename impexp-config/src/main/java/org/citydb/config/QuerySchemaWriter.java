@@ -1,7 +1,6 @@
 package org.citydb.config;
 
-import org.citydb.config.project.Project;
-import org.citydb.config.project.query.Query;
+import org.citydb.config.project.query.util.QueryWrapper;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.SchemaOutputResolver;
@@ -18,7 +17,7 @@ public class QuerySchemaWriter {
 		Path configFile = Paths.get("src/main/resources/org/citydb/config/schema/query.xsd");
 		System.out.print("Generting XML schema in " + configFile.toAbsolutePath() + "... ");
 		
-		JAXBContext context = JAXBContext.newInstance(Query.class);
+		JAXBContext context = JAXBContext.newInstance(QueryWrapper.class);
 		context.generateSchema(new SchemaOutputResolver() {
 			@Override
 			public Result createOutput(String namespaceUri, String suggestedFileName) throws IOException {

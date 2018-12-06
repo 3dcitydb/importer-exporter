@@ -69,6 +69,14 @@
 
   <xs:element name="within" type="tns:WithinOperatorType"/>
 
+  <xs:element name="wrapper" type="tns:QueryWrapperType"/>
+
+  <xs:complexType name="QueryWrapperType">
+    <xs:sequence>
+      <xs:element ref="tns:query" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
   <xs:complexType name="QueryType">
     <xs:sequence>
       <xs:element name="typeNames" type="tns:FeatureTypeFilterType" minOccurs="0"/>
