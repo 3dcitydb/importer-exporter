@@ -22,6 +22,7 @@ import org.citydb.config.project.query.filter.tiling.Tiling;
 import org.citydb.config.project.query.filter.type.FeatureTypeFilter;
 import org.citydb.config.project.query.simple.SimpleBBOXMode;
 import org.citydb.config.project.query.simple.SimpleSelectionFilter;
+import org.citydb.config.project.query.util.QueryWrapper;
 import org.citydb.database.connection.DatabaseConnectionPool;
 import org.citydb.database.schema.mapping.FeatureType;
 import org.citydb.database.schema.mapping.SchemaMapping;
@@ -32,6 +33,7 @@ import org.citydb.modules.citygml.exporter.gui.view.FilterPanel;
 import org.citydb.plugin.extension.view.ViewController;
 import org.citydb.registry.ObjectRegistry;
 import org.citydb.util.Util;
+import org.citygml4j.model.module.Module;
 import org.citygml4j.model.module.ModuleContext;
 import org.citygml4j.model.module.citygml.CityGMLModuleType;
 import org.citygml4j.model.module.citygml.CityGMLVersion;
@@ -304,12 +306,12 @@ public class XMLQueryView extends FilterView {
 
                 public void error(SAXParseException exception) {
                     errors[0]++;
-                    log.error("Invalid content at [" + exception.getLineNumber() + "," +
+                    log.error("Invalid content at [" + (exception.getLineNumber() - 1) + "," +
                             exception.getColumnNumber() + "]: " + exception.getMessage());
                 }
             });
 
-            validator.validate(new StreamSource(new StringReader(query)));
+            validator.validate(new StreamSource(new StringReader(wrapQuery(query))));
         } catch (SAXException | IOException e) {
             log.error("Validation aborted due to fatal errors.");
         }
@@ -325,10 +327,10 @@ public class XMLQueryView extends FilterView {
 
         try {
             Unmarshaller unmarshaller = projectContext.createUnmarshaller();
-            Object object = unmarshaller.unmarshal(new StringReader(xmlText.getText().trim()));
-            if (object instanceof Query)
-                query = (Query) object;
-        } catch (JAXBException  e) {
+            Object object = unmarshaller.unmarshal(new StringReader(wrapQuery(xmlText.getText().trim())));
+            if (object instanceof QueryWrapper)
+                query = ((QueryWrapper) object).getQuery();
+        } catch (JAXBException ignored) {
            //
         }
 
@@ -365,6 +367,21 @@ public class XMLQueryView extends FilterView {
         } catch (JAXBException | IOException | SAXException e) {
             return "";
         }
+    }
+
+    private String wrapQuery(String query) {
+        StringBuilder wrapper = new StringBuilder("<wrapper xmlns=\"")
+                .append(ConfigUtil.CITYDB_CONFIG_NAMESPACE_URI).append("\" ");
+
+        ModuleContext context = new ModuleContext(CityGMLVersion.v2_0_0);
+        for (Module module : context.getModules()) {
+            wrapper.append("xmlns:").append(module.getNamespacePrefix()).append("=\"")
+                    .append(module.getNamespaceURI()).append("\" ");
+        }
+
+        wrapper.append(">\n").append(query).append("\n</wrapper>");
+
+        return wrapper.toString();
     }
 
     @Override

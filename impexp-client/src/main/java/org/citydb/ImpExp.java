@@ -38,6 +38,7 @@ import org.citydb.config.project.Project;
 import org.citydb.config.project.global.LanguageType;
 import org.citydb.config.project.global.Logging;
 import org.citydb.config.project.plugin.PluginConfig;
+import org.citydb.config.project.query.util.QueryWrapper;
 import org.citydb.database.DatabaseController;
 import org.citydb.database.schema.mapping.SchemaMapping;
 import org.citydb.database.schema.mapping.SchemaMappingException;
@@ -252,6 +253,8 @@ public class ImpExp {
 		// get plugin config classes
 		List<Class<?>> projectConfigClasses = new ArrayList<>();
 		projectConfigClasses.add(Project.class);
+		projectConfigClasses.add(QueryWrapper.class);
+
 		for (ConfigExtension<? extends PluginConfig> plugin : pluginManager.getExternalConfigExtensions()) {
 			try {
 				projectConfigClasses.add(plugin.getClass().getMethod("getConfig").getReturnType());
