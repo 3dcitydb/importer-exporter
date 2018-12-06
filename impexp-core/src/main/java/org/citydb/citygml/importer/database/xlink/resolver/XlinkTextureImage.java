@@ -34,6 +34,7 @@ import org.citydb.event.global.CounterEvent;
 import org.citydb.event.global.CounterType;
 import org.citydb.log.Logger;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
@@ -58,8 +59,8 @@ public class XlinkTextureImage implements DBXlinkResolver {
 		resolverManager.propagateEvent(counter);			
 		String fileURI = xlink.getFileURI();
 		
-		try (InputStream inputStream = resolverManager.openStream(fileURI)) {
-			return textureImportAdapter.insert(xlink.getId(), inputStream, fileURI);
+		try (InputStream stream = new BufferedInputStream(resolverManager.openStream(fileURI))) {
+			return textureImportAdapter.insert(xlink.getId(), stream, fileURI);
 		} catch (IOException e) {
 			LOG.error("Failed to read texture file '" + fileURI + "': " + e.getMessage());
 			return false;

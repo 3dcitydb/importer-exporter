@@ -618,7 +618,7 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 			if (config.getProject().getExporter().getXlink().getFeature().isSetKeepGmlIdAsExternalReference()
 					&& feature instanceof AbstractCityObject) {
 				ExternalReference externalReference = new ExternalReference();
-				externalReference.setInformationSystem(config.getInternal().getExportFileName());
+				externalReference.setInformationSystem(config.getInternal().getCurrentExportFile().getFile().toString());
 
 				ExternalObject externalObject = new ExternalObject();
 				externalObject.setName(feature.getId());

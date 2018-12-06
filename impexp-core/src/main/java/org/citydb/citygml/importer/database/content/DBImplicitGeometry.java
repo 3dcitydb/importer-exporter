@@ -31,26 +31,31 @@ import org.citydb.citygml.common.database.xlink.DBXlinkLibraryObject;
 import org.citydb.citygml.common.database.xlink.DBXlinkSurfaceGeometry;
 import org.citydb.citygml.importer.CityGMLImportException;
 import org.citydb.citygml.importer.util.ConcurrentLockManager;
+import org.citydb.citygml.importer.util.ExternalFileChecker;
 import org.citydb.config.Config;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.database.schema.SequenceEnum;
 import org.citydb.database.schema.TableEnum;
 import org.citydb.database.schema.mapping.MappingConstants;
+import org.citydb.log.Logger;
 import org.citydb.util.CoreConstants;
 import org.citydb.util.Util;
 import org.citygml4j.model.citygml.core.ImplicitGeometry;
 import org.citygml4j.model.gml.geometry.AbstractGeometry;
 import org.citygml4j.model.gml.geometry.GeometryProperty;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class DBImplicitGeometry implements DBImporter {
 	private final ConcurrentLockManager lockManager = ConcurrentLockManager.getInstance(DBImplicitGeometry.class);
+	private final Logger log = Logger.getInstance();
 	private final Connection batchConn;
 	private final CityGMLImportManager importer;
 
@@ -60,6 +65,7 @@ public class DBImplicitGeometry implements DBImporter {
 
 	private DBSurfaceGeometry surfaceGeometryImporter;
 	private GeometryConverter geometryConverter;
+	private ExternalFileChecker externalFileChecker;
 	private int batchCounter;
 
 	public DBImplicitGeometry(Connection batchConn, Config config, CityGMLImportManager importer) throws CityGMLImportException, SQLException {
@@ -78,6 +84,7 @@ public class DBImplicitGeometry implements DBImporter {
 
 		surfaceGeometryImporter = importer.getImporter(DBSurfaceGeometry.class);
 		geometryConverter = importer.getGeometryConverter();
+		externalFileChecker = importer.getExternalFileChecker();
 	}
 
 	protected long doImport(ImplicitGeometry implicitGeometry) throws CityGMLImportException, SQLException {
@@ -136,7 +143,7 @@ public class DBImplicitGeometry implements DBImporter {
 			else if (gmlId != null)
 				implicitGeometryId = importer.getObjectId(gmlId);				
 
-			if (implicitGeometryId == 0) {
+			if (implicitGeometryId <= 0) {
 				implicitGeometryId = importer.getNextSequenceValue(SequenceEnum.IMPLICIT_GEOMETRY_ID_SEQ.getName());
 				psImplicitGeometry.setLong(1, implicitGeometryId);
 				psImplicitGeometry.setString(2, libraryURI);
@@ -159,10 +166,15 @@ public class DBImplicitGeometry implements DBImporter {
 					else
 						psUpdateImplicitGeometry.setNull(1, Types.VARCHAR);
 
-					// propagate the link to the library object
-					importer.propagateXlink(new DBXlinkLibraryObject(
-							implicitGeometryId,
-							libraryURI));
+					try {
+						// propagate the link to the library object
+						Map.Entry<String, String> fileInfo = externalFileChecker.getFileInfo(libraryURI);
+						importer.propagateXlink(new DBXlinkLibraryObject(
+								implicitGeometryId,
+								fileInfo.getKey()));
+					} catch (IOException e) {
+						log.error("Failed to read library object file at '" + libraryURI + "': " + e.getMessage());
+					}
 				} else
 					psUpdateImplicitGeometry.setNull(1, Types.VARCHAR);
 

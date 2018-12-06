@@ -233,7 +233,6 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 
 	public void loadSettings() {
 		useSimpleFilter = config.getProject().getExporter().isUseSimpleQuery();
-		browseText.setText(config.getInternal().getExportFileName());
 		workspaceText.setText(config.getProject().getDatabase().getWorkspaces().getExportWorkspace().getName());
 		timestampText.setText(config.getProject().getDatabase().getWorkspaces().getExportWorkspace().getTimestamp());
 
@@ -268,9 +267,15 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 
 	public void setSettings() {
 		config.getProject().getExporter().setUseSimpleQuery(useSimpleFilter);
-		config.getInternal().setExportFileName(browseText.getText());
 		config.getProject().getDatabase().getWorkspaces().getExportWorkspace().setName(workspaceText.getText().trim());
 		config.getProject().getDatabase().getWorkspaces().getExportWorkspace().setTimestamp(timestampText.getText().trim());
+
+		try {
+			config.getInternal().setExportFile(new File(browseText.getText().trim()).toPath());
+		} catch (Throwable e) {
+			log.error("'" + browseText.getText().trim() + "' is not a valid file.");
+			browseText.setText("");
+		}
 
 		filterPanel.setSettings();
 
@@ -290,7 +295,7 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 
 			int tileAmount = 0;
 
-			if (config.getInternal().getExportFileName().trim().equals("")) {
+			if (browseText.getText().trim().isEmpty()) {
 				viewContoller.errorMessage(Language.I18N.getString("export.dialog.error.incompleteData"),
 						Language.I18N.getString("export.dialog.error.incompleteData.dataset"));
 				return;
@@ -461,25 +466,46 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 		JFileChooser chooser = new JFileChooser();
 		chooser.setDialogTitle(title);
 
-		FileNameExtensionFilter filter = new FileNameExtensionFilter("CityGML Files (*.gml, *.xml)", "gml", "xml");
+		FileNameExtensionFilter filter = new FileNameExtensionFilter("CityGML Files (*.gml, *.xml, *.zip, *.gz, *.gzip)",
+				"gml", "xml", "zip", "gz", "gzip");
 		chooser.addChoosableFileFilter(filter);
+		chooser.addChoosableFileFilter(new FileNameExtensionFilter("CityGML GML Files (*.gml, *.xml)", "gml", "xml"));
+		chooser.addChoosableFileFilter(new FileNameExtensionFilter("CityGML ZIP Files (*.zip)", "zip"));
+		chooser.addChoosableFileFilter(new FileNameExtensionFilter("CityGML Compressed Files (*.gz, *.gzip)", "gz", "gzip"));
 		chooser.addChoosableFileFilter(chooser.getAcceptAllFileFilter());
 		chooser.setFileFilter(filter);
 
-		if (config.getProject().getExporter().getPath().isSetLastUsedMode()) {
-			chooser.setCurrentDirectory(new File(config.getProject().getExporter().getPath().getLastUsedPath()));
+		if (browseText.getText().trim().isEmpty()) {
+			chooser.setCurrentDirectory(config.getProject().getExporter().getPath().isSetLastUsedMode() ?
+					new File(config.getProject().getExporter().getPath().getLastUsedPath()) :
+					new File(config.getProject().getExporter().getPath().getStandardPath()));
 		} else {
-			chooser.setCurrentDirectory(new File(config.getProject().getExporter().getPath().getStandardPath()));
+			File file = new File(browseText.getText().trim());
+			if (!file.isDirectory())
+				file = file.getParentFile();
+
+			chooser.setCurrentDirectory(file);
 		}
+
 		int result = chooser.showSaveDialog(getTopLevelAncestor());
 		if (result == JFileChooser.CANCEL_OPTION) return;
 		try {
-			String exportString = chooser.getSelectedFile().toString();
-			if ((!chooser.getSelectedFile().getName().contains("."))&&(!exportString.equals(""))) exportString += ".gml";
+			String exportString = chooser.getSelectedFile().getAbsolutePath();
+
+			if (!exportString.trim().isEmpty() && !chooser.getSelectedFile().getName().contains(".")) {
+				String fileName = Util.stripFileExtension(exportString);
+				for (String extension : new String[]{".gml", ".zip", ".gz"}) {
+					String candidate = fileName + extension;
+					if (chooser.getFileFilter().accept(new File(candidate))) {
+						exportString = candidate;
+						break;
+					}
+				}
+			}
+
 			browseText.setText(exportString);
 			config.getProject().getExporter().getPath().setLastUsedPath(chooser.getCurrentDirectory().getAbsolutePath());
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			//
 		}
 	}

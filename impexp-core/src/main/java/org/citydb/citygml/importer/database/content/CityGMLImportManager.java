@@ -46,6 +46,7 @@ import org.citydb.citygml.importer.database.TableHelper;
 import org.citydb.citygml.importer.util.ADEPropertyCollector;
 import org.citydb.citygml.importer.util.AffineTransformer;
 import org.citydb.citygml.importer.util.AttributeValueJoiner;
+import org.citydb.citygml.importer.util.ExternalFileChecker;
 import org.citydb.citygml.importer.util.ImportLogger.ImportLogEntry;
 import org.citydb.citygml.importer.util.LocalAppearanceHandler;
 import org.citydb.concurrent.WorkerPool;
@@ -152,6 +153,7 @@ public class CityGMLImportManager implements CityGMLImportHelper {
 	private LocalAppearanceHandler localAppearanceHandler;
 	private List<ImportLogEntry> importLogEntries;
 	private AffineTransformer affineTransformer;
+	private ExternalFileChecker externalFileChecker;
 	private CityGMLVersion cityGMLVersion;
 	private JAXBMarshaller jaxbMarshaller;
 	private SAXWriter saxWriter;
@@ -184,6 +186,7 @@ public class CityGMLImportManager implements CityGMLImportHelper {
 		objectCounter = new HashMap<>();
 		geometryCounter = new HashMap<>();
 		attributeValueJoiner = new AttributeValueJoiner();
+		externalFileChecker = new ExternalFileChecker(config.getInternal().getCurrentImportFile());
 
 		if (config.getProject().getImporter().getAppearances().isSetImportAppearance())
 			localAppearanceHandler = new LocalAppearanceHandler(this);
@@ -535,6 +538,10 @@ public class CityGMLImportManager implements CityGMLImportHelper {
 		return affineTransformer;
 	}
 
+	public ExternalFileChecker getExternalFileChecker() {
+		return externalFileChecker;
+	}
+
 	public void propagateXlink(DBXlink xlink) {
 		xlinkPool.addWork(xlink);
 	}
@@ -608,11 +615,11 @@ public class CityGMLImportManager implements CityGMLImportHelper {
 		UIDCache cache = uidCacheManager.getCache(UIDCacheType.OBJECT);
 		if (cache != null) {
 			UIDCacheEntry entry = cache.get(gmlId);
-			if (entry != null && entry.getId() > 0)
+			if (entry != null)
 				return entry.getId();
 		}
 
-		return 0;
+		return -1;
 	}
 
 	public void putTextureImageUID(String gmlId, long id) {
@@ -626,11 +633,11 @@ public class CityGMLImportManager implements CityGMLImportHelper {
 
 		if (cache != null) {
 			UIDCacheEntry entry = cache.get(gmlId);
-			if (entry != null && entry.getId() > 0)
+			if (entry != null)
 				return entry.getId();
 		}
 
-		return 0;
+		return -1;
 	}
 
 	public void putGeometryUID(String gmlId, long id, long rootId, boolean reverse, String mapping) {
@@ -644,11 +651,11 @@ public class CityGMLImportManager implements CityGMLImportHelper {
 
 		if (cache != null) {
 			UIDCacheEntry entry = cache.getFromMemory(gmlId);
-			if (entry != null && entry.getId() > 0)
+			if (entry != null)
 				return entry.getId();
 		}
 
-		return 0;
+		return -1;
 	}
 
 	protected String getObjectSignature(AbstractGML object, String gmlId) {

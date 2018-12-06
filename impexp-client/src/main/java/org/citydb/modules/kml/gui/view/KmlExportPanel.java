@@ -548,9 +548,15 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 	}
 
 	public void setSettings() {
-		config.getInternal().setExportFileName(browseText.getText().trim());
 		config.getProject().getDatabase().getWorkspaces().getKmlExportWorkspace().setName(workspaceText.getText().trim());
 		config.getProject().getDatabase().getWorkspaces().getKmlExportWorkspace().setTimestamp(timestampText.getText().trim());
+
+		try {
+			config.getInternal().setExportFile(new File(browseText.getText().trim()).toPath());
+		} catch (Throwable e) {
+			log.error("'" + browseText.getText().trim() + "' is not a valid file.");
+			browseText.setText("");
+		}
 
 		// filter
 		SimpleKmlQuery query = config.getProject().getKmlExporter().getQuery();
@@ -743,7 +749,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 			Database db = config.getProject().getDatabase();
 
 			// check all input values...
-			if (config.getInternal().getExportFileName().trim().equals("")) {
+			if (browseText.getText().trim().isEmpty()) {
 				viewController.errorMessage(Language.I18N.getString("kmlExport.dialog.error.incompleteData"), 
 						Language.I18N.getString("kmlExport.dialog.error.incompleteData.dataset"));
 				return;

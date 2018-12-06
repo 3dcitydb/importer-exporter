@@ -33,7 +33,6 @@ import org.citydb.citygml.exporter.CityGMLExportException;
 import org.citydb.citygml.exporter.util.AttributeValueSplitter;
 import org.citydb.citygml.exporter.util.AttributeValueSplitter.SplitValue;
 import org.citydb.config.Config;
-import org.citydb.util.CoreConstants;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.database.schema.TableEnum;
 import org.citydb.database.schema.mapping.FeatureType;
@@ -50,6 +49,7 @@ import org.citydb.sqlbuilder.select.join.JoinFactory;
 import org.citydb.sqlbuilder.select.operator.comparison.ComparisonFactory;
 import org.citydb.sqlbuilder.select.operator.comparison.ComparisonName;
 import org.citydb.sqlbuilder.select.projection.Function;
+import org.citydb.util.CoreConstants;
 import org.citydb.util.Util;
 import org.citygml4j.geometry.Matrix;
 import org.citygml4j.model.citygml.appearance.AbstractSurfaceData;
@@ -90,13 +90,13 @@ public class AbstractAppearanceExporter extends AbstractTypeExporter {
 
 	private boolean exportTextureImage;
 	private boolean uniqueFileNames;
-	private String texturePath;
+	private String textureURI;
 	private boolean useBuckets;
 	private int noOfBuckets;
 	private boolean useXLink;
 	private boolean appendOldGmlId;
 	private String gmlIdPrefix;
-	private String pathSeparator;
+	private String separator;
 
 	private HashSet<Long> texImageIds;
 	private List<PlaceHolder<?>> themes;
@@ -106,7 +106,7 @@ public class AbstractAppearanceExporter extends AbstractTypeExporter {
 	protected AbstractAppearanceExporter(boolean isGlobal, Connection connection, Query query, CacheTable cacheTable, CityGMLExportManager exporter, Config config) throws CityGMLExportException, SQLException {
 		super(exporter);
 
-		texImageIds = new HashSet<Long>();
+		texImageIds = new HashSet<>();
 		themes = Collections.emptyList();
 
 		exportTextureImage = config.getProject().getExporter().getAppearances().isSetExportTextureFiles();
@@ -114,8 +114,8 @@ public class AbstractAppearanceExporter extends AbstractTypeExporter {
 		noOfBuckets = config.getProject().getExporter().getAppearances().getTexturePath().getNoOfBuckets(); 
 		useBuckets = config.getProject().getExporter().getAppearances().getTexturePath().isUseBuckets() && noOfBuckets > 0;
 
-		texturePath = config.getInternal().getExportTextureFilePath();
-		pathSeparator = config.getProject().getExporter().getAppearances().getTexturePath().isAbsolute() ? File.separator : "/";
+		textureURI = config.getInternal().getExportTextureURI();
+		separator = new File(textureURI).isAbsolute() ? File.separator : "/";
 		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 		String getLength = exporter.getDatabaseAdapter().getSQLAdapter().resolveDatabaseOperationName("blob.get_length");
 
@@ -231,7 +231,7 @@ public class AbstractAppearanceExporter extends AbstractTypeExporter {
 				} else {
 					String newGmlId = DefaultGMLIdManager.getInstance().generateUUID(gmlIdPrefix);
 					if (appendOldGmlId)
-						newGmlId = new StringBuilder(newGmlId).append("-").append(gmlId).toString();
+						newGmlId = newGmlId + "-" + gmlId;
 
 					gmlId = newGmlId;
 				}
@@ -311,22 +311,21 @@ public class AbstractAppearanceExporter extends AbstractTypeExporter {
 				String imageURI = rs.getString(23);
 				if (uniqueFileNames) {
 					String extension = Util.getFileExtension(imageURI);
-					imageURI = CoreConstants.UNIQUE_TEXTURE_FILENAME_PREFIX + texImageId + (extension != null ? "." + extension : "");
+					imageURI = CoreConstants.UNIQUE_TEXTURE_FILENAME_PREFIX + texImageId + (!extension.isEmpty() ? "." + extension : "");
 				}
 
 				String fileName = new File(imageURI).getName();
 				if (useBuckets)
-					fileName = String.valueOf(Math.abs(texImageId % noOfBuckets + 1)) + pathSeparator + fileName;
+					fileName = String.valueOf(Math.abs(texImageId % noOfBuckets + 1)) + separator + fileName;
 
-				abstractTexture.setImageURI(texturePath != null ? texturePath + pathSeparator + fileName : fileName);
+				abstractTexture.setImageURI(textureURI != null ? textureURI + separator + fileName : fileName);
 
 				// export texture image from database
 				if (exportTextureImage && (uniqueFileNames || !texImageIds.contains(texImageId))) {
 					if (dbImageSize > 0) {
 						DBXlinkTextureFile xlink = new DBXlinkTextureFile(
 								texImageId,
-								fileName,
-								false);
+								fileName);
 
 						if (!lazyExport)
 							exporter.propagateXlink(xlink);
@@ -334,8 +333,8 @@ public class AbstractAppearanceExporter extends AbstractTypeExporter {
 							abstractTexture.setLocalProperty(CoreConstants.TEXTURE_IMAGE_XLINK, xlink);
 
 					} else {
-						log.warn(new StringBuilder(exporter.getObjectSignature(exporter.getFeatureType(objectClassId), surfaceDataId))
-								.append(": Skipping 0 byte texture file '").append(imageURI).append("'.").toString());
+						log.warn(exporter.getObjectSignature(exporter.getFeatureType(objectClassId), surfaceDataId) +
+								": Skipping 0 byte texture file '" + imageURI + "'.");
 					}
 
 					if (!uniqueFileNames)
@@ -395,7 +394,7 @@ public class AbstractAppearanceExporter extends AbstractTypeExporter {
 					double[] point = pointObj.getCoordinates(0);
 					Point referencePoint = new Point();
 
-					List<Double> value = new ArrayList<Double>();
+					List<Double> value = new ArrayList<>();
 					value.add(point[0]);
 					value.add(point[1]);
 

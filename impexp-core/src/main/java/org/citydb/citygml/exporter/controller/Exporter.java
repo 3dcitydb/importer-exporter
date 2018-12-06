@@ -38,6 +38,7 @@ import org.citydb.citygml.exporter.database.content.DBSplitter;
 import org.citydb.citygml.exporter.database.content.DBSplittingResult;
 import org.citydb.citygml.exporter.database.uid.FeatureGmlIdCache;
 import org.citydb.citygml.exporter.database.uid.GeometryGmlIdCache;
+import org.citydb.citygml.exporter.file.OutputFileFactory;
 import org.citydb.citygml.exporter.writer.FeatureWriteException;
 import org.citydb.citygml.exporter.writer.FeatureWriter;
 import org.citydb.citygml.exporter.writer.FeatureWriterFactory;
@@ -46,6 +47,8 @@ import org.citydb.concurrent.PoolSizeAdaptationStrategy;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
+import org.citydb.config.internal.FileType;
+import org.citydb.config.internal.OutputFile;
 import org.citydb.config.project.database.DatabaseSrs;
 import org.citydb.config.project.database.Workspace;
 import org.citydb.config.project.exporter.TileNameSuffixMode;
@@ -84,11 +87,13 @@ import org.citygml4j.model.gml.GMLClass;
 import org.citygml4j.model.module.citygml.CityGMLModuleType;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -235,58 +240,83 @@ public class Exporter implements EventHandler {
 			}
 		}
 
-		// prepare files and folders
-		File exportFile = new File(config.getInternal().getExportFileName());
-		String fileName = exportFile.getName();
-		String folderName = exportFile.getAbsoluteFile().getParent();
+		// create output file factory
+		OutputFileFactory fileFactory = new OutputFileFactory(config);
+		Path exportFile = config.getInternal().getExportFile();
+		if (exportFile.getFileName() == null)
+			throw new CityGMLExportException("The export file '" + exportFile + "' is invalid.");
 
-		String fileExtension = Util.getFileExtension(fileName);		
-		if (fileExtension == null)
-			fileExtension = "gml";
-		else
-			fileName = Util.stripFileExtension(fileName);
+		// process export folder for texture files
+		String textureFolder = null;
+		boolean textureFolderIsAbsolute = false;
+		boolean exportAppearance = config.getProject().getExporter().getAppearances().isSetExportAppearance();
 
-		File folder = new File(folderName);
-		if (!folder.exists() && !folder.mkdirs())
-			throw new CityGMLExportException("Failed to create folder '" + folderName + "'.");
+		if (exportAppearance) {
+			textureFolder = config.getProject().getExporter().getAppearances().getTexturePath().getPath();
+			if (textureFolder == null || textureFolder.isEmpty())
+				textureFolder = "appearance";
+
+			textureFolderIsAbsolute = new File(textureFolder).isAbsolute();
+			if (!textureFolderIsAbsolute)
+				textureFolder = textureFolder.replace("\\", "/");
+
+			if (textureFolderIsAbsolute) {
+				try {
+					Path path = Paths.get(textureFolder).toAbsolutePath().normalize();
+					textureFolder = path.toString();
+					if (!Files.isDirectory(path)) {
+						Files.createDirectories(path);
+						log.info("Created texture files folder '" + textureFolder + "'.");
+					}
+				} catch (IOException | InvalidPathException e) {
+					throw new CityGMLExportException("Failed to create texture files folder '" + textureFolder + "'.", e);
+				}
+			}
+
+			config.getInternal().setExportTextureURI(textureFolder);
+
+			// check for unique texture filenames when exporting an archiv
+			if (!config.getProject().getExporter().getAppearances().isSetUniqueTextureFileNames()
+				&& fileFactory.getFileType(exportFile.getFileName()) == FileType.ARCHIVE) {
+				log.warn("Using unique texture filenames because of writing to an archive file.");
+				config.getProject().getExporter().getAppearances().setUniqueTextureFileNames(true);
+			}
+		}
 
 		int remainingTiles = rows * columns;
 		long start = System.currentTimeMillis();
 
 		for (int i = 0; shouldRun && i < rows; i++) {
 			for (int j = 0; shouldRun && j < columns; j++) {
-				FeatureWriter writer = null;
+				Path folder = exportFile.getParent();
+				String fileName = exportFile.getFileName().toString();
 
-				try {
-					File file;
+				if (useTiling) {
+					Tile tile;
+					try {
+						tile = tiling.getTileAt(i, j);
+						tiling.setActiveTile(tile);
 
-					if (useTiling) {
-						Tile tile;
+						Predicate bboxFilter = tile.getFilterPredicate(databaseAdapter);
+						if (predicate != null)
+							query.setSelection(new SelectionFilter(LogicalOperationFactory.AND(predicate, bboxFilter)));
+						else
+							query.setSelection(new SelectionFilter(bboxFilter));
 
-						try {
-							tile = tiling.getTileAt(i, j);
-							tiling.setActiveTile(tile);
+					} catch (FilterException e) {
+						throw new CityGMLExportException("Failed to get tile at [" + i + "," + j + "].", e);
+					}
 
-							Predicate bboxFilter = tile.getFilterPredicate(databaseAdapter);
-							if (predicate != null)
-								query.setSelection(new SelectionFilter(LogicalOperationFactory.AND(predicate, bboxFilter)));
-							else
-								query.setSelection(new SelectionFilter(bboxFilter));
+					// create suffix for folderName and fileName
+					TileSuffixMode suffixMode = tilingOptions.getTilePathSuffix();
+					String suffix;
 
-						} catch (FilterException e) {
-							throw new CityGMLExportException("Failed to get tile at [" + i + "," + j + "].", e);
-						}
+					double minX = tile.getExtent().getLowerCorner().getX();
+					double minY = tile.getExtent().getLowerCorner().getY();
+					double maxX = tile.getExtent().getUpperCorner().getX();
+					double maxY = tile.getExtent().getUpperCorner().getY();
 
-						// create suffix for folderName and fileName
-						TileSuffixMode suffixMode = tilingOptions.getTilePathSuffix();
-						String suffix;
-
-						double minX = tile.getExtent().getLowerCorner().getX();
-						double minY = tile.getExtent().getLowerCorner().getY();
-						double maxX = tile.getExtent().getUpperCorner().getX();
-						double maxY = tile.getExtent().getUpperCorner().getY();
-
-						switch (suffixMode) {
+					switch (suffixMode) {
 						case XMIN_YMIN:
 							suffix = String.valueOf(minX) + '_' + String.valueOf(minY);
 							break;
@@ -304,79 +334,54 @@ public class Exporter implements EventHandler {
 							break;
 						default:
 							suffix = String.valueOf(i) + '_' + String.valueOf(j);
-						}
-
-						File subfolder = new File(folderName, tilingOptions.getTilePath() + '_'  + suffix);
-						if (!subfolder.exists() && !subfolder.mkdirs())
-							throw new CityGMLExportException("Failed to create tiling subfolder '" + subfolder + "'.");
-
-						if (tilingOptions.getTileNameSuffix() == TileNameSuffixMode.SAME_AS_PATH)
-							file = new File(subfolder, fileName + '_'  + suffix + '.' + fileExtension);
-						else // no suffix for filename
-							file = new File(subfolder, fileName + '.' + fileExtension);
 					}
 
-					else // no tiling
-						file = new File(folderName, fileName + '.' + fileExtension);
+					folder = folder.resolve(tilingOptions.getTilePath() + '_' + suffix);
+					if (tilingOptions.getTileNameSuffix() == TileNameSuffixMode.SAME_AS_PATH) {
+						int index = fileName.indexOf('.');
+						fileName = index > 0 ?
+								fileName.substring(0, index) + '_' + suffix + fileName.substring(index) :
+								fileName + '_' + suffix;
+					}
+				}
 
-					config.getInternal().setExportFileName(file.getAbsolutePath());
-					File path = new File(file.getAbsolutePath());
-					config.getInternal().setExportPath(path.getParent());
-
+				FeatureWriter writer = null;
+				OutputFile file = null;
+				try {
 					eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("export.dialog.cityObj.msg"), this));
-					eventDispatcher.triggerEvent(new StatusDialogTitle(file.getName(), this));
+					eventDispatcher.triggerEvent(new StatusDialogTitle(fileName, this));
 					eventDispatcher.triggerEvent(new CounterEvent(CounterType.REMAINING_TILES, --remainingTiles, this));
 
-					// checking export path for texture images
-					if (config.getProject().getExporter().getAppearances().isSetExportAppearance()) {
-						String textureExportPath;
-						boolean isRelative = config.getProject().getExporter().getAppearances().getTexturePath().isRelative();
+					try {
+						file = fileFactory.createOutputFile(folder.resolve(fileName));
+						config.getInternal().setCurrentExportFile(file);
+					} catch (IOException e) {
+						throw new CityGMLExportException("Failed to create output file '" + folder.resolve(fileName) + "'.", e);
+					}
 
-						if (isRelative)
-							textureExportPath = config.getProject().getExporter().getAppearances().getTexturePath().getRelativePath();
-						else
-							textureExportPath = config.getProject().getExporter().getAppearances().getTexturePath().getAbsolutePath();
-
-						if (textureExportPath != null && textureExportPath.length() > 0) {
-							File tmp = new File(textureExportPath);
-							textureExportPath = tmp.getPath();
-
-							if (isRelative) {
-								File exportPath = new File(path.getParent(), textureExportPath);
-
-								if (exportPath.isFile() || (exportPath.isDirectory() && !exportPath.canWrite())) {
-									throw new CityGMLExportException("Failed to open texture files subfolder '" + exportPath.toString() + "' for writing.");
-								} else if (!exportPath.isDirectory()) {
-									boolean success = exportPath.mkdirs();
-
-									if (!success)
-										throw new CityGMLExportException("Failed to create texture files subfolder '" + exportPath.toString() + "'.");
-									else
-										log.info("Created texture files subfolder '" + textureExportPath + "'.");
-								}
-
-								config.getInternal().setExportTextureFilePath(textureExportPath);
-							} else {
-								File exportPath = new File(tmp.getAbsolutePath());
-								if (!exportPath.exists() || !exportPath.isDirectory() || !exportPath.canWrite())
-									throw new CityGMLExportException("Failed to open texture files folder '" + exportPath.toString() + "' for writing.");
-
-								config.getInternal().setExportTextureFilePath(exportPath.toString());
-							}
+					// create relative folder for texture files
+					if (exportAppearance && !textureFolderIsAbsolute &&
+							(file.getType() == FileType.ARCHIVE || !Files.isDirectory(Paths.get(file.resolve(textureFolder))))) {
+						try {
+							file.createDirectories(textureFolder);
+							log.info("Created texture files folder '" + textureFolder + "'.");
+						} catch (IOException e) {
+							throw new CityGMLExportException("Failed to create texture files folder '" + textureFolder + "'.", e);
 						}
 					}
 
 					// create output writer
 					try {
-						writer = writerFactory.createFeatureWriter(new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8));
-					} catch (FileNotFoundException | FeatureWriteException e) {
-						throw new CityGMLExportException("Failed to open file '" + fileName + "' for writing.", e);
+						writer = writerFactory.createFeatureWriter(new OutputStreamWriter(file.openStream(), StandardCharsets.UTF_8));
+						writer.useIndentation(file.getType() == FileType.REGULAR);
+					} catch (FeatureWriteException | IOException e) {
+						throw new CityGMLExportException("Failed to open file '" + file.getFile() + "' for writing.", e);
 					}
 
 					// create instance of temp table manager
 					try {
 						cacheTableManager = new CacheTableManager(
-								config.getProject().getExporter().getResources().getThreadPool().getDefaultPool().getMaxThreads(), 
+								config.getProject().getExporter().getResources().getThreadPool().getDefaultPool().getMaxThreads(),
 								config);
 					} catch (SQLException | IOException e) {
 						throw new CityGMLExportException("Failed to initialize internal cache manager.", e);
@@ -386,10 +391,10 @@ public class Exporter implements EventHandler {
 					uidCacheManager = new UIDCacheManager();
 
 					// ...and start servers
-					try {		
+					try {
 						uidCacheManager.initCache(
 								UIDCacheType.GEOMETRY,
-								new GeometryGmlIdCache(cacheTableManager, 
+								new GeometryGmlIdCache(cacheTableManager,
 										config.getProject().getExporter().getResources().getGmlIdCache().getGeometry().getPartitions(),
 										config.getProject().getDatabase().getUpdateBatching().getGmlIdCacheBatchValue()),
 								config.getProject().getExporter().getResources().getGmlIdCache().getGeometry().getCacheSize(),
@@ -398,15 +403,15 @@ public class Exporter implements EventHandler {
 
 						uidCacheManager.initCache(
 								UIDCacheType.OBJECT,
-								new FeatureGmlIdCache(cacheTableManager, 
-										config.getProject().getExporter().getResources().getGmlIdCache().getFeature().getPartitions(), 
+								new FeatureGmlIdCache(cacheTableManager,
+										config.getProject().getExporter().getResources().getGmlIdCache().getFeature().getPartitions(),
 										config.getProject().getDatabase().getUpdateBatching().getGmlIdCacheBatchValue()),
 								config.getProject().getExporter().getResources().getGmlIdCache().getFeature().getCacheSize(),
 								config.getProject().getExporter().getResources().getGmlIdCache().getFeature().getPageFactor(),
 								config.getProject().getExporter().getResources().getThreadPool().getDefaultPool().getMaxThreads());
 					} catch (SQLException e) {
 						throw new CityGMLExportException("Failed to initialize internal gml:id caches.", e);
-					}	
+					}
 
 					// create worker pools
 					// here we have an open issue: queue sizes are fix...
@@ -446,7 +451,7 @@ public class Exporter implements EventHandler {
 						throw new CityGMLExportException("Failed to start database export worker pool. Check the database connection pool settings.");
 
 					// ok, preparations done. inform user...
-					log.info("Exporting to file: " + file.getAbsolutePath());
+					log.info("Exporting to file: " + file.getFile());
 
 					// get database splitter and start query
 					dbSplitter = null;
@@ -477,12 +482,28 @@ public class Exporter implements EventHandler {
 
 					eventDispatcher.triggerEvent(new StatusDialogProgressBar(true, this));
 					eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("export.dialog.finish.msg"), this));
+				} catch (CityGMLExportException e) {
+					throw e;
+				} catch (Throwable e) {
+					throw new CityGMLExportException("An unexpected error occurred.", e);
 				} finally {
-					// close writer
-					try {
-						writer.close();
-					} catch (FeatureWriteException e) {
-						//
+					// close writer before closing output file
+					if (writer != null) {
+						try {
+							writer.close();
+						} catch (FeatureWriteException e) {
+							log.error("Failed to close output writer: " + e.getMessage());
+							shouldRun = false;
+						}
+					}
+
+					if (file != null) {
+						try {
+							file.close();
+						} catch (IOException e) {
+							log.error("Failed to close output file: " + e.getMessage());
+							shouldRun = false;
+						}
 					}
 					
 					// clean up
@@ -502,7 +523,8 @@ public class Exporter implements EventHandler {
 						try {
 							uidCacheManager.shutdownAll();
 						} catch (SQLException e) {
-							throw new CityGMLExportException("Failed to clean gml:id caches.", e);
+							log.error("Failed to clean gml:id caches: " + e.getMessage());
+							shouldRun = false;
 						}
 					}
 
@@ -512,7 +534,8 @@ public class Exporter implements EventHandler {
 							cacheTableManager.dropAll();
 							cacheTableManager = null;
 						} catch (SQLException e) {
-							throw new CityGMLExportException("Failed to clean temporary cache.", e);
+							log.error("Failed to clean temporary cache: " + e.getMessage());
+							shouldRun = false;
 						}					
 					}
 				}

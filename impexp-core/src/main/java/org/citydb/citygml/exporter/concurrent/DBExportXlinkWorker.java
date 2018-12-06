@@ -27,10 +27,6 @@
  */
 package org.citydb.citygml.exporter.concurrent;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.concurrent.locks.ReentrantLock;
-
 import org.citydb.citygml.common.database.xlink.DBXlink;
 import org.citydb.citygml.common.database.xlink.DBXlinkEnum;
 import org.citydb.citygml.common.database.xlink.DBXlinkLibraryObject;
@@ -48,6 +44,10 @@ import org.citydb.event.EventDispatcher;
 import org.citydb.event.EventHandler;
 import org.citydb.event.global.EventType;
 import org.citydb.event.global.InterruptEvent;
+
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class DBExportXlinkWorker extends Worker<DBXlink> implements EventHandler {
 	private final ReentrantLock runLock = new ReentrantLock();
@@ -130,15 +130,11 @@ public class DBExportXlinkWorker extends Worker<DBXlink> implements EventHandler
 			switch (type) {
 			case TEXTURE_FILE:
 				DBXlinkTextureFile texFile = (DBXlinkTextureFile)work;
-
-				if (!texFile.isWorldFile()) {
-					DBXlinkExporterTextureImage imageExporter = (DBXlinkExporterTextureImage)xlinkExporterManager.getDBXlinkExporter(DBXlinkExporterEnum.TEXTURE_IMAGE);
-					if (imageExporter != null)
-						success = imageExporter.export(texFile);
-				}
+				DBXlinkExporterTextureImage imageExporter = (DBXlinkExporterTextureImage) xlinkExporterManager.getDBXlinkExporter(DBXlinkExporterEnum.TEXTURE_IMAGE);
+				if (imageExporter != null)
+					success = imageExporter.export(texFile);
 
 				break;
-
 			case LIBRARY_OBJECT:
 				DBXlinkLibraryObject libObject = (DBXlinkLibraryObject)work;
 				DBXlinkExporterLibraryObject libraryObject = (DBXlinkExporterLibraryObject)xlinkExporterManager.getDBXlinkExporter(DBXlinkExporterEnum.LIBRARY_OBJECT);

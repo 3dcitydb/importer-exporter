@@ -27,42 +27,42 @@
  */
 package org.citydb.citygml.importer.database.content;
 
-import java.io.File;
+import org.citydb.citygml.common.database.xlink.DBXlinkTextureFile;
+import org.citydb.citygml.importer.CityGMLImportException;
+import org.citydb.citygml.importer.util.ConcurrentLockManager;
+import org.citydb.citygml.importer.util.ExternalFileChecker;
+import org.citydb.config.Config;
+import org.citydb.database.schema.SequenceEnum;
+import org.citydb.database.schema.TableEnum;
+import org.citydb.log.Logger;
+import org.citygml4j.model.citygml.appearance.AbstractTexture;
+
+import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
-
-import org.citydb.citygml.common.database.xlink.DBXlinkTextureFile;
-import org.citydb.citygml.importer.CityGMLImportException;
-import org.citydb.citygml.importer.util.ConcurrentLockManager;
-import org.citydb.config.Config;
-import org.citydb.database.schema.SequenceEnum;
-import org.citydb.database.schema.TableEnum;
-import org.citygml4j.model.citygml.CityGMLClass;
-import org.citygml4j.model.citygml.appearance.AbstractTexture;
-import org.citygml4j.model.citygml.appearance.GeoreferencedTexture;
 
 public class DBTexImage implements DBImporter {
 	private final ConcurrentLockManager lockManager = ConcurrentLockManager.getInstance(DBTexImage.class);
+	private final Logger log = Logger.getInstance();
 	private final CityGMLImportManager importer;
 	private PreparedStatement psInsertStmt;	
 
+	private ExternalFileChecker externalFileChecker;
 	private MessageDigest md5;
-	private String localPath;
-	private boolean replacePathSeparator;
 	private boolean importTextureImage;
 	private int batchCounter;
 
 	public DBTexImage(Connection connection, Config config, CityGMLImportManager importer) throws SQLException {
 		this.importer = importer;
 
-		localPath = config.getInternal().getImportPath();
-		replacePathSeparator = File.separatorChar == '/';
 		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
 		importTextureImage = config.getProject().getImporter().getAppearances().isSetImportTextureFiles();
+		externalFileChecker = importer.getExternalFileChecker();
 
 		try {
 			md5 = MessageDigest.getInstance("MD5");
@@ -82,21 +82,28 @@ public class DBTexImage implements DBImporter {
 
 		long texImageId = 0;
 		String md5URI = toHexString(md5.digest(imageURI.getBytes()));
+
+		Map.Entry<String, String> fileInfo = null;
 		boolean insertIntoTexImage = false;
 
 		// synchronize concurrent processing of the same texture image
 		// different texture images however may be processed concurrently
 		ReentrantLock lock = lockManager.getLock(md5URI);
 		lock.lock();
-
 		try {
 			texImageId = importer.getTextureImageId(md5URI);
-			if (texImageId == 0) {
-				texImageId = importer.getNextSequenceValue(SequenceEnum.TEX_IMAGE_ID_SEQ.getName());
-				importer.putTextureImageUID(md5URI, texImageId);
-				insertIntoTexImage = true;
-			}
+			if (texImageId == -1) {
+				try {
+					fileInfo = externalFileChecker.getFileInfo(imageURI);
+					texImageId = importer.getNextSequenceValue(SequenceEnum.TEX_IMAGE_ID_SEQ.getName());
+					insertIntoTexImage = true;
+				} catch (IOException e) {
+					log.error("Failed to read image file at '" + imageURI + "': " + e.getMessage());
+					texImageId = 0;
+				}
 
+				importer.putTextureImageUID(md5URI, texImageId);
+			}
 		} finally {
 			lockManager.releaseLock(md5URI);
 			lock.unlock();
@@ -104,7 +111,7 @@ public class DBTexImage implements DBImporter {
 
 		if (insertIntoTexImage) {
 			// fill TEX_IMAGE with texture file properties
-			String fileName = getFileName(imageURI);
+			String fileName = fileInfo.getValue();
 			String mimeType = null;
 			String codeSpace = null;
 
@@ -126,18 +133,7 @@ public class DBTexImage implements DBImporter {
 				// propagte xlink to import the texture file itself
 				importer.propagateXlink(new DBXlinkTextureFile(
 						texImageId,
-						imageURI,
-						false));
-
-				// do we have a world file?!
-				if (abstractTexture.getCityGMLClass() == CityGMLClass.GEOREFERENCED_TEXTURE 
-						&& !((GeoreferencedTexture)abstractTexture).isSetOrientation() 
-						&& !((GeoreferencedTexture)abstractTexture).isSetReferencePoint()) {
-					importer.propagateXlink(new DBXlinkTextureFile(
-							surfaceDataId,
-							imageURI,
-							true));
-				}
+						fileInfo.getKey()));
 			}
 		}
 
@@ -146,28 +142,10 @@ public class DBTexImage implements DBImporter {
 
 	private String toHexString(byte[] bytes) {
 		StringBuilder hexString = new StringBuilder();
-		for (int i = 0; i < bytes.length; i++)
-			hexString.append(Integer.toString((bytes[i] & 0xff) + 0x100, 16).substring(1));
+		for (byte b : bytes)
+			hexString.append(Integer.toString((b & 0xff) + 0x100, 16).substring(1));
 
 		return hexString.toString();
-	}
-
-	private String getFileName(String fileURI) {
-		String name = fileURI;
-
-		if (replacePathSeparator)
-			fileURI = fileURI.replace("\\", "/");
-
-		File imageFile = new File(fileURI);
-		if (!imageFile.isAbsolute()) {
-			fileURI = localPath + File.separator + imageFile.getPath();
-			imageFile = new File(fileURI);
-		}
-
-		if (imageFile.exists())
-			name = imageFile.getName();
-
-		return name;
 	}
 
 	@Override

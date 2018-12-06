@@ -29,9 +29,12 @@ package org.citydb.database.adapter;
 
 import org.citydb.log.Logger;
 
+import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -75,7 +78,7 @@ public class BlobExportAdapter {
 		}
 	}
 
-	public boolean getInFile(long id, String objectName, String fileName) throws SQLException {
+	public boolean writeToFile(long id, String objectName, String fileName) throws SQLException {
 		try (FileOutputStream out = new FileOutputStream(fileName)) {
 			byte[] buf = getInByteArray(id, objectName);
 			if (buf != null) {
@@ -86,6 +89,21 @@ public class BlobExportAdapter {
 			
 		} catch (IOException e) {
 			log.error("Failed to write " + (blobType == BlobType.TEXTURE_IMAGE ? "texture" : "library object") + " file " + fileName + ": " + e.getMessage());
+			return false;
+		}
+	}
+
+	public boolean writeToStream(long id, String objectName, OutputStream stream) throws SQLException {
+		try (BufferedOutputStream out = new BufferedOutputStream(stream)) {
+			byte[] buf = getInByteArray(id, objectName);
+			if (buf != null) {
+				out.write(buf);
+				return true;
+			} else
+				return false;
+
+		} catch (IOException e) {
+			log.error("Failed to write " + (blobType == BlobType.TEXTURE_IMAGE ? "texture" : "library object") + " file: " + e.getMessage());
 			return false;
 		}
 	}

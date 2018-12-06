@@ -27,14 +27,14 @@
  */
 package org.citydb.citygml.exporter.database.xlink;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.HashMap;
-
 import org.citydb.config.Config;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.event.Event;
 import org.citydb.event.EventDispatcher;
+
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.HashMap;
 
 public class DBXlinkExporterManager {
 	private final Connection connection;
@@ -50,7 +50,7 @@ public class DBXlinkExporterManager {
 		this.config = config;
 		this.eventDispatcher = eventDispatcher;
 
-		dbExporterMap = new HashMap<DBXlinkExporterEnum, DBXlinkExporter>();
+		dbExporterMap = new HashMap<>();
 	}
 
 	public DBXlinkExporter getDBXlinkExporter(DBXlinkExporterEnum dbXlinkExporterType) throws SQLException {
@@ -66,8 +66,7 @@ public class DBXlinkExporterManager {
 				break;
 			}
 
-			if (dbExporter != null)
-				dbExporterMap.put(dbXlinkExporterType, dbExporter);
+			dbExporterMap.put(dbXlinkExporterType, dbExporter);
 		}
 
 		return dbExporter;

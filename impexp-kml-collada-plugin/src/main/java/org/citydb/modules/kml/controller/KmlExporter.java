@@ -318,7 +318,7 @@ public class KmlExporter implements EventHandler {
 		saxWriter.setPrefix("xal", "urn:oasis:names:tc:ciq:xsdschema:xAL:2.0");
 
 		// set export filename and path
-		String path = config.getInternal().getExportFileName().trim();
+		String path = config.getInternal().getExportFile().toAbsolutePath().normalize().toString();
 		String fileExtension = config.getProject().getKmlExporter().isExportAsKmz() ? ".kmz" : ".kml";
 		String fileName = null;
 

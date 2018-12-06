@@ -27,13 +27,6 @@
  */
 package org.citydb.citygml.importer.database.content;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Types;
-import java.util.HashSet;
-import java.util.List;
-
 import org.citydb.citygml.common.database.xlink.DBXlinkSurfaceDataToTexImage;
 import org.citydb.citygml.common.database.xlink.DBXlinkTextureAssociation;
 import org.citydb.citygml.common.database.xlink.DBXlinkTextureAssociationTarget;
@@ -42,6 +35,7 @@ import org.citydb.citygml.common.database.xlink.DBXlinkTextureParam;
 import org.citydb.citygml.common.database.xlink.DBXlinkTextureParamEnum;
 import org.citydb.citygml.importer.CityGMLImportException;
 import org.citydb.citygml.importer.util.AttributeValueJoiner;
+import org.citydb.citygml.importer.util.ExternalFileChecker;
 import org.citydb.citygml.importer.util.LocalAppearanceHandler;
 import org.citydb.citygml.importer.util.LocalAppearanceHandler.SurfaceGeometryTarget;
 import org.citydb.config.Config;
@@ -64,10 +58,29 @@ import org.citygml4j.model.citygml.appearance.TexCoordList;
 import org.citygml4j.model.citygml.appearance.TextureAssociation;
 import org.citygml4j.model.citygml.appearance.TextureCoordinates;
 import org.citygml4j.model.citygml.appearance.X3DMaterial;
+import org.citygml4j.model.citygml.core.TransformationMatrix2x2;
 import org.citygml4j.model.gml.basicTypes.Code;
+import org.citygml4j.model.gml.geometry.primitives.DirectPosition;
 import org.citygml4j.model.gml.geometry.primitives.Point;
 import org.citygml4j.model.gml.geometry.primitives.PointProperty;
 import org.citygml4j.util.gmlid.DefaultGMLIdManager;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Types;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 
 public class DBSurfaceData implements DBImporter {
 	private final Logger log = Logger.getInstance();
@@ -82,6 +95,7 @@ public class DBSurfaceData implements DBImporter {
 	private DBAppearToSurfaceData appearToSurfaceDataImporter;
 	private LocalAppearanceHandler localAppearanceHandler;
 	private AttributeValueJoiner valueJoiner;
+	private ExternalFileChecker externalFileChecker;
 	private int batchCounter;
 
 	private int dbSrid;
@@ -127,10 +141,11 @@ public class DBSurfaceData implements DBImporter {
 		appearToSurfaceDataImporter = importer.getImporter(DBAppearToSurfaceData.class);
 		localAppearanceHandler = importer.getLocalAppearanceHandler();
 		valueJoiner = importer.getAttributeValueJoiner();
+		externalFileChecker = importer.getExternalFileChecker();
 	}
 
 	public long doImport(AbstractSurfaceData surfaceData, long parentId, boolean isLocalAppearance) throws CityGMLImportException, SQLException {
-		PreparedStatement psSurfaceData = null;
+		PreparedStatement psSurfaceData;
 
 		FeatureType featureType = importer.getFeatureType(surfaceData);
 		if (featureType == null)
@@ -261,7 +276,7 @@ public class DBSurfaceData implements DBImporter {
 				importer.executeBatch(TableEnum.SURFACE_DATA);
 
 			if (material.isSetTarget()) {
-				HashSet<String> duplicateTargets = new HashSet<String>(material.getTarget().size());
+				HashSet<String> duplicateTargets = new HashSet<>(material.getTarget().size());
 
 				for (String target : material.getTarget()) {
 					if (target != null && target.length() != 0) {
@@ -285,10 +300,9 @@ public class DBSurfaceData implements DBImporter {
 			AbstractTexture absTex = (AbstractTexture)surfaceData;
 
 			// handle texture image
-			long texImageId = 0;
+			long texImageId;
 			if (absTex.isSetImageURI()) {
 				texImageId = textureImageImporter.doImport(absTex, surfaceDataId);
-
 				if (texImageId != 0) {
 					importer.propagateXlink(new DBXlinkSurfaceDataToTexImage(
 							surfaceDataId, 
@@ -319,7 +333,7 @@ public class DBSurfaceData implements DBImporter {
 
 				ParameterizedTexture paraTex = (ParameterizedTexture)surfaceData;
 				if (paraTex.isSetTarget()) {
-					HashSet<String> duplicateTargets = new HashSet<String>(paraTex.getTarget().size());
+					HashSet<String> duplicateTargets = new HashSet<>(paraTex.getTarget().size());
 					int targetId = 0;
 
 					for (TextureAssociation target : paraTex.getTarget()) {
@@ -352,7 +366,7 @@ public class DBSurfaceData implements DBImporter {
 								if (isLocalAppearance) {
 									// check whether we can query the target from the in-memory gml:id cache
 									long surfaceGeometryId = importer.getGeometryIdFromMemory(targetURI.replaceAll("^#", ""));
-									isResolved = surfaceGeometryId != 0;
+									isResolved = surfaceGeometryId > 0;
 
 									if (isResolved) {
 										textureParamImporter.doImport(worldToTextureString, surfaceDataId, surfaceGeometryId);
@@ -490,10 +504,11 @@ public class DBSurfaceData implements DBImporter {
 			else if (surfaceData instanceof GeoreferencedTexture) {
 				GeoreferencedTexture geoTex = (GeoreferencedTexture)surfaceData;
 
-				if (geoTex.isSetPreferWorldFile() && !geoTex.getPreferWorldFile())
-					psSurfaceData.setInt(11, 0);
-				else
-					psSurfaceData.setInt(11, 1);
+				// check for a world file if there is no inline georeference
+				if (!geoTex.isSetOrientation() && !geoTex.isSetReferencePoint())
+					processWorldFile(geoTex);
+
+				psSurfaceData.setInt(11, geoTex.isSetPreferWorldFile() && !geoTex.getPreferWorldFile() ? 0 : 1);
 
 				if (geoTex.isSetOrientation()) {
 					Matrix orientation = geoTex.getOrientation().getMatrix();
@@ -536,7 +551,7 @@ public class DBSurfaceData implements DBImporter {
 					importer.executeBatch(TableEnum.SURFACE_DATA);
 
 				if (geoTex.isSetTarget()) {
-					HashSet<String> duplicateTargets = new HashSet<String>(geoTex.getTarget().size());
+					HashSet<String> duplicateTargets = new HashSet<>(geoTex.getTarget().size());
 
 					for (String target : geoTex.getTarget()) {
 						if (target != null && target.length() != 0) {
@@ -551,7 +566,7 @@ public class DBSurfaceData implements DBImporter {
 							if (isLocalAppearance) {
 								// check whether we can query the target from the in-memory gml:id cache
 								long surfaceGeometryId = importer.getGeometryIdFromMemory(target.replaceAll("^#", ""));
-								isResolved = surfaceGeometryId != 0;
+								isResolved = surfaceGeometryId > 0;
 								if (isResolved)
 									textureParamImporter.doImport(surfaceDataId, surfaceGeometryId);								
 							}
@@ -577,6 +592,81 @@ public class DBSurfaceData implements DBImporter {
 			importer.delegateToADEImporter(surfaceData, surfaceDataId, featureType);
 
 		return surfaceDataId;
+	}
+
+	private void processWorldFile(GeoreferencedTexture geoTex) {
+		String imageFileURI = geoTex.getImageURI();
+		List<String> candidates = new ArrayList<>();
+
+		// we assume the following naming scheme for world files:
+		// 1) if the image file name has a 3-character extension (image.tif), the world file
+		// has the same name followed by an extension containing the first and last letters
+		// of the image's extension and ending with a 'w' (image.tfw).
+		// 2) if the extension has more or less than 3 characters, including no extension at all,
+		// then the world file name is formed by simply appending a 'w' to the image file name.
+
+		// add candidate according to first scheme
+		int index = imageFileURI.lastIndexOf('.');
+		if (index != -1) {
+			String name = imageFileURI.substring(0, index + 1);
+			String extension = imageFileURI.substring(index + 1);
+			if (extension.length() == 3)
+				candidates.add(name + extension.substring(0, 1) + extension.substring(2, 3) + 'w');
+		}
+
+		// add candidate according to second scheme
+		candidates.add(imageFileURI + "w");
+
+		for (String candidate : candidates) {
+			Path file = null;
+			try {
+				Map.Entry<String, String> fileInfo = externalFileChecker.getFileInfo(candidate);
+
+				try {
+					file = Paths.get(fileInfo.getKey());
+				} catch (InvalidPathException ignored) {
+					//
+				}
+
+				if (file == null || !file.isAbsolute())
+					file = externalFileChecker.getInputFile().resolve(fileInfo.getKey());
+			} catch (IOException e) {
+				continue;
+			}
+
+			log.info("Processing world file: " + candidate);
+
+			try (BufferedReader in = new BufferedReader(new InputStreamReader(Files.newInputStream(file)))) {
+				double[] content = new double[6];
+				int i = 0;
+
+				String line;
+				while ((line = in.readLine()) != null && i < content.length)
+					content[i++] = Double.parseDouble(line);
+
+				if (i == 6) {
+					// interpretation of world file content taken from CityGML specification document version 1.0.0
+					Matrix matrix = new Matrix(2, 2);
+					matrix.setMatrix(Arrays.asList(content[0], content[2], content[1], content[3]));
+					geoTex.setOrientation(new TransformationMatrix2x2(matrix));
+
+					Point point = new Point();
+					DirectPosition pos = new DirectPosition();
+					pos.setValue(Arrays.asList(content[4], content[5]));
+					point.setPos(pos);
+					geoTex.setReferencePoint(new PointProperty(point));
+				} else {
+					log.error("Error while processing world file '" + candidate + "': Content could not be interpreted.");
+					break;
+				}
+			} catch (IOException e) {
+				log.error("Error while processing world file '" + candidate +"': " + e.getMessage());
+				break;
+			} catch (NumberFormatException e) {
+				log.error("Error while processing world file '" + candidate +"': Content could not be interpreted.");
+				break;
+			}
+		}
 	}
 
 	@Override

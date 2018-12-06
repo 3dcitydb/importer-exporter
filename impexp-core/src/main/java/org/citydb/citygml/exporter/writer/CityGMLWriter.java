@@ -83,6 +83,11 @@ public class CityGMLWriter implements FeatureWriter {
 		writerPool.prestartCoreWorkers();
 	}
 
+	@Override
+	public void useIndentation(boolean useIndentation) {
+		saxWriter.setIndentString(useIndentation ? "  " : "");
+	}
+
 	protected void writeStartDocument() throws FeatureWriteException {
 		writeCityModel(WriteMode.HEAD);
 	}
@@ -142,8 +147,8 @@ public class CityGMLWriter implements FeatureWriter {
 		try {
 			writerPool.shutdownAndWait();
 			writeEndDocument();
-			saxWriter.getOutputWriter().close();
-		} catch (IOException | InterruptedException e) {			
+			saxWriter.close();
+		} catch (Throwable e) {
 			throw new FeatureWriteException("Failed to close CityGML writer.", e);
 		} finally {
 			if (!writerPool.isTerminated())
