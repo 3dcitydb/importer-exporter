@@ -71,7 +71,9 @@ jar {
 }
 
 startScripts {
+    classpath = jar.outputs.files
     defaultJvmOpts = ['-Xms1G']
+
     doLast {
         def windowsScript = getWindowsScript()
         def unixScript = getUnixScript()
