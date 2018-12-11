@@ -119,12 +119,9 @@ public class DBXlinkExporterTextureImage implements DBXlinkExporter {
         }
 
         // load image data into file
-        try {
-            xlinkExporterManager.propagateEvent(counter);
-            OutputStream stream = file != null ?
-                    Files.newOutputStream(file) :
-                    outputFile.newOutputStream(outputFile.resolve(textureURI, fileURI));
-
+        xlinkExporterManager.propagateEvent(counter);
+        try (OutputStream stream = file != null ? Files.newOutputStream(file) :
+                outputFile.newOutputStream(outputFile.resolve(textureURI, fileURI))) {
             return textureImageExportAdapter.writeToStream(xlink.getId(), fileURI, stream);
         } catch (IOException e) {
             log.error("Failed to export texture file " + fileURI + ": " + e.getMessage());
