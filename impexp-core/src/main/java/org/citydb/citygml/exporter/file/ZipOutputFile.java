@@ -103,6 +103,7 @@ public class ZipOutputFile extends AbstractArchiveOutputFile {
             scatterZipPool.shutdownAndWait();
 
             // merge scatter screams into final zip
+            log.info("Merging temporary files to target ZIP file...");
             for (ScatterZipOutputStream scatterStream : scatterStreams) {
                 scatterStream.writeTo(out);
                 scatterStream.close();
