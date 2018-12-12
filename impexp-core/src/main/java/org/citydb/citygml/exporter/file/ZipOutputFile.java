@@ -1,9 +1,17 @@
 package org.citydb.citygml.exporter.file;
 
-import org.apache.commons.compress.archivers.zip.ParallelScatterZipCreator;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 import org.apache.commons.compress.parallel.FileBasedScatterGatherBackingStore;
+import org.apache.commons.compress.parallel.InputStreamSupplier;
+import org.apache.commons.compress.parallel.ScatterGatherBackingStoreSupplier;
+import org.citydb.concurrent.DefaultWorker;
+import org.citydb.concurrent.PoolSizeAdaptationStrategy;
+import org.citydb.concurrent.WorkerPool;
+import org.citydb.config.project.global.LogLevel;
+import org.citydb.event.EventDispatcher;
+import org.citydb.event.global.InterruptEvent;
+import org.citydb.log.Logger;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -11,20 +19,43 @@ import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.concurrent.Executors;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.zip.ZipEntry;
 
 public class ZipOutputFile extends AbstractArchiveOutputFile {
-    private final ZipArchiveOutputStream out;
-    private final ParallelScatterZipCreator scatterZipCreator;
+    private final Logger log = Logger.getInstance();
 
-    ZipOutputFile(String contentFile, Path zipFile, Path tempDir, int threads) throws IOException {
+    private final ZipArchiveOutputStream out;
+    private final WorkerPool<ScatterZipWork> scatterZipPool;
+    private final Set<ScatterZipOutputStream> scatterStreams;
+
+    private volatile boolean shouldRun = true;
+
+    ZipOutputFile(String contentFile, Path zipFile, Path tempDir, int threads, EventDispatcher eventDispatcher, Object eventChannel) throws IOException {
         super(contentFile, zipFile);
 
         out = new ZipArchiveOutputStream(zipFile.toFile());
-        scatterZipCreator = new ParallelScatterZipCreator(
-                Executors.newFixedThreadPool(Math.max(Runtime.getRuntime().availableProcessors(), threads)),
-                () -> new FileBasedScatterGatherBackingStore(Files.createTempFile(tempDir, "zip", ".tmp").toFile()));
+        scatterStreams = ConcurrentHashMap.newKeySet();
+
+        int minThreads = Math.max(2, Runtime.getRuntime().availableProcessors());
+        int maxThreads = Math.max(minThreads, threads);
+        ScatterGatherBackingStoreSupplier supplier = () -> new FileBasedScatterGatherBackingStore(Files.createTempFile(tempDir, "zip", ".tmp").toFile());
+
+        scatterZipPool = new WorkerPool<>("scatter_zip_pool", minThreads, maxThreads, PoolSizeAdaptationStrategy.AGGRESSIVE,
+                () -> {
+                    try {
+                        return new ScatterZipWorker(supplier, eventDispatcher);
+                    } catch (IOException e) {
+                        log.error("Failed to create scatter zip writer.");
+                        log.error(e.getClass().getTypeName() + ": " + e.getMessage());
+                        return null;
+                    }
+                },
+                maxThreads);
+
+        scatterZipPool.setEventSource(eventChannel);
+        scatterZipPool.prestartCoreWorkers();
     }
 
     @Override
@@ -39,29 +70,89 @@ public class ZipOutputFile extends AbstractArchiveOutputFile {
 
     @Override
     public OutputStream newOutputStream(String file) throws IOException {
-        ZipArchiveEntry entry = new ZipArchiveEntry(file);
-        entry.setMethod(ZipEntry.DEFLATED);
+        OutputStream out;
 
-        PipedInputStream in = new PipedInputStream();
-        PipedOutputStream out = new PipedOutputStream(in);
-        scatterZipCreator.addArchiveEntry(entry, () -> in);
+        if (shouldRun) {
+            ZipArchiveEntry entry = new ZipArchiveEntry(file);
+            entry.setMethod(ZipEntry.DEFLATED);
+
+            PipedInputStream in = new PipedInputStream();
+            out = new PipedOutputStream(in);
+            scatterZipPool.addWork(new ScatterZipWork(entry, () -> in));
+        } else {
+            out = new OutputStream() {
+                @Override
+                public void write(int b) {
+                    // do not write output
+                }
+            };
+        }
 
         return out;
     }
 
     @Override
-    public void createDirectories(String path) throws IOException {
+    public void createDirectories(String path) {
         // we do not need to separately create directories
     }
 
     @Override
     public void close() throws IOException {
         try {
-            scatterZipCreator.writeTo(out);
-        } catch (Exception e) {
-            //
+            // wait for zip entries to be written
+            scatterZipPool.shutdownAndWait();
+
+            // merge scatter screams into final zip
+            for (ScatterZipOutputStream scatterStream : scatterStreams) {
+                scatterStream.writeTo(out);
+                scatterStream.close();
+            }
+        } catch (InterruptedException e) {
+            scatterZipPool.shutdownNow();
+        } finally {
+            out.close();
+        }
+    }
+
+    private final class ScatterZipWorker extends DefaultWorker<ScatterZipWork> {
+        private final ScatterZipOutputStream scatterStream;
+        private final EventDispatcher eventDispatcher;
+
+        private ScatterZipWorker(ScatterGatherBackingStoreSupplier supplier, EventDispatcher eventDispatcher) throws IOException {
+            this.eventDispatcher = eventDispatcher;
+            scatterStream = new ScatterZipOutputStream(supplier);
+            scatterStreams.add(scatterStream);
         }
 
-        out.close();
+        @Override
+        public void doWork(ScatterZipWork work) {
+            try {
+                scatterStream.addArchiveEntry(work.zipArchiveEntry, work.source);
+            } catch (IOException e) {
+                eventDispatcher.triggerSyncEvent(new InterruptEvent("Failed to writer temporary zip archive.", LogLevel.ERROR, e, eventChannel, this));
+                shouldRun = false;
+            } finally {
+                try {
+                    work.source.get().close();
+                } catch (IOException ignored) {
+                    //
+                }
+            }
+        }
+
+        @Override
+        public void shutdown() {
+            // nothing to do
+        }
+    }
+
+    private final class ScatterZipWork {
+        private final ZipArchiveEntry zipArchiveEntry;
+        private final InputStreamSupplier source;
+
+        private ScatterZipWork(ZipArchiveEntry zipArchiveEntry, InputStreamSupplier source) {
+            this.zipArchiveEntry = zipArchiveEntry;
+            this.source = source;
+        }
     }
 }

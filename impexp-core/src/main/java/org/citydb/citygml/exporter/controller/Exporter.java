@@ -241,7 +241,7 @@ public class Exporter implements EventHandler {
 		}
 
 		// create output file factory
-		OutputFileFactory fileFactory = new OutputFileFactory(config);
+		OutputFileFactory fileFactory = new OutputFileFactory(config, eventDispatcher);
 		Path exportFile = config.getInternal().getExportFile();
 		if (exportFile.getFileName() == null)
 			throw new CityGMLExportException("The export file '" + exportFile + "' is invalid.");
