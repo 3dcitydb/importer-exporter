@@ -137,9 +137,9 @@ public class AppearancePanel extends AbstractPreferencesComponent {
 				{
 					exportBlock.add(exportAll, GuiUtil.setConstraints(0, 0, 0, 1, GridBagConstraints.BOTH, 0, 5, 0, 5));
 					exportBlock.add(overwriteCheck, GuiUtil.setConstraints(0, 1, 1, 1, GridBagConstraints.BOTH, 0, lmargin, 0, 5));
-					exportBlock.add(noTexturesCheck, GuiUtil.setConstraints(0, 2, 1, 1, GridBagConstraints.BOTH, 0, lmargin, 0, 5));
-					exportBlock.add(generateUniqueCheck, GuiUtil.setConstraints(0, 3, 1, 1, GridBagConstraints.BOTH, 0, lmargin, 0, 5));
-					exportBlock.add(noExport, GuiUtil.setConstraints(0, 5, 0, 1, GridBagConstraints.BOTH, 0, 5, 0, 5));
+					exportBlock.add(generateUniqueCheck, GuiUtil.setConstraints(0, 2, 1, 1, GridBagConstraints.BOTH, 0, lmargin, 0, 5));
+					exportBlock.add(noTexturesCheck, GuiUtil.setConstraints(0, 3, 1, 1, GridBagConstraints.BOTH, 0, lmargin, 0, 5));
+					exportBlock.add(noExport, GuiUtil.setConstraints(0, 4, 0, 1, GridBagConstraints.BOTH, 0, 5, 0, 5));
 				}
 			}
 
