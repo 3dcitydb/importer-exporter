@@ -59,9 +59,9 @@ public class AppearancePanel extends AbstractPreferencesComponent {
 	private JPanel pathBlock;
 
 	private JCheckBox overwriteCheck;
+	private JCheckBox noTexturesCheck;
 	private JCheckBox generateUniqueCheck;
 	private JRadioButton exportAll;
-	private JRadioButton exportWithoutTextures;
 	private JRadioButton noExport;
 	private JLabel pathLabel;
 	private JTextField pathText;
@@ -81,12 +81,9 @@ public class AppearancePanel extends AbstractPreferencesComponent {
 		try { noOfBuckets.commitEdit(); } catch (ParseException ignored) { }
 
 		if (!pathText.getText().equals(appearances.getTexturePath().getPath())) return true;
-		if (exportAll.isSelected()
-				&& !(appearances.isSetExportAppearance() && appearances.isSetExportTextureFiles())) return true;
-		if (noExport.isSelected()
-				&& !(!appearances.isSetExportAppearance() && !appearances.isSetExportTextureFiles())) return true;
-		if (exportWithoutTextures.isSelected()
-				&& !(appearances.isSetExportAppearance() && !appearances.isSetExportTextureFiles())) return true;
+		if (exportAll.isSelected() && !appearances.isSetExportAppearance()) return true;
+		if (noExport.isSelected() && appearances.isSetExportAppearance()) return true;
+		if (noTexturesCheck.isSelected() == appearances.isSetExportTextureFiles()) return true;
 		if (overwriteCheck.isSelected() != appearances.isSetOverwriteTextureFiles()) return true;
 		if (generateUniqueCheck.isSelected() != appearances.isSetUniqueTextureFileNames()) return true;
 		if (useBuckets.isSelected() != appearances.getTexturePath().isUseBuckets()) return true;
@@ -97,13 +94,13 @@ public class AppearancePanel extends AbstractPreferencesComponent {
 
 	private void initGui() {
 		overwriteCheck = new JCheckBox();
+		noTexturesCheck = new JCheckBox();
 		generateUniqueCheck = new JCheckBox();
-		exportWithoutTextures = new JRadioButton();
 		exportAll = new JRadioButton();
 		noExport = new JRadioButton();
+
 		ButtonGroup expAppRadio = new ButtonGroup();
 		expAppRadio.add(noExport);
-		expAppRadio.add(exportWithoutTextures);
 		expAppRadio.add(exportAll);
 
 		pathLabel = new JLabel();
@@ -132,7 +129,7 @@ public class AppearancePanel extends AbstractPreferencesComponent {
 			exportBlock.setLayout(new GridBagLayout());
 			{
 				exportAll.setIconTextGap(10);
-				exportWithoutTextures.setIconTextGap(10);
+				noTexturesCheck.setIconTextGap(10);
 				noExport.setIconTextGap(10);
 				overwriteCheck.setIconTextGap(10);
 				generateUniqueCheck.setIconTextGap(10);
@@ -140,9 +137,9 @@ public class AppearancePanel extends AbstractPreferencesComponent {
 				{
 					exportBlock.add(exportAll, GuiUtil.setConstraints(0, 0, 0, 1, GridBagConstraints.BOTH, 0, 5, 0, 5));
 					exportBlock.add(overwriteCheck, GuiUtil.setConstraints(0, 1, 1, 1, GridBagConstraints.BOTH, 0, lmargin, 0, 5));
-					exportBlock.add(generateUniqueCheck, GuiUtil.setConstraints(0, 2, 1, 1, GridBagConstraints.BOTH, 0, lmargin, 0, 5));
-					exportBlock.add(exportWithoutTextures, GuiUtil.setConstraints(0, 3, 0, 1, GridBagConstraints.BOTH, 0, 5, 0, 5));
-					exportBlock.add(noExport, GuiUtil.setConstraints(0, 4, 0, 1, GridBagConstraints.BOTH, 0, 5, 0, 5));
+					exportBlock.add(noTexturesCheck, GuiUtil.setConstraints(0, 2, 1, 1, GridBagConstraints.BOTH, 0, lmargin, 0, 5));
+					exportBlock.add(generateUniqueCheck, GuiUtil.setConstraints(0, 3, 1, 1, GridBagConstraints.BOTH, 0, lmargin, 0, 5));
+					exportBlock.add(noExport, GuiUtil.setConstraints(0, 5, 0, 1, GridBagConstraints.BOTH, 0, 5, 0, 5));
 				}
 			}
 
@@ -166,8 +163,9 @@ public class AppearancePanel extends AbstractPreferencesComponent {
 		}
 
 		noExport.addActionListener(e -> setEnabledTextureExport());
-		exportWithoutTextures.addActionListener(e -> setEnabledTextureExport());
 		exportAll.addActionListener(e -> setEnabledTextureExport());
+		overwriteCheck.addActionListener(e -> {if (overwriteCheck.isSelected()) noTexturesCheck.setSelected(false); });
+		noTexturesCheck.addActionListener(e -> {if (noTexturesCheck.isSelected()) overwriteCheck.setSelected(false); });
 		useBuckets.addActionListener(e -> noOfBuckets.setEnabled(useBuckets.isSelected()));
 		
 		noOfBuckets.addPropertyChangeListener(evt -> {
@@ -178,6 +176,7 @@ public class AppearancePanel extends AbstractPreferencesComponent {
 
 	private void setEnabledTextureExport() {
 		overwriteCheck.setEnabled(exportAll.isSelected());
+		noTexturesCheck.setEnabled(exportAll.isSelected());
 		generateUniqueCheck.setEnabled(exportAll.isSelected());
 
 		((TitledBorder) pathBlock.getBorder()).setTitleColor(exportAll.isSelected() ?
@@ -199,7 +198,7 @@ public class AppearancePanel extends AbstractPreferencesComponent {
 		overwriteCheck.setText(Language.I18N.getString("pref.export.appearance.label.exportWithTexture.overwrite"));
 		generateUniqueCheck.setText(Language.I18N.getString("pref.export.appearance.label.exportWithTexture.unique"));
 		noExport.setText(Language.I18N.getString("pref.export.appearance.label.noExport"));
-		exportWithoutTextures.setText(Language.I18N.getString("pref.export.appearance.label.exportWithoutTexture"));
+		noTexturesCheck.setText(Language.I18N.getString("pref.export.appearance.label.exportWithoutTexture"));
 		exportAll.setText(Language.I18N.getString("pref.export.appearance.label.exportWithTexture"));
 		pathLabel.setText(Language.I18N.getString("pref.export.appearance.label.path"));
 		browseButton.setText(Language.I18N.getString("common.button.browse"));
@@ -210,14 +209,12 @@ public class AppearancePanel extends AbstractPreferencesComponent {
 	public void loadSettings() {
 		ExportAppearance appearances = config.getProject().getExporter().getAppearances();
 
-		if (appearances.isSetExportAppearance()) {
-			if (appearances.isSetExportTextureFiles())
-				exportAll.setSelected(true);
-			else
-				exportWithoutTextures.setSelected(true);
-		} else
+		if (appearances.isSetExportAppearance())
+			exportAll.setSelected(true);
+		else
 			noExport.setSelected(true);
-		
+
+		noTexturesCheck.setSelected(!appearances.isSetExportTextureFiles());
 		overwriteCheck.setSelected(appearances.isSetOverwriteTextureFiles());
 		generateUniqueCheck.setSelected(appearances.isSetUniqueTextureFileNames());
 		pathText.setText(appearances.getTexturePath().getPath());
@@ -231,17 +228,12 @@ public class AppearancePanel extends AbstractPreferencesComponent {
 	public void setSettings() {
 		ExportAppearance appearances = config.getProject().getExporter().getAppearances();
 
-		if (exportAll.isSelected()) {
+		if (exportAll.isSelected())
 			appearances.setExportAppearances(true);
-			appearances.setExportTextureFiles(true);
-		} else if (exportWithoutTextures.isSelected()) {
-			appearances.setExportAppearances(true);
-			appearances.setExportTextureFiles(false);
-		} else if (noExport.isSelected()) {
+		else if (noExport.isSelected())
 			appearances.setExportAppearances(false);
-			appearances.setExportTextureFiles(false);
-		}
 
+		appearances.setExportTextureFiles(!noTexturesCheck.isSelected());
 		appearances.setOverwriteTextureFiles(overwriteCheck.isSelected());
 		appearances.setUniqueTextureFileNames(generateUniqueCheck.isSelected());
 		appearances.getTexturePath().setPath(pathText.getText());
