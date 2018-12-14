@@ -27,22 +27,23 @@
  */
 package org.citydb.query.builder.config;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.xml.namespace.QName;
-
 import org.citydb.config.project.query.filter.projection.AbstractPropertyName;
 import org.citydb.config.project.query.filter.projection.GenericAttributeName;
 import org.citydb.config.project.query.filter.projection.ProjectionContext;
 import org.citydb.config.project.query.filter.projection.PropertyName;
 import org.citydb.database.schema.mapping.AbstractObjectType;
+import org.citydb.database.schema.mapping.AbstractProperty;
 import org.citydb.database.schema.mapping.SchemaMapping;
 import org.citydb.query.builder.QueryBuildException;
 import org.citydb.query.filter.FilterException;
 import org.citydb.query.filter.projection.ProjectionFilter;
 import org.citydb.query.filter.projection.ProjectionMode;
 import org.citygml4j.model.citygml.CityGMLClass;
+
+import javax.xml.namespace.QName;
+import java.util.Collection;
+import java.util.IdentityHashMap;
+import java.util.Map;
 
 public class ProjectionFilterBuilder {
 	private final SchemaMapping schemaMapping;
@@ -51,8 +52,8 @@ public class ProjectionFilterBuilder {
 		this.schemaMapping = schemaMapping;
 	}
 
-	public List<ProjectionFilter> buildProjectionFilter(org.citydb.config.project.query.filter.projection.ProjectionFilter projectionFilterConfig) throws QueryBuildException {
-		List<ProjectionFilter> projectionFilters = new ArrayList<>();
+	public Collection<ProjectionFilter> buildProjectionFilter(org.citydb.config.project.query.filter.projection.ProjectionFilter projectionFilterConfig) throws QueryBuildException {
+		Map<AbstractObjectType<?>, ProjectionFilter> projectionFilters = new IdentityHashMap<>();
 
 		for (ProjectionContext context : projectionFilterConfig.getProjectionContexts()) {
 			// get feature type
@@ -66,6 +67,9 @@ public class ProjectionFilterBuilder {
 
 			if (objectType.isAbstract())
 				throw new QueryBuildException("Projection filters must not be defined for abstract object types.");
+
+			if (projectionFilters.containsKey(objectType))
+				throw new QueryBuildException("Multiple projection filters defined for '" + typeName + "'.");
 			
 			// get projection mode
 			ProjectionMode mode = null;
@@ -80,19 +84,25 @@ public class ProjectionFilterBuilder {
 			
 			// create projection filter for feature type
 			ProjectionFilter projectionFilter = new ProjectionFilter(objectType, mode);
-			projectionFilters.add(projectionFilter);
+			projectionFilters.put(objectType, projectionFilter);
 
 			try {				
 				// add properties and generic attributes
 				if (context.isSetPropertyNames()) {
 					for (AbstractPropertyName abstractPropertyName : context.getPropertyNames()) {
-						if (abstractPropertyName instanceof PropertyName)
-							projectionFilter.addProperty(((PropertyName)abstractPropertyName).getName());
+						if (abstractPropertyName instanceof PropertyName) {
+							QName name = ((PropertyName) abstractPropertyName).getName();
+							AbstractProperty property = objectType.getProperty(name.getLocalPart(), name.getNamespaceURI(), true);
+							if (property == null)
+								throw new QueryBuildException("'" + name + "' is not a valid property of " + typeName + ".");
+
+							projectionFilter.addProperty(property);
+						}
 
 						else if (abstractPropertyName instanceof GenericAttributeName) {
-							GenericAttributeName genericAttributeName = (GenericAttributeName)abstractPropertyName;
-							CityGMLClass type = genericAttributeName.isSetType() ? genericAttributeName.getType().getCityGMLClass() : null;
-							projectionFilter.addGenericAttribute(genericAttributeName.getName(), type);
+							GenericAttributeName name = (GenericAttributeName) abstractPropertyName;
+							CityGMLClass type = name.isSetType() ? name.getType().getCityGMLClass() : null;
+							projectionFilter.addGenericAttribute(name.getName(), type);
 						}
 					}
 				}
@@ -101,7 +111,7 @@ public class ProjectionFilterBuilder {
 			}
 		}
 
-		return projectionFilters;
+		return projectionFilters.values();
 	}
 
 }

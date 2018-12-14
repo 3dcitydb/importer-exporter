@@ -27,25 +27,25 @@
  */
 package org.citydb.config.project.query.filter.projection;
 
-import java.util.LinkedHashSet;
-
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
+import java.util.ArrayList;
+import java.util.List;
 
 @XmlType(name = "PropertyProjectionFilterType")
 public class ProjectionFilter {
 	@XmlElement(name="context")
-	private LinkedHashSet<ProjectionContext> projectionContexts;
+	private List<ProjectionContext> projectionContexts;
 	
 	public ProjectionFilter() {
-		projectionContexts = new LinkedHashSet<>();
+		projectionContexts = new ArrayList<>();
 	}
 	
-	public LinkedHashSet<ProjectionContext> getProjectionContexts() {
+	public List<ProjectionContext> getProjectionContexts() {
 		return projectionContexts;
 	}
 
-	public void setProjectionContexts(LinkedHashSet<ProjectionContext> projectionContexts) {
+	public void setProjectionContexts(List<ProjectionContext> projectionContexts) {
 		this.projectionContexts = projectionContexts;
 	}
 	
