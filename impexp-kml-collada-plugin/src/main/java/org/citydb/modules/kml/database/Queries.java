@@ -1409,7 +1409,7 @@ public class Queries {
 			.append("UNION ALL ")
 			.append("(SELECT tmp.* FROM (SELECT sg.geometry ")
 			.append("FROM ").append(schema).append(".surface_geometry sg ")
-			.append("JOIN ").append(schema).append(".PLANT_COVER pc ON sg.root_id = pc.lod").append(lodToExportFrom).append("multi_solid_id ")
+			.append("JOIN ").append(schema).append(".PLANT_COVER pc ON sg.root_id = pc.lod").append(lodToExportFrom).append("_multi_solid_id ")
 			.append("WHERE pc.id = ?")
 			.append("AND sg.geometry IS NOT NULL ")
 			.append(") tmp) ")
@@ -1422,10 +1422,10 @@ public class Queries {
 			.append("AND pc.lod").append(lodToExportFrom).append("_multi_surface_id is not null")
 			.append(") tmp) ")
 			.append("UNION ALL ")
-			.append("(SELECT tmp.* FROM (SELECT pc.lod").append(lodToExportFrom).append("multi_solid_id, '8' as objectclass_id ")
+			.append("(SELECT tmp.* FROM (SELECT pc.lod").append(lodToExportFrom).append("_multi_solid_id, '8' as objectclass_id ")
 			.append("FROM ").append(schema).append(".PLANT_COVER pc ")
 			.append("WHERE pc.id = ? ")
-			.append("AND pc.lod").append(lodToExportFrom).append("multi_solid_id is not null")
+			.append("AND pc.lod").append(lodToExportFrom).append("_multi_solid_id is not null")
 			.append(") tmp) ")
 			.append(") sub ");
 		}
