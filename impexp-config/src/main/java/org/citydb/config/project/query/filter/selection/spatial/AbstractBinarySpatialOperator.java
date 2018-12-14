@@ -29,6 +29,7 @@ package org.citydb.config.project.query.filter.selection.spatial;
 
 import org.citydb.config.geometry.AbstractGeometry;
 
+import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlType;
 
@@ -46,6 +47,7 @@ import javax.xml.bind.annotation.XmlType;
 	AbstractDistanceOperator.class
 })
 public abstract class AbstractBinarySpatialOperator extends AbstractSpatialOperator {
+	@XmlElementRef
 	private AbstractGeometry operand;
 	
 	public abstract SpatialOperatorName getOperatorName();
