@@ -38,7 +38,7 @@ public class CityGMLExportPreferences extends AbstractPreferences {
 		super(new CityGMLExportEntry());
 		
 		root.addChildEntry(new DefaultPreferencesEntry(new VersionPanel(config)));
-		root.addChildEntry(new DefaultPreferencesEntry(new BoundingBoxPanel(config)));
+		root.addChildEntry(new DefaultPreferencesEntry(new TilingOptionsPanel(config)));
 		root.addChildEntry(new DefaultPreferencesEntry(new CityObjectGroupPanel(config)));
 		root.addChildEntry(new DefaultPreferencesEntry(new AddressPanel(config)));
 		root.addChildEntry(new DefaultPreferencesEntry(new AppearancePanel(config)));

@@ -41,7 +41,7 @@ import javax.swing.border.TitledBorder;
 import java.awt.*;
 
 @SuppressWarnings("serial")
-public class BoundingBoxPanel extends AbstractPreferencesComponent {
+public class TilingOptionsPanel extends AbstractPreferencesComponent {
 	private JPanel block1;
 	private JPanel block2;
 
@@ -58,7 +58,7 @@ public class BoundingBoxPanel extends AbstractPreferencesComponent {
 	private JLabel genAttrValueLabel;
 	private JComboBox<TileSuffixMode> genAttrValueComboBox;
 
-	public BoundingBoxPanel(Config config) {
+	public TilingOptionsPanel(Config config) {
 		super(config);
 		initGui();
 	}
