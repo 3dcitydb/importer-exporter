@@ -38,12 +38,11 @@ import org.citydb.config.project.global.LogLevel;
 import org.citydb.config.project.kmlExporter.AltitudeOffsetMode;
 import org.citydb.config.project.kmlExporter.DisplayForm;
 import org.citydb.config.project.kmlExporter.KmlExporter;
+import org.citydb.config.project.kmlExporter.KmlTiling;
 import org.citydb.config.project.kmlExporter.KmlTilingMode;
-import org.citydb.config.project.kmlExporter.KmlTilingOptions;
 import org.citydb.config.project.kmlExporter.SimpleKmlQuery;
 import org.citydb.config.project.kmlExporter.SimpleKmlQueryMode;
 import org.citydb.config.project.query.filter.selection.id.ResourceIdOperator;
-import org.citydb.config.project.query.filter.selection.spatial.BBOXOperator;
 import org.citydb.config.project.query.filter.type.FeatureTypeFilter;
 import org.citydb.database.DatabaseController;
 import org.citydb.database.schema.mapping.SchemaMapping;
@@ -76,31 +75,11 @@ import org.citygml4j.model.module.citygml.VegetationModule;
 import org.jdesktop.swingx.JXTextField;
 import org.jdesktop.swingx.prompt.PromptSupport.FocusBehavior;
 
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.ButtonGroup;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JFileChooser;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JScrollPane;
-import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
-import javax.swing.SwingWorker;
-import javax.swing.UIManager;
+import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.xml.bind.JAXBContext;
-import java.awt.AWTEvent;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -464,14 +443,13 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		gmlIdText.setText(String.join(",", gmlIdFilter.getResourceIds()));
 
 		// bbox filter
-		BBOXOperator bboxFilter = query.getBboxFilter();
-		BoundingBox bbox = bboxFilter.getEnvelope();
+		KmlTiling bboxFilter = query.getBboxFilter();
+		BoundingBox bbox = bboxFilter.getExtent();
 		if (bbox != null)
-			bboxComponent.setBoundingBox(bboxFilter.getEnvelope());
+			bboxComponent.setBoundingBox(bboxFilter.getExtent());
 
 		// tiling
-		KmlTilingOptions tilingOptions = query.getTilingOptions();
-		switch (tilingOptions.getMode()) {
+		switch (bboxFilter.getMode()) {
 		case AUTOMATIC:
 			automaticTilingRadioButton.setSelected(true);
 			break;
@@ -482,8 +460,8 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 			noTilingRadioButton.setSelected(true);
 		}
 
-		rowsText.setText(String.valueOf(tilingOptions.getRows()));
-		columnsText.setText(String.valueOf(tilingOptions.getColumns()));
+		rowsText.setText(String.valueOf(bboxFilter.getRows()));
+		columnsText.setText(String.valueOf(bboxFilter.getColumns()));
 
 		// display options
 		KmlExporter kmlExporter = config.getProject().getKmlExporter();
@@ -576,27 +554,27 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		}
 
 		// bbox filter
-		query.getBboxFilter().setEnvelope(bboxComponent.getBoundingBox());
+		KmlTiling bboxFilter = query.getBboxFilter();
+		bboxFilter.setExtent(bboxComponent.getBoundingBox());
 
 		// tiling
-		KmlTilingOptions tilingOptions = query.getTilingOptions();
 		if (automaticTilingRadioButton.isSelected())
-			tilingOptions.setMode(KmlTilingMode.AUTOMATIC);
+			bboxFilter.setMode(KmlTilingMode.AUTOMATIC);
 		else if (manualTilingRadioButton.isSelected())
-			tilingOptions.setMode(KmlTilingMode.MANUAL);
+			bboxFilter.setMode(KmlTilingMode.MANUAL);
 		else
-			tilingOptions.setMode(KmlTilingMode.NO_TILING);
+			bboxFilter.setMode(KmlTilingMode.NO_TILING);
 
 		try {
-			tilingOptions.setRows(Integer.parseInt(rowsText.getText().trim()));
+			bboxFilter.setRows(Integer.parseInt(rowsText.getText().trim()));
 		} catch (NumberFormatException e) {
-			tilingOptions.setRows(1);
+			bboxFilter.setRows(1);
 		}
 
 		try {
-			tilingOptions.setColumns(Integer.parseInt(columnsText.getText().trim()));
+			bboxFilter.setColumns(Integer.parseInt(columnsText.getText().trim()));
 		} catch (NumberFormatException e) {
-			tilingOptions.setColumns(1);
+			bboxFilter.setColumns(1);
 		}
 
 		// display options
@@ -795,7 +773,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 			// BoundingBox check
 			if (query.getMode() == SimpleKmlQueryMode.BBOX
 					&& query.isSetBboxFilter()) {
-				BoundingBox bbox = query.getBboxFilter().getEnvelope();
+				BoundingBox bbox = query.getBboxFilter().getExtent();
 				Double xMin = bbox.getLowerCorner().getX();
 				Double yMin = bbox.getLowerCorner().getY();
 				Double xMax = bbox.getUpperCorner().getX();

@@ -27,16 +27,16 @@
  */
 package org.citydb.query.builder.config;
 
-import java.sql.SQLException;
-
 import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.project.database.DatabaseSrs;
+import org.citydb.config.project.kmlExporter.KmlTiling;
 import org.citydb.config.project.kmlExporter.KmlTilingMode;
-import org.citydb.config.project.kmlExporter.KmlTilingOptions;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.query.builder.QueryBuildException;
 import org.citydb.query.filter.FilterException;
 import org.citydb.query.filter.tiling.Tiling;
+
+import java.sql.SQLException;
 
 public class TilingFilterBuilder {
 	private final AbstractDatabaseAdapter databaseAdapter;
@@ -45,16 +45,16 @@ public class TilingFilterBuilder {
 		this.databaseAdapter = databaseAdapter;
 	}
 
-	public Tiling buildTilingFilter(org.citydb.config.project.query.filter.tiling.Tiling tilingConfig) throws QueryBuildException {		
+	public Tiling buildTilingFilter(org.citydb.config.project.query.filter.tiling.AbstractTiling tilingConfig) throws QueryBuildException {
 		try {
 			// adapt tiling settings in case of KML exports
-			if (tilingConfig.getTilingOptions() instanceof KmlTilingOptions) {
-				KmlTilingOptions tilingOptions = (KmlTilingOptions)tilingConfig.getTilingOptions();
+			if (tilingConfig instanceof KmlTiling) {
+				KmlTiling kmlTilingConfig = (KmlTiling) tilingConfig;
 
 				// calculate tile size if required
-				if (tilingOptions.getMode() == KmlTilingMode.AUTOMATIC) {
-					BoundingBox extent = tilingConfig.getExtent();
-					double autoTileSideLength = tilingOptions.getAutoTileSideLength();			
+				if (kmlTilingConfig.getMode() == KmlTilingMode.AUTOMATIC) {
+					BoundingBox extent = kmlTilingConfig.getExtent();
+					double autoTileSideLength = kmlTilingConfig.getTilingOptions().getAutoTileSideLength();
 
 					// transform extent into the database srs if required
 					DatabaseSrs dbSrs = databaseAdapter.getConnectionMetaData().getReferenceSystem();
@@ -72,8 +72,7 @@ public class TilingFilterBuilder {
 				} 
 
 				// internally map no tiling to manual tiling mode
-				else if (tilingOptions.getMode() == KmlTilingMode.NO_TILING) {
-					tilingOptions.setMode(KmlTilingMode.MANUAL);
+				else if (kmlTilingConfig.getMode() == KmlTilingMode.NO_TILING) {
 					tilingConfig.setRows(1);
 					tilingConfig.setColumns(1);
 				}

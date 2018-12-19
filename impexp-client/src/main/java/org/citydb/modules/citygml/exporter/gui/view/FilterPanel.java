@@ -31,14 +31,13 @@ import org.citydb.config.Config;
 import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.exporter.SimpleQuery;
-import org.citydb.config.project.exporter.TilingOptions;
+import org.citydb.config.project.exporter.SimpleTiling;
+import org.citydb.config.project.exporter.SimpleTilingMode;
 import org.citydb.config.project.query.filter.counter.CounterFilter;
 import org.citydb.config.project.query.filter.lod.LodFilter;
 import org.citydb.config.project.query.filter.lod.LodFilterMode;
 import org.citydb.config.project.query.filter.lod.LodSearchMode;
 import org.citydb.config.project.query.filter.type.FeatureTypeFilter;
-import org.citydb.config.project.query.simple.SimpleBBOXMode;
-import org.citydb.config.project.query.simple.SimpleBBOXOperator;
 import org.citydb.event.Event;
 import org.citydb.event.EventHandler;
 import org.citydb.event.global.EventType;
@@ -58,22 +57,9 @@ import org.citydb.util.Util;
 import org.citygml4j.model.module.citygml.CityGMLVersion;
 import org.jdesktop.swingx.JXTitledSeparator;
 
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.ButtonGroup;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JFormattedTextField;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JSpinner;
-import javax.swing.JTabbedPane;
-import javax.swing.SpinnerListModel;
+import javax.swing.*;
 import javax.xml.bind.JAXBContext;
-import java.awt.CardLayout;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
+import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.text.DecimalFormat;
@@ -501,22 +487,21 @@ public class FilterPanel extends JPanel implements EventHandler {
 		counterEndText.setValue(counterFilter.getUpperLimit());
 
 		// bbox filter
-		SimpleBBOXOperator bboxFilter = query.getBboxFilter();
-		BoundingBox bbox = bboxFilter.getEnvelope();
+		SimpleTiling bboxFilter = query.getBboxFilter();
+		BoundingBox bbox = bboxFilter.getExtent();
 		if (bbox != null)
-			bboxPanel.setBoundingBox(bboxFilter.getEnvelope());
+			bboxPanel.setBoundingBox(bboxFilter.getExtent());
 
-		if (query.isUseTiling())
-			bboxTiling.setSelected(query.isUseTiling());
-		else if (bboxFilter.getBboxMode() == SimpleBBOXMode.WITHIN)
+		if (bboxFilter.getMode() == SimpleTilingMode.TILING)
+			bboxTiling.setSelected(true);
+		else if (bboxFilter.getMode() == SimpleTilingMode.WITHIN)
 			bboxWithin.setSelected(true);
 		else
 			bboxOverlaps.setSelected(true);
 
 		// tiling options
-		TilingOptions tilingOptions = query.getTilingOptions();
-		tilingRowsText.setValue(tilingOptions.getRows());
-		tilingColumnsText.setValue(tilingOptions.getColumns());
+		tilingRowsText.setValue(bboxFilter.getRows());
+		tilingColumnsText.setValue(bboxFilter.getColumns());
 
 		// feature type filter
 		FeatureTypeFilter featureTypeFilter = query.getFeatureTypeFilter();
@@ -581,14 +566,19 @@ public class FilterPanel extends JPanel implements EventHandler {
 		}
 
 		// bbox filter
-		query.getBboxFilter().setEnvelope(bboxPanel.getBoundingBox());
-		query.getBboxFilter().setBboxMode(bboxOverlaps.isSelected() ? SimpleBBOXMode.BBOX : SimpleBBOXMode.WITHIN);
+		SimpleTiling bboxFilter = query.getBboxFilter();
+		bboxFilter.setExtent(bboxPanel.getBoundingBox());
+
+		if (bboxTiling.isSelected())
+			bboxFilter.setMode(SimpleTilingMode.TILING);
+		else if (bboxWithin.isSelected())
+			bboxFilter.setMode(SimpleTilingMode.WITHIN);
+		else
+			bboxFilter.setMode(SimpleTilingMode.BBOX);
 
 		// tiling options
-		TilingOptions tilingOptions = query.getTilingOptions();
-		tilingOptions.setRows(((Number) tilingRowsText.getValue()).intValue());
-		tilingOptions.setColumns(((Number) tilingColumnsText.getValue()).intValue());
-		query.setUseTiling(bboxTiling.isSelected());
+		bboxFilter.setRows(((Number) tilingRowsText.getValue()).intValue());
+		bboxFilter.setColumns(((Number) tilingColumnsText.getValue()).intValue());
 
 		// feature type filter
 		FeatureTypeFilter featureTypeFilter = query.getFeatureTypeFilter();

@@ -25,23 +25,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.citydb.config.project.query.simple;
+package org.citydb.config.project.exporter;
 
 import javax.xml.bind.annotation.XmlEnum;
 import javax.xml.bind.annotation.XmlEnumValue;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="SimpleBBOXModeType")
+@XmlType(name="SimpleTilingModeType")
 @XmlEnum
-public enum SimpleBBOXMode {
+public enum SimpleTilingMode {
 	@XmlEnumValue("within")
     WITHIN("within"),
     @XmlEnumValue("overlap")
-    BBOX("overlap");
+    BBOX("overlap"),
+    @XmlEnumValue("tiling")
+    TILING("tiling");
 
     private final String value;
 
-    SimpleBBOXMode(String v) {
+    SimpleTilingMode(String v) {
         value = v;
     }
 
@@ -49,8 +51,8 @@ public enum SimpleBBOXMode {
         return value;
     }
 
-    public static SimpleBBOXMode fromValue(String v) {
-        for (SimpleBBOXMode c: SimpleBBOXMode.values()) {
+    public static SimpleTilingMode fromValue(String v) {
+        for (SimpleTilingMode c: SimpleTilingMode.values()) {
             if (c.value.equals(v)) {
                 return c;
             }

@@ -27,39 +27,25 @@
  */
 package org.citydb.modules.kml.gui.preferences;
 
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.text.DecimalFormat;
-import java.text.ParseException;
-
-import javax.swing.ButtonGroup;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JFileChooser;
-import javax.swing.JFormattedTextField;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JTextField;
-
+import net.opengis.kml._2.ViewRefreshModeEnumType;
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.kmlExporter.KmlExporter;
+import org.citydb.config.project.kmlExporter.KmlTilingOptions;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.preferences.AbstractPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.plugin.extension.view.ViewController;
-
-import net.opengis.kml._2.ViewRefreshModeEnumType;
 import org.citydb.util.ClientConstants;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.text.DecimalFormat;
+import java.text.ParseException;
 
 @SuppressWarnings("serial")
 public class GeneralPanel extends AbstractPreferencesComponent {
@@ -119,7 +105,7 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 			}
 		}
 		catch (NumberFormatException nfe) {return true;}
-		if (autoTileSideLength != kmlExporter.getQuery().getTilingOptions().getAutoTileSideLength()) return true;
+		if (autoTileSideLength != kmlExporter.getQuery().getBboxFilter().getTilingOptions().getAutoTileSideLength()) return true;
 
 		if (oneFilePerObjectCheckbox.isSelected() != kmlExporter.isOneFilePerObject()) return true;
 
@@ -364,7 +350,7 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		showBoundingBoxCheckbox.setSelected(kmlExporter.isShowBoundingBox());
 		showTileBordersCheckbox.setSelected(kmlExporter.isShowTileBorders());
 		exportEmptyTilesCheckbox.setSelected(kmlExporter.isExportEmptyTiles());
-		autoTileSideLengthText.setText(String.valueOf(kmlExporter.getQuery().getTilingOptions().getAutoTileSideLength()));
+		autoTileSideLengthText.setText(String.valueOf(kmlExporter.getQuery().getBboxFilter().getTilingOptions().getAutoTileSideLength()));
 		oneFilePerObjectCheckbox.setSelected(kmlExporter.isOneFilePerObject());
 		visibleFromText.setText(String.valueOf(kmlExporter.getSingleObjectRegionSize()));
 		viewRefreshModeComboBox.setSelectedItem(kmlExporter.getViewRefreshMode());
@@ -393,9 +379,10 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		kmlExporter.setExportEmptyTiles(exportEmptyTilesCheckbox.isSelected());
 		
 		try {
-			kmlExporter.getQuery().getTilingOptions().setAutoTileSideLength(Double.parseDouble(autoTileSideLengthText.getText().trim()));
-			if (kmlExporter.getQuery().getTilingOptions().getAutoTileSideLength() <= 1.0) {
-				kmlExporter.getQuery().getTilingOptions().setAutoTileSideLength(125.0);
+			KmlTilingOptions tilingOptions = kmlExporter.getQuery().getBboxFilter().getTilingOptions();
+			tilingOptions.setAutoTileSideLength(Double.parseDouble(autoTileSideLengthText.getText().trim()));
+			if (tilingOptions.getAutoTileSideLength() <= 1.0) {
+				tilingOptions.setAutoTileSideLength(125.0);
 			}
 		}
 		catch (NumberFormatException nfe) {}

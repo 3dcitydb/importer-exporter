@@ -29,7 +29,6 @@ package org.citydb.config.project.importer;
 
 import org.citydb.config.project.query.filter.counter.CounterFilter;
 import org.citydb.config.project.query.filter.type.FeatureTypeFilter;
-import org.citydb.config.project.query.simple.SimpleBBOXOperator;
 import org.citydb.config.project.query.simple.SimpleAttributeFilter;
 
 import javax.xml.bind.annotation.XmlAttribute;

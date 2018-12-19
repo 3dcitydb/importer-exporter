@@ -27,17 +27,16 @@
  */
 package org.citydb.config.project.kmlExporter;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
+import org.citydb.config.project.general.Path;
+import org.citydb.config.project.resources.Resources;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlType;
-
-import org.citydb.config.project.general.Path;
-import org.citydb.config.project.resources.Resources;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 
 @XmlType(name="KmlExportType", propOrder={
 		"query",

@@ -28,7 +28,6 @@
 package org.citydb.config.project.kmlExporter;
 
 import org.citydb.config.project.query.filter.selection.id.ResourceIdOperator;
-import org.citydb.config.project.query.filter.selection.spatial.BBOXOperator;
 import org.citydb.config.project.query.filter.type.FeatureTypeFilter;
 import org.citygml4j.model.module.citygml.BridgeModule;
 import org.citygml4j.model.module.citygml.BuildingModule;
@@ -50,8 +49,7 @@ import javax.xml.namespace.QName;
 @XmlType(name="SimpleKmlExportQueryType", propOrder={
 		"featureTypeFilter",
 		"gmlIdFilter",
-		"bboxFilter",
-		"tilingOptions"
+		"bboxFilter"
 })
 public class SimpleKmlQuery {
 	@XmlAttribute
@@ -62,14 +60,12 @@ public class SimpleKmlQuery {
 	@XmlElement(name = "gmlIds")
 	private ResourceIdOperator gmlIdFilter;
 	@XmlElement(name = "bbox", required = true)
-	private BBOXOperator bboxFilter;
-	private KmlTilingOptions tilingOptions;
+	private KmlTiling bboxFilter;
 
 	public SimpleKmlQuery() {
 		featureTypeFilter = new FeatureTypeFilter();
 		gmlIdFilter = new ResourceIdOperator();
-		bboxFilter = new BBOXOperator();
-		tilingOptions = new KmlTilingOptions();
+		bboxFilter = new KmlTiling();
 
 		// add CityGML types per default
 		featureTypeFilter.addTypeName(new QName(BridgeModule.v2_0_0.getNamespaceURI(), "Bridge"));
@@ -122,7 +118,7 @@ public class SimpleKmlQuery {
 		this.gmlIdFilter = gmlIdFilter;
 	}
 
-	public BBOXOperator getBboxFilter() {
+	public KmlTiling getBboxFilter() {
 		return bboxFilter;
 	}
 
@@ -130,20 +126,8 @@ public class SimpleKmlQuery {
 		return bboxFilter != null;
 	}
 
-	public void setBboxFilter(BBOXOperator bboxFilter) {
+	public void setBboxFilter(KmlTiling bboxFilter) {
 		this.bboxFilter = bboxFilter;
-	}
-
-	public KmlTilingOptions getTilingOptions() {
-		return tilingOptions;
-	}
-
-	public boolean isSetTilingOptions() {
-		return tilingOptions != null;
-	}
-
-	public void setTilingOptions(KmlTilingOptions tilingOptions) {
-		this.tilingOptions = tilingOptions;
 	}
 
 }

@@ -38,7 +38,7 @@ import org.citydb.citygml.exporter.util.AttributeValueSplitter;
 import org.citydb.citygml.exporter.util.AttributeValueSplitter.SplitValue;
 import org.citydb.config.Config;
 import org.citydb.config.geometry.GeometryObject;
-import org.citydb.config.project.exporter.TilingOptions;
+import org.citydb.config.project.exporter.SimpleTilingOptions;
 import org.citydb.database.schema.TableEnum;
 import org.citydb.database.schema.mapping.AbstractObjectType;
 import org.citydb.database.schema.mapping.FeatureType;
@@ -93,7 +93,7 @@ public class DBCityObject implements DBExporter {
 	private boolean useTiling;
 	private boolean setTileInfoAsGenericAttribute;
 	private Tile activeTile;
-	private TilingOptions tilingOptions;
+	private SimpleTilingOptions tilingOptions;
 
 	private boolean exportCityDBMetadata;
 	private AttributeValueSplitter valueSplitter;
@@ -119,7 +119,7 @@ public class DBCityObject implements DBExporter {
 		useTiling = query.isSetTiling();
 		if (useTiling) {
 			Tiling tiling = query.getTiling();
-			tilingOptions = tiling.getTilingOptions() instanceof TilingOptions ? (TilingOptions) tiling.getTilingOptions() : new TilingOptions();
+			tilingOptions = tiling.getTilingOptions() instanceof SimpleTilingOptions ? (SimpleTilingOptions) tiling.getTilingOptions() : new SimpleTilingOptions();
 			setTileInfoAsGenericAttribute = tilingOptions.isIncludeTileAsGenericAttribute();
 			activeTile = tiling.getActiveTile();
 		}

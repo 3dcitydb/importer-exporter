@@ -36,6 +36,8 @@ import org.citydb.config.project.database.Database;
 import org.citydb.config.project.database.DatabaseConfigurationException;
 import org.citydb.config.project.database.DatabaseSrs;
 import org.citydb.config.project.exporter.SimpleQuery;
+import org.citydb.config.project.exporter.SimpleTiling;
+import org.citydb.config.project.exporter.SimpleTilingMode;
 import org.citydb.config.project.global.LogLevel;
 import org.citydb.config.project.query.Query;
 import org.citydb.config.project.query.simple.SimpleSelectionFilter;
@@ -61,23 +63,11 @@ import org.citygml4j.builder.jaxb.CityGMLBuilder;
 import org.jdesktop.swingx.JXTextField;
 import org.jdesktop.swingx.prompt.PromptSupport.FocusBehavior;
 
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JFileChooser;
-import javax.swing.JFormattedTextField;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
-import javax.swing.SwingWorker;
+import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.xml.bind.JAXBContext;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
+import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.dnd.DnDConstants;
@@ -353,7 +343,9 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 
 				// tiled bounding box
 				if (query.isUseBboxFilter()) {
-					BoundingBox bbox = query.getBboxFilter().getEnvelope();
+					SimpleTiling bboxFilter = query.getBboxFilter();
+
+					BoundingBox bbox = query.getBboxFilter().getExtent();
 					Double xMin = bbox.getLowerCorner().getX();
 					Double yMin = bbox.getLowerCorner().getY();
 					Double xMax = bbox.getUpperCorner().getX();
@@ -365,8 +357,8 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 						return;
 					}
 
-					if (query.isUseTiling())
-						tileAmount = query.getTilingOptions().getRows() * query.getTilingOptions().getColumns();
+					if (bboxFilter.getMode() == SimpleTilingMode.TILING)
+						tileAmount = bboxFilter.getRows() * bboxFilter.getColumns();
 				}
 
 				// feature types

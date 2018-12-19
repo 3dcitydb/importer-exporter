@@ -29,9 +29,9 @@ package org.citydb.modules.citygml.exporter.gui.preferences;
 
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
+import org.citydb.config.project.exporter.SimpleTilingOptions;
 import org.citydb.config.project.exporter.TileNameSuffixMode;
 import org.citydb.config.project.exporter.TileSuffixMode;
-import org.citydb.config.project.exporter.TilingOptions;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.preferences.AbstractPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
@@ -65,7 +65,7 @@ public class TilingOptionsPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public boolean isModified() {
-		TilingOptions tilingOptions = config.getProject().getExporter().getSimpleQuery().getTilingOptions();
+		SimpleTilingOptions tilingOptions = config.getProject().getExporter().getSimpleQuery().getBboxFilter().getTilingOptions();
 		if (!tilingOptions.getTilePath().equals(tilePathName.getText().trim())) return true;
 		if (tilePathSuffixComboBox.getSelectedItem() != tilingOptions.getTilePathSuffix()) return true;
 		if (tileNameSuffixComboBox.getSelectedItem() != tilingOptions.getTileNameSuffix()) return true;
@@ -168,7 +168,7 @@ public class TilingOptionsPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void loadSettings() {
-		TilingOptions tilingOptions = config.getProject().getExporter().getSimpleQuery().getTilingOptions();
+		SimpleTilingOptions tilingOptions = config.getProject().getExporter().getSimpleQuery().getBboxFilter().getTilingOptions();
 		tilePathName.setText(tilingOptions.getTilePath());
 		tilePathSuffixComboBox.setSelectedItem(tilingOptions.getTilePathSuffix());
 		tileNameSuffixComboBox.setSelectedItem(tilingOptions.getTileNameSuffix());		
@@ -184,7 +184,7 @@ public class TilingOptionsPanel extends AbstractPreferencesComponent {
 			tilePathName.setText("tile");
 
 		// tiling options
-		TilingOptions tilingOptions = config.getProject().getExporter().getSimpleQuery().getTilingOptions();
+		SimpleTilingOptions tilingOptions = config.getProject().getExporter().getSimpleQuery().getBboxFilter().getTilingOptions();
 		tilingOptions.setTilePath(tilePathName.getText());
 		tilingOptions.setTilePathSuffix((TileSuffixMode)tilePathSuffixComboBox.getSelectedItem());
 		tilingOptions.setTileNameSuffix((TileNameSuffixMode)tileNameSuffixComboBox.getSelectedItem());

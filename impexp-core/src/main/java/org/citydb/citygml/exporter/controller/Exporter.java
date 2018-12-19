@@ -53,7 +53,7 @@ import org.citydb.config.project.database.DatabaseSrs;
 import org.citydb.config.project.database.Workspace;
 import org.citydb.config.project.exporter.TileNameSuffixMode;
 import org.citydb.config.project.exporter.TileSuffixMode;
-import org.citydb.config.project.exporter.TilingOptions;
+import org.citydb.config.project.exporter.SimpleTilingOptions;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.adapter.IndexStatusInfo.IndexType;
 import org.citydb.database.connection.DatabaseConnectionPool;
@@ -223,7 +223,7 @@ public class Exporter implements EventHandler {
 
 		// tiling
 		Tiling tiling = query.getTiling();
-		TilingOptions tilingOptions = null;
+		SimpleTilingOptions tilingOptions = null;
 		Predicate predicate = null;
 		useTiling = query.isSetTiling();
 		int rows = useTiling ? tiling.getRows() : 1;  
@@ -234,7 +234,7 @@ public class Exporter implements EventHandler {
 				// transform tiling extent to database srs
 				tiling.transformExtent(databaseAdapter.getConnectionMetaData().getReferenceSystem(), databaseAdapter);
 				predicate = query.isSetSelection() ? query.getSelection().getPredicate() : null;
-				tilingOptions = tiling.getTilingOptions() instanceof TilingOptions ? (TilingOptions)tiling.getTilingOptions() : new TilingOptions();
+				tilingOptions = tiling.getTilingOptions() instanceof SimpleTilingOptions ? (SimpleTilingOptions)tiling.getTilingOptions() : new SimpleTilingOptions();
 			} catch (FilterException e) {
 				throw new CityGMLExportException("Failed to transform tiling extent.", e);
 			}

@@ -25,37 +25,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.citydb.config.project.query.filter.tiling;
+package org.citydb.config.project.importer;
 
-import org.citydb.config.project.exporter.SimpleTilingOptions;
-import org.citydb.config.project.kmlExporter.KmlTilingOptions;
-
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlElements;
+import javax.xml.bind.annotation.XmlEnum;
+import javax.xml.bind.annotation.XmlEnumValue;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="TilingType", propOrder={
-		"tilingOptions"
-})
-public class Tiling extends AbstractTiling {
-	@XmlElements({
-		@XmlElement(name="cityGMLTilingOptions", type= SimpleTilingOptions.class),
-		@XmlElement(name="kmlTilingOptions", type=KmlTilingOptions.class)
-	})
-	private AbstractTilingOptions tilingOptions;
+@XmlType(name="SimpleBBOXFilterModeType")
+@XmlEnum
+public enum SimpleBBOXMode {
+	@XmlEnumValue("within")
+    WITHIN("within"),
+    @XmlEnumValue("overlap")
+    BBOX("overlap");
 
-	@Override
-	public AbstractTilingOptions getTilingOptions() {
-		return tilingOptions;
-	}
+    private final String value;
 
-	@Override
-	public boolean isSetTilingOptions() {
-		return tilingOptions != null;
-	}
+    SimpleBBOXMode(String v) {
+        value = v;
+    }
 
-	public void setTilingOptions(AbstractTilingOptions tilingOptions) {
-		this.tilingOptions = tilingOptions;
-	}
-	
+    public String value() {
+        return value;
+    }
+
+    public static SimpleBBOXMode fromValue(String v) {
+        for (SimpleBBOXMode c: SimpleBBOXMode.values()) {
+            if (c.value.equals(v)) {
+                return c;
+            }
+        }
+
+        return BBOX;
+    }
 }

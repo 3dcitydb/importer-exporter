@@ -28,9 +28,9 @@
 package org.citydb.config.project.kmlExporter;
 
 
-import javax.xml.bind.annotation.XmlType;
-
 import org.citydb.config.project.general.Path;
+
+import javax.xml.bind.annotation.XmlType;
 
 @XmlType(name="BalloonType", propOrder={
 		"includeDescription",

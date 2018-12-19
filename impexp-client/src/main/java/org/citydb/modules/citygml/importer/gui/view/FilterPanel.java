@@ -31,12 +31,12 @@ import org.citydb.config.Config;
 import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.importer.ImportFilter;
+import org.citydb.config.project.importer.SimpleBBOXMode;
+import org.citydb.config.project.importer.SimpleBBOXOperator;
 import org.citydb.config.project.query.filter.counter.CounterFilter;
 import org.citydb.config.project.query.filter.selection.comparison.LikeOperator;
 import org.citydb.config.project.query.filter.selection.id.ResourceIdOperator;
 import org.citydb.config.project.query.filter.type.FeatureTypeFilter;
-import org.citydb.config.project.query.simple.SimpleBBOXMode;
-import org.citydb.config.project.query.simple.SimpleBBOXOperator;
 import org.citydb.gui.components.checkboxtree.DefaultCheckboxTreeCellRenderer;
 import org.citydb.gui.components.feature.FeatureTypeTree;
 import org.citydb.gui.factory.PopupMenuDecorator;
@@ -324,11 +324,11 @@ public class FilterPanel extends JPanel {
 
 		// bbox filter
 		SimpleBBOXOperator bboxFilter = filter.getBboxFilter();
-		BoundingBox bbox = bboxFilter.getEnvelope();
+		BoundingBox bbox = bboxFilter.getExtent();
 		if (bbox != null)
-			bboxPanel.setBoundingBox(bboxFilter.getEnvelope());
+			bboxPanel.setBoundingBox(bboxFilter.getExtent());
 
-		if (bboxFilter.getBboxMode() == SimpleBBOXMode.WITHIN)
+		if (bboxFilter.getMode() == SimpleBBOXMode.WITHIN)
 			bboxWithin.setSelected(true);
 		else
 			bboxOverlaps.setSelected(true);
@@ -379,8 +379,8 @@ public class FilterPanel extends JPanel {
 		}
 
 		// bbox filter
-		filter.getBboxFilter().setEnvelope(bboxPanel.getBoundingBox());
-		filter.getBboxFilter().setBboxMode(bboxOverlaps.isSelected() ? SimpleBBOXMode.BBOX : SimpleBBOXMode.WITHIN);
+		filter.getBboxFilter().setExtent(bboxPanel.getBoundingBox());
+		filter.getBboxFilter().setMode(bboxOverlaps.isSelected() ? SimpleBBOXMode.BBOX : SimpleBBOXMode.WITHIN);
 
 		// feature type filter
 		FeatureTypeFilter featureTypeFilter = filter.getFeatureTypeFilter();

@@ -32,7 +32,6 @@ import org.citydb.config.project.query.filter.counter.CounterFilter;
 import org.citydb.config.project.query.filter.lod.LodFilter;
 import org.citydb.config.project.query.filter.type.FeatureTypeFilter;
 import org.citydb.config.project.query.filter.version.CityGMLVersionType;
-import org.citydb.config.project.query.simple.SimpleBBOXOperator;
 import org.citydb.config.project.query.simple.SimpleSelectionFilter;
 
 import javax.xml.bind.annotation.XmlAttribute;
@@ -45,8 +44,7 @@ import javax.xml.bind.annotation.XmlType;
 		"selectionFilter",
 		"counterFilter",
 		"lodFilter",
-		"bboxFilter",
-		"tilingOptions"
+		"bboxFilter"
 })
 public class SimpleQuery {
 	@XmlAttribute
@@ -64,9 +62,7 @@ public class SimpleQuery {
 	private boolean useLodFilter;
 	@XmlAttribute
 	private boolean useBboxFilter;
-	@XmlAttribute
-	private boolean useTiling;
-	
+
 	@XmlElement(name = "typeNames")
 	protected FeatureTypeFilter featureTypeFilter;
 	@XmlElement(name = "selection")
@@ -76,16 +72,14 @@ public class SimpleQuery {
 	@XmlElement(name = "lods")
 	protected LodFilter lodFilter;
 	@XmlElement(name = "bbox", required = true)
-	private SimpleBBOXOperator bboxFilter;
-	private TilingOptions tilingOptions;
+	private SimpleTiling bboxFilter;
 
 	public SimpleQuery() {
 		featureTypeFilter = new FeatureTypeFilter();
 		selectionFilter = new SimpleSelectionFilter();
 		counterFilter = new CounterFilter();
 		lodFilter = new LodFilter();
-		bboxFilter = new SimpleBBOXOperator();
-		tilingOptions = new TilingOptions();
+		bboxFilter = new SimpleTiling();
 	}
 	
 	public CityGMLVersionType getVersion() {
@@ -148,14 +142,6 @@ public class SimpleQuery {
 		this.useBboxFilter = useBboxFilter;
 	}
 
-	public boolean isUseTiling() {
-		return useTiling;
-	}
-
-	public void setUseTiling(boolean useTiling) {
-		this.useTiling = useTiling;
-	}
-	
 	public FeatureTypeFilter getFeatureTypeFilter() {
 		return featureTypeFilter;
 	}
@@ -204,7 +190,7 @@ public class SimpleQuery {
 		this.lodFilter = lodFilter;
 	}
 
-	public SimpleBBOXOperator getBboxFilter() {
+	public SimpleTiling getBboxFilter() {
 		return bboxFilter;
 	}
 
@@ -212,20 +198,8 @@ public class SimpleQuery {
 		return bboxFilter != null;
 	}
 
-	public void setBboxFilter(SimpleBBOXOperator bboxFilter) {
+	public void setBboxFilter(SimpleTiling bboxFilter) {
 		this.bboxFilter = bboxFilter;
-	}
-	
-	public TilingOptions getTilingOptions() {
-		return tilingOptions;
-	}
-	
-	public boolean isSetTilingOptions() {
-		return tilingOptions != null;
-	}
-
-	public void setTilingOptions(TilingOptions tilingOptions) {
-		this.tilingOptions = tilingOptions;
 	}
 	
 }

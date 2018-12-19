@@ -625,14 +625,23 @@
   </xs:complexType>
 
   <xs:complexType name="TilingType">
+    <xs:complexContent>
+      <xs:extension base="AbstractTilingType">
+        <xs:sequence>
+          <xs:choice minOccurs="0">
+            <xs:element name="cityGMLTilingOptions" type="CityGMLTilingOptionsType"/>
+            <xs:element name="kmlTilingOptions" type="KmlTilingOptionsType"/>
+          </xs:choice>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="AbstractTilingType" abstract="true">
     <xs:sequence>
       <xs:element name="extent" type="BoundingBoxType"/>
       <xs:element name="rows" type="xs:int" default="1"/>
       <xs:element name="columns" type="xs:int" default="1"/>
-      <xs:choice minOccurs="0">
-        <xs:element name="cityGMLTilingOptions" type="CityGMLTilingOptionsType"/>
-        <xs:element name="kmlTilingOptions" type="KmlTilingOptionsType"/>
-      </xs:choice>
     </xs:sequence>
   </xs:complexType>
 
@@ -640,8 +649,6 @@
     <xs:complexContent>
       <xs:extension base="AbstractTilingOptionsType">
         <xs:sequence>
-          <xs:element name="rows" type="xs:int" default="1" minOccurs="0"/>
-          <xs:element name="columns" type="xs:int" default="1" minOccurs="0"/>
           <xs:element name="tilePath" type="xs:string" minOccurs="0"/>
           <xs:element name="tilePathSuffix" type="TileSuffixModeType" minOccurs="0"/>
           <xs:element name="tileNameSuffix" type="TileNameSuffixModeType" minOccurs="0"/>
@@ -660,11 +667,8 @@
     <xs:complexContent>
       <xs:extension base="AbstractTilingOptionsType">
         <xs:sequence>
-          <xs:element name="rows" type="xs:int" default="1" minOccurs="0"/>
-          <xs:element name="columns" type="xs:int" default="1" minOccurs="0"/>
           <xs:element name="autoTileSideLength" type="xs:double"/>
         </xs:sequence>
-        <xs:attribute name="mode" type="KmlTilingModeType"/>
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
@@ -717,14 +721,6 @@
     <xs:restriction base="xs:string">
       <xs:enumeration value="none"/>
       <xs:enumeration value="sameAsPath"/>
-    </xs:restriction>
-  </xs:simpleType>
-
-  <xs:simpleType name="KmlTilingModeType">
-    <xs:restriction base="xs:string">
-      <xs:enumeration value="no_tiling"/>
-      <xs:enumeration value="automatic"/>
-      <xs:enumeration value="manual"/>
     </xs:restriction>
   </xs:simpleType>
 </xs:schema>

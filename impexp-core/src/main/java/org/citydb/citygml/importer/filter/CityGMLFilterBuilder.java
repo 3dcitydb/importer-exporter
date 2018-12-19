@@ -100,7 +100,7 @@ public class CityGMLFilterBuilder {
 
 		// bbox filter
 		if (filterConfig.isUseBboxFilter()) {
-			if (!filterConfig.getBboxFilter().isSetEnvelope())
+			if (!filterConfig.getBboxFilter().isSetExtent())
 				throw new FilterException("The bounding box filter requires an " + GeometryType.ENVELOPE + " as spatial operand.");
 
 			SimpleBBOXFilter bboxFilter = new SimpleBBOXFilter(filterConfig.getBboxFilter());

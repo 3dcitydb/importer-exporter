@@ -29,16 +29,15 @@ package org.citydb.query.builder.config;
 
 import org.citydb.config.geometry.GeometryType;
 import org.citydb.config.project.exporter.SimpleQuery;
-import org.citydb.config.project.exporter.TilingOptions;
-import org.citydb.config.project.kmlExporter.KmlTilingOptions;
+import org.citydb.config.project.exporter.SimpleTiling;
+import org.citydb.config.project.exporter.SimpleTilingMode;
+import org.citydb.config.project.kmlExporter.KmlTiling;
 import org.citydb.config.project.kmlExporter.SimpleKmlQuery;
 import org.citydb.config.project.kmlExporter.SimpleKmlQueryMode;
 import org.citydb.config.project.query.filter.selection.AbstractPredicate;
 import org.citydb.config.project.query.filter.selection.comparison.LikeOperator;
+import org.citydb.config.project.query.filter.selection.spatial.BBOXOperator;
 import org.citydb.config.project.query.filter.selection.spatial.WithinOperator;
-import org.citydb.config.project.query.filter.tiling.Tiling;
-import org.citydb.config.project.query.simple.SimpleBBOXMode;
-import org.citydb.config.project.query.simple.SimpleBBOXOperator;
 import org.citydb.config.project.query.simple.SimpleSelectionFilter;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.schema.mapping.SchemaMapping;
@@ -217,33 +216,25 @@ public class ConfigQueryBuilder {
 
 		// bbox filter
 		if (queryConfig.isUseBboxFilter() && queryConfig.isSetBboxFilter()) {
-			if (!queryConfig.getBboxFilter().isSetEnvelope())
+			SimpleTiling bboxFilter = queryConfig.getBboxFilter();
+			if (!bboxFilter.isSetExtent())
 				throw new QueryBuildException("The bounding box filter requires an " + GeometryType.ENVELOPE + " as spatial operand.");
 
 			// tiling
-			if (queryConfig.isUseTiling()) {
-				TilingOptions tilingOptions = queryConfig.getTilingOptions();
-
-				Tiling tiling = new Tiling();
-				tiling.setExtent(queryConfig.getBboxFilter().getEnvelope());
-				tiling.setRows(tilingOptions.getRows());
-				tiling.setColumns(tilingOptions.getColumns());
-				tiling.setTilingOptions(tilingOptions);
-
+			if (bboxFilter.getMode() == SimpleTilingMode.TILING) {
 				TilingFilterBuilder tilingFilterBuilder = new TilingFilterBuilder(databaseAdapter);
-				query.setTiling(tilingFilterBuilder.buildTilingFilter(tiling));
+				query.setTiling(tilingFilterBuilder.buildTilingFilter(bboxFilter));
 			}
 
 			// bbox
 			else {
-				if (queryConfig.getBboxFilter().getBboxMode() == SimpleBBOXMode.BBOX) {
-					SimpleBBOXOperator bbox = queryConfig.getBboxFilter();
-					bbox.setValueReference("gml:boundedBy");
+				if (bboxFilter.getMode() == SimpleTilingMode.BBOX) {
+					BBOXOperator bbox = new BBOXOperator();
+					bbox.setEnvelope(bboxFilter.getExtent());
 					predicates.add(predicateBuilder.buildPredicate(bbox));
-				} else if (queryConfig.getBboxFilter().getBboxMode() == SimpleBBOXMode.WITHIN) {
+				} else if (bboxFilter.getMode() == SimpleTilingMode.WITHIN) {
 					WithinOperator within = new WithinOperator();
-					within.setValueReference(queryConfig.getBboxFilter().getValueReference());
-					within.setSpatialOperand(queryConfig.getBboxFilter().getEnvelope());
+					within.setSpatialOperand(bboxFilter.getExtent());
 					predicates.add(predicateBuilder.buildPredicate(within));
 				}
 			}
@@ -303,19 +294,12 @@ public class ConfigQueryBuilder {
 
 			// bbox filter
 			if (queryConfig.isSetBboxFilter()) {
-				if (!queryConfig.getBboxFilter().isSetEnvelope())
+				KmlTiling bboxFilter = queryConfig.getBboxFilter();
+				if (!bboxFilter.isSetExtent())
 					throw new QueryBuildException("The bounding box filter requires an " + GeometryType.ENVELOPE + " as spatial operand.");
 
-				KmlTilingOptions tilingOptions = queryConfig.getTilingOptions();
-
-				Tiling tiling = new Tiling();
-				tiling.setExtent(queryConfig.getBboxFilter().getEnvelope());
-				tiling.setRows(tilingOptions.getRows());
-				tiling.setColumns(tilingOptions.getColumns());
-				tiling.setTilingOptions(tilingOptions);
-
 				TilingFilterBuilder tilingFilterBuilder = new TilingFilterBuilder(databaseAdapter);
-				query.setTiling(tilingFilterBuilder.buildTilingFilter(tiling));				
+				query.setTiling(tilingFilterBuilder.buildTilingFilter(bboxFilter));
 			}
 		}
 

@@ -27,35 +27,57 @@
  */
 package org.citydb.config.project.query.filter.tiling;
 
-import org.citydb.config.project.exporter.SimpleTilingOptions;
-import org.citydb.config.project.kmlExporter.KmlTilingOptions;
+import org.citydb.config.geometry.BoundingBox;
 
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlElements;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="TilingType", propOrder={
-		"tilingOptions"
+@XmlType(name="AbstractTilingType", propOrder={
+		"extent",
+		"rows",
+		"columns"
 })
-public class Tiling extends AbstractTiling {
-	@XmlElements({
-		@XmlElement(name="cityGMLTilingOptions", type= SimpleTilingOptions.class),
-		@XmlElement(name="kmlTilingOptions", type=KmlTilingOptions.class)
-	})
-	private AbstractTilingOptions tilingOptions;
+public abstract class AbstractTiling {
+	@XmlElement(required=true)
+	private BoundingBox extent;
+	@XmlElement(required=true, defaultValue="1")
+	private int rows = 1;
+	@XmlElement(required=true, defaultValue="1")
+	private int columns = 1;
 
-	@Override
-	public AbstractTilingOptions getTilingOptions() {
-		return tilingOptions;
+	public AbstractTiling() {
+		extent = new BoundingBox();
 	}
 
-	@Override
-	public boolean isSetTilingOptions() {
-		return tilingOptions != null;
+	public abstract AbstractTilingOptions getTilingOptions();
+	public abstract boolean isSetTilingOptions();
+
+	public boolean isSetExtent() {
+		return extent != null;
 	}
 
-	public void setTilingOptions(AbstractTilingOptions tilingOptions) {
-		this.tilingOptions = tilingOptions;
+	public BoundingBox getExtent() {
+		return extent;
 	}
-	
+
+	public void setExtent(BoundingBox extent) {
+		this.extent = extent;
+	}
+
+	public int getRows() {
+		return rows;
+	}
+
+	public void setRows(int rows) {
+		this.rows = rows;
+	}
+
+	public int getColumns() {
+		return columns;
+	}
+
+	public void setColumns(int columns) {
+		this.columns = columns;
+	}
+
 }

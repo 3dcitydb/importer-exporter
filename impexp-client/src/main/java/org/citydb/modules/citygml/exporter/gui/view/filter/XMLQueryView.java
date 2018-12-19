@@ -7,6 +7,8 @@ import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.database.DatabaseSrs;
 import org.citydb.config.project.exporter.SimpleQuery;
+import org.citydb.config.project.exporter.SimpleTiling;
+import org.citydb.config.project.exporter.SimpleTilingMode;
 import org.citydb.config.project.query.Query;
 import org.citydb.config.project.query.filter.appearance.AppearanceFilter;
 import org.citydb.config.project.query.filter.counter.CounterFilter;
@@ -20,7 +22,6 @@ import org.citydb.config.project.query.filter.selection.spatial.BBOXOperator;
 import org.citydb.config.project.query.filter.selection.spatial.WithinOperator;
 import org.citydb.config.project.query.filter.tiling.Tiling;
 import org.citydb.config.project.query.filter.type.FeatureTypeFilter;
-import org.citydb.config.project.query.simple.SimpleBBOXMode;
 import org.citydb.config.project.query.simple.SimpleSelectionFilter;
 import org.citydb.config.project.query.util.QueryWrapper;
 import org.citydb.database.connection.DatabaseConnectionPool;
@@ -47,11 +48,7 @@ import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -63,10 +60,7 @@ import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
-import java.awt.Component;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
+import java.awt.*;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -227,8 +221,10 @@ public class XMLQueryView extends FilterView {
 
         if (simpleQuery.isUseBboxFilter()
                 && simpleQuery.isSetBboxFilter()
-                && simpleQuery.getBboxFilter().isSetEnvelope()) {
-            BoundingBox envelope = simpleQuery.getBboxFilter().getEnvelope();
+                && simpleQuery.getBboxFilter().isSetExtent()) {
+            SimpleTiling bboxFilter = simpleQuery.getBboxFilter();
+
+            BoundingBox envelope = simpleQuery.getBboxFilter().getExtent();
             if (envelope.getLowerCorner().isSetX() && envelope.getLowerCorner().isSetY()
                     && envelope.getUpperCorner().isSetX() && envelope.getUpperCorner().isSetY()) {
                 if (!isDefaultDatabaseSrs(envelope.getSrs()))
@@ -236,22 +232,20 @@ public class XMLQueryView extends FilterView {
                 else
                     envelope.unsetSrs();
 
-                if (simpleQuery.isUseTiling()) {
+                if (bboxFilter.getMode() == SimpleTilingMode.TILING) {
                     Tiling tiling = new Tiling();
                     tiling.setExtent(envelope);
-                    tiling.setRows(simpleQuery.getTilingOptions().getRows());
-                    tiling.setColumns(simpleQuery.getTilingOptions().getColumns());
+                    tiling.setRows(bboxFilter.getRows());
+                    tiling.setColumns(bboxFilter.getColumns());
                     query.setTiling(tiling);
                 } else {
-                    if (simpleQuery.getBboxFilter().getBboxMode() == SimpleBBOXMode.BBOX) {
+                    if (bboxFilter.getMode() == SimpleTilingMode.BBOX) {
                         BBOXOperator bbox = new BBOXOperator();
                         bbox.setEnvelope(envelope);
-                        bbox.setValueReference("gml:boundedBy");
                         predicates.add(bbox);
                     } else {
                         WithinOperator within = new WithinOperator();
                         within.setSpatialOperand(envelope);
-                        within.setValueReference("gml:boundedBy");
                         predicates.add(within);
                     }
                 }

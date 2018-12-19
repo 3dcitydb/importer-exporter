@@ -27,13 +27,12 @@
  */
 package org.citydb.config.project.kmlExporter;
 
-import java.util.Locale;
+import org.citydb.config.i18n.Language;
 
 import javax.xml.bind.annotation.XmlEnum;
 import javax.xml.bind.annotation.XmlEnumValue;
 import javax.xml.bind.annotation.XmlType;
-
-import org.citydb.config.i18n.Language;
+import java.util.Locale;
 
 @XmlType(name="Lod0FootprintMode")
 @XmlEnum
