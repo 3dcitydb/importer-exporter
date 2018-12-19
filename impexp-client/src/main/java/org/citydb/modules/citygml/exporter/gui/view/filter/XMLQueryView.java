@@ -373,7 +373,7 @@ public class XMLQueryView extends FilterView {
                     .append(module.getNamespaceURI()).append("\" ");
         }
 
-        wrapper.append(">\n").append(query).append("\n</wrapper>");
+        wrapper.append(">\n").append(query).append("</wrapper>");
 
         return wrapper.toString();
     }

@@ -374,6 +374,10 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 							Language.I18N.getString("common.dialog.error.incorrectData.xmlQuery"));
 					return;
 				}
+
+				// copy tiling options if required
+				if (query.isSetTiling() && !query.getTiling().isSetTilingOptions())
+					query.getTiling().setTilingOptions(config.getProject().getExporter().getSimpleQuery().getBboxFilter().getTilingOptions());
 			}
 
 			if (!databaseController.isConnected()) {
