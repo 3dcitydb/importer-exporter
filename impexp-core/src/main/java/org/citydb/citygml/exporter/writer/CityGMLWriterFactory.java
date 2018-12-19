@@ -33,6 +33,7 @@ import org.citydb.config.Config;
 import org.citydb.database.schema.mapping.FeatureType;
 import org.citydb.log.Logger;
 import org.citydb.query.Query;
+import org.citydb.query.filter.type.FeatureTypeFilter;
 import org.citygml4j.model.module.Module;
 import org.citygml4j.model.module.ModuleContext;
 import org.citygml4j.model.module.Modules;
@@ -54,20 +55,49 @@ import java.util.List;
 
 public class CityGMLWriterFactory implements FeatureWriterFactory {
 	private final Logger log = Logger.getInstance();
+	private final Config config;
 	private final CityGMLVersion version;
+	private final FeatureTypeFilter featureTypeFilter;
 
-	private SAXWriter saxWriter;
 	private TransformerChainFactory transformerChainFactory;
 
 	public CityGMLWriterFactory(Query query, Config config) throws FeatureWriteException {
+		this.config = config;
+
 		version = query.getTargetVersion();
+		featureTypeFilter = query.getFeatureTypeFilter();
+
+		// build XSLT transformer chain
+		if (config.getProject().getExporter().getXSLTransformation().isEnabled()
+				&& config.getProject().getExporter().getXSLTransformation().isSetStylesheets()) {
+			try {
+				log.info("Applying XSL transformations on export data.");
+
+				List<String> stylesheets = config.getProject().getExporter().getXSLTransformation().getStylesheets();
+				SAXTransformerFactory factory = (SAXTransformerFactory) TransformerFactory.newInstance();
+				Templates[] templates = new Templates[stylesheets.size()];
+
+				for (int i = 0; i < stylesheets.size(); i++) {
+					Templates template = factory.newTemplates(new StreamSource(new File(stylesheets.get(i))));
+					templates[i] = template;
+				}
+
+				transformerChainFactory = new TransformerChainFactory(templates);
+			} catch (TransformerConfigurationException e) {
+				throw new FeatureWriteException("Failed to configure the XSL transformation.", e);
+			}
+		}
+	}
+
+	@Override
+	public FeatureWriter createFeatureWriter(Writer writer) throws FeatureWriteException {
+		SAXWriter saxWriter = new SAXWriter();
 
 		// prepare SAX writer
-		saxWriter = new SAXWriter();
 		saxWriter.setWriteEncoding(true);
 		saxWriter.setIndentString("  ");
 		saxWriter.setHeaderComment("Written by " + this.getClass().getPackage().getImplementationTitle() + ", version \"" +
-				this.getClass().getPackage().getImplementationVersion() + '"', 
+						this.getClass().getPackage().getImplementationVersion() + '"',
 				this.getClass().getPackage().getImplementationVendor());
 
 		ModuleContext moduleContext = new ModuleContext(version);
@@ -98,7 +128,7 @@ public class CityGMLWriterFactory implements FeatureWriterFactory {
 		}
 
 		// set XML prefixes and schema locations for selected feature types
-		for (FeatureType featureType : query.getFeatureTypeFilter().getFeatureTypes()) {
+		for (FeatureType featureType : featureTypeFilter.getFeatureTypes()) {
 			if (featureType.isAvailableForCityGML(version)) {
 				CityGMLModule module = Modules.getCityGMLModule(featureType.getSchema().getNamespace(version).getURI());
 				if (module != null) {
@@ -108,30 +138,6 @@ public class CityGMLWriterFactory implements FeatureWriterFactory {
 			}
 		}
 
-		// build XSLT transformer chain
-		if (config.getProject().getExporter().getXSLTransformation().isEnabled()
-				&& config.getProject().getExporter().getXSLTransformation().isSetStylesheets()) {
-			try {
-				log.info("Applying XSL transformations on export data.");
-
-				List<String> stylesheets = config.getProject().getExporter().getXSLTransformation().getStylesheets();
-				SAXTransformerFactory factory = (SAXTransformerFactory) TransformerFactory.newInstance();
-				Templates[] templates = new Templates[stylesheets.size()];
-
-				for (int i = 0; i < stylesheets.size(); i++) {
-					Templates template = factory.newTemplates(new StreamSource(new File(stylesheets.get(i))));
-					templates[i] = template;
-				}
-
-				transformerChainFactory = new TransformerChainFactory(templates);
-			} catch (TransformerConfigurationException e) {
-				throw new FeatureWriteException("Failed to configure the XSL transformation.", e);
-			}
-		}
-	}
-
-	@Override
-	public FeatureWriter createFeatureWriter(Writer writer) throws FeatureWriteException {
 		// set writer as output for SAXWriter
 		saxWriter.setOutput(writer);
 
