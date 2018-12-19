@@ -115,12 +115,12 @@ public class XMLQueryView extends FilterView {
         RTextScrollPane scrollPane = new RTextScrollPane(xmlText);
 
         newButton = new JButton();
-        ImageIcon add = new ImageIcon(getClass().getResource("/org/citydb/gui/images/common/filter_new.png"));
+        ImageIcon add = new ImageIcon(getClass().getResource("/org/citydb/gui/images/common/query_new.png"));
         newButton.setIcon(add);
         newButton.setMargin(new Insets(0, 0, 0, 0));
 
         duplicateButton = new JButton();
-        ImageIcon duplicate = new ImageIcon(getClass().getResource("/org/citydb/gui/images/common/filter_duplicate.png"));
+        ImageIcon duplicate = new ImageIcon(getClass().getResource("/org/citydb/gui/images/common/query_duplicate.png"));
         duplicateButton.setIcon(duplicate);
         duplicateButton.setMargin(new Insets(0, 0, 0, 0));
 
