@@ -38,6 +38,7 @@ import org.citydb.config.project.database.DatabaseSrs;
 import org.citydb.config.project.exporter.SimpleQuery;
 import org.citydb.config.project.exporter.SimpleTiling;
 import org.citydb.config.project.exporter.SimpleTilingMode;
+import org.citydb.config.project.exporter.SimpleTilingOptions;
 import org.citydb.config.project.global.LogLevel;
 import org.citydb.config.project.query.Query;
 import org.citydb.config.project.query.simple.SimpleSelectionFilter;
@@ -63,11 +64,23 @@ import org.citygml4j.builder.jaxb.CityGMLBuilder;
 import org.jdesktop.swingx.JXTextField;
 import org.jdesktop.swingx.prompt.PromptSupport.FocusBehavior;
 
-import javax.swing.*;
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JFileChooser;
+import javax.swing.JFormattedTextField;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
 import javax.swing.border.TitledBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.xml.bind.JAXBContext;
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.dnd.DnDConstants;
@@ -376,7 +389,7 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 				}
 
 				// copy tiling options if required
-				if (query.isSetTiling() && !query.getTiling().isSetTilingOptions())
+				if (query.isSetTiling() && !(query.getTiling().getTilingOptions() instanceof SimpleTilingOptions))
 					query.getTiling().setTilingOptions(config.getProject().getExporter().getSimpleQuery().getBboxFilter().getTilingOptions());
 			}
 
