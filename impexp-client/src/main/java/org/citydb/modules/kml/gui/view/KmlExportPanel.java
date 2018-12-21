@@ -1068,6 +1068,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 					}
 
 					themeComboBox.setEnabled(true);
+					themeComboBox.setPopupVisible(true);
 				}
 			} catch (SQLException e) {
 				log.error("Failed to query appearance themes from database: " + e.getMessage());
