@@ -1,6 +1,39 @@
 Change Log
 ==========
 
+### 4.1 - tbd
+
+##### Additions
+* Added support for using SQL queries and XML-based filter expressions in CityGML exports. Please refer to the documentation
+to learn more about the new filter capabilities.
+* Added support for importing CityGML data from ZIP/GZIP files and for exporting CityGML content to ZIP/GZIP files. [#62](https://github.com/3dcitydb/importer-exporter/issues/62), 
+[#63](https://github.com/3dcitydb/importer-exporter/issues/63)
+* Added a counter and a progress bar to spreadsheet exports. [#50](https://github.com/3dcitydb/importer-exporter/issues/50)
+
+##### Changes
+* Due to changes in the Google Maps API license and usage terms, the Google services now require an API key
+([read more here](https://developers.google.com/maps/documentation/geocoding/get-api-key)). This affects the map window
+and the KML/COLLADA/glTF export of the Importer/Exporter, where Google services are used for address searches and for
+retrieving height values from the Google Earth terrain model. [#61](https://github.com/3dcitydb/importer-exporter/issues/61)
+  * If you want to continue using the Goolge services, then enter your Google API key in the corresponding global preferences
+    dialog that has been added in this release.
+  * The map window now uses [OSM Nominatim](https://wiki.openstreetmap.org/wiki/Nominatim) as the default
+    geocoding service, so no need for a Google API key.
+  * Querying height values from the Google Earth terrain model in KML/COLLADA/glTF exports requires the Google Elevation
+    service though. Simply deactivate this option if you do not have an API key.
+
+##### Fixes
+* When running on Java 9 or higher, the following warning was printed to the console: `WARNING: Illegal reflective access by com.sun.xml.bind.v2.runtime.reflect.opt.Injector`.
+This [JAXB](https://github.com/eclipse-ee4j/jaxb-ri) issue has been resolved in this release by updating to 
+[citygml4j 2.8.1](https://github.com/citygml4j/citygml4j).
+* Fixed SQL error when querying the highest LOD of `PlantCover` objects in KML/COLLADA/glTF exports. [#72](https://github.com/3dcitydb/importer-exporter/issues/72)
+* Fixed error in spreadsheet exports when column titles have leading and trailing whitespace. [#65](https://github.com/3dcitydb/importer-exporter/issues/65)
+* Fixed bug when using the Importer/Exporter installer in non-GUI installations. [#47](https://github.com/3dcitydb/importer-exporter/issues/47), 
+[#64](https://github.com/3dcitydb/importer-exporter/issues/64)
+* Fixed NPE when using a local cache for CityGML exports.
+* Fixed NPE when exporting appearances without textures.
+* Fixed CityGML writer to use default namespaces in tiled exports.
+
 ### 4.0 - 2018-09-18
 
 ##### Additions
