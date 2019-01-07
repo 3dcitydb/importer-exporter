@@ -55,7 +55,7 @@ public class PointAndCurveRenderingPanel extends AbstractPreferencesComponent {
     
 	private JPanel pointPanel;
 	private JLabel pointAltitudeModeLabel = new JLabel();
-	private JComboBox pointAltitudeModeComboBox = new JComboBox();
+	private JComboBox<AltitudeMode> pointAltitudeModeComboBox = new JComboBox<>();
 	private JLabel pointIconColorLabel = new JLabel();
 	private JButton pointIconColorButton = new AlphaButton();
 	private JLabel pointIconScaleLabel = new JLabel();
@@ -86,7 +86,7 @@ public class PointAndCurveRenderingPanel extends AbstractPreferencesComponent {
 
 	private JPanel curvePanel;
 	private JLabel curveAltitudeModeLabel = new JLabel();
-	private JComboBox curveAltitudeModeComboBox = new JComboBox();
+	private JComboBox<AltitudeMode> curveAltitudeModeComboBox = new JComboBox<>();
 	private JLabel curveThicknessLabel = new JLabel();
 	private JSpinner curveThicknessSpinner;
 	private JLabel curveNormalColorLabel = new JLabel();

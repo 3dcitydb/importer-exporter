@@ -65,7 +65,7 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 	private JLabel pixelsLabel = new JLabel();
 	private JLabel mLabel = new JLabel("m.");
 	private JLabel viewRefreshModeLabel = new JLabel();
-	private JComboBox viewRefreshModeComboBox = new JComboBox();
+	private JComboBox<String> viewRefreshModeComboBox = new JComboBox<>();
 	private JLabel viewRefreshTimeLabel = new JLabel();
 	private JLabel sLabel = new JLabel("s.");
 	private JFormattedTextField viewRefreshTimeText;

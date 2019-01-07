@@ -105,8 +105,8 @@ public class WaterBodyRenderingPanel extends AbstractPreferencesComponent {
 	private JLabel colladaHLLineColorLabel = new JLabel();
 	private JButton colladaHLLineColorButton = new AlphaButton();
 
-	private HashMap<String, Integer> packingAlgorithms = new HashMap<String, Integer>();  
-	private JComboBox packingAlgorithmsComboBox = new JComboBox();
+	private HashMap<String, Integer> packingAlgorithms = new HashMap<>();
+	private JComboBox<String> packingAlgorithmsComboBox = new JComboBox<>();
 
 	public WaterBodyRenderingPanel(Config config) {
 		super(config);
