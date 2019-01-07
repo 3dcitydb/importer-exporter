@@ -27,7 +27,7 @@ retrieving height values from the Google Earth terrain model. [#61](https://gith
 This [JAXB](https://github.com/eclipse-ee4j/jaxb-ri) issue has been resolved in this release by updating to 
 [citygml4j 2.8.1](https://github.com/citygml4j/citygml4j).
 * Fixed SQL error when querying the highest LOD of `PlantCover` objects in KML/COLLADA/glTF exports. [#72](https://github.com/3dcitydb/importer-exporter/issues/72)
-* Fixed error in spreadsheet exports when column titles have leading and trailing whitespace. [#65](https://github.com/3dcitydb/importer-exporter/issues/65)
+* Fixed error in spreadsheet exports when column titles have leading and trailing whitespaces. [#65](https://github.com/3dcitydb/importer-exporter/issues/65)
 * Fixed bug when using the Importer/Exporter installer in non-GUI installations. [#47](https://github.com/3dcitydb/importer-exporter/issues/47), 
 [#64](https://github.com/3dcitydb/importer-exporter/issues/64)
 * Fixed NPE when using a local cache for CityGML exports.
