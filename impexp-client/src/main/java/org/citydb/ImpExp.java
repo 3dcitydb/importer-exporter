@@ -129,7 +129,6 @@ public class ImpExp {
 	private JAXBContext kmlContext, colladaContext, projectContext, guiContext;
 	private PluginManager pluginManager = PluginManager.getInstance();
 	private ADEExtensionManager adeManager = ADEExtensionManager.getInstance();
-	private Config config;
 
 	private SplashScreen splashScreen;
 	private boolean useSplashScreen;
@@ -267,7 +266,7 @@ public class ImpExp {
 
 		// initialize application environment
 		printInfoMessage("Initializing application environment");
-		config = new Config();
+		Config config = new Config();
 
 		// initialize object registry
 		ObjectRegistry registry = ObjectRegistry.getInstance();
