@@ -1,9 +1,8 @@
-package org.citydb.config.project.exporter;
 /*
  * 3D City Database - The Open Source CityGML Database
  * http://www.3dcitydb.org/
  *
- * Copyright 2013 - 2018
+ * Copyright 2013 - 2019
  * Chair of Geoinformatics
  * Technical University of Munich, Germany
  * https://www.gis.bgu.tum.de/
@@ -26,6 +25,8 @@ package org.citydb.config.project.exporter;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+package org.citydb.config.project.exporter;
 
 import org.citydb.config.project.query.filter.tiling.AbstractTilingOptions;
 
