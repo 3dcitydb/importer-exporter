@@ -54,13 +54,13 @@ import org.citydb.sqlbuilder.select.Select;
 import org.citydb.sqlbuilder.select.operator.comparison.ComparisonFactory;
 import org.citydb.sqlbuilder.select.operator.logical.LogicalOperationFactory;
 import org.citygml4j.model.module.gml.GMLCoreModule;
+import org.geotools.measure.Units;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import si.uom.SI;
 
-import javax.measure.converter.ConversionException;
-import javax.measure.converter.UnitConverter;
-import javax.measure.unit.SI;
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
+import javax.measure.UnitConverter;
 import java.sql.SQLException;
 import java.util.Set;
 
@@ -218,12 +218,12 @@ public class SpatialOperatorBuilder {
 			srsUnit = crs.getCoordinateSystem().getAxis(0).getUnit();
 		} catch (FactoryException e) {
 			// assume meter per default
-			srsUnit = SI.METER;
+			srsUnit = SI.METRE;
 		}
 
 		try {
-			converter = distanceUnit.toUnit().getConverterTo(srsUnit);
-		} catch (ConversionException e) {
+			converter = Units.getConverterToAny(distanceUnit.toUnit(), srsUnit);
+		} catch (IllegalArgumentException e) {
 			throw new QueryBuildException("Cannot convert from the unit '" + distanceUnit + "' to the unit of the database SRS.");
 		}
 

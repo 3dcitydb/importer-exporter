@@ -27,20 +27,19 @@
  */
 package org.citydb.database.adapter.h2;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Types;
-
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.adapter.AbstractGeometryConverterAdapter;
-
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.LinearRing;
 import org.locationtech.jts.geom.Polygon;
+
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Types;
 
 public class GeometryConverterAdapter extends AbstractGeometryConverterAdapter {
 	// Note: This is a very limited implementation only aiming at
@@ -114,15 +113,15 @@ public class GeometryConverterAdapter extends AbstractGeometryConverterAdapter {
 		if (dimension == 3) {
 			for (int i = 0; i < exterior.getNumPoints(); i++) {
 				Coordinate coordinate = exterior.getPointN(i).getCoordinate();
-				coordinates[0][element++] = coordinate.x;
-				coordinates[0][element++] = coordinate.y;
-				coordinates[0][element++] = coordinate.z;
+				coordinates[0][element++] = coordinate.getX();
+				coordinates[0][element++] = coordinate.getY();
+				coordinates[0][element++] = coordinate.getZ();
 			}
 		} else {
 			for (int i = 0; i < exterior.getNumPoints(); i++) {
 				Coordinate coordinate = exterior.getPointN(i).getCoordinate();
-				coordinates[0][element++] = coordinate.x;
-				coordinates[0][element++] = coordinate.y;
+				coordinates[0][element++] = coordinate.getX();
+				coordinates[0][element++] = coordinate.getY();
 			}
 		}
 
@@ -133,15 +132,15 @@ public class GeometryConverterAdapter extends AbstractGeometryConverterAdapter {
 			if (dimension == 3) {
 				for (int j = 0; j < interior.getNumPoints(); j++) {
 					Coordinate coordinate = exterior.getPointN(j).getCoordinate();
-					coordinates[i + 1][element++] = coordinate.x;
-					coordinates[i + 1][element++] = coordinate.y;
-					coordinates[i + 1][element++] = coordinate.z;
+					coordinates[i + 1][element++] = coordinate.getX();
+					coordinates[i + 1][element++] = coordinate.getY();
+					coordinates[i + 1][element++] = coordinate.getZ();
 				}
 			} else {
 				for (int j = 0; j < interior.getNumPoints(); j++) {
 					Coordinate coordinate = exterior.getPointN(j).getCoordinate();
-					coordinates[i + 1][element++] = coordinate.x;
-					coordinates[i + 1][element++] = coordinate.y;
+					coordinates[i + 1][element++] = coordinate.getX();
+					coordinates[i + 1][element++] = coordinate.getY();
 				}
 			}
 		}
