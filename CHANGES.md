@@ -1,7 +1,7 @@
 Change Log
 ==========
 
-### 4.1 - tbd
+### 4.1 - 2019-01-08
 
 ##### Additions
 * Added support for using SQL queries and XML-based filter expressions in CityGML exports. Please refer to the documentation
