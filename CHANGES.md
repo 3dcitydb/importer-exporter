@@ -34,6 +34,10 @@ This [JAXB](https://github.com/eclipse-ee4j/jaxb-ri) issue has been resolved in 
 * Fixed NPE when exporting appearances without textures.
 * Fixed CityGML writer to use default namespaces in tiled exports.
 
+##### Miscellaneous 
+* Upgrade to latest PostgreSQL driver v42.2.5 and PostGIS driver v2.3.0.
+* Upgrade to latest Oracle driver 18.3.
+
 ### 4.0 - 2018-09-18
 
 ##### Additions
