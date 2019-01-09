@@ -339,7 +339,9 @@ public class ImportPanel extends JPanel implements EventHandler {
 
 			if (!databaseController.isConnected()) {
 				try {
-					databaseController.connect(true);
+					boolean isConnected = databaseController.connect(true);
+					if (!isConnected)
+						return;
 				} catch (DatabaseConfigurationException | DatabaseVersionException | SQLException e) {
 					return;
 				}
