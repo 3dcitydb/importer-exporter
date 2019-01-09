@@ -27,21 +27,18 @@
  */
 package org.citydb.gui.components.menubar;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.List;
-
-import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
-import javax.swing.SwingUtilities;
-
 import org.citydb.config.Config;
 import org.citydb.config.gui.Gui;
 import org.citydb.config.i18n.Language;
 import org.citydb.gui.ImpExpGui;
 import org.citydb.gui.components.mapviewer.MapWindow;
 import org.citydb.gui.util.GuiUtil;
+
+import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
+import javax.swing.SwingUtilities;
+import java.util.List;
 
 @SuppressWarnings("serial")
 public class MenuView extends JMenu {
@@ -64,37 +61,24 @@ public class MenuView extends JMenu {
 		detachConsole.setSelected(config.getGui().getConsoleWindow().isDetached());
 		defaults = new JMenuItem();
 		
-		map.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				final MapWindow map = MapWindow.getInstance(mainView, config);
+		map.addActionListener(e -> {
+			final MapWindow map = MapWindow.getInstance(mainView, config);
 
-				SwingUtilities.invokeLater(new Runnable() {
-					public void run() {
-						map.setVisible(true);
-					}
-				});
-			}
+			SwingUtilities.invokeLater(new Runnable() {
+				public void run() {
+					map.setVisible(true);
+				}
+			});
 		});
 		
-		detachConsole.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				boolean status = !config.getGui().getConsoleWindow().isDetached();
-				config.getGui().getConsoleWindow().setDetached(status);		
-				mainView.enableConsoleWindow(status, true);
-				detachConsole.setSelected(status);
-			}
-		});
+		detachConsole.addActionListener(e -> mainView.enableConsoleWindow(!config.getGui().getConsoleWindow().isDetached(), true));
 		
-		defaults.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				// do not loose recently used projects
-				List<String> recentlyUsedProjects = config.getGui().getRecentlyUsedProjectFiles();
-				config.setGui(new Gui());
-				
-				config.getGui().setRecentlyUsedProjectFiles(recentlyUsedProjects);
-				detachConsole.setSelected(config.getGui().getConsoleWindow().isDetached());
-				mainView.restoreDefaults();
-			}
+		defaults.addActionListener(e -> {
+			// do not loose recently used projects
+			List<String> recentlyUsedProjects = config.getGui().getRecentlyUsedProjectFiles();
+			config.setGui(new Gui());
+			config.getGui().setRecentlyUsedProjectFiles(recentlyUsedProjects);
+			mainView.restoreDefaults();
 		});
 		
 		add(map);
@@ -112,6 +96,10 @@ public class MenuView extends JMenu {
 		GuiUtil.setMnemonic(map, "menu.view.map.label", "menu.view.map.label.mnemonic");
 		GuiUtil.setMnemonic(detachConsole, "menu.view.detach.label", "menu.view.detach.label.mnemonic");
 		GuiUtil.setMnemonic(defaults, "menu.view.defaults.label", "menu.view.defaults.label.mnemonic");
+	}
+
+	public void update() {
+		detachConsole.setSelected(config.getGui().getConsoleWindow().isDetached());
 	}
 	
 }

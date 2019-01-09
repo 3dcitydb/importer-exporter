@@ -485,6 +485,8 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 			main.setPreferredSize(new Dimension(width, 1));
 			splitPane.setDividerLocation(dividerLocation);
 		}
+
+		config.getGui().getConsoleWindow().setDetached(enable);
 	}
 
 	public boolean saveProjectSettings() {
@@ -654,21 +656,15 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 			popupMenu.add(detach);
 
 			clear.addActionListener(e -> clearConsole());
-
-			detach.addActionListener(e -> {
-				boolean status = !config.getGui().getConsoleWindow().isDetached();
-				config.getGui().getConsoleWindow().setDetached(status);
-				enableConsoleWindow(status, true);
-
-				detach.setText(!status ? Language.I18N.getString("console.label.detach") :
-						Language.I18N.getString("console.label.attach"));
-			});
+			detach.addActionListener(e -> enableConsoleWindow(!config.getGui().getConsoleWindow().isDetached(), true));
 
 			popupMenu.addPopupMenuListener(new PopupMenuListener() {
-
 				@Override
 				public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
 					clear.setEnabled(consoleText.getDocument().getLength() != 0);
+					detach.setText(config.getGui().getConsoleWindow().isDetached() ?
+							Language.I18N.getString("console.label.attach") :
+							Language.I18N.getString("console.label.detach"));
 				}
 
 				@Override
@@ -687,7 +683,8 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		private void doTranslation() {
 			clear.setText(Language.I18N.getString("main.console.popup.clear"));
 			detach.setText(config.getGui().getConsoleWindow().isDetached() ?
-					Language.I18N.getString("console.label.attach") : Language.I18N.getString("console.label.detach"));
+					Language.I18N.getString("console.label.attach") :
+					Language.I18N.getString("console.label.detach"));
 		}
 	}
 }

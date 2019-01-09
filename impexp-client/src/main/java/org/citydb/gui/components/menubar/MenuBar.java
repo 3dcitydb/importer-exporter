@@ -27,10 +27,6 @@
  */
 package org.citydb.gui.components.menubar;
 
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.xml.bind.JAXBContext;
-
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.gui.ImpExpGui;
@@ -38,6 +34,12 @@ import org.citydb.gui.util.GuiUtil;
 import org.citydb.gui.util.OSXAdapter;
 import org.citydb.plugin.PluginManager;
 import org.citydb.plugin.extension.menu.MenuExtension;
+
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.event.MenuEvent;
+import javax.swing.event.MenuListener;
+import javax.xml.bind.JAXBContext;
 
 @SuppressWarnings("serial")
 public class MenuBar extends JMenuBar {
@@ -81,6 +83,19 @@ public class MenuBar extends JMenuBar {
 
 		add(view);
 		add(help);
+
+		view.addMenuListener(new MenuListener() {
+			@Override
+			public void menuSelected(MenuEvent e) {
+				view.update();
+			}
+
+			@Override
+			public void menuDeselected(MenuEvent e) { }
+
+			@Override
+			public void menuCanceled(MenuEvent e) { }
+		});
 	}
 
 	public void doTranslation() {
