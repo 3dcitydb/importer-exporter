@@ -187,9 +187,11 @@ public class Query {
 		targetVersion = query.targetVersion;
 		targetSrs = query.targetSrs;
 		featureTypeFilter = query.featureTypeFilter;
+		counterFilter = query.counterFilter;
 		lodFilter = query.lodFilter;
 		projectionFilters = query.projectionFilters;
 		selection = query.selection;
+		appearanceFilter = query.appearanceFilter;
 		tiling = query.tiling;
 	}
 
