@@ -36,7 +36,7 @@ import javax.xml.bind.annotation.XmlElements;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.namespace.QName;
 
-@XmlType(name = "PropertyProjectionContextType")
+@XmlType(name = "ProjectionContextType")
 public class ProjectionContext {
 	@XmlAttribute(required = true)
 	private QName typeName;

@@ -32,7 +32,7 @@ import javax.xml.bind.annotation.XmlType;
 import java.util.ArrayList;
 import java.util.List;
 
-@XmlType(name = "PropertyProjectionFilterType")
+@XmlType(name = "ProjectionFilterType")
 public class ProjectionFilter {
 	@XmlElement(name="context")
 	private List<ProjectionContext> projectionContexts;
