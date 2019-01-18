@@ -54,7 +54,7 @@ public class CityGMLFilterBuilder {
 
 		// feature type filter
 		if (filterConfig.isUseTypeNames()) {
-			if (filterConfig.isSetFeatureTypeFilter() && filterConfig.getFeatureTypeFilter().getTypeNames().isEmpty())
+			if (filterConfig.isSetFeatureTypeFilter() && !filterConfig.getFeatureTypeFilter().getTypeNames().isEmpty())
 				filter.setFeatureTypeFilter(new FeatureTypeFilter(filterConfig.getFeatureTypeFilter(), schemaMapping));
 			else
 				throw new FilterException("The feature type filter must not be empty.");
