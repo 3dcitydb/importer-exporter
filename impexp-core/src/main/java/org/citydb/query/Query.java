@@ -27,14 +27,13 @@
  */
 package org.citydb.query;
 
-import java.util.concurrent.ConcurrentHashMap;
-
 import org.citydb.config.project.database.DatabaseSrs;
 import org.citydb.database.schema.mapping.AbstractObjectType;
 import org.citydb.query.filter.apperance.AppearanceFilter;
 import org.citydb.query.filter.counter.CounterFilter;
 import org.citydb.query.filter.lod.LodFilter;
 import org.citydb.query.filter.lod.LodFilterMode;
+import org.citydb.query.filter.projection.Projection;
 import org.citydb.query.filter.projection.ProjectionFilter;
 import org.citydb.query.filter.selection.SelectionFilter;
 import org.citydb.query.filter.tiling.Tiling;
@@ -47,13 +46,13 @@ public class Query {
 	private FeatureTypeFilter featureTypeFilter;
 	private CounterFilter counterFilter;
 	private LodFilter lodFilter;
-	private ConcurrentHashMap<Integer, ProjectionFilter> projectionFilters;
+	private Projection projectionFilter;
 	private SelectionFilter selection;
 	private AppearanceFilter appearanceFilter;
 	private Tiling tiling;
 
 	public Query() {
-		projectionFilters = new ConcurrentHashMap<>();
+
 	}
 
 	public Query(Query other) {
@@ -124,23 +123,15 @@ public class Query {
 	}
 
 	public boolean isSetProjection() {
-		return !projectionFilters.isEmpty();
+		return projectionFilter != null;
 	}
 
 	public ProjectionFilter getProjectionFilter(AbstractObjectType<?> objectType) {
-		ProjectionFilter projectionFilter = projectionFilters.get(objectType.getObjectClassId());
-		if (projectionFilter == null) {
-			ProjectionFilter tmp = new ProjectionFilter(objectType);
-			projectionFilter = projectionFilters.putIfAbsent(objectType.getObjectClassId(), tmp);
-			if (projectionFilter == null)
-				projectionFilter = tmp;
-		}
-
-		return projectionFilter;
+		return projectionFilter != null ? projectionFilter.getProjectionFilter(objectType) : new ProjectionFilter(objectType);
 	}
 
-	public void addProjectionFilter(ProjectionFilter projectionFilter) {
-		projectionFilters.putIfAbsent(projectionFilter.getObjectType().getObjectClassId(), projectionFilter);
+	public void setProjection(Projection projectionFilter) {
+		this.projectionFilter = projectionFilter;
 	}
 
 	public boolean isSetSelection() {
@@ -189,7 +180,7 @@ public class Query {
 		featureTypeFilter = query.featureTypeFilter;
 		counterFilter = query.counterFilter;
 		lodFilter = query.lodFilter;
-		projectionFilters = query.projectionFilters;
+		projectionFilter = query.projectionFilter;
 		selection = query.selection;
 		appearanceFilter = query.appearanceFilter;
 		tiling = query.tiling;

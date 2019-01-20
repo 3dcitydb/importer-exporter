@@ -32,16 +32,15 @@ import org.citydb.config.project.query.filter.projection.GenericAttributeName;
 import org.citydb.config.project.query.filter.projection.ProjectionContext;
 import org.citydb.config.project.query.filter.projection.PropertyName;
 import org.citydb.database.schema.mapping.AbstractObjectType;
-import org.citydb.database.schema.mapping.AbstractProperty;
 import org.citydb.database.schema.mapping.SchemaMapping;
 import org.citydb.query.builder.QueryBuildException;
 import org.citydb.query.filter.FilterException;
+import org.citydb.query.filter.projection.Projection;
 import org.citydb.query.filter.projection.ProjectionFilter;
 import org.citydb.query.filter.projection.ProjectionMode;
 import org.citygml4j.model.citygml.CityGMLClass;
 
 import javax.xml.namespace.QName;
-import java.util.Collection;
 import java.util.IdentityHashMap;
 import java.util.Map;
 
@@ -52,7 +51,8 @@ public class ProjectionFilterBuilder {
 		this.schemaMapping = schemaMapping;
 	}
 
-	public Collection<ProjectionFilter> buildProjectionFilter(org.citydb.config.project.query.filter.projection.ProjectionFilter projectionFilterConfig) throws QueryBuildException {
+	public Projection buildProjectionFilter(org.citydb.config.project.query.filter.projection.ProjectionFilter projectionFilterConfig) throws QueryBuildException {
+		Projection projection = new Projection();
 		Map<AbstractObjectType<?>, ProjectionFilter> projectionFilters = new IdentityHashMap<>();
 
 		for (ProjectionContext context : projectionFilterConfig.getProjectionContexts()) {
@@ -64,9 +64,6 @@ public class ProjectionFilterBuilder {
 			AbstractObjectType<?> objectType = schemaMapping.getAbstractObjectType(typeName);
 			if (objectType == null)
 				throw new QueryBuildException("'" + typeName + "' is not a valid object type.");
-
-			if (objectType.isAbstract())
-				throw new QueryBuildException("Projection filters must not be defined for abstract object types.");
 
 			if (projectionFilters.containsKey(objectType))
 				throw new QueryBuildException("Multiple projection filters defined for '" + typeName + "'.");
@@ -81,8 +78,8 @@ public class ProjectionFilterBuilder {
 				mode = ProjectionMode.REMOVE;
 				break;
 			}
-			
-			// create projection filter for feature type
+
+			// create projection filter for object type
 			ProjectionFilter projectionFilter = new ProjectionFilter(objectType, mode);
 			projectionFilters.put(objectType, projectionFilter);
 
@@ -90,14 +87,8 @@ public class ProjectionFilterBuilder {
 				// add properties and generic attributes
 				if (context.isSetPropertyNames()) {
 					for (AbstractPropertyName abstractPropertyName : context.getPropertyNames()) {
-						if (abstractPropertyName instanceof PropertyName) {
-							QName name = ((PropertyName) abstractPropertyName).getName();
-							AbstractProperty property = objectType.getProperty(name.getLocalPart(), name.getNamespaceURI(), true);
-							if (property == null)
-								throw new QueryBuildException("'" + name + "' is not a valid property of " + typeName + ".");
-
-							projectionFilter.addProperty(property);
-						}
+						if (abstractPropertyName instanceof PropertyName)
+							projectionFilter.addProperty(((PropertyName) abstractPropertyName).getName());
 
 						else if (abstractPropertyName instanceof GenericAttributeName) {
 							GenericAttributeName name = (GenericAttributeName) abstractPropertyName;
@@ -109,9 +100,11 @@ public class ProjectionFilterBuilder {
 			} catch (FilterException e) {
 				throw new QueryBuildException("Failed to build the projection filter.", e);
 			}
+
+			projection.addProjectionFilter(projectionFilter);
 		}
 
-		return projectionFilters.values();
+		return projection;
 	}
 
 }

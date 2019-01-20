@@ -27,11 +27,6 @@
  */
 package org.citydb.query.filter.projection;
 
-import java.util.HashSet;
-import java.util.Set;
-
-import javax.xml.namespace.QName;
-
 import org.citydb.database.schema.mapping.AbstractObjectType;
 import org.citydb.database.schema.mapping.AbstractProperty;
 import org.citydb.database.schema.mapping.AppSchema;
@@ -41,6 +36,10 @@ import org.citygml4j.model.module.Modules;
 import org.citygml4j.model.module.citygml.CityGMLModule;
 import org.citygml4j.model.module.citygml.CityGMLModuleType;
 import org.citygml4j.model.module.citygml.GenericsModule;
+
+import javax.xml.namespace.QName;
+import java.util.HashSet;
+import java.util.Set;
 
 public class ProjectionFilter {
 	private final AbstractObjectType<?> objectType;
@@ -63,27 +62,50 @@ public class ProjectionFilter {
 		FALSE = !TRUE;
 	}
 
-	public ProjectionFilter(ProjectionFilter other) {
-		objectType = other.objectType;
-		mode = other.mode;
-		properties = new HashSet<>(other.properties);
-		genericAttributes = new HashSet<>(other.genericAttributes);
+	ProjectionFilter(AbstractObjectType<?> objectType, ProjectionMode mode, Set<AbstractProperty> properties, Set<GenericAttribute> genericAttributes) {
+		this(objectType, mode);
 
-		TRUE = other.TRUE;
-		FALSE = other.FALSE;
+		if (properties != null)
+			this.properties = new HashSet<>(properties);
+
+		if (genericAttributes != null)
+			this.genericAttributes = new HashSet<>(genericAttributes);
 	}
 
-	public void addProperty(AbstractProperty property) {
+	public AbstractObjectType<?> getObjectType() {
+		return objectType;
+	}
+
+	public ProjectionMode getMode() {
+		return mode;
+	}
+
+	Set<AbstractProperty> getProperties() {
+		return properties;
+	}
+
+	Set<GenericAttribute> getGenericAttributes() {
+		return genericAttributes;
+	}
+
+	public void addProperty(QName propertyName) throws FilterException {
+		AbstractProperty property = objectType.getProperty(propertyName.getLocalPart(), propertyName.getNamespaceURI(), true);
+		if (property == null)
+			throw new FilterException("'" + propertyName + "' is not a valid property of " + objectType + ".");
+
 		if (properties == null)
 			properties = new HashSet<>();
 
 		properties.add(property);
 	}
 
-	public void addProperty(QName propertyName) {
-		AbstractProperty property = objectType.getProperty(propertyName.getLocalPart(), propertyName.getNamespaceURI(), true);
-		if (property != null)
-			addProperty(property);
+	void addProperties(Set<AbstractProperty> properties) {
+		if (properties != null) {
+			if (this.properties != null)
+				this.properties.addAll(properties);
+			else
+				this.properties = new HashSet<>(properties);
+		}
 	}
 
 	public boolean addGenericAttribute(GenericAttribute genericAttribute) {
@@ -97,12 +119,13 @@ public class ProjectionFilter {
 		return addGenericAttribute(new GenericAttribute(name, type));
 	}
 
-	public AbstractObjectType<?> getObjectType() {
-		return objectType;
-	}
-
-	public ProjectionMode getMode() {
-		return mode;
+	void addGenericAttributes(Set<GenericAttribute> genericAttributes) {
+		if (genericAttributes != null) {
+			if (this.genericAttributes != null)
+				this.genericAttributes.addAll(genericAttributes);
+			else
+				this.genericAttributes = new HashSet<>(genericAttributes);
+		}
 	}
 
 	public boolean containsProperty(AbstractProperty property) {
@@ -212,14 +235,14 @@ public class ProjectionFilter {
 
 	private String getGenericAttributeName(CityGMLClass type) {
 		switch (type) {
-		case STRING_ATTRIBUTE: return "stringAttribute";
-		case INT_ATTRIBUTE: return "intAttribute";
-		case DOUBLE_ATTRIBUTE: return "doubleAttribute";
-		case URI_ATTRIBUTE: return "uriAttribute";
-		case DATE_ATTRIBUTE: return "dateAttribute";
-		case MEASURE_ATTRIBUTE: return "measureAttribute";
-		case GENERIC_ATTRIBUTE_SET: return "genericAttributeSet";
-		default: return "";
+			case STRING_ATTRIBUTE: return "stringAttribute";
+			case INT_ATTRIBUTE: return "intAttribute";
+			case DOUBLE_ATTRIBUTE: return "doubleAttribute";
+			case URI_ATTRIBUTE: return "uriAttribute";
+			case DATE_ATTRIBUTE: return "dateAttribute";
+			case MEASURE_ATTRIBUTE: return "measureAttribute";
+			case GENERIC_ATTRIBUTE_SET: return "genericAttributeSet";
+			default: return "";
 		}
 	}
 

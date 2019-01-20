@@ -44,7 +44,6 @@ import org.citydb.database.schema.mapping.SchemaMapping;
 import org.citydb.query.Query;
 import org.citydb.query.builder.QueryBuildException;
 import org.citydb.query.filter.FilterException;
-import org.citydb.query.filter.projection.ProjectionFilter;
 import org.citydb.query.filter.selection.Predicate;
 import org.citydb.query.filter.selection.SelectionFilter;
 import org.citydb.query.filter.selection.operator.logical.BinaryLogicalOperator;
@@ -108,8 +107,7 @@ public class ConfigQueryBuilder {
 		// projection filter
 		if (queryConfig.isSetProjectionFilter()) {
 			ProjectionFilterBuilder builder = new ProjectionFilterBuilder(schemaMapping);
-			for (ProjectionFilter projectionFilter : builder.buildProjectionFilter(queryConfig.getProjectionFilter()))
-				query.addProjectionFilter(projectionFilter);
+			query.setProjection(builder.buildProjectionFilter(queryConfig.getProjectionFilter()));
 		}
 
 		// selection filter
