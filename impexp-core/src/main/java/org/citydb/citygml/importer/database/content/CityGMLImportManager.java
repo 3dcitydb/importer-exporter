@@ -111,6 +111,7 @@ import org.citygml4j.model.gml.feature.AbstractFeature;
 import org.citygml4j.model.gml.geometry.AbstractGeometry;
 import org.citygml4j.model.module.ModuleType;
 import org.citygml4j.model.module.citygml.CityGMLVersion;
+import org.citygml4j.util.gmlid.DefaultGMLIdManager;
 import org.citygml4j.util.xml.SAXWriter;
 import org.citygml4j.xml.CityGMLNamespaceContext;
 import org.xml.sax.SAXException;
@@ -528,6 +529,10 @@ public class CityGMLImportManager implements CityGMLImportHelper {
 
 	protected boolean hasADESupport() {
 		return hasADESupport;
+	}
+
+	public String generateNewGmlId() {
+		return DefaultGMLIdManager.getInstance().generateUUID(config.getProject().getImporter().getGmlId().getIdPrefix());
 	}
 
 	public LocalAppearanceHandler getLocalAppearanceHandler() {

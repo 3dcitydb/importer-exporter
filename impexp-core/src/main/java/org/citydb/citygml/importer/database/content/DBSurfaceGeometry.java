@@ -76,7 +76,6 @@ import org.citygml4j.model.gml.geometry.primitives.Triangle;
 import org.citygml4j.model.gml.geometry.primitives.TrianglePatchArrayProperty;
 import org.citygml4j.model.gml.geometry.primitives.TriangulatedSurface;
 import org.citygml4j.util.child.ChildInfo;
-import org.citygml4j.util.gmlid.DefaultGMLIdManager;
 import org.citygml4j.util.walker.GeometryWalker;
 
 import java.sql.Connection;
@@ -216,7 +215,7 @@ public class DBSurfaceGeometry implements DBImporter {
 		if (gmlId == null || replaceGmlId) {
 			if (!surfaceGeometry.hasLocalProperty(CoreConstants.GEOMETRY_ORIGINAL)) {
 				if (!surfaceGeometry.hasLocalProperty("origGmlId")) {
-					gmlId = DefaultGMLIdManager.getInstance().generateUUID();					
+					gmlId = importer.generateNewGmlId();
 					surfaceGeometry.setId(gmlId);
 					surfaceGeometry.setLocalProperty("origGmlId", origGmlId);
 				} else
@@ -224,7 +223,7 @@ public class DBSurfaceGeometry implements DBImporter {
 			} else {
 				AbstractGeometry original = (AbstractGeometry) surfaceGeometry.getLocalProperty(CoreConstants.GEOMETRY_ORIGINAL);
 				if (!original.hasLocalProperty("origGmlId")) {
-					gmlId = DefaultGMLIdManager.getInstance().generateUUID();					
+					gmlId = importer.generateNewGmlId();
 					original.setId(gmlId);
 					original.setLocalProperty("origGmlId", origGmlId);
 				} else
@@ -456,7 +455,7 @@ public class DBSurfaceGeometry implements DBImporter {
 				if (surfaceProperty.isSetSurface()) {
 					AbstractSurface abstractSurface = surfaceProperty.getSurface();
 					if (!abstractSurface.isSetId())
-						abstractSurface.setId(DefaultGMLIdManager.getInstance().generateUUID());
+						abstractSurface.setId(importer.generateNewGmlId());
 
 					// mapping target
 					mapping = abstractSurface.getId();
@@ -520,7 +519,7 @@ public class DBSurfaceGeometry implements DBImporter {
 					abstractSurface = surfaceProperty.getSurface();
 
 					if (!abstractSurface.isSetId())
-						abstractSurface.setId(DefaultGMLIdManager.getInstance().generateUUID());
+						abstractSurface.setId(importer.generateNewGmlId());
 
 					// appearance and mapping target
 					targetURI = abstractSurface.getId();
@@ -549,7 +548,7 @@ public class DBSurfaceGeometry implements DBImporter {
 							for (AbstractRingProperty abstractRingProperty : polygon.getInterior()) {
 								LinearRing interiorRing = (LinearRing)abstractRingProperty.getRing();
 								if (!interiorRing.isSetId())
-									interiorRing.setId(DefaultGMLIdManager.getInstance().generateUUID());
+									interiorRing.setId(importer.generateNewGmlId());
 							}
 						}
 					case COMPOSITE_SURFACE:

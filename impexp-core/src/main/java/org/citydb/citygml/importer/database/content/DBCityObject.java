@@ -57,7 +57,6 @@ import org.citygml4j.model.gml.basicTypes.Code;
 import org.citygml4j.model.gml.feature.AbstractFeature;
 import org.citygml4j.model.gml.feature.BoundingShape;
 import org.citygml4j.util.bbox.BoundingBoxOptions;
-import org.citygml4j.util.gmlid.DefaultGMLIdManager;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -180,7 +179,7 @@ public class DBCityObject implements DBImporter {
 			object.setLocalProperty(CoreConstants.OBJECT_ORIGINAL_GMLID, origGmlId);
 
 		if (replaceGmlId) {
-			String gmlId = DefaultGMLIdManager.getInstance().generateUUID();
+			String gmlId = importer.generateNewGmlId();
 
 			// mapping entry
 			if (object.isSetId()) {
@@ -203,7 +202,7 @@ public class DBCityObject implements DBImporter {
 			if (object.isSetId())
 				importer.putObjectUID(object.getId(), objectId, objectType.getObjectClassId());
 			else
-				object.setId(DefaultGMLIdManager.getInstance().generateUUID());
+				object.setId(importer.generateNewGmlId());
 		}
 
 		psCityObject.setString(3, object.getId());

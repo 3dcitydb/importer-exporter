@@ -27,20 +27,6 @@
  */
 package org.citydb.modules.citygml.exporter.gui.preferences;
 
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
-import javax.swing.BorderFactory;
-import javax.swing.ButtonGroup;
-import javax.swing.JCheckBox;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JTextField;
-import javax.swing.border.TitledBorder;
-
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.exporter.XLinkConfig;
@@ -50,7 +36,19 @@ import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.preferences.AbstractPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 import org.citygml4j.util.gmlid.DefaultGMLIdManager;
-import org.citygml4j.util.gmlid.GMLIdManager;
+
+import javax.swing.BorderFactory;
+import javax.swing.ButtonGroup;
+import javax.swing.JCheckBox;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.JTextField;
+import javax.swing.border.TitledBorder;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 @SuppressWarnings("serial")
 public class XLinkPanel extends AbstractPreferencesComponent {
@@ -71,12 +69,8 @@ public class XLinkPanel extends AbstractPreferencesComponent {
 	private JTextField geometryIdPrefix;
 	private JCheckBox geometryAppendId;
 	
-	private GMLIdManager gmlIdManager;
-	
 	public XLinkPanel(Config config) {
 		super(config);
-		gmlIdManager = DefaultGMLIdManager.getInstance();
-		
 		initGui();
 	}
 	
@@ -134,6 +128,8 @@ public class XLinkPanel extends AbstractPreferencesComponent {
 			int lmargin = (int)(copyFeature.getPreferredSize().getWidth()) + 11;
 			xlinkToFeature.setIconTextGap(10);
 			copyFeature.setIconTextGap(10);
+			featureKeepExtRef.setIconTextGap(10);
+			featureAppendId.setIconTextGap(10);
 			{
 				block1.add(xlinkToFeature, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
 				block1.add(copyFeature, GuiUtil.setConstraints(0,1,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
@@ -230,8 +226,8 @@ public class XLinkPanel extends AbstractPreferencesComponent {
 		if (feature.getIdPrefix() != null && feature.getIdPrefix().trim().length() != 0)
 			featureIdPrefix.setText(feature.getIdPrefix());
 		else {
-			featureIdPrefix.setText(gmlIdManager.getDefaultPrefix());
-			feature.setIdPrefix(gmlIdManager.getDefaultPrefix());
+			featureIdPrefix.setText(DefaultGMLIdManager.getInstance().getDefaultPrefix());
+			feature.setIdPrefix(DefaultGMLIdManager.getInstance().getDefaultPrefix());
 		}
 			
 		if (feature.isModeXLink())
@@ -245,8 +241,8 @@ public class XLinkPanel extends AbstractPreferencesComponent {
 		if (geometry.getIdPrefix() != null && geometry.getIdPrefix().trim().length() != 0)
 			geometryIdPrefix.setText(geometry.getIdPrefix());
 		else {
-			geometryIdPrefix.setText(gmlIdManager.getDefaultPrefix());
-			geometry.setIdPrefix(gmlIdManager.getDefaultPrefix());
+			geometryIdPrefix.setText(DefaultGMLIdManager.getInstance().getDefaultPrefix());
+			geometry.setIdPrefix(DefaultGMLIdManager.getInstance().getDefaultPrefix());
 		}
 		
 		if (geometry.isModeXLink())
@@ -268,8 +264,8 @@ public class XLinkPanel extends AbstractPreferencesComponent {
 		if (featureIdPrefix.getText() != null && featureIdPrefix.getText().trim().length() != 0)
 			feature.setIdPrefix(featureIdPrefix.getText().trim());
 		else {
-			feature.setIdPrefix(gmlIdManager.getDefaultPrefix());
-			featureIdPrefix.setText(gmlIdManager.getDefaultPrefix());
+			feature.setIdPrefix(DefaultGMLIdManager.getInstance().getDefaultPrefix());
+			featureIdPrefix.setText(DefaultGMLIdManager.getInstance().getDefaultPrefix());
 		}
 		
 		if (xlinkToFeature.isSelected())
@@ -283,8 +279,8 @@ public class XLinkPanel extends AbstractPreferencesComponent {
 		if (geometryIdPrefix.getText() != null && geometryIdPrefix.getText().trim().length() != 0)
 			geometry.setIdPrefix(geometryIdPrefix.getText().trim());
 		else {
-			geometry.setIdPrefix(gmlIdManager.getDefaultPrefix());
-			geometryIdPrefix.setText(gmlIdManager.getDefaultPrefix());
+			geometry.setIdPrefix(DefaultGMLIdManager.getInstance().getDefaultPrefix());
+			geometryIdPrefix.setText(DefaultGMLIdManager.getInstance().getDefaultPrefix());
 		}
 		
 		if (xlinkToGeometry.isSelected())

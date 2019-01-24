@@ -42,7 +42,6 @@ import org.citygml4j.model.citygml.appearance.SurfaceDataProperty;
 import org.citygml4j.model.citygml.texturedsurface._AbstractAppearance;
 import org.citygml4j.model.gml.basicTypes.Code;
 import org.citygml4j.model.gml.geometry.primitives.AbstractSurface;
-import org.citygml4j.util.gmlid.DefaultGMLIdManager;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -98,7 +97,7 @@ public class DBAppearance implements DBImporter {
 			appearance.setLocalProperty(CoreConstants.OBJECT_ORIGINAL_GMLID, origGmlId);
 		
 		if (replaceGmlId) {
-			String gmlId = DefaultGMLIdManager.getInstance().generateUUID();
+			String gmlId = importer.generateNewGmlId();
 
 			// mapping entry
 			if (appearance.isSetId())
@@ -110,7 +109,7 @@ public class DBAppearance implements DBImporter {
 			if (appearance.isSetId())
 				importer.putObjectUID(appearance.getId(), appearanceId, featureType.getObjectClassId());
 			else
-				appearance.setId(DefaultGMLIdManager.getInstance().generateUUID());
+				appearance.setId(importer.generateNewGmlId());
 		}
 
 		psAppearance.setString(2, appearance.getId());

@@ -63,7 +63,6 @@ import org.citygml4j.model.gml.basicTypes.Code;
 import org.citygml4j.model.gml.geometry.primitives.DirectPosition;
 import org.citygml4j.model.gml.geometry.primitives.Point;
 import org.citygml4j.model.gml.geometry.primitives.PointProperty;
-import org.citygml4j.util.gmlid.DefaultGMLIdManager;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -172,7 +171,7 @@ public class DBSurfaceData implements DBImporter {
 		// gml:id
 		String origGmlId = surfaceData.getId();		
 		if (replaceGmlId) {
-			String gmlId = DefaultGMLIdManager.getInstance().generateUUID();
+			String gmlId = importer.generateNewGmlId();
 
 			// mapping entry
 			if (surfaceData.isSetId())
@@ -184,7 +183,7 @@ public class DBSurfaceData implements DBImporter {
 			if (surfaceData.isSetId())
 				importer.putObjectUID(surfaceData.getId(), surfaceDataId, featureType.getObjectClassId());
 			else
-				surfaceData.setId(DefaultGMLIdManager.getInstance().generateUUID());
+				surfaceData.setId(importer.generateNewGmlId());
 		}
 
 		psSurfaceData.setString(2, surfaceData.getId());

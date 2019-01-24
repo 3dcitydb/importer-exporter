@@ -27,20 +27,6 @@
  */
 package org.citydb.modules.citygml.importer.gui.preferences;
 
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
-import javax.swing.BorderFactory;
-import javax.swing.ButtonGroup;
-import javax.swing.JCheckBox;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JTextField;
-import javax.swing.UIManager;
-import javax.swing.border.TitledBorder;
-
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.importer.CodeSpaceMode;
@@ -55,11 +41,28 @@ import org.citydb.event.global.EventType;
 import org.citydb.gui.preferences.AbstractPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.registry.ObjectRegistry;
+import org.citygml4j.util.gmlid.DefaultGMLIdManager;
+
+import javax.swing.BorderFactory;
+import javax.swing.ButtonGroup;
+import javax.swing.JCheckBox;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.JTextField;
+import javax.swing.UIManager;
+import javax.swing.border.TitledBorder;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 @SuppressWarnings("serial")
 public class IdHandlingPanel extends AbstractPreferencesComponent implements EventHandler {
 	private JPanel block1;
-	private JCheckBox impIdCheckExtRef;	
+	private JLabel idPrefixLabel;
+	private JTextField idPrefix;
+	private JCheckBox impIdCheckExtRef;
 	private JRadioButton impIdRadioAdd;
 	private JRadioButton impIdRadioExchange;
 	private JPanel block2;
@@ -72,14 +75,15 @@ public class IdHandlingPanel extends AbstractPreferencesComponent implements Eve
 	public IdHandlingPanel(Config config) {
 		super(config);
 		initGui();
-		
+
 		ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(EventType.DATABASE_CONNECTION_STATE, this);
 	}
 
 	@Override
 	public boolean isModified() {
 		ImportGmlId gmlId = config.getProject().getImporter().getGmlId();
-		
+
+		if (!idPrefix.getText().equals(gmlId.getIdPrefix())) return true;
 		if (impIdCheckExtRef.isSelected() != gmlId.isSetKeepGmlIdAsExternalReference()) return true;
 		if (impIdRadioAdd.isSelected() != gmlId.isUUIDModeComplement()) return true;
 		if (impIdRadioExchange.isSelected() != gmlId.isUUIDModeReplace()) return true;
@@ -92,6 +96,8 @@ public class IdHandlingPanel extends AbstractPreferencesComponent implements Eve
 	}
 
 	private void initGui(){
+		idPrefixLabel = new JLabel();
+		idPrefix = new JTextField();
 		impIdRadioAdd = new JRadioButton();
 		impIdRadioExchange = new JRadioButton();
 		ButtonGroup impIdRadio = new ButtonGroup();
@@ -119,11 +125,18 @@ public class IdHandlingPanel extends AbstractPreferencesComponent implements Eve
 			impIdRadioAdd.setIconTextGap(10);
 			impIdRadioExchange.setIconTextGap(10);
 			impIdCheckExtRef.setIconTextGap(10);
+			JPanel block1_1 = new JPanel();
 			int lmargin = (int)(impIdRadioAdd.getPreferredSize().getWidth()) + 11;
 			{
-				block1.add(impIdRadioAdd, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
-				block1.add(impIdRadioExchange, GuiUtil.setConstraints(0,1,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
-				block1.add(impIdCheckExtRef, GuiUtil.setConstraints(0,2,1.0,1.0,GridBagConstraints.BOTH,0,lmargin,0,5));		
+				block1_1.setLayout(new GridBagLayout());
+				block1_1.setBorder(BorderFactory.createEmptyBorder());
+				block1_1.add(idPrefixLabel, GuiUtil.setConstraints(0,0,0,0,GridBagConstraints.BOTH,0,0,0,5));
+				block1_1.add(idPrefix, GuiUtil.setConstraints(1,0,1.0,1.0,GridBagConstraints.BOTH,0,5,0,0));
+
+				block1.add(block1_1, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
+				block1.add(impIdRadioAdd, GuiUtil.setConstraints(0,1,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
+				block1.add(impIdRadioExchange, GuiUtil.setConstraints(0,2,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
+				block1.add(impIdCheckExtRef, GuiUtil.setConstraints(0,3,1.0,1.0,GridBagConstraints.BOTH,0,lmargin,0,5));
 			}
 			
 			block2 = new JPanel();
@@ -187,11 +200,12 @@ public class IdHandlingPanel extends AbstractPreferencesComponent implements Eve
 	
 	@Override
 	public void doTranslation() {
-		((TitledBorder)block1.getBorder()).setTitle(Language.I18N.getString("pref.import.idHandling.border.id"));	
+		((TitledBorder)block1.getBorder()).setTitle(Language.I18N.getString("pref.import.idHandling.border.id"));
+		idPrefixLabel.setText(Language.I18N.getString("pref.import.idHandling.label.id.prefix"));
 		impIdCheckExtRef.setText(Language.I18N.getString("pref.import.idHandling.label.id.extReference"));
 		impIdRadioAdd.setText(Language.I18N.getString("pref.import.idHandling.label.id.add"));
 		impIdRadioExchange.setText(Language.I18N.getString("pref.import.idHandling.label.id.exchange"));
-		
+
 		((TitledBorder)block2.getBorder()).setTitle(Language.I18N.getString("pref.import.idHandling.border.idCodeSpace"));
 		impIdCSRadioNone.setText(Language.I18N.getString("pref.import.idHandling.label.idCodeSpace.none"));
 		impIdCSRadioFile.setText(Language.I18N.getString("pref.import.idHandling.label.idCodeSpace.file"));
@@ -202,6 +216,13 @@ public class IdHandlingPanel extends AbstractPreferencesComponent implements Eve
 	@Override
 	public void loadSettings() {
 		ImportGmlId gmlId = config.getProject().getImporter().getGmlId();
+
+		if (gmlId.getIdPrefix() != null && gmlId.getIdPrefix().trim().length() != 0)
+			idPrefix.setText(gmlId.getIdPrefix());
+		else {
+			idPrefix.setText(DefaultGMLIdManager.getInstance().getDefaultPrefix());
+			gmlId.setIdPrefix(DefaultGMLIdManager.getInstance().getDefaultPrefix());
+		}
 		
 		if (gmlId.isUUIDModeReplace())
 			impIdRadioExchange.setSelected(true);
@@ -209,7 +230,7 @@ public class IdHandlingPanel extends AbstractPreferencesComponent implements Eve
 			impIdRadioAdd.setSelected(true);
 
 		impIdCheckExtRef.setSelected(gmlId.isSetKeepGmlIdAsExternalReference());
-		
+
 		setEnabledGmlId();
 		
 		if (gmlId.isSetNoneCodeSpaceMode())
@@ -229,6 +250,13 @@ public class IdHandlingPanel extends AbstractPreferencesComponent implements Eve
 	@Override
 	public void setSettings() {
 		ImportGmlId gmlId = config.getProject().getImporter().getGmlId();
+
+		if (idPrefix.getText() != null && idPrefix.getText().trim().length() != 0)
+			gmlId.setIdPrefix(idPrefix.getText().trim());
+		else {
+			gmlId.setIdPrefix(DefaultGMLIdManager.getInstance().getDefaultPrefix());
+			idPrefix.setText(DefaultGMLIdManager.getInstance().getDefaultPrefix());
+		}
 		
 		if (impIdRadioAdd.isSelected())
 			gmlId.setUuidMode(UUIDMode.COMPLEMENT);

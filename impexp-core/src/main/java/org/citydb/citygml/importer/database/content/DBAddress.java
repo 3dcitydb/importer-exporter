@@ -42,7 +42,6 @@ import org.citygml4j.model.xal.PostBoxNumber;
 import org.citygml4j.model.xal.PostalCodeNumber;
 import org.citygml4j.model.xal.ThoroughfareName;
 import org.citygml4j.model.xal.ThoroughfareNumber;
-import org.citygml4j.util.gmlid.DefaultGMLIdManager;
 import org.citygml4j.util.walker.XALWalker;
 
 import java.sql.Connection;
@@ -107,7 +106,7 @@ public class DBAddress implements DBImporter {
 			address.setLocalProperty(CoreConstants.OBJECT_ORIGINAL_GMLID, address.getId());
 
 		if (replaceGmlId) {
-			String gmlId = DefaultGMLIdManager.getInstance().generateUUID();
+			String gmlId = importer.generateNewGmlId();
 
 			// mapping entry
 			if (address.isSetId())
@@ -119,7 +118,7 @@ public class DBAddress implements DBImporter {
 			if (address.isSetId())
 				importer.putObjectUID(address.getId(), addressId, featureType.getObjectClassId());
 			else
-				address.setId(DefaultGMLIdManager.getInstance().generateUUID());
+				address.setId(importer.generateNewGmlId());
 		}
 
 		int index = 1;			

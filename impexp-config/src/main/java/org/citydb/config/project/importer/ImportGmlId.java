@@ -32,6 +32,7 @@ import javax.xml.bind.annotation.XmlType;
 
 @XmlType(name="ImportGmlIdType", propOrder={
 		"uuidMode",
+		"idPrefix",
 		"keepGmlIdAsExternalReference",
 		"codeSpaceMode",
 		"codeSpace"
@@ -39,6 +40,8 @@ import javax.xml.bind.annotation.XmlType;
 public class ImportGmlId {
 	@XmlElement(required=true)
 	private UUIDMode uuidMode = UUIDMode.COMPLEMENT;
+	@XmlElement(defaultValue="UUID_")
+	private String idPrefix = "UUID_";
 	@XmlElement(defaultValue="true")
 	private Boolean keepGmlIdAsExternalReference = true;
 	@XmlElement(required=true)
@@ -63,6 +66,14 @@ public class ImportGmlId {
 
 	public void setUuidMode(UUIDMode uuidMode) {
 		this.uuidMode = uuidMode;
+	}
+
+	public String getIdPrefix() {
+		return idPrefix;
+	}
+
+	public void setIdPrefix(String idPrefix) {
+		this.idPrefix = idPrefix;
 	}
 
 	public boolean isSetKeepGmlIdAsExternalReference() {
