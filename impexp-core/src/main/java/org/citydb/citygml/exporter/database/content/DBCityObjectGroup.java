@@ -27,22 +27,20 @@
  */
 package org.citydb.citygml.exporter.database.content;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.List;
-import java.util.Set;
-
 import org.citydb.citygml.exporter.CityGMLExportException;
 import org.citydb.citygml.exporter.util.AttributeValueSplitter;
 import org.citydb.citygml.exporter.util.AttributeValueSplitter.SplitValue;
-import org.citydb.config.Config;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.database.schema.TableEnum;
 import org.citydb.database.schema.mapping.FeatureType;
 import org.citydb.query.filter.projection.CombinedProjectionFilter;
 import org.citydb.query.filter.projection.ProjectionFilter;
+import org.citydb.sqlbuilder.expression.PlaceHolder;
+import org.citydb.sqlbuilder.schema.Table;
+import org.citydb.sqlbuilder.select.Select;
+import org.citydb.sqlbuilder.select.join.JoinFactory;
+import org.citydb.sqlbuilder.select.operator.comparison.ComparisonFactory;
+import org.citydb.sqlbuilder.select.operator.comparison.ComparisonName;
 import org.citygml4j.model.citygml.cityobjectgroup.CityObjectGroup;
 import org.citygml4j.model.citygml.cityobjectgroup.CityObjectGroupMember;
 import org.citygml4j.model.citygml.cityobjectgroup.CityObjectGroupParent;
@@ -51,16 +49,14 @@ import org.citygml4j.model.gml.geometry.AbstractGeometry;
 import org.citygml4j.model.gml.geometry.GeometryProperty;
 import org.citygml4j.model.module.citygml.CityGMLModuleType;
 
-import org.citydb.sqlbuilder.expression.PlaceHolder;
-import org.citydb.sqlbuilder.schema.Table;
-import org.citydb.sqlbuilder.select.Select;
-import org.citydb.sqlbuilder.select.join.JoinFactory;
-import org.citydb.sqlbuilder.select.operator.comparison.ComparisonFactory;
-import org.citydb.sqlbuilder.select.operator.comparison.ComparisonName;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.List;
+import java.util.Set;
 
 public class DBCityObjectGroup extends AbstractTypeExporter {
-	private final Config config;
-
 	private final PreparedStatement ps;
 
 	private DBSurfaceGeometry surfaceGeometryExporter;
@@ -69,17 +65,15 @@ public class DBCityObjectGroup extends AbstractTypeExporter {
 
 	private String groupModule;
 	private AttributeValueSplitter valueSplitter;
-	private boolean hasObjectClassIdColumn;
 	private Set<String> adeHookTables;
 
-	public DBCityObjectGroup(Connection connection, CityGMLExportManager exporter, Config config) throws CityGMLExportException, SQLException {
+	public DBCityObjectGroup(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
 		super(exporter);
-		this.config = config;
 
 		CombinedProjectionFilter projectionFilter = exporter.getCombinedProjectionFilter(TableEnum.CITYOBJECTGROUP.getName());
 		groupModule = exporter.getTargetCityGMLVersion().getCityGMLModule(CityGMLModuleType.CITY_OBJECT_GROUP).getNamespaceURI();
 		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
-		hasObjectClassIdColumn = exporter.getDatabaseAdapter().getConnectionMetaData().getCityDBVersion().compareTo(4, 0, 0) >= 0;
+		boolean hasObjectClassIdColumn = exporter.getDatabaseAdapter().getConnectionMetaData().getCityDBVersion().compareTo(4, 0, 0) >= 0;
 
 		table = new Table(TableEnum.CITYOBJECTGROUP.getName(), schema);
 		select = new Select().addProjection(table.getColumn("id"));
@@ -187,7 +181,7 @@ public class DBCityObjectGroup extends AbstractTypeExporter {
 						if (!rs.wasNull() && parentId != 0) {
 							String gmlId = rs.getString("parent_gmlid");
 
-							if (!config.getProject().getExporter().getCityObjectGroup().isExportMemberAsXLinks()
+							if (!exporter.getExportConfig().getCityObjectGroup().isExportMemberAsXLinks()
 									&& !exporter.lookupObjectUID(gmlId))
 								continue;
 
@@ -213,7 +207,7 @@ public class DBCityObjectGroup extends AbstractTypeExporter {
 					if (!rs.wasNull() && groupMemberId != 0) {
 						String gmlId = rs.getString("member_gmlid");
 
-						if (!config.getProject().getExporter().getCityObjectGroup().isExportMemberAsXLinks()
+						if (!exporter.getExportConfig().getCityObjectGroup().isExportMemberAsXLinks()
 								&& !exporter.lookupObjectUID(gmlId))
 							continue;
 

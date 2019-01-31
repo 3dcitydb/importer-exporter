@@ -109,20 +109,20 @@ public class AbstractAppearanceExporter extends AbstractTypeExporter {
 		texImageIds = new HashSet<>();
 		themes = Collections.emptyList();
 
-		exportTextureImage = config.getProject().getExporter().getAppearances().isSetExportTextureFiles();
-		uniqueFileNames = config.getProject().getExporter().getAppearances().isSetUniqueTextureFileNames();
-		noOfBuckets = config.getProject().getExporter().getAppearances().getTexturePath().getNoOfBuckets(); 
-		useBuckets = config.getProject().getExporter().getAppearances().getTexturePath().isUseBuckets() && noOfBuckets > 0;
+		exportTextureImage = exporter.getExportConfig().getAppearances().isSetExportTextureFiles();
+		uniqueFileNames = exporter.getExportConfig().getAppearances().isSetUniqueTextureFileNames();
+		noOfBuckets = exporter.getExportConfig().getAppearances().getTexturePath().getNoOfBuckets();
+		useBuckets = exporter.getExportConfig().getAppearances().getTexturePath().isUseBuckets() && noOfBuckets > 0;
 
 		textureURI = config.getInternal().getExportTextureURI();
 		separator = new File(textureURI).isAbsolute() ? File.separator : "/";
 		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 		String getLength = exporter.getDatabaseAdapter().getSQLAdapter().resolveDatabaseOperationName("blob.get_length");
 
-		useXLink = config.getProject().getExporter().getXlink().getFeature().isModeXLink();
+		useXLink = exporter.getExportConfig().getXlink().getFeature().isModeXLink();
 		if (!useXLink) {
-			appendOldGmlId = config.getProject().getExporter().getXlink().getFeature().isSetAppendId();
-			gmlIdPrefix = config.getProject().getExporter().getXlink().getFeature().getIdPrefix();
+			appendOldGmlId = exporter.getExportConfig().getXlink().getFeature().isSetAppendId();
+			gmlIdPrefix = exporter.getExportConfig().getXlink().getFeature().getIdPrefix();
 		}
 
 		table = new Table(TableEnum.APPEARANCE.getName(), schema);
@@ -170,7 +170,7 @@ public class AbstractAppearanceExporter extends AbstractTypeExporter {
 
 		ps = connection.prepareStatement(select.toString());
 
-		textureParamExporter = new DBTextureParam(isGlobal, connection, cacheTable, config, exporter);
+		textureParamExporter = new DBTextureParam(isGlobal, connection, cacheTable, exporter);
 		valueSplitter = exporter.getAttributeValueSplitter();
 	}
 

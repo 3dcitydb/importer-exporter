@@ -27,6 +27,20 @@
  */
 package org.citydb.citygml.exporter.database.content;
 
+import org.citydb.citygml.common.xal.AddressExportFactory;
+import org.citydb.citygml.common.xal.AddressObject;
+import org.citydb.citygml.exporter.CityGMLExportException;
+import org.citydb.config.geometry.GeometryObject;
+import org.citydb.config.project.exporter.AddressMode;
+import org.citydb.database.schema.TableEnum;
+import org.citydb.database.schema.mapping.FeatureType;
+import org.citydb.sqlbuilder.schema.Table;
+import org.citydb.sqlbuilder.select.Select;
+import org.citygml4j.model.citygml.core.Address;
+import org.citygml4j.model.citygml.core.AddressProperty;
+import org.citygml4j.model.gml.geometry.aggregates.MultiPointProperty;
+import org.citygml4j.model.xal.AddressDetails;
+
 import java.io.StringReader;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -37,28 +51,12 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-import org.citydb.citygml.common.xal.AddressExportFactory;
-import org.citydb.citygml.common.xal.AddressObject;
-import org.citydb.citygml.exporter.CityGMLExportException;
-import org.citydb.config.Config;
-import org.citydb.config.geometry.GeometryObject;
-import org.citydb.config.project.exporter.AddressMode;
-import org.citydb.database.schema.TableEnum;
-import org.citydb.database.schema.mapping.FeatureType;
-import org.citygml4j.model.citygml.core.Address;
-import org.citygml4j.model.citygml.core.AddressProperty;
-import org.citygml4j.model.gml.geometry.aggregates.MultiPointProperty;
-import org.citygml4j.model.xal.AddressDetails;
-
-import org.citydb.sqlbuilder.schema.Table;
-import org.citydb.sqlbuilder.select.Select;
-
 public class DBAddress extends AbstractFeatureExporter<Address> {
 	private AddressExportFactory factory;
 	private GMLConverter gmlConverter;
 	private Set<String> adeHookTables;
 
-	public DBAddress(Connection connection, CityGMLExportManager exporter, Config config) throws CityGMLExportException, SQLException {
+	public DBAddress(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
 		super(Address.class, connection, exporter);
 
 		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
@@ -74,7 +72,7 @@ public class DBAddress extends AbstractFeatureExporter<Address> {
 			if (adeHookTables != null) addJoinsToADEHookTables(adeHookTables, table);
 		}
 		
-		factory = new AddressExportFactory(config);
+		factory = new AddressExportFactory(exporter.getExportConfig());
 		gmlConverter = exporter.getGMLConverter();
 	}
 

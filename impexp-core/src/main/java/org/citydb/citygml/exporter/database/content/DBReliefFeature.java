@@ -27,24 +27,17 @@
  */
 package org.citydb.citygml.exporter.database.content;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
-
 import org.citydb.citygml.exporter.CityGMLExportException;
-import org.citydb.config.Config;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.database.schema.TableEnum;
 import org.citydb.database.schema.mapping.FeatureType;
 import org.citydb.query.filter.lod.LodFilter;
 import org.citydb.query.filter.projection.CombinedProjectionFilter;
 import org.citydb.query.filter.projection.ProjectionFilter;
+import org.citydb.sqlbuilder.schema.Table;
+import org.citydb.sqlbuilder.select.Select;
+import org.citydb.sqlbuilder.select.join.JoinFactory;
+import org.citydb.sqlbuilder.select.operator.comparison.ComparisonName;
 import org.citygml4j.model.citygml.relief.AbstractReliefComponent;
 import org.citygml4j.model.citygml.relief.BreaklineRelief;
 import org.citygml4j.model.citygml.relief.MassPointRelief;
@@ -61,10 +54,15 @@ import org.citygml4j.model.gml.geometry.primitives.TriangulatedSurface;
 import org.citygml4j.model.gml.measures.Length;
 import org.citygml4j.model.module.citygml.CityGMLModuleType;
 
-import org.citydb.sqlbuilder.schema.Table;
-import org.citydb.sqlbuilder.select.Select;
-import org.citydb.sqlbuilder.select.join.JoinFactory;
-import org.citydb.sqlbuilder.select.operator.comparison.ComparisonName;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Set;
 
 public class DBReliefFeature extends AbstractFeatureExporter<ReliefFeature> {
 	private DBSurfaceGeometry geometryExporter;
@@ -79,7 +77,7 @@ public class DBReliefFeature extends AbstractFeatureExporter<ReliefFeature> {
 	private Set<String> reliefADEHookTables;
 	private Set<String> componentADEHookTables;
 
-	public DBReliefFeature(Connection connection, CityGMLExportManager exporter, Config config) throws CityGMLExportException, SQLException {
+	public DBReliefFeature(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
 		super(ReliefFeature.class, connection, exporter);
 
 		CombinedProjectionFilter projectionFilter = exporter.getCombinedProjectionFilter(TableEnum.RELIEF_FEATURE.getName());
@@ -88,7 +86,7 @@ public class DBReliefFeature extends AbstractFeatureExporter<ReliefFeature> {
 		lodFilter = exporter.getLodFilter();
 		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 		hasObjectClassIdColumn = exporter.getDatabaseAdapter().getConnectionMetaData().getCityDBVersion().compareTo(4, 0, 0) >= 0;
-		useXLink = config.getProject().getExporter().getXlink().getFeature().isModeXLink();
+		useXLink = exporter.getExportConfig().getXlink().getFeature().isModeXLink();
 
 		table = new Table(TableEnum.RELIEF_FEATURE.getName(), schema);
 		Table reliefComponent = new Table(TableEnum.RELIEF_COMPONENT.getName(), schema);

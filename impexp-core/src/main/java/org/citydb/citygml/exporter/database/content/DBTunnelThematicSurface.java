@@ -27,19 +27,7 @@
  */
 package org.citydb.citygml.exporter.database.content;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map.Entry;
-import java.util.Set;
-
 import org.citydb.citygml.exporter.CityGMLExportException;
-import org.citydb.config.Config;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.database.schema.TableEnum;
 import org.citydb.database.schema.mapping.FeatureType;
@@ -47,6 +35,10 @@ import org.citydb.query.filter.lod.LodFilter;
 import org.citydb.query.filter.lod.LodIterator;
 import org.citydb.query.filter.projection.CombinedProjectionFilter;
 import org.citydb.query.filter.projection.ProjectionFilter;
+import org.citydb.sqlbuilder.schema.Table;
+import org.citydb.sqlbuilder.select.Select;
+import org.citydb.sqlbuilder.select.join.JoinFactory;
+import org.citydb.sqlbuilder.select.operator.comparison.ComparisonName;
 import org.citygml4j.model.citygml.core.ImplicitGeometry;
 import org.citygml4j.model.citygml.core.ImplicitRepresentationProperty;
 import org.citygml4j.model.citygml.tunnel.AbstractBoundarySurface;
@@ -61,10 +53,16 @@ import org.citygml4j.model.gml.geometry.aggregates.MultiSurface;
 import org.citygml4j.model.gml.geometry.aggregates.MultiSurfaceProperty;
 import org.citygml4j.model.module.citygml.CityGMLModuleType;
 
-import org.citydb.sqlbuilder.schema.Table;
-import org.citydb.sqlbuilder.select.Select;
-import org.citydb.sqlbuilder.select.join.JoinFactory;
-import org.citydb.sqlbuilder.select.operator.comparison.ComparisonName;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.Set;
 
 public class DBTunnelThematicSurface extends AbstractFeatureExporter<AbstractBoundarySurface> {
 	private DBSurfaceGeometry geometryExporter;
@@ -77,7 +75,7 @@ public class DBTunnelThematicSurface extends AbstractFeatureExporter<AbstractBou
 	private Set<String> surfaceADEHookTables;
 	private Set<String> openingADEHookTables;
 
-	public DBTunnelThematicSurface(Connection connection, CityGMLExportManager exporter, Config config) throws CityGMLExportException, SQLException {
+	public DBTunnelThematicSurface(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
 		super(AbstractBoundarySurface.class, connection, exporter);
 
 		CombinedProjectionFilter boundarySurfaceProjectionFilter = exporter.getCombinedProjectionFilter(TableEnum.TUNNEL_THEMATIC_SURFACE.getName());
@@ -85,7 +83,7 @@ public class DBTunnelThematicSurface extends AbstractFeatureExporter<AbstractBou
 		tunnelModule = exporter.getTargetCityGMLVersion().getCityGMLModule(CityGMLModuleType.TUNNEL).getNamespaceURI();
 		lodFilter = exporter.getLodFilter();
 		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
-		useXLink = config.getProject().getExporter().getXlink().getFeature().isModeXLink();
+		useXLink = exporter.getExportConfig().getXlink().getFeature().isModeXLink();
 
 		table = new Table(TableEnum.TUNNEL_THEMATIC_SURFACE.getName(), schema);
 		Table opening = new Table(TableEnum.TUNNEL_OPENING.getName(), schema);

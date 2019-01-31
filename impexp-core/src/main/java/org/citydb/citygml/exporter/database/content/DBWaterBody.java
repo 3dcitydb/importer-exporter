@@ -27,20 +27,9 @@
  */
 package org.citydb.citygml.exporter.database.content;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
-
 import org.citydb.citygml.exporter.CityGMLExportException;
 import org.citydb.citygml.exporter.util.AttributeValueSplitter;
 import org.citydb.citygml.exporter.util.AttributeValueSplitter.SplitValue;
-import org.citydb.config.Config;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.database.schema.TableEnum;
 import org.citydb.database.schema.mapping.FeatureType;
@@ -48,6 +37,10 @@ import org.citydb.query.filter.lod.LodFilter;
 import org.citydb.query.filter.lod.LodIterator;
 import org.citydb.query.filter.projection.CombinedProjectionFilter;
 import org.citydb.query.filter.projection.ProjectionFilter;
+import org.citydb.sqlbuilder.schema.Table;
+import org.citydb.sqlbuilder.select.Select;
+import org.citydb.sqlbuilder.select.join.JoinFactory;
+import org.citydb.sqlbuilder.select.operator.comparison.ComparisonName;
 import org.citygml4j.model.citygml.waterbody.AbstractWaterBoundarySurface;
 import org.citygml4j.model.citygml.waterbody.BoundedByWaterSurfaceProperty;
 import org.citygml4j.model.citygml.waterbody.WaterBody;
@@ -63,10 +56,15 @@ import org.citygml4j.model.gml.geometry.primitives.SolidProperty;
 import org.citygml4j.model.gml.geometry.primitives.SurfaceProperty;
 import org.citygml4j.model.module.citygml.CityGMLModuleType;
 
-import org.citydb.sqlbuilder.schema.Table;
-import org.citydb.sqlbuilder.select.Select;
-import org.citydb.sqlbuilder.select.join.JoinFactory;
-import org.citydb.sqlbuilder.select.operator.comparison.ComparisonName;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Set;
 
 public class DBWaterBody extends AbstractFeatureExporter<WaterBody> {
 	private DBSurfaceGeometry geometryExporter;
@@ -82,7 +80,7 @@ public class DBWaterBody extends AbstractFeatureExporter<WaterBody> {
 	private Set<String> bodyADEHookTables;
 	private Set<String> surfaceADEHookTables;
 
-	public DBWaterBody(Connection connection, CityGMLExportManager exporter, Config config) throws CityGMLExportException, SQLException {
+	public DBWaterBody(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
 		super(WaterBody.class, connection, exporter);
 
 		CombinedProjectionFilter projectionFilter = exporter.getCombinedProjectionFilter(TableEnum.WATERBODY.getName());
@@ -91,7 +89,7 @@ public class DBWaterBody extends AbstractFeatureExporter<WaterBody> {
 		lodFilter = exporter.getLodFilter();
 		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();		
 		hasObjectClassIdColumn = exporter.getDatabaseAdapter().getConnectionMetaData().getCityDBVersion().compareTo(4, 0, 0) >= 0;
-		useXLink = config.getProject().getExporter().getXlink().getFeature().isModeXLink();
+		useXLink = exporter.getExportConfig().getXlink().getFeature().isModeXLink();
 
 		table = new Table(TableEnum.WATERBODY.getName(), schema);
 		Table waterBoundarySurface = new Table(TableEnum.WATERBOUNDARY_SURFACE.getName(), schema);

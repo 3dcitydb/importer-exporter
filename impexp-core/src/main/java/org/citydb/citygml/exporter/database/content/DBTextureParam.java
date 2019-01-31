@@ -27,18 +27,16 @@
  */
 package org.citydb.citygml.exporter.database.content;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.citydb.citygml.common.database.cache.CacheTable;
 import org.citydb.citygml.exporter.util.AttributeValueSplitter;
-import org.citydb.config.Config;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.database.schema.TableEnum;
+import org.citydb.sqlbuilder.expression.PlaceHolder;
+import org.citydb.sqlbuilder.schema.Table;
+import org.citydb.sqlbuilder.select.Select;
+import org.citydb.sqlbuilder.select.join.JoinFactory;
+import org.citydb.sqlbuilder.select.operator.comparison.ComparisonFactory;
+import org.citydb.sqlbuilder.select.operator.comparison.ComparisonName;
 import org.citygml4j.geometry.Matrix;
 import org.citygml4j.model.citygml.appearance.AbstractSurfaceData;
 import org.citygml4j.model.citygml.appearance.GeoreferencedTexture;
@@ -50,12 +48,12 @@ import org.citygml4j.model.citygml.appearance.TextureCoordinates;
 import org.citygml4j.model.citygml.appearance.WorldToTexture;
 import org.citygml4j.model.citygml.appearance.X3DMaterial;
 
-import org.citydb.sqlbuilder.expression.PlaceHolder;
-import org.citydb.sqlbuilder.schema.Table;
-import org.citydb.sqlbuilder.select.Select;
-import org.citydb.sqlbuilder.select.join.JoinFactory;
-import org.citydb.sqlbuilder.select.operator.comparison.ComparisonFactory;
-import org.citydb.sqlbuilder.select.operator.comparison.ComparisonName;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DBTextureParam implements DBExporter {
 	private final CityGMLExportManager exporter;
@@ -63,7 +61,7 @@ public class DBTextureParam implements DBExporter {
 	private PreparedStatement ps;
 	private AttributeValueSplitter valueSplitter;
 
-	public DBTextureParam(boolean isGlobal, Connection connection, CacheTable cacheTable, Config config, CityGMLExportManager exporter) throws SQLException {
+	public DBTextureParam(boolean isGlobal, Connection connection, CacheTable cacheTable, CityGMLExportManager exporter) throws SQLException {
 		this.exporter = exporter;
 		
 		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();

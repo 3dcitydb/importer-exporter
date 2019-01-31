@@ -838,13 +838,13 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 
 				exporter = new DBSurfaceGeometry(connection, cacheTable, this, config);
 			} else if (type == DBCityObject.class)
-				exporter = new DBCityObject(connection, query, this, config);
+				exporter = new DBCityObject(connection, query, this);
 			else if (type == DBGeneralization.class)
 				exporter = new DBGeneralization(connection, query, this);
 			else if (type == DBCityObjectGenericAttrib.class)
 				exporter = new DBCityObjectGenericAttrib(connection, this);
 			else if (type == DBAddress.class)
-				exporter = new DBAddress(connection, this, config);
+				exporter = new DBAddress(connection, this);
 			else if (type == DBImplicitGeometry.class)
 				exporter = new DBImplicitGeometry(connection, this);
 
@@ -852,7 +852,7 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 			else if (type == DBBuilding.class)
 				exporter = new DBBuilding(connection, this);
 			else if (type == DBThematicSurface.class)
-				exporter = new DBThematicSurface(connection, this, config);
+				exporter = new DBThematicSurface(connection, this);
 			else if (type == DBOpening.class)
 				exporter = new DBOpening(connection, this);
 			else if (type == DBBuildingInstallation.class)
@@ -866,7 +866,7 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 			else if (type == DBBridge.class)
 				exporter = new DBBridge(connection, this);
 			else if (type == DBBridgeThematicSurface.class)
-				exporter = new DBBridgeThematicSurface(connection, this, config);
+				exporter = new DBBridgeThematicSurface(connection, this);
 			else if (type == DBBridgeOpening.class)
 				exporter = new DBBridgeOpening(connection, this);
 			else if (type == DBBridgeConstrElement.class)
@@ -884,7 +884,7 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 
 			// city object group module
 			else if (type == DBCityObjectGroup.class)
-				exporter = new DBCityObjectGroup(connection, this, config);
+				exporter = new DBCityObjectGroup(connection, this);
 
 			// generics module
 			else if (type == DBGenericCityObject.class)
@@ -902,7 +902,7 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 
 			// relief module
 			else if (type == DBReliefFeature.class)
-				exporter = new DBReliefFeature(connection, this, config);
+				exporter = new DBReliefFeature(connection, this);
 			else if (type == DBReliefComponent.class)
 				exporter = new DBReliefComponent(connection, this);
 
@@ -916,7 +916,7 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 			else if (type == DBTunnel.class)
 				exporter = new DBTunnel(connection, this);
 			else if (type == DBTunnelThematicSurface.class)
-				exporter = new DBTunnelThematicSurface(connection, this, config);
+				exporter = new DBTunnelThematicSurface(connection, this);
 			else if (type == DBTunnelOpening.class)
 				exporter = new DBTunnelOpening(connection, this);
 			else if (type == DBTunnelInstallation.class)
@@ -928,7 +928,7 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 
 			// water body module
 			else if (type == DBWaterBody.class)
-				exporter = new DBWaterBody(connection, this, config);
+				exporter = new DBWaterBody(connection, this);
 			else if (type == DBWaterBoundarySurface.class)
 				exporter = new DBWaterBoundarySurface(connection, this);
 

@@ -38,6 +38,7 @@ import org.citydb.citygml.exporter.util.AttributeValueSplitter;
 import org.citydb.citygml.exporter.util.AttributeValueSplitter.SplitValue;
 import org.citydb.config.Config;
 import org.citydb.config.geometry.GeometryObject;
+import org.citydb.config.project.exporter.GMLEnvelopeMode;
 import org.citydb.config.project.exporter.SimpleTilingOptions;
 import org.citydb.database.schema.TableEnum;
 import org.citydb.database.schema.mapping.AbstractObjectType;
@@ -105,7 +106,7 @@ public class DBCityObject implements DBExporter {
 	private String gmlModule;
 	private String cityDBADEModule;
 
-	public DBCityObject(Connection connection, Query query, CityGMLExportManager exporter, Config config) throws CityGMLExportException, SQLException {
+	public DBCityObject(Connection connection, Query query, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
 		this.exporter = exporter;
 		this.query = query;
 
@@ -124,13 +125,13 @@ public class DBCityObject implements DBExporter {
 			activeTile = tiling.getActiveTile();
 		}
 
-		exportCityDBMetadata = config.getProject().getExporter().getContinuation().isExportCityDBMetadata();
+		exportCityDBMetadata = exporter.getExportConfig().getContinuation().isExportCityDBMetadata();
 		if (exportCityDBMetadata) {
 			cityDBADEModule = exporter.getTargetCityGMLVersion() == CityGMLVersion.v2_0_0 ?
 					CityDBADE200Module.v3_0.getNamespaceURI() : CityDBADE100Module.v3_0.getNamespaceURI();
 		}
 
-		exportAppearance = config.getProject().getExporter().getAppearances().isSetExportAppearance();
+		exportAppearance = exporter.getExportConfig().getAppearances().isSetExportAppearance();
 		gmlSrsName = query.getTargetSrs().getGMLSrsName();
 		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 
@@ -189,7 +190,8 @@ public class DBCityObject implements DBExporter {
 						object.setDescription(new StringOrRef(description));
 				}
 
-				if (isFeature && isTopLevel) {
+				if (isFeature && (exporter.getExportConfig().getCityGMLOptions().getGmlEnvelope() == GMLEnvelopeMode.ALL_FEATURES
+						|| (exporter.getExportConfig().getCityGMLOptions().getGmlEnvelope() == GMLEnvelopeMode.TOP_LEVEL_FEATURES && isTopLevel))) {
 					BoundingShape boundedBy = null;	
 					Object geom = rs.getObject("envelope");
 					if (!rs.wasNull() && geom != null) {

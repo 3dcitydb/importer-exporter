@@ -101,13 +101,13 @@ public class DBSurfaceGeometry implements DBExporter {
 			select.addSelection(ComparisonFactory.exists(new Select().addProjection(new ConstantColumn(1).withFromTable(table))
 					.addSelection(ComparisonFactory.equalTo(table.getColumn("surface_geometry_id"), new PlaceHolder<>()))));
 			
-			psImport = cacheTable.getConnection().prepareStatement(new StringBuilder("insert into ").append(cacheTable.getTableName()).append(" ").append(select.toString()).toString());
+			psImport = cacheTable.getConnection().prepareStatement("insert into " + cacheTable.getTableName() + " " + select.toString());
 		}
 
-		useXLink = config.getProject().getExporter().getXlink().getGeometry().isModeXLink();
+		useXLink = exporter.getExportConfig().getXlink().getGeometry().isModeXLink();
 		if (!useXLink) {
-			appendOldGmlId = config.getProject().getExporter().getXlink().getGeometry().isSetAppendId();
-			gmlIdPrefix = config.getProject().getExporter().getXlink().getGeometry().getIdPrefix();
+			appendOldGmlId = exporter.getExportConfig().getXlink().getGeometry().isSetAppendId();
+			gmlIdPrefix = exporter.getExportConfig().getXlink().getGeometry().getIdPrefix();
 		}
 
 		Table table = new Table(TableEnum.SURFACE_GEOMETRY.getName(), schema);
