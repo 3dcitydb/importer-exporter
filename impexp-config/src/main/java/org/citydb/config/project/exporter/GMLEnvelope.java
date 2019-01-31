@@ -25,19 +25,40 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.citydb.citygml.exporter.writer;
 
-import org.citydb.config.geometry.BoundingBox;
-import org.citygml4j.model.gml.feature.AbstractFeature;
+package org.citydb.config.project.exporter;
 
-public interface FeatureWriter extends AutoCloseable {
-	void writeHeader() throws FeatureWriteException;
-	void write(AbstractFeature feature) throws FeatureWriteException;
-	void useIndentation(boolean useIndentation);
-	void setSpatialExtent(BoundingBox extent);
-	void close() throws FeatureWriteException;
+import javax.xml.bind.annotation.XmlType;
 
-	default boolean supportsFlatHierarchies() {
-		return true;
-	}
+@XmlType(name="GMLEnvelopeType", propOrder={
+        "cityModel",
+        "features"
+})
+public class GMLEnvelope {
+    private CityModelEnvelopeMode cityModel;
+    private FeatureEnvelopeMode features = FeatureEnvelopeMode.TOP_LEVEL;
+
+    public boolean isSetCityModelEnvelopeMode() {
+        return cityModel != null;
+    }
+
+    public CityModelEnvelopeMode getCityModelEnvelopeMode() {
+        return cityModel;
+    }
+
+    public void setCityModelEnvelopeMode(CityModelEnvelopeMode mode) {
+        this.cityModel = mode;
+    }
+
+    public boolean isUseEnvelopeOnCityModel() {
+        return cityModel != null && cityModel.isUseEnvelope();
+    }
+
+    public FeatureEnvelopeMode getFeatureMode() {
+        return features;
+    }
+
+    public void setFeatureMode(FeatureEnvelopeMode mode) {
+        this.features = mode;
+    }
 }

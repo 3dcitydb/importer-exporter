@@ -31,8 +31,13 @@ import org.citydb.citygml.common.database.cache.CacheTable;
 import org.citydb.citygml.common.database.cache.CacheTableManager;
 import org.citydb.citygml.common.database.cache.model.CacheTableModel;
 import org.citydb.citygml.common.database.uid.UIDCache;
+import org.citydb.citygml.exporter.writer.FeatureWriteException;
+import org.citydb.citygml.exporter.writer.FeatureWriter;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
+import org.citydb.config.geometry.BoundingBox;
+import org.citydb.config.geometry.GeometryObject;
+import org.citydb.config.geometry.Position;
 import org.citydb.config.i18n.Language;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.connection.DatabaseConnectionPool;
@@ -84,6 +89,7 @@ public class DBSplitter {
 
 	private final WorkerPool<DBSplittingResult> dbWorkerPool;
 	private final Query query;
+	private final FeatureWriter writer;
 	private final UIDCache featureGmlIdCache;
 	private final CacheTableManager cacheTableManager;
 	private final Config config;
@@ -97,15 +103,18 @@ public class DBSplitter {
 
 	private volatile boolean shouldRun = true;
 	private boolean calculateNumberMatched;
+	private boolean calculateExtent;
 	private long elementCounter;
 
-	public DBSplitter(SchemaMapping schemaMapping,
+	public DBSplitter(FeatureWriter writer,
+			SchemaMapping schemaMapping,
 			WorkerPool<DBSplittingResult> dbWorkerPool, 
 			Query query,
 			UIDCache featureGmlIdCache,
 			CacheTableManager cacheTableManager,
 			EventDispatcher eventDispatcher, 
 			Config config) throws SQLException {
+		this.writer = writer;
 		this.schemaMapping = schemaMapping;
 		this.dbWorkerPool = dbWorkerPool;
 		this.query = query;
@@ -140,6 +149,11 @@ public class DBSplitter {
 		BuildProperties buildProperties = BuildProperties.defaults()
 				.addProjectionColumn(MappingConstants.GMLID);
 
+		// add envelope column in case we must export the extent of the result set
+		calculateExtent = config.getProject().getExporter().getCityGMLOptions().getGMLEnvelope().isUseEnvelopeOnCityModel();
+		if (calculateExtent)
+			buildProperties.addProjectionColumn(MappingConstants.ENVELOPE);
+
 		builder = new SQLQueryBuilder(
 				schemaMapping, 
 				databaseAdapter, 
@@ -159,7 +173,7 @@ public class DBSplitter {
 		eventDispatcher.triggerEvent(new StatusDialogProgressBar(true, this));
 	}
 
-	public void startQuery() throws SQLException, QueryBuildException, FilterException {
+	public void startQuery() throws SQLException, QueryBuildException, FilterException, FeatureWriteException {
 		try {
 			FeatureType cityObjectGroupType = schemaMapping.getFeatureType("CityObjectGroup", CityObjectGroupModule.v2_0_0.getNamespaceURI());
 			HashMap<Long, AbstractObjectType<?>> cityObjectGroups = new HashMap<>();
@@ -195,7 +209,7 @@ public class DBSplitter {
 		}
 	}
 
-	private void queryCityObject(FeatureType cityObjectGroupType, HashMap<Long, AbstractObjectType<?>> cityObjectGroups) throws SQLException, QueryBuildException {
+	private void queryCityObject(FeatureType cityObjectGroupType, HashMap<Long, AbstractObjectType<?>> cityObjectGroups) throws SQLException, QueryBuildException, FeatureWriteException {
 		if (!shouldRun)
 			return;
 
@@ -207,14 +221,21 @@ public class DBSplitter {
 		if (query.isSetCounterFilter())
 			select.addOrderBy(new OrderByToken((Column)select.getProjection().get(0)));
 
-		// add hits counter
-		if (calculateNumberMatched) {
+		// add hits counter and/or spatial extent
+		if (calculateNumberMatched || calculateExtent) {
 			Table table = new Table(select);
-			select = new Select()
-					.addProjection(table.getColumn(MappingConstants.ID))
-					.addProjection(table.getColumn(MappingConstants.OBJECTCLASS_ID))
-					.addProjection(table.getColumn(MappingConstants.GMLID))
-					.addProjection(new Function("count(1) over", "hits"));
+			select = new Select();
+
+			if (calculateNumberMatched) {
+				select.addProjection(table.getColumn(MappingConstants.ID))
+						.addProjection(table.getColumn(MappingConstants.OBJECTCLASS_ID))
+						.addProjection(table.getColumn(MappingConstants.GMLID))
+						.addProjection(new Function("count(1) over", "hits"));
+			}
+
+			if (calculateExtent)
+				select.addProjection(new Function(databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("geom_extent") +
+						"(" + table.getColumn(MappingConstants.ENVELOPE) + ") over", "extent"));
 		}
 
 		// issue query
@@ -238,6 +259,32 @@ public class DBSplitter {
 
 					eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.INIT, (int)hits, this));
 				}
+
+				if (calculateExtent) {
+					Object extent = rs.getObject("extent");
+					if (!rs.wasNull() && extent != null) {
+						GeometryObject extentObj = databaseAdapter.getGeometryConverter().getEnvelope(extent);
+						double[] coordinates = extentObj.getCoordinates(0);
+
+						BoundingBox bbox;
+						if (query.isSetTiling() &&
+								config.getProject().getExporter().getCityGMLOptions().getGMLEnvelope().getCityModelEnvelopeMode().isUseTileExtent()) {
+							BoundingBox tileExtent = query.getTiling().getActiveTile().getExtent();
+							bbox = new BoundingBox(
+									new Position(tileExtent.getLowerCorner().getX(),tileExtent.getLowerCorner().getY(), coordinates[2]),
+									new Position(tileExtent.getUpperCorner().getX(),tileExtent.getUpperCorner().getY(), coordinates[5]));
+						} else {
+							bbox = new BoundingBox(
+									new Position(coordinates[0], coordinates[1], coordinates[2]),
+									new Position(coordinates[3], coordinates[4], coordinates[5]));
+						}
+
+						bbox.setSrs(query.getTargetSrs());
+						writer.setSpatialExtent(bbox);
+					}
+				}
+
+				writer.writeHeader();
 				
 				do {
 					elementCounter++;
@@ -274,8 +321,20 @@ public class DBSplitter {
 					DBSplittingResult splitter = new DBSplittingResult(id, objectType);
 					dbWorkerPool.addWork(splitter);
 				} while (rs.next() && shouldRun);
-			} else
+			} else {
 				log.info("No top-level feature matches the request.");
+
+				if (query.isSetTiling() &&
+						config.getProject().getExporter().getCityGMLOptions().getGMLEnvelope().getCityModelEnvelopeMode().isUseTileExtent()) {
+					BoundingBox tileExtent = query.getTiling().getActiveTile().getExtent();
+					writer.setSpatialExtent(new BoundingBox(
+							new Position(tileExtent.getLowerCorner().getX(),tileExtent.getLowerCorner().getY(), 0.0),
+							new Position(tileExtent.getUpperCorner().getX(),tileExtent.getUpperCorner().getY(), 0.0),
+							query.getTargetSrs()));
+				}
+
+				writer.writeHeader();
+			}
 		}
 	}
 

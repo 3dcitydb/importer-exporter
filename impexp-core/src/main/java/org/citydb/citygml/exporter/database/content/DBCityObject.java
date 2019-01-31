@@ -36,9 +36,8 @@ import org.citydb.ade.model.module.CityDBADE200Module;
 import org.citydb.citygml.exporter.CityGMLExportException;
 import org.citydb.citygml.exporter.util.AttributeValueSplitter;
 import org.citydb.citygml.exporter.util.AttributeValueSplitter.SplitValue;
-import org.citydb.config.Config;
 import org.citydb.config.geometry.GeometryObject;
-import org.citydb.config.project.exporter.GMLEnvelopeMode;
+import org.citydb.config.project.exporter.FeatureEnvelopeMode;
 import org.citydb.config.project.exporter.SimpleTilingOptions;
 import org.citydb.database.schema.TableEnum;
 import org.citydb.database.schema.mapping.AbstractObjectType;
@@ -167,6 +166,11 @@ public class DBCityObject implements DBExporter {
 		boolean isCityObject = object instanceof AbstractCityObject;
 		boolean isTopLevel = objectType instanceof FeatureType && ((FeatureType)objectType).isTopLevel();
 
+		boolean setEnvelope = !isCityObject || (projectionFilter.containsProperty("boundedBy", gmlModule)
+				&& (exporter.getExportConfig().getCityGMLOptions().getGMLEnvelope().getFeatureMode() == FeatureEnvelopeMode.ALL
+				|| (exporter.getExportConfig().getCityGMLOptions().getGMLEnvelope().getFeatureMode() == FeatureEnvelopeMode.TOP_LEVEL && isTopLevel)));
+		boolean getEnvelope = isFeature && ((useTiling && isTopLevel) || setEnvelope);
+
 		ps.setLong(1, objectId);
 
 		try (ResultSet rs = ps.executeQuery()) {
@@ -190,9 +194,8 @@ public class DBCityObject implements DBExporter {
 						object.setDescription(new StringOrRef(description));
 				}
 
-				if (isFeature && (exporter.getExportConfig().getCityGMLOptions().getGmlEnvelope() == GMLEnvelopeMode.ALL_FEATURES
-						|| (exporter.getExportConfig().getCityGMLOptions().getGmlEnvelope() == GMLEnvelopeMode.TOP_LEVEL_FEATURES && isTopLevel))) {
-					BoundingShape boundedBy = null;	
+				if (getEnvelope) {
+					BoundingShape boundedBy = null;
 					Object geom = rs.getObject("envelope");
 					if (!rs.wasNull() && geom != null) {
 						GeometryObject geomObj = exporter.getDatabaseAdapter().getGeometryConverter().getEnvelope(geom);
@@ -209,7 +212,7 @@ public class DBCityObject implements DBExporter {
 					}
 
 					// check bounding volume filter
-					if (useTiling) {
+					if (useTiling && isTopLevel) {
 						if (boundedBy == null || !boundedBy.isSetEnvelope())
 							return false;
 
@@ -227,7 +230,7 @@ public class DBCityObject implements DBExporter {
 					}
 
 					// gml:boundedBy
-					if (!isCityObject || projectionFilter.containsProperty("boundedBy", gmlModule))
+					if (setEnvelope)
 						((AbstractFeature)object).setBoundedBy(boundedBy);
 				}
 

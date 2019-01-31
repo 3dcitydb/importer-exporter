@@ -45,6 +45,7 @@ import javax.xml.bind.annotation.XmlType;
 		"appearances",
 		"xlink",
 		"xslTransformation",
+		"cityGMLOptions",
 		"resources"
 })
 public class Exporter {
@@ -59,19 +60,21 @@ public class Exporter {
 	private ExportAppearance appearances;
 	private XLink xlink;
 	private XSLTransformation xslTransformation;
+	private CityGMLOptions cityGMLOptions;
 	private Resources resources;
 
 	public Exporter() {
 		query = new Query();
 		simpleQuery = new SimpleQuery();
 		path = new Path();
+		continuation = new Continuation();
 		cityObjectGroup = new ExportCityObjectGroup();
 		address = new ExportAddress();
 		appearances = new ExportAppearance();
 		xlink = new XLink();
 		xslTransformation = new XSLTransformation();
+		cityGMLOptions = new CityGMLOptions();
 		resources = new Resources();
-		continuation = new Continuation();
 	}
 
 	public boolean isUseSimpleQuery() {
@@ -161,6 +164,15 @@ public class Exporter {
 	public void setXSLTransformation(XSLTransformation xslTransformation) {
 		if (xslTransformation != null)
 			this.xslTransformation = xslTransformation;
+	}
+
+	public CityGMLOptions getCityGMLOptions() {
+		return cityGMLOptions;
+	}
+
+	public void setCityGMLOptions(CityGMLOptions cityGMLOptions) {
+		if (cityGMLOptions != null)
+			this.cityGMLOptions = cityGMLOptions;
 	}
 
 	public Resources getResources() {

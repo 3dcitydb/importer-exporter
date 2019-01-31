@@ -51,9 +51,9 @@ import org.citydb.config.internal.FileType;
 import org.citydb.config.internal.OutputFile;
 import org.citydb.config.project.database.DatabaseSrs;
 import org.citydb.config.project.database.Workspace;
+import org.citydb.config.project.exporter.SimpleTilingOptions;
 import org.citydb.config.project.exporter.TileNameSuffixMode;
 import org.citydb.config.project.exporter.TileSuffixMode;
-import org.citydb.config.project.exporter.SimpleTilingOptions;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.adapter.IndexStatusInfo.IndexType;
 import org.citydb.database.connection.DatabaseConnectionPool;
@@ -457,6 +457,7 @@ public class Exporter implements EventHandler {
 					dbSplitter = null;
 					try {
 						dbSplitter = new DBSplitter(
+								writer,
 								schemaMapping,
 								dbWorkerPool,
 								query,
@@ -471,6 +472,8 @@ public class Exporter implements EventHandler {
 						}
 					} catch (SQLException | QueryBuildException | FilterException e) {
 						throw new CityGMLExportException("Failed to query the database.", e);
+					} catch (FeatureWriteException e) {
+						throw new CityGMLExportException("Failed to write to output file.", e);
 					}
 
 					try {

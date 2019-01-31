@@ -28,18 +28,22 @@
 package org.citydb.citygml.exporter.writer;
 
 import org.citydb.concurrent.SingleWorkerPool;
+import org.citydb.config.geometry.BoundingBox;
 import org.citydb.registry.ObjectRegistry;
 import org.citydb.writer.XMLWriterWorkerFactory;
 import org.citygml4j.builder.jaxb.CityGMLBuilder;
 import org.citygml4j.builder.jaxb.marshal.JAXBMarshaller;
+import org.citygml4j.geometry.Point;
 import org.citygml4j.model.citygml.appearance.Appearance;
 import org.citygml4j.model.citygml.appearance.AppearanceMember;
 import org.citygml4j.model.citygml.core.AbstractCityObject;
 import org.citygml4j.model.citygml.core.CityModel;
 import org.citygml4j.model.citygml.core.CityObjectMember;
 import org.citygml4j.model.gml.feature.AbstractFeature;
+import org.citygml4j.model.gml.feature.BoundingShape;
 import org.citygml4j.model.gml.feature.FeatureMember;
 import org.citygml4j.model.gml.feature.FeatureProperty;
+import org.citygml4j.model.gml.geometry.primitives.Envelope;
 import org.citygml4j.model.module.citygml.CityGMLModuleType;
 import org.citygml4j.model.module.citygml.CityGMLVersion;
 import org.citygml4j.util.internal.xml.TransformerChain;
@@ -56,7 +60,6 @@ import javax.xml.bind.Marshaller;
 import javax.xml.namespace.QName;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.sax.SAXResult;
-import java.io.IOException;
 
 public class CityGMLWriter implements FeatureWriter {
 	private final SingleWorkerPool<SAXEventBuffer> writerPool;
@@ -66,7 +69,9 @@ public class CityGMLWriter implements FeatureWriter {
 	private final CityGMLVersion version;
 	private final TransformerChainFactory transformerChainFactory;
 
-	protected CityGMLWriter(SAXWriter saxWriter, CityGMLVersion version, TransformerChainFactory transformerChainFactory) {
+	private BoundingBox extent;
+
+	CityGMLWriter(SAXWriter saxWriter, CityGMLVersion version, TransformerChainFactory transformerChainFactory) {
 		this.saxWriter = saxWriter;
 		this.version = version;
 		this.transformerChainFactory = transformerChainFactory;
@@ -88,17 +93,19 @@ public class CityGMLWriter implements FeatureWriter {
 		saxWriter.setIndentString(useIndentation ? "  " : "");
 	}
 
-	protected void writeStartDocument() throws FeatureWriteException {
-		writeCityModel(WriteMode.HEAD);
+	@Override
+	public void setSpatialExtent(BoundingBox extent) {
+		this.extent = extent;
 	}
-	
-	protected void writeEndDocument() throws FeatureWriteException {
-		writeCityModel(WriteMode.TAIL);
+
+	@Override
+	public void writeHeader() throws FeatureWriteException {
+		writeCityModel(WriteMode.HEAD);
 	}
 
 	@Override
 	public void write(AbstractFeature feature) throws FeatureWriteException {
-		FeatureProperty<? extends AbstractFeature> member = null;
+		FeatureProperty<? extends AbstractFeature> member;
 
 		// wrap feature with a feature property element
 		if (feature instanceof AbstractCityObject) {
@@ -146,7 +153,7 @@ public class CityGMLWriter implements FeatureWriter {
 	public void close() throws FeatureWriteException {			
 		try {
 			writerPool.shutdownAndWait();
-			writeEndDocument();
+			writeCityModel(WriteMode.TAIL);
 			saxWriter.close();
 		} catch (Throwable e) {
 			throw new FeatureWriteException("Failed to close CityGML writer.", e);
@@ -163,7 +170,19 @@ public class CityGMLWriter implements FeatureWriter {
 					saxWriter, 
 					mode);
 
-			JAXBElement<?> jaxbElement = jaxbMarshaller.marshalJAXBElement(new CityModel());
+			CityModel cityModel = new CityModel();
+			if (mode == WriteMode.HEAD && extent != null && extent.isValid()) {
+				Envelope envelope = new Envelope();
+				envelope.setLowerCorner(new Point(extent.getLowerCorner().getX(), extent.getLowerCorner().getY(), extent.getLowerCorner().getZ()));
+				envelope.setUpperCorner(new Point(extent.getUpperCorner().getX(), extent.getUpperCorner().getY(), extent.getUpperCorner().getZ()));
+				envelope.setSrsDimension(3);
+				if (extent.isSetSrs())
+					envelope.setSrsName(extent.getSrs().getGMLSrsName());
+
+				cityModel.setBoundedBy(new BoundingShape(envelope));
+			}
+
+			JAXBElement<?> jaxbElement = jaxbMarshaller.marshalJAXBElement(cityModel);
 			if (jaxbElement != null) {
 				Marshaller marshaller = cityGMLBuilder.getJAXBContext().createMarshaller();
 

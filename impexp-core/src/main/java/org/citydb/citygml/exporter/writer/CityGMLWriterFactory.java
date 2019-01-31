@@ -90,7 +90,7 @@ public class CityGMLWriterFactory implements FeatureWriterFactory {
 	}
 
 	@Override
-	public FeatureWriter createFeatureWriter(Writer writer) throws FeatureWriteException {
+	public FeatureWriter createFeatureWriter(Writer writer) {
 		SAXWriter saxWriter = new SAXWriter();
 
 		// prepare SAX writer
@@ -141,11 +141,8 @@ public class CityGMLWriterFactory implements FeatureWriterFactory {
 		// set writer as output for SAXWriter
 		saxWriter.setOutput(writer);
 
-		// create CityGML writer and write XML header
-		CityGMLWriter featureWriter = new CityGMLWriter(saxWriter, version, transformerChainFactory);
-		featureWriter.writeStartDocument();
-
-		return featureWriter;
+		// create CityGML writer
+		return new CityGMLWriter(saxWriter, version, transformerChainFactory);
 	}
 
 }
