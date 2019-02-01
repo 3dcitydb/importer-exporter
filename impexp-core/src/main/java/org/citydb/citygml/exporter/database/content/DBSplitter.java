@@ -324,8 +324,9 @@ public class DBSplitter {
 			} else {
 				log.info("No top-level feature matches the request.");
 
-				if (query.isSetTiling() &&
-						config.getProject().getExporter().getCityGMLOptions().getGMLEnvelope().getCityModelEnvelopeMode().isUseTileExtent()) {
+				if (query.isSetTiling()
+						&& config.getProject().getExporter().getCityGMLOptions().getGMLEnvelope().isSetCityModelEnvelopeMode()
+						&& config.getProject().getExporter().getCityGMLOptions().getGMLEnvelope().getCityModelEnvelopeMode().isUseTileExtent()) {
 					BoundingBox tileExtent = query.getTiling().getActiveTile().getExtent();
 					writer.setSpatialExtent(new BoundingBox(
 							new Position(tileExtent.getLowerCorner().getX(),tileExtent.getLowerCorner().getY(), 0.0),
