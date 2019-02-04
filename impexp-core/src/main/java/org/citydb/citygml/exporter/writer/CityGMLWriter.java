@@ -69,6 +69,7 @@ public class CityGMLWriter implements FeatureWriter {
 	private final CityGMLVersion version;
 	private final TransformerChainFactory transformerChainFactory;
 
+	private volatile boolean headerWritten = false;
 	private BoundingBox extent;
 
 	CityGMLWriter(SAXWriter saxWriter, CityGMLVersion version, TransformerChainFactory transformerChainFactory) {
@@ -100,7 +101,15 @@ public class CityGMLWriter implements FeatureWriter {
 
 	@Override
 	public void writeHeader() throws FeatureWriteException {
+		headerWritten = true;
 		writeCityModel(WriteMode.HEAD);
+	}
+
+	private void writeEndDocument() throws FeatureWriteException {
+		if (!headerWritten)
+			writeHeader();
+
+		writeCityModel(WriteMode.TAIL);
 	}
 
 	@Override
@@ -153,7 +162,7 @@ public class CityGMLWriter implements FeatureWriter {
 	public void close() throws FeatureWriteException {			
 		try {
 			writerPool.shutdownAndWait();
-			writeCityModel(WriteMode.TAIL);
+			writeEndDocument();
 			saxWriter.close();
 		} catch (Throwable e) {
 			throw new FeatureWriteException("Failed to close CityGML writer.", e);
