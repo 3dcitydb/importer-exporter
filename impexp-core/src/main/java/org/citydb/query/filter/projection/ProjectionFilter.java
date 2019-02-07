@@ -156,9 +156,6 @@ public class ProjectionFilter {
 
 			if (isGenericAttribute) {
 				for (GenericAttribute genericAttribute : genericAttributes) {					
-					if (genericAttribute.getType() == CityGMLClass.UNDEFINED)
-						return TRUE;
-
 					String attrName = getGenericAttributeName(genericAttribute.getType());
 					if (name.equals(attrName))
 						return TRUE;
@@ -187,9 +184,6 @@ public class ProjectionFilter {
 		if (genericAttributes != null) {
 			if (schema.matchesNamespaceURI(GenericsModule.v2_0_0.getNamespaceURI())) {
 				for (GenericAttribute genericAttribute : genericAttributes) {					
-					if (genericAttribute.getType() == CityGMLClass.UNDEFINED)
-						return TRUE;
-
 					String attrName = getGenericAttributeName(genericAttribute.getType());
 					if (name.equals(attrName))
 						return TRUE;
