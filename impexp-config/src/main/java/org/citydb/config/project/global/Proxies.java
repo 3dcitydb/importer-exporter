@@ -27,14 +27,14 @@
  */
 package org.citydb.config.project.global;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @XmlType(name="ProxiesType", propOrder={
 		"proxies"
@@ -44,9 +44,9 @@ public class Proxies {
 	private Boolean useSingleProxy = false;
 	@XmlAttribute
 	private ProxyType singleProxy;
-	@XmlJavaTypeAdapter(org.citydb.config.project.global.ProxyListAdapter.class)
+	@XmlJavaTypeAdapter(ProxyConfigAdapter.class)
 	@XmlElement(name="proxyList")
-	private HashMap<ProxyType, ProxyConfig> proxies;
+	private Map<ProxyType, ProxyConfig> proxies;
 
 	public Proxies() {
 		proxies = new HashMap<ProxyType, ProxyConfig>();
@@ -91,7 +91,7 @@ public class Proxies {
 	}
 
 	public Boolean isSetSingleProxy() {
-		return useSingleProxy == true && singleProxy != null;
+		return useSingleProxy && singleProxy != null;
 	}
 
 	public void setSingleProxy(ProxyType type) {

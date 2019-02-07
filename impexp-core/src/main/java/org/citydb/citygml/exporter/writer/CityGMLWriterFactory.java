@@ -30,6 +30,7 @@ package org.citydb.citygml.exporter.writer;
 import org.citydb.ade.model.module.CityDBADE100Module;
 import org.citydb.ade.model.module.CityDBADE200Module;
 import org.citydb.config.Config;
+import org.citydb.config.project.exporter.CityGMLOptions;
 import org.citydb.database.schema.mapping.FeatureType;
 import org.citydb.log.Logger;
 import org.citydb.query.Query;
@@ -44,6 +45,7 @@ import org.citygml4j.model.module.citygml.CityGMLVersion;
 import org.citygml4j.util.internal.xml.TransformerChainFactory;
 import org.citygml4j.util.xml.SAXWriter;
 
+import javax.xml.XMLConstants;
 import javax.xml.transform.Templates;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerFactory;
@@ -60,12 +62,14 @@ public class CityGMLWriterFactory implements FeatureWriterFactory {
 	private final FeatureTypeFilter featureTypeFilter;
 
 	private TransformerChainFactory transformerChainFactory;
+	private CityGMLOptions cityGMLOptions;
 
 	public CityGMLWriterFactory(Query query, Config config) throws FeatureWriteException {
 		this.config = config;
 
 		version = query.getTargetVersion();
 		featureTypeFilter = query.getFeatureTypeFilter();
+		cityGMLOptions = config.getProject().getExporter().getCityGMLOptions();
 
 		// build XSLT transformer chain
 		if (config.getProject().getExporter().getXSLTransformation().isEnabled()
@@ -101,16 +105,22 @@ public class CityGMLWriterFactory implements FeatureWriterFactory {
 				this.getClass().getPackage().getImplementationVendor());
 
 		ModuleContext moduleContext = new ModuleContext(version);
-		saxWriter.setDefaultNamespace(moduleContext.getModule(CityGMLModuleType.CORE).getNamespaceURI());
 
 		// add default prefixes and schema locations
+		Module core = moduleContext.getModule(CityGMLModuleType.CORE);
+		String prefix = cityGMLOptions.getPrefix(core.getNamespaceURI());
+		String schemaLocation = cityGMLOptions.getSchemaLocation(core.getNamespaceURI());
+		saxWriter.setPrefix(prefix != null ? prefix : XMLConstants.DEFAULT_NS_PREFIX, core.getNamespaceURI());
+		if (schemaLocation != null)
+			saxWriter.setSchemaLocation(core.getNamespaceURI(), schemaLocation);
+
 		Module generics = moduleContext.getModule(CityGMLModuleType.GENERICS);
-		saxWriter.setPrefix(generics.getNamespacePrefix(), generics.getNamespaceURI());
-		saxWriter.setSchemaLocation(generics.getNamespaceURI(), generics.getSchemaLocation());
+		saxWriter.setPrefix(getPrefix(generics), generics.getNamespaceURI());
+		saxWriter.setSchemaLocation(generics.getNamespaceURI(), getSchemaLocation(generics));
 		if (config.getProject().getExporter().getAppearances().isSetExportAppearance()) {
 			Module appearance = moduleContext.getModule(CityGMLModuleType.APPEARANCE);
-			saxWriter.setPrefix(appearance.getNamespacePrefix(), appearance.getNamespaceURI());
-			saxWriter.setSchemaLocation(appearance.getNamespaceURI(), appearance.getSchemaLocation());
+			saxWriter.setPrefix(getPrefix(appearance), appearance.getNamespaceURI());
+			saxWriter.setSchemaLocation(appearance.getNamespaceURI(), getSchemaLocation(appearance));
 		}
 
 		// add XML prefixes and schema locations for non-CityGML modules
@@ -121,9 +131,9 @@ public class CityGMLWriterFactory implements FeatureWriterFactory {
 						&& !config.getProject().getExporter().getContinuation().isExportCityDBMetadata())
 					continue;
 
-				saxWriter.setPrefix(module.getNamespacePrefix(), module.getNamespaceURI());
+				saxWriter.setPrefix(getPrefix(module), module.getNamespaceURI());
 				if (module instanceof ADEModule)
-					saxWriter.setSchemaLocation(module.getNamespaceURI(), module.getSchemaLocation());
+					saxWriter.setSchemaLocation(module.getNamespaceURI(), getSchemaLocation(module));
 			}
 		}
 
@@ -132,8 +142,8 @@ public class CityGMLWriterFactory implements FeatureWriterFactory {
 			if (featureType.isAvailableForCityGML(version)) {
 				CityGMLModule module = Modules.getCityGMLModule(featureType.getSchema().getNamespace(version).getURI());
 				if (module != null) {
-					saxWriter.setPrefix(module.getNamespacePrefix(), module.getNamespaceURI());
-					saxWriter.setSchemaLocation(module.getNamespaceURI(), module.getSchemaLocation());
+					saxWriter.setPrefix(getPrefix(module), module.getNamespaceURI());
+					saxWriter.setSchemaLocation(module.getNamespaceURI(), getSchemaLocation(module));
 				}
 			}
 		}
@@ -145,4 +155,13 @@ public class CityGMLWriterFactory implements FeatureWriterFactory {
 		return new CityGMLWriter(saxWriter, version, transformerChainFactory);
 	}
 
+	private String getPrefix(Module module) {
+		String prefix = cityGMLOptions.getPrefix(module.getNamespaceURI());
+		return prefix != null ? prefix : module.getNamespacePrefix();
+	}
+
+	private String getSchemaLocation(Module module) {
+		String schemaLocation = cityGMLOptions.getSchemaLocation(module.getNamespaceURI());
+		return schemaLocation != null ? schemaLocation : module.getSchemaLocation();
+	}
 }

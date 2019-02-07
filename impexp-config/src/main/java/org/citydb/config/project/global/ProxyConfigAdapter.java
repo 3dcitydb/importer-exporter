@@ -27,29 +27,44 @@
  */
 package org.citydb.config.project.global;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.adapters.XmlAdapter;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-@XmlType(name="ProxyListType", propOrder={
-		"proxies"
-})
-public class ProxyList {
-	@XmlElement(name="proxy")
-	private List<ProxyConfig> proxies;
+public class ProxyConfigAdapter extends XmlAdapter<ProxyConfigAdapter.ProxyConfigList, Map<ProxyType, ProxyConfig>> {
 
-	public ProxyList() {
-		proxies = new ArrayList<ProxyConfig>();
+	public static class ProxyConfigList {
+		@XmlElement(name = "proxy")
+		private List<ProxyConfig> proxies;
 	}
 
-	public List<ProxyConfig> getProxies() {
-		return proxies;
+	@Override
+	public Map<ProxyType, ProxyConfig> unmarshal(ProxyConfigList v) throws Exception {
+		Map<ProxyType, ProxyConfig> map = new HashMap<>();
+		
+		if (v != null && v.proxies != null) {
+			for (ProxyConfig proxy : v.proxies)
+				map.put(proxy.getType(), proxy);
+		}
+		
+		for (ProxyType type : ProxyType.values())
+			if (!map.containsKey(type))
+				map.put(type, new ProxyConfig(type));
+
+		return map;
 	}
 
-	public void addProxy(ProxyConfig proxy) {
-		if (proxy != null)
-			proxies.add(proxy);
+	@Override
+	public ProxyConfigList marshal(Map<ProxyType, ProxyConfig> v) throws Exception {
+		ProxyConfigList list = new ProxyConfigList();
+
+		if (v != null)
+			list.proxies = new ArrayList<>(v.values());
+
+		return list;
 	}
+	
 }

@@ -29,12 +29,17 @@
 package org.citydb.config.project.exporter;
 
 import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import java.util.Map;
 
 @XmlType(name="CityGMLOptionsType", propOrder={
-        "gmlEnvelope"
+        "gmlEnvelope",
+        "namespaces"
 })
 public class CityGMLOptions {
     private GMLEnvelope gmlEnvelope;
+    @XmlJavaTypeAdapter(NamespaceAdapter.class)
+    private Map<String, Namespace> namespaces;
 
     public CityGMLOptions() {
         gmlEnvelope = new GMLEnvelope();
@@ -46,5 +51,29 @@ public class CityGMLOptions {
 
     public void setGMLEnvelope(GMLEnvelope gmlEnvelope) {
         this.gmlEnvelope = gmlEnvelope;
+    }
+
+    public boolean isSetNamespaces() {
+        return namespaces != null && !namespaces.isEmpty();
+    }
+
+    public String getPrefix(String uri) {
+        if (namespaces != null) {
+            Namespace namespace = namespaces.get(uri);
+            if (namespace != null && namespace.isSetPrefix())
+                return namespace.getPrefix();
+        }
+
+        return null;
+    }
+
+    public String getSchemaLocation(String uri) {
+        if (namespaces != null) {
+            Namespace namespace = namespaces.get(uri);
+            if (namespace != null && namespace.isSetSchemaLocation())
+                return namespace.getSchemaLocation();
+        }
+
+        return null;
     }
 }

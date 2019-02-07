@@ -33,7 +33,6 @@ import javax.xml.bind.annotation.XmlType;
 		"config"
 })
 public class PluginConfigItem {
-	
 	private PluginConfig config;
 
 	public PluginConfigItem() {

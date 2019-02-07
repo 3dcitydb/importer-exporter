@@ -27,38 +27,42 @@
  */
 package org.citydb.config.project.plugin;
 
+import javax.xml.bind.annotation.adapters.XmlAdapter;
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 
-import javax.xml.bind.annotation.adapters.XmlAdapter;
+public class PluginConfigListAdapter extends XmlAdapter<PluginConfigListAdapter.PluginConfigList, Map<Class<? extends PluginConfig>, PluginConfig>> {
 
-public class PluginConfigListAdapter extends XmlAdapter<PluginConfigList, HashMap<Class<? extends PluginConfig>, PluginConfig>> {
+	public static class PluginConfigList {
+		private List<PluginConfigItem> plugin;
+	}
 
 	@Override
-	public HashMap<Class<? extends PluginConfig>, PluginConfig> unmarshal(PluginConfigList v) throws Exception {
-		HashMap<Class<? extends PluginConfig>, PluginConfig> map = new HashMap<Class<? extends PluginConfig>, PluginConfig>();
+	public Map<Class<? extends PluginConfig>, PluginConfig> unmarshal(PluginConfigList v) throws Exception {
+		Map<Class<? extends PluginConfig>, PluginConfig> map = new HashMap<>();
 
-		if (v != null) {
-			for (PluginConfigItem item : v.getItems())
+		if (v != null && v.plugin != null) {
+			for (PluginConfigItem item : v.plugin)
 				if (item.getConfig() != null && !item.getConfig().getClass().equals(PluginConfig.class))
-					map.put((Class<? extends PluginConfig>)item.getConfig().getClass(), item.getConfig());
+					map.put(item.getConfig().getClass(), item.getConfig());
 		}
 
 		return map;
 	}
 
 	@Override
-	public PluginConfigList marshal(HashMap<Class<? extends PluginConfig>, PluginConfig> v) throws Exception {
+	public PluginConfigList marshal(Map<Class<? extends PluginConfig>, PluginConfig> v) throws Exception {
 		PluginConfigList list = new PluginConfigList();
 
 		if (v != null) {
-			Iterator<Entry<Class<? extends PluginConfig>, PluginConfig>> iter = v.entrySet().iterator();
-			while (iter.hasNext()) {
-				Entry<Class<? extends PluginConfig>, PluginConfig> entry = iter.next();
+			list.plugin = new ArrayList<>();
+			for (Entry<Class<? extends PluginConfig>, PluginConfig> entry : v.entrySet()) {
 				PluginConfigItem item = new PluginConfigItem();
 				item.setConfig(entry.getValue());
-				list.addItem(item);
+				list.plugin.add(item);
 			}
 		}
 
