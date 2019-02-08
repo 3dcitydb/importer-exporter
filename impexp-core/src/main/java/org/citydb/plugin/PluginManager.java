@@ -137,7 +137,6 @@ public class PluginManager {
 		return menuExtensions;
 	}
 	
-	@SuppressWarnings("unchecked")
 	public List<ConfigExtension<? extends PluginConfig>> getExternalConfigExtensions() {
 		List<ConfigExtension<? extends PluginConfig>> configExtensions = new ArrayList<>();
 		for (Plugin plugin : externalPlugins)

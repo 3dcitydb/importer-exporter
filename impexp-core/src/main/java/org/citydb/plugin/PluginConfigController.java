@@ -32,6 +32,8 @@ import org.citydb.config.project.plugin.PluginConfig;
 import org.citydb.log.Logger;
 import org.citydb.plugin.extension.config.ConfigExtension;
 
+import java.lang.reflect.InvocationTargetException;
+
 public class PluginConfigController {
 	public static PluginConfigController instance;
 	private final Logger log = Logger.getInstance();
@@ -51,33 +53,30 @@ public class PluginConfigController {
 	@SuppressWarnings("unchecked")
 	public <T extends PluginConfig> void setOrCreatePluginConfig(ConfigExtension<T> plugin) {
 		Class<T> pluginConfigClass = null;
-		T pluginConfig = null;
+		T pluginConfig;
 
 		try {
-			pluginConfigClass = (Class<T>)plugin.getClass().getMethod("getConfig", new Class<?>[]{}).getReturnType();
+			pluginConfigClass = (Class<T>)plugin.getClass().getMethod("getConfig").getReturnType();
 			pluginConfig = getPluginConfig(pluginConfigClass);
 			
 			if (pluginConfig == null) {
-				pluginConfig = pluginConfigClass.newInstance();
+				pluginConfig = pluginConfigClass.getDeclaredConstructor().newInstance();
 				updatePluginConfig(pluginConfig);
 			}
 			
 			// propagate new config to plugin
 			plugin.configLoaded(pluginConfig);
 			
-		} catch (NoSuchMethodException e) {
+		} catch (NoSuchMethodException | SecurityException e) {
 			log.error("Failed to instantiate config for plugin '" + plugin.getClass().getCanonicalName() + "'.");
 			log.error("Please check the following error message: " + e.getMessage());
-		} catch (InstantiationException e) {
+		} catch (InstantiationException | InvocationTargetException e) {
 			log.error("Failed to instantiate class '" + pluginConfigClass.getCanonicalName() + "'.");
 			log.error("Please provide a no-arg constructor.");
 		} catch (IllegalAccessException e) {
 			log.error("Failed to access no-arg constructor of class '" + pluginConfigClass.getCanonicalName() + "'.");
 			log.error("Please check the following error message: " + e.getMessage());
-		} catch (SecurityException e) {
-			log.error("Failed to instantiate config for plugin '" + plugin.getClass().getCanonicalName() + "'.");
-			log.error("Please check the following error message: " + e.getMessage());
-		}			
+		}
 	}
 
 	@SuppressWarnings("unchecked")

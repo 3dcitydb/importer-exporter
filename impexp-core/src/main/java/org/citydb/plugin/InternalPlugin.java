@@ -28,6 +28,6 @@
 package org.citydb.plugin;
 
 public interface InternalPlugin extends Plugin {
-	public void loadSettings();
-	public void setSettings();
+	void loadSettings();
+	void setSettings();
 }
