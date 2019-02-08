@@ -33,10 +33,10 @@ import javax.swing.JTree;
 import javax.swing.text.JTextComponent;
 
 public interface StandardEditingPopupMenuDecorator {
-	public void decorate(JTextComponent... components);
-	public JPopupMenu decorateAndGet(JTextComponent component);
-	public void decorate(JTree... trees);
-	public JPopupMenu decorateAndGet(JTree tree);
-	public void decorateCheckBoxGroup(JCheckBox... group);
-	public JPopupMenu[] decorateAndGetCheckBoxGroup(JCheckBox... group);
+	void decorate(JTextComponent... components);
+	JPopupMenu decorateAndGet(JTextComponent component);
+	void decorate(JTree... trees);
+	JPopupMenu decorateAndGet(JTree tree);
+	void decorateCheckBoxGroup(JCheckBox... group);
+	JPopupMenu[] decorateAndGetCheckBoxGroup(JCheckBox... group);
 }

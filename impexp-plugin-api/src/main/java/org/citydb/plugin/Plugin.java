@@ -32,7 +32,7 @@ import java.util.Locale;
 import org.citydb.plugin.extension.view.ViewController;
 
 public interface Plugin {
-	public void init(ViewController viewController, Locale locale);
-	public void shutdown();
-	public void switchLocale(Locale locale);		
+	void init(ViewController viewController, Locale locale);
+	void shutdown();
+	void switchLocale(Locale locale);
 }

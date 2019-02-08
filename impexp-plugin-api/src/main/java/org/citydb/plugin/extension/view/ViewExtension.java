@@ -27,8 +27,6 @@
  */
 package org.citydb.plugin.extension.view;
 
-import org.citydb.plugin.extension.view.View;
-
 public interface ViewExtension {
-	public View getView();
+	View getView();
 }

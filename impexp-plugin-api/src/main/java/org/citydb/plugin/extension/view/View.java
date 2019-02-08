@@ -27,14 +27,10 @@
  */
 package org.citydb.plugin.extension.view;
 
-import java.awt.Component;
+import javax.swing.*;
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.swing.Icon;
-import javax.swing.SwingUtilities;
-
-import org.citydb.plugin.extension.view.ViewListener;
 
 public abstract class View {
 	private List<ViewListener> viewListeners;
@@ -46,28 +42,26 @@ public abstract class View {
 
 	public final void addViewListener(ViewListener listener) {
 		if (viewListeners == null)
-			viewListeners = new ArrayList<ViewListener>();
+			viewListeners = new ArrayList<>();
 
 		viewListeners.add(listener);
 	}
 
 	public final boolean removeViewListener(ViewListener listener) {
-		return viewListeners != null ? viewListeners.remove(listener) : false;
+		return viewListeners != null && viewListeners.remove(listener);
 	}
 
 	public final void fireViewEvent(final ViewEvent e) {
 		if (viewListeners != null) {
 			for (final ViewListener listener : viewListeners) {
-				SwingUtilities.invokeLater(new Runnable() {
-					public void run() {
-						switch (e.getViewState()) {
-						case VIEW_ACTIVATED:
-							listener.viewActivated(e);
-							break;
-						case VIEW_DEACTIVATED:
-							listener.viewDeactivated(e);
-							break;
-						}
+				SwingUtilities.invokeLater(() -> {
+					switch (e.getViewState()) {
+					case VIEW_ACTIVATED:
+						listener.viewActivated(e);
+						break;
+					case VIEW_DEACTIVATED:
+						listener.viewDeactivated(e);
+						break;
 					}
 				});
 			}

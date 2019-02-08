@@ -30,7 +30,7 @@ package org.citydb.plugin.extension.config;
 import org.citydb.config.project.plugin.PluginConfig;
 
 public interface ConfigExtension<T extends PluginConfig> {
-	public T getConfig();
-	public void configLoaded(T config);
-	public void handleEvent(PluginConfigEvent event);
+	T getConfig();
+	void configLoaded(T config);
+	void handleEvent(PluginConfigEvent event);
 }

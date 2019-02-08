@@ -28,5 +28,5 @@
 package org.citydb.plugin.extension.menu;
 
 public interface MenuExtension {
-	public Menu getMenu();
+	Menu getMenu();
 }
