@@ -27,10 +27,7 @@
  */
 package org.citydb.plugin.extension.view;
 
-import org.citydb.event.Event;
-import org.citydb.event.global.EventType;
-
-public final class ViewEvent extends Event {
+public final class ViewEvent {
 	public enum ViewState {
 		VIEW_ACTIVATED,
 		VIEW_DEACTIVATED
@@ -40,7 +37,6 @@ public final class ViewEvent extends Event {
 	private final ViewState viewState;
 	
 	public ViewEvent(View view, ViewState viewState, Object source) {
-		super(EventType.VIEW_STATE, GLOBAL_CHANNEL, source);
 		this.view = view;
 		this.viewState = viewState;
 	}
