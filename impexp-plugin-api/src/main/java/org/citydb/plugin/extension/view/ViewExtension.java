@@ -27,6 +27,10 @@
  */
 package org.citydb.plugin.extension.view;
 
+import java.util.Locale;
+
 public interface ViewExtension {
+	void initViewExtension(ViewController viewController, Locale locale);
+	void switchLocale(Locale locale);
 	View getView();
 }

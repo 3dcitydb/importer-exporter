@@ -60,6 +60,7 @@ import org.citydb.plugin.Plugin;
 import org.citydb.plugin.PluginConfigController;
 import org.citydb.plugin.PluginManager;
 import org.citydb.plugin.extension.config.ConfigExtension;
+import org.citydb.plugin.extension.view.ViewExtension;
 import org.citydb.registry.ObjectRegistry;
 import org.citydb.util.ClientConstants;
 import org.citydb.util.CoreConstants;
@@ -493,8 +494,6 @@ public class ImpExp {
 				log.info("Initializing plugin " + plugin.getClass().getName());
 				if (useSplashScreen)
 					splashScreen.setMessage("Initializing plugin " + plugin.getClass().getName());
-
-				plugin.init(mainView, new Locale(lang.value()));
 			}
 
 			// register internal plugins
@@ -504,9 +503,10 @@ public class ImpExp {
 			pluginManager.registerInternalPlugin(databasePlugin);
 			pluginManager.registerInternalPlugin(new PreferencesPlugin(mainView, config));
 
-			// initialize internal plugins
-			for (Plugin plugin : pluginManager.getInternalPlugins())
-				plugin.init(mainView, new Locale(lang.value()));
+			for (Plugin plugin : pluginManager.getPlugins()) {
+				if (plugin instanceof ViewExtension)
+					((ViewExtension) plugin).initViewExtension(mainView, new Locale(lang.value()));
+			}
 
 			// initialize gui
 			printInfoMessage("Starting graphical user interface");

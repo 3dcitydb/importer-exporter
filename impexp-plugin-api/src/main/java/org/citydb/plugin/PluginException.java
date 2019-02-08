@@ -25,8 +25,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.citydb.plugin;
 
-public interface Plugin {
-	void shutdown();
+public class PluginException extends Exception {
+	private static final long serialVersionUID = -3716015045363231263L;
+
+	public PluginException() {
+		super();
+	}
+
+	public PluginException(String message) {
+		super(message);
+	}
+
+	public PluginException(Throwable cause) {
+		super(cause);
+	}
+
+	public PluginException(String message, Throwable cause) {
+		super(message, cause);
+	}
+	
 }

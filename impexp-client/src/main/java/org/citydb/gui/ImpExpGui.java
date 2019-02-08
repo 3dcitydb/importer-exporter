@@ -425,8 +425,10 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 			consoleLabel.setText(Language.I18N.getString("main.console.label"));
 
 			// fire translation notification to plugins
-			for (Plugin plugin : pluginManager.getPlugins())
-				plugin.switchLocale(locale);
+			for (Plugin plugin : pluginManager.getPlugins()) {
+				if (plugin instanceof ViewExtension)
+					((ViewExtension) plugin).switchLocale(locale);
+			}
 
 			int index = 0;
 			for (View view : views)
