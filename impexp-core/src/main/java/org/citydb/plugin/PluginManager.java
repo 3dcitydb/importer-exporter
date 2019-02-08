@@ -30,7 +30,6 @@ package org.citydb.plugin;
 import org.citydb.config.project.plugin.PluginConfig;
 import org.citydb.log.Logger;
 import org.citydb.plugin.extension.config.ConfigExtension;
-import org.citydb.plugin.extension.export.CityGMLExportExtension;
 import org.citydb.plugin.extension.menu.MenuExtension;
 import org.citydb.plugin.extension.preferences.PreferencesExtension;
 import org.citydb.plugin.extension.view.ViewExtension;
@@ -162,15 +161,6 @@ public class PluginManager {
                 configExtensions.add((ConfigExtension<? extends PluginConfig>) plugin);
 
         return configExtensions;
-    }
-
-    public List<CityGMLExportExtension> getCityGMLExportExtensions() {
-        List<CityGMLExportExtension> exportExtensions = new ArrayList<>();
-        for (Plugin plugin : externalPlugins)
-            if (plugin instanceof CityGMLExportExtension)
-                exportExtensions.add((CityGMLExportExtension) plugin);
-
-        return exportExtensions;
     }
 
     public List<Plugin> getPlugins() {
