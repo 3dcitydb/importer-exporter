@@ -27,10 +27,6 @@
  */
 package org.citydb.citygml.importer.database.content;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
 import org.citydb.citygml.importer.CityGMLImportException;
 import org.citydb.citygml.importer.util.AffineTransformer;
 import org.citydb.citygml.importer.util.RingValidator;
@@ -81,6 +77,10 @@ import org.citygml4j.model.gml.geometry.primitives.Solid;
 import org.citygml4j.model.gml.geometry.primitives.SurfaceProperty;
 import org.citygml4j.util.walker.GeometryWalker;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
 public class GeometryConverter {
 	private AffineTransformer affineTransformer;
 	private RingValidator ringValidator;
@@ -98,12 +98,12 @@ public class GeometryConverter {
 				databaseAdapter.getConnectionMetaData().getDatabaseMajorVersion() > 10;
 	}
 
-	public GeometryConverter(Config config, CityGMLImportManager importer) {
-		this(importer.getDatabaseAdapter());
+	public GeometryConverter(AbstractDatabaseAdapter databaseAdapter, AffineTransformer affineTransformer, Config config) {
+		this(databaseAdapter);
 
 		affineTransformation = config.getProject().getImporter().getAffineTransformation().isEnabled();
 		if (affineTransformation)
-			affineTransformer = importer.getAffineTransformer();
+			this.affineTransformer = affineTransformer;
 	}
 
 	public boolean isSurfaceGeometry(AbstractGeometry geometry) {
