@@ -56,6 +56,7 @@ import org.citydb.modules.database.DatabasePlugin;
 import org.citydb.modules.kml.KMLExportPlugin;
 import org.citydb.modules.preferences.PreferencesPlugin;
 import org.citydb.plugin.IllegalEventSourceChecker;
+import org.citydb.plugin.InternalPlugin;
 import org.citydb.plugin.Plugin;
 import org.citydb.plugin.PluginConfigController;
 import org.citydb.plugin.PluginManager;
@@ -489,13 +490,6 @@ public class ImpExp {
 			for (ConfigExtension<? extends PluginConfig> plugin : pluginManager.getExternalConfigExtensions())
 				PluginConfigController.getInstance(config).setOrCreatePluginConfig(plugin);
 
-			// initialize plugins
-			for (Plugin plugin : pluginManager.getExternalPlugins()) {
-				log.info("Initializing plugin " + plugin.getClass().getName());
-				if (useSplashScreen)
-					splashScreen.setMessage("Initializing plugin " + plugin.getClass().getName());
-			}
-
 			// register internal plugins
 			pluginManager.registerInternalPlugin(new CityGMLImportPlugin(mainView, config));		
 			pluginManager.registerInternalPlugin(new CityGMLExportPlugin(mainView, projectContext, config));
@@ -503,7 +497,14 @@ public class ImpExp {
 			pluginManager.registerInternalPlugin(databasePlugin);
 			pluginManager.registerInternalPlugin(new PreferencesPlugin(mainView, config));
 
+			// initialize plugins
 			for (Plugin plugin : pluginManager.getPlugins()) {
+				if (!(plugin instanceof InternalPlugin)) {
+					log.info("Initializing plugin " + plugin.getClass().getName());
+					if (useSplashScreen)
+						splashScreen.setMessage("Initializing plugin " + plugin.getClass().getName());
+				}
+
 				if (plugin instanceof ViewExtension)
 					((ViewExtension) plugin).initViewExtension(mainView, new Locale(lang.value()));
 			}
