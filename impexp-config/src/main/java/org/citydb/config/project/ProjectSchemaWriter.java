@@ -27,31 +27,31 @@
  */
 package org.citydb.config.project;
 
-import java.io.File;
-import java.io.IOException;
-
 import javax.xml.bind.SchemaOutputResolver;
 import javax.xml.transform.Result;
 import javax.xml.transform.stream.StreamResult;
+import java.io.File;
+import java.io.IOException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 
 public class ProjectSchemaWriter extends SchemaOutputResolver {
-	private String path;
+	private Path targetDir;
 
 	public ProjectSchemaWriter(File path) {
-		this.path = path.getAbsolutePath();
+		this.targetDir = path.toPath();
 	}
 
 	@Override
 	public Result createOutput(String namespaceUri, String suggestedFileName) throws IOException {
-		File file;
+		Path file = namespaceUri.equals("http://www.3dcitydb.org/importer-exporter/config") ?
+				targetDir.resolve("config.xsd") :
+				targetDir.resolve("plugin_" + suggestedFileName);
 
-		if (namespaceUri.equals("http://www.3dcitydb.org/importer-exporter/config"))
-			file = new File(path, "config.xsd");
-		else
-			file = new File(path, "plugin_" + suggestedFileName);
+		StreamResult res = new StreamResult(file.toFile());
+		res.setSystemId(URLDecoder.decode(file.toUri().toURL().toString(), StandardCharsets.UTF_8.name()));
 
-		StreamResult res = new StreamResult(file);
-		res.setSystemId(file.getAbsolutePath());
 		return res;
 	}
 
