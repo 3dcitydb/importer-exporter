@@ -27,14 +27,15 @@
  */
 package org.citydb.citygml.exporter.writer;
 
-import org.citydb.config.geometry.BoundingBox;
+import org.citydb.citygml.exporter.util.Metadata;
 import org.citygml4j.model.gml.feature.AbstractFeature;
 
 public interface FeatureWriter extends AutoCloseable {
 	void writeHeader() throws FeatureWriteException;
 	void write(AbstractFeature feature) throws FeatureWriteException;
 	void useIndentation(boolean useIndentation);
-	void setSpatialExtent(BoundingBox extent);
+	Metadata getMetadata();
+	void setMetadata(Metadata metadata);
 	void close() throws FeatureWriteException;
 
 	default boolean supportsFlatHierarchies() {

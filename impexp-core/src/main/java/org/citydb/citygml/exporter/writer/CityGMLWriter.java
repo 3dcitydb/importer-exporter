@@ -27,6 +27,7 @@
  */
 package org.citydb.citygml.exporter.writer;
 
+import org.citydb.citygml.exporter.util.Metadata;
 import org.citydb.concurrent.SingleWorkerPool;
 import org.citydb.config.geometry.BoundingBox;
 import org.citydb.registry.ObjectRegistry;
@@ -39,6 +40,8 @@ import org.citygml4j.model.citygml.appearance.AppearanceMember;
 import org.citygml4j.model.citygml.core.AbstractCityObject;
 import org.citygml4j.model.citygml.core.CityModel;
 import org.citygml4j.model.citygml.core.CityObjectMember;
+import org.citygml4j.model.gml.base.StringOrRef;
+import org.citygml4j.model.gml.basicTypes.Code;
 import org.citygml4j.model.gml.feature.AbstractFeature;
 import org.citygml4j.model.gml.feature.BoundingShape;
 import org.citygml4j.model.gml.feature.FeatureMember;
@@ -70,7 +73,7 @@ public class CityGMLWriter implements FeatureWriter {
 	private final TransformerChainFactory transformerChainFactory;
 
 	private volatile boolean headerWritten = false;
-	private BoundingBox extent;
+	private Metadata metadata;
 
 	CityGMLWriter(SAXWriter saxWriter, CityGMLVersion version, TransformerChainFactory transformerChainFactory) {
 		this.saxWriter = saxWriter;
@@ -95,8 +98,16 @@ public class CityGMLWriter implements FeatureWriter {
 	}
 
 	@Override
-	public void setSpatialExtent(BoundingBox extent) {
-		this.extent = extent;
+	public Metadata getMetadata() {
+		if (metadata == null)
+			metadata = new Metadata();
+
+		return metadata;
+	}
+
+	@Override
+	public void setMetadata(Metadata metadata) {
+		this.metadata = metadata;
 	}
 
 	@Override
@@ -180,15 +191,25 @@ public class CityGMLWriter implements FeatureWriter {
 					mode);
 
 			CityModel cityModel = new CityModel();
-			if (mode == WriteMode.HEAD && extent != null && extent.isValid()) {
-				Envelope envelope = new Envelope();
-				envelope.setLowerCorner(new Point(extent.getLowerCorner().getX(), extent.getLowerCorner().getY(), extent.getLowerCorner().getZ()));
-				envelope.setUpperCorner(new Point(extent.getUpperCorner().getX(), extent.getUpperCorner().getY(), extent.getUpperCorner().getZ()));
-				envelope.setSrsDimension(3);
-				if (extent.isSetSrs())
-					envelope.setSrsName(extent.getSrs().getGMLSrsName());
+			if (metadata != null && mode == WriteMode.HEAD) {
+				if (metadata.isSetDatasetName())
+					cityModel.addName(new Code(metadata.getDatasetName()));
 
-				cityModel.setBoundedBy(new BoundingShape(envelope));
+				if (metadata.isSetDatasetDescription())
+					cityModel.setDescription(new StringOrRef(metadata.getDatasetDescription()));
+
+				if (metadata.isSetSpatialExtent() && metadata.getSpatialExtent().isValid()) {
+					BoundingBox extent = metadata.getSpatialExtent();
+
+					Envelope envelope = new Envelope();
+					envelope.setLowerCorner(new Point(extent.getLowerCorner().getX(), extent.getLowerCorner().getY(), extent.getLowerCorner().getZ()));
+					envelope.setUpperCorner(new Point(extent.getUpperCorner().getX(), extent.getUpperCorner().getY(), extent.getUpperCorner().getZ()));
+					envelope.setSrsDimension(3);
+					if (extent.isSetSrs())
+						envelope.setSrsName(extent.getSrs().getGMLSrsName());
+
+					cityModel.setBoundedBy(new BoundingShape(envelope));
+				}
 			}
 
 			JAXBElement<?> jaxbElement = jaxbMarshaller.marshalJAXBElement(cityModel);
