@@ -260,27 +260,22 @@ public class DBSplitter {
 					eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.INIT, (int)hits, this));
 				}
 
-				if (calculateExtent) {
-					Object extent = rs.getObject("extent");
-					if (!rs.wasNull() && extent != null) {
-						GeometryObject extentObj = databaseAdapter.getGeometryConverter().getEnvelope(extent);
-						double[] coordinates = extentObj.getCoordinates(0);
+				if (calculateExtent && !writer.getMetadata().isSetSpatialExtent()) {
+					Object extentObj = rs.getObject("extent");
+					if (!rs.wasNull() && extentObj != null) {
+						GeometryObject extent = databaseAdapter.getGeometryConverter().getEnvelope(extentObj);
+						double[] coordinates = extent.getCoordinates(0);
 
-						BoundingBox bbox;
 						if (query.isSetTiling() &&
 								config.getProject().getExporter().getCityGMLOptions().getGMLEnvelope().getCityModelEnvelopeMode().isUseTileExtent()) {
 							BoundingBox tileExtent = query.getTiling().getActiveTile().getExtent();
-							bbox = new BoundingBox(
-									new Position(tileExtent.getLowerCorner().getX(),tileExtent.getLowerCorner().getY(), coordinates[2]),
-									new Position(tileExtent.getUpperCorner().getX(),tileExtent.getUpperCorner().getY(), coordinates[5]));
-						} else {
-							bbox = new BoundingBox(
-									new Position(coordinates[0], coordinates[1], coordinates[2]),
-									new Position(coordinates[3], coordinates[4], coordinates[5]));
+							coordinates[0] = tileExtent.getLowerCorner().getX();
+							coordinates[1] = tileExtent.getLowerCorner().getY();
+							coordinates[3] = tileExtent.getUpperCorner().getX();
+							coordinates[4] = tileExtent.getUpperCorner().getY();
 						}
 
-						bbox.setSrs(query.getTargetSrs());
-						writer.setSpatialExtent(bbox);
+						writer.getMetadata().setSpatialExtent(getSpatialExtent(extent));
 					}
 				}
 
@@ -324,14 +319,12 @@ public class DBSplitter {
 			} else {
 				log.info("No top-level feature matches the request.");
 
-				if (query.isSetTiling()
-						&& config.getProject().getExporter().getCityGMLOptions().getGMLEnvelope().isSetCityModelEnvelopeMode()
-						&& config.getProject().getExporter().getCityGMLOptions().getGMLEnvelope().getCityModelEnvelopeMode().isUseTileExtent()) {
-					BoundingBox tileExtent = query.getTiling().getActiveTile().getExtent();
-					writer.setSpatialExtent(new BoundingBox(
-							new Position(tileExtent.getLowerCorner().getX(),tileExtent.getLowerCorner().getY(), 0.0),
-							new Position(tileExtent.getUpperCorner().getX(),tileExtent.getUpperCorner().getY(), 0.0),
-							query.getTargetSrs()));
+				if (calculateExtent
+						&& query.isSetTiling()
+						&& config.getProject().getExporter().getCityGMLOptions().getGMLEnvelope().getCityModelEnvelopeMode().isUseTileExtent()
+						&& !writer.getMetadata().isSetSpatialExtent()) {
+					GeometryObject extentObj = GeometryObject.createEnvelope(query.getTiling().getActiveTile().getExtent(), true);
+					writer.getMetadata().setSpatialExtent(getSpatialExtent(extentObj));
 				}
 
 				writer.writeHeader();
@@ -523,6 +516,17 @@ public class DBSplitter {
 				} while (rs.next() && shouldRun);
 			}
 		}
+	}
+
+	private BoundingBox getSpatialExtent(GeometryObject extentObj) throws SQLException {
+		if (config.getInternal().isTransformCoordinates())
+			extentObj = databaseAdapter.getUtil().transform(extentObj, query.getTargetSrs());
+
+		double[] coordinates = extentObj.getCoordinates(0);
+		return new BoundingBox(
+				new Position(coordinates[0], coordinates[1], coordinates[2]),
+				new Position(coordinates[3], coordinates[4], coordinates[5]),
+				query.getTargetSrs());
 	}
 
 }

@@ -63,6 +63,15 @@ public class GeometryObject {
 		}
 	}
 
+	public static GeometryObject createEnvelope(BoundingBox bbox, boolean force3D) {
+		return bbox.is3D() ? createEnvelope(bbox) :
+				createEnvelope(new BoundingBox(
+						new Position(bbox.getLowerCorner().getX(), bbox.getLowerCorner().getY(), 0.0),
+						new Position(bbox.getLowerCorner().getX(), bbox.getLowerCorner().getY(), 0.0),
+						bbox.getSrs()
+				));
+	}
+
 	public static GeometryObject createPoint(double[] coordinates, int dimension, int srid) {
 		if (coordinates.length != dimension)
 			throw new IllegalArgumentException("Number of coordinate values does not match geometry dimension.");
