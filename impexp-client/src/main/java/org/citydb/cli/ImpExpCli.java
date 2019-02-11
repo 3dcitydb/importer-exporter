@@ -124,6 +124,7 @@ public class ImpExpCli {
 			log.info("Database import successfully finished.");
 		} else {
 			log.warn("Database import aborted.");
+			System.exit(1);
 		}
 	}
 
@@ -153,6 +154,7 @@ public class ImpExpCli {
 			log.info("XML validation finished.");
 		} else {
 			log.warn("XML validation aborted.");
+			System.exit(1);
 		}
 	}
 
@@ -197,6 +199,7 @@ public class ImpExpCli {
 			log.info("Database export successfully finished.");
 		} else {
 			log.warn("Database export aborted.");
+			System.exit(1);
 		}
 	}
 
@@ -240,6 +243,7 @@ public class ImpExpCli {
 			log.info("Database export successfully finished.");
 		} else {
 			log.warn("Database export aborted.");
+			System.exit(1);
 		}
 	}
 
