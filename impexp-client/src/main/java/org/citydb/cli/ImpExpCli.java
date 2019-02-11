@@ -77,19 +77,19 @@ public class ImpExpCli {
 		schemaMapping = ObjectRegistry.getInstance().getSchemaMapping();
 	}
 
-	public void doImport(String importFiles) {
+	public boolean doImport(String importFiles) {
 		// prepare list of files to be validated
 		List<Path> files = getFiles(importFiles);
 		if (files.size() == 0) {
 			log.error("Invalid list of files to be imported");
 			log.error("Aborting...");
-			return;
+			return false;
 		}
 
 		initDBPool();
 		if (!dbPool.isConnected()) {
 			log.error("Aborting...");
-			return;
+			return false;
 		}
 
 		log.info("Initializing database import...");
@@ -97,14 +97,12 @@ public class ImpExpCli {
 		config.getInternal().setImportFiles(files);
 		EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
 		Importer importer = new Importer(cityGMLBuilder, schemaMapping, config, eventDispatcher);
+		boolean success = false;
 
-		boolean success;
 		try {
 			success = importer.doProcess();
 		} catch (CityGMLImportException e) {
 			log.error("Aborting due to an internal error: " + e.getMessage());
-			success = false;
-
 			Throwable cause = e.getCause();
 			while (cause != null) {
 				log.error(cause.getClass().getTypeName() + ": " + cause.getMessage());
@@ -120,20 +118,21 @@ public class ImpExpCli {
 			dbPool.disconnect();
 		}
 
-		if (success) {
+		if (success)
 			log.info("Database import successfully finished.");
-		} else {
+		else
 			log.warn("Database import aborted.");
-		}
+
+		return success;
 	}
 
-	public void doValidate(String validateFiles) {
+	public boolean doValidate(String validateFiles) {
 		// prepare list of files to be validated
 		List<Path> files = getFiles(validateFiles);
 		if (files.size() == 0) {
 			log.error("Invalid list of files to be validated");
 			log.error("Aborting...");
-			return;
+			return false;
 		}
 
 		log.info("Initializing XML validation...");
@@ -149,21 +148,22 @@ public class ImpExpCli {
 			//
 		}
 
-		if (success) {
+		if (success)
 			log.info("XML validation finished.");
-		} else {
+		else
 			log.warn("XML validation aborted.");
-		}
+
+		return success;
 	}
 
-	public void doExport(String exportFile) {
+	public boolean doExport(String exportFile) {
 		if (!setExportFile(exportFile))
-			return;
+			return false;
 
 		initDBPool();
 		if (!dbPool.isConnected()) {
 			log.error("Aborting...");
-			return;
+			return false;
 		}
 
 		log.info("Initializing database export...");
@@ -176,14 +176,12 @@ public class ImpExpCli {
 			success = exporter.doProcess();
 		} catch (CityGMLExportException e) {
 			log.error(e.getMessage());
-
 			Throwable cause = e.getCause();
 			while (cause != null) {
 				log.error(cause.getClass().getTypeName() + ": " + cause.getMessage());
 				cause = cause.getCause();
 			}
 		} finally {
-
 			try {
 				eventDispatcher.flushEvents();
 			} catch (InterruptedException e) {
@@ -193,21 +191,22 @@ public class ImpExpCli {
 			dbPool.disconnect();
 		}
 
-		if (success) {
+		if (success)
 			log.info("Database export successfully finished.");
-		} else {
+		else
 			log.warn("Database export aborted.");
-		}
+
+		return success;
 	}
 
-	public void doKmlExport(String kmlExportFile) {
+	public boolean doKmlExport(String kmlExportFile) {
 		if (!setExportFile(kmlExportFile))
-			return;
+			return false;
 
 		initDBPool();
 		if (!dbPool.isConnected()) {
 			log.error("Aborting...");
-			return;
+			return false;
 		}
 
 		log.info("Initializing database export...");
@@ -220,7 +219,6 @@ public class ImpExpCli {
 			success = kmlExporter.doProcess();
 		} catch (KmlExportException e) {
 			log.error(e.getMessage());
-
 			Throwable cause = e.getCause();
 			while (cause != null) {
 				log.error(cause.getClass().getTypeName() + ": " + cause.getMessage());
@@ -236,11 +234,12 @@ public class ImpExpCli {
 			dbPool.disconnect();
 		}
 
-		if (success) {
+		if (success)
 			log.info("Database export successfully finished.");
-		} else {
+		else
 			log.warn("Database export aborted.");
-		}
+
+		return success;
 	}
 
 	private boolean setExportFile(String kmlExportFile) {
