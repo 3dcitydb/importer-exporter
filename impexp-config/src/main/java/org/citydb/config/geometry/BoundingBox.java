@@ -108,8 +108,14 @@ public class BoundingBox extends AbstractGeometry {
 	
 	public void copyFrom(BoundingBox other) {
 		setSrs(other.getSrs());
-		lowerCorner = new Position(other.getLowerCorner().getX(), other.getLowerCorner().getY());
-		upperCorner = new Position(other.getUpperCorner().getX(), other.getUpperCorner().getY());
+
+		if (!other.is3D()) {
+			lowerCorner = new Position(other.getLowerCorner().getX(), other.getLowerCorner().getY());
+			upperCorner = new Position(other.getUpperCorner().getX(), other.getUpperCorner().getY());
+		} else {
+			lowerCorner = new Position(other.getLowerCorner().getX(), other.getLowerCorner().getY(), other.getLowerCorner().getZ());
+			upperCorner = new Position(other.getUpperCorner().getX(), other.getUpperCorner().getY(), other.getUpperCorner().getZ());
+		}
 	}
 	
 	@Override
