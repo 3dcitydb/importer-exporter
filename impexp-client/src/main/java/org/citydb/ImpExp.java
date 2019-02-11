@@ -75,10 +75,11 @@ import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 import org.kohsuke.args4j.ParserProperties;
 
-import javax.swing.*;
+import javax.swing.SwingUtilities;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Toolkit;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.net.ProxySelector;
@@ -526,19 +527,21 @@ public class ImpExp {
 
 		else {
 			ImpExpCli cmd = new ImpExpCli(kmlContext, colladaContext, config);
+			boolean success = false;
+
 			if (validateFile != null)
-				cmd.doValidate(validateFile);
+				success = cmd.doValidate(validateFile);
 			else if (importFile != null)
-				cmd.doImport(importFile);
-			else if (exportFile != null) {
-				cmd.doExport(exportFile);
-			} else if (kmlExportFile != null) {
-				cmd.doKmlExport(kmlExportFile);
-			} else if (testConnection) {
-				boolean success = cmd.doTestConnection();
-				if (!success)
-					System.exit(1);
-			}
+				success = cmd.doImport(importFile);
+			else if (exportFile != null)
+				success = cmd.doExport(exportFile);
+			else if (kmlExportFile != null)
+				success= cmd.doKmlExport(kmlExportFile);
+			else if (testConnection)
+				success = cmd.doTestConnection();
+
+			if (!success)
+				System.exit(1);
 		}
 	}
 
