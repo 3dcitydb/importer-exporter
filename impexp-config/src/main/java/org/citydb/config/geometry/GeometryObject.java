@@ -64,12 +64,14 @@ public class GeometryObject {
 	}
 
 	public static GeometryObject createEnvelope(BoundingBox bbox, boolean force3D) {
-		return bbox.is3D() ? createEnvelope(bbox) :
-				createEnvelope(new BoundingBox(
-						new Position(bbox.getLowerCorner().getX(), bbox.getLowerCorner().getY(), 0.0),
-						new Position(bbox.getLowerCorner().getX(), bbox.getLowerCorner().getY(), 0.0),
-						bbox.getSrs()
-				));
+		if (!bbox.is3D() && force3D)
+			return createEnvelope(new BoundingBox(
+					new Position(bbox.getLowerCorner().getX(), bbox.getLowerCorner().getY(), 0.0),
+					new Position(bbox.getUpperCorner().getX(), bbox.getUpperCorner().getY(), 0.0),
+					bbox.getSrs()
+			));
+		else
+			return createEnvelope(bbox);
 	}
 
 	public static GeometryObject createPoint(double[] coordinates, int dimension, int srid) {
