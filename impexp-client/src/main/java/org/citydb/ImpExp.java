@@ -58,6 +58,7 @@ import org.citydb.plugin.IllegalEventSourceChecker;
 import org.citydb.plugin.InternalPlugin;
 import org.citydb.plugin.Plugin;
 import org.citydb.plugin.PluginConfigController;
+import org.citydb.plugin.PluginException;
 import org.citydb.plugin.PluginManager;
 import org.citydb.plugin.extension.config.ConfigExtension;
 import org.citydb.plugin.extension.view.ViewExtension;
@@ -87,9 +88,9 @@ import java.net.ProxySelector;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.text.DecimalFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
@@ -246,6 +247,9 @@ public class ImpExp {
 			}
 
 			pluginManager.loadPlugins(externalLoader);
+			for (Plugin plugin : pluginManager.getExternalPlugins())
+				log.info("Initializing plugin " + plugin.getClass().getName());
+
 		} catch (IOException e) {
 			log.error("Failed to initialize plugin support: " + e.getMessage());
 			System.exit(1);
@@ -328,7 +332,7 @@ public class ImpExp {
 
 			adeManager.loadExtensions(externalLoader);
 			adeManager.loadSchemaMappings(schemaMapping);
-			
+
 			for (ADEExtension extension : adeManager.getExtensions())
 				log.info("Initializing ADE extension " + extension.getClass().getName());
 			
@@ -424,6 +428,18 @@ public class ImpExp {
 			}
 		}
 
+		// load plugin configs to plugins
+		for (ConfigExtension<?> plugin : pluginManager.getExternalPlugins(ConfigExtension.class)) {
+			try {
+				PluginConfigController.getInstance(config).setOrCreatePluginConfig(plugin);
+			} catch (PluginException e) {
+				log.error("Failed to load config for plugin " + plugin.getClass().getName());
+				log.error("Aborting...");
+				e.printStackTrace();
+				System.exit(1);
+			}
+		}
+
 		// init logging environment
 		Logging logging = config.getProject().getGlobal().getLogging();
 		log.setDefaultConsoleLogLevel(logging.getConsole().getLogLevel());
@@ -443,12 +459,7 @@ public class ImpExp {
 				logging.getFile().setUseAlternativeLogPath(false);
 				log.detachLogFile();
 			} else {
-				Calendar cal = Calendar.getInstance();
-				DecimalFormat df = new DecimalFormat("00");
-				log.writeToFile("*** Starting new log file session on "
-						+ String.valueOf(cal.get(Calendar.YEAR)) + '-'
-						+ df.format(cal.get(Calendar.MONTH) + 1) + '-'
-						+ df.format(cal.get(Calendar.DATE)));
+				log.writeToFile("*** Starting new log file session on " + LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE));
 				config.getInternal().setCurrentLogPath(logPath);
 			}
 		}
@@ -486,10 +497,6 @@ public class ImpExp {
 			final DatabasePlugin databasePlugin = new DatabasePlugin(mainView, config);
 			databaseController.setConnectionViewHandler(databasePlugin.getConnectionViewHandler());
 
-			// propagate config to plugins
-			for (ConfigExtension<?> plugin : pluginManager.getExternalPlugins(ConfigExtension.class))
-				PluginConfigController.getInstance(config).setOrCreatePluginConfig(plugin);
-
 			// register internal plugins
 			pluginManager.registerInternalPlugin(new CityGMLImportPlugin(mainView, config));		
 			pluginManager.registerInternalPlugin(new CityGMLExportPlugin(mainView, projectContext, config));
@@ -499,14 +506,11 @@ public class ImpExp {
 
 			// initialize plugins
 			for (Plugin plugin : pluginManager.getPlugins()) {
-				if (!(plugin instanceof InternalPlugin)) {
-					log.info("Initializing plugin " + plugin.getClass().getName());
-					if (useSplashScreen)
+				if (plugin instanceof ViewExtension) {
+					((ViewExtension) plugin).initViewExtension(mainView, new Locale(lang.value()));
+					if (useSplashScreen && !(plugin instanceof InternalPlugin))
 						splashScreen.setMessage("Initializing plugin " + plugin.getClass().getName());
 				}
-
-				if (plugin instanceof ViewExtension)
-					((ViewExtension) plugin).initViewExtension(mainView, new Locale(lang.value()));
 			}
 
 			// initialize gui

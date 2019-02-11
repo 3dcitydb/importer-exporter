@@ -41,6 +41,7 @@ import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.util.HashMap;
+import java.util.Map;
 
 @XmlRootElement
 @XmlType(name="ProjectType", propOrder={
@@ -61,7 +62,7 @@ public class Project {
 	private KmlExporter kmlExporter;
 	private Global global;
 	@XmlJavaTypeAdapter(org.citydb.config.project.plugin.PluginConfigListAdapter.class)
-	private HashMap<Class<? extends PluginConfig>, PluginConfig> extensions;
+	private Map<Class<? extends PluginConfig>, PluginConfig> extensions;
 	
 	@XmlTransient
 	private ConfigNamespaceFilter namespaceFilter;

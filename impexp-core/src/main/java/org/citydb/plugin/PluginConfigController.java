@@ -32,8 +32,6 @@ import org.citydb.config.project.plugin.PluginConfig;
 import org.citydb.log.Logger;
 import org.citydb.plugin.extension.config.ConfigExtension;
 
-import java.lang.reflect.InvocationTargetException;
-
 public class PluginConfigController {
 	public static PluginConfigController instance;
 	private final Logger log = Logger.getInstance();
@@ -51,7 +49,7 @@ public class PluginConfigController {
 	}
 
 	@SuppressWarnings("unchecked")
-	public <T extends PluginConfig> void setOrCreatePluginConfig(ConfigExtension<T> plugin) {
+	public <T extends PluginConfig> void setOrCreatePluginConfig(ConfigExtension<T> plugin) throws PluginException {
 		Class<T> pluginConfigClass = null;
 		T pluginConfig;
 
@@ -67,15 +65,8 @@ public class PluginConfigController {
 			// propagate new config to plugin
 			plugin.configLoaded(pluginConfig);
 			
-		} catch (NoSuchMethodException | SecurityException e) {
-			log.error("Failed to instantiate config for plugin '" + plugin.getClass().getCanonicalName() + "'.");
-			log.error("Please check the following error message: " + e.getMessage());
-		} catch (InstantiationException | InvocationTargetException e) {
-			log.error("Failed to instantiate class '" + pluginConfigClass.getCanonicalName() + "'.");
-			log.error("Please provide a no-arg constructor.");
-		} catch (IllegalAccessException e) {
-			log.error("Failed to access no-arg constructor of class '" + pluginConfigClass.getCanonicalName() + "'.");
-			log.error("Please check the following error message: " + e.getMessage());
+		} catch (Exception e) {
+			throw new PluginException("Failed to load config for plugin " + plugin.getClass().getName(), e);
 		}
 	}
 
