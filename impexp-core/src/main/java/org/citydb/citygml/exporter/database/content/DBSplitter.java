@@ -323,7 +323,11 @@ public class DBSplitter {
 						&& query.isSetTiling()
 						&& config.getProject().getExporter().getCityGMLOptions().getGMLEnvelope().getCityModelEnvelopeMode().isUseTileExtent()
 						&& !writer.getMetadata().isSetSpatialExtent()) {
-					GeometryObject extentObj = GeometryObject.createEnvelope(query.getTiling().getActiveTile().getExtent(), true);
+					BoundingBox extent = new BoundingBox(query.getTiling().getActiveTile().getExtent());
+					if (!extent.isSetSrs())
+						extent.setSrs(databaseAdapter.getConnectionMetaData().getReferenceSystem());
+
+					GeometryObject extentObj = GeometryObject.createEnvelope(extent, true);
 					writer.getMetadata().setSpatialExtent(getSpatialExtent(extentObj));
 				}
 
