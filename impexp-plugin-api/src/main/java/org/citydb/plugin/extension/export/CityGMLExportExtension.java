@@ -25,10 +25,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.citydb.plugin.extension.preferences;
 
+package org.citydb.plugin.extension.export;
+
+import org.citydb.plugin.PluginException;
 import org.citydb.plugin.extension.Extension;
+import org.citygml4j.model.gml.feature.AbstractFeature;
 
-public interface PreferencesExtension extends Extension {
-	Preferences getPreferences();
+public interface CityGMLExportExtension extends Extension {
+    void postprocess(AbstractFeature feature) throws PluginException;
 }

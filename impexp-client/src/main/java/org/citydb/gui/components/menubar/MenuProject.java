@@ -27,14 +27,11 @@
  */
 package org.citydb.gui.components.menubar;
 
-import org.citydb.util.ClientConstants;
 import org.citydb.config.Config;
-import org.citydb.util.CoreConstants;
 import org.citydb.config.ConfigUtil;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.Project;
 import org.citydb.config.project.global.Logging;
-import org.citydb.config.project.plugin.PluginConfig;
 import org.citydb.event.global.ProjectChangedEvent;
 import org.citydb.gui.ImpExpGui;
 import org.citydb.gui.factory.SrsComboBoxFactory;
@@ -47,16 +44,14 @@ import org.citydb.plugin.PluginManager;
 import org.citydb.plugin.extension.config.ConfigExtension;
 import org.citydb.plugin.extension.config.PluginConfigEvent;
 import org.citydb.registry.ObjectRegistry;
+import org.citydb.util.ClientConstants;
+import org.citydb.util.CoreConstants;
 
-import javax.swing.JFileChooser;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.KeyStroke;
+import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
-import java.awt.Toolkit;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
@@ -119,7 +114,7 @@ public class MenuProject extends JMenu {
                 plugin.setSettings();
 
             // fire event to external plugins
-            for (ConfigExtension<? extends PluginConfig> plugin : pluginService.getExternalConfigExtensions())
+            for (ConfigExtension<?> plugin : pluginService.getExternalPlugins(ConfigExtension.class))
                 plugin.handleEvent(PluginConfigEvent.PRE_SAVE_CONFIG);
 
             if (mainView.saveProjectSettings())
@@ -140,7 +135,7 @@ public class MenuProject extends JMenu {
                         plugin.setSettings();
 
                     // fire event to external plugins
-                    for (ConfigExtension<? extends PluginConfig> plugin : pluginService.getExternalConfigExtensions())
+                    for (ConfigExtension<?> plugin : pluginService.getExternalPlugins(ConfigExtension.class))
                         plugin.handleEvent(PluginConfigEvent.PRE_SAVE_CONFIG);
 
                     ConfigUtil.marshal(config.getProject(), file, ctx);
@@ -175,7 +170,7 @@ public class MenuProject extends JMenu {
 						plugin.loadSettings();
 
 					// update plugin configs
-					for (ConfigExtension<? extends PluginConfig> plugin : pluginService.getExternalConfigExtensions())
+					for (ConfigExtension<?> plugin : pluginService.getExternalPlugins(ConfigExtension.class))
 						plugin.handleEvent(PluginConfigEvent.RESET_DEFAULT_CONFIG);
 
 					// trigger event
@@ -261,7 +256,7 @@ public class MenuProject extends JMenu {
 
 			// update plugin configs
 			PluginConfigController pluginConfigController = PluginConfigController.getInstance(config);
-			for (ConfigExtension<? extends PluginConfig> plugin : pluginService.getExternalConfigExtensions())
+			for (ConfigExtension<?> plugin : pluginService.getExternalPlugins(ConfigExtension.class))
 				pluginConfigController.setOrCreatePluginConfig(plugin);
 
 			// adapt logging subsystem

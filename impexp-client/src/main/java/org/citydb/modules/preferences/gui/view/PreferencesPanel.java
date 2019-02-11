@@ -27,32 +27,6 @@
  */
 package org.citydb.modules.preferences.gui.view;
 
-import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JSeparator;
-import javax.swing.JSplitPane;
-import javax.swing.JTree;
-import javax.swing.UIManager;
-import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeCellRenderer;
-import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreeNode;
-import javax.swing.tree.TreePath;
-import javax.swing.tree.TreeSelectionModel;
-
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.gui.ImpExpGui;
@@ -70,6 +44,19 @@ import org.citydb.plugin.PluginManager;
 import org.citydb.plugin.extension.preferences.PreferencesEntry;
 import org.citydb.plugin.extension.preferences.PreferencesEvent;
 import org.citydb.plugin.extension.preferences.PreferencesExtension;
+
+import javax.swing.*;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeCellRenderer;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreePath;
+import javax.swing.tree.TreeSelectionModel;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 @SuppressWarnings("serial")
 public class PreferencesPanel extends JPanel implements TreeSelectionListener {
@@ -142,7 +129,7 @@ public class PreferencesPanel extends JPanel implements TreeSelectionListener {
 		rootNode.add(pluginManager.getInternalPlugin(CityGMLExportPlugin.class).getPreferences().getPreferencesEntry());
 		rootNode.add(pluginManager.getInternalPlugin(KMLExportPlugin.class).getPreferences().getPreferencesEntry());
 
-		for (PreferencesExtension extension : pluginManager.getExternalPreferencesExtensions())
+		for (PreferencesExtension extension : pluginManager.getExternalPlugins(PreferencesExtension.class))
 			rootNode.add(extension.getPreferences().getPreferencesEntry());	
 
 		rootNode.add(pluginManager.getInternalPlugin(DatabasePlugin.class).getPreferences().getPreferencesEntry());

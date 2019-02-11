@@ -27,6 +27,8 @@
  */
 package org.citydb.plugin.extension.menu;
 
-public interface MenuExtension {
+import org.citydb.plugin.extension.Extension;
+
+public interface MenuExtension extends Extension {
 	Menu getMenu();
 }

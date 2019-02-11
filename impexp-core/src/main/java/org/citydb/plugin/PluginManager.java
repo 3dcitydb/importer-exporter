@@ -27,9 +27,8 @@
  */
 package org.citydb.plugin;
 
-import org.citydb.config.project.plugin.PluginConfig;
 import org.citydb.log.Logger;
-import org.citydb.plugin.extension.config.ConfigExtension;
+import org.citydb.plugin.extension.Extension;
 import org.citydb.plugin.extension.menu.MenuExtension;
 import org.citydb.plugin.extension.preferences.PreferencesExtension;
 import org.citydb.plugin.extension.view.ViewExtension;
@@ -124,43 +123,14 @@ public class PluginManager {
         return null;
     }
 
-    public List<ViewExtension> getExternalViewExtensions() {
-        List<ViewExtension> viewExtensions = new ArrayList<>();
+    public <T extends Extension> List<T> getExternalPlugins(Class<T> extensionClass) {
+        List<T> plugins = new ArrayList<>();
         for (Plugin plugin : externalPlugins) {
-            if (plugin instanceof ViewExtension)
-                viewExtensions.add((ViewExtension) plugin);
+            if (extensionClass.isAssignableFrom(plugin.getClass()))
+                plugins.add(extensionClass.cast(plugin));
         }
 
-        return viewExtensions;
-    }
-
-    public List<PreferencesExtension> getExternalPreferencesExtensions() {
-        List<PreferencesExtension> preferencesExtensions = new ArrayList<>();
-        for (Plugin plugin : externalPlugins) {
-            if (plugin instanceof PreferencesExtension)
-                preferencesExtensions.add((PreferencesExtension) plugin);
-        }
-
-        return preferencesExtensions;
-    }
-
-    public List<MenuExtension> getExternalMenuExtensions() {
-        List<MenuExtension> menuExtensions = new ArrayList<>();
-        for (Plugin plugin : externalPlugins) {
-            if (plugin instanceof MenuExtension)
-                menuExtensions.add((MenuExtension) plugin);
-        }
-
-        return menuExtensions;
-    }
-
-    public List<ConfigExtension<? extends PluginConfig>> getExternalConfigExtensions() {
-        List<ConfigExtension<? extends PluginConfig>> configExtensions = new ArrayList<>();
-        for (Plugin plugin : externalPlugins)
-            if (plugin instanceof ConfigExtension<?>)
-                configExtensions.add((ConfigExtension<? extends PluginConfig>) plugin);
-
-        return configExtensions;
+        return plugins;
     }
 
     public List<Plugin> getPlugins() {

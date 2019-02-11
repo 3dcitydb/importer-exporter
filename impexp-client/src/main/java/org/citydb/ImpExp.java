@@ -37,7 +37,6 @@ import org.citydb.config.i18n.Language;
 import org.citydb.config.project.Project;
 import org.citydb.config.project.global.LanguageType;
 import org.citydb.config.project.global.Logging;
-import org.citydb.config.project.plugin.PluginConfig;
 import org.citydb.config.project.query.util.QueryWrapper;
 import org.citydb.database.DatabaseController;
 import org.citydb.database.schema.mapping.SchemaMapping;
@@ -256,7 +255,7 @@ public class ImpExp {
 		projectConfigClasses.add(Project.class);
 		projectConfigClasses.add(QueryWrapper.class);
 
-		for (ConfigExtension<? extends PluginConfig> plugin : pluginManager.getExternalConfigExtensions()) {
+		for (ConfigExtension<?> plugin : pluginManager.getExternalPlugins(ConfigExtension.class)) {
 			try {
 				projectConfigClasses.add(plugin.getClass().getMethod("getConfig").getReturnType());
 			} catch (SecurityException | NoSuchMethodException e) {
@@ -487,7 +486,7 @@ public class ImpExp {
 			databaseController.setConnectionViewHandler(databasePlugin.getConnectionViewHandler());
 
 			// propagate config to plugins
-			for (ConfigExtension<? extends PluginConfig> plugin : pluginManager.getExternalConfigExtensions())
+			for (ConfigExtension<?> plugin : pluginManager.getExternalPlugins(ConfigExtension.class))
 				PluginConfigController.getInstance(config).setOrCreatePluginConfig(plugin);
 
 			// register internal plugins

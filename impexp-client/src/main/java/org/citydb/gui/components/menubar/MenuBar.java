@@ -35,8 +35,7 @@ import org.citydb.gui.util.OSXAdapter;
 import org.citydb.plugin.PluginManager;
 import org.citydb.plugin.extension.menu.MenuExtension;
 
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
+import javax.swing.*;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
 import javax.xml.bind.JAXBContext;
@@ -67,7 +66,7 @@ public class MenuBar extends JMenuBar {
 		
 		add(project);
 
-		for (MenuExtension extension : pluginManager.getExternalMenuExtensions()) {
+		for (MenuExtension extension : pluginManager.getExternalPlugins(MenuExtension.class)) {
 			if (extensions == null)
 				extensions = new JMenu();
 
@@ -114,7 +113,7 @@ public class MenuBar extends JMenuBar {
 			GuiUtil.setMnemonic(extensions, "menu.extensions.label", "menu.extensions.label.mnemonic");
 
 			int index = 0;
-			for (MenuExtension extension : pluginManager.getExternalMenuExtensions())
+			for (MenuExtension extension : pluginManager.getExternalPlugins(MenuExtension.class))
 				((JMenu)extensions.getMenuComponent(index++)).setText(extension.getMenu().getLocalizedTitle());
 		}
 

@@ -68,18 +68,7 @@ import org.citydb.registry.ObjectRegistry;
 import org.citydb.util.ClientConstants;
 import org.citydb.util.CoreConstants;
 
-import javax.swing.BorderFactory;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
-import javax.swing.JTabbedPane;
-import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
+import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
 import javax.swing.event.ChangeEvent;
@@ -90,17 +79,7 @@ import javax.swing.plaf.basic.BasicSplitPaneDivider;
 import javax.swing.plaf.basic.BasicSplitPaneUI;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.GraphicsConfiguration;
-import java.awt.GraphicsDevice;
-import java.awt.GraphicsEnvironment;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.Rectangle;
-import java.awt.Toolkit;
+import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
@@ -238,7 +217,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		views.add(pluginManager.getInternalPlugin(CityGMLExportPlugin.class).getView());
 		views.add(pluginManager.getInternalPlugin(KMLExportPlugin.class).getView());
 
-		for (ViewExtension viewExtension : pluginManager.getExternalViewExtensions())
+		for (ViewExtension viewExtension : pluginManager.getExternalPlugins(ViewExtension.class))
 			views.add(viewExtension.getView());
 
 		views.add(databasePlugin.getView());
