@@ -35,7 +35,6 @@ public interface FeatureWriter extends AutoCloseable {
 	void write(AbstractFeature feature) throws FeatureWriteException;
 	void useIndentation(boolean useIndentation);
 	Metadata getMetadata();
-	void setMetadata(Metadata metadata);
 	void close() throws FeatureWriteException;
 
 	default boolean supportsFlatHierarchies() {

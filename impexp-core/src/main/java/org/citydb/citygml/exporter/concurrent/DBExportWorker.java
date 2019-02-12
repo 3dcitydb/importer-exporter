@@ -27,10 +27,6 @@
  */
 package org.citydb.citygml.exporter.concurrent;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.concurrent.locks.ReentrantLock;
-
 import org.citydb.citygml.common.database.cache.CacheTableManager;
 import org.citydb.citygml.common.database.uid.UIDCacheManager;
 import org.citydb.citygml.common.database.xlink.DBXlink;
@@ -57,10 +53,18 @@ import org.citydb.event.global.InterruptEvent;
 import org.citydb.event.global.ObjectCounterEvent;
 import org.citydb.event.global.ProgressBarEventType;
 import org.citydb.event.global.StatusDialogProgressBar;
+import org.citydb.plugin.PluginException;
+import org.citydb.plugin.PluginManager;
+import org.citydb.plugin.extension.export.CityGMLExportExtension;
 import org.citydb.query.Query;
 import org.citygml4j.builder.jaxb.CityGMLBuilder;
 import org.citygml4j.model.gml.base.AbstractGML;
 import org.citygml4j.model.gml.feature.AbstractFeature;
+
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.List;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class DBExportWorker extends Worker<DBSplittingResult> implements EventHandler {
 	private final ReentrantLock runLock = new ReentrantLock();
@@ -72,6 +76,8 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 	private final EventDispatcher eventDispatcher;
 	private final Config config;
 	private int exportCounter = 0;
+
+	private List<CityGMLExportExtension> plugins;
 
 	public DBExportWorker(SchemaMapping schemaMapping,
 			CityGMLBuilder cityGMLBuilder,
@@ -108,6 +114,7 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 				cacheTableManager,
 				config);
 
+		plugins = PluginManager.getInstance().getExternalPlugins(CityGMLExportExtension.class);
 		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
 	}
 
@@ -164,7 +171,7 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 			if (!shouldWork)
 				return;
 
-			AbstractGML topLevelObject = null;
+			AbstractGML topLevelObject;
 			if (work.getObjectType().getObjectClassId() == MappingConstants.APPEARANCE_OBJECTCLASS_ID)
 				topLevelObject = exporter.exportGlobalAppearance(work.getId());			
 			else
@@ -173,6 +180,15 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 			if (topLevelObject instanceof AbstractFeature) {
 				// cleanup appearances
 				exporter.cleanupAppearances(topLevelObject);
+
+				// invoke export plugins
+				if (!plugins.isEmpty()) {
+					for (CityGMLExportExtension plugin : plugins) {
+						topLevelObject = plugin.postprocess((AbstractFeature) topLevelObject);
+						if (topLevelObject == null)
+							return;
+					}
+				}
 
 				// write feature to file
 				exporter.writeFeatureMember((AbstractFeature)topLevelObject, work.getId());
@@ -191,7 +207,7 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 				exportCounter = 0;
 			}
 
-		} catch (SQLException | CityGMLExportException e) {
+		} catch (SQLException | CityGMLExportException | PluginException e) {
 			eventDispatcher.triggerSyncEvent(new InterruptEvent("Aborting export due to errors.", LogLevel.WARN, e, eventChannel, this));
 		} catch (Throwable e) {
 			// this is to catch general exceptions that may occur during the export

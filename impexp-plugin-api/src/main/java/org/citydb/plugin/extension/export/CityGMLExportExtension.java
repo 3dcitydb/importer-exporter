@@ -33,5 +33,5 @@ import org.citydb.plugin.extension.Extension;
 import org.citygml4j.model.gml.feature.AbstractFeature;
 
 public interface CityGMLExportExtension extends Extension {
-    void postprocess(AbstractFeature feature) throws PluginException;
+    AbstractFeature postprocess(AbstractFeature feature) throws PluginException;
 }
