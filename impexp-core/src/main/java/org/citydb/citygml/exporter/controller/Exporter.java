@@ -467,7 +467,7 @@ public class Exporter implements EventHandler {
 								config);
 
 						if (shouldRun) {
-							dbSplitter.setCalculateNumberMatched(true);
+							dbSplitter.setCalculateNumberMatched(config.getInternal().isGUIMode());
 							dbSplitter.startQuery();
 						}
 					} catch (SQLException | QueryBuildException | FilterException e) {
