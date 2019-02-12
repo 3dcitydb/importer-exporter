@@ -7,7 +7,7 @@ subprojects {
     apply plugin: 'maven-publish'
 
     group 'org.citydb'
-    version '4.1.0'
+    version '4.1.1'
 
     sourceCompatibility = 1.8
     compileJava.options.encoding = 'UTF-8'
@@ -34,9 +34,21 @@ subprojects {
 
     javadoc {
         include 'org/citydb/**'
-        options.overview "$buildDir/tmp/javadoc/overview.html"
-        options.addStringOption('doctitle', project.name + ' - ' + project.version)
-        options.addStringOption('Xdoclint:none', '-quiet')
+        options {
+            overview "$buildDir/tmp/javadoc/overview.html"
+            header "${project.name} ${project.version}"
+            bottom """
+                <a href="${impexpIssueTrackerUrl}">Report a bug or suggest an enhancement</a><br>
+                ${project.name} is open source and licensed under the <a target="_blank" href="http://www.apache.org/licenses/LICENSE-2.0">Apache License, Version 2.0</a>.<br>
+                Official website and more information at: <a target="_blank" href="${project.citydbWebsiteUrl}">${project.citydbWebsiteUrl}</a><br>
+                Copyright &copy; ${project.vendorCopyright}<br>
+                ${project.vendorName}<br>
+                ${project.vendorOrganisation}, ${project.vendorCountry}<br>
+                <a target="_blank" href="${project.vendorWebsiteUrl}">${project.vendorWebsiteUrl}</a>
+                """.replaceAll("[\r|\n]+", "")
+            addStringOption('doctitle', project.name + ' - ' + project.version)
+            addStringOption('Xdoclint:none', '-quiet')
+        }
 
         doFirst {
             copy {
@@ -46,12 +58,6 @@ subprojects {
                             name: project.name,
                             version: project.version,
                             impexpName: project.impexpName,
-                            citydbWebsiteUrl: project.citydbWebsiteUrl,
-                            vendorName: project.vendorName,
-                            vendorOrganisation: project.vendorOrganisation,
-                            vendorCountry: project.vendorCountry,
-                            vendorCopyright: project.vendorCopyright,
-                            vendorWebsiteUrl: project.vendorWebsiteUrl
                     ])
                 }
                 into "$buildDir/tmp/javadoc"
@@ -73,12 +79,12 @@ subprojects {
     }
 
     task sourcesJar(type: Jar, dependsOn: classes) {
-        classifier = 'sources'
+        archiveClassifier = 'sources'
         from sourceSets.main.allSource
     }
 
     task javadocJar(type: Jar, dependsOn: javadoc) {
-        classifier = 'javadoc'
+        archiveClassifier = 'javadoc'
         from javadoc.destinationDir
     }
 
