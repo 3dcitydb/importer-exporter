@@ -50,6 +50,8 @@ import org.citydb.event.global.ProgressBarEventType;
 import org.citydb.event.global.StatusDialogMessage;
 import org.citydb.event.global.StatusDialogProgressBar;
 import org.citydb.log.Logger;
+import org.citydb.plugin.PluginException;
+import org.citydb.plugin.extension.export.MetadataProvider;
 import org.citydb.query.Query;
 import org.citydb.query.builder.QueryBuildException;
 import org.citydb.query.builder.sql.AppearanceFilterBuilder;
@@ -82,6 +84,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Map.Entry;
 
 public class DBSplitter {
@@ -101,6 +104,7 @@ public class DBSplitter {
 	private final SchemaMapping schemaMapping;
 	private final SQLQueryBuilder builder;
 
+	private MetadataProvider metadataProvider;
 	private volatile boolean shouldRun = true;
 	private boolean calculateNumberMatched;
 	private boolean calculateExtent;
@@ -160,6 +164,14 @@ public class DBSplitter {
 				buildProperties);
 	}
 
+	public MetadataProvider getMetadataProvider() {
+		return metadataProvider;
+	}
+
+	public void setMetadataProvider(MetadataProvider metadataProvider) {
+		this.metadataProvider = metadataProvider;
+	}
+
 	public boolean isCalculateNumberMatched() {
 		return calculateNumberMatched;
 	}
@@ -176,7 +188,7 @@ public class DBSplitter {
 	public void startQuery() throws SQLException, QueryBuildException, FilterException, FeatureWriteException {
 		try {
 			FeatureType cityObjectGroupType = schemaMapping.getFeatureType("CityObjectGroup", CityObjectGroupModule.v2_0_0.getNamespaceURI());
-			HashMap<Long, AbstractObjectType<?>> cityObjectGroups = new HashMap<>();
+			Map<Long, AbstractObjectType<?>> cityObjectGroups = new HashMap<>();
 			
 			queryCityObject(cityObjectGroupType, cityObjectGroups);
 
@@ -209,7 +221,7 @@ public class DBSplitter {
 		}
 	}
 
-	private void queryCityObject(FeatureType cityObjectGroupType, HashMap<Long, AbstractObjectType<?>> cityObjectGroups) throws SQLException, QueryBuildException, FeatureWriteException {
+	private void queryCityObject(FeatureType cityObjectGroupType, Map<Long, AbstractObjectType<?>> cityObjectGroups) throws SQLException, QueryBuildException, FeatureWriteException {
 		if (!shouldRun)
 			return;
 
@@ -258,7 +270,7 @@ public class DBSplitter {
 					eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.INIT, (int)hits, this));
 				}
 
-				if (calculateExtent && !writer.getMetadata().isSetSpatialExtent()) {
+				if (calculateExtent) {
 					Object extentObj = rs.getObject("extent");
 					if (!rs.wasNull() && extentObj != null) {
 						GeometryObject extent = databaseAdapter.getGeometryConverter().getEnvelope(extentObj);
@@ -277,7 +289,7 @@ public class DBSplitter {
 					}
 				}
 
-				writer.writeHeader();
+				writeDocumentHeader();
 				
 				do {
 					elementCounter++;
@@ -319,8 +331,7 @@ public class DBSplitter {
 
 				if (calculateExtent
 						&& query.isSetTiling()
-						&& config.getProject().getExporter().getCityGMLOptions().getGMLEnvelope().getCityModelEnvelopeMode().isUseTileExtent()
-						&& !writer.getMetadata().isSetSpatialExtent()) {
+						&& config.getProject().getExporter().getCityGMLOptions().getGMLEnvelope().getCityModelEnvelopeMode().isUseTileExtent()) {
 					BoundingBox extent = new BoundingBox(query.getTiling().getActiveTile().getExtent());
 					if (!extent.isSetSrs())
 						extent.setSrs(databaseAdapter.getConnectionMetaData().getReferenceSystem());
@@ -329,12 +340,12 @@ public class DBSplitter {
 					writer.getMetadata().setSpatialExtent(getSpatialExtent(extentObj));
 				}
 
-				writer.writeHeader();
+				writeDocumentHeader();
 			}
 		}
 	}
 
-	private void queryCityObjectGroups(FeatureType cityObjectGroupType, HashMap<Long, AbstractObjectType<?>> cityObjectGroups) throws SQLException, FilterException, QueryBuildException {
+	private void queryCityObjectGroups(FeatureType cityObjectGroupType, Map<Long, AbstractObjectType<?>> cityObjectGroups) throws SQLException, FilterException, QueryBuildException {
 		if (!shouldRun)
 			return;
 
@@ -398,7 +409,6 @@ public class DBSplitter {
 			}
 
 			// issue query
-
 			try (PreparedStatement stmt = databaseAdapter.getSQLAdapter().prepareStatement(select, connection);
 				 ResultSet rs = stmt.executeQuery()) {
 				if (rs.next()) {
@@ -529,6 +539,18 @@ public class DBSplitter {
 				new Position(coordinates[0], coordinates[1], coordinates[2]),
 				new Position(coordinates[3], coordinates[4], coordinates[5]),
 				query.getTargetSrs());
+	}
+
+	private void writeDocumentHeader() throws FeatureWriteException {
+		if (metadataProvider != null) {
+			try {
+				metadataProvider.setMetadata(writer.getMetadata(), query, config.getProject().getExporter());
+			} catch (PluginException e) {
+				throw new FeatureWriteException("Failed to set export metadata.", e);
+			}
+		}
+
+		writer.writeHeader();
 	}
 
 }

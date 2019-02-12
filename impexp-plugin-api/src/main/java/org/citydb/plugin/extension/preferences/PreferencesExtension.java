@@ -27,6 +27,8 @@
  */
 package org.citydb.plugin.extension.preferences;
 
-public interface PreferencesExtension {
-	public Preferences getPreferences();
+import org.citydb.plugin.extension.Extension;
+
+public interface PreferencesExtension extends Extension {
+	Preferences getPreferences();
 }

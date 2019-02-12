@@ -36,8 +36,8 @@ import org.citydb.config.gui.Gui;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.Project;
 import org.citydb.config.project.global.LanguageType;
+import org.citydb.config.project.global.LogLevel;
 import org.citydb.config.project.global.Logging;
-import org.citydb.config.project.plugin.PluginConfig;
 import org.citydb.config.project.query.util.QueryWrapper;
 import org.citydb.database.DatabaseController;
 import org.citydb.database.schema.mapping.SchemaMapping;
@@ -56,10 +56,13 @@ import org.citydb.modules.database.DatabasePlugin;
 import org.citydb.modules.kml.KMLExportPlugin;
 import org.citydb.modules.preferences.PreferencesPlugin;
 import org.citydb.plugin.IllegalEventSourceChecker;
+import org.citydb.plugin.InternalPlugin;
 import org.citydb.plugin.Plugin;
 import org.citydb.plugin.PluginConfigController;
+import org.citydb.plugin.PluginException;
 import org.citydb.plugin.PluginManager;
 import org.citydb.plugin.extension.config.ConfigExtension;
+import org.citydb.plugin.extension.view.ViewExtension;
 import org.citydb.registry.ObjectRegistry;
 import org.citydb.util.ClientConstants;
 import org.citydb.util.CoreConstants;
@@ -86,11 +89,13 @@ import java.net.ProxySelector;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.text.DecimalFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.stream.Stream;
 
@@ -133,7 +138,7 @@ public class ImpExp {
 
 	private SplashScreen splashScreen;
 	private boolean useSplashScreen;
-	private List<String> errMsgs = new ArrayList<>();
+	private Map<LogLevel, String> logMessages = new HashMap<>();
 
 	public static void main(String[] args) {
 		new ImpExp().doMain(args);
@@ -245,6 +250,9 @@ public class ImpExp {
 			}
 
 			pluginManager.loadPlugins(externalLoader);
+			for (Plugin plugin : pluginManager.getExternalPlugins())
+				log.info("Initializing plugin " + plugin.getClass().getName());
+
 		} catch (IOException e) {
 			log.error("Failed to initialize plugin support: " + e.getMessage());
 			System.exit(1);
@@ -255,7 +263,7 @@ public class ImpExp {
 		projectConfigClasses.add(Project.class);
 		projectConfigClasses.add(QueryWrapper.class);
 
-		for (ConfigExtension<? extends PluginConfig> plugin : pluginManager.getExternalConfigExtensions()) {
+		for (ConfigExtension<?> plugin : pluginManager.getExternalPlugins(ConfigExtension.class)) {
 			try {
 				projectConfigClasses.add(plugin.getClass().getMethod("getConfig").getReturnType());
 			} catch (SecurityException | NoSuchMethodException e) {
@@ -327,7 +335,7 @@ public class ImpExp {
 
 			adeManager.loadExtensions(externalLoader);
 			adeManager.loadSchemaMappings(schemaMapping);
-			
+
 			for (ADEExtension extension : adeManager.getExtensions())
 				log.info("Initializing ADE extension " + extension.getClass().getName());
 			
@@ -405,8 +413,10 @@ public class ImpExp {
 				log.error(errMsg);
 				log.error("Aborting...");
 				System.exit(1);
-			} else
-				errMsgs.add(errMsg);
+			} else {
+				logMessages.put(LogLevel.ERROR, errMsg);
+				logMessages.put(LogLevel.INFO, "Project settings initialized using default values.");
+			}
 		} finally {
 			config.setProject(project);
 		}
@@ -420,6 +430,18 @@ public class ImpExp {
 					config.setGui((Gui)object);
 			} catch (JAXBException | IOException e) {
 				//
+			}
+		}
+
+		// load plugin configs to plugins
+		for (ConfigExtension<?> plugin : pluginManager.getExternalPlugins(ConfigExtension.class)) {
+			try {
+				PluginConfigController.getInstance(config).setOrCreatePluginConfig(plugin);
+			} catch (PluginException e) {
+				log.error("Failed to load config for plugin " + plugin.getClass().getName());
+				log.error("Aborting...");
+				e.printStackTrace();
+				System.exit(1);
 			}
 		}
 
@@ -442,12 +464,7 @@ public class ImpExp {
 				logging.getFile().setUseAlternativeLogPath(false);
 				log.detachLogFile();
 			} else {
-				Calendar cal = Calendar.getInstance();
-				DecimalFormat df = new DecimalFormat("00");
-				log.writeToFile("*** Starting new log file session on "
-						+ String.valueOf(cal.get(Calendar.YEAR)) + '-'
-						+ df.format(cal.get(Calendar.MONTH) + 1) + '-'
-						+ df.format(cal.get(Calendar.DATE)));
+				log.writeToFile("*** Starting new log file session on " + LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE));
 				config.getInternal().setCurrentLogPath(logPath);
 			}
 		}
@@ -485,19 +502,6 @@ public class ImpExp {
 			final DatabasePlugin databasePlugin = new DatabasePlugin(mainView, config);
 			databaseController.setConnectionViewHandler(databasePlugin.getConnectionViewHandler());
 
-			// propagate config to plugins
-			for (ConfigExtension<? extends PluginConfig> plugin : pluginManager.getExternalConfigExtensions())
-				PluginConfigController.getInstance(config).setOrCreatePluginConfig(plugin);
-
-			// initialize plugins
-			for (Plugin plugin : pluginManager.getExternalPlugins()) {
-				log.info("Initializing plugin " + plugin.getClass().getName());
-				if (useSplashScreen)
-					splashScreen.setMessage("Initializing plugin " + plugin.getClass().getName());
-
-				plugin.init(mainView, new Locale(lang.value()));
-			}
-
 			// register internal plugins
 			pluginManager.registerInternalPlugin(new CityGMLImportPlugin(mainView, config));		
 			pluginManager.registerInternalPlugin(new CityGMLExportPlugin(mainView, projectContext, config));
@@ -505,13 +509,18 @@ public class ImpExp {
 			pluginManager.registerInternalPlugin(databasePlugin);
 			pluginManager.registerInternalPlugin(new PreferencesPlugin(mainView, config));
 
-			// initialize internal plugins
-			for (Plugin plugin : pluginManager.getInternalPlugins())
-				plugin.init(mainView, new Locale(lang.value()));
+			// initialize plugins
+			for (Plugin plugin : pluginManager.getPlugins()) {
+				if (plugin instanceof ViewExtension) {
+					((ViewExtension) plugin).initViewExtension(mainView, new Locale(lang.value()));
+					if (useSplashScreen && !(plugin instanceof InternalPlugin))
+						splashScreen.setMessage("Initializing plugin " + plugin.getClass().getName());
+				}
+			}
 
 			// initialize gui
 			printInfoMessage("Starting graphical user interface");
-			SwingUtilities.invokeLater(() -> mainView.invoke(projectContext, guiContext, errMsgs));
+			SwingUtilities.invokeLater(() -> mainView.invoke(projectContext, guiContext, logMessages));
 
 			try {
 				// clean up heap space

@@ -51,7 +51,7 @@ public class KMLExportPlugin implements InternalPlugin, ViewExtension, Preferenc
 	}
 		
 	@Override
-	public void init(ViewController viewController, Locale locale) {
+	public void initViewExtension(ViewController viewController, Locale locale) {
 		loadSettings();
 	}
 

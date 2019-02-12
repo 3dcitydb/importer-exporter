@@ -71,6 +71,9 @@ import org.citydb.event.global.StatusDialogMessage;
 import org.citydb.event.global.StatusDialogProgressBar;
 import org.citydb.event.global.StatusDialogTitle;
 import org.citydb.log.Logger;
+import org.citydb.plugin.PluginManager;
+import org.citydb.plugin.extension.export.CityGMLExportExtension;
+import org.citydb.plugin.extension.export.MetadataProvider;
 import org.citydb.query.Query;
 import org.citydb.query.builder.QueryBuildException;
 import org.citydb.query.builder.config.ConfigQueryBuilder;
@@ -178,6 +181,21 @@ public class Exporter implements EventHandler {
 			writerFactory = FeatureWriterFactoryBuilder.buildFactory(query, config);
 		} catch (FeatureWriteException e) {
 			throw new CityGMLExportException("Failed to build the feature writer factory.", e);
+		}
+
+		// get metadata provider
+		MetadataProvider metadataProvider = null;
+		if (config.getProject().getExporter().isSetMetadataProvider()) {
+			for (CityGMLExportExtension plugin : PluginManager.getInstance().getExternalPlugins(CityGMLExportExtension.class)) {
+				if (plugin instanceof MetadataProvider
+						&& plugin.getClass().getCanonicalName().equals(config.getProject().getExporter().getMetadataProvider())) {
+					metadataProvider = (MetadataProvider) plugin;
+					break;
+				}
+			}
+
+			if (metadataProvider == null)
+				throw new CityGMLExportException("Failed to load metadata provider '" + config.getProject().getExporter().getMetadataProvider() + "'.");
 		}
 
 		// set target reference system for export
@@ -467,6 +485,7 @@ public class Exporter implements EventHandler {
 								config);
 
 						if (shouldRun) {
+							dbSplitter.setMetadataProvider(metadataProvider);
 							dbSplitter.setCalculateNumberMatched(config.getInternal().isGUIMode());
 							dbSplitter.startQuery();
 						}

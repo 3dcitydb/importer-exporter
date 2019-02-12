@@ -28,7 +28,7 @@
 package org.citydb.plugin.extension.view.components;
 
 public interface ComponentFactory {
-	public DatabaseSrsComboBox createDatabaseSrsComboBox();
-	public StandardEditingPopupMenuDecorator createPopupMenuDecorator();
-	public BoundingBoxPanel createBoundingBoxPanel();
+	DatabaseSrsComboBox createDatabaseSrsComboBox();
+	StandardEditingPopupMenuDecorator createPopupMenuDecorator();
+	BoundingBoxPanel createBoundingBoxPanel();
 }

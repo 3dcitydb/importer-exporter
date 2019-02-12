@@ -4,6 +4,7 @@ plugins {
 
 dependencies {
     compile project(':impexp-config')
+    compile project(':impexp-plugin-api')
     compile 'org.citydb:sqlbuilder:2.1.3'
     compile 'org.citydb:3dcitydb-ade-citygml4j:1.1.0'
     compile 'org.citygml4j:citygml4j:2.9.0'

@@ -106,11 +106,6 @@ public class CityGMLWriter implements FeatureWriter {
 	}
 
 	@Override
-	public void setMetadata(Metadata metadata) {
-		this.metadata = metadata;
-	}
-
-	@Override
 	public void writeHeader() throws FeatureWriteException {
 		headerWritten = true;
 		writeCityModel(WriteMode.HEAD);

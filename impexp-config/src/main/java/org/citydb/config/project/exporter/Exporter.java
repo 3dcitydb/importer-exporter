@@ -45,6 +45,7 @@ import javax.xml.bind.annotation.XmlType;
 		"appearances",
 		"xlink",
 		"xslTransformation",
+		"metadataProvider",
 		"cityGMLOptions",
 		"resources"
 })
@@ -60,6 +61,7 @@ public class Exporter {
 	private ExportAppearance appearances;
 	private XLink xlink;
 	private XSLTransformation xslTransformation;
+	private String metadataProvider;
 	private CityGMLOptions cityGMLOptions;
 	private Resources resources;
 
@@ -164,6 +166,18 @@ public class Exporter {
 	public void setXSLTransformation(XSLTransformation xslTransformation) {
 		if (xslTransformation != null)
 			this.xslTransformation = xslTransformation;
+	}
+
+	public boolean isSetMetadataProvider() {
+		return metadataProvider != null;
+	}
+
+	public String getMetadataProvider() {
+		return metadataProvider;
+	}
+
+	public void setMetadataProvider(String metadataProvider) {
+		this.metadataProvider = metadataProvider;
 	}
 
 	public CityGMLOptions getCityGMLOptions() {

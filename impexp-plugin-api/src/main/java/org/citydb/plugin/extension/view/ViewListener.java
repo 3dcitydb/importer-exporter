@@ -28,6 +28,6 @@
 package org.citydb.plugin.extension.view;
 
 public interface ViewListener {
-	public void viewActivated(ViewEvent e);
-	public void viewDeactivated(ViewEvent e);
+	void viewActivated(ViewEvent e);
+	void viewDeactivated(ViewEvent e);
 }

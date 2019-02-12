@@ -34,6 +34,7 @@ import org.citydb.config.gui.window.MainWindow;
 import org.citydb.config.gui.window.WindowSize;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.global.LanguageType;
+import org.citydb.config.project.global.LogLevel;
 import org.citydb.database.connection.DatabaseConnectionPool;
 import org.citydb.event.Event;
 import org.citydb.event.EventDispatcher;
@@ -68,18 +69,7 @@ import org.citydb.registry.ObjectRegistry;
 import org.citydb.util.ClientConstants;
 import org.citydb.util.CoreConstants;
 
-import javax.swing.BorderFactory;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
-import javax.swing.JTabbedPane;
-import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
+import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
 import javax.swing.event.ChangeEvent;
@@ -90,17 +80,7 @@ import javax.swing.plaf.basic.BasicSplitPaneDivider;
 import javax.swing.plaf.basic.BasicSplitPaneUI;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.GraphicsConfiguration;
-import java.awt.GraphicsDevice;
-import java.awt.GraphicsEnvironment;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.Rectangle;
-import java.awt.Toolkit;
+import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
@@ -112,6 +92,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
@@ -170,22 +151,21 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 
 	public void invoke(JAXBContext jaxbProjectContext,
 			JAXBContext jaxbGuiContext,
-			List<String> errMsgs) {		
+			Map<LogLevel, String> logMessages) {
 		this.jaxbProjectContext = jaxbProjectContext;
 		this.jaxbGuiContext = jaxbGuiContext;		
 		
 		// init GUI elements
-		initGui();
+		initGui(logMessages);
 		doTranslation();
 		showWindow();
 
 		// initConsole;
 		initConsole();
 
-		if (!errMsgs.isEmpty()) {
-			for (String msg : errMsgs)
-				log.error(msg);
-			log.info("Project settings initialized using default values.");
+		if (!logMessages.isEmpty()) {
+			for (Map.Entry<LogLevel, String> entry : logMessages.entrySet())
+				log.log(entry.getKey(), entry.getValue());
 		}
 
 		// log exceptions for disabled ADE extensions
@@ -200,7 +180,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		showWindow();
 	}
 
-	private void initGui() {
+	private void initGui(Map<LogLevel, String> logMessages) {
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
 		activePosition = 0;
@@ -240,8 +220,15 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		views.add(pluginManager.getInternalPlugin(CityGMLExportPlugin.class).getView());
 		views.add(pluginManager.getInternalPlugin(KMLExportPlugin.class).getView());
 
-		for (ViewExtension viewExtension : pluginManager.getExternalViewExtensions())
-			views.add(viewExtension.getView());
+		for (ViewExtension viewExtension : pluginManager.getExternalPlugins(ViewExtension.class)) {
+			View view = viewExtension.getView();
+			if (view == null || view.getViewComponent() == null) {
+				logMessages.put(LogLevel.ERROR, "Failed to get view component from plugin " + viewExtension.getClass().getName() + ".");
+				continue;
+			}
+
+			views.add(view);
+		}
 
 		views.add(databasePlugin.getView());
 		views.add(preferencesPlugin.getView());
@@ -427,8 +414,10 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 			consoleLabel.setText(Language.I18N.getString("main.console.label"));
 
 			// fire translation notification to plugins
-			for (Plugin plugin : pluginManager.getPlugins())
-				plugin.switchLocale(locale);
+			for (Plugin plugin : pluginManager.getPlugins()) {
+				if (plugin instanceof ViewExtension)
+					((ViewExtension) plugin).switchLocale(locale);
+			}
 
 			int index = 0;
 			for (View view : views)

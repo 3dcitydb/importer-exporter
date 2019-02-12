@@ -25,28 +25,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.citydb.plugin.extension.view;
 
-public final class ViewEvent {
-	public enum ViewState {
-		VIEW_ACTIVATED,
-		VIEW_DEACTIVATED
-	}
-	
-	private final View view;
-	private final ViewState viewState;
-	
-	public ViewEvent(View view, ViewState viewState, Object source) {
-		this.view = view;
-		this.viewState = viewState;
-	}
-	
-	public View getView() {
-		return view;
+package org.citydb.plugin;
+
+public class PluginException extends Exception {
+	private static final long serialVersionUID = -3716015045363231263L;
+
+	public PluginException() {
+		super();
 	}
 
-	public ViewState getViewState() {
-		return viewState;
+	public PluginException(String message) {
+		super(message);
+	}
+
+	public PluginException(Throwable cause) {
+		super(cause);
+	}
+
+	public PluginException(String message, Throwable cause) {
+		super(message, cause);
 	}
 	
 }

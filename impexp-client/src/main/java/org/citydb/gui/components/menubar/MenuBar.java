@@ -32,11 +32,12 @@ import org.citydb.config.i18n.Language;
 import org.citydb.gui.ImpExpGui;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.gui.util.OSXAdapter;
+import org.citydb.log.Logger;
 import org.citydb.plugin.PluginManager;
+import org.citydb.plugin.extension.menu.Menu;
 import org.citydb.plugin.extension.menu.MenuExtension;
 
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
+import javax.swing.*;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
 import javax.xml.bind.JAXBContext;
@@ -67,15 +68,21 @@ public class MenuBar extends JMenuBar {
 		
 		add(project);
 
-		for (MenuExtension extension : pluginManager.getExternalMenuExtensions()) {
+		for (MenuExtension extension : pluginManager.getExternalPlugins(MenuExtension.class)) {
+			Menu menu = extension.getMenu();
+			if (menu == null || menu.getMenuComponent() == null) {
+				Logger.getInstance().error("Failed to get menu entry from plugin " + extension.getClass().getName() + ".");
+				continue;
+			}
+
 			if (extensions == null)
 				extensions = new JMenu();
 
-			JMenu menu = extension.getMenu().getMenuComponent();
-			menu.setText(extension.getMenu().getLocalizedTitle());
-			menu.setIcon(extension.getMenu().getIcon());
-			GuiUtil.setMnemonic(menu, menu.getText(), extension.getMenu().getMnemonicIndex());
-			extensions.add(menu);
+			JMenu component = menu.getMenuComponent();
+			component.setText(menu.getLocalizedTitle());
+			component.setIcon(menu.getIcon());
+			GuiUtil.setMnemonic(component, component.getText(), menu.getMnemonicIndex());
+			extensions.add(component);
 		}
 
 		if (extensions != null)
@@ -114,7 +121,7 @@ public class MenuBar extends JMenuBar {
 			GuiUtil.setMnemonic(extensions, "menu.extensions.label", "menu.extensions.label.mnemonic");
 
 			int index = 0;
-			for (MenuExtension extension : pluginManager.getExternalMenuExtensions())
+			for (MenuExtension extension : pluginManager.getExternalPlugins(MenuExtension.class))
 				((JMenu)extensions.getMenuComponent(index++)).setText(extension.getMenu().getLocalizedTitle());
 		}
 

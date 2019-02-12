@@ -41,14 +41,14 @@ public abstract class PreferencesEntry {
 
 	public void addChildEntry(PreferencesEntry child) {
 		if (childEntries == null)
-			childEntries = new ArrayList<PreferencesEntry>();
+			childEntries = new ArrayList<>();
 		
 		childEntries.add(child);
 	}
 	
 	public List<PreferencesEntry> getChildEntries() {
 		if (childEntries == null)
-			childEntries = new ArrayList<PreferencesEntry>();
+			childEntries = new ArrayList<>();
 		
 		return childEntries;
 	}

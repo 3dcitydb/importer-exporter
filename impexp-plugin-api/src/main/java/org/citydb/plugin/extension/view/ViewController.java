@@ -32,12 +32,11 @@ import javax.swing.JFrame;
 import org.citydb.plugin.extension.view.components.ComponentFactory;
 
 public interface ViewController {
-	public JFrame getTopFrame();
-	public void clearConsole();
-	public void setStatusText(String statusText);
-	public void setDefaultStatus();	
-	public void errorMessage(String title, String message);
-	public int warnMessage(String title, String message);
-	
-	public ComponentFactory getComponentFactory();
+	JFrame getTopFrame();
+	void clearConsole();
+	void setStatusText(String statusText);
+	void setDefaultStatus();
+	void errorMessage(String title, String message);
+	int warnMessage(String title, String message);
+	ComponentFactory getComponentFactory();
 }

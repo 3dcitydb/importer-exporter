@@ -27,14 +27,11 @@
  */
 package org.citydb.gui.components.menubar;
 
-import org.citydb.util.ClientConstants;
 import org.citydb.config.Config;
-import org.citydb.util.CoreConstants;
 import org.citydb.config.ConfigUtil;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.Project;
 import org.citydb.config.project.global.Logging;
-import org.citydb.config.project.plugin.PluginConfig;
 import org.citydb.event.global.ProjectChangedEvent;
 import org.citydb.gui.ImpExpGui;
 import org.citydb.gui.factory.SrsComboBoxFactory;
@@ -43,20 +40,19 @@ import org.citydb.log.Logger;
 import org.citydb.modules.preferences.PreferencesPlugin;
 import org.citydb.plugin.InternalPlugin;
 import org.citydb.plugin.PluginConfigController;
+import org.citydb.plugin.PluginException;
 import org.citydb.plugin.PluginManager;
 import org.citydb.plugin.extension.config.ConfigExtension;
 import org.citydb.plugin.extension.config.PluginConfigEvent;
 import org.citydb.registry.ObjectRegistry;
+import org.citydb.util.ClientConstants;
+import org.citydb.util.CoreConstants;
 
-import javax.swing.JFileChooser;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.KeyStroke;
+import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
-import java.awt.Toolkit;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
@@ -67,7 +63,7 @@ import java.util.List;
 
 @SuppressWarnings("serial")
 public class MenuProject extends JMenu {
-	private final Logger LOG = Logger.getInstance();
+	private final Logger log = Logger.getInstance();
 	private final PluginManager pluginService;
 	private final Config config;
 	private final JAXBContext ctx;
@@ -119,11 +115,11 @@ public class MenuProject extends JMenu {
                 plugin.setSettings();
 
             // fire event to external plugins
-            for (ConfigExtension<? extends PluginConfig> plugin : pluginService.getExternalConfigExtensions())
+            for (ConfigExtension<?> plugin : pluginService.getExternalPlugins(ConfigExtension.class))
                 plugin.handleEvent(PluginConfigEvent.PRE_SAVE_CONFIG);
 
             if (mainView.saveProjectSettings())
-                LOG.info("Settings successfully saved to config file '"
+                log.info("Settings successfully saved to config file '"
                         + CoreConstants.IMPEXP_DATA_DIR
                                 .resolve(ClientConstants.PROJECT_SETTINGS_FILE)
                                 .resolve(ClientConstants.PROJECT_SETTINGS_FILE) + "'.");
@@ -133,14 +129,14 @@ public class MenuProject extends JMenu {
             File file = saveDialog(Language.I18N.getString("menu.project.saveAs.label"), true);
 
             if (file != null) {
-                LOG.info("Saving project settings as file '" + file.toString() + "'.");
+                log.info("Saving project settings as file '" + file.toString() + "'.");
                 try {
                     // set settings on internal plugins
                     for (InternalPlugin plugin : pluginService.getInternalPlugins())
                         plugin.setSettings();
 
                     // fire event to external plugins
-                    for (ConfigExtension<? extends PluginConfig> plugin : pluginService.getExternalConfigExtensions())
+                    for (ConfigExtension<?> plugin : pluginService.getExternalPlugins(ConfigExtension.class))
                         plugin.handleEvent(PluginConfigEvent.PRE_SAVE_CONFIG);
 
                     ConfigUtil.marshal(config.getProject(), file, ctx);
@@ -150,7 +146,7 @@ public class MenuProject extends JMenu {
                     setLastUsedList();
                     lastUsed.repaint();
                 } catch (JAXBException e1) {
-                    LOG.error("Failed to save project settings: " + e1.getMessage());
+                    log.error("Failed to save project settings: " + e1.getMessage());
                 }
             }
         });
@@ -175,14 +171,14 @@ public class MenuProject extends JMenu {
 						plugin.loadSettings();
 
 					// update plugin configs
-					for (ConfigExtension<? extends PluginConfig> plugin : pluginService.getExternalConfigExtensions())
+					for (ConfigExtension<?> plugin : pluginService.getExternalPlugins(ConfigExtension.class))
 						plugin.handleEvent(PluginConfigEvent.RESET_DEFAULT_CONFIG);
 
 					// trigger event
 					ObjectRegistry.getInstance().getEventDispatcher().triggerEvent(new ProjectChangedEvent(this));
 
 					mainView.doTranslation();
-					LOG.info("Project settings are reset to default values.");
+					log.info("Project settings are reset to default values.");
 				}
 			}
 		});
@@ -191,11 +187,11 @@ public class MenuProject extends JMenu {
             File path = saveDialog(Language.I18N.getString("menu.project.saveXSDas.label"), false);
 
             if (path != null) {
-                LOG.info("Saving project XSD at location '" + path.toString() + "'.");
+                log.info("Saving project XSD at location '" + path.toString() + "'.");
                 try {
                     ConfigUtil.generateSchema(ctx, path);
                 } catch (IOException e1) {
-                    LOG.error("Failed to save project settings: " + e1.getMessage());
+                    log.error("Failed to save project settings: " + e1.getMessage());
                 }
             }
         });
@@ -237,14 +233,14 @@ public class MenuProject extends JMenu {
 	}
 
 	private boolean openProject(File file) {		
-		LOG.info("Loading project settings from file '" + file.toString() + "'.");
+		log.info("Loading project settings from file '" + file.toString() + "'.");
 		boolean success = false;
 
 		try {
 			Logging logging = config.getProject().getGlobal().getLogging();
 			Object object = ConfigUtil.unmarshal(file, ctx);
 			if (!(object instanceof Project)) {
-				LOG.error("Failed to read project settings.");
+				log.error("Failed to read project settings.");
 				return false;
 			}
 
@@ -261,8 +257,14 @@ public class MenuProject extends JMenu {
 
 			// update plugin configs
 			PluginConfigController pluginConfigController = PluginConfigController.getInstance(config);
-			for (ConfigExtension<? extends PluginConfig> plugin : pluginService.getExternalConfigExtensions())
-				pluginConfigController.setOrCreatePluginConfig(plugin);
+			for (ConfigExtension<?> plugin : pluginService.getExternalPlugins(ConfigExtension.class)) {
+				try {
+					pluginConfigController.setOrCreatePluginConfig(plugin);
+				} catch (PluginException e) {
+					log.warn("Failed to load config for plugin " + plugin.getClass().getName());
+					log.warn("The plugin will most likely not work.");
+				}
+			}
 
 			// adapt logging subsystem
 			project.getGlobal().setLogging(logging);
@@ -273,11 +275,11 @@ public class MenuProject extends JMenu {
 			// trigger event
 			ObjectRegistry.getInstance().getEventDispatcher().triggerEvent(new ProjectChangedEvent(this));
 			success = true;
-		} catch (IOException e1) {
-			LOG.error("Failed to read project settings file '" + file.toString() + "'.");
-		} catch (JAXBException e1) {
-			LOG.error("Failed to read project settings: " + e1.getMessage());
-		}					
+		} catch (IOException e) {
+			log.error("Failed to read project settings file '" + file.toString() + "'.");
+		} catch (JAXBException e) {
+			log.error("Failed to read project settings: " + e.getMessage());
+		}
 
 		return success;
 	}

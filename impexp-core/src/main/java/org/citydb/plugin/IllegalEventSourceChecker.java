@@ -31,7 +31,7 @@ import org.citydb.database.connection.DatabaseConnectionPool;
 import org.citydb.event.Event;
 import org.citydb.event.EventHandler;
 import org.citydb.event.global.EventType;
-import org.citydb.gui.ImpExpGui;
+import org.citydb.plugin.extension.view.ViewController;
 
 public class IllegalEventSourceChecker implements EventHandler {
 	private static IllegalEventSourceChecker instance;
@@ -52,7 +52,7 @@ public class IllegalEventSourceChecker implements EventHandler {
 		if (event.getEventType() == EventType.DATABASE_CONNECTION_STATE && event.getSource() != DatabaseConnectionPool.getInstance())
 			throw new IllegalArgumentException("Illegal source for event of type " + EventType.DATABASE_CONNECTION_STATE + ".");
 
-		else if (event.getEventType() == EventType.SWITCH_LOCALE && !(event.getSource() instanceof ImpExpGui))
+		else if (event.getEventType() == EventType.SWITCH_LOCALE && !(event.getSource() instanceof ViewController))
 			throw new IllegalArgumentException("Illegal source for event of type " + EventType.SWITCH_LOCALE + ".");
 	}
 	

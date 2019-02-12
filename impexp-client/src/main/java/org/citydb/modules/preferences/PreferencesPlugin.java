@@ -51,7 +51,7 @@ public class PreferencesPlugin implements InternalPlugin, ViewExtension, Prefere
 	}
 		
 	@Override
-	public void init(ViewController viewController, Locale locale) {
+	public void initViewExtension(ViewController viewController, Locale locale) {
 		loadSettings();
 	}
 

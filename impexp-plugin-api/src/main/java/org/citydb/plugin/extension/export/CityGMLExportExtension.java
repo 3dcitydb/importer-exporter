@@ -25,9 +25,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.citydb.plugin;
 
-public interface InternalPlugin extends Plugin {
-	public void loadSettings();
-	public void setSettings();
+package org.citydb.plugin.extension.export;
+
+import org.citydb.plugin.PluginException;
+import org.citydb.plugin.extension.Extension;
+import org.citygml4j.model.gml.feature.AbstractFeature;
+
+public interface CityGMLExportExtension extends Extension {
+    AbstractFeature postprocess(AbstractFeature feature) throws PluginException;
 }
