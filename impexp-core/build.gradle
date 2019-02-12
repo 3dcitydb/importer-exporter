@@ -24,6 +24,7 @@ dependencies {
 
 javadoc {
     source += project(':impexp-config').sourceSets.main.allJava
+    source += project(':impexp-plugin-api').sourceSets.main.allJava
 }
 
 bintray {
