@@ -251,8 +251,8 @@ public class IdHandlingPanel extends AbstractPreferencesComponent implements Eve
 	public void setSettings() {
 		ImportGmlId gmlId = config.getProject().getImporter().getGmlId();
 
-		if (idPrefix.getText() != null && idPrefix.getText().trim().length() != 0)
-			gmlId.setIdPrefix(idPrefix.getText().trim());
+		if (idPrefix.getText() != null && DefaultGMLIdManager.getInstance().isValidPrefix(idPrefix.getText()))
+			gmlId.setIdPrefix(idPrefix.getText());
 		else {
 			gmlId.setIdPrefix(DefaultGMLIdManager.getInstance().getDefaultPrefix());
 			idPrefix.setText(DefaultGMLIdManager.getInstance().getDefaultPrefix());

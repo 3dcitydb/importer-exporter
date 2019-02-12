@@ -261,7 +261,7 @@ public class XLinkPanel extends AbstractPreferencesComponent {
 		XLinkFeatureConfig feature = config.getProject().getExporter().getXlink().getFeature();
 		XLinkConfig geometry = config.getProject().getExporter().getXlink().getGeometry();
 		
-		if (featureIdPrefix.getText() != null && featureIdPrefix.getText().trim().length() != 0)
+		if (featureIdPrefix.getText() != null && DefaultGMLIdManager.getInstance().isValidPrefix(featureIdPrefix.getText()))
 			feature.setIdPrefix(featureIdPrefix.getText().trim());
 		else {
 			feature.setIdPrefix(DefaultGMLIdManager.getInstance().getDefaultPrefix());
@@ -276,7 +276,7 @@ public class XLinkPanel extends AbstractPreferencesComponent {
 		feature.setAppendId(featureAppendId.isSelected());
 		feature.setKeepGmlIdAsExternalReference(featureKeepExtRef.isSelected());
 
-		if (geometryIdPrefix.getText() != null && geometryIdPrefix.getText().trim().length() != 0)
+		if (geometryIdPrefix.getText() != null && DefaultGMLIdManager.getInstance().isValidPrefix(geometryIdPrefix.getText()))
 			geometry.setIdPrefix(geometryIdPrefix.getText().trim());
 		else {
 			geometry.setIdPrefix(DefaultGMLIdManager.getInstance().getDefaultPrefix());
