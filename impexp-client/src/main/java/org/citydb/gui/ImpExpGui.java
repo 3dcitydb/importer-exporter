@@ -34,6 +34,7 @@ import org.citydb.config.gui.window.MainWindow;
 import org.citydb.config.gui.window.WindowSize;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.global.LanguageType;
+import org.citydb.config.project.global.LogLevel;
 import org.citydb.database.connection.DatabaseConnectionPool;
 import org.citydb.event.Event;
 import org.citydb.event.EventDispatcher;
@@ -91,6 +92,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
@@ -149,22 +151,21 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 
 	public void invoke(JAXBContext jaxbProjectContext,
 			JAXBContext jaxbGuiContext,
-			List<String> errMsgs) {		
+			Map<LogLevel, String> logMessages) {
 		this.jaxbProjectContext = jaxbProjectContext;
 		this.jaxbGuiContext = jaxbGuiContext;		
 		
 		// init GUI elements
-		initGui();
+		initGui(logMessages);
 		doTranslation();
 		showWindow();
 
 		// initConsole;
 		initConsole();
 
-		if (!errMsgs.isEmpty()) {
-			for (String msg : errMsgs)
-				log.error(msg);
-			log.info("Project settings initialized using default values.");
+		if (!logMessages.isEmpty()) {
+			for (Map.Entry<LogLevel, String> entry : logMessages.entrySet())
+				log.log(entry.getKey(), entry.getValue());
 		}
 
 		// log exceptions for disabled ADE extensions
@@ -179,7 +180,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		showWindow();
 	}
 
-	private void initGui() {
+	private void initGui(Map<LogLevel, String> logMessages) {
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
 		activePosition = 0;
@@ -219,8 +220,15 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		views.add(pluginManager.getInternalPlugin(CityGMLExportPlugin.class).getView());
 		views.add(pluginManager.getInternalPlugin(KMLExportPlugin.class).getView());
 
-		for (ViewExtension viewExtension : pluginManager.getExternalPlugins(ViewExtension.class))
-			views.add(viewExtension.getView());
+		for (ViewExtension viewExtension : pluginManager.getExternalPlugins(ViewExtension.class)) {
+			View view = viewExtension.getView();
+			if (view == null || view.getViewComponent() == null) {
+				logMessages.put(LogLevel.ERROR, "Failed to get view component from plugin " + viewExtension.getClass().getName() + ".");
+				continue;
+			}
+
+			views.add(view);
+		}
 
 		views.add(databasePlugin.getView());
 		views.add(preferencesPlugin.getView());

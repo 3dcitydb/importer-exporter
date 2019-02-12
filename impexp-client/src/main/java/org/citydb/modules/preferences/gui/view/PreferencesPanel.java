@@ -41,6 +41,7 @@ import org.citydb.modules.kml.KMLExportPlugin;
 import org.citydb.modules.preferences.gui.preferences.GeneralPreferences;
 import org.citydb.modules.preferences.gui.preferences.RootPreferencesEntry;
 import org.citydb.plugin.PluginManager;
+import org.citydb.plugin.extension.preferences.Preferences;
 import org.citydb.plugin.extension.preferences.PreferencesEntry;
 import org.citydb.plugin.extension.preferences.PreferencesEvent;
 import org.citydb.plugin.extension.preferences.PreferencesExtension;
@@ -60,7 +61,7 @@ import java.awt.event.ActionListener;
 
 @SuppressWarnings("serial")
 public class PreferencesPanel extends JPanel implements TreeSelectionListener {
-	private final Logger LOG = Logger.getInstance();
+	private final Logger log = Logger.getInstance();
 	private final ImpExpGui mainView;
 	private final PluginManager pluginManager;
 	private final Config config;
@@ -117,7 +118,7 @@ public class PreferencesPanel extends JPanel implements TreeSelectionListener {
 				if (activeEntry != null) {
 					boolean success = activeEntry.handleEvent(PreferencesEvent.APPLY_SETTINGS);
 					if (success)
-						LOG.info("Settings successfully applied.");
+						log.info("Settings successfully applied.");
 				}
 			}
 		});
@@ -129,8 +130,15 @@ public class PreferencesPanel extends JPanel implements TreeSelectionListener {
 		rootNode.add(pluginManager.getInternalPlugin(CityGMLExportPlugin.class).getPreferences().getPreferencesEntry());
 		rootNode.add(pluginManager.getInternalPlugin(KMLExportPlugin.class).getPreferences().getPreferencesEntry());
 
-		for (PreferencesExtension extension : pluginManager.getExternalPlugins(PreferencesExtension.class))
-			rootNode.add(extension.getPreferences().getPreferencesEntry());	
+		for (PreferencesExtension extension : pluginManager.getExternalPlugins(PreferencesExtension.class)) {
+			Preferences preferences = extension.getPreferences();
+			if (preferences == null || preferences.getPreferencesEntry() == null) {
+				log.error("Failed to get preference entry from plugin " + extension.getClass().getName() + ".");
+				continue;
+			}
+
+			rootNode.add(preferences.getPreferencesEntry());
+		}
 
 		rootNode.add(pluginManager.getInternalPlugin(DatabasePlugin.class).getPreferences().getPreferencesEntry());
 		rootNode.add(generalPreferences.getPreferencesEntry());

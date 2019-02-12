@@ -29,9 +29,6 @@ package org.citydb.plugin;
 
 import org.citydb.log.Logger;
 import org.citydb.plugin.extension.Extension;
-import org.citydb.plugin.extension.menu.MenuExtension;
-import org.citydb.plugin.extension.preferences.PreferencesExtension;
-import org.citydb.plugin.extension.view.ViewExtension;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -76,34 +73,7 @@ public class PluginManager {
                 return;
         }
 
-        try {
-            validate(plugin);
-            externalPlugins.add(plugin);
-        } catch (PluginException e) {
-            log.warn("Failed to load plugin " + plugin.getClass().getName());
-            log.warn("Cause: " + e.getMessage());
-        }
-    }
-
-    private void validate(Plugin plugin) throws PluginException {
-        if (plugin instanceof ViewExtension) {
-            ViewExtension viewExtension = (ViewExtension) plugin;
-            if (viewExtension.getView() == null || viewExtension.getView().getViewComponent() == null)
-                throw new PluginException("The plugins lacks a valid view component");
-        }
-
-        if (plugin instanceof PreferencesExtension) {
-            PreferencesExtension preferencesExtension = (PreferencesExtension) plugin;
-            if (preferencesExtension.getPreferences() == null
-                    || preferencesExtension.getPreferences().getPreferencesEntry() == null)
-                throw new PluginException("The plugins lacks a valid preference entry");
-        }
-
-        if (plugin instanceof MenuExtension) {
-            MenuExtension menuExtension = (MenuExtension) plugin;
-            if (menuExtension.getMenu() == null || menuExtension.getMenu().getMenuComponent() == null)
-                throw new PluginException("The plugins lacks a valid menu entry");
-        }
+        externalPlugins.add(plugin);
     }
 
     public List<InternalPlugin> getInternalPlugins() {

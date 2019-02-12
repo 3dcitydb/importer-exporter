@@ -36,6 +36,7 @@ import org.citydb.config.gui.Gui;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.Project;
 import org.citydb.config.project.global.LanguageType;
+import org.citydb.config.project.global.LogLevel;
 import org.citydb.config.project.global.Logging;
 import org.citydb.config.project.query.util.QueryWrapper;
 import org.citydb.database.DatabaseController;
@@ -91,8 +92,10 @@ import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.stream.Stream;
 
@@ -135,7 +138,7 @@ public class ImpExp {
 
 	private SplashScreen splashScreen;
 	private boolean useSplashScreen;
-	private List<String> errMsgs = new ArrayList<>();
+	private Map<LogLevel, String> logMessages = new HashMap<>();
 
 	public static void main(String[] args) {
 		new ImpExp().doMain(args);
@@ -410,8 +413,10 @@ public class ImpExp {
 				log.error(errMsg);
 				log.error("Aborting...");
 				System.exit(1);
-			} else
-				errMsgs.add(errMsg);
+			} else {
+				logMessages.put(LogLevel.ERROR, errMsg);
+				logMessages.put(LogLevel.INFO, "Project settings initialized using default values.");
+			}
 		} finally {
 			config.setProject(project);
 		}
@@ -515,7 +520,7 @@ public class ImpExp {
 
 			// initialize gui
 			printInfoMessage("Starting graphical user interface");
-			SwingUtilities.invokeLater(() -> mainView.invoke(projectContext, guiContext, errMsgs));
+			SwingUtilities.invokeLater(() -> mainView.invoke(projectContext, guiContext, logMessages));
 
 			try {
 				// clean up heap space
