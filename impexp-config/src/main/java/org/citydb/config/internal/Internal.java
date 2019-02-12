@@ -45,6 +45,7 @@ public class Internal {
 	private boolean transformCoordinates = false;
 	private boolean exportGlobalAppearances = false;
 	private boolean registerGmlIdInCache = false;
+	private boolean guiMode = false;
 
 	public String getCurrentLogPath() {
 		return currentLogPath;
@@ -127,4 +128,11 @@ public class Internal {
 		this.registerGmlIdInCache = registerGmlIdInCache;
 	}
 
+	public boolean isGUIMode() {
+		return guiMode;
+	}
+
+	public void setGUIMode(boolean guiMode) {
+		this.guiMode = guiMode;
+	}
 }

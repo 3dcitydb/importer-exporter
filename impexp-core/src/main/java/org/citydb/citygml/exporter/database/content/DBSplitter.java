@@ -224,14 +224,12 @@ public class DBSplitter {
 		// add hits counter and/or spatial extent
 		if (calculateNumberMatched || calculateExtent) {
 			Table table = new Table(select);
-			select = new Select();
+			select = new Select().addProjection(table.getColumn(MappingConstants.ID))
+					.addProjection(table.getColumn(MappingConstants.OBJECTCLASS_ID))
+					.addProjection(table.getColumn(MappingConstants.GMLID));
 
-			if (calculateNumberMatched) {
-				select.addProjection(table.getColumn(MappingConstants.ID))
-						.addProjection(table.getColumn(MappingConstants.OBJECTCLASS_ID))
-						.addProjection(table.getColumn(MappingConstants.GMLID))
-						.addProjection(new Function("count(1) over", "hits"));
-			}
+			if (calculateNumberMatched)
+				select.addProjection(new Function("count(1) over", "hits"));
 
 			if (calculateExtent)
 				select.addProjection(new Function(databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("geom_extent") +
