@@ -1,7 +1,7 @@
 Change Log
 ==========
 
-### 4.2 - tbd
+### 4.2 - 2019-02-13
 
 ##### Additions
 * Reworked Plugin API to support non-GUI plugins. [#78](https://github.com/3dcitydb/importer-exporter/pull/78)
@@ -20,7 +20,7 @@ Change Log
 * The CLI version of the Importer/Exporter now returns an exit code of 1 on failures.
 
 ##### Miscellaneous 
-* Updated citygml4j to 2.9.0.
+* Updated citygml4j to 2.9.1.
 
 ### 4.1 - 2019-01-09
 
