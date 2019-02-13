@@ -88,15 +88,19 @@ public class ProjectionFilter {
 		return genericAttributes;
 	}
 
+	public void addProperty(AbstractProperty property) {
+		if (properties == null)
+			properties = new HashSet<>();
+
+		properties.add(property);
+	}
+
 	public void addProperty(QName propertyName) throws FilterException {
 		AbstractProperty property = objectType.getProperty(propertyName.getLocalPart(), propertyName.getNamespaceURI(), true);
 		if (property == null)
 			throw new FilterException("'" + propertyName + "' is not a valid property of " + objectType + ".");
 
-		if (properties == null)
-			properties = new HashSet<>();
-
-		properties.add(property);
+		addProperty(property);
 	}
 
 	void addProperties(Set<AbstractProperty> properties) {
