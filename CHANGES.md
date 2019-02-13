@@ -1,6 +1,27 @@
 Change Log
 ==========
 
+### 4.2 - tbd
+
+##### Additions
+* Reworked Plugin API to support non-GUI plugins. [#78](https://github.com/3dcitydb/importer-exporter/pull/78)
+  * Added `CityGMLExportExtension` as a first non-GUI extension point for plugins. Using this extension, a plugin receives
+  and can process all CityGML features before they are written to the output file. Besides using XSLT stylesheets
+  for CityGML exports, this adds another way of having full control over the output.
+  * Due to the changes to the Plugin API, make sure to only use plugins built for this version.
+* Property projections can now also be defined for abstract feature types.
+* Added possibility to define a gml:id prefix for the UUIDs that are created during CityGML imports.
+* Added config options to control the writing of `gml:Envelope` elements on features and the root `CityModel`.
+* Added config options to define XML prefixes and schema locations for the CityGML output file.
+
+##### Fixes
+* Fixed broken feature type filter for CityGML imports. [#75](https://github.com/3dcitydb/importer-exporter/issues/75)
+* Fixed NPE in `GeometryConverter` when using affine transformations during CityGML imports. [#77](https://github.com/3dcitydb/importer-exporter/issues/77)
+* The CLI version of the Importer/Exporter now returns an exit code of 1 on failures.
+
+##### Miscellaneous 
+* Updated citygml4j to 2.9.0.
+
 ### 4.1 - 2019-01-09
 
 ##### Additions
