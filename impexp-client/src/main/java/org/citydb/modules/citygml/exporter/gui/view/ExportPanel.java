@@ -266,6 +266,7 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 
 		filterPanel.loadSettings();
 		filterPanel.showFilterDialog(useSimpleFilter);
+		switchFilterModeButton.setText(Language.I18N.getString(useSimpleFilter ? "filter.label.mode.xml" : "filter.label.mode.simple"));
 	}
 
 	public void setSettings() {
