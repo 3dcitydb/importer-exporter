@@ -55,6 +55,7 @@ import org.citydb.sqlbuilder.select.operator.comparison.ComparisonFactory;
 import org.citydb.sqlbuilder.select.operator.logical.LogicalOperationFactory;
 import org.citygml4j.model.module.gml.GMLCoreModule;
 import org.geotools.measure.Units;
+import org.geotools.resources.CRSUtilities;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import si.uom.SI;
@@ -215,7 +216,7 @@ public class SpatialOperatorBuilder {
 
 		try {
 			CoordinateReferenceSystem crs = databaseAdapter.getUtil().decodeDatabaseSrs(targetSrs);
-			srsUnit = crs.getCoordinateSystem().getAxis(0).getUnit();
+			srsUnit = CRSUtilities.getUnit(crs.getCoordinateSystem());
 		} catch (FactoryException e) {
 			// assume meter per default
 			srsUnit = SI.METRE;
