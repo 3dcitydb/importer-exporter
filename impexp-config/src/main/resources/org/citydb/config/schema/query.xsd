@@ -78,7 +78,7 @@
   <xs:complexType name="QueryType">
     <xs:sequence>
       <xs:element name="typeNames" type="FeatureTypeFilterType" minOccurs="0"/>
-      <xs:element name="propertyNames" type="PropertyProjectionFilterType" minOccurs="0"/>
+      <xs:element name="propertyNames" type="ProjectionFilterType" minOccurs="0"/>
       <xs:element ref="filter" minOccurs="0"/>
       <xs:element name="count" type="CounterFilterType" minOccurs="0"/>
       <xs:element name="lods" type="LodFilterType" minOccurs="0"/>
@@ -96,13 +96,13 @@
     </xs:sequence>
   </xs:complexType>
 
-  <xs:complexType name="PropertyProjectionFilterType">
+  <xs:complexType name="ProjectionFilterType">
     <xs:sequence>
-      <xs:element name="context" type="PropertyProjectionContextType" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="context" type="ProjectionContextType" minOccurs="0" maxOccurs="unbounded"/>
     </xs:sequence>
   </xs:complexType>
 
-  <xs:complexType name="PropertyProjectionContextType">
+  <xs:complexType name="ProjectionContextType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
         <xs:element name="propertyName" type="PropertyNameType"/>
@@ -110,7 +110,7 @@
       </xs:choice>
     </xs:sequence>
     <xs:attribute name="typeName" type="xs:QName" use="required"/>
-    <xs:attribute name="mode" type="PropertyProjectionModeType"/>
+    <xs:attribute name="mode" type="ProjectionModeType"/>
   </xs:complexType>
 
   <xs:simpleType name="PropertyNameType">
@@ -366,7 +366,10 @@
     <xs:complexContent>
       <xs:extension base="AbstractSpatialOperatorType">
         <xs:sequence>
-          <xs:element name="operand" type="BoundingBoxType" minOccurs="0"/>
+          <xs:choice minOccurs="0">
+            <xs:element name="operand" type="BoundingBoxType"/>
+            <xs:element ref="envelope"/>
+          </xs:choice>
         </xs:sequence>
       </xs:extension>
     </xs:complexContent>
@@ -673,7 +676,7 @@
     </xs:complexContent>
   </xs:complexType>
 
-  <xs:simpleType name="PropertyProjectionModeType">
+  <xs:simpleType name="ProjectionModeType">
     <xs:restriction base="xs:string">
       <xs:enumeration value="keep"/>
       <xs:enumeration value="remove"/>
