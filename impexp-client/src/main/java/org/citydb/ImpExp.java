@@ -222,13 +222,13 @@ public class ImpExp {
 				++commands;
 
 			if (commands == 0) {
-				System.out.println("Choose either command \"-import\", \"-export\", \"-kmlExport\", \"-validate\" or \"testConnection\" for shell version");
+				System.out.println("Choose either command \"-import\", \"-export\", \"-kmlExport\", \"-validate\" or \"-testConnection\" for shell version");
 				printUsage(parser, System.out);
 				System.exit(1);
 			}
 
 			if (commands > 1) {
-				System.out.println("Commands \"-import\", \"-export\", \"-kmlExport\", \"-validate\" and \"testConnection\" may not be mixed");
+				System.out.println("Commands \"-import\", \"-export\", \"-kmlExport\", \"-validate\" and \"-testConnection\" may not be mixed");
 				printUsage(parser, System.out);
 				System.exit(1);
 			}

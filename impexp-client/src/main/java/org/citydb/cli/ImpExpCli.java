@@ -27,6 +27,7 @@
  */
 package org.citydb.cli;
 
+import org.citydb.ImpExpException;
 import org.citydb.citygml.exporter.CityGMLExportException;
 import org.citydb.citygml.exporter.controller.Exporter;
 import org.citydb.citygml.importer.CityGMLImportException;
@@ -77,20 +78,15 @@ public class ImpExpCli {
 		schemaMapping = ObjectRegistry.getInstance().getSchemaMapping();
 	}
 
-	public boolean doImport(String importFiles) {
+	public boolean doImport(String importFiles) throws ImpExpException {
 		// prepare list of files to be validated
 		List<Path> files = getFiles(importFiles);
-		if (files.size() == 0) {
-			log.error("Invalid list of files to be imported");
-			log.error("Aborting...");
-			return false;
-		}
+		if (files.size() == 0)
+			throw new ImpExpException("Invalid list of files to be imported.");
 
 		initDBPool();
-		if (!dbPool.isConnected()) {
-			log.error("Aborting...");
-			return false;
-		}
+		if (!dbPool.isConnected())
+			throw new ImpExpException("Connection to database could not be established.");
 
 		log.info("Initializing database import...");
 
@@ -102,12 +98,7 @@ public class ImpExpCli {
 		try {
 			success = importer.doProcess();
 		} catch (CityGMLImportException e) {
-			log.error("Aborting due to an internal error: " + e.getMessage());
-			Throwable cause = e.getCause();
-			while (cause != null) {
-				log.error(cause.getClass().getTypeName() + ": " + cause.getMessage());
-				cause = cause.getCause();
-			}
+			throw new ImpExpException("CityGML import failed due to an internal error.", e);
 		} finally {
 			try {
 				eventDispatcher.flushEvents();
@@ -126,14 +117,11 @@ public class ImpExpCli {
 		return success;
 	}
 
-	public boolean doValidate(String validateFiles) {
+	public boolean doValidate(String validateFiles) throws ImpExpException {
 		// prepare list of files to be validated
 		List<Path> files = getFiles(validateFiles);
-		if (files.size() == 0) {
-			log.error("Invalid list of files to be validated");
-			log.error("Aborting...");
-			return false;
-		}
+		if (files.size() == 0)
+			throw new ImpExpException("Invalid list of files to be validated.");
 
 		log.info("Initializing XML validation...");
 
@@ -156,15 +144,12 @@ public class ImpExpCli {
 		return success;
 	}
 
-	public boolean doExport(String exportFile) {
-		if (!setExportFile(exportFile))
-			return false;
+	public boolean doExport(String exportFile) throws ImpExpException {
+		setExportFile(exportFile);
 
 		initDBPool();
-		if (!dbPool.isConnected()) {
-			log.error("Aborting...");
-			return false;
-		}
+		if (!dbPool.isConnected())
+			throw new ImpExpException("Connection to database could not be established.");
 
 		log.info("Initializing database export...");
 
@@ -175,12 +160,7 @@ public class ImpExpCli {
 		try {
 			success = exporter.doProcess();
 		} catch (CityGMLExportException e) {
-			log.error(e.getMessage());
-			Throwable cause = e.getCause();
-			while (cause != null) {
-				log.error(cause.getClass().getTypeName() + ": " + cause.getMessage());
-				cause = cause.getCause();
-			}
+			throw new ImpExpException("CityGML export failed due to an internal error.", e);
 		} finally {
 			try {
 				eventDispatcher.flushEvents();
@@ -199,15 +179,12 @@ public class ImpExpCli {
 		return success;
 	}
 
-	public boolean doKmlExport(String kmlExportFile) {
-		if (!setExportFile(kmlExportFile))
-			return false;
+	public boolean doKmlExport(String kmlExportFile) throws ImpExpException {
+		setExportFile(kmlExportFile);
 
 		initDBPool();
-		if (!dbPool.isConnected()) {
-			log.error("Aborting...");
-			return false;
-		}
+		if (!dbPool.isConnected())
+			throw new ImpExpException("Connection to database could not be established.");
 
 		log.info("Initializing database export...");
 
@@ -218,12 +195,7 @@ public class ImpExpCli {
 		try {
 			success = kmlExporter.doProcess();
 		} catch (KmlExportException e) {
-			log.error(e.getMessage());
-			Throwable cause = e.getCause();
-			while (cause != null) {
-				log.error(cause.getClass().getTypeName() + ": " + cause.getMessage());
-				cause = cause.getCause();
-			}
+			throw new ImpExpException("KML/COLLADA/glTF export failed due to an internal error.", e);
 		} finally {
 			try {
 				eventDispatcher.flushEvents();
@@ -242,37 +214,28 @@ public class ImpExpCli {
 		return success;
 	}
 
-	private boolean setExportFile(String kmlExportFile) {
+	private void setExportFile(String exportFile) throws ImpExpException {
 		try {
-			config.getInternal().setExportFile(new File(kmlExportFile).toPath());
+			config.getInternal().setExportFile(new File(exportFile).toPath());
 		} catch (InvalidPathException e) {
-			log.error("'" + kmlExportFile + "' is not a valid file.");
-			log.error("Aborting...");
-			return false;
+			throw new ImpExpException("'" + exportFile + "' is not a valid file.", e);
 		}
-
-		return true;
 	}
 
-	public boolean doTestConnection() {
+	public boolean doTestConnection() throws ImpExpException {
 		initDBPool();
-		if (!dbPool.isConnected()) {
-			log.error("Aborting...");
-			return false;
-		}
+		if (!dbPool.isConnected())
+			throw new ImpExpException("Connection to database could not be established");
 
 		dbPool.disconnect();
 		return true;
 	}
 
-	private void initDBPool() {	
+	private void initDBPool() throws ImpExpException {
 		// check active connection
 		DBConnection conn = config.getProject().getDatabase().getActiveConnection();
-
-		if (conn == null) {
-			log.error("No valid database connection found in project settings.");
-			return;
-		}
+		if (conn == null)
+			throw new ImpExpException("No valid database connection found in project settings.");
 
 		log.info("Connecting to database profile '" + conn.getDescription() + "'.");
 		conn.setInternalPassword(conn.getPassword());
@@ -296,11 +259,11 @@ public class ImpExpCli {
 			}
 
 		} catch (DatabaseConfigurationException | SQLException e) {
-			log.error("Connection to database could not be established: " + e.getMessage());
+			throw new ImpExpException("Connection to database could not be established.", e);
 		} catch (DatabaseVersionException e) {
 			log.error(e.getMessage());
 			log.error("Supported versions are '" + Util.collection2string(e.getSupportedVersions(), ", ") + "'.");
-			log.error("Connection to database could not be established.");
+			throw new ImpExpException("Connection to database could not be established.");
 		}
 	}
 
