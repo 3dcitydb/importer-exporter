@@ -478,7 +478,7 @@ public class ImpExp {
 		// create pid file
 		if (pidFile != null) {
 			try {
-				log.debug("Creating PID file '" + pidFile.normalize().toAbsolutePath() + "'.");
+				log.debug("Creating PID file '" + pidFile.normalize().toAbsolutePath() + "'");
 				PidFile.create(pidFile, true);
 			} catch (IOException e) {
 				throw new ImpExpException("Failed to create PID file.", e);
