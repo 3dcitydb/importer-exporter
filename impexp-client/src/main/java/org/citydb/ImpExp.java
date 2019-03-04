@@ -67,6 +67,7 @@ import org.citydb.registry.ObjectRegistry;
 import org.citydb.util.ClientConstants;
 import org.citydb.util.CoreConstants;
 import org.citydb.util.InternalProxySelector;
+import org.citydb.util.PidFile;
 import org.citydb.util.Util.URLClassLoader;
 import org.citygml4j.CityGMLContext;
 import org.citygml4j.builder.jaxb.CityGMLBuilder;
@@ -78,11 +79,10 @@ import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 import org.kohsuke.args4j.ParserProperties;
 
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
-import java.awt.Color;
-import java.awt.Toolkit;
+import java.awt.*;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.net.ProxySelector;
@@ -128,6 +128,9 @@ public class ImpExp {
 	@Option(name="-testConnection", usage="test whether a database connection can be established")
 	private boolean testConnection;
 
+	@Option(name="-pid-file", usage="create file containing the current process ID", metaVar="fileName")
+	private Path pidFile;
+
 	@Option(name="-noSplash")
 	private boolean noSplash;
 
@@ -141,7 +144,13 @@ public class ImpExp {
 	private Map<LogLevel, String> logMessages = new HashMap<>();
 
 	public static void main(String[] args) {
-		new ImpExp().doMain(args);
+		ImpExp impExp = new ImpExp();
+
+		try {
+			impExp.doMain(args);
+		} catch (ImpExpException e) {
+			impExp.logErrorAndExit(e);
+		}
 	}
 
 	public void doMain(String[] args, Plugin... plugins) {
@@ -150,7 +159,11 @@ public class ImpExp {
 				pluginManager.registerExternalPlugin(plugin);
 		}
 
-		doMain(args);
+		try {
+			doMain(args);
+		} catch (ImpExpException e) {
+			logErrorAndExit(e);
+		}
 	}
 	
 	public void doMain(String[] args, ADEExtension... extensions) {
@@ -162,11 +175,15 @@ public class ImpExp {
 				adeManager.loadExtension(extension);
 			}
 		}
-		
-		doMain(args);
+
+		try {
+			doMain(args);
+		} catch (ImpExpException e) {
+			logErrorAndExit(e);
+		}
 	}
 
-	private void doMain(String[] args) {
+	private void doMain(String[] args) throws ImpExpException {
 		CmdLineParser parser = new CmdLineParser(this, ParserProperties.defaults().withUsageWidth(80));
 
 		try {
@@ -254,8 +271,7 @@ public class ImpExp {
 				log.info("Initializing plugin " + plugin.getClass().getName());
 
 		} catch (IOException e) {
-			log.error("Failed to initialize plugin support: " + e.getMessage());
-			System.exit(1);
+			throw new ImpExpException("Failed to initialize plugin support.", e);
 		}
 
 		// get plugin config classes
@@ -267,9 +283,7 @@ public class ImpExp {
 			try {
 				projectConfigClasses.add(plugin.getClass().getMethod("getConfig").getReturnType());
 			} catch (SecurityException | NoSuchMethodException e) {
-				log.error("Failed to instantiate config for plugin " + plugin.getClass().getName());
-				log.error("Please check the following error message: " + e.getMessage());
-				System.exit(1);
+				throw new ImpExpException("Failed to instantiate config for plugin " + plugin.getClass().getName() + ".", e);
 			}
 		}
 
@@ -303,10 +317,7 @@ public class ImpExp {
 			projectContext = JAXBContext.newInstance(projectConfigClasses.toArray(new Class<?>[]{}));
 			guiContext = JAXBContext.newInstance(Gui.class);
 		} catch (JAXBException e) {
-			log.error("Application environment could not be initialized. Please check the following stack trace.");
-			log.error("Aborting...");
-			e.printStackTrace();
-			System.exit(1);
+			throw new ImpExpException("Application environment could not be initialized.", e);
 		}
 		
 		// read database schema mapping and register with ObjectRegistry
@@ -316,10 +327,7 @@ public class ImpExp {
 			schemaMapping = SchemaMappingUtil.getInstance().unmarshal(CoreConstants.CITYDB_SCHEMA_MAPPING_FILE);
 			registry.setSchemaMapping(schemaMapping);
 		} catch (JAXBException | SchemaMappingException | SchemaMappingValidationException e) {
-			log.error("Failed to process 3DCityDB schema mapping file.");
-			log.error(e.getClass().getTypeName() + ": " + e.getMessage());
-			log.error("Aborting...");
-			System.exit(1);
+			throw new ImpExpException("Failed to process 3DCityDB schema mapping file.", e);
 		}
 
 		// load ADE extensions	
@@ -342,13 +350,10 @@ public class ImpExp {
 			// exit shell mode if not all extensions could be loaded successfully
 			if (shell && adeManager.hasExceptions()) {
 				adeManager.logExceptions();
-				log.error("Aborting...");
-				System.exit(1);
+				throw new ImpExpException("Failed to load ADE extensions.");
 			}
 		} catch (IOException e) {
-			log.error("Failed to initialize ADE extension support: " + e.getMessage());
-			log.error("Aborting...");
-			System.exit(1);
+			throw new ImpExpException("Failed to initialize ADE extension support.", e);
 		}
 		
 		// load CityGML and ADE context
@@ -362,10 +367,7 @@ public class ImpExp {
 			CityGMLBuilder cityGMLBuilder = context.createCityGMLBuilder(externalLoader);			
 			registry.setCityGMLBuilder(cityGMLBuilder);
 		} catch (CityGMLBuilderException | ADEException e) {
-			log.error("CityGML context could not be initialized");
-			log.error("Aborting...");
-			e.printStackTrace();
-			System.exit(1);
+			throw new ImpExpException("CityGML context could not be initialized.", e);
 		}
 		
 		// initialize config
@@ -375,13 +377,9 @@ public class ImpExp {
 				configFile = ClientConstants.WORKING_DIR.resolve(configFile);
 
 			if (!Files.exists(configFile)) {
-				log.error("Failed to find config file '" + configFile + "'");
-				log.error("Aborting...");
-				System.exit(1);
+				throw new ImpExpException("Failed to find config file '" + configFile + "'.");
 			} else if (!Files.isReadable(configFile) || !Files.isWritable(configFile)) {
-				log.error("Insufficient access rights to config file '" + configFile + "'");
-				log.error("Aborting...");
-				System.exit(1);
+				throw new ImpExpException("Insufficient access rights to config file '" + configFile + "'.");
 			}
 		} else
 			configFile = CoreConstants.IMPEXP_DATA_DIR
@@ -404,15 +402,13 @@ public class ImpExp {
 		try {
 			Object object = ConfigUtil.unmarshal(configFile.toFile(), projectContext);
 			if (!(object instanceof Project))
-				throw new JAXBException("Failed to interpret project file");
+				throw new JAXBException("Failed to interpret project file.");
 			
 			project = (Project)object;
 		} catch (IOException | JAXBException e) {
-			String errMsg = "Failed to read project settings file '" + configFile + '\'';
+			String errMsg = "Failed to read project settings file '" + configFile + "\'.";
 			if (shell) {
-				log.error(errMsg);
-				log.error("Aborting...");
-				System.exit(1);
+				throw new ImpExpException(errMsg);
 			} else {
 				logMessages.put(LogLevel.ERROR, errMsg);
 				logMessages.put(LogLevel.INFO, "Project settings initialized using default values.");
@@ -438,10 +434,7 @@ public class ImpExp {
 			try {
 				PluginConfigController.getInstance(config).setOrCreatePluginConfig(plugin);
 			} catch (PluginException e) {
-				log.error("Failed to load config for plugin " + plugin.getClass().getName());
-				log.error("Aborting...");
-				e.printStackTrace();
-				System.exit(1);
+				throw new ImpExpException("Failed to load config for plugin " + plugin.getClass().getName() + ".", e);
 			}
 		}
 
@@ -480,6 +473,16 @@ public class ImpExp {
 			}
 
 			log.writeToFile(msg.toString());
+		}
+
+		// create pid file
+		if (pidFile != null) {
+			try {
+				log.debug("Creating PID file '" + pidFile.normalize().toAbsolutePath() + "'.");
+				PidFile.create(pidFile, true);
+			} catch (IOException e) {
+				throw new ImpExpException("Failed to create PID file.", e);
+			}
 		}
 
 		// init internationalized labels 
@@ -554,7 +557,7 @@ public class ImpExp {
 		}
 	}
 
-	private void setLookAndFeel() {
+	private void setLookAndFeel() throws ImpExpException {
 		try {
 			// set look & feel
 			javax.swing.UIManager.setLookAndFeel(javax.swing.UIManager.getSystemLookAndFeelClassName());
@@ -562,11 +565,15 @@ public class ImpExp {
 				OSXAdapter.setDockIconImage(Toolkit.getDefaultToolkit().getImage(ImpExp.class.getResource("/org/citydb/gui/images/common/logo_small.png")));
 				System.setProperty("apple.laf.useScreenMenuBar", "true");
 			}
-
-		} catch(Exception e) {
-			e.printStackTrace();
-			System.exit(1);
+		} catch (Exception e) {
+			throw new ImpExpException("Failed to initialize user interface.", e);
 		}
+	}
+
+	private void logErrorAndExit(ImpExpException e) {
+		log.logStackTrace(e);
+		log.error("Aborting...");
+		System.exit(1);
 	}
 
 	public void printInfoMessage(String message) {
