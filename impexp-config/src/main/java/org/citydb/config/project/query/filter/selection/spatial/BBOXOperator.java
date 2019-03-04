@@ -29,6 +29,8 @@ package org.citydb.config.project.query.filter.selection.spatial;
 
 import org.citydb.config.geometry.BoundingBox;
 
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElements;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
@@ -36,7 +38,11 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name="BBOXOperatorType", propOrder={
 		"operand"
 })
-public class BBOXOperator extends AbstractSpatialOperator {	
+public class BBOXOperator extends AbstractSpatialOperator {
+	@XmlElements({
+			@XmlElement(name = "operand", type = BoundingBox.class),
+			@XmlElement(name = "envelope", type = BoundingBox.class)
+	})
 	private BoundingBox operand;
 
 	public boolean isSetEnvelope() {
