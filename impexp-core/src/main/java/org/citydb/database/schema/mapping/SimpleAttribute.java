@@ -46,6 +46,8 @@ public class SimpleAttribute extends AbstractAttribute {
 	protected String column;
 	@XmlAttribute(required = true)
 	protected SimpleType type;
+	@XmlAttribute
+	protected Boolean requiresPrefix;
 	
 	@XmlTransient
 	protected AbstractType<?> complexType;
@@ -130,7 +132,19 @@ public class SimpleAttribute extends AbstractAttribute {
 	public void setType(SimpleType type) {
 		this.type = type;
 	}
-	
+
+	public boolean requiresPrefix() {
+		return requiresPrefix != null && requiresPrefix;
+	}
+
+	public boolean isSetRequiresPrefix() {
+		return requiresPrefix!= null;
+	}
+
+	public void setRequiresPrefix(boolean requiresPrefix) {
+		this.requiresPrefix = requiresPrefix ? true : null;
+	}
+
 	public String getName() {
 		if (name == null)
 			name = path.startsWith("@") ? path.substring(1, path.length()) : path;
@@ -146,6 +160,9 @@ public class SimpleAttribute extends AbstractAttribute {
 	@Override
 	protected void validate(SchemaMapping schemaMapping, Object parent) throws SchemaMappingException {
 		super.validate(schemaMapping, parent);
+
+		if (requiresPrefix() && !path.startsWith("@"))
+			throw new SchemaMappingException("The attribute 'requiresPrefix' shall only be used for XML attributes.");
 		
 		if (parent instanceof AbstractType<?>)
 			complexType = (AbstractType<?>)parent;

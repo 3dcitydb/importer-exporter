@@ -75,12 +75,7 @@ public final class SimpleAttributeNode extends AbstractNode<SimpleAttribute> {
 
 		if (pathElement.getPath().startsWith("@")) {
 			builder.append("@");
-
-			if (removeAttributePrefixes 
-					&& parent != null 
-					&& parent.getPathElement().getSchema() == pathElement.getSchema()
-					&& !name.equals("id"))
-				usePrefix = false;
+			usePrefix = !removeAttributePrefixes || pathElement.requiresPrefix();
 		}
 
 		if (usePrefix)

@@ -148,7 +148,7 @@
   <objectTypes>
     <!-- GML module -->
     <objectType id="AbstractGMLType" path="_GML" table="cityobject" objectClassId="1" schema="gml" abstract="true">
-      <attribute path="@id" column="gmlid" type="string" schema="gml"/>
+      <attribute path="@id" column="gmlid" type="string" requiresPrefix="true" schema="gml"/>
       <attribute path="description" column="description" type="string" schema="gml"/>
       <complexAttribute path="name" schema="gml">
         <attribute path="." column="name" type="string" schema="gml"/>
@@ -162,7 +162,7 @@
   <featureTypes>
     <!-- GML module -->
     <featureType id="AbstractFeatureType" path="_Feature" table="cityobject" schema="gml" objectClassId="2" abstract="true">
-      <attribute path="@id" column="gmlid" type="string" schema="gml"/>
+      <attribute path="@id" column="gmlid" type="string" requiresPrefix="true" schema="gml"/>
       <attribute path="description" column="description" type="string" schema="gml"/>
       <complexAttribute path="name" schema="gml">
         <attribute path="." column="name" type="string" schema="gml"/>
@@ -1620,7 +1620,7 @@
 
     <!-- Appearance module -->
     <featureType id="AppearanceType" path="Appearance" table="appearance" objectClassId="50" schema="app">
-      <attribute path="@id" column="gmlid" type="string" schema="gml"/>
+      <attribute path="@id" column="gmlid" type="string" requiresPrefix="true" schema="gml"/>
       <attribute path="description" column="description" type="string" schema="gml"/>
       <complexAttribute path="name" schema="gml">
         <attribute path="." column="name" type="string" schema="gml"/>
@@ -1639,7 +1639,7 @@
     </featureType>
 
     <featureType id="AbstractSurfaceDataType" path="_SurfaceData" table="surface_data" objectClassId="51" schema="app" abstract="true">
-      <attribute path="@id" column="gmlid" type="string" schema="gml"/>
+      <attribute path="@id" column="gmlid" type="string" requiresPrefix="true" schema="gml"/>
       <attribute path="description" column="description" type="string" schema="gml"/>
       <complexAttribute path="name" schema="gml">
         <attribute path="." column="name" type="string" schema="gml"/>
@@ -1692,7 +1692,7 @@
 
     <!-- 3DCityDB ADE module -->
     <featureType id="AddressType" path="Address" table="address" objectClassId="58" schema="core">
-      <attribute path="@id" column="gmlid" type="string" schema="gml"/>
+      <attribute path="@id" column="gmlid" type="string" requiresPrefix="true" schema="gml"/>
       <geometryProperty path="multiPoint" inlineColumn="multi_point" type="MultiPoint" schema="core"/>
       <attribute path="street" column="street" type="string" schema="citydb"/>
       <attribute path="houseNumber" column="house_number" type="string" schema="citydb"/>
