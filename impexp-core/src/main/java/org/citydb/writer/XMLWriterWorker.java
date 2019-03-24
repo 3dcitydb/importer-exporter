@@ -53,16 +53,6 @@ public class XMLWriterWorker extends Worker<SAXEventBuffer> {
 	@Override
 	public void interrupt() {
 		shouldRun = false;
-
-		if (runLock.tryLock()) {
-			try {
-				saxWriter.flush();
-			} catch (SAXException e) {
-				eventDispatcher.triggerSyncEvent(new InterruptEvent("Failed to write XML content.", LogLevel.ERROR, e, eventChannel, this));
-			} finally {
-				runLock.unlock();
-			}
-		}
 	}
 
 	@Override
