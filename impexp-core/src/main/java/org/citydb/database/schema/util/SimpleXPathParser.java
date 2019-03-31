@@ -213,16 +213,16 @@ public class SimpleXPathParser {
 
 	private Object evaluatePredicateToken(String token, NamespaceContext namespaceContext) throws XPathException, InvalidSchemaPathException {
 		token = token.trim();
-		int index = -1;
+		int index;
 
 		if ((index = token.indexOf(" and ")) != -1)
-			return evaluateLogicalExpr(token.substring(0, index), token.substring(index + 5, token.length()), LogicalPredicateName.AND, namespaceContext);
+			return evaluateLogicalExpr(token.substring(0, index), token.substring(index + 5), LogicalPredicateName.AND, namespaceContext);
 
 		else if ((index = token.indexOf(" or ")) != -1)
-			return evaluateLogicalExpr(token.substring(0, index), token.substring(index + 4, token.length()), LogicalPredicateName.OR, namespaceContext);
+			return evaluateLogicalExpr(token.substring(0, index), token.substring(index + 4), LogicalPredicateName.OR, namespaceContext);
 
 		else if ((index = token.indexOf("=")) != -1)
-			return evaluateComparisonExpr(token.substring(0, index), token.substring(index + 1, token.length()), "=", namespaceContext);
+			return evaluateComparisonExpr(token.substring(0, index), token.substring(index + 1), "=", namespaceContext);
 
 		else {
 			// test for context item expression
@@ -281,8 +281,11 @@ public class SimpleXPathParser {
 		QName name = getQName(prefix, localPart, namespaceContext);
 		AbstractProperty property = findProperty(name, isAttribute);
 
-		if (property.getElementType() == PathElementType.COMPLEX_ATTRIBUTE)
-			property = getSimpleAttribute((ComplexAttribute)property);
+		if (property.getElementType() == PathElementType.COMPLEX_ATTRIBUTE) {
+			property = getSimpleAttribute((ComplexAttribute) property);
+			if (property == null)
+				throw new XPathException("Failed to map node '" + name + "' to a simple attribute.");
+		}
 
 		if (property.getElementType() != PathElementType.SIMPLE_ATTRIBUTE)
 			throw new InvalidSchemaPathException("'" + name + "' is not a valid property element of " + schemaPath.getLastNode());
