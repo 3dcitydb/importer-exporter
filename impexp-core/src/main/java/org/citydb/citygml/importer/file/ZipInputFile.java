@@ -66,8 +66,7 @@ public class ZipInputFile extends AbstractArchiveInputFile {
 
     @Override
     public void close() throws IOException {
-        if (fileSystem != null && fileSystem.isOpen())
-            fileSystem.close();
+        // nothing to do here
     }
 
     private FileSystem getFileSystem() {
