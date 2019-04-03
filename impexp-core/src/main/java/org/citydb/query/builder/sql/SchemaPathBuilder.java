@@ -83,8 +83,8 @@ import org.citydb.sqlbuilder.select.projection.Function;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
 import java.util.Set;
-import java.util.Stack;
 
 public class SchemaPathBuilder {
 	private final AbstractSQLAdapter sqlAdapter;
@@ -92,7 +92,7 @@ public class SchemaPathBuilder {
 	private final BuildProperties buildProperties;
 	private final DefaultAliasGenerator aliasGenerator;
 
-	private Stack<HashMap<String, Table>> tableContext;
+	private Map<String, Table> tableContext;
 	private Table currentTable;
 	private AbstractNode<?> currentNode;
 	private boolean matchCase;
@@ -126,7 +126,7 @@ public class SchemaPathBuilder {
 		SQLQueryContext queryContext = new SQLQueryContext(select);
 		aliasGenerator.reset();
 
-		tableContext = new Stack<>();
+		tableContext = new HashMap<>();
 		currentTable = new Table(head.getPathElement().getTable(), schemaName, aliasGenerator);
 		currentNode = head;
 
@@ -151,8 +151,8 @@ public class SchemaPathBuilder {
 			case COMPLEX_TYPE:
 				AbstractType<?> type = (AbstractType<?>)pathElement;
 				if (type.isSetTable()) {			
-					tableContext.push(new HashMap<>());
-					tableContext.peek().put(currentTable.getName(), currentTable);
+					tableContext.clear();
+					tableContext.put(currentTable.getName(), currentTable);
 
 					// correct table context in case of ADE subtypes
 					if (currentNode != head && !type.getTable().equals(currentTable.getName()))
@@ -357,9 +357,6 @@ public class SchemaPathBuilder {
 			JoinTable joinTable = (JoinTable)abstractJoin;
 			Table fromTable = currentTable;
 
-			tableContext.push(new HashMap<>());
-			tableContext.peek().put(currentTable.getName(), currentTable);
-
 			// join intermediate table
 			Join join = joinTable.getJoin();
 			addJoin(select, join.getToColumn(), joinTable.getTable(), join.getFromColumn(), join.getConditions(), true);
@@ -376,7 +373,7 @@ public class SchemaPathBuilder {
 				org.citydb.sqlbuilder.select.join.Join candidate = iter.previous();
 				if (candidate.getToColumn().getTable() == currentTable) {
 					currentTable = candidate.getFromColumn().getTable();
-					tableContext.peek().put(currentTable.getName(), currentTable);
+					tableContext.put(currentTable.getName(), currentTable);
 					return;
 				}
 			}
@@ -388,7 +385,7 @@ public class SchemaPathBuilder {
 	private void addJoin(Select select, String fromColumn, String joinTable, String toColumn, List<Condition> conditions, boolean force) throws QueryBuildException {
 		// check whether we already have joined the target table
 		if (!force && !currentTable.getName().equals(joinTable)) {
-			Table toTable = tableContext.peek().get(joinTable);
+			Table toTable = tableContext.get(joinTable);
 			if (toTable != null) {
 				currentTable = toTable;
 				return;
@@ -450,11 +447,11 @@ public class SchemaPathBuilder {
 		}
 
 		// update tableContext and current fromTable pointer
-		tableContext.peek().put(toTable.getName(), toTable);
+		tableContext.put(toTable.getName(), toTable);
 		currentTable = toTable;
 	}
 	
-	protected AbstractSQLLiteral<?> convertToSQLLiteral(String value, SimpleType type) throws QueryBuildException {
+	AbstractSQLLiteral<?> convertToSQLLiteral(String value, SimpleType type) throws QueryBuildException {
 		AbstractSQLLiteral<?> literal = null;
 
 		switch (type) {
