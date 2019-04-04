@@ -78,6 +78,7 @@ import org.citydb.sqlbuilder.select.join.JoinFactory;
 import org.citydb.sqlbuilder.select.operator.comparison.ComparisonFactory;
 import org.citydb.sqlbuilder.select.operator.comparison.ComparisonName;
 import org.citydb.sqlbuilder.select.operator.logical.BinaryLogicalOperator;
+import org.citydb.sqlbuilder.select.operator.logical.LogicalOperationFactory;
 import org.citydb.sqlbuilder.select.operator.logical.LogicalOperationName;
 import org.citydb.sqlbuilder.select.projection.Function;
 
@@ -136,8 +137,11 @@ public class SchemaPathBuilder {
 			processNode(pathElement, head, select);
 
 			// translate predicate to where-conditions
-			if (currentNode.isSetPredicate())
-				select.addSelection(evaluatePredicatePath(select, pathElement, currentNode.getPredicate(), matchCase));
+			if (currentNode.isSetPredicate()) {
+				PredicateToken predicate = evaluatePredicatePath(select, pathElement, currentNode.getPredicate(), matchCase);
+				select.addSelection(predicate);
+				buildContext.predicate = predicate;
+			}
 
 			// remember build context
 			buildContext.tableContext = tableContext;
@@ -187,8 +191,16 @@ public class SchemaPathBuilder {
 			}
 
 			// translate predicate to where-conditions
-			if (currentNode.isSetPredicate())
-				select.addSelection(evaluatePredicatePath(select, pathElement, currentNode.getPredicate(), matchCase));
+			if (currentNode.isSetPredicate()) {
+				PredicateToken predicate = evaluatePredicatePath(select, pathElement, currentNode.getPredicate(), matchCase);
+				if (subContext.predicate != null) {
+					predicate = LogicalOperationFactory.OR(subContext.predicate, predicate);
+					select.removeSelection(subContext.predicate);
+				}
+
+				select.addSelection(predicate);
+				subContext.predicate = predicate;
+			}
 
 			buildContext = subContext;
 			currentNode = currentNode.child();

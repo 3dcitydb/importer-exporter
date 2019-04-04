@@ -31,6 +31,7 @@ import org.citydb.database.schema.path.AbstractNode;
 import org.citydb.database.schema.path.SchemaPath;
 import org.citydb.sqlbuilder.schema.Column;
 import org.citydb.sqlbuilder.schema.Table;
+import org.citydb.sqlbuilder.select.PredicateToken;
 import org.citydb.sqlbuilder.select.Select;
 
 import java.util.ArrayList;
@@ -72,6 +73,7 @@ public class SQLQueryContext {
 		final AbstractNode<?> node;
 		Map<String, Table> tableContext;
 		Table currentTable;
+		PredicateToken predicate;
 		List<BuildContext> children;
 
 		BuildContext(AbstractNode<?> node) {
