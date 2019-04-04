@@ -62,12 +62,11 @@ public class SQLQueryBuilder {
 	}
 
 	public Select buildQuery(Query query) throws QueryBuildException {
-		// TODO: we need some consistency check for the Query element (possibly query.isValid())?
-		Select select;
+		// TODO: we need some consistency check for the query (possibly query.isValid())?
+		SchemaPathBuilder builder = new SchemaPathBuilder(databaseAdapter.getSQLAdapter(), schemaName, buildProperties);
 
 		// feature type filter
 		FeatureTypeFilter typeFilter = query.getFeatureTypeFilter();
-
 		if (typeFilter == null) {
 			typeFilter = new FeatureTypeFilter();
 			query.setFeatureTypeFilter(typeFilter);
@@ -81,25 +80,22 @@ public class SQLQueryBuilder {
 			}
 		}
 
-		// map feature types to objectclassIds
+		// map feature types to object class ids
 		Set<Integer> objectclassIds = new FeatureTypeFilterBuilder().buildFeatureTypeFilter(typeFilter, query.getTargetVersion());
 
 		// selection filter
+		SQLQueryContext queryContext;
 		if (query.isSetSelection()) {
 			// TODO: we must check, whether the feature types announced by the feature type filter
 			// are all subtypes of the root node of the schema path
-
 			Predicate predicate = query.getSelection().getPredicate();
-			PredicateBuilder predicateBuilder = new PredicateBuilder(query, objectclassIds, schemaMapping, databaseAdapter, schemaName, buildProperties);
-			select = predicateBuilder.buildPredicate(predicate);	
+			PredicateBuilder predicateBuilder = new PredicateBuilder(query, builder, schemaMapping, databaseAdapter, schemaName, buildProperties);
+			queryContext = predicateBuilder.buildPredicate(predicate);
 		} else {
 			FeatureType superType = schemaMapping.getCommonSuperType(typeFilter.getFeatureTypes());			
 			SchemaPath schemaPath = new SchemaPath();
 			schemaPath.setFirstNode(superType);
-
-			SchemaPathBuilder builder = new SchemaPathBuilder(databaseAdapter.getSQLAdapter(), schemaName, buildProperties);
-			SQLQueryContext context = builder.buildSchemaPath(schemaPath, objectclassIds, true, true);
-			select = context.select;
+			queryContext = builder.buildSchemaPath(schemaPath, true);
 		}
 
 		// lod filter
@@ -107,15 +103,18 @@ public class SQLQueryBuilder {
 			LodFilter lodFilter = query.getLodFilter();
 			if (lodFilter.getFilterMode() != LodFilterMode.OR || !lodFilter.areAllEnabled()) {
 				LodFilterBuilder lodFilterBuilder = new LodFilterBuilder(schemaMapping, schemaName);
-				lodFilterBuilder.buildLodFilter(query.getLodFilter(), typeFilter, query.getTargetVersion(), select);
+				lodFilterBuilder.buildLodFilter(query.getLodFilter(), typeFilter, query.getTargetVersion(), queryContext);
 			}
 		}
-		
+
+		// add projection and object class id filter
+		builder.prepareStatement(queryContext, objectclassIds, true);
+
 		// set distinct on select if required
 		if (buildProperties.isUseDistinct())
-			select.setDistinct(true);
+			queryContext.select.setDistinct(true);
 
-		return select;
+		return queryContext.select;
 	}
 
 	public SQLQueryContext buildSchemaPath(SchemaPath schemaPath, boolean addProjection) throws QueryBuildException {
@@ -128,10 +127,19 @@ public class SQLQueryBuilder {
 			throw new QueryBuildException("Failed to build feature type filter.", e);
 		}
 
-		// map feature types to objectclassIds
+		// map feature types to object class ids
 		Set<Integer> objectclassIds = new FeatureTypeFilterBuilder().buildFeatureTypeFilter(typeFilter);
 
-		return builder.buildSchemaPath(schemaPath, objectclassIds, addProjection, true);
+		SQLQueryContext queryContext = builder.buildSchemaPath(schemaPath, true);
+		builder.prepareStatement(queryContext, objectclassIds, addProjection);
+
+		return queryContext;
+	}
+
+	// TODO: remove
+	public SQLQueryContext addSchemaPath(SchemaPath schemaPath, SQLQueryContext queryContext) throws QueryBuildException {
+		SchemaPathBuilder builder = new SchemaPathBuilder(databaseAdapter.getSQLAdapter(), schemaName, buildProperties);
+		return builder.addSchemaPath(queryContext, schemaPath, true);
 	}
 
 	public BuildProperties getBuildProperties() {

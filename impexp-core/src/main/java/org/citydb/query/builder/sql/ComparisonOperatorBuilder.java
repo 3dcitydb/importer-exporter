@@ -70,17 +70,14 @@ import org.citydb.sqlbuilder.select.projection.Function;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 public class ComparisonOperatorBuilder {
 	private final SchemaPathBuilder schemaPathBuilder;
 	private final AbstractSQLAdapter sqlAdapter;
-	private final Set<Integer> objectclassIds;
 	private final String schemaName;
 
-	protected ComparisonOperatorBuilder(SchemaPathBuilder schemaPathBuilder, Set<Integer> objectclassIds, AbstractSQLAdapter sqlAdapter, String schemaName) {
+	protected ComparisonOperatorBuilder(SchemaPathBuilder schemaPathBuilder, AbstractSQLAdapter sqlAdapter, String schemaName) {
 		this.schemaPathBuilder = schemaPathBuilder;
-		this.objectclassIds = objectclassIds;
 		this.sqlAdapter = sqlAdapter;
 		this.schemaName = schemaName;
 	}
@@ -139,7 +136,7 @@ public class ComparisonOperatorBuilder {
 			throw new QueryBuildException("Only combinations of ValueReference and Literal are supported as operands of a binary comparison operator.");
 
 		// build the value reference
-		SQLQueryContext queryContext = schemaPathBuilder.buildSchemaPath(valueReference.getSchemaPath(), objectclassIds, operator.isMatchCase());
+		SQLQueryContext queryContext = schemaPathBuilder.buildSchemaPath(valueReference.getSchemaPath(), operator.isMatchCase());
 
 		// check for type mismatch of literal
 		SimpleAttribute attribute = (SimpleAttribute)valueReference.getTarget();
@@ -199,7 +196,7 @@ public class ComparisonOperatorBuilder {
 		AbstractLiteral<?> upperBoundary = (AbstractLiteral<?>)operator.getUpperBoundary();
 
 		// build the value reference
-		SQLQueryContext queryContext = schemaPathBuilder.buildSchemaPath(valueReference.getSchemaPath(), objectclassIds);
+		SQLQueryContext queryContext = schemaPathBuilder.buildSchemaPath(valueReference.getSchemaPath());
 
 		// check for type mismatch of literal
 		SimpleAttribute attribute = (SimpleAttribute)valueReference.getTarget();
@@ -248,7 +245,7 @@ public class ComparisonOperatorBuilder {
 			throw new QueryBuildException("Only combinations of ValueReference and Literal are supported as operands of a like operator.");
 
 		// build the value reference
-		SQLQueryContext queryContext = schemaPathBuilder.buildSchemaPath(valueReference.getSchemaPath(), objectclassIds, operator.isMatchCase());
+		SQLQueryContext queryContext = schemaPathBuilder.buildSchemaPath(valueReference.getSchemaPath(), operator.isMatchCase());
 
 		// check for type mismatch of literal
 		SimpleAttribute attribute = (SimpleAttribute)valueReference.getTarget();
@@ -303,7 +300,7 @@ public class ComparisonOperatorBuilder {
 		PredicateToken token = buildIsNullPredicate((AbstractProperty)valueReference.getTarget(), schemaPath, negate);
 
 		// create equivalent sql operation
-		SQLQueryContext queryContext = schemaPathBuilder.buildSchemaPath(schemaPath, objectclassIds);
+		SQLQueryContext queryContext = schemaPathBuilder.buildSchemaPath(schemaPath);
 		queryContext.select.addSelection(token);
 
 		// if the target property is an injected ADE property, we need to change the join for
@@ -331,7 +328,7 @@ public class ComparisonOperatorBuilder {
 	private PredicateToken buildIsNullPredicate(AbstractProperty property, SchemaPath schemaPath, boolean negate) throws QueryBuildException {
 		if (property.getElementType() == PathElementType.SIMPLE_ATTRIBUTE || property.getElementType() == PathElementType.GEOMETRY_PROPERTY) {
 			// for simple properties, we just check whether the column is null
-			SQLQueryContext queryContext = schemaPathBuilder.buildSchemaPath(schemaPath, objectclassIds);
+			SQLQueryContext queryContext = schemaPathBuilder.buildSchemaPath(schemaPath);
 			return ComparisonFactory.isNull(queryContext.targetColumn, negate);
 		}
 
@@ -344,7 +341,7 @@ public class ComparisonOperatorBuilder {
 				// we therefore remove the complex property from the schema
 				// path and create an exists clause
 				schemaPath.removeLastPathElement();
-				SQLQueryContext queryContext = schemaPathBuilder.buildSchemaPath(schemaPath, objectclassIds);
+				SQLQueryContext queryContext = schemaPathBuilder.buildSchemaPath(schemaPath);
 
 				// derive join information
 				String toTable;

@@ -56,7 +56,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 public class PredicateBuilder {
@@ -65,16 +64,15 @@ public class PredicateBuilder {
 	private final IdOperatorBuilder idBuilder;
 	private final SelectOperatorBuilder selectBuilder;
 
-	protected PredicateBuilder(Query query, Set<Integer> objectClassIds, SchemaMapping schemaMapping, AbstractDatabaseAdapter databaseAdapter, String schemaName, BuildProperties buildProperties) {
-		SchemaPathBuilder schemaPathBuilder = new SchemaPathBuilder(databaseAdapter.getSQLAdapter(), schemaName, buildProperties);
-		comparisonBuilder = new ComparisonOperatorBuilder(schemaPathBuilder, objectClassIds, databaseAdapter.getSQLAdapter(), schemaName);
-		spatialBuilder = new SpatialOperatorBuilder(query, schemaPathBuilder, objectClassIds, schemaMapping, databaseAdapter, schemaName);
-		idBuilder = new IdOperatorBuilder(query, schemaPathBuilder, objectClassIds, schemaMapping, databaseAdapter.getSQLAdapter());
-		selectBuilder = new SelectOperatorBuilder(query, schemaPathBuilder, objectClassIds, schemaMapping);
+	protected PredicateBuilder(Query query, SchemaPathBuilder schemaPathBuilder, SchemaMapping schemaMapping, AbstractDatabaseAdapter databaseAdapter, String schemaName, BuildProperties buildProperties) {
+		comparisonBuilder = new ComparisonOperatorBuilder(schemaPathBuilder, databaseAdapter.getSQLAdapter(), schemaName);
+		spatialBuilder = new SpatialOperatorBuilder(query, schemaPathBuilder, schemaMapping, databaseAdapter, schemaName);
+		idBuilder = new IdOperatorBuilder(query, schemaPathBuilder, schemaMapping, databaseAdapter.getSQLAdapter());
+		selectBuilder = new SelectOperatorBuilder(query, schemaPathBuilder, schemaMapping);
 	}
 
-	protected Select buildPredicate(Predicate predicate) throws QueryBuildException {
-		return buildPredicate(predicate, false).select;
+	protected SQLQueryContext buildPredicate(Predicate predicate) throws QueryBuildException {
+		return buildPredicate(predicate, false);
 	}
 
 	private SQLQueryContext buildPredicate(Predicate predicate, boolean negate) throws QueryBuildException {

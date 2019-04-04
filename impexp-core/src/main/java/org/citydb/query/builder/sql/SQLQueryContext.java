@@ -27,24 +27,29 @@
  */
 package org.citydb.query.builder.sql;
 
+import org.citydb.database.schema.path.AbstractNode;
 import org.citydb.database.schema.path.SchemaPath;
 import org.citydb.sqlbuilder.schema.Column;
 import org.citydb.sqlbuilder.schema.Table;
 import org.citydb.sqlbuilder.select.Select;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+
 public class SQLQueryContext {
-	protected final Select select;	
-	protected Column targetColumn;
-	protected Table fromTable;
-	protected Table toTable;
-	protected SchemaPath schemaPath;
+	final Select select;
+	Column targetColumn;
+	Table fromTable;
+	Table toTable;
+	BuildContext buildContext;
+
+	SchemaPath schemaPath;
 	SchemaPath backup;
 	
-	protected SQLQueryContext(Select select) {
-		if (select == null)
-			throw new IllegalArgumentException("Select object may not be null.");
-			
-		this.select = select;
+	SQLQueryContext(Select select) {
+		this.select = Objects.requireNonNull(select, "Select object may not be null.");
 	}
 	
 	public Select getSelect() {
@@ -61,6 +66,46 @@ public class SQLQueryContext {
 
 	public Table getToTable() {
 		return toTable;
+	}
+
+	static class BuildContext {
+		final AbstractNode<?> node;
+		Map<String, Table> tableContext;
+		Table currentTable;
+		List<BuildContext> children;
+
+		BuildContext(AbstractNode<?> node) {
+			this.node = Objects.requireNonNull(node, "Node object may not be null.");
+		}
+
+		BuildContext addSubContext(AbstractNode<?> node) {
+			BuildContext nodeContext = null;
+
+			if (node != null) {
+				if (children == null)
+					children = new ArrayList<>();
+
+				nodeContext = new BuildContext(node);
+				children.add(nodeContext);
+			}
+
+			return nodeContext;
+		}
+
+		boolean hasSubContexts() {
+			return children != null && !children.isEmpty();
+		}
+
+		BuildContext findSubContext(AbstractNode<?> node) {
+			if (children != null) {
+				for (BuildContext child : children) {
+					if (child.node.isEqualTo(node, false))
+						return child;
+				}
+			}
+
+			return null;
+		}
 	}
 	
 }

@@ -53,7 +53,6 @@ import org.citydb.sqlbuilder.expression.SubQueryExpression;
 import org.citydb.sqlbuilder.schema.Column;
 import org.citydb.sqlbuilder.schema.Table;
 import org.citydb.sqlbuilder.select.PredicateToken;
-import org.citydb.sqlbuilder.select.ProjectionToken;
 import org.citydb.sqlbuilder.select.Select;
 import org.citydb.sqlbuilder.select.join.JoinFactory;
 import org.citydb.sqlbuilder.select.operator.comparison.ComparisonFactory;
@@ -88,19 +87,8 @@ public class LodFilterBuilder {
 		disabledADESchemas = ADEExtensionManager.getInstance().getDisabledSchemas(schemaMapping);
 	}
 
-	protected void buildLodFilter(LodFilter lodFilter, FeatureTypeFilter typeFilter, CityGMLVersion targetVersion, Select select) throws QueryBuildException {
+	protected void buildLodFilter(LodFilter lodFilter, FeatureTypeFilter typeFilter, CityGMLVersion targetVersion, SQLQueryContext queryContext) throws QueryBuildException {
 		List<Select> queries = new ArrayList<>();
-
-		Table table = null;
-		for (ProjectionToken token : select.getProjection()) {
-			if (token instanceof Column && ((Column)token).getName().equals(MappingConstants.ID)) {
-				table = ((Column)token).getTable();
-				break;
-			}
-		}
-
-		if (table == null)
-			throw new QueryBuildException("Failed to retrieve cityobject table for building the LoD filter.");
 
 		for (FeatureType type : typeFilter.getFeatureTypes(targetVersion)) {
 			boolean isNested = hasNestedTypesWithLodProperties(type);
@@ -136,6 +124,9 @@ public class LodFilterBuilder {
 			}
 		}
 
+		Select select = queryContext.select;
+		Table table = queryContext.fromTable;
+
 		if (!queries.isEmpty()) {
 			SubQueryExpression subQueryExpression = queries.size() == 1 ? queries.get(0) : SetOperationFactory.unionAll(queries);
 			select.addSelection(ComparisonFactory.in(table.getColumn(MappingConstants.ID), subQueryExpression));
@@ -144,7 +135,6 @@ public class LodFilterBuilder {
 			// so we add a dummy predicate to make sure the query returns null
 			select.addSelection(ComparisonFactory.isNull(table.getColumn(MappingConstants.ID)));
 		}
-		
 	}
 
 	private void buildLodSelection(FeatureType type, LodFilter lodFilter, List<Select> selects) {

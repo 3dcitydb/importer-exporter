@@ -63,20 +63,17 @@ import si.uom.SI;
 import javax.measure.Unit;
 import javax.measure.UnitConverter;
 import java.sql.SQLException;
-import java.util.Set;
 
 public class SpatialOperatorBuilder {
 	private final Query query;
 	private final SchemaPathBuilder schemaPathBuilder;
-	private final Set<Integer> objectclassIds;
 	private final SchemaMapping schemaMapping;
 	private final AbstractDatabaseAdapter databaseAdapter;
 	private final String schemaName;
 
-	protected SpatialOperatorBuilder(Query query, SchemaPathBuilder schemaPathBuilder, Set<Integer> objectclassIds, SchemaMapping schemaMapping, AbstractDatabaseAdapter databaseAdapter, String schemaName) {
+	protected SpatialOperatorBuilder(Query query, SchemaPathBuilder schemaPathBuilder, SchemaMapping schemaMapping, AbstractDatabaseAdapter databaseAdapter, String schemaName) {
 		this.query = query;
 		this.schemaPathBuilder = schemaPathBuilder;
-		this.objectclassIds = objectclassIds;
 		this.schemaMapping = schemaMapping;
 		this.databaseAdapter = databaseAdapter;
 		this.schemaName = schemaName;
@@ -137,7 +134,7 @@ public class SpatialOperatorBuilder {
 		}
 
 		// build the value reference and spatial predicate
-		SQLQueryContext queryContext = schemaPathBuilder.buildSchemaPath(valueReference.getSchemaPath(), objectclassIds);
+		SQLQueryContext queryContext = schemaPathBuilder.buildSchemaPath(valueReference.getSchemaPath());
 
 		GeometryProperty property = (GeometryProperty)valueReference.getSchemaPath().getLastNode().getPathElement();
 		if (property.isSetInlineColumn()) {
@@ -231,7 +228,7 @@ public class SpatialOperatorBuilder {
 		double value = converter.convert(distance.getValue());
 
 		// build the value reference and spatial predicate
-		SQLQueryContext queryContext = schemaPathBuilder.buildSchemaPath(valueReference.getSchemaPath(), objectclassIds);		
+		SQLQueryContext queryContext = schemaPathBuilder.buildSchemaPath(valueReference.getSchemaPath());
 
 		GeometryProperty property = (GeometryProperty)valueReference.getSchemaPath().getLastNode().getPathElement();
 		if (property.isSetInlineColumn()) {

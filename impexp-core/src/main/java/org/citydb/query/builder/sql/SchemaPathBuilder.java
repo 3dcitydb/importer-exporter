@@ -58,6 +58,7 @@ import org.citydb.database.schema.path.predicate.comparison.EqualToPredicate;
 import org.citydb.database.schema.path.predicate.logical.BinaryLogicalPredicate;
 import org.citydb.database.schema.path.predicate.logical.LogicalPredicateName;
 import org.citydb.query.builder.QueryBuildException;
+import org.citydb.query.builder.sql.SQLQueryContext.BuildContext;
 import org.citydb.query.filter.selection.expression.LiteralType;
 import org.citydb.query.filter.selection.expression.TimestampLiteral;
 import org.citydb.sqlbuilder.expression.AbstractSQLLiteral;
@@ -95,7 +96,6 @@ public class SchemaPathBuilder {
 	private Map<String, Table> tableContext;
 	private Table currentTable;
 	private AbstractNode<?> currentNode;
-	private boolean matchCase;
 
 	protected SchemaPathBuilder(AbstractSQLAdapter sqlAdapter, String schemaName, BuildProperties buildProperties) {
 		this.sqlAdapter = sqlAdapter;
@@ -109,81 +109,46 @@ public class SchemaPathBuilder {
 		return aliasGenerator;
 	}
 
-	protected SQLQueryContext buildSchemaPath(SchemaPath schemaPath, Set<Integer> objectClassIds) throws QueryBuildException {
-		return buildSchemaPath(schemaPath, objectClassIds, true, true);
+	protected SQLQueryContext buildSchemaPath(SchemaPath schemaPath) throws QueryBuildException {
+		return buildSchemaPath(schemaPath, true);
 	}
 
-	protected SQLQueryContext buildSchemaPath(SchemaPath schemaPath, Set<Integer> objectClassIds, boolean matchCase) throws QueryBuildException {
-		return buildSchemaPath(schemaPath, objectClassIds, true, matchCase);
-	}
-
-	protected SQLQueryContext buildSchemaPath(SchemaPath schemaPath, Set<Integer> objectClassIds, boolean addProjection, boolean matchCase) throws QueryBuildException {
+	protected SQLQueryContext buildSchemaPath(SchemaPath schemaPath, boolean matchCase) throws QueryBuildException {
 		FeatureTypeNode head = schemaPath.getFirstNode();
-		AbstractNode<?> tail = schemaPath.getLastNode();
 
-		// initialize context
-		Select select = new Select();
-		SQLQueryContext queryContext = new SQLQueryContext(select);
 		aliasGenerator.reset();
-
 		tableContext = new HashMap<>();
 		currentTable = new Table(head.getPathElement().getTable(), schemaName, aliasGenerator);
 		currentNode = head;
 
-		this.matchCase = matchCase;
+		// initialize query context
+		Select select = new Select();
+		SQLQueryContext queryContext = new SQLQueryContext(select);
+		queryContext.fromTable = currentTable;
+
+		// store build context
+		BuildContext buildContext = new BuildContext(head);
+		queryContext.buildContext = buildContext;
 
 		// iterate through schema path
 		while (currentNode != null) {
 			AbstractPathElement pathElement = currentNode.getPathElement();
-
-			switch (pathElement.getElementType()) {
-			case SIMPLE_ATTRIBUTE:
-			case COMPLEX_ATTRIBUTE:
-			case FEATURE_PROPERTY:
-			case OBJECT_PROPERTY:
-			case COMPLEX_PROPERTY:
-			case IMPLICIT_GEOMETRY_PROPERTY:
-			case GEOMETRY_PROPERTY:
-				evaluatePropertyPath(select, currentNode.parent().getPathElement(), (AbstractProperty)pathElement);
-				break;
-			case FEATURE_TYPE:
-			case OBJECT_TYPE:
-			case COMPLEX_TYPE:
-				AbstractType<?> type = (AbstractType<?>)pathElement;
-				if (type.isSetTable()) {			
-					tableContext.clear();
-					tableContext.put(currentTable.getName(), currentTable);
-
-					// correct table context in case of ADE subtypes
-					if (currentNode != head && !type.getTable().equals(currentTable.getName()))
-						traverseTypeHierarchy(type, select);
-				}
-				break;
-			}
-
-			// add projection and objectclass_id predicate
-			if (currentNode == head) {
-				queryContext.fromTable = currentTable;
-				prepareStatement(select, head.getPathElement(), objectClassIds, addProjection);
-			}
+			processNode(pathElement, head, select);
 
 			// translate predicate to where-conditions
 			if (currentNode.isSetPredicate())
-				select.addSelection(evaluatePredicatePath(select, pathElement, currentNode.getPredicate()));
+				select.addSelection(evaluatePredicatePath(select, pathElement, currentNode.getPredicate(), matchCase));
+
+			// remember build context
+			buildContext.tableContext = tableContext;
+			buildContext.currentTable = currentTable;
 
 			currentNode = currentNode.child();
-		}		
+			buildContext = buildContext.addSubContext(currentNode);
+		}
 
 		// copy results to query context
-		queryContext.toTable = currentTable;
-		queryContext.schemaPath = schemaPath;
-
-		if (tail.getPathElement().getElementType() == PathElementType.SIMPLE_ATTRIBUTE)
-			queryContext.targetColumn = currentTable.getColumn(((SimpleAttribute)tail.getPathElement()).getColumn());
-		else if (tail.getPathElement().getElementType() == PathElementType.GEOMETRY_PROPERTY) {
-			GeometryProperty geometryProperty = (GeometryProperty)tail.getPathElement();
-			queryContext.targetColumn = currentTable.getColumn(geometryProperty.isSetRefColumn() ? geometryProperty.getRefColumn() : geometryProperty.getInlineColumn());
-		}
+		updateQueryContext(queryContext, currentTable, schemaPath);
 
 		// update alias generator
 		buildProperties.aliasGenerator.updateFrom(aliasGenerator);
@@ -191,12 +156,70 @@ public class SchemaPathBuilder {
 		return queryContext;
 	}
 
-	private void prepareStatement(Select select, FeatureType featureType, Set<Integer> objectClassIds, boolean addProjection) throws QueryBuildException {
+	protected SQLQueryContext addSchemaPath(SQLQueryContext queryContext, SchemaPath schemaPath, boolean matchCase) throws QueryBuildException {
+		BuildContext buildContext = queryContext.buildContext;
+
+		FeatureTypeNode head = schemaPath.getFirstNode();
+		if (!buildContext.node.isEqualTo(head, false))
+			throw new QueryBuildException("The root node " + head + " of the schema path does not match the query context.");
+
+		// initialize build context
+		Select select = queryContext.select;
+		aliasGenerator.updateFrom(buildProperties.aliasGenerator);
+		currentNode = head;
+
+		// iterate through schema path
+		while (currentNode != null) {
+			AbstractPathElement pathElement = currentNode.getPathElement();
+
+			BuildContext subContext = currentNode == head ? buildContext : buildContext.findSubContext(currentNode);
+			if (subContext != null) {
+				// restore build context
+				tableContext = subContext.tableContext;
+				currentTable = subContext.currentTable;
+			} else {
+				processNode(pathElement, head, select);
+
+				// remember build context
+				subContext = buildContext.addSubContext(currentNode);
+				subContext.tableContext = tableContext;
+				subContext.currentTable = currentTable;
+			}
+
+			// translate predicate to where-conditions
+			if (currentNode.isSetPredicate())
+				select.addSelection(evaluatePredicatePath(select, pathElement, currentNode.getPredicate(), matchCase));
+
+			buildContext = subContext;
+			currentNode = currentNode.child();
+		}
+
+		// copy results to query context
+		updateQueryContext(queryContext, currentTable, schemaPath);
+
+		// update alias generator
+		buildProperties.aliasGenerator.updateFrom(aliasGenerator);
+
+		return queryContext;
+	}
+
+	protected void prepareStatement(SQLQueryContext queryContext, Set<Integer> objectClassIds, boolean addProjection) throws QueryBuildException {
 		if ((objectClassIds == null || objectClassIds.isEmpty()) && !addProjection)
 			return;
 
+		BuildContext buildContext = queryContext.buildContext;
+		if (!(buildContext.node.getPathElement() instanceof FeatureType))
+			throw new QueryBuildException("Invalid schema patch build context. Expected a feature type as root node.");
+
+		FeatureType featureType = (FeatureType) buildContext.node.getPathElement();
+		Select select = queryContext.select;
+
+		// restore build context
+		tableContext = buildContext.tableContext;
+		currentTable = buildContext.currentTable;
+		aliasGenerator.updateFrom(buildProperties.aliasGenerator);
+
 		// retrieve table and column of id property
-		Table fromTable = currentTable;
 		AbstractProperty property = featureType.getProperty(MappingConstants.ID, CityDBADE200Module.v3_0.getNamespaceURI(), true);
 		if (property == null)
 			throw new QueryBuildException("Fatal database schema error: Failed to find '" + MappingConstants.ID + "' property.");
@@ -204,8 +227,6 @@ public class SchemaPathBuilder {
 		evaluatePropertyPath(select, featureType, property);
 		Column id = currentTable.getColumn(property.getPath());
 		Column objectClassId = currentTable.getColumn(MappingConstants.OBJECTCLASS_ID);
-		if (fromTable != currentTable)
-			currentTable = fromTable;
 
 		// add projection
 		if (addProjection) {
@@ -227,6 +248,36 @@ public class SchemaPathBuilder {
 				select.addSelection(ComparisonFactory.equalTo(objectClassId, new IntegerLiteral(objectClassIds.iterator().next())));
 			else
 				select.addSelection(ComparisonFactory.in(objectClassId, new LiteralList(objectClassIds.toArray(new Integer[0]))));
+		}
+
+		// update alias generator
+		buildProperties.aliasGenerator.updateFrom(aliasGenerator);
+	}
+
+	private void processNode(AbstractPathElement pathElement, FeatureTypeNode head, Select select) throws QueryBuildException {
+		switch (pathElement.getElementType()) {
+			case SIMPLE_ATTRIBUTE:
+			case COMPLEX_ATTRIBUTE:
+			case FEATURE_PROPERTY:
+			case OBJECT_PROPERTY:
+			case COMPLEX_PROPERTY:
+			case IMPLICIT_GEOMETRY_PROPERTY:
+			case GEOMETRY_PROPERTY:
+				evaluatePropertyPath(select, currentNode.parent().getPathElement(), (AbstractProperty) pathElement);
+				break;
+			case FEATURE_TYPE:
+			case OBJECT_TYPE:
+			case COMPLEX_TYPE:
+				AbstractType<?> type = (AbstractType<?>) pathElement;
+				if (type.isSetTable()) {
+					tableContext = new HashMap<>();
+					tableContext.put(currentTable.getName(), currentTable);
+
+					// correct table context in case of ADE subtypes
+					if (currentNode != head && !type.getTable().equals(currentTable.getName()))
+						traverseTypeHierarchy(type, select);
+				}
+				break;
 		}
 	}
 
@@ -277,7 +328,7 @@ public class SchemaPathBuilder {
 			addJoin(select, property.getJoin());
 	}
 
-	private PredicateToken evaluatePredicatePath(Select select, AbstractPathElement parent, AbstractNodePredicate predicate) throws QueryBuildException {
+	private PredicateToken evaluatePredicatePath(Select select, AbstractPathElement parent, AbstractNodePredicate predicate, boolean matchCase) throws QueryBuildException {
 		if (predicate.getPredicateName() == ComparisonPredicateName.EQUAL_TO) {
 			EqualToPredicate equalTo = (EqualToPredicate)predicate;
 			Table fromTable = currentTable;
@@ -312,8 +363,8 @@ public class SchemaPathBuilder {
 		else {
 			// recursively build predicate that is composed of AND and OR operators
 			BinaryLogicalPredicate logicalPredicate = (BinaryLogicalPredicate)predicate;
-			PredicateToken leftOperand = evaluatePredicatePath(select, parent, logicalPredicate.getLeftOperand());
-			PredicateToken rightOperand = evaluatePredicatePath(select, parent, logicalPredicate.getRightOperand());
+			PredicateToken leftOperand = evaluatePredicatePath(select, parent, logicalPredicate.getLeftOperand(), matchCase);
+			PredicateToken rightOperand = evaluatePredicatePath(select, parent, logicalPredicate.getRightOperand(), matchCase);
 
 			LogicalOperationName op = logicalPredicate.getPredicateName() == LogicalPredicateName.AND ? 
 					LogicalOperationName.AND : LogicalOperationName.OR;
@@ -449,6 +500,21 @@ public class SchemaPathBuilder {
 		// update tableContext and current fromTable pointer
 		tableContext.put(toTable.getName(), toTable);
 		currentTable = toTable;
+	}
+
+	private void updateQueryContext(SQLQueryContext queryContext, Table toTable, SchemaPath schemaPath) {
+		AbstractNode<?> tail = schemaPath.getLastNode();
+
+		// copy results to query context
+		queryContext.toTable = toTable;
+		queryContext.schemaPath = schemaPath;
+
+		if (tail.getPathElement().getElementType() == PathElementType.SIMPLE_ATTRIBUTE)
+			queryContext.targetColumn = toTable.getColumn(((SimpleAttribute)tail.getPathElement()).getColumn());
+		else if (tail.getPathElement().getElementType() == PathElementType.GEOMETRY_PROPERTY) {
+			GeometryProperty geometryProperty = (GeometryProperty)tail.getPathElement();
+			queryContext.targetColumn = toTable.getColumn(geometryProperty.isSetRefColumn() ? geometryProperty.getRefColumn() : geometryProperty.getInlineColumn());
+		}
 	}
 	
 	AbstractSQLLiteral<?> convertToSQLLiteral(String value, SimpleType type) throws QueryBuildException {
