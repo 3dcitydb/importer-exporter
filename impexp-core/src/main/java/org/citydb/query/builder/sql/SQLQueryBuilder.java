@@ -91,7 +91,8 @@ public class SQLQueryBuilder {
 
 			Predicate predicate = query.getSelection().getPredicate();
 			PredicateBuilder predicateBuilder = new PredicateBuilder(query, objectclassIds, schemaMapping, databaseAdapter, schemaName, buildProperties);
-			select = predicateBuilder.buildPredicate(predicate);	
+			select = predicateBuilder.buildPredicate(predicate);
+			select.setDistinct(true);
 		} else {
 			FeatureType superType = schemaMapping.getCommonSuperType(typeFilter.getFeatureTypes());			
 			SchemaPath schemaPath = new SchemaPath();
