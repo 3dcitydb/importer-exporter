@@ -27,6 +27,12 @@
  */
 package org.citydb.query.builder.sql;
 
+import org.citydb.database.schema.mapping.AbstractJoin;
+import org.citydb.database.schema.mapping.Join;
+import org.citydb.database.schema.mapping.JoinTable;
+import org.citydb.database.schema.mapping.Joinable;
+import org.citydb.database.schema.mapping.PathElementType;
+import org.citydb.database.schema.mapping.TableRole;
 import org.citydb.database.schema.path.AbstractNode;
 import org.citydb.database.schema.path.SchemaPath;
 import org.citydb.sqlbuilder.schema.Column;
@@ -44,6 +50,7 @@ public class SQLQueryContext {
 	Column targetColumn;
 	Table fromTable;
 	Table toTable;
+	List<PredicateToken> predicates;
 	BuildContext buildContext;
 
 	SchemaPath schemaPath;
@@ -69,11 +76,25 @@ public class SQLQueryContext {
 		return toTable;
 	}
 
+	boolean hasPredicates() {
+		return predicates != null && !predicates.isEmpty();
+	}
+
+	void addPredicate(PredicateToken predicate) {
+		if (predicates == null)
+			predicates = new ArrayList<>();
+
+		predicates.add(predicate);
+	}
+
+	void unsetPredicates() {
+		predicates = null;
+	}
+
 	static class BuildContext {
 		final AbstractNode<?> node;
 		Map<String, Table> tableContext;
 		Table currentTable;
-		PredicateToken predicate;
 		List<BuildContext> children;
 
 		BuildContext(AbstractNode<?> node) {
@@ -99,14 +120,44 @@ public class SQLQueryContext {
 		}
 
 		BuildContext findSubContext(AbstractNode<?> node) {
-			if (children != null) {
+			if (children != null && node != null) {
 				for (BuildContext child : children) {
-					if (child.node.isEqualTo(node, false))
+					if (child.node.isEqualTo(node, false)) {
+
+						// only return the context of a property if the types are also identical
+						// otherwise the schema paths substantially differ
+						if (PathElementType.TYPE_PROPERTIES.contains(node.getPathElement().getElementType())
+								&& child.findSubContext(node.child()) == null)
+							return null;
+
 						return child;
+					}
 				}
 			}
 
 			return null;
+		}
+
+		boolean requiresDistinct() {
+			if (children != null) {
+				for (BuildContext child : children) {
+					if (child.node.getPathElement() instanceof Joinable) {
+						Joinable joinable = (Joinable) child.node.getPathElement();
+						if (joinable.isSetJoin()) {
+							AbstractJoin join = joinable.getJoin();
+							if (join instanceof JoinTable)
+								return true;
+							if (join instanceof Join)
+								return ((Join) join).getToRole() == TableRole.CHILD;
+						}
+					}
+
+					if (child.requiresDistinct())
+						return true;
+				}
+			}
+
+			return false;
 		}
 	}
 	

@@ -78,7 +78,6 @@ import org.citydb.sqlbuilder.select.join.JoinFactory;
 import org.citydb.sqlbuilder.select.operator.comparison.ComparisonFactory;
 import org.citydb.sqlbuilder.select.operator.comparison.ComparisonName;
 import org.citydb.sqlbuilder.select.operator.logical.BinaryLogicalOperator;
-import org.citydb.sqlbuilder.select.operator.logical.LogicalOperationFactory;
 import org.citydb.sqlbuilder.select.operator.logical.LogicalOperationName;
 import org.citydb.sqlbuilder.select.projection.Function;
 
@@ -136,11 +135,10 @@ public class SchemaPathBuilder {
 			AbstractPathElement pathElement = currentNode.getPathElement();
 			processNode(pathElement, head, select);
 
-			// translate predicate to where-conditions
+			// process predicate
 			if (currentNode.isSetPredicate()) {
 				PredicateToken predicate = evaluatePredicatePath(select, pathElement, currentNode.getPredicate(), matchCase);
-				select.addSelection(predicate);
-				buildContext.predicate = predicate;
+				queryContext.addPredicate(predicate);
 			}
 
 			// remember build context
@@ -193,13 +191,7 @@ public class SchemaPathBuilder {
 			// translate predicate to where-conditions
 			if (currentNode.isSetPredicate()) {
 				PredicateToken predicate = evaluatePredicatePath(select, pathElement, currentNode.getPredicate(), matchCase);
-				if (subContext.predicate != null) {
-					predicate = LogicalOperationFactory.OR(subContext.predicate, predicate);
-					select.removeSelection(subContext.predicate);
-				}
-
-				select.addSelection(predicate);
-				subContext.predicate = predicate;
+				queryContext.addPredicate(predicate);
 			}
 
 			buildContext = subContext;
@@ -336,8 +328,10 @@ public class SchemaPathBuilder {
 				addJoin(select, injectedProperty.getBaseJoin());
 		}
 
-		if (property.isSetJoin())
+		if (property.isSetJoin()) {
+			tableContext = new HashMap<>();
 			addJoin(select, property.getJoin());
+		}
 	}
 
 	private PredicateToken evaluatePredicatePath(Select select, AbstractPathElement parent, AbstractNodePredicate predicate, boolean matchCase) throws QueryBuildException {

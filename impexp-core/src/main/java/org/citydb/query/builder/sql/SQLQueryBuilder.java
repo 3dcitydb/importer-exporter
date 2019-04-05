@@ -111,7 +111,7 @@ public class SQLQueryBuilder {
 		builder.prepareStatement(queryContext, objectclassIds, true);
 
 		// set distinct on select if required
-		if (buildProperties.isUseDistinct())
+		if (buildProperties.isUseDistinct() || queryContext.buildContext.requiresDistinct())
 			queryContext.select.setDistinct(true);
 
 		return queryContext.select;
@@ -133,13 +133,25 @@ public class SQLQueryBuilder {
 		SQLQueryContext queryContext = builder.buildSchemaPath(schemaPath, true);
 		builder.prepareStatement(queryContext, objectclassIds, addProjection);
 
+		if (queryContext.hasPredicates()) {
+			queryContext.predicates.forEach(queryContext.select::addSelection);
+			queryContext.unsetPredicates();
+		}
+
 		return queryContext;
 	}
 
 	// TODO: remove
 	public SQLQueryContext addSchemaPath(SchemaPath schemaPath, SQLQueryContext queryContext) throws QueryBuildException {
 		SchemaPathBuilder builder = new SchemaPathBuilder(databaseAdapter.getSQLAdapter(), schemaName, buildProperties);
-		return builder.addSchemaPath(queryContext, schemaPath, true);
+		SQLQueryContext tmp = builder.addSchemaPath(queryContext, schemaPath, true);
+
+		if (tmp.hasPredicates()) {
+			tmp.predicates.forEach(queryContext.select::addSelection);
+			tmp.unsetPredicates();
+		}
+
+		return tmp;
 	}
 
 	public BuildProperties getBuildProperties() {
