@@ -28,36 +28,38 @@
 package org.citydb.query.builder.sql;
 
 import org.citydb.database.schema.mapping.AbstractJoin;
+import org.citydb.database.schema.mapping.FeatureType;
 import org.citydb.database.schema.mapping.Join;
 import org.citydb.database.schema.mapping.JoinTable;
 import org.citydb.database.schema.mapping.Joinable;
 import org.citydb.database.schema.mapping.PathElementType;
 import org.citydb.database.schema.mapping.TableRole;
 import org.citydb.database.schema.path.AbstractNode;
-import org.citydb.database.schema.path.SchemaPath;
 import org.citydb.sqlbuilder.schema.Column;
 import org.citydb.sqlbuilder.schema.Table;
 import org.citydb.sqlbuilder.select.PredicateToken;
 import org.citydb.sqlbuilder.select.Select;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
 public class SQLQueryContext {
+	final FeatureType featureType;
+	final Table fromTable;
 	final Select select;
+
 	Column targetColumn;
-	Table fromTable;
 	Table toTable;
 	List<PredicateToken> predicates;
 	BuildContext buildContext;
-
-	SchemaPath schemaPath;
-	SchemaPath backup;
 	
-	SQLQueryContext(Select select) {
-		this.select = Objects.requireNonNull(select, "Select object may not be null.");
+	SQLQueryContext(FeatureType featureType, Table fromTable) {
+		this.featureType = Objects.requireNonNull(featureType, "Feature type may not be null.");
+		this.fromTable = Objects.requireNonNull(fromTable, "Table may not be null.");
+		select = new Select();
 	}
 	
 	public Select getSelect() {
@@ -85,6 +87,10 @@ public class SQLQueryContext {
 			predicates = new ArrayList<>();
 
 		predicates.add(predicate);
+	}
+
+	void addPredicates(PredicateToken... predicates) {
+		Arrays.stream(predicates).forEach(this::addPredicate);
 	}
 
 	void unsetPredicates() {
@@ -128,7 +134,7 @@ public class SQLQueryContext {
 						// otherwise the schema paths substantially differ
 						if (PathElementType.TYPE_PROPERTIES.contains(node.getPathElement().getElementType())
 								&& child.findSubContext(node.child()) == null)
-							return null;
+							continue;
 
 						return child;
 					}

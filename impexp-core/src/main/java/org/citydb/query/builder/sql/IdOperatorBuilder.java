@@ -63,7 +63,7 @@ public class IdOperatorBuilder {
 	}
 
 	@SuppressWarnings("unchecked")
-	protected SQLQueryContext buildResourceIdOperator(ResourceIdOperator operator, boolean negate) throws QueryBuildException {
+	protected SQLQueryContext buildResourceIdOperator(ResourceIdOperator operator, SQLQueryContext queryContext, boolean negate) throws QueryBuildException {
 		FeatureType superType = schemaMapping.getCommonSuperType(query.getFeatureTypeFilter().getFeatureTypes());		
 		ValueReference valueReference;
 
@@ -76,11 +76,11 @@ public class IdOperatorBuilder {
 		}
 
 		// build the value reference
-		SQLQueryContext queryContext = schemaPathBuilder.buildSchemaPath(valueReference.getSchemaPath());
+		queryContext = schemaPathBuilder.buildSchemaPath(valueReference.getSchemaPath(), queryContext);
 		List<PredicateToken> predicates = new ArrayList<>();
 
 		if (operator.getResourceIds().size() == 1) {
-			queryContext.select.addSelection(ComparisonFactory.equalTo(queryContext.targetColumn, new PlaceHolder<>(operator.getResourceIds().iterator().next())));
+			queryContext.addPredicate(ComparisonFactory.equalTo(queryContext.targetColumn, new PlaceHolder<>(operator.getResourceIds().iterator().next())));
 		} else {
 			List<PlaceHolder<String>> placeHolders = new ArrayList<>();
 			int maxItems = sqlAdapter.getMaximumNumberOfItemsForInOperator();
@@ -98,10 +98,10 @@ public class IdOperatorBuilder {
 			}
 
 			if (predicates.size() == 1) {
-				queryContext.select.addSelection(predicates.get(0));
+				queryContext.addPredicate(predicates.get(0));
 			} else {
 				LogicalOperationName name = negate ? LogicalOperationName.AND : LogicalOperationName.OR;
-				queryContext.select.addSelection(new BinaryLogicalOperator(name, predicates));
+				queryContext.addPredicate(new BinaryLogicalOperator(name, predicates));
 			}
 		}
 

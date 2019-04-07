@@ -101,30 +101,31 @@ public class SchemaPathBuilder {
 		this.sqlAdapter = sqlAdapter;
 		this.schemaName = schemaName;
 		this.buildProperties = buildProperties;
-
-		aliasGenerator = new DefaultAliasGenerator();
+		aliasGenerator = buildProperties.aliasGenerator;
 	}
 
 	protected AliasGenerator getAliasGenerator() {
 		return aliasGenerator;
 	}
 
-	protected SQLQueryContext buildSchemaPath(SchemaPath schemaPath) throws QueryBuildException {
-		return buildSchemaPath(schemaPath, true);
+	protected SQLQueryContext buildSchemaPath(SchemaPath schemaPath, SQLQueryContext queryContext) throws QueryBuildException {
+		return queryContext == null ? buildSchemaPath(schemaPath, true) : addSchemaPath(queryContext, schemaPath, true);
 	}
 
-	protected SQLQueryContext buildSchemaPath(SchemaPath schemaPath, boolean matchCase) throws QueryBuildException {
+	protected SQLQueryContext buildSchemaPath(SchemaPath schemaPath, SQLQueryContext queryContext, boolean matchCase) throws QueryBuildException {
+		return queryContext == null ? buildSchemaPath(schemaPath, matchCase) : addSchemaPath(queryContext, schemaPath, matchCase);
+	}
+
+	private SQLQueryContext buildSchemaPath(SchemaPath schemaPath, boolean matchCase) throws QueryBuildException {
 		FeatureTypeNode head = schemaPath.getFirstNode();
 
-		aliasGenerator.reset();
 		tableContext = new HashMap<>();
 		currentTable = new Table(head.getPathElement().getTable(), schemaName, aliasGenerator);
 		currentNode = head;
 
 		// initialize query context
-		Select select = new Select();
-		SQLQueryContext queryContext = new SQLQueryContext(select);
-		queryContext.fromTable = currentTable;
+		SQLQueryContext queryContext = new SQLQueryContext(head.getPathElement(), currentTable);
+		Select select = queryContext.select;
 
 		// store build context
 		BuildContext buildContext = new BuildContext(head);
@@ -151,14 +152,11 @@ public class SchemaPathBuilder {
 
 		// copy results to query context
 		updateQueryContext(queryContext, currentTable, schemaPath);
-
-		// update alias generator
-		buildProperties.aliasGenerator.updateFrom(aliasGenerator);
 		
 		return queryContext;
 	}
 
-	protected SQLQueryContext addSchemaPath(SQLQueryContext queryContext, SchemaPath schemaPath, boolean matchCase) throws QueryBuildException {
+	private SQLQueryContext addSchemaPath(SQLQueryContext queryContext, SchemaPath schemaPath, boolean matchCase) throws QueryBuildException {
 		BuildContext buildContext = queryContext.buildContext;
 
 		FeatureTypeNode head = schemaPath.getFirstNode();
@@ -167,7 +165,6 @@ public class SchemaPathBuilder {
 
 		// initialize build context
 		Select select = queryContext.select;
-		aliasGenerator.updateFrom(buildProperties.aliasGenerator);
 		currentNode = head;
 
 		// iterate through schema path
@@ -201,9 +198,6 @@ public class SchemaPathBuilder {
 		// copy results to query context
 		updateQueryContext(queryContext, currentTable, schemaPath);
 
-		// update alias generator
-		buildProperties.aliasGenerator.updateFrom(aliasGenerator);
-
 		return queryContext;
 	}
 
@@ -212,16 +206,12 @@ public class SchemaPathBuilder {
 			return;
 
 		BuildContext buildContext = queryContext.buildContext;
-		if (!(buildContext.node.getPathElement() instanceof FeatureType))
-			throw new QueryBuildException("Invalid schema patch build context. Expected a feature type as root node.");
-
-		FeatureType featureType = (FeatureType) buildContext.node.getPathElement();
+		FeatureType featureType = queryContext.featureType;
 		Select select = queryContext.select;
 
 		// restore build context
 		tableContext = buildContext.tableContext;
 		currentTable = buildContext.currentTable;
-		aliasGenerator.updateFrom(buildProperties.aliasGenerator);
 
 		// retrieve table and column of id property
 		AbstractProperty property = featureType.getProperty(MappingConstants.ID, CityDBADE200Module.v3_0.getNamespaceURI(), true);
@@ -253,9 +243,6 @@ public class SchemaPathBuilder {
 			else
 				select.addSelection(ComparisonFactory.in(objectClassId, new LiteralList(objectClassIds.toArray(new Integer[0]))));
 		}
-
-		// update alias generator
-		buildProperties.aliasGenerator.updateFrom(aliasGenerator);
 	}
 
 	private void processNode(AbstractPathElement pathElement, FeatureTypeNode head, Select select) throws QueryBuildException {
@@ -513,7 +500,6 @@ public class SchemaPathBuilder {
 
 		// copy results to query context
 		queryContext.toTable = toTable;
-		queryContext.schemaPath = schemaPath;
 
 		if (tail.getPathElement().getElementType() == PathElementType.SIMPLE_ATTRIBUTE)
 			queryContext.targetColumn = toTable.getColumn(((SimpleAttribute)tail.getPathElement()).getColumn());
