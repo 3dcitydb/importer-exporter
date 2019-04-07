@@ -299,8 +299,8 @@ public class ComparisonOperatorBuilder {
 		
 		// create a copy of the schema path and create an is null check
 		// the schema path might be changed by this operation
-		SchemaPath schemaPath = valueReference.getSchemaPath().copy();
-		PredicateToken token = buildIsNullPredicate((AbstractProperty)valueReference.getTarget(), schemaPath, negate);
+		SchemaPath schemaPath = valueReference.getSchemaPath();
+		PredicateToken token = buildIsNullPredicate((AbstractProperty)valueReference.getTarget(), schemaPath.copy(), negate);
 
 		// create equivalent sql operation
 		SQLQueryContext queryContext = schemaPathBuilder.buildSchemaPath(schemaPath, objectclassIds);
@@ -426,7 +426,9 @@ public class ComparisonOperatorBuilder {
 						tokens.add(buildIsNullPredicate(innerProperty, innerPath, negate));
 					}
 
-					return LogicalOperationFactory.AND(tokens);
+					return !negate ?
+							LogicalOperationFactory.AND(tokens) :
+							LogicalOperationFactory.OR(tokens);
 				} catch (InvalidSchemaPathException e) {
 					//
 				}
