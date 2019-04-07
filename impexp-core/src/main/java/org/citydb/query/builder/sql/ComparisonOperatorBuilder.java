@@ -291,15 +291,11 @@ public class ComparisonOperatorBuilder {
 			throw new QueryBuildException("Only ValueRefernce is supported as operand of a null operator.");
 
 		ValueReference valueReference = (ValueReference)operator.getOperand();
-		
-		// create a copy of the schema path and create an is null check
-		// the schema path might be changed by this operation
 		SchemaPath schemaPath = valueReference.getSchemaPath();
-		PredicateToken token = buildIsNullPredicate((AbstractProperty)valueReference.getTarget(), schemaPath.copy(), queryContext, negate);
 
-		// create equivalent sql operation
-		queryContext = schemaPathBuilder.buildSchemaPath(schemaPath, queryContext);
-		queryContext.addPredicate(token);
+		// build the is null checks. we use a copy of the schema path
+		// as it might be changed by this operation
+		queryContext = buildIsNullPredicate((AbstractProperty)valueReference.getTarget(), schemaPath.copy(), queryContext, negate);
 
 		// if the target property is an injected ADE property, we need to change the join for
 		// the injection table from an inner join to a left join
@@ -323,11 +319,12 @@ public class ComparisonOperatorBuilder {
 		return queryContext;
 	}
 	
-	private PredicateToken buildIsNullPredicate(AbstractProperty property, SchemaPath schemaPath, SQLQueryContext queryContext, boolean negate) throws QueryBuildException {
+	private SQLQueryContext buildIsNullPredicate(AbstractProperty property, SchemaPath schemaPath, SQLQueryContext queryContext, boolean negate) throws QueryBuildException {
 		if (property.getElementType() == PathElementType.SIMPLE_ATTRIBUTE || property.getElementType() == PathElementType.GEOMETRY_PROPERTY) {
 			// for simple properties, we just check whether the column is null
 			queryContext = schemaPathBuilder.buildSchemaPath(schemaPath, queryContext);
-			return ComparisonFactory.isNull(queryContext.targetColumn, negate);
+			queryContext.addPredicate(ComparisonFactory.isNull(queryContext.targetColumn, negate));
+			return queryContext;
 		}
 
 		else if (property.getElementType() == PathElementType.COMPLEX_ATTRIBUTE || PathElementType.TYPE_PROPERTIES.contains(property.getElementType())) {
@@ -390,7 +387,8 @@ public class ComparisonOperatorBuilder {
 				}
 				
 				// finally, create exists clause from select
-				return ComparisonFactory.exists(select, !negate);
+				queryContext.addPredicate(ComparisonFactory.exists(select, !negate));
+				return queryContext;
 			}
 
 			else {
@@ -413,17 +411,20 @@ public class ComparisonOperatorBuilder {
 
 					// we iterate over all type properties and recursively create
 					// an is null check predicate using copies of the schema path
-					List<PredicateToken> tokens = new ArrayList<>();
 					for (AbstractProperty innerProperty : innerProperties) {
 						SchemaPath innerPath = schemaPath.copy();
 						innerPath.appendChild(innerProperty);
-						
-						tokens.add(buildIsNullPredicate(innerProperty, innerPath, queryContext, negate));
+						queryContext = buildIsNullPredicate(innerProperty, innerPath, queryContext, negate);
 					}
 
-					return !negate ?
-							LogicalOperationFactory.AND(tokens) :
-							LogicalOperationFactory.OR(tokens);
+					// if we shall check for not is null, then we combine the predicates using or
+					if (negate) {
+						PredicateToken predicate = LogicalOperationFactory.OR(queryContext.predicates);
+						queryContext.unsetPredicates();
+						queryContext.addPredicate(predicate);
+					}
+
+					return queryContext;
 				} catch (InvalidSchemaPathException e) {
 					//
 				}
