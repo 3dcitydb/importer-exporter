@@ -146,7 +146,7 @@ public class SpatialOperatorBuilder {
 			GeometryObject bbox = spatialDescription.toEnvelope();
 			boolean all = operator.getOperatorName() == SpatialOperatorName.DISJOINT || operator.getOperatorName() == SpatialOperatorName.WITHIN;
 			Table surfaceGeometry = new Table(MappingConstants.SURFACE_GEOMETRY, schemaName, schemaPathBuilder.getAliasGenerator());
-			Table cityObject = getCityObjectTable(queryContext);
+			Table cityObject = getCityObjectTable(query, queryContext);
 
 			Select inner = new Select()
 					.addProjection(surfaceGeometry.getColumn(MappingConstants.ID))
@@ -246,7 +246,7 @@ public class SpatialOperatorBuilder {
 			coords[bbox.getDimension() + 1] += value;
 
 			Table surfaceGeometry = new Table(MappingConstants.SURFACE_GEOMETRY, schemaName, schemaPathBuilder.getAliasGenerator());
-			Table cityObject = getCityObjectTable(queryContext);
+			Table cityObject = getCityObjectTable(query, queryContext);
 
 			Select inner = new Select()
 					.addProjection(surfaceGeometry.getColumn(MappingConstants.ID))
@@ -283,15 +283,9 @@ public class SpatialOperatorBuilder {
 		}
 	}
 
-	private Table getCityObjectTable(SQLQueryContext queryContext) throws QueryBuildException {
-		try {
-			FeatureType featureType = queryContext.featureType;
-			SchemaPath path = new SchemaPath(featureType);
-			path.appendChild(featureType.getProperty("boundedBy", GMLCoreModule.v3_1_1.getNamespaceURI(), true));
-			return schemaPathBuilder.buildSchemaPath(path, queryContext).toTable;
-		} catch (InvalidSchemaPathException e) {
-			throw new QueryBuildException(e.getMessage());
-		}
+	private Table getCityObjectTable(Query query, SQLQueryContext queryContext) throws QueryBuildException {
+		SchemaPath schemaPath = getBoundedByProperty(query).getSchemaPath();
+		return schemaPathBuilder.buildSchemaPath(schemaPath, queryContext).toTable;
 	}
 
 }
