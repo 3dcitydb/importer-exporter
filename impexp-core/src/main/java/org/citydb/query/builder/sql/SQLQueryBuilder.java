@@ -141,19 +141,6 @@ public class SQLQueryBuilder {
 		return queryContext;
 	}
 
-	// TODO: remove
-	public SQLQueryContext addSchemaPath(SchemaPath schemaPath, SQLQueryContext queryContext) throws QueryBuildException {
-		SchemaPathBuilder builder = new SchemaPathBuilder(databaseAdapter.getSQLAdapter(), schemaName, buildProperties);
-		SQLQueryContext tmp = builder.buildSchemaPath(schemaPath, queryContext, true);
-
-		if (tmp.hasPredicates()) {
-			tmp.predicates.forEach(queryContext.select::addSelection);
-			//tmp.unsetPredicates();
-		}
-
-		return tmp;
-	}
-
 	public BuildProperties getBuildProperties() {
 		return buildProperties;
 	}
