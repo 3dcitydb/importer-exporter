@@ -44,7 +44,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class GeometryGmlIdCache implements UIDCachingModel {
-	private final ReentrantLock mainLock = new ReentrantLock(true);
+	private final ReentrantLock mainLock = new ReentrantLock();
 	private final int partitions;
 	private final CacheTableModel cacheTableModel;
 	private final CacheTableManager cacheTableManager;
@@ -72,7 +72,7 @@ public class GeometryGmlIdCache implements UIDCachingModel {
 		batchCounters = new int[partitions];
 
 		for (int i = 0; i < partitions; i++)
-			locks[i] = new ReentrantLock(true);
+			locks[i] = new ReentrantLock();
 	}
 
 	@Override
