@@ -54,6 +54,7 @@ import org.citydb.event.global.DatabaseConnectionStateEvent;
 import org.citydb.event.global.EventType;
 import org.citydb.event.global.InterruptEvent;
 import org.citydb.gui.components.checkboxtree.DefaultCheckboxTreeCellRenderer;
+import org.citydb.gui.components.dialog.ADESupportWarningDialog;
 import org.citydb.gui.components.dialog.ExportStatusDialog;
 import org.citydb.gui.components.feature.FeatureTypeTree;
 import org.citydb.gui.factory.PopupMenuDecorator;
@@ -61,6 +62,8 @@ import org.citydb.gui.util.GuiUtil;
 import org.citydb.log.Logger;
 import org.citydb.modules.kml.controller.KmlExportException;
 import org.citydb.plugin.extension.view.ViewController;
+import org.citydb.plugin.extension.view.ViewEvent;
+import org.citydb.plugin.extension.view.ViewListener;
 import org.citydb.plugin.extension.view.components.BoundingBoxPanel;
 import org.citydb.registry.ObjectRegistry;
 import org.citydb.util.ClientConstants;
@@ -97,7 +100,7 @@ import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 
 @SuppressWarnings("serial")
-public class KmlExportPanel extends JPanel implements EventHandler {
+public class KmlExportPanel extends JPanel implements EventHandler, ViewListener {
 	private final Logger log = Logger.getInstance();
 
 	protected static final int BORDER_THICKNESS = 5;
@@ -167,6 +170,8 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 	private JLabel featureClassesLabel = new JLabel();
 	private FeatureTypeTree typeTree;
 	private JButton exportButton = new JButton("");
+	
+	private ADESupportWarningDialog adeSupportWarningDialog = new ADESupportWarningDialog();
 
 	public KmlExportPanel(ViewController viewController, JAXBContext jaxbKmlContext, JAXBContext jaxbColladaContext, Config config) {
 		this.jaxbKmlContext = jaxbKmlContext;
@@ -1080,6 +1085,16 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 
 			return null;
 		}
+	}
+
+	@Override
+	public void viewActivated(ViewEvent e) {
+		adeSupportWarningDialog.show(viewController.getTopFrame());
+	}
+
+	@Override
+	public void viewDeactivated(ViewEvent e) {
+		// nothing to do here
 	}
 
 }
