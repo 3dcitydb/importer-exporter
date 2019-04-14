@@ -421,8 +421,6 @@ public class DBSplitter {
 						eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.INIT, hits + cityObjectGroups.size(), this));
 					}
 
-					long sequenceId = 0;
-
 					do {
 						long id = rs.getLong("id");
 						int objectClassId = rs.getInt("objectclass_id");
@@ -447,7 +445,7 @@ public class DBSplitter {
 						}
 
 						// set initial context...
-						DBSplittingResult splitter = new DBSplittingResult(id, objectType, sequenceId++);
+						DBSplittingResult splitter = new DBSplittingResult(id, objectType);
 						dbWorkerPool.addWork(splitter);
 					} while (rs.next() && shouldRun);
 				}
