@@ -44,7 +44,7 @@ public class UIDCache {
 	private final int capacity;
 	private final float drainFactor;
 
-	private final ReentrantLock mainLock = new ReentrantLock(true);
+	private final ReentrantLock mainLock = new ReentrantLock();
 	private final Condition drainingDone = mainLock.newCondition();
 
 	private final AtomicBoolean isDraining = new AtomicBoolean(false);

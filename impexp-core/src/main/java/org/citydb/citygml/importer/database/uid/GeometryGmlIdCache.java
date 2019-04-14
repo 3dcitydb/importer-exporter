@@ -48,7 +48,7 @@ public class GeometryGmlIdCache implements UIDCachingModel {
 	private final CacheTableModel cacheTableModel;
 	private final CacheTableManager cacheTableManager;
 
-	private final ReentrantLock mainLock = new ReentrantLock(true);
+	private final ReentrantLock mainLock = new ReentrantLock();
 	private BranchCacheTable branchTable;
 
 	private CacheTable[] backUpTables;
@@ -74,7 +74,7 @@ public class GeometryGmlIdCache implements UIDCachingModel {
 		batchCounters = new int[partitions];
 
 		for (int i = 0; i < partitions; i++)
-			locks[i] = new ReentrantLock(true);
+			locks[i] = new ReentrantLock();
 	}
 
 	@Override
