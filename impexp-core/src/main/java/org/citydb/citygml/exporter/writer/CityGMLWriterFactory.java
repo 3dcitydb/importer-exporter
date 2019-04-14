@@ -63,6 +63,7 @@ public class CityGMLWriterFactory implements FeatureWriterFactory {
 
 	private TransformerChainFactory transformerChainFactory;
 	private CityGMLOptions cityGMLOptions;
+	private boolean useSequentialWriting = true;
 
 	public CityGMLWriterFactory(Query query, Config config) throws FeatureWriteException {
 		this.config = config;
@@ -152,7 +153,7 @@ public class CityGMLWriterFactory implements FeatureWriterFactory {
 		saxWriter.setOutput(writer);
 
 		// create CityGML writer
-		return new CityGMLWriter(saxWriter, version, transformerChainFactory);
+		return new CityGMLWriter(saxWriter, version, transformerChainFactory, useSequentialWriting);
 	}
 
 	private String getPrefix(Module module) {

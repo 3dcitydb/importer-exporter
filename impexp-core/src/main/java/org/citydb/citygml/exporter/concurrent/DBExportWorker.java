@@ -33,6 +33,7 @@ import org.citydb.citygml.common.database.xlink.DBXlink;
 import org.citydb.citygml.exporter.CityGMLExportException;
 import org.citydb.citygml.exporter.database.content.CityGMLExportManager;
 import org.citydb.citygml.exporter.database.content.DBSplittingResult;
+import org.citydb.citygml.exporter.writer.FeatureWriteException;
 import org.citydb.citygml.exporter.writer.FeatureWriter;
 import org.citydb.concurrent.Worker;
 import org.citydb.concurrent.WorkerPool;
@@ -73,6 +74,7 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 
 	private Connection connection;	
 	private final CityGMLExportManager exporter;
+	private final FeatureWriter featureWriter;
 	private final EventDispatcher eventDispatcher;
 	private final Config config;
 	private int exportCounter = 0;
@@ -87,7 +89,8 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 			CacheTableManager cacheTableManager,
 			Query query,
 			Config config,
-			EventDispatcher eventDispatcher) throws CityGMLExportException, SQLException {		
+			EventDispatcher eventDispatcher) throws CityGMLExportException, SQLException {
+		this.featureWriter = featureWriter;
 		this.eventDispatcher = eventDispatcher;
 		this.config = config;
 
@@ -185,13 +188,15 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 				if (!plugins.isEmpty()) {
 					for (CityGMLExportExtension plugin : plugins) {
 						topLevelObject = plugin.postprocess((AbstractFeature) topLevelObject);
-						if (topLevelObject == null)
+						if (topLevelObject == null) {
+							featureWriter.updateSequenceId(work.getSequenceId());
 							return;
+						}
 					}
 				}
 
 				// write feature to file
-				exporter.writeFeatureMember((AbstractFeature)topLevelObject, work.getId());
+				featureWriter.write((AbstractFeature) topLevelObject, work.getSequenceId());
 
 				// register gml:id in cache
 				if (config.getInternal().isRegisterGmlIdInCache() && topLevelObject.isSetId())
@@ -199,15 +204,15 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 				
 				// update export counter
 				exporter.updateExportCounter(topLevelObject);
-			}
+				if (++exportCounter == 20) {
+					eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, exportCounter, this));
+					eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.UPDATE, exportCounter, this));
+					exportCounter = 0;
+				}
+			} else
+				featureWriter.updateSequenceId(work.getSequenceId());
 
-			if (++exportCounter == 20) {
-				eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, exportCounter, this));
-				eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.UPDATE, exportCounter, this));
-				exportCounter = 0;
-			}
-
-		} catch (SQLException | CityGMLExportException | PluginException e) {
+		} catch (SQLException | CityGMLExportException | FeatureWriteException | PluginException e) {
 			eventDispatcher.triggerSyncEvent(new InterruptEvent("Aborting export due to errors.", LogLevel.WARN, e, eventChannel, this));
 		} catch (Throwable e) {
 			// this is to catch general exceptions that may occur during the export
