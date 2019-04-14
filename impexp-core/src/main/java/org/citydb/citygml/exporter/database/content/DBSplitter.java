@@ -359,7 +359,9 @@ public class DBSplitter {
 			// exclude previously exported features
 			Select notInQuery = builder.buildQuery(query);
 			ProjectionToken token = notInQuery.getProjection().get(0);
-			notInQuery.unsetProjection().addProjection(token);
+			notInQuery.unsetProjection()
+					.addProjection(token)
+					.unsetOrderBy();
 
 			// prepare query for group members
 			Query groupQuery = new Query(query);
