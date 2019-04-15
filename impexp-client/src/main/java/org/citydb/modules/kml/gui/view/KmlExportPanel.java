@@ -845,13 +845,17 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 				}				
 			}
 
-			// pop up a dialog for warning the non-support of CityGML ADEs  
-			if (databaseController.getActiveDatabaseAdapter().getConnectionMetaData().hasRegisteredADEs())
-				adeSupportWarningDialog.show(viewController.getTopFrame());	
-			
 			viewController.setStatusText(Language.I18N.getString("main.status.kmlExport.label"));
 			log.info("Initializing database export...");
 
+			// pop up a dialog for warning the non-support of CityGML ADEs  
+			if (databaseController.getActiveDatabaseAdapter().getConnectionMetaData().hasRegisteredADEs()) {
+				if (adeSupportWarningDialog.show(viewController.getTopFrame()) != JOptionPane.OK_OPTION) {
+					log.warn("Database export canceled.");
+					return;
+				}				
+			}
+				
 			final ExportStatusDialog exportDialog = new ExportStatusDialog(viewController.getTopFrame(), 
 					Language.I18N.getString("kmlExport.dialog.window"),
 					Language.I18N.getString("export.dialog.msg"),

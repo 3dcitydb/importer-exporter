@@ -42,7 +42,9 @@ import org.citydb.gui.util.GuiUtil;
 public class ADESupportWarningDialog {
 	private boolean shouldShow = true;
 
-	public void show(JFrame topFrame) {
+	public int show(JFrame topFrame) {
+		int option = JOptionPane.OK_OPTION;
+		
 		if (shouldShow) {
 			JPanel confirmPanel = new JPanel(new GridBagLayout());
 			JCheckBox confirmDialogNoShow = new JCheckBox(Language.I18N.getString("common.dialog.msg.noShow"));
@@ -50,12 +52,14 @@ public class ADESupportWarningDialog {
 			confirmPanel.add(new JLabel(Language.I18N.getString("common.dialog.warning.ade.unsupported")), GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.BOTH,0,0,0,0));
 			confirmPanel.add(confirmDialogNoShow, GuiUtil.setConstraints(0,2,1.0,0.0,GridBagConstraints.BOTH,10,0,0,0));
 			
-			JOptionPane.showConfirmDialog(topFrame, confirmPanel, Language.I18N.getString("common.dialog.warning.title"), JOptionPane.CLOSED_OPTION);
+			option = JOptionPane.showConfirmDialog(topFrame, confirmPanel, Language.I18N.getString("common.dialog.warning.title"), JOptionPane.OK_CANCEL_OPTION);
 			
 			if (confirmDialogNoShow.isSelected()) {
 				shouldShow = false;
 			}
 		}
+		
+		return option;
 	}
 	
 }
