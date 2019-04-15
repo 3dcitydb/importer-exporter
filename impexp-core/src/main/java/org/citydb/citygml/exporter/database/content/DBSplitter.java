@@ -66,7 +66,6 @@ import org.citydb.sqlbuilder.schema.Column;
 import org.citydb.sqlbuilder.schema.Table;
 import org.citydb.sqlbuilder.select.OrderByToken;
 import org.citydb.sqlbuilder.select.PredicateToken;
-import org.citydb.sqlbuilder.select.ProjectionToken;
 import org.citydb.sqlbuilder.select.Select;
 import org.citydb.sqlbuilder.select.join.JoinFactory;
 import org.citydb.sqlbuilder.select.operator.comparison.ComparisonFactory;
@@ -355,21 +354,15 @@ public class DBSplitter {
 
 		// first step: export group members
 		int hits = 0;
-		if (!config.getProject().getExporter().getCityObjectGroup().isExportMemberAsXLinks()) {
-
-			// exclude previously exported features
-			Select notInQuery = builder.buildQuery(query);
-			ProjectionToken token = notInQuery.getProjection().get(0);
-			notInQuery.unsetProjection()
-					.addProjection(token)
-					.unsetOrderBy();
+		if (!config.getProject().getExporter().getCityObjectGroup().isExportMemberAsXLinks()
+				&& query.getFeatureTypeFilter().size() == 1
+				&& query.getFeatureTypeFilter().getFeatureTypes().get(0).isEqualToOrSubTypeOf(cityObjectGroupType)) {
 
 			// prepare query for group members
 			Query groupQuery = new Query(query);
 
-			// add all feature types if the type filter only contains CityObjectGroup
-			if (groupQuery.getFeatureTypeFilter().size() == 1)
-				groupQuery.setFeatureTypeFilter(new FeatureTypeFilter(schemaMapping.getFeatureType("_CityObject", CoreModule.v2_0_0.getNamespaceURI())));
+			// add all feature types
+			groupQuery.setFeatureTypeFilter(new FeatureTypeFilter(schemaMapping.getFeatureType("_CityObject", CoreModule.v2_0_0.getNamespaceURI())));
 
 			// set generic spatial filter
 			if (groupQuery.isSetSelection()) {
@@ -379,8 +372,6 @@ public class DBSplitter {
 
 			// create query statement
 			Select select = builder.buildQuery(groupQuery);
-			if (groupQuery.isSetCounterFilter())
-				select.addOrderBy(new OrderByToken((Column)select.getProjection().get(0)));
 
 			// join group members
 			Table cityObject = new Table("cityobject", schema);
@@ -399,7 +390,7 @@ public class DBSplitter {
 									.addProjection(cityObjectGroup.getColumn("parent_cityobject_id"))
 									.addSelection(ComparisonFactory.in(cityObjectGroup.getColumn(MappingConstants.ID), idLiteralList))
 									)),
-					ComparisonFactory.notIn((Column)select.getProjection().get(0), notInQuery)));
+					ComparisonFactory.notIn((Column)select.getProjection().get(0), idLiteralList)));
 
 			// add hits counter
 			if (calculateNumberMatched) {
