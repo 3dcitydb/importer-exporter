@@ -845,6 +845,27 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 			viewController.setStatusText(Language.I18N.getString("main.status.kmlExport.label"));
 			log.info("Initializing database export...");
 
+			// pop up a dialog for warning the non-support of CityGML ADEs  
+			if (config.getGui().isShowKmlExportUnsupportedADEWarning()
+					&& databaseController.getActiveDatabaseAdapter().getConnectionMetaData().hasRegisteredADEs()) {
+				JPanel confirmPanel = new JPanel(new GridBagLayout());
+				JCheckBox confirmDialogNoShow = new JCheckBox(Language.I18N.getString("common.dialog.msg.noShow"));
+				confirmDialogNoShow.setIconTextGap(10);
+				confirmPanel.add(new JLabel(Language.I18N.getString("kmlExport.dialog.warning.ade.unsupported")), GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.BOTH,0,0,0,0));
+				confirmPanel.add(confirmDialogNoShow, GuiUtil.setConstraints(0,2,1.0,0.0,GridBagConstraints.BOTH,10,0,0,0));
+				
+				int selectedOption = JOptionPane.showConfirmDialog(viewController.getTopFrame(), confirmPanel, Language.I18N.getString("common.dialog.warning.title"), JOptionPane.OK_CANCEL_OPTION);
+				
+				if (confirmDialogNoShow.isSelected()) {
+					config.getGui().setShowKmlExportUnsupportedADEWarning(false);
+				}	
+				
+				if (selectedOption != JOptionPane.OK_OPTION) {
+					log.warn("Database export canceled.");
+					return;
+				}					
+			}			
+				
 			final ExportStatusDialog exportDialog = new ExportStatusDialog(viewController.getTopFrame(), 
 					Language.I18N.getString("kmlExport.dialog.window"),
 					Language.I18N.getString("export.dialog.msg"),
