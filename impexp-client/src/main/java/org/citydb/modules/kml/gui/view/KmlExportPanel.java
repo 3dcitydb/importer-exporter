@@ -54,7 +54,6 @@ import org.citydb.event.global.DatabaseConnectionStateEvent;
 import org.citydb.event.global.EventType;
 import org.citydb.event.global.InterruptEvent;
 import org.citydb.gui.components.checkboxtree.DefaultCheckboxTreeCellRenderer;
-import org.citydb.gui.components.dialog.ADESupportWarningDialog;
 import org.citydb.gui.components.dialog.ExportStatusDialog;
 import org.citydb.gui.components.feature.FeatureTypeTree;
 import org.citydb.gui.factory.PopupMenuDecorator;
@@ -168,8 +167,6 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 	private JLabel featureClassesLabel = new JLabel();
 	private FeatureTypeTree typeTree;
 	private JButton exportButton = new JButton("");
-	
-	private ADESupportWarningDialog adeSupportWarningDialog = new ADESupportWarningDialog();
 
 	public KmlExportPanel(ViewController viewController, JAXBContext jaxbKmlContext, JAXBContext jaxbColladaContext, Config config) {
 		this.jaxbKmlContext = jaxbKmlContext;
@@ -849,12 +846,25 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 			log.info("Initializing database export...");
 
 			// pop up a dialog for warning the non-support of CityGML ADEs  
-			if (databaseController.getActiveDatabaseAdapter().getConnectionMetaData().hasRegisteredADEs()) {
-				if (adeSupportWarningDialog.show(viewController.getTopFrame()) != JOptionPane.OK_OPTION) {
+			if (config.getGui().isShowKmlExportUnsupportedADEWarning()
+					&& databaseController.getActiveDatabaseAdapter().getConnectionMetaData().hasRegisteredADEs()) {
+				JPanel confirmPanel = new JPanel(new GridBagLayout());
+				JCheckBox confirmDialogNoShow = new JCheckBox(Language.I18N.getString("common.dialog.msg.noShow"));
+				confirmDialogNoShow.setIconTextGap(10);
+				confirmPanel.add(new JLabel(Language.I18N.getString("kmlExport.dialog.warning.ade.unsupported")), GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.BOTH,0,0,0,0));
+				confirmPanel.add(confirmDialogNoShow, GuiUtil.setConstraints(0,2,1.0,0.0,GridBagConstraints.BOTH,10,0,0,0));
+				
+				int selectedOption = JOptionPane.showConfirmDialog(viewController.getTopFrame(), confirmPanel, Language.I18N.getString("common.dialog.warning.title"), JOptionPane.OK_CANCEL_OPTION);
+				
+				if (confirmDialogNoShow.isSelected()) {
+					config.getGui().setShowKmlExportUnsupportedADEWarning(false);
+				}	
+				
+				if (selectedOption != JOptionPane.OK_OPTION) {
 					log.warn("Database export canceled.");
 					return;
-				}				
-			}
+				}					
+			}			
 				
 			final ExportStatusDialog exportDialog = new ExportStatusDialog(viewController.getTopFrame(), 
 					Language.I18N.getString("kmlExport.dialog.window"),
