@@ -42,7 +42,6 @@ public class KMLExportView extends View {
 	
 	public KMLExportView(ViewController viewController, JAXBContext jaxbKmlContext, JAXBContext jaxbColladaContext, Config config) {
 		component = new KmlExportPanel(viewController, jaxbKmlContext, jaxbColladaContext, config);
-		addViewListener(component);
 	}
 	
 	@Override

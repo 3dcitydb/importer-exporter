@@ -62,8 +62,6 @@ import org.citydb.gui.util.GuiUtil;
 import org.citydb.log.Logger;
 import org.citydb.modules.kml.controller.KmlExportException;
 import org.citydb.plugin.extension.view.ViewController;
-import org.citydb.plugin.extension.view.ViewEvent;
-import org.citydb.plugin.extension.view.ViewListener;
 import org.citydb.plugin.extension.view.components.BoundingBoxPanel;
 import org.citydb.registry.ObjectRegistry;
 import org.citydb.util.ClientConstants;
@@ -100,7 +98,7 @@ import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 
 @SuppressWarnings("serial")
-public class KmlExportPanel extends JPanel implements EventHandler, ViewListener {
+public class KmlExportPanel extends JPanel implements EventHandler {
 	private final Logger log = Logger.getInstance();
 
 	protected static final int BORDER_THICKNESS = 5;
@@ -847,6 +845,10 @@ public class KmlExportPanel extends JPanel implements EventHandler, ViewListener
 				}				
 			}
 
+			// pop up a dialog for warning the non-support of CityGML ADEs  
+			if (databaseController.getActiveDatabaseAdapter().getConnectionMetaData().hasRegisteredADEs())
+				adeSupportWarningDialog.show(viewController.getTopFrame());	
+			
 			viewController.setStatusText(Language.I18N.getString("main.status.kmlExport.label"));
 			log.info("Initializing database export...");
 
@@ -1085,16 +1087,6 @@ public class KmlExportPanel extends JPanel implements EventHandler, ViewListener
 
 			return null;
 		}
-	}
-
-	@Override
-	public void viewActivated(ViewEvent e) {
-		adeSupportWarningDialog.show(viewController.getTopFrame());
-	}
-
-	@Override
-	public void viewDeactivated(ViewEvent e) {
-		// nothing to do here
 	}
 
 }
