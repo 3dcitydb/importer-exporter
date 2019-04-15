@@ -81,8 +81,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -108,6 +108,7 @@ public class DBSplitter {
 	private boolean calculateNumberMatched;
 	private boolean calculateExtent;
 	private long elementCounter;
+	private long sequenceId;
 
 	public DBSplitter(FeatureWriter writer,
 			SchemaMapping schemaMapping,
@@ -187,7 +188,10 @@ public class DBSplitter {
 	public void startQuery() throws SQLException, QueryBuildException, FilterException, FeatureWriteException {
 		try {
 			FeatureType cityObjectGroupType = schemaMapping.getFeatureType("CityObjectGroup", CityObjectGroupModule.v2_0_0.getNamespaceURI());
-			Map<Long, AbstractObjectType<?>> cityObjectGroups = new HashMap<>();
+			Map<Long, AbstractObjectType<?>> cityObjectGroups = new LinkedHashMap<>();
+
+			sequenceId = 0;
+			elementCounter = 0;
 			
 			queryCityObject(cityObjectGroupType, cityObjectGroups);
 
@@ -289,7 +293,6 @@ public class DBSplitter {
 				}
 
 				writeDocumentHeader();
-				long sequenceId = 0;
 
 				do {
 					elementCounter++;
@@ -458,7 +461,7 @@ public class DBSplitter {
 
 		for (Iterator<Entry<Long, AbstractObjectType<?>>> iter = cityObjectGroups.entrySet().iterator(); shouldRun && iter.hasNext(); ) {
 			Entry<Long, AbstractObjectType<?>> entry = iter.next();
-			DBSplittingResult splitter = new DBSplittingResult(entry.getKey(), entry.getValue());
+			DBSplittingResult splitter = new DBSplittingResult(entry.getKey(), entry.getValue(), sequenceId++);
 			dbWorkerPool.addWork(splitter);
 		}
 	}
