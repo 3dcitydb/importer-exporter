@@ -178,7 +178,7 @@ public class Exporter implements EventHandler {
 		// create feature writer factory
 		FeatureWriterFactory writerFactory;
 		try {
-			writerFactory = FeatureWriterFactoryBuilder.buildFactory(query, config);
+			writerFactory = FeatureWriterFactoryBuilder.buildFactory(query, schemaMapping, config);
 		} catch (FeatureWriteException e) {
 			throw new CityGMLExportException("Failed to build the feature writer factory.", e);
 		}

@@ -32,6 +32,7 @@ import org.citydb.ade.model.module.CityDBADE200Module;
 import org.citydb.config.Config;
 import org.citydb.config.project.exporter.CityGMLOptions;
 import org.citydb.database.schema.mapping.FeatureType;
+import org.citydb.database.schema.mapping.SchemaMapping;
 import org.citydb.log.Logger;
 import org.citydb.query.Query;
 import org.citydb.query.filter.type.FeatureTypeFilter;
@@ -42,6 +43,7 @@ import org.citygml4j.model.module.ade.ADEModule;
 import org.citygml4j.model.module.citygml.CityGMLModule;
 import org.citygml4j.model.module.citygml.CityGMLModuleType;
 import org.citygml4j.model.module.citygml.CityGMLVersion;
+import org.citygml4j.model.module.citygml.CityObjectGroupModule;
 import org.citygml4j.util.internal.xml.TransformerChainFactory;
 import org.citygml4j.util.xml.SAXWriter;
 
@@ -63,8 +65,9 @@ public class CityGMLWriterFactory implements FeatureWriterFactory {
 
 	private TransformerChainFactory transformerChainFactory;
 	private CityGMLOptions cityGMLOptions;
+	private boolean setAllCityGMLPrefixes;
 
-	public CityGMLWriterFactory(Query query, Config config) throws FeatureWriteException {
+	public CityGMLWriterFactory(Query query, SchemaMapping schemaMapping, Config config) throws FeatureWriteException {
 		this.config = config;
 
 		version = query.getTargetVersion();
@@ -90,6 +93,13 @@ public class CityGMLWriterFactory implements FeatureWriterFactory {
 			} catch (TransformerConfigurationException e) {
 				throw new FeatureWriteException("Failed to configure the XSL transformation.", e);
 			}
+		}
+
+		// if only city object groups shall be exported, then we must set all CityGML prefixes
+		// and schema locations because also the group members will be exported
+		if (featureTypeFilter.size() == 1) {
+			FeatureType cityObjectGroupType = schemaMapping.getFeatureType("CityObjectGroup", CityObjectGroupModule.v2_0_0.getNamespaceURI());
+			setAllCityGMLPrefixes = featureTypeFilter.getFeatureTypes().get(0).isEqualToOrSubTypeOf(cityObjectGroupType);
 		}
 	}
 
@@ -138,12 +148,19 @@ public class CityGMLWriterFactory implements FeatureWriterFactory {
 		}
 
 		// set XML prefixes and schema locations for selected feature types
-		for (FeatureType featureType : featureTypeFilter.getFeatureTypes()) {
-			if (featureType.isAvailableForCityGML(version)) {
-				CityGMLModule module = Modules.getCityGMLModule(featureType.getSchema().getNamespace(version).getURI());
-				if (module != null) {
-					saxWriter.setPrefix(getPrefix(module), module.getNamespaceURI());
-					saxWriter.setSchemaLocation(module.getNamespaceURI(), getSchemaLocation(module));
+		if (setAllCityGMLPrefixes) {
+			for (CityGMLModule module : version.getCityGMLModules()) {
+				saxWriter.setPrefix(getPrefix(module), module.getNamespaceURI());
+				saxWriter.setSchemaLocation(module.getNamespaceURI(), getSchemaLocation(module));
+			}
+		} else {
+			for (FeatureType featureType : featureTypeFilter.getFeatureTypes()) {
+				if (featureType.isAvailableForCityGML(version)) {
+					CityGMLModule module = Modules.getCityGMLModule(featureType.getSchema().getNamespace(version).getURI());
+					if (module != null) {
+						saxWriter.setPrefix(getPrefix(module), module.getNamespaceURI());
+						saxWriter.setSchemaLocation(module.getNamespaceURI(), getSchemaLocation(module));
+					}
 				}
 			}
 		}
