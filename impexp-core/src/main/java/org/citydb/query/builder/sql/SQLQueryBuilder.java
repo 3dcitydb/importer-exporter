@@ -107,6 +107,12 @@ public class SQLQueryBuilder {
 			}
 		}
 
+		// sorting clause
+		if (query.isSetSorting()) {
+			SortingBuilder sortingBuilder = new SortingBuilder();
+			sortingBuilder.buildSorting(query.getSorting(), builder, queryContext);
+		}
+
 		// add projection and object class id filter
 		builder.prepareStatement(queryContext, objectclassIds, true);
 

@@ -29,11 +29,11 @@ public class SortingBuilder {
                 SortProperty sortProperty = new SortProperty(valueReference);
 
                 switch (sortBy.getSortOrder()) {
-                    case ASC:
-                        sortProperty.setSortOrder(SortOrder.ASC);
+                    case ASCENDING:
+                        sortProperty.setSortOrder(SortOrder.ASCENDING);
                         break;
-                    case DESC:
-                        sortProperty.setSortOrder(SortOrder.DESC);
+                    case DESCENDING:
+                        sortProperty.setSortOrder(SortOrder.DESCENDING);
                         break;
                 }
 

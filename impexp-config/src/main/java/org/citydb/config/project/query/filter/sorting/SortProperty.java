@@ -53,7 +53,7 @@ public class SortProperty {
     }
 
     public SortOrder getSortOrder() {
-        return sortOrder != null ? sortOrder : SortOrder.ASC;
+        return sortOrder != null ? sortOrder : SortOrder.ASCENDING;
     }
 
     public void setSortOrder(SortOrder sortOrder) {

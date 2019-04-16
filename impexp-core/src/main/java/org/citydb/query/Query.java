@@ -97,6 +97,10 @@ public class Query {
 		this.featureTypeFilter = featureTypeFilter;
 	}
 
+	public void unsetFeatureTypeFilter() {
+		featureTypeFilter = null;
+	}
+
 	public boolean isSetCounterFilter() {
 		return counterFilter != null;
 	}
@@ -107,6 +111,10 @@ public class Query {
 
 	public void setCounterFilter(CounterFilter counterFilter) {
 		this.counterFilter = counterFilter;
+	}
+
+	public void unsetCounterFilter() {
+		counterFilter = null;
 	}
 
 	public boolean isSetLodFilter() {
@@ -124,6 +132,10 @@ public class Query {
 		this.lodFilter = lodFilter;
 	}
 
+	public void unsetLodFilter() {
+		lodFilter = null;
+	}
+
 	public boolean isSetProjection() {
 		return projectionFilter != null;
 	}
@@ -134,6 +146,10 @@ public class Query {
 
 	public void setProjection(Projection projectionFilter) {
 		this.projectionFilter = projectionFilter;
+	}
+
+	public void unsetProjection() {
+		projectionFilter = null;
 	}
 
 	public boolean isSetSelection() {
@@ -148,6 +164,10 @@ public class Query {
 		this.selection = selection;
 	}
 
+	public void unsetSelection() {
+		selection = null;
+	}
+
 	public AppearanceFilter getAppearanceFilter() {
 		return appearanceFilter;
 	}
@@ -158,6 +178,10 @@ public class Query {
 
 	public void setAppearanceFilter(AppearanceFilter appearanceFilter) {
 		this.appearanceFilter = appearanceFilter;
+	}
+
+	public void unsetAppearanceFilter() {
+		appearanceFilter = null;
 	}
 
 	public boolean isSetSorting() {
@@ -172,6 +196,10 @@ public class Query {
 		this.sorting = sorting;
 	}
 
+	public void unsetSorting() {
+		sorting = null;
+	}
+
 	public boolean isSetTiling() {
 		return tiling != null;
 	}
@@ -184,8 +212,8 @@ public class Query {
 		this.tiling = tiling;
 	}
 
-	public boolean isSetOrderBy() {
-		return false;
+	public void unsetTiling() {
+		tiling = null;
 	}
 
 	public void copyFrom(Query query) {

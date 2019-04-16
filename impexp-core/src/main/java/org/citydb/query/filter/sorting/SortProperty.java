@@ -44,7 +44,7 @@ public class SortProperty {
     }
 
     public SortProperty(ValueReference valueReference) throws FilterException {
-        this(valueReference, SortOrder.ASC);
+        this(valueReference, SortOrder.ASCENDING);
     }
 
     public ValueReference getValueReference() {
@@ -52,7 +52,7 @@ public class SortProperty {
     }
 
     public SortOrder getSortOrder() {
-        return sortOrder != null ? sortOrder : SortOrder.ASC;
+        return sortOrder != null ? sortOrder : SortOrder.ASCENDING;
     }
 
     public void setSortOrder(SortOrder sortOrder) {

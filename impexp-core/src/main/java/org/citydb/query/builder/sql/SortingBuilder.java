@@ -26,38 +26,28 @@
  * limitations under the License.
  */
 
-package org.citydb.config.project.query.filter.sorting;
+package org.citydb.query.builder.sql;
 
-import javax.xml.bind.annotation.XmlEnum;
-import javax.xml.bind.annotation.XmlEnumValue;
-import javax.xml.bind.annotation.XmlType;
+import org.citydb.query.builder.QueryBuildException;
+import org.citydb.query.filter.sorting.SortProperty;
+import org.citydb.query.filter.sorting.Sorting;
+import org.citydb.sqlbuilder.select.OrderByToken;
+import org.citydb.sqlbuilder.select.orderBy.SortOrder;
 
-@XmlType(name="SortOrderType")
-@XmlEnum
-public enum SortOrder {
-    @XmlEnumValue("asc")
-    ASCENDING("asc"),
-    @XmlEnumValue("desc")
-    DESCENDING("desc");
+public class SortingBuilder {
 
-    final String value;
+    protected SortingBuilder() {
 
-    SortOrder(String value) {
-        this.value = value;
     }
 
-    public static SortOrder fromValue(String v) {
-        for (SortOrder c : SortOrder.values()) {
-            if (c.value.equals(v)) {
-                return c;
-            }
+    protected void buildSorting(Sorting sorting, SchemaPathBuilder builder, SQLQueryContext queryContext) throws QueryBuildException {
+        for (SortProperty sortProperty : sorting.getSortProperties()) {
+            queryContext = builder.buildSchemaPath(sortProperty.getValueReference().getSchemaPath(), queryContext);
+
+            SortOrder sortOrder = sortProperty.getSortOrder() == org.citydb.query.filter.sorting.SortOrder.DESCENDING ?
+                    SortOrder.DESCENDING : SortOrder.ASCENDING;
+
+            queryContext.select.addOrderBy(new OrderByToken(queryContext.targetColumn, sortOrder));
         }
-
-        return ASCENDING;
-    }
-
-    @Override
-    public String toString() {
-        return value;
     }
 }

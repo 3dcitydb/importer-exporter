@@ -233,7 +233,7 @@ public class DBSplitter {
 
 		// create query statement
 		Select select = builder.buildQuery(query);
-		if (query.isSetCounterFilter())
+		if (query.isSetCounterFilter() && !query.isSetSorting())
 			select.addOrderBy(new OrderByToken((Column)select.getProjection().get(0)));
 
 		// add hits counter and/or spatial extent
@@ -372,6 +372,9 @@ public class DBSplitter {
 				Predicate predicate = groupQuery.getSelection().getGenericSpatialFilter(schemaMapping.getCommonSuperType(groupQuery.getFeatureTypeFilter().getFeatureTypes()));
 				groupQuery.setSelection(new SelectionFilter(predicate));
 			}
+
+			// unset sorting as it is not required on this query
+			groupQuery.unsetSorting();
 
 			// create query statement
 			Select select = builder.buildQuery(groupQuery);

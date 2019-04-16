@@ -29,6 +29,6 @@
 package org.citydb.query.filter.sorting;
 
 public enum SortOrder {
-    ASC,
-    DESC
+    ASCENDING,
+    DESCENDING
 }

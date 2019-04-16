@@ -126,7 +126,7 @@ public class ConfigQueryBuilder {
 			query.setAppearanceFilter(builder.buildAppearanceFilter(queryConfig.getAppearanceFilter()));
 		}
 
-		// sorting
+		// sorting clause
 		if (queryConfig.isSetSorting() && queryConfig.getSorting().hasSortProperties()) {
 			SortingBuilder sortingBuilder = new SortingBuilder(valueReferenceBuilder);
 			query.setSorting(sortingBuilder.buildSorting(queryConfig.getSorting()));

@@ -63,7 +63,7 @@ public class CityGMLWriterFactory implements FeatureWriterFactory {
 
 	private TransformerChainFactory transformerChainFactory;
 	private CityGMLOptions cityGMLOptions;
-	private boolean useSequentialWriting = false;
+	private boolean useSequentialWriting;
 
 	public CityGMLWriterFactory(Query query, Config config) throws FeatureWriteException {
 		this.config = config;
@@ -71,6 +71,9 @@ public class CityGMLWriterFactory implements FeatureWriterFactory {
 		version = query.getTargetVersion();
 		featureTypeFilter = query.getFeatureTypeFilter();
 		cityGMLOptions = config.getProject().getExporter().getCityGMLOptions();
+
+		// require sequential writing if a sorting clause is defined for the query
+		useSequentialWriting = query.isSetSorting();
 
 		// build XSLT transformer chain
 		if (config.getProject().getExporter().getXSLTransformation().isEnabled()
@@ -92,6 +95,12 @@ public class CityGMLWriterFactory implements FeatureWriterFactory {
 				throw new FeatureWriteException("Failed to configure the XSL transformation.", e);
 			}
 		}
+	}
+
+	@Override
+	public CityGMLWriterFactory useSequentialWriting(boolean useSequentialWriting) {
+		this.useSequentialWriting = useSequentialWriting;
+		return this;
 	}
 
 	@Override
