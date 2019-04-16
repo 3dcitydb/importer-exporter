@@ -108,12 +108,6 @@ public class CityGMLWriterFactory implements FeatureWriterFactory {
 	}
 
 	@Override
-	public CityGMLWriterFactory useSequentialWriting(boolean useSequentialWriting) {
-		this.useSequentialWriting = useSequentialWriting;
-		return this;
-	}
-
-	@Override
 	public FeatureWriter createFeatureWriter(Writer writer) {
 		SAXWriter saxWriter = new SAXWriter();
 
