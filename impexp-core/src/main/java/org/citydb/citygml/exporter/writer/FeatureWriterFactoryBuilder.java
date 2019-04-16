@@ -28,12 +28,13 @@
 package org.citydb.citygml.exporter.writer;
 
 import org.citydb.config.Config;
+import org.citydb.database.schema.mapping.SchemaMapping;
 import org.citydb.query.Query;
 
 public class FeatureWriterFactoryBuilder {
 
-	public static FeatureWriterFactory buildFactory(Query query, Config config) throws FeatureWriteException {
-		return new CityGMLWriterFactory(query, config);
+	public static FeatureWriterFactory buildFactory(Query query, SchemaMapping schemaMapping, Config config) throws FeatureWriteException {
+		return new CityGMLWriterFactory(query, schemaMapping, config);
 	}
 	
 }
