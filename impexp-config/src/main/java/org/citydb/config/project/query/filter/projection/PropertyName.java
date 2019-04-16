@@ -27,11 +27,10 @@
  */
 package org.citydb.config.project.query.filter.projection;
 
-import java.util.Objects;
-
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlValue;
 import javax.xml.namespace.QName;
+import java.util.Objects;
 
 @XmlType(name = "PropertyNameType")
 public class PropertyName extends AbstractPropertyName {

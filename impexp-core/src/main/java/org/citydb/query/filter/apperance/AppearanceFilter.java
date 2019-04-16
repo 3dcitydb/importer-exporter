@@ -27,11 +27,11 @@
  */
 package org.citydb.query.filter.apperance;
 
+import org.citydb.query.filter.FilterException;
+
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
-
-import org.citydb.query.filter.FilterException;
 
 public class AppearanceFilter {
 	private boolean includeNullTheme;

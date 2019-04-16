@@ -27,23 +27,14 @@
  */
 package org.citydb.query.builder.config;
 
-import javax.xml.namespace.NamespaceContext;
-
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.config.geometry.GeometryType;
 import org.citydb.config.project.query.filter.selection.spatial.AbstractBinarySpatialOperator;
 import org.citydb.config.project.query.filter.selection.spatial.AbstractDistanceOperator;
 import org.citydb.config.project.query.filter.selection.spatial.BBOXOperator;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
-import org.citydb.database.schema.mapping.FeatureType;
-import org.citydb.database.schema.mapping.PathElementType;
-import org.citydb.database.schema.mapping.SchemaMapping;
-import org.citydb.database.schema.path.InvalidSchemaPathException;
-import org.citydb.database.schema.path.SchemaPath;
-import org.citydb.database.schema.util.SimpleXPathParser;
-import org.citydb.database.schema.util.XPathException;
-import org.citydb.query.Query;
 import org.citydb.query.builder.QueryBuildException;
+import org.citydb.query.builder.util.ValueReferenceBuilder;
 import org.citydb.query.filter.FilterException;
 import org.citydb.query.filter.selection.Predicate;
 import org.citydb.query.filter.selection.expression.ValueReference;
@@ -55,21 +46,13 @@ import org.citydb.query.filter.selection.operator.spatial.DistanceUnit;
 import org.citydb.query.filter.selection.operator.spatial.SpatialOperationFactory;
 import org.citydb.query.geometry.GeometryParseException;
 import org.citydb.query.geometry.config.SpatialOperandParser;
-import org.citygml4j.model.module.gml.GMLCoreModule;
 
 public class SpatialOperatorBuilder {
-	private final Query query;
-	private final SimpleXPathParser xPathParser;
-	private final SchemaMapping schemaMapping;
+	private final ValueReferenceBuilder valueReferenceBuilder;
 	private final SpatialOperandParser spatialOperandParser;
-	private final NamespaceContext namespaceContext;
 
-	protected SpatialOperatorBuilder(Query query, SimpleXPathParser xPathParser, SchemaMapping schemaMapping, NamespaceContext namespaceContext, AbstractDatabaseAdapter databaseAdapter) {
-		this.query = query;
-		this.xPathParser = xPathParser;
-		this.schemaMapping = schemaMapping;
-		this.namespaceContext = namespaceContext;
-		
+	protected SpatialOperatorBuilder(ValueReferenceBuilder valueReferenceBuilder, AbstractDatabaseAdapter databaseAdapter) {
+		this.valueReferenceBuilder = valueReferenceBuilder;
 		spatialOperandParser = new SpatialOperandParser(databaseAdapter);
 	}
 
@@ -107,7 +90,7 @@ public class SpatialOperatorBuilder {
 			throw new QueryBuildException("The bbox operator requires an " + GeometryType.ENVELOPE + " as spatial operand.");
 
 		// build the value reference
-		ValueReference valueReference = buildValueReference(bboxConfig);
+		ValueReference valueReference = valueReferenceBuilder.buildValueReference(bboxConfig);
 				
 		// convert the spatial operand
 		GeometryObject spatialOperand = null;
@@ -125,7 +108,7 @@ public class SpatialOperatorBuilder {
 			throw new QueryBuildException("No spatial operand provided for the binary spatial operator " + operatorConfig.getOperatorName() + ".");
 
 		// build the value reference
-		ValueReference valueReference = buildValueReference(operatorConfig);
+		ValueReference valueReference = valueReferenceBuilder.buildValueReference(operatorConfig);
 
 		// convert the spatial operand
 		GeometryObject spatialOperand = null;
@@ -163,7 +146,7 @@ public class SpatialOperatorBuilder {
 			throw new QueryBuildException("The distance operator " + operatorConfig.getOperatorName() + " lacks a distance measure.");
 
 		// build the value reference
-		ValueReference valueReference = buildValueReference(operatorConfig);
+		ValueReference valueReference = valueReferenceBuilder.buildValueReference(operatorConfig);
 
 		// convert the spatial operand
 		GeometryObject spatialOperand = null;
@@ -185,34 +168,5 @@ public class SpatialOperatorBuilder {
 		default:
 			throw new QueryBuildException("Failed to build the distance operator " + operatorConfig.getOperatorName() + ".");
 		}
-	}
-
-	private ValueReference buildValueReference(org.citydb.config.project.query.filter.selection.spatial.AbstractSpatialOperator operatorConfig) throws QueryBuildException {
-		ValueReference valueReference = null;
-
-		try {
-			if (operatorConfig.isSetValueReference()) {
-				FeatureType featureType = schemaMapping.getCommonSuperType(query.getFeatureTypeFilter().getFeatureTypes());
-				SchemaPath path = xPathParser.parse(operatorConfig.getValueReference(), featureType, namespaceContext);
-				valueReference = new ValueReference(path);
-
-				if (valueReference.getTarget().getElementType() != PathElementType.GEOMETRY_PROPERTY)
-					throw new QueryBuildException("The value reference of the spatial operator " + operatorConfig.getOperatorName() + " must point to a geometry property.");
-				
-				// reset XPath expression using default namespace prefixes
-				operatorConfig.setValueReference(path.toXPath());
-			}
-
-			else {
-				FeatureType superType = schemaMapping.getCommonSuperType(query.getFeatureTypeFilter().getFeatureTypes());	
-				SchemaPath path = new SchemaPath(superType);	
-				path.appendChild(superType.getProperty("boundedBy", GMLCoreModule.v3_1_1.getNamespaceURI(), true));
-				valueReference = new ValueReference(path);
-			}
-		} catch (XPathException | InvalidSchemaPathException e) {
-			throw new QueryBuildException("Failed to parse the value reference " + operatorConfig.getValueReference() + ".", e);
-		}
-
-		return valueReference;
 	}
 }

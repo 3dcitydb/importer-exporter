@@ -36,6 +36,7 @@ import org.citydb.query.filter.lod.LodFilterMode;
 import org.citydb.query.filter.projection.Projection;
 import org.citydb.query.filter.projection.ProjectionFilter;
 import org.citydb.query.filter.selection.SelectionFilter;
+import org.citydb.query.filter.sorting.Sorting;
 import org.citydb.query.filter.tiling.Tiling;
 import org.citydb.query.filter.type.FeatureTypeFilter;
 import org.citygml4j.model.module.citygml.CityGMLVersion;
@@ -49,6 +50,7 @@ public class Query {
 	private Projection projectionFilter;
 	private SelectionFilter selection;
 	private AppearanceFilter appearanceFilter;
+	private Sorting sorting;
 	private Tiling tiling;
 
 	public Query() {
@@ -158,6 +160,18 @@ public class Query {
 		this.appearanceFilter = appearanceFilter;
 	}
 
+	public boolean isSetSorting() {
+		return sorting != null && sorting.hasSortProperties();
+	}
+
+	public Sorting getSorting() {
+		return sorting;
+	}
+
+	public void setSorting(Sorting sorting) {
+		this.sorting = sorting;
+	}
+
 	public boolean isSetTiling() {
 		return tiling != null;
 	}
@@ -183,6 +197,7 @@ public class Query {
 		projectionFilter = query.projectionFilter;
 		selection = query.selection;
 		appearanceFilter = query.appearanceFilter;
+		sorting = query.sorting;
 		tiling = query.tiling;
 	}
 

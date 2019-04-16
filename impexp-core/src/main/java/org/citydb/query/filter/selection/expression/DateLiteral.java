@@ -27,13 +27,12 @@
  */
 package org.citydb.query.filter.selection.expression;
 
+import org.citydb.database.schema.mapping.SimpleType;
+import org.citydb.sqlbuilder.expression.PlaceHolder;
+
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
-
-import org.citydb.database.schema.mapping.SimpleType;
-
-import org.citydb.sqlbuilder.expression.PlaceHolder;
 
 public class DateLiteral extends AbstractLiteral<Date> {
 	private String xmlLiteral;

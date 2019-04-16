@@ -27,12 +27,12 @@
  */
 package org.citydb.query.filter.selection.operator.logical;
 
+import org.citydb.query.filter.FilterException;
+import org.citydb.query.filter.selection.Predicate;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import org.citydb.query.filter.FilterException;
-import org.citydb.query.filter.selection.Predicate;
 
 public class BinaryLogicalOperator extends AbstractLogicalOperator {
 	private List<Predicate> operands;

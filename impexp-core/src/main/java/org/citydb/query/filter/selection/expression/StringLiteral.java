@@ -28,7 +28,6 @@
 package org.citydb.query.filter.selection.expression;
 
 import org.citydb.database.schema.mapping.SimpleType;
-
 import org.citydb.sqlbuilder.expression.PlaceHolder;
 
 public class StringLiteral extends AbstractLiteral<String> {

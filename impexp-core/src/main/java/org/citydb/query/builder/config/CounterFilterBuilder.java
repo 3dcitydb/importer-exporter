@@ -35,8 +35,8 @@ public class CounterFilterBuilder {
 	protected CounterFilterBuilder() {
 		
 	}
-	
-	public CounterFilter buildCounterFilter(org.citydb.config.project.query.filter.counter.CounterFilter counterFilterConfig) throws FilterException {
+
+	protected CounterFilter buildCounterFilter(org.citydb.config.project.query.filter.counter.CounterFilter counterFilterConfig) throws FilterException {
 		if (!counterFilterConfig.isSetUpperLimit())
 			throw new FilterException("Upper counter limit must not be null.");
 		

@@ -27,8 +27,6 @@
  */
 package org.citydb.query.filter.tiling;
 
-import java.sql.SQLException;
-
 import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.config.geometry.Point;
@@ -38,6 +36,8 @@ import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.query.filter.FilterException;
 import org.citydb.query.filter.selection.operator.spatial.BinarySpatialOperator;
 import org.citydb.query.filter.selection.operator.spatial.SpatialOperationFactory;
+
+import java.sql.SQLException;
 
 public class Tile {
 	private final BoundingBox extent;

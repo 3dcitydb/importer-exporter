@@ -27,15 +27,14 @@
  */
 package org.citydb.config.project.query.filter.selection.id;
 
-import java.util.ArrayList;
-import java.util.List;
+import org.citydb.config.project.query.filter.selection.AbstractPredicate;
+import org.citydb.config.project.query.filter.selection.PredicateName;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
-
-import org.citydb.config.project.query.filter.selection.AbstractPredicate;
-import org.citydb.config.project.query.filter.selection.PredicateName;
+import java.util.ArrayList;
+import java.util.List;
 
 @XmlRootElement(name="resourceIds")
 @XmlType(name="ResourceIdType", propOrder={

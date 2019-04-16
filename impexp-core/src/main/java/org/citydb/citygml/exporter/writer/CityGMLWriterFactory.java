@@ -63,7 +63,7 @@ public class CityGMLWriterFactory implements FeatureWriterFactory {
 
 	private TransformerChainFactory transformerChainFactory;
 	private CityGMLOptions cityGMLOptions;
-	private boolean useSequentialWriting = true;
+	private boolean useSequentialWriting = false;
 
 	public CityGMLWriterFactory(Query query, Config config) throws FeatureWriteException {
 		this.config = config;

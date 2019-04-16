@@ -25,29 +25,39 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.citydb.config.project.query.filter.projection;
 
-import javax.xml.bind.annotation.XmlElement;
+package org.citydb.config.project.query.filter.sorting;
+
+import javax.xml.bind.annotation.XmlEnum;
+import javax.xml.bind.annotation.XmlEnumValue;
 import javax.xml.bind.annotation.XmlType;
-import java.util.ArrayList;
-import java.util.List;
 
-@XmlType(name = "ProjectionFilterType")
-public class ProjectionFilter {
-	@XmlElement(name="context")
-	private List<ProjectionContext> projectionContexts;
-	
-	public ProjectionFilter() {
-		projectionContexts = new ArrayList<>();
-	}
-	
-	public List<ProjectionContext> getProjectionContexts() {
-		return projectionContexts;
-	}
+@XmlType(name="SortOrderType")
+@XmlEnum
+public enum SortOrder {
+    @XmlEnumValue("asc")
+    ASC("asc"),
+    @XmlEnumValue("desc")
+    DESC("desc");
 
-	public void setProjectionContexts(List<ProjectionContext> projectionContexts) {
-		if (projectionContexts != null)
-			this.projectionContexts = projectionContexts;
-	}
-	
+    final String value;
+
+    SortOrder(String value) {
+        this.value = value;
+    }
+
+    public static SortOrder fromValue(String v) {
+        for (SortOrder c : SortOrder.values()) {
+            if (c.value.equals(v)) {
+                return c;
+            }
+        }
+
+        return ASC;
+    }
+
+    @Override
+    public String toString() {
+        return value;
+    }
 }

@@ -27,9 +27,9 @@
  */
 package org.citydb.query.filter.selection.operator.spatial;
 
-import java.util.EnumSet;
-
 import org.citydb.query.filter.selection.operator.OperatorName;
+
+import java.util.EnumSet;
 
 public enum SpatialOperatorName implements OperatorName {
 	EQUALS("Equals"),

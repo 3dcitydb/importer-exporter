@@ -29,7 +29,6 @@ package org.citydb.query.builder.config;
 
 import org.citydb.config.project.query.filter.lod.LodSearchMode;
 import org.citydb.query.builder.QueryBuildException;
-import org.citydb.query.filter.FilterException;
 import org.citydb.query.filter.lod.LodFilter;
 import org.citydb.query.filter.lod.LodFilterMode;
 

@@ -48,6 +48,7 @@ import org.citydb.config.project.query.filter.selection.comparison.LikeOperator;
 import org.citydb.config.project.query.filter.selection.logical.AndOperator;
 import org.citydb.config.project.query.filter.selection.spatial.BBOXOperator;
 import org.citydb.config.project.query.filter.selection.spatial.WithinOperator;
+import org.citydb.config.project.query.filter.sorting.Sorting;
 import org.citydb.config.project.query.filter.tiling.Tiling;
 import org.citydb.config.project.query.filter.type.FeatureTypeFilter;
 import org.citydb.config.project.query.simple.SimpleSelectionFilter;
@@ -181,6 +182,7 @@ public class XMLQueryView extends FilterView {
         query.setLodFilter(new LodFilter());
         query.setProjectionFilter(new ProjectionFilter());
         query.setSelectionFilter(new SelectionFilter());
+        query.setSorting(new Sorting());
         query.setTiling(new Tiling());
 
         CityGMLNamespaceContext namespaceContext = new CityGMLNamespaceContext();

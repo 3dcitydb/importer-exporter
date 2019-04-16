@@ -25,29 +25,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.citydb.config.project.query.filter.projection;
 
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlType;
-import java.util.ArrayList;
-import java.util.List;
+package org.citydb.query.filter.sorting;
 
-@XmlType(name = "ProjectionFilterType")
-public class ProjectionFilter {
-	@XmlElement(name="context")
-	private List<ProjectionContext> projectionContexts;
-	
-	public ProjectionFilter() {
-		projectionContexts = new ArrayList<>();
-	}
-	
-	public List<ProjectionContext> getProjectionContexts() {
-		return projectionContexts;
-	}
+import org.citydb.query.filter.FilterException;
+import org.citydb.query.filter.selection.expression.ValueReference;
 
-	public void setProjectionContexts(List<ProjectionContext> projectionContexts) {
-		if (projectionContexts != null)
-			this.projectionContexts = projectionContexts;
-	}
-	
+public class SortProperty {
+    private final ValueReference valueReference;
+    private SortOrder sortOrder;
+
+    public SortProperty(ValueReference valueReference, SortOrder sortOrder) throws FilterException {
+        if (valueReference == null)
+            throw new FilterException("Value reference may not be null.");
+
+        this.valueReference = valueReference;
+        this.sortOrder = sortOrder;
+    }
+
+    public SortProperty(ValueReference valueReference) throws FilterException {
+        this(valueReference, SortOrder.ASC);
+    }
+
+    public ValueReference getValueReference() {
+        return valueReference;
+    }
+
+    public SortOrder getSortOrder() {
+        return sortOrder != null ? sortOrder : SortOrder.ASC;
+    }
+
+    public void setSortOrder(SortOrder sortOrder) {
+        this.sortOrder = sortOrder;
+    }
 }

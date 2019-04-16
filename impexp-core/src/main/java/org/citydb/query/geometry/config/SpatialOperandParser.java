@@ -27,9 +27,6 @@
  */
 package org.citydb.query.geometry.config;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.citydb.config.geometry.AbstractGeometry;
 import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.geometry.GeometryObject;
@@ -43,6 +40,9 @@ import org.citydb.config.geometry.PositionList;
 import org.citydb.config.project.database.DatabaseSrs;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.query.geometry.GeometryParseException;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class SpatialOperandParser {
 	private final AbstractDatabaseAdapter databaseAdapter;

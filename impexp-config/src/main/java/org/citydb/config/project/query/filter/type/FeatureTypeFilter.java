@@ -27,12 +27,11 @@
  */
 package org.citydb.config.project.query.filter.type;
 
-import java.util.Collection;
-import java.util.LinkedHashSet;
-
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.namespace.QName;
+import java.util.Collection;
+import java.util.LinkedHashSet;
 
 @XmlType(name="FeatureTypeFilterType", propOrder={
 		"typeNames"

@@ -45,11 +45,11 @@ public class LodFilter {
 	}
 
 	public boolean isSetSearchDepth() {
-		return searchDepth != null && searchDepth.intValue() >= 0;
+		return searchDepth != null && searchDepth >= 0;
 	}
 	
 	public int getSearchDepth() {
-		return isSetSearchDepth() ? searchDepth.intValue() : Integer.MAX_VALUE;
+		return isSetSearchDepth() ? searchDepth : Integer.MAX_VALUE;
 	}
 
 	public void setSearchDepth(int searchDepth) {
@@ -63,7 +63,7 @@ public class LodFilter {
 	}
 		
 	public boolean isEnabled(int lod) {
-		return (lod >= 0 && lod < 5) ? lods[lod] : false;
+		return (lod >= 0 && lod < 5) && lods[lod];
 	}
 
 	public void setEnabledAll(boolean enabled) {

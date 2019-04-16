@@ -68,7 +68,6 @@ import org.citydb.sqlbuilder.select.operator.logical.LogicalOperationFactory;
 import org.citydb.sqlbuilder.select.projection.ConstantColumn;
 import org.citydb.sqlbuilder.select.projection.Function;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class ComparisonOperatorBuilder {

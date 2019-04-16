@@ -27,16 +27,16 @@
  */
 package org.citydb.query.filter.type;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import org.citydb.ade.ADEExtension;
 import org.citydb.ade.ADEExtensionManager;
 import org.citydb.database.schema.mapping.FeatureType;
 import org.citydb.query.filter.FilterException;
 import org.citygml4j.model.module.citygml.CityGMLVersion;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class FeatureTypeFilter {
 	private final Set<FeatureType> featureTypes;

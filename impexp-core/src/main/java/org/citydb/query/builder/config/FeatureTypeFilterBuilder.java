@@ -27,8 +27,6 @@
  */
 package org.citydb.query.builder.config;
 
-import javax.xml.namespace.QName;
-
 import org.citydb.ade.ADEExtension;
 import org.citydb.ade.ADEExtensionManager;
 import org.citydb.database.schema.mapping.FeatureType;
@@ -38,6 +36,8 @@ import org.citydb.query.builder.QueryBuildException;
 import org.citydb.query.filter.FilterException;
 import org.citydb.query.filter.type.FeatureTypeFilter;
 import org.citygml4j.model.module.citygml.CityGMLVersion;
+
+import javax.xml.namespace.QName;
 
 public class FeatureTypeFilterBuilder {
 	private final Query query;
