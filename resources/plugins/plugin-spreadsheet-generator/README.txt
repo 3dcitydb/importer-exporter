@@ -1,6 +1,6 @@
 ﻿3D City Database Importer/Exporter Spreadsheet Generator Plugin
 
-Version 3.1.1 (2019-02-13)
+Version 3.1.2 (2019-04-16)
 
   This software is free software and is distributed on an "AS IS" BASIS,
   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -62,7 +62,7 @@ previous or later version of the 3D City Database Importer/Exporter.
 -------------------
 
 The plugin is shipped as a precompiled and ready-to-use ZIP package
-called "plugin-spreadsheet-generator-3.1.1.zip".
+called "plugin-spreadsheet-generator-3.1.2.zip".
 
 The following simple steps will guide you through the install process:
 * Open the installation directory of your local installation of the
@@ -70,12 +70,12 @@ The following simple steps will guide you through the install process:
 * Open the "plugins" subfolder. If it is not available, create a new
   subfolder and name it "plugins".
 * Extract the downloaded ZIP file in the plugins folder. As a result a new
-  folder named "plugin-spreadsheet-generator-3.1.1" will be created. This
+  folder named "plugin-spreadsheet-generator-3.1.2" will be created. This
   folder will contain all required files and subfolders.
 * Run the 3D City Database Importer/Exporter.
 
 If you want to uninstall the Spreadsheet Generator Plugin, simply delete
-the "plugin-spreadsheet-generator-3.1.1" subfolder and all its contents.
+the "plugin-spreadsheet-generator-3.1.2" subfolder and all its contents.
 
 
 6. Developers
