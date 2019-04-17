@@ -21,6 +21,9 @@ public class SortingBuilder {
             Sorting sorting = new Sorting();
 
             for (org.citydb.config.project.query.filter.sorting.SortProperty sortBy : sortingConfig.getSortProperties()) {
+                if (!sortBy.isSetValueReference())
+                    throw new QueryBuildException("A sort property requires a value reference.");
+
                 // build the value reference
                 ValueReference valueReference = valueReferenceBuilder.buildValueReference(sortBy);
                 if (valueReference.getTarget().getElementType() != PathElementType.SIMPLE_ATTRIBUTE)
