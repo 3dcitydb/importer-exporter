@@ -3,7 +3,7 @@ Change Log
 
 ### Pending changes
 
-* Support for sorting the top-level features in a CityGML export based on one or more simple thematic attributes.
+* Support for sorting the top-level features in a CityGML export based on one or more simple thematic attribute.
  It should be possible to define the sorting criteria using the XML query language, e.g. as new `<sortBy>` element. [#86](https://github.com/3dcitydb/importer-exporter/pull/86)
 
 ### 4.2.1 - 2019-04-17
