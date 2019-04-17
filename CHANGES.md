@@ -5,8 +5,7 @@ Change Log
 
 ##### Additions
 * Added the `-pid-file` command-line argument to create a file storing the process ID of the Importer/Exporter at the 
-provided path. This can be useful to check whether the Importer/Exporter is running or to issue a `kill` command to 
-to end it.
+provided path. This can be useful to check whether the Importer/Exporter is running or to issue a `kill` command to end it.
 * Added GUI warning dialogs if a Importer/Exporter module does not support ADEs registered in the database.
 * Updated Spreadsheet Plugin to version 3.1.2.
 * Updated ADE Manager Plugin to version 1.1.2.
