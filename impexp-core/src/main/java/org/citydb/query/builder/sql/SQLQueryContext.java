@@ -49,10 +49,10 @@ import java.util.Objects;
 public class SQLQueryContext {
 	final FeatureType featureType;
 	final Table fromTable;
-	final Select select;
 
-	Column targetColumn;
+	Select select;
 	Table toTable;
+	Column targetColumn;
 	List<PredicateToken> predicates;
 	BuildContext buildContext;
 	

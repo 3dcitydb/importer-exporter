@@ -29,6 +29,7 @@ package org.citydb.query.builder.sql;
 
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.schema.mapping.FeatureType;
+import org.citydb.database.schema.mapping.MappingConstants;
 import org.citydb.database.schema.mapping.SchemaMapping;
 import org.citydb.database.schema.path.SchemaPath;
 import org.citydb.query.Query;
@@ -38,10 +39,20 @@ import org.citydb.query.filter.lod.LodFilter;
 import org.citydb.query.filter.lod.LodFilterMode;
 import org.citydb.query.filter.selection.Predicate;
 import org.citydb.query.filter.type.FeatureTypeFilter;
+import org.citydb.sqlbuilder.expression.CommonTableExpression;
+import org.citydb.sqlbuilder.expression.IntegerLiteral;
+import org.citydb.sqlbuilder.schema.Column;
+import org.citydb.sqlbuilder.schema.Table;
+import org.citydb.sqlbuilder.select.OrderByToken;
+import org.citydb.sqlbuilder.select.ProjectionToken;
 import org.citydb.sqlbuilder.select.Select;
+import org.citydb.sqlbuilder.select.operator.comparison.ComparisonFactory;
+import org.citydb.sqlbuilder.select.projection.Function;
 import org.citygml4j.model.module.citygml.CoreModule;
 
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class SQLQueryBuilder {
 	private final SchemaMapping schemaMapping;
@@ -116,9 +127,9 @@ public class SQLQueryBuilder {
 		// add projection and object class id filter
 		builder.prepareStatement(queryContext, objectclassIds, true);
 
-		// set distinct on select if required
-		if (buildProperties.isUseDistinct() || queryContext.buildContext.requiresDistinct())
-			queryContext.select.setDistinct(true);
+		// build distinct query if the query involves 1:n or n:m joins
+		if (queryContext.buildContext.requiresDistinct())
+			buildDistinctQuery(query, queryContext);
 
 		return queryContext.select;
 	}
@@ -149,6 +160,51 @@ public class SQLQueryBuilder {
 
 	public BuildProperties getBuildProperties() {
 		return buildProperties;
+	}
+
+	private void buildDistinctQuery(Query query, SQLQueryContext queryContext) {
+		if (!query.isSetSorting())
+			queryContext.select.setDistinct(true);
+
+		else {
+			// when sorting is enabled, then adding the sort column as projection token
+			// might lead to multiple rows per top-level feature even if distinct is used.
+			// so we have to rewrite the query using the row_number() function to guarantee
+			// that every top-level feature is only exported once.
+			Select inner = queryContext.select;
+			List<OrderByToken> orderBy = inner.getOrderBy();
+			List<ProjectionToken> projection = inner.getProjection();
+
+			// add all order by tokens to the projection clause
+			orderBy.stream().map(OrderByToken::getColumn).forEach(inner::addProjection);
+			inner.unsetOrderBy();
+
+			// add row_number() function over the sorted set. the row number is later
+			// used to remove duplicates for the same top-level feature.
+			inner.addProjection(new Function("row_number() over (" +
+					"partition by " + queryContext.fromTable.getColumn(MappingConstants.ID) + " " +
+					"order by " + orderBy.stream().map(OrderByToken::toString).collect(Collectors.joining(", ")) +
+					")", "rn", false));
+
+			CommonTableExpression cte = new CommonTableExpression("cte", inner);
+			Table withTable = cte.asTable();
+
+			// create a new select statement that uses the previous select as CTE
+			// and remove duplicates by selecting row numbers with value 1
+			queryContext.select = new Select()
+					.addWith(cte)
+					.addSelection(ComparisonFactory.equalTo(withTable.getColumn("rn"), new IntegerLiteral(1)));
+
+			// re-add projection columns to new select
+			projection.stream()
+					.map(token -> token instanceof Column ? withTable.getColumn(((Column) token).getName()) : token)
+					.forEach(queryContext.select::addProjection);
+
+			// re-add order by tokens to new select
+			orderBy.stream()
+					.map(token -> new OrderByToken(withTable.getColumn(token.getColumn().getName()), token.getSortOrder()))
+					.forEach(queryContext.select::addOrderBy);
+		}
 	}
 
 }
