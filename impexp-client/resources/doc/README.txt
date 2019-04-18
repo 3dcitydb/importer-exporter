@@ -170,7 +170,7 @@ b) Alternatively, you can directly run the @jar@
 
        java -jar lib/@jar@ -shell [-options]
 
-   Type "java -jar lib/@jar@" -help' to get a list of the
+   Type "java -jar lib/@jar@ -help" to get a list of the
    available program arguments.
 
   
