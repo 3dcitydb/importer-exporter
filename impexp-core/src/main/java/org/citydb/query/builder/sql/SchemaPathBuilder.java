@@ -74,7 +74,7 @@ import org.citydb.sqlbuilder.schema.DefaultAliasGenerator;
 import org.citydb.sqlbuilder.schema.Table;
 import org.citydb.sqlbuilder.select.PredicateToken;
 import org.citydb.sqlbuilder.select.Select;
-import org.citydb.sqlbuilder.select.join.JoinFactory;
+import org.citydb.sqlbuilder.select.join.JoinName;
 import org.citydb.sqlbuilder.select.operator.comparison.ComparisonFactory;
 import org.citydb.sqlbuilder.select.operator.comparison.ComparisonName;
 import org.citydb.sqlbuilder.select.operator.logical.BinaryLogicalOperator;
@@ -300,7 +300,7 @@ public class SchemaPathBuilder {
 					if (type.isSetExtension()) {
 						AbstractExtension<?> extension = type.getExtension();
 						if (extension.isSetJoin())
-							addJoin(select, extension.getJoin());
+							addJoin(select, extension.getJoin(), false);
 
 						type = extension.getBase();
 					} else
@@ -312,12 +312,12 @@ public class SchemaPathBuilder {
 		if (property instanceof InjectedProperty) {
 			InjectedProperty injectedProperty = (InjectedProperty)property;
 			if (injectedProperty.isSetBaseJoin())
-				addJoin(select, injectedProperty.getBaseJoin());
+				addJoin(select, injectedProperty.getBaseJoin(), true);
 		}
 
 		if (property.isSetJoin()) {
 			tableContext = new HashMap<>();
-			addJoin(select, property.getJoin());
+			addJoin(select, property.getJoin(), true);
 		}
 	}
 
@@ -379,7 +379,7 @@ public class SchemaPathBuilder {
 				AbstractExtension<?> extension = type.getExtension();				
 				if (extension.isSetJoin()) {
 					Join join = type.getExtension().getJoin();
-					addJoin(select, new Join(type.getTable(), join.getToColumn(), join.getFromColumn(), TableRole.PARENT));
+					addJoin(select, new Join(type.getTable(), join.getToColumn(), join.getFromColumn(), TableRole.PARENT), false);
 					if (join.getTable().equals(parentTable))
 						break;
 				}
@@ -390,11 +390,11 @@ public class SchemaPathBuilder {
 		}
 	}
 	
-	private void addJoin(Select select, AbstractJoin abstractJoin) throws QueryBuildException {		
+	private void addJoin(Select select, AbstractJoin abstractJoin, boolean useLeftJoin) throws QueryBuildException {
 		if (abstractJoin instanceof Join) {
 			Join join = (Join)abstractJoin;
 			String toTable = resolveTableToken(join.getTable(), currentTable);
-			addJoin(select, join.getFromColumn(), toTable, join.getToColumn(), join.getConditions(), false);
+			addJoin(select, join.getFromColumn(), toTable, join.getToColumn(), join.getConditions(), useLeftJoin, false);
 		}
 
 		else if (abstractJoin instanceof JoinTable) {
@@ -403,12 +403,12 @@ public class SchemaPathBuilder {
 
 			// join intermediate table
 			Join join = joinTable.getJoin();
-			addJoin(select, join.getToColumn(), joinTable.getTable(), join.getFromColumn(), join.getConditions(), true);
+			addJoin(select, join.getToColumn(), joinTable.getTable(), join.getFromColumn(), join.getConditions(), useLeftJoin, true);
 
 			// join target table
 			Join inverseJoin = joinTable.getInverseJoin();
 			String toTable = resolveTableToken(inverseJoin.getTable(), fromTable);
-			addJoin(select, inverseJoin.getFromColumn(), toTable, inverseJoin.getToColumn(), inverseJoin.getConditions(), true);
+			addJoin(select, inverseJoin.getFromColumn(), toTable, inverseJoin.getToColumn(), inverseJoin.getConditions(), useLeftJoin, true);
 		}
 
 		else if (abstractJoin instanceof ReverseJoin) {
@@ -426,7 +426,7 @@ public class SchemaPathBuilder {
 		}
 	}
 
-	private void addJoin(Select select, String fromColumn, String joinTable, String toColumn, List<Condition> conditions, boolean force) throws QueryBuildException {
+	private void addJoin(Select select, String fromColumn, String joinTable, String toColumn, List<Condition> conditions, boolean useLeftJoin, boolean force) throws QueryBuildException {
 		// check whether we already have joined the target table
 		if (!force && !currentTable.getName().equals(joinTable)) {
 			Table toTable = tableContext.get(joinTable);
@@ -437,7 +437,9 @@ public class SchemaPathBuilder {
 		}
 
 		Table toTable = new Table(joinTable, schemaName, aliasGenerator);
-		select.addJoin(JoinFactory.inner(toTable, toColumn, ComparisonName.EQUAL_TO, currentTable.getColumn(fromColumn)));
+		org.citydb.sqlbuilder.select.join.Join join = new org.citydb.sqlbuilder.select.join.Join(
+				useLeftJoin ? JoinName.LEFT_JOIN : JoinName.INNER_JOIN,
+				toTable, toColumn, ComparisonName.EQUAL_TO, currentTable.getColumn(fromColumn));
 
 		if (conditions != null) {
 			for (Condition condition : conditions) {
@@ -475,20 +477,22 @@ public class SchemaPathBuilder {
 						for (int i = 0; i < subTypes.size(); i++)
 							ids[i] = subTypes.get(i).getObjectClassId();
 
-						select.addSelection(ComparisonFactory.in(toTable.getColumn(condition.getColumn()), new LiteralList(ids)));
+						join.addCondition(ComparisonFactory.in(toTable.getColumn(condition.getColumn()), new LiteralList(ids)));
 						continue;
 					}
 				}
 
 				else if (value.equals(MappingConstants.TARGET_ID_TOKEN)) {
-					select.addSelection(ComparisonFactory.equalTo(toTable.getColumn(condition.getColumn()), toTable.getColumn(MappingConstants.ID)));
+					join.addCondition(ComparisonFactory.equalTo(toTable.getColumn(condition.getColumn()), toTable.getColumn(MappingConstants.ID)));
 					continue;
 				}
 
 				AbstractSQLLiteral<?> literal = convertToSQLLiteral(value, condition.getType());
-				select.addSelection(ComparisonFactory.equalTo(toTable.getColumn(condition.getColumn()), literal));
+				join.addCondition(ComparisonFactory.equalTo(toTable.getColumn(condition.getColumn()), literal));
 			}
 		}
+
+		select.addJoin(join);
 
 		// update tableContext and current fromTable pointer
 		tableContext.put(toTable.getName(), toTable);
