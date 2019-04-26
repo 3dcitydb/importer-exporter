@@ -630,7 +630,7 @@
 
   <xs:complexType name="SortingType">
     <xs:sequence>
-      <xs:element name="sortProperty" type="SortPropertyType" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="sortProperty" type="SortPropertyType" maxOccurs="unbounded"/>
     </xs:sequence>
   </xs:complexType>
 

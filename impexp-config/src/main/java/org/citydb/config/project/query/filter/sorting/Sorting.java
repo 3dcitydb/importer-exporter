@@ -37,7 +37,7 @@ import java.util.List;
         "sortProperties"
 })
 public class Sorting {
-    @XmlElement(name="sortProperty")
+    @XmlElement(name="sortProperty", required = true)
     private List<SortProperty> sortProperties;
 
     public Sorting() {

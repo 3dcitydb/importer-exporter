@@ -150,10 +150,8 @@ public class SQLQueryBuilder {
 		SQLQueryContext queryContext = builder.buildSchemaPath(schemaPath, null, true);
 		builder.prepareStatement(queryContext, objectclassIds, addProjection);
 
-		if (queryContext.hasPredicates()) {
+		if (queryContext.hasPredicates())
 			queryContext.predicates.forEach(queryContext.select::addSelection);
-			queryContext.unsetPredicates();
-		}
 
 		return queryContext;
 	}
@@ -172,12 +170,16 @@ public class SQLQueryBuilder {
 			// so we have to rewrite the query using the row_number() function to guarantee
 			// that every top-level feature is only exported once.
 			Select inner = queryContext.select;
-			List<OrderByToken> orderBy = inner.getOrderBy();
 			List<ProjectionToken> projection = inner.getProjection();
-
-			// add all order by tokens to the projection clause
-			orderBy.stream().map(OrderByToken::getColumn).forEach(inner::addProjection);
+			List<OrderByToken> orderBy = inner.getOrderBy();
 			inner.unsetOrderBy();
+
+			// add all order by tokens to the projection clause. use aliases for the
+			// column names since sorting may be requested for identical columns
+			for (int i = 0; i < orderBy.size(); i++) {
+				Column column = orderBy.get(i).getColumn();
+				inner.addProjection(new Column(column.getTable(), column.getName(), "order" + i));
+			}
 
 			// add row_number() function over the sorted set. the row number is later
 			// used to remove duplicates for the same top-level feature.
@@ -196,14 +198,12 @@ public class SQLQueryBuilder {
 					.addSelection(ComparisonFactory.equalTo(withTable.getColumn("rn"), new IntegerLiteral(1)));
 
 			// re-add projection columns to new select
-			projection.stream()
-					.map(token -> token instanceof Column ? withTable.getColumn(((Column) token).getName()) : token)
-					.forEach(queryContext.select::addProjection);
+			for (ProjectionToken token : projection)
+				queryContext.select.addProjection(token instanceof Column ? withTable.getColumn(((Column) token).getName()) : token);
 
 			// re-add order by tokens to new select
-			orderBy.stream()
-					.map(token -> new OrderByToken(withTable.getColumn(token.getColumn().getName()), token.getSortOrder()))
-					.forEach(queryContext.select::addOrderBy);
+			for (int i = 0; i < orderBy.size(); i++)
+				queryContext.select.addOrderBy(new OrderByToken(withTable.getColumn("order" + i), orderBy.get(i).getSortOrder()));
 		}
 	}
 

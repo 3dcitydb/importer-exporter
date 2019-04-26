@@ -28,6 +28,8 @@
 
 package org.citydb.query.filter.sorting;
 
+import org.citydb.database.schema.mapping.PathElementType;
+import org.citydb.query.builder.QueryBuildException;
 import org.citydb.query.filter.FilterException;
 import org.citydb.query.filter.selection.expression.ValueReference;
 
@@ -38,6 +40,9 @@ public class SortProperty {
     public SortProperty(ValueReference valueReference, SortOrder sortOrder) throws FilterException {
         if (valueReference == null)
             throw new FilterException("Value reference may not be null.");
+
+        if (valueReference.getTarget().getElementType() != PathElementType.SIMPLE_ATTRIBUTE)
+            throw new FilterException("The value reference of a sorting property must point to a simple thematic attribute.");
 
         this.valueReference = valueReference;
         this.sortOrder = sortOrder;

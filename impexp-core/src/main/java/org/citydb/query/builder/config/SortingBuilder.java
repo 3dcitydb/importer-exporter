@@ -17,9 +17,11 @@ public class SortingBuilder {
     }
 
     protected Sorting buildSorting(org.citydb.config.project.query.filter.sorting.Sorting sortingConfig) throws QueryBuildException {
-        try {
-            Sorting sorting = new Sorting();
+        if (!sortingConfig.hasSortProperties())
+            throw new QueryBuildException("No valid sort properties provided.");
 
+        Sorting sorting = new Sorting();
+        try {
             for (org.citydb.config.project.query.filter.sorting.SortProperty sortBy : sortingConfig.getSortProperties()) {
                 if (!sortBy.isSetValueReference())
                     throw new QueryBuildException("A sort property requires a value reference.");
@@ -27,10 +29,9 @@ public class SortingBuilder {
                 // build the value reference
                 ValueReference valueReference = valueReferenceBuilder.buildValueReference(sortBy);
                 if (valueReference.getTarget().getElementType() != PathElementType.SIMPLE_ATTRIBUTE)
-                    throw new QueryBuildException("The value reference of the sorting clause must point to a simple thematic attribute.");
+                    throw new QueryBuildException("The value reference of a sorting property must point to a simple thematic attribute.");
 
                 SortProperty sortProperty = new SortProperty(valueReference);
-
                 switch (sortBy.getSortOrder()) {
                     case ASCENDING:
                         sortProperty.setSortOrder(SortOrder.ASCENDING);
@@ -42,10 +43,10 @@ public class SortingBuilder {
 
                 sorting.addSortProperty(sortProperty);
             }
-
-            return sorting;
         } catch (FilterException e) {
             throw new QueryBuildException("Failed to build the sorting clause.", e);
         }
+
+        return sorting;
     }
 }

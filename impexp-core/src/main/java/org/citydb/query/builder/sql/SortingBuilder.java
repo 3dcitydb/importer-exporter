@@ -28,10 +28,20 @@
 
 package org.citydb.query.builder.sql;
 
+import org.citydb.database.schema.path.AbstractNode;
+import org.citydb.database.schema.path.SchemaPath;
 import org.citydb.query.builder.QueryBuildException;
 import org.citydb.query.filter.sorting.SortProperty;
 import org.citydb.query.filter.sorting.Sorting;
+import org.citydb.sqlbuilder.schema.Column;
+import org.citydb.sqlbuilder.schema.Table;
 import org.citydb.sqlbuilder.select.OrderByToken;
+import org.citydb.sqlbuilder.select.PredicateToken;
+import org.citydb.sqlbuilder.select.Select;
+import org.citydb.sqlbuilder.select.join.Join;
+import org.citydb.sqlbuilder.select.operator.comparison.BinaryComparisonOperator;
+import org.citydb.sqlbuilder.select.operator.logical.BinaryLogicalOperator;
+import org.citydb.sqlbuilder.select.operator.logical.LogicalOperationName;
 import org.citydb.sqlbuilder.select.orderBy.SortOrder;
 
 public class SortingBuilder {
@@ -41,13 +51,55 @@ public class SortingBuilder {
     }
 
     protected void buildSorting(Sorting sorting, SchemaPathBuilder builder, SQLQueryContext queryContext) throws QueryBuildException {
-        for (SortProperty sortProperty : sorting.getSortProperties()) {
-            queryContext = builder.buildSchemaPath(sortProperty.getValueReference().getSchemaPath(), queryContext);
+        if (!sorting.hasSortProperties())
+            throw new QueryBuildException("No valid sort properties provided.");
 
+        for (SortProperty sortProperty : sorting.getSortProperties()) {
+            SchemaPath schemaPath = sortProperty.getValueReference().getSchemaPath();
+
+            AbstractNode<?> node = schemaPath.getFirstNode();
+            if (node.isSetPredicate())
+                throw new QueryBuildException("Predicates on the root feature are not supported for value references of sort properties.");
+
+            queryContext = builder.addSchemaPath(schemaPath, queryContext);
             SortOrder sortOrder = sortProperty.getSortOrder() == org.citydb.query.filter.sorting.SortOrder.DESCENDING ?
                     SortOrder.DESCENDING : SortOrder.ASCENDING;
 
             queryContext.select.addOrderBy(new OrderByToken(queryContext.targetColumn, sortOrder));
+
+            if (queryContext.hasPredicates()) {
+                for (PredicateToken predicate : queryContext.predicates)
+                    addJoinConditions(predicate, queryContext.select);
+
+                queryContext.unsetPredicates();
+            }
         }
+    }
+
+    private void addJoinConditions(PredicateToken predicate, Select select) throws QueryBuildException {
+        if (predicate instanceof BinaryLogicalOperator) {
+            if (((BinaryLogicalOperator) predicate).getOperationName() == LogicalOperationName.OR)
+                throw new QueryBuildException("Logical OR predicates are not supported for value references of sort properties.");
+
+            for (PredicateToken operand : ((BinaryLogicalOperator) predicate).getOperands())
+                addJoinConditions(operand, select);
+
+        } else if (predicate instanceof BinaryComparisonOperator) {
+            BinaryComparisonOperator operator = (BinaryComparisonOperator) predicate;
+            if (!(operator.getLeftOperand() instanceof Column))
+                throw new QueryBuildException("Found unexpected predicate operand in value reference of sort property.");
+
+            Table table = ((Column) operator.getLeftOperand()).getTable();
+
+            for (Join join : select.getJoins()) {
+                if (join.getToColumn().getTable().equals(table)) {
+                    join.addCondition(predicate);
+                    return;
+                }
+            }
+
+            throw new QueryBuildException("Failed to map predicates in value reference to join conditions.");
+        } else
+            throw new QueryBuildException("Failed to map predicates in value reference to join conditions.");
     }
 }

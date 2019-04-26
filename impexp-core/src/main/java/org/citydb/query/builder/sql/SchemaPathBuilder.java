@@ -109,11 +109,18 @@ public class SchemaPathBuilder {
 	}
 
 	protected SQLQueryContext buildSchemaPath(SchemaPath schemaPath, SQLQueryContext queryContext) throws QueryBuildException {
-		return queryContext == null ? buildSchemaPath(schemaPath, true) : addSchemaPath(queryContext, schemaPath, true);
+		return queryContext == null ? buildSchemaPath(schemaPath, true) : addSchemaPath(queryContext, schemaPath, true, true);
 	}
 
 	protected SQLQueryContext buildSchemaPath(SchemaPath schemaPath, SQLQueryContext queryContext, boolean matchCase) throws QueryBuildException {
-		return queryContext == null ? buildSchemaPath(schemaPath, matchCase) : addSchemaPath(queryContext, schemaPath, matchCase);
+		return queryContext == null ? buildSchemaPath(schemaPath, matchCase) : addSchemaPath(queryContext, schemaPath, matchCase, true);
+	}
+
+	protected SQLQueryContext addSchemaPath(SchemaPath schemaPath, SQLQueryContext queryContext) throws QueryBuildException {
+		if (queryContext == null)
+			throw new QueryBuildException("The query context must not be null.");
+
+		return addSchemaPath(queryContext, schemaPath, true, false);
 	}
 
 	private SQLQueryContext buildSchemaPath(SchemaPath schemaPath, boolean matchCase) throws QueryBuildException {
@@ -156,7 +163,7 @@ public class SchemaPathBuilder {
 		return queryContext;
 	}
 
-	private SQLQueryContext addSchemaPath(SQLQueryContext queryContext, SchemaPath schemaPath, boolean matchCase) throws QueryBuildException {
+	private SQLQueryContext addSchemaPath(SQLQueryContext queryContext, SchemaPath schemaPath, boolean matchCase, boolean useBuildContext) throws QueryBuildException {
 		BuildContext buildContext = queryContext.buildContext;
 
 		FeatureTypeNode head = schemaPath.getFirstNode();
@@ -165,13 +172,19 @@ public class SchemaPathBuilder {
 
 		// initialize build context
 		Select select = queryContext.select;
+		queryContext.unsetPredicates();
 		currentNode = head;
 
 		// iterate through schema path
 		while (currentNode != null) {
 			AbstractPathElement pathElement = currentNode.getPathElement();
 
-			BuildContext subContext = currentNode == head ? buildContext : buildContext.findSubContext(currentNode);
+			BuildContext subContext = null;
+			if (currentNode == head)
+				subContext = buildContext;
+			else if (useBuildContext)
+				subContext = buildContext.findSubContext(currentNode);
+
 			if (subContext != null) {
 				// restore build context
 				tableContext = subContext.tableContext;
@@ -180,7 +193,7 @@ public class SchemaPathBuilder {
 				processNode(pathElement, head, select);
 
 				// remember build context
-				subContext = buildContext.addSubContext(currentNode);
+				subContext = buildContext.addSubContext(currentNode, useBuildContext);
 				subContext.tableContext = tableContext;
 				subContext.currentTable = currentTable;
 			}

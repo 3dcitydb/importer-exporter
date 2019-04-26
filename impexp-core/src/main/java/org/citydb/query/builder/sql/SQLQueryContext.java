@@ -99,26 +99,36 @@ public class SQLQueryContext {
 
 	static class BuildContext {
 		final AbstractNode<?> node;
+		final boolean isReuseable;
 		Map<String, Table> tableContext;
 		Table currentTable;
 		List<BuildContext> children;
 
-		BuildContext(AbstractNode<?> node) {
+		private BuildContext(AbstractNode<?> node, boolean isReuseable) {
 			this.node = Objects.requireNonNull(node, "Node object may not be null.");
+			this.isReuseable = isReuseable;
 		}
 
-		BuildContext addSubContext(AbstractNode<?> node) {
+		BuildContext(AbstractNode<?> node) {
+			this(node, true);
+		}
+
+		BuildContext addSubContext(AbstractNode<?> node, boolean isReuseable) {
 			BuildContext nodeContext = null;
 
 			if (node != null) {
 				if (children == null)
 					children = new ArrayList<>();
 
-				nodeContext = new BuildContext(node);
+				nodeContext = new BuildContext(node, isReuseable);
 				children.add(nodeContext);
 			}
 
 			return nodeContext;
+		}
+
+		BuildContext addSubContext(AbstractNode<?> node) {
+			return addSubContext(node, true);
 		}
 
 		boolean hasSubContexts() {
@@ -128,8 +138,10 @@ public class SQLQueryContext {
 		BuildContext findSubContext(AbstractNode<?> node) {
 			if (children != null && node != null) {
 				for (BuildContext child : children) {
-					if (child.node.isEqualTo(node, false)) {
+					if (!child.isReuseable)
+						continue;
 
+					if (child.node.isEqualTo(node, false)) {
 						// only return the context of a property if the types are also identical
 						// otherwise the schema paths substantially differ
 						if (PathElementType.TYPE_PROPERTIES.contains(node.getPathElement().getElementType())
