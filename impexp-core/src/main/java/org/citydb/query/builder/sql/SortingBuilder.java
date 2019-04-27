@@ -44,6 +44,9 @@ import org.citydb.sqlbuilder.select.operator.logical.BinaryLogicalOperator;
 import org.citydb.sqlbuilder.select.operator.logical.LogicalOperationName;
 import org.citydb.sqlbuilder.select.orderBy.SortOrder;
 
+import java.util.HashSet;
+import java.util.Set;
+
 public class SortingBuilder {
 
     protected SortingBuilder() {
@@ -54,8 +57,11 @@ public class SortingBuilder {
         if (!sorting.hasSortProperties())
             throw new QueryBuildException("No valid sort properties provided.");
 
+        Set<String> valueReferences = new HashSet<>();
         for (SortProperty sortProperty : sorting.getSortProperties()) {
             SchemaPath schemaPath = sortProperty.getValueReference().getSchemaPath();
+            if (!valueReferences.add(schemaPath.toXPath()))
+                throw new QueryBuildException("Duplicate value references pointing to the same sorting key are not allowed.");
 
             AbstractNode<?> node = schemaPath.getFirstNode();
             if (node.isSetPredicate())
