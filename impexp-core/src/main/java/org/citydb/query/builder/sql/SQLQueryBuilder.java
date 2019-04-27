@@ -106,7 +106,7 @@ public class SQLQueryBuilder {
 			FeatureType superType = schemaMapping.getCommonSuperType(typeFilter.getFeatureTypes());			
 			SchemaPath schemaPath = new SchemaPath();
 			schemaPath.setFirstNode(superType);
-			queryContext = builder.buildSchemaPath(schemaPath, null, true);
+			queryContext = builder.buildSchemaPath(schemaPath, null, true, false);
 		}
 
 		// lod filter
@@ -134,10 +134,10 @@ public class SQLQueryBuilder {
 		return queryContext.select;
 	}
 
-	public SQLQueryContext buildSchemaPath(SchemaPath schemaPath, boolean addProjection) throws QueryBuildException {
+	public SQLQueryContext buildSchemaPath(SchemaPath schemaPath, boolean addProjection, boolean useLeftJoins) throws QueryBuildException {
 		SchemaPathBuilder builder = new SchemaPathBuilder(databaseAdapter.getSQLAdapter(), schemaName, buildProperties);
-		FeatureTypeFilter typeFilter = new FeatureTypeFilter(false);
 
+		FeatureTypeFilter typeFilter = new FeatureTypeFilter(false);
 		try {
 			typeFilter.addFeatureType(schemaPath.getFirstNode().getPathElement());
 		} catch (FilterException e) {
@@ -147,7 +147,7 @@ public class SQLQueryBuilder {
 		// map feature types to object class ids
 		Set<Integer> objectclassIds = new FeatureTypeFilterBuilder().buildFeatureTypeFilter(typeFilter);
 
-		SQLQueryContext queryContext = builder.buildSchemaPath(schemaPath, null, true);
+		SQLQueryContext queryContext = builder.buildSchemaPath(schemaPath, null, true, useLeftJoins);
 		builder.prepareStatement(queryContext, objectclassIds, addProjection);
 
 		if (queryContext.hasPredicates())

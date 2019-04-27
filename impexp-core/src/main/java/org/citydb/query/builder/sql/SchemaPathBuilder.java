@@ -108,22 +108,22 @@ public class SchemaPathBuilder {
 		return aliasGenerator;
 	}
 
-	protected SQLQueryContext buildSchemaPath(SchemaPath schemaPath, SQLQueryContext queryContext) throws QueryBuildException {
-		return queryContext == null ? buildSchemaPath(schemaPath, true) : addSchemaPath(queryContext, schemaPath, true, true);
+	protected SQLQueryContext buildSchemaPath(SchemaPath schemaPath, SQLQueryContext queryContext, boolean useLeftJoins) throws QueryBuildException {
+		return queryContext == null ? buildSchemaPath(schemaPath, true, useLeftJoins) : addSchemaPath(queryContext, schemaPath, true, useLeftJoins, true);
 	}
 
-	protected SQLQueryContext buildSchemaPath(SchemaPath schemaPath, SQLQueryContext queryContext, boolean matchCase) throws QueryBuildException {
-		return queryContext == null ? buildSchemaPath(schemaPath, matchCase) : addSchemaPath(queryContext, schemaPath, matchCase, true);
+	protected SQLQueryContext buildSchemaPath(SchemaPath schemaPath, SQLQueryContext queryContext, boolean matchCase, boolean useLeftJoins) throws QueryBuildException {
+		return queryContext == null ? buildSchemaPath(schemaPath, matchCase, useLeftJoins) : addSchemaPath(queryContext, schemaPath, matchCase, useLeftJoins, true);
 	}
 
 	protected SQLQueryContext addSchemaPath(SchemaPath schemaPath, SQLQueryContext queryContext) throws QueryBuildException {
 		if (queryContext == null)
 			throw new QueryBuildException("The query context must not be null.");
 
-		return addSchemaPath(queryContext, schemaPath, true, false);
+		return addSchemaPath(queryContext, schemaPath, true, true, false);
 	}
 
-	private SQLQueryContext buildSchemaPath(SchemaPath schemaPath, boolean matchCase) throws QueryBuildException {
+	private SQLQueryContext buildSchemaPath(SchemaPath schemaPath, boolean matchCase, boolean useLeftJoins) throws QueryBuildException {
 		FeatureTypeNode head = schemaPath.getFirstNode();
 
 		tableContext = new HashMap<>();
@@ -141,11 +141,11 @@ public class SchemaPathBuilder {
 		// iterate through schema path
 		while (currentNode != null) {
 			AbstractPathElement pathElement = currentNode.getPathElement();
-			processNode(pathElement, head, select);
+			processNode(pathElement, head, select, useLeftJoins);
 
 			// process predicate
 			if (currentNode.isSetPredicate()) {
-				PredicateToken predicate = evaluatePredicatePath(select, pathElement, currentNode.getPredicate(), matchCase);
+				PredicateToken predicate = evaluatePredicatePath(select, pathElement, currentNode.getPredicate(), matchCase, useLeftJoins);
 				queryContext.addPredicate(predicate);
 			}
 
@@ -163,7 +163,7 @@ public class SchemaPathBuilder {
 		return queryContext;
 	}
 
-	private SQLQueryContext addSchemaPath(SQLQueryContext queryContext, SchemaPath schemaPath, boolean matchCase, boolean useBuildContext) throws QueryBuildException {
+	private SQLQueryContext addSchemaPath(SQLQueryContext queryContext, SchemaPath schemaPath, boolean matchCase, boolean useLeftJoins, boolean useBuildContext) throws QueryBuildException {
 		BuildContext buildContext = queryContext.buildContext;
 
 		FeatureTypeNode head = schemaPath.getFirstNode();
@@ -190,7 +190,7 @@ public class SchemaPathBuilder {
 				tableContext = subContext.tableContext;
 				currentTable = subContext.currentTable;
 			} else {
-				processNode(pathElement, head, select);
+				processNode(pathElement, head, select, useLeftJoins);
 
 				// remember build context
 				subContext = buildContext.addSubContext(currentNode, useBuildContext);
@@ -200,7 +200,7 @@ public class SchemaPathBuilder {
 
 			// translate predicate to where-conditions
 			if (currentNode.isSetPredicate()) {
-				PredicateToken predicate = evaluatePredicatePath(select, pathElement, currentNode.getPredicate(), matchCase);
+				PredicateToken predicate = evaluatePredicatePath(select, pathElement, currentNode.getPredicate(), matchCase, useLeftJoins);
 				queryContext.addPredicate(predicate);
 			}
 
@@ -231,7 +231,7 @@ public class SchemaPathBuilder {
 		if (property == null)
 			throw new QueryBuildException("Fatal database schema error: Failed to find '" + MappingConstants.ID + "' property.");
 
-		evaluatePropertyPath(select, featureType, property);
+		evaluatePropertyPath(select, featureType, property, false);
 		Column id = currentTable.getColumn(property.getPath());
 		Column objectClassId = currentTable.getColumn(MappingConstants.OBJECTCLASS_ID);
 
@@ -258,7 +258,7 @@ public class SchemaPathBuilder {
 		}
 	}
 
-	private void processNode(AbstractPathElement pathElement, FeatureTypeNode head, Select select) throws QueryBuildException {
+	private void processNode(AbstractPathElement pathElement, FeatureTypeNode head, Select select, boolean useLeftJoins) throws QueryBuildException {
 		switch (pathElement.getElementType()) {
 			case SIMPLE_ATTRIBUTE:
 			case COMPLEX_ATTRIBUTE:
@@ -267,7 +267,7 @@ public class SchemaPathBuilder {
 			case COMPLEX_PROPERTY:
 			case IMPLICIT_GEOMETRY_PROPERTY:
 			case GEOMETRY_PROPERTY:
-				evaluatePropertyPath(select, currentNode.parent().getPathElement(), (AbstractProperty) pathElement);
+				evaluatePropertyPath(select, currentNode.parent().getPathElement(), (AbstractProperty) pathElement, useLeftJoins);
 				break;
 			case FEATURE_TYPE:
 			case OBJECT_TYPE:
@@ -285,7 +285,7 @@ public class SchemaPathBuilder {
 		}
 	}
 
-	private void evaluatePropertyPath(Select select, AbstractPathElement parent, AbstractProperty property) throws QueryBuildException {
+	private void evaluatePropertyPath(Select select, AbstractPathElement parent, AbstractProperty property, boolean useLeftJoins) throws QueryBuildException {
 		boolean found = false;
 
 		if (PathElementType.TYPES.contains(parent.getElementType())) {
@@ -325,22 +325,22 @@ public class SchemaPathBuilder {
 		if (property instanceof InjectedProperty) {
 			InjectedProperty injectedProperty = (InjectedProperty)property;
 			if (injectedProperty.isSetBaseJoin())
-				addJoin(select, injectedProperty.getBaseJoin(), true);
+				addJoin(select, injectedProperty.getBaseJoin(), useLeftJoins);
 		}
 
 		if (property.isSetJoin()) {
 			tableContext = new HashMap<>();
-			addJoin(select, property.getJoin(), true);
+			addJoin(select, property.getJoin(), useLeftJoins);
 		}
 	}
 
-	private PredicateToken evaluatePredicatePath(Select select, AbstractPathElement parent, AbstractNodePredicate predicate, boolean matchCase) throws QueryBuildException {
+	private PredicateToken evaluatePredicatePath(Select select, AbstractPathElement parent, AbstractNodePredicate predicate, boolean matchCase, boolean useLeftJoins) throws QueryBuildException {
 		if (predicate.getPredicateName() == ComparisonPredicateName.EQUAL_TO) {
 			EqualToPredicate equalTo = (EqualToPredicate)predicate;
 			Table fromTable = currentTable;
 
 			if (PathElementType.TYPES.contains(parent.getElementType()))
-				evaluatePropertyPath(select, parent, equalTo.getLeftOperand());
+				evaluatePropertyPath(select, parent, equalTo.getLeftOperand(), useLeftJoins);
 
 			Expression leftOperand = currentTable.getColumn(equalTo.getLeftOperand().getColumn());
 			Expression rightOperand = equalTo.getRightOperand().convertToSQLPlaceHolder();
@@ -369,8 +369,8 @@ public class SchemaPathBuilder {
 		else {
 			// recursively build predicate that is composed of AND and OR operators
 			BinaryLogicalPredicate logicalPredicate = (BinaryLogicalPredicate)predicate;
-			PredicateToken leftOperand = evaluatePredicatePath(select, parent, logicalPredicate.getLeftOperand(), matchCase);
-			PredicateToken rightOperand = evaluatePredicatePath(select, parent, logicalPredicate.getRightOperand(), matchCase);
+			PredicateToken leftOperand = evaluatePredicatePath(select, parent, logicalPredicate.getLeftOperand(), matchCase, useLeftJoins);
+			PredicateToken rightOperand = evaluatePredicatePath(select, parent, logicalPredicate.getRightOperand(), matchCase, useLeftJoins);
 
 			LogicalOperationName op = logicalPredicate.getPredicateName() == LogicalPredicateName.AND ? 
 					LogicalOperationName.AND : LogicalOperationName.OR;
@@ -403,11 +403,11 @@ public class SchemaPathBuilder {
 		}
 	}
 	
-	private void addJoin(Select select, AbstractJoin abstractJoin, boolean useLeftJoin) throws QueryBuildException {
+	private void addJoin(Select select, AbstractJoin abstractJoin, boolean useLeftJoins) throws QueryBuildException {
 		if (abstractJoin instanceof Join) {
 			Join join = (Join)abstractJoin;
 			String toTable = resolveTableToken(join.getTable(), currentTable);
-			addJoin(select, join.getFromColumn(), toTable, join.getToColumn(), join.getConditions(), useLeftJoin, false);
+			addJoin(select, join.getFromColumn(), toTable, join.getToColumn(), join.getConditions(), useLeftJoins, false);
 		}
 
 		else if (abstractJoin instanceof JoinTable) {
@@ -416,12 +416,12 @@ public class SchemaPathBuilder {
 
 			// join intermediate table
 			Join join = joinTable.getJoin();
-			addJoin(select, join.getToColumn(), joinTable.getTable(), join.getFromColumn(), join.getConditions(), useLeftJoin, true);
+			addJoin(select, join.getToColumn(), joinTable.getTable(), join.getFromColumn(), join.getConditions(), useLeftJoins, true);
 
 			// join target table
 			Join inverseJoin = joinTable.getInverseJoin();
 			String toTable = resolveTableToken(inverseJoin.getTable(), fromTable);
-			addJoin(select, inverseJoin.getFromColumn(), toTable, inverseJoin.getToColumn(), inverseJoin.getConditions(), useLeftJoin, true);
+			addJoin(select, inverseJoin.getFromColumn(), toTable, inverseJoin.getToColumn(), inverseJoin.getConditions(), useLeftJoins, true);
 		}
 
 		else if (abstractJoin instanceof ReverseJoin) {

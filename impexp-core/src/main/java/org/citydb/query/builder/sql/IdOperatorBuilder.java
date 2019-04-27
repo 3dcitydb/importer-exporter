@@ -63,7 +63,7 @@ public class IdOperatorBuilder {
 	}
 
 	@SuppressWarnings("unchecked")
-	protected SQLQueryContext buildResourceIdOperator(ResourceIdOperator operator, SQLQueryContext queryContext, boolean negate) throws QueryBuildException {
+	protected SQLQueryContext buildResourceIdOperator(ResourceIdOperator operator, SQLQueryContext queryContext, boolean negate, boolean useLeftJoins) throws QueryBuildException {
 		FeatureType superType = schemaMapping.getCommonSuperType(query.getFeatureTypeFilter().getFeatureTypes());		
 		ValueReference valueReference;
 
@@ -76,7 +76,7 @@ public class IdOperatorBuilder {
 		}
 
 		// build the value reference
-		queryContext = schemaPathBuilder.buildSchemaPath(valueReference.getSchemaPath(), queryContext);
+		queryContext = schemaPathBuilder.buildSchemaPath(valueReference.getSchemaPath(), queryContext, useLeftJoins);
 		List<PredicateToken> predicates = new ArrayList<>();
 
 		if (operator.getResourceIds().size() == 1) {
