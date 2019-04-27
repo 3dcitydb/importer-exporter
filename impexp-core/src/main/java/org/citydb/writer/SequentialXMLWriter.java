@@ -21,6 +21,18 @@ public class SequentialXMLWriter {
         this.writerPool = writerPool;
     }
 
+    public long reset() {
+        currentId = 0;
+        cache.clear();
+        locks.clear();
+
+        return currentId;
+    }
+
+    public long getCurrentSequenceId() {
+        return currentId;
+    }
+
     public void write(SAXEventBuffer buffer, long sequenceId) throws InterruptedException {
         if (sequenceId >= 0) {
             lock.lock();
