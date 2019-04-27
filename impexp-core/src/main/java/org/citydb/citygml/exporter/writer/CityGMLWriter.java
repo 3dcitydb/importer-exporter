@@ -175,7 +175,7 @@ public class CityGMLWriter implements FeatureWriter, EventHandler {
 			throw new FeatureWriteException("Failed to write feature with gml:id '" + feature.getId() + "'.", e);
 		}
 
-		if (!useSequentialWriting || sequenceId < 0) {
+		if (!useSequentialWriting) {
 			if (!buffer.isEmpty())
 				writerPool.addWork(buffer);
 		} else {

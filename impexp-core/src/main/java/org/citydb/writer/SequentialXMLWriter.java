@@ -22,32 +22,35 @@ public class SequentialXMLWriter {
     }
 
     public void write(SAXEventBuffer buffer, long sequenceId) throws InterruptedException {
-        lock.lock();
-        try {
-            if (sequenceId == currentId) {
-                currentId++;
-                if (buffer != null && !buffer.isEmpty())
-                    writerPool.addWork(buffer);
-
-                CachedObject cachedObject;
-                while ((cachedObject = cache.get(currentId)) != null) {
-                    if (cachedObject.buffer != null && !cachedObject.buffer.isEmpty())
-                        writerPool.addWork(cachedObject.buffer);
-
-                    cache.remove(currentId);
-                    locks.get(cachedObject.threadId).signal();
+        if (sequenceId >= 0) {
+            lock.lock();
+            try {
+                if (sequenceId == currentId) {
                     currentId++;
-                }
-            } else {
-                long threadId = Thread.currentThread().getId();
-                cache.put(sequenceId, new CachedObject(buffer, threadId));
+                    if (buffer != null && !buffer.isEmpty())
+                        writerPool.addWork(buffer);
 
-                if (shouldRun)
-                    locks.computeIfAbsent(threadId, v -> lock.newCondition()).await();
+                    CachedObject cachedObject;
+                    while ((cachedObject = cache.get(currentId)) != null) {
+                        if (cachedObject.buffer != null && !cachedObject.buffer.isEmpty())
+                            writerPool.addWork(cachedObject.buffer);
+
+                        cache.remove(currentId);
+                        locks.get(cachedObject.threadId).signal();
+                        currentId++;
+                    }
+                } else {
+                    long threadId = Thread.currentThread().getId();
+                    cache.put(sequenceId, new CachedObject(buffer, threadId));
+
+                    if (shouldRun)
+                        locks.computeIfAbsent(threadId, v -> lock.newCondition()).await();
+                }
+            } finally {
+                lock.unlock();
             }
-        } finally {
-            lock.unlock();
-        }
+        } else if (buffer != null && !buffer.isEmpty())
+            writerPool.addWork(buffer);
     }
 
     public void updateSequenceId(long sequenceId) throws InterruptedException {
