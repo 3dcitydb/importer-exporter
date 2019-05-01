@@ -30,8 +30,8 @@ package org.citydb.writer;
 import org.citydb.concurrent.Worker;
 import org.citydb.concurrent.WorkerFactory;
 import org.citydb.event.EventDispatcher;
-import org.citygml4j.binding.cityjson.feature.AbstractCityObjectType;
 import org.citygml4j.builder.cityjson.json.io.writer.CityJSONChunkWriter;
+import org.citygml4j.cityjson.feature.AbstractCityObjectType;
 
 public class CityJSONWriterWorkerFactory implements WorkerFactory<AbstractCityObjectType> {
 	private final CityJSONChunkWriter writer;
