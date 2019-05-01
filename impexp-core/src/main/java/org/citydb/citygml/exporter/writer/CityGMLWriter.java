@@ -35,7 +35,7 @@ import org.citydb.event.EventDispatcher;
 import org.citydb.event.EventHandler;
 import org.citydb.event.global.EventType;
 import org.citydb.registry.ObjectRegistry;
-import org.citydb.writer.SequentialXMLWriter;
+import org.citydb.writer.SequentialWriter;
 import org.citydb.writer.XMLWriterWorkerFactory;
 import org.citygml4j.builder.jaxb.CityGMLBuilder;
 import org.citygml4j.builder.jaxb.marshal.JAXBMarshaller;
@@ -82,7 +82,7 @@ public class CityGMLWriter implements FeatureWriter, EventHandler {
 	private volatile boolean headerWritten = false;
 	private Metadata metadata;
 
-	private SequentialXMLWriter sequentialWriter;
+	private SequentialWriter<SAXEventBuffer> sequentialWriter;
 
 	CityGMLWriter(SAXWriter saxWriter, CityGMLVersion version, TransformerChainFactory transformerChainFactory, boolean useSequentialWriting) {
 		this.saxWriter = saxWriter;
@@ -105,7 +105,7 @@ public class CityGMLWriter implements FeatureWriter, EventHandler {
 		writerPool.prestartCoreWorkers();
 
 		if (useSequentialWriting)
-			sequentialWriter = new SequentialXMLWriter(writerPool);
+			sequentialWriter = new SequentialWriter<>(writerPool);
 	}
 
 	@Override
@@ -175,10 +175,12 @@ public class CityGMLWriter implements FeatureWriter, EventHandler {
 			throw new FeatureWriteException("Failed to write feature with gml:id '" + feature.getId() + "'.", e);
 		}
 
-		if (!useSequentialWriting) {
-			if (!buffer.isEmpty())
-				writerPool.addWork(buffer);
-		} else {
+		if (buffer.isEmpty())
+			throw new FeatureWriteException("Failed to write feature with gml:id '" + feature.getId() + "'.");
+
+		if (!useSequentialWriting)
+			writerPool.addWork(buffer);
+		else {
 			try {
 				sequentialWriter.write(buffer, sequenceId);
 			} catch (InterruptedException e) {

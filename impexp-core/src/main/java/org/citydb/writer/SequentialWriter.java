@@ -1,23 +1,23 @@
 package org.citydb.writer;
 
 import org.citydb.concurrent.WorkerPool;
-import org.citygml4j.util.xml.SAXEventBuffer;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
-public class SequentialXMLWriter {
+public class SequentialWriter<T> {
     private final ReentrantLock lock = new ReentrantLock();
-    private final WorkerPool<SAXEventBuffer> writerPool;
+    private final WorkerPool<T> writerPool;
 
     private Map<Long, CachedObject> cache = new HashMap<>();
     private Map<Long, Condition> locks = new HashMap<>();
     private long currentId = 0;
     private volatile boolean shouldRun = true;
 
-    public SequentialXMLWriter(WorkerPool<SAXEventBuffer> writerPool) {
+    public SequentialWriter(WorkerPool<T> writerPool) {
         this.writerPool = writerPool;
     }
 
@@ -33,19 +33,19 @@ public class SequentialXMLWriter {
         return currentId;
     }
 
-    public void write(SAXEventBuffer buffer, long sequenceId) throws InterruptedException {
+    public void write(T object, long sequenceId) throws InterruptedException {
         if (sequenceId >= 0) {
             lock.lock();
             try {
                 if (sequenceId == currentId) {
                     currentId++;
-                    if (buffer != null && !buffer.isEmpty())
-                        writerPool.addWork(buffer);
+                    if (object != null)
+                        writerPool.addWork(object);
 
                     CachedObject cachedObject;
                     while ((cachedObject = cache.get(currentId)) != null) {
-                        if (cachedObject.buffer != null && !cachedObject.buffer.isEmpty())
-                            writerPool.addWork(cachedObject.buffer);
+                        if (cachedObject.object != null)
+                            writerPool.addWork(cachedObject.object);
 
                         cache.remove(currentId);
                         locks.get(cachedObject.threadId).signal();
@@ -53,7 +53,7 @@ public class SequentialXMLWriter {
                     }
                 } else {
                     long threadId = Thread.currentThread().getId();
-                    cache.put(sequenceId, new CachedObject(buffer, threadId));
+                    cache.put(sequenceId, new CachedObject(object, threadId));
 
                     if (shouldRun)
                         locks.computeIfAbsent(threadId, v -> lock.newCondition()).await();
@@ -61,8 +61,8 @@ public class SequentialXMLWriter {
             } finally {
                 lock.unlock();
             }
-        } else if (buffer != null && !buffer.isEmpty())
-            writerPool.addWork(buffer);
+        } else if (object != null)
+            writerPool.addWork(object);
     }
 
     public void updateSequenceId(long sequenceId) throws InterruptedException {
@@ -75,8 +75,8 @@ public class SequentialXMLWriter {
             if (!cache.isEmpty()) {
                 cache.entrySet().stream()
                         .sorted(Map.Entry.comparingByKey())
-                        .map(e -> e.getValue().buffer)
-                        .filter(b -> b != null && !b.isEmpty())
+                        .map(e -> e.getValue().object)
+                        .filter(Objects::nonNull)
                         .forEach(writerPool::addWork);
 
                 cache.clear();
@@ -102,11 +102,11 @@ public class SequentialXMLWriter {
     }
 
     private final class CachedObject {
-        private final SAXEventBuffer buffer;
+        private final T object;
         private final long threadId;
 
-        private CachedObject(SAXEventBuffer buffer, long threadId) {
-            this.buffer = buffer;
+        private CachedObject(T object, long threadId) {
+            this.object = object;
             this.threadId = threadId;
         }
     }
