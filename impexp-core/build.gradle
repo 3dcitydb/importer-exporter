@@ -12,7 +12,7 @@ dependencies {
     compile 'org.geotools:gt-epsg-hsql:20.1'
     compile 'org.geotools:gt-referencing:20.1'
     compile 'com.h2database:h2:1.4.197'
-    compile 'org.locationtech.jts:jts-core:1.16.0'
+    compile 'org.locationtech.jts:jts-core:1.16.1'
     compile 'org.postgresql:postgresql:42.2.5'
     compile 'net.postgis:postgis-jdbc:2.3.0'
     compile 'org.apache.tomcat:tomcat-jdbc:9.0.19'
