@@ -25,20 +25,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.citydb.citygml.exporter.writer;
 
-import org.citydb.citygml.exporter.util.Metadata;
-import org.citygml4j.model.gml.feature.AbstractFeature;
-
-public interface FeatureWriter extends AutoCloseable {
-	void writeHeader() throws FeatureWriteException;
-	void write(AbstractFeature feature, long sequenceId) throws FeatureWriteException;
-	void updateSequenceId(long sequenceId) throws FeatureWriteException;
-	void useIndentation(boolean useIndentation);
-	Metadata getMetadata();
-	void close() throws FeatureWriteException;
-
-	default boolean supportsFlatHierarchies() {
-		return true;
-	}
-}
+@javax.xml.bind.annotation.XmlAccessorType(javax.xml.bind.annotation.XmlAccessType.FIELD)
+@javax.xml.bind.annotation.XmlSchema(namespace="http://www.3dcitydb.org/importer-exporter/config", elementFormDefault = javax.xml.bind.annotation.XmlNsForm.QUALIFIED)
+package org.citydb.config.project.query.filter.sorting;

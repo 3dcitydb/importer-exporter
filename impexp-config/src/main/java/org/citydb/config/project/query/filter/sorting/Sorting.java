@@ -25,20 +25,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.citydb.citygml.exporter.writer;
 
-import org.citydb.citygml.exporter.util.Metadata;
-import org.citygml4j.model.gml.feature.AbstractFeature;
+package org.citydb.config.project.query.filter.sorting;
 
-public interface FeatureWriter extends AutoCloseable {
-	void writeHeader() throws FeatureWriteException;
-	void write(AbstractFeature feature, long sequenceId) throws FeatureWriteException;
-	void updateSequenceId(long sequenceId) throws FeatureWriteException;
-	void useIndentation(boolean useIndentation);
-	Metadata getMetadata();
-	void close() throws FeatureWriteException;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlType;
+import java.util.ArrayList;
+import java.util.List;
 
-	default boolean supportsFlatHierarchies() {
-		return true;
-	}
+@XmlType(name="SortingType", propOrder={
+        "sortProperties"
+})
+public class Sorting {
+    @XmlElement(name="sortProperty", required = true)
+    private List<SortProperty> sortProperties;
+
+    public Sorting() {
+        sortProperties = new ArrayList<>();
+    }
+
+    public boolean hasSortProperties() {
+        return sortProperties != null && !sortProperties.isEmpty();
+    }
+
+    public List<SortProperty> getSortProperties() {
+        return sortProperties;
+    }
+
+    public void setSortProperties(List<SortProperty> sortProperties) {
+        if (sortProperties != null && !sortProperties.isEmpty())
+            this.sortProperties = sortProperties;
+    }
+
 }

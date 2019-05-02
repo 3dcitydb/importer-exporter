@@ -27,14 +27,14 @@
  */
 package org.citydb.query.filter.tiling;
 
-import java.sql.SQLException;
-
 import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.config.geometry.Position;
 import org.citydb.config.project.database.DatabaseSrs;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.query.filter.FilterException;
+
+import java.sql.SQLException;
 
 public class Tiling {
 	private BoundingBox extent;

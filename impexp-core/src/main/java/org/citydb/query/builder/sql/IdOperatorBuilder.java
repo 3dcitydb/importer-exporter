@@ -48,25 +48,22 @@ import org.citygml4j.model.module.gml.GMLCoreModule;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 public class IdOperatorBuilder {
 	private final Query query;
 	private final SchemaPathBuilder schemaPathBuilder;
-	private final Set<Integer> objectClassIds;
 	private final SchemaMapping schemaMapping;
 	private final AbstractSQLAdapter sqlAdapter;
 
-	protected IdOperatorBuilder(Query query, SchemaPathBuilder schemaPathBuilder, Set<Integer> objectClassIds, SchemaMapping schemaMapping, AbstractSQLAdapter sqlAdapter) {
+	protected IdOperatorBuilder(Query query, SchemaPathBuilder schemaPathBuilder, SchemaMapping schemaMapping, AbstractSQLAdapter sqlAdapter) {
 		this.query = query;
 		this.schemaPathBuilder = schemaPathBuilder;
-		this.objectClassIds = objectClassIds;
 		this.schemaMapping = schemaMapping;
 		this.sqlAdapter = sqlAdapter;
 	}
 
 	@SuppressWarnings("unchecked")
-	protected SQLQueryContext buildResourceIdOperator(ResourceIdOperator operator, boolean negate) throws QueryBuildException {
+	protected SQLQueryContext buildResourceIdOperator(ResourceIdOperator operator, SQLQueryContext queryContext, boolean negate, boolean useLeftJoins) throws QueryBuildException {
 		FeatureType superType = schemaMapping.getCommonSuperType(query.getFeatureTypeFilter().getFeatureTypes());		
 		ValueReference valueReference;
 
@@ -79,11 +76,11 @@ public class IdOperatorBuilder {
 		}
 
 		// build the value reference
-		SQLQueryContext queryContext = schemaPathBuilder.buildSchemaPath(valueReference.getSchemaPath(), objectClassIds);
+		queryContext = schemaPathBuilder.buildSchemaPath(valueReference.getSchemaPath(), queryContext, useLeftJoins);
 		List<PredicateToken> predicates = new ArrayList<>();
 
 		if (operator.getResourceIds().size() == 1) {
-			queryContext.select.addSelection(ComparisonFactory.equalTo(queryContext.targetColumn, new PlaceHolder<>(operator.getResourceIds().iterator().next())));
+			queryContext.addPredicate(ComparisonFactory.equalTo(queryContext.targetColumn, new PlaceHolder<>(operator.getResourceIds().iterator().next())));
 		} else {
 			List<PlaceHolder<String>> placeHolders = new ArrayList<>();
 			int maxItems = sqlAdapter.getMaximumNumberOfItemsForInOperator();
@@ -101,10 +98,10 @@ public class IdOperatorBuilder {
 			}
 
 			if (predicates.size() == 1) {
-				queryContext.select.addSelection(predicates.get(0));
+				queryContext.addPredicate(predicates.get(0));
 			} else {
 				LogicalOperationName name = negate ? LogicalOperationName.AND : LogicalOperationName.OR;
-				queryContext.select.addSelection(new BinaryLogicalOperator(name, predicates));
+				queryContext.addPredicate(new BinaryLogicalOperator(name, predicates));
 			}
 		}
 

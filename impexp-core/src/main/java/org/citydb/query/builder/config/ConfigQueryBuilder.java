@@ -43,6 +43,7 @@ import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.schema.mapping.SchemaMapping;
 import org.citydb.query.Query;
 import org.citydb.query.builder.QueryBuildException;
+import org.citydb.query.builder.util.ValueReferenceBuilder;
 import org.citydb.query.filter.FilterException;
 import org.citydb.query.filter.selection.Predicate;
 import org.citydb.query.filter.selection.SelectionFilter;
@@ -68,6 +69,8 @@ public class ConfigQueryBuilder {
 
 	public Query buildQuery(org.citydb.config.project.query.Query queryConfig, NamespaceContext namespaceContext) throws QueryBuildException {
 		Query query = new Query();
+
+		ValueReferenceBuilder valueReferenceBuilder = new ValueReferenceBuilder(query, schemaMapping, namespaceContext);
 
 		// target SRS
 		if (queryConfig.isSetTargetSrs())
@@ -113,7 +116,7 @@ public class ConfigQueryBuilder {
 		// selection filter
 		if (queryConfig.isSetSelectionFilter()) {
 			AbstractPredicate predicate = queryConfig.getSelectionFilter().getPredicate();
-			PredicateBuilder predicateBuilder = new PredicateBuilder(query, schemaMapping, namespaceContext, databaseAdapter);			
+			PredicateBuilder predicateBuilder = new PredicateBuilder(valueReferenceBuilder, databaseAdapter);
 			query.setSelection(new SelectionFilter(predicateBuilder.buildPredicate(predicate)));
 		}
 
@@ -121,6 +124,12 @@ public class ConfigQueryBuilder {
 		if (queryConfig.isSetAppearanceFilter()) {
 			AppearanceFilterBuilder builder = new AppearanceFilterBuilder();
 			query.setAppearanceFilter(builder.buildAppearanceFilter(queryConfig.getAppearanceFilter()));
+		}
+
+		// sorting clause
+		if (queryConfig.isSetSorting() && queryConfig.getSorting().hasSortProperties()) {
+			SortingBuilder sortingBuilder = new SortingBuilder(valueReferenceBuilder);
+			query.setSorting(sortingBuilder.buildSorting(queryConfig.getSorting()));
 		}
 
 		// tiling
@@ -136,6 +145,9 @@ public class ConfigQueryBuilder {
 		// support for legacy CityGML export filter
 		Query query = new Query();
 
+		ValueReferenceBuilder valueReferenceBuilder = new ValueReferenceBuilder(query, schemaMapping, namespaceContext);
+		PredicateBuilder predicateBuilder = new PredicateBuilder(valueReferenceBuilder, databaseAdapter);
+
 		// CityGML version
 		CityGMLVersion version = Util.toCityGMLVersion(queryConfig.getVersion()); 
 		query.setTargetVersion(version);
@@ -145,17 +157,6 @@ public class ConfigQueryBuilder {
 			query.setTargetSrs(queryConfig.getTargetSrs());
 		else
 			query.setTargetSrs(databaseAdapter.getConnectionMetaData().getReferenceSystem());
-
-		PredicateBuilder predicateBuilder = new PredicateBuilder(query, schemaMapping, namespaceContext, databaseAdapter);
-
-		// lod filter
-		if (queryConfig.isUseLodFilter() && queryConfig.isSetLodFilter()) {
-			LodFilterBuilder lodFilterBuilder = new LodFilterBuilder();
-			query.setLodFilter(lodFilterBuilder.buildLodFilter(queryConfig.getLodFilter()));
-		}
-
-		// simple filter settings
-		List<Predicate> predicates = new ArrayList<>();
 
 		// feature type filter
 		if (queryConfig.isUseTypeNames()) {
@@ -171,6 +172,15 @@ public class ConfigQueryBuilder {
 				throw new QueryBuildException("Failed to build the feature type filter.", e);
 			}
 		}
+
+		// lod filter
+		if (queryConfig.isUseLodFilter() && queryConfig.isSetLodFilter()) {
+			LodFilterBuilder lodFilterBuilder = new LodFilterBuilder();
+			query.setLodFilter(lodFilterBuilder.buildLodFilter(queryConfig.getLodFilter()));
+		}
+
+		// simple filter settings
+		List<Predicate> predicates = new ArrayList<>();
 
 		if (queryConfig.isUseSelectionFilter() && queryConfig.isSetSelectionFilter()) {
 			SimpleSelectionFilter selectionFilter = queryConfig.getSelectionFilter();
@@ -257,7 +267,8 @@ public class ConfigQueryBuilder {
 		// always use CityGML 2.0 as target version
 		query.setTargetVersion(CityGMLVersion.v2_0_0);
 
-		PredicateBuilder predicateBuilder = new PredicateBuilder(query, schemaMapping, namespaceContext, databaseAdapter);
+		ValueReferenceBuilder valueReferenceBuilder = new ValueReferenceBuilder(query, schemaMapping, namespaceContext);
+		PredicateBuilder predicateBuilder = new PredicateBuilder(valueReferenceBuilder, databaseAdapter);
 
 		// simple filter settings
 		if (queryConfig.getMode() == SimpleKmlQueryMode.SINGLE) {

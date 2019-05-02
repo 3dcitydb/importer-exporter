@@ -83,6 +83,7 @@
       <xs:element name="count" type="CounterFilterType" minOccurs="0"/>
       <xs:element name="lods" type="LodFilterType" minOccurs="0"/>
       <xs:element name="appearance" type="AppearanceFilterType" minOccurs="0"/>
+      <xs:element name="sortBy" type="SortingType" minOccurs="0"/>
       <xs:element name="tiling" type="TilingType" minOccurs="0"/>
     </xs:sequence>
     <xs:attribute name="targetSrs" type="xs:IDREF"/>
@@ -627,6 +628,19 @@
     </xs:sequence>
   </xs:complexType>
 
+  <xs:complexType name="SortingType">
+    <xs:sequence>
+      <xs:element name="sortProperty" type="SortPropertyType" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="SortPropertyType">
+    <xs:sequence>
+      <xs:element name="valueReference" type="xs:string"/>
+      <xs:element name="sortOrder" type="SortOrderType" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
   <xs:complexType name="TilingType">
     <xs:complexContent>
       <xs:extension base="AbstractTilingType">
@@ -706,6 +720,13 @@
     <xs:restriction base="xs:string">
       <xs:enumeration value="all"/>
       <xs:enumeration value="depth"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="SortOrderType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="asc"/>
+      <xs:enumeration value="desc"/>
     </xs:restriction>
   </xs:simpleType>
 

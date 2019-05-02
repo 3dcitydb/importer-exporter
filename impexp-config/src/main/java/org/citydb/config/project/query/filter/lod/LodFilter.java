@@ -27,11 +27,10 @@
  */
 package org.citydb.config.project.query.filter.lod;
 
-import java.util.LinkedHashSet;
-
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
+import java.util.LinkedHashSet;
 
 @XmlType(name="LodFilterType", propOrder={
 		"lods"

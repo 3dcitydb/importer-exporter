@@ -40,22 +40,18 @@ import org.citydb.query.filter.selection.operator.sql.SelectOperator;
 import org.citydb.sqlbuilder.expression.LiteralSelectExpression;
 import org.citydb.sqlbuilder.select.operator.comparison.InOperator;
 
-import java.util.Set;
-
 public class SelectOperatorBuilder {
     private final Query query;
     private final SchemaPathBuilder schemaPathBuilder;
-    private final Set<Integer> objectClassIds;
     private final SchemaMapping schemaMapping;
 
-    protected SelectOperatorBuilder(Query query, SchemaPathBuilder schemaPathBuilder, Set<Integer> objectclassIds, SchemaMapping schemaMapping) {
+    protected SelectOperatorBuilder(Query query, SchemaPathBuilder schemaPathBuilder, SchemaMapping schemaMapping) {
         this.query = query;
         this.schemaPathBuilder = schemaPathBuilder;
         this.schemaMapping = schemaMapping;
-        this.objectClassIds = objectclassIds;
     }
 
-    protected SQLQueryContext buildSelectOperator(SelectOperator operator, boolean negate) throws QueryBuildException {
+    protected SQLQueryContext buildSelectOperator(SelectOperator operator, SQLQueryContext queryContext, boolean negate, boolean useLeftJoins) throws QueryBuildException {
         if (!operator.isSetSelect())
             throw new QueryBuildException("No select statement provided for the SQL operator.");
 
@@ -71,9 +67,9 @@ public class SelectOperatorBuilder {
         }
 
         // build the value reference
-        SQLQueryContext queryContext = schemaPathBuilder.buildSchemaPath(valueReference.getSchemaPath(), objectClassIds);
+        queryContext = schemaPathBuilder.buildSchemaPath(valueReference.getSchemaPath(), queryContext, useLeftJoins);
         LiteralSelectExpression subQuery = new LiteralSelectExpression(operator.getSelect());
-        queryContext.select.addSelection(new InOperator(queryContext.targetColumn, subQuery, negate));
+        queryContext.addPredicate(new InOperator(queryContext.targetColumn, subQuery, negate));
 
         return queryContext;
     }

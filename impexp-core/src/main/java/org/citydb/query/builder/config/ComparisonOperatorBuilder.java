@@ -27,25 +27,12 @@
  */
 package org.citydb.query.builder.config;
 
-import javax.xml.bind.DatatypeConverter;
-import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeConstants;
-import javax.xml.datatype.DatatypeFactory;
-import javax.xml.datatype.XMLGregorianCalendar;
-import javax.xml.namespace.NamespaceContext;
-
 import org.citydb.config.project.query.filter.selection.comparison.AbstractBinaryComparisonOperator;
 import org.citydb.database.schema.mapping.AbstractProperty;
-import org.citydb.database.schema.mapping.FeatureType;
 import org.citydb.database.schema.mapping.PathElementType;
-import org.citydb.database.schema.mapping.SchemaMapping;
 import org.citydb.database.schema.mapping.SimpleAttribute;
-import org.citydb.database.schema.path.InvalidSchemaPathException;
-import org.citydb.database.schema.path.SchemaPath;
-import org.citydb.database.schema.util.SimpleXPathParser;
-import org.citydb.database.schema.util.XPathException;
-import org.citydb.query.Query;
 import org.citydb.query.builder.QueryBuildException;
+import org.citydb.query.builder.util.ValueReferenceBuilder;
 import org.citydb.query.filter.FilterException;
 import org.citydb.query.filter.selection.Predicate;
 import org.citydb.query.filter.selection.expression.AbstractLiteral;
@@ -63,17 +50,17 @@ import org.citydb.query.filter.selection.operator.comparison.ComparisonFactory;
 import org.citydb.query.filter.selection.operator.comparison.LikeOperator;
 import org.citydb.query.filter.selection.operator.comparison.NullOperator;
 
+import javax.xml.bind.DatatypeConverter;
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeConstants;
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.XMLGregorianCalendar;
+
 public class ComparisonOperatorBuilder {
-	private final Query query;
-	private final SimpleXPathParser xPathParser;
-	private final SchemaMapping schemaMapping;
-	private final NamespaceContext namespaceContext;
+	private final ValueReferenceBuilder valueReferenceBuilder;
 	
-	protected ComparisonOperatorBuilder(Query query, SimpleXPathParser xPathParser, SchemaMapping schemaMapping, NamespaceContext namespaceContext) {
-		this.query = query;
-		this.xPathParser = xPathParser;
-		this.schemaMapping = schemaMapping;
-		this.namespaceContext = namespaceContext;	
+	protected ComparisonOperatorBuilder(ValueReferenceBuilder valueReferenceBuilder) {
+		this.valueReferenceBuilder = valueReferenceBuilder;
 	}
 
 	protected Predicate buildComparisonOperator(org.citydb.config.project.query.filter.selection.comparison.AbstractComparisonOperator operatorConfig) throws QueryBuildException {
@@ -114,7 +101,7 @@ public class ComparisonOperatorBuilder {
 			throw new QueryBuildException("The binary comparison operator " + operatorConfig.getOperatorName() + " requires a literal value.");
 
 		// build the value reference
-		ValueReference valueReference = buildValueReference(operatorConfig);
+		ValueReference valueReference = valueReferenceBuilder.buildValueReference(operatorConfig);
 		if (valueReference.getTarget().getElementType() != PathElementType.SIMPLE_ATTRIBUTE)
 			throw new QueryBuildException("The value reference of the comparison operator " + operatorConfig.getOperatorName() + " must point to a simple thematic attribute.");
 
@@ -157,7 +144,7 @@ public class ComparisonOperatorBuilder {
 			throw new QueryBuildException("The between operator requires both a lower and upper boundary value.");
 
 		// build the value reference
-		ValueReference valueReference = buildValueReference(operatorConfig);
+		ValueReference valueReference = valueReferenceBuilder.buildValueReference(operatorConfig);
 		if (valueReference.getTarget().getElementType() != PathElementType.SIMPLE_ATTRIBUTE)
 			throw new QueryBuildException("The value reference of the comparison operator " + operatorConfig.getOperatorName() + " must point to a simple thematic attribute.");
 
@@ -174,7 +161,7 @@ public class ComparisonOperatorBuilder {
 			throw new QueryBuildException("The like operator requires a literal value.");
 
 		// build the value reference
-		ValueReference valueReference = buildValueReference(operatorConfig);
+		ValueReference valueReference = valueReferenceBuilder.buildValueReference(operatorConfig);
 		if (valueReference.getTarget().getElementType() != PathElementType.SIMPLE_ATTRIBUTE)
 			throw new QueryBuildException("The value reference of the comparison operator " + operatorConfig.getOperatorName() + " must point to a simple thematic attribute.");
 
@@ -207,29 +194,12 @@ public class ComparisonOperatorBuilder {
 
 	private NullOperator buildNullComparison(org.citydb.config.project.query.filter.selection.comparison.NullOperator operatorConfig) throws FilterException, QueryBuildException {
 		// build the value reference
-		ValueReference valueReference = buildValueReference(operatorConfig);
+		ValueReference valueReference = valueReferenceBuilder.buildValueReference(operatorConfig);
 		if (!(valueReference.getTarget() instanceof AbstractProperty))
 			throw new QueryBuildException("The value reference of the comparison operator " + operatorConfig.getOperatorName() + " must point to a property.");
 
 		// finally, create equivalent filter operation
 		return ComparisonFactory.isNull(valueReference);
-	}
-
-	private ValueReference buildValueReference(org.citydb.config.project.query.filter.selection.comparison.AbstractComparisonOperator operatorConfig) throws QueryBuildException {
-		ValueReference valueReference = null;
-
-		try {
-			FeatureType featureType = schemaMapping.getCommonSuperType(query.getFeatureTypeFilter().getFeatureTypes());
-			SchemaPath path = xPathParser.parse(operatorConfig.getValueReference(), featureType, namespaceContext);
-			valueReference = new ValueReference(path);
-
-			// reset XPath expression using default namespace prefixes
-			operatorConfig.setValueReference(path.toXPath());
-		} catch (XPathException | InvalidSchemaPathException e) {
-			throw new QueryBuildException("Failed to parse the value reference " + operatorConfig.getValueReference() + ".", e);
-		}
-
-		return valueReference;
 	}
 
 	private AbstractLiteral<?> convertToLiteral(String literalValue, SimpleAttribute attribute) throws QueryBuildException {

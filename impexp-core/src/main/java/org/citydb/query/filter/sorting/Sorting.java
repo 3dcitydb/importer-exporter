@@ -25,33 +25,47 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.citydb.query.filter.selection.operator.logical;
+
+package org.citydb.query.filter.sorting;
 
 import org.citydb.query.filter.FilterException;
-import org.citydb.query.filter.selection.Predicate;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
-public class LogicalOperationFactory {
+public class Sorting {
+    private List<SortProperty> sortProperties;
 
-	public static BinaryLogicalOperator AND(List<Predicate> operands) throws FilterException {
-		return new BinaryLogicalOperator(LogicalOperatorName.AND, operands);
-	}
-	
-	public static BinaryLogicalOperator AND(Predicate... operands) throws FilterException {
-		return new BinaryLogicalOperator(LogicalOperatorName.AND, operands);
-	}
-	
-	public static BinaryLogicalOperator OR(List<Predicate> operands) throws FilterException {
-		return new BinaryLogicalOperator(LogicalOperatorName.OR, operands);
-	}
-	
-	public static BinaryLogicalOperator OR(Predicate... operands) throws FilterException {
-		return new BinaryLogicalOperator(LogicalOperatorName.OR, operands);
-	}
-	
-	public static NotOperator NOT(Predicate operand) {
-		return new NotOperator(operand);
-	}
-	
+    public Sorting() {
+        sortProperties = new ArrayList<>();
+    }
+
+    public Sorting(List<SortProperty> sortProperties) throws FilterException {
+        if (sortProperties == null)
+            throw new FilterException("Sort properties may not be null.");
+
+        this.sortProperties = sortProperties;
+    }
+
+    public Sorting(SortProperty... sortProperties) throws FilterException {
+        this(Arrays.asList(sortProperties));
+    }
+
+    public boolean hasSortProperties() {
+        return sortProperties != null && !sortProperties.isEmpty();
+    }
+
+    public void addSortProperty(SortProperty sortProperty) {
+        sortProperties.add(sortProperty);
+    }
+
+    public boolean removeSortProperty(SortProperty sortProperty) {
+        return sortProperties.remove(sortProperty);
+    }
+
+    public List<SortProperty> getSortProperties() {
+        return sortProperties;
+    }
+
 }

@@ -445,12 +445,17 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 	}
 
 	@Override
-	public boolean exportAsGlobalFeature(AbstractFeature feature, long id) throws CityGMLExportException {
+	public boolean exportAsGlobalFeature(AbstractFeature feature) throws CityGMLExportException {
 		if (featureWriter.supportsFlatHierarchies()) {
 			if (!query.getFeatureTypeFilter().containsFeatureType(getFeatureType(feature)))
 				feature.setLocalProperty(CoreConstants.EXPORT_AS_ADDITIONAL_OBJECT, true);
 
-			writeFeatureMember(feature, id);
+			try {
+				featureWriter.write(feature, -1);
+			} catch (FeatureWriteException e) {
+				throw new CityGMLExportException("Failed to write global feature with gml:id '" + feature.getId() + "'.", e);
+			}
+
 			updateExportCounter(feature);
 			return true;
 		}
@@ -700,14 +705,6 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 				&& !query.getLodFilter().preservesGeometry()
 				&& object instanceof AbstractCityObject)
 			appearanceRemover.cleanupAppearance((AbstractCityObject)object);
-	}
-
-	public void writeFeatureMember(AbstractFeature feature, long id) throws CityGMLExportException {
-		try {
-			featureWriter.write(feature);
-		} catch (FeatureWriteException e) {
-			throw new CityGMLExportException("Failed to write feature " + getObjectSignature(getFeatureType(feature.getClass()), id), e);
-		}
 	}
 
 	public void updateExportCounter(AbstractGML object) {

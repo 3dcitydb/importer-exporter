@@ -27,12 +27,6 @@
  */
 package org.citydb.query.geometry.gml;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.xml.bind.JAXBElement;
-import javax.xml.namespace.QName;
-
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.config.project.database.DatabaseSrs;
 import org.citydb.query.filter.selection.operator.spatial.SpatialOperandName;
@@ -85,6 +79,11 @@ import org.citygml4j.model.gml.geometry.primitives.SurfaceProperty;
 import org.citygml4j.model.gml.geometry.primitives.Triangle;
 import org.citygml4j.xml.io.reader.MissingADESchemaException;
 import org.w3c.dom.Node;
+
+import javax.xml.bind.JAXBElement;
+import javax.xml.namespace.QName;
+import java.util.ArrayList;
+import java.util.List;
 
 public class SimpleGMLParser {
 	private final JAXBUnmarshaller unmarshaller;

@@ -68,26 +68,20 @@ import org.citydb.sqlbuilder.select.operator.logical.LogicalOperationFactory;
 import org.citydb.sqlbuilder.select.projection.ConstantColumn;
 import org.citydb.sqlbuilder.select.projection.Function;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 public class ComparisonOperatorBuilder {
 	private final SchemaPathBuilder schemaPathBuilder;
 	private final AbstractSQLAdapter sqlAdapter;
-	private final Set<Integer> objectclassIds;
 	private final String schemaName;
 
-	protected ComparisonOperatorBuilder(SchemaPathBuilder schemaPathBuilder, Set<Integer> objectclassIds, AbstractSQLAdapter sqlAdapter, String schemaName) {
+	protected ComparisonOperatorBuilder(SchemaPathBuilder schemaPathBuilder, AbstractSQLAdapter sqlAdapter, String schemaName) {
 		this.schemaPathBuilder = schemaPathBuilder;
-		this.objectclassIds = objectclassIds;
 		this.sqlAdapter = sqlAdapter;
 		this.schemaName = schemaName;
 	}
 
-	protected SQLQueryContext buildComparisonOperator(AbstractComparisonOperator operator, boolean negate) throws QueryBuildException {
-		SQLQueryContext queryContext = null;
-
+	protected SQLQueryContext buildComparisonOperator(AbstractComparisonOperator operator, SQLQueryContext queryContext, boolean negate, boolean useLeftJoins) throws QueryBuildException {
 		switch (operator.getOperatorName()) {
 		case EQUAL_TO:
 		case NOT_EQUAL_TO:
@@ -95,23 +89,23 @@ public class ComparisonOperatorBuilder {
 		case GREATER_THAN:
 		case LESS_THAN_OR_EQUAL_TO:
 		case GREATER_THAN_OR_EQUAL_TO:
-			queryContext = buildBinaryOperator((BinaryComparisonOperator)operator, negate);
+			queryContext = buildBinaryOperator((BinaryComparisonOperator)operator, queryContext, negate, useLeftJoins);
 			break;
 		case BETWEEN:
-			queryContext = buildBetweenOperator((BetweenOperator)operator, negate);
+			queryContext = buildBetweenOperator((BetweenOperator)operator, queryContext, negate, useLeftJoins);
 			break;
 		case LIKE:
-			queryContext = buildLikeOperator((LikeOperator)operator, negate);
+			queryContext = buildLikeOperator((LikeOperator)operator, queryContext, negate, useLeftJoins);
 			break;
 		case NULL:
-			queryContext = buildNullComparison((NullOperator)operator, negate);
+			queryContext = buildNullComparison((NullOperator)operator, queryContext, negate, useLeftJoins);
 			break;
 		}
 
 		return queryContext;
 	}
 
-	private SQLQueryContext buildBinaryOperator(BinaryComparisonOperator operator, boolean negate) throws QueryBuildException {
+	private SQLQueryContext buildBinaryOperator(BinaryComparisonOperator operator, SQLQueryContext queryContext, boolean negate, boolean useLeftJoins) throws QueryBuildException {
 		if (!ComparisonOperatorName.BINARY_COMPARISONS.contains(operator.getOperatorName()))
 			throw new QueryBuildException(operator + " is not a binary comparison operator.");
 
@@ -139,7 +133,7 @@ public class ComparisonOperatorBuilder {
 			throw new QueryBuildException("Only combinations of ValueReference and Literal are supported as operands of a binary comparison operator.");
 
 		// build the value reference
-		SQLQueryContext queryContext = schemaPathBuilder.buildSchemaPath(valueReference.getSchemaPath(), objectclassIds, operator.isMatchCase());
+		queryContext = schemaPathBuilder.buildSchemaPath(valueReference.getSchemaPath(), queryContext, operator.isMatchCase(), useLeftJoins);
 
 		// check for type mismatch of literal
 		SimpleAttribute attribute = (SimpleAttribute)valueReference.getTarget();
@@ -163,22 +157,22 @@ public class ComparisonOperatorBuilder {
 		// finally, create equivalent sql operation
 		switch (operator.getOperatorName()) {
 		case EQUAL_TO:
-			queryContext.select.addSelection(ComparisonFactory.equalTo(leftOperand, rightOperand, negate));
+			queryContext.addPredicate(ComparisonFactory.equalTo(leftOperand, rightOperand, negate));
 			break;
 		case NOT_EQUAL_TO:
-			queryContext.select.addSelection(ComparisonFactory.notEqualTo(leftOperand, rightOperand, negate));
+			queryContext.addPredicate(ComparisonFactory.notEqualTo(leftOperand, rightOperand, negate));
 			break;
 		case LESS_THAN:
-			queryContext.select.addSelection(ComparisonFactory.lessThan(leftOperand, rightOperand, negate));
+			queryContext.addPredicate(ComparisonFactory.lessThan(leftOperand, rightOperand, negate));
 			break;
 		case GREATER_THAN:
-			queryContext.select.addSelection(ComparisonFactory.greaterThan(leftOperand, rightOperand, negate));
+			queryContext.addPredicate(ComparisonFactory.greaterThan(leftOperand, rightOperand, negate));
 			break;
 		case LESS_THAN_OR_EQUAL_TO:
-			queryContext.select.addSelection(ComparisonFactory.lessThanOrEqualTo(leftOperand, rightOperand, negate));
+			queryContext.addPredicate(ComparisonFactory.lessThanOrEqualTo(leftOperand, rightOperand, negate));
 			break;
 		case GREATER_THAN_OR_EQUAL_TO:
-			queryContext.select.addSelection(ComparisonFactory.greaterThanOrEqual(leftOperand, rightOperand, negate));
+			queryContext.addPredicate(ComparisonFactory.greaterThanOrEqual(leftOperand, rightOperand, negate));
 			break;
 		default:
 			break;			
@@ -187,7 +181,7 @@ public class ComparisonOperatorBuilder {
 		return queryContext;
 	}
 
-	private SQLQueryContext buildBetweenOperator(BetweenOperator operator, boolean negate) throws QueryBuildException {
+	private SQLQueryContext buildBetweenOperator(BetweenOperator operator, SQLQueryContext queryContext, boolean negate, boolean useLeftJoins) throws QueryBuildException {
 		if (operator.getOperand().getExpressionName() != ExpressionName.VALUE_REFERENCE)
 			throw new QueryBuildException("Only ValueRefernce is supported as operand of a between operator.");
 
@@ -199,7 +193,7 @@ public class ComparisonOperatorBuilder {
 		AbstractLiteral<?> upperBoundary = (AbstractLiteral<?>)operator.getUpperBoundary();
 
 		// build the value reference
-		SQLQueryContext queryContext = schemaPathBuilder.buildSchemaPath(valueReference.getSchemaPath(), objectclassIds);
+		queryContext = schemaPathBuilder.buildSchemaPath(valueReference.getSchemaPath(), queryContext, useLeftJoins);
 
 		// check for type mismatch of literal
 		SimpleAttribute attribute = (SimpleAttribute)valueReference.getTarget();
@@ -215,11 +209,11 @@ public class ComparisonOperatorBuilder {
 		PlaceHolder<?> upperBoundaryLiteral = upperBoundary.convertToSQLPlaceHolder();
 
 		// finally, create equivalent sql operation
-		queryContext.select.addSelection(ComparisonFactory.between(queryContext.targetColumn, lowerBoundaryLiteral, upperBoundaryLiteral, negate));
+		queryContext.addPredicate(ComparisonFactory.between(queryContext.targetColumn, lowerBoundaryLiteral, upperBoundaryLiteral, negate));
 		return queryContext;
 	}
 
-	private SQLQueryContext buildLikeOperator(LikeOperator operator, boolean negate) throws QueryBuildException {
+	private SQLQueryContext buildLikeOperator(LikeOperator operator, SQLQueryContext queryContext, boolean negate, boolean useLeftJoins) throws QueryBuildException {
 		if (!operator.isSetLeftOperand() || !operator.isSetRightOperand())
 			throw new QueryBuildException("Only one operand found for like comparison operator.");
 
@@ -248,7 +242,7 @@ public class ComparisonOperatorBuilder {
 			throw new QueryBuildException("Only combinations of ValueReference and Literal are supported as operands of a like operator.");
 
 		// build the value reference
-		SQLQueryContext queryContext = schemaPathBuilder.buildSchemaPath(valueReference.getSchemaPath(), objectclassIds, operator.isMatchCase());
+		queryContext = schemaPathBuilder.buildSchemaPath(valueReference.getSchemaPath(), queryContext, operator.isMatchCase(), useLeftJoins);
 
 		// check for type mismatch of literal
 		SimpleAttribute attribute = (SimpleAttribute)valueReference.getTarget();
@@ -283,7 +277,7 @@ public class ComparisonOperatorBuilder {
 		}
 
 		// finally, create equivalent sql operation
-		queryContext.select.addSelection(ComparisonFactory.like(leftOperand,
+		queryContext.addPredicate(ComparisonFactory.like(leftOperand,
 				rightOperand,
 				value.contains(escapeCharacter) ? new org.citydb.sqlbuilder.expression.StringLiteral(escapeCharacter) : null,
 				negate));
@@ -291,20 +285,16 @@ public class ComparisonOperatorBuilder {
 		return queryContext;
 	}
 
-	private SQLQueryContext buildNullComparison(NullOperator operator, boolean negate) throws QueryBuildException {
+	private SQLQueryContext buildNullComparison(NullOperator operator, SQLQueryContext queryContext, boolean negate, boolean useLeftJoins) throws QueryBuildException {
 		if (operator.getOperand().getExpressionName() != ExpressionName.VALUE_REFERENCE)
 			throw new QueryBuildException("Only ValueRefernce is supported as operand of a null operator.");
 
 		ValueReference valueReference = (ValueReference)operator.getOperand();
-		
-		// create a copy of the schema path and create an is null check
-		// the schema path might be changed by this operation
 		SchemaPath schemaPath = valueReference.getSchemaPath();
-		PredicateToken token = buildIsNullPredicate((AbstractProperty)valueReference.getTarget(), schemaPath.copy(), negate);
 
-		// create equivalent sql operation
-		SQLQueryContext queryContext = schemaPathBuilder.buildSchemaPath(schemaPath, objectclassIds);
-		queryContext.select.addSelection(token);
+		// build the is null checks. we use a copy of the schema path
+		// as it might be changed by this operation
+		queryContext = buildIsNullPredicate((AbstractProperty)valueReference.getTarget(), schemaPath.copy(), queryContext, negate, useLeftJoins);
 
 		// if the target property is an injected ADE property, we need to change the join for
 		// the injection table from an inner join to a left join
@@ -328,11 +318,12 @@ public class ComparisonOperatorBuilder {
 		return queryContext;
 	}
 	
-	private PredicateToken buildIsNullPredicate(AbstractProperty property, SchemaPath schemaPath, boolean negate) throws QueryBuildException {
+	private SQLQueryContext buildIsNullPredicate(AbstractProperty property, SchemaPath schemaPath, SQLQueryContext queryContext, boolean negate, boolean useLeftJoins) throws QueryBuildException {
 		if (property.getElementType() == PathElementType.SIMPLE_ATTRIBUTE || property.getElementType() == PathElementType.GEOMETRY_PROPERTY) {
 			// for simple properties, we just check whether the column is null
-			SQLQueryContext queryContext = schemaPathBuilder.buildSchemaPath(schemaPath, objectclassIds);
-			return ComparisonFactory.isNull(queryContext.targetColumn, negate);
+			queryContext = schemaPathBuilder.buildSchemaPath(schemaPath, queryContext, useLeftJoins);
+			queryContext.addPredicate(ComparisonFactory.isNull(queryContext.targetColumn, negate));
+			return queryContext;
 		}
 
 		else if (property.getElementType() == PathElementType.COMPLEX_ATTRIBUTE || PathElementType.TYPE_PROPERTIES.contains(property.getElementType())) {
@@ -344,7 +335,7 @@ public class ComparisonOperatorBuilder {
 				// we therefore remove the complex property from the schema
 				// path and create an exists clause
 				schemaPath.removeLastPathElement();
-				SQLQueryContext queryContext = schemaPathBuilder.buildSchemaPath(schemaPath, objectclassIds);
+				queryContext = schemaPathBuilder.buildSchemaPath(schemaPath, queryContext, useLeftJoins);
 
 				// derive join information
 				String toTable;
@@ -395,7 +386,8 @@ public class ComparisonOperatorBuilder {
 				}
 				
 				// finally, create exists clause from select
-				return ComparisonFactory.exists(select, !negate);
+				queryContext.addPredicate(ComparisonFactory.exists(select, !negate));
+				return queryContext;
 			}
 
 			else {
@@ -418,17 +410,20 @@ public class ComparisonOperatorBuilder {
 
 					// we iterate over all type properties and recursively create
 					// an is null check predicate using copies of the schema path
-					List<PredicateToken> tokens = new ArrayList<>();
 					for (AbstractProperty innerProperty : innerProperties) {
 						SchemaPath innerPath = schemaPath.copy();
 						innerPath.appendChild(innerProperty);
-						
-						tokens.add(buildIsNullPredicate(innerProperty, innerPath, negate));
+						queryContext = buildIsNullPredicate(innerProperty, innerPath, queryContext, negate, useLeftJoins);
 					}
 
-					return !negate ?
-							LogicalOperationFactory.AND(tokens) :
-							LogicalOperationFactory.OR(tokens);
+					// if we shall check for not is null, then we combine the predicates using or
+					if (negate) {
+						PredicateToken predicate = LogicalOperationFactory.OR(queryContext.predicates);
+						queryContext.unsetPredicates();
+						queryContext.addPredicate(predicate);
+					}
+
+					return queryContext;
 				} catch (InvalidSchemaPathException e) {
 					//
 				}

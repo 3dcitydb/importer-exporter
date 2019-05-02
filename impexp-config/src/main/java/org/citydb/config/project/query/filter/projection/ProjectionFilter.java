@@ -46,7 +46,8 @@ public class ProjectionFilter {
 	}
 
 	public void setProjectionContexts(List<ProjectionContext> projectionContexts) {
-		this.projectionContexts = projectionContexts;
+		if (projectionContexts != null)
+			this.projectionContexts = projectionContexts;
 	}
 	
 }

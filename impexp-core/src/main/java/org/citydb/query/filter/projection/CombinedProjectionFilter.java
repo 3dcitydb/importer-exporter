@@ -27,13 +27,12 @@
  */
 package org.citydb.query.filter.projection;
 
-import java.util.Arrays;
-import java.util.List;
-
-import javax.xml.namespace.QName;
-
 import org.citydb.database.schema.mapping.AppSchema;
 import org.citygml4j.model.citygml.CityGMLClass;
+
+import javax.xml.namespace.QName;
+import java.util.Arrays;
+import java.util.List;
 
 public class CombinedProjectionFilter {
 	private final List<ProjectionFilter> filters;

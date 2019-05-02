@@ -25,20 +25,39 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.citydb.citygml.exporter.writer;
 
-import org.citydb.citygml.exporter.util.Metadata;
-import org.citygml4j.model.gml.feature.AbstractFeature;
+package org.citydb.config.project.query.filter.sorting;
 
-public interface FeatureWriter extends AutoCloseable {
-	void writeHeader() throws FeatureWriteException;
-	void write(AbstractFeature feature, long sequenceId) throws FeatureWriteException;
-	void updateSequenceId(long sequenceId) throws FeatureWriteException;
-	void useIndentation(boolean useIndentation);
-	Metadata getMetadata();
-	void close() throws FeatureWriteException;
+import javax.xml.bind.annotation.XmlEnum;
+import javax.xml.bind.annotation.XmlEnumValue;
+import javax.xml.bind.annotation.XmlType;
 
-	default boolean supportsFlatHierarchies() {
-		return true;
-	}
+@XmlType(name="SortOrderType")
+@XmlEnum
+public enum SortOrder {
+    @XmlEnumValue("asc")
+    ASCENDING("asc"),
+    @XmlEnumValue("desc")
+    DESCENDING("desc");
+
+    final String value;
+
+    SortOrder(String value) {
+        this.value = value;
+    }
+
+    public static SortOrder fromValue(String v) {
+        for (SortOrder c : SortOrder.values()) {
+            if (c.value.equals(v)) {
+                return c;
+            }
+        }
+
+        return ASCENDING;
+    }
+
+    @Override
+    public String toString() {
+        return value;
+    }
 }

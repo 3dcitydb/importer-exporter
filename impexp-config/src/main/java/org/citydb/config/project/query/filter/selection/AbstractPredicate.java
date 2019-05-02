@@ -27,14 +27,14 @@
  */
 package org.citydb.config.project.query.filter.selection;
 
-import javax.xml.bind.annotation.XmlSeeAlso;
-import javax.xml.bind.annotation.XmlType;
-
 import org.citydb.config.project.query.filter.selection.comparison.AbstractComparisonOperator;
 import org.citydb.config.project.query.filter.selection.id.ResourceIdOperator;
 import org.citydb.config.project.query.filter.selection.logical.AbstractLogicalOperator;
 import org.citydb.config.project.query.filter.selection.spatial.AbstractSpatialOperator;
 import org.citydb.config.project.query.filter.selection.sql.SelectOperator;
+
+import javax.xml.bind.annotation.XmlSeeAlso;
+import javax.xml.bind.annotation.XmlType;
 
 @XmlType(name="AbstractPredicateType")
 @XmlSeeAlso({

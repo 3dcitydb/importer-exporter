@@ -25,20 +25,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.citydb.citygml.exporter.writer;
 
-import org.citydb.citygml.exporter.util.Metadata;
-import org.citygml4j.model.gml.feature.AbstractFeature;
+package org.citydb.config.project.query.filter.sorting;
 
-public interface FeatureWriter extends AutoCloseable {
-	void writeHeader() throws FeatureWriteException;
-	void write(AbstractFeature feature, long sequenceId) throws FeatureWriteException;
-	void updateSequenceId(long sequenceId) throws FeatureWriteException;
-	void useIndentation(boolean useIndentation);
-	Metadata getMetadata();
-	void close() throws FeatureWriteException;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlType;
 
-	default boolean supportsFlatHierarchies() {
-		return true;
-	}
+@XmlType(name="SortPropertyType", propOrder={
+        "valueReference",
+        "sortOrder"
+})
+public class SortProperty {
+    @XmlElement(required = true)
+    private String valueReference;
+    private SortOrder sortOrder;
+
+    public boolean isSetValueReference() {
+        return valueReference != null;
+    }
+
+    public String getValueReference() {
+        return valueReference;
+    }
+
+    public void setValueReference(String valueReference) {
+        this.valueReference = valueReference;
+    }
+
+    public SortOrder getSortOrder() {
+        return sortOrder != null ? sortOrder : SortOrder.ASCENDING;
+    }
+
+    public void setSortOrder(SortOrder sortOrder) {
+        this.sortOrder = sortOrder;
+    }
 }

@@ -27,12 +27,12 @@
  */
 package org.citydb.config.project.query.filter.selection.comparison;
 
+import org.citydb.config.project.query.filter.selection.AbstractPredicate;
+import org.citydb.config.project.query.filter.selection.PredicateName;
+
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlType;
-
-import org.citydb.config.project.query.filter.selection.AbstractPredicate;
-import org.citydb.config.project.query.filter.selection.PredicateName;
 
 @XmlType(name="AbstractComparisonOperatorType", propOrder={
 		"valueReference"

@@ -66,6 +66,7 @@ public class CityGMLWriterFactory implements FeatureWriterFactory {
 	private TransformerChainFactory transformerChainFactory;
 	private CityGMLOptions cityGMLOptions;
 	private boolean setAllCityGMLPrefixes;
+	private boolean useSequentialWriting;
 
 	public CityGMLWriterFactory(Query query, SchemaMapping schemaMapping, Config config) throws FeatureWriteException {
 		this.config = config;
@@ -73,6 +74,9 @@ public class CityGMLWriterFactory implements FeatureWriterFactory {
 		version = query.getTargetVersion();
 		featureTypeFilter = query.getFeatureTypeFilter();
 		cityGMLOptions = config.getProject().getExporter().getCityGMLOptions();
+
+		// require sequential writing if a sorting clause is defined for the query
+		useSequentialWriting = query.isSetSorting();
 
 		// build XSLT transformer chain
 		if (config.getProject().getExporter().getXSLTransformation().isEnabled()
@@ -169,7 +173,7 @@ public class CityGMLWriterFactory implements FeatureWriterFactory {
 		saxWriter.setOutput(writer);
 
 		// create CityGML writer
-		return new CityGMLWriter(saxWriter, version, transformerChainFactory);
+		return new CityGMLWriter(saxWriter, version, transformerChainFactory, useSequentialWriting);
 	}
 
 	private String getPrefix(Module module) {

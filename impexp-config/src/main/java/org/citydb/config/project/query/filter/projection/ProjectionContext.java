@@ -27,14 +27,13 @@
  */
 package org.citydb.config.project.query.filter.projection;
 
-import java.util.LinkedHashSet;
-import java.util.Objects;
-
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElements;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.namespace.QName;
+import java.util.LinkedHashSet;
+import java.util.Objects;
 
 @XmlType(name = "ProjectionContextType")
 public class ProjectionContext {
