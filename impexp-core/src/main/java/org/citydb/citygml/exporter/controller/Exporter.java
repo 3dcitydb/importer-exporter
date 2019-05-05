@@ -599,7 +599,7 @@ public class Exporter implements EventHandler {
 	@Override
 	public void handleEvent(Event e) throws Exception {
 		if (e.getEventType() == EventType.OBJECT_COUNTER) {
-			HashMap<Integer, Long> counter = ((ObjectCounterEvent)e).getCounter();
+			Map<Integer, Long> counter = ((ObjectCounterEvent)e).getCounter();
 
 			for (Entry<Integer, Long> entry : counter.entrySet()) {
 				Long tmp = objectCounter.get(entry.getKey());
@@ -613,7 +613,7 @@ public class Exporter implements EventHandler {
 		}
 
 		else if (e.getEventType() == EventType.GEOMETRY_COUNTER) {
-			HashMap<GMLClass, Long> counter = ((GeometryCounterEvent)e).getCounter();
+			Map<GMLClass, Long> counter = ((GeometryCounterEvent)e).getCounter();
 
 			for (Entry<GMLClass, Long> entry : counter.entrySet()) {
 				Long tmp = geometryCounter.get(entry.getKey());

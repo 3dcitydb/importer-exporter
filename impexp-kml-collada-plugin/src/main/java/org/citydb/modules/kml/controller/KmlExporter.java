@@ -1540,7 +1540,7 @@ public class KmlExporter implements EventHandler {
 	@Override
 	public void handleEvent(Event e) throws Exception {
 		if (e.getEventType() == EventType.OBJECT_COUNTER) {
-			HashMap<Integer, Long> counter = ((ObjectCounterEvent)e).getCounter();
+			Map<Integer, Long> counter = ((ObjectCounterEvent)e).getCounter();
 			
 			for (Entry<Integer, Long> entry : counter.entrySet()) {
 				Long tmp = objectCounter.get(entry.getKey());

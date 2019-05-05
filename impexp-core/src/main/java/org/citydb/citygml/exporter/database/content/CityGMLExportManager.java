@@ -131,10 +131,10 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class CityGMLExportManager implements CityGMLExportHelper {
@@ -711,11 +711,11 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 		exportCounter.updateExportCounter(object);
 	}
 
-	public HashMap<Integer, Long> getAndResetObjectCounter() {
+	public Map<Integer, Long> getAndResetObjectCounter() {
 		return exportCounter.getAndResetObjectCounter();
 	}
 
-	public HashMap<GMLClass, Long> getAndResetGeometryCounter() {
+	public Map<GMLClass, Long> getAndResetGeometryCounter() {
 		return exportCounter.getAndResetGeometryCounter();
 	}
 

@@ -27,20 +27,20 @@
  */
 package org.citydb.event.global;
 
-import java.util.HashMap;
-
 import org.citydb.event.Event;
 import org.citygml4j.model.gml.GMLClass;
 
-public class GeometryCounterEvent extends Event {
-	private HashMap<GMLClass, Long> geometryCounterMap;
+import java.util.Map;
 
-	public GeometryCounterEvent(HashMap<GMLClass, Long> geometryCounterMap, Object source) {
+public class GeometryCounterEvent extends Event {
+	private Map<GMLClass, Long> geometryCounterMap;
+
+	public GeometryCounterEvent(Map<GMLClass, Long> geometryCounterMap, Object source) {
 		super(EventType.GEOMETRY_COUNTER, GLOBAL_CHANNEL, source);
 		this.geometryCounterMap = geometryCounterMap;
 	}
 
-	public HashMap<GMLClass, Long> getCounter() {
+	public Map<GMLClass, Long> getCounter() {
 		return geometryCounterMap;
 	}
 

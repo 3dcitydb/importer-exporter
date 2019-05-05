@@ -27,6 +27,20 @@
  */
 package org.citydb.ade;
 
+import org.citydb.database.schema.mapping.AbstractObjectType;
+import org.citydb.database.schema.mapping.AppSchema;
+import org.citydb.database.schema.mapping.Metadata;
+import org.citydb.database.schema.mapping.Namespace;
+import org.citydb.database.schema.mapping.SchemaMapping;
+import org.citydb.database.schema.mapping.SchemaMappingException;
+import org.citydb.database.schema.mapping.SchemaMappingValidationException;
+import org.citydb.database.schema.util.SchemaMappingUtil;
+import org.citydb.log.Logger;
+import org.citygml4j.model.citygml.ade.binding.ADEContext;
+import org.citygml4j.model.citygml.ade.binding.ADEModelObject;
+import org.citygml4j.model.module.ade.ADEModule;
+
+import javax.xml.bind.JAXBException;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -42,23 +56,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.ServiceLoader;
-
-import javax.xml.bind.JAXBException;
-
-import org.citydb.database.schema.mapping.AbstractObjectType;
-import org.citydb.database.schema.mapping.AppSchema;
-import org.citydb.database.schema.mapping.Metadata;
-import org.citydb.database.schema.mapping.Namespace;
-import org.citydb.database.schema.mapping.SchemaMapping;
-import org.citydb.database.schema.mapping.SchemaMappingException;
-import org.citydb.database.schema.mapping.SchemaMappingValidationException;
-import org.citydb.database.schema.util.SchemaMappingUtil;
-import org.citydb.log.Logger;
-import org.citygml4j.model.citygml.ade.binding.ADEContext;
-import org.citygml4j.model.citygml.ade.binding.ADEModelObject;
-import org.citygml4j.model.module.ade.ADEModule;
 
 public class ADEExtensionManager {
 	private static ADEExtensionManager instance;
@@ -300,7 +300,7 @@ public class ADEExtensionManager {
 		}
 	}
 	
-	public HashMap<String, List<ADEExtensionException>> getExceptions() {
+	public Map<String, List<ADEExtensionException>> getExceptions() {
 		return exceptions;
 	}
 

@@ -27,8 +27,6 @@
  */
 package org.citydb.citygml.exporter.util;
 
-import java.util.HashMap;
-
 import org.citydb.database.schema.mapping.AbstractObjectType;
 import org.citydb.database.schema.mapping.MappingConstants;
 import org.citydb.database.schema.mapping.SchemaMapping;
@@ -41,10 +39,13 @@ import org.citygml4j.model.gml.base.AbstractGML;
 import org.citygml4j.model.gml.geometry.AbstractGeometry;
 import org.citygml4j.util.walker.GMLWalker;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class ExportCounter {
 	private final SchemaMapping schemaMapping;
-	private final HashMap<Integer, Long> objectCounter;
-	private final HashMap<GMLClass, Long> geometryCounter;
+	private final Map<Integer, Long> objectCounter;
+	private final Map<GMLClass, Long> geometryCounter;
 	private final CounterWalker counterWalker;
 	
 	public ExportCounter(SchemaMapping schemaMapping) {
@@ -61,7 +62,7 @@ public class ExportCounter {
 	private void updateObjectCounter(int objectClassId) {
 		Long counter = objectCounter.get(objectClassId);
 		if (counter == null)
-			objectCounter.put(objectClassId, 1l);
+			objectCounter.put(objectClassId, 1L);
 		else
 			objectCounter.put(objectClassId, counter + 1);		
 	}
@@ -69,19 +70,19 @@ public class ExportCounter {
 	private void updateGeometryCounter(GMLClass type) {
 		Long counter = geometryCounter.get(type);
 		if (counter == null)
-			geometryCounter.put(type, 1l);
+			geometryCounter.put(type, 1L);
 		else
 			geometryCounter.put(type, counter + 1);
 	}
 
-	public HashMap<Integer, Long> getAndResetObjectCounter() {
-		HashMap<Integer, Long> tmp = new HashMap<>(objectCounter);
+	public Map<Integer, Long> getAndResetObjectCounter() {
+		Map<Integer, Long> tmp = new HashMap<>(objectCounter);
 		objectCounter.clear();
 		return tmp;
 	}
 
-	public HashMap<GMLClass, Long> getAndResetGeometryCounter() {
-		HashMap<GMLClass, Long> tmp = new HashMap<>(geometryCounter);
+	public Map<GMLClass, Long> getAndResetGeometryCounter() {
+		Map<GMLClass, Long> tmp = new HashMap<>(geometryCounter);
 		geometryCounter.clear();
 		return tmp;
 	}

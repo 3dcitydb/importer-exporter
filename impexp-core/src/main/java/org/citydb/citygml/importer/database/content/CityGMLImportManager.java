@@ -127,6 +127,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 
 public class CityGMLImportManager implements CityGMLImportHelper {
@@ -146,8 +147,8 @@ public class CityGMLImportManager implements CityGMLImportHelper {
 	private final TableHelper tableHelper;
 	private final SequenceHelper sequenceHelper;
 	private final GeometryConverter geometryConverter;
-	private final HashMap<Integer, Long> objectCounter;
-	private final HashMap<GMLClass, Long> geometryCounter;
+	private final Map<Integer, Long> objectCounter;
+	private final Map<GMLClass, Long> geometryCounter;
 	private final AttributeValueJoiner attributeValueJoiner;
 
 	private ADEPropertyCollector propertyCollector;
@@ -580,14 +581,14 @@ public class CityGMLImportManager implements CityGMLImportHelper {
 			geometryCounter.put(type, counter + 1);
 	}
 
-	public HashMap<Integer, Long> getAndResetObjectCounter() {
-		HashMap<Integer, Long> tmp = new HashMap<>(objectCounter);
+	public Map<Integer, Long> getAndResetObjectCounter() {
+		Map<Integer, Long> tmp = new HashMap<>(objectCounter);
 		objectCounter.clear();
 		return tmp;
 	}
 
-	public HashMap<GMLClass, Long> getAndResetGeometryCounter() {
-		HashMap<GMLClass, Long> tmp = new HashMap<>(geometryCounter);
+	public Map<GMLClass, Long> getAndResetGeometryCounter() {
+		Map<GMLClass, Long> tmp = new HashMap<>(geometryCounter);
 		geometryCounter.clear();
 		return tmp;
 	}
