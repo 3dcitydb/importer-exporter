@@ -37,7 +37,7 @@ import org.citydb.event.EventDispatcher;
 import org.citydb.log.Logger;
 
 public class DBDeleteWorkerFactory implements WorkerFactory<DBSplittingResult>{
-	private final Logger LOG = Logger.getInstance();
+	private final Logger log = Logger.getInstance();
 	private final EventDispatcher eventDispatcher;
 	private final BundledDBConnection bundledConnection;
 
@@ -53,7 +53,7 @@ public class DBDeleteWorkerFactory implements WorkerFactory<DBSplittingResult>{
 		try {	
 			dbWorker = new DBDeleteWorker(eventDispatcher, bundledConnection);
 		} catch (SQLException e) {
-			LOG.error("Failed to create delete worker: " + e.getMessage());
+			log.error("Failed to create delete worker: " + e.getMessage());
 		}
 		
 		return dbWorker;

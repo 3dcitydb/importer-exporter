@@ -72,7 +72,7 @@ public class Deleter implements EventHandler {
 	private volatile boolean shouldRun = true;
 	private AtomicBoolean isInterrupted = new AtomicBoolean(false);
 	private WorkerPool<DBSplittingResult> dbWorkerPool;
-	private HashMap<Integer, Long> objectCounter;
+	private Map<Integer, Long> objectCounter;
 	private Query query;
 	private BundledDBConnection bundledConnection;
 	

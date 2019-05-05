@@ -47,6 +47,7 @@ import java.sql.CallableStatement;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class DBDeleteWorker extends Worker<DBSplittingResult> implements EventHandler {
@@ -60,10 +61,12 @@ public class DBDeleteWorker extends Worker<DBSplittingResult> implements EventHa
 	public DBDeleteWorker(EventDispatcher eventDispatcher, BundledDBConnection bundledConnection) throws SQLException {
 		this.eventDispatcher = eventDispatcher;
 		this.eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
+
 		AbstractDatabaseAdapter databaseAdapter = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter();
 		stmt = bundledConnection.getOrCreateConnection().prepareCall("{? = call "
 				+ databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_delete.delete_cityobject")
 				+ "(?)}");
+		stmt.registerOutParameter(1, Types.INTEGER);
 	}
 	
 	@Override
@@ -113,21 +116,20 @@ public class DBDeleteWorker extends Worker<DBSplittingResult> implements EventHa
 		boolean accept = false;  
 		
 		try {
-			stmt.registerOutParameter(1, Types.INTEGER);
-			stmt.setInt(2, (int)objectId);
-			stmt.executeUpdate();	
+			stmt.setObject(2, objectId, Types.INTEGER);
+			stmt.executeUpdate();
 			
 			int deletedObjectId = stmt.getInt(1);
 			if (deletedObjectId == objectId) {
-				log.debug(objectclassName + " (RowID = " + objectId + ") deleted");
+				log.debug(objectclassName + " (ID = " + objectId + ") deleted.");
 				accept = true;
 			} 				
 			else {
-				log.warn(objectclassName + " (RowID = " + objectId + ") has not been found in the database.");
+				log.warn("Failed to delete " + objectclassName + " (ID = " + objectId + ").");
 			}
 		} catch (SQLException e) {
 			eventDispatcher.triggerEvent(new InterruptEvent(
-					"Failed to delete " + objectclassName + " (RowID = " + objectId + "). Abort and rollback transactions.",
+					"Failed to delete " + objectclassName + " (ID = " + objectId + "). Abort and rollback transactions.",
 					LogLevel.WARN, e, eventChannel, this));	
 		} finally {
 			updateDeleteContext(objectclassId, accept);
@@ -146,10 +148,12 @@ public class DBDeleteWorker extends Worker<DBSplittingResult> implements EventHa
 	}
 
 	private void updateDeleteContext(int objectclassId, boolean accept) {
-		HashMap<Integer, Long> objectCounter = new HashMap<>();
-		objectCounter.put(objectclassId, (long) 1);
-		if (accept)
-			eventDispatcher.triggerEvent(new ObjectCounterEvent(objectCounter, this));		
+		if (accept) {
+			Map<Integer, Long> objectCounter = new HashMap<>();
+			objectCounter.put(objectclassId, 1L);
+			eventDispatcher.triggerEvent(new ObjectCounterEvent(objectCounter, this));
+		}
+
 		eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.UPDATE, 1, this));
 	}
 
