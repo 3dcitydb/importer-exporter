@@ -459,6 +459,9 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 
 			SwingUtilities.invokeLater(exportDialog::dispose);
 
+			// cleanup
+			exporter.cleanup();
+
 			if (success) {
 				log.info("Database export successfully finished.");
 			} else {

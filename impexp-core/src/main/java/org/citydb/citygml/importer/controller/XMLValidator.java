@@ -79,6 +79,10 @@ public class XMLValidator implements EventHandler {
 		this.eventDispatcher = eventDispatcher;
 	}
 
+	public void cleanup() {
+		eventDispatcher.removeEventHandler(this);
+	}
+
 	public boolean doProcess() {
 		// adding listeners
 		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
@@ -165,9 +169,6 @@ public class XMLValidator implements EventHandler {
 		
 		if (shouldRun)
 			log.info("Total validation time: " + Util.formatElapsedTime(System.currentTimeMillis() - start) + ".");
-
-		// remove event handler
-		eventDispatcher.removeEventHandler(this);
 
 		return shouldRun;
 	}

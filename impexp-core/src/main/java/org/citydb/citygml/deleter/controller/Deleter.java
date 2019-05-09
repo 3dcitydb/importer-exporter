@@ -82,6 +82,10 @@ public class Deleter implements EventHandler {
 		objectCounter = new HashMap<>();
 	}
 
+	public void cleanup() {
+		eventDispatcher.removeEventHandler(this);
+	}
+
 	public boolean doProcess(boolean useSingleConnection) throws CityGMLDeleteException {
 		long start = System.currentTimeMillis();
 		int minThreads = 2;
@@ -145,8 +149,6 @@ public class Deleter implements EventHandler {
 		if (shouldRun)
 			log.info("Process time: " + Util.formatElapsedTime(System.currentTimeMillis() - start) + ".");
 
-		// remove event handler
-		eventDispatcher.removeEventHandler(this);
 		objectCounter.clear();
 
 		return shouldRun;
@@ -177,6 +179,12 @@ public class Deleter implements EventHandler {
 	
 	public boolean cleanupSchema(Workspace workspace) throws CityGMLDeleteException {
 		AbstractDatabaseAdapter databaseAdapter = dbPool.getActiveDatabaseAdapter();
+
+		// checking workspace
+		if (shouldRun && databaseAdapter.hasVersioningSupport() &&
+				!databaseAdapter.getWorkspaceManager().equalsDefaultWorkspaceName(workspace.getName()) &&
+				!databaseAdapter.getWorkspaceManager().existsWorkspace(workspace, true))
+			return false;
 
 		try (Connection connection = dbPool.getConnection()) {
 			if (databaseAdapter.hasVersioningSupport())

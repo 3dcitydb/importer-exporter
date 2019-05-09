@@ -401,6 +401,9 @@ public class ImportPanel extends JPanel implements EventHandler {
 
 			SwingUtilities.invokeLater(importDialog::dispose);
 
+			// cleanup
+			importer.cleanup();
+
 			if (success) {
 				log.info("Database import successfully finished.");
 			} else {
@@ -471,6 +474,9 @@ public class ImportPanel extends JPanel implements EventHandler {
 			}
 
 			SwingUtilities.invokeLater(validatorDialog::dispose);
+
+			// cleanup
+			validator.cleanup();
 
 			if (success) {
 				log.info("XML validation finished.");

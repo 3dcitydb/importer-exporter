@@ -916,6 +916,9 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 
 			SwingUtilities.invokeLater(exportDialog::dispose);
 
+			// cleanup
+			kmlExporter.cleanup();
+
 			if (success) {
 				log.info("Database export successfully finished.");
 			} else {

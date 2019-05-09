@@ -187,6 +187,10 @@ public class KmlExporter implements EventHandler {
 		kmlFactory = new ObjectFactory();
 	}
 
+	public void cleanup() {
+		eventDispatcher.removeEventHandler(this);
+	}
+
 	public boolean doProcess() throws KmlExportException {
 		// adding listener
 		eventDispatcher.addEventHandler(EventType.OBJECT_COUNTER, this);
@@ -696,9 +700,6 @@ public class KmlExporter implements EventHandler {
 
 		if (shouldRun)
 			log.info("Total export time: " + Util.formatElapsedTime(System.currentTimeMillis() - start) + ".");
-
-		// remove event handler
-		eventDispatcher.removeEventHandler(this);
 
 		return shouldRun;
 	}

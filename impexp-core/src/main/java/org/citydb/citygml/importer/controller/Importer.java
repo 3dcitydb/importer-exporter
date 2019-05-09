@@ -152,6 +152,10 @@ public class Importer implements EventHandler {
 		geometryCounter = new EnumMap<>(GMLClass.class);
 	}
 
+	public void cleanup() {
+		eventDispatcher.removeEventHandler(this);
+	}
+
 	public boolean doProcess() throws CityGMLImportException {
 		// adding listeners
 		eventDispatcher.addEventHandler(EventType.OBJECT_COUNTER, this);
@@ -637,9 +641,6 @@ public class Importer implements EventHandler {
 
 		if (shouldRun)
 			log.info("Total import time: " + Util.formatElapsedTime(System.currentTimeMillis() - start) + ".");
-
-		// remove event handler
-		eventDispatcher.removeEventHandler(this);
 
 		return shouldRun;
 	}
