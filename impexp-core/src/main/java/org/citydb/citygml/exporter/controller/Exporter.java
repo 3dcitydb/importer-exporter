@@ -145,10 +145,6 @@ public class Exporter implements EventHandler {
 		totalGeometryCounter = new EnumMap<>(GMLClass.class);
 	}
 
-	public void cleanup() {
-		eventDispatcher.removeEventHandler(this);
-	}
-
 	public boolean doProcess() throws CityGMLExportException {
 		// adding listeners
 		eventDispatcher.addEventHandler(EventType.OBJECT_COUNTER, this);
@@ -472,7 +468,6 @@ public class Exporter implements EventHandler {
 					log.info("Exporting to file: " + file.getFile());
 
 					// get database splitter and start query
-					dbSplitter = null;
 					try {
 						dbSplitter = new DBSplitter(
 								writer,
@@ -592,6 +587,9 @@ public class Exporter implements EventHandler {
 
 		if (shouldRun)
 			log.info("Total export time: " + Util.formatElapsedTime(System.currentTimeMillis() - start) + ".");
+
+		// remove event handler
+		eventDispatcher.removeEventHandler(this);
 
 		return shouldRun;
 	}

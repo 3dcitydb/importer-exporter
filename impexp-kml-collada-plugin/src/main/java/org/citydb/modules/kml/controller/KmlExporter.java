@@ -187,10 +187,6 @@ public class KmlExporter implements EventHandler {
 		kmlFactory = new ObjectFactory();
 	}
 
-	public void cleanup() {
-		eventDispatcher.removeEventHandler(this);
-	}
-
 	public boolean doProcess() throws KmlExportException {
 		// adding listener
 		eventDispatcher.addEventHandler(EventType.OBJECT_COUNTER, this);
@@ -700,6 +696,9 @@ public class KmlExporter implements EventHandler {
 
 		if (shouldRun)
 			log.info("Total export time: " + Util.formatElapsedTime(System.currentTimeMillis() - start) + ".");
+
+		// remove event handler
+		eventDispatcher.removeEventHandler(this);
 
 		return shouldRun;
 	}
@@ -1514,7 +1513,7 @@ public class KmlExporter implements EventHandler {
 		return success;
 	}
 
-	private static void getAllFiles(File startFolder, List<File> fileList) {
+	private void getAllFiles(File startFolder, List<File> fileList) {
 		File[] files = startFolder.listFiles();
 		for (File file : files) {
 			fileList.add(file);
@@ -1523,7 +1522,7 @@ public class KmlExporter implements EventHandler {
 		}
 	}
 
-	private static void deleteFolder(File folder) {
+	private void deleteFolder(File folder) {
 		if (folder == null) return;
 		File[] files = folder.listFiles();
 		if (files != null) {

@@ -37,13 +37,13 @@ import javax.xml.bind.annotation.XmlType;
 		"operationWorkspace"
 })
 public class Workspaces {
-	@XmlElement(name="import", required=true)
+	@XmlElement(name="import")
 	private Workspace importWorkspace;
-	@XmlElement(name="export", required=true)
+	@XmlElement(name="export")
 	private Workspace exportWorkspace;
-	@XmlElement(name="kmlExport", required=true)
+	@XmlElement(name="kmlExport")
 	private Workspace kmlExportWorkspace;
-	@XmlElement(name="operations", required=true)
+	@XmlElement(name="operations")
 	private Workspace operationWorkspace;
 
 	public Workspaces() {

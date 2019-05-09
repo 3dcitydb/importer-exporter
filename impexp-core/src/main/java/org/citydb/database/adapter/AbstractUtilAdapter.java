@@ -82,6 +82,7 @@ public abstract class AbstractUtilAdapter {
     protected abstract IndexStatusInfo manageIndexes(String operation, IndexType type, String schema, Connection connection) throws SQLException;
     protected abstract boolean updateTableStats(IndexType type, String schema, Connection connection) throws SQLException;
     protected abstract boolean containsGlobalAppearances(Connection connection) throws SQLException;
+    protected abstract int cleanupGlobalAppearances(String schema, Connection connection) throws SQLException;
     public abstract DatabaseSrs getWGS843D();
 
     public DatabaseMetaData getDatabaseInfo(String schema) throws SQLException {
@@ -349,8 +350,15 @@ public abstract class AbstractUtilAdapter {
                 databaseAdapter.getWorkspaceManager().gotoWorkspace(conn, workspace);
 
             return containsGlobalAppearances(conn);
-        } catch (SQLException e) {
-            throw new SQLException("Failed to discover number of global appearances.", e);
+        }
+    }
+
+    public int cleanupGlobalAppearances(Workspace workspace, String schema) throws SQLException {
+        try (Connection conn = databaseAdapter.connectionPool.getConnection()) {
+            if (databaseAdapter.hasVersioningSupport())
+                databaseAdapter.getWorkspaceManager().gotoWorkspace(conn, workspace);
+
+            return cleanupGlobalAppearances(schema, conn);
         }
     }
 
