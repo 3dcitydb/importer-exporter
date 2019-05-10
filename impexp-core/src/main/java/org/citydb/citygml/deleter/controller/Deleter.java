@@ -34,8 +34,6 @@ import org.citydb.citygml.deleter.util.BundledDBConnection;
 import org.citydb.citygml.exporter.database.content.DBSplittingResult;
 import org.citydb.concurrent.PoolSizeAdaptationStrategy;
 import org.citydb.concurrent.WorkerPool;
-import org.citydb.config.project.database.Workspace;
-import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.connection.DatabaseConnectionPool;
 import org.citydb.database.schema.mapping.SchemaMapping;
 import org.citydb.event.Event;
@@ -50,8 +48,6 @@ import org.citydb.query.builder.QueryBuildException;
 import org.citydb.registry.ObjectRegistry;
 import org.citydb.util.Util;
 
-import java.sql.CallableStatement;
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -152,58 +148,6 @@ public class Deleter implements EventHandler {
 		objectCounter.clear();
 
 		return shouldRun;
-	}
-	
-	public boolean cleanupGlobalAppearances(Workspace workspace) throws CityGMLDeleteException {
-		AbstractDatabaseAdapter databaseAdapter = dbPool.getActiveDatabaseAdapter();
-
-		// checking workspace
-		if (shouldRun && databaseAdapter.hasVersioningSupport() &&
-				!databaseAdapter.getWorkspaceManager().equalsDefaultWorkspaceName(workspace.getName()) &&
-				!databaseAdapter.getWorkspaceManager().existsWorkspace(workspace, true))
-			return false;
-
-		String schema = databaseAdapter.getConnectionDetails().getSchema();
-		try {
-			int deleted = databaseAdapter.getUtil().cleanupGlobalAppearances(workspace, schema);
-			log.info("Cleaned up global appearances: " + deleted);
-			return shouldRun;
-		} catch (SQLException e) {
-			throw new CityGMLDeleteException("Failed to clean up global appearances.", e);
-		}
-	}
-
-	public boolean cleanupGlobalAppearances() throws CityGMLDeleteException {
-		return cleanupGlobalAppearances(new Workspace());
-	}
-	
-	public boolean cleanupSchema(Workspace workspace) throws CityGMLDeleteException {
-		AbstractDatabaseAdapter databaseAdapter = dbPool.getActiveDatabaseAdapter();
-
-		// checking workspace
-		if (shouldRun && databaseAdapter.hasVersioningSupport() &&
-				!databaseAdapter.getWorkspaceManager().equalsDefaultWorkspaceName(workspace.getName()) &&
-				!databaseAdapter.getWorkspaceManager().existsWorkspace(workspace, true))
-			return false;
-
-		try (Connection connection = dbPool.getConnection()) {
-			if (databaseAdapter.hasVersioningSupport())
-				databaseAdapter.getWorkspaceManager().gotoWorkspace(connection, workspace);
-
-			try (CallableStatement stmt = connection.prepareCall("{call " +
-					databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_delete.cleanup_schema") +
-					"()}")) {
-				stmt.execute();
-			}
-
-			return shouldRun;
-		} catch (SQLException e) {
-			throw new CityGMLDeleteException("Failed to clean up data schema.", e);
-		}
-	}
-
-	public boolean cleanupSchema() throws CityGMLDeleteException {
-		return cleanupSchema(new Workspace());
 	}
 	
 	@Override
