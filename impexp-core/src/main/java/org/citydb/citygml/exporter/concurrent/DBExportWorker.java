@@ -163,6 +163,8 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 
 				connection = null;
 			}
+
+			eventDispatcher.removeEventHandler(this);
 		}
 	}
 
