@@ -81,12 +81,10 @@ public class DBSplitter {
 		databaseAdapter = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter();
 		connection = DatabaseConnectionPool.getInstance().getConnection();
 
-		BuildProperties buildProperties = BuildProperties.defaults().addProjectionColumn(MappingConstants.GMLID);
-
 		builder = new SQLQueryBuilder(
 				schemaMapping, 
-				databaseAdapter, 
-				buildProperties);
+				databaseAdapter,
+				BuildProperties.defaults());
 	}
 
 	public boolean isCalculateNumberMatched() {
@@ -127,8 +125,10 @@ public class DBSplitter {
 
 		// create query statement
 		Select select = builder.buildQuery(query);
+		select.unsetOrderBy();
+
 		if (query.isSetCounterFilter())
-			select.addOrderBy(new OrderByToken((Column)select.getProjection().get(0)));
+			select.addOrderBy(new OrderByToken((Column) select.getProjection().get(0)));
 
 		// add hits counter
 		if (calculateNumberMatched) {
@@ -136,33 +136,27 @@ public class DBSplitter {
 			select = new Select()
 					.addProjection(table.getColumn(MappingConstants.ID))
 					.addProjection(table.getColumn(MappingConstants.OBJECTCLASS_ID))
-					.addProjection(table.getColumn(MappingConstants.GMLID))
 					.addProjection(new Function("count(1) over", "hits"));
 		}
 
 		// issue query
-		PreparedStatement stmt = null;
-		ResultSet rs = null;
-
-		try {
-			stmt = databaseAdapter.getSQLAdapter().prepareStatement(select, connection);
-			rs = stmt.executeQuery();
-
+		try (PreparedStatement stmt = databaseAdapter.getSQLAdapter().prepareStatement(select, connection);
+			 ResultSet rs = stmt.executeQuery()) {
 			if (rs.next()) {
 				if (calculateNumberMatched) {
 					long hits = rs.getLong("hits");
 					log.info("Found " + hits + " top-level feature(s) matching the request.");
 
 					if (query.isSetCounterFilter()) {
-						long maxCount = query.getCounterFilter().getUpperLimit();					
+						long maxCount = query.getCounterFilter().getUpperLimit();
 						if (maxCount < hits) {
 							log.info("Deleting " + maxCount + " top-level feature(s) due to counter settings.");
 							hits = maxCount;
 						}
 					}
-					eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.INIT, (int)hits, this));
+					eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.INIT, (int) hits, this));
 				}
-				
+
 				do {
 					elementCounter++;
 
@@ -189,12 +183,6 @@ public class DBSplitter {
 				} while (rs.next() && shouldRun);
 			} else
 				log.info("No feature matches the request.");
-		} finally {
-			if (rs != null)
-				rs.close();
-
-			if (stmt != null)
-				stmt.close();
 		}
 	}
 	

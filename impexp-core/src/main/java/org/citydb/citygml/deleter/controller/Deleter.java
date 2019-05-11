@@ -34,7 +34,6 @@ import org.citydb.citygml.deleter.util.BundledDBConnection;
 import org.citydb.citygml.exporter.database.content.DBSplittingResult;
 import org.citydb.concurrent.PoolSizeAdaptationStrategy;
 import org.citydb.concurrent.WorkerPool;
-import org.citydb.database.connection.DatabaseConnectionPool;
 import org.citydb.database.schema.mapping.SchemaMapping;
 import org.citydb.event.Event;
 import org.citydb.event.EventDispatcher;
@@ -57,7 +56,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Deleter implements EventHandler {
 	private final Logger log = Logger.getInstance();
-	private final DatabaseConnectionPool dbPool;
 	private final SchemaMapping schemaMapping;
 	private final EventDispatcher eventDispatcher;
 
@@ -72,7 +70,6 @@ public class Deleter implements EventHandler {
 	public Deleter(Query query) {
 		this.query = query;
 
-		dbPool = DatabaseConnectionPool.getInstance();
 		schemaMapping = ObjectRegistry.getInstance().getSchemaMapping();
 		eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
 		objectCounter = new HashMap<>();
