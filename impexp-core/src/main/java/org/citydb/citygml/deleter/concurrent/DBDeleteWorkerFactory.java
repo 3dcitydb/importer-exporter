@@ -30,6 +30,7 @@ package org.citydb.citygml.deleter.concurrent;
 import org.citydb.citygml.exporter.database.content.DBSplittingResult;
 import org.citydb.concurrent.Worker;
 import org.citydb.concurrent.WorkerFactory;
+import org.citydb.config.project.deleter.DeleteConfig;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.connection.ConnectionManager;
 import org.citydb.database.connection.DatabaseConnectionPool;
@@ -42,10 +43,12 @@ import java.sql.SQLException;
 public class DBDeleteWorkerFactory implements WorkerFactory<DBSplittingResult>{
 	private final Logger log = Logger.getInstance();
 	private final ConnectionManager connectionManager;
+	private final DeleteConfig config;
 	private final EventDispatcher eventDispatcher;
 
-	public DBDeleteWorkerFactory(ConnectionManager connectionManager, EventDispatcher eventDispatcher) {
+	public DBDeleteWorkerFactory(ConnectionManager connectionManager, DeleteConfig config, EventDispatcher eventDispatcher) {
 		this.connectionManager = connectionManager;
+		this.config = config;
 		this.eventDispatcher = eventDispatcher;
 	}
 	
@@ -55,7 +58,11 @@ public class DBDeleteWorkerFactory implements WorkerFactory<DBSplittingResult>{
 	
 		try {
 			Connection connection = connectionManager.getConnection();
+
+			// try and change workspace the connections if needed
 			AbstractDatabaseAdapter databaseAdapter = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter();
+			if (databaseAdapter.hasVersioningSupport())
+				databaseAdapter.getWorkspaceManager().gotoWorkspace(connection, config.getWorkspace());
 
 			dbWorker = new DBDeleteWorker(connection, databaseAdapter, eventDispatcher);
 		} catch (SQLException e) {

@@ -34,6 +34,7 @@ import org.citydb.citygml.deleter.database.DBSplitter;
 import org.citydb.citygml.exporter.database.content.DBSplittingResult;
 import org.citydb.concurrent.PoolSizeAdaptationStrategy;
 import org.citydb.concurrent.WorkerPool;
+import org.citydb.config.project.deleter.DeleteConfig;
 import org.citydb.database.schema.mapping.SchemaMapping;
 import org.citydb.event.Event;
 import org.citydb.event.EventDispatcher;
@@ -64,12 +65,9 @@ public class Deleter implements EventHandler {
 	private AtomicBoolean isInterrupted = new AtomicBoolean(false);
 	private WorkerPool<DBSplittingResult> dbWorkerPool;
 	private Map<Integer, Long> objectCounter;
-	private Query query;
 	private BundledConnection bundledConnection;
 	
-	public Deleter(Query query) {
-		this.query = query;
-
+	public Deleter() {
 		schemaMapping = ObjectRegistry.getInstance().getSchemaMapping();
 		eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
 		objectCounter = new HashMap<>();
@@ -79,7 +77,7 @@ public class Deleter implements EventHandler {
 		eventDispatcher.removeEventHandler(this);
 	}
 
-	public boolean doProcess() throws CityGMLDeleteException {
+	public boolean doProcess(Query query, DeleteConfig config) throws CityGMLDeleteException {
 		long start = System.currentTimeMillis();
 		int minThreads = 2;
 		int maxThreads = Math.max(minThreads, Runtime.getRuntime().availableProcessors());
@@ -96,7 +94,7 @@ public class Deleter implements EventHandler {
 					minThreads,
 					maxThreads,
 					PoolSizeAdaptationStrategy.AGGRESSIVE,
-					new DBDeleteWorkerFactory(bundledConnection, eventDispatcher),
+					new DBDeleteWorkerFactory(bundledConnection, config, eventDispatcher),
 					300,
 					false);
 
