@@ -40,7 +40,6 @@ import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
 import org.citydb.config.project.global.LogLevel;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
-import org.citydb.database.connection.DatabaseConnectionPool;
 import org.citydb.database.schema.mapping.MappingConstants;
 import org.citydb.database.schema.mapping.SchemaMapping;
 import org.citydb.event.Event;
@@ -72,16 +71,18 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 	private volatile boolean shouldRun = true;
 	private volatile boolean shouldWork = true;
 
-	private Connection connection;	
+	private final Connection connection;
 	private final CityGMLExportManager exporter;
 	private final FeatureWriter featureWriter;
 	private final EventDispatcher eventDispatcher;
 	private final Config config;
-	private int exportCounter = 0;
 
+	private int exportCounter = 0;
 	private List<CityGMLExportExtension> plugins;
 
-	public DBExportWorker(SchemaMapping schemaMapping,
+	public DBExportWorker(Connection connection,
+			AbstractDatabaseAdapter databaseAdapter,
+			SchemaMapping schemaMapping,
 			CityGMLBuilder cityGMLBuilder,
 			FeatureWriter featureWriter,
 			WorkerPool<DBXlink> xlinkPool,
@@ -89,21 +90,11 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 			CacheTableManager cacheTableManager,
 			Query query,
 			Config config,
-			EventDispatcher eventDispatcher) throws CityGMLExportException, SQLException {
+			EventDispatcher eventDispatcher) throws CityGMLExportException {
+		this.connection = connection;
 		this.featureWriter = featureWriter;
 		this.eventDispatcher = eventDispatcher;
 		this.config = config;
-
-		AbstractDatabaseAdapter databaseAdapter = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter();
-		connection = DatabaseConnectionPool.getInstance().getConnection();
-		connection.setAutoCommit(false);
-
-		// try and change workspace the connections if needed
-		if (databaseAdapter.hasVersioningSupport()) {
-			databaseAdapter.getWorkspaceManager().gotoWorkspace(
-					connection, 
-					config.getProject().getDatabase().getWorkspaces().getExportWorkspace());
-		}
 
 		exporter = new CityGMLExportManager(
 				connection, 
@@ -154,14 +145,10 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 				//
 			}
 
-			if (connection != null) {
-				try {
-					connection.close();
-				} catch (SQLException e) {
-					//
-				}
-
-				connection = null;
+			try {
+				connection.close();
+			} catch (SQLException e) {
+				//
 			}
 
 			eventDispatcher.removeEventHandler(this);

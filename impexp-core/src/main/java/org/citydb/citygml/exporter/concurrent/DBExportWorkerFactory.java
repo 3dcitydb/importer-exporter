@@ -27,8 +27,6 @@
  */
 package org.citydb.citygml.exporter.concurrent;
 
-import java.sql.SQLException;
-
 import org.citydb.citygml.common.database.cache.CacheTableManager;
 import org.citydb.citygml.common.database.uid.UIDCacheManager;
 import org.citydb.citygml.common.database.xlink.DBXlink;
@@ -39,14 +37,19 @@ import org.citydb.concurrent.Worker;
 import org.citydb.concurrent.WorkerFactory;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
+import org.citydb.database.adapter.AbstractDatabaseAdapter;
+import org.citydb.database.connection.DatabaseConnectionPool;
 import org.citydb.database.schema.mapping.SchemaMapping;
 import org.citydb.event.EventDispatcher;
 import org.citydb.log.Logger;
 import org.citydb.query.Query;
 import org.citygml4j.builder.jaxb.CityGMLBuilder;
 
+import java.sql.Connection;
+import java.sql.SQLException;
+
 public class DBExportWorkerFactory implements WorkerFactory<DBSplittingResult> {
-	private final Logger LOG = Logger.getInstance();
+	private final Logger log = Logger.getInstance();
 	
 	private final SchemaMapping schemaMapping;
 	private final CityGMLBuilder cityGMLBuilder;
@@ -84,21 +87,22 @@ public class DBExportWorkerFactory implements WorkerFactory<DBSplittingResult> {
 		DBExportWorker dbWorker = null;
 
 		try {
-			dbWorker = new DBExportWorker(
-					schemaMapping,
-					cityGMLBuilder,
-					featureWriter,
-					xlinkExporterPool,
-					uidCacheManager,
-					cacheTableManager,
-					query,
-					config,
-					eventDispatcher);
-		} catch (CityGMLExportException e) {
-			LOG.error("Failed to create export worker: " + e.getMessage());
-		} catch (SQLException e) {
-			LOG.error("Failed to create export worker: " + e.getMessage());
-		} 
+			Connection connection = DatabaseConnectionPool.getInstance().getConnection();
+			connection.setAutoCommit(false);
+
+			// try and change workspace the connections if needed
+			AbstractDatabaseAdapter databaseAdapter = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter();
+			if (databaseAdapter.hasVersioningSupport()) {
+				databaseAdapter.getWorkspaceManager().gotoWorkspace(
+						connection,
+						config.getProject().getDatabase().getWorkspaces().getExportWorkspace());
+			}
+
+			dbWorker = new DBExportWorker(connection, databaseAdapter, schemaMapping, cityGMLBuilder, featureWriter,
+					xlinkExporterPool, uidCacheManager, cacheTableManager, query, config, eventDispatcher);
+		} catch (CityGMLExportException | SQLException e) {
+			log.error("Failed to create export worker: " + e.getMessage());
+		}
 
 		return dbWorker;
 	}

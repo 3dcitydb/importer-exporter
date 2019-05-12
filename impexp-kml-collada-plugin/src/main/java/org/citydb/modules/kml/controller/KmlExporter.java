@@ -450,7 +450,6 @@ public class KmlExporter implements EventHandler {
 								new KmlExportWorkerFactory(
 										jaxbKmlContext,
 										jaxbColladaContext,
-										schemaMapping,
 										writerPool,
 										tracker,
 										query,

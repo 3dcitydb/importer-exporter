@@ -59,10 +59,8 @@ import org.citydb.citygml.importer.database.xlink.resolver.XlinkTextureParam;
 import org.citydb.concurrent.Worker;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
-import org.citydb.config.project.database.Workspace;
 import org.citydb.config.project.global.LogLevel;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
-import org.citydb.database.connection.DatabaseConnectionPool;
 import org.citydb.event.Event;
 import org.citydb.event.EventDispatcher;
 import org.citydb.event.EventHandler;
@@ -75,47 +73,21 @@ import java.sql.SQLException;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class DBImportXlinkResolverWorker extends Worker<DBXlink> implements EventHandler {
-	private final Logger LOG = Logger.getInstance();
+	private final Logger log = Logger.getInstance();
 	private final ReentrantLock runLock = new ReentrantLock();
 	private volatile boolean shouldRun = true;
 	private volatile boolean shouldWork = true;
 
-	private final WorkerPool<DBXlink> tmpXlinkPool;
-	private final UIDCacheManager uidCacheManager;
-	private final CacheTableManager cacheTableManager;
+	private final Connection connection;
+	private final boolean isManagedTransaction;
+	private final DBXlinkResolverManager xlinkResolverManager;
 	private final EventDispatcher eventDispatcher;
-	private boolean globalTransaction;
 
-	private Connection connection;
-	private DBXlinkResolverManager xlinkResolverManager;
 	private int updateCounter = 0;
 	private int commitAfter = 20;
 
-	public DBImportXlinkResolverWorker(WorkerPool<DBXlink> tmpXlinkPool, 
-			UIDCacheManager uidCacheManager, 
-			CacheTableManager cacheTableManager, 
-			Config config, 
-			EventDispatcher eventDispatcher) throws SQLException {
-		this.tmpXlinkPool = tmpXlinkPool;
-		this.uidCacheManager = uidCacheManager;
-		this.cacheTableManager = cacheTableManager;
-		this.eventDispatcher = eventDispatcher;
-
-		AbstractDatabaseAdapter databaseAdapter = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter();
-		connection = DatabaseConnectionPool.getInstance().getConnection();
-		connection.setAutoCommit(false);
-		globalTransaction = false;
-
-		// try and change workspace for the connection if needed
-		if (databaseAdapter.hasVersioningSupport()) {
-			Workspace workspace = config.getProject().getDatabase().getWorkspaces().getImportWorkspace();
-			databaseAdapter.getWorkspaceManager().gotoWorkspace(connection, workspace);
-		}
-
-		init(databaseAdapter, config);
-	}
-
 	public DBImportXlinkResolverWorker(Connection connection,
+			boolean isManagedTransaction,
 			AbstractDatabaseAdapter databaseAdapter,
 			WorkerPool<DBXlink> tmpXlinkPool, 
 			UIDCacheManager uidCacheManager, 
@@ -123,16 +95,9 @@ public class DBImportXlinkResolverWorker extends Worker<DBXlink> implements Even
 			Config config, 
 			EventDispatcher eventDispatcher) throws SQLException {
 		this.connection = connection;
-		this.tmpXlinkPool = tmpXlinkPool;
-		this.uidCacheManager = uidCacheManager;
-		this.cacheTableManager = cacheTableManager;
+		this.isManagedTransaction = isManagedTransaction;
 		this.eventDispatcher = eventDispatcher;
 
-		globalTransaction = true;
-		init(databaseAdapter, config);
-	}
-
-	private void init(AbstractDatabaseAdapter databaseAdapter, Config config) throws SQLException {
 		Integer commitAfterProp = config.getProject().getDatabase().getUpdateBatching().getFeatureBatchValue();
 		if (commitAfterProp != null && commitAfterProp > 0 && commitAfterProp <= databaseAdapter.getMaxBatchSize())
 			commitAfter = commitAfterProp;
@@ -174,7 +139,7 @@ public class DBImportXlinkResolverWorker extends Worker<DBXlink> implements Even
 			try {
 				if (shouldWork) {
 					xlinkResolverManager.executeBatch();
-					if (!globalTransaction)
+					if (!isManagedTransaction)
 						connection.commit();
 				}
 			} catch (SQLException e) {
@@ -194,7 +159,7 @@ public class DBImportXlinkResolverWorker extends Worker<DBXlink> implements Even
 				//
 			}
 
-			if (!globalTransaction) {
+			if (!isManagedTransaction) {
 				try {
 					connection.close();
 				} catch (SQLException e) {
@@ -202,7 +167,6 @@ public class DBImportXlinkResolverWorker extends Worker<DBXlink> implements Even
 				}
 			}
 
-			connection = null;
 			eventDispatcher.removeEventHandler(this);
 		}
 	}
@@ -315,13 +279,13 @@ public class DBImportXlinkResolverWorker extends Worker<DBXlink> implements Even
 			}
 
 			if (!success) {
-				LOG.error("Failed to resolve XLink reference '" + work.getGmlId() + "'.");
+				log.error("Failed to resolve XLink reference '" + work.getGmlId() + "'.");
 			} else
 				updateCounter++;
 
 			if (updateCounter == commitAfter) {
 				xlinkResolverManager.executeBatch();
-				if (!globalTransaction)
+				if (!isManagedTransaction)
 					connection.commit();
 
 				updateCounter = 0;
