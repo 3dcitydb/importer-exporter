@@ -29,8 +29,8 @@ package org.citydb.citygml.deleter.controller;
 
 import org.citydb.citygml.deleter.CityGMLDeleteException;
 import org.citydb.citygml.deleter.concurrent.DBDeleteWorkerFactory;
+import org.citydb.citygml.deleter.database.BundledConnection;
 import org.citydb.citygml.deleter.database.DBSplitter;
-import org.citydb.citygml.deleter.util.BundledDBConnection;
 import org.citydb.citygml.exporter.database.content.DBSplittingResult;
 import org.citydb.concurrent.PoolSizeAdaptationStrategy;
 import org.citydb.concurrent.WorkerPool;
@@ -65,7 +65,7 @@ public class Deleter implements EventHandler {
 	private WorkerPool<DBSplittingResult> dbWorkerPool;
 	private Map<Integer, Long> objectCounter;
 	private Query query;
-	private BundledDBConnection bundledConnection;
+	private BundledConnection bundledConnection;
 	
 	public Deleter(Query query) {
 		this.query = query;
@@ -79,7 +79,7 @@ public class Deleter implements EventHandler {
 		eventDispatcher.removeEventHandler(this);
 	}
 
-	public boolean doProcess(boolean useSingleConnection) throws CityGMLDeleteException {
+	public boolean doProcess() throws CityGMLDeleteException {
 		long start = System.currentTimeMillis();
 		int minThreads = 2;
 		int maxThreads = Math.max(minThreads, Runtime.getRuntime().availableProcessors());
@@ -88,7 +88,7 @@ public class Deleter implements EventHandler {
 		eventDispatcher.addEventHandler(EventType.OBJECT_COUNTER, this);
 		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
 
-		bundledConnection = new BundledDBConnection(useSingleConnection);
+		bundledConnection = new BundledConnection();
 		
 		try {				
 			dbWorkerPool = new WorkerPool<>(
@@ -96,7 +96,7 @@ public class Deleter implements EventHandler {
 					minThreads,
 					maxThreads,
 					PoolSizeAdaptationStrategy.AGGRESSIVE,
-					new DBDeleteWorkerFactory(eventDispatcher, bundledConnection),
+					new DBDeleteWorkerFactory(bundledConnection, eventDispatcher),
 					300,
 					false);
 
@@ -119,7 +119,7 @@ public class Deleter implements EventHandler {
 				bundledConnection.close();
 			} catch (SQLException e) {
 				//
-			}			
+			}
 			
 			// clean up
 			if (dbWorkerPool != null)
@@ -132,7 +132,7 @@ public class Deleter implements EventHandler {
 			}
 		}		
 		
-		// show exported features
+		// show deleted features
 		if (!objectCounter.isEmpty()) {
 			log.info("Deleted city objects:");
 			Map<String, Long> typeNames = Util.mapObjectCounter(objectCounter, schemaMapping);					

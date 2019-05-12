@@ -27,12 +27,10 @@
  */
 package org.citydb.citygml.deleter.concurrent;
 
-import org.citydb.citygml.deleter.util.BundledDBConnection;
 import org.citydb.citygml.exporter.database.content.DBSplittingResult;
 import org.citydb.concurrent.Worker;
 import org.citydb.config.project.global.LogLevel;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
-import org.citydb.database.connection.DatabaseConnectionPool;
 import org.citydb.event.Event;
 import org.citydb.event.EventDispatcher;
 import org.citydb.event.EventHandler;
@@ -44,6 +42,7 @@ import org.citydb.event.global.StatusDialogProgressBar;
 import org.citydb.log.Logger;
 
 import java.sql.CallableStatement;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.HashMap;
@@ -53,17 +52,17 @@ import java.util.concurrent.locks.ReentrantLock;
 public class DBDeleteWorker extends Worker<DBSplittingResult> implements EventHandler {
 	private final ReentrantLock mainLock = new ReentrantLock();
 	private final Logger log = Logger.getInstance();
-	private final EventDispatcher eventDispatcher;	
-	private final CallableStatement stmt;	
+	private final CallableStatement stmt;
+	private final EventDispatcher eventDispatcher;
+
 	private volatile boolean shouldRun = true;
 	private volatile boolean shouldWork = true;
 	
-	public DBDeleteWorker(EventDispatcher eventDispatcher, BundledDBConnection bundledConnection) throws SQLException {
+	public DBDeleteWorker(Connection connection, AbstractDatabaseAdapter databaseAdapter, EventDispatcher eventDispatcher) throws SQLException {
 		this.eventDispatcher = eventDispatcher;
 		this.eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
 
-		AbstractDatabaseAdapter databaseAdapter = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter();
-		stmt = bundledConnection.getOrCreateConnection().prepareCall("{? = call "
+		stmt = connection.prepareCall("{? = call "
 				+ databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_delete.delete_cityobject")
 				+ "(?)}");
 		stmt.registerOutParameter(1, Types.INTEGER);
