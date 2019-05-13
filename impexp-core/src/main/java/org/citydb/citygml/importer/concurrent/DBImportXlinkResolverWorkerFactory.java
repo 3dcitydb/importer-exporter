@@ -27,9 +27,6 @@
  */
 package org.citydb.citygml.importer.concurrent;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-
 import org.citydb.citygml.common.database.cache.CacheTableManager;
 import org.citydb.citygml.common.database.uid.UIDCacheManager;
 import org.citydb.citygml.common.database.xlink.DBXlink;
@@ -37,13 +34,18 @@ import org.citydb.concurrent.Worker;
 import org.citydb.concurrent.WorkerFactory;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
+import org.citydb.file.InputFile;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.event.EventDispatcher;
 import org.citydb.log.Logger;
 
+import java.sql.Connection;
+import java.sql.SQLException;
+
 public class DBImportXlinkResolverWorkerFactory implements WorkerFactory<DBXlink> {
 	private final Logger LOG = Logger.getInstance();
-	
+
+	private final InputFile inputFile;
 	private final Connection connection;
 	private final AbstractDatabaseAdapter databaseAdapter;
 	private final WorkerPool<DBXlink> tmpXlinkPool;
@@ -52,11 +54,13 @@ public class DBImportXlinkResolverWorkerFactory implements WorkerFactory<DBXlink
 	private final Config config;
 	private final EventDispatcher eventDispatcher;
 
-	public DBImportXlinkResolverWorkerFactory(WorkerPool<DBXlink> tmpXlinkPool, 
+	public DBImportXlinkResolverWorkerFactory(InputFile inputFile,
+			WorkerPool<DBXlink> tmpXlinkPool,
 			UIDCacheManager uidCacheManager, 
 			CacheTableManager cacheTableManager, 
 			Config config, 
 			EventDispatcher eventDispatcher) {
+		this.inputFile = inputFile;
 		this.tmpXlinkPool = tmpXlinkPool;
 		this.uidCacheManager = uidCacheManager;
 		this.cacheTableManager = cacheTableManager;
@@ -67,13 +71,15 @@ public class DBImportXlinkResolverWorkerFactory implements WorkerFactory<DBXlink
 		databaseAdapter = null;
 	}
 	
-	public DBImportXlinkResolverWorkerFactory(Connection connection,
+	public DBImportXlinkResolverWorkerFactory(InputFile inputFile,
+			Connection connection,
 			AbstractDatabaseAdapter databaseAdapter, 
 			WorkerPool<DBXlink> tmpXlinkPool, 
 			UIDCacheManager uidCacheManager, 
 			CacheTableManager cacheTableManager, 
 			Config config, 
 			EventDispatcher eventDispatcher) {
+		this.inputFile = inputFile;
 		this.connection = connection;
 		this.databaseAdapter = databaseAdapter;
 		this.tmpXlinkPool = tmpXlinkPool;
@@ -88,8 +94,8 @@ public class DBImportXlinkResolverWorkerFactory implements WorkerFactory<DBXlink
 		DBImportXlinkResolverWorker dbWorker = null;
 
 		try {
-			dbWorker = connection == null ? new DBImportXlinkResolverWorker(tmpXlinkPool, uidCacheManager, cacheTableManager, config, eventDispatcher) : 
-				new DBImportXlinkResolverWorker(connection, databaseAdapter, tmpXlinkPool, uidCacheManager, cacheTableManager, config, eventDispatcher);
+			dbWorker = connection == null ? new DBImportXlinkResolverWorker(inputFile, tmpXlinkPool, uidCacheManager, cacheTableManager, config, eventDispatcher) :
+				new DBImportXlinkResolverWorker(inputFile, connection, databaseAdapter, tmpXlinkPool, uidCacheManager, cacheTableManager, config, eventDispatcher);
 		} catch (SQLException e) {
 			LOG.error("Failed to create XLink resolver worker: " + e.getMessage());
 		}

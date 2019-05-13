@@ -27,22 +27,25 @@
  */
 package org.citydb.citygml.exporter.concurrent;
 
-import java.sql.SQLException;
-
 import org.citydb.citygml.common.database.xlink.DBXlink;
 import org.citydb.concurrent.Worker;
 import org.citydb.concurrent.WorkerFactory;
 import org.citydb.config.Config;
 import org.citydb.event.EventDispatcher;
+import org.citydb.file.OutputFile;
 import org.citydb.log.Logger;
+
+import java.sql.SQLException;
 
 public class DBExportXlinkWorkerFactory implements WorkerFactory<DBXlink> {
 	private final Logger LOG = Logger.getInstance();
-	
+
+	private final OutputFile outputFile;
 	private final Config config;
 	private final EventDispatcher eventDispatcher;
 
-	public DBExportXlinkWorkerFactory(Config config, EventDispatcher eventDispatcher) {
+	public DBExportXlinkWorkerFactory(OutputFile outputFile, Config config, EventDispatcher eventDispatcher) {
+		this.outputFile = outputFile;
 		this.config = config;
 		this.eventDispatcher = eventDispatcher;
 	}
@@ -52,7 +55,7 @@ public class DBExportXlinkWorkerFactory implements WorkerFactory<DBXlink> {
 		DBExportXlinkWorker dbWorker = null;
 
 		try {
-			dbWorker = new DBExportXlinkWorker(config, eventDispatcher);
+			dbWorker = new DBExportXlinkWorker(outputFile, config, eventDispatcher);
 		} catch (SQLException e) {
 			LOG.error("Failed to create XLink export worker: " + e.getMessage());
 		}

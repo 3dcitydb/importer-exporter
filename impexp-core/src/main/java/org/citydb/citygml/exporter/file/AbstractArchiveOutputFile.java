@@ -28,8 +28,8 @@
 
 package org.citydb.citygml.exporter.file;
 
-import org.citydb.config.internal.FileType;
-import org.citydb.config.internal.OutputFile;
+import org.citydb.file.FileType;
+import org.citydb.file.OutputFile;
 
 import java.nio.file.Path;
 import java.util.Objects;

@@ -27,8 +27,6 @@
  */
 package org.citydb.citygml.exporter.concurrent;
 
-import java.sql.SQLException;
-
 import org.citydb.citygml.common.database.cache.CacheTableManager;
 import org.citydb.citygml.common.database.uid.UIDCacheManager;
 import org.citydb.citygml.common.database.xlink.DBXlink;
@@ -41,13 +39,17 @@ import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
 import org.citydb.database.schema.mapping.SchemaMapping;
 import org.citydb.event.EventDispatcher;
+import org.citydb.file.OutputFile;
 import org.citydb.log.Logger;
 import org.citydb.query.Query;
 import org.citygml4j.builder.jaxb.CityGMLBuilder;
 
+import java.sql.SQLException;
+
 public class DBExportWorkerFactory implements WorkerFactory<DBSplittingResult> {
 	private final Logger LOG = Logger.getInstance();
-	
+
+	private final OutputFile outputFile;
 	private final SchemaMapping schemaMapping;
 	private final CityGMLBuilder cityGMLBuilder;
 	private final FeatureWriter featureWriter;
@@ -58,7 +60,7 @@ public class DBExportWorkerFactory implements WorkerFactory<DBSplittingResult> {
 	private final Config config;
 	private final EventDispatcher eventDispatcher;
 
-	public DBExportWorkerFactory(
+	public DBExportWorkerFactory(OutputFile outputFile,
 			SchemaMapping schemaMapping,
 			CityGMLBuilder cityGMLBuilder,
 			FeatureWriter featureWriter,
@@ -68,6 +70,7 @@ public class DBExportWorkerFactory implements WorkerFactory<DBSplittingResult> {
 			Query query,
 			Config config,
 			EventDispatcher eventDispatcher) {
+		this.outputFile = outputFile;
 		this.schemaMapping = schemaMapping;
 		this.cityGMLBuilder = cityGMLBuilder;
 		this.featureWriter = featureWriter;
@@ -85,6 +88,7 @@ public class DBExportWorkerFactory implements WorkerFactory<DBSplittingResult> {
 
 		try {
 			dbWorker = new DBExportWorker(
+					outputFile,
 					schemaMapping,
 					cityGMLBuilder,
 					featureWriter,
@@ -94,11 +98,9 @@ public class DBExportWorkerFactory implements WorkerFactory<DBSplittingResult> {
 					query,
 					config,
 					eventDispatcher);
-		} catch (CityGMLExportException e) {
+		} catch (CityGMLExportException | SQLException e) {
 			LOG.error("Failed to create export worker: " + e.getMessage());
-		} catch (SQLException e) {
-			LOG.error("Failed to create export worker: " + e.getMessage());
-		} 
+		}
 
 		return dbWorker;
 	}

@@ -29,12 +29,12 @@ package org.citydb.citygml.exporter.database.xlink;
 
 import org.citydb.citygml.common.database.xlink.DBXlinkTextureFile;
 import org.citydb.config.Config;
-import org.citydb.config.internal.FileType;
-import org.citydb.config.internal.OutputFile;
 import org.citydb.database.adapter.BlobExportAdapter;
 import org.citydb.database.adapter.BlobType;
 import org.citydb.event.global.CounterEvent;
 import org.citydb.event.global.CounterType;
+import org.citydb.file.FileType;
+import org.citydb.file.OutputFile;
 import org.citydb.log.Logger;
 
 import java.io.File;
@@ -51,8 +51,8 @@ public class DBXlinkExporterTextureImage implements DBXlinkExporter {
     private final Logger log = Logger.getInstance();
     private final DBXlinkExporterManager xlinkExporterManager;
 
-    private BlobExportAdapter textureImageExportAdapter;
     private OutputFile outputFile;
+    private BlobExportAdapter textureImageExportAdapter;
     private String textureURI;
     private boolean isAbsoluteTextureURI;
     private String separator;
@@ -64,7 +64,7 @@ public class DBXlinkExporterTextureImage implements DBXlinkExporter {
     public DBXlinkExporterTextureImage(Connection connection, Config config, DBXlinkExporterManager xlinkExporterManager) throws SQLException {
         this.xlinkExporterManager = xlinkExporterManager;
 
-        outputFile = config.getInternal().getCurrentExportFile();
+        outputFile = xlinkExporterManager.getOutputFile();
         textureURI = config.getInternal().getExportTextureURI();
         isAbsoluteTextureURI = new File(textureURI).isAbsolute();
         separator = isAbsoluteTextureURI ? File.separator : "/";

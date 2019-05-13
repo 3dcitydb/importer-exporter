@@ -59,6 +59,7 @@ import org.citydb.citygml.importer.database.xlink.resolver.XlinkTextureParam;
 import org.citydb.concurrent.Worker;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
+import org.citydb.file.InputFile;
 import org.citydb.config.project.database.Workspace;
 import org.citydb.config.project.global.LogLevel;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
@@ -91,7 +92,8 @@ public class DBImportXlinkResolverWorker extends Worker<DBXlink> implements Even
 	private int updateCounter = 0;
 	private int commitAfter = 20;
 
-	public DBImportXlinkResolverWorker(WorkerPool<DBXlink> tmpXlinkPool, 
+	public DBImportXlinkResolverWorker(InputFile inputFile,
+			WorkerPool<DBXlink> tmpXlinkPool,
 			UIDCacheManager uidCacheManager, 
 			CacheTableManager cacheTableManager, 
 			Config config, 
@@ -112,10 +114,11 @@ public class DBImportXlinkResolverWorker extends Worker<DBXlink> implements Even
 			databaseAdapter.getWorkspaceManager().gotoWorkspace(connection, workspace);
 		}
 
-		init(databaseAdapter, config);
+		init(inputFile, databaseAdapter, config);
 	}
 
-	public DBImportXlinkResolverWorker(Connection connection,
+	public DBImportXlinkResolverWorker(InputFile inputFile,
+			Connection connection,
 			AbstractDatabaseAdapter databaseAdapter,
 			WorkerPool<DBXlink> tmpXlinkPool, 
 			UIDCacheManager uidCacheManager, 
@@ -129,15 +132,16 @@ public class DBImportXlinkResolverWorker extends Worker<DBXlink> implements Even
 		this.eventDispatcher = eventDispatcher;
 
 		globalTransaction = true;
-		init(databaseAdapter, config);
+		init(inputFile, databaseAdapter, config);
 	}
 
-	private void init(AbstractDatabaseAdapter databaseAdapter, Config config) throws SQLException {
+	private void init(InputFile inputFile, AbstractDatabaseAdapter databaseAdapter, Config config) throws SQLException {
 		Integer commitAfterProp = config.getProject().getDatabase().getUpdateBatching().getFeatureBatchValue();
 		if (commitAfterProp != null && commitAfterProp > 0 && commitAfterProp <= databaseAdapter.getMaxBatchSize())
 			commitAfter = commitAfterProp;
 
 		xlinkResolverManager = new DBXlinkResolverManager(
+				inputFile,
 				connection,
 				databaseAdapter,
 				tmpXlinkPool,

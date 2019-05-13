@@ -53,6 +53,7 @@ import org.citydb.event.global.InterruptEvent;
 import org.citydb.event.global.ObjectCounterEvent;
 import org.citydb.event.global.ProgressBarEventType;
 import org.citydb.event.global.StatusDialogProgressBar;
+import org.citydb.file.OutputFile;
 import org.citydb.plugin.PluginException;
 import org.citydb.plugin.PluginManager;
 import org.citydb.plugin.extension.export.CityGMLExportExtension;
@@ -79,7 +80,8 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 
 	private List<CityGMLExportExtension> plugins;
 
-	public DBExportWorker(SchemaMapping schemaMapping,
+	public DBExportWorker(OutputFile outputFile,
+			SchemaMapping schemaMapping,
 			CityGMLBuilder cityGMLBuilder,
 			FeatureWriter featureWriter,
 			WorkerPool<DBXlink> xlinkPool,
@@ -87,7 +89,7 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 			CacheTableManager cacheTableManager,
 			Query query,
 			Config config,
-			EventDispatcher eventDispatcher) throws CityGMLExportException, SQLException {		
+			EventDispatcher eventDispatcher) throws CityGMLExportException, SQLException {
 		this.eventDispatcher = eventDispatcher;
 		this.config = config;
 
@@ -103,7 +105,8 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 		}
 
 		exporter = new CityGMLExportManager(
-				connection, 
+				outputFile,
+				connection,
 				query,
 				databaseAdapter,
 				schemaMapping, 

@@ -38,6 +38,7 @@ import org.citydb.citygml.importer.util.ImportLogger.ImportLogEntry;
 import org.citydb.concurrent.Worker;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
+import org.citydb.file.InputFile;
 import org.citydb.config.project.database.Workspace;
 import org.citydb.config.project.global.LogLevel;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
@@ -82,7 +83,8 @@ public class DBImportWorker extends Worker<CityGML> implements EventHandler {
 	private BoundingBoxOptions bboxOptions;
 	private CityGMLImportManager importer;	
 
-	public DBImportWorker(SchemaMapping schemaMapping,
+	public DBImportWorker(InputFile inputFile,
+			SchemaMapping schemaMapping,
 			CityGMLBuilder cityGMLBuilder,
 			WorkerPool<DBXlink> xlinkPool,
 			UIDCacheManager uidCacheManager,
@@ -106,10 +108,11 @@ public class DBImportWorker extends Worker<CityGML> implements EventHandler {
 			databaseAdapter.getWorkspaceManager().gotoWorkspace(connection, workspace);
 		}
 
-		init(databaseAdapter, schemaMapping, cityGMLBuilder, xlinkPool, uidCacheManager, affineTransformer, config);
+		init(inputFile, databaseAdapter, schemaMapping, cityGMLBuilder, xlinkPool, uidCacheManager, affineTransformer, config);
 	}
 
-	public DBImportWorker(Connection connection,
+	public DBImportWorker(InputFile inputFile,
+			Connection connection,
 			AbstractDatabaseAdapter databaseAdapter,
 			SchemaMapping schemaMapping,
 			CityGMLBuilder cityGMLBuilder,
@@ -126,17 +129,19 @@ public class DBImportWorker extends Worker<CityGML> implements EventHandler {
 		this.eventDispatcher = eventDispatcher;
 
 		globalTransaction = true;
-		init(databaseAdapter, schemaMapping, cityGMLBuilder, xlinkPool, uidCacheManager, affineTransformer, config);
+		init(inputFile, databaseAdapter, schemaMapping, cityGMLBuilder, xlinkPool, uidCacheManager, affineTransformer, config);
 	}
 
-	private void init(AbstractDatabaseAdapter databaseAdapter, 
-			SchemaMapping schemaMapping, 
+	private void init(InputFile inputFile,
+			AbstractDatabaseAdapter databaseAdapter,
+			SchemaMapping schemaMapping,
 			CityGMLBuilder cityGMLBuilder,
 			WorkerPool<DBXlink> xlinkPool,
 			UIDCacheManager uidCacheManager,
 			AffineTransformer affineTransformer,
 			Config config) throws SQLException {
-		importer = new CityGMLImportManager(connection, 
+		importer = new CityGMLImportManager(inputFile,
+				connection,
 				databaseAdapter,
 				schemaMapping,
 				cityGMLBuilder,

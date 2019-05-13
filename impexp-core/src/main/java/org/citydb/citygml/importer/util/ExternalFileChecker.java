@@ -28,8 +28,8 @@
 
 package org.citydb.citygml.importer.util;
 
-import org.citydb.config.internal.InputFile;
-import org.citydb.config.internal.FileType;
+import org.citydb.file.FileType;
+import org.citydb.file.InputFile;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -46,7 +46,7 @@ public class ExternalFileChecker {
 
     public ExternalFileChecker(InputFile inputFile) {
         this.inputFile = inputFile;
-        replaceSeparator = inputFile.getSeparator().equals("/");
+        replaceSeparator = inputFile != null && inputFile.getSeparator().equals("/");
     }
 
     public Map.Entry<String, String> getFileInfo(String imageURI) throws IOException {
@@ -56,6 +56,9 @@ public class ExternalFileChecker {
         } catch (MalformedURLException ignored) {
             //
         }
+
+        if (inputFile == null)
+            throw new IOException("Base file path for resolving file references is null.");
 
         String path = null;
         Path file = null;

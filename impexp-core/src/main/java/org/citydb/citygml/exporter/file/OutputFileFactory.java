@@ -29,8 +29,8 @@
 package org.citydb.citygml.exporter.file;
 
 import org.citydb.config.Config;
-import org.citydb.config.internal.FileType;
-import org.citydb.config.internal.OutputFile;
+import org.citydb.file.FileType;
+import org.citydb.file.OutputFile;
 import org.citydb.event.EventDispatcher;
 import org.citydb.util.Util;
 

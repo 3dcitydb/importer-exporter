@@ -28,11 +28,10 @@
 package org.citydb.citygml.exporter.database.xlink;
 
 import org.citydb.citygml.common.database.xlink.DBXlinkLibraryObject;
-import org.citydb.config.Config;
-import org.citydb.config.internal.FileType;
-import org.citydb.config.internal.OutputFile;
 import org.citydb.database.adapter.BlobExportAdapter;
 import org.citydb.database.adapter.BlobType;
+import org.citydb.file.FileType;
+import org.citydb.file.OutputFile;
 import org.citydb.log.Logger;
 import org.citydb.util.CoreConstants;
 
@@ -48,12 +47,12 @@ import java.sql.SQLException;
 public class DBXlinkExporterLibraryObject implements DBXlinkExporter {
 	private final Logger log = Logger.getInstance();
 
-	private BlobExportAdapter blobExportAdapter;
 	private OutputFile outputFile;
+	private BlobExportAdapter blobExportAdapter;
 	private boolean isFolderCreated;
 
-	public DBXlinkExporterLibraryObject(Connection connection, Config config, DBXlinkExporterManager xlinkExporterManager) throws SQLException {
-		outputFile = config.getInternal().getCurrentExportFile();
+	public DBXlinkExporterLibraryObject(Connection connection, DBXlinkExporterManager xlinkExporterManager) throws SQLException {
+		outputFile = xlinkExporterManager.getOutputFile();
 		blobExportAdapter = xlinkExporterManager.getDatabaseAdapter().getSQLAdapter().getBlobExportAdapter(connection, BlobType.LIBRARY_OBJECT);
 	}
 
