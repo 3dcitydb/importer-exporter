@@ -28,8 +28,8 @@
 
 package org.citydb.citygml.importer.file;
 
-import org.citydb.config.internal.InputFile;
-import org.citydb.config.internal.FileType;
+import org.citydb.file.InputFile;
+import org.citydb.file.FileType;
 
 import java.nio.file.FileSystems;
 import java.nio.file.InvalidPathException;

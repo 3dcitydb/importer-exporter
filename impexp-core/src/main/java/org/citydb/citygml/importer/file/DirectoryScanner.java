@@ -33,7 +33,7 @@ import org.apache.tika.exception.TikaException;
 import org.apache.tika.io.TikaInputStream;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.mime.MediaType;
-import org.citydb.config.internal.InputFile;
+import org.citydb.file.InputFile;
 
 import java.io.FileInputStream;
 import java.io.IOException;

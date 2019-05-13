@@ -37,7 +37,7 @@ import org.citydb.citygml.common.database.xlink.DBXlink;
 import org.citydb.citygml.importer.database.SequenceHelper;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
-import org.citydb.config.internal.InputFile;
+import org.citydb.file.InputFile;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.schema.mapping.AbstractObjectType;
 import org.citydb.database.schema.mapping.FeatureType;
@@ -60,6 +60,7 @@ import java.sql.SQLException;
 import java.util.HashMap;
 
 public class DBXlinkResolverManager {
+	private final InputFile inputFile;
 	private final Connection connection;
 	private final AbstractDatabaseAdapter databaseAdapter;
 	private final SchemaMapping schemaMapping;
@@ -70,9 +71,9 @@ public class DBXlinkResolverManager {
 	private HashMap<DBXlinkResolverEnum, DBXlinkResolver> dbWriterMap;
 	private DBGmlIdResolver dbGmlIdResolver;
 	private SequenceHelper sequenceHelper;
-	private InputFile inputFile;
 
 	public DBXlinkResolverManager(
+			InputFile inputFile,
 			Connection batchConn,
 			AbstractDatabaseAdapter databaseAdapter,
 			WorkerPool<DBXlink> tmpXlinkPool,
@@ -80,6 +81,7 @@ public class DBXlinkResolverManager {
 			CacheTableManager cacheTableManager,
 			Config config,
 			EventDispatcher eventDispatcher) throws SQLException {
+		this.inputFile = inputFile;
 		this.connection = batchConn;
 		this.databaseAdapter = databaseAdapter;
 		this.tmpXlinkPool = tmpXlinkPool;
@@ -90,7 +92,6 @@ public class DBXlinkResolverManager {
 		dbGmlIdResolver = new DBGmlIdResolver(batchConn, databaseAdapter, uidCacheManager);
 		sequenceHelper = new SequenceHelper(batchConn, databaseAdapter, config);
 
-		inputFile = config.getInternal().getCurrentImportFile();
      	schemaMapping = ObjectRegistry.getInstance().getSchemaMapping();
 	}
 

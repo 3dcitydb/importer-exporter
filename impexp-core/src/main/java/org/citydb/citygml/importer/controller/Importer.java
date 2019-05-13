@@ -52,8 +52,8 @@ import org.citydb.concurrent.PoolSizeAdaptationStrategy;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
-import org.citydb.config.internal.FileType;
-import org.citydb.config.internal.InputFile;
+import org.citydb.file.FileType;
+import org.citydb.file.InputFile;
 import org.citydb.config.internal.Internal;
 import org.citydb.config.project.database.Database;
 import org.citydb.config.project.database.Workspace;
@@ -328,7 +328,6 @@ public class Importer implements EventHandler {
 				break;
 
 			try (InputFile file = importFiles.get(fileCounter++)) {
-				internalConfig.setCurrentImportFile(file);
 				Path contentFile = file.getType() != FileType.ARCHIVE ?
 						file.getFile() : Paths.get(file.getFile().toString(), ((AbstractArchiveInputFile) file).getContentFile());
 
@@ -430,7 +429,8 @@ public class Importer implements EventHandler {
 						minThreads,
 						maxThreads,
 						PoolSizeAdaptationStrategy.AGGRESSIVE,
-						new DBImportWorkerFactory(schemaMapping,
+						new DBImportWorkerFactory(file,
+								schemaMapping,
 								cityGMLBuilder,
 								tmpXlinkPool,
 								uidCacheManager,
@@ -509,7 +509,8 @@ public class Importer implements EventHandler {
 							minThreads,
 							maxThreads,
 							PoolSizeAdaptationStrategy.AGGRESSIVE,
-							new DBImportXlinkResolverWorkerFactory(tmpXlinkPool,
+							new DBImportXlinkResolverWorkerFactory(file,
+									tmpXlinkPool,
 									uidCacheManager,
 									cacheTableManager,
 									config,

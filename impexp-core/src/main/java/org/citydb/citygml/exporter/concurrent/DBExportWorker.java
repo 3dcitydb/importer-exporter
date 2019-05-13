@@ -53,6 +53,7 @@ import org.citydb.event.global.InterruptEvent;
 import org.citydb.event.global.ObjectCounterEvent;
 import org.citydb.event.global.ProgressBarEventType;
 import org.citydb.event.global.StatusDialogProgressBar;
+import org.citydb.file.OutputFile;
 import org.citydb.plugin.PluginException;
 import org.citydb.plugin.PluginManager;
 import org.citydb.plugin.extension.export.CityGMLExportExtension;
@@ -80,7 +81,8 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 	private int exportCounter = 0;
 	private List<CityGMLExportExtension> plugins;
 
-	public DBExportWorker(Connection connection,
+	public DBExportWorker(OutputFile outputFile,
+			Connection connection,
 			AbstractDatabaseAdapter databaseAdapter,
 			SchemaMapping schemaMapping,
 			CityGMLBuilder cityGMLBuilder,
@@ -97,7 +99,8 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 		this.config = config;
 
 		exporter = new CityGMLExportManager(
-				connection, 
+				outputFile,
+				connection,
 				query,
 				databaseAdapter,
 				schemaMapping, 

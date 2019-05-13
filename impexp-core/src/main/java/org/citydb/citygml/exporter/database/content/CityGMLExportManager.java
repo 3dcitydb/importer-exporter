@@ -60,6 +60,7 @@ import org.citydb.database.schema.mapping.InjectedProperty;
 import org.citydb.database.schema.mapping.MappingConstants;
 import org.citydb.database.schema.mapping.ObjectType;
 import org.citydb.database.schema.mapping.SchemaMapping;
+import org.citydb.file.OutputFile;
 import org.citydb.log.Logger;
 import org.citydb.query.Query;
 import org.citydb.query.filter.lod.LodFilter;
@@ -142,6 +143,7 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 	private final IdentityHashMap<Class<? extends DBExporter>, DBExporter> exporters = new IdentityHashMap<>();
 	private final IdentityHashMap<ADEExtension, ADEExportManager> adeExporters = new IdentityHashMap<>();
 
+	private final OutputFile outputFile;
 	private final Connection connection;
 	private final Query query;
 	private final AbstractDatabaseAdapter databaseAdapter;
@@ -165,7 +167,8 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 	private boolean failOnError = false;
 	private boolean hasADESupport = false;
 
-	public CityGMLExportManager(Connection connection,
+	public CityGMLExportManager(OutputFile outputFile,
+			Connection connection,
 			Query query,
 			AbstractDatabaseAdapter databaseAdapter,
 			SchemaMapping schemaMapping,
@@ -175,6 +178,7 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 			UIDCacheManager uidCacheManager,
 			CacheTableManager cacheTableManager,
 			Config config) throws CityGMLExportException {
+		this.outputFile = outputFile;
 		this.connection = connection;
 		this.query = query;
 		this.databaseAdapter = databaseAdapter;
@@ -623,7 +627,8 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 			if (config.getProject().getExporter().getXlink().getFeature().isSetKeepGmlIdAsExternalReference()
 					&& feature instanceof AbstractCityObject) {
 				ExternalReference externalReference = new ExternalReference();
-				externalReference.setInformationSystem(config.getInternal().getCurrentExportFile().getFile().toString());
+				if (outputFile != null)
+					externalReference.setInformationSystem(outputFile.getFile().toString());
 
 				ExternalObject externalObject = new ExternalObject();
 				externalObject.setName(feature.getId());

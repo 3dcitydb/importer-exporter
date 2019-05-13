@@ -47,8 +47,6 @@ import org.citydb.concurrent.PoolSizeAdaptationStrategy;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
-import org.citydb.config.internal.FileType;
-import org.citydb.config.internal.OutputFile;
 import org.citydb.config.project.database.DatabaseSrs;
 import org.citydb.config.project.database.Workspace;
 import org.citydb.config.project.exporter.SimpleTilingOptions;
@@ -70,6 +68,8 @@ import org.citydb.event.global.ObjectCounterEvent;
 import org.citydb.event.global.StatusDialogMessage;
 import org.citydb.event.global.StatusDialogProgressBar;
 import org.citydb.event.global.StatusDialogTitle;
+import org.citydb.file.FileType;
+import org.citydb.file.OutputFile;
 import org.citydb.log.Logger;
 import org.citydb.plugin.PluginManager;
 import org.citydb.plugin.extension.export.CityGMLExportExtension;
@@ -372,7 +372,6 @@ public class Exporter implements EventHandler {
 
 					try {
 						file = fileFactory.createOutputFile(folder.resolve(fileName));
-						config.getInternal().setCurrentExportFile(file);
 					} catch (IOException e) {
 						throw new CityGMLExportException("Failed to create output file '" + folder.resolve(fileName) + "'.", e);
 					}
@@ -438,7 +437,7 @@ public class Exporter implements EventHandler {
 							1,
 							Math.max(1, config.getProject().getExporter().getResources().getThreadPool().getDefaultPool().getMaxThreads() / 2),
 							PoolSizeAdaptationStrategy.AGGRESSIVE,
-							new DBExportXlinkWorkerFactory(config, eventDispatcher),
+							new DBExportXlinkWorkerFactory(file, config, eventDispatcher),
 							300,
 							false);
 
@@ -448,6 +447,7 @@ public class Exporter implements EventHandler {
 							config.getProject().getExporter().getResources().getThreadPool().getDefaultPool().getMaxThreads(),
 							PoolSizeAdaptationStrategy.AGGRESSIVE,
 							new DBExportWorkerFactory(
+									file,
 									schemaMapping,
 									cityGMLBuilder,
 									writer,

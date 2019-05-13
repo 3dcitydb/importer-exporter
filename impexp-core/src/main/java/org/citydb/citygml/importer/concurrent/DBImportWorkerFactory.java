@@ -42,6 +42,7 @@ import org.citydb.database.connection.ConnectionManager;
 import org.citydb.database.connection.DatabaseConnectionPool;
 import org.citydb.database.schema.mapping.SchemaMapping;
 import org.citydb.event.EventDispatcher;
+import org.citydb.file.InputFile;
 import org.citydb.log.Logger;
 import org.citygml4j.builder.jaxb.CityGMLBuilder;
 import org.citygml4j.model.citygml.CityGML;
@@ -52,6 +53,7 @@ import java.sql.SQLException;
 public class DBImportWorkerFactory implements WorkerFactory<CityGML> {
 	private final Logger log = Logger.getInstance();
 
+	private final InputFile inputFile;
 	private final ConnectionManager connectionManager;
 	private final boolean isManagedTransaction;
 	private final AbstractDatabaseAdapter databaseAdapter;
@@ -65,7 +67,8 @@ public class DBImportWorkerFactory implements WorkerFactory<CityGML> {
 	private final Config config;
 	private final EventDispatcher eventDispatcher;
 
-	public DBImportWorkerFactory(ConnectionManager connectionManager,
+	public DBImportWorkerFactory(InputFile inputFile,
+			ConnectionManager connectionManager,
 			boolean isManagedTransaction,
 			AbstractDatabaseAdapter databaseAdapter,
 			SchemaMapping schemaMapping,
@@ -77,6 +80,7 @@ public class DBImportWorkerFactory implements WorkerFactory<CityGML> {
 			ImportLogger importLogger,
 			Config config,
 			EventDispatcher eventDispatcher) {
+		this.inputFile = inputFile;
 		this.connectionManager = connectionManager;
 		this.isManagedTransaction = isManagedTransaction;
 		this.databaseAdapter = databaseAdapter;
@@ -91,7 +95,8 @@ public class DBImportWorkerFactory implements WorkerFactory<CityGML> {
 		this.eventDispatcher = eventDispatcher;
 	}
 
-	public DBImportWorkerFactory(SchemaMapping schemaMapping,
+	public DBImportWorkerFactory(InputFile inputFile,
+			SchemaMapping schemaMapping,
 			CityGMLBuilder cityGMLBuilder,
 			WorkerPool<DBXlink> xlinkWorkerPool,
 			UIDCacheManager uidCacheManager,
@@ -100,11 +105,12 @@ public class DBImportWorkerFactory implements WorkerFactory<CityGML> {
 			ImportLogger importLogger,
 			Config config,
 			EventDispatcher eventDispatcher) {
-		this(DatabaseConnectionPool.getInstance(), false, DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter(), schemaMapping,
+		this(inputFile, DatabaseConnectionPool.getInstance(), false, DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter(), schemaMapping,
 				cityGMLBuilder, xlinkWorkerPool, uidCacheManager, filter, affineTransformer, importLogger, config, eventDispatcher);
 	}
 
-	public DBImportWorkerFactory(ConnectionManager connectionManager,
+	public DBImportWorkerFactory(InputFile inputFile,
+			ConnectionManager connectionManager,
 			AbstractDatabaseAdapter databaseAdapter,
 			SchemaMapping schemaMapping,
 			CityGMLBuilder cityGMLBuilder,
@@ -115,7 +121,7 @@ public class DBImportWorkerFactory implements WorkerFactory<CityGML> {
 			ImportLogger importLogger,
 			Config config,
 			EventDispatcher eventDispatcher) {
-		this(connectionManager, true, databaseAdapter, schemaMapping, cityGMLBuilder, xlinkWorkerPool, uidCacheManager,
+		this(inputFile, connectionManager, true, databaseAdapter, schemaMapping, cityGMLBuilder, xlinkWorkerPool, uidCacheManager,
 				filter, affineTransformer, importLogger, config, eventDispatcher);
 	}
 
@@ -134,7 +140,7 @@ public class DBImportWorkerFactory implements WorkerFactory<CityGML> {
 				databaseAdapter.getWorkspaceManager().gotoWorkspace(connection, workspace);
 			}
 
-			dbWorker = new DBImportWorker(connection, isManagedTransaction, databaseAdapter, schemaMapping, cityGMLBuilder,
+			dbWorker = new DBImportWorker(inputFile, connection, isManagedTransaction, databaseAdapter, schemaMapping, cityGMLBuilder,
 					xlinkWorkerPool, uidCacheManager, filter, affineTransformer, importLogger, config, eventDispatcher);
 		} catch (SQLException e) {
 			log.error("Failed to create import worker: " + e.getMessage());

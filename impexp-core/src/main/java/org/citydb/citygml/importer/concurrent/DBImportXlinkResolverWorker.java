@@ -66,6 +66,7 @@ import org.citydb.event.EventDispatcher;
 import org.citydb.event.EventHandler;
 import org.citydb.event.global.EventType;
 import org.citydb.event.global.InterruptEvent;
+import org.citydb.file.InputFile;
 import org.citydb.log.Logger;
 
 import java.sql.Connection;
@@ -86,13 +87,14 @@ public class DBImportXlinkResolverWorker extends Worker<DBXlink> implements Even
 	private int updateCounter = 0;
 	private int commitAfter = 20;
 
-	public DBImportXlinkResolverWorker(Connection connection,
+	public DBImportXlinkResolverWorker(InputFile inputFile,
+			Connection connection,
 			boolean isManagedTransaction,
 			AbstractDatabaseAdapter databaseAdapter,
-			WorkerPool<DBXlink> tmpXlinkPool, 
-			UIDCacheManager uidCacheManager, 
-			CacheTableManager cacheTableManager, 
-			Config config, 
+			WorkerPool<DBXlink> tmpXlinkPool,
+			UIDCacheManager uidCacheManager,
+			CacheTableManager cacheTableManager,
+			Config config,
 			EventDispatcher eventDispatcher) throws SQLException {
 		this.connection = connection;
 		this.isManagedTransaction = isManagedTransaction;
@@ -103,6 +105,7 @@ public class DBImportXlinkResolverWorker extends Worker<DBXlink> implements Even
 			commitAfter = commitAfterProp;
 
 		xlinkResolverManager = new DBXlinkResolverManager(
+				inputFile,
 				connection,
 				databaseAdapter,
 				tmpXlinkPool,

@@ -44,6 +44,7 @@ import org.citydb.event.EventDispatcher;
 import org.citydb.event.EventHandler;
 import org.citydb.event.global.EventType;
 import org.citydb.event.global.InterruptEvent;
+import org.citydb.file.OutputFile;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -58,11 +59,11 @@ public class DBExportXlinkWorker extends Worker<DBXlink> implements EventHandler
 	private final DBXlinkExporterManager xlinkExporterManager;
 	private final EventDispatcher eventDispatcher;
 
-	public DBExportXlinkWorker(Connection connection, AbstractDatabaseAdapter databaseAdapter, Config config, EventDispatcher eventDispatcher) {
+	public DBExportXlinkWorker(OutputFile outputFile, Connection connection, AbstractDatabaseAdapter databaseAdapter, Config config, EventDispatcher eventDispatcher) {
 		this.connection = connection;
 		this.eventDispatcher = eventDispatcher;
 
-		xlinkExporterManager = new DBXlinkExporterManager(connection, databaseAdapter, config, eventDispatcher);
+		xlinkExporterManager = new DBXlinkExporterManager(outputFile, connection, databaseAdapter, config, eventDispatcher);
 		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
 	}
 

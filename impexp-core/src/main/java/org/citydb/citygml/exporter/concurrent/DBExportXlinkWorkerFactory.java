@@ -34,6 +34,7 @@ import org.citydb.config.Config;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.connection.DatabaseConnectionPool;
 import org.citydb.event.EventDispatcher;
+import org.citydb.file.OutputFile;
 import org.citydb.log.Logger;
 
 import java.sql.Connection;
@@ -41,11 +42,13 @@ import java.sql.SQLException;
 
 public class DBExportXlinkWorkerFactory implements WorkerFactory<DBXlink> {
 	private final Logger log = Logger.getInstance();
-	
+
+	private final OutputFile outputFile;
 	private final Config config;
 	private final EventDispatcher eventDispatcher;
 
-	public DBExportXlinkWorkerFactory(Config config, EventDispatcher eventDispatcher) {
+	public DBExportXlinkWorkerFactory(OutputFile outputFile, Config config, EventDispatcher eventDispatcher) {
+		this.outputFile = outputFile;
 		this.config = config;
 		this.eventDispatcher = eventDispatcher;
 	}
@@ -66,7 +69,7 @@ public class DBExportXlinkWorkerFactory implements WorkerFactory<DBXlink> {
 						config.getProject().getDatabase().getWorkspaces().getExportWorkspace());
 			}
 
-			dbWorker = new DBExportXlinkWorker(connection, databaseAdapter, config, eventDispatcher);
+			dbWorker = new DBExportXlinkWorker(outputFile, connection, databaseAdapter, config, eventDispatcher);
 		} catch (SQLException e) {
 			log.error("Failed to create XLink export worker: " + e.getMessage());
 		}

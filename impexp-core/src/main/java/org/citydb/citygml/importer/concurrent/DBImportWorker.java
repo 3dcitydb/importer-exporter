@@ -50,6 +50,7 @@ import org.citydb.event.global.EventType;
 import org.citydb.event.global.GeometryCounterEvent;
 import org.citydb.event.global.InterruptEvent;
 import org.citydb.event.global.ObjectCounterEvent;
+import org.citydb.file.InputFile;
 import org.citydb.log.Logger;
 import org.citygml4j.builder.jaxb.CityGMLBuilder;
 import org.citygml4j.model.citygml.CityGML;
@@ -80,7 +81,8 @@ public class DBImportWorker extends Worker<CityGML> implements EventHandler {
 	private int updateCounter = 0;
 	private int commitAfter = 20;
 
-	public DBImportWorker(Connection connection,
+	public DBImportWorker(InputFile inputFile,
+			Connection connection,
 			boolean isManagedTransaction,
 			AbstractDatabaseAdapter databaseAdapter,
 			SchemaMapping schemaMapping,
@@ -98,7 +100,8 @@ public class DBImportWorker extends Worker<CityGML> implements EventHandler {
 		this.importLogger = importLogger;
 		this.eventDispatcher = eventDispatcher;
 
-		importer = new CityGMLImportManager(connection,
+		importer = new CityGMLImportManager(inputFile,
+				connection,
 				databaseAdapter,
 				schemaMapping,
 				cityGMLBuilder,

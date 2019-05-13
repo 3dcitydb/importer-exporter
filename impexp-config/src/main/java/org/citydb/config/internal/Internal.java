@@ -33,10 +33,8 @@ import java.util.List;
 public class Internal {	
 	private String currentLogPath;
 	private List<Path> importFiles;
-	private InputFile currentImportFile;
 	private Path exportFile;
 	private String exportTextureURI;
-	private OutputFile currentExportFile;
 
 	// internal variables
 	private String currentGmlIdCodespace = null;
@@ -63,14 +61,6 @@ public class Internal {
 		this.importFiles = importFiles;
 	}
 
-	public InputFile getCurrentImportFile() {
-		return currentImportFile;
-	}
-
-	public void setCurrentImportFile(InputFile currentImportFile) {
-		this.currentImportFile = currentImportFile;
-	}
-
 	public Path getExportFile() {
 		return exportFile;
 	}
@@ -85,14 +75,6 @@ public class Internal {
 
 	public void setExportTextureURI(String exportTextureURI) {
 		this.exportTextureURI = exportTextureURI;
-	}
-
-	public OutputFile getCurrentExportFile() {
-		return currentExportFile;
-	}
-
-	public void setCurrentExportFile(OutputFile currentExportFile) {
-		this.currentExportFile = currentExportFile;
 	}
 
 	public boolean isTransformCoordinates() {

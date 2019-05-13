@@ -31,12 +31,14 @@ import org.citydb.config.Config;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.event.Event;
 import org.citydb.event.EventDispatcher;
+import org.citydb.file.OutputFile;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.HashMap;
 
 public class DBXlinkExporterManager {
+	private final OutputFile outputFile;
 	private final Connection connection;
 	private final AbstractDatabaseAdapter databaseAdapter;
 	private final Config config;
@@ -44,7 +46,8 @@ public class DBXlinkExporterManager {
 
 	private HashMap<DBXlinkExporterEnum, DBXlinkExporter> dbExporterMap;
 
-	public DBXlinkExporterManager(Connection connection, AbstractDatabaseAdapter databaseAdapter, Config config, EventDispatcher eventDispatcher) {
+	public DBXlinkExporterManager(OutputFile outputFile, Connection connection, AbstractDatabaseAdapter databaseAdapter, Config config, EventDispatcher eventDispatcher) {
+		this.outputFile = outputFile;
 		this.connection = connection;
 		this.databaseAdapter = databaseAdapter;
 		this.config = config;
@@ -62,7 +65,7 @@ public class DBXlinkExporterManager {
 				dbExporter = new DBXlinkExporterTextureImage(connection, config, this);
 				break;
 			case LIBRARY_OBJECT:
-				dbExporter = new DBXlinkExporterLibraryObject(connection, config, this);
+				dbExporter = new DBXlinkExporterLibraryObject(connection, this);
 				break;
 			}
 
@@ -71,7 +74,11 @@ public class DBXlinkExporterManager {
 
 		return dbExporter;
 	}
-	
+
+	public OutputFile getOutputFile() {
+		return outputFile;
+	}
+
 	public AbstractDatabaseAdapter getDatabaseAdapter() {
 		return databaseAdapter;
 	}

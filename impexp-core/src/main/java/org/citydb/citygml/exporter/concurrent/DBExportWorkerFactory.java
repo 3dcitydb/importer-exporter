@@ -41,6 +41,7 @@ import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.connection.DatabaseConnectionPool;
 import org.citydb.database.schema.mapping.SchemaMapping;
 import org.citydb.event.EventDispatcher;
+import org.citydb.file.OutputFile;
 import org.citydb.log.Logger;
 import org.citydb.query.Query;
 import org.citygml4j.builder.jaxb.CityGMLBuilder;
@@ -50,7 +51,8 @@ import java.sql.SQLException;
 
 public class DBExportWorkerFactory implements WorkerFactory<DBSplittingResult> {
 	private final Logger log = Logger.getInstance();
-	
+
+	private final OutputFile outputFile;
 	private final SchemaMapping schemaMapping;
 	private final CityGMLBuilder cityGMLBuilder;
 	private final FeatureWriter featureWriter;
@@ -61,7 +63,7 @@ public class DBExportWorkerFactory implements WorkerFactory<DBSplittingResult> {
 	private final Config config;
 	private final EventDispatcher eventDispatcher;
 
-	public DBExportWorkerFactory(
+	public DBExportWorkerFactory(OutputFile outputFile,
 			SchemaMapping schemaMapping,
 			CityGMLBuilder cityGMLBuilder,
 			FeatureWriter featureWriter,
@@ -71,6 +73,7 @@ public class DBExportWorkerFactory implements WorkerFactory<DBSplittingResult> {
 			Query query,
 			Config config,
 			EventDispatcher eventDispatcher) {
+		this.outputFile = outputFile;
 		this.schemaMapping = schemaMapping;
 		this.cityGMLBuilder = cityGMLBuilder;
 		this.featureWriter = featureWriter;
@@ -98,7 +101,7 @@ public class DBExportWorkerFactory implements WorkerFactory<DBSplittingResult> {
 						config.getProject().getDatabase().getWorkspaces().getExportWorkspace());
 			}
 
-			dbWorker = new DBExportWorker(connection, databaseAdapter, schemaMapping, cityGMLBuilder, featureWriter,
+			dbWorker = new DBExportWorker(outputFile, connection, databaseAdapter, schemaMapping, cityGMLBuilder, featureWriter,
 					xlinkExporterPool, uidCacheManager, cacheTableManager, query, config, eventDispatcher);
 		} catch (CityGMLExportException | SQLException e) {
 			log.error("Failed to create export worker: " + e.getMessage());
