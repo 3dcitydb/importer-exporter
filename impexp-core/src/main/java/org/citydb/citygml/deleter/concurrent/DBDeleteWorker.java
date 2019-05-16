@@ -65,7 +65,7 @@ public class DBDeleteWorker extends Worker<DBSplittingResult> implements EventHa
 
 	private volatile boolean shouldRun = true;
 	private volatile boolean shouldWork = true;
-	
+
 	public DBDeleteWorker(Connection connection, AbstractDatabaseAdapter databaseAdapter, DeleteConfig config, EventDispatcher eventDispatcher) throws SQLException {
 		this.databaseAdapter = databaseAdapter;
 		this.config = config;
@@ -87,7 +87,7 @@ public class DBDeleteWorker extends Worker<DBSplittingResult> implements EventHa
 			((CallableStatement) stmt).registerOutParameter(1, Types.INTEGER);
 		}
 	}
-	
+
 	@Override
 	public void interrupt() {
 		shouldRun = false;
@@ -97,44 +97,39 @@ public class DBDeleteWorker extends Worker<DBSplittingResult> implements EventHa
 	public void run() {
 		try {
 			if (firstWork != null) {
-				lockAndDoWork(firstWork);
+				doWork(firstWork);
 				firstWork = null;
 			}
 
 			while (shouldRun) {
 				try {
 					DBSplittingResult work = workQueue.take();
-					lockAndDoWork(work);					
+					doWork(work);
 				} catch (InterruptedException ie) {
 					// re-check state
 				}
 			}
 		} finally {
-			shutdown();
+			try {
+				if (stmt != null)
+					stmt.close();
+			} catch (SQLException e) {
+				log.logStackTrace(e);
+			}
+
+			eventDispatcher.removeEventHandler(this);
 		}
 	}
-	
-	private void lockAndDoWork(DBSplittingResult work) {
+
+	private void doWork(DBSplittingResult work) {
 		final ReentrantLock lock = this.mainLock;
 		lock.lock();
-		
+
 		try {
-			doWork(work);
-		} finally {
-			lock.unlock();
-		}
-	}
-	
-	public void doWork(DBSplittingResult work) {
-		if (!shouldWork)
-			return;
-		
-		long objectId = work.getId();
-		int objectclassId = work.getObjectType().getObjectClassId();
-		String objectclassName = work.getObjectType().getPath(); 
-		boolean accept = false;  
-		
-		try {
+			if (!shouldWork)
+				return;
+
+			long objectId = work.getId();
 			long deletedObjectId;
 
 			if (config.getMode() == DeleteMode.TERMINATE) {
@@ -158,40 +153,22 @@ public class DBDeleteWorker extends Worker<DBSplittingResult> implements EventHa
 			}
 
 			if (deletedObjectId == objectId) {
-				log.debug(objectclassName + " (ID = " + objectId + ") deleted.");
-				accept = true;
-			} 				
-			else {
-				log.warn("Failed to delete " + objectclassName + " (ID = " + objectId + ").");
-			}
+				log.debug(work.getObjectType().getPath() + " (ID = " + objectId + ") deleted.");
+				Map<Integer, Long> objectCounter = new HashMap<>();
+				objectCounter.put(work.getObjectType().getObjectClassId(), 1L);
+				eventDispatcher.triggerEvent(new ObjectCounterEvent(objectCounter, eventChannel, this));
+			} else
+				log.warn("Failed to delete " + work.getObjectType().getPath() + " (ID = " + objectId + ").");
+
+			eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.UPDATE, 1, this));
 		} catch (SQLException e) {
-			eventDispatcher.triggerEvent(new InterruptEvent(
-					"Failed to delete " + objectclassName + " (ID = " + objectId + "). Abort and rollback transactions.",
-					LogLevel.WARN, e, eventChannel, this));	
+			eventDispatcher.triggerEvent(new InterruptEvent("Failed to delete " + work.getObjectType().getPath() + " (ID = " + work.getId() + ").", LogLevel.WARN, e, eventChannel, this));
+		} catch (Throwable e) {
+			// this is to catch general exceptions that may occur during the export
+			eventDispatcher.triggerSyncEvent(new InterruptEvent("Aborting due to an unexpected " + e.getClass().getName() + " error.", LogLevel.ERROR, e, eventChannel, this));
 		} finally {
-			updateDeleteContext(objectclassId, accept);
-		}		
-	}
-
-	public void shutdown() {
-		try {
-			if (stmt != null)
-				stmt.close();
-		} catch (SQLException e) {
-			log.logStackTrace(e);
-		} 
-		
-		eventDispatcher.removeEventHandler(this);
-	}
-
-	private void updateDeleteContext(int objectclassId, boolean accept) {
-		if (accept) {
-			Map<Integer, Long> objectCounter = new HashMap<>();
-			objectCounter.put(objectclassId, 1L);
-			eventDispatcher.triggerEvent(new ObjectCounterEvent(objectCounter, this));
+			lock.unlock();
 		}
-
-		eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.UPDATE, 1, this));
 	}
 
 	@Override

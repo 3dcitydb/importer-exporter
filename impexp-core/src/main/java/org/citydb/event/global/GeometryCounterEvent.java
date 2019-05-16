@@ -35,9 +35,13 @@ import java.util.Map;
 public class GeometryCounterEvent extends Event {
 	private Map<GMLClass, Long> geometryCounterMap;
 
-	public GeometryCounterEvent(Map<GMLClass, Long> geometryCounterMap, Object source) {
-		super(EventType.GEOMETRY_COUNTER, GLOBAL_CHANNEL, source);
+	public GeometryCounterEvent(Map<GMLClass, Long> geometryCounterMap, Object channel, Object source) {
+		super(EventType.GEOMETRY_COUNTER, channel, source);
 		this.geometryCounterMap = geometryCounterMap;
+	}
+
+	public GeometryCounterEvent(Map<GMLClass, Long> geometryCounterMap, Object source) {
+		this(geometryCounterMap, GLOBAL_CHANNEL, source);
 	}
 
 	public Map<GMLClass, Long> getCounter() {
