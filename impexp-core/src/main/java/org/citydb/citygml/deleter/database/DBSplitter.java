@@ -29,11 +29,16 @@ package org.citydb.citygml.deleter.database;
 
 import org.citydb.citygml.exporter.database.content.DBSplittingResult;
 import org.citydb.concurrent.WorkerPool;
+import org.citydb.config.project.deleter.DeleteConfig;
+import org.citydb.config.project.deleter.DeleteMode;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.connection.DatabaseConnectionPool;
 import org.citydb.database.schema.mapping.AbstractObjectType;
+import org.citydb.database.schema.mapping.FeatureType;
 import org.citydb.database.schema.mapping.MappingConstants;
 import org.citydb.database.schema.mapping.SchemaMapping;
+import org.citydb.database.schema.path.InvalidSchemaPathException;
+import org.citydb.database.schema.path.SchemaPath;
 import org.citydb.event.EventDispatcher;
 import org.citydb.event.global.ProgressBarEventType;
 import org.citydb.event.global.StatusDialogProgressBar;
@@ -42,11 +47,18 @@ import org.citydb.query.Query;
 import org.citydb.query.builder.QueryBuildException;
 import org.citydb.query.builder.sql.BuildProperties;
 import org.citydb.query.builder.sql.SQLQueryBuilder;
+import org.citydb.query.filter.FilterException;
+import org.citydb.query.filter.selection.SelectionFilter;
+import org.citydb.query.filter.selection.expression.ValueReference;
+import org.citydb.query.filter.selection.operator.comparison.ComparisonFactory;
+import org.citydb.query.filter.selection.operator.comparison.NullOperator;
+import org.citydb.query.filter.selection.operator.logical.LogicalOperationFactory;
 import org.citydb.sqlbuilder.schema.Column;
 import org.citydb.sqlbuilder.schema.Table;
 import org.citydb.sqlbuilder.select.OrderByToken;
 import org.citydb.sqlbuilder.select.Select;
 import org.citydb.sqlbuilder.select.projection.Function;
+import org.citygml4j.model.module.citygml.CoreModule;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -58,6 +70,7 @@ public class DBSplitter {
 
 	private final WorkerPool<DBSplittingResult> dbWorkerPool;
 	private final Query query;
+	private final DeleteConfig config;
 	private final EventDispatcher eventDispatcher;
 
 	private final AbstractDatabaseAdapter databaseAdapter;
@@ -72,11 +85,13 @@ public class DBSplitter {
 	public DBSplitter(SchemaMapping schemaMapping,
 			WorkerPool<DBSplittingResult> dbWorkerPool, 
 			Query query,
+			DeleteConfig config,
 			EventDispatcher eventDispatcher) throws SQLException {
 		
 		this.schemaMapping = schemaMapping;
 		this.dbWorkerPool = dbWorkerPool;
 		this.query = query;
+		this.config = config;
 		this.eventDispatcher = eventDispatcher;
 		databaseAdapter = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter();
 		connection = DatabaseConnectionPool.getInstance().getConnection();
@@ -122,6 +137,24 @@ public class DBSplitter {
 
 		if (query.getFeatureTypeFilter().isEmpty())
 			return;
+
+		// do not terminate city objects that have already been terminated
+		if (config.getMode() == DeleteMode.TERMINATE) {
+			try {
+				FeatureType superType = schemaMapping.getCommonSuperType(query.getFeatureTypeFilter().getFeatureTypes());
+				SchemaPath schemaPath = new SchemaPath(superType)
+						.appendChild(superType.getProperty("terminationDate", CoreModule.v2_0_0.getNamespaceURI(), true));
+				NullOperator isNull = ComparisonFactory.isNull(new ValueReference(schemaPath));
+
+				if (query.isSetSelection()) {
+					SelectionFilter selection = query.getSelection();
+					selection.setPredicate(LogicalOperationFactory.AND(selection.getPredicate(), isNull));
+				} else
+					query.setSelection(new SelectionFilter(isNull));
+			} catch (InvalidSchemaPathException | FilterException e) {
+				throw new QueryBuildException("Failed to add is null test for termination date.", e);
+			}
+		}
 
 		// create query statement
 		Select select = builder.buildQuery(query);

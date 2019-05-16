@@ -47,6 +47,7 @@ import org.citydb.concurrent.PoolSizeAdaptationStrategy;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
+import org.citydb.config.internal.Internal;
 import org.citydb.config.project.database.DatabaseSrs;
 import org.citydb.config.project.database.Workspace;
 import org.citydb.config.project.exporter.SimpleTilingOptions;
@@ -485,7 +486,7 @@ public class Exporter implements EventHandler {
 
 						if (shouldRun) {
 							dbSplitter.setMetadataProvider(metadataProvider);
-							dbSplitter.setCalculateNumberMatched(config.getInternal().isGUIMode());
+							dbSplitter.setCalculateNumberMatched(Internal.IS_GUI_MODE);
 							dbSplitter.startQuery();
 						}
 					} catch (SQLException | QueryBuildException | FilterException e) {

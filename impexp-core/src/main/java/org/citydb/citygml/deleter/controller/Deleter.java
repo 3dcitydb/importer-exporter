@@ -34,6 +34,7 @@ import org.citydb.citygml.deleter.database.DBSplitter;
 import org.citydb.citygml.exporter.database.content.DBSplittingResult;
 import org.citydb.concurrent.PoolSizeAdaptationStrategy;
 import org.citydb.concurrent.WorkerPool;
+import org.citydb.config.internal.Internal;
 import org.citydb.config.project.deleter.DeleteConfig;
 import org.citydb.database.schema.mapping.SchemaMapping;
 import org.citydb.event.Event;
@@ -104,9 +105,9 @@ public class Deleter implements EventHandler {
 
 			// get database splitter and start query
 			try {
-				dbSplitter = new DBSplitter(schemaMapping, dbWorkerPool, query, eventDispatcher);
+				dbSplitter = new DBSplitter(schemaMapping, dbWorkerPool, query, config, eventDispatcher);
 				if (shouldRun) {
-					dbSplitter.setCalculateNumberMatched(true);
+					dbSplitter.setCalculateNumberMatched(Internal.IS_GUI_MODE);
 					dbSplitter.startQuery();
 				}
 			} catch (SQLException | QueryBuildException e) {

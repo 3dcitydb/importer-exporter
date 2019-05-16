@@ -33,6 +33,7 @@ import org.citydb.config.ConfigUtil;
 import org.citydb.config.gui.window.MainWindow;
 import org.citydb.config.gui.window.WindowSize;
 import org.citydb.config.i18n.Language;
+import org.citydb.config.internal.Internal;
 import org.citydb.config.project.global.LanguageType;
 import org.citydb.config.project.global.LogLevel;
 import org.citydb.database.connection.DatabaseConnectionPool;
@@ -146,7 +147,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		consoleText = new ConsoleTextPane();
 		consoleLogger = new StyledConsoleLogger(consoleText, StandardCharsets.UTF_8);
 
-		config.getInternal().setGUIMode(true);
+		Internal.IS_GUI_MODE = true;
 	}
 
 	public void invoke(JAXBContext jaxbProjectContext,

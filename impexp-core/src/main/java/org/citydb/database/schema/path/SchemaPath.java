@@ -57,11 +57,11 @@ public class SchemaPath {
 		return head;
 	}
 
-	public FeatureTypeNode setFirstNode(FeatureType featureType) {
+	public SchemaPath setFirstNode(FeatureType featureType) {
 		tail = head = new FeatureTypeNode(featureType);
 		size = 1;
 
-		return head;
+		return this;
 	}
 
 	public AbstractNode<? extends AbstractPathElement> getLastNode() {
@@ -90,12 +90,13 @@ public class SchemaPath {
 		return true;
 	}
 
-	public AbstractNode<? extends AbstractPathElement> appendChild(AbstractPathElement pathElement) throws InvalidSchemaPathException {
+	public SchemaPath appendChild(AbstractPathElement pathElement) throws InvalidSchemaPathException {
 		if (head == null) {
 			if (pathElement.getElementType() != PathElementType.FEATURE_TYPE)
 				throw new InvalidSchemaPathException("Only FeatureType objects are allowed as head of a schema path.");
 
-			return setFirstNode((FeatureType)pathElement);
+			setFirstNode((FeatureType)pathElement);
+			return this;
 		} else {
 			AbstractNode<? extends AbstractPathElement> node = null;
 
@@ -136,7 +137,7 @@ public class SchemaPath {
 			tail = node;
 			size++;
 
-			return tail;
+			return this;
 		}
 	}
 
@@ -144,12 +145,12 @@ public class SchemaPath {
 		return tail != null && tail.isValidChild(pathElement);
 	}
 
-	public AbstractNode<? extends AbstractPathElement> setPredicate(AbstractNodePredicate predicate) throws InvalidSchemaPathException {
+	public SchemaPath setPredicate(AbstractNodePredicate predicate) throws InvalidSchemaPathException {
 		if (tail == null)
 			throw new InvalidSchemaPathException("The schema path does not contain an element node.");
 
 		tail.setPredicate(predicate);
-		return tail;
+		return this;
 	}
 
 	public boolean isValidPredicate(AbstractNodePredicate predicate) {

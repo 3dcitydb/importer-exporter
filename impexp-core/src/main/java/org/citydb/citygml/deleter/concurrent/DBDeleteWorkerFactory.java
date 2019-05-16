@@ -64,7 +64,7 @@ public class DBDeleteWorkerFactory implements WorkerFactory<DBSplittingResult>{
 			if (databaseAdapter.hasVersioningSupport())
 				databaseAdapter.getWorkspaceManager().gotoWorkspace(connection, config.getWorkspace());
 
-			dbWorker = new DBDeleteWorker(connection, databaseAdapter, eventDispatcher);
+			dbWorker = new DBDeleteWorker(connection, databaseAdapter, config, eventDispatcher);
 		} catch (SQLException e) {
 			log.error("Failed to create delete worker: " + e.getMessage());
 		}

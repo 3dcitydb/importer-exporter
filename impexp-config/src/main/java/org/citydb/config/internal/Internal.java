@@ -30,7 +30,9 @@ package org.citydb.config.internal;
 import java.nio.file.Path;
 import java.util.List;
 
-public class Internal {	
+public class Internal {
+	public static boolean IS_GUI_MODE = false;
+
 	private String currentLogPath;
 	private List<Path> importFiles;
 	private Path exportFile;
@@ -43,7 +45,6 @@ public class Internal {
 	private boolean transformCoordinates = false;
 	private boolean exportGlobalAppearances = false;
 	private boolean registerGmlIdInCache = false;
-	private boolean guiMode = false;
 
 	public String getCurrentLogPath() {
 		return currentLogPath;
@@ -108,13 +109,5 @@ public class Internal {
 
 	public void setRegisterGmlIdInCache(boolean registerGmlIdInCache) {
 		this.registerGmlIdInCache = registerGmlIdInCache;
-	}
-
-	public boolean isGUIMode() {
-		return guiMode;
-	}
-
-	public void setGUIMode(boolean guiMode) {
-		this.guiMode = guiMode;
 	}
 }

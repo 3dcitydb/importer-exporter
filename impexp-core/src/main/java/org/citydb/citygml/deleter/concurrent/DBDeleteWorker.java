@@ -29,6 +29,8 @@ package org.citydb.citygml.deleter.concurrent;
 
 import org.citydb.citygml.exporter.database.content.DBSplittingResult;
 import org.citydb.concurrent.Worker;
+import org.citydb.config.project.deleter.DeleteConfig;
+import org.citydb.config.project.deleter.DeleteMode;
 import org.citydb.config.project.global.LogLevel;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.event.Event;
@@ -43,8 +45,11 @@ import org.citydb.log.Logger;
 
 import java.sql.CallableStatement;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.sql.Types;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
@@ -52,20 +57,35 @@ import java.util.concurrent.locks.ReentrantLock;
 public class DBDeleteWorker extends Worker<DBSplittingResult> implements EventHandler {
 	private final ReentrantLock mainLock = new ReentrantLock();
 	private final Logger log = Logger.getInstance();
-	private final CallableStatement stmt;
+
+	private final PreparedStatement stmt;
+	private final AbstractDatabaseAdapter databaseAdapter;
+	private final DeleteConfig config;
 	private final EventDispatcher eventDispatcher;
 
 	private volatile boolean shouldRun = true;
 	private volatile boolean shouldWork = true;
 	
-	public DBDeleteWorker(Connection connection, AbstractDatabaseAdapter databaseAdapter, EventDispatcher eventDispatcher) throws SQLException {
+	public DBDeleteWorker(Connection connection, AbstractDatabaseAdapter databaseAdapter, DeleteConfig config, EventDispatcher eventDispatcher) throws SQLException {
+		this.databaseAdapter = databaseAdapter;
+		this.config = config;
 		this.eventDispatcher = eventDispatcher;
-		this.eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
 
-		stmt = connection.prepareCall("{? = call "
-				+ databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_delete.delete_cityobject")
-				+ "(?)}");
-		stmt.registerOutParameter(1, Types.INTEGER);
+		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
+
+		if (config.getMode() == DeleteMode.TERMINATE) {
+			StringBuilder update = new StringBuilder("update cityobject set termination_date = ?, last_modification_date = ?, updating_person = ? ");
+			if (config.isSetReasonForUpdate()) update.append(", reason_for_update = ? ");
+			if (config.isSetLineage()) update.append(", lineage = ? ");
+			update.append("where id = ?");
+
+			stmt = connection.prepareStatement(update.toString());
+		} else {
+			stmt = connection.prepareCall("{? = call "
+					+ databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_delete.delete_cityobject")
+					+ "(?)}");
+			((CallableStatement) stmt).registerOutParameter(1, Types.INTEGER);
+		}
 	}
 	
 	@Override
@@ -115,10 +135,28 @@ public class DBDeleteWorker extends Worker<DBSplittingResult> implements EventHa
 		boolean accept = false;  
 		
 		try {
-			stmt.setObject(2, objectId, Types.INTEGER);
-			stmt.executeUpdate();
-			
-			int deletedObjectId = stmt.getInt(1);
+			long deletedObjectId;
+
+			if (config.getMode() == DeleteMode.TERMINATE) {
+				LocalDateTime terminationDate = config.isSetTerminationDate() ? config.getTerminationDate() : LocalDateTime.now();
+				String updatingPerson = config.isSetUpdatingPerson() ? config.getUpdatingPerson() : databaseAdapter.getConnectionDetails().getUser();
+
+				int i = 1;
+				stmt.setTimestamp(i++, Timestamp.valueOf(terminationDate));
+				stmt.setTimestamp(i++, Timestamp.valueOf(LocalDateTime.now()));
+				stmt.setString(i++, updatingPerson);
+				if (config.isSetReasonForUpdate()) stmt.setString(i++, config.getReasonForUpdate());
+				if (config.isSetLineage()) stmt.setString(i++, config.getLineage());
+				stmt.setLong(i, objectId);
+
+				stmt.executeUpdate();
+				deletedObjectId = objectId;
+			} else {
+				stmt.setObject(2, objectId, Types.INTEGER);
+				stmt.executeUpdate();
+				deletedObjectId = ((CallableStatement) stmt).getInt(1);
+			}
+
 			if (deletedObjectId == objectId) {
 				log.debug(objectclassName + " (ID = " + objectId + ") deleted.");
 				accept = true;
