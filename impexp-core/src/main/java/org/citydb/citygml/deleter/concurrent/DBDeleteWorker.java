@@ -75,9 +75,10 @@ public class DBDeleteWorker extends Worker<DBSplittingResult> implements EventHa
 		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
 
 		if (config.getMode() == DeleteMode.TERMINATE) {
+			Continuation metadata = config.getContinuation();
 			StringBuilder update = new StringBuilder("update cityobject set termination_date = ?, last_modification_date = ?, updating_person = ? ");
-			if (config.getContinuation().isSetReasonForUpdate()) update.append(", reason_for_update = ? ");
-			if (config.getContinuation().isSetLineage()) update.append(", lineage = ? ");
+			if (metadata.isSetReasonForUpdate()) update.append(", reason_for_update = '").append(metadata.getReasonForUpdate()).append("'");
+			if (metadata.isSetLineage()) update.append(", lineage = '").append(metadata.getLineage()).append("' ");
 			update.append("where id = ?");
 
 			stmt = connection.prepareStatement(update.toString());
@@ -139,13 +140,10 @@ public class DBDeleteWorker extends Worker<DBSplittingResult> implements EventHa
 				String updatingPerson = metadata.isUpdatingPersonModeDatabase() || !metadata.isSetUpdatingPerson() ?
 						databaseAdapter.getConnectionDetails().getUser() : metadata.getUpdatingPerson();
 
-				int i = 1;
-				stmt.setTimestamp(i++, Timestamp.valueOf(terminationDate));
-				stmt.setTimestamp(i++, Timestamp.valueOf(LocalDateTime.now()));
-				stmt.setString(i++, updatingPerson);
-				if (metadata.isSetReasonForUpdate()) stmt.setString(i++, metadata.getReasonForUpdate());
-				if (metadata.isSetLineage()) stmt.setString(i++, metadata.getLineage());
-				stmt.setLong(i, objectId);
+				stmt.setTimestamp(1, Timestamp.valueOf(terminationDate));
+				stmt.setTimestamp(2, Timestamp.valueOf(LocalDateTime.now()));
+				stmt.setString(3, updatingPerson);
+				stmt.setLong(4, objectId);
 
 				stmt.executeUpdate();
 				deletedObjectId = objectId;
