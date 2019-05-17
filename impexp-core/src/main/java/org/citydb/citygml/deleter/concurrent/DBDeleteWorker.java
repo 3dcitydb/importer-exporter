@@ -135,13 +135,15 @@ public class DBDeleteWorker extends Worker<DBSplittingResult> implements EventHa
 			long deletedObjectId;
 
 			if (config.getMode() == DeleteMode.TERMINATE) {
+				LocalDateTime now = LocalDateTime.now();
+
 				Continuation metadata = config.getContinuation();
-				LocalDateTime terminationDate = metadata.isSetTerminationDate() ? metadata.getTerminationDate() : LocalDateTime.now();
+				LocalDateTime terminationDate = metadata.isSetTerminationDate() ? metadata.getTerminationDate() : now;
 				String updatingPerson = metadata.isUpdatingPersonModeDatabase() || !metadata.isSetUpdatingPerson() ?
 						databaseAdapter.getConnectionDetails().getUser() : metadata.getUpdatingPerson();
 
 				stmt.setTimestamp(1, Timestamp.valueOf(terminationDate));
-				stmt.setTimestamp(2, Timestamp.valueOf(LocalDateTime.now()));
+				stmt.setTimestamp(2, Timestamp.valueOf(now));
 				stmt.setString(3, updatingPerson);
 				stmt.setLong(4, objectId);
 
