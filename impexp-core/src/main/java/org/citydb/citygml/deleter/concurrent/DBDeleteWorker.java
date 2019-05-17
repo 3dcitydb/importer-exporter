@@ -29,6 +29,7 @@ package org.citydb.citygml.deleter.concurrent;
 
 import org.citydb.citygml.exporter.database.content.DBSplittingResult;
 import org.citydb.concurrent.Worker;
+import org.citydb.config.project.deleter.Continuation;
 import org.citydb.config.project.deleter.DeleteConfig;
 import org.citydb.config.project.deleter.DeleteMode;
 import org.citydb.config.project.global.LogLevel;
@@ -75,8 +76,8 @@ public class DBDeleteWorker extends Worker<DBSplittingResult> implements EventHa
 
 		if (config.getMode() == DeleteMode.TERMINATE) {
 			StringBuilder update = new StringBuilder("update cityobject set termination_date = ?, last_modification_date = ?, updating_person = ? ");
-			if (config.isSetReasonForUpdate()) update.append(", reason_for_update = ? ");
-			if (config.isSetLineage()) update.append(", lineage = ? ");
+			if (config.getContinuation().isSetReasonForUpdate()) update.append(", reason_for_update = ? ");
+			if (config.getContinuation().isSetLineage()) update.append(", lineage = ? ");
 			update.append("where id = ?");
 
 			stmt = connection.prepareStatement(update.toString());
@@ -133,15 +134,17 @@ public class DBDeleteWorker extends Worker<DBSplittingResult> implements EventHa
 			long deletedObjectId;
 
 			if (config.getMode() == DeleteMode.TERMINATE) {
-				LocalDateTime terminationDate = config.isSetTerminationDate() ? config.getTerminationDate() : LocalDateTime.now();
-				String updatingPerson = config.isSetUpdatingPerson() ? config.getUpdatingPerson() : databaseAdapter.getConnectionDetails().getUser();
+				Continuation metadata = config.getContinuation();
+				LocalDateTime terminationDate = metadata.isSetTerminationDate() ? metadata.getTerminationDate() : LocalDateTime.now();
+				String updatingPerson = metadata.isUpdatingPersonModeDatabase() || !metadata.isSetUpdatingPerson() ?
+						databaseAdapter.getConnectionDetails().getUser() : metadata.getUpdatingPerson();
 
 				int i = 1;
 				stmt.setTimestamp(i++, Timestamp.valueOf(terminationDate));
 				stmt.setTimestamp(i++, Timestamp.valueOf(LocalDateTime.now()));
 				stmt.setString(i++, updatingPerson);
-				if (config.isSetReasonForUpdate()) stmt.setString(i++, config.getReasonForUpdate());
-				if (config.isSetLineage()) stmt.setString(i++, config.getLineage());
+				if (metadata.isSetReasonForUpdate()) stmt.setString(i++, metadata.getReasonForUpdate());
+				if (metadata.isSetLineage()) stmt.setString(i++, metadata.getLineage());
 				stmt.setLong(i, objectId);
 
 				stmt.executeUpdate();

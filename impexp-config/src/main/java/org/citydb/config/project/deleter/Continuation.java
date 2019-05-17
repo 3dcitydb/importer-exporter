@@ -25,40 +25,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.citydb.config.project.importer;
+package org.citydb.config.project.deleter;
 
 import org.citydb.config.project.global.UpdatingPersonMode;
 
-import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+import java.time.LocalDateTime;
 
-@XmlType(name="ContinuationType", propOrder={
+@XmlType(name="DeleteContinuationType", propOrder={
 		"lineage",
 		"updatingPersonMode",
 		"updatingPerson",
-		"reasonForUpdate",
-		"importCityDBMetadata",
-		"creationDateMode",
-		"terminationDateMode"
-		})
+		"reasonForUpdate"
+})
 public class Continuation {
-	@XmlElement(required=true)
 	private String lineage;
-	@XmlElement(required=true)
 	private UpdatingPersonMode updatingPersonMode = UpdatingPersonMode.DATABASE;
 	private String updatingPerson;
-	@XmlElement(required=true)
 	private String reasonForUpdate;
-	private boolean importCityDBMetadata = false;
-	@XmlElement(required=true)
-	private CreationDateMode creationDateMode = CreationDateMode.REPLACE;
-	@XmlElement(required=true)
-	private TerminationDateMode terminationDateMode = TerminationDateMode.REPLACE;
-	
-	public Continuation() {
-		
+
+	@XmlTransient
+	LocalDateTime terminationDate;
+
+	public boolean isSetLineage() {
+		return lineage != null;
 	}
-	
+
 	public String getLineage() {
 		return lineage;
 	}
@@ -83,12 +76,20 @@ public class Continuation {
 		this.updatingPersonMode = updatingPersonMode;
 	}
 
+	public boolean isSetUpdatingPerson() {
+		return updatingPerson != null;
+	}
+
 	public String getUpdatingPerson() {
 		return updatingPerson;
 	}
 
 	public void setUpdatingPerson(String updatingPerson) {
 		this.updatingPerson = updatingPerson;
+	}
+
+	public boolean isSetReasonForUpdate() {
+		return reasonForUpdate != null;
 	}
 
 	public String getReasonForUpdate() {
@@ -99,52 +100,16 @@ public class Continuation {
 		this.reasonForUpdate = reasonForUpdate;
 	}
 
-	public boolean isImportCityDBMetadata() {
-		return importCityDBMetadata;
+	public boolean isSetTerminationDate() {
+		return terminationDate != null;
 	}
 
-	public void setImportCityDBMetadata(boolean importCityDBMetadata) {
-		this.importCityDBMetadata = importCityDBMetadata;
+	public LocalDateTime getTerminationDate() {
+		return terminationDate;
 	}
 
-	public boolean isCreationDateModeInherit() {
-		return creationDateMode == CreationDateMode.INHERIT;
-	}
-
-	public boolean isCreationDateModeComplement() {
-		return creationDateMode == CreationDateMode.COMPLEMENT;
-	}
-
-	public boolean isCreationDateModeReplace() {
-		return creationDateMode == CreationDateMode.REPLACE;
-	}
-
-	public CreationDateMode getCreationDateMode() {
-		return creationDateMode;
-	}
-
-	public void setCreationDateMode(CreationDateMode creationDateMode) {
-		this.creationDateMode = creationDateMode;
-	}
-
-	public boolean isTerminationDateModeInherit() {
-		return terminationDateMode == TerminationDateMode.INHERIT;
-	}
-
-	public boolean isTerminationDateModeComplement() {
-		return terminationDateMode == TerminationDateMode.COMPLEMENT;
-	}
-
-	public boolean isTerminationDateModeReplace() {
-		return terminationDateMode == TerminationDateMode.REPLACE;
-	}
-
-	public TerminationDateMode getTerminationDateMode() {
-		return terminationDateMode;
-	}
-
-	public void setTerminationDateMode(TerminationDateMode terminationDateMode) {
-		this.terminationDateMode = terminationDateMode;
+	public void setTerminationDate(LocalDateTime terminationDate) {
+		this.terminationDate = terminationDate;
 	}
   
 }
