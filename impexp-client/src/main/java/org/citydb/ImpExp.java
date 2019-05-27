@@ -128,6 +128,9 @@ public class ImpExp {
 	@Option(name="-testConnection", usage="test whether a database connection can be established")
 	private boolean testConnection;
 
+	@Option(name="-calcBBOX", usage="calculate bounding box of the database")
+	private boolean calcBBOX;
+
 	@Option(name="-pid-file", usage="create file containing the current process ID", metaVar="fileName")
 	private Path pidFile;
 
@@ -220,15 +223,17 @@ public class ImpExp {
 				++commands;
 			if (testConnection)
 				++commands;
+			if (calcBBOX)
+				++commands;
 
 			if (commands == 0) {
-				System.out.println("Choose either command \"-import\", \"-export\", \"-kmlExport\", \"-validate\" or \"-testConnection\" for shell version");
+				System.out.println("Choose either command \"-import\", \"-export\", \"-kmlExport\", \"-validate\", \"-testConnection\" or \"-calcBBOX\" for shell version");
 				printUsage(parser, System.out);
 				System.exit(1);
 			}
 
 			if (commands > 1) {
-				System.out.println("Commands \"-import\", \"-export\", \"-kmlExport\", \"-validate\" and \"-testConnection\" may not be mixed");
+				System.out.println("Commands \"-import\", \"-export\", \"-kmlExport\", \"-validate\", \"-testConnection\" and \"-calcBBOX\" may not be mixed");
 				printUsage(parser, System.out);
 				System.exit(1);
 			}
@@ -551,6 +556,8 @@ public class ImpExp {
 				success= cmd.doKmlExport(kmlExportFile);
 			else if (testConnection)
 				success = cmd.doTestConnection();
+			else if (calcBBOX)
+				success = cmd.calcBoundingBox();
 
 			if (!success)
 				System.exit(1);
