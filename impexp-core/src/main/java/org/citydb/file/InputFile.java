@@ -63,4 +63,7 @@ public abstract class InputFile implements AutoCloseable {
         return type;
     }
 
+    public MediaType getMediaType() {
+        return mediaType;
+    }
 }
