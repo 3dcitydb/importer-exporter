@@ -28,6 +28,7 @@
 
 package org.citydb.citygml.importer.file;
 
+import org.apache.tika.mime.MediaType;
 import org.citydb.file.InputFile;
 import org.citydb.file.FileType;
 
@@ -37,8 +38,8 @@ import java.util.Objects;
 public abstract class AbstractArchiveInputFile extends InputFile {
     final String contentFile;
 
-    AbstractArchiveInputFile(String contentFile, Path file) {
-        super(file, FileType.ARCHIVE);
+    AbstractArchiveInputFile(String contentFile, Path file, MediaType mediaType) {
+        super(file, FileType.ARCHIVE, mediaType);
         this.contentFile = Objects.requireNonNull(contentFile, "content file must not be null.");
     }
 

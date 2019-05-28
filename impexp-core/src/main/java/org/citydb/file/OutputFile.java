@@ -41,7 +41,7 @@ public abstract class OutputFile implements AutoCloseable {
     protected OutputFile(Path file, FileType type) {
         Objects.requireNonNull(file, "file must not be null.");
         this.file = file.toAbsolutePath().normalize();
-        this.type = type;
+        this.type = Objects.requireNonNull(type, "file type must not be null.");
     }
 
     public abstract OutputStream openStream() throws IOException;

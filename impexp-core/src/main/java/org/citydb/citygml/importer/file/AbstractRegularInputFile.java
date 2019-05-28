@@ -28,6 +28,7 @@
 
 package org.citydb.citygml.importer.file;
 
+import org.apache.tika.mime.MediaType;
 import org.citydb.file.InputFile;
 import org.citydb.file.FileType;
 
@@ -37,8 +38,8 @@ import java.nio.file.Path;
 
 public abstract class AbstractRegularInputFile extends InputFile {
 
-    AbstractRegularInputFile(Path file, boolean isCompressed) {
-        super(file, isCompressed ? FileType.COMPRESSED : FileType.REGULAR);
+    AbstractRegularInputFile(Path file, MediaType mediaType, boolean isCompressed) {
+        super(file, isCompressed ? FileType.COMPRESSED : FileType.REGULAR, mediaType);
     }
 
     @Override

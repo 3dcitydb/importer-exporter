@@ -145,16 +145,16 @@ public class DirectoryScanner {
         else if ("application/gzip".equalsIgnoreCase(mediaType.toString()))
             processGZipFile(file, files);
         else if (isSupportedContentType(mediaType)) {
-            files.add(new XMLInputFile(file));
+            files.add(new XMLInputFile(file, mediaType));
         } else if (force)
-            files.add(new XMLInputFile(file));
+            files.add(new XMLInputFile(file, mediaType));
     }
 
     private void processGZipFile(Path gzipFile, List<InputFile> files) {
         try {
             MediaType mediaType = getMediaType(new GZIPInputStream(new FileInputStream(gzipFile.toFile())));
             if (isSupportedContentType(mediaType))
-                files.add(new GZipInputFile(gzipFile));
+                files.add(new GZipInputFile(gzipFile, mediaType));
         } catch (IOException ignored) {
             //
         }
@@ -169,7 +169,7 @@ public class DirectoryScanner {
                 if (matcher.matches()) {
                     MediaType mediaType = getMediaType(path);
                     if (isSupportedContentType(mediaType)) {
-                        ZipInputFile zipInputFile = new ZipInputFile(path.toString(), zipFile, uri);
+                        ZipInputFile zipInputFile = new ZipInputFile(path.toString(), zipFile, uri, mediaType);
                         files.add(zipInputFile);
                     }
                 }

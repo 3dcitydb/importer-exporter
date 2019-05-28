@@ -28,6 +28,8 @@
 
 package org.citydb.citygml.importer.file;
 
+import org.apache.tika.mime.MediaType;
+
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,8 +38,8 @@ import java.nio.file.Path;
 
 public class XMLInputFile extends AbstractRegularInputFile {
 
-    XMLInputFile(Path file) {
-        super(file, false);
+    XMLInputFile(Path file, MediaType mediaType) {
+        super(file, mediaType, false);
     }
 
     @Override

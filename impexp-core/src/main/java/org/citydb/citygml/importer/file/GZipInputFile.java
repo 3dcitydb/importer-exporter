@@ -28,6 +28,8 @@
 
 package org.citydb.citygml.importer.file;
 
+import org.apache.tika.mime.MediaType;
+
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -37,8 +39,8 @@ import java.util.zip.GZIPInputStream;
 
 public class GZipInputFile extends AbstractRegularInputFile {
 
-    GZipInputFile(Path file) {
-        super(file, true);
+    GZipInputFile(Path file, MediaType mediaType) {
+        super(file, mediaType, true);
     }
 
     @Override

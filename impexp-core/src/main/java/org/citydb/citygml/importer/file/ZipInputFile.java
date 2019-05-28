@@ -28,6 +28,8 @@
 
 package org.citydb.citygml.importer.file;
 
+import org.apache.tika.mime.MediaType;
+
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -44,8 +46,8 @@ public class ZipInputFile extends AbstractArchiveInputFile {
     private final URI zipFileUri;
     private FileSystem fileSystem;
 
-    ZipInputFile(String contentFile, Path zipFile, URI zipFileUri) {
-        super(contentFile, zipFile);
+    ZipInputFile(String contentFile, Path zipFile, URI zipFileUri, MediaType mediaType) {
+        super(contentFile, zipFile, mediaType);
         this.zipFileUri = Objects.requireNonNull(zipFileUri, "zip file URI must not be null.");
     }
 

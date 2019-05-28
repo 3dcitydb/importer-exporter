@@ -28,6 +28,8 @@
 
 package org.citydb.file;
 
+import org.apache.tika.mime.MediaType;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.InvalidPathException;
@@ -37,11 +39,13 @@ import java.util.Objects;
 public abstract class InputFile implements AutoCloseable {
     protected final Path file;
     protected final FileType type;
+    protected final MediaType mediaType;
 
-    protected InputFile(Path file, FileType type) {
+    protected InputFile(Path file, FileType type, MediaType mediaType) {
         Objects.requireNonNull(file, "file must not be null.");
         this.file = file.toAbsolutePath().normalize();
-        this.type = type;
+        this.type = Objects.requireNonNull(type, "file type must not be null.");
+        this.mediaType = Objects.requireNonNull(mediaType, "media type must not be null.");
     }
 
     public abstract InputStream openStream() throws IOException;
