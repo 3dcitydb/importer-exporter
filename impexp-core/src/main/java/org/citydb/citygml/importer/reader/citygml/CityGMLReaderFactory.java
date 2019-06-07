@@ -8,7 +8,7 @@ import org.citydb.config.Config;
 import org.citydb.config.project.importer.XMLValidation;
 import org.citydb.config.project.query.filter.counter.CounterFilter;
 import org.citydb.log.Logger;
-import org.citygml4j.builder.jaxb.CityGMLBuilder;
+import org.citydb.registry.ObjectRegistry;
 import org.citygml4j.builder.jaxb.CityGMLBuilderException;
 import org.citygml4j.model.module.Module;
 import org.citygml4j.model.module.Modules;
@@ -37,12 +37,12 @@ public class CityGMLReaderFactory implements FeatureReaderFactory {
     private Config config;
 
     @Override
-    public void initializeContext(CityGMLFilter filter, CityGMLBuilder cityGMLBuilder, Config config) throws FeatureReadException {
+    public void initializeContext(CityGMLFilter filter, Config config) throws FeatureReadException {
         this.config = config;
 
         // prepare CityGML input factory
         try {
-            factory = cityGMLBuilder.createCityGMLInputFactory();
+            factory = ObjectRegistry.getInstance().getCityGMLBuilder().createCityGMLInputFactory();
             factory.setProperty(CityGMLInputFactory.FEATURE_READ_MODE, FeatureReadMode.SPLIT_PER_COLLECTION_MEMBER);
             factory.setProperty(CityGMLInputFactory.FAIL_ON_MISSING_ADE_SCHEMA, false);
             factory.setProperty(CityGMLInputFactory.PARSE_SCHEMA, false);

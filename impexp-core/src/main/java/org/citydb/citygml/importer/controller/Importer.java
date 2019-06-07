@@ -375,7 +375,7 @@ public class Importer implements EventHandler {
 
 				FeatureReaderFactory factory;
 				try {
-					factory = builder.buildFactory(file, filter, cityGMLBuilder, config);
+					factory = builder.buildFactory(file, filter, config);
 				} catch (FeatureReadException e) {
 					throw new CityGMLImportException("Failed to read file '" + contentFile + "'.", e);
 				}
