@@ -140,9 +140,9 @@ public class DirectoryScanner {
 
         MediaType mediaType = getMediaType(file);
 
-        if (mediaType == MediaType.APPLICATION_ZIP)
+        if (mediaType.equals(InputFile.APPLICATION_ZIP))
             processZipFile(file, files);
-        else if ("application/gzip".equalsIgnoreCase(mediaType.toString()))
+        else if (mediaType.equals(InputFile.APPLICATION_GZIP))
             processGZipFile(file, files);
         else if (isSupportedContentType(mediaType)) {
             files.add(new XMLInputFile(file, mediaType));
@@ -151,8 +151,8 @@ public class DirectoryScanner {
     }
 
     private void processGZipFile(Path gzipFile, List<InputFile> files) {
-        try {
-            MediaType mediaType = getMediaType(new GZIPInputStream(new FileInputStream(gzipFile.toFile())));
+        try (InputStream stream = new GZIPInputStream(new FileInputStream(gzipFile.toFile()))) {
+            MediaType mediaType = getMediaType(stream);
             if (isSupportedContentType(mediaType))
                 files.add(new GZipInputFile(gzipFile, mediaType));
         } catch (IOException ignored) {
@@ -180,10 +180,10 @@ public class DirectoryScanner {
     }
 
     private MediaType getMediaType(Path file) {
-        try {
+        try (InputStream stream = TikaInputStream.get(file)) {
             Metadata metadata = new Metadata();
             metadata.set(Metadata.RESOURCE_NAME_KEY, file.toString());
-            return tikaConfig.getDetector().detect(TikaInputStream.get(file), metadata);
+            return tikaConfig.getDetector().detect(stream, metadata);
         } catch (IOException e) {
             return MediaType.EMPTY;
         }
@@ -198,8 +198,7 @@ public class DirectoryScanner {
     }
 
     private boolean isSupportedContentType(MediaType mediaType) {
-        return mediaType == MediaType.APPLICATION_XML
-                || mediaType == MediaType.TEXT_PLAIN;
+        return mediaType.equals(InputFile.APPLICATION_XML);
     }
 
 }

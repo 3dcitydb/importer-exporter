@@ -37,6 +37,10 @@ import java.nio.file.Path;
 import java.util.Objects;
 
 public abstract class InputFile implements AutoCloseable {
+    public static final MediaType APPLICATION_XML = MediaType.APPLICATION_XML;
+    public static final MediaType APPLICATION_GZIP = MediaType.parse("application/gzip");
+    public static final MediaType APPLICATION_ZIP = MediaType.APPLICATION_ZIP;
+
     protected final Path file;
     protected final FileType type;
     protected final MediaType mediaType;
