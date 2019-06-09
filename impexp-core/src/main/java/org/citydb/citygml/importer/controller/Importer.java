@@ -377,7 +377,7 @@ public class Importer implements EventHandler {
 				try {
 					factory = builder.buildFactory(file, filter, config);
 				} catch (FeatureReadException e) {
-					throw new CityGMLImportException("Failed to read file '" + contentFile + "'.", e);
+					throw new CityGMLImportException("Failed to read input file '" + contentFile + "'.", e);
 				}
 
 				// ok, preparation done. start parsing the input file
@@ -389,7 +389,7 @@ public class Importer implements EventHandler {
 					if (reader.getValidationErrors() > 0)
 						log.warn(reader.getValidationErrors() + " error(s) encountered while validating the document.");
 				} catch (FeatureReadException e) {
-					throw new CityGMLImportException("Failed to read file.", e);
+					throw new CityGMLImportException("Failed to read input file.", e);
 				}
 
 				// we are done with parsing the file. so shutdown the workers.

@@ -38,6 +38,7 @@ import java.util.Objects;
 
 public abstract class InputFile implements AutoCloseable {
     public static final MediaType APPLICATION_XML = MediaType.APPLICATION_XML;
+    public static final MediaType APPLICATION_JSON = MediaType.parse("application/json");
     public static final MediaType APPLICATION_GZIP = MediaType.parse("application/gzip");
     public static final MediaType APPLICATION_ZIP = MediaType.APPLICATION_ZIP;
 

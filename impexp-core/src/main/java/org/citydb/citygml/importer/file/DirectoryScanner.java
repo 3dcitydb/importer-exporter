@@ -144,10 +144,9 @@ public class DirectoryScanner {
             processZipFile(file, files);
         else if (mediaType.equals(InputFile.APPLICATION_GZIP))
             processGZipFile(file, files);
-        else if (isSupportedContentType(mediaType)) {
-            files.add(new XMLInputFile(file, mediaType));
-        } else if (force)
-            files.add(new XMLInputFile(file, mediaType));
+        else if (isSupportedContentType(mediaType) || force) {
+            files.add(new RegularInputFile(file, mediaType));
+        }
     }
 
     private void processGZipFile(Path gzipFile, List<InputFile> files) {
@@ -198,7 +197,8 @@ public class DirectoryScanner {
     }
 
     private boolean isSupportedContentType(MediaType mediaType) {
-        return mediaType.equals(InputFile.APPLICATION_XML);
+        return mediaType.equals(InputFile.APPLICATION_XML)
+                || mediaType.equals(InputFile.APPLICATION_JSON);
     }
 
 }

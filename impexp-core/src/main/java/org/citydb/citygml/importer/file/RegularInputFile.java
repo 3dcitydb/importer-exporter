@@ -36,9 +36,9 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-public class XMLInputFile extends AbstractRegularInputFile {
+public class RegularInputFile extends AbstractRegularInputFile {
 
-    XMLInputFile(Path file, MediaType mediaType) {
+    RegularInputFile(Path file, MediaType mediaType) {
         super(file, mediaType, false);
     }
 
