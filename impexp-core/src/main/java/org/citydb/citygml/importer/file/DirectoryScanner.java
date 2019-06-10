@@ -66,7 +66,7 @@ public class DirectoryScanner {
 
     public DirectoryScanner() throws TikaException, IOException {
         tikaConfig = new TikaConfig();
-        contentFile = Pattern.compile("(?i).+\\.((gml)|(xml)|(gz)|(gzip))$");
+        contentFile = Pattern.compile("(?i).+\\.((gml)|(xml)|(json)|(gz)|(gzip))$");
         matcher = Pattern.compile("").matcher("");
     }
 
@@ -84,7 +84,7 @@ public class DirectoryScanner {
     }
 
     public String[] getDefaultFileEndings() {
-        return new String[]{"gml", "xml", "gz", "gzip", "zip"};
+        return new String[]{"gml", "xml", "json", "gz", "gzip", "zip"};
     }
 
     public List<InputFile> listFiles(List<Path> bases, String... fileEndings) throws IOException {
