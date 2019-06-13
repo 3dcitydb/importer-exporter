@@ -29,7 +29,8 @@ package org.citydb.modules.citygml.importer.gui.view;
 
 import org.citydb.citygml.importer.CityGMLImportException;
 import org.citydb.citygml.importer.controller.Importer;
-import org.citydb.citygml.importer.controller.XMLValidator;
+import org.citydb.citygml.validator.ValidationException;
+import org.citydb.citygml.validator.controller.XMLValidator;
 import org.citydb.config.Config;
 import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.i18n.Language;
@@ -465,7 +466,18 @@ public class ImportPanel extends JPanel implements EventHandler {
 				}
 			});
 
-			boolean success = validator.doProcess();
+			boolean success = false;
+			try {
+				success = validator.doProcess();
+			} catch (ValidationException e) {
+				log.error(e.getMessage());
+
+				Throwable cause = e.getCause();
+				while (cause != null) {
+					log.error(cause.getClass().getTypeName() + ": " + cause.getMessage());
+					cause = cause.getCause();
+				}
+			}
 
 			try {
 				eventDispatcher.flushEvents();

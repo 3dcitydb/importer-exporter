@@ -32,7 +32,8 @@ import org.citydb.citygml.exporter.CityGMLExportException;
 import org.citydb.citygml.exporter.controller.Exporter;
 import org.citydb.citygml.importer.CityGMLImportException;
 import org.citydb.citygml.importer.controller.Importer;
-import org.citydb.citygml.importer.controller.XMLValidator;
+import org.citydb.citygml.validator.ValidationException;
+import org.citydb.citygml.validator.controller.XMLValidator;
 import org.citydb.config.Config;
 import org.citydb.config.project.database.DBConnection;
 import org.citydb.config.project.database.DatabaseConfigurationException;
@@ -128,12 +129,18 @@ public class ImpExpCli {
 		config.getInternal().setImportFiles(files);
 		EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
 		XMLValidator validator = new XMLValidator(config, eventDispatcher);
-		boolean success = validator.doProcess();
+		boolean success = false;
 
 		try {
-			eventDispatcher.flushEvents();
-		} catch (InterruptedException e) {
-			//
+			success = validator.doProcess();
+		} catch (ValidationException e) {
+			throw new ImpExpException("Data validation failed due to an internal error.", e);
+		} finally {
+			try {
+				eventDispatcher.flushEvents();
+			} catch (InterruptedException e) {
+				//
+			}
 		}
 
 		if (success)

@@ -25,15 +25,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.citydb.citygml.importer.controller;
+package org.citydb.citygml.validator.controller;
 
 import org.apache.tika.exception.TikaException;
-import org.citydb.file.input.DirectoryScanner;
+import org.citydb.citygml.validator.ValidationException;
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
-import org.citydb.file.input.AbstractArchiveInputFile;
-import org.citydb.file.InputFile;
-import org.citydb.file.FileType;
 import org.citydb.config.internal.Internal;
 import org.citydb.config.project.global.LogLevel;
 import org.citydb.event.Event;
@@ -45,6 +42,10 @@ import org.citydb.event.global.EventType;
 import org.citydb.event.global.InterruptEvent;
 import org.citydb.event.global.StatusDialogMessage;
 import org.citydb.event.global.StatusDialogTitle;
+import org.citydb.file.FileType;
+import org.citydb.file.InputFile;
+import org.citydb.file.input.AbstractArchiveInputFile;
+import org.citydb.file.input.DirectoryScanner;
 import org.citydb.log.Logger;
 import org.citydb.util.Util;
 import org.citygml4j.xml.schema.SchemaHandler;
@@ -62,6 +63,7 @@ import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class XMLValidator implements EventHandler {
 	private final Logger log = Logger.getInstance();
@@ -70,6 +72,7 @@ public class XMLValidator implements EventHandler {
 	private final EventDispatcher eventDispatcher;
 
 	private volatile boolean shouldRun = true;
+	private AtomicBoolean isInterrupted = new AtomicBoolean(false);
 	private DirectoryScanner directoryScanner;
 	private boolean reportAllErrors;
 	private InputStream inputStream;
@@ -83,7 +86,7 @@ public class XMLValidator implements EventHandler {
 		eventDispatcher.removeEventHandler(this);
 	}
 
-	public boolean doProcess() {
+	public boolean doProcess() throws ValidationException {
 		// adding listeners
 		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
 		Internal internalConfig = config.getInternal();
@@ -99,8 +102,7 @@ public class XMLValidator implements EventHandler {
 				return false;
 			}
 		} catch (TikaException | IOException e) {
-			log.error("Fatal error while searching for CityGML files.");
-			return false;
+			throw new ValidationException("Fatal error while searching for CityGML files.", e);
 		}
 
 		if (!shouldRun)
@@ -121,8 +123,7 @@ public class XMLValidator implements EventHandler {
 			Schema schema = schemaFactory.newSchema(schemaHandler.getSchemaSources());	
 			validator = schema.newValidator();
 		} catch (SAXException e) {
-			log.error("Failed to create CityGML schema context: " + e.getMessage());
-			return false;
+			throw new ValidationException("Failed to create CityGML schema context", e);
 		}
 
 		long start = System.currentTimeMillis();
@@ -147,8 +148,10 @@ public class XMLValidator implements EventHandler {
 				validator.validate(new StreamSource(inputStream));
 			} catch (SAXException | IOException e) {
 				if (!errorHandler.isAborted && shouldRun)
-					log.error("Failed to validate CityGML file: " + e.getMessage());
-			} finally {
+					throw new ValidationException("Failed to validate CityGML file.", e);
+			} catch (Throwable e) {
+				throw new ValidationException("An unexpected error occurred.", e);
+			}finally {
 				if (inputStream != null) {
 					try {
 						inputStream.close();
@@ -175,7 +178,7 @@ public class XMLValidator implements EventHandler {
 
 	@Override
 	public void handleEvent(Event e) throws Exception {
-		if (e.getEventType() == EventType.INTERRUPT) {
+		if (isInterrupted.compareAndSet(false, true)) {
 			shouldRun = false;
 			InterruptEvent interruptEvent = (InterruptEvent)e;
 
