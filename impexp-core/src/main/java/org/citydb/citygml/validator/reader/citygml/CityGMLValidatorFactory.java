@@ -54,8 +54,7 @@ public class CityGMLValidatorFactory implements ValidatorFactory {
             throw new ValidationException("Failed to create CityGML schema context.", e);
         }
 
-        validationHandler = new ValidationErrorHandler();
-        validationHandler.setReportAllErrors(!config.getProject().getImporter().getXMLValidation().isSetReportOneErrorPerFeature());
+        validationHandler = new ValidationErrorHandler(config);
     }
 
     @Override

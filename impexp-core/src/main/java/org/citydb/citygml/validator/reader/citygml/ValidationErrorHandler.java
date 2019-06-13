@@ -28,6 +28,7 @@
 
 package org.citydb.citygml.validator.reader.citygml;
 
+import org.citydb.config.Config;
 import org.citydb.config.project.global.LogLevel;
 import org.citydb.log.Logger;
 import org.xml.sax.ErrorHandler;
@@ -36,12 +37,19 @@ import org.xml.sax.SAXParseException;
 
 class ValidationErrorHandler implements ErrorHandler {
     private final Logger log = Logger.getInstance();
+    private final Config config;
+
     private long validationErrors;
-    private boolean reportAllErrors;
+    private boolean isReportAllErrors;
     private boolean isAborted;
 
+    ValidationErrorHandler(Config config) {
+        this.config = config;
+        reset();
+    }
+
     void setReportAllErrors(boolean reportAllErrors) {
-        this.reportAllErrors = reportAllErrors;
+        this.isReportAllErrors = reportAllErrors;
     }
 
     long getValidationErrors() {
@@ -58,6 +66,7 @@ class ValidationErrorHandler implements ErrorHandler {
 
     void reset() {
         validationErrors = 0;
+        isReportAllErrors = !config.getProject().getImporter().getXMLValidation().isSetReportOneErrorPerFeature();
         isAborted = false;
     }
 
@@ -68,12 +77,12 @@ class ValidationErrorHandler implements ErrorHandler {
 
     @Override
     public void error(SAXParseException e) throws SAXException {
-        reportAllErrors = false;
         write(e, "Invalid content", LogLevel.ERROR);
     }
 
     @Override
     public void fatalError(SAXParseException e) throws SAXException {
+        isReportAllErrors = false;
         write(e, "Invalid content", LogLevel.ERROR);
     }
 
@@ -81,7 +90,7 @@ class ValidationErrorHandler implements ErrorHandler {
         if (!isAborted) {
             log.log(level, prefix + " at " + '[' + e.getLineNumber() + ',' + e.getColumnNumber() + "]: " + e.getMessage());
             validationErrors++;
-            if (!reportAllErrors) {
+            if (!isReportAllErrors) {
                 isAborted = true;
                 throw new SAXException();
             }
