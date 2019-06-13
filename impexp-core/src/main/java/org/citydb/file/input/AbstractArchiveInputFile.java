@@ -26,34 +26,24 @@
  * limitations under the License.
  */
 
-package org.citydb.citygml.importer.file;
+package org.citydb.file.input;
 
 import org.apache.tika.mime.MediaType;
 import org.citydb.file.InputFile;
 import org.citydb.file.FileType;
 
-import java.nio.file.FileSystems;
-import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
+import java.util.Objects;
 
-public abstract class AbstractRegularInputFile extends InputFile {
+public abstract class AbstractArchiveInputFile extends InputFile {
+    final String contentFile;
 
-    AbstractRegularInputFile(Path file, MediaType mediaType, boolean isCompressed) {
-        super(file, isCompressed ? FileType.COMPRESSED : FileType.REGULAR, mediaType);
+    AbstractArchiveInputFile(String contentFile, Path file, MediaType mediaType) {
+        super(file, FileType.ARCHIVE, mediaType);
+        this.contentFile = Objects.requireNonNull(contentFile, "content file must not be null.");
     }
 
-    @Override
-    public Path resolve(String path) throws InvalidPathException {
-        return file.getParent().resolve(path);
-    }
-
-    @Override
-    public String getSeparator() {
-        return FileSystems.getDefault().getSeparator();
-    }
-
-    @Override
-    public void close() {
-        // nothing to do here
+    public String getContentFile() {
+        return contentFile;
     }
 }

@@ -26,24 +26,22 @@
  * limitations under the License.
  */
 
-package org.citydb.citygml.importer.file;
+package org.citydb.file.output;
 
-import org.apache.tika.mime.MediaType;
-
-import java.io.BufferedInputStream;
 import java.io.IOException;
-import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.zip.GZIPOutputStream;
 
-public class XMLInputFile extends AbstractRegularInputFile {
+public class GZipOutputFile extends AbstractRegularOutputFile {
 
-    XMLInputFile(Path file, MediaType mediaType) {
-        super(file, mediaType, false);
+    GZipOutputFile(Path file) {
+        super(file, true);
     }
 
     @Override
-    public InputStream openStream() throws IOException {
-        return new BufferedInputStream(Files.newInputStream(file));
+    public OutputStream openStream() throws IOException {
+        return new GZIPOutputStream(Files.newOutputStream(file));
     }
 }

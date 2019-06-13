@@ -26,40 +26,23 @@
  * limitations under the License.
  */
 
-package org.citydb.citygml.exporter.file;
+package org.citydb.file.output;
 
 import org.citydb.file.FileType;
 import org.citydb.file.OutputFile;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.util.Objects;
 
-public abstract class AbstractRegularOutputFile extends OutputFile {
+public abstract class AbstractArchiveOutputFile extends OutputFile {
+    final String contentFile;
 
-    AbstractRegularOutputFile(Path file, boolean isCompressed) {
-        super(file, isCompressed ? FileType.COMPRESSED : FileType.REGULAR);
+    AbstractArchiveOutputFile(String contentFile, Path file) {
+        super(file, FileType.ARCHIVE);
+        this.contentFile = Objects.requireNonNull(contentFile, "content file must not be null.");
     }
 
-    @Override
-    public String resolve(String... paths) {
-        return Paths.get(file.getParent().toString(), paths).toString();
-    }
-
-    @Override
-    public void createDirectories(String path) throws IOException {
-        Files.createDirectories(file.getParent().resolve(path));
-    }
-
-    @Override
-    public OutputStream newOutputStream(String file) throws IOException {
-        return Files.newOutputStream(Paths.get(file) );
-    }
-
-    @Override
-    public void close() {
-        // nothing to do here
+    public String getContentFile() {
+        return contentFile;
     }
 }

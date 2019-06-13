@@ -38,7 +38,7 @@ import org.citydb.citygml.exporter.database.content.DBSplitter;
 import org.citydb.citygml.exporter.database.content.DBSplittingResult;
 import org.citydb.citygml.exporter.database.uid.FeatureGmlIdCache;
 import org.citydb.citygml.exporter.database.uid.GeometryGmlIdCache;
-import org.citydb.citygml.exporter.file.OutputFileFactory;
+import org.citydb.file.output.OutputFileFactory;
 import org.citydb.citygml.exporter.writer.FeatureWriteException;
 import org.citydb.citygml.exporter.writer.FeatureWriter;
 import org.citydb.citygml.exporter.writer.FeatureWriterFactory;

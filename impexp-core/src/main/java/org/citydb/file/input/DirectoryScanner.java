@@ -26,7 +26,7 @@
  * limitations under the License.
  */
 
-package org.citydb.citygml.importer.file;
+package org.citydb.file.input;
 
 import org.apache.tika.config.TikaConfig;
 import org.apache.tika.exception.TikaException;

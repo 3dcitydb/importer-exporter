@@ -26,23 +26,25 @@
  * limitations under the License.
  */
 
-package org.citydb.citygml.exporter.file;
+package org.citydb.file.input;
 
-import org.citydb.file.FileType;
-import org.citydb.file.OutputFile;
+import org.apache.tika.mime.MediaType;
 
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Objects;
+import java.util.zip.GZIPInputStream;
 
-public abstract class AbstractArchiveOutputFile extends OutputFile {
-    final String contentFile;
+public class GZipInputFile extends AbstractRegularInputFile {
 
-    AbstractArchiveOutputFile(String contentFile, Path file) {
-        super(file, FileType.ARCHIVE);
-        this.contentFile = Objects.requireNonNull(contentFile, "content file must not be null.");
+    GZipInputFile(Path file, MediaType mediaType) {
+        super(file, mediaType, true);
     }
 
-    public String getContentFile() {
-        return contentFile;
+    @Override
+    public InputStream openStream() throws IOException {
+        return new GZIPInputStream(new BufferedInputStream(Files.newInputStream(file)));
     }
 }

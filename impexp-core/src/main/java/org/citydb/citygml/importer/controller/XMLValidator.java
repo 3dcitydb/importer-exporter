@@ -28,10 +28,10 @@
 package org.citydb.citygml.importer.controller;
 
 import org.apache.tika.exception.TikaException;
-import org.citydb.citygml.importer.file.DirectoryScanner;
+import org.citydb.file.input.DirectoryScanner;
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
-import org.citydb.citygml.importer.file.AbstractArchiveInputFile;
+import org.citydb.file.input.AbstractArchiveInputFile;
 import org.citydb.file.InputFile;
 import org.citydb.file.FileType;
 import org.citydb.config.internal.Internal;

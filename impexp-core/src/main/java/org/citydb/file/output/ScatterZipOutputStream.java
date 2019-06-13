@@ -26,7 +26,7 @@
  * limitations under the License.
  */
 
-package org.citydb.citygml.exporter.file;
+package org.citydb.file.output;
 
 import org.apache.commons.compress.archivers.zip.StreamCompressor;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;

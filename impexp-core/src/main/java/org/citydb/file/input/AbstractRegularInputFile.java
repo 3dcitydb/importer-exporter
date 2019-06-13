@@ -26,22 +26,34 @@
  * limitations under the License.
  */
 
-package org.citydb.citygml.exporter.file;
+package org.citydb.file.input;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.file.Files;
+import org.apache.tika.mime.MediaType;
+import org.citydb.file.InputFile;
+import org.citydb.file.FileType;
+
+import java.nio.file.FileSystems;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
-import java.util.zip.GZIPOutputStream;
 
-public class GZipOutputFile extends AbstractRegularOutputFile {
+public abstract class AbstractRegularInputFile extends InputFile {
 
-    GZipOutputFile(Path file) {
-        super(file, true);
+    AbstractRegularInputFile(Path file, MediaType mediaType, boolean isCompressed) {
+        super(file, isCompressed ? FileType.COMPRESSED : FileType.REGULAR, mediaType);
     }
 
     @Override
-    public OutputStream openStream() throws IOException {
-        return new GZIPOutputStream(Files.newOutputStream(file));
+    public Path resolve(String path) throws InvalidPathException {
+        return file.getParent().resolve(path);
+    }
+
+    @Override
+    public String getSeparator() {
+        return FileSystems.getDefault().getSeparator();
+    }
+
+    @Override
+    public void close() {
+        // nothing to do here
     }
 }

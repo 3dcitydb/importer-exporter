@@ -26,24 +26,40 @@
  * limitations under the License.
  */
 
-package org.citydb.citygml.importer.file;
+package org.citydb.file.output;
 
-import org.apache.tika.mime.MediaType;
-import org.citydb.file.InputFile;
 import org.citydb.file.FileType;
+import org.citydb.file.OutputFile;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Objects;
+import java.nio.file.Paths;
 
-public abstract class AbstractArchiveInputFile extends InputFile {
-    final String contentFile;
+public abstract class AbstractRegularOutputFile extends OutputFile {
 
-    AbstractArchiveInputFile(String contentFile, Path file, MediaType mediaType) {
-        super(file, FileType.ARCHIVE, mediaType);
-        this.contentFile = Objects.requireNonNull(contentFile, "content file must not be null.");
+    AbstractRegularOutputFile(Path file, boolean isCompressed) {
+        super(file, isCompressed ? FileType.COMPRESSED : FileType.REGULAR);
     }
 
-    public String getContentFile() {
-        return contentFile;
+    @Override
+    public String resolve(String... paths) {
+        return Paths.get(file.getParent().toString(), paths).toString();
+    }
+
+    @Override
+    public void createDirectories(String path) throws IOException {
+        Files.createDirectories(file.getParent().resolve(path));
+    }
+
+    @Override
+    public OutputStream newOutputStream(String file) throws IOException {
+        return Files.newOutputStream(Paths.get(file) );
+    }
+
+    @Override
+    public void close() {
+        // nothing to do here
     }
 }
