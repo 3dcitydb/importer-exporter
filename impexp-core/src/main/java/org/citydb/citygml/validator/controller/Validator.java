@@ -29,8 +29,6 @@ package org.citydb.citygml.validator.controller;
 
 import org.apache.tika.exception.TikaException;
 import org.citydb.citygml.validator.ValidationException;
-import org.citydb.file.input.AbstractArchiveInputFile;
-import org.citydb.file.input.DirectoryScanner;
 import org.citydb.citygml.validator.reader.ValidatorFactory;
 import org.citydb.citygml.validator.reader.ValidatorFactoryBuilder;
 import org.citydb.config.Config;
@@ -47,6 +45,8 @@ import org.citydb.event.global.StatusDialogMessage;
 import org.citydb.event.global.StatusDialogTitle;
 import org.citydb.file.FileType;
 import org.citydb.file.InputFile;
+import org.citydb.file.input.AbstractArchiveInputFile;
+import org.citydb.file.input.DirectoryScanner;
 import org.citydb.log.Logger;
 import org.citydb.util.Util;
 
@@ -133,11 +133,11 @@ public class Validator implements EventHandler {
 						log.warn(validator.getValidationErrors() + " error(s) encountered while validating the document.");
 					else if (shouldRun)
 						log.info("The input file is valid.");
-				} catch (ValidationException e) {
-					throw new ValidationException("Failed to validate input file.", e);
 				}
 
 				eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("validate.dialog.finish.msg"), this));
+			} catch (ValidationException e) {
+				throw e;
 			} catch (IOException e) {
 				throw new ValidationException("Failed to validate input file.", e);
 			} catch (Throwable e) {
