@@ -91,7 +91,7 @@ public class Validator implements EventHandler {
 				return false;
 			}
 		} catch (TikaException | IOException e) {
-			throw new ValidationException("Fatal error while searching for CityGML files.");
+			throw new ValidationException("Fatal error while searching for CityGML files.", e);
 		}
 
 		if (!shouldRun)
