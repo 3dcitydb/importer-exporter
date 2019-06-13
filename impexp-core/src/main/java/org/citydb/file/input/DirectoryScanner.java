@@ -40,6 +40,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.nio.file.FileSystem;
+import java.nio.file.FileSystemNotFoundException;
 import java.nio.file.FileSystems;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
@@ -109,7 +110,7 @@ public class DirectoryScanner {
         if (Files.isDirectory(base)) {
             Files.walkFileTree(base, new SimpleFileVisitor<Path>() {
                 @Override
-                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
+                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
                     matcher.reset(file.getFileName().toString()).usePattern(filePattern);
                     if (matcher.matches())
                         processFile(file, files, false);
@@ -134,7 +135,7 @@ public class DirectoryScanner {
             processFile(base, files, true);
     }
 
-    private void processFile(Path file, List<InputFile> files, boolean force) {
+    private void processFile(Path file, List<InputFile> files, boolean force) throws IOException {
         if (!shouldRun)
             return;
 
@@ -159,10 +160,27 @@ public class DirectoryScanner {
         }
     }
 
-    private void processZipFile(Path zipFile, List<InputFile> files) {
+    private void processZipFile(Path zipFile, List<InputFile> files) throws IOException {
         URI uri = URI.create("jar:" + zipFile.toAbsolutePath().toUri());
 
-        try (FileSystem fileSystem = FileSystems.newFileSystem(uri, new HashMap<>())) {
+        FileSystem fileSystem = null;
+        try {
+            fileSystem = FileSystems.getFileSystem(uri);
+        } catch (FileSystemNotFoundException e) {
+            //
+        } catch (Throwable e) {
+            throw new IOException("Failed to open zip file system '" + uri + "'.", e);
+        }
+
+        if (fileSystem == null) {
+            try {
+                fileSystem = FileSystems.newFileSystem(uri, new HashMap<>());
+            } catch (Throwable e) {
+                throw new IOException("Failed to open zip file system '" + uri + "'.", e);
+            }
+        }
+
+        try {
             Files.walk(fileSystem.getPath("/")).filter(Files::isRegularFile).forEach(path -> {
                 matcher.reset(path.getFileName().toString()).usePattern(contentFile);
                 if (matcher.matches()) {
@@ -173,8 +191,8 @@ public class DirectoryScanner {
                     }
                 }
             });
-        } catch (Throwable ignored) {
-            //
+        } finally {
+            fileSystem.close();
         }
     }
 
