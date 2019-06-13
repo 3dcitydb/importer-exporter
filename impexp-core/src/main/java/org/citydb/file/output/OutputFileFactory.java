@@ -26,7 +26,7 @@
  * limitations under the License.
  */
 
-package org.citydb.citygml.exporter.file;
+package org.citydb.file.output;
 
 import org.citydb.config.Config;
 import org.citydb.file.FileType;

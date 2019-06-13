@@ -40,8 +40,8 @@ import org.citydb.citygml.importer.database.uid.FeatureGmlIdCache;
 import org.citydb.citygml.importer.database.uid.GeometryGmlIdCache;
 import org.citydb.citygml.importer.database.uid.TextureImageCache;
 import org.citydb.citygml.importer.database.xlink.resolver.DBXlinkSplitter;
-import org.citydb.citygml.importer.file.AbstractArchiveInputFile;
-import org.citydb.citygml.importer.file.DirectoryScanner;
+import org.citydb.file.input.AbstractArchiveInputFile;
+import org.citydb.file.input.DirectoryScanner;
 import org.citydb.citygml.importer.filter.CityGMLFilter;
 import org.citydb.citygml.importer.filter.CityGMLFilterBuilder;
 import org.citydb.citygml.importer.reader.FeatureReadException;
@@ -232,6 +232,9 @@ public class Importer implements EventHandler {
 			throw new CityGMLImportException("Failed to build the import filter.", e);
 		}
 
+		// create reader factory builder
+		FeatureReaderFactoryBuilder builder = new FeatureReaderFactoryBuilder();
+
 		CacheTableManager cacheTableManager = null;
 		UIDCacheManager uidCacheManager = null;
 		WorkerPool<CityGML> dbWorkerPool = null;
@@ -240,7 +243,6 @@ public class Importer implements EventHandler {
 		DBXlinkSplitter splitter;
 		ImportLogger importLogger = null;
 
-		FeatureReaderFactoryBuilder builder = new FeatureReaderFactoryBuilder();
 		long featureCounter = 0;
 		long start = System.currentTimeMillis();
 

@@ -5,7 +5,6 @@ import org.citydb.citygml.importer.reader.FeatureReadException;
 import org.citydb.citygml.importer.reader.FeatureReader;
 import org.citydb.citygml.importer.reader.FeatureReaderFactory;
 import org.citydb.config.Config;
-import org.citydb.config.project.importer.XMLValidation;
 import org.citydb.config.project.query.filter.counter.CounterFilter;
 import org.citydb.log.Logger;
 import org.citydb.registry.ObjectRegistry;
@@ -53,15 +52,14 @@ public class CityGMLReaderFactory implements FeatureReaderFactory {
         }
 
         // prepare XML validation
-        XMLValidation xmlValidation = config.getProject().getImporter().getXMLValidation();
-        if (xmlValidation.isSetUseXMLValidation()) {
+        if (config.getProject().getImporter().getXMLValidation().isSetUseXMLValidation()) {
             log.info("Applying XML validation to CityGML input features.");
 
             factory.setProperty(CityGMLInputFactory.USE_VALIDATION, true);
             factory.setProperty(CityGMLInputFactory.PARSE_SCHEMA, true);
 
             validationHandler = new ValidationErrorHandler();
-            validationHandler.setReportAllErrors(!xmlValidation.isSetReportOneErrorPerFeature());
+            validationHandler.setReportAllErrors(!config.getProject().getImporter().getXMLValidation().isSetReportOneErrorPerFeature());
             factory.setValidationEventHandler(validationHandler);
         }
 

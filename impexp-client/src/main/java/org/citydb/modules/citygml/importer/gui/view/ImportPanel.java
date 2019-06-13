@@ -28,8 +28,9 @@
 package org.citydb.modules.citygml.importer.gui.view;
 
 import org.citydb.citygml.importer.CityGMLImportException;
+import org.citydb.citygml.validator.ValidationException;
 import org.citydb.citygml.importer.controller.Importer;
-import org.citydb.citygml.importer.controller.XMLValidator;
+import org.citydb.citygml.validator.controller.Validator;
 import org.citydb.config.Config;
 import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.i18n.Language;
@@ -56,30 +57,10 @@ import org.citygml4j.builder.jaxb.CityGMLBuilder;
 import org.jdesktop.swingx.JXTextField;
 import org.jdesktop.swingx.prompt.PromptSupport.FocusBehavior;
 
-import javax.swing.Action;
-import javax.swing.ActionMap;
-import javax.swing.BorderFactory;
-import javax.swing.DefaultListModel;
-import javax.swing.InputMap;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JFileChooser;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.KeyStroke;
-import javax.swing.ListSelectionModel;
-import javax.swing.SwingUtilities;
-import javax.swing.SwingWorker;
-import javax.swing.TransferHandler;
-import javax.swing.UIManager;
+import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
-import java.awt.Color;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
+import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
@@ -452,7 +433,7 @@ public class ImportPanel extends JPanel implements EventHandler {
 			}
 
 			viewController.setStatusText(Language.I18N.getString("main.status.validate.label"));
-			log.info("Initializing XML validation...");
+			log.info("Initializing data validation...");
 
 			// initialize event dispatcher
 			final EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
@@ -469,14 +450,14 @@ public class ImportPanel extends JPanel implements EventHandler {
 				validatorDialog.setVisible(true);
 			});
 
-			XMLValidator validator = new XMLValidator(config, eventDispatcher);
+			Validator validator = new Validator(config, eventDispatcher);
 
 			validatorDialog.getButton().addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					SwingUtilities.invokeLater(new Runnable() {
 						public void run() {
 							eventDispatcher.triggerEvent(new InterruptEvent(
-									"User abort of XML validation.", 
+									"User abort of data validation.",
 									LogLevel.WARN,
 									Event.GLOBAL_CHANNEL,
 									this));
@@ -485,7 +466,18 @@ public class ImportPanel extends JPanel implements EventHandler {
 				}
 			});
 
-			boolean success = validator.doProcess();
+			boolean success = false;
+			try {
+				success = validator.doProcess();
+			} catch (ValidationException e) {
+				log.error(e.getMessage());
+
+				Throwable cause = e.getCause();
+				while (cause != null) {
+					log.error(cause.getClass().getTypeName() + ": " + cause.getMessage());
+					cause = cause.getCause();
+				}
+			}
 
 			try {
 				eventDispatcher.flushEvents();
@@ -499,9 +491,9 @@ public class ImportPanel extends JPanel implements EventHandler {
 			validator.cleanup();
 
 			if (success) {
-				log.info("XML validation finished.");
+				log.info("Data validation finished.");
 			} else {
-				log.warn("XML validation aborted.");
+				log.warn("Data validation aborted.");
 			}
 
 			viewController.setStatusText(Language.I18N.getString("main.status.ready.label"));

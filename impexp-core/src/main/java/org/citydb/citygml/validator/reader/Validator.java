@@ -26,23 +26,13 @@
  * limitations under the License.
  */
 
-package org.citydb.citygml.exporter.file;
+package org.citydb.citygml.validator.reader;
 
-import org.citydb.file.FileType;
-import org.citydb.file.OutputFile;
+import org.citydb.citygml.validator.ValidationException;
+import org.citydb.file.InputFile;
 
-import java.nio.file.Path;
-import java.util.Objects;
-
-public abstract class AbstractArchiveOutputFile extends OutputFile {
-    final String contentFile;
-
-    AbstractArchiveOutputFile(String contentFile, Path file) {
-        super(file, FileType.ARCHIVE);
-        this.contentFile = Objects.requireNonNull(contentFile, "content file must not be null.");
-    }
-
-    public String getContentFile() {
-        return contentFile;
-    }
+public interface Validator extends AutoCloseable {
+    long getValidationErrors();
+    void validate(InputFile inputFile) throws ValidationException;
+    void close() throws ValidationException;
 }

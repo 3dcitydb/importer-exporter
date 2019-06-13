@@ -26,20 +26,19 @@
  * limitations under the License.
  */
 
-package org.citydb.citygml.importer.file;
+package org.citydb.file.output;
 
-import org.apache.tika.mime.MediaType;
-import org.citydb.file.InputFile;
 import org.citydb.file.FileType;
+import org.citydb.file.OutputFile;
 
 import java.nio.file.Path;
 import java.util.Objects;
 
-public abstract class AbstractArchiveInputFile extends InputFile {
+public abstract class AbstractArchiveOutputFile extends OutputFile {
     final String contentFile;
 
-    AbstractArchiveInputFile(String contentFile, Path file, MediaType mediaType) {
-        super(file, FileType.ARCHIVE, mediaType);
+    AbstractArchiveOutputFile(String contentFile, Path file) {
+        super(file, FileType.ARCHIVE);
         this.contentFile = Objects.requireNonNull(contentFile, "content file must not be null.");
     }
 

@@ -26,25 +26,25 @@
  * limitations under the License.
  */
 
-package org.citydb.citygml.importer.file;
+package org.citydb.citygml.validator;
 
-import org.apache.tika.mime.MediaType;
+public class ValidationException extends Exception {
+	private static final long serialVersionUID = 4539651915483540421L;
 
-import java.io.BufferedInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.zip.GZIPInputStream;
+	public ValidationException() {
+		super();
+	}
 
-public class GZipInputFile extends AbstractRegularInputFile {
+	public ValidationException(String message) {
+		super(message);
+	}
 
-    GZipInputFile(Path file, MediaType mediaType) {
-        super(file, mediaType, true);
-    }
+	public ValidationException(Throwable cause) {
+		super(cause);
+	}
 
-    @Override
-    public InputStream openStream() throws IOException {
-        return new GZIPInputStream(new BufferedInputStream(Files.newInputStream(file)));
-    }
+	public ValidationException(String message, Throwable cause) {
+		super(message, cause);
+	}
+	
 }

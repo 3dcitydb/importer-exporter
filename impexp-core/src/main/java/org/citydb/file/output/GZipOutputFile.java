@@ -26,21 +26,22 @@
  * limitations under the License.
  */
 
-package org.citydb.citygml.exporter.file;
+package org.citydb.file.output;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.zip.GZIPOutputStream;
 
-public class XMLOutputFile extends AbstractRegularOutputFile {
+public class GZipOutputFile extends AbstractRegularOutputFile {
 
-    XMLOutputFile(Path file) {
-        super(file, false);
+    GZipOutputFile(Path file) {
+        super(file, true);
     }
 
     @Override
     public OutputStream openStream() throws IOException {
-        return Files.newOutputStream(file);
+        return new GZIPOutputStream(Files.newOutputStream(file));
     }
 }
