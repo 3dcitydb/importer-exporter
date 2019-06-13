@@ -18,6 +18,7 @@ import org.citygml4j.model.gml.feature.AbstractFeature;
 import org.citygml4j.model.gml.feature.FeatureProperty;
 import org.citygml4j.xml.io.reader.CityGMLInputFilter;
 
+import java.io.IOException;
 import java.util.Iterator;
 
 public class CityJSONReader implements FeatureReader, EventHandler {
@@ -45,7 +46,7 @@ public class CityJSONReader implements FeatureReader, EventHandler {
     @Override
     public long read(InputFile inputFile, WorkerPool<CityGML> workerPool, long counter) throws FeatureReadException {
         try (org.citygml4j.builder.cityjson.json.io.reader.CityJSONReader reader = factory.createFilteredCityJSONReader(
-                factory.createCityJSONReader(inputFile.getFile().toFile()), typeFilter)) {
+                factory.createCityJSONReader(inputFile.openStream()), typeFilter)) {
             // read input file into a city model
             CityModel cityModel = reader.read();
 
@@ -55,7 +56,7 @@ public class CityJSONReader implements FeatureReader, EventHandler {
             counter = process(cityModel.getAppearanceMember().iterator(), workerPool, counter);
 
             return counter;
-        } catch (CityJSONReadException e) {
+        } catch (CityJSONReadException | IOException e) {
             throw new FeatureReadException("Failed to read CityJSON input file.", e);
         }
     }
