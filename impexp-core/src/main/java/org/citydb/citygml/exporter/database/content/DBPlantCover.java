@@ -101,6 +101,7 @@ public class DBPlantCover extends AbstractFeatureExporter<PlantCover> {
 
 		cityObjectExporter = exporter.getExporter(DBCityObject.class);
 		geometryExporter = exporter.getExporter(DBSurfaceGeometry.class);
+		valueSplitter = exporter.getAttributeValueSplitter();
 	}
 
 	@Override
