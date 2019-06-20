@@ -217,7 +217,7 @@ public class Queries {
 				.append(") tmp) ")
 				// exterior building installations
 				.append("UNION ALL ")
-				.append("(SELECT tmp.* FROM (SELECT bi.lod").append(lod).append("_brep_id, 0 as objectclass_id ")
+				.append("(SELECT tmp.* FROM (SELECT bi.lod").append(lod).append("_brep_id, bi.objectclass_id ")
 				.append("FROM ").append(schema).append(".building_installation bi ")
 				.append("WHERE bi.building_id = ? ")
 				.append("AND bi.lod").append(lod).append("_brep_id is not null ")
@@ -288,7 +288,7 @@ public class Queries {
 			.append(") tmp) ")
 			// building furniture
 			.append("UNION ALL ")
-			.append("(SELECT tmp.* FROM (SELECT bf.lod4_brep_id, 0 as objectclass_id ")
+			.append("(SELECT tmp.* FROM (SELECT bf.lod4_brep_id, bf.objectclass_id ")
 			.append("FROM ").append(schema).append(".building_furniture bf ")
 			.append("JOIN ").append(schema).append(".room r ON bf.room_id = r.id ")
 			.append("WHERE r.building_id = ? ")
@@ -296,20 +296,20 @@ public class Queries {
 			.append(") tmp) ")
 			// rooms
 			.append("UNION ALL ")
-			.append("(SELECT tmp.* FROM (SELECT r.lod4_solid_id, 0 as objectclass_id ")
+			.append("(SELECT tmp.* FROM (SELECT r.lod4_solid_id, r.objectclass_id ")
 			.append("FROM ").append(schema).append(".room r ")
 			.append("WHERE r.building_id = ? ")
 			.append("AND r.lod4_solid_id is not null ")
 			.append(") tmp) ")
 			.append("UNION ALL ")
-			.append("(SELECT tmp.* FROM (SELECT r.lod4_multi_surface_id, 0 as objectclass_id ")
+			.append("(SELECT tmp.* FROM (SELECT r.lod4_multi_surface_id, r.objectclass_id ")
 			.append("FROM ").append(schema).append(".room r ")
 			.append("WHERE r.building_id = ? ")
 			.append("AND r.lod4_multi_surface_id is not null ")
 			.append(") tmp) ")
 			// interior building installations
 			.append("UNION ALL ")
-			.append("(SELECT tmp.* FROM (SELECT bi.lod").append(lod).append("_brep_id, 0 as objectclass_id ")
+			.append("(SELECT tmp.* FROM (SELECT bi.lod").append(lod).append("_brep_id, bi.objectclass_id ")
 			.append("FROM ").append(schema).append(".building_installation bi ")
 			.append("JOIN ").append(schema).append(".room r ON bi.room_id = r.id ")
 			.append("WHERE r.building_id = ? ")
@@ -646,9 +646,9 @@ public class Queries {
 				.append("WHERE bi.bridge_id = ? ")
 				.append("AND ts.lod").append(lod).append("_multi_surface_id is not null ")
 				.append(") tmp) ")
-				// exterior building installations
+				// exterior bridge installations
 				.append("UNION ALL ")
-				.append("(SELECT tmp.* FROM (SELECT bi.lod").append(lod).append("_brep_id, 0 as objectclass_id ")
+				.append("(SELECT tmp.* FROM (SELECT bi.lod").append(lod).append("_brep_id, bi.bjectclass_id ")
 				.append("FROM ").append(schema).append(".bridge_installation bi ")
 				.append("WHERE bi.bridge_id = ? ")
 				.append("AND bi.lod").append(lod).append("_brep_id is not null ")
@@ -729,7 +729,7 @@ public class Queries {
 			.append(") tmp) ")
 			// bridge furniture
 			.append("UNION ALL ")
-			.append("(SELECT tmp.* FROM (SELECT bf.lod4_brep_id, 0 as objectclass_id ")
+			.append("(SELECT tmp.* FROM (SELECT bf.lod4_brep_id, bf.objectclass_id ")
 			.append("FROM ").append(schema).append(".bridge_furniture bf ")
 			.append("JOIN ").append(schema).append(".bridge_room r ON bf.bridge_room_id = r.id ")
 			.append("WHERE r.bridge_id = ? ")
@@ -737,20 +737,20 @@ public class Queries {
 			.append(") tmp) ")
 			// bridge rooms
 			.append("UNION ALL ")
-			.append("(SELECT tmp.* FROM (SELECT r.lod4_solid_id, 0 as objectclass_id ")
+			.append("(SELECT tmp.* FROM (SELECT r.lod4_solid_id, r.objectclass_id ")
 			.append("FROM ").append(schema).append(".bridge_room r ")
 			.append("WHERE r.bridge_id = ? ")
 			.append("AND r.lod4_solid_id is not null ")
 			.append(") tmp) ")
 			.append("UNION ALL ")
-			.append("(SELECT tmp.* FROM (SELECT r.lod4_multi_surface_id, 0 as objectclass_id ")
+			.append("(SELECT tmp.* FROM (SELECT r.lod4_multi_surface_id, r.objectclass_id ")
 			.append("FROM ").append(schema).append(".bridge_room r ")
 			.append("WHERE r.bridge_id = ? ")
 			.append("AND r.lod4_multi_surface_id is not null ")
 			.append(") tmp) ")
 			// interior bridge installations
 			.append("UNION ALL ")
-			.append("(SELECT tmp.* FROM (SELECT bi.lod").append(lod).append("_brep_id, 0 as objectclass_id ")
+			.append("(SELECT tmp.* FROM (SELECT bi.lod").append(lod).append("_brep_id, bi.objectclass_id ")
 			.append("FROM ").append(schema).append(".bridge_installation bi ")
 			.append("JOIN ").append(schema).append(".bridge_room r ON bi.bridge_room_id = r.id ")
 			.append("WHERE r.bridge_id = ? ")
@@ -777,7 +777,7 @@ public class Queries {
 		if (!lodCheckOnly) {
 			// exterior bridge construction elements
 			query.append("UNION ALL ")
-			.append("(SELECT tmp.* FROM (SELECT bc.lod").append(lod).append("_brep_id, 0 as objectclass_id ")
+			.append("(SELECT tmp.* FROM (SELECT bc.lod").append(lod).append("_brep_id, bc.objectclass_id ")
 			.append("FROM ").append(schema).append(".bridge_constr_element bc ")
 			.append("WHERE bc.bridge_id = ? ")
 			.append("AND bc.lod").append(lod).append("_brep_id is not null ")
@@ -1019,9 +1019,9 @@ public class Queries {
 				.append("WHERE tui.tunnel_id = ? ")
 				.append("AND ts.lod").append(lod).append("_multi_surface_id is not null ")
 				.append(") tmp) ")
-				// exterior building installations
+				// exterior tunnel installations
 				.append("UNION ALL ")
-				.append("(SELECT tmp.* FROM (SELECT tui.lod").append(lod).append("_brep_id, 0 as objectclass_id ")
+				.append("(SELECT tmp.* FROM (SELECT tui.lod").append(lod).append("_brep_id, tui.objectclass_id ")
 				.append("FROM ").append(schema).append(".tunnel_installation tui ")
 				.append("WHERE tui.tunnel_id = ? ")
 				.append("AND tui.lod").append(lod).append("_brep_id is not null ")
@@ -1092,7 +1092,7 @@ public class Queries {
 			.append(") tmp) ")
 			// tunnel furniture
 			.append("UNION ALL ")
-			.append("(SELECT tmp.* FROM (SELECT tf.lod4_brep_id, 0 as objectclass_id ")
+			.append("(SELECT tmp.* FROM (SELECT tf.lod4_brep_id, tf.objectclass_id ")
 			.append("FROM ").append(schema).append(".tunnel_furniture tf ")
 			.append("JOIN ").append(schema).append(".tunnel_hollow_space hs ON tbf.tunnel_hollow_space_id = hs.id ")
 			.append("WHERE hs.tunnel_id = ? ")
@@ -1100,20 +1100,20 @@ public class Queries {
 			.append(") tmp) ")
 			// hollow spaces
 			.append("UNION ALL ")
-			.append("(SELECT tmp.* FROM (SELECT hs.lod4_solid_id, 0 as objectclass_id ")
+			.append("(SELECT tmp.* FROM (SELECT hs.lod4_solid_id, hs.objectclass_id ")
 			.append("FROM ").append(schema).append(".tunnel_hollow_space hs ")
 			.append("WHERE hs.tunnel_id = ? ")
 			.append("AND hs.lod4_solid_id is not null ")
 			.append(") tmp) ")
 			.append("UNION ALL ")
-			.append("(SELECT tmp.* FROM (SELECT r.lod4_multi_surface_id, 0 as objectclass_id ")
+			.append("(SELECT tmp.* FROM (SELECT r.lod4_multi_surface_id, hs.objectclass_id ")
 			.append("FROM ").append(schema).append(".tunnel_hollow_space hs ")
 			.append("WHERE hs.tunnel_id = ? ")
 			.append("AND r.lod4_multi_surface_id is not null ")
 			.append(") tmp) ")
 			// interior tunnel installations
 			.append("UNION ALL ")
-			.append("(SELECT tmp.* FROM (SELECT tui.lod").append(lod).append("_brep_id, 0 as objectclass_id ")
+			.append("(SELECT tmp.* FROM (SELECT tui.lod").append(lod).append("_brep_id, tui.objectclass_id ")
 			.append("FROM ").append(schema).append(".tunnel_installation tui ")
 			.append("JOIN ").append(schema).append(".tunnel_hollow_space hs ON tui.tunnel_hollow_space_id = hs.id ")
 			.append("WHERE hs.tunnel_id = ? ")
@@ -1682,7 +1682,7 @@ public class Queries {
 			.append("UNION ALL ");
 		}
 
-		query.append("(SELECT tmp.* FROM (SELECT tc.lod").append(lod).append("_multi_surface_id, 0 as objectclass_id ")
+		query.append("(SELECT tmp.* FROM (SELECT tc.lod").append(lod).append("_multi_surface_id, tc.objectclass_id ")
 		.append("FROM ").append(schema).append(".transportation_complex tc ")
 		.append("WHERE tc.id = ? ")
 		.append("AND tc.lod").append(lod).append("_multi_surface_id is not null ")
@@ -1727,7 +1727,7 @@ public class Queries {
 			.append("AND sg.geometry IS NOT NULL");
 			break;
 		default:
-			query.append("SELECT tr.surface_geometry_id, 0 as objectclass_id ")
+			query.append("SELECT tr.surface_geometry_id, tr.objectclass_id ")
 			.append("FROM ").append(schema).append(".tin_relief tr ")
 			.append("JOIN ").append(schema).append(".relief_feat_to_rel_comp rf2rc ON rf2rc.relief_component_id = tr.id ")
 			.append("JOIN ").append(schema).append(".relief_feature rf ON rf.id = rf2rc.relief_feature_id ")
