@@ -59,8 +59,6 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 
 	public static final String STYLE_BASIS_NAME = "Vegetation";
 
-	private AffineTransformer transformer;
-
 	public SolitaryVegetationObject(Connection connection,
 			Query query,
 			KmlExporterManager kmlExporterManager,
@@ -153,6 +151,7 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 
 			else { // result not empty
 				// decide whether explicit or implicit geometry
+				AffineTransformer transformer = null;
 				long sgRootId = rs.getLong(4);
 				if (sgRootId == 0) {
 					sgRootId = rs.getLong(1);

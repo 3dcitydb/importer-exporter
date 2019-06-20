@@ -76,7 +76,6 @@ public class GenericCityObject extends KmlGenericObject{
 	public static final String POINT = "Point";
 	public static final String CURVE = "Curve";
 
-	private AffineTransformer transformer;
 	private boolean isPointOrCurve;
 	private boolean isPoint;
 
@@ -204,6 +203,7 @@ public class GenericCityObject extends KmlGenericObject{
 				}
 				else {					
 					// decide whether explicit or implicit geometry
+					AffineTransformer transformer = null;
 					long sgRootId = rs.getLong(4);
 					if (sgRootId == 0) {
 						sgRootId = rs.getLong(1);

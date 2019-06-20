@@ -59,8 +59,6 @@ public class CityFurniture extends KmlGenericObject{
 
 	public static final String STYLE_BASIS_NAME = "Furniture";
 
-	private AffineTransformer transformer;
-
 	public CityFurniture(Connection connection,
 			Query query,
 			KmlExporterManager kmlExporterManager,
@@ -153,6 +151,7 @@ public class CityFurniture extends KmlGenericObject{
 
 			else { // result not empty
 				// decide whether explicit or implicit geometry
+				AffineTransformer transformer = null;
 				long sgRootId = rs.getLong(4);
 				if (sgRootId == 0) {
 					sgRootId = rs.getLong(1);
