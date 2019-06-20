@@ -193,13 +193,13 @@ public class Transportation extends KmlGenericObject{
 						setId(work.getId());
 						if (query.isSetTiling()) { // region
 							if (work.getDisplayForm().isHighlightingEnabled())
-								kmlExporterManager.print(createPlacemarksForHighlighting(rs, work), work, getBalloonSettings().isBalloonContentInSeparateFile());
+								kmlExporterManager.print(createPlacemarksForHighlighting(rs, work, false), work, getBalloonSettings().isBalloonContentInSeparateFile());
 
-							kmlExporterManager.print(createPlacemarksForGeometry(rs, work), work, getBalloonSettings().isBalloonContentInSeparateFile());
+							kmlExporterManager.print(createPlacemarksForGeometry(rs, work, false), work, getBalloonSettings().isBalloonContentInSeparateFile());
 						} else { // reverse order for single objects
-							kmlExporterManager.print(createPlacemarksForGeometry(rs, work), work, getBalloonSettings().isBalloonContentInSeparateFile());
+							kmlExporterManager.print(createPlacemarksForGeometry(rs, work, false), work, getBalloonSettings().isBalloonContentInSeparateFile());
 							if (work.getDisplayForm().isHighlightingEnabled())
-								kmlExporterManager.print(createPlacemarksForHighlighting(rs, work), work, getBalloonSettings().isBalloonContentInSeparateFile());
+								kmlExporterManager.print(createPlacemarksForHighlighting(rs, work, false), work, getBalloonSettings().isBalloonContentInSeparateFile());
 						}
 						break;
 
@@ -223,7 +223,7 @@ public class Transportation extends KmlGenericObject{
 						setIgnoreSurfaceOrientation(colladaOptions.isIgnoreSurfaceOrientation());
 						try {
 							if (work.getDisplayForm().isHighlightingEnabled())
-								kmlExporterManager.print(createPlacemarksForHighlighting(rs, work), work, getBalloonSettings().isBalloonContentInSeparateFile());
+								kmlExporterManager.print(createPlacemarksForHighlighting(rs, work, false), work, getBalloonSettings().isBalloonContentInSeparateFile());
 						} catch (Exception ioe) {
 							log.logStackTrace(ioe);
 						}

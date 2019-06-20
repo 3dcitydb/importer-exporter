@@ -207,17 +207,7 @@ public class GenericCityObject extends KmlGenericObject{
 					long sgRootId = rs.getLong(4);
 					if (sgRootId == 0) {
 						sgRootId = rs.getLong(1);
-						if (sgRootId != 0) {
-							GeometryObject point = geometryConverterAdapter.getPoint(rs.getObject(2));
-							String transformationString = rs.getString(3);
-							if (point != null && transformationString != null) {
-								double[] ordinatesArray = point.getCoordinates(0);
-								Point referencePoint = new Point(ordinatesArray[0], ordinatesArray[1], ordinatesArray[2]);						
-								List<Double> m = Util.string2double(transformationString, "\\s+");
-								if (m != null && m.size() >= 16)
-									transformer = new AffineTransformer(new Matrix(m.subList(0, 16), 4), referencePoint, databaseAdapter.getConnectionMetaData().getReferenceSystem().getSrid());
-							}
-						}
+						transformer = getAffineTransformer(rs, 2, 3);
 					}
 
 					try { rs.close(); } catch (SQLException sqle) {} 
@@ -271,13 +261,13 @@ public class GenericCityObject extends KmlGenericObject{
 						setId(work.getId());
 						if (this.query.isSetTiling()) { // region
 							if (work.getDisplayForm().isHighlightingEnabled())
-								kmlExporterManager.print(createPlacemarksForHighlighting(rs, work, transformer), work, getBalloonSettings().isBalloonContentInSeparateFile());
+								kmlExporterManager.print(createPlacemarksForHighlighting(rs, work, transformer, false), work, getBalloonSettings().isBalloonContentInSeparateFile());
 
-							kmlExporterManager.print(createPlacemarksForGeometry(rs, work, transformer), work, getBalloonSettings().isBalloonContentInSeparateFile());
+							kmlExporterManager.print(createPlacemarksForGeometry(rs, work, transformer, false), work, getBalloonSettings().isBalloonContentInSeparateFile());
 						} else { // reverse order for single objects
-							kmlExporterManager.print(createPlacemarksForGeometry(rs, work, transformer), work, getBalloonSettings().isBalloonContentInSeparateFile());
+							kmlExporterManager.print(createPlacemarksForGeometry(rs, work, transformer, false), work, getBalloonSettings().isBalloonContentInSeparateFile());
 							if (work.getDisplayForm().isHighlightingEnabled())
-								kmlExporterManager.print(createPlacemarksForHighlighting(rs, work, transformer), work, getBalloonSettings().isBalloonContentInSeparateFile());
+								kmlExporterManager.print(createPlacemarksForHighlighting(rs, work, transformer, false), work, getBalloonSettings().isBalloonContentInSeparateFile());
 						}
 						break;
 						
@@ -301,7 +291,7 @@ public class GenericCityObject extends KmlGenericObject{
 					setIgnoreSurfaceOrientation(colladaOptions.isIgnoreSurfaceOrientation());
 					try {
 						if (work.getDisplayForm().isHighlightingEnabled()) 
-							kmlExporterManager.print(createPlacemarksForHighlighting(rs, work, transformer), work, getBalloonSettings().isBalloonContentInSeparateFile());
+							kmlExporterManager.print(createPlacemarksForHighlighting(rs, work, transformer, false), work, getBalloonSettings().isBalloonContentInSeparateFile());
 					} catch (Exception ioe) {
 						log.logStackTrace(ioe);
 					}
