@@ -96,7 +96,7 @@ public class Tunnel extends KmlGenericObject{
 	}
 
 	public void read(KmlSplittingResult work) {
-		List<PlacemarkType> placemarks = new ArrayList<PlacemarkType>();
+		List<PlacemarkType> placemarks = new ArrayList<>();
 		PreparedStatement psQuery = null;
 		ResultSet rs = null;
 		try {
@@ -118,7 +118,6 @@ public class Tunnel extends KmlGenericObject{
 		} finally {
 			try { if (rs != null) rs.close(); } catch (SQLException sqle) {} 
 			try { if (psQuery != null) psQuery.close(); } catch (SQLException sqle) {}
-			rs = null;	
 		}
 		
 		if (placemarks.size() == 0) {
@@ -243,51 +242,47 @@ public class Tunnel extends KmlGenericObject{
 
 						try { rs.close(); } catch (SQLException sqle) {} 
 						try { psQuery.close(); } catch (SQLException sqle) {}
-						rs = null;
 					} catch (SQLException e) {
 						log.error("SQL error while querying geometries in LOD " + currentLod + ": " + e.getMessage());
 						try { if (rs != null) rs.close(); } catch (SQLException sqle) {} 
 						try { if (psQuery != null) psQuery.close(); } catch (SQLException sqle) {}
 						try { connection.commit(); } catch (SQLException sqle) {}
-						rs = null;
 					}
 
-					if (rs == null) {
-						// second, try and generate a footprint by aggregating geometries						
-						reversePointOrder = true;
-						int groupBasis = 4;
+					// second, try and generate a footprint by aggregating geometries
+					reversePointOrder = true;
+					int groupBasis = 4;
 
-						try {
-							String query = queries.getTunnelPartAggregateGeometries(0.001,
-									DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter().getUtil().get2DSrid(dbSrs),
-									currentLod,
-									Math.pow(groupBasis, 4),
-									Math.pow(groupBasis, 3),
-									Math.pow(groupBasis, 2));
+					try {
+						String query = queries.getTunnelPartAggregateGeometries(0.001,
+								DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter().getUtil().get2DSrid(dbSrs),
+								currentLod,
+								Math.pow(groupBasis, 4),
+								Math.pow(groupBasis, 3),
+								Math.pow(groupBasis, 2));
 
-							psQuery = connection.prepareStatement(query, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
-							for (int i = 1; i <= getParameterCount(query); i++)
-								psQuery.setLong(i, tunnelPartId);
+						psQuery = connection.prepareStatement(query, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+						for (int i = 1; i <= getParameterCount(query); i++)
+							psQuery.setLong(i, tunnelPartId);
 
-							rs = psQuery.executeQuery();
-							if (rs.isBeforeFirst()) {
-								rs.next();
-								if (rs.getObject(1) != null) {
-									rs.beforeFirst();
-									break;
-								}
+						rs = psQuery.executeQuery();
+						if (rs.isBeforeFirst()) {
+							rs.next();
+							if (rs.getObject(1) != null) {
+								rs.beforeFirst();
+								break;
 							}
-
-							try { rs.close(); } catch (SQLException sqle) {} 
-							try { psQuery.close(); } catch (SQLException sqle) {}
-							rs = null;
-						} catch (SQLException e) {
-							log.error("SQL error while aggregating geometries in LOD " + currentLod + ": " + e.getMessage());
-							try { if (rs != null) rs.close(); } catch (SQLException sqle) {} 
-							try { if (psQuery != null) psQuery.close(); } catch (SQLException sqle) {}
-							try { connection.commit(); } catch (SQLException sqle) {}
-							rs = null;
 						}
+
+						try { rs.close(); } catch (SQLException sqle) {}
+						try { psQuery.close(); } catch (SQLException sqle) {}
+						rs = null;
+					} catch (SQLException e) {
+						log.error("SQL error while aggregating geometries in LOD " + currentLod + ": " + e.getMessage());
+						try { if (rs != null) rs.close(); } catch (SQLException sqle) {}
+						try { if (psQuery != null) psQuery.close(); } catch (SQLException sqle) {}
+						try { connection.commit(); } catch (SQLException sqle) {}
+						rs = null;
 					}
 
 					currentLod--;
@@ -365,7 +360,7 @@ public class Tunnel extends KmlGenericObject{
 							return createPlacemarksForHighlighting(rs, work);
 						}
 						// just COLLADA, no KML
-						List<PlacemarkType> dummy = new ArrayList<PlacemarkType>();
+						List<PlacemarkType> dummy = new ArrayList<>();
 						dummy.add(null);
 						return dummy;
 					}
