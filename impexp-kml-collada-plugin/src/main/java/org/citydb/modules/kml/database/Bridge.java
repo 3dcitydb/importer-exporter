@@ -340,7 +340,7 @@ public class Bridge extends KmlGenericObject{
 					return createPlacemarksForGeometry(rs, work, true);
 
 				case DisplayForm.COLLADA:
-					fillGenericObjectForCollada(rs, config.getProject().getKmlExporter().getBridgeColladaOptions().isGenerateTextureAtlases()); // fill and refill
+					fillGenericObjectForCollada(rs, config.getProject().getKmlExporter().getBridgeColladaOptions().isGenerateTextureAtlases(), true); // fill and refill
 					String currentgmlId = getGmlId();
 					setGmlId(work.getGmlId());
 					setId(work.getId());

@@ -204,7 +204,7 @@ public class Transportation extends KmlGenericObject{
 						break;
 
 					case DisplayForm.COLLADA:
-						fillGenericObjectForCollada(rs, config.getProject().getKmlExporter().getTransportationColladaOptions().isGenerateTextureAtlases());
+						fillGenericObjectForCollada(rs, config.getProject().getKmlExporter().getTransportationColladaOptions().isGenerateTextureAtlases(), false);
 						String currentgmlId = getGmlId();
 						setGmlId(work.getGmlId());
 						setId(work.getId());

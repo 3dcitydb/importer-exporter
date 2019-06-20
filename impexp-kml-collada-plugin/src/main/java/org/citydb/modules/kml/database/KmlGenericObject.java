@@ -125,7 +125,9 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import java.awt.*;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.Transparency;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -1764,11 +1766,11 @@ public abstract class KmlGenericObject {
 		return x3dMaterial;
 	}
 
-	protected void fillGenericObjectForCollada(ResultSet rs, boolean generateTextureAtlas) throws SQLException {
-		fillGenericObjectForCollada(rs, generateTextureAtlas, null);
+	protected void fillGenericObjectForCollada(ResultSet rs, boolean generateTextureAtlas, boolean supportsNestedImplicitGeometries) throws SQLException {
+		fillGenericObjectForCollada(rs, generateTextureAtlas, null, supportsNestedImplicitGeometries);
 	}
 
-	protected void fillGenericObjectForCollada(ResultSet _rs, boolean generateTextureAtlas, AffineTransformer globalTransformer) throws SQLException {
+	protected void fillGenericObjectForCollada(ResultSet _rs, boolean generateTextureAtlas, AffineTransformer globalTransformer, boolean supportsNestedImplicitGeometries) throws SQLException {
 		HashSet<String> exportedGmlIds = new HashSet<String>();
 
 		String selectedTheme = config.getProject().getKmlExporter().getAppearanceTheme();
@@ -1789,7 +1791,6 @@ public abstract class KmlGenericObject {
 			x3dRoofMaterial = getX3dMaterialFromIntColor(colladaDisplayForm.getRgba2());
 
 		HashMap<Long, Long> implicitIdMap = new HashMap<Long, Long>();
-		boolean supportsNestedImplicitGeometries = _rs.getMetaData().getColumnCount() == 5;
 
 		while (_rs.next()) {
 			AffineTransformer transformer = globalTransformer;

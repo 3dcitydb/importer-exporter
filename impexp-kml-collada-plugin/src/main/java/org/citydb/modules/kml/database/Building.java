@@ -339,7 +339,7 @@ public class Building extends KmlGenericObject{
 					return createPlacemarksForGeometry(rs, work, true);
 
 				case DisplayForm.COLLADA:
-					fillGenericObjectForCollada(rs, config.getProject().getKmlExporter().getBuildingColladaOptions().isGenerateTextureAtlases()); // fill and refill
+					fillGenericObjectForCollada(rs, config.getProject().getKmlExporter().getBuildingColladaOptions().isGenerateTextureAtlases(), true); // fill and refill
 					String currentgmlId = getGmlId();
 					setGmlId(work.getGmlId());
 					setId(work.getId());

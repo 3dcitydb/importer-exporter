@@ -338,7 +338,7 @@ public class Tunnel extends KmlGenericObject{
 					return createPlacemarksForGeometry(rs, work, true);
 
 				case DisplayForm.COLLADA:
-					fillGenericObjectForCollada(rs, config.getProject().getKmlExporter().getTunnelColladaOptions().isGenerateTextureAtlases()); // fill and refill
+					fillGenericObjectForCollada(rs, config.getProject().getKmlExporter().getTunnelColladaOptions().isGenerateTextureAtlases(), true); // fill and refill
 					String currentgmlId = getGmlId();
 					setGmlId(work.getGmlId());
 					setId(work.getId());

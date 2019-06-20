@@ -191,7 +191,7 @@ public class PlantCover extends KmlGenericObject{
 					break;
 
 				case DisplayForm.COLLADA:
-					fillGenericObjectForCollada(rs, config.getProject().getKmlExporter().getVegetationColladaOptions().isGenerateTextureAtlases());
+					fillGenericObjectForCollada(rs, config.getProject().getKmlExporter().getVegetationColladaOptions().isGenerateTextureAtlases(), false);
 					String currentgmlId = getGmlId();
 					setGmlId(work.getGmlId());
 					setId(work.getId());
