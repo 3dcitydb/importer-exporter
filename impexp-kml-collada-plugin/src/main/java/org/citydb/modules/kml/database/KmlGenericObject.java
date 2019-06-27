@@ -69,6 +69,8 @@ import org.citydb.textureAtlas.image.ImageReader;
 import org.citydb.textureAtlas.model.TextureImage;
 import org.citydb.textureAtlas.model.TextureImagesInfo;
 import org.citydb.util.Util;
+import org.citygml4j.geometry.Matrix;
+import org.citygml4j.geometry.Point;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.appearance.Color;
 import org.citygml4j.model.citygml.appearance.X3DMaterial;
@@ -1502,11 +1504,11 @@ public abstract class KmlGenericObject {
 		return placemarkList;
 	}
 
-	protected List<PlacemarkType> createPlacemarksForGeometry(ResultSet rs, KmlSplittingResult work) throws SQLException {
-		return createPlacemarksForGeometry(rs, work, null);
+	protected List<PlacemarkType> createPlacemarksForGeometry(ResultSet rs, KmlSplittingResult work, boolean supportsNestedImplicitGeometries) throws SQLException {
+		return createPlacemarksForGeometry(rs, work, null, supportsNestedImplicitGeometries);
 	}
 
-	protected List<PlacemarkType> createPlacemarksForGeometry(ResultSet _rs, KmlSplittingResult work, AffineTransformer transformer) throws SQLException {		
+	protected List<PlacemarkType> createPlacemarksForGeometry(ResultSet _rs, KmlSplittingResult work, AffineTransformer globalTransformer, boolean supportsNestedImplicitGeometries) throws SQLException {
 		HashSet<String> exportedGmlIds = new HashSet<String>();
 		HashMap<String, MultiGeometryType> multiGeometries = new HashMap<String, MultiGeometryType>();
 		MultiGeometryType multiGeometry = null;
@@ -1515,7 +1517,19 @@ public abstract class KmlGenericObject {
 		_rs.beforeFirst(); // return cursor to beginning
 
 		while (_rs.next()) {
+			AffineTransformer transformer = globalTransformer;
 			long rootId = _rs.getLong(1);
+
+			if (rootId == 0) {
+				// get nested implicit geometry
+				if (supportsNestedImplicitGeometries) {
+					rootId = _rs.getLong(3);
+					transformer = getAffineTransformer(_rs, 4, 5);
+				}
+
+				if (rootId == 0 || transformer == null)
+					continue;
+			}
 
 			// skip closure surfaces
 			int surfaceTypeID = _rs.getInt("objectclass_id");
@@ -1752,15 +1766,15 @@ public abstract class KmlGenericObject {
 		return x3dMaterial;
 	}
 
-	protected void fillGenericObjectForCollada(ResultSet rs, boolean generateTextureAtlas) throws SQLException {
-		fillGenericObjectForCollada(rs, generateTextureAtlas, null);
+	protected void fillGenericObjectForCollada(ResultSet rs, boolean generateTextureAtlas, boolean supportsNestedImplicitGeometries) throws SQLException {
+		fillGenericObjectForCollada(rs, generateTextureAtlas, null, supportsNestedImplicitGeometries);
 	}
 
-	protected void fillGenericObjectForCollada(ResultSet _rs, boolean generateTextureAtlas, AffineTransformer transformer) throws SQLException {
+	protected void fillGenericObjectForCollada(ResultSet _rs, boolean generateTextureAtlas, AffineTransformer globalTransformer, boolean supportsNestedImplicitGeometries) throws SQLException {
 		HashSet<String> exportedGmlIds = new HashSet<String>();
 
 		String selectedTheme = config.getProject().getKmlExporter().getAppearanceTheme();
-		boolean exportAppearance = selectedTheme != KmlExporter.THEME_NONE;
+		boolean exportAppearance = !selectedTheme.equals(KmlExporter.THEME_NONE);
 		int texImageCounter = 0;
 
 		DisplayForm colladaDisplayForm = null;
@@ -1776,11 +1790,24 @@ public abstract class KmlGenericObject {
 		if (colladaDisplayForm.isSetRgba2())
 			x3dRoofMaterial = getX3dMaterialFromIntColor(colladaDisplayForm.getRgba2());
 
-		boolean isImplicit = transformer != null;
-		HashMap<Long, Long> implicitIdMap = !isImplicit ? null : new HashMap<Long, Long>();
+		HashMap<Long, Long> implicitIdMap = new HashMap<Long, Long>();
 
 		while (_rs.next()) {
+			AffineTransformer transformer = globalTransformer;
 			long rootId = _rs.getLong(1);
+
+			if (rootId == 0) {
+				// get nested implicit geometry
+				if (supportsNestedImplicitGeometries) {
+					rootId = _rs.getLong(3);
+					transformer = getAffineTransformer(_rs, 4, 5);
+				}
+
+				if (rootId == 0 || transformer == null)
+					continue;
+			}
+
+			boolean isImplicit = transformer != null;
 
 			// skip closure surfaces
 			int surfaceTypeID = _rs.getInt("objectclass_id");
@@ -2068,11 +2095,11 @@ public abstract class KmlGenericObject {
 		return placemark;
 	}
 
-	protected List<PlacemarkType> createPlacemarksForHighlighting(ResultSet rs, KmlSplittingResult work) throws SQLException {
-		return createPlacemarksForHighlighting(rs, work, null);
+	protected List<PlacemarkType> createPlacemarksForHighlighting(ResultSet rs, KmlSplittingResult work, boolean supportsNestedImplicitGeometries) throws SQLException {
+		return createPlacemarksForHighlighting(rs, work, null, supportsNestedImplicitGeometries);
 	}
 
-	protected List<PlacemarkType> createPlacemarksForHighlighting(ResultSet _rs, KmlSplittingResult work, AffineTransformer transformer) throws SQLException {
+	protected List<PlacemarkType> createPlacemarksForHighlighting(ResultSet _rs, KmlSplittingResult work, AffineTransformer globalTransformer, boolean supportsNestedImplicitGeometries) throws SQLException {
 		HashSet<String> exportedGmlIds = new HashSet<String>();
 
 		List<PlacemarkType> placemarkList= new ArrayList<PlacemarkType>();
@@ -2094,7 +2121,19 @@ public abstract class KmlGenericObject {
 		_rs.beforeFirst(); // return cursor to beginning
 
 		while (_rs.next()) {
+			AffineTransformer transformer = globalTransformer;
 			long rootId = _rs.getLong(1);
+
+			if (rootId == 0) {
+				// get nested implicit geometry
+				if (supportsNestedImplicitGeometries) {
+					rootId = _rs.getLong(3);
+					transformer = getAffineTransformer(_rs, 4, 5);
+				}
+
+				if (rootId == 0 || transformer == null)
+					continue;
+			}
 
 			PreparedStatement geometryQuery = null;
 			ResultSet rs = null;
@@ -2213,6 +2252,20 @@ public abstract class KmlGenericObject {
 		}
 
 		return placemarkList;
+	}
+
+	protected AffineTransformer getAffineTransformer(ResultSet rs, int referencePoint, int transformationMatrix) throws SQLException {
+		GeometryObject obj = geometryConverterAdapter.getPoint(rs.getObject(referencePoint));
+		String transformationString = rs.getString(transformationMatrix);
+		if (obj != null && transformationString != null) {
+			double[] ordinatesArray = obj.getCoordinates(0);
+			Point point = new Point(ordinatesArray[0], ordinatesArray[1], ordinatesArray[2]);
+			List<Double> m = Util.string2double(transformationString, "\\s+");
+			if (m != null && m.size() >= 16)
+				return new AffineTransformer(new Matrix(m.subList(0, 16), 4), point, databaseAdapter.getConnectionMetaData().getReferenceSystem().getSrid());
+		}
+
+		return null;
 	}
 
 	private String getBalloonContentFromGenericAttribute(long id) {

@@ -29,7 +29,6 @@ package org.citydb.modules.kml.database;
 
 import net.opengis.kml._2.PlacemarkType;
 import org.citydb.config.Config;
-import org.citydb.config.geometry.GeometryObject;
 import org.citydb.config.project.kmlExporter.Balloon;
 import org.citydb.config.project.kmlExporter.ColladaOptions;
 import org.citydb.config.project.kmlExporter.DisplayForm;
@@ -42,9 +41,6 @@ import org.citydb.modules.kml.util.AffineTransformer;
 import org.citydb.modules.kml.util.BalloonTemplateHandler;
 import org.citydb.modules.kml.util.ElevationServiceHandler;
 import org.citydb.query.Query;
-import org.citydb.util.Util;
-import org.citygml4j.geometry.Matrix;
-import org.citygml4j.geometry.Point;
 
 import javax.vecmath.Point3d;
 import javax.xml.bind.JAXBException;
@@ -155,17 +151,7 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 				long sgRootId = rs.getLong(4);
 				if (sgRootId == 0) {
 					sgRootId = rs.getLong(1);
-					if (sgRootId != 0) {
-						GeometryObject point = geometryConverterAdapter.getPoint(rs.getObject(2));
-						String transformationString = rs.getString(3);
-						if (point != null && transformationString != null) {
-							double[] ordinatesArray = point.getCoordinates(0);
-							Point referencePoint = new Point(ordinatesArray[0], ordinatesArray[1], ordinatesArray[2]);						
-							List<Double> m = Util.string2double(transformationString, "\\s+");
-							if (m != null && m.size() >= 16)
-								transformer = new AffineTransformer(new Matrix(m.subList(0, 16), 4), referencePoint, databaseAdapter.getConnectionMetaData().getReferenceSystem().getSrid());
-						}
-					}
+					transformer = getAffineTransformer(rs, 2, 3);
 				}
 
 				try { rs.close(); } catch (SQLException sqle) {} 
@@ -221,13 +207,13 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 					setId(work.getId());
 					if (this.query.isSetTiling()) { // region
 						if (work.getDisplayForm().isHighlightingEnabled())
-							kmlExporterManager.print(createPlacemarksForHighlighting(rs, work, transformer), work, getBalloonSettings().isBalloonContentInSeparateFile());
+							kmlExporterManager.print(createPlacemarksForHighlighting(rs, work, transformer, false), work, getBalloonSettings().isBalloonContentInSeparateFile());
 
-						kmlExporterManager.print(createPlacemarksForGeometry(rs, work, transformer), work, getBalloonSettings().isBalloonContentInSeparateFile());
+						kmlExporterManager.print(createPlacemarksForGeometry(rs, work, transformer, false), work, getBalloonSettings().isBalloonContentInSeparateFile());
 					} else { // reverse order for single objects
-						kmlExporterManager.print(createPlacemarksForGeometry(rs, work, transformer), work, getBalloonSettings().isBalloonContentInSeparateFile());
+						kmlExporterManager.print(createPlacemarksForGeometry(rs, work, transformer, false), work, getBalloonSettings().isBalloonContentInSeparateFile());
 						if (work.getDisplayForm().isHighlightingEnabled())
-							kmlExporterManager.print(createPlacemarksForHighlighting(rs, work, transformer), work, getBalloonSettings().isBalloonContentInSeparateFile());
+							kmlExporterManager.print(createPlacemarksForHighlighting(rs, work, transformer, false), work, getBalloonSettings().isBalloonContentInSeparateFile());
 					}
 					break;
 
@@ -235,7 +221,7 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 					String currentgmlId = getGmlId();
 					setGmlId(work.getGmlId());
 					setId(work.getId());
-					fillGenericObjectForCollada(rs, config.getProject().getKmlExporter().getVegetationColladaOptions().isGenerateTextureAtlases(), transformer);
+					fillGenericObjectForCollada(rs, config.getProject().getKmlExporter().getVegetationColladaOptions().isGenerateTextureAtlases(), transformer, false);
 
 					if (currentgmlId != null && !currentgmlId.equals(work.getGmlId()) && getGeometryAmount() > GEOMETRY_AMOUNT_WARNING)
 						log.info("Object " + work.getGmlId() + " has more than " + GEOMETRY_AMOUNT_WARNING + " geometries. This may take a while to process...");
@@ -251,7 +237,7 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 					setIgnoreSurfaceOrientation(colladaOptions.isIgnoreSurfaceOrientation());
 					try {
 						if (work.getDisplayForm().isHighlightingEnabled()) 
-							kmlExporterManager.print(createPlacemarksForHighlighting(rs, work, transformer), work, getBalloonSettings().isBalloonContentInSeparateFile());
+							kmlExporterManager.print(createPlacemarksForHighlighting(rs, work, transformer, false), work, getBalloonSettings().isBalloonContentInSeparateFile());
 					} catch (Exception ioe) {
 						log.logStackTrace(ioe);
 					}
