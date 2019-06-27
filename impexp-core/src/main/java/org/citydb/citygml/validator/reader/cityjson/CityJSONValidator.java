@@ -29,6 +29,7 @@
 package org.citydb.citygml.validator.reader.cityjson;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonParseException;
 import com.google.gson.stream.JsonReader;
 import org.citydb.citygml.validator.ValidationException;
@@ -41,6 +42,7 @@ import org.citydb.file.InputFile;
 import org.citydb.log.Logger;
 import org.citydb.registry.ObjectRegistry;
 import org.citygml4j.cityjson.CityJSON;
+import org.citygml4j.cityjson.CityJSONTypeAdapterFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -72,7 +74,9 @@ public class CityJSONValidator implements Validator, EventHandler {
             // we do not really validate the file against the CityJSON schema
             // but only check whether Gson can parse it...
             try (JsonReader reader = new JsonReader(new InputStreamReader(inputStream))) {
-                Gson gson = new Gson();
+                Gson gson = new GsonBuilder()
+                        .registerTypeAdapterFactory(new CityJSONTypeAdapterFactory())
+                        .create();
                 gson.fromJson(reader, CityJSON.class);
             }
         } catch (JsonParseException e) {
