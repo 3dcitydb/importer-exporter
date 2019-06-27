@@ -209,7 +209,7 @@ public class Transportation extends KmlGenericObject{
 						setGmlId(work.getGmlId());
 						setId(work.getId());
 
-						if (currentgmlId != work.getGmlId() && getGeometryAmount() > GEOMETRY_AMOUNT_WARNING)
+						if (currentgmlId != null && !currentgmlId.equals(work.getGmlId()) && getGeometryAmount() > GEOMETRY_AMOUNT_WARNING)
 							log.info("Object " + work.getGmlId() + " has more than " + GEOMETRY_AMOUNT_WARNING + " geometries. This may take a while to process...");
 
 						List<Point3d> anchorCandidates = getOrigins(); // setOrigins() called mainly for the side-effect
@@ -234,10 +234,8 @@ public class Transportation extends KmlGenericObject{
 			}
 		} catch (SQLException sqlEx) {
 			log.error("SQL error while querying city object " + work.getGmlId() + ": " + sqlEx.getMessage());
-			return;
 		} catch (JAXBException jaxbEx) {
 			log.error("XML error while working on city object " + work.getGmlId() + ": " + jaxbEx.getMessage());
-			return;
 		} finally {
 			if (rs != null)
 				try { rs.close(); } catch (SQLException e) {}
@@ -266,7 +264,7 @@ public class Transportation extends KmlGenericObject{
 			footprintSettings = getDisplayForms().get(indexOfDf);
 		}
 
-		List<PlacemarkType> placemarkList= new ArrayList<PlacemarkType>();
+		List<PlacemarkType> placemarkList= new ArrayList<>();
 		
 		double zOffset = getZOffsetFromConfigOrDB(work.getId());
 		List<Point3d> lowestPointCandidates = getLowestPointsCoordinates(rs, (zOffset == Double.MAX_VALUE));
@@ -294,9 +292,9 @@ public class Transportation extends KmlGenericObject{
 					ordinatesArray = super.convertPointCoordinatesToWGS84(ordinatesArray);
 
 					PointType point = kmlFactory.createPointType();
-					point.getCoordinates().add(String.valueOf(reducePrecisionForXorY(ordinatesArray[0]) + "," 
+					point.getCoordinates().add(reducePrecisionForXorY(ordinatesArray[0]) + ","
 							+ reducePrecisionForXorY(ordinatesArray[1]) + ","
-							+ reducePrecisionForZ(ordinatesArray[2]) + zOffset));
+							+ reducePrecisionForZ(ordinatesArray[2]) + zOffset);
 
 					placemark.setAbstractGeometryGroup(kmlFactory.createPoint(point));
 				}
@@ -309,9 +307,9 @@ public class Transportation extends KmlGenericObject{
 
 						// order points clockwise
 						for (int j = 0; j < ordinatesArray.length; j = j+3) {
-							lineString.getCoordinates().add(String.valueOf(reducePrecisionForXorY(ordinatesArray[j]) + "," 
-									+ reducePrecisionForXorY(ordinatesArray[j+1]) + ","
-									+ reducePrecisionForZ(ordinatesArray[j+2] + zOffset)));
+							lineString.getCoordinates().add(reducePrecisionForXorY(ordinatesArray[j]) + ","
+									+ reducePrecisionForXorY(ordinatesArray[j + 1]) + ","
+									+ reducePrecisionForZ(ordinatesArray[j + 2] + zOffset));
 						}
 					}
 					

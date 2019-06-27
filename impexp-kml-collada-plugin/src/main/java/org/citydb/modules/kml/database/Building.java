@@ -97,7 +97,7 @@ public class Building extends KmlGenericObject{
 	}
 
 	public void read(KmlSplittingResult work) {
-		List<PlacemarkType> placemarks = new ArrayList<PlacemarkType>();
+		List<PlacemarkType> placemarks = new ArrayList<>();
 		PreparedStatement psQuery = null;
 		ResultSet rs = null;
 		
@@ -120,7 +120,6 @@ public class Building extends KmlGenericObject{
 		} finally {
 			try { if (rs != null) rs.close(); } catch (SQLException sqle) {} 
 			try { if (psQuery != null) psQuery.close(); } catch (SQLException sqle) {}
-			rs = null;
 		}
 
 		if (placemarks.size() == 0) {
@@ -246,16 +245,14 @@ public class Building extends KmlGenericObject{
 
 						try { rs.close(); } catch (SQLException sqle) {} 
 						try { psQuery.close(); } catch (SQLException sqle) {}
-						rs = null;
 					} catch (SQLException e) {
 						log.error("SQL error while querying geometries in LOD " + currentLod + ": " + e.getMessage());
 						try { if (rs != null) rs.close(); } catch (SQLException sqle) {} 
 						try { if (psQuery != null) psQuery.close(); } catch (SQLException sqle) {}
 						try { connection.commit(); } catch (SQLException sqle) {}
-						rs = null;
 					}
 
-					if (rs == null && (currentLod > 0 || (currentLod == 0 && lod0FootprintMode == Lod0FootprintMode.ROOFPRINT_PRIOR_FOOTPRINT))) {
+					if (currentLod > 0 || currentLod == 0 && lod0FootprintMode == Lod0FootprintMode.ROOFPRINT_PRIOR_FOOTPRINT) {
 						// second, try and generate a footprint by aggregating geometries						
 						reversePointOrder = true;
 						int groupBasis = 4;
@@ -347,7 +344,7 @@ public class Building extends KmlGenericObject{
 					setGmlId(work.getGmlId());
 					setId(work.getId());
 
-					if (currentgmlId != work.getGmlId() && getGeometryAmount() > GEOMETRY_AMOUNT_WARNING)
+					if (currentgmlId != null && !currentgmlId.equals(work.getGmlId()) && getGeometryAmount() > GEOMETRY_AMOUNT_WARNING)
 						log.info("Object " + work.getGmlId() + " has more than " + GEOMETRY_AMOUNT_WARNING + " geometries. This may take a while to process...");
 
 					List<Point3d> anchorCandidates = getOrigins(); // setOrigins() called mainly for the side-effect
@@ -364,7 +361,7 @@ public class Building extends KmlGenericObject{
 							return createPlacemarksForHighlighting(rs, work);
 						}
 						// just COLLADA, no KML
-						List<PlacemarkType> dummy = new ArrayList<PlacemarkType>();
+						List<PlacemarkType> dummy = new ArrayList<>();
 						dummy.add(null);
 						return dummy;
 					}

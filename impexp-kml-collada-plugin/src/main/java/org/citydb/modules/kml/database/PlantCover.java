@@ -196,7 +196,7 @@ public class PlantCover extends KmlGenericObject{
 					setGmlId(work.getGmlId());
 					setId(work.getId());
 
-					if (currentgmlId != work.getGmlId() && getGeometryAmount() > GEOMETRY_AMOUNT_WARNING)
+					if (currentgmlId != null && !currentgmlId.equals(work.getGmlId()) && getGeometryAmount() > GEOMETRY_AMOUNT_WARNING)
 						log.info("Object " + work.getGmlId() + " has more than " + GEOMETRY_AMOUNT_WARNING + " geometries. This may take a while to process...");
 
 					List<Point3d> anchorCandidates = getOrigins(); // setOrigins() called mainly for the side-effect
@@ -220,10 +220,8 @@ public class PlantCover extends KmlGenericObject{
 			}
 		} catch (SQLException sqlEx) {
 			log.error("SQL error while querying city object " + work.getGmlId() + ": " + sqlEx.getMessage());
-			return;
 		} catch (JAXBException jaxbEx) {
 			log.error("XML error while working on city object " + work.getGmlId() + ": " + jaxbEx.getMessage());
-			return;
 		} finally {
 			if (rs != null)
 				try { rs.close(); } catch (SQLException e) {}

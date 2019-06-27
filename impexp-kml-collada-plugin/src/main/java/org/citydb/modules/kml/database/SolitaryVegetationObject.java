@@ -59,8 +59,6 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 
 	public static final String STYLE_BASIS_NAME = "Vegetation";
 
-	private AffineTransformer transformer;
-
 	public SolitaryVegetationObject(Connection connection,
 			Query query,
 			KmlExporterManager kmlExporterManager,
@@ -153,6 +151,7 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 
 			else { // result not empty
 				// decide whether explicit or implicit geometry
+				AffineTransformer transformer = null;
 				long sgRootId = rs.getLong(4);
 				if (sgRootId == 0) {
 					sgRootId = rs.getLong(1);
@@ -176,7 +175,7 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 				String query = queries.getSolitaryVegetationObjectQuery(currentLod, 
 						work.getDisplayForm(),
 						transformer != null, 
-						work.getDisplayForm().getForm() == DisplayForm.COLLADA && config.getProject().getKmlExporter().getAppearanceTheme() != KmlExporter.THEME_NONE);
+						work.getDisplayForm().getForm() == DisplayForm.COLLADA && !config.getProject().getKmlExporter().getAppearanceTheme().equals(KmlExporter.THEME_NONE));
 				psQuery = connection.prepareStatement(query, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 				psQuery.setLong(1, sgRootId);
 				rs = psQuery.executeQuery();
@@ -238,7 +237,7 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 					setId(work.getId());
 					fillGenericObjectForCollada(rs, config.getProject().getKmlExporter().getVegetationColladaOptions().isGenerateTextureAtlases(), transformer);
 
-					if (currentgmlId != work.getGmlId() && getGeometryAmount() > GEOMETRY_AMOUNT_WARNING)
+					if (currentgmlId != null && !currentgmlId.equals(work.getGmlId()) && getGeometryAmount() > GEOMETRY_AMOUNT_WARNING)
 						log.info("Object " + work.getGmlId() + " has more than " + GEOMETRY_AMOUNT_WARNING + " geometries. This may take a while to process...");
 
 					List<Point3d> anchorCandidates = getOrigins();
@@ -262,10 +261,8 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 			}
 		} catch (SQLException sqlEx) {
 			log.error("SQL error while querying city object " + work.getGmlId() + ": " + sqlEx.getMessage());
-			return;
 		} catch (JAXBException jaxbEx) {
 			log.error("XML error while working on city object " + work.getGmlId() + ": " + jaxbEx.getMessage());
-			return;
 		} finally {
 			if (rs != null)
 				try { rs.close(); } catch (SQLException e) {}
