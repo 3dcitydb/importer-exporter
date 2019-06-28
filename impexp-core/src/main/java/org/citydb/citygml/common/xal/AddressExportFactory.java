@@ -82,7 +82,7 @@ public class AddressExportFactory {
 				addressDetails = new AddressDetails();
 
 				Locality locality = new Locality();
-				locality.setType("Town");
+				locality.setType("City");
 
 				if (addressObject.city != null) {
 					LocalityName localityName = new LocalityName();
