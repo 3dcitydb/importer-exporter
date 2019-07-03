@@ -185,7 +185,56 @@ public class ImpExpCli {
 		return success;
 	}
 
-	public boolean doKmlExport(String kmlExportFile) throws ImpExpException {
+	private BoundingBox doCalcBBOX() {
+		final ReentrantLock mainLock = new ReentrantLock();
+		final ReentrantLock lock = mainLock;
+		lock.lock();
+
+		BoundingBox bbox = null;
+		DatabaseConnectionPool dbConnectionPool = DatabaseConnectionPool.getInstance();
+		try {
+			if (dbConnectionPool.getActiveDatabaseAdapter().hasVersioningSupport())
+				return null;
+
+			try {
+				log.info("Calculate bounding box automatically from the database as prompted by user");
+				// automatically calculate bounding box --> will overwrite bounding box defined in the config file
+				dbConnectionPool = DatabaseConnectionPool.getInstance();
+				FeatureType featureType = schemaMapping.getFeatureType(config.getProject().getDatabase().getOperation().getBoundingBoxTypeName());
+				FeatureType cityObject = schemaMapping.getFeatureType("_CityObject", CoreModule.v2_0_0.getNamespaceURI());
+				featureType = (featureType != null) ? featureType : cityObject;
+				bbox = dbConnectionPool.getActiveDatabaseAdapter().getUtil().calcBoundingBox(null, Util.getObjectClassIds(featureType, cityObject, true, schemaMapping));
+
+				if (bbox != null) {
+					if (bbox.getLowerCorner().getX() != Double.MAX_VALUE &&
+							bbox.getLowerCorner().getY() != Double.MAX_VALUE &&
+							bbox.getUpperCorner().getX() != -Double.MAX_VALUE &&
+							bbox.getUpperCorner().getY() != -Double.MAX_VALUE) {
+						log.info("BBOX " + "[" + bbox.getLowerCorner().getX() + ", " + bbox.getLowerCorner().getY() + ", " + bbox.getLowerCorner().getZ() + "]"
+								+ "[" + bbox.getUpperCorner().getX() + ", " + bbox.getUpperCorner().getY() + ", " + bbox.getUpperCorner().getZ() + "]");
+						log.info("Bounding box for " + featureType + " features successfully calculated.");
+					} else {
+						log.warn("The bounding box could not be calculated.");
+						log.warn("Either the database does not contain " + featureType + " features or their ENVELOPE attribute is not set.");
+					}
+				} else
+					log.warn("Calculation of bounding box aborted.");
+			} catch (SQLException sqlEx) {
+				log.error("An SQL error occurred while calculating the bounding box: " + sqlEx.getMessage().trim());
+				bbox = null;
+			} finally {
+				log.info("BBOX calculation done.");
+			}
+		} catch (Exception e) {
+			log.error("An error occurred while calculating the bounding box: " + e.getMessage().trim());
+		} finally {
+			lock.unlock();
+		}
+
+		return bbox;
+	}
+
+	public boolean doKmlExport(String kmlExportFile, boolean calcBBOX) throws ImpExpException {
 		setExportFile(kmlExportFile);
 
 		initDBPool();
@@ -194,11 +243,9 @@ public class ImpExpCli {
 
 		log.info("Initializing database export...");
 
-		// automatically calculate bounding box --> will overwrite bounding box defined in the config file
-		BoundingBox configBBOX = config.getProject().getKmlExporter().getQuery().getBboxFilter().getExtent();
-		BoundingBox bbox = doCalcBBOX();
-		configBBOX.setLowerCorner(bbox.getLowerCorner());
-		configBBOX.setUpperCorner(bbox.getUpperCorner());
+		if (calcBBOX) {
+			config.getProject().getKmlExporter().getQuery().getBboxFilter().setExtent(doCalcBBOX());
+		}
 
 		EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
 		KmlExporter kmlExporter = new KmlExporter(jaxbKmlContext, jaxbColladaContext, schemaMapping, config, eventDispatcher);
@@ -312,117 +359,4 @@ public class ImpExpCli {
 		return files;
 	}
 
-	public boolean calcBoundingBox() throws ImpExpException {
-		initDBPool();
-		if (!dbPool.isConnected())
-			throw new ImpExpException("Connection to database could not be established.");
-
-		log.info("Initializing database export...");
-
-		EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
-		boolean success = false;
-
-		try {
-			BoundingBox bbox = doCalcBBOX();
-			success = (bbox != null);
-		} catch (Exception e) {
-			throw new ImpExpException("BBOX calculation failed due to an internal error.", e);
-		} finally {
-			try {
-				eventDispatcher.flushEvents();
-			} catch (InterruptedException e) {
-
-			}
-			dbPool.disconnect();
-		}
-
-		if (success)
-			log.info("BBOX successfully calculated.");
-		else
-			log.warn("BBOX calculation aborted.");
-
-		return success;
-	}
-
-	private BoundingBox doCalcBBOX() {
-		final ReentrantLock mainLock = new ReentrantLock();
-		final ReentrantLock lock = mainLock;
-		lock.lock();
-
-		BoundingBox bbox = null;
-		DatabaseConnectionPool dbConnectionPool = DatabaseConnectionPool.getInstance();
-		try {
-			log.info("Calculating bounding box...");
-			if (dbConnectionPool.getActiveDatabaseAdapter().hasVersioningSupport())
-				return null;
-
-			try {
-				FeatureType featureType = schemaMapping.getFeatureType(config.getProject().getDatabase().getOperation().getBoundingBoxTypeName());
-				//FeatureType featureType = config.getProject().getKmlExporter().getQuery().getFeatureTypeFilter().
-
-				FeatureType cityObject = cityObject = schemaMapping.getFeatureType("_CityObject", CoreModule.v2_0_0.getNamespaceURI());
-				featureType = featureType != null ? featureType : cityObject;
-
-				DatabaseSrs bboxSrs = config.getProject().getDatabase().getOperation().getBoundingBoxSrs();
-				bbox = dbConnectionPool.getActiveDatabaseAdapter().getUtil().calcBoundingBox(null, getObjectClassIds(featureType, true));
-
-				if (bbox != null) {
-					if (bbox.getLowerCorner().getX() != Double.MAX_VALUE &&
-							bbox.getLowerCorner().getY() != Double.MAX_VALUE &&
-							bbox.getUpperCorner().getX() != -Double.MAX_VALUE &&
-							bbox.getUpperCorner().getY() != -Double.MAX_VALUE) {
-
-						DatabaseSrs dbSrs = dbConnectionPool.getActiveDatabaseAdapter().getConnectionMetaData().getReferenceSystem();
-						DatabaseSrs targetSrs = bboxSrs;
-
-						if (targetSrs.isSupported() && targetSrs.getSrid() != dbSrs.getSrid()) {
-							try {
-								bbox = dbConnectionPool.getActiveDatabaseAdapter().getUtil().transformBoundingBox(bbox, dbSrs, targetSrs);
-							} catch (SQLException e) {
-
-							}
-						}
-
-						log.info("BBOX " + "[" + bbox.getLowerCorner().getX() + ", " + bbox.getLowerCorner().getY() + ", " + bbox.getLowerCorner().getZ() + "]"
-								+ "[" + bbox.getUpperCorner().getX() + ", " + bbox.getUpperCorner().getY() + ", " + bbox.getUpperCorner().getZ() + "]");
-						bbox.setSrs(targetSrs);
-						log.info("Bounding box for " + featureType + " features successfully calculated.");
-					} else {
-						log.warn("The bounding box could not be calculated.");
-						log.warn("Either the database does not contain " + featureType + " features or their ENVELOPE attribute is not set.");
-					}
-				} else
-					log.warn("Calculation of bounding box aborted.");
-			} catch (SQLException sqlEx) {
-				String sqlExMsg = sqlEx.getMessage().trim();
-				String text = Language.I18N.getString("db.dialog.error.bbox");
-				Object[] args = new Object[]{sqlExMsg};
-				String result = MessageFormat.format(text, args);
-
-				log.error("SQL error: " + sqlExMsg);
-				bbox = null;
-			} finally {
-				log.info("BBOX calculation done.");
-			}
-		} finally {
-			lock.unlock();
-		}
-
-		return bbox;
-	}
-
-	private List<Integer> getObjectClassIds(FeatureType featureType, boolean fanOutCityObject) {
-		List<Integer> objectClassIds = new ArrayList<>();
-		FeatureType cityObject = cityObject = schemaMapping.getFeatureType("_CityObject", CoreModule.v2_0_0.getNamespaceURI());
-		if (featureType == cityObject) {
-			if (fanOutCityObject) {
-				for (FeatureType topLevelType : schemaMapping.listTopLevelFeatureTypes(true))
-					objectClassIds.add(topLevelType.getObjectClassId());
-			} else
-				objectClassIds.add(0);
-		} else
-			objectClassIds.add(featureType.getObjectClassId());
-
-		return objectClassIds;
-	}
 }
