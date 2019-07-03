@@ -47,6 +47,7 @@ import org.citydb.log.Logger;
 import org.citydb.plugin.extension.view.ViewController;
 import org.citydb.plugin.extension.view.components.BoundingBoxPanel;
 import org.citydb.registry.ObjectRegistry;
+import org.citydb.util.Util;
 import org.citygml4j.model.module.citygml.CoreModule;
 
 import javax.swing.*;
@@ -262,7 +263,7 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 
 			try {
 				FeatureType featureType = (FeatureType)featureComboBox.getSelectedItem();
-				BoundingBox bbox = dbConnectionPool.getActiveDatabaseAdapter().getUtil().calcBoundingBox(workspace, getObjectClassIds(featureType, true));
+				BoundingBox bbox = dbConnectionPool.getActiveDatabaseAdapter().getUtil().calcBoundingBox(workspace, Util.getObjectClassIds(featureType, cityObject, true, schemaMapping));
 
 				if (bbox != null) {
 					if (bbox.getLowerCorner().getX() != Double.MAX_VALUE && 
@@ -362,7 +363,7 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 			});
 
 			try {
-				List<Integer> objectClassIds = getObjectClassIds(featureType, false);
+				List<Integer> objectClassIds = Util.getObjectClassIds(featureType, cityObject, false, schemaMapping);
 				BoundingBox bbox = dbConnectionPool.getActiveDatabaseAdapter().getUtil().createBoundingBoxes(workspace, objectClassIds, mode == BoundingBoxMode.PARTIAL);
 
 				if (bbox != null) {
@@ -434,20 +435,6 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 			if (extension == null || extension.isEnabled())
 				featureComboBox.addItem(featureType);			
 		});
-	}
-	
-	private List<Integer> getObjectClassIds(FeatureType featureType, boolean fanOutCityObject) {
-		List<Integer> objectClassIds = new ArrayList<>();
-		if (featureType == cityObject) {
-			if (fanOutCityObject) {
-				for (FeatureType topLevelType : schemaMapping.listTopLevelFeatureTypes(true))
-					objectClassIds.add(topLevelType.getObjectClassId());
-			} else
-				objectClassIds.add(0);
-		} else 
-			objectClassIds.add(featureType.getObjectClassId());
-
-		return objectClassIds;
 	}
 
 	@Override

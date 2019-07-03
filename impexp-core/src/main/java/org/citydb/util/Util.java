@@ -31,6 +31,7 @@ import org.citydb.ade.ADEExtension;
 import org.citydb.ade.ADEExtensionManager;
 import org.citydb.config.project.database.Workspace;
 import org.citydb.config.project.query.filter.version.CityGMLVersionType;
+import org.citydb.database.schema.mapping.FeatureType;
 import org.citydb.database.schema.mapping.MappingConstants;
 import org.citydb.database.schema.mapping.SchemaMapping;
 import org.citygml4j.model.citygml.CityGML;
@@ -119,6 +120,7 @@ import org.citygml4j.model.gml.feature.AbstractFeature;
 import org.citygml4j.model.gml.feature.AbstractFeatureCollection;
 import org.citygml4j.model.module.citygml.CityGMLVersion;
 import org.citygml4j.model.module.citygml.CoreModule;
+import org.opengis.feature.Feature;
 
 import java.io.File;
 import java.lang.reflect.Modifier;
@@ -520,6 +522,20 @@ public class Util {
 				// 
 			}
 		}
+	}
+
+	public static List<Integer> getObjectClassIds(FeatureType featureType, FeatureType cityObject, boolean fanOutCityObject, SchemaMapping schemaMapping) {
+		List<Integer> objectClassIds = new ArrayList<>();
+		if (featureType == cityObject) {
+			if (fanOutCityObject) {
+				for (FeatureType topLevelType : schemaMapping.listTopLevelFeatureTypes(true))
+					objectClassIds.add(topLevelType.getObjectClassId());
+			} else
+				objectClassIds.add(0);
+		} else
+			objectClassIds.add(featureType.getObjectClassId());
+
+		return objectClassIds;
 	}
 
 }
