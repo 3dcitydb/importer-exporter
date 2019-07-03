@@ -125,11 +125,11 @@ public class ImpExp {
 	@Option(name="-kmlExport", usage="export KML/COLLADA/glTF data to this file\n(shell version only)", metaVar="fileName")
 	private String kmlExportFile;
 
+	@Option(name="-calcBBOX", usage="automatically calculate bounding box for the KML export")
+	private boolean calcBBOX;
+
 	@Option(name="-testConnection", usage="test whether a database connection can be established")
 	private boolean testConnection;
-
-	@Option(name="-calcBBOX", usage="calculate bounding box of the database")
-	private boolean calcBBOX;
 
 	@Option(name="-pid-file", usage="create file containing the current process ID", metaVar="fileName")
 	private Path pidFile;
@@ -223,17 +223,15 @@ public class ImpExp {
 				++commands;
 			if (testConnection)
 				++commands;
-			if (calcBBOX)
-				++commands;
 
 			if (commands == 0) {
-				System.out.println("Choose either command \"-import\", \"-export\", \"-kmlExport\", \"-validate\", \"-testConnection\" or \"-calcBBOX\" for shell version");
+				System.out.println("Choose either command \"-import\", \"-export\", \"-kmlExport\", \"-validate\" or \"-testConnection\" for shell version");
 				printUsage(parser, System.out);
 				System.exit(1);
 			}
 
 			if (commands > 1) {
-				System.out.println("Commands \"-import\", \"-export\", \"-kmlExport\", \"-validate\", \"-testConnection\" and \"-calcBBOX\" may not be mixed");
+				System.out.println("Commands \"-import\", \"-export\", \"-kmlExport\", \"-validate\" and \"-testConnection\" may not be mixed");
 				printUsage(parser, System.out);
 				System.exit(1);
 			}
@@ -553,11 +551,9 @@ public class ImpExp {
 			else if (exportFile != null)
 				success = cmd.doExport(exportFile);
 			else if (kmlExportFile != null)
-				success= cmd.doKmlExport(kmlExportFile);
+				success= cmd.doKmlExport(kmlExportFile, calcBBOX);
 			else if (testConnection)
 				success = cmd.doTestConnection();
-			else if (calcBBOX)
-				success = cmd.calcBoundingBox();
 
 			if (!success)
 				System.exit(1);
