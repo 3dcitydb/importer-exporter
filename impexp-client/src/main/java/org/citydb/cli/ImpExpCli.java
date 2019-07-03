@@ -197,7 +197,7 @@ public class ImpExpCli {
 				return null;
 
 			try {
-				log.info("Calculate bounding box automatically from the database as prompted by user");
+				log.info("Calculate bounding box automatically from the database as prompted by user or a bounding box is not found");
 				// automatically calculate bounding box --> will overwrite bounding box defined in the config file
 				dbConnectionPool = DatabaseConnectionPool.getInstance();
 				FeatureType featureType = schemaMapping.getFeatureType(config.getProject().getDatabase().getOperation().getBoundingBoxTypeName());
@@ -243,9 +243,21 @@ public class ImpExpCli {
 
 		log.info("Initializing database export...");
 
-		if (calcBBOX) {
-			config.getProject().getKmlExporter().getQuery().getBboxFilter().setExtent(doCalcBBOX());
-		}
+		boolean bboxExists = true;
+		try {
+            config.getProject().getKmlExporter().getQuery().getBboxFilter().getExtent().getLowerCorner().getX().doubleValue();
+            config.getProject().getKmlExporter().getQuery().getBboxFilter().getExtent().getLowerCorner().getY().doubleValue();
+            config.getProject().getKmlExporter().getQuery().getBboxFilter().getExtent().getUpperCorner().getX().doubleValue();
+            config.getProject().getKmlExporter().getQuery().getBboxFilter().getExtent().getUpperCorner().getY().doubleValue();
+        } catch (NullPointerException e) {
+		    bboxExists = false;
+            log.warn("A bounding box is not found, it shall be automatically calculated from the database");
+        }
+
+        // if user prompts to calculate bbox, or if the bbox is undefined in the config file
+        if (calcBBOX || !bboxExists) {
+            config.getProject().getKmlExporter().getQuery().getBboxFilter().setExtent(doCalcBBOX());
+        }
 
 		EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
 		KmlExporter kmlExporter = new KmlExporter(jaxbKmlContext, jaxbColladaContext, schemaMapping, config, eventDispatcher);
