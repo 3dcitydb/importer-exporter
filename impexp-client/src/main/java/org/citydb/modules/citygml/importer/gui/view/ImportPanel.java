@@ -28,9 +28,9 @@
 package org.citydb.modules.citygml.importer.gui.view;
 
 import org.citydb.citygml.importer.CityGMLImportException;
-import org.citydb.citygml.importer.controller.Importer;
 import org.citydb.citygml.validator.ValidationException;
-import org.citydb.citygml.validator.controller.XMLValidator;
+import org.citydb.citygml.importer.controller.Importer;
+import org.citydb.citygml.validator.controller.Validator;
 import org.citydb.config.Config;
 import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.i18n.Language;
@@ -433,7 +433,7 @@ public class ImportPanel extends JPanel implements EventHandler {
 			}
 
 			viewController.setStatusText(Language.I18N.getString("main.status.validate.label"));
-			log.info("Initializing XML validation...");
+			log.info("Initializing data validation...");
 
 			// initialize event dispatcher
 			final EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
@@ -450,14 +450,14 @@ public class ImportPanel extends JPanel implements EventHandler {
 				validatorDialog.setVisible(true);
 			});
 
-			XMLValidator validator = new XMLValidator(config, eventDispatcher);
+			Validator validator = new Validator(config, eventDispatcher);
 
 			validatorDialog.getButton().addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					SwingUtilities.invokeLater(new Runnable() {
 						public void run() {
 							eventDispatcher.triggerEvent(new InterruptEvent(
-									"User abort of XML validation.", 
+									"User abort of data validation.",
 									LogLevel.WARN,
 									Event.GLOBAL_CHANNEL,
 									this));
@@ -491,9 +491,9 @@ public class ImportPanel extends JPanel implements EventHandler {
 			validator.cleanup();
 
 			if (success) {
-				log.info("XML validation finished.");
+				log.info("Data validation finished.");
 			} else {
-				log.warn("XML validation aborted.");
+				log.warn("Data validation aborted.");
 			}
 
 			viewController.setStatusText(Language.I18N.getString("main.status.ready.label"));
@@ -508,10 +508,11 @@ public class ImportPanel extends JPanel implements EventHandler {
 		chooser.setMultiSelectionEnabled(true);
 		chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
 
-		FileNameExtensionFilter filter = new FileNameExtensionFilter("CityGML Files (*.gml, *.xml, *.zip, *.gz, *.gzip)",
-				"gml", "xml", "zip", "gz", "gzip");
+		FileNameExtensionFilter filter = new FileNameExtensionFilter("CityGML Files (*.gml, *.xml, *.json, *.zip, *.gz, *.gzip)",
+				"gml", "xml", "json", "zip", "gz", "gzip");
 		chooser.addChoosableFileFilter(filter);
 		chooser.addChoosableFileFilter(new FileNameExtensionFilter("CityGML GML Files (*.gml, *.xml)", "gml", "xml"));
+		chooser.addChoosableFileFilter(new FileNameExtensionFilter("CityJSON Files (*.json)", "json"));
 		chooser.addChoosableFileFilter(new FileNameExtensionFilter("CityGML ZIP Files (*.zip)", "zip"));
 		chooser.addChoosableFileFilter(new FileNameExtensionFilter("CityGML Compressed Files (*.gz, *.gzip)", "gz", "gzip"));
 		chooser.addChoosableFileFilter(chooser.getAcceptAllFileFilter());

@@ -26,24 +26,22 @@
  * limitations under the License.
  */
 
-package org.citydb.file.input;
+package org.citydb.citygml.validator.reader.cityjson;
 
-import org.apache.tika.mime.MediaType;
+import org.citydb.citygml.validator.ValidationException;
+import org.citydb.citygml.validator.reader.Validator;
+import org.citydb.citygml.validator.reader.ValidatorFactory;
+import org.citydb.config.Config;
 
-import java.io.BufferedInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
+public class CityJSONValidatorFactory implements ValidatorFactory {
 
-public class XMLInputFile extends AbstractRegularInputFile {
-
-    XMLInputFile(Path file, MediaType mediaType) {
-        super(file, mediaType, false);
+    @Override
+    public void initializeContext(Config config) throws ValidationException {
+        // nothing to do...
     }
 
     @Override
-    public InputStream openStream() throws IOException {
-        return new BufferedInputStream(Files.newInputStream(file));
+    public Validator createValidator() throws ValidationException {
+        return new CityJSONValidator();
     }
 }

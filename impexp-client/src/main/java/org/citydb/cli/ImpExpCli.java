@@ -31,9 +31,9 @@ import org.citydb.ImpExpException;
 import org.citydb.citygml.exporter.CityGMLExportException;
 import org.citydb.citygml.exporter.controller.Exporter;
 import org.citydb.citygml.importer.CityGMLImportException;
-import org.citydb.citygml.importer.controller.Importer;
 import org.citydb.citygml.validator.ValidationException;
-import org.citydb.citygml.validator.controller.XMLValidator;
+import org.citydb.citygml.importer.controller.Importer;
+import org.citydb.citygml.validator.controller.Validator;
 import org.citydb.config.Config;
 import org.citydb.config.project.database.DBConnection;
 import org.citydb.config.project.database.DatabaseConfigurationException;
@@ -124,11 +124,11 @@ public class ImpExpCli {
 		if (files.size() == 0)
 			throw new ImpExpException("Invalid list of files to be validated.");
 
-		log.info("Initializing XML validation...");
+		log.info("Initializing data validation...");
 
 		config.getInternal().setImportFiles(files);
 		EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
-		XMLValidator validator = new XMLValidator(config, eventDispatcher);
+		Validator validator = new Validator(config, eventDispatcher);
 		boolean success = false;
 
 		try {
@@ -144,9 +144,9 @@ public class ImpExpCli {
 		}
 
 		if (success)
-			log.info("XML validation finished.");
+			log.info("Data validation finished.");
 		else
-			log.warn("XML validation aborted.");
+			log.warn("Data validation aborted.");
 
 		return success;
 	}

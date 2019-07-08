@@ -67,7 +67,7 @@ public class DirectoryScanner {
 
     public DirectoryScanner() throws TikaException, IOException {
         tikaConfig = new TikaConfig();
-        contentFile = Pattern.compile("(?i).+\\.((gml)|(xml)|(gz)|(gzip))$");
+        contentFile = Pattern.compile("(?i).+\\.((gml)|(xml)|(json)|(gz)|(gzip))$");
         matcher = Pattern.compile("").matcher("");
     }
 
@@ -85,7 +85,7 @@ public class DirectoryScanner {
     }
 
     public String[] getDefaultFileEndings() {
-        return new String[]{"gml", "xml", "gz", "gzip", "zip"};
+        return new String[]{"gml", "xml", "json", "gz", "gzip", "zip"};
     }
 
     public List<InputFile> listFiles(List<Path> bases, String... fileEndings) throws IOException {
@@ -145,10 +145,9 @@ public class DirectoryScanner {
             processZipFile(file, files);
         else if (mediaType.equals(InputFile.APPLICATION_GZIP))
             processGZipFile(file, files);
-        else if (isSupportedContentType(mediaType)) {
-            files.add(new XMLInputFile(file, mediaType));
-        } else if (force)
-            files.add(new XMLInputFile(file, mediaType));
+        else if (isSupportedContentType(mediaType) || force) {
+            files.add(new RegularInputFile(file, mediaType));
+        }
     }
 
     private void processGZipFile(Path gzipFile, List<InputFile> files) {
@@ -216,7 +215,8 @@ public class DirectoryScanner {
     }
 
     private boolean isSupportedContentType(MediaType mediaType) {
-        return mediaType.equals(InputFile.APPLICATION_XML);
+        return mediaType.equals(InputFile.APPLICATION_XML)
+                || mediaType.equals(InputFile.APPLICATION_JSON);
     }
 
 }
