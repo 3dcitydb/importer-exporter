@@ -79,6 +79,7 @@ public class DBImportWorker extends Worker<CityGML> implements EventHandler {
 	private final CityGMLImportManager importer;
 
 	private int updateCounter = 0;
+	private int topLevelFeatureCounter = 0;
 	private int commitAfter = 20;
 
 	public DBImportWorker(InputFile inputFile,
@@ -214,6 +215,8 @@ public class DBImportWorker extends Worker<CityGML> implements EventHandler {
 				id = importer.importObject(feature);
 				if (id == 0)
 					importer.logOrThrowErrorMessage("Failed to import object " + importer.getObjectSignature(feature) + ".");
+				else 
+					topLevelFeatureCounter++;
 			}
 
 			else {
@@ -256,8 +259,9 @@ public class DBImportWorker extends Worker<CityGML> implements EventHandler {
 	private void updateImportContext() throws IOException {
 		eventDispatcher.triggerEvent(new ObjectCounterEvent(importer.getAndResetObjectCounter(), this));
 		eventDispatcher.triggerEvent(new GeometryCounterEvent(importer.getAndResetGeometryCounter(), this));
-		eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, updateCounter, this));
+		eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, topLevelFeatureCounter, this));
 		updateCounter = 0;
+		topLevelFeatureCounter = 0;
 
 		// log imported top-level features
 		if (importLogger != null) {

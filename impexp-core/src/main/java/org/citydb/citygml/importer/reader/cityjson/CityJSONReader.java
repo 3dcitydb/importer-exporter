@@ -13,6 +13,7 @@ import org.citydb.registry.ObjectRegistry;
 import org.citygml4j.builder.cityjson.json.io.reader.CityJSONInputFactory;
 import org.citygml4j.builder.cityjson.json.io.reader.CityJSONReadException;
 import org.citygml4j.model.citygml.CityGML;
+import org.citygml4j.model.citygml.appearance.Appearance;
 import org.citygml4j.model.citygml.core.CityModel;
 import org.citygml4j.model.gml.feature.AbstractFeature;
 import org.citygml4j.model.gml.feature.FeatureProperty;
@@ -62,7 +63,8 @@ public class CityJSONReader implements FeatureReader, EventHandler {
     }
 
     private long process(Iterator<? extends FeatureProperty<?>> iter, WorkerPool<CityGML> workerPool, long counter) {
-        while (shouldRun && iter.hasNext()) {
+    	boolean breakTopLevelFeatureImport = false;
+    	while (shouldRun && iter.hasNext()) {
             AbstractFeature feature = iter.next().getFeature();
 
             // unset parent to mark the feature as top-level
@@ -72,17 +74,18 @@ public class CityJSONReader implements FeatureReader, EventHandler {
             iter.remove();
 
             if (feature instanceof CityGML) {
-                if (counterFilter != null) {
+                if (counterFilter != null && !(feature instanceof Appearance)) {
                     counter++;
 
                     if (counter < counterFilter.getLowerLimit())
                         continue;
 
                     if (counter > counterFilter.getUpperLimit())
-                        break;
+                    	breakTopLevelFeatureImport = true;
                 }
 
-                workerPool.addWork((CityGML) feature);
+                if (!breakTopLevelFeatureImport || (feature instanceof Appearance && breakTopLevelFeatureImport))
+                	workerPool.addWork((CityGML) feature);              
             }
         }
 
