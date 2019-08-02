@@ -84,7 +84,7 @@ public class CityJSONReader implements FeatureReader, EventHandler {
                     	breakTopLevelFeatureImport = true;
                 }
 
-                if (!breakTopLevelFeatureImport || (feature instanceof Appearance && breakTopLevelFeatureImport))
+                if (!breakTopLevelFeatureImport || feature instanceof Appearance)
                 	workerPool.addWork((CityGML) feature);              
             }
         }
