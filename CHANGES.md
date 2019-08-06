@@ -1,5 +1,28 @@
 Change Log
 ==========
+### 4.2.2 - 2019-08-06
+
+##### Additions
+* Added config option to suppress the product information header comment. 
+
+##### Changes
+* Moved input and output file information from internal config to external API.
+
+### 4.2.1 - 2019-04-17
+
+##### Additions
+* Added the `-pid-file` command-line argument to create a file storing the process ID of the Importer/Exporter at the 
+provided path. This can be useful to check whether the Importer/Exporter is running or to issue a `kill` command to end it.
+* Added GUI warning dialogs if a Importer/Exporter module does not support ADEs registered in the database.
+* Updated Spreadsheet Plugin to version 3.1.2.
+* Updated ADE Manager Plugin to version 1.1.2.
+* Updated 3DCityDB-Web-Map to version 1.7.1.
+
+##### Fixes
+* Added `distinct` to complex SQL queries to avoid exporting duplicates of a top-level feature.
+* Fixed memory leak when importing ZIP files.
+* Fixed database schema mapping to correctly support qualified XML attributes in CityGML and ADE XML schemas.
+* Fixed NPE in XPath parser.
 
 ### 4.2 - 2019-02-13
 
