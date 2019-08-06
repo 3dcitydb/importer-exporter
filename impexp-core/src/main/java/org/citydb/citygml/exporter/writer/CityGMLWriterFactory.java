@@ -110,9 +110,12 @@ public class CityGMLWriterFactory implements FeatureWriterFactory {
 		// prepare SAX writer
 		saxWriter.setWriteEncoding(true);
 		saxWriter.setIndentString("  ");
-		saxWriter.setHeaderComment("Written by " + this.getClass().getPackage().getImplementationTitle() + ", version \"" +
-						this.getClass().getPackage().getImplementationVersion() + '"',
-				this.getClass().getPackage().getImplementationVendor());
+
+		if (cityGMLOptions.isWriteProductHeader()) {
+			saxWriter.setHeaderComment("Written by " + this.getClass().getPackage().getImplementationTitle() + ", version \"" +
+							this.getClass().getPackage().getImplementationVersion() + '"',
+					this.getClass().getPackage().getImplementationVendor());
+		}
 
 		ModuleContext moduleContext = new ModuleContext(version);
 

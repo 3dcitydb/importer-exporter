@@ -33,16 +33,26 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.util.Map;
 
 @XmlType(name="CityGMLOptionsType", propOrder={
+        "writeProductHeader",
         "gmlEnvelope",
         "namespaces"
 })
 public class CityGMLOptions {
+    private Boolean writeProductHeader;
     private GMLEnvelope gmlEnvelope;
     @XmlJavaTypeAdapter(NamespaceAdapter.class)
     private Map<String, Namespace> namespaces;
 
     public CityGMLOptions() {
         gmlEnvelope = new GMLEnvelope();
+    }
+
+    public boolean isWriteProductHeader() {
+        return writeProductHeader != null ? writeProductHeader : true;
+    }
+
+    public void setWriteProductHeader(Boolean writeProductHeader) {
+        this.writeProductHeader = writeProductHeader;
     }
 
     public GMLEnvelope getGMLEnvelope() {
