@@ -121,7 +121,7 @@ public class MenuProject extends JMenu {
             if (mainView.saveProjectSettings())
                 log.info("Settings successfully saved to config file '"
                         + CoreConstants.IMPEXP_DATA_DIR
-                                .resolve(ClientConstants.PROJECT_SETTINGS_FILE)
+                                .resolve(ClientConstants.CONFIG_DIR)
                                 .resolve(ClientConstants.PROJECT_SETTINGS_FILE) + "'.");
         });
 
