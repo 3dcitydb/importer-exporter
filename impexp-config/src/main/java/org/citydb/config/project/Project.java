@@ -29,7 +29,7 @@ package org.citydb.config.project;
 
 import org.citydb.config.ConfigNamespaceFilter;
 import org.citydb.config.project.database.Database;
-import org.citydb.config.project.deleter.DeleteConfig;
+import org.citydb.config.project.deleter.Deleter;
 import org.citydb.config.project.exporter.Exporter;
 import org.citydb.config.project.global.Global;
 import org.citydb.config.project.importer.Importer;
@@ -49,8 +49,8 @@ import java.util.Map;
 		"database",
 		"importer",
 		"exporter",
-		"kmlExporter",
 		"deleter",
+		"kmlExporter",
 		"global",
 		"extensions"
 })
@@ -60,10 +60,10 @@ public class Project {
 	private Importer importer;
 	@XmlElement(name="export")
 	private Exporter exporter;
+	@XmlElement(name="delete")
+	private Deleter deleter;
 	@XmlElement(name="kmlExport")
 	private KmlExporter kmlExporter;
-	@XmlElement(name="delete")
-	private DeleteConfig deleter;
 	private Global global;
 	@XmlJavaTypeAdapter(org.citydb.config.project.plugin.PluginConfigListAdapter.class)
 	private Map<Class<? extends PluginConfig>, PluginConfig> extensions;
@@ -71,7 +71,7 @@ public class Project {
 	@XmlTransient
 	private ConfigNamespaceFilter namespaceFilter;
 
-	public Project(Database database, Importer importer, Exporter exporter, DeleteConfig deleter, KmlExporter kmlExporter, Global global) {
+	public Project(Database database, Importer importer, Exporter exporter, Deleter deleter, KmlExporter kmlExporter, Global global) {
 		this.database = database;
 		this.importer = importer;
 		this.exporter = exporter;
@@ -84,7 +84,7 @@ public class Project {
 	}
 
 	public Project() {
-		this(new Database(), new Importer(), new Exporter(), new DeleteConfig(), new KmlExporter(), new Global());
+		this(new Database(), new Importer(), new Exporter(), new Deleter(), new KmlExporter(), new Global());
 	}
 
 	public Database getDatabase() {
@@ -113,6 +113,15 @@ public class Project {
 		if (exporter != null)
 			this.exporter = exporter;
 	}
+	
+	public Deleter getDeleter() {
+		return deleter;
+	}
+
+	public void setDeleter(Deleter deleter) {
+		if (deleter != null)
+			this.deleter = deleter;
+	}
 
 	public void setKmlExporter(KmlExporter kmlExporter) {
 		if (kmlExporter != null)
@@ -121,15 +130,6 @@ public class Project {
 
 	public KmlExporter getKmlExporter() {
 		return kmlExporter;
-	}
-
-	public DeleteConfig getDeleter() {
-		return deleter;
-	}
-
-	public void setDeleter(DeleteConfig deleter) {
-		if (deleter != null)
-			this.deleter = deleter;
 	}
 
 	public Global getGlobal() {

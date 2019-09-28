@@ -28,6 +28,8 @@
 package org.citydb.cli;
 
 import org.citydb.ImpExpException;
+import org.citydb.citygml.deleter.CityGMLDeleteException;
+import org.citydb.citygml.deleter.controller.Deleter;
 import org.citydb.citygml.exporter.CityGMLExportException;
 import org.citydb.citygml.exporter.controller.Exporter;
 import org.citydb.citygml.importer.CityGMLImportException;
@@ -186,6 +188,39 @@ public class ImpExpCli {
 		return success;
 	}
 
+	public boolean doDelete() throws ImpExpException {
+		initDBPool();
+		if (!dbPool.isConnected())
+			throw new ImpExpException("Connection to database could not be established.");
+
+		log.info("Initializing database delete...");
+
+		EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
+		Deleter deleter = new Deleter(config, schemaMapping, eventDispatcher);
+		boolean success = false;
+
+		try {
+			success = deleter.doProcess();
+		} catch (CityGMLDeleteException e) {
+			throw new ImpExpException("CityGML delete failed due to an internal error.", e);
+		} finally {
+			try {
+				eventDispatcher.flushEvents();
+			} catch (InterruptedException e) {
+				//
+			}
+
+			dbPool.disconnect();
+		}
+
+		if (success)
+			log.info("Database delete successfully finished.");
+		else
+			log.warn("Database delete aborted.");
+
+		return success;
+	}
+	
 	public boolean doKmlExport(String kmlExportFile) throws ImpExpException {
 		setExportFile(kmlExportFile);
 

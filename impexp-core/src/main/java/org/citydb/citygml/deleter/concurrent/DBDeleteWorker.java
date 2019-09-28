@@ -29,8 +29,8 @@ package org.citydb.citygml.deleter.concurrent;
 
 import org.citydb.citygml.exporter.database.content.DBSplittingResult;
 import org.citydb.concurrent.Worker;
+import org.citydb.config.Config;
 import org.citydb.config.project.deleter.Continuation;
-import org.citydb.config.project.deleter.DeleteConfig;
 import org.citydb.config.project.deleter.DeleteMode;
 import org.citydb.config.project.global.LogLevel;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
@@ -61,21 +61,21 @@ public class DBDeleteWorker extends Worker<DBSplittingResult> implements EventHa
 
 	private final PreparedStatement stmt;
 	private final AbstractDatabaseAdapter databaseAdapter;
-	private final DeleteConfig config;
+	private final Config config;
 	private final EventDispatcher eventDispatcher;
 
 	private volatile boolean shouldRun = true;
 	private volatile boolean shouldWork = true;
 
-	public DBDeleteWorker(Connection connection, AbstractDatabaseAdapter databaseAdapter, DeleteConfig config, EventDispatcher eventDispatcher) throws SQLException {
+	public DBDeleteWorker(Connection connection, AbstractDatabaseAdapter databaseAdapter, Config config, EventDispatcher eventDispatcher) throws SQLException {
 		this.databaseAdapter = databaseAdapter;
 		this.config = config;
 		this.eventDispatcher = eventDispatcher;
 
 		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
 
-		if (config.getMode() == DeleteMode.TERMINATE) {
-			Continuation metadata = config.getContinuation();
+		if (config.getProject().getDeleter().getMode() == DeleteMode.TERMINATE) {
+			Continuation metadata = config.getProject().getDeleter().getContinuation();
 			StringBuilder update = new StringBuilder("update cityobject set termination_date = ?, last_modification_date = ?, updating_person = ? ");
 			if (metadata.isSetReasonForUpdate()) update.append(", reason_for_update = '").append(metadata.getReasonForUpdate()).append("'");
 			if (metadata.isSetLineage()) update.append(", lineage = '").append(metadata.getLineage()).append("' ");
@@ -134,10 +134,10 @@ public class DBDeleteWorker extends Worker<DBSplittingResult> implements EventHa
 			long objectId = work.getId();
 			long deletedObjectId;
 
-			if (config.getMode() == DeleteMode.TERMINATE) {
+			if (config.getProject().getDeleter().getMode() == DeleteMode.TERMINATE) {
 				LocalDateTime now = LocalDateTime.now();
 
-				Continuation metadata = config.getContinuation();
+				Continuation metadata = config.getProject().getDeleter().getContinuation();
 				LocalDateTime terminationDate = metadata.isSetTerminationDate() ? metadata.getTerminationDate() : now;
 				String updatingPerson = metadata.isUpdatingPersonModeDatabase() || !metadata.isSetUpdatingPerson() ?
 						databaseAdapter.getConnectionDetails().getUser() : metadata.getUpdatingPerson();

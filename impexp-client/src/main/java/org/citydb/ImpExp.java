@@ -121,6 +121,9 @@ public class ImpExp {
 
 	@Option(name="-export", usage="export data to this file\n(shell version only)", metaVar="fileName")
 	private String exportFile;
+	
+	@Option(name="-delete", usage="delete data from database\n(shell version only)")
+	private boolean databaseDelete;
 
 	@Option(name="-kmlExport", usage="export KML/COLLADA/glTF data to this file\n(shell version only)", metaVar="fileName")
 	private String kmlExportFile;
@@ -216,19 +219,21 @@ public class ImpExp {
 				++commands;
 			if (exportFile != null)
 				++commands;
+			if (databaseDelete)
+				++commands;
 			if (kmlExportFile != null)
 				++commands;
 			if (testConnection)
 				++commands;
 
 			if (commands == 0) {
-				System.out.println("Choose either command \"-import\", \"-export\", \"-kmlExport\", \"-validate\" or \"-testConnection\" for shell version");
+				System.out.println("Choose either command \"-import\", \"-export\", \"-delete\", \"-kmlExport\", \"-validate\" or \"-testConnection\" for shell version");
 				printUsage(parser, System.out);
 				System.exit(1);
 			}
 
 			if (commands > 1) {
-				System.out.println("Commands \"-import\", \"-export\", \"-kmlExport\", \"-validate\" and \"-testConnection\" may not be mixed");
+				System.out.println("Commands \"-import\", \"-export\", \"-delete\", \"-kmlExport\", \"-validate\" and \"-testConnection\" may not be mixed");
 				printUsage(parser, System.out);
 				System.exit(1);
 			}
@@ -547,6 +552,8 @@ public class ImpExp {
 				success = cmd.doImport(importFile);
 			else if (exportFile != null)
 				success = cmd.doExport(exportFile);
+			else if (databaseDelete)
+				success = cmd.doDelete();
 			else if (kmlExportFile != null)
 				success= cmd.doKmlExport(kmlExportFile);
 			else if (testConnection)

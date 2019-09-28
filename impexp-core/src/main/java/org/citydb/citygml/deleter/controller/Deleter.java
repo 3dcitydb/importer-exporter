@@ -34,8 +34,11 @@ import org.citydb.citygml.deleter.database.DBSplitter;
 import org.citydb.citygml.exporter.database.content.DBSplittingResult;
 import org.citydb.concurrent.PoolSizeAdaptationStrategy;
 import org.citydb.concurrent.WorkerPool;
+import org.citydb.config.Config;
 import org.citydb.config.internal.Internal;
-import org.citydb.config.project.deleter.DeleteConfig;
+import org.citydb.config.project.database.Workspace;
+import org.citydb.database.adapter.AbstractDatabaseAdapter;
+import org.citydb.database.connection.DatabaseConnectionPool;
 import org.citydb.database.schema.mapping.SchemaMapping;
 import org.citydb.event.Event;
 import org.citydb.event.EventDispatcher;
@@ -46,7 +49,7 @@ import org.citydb.event.global.ObjectCounterEvent;
 import org.citydb.log.Logger;
 import org.citydb.query.Query;
 import org.citydb.query.builder.QueryBuildException;
-import org.citydb.registry.ObjectRegistry;
+import org.citydb.query.builder.config.ConfigQueryBuilder;
 import org.citydb.util.Util;
 
 import java.sql.SQLException;
@@ -60,7 +63,9 @@ public class Deleter implements EventHandler {
 	private final Logger log = Logger.getInstance();
 	private final SchemaMapping schemaMapping;
 	private final EventDispatcher eventDispatcher;
-
+	private final AbstractDatabaseAdapter databaseAdapter;
+	private final Config config;
+	
 	private DBSplitter dbSplitter;
 	private volatile boolean shouldRun = true;
 	private AtomicBoolean isInterrupted = new AtomicBoolean(false);
@@ -68,17 +73,21 @@ public class Deleter implements EventHandler {
 	private Map<Integer, Long> objectCounter;
 	private BundledConnection bundledConnection;
 	
-	public Deleter() {
-		schemaMapping = ObjectRegistry.getInstance().getSchemaMapping();
-		eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
-		objectCounter = new HashMap<>();
+	public Deleter(Config config, 
+			SchemaMapping schemaMapping, 
+			EventDispatcher eventDispatcher) {
+		this.config = config;
+		this.schemaMapping = schemaMapping;
+		this.eventDispatcher = eventDispatcher;
+		this.databaseAdapter = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter();
+		this.objectCounter = new HashMap<>();
 	}
 
 	public void cleanup() {
 		eventDispatcher.removeEventHandler(this);
 	}
 
-	public boolean doProcess(Query query, DeleteConfig config) throws CityGMLDeleteException {
+	public boolean doProcess() throws CityGMLDeleteException {
 		long start = System.currentTimeMillis();
 		int minThreads = 2;
 		int maxThreads = Math.max(minThreads, Runtime.getRuntime().availableProcessors());
@@ -87,8 +96,27 @@ public class Deleter implements EventHandler {
 		eventDispatcher.addEventHandler(EventType.OBJECT_COUNTER, this);
 		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
 
-		bundledConnection = new BundledConnection();
+		// checking workspace
+		Workspace workspace = config.getProject().getDatabase().getWorkspaces().getDeleteWorkspace();
+		if (shouldRun && databaseAdapter.hasVersioningSupport() && 
+				!databaseAdapter.getWorkspaceManager().equalsDefaultWorkspaceName(workspace.getName()) &&
+				!databaseAdapter.getWorkspaceManager().existsWorkspace(workspace, true))
+			return false;
 		
+		// build query from filter settings
+		Query query;
+		try {
+			ConfigQueryBuilder queryBuilder = new ConfigQueryBuilder(schemaMapping, databaseAdapter);
+			if (config.getProject().getExporter().isUseSimpleQuery())
+				query = queryBuilder.buildQuery(config.getProject().getDeleter().getSimpleQuery(), config.getProject().getNamespaceFilter());
+			else
+				query = queryBuilder.buildQuery(config.getProject().getDeleter().getQuery(), config.getProject().getNamespaceFilter());
+
+		} catch (QueryBuildException e) {
+			throw new CityGMLDeleteException("Failed to build the delete query expression.", e);
+		}
+		
+		bundledConnection = new BundledConnection();
 		try {				
 			dbWorkerPool = new WorkerPool<>(
 					"db_deleter_pool",
