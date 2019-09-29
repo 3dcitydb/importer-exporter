@@ -3,11 +3,10 @@ package org.citydb.config.project.exporter;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
-public class NamespaceAdapter extends XmlAdapter<NamespaceAdapter.NamespaceList, Map<String, Namespace>> {
+public class NamespaceAdapter extends XmlAdapter<NamespaceAdapter.NamespaceList, LinkedHashMap<String, Namespace>> {
 
     public static class NamespaceList {
         @XmlElement(name = "namespace")
@@ -15,11 +14,11 @@ public class NamespaceAdapter extends XmlAdapter<NamespaceAdapter.NamespaceList,
     }
 
     @Override
-    public Map<String, Namespace> unmarshal(NamespaceList v) throws Exception {
-        Map<String, Namespace> namespaces = null;
+    public LinkedHashMap<String, Namespace> unmarshal(NamespaceList v) {
+        LinkedHashMap<String, Namespace> namespaces = null;
 
         if (v != null && v.namespaces != null && !v.namespaces.isEmpty()) {
-            namespaces = new HashMap<>();
+            namespaces = new LinkedHashMap<>();
             for (Namespace namespace : v.namespaces) {
                 if (namespace.isSetURI())
                     namespaces.put(namespace.getURI(), namespace);
@@ -30,7 +29,7 @@ public class NamespaceAdapter extends XmlAdapter<NamespaceAdapter.NamespaceList,
     }
 
     @Override
-    public NamespaceList marshal(Map<String, Namespace> v) throws Exception {
+    public NamespaceList marshal(LinkedHashMap<String, Namespace> v) {
         NamespaceList list = null;
 
         if (v != null && !v.isEmpty()) {
