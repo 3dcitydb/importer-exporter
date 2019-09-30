@@ -33,7 +33,6 @@ import org.citydb.config.geometry.GeometryObject;
 import org.citydb.database.schema.SequenceEnum;
 import org.citydb.database.schema.TableEnum;
 import org.citydb.database.schema.mapping.FeatureType;
-import org.citydb.log.Logger;
 import org.citydb.util.CoreConstants;
 import org.citygml4j.model.citygml.core.Address;
 import org.citygml4j.model.module.xal.XALModuleType;
@@ -51,7 +50,6 @@ import java.sql.SQLException;
 import java.sql.Types;
 
 public class DBAddress implements DBImporter {
-	private final Logger log = Logger.getInstance();
 	private final Connection batchConn;
 	private final CityGMLImportManager importer;
 
@@ -95,7 +93,7 @@ public class DBAddress implements DBImporter {
 
 	protected long doImport(Address address) throws CityGMLImportException, SQLException {
 		if (!address.isSetXalAddress() || !address.getXalAddress().isSetAddressDetails()) {
-			log.debug(importer.getObjectSignature(address) + ": Skipping address due to missing xAL address details.");
+			importer.logOrThrowErrorMessage(importer.getObjectSignature(address) + ": Skipping address due to missing xAL address details.");
 			return 0;
 		}
 
