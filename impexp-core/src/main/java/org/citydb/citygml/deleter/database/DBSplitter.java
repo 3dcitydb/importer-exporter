@@ -29,7 +29,7 @@ package org.citydb.citygml.deleter.database;
 
 import org.citydb.citygml.exporter.database.content.DBSplittingResult;
 import org.citydb.concurrent.WorkerPool;
-import org.citydb.config.project.deleter.DeleteConfig;
+import org.citydb.config.Config;
 import org.citydb.config.project.deleter.DeleteMode;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.connection.DatabaseConnectionPool;
@@ -70,7 +70,7 @@ public class DBSplitter {
 
 	private final WorkerPool<DBSplittingResult> dbWorkerPool;
 	private final Query query;
-	private final DeleteConfig config;
+	private final Config config;
 	private final EventDispatcher eventDispatcher;
 
 	private final AbstractDatabaseAdapter databaseAdapter;
@@ -85,7 +85,7 @@ public class DBSplitter {
 	public DBSplitter(SchemaMapping schemaMapping,
 			WorkerPool<DBSplittingResult> dbWorkerPool, 
 			Query query,
-			DeleteConfig config,
+			Config config,
 			EventDispatcher eventDispatcher) throws SQLException {
 		
 		this.schemaMapping = schemaMapping;
@@ -139,7 +139,7 @@ public class DBSplitter {
 			return;
 
 		// do not terminate city objects that have already been terminated
-		if (config.getMode() == DeleteMode.TERMINATE) {
+		if (config.getProject().getDeleter().getMode() == DeleteMode.TERMINATE) {
 			try {
 				FeatureType superType = schemaMapping.getCommonSuperType(query.getFeatureTypeFilter().getFeatureTypes());
 				SchemaPath schemaPath = new SchemaPath(superType)
