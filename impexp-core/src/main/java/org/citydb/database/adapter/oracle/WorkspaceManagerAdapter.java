@@ -73,7 +73,7 @@ public class WorkspaceManagerAdapter extends AbstractWorkspaceManagerAdapter {
 
 			if (timestamp.length() > 0) {
 				try (CallableStatement timestampStmt = connection.prepareCall("{call dbms_wm.GotoDate('" + timestamp + "', 'DD.MM.YYYY')}")) {
-					workspaceStmt.executeQuery();
+					timestampStmt.executeQuery();
 				}
 			}
 
