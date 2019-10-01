@@ -193,7 +193,6 @@ public class ConfigQueryBuilder {
 				// gml:name filter
 				if (selectionFilter.isSetGmlNameFilter() && selectionFilter.getGmlNameFilter().isSetLiteral()) {
 					LikeOperator gmlNameFilter = selectionFilter.getGmlNameFilter();
-					gmlNameFilter.setLiteral(gmlNameFilter.getLiteral());
 					gmlNameFilter.setValueReference("gml:name");
 					predicates.add(predicateBuilder.buildPredicate(gmlNameFilter));
 				}
@@ -201,7 +200,6 @@ public class ConfigQueryBuilder {
 				// citydb:lineage filter
 				if (selectionFilter.isSetLineageFilter() && selectionFilter.getLineageFilter().isSetLiteral()) {
 					LikeOperator lineageFilter = selectionFilter.getLineageFilter();
-					lineageFilter.setLiteral(lineageFilter.getLiteral());
 					lineageFilter.setValueReference("citydb:lineage");
 					predicates.add(predicateBuilder.buildPredicate(lineageFilter));
 				}
