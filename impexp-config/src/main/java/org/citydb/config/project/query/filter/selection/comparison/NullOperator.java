@@ -34,6 +34,13 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name="NullOperatorType")
 public class NullOperator extends AbstractComparisonOperator {
 
+	public NullOperator() {
+	}
+
+	public NullOperator(String valueReference) {
+		super(valueReference);
+	}
+
 	@Override
 	public ComparisonOperatorName getOperatorName() {
 		return ComparisonOperatorName.NULL;

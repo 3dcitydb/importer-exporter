@@ -34,6 +34,13 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name="EqualToOperatorType")
 public class EqualToOperator extends AbstractBinaryComparisonOperator {
 
+	public EqualToOperator() {
+	}
+
+	public EqualToOperator(String valueReference, String literal) {
+		super(valueReference, literal);
+	}
+
 	@Override
 	public ComparisonOperatorName getOperatorName() {
 		return ComparisonOperatorName.EQUAL_TO;

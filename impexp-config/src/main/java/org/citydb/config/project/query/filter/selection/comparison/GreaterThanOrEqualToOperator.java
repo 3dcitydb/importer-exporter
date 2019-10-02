@@ -34,6 +34,13 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name="GreaterThanOrEqualToOperatorType")
 public class GreaterThanOrEqualToOperator extends AbstractBinaryComparisonOperator {
 
+	public GreaterThanOrEqualToOperator() {
+	}
+
+	public GreaterThanOrEqualToOperator(String valueReference, String literal) {
+		super(valueReference, literal);
+	}
+
 	@Override
 	public ComparisonOperatorName getOperatorName() {
 		return ComparisonOperatorName.GREATER_THAN_OR_EQUAL_TO;

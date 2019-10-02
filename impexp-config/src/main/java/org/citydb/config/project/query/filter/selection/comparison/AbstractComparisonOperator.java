@@ -46,6 +46,13 @@ import javax.xml.bind.annotation.XmlType;
 public abstract class AbstractComparisonOperator extends AbstractPredicate {
 	@XmlElement(required = true)
 	private String valueReference;
+
+	public AbstractComparisonOperator() {
+	}
+
+	public AbstractComparisonOperator(String valueReference) {
+		this.valueReference = valueReference;
+	}
 	
 	public abstract ComparisonOperatorName getOperatorName();
 	

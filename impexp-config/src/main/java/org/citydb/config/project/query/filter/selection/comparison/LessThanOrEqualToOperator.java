@@ -34,6 +34,13 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name="LessThanOrEqualToOperatorType")
 public class LessThanOrEqualToOperator extends AbstractBinaryComparisonOperator {
 
+	public LessThanOrEqualToOperator() {
+	}
+
+	public LessThanOrEqualToOperator(String valueReference, String literal) {
+		super(valueReference, literal);
+	}
+
 	@Override
 	public ComparisonOperatorName getOperatorName() {
 		return ComparisonOperatorName.LESS_THAN_OR_EQUAL_TO;

@@ -44,10 +44,18 @@ import javax.xml.bind.annotation.XmlType;
 	GreaterThanOrEqualToOperator.class
 })
 public abstract class AbstractBinaryComparisonOperator extends AbstractComparisonOperator {
-	@XmlAttribute(required = false)
-	private Boolean matchCase = true;
+	@XmlAttribute
+	private Boolean matchCase;
 	@XmlElement(required = true)
 	private String literal;
+
+	public AbstractBinaryComparisonOperator() {
+	}
+
+	public AbstractBinaryComparisonOperator(String valueReference, String literal) {
+		super(valueReference);
+		this.literal = literal;
+	}
 
 	public boolean isSetLiteral() {
 		return literal != null;
@@ -62,7 +70,7 @@ public abstract class AbstractBinaryComparisonOperator extends AbstractCompariso
 	}
 	
 	public boolean isMatchCase() {
-		return matchCase;
+		return matchCase != null ? matchCase : true;
 	}
 
 	public void setMatchCase(boolean matchCase) {
@@ -71,7 +79,7 @@ public abstract class AbstractBinaryComparisonOperator extends AbstractCompariso
 	
 	@Override
 	public void reset() {
-		matchCase = true;
+		matchCase = null;
 		literal = null;
 		super.reset();
 	}

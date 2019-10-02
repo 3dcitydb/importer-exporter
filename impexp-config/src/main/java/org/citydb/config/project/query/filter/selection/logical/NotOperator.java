@@ -40,6 +40,13 @@ import javax.xml.bind.annotation.XmlType;
 public class NotOperator extends AbstractLogicalOperator {
 	@XmlElementRef
 	private AbstractPredicate operand;
+
+	public NotOperator() {
+	}
+
+	public NotOperator(AbstractPredicate operand) {
+		this.operand = operand;
+	}
 	
 	public boolean isSetOperand() {
 		return operand != null;

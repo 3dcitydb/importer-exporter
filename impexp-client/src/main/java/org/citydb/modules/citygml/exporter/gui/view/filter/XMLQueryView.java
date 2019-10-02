@@ -44,13 +44,22 @@ import org.citydb.config.project.query.filter.lod.LodFilter;
 import org.citydb.config.project.query.filter.projection.ProjectionFilter;
 import org.citydb.config.project.query.filter.selection.AbstractPredicate;
 import org.citydb.config.project.query.filter.selection.SelectionFilter;
+import org.citydb.config.project.query.filter.selection.comparison.BetweenOperator;
+import org.citydb.config.project.query.filter.selection.comparison.GreaterThanOperator;
+import org.citydb.config.project.query.filter.selection.comparison.LessThanOrEqualToOperator;
 import org.citydb.config.project.query.filter.selection.comparison.LikeOperator;
+import org.citydb.config.project.query.filter.selection.comparison.NullOperator;
 import org.citydb.config.project.query.filter.selection.logical.AndOperator;
+import org.citydb.config.project.query.filter.selection.logical.NotOperator;
+import org.citydb.config.project.query.filter.selection.logical.OrOperator;
 import org.citydb.config.project.query.filter.selection.spatial.BBOXOperator;
 import org.citydb.config.project.query.filter.selection.spatial.WithinOperator;
 import org.citydb.config.project.query.filter.sorting.Sorting;
 import org.citydb.config.project.query.filter.tiling.Tiling;
 import org.citydb.config.project.query.filter.type.FeatureTypeFilter;
+import org.citydb.config.project.query.simple.FeatureState;
+import org.citydb.config.project.query.simple.SimpleFeatureVersionFilter;
+import org.citydb.config.project.query.simple.SimpleFeatureVersionFilterMode;
 import org.citydb.config.project.query.simple.SimpleSelectionFilter;
 import org.citydb.config.project.query.util.QueryWrapper;
 import org.citydb.database.connection.DatabaseConnectionPool;
@@ -227,6 +236,30 @@ public class XMLQueryView extends FilterView {
             query.setCounterFilter(simpleQuery.getCounterFilter());
 
         List<AbstractPredicate> predicates = new ArrayList<>();
+
+        if (simpleQuery.isUseFeatureVersionFilter() && simpleQuery.isSetFeatureVersionFilter()) {
+            SimpleFeatureVersionFilter versionFilter = simpleQuery.getFeatureVersionFilter();
+
+            if (versionFilter.getMode() == SimpleFeatureVersionFilterMode.STATE) {
+                NullOperator terminationDateFilter = new NullOperator("core:terminationDate");
+                if (versionFilter.getFeatureState() == FeatureState.LATEST)
+                    predicates.add(terminationDateFilter);
+                else if (versionFilter.getFeatureState() == FeatureState.TERMINATED)
+                    predicates.add(new NotOperator(terminationDateFilter));
+            } else if (versionFilter.getMode() == SimpleFeatureVersionFilterMode.AT && versionFilter.isSetStartDate()) {
+                predicates.add(new AndOperator(
+                        new LessThanOrEqualToOperator("core:creationDate", versionFilter.getStartDate().toXMLFormat()),
+                        new OrOperator(
+                                new GreaterThanOperator("core:terminationDate", versionFilter.getStartDate().toString()),
+                                new NullOperator("core:terminationDate")
+                        )
+                ));
+            } else if (versionFilter.getMode() == SimpleFeatureVersionFilterMode.BETWEEN && versionFilter.isSetStartDate() && versionFilter.isSetEndDate()) {
+                predicates.add(new BetweenOperator("core:creationDate", versionFilter.getStartDate().toXMLFormat(), versionFilter.getEndDate().toXMLFormat()));
+                predicates.add(new BetweenOperator("core:terminationDate", versionFilter.getStartDate().toXMLFormat(), versionFilter.getEndDate().toXMLFormat()));
+            }
+        }
+
         if (simpleQuery.isUseSelectionFilter()) {
             SimpleSelectionFilter selectionFilter = simpleQuery.getSelectionFilter();
 

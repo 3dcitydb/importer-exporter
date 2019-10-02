@@ -25,33 +25,39 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.citydb.config.project.query.filter.selection.logical;
+package org.citydb.config.project.query.simple;
 
-import org.citydb.config.project.query.filter.selection.AbstractPredicate;
-
-import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlEnum;
+import javax.xml.bind.annotation.XmlEnumValue;
 import javax.xml.bind.annotation.XmlType;
-import java.util.List;
 
-@XmlRootElement(name="or")
-@XmlType(name="OrOperatorType")
-public class OrOperator extends AbstractBinaryLogicalOperator {
+@XmlType(name="FeatureStateType")
+@XmlEnum
+public enum FeatureState {
+	@XmlEnumValue("latest")
+    LATEST("latest"),
+    @XmlEnumValue("terminated")
+    TERMINATED("terminated"),
+    @XmlEnumValue("all")
+    ALL("all");
 
-	public OrOperator() {
-		super();
-	}
+    private final String value;
 
-	public OrOperator(List<AbstractPredicate> operands) {
-		super(operands);
-	}
+    FeatureState(String v) {
+        value = v;
+    }
 
-	public OrOperator(AbstractPredicate... operands) {
-		super(operands);
-	}
+    public String value() {
+        return value;
+    }
 
-	@Override
-	public LogicalOperatorName getOperatorName() {
-		return LogicalOperatorName.OR;
-	}
-	
+    public static FeatureState fromValue(String v) {
+        for (FeatureState c: FeatureState.values()) {
+            if (c.value.equals(v)) {
+                return c;
+            }
+        }
+
+        return LATEST;
+    }
 }

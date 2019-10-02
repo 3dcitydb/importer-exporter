@@ -25,33 +25,40 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.citydb.config.project.query.filter.selection.logical;
 
-import org.citydb.config.project.query.filter.selection.AbstractPredicate;
+package org.citydb.config.project.query.simple;
 
-import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlEnum;
+import javax.xml.bind.annotation.XmlEnumValue;
 import javax.xml.bind.annotation.XmlType;
-import java.util.List;
 
-@XmlRootElement(name="or")
-@XmlType(name="OrOperatorType")
-public class OrOperator extends AbstractBinaryLogicalOperator {
+@XmlType(name="SimpleFeatureVersionFilterModeType")
+@XmlEnum
+public enum SimpleFeatureVersionFilterMode {
+    @XmlEnumValue("state")
+    STATE("state"),
+    @XmlEnumValue("at")
+    AT("at"),
+    @XmlEnumValue("between")
+    BETWEEN("between");
 
-	public OrOperator() {
-		super();
-	}
+    private final String value;
 
-	public OrOperator(List<AbstractPredicate> operands) {
-		super(operands);
-	}
+    SimpleFeatureVersionFilterMode(String v) {
+        value = v;
+    }
 
-	public OrOperator(AbstractPredicate... operands) {
-		super(operands);
-	}
+    public String value() {
+        return value;
+    }
 
-	@Override
-	public LogicalOperatorName getOperatorName() {
-		return LogicalOperatorName.OR;
-	}
-	
+    public static SimpleFeatureVersionFilterMode fromValue(String v) {
+        for (SimpleFeatureVersionFilterMode c: SimpleFeatureVersionFilterMode.values()) {
+            if (c.value.equals(v)) {
+                return c;
+            }
+        }
+
+        return STATE;
+    }
 }

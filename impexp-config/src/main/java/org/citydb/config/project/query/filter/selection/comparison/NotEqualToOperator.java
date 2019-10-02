@@ -34,6 +34,13 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name="NotEqualToOperatorType")
 public class NotEqualToOperator extends AbstractBinaryComparisonOperator {
 
+	public NotEqualToOperator() {
+	}
+
+	public NotEqualToOperator(String valueReference, String literal) {
+		super(valueReference, literal);
+	}
+
 	@Override
 	public ComparisonOperatorName getOperatorName() {
 		return ComparisonOperatorName.NOT_EQUAL_TO;
