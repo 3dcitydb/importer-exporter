@@ -54,6 +54,7 @@ import org.citydb.event.global.DatabaseConnectionStateEvent;
 import org.citydb.event.global.EventType;
 import org.citydb.event.global.InterruptEvent;
 import org.citydb.gui.components.checkboxtree.DefaultCheckboxTreeCellRenderer;
+import org.citydb.gui.components.common.DatePicker;
 import org.citydb.gui.components.dialog.ExportStatusDialog;
 import org.citydb.gui.components.feature.FeatureTypeTree;
 import org.citydb.gui.factory.PopupMenuDecorator;
@@ -75,11 +76,31 @@ import org.citygml4j.model.module.citygml.VegetationModule;
 import org.jdesktop.swingx.JXTextField;
 import org.jdesktop.swingx.prompt.PromptSupport.FocusBehavior;
 
-import javax.swing.*;
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.ButtonGroup;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.JScrollPane;
+import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
+import javax.swing.UIManager;
 import javax.swing.border.TitledBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.xml.bind.JAXBContext;
-import java.awt.*;
+import java.awt.AWTEvent;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -118,7 +139,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 	private JLabel workspaceLabel = new JLabel();
 	private JXTextField workspaceText = new JXTextField("");
 	private JLabel timestampLabel = new JLabel();
-	private JTextField timestampText = new JTextField("");
+	private DatePicker datePicker = new DatePicker();
 
 	private JPanel filterPanel;
 	private JRadioButton singleBuildingRadioButton = new JRadioButton("");
@@ -196,7 +217,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		versioningPanel.add(workspaceLabel, GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.HORIZONTAL,0,BORDER_THICKNESS,BORDER_THICKNESS,BORDER_THICKNESS));
 		versioningPanel.add(workspaceText, GuiUtil.setConstraints(1,0,1.0,0.0,GridBagConstraints.HORIZONTAL,0,BORDER_THICKNESS,BORDER_THICKNESS,BORDER_THICKNESS));
 		versioningPanel.add(timestampLabel, GuiUtil.setConstraints(2,0,0.0,0.0,GridBagConstraints.HORIZONTAL,0,BORDER_THICKNESS * 2,BORDER_THICKNESS,BORDER_THICKNESS));
-		versioningPanel.add(timestampText, GuiUtil.setConstraints(3,0,1.0,0.0,GridBagConstraints.HORIZONTAL,0,BORDER_THICKNESS,BORDER_THICKNESS,BORDER_THICKNESS));
+		versioningPanel.add(datePicker, GuiUtil.setConstraints(3,0,0.0,0.0,GridBagConstraints.HORIZONTAL,0,BORDER_THICKNESS,BORDER_THICKNESS,BORDER_THICKNESS));
 
 		ButtonGroup filterButtonGroup = new ButtonGroup();
 		filterButtonGroup.add(singleBuildingRadioButton);
@@ -351,7 +372,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		this.add(scrollPane, GuiUtil.setConstraints(0,1,1.0,1.0,GridBagConstraints.BOTH,0,0,0,0));
 		this.add(exportButtonPanel, GuiUtil.setConstraints(0,3,1.0,0.0,GridBagConstraints.BOTH,5,5,5,5));
 
-		PopupMenuDecorator.getInstance().decorate(browseText, workspaceText, timestampText,
+		PopupMenuDecorator.getInstance().decorate(browseText, workspaceText, datePicker.getEditor(),
 				gmlIdText, rowsText, columnsText,
 				footprintVisibleFromText, extrudedVisibleFromText, geometryVisibleFromText, colladaVisibleFromText,
 				typeTree);		
@@ -366,7 +387,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		workspaceLabel.setEnabled(enable);
 		workspaceText.setEnabled(enable);
 		timestampLabel.setEnabled(enable);
-		timestampText.setEnabled(enable);
+		datePicker.setEnabled(enable);
 	}
 
 	// localized Labels und Strings
@@ -424,7 +445,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 	public void loadSettings() {
 		// database-specific content
 		workspaceText.setText(config.getProject().getDatabase().getWorkspaces().getKmlExportWorkspace().getName());
-		timestampText.setText(config.getProject().getDatabase().getWorkspaces().getKmlExportWorkspace().getTimestamp());
+		datePicker.setDate(config.getProject().getDatabase().getWorkspaces().getKmlExportWorkspace().getTimestamp());
 
 		// filter
 		SimpleKmlQuery query = config.getProject().getKmlExporter().getQuery();
@@ -505,8 +526,8 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		if (databaseController.isConnected()) {
 			try {
 				Workspace workspace = new Workspace();
-				workspace.setName(workspaceText.getText().trim());
-				workspace.setTimestamp(timestampText.getText().trim());
+				workspace.setName(workspaceText.getText());
+				workspace.setTimestamp(datePicker.getDate());
 				for (String theme : databaseController.getActiveDatabaseAdapter().getUtil().getAppearanceThemeList(workspace)) {
 					if (theme == null) continue; 
 					themeComboBox.addItem(theme);
@@ -526,8 +547,8 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 	}
 
 	public void setSettings() {
-		config.getProject().getDatabase().getWorkspaces().getKmlExportWorkspace().setName(workspaceText.getText().trim());
-		config.getProject().getDatabase().getWorkspaces().getKmlExportWorkspace().setTimestamp(timestampText.getText().trim());
+		config.getProject().getDatabase().getWorkspaces().getKmlExportWorkspace().setName(workspaceText.getText());
+		config.getProject().getDatabase().getWorkspaces().getKmlExportWorkspace().setTimestamp(datePicker.getDate());
 
 		try {
 			config.getInternal().setExportFile(new File(browseText.getText().trim()).toPath());
@@ -730,13 +751,6 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 			if (browseText.getText().trim().isEmpty()) {
 				viewController.errorMessage(Language.I18N.getString("kmlExport.dialog.error.incompleteData"), 
 						Language.I18N.getString("kmlExport.dialog.error.incompleteData.dataset"));
-				return;
-			}
-
-			// workspace timestamp
-			if (!Util.checkWorkspaceTimestamp(db.getWorkspaces().getExportWorkspace())) {
-				viewController.errorMessage(Language.I18N.getString("export.dialog.error.incorrectData"), 
-						Language.I18N.getString("export.dialog.error.incorrectData.date"));
 				return;
 			}
 
@@ -1073,7 +1087,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 					themeComboBox.setSelectedItem(KmlExporter.THEME_NONE);
 
 					// checking workspace
-					Workspace workspace = new Workspace(workspaceText.getText().trim(), timestampText.getText().trim());
+					Workspace workspace = new Workspace(workspaceText.getText().trim(), datePicker.getDate());
 					if (databaseController.getActiveDatabaseAdapter().hasVersioningSupport() && 
 							!databaseController.getActiveDatabaseAdapter().getWorkspaceManager().equalsDefaultWorkspaceName(workspace.getName()) &&
 							!databaseController.getActiveDatabaseAdapter().getWorkspaceManager().existsWorkspace(workspace, true)) {

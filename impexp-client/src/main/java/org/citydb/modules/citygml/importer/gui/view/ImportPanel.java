@@ -261,7 +261,7 @@ public class ImportPanel extends JPanel implements EventHandler {
 		}
 
 		config.getInternal().setImportFiles(importFiles);		
-		config.getProject().getDatabase().getWorkspaces().getImportWorkspace().setName(workspaceText.getText().trim());
+		config.getProject().getDatabase().getWorkspaces().getImportWorkspace().setName(workspaceText.getText());
 
 		filterPanel.setSettings();
 	}

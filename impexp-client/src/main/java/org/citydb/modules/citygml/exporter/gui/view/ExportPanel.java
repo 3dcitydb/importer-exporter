@@ -32,7 +32,6 @@ import org.citydb.citygml.exporter.controller.Exporter;
 import org.citydb.config.Config;
 import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.i18n.Language;
-import org.citydb.config.project.database.Database;
 import org.citydb.config.project.database.DatabaseConfigurationException;
 import org.citydb.config.project.database.DatabaseSrs;
 import org.citydb.config.project.exporter.SimpleQuery;
@@ -51,6 +50,7 @@ import org.citydb.event.EventHandler;
 import org.citydb.event.global.DatabaseConnectionStateEvent;
 import org.citydb.event.global.EventType;
 import org.citydb.event.global.InterruptEvent;
+import org.citydb.gui.components.common.DatePicker;
 import org.citydb.gui.components.dialog.ExportStatusDialog;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.factory.SrsComboBoxFactory;
@@ -67,7 +67,6 @@ import org.jdesktop.swingx.prompt.PromptSupport.FocusBehavior;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
-import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -94,7 +93,6 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -110,7 +108,7 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 	private JTextField browseText;
 	private JButton browseButton;
 	private JXTextField workspaceText;
-	private JFormattedTextField timestampText;
+	private DatePicker datePicker;
 	private FilterPanel filterPanel;
 	private JButton exportButton;
 
@@ -140,18 +138,16 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 		workspaceText = new JXTextField();
 		workspaceText.setPromptForeground(Color.LIGHT_GRAY);
 		workspaceText.setFocusBehavior(FocusBehavior.SHOW_PROMPT);
-		timestampText = new JFormattedTextField(new SimpleDateFormat("dd.MM.yyyy"));
-		timestampText.setFocusLostBehavior(JFormattedTextField.COMMIT);
-		timestampText.setColumns(10);
+		datePicker = new DatePicker();
 		filterPanel = new FilterPanel(viewContoller, projectContext, config);
 		exportButton = new JButton();
 		switchFilterModeButton = new JButton();
 
 		workspaceText.setEnabled(true);
-		timestampText.setEnabled(true);
+		datePicker.setEnabled(true);
 		browseButton.addActionListener(e -> saveFile(Language.I18N.getString("main.tabbedPane.export")));
 
-		PopupMenuDecorator.getInstance().decorate(workspaceText, timestampText, browseText);
+		PopupMenuDecorator.getInstance().decorate(workspaceText, datePicker.getEditor(), browseText);
 
 		exportButton.addActionListener(e -> new SwingWorker<Void, Void>() {
 			protected Void doInBackground() {
@@ -189,8 +185,7 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 		operations.add(workspaceLabel, GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.HORIZONTAL,0,5,5,5));
 		operations.add(workspaceText, GuiUtil.setConstraints(1,0,1.0,0.0,GridBagConstraints.HORIZONTAL,0,5,5,5));
 		operations.add(timestampLabel, GuiUtil.setConstraints(2,0,0.0,0.0,GridBagConstraints.NONE,0,10,5,5));
-		operations.add(timestampText, GuiUtil.setConstraints(3,0,0.0,0.0,GridBagConstraints.HORIZONTAL,0,5,5,5));
-		timestampText.setMinimumSize(timestampText.getPreferredSize());
+		operations.add(datePicker, GuiUtil.setConstraints(3,0,0.0,0.0,GridBagConstraints.HORIZONTAL,0,5,5,5));
 		operations.add(srsComboBoxLabel, GuiUtil.setConstraints(0,1,0.0,0.0,GridBagConstraints.HORIZONTAL,0,5,5,5));
 		operations.add(srsComboBox, GuiUtil.setConstraints(1,1,3,1,1.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
 
@@ -213,7 +208,7 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 		workspaceLabel.setEnabled(enable);
 		workspaceText.setEnabled(enable);
 		timestampLabel.setEnabled(enable);
-		timestampText.setEnabled(enable);
+		datePicker.setEnabled(enable);
 	}
 
 	private void switchFilterMode() {
@@ -237,7 +232,7 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 	public void loadSettings() {
 		useSimpleFilter = config.getProject().getExporter().isUseSimpleQuery();
 		workspaceText.setText(config.getProject().getDatabase().getWorkspaces().getExportWorkspace().getName());
-		timestampText.setText(config.getProject().getDatabase().getWorkspaces().getExportWorkspace().getTimestamp());
+		datePicker.setDate(config.getProject().getDatabase().getWorkspaces().getExportWorkspace().getTimestamp());
 
 		Query query = config.getProject().getExporter().getQuery();
 		DatabaseSrs targetSrs = query.getTargetSrs();
@@ -271,8 +266,8 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 
 	public void setSettings() {
 		config.getProject().getExporter().setUseSimpleQuery(useSimpleFilter);
-		config.getProject().getDatabase().getWorkspaces().getExportWorkspace().setName(workspaceText.getText().trim());
-		config.getProject().getDatabase().getWorkspaces().getExportWorkspace().setTimestamp(timestampText.getText().trim());
+		config.getProject().getDatabase().getWorkspaces().getExportWorkspace().setName(workspaceText.getText());
+		config.getProject().getDatabase().getWorkspaces().getExportWorkspace().setTimestamp(datePicker.getDate());
 
 		try {
 			config.getInternal().setExportFile(new File(browseText.getText().trim()).toPath());
@@ -302,14 +297,6 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 			if (browseText.getText().trim().isEmpty()) {
 				viewContoller.errorMessage(Language.I18N.getString("export.dialog.error.incompleteData"),
 						Language.I18N.getString("export.dialog.error.incompleteData.dataset"));
-				return;
-			}
-
-			// workspace timestamp
-			Database db = config.getProject().getDatabase();
-			if (!Util.checkWorkspaceTimestamp(db.getWorkspaces().getExportWorkspace())) {
-				viewContoller.errorMessage(Language.I18N.getString("export.dialog.error.incorrectData"),
-						Language.I18N.getString("common.dialog.error.incorrectData.date"));
 				return;
 			}
 

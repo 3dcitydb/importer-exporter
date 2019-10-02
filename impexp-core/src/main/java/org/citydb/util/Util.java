@@ -29,7 +29,6 @@ package org.citydb.util;
 
 import org.citydb.ade.ADEExtension;
 import org.citydb.ade.ADEExtensionManager;
-import org.citydb.config.project.database.Workspace;
 import org.citydb.config.project.query.filter.version.CityGMLVersionType;
 import org.citydb.database.schema.mapping.MappingConstants;
 import org.citydb.database.schema.mapping.SchemaMapping;
@@ -125,7 +124,6 @@ import java.lang.reflect.Modifier;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Path;
-import java.text.SimpleDateFormat;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -419,24 +417,6 @@ public class Util {
 			return String.format("%02d m, %02d s", m, s);
 
 		return String.format("%02d s", s);
-	}
-
-	public static boolean checkWorkspaceTimestamp(Workspace workspace) {
-		String timestamp = workspace.getTimestamp().trim();
-		boolean success = true;
-
-		if (timestamp.length() > 0) {		
-			SimpleDateFormat format = new SimpleDateFormat("dd.MM.yyyy");
-			format.setLenient(false);
-			try {
-				format.parse(timestamp);				
-			} catch (java.text.ParseException e) {
-				success = false;
-			}
-		}
-
-		workspace.setTimestamp(timestamp);
-		return success;
 	}
 
 	public static ZonedDateTime getCreationDate(AbstractCityObject cityObject, boolean checkParents) {
