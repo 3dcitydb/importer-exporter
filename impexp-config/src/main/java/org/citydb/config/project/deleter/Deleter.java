@@ -7,7 +7,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="DeleteConfigType", propOrder={
+@XmlType(name="DeleterType", propOrder={
 		"query",
 		"simpleQuery",
         "mode",

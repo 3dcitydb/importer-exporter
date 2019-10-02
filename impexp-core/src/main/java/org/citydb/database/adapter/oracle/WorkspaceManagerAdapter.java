@@ -34,9 +34,11 @@ import org.citydb.database.adapter.AbstractWorkspaceManagerAdapter;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 
 public class WorkspaceManagerAdapter extends AbstractWorkspaceManagerAdapter {
 	private final String defaultWorkspaceName = "LIVE";
+	private final SimpleDateFormat format = new SimpleDateFormat("dd.MM.yyyy");
 
 	protected WorkspaceManagerAdapter(AbstractDatabaseAdapter databaseAdapter) {
 		super(databaseAdapter);
@@ -49,31 +51,20 @@ public class WorkspaceManagerAdapter extends AbstractWorkspaceManagerAdapter {
 	
 	@Override
 	public boolean equalsDefaultWorkspaceName(String workspaceName) {
-		return (workspaceName == null || workspaceName.trim().length() == 0 || defaultWorkspaceName.equals(workspaceName.trim().toUpperCase()));
+		return (workspaceName == null || workspaceName.trim().isEmpty() || defaultWorkspaceName.equalsIgnoreCase(workspaceName.trim()));
 	}
 
 	@Override
 	public boolean gotoWorkspace(Connection connection, Workspace workspace) {
-		String workspaceName = workspace.getName();		
-		if (workspaceName == null)
-			throw new IllegalArgumentException("Workspace name may not be null.");
-
-		String timestamp = workspace.getTimestamp();
-		if (timestamp == null)
-			throw new IllegalArgumentException("Workspace timestamp name may not be null.");
-
-		workspaceName = workspaceName.trim();
-		timestamp = timestamp.trim();
-
-		if (!workspaceName.equals(defaultWorkspaceName) && (workspaceName.length() == 0 || workspaceName.toUpperCase().equals(defaultWorkspaceName)))
+		String workspaceName = workspace.getName();
+		if (workspaceName == null || defaultWorkspaceName.equalsIgnoreCase(workspaceName))
 			workspaceName = defaultWorkspaceName;
 
 		try (CallableStatement workspaceStmt = connection.prepareCall("{call dbms_wm.GotoWorkspace('" + workspaceName + "')}")) {
 			workspaceStmt.executeQuery();
-
-			if (timestamp.length() > 0) {
-				try (CallableStatement timestampStmt = connection.prepareCall("{call dbms_wm.GotoDate('" + timestamp + "', 'DD.MM.YYYY')}")) {
-					workspaceStmt.executeQuery();
+			if (workspace.isSetTimestamp()) {
+				try (CallableStatement timestampStmt = connection.prepareCall("{call dbms_wm.GotoDate('" + format.format(workspace.getTimestamp()) + "', 'DD.MM.YYYY')}")) {
+					timestampStmt.executeQuery();
 				}
 			}
 

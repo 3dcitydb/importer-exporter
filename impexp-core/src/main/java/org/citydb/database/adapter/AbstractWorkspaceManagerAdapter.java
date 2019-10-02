@@ -32,6 +32,7 @@ import org.citydb.log.Logger;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Date;
 
 public abstract class AbstractWorkspaceManagerAdapter {
 	private final Logger LOG = Logger.getInstance();
@@ -49,7 +50,7 @@ public abstract class AbstractWorkspaceManagerAdapter {
 		return existsWorkspace(new Workspace(workspaceName), false);
 	}
 
-	public boolean gotoWorkspace(Connection connection, String workspaceName, String timestamp) throws SQLException {
+	public boolean gotoWorkspace(Connection connection, String workspaceName, Date timestamp) throws SQLException {
 		return gotoWorkspace(connection, new Workspace(workspaceName, timestamp));
 	}
 
