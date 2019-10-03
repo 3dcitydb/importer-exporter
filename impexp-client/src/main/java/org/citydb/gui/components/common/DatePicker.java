@@ -10,6 +10,7 @@ import org.jdesktop.swingx.JXDatePicker;
 import org.jdesktop.swingx.JXMonthView;
 import org.jdesktop.swingx.plaf.basic.CalendarHeaderHandler;
 import org.jdesktop.swingx.plaf.basic.SpinningCalendarHeaderHandler;
+import org.jdesktop.swingx.prompt.PromptSupport;
 
 import javax.swing.*;
 import java.awt.*;
@@ -36,6 +37,9 @@ public class DatePicker extends JXDatePicker implements EventHandler {
         ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(EventType.SWITCH_LOCALE, this);
         setFormats("yyyy-MM-dd", "dd.MM.yyyy");
         getMonthView().setZoomable(true);
+        getEditor().setPromptForeground(Color.LIGHT_GRAY);
+        getEditor().setFocusBehavior(PromptSupport.FocusBehavior.SHOW_PROMPT);
+        getEditor().setPrompt("YYYY-MM-DD");
     }
 
     @Override
