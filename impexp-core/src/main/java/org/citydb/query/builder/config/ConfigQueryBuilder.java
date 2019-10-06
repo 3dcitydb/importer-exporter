@@ -41,11 +41,9 @@ import org.citydb.config.project.query.filter.selection.comparison.LessThanOrEqu
 import org.citydb.config.project.query.filter.selection.comparison.LikeOperator;
 import org.citydb.config.project.query.filter.selection.comparison.NullOperator;
 import org.citydb.config.project.query.filter.selection.logical.AndOperator;
-import org.citydb.config.project.query.filter.selection.logical.NotOperator;
 import org.citydb.config.project.query.filter.selection.logical.OrOperator;
 import org.citydb.config.project.query.filter.selection.spatial.BBOXOperator;
 import org.citydb.config.project.query.filter.selection.spatial.WithinOperator;
-import org.citydb.config.project.query.simple.FeatureState;
 import org.citydb.config.project.query.simple.SimpleFeatureVersionFilter;
 import org.citydb.config.project.query.simple.SimpleFeatureVersionFilterMode;
 import org.citydb.config.project.query.simple.SimpleSelectionFilter;
@@ -196,13 +194,9 @@ public class ConfigQueryBuilder {
 		if (queryConfig.isUseFeatureVersionFilter() && queryConfig.isSetFeatureVersionFilter()) {
 			SimpleFeatureVersionFilter versionFilter = queryConfig.getFeatureVersionFilter();
 
-			if (versionFilter.getMode() == SimpleFeatureVersionFilterMode.STATE) {
-				NullOperator terminationDateFilter = new NullOperator("core:terminationDate");
-				if (versionFilter.getFeatureState() == FeatureState.LATEST)
-					predicates.add(predicateBuilder.buildPredicate(terminationDateFilter));
-				else if (versionFilter.getFeatureState() == FeatureState.TERMINATED)
-					predicates.add(predicateBuilder.buildPredicate(new NotOperator(terminationDateFilter)));
-			} else if (versionFilter.getMode() == SimpleFeatureVersionFilterMode.AT && versionFilter.isSetStartDate()) {
+			if (versionFilter.getMode() == SimpleFeatureVersionFilterMode.LATEST)
+				predicates.add(predicateBuilder.buildPredicate(new NullOperator("core:terminationDate")));
+			else if (versionFilter.getMode() == SimpleFeatureVersionFilterMode.AT && versionFilter.isSetStartDate()) {
 				predicates.add(predicateBuilder.buildPredicate(new AndOperator(
 						new LessThanOrEqualToOperator("core:creationDate", versionFilter.getStartDate().toXMLFormat()),
 						new OrOperator(

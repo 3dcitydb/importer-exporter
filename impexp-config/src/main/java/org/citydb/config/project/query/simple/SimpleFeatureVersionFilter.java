@@ -29,21 +29,17 @@
 package org.citydb.config.project.query.simple;
 
 import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.datatype.XMLGregorianCalendar;
 
 @XmlType(name="SimpleFeatureVersionFilterType", propOrder={
-        "featureState",
         "startDate",
         "endDate"
 })
 public class SimpleFeatureVersionFilter {
     @XmlAttribute(required = true)
-    private SimpleFeatureVersionFilterMode mode = SimpleFeatureVersionFilterMode.STATE;
-    @XmlElement(name = "state")
-    private FeatureState featureState = FeatureState.LATEST;
+    private SimpleFeatureVersionFilterMode mode = SimpleFeatureVersionFilterMode.LATEST;
     @XmlSchemaType(name = "dateTime")
     private XMLGregorianCalendar startDate;
     @XmlSchemaType(name = "dateTime")
@@ -55,18 +51,6 @@ public class SimpleFeatureVersionFilter {
 
     public void setMode(SimpleFeatureVersionFilterMode mode) {
         this.mode = mode;
-    }
-
-    public FeatureState getFeatureState() {
-        return featureState;
-    }
-
-    public boolean isSetFeatureState() {
-        return featureState != null;
-    }
-
-    public void setFeatureState(FeatureState featureState) {
-        this.featureState = featureState;
     }
 
     public XMLGregorianCalendar getStartDate() {

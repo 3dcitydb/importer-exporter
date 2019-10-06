@@ -35,8 +35,8 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name="SimpleFeatureVersionFilterModeType")
 @XmlEnum
 public enum SimpleFeatureVersionFilterMode {
-    @XmlEnumValue("state")
-    STATE("state"),
+    @XmlEnumValue("latest")
+    LATEST("latest"),
     @XmlEnumValue("at")
     AT("at"),
     @XmlEnumValue("between")
@@ -59,6 +59,6 @@ public enum SimpleFeatureVersionFilterMode {
             }
         }
 
-        return STATE;
+        return LATEST;
     }
 }

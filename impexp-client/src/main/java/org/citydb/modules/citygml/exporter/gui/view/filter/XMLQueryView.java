@@ -50,14 +50,12 @@ import org.citydb.config.project.query.filter.selection.comparison.LessThanOrEqu
 import org.citydb.config.project.query.filter.selection.comparison.LikeOperator;
 import org.citydb.config.project.query.filter.selection.comparison.NullOperator;
 import org.citydb.config.project.query.filter.selection.logical.AndOperator;
-import org.citydb.config.project.query.filter.selection.logical.NotOperator;
 import org.citydb.config.project.query.filter.selection.logical.OrOperator;
 import org.citydb.config.project.query.filter.selection.spatial.BBOXOperator;
 import org.citydb.config.project.query.filter.selection.spatial.WithinOperator;
 import org.citydb.config.project.query.filter.sorting.Sorting;
 import org.citydb.config.project.query.filter.tiling.Tiling;
 import org.citydb.config.project.query.filter.type.FeatureTypeFilter;
-import org.citydb.config.project.query.simple.FeatureState;
 import org.citydb.config.project.query.simple.SimpleFeatureVersionFilter;
 import org.citydb.config.project.query.simple.SimpleFeatureVersionFilterMode;
 import org.citydb.config.project.query.simple.SimpleSelectionFilter;
@@ -86,7 +84,11 @@ import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
-import javax.swing.*;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -98,7 +100,10 @@ import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
-import java.awt.*;
+import java.awt.Component;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -240,13 +245,9 @@ public class XMLQueryView extends FilterView {
         if (simpleQuery.isUseFeatureVersionFilter() && simpleQuery.isSetFeatureVersionFilter()) {
             SimpleFeatureVersionFilter versionFilter = simpleQuery.getFeatureVersionFilter();
 
-            if (versionFilter.getMode() == SimpleFeatureVersionFilterMode.STATE) {
-                NullOperator terminationDateFilter = new NullOperator("core:terminationDate");
-                if (versionFilter.getFeatureState() == FeatureState.LATEST)
-                    predicates.add(terminationDateFilter);
-                else if (versionFilter.getFeatureState() == FeatureState.TERMINATED)
-                    predicates.add(new NotOperator(terminationDateFilter));
-            } else if (versionFilter.getMode() == SimpleFeatureVersionFilterMode.AT && versionFilter.isSetStartDate()) {
+            if (versionFilter.getMode() == SimpleFeatureVersionFilterMode.LATEST)
+                predicates.add(new NullOperator("core:terminationDate"));
+            else if (versionFilter.getMode() == SimpleFeatureVersionFilterMode.AT && versionFilter.isSetStartDate()) {
                 predicates.add(new AndOperator(
                         new LessThanOrEqualToOperator("core:creationDate", versionFilter.getStartDate().toXMLFormat()),
                         new OrOperator(
