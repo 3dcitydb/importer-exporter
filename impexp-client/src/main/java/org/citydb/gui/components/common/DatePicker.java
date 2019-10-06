@@ -12,13 +12,18 @@ import org.jdesktop.swingx.plaf.basic.CalendarHeaderHandler;
 import org.jdesktop.swingx.plaf.basic.SpinningCalendarHeaderHandler;
 import org.jdesktop.swingx.prompt.PromptSupport;
 
-import javax.swing.*;
-import java.awt.*;
+import javax.swing.Action;
+import javax.swing.ImageIcon;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+import java.awt.Color;
+import java.awt.Cursor;
+import java.awt.FlowLayout;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.text.DateFormatSymbols;
-import java.text.MessageFormat;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 public class DatePicker extends JXDatePicker implements EventHandler {
@@ -49,7 +54,7 @@ public class DatePicker extends JXDatePicker implements EventHandler {
 
     private JPanel createLinkPanel() {
         linkPanel = new JPanel();
-        linkPanel.setLayout(new FlowLayout());
+        linkPanel.setLayout(new FlowLayout(FlowLayout.RIGHT));
 
         todayLink = new JLabel();
         todayLink.setForeground(new Color(16, 66, 104));
@@ -74,6 +79,8 @@ public class DatePicker extends JXDatePicker implements EventHandler {
         SwitchLocaleEvent localeEvent = (SwitchLocaleEvent) event;
         setLocale(localeEvent.getLocale());
 
+        todayLink.setText("<html><u>" + Language.I18N.getString("common.label.datePicker.today") + "</u></html>");
+
         String[] daysOfTheWeek = new String[JXMonthView.DAYS_IN_WEEK];
         String[] dateFormatSymbols = DateFormatSymbols.getInstance(localeEvent.getLocale()).getShortWeekdays();
         for (int i = Calendar.SUNDAY; i <= Calendar.SATURDAY; i++) {
@@ -85,9 +92,5 @@ public class DatePicker extends JXDatePicker implements EventHandler {
         getMonthView().setDaysOfTheWeek(daysOfTheWeek);
         getMonthView().setFirstDayOfWeek(Calendar.MONDAY);
         setDate(getDate());
-
-        MessageFormat format = new MessageFormat(Language.I18N.getString("common.label.datePicker.today"));
-        String text = format.format(new Object[] {new SimpleDateFormat("dd. MMMM yyyy", localeEvent.getLocale()).format(getLinkDay())});
-        todayLink.setText("<html><u>" + text + "</u></html>");
     }
 }
