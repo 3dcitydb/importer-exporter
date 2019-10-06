@@ -35,7 +35,6 @@ import org.citydb.config.project.kmlExporter.KmlTiling;
 import org.citydb.config.project.kmlExporter.SimpleKmlQuery;
 import org.citydb.config.project.kmlExporter.SimpleKmlQueryMode;
 import org.citydb.config.project.query.filter.selection.AbstractPredicate;
-import org.citydb.config.project.query.filter.selection.comparison.BetweenOperator;
 import org.citydb.config.project.query.filter.selection.comparison.GreaterThanOperator;
 import org.citydb.config.project.query.filter.selection.comparison.LessThanOrEqualToOperator;
 import org.citydb.config.project.query.filter.selection.comparison.LikeOperator;
@@ -62,6 +61,7 @@ import org.citydb.util.Util;
 import org.citygml4j.model.module.citygml.CityGMLVersion;
 import org.citygml4j.model.module.citygml.CoreModule;
 
+import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.NamespaceContext;
 import java.util.ArrayList;
 import java.util.List;
@@ -157,7 +157,7 @@ public class ConfigQueryBuilder {
 		PredicateBuilder predicateBuilder = new PredicateBuilder(valueReferenceBuilder, databaseAdapter);
 
 		// CityGML version
-		CityGMLVersion version = Util.toCityGMLVersion(queryConfig.getVersion()); 
+		CityGMLVersion version = Util.toCityGMLVersion(queryConfig.getVersion());
 		query.setTargetVersion(version);
 
 		// target SRS
@@ -196,17 +196,20 @@ public class ConfigQueryBuilder {
 
 			if (featureVersionFilter.getMode() == SimpleFeatureVersionFilterMode.LATEST)
 				predicates.add(predicateBuilder.buildPredicate(new NullOperator("core:terminationDate")));
-			else if (featureVersionFilter.getMode() == SimpleFeatureVersionFilterMode.AT && featureVersionFilter.isSetStartDate()) {
+			else if (featureVersionFilter.isSetStartDate()
+					&& (featureVersionFilter.getMode() == SimpleFeatureVersionFilterMode.AT
+					|| featureVersionFilter.isSetEndDate())) {
+				XMLGregorianCalendar creationDate = featureVersionFilter.getMode() == SimpleFeatureVersionFilterMode.AT ?
+						featureVersionFilter.getStartDate() :
+						featureVersionFilter.getEndDate();
+
 				predicates.add(predicateBuilder.buildPredicate(new AndOperator(
-						new LessThanOrEqualToOperator("core:creationDate", featureVersionFilter.getStartDate().toXMLFormat()),
+						new LessThanOrEqualToOperator("core:creationDate", creationDate.toXMLFormat()),
 						new OrOperator(
 								new GreaterThanOperator("core:terminationDate", featureVersionFilter.getStartDate().toString()),
 								new NullOperator("core:terminationDate")
 						)
 				)));
-			} else if (featureVersionFilter.getMode() == SimpleFeatureVersionFilterMode.BETWEEN && featureVersionFilter.isSetStartDate() && featureVersionFilter.isSetEndDate()) {
-				predicates.add(predicateBuilder.buildPredicate(new BetweenOperator("core:creationDate", featureVersionFilter.getStartDate().toXMLFormat(), featureVersionFilter.getEndDate().toXMLFormat())));
-				predicates.add(predicateBuilder.buildPredicate(new BetweenOperator("core:terminationDate", featureVersionFilter.getStartDate().toXMLFormat(), featureVersionFilter.getEndDate().toXMLFormat())));
 			}
 		}
 

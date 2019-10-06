@@ -44,7 +44,6 @@ import org.citydb.config.project.query.filter.lod.LodFilter;
 import org.citydb.config.project.query.filter.projection.ProjectionFilter;
 import org.citydb.config.project.query.filter.selection.AbstractPredicate;
 import org.citydb.config.project.query.filter.selection.SelectionFilter;
-import org.citydb.config.project.query.filter.selection.comparison.BetweenOperator;
 import org.citydb.config.project.query.filter.selection.comparison.GreaterThanOperator;
 import org.citydb.config.project.query.filter.selection.comparison.LessThanOrEqualToOperator;
 import org.citydb.config.project.query.filter.selection.comparison.LikeOperator;
@@ -94,6 +93,7 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
+import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.namespace.QName;
 import javax.xml.transform.stream.StreamSource;
@@ -247,17 +247,20 @@ public class XMLQueryView extends FilterView {
 
             if (featureVersionFilter.getMode() == SimpleFeatureVersionFilterMode.LATEST)
                 predicates.add(new NullOperator("core:terminationDate"));
-            else if (featureVersionFilter.getMode() == SimpleFeatureVersionFilterMode.AT && featureVersionFilter.isSetStartDate()) {
+            else if (featureVersionFilter.isSetStartDate()
+                    && (featureVersionFilter.getMode() == SimpleFeatureVersionFilterMode.AT
+                    || featureVersionFilter.isSetEndDate())) {
+                XMLGregorianCalendar creationDate = featureVersionFilter.getMode() == SimpleFeatureVersionFilterMode.AT ?
+                        featureVersionFilter.getStartDate() :
+                        featureVersionFilter.getEndDate();
+
                 predicates.add(new AndOperator(
-                        new LessThanOrEqualToOperator("core:creationDate", featureVersionFilter.getStartDate().toXMLFormat()),
+                        new LessThanOrEqualToOperator("core:creationDate", creationDate.toXMLFormat()),
                         new OrOperator(
                                 new GreaterThanOperator("core:terminationDate", featureVersionFilter.getStartDate().toString()),
                                 new NullOperator("core:terminationDate")
                         )
                 ));
-            } else if (featureVersionFilter.getMode() == SimpleFeatureVersionFilterMode.BETWEEN && featureVersionFilter.isSetStartDate() && featureVersionFilter.isSetEndDate()) {
-                predicates.add(new BetweenOperator("core:creationDate", featureVersionFilter.getStartDate().toXMLFormat(), featureVersionFilter.getEndDate().toXMLFormat()));
-                predicates.add(new BetweenOperator("core:terminationDate", featureVersionFilter.getStartDate().toXMLFormat(), featureVersionFilter.getEndDate().toXMLFormat()));
             }
         }
 
