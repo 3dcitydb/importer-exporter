@@ -192,21 +192,21 @@ public class ConfigQueryBuilder {
 
 		// feature version filter
 		if (queryConfig.isUseFeatureVersionFilter() && queryConfig.isSetFeatureVersionFilter()) {
-			SimpleFeatureVersionFilter versionFilter = queryConfig.getFeatureVersionFilter();
+			SimpleFeatureVersionFilter featureVersionFilter = queryConfig.getFeatureVersionFilter();
 
-			if (versionFilter.getMode() == SimpleFeatureVersionFilterMode.LATEST)
+			if (featureVersionFilter.getMode() == SimpleFeatureVersionFilterMode.LATEST)
 				predicates.add(predicateBuilder.buildPredicate(new NullOperator("core:terminationDate")));
-			else if (versionFilter.getMode() == SimpleFeatureVersionFilterMode.AT && versionFilter.isSetStartDate()) {
+			else if (featureVersionFilter.getMode() == SimpleFeatureVersionFilterMode.AT && featureVersionFilter.isSetStartDate()) {
 				predicates.add(predicateBuilder.buildPredicate(new AndOperator(
-						new LessThanOrEqualToOperator("core:creationDate", versionFilter.getStartDate().toXMLFormat()),
+						new LessThanOrEqualToOperator("core:creationDate", featureVersionFilter.getStartDate().toXMLFormat()),
 						new OrOperator(
-								new GreaterThanOperator("core:terminationDate", versionFilter.getStartDate().toString()),
+								new GreaterThanOperator("core:terminationDate", featureVersionFilter.getStartDate().toString()),
 								new NullOperator("core:terminationDate")
 						)
 				)));
-			} else if (versionFilter.getMode() == SimpleFeatureVersionFilterMode.BETWEEN && versionFilter.isSetStartDate() && versionFilter.isSetEndDate()) {
-				predicates.add(predicateBuilder.buildPredicate(new BetweenOperator("core:creationDate", versionFilter.getStartDate().toXMLFormat(), versionFilter.getEndDate().toXMLFormat())));
-				predicates.add(predicateBuilder.buildPredicate(new BetweenOperator("core:terminationDate", versionFilter.getStartDate().toXMLFormat(), versionFilter.getEndDate().toXMLFormat())));
+			} else if (featureVersionFilter.getMode() == SimpleFeatureVersionFilterMode.BETWEEN && featureVersionFilter.isSetStartDate() && featureVersionFilter.isSetEndDate()) {
+				predicates.add(predicateBuilder.buildPredicate(new BetweenOperator("core:creationDate", featureVersionFilter.getStartDate().toXMLFormat(), featureVersionFilter.getEndDate().toXMLFormat())));
+				predicates.add(predicateBuilder.buildPredicate(new BetweenOperator("core:terminationDate", featureVersionFilter.getStartDate().toXMLFormat(), featureVersionFilter.getEndDate().toXMLFormat())));
 			}
 		}
 
