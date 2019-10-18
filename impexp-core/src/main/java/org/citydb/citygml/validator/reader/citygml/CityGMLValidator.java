@@ -72,7 +72,7 @@ public class CityGMLValidator implements Validator, EventHandler {
             inputStream = inputFile.openStream();
             validator.validate(new StreamSource(inputStream));
         } catch (IOException | SAXException e) {
-            if (!validationHandler.isAborted())
+            if (!validationHandler.isAborted() || validationHandler.hasFatalErrors())
                 throw new ValidationException("Failed to validate CityGML input file.", e);
         } finally {
             if (inputStream != null) {

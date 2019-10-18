@@ -42,6 +42,7 @@ class ValidationErrorHandler implements ErrorHandler {
     private long validationErrors;
     private boolean isReportAllErrors;
     private boolean isAborted;
+    private boolean hasFatalErrors;
 
     ValidationErrorHandler(Config config) {
         this.config = config;
@@ -64,10 +65,15 @@ class ValidationErrorHandler implements ErrorHandler {
         this.isAborted = isAborted;
     }
 
+    public boolean hasFatalErrors() {
+        return hasFatalErrors;
+    }
+
     void reset() {
         validationErrors = 0;
         isReportAllErrors = !config.getProject().getImporter().getXMLValidation().isSetReportOneErrorPerFeature();
         isAborted = false;
+        hasFatalErrors = false;
     }
 
     @Override
@@ -83,6 +89,7 @@ class ValidationErrorHandler implements ErrorHandler {
     @Override
     public void fatalError(SAXParseException e) throws SAXException {
         isReportAllErrors = false;
+        hasFatalErrors = true;
         write(e, "Invalid content", LogLevel.ERROR);
     }
 
@@ -92,7 +99,7 @@ class ValidationErrorHandler implements ErrorHandler {
             validationErrors++;
             if (!isReportAllErrors) {
                 isAborted = true;
-                throw new SAXException();
+                throw new SAXException(e.getException());
             }
         }
     }
