@@ -57,7 +57,7 @@ public class WorkspaceManagerAdapter extends AbstractWorkspaceManagerAdapter {
 	@Override
 	public boolean gotoWorkspace(Connection connection, Workspace workspace) {
 		String workspaceName = workspace.getName();
-		if (workspaceName == null || defaultWorkspaceName.equalsIgnoreCase(workspaceName))
+		if (workspaceName == null || workspaceName.trim().isEmpty() || defaultWorkspaceName.equalsIgnoreCase(workspaceName))
 			workspaceName = defaultWorkspaceName;
 
 		try (CallableStatement workspaceStmt = connection.prepareCall("{call dbms_wm.GotoWorkspace('" + workspaceName + "')}")) {

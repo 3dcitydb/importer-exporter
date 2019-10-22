@@ -63,12 +63,12 @@ public class Workspace {
 	}
 
 	public void setName(String name) {
-		if (name != null && !name.trim().isEmpty())
+		if (name != null)
 			this.name = name.trim();
 	}
 	
 	public boolean isSetName() {
-		return name != null;
+		return name != null && !name.trim().isEmpty();
 	}
 
 	public Date getTimestamp() {
