@@ -129,6 +129,7 @@ public class DBSplitter {
 
 		databaseAdapter = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter();
 		connection = DatabaseConnectionPool.getInstance().getConnection();
+		connection.setAutoCommit(false);
 		schema = databaseAdapter.getConnectionDetails().getSchema();
 
 		// try and change workspace for connection
