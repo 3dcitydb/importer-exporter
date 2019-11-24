@@ -82,10 +82,10 @@ public class ScatterZipOutputStream implements Closeable {
                     throw new IOException("Failed to read temporary zip entry.");
 
                 ZipArchiveEntry entry = new ZipArchiveEntry(values[0]);
-                entry.setMethod(Integer.valueOf(values[1]));
-                entry.setCrc(Long.valueOf(values[2]));
-                entry.setCompressedSize(Long.valueOf(values[3]));
-                entry.setSize(Long.valueOf(values[4]));
+                entry.setMethod(Integer.parseInt(values[1]));
+                entry.setCrc(Long.parseLong(values[2]));
+                entry.setCompressedSize(Long.parseLong(values[3]));
+                entry.setSize(Long.parseLong(values[4]));
 
                 try (BoundedInputStream rawStream = new BoundedInputStream(stream, entry.getCompressedSize())) {
                     target.addRawArchiveEntry(entry, rawStream);

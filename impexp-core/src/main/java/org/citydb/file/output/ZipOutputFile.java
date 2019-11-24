@@ -158,7 +158,7 @@ public class ZipOutputFile extends AbstractArchiveOutputFile {
             try {
                 scatterStream.addArchiveEntry(work.zipArchiveEntry, work.source);
             } catch (IOException e) {
-                eventDispatcher.triggerSyncEvent(new InterruptEvent("Failed to writer temporary zip archive.", LogLevel.ERROR, e, eventChannel, this));
+                eventDispatcher.triggerSyncEvent(new InterruptEvent("Failed to write temporary zip archive.", LogLevel.ERROR, e, eventChannel, this));
                 shouldRun = false;
             } finally {
                 try {
@@ -175,7 +175,7 @@ public class ZipOutputFile extends AbstractArchiveOutputFile {
         }
     }
 
-    private final class ScatterZipWork {
+    private static final class ScatterZipWork {
         private final ZipArchiveEntry zipArchiveEntry;
         private final InputStreamSupplier source;
 
