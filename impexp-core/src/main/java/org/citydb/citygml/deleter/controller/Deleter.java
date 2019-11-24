@@ -141,6 +141,16 @@ public class Deleter implements EventHandler {
 			} catch (SQLException | QueryBuildException e) {
 				throw new CityGMLDeleteException("Failed to query the database.", e);
 			}
+
+			try {
+				dbWorkerPool.shutdownAndWait();
+			} catch (InterruptedException e) {
+				throw new CityGMLDeleteException("Failed to shutdown worker pools.", e);
+			}
+		} catch (CityGMLDeleteException e) {
+			throw e;
+		} catch (Throwable e) {
+			throw new CityGMLDeleteException("An unexpected error occurred.", e);
 		} finally {
 			try {
 				bundledConnection.close();
