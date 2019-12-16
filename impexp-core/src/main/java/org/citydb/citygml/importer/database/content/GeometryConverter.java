@@ -71,6 +71,7 @@ import org.citygml4j.model.gml.geometry.primitives.Point;
 import org.citygml4j.model.gml.geometry.primitives.PointArrayProperty;
 import org.citygml4j.model.gml.geometry.primitives.PointProperty;
 import org.citygml4j.model.gml.geometry.primitives.Polygon;
+import org.citygml4j.model.gml.geometry.primitives.PolygonPatch;
 import org.citygml4j.model.gml.geometry.primitives.PolygonProperty;
 import org.citygml4j.model.gml.geometry.primitives.Sign;
 import org.citygml4j.model.gml.geometry.primitives.Solid;
@@ -678,6 +679,13 @@ public class GeometryConverter {
 					ringNo += points.size();
 				}
 
+				public void visit(PolygonPatch polygonPatch) {
+					Polygon polygon = new Polygon();
+					polygon.setExterior(polygonPatch.getExterior());
+					polygon.setInterior(polygonPatch.getInterior());
+					visit(polygon);
+				}
+
 				public void visit(LinearRing linearRing) {
 					// required to handle surface patches such as triangles and rectangles
 					if (ringValidator.validate(linearRing)) {
@@ -721,7 +729,6 @@ public class GeometryConverter {
 					else {
 						setShouldWalk(false);
 						solidMembers.clear();
-						return;
 					}
 				}
 			});
@@ -786,16 +793,11 @@ public class GeometryConverter {
 				if (primitiveProperty.isSetGeometricPrimitive()) {
 					AbstractGeometricPrimitive primitive = primitiveProperty.getGeometricPrimitive();
 
-					switch (primitive.getGMLClass()) {
-					case POINT:
+					if (primitive.getGMLClass() == GMLClass.POINT) {
 						if (!exclusive)
 							return true;
-						else 
-							break;
-					default:
-						if (!exclusive)
-							return false;
-					}
+					} else if (!exclusive)
+						return false;
 				}
 			}
 		}
