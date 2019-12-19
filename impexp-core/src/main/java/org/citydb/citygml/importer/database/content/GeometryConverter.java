@@ -109,7 +109,6 @@ public class GeometryConverter {
 
 	public boolean isSurfaceGeometry(AbstractGeometry geometry) {
 		switch (geometry.getGMLClass()) {
-		case LINEAR_RING:
 		case POLYGON:
 		case ORIENTABLE_SURFACE:
 		case _TEXTURED_SURFACE:
