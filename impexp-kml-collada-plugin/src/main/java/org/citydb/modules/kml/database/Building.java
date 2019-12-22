@@ -183,7 +183,7 @@ public class Building extends KmlGenericObject{
 							break;
 
 						try {
-							String query = queries.getBuildingPartQuery(currentLod, lod0FootprintMode, work.getDisplayForm(), true);
+							String query = queries.getBuildingPartQuery(currentLod, lod0FootprintMode, work.getDisplayForm(), true, work.getObjectClassId());
 							psQuery = connection.prepareStatement(query, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 							for (int i = 1; i <= getParameterCount(query); i++)
 								psQuery.setLong(i, buildingPartId);
@@ -206,7 +206,7 @@ public class Building extends KmlGenericObject{
 				// the building geometry including sub-features and appearances 
 				if (currentLod > 0 && work.getDisplayForm().isAchievableFromLoD(currentLod)) {
 					try {
-						String query = queries.getBuildingPartQuery(currentLod, lod0FootprintMode, work.getDisplayForm(), false);
+						String query = queries.getBuildingPartQuery(currentLod, lod0FootprintMode, work.getDisplayForm(), false, work.getObjectClassId());
 						psQuery = connection.prepareStatement(query, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 						for (int i = 1; i <= getParameterCount(query); i++)
 							psQuery.setLong(i, buildingPartId);
@@ -234,7 +234,7 @@ public class Building extends KmlGenericObject{
 
 					try {
 						// first, check whether we have an LOD0 geometry or a GroundSurface
-						String query = queries.getBuildingPartQuery(currentLod, lod0FootprintMode, work.getDisplayForm(), false);
+						String query = queries.getBuildingPartQuery(currentLod, lod0FootprintMode, work.getDisplayForm(), false, work.getObjectClassId());
 						psQuery = connection.prepareStatement(query, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 						for (int i = 1; i <= getParameterCount(query); i++)
 							psQuery.setLong(i, buildingPartId);
@@ -263,7 +263,7 @@ public class Building extends KmlGenericObject{
 									currentLod,
 									Math.pow(groupBasis, 4),
 									Math.pow(groupBasis, 3),
-									Math.pow(groupBasis, 2));
+									Math.pow(groupBasis, 2), work.getObjectClassId());
 
 							psQuery = connection.prepareStatement(query, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 							for (int i = 1; i <= getParameterCount(query); i++)

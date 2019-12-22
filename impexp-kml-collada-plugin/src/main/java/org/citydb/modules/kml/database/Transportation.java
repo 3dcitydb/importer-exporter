@@ -114,7 +114,7 @@ public class Transportation extends KmlGenericObject{
 					break;
 
 				try {
-					String query = queries.getTransportationQuery(currentLod, work.getDisplayForm());				
+					String query = queries.getTransportationQuery(currentLod, work.getDisplayForm(), work.getObjectClassId());
 					psQuery = connection.prepareStatement(query, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 					for (int i = 1; i <= getParameterCount(query); i++)
 						psQuery.setLong(i, work.getId());
@@ -267,7 +267,7 @@ public class Transportation extends KmlGenericObject{
 		List<PlacemarkType> placemarkList= new ArrayList<>();
 		
 		double zOffset = getZOffsetFromConfigOrDB(work.getId());
-		List<Point3d> lowestPointCandidates = getLowestPointsCoordinates(rs, (zOffset == Double.MAX_VALUE));
+		List<Point3d> lowestPointCandidates = getLowestPointsCoordinates(rs, null, (zOffset == Double.MAX_VALUE));
 		rs.beforeFirst(); // return cursor to beginning
 		if (zOffset == Double.MAX_VALUE) {
 			zOffset = getZOffsetFromGEService(work.getId(), lowestPointCandidates);

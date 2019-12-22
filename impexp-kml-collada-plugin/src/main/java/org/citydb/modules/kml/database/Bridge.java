@@ -182,7 +182,7 @@ public class Bridge extends KmlGenericObject{
 							break;
 
 						try {
-							String query = queries.getBridgePartQuery(currentLod, work.getDisplayForm(), true);
+							String query = queries.getBridgePartQuery(currentLod, work.getDisplayForm(), true, work.getObjectClassId());
 							psQuery = connection.prepareStatement(query, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 							for (int i = 1; i <= getParameterCount(query); i++)
 								psQuery.setLong(i, bridgePartId);
@@ -205,7 +205,7 @@ public class Bridge extends KmlGenericObject{
 				// the building geometry including sub-features and appearances 
 				if (currentLod > 0 && work.getDisplayForm().isAchievableFromLoD(currentLod)) {
 					try {
-						String query = queries.getBridgePartQuery(currentLod, work.getDisplayForm(), false);
+						String query = queries.getBridgePartQuery(currentLod, work.getDisplayForm(), false, work.getObjectClassId());
 						psQuery = connection.prepareStatement(query, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 						for (int i = 1; i <= getParameterCount(query); i++)
 							psQuery.setLong(i, bridgePartId);
@@ -233,7 +233,7 @@ public class Bridge extends KmlGenericObject{
 
 					try {
 						// first, check whether we have an LOD1 geometry or a GroundSurface
-						String query = queries.getBridgePartQuery(currentLod, work.getDisplayForm(), false);
+						String query = queries.getBridgePartQuery(currentLod, work.getDisplayForm(), false, work.getObjectClassId());
 						psQuery = connection.prepareStatement(query, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 						for (int i = 1; i <= getParameterCount(query); i++)
 							psQuery.setLong(i, bridgePartId);
@@ -261,7 +261,7 @@ public class Bridge extends KmlGenericObject{
 								currentLod,
 								Math.pow(groupBasis, 4),
 								Math.pow(groupBasis, 3),
-								Math.pow(groupBasis, 2));
+								Math.pow(groupBasis, 2), work.getObjectClassId());
 
 						psQuery = connection.prepareStatement(query, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 						for (int i = 1; i <= getParameterCount(query); i++)

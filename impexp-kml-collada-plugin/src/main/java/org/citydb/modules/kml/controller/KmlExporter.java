@@ -57,6 +57,7 @@ import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
 import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.i18n.Language;
+import org.citydb.config.project.ade.ADEKmlExporterPreference;
 import org.citydb.config.project.database.Database;
 import org.citydb.config.project.database.Workspace;
 import org.citydb.config.project.kmlExporter.AltitudeOffsetMode;
@@ -81,20 +82,9 @@ import org.citydb.event.global.ObjectCounterEvent;
 import org.citydb.event.global.StatusDialogMessage;
 import org.citydb.event.global.StatusDialogTitle;
 import org.citydb.log.Logger;
+import org.citydb.modules.kml.ade.ADEKmlExportExtensionManager;
 import org.citydb.modules.kml.concurrent.KmlExportWorkerFactory;
-import org.citydb.modules.kml.database.Bridge;
-import org.citydb.modules.kml.database.Building;
-import org.citydb.modules.kml.database.CityFurniture;
-import org.citydb.modules.kml.database.CityObjectGroup;
-import org.citydb.modules.kml.database.GenericCityObject;
-import org.citydb.modules.kml.database.KmlSplitter;
-import org.citydb.modules.kml.database.KmlSplittingResult;
-import org.citydb.modules.kml.database.LandUse;
-import org.citydb.modules.kml.database.Relief;
-import org.citydb.modules.kml.database.SolitaryVegetationObject;
-import org.citydb.modules.kml.database.Transportation;
-import org.citydb.modules.kml.database.Tunnel;
-import org.citydb.modules.kml.database.WaterBody;
+import org.citydb.modules.kml.database.*;
 import org.citydb.modules.kml.datatype.TypeAttributeValueEnum;
 import org.citydb.modules.kml.util.CityObject4JSON;
 import org.citydb.modules.kml.util.ExportTracker;
@@ -611,7 +601,7 @@ public class KmlExporter implements EventHandler {
 						try {
 							eventDispatcher.flushEvents();
 						} catch (InterruptedException e) {
-							//
+							e.printStackTrace();
 						}
 					}
 				}
@@ -992,11 +982,19 @@ public class KmlExporter implements EventHandler {
 					saxWriter);
 			break;
 		case BUILDING: // must be last, why?
-		default:
 			addStyle(currentDisplayForm,
 					config.getProject().getKmlExporter().getBuildingDisplayForms(),
 					Building.STYLE_BASIS_NAME,
 					saxWriter);
+			break;
+		case ADE_COMPONENT:
+			ADEKmlExporterPreference preference = ADEKmlExportExtensionManager.getInstance().getPreference(config, objectClassId);
+			addADEPointAndCurveStyle(saxWriter, preference);
+			addStyle(currentDisplayForm,
+					ADEKmlExportExtensionManager.getInstance().getPreference(config, objectClassId).getDisplayForms(),
+					preference.getTarget(),
+					saxWriter);
+			break;
 		}
 	}
 
@@ -1136,6 +1134,150 @@ public class KmlExporter implements EventHandler {
 			pairCurveHighlight.setStyleUrl("#" + curveStyleHighlight.getId());
 			StyleMapType styleMapCurve = kmlFactory.createStyleMapType();
 			styleMapCurve.setId(GenericCityObject.STYLE_BASIS_NAME + GenericCityObject.CURVE + "Style");
+			styleMapCurve.getPair().add(pairCurveNormal);
+			styleMapCurve.getPair().add(pairCurveHighlight);
+
+			marshaller.marshal(kmlFactory.createStyle(curveStyleHighlight), saxWriter);
+			marshaller.marshal(kmlFactory.createStyleMap(styleMapCurve), saxWriter);
+		}
+	}
+
+	private void addADEPointAndCurveStyle(SAXWriter saxWriter, ADEKmlExporterPreference preference) throws JAXBException {
+		Marshaller marshaller = jaxbKmlContext.createMarshaller();
+		marshaller.setProperty(Marshaller.JAXB_FRAGMENT, true);
+
+		BalloonStyleType balloonStyle = new BalloonStyleType();
+		balloonStyle.setText("$[description]");
+
+		PointAndCurve pacSettings = preference.getPointAndCurve();
+
+		if (pacSettings.getPointDisplayMode() == PointDisplayMode.ICON) {
+			StyleType pointStyleNormal = kmlFactory.createStyleType();
+			LabelStyleType labelStyleType = kmlFactory.createLabelStyleType();
+			labelStyleType.setScale(0.0);
+			pointStyleNormal.setLabelStyle(labelStyleType);
+
+			IconStyleType iconStyleType = kmlFactory.createIconStyleType();
+			iconStyleType.setScale(pacSettings.getPointIconScale());
+			iconStyleType.setColor(hexStringToByteArray(DisplayForm.formatColorStringForKML(Integer.toHexString(pacSettings.getPointIconColor()))));
+			BasicLinkType icon = kmlFactory.createBasicLinkType();
+			icon.setHref(PointAndCurve.DefaultIconHref);
+			iconStyleType.setIcon(icon);
+			pointStyleNormal.setIconStyle(iconStyleType);
+			pointStyleNormal.setId(preference.getTarget() + ADEObject.POINT + "Normal");
+			pointStyleNormal.setBalloonStyle(balloonStyle);
+
+			marshaller.marshal(kmlFactory.createStyle(pointStyleNormal), saxWriter);
+		}
+		else if (pacSettings.getPointDisplayMode() == PointDisplayMode.CUBE) {
+			String fillColor = DisplayForm.formatColorStringForKML(Integer.toHexString(pacSettings.getPointCubeFillColor()));
+			String lineColor = DisplayForm.formatColorStringForKML(Integer.toHexString(pacSettings.getPointCubeFillColor()));
+			String hlFillColor = DisplayForm.formatColorStringForKML(Integer.toHexString(pacSettings.getPointCubeHighlightedColor()));
+			String hlLineColor = DisplayForm.formatColorStringForKML(Integer.toHexString(pacSettings.getPointCubeHighlightedColor()));
+
+			LineStyleType lineStyleCubeNormal = kmlFactory.createLineStyleType();
+			lineStyleCubeNormal.setColor(hexStringToByteArray(lineColor));
+			lineStyleCubeNormal.setWidth(1.5);
+			PolyStyleType polyStyleCubeNormal = kmlFactory.createPolyStyleType();
+			polyStyleCubeNormal.setColor(hexStringToByteArray(fillColor));
+			StyleType styleCubeNormal = kmlFactory.createStyleType();
+			styleCubeNormal.setId(preference.getTarget() + ADEObject.POINT + "Normal");
+			styleCubeNormal.setLineStyle(lineStyleCubeNormal);
+			styleCubeNormal.setPolyStyle(polyStyleCubeNormal);
+			styleCubeNormal.setBalloonStyle(balloonStyle);
+
+			marshaller.marshal(kmlFactory.createStyle(styleCubeNormal), saxWriter);
+
+			if (pacSettings.isPointCubeHighlightingEnabled()) {
+				LineStyleType lineStyleCubeHighlight = kmlFactory.createLineStyleType();
+				lineStyleCubeHighlight.setColor(hexStringToByteArray(hlLineColor));
+				lineStyleCubeHighlight.setWidth(1.5);
+				PolyStyleType polyStyleCubeHighlight = kmlFactory.createPolyStyleType();
+				polyStyleCubeHighlight.setColor(hexStringToByteArray(hlFillColor));
+				StyleType styleCubeHighlight = kmlFactory.createStyleType();
+				styleCubeHighlight.setId(preference.getTarget() + ADEObject.POINT + "Highlight");
+				styleCubeHighlight.setLineStyle(lineStyleCubeHighlight);
+				styleCubeHighlight.setPolyStyle(polyStyleCubeHighlight);
+				styleCubeHighlight.setBalloonStyle(balloonStyle);
+
+				PairType pairCubeNormal = kmlFactory.createPairType();
+				pairCubeNormal.setKey(StyleStateEnumType.NORMAL);
+				pairCubeNormal.setStyleUrl("#" + styleCubeNormal.getId());
+				PairType pairCubeHighlight = kmlFactory.createPairType();
+				pairCubeHighlight.setKey(StyleStateEnumType.HIGHLIGHT);
+				pairCubeHighlight.setStyleUrl("#" + styleCubeHighlight.getId());
+				StyleMapType styleMapCube = kmlFactory.createStyleMapType();
+				styleMapCube.setId(preference.getTarget() + ADEObject.POINT + "Style");
+				styleMapCube.getPair().add(pairCubeNormal);
+				styleMapCube.getPair().add(pairCubeHighlight);
+
+				marshaller.marshal(kmlFactory.createStyle(styleCubeHighlight), saxWriter);
+				marshaller.marshal(kmlFactory.createStyleMap(styleMapCube), saxWriter);
+			}
+		}
+		else {
+			LineStyleType pointLineStyleNormal = kmlFactory.createLineStyleType();
+			pointLineStyleNormal.setColor(hexStringToByteArray(DisplayForm.formatColorStringForKML(Integer.toHexString(pacSettings.getPointNormalColor()))));
+			pointLineStyleNormal.setWidth(pacSettings.getPointThickness());
+			StyleType pointStyleNormal = kmlFactory.createStyleType();
+			pointStyleNormal.setId(preference.getTarget() + ADEObject.POINT + "Normal");
+			pointStyleNormal.setLineStyle(pointLineStyleNormal);
+			pointStyleNormal.setBalloonStyle(balloonStyle);
+
+			marshaller.marshal(kmlFactory.createStyle(pointStyleNormal), saxWriter);
+
+			if (pacSettings.isPointHighlightingEnabled()) {
+				LineStyleType pointLineStyleHighlight = kmlFactory.createLineStyleType();
+				pointLineStyleHighlight.setColor(hexStringToByteArray(DisplayForm.formatColorStringForKML(Integer.toHexString(pacSettings.getPointHighlightedColor()))));
+				pointLineStyleHighlight.setWidth(pacSettings.getPointHighlightedThickness());
+				StyleType pointStyleHighlight = kmlFactory.createStyleType();
+				pointStyleHighlight.setId(preference.getTarget() + ADEObject.POINT + "Highlight");
+				pointStyleHighlight.setLineStyle(pointLineStyleHighlight);
+				pointStyleHighlight.setBalloonStyle(balloonStyle);
+
+				PairType pairPointNormal = kmlFactory.createPairType();
+				pairPointNormal.setKey(StyleStateEnumType.NORMAL);
+				pairPointNormal.setStyleUrl("#" + pointStyleNormal.getId());
+				PairType pairPointHighlight = kmlFactory.createPairType();
+				pairPointHighlight.setKey(StyleStateEnumType.HIGHLIGHT);
+				pairPointHighlight.setStyleUrl("#" + pointStyleHighlight.getId());
+				StyleMapType styleMapPoint = kmlFactory.createStyleMapType();
+				styleMapPoint.setId(preference.getTarget() + ADEObject.POINT + "Style");
+				styleMapPoint.getPair().add(pairPointNormal);
+				styleMapPoint.getPair().add(pairPointHighlight);
+
+				marshaller.marshal(kmlFactory.createStyle(pointStyleHighlight), saxWriter);
+				marshaller.marshal(kmlFactory.createStyleMap(styleMapPoint), saxWriter);
+			}
+		}
+
+		LineStyleType lineStyleNormal = kmlFactory.createLineStyleType();
+		lineStyleNormal.setColor(hexStringToByteArray(DisplayForm.formatColorStringForKML(Integer.toHexString(pacSettings.getCurveNormalColor()))));
+		lineStyleNormal.setWidth(pacSettings.getCurveThickness());
+		StyleType curveStyleNormal = kmlFactory.createStyleType();
+		curveStyleNormal.setId(preference.getTarget() + ADEObject.CURVE + "Normal");
+		curveStyleNormal.setLineStyle(lineStyleNormal);
+		curveStyleNormal.setBalloonStyle(balloonStyle);
+
+		marshaller.marshal(kmlFactory.createStyle(curveStyleNormal), saxWriter);
+
+		if (pacSettings.isCurveHighlightingEnabled()) {
+			LineStyleType lineStyleHighlight = kmlFactory.createLineStyleType();
+			lineStyleHighlight.setColor(hexStringToByteArray(DisplayForm.formatColorStringForKML(Integer.toHexString(pacSettings.getCurveHighlightedColor()))));
+			lineStyleHighlight.setWidth(pacSettings.getCurveHighlightedThickness());
+			StyleType curveStyleHighlight = kmlFactory.createStyleType();
+			curveStyleHighlight.setId(preference.getTarget() + ADEObject.CURVE + "Highlight");
+			curveStyleHighlight.setLineStyle(lineStyleHighlight);
+			curveStyleHighlight.setBalloonStyle(balloonStyle);
+
+			PairType pairCurveNormal = kmlFactory.createPairType();
+			pairCurveNormal.setKey(StyleStateEnumType.NORMAL);
+			pairCurveNormal.setStyleUrl("#" + curveStyleNormal.getId());
+			PairType pairCurveHighlight = kmlFactory.createPairType();
+			pairCurveHighlight.setKey(StyleStateEnumType.HIGHLIGHT);
+			pairCurveHighlight.setStyleUrl("#" + curveStyleHighlight.getId());
+			StyleMapType styleMapCurve = kmlFactory.createStyleMapType();
+			styleMapCurve.setId(preference.getTarget() + ADEObject.CURVE + "Style");
 			styleMapCurve.getPair().add(pairCurveNormal);
 			styleMapCurve.getPair().add(pairCurveHighlight);
 

@@ -139,7 +139,7 @@ public class GenericCityObject extends KmlGenericObject{
 					break;
 
 				try {
-					String query = queries.getGenericCityObjectBasisData(currentLod);
+					String query = queries.getGenericCityObjectQuery(currentLod, work.getDisplayForm(), work.getObjectClassId());
 					psQuery = connection.prepareStatement(query, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 					for (int i = 1; i <= getParameterCount(query); i++)
 						psQuery.setLong(i, work.getId());
@@ -147,7 +147,7 @@ public class GenericCityObject extends KmlGenericObject{
 					rs = psQuery.executeQuery();
 					if (rs.isBeforeFirst()) {
 						rs.next();
-						if (rs.getLong(4) != 0 || rs.getLong(1) != 0)
+						if (rs.getLong(1) != 0 || rs.getLong(3) != 0)
 							break; // result set not empty
 					}
 
@@ -156,7 +156,7 @@ public class GenericCityObject extends KmlGenericObject{
 					rs = null;
 
 					// check for point or curve
-					query = queries.getGenericCityObjectPointAndCurveQuery(currentLod);
+					query = queries.getGenericCityObjectPointAndCurveQuery(currentLod, work.getObjectClassId());
 					psQuery = connection.prepareStatement(query, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 					for (int i = 1; i <= getParameterCount(query); i++)
 						psQuery.setLong(i, work.getId());
@@ -204,22 +204,14 @@ public class GenericCityObject extends KmlGenericObject{
 				else {					
 					// decide whether explicit or implicit geometry
 					AffineTransformer transformer = null;
-					long sgRootId = rs.getLong(4);
-					if (sgRootId == 0) {
-						sgRootId = rs.getLong(1);
-						transformer = getAffineTransformer(rs, 2, 3);
-					}
 
-					try { rs.close(); } catch (SQLException sqle) {} 
-					try { psQuery.close(); } catch (SQLException sqle) {}
-					rs = null;
-
-					String query = queries.getGenericCityObjectQuery(currentLod, 
-							work.getDisplayForm(),
-							transformer != null, 
-							work.getDisplayForm().getForm() == DisplayForm.COLLADA && !config.getProject().getKmlExporter().getAppearanceTheme().equals(KmlExporter.THEME_NONE));
+					String query = queries.getGenericCityObjectQuery(currentLod, work.getDisplayForm(), work.getObjectClassId());
 					psQuery = connection.prepareStatement(query, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
-					psQuery.setLong(1, sgRootId);
+					psQuery.setLong(1, work.getId());
+
+					for (int i = 1; i <= getParameterCount(query); i++)
+						psQuery.setLong(i, work.getId());
+
 					rs = psQuery.executeQuery();
 
 					// get the proper displayForm (for highlighting)
@@ -261,13 +253,13 @@ public class GenericCityObject extends KmlGenericObject{
 						setId(work.getId());
 						if (this.query.isSetTiling()) { // region
 							if (work.getDisplayForm().isHighlightingEnabled())
-								kmlExporterManager.print(createPlacemarksForHighlighting(rs, work, transformer, false), work, getBalloonSettings().isBalloonContentInSeparateFile());
+								kmlExporterManager.print(createPlacemarksForHighlighting(rs, work, transformer, true), work, getBalloonSettings().isBalloonContentInSeparateFile());
 
-							kmlExporterManager.print(createPlacemarksForGeometry(rs, work, transformer, false), work, getBalloonSettings().isBalloonContentInSeparateFile());
+							kmlExporterManager.print(createPlacemarksForGeometry(rs, work, transformer, true), work, getBalloonSettings().isBalloonContentInSeparateFile());
 						} else { // reverse order for single objects
-							kmlExporterManager.print(createPlacemarksForGeometry(rs, work, transformer, false), work, getBalloonSettings().isBalloonContentInSeparateFile());
+							kmlExporterManager.print(createPlacemarksForGeometry(rs, work, transformer, true), work, getBalloonSettings().isBalloonContentInSeparateFile());
 							if (work.getDisplayForm().isHighlightingEnabled())
-								kmlExporterManager.print(createPlacemarksForHighlighting(rs, work, transformer, false), work, getBalloonSettings().isBalloonContentInSeparateFile());
+								kmlExporterManager.print(createPlacemarksForHighlighting(rs, work, transformer, true), work, getBalloonSettings().isBalloonContentInSeparateFile());
 						}
 						break;
 						
@@ -275,7 +267,7 @@ public class GenericCityObject extends KmlGenericObject{
 					String currentgmlId = getGmlId();
 					setGmlId(work.getGmlId());
 					setId(work.getId());
-					fillGenericObjectForCollada(rs, config.getProject().getKmlExporter().getGenericCityObjectColladaOptions().isGenerateTextureAtlases(), transformer, false);
+					fillGenericObjectForCollada(rs, config.getProject().getKmlExporter().getGenericCityObjectColladaOptions().isGenerateTextureAtlases(), transformer, true);
 
 					if (currentgmlId != null && !currentgmlId.equals(work.getGmlId()) && getGeometryAmount() > GEOMETRY_AMOUNT_WARNING)
 						log.info("Object " + work.getGmlId() + " has more than " + GEOMETRY_AMOUNT_WARNING + " geometries. This may take a while to process...");
@@ -291,7 +283,7 @@ public class GenericCityObject extends KmlGenericObject{
 					setIgnoreSurfaceOrientation(colladaOptions.isIgnoreSurfaceOrientation());
 					try {
 						if (work.getDisplayForm().isHighlightingEnabled()) 
-							kmlExporterManager.print(createPlacemarksForHighlighting(rs, work, transformer, false), work, getBalloonSettings().isBalloonContentInSeparateFile());
+							kmlExporterManager.print(createPlacemarksForHighlighting(rs, work, transformer, true), work, getBalloonSettings().isBalloonContentInSeparateFile());
 					} catch (Exception ioe) {
 						log.logStackTrace(ioe);
 					}
@@ -329,7 +321,7 @@ public class GenericCityObject extends KmlGenericObject{
 		List<PlacemarkType> placemarkList= new ArrayList<>();
 
 		double zOffset = getZOffsetFromConfigOrDB(work.getId());
-		List<Point3d> lowestPointCandidates = getLowestPointsCoordinates(rs, (zOffset == Double.MAX_VALUE));
+		List<Point3d> lowestPointCandidates = getLowestPointsCoordinates(rs, null, (zOffset == Double.MAX_VALUE));
 		rs.beforeFirst(); // return cursor to beginning
 		if (zOffset == Double.MAX_VALUE) {
 			zOffset = getZOffsetFromGEService(work.getId(), lowestPointCandidates);

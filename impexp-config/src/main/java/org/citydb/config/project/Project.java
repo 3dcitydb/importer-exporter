@@ -28,6 +28,7 @@
 package org.citydb.config.project;
 
 import org.citydb.config.ConfigNamespaceFilter;
+import org.citydb.config.project.ade.ADEExtension;
 import org.citydb.config.project.database.Database;
 import org.citydb.config.project.deleter.Deleter;
 import org.citydb.config.project.exporter.Exporter;
@@ -36,10 +37,7 @@ import org.citydb.config.project.importer.Importer;
 import org.citydb.config.project.kmlExporter.KmlExporter;
 import org.citydb.config.project.plugin.PluginConfig;
 
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlTransient;
-import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.*;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.util.HashMap;
 import java.util.Map;
@@ -52,7 +50,8 @@ import java.util.Map;
 		"deleter",
 		"kmlExporter",
 		"global",
-		"extensions"
+		"extensions",
+		"adeExtensions"
 })
 public class Project {
 	private Database database;
@@ -67,6 +66,8 @@ public class Project {
 	private Global global;
 	@XmlJavaTypeAdapter(org.citydb.config.project.plugin.PluginConfigListAdapter.class)
 	private Map<Class<? extends PluginConfig>, PluginConfig> extensions;
+	@XmlJavaTypeAdapter(org.citydb.config.project.ade.ADEExtensionAdapter.class)
+	private Map<String, ADEExtension> adeExtensions;
 	
 	@XmlTransient
 	private ConfigNamespaceFilter namespaceFilter;
@@ -81,6 +82,7 @@ public class Project {
 
 		namespaceFilter = new ConfigNamespaceFilter();
 		extensions = new HashMap<>();
+		setAdeExtensions(new HashMap<>());
 	}
 
 	public Project() {
@@ -149,6 +151,14 @@ public class Project {
 		return extensions.put(pluginConfig.getClass(), pluginConfig);
 	}
 
+	public Map<String, ADEExtension> getAdeExtensions() {
+		return adeExtensions;
+	}
+
+	public void setAdeExtensions(Map<String, ADEExtension> adeExtensions) {
+		this.adeExtensions = adeExtensions;
+	}
+	
 	public ConfigNamespaceFilter getNamespaceFilter() {
 		return namespaceFilter;
 	}
@@ -156,5 +166,5 @@ public class Project {
 	public void setNamespaceFilter(ConfigNamespaceFilter namespaceFilter) {
 		this.namespaceFilter = namespaceFilter;
 	}
-	
+
 }

@@ -28,6 +28,8 @@
 package org.citydb.modules.kml.gui.preferences;
 
 import org.citydb.config.Config;
+import org.citydb.config.project.ade.ADEExtension;
+import org.citydb.config.project.ade.ADEKmlExporterPreference;
 import org.citydb.gui.preferences.AbstractPreferences;
 import org.citydb.gui.preferences.DefaultPreferencesEntry;
 import org.citydb.plugin.extension.view.ViewController;
@@ -68,6 +70,26 @@ public class KMLExportPreferences extends AbstractPreferences {
 		balloonNode.addChildEntry(new DefaultPreferencesEntry(new CityObjectGroupBalloonPanel(config)));
 		balloonNode.addChildEntry(new DefaultPreferencesEntry(new BridgeBalloonPanel(config)));
 		balloonNode.addChildEntry(new DefaultPreferencesEntry(new TunnelBalloonPanel(config)));
+
+		// ADEs
+		DefaultPreferencesEntry adeRenderingRootNode = new ADEPanel("ADE(s)");
+		DefaultPreferencesEntry adeBalloonRootNode = new ADEPanel("ADE(s)");
+		for (ADEExtension adeExtensionConfig : config.getProject().getAdeExtensions().values()) {
+			String adeExtensionName = adeExtensionConfig.getExtensionName();
+			DefaultPreferencesEntry adeRenderingNode = new ADEPanel(adeExtensionName);
+			DefaultPreferencesEntry adeBalloonNode = new ADEPanel(adeExtensionName);
+			for (ADEKmlExporterPreference preference : adeExtensionConfig.getKmlExporter().getPreferences().values()) {
+				DefaultPreferencesEntry adeFeatureRenderingNode = new ADEPanel(preference.getTarget());
+				adeFeatureRenderingNode.addChildEntry(new DefaultPreferencesEntry(new ADEThreeDRenderingPanel(preference)));
+				adeFeatureRenderingNode.addChildEntry(new DefaultPreferencesEntry(new ADEPointAndCurveRenderingPanel(preference)));
+				adeRenderingNode.addChildEntry(adeFeatureRenderingNode);
+				adeBalloonNode.addChildEntry(new DefaultPreferencesEntry(new ADEDBalloonPanel(preference)));
+			}
+			adeRenderingRootNode.addChildEntry(adeRenderingNode);
+			adeBalloonRootNode.addChildEntry(adeBalloonNode);
+		}
+		renderingNode.addChildEntry(adeRenderingRootNode);
+		balloonNode.addChildEntry(adeBalloonRootNode);
 
 		root.addChildEntry(new DefaultPreferencesEntry(new GeneralPanel(viewController, config)));
 		root.addChildEntry(renderingNode);

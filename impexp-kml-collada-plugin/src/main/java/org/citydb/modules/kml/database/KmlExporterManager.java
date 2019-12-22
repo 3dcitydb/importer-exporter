@@ -37,19 +37,25 @@ import net.opengis.kml._2.ObjectFactory;
 import net.opengis.kml._2.PlacemarkType;
 import net.opengis.kml._2.RegionType;
 import net.opengis.kml._2.ViewRefreshModeEnumType;
+import org.citydb.ade.ADEExtension;
+import org.citydb.ade.ADEExtensionManager;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
 import org.citydb.config.project.kmlExporter.DisplayForm;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.adapter.BlobExportAdapter;
+import org.citydb.database.schema.mapping.SchemaMapping;
 import org.citydb.event.EventDispatcher;
 import org.citydb.event.global.CounterEvent;
 import org.citydb.event.global.CounterType;
 import org.citydb.log.Logger;
+import org.citydb.modules.kml.ade.*;
+import org.citydb.modules.kml.controller.KmlExportException;
 import org.citydb.modules.kml.util.BalloonTemplateHandler;
 import org.citydb.modules.kml.util.CityObject4JSON;
 import org.citydb.modules.kml.util.ExportTracker;
 import org.citydb.query.Query;
+import org.citydb.registry.ObjectRegistry;
 import org.citydb.util.ClientConstants;
 import org.citygml4j.util.xml.SAXEventBuffer;
 
@@ -66,14 +72,11 @@ import java.io.OutputStreamWriter;
 import java.io.StringWriter;
 import java.nio.charset.Charset;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-public class KmlExporterManager {
+public class KmlExporterManager implements ADEKmlExportHelper {
 	private final Logger log = Logger.getInstance();
 	private final JAXBContext jaxbKmlContext;
 	private final JAXBContext jaxbColladaContext;
@@ -84,6 +87,9 @@ public class KmlExporterManager {
 	private final BlobExportAdapter textureExportAdapter;
 	private final EventDispatcher eventDispatcher;
 	private final Config config;
+	private final ADEExtensionManager adeManager;
+	private final SchemaMapping schemaMapping;
+	private final Queries sqlQueries;
 
 	private boolean useTiling;
 	private String mainFilename;
@@ -94,6 +100,9 @@ public class KmlExporterManager {
 	private final String TEMP_FOLDER = "__temp";
 
 	private long implicitId;
+
+	private final IdentityHashMap<ADEKmlExportExtension, ADEKmlExportManager> adeKmlExportManagers;
+
 
 	public KmlExporterManager(JAXBContext jaxbKmlContext,
 			JAXBContext jaxbColladaContext,
@@ -114,6 +123,11 @@ public class KmlExporterManager {
 		this.textureExportAdapter = textureExportAdapter;
 		this.eventDispatcher = eventDispatcher;
 		this.config = config;
+
+		adeManager = ADEExtensionManager.getInstance();
+		schemaMapping = ObjectRegistry.getInstance().getSchemaMapping();
+		sqlQueries = new Queries(databaseAdapter, databaseAdapter.getConnectionDetails().getSchema(), this);
+		adeKmlExportManagers = new IdentityHashMap<>();
 
 		useTiling = query.isSetTiling();
 		mainFilename = config.getInternal().getExportFile().toAbsolutePath().normalize().toString();
@@ -137,6 +151,11 @@ public class KmlExporterManager {
 	
 	public AbstractDatabaseAdapter getDatabaseAdapter() {
 		return databaseAdapter;
+	}
+
+	@Override
+	public Queries getSQLQueries() {
+		return sqlQueries;
 	}
 
 	public void updateFeatureTracker(KmlSplittingResult work) {
@@ -668,5 +687,49 @@ public class KmlExporterManager {
 			}
 		}
 	}
+
+	public ADEKmlExportManager getADEKmlExportManager(ADEExtension adeExtension) {
+		ADEKmlExportManager adeKmlExportManager = null;
+
+		ADEKmlExportExtension adeKmlExportExtension = ADEKmlExportExtensionManager.getInstance().getADEKmlExportExtension(adeExtension);
+		if (adeKmlExportExtension != null) {
+			adeKmlExportManager = adeKmlExportManagers.get(adeExtension);
+			if (adeKmlExportManager == null) {
+				adeKmlExportManager = adeKmlExportExtension.createADEKmlExportManager();
+				adeKmlExportManager.init(this);
+				if (adeKmlExportManager != null) {
+					adeKmlExportManagers.put(adeKmlExportExtension, adeKmlExportManager);
+				}
+			}
+		}
+
+		return adeKmlExportManager;
+	}
+
+	public ADEKmlExportManager getADEKmlExportManager(int objectClassId) throws ADEKmlExportException {
+		ADEExtension adeExtension = ADEExtensionManager.getInstance().getExtensionByObjectClassId(objectClassId);
+		ADEKmlExportManager adeKmlExportManager = getADEKmlExportManager(adeExtension);
+
+		if (adeKmlExportManager == null) {
+			throw new ADEKmlExportException("The Kml-Export extension is not enabled " +
+					"for the ADE class '" + ObjectRegistry.getInstance().getSchemaMapping().getFeatureType(objectClassId).getPath() + "'.");
+		}
+
+		return adeKmlExportManager;
+	}
+
+	public List<ADEKmlExportManager> getADEKmlExportManagers() {
+		List<ADEKmlExportManager> result = new ArrayList<>();
+
+		for (ADEExtension adeExtension : ADEExtensionManager.getInstance().getExtensions()) {
+			ADEKmlExportManager adeKmlExportManager = getADEKmlExportManager(adeExtension);
+			if (adeKmlExportManager != null) {
+				result.add(adeKmlExportManager);
+			}
+		}
+
+		return result;
+	}
+
 }
 

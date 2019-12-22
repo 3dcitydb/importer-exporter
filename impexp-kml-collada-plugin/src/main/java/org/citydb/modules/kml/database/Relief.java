@@ -108,7 +108,7 @@ public class Relief extends KmlGenericObject{
 
 				try {
 					// we currently only support TIN reliefs...
-					String query = queries.getReliefQuery(currentLod, work.getDisplayForm());				
+					String query = queries.getReliefQuery(currentLod, work.getDisplayForm(), work.getObjectClassId());
 					psQuery = connection.prepareStatement(query, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 					for (int i = 1; i <= getParameterCount(query); i++)
 						psQuery.setLong(i, work.getId());
