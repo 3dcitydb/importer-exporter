@@ -345,9 +345,6 @@ public class KmlExporter implements EventHandler {
 				throw new KmlExportException("Failed to write JSON file header.", e);
 			}			
 		}
-		
-		if (!ADEExtensionManager.getInstance().getEnabledExtensions().isEmpty())
-			log.warn("NOTE: This operation does not work on ADE features.");
 
 		long start = System.currentTimeMillis();
 
