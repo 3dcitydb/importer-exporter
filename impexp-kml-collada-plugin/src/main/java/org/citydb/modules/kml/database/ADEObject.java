@@ -179,12 +179,6 @@ public class ADEObject extends KmlGenericObject{
 			else { // result not empty
 				kmlExporterManager.updateFeatureTracker(work);
 
-				if (hasPointAndCurve) { // point or curve geometry
-					kmlExporterManager.print(createPlacemarksForPointOrCurve(pointAndCurveQueryRs, work, getPointAndCurve()),
-							work,
-							getBalloonSettings().isBalloonContentInSeparateFile());
-				}
-
 				if (hasBrep) {
 					String query;
 					if (work.getDisplayForm().getForm() == DisplayForm.FOOTPRINT || work.getDisplayForm().getForm() == DisplayForm.EXTRUDED) {
@@ -242,6 +236,12 @@ public class ADEObject extends KmlGenericObject{
 								kmlExporterManager.print(createPlacemarksForGeometry(brepGeometriesQueryRs, work, true), work, getBalloonSettings().isBalloonContentInSeparateFile());
 								if (work.getDisplayForm().isHighlightingEnabled())
 									kmlExporterManager.print(createPlacemarksForHighlighting(brepGeometriesQueryRs, work, true), work, getBalloonSettings().isBalloonContentInSeparateFile());
+							}
+
+							if (hasPointAndCurve) { // point or curve geometry
+								kmlExporterManager.print(createPlacemarksForPointOrCurve(pointAndCurveQueryRs, work, getPointAndCurve()),
+										work,
+										getBalloonSettings().isBalloonContentInSeparateFile());
 							}
 							break;
 
