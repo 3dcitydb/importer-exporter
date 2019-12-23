@@ -229,13 +229,13 @@ public class ADEObject extends KmlGenericObject{
 							setId(work.getId());
 							if (this.query.isSetTiling()) { // region
 								if (work.getDisplayForm().isHighlightingEnabled())
-									kmlExporterManager.print(createPlacemarksForHighlighting(brepGeometriesQueryRs, work, true), work, getBalloonSettings().isBalloonContentInSeparateFile());
+									kmlExporterManager.print(createPlacemarksForHighlighting(brepGeometriesQueryRs, work), work, getBalloonSettings().isBalloonContentInSeparateFile());
 
-								kmlExporterManager.print(createPlacemarksForGeometry(brepGeometriesQueryRs, work, true), work, getBalloonSettings().isBalloonContentInSeparateFile());
+								kmlExporterManager.print(createPlacemarksForGeometry(brepGeometriesQueryRs, work), work, getBalloonSettings().isBalloonContentInSeparateFile());
 							} else { // reverse order for single objects
-								kmlExporterManager.print(createPlacemarksForGeometry(brepGeometriesQueryRs, work, true), work, getBalloonSettings().isBalloonContentInSeparateFile());
+								kmlExporterManager.print(createPlacemarksForGeometry(brepGeometriesQueryRs, work), work, getBalloonSettings().isBalloonContentInSeparateFile());
 								if (work.getDisplayForm().isHighlightingEnabled())
-									kmlExporterManager.print(createPlacemarksForHighlighting(brepGeometriesQueryRs, work, true), work, getBalloonSettings().isBalloonContentInSeparateFile());
+									kmlExporterManager.print(createPlacemarksForHighlighting(brepGeometriesQueryRs, work), work, getBalloonSettings().isBalloonContentInSeparateFile());
 							}
 
 							if (hasPointAndCurve) { // point or curve geometry
@@ -249,7 +249,7 @@ public class ADEObject extends KmlGenericObject{
 							String currentgmlId = getGmlId();
 							setGmlId(work.getGmlId());
 							setId(work.getId());
-							fillGenericObjectForCollada(brepGeometriesQueryRs, getColladaOptions().isGenerateTextureAtlases(), true);
+							fillGenericObjectForCollada(brepGeometriesQueryRs, getColladaOptions().isGenerateTextureAtlases());
 
 							if (currentgmlId != null && !currentgmlId.equals(work.getGmlId()) && getGeometryAmount() > GEOMETRY_AMOUNT_WARNING)
 								log.info("Object " + work.getGmlId() + " has more than " + GEOMETRY_AMOUNT_WARNING + " geometries. This may take a while to process...");
@@ -265,7 +265,7 @@ public class ADEObject extends KmlGenericObject{
 							setIgnoreSurfaceOrientation(colladaOptions.isIgnoreSurfaceOrientation());
 							try {
 								if (work.getDisplayForm().isHighlightingEnabled())
-									kmlExporterManager.print(createPlacemarksForHighlighting(brepGeometriesQueryRs, work, true), work, getBalloonSettings().isBalloonContentInSeparateFile());
+									kmlExporterManager.print(createPlacemarksForHighlighting(brepGeometriesQueryRs, work), work, getBalloonSettings().isBalloonContentInSeparateFile());
 							} catch (Exception ioe) {
 								log.logStackTrace(ioe);
 							}

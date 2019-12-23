@@ -1348,10 +1348,6 @@ public abstract class KmlGenericObject {
 	}
 
 	protected List<PlacemarkType> createPlacemarksForFootprint(ResultSet rs, KmlSplittingResult work) throws SQLException {
-		return createPlacemarksForFootprint(rs, work, null);
-	}
-
-	protected List<PlacemarkType> createPlacemarksForFootprint(ResultSet rs, KmlSplittingResult work, AffineTransformer transformer) throws SQLException {
 		List<PlacemarkType> placemarkList = new ArrayList<PlacemarkType>();
 		PlacemarkType placemark = kmlFactory.createPlacemarkType();
 		placemark.setName(work.getGmlId());
@@ -1382,14 +1378,14 @@ public abstract class KmlGenericObject {
 					continue;
 
 				// for implicit geometries, we need to apply the transformation matrix first
-				if (rs.getMetaData().getColumnCount() > 1) {
-					transformer = getAffineTransformer(rs, 3, 4);
+				rs.getLong(2);
+				if (!rs.wasNull()) {
+					AffineTransformer transformer = getAffineTransformer(rs, 3, 4);
 					if (transformer != null)
 						unconvertedGeom = transformer.applyTransformation(unconvertedGeom);
 				}
 
 				GeometryObject groundSurface = convertToWGS84(unconvertedGeom);
-				unconvertedGeom = null;
 
 				int dim = groundSurface.getDimension();
 
@@ -1422,10 +1418,6 @@ public abstract class KmlGenericObject {
 	}
 
 	protected List<PlacemarkType> createPlacemarksForExtruded(ResultSet rs, KmlSplittingResult work, double measuredHeight, boolean reversePointOrder) throws SQLException {
-		return createPlacemarksForExtruded(rs, work, measuredHeight, reversePointOrder, null);
-	}
-
-	protected List<PlacemarkType> createPlacemarksForExtruded(ResultSet rs, KmlSplittingResult work, double measuredHeight, boolean reversePointOrder, AffineTransformer transformer) throws SQLException {
 		List<PlacemarkType> placemarkList = new ArrayList<PlacemarkType>();
 		PlacemarkType placemark = kmlFactory.createPlacemarkType();
 		placemark.setName(work.getGmlId());
@@ -1454,14 +1446,14 @@ public abstract class KmlGenericObject {
 					continue;
 
 				// for implicit geometries, we need to apply the transformation matrix first
-				if (rs.getMetaData().getColumnCount() > 1) {
-					transformer = getAffineTransformer(rs, 3, 4);
+				rs.getLong(2);
+				if (!rs.wasNull()) {
+					AffineTransformer transformer = getAffineTransformer(rs, 3, 4);
 					if (transformer != null)
 						unconvertedGeom = transformer.applyTransformation(unconvertedGeom);
 				}
 
 				GeometryObject groundSurface = convertToWGS84(unconvertedGeom);
-				unconvertedGeom = null;
 
 				int dim = groundSurface.getDimension();
 
@@ -1497,12 +1489,8 @@ public abstract class KmlGenericObject {
 		}
 		return placemarkList;
 	}
-
-	protected List<PlacemarkType> createPlacemarksForGeometry(ResultSet rs, KmlSplittingResult work, boolean supportsNestedImplicitGeometries) throws SQLException {
-		return createPlacemarksForGeometry(rs, work, null, supportsNestedImplicitGeometries);
-	}
-
-	protected List<PlacemarkType> createPlacemarksForGeometry(ResultSet _rs, KmlSplittingResult work, AffineTransformer globalTransformer, boolean supportsNestedImplicitGeometries) throws SQLException {
+	
+	protected List<PlacemarkType> createPlacemarksForGeometry(ResultSet _rs, KmlSplittingResult work) throws SQLException {
 		HashSet<String> exportedGmlIds = new HashSet<String>();
 		HashMap<String, MultiGeometryType> multiGeometries = new HashMap<String, MultiGeometryType>();
 		MultiGeometryType multiGeometry = null;
@@ -1510,24 +1498,24 @@ public abstract class KmlGenericObject {
 
 		_rs.beforeFirst(); // return cursor to beginning
 		double zOffset = getZOffsetFromConfigOrDB(work.getId());
-		List<Point3d> lowestPointCandidates = getLowestPointsCoordinates(_rs, (zOffset == Double.MAX_VALUE), globalTransformer, supportsNestedImplicitGeometries);
+		List<Point3d> lowestPointCandidates = getLowestPointsCoordinates(_rs, (zOffset == Double.MAX_VALUE));
 		if (zOffset == Double.MAX_VALUE)
 			zOffset = getZOffsetFromGEService(work.getId(), lowestPointCandidates);
 
 		_rs.beforeFirst(); // return cursor to beginning
 
 		while (_rs.next()) {
-			AffineTransformer transformer = globalTransformer;
+			AffineTransformer transformer = null;
 			long rootId = _rs.getLong(1);
 
-			if (rootId == 0) {
+			if (_rs.wasNull()) {
 				// get nested implicit geometry
-				if (supportsNestedImplicitGeometries) {
-					rootId = _rs.getLong(3);
-					transformer = getAffineTransformer(_rs, 4, 5);
-				}
+				rootId = _rs.getLong(3);
+				if (_rs.wasNull())
+					continue;
 
-				if (rootId == 0 || transformer == null)
+				transformer = getAffineTransformer(_rs, 4, 5);
+				if (transformer == null)
 					continue;
 			}
 
@@ -1761,6 +1749,13 @@ public abstract class KmlGenericObject {
 			Object buildingGeometryObj = rs.getObject(1);
 
 			GeometryObject pointOrCurveGeometry = geometryConverterAdapter.getGeometry(buildingGeometryObj);
+			// for implicit geometries, we need to apply the transformation matrix first
+			rs.getLong(2);
+			if (!rs.wasNull()) {
+				AffineTransformer transformer = getAffineTransformer(rs, 3, 4);
+				if (transformer != null)
+					pointOrCurveGeometry = transformer.applyTransformation(pointOrCurveGeometry);
+			}
 
 			eventDispatcher.triggerEvent(new GeometryCounterEvent(null, this));
 			MultiGeometryType multiGeometry =  kmlFactory.createMultiGeometryType();
@@ -2101,12 +2096,8 @@ public abstract class KmlGenericObject {
 		x3dMaterial.setEmissiveColor(getX3dColorFromString("0.0 0.0 0.0"));
 		return x3dMaterial;
 	}
-
-	protected void fillGenericObjectForCollada(ResultSet rs, boolean generateTextureAtlas, boolean supportsNestedImplicitGeometries) throws SQLException {
-		fillGenericObjectForCollada(rs, generateTextureAtlas, null, supportsNestedImplicitGeometries);
-	}
-
-	protected void fillGenericObjectForCollada(ResultSet _rs, boolean generateTextureAtlas, AffineTransformer globalTransformer, boolean supportsNestedImplicitGeometries) throws SQLException {
+	
+	protected void fillGenericObjectForCollada(ResultSet _rs, boolean generateTextureAtlas) throws SQLException {
 		HashSet<String> exportedGmlIds = new HashSet<String>();
 
 		String selectedTheme = config.getProject().getKmlExporter().getAppearanceTheme();
@@ -2129,17 +2120,17 @@ public abstract class KmlGenericObject {
 		HashMap<Long, Long> implicitIdMap = new HashMap<Long, Long>();
 
 		while (_rs.next()) {
-			AffineTransformer transformer = globalTransformer;
+			AffineTransformer transformer = null;
 			long rootId = _rs.getLong(1);
 
-			if (rootId == 0) {
+			if (_rs.wasNull()) {
 				// get nested implicit geometry
-				if (supportsNestedImplicitGeometries) {
-					rootId = _rs.getLong(3);
-					transformer = getAffineTransformer(_rs, 4, 5);
-				}
+				rootId = _rs.getLong(3);
+				if (_rs.wasNull())
+					continue;
 
-				if (rootId == 0 || transformer == null)
+				transformer = getAffineTransformer(_rs, 4, 5);
+				if (transformer == null)
 					continue;
 			}
 
@@ -2421,12 +2412,8 @@ public abstract class KmlGenericObject {
 		placemark.setAbstractGeometryGroup(kmlFactory.createModel(model));
 		return placemark;
 	}
-
-	protected List<PlacemarkType> createPlacemarksForHighlighting(ResultSet rs, KmlSplittingResult work, boolean supportsNestedImplicitGeometries) throws SQLException {
-		return createPlacemarksForHighlighting(rs, work, null, supportsNestedImplicitGeometries);
-	}
-
-	protected List<PlacemarkType> createPlacemarksForHighlighting(ResultSet _rs, KmlSplittingResult work, AffineTransformer globalTransformer, boolean supportsNestedImplicitGeometries) throws SQLException {
+	
+	protected List<PlacemarkType> createPlacemarksForHighlighting(ResultSet _rs, KmlSplittingResult work) throws SQLException {
 		HashSet<String> exportedGmlIds = new HashSet<String>();
 
 		List<PlacemarkType> placemarkList= new ArrayList<PlacemarkType>();
@@ -2448,23 +2435,23 @@ public abstract class KmlGenericObject {
 		_rs.beforeFirst(); // return cursor to beginning
 		double zOffset = getZOffsetFromConfigOrDB(work.getId());
 		if (zOffset == Double.MAX_VALUE) {
-			List<Point3d> lowestPointCandidates = getLowestPointsCoordinates(_rs, (zOffset == Double.MAX_VALUE), globalTransformer, supportsNestedImplicitGeometries);
+			List<Point3d> lowestPointCandidates = getLowestPointsCoordinates(_rs, (zOffset == Double.MAX_VALUE));
 			zOffset = getZOffsetFromGEService(work.getId(), lowestPointCandidates);
 		}
 
 		_rs.beforeFirst(); // return cursor to beginning
 		while (_rs.next()) {
-			AffineTransformer transformer = globalTransformer;
+			AffineTransformer transformer = null;
 			long rootId = _rs.getLong(1);
 
-			if (rootId == 0) {
+			if (_rs.wasNull()) {
 				// get nested implicit geometry
-				if (supportsNestedImplicitGeometries) {
-					rootId = _rs.getLong(3);
-					transformer = getAffineTransformer(_rs, 4, 5);
-				}
+				rootId = _rs.getLong(3);
+				if (_rs.wasNull())
+					continue;
 
-				if (rootId == 0 || transformer == null)
+				transformer = getAffineTransformer(_rs, 4, 5);
+				if (transformer == null)
 					continue;
 			}
 
@@ -2818,21 +2805,20 @@ public abstract class KmlGenericObject {
 		return zOffset;
 	}
 
-	protected List<Point3d> getLowestPointsCoordinates(ResultSet _rs, boolean willCallGEService,
-	                                                   AffineTransformer globalTransformer, boolean supportsNestedImplicitGeometries) throws SQLException {
+	protected List<Point3d> getLowestPointsCoordinates(ResultSet _rs, boolean willCallGEService) throws SQLException {
 		List<Point3d> result = new ArrayList<Point3d>();
 		while (_rs.next()) {
-			AffineTransformer transformer = globalTransformer;
+			AffineTransformer transformer = null;
 			long rootId = _rs.getLong(1);
 
-			if (rootId == 0) {
+			if (_rs.wasNull()) {
 				// get nested implicit geometry
-				if (supportsNestedImplicitGeometries) {
-					rootId = _rs.getLong(3);
-					transformer = getAffineTransformer(_rs, 4, 5);
-				}
+				rootId = _rs.getLong(3);
+				if (_rs.wasNull())
+					continue;
 
-				if (rootId == 0 || transformer == null)
+				transformer = getAffineTransformer(_rs, 4, 5);
+				if (transformer == null)
 					continue;
 			}
 

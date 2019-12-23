@@ -29,11 +29,9 @@ package org.citydb.modules.kml.database;
 
 import net.opengis.kml._2.PlacemarkType;
 import org.citydb.config.Config;
-import org.citydb.config.geometry.GeometryObject;
 import org.citydb.config.project.kmlExporter.Balloon;
 import org.citydb.config.project.kmlExporter.ColladaOptions;
 import org.citydb.config.project.kmlExporter.DisplayForm;
-import org.citydb.config.project.kmlExporter.KmlExporter;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.adapter.BlobExportAdapter;
 import org.citydb.event.EventDispatcher;
@@ -42,9 +40,6 @@ import org.citydb.modules.kml.util.AffineTransformer;
 import org.citydb.modules.kml.util.BalloonTemplateHandler;
 import org.citydb.modules.kml.util.ElevationServiceHandler;
 import org.citydb.query.Query;
-import org.citydb.util.Util;
-import org.citygml4j.geometry.Matrix;
-import org.citygml4j.geometry.Point;
 
 import javax.vecmath.Point3d;
 import javax.xml.bind.JAXBException;
@@ -119,9 +114,7 @@ public class CityFurniture extends KmlGenericObject{
 
 					rs = psQuery.executeQuery();
 					if (rs.isBeforeFirst()) {
-						rs.next();
-						if (rs.getLong(1) != 0 || rs.getLong(3) != 0)
-							break; // result set not empty
+						break; // result set not empty
 					}
 
 					try { rs.close(); } catch (SQLException sqle) {} 
@@ -150,9 +143,6 @@ public class CityFurniture extends KmlGenericObject{
 			}
 
 			else { // result not empty
-				// decide whether explicit or implicit geometry
-				AffineTransformer transformer = null;
-
 				String query = queries.getCityFurnitureQuery(currentLod, work.getDisplayForm(), work.getObjectClassId());
 				psQuery = connection.prepareStatement(query, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 
@@ -170,7 +160,7 @@ public class CityFurniture extends KmlGenericObject{
 
 				switch (work.getDisplayForm().getForm()) {
 				case DisplayForm.FOOTPRINT:
-					kmlExporterManager.print(createPlacemarksForFootprint(rs, work, transformer),
+					kmlExporterManager.print(createPlacemarksForFootprint(rs, work),
 							work,
 							getBalloonSettings().isBalloonContentInSeparateFile());
 					break;
@@ -189,7 +179,7 @@ public class CityFurniture extends KmlGenericObject{
 						rs2.next();
 
 						double measuredHeight = rs2.getDouble("envelope_measured_height");
-						kmlExporterManager.print(createPlacemarksForExtruded(rs, work, measuredHeight, false, transformer),
+						kmlExporterManager.print(createPlacemarksForExtruded(rs, work, measuredHeight, false),
 								work, getBalloonSettings().isBalloonContentInSeparateFile());
 						break;
 					} finally {
@@ -202,13 +192,13 @@ public class CityFurniture extends KmlGenericObject{
 					setId(work.getId());
 					if (this.query.isSetTiling()) { // region
 						if (work.getDisplayForm().isHighlightingEnabled())
-							kmlExporterManager.print(createPlacemarksForHighlighting(rs, work, transformer, true), work, getBalloonSettings().isBalloonContentInSeparateFile());
+							kmlExporterManager.print(createPlacemarksForHighlighting(rs, work), work, getBalloonSettings().isBalloonContentInSeparateFile());
 
-						kmlExporterManager.print(createPlacemarksForGeometry(rs, work, transformer, true), work, getBalloonSettings().isBalloonContentInSeparateFile());
+						kmlExporterManager.print(createPlacemarksForGeometry(rs, work), work, getBalloonSettings().isBalloonContentInSeparateFile());
 					} else { // reverse order for single objects
-						kmlExporterManager.print(createPlacemarksForGeometry(rs, work, transformer, true), work, getBalloonSettings().isBalloonContentInSeparateFile());
+						kmlExporterManager.print(createPlacemarksForGeometry(rs, work), work, getBalloonSettings().isBalloonContentInSeparateFile());
 						if (work.getDisplayForm().isHighlightingEnabled())
-							kmlExporterManager.print(createPlacemarksForHighlighting(rs, work, transformer, true), work, getBalloonSettings().isBalloonContentInSeparateFile());
+							kmlExporterManager.print(createPlacemarksForHighlighting(rs, work), work, getBalloonSettings().isBalloonContentInSeparateFile());
 					}
 					break;
 
@@ -216,7 +206,7 @@ public class CityFurniture extends KmlGenericObject{
 					String currentgmlId = getGmlId();
 					setGmlId(work.getGmlId());
 					setId(work.getId());
-					fillGenericObjectForCollada(rs, config.getProject().getKmlExporter().getCityFurnitureColladaOptions().isGenerateTextureAtlases(),  transformer, true);
+					fillGenericObjectForCollada(rs, config.getProject().getKmlExporter().getCityFurnitureColladaOptions().isGenerateTextureAtlases());
 
 					if (currentgmlId != null && !currentgmlId.equals(work.getGmlId()) && getGeometryAmount() > GEOMETRY_AMOUNT_WARNING)
 						log.info("Object " + work.getGmlId() + " has more than " + GEOMETRY_AMOUNT_WARNING + " geometries. This may take a while to process...");
@@ -232,7 +222,7 @@ public class CityFurniture extends KmlGenericObject{
 					setIgnoreSurfaceOrientation(colladaOptions.isIgnoreSurfaceOrientation());
 					try {
 						if (work.getDisplayForm().isHighlightingEnabled()) 
-							kmlExporterManager.print(createPlacemarksForHighlighting(rs, work, transformer, true), work, getBalloonSettings().isBalloonContentInSeparateFile());
+							kmlExporterManager.print(createPlacemarksForHighlighting(rs, work), work, getBalloonSettings().isBalloonContentInSeparateFile());
 					} catch (Exception ioe) {
 						log.logStackTrace(ioe);
 					}

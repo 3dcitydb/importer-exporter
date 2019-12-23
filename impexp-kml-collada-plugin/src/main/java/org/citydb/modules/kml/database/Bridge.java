@@ -327,20 +327,20 @@ public class Bridge extends KmlGenericObject{
 					setId(work.getId());
 					if (work.getDisplayForm().isHighlightingEnabled()) {
 						if (query.isSetTiling()) { // region
-							List<PlacemarkType> hlPlacemarks = createPlacemarksForHighlighting(rs, work, true);
-							hlPlacemarks.addAll(createPlacemarksForGeometry(rs, work, true));
+							List<PlacemarkType> hlPlacemarks = createPlacemarksForHighlighting(rs, work);
+							hlPlacemarks.addAll(createPlacemarksForGeometry(rs, work));
 							return hlPlacemarks;
 						}
 						else { // reverse order for single buildings
-							List<PlacemarkType> placemarks = createPlacemarksForGeometry(rs, work, true);
-							placemarks.addAll(createPlacemarksForHighlighting(rs, work, true));
+							List<PlacemarkType> placemarks = createPlacemarksForGeometry(rs, work);
+							placemarks.addAll(createPlacemarksForHighlighting(rs, work));
 							return placemarks;
 						}
 					}
-					return createPlacemarksForGeometry(rs, work, true);
+					return createPlacemarksForGeometry(rs, work);
 
 				case DisplayForm.COLLADA:
-					fillGenericObjectForCollada(rs, config.getProject().getKmlExporter().getBridgeColladaOptions().isGenerateTextureAtlases(), true); // fill and refill
+					fillGenericObjectForCollada(rs, config.getProject().getKmlExporter().getBridgeColladaOptions().isGenerateTextureAtlases()); // fill and refill
 					String currentgmlId = getGmlId();
 					setGmlId(work.getGmlId());
 					setId(work.getId());
@@ -359,7 +359,7 @@ public class Bridge extends KmlGenericObject{
 					setIgnoreSurfaceOrientation(colladaOptions.isIgnoreSurfaceOrientation());
 					try {
 						if (work.getDisplayForm().isHighlightingEnabled()) {
-							return createPlacemarksForHighlighting(rs, work, true);
+							return createPlacemarksForHighlighting(rs, work);
 						}
 						// just COLLADA, no KML
 						List<PlacemarkType> dummy = new ArrayList<>();
