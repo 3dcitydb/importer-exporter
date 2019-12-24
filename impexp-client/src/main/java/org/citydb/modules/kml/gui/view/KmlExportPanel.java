@@ -30,18 +30,14 @@ package org.citydb.modules.kml.gui.view;
 import org.citydb.config.Config;
 import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.i18n.Language;
+import org.citydb.config.project.ade.ADEExtension;
+import org.citydb.config.project.ade.ADEKmlExporterPreference;
 import org.citydb.config.project.database.DBConnection;
 import org.citydb.config.project.database.Database;
 import org.citydb.config.project.database.DatabaseConfigurationException;
 import org.citydb.config.project.database.Workspace;
 import org.citydb.config.project.global.LogLevel;
-import org.citydb.config.project.kmlExporter.AltitudeOffsetMode;
-import org.citydb.config.project.kmlExporter.DisplayForm;
-import org.citydb.config.project.kmlExporter.KmlExporter;
-import org.citydb.config.project.kmlExporter.KmlTiling;
-import org.citydb.config.project.kmlExporter.KmlTilingMode;
-import org.citydb.config.project.kmlExporter.SimpleKmlQuery;
-import org.citydb.config.project.kmlExporter.SimpleKmlQueryMode;
+import org.citydb.config.project.kmlExporter.*;
 import org.citydb.config.project.query.filter.selection.id.ResourceIdOperator;
 import org.citydb.config.project.query.filter.type.FeatureTypeFilter;
 import org.citydb.database.DatabaseController;
@@ -66,41 +62,15 @@ import org.citydb.plugin.extension.view.components.BoundingBoxPanel;
 import org.citydb.registry.ObjectRegistry;
 import org.citydb.util.ClientConstants;
 import org.citydb.util.Util;
-import org.citygml4j.model.module.citygml.BridgeModule;
-import org.citygml4j.model.module.citygml.CityFurnitureModule;
-import org.citygml4j.model.module.citygml.CityGMLVersion;
-import org.citygml4j.model.module.citygml.CityObjectGroupModule;
-import org.citygml4j.model.module.citygml.ReliefModule;
-import org.citygml4j.model.module.citygml.TunnelModule;
-import org.citygml4j.model.module.citygml.VegetationModule;
+import org.citygml4j.model.module.citygml.*;
 import org.jdesktop.swingx.JXTextField;
 import org.jdesktop.swingx.prompt.PromptSupport.FocusBehavior;
 
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.ButtonGroup;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JFileChooser;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JScrollPane;
-import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
-import javax.swing.SwingWorker;
-import javax.swing.UIManager;
+import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.xml.bind.JAXBContext;
-import java.awt.AWTEvent;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -614,6 +584,12 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		setDisplayFormSettings(kmlExporter.getCityObjectGroupDisplayForms());
 		setDisplayFormSettings(kmlExporter.getBridgeDisplayForms());
 		setDisplayFormSettings(kmlExporter.getTunnelDisplayForms());
+
+		for (ADEExtension adeExtensionConfig : config.getProject().getAdeExtensions().values()) {
+			for (ADEKmlExporterPreference preference : adeExtensionConfig.getKmlExporter().getPreferences().values()) {
+				setDisplayFormSettings(preference.getDisplayForms());
+			}
+		}
 
 		kmlExporter.setAppearanceTheme((String) themeComboBox.getSelectedItem());
 	}
