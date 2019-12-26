@@ -418,10 +418,8 @@ public class ImpExp {
 					adeExtensionConfig.setExtensionId(adeExtensionId);
 					adeExtensionConfig.setExtensionName(adeExtensionName);
 					for (AppSchema appSchema : adeExtension.getSchemas()) {
-						for (FeatureType featureType : appSchema.getFeatureTypes()) {
-							if (featureType.isTopLevel()) {
-								adeExtensionConfig.getKmlExporter().addPreference(featureType.getPath());
-							}
+						for (FeatureType featureType : appSchema.listTopLevelFeatureTypes(true)) {
+							adeExtensionConfig.getKmlExporter().addPreference(featureType.toString());
 						}
 					}
 					project.getAdeExtensions().put(adeExtensionId, adeExtensionConfig);

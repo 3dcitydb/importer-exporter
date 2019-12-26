@@ -57,7 +57,7 @@ public class ADEKmlExportExtensionManager {
 
 	public ADEKmlExporterPreference getPreference(Config config, int objectClassId) {
 		ADEKmlExporterPreference preference = null;
-		String target = ObjectRegistry.getInstance().getSchemaMapping().getFeatureType(objectClassId).getPath();
+		String target = ObjectRegistry.getInstance().getSchemaMapping().getFeatureType(objectClassId).toString();
 
 		ADEExtension adeExtension = ADEExtensionManager.getInstance().getExtensionByObjectClassId(objectClassId);
 		if (adeExtension != null) {
