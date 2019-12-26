@@ -1883,7 +1883,7 @@ public class BalloonTemplateHandler {
 					sqlStatement = sqlStatementForCityObjectGroup(table, columns, aggregateString, aggregateClosingString, lod, schemaName);
 					break;
 				default:
-					sqlStatement = sqlStatementForAnyObject(table, columns, aggregateString, aggregateClosingString, lod, schemaName, null);
+					sqlStatement = sqlStatementForAnyObject(table, columns, aggregateString, aggregateClosingString, lod, schemaName, false);
 					break;
 			}
 
@@ -2008,6 +2008,8 @@ public class BalloonTemplateHandler {
 					sqlStatement = sqlStatementForTunnel(table, columns, aggregateString, aggregateClosingString, lod, schemaName);
 				} else if (modelObject instanceof CityObjectGroup) {
 					sqlStatement = sqlStatementForCityObjectGroup(table, columns, aggregateString, aggregateClosingString, lod, schemaName);
+				} else {
+					sqlStatement = sqlStatementForAnyObject(table, columns, aggregateString, aggregateClosingString, lod, schemaName, false);
 				}
 			}
 
@@ -2160,7 +2162,7 @@ public class BalloonTemplateHandler {
 						" AND ts.building_id = b.id";
 			}
 			else {
-				sqlStatement = sqlStatementForAnyObject(table, columns, aggregateString, aggregateClosingString, lod, schemaName, Building.class);
+				sqlStatement = sqlStatementForAnyObject(table, columns, aggregateString, aggregateClosingString, lod, schemaName, true);
 			}
 
 			return sqlStatement;
@@ -2193,7 +2195,7 @@ public class BalloonTemplateHandler {
 						" AND tp.surface_geometry_id = sg.id";
 			}
 			else {
-				sqlStatement = sqlStatementForAnyObject(table, columns, aggregateString, aggregateClosingString, lod, schemaName, LandUse.class);
+				sqlStatement = sqlStatementForAnyObject(table, columns, aggregateString, aggregateClosingString, lod, schemaName, true);
 			}
 			return sqlStatement;
 		}
@@ -2244,7 +2246,7 @@ public class BalloonTemplateHandler {
 			}
 			else if (PLANT_COVER_TABLE.equalsIgnoreCase(table)) { } // tolerate but do nothing
 			else {
-				sqlStatement = sqlStatementForAnyObject(table, columns, aggregateString, aggregateClosingString, lod, schemaName, SolitaryVegetationObject.class);
+				sqlStatement = sqlStatementForAnyObject(table, columns, aggregateString, aggregateClosingString, lod, schemaName, true);
 			}
 
 			return sqlStatement;
@@ -2295,7 +2297,7 @@ public class BalloonTemplateHandler {
 			}
 			else if (SOLITARY_VEGETAT_OBJECT_TABLE.equalsIgnoreCase(table)) { } // tolerate but do nothing
 			else {
-				sqlStatement = sqlStatementForAnyObject(table, columns, aggregateString, aggregateClosingString, lod, schemaName, PlantCover.class);
+				sqlStatement = sqlStatementForAnyObject(table, columns, aggregateString, aggregateClosingString, lod, schemaName, true);
 			}
 
 			return sqlStatement;
@@ -2376,7 +2378,7 @@ public class BalloonTemplateHandler {
 			}
 
 			else {
-				sqlStatement = sqlStatementForAnyObject(table, columns, aggregateString, aggregateClosingString, lod, schemaName, WaterBody.class);
+				sqlStatement = sqlStatementForAnyObject(table, columns, aggregateString, aggregateClosingString, lod, schemaName, true);
 			}
 
 			return sqlStatement;
@@ -2456,7 +2458,7 @@ public class BalloonTemplateHandler {
 				sqlStatement = sqlStatement + ") tmp )";
 			}
 			else {
-				sqlStatement = sqlStatementForAnyObject(table, columns, aggregateString, aggregateClosingString, lod, schemaName, WaterSurface.class);
+				sqlStatement = sqlStatementForAnyObject(table, columns, aggregateString, aggregateClosingString, lod, schemaName, true);
 			}
 
 			return sqlStatement;
@@ -2520,7 +2522,7 @@ public class BalloonTemplateHandler {
 				sqlStatement = sqlStatement + ") tmp )";
 			}
 			else {
-				sqlStatement = sqlStatementForAnyObject(table, columns, aggregateString, aggregateClosingString, lod, schemaName, TrafficArea.class);
+				sqlStatement = sqlStatementForAnyObject(table, columns, aggregateString, aggregateClosingString, lod, schemaName, true);
 			}
 
 			return sqlStatement;
@@ -2559,7 +2561,7 @@ public class BalloonTemplateHandler {
 						" AND sg.root_id = tc.lod" + lod + "_multi_surface_id) tmp )";
 			}
 			else {
-				sqlStatement = sqlStatementForAnyObject(table, columns, aggregateString, aggregateClosingString, lod, schemaName, TransportationComplex.class);
+				sqlStatement = sqlStatementForAnyObject(table, columns, aggregateString, aggregateClosingString, lod, schemaName, true);
 			}
 
 			return sqlStatement;
@@ -2609,7 +2611,7 @@ public class BalloonTemplateHandler {
 						" AND sg.root_id = tr.surface_geometry_id) tmp )";
 			}
 			else {
-				sqlStatement = sqlStatementForAnyObject(table, columns, aggregateString, aggregateClosingString, lod, schemaName, ReliefFeature.class);
+				sqlStatement = sqlStatementForAnyObject(table, columns, aggregateString, aggregateClosingString, lod, schemaName, true);
 			}
 
 			return sqlStatement;
@@ -2658,7 +2660,7 @@ public class BalloonTemplateHandler {
 						" WHERE gco.id = ?) tmp ))";
 			}
 			else {
-				sqlStatement = sqlStatementForAnyObject(table, columns, aggregateString, aggregateClosingString, lod, schemaName, GenericCityObject.class);
+				sqlStatement = sqlStatementForAnyObject(table, columns, aggregateString, aggregateClosingString, lod, schemaName, true);
 			}
 
 			return sqlStatement;
@@ -2707,7 +2709,7 @@ public class BalloonTemplateHandler {
 						" WHERE cf.id = ?) tmp ))";
 			}
 			else {
-				sqlStatement = sqlStatementForAnyObject(table, columns, aggregateString, aggregateClosingString, lod, schemaName, CityFurniture.class);
+				sqlStatement = sqlStatementForAnyObject(table, columns, aggregateString, aggregateClosingString, lod, schemaName, true);
 			}
 
 			return sqlStatement;
@@ -2833,7 +2835,7 @@ public class BalloonTemplateHandler {
 						" AND bts.bridge_id = b.id";
 			}
 			else {
-				sqlStatement = sqlStatementForAnyObject(table, columns, aggregateString, aggregateClosingString, lod, schemaName, Bridge.class);
+				sqlStatement = sqlStatementForAnyObject(table, columns, aggregateString, aggregateClosingString, lod, schemaName, true);
 			}
 
 			return sqlStatement;
@@ -2943,7 +2945,7 @@ public class BalloonTemplateHandler {
 						" AND tts.tunnel_id = t.id";
 			}
 			else {
-				sqlStatement = sqlStatementForAnyObject(table, columns, aggregateString, aggregateClosingString, lod, schemaName, Tunnel.class);
+				sqlStatement = sqlStatementForAnyObject(table, columns, aggregateString, aggregateClosingString, lod, schemaName, true);
 			}
 
 			return sqlStatement;
@@ -2969,7 +2971,7 @@ public class BalloonTemplateHandler {
 						" FROM " + schemaName + ".CITYOBJECT_MEMBER com" +
 						" WHERE com.citymodel_id = ?";
 			} else {
-				sqlStatement = sqlStatementForAnyObject(table, columns, aggregateString, aggregateClosingString, lod, schemaName, CityObjectGroup.class);
+				sqlStatement = sqlStatementForAnyObject(table, columns, aggregateString, aggregateClosingString, lod, schemaName, true);
 			}
 
 			return sqlStatement;
@@ -2982,7 +2984,7 @@ public class BalloonTemplateHandler {
 												String aggregateClosingString,
 												int lod,
 												String schemaName,
-												Class<? extends AbstractGML> topLevelClass) throws Exception {
+												boolean checkADEHooks) throws Exception {
 			String sqlStatement = null;
 
 			if (APPEAR_TO_SURFACE_DATA_TABLE.equalsIgnoreCase(table)) {
@@ -3053,10 +3055,10 @@ public class BalloonTemplateHandler {
 						" AND ti.id = sd.tex_image_id";
 			}
 			else {
-				if (topLevelClass != null) {
+				if (checkADEHooks) {
 					String columnsClause = getColumnsClause(table, columns);
 					ADEBalloonManager balloonManager = ADEBalloonExtensionManager.getInstance().getBalloonManager(table);
-					ADEBalloonHandler adeBalloonHandler = balloonManager.getBalloonHandler(Util.getObjectClassId(topLevelClass));
+					ADEBalloonHandler adeBalloonHandler = balloonManager.getBalloonHandler(objectClassId);
 					if (adeBalloonHandler != null) {
 						String aggregateColumnsClause = aggregateString + columnsClause + aggregateClosingString;
 						sqlStatement = adeBalloonHandler.getSqlStatement(table, tableShortId, aggregateColumnsClause, lod, schemaName);
