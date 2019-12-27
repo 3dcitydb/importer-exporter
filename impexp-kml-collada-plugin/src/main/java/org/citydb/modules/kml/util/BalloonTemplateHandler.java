@@ -3372,7 +3372,7 @@ public class BalloonTemplateHandler {
 			}
 			else {
 				orderByColumnAllowed = true;
-				tableShortId = "_ade_";
+				tableShortId = "ade_";
 				if (tableShortId == null)
 					throw new Exception("Unsupported table \"" + tablename + "\" in statement \"" + rawStatement + "\"");
 			}
