@@ -1852,8 +1852,9 @@ public class Queries {
 		query.append("select sub.* from (");
 
 		if (lod == 0) {
-			query.append("(SELECT tc.lod0_network FROM ").append(schema).append(".transportation_complex tc, ")
+			query.append("(SELECT tmp.* FROM (SELECT tc.lod0_network, ")
 			.append(implicitGeometryNullColumns)
+			.append("FROM ").append(schema).append(".transportation_complex tc ")
 			.append("WHERE tc.id = ? ")
 			.append("AND tc.lod0_network IS NOT NULL")
 			.append(") tmp) ");
