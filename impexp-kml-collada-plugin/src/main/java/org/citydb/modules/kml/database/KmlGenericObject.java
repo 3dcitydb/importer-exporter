@@ -2067,8 +2067,7 @@ public abstract class KmlGenericObject {
 					placemark.setStyleUrl("#" + getStyleBasisName() + ADEObject.CURVE + "Normal");
 			}
 
-			if (getBalloonSettings().isIncludeDescription() &&
-					!work.getDisplayForm().isHighlightingEnabled()) { // avoid double description
+			if (getBalloonSettings().isIncludeDescription()) {
 				addBalloonContents(placemark, work.getId());
 			}
 
