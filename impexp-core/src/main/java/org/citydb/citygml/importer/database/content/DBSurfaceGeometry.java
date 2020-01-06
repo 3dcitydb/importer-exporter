@@ -71,7 +71,6 @@ import org.citygml4j.model.gml.geometry.primitives.SolidArrayProperty;
 import org.citygml4j.model.gml.geometry.primitives.SolidProperty;
 import org.citygml4j.model.gml.geometry.primitives.Surface;
 import org.citygml4j.model.gml.geometry.primitives.SurfaceArrayProperty;
-import org.citygml4j.model.gml.geometry.primitives.SurfacePatchArrayProperty;
 import org.citygml4j.model.gml.geometry.primitives.SurfaceProperty;
 import org.citygml4j.model.gml.geometry.primitives.Triangle;
 import org.citygml4j.model.gml.geometry.primitives.TrianglePatchArrayProperty;
@@ -613,73 +612,69 @@ public class DBSurfaceGeometry implements DBImporter {
 		}
 
 		// Surface
-		// since a surface is a geometric primitive we represent it as composite surface
-		// within the database
 		else if (surfaceGeometryType == GMLClass.SURFACE) {
 			Surface surface = (Surface)surfaceGeometry;
 
 			if (origGmlId != null && !isCopy)
 				importer.putGeometryUID(origGmlId, surfaceGeometryId, rootId, reverse, gmlId);
 
-			// set root entry
-			psGeomElem.setLong(1, surfaceGeometryId);
-			psGeomElem.setString(2, gmlId);
-			psGeomElem.setLong(4, rootId);
-			psGeomElem.setInt(5, 0);
-			psGeomElem.setInt(6, 1);
-			psGeomElem.setInt(7, 0);
-			psGeomElem.setInt(8, isXlink ? 1 : 0);
-			psGeomElem.setInt(9, reverse ? 1 : 0);
-			psGeomElem.setNull(10, nullGeometryType, nullGeometryTypeName);
-			psGeomElem.setNull(11, nullGeometryType, nullGeometryTypeName);
-			psGeomElem.setNull(12, nullGeometryType, nullGeometryTypeName);
+			int nrOfPatches = surface.isSetPatches() && surface.getPatches().isSetSurfacePatch() ?
+					surface.getPatches().getSurfacePatch().size() : 0;
 
-			if (parentId != 0)
-				psGeomElem.setLong(3, parentId);
-			else
-				psGeomElem.setNull(3, Types.NULL);
+			// add a composite surface as root unless there is only one surface patch
+			if (nrOfPatches != 1) {
+				psGeomElem.setLong(1, surfaceGeometryId);
+				psGeomElem.setString(2, gmlId);
+				psGeomElem.setLong(4, rootId);
+				psGeomElem.setInt(5, 0);
+				psGeomElem.setInt(6, 1);
+				psGeomElem.setInt(7, 0);
+				psGeomElem.setInt(8, isXlink ? 1 : 0);
+				psGeomElem.setInt(9, reverse ? 1 : 0);
+				psGeomElem.setNull(10, nullGeometryType, nullGeometryTypeName);
+				psGeomElem.setNull(11, nullGeometryType, nullGeometryTypeName);
+				psGeomElem.setNull(12, nullGeometryType, nullGeometryTypeName);
 
-			if (cityObjectId != 0)
-				psGeomElem.setLong(13, cityObjectId);
-			else
-				psGeomElem.setNull(13, Types.NULL);
+				if (parentId != 0)
+					psGeomElem.setLong(3, parentId);
+				else
+					psGeomElem.setNull(3, Types.NULL);
 
-			addBatch();
+				if (cityObjectId != 0)
+					psGeomElem.setLong(13, cityObjectId);
+				else
+					psGeomElem.setNull(13, Types.NULL);
 
-			// set parentId
-			parentId = surfaceGeometryId;
+				addBatch();
 
-			// get surface patches
-			if (surface.isSetPatches()) {
-				SurfacePatchArrayProperty arrayProperty = surface.getPatches();
-				if (arrayProperty.isSetSurfacePatch()) {
-					for (AbstractSurfacePatch surfacePatch : arrayProperty.getSurfacePatch()) {
+				// set parentId
+				parentId = surfaceGeometryId;
+			}
 
-						if (surfacePatch.getGMLClass() == GMLClass.RECTANGLE) {
-							Rectangle rectangle = (Rectangle) surfacePatch;
-							surfaceGeometryId = pkManager.nextId();
-							Polygon polygon = new Polygon();
-							polygon.setExterior(rectangle.getExterior());
-							doImport(polygon, surfaceGeometryId, parentId, rootId, reverse, isXlink, isCopy, cityObjectId);
-						}
+			// import surface patches
+			if (nrOfPatches > 0) {
+				for (AbstractSurfacePatch surfacePatch : surface.getPatches().getSurfacePatch()) {
+					surfaceGeometryId = pkManager.nextId();
 
-						else if (surfacePatch.getGMLClass() == GMLClass.TRIANGLE) {
-							Triangle triangle = (Triangle) surfacePatch;
-							surfaceGeometryId = pkManager.nextId();
-							Polygon polygon = new Polygon();
-							polygon.setExterior(triangle.getExterior());
-							doImport(polygon, surfaceGeometryId, parentId, rootId, reverse, isXlink, isCopy, cityObjectId);
-						}
+					Polygon polygon = new Polygon();
+					if (nrOfPatches == 1)
+						polygon.setId(gmlId);
 
-						else if (surfacePatch.getGMLClass() == GMLClass.POLYGON_PATCH) {
-							PolygonPatch polygonPatch = (PolygonPatch) surfacePatch;
-							surfaceGeometryId = pkManager.nextId();
-							Polygon polygon = new Polygon();
-							polygon.setExterior(polygonPatch.getExterior());
-							polygon.setInterior(polygonPatch.getInterior());
-							doImport(polygon, surfaceGeometryId, parentId, rootId, reverse, isXlink, isCopy, cityObjectId);
-						}
+					if (surfacePatch.getGMLClass() == GMLClass.RECTANGLE) {
+						Rectangle rectangle = (Rectangle) surfacePatch;
+						polygon = new Polygon();
+						polygon.setExterior(rectangle.getExterior());
+					} else if (surfacePatch.getGMLClass() == GMLClass.TRIANGLE) {
+						Triangle triangle = (Triangle) surfacePatch;
+						polygon = new Polygon();
+						polygon.setExterior(triangle.getExterior());
+					} else if (surfacePatch.getGMLClass() == GMLClass.POLYGON_PATCH) {
+						PolygonPatch polygonPatch = (PolygonPatch) surfacePatch;
+						polygon.setExterior(polygonPatch.getExterior());
+						polygon.setInterior(polygonPatch.getInterior());
 					}
+
+					doImport(polygon, surfaceGeometryId, parentId, rootId, reverse, isXlink, isCopy, cityObjectId);
 				}
 			}
 		}
