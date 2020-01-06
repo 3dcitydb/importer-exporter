@@ -37,7 +37,6 @@ import org.citygml4j.builder.jaxb.unmarshal.JAXBUnmarshaller;
 import org.citygml4j.geometry.BoundingBox;
 import org.citygml4j.model.common.base.ModelObject;
 import org.citygml4j.model.gml.GML;
-import org.citygml4j.model.gml.GMLClass;
 import org.citygml4j.model.gml.geometry.SRSReferenceGroup;
 import org.citygml4j.model.gml.geometry.aggregates.MultiCurve;
 import org.citygml4j.model.gml.geometry.aggregates.MultiLineString;
@@ -53,9 +52,7 @@ import org.citygml4j.model.gml.geometry.primitives.AbstractRingProperty;
 import org.citygml4j.model.gml.geometry.primitives.AbstractSurface;
 import org.citygml4j.model.gml.geometry.primitives.AbstractSurfacePatch;
 import org.citygml4j.model.gml.geometry.primitives.Curve;
-import org.citygml4j.model.gml.geometry.primitives.CurveArrayProperty;
 import org.citygml4j.model.gml.geometry.primitives.CurveProperty;
-import org.citygml4j.model.gml.geometry.primitives.CurveSegmentArrayProperty;
 import org.citygml4j.model.gml.geometry.primitives.DirectPositionList;
 import org.citygml4j.model.gml.geometry.primitives.Envelope;
 import org.citygml4j.model.gml.geometry.primitives.LineString;
@@ -68,6 +65,7 @@ import org.citygml4j.model.gml.geometry.primitives.Point;
 import org.citygml4j.model.gml.geometry.primitives.PointArrayProperty;
 import org.citygml4j.model.gml.geometry.primitives.PointProperty;
 import org.citygml4j.model.gml.geometry.primitives.Polygon;
+import org.citygml4j.model.gml.geometry.primitives.PolygonPatch;
 import org.citygml4j.model.gml.geometry.primitives.PolygonProperty;
 import org.citygml4j.model.gml.geometry.primitives.PosOrPointPropertyOrPointRep;
 import org.citygml4j.model.gml.geometry.primitives.PosOrPointPropertyOrPointRepOrCoord;
@@ -95,31 +93,27 @@ public class SimpleGMLParser {
 	}
 
 	public GeometryObject parseGeometry(JAXBElement<?> geometry) throws GeometryParseException, SrsParseException {
-		GeometryObject geometryObject = null;
-
 		try {
 			ModelObject object = unmarshaller.unmarshal(geometry);
 			if (object instanceof GML)
-				geometryObject = parseGeometry((GML)object, geometry.getName());
+				return parseGeometry((GML)object, geometry.getName());
 		} catch (MissingADESchemaException e) {
 			throw new GeometryParseException("Failed to parse GML geometry.", e);
 		}
 
-		return geometryObject;
+		throw new GeometryParseException("Failed to parse the geometry element '" + geometry.getName() + "'.");
 	}
 	
 	public GeometryObject parseGeometry(Node geometry) throws GeometryParseException, SrsParseException {
-		GeometryObject geometryObject = null;
-		
 		try {
 			ModelObject object = unmarshaller.unmarshal(geometry);
 			if (object instanceof GML)
-				geometryObject = parseGeometry((GML)object, new QName(geometry.getNamespaceURI(), geometry.getLocalName()));
+				return parseGeometry((GML)object, new QName(geometry.getNamespaceURI(), geometry.getLocalName()));
 		} catch (MissingADESchemaException e) {
 			throw new GeometryParseException("Failed to parse GML geometry.", e);
 		}
-		
-		return geometryObject;
+
+		throw new GeometryParseException("Failed to parse the geometry element '" + geometry.getLocalName() + "'.");
 	}
 
 	private GeometryObject parseGeometry(GML gml, QName name) throws GeometryParseException, SrsParseException {
@@ -163,8 +157,6 @@ public class SimpleGMLParser {
 		case MULTI_SURFACE:
 			geometryObject = parseMultiSurface((MultiSurface)gml);
 			break;
-		default:
-			break;
 		}
 
 		if (geometryObject == null)
@@ -204,236 +196,224 @@ public class SimpleGMLParser {
 	}
 
 	private GeometryObject parsePoint(Point point) throws SrsParseException {
-		GeometryObject geometryObject = null;
 		DatabaseSrs targetSrs = point.isSetSrsName() ? srsNameParser.getDatabaseSrs(point.getSrsName()) : srsNameParser.getDefaultSrs();
 
 		// we assume the dim of the target SRS as default value
 		int dimension = point.isSetSrsDimension() ? point.getSrsDimension() : (targetSrs.is3D() ? 3 : 2);
-
 		if (point.isSetPos() && point.getPos().isSetSrsDimension() && point.getPos().getSrsDimension() == 3)
 			dimension = 3;
 
-		List<Double> values = point.toList3d();
-		if (values != null && !values.isEmpty())
-			geometryObject = GeometryObject.createPoint(convertPrimitive(values, dimension), dimension, targetSrs.getSrid());
+		List<Double> coordinates = point.toList3d();
+		if (!coordinates.isEmpty())
+			return GeometryObject.createPoint(convertPrimitive(coordinates, dimension), dimension, targetSrs.getSrid());
 
-		return geometryObject;
+		return null;
 	}
 
 	private GeometryObject parseMultiPoint(MultiPoint multiPoint) throws GeometryParseException, SrsParseException {
-		GeometryObject geometryObject = null;
 		DatabaseSrs targetSrs = multiPoint.isSetSrsName() ? srsNameParser.getDatabaseSrs(multiPoint.getSrsName()) : srsNameParser.getDefaultSrs();
 
 		// we assume the dim of the target SRS as default value
 		int dimension = multiPoint.isSetSrsDimension() ? multiPoint.getSrsDimension() : (targetSrs.is3D() ? 3 : 2);
-		List<List<Double>> pointList = new ArrayList<>();
+		List<List<Double>> coordinatesList = new ArrayList<>();
 
 		if (multiPoint.isSetPointMember()) {
-			for (PointProperty pointProperty : multiPoint.getPointMember()) {
-				if (pointProperty.isSetPoint()) {
-					Point point = pointProperty.getPoint();
+			for (PointProperty property : multiPoint.getPointMember()) {
+				if (property.isSetPoint()) {
+					Point point = property.getPoint();
 					if (point.isSetPos() && point.getPos().isSetSrsDimension() && point.getPos().getSrsDimension() == 3)
 						dimension = 3;
 
-					pointList.add(point.toList3d());
-				} else
-					throw new GeometryParseException("Geometry properties may neither be empty nor given by reference.");
+					List<Double> coordinates = point.toList3d();
+					if (!coordinates.isEmpty())
+						coordinatesList.add(coordinates);
+				}
 			}
 
 		} else if (multiPoint.isSetPointMembers()) {
-			PointArrayProperty pointArrayProperty = multiPoint.getPointMembers();
-			for (Point point : pointArrayProperty.getPoint()) {
-				if (point.isSetPos() && point.getPos().isSetSrsDimension() && point.getPos().getSrsDimension() == 3)
-					dimension = 3;
+			PointArrayProperty property = multiPoint.getPointMembers();
+			for (Point point : property.getPoint()) {
+				if (point != null) {
+					if (point.isSetPos() && point.getPos().isSetSrsDimension() && point.getPos().getSrsDimension() == 3)
+						dimension = 3;
 
-				pointList.add(point.toList3d());
+					List<Double> coordinates = point.toList3d();
+					if (!coordinates.isEmpty())
+						coordinatesList.add(coordinates);
+				}
 			}
 		}
 
-		if (!pointList.isEmpty())
-			geometryObject = GeometryObject.createMultiPoint(convertAggregate(pointList, dimension), dimension, targetSrs.getSrid());
+		if (!coordinatesList.isEmpty())
+			return GeometryObject.createMultiPoint(convertAggregate(coordinatesList, dimension), dimension, targetSrs.getSrid());
 
-		return geometryObject;
+		return null;
 	}
 
 	private GeometryObject parseLineString(LineString lineString) throws GeometryParseException, SrsParseException {
-		GeometryObject geometryObject = null;
 		SrsDimensionInfo dimInfo = getSrsDimensionInfo(lineString);
+		checkDimension(lineString, dimInfo);
 
-		List<Double> pointList = new ArrayList<>();
-		generatePointList(lineString, pointList, dimInfo, false);
-		if (!pointList.isEmpty())
-			geometryObject = GeometryObject.createCurve(convertPrimitive(pointList, dimInfo.is2d ? 2 : 3), dimInfo.is2d ? 2 : 3, dimInfo.targetSrs.getSrid());
+		List<Double> coordinates = lineString.toList3d();
+		if (!coordinates.isEmpty())
+			return GeometryObject.createCurve(convertPrimitive(coordinates, dimInfo.is2d ? 2 : 3), dimInfo.is2d ? 2 : 3, dimInfo.targetSrs.getSrid());
 
-		return geometryObject;
+		return null;
 	}
 
 	private GeometryObject parseMultiLineString(MultiLineString multiLineString) throws GeometryParseException, SrsParseException {
-		GeometryObject geometryObject = null;
 		SrsDimensionInfo dimInfo = getSrsDimensionInfo(multiLineString);
 
-		List<List<Double>> pointList = new ArrayList<>();
-		for (LineStringProperty lineStringProperty : multiLineString.getLineStringMember()) {
-			if (lineStringProperty.isSetLineString()) {
-				List<Double> points = new ArrayList<>();
-				generatePointList(lineStringProperty.getLineString(), points, dimInfo, false);
+		List<List<Double>> coordinatesList = new ArrayList<>();
+		for (LineStringProperty property : multiLineString.getLineStringMember()) {
+			if (property.isSetLineString()) {
+				LineString lineString = property.getLineString();
+				checkDimension(lineString, dimInfo);
 
-				if (!points.isEmpty())
-					pointList.add(points);
-			} else
-				throw new GeometryParseException("Geometry properties may neither be empty nor given by reference.");
+				List<Double> coordinates = lineString.toList3d();
+				if (!coordinates.isEmpty())
+					coordinatesList.add(coordinates);
+			}
 		}
 
-		if (!pointList.isEmpty())
-			geometryObject = GeometryObject.createMultiCurve(convertAggregate(pointList, dimInfo.is2d ? 2 : 3), dimInfo.is2d ? 2 : 3, dimInfo.targetSrs.getSrid());
+		if (!coordinatesList.isEmpty())
+			return GeometryObject.createMultiCurve(convertAggregate(coordinatesList, dimInfo.is2d ? 2 : 3), dimInfo.is2d ? 2 : 3, dimInfo.targetSrs.getSrid());
 
-		return geometryObject;
+		return null;
 	}
 
 	private GeometryObject parseCurve(Curve curve) throws GeometryParseException, SrsParseException {
-		GeometryObject geometryObject = null;
 		SrsDimensionInfo dimInfo = getSrsDimensionInfo(curve);
+		checkDimension(curve, dimInfo);
 
-		List<Double> pointList = new ArrayList<>();
-		generatePointList(curve, pointList, dimInfo, false);
-		if (!pointList.isEmpty())
-			geometryObject = GeometryObject.createCurve(convertPrimitive(pointList, dimInfo.is2d ? 2 : 3), dimInfo.is2d ? 2 : 3, dimInfo.targetSrs.getSrid());
+		List<Double> coordinates = curve.toList3d();
+		if (!coordinates.isEmpty())
+			return GeometryObject.createCurve(convertPrimitive(coordinates, dimInfo.is2d ? 2 : 3), dimInfo.is2d ? 2 : 3, dimInfo.targetSrs.getSrid());
 
-		return geometryObject;
+		return null;
 	}
 
 	private GeometryObject parseMultiCurve(MultiCurve multiCurve) throws GeometryParseException, SrsParseException {
-		GeometryObject geometryObject = null;
 		SrsDimensionInfo dimInfo = getSrsDimensionInfo(multiCurve);
 
-		List<List<Double>> pointList = new ArrayList<>();
+		List<List<Double>> coordinatesList = new ArrayList<>();
 		if (multiCurve.isSetCurveMember()) {
-			for (CurveProperty curveProperty : multiCurve.getCurveMember()) {
-				if (curveProperty.isSetCurve()) {
-					AbstractCurve curve = curveProperty.getCurve();
-					List<Double> points = new ArrayList<>();
-					generatePointList(curve, points, dimInfo, false);
+			for (CurveProperty property : multiCurve.getCurveMember()) {
+				if (property.isSetCurve()) {
+					AbstractCurve curve = property.getCurve();
+					checkDimension(curve, dimInfo);
 
-					if (!points.isEmpty())
-						pointList.add(points);
-				} else
-					throw new GeometryParseException("Geometry properties may neither be empty nor given by reference.");
+					List<Double> coordinates = curve.toList3d();
+					if (!coordinates.isEmpty())
+						coordinatesList.add(coordinates);
+				}
 			}
 		} 
 
 		else if (multiCurve.isSetCurveMembers()) {
-			CurveArrayProperty curveArrayProperty = multiCurve.getCurveMembers();
-			for (AbstractCurve curve : curveArrayProperty.getCurve()) {
-				List<Double> points = new ArrayList<>();
-				generatePointList(curve, points, dimInfo, false);
-
-				if (!points.isEmpty())
-					pointList.add(points);
+			for (AbstractCurve curve : multiCurve.getCurveMembers().getCurve()) {
+				if (curve != null) {
+					checkDimension(curve, dimInfo);
+					List<Double> coordinates = curve.toList3d();
+					if (!coordinates.isEmpty())
+						coordinatesList.add(coordinates);
+				}
 			}
 		}
 
-		if (!pointList.isEmpty())
-			geometryObject = GeometryObject.createMultiCurve(convertAggregate(pointList, dimInfo.is2d ? 2 : 3), dimInfo.is2d ? 2 : 3, dimInfo.targetSrs.getSrid());
+		if (!coordinatesList.isEmpty())
+			return GeometryObject.createMultiCurve(convertAggregate(coordinatesList, dimInfo.is2d ? 2 : 3), dimInfo.is2d ? 2 : 3, dimInfo.targetSrs.getSrid());
 
-		return geometryObject;
+		return null;
 	}
 
 	private GeometryObject parsePolygon(Polygon polygon) throws GeometryParseException, SrsParseException {
-		GeometryObject geometryObject = null;
 		SrsDimensionInfo dimInfo = getSrsDimensionInfo(polygon);
 
-		List<List<Double>> pointList = new ArrayList<>();
-		generatePointList(polygon, pointList, dimInfo, false);
-		if (!pointList.isEmpty())
-			geometryObject = GeometryObject.createPolygon(convertAggregate(pointList, dimInfo.is2d ? 2 : 3), dimInfo.is2d ? 2 : 3, dimInfo.targetSrs.getSrid());
+		List<List<Double>> coordinatesList = new ArrayList<>();
+		generateCoordinatesList(polygon, coordinatesList, dimInfo, false);
+		if (!coordinatesList.isEmpty())
+			return GeometryObject.createPolygon(convertAggregate(coordinatesList, dimInfo.is2d ? 2 : 3), dimInfo.is2d ? 2 : 3, dimInfo.targetSrs.getSrid());
 
-		return geometryObject;
+		return null;
 	}
 
 	private GeometryObject parseMultiPolygon(MultiPolygon multiPolygon) throws GeometryParseException, SrsParseException {
-		GeometryObject geometryObject = null;
 		SrsDimensionInfo dimInfo = getSrsDimensionInfo(multiPolygon);
 
-		List<List<Double>> pointList = new ArrayList<>();
+		List<List<Double>> coordinatesList = new ArrayList<>();
 		List<Integer> exteriorRings = new ArrayList<>();
 		int exteriorRing = 0;
 
-		for (PolygonProperty polygonProperty : multiPolygon.getPolygonMember()) {
-			if (polygonProperty.isSetPolygon()) {
-				List<List<Double>> tmp = new ArrayList<>();
-				generatePointList(polygonProperty.getPolygon(), tmp, dimInfo, false);
+		for (PolygonProperty property : multiPolygon.getPolygonMember()) {
+			if (property.isSetPolygon()) {
+				List<List<Double>> coordinates = new ArrayList<>();
+				generateCoordinatesList(property.getPolygon(), coordinates, dimInfo, false);
 
-				if (!tmp.isEmpty()) {
-					pointList.addAll(tmp);
+				if (!coordinates.isEmpty()) {
+					coordinatesList.addAll(coordinates);
 					exteriorRings.add(exteriorRing);
-					exteriorRing += tmp.size();
+					exteriorRing += coordinates.size();
 				}
-			} else
-				throw new GeometryParseException("Geometry properties may neither be empty nor given by reference.");
+			}
 		}
 
-		if (!pointList.isEmpty()) {
+		if (!coordinatesList.isEmpty()) {
 			int[] tmp = new int[exteriorRings.size()];
 			for (int i = 0; i < exteriorRings.size(); i++)
 				tmp[i] = exteriorRings.get(i);
 
-			geometryObject = GeometryObject.createMultiPolygon(convertAggregate(pointList, dimInfo.is2d ? 2 : 3), tmp, dimInfo.is2d ? 2 : 3, dimInfo.targetSrs.getSrid());
+			return GeometryObject.createMultiPolygon(convertAggregate(coordinatesList, dimInfo.is2d ? 2 : 3), tmp, dimInfo.is2d ? 2 : 3, dimInfo.targetSrs.getSrid());
 		}		
 
-		return geometryObject;
+		return null;
 	}
 
 	private GeometryObject parseSurface(Surface surface) throws GeometryParseException, SrsParseException {
-		GeometryObject geometryObject = null;
 		SrsDimensionInfo dimInfo = getSrsDimensionInfo(surface);
 
-		List<List<Double>> pointList = new ArrayList<>();
-		generatePointList(surface, pointList, dimInfo, false);
-		if (!pointList.isEmpty())
-			geometryObject = GeometryObject.createPolygon(convertAggregate(pointList, dimInfo.is2d ? 2 : 3), dimInfo.is2d ? 2 : 3, dimInfo.targetSrs.getSrid());
+		List<List<Double>> coordinatesList = new ArrayList<>();
+		generateCoordinatesList(surface, coordinatesList, dimInfo, false);
+		if (!coordinatesList.isEmpty())
+			return GeometryObject.createPolygon(convertAggregate(coordinatesList, dimInfo.is2d ? 2 : 3), dimInfo.is2d ? 2 : 3, dimInfo.targetSrs.getSrid());
 
-		return geometryObject;
+		return null;
 	}
 
 	private GeometryObject parseMultiSurface(MultiSurface multiSurface) throws GeometryParseException, SrsParseException {
-		GeometryObject geometryObject = null;
 		SrsDimensionInfo dimInfo = getSrsDimensionInfo(multiSurface);
 
-		List<List<Double>> pointList = new ArrayList<>();
+		List<List<Double>> coordinatesList = new ArrayList<>();
 		List<Integer> exteriorRings = new ArrayList<>();
 		int exteriorRing = 0;
 
 		if (multiSurface.isSetSurfaceMember()) {
-			for (SurfaceProperty surfaceProperty : multiSurface.getSurfaceMember()) {
-				if (surfaceProperty.isSetSurface()) {
-					List<List<Double>> tmp = new ArrayList<>();
-					generatePointList(surfaceProperty.getSurface(), tmp, dimInfo, false);
+			for (SurfaceProperty property : multiSurface.getSurfaceMember()) {
+				if (property.isSetSurface()) {
+					List<List<Double>> coordinates = new ArrayList<>();
+					generateCoordinatesList(property.getSurface(), coordinates, dimInfo, false);
 
-					if (!tmp.isEmpty()) {
-						pointList.addAll(tmp);
+					if (!coordinates.isEmpty()) {
+						coordinatesList.addAll(coordinates);
 						exteriorRings.add(exteriorRing);
-						exteriorRing += tmp.size();
+						exteriorRing += coordinates.size();
 					}
-
-				} else
-					throw new GeometryParseException("Geometry properties may neither be empty nor given by reference.");
+				}
 			}
 		}
 
-		if (!pointList.isEmpty()) {
+		if (!coordinatesList.isEmpty()) {
 			int[] tmp = new int[exteriorRings.size()];
 			for (int i = 0; i < exteriorRings.size(); i++)
 				tmp[i] = exteriorRings.get(i);
 
-			geometryObject = GeometryObject.createMultiPolygon(convertAggregate(pointList, dimInfo.is2d ? 2 : 3), tmp, dimInfo.is2d ? 2 : 3, dimInfo.targetSrs.getSrid());
+			return GeometryObject.createMultiPolygon(convertAggregate(coordinatesList, dimInfo.is2d ? 2 : 3), tmp, dimInfo.is2d ? 2 : 3, dimInfo.targetSrs.getSrid());
 		}
 
-		return geometryObject;
+		return null;
 	}
 
-	private List<Double> generatePointList(AbstractRing abstractRing, SrsDimensionInfo dimInfo, boolean reverse) throws GeometryParseException, SrsParseException {
-		List<Double> pointList = new ArrayList<>();
-
+	private List<Double> generateCoordinatesList(AbstractRing abstractRing, SrsDimensionInfo dimInfo, boolean reverse) throws GeometryParseException, SrsParseException {
 		// get and set dimension
 		int dimension = abstractRing.isSetSrsDimension() ? abstractRing.getSrsDimension() : dimInfo.defaultDimension;
 		if (dimension == 3)
@@ -448,10 +428,9 @@ public class SimpleGMLParser {
 				throw new GeometryParseException("Mixing different spatial reference systems in one geometry operand is not allowed.");
 		}
 
+		// get and set dimension on child elements
 		if (abstractRing instanceof LinearRing) {
 			LinearRing ring = (LinearRing)abstractRing;
-
-			// get and set dimension on child elements
 			if (ring.isSetPosList())
 				setSrsDimension(ring.getPosList(), dimInfo, dimension);
 			if (ring.isSetPosOrPointPropertyOrPointRep()) {
@@ -462,42 +441,23 @@ public class SimpleGMLParser {
 						dimInfo.is2d = false;
 				}
 			}
-
-			List<Double> coords = ring.toList3d(reverse);
-			if (coords != null && !coords.isEmpty())
-				pointList.addAll(coords);
-
-			validateRing(pointList);
 		}
 
 		else if (abstractRing instanceof Ring) {
 			Ring ring = (Ring)abstractRing;
-			pointList = new ArrayList<>();
-
-			for (CurveProperty curveMember : ring.getCurveMember()) {
-				List<Double> tmp = new ArrayList<>();
-				generatePointList(curveMember.getCurve(), tmp, dimInfo, false);
-
-				if (!pointList.isEmpty()) {
-					// remove duplicates
-					int i = pointList.size() - 3;
-					if (pointList.get(i).doubleValue() == tmp.get(0).doubleValue()
-							&& pointList.get(i + 1).doubleValue() == tmp.get(1).doubleValue()
-							&& pointList.get(i + 2).doubleValue() == tmp.get(2).doubleValue())
-						pointList.addAll(tmp.subList(3, tmp.size()));
-					else
-						pointList.addAll(tmp);
-				} else
-					pointList.addAll(tmp);
+			for (CurveProperty property : ring.getCurveMember()) {
+				if (property.isSetCurve())
+					checkDimension(property.getCurve(), dimInfo);
 			}
-
-			validateRing(pointList);
 		}
 
-		return pointList;
+		List<Double> points = abstractRing.toList3d(reverse);
+		validateRing(points);
+
+		return points;
 	}
 
-	private void generatePointList(AbstractSurface abstractSurface, List<List<Double>> pointList, SrsDimensionInfo dimInfo, boolean reverse) throws GeometryParseException, SrsParseException {
+	private void generateCoordinatesList(AbstractSurface abstractSurface, List<List<Double>> coordinatesList, SrsDimensionInfo dimInfo, boolean reverse) throws GeometryParseException, SrsParseException {
 		// get and set dimension
 		int dimension = abstractSurface.isSetSrsDimension() ? abstractSurface.getSrsDimension() : dimInfo.defaultDimension;
 		if (dimension == 3)
@@ -512,76 +472,79 @@ public class SimpleGMLParser {
 				throw new GeometryParseException("Mixing different spatial reference systems in one geometry operand is not allowed.");
 		}
 
-		if (abstractSurface.getGMLClass() == GMLClass.POLYGON) {
+		if (abstractSurface instanceof Polygon) {
 			Polygon polygon = (Polygon)abstractSurface;
-
-			if (polygon.isSetExterior()) {
-				List<Double> coords = generatePointList(polygon.getExterior().getRing(), dimInfo, reverse);
-				if (coords != null && !coords.isEmpty())
-					pointList.add(coords);
+			if (polygon.isSetExterior() && polygon.getExterior().isSetRing()) {
+				List<Double> coordinates = generateCoordinatesList(polygon.getExterior().getRing(), dimInfo, reverse);
+				if (!coordinates.isEmpty())
+					coordinatesList.add(coordinates);
 			}
 
-			if (!pointList.isEmpty() && polygon.isSetInterior()) {
-				for (AbstractRingProperty abstractRingProperty : polygon.getInterior()) {
-					List<Double> coords = generatePointList(abstractRingProperty.getRing(), dimInfo, reverse);
-					if (coords != null && !coords.isEmpty())
-						pointList.add(coords);
+			if (!coordinatesList.isEmpty() && polygon.isSetInterior()) {
+				for (AbstractRingProperty property : polygon.getInterior()) {
+					if (property.isSetRing()) {
+						List<Double> coords = generateCoordinatesList(property.getRing(), dimInfo, reverse);
+						if (coords != null && !coords.isEmpty())
+							coordinatesList.add(coords);
+					}
 				}
 			}
 		}
 
-		else if (abstractSurface.getGMLClass() == GMLClass.SURFACE) {
+		else if (abstractSurface instanceof Surface) {
 			Surface surface = (Surface)abstractSurface;
-
 			if (surface.isSetPatches()) {
 				for (AbstractSurfacePatch surfacePatch : surface.getPatches().getSurfacePatch()) {
-					if (surfacePatch.getGMLClass() == GMLClass.TRIANGLE) {
+					if (surfacePatch instanceof Triangle) {
 						Triangle triangle = (Triangle)surfacePatch;
-						if (triangle.isSetExterior()) {
-							List<Double> coords = generatePointList(triangle.getExterior().getRing(), dimInfo, reverse);
-							if (coords != null && !coords.isEmpty())
-								pointList.add(coords);
+						if (triangle.isSetExterior() && triangle.getExterior().isSetRing()) {
+							List<Double> coordinates = generateCoordinatesList(triangle.getExterior().getRing(), dimInfo, reverse);
+							if (coordinates != null && !coordinates.isEmpty())
+								coordinatesList.add(coordinates);
 						}
 					}
 
-					else if (surfacePatch.getGMLClass() == GMLClass.RECTANGLE) {
+					else if (surfacePatch instanceof Rectangle) {
 						Rectangle rectangle = (Rectangle)surfacePatch;
-						List<Double> coords = generatePointList(rectangle.getExterior().getRing(), dimInfo, reverse);
-						if (coords != null && !coords.isEmpty())
-							pointList.add(coords);
+						if (rectangle.isSetExterior() && rectangle.getExterior().isSetRing()) {
+							List<Double> coordinates = generateCoordinatesList(rectangle.getExterior().getRing(), dimInfo, reverse);
+							if (coordinates != null && !coordinates.isEmpty())
+								coordinatesList.add(coordinates);
+						}
+					}
+
+					else if (surfacePatch instanceof PolygonPatch) {
+						PolygonPatch polygonPatch = (PolygonPatch) surfacePatch;
+						Polygon polygon = new Polygon();
+						polygon.setExterior(polygonPatch.getExterior());
+						polygon.setInterior(polygonPatch.getInterior());
+						generateCoordinatesList(polygon, coordinatesList, dimInfo, reverse);
 					}
 				}
 			}
 		}
 
-		else if (abstractSurface.getGMLClass() == GMLClass.COMPOSITE_SURFACE) {		
+		else if (abstractSurface instanceof CompositeSurface) {
 			CompositeSurface compositeSurface = (CompositeSurface)abstractSurface;
 			if (compositeSurface.isSetSurfaceMember()) {
-				for (SurfaceProperty surfaceProperty : compositeSurface.getSurfaceMember()) {
-					if (surfaceProperty.isSetSurface())
-						generatePointList(surfaceProperty.getSurface(), pointList, dimInfo, reverse);
-					else
-						throw new GeometryParseException("Geometry properties may neither be empty nor given by reference.");
+				for (SurfaceProperty property : compositeSurface.getSurfaceMember()) {
+					if (property.isSetSurface())
+						generateCoordinatesList(property.getSurface(), coordinatesList, dimInfo, reverse);
 				}
 			}
 		}
 
-		else if (abstractSurface.getGMLClass() == GMLClass.ORIENTABLE_SURFACE) {
+		else if (abstractSurface instanceof OrientableSurface) {
 			OrientableSurface orientableSurface = (OrientableSurface)abstractSurface;
 			if (orientableSurface.isSetOrientation() && orientableSurface.getOrientation() == Sign.MINUS)
 				reverse = !reverse;
 
-			if (orientableSurface.isSetBaseSurface()) {
-				SurfaceProperty surfaceProperty = orientableSurface.getBaseSurface();
-				if (surfaceProperty.isSetSurface())
-					generatePointList(surfaceProperty.getSurface(), pointList, dimInfo, reverse);
-				else
-					throw new GeometryParseException("Geometry properties may neither be empty nor given by reference.");
-			}
+			if (orientableSurface.isSetBaseSurface() && orientableSurface.getBaseSurface().isSetSurface())
+				generateCoordinatesList(orientableSurface.getBaseSurface().getSurface(), coordinatesList, dimInfo, reverse);
 		}
 	}
 
-	private void generatePointList(AbstractCurve abstractCurve, List<Double> pointList, SrsDimensionInfo dimInfo, boolean reverse) throws GeometryParseException, SrsParseException {
+	private void checkDimension(AbstractCurve abstractCurve, SrsDimensionInfo dimInfo) throws GeometryParseException, SrsParseException {
 		// get and set dimension
 		int dimension = abstractCurve.isSetSrsDimension() ? abstractCurve.getSrsDimension() : dimInfo.defaultDimension;
 		if (dimension == 3)
@@ -596,9 +559,8 @@ public class SimpleGMLParser {
 				throw new GeometryParseException("Mixing different spatial reference systems in one geometry operand is not allowed.");
 		}
 
-		if (abstractCurve.getGMLClass() == GMLClass.LINE_STRING) {	
+		if (abstractCurve instanceof LineString) {
 			LineString lineString = (LineString)abstractCurve;
-
 			if (lineString.isSetPosList())
 				setSrsDimension(lineString.getPosList(), dimInfo, dimension);
 			else if (lineString.isSetPosOrPointPropertyOrPointRepOrCoord()) {
@@ -609,74 +571,43 @@ public class SimpleGMLParser {
 						dimInfo.is2d = false;
 				}
 			}
-
-			List<Double> points = lineString.toList3d(reverse);
-			if (points != null && !points.isEmpty())
-				pointList.addAll(points);				
 		}
 
-		else if (abstractCurve.getGMLClass() == GMLClass.CURVE) {
-			Curve curve = (Curve)abstractCurve;
-			if (curve.isSetSegments()) {
-				CurveSegmentArrayProperty arrayProperty = curve.getSegments();
-
-				if (arrayProperty.isSetCurveSegment()) {
-					List<Double> points = new ArrayList<>();
-
-					for (AbstractCurveSegment abstractCurveSegment : arrayProperty.getCurveSegment())
-						if (abstractCurveSegment.getGMLClass() == GMLClass.LINE_STRING_SEGMENT) {
-							LineStringSegment segment = (LineStringSegment)abstractCurveSegment;
-
-							if (segment.isSetPosList())
-								setSrsDimension(segment.getPosList(), dimInfo, dimension);
-							else if (segment.isSetPosOrPointPropertyOrPointRep()) {
-								for (PosOrPointPropertyOrPointRep controlPoint : segment.getPosOrPointPropertyOrPointRep()) {
-									if (controlPoint.isSetPos() 
-											&& controlPoint.getPos().isSetSrsDimension() 
-											&& controlPoint.getPos().getSrsDimension() == 3)
-										dimInfo.is2d = false;
-								}
+		else if (abstractCurve instanceof Curve) {
+			Curve curve = (Curve) abstractCurve;
+			if (curve.isSetSegments() && curve.getSegments().isSetCurveSegment()) {
+				for (AbstractCurveSegment abstractCurveSegment : curve.getSegments().getCurveSegment()) {
+					if (abstractCurveSegment instanceof LineStringSegment) {
+						LineStringSegment segment = (LineStringSegment) abstractCurveSegment;
+						if (segment.isSetPosList())
+							setSrsDimension(segment.getPosList(), dimInfo, dimension);
+						else if (segment.isSetPosOrPointPropertyOrPointRep()) {
+							for (PosOrPointPropertyOrPointRep controlPoint : segment.getPosOrPointPropertyOrPointRep()) {
+								if (controlPoint.isSetPos()
+										&& controlPoint.getPos().isSetSrsDimension()
+										&& controlPoint.getPos().getSrsDimension() == 3)
+									dimInfo.is2d = false;
 							}
-
-							points.addAll(((LineStringSegment)abstractCurveSegment).toList3d());
-						}
-
-					if (!points.isEmpty()) {
-						if (!reverse)
-							pointList.addAll(points);
-						else {
-							for (int i = points.size() - 3; i >= 0; i -= 3)
-								pointList.addAll(points.subList(i, i + 3));
 						}
 					}
 				}
 			}
 		}
 
-		else if (abstractCurve.getGMLClass() == GMLClass.COMPOSITE_CURVE) {		
+		else if (abstractCurve instanceof CompositeCurve) {
 			CompositeCurve compositeCurve = (CompositeCurve)abstractCurve;
 			if (compositeCurve.isSetCurveMember()) {		
-				for (CurveProperty curveProperty : compositeCurve.getCurveMember()) {
-					if (curveProperty.isSetCurve())
-						generatePointList(curveProperty.getCurve(), pointList, dimInfo, reverse);
-					else
-						throw new GeometryParseException("Geometry properties may neither be empty nor given by reference.");
+				for (CurveProperty property : compositeCurve.getCurveMember()) {
+					if (property.isSetCurve())
+						checkDimension(property.getCurve(), dimInfo);
 				}
 			}
 		} 
 
-		else if (abstractCurve.getGMLClass() == GMLClass.ORIENTABLE_CURVE) {			
+		else if (abstractCurve instanceof OrientableCurve) {
 			OrientableCurve orientableCurve = (OrientableCurve)abstractCurve;
-			if (orientableCurve.isSetOrientation() && orientableCurve.getOrientation() == Sign.MINUS)
-				reverse = !reverse;
-
-			if (orientableCurve.isSetBaseCurve()) {
-				CurveProperty curveProperty = orientableCurve.getBaseCurve();
-				if (curveProperty.isSetCurve())
-					generatePointList(curveProperty.getCurve(), pointList, dimInfo, reverse);
-				else
-					throw new GeometryParseException("Geometry properties may neither be empty nor given by reference.");
-			}
+			if (orientableCurve.isSetBaseCurve() && orientableCurve.getBaseCurve().isSetCurve())
+				checkDimension(orientableCurve.getBaseCurve().getCurve(), dimInfo);
 		}
 	}
 
@@ -697,9 +628,8 @@ public class SimpleGMLParser {
 	}
 
 	private void validateRing(List<Double> coords) throws GeometryParseException {
-		if (coords == null || coords.isEmpty()) {
-			throw new GeometryParseException("Linear ring contains less than 4 coordinates.");
-		}
+		if (coords == null || coords.isEmpty())
+			throw new GeometryParseException("Ring contains less than 4 coordinates.");
 
 		// check closedness
 		Double x = coords.get(0);
@@ -707,7 +637,6 @@ public class SimpleGMLParser {
 		Double z = coords.get(2);
 
 		int nrOfPoints = coords.size();
-
 		if (!x.equals(coords.get(nrOfPoints - 3)) ||
 				!y.equals(coords.get(nrOfPoints - 2)) ||
 				!z.equals(coords.get(nrOfPoints - 1))) {
@@ -720,7 +649,7 @@ public class SimpleGMLParser {
 
 		// check for minimum number of coordinates
 		if (coords.size() / 3 < 4)
-			throw new GeometryParseException("Linear ring contains less than 4 coordinates.");
+			throw new GeometryParseException("Ring contains less than 4 coordinates.");
 	}
 
 	private double[] convertPrimitive(List<Double> pointList, int dimension) {
@@ -761,7 +690,7 @@ public class SimpleGMLParser {
 		return dimInfo;
 	}
 
-	private final class SrsDimensionInfo {
+	private static final class SrsDimensionInfo {
 		int defaultDimension;
 		boolean is2d;
 		DatabaseSrs targetSrs;

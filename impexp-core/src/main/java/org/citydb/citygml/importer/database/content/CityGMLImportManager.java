@@ -188,7 +188,7 @@ public class CityGMLImportManager implements CityGMLImportHelper {
 
 		tableHelper = new TableHelper(schemaMapping);
 		sequenceHelper = new SequenceHelper(connection, databaseAdapter, config);
-		geometryConverter = new GeometryConverter(databaseAdapter, affineTransformer, config);
+		geometryConverter = new GeometryConverter(databaseAdapter, affineTransformer, config, this);
 		objectCounter = new HashMap<>();
 		geometryCounter = new HashMap<>();
 		attributeValueJoiner = new AttributeValueJoiner();
