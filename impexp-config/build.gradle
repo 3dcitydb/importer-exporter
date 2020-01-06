@@ -3,7 +3,7 @@ plugins {
 }
 
 dependencies {
-    compile 'org.citygml4j:citygml4j:2.10.5-b20191216.1637'
+    compile 'org.citygml4j:citygml4j:2.10.5-b20200106.2257'
 }
 
 bintray {
