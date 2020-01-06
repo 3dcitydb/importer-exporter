@@ -629,7 +629,7 @@ public class SimpleGMLParser {
 
 	private void validateRing(List<Double> coords) throws GeometryParseException {
 		if (coords == null || coords.isEmpty())
-			throw new GeometryParseException("Linear ring contains less than 4 coordinates.");
+			throw new GeometryParseException("Ring contains less than 4 coordinates.");
 
 		// check closedness
 		Double x = coords.get(0);
@@ -649,7 +649,7 @@ public class SimpleGMLParser {
 
 		// check for minimum number of coordinates
 		if (coords.size() / 3 < 4)
-			throw new GeometryParseException("Linear ring contains less than 4 coordinates.");
+			throw new GeometryParseException("Ring contains less than 4 coordinates.");
 	}
 
 	private double[] convertPrimitive(List<Double> pointList, int dimension) {
