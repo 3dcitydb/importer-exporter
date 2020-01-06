@@ -40,11 +40,10 @@ import org.citydb.config.project.global.LogLevel;
 import org.citydb.event.EventDispatcher;
 import org.citydb.event.global.InterruptEvent;
 import org.citydb.log.Logger;
+import org.citydb.util.Pipe;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Set;
@@ -104,9 +103,9 @@ public class ZipOutputFile extends AbstractArchiveOutputFile {
             ZipArchiveEntry entry = new ZipArchiveEntry(file);
             entry.setMethod(ZipEntry.DEFLATED);
 
-            PipedInputStream in = new PipedInputStream();
-            out = new PipedOutputStream(in);
-            scatterZipPool.addWork(new ScatterZipWork(entry, () -> in));
+            Pipe pipe = new Pipe();
+            out = pipe.source();
+            scatterZipPool.addWork(new ScatterZipWork(entry, pipe::sink));
         } else {
             out = new OutputStream() {
                 @Override
