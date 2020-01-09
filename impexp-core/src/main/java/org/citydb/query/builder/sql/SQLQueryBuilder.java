@@ -83,9 +83,10 @@ public class SQLQueryBuilder {
 			query.setFeatureTypeFilter(typeFilter);
 		}
 
+		FeatureType cityObject = schemaMapping.getFeatureType("_CityObject", CoreModule.v2_0_0.getNamespaceURI());
 		if (typeFilter.isEmpty()) {
 			try {
-				typeFilter.addFeatureType(schemaMapping.getFeatureType("_CityObject", CoreModule.v2_0_0.getNamespaceURI()));
+				typeFilter.addFeatureType(cityObject);
 			} catch (FilterException e) {
 				throw new QueryBuildException("Failed to build feature type filter.", e);
 			}
@@ -102,12 +103,8 @@ public class SQLQueryBuilder {
 			Predicate predicate = query.getSelection().getPredicate();
 			PredicateBuilder predicateBuilder = new PredicateBuilder(query, builder, schemaMapping, databaseAdapter, schemaName, buildProperties);
 			queryContext = predicateBuilder.buildPredicate(predicate);
-		} else {
-			FeatureType superType = schemaMapping.getCommonSuperType(typeFilter.getFeatureTypes());			
-			SchemaPath schemaPath = new SchemaPath();
-			schemaPath.setFirstNode(superType);
-			queryContext = builder.buildSchemaPath(schemaPath, null, true, false);
-		}
+		} else
+			queryContext = builder.buildSchemaPath(new SchemaPath(cityObject), null, true, false);
 
 		// lod filter
 		if (query.isSetLodFilter()) {
