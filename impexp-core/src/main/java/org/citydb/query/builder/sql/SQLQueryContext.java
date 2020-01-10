@@ -47,27 +47,39 @@ import java.util.Map;
 import java.util.Objects;
 
 public class SQLQueryContext {
-	final FeatureType featureType;
-	final Table fromTable;
+	private final FeatureType featureType;
+	private final Table fromTable;
 
-	Select select;
-	Table toTable;
-	Column targetColumn;
-	List<PredicateToken> predicates;
-	BuildContext buildContext;
+	private Select select;
+	private Table toTable;
+	private Column targetColumn;
+	private List<PredicateToken> predicates;
+	private BuildContext buildContext;
 	
 	SQLQueryContext(FeatureType featureType, Table fromTable) {
 		this.featureType = Objects.requireNonNull(featureType, "Feature type may not be null.");
 		this.fromTable = Objects.requireNonNull(fromTable, "Table may not be null.");
 		select = new Select();
 	}
-	
+
+	FeatureType getFeatureType() {
+		return featureType;
+	}
+
 	public Select getSelect() {
 		return select;
 	}
 
+	void setSelect(Select select) {
+		this.select = select;
+	}
+
 	public Column getTargetColumn() {
 		return targetColumn;
+	}
+
+	void setTargetColumn(Column targetColumn) {
+		this.targetColumn = targetColumn;
 	}
 
 	public Table getFromTable() {
@@ -76,6 +88,10 @@ public class SQLQueryContext {
 
 	public Table getToTable() {
 		return toTable;
+	}
+
+	void setToTable(Table toTable) {
+		this.toTable = toTable;
 	}
 
 	boolean hasPredicates() {
@@ -93,8 +109,20 @@ public class SQLQueryContext {
 		Arrays.stream(predicates).forEach(this::addPredicate);
 	}
 
+	List<PredicateToken> getPredicates() {
+		return predicates;
+	}
+
 	void unsetPredicates() {
 		predicates = null;
+	}
+
+	BuildContext getBuildContext() {
+		return buildContext;
+	}
+
+	void setBuildContext(BuildContext buildContext) {
+		this.buildContext = buildContext;
 	}
 
 	static class BuildContext {

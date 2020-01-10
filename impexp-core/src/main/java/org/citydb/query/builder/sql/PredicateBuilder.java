@@ -68,7 +68,7 @@ public class PredicateBuilder {
 		if (!queryContext.hasPredicates())
 			throw new QueryBuildException("Failed to build selection predicates.");
 
-		queryContext.predicates.forEach(queryContext.select::addSelection);
+		queryContext.getPredicates().forEach(queryContext.getSelect()::addSelection);
 		return queryContext;
 	}
 
@@ -121,10 +121,10 @@ public class PredicateBuilder {
 				if (!queryContext.hasPredicates())
 					throw new QueryBuildException("Failed to build selection predicates.");
 
-				if (binaryOperator.getOperatorName() == LogicalOperatorName.OR && queryContext.predicates.size() > 1)
-					predicates.add(LogicalOperationFactory.AND(queryContext.predicates));
+				if (binaryOperator.getOperatorName() == LogicalOperatorName.OR && queryContext.getPredicates().size() > 1)
+					predicates.add(LogicalOperationFactory.AND(queryContext.getPredicates()));
 				else
-					predicates.addAll(queryContext.predicates);
+					predicates.addAll(queryContext.getPredicates());
 
 				queryContext.unsetPredicates();
 			}

@@ -124,8 +124,8 @@ public class LodFilterBuilder {
 			}
 		}
 
-		Select select = queryContext.select;
-		Table table = queryContext.fromTable;
+		Select select = queryContext.getSelect();
+		Table table = queryContext.getFromTable();
 
 		if (!queries.isEmpty()) {
 			SubQueryExpression subQueryExpression = queries.size() == 1 ? queries.get(0) : SetOperationFactory.unionAll(queries);

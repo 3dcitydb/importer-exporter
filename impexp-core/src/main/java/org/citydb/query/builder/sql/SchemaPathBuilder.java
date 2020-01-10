@@ -132,11 +132,11 @@ public class SchemaPathBuilder {
 
 		// initialize query context
 		SQLQueryContext queryContext = new SQLQueryContext(head.getPathElement(), currentTable);
-		Select select = queryContext.select;
+		Select select = queryContext.getSelect();
 
 		// store build context
 		BuildContext buildContext = new BuildContext(head);
-		queryContext.buildContext = buildContext;
+		queryContext.setBuildContext(buildContext);
 
 		// iterate through schema path
 		while (currentNode != null) {
@@ -164,14 +164,14 @@ public class SchemaPathBuilder {
 	}
 
 	private SQLQueryContext addSchemaPath(SQLQueryContext queryContext, SchemaPath schemaPath, boolean matchCase, boolean useLeftJoins, boolean useBuildContext) throws QueryBuildException {
-		BuildContext buildContext = queryContext.buildContext;
+		BuildContext buildContext = queryContext.getBuildContext();
 
 		FeatureTypeNode head = schemaPath.getFirstNode();
 		if (!buildContext.node.isEqualTo(head, false))
 			throw new QueryBuildException("The root node " + head + " of the schema path does not match the query context.");
 
 		// initialize build context
-		Select select = queryContext.select;
+		Select select = queryContext.getSelect();
 		queryContext.unsetPredicates();
 		currentNode = head;
 
@@ -218,9 +218,9 @@ public class SchemaPathBuilder {
 		if ((objectClassIds == null || objectClassIds.isEmpty()) && !addProjection)
 			return;
 
-		BuildContext buildContext = queryContext.buildContext;
-		FeatureType featureType = queryContext.featureType;
-		Select select = queryContext.select;
+		BuildContext buildContext = queryContext.getBuildContext();
+		FeatureType featureType = queryContext.getFeatureType();
+		Select select = queryContext.getSelect();
 
 		// restore build context
 		tableContext = buildContext.tableContext;
@@ -516,13 +516,13 @@ public class SchemaPathBuilder {
 		AbstractNode<?> tail = schemaPath.getLastNode();
 
 		// copy results to query context
-		queryContext.toTable = toTable;
+		queryContext.setToTable(toTable);
 
 		if (tail.getPathElement().getElementType() == PathElementType.SIMPLE_ATTRIBUTE)
-			queryContext.targetColumn = toTable.getColumn(((SimpleAttribute)tail.getPathElement()).getColumn());
+			queryContext.setTargetColumn(toTable.getColumn(((SimpleAttribute)tail.getPathElement()).getColumn()));
 		else if (tail.getPathElement().getElementType() == PathElementType.GEOMETRY_PROPERTY) {
 			GeometryProperty geometryProperty = (GeometryProperty)tail.getPathElement();
-			queryContext.targetColumn = toTable.getColumn(geometryProperty.isSetRefColumn() ? geometryProperty.getRefColumn() : geometryProperty.getInlineColumn());
+			queryContext.setTargetColumn(toTable.getColumn(geometryProperty.isSetRefColumn() ? geometryProperty.getRefColumn() : geometryProperty.getInlineColumn()));
 		}
 	}
 	

@@ -71,11 +71,11 @@ public class SortingBuilder {
             SortOrder sortOrder = sortProperty.getSortOrder() == org.citydb.query.filter.sorting.SortOrder.DESCENDING ?
                     SortOrder.DESCENDING : SortOrder.ASCENDING;
 
-            queryContext.select.addOrderBy(new OrderByToken(queryContext.targetColumn, sortOrder));
+            queryContext.getSelect().addOrderBy(new OrderByToken(queryContext.getTargetColumn(), sortOrder));
 
             if (queryContext.hasPredicates()) {
-                for (PredicateToken predicate : queryContext.predicates)
-                    addJoinConditions(predicate, queryContext.select);
+                for (PredicateToken predicate : queryContext.getPredicates())
+                    addJoinConditions(predicate, queryContext.getSelect());
 
                 queryContext.unsetPredicates();
             }

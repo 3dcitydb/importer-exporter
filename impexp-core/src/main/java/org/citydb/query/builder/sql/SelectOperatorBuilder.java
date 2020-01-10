@@ -69,7 +69,7 @@ public class SelectOperatorBuilder {
         // build the value reference
         queryContext = schemaPathBuilder.buildSchemaPath(valueReference.getSchemaPath(), queryContext, useLeftJoins);
         LiteralSelectExpression subQuery = new LiteralSelectExpression(operator.getSelect());
-        queryContext.addPredicate(new InOperator(queryContext.targetColumn, subQuery, negate));
+        queryContext.addPredicate(new InOperator(queryContext.getTargetColumn(), subQuery, negate));
 
         return queryContext;
     }
