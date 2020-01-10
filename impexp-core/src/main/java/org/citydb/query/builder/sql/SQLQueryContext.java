@@ -49,7 +49,6 @@ import java.util.Objects;
 public class SQLQueryContext {
 	private final FeatureType featureType;
 	private final Table fromTable;
-
 	private Select select;
 	private Table toTable;
 	private Column targetColumn;
@@ -126,11 +125,11 @@ public class SQLQueryContext {
 	}
 
 	static class BuildContext {
-		final AbstractNode<?> node;
-		final boolean isReuseable;
-		Map<String, Table> tableContext;
-		Table currentTable;
-		List<BuildContext> children;
+		private final AbstractNode<?> node;
+		private final boolean isReuseable;
+		private Map<String, Table> tableContext;
+		private Table currentTable;
+		private List<BuildContext> children;
 
 		private BuildContext(AbstractNode<?> node, boolean isReuseable) {
 			this.node = Objects.requireNonNull(node, "Node object may not be null.");
@@ -139,6 +138,26 @@ public class SQLQueryContext {
 
 		BuildContext(AbstractNode<?> node) {
 			this(node, true);
+		}
+
+		AbstractNode<?> getNode() {
+			return node;
+		}
+
+		Map<String, Table> getTableContext() {
+			return tableContext;
+		}
+
+		void setTableContext(Map<String, Table> tableContext) {
+			this.tableContext = tableContext;
+		}
+
+		Table getCurrentTable() {
+			return currentTable;
+		}
+
+		void setCurrentTable(Table currentTable) {
+			this.currentTable = currentTable;
 		}
 
 		BuildContext addSubContext(AbstractNode<?> node, boolean isReuseable) {
@@ -206,5 +225,4 @@ public class SQLQueryContext {
 			return false;
 		}
 	}
-	
 }

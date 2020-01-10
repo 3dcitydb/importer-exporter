@@ -150,8 +150,8 @@ public class SchemaPathBuilder {
 			}
 
 			// remember build context
-			buildContext.tableContext = tableContext;
-			buildContext.currentTable = currentTable;
+			buildContext.setTableContext(tableContext);
+			buildContext.setCurrentTable(currentTable);
 
 			currentNode = currentNode.child();
 			buildContext = buildContext.addSubContext(currentNode);
@@ -167,7 +167,7 @@ public class SchemaPathBuilder {
 		BuildContext buildContext = queryContext.getBuildContext();
 
 		FeatureTypeNode head = schemaPath.getFirstNode();
-		if (!buildContext.node.isEqualTo(head, false))
+		if (!buildContext.getNode().isEqualTo(head, false))
 			throw new QueryBuildException("The root node " + head + " of the schema path does not match the query context.");
 
 		// initialize build context
@@ -187,15 +187,15 @@ public class SchemaPathBuilder {
 
 			if (subContext != null) {
 				// restore build context
-				tableContext = subContext.tableContext;
-				currentTable = subContext.currentTable;
+				tableContext = subContext.getTableContext();
+				currentTable = subContext.getCurrentTable();
 			} else {
 				processNode(pathElement, head, select, useLeftJoins);
 
 				// remember build context
 				subContext = buildContext.addSubContext(currentNode, useBuildContext);
-				subContext.tableContext = tableContext;
-				subContext.currentTable = currentTable;
+				subContext.setTableContext(tableContext);
+				subContext.setCurrentTable(currentTable);
 			}
 
 			// translate predicate to where-conditions
@@ -223,8 +223,8 @@ public class SchemaPathBuilder {
 		Select select = queryContext.getSelect();
 
 		// restore build context
-		tableContext = buildContext.tableContext;
-		currentTable = buildContext.currentTable;
+		tableContext = buildContext.getTableContext();
+		currentTable = buildContext.getCurrentTable();
 
 		// retrieve table and column of id property
 		AbstractProperty property = featureType.getProperty(MappingConstants.ID, CityDBADE200Module.v3_0.getNamespaceURI(), true);
