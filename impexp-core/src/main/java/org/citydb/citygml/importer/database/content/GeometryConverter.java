@@ -83,8 +83,8 @@ public class GeometryConverter {
 	private boolean affineTransformation;
 	private boolean hasSolidSupport;
 
-	public GeometryConverter(AbstractDatabaseAdapter databaseAdapter, CityGMLImportManager importer) {
-		ringValidator = new RingValidator(importer);
+	public GeometryConverter(AbstractDatabaseAdapter databaseAdapter) {
+		ringValidator = new RingValidator();
 		dbSrid = databaseAdapter.getConnectionMetaData().getReferenceSystem().getSrid();
 
 		// solid geometries are only supported in Oracle 11g or higher
@@ -92,8 +92,8 @@ public class GeometryConverter {
 				databaseAdapter.getConnectionMetaData().getDatabaseMajorVersion() > 10;
 	}
 
-	public GeometryConverter(AbstractDatabaseAdapter databaseAdapter, AffineTransformer affineTransformer, Config config, CityGMLImportManager importer) {
-		this(databaseAdapter, importer);
+	public GeometryConverter(AbstractDatabaseAdapter databaseAdapter, AffineTransformer affineTransformer, Config config) {
+		this(databaseAdapter);
 
 		affineTransformation = config.getProject().getImporter().getAffineTransformation().isEnabled();
 		if (affineTransformation)

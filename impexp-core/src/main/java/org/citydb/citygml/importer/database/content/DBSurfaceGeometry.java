@@ -145,7 +145,7 @@ public class DBSurfaceGeometry implements DBImporter {
 		geometryConverter = importer.getGeometryConverter();
 
 		pkManager = new PrimaryKeyManager();
-		ringValidator = new RingValidator(importer);
+		ringValidator = new RingValidator();
 	}
 
 	protected long doImport(AbstractGeometry surfaceGeometry, long cityObjectId) throws CityGMLImportException, SQLException {

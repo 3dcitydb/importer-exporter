@@ -27,20 +27,15 @@
  */
 package org.citydb.citygml.importer.util;
 
-import org.citydb.citygml.importer.database.content.CityGMLImportManager;
 import org.citydb.log.Logger;
 import org.citydb.util.CoreConstants;
+import org.citygml4j.model.gml.geometry.AbstractGeometry;
 import org.citygml4j.model.gml.geometry.primitives.AbstractRing;
 
 import java.util.List;
 
 public class RingValidator {
 	private final Logger log = Logger.getInstance();
-	private final CityGMLImportManager importer;
-
-	public RingValidator(CityGMLImportManager importer) {
-		this.importer = importer;
-	}
 
 	public boolean validate(List<Double> coordinates, AbstractRing ring) {
 		if (coordinates == null || ring.hasLocalProperty(CoreConstants.GEOMETRY_INVALID))
@@ -48,12 +43,12 @@ public class RingValidator {
 
 		// check closedness
 		if (coordinates.size() >= 9 && !isClosed(coordinates))
-			log.warn(importer.getObjectSignature(ring) + ": Ring is not closed. Appending first coordinate to fix it.");
+			log.warn(getGeometrySignature(ring) + ": Ring is not closed. Appending first coordinate to fix it.");
 
 		// too few coordinates
 		if (coordinates.size() / 3 < 4) {
 			ring.setLocalProperty(CoreConstants.GEOMETRY_INVALID, "Too few coordinates");
-			log.error(importer.getObjectSignature(ring) + ": Ring contains less than 4 coordinates and will not be imported.");
+			log.error(getGeometrySignature(ring) + ": Ring contains less than 4 coordinates and will not be imported.");
 			return false;
 		}
 
@@ -79,5 +74,19 @@ public class RingValidator {
 		}
 
 		return true;
+	}
+
+	public String getGeometrySignature(AbstractGeometry object) {
+		StringBuilder signature = new StringBuilder("gml:").append(object.getGMLClass().toString());
+		String gmlId = object.hasLocalProperty(CoreConstants.OBJECT_ORIGINAL_GMLID) ?
+				(String)object.getLocalProperty(CoreConstants.OBJECT_ORIGINAL_GMLID) :
+				object.getId();
+
+		if (gmlId != null)
+			signature.append(" '").append(gmlId).append("'");
+		else
+			signature.append(" (unknown gml:id)");
+
+		return signature.toString();
 	}
 }
