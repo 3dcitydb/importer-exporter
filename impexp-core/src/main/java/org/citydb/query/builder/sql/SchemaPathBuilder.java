@@ -131,12 +131,9 @@ public class SchemaPathBuilder {
 		currentNode = head;
 
 		// initialize query context
-		SQLQueryContext queryContext = new SQLQueryContext(head.getPathElement(), currentTable);
+		SQLQueryContext queryContext = new SQLQueryContext(head, currentTable);
 		Select select = queryContext.getSelect();
-
-		// store build context
-		BuildContext buildContext = new BuildContext(head);
-		queryContext.setBuildContext(buildContext);
+		BuildContext buildContext = queryContext.getBuildContext();
 
 		// iterate through schema path
 		while (currentNode != null) {

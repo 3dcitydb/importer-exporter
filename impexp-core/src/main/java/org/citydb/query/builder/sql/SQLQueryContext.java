@@ -35,6 +35,7 @@ import org.citydb.database.schema.mapping.Joinable;
 import org.citydb.database.schema.mapping.PathElementType;
 import org.citydb.database.schema.mapping.TableRole;
 import org.citydb.database.schema.path.AbstractNode;
+import org.citydb.database.schema.path.FeatureTypeNode;
 import org.citydb.sqlbuilder.schema.Column;
 import org.citydb.sqlbuilder.schema.Table;
 import org.citydb.sqlbuilder.select.PredicateToken;
@@ -48,17 +49,18 @@ import java.util.Objects;
 
 public class SQLQueryContext {
 	private final FeatureType featureType;
-	private final Table fromTable;
+	private Table fromTable;
 	private Select select;
 	private Table toTable;
 	private Column targetColumn;
 	private List<PredicateToken> predicates;
 	private BuildContext buildContext;
 	
-	SQLQueryContext(FeatureType featureType, Table fromTable) {
-		this.featureType = Objects.requireNonNull(featureType, "Feature type may not be null.");
-		this.fromTable = Objects.requireNonNull(fromTable, "Table may not be null.");
+	SQLQueryContext(FeatureTypeNode node, Table fromTable) {
+		featureType = node.getPathElement();
+		this.fromTable = fromTable;
 		select = new Select();
+		buildContext = new BuildContext(node);
 	}
 
 	FeatureType getFeatureType() {
@@ -83,6 +85,10 @@ public class SQLQueryContext {
 
 	public Table getFromTable() {
 		return fromTable;
+	}
+
+	void setFromTable(Table fromTable) {
+		this.fromTable = fromTable;
 	}
 
 	public Table getToTable() {
