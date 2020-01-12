@@ -132,18 +132,12 @@ public class SQLQueryContext {
 
 	static class BuildContext {
 		private final AbstractNode<?> node;
-		private final boolean isReuseable;
 		private Map<String, Table> tableContext;
 		private Table currentTable;
 		private List<BuildContext> children;
 
-		private BuildContext(AbstractNode<?> node, boolean isReuseable) {
-			this.node = Objects.requireNonNull(node, "Node object may not be null.");
-			this.isReuseable = isReuseable;
-		}
-
 		BuildContext(AbstractNode<?> node) {
-			this(node, true);
+			this.node = Objects.requireNonNull(node, "Node object may not be null.");
 		}
 
 		AbstractNode<?> getNode() {
@@ -166,22 +160,18 @@ public class SQLQueryContext {
 			this.currentTable = currentTable;
 		}
 
-		BuildContext addSubContext(AbstractNode<?> node, boolean isReuseable) {
+		BuildContext addSubContext(AbstractNode<?> node) {
 			BuildContext nodeContext = null;
 
 			if (node != null) {
 				if (children == null)
 					children = new ArrayList<>();
 
-				nodeContext = new BuildContext(node, isReuseable);
+				nodeContext = new BuildContext(node);
 				children.add(nodeContext);
 			}
 
 			return nodeContext;
-		}
-
-		BuildContext addSubContext(AbstractNode<?> node) {
-			return addSubContext(node, true);
 		}
 
 		boolean hasSubContexts() {
@@ -191,9 +181,6 @@ public class SQLQueryContext {
 		BuildContext findSubContext(AbstractNode<?> node) {
 			if (children != null && node != null) {
 				for (BuildContext child : children) {
-					if (!child.isReuseable)
-						continue;
-
 					if (child.node.isEqualTo(node, false)) {
 						// only return the context of a property if the types are also identical
 						// otherwise the schema paths substantially differ
