@@ -100,7 +100,7 @@ public class SQLQueryBuilder {
 			// TODO: we must check, whether the feature types announced by the feature type filter
 			// are all subtypes of the root node of the schema path
 			Predicate predicate = query.getSelection().getPredicate();
-			PredicateBuilder predicateBuilder = new PredicateBuilder(query, builder, schemaMapping, databaseAdapter, schemaName, buildProperties);
+			PredicateBuilder predicateBuilder = new PredicateBuilder(query, builder, schemaMapping, databaseAdapter, schemaName);
 			queryContext = predicateBuilder.buildPredicate(predicate);
 		} else {
 			FeatureType superType = schemaMapping.getCommonSuperType(typeFilter.getFeatureTypes());
