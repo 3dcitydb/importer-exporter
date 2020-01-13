@@ -598,7 +598,7 @@ public class DBXlinkSplitter implements EventHandler {
 				boolean reverse = rs.getInt("REVERSE") == 1;
 				String gmlId = rs.getString("GMLID");
 				long cityObjectId = rs.getLong("CITYOBJECT_ID");
-				int objectClassId = rs.getInt("OBJECTCLASS_ID");
+				String table = rs.getString("TABLE_NAME");
 				String fromColumn = rs.getString("FROM_COLUMN");
 
 				// set initial context...
@@ -609,7 +609,7 @@ public class DBXlinkSplitter implements EventHandler {
 						reverse,
 						gmlId,
 						cityObjectId,
-						objectClassId,
+						table,
 						fromColumn);
 
 				xlinkResolverPool.addWork(xlink);

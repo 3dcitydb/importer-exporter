@@ -143,10 +143,10 @@ public class DBLandUse implements DBImporter {
 					String href = multiSurfaceProperty.getHref();
 					if (href != null && href.length() != 0) {
 						importer.propagateXlink(new DBXlinkSurfaceGeometry(
-								featureType.getObjectClassId(), 
+								"land_use",
 								landUseId, 
 								href, 
-								"LOD" + i + "_MULTI_SURFACE_ID"));
+								"lod" + i + "_multi_surface_id"));
 					}
 				}
 			}

@@ -35,6 +35,7 @@ import org.citydb.database.schema.mapping.Joinable;
 import org.citydb.database.schema.mapping.PathElementType;
 import org.citydb.database.schema.mapping.TableRole;
 import org.citydb.database.schema.path.AbstractNode;
+import org.citydb.database.schema.path.FeatureTypeNode;
 import org.citydb.sqlbuilder.schema.Column;
 import org.citydb.sqlbuilder.schema.Table;
 import org.citydb.sqlbuilder.select.PredicateToken;
@@ -47,35 +48,55 @@ import java.util.Map;
 import java.util.Objects;
 
 public class SQLQueryContext {
-	final FeatureType featureType;
-	final Table fromTable;
-
-	Select select;
-	Table toTable;
-	Column targetColumn;
-	List<PredicateToken> predicates;
-	BuildContext buildContext;
+	private final FeatureType featureType;
+	private Table fromTable;
+	private Select select;
+	private Table toTable;
+	private Column targetColumn;
+	private List<PredicateToken> predicates;
+	private BuildContext buildContext;
 	
-	SQLQueryContext(FeatureType featureType, Table fromTable) {
-		this.featureType = Objects.requireNonNull(featureType, "Feature type may not be null.");
-		this.fromTable = Objects.requireNonNull(fromTable, "Table may not be null.");
+	SQLQueryContext(FeatureTypeNode node, Table fromTable) {
+		featureType = node.getPathElement();
+		this.fromTable = fromTable;
 		select = new Select();
+		buildContext = new BuildContext(node);
 	}
-	
+
+	FeatureType getFeatureType() {
+		return featureType;
+	}
+
 	public Select getSelect() {
 		return select;
+	}
+
+	void setSelect(Select select) {
+		this.select = select;
 	}
 
 	public Column getTargetColumn() {
 		return targetColumn;
 	}
 
+	void setTargetColumn(Column targetColumn) {
+		this.targetColumn = targetColumn;
+	}
+
 	public Table getFromTable() {
 		return fromTable;
 	}
 
+	void setFromTable(Table fromTable) {
+		this.fromTable = fromTable;
+	}
+
 	public Table getToTable() {
 		return toTable;
+	}
+
+	void setToTable(Table toTable) {
+		this.toTable = toTable;
 	}
 
 	boolean hasPredicates() {
@@ -93,42 +114,64 @@ public class SQLQueryContext {
 		Arrays.stream(predicates).forEach(this::addPredicate);
 	}
 
+	List<PredicateToken> getPredicates() {
+		return predicates;
+	}
+
 	void unsetPredicates() {
 		predicates = null;
 	}
 
-	static class BuildContext {
-		final AbstractNode<?> node;
-		final boolean isReuseable;
-		Map<String, Table> tableContext;
-		Table currentTable;
-		List<BuildContext> children;
+	BuildContext getBuildContext() {
+		return buildContext;
+	}
 
-		private BuildContext(AbstractNode<?> node, boolean isReuseable) {
-			this.node = Objects.requireNonNull(node, "Node object may not be null.");
-			this.isReuseable = isReuseable;
-		}
+	void setBuildContext(BuildContext buildContext) {
+		this.buildContext = buildContext;
+	}
+
+	static class BuildContext {
+		private final AbstractNode<?> node;
+		private Map<String, Table> tableContext;
+		private Table currentTable;
+		private List<BuildContext> children;
 
 		BuildContext(AbstractNode<?> node) {
-			this(node, true);
+			this.node = Objects.requireNonNull(node, "Node object may not be null.");
 		}
 
-		BuildContext addSubContext(AbstractNode<?> node, boolean isReuseable) {
+		AbstractNode<?> getNode() {
+			return node;
+		}
+
+		Map<String, Table> getTableContext() {
+			return tableContext;
+		}
+
+		void setTableContext(Map<String, Table> tableContext) {
+			this.tableContext = tableContext;
+		}
+
+		Table getCurrentTable() {
+			return currentTable;
+		}
+
+		void setCurrentTable(Table currentTable) {
+			this.currentTable = currentTable;
+		}
+
+		BuildContext addSubContext(AbstractNode<?> node) {
 			BuildContext nodeContext = null;
 
 			if (node != null) {
 				if (children == null)
 					children = new ArrayList<>();
 
-				nodeContext = new BuildContext(node, isReuseable);
+				nodeContext = new BuildContext(node);
 				children.add(nodeContext);
 			}
 
 			return nodeContext;
-		}
-
-		BuildContext addSubContext(AbstractNode<?> node) {
-			return addSubContext(node, true);
 		}
 
 		boolean hasSubContexts() {
@@ -138,9 +181,6 @@ public class SQLQueryContext {
 		BuildContext findSubContext(AbstractNode<?> node) {
 			if (children != null && node != null) {
 				for (BuildContext child : children) {
-					if (!child.isReuseable)
-						continue;
-
 					if (child.node.isEqualTo(node, false)) {
 						// only return the context of a property if the types are also identical
 						// otherwise the schema paths substantially differ
@@ -178,5 +218,4 @@ public class SQLQueryContext {
 			return false;
 		}
 	}
-	
 }

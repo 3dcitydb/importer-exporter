@@ -53,10 +53,8 @@ public class PredicateBuilder {
 	private final SpatialOperatorBuilder spatialBuilder;
 	private final IdOperatorBuilder idBuilder;
 	private final SelectOperatorBuilder selectBuilder;
-	private final SchemaPathBuilder schemaPathBuilder;
 
-	protected PredicateBuilder(Query query, SchemaPathBuilder schemaPathBuilder, SchemaMapping schemaMapping, AbstractDatabaseAdapter databaseAdapter, String schemaName, BuildProperties buildProperties) {
-		this.schemaPathBuilder = schemaPathBuilder;
+	protected PredicateBuilder(Query query, SchemaPathBuilder schemaPathBuilder, SchemaMapping schemaMapping, AbstractDatabaseAdapter databaseAdapter, String schemaName) {
 		comparisonBuilder = new ComparisonOperatorBuilder(schemaPathBuilder, databaseAdapter.getSQLAdapter(), schemaName);
 		spatialBuilder = new SpatialOperatorBuilder(query, schemaPathBuilder, schemaMapping, databaseAdapter, schemaName);
 		idBuilder = new IdOperatorBuilder(query, schemaPathBuilder, schemaMapping, databaseAdapter.getSQLAdapter());
@@ -68,7 +66,7 @@ public class PredicateBuilder {
 		if (!queryContext.hasPredicates())
 			throw new QueryBuildException("Failed to build selection predicates.");
 
-		queryContext.predicates.forEach(queryContext.select::addSelection);
+		queryContext.getPredicates().forEach(queryContext.getSelect()::addSelection);
 		return queryContext;
 	}
 
@@ -121,10 +119,10 @@ public class PredicateBuilder {
 				if (!queryContext.hasPredicates())
 					throw new QueryBuildException("Failed to build selection predicates.");
 
-				if (binaryOperator.getOperatorName() == LogicalOperatorName.OR && queryContext.predicates.size() > 1)
-					predicates.add(LogicalOperationFactory.AND(queryContext.predicates));
+				if (binaryOperator.getOperatorName() == LogicalOperatorName.OR && queryContext.getPredicates().size() > 1)
+					predicates.add(LogicalOperationFactory.AND(queryContext.getPredicates()));
 				else
-					predicates.addAll(queryContext.predicates);
+					predicates.addAll(queryContext.getPredicates());
 
 				queryContext.unsetPredicates();
 			}

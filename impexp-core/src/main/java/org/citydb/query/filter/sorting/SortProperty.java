@@ -29,7 +29,6 @@
 package org.citydb.query.filter.sorting;
 
 import org.citydb.database.schema.mapping.PathElementType;
-import org.citydb.query.builder.QueryBuildException;
 import org.citydb.query.filter.FilterException;
 import org.citydb.query.filter.selection.expression.ValueReference;
 

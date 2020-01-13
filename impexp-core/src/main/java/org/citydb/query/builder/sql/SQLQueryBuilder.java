@@ -97,16 +97,12 @@ public class SQLQueryBuilder {
 		// selection filter
 		SQLQueryContext queryContext;
 		if (query.isSetSelection()) {
-			// TODO: we must check, whether the feature types announced by the feature type filter
-			// are all subtypes of the root node of the schema path
 			Predicate predicate = query.getSelection().getPredicate();
-			PredicateBuilder predicateBuilder = new PredicateBuilder(query, builder, schemaMapping, databaseAdapter, schemaName, buildProperties);
+			PredicateBuilder predicateBuilder = new PredicateBuilder(query, builder, schemaMapping, databaseAdapter, schemaName);
 			queryContext = predicateBuilder.buildPredicate(predicate);
 		} else {
-			FeatureType superType = schemaMapping.getCommonSuperType(typeFilter.getFeatureTypes());			
-			SchemaPath schemaPath = new SchemaPath();
-			schemaPath.setFirstNode(superType);
-			queryContext = builder.buildSchemaPath(schemaPath, null, true, false);
+			FeatureType superType = schemaMapping.getCommonSuperType(typeFilter.getFeatureTypes());
+			queryContext = builder.buildSchemaPath(new SchemaPath(superType), null, true, false);
 		}
 
 		// lod filter
@@ -128,10 +124,10 @@ public class SQLQueryBuilder {
 		builder.prepareStatement(queryContext, objectclassIds, true);
 
 		// build distinct query if the query involves 1:n or n:m joins
-		if (queryContext.buildContext.requiresDistinct())
+		if (queryContext.getBuildContext().requiresDistinct())
 			buildDistinctQuery(query, queryContext);
 
-		return queryContext.select;
+		return queryContext.getSelect();
 	}
 
 	public SQLQueryContext buildSchemaPath(SchemaPath schemaPath, boolean addProjection, boolean useLeftJoins) throws QueryBuildException {
@@ -148,10 +144,10 @@ public class SQLQueryBuilder {
 		Set<Integer> objectclassIds = new FeatureTypeFilterBuilder().buildFeatureTypeFilter(typeFilter);
 
 		SQLQueryContext queryContext = builder.buildSchemaPath(schemaPath, null, true, useLeftJoins);
-		builder.prepareStatement(queryContext, objectclassIds, addProjection);
-
 		if (queryContext.hasPredicates())
-			queryContext.predicates.forEach(queryContext.select::addSelection);
+			queryContext.getPredicates().forEach(queryContext.getSelect()::addSelection);
+
+		builder.prepareStatement(queryContext, objectclassIds, addProjection);
 
 		return queryContext;
 	}
@@ -162,14 +158,14 @@ public class SQLQueryBuilder {
 
 	private void buildDistinctQuery(Query query, SQLQueryContext queryContext) {
 		if (!query.isSetSorting())
-			queryContext.select.setDistinct(true);
+			queryContext.getSelect().setDistinct(true);
 
 		else {
 			// when sorting is enabled, then adding the sort column as projection token
 			// might lead to multiple rows per top-level feature even if distinct is used.
 			// so we have to rewrite the query using the row_number() function to guarantee
 			// that every top-level feature is only exported once.
-			Select inner = queryContext.select;
+			Select inner = queryContext.getSelect();
 			List<ProjectionToken> projection = inner.getProjection();
 			List<OrderByToken> orderBy = inner.getOrderBy();
 			inner.unsetOrderBy();
@@ -184,7 +180,7 @@ public class SQLQueryBuilder {
 			// add row_number() function over the sorted set. the row number is later
 			// used to remove duplicates for the same top-level feature.
 			inner.addProjection(new Function("row_number() over (" +
-					"partition by " + queryContext.fromTable.getColumn(MappingConstants.ID) + " " +
+					"partition by " + queryContext.getFromTable().getColumn(MappingConstants.ID) + " " +
 					"order by " + orderBy.stream().map(OrderByToken::toString).collect(Collectors.joining(", ")) +
 					")", "rn", false));
 
@@ -193,17 +189,17 @@ public class SQLQueryBuilder {
 
 			// create a new select statement that uses the previous select as CTE
 			// and remove duplicates by selecting row numbers with value 1
-			queryContext.select = new Select()
+			queryContext.setSelect(new Select()
 					.addWith(cte)
-					.addSelection(ComparisonFactory.equalTo(withTable.getColumn("rn"), new IntegerLiteral(1)));
+					.addSelection(ComparisonFactory.equalTo(withTable.getColumn("rn"), new IntegerLiteral(1))));
 
 			// re-add projection columns to new select
 			for (ProjectionToken token : projection)
-				queryContext.select.addProjection(token instanceof Column ? withTable.getColumn(((Column) token).getName()) : token);
+				queryContext.getSelect().addProjection(token instanceof Column ? withTable.getColumn(((Column) token).getName()) : token);
 
 			// re-add order by tokens to new select
 			for (int i = 0; i < orderBy.size(); i++)
-				queryContext.select.addOrderBy(new OrderByToken(withTable.getColumn("order" + i), orderBy.get(i).getSortOrder()));
+				queryContext.getSelect().addOrderBy(new OrderByToken(withTable.getColumn("order" + i), orderBy.get(i).getSortOrder()));
 		}
 	}
 

@@ -132,12 +132,12 @@ public class SpatialOperatorBuilder {
 
 		// build the value reference and spatial predicate
 		queryContext = schemaPathBuilder.buildSchemaPath(valueReference.getSchemaPath(), queryContext, useLeftJoins);
-		Table toTable = queryContext.toTable;
-		Column targetColumn = queryContext.targetColumn;
+		Table toTable = queryContext.getToTable();
+		Column targetColumn = queryContext.getTargetColumn();
 
 		GeometryProperty property = (GeometryProperty)valueReference.getSchemaPath().getLastNode().getPathElement();
 		if (property.isSetInlineColumn()) {
-			PredicateToken predicate = databaseAdapter.getSQLAdapter().getBinarySpatialPredicate(operator.getOperatorName(), queryContext.targetColumn, spatialDescription, negate);
+			PredicateToken predicate = databaseAdapter.getSQLAdapter().getBinarySpatialPredicate(operator.getOperatorName(), queryContext.getTargetColumn(), spatialDescription, negate);
 			queryContext.addPredicate(predicate);
 		} else {
 			if (operator.getOperatorName() == SpatialOperatorName.CONTAINS || operator.getOperatorName() == SpatialOperatorName.EQUALS)
@@ -167,7 +167,7 @@ public class SpatialOperatorBuilder {
 		// add optimizer hint if required
 		if (databaseAdapter.getSQLAdapter().spatialPredicateRequiresNoIndexHint()
 				&& targetColumn.getName().equalsIgnoreCase(MappingConstants.ENVELOPE))
-			queryContext.select.setOptimizerString("/*+ no_index(" + toTable.getAlias() + " cityobject_objectclass_fkx) */");
+			queryContext.getSelect().setOptimizerString("/*+ no_index(" + toTable.getAlias() + " cityobject_objectclass_fkx) */");
 
 		return queryContext;
 	}
@@ -223,12 +223,12 @@ public class SpatialOperatorBuilder {
 
 		// build the value reference and spatial predicate
 		queryContext = schemaPathBuilder.buildSchemaPath(valueReference.getSchemaPath(), queryContext, useLeftJoins);
-		Table toTable = queryContext.toTable;
-		Column targetColumn = queryContext.targetColumn;
+		Table toTable = queryContext.getToTable();
+		Column targetColumn = queryContext.getTargetColumn();
 
 		GeometryProperty property = (GeometryProperty)valueReference.getSchemaPath().getLastNode().getPathElement();
 		if (property.isSetInlineColumn()) {
-			PredicateToken predicate = databaseAdapter.getSQLAdapter().getDistancePredicate(operator.getOperatorName(), queryContext.targetColumn, spatialDescription, value, negate);
+			PredicateToken predicate = databaseAdapter.getSQLAdapter().getDistancePredicate(operator.getOperatorName(), queryContext.getTargetColumn(), spatialDescription, value, negate);
 			queryContext.addPredicate(predicate);
 		} else {
 			SpatialOperatorName operatorName = operator.getOperatorName();
@@ -267,7 +267,7 @@ public class SpatialOperatorBuilder {
 		// add optimizer hint if required
 		if (databaseAdapter.getSQLAdapter().spatialPredicateRequiresNoIndexHint()
 				&& targetColumn.getName().equalsIgnoreCase(MappingConstants.ENVELOPE))
-			queryContext.select.setOptimizerString("/*+ no_index(" + toTable.getAlias() + " cityobject_objectclass_fkx) */");
+			queryContext.getSelect().setOptimizerString("/*+ no_index(" + toTable.getAlias() + " cityobject_objectclass_fkx) */");
 
 		return queryContext;
 	}
@@ -285,7 +285,7 @@ public class SpatialOperatorBuilder {
 
 	private Table getCityObjectTable(Query query, SQLQueryContext queryContext, boolean useLeftJoins) throws QueryBuildException {
 		SchemaPath schemaPath = getBoundedByProperty(query).getSchemaPath();
-		return schemaPathBuilder.buildSchemaPath(schemaPath, queryContext, useLeftJoins).toTable;
+		return schemaPathBuilder.buildSchemaPath(schemaPath, queryContext, useLeftJoins).getToTable();
 	}
 
 }

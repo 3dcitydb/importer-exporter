@@ -230,7 +230,7 @@ public class DBImplicitGeometry implements DBImporter {
 
 		if (isXLink && !importer.lookupAndPutObjectUID("#xlink#" + gmlId, 1, MappingConstants.IMPLICIT_GEOMETRY_OBJECTCLASS_ID)) {
 			importer.propagateXlink(new DBXlinkSurfaceGeometry(
-					MappingConstants.IMPLICIT_GEOMETRY_OBJECTCLASS_ID, 
+					MappingConstants.IMPLICIT_GEOMETRY_TABLE,
 					implicitGeometryId, 
 					gmlId, 
 					null));

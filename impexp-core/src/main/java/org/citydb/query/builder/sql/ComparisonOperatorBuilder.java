@@ -142,7 +142,7 @@ public class ComparisonOperatorBuilder {
 
 		// map operands
 		org.citydb.sqlbuilder.expression.Expression rightOperand = literal.convertToSQLPlaceHolder();
-		org.citydb.sqlbuilder.expression.Expression leftOperand = queryContext.targetColumn;
+		org.citydb.sqlbuilder.expression.Expression leftOperand = queryContext.getTargetColumn();
 
 		// consider match case
 		if (!operator.isMatchCase() && ((PlaceHolder<?>)rightOperand).getValue() instanceof String) {
@@ -209,7 +209,7 @@ public class ComparisonOperatorBuilder {
 		PlaceHolder<?> upperBoundaryLiteral = upperBoundary.convertToSQLPlaceHolder();
 
 		// finally, create equivalent sql operation
-		queryContext.addPredicate(ComparisonFactory.between(queryContext.targetColumn, lowerBoundaryLiteral, upperBoundaryLiteral, negate));
+		queryContext.addPredicate(ComparisonFactory.between(queryContext.getTargetColumn(), lowerBoundaryLiteral, upperBoundaryLiteral, negate));
 		return queryContext;
 	}
 
@@ -268,7 +268,7 @@ public class ComparisonOperatorBuilder {
 
 		// map operands
 		org.citydb.sqlbuilder.expression.Expression rightOperand = new PlaceHolder<>(value);
-		org.citydb.sqlbuilder.expression.Expression leftOperand = queryContext.targetColumn;
+		org.citydb.sqlbuilder.expression.Expression leftOperand = queryContext.getTargetColumn();
 
 		// consider match case
 		if (!operator.isMatchCase()) {
@@ -298,7 +298,7 @@ public class ComparisonOperatorBuilder {
 
 		// if the target property is an injected ADE property, we need to change the join for
 		// the injection table from an inner join to a left join
-		List<org.citydb.sqlbuilder.select.join.Join> joins = queryContext.select.getJoins();
+		List<org.citydb.sqlbuilder.select.join.Join> joins = queryContext.getSelect().getJoins();
 		if (!joins.isEmpty()) {
 			AbstractNode<?> node = schemaPath.getLastNode();
 			while (node.getPathElement() instanceof AbstractProperty) {
@@ -322,7 +322,7 @@ public class ComparisonOperatorBuilder {
 		if (property.getElementType() == PathElementType.SIMPLE_ATTRIBUTE || property.getElementType() == PathElementType.GEOMETRY_PROPERTY) {
 			// for simple properties, we just check whether the column is null
 			queryContext = schemaPathBuilder.buildSchemaPath(schemaPath, queryContext, useLeftJoins);
-			queryContext.addPredicate(ComparisonFactory.isNull(queryContext.targetColumn, negate));
+			queryContext.addPredicate(ComparisonFactory.isNull(queryContext.getTargetColumn(), negate));
 			return queryContext;
 		}
 
@@ -364,7 +364,7 @@ public class ComparisonOperatorBuilder {
 				Table table = new Table(toTable, schemaName, schemaPathBuilder.getAliasGenerator());
 				Select select = new Select()
 						.addProjection(new ConstantColumn(1).withFromTable(table))
-						.addSelection(ComparisonFactory.equalTo(table.getColumn(toColumn), queryContext.toTable.getColumn(fromColumn)));
+						.addSelection(ComparisonFactory.equalTo(table.getColumn(toColumn), queryContext.getToTable().getColumn(fromColumn)));
 
 				// add join conditions if required
 				if (conditions != null) {
@@ -418,7 +418,7 @@ public class ComparisonOperatorBuilder {
 
 					// if we shall check for not is null, then we combine the predicates using or
 					if (negate) {
-						PredicateToken predicate = LogicalOperationFactory.OR(queryContext.predicates);
+						PredicateToken predicate = LogicalOperationFactory.OR(queryContext.getPredicates());
 						queryContext.unsetPredicates();
 						queryContext.addPredicate(predicate);
 					}

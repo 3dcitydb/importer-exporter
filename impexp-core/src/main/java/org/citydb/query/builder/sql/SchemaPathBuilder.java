@@ -109,18 +109,18 @@ public class SchemaPathBuilder {
 	}
 
 	protected SQLQueryContext buildSchemaPath(SchemaPath schemaPath, SQLQueryContext queryContext, boolean useLeftJoins) throws QueryBuildException {
-		return queryContext == null ? buildSchemaPath(schemaPath, true, useLeftJoins) : addSchemaPath(queryContext, schemaPath, true, useLeftJoins, true);
+		return queryContext == null ? buildSchemaPath(schemaPath, true, useLeftJoins) : addSchemaPath(queryContext, schemaPath, true, useLeftJoins);
 	}
 
 	protected SQLQueryContext buildSchemaPath(SchemaPath schemaPath, SQLQueryContext queryContext, boolean matchCase, boolean useLeftJoins) throws QueryBuildException {
-		return queryContext == null ? buildSchemaPath(schemaPath, matchCase, useLeftJoins) : addSchemaPath(queryContext, schemaPath, matchCase, useLeftJoins, true);
+		return queryContext == null ? buildSchemaPath(schemaPath, matchCase, useLeftJoins) : addSchemaPath(queryContext, schemaPath, matchCase, useLeftJoins);
 	}
 
 	protected SQLQueryContext addSchemaPath(SchemaPath schemaPath, SQLQueryContext queryContext) throws QueryBuildException {
 		if (queryContext == null)
 			throw new QueryBuildException("The query context must not be null.");
 
-		return addSchemaPath(queryContext, schemaPath, true, true, false);
+		return addSchemaPath(queryContext, schemaPath, true, true);
 	}
 
 	private SQLQueryContext buildSchemaPath(SchemaPath schemaPath, boolean matchCase, boolean useLeftJoins) throws QueryBuildException {
@@ -131,12 +131,9 @@ public class SchemaPathBuilder {
 		currentNode = head;
 
 		// initialize query context
-		SQLQueryContext queryContext = new SQLQueryContext(head.getPathElement(), currentTable);
-		Select select = queryContext.select;
-
-		// store build context
-		BuildContext buildContext = new BuildContext(head);
-		queryContext.buildContext = buildContext;
+		SQLQueryContext queryContext = new SQLQueryContext(head, currentTable);
+		Select select = queryContext.getSelect();
+		BuildContext buildContext = queryContext.getBuildContext();
 
 		// iterate through schema path
 		while (currentNode != null) {
@@ -150,8 +147,8 @@ public class SchemaPathBuilder {
 			}
 
 			// remember build context
-			buildContext.tableContext = tableContext;
-			buildContext.currentTable = currentTable;
+			buildContext.setTableContext(tableContext);
+			buildContext.setCurrentTable(currentTable);
 
 			currentNode = currentNode.child();
 			buildContext = buildContext.addSubContext(currentNode);
@@ -163,15 +160,15 @@ public class SchemaPathBuilder {
 		return queryContext;
 	}
 
-	private SQLQueryContext addSchemaPath(SQLQueryContext queryContext, SchemaPath schemaPath, boolean matchCase, boolean useLeftJoins, boolean useBuildContext) throws QueryBuildException {
-		BuildContext buildContext = queryContext.buildContext;
+	private SQLQueryContext addSchemaPath(SQLQueryContext queryContext, SchemaPath schemaPath, boolean matchCase, boolean useLeftJoins) throws QueryBuildException {
+		BuildContext buildContext = queryContext.getBuildContext();
 
 		FeatureTypeNode head = schemaPath.getFirstNode();
-		if (!buildContext.node.isEqualTo(head, false))
+		if (!buildContext.getNode().isEqualTo(head, false))
 			throw new QueryBuildException("The root node " + head + " of the schema path does not match the query context.");
 
 		// initialize build context
-		Select select = queryContext.select;
+		Select select = queryContext.getSelect();
 		queryContext.unsetPredicates();
 		currentNode = head;
 
@@ -179,23 +176,21 @@ public class SchemaPathBuilder {
 		while (currentNode != null) {
 			AbstractPathElement pathElement = currentNode.getPathElement();
 
-			BuildContext subContext = null;
-			if (currentNode == head)
-				subContext = buildContext;
-			else if (useBuildContext)
-				subContext = buildContext.findSubContext(currentNode);
+			BuildContext subContext = currentNode == head ?
+					buildContext :
+					buildContext.findSubContext(currentNode);
 
 			if (subContext != null) {
 				// restore build context
-				tableContext = subContext.tableContext;
-				currentTable = subContext.currentTable;
+				tableContext = subContext.getTableContext();
+				currentTable = subContext.getCurrentTable();
 			} else {
 				processNode(pathElement, head, select, useLeftJoins);
 
 				// remember build context
-				subContext = buildContext.addSubContext(currentNode, useBuildContext);
-				subContext.tableContext = tableContext;
-				subContext.currentTable = currentTable;
+				subContext = buildContext.addSubContext(currentNode);
+				subContext.setTableContext(tableContext);
+				subContext.setCurrentTable(currentTable);
 			}
 
 			// translate predicate to where-conditions
@@ -218,13 +213,13 @@ public class SchemaPathBuilder {
 		if ((objectClassIds == null || objectClassIds.isEmpty()) && !addProjection)
 			return;
 
-		BuildContext buildContext = queryContext.buildContext;
-		FeatureType featureType = queryContext.featureType;
-		Select select = queryContext.select;
+		BuildContext buildContext = queryContext.getBuildContext();
+		FeatureType featureType = queryContext.getFeatureType();
+		Select select = queryContext.getSelect();
 
 		// restore build context
-		tableContext = buildContext.tableContext;
-		currentTable = buildContext.currentTable;
+		tableContext = buildContext.getTableContext();
+		currentTable = buildContext.getCurrentTable();
 
 		// retrieve table and column of id property
 		AbstractProperty property = featureType.getProperty(MappingConstants.ID, CityDBADE200Module.v3_0.getNamespaceURI(), true);
@@ -516,13 +511,13 @@ public class SchemaPathBuilder {
 		AbstractNode<?> tail = schemaPath.getLastNode();
 
 		// copy results to query context
-		queryContext.toTable = toTable;
+		queryContext.setToTable(toTable);
 
 		if (tail.getPathElement().getElementType() == PathElementType.SIMPLE_ATTRIBUTE)
-			queryContext.targetColumn = toTable.getColumn(((SimpleAttribute)tail.getPathElement()).getColumn());
+			queryContext.setTargetColumn(toTable.getColumn(((SimpleAttribute)tail.getPathElement()).getColumn()));
 		else if (tail.getPathElement().getElementType() == PathElementType.GEOMETRY_PROPERTY) {
 			GeometryProperty geometryProperty = (GeometryProperty)tail.getPathElement();
-			queryContext.targetColumn = toTable.getColumn(geometryProperty.isSetRefColumn() ? geometryProperty.getRefColumn() : geometryProperty.getInlineColumn());
+			queryContext.setTargetColumn(toTable.getColumn(geometryProperty.isSetRefColumn() ? geometryProperty.getRefColumn() : geometryProperty.getInlineColumn()));
 		}
 	}
 	

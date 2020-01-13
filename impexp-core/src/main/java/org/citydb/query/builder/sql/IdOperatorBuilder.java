@@ -80,7 +80,7 @@ public class IdOperatorBuilder {
 		List<PredicateToken> predicates = new ArrayList<>();
 
 		if (operator.getResourceIds().size() == 1) {
-			queryContext.addPredicate(ComparisonFactory.equalTo(queryContext.targetColumn, new PlaceHolder<>(operator.getResourceIds().iterator().next())));
+			queryContext.addPredicate(ComparisonFactory.equalTo(queryContext.getTargetColumn(), new PlaceHolder<>(operator.getResourceIds().iterator().next())));
 		} else {
 			List<PlaceHolder<String>> placeHolders = new ArrayList<>();
 			int maxItems = sqlAdapter.getMaximumNumberOfItemsForInOperator();
@@ -91,7 +91,7 @@ public class IdOperatorBuilder {
 				placeHolders.add(new PlaceHolder<>(iter.next()));
 
 				if (++i == maxItems || !iter.hasNext()) {
-					predicates.add(ComparisonFactory.in(queryContext.targetColumn, new LiteralList(placeHolders.toArray(new PlaceHolder[0])), negate));
+					predicates.add(ComparisonFactory.in(queryContext.getTargetColumn(), new LiteralList(placeHolders.toArray(new PlaceHolder[0])), negate));
 					placeHolders.clear();
 					i = 0;
 				}

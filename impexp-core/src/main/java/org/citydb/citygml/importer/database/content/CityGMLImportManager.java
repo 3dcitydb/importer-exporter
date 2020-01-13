@@ -51,7 +51,6 @@ import org.citydb.citygml.importer.util.ImportLogger.ImportLogEntry;
 import org.citydb.citygml.importer.util.LocalAppearanceHandler;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
-import org.citydb.file.InputFile;
 import org.citydb.config.project.importer.Importer;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.schema.TableEnum;
@@ -59,6 +58,7 @@ import org.citydb.database.schema.mapping.AbstractObjectType;
 import org.citydb.database.schema.mapping.FeatureType;
 import org.citydb.database.schema.mapping.ObjectType;
 import org.citydb.database.schema.mapping.SchemaMapping;
+import org.citydb.file.InputFile;
 import org.citydb.log.Logger;
 import org.citydb.util.CoreConstants;
 import org.citydb.util.Util;
@@ -188,7 +188,7 @@ public class CityGMLImportManager implements CityGMLImportHelper {
 
 		tableHelper = new TableHelper(schemaMapping);
 		sequenceHelper = new SequenceHelper(connection, databaseAdapter, config);
-		geometryConverter = new GeometryConverter(databaseAdapter, affineTransformer, config, this);
+		geometryConverter = new GeometryConverter(databaseAdapter, affineTransformer, config);
 		objectCounter = new HashMap<>();
 		geometryCounter = new HashMap<>();
 		attributeValueJoiner = new AttributeValueJoiner();
@@ -434,8 +434,8 @@ public class CityGMLImportManager implements CityGMLImportHelper {
 	}
 
 	@Override
-	public void propagateSurfaceGeometryXlink(String xlink, AbstractObjectType<?> objectType, long objectId, String propertyColumn) {
-		xlinkPool.addWork(new DBXlinkSurfaceGeometry(objectType.getObjectClassId(), objectId, xlink, propertyColumn));
+	public void propagateSurfaceGeometryXlink(String xlink, String table, long objectId, String propertyColumn) {
+		xlinkPool.addWork(new DBXlinkSurfaceGeometry(table, objectId, xlink, propertyColumn));
 	}
 
 	@Override

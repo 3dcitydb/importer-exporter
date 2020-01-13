@@ -27,12 +27,12 @@
  */
 package org.citydb.citygml.importer.database.xlink.importer;
 
+import org.citydb.citygml.common.database.cache.CacheTable;
+import org.citydb.citygml.common.database.xlink.DBXlinkSurfaceGeometry;
+
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
-
-import org.citydb.citygml.common.database.cache.CacheTable;
-import org.citydb.citygml.common.database.xlink.DBXlinkSurfaceGeometry;
 
 public class DBXlinkImporterSurfaceGeometry implements DBXlinkImporter {
 	private final DBXlinkImporterManager xlinkImporterManager;
@@ -43,7 +43,7 @@ public class DBXlinkImporterSurfaceGeometry implements DBXlinkImporter {
 		this.xlinkImporterManager = xlinkImporterManager;
 
 		psXlink = tempTable.getConnection().prepareStatement(new StringBuilder("insert into " + tempTable.getTableName()) 
-			.append(" (ID, PARENT_ID, ROOT_ID, REVERSE, GMLID, CITYOBJECT_ID, OBJECTCLASS_ID, FROM_COLUMN) values ")
+			.append(" (ID, PARENT_ID, ROOT_ID, REVERSE, GMLID, CITYOBJECT_ID, TABLE_NAME, FROM_COLUMN) values ")
 			.append("(?, ?, ?, ?, ?, ?, ?, ?)").toString());
 	}
 
@@ -55,8 +55,8 @@ public class DBXlinkImporterSurfaceGeometry implements DBXlinkImporter {
 		psXlink.setString(5, xlinkEntry.getGmlId());
 		psXlink.setLong(6, xlinkEntry.getCityObjectId());
 
-		if (xlinkEntry.getObjectClassId() != 0) {
-			psXlink.setInt(7, xlinkEntry.getObjectClassId());
+		if (xlinkEntry.getTable() != null) {
+			psXlink.setString(7, xlinkEntry.getTable());
 			psXlink.setString(8, xlinkEntry.getFromColumn());
 		} else {
 			psXlink.setNull(7, Types.NULL);
