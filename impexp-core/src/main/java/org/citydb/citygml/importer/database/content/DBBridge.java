@@ -275,7 +275,7 @@ public class DBBridge implements DBImporter {
 					String href = multiSurfaceProperty.getHref();
 					if (href != null && href.length() != 0) {
 						importer.propagateXlink(new DBXlinkSurfaceGeometry(
-								"bridge",
+								TableEnum.BRIDGE.getName(),
 								bridgeId, 
 								href, 
 								"lod" + (i + 1) + "_multi_surface_id"));
@@ -317,7 +317,7 @@ public class DBBridge implements DBImporter {
 					String href = solidProperty.getHref();
 					if (href != null && href.length() != 0) {
 						importer.propagateXlink(new DBXlinkSurfaceGeometry(
-								"bridge",
+								TableEnum.BRIDGE.getName(),
 								bridgeId, 
 								href, 
 								"lod" + (i + 1) + "_solid_id"));

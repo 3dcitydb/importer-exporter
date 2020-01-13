@@ -193,7 +193,7 @@ public class DBTunnelInstallation implements DBImporter {
 					String href = geometryProperty.getHref();
 					if (href != null && href.length() != 0) {
 						importer.propagateXlink(new DBXlinkSurfaceGeometry(
-								"tunnel_installation",
+								TableEnum.TUNNEL_INSTALLATION.getName(),
 								tunnelInstallationId, 
 								href, 
 								"lod" + (i + 2) + "_brep_id"));
@@ -383,7 +383,7 @@ public class DBTunnelInstallation implements DBImporter {
 				String href = geometryProperty.getHref();
 				if (href != null && href.length() != 0) {
 					importer.propagateXlink(new DBXlinkSurfaceGeometry(
-							"tunnel_installation",
+							TableEnum.TUNNEL_INSTALLATION.getName(),
 							intTunnelInstallationId, 
 							href, 
 							"lod4_brep_id"));

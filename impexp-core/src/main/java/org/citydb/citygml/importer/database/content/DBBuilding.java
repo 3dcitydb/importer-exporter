@@ -316,7 +316,7 @@ public class DBBuilding implements DBImporter {
 					String href = multiSurfaceProperty.getHref();
 					if (href != null && href.length() != 0) {
 						importer.propagateXlink(new DBXlinkSurfaceGeometry(
-								"building",
+								TableEnum.BUILDING.getName(),
 								buildingId, 
 								href, 
 								i == 0 ? "lod0_footprint_id" : "lod0_roofprint_id"));
@@ -358,7 +358,7 @@ public class DBBuilding implements DBImporter {
 					String href = multiSurfaceProperty.getHref();
 					if (href != null && href.length() != 0) {
 						importer.propagateXlink(new DBXlinkSurfaceGeometry(
-								"building",
+								TableEnum.BUILDING.getName(),
 								buildingId, 
 								href, 
 								"lod" + (i + 1) + "_multi_surface_id"));

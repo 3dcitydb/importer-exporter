@@ -151,7 +151,7 @@ public class DBPlantCover implements DBImporter {
 					String href = multiSurfaceProperty.getHref();
 					if (href != null && href.length() != 0) {
 						importer.propagateXlink(new DBXlinkSurfaceGeometry(
-								"plant_cover",
+								TableEnum.PLANT_COVER.getName(),
 								plantCoverId, 
 								href, 
 								"lod" + (i + 1) + "_multi_surface_id"));
@@ -193,7 +193,7 @@ public class DBPlantCover implements DBImporter {
 					String href = multiSolidProperty.getHref();
 					if (href != null && href.length() != 0) {
 						importer.propagateXlink(new DBXlinkSurfaceGeometry(
-								"plant_cover",
+								TableEnum.PLANT_COVER.getName(),
 								plantCoverId, 
 								href, 
 								"lod" + (i + 1) + "_multi_solid_id"));

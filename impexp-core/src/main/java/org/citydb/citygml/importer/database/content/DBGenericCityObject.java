@@ -209,7 +209,7 @@ public class DBGenericCityObject implements DBImporter {
 					String href = geometryProperty.getHref();
 					if (href != null && href.length() != 0) {
 						importer.propagateXlink(new DBXlinkSurfaceGeometry(
-								"generic_cityobject",
+								TableEnum.GENERIC_CITYOBJECT.getName(),
 								genericCityObjectId, 
 								href, 
 								"lod" + i + "_brep_id"));

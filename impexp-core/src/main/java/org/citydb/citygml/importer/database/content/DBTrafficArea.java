@@ -154,7 +154,7 @@ public class DBTrafficArea implements DBImporter {
 					String href = multiSurfaceProperty.getHref();
 					if (href != null && href.length() != 0) {
 						importer.propagateXlink(new DBXlinkSurfaceGeometry(
-								"traffic_area",
+								TableEnum.TRAFFIC_AREA.getName(),
 								trafficAreaId, 
 								href, 
 								"lod" + (i + 2) + "_multi_surface_id"));
@@ -263,7 +263,7 @@ public class DBTrafficArea implements DBImporter {
 					String href = multiSurfaceProperty.getHref();
 					if (href != null && href.length() != 0) {
 						importer.propagateXlink(new DBXlinkSurfaceGeometry(
-								"traffic_area",
+								TableEnum.TRAFFIC_AREA.getName(),
 								auxiliaryTrafficAreaId, 
 								href, 
 								"lod" + (i + 2) + "_multi_surface_id"));

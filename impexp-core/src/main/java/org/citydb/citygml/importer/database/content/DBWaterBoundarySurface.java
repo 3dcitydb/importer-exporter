@@ -121,7 +121,7 @@ public class DBWaterBoundarySurface implements DBImporter {
 					String href = surfaceProperty.getHref();
 					if (href != null && href.length() != 0) {
 						importer.propagateXlink(new DBXlinkSurfaceGeometry(
-								"waterboundary_surface",
+								TableEnum.WATERBOUNDARY_SURFACE.getName(),
 								waterBoundarySurfaceId, 
 								href, 
 								"lod" + (i + 2) + "_surface_id"));

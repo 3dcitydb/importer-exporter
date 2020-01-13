@@ -157,7 +157,7 @@ public class DBBridgeFurniture implements DBImporter {
 				String href = geometryProperty.getHref();
 				if (href != null && href.length() != 0) {
 					importer.propagateXlink(new DBXlinkSurfaceGeometry(
-							"bridge_furniture",
+							TableEnum.BRIDGE_FURNITURE.getName(),
 							bridgeFurnitureId, 
 							href, 
 							"lod4_brep_id"));

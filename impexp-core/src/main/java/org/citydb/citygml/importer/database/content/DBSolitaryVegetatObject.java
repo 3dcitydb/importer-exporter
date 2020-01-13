@@ -206,7 +206,7 @@ public class DBSolitaryVegetatObject implements DBImporter {
 					String href = geometryProperty.getHref();
 					if (href != null && href.length() != 0) {
 						importer.propagateXlink(new DBXlinkSurfaceGeometry(
-								"solitary_vegetat_object",
+								TableEnum.SOLITARY_VEGETAT_OBJECT.getName(),
 								vegetationObjectId, 
 								href, 
 								"lod" + (i + 1) + "_brep_id"));

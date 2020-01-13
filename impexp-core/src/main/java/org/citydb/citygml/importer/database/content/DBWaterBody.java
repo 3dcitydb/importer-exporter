@@ -177,7 +177,7 @@ public class DBWaterBody implements DBImporter {
 					String href = multiSurfaceProperty.getHref();
 					if (href != null && href.length() != 0) {
 						importer.propagateXlink(new DBXlinkSurfaceGeometry(
-								"waterbody",
+								TableEnum.WATERBODY.getName(),
 								waterBodyId, 
 								href, 
 								"lod" + i + "_multi_surface_id"));
@@ -219,7 +219,7 @@ public class DBWaterBody implements DBImporter {
 					String href = solidProperty.getHref();
 					if (href != null && href.length() != 0) {
 						importer.propagateXlink(new DBXlinkSurfaceGeometry(
-								"waterbody",
+								TableEnum.WATERBODY.getName(),
 								waterBodyId, 
 								href, 
 								"lod" + (i + 1) + "_solid_id"));

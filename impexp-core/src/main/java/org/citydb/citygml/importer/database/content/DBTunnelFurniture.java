@@ -158,7 +158,7 @@ public class DBTunnelFurniture implements DBImporter {
 				String href = geometryProperty.getHref();
 				if (href != null && href.length() != 0) {
 					importer.propagateXlink(new DBXlinkSurfaceGeometry(
-							"tunnel_furniture",
+							TableEnum.TUNNEL_FURNITURE.getName(),
 							tunnelFurnitureId, 
 							href, 
 							"lod4_brep_id"));
