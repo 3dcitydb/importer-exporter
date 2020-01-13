@@ -419,8 +419,8 @@ public class CityGMLImportManager implements CityGMLImportHelper {
 	}
 
 	@Override
-	public void propagateObjectXlink(AbstractObjectType<?> objectType, long objectId, String xlink, String propertyColumn) {
-		xlinkPool.addWork(new DBXlinkBasic(objectType.getTable(), objectId, xlink, propertyColumn));
+	public void propagateObjectXlink(String table, long objectId, String xlink, String propertyColumn) {
+		xlinkPool.addWork(new DBXlinkBasic(table, objectId, xlink, propertyColumn));
 	}
 
 	@Override
