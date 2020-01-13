@@ -275,10 +275,10 @@ public class DBBridge implements DBImporter {
 					String href = multiSurfaceProperty.getHref();
 					if (href != null && href.length() != 0) {
 						importer.propagateXlink(new DBXlinkSurfaceGeometry(
-								featureType.getObjectClassId(), 
+								"bridge",
 								bridgeId, 
 								href, 
-								"LOD" + (i + 1) + "_MULTI_SURFACE_ID"));
+								"lod" + (i + 1) + "_multi_surface_id"));
 					}
 				}
 			}
@@ -317,10 +317,10 @@ public class DBBridge implements DBImporter {
 					String href = solidProperty.getHref();
 					if (href != null && href.length() != 0) {
 						importer.propagateXlink(new DBXlinkSurfaceGeometry(
-								featureType.getObjectClassId(), 
+								"bridge",
 								bridgeId, 
 								href, 
-								"LOD" + (i + 1) + "_SOLID_ID"));
+								"lod" + (i + 1) + "_solid_id"));
 					}
 				}
 			}

@@ -33,27 +33,27 @@ public class DBXlinkSurfaceGeometry implements DBXlink {
 	private long rootId;
 	private boolean reverse;
 	private long cityObjectId;
-	private int objectClassId;
+	private String table;
 	private String fromColumn;
 	private String gmlId;
 	
-	public DBXlinkSurfaceGeometry(long id, long parentId, long rootId, boolean reverse, String gmlId, long cityObjectId, int objectClassId, String fromColumn) {
+	public DBXlinkSurfaceGeometry(long id, long parentId, long rootId, boolean reverse, String gmlId, long cityObjectId, String table, String fromColumn) {
 		this.id = id;
 		this.parentId = parentId;
 		this.rootId = rootId;
 		this.reverse = reverse;
 		this.gmlId = gmlId;
 		this.cityObjectId = cityObjectId;
-		this.objectClassId = objectClassId;
+		this.table = table;
 		this.fromColumn = fromColumn;
 	}
 	
 	public DBXlinkSurfaceGeometry(long id, long parentId, long rootId, boolean reverse, String gmlId, long cityObjectId) {
-		this(id, parentId, rootId, reverse, gmlId, cityObjectId, 0, null);
+		this(id, parentId, rootId, reverse, gmlId, cityObjectId, null, null);
 	}
 	
-	public DBXlinkSurfaceGeometry(int objectClassId, long cityObjectId, String gmlId, String fromColumn) {
-		this(0, 0, 0, false, gmlId, cityObjectId, objectClassId, fromColumn);
+	public DBXlinkSurfaceGeometry(String table, long cityObjectId, String gmlId, String fromColumn) {
+		this(0, 0, 0, false, gmlId, cityObjectId, table, fromColumn);
 	}
 	
 	public long getId() {
@@ -84,8 +84,8 @@ public class DBXlinkSurfaceGeometry implements DBXlink {
 		return cityObjectId;
 	}
 
-	public int getObjectClassId() {
-		return objectClassId;
+	public String getTable() {
+		return table;
 	}
 
 	public String getFromColumn() {

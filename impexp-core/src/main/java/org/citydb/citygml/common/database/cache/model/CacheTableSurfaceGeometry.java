@@ -65,7 +65,7 @@ public class CacheTableSurfaceGeometry extends AbstractCacheTableModel {
 				"REVERSE " + sqlAdapter.getNumeric(1, 0) + ", " +
 				"GMLID " + sqlAdapter.getCharacterVarying(256) + ", " +
 				"CITYOBJECT_ID " + sqlAdapter.getInteger() + ", " +
-				"OBJECTCLASS_ID " + sqlAdapter.getInteger() + ", " +
+				"TABLE_NAME " + sqlAdapter.getCharacterVarying(64) + ", " +
 				"FROM_COLUMN " + sqlAdapter.getCharacterVarying(64) +
 				")";
 	}

@@ -43,7 +43,6 @@ public class XlinkBasic implements DBXlinkResolver {
 
 	private HashMap<String, PreparedStatement> psMap;
 	private HashMap<String, Integer> psBatchCounterMap;
-	
 	private String schema;
 
 	public XlinkBasic(Connection batchConn, DBXlinkResolverManager resolverManager) {

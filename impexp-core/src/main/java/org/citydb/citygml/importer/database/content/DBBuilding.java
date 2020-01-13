@@ -316,10 +316,10 @@ public class DBBuilding implements DBImporter {
 					String href = multiSurfaceProperty.getHref();
 					if (href != null && href.length() != 0) {
 						importer.propagateXlink(new DBXlinkSurfaceGeometry(
-								featureType.getObjectClassId(), 
+								"building",
 								buildingId, 
 								href, 
-								i == 0 ? "LOD0_FOOTPRINT_ID" : "LOD0_ROOFPRINT_ID"));
+								i == 0 ? "lod0_footprint_id" : "lod0_roofprint_id"));
 					}
 				}
 			}
@@ -358,10 +358,10 @@ public class DBBuilding implements DBImporter {
 					String href = multiSurfaceProperty.getHref();
 					if (href != null && href.length() != 0) {
 						importer.propagateXlink(new DBXlinkSurfaceGeometry(
-								featureType.getObjectClassId(), 
+								"building",
 								buildingId, 
 								href, 
-								"LOD" + (i + 1) + "_MULTI_SURFACE_ID"));
+								"lod" + (i + 1) + "_multi_surface_id"));
 					}
 				}
 			}
@@ -400,10 +400,10 @@ public class DBBuilding implements DBImporter {
 					String href = solidProperty.getHref();
 					if (href != null && href.length() != 0) {
 						importer.propagateXlink(new DBXlinkSurfaceGeometry(
-								featureType.getObjectClassId(), 
+								"building",
 								buildingId, 
 								href, 
-								"LOD" + (i + 1) + "_SOLID_ID"));
+								"lod" + (i + 1) + "_solid_id"));
 					}
 				}
 			}
