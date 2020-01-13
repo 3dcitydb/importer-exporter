@@ -210,7 +210,7 @@ public class DBTransportationComplex implements DBImporter {
 					String href = multiSurfaceProperty.getHref();
 					if (href != null && href.length() != 0) {
 						importer.propagateXlink(new DBXlinkSurfaceGeometry(
-								"transportation_complex",
+								TableEnum.TRANSPORTATION_COMPLEX.getName(),
 								transportationComplexId, 
 								href, 
 								"lod" + (i + 1) + "_multi_surface_id"));

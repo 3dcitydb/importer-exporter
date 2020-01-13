@@ -148,7 +148,7 @@ public class DBRoom implements DBImporter {
 				String href = multiSurfacePropery.getHref();
 				if (href != null && href.length() != 0) {
 					importer.propagateXlink(new DBXlinkSurfaceGeometry(
-							"room",
+							TableEnum.ROOM.getName(),
 							roomId, 
 							href, 
 							"lod4_multi_surface_id"));
@@ -173,8 +173,8 @@ public class DBRoom implements DBImporter {
 				String href = solidProperty.getHref();
 				if (href != null && href.length() != 0) {
 					importer.propagateXlink(new DBXlinkSurfaceGeometry(
-							"room",
-							roomId, 
+							TableEnum.ROOM.getName(),
+							roomId,
 							href, 
 							"lod4_solid_id"));
 				}

@@ -219,7 +219,7 @@ public class DBBridgeConstrElement implements DBImporter {
 					String href = geometryProperty.getHref();
 					if (href != null && href.length() != 0) {
 						importer.propagateXlink(new DBXlinkSurfaceGeometry(
-								"bridge_constr_element",
+								TableEnum.BRIDGE_CONSTR_ELEMENT.getName(),
 								bridgeConstructionId, 
 								href, 
 								"lod" + (i + 1) + "_brep_id"));

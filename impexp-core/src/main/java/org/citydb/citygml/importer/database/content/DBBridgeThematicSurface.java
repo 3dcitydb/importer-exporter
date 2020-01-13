@@ -146,7 +146,7 @@ public class DBBridgeThematicSurface implements DBImporter {
 					String href = multiSurfaceProperty.getHref();
 					if (href != null && href.length() != 0) {
 						importer.propagateXlink(new DBXlinkSurfaceGeometry(
-								"bridge_thematic_surface",
+								TableEnum.BRIDGE_THEMATIC_SURFACE.getName(),
 								boundarySurfaceId, 
 								href, 
 								"lod" + (i + 2) + "_multi_surface_id"));

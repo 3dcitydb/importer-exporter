@@ -149,7 +149,7 @@ public class DBTunnelHollowSpace implements DBImporter {
 				String href = multiSurfacePropery.getHref();
 				if (href != null && href.length() != 0) {
 					importer.propagateXlink(new DBXlinkSurfaceGeometry(
-							"tunnel_hollow_space",
+							TableEnum.TUNNEL_HOLLOW_SPACE.getName(),
 							hollowSpaceId, 
 							href, 
 							"lod4_multi_surface_id"));
@@ -175,7 +175,7 @@ public class DBTunnelHollowSpace implements DBImporter {
 				String href = solidProperty.getHref();
 				if (href != null && href.length() != 0) {
 					importer.propagateXlink(new DBXlinkSurfaceGeometry(
-							"tunnel_hollow_space",
+							TableEnum.TUNNEL_HOLLOW_SPACE.getName(),
 							hollowSpaceId, 
 							href, 
 							"lod4_solid_id"));
