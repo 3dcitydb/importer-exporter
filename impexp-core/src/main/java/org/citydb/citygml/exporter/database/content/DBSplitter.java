@@ -66,6 +66,7 @@ import org.citydb.sqlbuilder.schema.Column;
 import org.citydb.sqlbuilder.schema.Table;
 import org.citydb.sqlbuilder.select.OrderByToken;
 import org.citydb.sqlbuilder.select.PredicateToken;
+import org.citydb.sqlbuilder.select.ProjectionToken;
 import org.citydb.sqlbuilder.select.Select;
 import org.citydb.sqlbuilder.select.join.JoinFactory;
 import org.citydb.sqlbuilder.select.operator.comparison.ComparisonFactory;
@@ -73,6 +74,7 @@ import org.citydb.sqlbuilder.select.operator.comparison.ComparisonName;
 import org.citydb.sqlbuilder.select.operator.logical.LogicalOperationFactory;
 import org.citydb.sqlbuilder.select.operator.set.SetOperationFactory;
 import org.citydb.sqlbuilder.select.projection.Function;
+import org.citydb.sqlbuilder.select.projection.WildCardColumn;
 import org.citygml4j.model.module.citygml.AppearanceModule;
 import org.citygml4j.model.module.citygml.CityObjectGroupModule;
 import org.citygml4j.model.module.citygml.CoreModule;
@@ -234,22 +236,26 @@ public class DBSplitter {
 
 		// create query statement
 		Select select = builder.buildQuery(query);
+
+		// calculate hits
+		long hits = 0;
+		if (calculateNumberMatched) {
+			log.debug("Calculating the number of matching top-level features...");
+			hits = getNumberMatched(select, connection);
+		}
+
+		// add order by clause
 		if (query.isSetCounterFilter() && !query.isSetSorting())
 			select.addOrderBy(new OrderByToken((Column)select.getProjection().get(0)));
 
-		// add hits counter and/or spatial extent
-		if (calculateNumberMatched || calculateExtent) {
+		// add spatial extent
+		if (calculateExtent) {
 			Table table = new Table(select);
 			select = new Select().addProjection(table.getColumn(MappingConstants.ID))
 					.addProjection(table.getColumn(MappingConstants.OBJECTCLASS_ID))
-					.addProjection(table.getColumn(MappingConstants.GMLID));
-
-			if (calculateNumberMatched)
-				select.addProjection(new Function("count(1) over", "hits"));
-
-			if (calculateExtent)
-				select.addProjection(new Function(databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("geom_extent") +
-						"(" + table.getColumn(MappingConstants.ENVELOPE) + ") over", "extent"));
+					.addProjection(table.getColumn(MappingConstants.GMLID))
+					.addProjection(new Function(databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("geom_extent") +
+					"(" + table.getColumn(MappingConstants.ENVELOPE) + ") over", "extent"));
 		}
 
 		// issue query
@@ -257,11 +263,10 @@ public class DBSplitter {
 			 ResultSet rs = stmt.executeQuery()) {
 			if (rs.next()) {
 				if (calculateNumberMatched) {
-					long hits = rs.getLong("hits");
 					log.info("Found " + hits + " top-level feature(s) matching the request.");
 
 					if (query.isSetCounterFilter()) {
-						long maxCount = query.getCounterFilter().getUpperLimit() - query.getCounterFilter().getLowerLimit() + 1;					
+						long maxCount = query.getCounterFilter().getUpperLimit() - query.getCounterFilter().getLowerLimit() + 1;
 						if (maxCount < hits) {
 							log.info("Exporting " + maxCount + " top-level feature(s) due to counter settings.");
 							hits = maxCount;
@@ -357,7 +362,7 @@ public class DBSplitter {
 		eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("export.dialog.group.msg"), this));
 
 		// first step: export group members
-		int hits = 0;
+		long hits = 0;
 		if (!config.getProject().getExporter().getCityObjectGroup().isExportMemberAsXLinks()
 				&& query.getFeatureTypeFilter().size() == 1
 				&& query.getFeatureTypeFilter().getFeatureTypes().get(0).isEqualToOrSubTypeOf(cityObjectGroupType)) {
@@ -399,14 +404,10 @@ public class DBSplitter {
 									)),
 					ComparisonFactory.notIn((Column)select.getProjection().get(0), idLiteralList)));
 
-			// add hits counter
+			// calculate hits
 			if (calculateNumberMatched) {
-				Table table = new Table(select);
-				select = new Select()
-						.addProjection(table.getColumn(MappingConstants.ID))
-						.addProjection(table.getColumn(MappingConstants.OBJECTCLASS_ID))
-						.addProjection(table.getColumn(MappingConstants.GMLID))
-						.addProjection(new Function("count(1) over", "hits"));
+				log.debug("Calculating the number of matching group members...");
+				hits = getNumberMatched(select, connection);
 			}
 
 			// issue query
@@ -414,9 +415,8 @@ public class DBSplitter {
 				 ResultSet rs = stmt.executeQuery()) {
 				if (rs.next()) {
 					if (calculateNumberMatched) {
-						hits = rs.getInt("hits");
 						log.info("Found " + hits + " additional group member(s).");
-						eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.INIT, hits + cityObjectGroups.size(), this));
+						eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.INIT, (int) hits + cityObjectGroups.size(), this));
 					}
 
 					do {
@@ -477,7 +477,6 @@ public class DBSplitter {
 		log.info("Processing global appearance features.");
 		eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("export.dialog.globalApp.msg"), this));
 
-
 		CacheTable globalAppTempTable = cacheTableManager.getCacheTable(CacheTableModel.GLOBAL_APPEARANCE);
 		globalAppTempTable.createIndexes();
 
@@ -501,25 +500,22 @@ public class DBSplitter {
 			select.addSelection(predicate);
 		}
 
-		// add hits counter
+		// calculate hits
+		long hits = 0;
 		if (calculateNumberMatched) {
-			Table table = new Table(select);
-			select = new Select()
-					.addProjection(table.getColumn(MappingConstants.ID))
-					.addProjection(new Function("count(1) over", "hits"));
+			log.debug("Calculating the number of global appearances...");
+			hits = getNumberMatched(select, globalAppTempTable.getConnection());
 		}
 
 		try (PreparedStatement stmt = databaseAdapter.getSQLAdapter().prepareStatement(select, globalAppTempTable.getConnection());
 			 ResultSet rs = stmt.executeQuery()) {
 			if (rs.next()) {
 				if (calculateNumberMatched) {
-					long hits = rs.getLong("hits");
-					log.info("Found " + hits + " global appearance feature(s).");
+					log.info("Found " + hits + " global appearance(s).");
 					eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.INIT, (int) hits, this));
 				}
 
 				FeatureType appearanceType = schemaMapping.getFeatureType("Appearance", AppearanceModule.v2_0_0.getNamespaceURI());
-
 				do {
 					long appearanceId = rs.getLong(1);
 
@@ -528,6 +524,21 @@ public class DBSplitter {
 					dbWorkerPool.addWork(splitter);
 				} while (rs.next() && shouldRun);
 			}
+		}
+	}
+
+	private long getNumberMatched(Select select, Connection connection) throws SQLException {
+		Select hitsQuery = new Select(select).unsetOrderBy();
+
+		for (ProjectionToken token : hitsQuery.getProjection()) {
+			if (!(token instanceof Column) || !((Column) token).getName().equals(MappingConstants.ID))
+				hitsQuery.removeProjection(token);
+		}
+
+		hitsQuery = new Select().addProjection(new Function("count", new WildCardColumn(new Table(hitsQuery), false)));
+		try (PreparedStatement stmt = databaseAdapter.getSQLAdapter().prepareStatement(hitsQuery, connection);
+			 ResultSet rs = stmt.executeQuery()) {
+			return rs.next() ? rs.getLong(1) : 0;
 		}
 	}
 
