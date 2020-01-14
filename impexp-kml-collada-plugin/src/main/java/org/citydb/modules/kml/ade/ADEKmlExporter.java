@@ -28,5 +28,7 @@
 package org.citydb.modules.kml.ade;
 
 public interface ADEKmlExporter {
-	ADEKmlExportQueries getQueries();
+	String getPointAndCurveQuery(int lod);
+	String getSurfaceGeometryQuery(int lod);
+	String getSurfaceGeometryRefIdsQuery(int lod);
 }

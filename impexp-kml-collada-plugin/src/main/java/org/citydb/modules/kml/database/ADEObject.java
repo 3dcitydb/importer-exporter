@@ -41,7 +41,7 @@ import org.citydb.log.Logger;
 import org.citydb.modules.kml.ade.ADEKmlExportException;
 import org.citydb.modules.kml.ade.ADEKmlExportExtensionManager;
 import org.citydb.modules.kml.ade.ADEKmlExportManager;
-import org.citydb.modules.kml.ade.ADEKmlExportQueries;
+import org.citydb.modules.kml.ade.ADEKmlExporter;
 import org.citydb.modules.kml.util.BalloonTemplateHandler;
 import org.citydb.modules.kml.util.ElevationServiceHandler;
 import org.citydb.query.Query;
@@ -123,7 +123,7 @@ public class ADEObject extends KmlGenericObject{
 
 		try {
 			ADEKmlExportManager adeKmlExportManager = kmlExporterManager.getADEKmlExportManager(adeObjectClassId);
-			ADEKmlExportQueries adeQueries = adeKmlExportManager.getKmlExporter(adeObjectClassId).getQueries();
+			ADEKmlExporter adeKmlExporter = adeKmlExportManager.getKmlExporter(adeObjectClassId);
 
 			int lodToExportFrom = config.getProject().getKmlExporter().getLodToExportFrom();
 			currentLod = lodToExportFrom == 5 ? 4: lodToExportFrom;
@@ -134,7 +134,7 @@ public class ADEObject extends KmlGenericObject{
 					break;
 
 				try {
-					String query = adeQueries.getSurfaceGeometryQuery(currentLod);
+					String query = adeKmlExporter.getSurfaceGeometryQuery(currentLod);
 					brepIdsQueryPs = connection.prepareStatement(query, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 					for (int i = 1; i <= getParameterCount(query); i++)
 						brepIdsQueryPs.setLong(i, work.getId());
@@ -146,7 +146,7 @@ public class ADEObject extends KmlGenericObject{
 					}
 
 					// check for point or curve
-					query = adeQueries.getPointAndCurveQuery(currentLod);
+					query = adeKmlExporter.getPointAndCurveQuery(currentLod);
 					if (query != null) {
 						pointAndCurveQueryPs = connection.prepareStatement(query, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 						for (int i = 1; i <= getParameterCount(query); i++)
@@ -182,9 +182,9 @@ public class ADEObject extends KmlGenericObject{
 				if (hasBrep) {
 					String query;
 					if (work.getDisplayForm().getForm() == DisplayForm.FOOTPRINT || work.getDisplayForm().getForm() == DisplayForm.EXTRUDED) {
-						query = adeQueries.getSurfaceGeometryQuery(currentLod);
+						query = adeKmlExporter.getSurfaceGeometryQuery(currentLod);
 					} else {
-						query = adeQueries.getSurfaceGeometryRefIdsQuery(currentLod);
+						query = adeKmlExporter.getSurfaceGeometryRefIdsQuery(currentLod);
 					}
 					brepGeometriesQueryPs = connection.prepareStatement(query, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 					for (int i = 1; i <= getParameterCount(query); i++)

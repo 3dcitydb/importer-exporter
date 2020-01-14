@@ -35,9 +35,6 @@ import org.citydb.log.Logger;
 import org.citydb.modules.kml.ade.ADEKmlExportException;
 import org.citydb.modules.kml.ade.ADEKmlExportManager;
 import org.citydb.modules.kml.ade.ADEKmlExporter;
-import org.citydb.util.Util;
-import org.citygml4j.model.citygml.CityGMLClass;
-import org.citygml4j.model.gml.base.AbstractGML;
 
 public class Queries {
 	private AbstractDatabaseAdapter databaseAdapter;
@@ -1978,11 +1975,11 @@ public class Queries {
 				if (exporter != null) {
 					String adeQuery = null;
 					if (queryType == QUERY_POINT_AND_CURVE_GEOMETRY)
-						adeQuery = exporter.getQueries().getPointAndCurveQuery(lod);
+						adeQuery = exporter.getPointAndCurveQuery(lod);
 					else if (queryType == QUERY_SURFACE_GEOMETRY)
-						adeQuery = exporter.getQueries().getSurfaceGeometryQuery(lod);
+						adeQuery = exporter.getSurfaceGeometryQuery(lod);
 					else if (queryType == QUERY_SURFACE_GEOMETRY_REFERENCE_IDS)
-						adeQuery = exporter.getQueries().getSurfaceGeometryRefIdsQuery(lod);
+						adeQuery = exporter.getSurfaceGeometryRefIdsQuery(lod);
 					if (adeQuery != null)
 						builder.append(adeQuery).append(" union all ");
 				}
