@@ -78,7 +78,7 @@ public class SpatialOperatorBuilder {
 		this.schemaName = schemaName;
 	}
 
-	protected SQLQueryContext buildSpatialOperator(AbstractSpatialOperator operator, SQLQueryContext queryContext, boolean negate, boolean useLeftJoins) throws QueryBuildException {
+	protected void buildSpatialOperator(AbstractSpatialOperator operator, SQLQueryContext queryContext, boolean negate, boolean useLeftJoins) throws QueryBuildException {
 		switch (operator.getOperatorName()) {
 		case BBOX:
 		case EQUALS:
@@ -88,18 +88,17 @@ public class SpatialOperatorBuilder {
 		case OVERLAPS:
 		case INTERSECTS:
 		case CONTAINS:
-			queryContext = buildBinaryOperator((BinarySpatialOperator)operator, queryContext, negate, useLeftJoins);
+			buildBinaryOperator((BinarySpatialOperator)operator, queryContext, negate, useLeftJoins);
 			break;
 		case DWITHIN:
 		case BEYOND:
-			queryContext = buildDistanceOperator((DistanceOperator)operator, queryContext, negate, useLeftJoins);
+			buildDistanceOperator((DistanceOperator)operator, queryContext, negate, useLeftJoins);
 			break;
 		}
 
-		return queryContext;
 	}
 
-	private SQLQueryContext buildBinaryOperator(BinarySpatialOperator operator, SQLQueryContext queryContext, boolean negate, boolean useLeftJoins) throws QueryBuildException {
+	private void buildBinaryOperator(BinarySpatialOperator operator, SQLQueryContext queryContext, boolean negate, boolean useLeftJoins) throws QueryBuildException {
 		if (!SpatialOperatorName.BINARY_SPATIAL_OPERATORS.contains(operator.getOperatorName()))
 			throw new QueryBuildException(operator.getOperatorName() + " is not a binary spatial operator.");
 
@@ -131,7 +130,7 @@ public class SpatialOperatorBuilder {
 		}
 
 		// build the value reference and spatial predicate
-		queryContext = schemaPathBuilder.buildSchemaPath(valueReference.getSchemaPath(), queryContext, useLeftJoins);
+		schemaPathBuilder.addSchemaPath(valueReference.getSchemaPath(), queryContext, useLeftJoins);
 		Table toTable = queryContext.getToTable();
 		Column targetColumn = queryContext.getTargetColumn();
 
@@ -168,11 +167,9 @@ public class SpatialOperatorBuilder {
 		if (databaseAdapter.getSQLAdapter().spatialPredicateRequiresNoIndexHint()
 				&& targetColumn.getName().equalsIgnoreCase(MappingConstants.ENVELOPE))
 			queryContext.getSelect().setOptimizerString("/*+ no_index(" + toTable.getAlias() + " cityobject_objectclass_fkx) */");
-
-		return queryContext;
 	}
 
-	private SQLQueryContext buildDistanceOperator(DistanceOperator operator, SQLQueryContext queryContext, boolean negate, boolean useLeftJoins) throws QueryBuildException {
+	private void buildDistanceOperator(DistanceOperator operator, SQLQueryContext queryContext, boolean negate, boolean useLeftJoins) throws QueryBuildException {
 		if (!SpatialOperatorName.DISTANCE_OPERATORS.contains(operator.getOperatorName()))
 			throw new QueryBuildException(operator.getOperatorName() + " is not a distance operator.");
 
@@ -222,7 +219,7 @@ public class SpatialOperatorBuilder {
 		double value = converter.convert(distance.getValue());
 
 		// build the value reference and spatial predicate
-		queryContext = schemaPathBuilder.buildSchemaPath(valueReference.getSchemaPath(), queryContext, useLeftJoins);
+		schemaPathBuilder.addSchemaPath(valueReference.getSchemaPath(), queryContext, useLeftJoins);
 		Table toTable = queryContext.getToTable();
 		Column targetColumn = queryContext.getTargetColumn();
 
@@ -268,8 +265,6 @@ public class SpatialOperatorBuilder {
 		if (databaseAdapter.getSQLAdapter().spatialPredicateRequiresNoIndexHint()
 				&& targetColumn.getName().equalsIgnoreCase(MappingConstants.ENVELOPE))
 			queryContext.getSelect().setOptimizerString("/*+ no_index(" + toTable.getAlias() + " cityobject_objectclass_fkx) */");
-
-		return queryContext;
 	}
 
 	private ValueReference getBoundedByProperty(Query query) throws QueryBuildException {
@@ -285,7 +280,8 @@ public class SpatialOperatorBuilder {
 
 	private Table getCityObjectTable(Query query, SQLQueryContext queryContext, boolean useLeftJoins) throws QueryBuildException {
 		SchemaPath schemaPath = getBoundedByProperty(query).getSchemaPath();
-		return schemaPathBuilder.buildSchemaPath(schemaPath, queryContext, useLeftJoins).getToTable();
+		schemaPathBuilder.addSchemaPath(schemaPath, queryContext, useLeftJoins);
+		return queryContext.getToTable();
 	}
 
 }

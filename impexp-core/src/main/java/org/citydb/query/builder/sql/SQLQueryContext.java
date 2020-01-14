@@ -43,9 +43,9 @@ import org.citydb.sqlbuilder.select.Select;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 public class SQLQueryContext {
 	private final FeatureType featureType;
@@ -54,13 +54,15 @@ public class SQLQueryContext {
 	private Table toTable;
 	private Column targetColumn;
 	private List<PredicateToken> predicates;
+	private Table cityObjectTable;
 	private BuildContext buildContext;
-	
-	SQLQueryContext(FeatureTypeNode node, Table fromTable) {
-		featureType = node.getPathElement();
-		this.fromTable = fromTable;
+
+	SQLQueryContext(FeatureType featureType, Table fromTable) {
+		this.featureType = featureType;
+		this.fromTable = toTable = fromTable;
+
 		select = new Select();
-		buildContext = new BuildContext(node);
+		buildContext = new BuildContext(new FeatureTypeNode(featureType), fromTable, new HashMap<>());
 	}
 
 	FeatureType getFeatureType() {
@@ -122,22 +124,28 @@ public class SQLQueryContext {
 		predicates = null;
 	}
 
+	Table getCityObjectTable() {
+		return cityObjectTable;
+	}
+
+	void setCityObjectTable(Table cityObjectTable) {
+		this.cityObjectTable = cityObjectTable;
+	}
+
 	BuildContext getBuildContext() {
 		return buildContext;
 	}
 
-	void setBuildContext(BuildContext buildContext) {
-		this.buildContext = buildContext;
-	}
-
 	static class BuildContext {
 		private final AbstractNode<?> node;
-		private Map<String, Table> tableContext;
-		private Table currentTable;
+		private final Table currentTable;
+		private final Map<String, Table> tableContext;
 		private List<BuildContext> children;
 
-		BuildContext(AbstractNode<?> node) {
-			this.node = Objects.requireNonNull(node, "Node object may not be null.");
+		BuildContext(AbstractNode<?> node, Table currentTable, Map<String, Table> tableContext) {
+			this.node = node;
+			this.currentTable = currentTable;
+			this.tableContext = tableContext;
 		}
 
 		AbstractNode<?> getNode() {
@@ -148,34 +156,26 @@ public class SQLQueryContext {
 			return tableContext;
 		}
 
-		void setTableContext(Map<String, Table> tableContext) {
-			this.tableContext = tableContext;
-		}
-
 		Table getCurrentTable() {
 			return currentTable;
 		}
 
-		void setCurrentTable(Table currentTable) {
-			this.currentTable = currentTable;
+		boolean hasSubContexts() {
+			return children != null && !children.isEmpty();
 		}
 
-		BuildContext addSubContext(AbstractNode<?> node) {
+		BuildContext addSubContext(AbstractNode<?> node, Table currentTable, Map<String, Table> tableContext) {
 			BuildContext nodeContext = null;
 
 			if (node != null) {
 				if (children == null)
 					children = new ArrayList<>();
 
-				nodeContext = new BuildContext(node);
+				nodeContext = new BuildContext(node, currentTable, tableContext);
 				children.add(nodeContext);
 			}
 
 			return nodeContext;
-		}
-
-		boolean hasSubContexts() {
-			return children != null && !children.isEmpty();
 		}
 
 		BuildContext findSubContext(AbstractNode<?> node) {

@@ -44,12 +44,15 @@ import org.citydb.sqlbuilder.expression.IntegerLiteral;
 import org.citydb.sqlbuilder.schema.Column;
 import org.citydb.sqlbuilder.schema.Table;
 import org.citydb.sqlbuilder.select.OrderByToken;
+import org.citydb.sqlbuilder.select.PredicateToken;
 import org.citydb.sqlbuilder.select.ProjectionToken;
 import org.citydb.sqlbuilder.select.Select;
+import org.citydb.sqlbuilder.select.join.Join;
 import org.citydb.sqlbuilder.select.operator.comparison.ComparisonFactory;
 import org.citydb.sqlbuilder.select.projection.Function;
 import org.citygml4j.model.module.citygml.CoreModule;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -74,9 +77,7 @@ public class SQLQueryBuilder {
 
 	public Select buildQuery(Query query) throws QueryBuildException {
 		// TODO: we need some consistency check for the query (possibly query.isValid())?
-		SchemaPathBuilder builder = new SchemaPathBuilder(databaseAdapter.getSQLAdapter(), schemaName, buildProperties);
 
-		// feature type filter
 		FeatureTypeFilter typeFilter = query.getFeatureTypeFilter();
 		if (typeFilter == null) {
 			typeFilter = new FeatureTypeFilter();
@@ -91,19 +92,23 @@ public class SQLQueryBuilder {
 			}
 		}
 
-		// map feature types to object class ids
-		Set<Integer> objectclassIds = new FeatureTypeFilterBuilder().buildFeatureTypeFilter(typeFilter, query.getTargetVersion());
+		SchemaPathBuilder builder = new SchemaPathBuilder(databaseAdapter.getSQLAdapter(), schemaName, buildProperties);
+		FeatureType featureType = schemaMapping.getCommonSuperType(typeFilter.getFeatureTypes());
+		SQLQueryContext queryContext = builder.createQueryContext(featureType);
+
+		// feature type filter
+		FeatureTypeFilterBuilder typeBuilder = new FeatureTypeFilterBuilder(builder);
+		typeBuilder.buildFeatureTypeFilter(typeFilter, query.getTargetVersion(), true, queryContext);
 
 		// selection filter
-		SQLQueryContext queryContext;
 		if (query.isSetSelection()) {
 			Predicate predicate = query.getSelection().getPredicate();
 			PredicateBuilder predicateBuilder = new PredicateBuilder(query, builder, schemaMapping, databaseAdapter, schemaName);
-			queryContext = predicateBuilder.buildPredicate(predicate);
-		} else {
-			FeatureType superType = schemaMapping.getCommonSuperType(typeFilter.getFeatureTypes());
-			queryContext = builder.buildSchemaPath(new SchemaPath(superType), null, true, false);
+			predicateBuilder.buildPredicate(predicate, queryContext);
 		}
+
+		// remove unnecessary joins
+		optimizeJoins(builder, queryContext);
 
 		// lod filter
 		if (query.isSetLodFilter()) {
@@ -116,12 +121,12 @@ public class SQLQueryBuilder {
 
 		// sorting clause
 		if (query.isSetSorting()) {
-			SortingBuilder sortingBuilder = new SortingBuilder();
-			sortingBuilder.buildSorting(query.getSorting(), builder, queryContext);
+			SortingBuilder sortingBuilder = new SortingBuilder(builder);
+			sortingBuilder.buildSorting(query.getSorting(), queryContext);
 		}
 
-		// add projection and object class id filter
-		builder.prepareStatement(queryContext, objectclassIds, true);
+		// add projection
+		addProjection(builder, queryContext);
 
 		// build distinct query if the query involves 1:n or n:m joins
 		if (queryContext.getBuildContext().requiresDistinct())
@@ -132,6 +137,7 @@ public class SQLQueryBuilder {
 
 	public SQLQueryContext buildSchemaPath(SchemaPath schemaPath, boolean addProjection, boolean useLeftJoins) throws QueryBuildException {
 		SchemaPathBuilder builder = new SchemaPathBuilder(databaseAdapter.getSQLAdapter(), schemaName, buildProperties);
+		SQLQueryContext queryContext = builder.createQueryContext(schemaPath.getFirstNode().getPathElement());
 
 		FeatureTypeFilter typeFilter = new FeatureTypeFilter(false);
 		try {
@@ -140,20 +146,68 @@ public class SQLQueryBuilder {
 			throw new QueryBuildException("Failed to build feature type filter.", e);
 		}
 
-		// map feature types to object class ids
-		Set<Integer> objectclassIds = new FeatureTypeFilterBuilder().buildFeatureTypeFilter(typeFilter);
+		// feature type filter
+		FeatureTypeFilterBuilder typeBuilder = new FeatureTypeFilterBuilder(builder);
+		typeBuilder.buildFeatureTypeFilter(typeFilter, false, queryContext);
 
-		SQLQueryContext queryContext = builder.buildSchemaPath(schemaPath, null, true, useLeftJoins);
+		// build path
+		builder.addSchemaPath(schemaPath, queryContext, useLeftJoins);
 		if (queryContext.hasPredicates())
 			queryContext.getPredicates().forEach(queryContext.getSelect()::addSelection);
 
-		builder.prepareStatement(queryContext, objectclassIds, addProjection);
+		// add projection
+		if (addProjection)
+			addProjection(builder, queryContext);
+
+		// remove unnecessary joins
+		optimizeJoins(builder, queryContext);
 
 		return queryContext;
 	}
 
 	public BuildProperties getBuildProperties() {
 		return buildProperties;
+	}
+
+	private void optimizeJoins(SchemaPathBuilder builder, SQLQueryContext queryContext) throws QueryBuildException {
+		Select select = queryContext.getSelect();
+		Set<Table> from = new HashSet<>();
+		boolean removedJoins = false;
+
+		// collect tables participating in the from clause
+		select.getSelection().forEach(t -> t.getInvolvedTables(from));
+		select.getOrderBy().forEach(t -> t.getInvolvedTables(from));
+		select.getHaving().forEach(t -> t.getInvolvedTables(from));
+
+		// add the table of the target column to make sure we do not remove it
+		if (queryContext.getTargetColumn() != null)
+			from.add(queryContext.getTargetColumn().getTable());
+
+		for (Join join : select.getJoins()) {
+			Set<Table> tables = new HashSet<>(from);
+
+			// add the tables referenced in the join conditions of all other joins
+			for (Join other : select.getJoins()) {
+				if (other != join) {
+					for (PredicateToken condition : other.getConditions())
+						condition.getInvolvedTables(tables);
+				}
+			}
+
+			// remove the join if one of its tables is not contained in the collected tables
+			if (!tables.contains(join.getFromColumn().getTable()) || !tables.contains(join.getToColumn().getTable())) {
+				select.removeJoin(join);
+				removedJoins = true;
+			}
+		}
+
+		if (removedJoins && !select.getInvolvedTables().contains(queryContext.getFromTable())) {
+			Table cityObject = builder.joinCityObjectTable(queryContext);
+			if (queryContext.getToTable() == queryContext.getFromTable())
+				queryContext.setToTable(cityObject);
+
+			queryContext.setFromTable(cityObject);
+		}
 	}
 
 	private void buildDistinctQuery(Query query, SQLQueryContext queryContext) {
@@ -203,4 +257,17 @@ public class SQLQueryBuilder {
 		}
 	}
 
+	protected void addProjection(SchemaPathBuilder builder, SQLQueryContext queryContext) throws QueryBuildException {
+		Select select = queryContext.getSelect();
+		Table cityObject = builder.joinCityObjectTable(queryContext);
+
+		select.addProjection(cityObject.getColumns(MappingConstants.ID, MappingConstants.OBJECTCLASS_ID));
+
+		// check whether we shall add additional projection columns
+		List<String> projectionColumns = buildProperties.getAdditionalProjectionColumns();
+		if (!projectionColumns.isEmpty()) {
+			for (String column : projectionColumns)
+				select.addProjection(cityObject.getColumn(column));
+		}
+	}
 }

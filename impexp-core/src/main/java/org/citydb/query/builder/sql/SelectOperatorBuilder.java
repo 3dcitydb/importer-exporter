@@ -51,7 +51,7 @@ public class SelectOperatorBuilder {
         this.schemaMapping = schemaMapping;
     }
 
-    protected SQLQueryContext buildSelectOperator(SelectOperator operator, SQLQueryContext queryContext, boolean negate, boolean useLeftJoins) throws QueryBuildException {
+    protected void buildSelectOperator(SelectOperator operator, SQLQueryContext queryContext, boolean negate, boolean useLeftJoins) throws QueryBuildException {
         if (!operator.isSetSelect())
             throw new QueryBuildException("No select statement provided for the SQL operator.");
 
@@ -67,10 +67,8 @@ public class SelectOperatorBuilder {
         }
 
         // build the value reference
-        queryContext = schemaPathBuilder.buildSchemaPath(valueReference.getSchemaPath(), queryContext, useLeftJoins);
+        schemaPathBuilder.addSchemaPath(valueReference.getSchemaPath(), queryContext, useLeftJoins);
         LiteralSelectExpression subQuery = new LiteralSelectExpression(operator.getSelect());
         queryContext.addPredicate(new InOperator(queryContext.getTargetColumn(), subQuery, negate));
-
-        return queryContext;
     }
 }

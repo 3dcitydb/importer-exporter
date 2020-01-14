@@ -69,7 +69,6 @@ import org.citydb.sqlbuilder.expression.LiteralList;
 import org.citydb.sqlbuilder.expression.PlaceHolder;
 import org.citydb.sqlbuilder.expression.StringLiteral;
 import org.citydb.sqlbuilder.schema.AliasGenerator;
-import org.citydb.sqlbuilder.schema.Column;
 import org.citydb.sqlbuilder.schema.DefaultAliasGenerator;
 import org.citydb.sqlbuilder.schema.Table;
 import org.citydb.sqlbuilder.select.PredicateToken;
@@ -85,7 +84,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
-import java.util.Set;
 
 public class SchemaPathBuilder {
 	private final AbstractSQLAdapter sqlAdapter;
@@ -108,59 +106,19 @@ public class SchemaPathBuilder {
 		return aliasGenerator;
 	}
 
-	protected SQLQueryContext buildSchemaPath(SchemaPath schemaPath, SQLQueryContext queryContext, boolean useLeftJoins) throws QueryBuildException {
-		return queryContext == null ? buildSchemaPath(schemaPath, true, useLeftJoins) : addSchemaPath(queryContext, schemaPath, true, useLeftJoins);
+	protected SQLQueryContext createQueryContext(FeatureType featureType) {
+		return new SQLQueryContext(featureType, new Table(featureType.getTable(), schemaName, aliasGenerator));
 	}
 
-	protected SQLQueryContext buildSchemaPath(SchemaPath schemaPath, SQLQueryContext queryContext, boolean matchCase, boolean useLeftJoins) throws QueryBuildException {
-		return queryContext == null ? buildSchemaPath(schemaPath, matchCase, useLeftJoins) : addSchemaPath(queryContext, schemaPath, matchCase, useLeftJoins);
+	protected void addSchemaPath(SchemaPath schemaPath, SQLQueryContext queryContext, boolean useLeftJoins) throws QueryBuildException {
+		addSchemaPath(queryContext, schemaPath, true, useLeftJoins);
 	}
 
-	protected SQLQueryContext addSchemaPath(SchemaPath schemaPath, SQLQueryContext queryContext) throws QueryBuildException {
-		if (queryContext == null)
-			throw new QueryBuildException("The query context must not be null.");
-
-		return addSchemaPath(queryContext, schemaPath, true, true);
+	protected void addSchemaPath(SchemaPath schemaPath, SQLQueryContext queryContext, boolean matchCase, boolean useLeftJoins) throws QueryBuildException {
+		addSchemaPath(queryContext, schemaPath, matchCase, useLeftJoins);
 	}
 
-	private SQLQueryContext buildSchemaPath(SchemaPath schemaPath, boolean matchCase, boolean useLeftJoins) throws QueryBuildException {
-		FeatureTypeNode head = schemaPath.getFirstNode();
-
-		tableContext = new HashMap<>();
-		currentTable = new Table(head.getPathElement().getTable(), schemaName, aliasGenerator);
-		currentNode = head;
-
-		// initialize query context
-		SQLQueryContext queryContext = new SQLQueryContext(head, currentTable);
-		Select select = queryContext.getSelect();
-		BuildContext buildContext = queryContext.getBuildContext();
-
-		// iterate through schema path
-		while (currentNode != null) {
-			AbstractPathElement pathElement = currentNode.getPathElement();
-			processNode(pathElement, head, select, useLeftJoins);
-
-			// process predicate
-			if (currentNode.isSetPredicate()) {
-				PredicateToken predicate = evaluatePredicatePath(select, pathElement, currentNode.getPredicate(), matchCase, useLeftJoins);
-				queryContext.addPredicate(predicate);
-			}
-
-			// remember build context
-			buildContext.setTableContext(tableContext);
-			buildContext.setCurrentTable(currentTable);
-
-			currentNode = currentNode.child();
-			buildContext = buildContext.addSubContext(currentNode);
-		}
-
-		// copy results to query context
-		updateQueryContext(queryContext, currentTable, schemaPath);
-		
-		return queryContext;
-	}
-
-	private SQLQueryContext addSchemaPath(SQLQueryContext queryContext, SchemaPath schemaPath, boolean matchCase, boolean useLeftJoins) throws QueryBuildException {
+	private void addSchemaPath(SQLQueryContext queryContext, SchemaPath schemaPath, boolean matchCase, boolean useLeftJoins) throws QueryBuildException {
 		BuildContext buildContext = queryContext.getBuildContext();
 
 		FeatureTypeNode head = schemaPath.getFirstNode();
@@ -188,9 +146,7 @@ public class SchemaPathBuilder {
 				processNode(pathElement, head, select, useLeftJoins);
 
 				// remember build context
-				subContext = buildContext.addSubContext(currentNode);
-				subContext.setTableContext(tableContext);
-				subContext.setCurrentTable(currentTable);
+				subContext = buildContext.addSubContext(currentNode, currentTable, tableContext);
 			}
 
 			// translate predicate to where-conditions
@@ -205,13 +161,11 @@ public class SchemaPathBuilder {
 
 		// copy results to query context
 		updateQueryContext(queryContext, currentTable, schemaPath);
-
-		return queryContext;
 	}
 
-	protected void prepareStatement(SQLQueryContext queryContext, Set<Integer> objectClassIds, boolean addProjection) throws QueryBuildException {
-		if ((objectClassIds == null || objectClassIds.isEmpty()) && !addProjection)
-			return;
+	protected Table joinCityObjectTable(SQLQueryContext queryContext) throws QueryBuildException {
+		if (queryContext.getCityObjectTable() != null)
+			return queryContext.getCityObjectTable();
 
 		BuildContext buildContext = queryContext.getBuildContext();
 		FeatureType featureType = queryContext.getFeatureType();
@@ -227,30 +181,9 @@ public class SchemaPathBuilder {
 			throw new QueryBuildException("Fatal database schema error: Failed to find '" + MappingConstants.ID + "' property.");
 
 		evaluatePropertyPath(select, featureType, property, false);
-		Column id = currentTable.getColumn(property.getPath());
-		Column objectClassId = currentTable.getColumn(MappingConstants.OBJECTCLASS_ID);
+		queryContext.setCityObjectTable(currentTable);
 
-		// add projection
-		if (addProjection) {
-			select.addProjection(id);
-			select.addProjection(objectClassId);
-
-			// check whether we shall add additional projection columns
-			List<String> projectionColumns = buildProperties.getAdditionalProjectionColumns();
-			if (!projectionColumns.isEmpty()) {
-				Table table = id.getTable();
-				for (String column : projectionColumns)
-					select.addProjection(table.getColumn(column));
-			}
-		}
-
-		// add objectclass_id predicate
-		if (objectClassIds != null && !objectClassIds.isEmpty()) {
-			if (objectClassIds.size() == 1)
-				select.addSelection(ComparisonFactory.equalTo(objectClassId, new IntegerLiteral(objectClassIds.iterator().next())));
-			else
-				select.addSelection(ComparisonFactory.in(objectClassId, new LiteralList(objectClassIds.toArray(new Integer[0]))));
-		}
+		return currentTable;
 	}
 
 	private void processNode(AbstractPathElement pathElement, FeatureTypeNode head, Select select, boolean useLeftJoins) throws QueryBuildException {

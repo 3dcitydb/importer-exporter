@@ -48,12 +48,13 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class SortingBuilder {
+    private final SchemaPathBuilder builder;
 
-    protected SortingBuilder() {
-
+    protected SortingBuilder(SchemaPathBuilder builder) {
+        this.builder = builder;
     }
 
-    protected void buildSorting(Sorting sorting, SchemaPathBuilder builder, SQLQueryContext queryContext) throws QueryBuildException {
+    protected void buildSorting(Sorting sorting, SQLQueryContext queryContext) throws QueryBuildException {
         if (!sorting.hasSortProperties())
             throw new QueryBuildException("No valid sort properties provided.");
 
@@ -67,7 +68,7 @@ public class SortingBuilder {
             if (node.isSetPredicate())
                 throw new QueryBuildException("Predicates on the root feature are not supported for value references of sort properties.");
 
-            queryContext = builder.addSchemaPath(schemaPath, queryContext);
+            builder.addSchemaPath(schemaPath, queryContext, true, true);
             SortOrder sortOrder = sortProperty.getSortOrder() == org.citydb.query.filter.sorting.SortOrder.DESCENDING ?
                     SortOrder.DESCENDING : SortOrder.ASCENDING;
 

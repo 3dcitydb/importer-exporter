@@ -28,40 +28,54 @@
 package org.citydb.query.builder.sql;
 
 import org.citydb.database.schema.mapping.FeatureType;
+import org.citydb.database.schema.mapping.MappingConstants;
+import org.citydb.query.builder.QueryBuildException;
 import org.citydb.query.filter.type.FeatureTypeFilter;
+import org.citydb.sqlbuilder.expression.IntegerLiteral;
+import org.citydb.sqlbuilder.expression.LiteralList;
+import org.citydb.sqlbuilder.schema.Column;
+import org.citydb.sqlbuilder.schema.Table;
+import org.citydb.sqlbuilder.select.Select;
+import org.citydb.sqlbuilder.select.operator.comparison.ComparisonFactory;
 import org.citygml4j.model.module.citygml.CityGMLVersion;
 
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 public class FeatureTypeFilterBuilder {
+	private final SchemaPathBuilder builder;
 
-	protected FeatureTypeFilterBuilder() {
-
+	protected FeatureTypeFilterBuilder(SchemaPathBuilder builder) {
+		this.builder = builder;
 	}
 
-	protected Set<Integer> buildFeatureTypeFilter(FeatureTypeFilter typeFilter, CityGMLVersion targetVersion) {
-		List<FeatureType> featureTypes = typeFilter.getFeatureTypes(targetVersion);		
+	protected void buildFeatureTypeFilter(FeatureTypeFilter typeFilter, CityGMLVersion targetVersion, boolean forceSelection, SQLQueryContext queryContext) throws QueryBuildException {
+		List<FeatureType> featureTypes = typeFilter.getFeatureTypes(targetVersion);
 		if (featureTypes.isEmpty())
-			return Collections.emptySet();
+			return;
 
-		if (featureTypes.size() == 1) {
+		if (!forceSelection && featureTypes.size() == 1) {
 			FeatureType featureType = featureTypes.iterator().next();
 			if (!featureType.isAbstract() && !featureType.hasSharedTable(true))
-				return Collections.emptySet();
+				return;
 		}
 
 		Set<Integer> ids = new HashSet<>(featureTypes.size());
 		for (FeatureType featureType : featureTypes)
 			ids.add(featureType.getObjectClassId());
 
-		return ids;
+		Select select = queryContext.getSelect();
+		Table cityObject = builder.joinCityObjectTable(queryContext);
+		Column objectClassId = cityObject.getColumn(MappingConstants.OBJECTCLASS_ID);
+
+		if (ids.size() == 1)
+			select.addSelection(ComparisonFactory.equalTo(objectClassId, new IntegerLiteral(ids.iterator().next())));
+		else
+			select.addSelection(ComparisonFactory.in(objectClassId, new LiteralList(ids.toArray(new Integer[0]))));
 	}
 
-	protected Set<Integer> buildFeatureTypeFilter(FeatureTypeFilter typeFilter) {
-		return buildFeatureTypeFilter(typeFilter, CityGMLVersion.DEFAULT);
+	protected void buildFeatureTypeFilter(FeatureTypeFilter typeFilter, boolean forceSelection, SQLQueryContext queryContext) throws QueryBuildException {
+		buildFeatureTypeFilter(typeFilter, CityGMLVersion.DEFAULT, forceSelection, queryContext);
 	}
-
 }
