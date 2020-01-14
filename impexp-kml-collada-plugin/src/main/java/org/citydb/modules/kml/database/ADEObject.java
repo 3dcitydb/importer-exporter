@@ -227,22 +227,16 @@ public class ADEObject extends KmlGenericObject{
 						case DisplayForm.GEOMETRY:
 							setGmlId(work.getGmlId());
 							setId(work.getId());
-							if (this.query.isSetTiling()) { // region
-								if (work.getDisplayForm().isHighlightingEnabled())
-									kmlExporterManager.print(createPlacemarksForHighlighting(brepGeometriesQueryRs, work), work, getBalloonSettings().isBalloonContentInSeparateFile());
 
-								kmlExporterManager.print(createPlacemarksForGeometry(brepGeometriesQueryRs, work), work, getBalloonSettings().isBalloonContentInSeparateFile());
-							} else { // reverse order for single objects
-								kmlExporterManager.print(createPlacemarksForGeometry(brepGeometriesQueryRs, work), work, getBalloonSettings().isBalloonContentInSeparateFile());
-								if (work.getDisplayForm().isHighlightingEnabled())
-									kmlExporterManager.print(createPlacemarksForHighlighting(brepGeometriesQueryRs, work), work, getBalloonSettings().isBalloonContentInSeparateFile());
-							}
+							kmlExporterManager.print(createPlacemarksForGeometry(brepGeometriesQueryRs, work), work, getBalloonSettings().isBalloonContentInSeparateFile());
+							if (work.getDisplayForm().isHighlightingEnabled())
+								kmlExporterManager.print(createPlacemarksForHighlighting(brepGeometriesQueryRs, work), work, getBalloonSettings().isBalloonContentInSeparateFile());
 
-							if (hasPointAndCurve) { // point or curve geometry
+							if (hasPointAndCurve)  // point or curve geometry
 								kmlExporterManager.print(createPlacemarksForPointOrCurve(pointAndCurveQueryRs, work, getPointAndCurve()),
 										work,
 										getBalloonSettings().isBalloonContentInSeparateFile());
-							}
+
 							break;
 
 						case DisplayForm.COLLADA:

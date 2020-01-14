@@ -324,19 +324,11 @@ public class Building extends KmlGenericObject{
 				case DisplayForm.GEOMETRY:
 					setGmlId(work.getGmlId());
 					setId(work.getId());
+					List<PlacemarkType> placemarks = createPlacemarksForGeometry(rs, work);
 					if (work.getDisplayForm().isHighlightingEnabled()) {
-						if (query.isSetTiling()) { // region
-							List<PlacemarkType> hlPlacemarks = createPlacemarksForHighlighting(rs, work);
-							hlPlacemarks.addAll(createPlacemarksForGeometry(rs, work));
-							return hlPlacemarks;
-						}
-						else { // reverse order for single buildings
-							List<PlacemarkType> placemarks = createPlacemarksForGeometry(rs, work);
-							placemarks.addAll(createPlacemarksForHighlighting(rs, work));
-							return placemarks;
-						}
+						placemarks.addAll(createPlacemarksForHighlighting(rs, work));
 					}
-					return createPlacemarksForGeometry(rs, work);
+					return placemarks;
 
 				case DisplayForm.COLLADA:
 					fillGenericObjectForCollada(rs, config.getProject().getKmlExporter().getBuildingColladaOptions().isGenerateTextureAtlases()); // fill and refill
