@@ -254,6 +254,8 @@ public class SQLQueryBuilder {
 			// re-add order by tokens to new select
 			for (int i = 0; i < orderBy.size(); i++)
 				queryContext.getSelect().addOrderBy(new OrderByToken(withTable.getColumn("order" + i), orderBy.get(i).getSortOrder()));
+
+			queryContext.setFromTable(withTable);
 		}
 	}
 
