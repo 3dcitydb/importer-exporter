@@ -128,6 +128,12 @@ public class SQLQueryBuilder {
 		// add projection
 		addProjection(builder, queryContext);
 
+		// add row limit based on counter filter
+		if (query.isSetCounterFilter()) {
+			CounterFilterBuilder counterBuilder = new CounterFilterBuilder(builder, databaseAdapter);
+			counterBuilder.buildCounterFilter(query.getCounterFilter(), queryContext);
+		}
+
 		// build distinct query if the query involves 1:n or n:m joins
 		if (queryContext.getBuildContext().requiresDistinct())
 			buildDistinctQuery(query, queryContext);

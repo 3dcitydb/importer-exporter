@@ -32,7 +32,6 @@ import org.citydb.database.schema.mapping.FeatureType;
 import org.citydb.database.schema.mapping.JoinTable;
 import org.citydb.database.schema.mapping.Joinable;
 import org.citydb.database.schema.mapping.PathElementType;
-import org.citydb.database.schema.mapping.TableRole;
 import org.citydb.database.schema.path.AbstractNode;
 import org.citydb.database.schema.path.FeatureTypeNode;
 import org.citydb.sqlbuilder.schema.Column;
