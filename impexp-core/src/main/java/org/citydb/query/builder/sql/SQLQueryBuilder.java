@@ -107,6 +107,12 @@ public class SQLQueryBuilder {
 			predicateBuilder.buildPredicate(predicate, queryContext);
 		}
 
+		// sorting clause
+		if (query.isSetSorting()) {
+			SortingBuilder sortingBuilder = new SortingBuilder(builder);
+			sortingBuilder.buildSorting(query.getSorting(), queryContext);
+		}
+
 		// remove unnecessary joins
 		optimizeJoins(builder, queryContext);
 
@@ -117,12 +123,6 @@ public class SQLQueryBuilder {
 				LodFilterBuilder lodFilterBuilder = new LodFilterBuilder(schemaMapping, schemaName);
 				lodFilterBuilder.buildLodFilter(query.getLodFilter(), typeFilter, query.getTargetVersion(), queryContext);
 			}
-		}
-
-		// sorting clause
-		if (query.isSetSorting()) {
-			SortingBuilder sortingBuilder = new SortingBuilder(builder);
-			sortingBuilder.buildSorting(query.getSorting(), queryContext);
 		}
 
 		// add projection
@@ -159,7 +159,7 @@ public class SQLQueryBuilder {
 		// build path
 		builder.addSchemaPath(schemaPath, queryContext, useLeftJoins);
 		if (queryContext.hasPredicates())
-			queryContext.getPredicates().forEach(queryContext.getSelect()::addSelection);
+			queryContext.applyPredicates();
 
 		// add projection
 		if (addProjection)

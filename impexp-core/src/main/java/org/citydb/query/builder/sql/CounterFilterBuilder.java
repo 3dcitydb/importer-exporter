@@ -66,20 +66,17 @@ public class CounterFilterBuilder {
     }
 
     private void limitResultUsingFetch(CounterFilter counterFilter, SQLQueryContext queryContext) throws QueryBuildException {
-        Select select = queryContext.getSelect()
-                .addOrderBy(new OrderByToken(builder.joinCityObjectTable(queryContext).getColumn(MappingConstants.ID)));
-
-        select.withOffset(new OffsetToken(counterFilter.getLowerLimit() - 1));
-        select.withFetch(new FetchToken(counterFilter.getUpperLimit() - counterFilter.getLowerLimit() + 1));
+        prepareSelect(queryContext)
+                .withOffset(new OffsetToken(counterFilter.getLowerLimit() - 1))
+                .withFetch(new FetchToken(counterFilter.getUpperLimit() - counterFilter.getLowerLimit() + 1));
     }
 
     private void limitResultUsingRowNumber(CounterFilter counterFilter, SQLQueryContext queryContext) throws QueryBuildException {
-        Select select = queryContext.getSelect();
+        Select select = prepareSelect(queryContext);
+
         List<ProjectionToken> projection = select.getProjection();
         List<OrderByToken> orderBy = select.getOrderBy();
         select.unsetOrderBy();
-
-        orderBy.add(new OrderByToken(builder.joinCityObjectTable(queryContext).getColumn(MappingConstants.ID)));
 
         select.addProjection(new Function("row_number() over (" +
                 "order by " + orderBy.stream().map(OrderByToken::toString).collect(Collectors.joining(", ")) +
@@ -103,5 +100,28 @@ public class CounterFilterBuilder {
 
         queryContext.setSelect(outer);
         queryContext.setFromTable(table);
+    }
+
+    private Select prepareSelect(SQLQueryContext queryContext) throws QueryBuildException {
+        Select select = queryContext.getSelect();
+        Table cityObject = builder.joinCityObjectTable(queryContext);
+        boolean found = false;
+
+        // check if a sorting by the ID column is already defined
+        for (OrderByToken token : select.getOrderBy()) {
+            Column column = token.getColumn();
+            if (column.getName().equalsIgnoreCase(MappingConstants.ID)
+                    && (column.getTable().getName().equalsIgnoreCase(cityObject.getName())
+                    || column.getTable().getName().equalsIgnoreCase(queryContext.getFromTable().getName()))) {
+                found = true;
+                break;
+            }
+        }
+
+        // if not, then add unique sorting by ID column
+        if (!found)
+            select.addOrderBy(new OrderByToken(cityObject.getColumn(MappingConstants.ID)));
+
+        return select;
     }
 }
