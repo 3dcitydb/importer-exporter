@@ -109,7 +109,6 @@ public class DBSplitter {
 	private volatile boolean shouldRun = true;
 	private boolean calculateNumberMatched;
 	private boolean calculateExtent;
-	private long elementCounter;
 	private long sequenceId;
 
 	public DBSplitter(FeatureWriter writer,
@@ -192,10 +191,8 @@ public class DBSplitter {
 		try {
 			FeatureType cityObjectGroupType = schemaMapping.getFeatureType("CityObjectGroup", CityObjectGroupModule.v2_0_0.getNamespaceURI());
 			Map<Long, AbstractObjectType<?>> cityObjectGroups = new LinkedHashMap<>();
-
 			sequenceId = 0;
-			elementCounter = 0;
-			
+
 			queryCityObject(cityObjectGroupType, cityObjectGroups);
 
 			if (shouldRun) {
@@ -218,7 +215,7 @@ public class DBSplitter {
 				}
 			}
 
-			if (config.getInternal().isExportGlobalAppearances() && elementCounter > 0)
+			if (config.getInternal().isExportGlobalAppearances() && sequenceId > 0)
 				queryGlobalAppearance();
 
 		} finally {
@@ -241,7 +238,7 @@ public class DBSplitter {
 		long hits = 0;
 		if (calculateNumberMatched) {
 			log.debug("Calculating the number of matching top-level features...");
-			hits = getNumberMatched(select, connection);
+			hits = getNumberMatched(query, connection);
 		}
 
 		// add order by clause
@@ -268,7 +265,7 @@ public class DBSplitter {
 					if (query.isSetCounterFilter()) {
 						long maxCount = query.getCounterFilter().getUpperLimit() - query.getCounterFilter().getLowerLimit() + 1;
 						if (maxCount < hits) {
-							log.info("Exporting " + maxCount + " top-level feature(s) due to counter settings.");
+							log.info("Exporting at maximum " + maxCount + " top-level feature(s) due to counter settings.");
 							hits = maxCount;
 						}
 					}
@@ -301,16 +298,6 @@ public class DBSplitter {
 				writeDocumentHeader();
 
 				do {
-					elementCounter++;
-
-					if (query.isSetCounterFilter()) {
-						if (elementCounter < query.getCounterFilter().getLowerLimit())
-							continue;
-
-						if (elementCounter > query.getCounterFilter().getUpperLimit())
-							break;
-					}
-
 					long id = rs.getLong("id");
 					int objectClassId = rs.getInt("objectclass_id");
 
@@ -407,7 +394,7 @@ public class DBSplitter {
 			// calculate hits
 			if (calculateNumberMatched) {
 				log.debug("Calculating the number of matching group members...");
-				hits = getNumberMatched(select, connection);
+				hits = getNumberMatched(groupQuery, connection);
 			}
 
 			// issue query
@@ -525,6 +512,14 @@ public class DBSplitter {
 				} while (rs.next() && shouldRun);
 			}
 		}
+	}
+
+	private long getNumberMatched(Query query, Connection connection) throws QueryBuildException, SQLException {
+		Query hitsQuery = new Query(query);
+		hitsQuery.unsetCounterFilter();
+		hitsQuery.unsetSorting();
+
+		return getNumberMatched(builder.buildQuery(hitsQuery), connection);
 	}
 
 	private long getNumberMatched(Select select, Connection connection) throws SQLException {

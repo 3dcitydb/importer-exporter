@@ -70,7 +70,7 @@ public class CounterFilterBuilder {
                 .addOrderBy(new OrderByToken(builder.joinCityObjectTable(queryContext).getColumn(MappingConstants.ID)));
 
         select.withOffset(new OffsetToken(counterFilter.getLowerLimit() - 1));
-        select.withFetch(new FetchToken(counterFilter.getUpperLimit()));
+        select.withFetch(new FetchToken(counterFilter.getUpperLimit() - counterFilter.getLowerLimit()));
     }
 
     private void limitResultUsingRowNumber(CounterFilter counterFilter, SQLQueryContext queryContext) throws QueryBuildException {
