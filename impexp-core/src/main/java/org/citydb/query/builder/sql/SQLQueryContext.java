@@ -29,7 +29,6 @@ package org.citydb.query.builder.sql;
 
 import org.citydb.database.schema.mapping.AbstractJoin;
 import org.citydb.database.schema.mapping.FeatureType;
-import org.citydb.database.schema.mapping.Join;
 import org.citydb.database.schema.mapping.JoinTable;
 import org.citydb.database.schema.mapping.Joinable;
 import org.citydb.database.schema.mapping.PathElementType;
@@ -40,6 +39,8 @@ import org.citydb.sqlbuilder.schema.Column;
 import org.citydb.sqlbuilder.schema.Table;
 import org.citydb.sqlbuilder.select.PredicateToken;
 import org.citydb.sqlbuilder.select.Select;
+import org.citydb.sqlbuilder.select.join.Join;
+import org.citydb.sqlbuilder.select.join.JoinName;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -136,7 +137,7 @@ public class SQLQueryContext {
 		return buildContext;
 	}
 
-	static class BuildContext {
+	class BuildContext {
 		private final AbstractNode<?> node;
 		private final Table currentTable;
 		private final Map<String, Table> tableContext;
@@ -205,9 +206,12 @@ public class SQLQueryContext {
 							AbstractJoin join = joinable.getJoin();
 							if (join instanceof JoinTable)
 								return true;
-							if (join instanceof Join)
-								return ((Join) join).getToRole() == TableRole.CHILD;
 						}
+					}
+
+					for (Join join : select.getJoins()) {
+						if (join.getJoinName() != JoinName.INNER_JOIN)
+							return true;
 					}
 
 					if (child.requiresDistinct())
