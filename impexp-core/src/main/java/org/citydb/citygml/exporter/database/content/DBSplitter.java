@@ -66,7 +66,6 @@ import org.citydb.sqlbuilder.schema.Column;
 import org.citydb.sqlbuilder.schema.Table;
 import org.citydb.sqlbuilder.select.OrderByToken;
 import org.citydb.sqlbuilder.select.PredicateToken;
-import org.citydb.sqlbuilder.select.ProjectionToken;
 import org.citydb.sqlbuilder.select.Select;
 import org.citydb.sqlbuilder.select.join.JoinFactory;
 import org.citydb.sqlbuilder.select.operator.comparison.ComparisonFactory;
@@ -523,12 +522,9 @@ public class DBSplitter {
 	}
 
 	private long getNumberMatched(Select select, Connection connection) throws SQLException {
-		Select hitsQuery = new Select(select).unsetOrderBy();
-
-		for (ProjectionToken token : hitsQuery.getProjection()) {
-			if (!(token instanceof Column) || !((Column) token).getName().equals(MappingConstants.ID))
-				hitsQuery.removeProjection(token);
-		}
+		Select hitsQuery = new Select(select)
+				.unsetOrderBy()
+				.filterProjection(t -> !(t instanceof Column) || !((Column) t).getName().equals(MappingConstants.ID));
 
 		hitsQuery = new Select().addProjection(new Function("count", new WildCardColumn(new Table(hitsQuery), false)));
 		try (PreparedStatement stmt = databaseAdapter.getSQLAdapter().prepareStatement(hitsQuery, connection);
