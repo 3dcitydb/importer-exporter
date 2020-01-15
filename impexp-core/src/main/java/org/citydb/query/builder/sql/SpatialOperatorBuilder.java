@@ -166,7 +166,7 @@ public class SpatialOperatorBuilder {
 		// add optimizer hint if required
 		if (databaseAdapter.getSQLAdapter().spatialPredicateRequiresNoIndexHint()
 				&& targetColumn.getName().equalsIgnoreCase(MappingConstants.ENVELOPE))
-			queryContext.getSelect().setOptimizerString("/*+ no_index(" + toTable.getAlias() + " cityobject_objectclass_fkx) */");
+			queryContext.getSelect().addOptimizerHint("no_index(" + toTable.getAlias() + " cityobject_objectclass_fkx)");
 	}
 
 	private void buildDistanceOperator(DistanceOperator operator, SQLQueryContext queryContext, boolean negate, boolean useLeftJoins) throws QueryBuildException {
@@ -264,7 +264,7 @@ public class SpatialOperatorBuilder {
 		// add optimizer hint if required
 		if (databaseAdapter.getSQLAdapter().spatialPredicateRequiresNoIndexHint()
 				&& targetColumn.getName().equalsIgnoreCase(MappingConstants.ENVELOPE))
-			queryContext.getSelect().setOptimizerString("/*+ no_index(" + toTable.getAlias() + " cityobject_objectclass_fkx) */");
+			queryContext.getSelect().addOptimizerHint("no_index(" + toTable.getAlias() + " cityobject_objectclass_fkx)");
 	}
 
 	private ValueReference getBoundedByProperty(Query query) throws QueryBuildException {
