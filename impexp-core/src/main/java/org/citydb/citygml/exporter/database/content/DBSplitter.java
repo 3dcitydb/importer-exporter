@@ -323,7 +323,7 @@ public class DBSplitter {
 					dbWorkerPool.addWork(splitter);
 				} while (rs.next() && shouldRun);
 			} else {
-				log.info("No top-level feature matches the request.");
+				log.info("No top-level feature matches the query expression.");
 
 				if (calculateExtent
 						&& query.isSetTiling()
