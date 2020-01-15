@@ -236,7 +236,7 @@ public class SQLQueryBuilder {
 			inner.addProjection(new Function("row_number() over (" +
 					"partition by " + queryContext.getFromTable().getColumn(MappingConstants.ID) + " " +
 					"order by " + orderBy.stream().map(OrderByToken::toString).collect(Collectors.joining(", ")) +
-					")", "rn", false));
+					")", "rn_distinct", false));
 
 			CommonTableExpression cte = new CommonTableExpression("cte", inner);
 			Table withTable = cte.asTable();
@@ -245,7 +245,7 @@ public class SQLQueryBuilder {
 			// and remove duplicates by selecting row numbers with value 1
 			queryContext.setSelect(new Select()
 					.addWith(cte)
-					.addSelection(ComparisonFactory.equalTo(withTable.getColumn("rn"), new IntegerLiteral(1))));
+					.addSelection(ComparisonFactory.equalTo(withTable.getColumn("rn_distinct"), new IntegerLiteral(1))));
 
 			// re-add projection columns to new select
 			for (ProjectionToken token : projection)
