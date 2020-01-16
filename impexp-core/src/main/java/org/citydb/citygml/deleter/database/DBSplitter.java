@@ -55,9 +55,9 @@ import org.citydb.query.filter.selection.operator.comparison.NullOperator;
 import org.citydb.query.filter.selection.operator.logical.LogicalOperationFactory;
 import org.citydb.sqlbuilder.schema.Column;
 import org.citydb.sqlbuilder.schema.Table;
-import org.citydb.sqlbuilder.select.OrderByToken;
 import org.citydb.sqlbuilder.select.Select;
 import org.citydb.sqlbuilder.select.projection.Function;
+import org.citydb.sqlbuilder.select.projection.WildCardColumn;
 import org.citygml4j.model.module.citygml.CoreModule;
 
 import java.sql.Connection;
@@ -80,7 +80,6 @@ public class DBSplitter {
 
 	private volatile boolean shouldRun = true;
 	private boolean calculateNumberMatched;
-	private long elementCounter;
 
 	public DBSplitter(SchemaMapping schemaMapping,
 			WorkerPool<DBSplittingResult> dbWorkerPool, 
@@ -160,16 +159,11 @@ public class DBSplitter {
 		Select select = builder.buildQuery(query);
 		select.unsetOrderBy();
 
-		if (query.isSetCounterFilter())
-			select.addOrderBy(new OrderByToken((Column) select.getProjection().get(0)));
-
-		// add hits counter
+		// calculate hits
+		long hits = 0;
 		if (calculateNumberMatched) {
-			Table table = new Table(select);
-			select = new Select()
-					.addProjection(table.getColumn(MappingConstants.ID))
-					.addProjection(table.getColumn(MappingConstants.OBJECTCLASS_ID))
-					.addProjection(new Function("count(1) over", "hits"));
+			log.debug("Calculating the number of matching top-level features...");
+			hits = getNumberMatched(query);
 		}
 
 		// issue query
@@ -177,30 +171,20 @@ public class DBSplitter {
 			 ResultSet rs = stmt.executeQuery()) {
 			if (rs.next()) {
 				if (calculateNumberMatched) {
-					long hits = rs.getLong("hits");
 					log.info("Found " + hits + " top-level feature(s) matching the request.");
 
 					if (query.isSetCounterFilter()) {
 						long maxCount = query.getCounterFilter().getUpperLimit();
 						if (maxCount < hits) {
-							log.info("Deleting " + maxCount + " top-level feature(s) due to counter settings.");
+							log.info("Deleting at maximum " + maxCount + " top-level feature(s) due to counter settings.");
 							hits = maxCount;
 						}
 					}
+
 					eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.INIT, (int) hits, this));
 				}
 
 				do {
-					elementCounter++;
-
-					if (query.isSetCounterFilter()) {
-						if (elementCounter < query.getCounterFilter().getLowerLimit())
-							continue;
-
-						if (elementCounter > query.getCounterFilter().getUpperLimit())
-							break;
-					}
-
 					long id = rs.getLong("id");
 					int objectClassId = rs.getInt("objectclass_id");
 
@@ -218,5 +202,19 @@ public class DBSplitter {
 				log.info("No feature matches the request.");
 		}
 	}
-	
+
+	private long getNumberMatched(Query query) throws QueryBuildException, SQLException {
+		Query hitsQuery = new Query(query);
+		hitsQuery.unsetCounterFilter();
+		hitsQuery.unsetSorting();
+
+		Select select = builder.buildQuery(hitsQuery)
+				.filterProjection(t -> !(t instanceof Column) || !((Column) t).getName().equals(MappingConstants.ID));
+
+		select = new Select().addProjection(new Function("count", new WildCardColumn(new Table(select), false)));
+		try (PreparedStatement stmt = databaseAdapter.getSQLAdapter().prepareStatement(select, connection);
+			 ResultSet rs = stmt.executeQuery()) {
+			return rs.next() ? rs.getLong(1) : 0;
+		}
+	}
 }
