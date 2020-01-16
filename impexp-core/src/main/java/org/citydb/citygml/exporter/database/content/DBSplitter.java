@@ -64,7 +64,6 @@ import org.citydb.query.filter.type.FeatureTypeFilter;
 import org.citydb.sqlbuilder.expression.LiteralList;
 import org.citydb.sqlbuilder.schema.Column;
 import org.citydb.sqlbuilder.schema.Table;
-import org.citydb.sqlbuilder.select.OrderByToken;
 import org.citydb.sqlbuilder.select.PredicateToken;
 import org.citydb.sqlbuilder.select.Select;
 import org.citydb.sqlbuilder.select.join.JoinFactory;
@@ -239,10 +238,6 @@ public class DBSplitter {
 			log.debug("Calculating the number of matching top-level features...");
 			hits = getNumberMatched(query, connection);
 		}
-
-		// add order by clause
-		if (query.isSetCounterFilter() && !query.isSetSorting())
-			select.addOrderBy(new OrderByToken((Column)select.getProjection().get(0)));
 
 		// add spatial extent
 		if (calculateExtent) {
