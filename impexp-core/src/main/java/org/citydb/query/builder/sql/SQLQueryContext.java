@@ -124,6 +124,13 @@ public class SQLQueryContext {
 		predicates = null;
 	}
 
+	void applyPredicates() {
+		if (predicates != null) {
+			predicates.forEach(select::addSelection);
+			predicates = null;
+		}
+	}
+
 	Table getCityObjectTable() {
 		return cityObjectTable;
 	}

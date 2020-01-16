@@ -66,7 +66,7 @@ public class PredicateBuilder {
 		if (!queryContext.hasPredicates())
 			throw new QueryBuildException("Failed to build selection predicates.");
 
-		queryContext.getPredicates().forEach(queryContext.getSelect()::addSelection);
+		queryContext.applyPredicates();
 	}
 
 	private void buildPredicate(Predicate predicate, SQLQueryContext queryContext, boolean negate, boolean useLeftJoins) throws QueryBuildException {
