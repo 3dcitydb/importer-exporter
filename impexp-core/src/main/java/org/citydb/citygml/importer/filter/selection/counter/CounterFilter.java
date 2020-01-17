@@ -2,7 +2,7 @@
  * 3D City Database - The Open Source CityGML Database
  * http://www.3dcitydb.org/
  *
- * Copyright 2013 - 2019
+ * Copyright 2013 - 2020
  * Chair of Geoinformatics
  * Technical University of Munich, Germany
  * https://www.gis.bgu.tum.de/
@@ -25,48 +25,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.citydb.config.project.query.filter.counter;
 
-import javax.xml.bind.annotation.XmlSchemaType;
-import javax.xml.bind.annotation.XmlType;
+package org.citydb.citygml.importer.filter.selection.counter;
 
-@XmlType(name="CounterFilterType", propOrder={
-		"count",
-		"startIndex"
-})
-public class CounterFilter {
-	@XmlSchemaType(name="nonNegativeInteger")
-	private Long count;
-	@XmlSchemaType(name="nonNegativeInteger")
-	private Long startIndex;
-	
-	public boolean isSetCount() {
-		return count != null;
-	}
+public class CounterFilter extends org.citydb.query.filter.counter.CounterFilter {
+    private long currentCount;
+    private long currentStartIndex;
 
-	public Long getCount() {
-		return count;
-	}
+    public void incrementCount() {
+        currentCount++;
+    }
 
-	public void setCount(Long count) {
-		this.count = count;
-	}
-	
-	public boolean isSetStartIndex() {
-		return startIndex != null;
-	}
+    public void incrementStartIndex() {
+        currentStartIndex++;
+    }
 
-	public Long getStartIndex() {
-		return startIndex;
-	}
+    public boolean isCountSatisfied() {
+        return !isSetCount() || currentCount <= getCount();
+    }
 
-	public void setStartIndex(Long startIndex) {
-		this.startIndex = startIndex;
-	}
-
-	public void reset() {
-		count = null;
-		startIndex = null;
-	}
-
+    public boolean isStartIndexSatisfied() {
+        return !isSetStartIndex() || currentStartIndex >= getStartIndex();
+    }
 }

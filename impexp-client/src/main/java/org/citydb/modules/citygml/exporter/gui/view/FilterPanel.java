@@ -88,10 +88,10 @@ public class FilterPanel extends JPanel implements EventHandler {
 	private JTabbedPane filterTab;
 	private FilterView[] filters;
 
-	private JLabel counterStartLabel;
-	private JLabel counterEndLabel;
-	private JFormattedTextField counterStartText;
-	private JFormattedTextField counterEndText;
+	private JLabel countLabel;
+	private JLabel startIndexLabel;
+	private JFormattedTextField countText;
+	private JFormattedTextField startIndexText;
 
 	private JCheckBox[] lods;
 	private JLabel lodModeLabel;
@@ -130,14 +130,14 @@ public class FilterPanel extends JPanel implements EventHandler {
 		bboxSeparator = new JXTitledSeparator();
 		featureSeparator = new JXTitledSeparator();
 
-		counterStartLabel = new JLabel();
-		counterEndLabel = new JLabel();
+		countLabel = new JLabel();
+		startIndexLabel = new JLabel();
 		DecimalFormat counterFormat = new DecimalFormat("###################");
 		counterFormat.setMaximumIntegerDigits(19);
-		counterStartText = new JFormattedTextField(counterFormat);
-		counterEndText = new JFormattedTextField(counterFormat);
-		counterStartText.setFocusLostBehavior(JFormattedTextField.COMMIT);
-		counterEndText.setFocusLostBehavior(JFormattedTextField.COMMIT);
+		countText = new JFormattedTextField(counterFormat);
+		startIndexText = new JFormattedTextField(counterFormat);
+		countText.setFocusLostBehavior(JFormattedTextField.COMMIT);
+		startIndexText.setFocusLostBehavior(JFormattedTextField.COMMIT);
 
 		lodModeLabel = new JLabel();
 		lodDepthLabel = new JLabel();
@@ -256,10 +256,10 @@ public class FilterPanel extends JPanel implements EventHandler {
 
 				counterPanel.setLayout(new GridBagLayout());
 				{
-					counterPanel.add(counterStartLabel, GuiUtil.setConstraints(0,0,0,0,GridBagConstraints.NONE,0,0,0,5));
-					counterPanel.add(counterStartText, GuiUtil.setConstraints(1,0,1,0,GridBagConstraints.HORIZONTAL,0,5,0,5));
-					counterPanel.add(counterEndLabel, GuiUtil.setConstraints(2,0,0,0,GridBagConstraints.NONE,0,10,0,5));
-					counterPanel.add(counterEndText, GuiUtil.setConstraints(3,0,1,0,GridBagConstraints.HORIZONTAL,0,5,0,0));
+					counterPanel.add(countLabel, GuiUtil.setConstraints(0,0,0,0,GridBagConstraints.NONE,0,0,0,5));
+					counterPanel.add(countText, GuiUtil.setConstraints(1,0,1,0,GridBagConstraints.HORIZONTAL,0,5,0,5));
+					counterPanel.add(startIndexLabel, GuiUtil.setConstraints(2,0,0,0,GridBagConstraints.NONE,0,10,0,5));
+					counterPanel.add(startIndexText, GuiUtil.setConstraints(3,0,1,0,GridBagConstraints.HORIZONTAL,0,5,0,0));
 				}
 			}
 		}
@@ -341,14 +341,14 @@ public class FilterPanel extends JPanel implements EventHandler {
 			}
 		});
 
-		counterStartText.addPropertyChangeListener(e -> {
-			if (counterStartText.getValue() != null && ((Number) counterStartText.getValue()).longValue() < 0)
-				counterStartText.setValue(null);
+		countText.addPropertyChangeListener(e -> {
+			if (countText.getValue() != null && ((Number) countText.getValue()).longValue() < 0)
+				countText.setValue(null);
 		});
 
-		counterEndText.addPropertyChangeListener(e -> {
-			if (counterEndText.getValue() != null && ((Number) counterEndText.getValue()).longValue() < 0)
-				counterEndText.setValue(null);
+		startIndexText.addPropertyChangeListener(e -> {
+			if (startIndexText.getValue() != null && ((Number) startIndexText.getValue()).longValue() < 0)
+				startIndexText.setValue(null);
 		});
 
 		for (JCheckBox lod : lods)
@@ -362,7 +362,7 @@ public class FilterPanel extends JPanel implements EventHandler {
 
 		PopupMenuDecorator.getInstance().decorateCheckBoxGroup(lods);
 		PopupMenuDecorator.getInstance().decorate(featureTree);
-		PopupMenuDecorator.getInstance().decorate(counterStartText, counterEndText, tilingRowsText, tilingColumnsText);
+		PopupMenuDecorator.getInstance().decorate(countText, startIndexText, tilingRowsText, tilingColumnsText);
 	}
 
 	private void setEnabledFilterTab() {
@@ -397,10 +397,10 @@ public class FilterPanel extends JPanel implements EventHandler {
 	}
 
 	private void setEnabledCounterFilter() {
-		counterStartLabel.setEnabled(useCounterFilter.isSelected());
-		counterEndLabel.setEnabled(useCounterFilter.isSelected());
-		counterStartText.setEnabled(useCounterFilter.isSelected());
-		counterEndText.setEnabled(useCounterFilter.isSelected());
+		countLabel.setEnabled(useCounterFilter.isSelected());
+		startIndexLabel.setEnabled(useCounterFilter.isSelected());
+		countText.setEnabled(useCounterFilter.isSelected());
+		startIndexText.setEnabled(useCounterFilter.isSelected());
 	}
 
 	private void setEnabledBBoxFilter() {
@@ -442,8 +442,8 @@ public class FilterPanel extends JPanel implements EventHandler {
 
 		lodModeLabel.setText(Language.I18N.getString("filter.label.lod.mode"));
 		lodDepthLabel.setText(Language.I18N.getString("filter.label.lod.depth"));
-		counterStartLabel.setText(Language.I18N.getString("filter.label.counter.start"));
-		counterEndLabel.setText(Language.I18N.getString("filter.label.counter.end"));
+		countLabel.setText(Language.I18N.getString("filter.label.counter.count"));
+		startIndexLabel.setText(Language.I18N.getString("filter.label.counter.startIndex"));
 		bboxMode.setText(Language.I18N.getString("filter.label.boundingBox.mode"));
 		bboxOverlaps.setText(Language.I18N.getString("filter.label.boundingBox.overlaps"));
 		bboxWithin.setText(Language.I18N.getString("filter.label.boundingBox.within"));
@@ -483,8 +483,8 @@ public class FilterPanel extends JPanel implements EventHandler {
 
 		// counter filter
 		CounterFilter counterFilter = query.getCounterFilter();
-		counterStartText.setValue(counterFilter.getLowerLimit());
-		counterEndText.setValue(counterFilter.getUpperLimit());
+		countText.setValue(counterFilter.getCount());
+		startIndexText.setValue(counterFilter.getStartIndex());
 
 		// bbox filter
 		SimpleTiling bboxFilter = query.getBboxFilter();
@@ -556,14 +556,15 @@ public class FilterPanel extends JPanel implements EventHandler {
 		// counter filter
 		CounterFilter counterFilter = query.getCounterFilter();
 		counterFilter.reset();
-		if (counterStartText.isEditValid() && counterStartText.getValue() != null
-				&& counterEndText.isEditValid() && counterEndText.getValue() != null) {
-			counterFilter.setLowerLimit(((Number) counterStartText.getValue()).longValue());
-			counterFilter.setUpperLimit(((Number) counterEndText.getValue()).longValue());
-		} else {
-			counterFilter.setLowerLimit(null);
-			counterFilter.setUpperLimit(null);
-		}
+		if (countText.isEditValid() && countText.getValue() != null)
+			counterFilter.setCount(((Number) countText.getValue()).longValue());
+		else
+			counterFilter.setCount(null);
+
+		if (startIndexText.isEditValid() && startIndexText.getValue() != null)
+			counterFilter.setStartIndex(((Number) startIndexText.getValue()).longValue());
+		else
+			counterFilter.setStartIndex(null);
 
 		// bbox filter
 		SimpleTiling bboxFilter = query.getBboxFilter();

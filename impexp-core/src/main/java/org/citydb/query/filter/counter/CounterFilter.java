@@ -30,30 +30,46 @@ package org.citydb.query.filter.counter;
 import org.citydb.query.filter.FilterException;
 
 public class CounterFilter {
-	private final long lowerLimit;
-	private final long upperLimit;
-	
-	public CounterFilter(long lowerLimit, long upperLimit) throws FilterException {
-		if (lowerLimit <= 0 || upperLimit <= 0)
-			throw new FilterException("Counter limits must be greater than zero.");
-		
-		if (lowerLimit > upperLimit)
-			throw new FilterException("The upper counter limit must be greater than or equal to the lower limit.");
-		
-		this.lowerLimit = lowerLimit;
-		this.upperLimit = upperLimit;
-	}
-	
-	public CounterFilter(long upperLimit) throws FilterException {
-		this(1, upperLimit);
-	}
-	
-	public long getLowerLimit() {
-		return lowerLimit;
+	private long count = -1;
+	private long startIndex = -1;
+
+	public CounterFilter() {
 	}
 
-	public long getUpperLimit() {
-		return upperLimit;
+	public CounterFilter(long count, long startIndex) throws FilterException {
+		setCount(count);
+		setStartIndex(startIndex);
 	}
 	
+	public static CounterFilter ofCount(long count) throws FilterException {
+		return new CounterFilter(count, -1);
+	}
+
+	public static CounterFilter ofStartIndex(long startIndex) throws FilterException {
+		return new CounterFilter(-1, startIndex);
+	}
+
+	public boolean isSetCount() {
+		return count != -1;
+	}
+	
+	public long getCount() {
+		return count;
+	}
+
+	public void setCount(long count) {
+		this.count = Math.max(count, -1);
+	}
+
+	public boolean isSetStartIndex() {
+		return startIndex != -1;
+	}
+
+	public long getStartIndex() {
+		return startIndex;
+	}
+
+	public void setStartIndex(long startIndex) {
+		this.startIndex = Math.max(startIndex, -1);
+	}
 }

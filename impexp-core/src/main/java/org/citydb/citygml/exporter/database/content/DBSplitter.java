@@ -256,11 +256,11 @@ public class DBSplitter {
 				if (calculateNumberMatched) {
 					log.info("Found " + hits + " top-level feature(s) matching the request.");
 
-					if (query.isSetCounterFilter()) {
-						long maxCount = query.getCounterFilter().getUpperLimit() - query.getCounterFilter().getLowerLimit() + 1;
-						if (maxCount < hits) {
-							log.info("Exporting at maximum " + maxCount + " top-level feature(s) due to counter settings.");
-							hits = maxCount;
+					if (query.isSetCounterFilter() && query.getCounterFilter().isSetCount()) {
+						long count = query.getCounterFilter().getCount();
+						if (count < hits) {
+							log.info("Exporting at maximum " + count + " top-level feature(s) due to counter settings.");
+							hits = count;
 						}
 					}
 

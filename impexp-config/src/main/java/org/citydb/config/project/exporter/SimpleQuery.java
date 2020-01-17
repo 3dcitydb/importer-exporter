@@ -73,7 +73,7 @@ public class SimpleQuery {
 	private SimpleFeatureVersionFilter featureVersionFilter;
 	@XmlElement(name = "selection")
 	private SimpleSelectionFilter selectionFilter;
-	@XmlElement(name = "count")
+	@XmlElement(name = "limit")
 	protected CounterFilter counterFilter;
 	@XmlElement(name = "lods")
 	protected LodFilter lodFilter;

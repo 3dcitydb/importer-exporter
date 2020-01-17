@@ -27,6 +27,8 @@
  */
 package org.citydb.query.filter.lod;
 
+import java.util.Arrays;
+
 public class LodFilter {
 	private boolean[] lods;
 	private LodFilterMode mode;
@@ -38,8 +40,7 @@ public class LodFilter {
 	
 	public LodFilter(boolean defaultValue, LodFilterMode mode) {
 		lods = new boolean[5];
-		for (int i = 0; i < lods.length; i++)
-			lods[i] = defaultValue;
+		Arrays.fill(lods, defaultValue);
 		
 		this.mode = mode;
 	}
@@ -67,13 +68,12 @@ public class LodFilter {
 	}
 
 	public void setEnabledAll(boolean enabled) {
-		for (int i = 0; i < lods.length; i++)
-			lods[i] = enabled;
+		Arrays.fill(lods, enabled);
 	}
 	
 	public boolean isAnyEnabled() {
-		for (int i = 0; i < lods.length; i++) {
-			if (lods[i])
+		for (boolean lod : lods) {
+			if (lod)
 				return true;
 		}
 		
@@ -81,8 +81,8 @@ public class LodFilter {
 	}
 	
 	public boolean areAllEnabled() {
-		for (int i = 0; i < lods.length; i++) {
-			if (!lods[i])
+		for (boolean lod : lods) {
+			if (!lod)
 				return false;
 		}
 		

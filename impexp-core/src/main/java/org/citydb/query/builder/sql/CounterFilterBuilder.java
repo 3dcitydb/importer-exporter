@@ -50,25 +50,27 @@ import java.util.stream.Collectors;
 public class CounterFilterBuilder {
     private final SchemaPathBuilder builder;
     private final AbstractDatabaseAdapter databaseAdapter;
-    private final boolean useFetchSyntax;
 
     CounterFilterBuilder(SchemaPathBuilder builder, AbstractDatabaseAdapter databaseAdapter) {
         this.builder = builder;
         this.databaseAdapter = databaseAdapter;
-        useFetchSyntax = databaseAdapter.getSQLAdapter().supportsFetchFirstClause();
     }
 
     void buildCounterFilter(CounterFilter counterFilter, SQLQueryContext queryContext) throws QueryBuildException {
-        if (useFetchSyntax)
+        if (!databaseAdapter.getSQLAdapter().supportsFetchFirstClause())
             limitResultUsingFetch(counterFilter, queryContext);
         else
             limitResultUsingRowNumber(counterFilter, queryContext);
     }
 
     private void limitResultUsingFetch(CounterFilter counterFilter, SQLQueryContext queryContext) throws QueryBuildException {
-        prepareSelect(queryContext)
-                .withOffset(new OffsetToken(counterFilter.getLowerLimit() - 1))
-                .withFetch(new FetchToken(counterFilter.getUpperLimit() - counterFilter.getLowerLimit() + 1));
+        Select select = prepareSelect(queryContext);
+
+        if (counterFilter.isSetStartIndex())
+            select.withOffset(new OffsetToken(counterFilter.getStartIndex()));
+
+        if (counterFilter.isSetCount())
+            select.withFetch(new FetchToken(counterFilter.getCount()));
     }
 
     private void limitResultUsingRowNumber(CounterFilter counterFilter, SQLQueryContext queryContext) throws QueryBuildException {
@@ -83,17 +85,22 @@ public class CounterFilterBuilder {
                 ")", "rn_limit", false));
 
         // add first_rows hint for Oracle
-        if (!useFetchSyntax && databaseAdapter.getConnectionDetails().getDatabaseType() == DatabaseType.ORACLE) {
-            long firstRows = counterFilter.getUpperLimit() - counterFilter.getLowerLimit() + 1;
-            select.addOptimizerHint("first_rows(" + firstRows + ")");
-        }
+        if (counterFilter.isSetCount() && databaseAdapter.getConnectionDetails().getDatabaseType() == DatabaseType.ORACLE)
+            select.addOptimizerHint("first_rows(" + counterFilter.getCount() + ")");
 
         Table table = new Table(select);
-        Select outer = new Select()
-                .addSelection(ComparisonFactory.between(table.getColumn("rn_limit"),
-                        new LongLiteral(counterFilter.getLowerLimit()),
-                        new LongLiteral(counterFilter.getUpperLimit())))
-                .addOrderBy(new OrderByToken(table.getColumn("rn_limit")));
+        Select outer = new Select().addOrderBy(new OrderByToken(table.getColumn("rn_limit")));
+
+        long startIndex = counterFilter.isSetStartIndex() ? counterFilter.getStartIndex() : 0;
+        if (startIndex > 0) {
+            outer.addSelection(ComparisonFactory.greaterThan(table.getColumn("rn_limit"),
+                    new LongLiteral(counterFilter.getStartIndex())));
+        }
+
+        if (counterFilter.isSetCount()) {
+            outer.addSelection(ComparisonFactory.lessThanOrEqualTo(table.getColumn("rn_limit"),
+                    new LongLiteral(startIndex + counterFilter.getCount())));
+        }
 
         for (ProjectionToken token : projection)
             outer.addProjection(token instanceof Column ? table.getColumn(((Column) token).getName()) : token);
