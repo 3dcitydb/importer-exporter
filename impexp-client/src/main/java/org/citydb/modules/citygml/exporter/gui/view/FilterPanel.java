@@ -43,6 +43,7 @@ import org.citydb.event.EventHandler;
 import org.citydb.event.global.EventType;
 import org.citydb.event.global.PropertyChangeEvent;
 import org.citydb.gui.components.checkboxtree.DefaultCheckboxTreeCellRenderer;
+import org.citydb.gui.components.common.BlankNumberFormatter;
 import org.citydb.gui.components.feature.FeatureTypeTree;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.util.GuiUtil;
@@ -132,12 +133,16 @@ public class FilterPanel extends JPanel implements EventHandler {
 
 		countLabel = new JLabel();
 		startIndexLabel = new JLabel();
-		DecimalFormat counterFormat = new DecimalFormat("###################");
-		counterFormat.setMaximumIntegerDigits(19);
-		countText = new JFormattedTextField(counterFormat);
-		startIndexText = new JFormattedTextField(counterFormat);
-		countText.setFocusLostBehavior(JFormattedTextField.COMMIT);
-		startIndexText.setFocusLostBehavior(JFormattedTextField.COMMIT);
+
+		BlankNumberFormatter countFormatter = new BlankNumberFormatter(new DecimalFormat("##########"));
+		countFormatter.setLimits(0, Integer.MAX_VALUE);
+		countText = new JFormattedTextField(countFormatter);
+		countText.setColumns(10);
+
+		BlankNumberFormatter startIndexFormatter = new BlankNumberFormatter(new DecimalFormat("###################"));
+		startIndexFormatter.setLimits(0L, Long.MAX_VALUE);
+		startIndexText = new JFormattedTextField(startIndexFormatter);
+		startIndexText.setColumns(10);
 
 		lodModeLabel = new JLabel();
 		lodDepthLabel = new JLabel();
@@ -163,9 +168,8 @@ public class FilterPanel extends JPanel implements EventHandler {
 		bboxModeGroup.add(bboxWithin);
 		bboxModeGroup.add(bboxTiling);
 
-		DecimalFormat tileFormat = new DecimalFormat("#######");
-		tileFormat.setMaximumIntegerDigits(7);
-		tileFormat.setMinimumIntegerDigits(1);
+		BlankNumberFormatter tileFormat = new BlankNumberFormatter(new DecimalFormat("#######"));
+		tileFormat.setLimits(0, 9999999);
 		tilingRowsText = new JFormattedTextField(tileFormat);
 		tilingColumnsText = new JFormattedTextField(tileFormat);
 
@@ -341,24 +345,14 @@ public class FilterPanel extends JPanel implements EventHandler {
 			}
 		});
 
-		countText.addPropertyChangeListener(e -> {
-			if (countText.getValue() != null && ((Number) countText.getValue()).longValue() < 0)
-				countText.setValue(null);
-		});
-
-		startIndexText.addPropertyChangeListener(e -> {
-			if (startIndexText.getValue() != null && ((Number) startIndexText.getValue()).longValue() < 0)
-				startIndexText.setValue(null);
-		});
-
 		for (JCheckBox lod : lods)
 			lod.addItemListener(e -> setEnabledLodFilterMode());
 
 		bboxOverlaps.addActionListener(e -> setEnabledTilingOptions());
 		bboxWithin.addActionListener(e -> setEnabledTilingOptions());
 		bboxTiling.addActionListener(e -> setEnabledTilingOptions());
-		tilingRowsText.addPropertyChangeListener(evt -> checkNonNegative(tilingRowsText));
-		tilingColumnsText.addPropertyChangeListener(evt -> checkNonNegative(tilingColumnsText));
+		tilingRowsText.addPropertyChangeListener("value", evt -> checkNonNegative(tilingRowsText));
+		tilingColumnsText.addPropertyChangeListener("value", evt -> checkNonNegative(tilingColumnsText));
 
 		PopupMenuDecorator.getInstance().decorateCheckBoxGroup(lods);
 		PopupMenuDecorator.getInstance().decorate(featureTree);
@@ -425,7 +419,7 @@ public class FilterPanel extends JPanel implements EventHandler {
 	}
 
 	private void checkNonNegative(JFormattedTextField field) {
-		if (field.getValue() != null && ((Number)field.getValue()).intValue() < 0)
+		if (field.getValue() == null || ((Number)field.getValue()).intValue() < 0)
 			field.setValue(0);
 	}
 

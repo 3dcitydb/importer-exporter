@@ -38,6 +38,7 @@ import org.citydb.config.project.query.filter.selection.comparison.LikeOperator;
 import org.citydb.config.project.query.filter.selection.id.ResourceIdOperator;
 import org.citydb.config.project.query.filter.type.FeatureTypeFilter;
 import org.citydb.gui.components.checkboxtree.DefaultCheckboxTreeCellRenderer;
+import org.citydb.gui.components.common.BlankNumberFormatter;
 import org.citydb.gui.components.feature.FeatureTypeTree;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.util.GuiUtil;
@@ -106,12 +107,16 @@ public class FilterPanel extends JPanel {
 
 		countLabel = new JLabel();
 		startIndexLabel = new JLabel();
-		DecimalFormat counterFormat = new DecimalFormat("###################");
-		counterFormat.setMaximumIntegerDigits(19);
-		countText = new JFormattedTextField(counterFormat);
-		startIndexText = new JFormattedTextField(counterFormat);
-		countText.setFocusLostBehavior(JFormattedTextField.COMMIT);
-		startIndexText.setFocusLostBehavior(JFormattedTextField.COMMIT);
+
+		BlankNumberFormatter countFormatter = new BlankNumberFormatter(new DecimalFormat("##########"));
+		countFormatter.setLimits(0, Integer.MAX_VALUE);
+		countText = new JFormattedTextField(countFormatter);
+		countText.setColumns(10);
+
+		BlankNumberFormatter startIndexFormatter = new BlankNumberFormatter(new DecimalFormat("###################"));
+		startIndexFormatter.setLimits(0L, Long.MAX_VALUE);
+		startIndexText = new JFormattedTextField(startIndexFormatter);
+		startIndexText.setColumns(10);
 
 		bboxPanel = viewController.getComponentFactory().createBoundingBoxPanel();
 		bboxMode = new JLabel();

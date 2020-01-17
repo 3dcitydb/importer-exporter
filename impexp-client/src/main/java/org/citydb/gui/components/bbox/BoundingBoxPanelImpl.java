@@ -34,6 +34,7 @@ import org.citydb.config.i18n.Language;
 import org.citydb.event.Event;
 import org.citydb.event.EventHandler;
 import org.citydb.event.global.EventType;
+import org.citydb.gui.components.common.BlankNumberFormatter;
 import org.citydb.gui.components.mapviewer.MapWindow;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.factory.SrsComboBoxFactory;
@@ -46,6 +47,7 @@ import org.citydb.plugin.extension.view.components.DatabaseSrsComboBox;
 import org.citydb.registry.ObjectRegistry;
 
 import javax.swing.*;
+import javax.swing.text.NumberFormatter;
 import java.awt.*;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
@@ -83,16 +85,17 @@ public class BoundingBoxPanelImpl extends BoundingBoxPanel implements EventHandl
         srsLabel = new JLabel();
         srsComboBox = SrsComboBoxFactory.getInstance(config).createSrsComboBox(true);
 
-        DecimalFormat bboxFormat = new DecimalFormat("##########.##############", DecimalFormatSymbols.getInstance(Locale.ENGLISH));
+        NumberFormatter bboxFormat = new BlankNumberFormatter(new DecimalFormat("##########.##############",
+                DecimalFormatSymbols.getInstance(Locale.ENGLISH)));
         xmin = new JFormattedTextField(bboxFormat);
         ymin = new JFormattedTextField(bboxFormat);
         xmax = new JFormattedTextField(bboxFormat);
         ymax = new JFormattedTextField(bboxFormat);
 
-        xmin.setFocusLostBehavior(JFormattedTextField.COMMIT);
-        ymin.setFocusLostBehavior(JFormattedTextField.COMMIT);
-        xmax.setFocusLostBehavior(JFormattedTextField.COMMIT);
-        ymax.setFocusLostBehavior(JFormattedTextField.COMMIT);
+        xmin.setColumns(10);
+        ymin.setColumns(10);
+        xmax.setColumns(10);
+        ymax.setColumns(10);
 
         xminLabel = new JLabel("<html>x<sub>min</sub></html>");
         xmaxLabel = new JLabel("<html>x<sub>max</sub></html>");
