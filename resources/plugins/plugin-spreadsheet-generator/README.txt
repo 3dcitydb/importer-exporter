@@ -1,6 +1,6 @@
 ﻿3D City Database Importer/Exporter Spreadsheet Generator Plugin
 
-Version 3.2.0-SNAPSHOT (2019-11-24)
+Version 3.2.0-SNAPSHOT (2020-01-16)
 
   This software is free software and is distributed on an "AS IS" BASIS,
   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -35,7 +35,7 @@ You may obtain a copy of the License at
 2. Copyright
 ------------
 
-(C) 2013-2019
+(C) 2013-2020
 Chair of Geoinformatics
 Technical University of Munich, Germany
 https://www.gis.bgu.tum.de
