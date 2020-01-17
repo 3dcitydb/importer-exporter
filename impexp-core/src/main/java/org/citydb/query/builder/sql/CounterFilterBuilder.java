@@ -57,10 +57,14 @@ public class CounterFilterBuilder {
     }
 
     void buildCounterFilter(CounterFilter counterFilter, SQLQueryContext queryContext) throws QueryBuildException {
-        if (!databaseAdapter.getSQLAdapter().supportsFetchFirstClause())
+        if (databaseAdapter.getSQLAdapter().supportsFetchFirstClause())
             limitResultUsingFetch(counterFilter, queryContext);
         else
             limitResultUsingRowNumber(counterFilter, queryContext);
+
+        // add first_rows hint for Oracle
+        if (counterFilter.isSetCount() && databaseAdapter.getConnectionDetails().getDatabaseType() == DatabaseType.ORACLE)
+            queryContext.getSelect().addOptimizerHint("first_rows(" + counterFilter.getCount() + ")");
     }
 
     private void limitResultUsingFetch(CounterFilter counterFilter, SQLQueryContext queryContext) throws QueryBuildException {
@@ -83,10 +87,6 @@ public class CounterFilterBuilder {
         select.addProjection(new Function("row_number() over (" +
                 "order by " + orderBy.stream().map(OrderByToken::toString).collect(Collectors.joining(", ")) +
                 ")", "rn_limit", false));
-
-        // add first_rows hint for Oracle
-        if (counterFilter.isSetCount() && databaseAdapter.getConnectionDetails().getDatabaseType() == DatabaseType.ORACLE)
-            select.addOptimizerHint("first_rows(" + counterFilter.getCount() + ")");
 
         Table table = new Table(select);
         Select outer = new Select().addOrderBy(new OrderByToken(table.getColumn("rn_limit")));
