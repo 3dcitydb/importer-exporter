@@ -57,6 +57,9 @@ public class CounterFilterBuilder {
     }
 
     void buildCounterFilter(CounterFilter counterFilter, SQLQueryContext queryContext) throws QueryBuildException {
+        if (!counterFilter.isSetCount() && !counterFilter.isSetStartIndex())
+            throw new QueryBuildException("Either count or startIndex must be defined for a counter filter.");
+
         if (databaseAdapter.getSQLAdapter().supportsFetchFirstClause())
             limitResultUsingFetch(counterFilter, queryContext);
         else
