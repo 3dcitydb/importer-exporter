@@ -415,9 +415,8 @@ public class ComparisonOperatorBuilder {
 					//
 				}
 			}
-		}
-
-		throw new QueryBuildException("Failed to build null operator for property '" + property + "'.");
+		} else
+			throw new QueryBuildException("Failed to build null operator for property '" + property + "'.");
 	}
 
 	private String replaceWildCards(String value, char wildCard, char singleChar, char escapeChar) {
