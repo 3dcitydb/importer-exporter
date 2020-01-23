@@ -80,7 +80,7 @@
       <xs:element name="typeNames" type="FeatureTypeFilterType" minOccurs="0"/>
       <xs:element name="propertyNames" type="ProjectionFilterType" minOccurs="0"/>
       <xs:element ref="filter" minOccurs="0"/>
-      <xs:element name="count" type="CounterFilterType" minOccurs="0"/>
+      <xs:element name="limit" type="CounterFilterType" minOccurs="0"/>
       <xs:element name="lods" type="LodFilterType" minOccurs="0"/>
       <xs:element name="appearance" type="AppearanceFilterType" minOccurs="0"/>
       <xs:element name="sortBy" type="SortingType" minOccurs="0"/>
@@ -607,8 +607,8 @@
 
   <xs:complexType name="CounterFilterType">
     <xs:sequence>
-      <xs:element name="lowerLimit" type="xs:nonNegativeInteger" minOccurs="0"/>
-      <xs:element name="upperLimit" type="xs:nonNegativeInteger"/>
+      <xs:element name="count" type="xs:nonNegativeInteger" minOccurs="0"/>
+      <xs:element name="startIndex" type="xs:nonNegativeInteger" minOccurs="0"/>
     </xs:sequence>
   </xs:complexType>
 
