@@ -228,7 +228,8 @@ public class SQLQueryBuilder {
 			Select inner = queryContext.getSelect();
 			List<ProjectionToken> projection = inner.getProjection();
 			List<OrderByToken> orderBy = inner.getOrderBy();
-			inner.unsetOrderBy();
+			if (!query.isSetCounterFilter())
+				inner.unsetOrderBy();
 
 			// add all order by tokens to the projection clause. use aliases for the
 			// column names since sorting may be requested for identical columns
