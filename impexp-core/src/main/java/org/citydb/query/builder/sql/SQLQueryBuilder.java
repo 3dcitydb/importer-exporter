@@ -76,6 +76,10 @@ public class SQLQueryBuilder {
 	}
 
 	public Select buildQuery(Query query) throws QueryBuildException {
+		return buildQuery(query, null);
+	}
+
+	public Select buildQuery(Query query, SQLQueryContext queryContext) throws QueryBuildException {
 		// TODO: we need some consistency check for the query (possibly query.isValid())?
 
 		FeatureTypeFilter typeFilter = query.getFeatureTypeFilter();
@@ -94,7 +98,8 @@ public class SQLQueryBuilder {
 
 		SchemaPathBuilder builder = new SchemaPathBuilder(databaseAdapter.getSQLAdapter(), schemaName, buildProperties);
 		FeatureType featureType = schemaMapping.getCommonSuperType(typeFilter.getFeatureTypes());
-		SQLQueryContext queryContext = builder.createQueryContext(featureType);
+		if (queryContext == null)
+			queryContext = builder.createQueryContext(featureType);
 
 		// feature type filter
 		FeatureTypeFilterBuilder typeBuilder = new FeatureTypeFilterBuilder(builder);
@@ -141,7 +146,7 @@ public class SQLQueryBuilder {
 		return queryContext.getSelect();
 	}
 
-	public SQLQueryContext buildSchemaPath(SchemaPath schemaPath, boolean addProjection, boolean useLeftJoins) throws QueryBuildException {
+	public SQLQueryContext buildSchemaPath(SchemaPath schemaPath, boolean useLeftJoins, boolean optimizeJoins) throws QueryBuildException {
 		SchemaPathBuilder builder = new SchemaPathBuilder(databaseAdapter.getSQLAdapter(), schemaName, buildProperties);
 		SQLQueryContext queryContext = builder.createQueryContext(schemaPath.getFirstNode().getPathElement());
 
@@ -161,12 +166,9 @@ public class SQLQueryBuilder {
 		if (queryContext.hasPredicates())
 			queryContext.applyPredicates();
 
-		// add projection
-		if (addProjection)
-			addProjection(builder, queryContext);
-
 		// remove unnecessary joins
-		optimizeJoins(builder, queryContext);
+		if (optimizeJoins)
+			optimizeJoins(builder, queryContext);
 
 		return queryContext;
 	}
@@ -266,7 +268,7 @@ public class SQLQueryBuilder {
 		}
 	}
 
-	protected void addProjection(SchemaPathBuilder builder, SQLQueryContext queryContext) throws QueryBuildException {
+	private void addProjection(SchemaPathBuilder builder, SQLQueryContext queryContext) throws QueryBuildException {
 		Select select = queryContext.getSelect();
 		Table cityObject = builder.joinCityObjectTable(queryContext);
 

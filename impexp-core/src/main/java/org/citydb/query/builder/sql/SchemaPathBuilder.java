@@ -88,7 +88,6 @@ import java.util.Map;
 public class SchemaPathBuilder {
 	private final AbstractSQLAdapter sqlAdapter;
 	private final String schemaName;
-	private final BuildProperties buildProperties;
 	private final DefaultAliasGenerator aliasGenerator;
 
 	private Map<String, Table> tableContext;
@@ -98,7 +97,6 @@ public class SchemaPathBuilder {
 	protected SchemaPathBuilder(AbstractSQLAdapter sqlAdapter, String schemaName, BuildProperties buildProperties) {
 		this.sqlAdapter = sqlAdapter;
 		this.schemaName = schemaName;
-		this.buildProperties = buildProperties;
 		aliasGenerator = buildProperties.aliasGenerator;
 	}
 
