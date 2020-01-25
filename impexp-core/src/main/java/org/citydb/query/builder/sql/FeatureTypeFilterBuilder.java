@@ -50,16 +50,13 @@ public class FeatureTypeFilterBuilder {
 		this.builder = builder;
 	}
 
-	protected void buildFeatureTypeFilter(FeatureTypeFilter typeFilter, CityGMLVersion targetVersion, boolean forceSelection, SQLQueryContext queryContext) throws QueryBuildException {
+	protected void buildFeatureTypeFilter(FeatureTypeFilter typeFilter, CityGMLVersion targetVersion, SQLQueryContext queryContext) throws QueryBuildException {
+		if (targetVersion == null)
+			targetVersion = CityGMLVersion.DEFAULT;
+
 		List<FeatureType> featureTypes = typeFilter.getFeatureTypes(targetVersion);
 		if (featureTypes.isEmpty())
 			return;
-
-		if (!forceSelection && featureTypes.size() == 1) {
-			FeatureType featureType = featureTypes.iterator().next();
-			if (!featureType.isAbstract() && !featureType.hasSharedTable(true))
-				return;
-		}
 
 		Set<Integer> ids = new HashSet<>(featureTypes.size());
 		for (FeatureType featureType : featureTypes)
@@ -75,7 +72,7 @@ public class FeatureTypeFilterBuilder {
 			select.addSelection(ComparisonFactory.in(objectClassId, new LiteralList(ids.toArray(new Integer[0]))));
 	}
 
-	protected void buildFeatureTypeFilter(FeatureTypeFilter typeFilter, boolean forceSelection, SQLQueryContext queryContext) throws QueryBuildException {
-		buildFeatureTypeFilter(typeFilter, CityGMLVersion.DEFAULT, forceSelection, queryContext);
+	protected void buildFeatureTypeFilter(FeatureTypeFilter typeFilter, SQLQueryContext queryContext) throws QueryBuildException {
+		buildFeatureTypeFilter(typeFilter, CityGMLVersion.DEFAULT, queryContext);
 	}
 }

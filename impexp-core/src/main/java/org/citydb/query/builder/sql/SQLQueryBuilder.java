@@ -98,12 +98,13 @@ public class SQLQueryBuilder {
 
 		SchemaPathBuilder builder = new SchemaPathBuilder(databaseAdapter.getSQLAdapter(), schemaName, buildProperties);
 		FeatureType featureType = schemaMapping.getCommonSuperType(typeFilter.getFeatureTypes());
-		if (queryContext == null)
+		if (queryContext == null) {
 			queryContext = builder.createQueryContext(featureType);
 
-		// feature type filter
-		FeatureTypeFilterBuilder typeBuilder = new FeatureTypeFilterBuilder(builder);
-		typeBuilder.buildFeatureTypeFilter(typeFilter, query.getTargetVersion(), true, queryContext);
+			// feature type filter
+			FeatureTypeFilterBuilder typeBuilder = new FeatureTypeFilterBuilder(builder);
+			typeBuilder.buildFeatureTypeFilter(typeFilter, query.getTargetVersion(), queryContext);
+		}
 
 		// selection filter
 		if (query.isSetSelection()) {
@@ -159,7 +160,7 @@ public class SQLQueryBuilder {
 
 		// feature type filter
 		FeatureTypeFilterBuilder typeBuilder = new FeatureTypeFilterBuilder(builder);
-		typeBuilder.buildFeatureTypeFilter(typeFilter, false, queryContext);
+		typeBuilder.buildFeatureTypeFilter(typeFilter, queryContext);
 
 		// build path
 		builder.addSchemaPath(schemaPath, queryContext, useLeftJoins);
