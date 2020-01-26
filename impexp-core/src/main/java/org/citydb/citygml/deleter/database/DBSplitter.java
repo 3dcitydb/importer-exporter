@@ -209,7 +209,7 @@ public class DBSplitter {
 		hitsQuery.unsetSorting();
 
 		Select select = builder.buildQuery(hitsQuery)
-				.removeProjection(t -> !(t instanceof Column) || !((Column) t).getName().equals(MappingConstants.ID));
+				.removeProjectionIf(t -> !(t instanceof Column) || !((Column) t).getName().equals(MappingConstants.ID));
 
 		select = new Select().addProjection(new Function("count", new WildCardColumn(new Table(select), false)));
 		try (PreparedStatement stmt = databaseAdapter.getSQLAdapter().prepareStatement(select, connection);

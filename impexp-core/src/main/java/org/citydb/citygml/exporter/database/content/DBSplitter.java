@@ -519,7 +519,7 @@ public class DBSplitter {
 	private long getNumberMatched(Select select, Connection connection) throws SQLException {
 		Select hitsQuery = new Select(select)
 				.unsetOrderBy()
-				.removeProjection(t -> !(t instanceof Column) || !((Column) t).getName().equals(MappingConstants.ID));
+				.removeProjectionIf(t -> !(t instanceof Column) || !((Column) t).getName().equals(MappingConstants.ID));
 
 		hitsQuery = new Select().addProjection(new Function("count", new WildCardColumn(new Table(hitsQuery), false)));
 		try (PreparedStatement stmt = databaseAdapter.getSQLAdapter().prepareStatement(hitsQuery, connection);
