@@ -167,7 +167,7 @@ public class SpatialOperatorBuilder {
 		// add optimizer hint if required
 		if (databaseAdapter.getSQLAdapter().spatialPredicateRequiresNoIndexHint()
 				&& targetColumn.getName().equalsIgnoreCase(MappingConstants.ENVELOPE))
-			queryContext.getSelect().setOptimizerString("/*+ no_index(" + toTable.getAlias() + " cityobject_objectclass_fkx) */");
+			queryContext.getSelect().addOptimizerHint("no_index(" + toTable.getAlias() + " cityobject_objectclass_fkx)");
 
 		return queryContext;
 	}
@@ -267,7 +267,7 @@ public class SpatialOperatorBuilder {
 		// add optimizer hint if required
 		if (databaseAdapter.getSQLAdapter().spatialPredicateRequiresNoIndexHint()
 				&& targetColumn.getName().equalsIgnoreCase(MappingConstants.ENVELOPE))
-			queryContext.getSelect().setOptimizerString("/*+ no_index(" + toTable.getAlias() + " cityobject_objectclass_fkx) */");
+			queryContext.getSelect().addOptimizerHint("no_index(" + toTable.getAlias() + " cityobject_objectclass_fkx)");
 
 		return queryContext;
 	}
