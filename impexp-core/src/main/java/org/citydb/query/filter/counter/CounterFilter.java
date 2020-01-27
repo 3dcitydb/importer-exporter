@@ -27,26 +27,12 @@
  */
 package org.citydb.query.filter.counter;
 
-import org.citydb.query.filter.FilterException;
-
 public class CounterFilter {
 	private long count = -1;
 	private long startIndex = -1;
+	private long startId = -1;
 
 	public CounterFilter() {
-	}
-
-	public CounterFilter(long count, long startIndex) throws FilterException {
-		setCount(count);
-		setStartIndex(startIndex);
-	}
-	
-	public static CounterFilter ofCount(long count) throws FilterException {
-		return new CounterFilter(count, -1);
-	}
-
-	public static CounterFilter ofStartIndex(long startIndex) throws FilterException {
-		return new CounterFilter(-1, startIndex);
 	}
 
 	public boolean isSetCount() {
@@ -71,5 +57,19 @@ public class CounterFilter {
 
 	public void setStartIndex(long startIndex) {
 		this.startIndex = Math.max(startIndex, -1);
+		startId = -1;
+	}
+
+	public boolean isSetStartId() {
+		return startId != -1;
+	}
+
+	public long getStartId() {
+		return startId;
+	}
+
+	public void setStartId(long startId) {
+		this.startId = Math.max(startId, -1);
+		startIndex = -1;
 	}
 }

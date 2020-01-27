@@ -57,8 +57,8 @@ public class CounterFilterBuilder {
     }
 
     void buildCounterFilter(CounterFilter counterFilter, SQLQueryContext queryContext) throws QueryBuildException {
-        if (!counterFilter.isSetCount() && !counterFilter.isSetStartIndex())
-            throw new QueryBuildException("Either count or startIndex must be defined for a counter filter.");
+        if (!counterFilter.isSetCount() && !counterFilter.isSetStartIndex() && !counterFilter.isSetStartId())
+            throw new QueryBuildException("Invalid counter filter configuration.");
 
         if (databaseAdapter.getSQLAdapter().supportsFetchFirstClause())
             limitResultUsingFetch(counterFilter, queryContext);
@@ -71,7 +71,7 @@ public class CounterFilterBuilder {
     }
 
     private void limitResultUsingFetch(CounterFilter counterFilter, SQLQueryContext queryContext) throws QueryBuildException {
-        Select select = prepareSelect(queryContext);
+        Select select = prepareSelect(counterFilter, queryContext);
 
         if (counterFilter.isSetStartIndex())
             select.withOffset(new OffsetToken(counterFilter.getStartIndex()));
@@ -81,7 +81,7 @@ public class CounterFilterBuilder {
     }
 
     private void limitResultUsingRowNumber(CounterFilter counterFilter, SQLQueryContext queryContext) throws QueryBuildException {
-        Select select = prepareSelect(queryContext);
+        Select select = prepareSelect(counterFilter, queryContext);
 
         List<ProjectionToken> projection = select.getProjection();
         List<OrderByToken> orderBy = select.getOrderBy();
@@ -112,12 +112,18 @@ public class CounterFilterBuilder {
         queryContext.setFromTable(table);
     }
 
-    private Select prepareSelect(SQLQueryContext queryContext) throws QueryBuildException {
+    private Select prepareSelect(CounterFilter counterFilter, SQLQueryContext queryContext) throws QueryBuildException {
         Select select = queryContext.getSelect();
         Table cityObject = builder.joinCityObjectTable(queryContext);
-        boolean found = false;
 
-        // check if a sorting by the ID column is already defined
+        // add start id filter
+        if (counterFilter.isSetStartId()) {
+            select.addSelection(ComparisonFactory.greaterThan(cityObject.getColumn(MappingConstants.ID),
+                    new LongLiteral(counterFilter.getStartId())));
+        }
+
+        // make sure we sort by ids
+        boolean found = false;
         for (OrderByToken token : select.getOrderBy()) {
             Column column = token.getColumn();
             if (column.getName().equalsIgnoreCase(MappingConstants.ID)
@@ -128,7 +134,6 @@ public class CounterFilterBuilder {
             }
         }
 
-        // if not, then add unique sorting by ID column
         if (!found)
             select.addOrderBy(new OrderByToken(cityObject.getColumn(MappingConstants.ID)));
 
