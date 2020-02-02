@@ -135,14 +135,16 @@ public class ADEObject extends KmlGenericObject{
 
 				try {
 					String query = adeKmlExporter.getSurfaceGeometryQuery(currentLod);
-					brepIdsQueryPs = connection.prepareStatement(query, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
-					for (int i = 1; i <= getParameterCount(query); i++)
-						brepIdsQueryPs.setLong(i, work.getId());
+					if (query != null) {
+						brepIdsQueryPs = connection.prepareStatement(query, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+						for (int i = 1; i <= getParameterCount(query); i++)
+							brepIdsQueryPs.setLong(i, work.getId());
 
-					brepIdsQueryRs = brepIdsQueryPs.executeQuery();
+						brepIdsQueryRs = brepIdsQueryPs.executeQuery();
 
-					if (brepIdsQueryRs.isBeforeFirst()) {
-						hasBrep = true; // result set not empty
+						if (brepIdsQueryRs.isBeforeFirst()) {
+							hasBrep = true; // result set not empty
+						}
 					}
 
 					// check for point or curve
