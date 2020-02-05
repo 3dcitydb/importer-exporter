@@ -27,8 +27,6 @@
  */
 package org.citydb.registry;
 
-import java.util.concurrent.ConcurrentHashMap;
-
 import org.citydb.ade.CityDBADEContext;
 import org.citydb.database.DatabaseController;
 import org.citydb.database.schema.mapping.SchemaMapping;
@@ -36,6 +34,8 @@ import org.citydb.event.EventDispatcher;
 import org.citygml4j.CityGMLContext;
 import org.citygml4j.builder.jaxb.CityGMLBuilder;
 import org.citygml4j.model.citygml.ade.ADEException;
+
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ObjectRegistry {
 	private static ObjectRegistry instance;
@@ -73,12 +73,25 @@ public class ObjectRegistry {
 		properties.put(name, object);
 	}
 
+	public void register(Object object) {
+		register(object.getClass().getName(), object);
+	}
+
 	public void unregister(String name) {
 		properties.remove(name);
 	}
 
+	public void unregister(Class<?> type) {
+		unregister(type.getName());
+	}
+
 	public Object lookup(String name) {
 		return properties != null ? properties.get(name) : null;
+	}
+
+	public <T> T lookup(Class<T> type) {
+		Object object = lookup(type.getName());
+		return type.isInstance(object) ? type.cast(object) : null;
 	}
 
 	public EventDispatcher getEventDispatcher() {
