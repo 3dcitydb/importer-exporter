@@ -38,9 +38,9 @@ public class BuildProperties {
 	protected final DefaultAliasGenerator aliasGenerator;
 	private List<String> projectionColumns;
 	private boolean suppressDistinct;
+	private boolean optimizeJoins = true;
 
 	private BuildProperties() {
-		// just to thwart instantiation
 		aliasGenerator = new DefaultAliasGenerator();
 	}
 	
@@ -85,6 +85,15 @@ public class BuildProperties {
 
 	public BuildProperties suppressDistinct(boolean suppressDistinct) {
 		this.suppressDistinct = suppressDistinct;
+		return this;
+	}
+
+	public boolean isOptimizeJoins() {
+		return optimizeJoins;
+	}
+
+	public BuildProperties optimizeJoins(boolean optimizeJoins) {
+		this.optimizeJoins = optimizeJoins;
 		return this;
 	}
 }

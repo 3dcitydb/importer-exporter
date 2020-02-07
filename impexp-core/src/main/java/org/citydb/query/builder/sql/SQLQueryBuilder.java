@@ -61,7 +61,6 @@ public class SQLQueryBuilder {
 	private final SchemaMapping schemaMapping;
 	private final AbstractDatabaseAdapter databaseAdapter;
 	private final String schemaName;
-
 	private final BuildProperties buildProperties;
 
 	public SQLQueryBuilder(SchemaMapping schemaMapping, AbstractDatabaseAdapter databaseAdapter, BuildProperties buildProperties) {
@@ -120,7 +119,8 @@ public class SQLQueryBuilder {
 		}
 
 		// remove unnecessary joins
-		optimizeJoins(builder, queryContext);
+		if (buildProperties.isOptimizeJoins())
+			optimizeJoins(builder, queryContext);
 
 		// lod filter
 		if (query.isSetLodFilter()) {
@@ -147,7 +147,7 @@ public class SQLQueryBuilder {
 		return queryContext.getSelect();
 	}
 
-	public SQLQueryContext buildSchemaPath(SchemaPath schemaPath, boolean useLeftJoins, boolean optimizeJoins) throws QueryBuildException {
+	public SQLQueryContext buildSchemaPath(SchemaPath schemaPath, boolean useLeftJoins) throws QueryBuildException {
 		SchemaPathBuilder builder = new SchemaPathBuilder(databaseAdapter.getSQLAdapter(), schemaName, buildProperties);
 		SQLQueryContext queryContext = builder.createQueryContext(schemaPath.getFirstNode().getPathElement());
 
@@ -168,7 +168,7 @@ public class SQLQueryBuilder {
 			queryContext.applyPredicates();
 
 		// remove unnecessary joins
-		if (optimizeJoins)
+		if (buildProperties.isOptimizeJoins())
 			optimizeJoins(builder, queryContext);
 
 		return queryContext;
