@@ -39,6 +39,7 @@ import org.citydb.sqlbuilder.schema.Table;
 import org.citydb.sqlbuilder.select.FetchToken;
 import org.citydb.sqlbuilder.select.OffsetToken;
 import org.citydb.sqlbuilder.select.OrderByToken;
+import org.citydb.sqlbuilder.select.PredicateToken;
 import org.citydb.sqlbuilder.select.ProjectionToken;
 import org.citydb.sqlbuilder.select.Select;
 import org.citydb.sqlbuilder.select.operator.comparison.ComparisonFactory;
@@ -118,8 +119,31 @@ public class CounterFilterBuilder {
 
         // add start id filter
         if (counterFilter.isSetStartId()) {
-            select.addSelection(ComparisonFactory.greaterThan(cityObject.getColumn(MappingConstants.ID),
-                    new LongLiteral(counterFilter.getStartId())));
+            Column column = cityObject.getColumn(MappingConstants.ID);
+            LongLiteral literal = new LongLiteral(counterFilter.getStartId());
+
+            PredicateToken predicate;
+            switch (counterFilter.getStartIdComparisonOperator()) {
+                case EQUAL_TO:
+                    predicate = ComparisonFactory.equalTo(column, literal);
+                    break;
+                case NOT_EQUAL_TO:
+                    predicate = ComparisonFactory.notEqualTo(column, literal);
+                    break;
+                case LESS_THAN:
+                    predicate = ComparisonFactory.lessThan(column, literal);
+                    break;
+                case LESS_THAN_OR_EQUAL_TO:
+                    predicate = ComparisonFactory.lessThanOrEqualTo(column, literal);
+                    break;
+                case GREATER_THAN_OR_EQUAL_TO:
+                    predicate = ComparisonFactory.greaterThanOrEqualTo(column, literal);
+                    break;
+                default:
+                    predicate = ComparisonFactory.greaterThan(column, literal);
+            }
+
+            select.addSelection(predicate);
         }
 
         // make sure we sort by ids

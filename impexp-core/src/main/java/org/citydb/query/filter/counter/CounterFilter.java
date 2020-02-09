@@ -27,10 +27,13 @@
  */
 package org.citydb.query.filter.counter;
 
+import org.citydb.query.filter.selection.operator.comparison.ComparisonOperatorName;
+
 public class CounterFilter {
 	private long count = -1;
 	private long startIndex = -1;
 	private long startId = -1;
+	private ComparisonOperatorName comparisonOperator;
 
 	public CounterFilter() {
 	}
@@ -40,7 +43,7 @@ public class CounterFilter {
 	}
 	
 	public long getCount() {
-		return count;
+		return isSetCount() ? count : 0;
 	}
 
 	public void setCount(long count) {
@@ -52,7 +55,7 @@ public class CounterFilter {
 	}
 
 	public long getStartIndex() {
-		return startIndex;
+		return isSetStartIndex() ? startIndex : 0;
 	}
 
 	public void setStartIndex(long startIndex) {
@@ -65,11 +68,20 @@ public class CounterFilter {
 	}
 
 	public long getStartId() {
-		return startId;
+		return isSetStartId() ? startId : 0;
 	}
 
 	public void setStartId(long startId) {
 		this.startId = Math.max(startId, -1);
 		startIndex = -1;
+	}
+
+	public void setStartId(long startId, ComparisonOperatorName comparisonOperator) {
+		setStartId(startId);
+		this.comparisonOperator = comparisonOperator;
+	}
+
+	public ComparisonOperatorName getStartIdComparisonOperator() {
+		return comparisonOperator != null ? comparisonOperator : ComparisonOperatorName.GREATER_THAN;
 	}
 }

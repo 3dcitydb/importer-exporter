@@ -170,7 +170,7 @@ public class ComparisonOperatorBuilder {
 			queryContext.addPredicate(ComparisonFactory.lessThanOrEqualTo(leftOperand, rightOperand, negate));
 			break;
 		case GREATER_THAN_OR_EQUAL_TO:
-			queryContext.addPredicate(ComparisonFactory.greaterThanOrEqual(leftOperand, rightOperand, negate));
+			queryContext.addPredicate(ComparisonFactory.greaterThanOrEqualTo(leftOperand, rightOperand, negate));
 			break;
 		default:
 			break;			
