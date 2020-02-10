@@ -258,8 +258,10 @@ public class DBSplitter {
 
 					if (query.isSetCounterFilter() && query.getCounterFilter().isSetCount()) {
 						long count = query.getCounterFilter().getCount();
-						if (count < hits) {
-							log.info("Exporting at maximum " + count + " top-level feature(s) due to counter settings.");
+						long startIndex = query.getCounterFilter().isSetStartIndex() ?query.getCounterFilter().getStartIndex() : 0;
+						long numberReturned = Math.min(Math.max(hits - startIndex, 0), count);
+						if (numberReturned < hits) {
+							log.info("Exporting " + numberReturned + " top-level feature(s) due to counter settings.");
 							hits = count;
 						}
 					}
@@ -360,8 +362,9 @@ public class DBSplitter {
 				groupQuery.setSelection(new SelectionFilter(predicate));
 			}
 
-			// unset sorting as it is not required on this query
+			// unset sorting and counter settings
 			groupQuery.unsetSorting();
+			groupQuery.unsetCounterFilter();
 
 			// create query statement
 			Select select = builder.buildQuery(groupQuery);
@@ -388,7 +391,7 @@ public class DBSplitter {
 			// calculate hits
 			if (calculateNumberMatched) {
 				log.debug("Calculating the number of matching group members...");
-				hits = getNumberMatched(groupQuery, connection);
+				hits = getNumberMatched(select, connection);
 			}
 
 			// issue query
