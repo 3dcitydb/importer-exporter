@@ -1939,6 +1939,8 @@ public abstract class KmlGenericObject {
 						if (selectedTheme.equalsIgnoreCase(theme)) {
 							long textureImageId = rs.getLong("tex_image_id");
 							String texImageUri = rs.getString("tex_image_uri");
+							String imageType = texImageUri.substring(texImageUri.lastIndexOf('.') + 1);
+							texImageUri = "img_" + textureImageId + "." + imageType;
 							Object texCoordsObject = rs.getObject("texture_coordinates");
 							boolean hasTexture = false;
 
