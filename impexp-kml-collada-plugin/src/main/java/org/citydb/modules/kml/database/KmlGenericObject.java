@@ -1955,7 +1955,7 @@ public abstract class KmlGenericObject {
 								texImageUri = "_" + texImageUri.substring(fileSeparatorIndex + 1); // for example: _tex4712047.jpeg
 
 								if ((getUnsupportedTexImageId(texImageUri) == -1) && (getTexImage(texImageUri) == null)) { 
-									byte[] imageBytes = textureExportAdapter.getInByteArray(textureImageId, texImageUri);
+									byte[] imageBytes = textureExportAdapter.getInByteArray(textureImageId, rs.getString("tex_image_uri"));
 									if (imageBytes != null) {
 										imageReader.setSupportRGB(generateTextureAtlas);
 
