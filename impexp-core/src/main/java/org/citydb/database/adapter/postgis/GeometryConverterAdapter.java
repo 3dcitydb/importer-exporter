@@ -27,12 +27,6 @@
  */
 package org.citydb.database.adapter.postgis;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Types;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.citydb.config.geometry.ElementType;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
@@ -48,6 +42,12 @@ import org.postgis.PGbox3d;
 import org.postgis.PGgeometry;
 import org.postgis.Point;
 import org.postgis.Polygon;
+
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Types;
+import java.util.ArrayList;
+import java.util.List;
 
 public class GeometryConverterAdapter extends AbstractGeometryConverterAdapter {
 

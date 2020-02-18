@@ -97,19 +97,19 @@ public abstract class AbstractDatabaseAdapter {
 	}
 
 	public List<DatabaseConnectionWarning> getConnectionWarnings() {
-		return connectionWarnings != null ? connectionWarnings : Collections.<DatabaseConnectionWarning>emptyList();
+		return connectionWarnings != null ? connectionWarnings : Collections.emptyList();
 	}
 
 	public void addConnectionWarning(DatabaseConnectionWarning connectionWarning) {
 		if (connectionWarnings == null)
-			connectionWarnings = new ArrayList<DatabaseConnectionWarning>();
+			connectionWarnings = new ArrayList<>();
 		
 		connectionWarnings.add(connectionWarning);
 	}
 	
 	public void addConnectionWarnings(List<DatabaseConnectionWarning> connectionWarnings) {
 		if (this.connectionWarnings == null)
-			this.connectionWarnings = new ArrayList<DatabaseConnectionWarning>(connectionWarnings);
+			this.connectionWarnings = new ArrayList<>(connectionWarnings);
 		else
 			this.connectionWarnings.addAll(connectionWarnings);
 	}
