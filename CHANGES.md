@@ -3,6 +3,11 @@ Change Log
 
 ### Pending changes
 
+* Support for sorting the top-level features in a CityGML export based on one or more simple thematic attribute.
+ It should be possible to define the sorting criteria using the XML query language, e.g. as new `<sortBy>` element. [#86](https://github.com/3dcitydb/importer-exporter/pull/86)
+
+##### Additions
+
 * Optimized COLLADA/KML/glTF export to prevent redundant texture as well as visualization files of implicit geometries
 from being exported repeatedly leading to file redundancy. This includes the following changes:
 
@@ -14,9 +19,6 @@ from being exported repeatedly leading to file redundancy. This includes the fol
   The `.kml` file in each tile e.g. `X/Y` shall point to these files, so that the 3DCityDB-Web-Map-Client can visualize
   them as usual. 
   Empty folders such as `X/Y/<gmlid>` that used to contain the now relocated `.dae` and `.gltf` files shall be removed.
-
-* Support for sorting the top-level features in a CityGML export based on one or more simple thematic attribute.
- It should be possible to define the sorting criteria using the XML query language, e.g. as new `<sortBy>` element. [#86](https://github.com/3dcitydb/importer-exporter/pull/86)
 
 ### 4.2.2 - 2019-08-06
 
