@@ -536,7 +536,8 @@ public class KmlExportWorker extends Worker<KmlSplittingResult> {
 
 			kmlExporterManager.print(colladaBundle,
 					objectGroup.getId(),					
-					objectGroup.getBalloonSettings().isBalloonContentInSeparateFile());
+					objectGroup.getBalloonSettings().isBalloonContentInSeparateFile(),
+					objectGroup.getImplicitId());
 		}
 		catch (Exception e) {
 			Logger.getInstance().logStackTrace(e);
