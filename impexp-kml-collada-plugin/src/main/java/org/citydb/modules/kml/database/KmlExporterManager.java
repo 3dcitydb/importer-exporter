@@ -380,7 +380,7 @@ public class KmlExporterManager {
 		}
 	}
 
-	public void print(ColladaBundle colladaBundle, long id, boolean balloonInSeparateFile) throws JAXBException, 
+	public void print(ColladaBundle colladaBundle, long id, boolean balloonInSeparateFile, String implicitId) throws JAXBException,
 	FileNotFoundException,
 	IOException,
 	SQLException {
@@ -509,7 +509,7 @@ public class KmlExporterManager {
 
 			// marshalling in parallel threads should save some time
 			StringWriter sw = new StringWriter();
-			setInitFromOfColladaImages(colladaBundle);
+			setInitFromOfColladaImages(colladaBundle, implicitId);
 			colladaMarshaller.marshal(colladaBundle.getCollada(), sw);
 			colladaBundle.setColladaAsString(sw.toString());
 			colladaBundle.setCollada(null); // free heap space
@@ -577,23 +577,36 @@ public class KmlExporterManager {
 
 			// --------------- create subfolder ---------------
 			File buildingDirectory = new File(path, String.valueOf(colladaBundle.getId()));
-			if (!buildingDirectory.exists()) {
+			if (!buildingDirectory.exists() && implicitId == null) {
 				buildingDirectory.mkdir();
 			}
 
 			// ----------------- model saving -----------------
 			File colladaModelFile = new File(buildingDirectory, colladaBundle.getGmlId() + ".dae");
 			File gltfModelFile = new File(buildingDirectory, colladaBundle.getGmlId() + ".gltf");
+			File implicitGeometryExport = new File(buildingDirectory.getParentFile().getParentFile().getParentFile().getParentFile() + File.separator + "ImplicitGeometry");
+			if (implicitId != null) {
+				if (!implicitGeometryExport.exists()) {
+					implicitGeometryExport.mkdir();
+				}
+				colladaModelFile = new File(implicitGeometryExport, implicitId + ".dae");
+				gltfModelFile = new File(implicitGeometryExport, implicitId + ".gltf");
+			}
+
 			FileOutputStream fos = new FileOutputStream(colladaModelFile);
-			setInitFromOfColladaImages(colladaBundle);
+			setInitFromOfColladaImages(colladaBundle, implicitId);
 			colladaMarshaller.marshal(colladaBundle.getCollada(), fos);
 			fos.close();
 
 			// ----------------- create glTF without embedded textures-----------------
 			boolean exportGltfV1 = config.getProject().getKmlExporter().isExportGltfV1();
 			if (config.getProject().getKmlExporter().isCreateGltfModel() && !config.getProject().getKmlExporter().isEmbedTexturesInGltfFiles()) {
-				convertColladaToglTF(colladaBundle, buildingDirectory, colladaModelFile, gltfModelFile, exportGltfV1);
-			}	        
+				if (implicitId != null) {
+					convertColladaToglTF(colladaBundle, implicitGeometryExport, colladaModelFile, gltfModelFile, exportGltfV1);
+				} else {
+					convertColladaToglTF(colladaBundle, buildingDirectory, colladaModelFile, gltfModelFile, exportGltfV1);
+				}
+			}
 
 			// ----------------- image saving -----------------
 			if (colladaBundle.getUnsupportedTexImageIds() != null) {
@@ -601,7 +614,7 @@ public class KmlExporterManager {
 				Iterator<String> iterator = keySet.iterator();
 				while (iterator.hasNext()) {
 					String imageFilename = iterator.next();
-					String fileName = buildingDirectory.getParent() + File.separator + imageFilename;
+					String fileName = getTextureExportLocation(buildingDirectory, implicitId) + File.separator + imageFilename;
 					textureExportAdapter.writeToFile(colladaBundle.getUnsupportedTexImageIds().get(imageFilename), imageFilename, fileName);
 				}
 			}
@@ -614,26 +627,30 @@ public class KmlExporterManager {
 					BufferedImage texImage = colladaBundle.getTexImages().get(imageFilename).getBufferedImage();
 					String imageType = imageFilename.substring(imageFilename.lastIndexOf('.') + 1);
 
-					File imageFile = new File(buildingDirectory.getParent(), imageFilename);
+					File imageFile = new File(getTextureExportLocation(buildingDirectory, null), imageFilename);
 					if (!imageFile.exists()) // avoid overwriting and access conflicts
-						ImageIO.write(texImage, imageType, imageFile);					
+						ImageIO.write(texImage, imageType, imageFile);
 				}
 			}
 
 			// ----------------- create glTF with embedded textures-----------------
 			if (config.getProject().getKmlExporter().isCreateGltfModel() && config.getProject().getKmlExporter().isEmbedTexturesInGltfFiles()) {
-				convertColladaToglTF(colladaBundle, buildingDirectory, colladaModelFile, gltfModelFile, exportGltfV1);
+				if (implicitId != null) {
+					convertColladaToglTF(colladaBundle, implicitGeometryExport, colladaModelFile, gltfModelFile, exportGltfV1);
+				} else {
+					convertColladaToglTF(colladaBundle, buildingDirectory, colladaModelFile, gltfModelFile, exportGltfV1);
+				}
 				if (config.getProject().getKmlExporter().isNotCreateColladaFiles() && gltfModelFile.exists()) {
 					Set<String> keySet = colladaBundle.getTexImages().keySet();
 					Iterator<String> iterator = keySet.iterator();
 					while (iterator.hasNext()) {
 						String imageFilename = iterator.next();
-						File imageFile = new File(buildingDirectory.getParent(), imageFilename);
-						if (imageFile.exists()) 
-							imageFile.delete();					
+						File imageFile = new File(getTextureExportLocation(buildingDirectory, implicitId), imageFilename);
+						if (imageFile.exists())
+							imageFile.delete();
 					}
 				}
-			}			
+			}
 
 			// ----------------- balloon saving -----------------
 			if (colladaBundle.getExternalBalloonFileContent() != null) {
@@ -655,12 +672,17 @@ public class KmlExporterManager {
 	}
 
 	// set paths to images to the same folder of tiles
-	private void setInitFromOfColladaImages(ColladaBundle colladaBundle) {
+	private void setInitFromOfColladaImages(ColladaBundle colladaBundle, String implicitId) {
 		List colladaObj = colladaBundle.getCollada().getLibraryAnimationsOrLibraryAnimationClipsOrLibraryCameras();
-		if (colladaObj.size() > 0 && colladaObj.get(0) instanceof LibraryImages) {
-			List<Image> collada_images = ((LibraryImages) colladaObj.get(0)).getImage();
-			for (Image colladaImage : collada_images) {
-				colladaImage.setInitFrom(".." + File.separator + colladaImage.getInitFrom());
+		if (colladaObj.size() > 0) {
+			for (Object obj : colladaObj) {
+				if (obj instanceof LibraryImages) {
+					List<Image> collada_images = ((LibraryImages) obj).getImage();
+					for (Image colladaImage : collada_images) {
+						colladaImage.setInitFrom(getTextureExportLocation(null, implicitId) + File.separator + colladaImage.getInitFrom());
+					}
+					break;
+				}
 			}
 		}
 	}
@@ -669,7 +691,7 @@ public class KmlExporterManager {
 		String collada2gltfPath = config.getProject().getKmlExporter().getPathOfGltfConverter();
 		File collada2gltfFile = new File(ClientConstants.IMPEXP_HOME.resolve(collada2gltfPath).toString());
 		if (collada2gltfFile.exists()) {
-			ProcessBuilder pb = new ProcessBuilder(collada2gltfFile.getAbsolutePath(), "-i", colladaBundle.getGmlId() + ".dae", "-o", gltfModelFile.getAbsolutePath(), "-v", exportGltfV1 ? "1.0" : "2.0");
+			ProcessBuilder pb = new ProcessBuilder(collada2gltfFile.getAbsolutePath(), "-i", colladaModelFile.getAbsolutePath(), "-o", gltfModelFile.getAbsolutePath(), "-v", exportGltfV1 ? "1.0" : "2.0");
 			pb.directory(buildingDirectory);
 			try {
 				Process process = pb.start();
@@ -682,6 +704,40 @@ public class KmlExporterManager {
 				}
 			}
 		}
+	}
+
+	public String getTextureExportLocation(File buildingDirectory, String implicitId) {
+		String result = "";
+		if (implicitId != null) {
+			if (buildingDirectory == null) {
+				result = "..";
+				if (config.getProject().getKmlExporter().isExportAsKmz()) {
+					result += File.separator + "..";
+				}
+			} else {
+				File dir = buildingDirectory.getParentFile();
+				if (config.getProject().getKmlExporter().isExportAsKmz()) {
+					dir = dir.getParentFile();
+				}
+				result = dir.toString();
+			}
+		} else {
+			if (buildingDirectory == null) {
+				result = ".." + File.separator + ".." + File.separator + ".." + File.separator + "..";
+				if (config.getProject().getKmlExporter().isExportAsKmz()) {
+					result += File.separator + "..";
+				}
+			} else {
+				File dir = buildingDirectory.getParentFile().getParentFile().getParentFile().getParentFile();
+				if (config.getProject().getKmlExporter().isExportAsKmz()) {
+					dir = dir.getParentFile();
+				}
+				result = dir.toString();
+			}
+		}
+
+		result += File.separator + "appearance";
+		return result;
 	}
 }
 

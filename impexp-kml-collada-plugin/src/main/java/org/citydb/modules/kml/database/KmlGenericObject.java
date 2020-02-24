@@ -130,6 +130,7 @@ import java.awt.RenderingHints;
 import java.awt.Transparency;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.sql.Connection;
@@ -202,6 +203,8 @@ public abstract class KmlGenericObject {
 	private SimpleDateFormat dateFormatter;
 	private final ImageReader imageReader;
 
+	protected String implicitId;
+
 	protected KmlGenericObject(Connection connection,
 			Query query,
 			KmlExporterManager kmlExporterManager,
@@ -271,6 +274,8 @@ public abstract class KmlGenericObject {
 	public String getGmlId() {
 		return gmlId;
 	}
+
+	public String getImplicitId() { return this.implicitId; }
 
 	protected void updateOrigins(double x, double y, double z) {
 		// update origin and list of lowest points
@@ -1808,6 +1813,7 @@ public abstract class KmlGenericObject {
 			}
 
 			boolean isImplicit = transformer != null;
+			this.implicitId = (isImplicit ? (rootId + "") : null);
 
 			// skip closure surfaces
 			int surfaceTypeID = _rs.getInt("objectclass_id");
@@ -1939,13 +1945,13 @@ public abstract class KmlGenericObject {
 						if (selectedTheme.equalsIgnoreCase(theme)) {
 							long textureImageId = rs.getLong("tex_image_id");
 							String texImageUri = rs.getString("tex_image_uri");
-							String imageType = texImageUri.substring(texImageUri.lastIndexOf('.') + 1);
-							texImageUri = "img_" + textureImageId + "." + imageType;
 							Object texCoordsObject = rs.getObject("texture_coordinates");
 							boolean hasTexture = false;
 
 							// textures have priority
 							if (texImageUri != null && texImageUri.trim().length() != 0 && texCoordsObject != null && surfaceInfo != null) {
+								String imageType = texImageUri.substring(texImageUri.lastIndexOf('.') + 1);
+								texImageUri = "img_" + textureImageId + "." + imageType;
 								GeometryObject texCoordsGeometry = geometryConverterAdapter.getPolygon(texCoordsObject);
 								texImageUri = texImageUri.replaceAll(" ", "_"); //replace spaces with underscores
 								hasTexture = true;
@@ -2081,15 +2087,17 @@ public abstract class KmlGenericObject {
 		model.setOrientation(orientation);
 
 		LinkType link = kmlFactory.createLinkType();
-		if (config.getProject().getKmlExporter().isOneFilePerObject() &&
-				!config.getProject().getKmlExporter().isExportAsKmz() &&
-				query.isSetTiling())
-		{
-			link.setHref(getGmlId() + ".dae");
-		}
-		else {
-			// File.separator would be wrong here, it MUST be "/"
-			link.setHref(getId() + "/" + getGmlId() + ".dae");
+		if (this.implicitId != null) {
+			link.setHref(".." + File.separator + ".." + File.separator + ".." + File.separator + "ImplicitGeometry" + File.separator + this.implicitId + ".dae");
+		} else {
+			if (config.getProject().getKmlExporter().isOneFilePerObject() &&
+					!config.getProject().getKmlExporter().isExportAsKmz() &&
+					query.isSetTiling()) {
+				link.setHref(getGmlId() + ".dae");
+			} else {
+				// File.separator would be wrong here, it MUST be "/"
+				link.setHref(getId() + "/" + getGmlId() + ".dae");
+			}
 		}
 		model.setLink(link);
 

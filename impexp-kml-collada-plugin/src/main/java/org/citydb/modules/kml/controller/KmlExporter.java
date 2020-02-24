@@ -359,6 +359,13 @@ public class KmlExporter implements EventHandler {
 		if (!ADEExtensionManager.getInstance().getEnabledExtensions().isEmpty())
 			log.warn("NOTE: This operation does not work on ADE features.");
 
+		// directory to store texture images
+		// (in order to prevent textures of implicit geometries repeatedly exported, but also for all textures)
+		File implicitGeometryAppearanceDirectory = new File(path, "appearance");
+		if (! implicitGeometryAppearanceDirectory.exists()) {
+			implicitGeometryAppearanceDirectory.mkdir();
+		}
+
 		long start = System.currentTimeMillis();
 
 		// iterate over tiles
