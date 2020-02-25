@@ -2,7 +2,7 @@
  * 3D City Database - The Open Source CityGML Database
  * http://www.3dcitydb.org/
  *
- * Copyright 2013 - 2019
+ * Copyright 2013 - 2020
  * Chair of Geoinformatics
  * Technical University of Munich, Germany
  * https://www.gis.bgu.tum.de/
@@ -25,33 +25,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.citydb.database.adapter.postgis;
 
-import org.citydb.config.project.database.Workspace;
-import org.citydb.database.adapter.AbstractDatabaseAdapter;
-import org.citydb.database.adapter.AbstractWorkspaceManagerAdapter;
+package org.citydb.gui.components.common;
 
-import java.sql.Connection;
+import javax.swing.text.NumberFormatter;
+import java.text.NumberFormat;
+import java.text.ParseException;
 
-public class WorkspaceManagerAdapter extends AbstractWorkspaceManagerAdapter {
-	
-	protected WorkspaceManagerAdapter(AbstractDatabaseAdapter databaseAdapter) {
-		super(databaseAdapter);
-	}
+public class BlankNumberFormatter extends NumberFormatter {
 
-	@Override
-	public String getDefaultWorkspaceName() {
-		return null;
-	}
+    public BlankNumberFormatter() {
+        super();
+    }
 
-	@Override
-	public boolean equalsDefaultWorkspaceName(String workspaceName) {
-		return false;
-	}
+    public BlankNumberFormatter(NumberFormat format) {
+        super(format);
+    }
 
-	@Override
-	public boolean gotoWorkspace(Connection connection, Workspace workspace) {
-		return false;
-	}
+    public void setLimits(Comparable<?> min, Comparable<?> max) {
+        setMinimum(min);
+        setMaximum(max);
+    }
 
+    @Override
+    public Object stringToValue(String text) throws ParseException {
+        return text != null && !text.trim().isEmpty() ? super.stringToValue(text) : null;
+    }
 }

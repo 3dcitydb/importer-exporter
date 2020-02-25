@@ -32,7 +32,7 @@ import org.citydb.database.schema.mapping.FeatureType;
 public final class FeatureTypeNode extends AbstractTypeNode<FeatureType> {
 	private boolean useSchemaElement;
 
-	FeatureTypeNode(FeatureType featureType) {
+	public FeatureTypeNode(FeatureType featureType) {
 		super(featureType);
 	}
 	

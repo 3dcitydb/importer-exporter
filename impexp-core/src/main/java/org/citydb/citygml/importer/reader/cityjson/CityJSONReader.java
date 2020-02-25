@@ -1,9 +1,9 @@
 package org.citydb.citygml.importer.reader.cityjson;
 
+import org.citydb.citygml.importer.filter.selection.counter.CounterFilter;
 import org.citydb.citygml.importer.reader.FeatureReadException;
 import org.citydb.citygml.importer.reader.FeatureReader;
 import org.citydb.concurrent.WorkerPool;
-import org.citydb.config.project.query.filter.counter.CounterFilter;
 import org.citydb.event.Event;
 import org.citydb.event.EventDispatcher;
 import org.citydb.event.EventHandler;
@@ -44,24 +44,22 @@ public class CityJSONReader implements FeatureReader, EventHandler {
     }
 
     @Override
-    public long read(InputFile inputFile, WorkerPool<CityGML> workerPool, long counter) throws FeatureReadException {
+    public void read(InputFile inputFile, WorkerPool<CityGML> workerPool) throws FeatureReadException {
         try (org.citygml4j.builder.cityjson.json.io.reader.CityJSONReader reader = factory.createFilteredCityJSONReader(
                 factory.createCityJSONReader(inputFile.openStream()), typeFilter)) {
             // read input file into a city model
             CityModel cityModel = reader.read();
 
             // process city model members
-            counter = process(cityModel.getCityObjectMember().iterator(), workerPool, counter);
-            counter = process(cityModel.getFeatureMember().iterator(), workerPool, counter);
-            counter = process(cityModel.getAppearanceMember().iterator(), workerPool, counter);
-
-            return counter;
+            process(cityModel.getCityObjectMember().iterator(), workerPool);
+            process(cityModel.getFeatureMember().iterator(), workerPool);
+            process(cityModel.getAppearanceMember().iterator(), workerPool);
         } catch (CityJSONReadException | IOException e) {
             throw new FeatureReadException("Failed to read CityJSON input file.", e);
         }
     }
 
-    private long process(Iterator<? extends FeatureProperty<?>> iter, WorkerPool<CityGML> workerPool, long counter) {
+    private void process(Iterator<? extends FeatureProperty<?>> iter, WorkerPool<CityGML> workerPool) {
         while (shouldRun && iter.hasNext()) {
             AbstractFeature feature = iter.next().getFeature();
 
@@ -73,20 +71,19 @@ public class CityJSONReader implements FeatureReader, EventHandler {
 
             if (feature instanceof CityGML) {
                 if (counterFilter != null) {
-                    counter++;
-
-                    if (counter < counterFilter.getLowerLimit())
+                    if (!counterFilter.isStartIndexSatisfied()) {
+                        counterFilter.incrementStartIndex();
                         continue;
+                    }
 
-                    if (counter > counterFilter.getUpperLimit())
+                    counterFilter.incrementCount();
+                    if (!counterFilter.isCountSatisfied())
                         break;
                 }
 
                 workerPool.addWork((CityGML) feature);
             }
         }
-
-        return counter;
     }
 
     @Override

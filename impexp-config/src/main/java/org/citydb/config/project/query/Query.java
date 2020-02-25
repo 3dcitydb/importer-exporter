@@ -70,7 +70,7 @@ public class Query {
 	private ProjectionFilter projectionFilter;
 	@XmlElement(name="filter")
 	private SelectionFilter selectionFilter;
-	@XmlElement(name = "count")
+	@XmlElement(name = "limit")
 	private CounterFilter counterFilter;
 	@XmlElement(name = "lods")
 	private LodFilter lodFilter;

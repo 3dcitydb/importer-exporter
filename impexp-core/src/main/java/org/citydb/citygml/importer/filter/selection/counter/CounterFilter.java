@@ -2,7 +2,7 @@
  * 3D City Database - The Open Source CityGML Database
  * http://www.3dcitydb.org/
  *
- * Copyright 2013 - 2019
+ * Copyright 2013 - 2020
  * Chair of Geoinformatics
  * Technical University of Munich, Germany
  * https://www.gis.bgu.tum.de/
@@ -25,33 +25,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.citydb.database.adapter.postgis;
 
-import org.citydb.config.project.database.Workspace;
-import org.citydb.database.adapter.AbstractDatabaseAdapter;
-import org.citydb.database.adapter.AbstractWorkspaceManagerAdapter;
+package org.citydb.citygml.importer.filter.selection.counter;
 
-import java.sql.Connection;
+public class CounterFilter extends org.citydb.query.filter.counter.CounterFilter {
+    private long currentCount;
+    private long currentStartIndex;
 
-public class WorkspaceManagerAdapter extends AbstractWorkspaceManagerAdapter {
-	
-	protected WorkspaceManagerAdapter(AbstractDatabaseAdapter databaseAdapter) {
-		super(databaseAdapter);
-	}
+    public void incrementCount() {
+        currentCount++;
+    }
 
-	@Override
-	public String getDefaultWorkspaceName() {
-		return null;
-	}
+    public void incrementStartIndex() {
+        currentStartIndex++;
+    }
 
-	@Override
-	public boolean equalsDefaultWorkspaceName(String workspaceName) {
-		return false;
-	}
+    public boolean isCountSatisfied() {
+        return !isSetCount() || currentCount <= getCount();
+    }
 
-	@Override
-	public boolean gotoWorkspace(Connection connection, Workspace workspace) {
-		return false;
-	}
-
+    public boolean isStartIndexSatisfied() {
+        return !isSetStartIndex() || currentStartIndex >= getStartIndex();
+    }
 }

@@ -1,12 +1,12 @@
 package org.citydb.citygml.importer.reader.citygml;
 
 import org.citydb.citygml.importer.concurrent.FeatureReaderWorkerFactory;
+import org.citydb.citygml.importer.filter.selection.counter.CounterFilter;
 import org.citydb.citygml.importer.reader.FeatureReadException;
 import org.citydb.citygml.importer.reader.FeatureReader;
 import org.citydb.concurrent.PoolSizeAdaptationStrategy;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
-import org.citydb.config.project.query.filter.counter.CounterFilter;
 import org.citydb.event.Event;
 import org.citydb.event.EventDispatcher;
 import org.citydb.event.EventHandler;
@@ -52,7 +52,7 @@ public class CityGMLReader implements FeatureReader, EventHandler {
     }
 
     @Override
-    public long read(InputFile inputFile, WorkerPool<CityGML> workerPool, long counter) throws FeatureReadException {
+    public void read(InputFile inputFile, WorkerPool<CityGML> workerPool) throws FeatureReadException {
         if (validationHandler != null)
             validationHandler.reset();
 
@@ -79,12 +79,13 @@ public class CityGMLReader implements FeatureReader, EventHandler {
                     XMLChunk chunk = reader.nextChunk();
 
                     if (counterFilter != null) {
-                        counter++;
-
-                        if (counter < counterFilter.getLowerLimit())
+                        if (!counterFilter.isStartIndexSatisfied()) {
+                            counterFilter.incrementStartIndex();
                             continue;
+                        }
 
-                        if (counter > counterFilter.getUpperLimit())
+                        counterFilter.incrementCount();
+                        if (!counterFilter.isCountSatisfied())
                             break;
                     }
 
@@ -105,8 +106,6 @@ public class CityGMLReader implements FeatureReader, EventHandler {
             } catch (CityGMLReadException e) {
                 throw new FeatureReadException("Failed to close CityGML reader.", e);
             }
-
-            return counter;
         } finally {
             if (featureWorkerPool != null && !featureWorkerPool.isTerminated())
                 featureWorkerPool.shutdownNow();

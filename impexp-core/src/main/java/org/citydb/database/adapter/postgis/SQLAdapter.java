@@ -173,6 +173,11 @@ public class SQLAdapter extends AbstractSQLAdapter {
     }
 
     @Override
+    public boolean supportsFetchFirstClause() {
+        return true;
+    }
+
+    @Override
     public String getHierarchicalGeometryQuery() {
         String schema = databaseAdapter.getConnectionDetails().getSchema();
         return "WITH RECURSIVE geometry_rec (id, gmlid, parent_id, root_id, is_solid, is_composite, is_triangulated, is_xlink, is_reverse, geometry, implicit_geometry, solid_geometry, cityobject_id, level) " +

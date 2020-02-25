@@ -7,18 +7,18 @@ dependencies {
     compile project(':impexp-plugin-api')
     compile 'org.citydb:sqlbuilder:2.2.1'
     compile 'org.citydb:3dcitydb-ade-citygml4j:1.1.1'
-    compile 'org.citygml4j:citygml4j:2.10.5-b20200106.2257'
+    compile 'org.citygml4j:citygml4j:2.10.5'
     compile 'org.geotools:gt-epsg-extension:20.1'
     compile 'org.geotools:gt-epsg-hsql:20.1'
     compile 'org.geotools:gt-referencing:20.1'
     compile 'com.h2database:h2:1.4.200'
     compile 'org.locationtech.jts:jts-core:1.16.1'
-    compile 'org.postgresql:postgresql:42.2.8'
+    compile 'org.postgresql:postgresql:42.2.10'
     compile 'net.postgis:postgis-jdbc:2.3.0'
-    compile 'org.apache.tomcat:tomcat-jdbc:9.0.29'
-    compile 'org.apache.tomcat:tomcat-juli:9.0.29'
-    compile 'org.apache.tika:tika-core:1.22'
-    compile 'org.apache.commons:commons-compress:1.19'
+    compile 'org.apache.tomcat:tomcat-jdbc:9.0.30'
+    compile 'org.apache.tomcat:tomcat-juli:9.0.30'
+    compile 'org.apache.tika:tika-core:1.23'
+    compile 'org.apache.commons:commons-compress:1.20'
     compile fileTree(dir: 'lib', include: '*.jar')
 }
 

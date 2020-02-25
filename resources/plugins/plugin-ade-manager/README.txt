@@ -1,6 +1,6 @@
 ﻿3D City Database Importer/Exporter ADE Manager Plugin
 
-Version 1.2.0-SNAPSHOT (2020-02-02)
+Version 1.2.0-SNAPSHOT (2020-02-13)
 
   This software is free software and is distributed on an "AS IS" BASIS,
   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.

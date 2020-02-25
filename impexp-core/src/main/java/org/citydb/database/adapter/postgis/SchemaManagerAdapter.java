@@ -27,6 +27,9 @@
  */
 package org.citydb.database.adapter.postgis;
 
+import org.citydb.database.adapter.AbstractDatabaseAdapter;
+import org.citydb.database.adapter.AbstractSchemaManagerAdapter;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -34,9 +37,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
-
-import org.citydb.database.adapter.AbstractDatabaseAdapter;
-import org.citydb.database.adapter.AbstractSchemaManagerAdapter;
 
 public class SchemaManagerAdapter extends AbstractSchemaManagerAdapter {
 	private final String defaultSchema = "citydb";
@@ -61,13 +61,13 @@ public class SchemaManagerAdapter extends AbstractSchemaManagerAdapter {
 			throw new IllegalArgumentException("Schema name may not be null.");
 
 		schema = formatSchema(schema);
-		if (!schema.equals(defaultSchema) && (schema.length() == 0 || defaultSchema.equals(schema)))
+		if (!schema.equals(defaultSchema) && schema.length() == 0)
 			schema = defaultSchema;
 
 		try (PreparedStatement stmt = connection.prepareStatement("select exists(select schema_name from information_schema.schemata where schema_name = ?)")) {
 			stmt.setString(1, schema);
 			try (ResultSet rs = stmt.executeQuery()) {
-				return rs.next() ? rs.getBoolean(1) : false;
+				return rs.next() && rs.getBoolean(1);
 			}
 		} catch (SQLException e) {
 			return false;
@@ -77,10 +77,10 @@ public class SchemaManagerAdapter extends AbstractSchemaManagerAdapter {
 	@Override
 	public List<String> fetchSchemasFromDatabase(Connection connection) throws SQLException {
 		try (Statement stmt = connection.createStatement();
-				ResultSet rs = stmt.executeQuery(new StringBuilder("select s.schema_name from information_schema.schemata s ")
-						.append("where exists (select 1 from information_schema.tables t ")
-						.append("where t.table_name='database_srs' and t.table_schema=s.schema_name) ")
-						.append("order by s.schema_name").toString())) {
+				ResultSet rs = stmt.executeQuery("select s.schema_name from information_schema.schemata s " +
+						"where exists (select 1 from information_schema.tables t " +
+						"where t.table_name='database_srs' and t.table_schema=s.schema_name) " +
+						"order by s.schema_name")) {
 			List<String> schemas = new ArrayList<>();
 			while (rs.next())
 				schemas.add(rs.getString(1));
