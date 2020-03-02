@@ -8,6 +8,14 @@ Change Log
 
 ##### Additions
 
+* The COLLADA/KML/glTF export now supports exporting textures to binary glTF files `.glb`.
+
+* The COLLADA/KML/glTF export now supports exporting textures of `.gltf` files in Draco compression.
+
+##### Changes
+
+* The option to embed textures in `.gltf` files is now set to `true` by default to reduce network calls while visualizing. 
+
 * Optimized COLLADA/KML/glTF export to prevent redundant texture as well as visualization files of implicit geometries
 from being exported repeatedly leading to file redundancy. This includes the following changes:
 
