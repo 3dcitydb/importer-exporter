@@ -33,16 +33,18 @@ import org.citydb.query.filter.counter.CounterFilter;
 public class CounterFilterBuilder {
 
 	protected CounterFilterBuilder() {
-		
 	}
 
 	protected CounterFilter buildCounterFilter(org.citydb.config.project.query.filter.counter.CounterFilter counterFilterConfig) throws FilterException {
-		if (!counterFilterConfig.isSetUpperLimit())
-			throw new FilterException("Upper counter limit must not be null.");
-		
-		long upperLimit = counterFilterConfig.getUpperLimit();
-		long lowerLimit = counterFilterConfig.isSetLowerLimit() ? counterFilterConfig.getLowerLimit() : 1;
-		
-		return new CounterFilter(lowerLimit, upperLimit);
+		if (!counterFilterConfig.isSetCount() && !counterFilterConfig.isSetStartIndex())
+			throw new FilterException("Either count or startIndex must be defined for a counter filter.");
+
+		CounterFilter counterFilter = new CounterFilter();
+		if (counterFilterConfig.isSetCount())
+			counterFilter.setCount(counterFilterConfig.getCount());
+		if (counterFilterConfig.isSetStartIndex())
+			counterFilter.setStartIndex(counterFilterConfig.getStartIndex());
+
+		return counterFilter;
 	}
 }

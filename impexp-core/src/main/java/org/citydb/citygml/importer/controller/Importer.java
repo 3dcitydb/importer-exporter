@@ -40,8 +40,6 @@ import org.citydb.citygml.importer.database.uid.FeatureGmlIdCache;
 import org.citydb.citygml.importer.database.uid.GeometryGmlIdCache;
 import org.citydb.citygml.importer.database.uid.TextureImageCache;
 import org.citydb.citygml.importer.database.xlink.resolver.DBXlinkSplitter;
-import org.citydb.file.input.AbstractArchiveInputFile;
-import org.citydb.file.input.DirectoryScanner;
 import org.citydb.citygml.importer.filter.CityGMLFilter;
 import org.citydb.citygml.importer.filter.CityGMLFilterBuilder;
 import org.citydb.citygml.importer.reader.FeatureReadException;
@@ -82,6 +80,8 @@ import org.citydb.event.global.StatusDialogProgressBar;
 import org.citydb.event.global.StatusDialogTitle;
 import org.citydb.file.FileType;
 import org.citydb.file.InputFile;
+import org.citydb.file.input.AbstractArchiveInputFile;
+import org.citydb.file.input.DirectoryScanner;
 import org.citydb.log.Logger;
 import org.citydb.query.filter.FilterException;
 import org.citydb.util.CoreConstants;
@@ -243,12 +243,11 @@ public class Importer implements EventHandler {
 		DBXlinkSplitter splitter;
 		ImportLogger importLogger = null;
 
-		long featureCounter = 0;
 		long start = System.currentTimeMillis();
 
 		while (shouldRun && fileCounter < importFiles.size()) {
 			// check whether we reached the counter limit
-			if (filter.isSetCounterFilter() && featureCounter > filter.getCounterFilter().getUpperLimit())
+			if (filter.isSetCounterFilter() && !filter.getCounterFilter().isCountSatisfied())
 				break;
 
 			try (InputFile file = importFiles.get(fileCounter++)) {
@@ -385,7 +384,7 @@ public class Importer implements EventHandler {
 				// ok, preparation done. start parsing the input file
 				log.info("Importing file: " + contentFile.toString());
 				try (FeatureReader reader = factory.createFeatureReader()) {
-					featureCounter = reader.read(file, dbWorkerPool, featureCounter);
+					reader.read(file, dbWorkerPool);
 
 					// show XML validation errors
 					if (reader.getValidationErrors() > 0)

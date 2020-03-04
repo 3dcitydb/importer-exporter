@@ -28,12 +28,12 @@
 package org.citydb.citygml.importer.filter;
 
 import org.citydb.citygml.importer.filter.selection.comparison.LikeFilter;
+import org.citydb.citygml.importer.filter.selection.counter.CounterFilter;
 import org.citydb.citygml.importer.filter.selection.id.ResourceIdFilter;
 import org.citydb.citygml.importer.filter.selection.spatial.SimpleBBOXFilter;
 import org.citydb.citygml.importer.filter.type.FeatureTypeFilter;
 import org.citydb.config.geometry.GeometryType;
 import org.citydb.config.project.importer.ImportFilter;
-import org.citydb.config.project.query.filter.counter.CounterFilter;
 import org.citydb.config.project.query.filter.selection.comparison.LikeOperator;
 import org.citydb.config.project.query.simple.SimpleAttributeFilter;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
@@ -86,16 +86,18 @@ public class CityGMLFilterBuilder {
 
 		// counter filter
 		if (filterConfig.isUseCountFilter() && filterConfig.isSetCounterFilter()) {
-			CounterFilter counterFilterConfig = filterConfig.getCounterFilter();
-			if (!counterFilterConfig.isSetLowerLimit())
-				counterFilterConfig.setLowerLimit(1L);
+			org.citydb.config.project.query.filter.counter.CounterFilter counterFilterConfig = filterConfig.getCounterFilter();
+			if (!counterFilterConfig.isSetCount() && !counterFilterConfig.isSetStartIndex())
+				throw new FilterException("Either count or startIndex must be defined for a counter filter.");
 
-			if (!counterFilterConfig.isSetUpperLimit()
-					|| counterFilterConfig.getLowerLimit() <= 0
-					|| filterConfig.getCounterFilter().getUpperLimit() < filterConfig.getCounterFilter().getLowerLimit())
-				throw new FilterException("Invalid limit values for counter filter.");
+			CounterFilter counterFilter = new CounterFilter();
+			if (counterFilterConfig.isSetCount())
+				counterFilter.setCount(counterFilterConfig.getCount());
 
-			filter.setCounterFilter(filterConfig.getCounterFilter());
+			if (counterFilterConfig.isSetStartIndex())
+				counterFilter.setStartIndex(counterFilterConfig.getStartIndex());
+
+			filter.setCounterFilter(counterFilter);
 		}
 
 		// bbox filter

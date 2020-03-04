@@ -28,8 +28,8 @@
 package org.citydb.modules.citygml.importer.gui.view;
 
 import org.citydb.citygml.importer.CityGMLImportException;
-import org.citydb.citygml.validator.ValidationException;
 import org.citydb.citygml.importer.controller.Importer;
+import org.citydb.citygml.validator.ValidationException;
 import org.citydb.citygml.validator.controller.Validator;
 import org.citydb.config.Config;
 import org.citydb.config.geometry.BoundingBox;
@@ -37,6 +37,7 @@ import org.citydb.config.i18n.Language;
 import org.citydb.config.project.database.DatabaseConfigurationException;
 import org.citydb.config.project.global.LogLevel;
 import org.citydb.config.project.importer.ImportFilter;
+import org.citydb.config.project.query.filter.counter.CounterFilter;
 import org.citydb.database.DatabaseController;
 import org.citydb.database.schema.mapping.SchemaMapping;
 import org.citydb.database.version.DatabaseVersionException;
@@ -294,14 +295,12 @@ public class ImportPanel extends JPanel implements EventHandler {
 
 			// counter filter
 			if (filter.isUseCountFilter()) {
-				Long lowerLimit = filter.getCounterFilter().getLowerLimit();
-				Long upperLimit = filter.getCounterFilter().getUpperLimit();
-
-				if (lowerLimit == null || upperLimit == null
-						|| lowerLimit <= 0 || upperLimit <= 0
-						|| upperLimit < lowerLimit) {
+				CounterFilter counterFilter = filter.getCounterFilter();
+				if ((!counterFilter.isSetCount() && !counterFilter.isSetStartIndex())
+						|| (counterFilter.isSetCount() && counterFilter.getCount() < 0)
+						|| (counterFilter.isSetStartIndex() && counterFilter.getStartIndex() < 0)) {
 					viewController.errorMessage(Language.I18N.getString("import.dialog.error.incorrectData"), 
-							Language.I18N.getString("import.dialog.error.incorrectData.range"));
+							Language.I18N.getString("import.dialog.error.incorrectData.counter"));
 					return;
 				}
 			}

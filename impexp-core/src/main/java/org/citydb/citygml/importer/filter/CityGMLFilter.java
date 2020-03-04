@@ -28,8 +28,8 @@
 package org.citydb.citygml.importer.filter;
 
 import org.citydb.citygml.importer.filter.selection.SelectionFilter;
+import org.citydb.citygml.importer.filter.selection.counter.CounterFilter;
 import org.citydb.citygml.importer.filter.type.FeatureTypeFilter;
-import org.citydb.config.project.query.filter.counter.CounterFilter;
 import org.citydb.database.schema.mapping.SchemaMapping;
 
 public class CityGMLFilter {

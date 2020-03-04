@@ -83,11 +83,7 @@ import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -100,10 +96,7 @@ import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
-import java.awt.Component;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
+import java.awt.*;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -237,7 +230,8 @@ public class XMLQueryView extends FilterView {
 
         if (simpleQuery.isUseCountFilter()
                 && simpleQuery.isSetCounterFilter()
-                && simpleQuery.getCounterFilter().isSetUpperLimit())
+                && (simpleQuery.getCounterFilter().isSetCount()
+                || simpleQuery.getCounterFilter().isSetStartIndex()))
             query.setCounterFilter(simpleQuery.getCounterFilter());
 
         List<AbstractPredicate> predicates = new ArrayList<>();

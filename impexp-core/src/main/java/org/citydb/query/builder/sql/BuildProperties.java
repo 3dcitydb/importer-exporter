@@ -37,9 +37,10 @@ import java.util.List;
 public class BuildProperties {
 	protected final DefaultAliasGenerator aliasGenerator;
 	private List<String> projectionColumns;
+	private boolean suppressDistinct;
+	private boolean optimizeJoins = true;
 
 	private BuildProperties() {
-		// just to thwart instantiation
 		aliasGenerator = new DefaultAliasGenerator();
 	}
 	
@@ -51,6 +52,10 @@ public class BuildProperties {
 		projectionColumns = null;
 		aliasGenerator.reset();
 		return this;
+	}
+
+	public AliasGenerator getAliasGenerator() {
+		return aliasGenerator;
 	}
 	
 	public BuildProperties addProjectionColumn(String columnName) {
@@ -74,8 +79,21 @@ public class BuildProperties {
 		return projectionColumns != null ? new ArrayList<>(projectionColumns) : Collections.emptyList();
 	}
 
-	public AliasGenerator getAliasGenerator() {
-		return aliasGenerator;
+	public boolean isSuppressDistinct() {
+		return suppressDistinct;
 	}
-	
+
+	public BuildProperties suppressDistinct(boolean suppressDistinct) {
+		this.suppressDistinct = suppressDistinct;
+		return this;
+	}
+
+	public boolean isOptimizeJoins() {
+		return optimizeJoins;
+	}
+
+	public BuildProperties optimizeJoins(boolean optimizeJoins) {
+		this.optimizeJoins = optimizeJoins;
+		return this;
+	}
 }

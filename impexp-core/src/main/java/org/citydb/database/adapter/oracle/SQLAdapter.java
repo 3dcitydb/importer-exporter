@@ -171,6 +171,11 @@ public class SQLAdapter extends AbstractSQLAdapter {
     }
 
     @Override
+    public boolean supportsFetchFirstClause() {
+        return databaseAdapter.getConnectionMetaData().getDatabaseMajorVersion() > 11;
+    }
+
+    @Override
     public String getHierarchicalGeometryQuery() {
         return "select sg.*, LEVEL from " + databaseAdapter.getConnectionDetails().getSchema() +
                 ".SURFACE_GEOMETRY sg start with sg.ID=? connect by prior sg.ID=sg.PARENT_ID";
