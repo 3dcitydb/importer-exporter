@@ -95,6 +95,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class ImpExp {
@@ -410,7 +411,8 @@ public class ImpExp {
 			project = (Project)object;
 
 			// init config settings for ADE KML export
-			for (org.citydb.ade.ADEExtension adeExtension : adeManager.getExtensions()) {
+			List<org.citydb.ade.ADEExtension> adeExtensions = adeManager.getExtensions();
+			for (org.citydb.ade.ADEExtension adeExtension : adeExtensions) {
 				ADEExtension adeExtensionConfig = new ADEExtension();
 				String adeExtensionId = adeExtension.getId();
 				String adeExtensionName = adeExtension.getMetadata().getName();
@@ -425,6 +427,7 @@ public class ImpExp {
 					project.getAdeExtensions().put(adeExtensionId, adeExtensionConfig);
 				}
 			}
+			project.getAdeExtensions().keySet().retainAll(adeExtensions.stream().map(v -> v.getId()).collect(Collectors.toList()));
 		} catch (IOException | JAXBException e) {
 			String errMsg = "Failed to read project settings file '" + configFile + "\'.";
 			if (shell) {
