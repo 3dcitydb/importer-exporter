@@ -78,7 +78,8 @@ public class DBImportWorker extends Worker<CityGML> implements EventHandler {
 	private final BoundingBoxOptions bboxOptions;
 	private final CityGMLImportManager importer;
 
-	private int updateCounter = 0;
+	private int globalAppearanceCounter = 0;
+	private int topLevelFeatureCounter = 0;
 	private int commitAfter = 20;
 
 	public DBImportWorker(InputFile inputFile,
@@ -199,6 +200,9 @@ public class DBImportWorker extends Worker<CityGML> implements EventHandler {
 				// global appearances
 				Appearance appearance = (Appearance)work;
 				id = importer.importGlobalAppearance(appearance);
+
+				if (id != 0)
+					globalAppearanceCounter++;
 			} 
 
 			else if (work instanceof AbstractFeature) {
@@ -214,6 +218,8 @@ public class DBImportWorker extends Worker<CityGML> implements EventHandler {
 				id = importer.importObject(feature);
 				if (id == 0)
 					importer.logOrThrowErrorMessage("Failed to import object " + importer.getObjectSignature(feature) + ".");
+				else
+					topLevelFeatureCounter++;
 			}
 
 			else {
@@ -226,10 +232,7 @@ public class DBImportWorker extends Worker<CityGML> implements EventHandler {
 					throw new CityGMLImportException(msg);
 			}
 
-			if (id != 0)
-				updateCounter++;
-
-			if (updateCounter == commitAfter) {
+			if (globalAppearanceCounter + topLevelFeatureCounter == commitAfter) {
 				importer.executeBatch();
 				if (!isManagedTransaction)
 					connection.commit();
@@ -256,8 +259,10 @@ public class DBImportWorker extends Worker<CityGML> implements EventHandler {
 	private void updateImportContext() throws IOException {
 		eventDispatcher.triggerEvent(new ObjectCounterEvent(importer.getAndResetObjectCounter(), this));
 		eventDispatcher.triggerEvent(new GeometryCounterEvent(importer.getAndResetGeometryCounter(), this));
-		eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, updateCounter, this));
-		updateCounter = 0;
+		eventDispatcher.triggerEvent(new CounterEvent(CounterType.GLOBAL_APPEARANCE, globalAppearanceCounter, this));
+		eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, topLevelFeatureCounter, this));
+		globalAppearanceCounter = 0;
+		topLevelFeatureCounter = 0;
 
 		// log imported top-level features
 		if (importLogger != null) {

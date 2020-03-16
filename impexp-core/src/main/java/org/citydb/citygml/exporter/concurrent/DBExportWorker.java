@@ -59,6 +59,7 @@ import org.citydb.plugin.PluginManager;
 import org.citydb.plugin.extension.export.CityGMLExportExtension;
 import org.citydb.query.Query;
 import org.citygml4j.builder.jaxb.CityGMLBuilder;
+import org.citygml4j.model.citygml.appearance.Appearance;
 import org.citygml4j.model.gml.base.AbstractGML;
 import org.citygml4j.model.gml.feature.AbstractFeature;
 
@@ -78,7 +79,8 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 	private final EventDispatcher eventDispatcher;
 	private final Config config;
 
-	private int exportCounter = 0;
+	private int globalAppearanceCounter = 0;
+	private int topLevelFeatureCounter = 0;
 	private List<CityGMLExportExtension> plugins;
 
 	public DBExportWorker(OutputFile outputFile,
@@ -137,8 +139,9 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 				}
 			}
 
-			eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, exportCounter, this));
-			eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.UPDATE, exportCounter, this));
+			eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, topLevelFeatureCounter, this));
+			eventDispatcher.triggerEvent(new CounterEvent(CounterType.GLOBAL_APPEARANCE, globalAppearanceCounter, this));
+			eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.UPDATE, topLevelFeatureCounter + globalAppearanceCounter, this));
 			eventDispatcher.triggerEvent(new ObjectCounterEvent(exporter.getAndResetObjectCounter(), this));
 			eventDispatcher.triggerEvent(new GeometryCounterEvent(exporter.getAndResetGeometryCounter(), this));
 		} finally {
@@ -187,6 +190,11 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 					}
 				}
 
+				if (topLevelObject instanceof Appearance)
+					globalAppearanceCounter++;
+				else
+					topLevelFeatureCounter++;
+
 				// write feature to file
 				featureWriter.write((AbstractFeature) topLevelObject, work.getSequenceId());
 
@@ -196,10 +204,12 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 				
 				// update export counter
 				exporter.updateExportCounter(topLevelObject);
-				if (++exportCounter == 20) {
-					eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, exportCounter, this));
-					eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.UPDATE, exportCounter, this));
-					exportCounter = 0;
+				if (topLevelFeatureCounter + globalAppearanceCounter == 20) {
+					eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, topLevelFeatureCounter, this));
+					eventDispatcher.triggerEvent(new CounterEvent(CounterType.GLOBAL_APPEARANCE, globalAppearanceCounter, this));
+					eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.UPDATE, topLevelFeatureCounter + globalAppearanceCounter, this));
+					topLevelFeatureCounter = 0;
+					globalAppearanceCounter = 0;
 				}
 			} else
 				featureWriter.updateSequenceId(work.getSequenceId());
