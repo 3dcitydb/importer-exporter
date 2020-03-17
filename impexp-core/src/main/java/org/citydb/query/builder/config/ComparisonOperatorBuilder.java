@@ -50,7 +50,6 @@ import org.citydb.query.filter.selection.operator.comparison.ComparisonFactory;
 import org.citydb.query.filter.selection.operator.comparison.LikeOperator;
 import org.citydb.query.filter.selection.operator.comparison.NullOperator;
 
-import javax.xml.bind.DatatypeConverter;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.DatatypeFactory;
@@ -58,9 +57,16 @@ import javax.xml.datatype.XMLGregorianCalendar;
 
 public class ComparisonOperatorBuilder {
 	private final ValueReferenceBuilder valueReferenceBuilder;
+	private final DatatypeFactory datatypeFactory;
 	
 	protected ComparisonOperatorBuilder(ValueReferenceBuilder valueReferenceBuilder) {
 		this.valueReferenceBuilder = valueReferenceBuilder;
+
+		try {
+			datatypeFactory = DatatypeFactory.newInstance();
+		} catch (DatatypeConfigurationException e) {
+			throw new RuntimeException("Failed to initialize datatype factory.", e);
+		}
 	}
 
 	protected Predicate buildComparisonOperator(org.citydb.config.project.query.filter.selection.comparison.AbstractComparisonOperator operatorConfig) throws QueryBuildException {
@@ -239,7 +245,8 @@ public class ComparisonOperatorBuilder {
 				break;
 			case DATE:
 				try {
-					literal = new DateLiteral(DatatypeConverter.parseDateTime(literalValue));
+					XMLGregorianCalendar cal = datatypeFactory.newXMLGregorianCalendar(literalValue);
+					literal = new DateLiteral(cal.toGregorianCalendar());
 					((DateLiteral)literal).setXMLLiteral(literalValue);
 				} catch (IllegalArgumentException e) {
 					//
@@ -247,11 +254,11 @@ public class ComparisonOperatorBuilder {
 				break;
 			case TIMESTAMP:
 				try {
-					XMLGregorianCalendar cal = DatatypeFactory.newInstance().newXMLGregorianCalendar(literalValue);
+					XMLGregorianCalendar cal = datatypeFactory.newXMLGregorianCalendar(literalValue);
 					literal = new TimestampLiteral(cal.toGregorianCalendar());
 					((TimestampLiteral)literal).setXMLLiteral(literalValue);
 					((TimestampLiteral)literal).setDate(cal.getXMLSchemaType() == DatatypeConstants.DATE);
-				} catch (DatatypeConfigurationException | IllegalArgumentException e) {
+				} catch (IllegalArgumentException e) {
 					//
 				}
 				break;

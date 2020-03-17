@@ -68,16 +68,19 @@ public class ExportStatusDialog extends JDialog implements EventHandler {
 	private JLabel messageLabel;
 	private JLabel details;
 	private JLabel featureLabel;
+	private JLabel appearanceLabel;
 	private JLabel textureLabel;
 	private JPanel main;
 	private JPanel row;
 	private JLabel tileCounterLabel;
 	private JLabel featureCounterLabel;
+	private JLabel appearanceCounterLabel;
 	private JLabel textureCounterLabel;
 	private JProgressBar progressBar;
 	public JButton cancelButton;
 	
 	private long featureCounter;
+	private long appearanceCounter;
 	private long textureCounter;
 	private int progressBarCounter;
 	private volatile boolean acceptStatusUpdate = true;
@@ -107,11 +110,14 @@ public class ExportStatusDialog extends JDialog implements EventHandler {
 		messageLabel = new JLabel(" ");
 		cancelButton = new JButton(Language.I18N.getString("common.button.cancel"));
 		featureLabel = new JLabel(Language.I18N.getString("common.status.dialog.featureCounter"));
+		appearanceLabel = new JLabel(Language.I18N.getString("common.status.dialog.appearanceCounter"));
 		textureLabel = new JLabel(Language.I18N.getString("common.status.dialog.textureCounter"));
 
 		featureCounterLabel = new JLabel("0", SwingConstants.TRAILING);
+		appearanceCounterLabel = new JLabel("0", SwingConstants.TRAILING);
 		textureCounterLabel = new JLabel("0", SwingConstants.TRAILING);
 		featureCounterLabel.setPreferredSize(new Dimension(100, featureLabel.getPreferredSize().height));
+		appearanceCounterLabel.setPreferredSize(new Dimension(100, appearanceLabel.getPreferredSize().height));
 		textureCounterLabel.setPreferredSize(new Dimension(100, textureLabel.getPreferredSize().height));
 
 		progressBar = new JProgressBar();
@@ -139,16 +145,18 @@ public class ExportStatusDialog extends JDialog implements EventHandler {
 				{
 					row.add(featureLabel, GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.HORIZONTAL,5,5,1,5));
 					row.add(featureCounterLabel, GuiUtil.setConstraints(1,0,1.0,0.0,GridBagConstraints.HORIZONTAL,5,5,1,5));
-					row.add(textureLabel, GuiUtil.setConstraints(0,1,0.0,0.0,GridBagConstraints.HORIZONTAL,1,5,5,5));
-					row.add(textureCounterLabel, GuiUtil.setConstraints(1,1,1.0,0.0,GridBagConstraints.HORIZONTAL,1,5,5,5));
+					row.add(appearanceLabel, GuiUtil.setConstraints(0,1,0.0,0.0,GridBagConstraints.HORIZONTAL,1,5,1,5));
+					row.add(appearanceCounterLabel, GuiUtil.setConstraints(1,1,1.0,0.0,GridBagConstraints.HORIZONTAL,1,5,1,5));
+					row.add(textureLabel, GuiUtil.setConstraints(0,2,0.0,0.0,GridBagConstraints.HORIZONTAL,1,5,5,5));
+					row.add(textureCounterLabel, GuiUtil.setConstraints(1,2,1.0,0.0,GridBagConstraints.HORIZONTAL,1,5,5,5));
 
 					if (showTileCounter) {
 						tileLabel = new JLabel(Language.I18N.getString("common.status.dialog.tileCounter"));
 						tileCounterLabel = new JLabel("n/a", SwingConstants.TRAILING);
 						tileCounterLabel.setPreferredSize(new Dimension(100, tileCounterLabel.getPreferredSize().height));
 
-						row.add(tileLabel, GuiUtil.setConstraints(0,2,0.0,0.0,GridBagConstraints.HORIZONTAL,1,5,5,5));
-						row.add(tileCounterLabel, GuiUtil.setConstraints(1,2,1.0,0.0,GridBagConstraints.HORIZONTAL,1,5,5,5));
+						row.add(tileLabel, GuiUtil.setConstraints(0,3,0.0,0.0,GridBagConstraints.HORIZONTAL,1,5,5,5));
+						row.add(tileCounterLabel, GuiUtil.setConstraints(1,3,1.0,0.0,GridBagConstraints.HORIZONTAL,1,5,5,5));
 					}
 				}
 			}
@@ -178,6 +186,9 @@ public class ExportStatusDialog extends JDialog implements EventHandler {
 			if (counter.getType() == CounterType.TOPLEVEL_FEATURE) {
 				featureCounter += counter.getCounter();
 				featureCounterLabel.setText(String.valueOf(featureCounter));
+			} else if (counter.getType() == CounterType.GLOBAL_APPEARANCE) {
+				appearanceCounter += counter.getCounter();
+				appearanceCounterLabel.setText(String.valueOf(appearanceCounter));
 			} else if (counter.getType() == CounterType.TEXTURE_IMAGE) {
 				textureCounter += counter.getCounter();
 				textureCounterLabel.setText(String.valueOf(textureCounter));

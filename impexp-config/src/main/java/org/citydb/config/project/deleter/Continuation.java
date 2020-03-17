@@ -31,7 +31,7 @@ import org.citydb.config.project.global.UpdatingPersonMode;
 
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 @XmlType(name="DeleteContinuationType", propOrder={
 		"lineage",
@@ -46,7 +46,7 @@ public class Continuation {
 	private String reasonForUpdate;
 
 	@XmlTransient
-	LocalDateTime terminationDate;
+	OffsetDateTime terminationDate;
 
 	public boolean isSetLineage() {
 		return lineage != null;
@@ -104,11 +104,11 @@ public class Continuation {
 		return terminationDate != null;
 	}
 
-	public LocalDateTime getTerminationDate() {
+	public OffsetDateTime getTerminationDate() {
 		return terminationDate;
 	}
 
-	public void setTerminationDate(LocalDateTime terminationDate) {
+	public void setTerminationDate(OffsetDateTime terminationDate) {
 		this.terminationDate = terminationDate;
 	}
   

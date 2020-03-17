@@ -61,9 +61,9 @@ import org.citygml4j.util.bbox.BoundingBoxOptions;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.sql.Types;
 import java.time.LocalTime;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.List;
 
@@ -259,27 +259,25 @@ public class DBCityObject implements DBImporter {
 		ZonedDateTime creationDate = null;
 		if (isCityObject && (creationDateMode == CreationDateMode.INHERIT || creationDateMode == CreationDateMode.COMPLEMENT)) {
 			creationDate = Util.getCreationDate((AbstractCityObject) object, creationDateMode == CreationDateMode.INHERIT);
-			if (creationDate != null)
-				creationDate = creationDate.with(LocalTime.now());
+			creationDate = creationDate.toLocalDate().atTime(LocalTime.MIDNIGHT).atZone(ZoneOffset.UTC);
 		}
 
 		if (creationDate == null)
 			creationDate = now;
 
-		psCityObject.setTimestamp(8, Timestamp.valueOf(creationDate.toLocalDateTime()));
+		psCityObject.setObject(8, creationDate.toOffsetDateTime());
 
 		// core:terminationDate
 		ZonedDateTime terminationDate = null;
 		if (isCityObject && (terminationDateMode == TerminationDateMode.INHERIT || terminationDateMode == TerminationDateMode.COMPLEMENT)) {
 			terminationDate = Util.getTerminationDate((AbstractCityObject) object, terminationDateMode == TerminationDateMode.INHERIT);
-			if (terminationDate != null)
-				terminationDate = terminationDate.with(LocalTime.now());
+			terminationDate = terminationDate.toLocalDate().atTime(LocalTime.MIDNIGHT).atZone(ZoneOffset.UTC);
 		}
 
 		if (terminationDate == null)
 			psCityObject.setNull(9, Types.TIMESTAMP);
 		else
-			psCityObject.setTimestamp(9, Timestamp.valueOf(terminationDate.toLocalDateTime()));
+			psCityObject.setObject(9, terminationDate.toOffsetDateTime());
 
 		// core:relativeToTerrain
 		if (isCityObject && ((AbstractCityObject)object).isSetRelativeToTerrain())
@@ -310,7 +308,7 @@ public class DBCityObject implements DBImporter {
 		}
 
 		// citydb:lastModificationDate
-		psCityObject.setTimestamp(12, Timestamp.valueOf(now.toLocalDateTime()));
+		psCityObject.setObject(12, now.toOffsetDateTime());
 
 		// citydb:updatingPerson
 		psCityObject.setString(13, updatingPerson);
