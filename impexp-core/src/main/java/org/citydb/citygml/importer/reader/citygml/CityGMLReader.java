@@ -14,6 +14,7 @@ import org.citydb.event.global.EventType;
 import org.citydb.file.InputFile;
 import org.citydb.registry.ObjectRegistry;
 import org.citygml4j.model.citygml.CityGML;
+import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.xml.io.CityGMLInputFactory;
 import org.citygml4j.xml.io.reader.CityGMLInputFilter;
 import org.citygml4j.xml.io.reader.CityGMLReadException;
@@ -77,8 +78,9 @@ public class CityGMLReader implements FeatureReader, EventHandler {
 
                 while (shouldRun && reader.hasNext()) {
                     XMLChunk chunk = reader.nextChunk();
+                    CityGMLClass type = chunk.getCityGMLClass();
 
-                    if (counterFilter != null) {
+                    if (counterFilter != null && type != CityGMLClass.APPEARANCE) {
                         if (!counterFilter.isStartIndexSatisfied()) {
                             counterFilter.incrementStartIndex();
                             continue;
@@ -86,7 +88,7 @@ public class CityGMLReader implements FeatureReader, EventHandler {
 
                         counterFilter.incrementCount();
                         if (!counterFilter.isCountSatisfied())
-                            break;
+                            continue;
                     }
 
                     featureWorkerPool.addWork(chunk);
