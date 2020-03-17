@@ -77,7 +77,7 @@ public abstract class AbstractTypeNode<T extends AbstractType<T>> extends Abstra
 			}
 
 			if (found)				
-				return predicate.getRightOperand().evalutesToSchemaType(predicate.getLeftOperand().getType());
+				return predicate.getRightOperand().evaluatesToSchemaType(predicate.getLeftOperand().getType());
 		}
 
 		else {

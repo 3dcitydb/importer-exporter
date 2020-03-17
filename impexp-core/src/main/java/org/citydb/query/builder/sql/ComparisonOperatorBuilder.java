@@ -135,7 +135,7 @@ public class ComparisonOperatorBuilder {
 
 		// check for type mismatch of literal
 		SimpleAttribute attribute = (SimpleAttribute)valueReference.getTarget();
-		if (!literal.evalutesToSchemaType(attribute.getType()))
+		if (!literal.evaluatesToSchemaType(attribute.getType()))
 			throw new QueryBuildException("Type mismatch between provided literal and database representation.");
 
 		// map operands
@@ -193,11 +193,11 @@ public class ComparisonOperatorBuilder {
 
 		// check for type mismatch of literal
 		SimpleAttribute attribute = (SimpleAttribute)valueReference.getTarget();
-		if (!lowerBoundary.evalutesToSchemaType(attribute.getType()))
+		if (!lowerBoundary.evaluatesToSchemaType(attribute.getType()))
 			throw new QueryBuildException("Type mismatch between provided lower boundary literal and database representation.");
 
 		// check for type mismatch of literal
-		if (!upperBoundary.evalutesToSchemaType(attribute.getType()))
+		if (!upperBoundary.evaluatesToSchemaType(attribute.getType()))
 			throw new QueryBuildException("Type mismatch between provided upper boundary literal and database representation.");
 
 		// map operands
@@ -241,7 +241,7 @@ public class ComparisonOperatorBuilder {
 
 		// check for type mismatch of literal
 		SimpleAttribute attribute = (SimpleAttribute)valueReference.getTarget();
-		if (!literal.evalutesToSchemaType(attribute.getType()))
+		if (!literal.evaluatesToSchemaType(attribute.getType()))
 			throw new QueryBuildException("Type mismatch between provided literal and database representation.");
 
 		// check wildcard and escape characters

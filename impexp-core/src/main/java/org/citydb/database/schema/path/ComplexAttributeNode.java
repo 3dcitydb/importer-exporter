@@ -61,7 +61,7 @@ public final class ComplexAttributeNode extends AbstractNode<ComplexAttribute> {
 			EqualToPredicate predicate = (EqualToPredicate)candidate;
 
 			if (pathElement.getType().getAttributes().contains(predicate.getLeftOperand()))				
-				return predicate.getRightOperand().evalutesToSchemaType(predicate.getLeftOperand().getType());
+				return predicate.getRightOperand().evaluatesToSchemaType(predicate.getLeftOperand().getType());
 		}
 		
 		else {

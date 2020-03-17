@@ -69,7 +69,7 @@ public class TimestampLiteral extends AbstractLiteral<Instant> {
 	}
 
 	@Override
-	public boolean evalutesToSchemaType(SimpleType schemaType) {
+	public boolean evaluatesToSchemaType(SimpleType schemaType) {
 		switch (schemaType) {
 		case TIMESTAMP:
 			return true;

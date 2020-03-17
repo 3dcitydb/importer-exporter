@@ -37,7 +37,7 @@ public class StringLiteral extends AbstractLiteral<String> {
 	}
 
 	@Override
-	public boolean evalutesToSchemaType(SimpleType schemaType) {
+	public boolean evaluatesToSchemaType(SimpleType schemaType) {
 		switch (schemaType) {
 		case STRING:
 			return true;
