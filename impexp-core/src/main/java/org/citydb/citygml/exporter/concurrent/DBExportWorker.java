@@ -190,11 +190,6 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 					}
 				}
 
-				if (topLevelObject instanceof Appearance)
-					globalAppearanceCounter++;
-				else
-					topLevelFeatureCounter++;
-
 				// write feature to file
 				featureWriter.write((AbstractFeature) topLevelObject, work.getSequenceId());
 
@@ -204,12 +199,16 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 				
 				// update export counter
 				exporter.updateExportCounter(topLevelObject);
-				if (topLevelFeatureCounter + globalAppearanceCounter == 20) {
+				if (topLevelObject instanceof Appearance) {
+					if (++globalAppearanceCounter == 20) {
+						eventDispatcher.triggerEvent(new CounterEvent(CounterType.GLOBAL_APPEARANCE, globalAppearanceCounter, this));
+						eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.UPDATE, globalAppearanceCounter, this));
+						globalAppearanceCounter = 0;
+					}
+				} else if (++topLevelFeatureCounter == 20) {
 					eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, topLevelFeatureCounter, this));
-					eventDispatcher.triggerEvent(new CounterEvent(CounterType.GLOBAL_APPEARANCE, globalAppearanceCounter, this));
-					eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.UPDATE, topLevelFeatureCounter + globalAppearanceCounter, this));
+					eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.UPDATE, topLevelFeatureCounter, this));
 					topLevelFeatureCounter = 0;
-					globalAppearanceCounter = 0;
 				}
 			} else
 				featureWriter.updateSequenceId(work.getSequenceId());

@@ -78,11 +78,11 @@ public class CityJSONReader implements FeatureReader, EventHandler {
                     }
 
                     counterFilter.incrementCount();
-                    if (counterFilter.isCountSatisfied())
-                        workerPool.addWork((CityGML) feature);
-                } else {
-                    workerPool.addWork((CityGML) feature);
+                    if (!counterFilter.isCountSatisfied())
+                        continue;
                 }
+
+                workerPool.addWork((CityGML) feature);
             }
         }
     }

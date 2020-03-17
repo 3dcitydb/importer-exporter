@@ -87,11 +87,11 @@ public class CityGMLReader implements FeatureReader, EventHandler {
                         }
 
                         counterFilter.incrementCount();
-                        if (counterFilter.isCountSatisfied())
-                            featureWorkerPool.addWork(chunk);
-                    } else {
-                        featureWorkerPool.addWork(chunk);
+                        if (!counterFilter.isCountSatisfied())
+                            continue;
                     }
+
+                    featureWorkerPool.addWork(chunk);
                 }
             } catch (CityGMLReadException | IOException e) {
                 throw new FeatureReadException("Failed to read CityGML input file.", e);
