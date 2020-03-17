@@ -67,10 +67,10 @@ import org.citygml4j.model.gml.geometry.primitives.SolidProperty;
 import org.citygml4j.model.module.citygml.CityGMLModuleType;
 
 import java.sql.Connection;
-import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -246,17 +246,11 @@ public class DBBridge extends AbstractFeatureExporter<AbstractBridge> {
 							}
 						}
 
-						if (projectionFilter.containsProperty("yearOfConstruction", bridgeModule)) {
-							Date yearOfConstruction = rs.getDate("year_of_construction");				
-							if (!rs.wasNull())
-								bridge.setYearOfConstruction(yearOfConstruction.toLocalDate());
-						}
+						if (projectionFilter.containsProperty("yearOfConstruction", bridgeModule))
+							bridge.setYearOfConstruction(rs.getObject("year_of_construction", LocalDate.class));
 
-						if (projectionFilter.containsProperty("yearOfDemolition", bridgeModule)) {
-							Date yearOfDemolition = rs.getDate("year_of_demolition");
-							if (!rs.wasNull())
-								bridge.setYearOfDemolition(yearOfDemolition.toLocalDate());
-						}
+						if (projectionFilter.containsProperty("yearOfDemolition", bridgeModule))
+							bridge.setYearOfDemolition(rs.getObject("year_of_demolition", LocalDate.class));
 
 						if (projectionFilter.containsProperty("isMovable", bridgeModule)) {
 							boolean isMovable = rs.getBoolean("is_movable");

@@ -68,10 +68,10 @@ import org.citygml4j.model.gml.measures.Length;
 import org.citygml4j.model.module.citygml.CityGMLModuleType;
 
 import java.sql.Connection;
-import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -253,17 +253,11 @@ public class DBBuilding extends AbstractFeatureExporter<AbstractBuilding> {
 							}
 						}
 
-						if (projectionFilter.containsProperty("yearOfConstruction", buildingModule)) {
-							Date yearOfConstruction = rs.getDate("year_of_construction");				
-							if (!rs.wasNull())
-								building.setYearOfConstruction(yearOfConstruction.toLocalDate());
-						}
+						if (projectionFilter.containsProperty("yearOfConstruction", buildingModule))
+							building.setYearOfConstruction(rs.getObject("year_of_construction", LocalDate.class));
 
-						if (projectionFilter.containsProperty("yearOfDemolition", buildingModule)) {
-							Date yearOfDemolition = rs.getDate("year_of_demolition");
-							if (!rs.wasNull())
-								building.setYearOfDemolition(yearOfDemolition.toLocalDate());
-						}
+						if (projectionFilter.containsProperty("yearOfDemolition", buildingModule))
+							building.setYearOfDemolition(rs.getObject("year_of_demolition", LocalDate.class));
 
 						if (projectionFilter.containsProperty("roofType", buildingModule)) {
 							String roofType = rs.getString("roof_type");
