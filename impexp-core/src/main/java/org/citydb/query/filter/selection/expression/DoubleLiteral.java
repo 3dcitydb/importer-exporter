@@ -37,7 +37,7 @@ public class DoubleLiteral extends AbstractLiteral<Double> {
 	}
 
 	@Override
-	public boolean evalutesToSchemaType(SimpleType schemaType) {
+	public boolean evaluatesToSchemaType(SimpleType schemaType) {
 		switch (schemaType) {
 		case DOUBLE:
 			return true;

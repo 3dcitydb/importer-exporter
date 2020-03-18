@@ -341,7 +341,7 @@ public class SimpleXPathParser {
 			throw new XPathException("Only equality tests of the form 'child=value' may be used.");
 
 		// try and apply an implicit type conversion if required
-		if (!literal.evalutesToSchemaType(attribute.getType()))
+		if (!literal.evaluatesToSchemaType(attribute.getType()))
 			literal = implicitTypeConversion(literal, attribute.getType());
 
 		return new EqualToPredicate(attribute, literal);
