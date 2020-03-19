@@ -581,7 +581,7 @@ public class KmlExporterManager {
 			// ----------------- model saving -----------------
 			File colladaModelFile = new File(buildingDirectory, colladaBundle.getGmlId() + ".dae");
 			File gltfModelFile = new File(buildingDirectory, colladaBundle.getGmlId() + ".gltf");
-			File implicitGeometryExport = new File(buildingDirectory.getParentFile().getParentFile().getParentFile().getParentFile() + File.separator + "ImplicitGeometry");
+			File implicitGeometryExport = new File(buildingDirectory.getParentFile().getParentFile().getParentFile().getParentFile() + File.separator + "ImplicitObjects");
 			if (implicitId != null) {
 				if (!implicitGeometryExport.exists()) {
 					implicitGeometryExport.mkdir();
