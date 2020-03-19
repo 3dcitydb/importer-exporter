@@ -750,7 +750,7 @@ public class KmlExporterManager {
 			}
 		}
 
-		result += File.separator + "appearance";
+		result += File.separator + "Appearance";
 		return result;
 	}
 }

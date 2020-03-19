@@ -19,7 +19,7 @@ Change Log
 * Optimized COLLADA/KML/glTF export to prevent redundant texture as well as visualization files of implicit geometries
 from being exported repeatedly leading to file redundancy. This includes the following changes:
 
-  + Exported textures are now stored in the folder `appearance`. 
+  + Exported textures are now stored in the folder `Appearance`. 
   Each texture has a unique name, i.e. no texture shall be overwritten.
   
   + COLLADA `.dae` and `.gltf` files of implicit geometries shall be exported in the folder `ImplicitGeometry`. 
