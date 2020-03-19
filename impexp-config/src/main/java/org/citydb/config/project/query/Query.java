@@ -50,10 +50,10 @@ import java.util.HashMap;
 		"featureTypeFilter",
 		"projectionFilter",
 		"selectionFilter",
+		"sorting",
 		"counterFilter",
 		"lodFilter",
 		"appearanceFilter",
-		"sorting",
 		"tiling"
 })
 public class Query {
@@ -70,14 +70,14 @@ public class Query {
 	private ProjectionFilter projectionFilter;
 	@XmlElement(name="filter")
 	private SelectionFilter selectionFilter;
+	@XmlElement(name = "sortBy")
+	private Sorting sorting;
 	@XmlElement(name = "limit")
 	private CounterFilter counterFilter;
 	@XmlElement(name = "lods")
 	private LodFilter lodFilter;
 	@XmlElement(name = "appearance")
 	private AppearanceFilter appearanceFilter;
-	@XmlElement(name = "sortBy")
-	private Sorting sorting;
 	private Tiling tiling;
 
 	@XmlTransient
@@ -154,6 +154,18 @@ public class Query {
 		this.selectionFilter = selectionFilter;
 	}
 
+	public Sorting getSorting() {
+		return sorting;
+	}
+
+	public boolean isSetSorting() {
+		return sorting != null;
+	}
+
+	public void setSorting(Sorting sorting) {
+		this.sorting = sorting;
+	}
+
 	public CounterFilter getCounterFilter() {
 		return counterFilter;
 	}
@@ -188,18 +200,6 @@ public class Query {
 
 	public void setAppearanceFilter(AppearanceFilter appearanceFilter) {
 		this.appearanceFilter = appearanceFilter;
-	}
-
-	public Sorting getSorting() {
-		return sorting;
-	}
-
-	public boolean isSetSorting() {
-		return sorting != null;
-	}
-
-	public void setSorting(Sorting sorting) {
-		this.sorting = sorting;
 	}
 
 	public Tiling getTiling() {
