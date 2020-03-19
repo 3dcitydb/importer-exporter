@@ -2088,7 +2088,7 @@ public abstract class KmlGenericObject {
 
 		LinkType link = kmlFactory.createLinkType();
 		if (this.implicitId != null) {
-			link.setHref(".." + File.separator + ".." + File.separator + ".." + File.separator + "ImplicitGeometry" + File.separator + this.implicitId + ".dae");
+			link.setHref(".." + File.separator + ".." + File.separator + ".." + File.separator + "ImplicitObjects" + File.separator + this.implicitId + ".dae");
 		} else {
 			if (config.getProject().getKmlExporter().isOneFilePerObject() &&
 					!config.getProject().getKmlExporter().isExportAsKmz() &&
