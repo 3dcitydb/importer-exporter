@@ -27,22 +27,24 @@
  */
 package org.citydb.gui.components.menubar;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
-import javax.swing.SwingUtilities;
-
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.gui.ImpExpGui;
 import org.citydb.gui.util.GuiUtil;
+import org.citydb.log.Logger;
+
+import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.net.URI;
+import java.util.Properties;
 
 @SuppressWarnings("serial")
 public class MenuHelp extends JMenu {
 	private final Config config;
 	private final ImpExpGui mainView;
+	private JMenuItem doc;
 	private JMenuItem info;
 	private JMenuItem readMe;
 	
@@ -53,9 +55,16 @@ public class MenuHelp extends JMenu {
 	}
 	
 	private void init() {
+		doc = new JMenuItem();
 		info = new JMenuItem();
 		readMe = new JMenuItem();
-		
+
+		doc.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				openOnlineDoc();
+			}
+		});
+
 		info.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				printInfo();
@@ -67,17 +76,30 @@ public class MenuHelp extends JMenu {
 				printReadMe();
 			}
 		});
-		
+
+		add(doc);
 		add(info);
 		add(readMe);
 	}
 	
 	public void doTranslation() {
+		doc.setText(Language.I18N.getString("menu.help.doc.label"));
 		info.setText(Language.I18N.getString("menu.help.info.label"));		
 		readMe.setText(Language.I18N.getString("menu.help.readMe.label"));
-		
+
+		GuiUtil.setMnemonic(doc, "menu.help.doc.label", "menu.help.doc.label.mnemonic");
 		GuiUtil.setMnemonic(info, "menu.help.info.label", "menu.help.info.label.mnemonic");
 		GuiUtil.setMnemonic(readMe, "menu.help.readMe.label", "menu.help.readMe.label.mnemonic");
+	}
+
+	public void openOnlineDoc() {
+		try {
+			Properties appProperties = new Properties();
+			appProperties.load(getClass().getResourceAsStream("/org/citydb/application.properties"));
+			java.awt.Desktop.getDesktop().browse(URI.create(appProperties.getProperty("docUrl")));
+		} catch (IOException e) {
+			Logger.getInstance().error("Failed to open the 3DCityDB online documentation: " + e.getMessage());
+		}
 	}
 	
 	public void printInfo() {		

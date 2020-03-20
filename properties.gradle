@@ -25,4 +25,7 @@ ext {
     // IzPack
     appName = citydbShortName + '-Importer-Exporter'
     appShortcutName = citydbShortName + ' Importer Exporter'
+
+    // Documentation
+    docUrl = 'https://3dcitydb-docs.readthedocs.io/en/latest/index.html'
 }
