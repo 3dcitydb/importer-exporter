@@ -102,7 +102,7 @@
         <pack name="core" id="core" required="yes" preselected="yes">
             <description/>
             <fileset dir="@installDir@" targetdir="$INSTALL_PATH"
-                excludes="@pluginsDir@/ @contribsDir@/ @citydbDir@/ @startScriptsDir@/ @manualDir@/ @samplesDir@/ @webMapClientDir@/" override="true"/>
+                excludes="@pluginsDir@/ @contribsDir@/ @citydbDir@/ @startScriptsDir@/ @samplesDir@/ @webMapClientDir@/" override="true"/>
             <file src="@installDir@/@startScriptsDir@/3DCityDB-Importer-Exporter.bat" targetdir="$INSTALL_PATH/@startScriptsDir@" os="windows"
                 override="true"/>
             <file src="@installDir@/@startScriptsDir@/3DCityDB-Importer-Exporter" targetdir="$INSTALL_PATH/@startScriptsDir@" os="unix"
@@ -135,10 +135,6 @@
         <pack name="3dcitydb" id="3dcitydb" required="no" preselected="yes">
             <description/>
             <fileset dir="@installDir@/@citydbDir@" targetdir="$INSTALL_PATH/@citydbDir@" override="true"/>
-        </pack>
-        <pack name="manual" id="manual" required="no" preselected="yes">
-            <description/>
-            <fileset dir="@installDir@/@manualDir@" targetdir="$INSTALL_PATH/@manualDir@" override="true"/>
         </pack>
         <pack name="3d-web-map-client" id="3d-web-map-client" required="no" preselected="yes">
             <description/>

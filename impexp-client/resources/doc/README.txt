@@ -17,11 +17,12 @@ Version @version@ (@date@)
 4. System requirements
 5. (Un)Installation
 6. Running the application
-7. Cooperation partners and supporters
-8. Active Developers
-9. Contact
-10. Websites
-11. Disclaimer
+7. Documentation
+8. Cooperation partners and supporters
+9. Active Developers
+10. Contact
+11. Websites
+12. Disclaimer
 
 
 1. License
@@ -173,8 +174,13 @@ b) Alternatively, you can directly run the @jar@
    Type "java -jar lib/@jar@ -help" to get a list of
    the available program arguments.
 
+
+7. Documentation
+----------------------------
+A complete and comprehensive documentation on the @name@ is available online (@docUrl@).
+
   
-7. Cooperation partners and supporters
+8. Cooperation partners and supporters
 --------------------------------------
 
 The @name@ v@version@ has been developed by
@@ -188,7 +194,7 @@ and with the support from the following cooperation partners:
   http://www.moss.de/
   
    
-8. Active Developers
+9. Active Developers
 --------------------
 
 Claus Nagel <cnagel@virtualcitysystems.de>
@@ -203,14 +209,14 @@ Version @version@ is based on earlier versions of the
 documentation for the list of all contributors to previous versions. 
 
 
-9. Contact
+10. Contact
 ----------
 
 cnagel@virtualcitysystems.de
 thomas.kolbe@tum.de
 
 
-10. Websites
+11. Websites
 ------------
 
 Official @citydbName@ website: 
@@ -225,7 +231,7 @@ http://www.citygmlwiki.org
 http://www.opengeospatial.org/standards/citygml
 
 
-11. Disclaimer
+12. Disclaimer
 --------------
 
 THIS SOFTWARE IS PROVIDED BY THE CHAIR OF GEOINFORMATION FROM TU MUNICH

@@ -33,9 +33,6 @@
     <str id="3dcitydb" txt="3D City Database"/>
     <str id="3dcitydb.description" txt="SQL Skripte der ${3DCITYDB_NAME} ${3DCITYDB_VER} für Oracle Spatial/Locator und PostgreSQL/PostGIS."/>
 
-    <str id="manual" txt="Dokumentation"/>
-    <str id="manual.description" txt="Die Dokumentation der ${3DCITYDB_NAME} und des ${APP_NAME}."/>
-
     <str id="3d-web-map-client" txt="3D Web Map Client"/>
     <str id="3d-web-map-client.description"
         txt="Cesium-basierter 3D Web-Viewer für die Visualisierung und interaktive Exploration von Inhalten der ${3DCITYDB_NAME}."/>
