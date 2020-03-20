@@ -31,6 +31,15 @@ dependencies {
     doc 'org.swinglabs.swingx:swingx-mavensupport:1.6.5-1'
 }
 
+processResources {
+    filesMatching('**/application.properties') {
+        filteringCharset = 'UTF-8'
+        filter(ReplaceTokens, tokens: [
+                docUrl: project.docUrl,
+        ])
+    }
+}
+
 task processReadme(type: Copy) {
     from('resources/doc/README.txt') {
         filteringCharset = 'UTF-8'
@@ -62,8 +71,7 @@ javadoc {
 jar {
     manifest {
         attributes('Main-Class': mainClassName,
-                'Class-Path': configurations.runtimeClasspath.collect{ it.name }.join(' '),
-                'docUrl': project.docUrl
+                'Class-Path': configurations.runtimeClasspath.collect{ it.name }.join(' ')
         )
         into('META-INF') {
             from processReadme

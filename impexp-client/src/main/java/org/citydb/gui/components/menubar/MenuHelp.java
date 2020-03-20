@@ -27,7 +27,6 @@
  */
 package org.citydb.gui.components.menubar;
 
-import org.citydb.ImpExp;
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.gui.ImpExpGui;
@@ -39,9 +38,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.net.URI;
-import java.net.URL;
-import java.util.Enumeration;
-import java.util.jar.Manifest;
+import java.util.Properties;
 
 @SuppressWarnings("serial")
 public class MenuHelp extends JMenu {
@@ -97,14 +94,9 @@ public class MenuHelp extends JMenu {
 
 	public void openOnlineDoc() {
 		try {
-			Enumeration<URL> resources = getClass().getClassLoader().getResources("META-INF/MANIFEST.MF");
-			while (resources.hasMoreElements()) {
-				Manifest manifest = new Manifest(resources.nextElement().openStream());
-				if (ImpExp.class.getName().equals(manifest.getMainAttributes().getValue("Main-Class"))) {
-					java.awt.Desktop.getDesktop().browse(URI.create(manifest.getMainAttributes().getValue("docUrl")));
-					break;
-				}
-			}
+			Properties appProperties = new Properties();
+			appProperties.load(getClass().getResourceAsStream("/org/citydb/application.properties"));
+			java.awt.Desktop.getDesktop().browse(URI.create(appProperties.getProperty("docUrl")));
 		} catch (IOException e) {
 			Logger.getInstance().error("Failed to open the 3DCityDB online documentation: " + e.getMessage());
 		}
