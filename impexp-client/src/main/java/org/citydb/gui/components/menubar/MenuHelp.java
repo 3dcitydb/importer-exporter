@@ -33,9 +33,9 @@ import org.citydb.gui.ImpExpGui;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.log.Logger;
 
-import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
+import javax.swing.SwingUtilities;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Properties;
@@ -56,40 +56,27 @@ public class MenuHelp extends JMenu {
 	
 	private void init() {
 		doc = new JMenuItem();
-		info = new JMenuItem();
 		readMe = new JMenuItem();
+		info = new JMenuItem();
 
-		doc.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				openOnlineDoc();
-			}
-		});
-
-		info.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				printInfo();
-			}
-		});
-		
-		readMe.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				printReadMe();
-			}
-		});
+		doc.addActionListener(e -> openOnlineDoc());
+		readMe.addActionListener(e -> printReadMe());
+		info.addActionListener(e -> printInfo());
 
 		add(doc);
-		add(info);
 		add(readMe);
+		addSeparator();
+		add(info);
 	}
 	
 	public void doTranslation() {
 		doc.setText(Language.I18N.getString("menu.help.doc.label"));
-		info.setText(Language.I18N.getString("menu.help.info.label"));		
 		readMe.setText(Language.I18N.getString("menu.help.readMe.label"));
+		info.setText(Language.I18N.getString("menu.help.info.label"));
 
 		GuiUtil.setMnemonic(doc, "menu.help.doc.label", "menu.help.doc.label.mnemonic");
-		GuiUtil.setMnemonic(info, "menu.help.info.label", "menu.help.info.label.mnemonic");
 		GuiUtil.setMnemonic(readMe, "menu.help.readMe.label", "menu.help.readMe.label.mnemonic");
+		GuiUtil.setMnemonic(info, "menu.help.info.label", "menu.help.info.label.mnemonic");
 	}
 
 	public void openOnlineDoc() {
@@ -102,23 +89,19 @@ public class MenuHelp extends JMenu {
 		}
 	}
 	
-	public void printInfo() {		
-		final InfoDialog infoDialog = new InfoDialog(config, mainView);
-		SwingUtilities.invokeLater(new Runnable() {
-			public void run() {
-				infoDialog.setLocationRelativeTo(getTopLevelAncestor());
-				infoDialog.setVisible(true);
-			}
-		});
-	}
-	
 	private void printReadMe() {		
 		final ReadMeDialog readMeDialog = new ReadMeDialog(mainView);
-		SwingUtilities.invokeLater(new Runnable() {
-			public void run() {
-				readMeDialog.setLocationRelativeTo(getTopLevelAncestor());
-				readMeDialog.setVisible(true);
-			}
+		SwingUtilities.invokeLater(() -> {
+			readMeDialog.setLocationRelativeTo(getTopLevelAncestor());
+			readMeDialog.setVisible(true);
+		});
+	}
+
+	public void printInfo() {
+		final InfoDialog infoDialog = new InfoDialog(config, mainView);
+		SwingUtilities.invokeLater(() -> {
+			infoDialog.setLocationRelativeTo(getTopLevelAncestor());
+			infoDialog.setVisible(true);
 		});
 	}
 }

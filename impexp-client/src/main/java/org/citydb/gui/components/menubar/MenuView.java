@@ -63,12 +63,7 @@ public class MenuView extends JMenu {
 		
 		map.addActionListener(e -> {
 			final MapWindow map = MapWindow.getInstance(mainView, config);
-
-			SwingUtilities.invokeLater(new Runnable() {
-				public void run() {
-					map.setVisible(true);
-				}
-			});
+			SwingUtilities.invokeLater(() -> map.setVisible(true));
 		});
 		
 		detachConsole.addActionListener(e -> mainView.enableConsoleWindow(!config.getGui().getConsoleWindow().isDetached(), true));
