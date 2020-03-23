@@ -54,7 +54,7 @@
         <variable name="APP_SHORTCUT_NAME" value="@appShortcut@"/>
         <variable name="3DCITYDB_NAME" value="@citydbName@"/>
         <variable name="3DCITYDB_VER" value="v@citydbVersion@"/>
-        <variable name="DesktopShortcutCheckboxEnabled" value="true"/>
+        <variable name="DesktopShortcutCheckboxEnabled" value="false"/>
         <variable name="ApplicationShortcutPath" value="shortcuts"/>
     </variables>
 
@@ -87,15 +87,15 @@
     </resources>
 
     <panels>
-        <panel classname="HelloPanel"/>
-        <panel classname="InfoPanel"/>
-        <panel classname="LicencePanel"/>
-        <panel classname="TargetPanel"/>
-        <panel classname="TreePacksPanel"/>
-        <panel classname="SummaryPanel"/>
-        <panel classname="InstallPanel"/>
-        <panel classname="ShortcutPanel"/>
-        <panel classname="SimpleFinishPanel"/>
+        <panel classname="HelloPanel" id="hello"/>
+        <panel classname="InfoPanel" id="info"/>
+        <panel classname="LicencePanel" id="license"/>
+        <panel classname="TargetPanel" id="target"/>
+        <panel classname="TreePacksPanel" id="packs"/>
+        <panel classname="SummaryPanel" id="summary"/>
+        <panel classname="InstallPanel" id="install"/>
+        <panel classname="ShortcutPanel" id="shortcut"/>
+        <panel classname="FinishPanel" id="finish"/>
     </panels>
 
     <packs>
