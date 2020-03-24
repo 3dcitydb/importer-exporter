@@ -43,6 +43,7 @@ import java.util.Properties;
 
 @SuppressWarnings("serial")
 public class MenuHelp extends JMenu {
+	private final Logger log = Logger.getInstance();
 	private final Config config;
 	private final ImpExpGui mainView;
 	private JMenuItem doc;
@@ -86,7 +87,8 @@ public class MenuHelp extends JMenu {
 			appProperties.load(getClass().getResourceAsStream("/org/citydb/application.properties"));
 			Desktop.getDesktop().browse(URI.create(appProperties.getProperty("docUrl")));
 		} catch (IOException e) {
-			Logger.getInstance().error("Failed to open the 3DCityDB online documentation: " + e.getMessage());
+			log.error("Failed to open the 3DCityDB online documentation.");
+			log.error("Cause: " + e.getMessage());
 		}
 	}
 	
