@@ -35,7 +35,7 @@ processResources {
     filesMatching('**/application.properties') {
         filteringCharset = 'UTF-8'
         filter(ReplaceTokens, tokens: [
-                docUrl: project.docUrl,
+                docUrl: project.docUrl
         ])
     }
 }
