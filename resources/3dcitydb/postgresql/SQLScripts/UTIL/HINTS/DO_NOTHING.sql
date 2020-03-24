@@ -24,10 +24,5 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 --
-
-\pset footer off
-SET client_min_messages TO WARNING;
-\set ON_ERROR_STOP ON
-
-\echo
-\echo 'The 3DCityDB is already up to date. No action required.'
+-------------------------------------------------------------------------------
+-- // empty SQL file

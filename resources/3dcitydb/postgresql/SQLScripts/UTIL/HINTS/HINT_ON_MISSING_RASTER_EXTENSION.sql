@@ -25,9 +25,9 @@
 -- limitations under the License.
 --
 
-\pset footer off
-SET client_min_messages TO WARNING;
-\set ON_ERROR_STOP ON
-
-\echo
-\echo 'The 3DCityDB is already up to date. No action required.'
+DO $$
+BEGIN
+  RAISE EXCEPTION 'The postgis_raster extension is missing!'
+    USING HINT = 'This extension is required when the target database uses PostGIS 3 or higher.';
+END
+$$;
