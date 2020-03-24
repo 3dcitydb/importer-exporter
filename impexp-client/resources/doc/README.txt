@@ -177,7 +177,10 @@ b) Alternatively, you can directly run the @jar@
 
 7. Documentation
 ----------------------------
-A complete and comprehensive documentation on the @name@ is available online (@docUrl@).
+A complete and comprehensive documentation on the @citydbName@
+and the @name@ is available online at:
+
+@docUrl@
 
   
 8. Cooperation partners and supporters
