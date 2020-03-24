@@ -36,6 +36,7 @@ import org.citydb.log.Logger;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
+import java.awt.Desktop;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Properties;
@@ -70,11 +71,11 @@ public class MenuHelp extends JMenu {
 	}
 	
 	public void doTranslation() {
-		doc.setText(Language.I18N.getString("menu.help.doc.label"));
+		doc.setText(Language.I18N.getString("menu.help.doc.citydb.label"));
 		readMe.setText(Language.I18N.getString("menu.help.readMe.label"));
 		info.setText(Language.I18N.getString("menu.help.info.label"));
 
-		GuiUtil.setMnemonic(doc, "menu.help.doc.label", "menu.help.doc.label.mnemonic");
+		GuiUtil.setMnemonic(doc, "menu.help.doc.citydb.label", "menu.help.doc.citydb.label.mnemonic");
 		GuiUtil.setMnemonic(readMe, "menu.help.readMe.label", "menu.help.readMe.label.mnemonic");
 		GuiUtil.setMnemonic(info, "menu.help.info.label", "menu.help.info.label.mnemonic");
 	}
@@ -83,7 +84,7 @@ public class MenuHelp extends JMenu {
 		try {
 			Properties appProperties = new Properties();
 			appProperties.load(getClass().getResourceAsStream("/org/citydb/application.properties"));
-			java.awt.Desktop.getDesktop().browse(URI.create(appProperties.getProperty("docUrl")));
+			Desktop.getDesktop().browse(URI.create(appProperties.getProperty("docUrl")));
 		} catch (IOException e) {
 			Logger.getInstance().error("Failed to open the 3DCityDB online documentation: " + e.getMessage());
 		}
