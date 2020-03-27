@@ -27,5 +27,5 @@ ext {
     appShortcutName = citydbShortName + ' Importer Exporter'
 
     // Documentation
-    docUrl = 'https://3dcitydb-docs.readthedocs.io/en/release-v4.2.3/index.html'
+    docUrl = 'https://3dcitydb-docs.readthedocs.io/en/release-v4.2.3/'
 }

@@ -21,7 +21,7 @@ config file lets you define the behavior of the delete operation (e.g. by provid
 * Added import and export counter for global appearances. [#95](https://github.com/3dcitydb/importer-exporter/issues/95),
 [#115](https://github.com/3dcitydb/importer-exporter/pull/115)
 * Added date picker in GUI.
-* Added a link to the [online documentation](https://3dcitydb-docs.readthedocs.io/en/latest/index.html) in the `Help` menu of the GUI.
+* Added a link to the [online documentation](https://3dcitydb-docs.readthedocs.io/en/release-v4.2.3/) in the `Help` menu of the GUI.
 
 ##### Changes
 * Reworked the feature counter filter for CityGML imports and exports. Instead of providing a lower and upper
