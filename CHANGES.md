@@ -18,7 +18,7 @@ the XML query language. [#86](https://github.com/3dcitydb/importer-exporter/pull
 config file lets you define the behavior of the delete operation (e.g. by providing a filter expression). [#102](https://github.com/3dcitydb/importer-exporter/pull/102)
 * Added support for importing `gml:PolygonPatch` geometry objects.
 * Added installation via CLI to the documentation. [#99](https://github.com/3dcitydb/importer-exporter/issues/99) 
-* Added import counter for global appearances. [#95](https://github.com/3dcitydb/importer-exporter/issues/95),
+* Added import and export counter for global appearances. [#95](https://github.com/3dcitydb/importer-exporter/issues/95),
 [#115](https://github.com/3dcitydb/importer-exporter/pull/115)
 * Added date picker in GUI.
 * Added a link to the [online documentation](https://3dcitydb-docs.readthedocs.io/en/latest/index.html) in the `Help` menu of the GUI.
@@ -42,9 +42,10 @@ interior start and end points of the segments were imported into the database. T
 
 ##### Miscellaneous 
 * Updated to latest versions of the ADE manager plugin and the Spreadsheet Generator plugin.
-* Upgrade to latest PostgreSQL driver v42.2.10.
-* Upgrade to latest Oracle driver 19.3.
+* Updated to latest PostgreSQL driver v42.2.10.
+* Updated to latest Oracle driver 19.3.
 * Updated citygml4j to 2.10.5.
+* Updated sqlbuilder to 2.2.1.
 
 ### 4.2.2 - 2019-08-06
 
