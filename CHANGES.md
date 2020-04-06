@@ -6,7 +6,7 @@ Change Log
 * CityJSON import (already working in `master`). [#88](https://github.com/3dcitydb/importer-exporter/issues/88)
 * CityJSON export. [#89](https://github.com/3dcitydb/importer-exporter/issues/89)
 
-### 4.2.3 - 2019-04-06
+### 4.2.3 - 2020-04-06
 
 ##### Additions
 * Added support for sorting the top-level features in a CityGML export based on one or more 
