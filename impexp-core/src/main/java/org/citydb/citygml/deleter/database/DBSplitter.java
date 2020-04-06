@@ -29,11 +29,16 @@ package org.citydb.citygml.deleter.database;
 
 import org.citydb.citygml.exporter.database.content.DBSplittingResult;
 import org.citydb.concurrent.WorkerPool;
+import org.citydb.config.Config;
+import org.citydb.config.project.deleter.DeleteMode;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.connection.DatabaseConnectionPool;
 import org.citydb.database.schema.mapping.AbstractObjectType;
+import org.citydb.database.schema.mapping.FeatureType;
 import org.citydb.database.schema.mapping.MappingConstants;
 import org.citydb.database.schema.mapping.SchemaMapping;
+import org.citydb.database.schema.path.InvalidSchemaPathException;
+import org.citydb.database.schema.path.SchemaPath;
 import org.citydb.event.EventDispatcher;
 import org.citydb.event.global.ProgressBarEventType;
 import org.citydb.event.global.StatusDialogProgressBar;
@@ -42,11 +47,18 @@ import org.citydb.query.Query;
 import org.citydb.query.builder.QueryBuildException;
 import org.citydb.query.builder.sql.BuildProperties;
 import org.citydb.query.builder.sql.SQLQueryBuilder;
+import org.citydb.query.filter.FilterException;
+import org.citydb.query.filter.selection.SelectionFilter;
+import org.citydb.query.filter.selection.expression.ValueReference;
+import org.citydb.query.filter.selection.operator.comparison.ComparisonFactory;
+import org.citydb.query.filter.selection.operator.comparison.NullOperator;
+import org.citydb.query.filter.selection.operator.logical.LogicalOperationFactory;
 import org.citydb.sqlbuilder.schema.Column;
 import org.citydb.sqlbuilder.schema.Table;
-import org.citydb.sqlbuilder.select.OrderByToken;
 import org.citydb.sqlbuilder.select.Select;
 import org.citydb.sqlbuilder.select.projection.Function;
+import org.citydb.sqlbuilder.select.projection.WildCardColumn;
+import org.citygml4j.model.module.citygml.CoreModule;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -58,6 +70,7 @@ public class DBSplitter {
 
 	private final WorkerPool<DBSplittingResult> dbWorkerPool;
 	private final Query query;
+	private final Config config;
 	private final EventDispatcher eventDispatcher;
 
 	private final AbstractDatabaseAdapter databaseAdapter;
@@ -67,26 +80,25 @@ public class DBSplitter {
 
 	private volatile boolean shouldRun = true;
 	private boolean calculateNumberMatched;
-	private long elementCounter;
 
 	public DBSplitter(SchemaMapping schemaMapping,
 			WorkerPool<DBSplittingResult> dbWorkerPool, 
 			Query query,
+			Config config,
 			EventDispatcher eventDispatcher) throws SQLException {
 		
 		this.schemaMapping = schemaMapping;
 		this.dbWorkerPool = dbWorkerPool;
 		this.query = query;
+		this.config = config;
 		this.eventDispatcher = eventDispatcher;
 		databaseAdapter = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter();
 		connection = DatabaseConnectionPool.getInstance().getConnection();
 
-		BuildProperties buildProperties = BuildProperties.defaults().addProjectionColumn(MappingConstants.GMLID);
-
 		builder = new SQLQueryBuilder(
 				schemaMapping, 
-				databaseAdapter, 
-				buildProperties);
+				databaseAdapter,
+				BuildProperties.defaults());
 	}
 
 	public boolean isCalculateNumberMatched() {
@@ -125,55 +137,54 @@ public class DBSplitter {
 		if (query.getFeatureTypeFilter().isEmpty())
 			return;
 
+		// do not terminate city objects that have already been terminated
+		if (config.getProject().getDeleter().getMode() == DeleteMode.TERMINATE) {
+			try {
+				FeatureType superType = schemaMapping.getCommonSuperType(query.getFeatureTypeFilter().getFeatureTypes());
+				SchemaPath schemaPath = new SchemaPath(superType)
+						.appendChild(superType.getProperty("terminationDate", CoreModule.v2_0_0.getNamespaceURI(), true));
+				NullOperator isNull = ComparisonFactory.isNull(new ValueReference(schemaPath));
+
+				if (query.isSetSelection()) {
+					SelectionFilter selection = query.getSelection();
+					selection.setPredicate(LogicalOperationFactory.AND(selection.getPredicate(), isNull));
+				} else
+					query.setSelection(new SelectionFilter(isNull));
+			} catch (InvalidSchemaPathException | FilterException e) {
+				throw new QueryBuildException("Failed to add is null test for termination date.", e);
+			}
+		}
+
 		// create query statement
 		Select select = builder.buildQuery(query);
-		if (query.isSetCounterFilter())
-			select.addOrderBy(new OrderByToken((Column)select.getProjection().get(0)));
+		select.unsetOrderBy();
 
-		// add hits counter
+		// calculate hits
+		long hits = 0;
 		if (calculateNumberMatched) {
-			Table table = new Table(select);
-			select = new Select()
-					.addProjection(table.getColumn(MappingConstants.ID))
-					.addProjection(table.getColumn(MappingConstants.OBJECTCLASS_ID))
-					.addProjection(table.getColumn(MappingConstants.GMLID))
-					.addProjection(new Function("count(1) over", "hits"));
+			log.debug("Calculating the number of matching top-level features...");
+			hits = getNumberMatched(query);
 		}
 
 		// issue query
-		PreparedStatement stmt = null;
-		ResultSet rs = null;
-
-		try {
-			stmt = databaseAdapter.getSQLAdapter().prepareStatement(select, connection);
-			rs = stmt.executeQuery();
-
+		try (PreparedStatement stmt = databaseAdapter.getSQLAdapter().prepareStatement(select, connection);
+			 ResultSet rs = stmt.executeQuery()) {
 			if (rs.next()) {
 				if (calculateNumberMatched) {
-					long hits = rs.getLong("hits");
 					log.info("Found " + hits + " top-level feature(s) matching the request.");
 
-					if (query.isSetCounterFilter()) {
-						long maxCount = query.getCounterFilter().getUpperLimit();					
-						if (maxCount < hits) {
-							log.info("Deleting " + maxCount + " top-level feature(s) due to counter settings.");
-							hits = maxCount;
+					if (query.isSetCounterFilter() && query.getCounterFilter().isSetCount()) {
+						long count = query.getCounterFilter().getCount();
+						if (count < hits) {
+							log.info("Deleting at maximum " + count + " top-level feature(s) due to counter settings.");
+							hits = count;
 						}
 					}
-					eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.INIT, (int)hits, this));
+
+					eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.INIT, (int) hits, this));
 				}
-				
+
 				do {
-					elementCounter++;
-
-					if (query.isSetCounterFilter()) {
-						if (elementCounter < query.getCounterFilter().getLowerLimit())
-							continue;
-
-						if (elementCounter > query.getCounterFilter().getUpperLimit())
-							break;
-					}
-
 					long id = rs.getLong("id");
 					int objectClassId = rs.getInt("objectclass_id");
 
@@ -189,13 +200,21 @@ public class DBSplitter {
 				} while (rs.next() && shouldRun);
 			} else
 				log.info("No feature matches the request.");
-		} finally {
-			if (rs != null)
-				rs.close();
-
-			if (stmt != null)
-				stmt.close();
 		}
 	}
-	
+
+	private long getNumberMatched(Query query) throws QueryBuildException, SQLException {
+		Query hitsQuery = new Query(query);
+		hitsQuery.unsetCounterFilter();
+		hitsQuery.unsetSorting();
+
+		Select select = builder.buildQuery(hitsQuery)
+				.removeProjectionIf(t -> !(t instanceof Column) || !((Column) t).getName().equals(MappingConstants.ID));
+
+		select = new Select().addProjection(new Function("count", new WildCardColumn(new Table(select), false)));
+		try (PreparedStatement stmt = databaseAdapter.getSQLAdapter().prepareStatement(select, connection);
+			 ResultSet rs = stmt.executeQuery()) {
+			return rs.next() ? rs.getLong(1) : 0;
+		}
+	}
 }

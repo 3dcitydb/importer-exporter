@@ -18,7 +18,7 @@ dependencies {
     compile project(':impexp-client-common')
     compile project(':impexp-kml-collada-plugin')
     compile 'args4j:args4j:2.33'
-    compile 'com.fifesoft:rsyntaxtextarea:3.0.0'
+    compile 'com.fifesoft:rsyntaxtextarea:3.0.8'
     compile ('org.citydb:swingx-ws:1.1.3') {
         transitive = false
     }
@@ -29,6 +29,15 @@ dependencies {
     izpack fileTree(dir: 'resources/izpack/lib', include: '*.jar')
     doc 'org.kohsuke.metainf-services:metainf-services:1.8'
     doc 'org.swinglabs.swingx:swingx-mavensupport:1.6.5-1'
+}
+
+processResources {
+    filesMatching('**/application.properties') {
+        filteringCharset = 'UTF-8'
+        filter(ReplaceTokens, tokens: [
+                docUrl: project.docUrl
+        ])
+    }
 }
 
 task processReadme(type: Copy) {
@@ -48,7 +57,8 @@ task processReadme(type: Copy) {
                 vendorOrganisation: project.vendorOrganisation,
                 vendorCountry: project.vendorCountry,
                 vendorCopyright: project.vendorCopyright,
-                vendorWebsiteUrl: project.vendorWebsiteUrl
+                vendorWebsiteUrl: project.vendorWebsiteUrl,
+                docUrl: project.docUrl
         ])
     }
     into "$buildDir/tmp/doc"
@@ -93,9 +103,6 @@ distributions.main.contents {
     }
     into('3d-web-map-client') {
         from "$rootDir/resources/3d-web-map-client"
-    }
-    into('manual') {
-        from "$rootDir/resources/manual"
     }
     into('contribs') {
         from 'contribs'
@@ -147,7 +154,6 @@ task buildInstaller(dependsOn: installDist, group: 'distribution') {
                         startScriptsDir: 'bin',
                         adeExtensionsDir: 'ade-extensions',
                         templatesDir: 'templates',
-                        manualDir: 'manual',
                         webMapClientDir: '3d-web-map-client',
                         samplesDir: 'samples',
                         spreadSheetPluginDir: 'plugin-spreadsheet-generator',

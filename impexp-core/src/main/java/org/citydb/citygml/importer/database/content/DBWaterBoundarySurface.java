@@ -27,11 +27,6 @@
  */
 package org.citydb.citygml.importer.database.content;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Types;
-
 import org.citydb.citygml.common.database.xlink.DBXlinkSurfaceGeometry;
 import org.citydb.citygml.importer.CityGMLImportException;
 import org.citydb.config.Config;
@@ -42,6 +37,11 @@ import org.citygml4j.model.citygml.waterbody.AbstractWaterBoundarySurface;
 import org.citygml4j.model.citygml.waterbody.WaterBody;
 import org.citygml4j.model.citygml.waterbody.WaterSurface;
 import org.citygml4j.model.gml.geometry.primitives.SurfaceProperty;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Types;
 
 public class DBWaterBoundarySurface implements DBImporter {
 	private final CityGMLImportManager importer;
@@ -121,10 +121,10 @@ public class DBWaterBoundarySurface implements DBImporter {
 					String href = surfaceProperty.getHref();
 					if (href != null && href.length() != 0) {
 						importer.propagateXlink(new DBXlinkSurfaceGeometry(
-								featureType.getObjectClassId(), 
+								TableEnum.WATERBOUNDARY_SURFACE.getName(),
 								waterBoundarySurfaceId, 
 								href, 
-								"LOD" + (i + 2) + "_SURFACE_ID"));
+								"lod" + (i + 2) + "_surface_id"));
 					}
 				}
 			}

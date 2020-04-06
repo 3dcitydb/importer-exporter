@@ -29,6 +29,7 @@ package org.citydb.config.project;
 
 import org.citydb.config.ConfigNamespaceFilter;
 import org.citydb.config.project.database.Database;
+import org.citydb.config.project.deleter.Deleter;
 import org.citydb.config.project.exporter.Exporter;
 import org.citydb.config.project.global.Global;
 import org.citydb.config.project.importer.Importer;
@@ -48,6 +49,7 @@ import java.util.Map;
 		"database",
 		"importer",
 		"exporter",
+		"deleter",
 		"kmlExporter",
 		"global",
 		"extensions"
@@ -58,6 +60,8 @@ public class Project {
 	private Importer importer;
 	@XmlElement(name="export")
 	private Exporter exporter;
+	@XmlElement(name="delete")
+	private Deleter deleter;
 	@XmlElement(name="kmlExport")
 	private KmlExporter kmlExporter;
 	private Global global;
@@ -67,10 +71,11 @@ public class Project {
 	@XmlTransient
 	private ConfigNamespaceFilter namespaceFilter;
 
-	public Project(Database database, Importer importer, Exporter exporter, KmlExporter kmlExporter, Global global) {
+	public Project(Database database, Importer importer, Exporter exporter, Deleter deleter, KmlExporter kmlExporter, Global global) {
 		this.database = database;
 		this.importer = importer;
 		this.exporter = exporter;
+		this.deleter = deleter;
 		this.kmlExporter = kmlExporter;
 		this.global = global;
 
@@ -79,7 +84,7 @@ public class Project {
 	}
 
 	public Project() {
-		this(new Database(), new Importer(), new Exporter(), new KmlExporter(), new Global());
+		this(new Database(), new Importer(), new Exporter(), new Deleter(), new KmlExporter(), new Global());
 	}
 
 	public Database getDatabase() {
@@ -108,14 +113,14 @@ public class Project {
 		if (exporter != null)
 			this.exporter = exporter;
 	}
-
-	public Global getGlobal() {
-		return global;
+	
+	public Deleter getDeleter() {
+		return deleter;
 	}
 
-	public void setGlobal(Global global) {
-		if (global != null)
-			this.global = global;
+	public void setDeleter(Deleter deleter) {
+		if (deleter != null)
+			this.deleter = deleter;
 	}
 
 	public void setKmlExporter(KmlExporter kmlExporter) {
@@ -125,6 +130,15 @@ public class Project {
 
 	public KmlExporter getKmlExporter() {
 		return kmlExporter;
+	}
+
+	public Global getGlobal() {
+		return global;
+	}
+
+	public void setGlobal(Global global) {
+		if (global != null)
+			this.global = global;
 	}
 
 	public PluginConfig getExtension(Class<? extends PluginConfig> pluginConfigClass) {

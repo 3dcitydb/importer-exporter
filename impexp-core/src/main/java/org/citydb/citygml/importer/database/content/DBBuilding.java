@@ -27,12 +27,6 @@
  */
 package org.citydb.citygml.importer.database.content;
 
-import java.sql.Connection;
-import java.sql.Date;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Types;
-
 import org.citydb.citygml.common.database.xlink.DBXlinkBasic;
 import org.citydb.citygml.common.database.xlink.DBXlinkSurfaceGeometry;
 import org.citydb.citygml.importer.CityGMLImportException;
@@ -58,6 +52,11 @@ import org.citygml4j.model.gml.basicTypes.Code;
 import org.citygml4j.model.gml.geometry.aggregates.MultiCurveProperty;
 import org.citygml4j.model.gml.geometry.aggregates.MultiSurfaceProperty;
 import org.citygml4j.model.gml.geometry.primitives.SolidProperty;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Types;
 
 public class DBBuilding implements DBImporter {
 	private final Connection batchConn;
@@ -165,14 +164,14 @@ public class DBBuilding implements DBImporter {
 
 		// bldg:yearOfConstruction
 		if (building.isSetYearOfConstruction()) {
-			psBuilding.setDate(10, Date.valueOf(building.getYearOfConstruction()));
+			psBuilding.setObject(10, building.getYearOfConstruction());
 		} else {
 			psBuilding.setNull(10, Types.DATE);
 		}
 
 		// bldg:yearOfDemolition
 		if (building.isSetYearOfDemolition()) {
-			psBuilding.setDate(11, Date.valueOf(building.getYearOfDemolition()));
+			psBuilding.setObject(11, building.getYearOfDemolition());
 		} else {
 			psBuilding.setNull(11, Types.DATE);
 		}
@@ -316,10 +315,10 @@ public class DBBuilding implements DBImporter {
 					String href = multiSurfaceProperty.getHref();
 					if (href != null && href.length() != 0) {
 						importer.propagateXlink(new DBXlinkSurfaceGeometry(
-								featureType.getObjectClassId(), 
+								TableEnum.BUILDING.getName(),
 								buildingId, 
 								href, 
-								i == 0 ? "LOD0_FOOTPRINT_ID" : "LOD0_ROOFPRINT_ID"));
+								i == 0 ? "lod0_footprint_id" : "lod0_roofprint_id"));
 					}
 				}
 			}
@@ -358,10 +357,10 @@ public class DBBuilding implements DBImporter {
 					String href = multiSurfaceProperty.getHref();
 					if (href != null && href.length() != 0) {
 						importer.propagateXlink(new DBXlinkSurfaceGeometry(
-								featureType.getObjectClassId(), 
+								TableEnum.BUILDING.getName(),
 								buildingId, 
 								href, 
-								"LOD" + (i + 1) + "_MULTI_SURFACE_ID"));
+								"lod" + (i + 1) + "_multi_surface_id"));
 					}
 				}
 			}
@@ -400,10 +399,10 @@ public class DBBuilding implements DBImporter {
 					String href = solidProperty.getHref();
 					if (href != null && href.length() != 0) {
 						importer.propagateXlink(new DBXlinkSurfaceGeometry(
-								featureType.getObjectClassId(), 
+								"building",
 								buildingId, 
 								href, 
-								"LOD" + (i + 1) + "_SOLID_ID"));
+								"lod" + (i + 1) + "_solid_id"));
 					}
 				}
 			}

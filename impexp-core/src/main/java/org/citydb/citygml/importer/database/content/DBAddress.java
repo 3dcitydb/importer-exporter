@@ -49,7 +49,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
 
-public class DBAddress implements DBImporter {	
+public class DBAddress implements DBImporter {
 	private final Connection batchConn;
 	private final CityGMLImportManager importer;
 
@@ -92,8 +92,10 @@ public class DBAddress implements DBImporter {
 	}
 
 	protected long doImport(Address address) throws CityGMLImportException, SQLException {
-		if (!address.isSetXalAddress() || !address.getXalAddress().isSetAddressDetails())
-			importer.logOrThrowErrorMessage(importer.getObjectSignature(address) + ": Failed to interpret xAL address element.");
+		if (!address.isSetXalAddress() || !address.getXalAddress().isSetAddressDetails()) {
+			importer.logOrThrowErrorMessage(importer.getObjectSignature(address) + ": Skipping address due to missing xAL address details.");
+			return 0;
+		}
 
 		FeatureType featureType = importer.getFeatureType(address);
 		if (featureType == null)
@@ -171,15 +173,17 @@ public class DBAddress implements DBImporter {
 
 	public void importBuildingAddress(Address address, long parentId) throws CityGMLImportException, SQLException {
 		long addressId = doImport(address);
-		addressToBuildingImporter.doImport(addressId, parentId);
+		if (addressId != 0)
+			addressToBuildingImporter.doImport(addressId, parentId);
 	}
 
 	public void importBridgeAddress(Address address, long parentId) throws CityGMLImportException, SQLException {
 		long addressId = doImport(address);
-		addressToBridgeImporter.doImport(addressId, parentId);
+		if (addressId != 0)
+			addressToBridgeImporter.doImport(addressId, parentId);
 	}
 
-	private final class XALAddressWalker extends XALWalker {
+	private static final class XALAddressWalker extends XALWalker {
 		private StringBuilder street;
 		private StringBuilder houseNo;
 		private StringBuilder poBox;

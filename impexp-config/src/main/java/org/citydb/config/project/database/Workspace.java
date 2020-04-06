@@ -28,16 +28,23 @@
 package org.citydb.config.project.database;
 
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.XMLGregorianCalendar;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 @XmlType(name="WorkspaceType", propOrder={
 		"name",
 		"timestamp"
 })
 public class Workspace {
-	@XmlElement(required=true)
-	private String name = "";
-	private String timestamp = "";
+	@XmlElement(required = true)
+	private String name;
+	@XmlSchemaType(name = "date")
+	private XMLGregorianCalendar timestamp;
 
 	public Workspace() {
 	}
@@ -46,7 +53,7 @@ public class Workspace {
 		setName(name);
 	}
 	
-	public Workspace(String name, String timestamp) {
+	public Workspace(String name, Date timestamp) {
 		this(name);
 		setTimestamp(timestamp);
 	}
@@ -57,28 +64,39 @@ public class Workspace {
 
 	public void setName(String name) {
 		if (name != null)
-			this.name = name;
+			this.name = name.trim();
 	}
 	
 	public boolean isSetName() {
 		return name != null && !name.trim().isEmpty();
 	}
 
-	public String getTimestamp() {
-		return timestamp;
+	public Date getTimestamp() {
+		return timestamp != null ? timestamp.toGregorianCalendar().getTime() : null;
 	}
 
-	public void setTimestamp(String timestamp) {
-		if (timestamp != null)
-			this.timestamp = timestamp;
+	public boolean isSetTimestamp() {
+		return timestamp != null;
+	}
+
+	public void setTimestamp(Date timestamp) {
+		if (timestamp != null) {
+			try {
+				SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+				this.timestamp = DatatypeFactory.newInstance().newXMLGregorianCalendar(format.format(timestamp));
+			} catch (DatatypeConfigurationException e) {
+				this.timestamp = null;
+			}
+		} else
+			this.timestamp = null;
 	}
 
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder()
 		.append("'").append(getName()).append("'");
-		if (timestamp.length() > 0)
-			builder.append(" at timestamp ").append(timestamp);
+		if (timestamp != null)
+			builder.append(" at timestamp ").append(timestamp.toXMLFormat());
 		
 		return builder.toString();
 	}

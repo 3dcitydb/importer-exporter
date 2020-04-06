@@ -75,8 +75,8 @@ public interface CityGMLImportHelper {
 	public ObjectType getObjectType(AbstractGML object);
 	public AbstractObjectType<?> getAbstractObjectType(AbstractGML object);
 	
-	public void propagateObjectXlink(AbstractObjectType<?> objectType, long objectId, String xlink, String propertyColumn);
+	public void propagateObjectXlink(String table, long objectId, String xlink, String propertyColumn);
 	public void propagateObjectXlink(String intermediateTable, long objectId, String fromColumn, String xlink, String toColumn);
 	public void propagateReverseObjectXlink(String toTable, String gmlId, long objectId, String propertyColumn);
-	public void propagateSurfaceGeometryXlink(String xlink, AbstractObjectType<?> objectType, long objectId, String propertyColumn);
+	public void propagateSurfaceGeometryXlink(String xlink, String table, long objectId, String propertyColumn);
 }

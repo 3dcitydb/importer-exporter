@@ -32,7 +32,6 @@ import org.citydb.citygml.exporter.controller.Exporter;
 import org.citydb.config.Config;
 import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.i18n.Language;
-import org.citydb.config.project.database.Database;
 import org.citydb.config.project.database.DatabaseConfigurationException;
 import org.citydb.config.project.database.DatabaseSrs;
 import org.citydb.config.project.exporter.SimpleQuery;
@@ -41,6 +40,7 @@ import org.citydb.config.project.exporter.SimpleTilingMode;
 import org.citydb.config.project.exporter.SimpleTilingOptions;
 import org.citydb.config.project.global.LogLevel;
 import org.citydb.config.project.query.Query;
+import org.citydb.config.project.query.filter.counter.CounterFilter;
 import org.citydb.config.project.query.simple.SimpleSelectionFilter;
 import org.citydb.database.DatabaseController;
 import org.citydb.database.schema.mapping.SchemaMapping;
@@ -51,6 +51,7 @@ import org.citydb.event.EventHandler;
 import org.citydb.event.global.DatabaseConnectionStateEvent;
 import org.citydb.event.global.EventType;
 import org.citydb.event.global.InterruptEvent;
+import org.citydb.gui.components.common.DatePicker;
 import org.citydb.gui.components.dialog.ExportStatusDialog;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.factory.SrsComboBoxFactory;
@@ -64,23 +65,11 @@ import org.citygml4j.builder.jaxb.CityGMLBuilder;
 import org.jdesktop.swingx.JXTextField;
 import org.jdesktop.swingx.prompt.PromptSupport.FocusBehavior;
 
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JFileChooser;
-import javax.swing.JFormattedTextField;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
-import javax.swing.SwingWorker;
+import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.xml.bind.JAXBContext;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
+import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.dnd.DnDConstants;
@@ -94,7 +83,6 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -110,7 +98,7 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 	private JTextField browseText;
 	private JButton browseButton;
 	private JXTextField workspaceText;
-	private JFormattedTextField timestampText;
+	private DatePicker datePicker;
 	private FilterPanel filterPanel;
 	private JButton exportButton;
 
@@ -140,18 +128,16 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 		workspaceText = new JXTextField();
 		workspaceText.setPromptForeground(Color.LIGHT_GRAY);
 		workspaceText.setFocusBehavior(FocusBehavior.SHOW_PROMPT);
-		timestampText = new JFormattedTextField(new SimpleDateFormat("dd.MM.yyyy"));
-		timestampText.setFocusLostBehavior(JFormattedTextField.COMMIT);
-		timestampText.setColumns(10);
+		datePicker = new DatePicker();
 		filterPanel = new FilterPanel(viewContoller, projectContext, config);
 		exportButton = new JButton();
 		switchFilterModeButton = new JButton();
 
 		workspaceText.setEnabled(true);
-		timestampText.setEnabled(true);
+		datePicker.setEnabled(true);
 		browseButton.addActionListener(e -> saveFile(Language.I18N.getString("main.tabbedPane.export")));
 
-		PopupMenuDecorator.getInstance().decorate(workspaceText, timestampText, browseText);
+		PopupMenuDecorator.getInstance().decorate(workspaceText, datePicker.getEditor(), browseText);
 
 		exportButton.addActionListener(e -> new SwingWorker<Void, Void>() {
 			protected Void doInBackground() {
@@ -189,8 +175,7 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 		operations.add(workspaceLabel, GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.HORIZONTAL,0,5,5,5));
 		operations.add(workspaceText, GuiUtil.setConstraints(1,0,1.0,0.0,GridBagConstraints.HORIZONTAL,0,5,5,5));
 		operations.add(timestampLabel, GuiUtil.setConstraints(2,0,0.0,0.0,GridBagConstraints.NONE,0,10,5,5));
-		operations.add(timestampText, GuiUtil.setConstraints(3,0,0.0,0.0,GridBagConstraints.HORIZONTAL,0,5,5,5));
-		timestampText.setMinimumSize(timestampText.getPreferredSize());
+		operations.add(datePicker, GuiUtil.setConstraints(3,0,0.0,0.0,GridBagConstraints.HORIZONTAL,0,5,5,5));
 		operations.add(srsComboBoxLabel, GuiUtil.setConstraints(0,1,0.0,0.0,GridBagConstraints.HORIZONTAL,0,5,5,5));
 		operations.add(srsComboBox, GuiUtil.setConstraints(1,1,3,1,1.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
 
@@ -213,7 +198,7 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 		workspaceLabel.setEnabled(enable);
 		workspaceText.setEnabled(enable);
 		timestampLabel.setEnabled(enable);
-		timestampText.setEnabled(enable);
+		datePicker.setEnabled(enable);
 	}
 
 	private void switchFilterMode() {
@@ -237,7 +222,7 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 	public void loadSettings() {
 		useSimpleFilter = config.getProject().getExporter().isUseSimpleQuery();
 		workspaceText.setText(config.getProject().getDatabase().getWorkspaces().getExportWorkspace().getName());
-		timestampText.setText(config.getProject().getDatabase().getWorkspaces().getExportWorkspace().getTimestamp());
+		datePicker.setDate(config.getProject().getDatabase().getWorkspaces().getExportWorkspace().getTimestamp());
 
 		Query query = config.getProject().getExporter().getQuery();
 		DatabaseSrs targetSrs = query.getTargetSrs();
@@ -271,8 +256,8 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 
 	public void setSettings() {
 		config.getProject().getExporter().setUseSimpleQuery(useSimpleFilter);
-		config.getProject().getDatabase().getWorkspaces().getExportWorkspace().setName(workspaceText.getText().trim());
-		config.getProject().getDatabase().getWorkspaces().getExportWorkspace().setTimestamp(timestampText.getText().trim());
+		config.getProject().getDatabase().getWorkspaces().getExportWorkspace().setName(workspaceText.getText());
+		config.getProject().getDatabase().getWorkspaces().getExportWorkspace().setTimestamp(datePicker.getDate());
 
 		try {
 			config.getInternal().setExportFile(new File(browseText.getText().trim()).toPath());
@@ -302,14 +287,6 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 			if (browseText.getText().trim().isEmpty()) {
 				viewContoller.errorMessage(Language.I18N.getString("export.dialog.error.incompleteData"),
 						Language.I18N.getString("export.dialog.error.incompleteData.dataset"));
-				return;
-			}
-
-			// workspace timestamp
-			Database db = config.getProject().getDatabase();
-			if (!Util.checkWorkspaceTimestamp(db.getWorkspaces().getExportWorkspace())) {
-				viewContoller.errorMessage(Language.I18N.getString("export.dialog.error.incorrectData"),
-						Language.I18N.getString("common.dialog.error.incorrectData.date"));
 				return;
 			}
 
@@ -343,14 +320,12 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 
 				// counter filter
 				if (query.isUseCountFilter()) {
-					Long lowerLimit = query.getCounterFilter().getLowerLimit();
-					Long upperLimit = query.getCounterFilter().getUpperLimit();
-
-					if (lowerLimit == null || upperLimit == null
-							|| lowerLimit <= 0 || upperLimit <= 0
-							|| upperLimit < lowerLimit) {
+					CounterFilter counterFilter = query.getCounterFilter();
+					if ((!counterFilter.isSetCount() && !counterFilter.isSetStartIndex())
+							|| (counterFilter.isSetCount() && counterFilter.getCount() < 0)
+							|| (counterFilter.isSetStartIndex() && counterFilter.getStartIndex() < 0)) {
 						viewContoller.errorMessage(Language.I18N.getString("export.dialog.error.incorrectData"),
-								Language.I18N.getString("export.dialog.error.incorrectData.range"));
+								Language.I18N.getString("export.dialog.error.incorrectData.counter"));
 						return;
 					}
 				}

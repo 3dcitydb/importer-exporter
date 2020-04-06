@@ -96,7 +96,7 @@ public class Bridge extends KmlGenericObject{
 	}
 
 	public void read(KmlSplittingResult work) {
-		List<PlacemarkType> placemarks = new ArrayList<PlacemarkType>();
+		List<PlacemarkType> placemarks = new ArrayList<>();
 		PreparedStatement psQuery = null;
 		ResultSet rs = null;
 		
@@ -120,7 +120,6 @@ public class Bridge extends KmlGenericObject{
 		} finally {
 			try { if (rs != null) rs.close(); } catch (SQLException sqle) {} 
 			try { if (psQuery != null) psQuery.close(); } catch (SQLException sqle) {}
-			rs = null;
 		}
 
 		if (placemarks.size() == 0) {
@@ -245,51 +244,47 @@ public class Bridge extends KmlGenericObject{
 
 						try { rs.close(); } catch (SQLException sqle) {} 
 						try { psQuery.close(); } catch (SQLException sqle) {}
-						rs = null;
 					} catch (SQLException e) {
 						log.error("SQL error while querying geometries in LOD " + currentLod + ": " + e.getMessage());
 						try { if (rs != null) rs.close(); } catch (SQLException sqle) {} 
 						try { if (psQuery != null) psQuery.close(); } catch (SQLException sqle) {}
 						try { connection.commit(); } catch (SQLException sqle) {}
-						rs = null;
 					}
 
-					if (rs == null) {
-						// second, try and generate a footprint by aggregating geometries						
-						reversePointOrder = true;
-						int groupBasis = 4;
+					// second, try and generate a footprint by aggregating geometries
+					reversePointOrder = true;
+					int groupBasis = 4;
 
-						try {
-							String query = queries.getBridgePartAggregateGeometries(0.001,
-									DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter().getUtil().get2DSrid(dbSrs),
-									currentLod,
-									Math.pow(groupBasis, 4),
-									Math.pow(groupBasis, 3),
-									Math.pow(groupBasis, 2));
+					try {
+						String query = queries.getBridgePartAggregateGeometries(0.001,
+								DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter().getUtil().get2DSrid(dbSrs),
+								currentLod,
+								Math.pow(groupBasis, 4),
+								Math.pow(groupBasis, 3),
+								Math.pow(groupBasis, 2));
 
-							psQuery = connection.prepareStatement(query, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
-							for (int i = 1; i <= getParameterCount(query); i++)
-								psQuery.setLong(i, bridgePartId);
+						psQuery = connection.prepareStatement(query, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+						for (int i = 1; i <= getParameterCount(query); i++)
+							psQuery.setLong(i, bridgePartId);
 
-							rs = psQuery.executeQuery();
-							if (rs.isBeforeFirst()) {
-								rs.next();
-								if (rs.getObject(1) != null) {
-									rs.beforeFirst();
-									break;
-								}
+						rs = psQuery.executeQuery();
+						if (rs.isBeforeFirst()) {
+							rs.next();
+							if (rs.getObject(1) != null) {
+								rs.beforeFirst();
+								break;
 							}
-
-							try { rs.close(); } catch (SQLException sqle) {} 
-							try { psQuery.close(); } catch (SQLException sqle) {}
-							rs = null;
-						} catch (SQLException e) {
-							log.error("SQL error while aggregating geometries in LOD " + currentLod + ": " + e.getMessage());
-							try { if (rs != null) rs.close(); } catch (SQLException sqle) {} 
-							try { if (psQuery != null) psQuery.close(); } catch (SQLException sqle) {}
-							try { connection.commit(); } catch (SQLException sqle) {}
-							rs = null;
 						}
+
+						try { rs.close(); } catch (SQLException sqle) {}
+						try { psQuery.close(); } catch (SQLException sqle) {}
+						rs = null;
+					} catch (SQLException e) {
+						log.error("SQL error while aggregating geometries in LOD " + currentLod + ": " + e.getMessage());
+						try { if (rs != null) rs.close(); } catch (SQLException sqle) {}
+						try { if (psQuery != null) psQuery.close(); } catch (SQLException sqle) {}
+						try { connection.commit(); } catch (SQLException sqle) {}
+						rs = null;
 					}
 
 					currentLod--;
@@ -332,25 +327,25 @@ public class Bridge extends KmlGenericObject{
 					setId(work.getId());
 					if (work.getDisplayForm().isHighlightingEnabled()) {
 						if (query.isSetTiling()) { // region
-							List<PlacemarkType> hlPlacemarks = createPlacemarksForHighlighting(rs, work);
-							hlPlacemarks.addAll(createPlacemarksForGeometry(rs, work));
+							List<PlacemarkType> hlPlacemarks = createPlacemarksForHighlighting(rs, work, true);
+							hlPlacemarks.addAll(createPlacemarksForGeometry(rs, work, true));
 							return hlPlacemarks;
 						}
 						else { // reverse order for single buildings
-							List<PlacemarkType> placemarks = createPlacemarksForGeometry(rs, work);
-							placemarks.addAll(createPlacemarksForHighlighting(rs, work));
+							List<PlacemarkType> placemarks = createPlacemarksForGeometry(rs, work, true);
+							placemarks.addAll(createPlacemarksForHighlighting(rs, work, true));
 							return placemarks;
 						}
 					}
-					return createPlacemarksForGeometry(rs, work);
+					return createPlacemarksForGeometry(rs, work, true);
 
 				case DisplayForm.COLLADA:
-					fillGenericObjectForCollada(rs, config.getProject().getKmlExporter().getBridgeColladaOptions().isGenerateTextureAtlases()); // fill and refill
+					fillGenericObjectForCollada(rs, config.getProject().getKmlExporter().getBridgeColladaOptions().isGenerateTextureAtlases(), true); // fill and refill
 					String currentgmlId = getGmlId();
 					setGmlId(work.getGmlId());
 					setId(work.getId());
 
-					if (currentgmlId != work.getGmlId() && getGeometryAmount() > GEOMETRY_AMOUNT_WARNING)
+					if (currentgmlId != null && !currentgmlId.equals(work.getGmlId()) && getGeometryAmount() > GEOMETRY_AMOUNT_WARNING)
 						log.info("Object " + work.getGmlId() + " has more than " + GEOMETRY_AMOUNT_WARNING + " geometries. This may take a while to process...");
 
 					List<Point3d> anchorCandidates = getOrigins(); // setOrigins() called mainly for the side-effect
@@ -364,10 +359,10 @@ public class Bridge extends KmlGenericObject{
 					setIgnoreSurfaceOrientation(colladaOptions.isIgnoreSurfaceOrientation());
 					try {
 						if (work.getDisplayForm().isHighlightingEnabled()) {
-							return createPlacemarksForHighlighting(rs, work);
+							return createPlacemarksForHighlighting(rs, work, true);
 						}
 						// just COLLADA, no KML
-						List<PlacemarkType> dummy = new ArrayList<PlacemarkType>();
+						List<PlacemarkType> dummy = new ArrayList<>();
 						dummy.add(null);
 						return dummy;
 					}

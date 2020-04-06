@@ -27,14 +27,13 @@
  */
 package org.citydb.config.project.query.filter.selection.logical;
 
-import java.util.ArrayList;
-import java.util.List;
+import org.citydb.config.project.query.filter.selection.AbstractPredicate;
 
 import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlType;
-
-import org.citydb.config.project.query.filter.selection.AbstractPredicate;
+import java.util.Arrays;
+import java.util.List;
 
 @XmlType(name="AbstractBinaryLogicalOperatorType", propOrder={
 		"operands"
@@ -46,9 +45,16 @@ import org.citydb.config.project.query.filter.selection.AbstractPredicate;
 public abstract class AbstractBinaryLogicalOperator extends AbstractLogicalOperator {
 	@XmlElementRef
 	private List<AbstractPredicate> operands;
-	
+
 	public AbstractBinaryLogicalOperator() {
-		operands = new ArrayList<>();
+	}
+	
+	public AbstractBinaryLogicalOperator(List<AbstractPredicate> operands) {
+		this.operands = operands;
+	}
+
+	public AbstractBinaryLogicalOperator(AbstractPredicate... operands) {
+		this.operands = Arrays.asList(operands);
 	}
 	
 	public boolean isSetOperands() {

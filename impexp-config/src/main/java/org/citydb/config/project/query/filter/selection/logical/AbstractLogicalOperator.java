@@ -27,11 +27,11 @@
  */
 package org.citydb.config.project.query.filter.selection.logical;
 
-import javax.xml.bind.annotation.XmlSeeAlso;
-import javax.xml.bind.annotation.XmlType;
-
 import org.citydb.config.project.query.filter.selection.AbstractPredicate;
 import org.citydb.config.project.query.filter.selection.PredicateName;
+
+import javax.xml.bind.annotation.XmlSeeAlso;
+import javax.xml.bind.annotation.XmlType;
 
 @XmlType(name="AbstractLogicalOperatorType")
 @XmlSeeAlso({

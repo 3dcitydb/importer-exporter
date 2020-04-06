@@ -56,7 +56,7 @@ public class ImportFilter {
 	private FeatureTypeFilter featureTypeFilter;
 	@XmlElement(name="attributes")
 	private SimpleAttributeFilter attributeFilter;
-	@XmlElement(name = "count")
+	@XmlElement(name = "limit")
 	private CounterFilter counterFilter;
 	@XmlElement(name = "bbox", required = true)
 	private SimpleBBOXOperator bboxFilter;

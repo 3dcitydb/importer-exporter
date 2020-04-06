@@ -38,7 +38,7 @@ import org.citydb.citygml.exporter.database.xlink.DBXlinkExporterTextureImage;
 import org.citydb.concurrent.Worker;
 import org.citydb.config.Config;
 import org.citydb.config.project.global.LogLevel;
-import org.citydb.database.connection.DatabaseConnectionPool;
+import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.event.Event;
 import org.citydb.event.EventDispatcher;
 import org.citydb.event.EventHandler;
@@ -55,25 +55,15 @@ public class DBExportXlinkWorker extends Worker<DBXlink> implements EventHandler
 	private volatile boolean shouldRun = true;
 	private volatile boolean shouldWork = true;
 
+	private final Connection connection;
+	private final DBXlinkExporterManager xlinkExporterManager;
 	private final EventDispatcher eventDispatcher;
-	private Connection connection;
-	private DBXlinkExporterManager xlinkExporterManager;
 
-	public DBExportXlinkWorker(OutputFile outputFile, Config config, EventDispatcher eventDispatcher) throws SQLException {
+	public DBExportXlinkWorker(OutputFile outputFile, Connection connection, AbstractDatabaseAdapter databaseAdapter, Config config, EventDispatcher eventDispatcher) {
+		this.connection = connection;
 		this.eventDispatcher = eventDispatcher;
 
-		DatabaseConnectionPool connectionPool = DatabaseConnectionPool.getInstance();
-		connection = connectionPool.getConnection();
-		connection.setAutoCommit(false);
-
-		// try and change workspace for the connection if needed
-		if (connectionPool.getActiveDatabaseAdapter().hasVersioningSupport()) {
-			connectionPool.getActiveDatabaseAdapter().getWorkspaceManager().gotoWorkspace(
-					connection, 
-					config.getProject().getDatabase().getWorkspaces().getExportWorkspace());
-		}
-
-		xlinkExporterManager = new DBXlinkExporterManager(outputFile, connection, connectionPool.getActiveDatabaseAdapter(), config, eventDispatcher);
+		xlinkExporterManager = new DBXlinkExporterManager(outputFile, connection, databaseAdapter, config, eventDispatcher);
 		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
 	}
 
@@ -105,14 +95,10 @@ public class DBExportXlinkWorker extends Worker<DBXlink> implements EventHandler
 				//
 			}
 		} finally {
-			if (connection != null) {
-				try {
-					connection.close();
-				} catch (SQLException e) {
-					//
-				}
-
-				connection = null;
+			try {
+				connection.close();
+			} catch (SQLException e) {
+				//
 			}
 		}
 	}

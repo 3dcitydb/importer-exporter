@@ -29,13 +29,15 @@ package org.citydb.modules.citygml.importer.gui.view;
 
 import org.citydb.citygml.importer.CityGMLImportException;
 import org.citydb.citygml.importer.controller.Importer;
-import org.citydb.citygml.importer.controller.XMLValidator;
+import org.citydb.citygml.validator.ValidationException;
+import org.citydb.citygml.validator.controller.Validator;
 import org.citydb.config.Config;
 import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.database.DatabaseConfigurationException;
 import org.citydb.config.project.global.LogLevel;
 import org.citydb.config.project.importer.ImportFilter;
+import org.citydb.config.project.query.filter.counter.CounterFilter;
 import org.citydb.database.DatabaseController;
 import org.citydb.database.schema.mapping.SchemaMapping;
 import org.citydb.database.version.DatabaseVersionException;
@@ -260,7 +262,7 @@ public class ImportPanel extends JPanel implements EventHandler {
 		}
 
 		config.getInternal().setImportFiles(importFiles);		
-		config.getProject().getDatabase().getWorkspaces().getImportWorkspace().setName(workspaceText.getText().trim());
+		config.getProject().getDatabase().getWorkspaces().getImportWorkspace().setName(workspaceText.getText());
 
 		filterPanel.setSettings();
 	}
@@ -293,14 +295,12 @@ public class ImportPanel extends JPanel implements EventHandler {
 
 			// counter filter
 			if (filter.isUseCountFilter()) {
-				Long lowerLimit = filter.getCounterFilter().getLowerLimit();
-				Long upperLimit = filter.getCounterFilter().getUpperLimit();
-
-				if (lowerLimit == null || upperLimit == null
-						|| lowerLimit <= 0 || upperLimit <= 0
-						|| upperLimit < lowerLimit) {
+				CounterFilter counterFilter = filter.getCounterFilter();
+				if ((!counterFilter.isSetCount() && !counterFilter.isSetStartIndex())
+						|| (counterFilter.isSetCount() && counterFilter.getCount() < 0)
+						|| (counterFilter.isSetStartIndex() && counterFilter.getStartIndex() < 0)) {
 					viewController.errorMessage(Language.I18N.getString("import.dialog.error.incorrectData"), 
-							Language.I18N.getString("import.dialog.error.incorrectData.range"));
+							Language.I18N.getString("import.dialog.error.incorrectData.counter"));
 					return;
 				}
 			}
@@ -432,7 +432,7 @@ public class ImportPanel extends JPanel implements EventHandler {
 			}
 
 			viewController.setStatusText(Language.I18N.getString("main.status.validate.label"));
-			log.info("Initializing XML validation...");
+			log.info("Initializing data validation...");
 
 			// initialize event dispatcher
 			final EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
@@ -449,14 +449,14 @@ public class ImportPanel extends JPanel implements EventHandler {
 				validatorDialog.setVisible(true);
 			});
 
-			XMLValidator validator = new XMLValidator(config, eventDispatcher);
+			Validator validator = new Validator(config, eventDispatcher);
 
 			validatorDialog.getButton().addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					SwingUtilities.invokeLater(new Runnable() {
 						public void run() {
 							eventDispatcher.triggerEvent(new InterruptEvent(
-									"User abort of XML validation.", 
+									"User abort of data validation.",
 									LogLevel.WARN,
 									Event.GLOBAL_CHANNEL,
 									this));
@@ -465,7 +465,18 @@ public class ImportPanel extends JPanel implements EventHandler {
 				}
 			});
 
-			boolean success = validator.doProcess();
+			boolean success = false;
+			try {
+				success = validator.doProcess();
+			} catch (ValidationException e) {
+				log.error(e.getMessage());
+
+				Throwable cause = e.getCause();
+				while (cause != null) {
+					log.error(cause.getClass().getTypeName() + ": " + cause.getMessage());
+					cause = cause.getCause();
+				}
+			}
 
 			try {
 				eventDispatcher.flushEvents();
@@ -479,9 +490,9 @@ public class ImportPanel extends JPanel implements EventHandler {
 			validator.cleanup();
 
 			if (success) {
-				log.info("XML validation finished.");
+				log.info("Data validation finished.");
 			} else {
-				log.warn("XML validation aborted.");
+				log.warn("Data validation aborted.");
 			}
 
 			viewController.setStatusText(Language.I18N.getString("main.status.ready.label"));
@@ -496,10 +507,11 @@ public class ImportPanel extends JPanel implements EventHandler {
 		chooser.setMultiSelectionEnabled(true);
 		chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
 
-		FileNameExtensionFilter filter = new FileNameExtensionFilter("CityGML Files (*.gml, *.xml, *.zip, *.gz, *.gzip)",
-				"gml", "xml", "zip", "gz", "gzip");
+		FileNameExtensionFilter filter = new FileNameExtensionFilter("CityGML Files (*.gml, *.xml, *.json, *.zip, *.gz, *.gzip)",
+				"gml", "xml", "json", "zip", "gz", "gzip");
 		chooser.addChoosableFileFilter(filter);
 		chooser.addChoosableFileFilter(new FileNameExtensionFilter("CityGML GML Files (*.gml, *.xml)", "gml", "xml"));
+		chooser.addChoosableFileFilter(new FileNameExtensionFilter("CityJSON Files (*.json)", "json"));
 		chooser.addChoosableFileFilter(new FileNameExtensionFilter("CityGML ZIP Files (*.zip)", "zip"));
 		chooser.addChoosableFileFilter(new FileNameExtensionFilter("CityGML Compressed Files (*.gz, *.gzip)", "gz", "gzip"));
 		chooser.addChoosableFileFilter(chooser.getAcceptAllFileFilter());

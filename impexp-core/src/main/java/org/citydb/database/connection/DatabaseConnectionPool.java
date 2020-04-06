@@ -56,7 +56,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class DatabaseConnectionPool {
+public class DatabaseConnectionPool implements ConnectionManager {
 	private static DatabaseConnectionPool instance;
 	private final int DEFAULT_LOGIN_TIMEOUT = 60;
 

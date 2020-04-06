@@ -38,6 +38,7 @@ import org.citydb.config.Config;
 import org.citydb.config.project.database.DBConnection;
 import org.citydb.config.project.database.DatabaseSrs;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
+import org.citydb.database.connection.ConnectionManager;
 import org.citydb.database.connection.ConnectionState;
 import org.citydb.database.connection.ConnectionViewHandler;
 import org.citydb.config.project.database.DatabaseConfigurationException;
@@ -48,7 +49,7 @@ import org.citydb.database.version.DatabaseVersionChecker;
 import org.citydb.database.version.DatabaseVersionException;
 import org.citydb.log.Logger;
 
-public class DatabaseController {
+public class DatabaseController implements ConnectionManager {
 	private final Logger log = Logger.getInstance();
 	private final Config config;
 	private final DatabaseConnectionPool dbPool;

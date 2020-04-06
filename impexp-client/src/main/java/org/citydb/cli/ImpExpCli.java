@@ -28,11 +28,14 @@
 package org.citydb.cli;
 
 import org.citydb.ImpExpException;
+import org.citydb.citygml.deleter.CityGMLDeleteException;
+import org.citydb.citygml.deleter.controller.Deleter;
 import org.citydb.citygml.exporter.CityGMLExportException;
 import org.citydb.citygml.exporter.controller.Exporter;
 import org.citydb.citygml.importer.CityGMLImportException;
+import org.citydb.citygml.validator.ValidationException;
 import org.citydb.citygml.importer.controller.Importer;
-import org.citydb.citygml.importer.controller.XMLValidator;
+import org.citydb.citygml.validator.controller.Validator;
 import org.citydb.config.Config;
 import org.citydb.config.project.database.DBConnection;
 import org.citydb.config.project.database.DatabaseConfigurationException;
@@ -123,23 +126,29 @@ public class ImpExpCli {
 		if (files.size() == 0)
 			throw new ImpExpException("Invalid list of files to be validated.");
 
-		log.info("Initializing XML validation...");
+		log.info("Initializing data validation...");
 
 		config.getInternal().setImportFiles(files);
 		EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
-		XMLValidator validator = new XMLValidator(config, eventDispatcher);
-		boolean success = validator.doProcess();
+		Validator validator = new Validator(config, eventDispatcher);
+		boolean success = false;
 
 		try {
-			eventDispatcher.flushEvents();
-		} catch (InterruptedException e) {
-			//
+			success = validator.doProcess();
+		} catch (ValidationException e) {
+			throw new ImpExpException("Data validation failed due to an internal error.", e);
+		} finally {
+			try {
+				eventDispatcher.flushEvents();
+			} catch (InterruptedException e) {
+				//
+			}
 		}
 
 		if (success)
-			log.info("XML validation finished.");
+			log.info("Data validation finished.");
 		else
-			log.warn("XML validation aborted.");
+			log.warn("Data validation aborted.");
 
 		return success;
 	}
@@ -179,6 +188,39 @@ public class ImpExpCli {
 		return success;
 	}
 
+	public boolean doDelete() throws ImpExpException {
+		initDBPool();
+		if (!dbPool.isConnected())
+			throw new ImpExpException("Connection to database could not be established.");
+
+		log.info("Initializing database delete...");
+
+		EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
+		Deleter deleter = new Deleter(config, schemaMapping, eventDispatcher);
+		boolean success = false;
+
+		try {
+			success = deleter.doProcess();
+		} catch (CityGMLDeleteException e) {
+			throw new ImpExpException("CityGML delete failed due to an internal error.", e);
+		} finally {
+			try {
+				eventDispatcher.flushEvents();
+			} catch (InterruptedException e) {
+				//
+			}
+
+			dbPool.disconnect();
+		}
+
+		if (success)
+			log.info("Database delete successfully finished.");
+		else
+			log.warn("Database delete aborted.");
+
+		return success;
+	}
+	
 	public boolean doKmlExport(String kmlExportFile) throws ImpExpException {
 		setExportFile(kmlExportFile);
 

@@ -38,11 +38,8 @@ import org.citydb.citygml.importer.util.ImportLogger.ImportLogEntry;
 import org.citydb.concurrent.Worker;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
-import org.citydb.file.InputFile;
-import org.citydb.config.project.database.Workspace;
 import org.citydb.config.project.global.LogLevel;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
-import org.citydb.database.connection.DatabaseConnectionPool;
 import org.citydb.database.schema.mapping.SchemaMapping;
 import org.citydb.event.Event;
 import org.citydb.event.EventDispatcher;
@@ -53,6 +50,7 @@ import org.citydb.event.global.EventType;
 import org.citydb.event.global.GeometryCounterEvent;
 import org.citydb.event.global.InterruptEvent;
 import org.citydb.event.global.ObjectCounterEvent;
+import org.citydb.file.InputFile;
 import org.citydb.log.Logger;
 import org.citygml4j.builder.jaxb.CityGMLBuilder;
 import org.citygml4j.model.citygml.CityGML;
@@ -71,48 +69,22 @@ public class DBImportWorker extends Worker<CityGML> implements EventHandler {
 	private volatile boolean shouldRun = true;
 	private volatile boolean shouldWork = true;
 
+	private final Connection connection;
+	private final boolean isManagedTransaction;
 	private final CityGMLFilter filter;
 	private final ImportLogger importLogger;
 	private final EventDispatcher eventDispatcher;
 
-	private Connection connection;
-	private int updateCounter = 0;
+	private final BoundingBoxOptions bboxOptions;
+	private final CityGMLImportManager importer;
+
+	private int globalAppearanceCounter = 0;
+	private int topLevelFeatureCounter = 0;
 	private int commitAfter = 20;
-	private boolean globalTransaction;
-
-	private BoundingBoxOptions bboxOptions;
-	private CityGMLImportManager importer;	
-
-	public DBImportWorker(InputFile inputFile,
-			SchemaMapping schemaMapping,
-			CityGMLBuilder cityGMLBuilder,
-			WorkerPool<DBXlink> xlinkPool,
-			UIDCacheManager uidCacheManager,
-			CityGMLFilter filter,
-			AffineTransformer affineTransformer,
-			ImportLogger importLogger,
-			Config config,
-			EventDispatcher eventDispatcher) throws SQLException {
-		this.filter = filter;
-		this.importLogger = importLogger;
-		this.eventDispatcher = eventDispatcher;
-
-		AbstractDatabaseAdapter databaseAdapter = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter();
-		connection = DatabaseConnectionPool.getInstance().getConnection();
-		connection.setAutoCommit(false);
-		globalTransaction = false;
-
-		// try and change workspace for both connections if needed
-		if (databaseAdapter.hasVersioningSupport()) {
-			Workspace workspace = config.getProject().getDatabase().getWorkspaces().getImportWorkspace();
-			databaseAdapter.getWorkspaceManager().gotoWorkspace(connection, workspace);
-		}
-
-		init(inputFile, databaseAdapter, schemaMapping, cityGMLBuilder, xlinkPool, uidCacheManager, affineTransformer, config);
-	}
 
 	public DBImportWorker(InputFile inputFile,
 			Connection connection,
+			boolean isManagedTransaction,
 			AbstractDatabaseAdapter databaseAdapter,
 			SchemaMapping schemaMapping,
 			CityGMLBuilder cityGMLBuilder,
@@ -124,22 +96,11 @@ public class DBImportWorker extends Worker<CityGML> implements EventHandler {
 			Config config,
 			EventDispatcher eventDispatcher) throws SQLException {
 		this.connection = connection;
+		this.isManagedTransaction = isManagedTransaction;
 		this.filter = filter;
 		this.importLogger = importLogger;
 		this.eventDispatcher = eventDispatcher;
 
-		globalTransaction = true;
-		init(inputFile, databaseAdapter, schemaMapping, cityGMLBuilder, xlinkPool, uidCacheManager, affineTransformer, config);
-	}
-
-	private void init(InputFile inputFile,
-			AbstractDatabaseAdapter databaseAdapter,
-			SchemaMapping schemaMapping,
-			CityGMLBuilder cityGMLBuilder,
-			WorkerPool<DBXlink> xlinkPool,
-			UIDCacheManager uidCacheManager,
-			AffineTransformer affineTransformer,
-			Config config) throws SQLException {
 		importer = new CityGMLImportManager(inputFile,
 				connection,
 				databaseAdapter,
@@ -187,13 +148,13 @@ public class DBImportWorker extends Worker<CityGML> implements EventHandler {
 			try {
 				if (shouldWork) {
 					importer.executeBatch();					
-					if (!globalTransaction)
+					if (!isManagedTransaction)
 						connection.commit();
 
 					updateImportContext();
 				}
 			} catch (CityGMLImportException | SQLException e) {
-				if (!globalTransaction) {
+				if (!isManagedTransaction) {
 					try {
 						connection.rollback();
 					} catch (SQLException sql) {
@@ -213,7 +174,7 @@ public class DBImportWorker extends Worker<CityGML> implements EventHandler {
 				// 
 			}
 
-			if (!globalTransaction) {
+			if (!isManagedTransaction) {
 				try {
 					connection.close();
 				} catch (SQLException e) {
@@ -221,7 +182,6 @@ public class DBImportWorker extends Worker<CityGML> implements EventHandler {
 				}
 			}
 
-			connection = null;
 			eventDispatcher.removeEventHandler(this);
 		}
 	}
@@ -240,6 +200,9 @@ public class DBImportWorker extends Worker<CityGML> implements EventHandler {
 				// global appearances
 				Appearance appearance = (Appearance)work;
 				id = importer.importGlobalAppearance(appearance);
+
+				if (id != 0)
+					globalAppearanceCounter++;
 			} 
 
 			else if (work instanceof AbstractFeature) {
@@ -255,6 +218,8 @@ public class DBImportWorker extends Worker<CityGML> implements EventHandler {
 				id = importer.importObject(feature);
 				if (id == 0)
 					importer.logOrThrowErrorMessage("Failed to import object " + importer.getObjectSignature(feature) + ".");
+				else
+					topLevelFeatureCounter++;
 			}
 
 			else {
@@ -267,12 +232,9 @@ public class DBImportWorker extends Worker<CityGML> implements EventHandler {
 					throw new CityGMLImportException(msg);
 			}
 
-			if (id != 0)
-				updateCounter++;
-
-			if (updateCounter == commitAfter) {
+			if (globalAppearanceCounter + topLevelFeatureCounter == commitAfter) {
 				importer.executeBatch();
-				if (!globalTransaction)
+				if (!isManagedTransaction)
 					connection.commit();
 
 				updateImportContext();
@@ -297,8 +259,10 @@ public class DBImportWorker extends Worker<CityGML> implements EventHandler {
 	private void updateImportContext() throws IOException {
 		eventDispatcher.triggerEvent(new ObjectCounterEvent(importer.getAndResetObjectCounter(), this));
 		eventDispatcher.triggerEvent(new GeometryCounterEvent(importer.getAndResetGeometryCounter(), this));
-		eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, updateCounter, this));
-		updateCounter = 0;
+		eventDispatcher.triggerEvent(new CounterEvent(CounterType.GLOBAL_APPEARANCE, globalAppearanceCounter, this));
+		eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, topLevelFeatureCounter, this));
+		globalAppearanceCounter = 0;
+		topLevelFeatureCounter = 0;
 
 		// log imported top-level features
 		if (importLogger != null) {

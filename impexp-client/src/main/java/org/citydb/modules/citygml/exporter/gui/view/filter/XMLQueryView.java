@@ -44,12 +44,19 @@ import org.citydb.config.project.query.filter.lod.LodFilter;
 import org.citydb.config.project.query.filter.projection.ProjectionFilter;
 import org.citydb.config.project.query.filter.selection.AbstractPredicate;
 import org.citydb.config.project.query.filter.selection.SelectionFilter;
+import org.citydb.config.project.query.filter.selection.comparison.GreaterThanOperator;
+import org.citydb.config.project.query.filter.selection.comparison.LessThanOrEqualToOperator;
 import org.citydb.config.project.query.filter.selection.comparison.LikeOperator;
+import org.citydb.config.project.query.filter.selection.comparison.NullOperator;
 import org.citydb.config.project.query.filter.selection.logical.AndOperator;
+import org.citydb.config.project.query.filter.selection.logical.OrOperator;
 import org.citydb.config.project.query.filter.selection.spatial.BBOXOperator;
 import org.citydb.config.project.query.filter.selection.spatial.WithinOperator;
+import org.citydb.config.project.query.filter.sorting.Sorting;
 import org.citydb.config.project.query.filter.tiling.Tiling;
 import org.citydb.config.project.query.filter.type.FeatureTypeFilter;
+import org.citydb.config.project.query.simple.SimpleFeatureVersionFilter;
+import org.citydb.config.project.query.simple.SimpleFeatureVersionFilterMode;
 import org.citydb.config.project.query.simple.SimpleSelectionFilter;
 import org.citydb.config.project.query.util.QueryWrapper;
 import org.citydb.database.connection.DatabaseConnectionPool;
@@ -82,6 +89,7 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
+import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.namespace.QName;
 import javax.xml.transform.stream.StreamSource;
@@ -181,6 +189,7 @@ public class XMLQueryView extends FilterView {
         query.setLodFilter(new LodFilter());
         query.setProjectionFilter(new ProjectionFilter());
         query.setSelectionFilter(new SelectionFilter());
+        query.setSorting(new Sorting());
         query.setTiling(new Tiling());
 
         CityGMLNamespaceContext namespaceContext = new CityGMLNamespaceContext();
@@ -221,10 +230,34 @@ public class XMLQueryView extends FilterView {
 
         if (simpleQuery.isUseCountFilter()
                 && simpleQuery.isSetCounterFilter()
-                && simpleQuery.getCounterFilter().isSetUpperLimit())
+                && (simpleQuery.getCounterFilter().isSetCount()
+                || simpleQuery.getCounterFilter().isSetStartIndex()))
             query.setCounterFilter(simpleQuery.getCounterFilter());
 
         List<AbstractPredicate> predicates = new ArrayList<>();
+
+        if (simpleQuery.isUseFeatureVersionFilter() && simpleQuery.isSetFeatureVersionFilter()) {
+            SimpleFeatureVersionFilter featureVersionFilter = simpleQuery.getFeatureVersionFilter();
+
+            if (featureVersionFilter.getMode() == SimpleFeatureVersionFilterMode.LATEST)
+                predicates.add(new NullOperator("core:terminationDate"));
+            else if (featureVersionFilter.isSetStartDate()
+                    && (featureVersionFilter.getMode() == SimpleFeatureVersionFilterMode.AT
+                    || featureVersionFilter.isSetEndDate())) {
+                XMLGregorianCalendar creationDate = featureVersionFilter.getMode() == SimpleFeatureVersionFilterMode.AT ?
+                        featureVersionFilter.getStartDate() :
+                        featureVersionFilter.getEndDate();
+
+                predicates.add(new AndOperator(
+                        new LessThanOrEqualToOperator("core:creationDate", creationDate.toXMLFormat()),
+                        new OrOperator(
+                                new GreaterThanOperator("core:terminationDate", featureVersionFilter.getStartDate().toString()),
+                                new NullOperator("core:terminationDate")
+                        )
+                ));
+            }
+        }
+
         if (simpleQuery.isUseSelectionFilter()) {
             SimpleSelectionFilter selectionFilter = simpleQuery.getSelectionFilter();
 

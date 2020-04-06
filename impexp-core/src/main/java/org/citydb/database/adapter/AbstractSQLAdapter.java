@@ -75,6 +75,7 @@ public abstract class AbstractSQLAdapter {
 	public abstract boolean requiresPseudoTableInSelect();
 	public abstract String getPseudoTableName();
 	public abstract boolean spatialPredicateRequiresNoIndexHint();
+	public abstract boolean supportsFetchFirstClause();
 
 	public abstract String getHierarchicalGeometryQuery();
 	public abstract String getNextSequenceValue(String sequence);
@@ -120,7 +121,7 @@ public abstract class AbstractSQLAdapter {
 							String major = matcher.group(1);
 							String minor = matcher.group(2);
 
-							DatabaseVersion version = new DatabaseVersion(Integer.valueOf(major), minor != null ? Integer.valueOf(minor) : 0, 0);
+							DatabaseVersion version = new DatabaseVersion(Integer.parseInt(major), minor != null ? Integer.parseInt(minor) : 0, 0);
 							operations.put(version, items[1]);
 						} else
 							throw new IllegalStateException("Failed to parse versions for database operation key '" + key + "'.");

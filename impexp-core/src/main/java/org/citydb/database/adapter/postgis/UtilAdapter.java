@@ -414,6 +414,32 @@ public class UtilAdapter extends AbstractUtilAdapter {
         }
     }
 
+    @Override
+    protected int cleanupGlobalAppearances(String schema, Connection connection) throws SQLException {
+        int deleted = 0;
+
+        try (PreparedStatement pStmt = connection.prepareStatement("SELECT "
+                + databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_delete.cleanup_appearances")
+                + "()")) {
+            try (ResultSet rs = pStmt.executeQuery()) {
+                while (rs.next())
+                    deleted++;
+            }
+        } catch (SQLException e) {
+            if (!isInterrupted)
+                throw e;
+        } finally {
+            if (interruptablePreparedStatement != null) {
+                interruptablePreparedStatement.close();
+                interruptablePreparedStatement = null;
+            }
+
+            isInterrupted = false;
+        }
+
+        return deleted;
+    }
+
     private DatabaseSrsType getSrsType(String srsType) {
         if ("PROJCS".equals(srsType))
             return DatabaseSrsType.PROJECTED;

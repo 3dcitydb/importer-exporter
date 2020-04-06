@@ -33,10 +33,10 @@ import org.citydb.config.project.database.DatabaseConfigurationException;
 import org.citydb.database.version.DatabaseVersionException;
 
 public interface ConnectionViewHandler {
-	public void commitConnectionDetails();
-	public void printConnectionState(ConnectionState state);
-	public void printError(DatabaseConfigurationException e, boolean showErrorDialog);
-	public void printError(DatabaseVersionException e, boolean showErrorDialog);
-	public void printError(SQLException e, boolean showErrorDialog);
-	public int printWarning(DatabaseConnectionWarning warning, boolean showWarningDialog);
+	void commitConnectionDetails();
+	void printConnectionState(ConnectionState state);
+	void printError(DatabaseConfigurationException e, boolean showErrorDialog);
+	void printError(DatabaseVersionException e, boolean showErrorDialog);
+	void printError(SQLException e, boolean showErrorDialog);
+	int printWarning(DatabaseConnectionWarning warning, boolean showWarningDialog);
 }

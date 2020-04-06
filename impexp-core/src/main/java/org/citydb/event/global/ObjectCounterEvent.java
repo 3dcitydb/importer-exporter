@@ -27,19 +27,23 @@
  */
 package org.citydb.event.global;
 
-import java.util.HashMap;
-
 import org.citydb.event.Event;
 
-public class ObjectCounterEvent extends Event {
-	private HashMap<Integer, Long> objectCounter;
+import java.util.Map;
 
-	public ObjectCounterEvent(HashMap<Integer, Long> objectCounter, Object source) {
-		super(EventType.OBJECT_COUNTER, GLOBAL_CHANNEL, source);
+public class ObjectCounterEvent extends Event {
+	private Map<Integer, Long> objectCounter;
+
+	public ObjectCounterEvent(Map<Integer, Long> objectCounter, Object channel, Object source) {
+		super(EventType.OBJECT_COUNTER, channel, source);
 		this.objectCounter = objectCounter;
 	}
 
-	public HashMap<Integer, Long> getCounter() {
+	public ObjectCounterEvent(Map<Integer, Long> objectCounter, Object source) {
+		this(objectCounter, GLOBAL_CHANNEL, source);
+	}
+
+	public Map<Integer, Long> getCounter() {
 		return objectCounter;
 	}
 

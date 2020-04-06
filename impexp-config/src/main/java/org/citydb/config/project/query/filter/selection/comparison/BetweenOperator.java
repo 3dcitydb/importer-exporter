@@ -41,6 +41,15 @@ public class BetweenOperator extends AbstractComparisonOperator {
 	private String lowerBoundary;
 	@XmlElement(required = true)
 	private String upperBoundary;
+
+	public BetweenOperator() {
+	}
+
+	public BetweenOperator(String valueReference, String lowerBoundary, String upperBoundary) {
+		super(valueReference);
+		this.lowerBoundary = lowerBoundary;
+		this.upperBoundary = upperBoundary;
+	}
 	
 	public boolean isSetLowerBoundary() {
 		return lowerBoundary != null;

@@ -59,8 +59,6 @@ public class CityFurniture extends KmlGenericObject{
 
 	public static final String STYLE_BASIS_NAME = "Furniture";
 
-	private AffineTransformer transformer;
-
 	public CityFurniture(Connection connection,
 			Query query,
 			KmlExporterManager kmlExporterManager,
@@ -153,20 +151,11 @@ public class CityFurniture extends KmlGenericObject{
 
 			else { // result not empty
 				// decide whether explicit or implicit geometry
+				AffineTransformer transformer = null;
 				long sgRootId = rs.getLong(4);
 				if (sgRootId == 0) {
 					sgRootId = rs.getLong(1);
-					if (sgRootId != 0) {
-						GeometryObject point = geometryConverterAdapter.getPoint(rs.getObject(2));
-						String transformationString = rs.getString(3);
-						if (point != null && transformationString != null) {
-							double[] ordinatesArray = point.getCoordinates(0);
-							Point referencePoint = new Point(ordinatesArray[0], ordinatesArray[1], ordinatesArray[2]);						
-							List<Double> m = Util.string2double(transformationString, "\\s+");
-							if (m != null && m.size() >= 16)
-								transformer = new AffineTransformer(new Matrix(m.subList(0, 16), 4), referencePoint, databaseAdapter.getConnectionMetaData().getReferenceSystem().getSrid());
-						}
-					}
+					transformer = getAffineTransformer(rs, 2, 3);
 				}
 
 				try { rs.close(); } catch (SQLException sqle) {} 
@@ -176,7 +165,7 @@ public class CityFurniture extends KmlGenericObject{
 				String query = queries.getCityFurnitureQuery(currentLod, 
 						work.getDisplayForm(),
 						transformer != null, 
-						work.getDisplayForm().getForm() == DisplayForm.COLLADA && config.getProject().getKmlExporter().getAppearanceTheme() != KmlExporter.THEME_NONE);
+						work.getDisplayForm().getForm() == DisplayForm.COLLADA && !config.getProject().getKmlExporter().getAppearanceTheme().equals(KmlExporter.THEME_NONE));
 				psQuery = connection.prepareStatement(query, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 				psQuery.setLong(1, sgRootId);
 				rs = psQuery.executeQuery();
@@ -222,13 +211,13 @@ public class CityFurniture extends KmlGenericObject{
 					setId(work.getId());
 					if (this.query.isSetTiling()) { // region
 						if (work.getDisplayForm().isHighlightingEnabled())
-							kmlExporterManager.print(createPlacemarksForHighlighting(rs, work, transformer), work, getBalloonSettings().isBalloonContentInSeparateFile());
+							kmlExporterManager.print(createPlacemarksForHighlighting(rs, work, transformer, false), work, getBalloonSettings().isBalloonContentInSeparateFile());
 
-						kmlExporterManager.print(createPlacemarksForGeometry(rs, work, transformer), work, getBalloonSettings().isBalloonContentInSeparateFile());
+						kmlExporterManager.print(createPlacemarksForGeometry(rs, work, transformer, false), work, getBalloonSettings().isBalloonContentInSeparateFile());
 					} else { // reverse order for single objects
-						kmlExporterManager.print(createPlacemarksForGeometry(rs, work, transformer), work, getBalloonSettings().isBalloonContentInSeparateFile());
+						kmlExporterManager.print(createPlacemarksForGeometry(rs, work, transformer, false), work, getBalloonSettings().isBalloonContentInSeparateFile());
 						if (work.getDisplayForm().isHighlightingEnabled())
-							kmlExporterManager.print(createPlacemarksForHighlighting(rs, work, transformer), work, getBalloonSettings().isBalloonContentInSeparateFile());
+							kmlExporterManager.print(createPlacemarksForHighlighting(rs, work, transformer, false), work, getBalloonSettings().isBalloonContentInSeparateFile());
 					}
 					break;
 
@@ -236,9 +225,9 @@ public class CityFurniture extends KmlGenericObject{
 					String currentgmlId = getGmlId();
 					setGmlId(work.getGmlId());
 					setId(work.getId());
-					fillGenericObjectForCollada(rs, config.getProject().getKmlExporter().getCityFurnitureColladaOptions().isGenerateTextureAtlases(),  transformer);
+					fillGenericObjectForCollada(rs, config.getProject().getKmlExporter().getCityFurnitureColladaOptions().isGenerateTextureAtlases(),  transformer, false);
 
-					if (currentgmlId != work.getGmlId() && getGeometryAmount() > GEOMETRY_AMOUNT_WARNING)
+					if (currentgmlId != null && !currentgmlId.equals(work.getGmlId()) && getGeometryAmount() > GEOMETRY_AMOUNT_WARNING)
 						log.info("Object " + work.getGmlId() + " has more than " + GEOMETRY_AMOUNT_WARNING + " geometries. This may take a while to process...");
 
 					List<Point3d> anchorCandidates = getOrigins();
@@ -252,7 +241,7 @@ public class CityFurniture extends KmlGenericObject{
 					setIgnoreSurfaceOrientation(colladaOptions.isIgnoreSurfaceOrientation());
 					try {
 						if (work.getDisplayForm().isHighlightingEnabled()) 
-							kmlExporterManager.print(createPlacemarksForHighlighting(rs, work, transformer), work, getBalloonSettings().isBalloonContentInSeparateFile());
+							kmlExporterManager.print(createPlacemarksForHighlighting(rs, work, transformer, false), work, getBalloonSettings().isBalloonContentInSeparateFile());
 					} catch (Exception ioe) {
 						log.logStackTrace(ioe);
 					}
@@ -262,10 +251,8 @@ public class CityFurniture extends KmlGenericObject{
 			}
 		} catch (SQLException sqlEx) {
 			log.error("SQL error while querying city object " + work.getGmlId() + ": " + sqlEx.getMessage());
-			return;
 		} catch (JAXBException jaxbEx) {
 			log.error("XML error while working on city object " + work.getGmlId() + ": " + jaxbEx.getMessage());
-			return;
 		} finally {
 			if (rs != null)
 				try { rs.close(); } catch (SQLException e) {}

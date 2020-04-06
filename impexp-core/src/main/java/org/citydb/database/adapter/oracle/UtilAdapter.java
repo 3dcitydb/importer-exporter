@@ -447,6 +447,31 @@ public class UtilAdapter extends AbstractUtilAdapter {
         }
     }
 
+    @Override
+    protected int cleanupGlobalAppearances(String schema, Connection connection) throws SQLException {
+        try {
+            String call = "{? = call " + databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_delete.cleanup_appearances") + "()";
+            interruptableCallableStatement = connection.prepareCall(call);
+            interruptableCallableStatement.registerOutParameter(1, OracleTypes.ARRAY, schema + ".ID_ARRAY");
+            interruptableCallableStatement.execute();
+
+            Array result = interruptableCallableStatement.getArray(1);
+            return ((Object[]) result.getArray()).length;
+        } catch (SQLException e) {
+            if (!isInterrupted)
+                throw e;
+        } finally {
+            if (interruptableCallableStatement != null) {
+                interruptableCallableStatement.close();
+                interruptableCallableStatement = null;
+            }
+
+            isInterrupted = false;
+        }
+
+        return 0;
+    }
+
     private DatabaseSrsType getSrsType(String srsType) {
         if ("PROJECTED".equals(srsType))
             return DatabaseSrsType.PROJECTED;

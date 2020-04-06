@@ -27,11 +27,11 @@
  */
 package org.citydb.config.project.query.filter.projection;
 
+import org.citygml4j.model.citygml.CityGMLClass;
+
 import javax.xml.bind.annotation.XmlEnum;
 import javax.xml.bind.annotation.XmlEnumValue;
 import javax.xml.bind.annotation.XmlType;
-
-import org.citygml4j.model.citygml.CityGMLClass;
 
 @XmlType(name="GenericAttributeTypeType")
 @XmlEnum

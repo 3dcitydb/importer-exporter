@@ -27,12 +27,6 @@
  */
 package org.citydb.citygml.importer.database.content;
 
-import java.sql.Connection;
-import java.sql.Date;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Types;
-
 import org.citydb.citygml.common.database.xlink.DBXlinkBasic;
 import org.citydb.citygml.common.database.xlink.DBXlinkSurfaceGeometry;
 import org.citydb.citygml.importer.CityGMLImportException;
@@ -60,6 +54,11 @@ import org.citygml4j.model.gml.basicTypes.Code;
 import org.citygml4j.model.gml.geometry.aggregates.MultiCurveProperty;
 import org.citygml4j.model.gml.geometry.aggregates.MultiSurfaceProperty;
 import org.citygml4j.model.gml.geometry.primitives.SolidProperty;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Types;
 
 public class DBBridge implements DBImporter {
 	private final Connection batchConn;
@@ -168,14 +167,14 @@ public class DBBridge implements DBImporter {
 
 		// brid:yearOfConstruction
 		if (bridge.isSetYearOfConstruction()) {
-			psBridge.setDate(10, Date.valueOf(bridge.getYearOfConstruction()));
+			psBridge.setObject(10, bridge.getYearOfConstruction());
 		} else {
 			psBridge.setNull(10, Types.DATE);
 		}
 
 		// brid:yearOfDemolition
 		if (bridge.isSetYearOfDemolition()) {
-			psBridge.setDate(11, Date.valueOf(bridge.getYearOfDemolition()));
+			psBridge.setObject(11, bridge.getYearOfDemolition());
 		} else {
 			psBridge.setNull(11, Types.DATE);
 		}
@@ -275,10 +274,10 @@ public class DBBridge implements DBImporter {
 					String href = multiSurfaceProperty.getHref();
 					if (href != null && href.length() != 0) {
 						importer.propagateXlink(new DBXlinkSurfaceGeometry(
-								featureType.getObjectClassId(), 
+								TableEnum.BRIDGE.getName(),
 								bridgeId, 
 								href, 
-								"LOD" + (i + 1) + "_MULTI_SURFACE_ID"));
+								"lod" + (i + 1) + "_multi_surface_id"));
 					}
 				}
 			}
@@ -317,10 +316,10 @@ public class DBBridge implements DBImporter {
 					String href = solidProperty.getHref();
 					if (href != null && href.length() != 0) {
 						importer.propagateXlink(new DBXlinkSurfaceGeometry(
-								featureType.getObjectClassId(), 
+								TableEnum.BRIDGE.getName(),
 								bridgeId, 
 								href, 
-								"LOD" + (i + 1) + "_SOLID_ID"));
+								"lod" + (i + 1) + "_solid_id"));
 					}
 				}
 			}

@@ -136,10 +136,10 @@ public class DBTunnelThematicSurface implements DBImporter {
 					String href = multiSurfaceProperty.getHref();
 					if (href != null && href.length() != 0) {
 						importer.propagateXlink(new DBXlinkSurfaceGeometry(
-								featureType.getObjectClassId(), 
+								TableEnum.TUNNEL_THEMATIC_SURFACE.getName(),
 								boundarySurfaceId, 
 								href, 
-								"LOD" + (i + 2) + "_MULTI_SURFACE_ID"));
+								"lod" + (i + 2) + "_multi_surface_id"));
 					}
 				}
 			}

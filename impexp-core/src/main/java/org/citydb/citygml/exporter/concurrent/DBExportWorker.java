@@ -33,13 +33,13 @@ import org.citydb.citygml.common.database.xlink.DBXlink;
 import org.citydb.citygml.exporter.CityGMLExportException;
 import org.citydb.citygml.exporter.database.content.CityGMLExportManager;
 import org.citydb.citygml.exporter.database.content.DBSplittingResult;
+import org.citydb.citygml.exporter.writer.FeatureWriteException;
 import org.citydb.citygml.exporter.writer.FeatureWriter;
 import org.citydb.concurrent.Worker;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
 import org.citydb.config.project.global.LogLevel;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
-import org.citydb.database.connection.DatabaseConnectionPool;
 import org.citydb.database.schema.mapping.MappingConstants;
 import org.citydb.database.schema.mapping.SchemaMapping;
 import org.citydb.event.Event;
@@ -59,6 +59,7 @@ import org.citydb.plugin.PluginManager;
 import org.citydb.plugin.extension.export.CityGMLExportExtension;
 import org.citydb.query.Query;
 import org.citygml4j.builder.jaxb.CityGMLBuilder;
+import org.citygml4j.model.citygml.appearance.Appearance;
 import org.citygml4j.model.gml.base.AbstractGML;
 import org.citygml4j.model.gml.feature.AbstractFeature;
 
@@ -72,15 +73,19 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 	private volatile boolean shouldRun = true;
 	private volatile boolean shouldWork = true;
 
-	private Connection connection;	
+	private final Connection connection;
 	private final CityGMLExportManager exporter;
+	private final FeatureWriter featureWriter;
 	private final EventDispatcher eventDispatcher;
 	private final Config config;
-	private int exportCounter = 0;
 
+	private int globalAppearanceCounter = 0;
+	private int topLevelFeatureCounter = 0;
 	private List<CityGMLExportExtension> plugins;
 
 	public DBExportWorker(OutputFile outputFile,
+			Connection connection,
+			AbstractDatabaseAdapter databaseAdapter,
 			SchemaMapping schemaMapping,
 			CityGMLBuilder cityGMLBuilder,
 			FeatureWriter featureWriter,
@@ -89,20 +94,11 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 			CacheTableManager cacheTableManager,
 			Query query,
 			Config config,
-			EventDispatcher eventDispatcher) throws CityGMLExportException, SQLException {
+			EventDispatcher eventDispatcher) throws CityGMLExportException {
+		this.connection = connection;
+		this.featureWriter = featureWriter;
 		this.eventDispatcher = eventDispatcher;
 		this.config = config;
-
-		AbstractDatabaseAdapter databaseAdapter = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter();
-		connection = DatabaseConnectionPool.getInstance().getConnection();
-		connection.setAutoCommit(false);
-
-		// try and change workspace the connections if needed
-		if (databaseAdapter.hasVersioningSupport()) {
-			databaseAdapter.getWorkspaceManager().gotoWorkspace(
-					connection, 
-					config.getProject().getDatabase().getWorkspaces().getExportWorkspace());
-		}
 
 		exporter = new CityGMLExportManager(
 				outputFile,
@@ -143,8 +139,9 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 				}
 			}
 
-			eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, exportCounter, this));
-			eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.UPDATE, exportCounter, this));
+			eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, topLevelFeatureCounter, this));
+			eventDispatcher.triggerEvent(new CounterEvent(CounterType.GLOBAL_APPEARANCE, globalAppearanceCounter, this));
+			eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.UPDATE, topLevelFeatureCounter + globalAppearanceCounter, this));
 			eventDispatcher.triggerEvent(new ObjectCounterEvent(exporter.getAndResetObjectCounter(), this));
 			eventDispatcher.triggerEvent(new GeometryCounterEvent(exporter.getAndResetGeometryCounter(), this));
 		} finally {
@@ -154,15 +151,13 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 				//
 			}
 
-			if (connection != null) {
-				try {
-					connection.close();
-				} catch (SQLException e) {
-					//
-				}
-
-				connection = null;
+			try {
+				connection.close();
+			} catch (SQLException e) {
+				//
 			}
+
+			eventDispatcher.removeEventHandler(this);
 		}
 	}
 
@@ -188,13 +183,15 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 				if (!plugins.isEmpty()) {
 					for (CityGMLExportExtension plugin : plugins) {
 						topLevelObject = plugin.postprocess((AbstractFeature) topLevelObject);
-						if (topLevelObject == null)
+						if (topLevelObject == null) {
+							featureWriter.updateSequenceId(work.getSequenceId());
 							return;
+						}
 					}
 				}
 
 				// write feature to file
-				exporter.writeFeatureMember((AbstractFeature)topLevelObject, work.getId());
+				featureWriter.write((AbstractFeature) topLevelObject, work.getSequenceId());
 
 				// register gml:id in cache
 				if (config.getInternal().isRegisterGmlIdInCache() && topLevelObject.isSetId())
@@ -202,15 +199,21 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 				
 				// update export counter
 				exporter.updateExportCounter(topLevelObject);
-			}
+				if (topLevelObject instanceof Appearance) {
+					if (++globalAppearanceCounter == 20) {
+						eventDispatcher.triggerEvent(new CounterEvent(CounterType.GLOBAL_APPEARANCE, globalAppearanceCounter, this));
+						eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.UPDATE, globalAppearanceCounter, this));
+						globalAppearanceCounter = 0;
+					}
+				} else if (++topLevelFeatureCounter == 20) {
+					eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, topLevelFeatureCounter, this));
+					eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.UPDATE, topLevelFeatureCounter, this));
+					topLevelFeatureCounter = 0;
+				}
+			} else
+				featureWriter.updateSequenceId(work.getSequenceId());
 
-			if (++exportCounter == 20) {
-				eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, exportCounter, this));
-				eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.UPDATE, exportCounter, this));
-				exportCounter = 0;
-			}
-
-		} catch (SQLException | CityGMLExportException | PluginException e) {
+		} catch (SQLException | CityGMLExportException | FeatureWriteException | PluginException e) {
 			eventDispatcher.triggerSyncEvent(new InterruptEvent("Aborting export due to errors.", LogLevel.WARN, e, eventChannel, this));
 		} catch (Throwable e) {
 			// this is to catch general exceptions that may occur during the export

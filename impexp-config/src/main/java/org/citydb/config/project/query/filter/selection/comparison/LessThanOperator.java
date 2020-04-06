@@ -34,6 +34,13 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name="LessThanOperatorType")
 public class LessThanOperator extends AbstractBinaryComparisonOperator {
 
+	public LessThanOperator() {
+	}
+
+	public LessThanOperator(String valueReference, String literal) {
+		super(valueReference, literal);
+	}
+
 	@Override
 	public ComparisonOperatorName getOperatorName() {
 		return ComparisonOperatorName.LESS_THAN;

@@ -27,12 +27,13 @@
  */
 package org.citydb.citygml.deleter.concurrent;
 
-import org.citydb.citygml.deleter.util.BundledDBConnection;
 import org.citydb.citygml.exporter.database.content.DBSplittingResult;
 import org.citydb.concurrent.Worker;
+import org.citydb.config.Config;
+import org.citydb.config.project.deleter.Continuation;
+import org.citydb.config.project.deleter.DeleteMode;
 import org.citydb.config.project.global.LogLevel;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
-import org.citydb.database.connection.DatabaseConnectionPool;
 import org.citydb.event.Event;
 import org.citydb.event.EventDispatcher;
 import org.citydb.event.EventHandler;
@@ -44,28 +45,50 @@ import org.citydb.event.global.StatusDialogProgressBar;
 import org.citydb.log.Logger;
 
 import java.sql.CallableStatement;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.time.OffsetDateTime;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class DBDeleteWorker extends Worker<DBSplittingResult> implements EventHandler {
 	private final ReentrantLock mainLock = new ReentrantLock();
 	private final Logger log = Logger.getInstance();
-	private final EventDispatcher eventDispatcher;	
-	private final CallableStatement stmt;	
+
+	private final PreparedStatement stmt;
+	private final AbstractDatabaseAdapter databaseAdapter;
+	private final Config config;
+	private final EventDispatcher eventDispatcher;
+
 	private volatile boolean shouldRun = true;
 	private volatile boolean shouldWork = true;
-	
-	public DBDeleteWorker(EventDispatcher eventDispatcher, BundledDBConnection bundledConnection) throws SQLException {
+
+	public DBDeleteWorker(Connection connection, AbstractDatabaseAdapter databaseAdapter, Config config, EventDispatcher eventDispatcher) throws SQLException {
+		this.databaseAdapter = databaseAdapter;
+		this.config = config;
 		this.eventDispatcher = eventDispatcher;
-		this.eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
-		AbstractDatabaseAdapter databaseAdapter = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter();
-		stmt = bundledConnection.getOrCreateConnection().prepareCall("{? = call "
-				+ databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_delete.delete_cityobject")
-				+ "(?)}");
+
+		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
+
+		if (config.getProject().getDeleter().getMode() == DeleteMode.TERMINATE) {
+			Continuation metadata = config.getProject().getDeleter().getContinuation();
+			StringBuilder update = new StringBuilder("update cityobject set termination_date = ?, last_modification_date = ?, updating_person = ? ");
+			if (metadata.isSetReasonForUpdate()) update.append(", reason_for_update = '").append(metadata.getReasonForUpdate()).append("'");
+			if (metadata.isSetLineage()) update.append(", lineage = '").append(metadata.getLineage()).append("' ");
+			update.append("where id = ?");
+
+			stmt = connection.prepareStatement(update.toString());
+		} else {
+			stmt = connection.prepareCall("{? = call "
+					+ databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_delete.delete_cityobject")
+					+ "(?)}");
+			((CallableStatement) stmt).registerOutParameter(1, Types.INTEGER);
+		}
 	}
-	
+
 	@Override
 	public void interrupt() {
 		shouldRun = false;
@@ -75,82 +98,79 @@ public class DBDeleteWorker extends Worker<DBSplittingResult> implements EventHa
 	public void run() {
 		try {
 			if (firstWork != null) {
-				lockAndDoWork(firstWork);
+				doWork(firstWork);
 				firstWork = null;
 			}
 
 			while (shouldRun) {
 				try {
 					DBSplittingResult work = workQueue.take();
-					lockAndDoWork(work);					
+					doWork(work);
 				} catch (InterruptedException ie) {
 					// re-check state
 				}
 			}
 		} finally {
-			shutdown();
+			try {
+				if (stmt != null)
+					stmt.close();
+			} catch (SQLException e) {
+				log.logStackTrace(e);
+			}
+
+			eventDispatcher.removeEventHandler(this);
 		}
 	}
-	
-	private void lockAndDoWork(DBSplittingResult work) {
+
+	private void doWork(DBSplittingResult work) {
 		final ReentrantLock lock = this.mainLock;
 		lock.lock();
-		
+
 		try {
-			doWork(work);
+			if (!shouldWork)
+				return;
+
+			long objectId = work.getId();
+			long deletedObjectId;
+
+			if (config.getProject().getDeleter().getMode() == DeleteMode.TERMINATE) {
+				OffsetDateTime now = OffsetDateTime.now();
+
+				Continuation metadata = config.getProject().getDeleter().getContinuation();
+				OffsetDateTime terminationDate = metadata.isSetTerminationDate() ? metadata.getTerminationDate() : now;
+				String updatingPerson = metadata.isUpdatingPersonModeDatabase() || !metadata.isSetUpdatingPerson() ?
+						databaseAdapter.getConnectionDetails().getUser() : metadata.getUpdatingPerson();
+
+				stmt.setObject(1, terminationDate);
+				stmt.setObject(2, now);
+				stmt.setString(3, updatingPerson);
+				stmt.setLong(4, objectId);
+
+				stmt.executeUpdate();
+				deletedObjectId = objectId;
+			} else {
+				stmt.setObject(2, objectId, Types.INTEGER);
+				stmt.executeUpdate();
+				deletedObjectId = ((CallableStatement) stmt).getInt(1);
+			}
+
+			if (deletedObjectId == objectId) {
+				log.debug(work.getObjectType().getPath() + " (ID = " + objectId + ") deleted.");
+				Map<Integer, Long> objectCounter = new HashMap<>();
+				objectCounter.put(work.getObjectType().getObjectClassId(), 1L);
+				eventDispatcher.triggerEvent(new ObjectCounterEvent(objectCounter, eventChannel, this));
+			} else
+				log.warn("Failed to delete " + work.getObjectType().getPath() + " (ID = " + objectId + ").");
+
+			eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.UPDATE, 1, this));
+		} catch (SQLException e) {
+			eventDispatcher.triggerEvent(new InterruptEvent("Failed to delete " + work.getObjectType().getPath() + " (ID = " + work.getId() + ").", LogLevel.WARN, e, eventChannel, this));
+		} catch (Throwable e) {
+			// this is to catch general exceptions that may occur during the export
+			eventDispatcher.triggerSyncEvent(new InterruptEvent("Aborting due to an unexpected " + e.getClass().getName() + " error.", LogLevel.ERROR, e, eventChannel, this));
 		} finally {
 			lock.unlock();
 		}
-	}
-	
-	public void doWork(DBSplittingResult work) {
-		if (!shouldWork)
-			return;
-		
-		long objectId = work.getId();
-		int objectclassId = work.getObjectType().getObjectClassId();
-		String objectclassName = work.getObjectType().getPath(); 
-		boolean accept = false;  
-		
-		try {
-			stmt.registerOutParameter(1, Types.INTEGER);
-			stmt.setInt(2, (int)objectId);
-			stmt.executeUpdate();	
-			
-			int deletedObjectId = stmt.getInt(1);
-			if (deletedObjectId == objectId) {
-				log.debug(objectclassName + " (RowID = " + objectId + ") deleted");
-				accept = true;
-			} 				
-			else {
-				log.warn(objectclassName + " (RowID = " + objectId + ") has not been found in the database.");
-			}
-		} catch (SQLException e) {
-			eventDispatcher.triggerEvent(new InterruptEvent(
-					"Failed to delete " + objectclassName + " (RowID = " + objectId + "). Abort and rollback transactions.",
-					LogLevel.WARN, e, eventChannel, this));	
-		} finally {
-			updateDeleteContext(objectclassId, accept);
-		}		
-	}
-
-	public void shutdown() {
-		try {
-			if (stmt != null)
-				stmt.close();
-		} catch (SQLException e) {
-			log.logStackTrace(e);
-		} 
-		
-		eventDispatcher.removeEventHandler(this);
-	}
-
-	private void updateDeleteContext(int objectclassId, boolean accept) {
-		HashMap<Integer, Long> objectCounter = new HashMap<>();
-		objectCounter.put(objectclassId, (long) 1);
-		if (accept)
-			eventDispatcher.triggerEvent(new ObjectCounterEvent(objectCounter, this));		
-		eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.UPDATE, 1, this));
 	}
 
 	@Override

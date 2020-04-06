@@ -141,10 +141,10 @@ public class DBCityObjectGroup implements DBImporter {
 				String href = geometryProperty.getHref();
 				if (href != null && href.length() != 0) {
 					importer.propagateXlink(new DBXlinkSurfaceGeometry(
-							featureType.getObjectClassId(), 
+							TableEnum.CITYOBJECTGROUP.getName(),
 							cityObjectGroupId, 
 							href, 
-							"BREP_ID"));
+							"brep_id"));
 				}
 			}
 		}

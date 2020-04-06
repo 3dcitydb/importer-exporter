@@ -1,5 +1,52 @@
 Change Log
 ==========
+
+### Pending changes
+
+* CityJSON import (already working in `master`). [#88](https://github.com/3dcitydb/importer-exporter/issues/88)
+* CityJSON export. [#89](https://github.com/3dcitydb/importer-exporter/issues/89)
+
+### 4.2.3 - 2019-04-06
+
+##### Additions
+* Added support for sorting the top-level features in a CityGML export based on one or more 
+simple thematic attributes. The sorting criteria can be defined using the new `<sortBy>` element of
+the XML query language. [#86](https://github.com/3dcitydb/importer-exporter/pull/86)
+* Added support for implicit geometries of nested sub-features in KML/COLLADA/glTF exports. [#93](https://github.com/3dcitydb/importer-exporter/issues/93),
+[#94](https://github.com/3dcitydb/importer-exporter/pull/94)
+* Added a delete operation to the CLI through the new `-delete` option. A corresponding `<delete>` element in the
+config file lets you define the behavior of the delete operation (e.g. by providing a filter expression). [#102](https://github.com/3dcitydb/importer-exporter/pull/102)
+* Added support for importing `gml:PolygonPatch` geometry objects.
+* Added installation via CLI to the documentation. [#99](https://github.com/3dcitydb/importer-exporter/issues/99) 
+* Added import and export counter for global appearances. [#95](https://github.com/3dcitydb/importer-exporter/issues/95),
+[#115](https://github.com/3dcitydb/importer-exporter/pull/115)
+* Added date picker in GUI.
+* Added a link to the [online documentation](https://3dcitydb-docs.readthedocs.io/en/release-v4.2.3/) in the `Help` menu of the GUI.
+
+##### Changes
+* Reworked the feature counter filter for CityGML imports and exports. Instead of providing a lower and upper
+boundary, you can now provide the total `count` of features and the `start index` of the first feature. For 
+exports, this is mapped to SQL `LIMIT` and `OFFSET` clauses. Note that the definition in the XML query
+language now uses a `<limit>` element instead of the previous `<count>` element.
+* Improved SQL query builder to create more concise SQL statements.
+
+##### Fixes
+* Fixed memory leak for large exports under PostgreSQL.
+* Fixed OpenStreetMap data not showing in the map window. [#97](https://github.com/3dcitydb/importer-exporter/issues/97)
+* Fixed NPE when importing invalid xAL address elements. [#103](https://github.com/3dcitydb/importer-exporter/issues/103)
+* Fixed NPE when exporting PlantCover features as KML/COLLADA/glTF. [#91](https://github.com/3dcitydb/importer-exporter/issues/91)
+* Fixed memory issue due to re-opening of ZIP files in CityGML imports.
+* Fixed import of curve geometries. If a curve geometry was given by several curve segments, then the
+interior start and end points of the segments were imported into the database. This has been corrected.
+* Fixed the `IzPack` library to support automated install scripts.
+
+##### Miscellaneous 
+* Updated to latest versions of the ADE manager plugin and the Spreadsheet Generator plugin.
+* Updated to latest PostgreSQL driver v42.2.10.
+* Updated to latest Oracle driver 19.3.
+* Updated citygml4j to 2.10.5.
+* Updated sqlbuilder to 2.2.1.
+
 ### 4.2.2 - 2019-08-06
 
 ##### Additions

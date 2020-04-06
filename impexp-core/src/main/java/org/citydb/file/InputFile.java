@@ -28,6 +28,8 @@
 
 package org.citydb.file;
 
+import org.apache.tika.mime.MediaType;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.InvalidPathException;
@@ -35,13 +37,20 @@ import java.nio.file.Path;
 import java.util.Objects;
 
 public abstract class InputFile implements AutoCloseable {
+    public static final MediaType APPLICATION_XML = MediaType.APPLICATION_XML;
+    public static final MediaType APPLICATION_JSON = MediaType.parse("application/json");
+    public static final MediaType APPLICATION_GZIP = MediaType.parse("application/gzip");
+    public static final MediaType APPLICATION_ZIP = MediaType.APPLICATION_ZIP;
+
     protected final Path file;
     protected final FileType type;
+    protected final MediaType mediaType;
 
-    protected InputFile(Path file, FileType type) {
+    protected InputFile(Path file, FileType type, MediaType mediaType) {
         Objects.requireNonNull(file, "file must not be null.");
         this.file = file.toAbsolutePath().normalize();
-        this.type = type;
+        this.type = Objects.requireNonNull(type, "file type must not be null.");
+        this.mediaType = Objects.requireNonNull(mediaType, "media type must not be null.");
     }
 
     public abstract InputStream openStream() throws IOException;
@@ -59,4 +68,7 @@ public abstract class InputFile implements AutoCloseable {
         return type;
     }
 
+    public MediaType getMediaType() {
+        return mediaType;
+    }
 }

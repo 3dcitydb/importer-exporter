@@ -45,7 +45,7 @@ public class TilingFilterBuilder {
 		this.databaseAdapter = databaseAdapter;
 	}
 
-	public Tiling buildTilingFilter(org.citydb.config.project.query.filter.tiling.AbstractTiling tilingConfig) throws QueryBuildException {
+	protected Tiling buildTilingFilter(org.citydb.config.project.query.filter.tiling.AbstractTiling tilingConfig) throws QueryBuildException {
 		try {
 			// adapt tiling settings in case of KML exports
 			if (tilingConfig instanceof KmlTiling) {

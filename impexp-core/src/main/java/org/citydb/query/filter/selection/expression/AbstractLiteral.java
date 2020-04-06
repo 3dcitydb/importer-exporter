@@ -28,7 +28,6 @@
 package org.citydb.query.filter.selection.expression;
 
 import org.citydb.database.schema.mapping.SimpleType;
-
 import org.citydb.sqlbuilder.expression.PlaceHolder;
 
 public abstract class AbstractLiteral<T> implements Expression {
@@ -39,7 +38,7 @@ public abstract class AbstractLiteral<T> implements Expression {
 	}
 	
 	public abstract LiteralType getLiteralType();
-	public abstract boolean evalutesToSchemaType(SimpleType schemaType);
+	public abstract boolean evaluatesToSchemaType(SimpleType schemaType);
 	public abstract PlaceHolder<?> convertToSQLPlaceHolder();
 	
 	public T getValue() {

@@ -76,7 +76,6 @@ public class GenericCityObject extends KmlGenericObject{
 	public static final String POINT = "Point";
 	public static final String CURVE = "Curve";
 
-	private AffineTransformer transformer;
 	private boolean isPointOrCurve;
 	private boolean isPoint;
 
@@ -204,20 +203,11 @@ public class GenericCityObject extends KmlGenericObject{
 				}
 				else {					
 					// decide whether explicit or implicit geometry
+					AffineTransformer transformer = null;
 					long sgRootId = rs.getLong(4);
 					if (sgRootId == 0) {
 						sgRootId = rs.getLong(1);
-						if (sgRootId != 0) {
-							GeometryObject point = geometryConverterAdapter.getPoint(rs.getObject(2));
-							String transformationString = rs.getString(3);
-							if (point != null && transformationString != null) {
-								double[] ordinatesArray = point.getCoordinates(0);
-								Point referencePoint = new Point(ordinatesArray[0], ordinatesArray[1], ordinatesArray[2]);						
-								List<Double> m = Util.string2double(transformationString, "\\s+");
-								if (m != null && m.size() >= 16)
-									transformer = new AffineTransformer(new Matrix(m.subList(0, 16), 4), referencePoint, databaseAdapter.getConnectionMetaData().getReferenceSystem().getSrid());
-							}
-						}
+						transformer = getAffineTransformer(rs, 2, 3);
 					}
 
 					try { rs.close(); } catch (SQLException sqle) {} 
@@ -227,7 +217,7 @@ public class GenericCityObject extends KmlGenericObject{
 					String query = queries.getGenericCityObjectQuery(currentLod, 
 							work.getDisplayForm(),
 							transformer != null, 
-							work.getDisplayForm().getForm() == DisplayForm.COLLADA && config.getProject().getKmlExporter().getAppearanceTheme() != KmlExporter.THEME_NONE);
+							work.getDisplayForm().getForm() == DisplayForm.COLLADA && !config.getProject().getKmlExporter().getAppearanceTheme().equals(KmlExporter.THEME_NONE));
 					psQuery = connection.prepareStatement(query, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 					psQuery.setLong(1, sgRootId);
 					rs = psQuery.executeQuery();
@@ -271,13 +261,13 @@ public class GenericCityObject extends KmlGenericObject{
 						setId(work.getId());
 						if (this.query.isSetTiling()) { // region
 							if (work.getDisplayForm().isHighlightingEnabled())
-								kmlExporterManager.print(createPlacemarksForHighlighting(rs, work, transformer), work, getBalloonSettings().isBalloonContentInSeparateFile());
+								kmlExporterManager.print(createPlacemarksForHighlighting(rs, work, transformer, false), work, getBalloonSettings().isBalloonContentInSeparateFile());
 
-							kmlExporterManager.print(createPlacemarksForGeometry(rs, work, transformer), work, getBalloonSettings().isBalloonContentInSeparateFile());
+							kmlExporterManager.print(createPlacemarksForGeometry(rs, work, transformer, false), work, getBalloonSettings().isBalloonContentInSeparateFile());
 						} else { // reverse order for single objects
-							kmlExporterManager.print(createPlacemarksForGeometry(rs, work, transformer), work, getBalloonSettings().isBalloonContentInSeparateFile());
+							kmlExporterManager.print(createPlacemarksForGeometry(rs, work, transformer, false), work, getBalloonSettings().isBalloonContentInSeparateFile());
 							if (work.getDisplayForm().isHighlightingEnabled())
-								kmlExporterManager.print(createPlacemarksForHighlighting(rs, work, transformer), work, getBalloonSettings().isBalloonContentInSeparateFile());
+								kmlExporterManager.print(createPlacemarksForHighlighting(rs, work, transformer, false), work, getBalloonSettings().isBalloonContentInSeparateFile());
 						}
 						break;
 						
@@ -285,9 +275,9 @@ public class GenericCityObject extends KmlGenericObject{
 					String currentgmlId = getGmlId();
 					setGmlId(work.getGmlId());
 					setId(work.getId());
-					fillGenericObjectForCollada(rs, config.getProject().getKmlExporter().getGenericCityObjectColladaOptions().isGenerateTextureAtlases(), transformer);
+					fillGenericObjectForCollada(rs, config.getProject().getKmlExporter().getGenericCityObjectColladaOptions().isGenerateTextureAtlases(), transformer, false);
 
-					if (currentgmlId != work.getGmlId() && getGeometryAmount() > GEOMETRY_AMOUNT_WARNING)
+					if (currentgmlId != null && !currentgmlId.equals(work.getGmlId()) && getGeometryAmount() > GEOMETRY_AMOUNT_WARNING)
 						log.info("Object " + work.getGmlId() + " has more than " + GEOMETRY_AMOUNT_WARNING + " geometries. This may take a while to process...");
 
 					List<Point3d> anchorCandidates = getOrigins();
@@ -301,7 +291,7 @@ public class GenericCityObject extends KmlGenericObject{
 					setIgnoreSurfaceOrientation(colladaOptions.isIgnoreSurfaceOrientation());
 					try {
 						if (work.getDisplayForm().isHighlightingEnabled()) 
-							kmlExporterManager.print(createPlacemarksForHighlighting(rs, work, transformer), work, getBalloonSettings().isBalloonContentInSeparateFile());
+							kmlExporterManager.print(createPlacemarksForHighlighting(rs, work, transformer, false), work, getBalloonSettings().isBalloonContentInSeparateFile());
 					} catch (Exception ioe) {
 						log.logStackTrace(ioe);
 					}
@@ -312,10 +302,8 @@ public class GenericCityObject extends KmlGenericObject{
 			}
 		} catch (SQLException sqlEx) {
 			log.error("SQL error while querying city object " + work.getGmlId() + ": " + sqlEx.getMessage());
-			return;
 		} catch (JAXBException jaxbEx) {
 			log.error("XML error while working on city object " + work.getGmlId() + ": " + jaxbEx.getMessage());
-			return;
 		} finally {
 			if (rs != null)
 				try { rs.close(); } catch (SQLException e) {}
@@ -338,7 +326,7 @@ public class GenericCityObject extends KmlGenericObject{
 	protected List<PlacemarkType> createPlacemarksForPointOrCurve(ResultSet rs,
 			KmlSplittingResult work) throws SQLException {
 		PointAndCurve pacSettings = config.getProject().getKmlExporter().getGenericCityObjectPointAndCurve();
-		List<PlacemarkType> placemarkList= new ArrayList<PlacemarkType>();
+		List<PlacemarkType> placemarkList= new ArrayList<>();
 
 		double zOffset = getZOffsetFromConfigOrDB(work.getId());
 		List<Point3d> lowestPointCandidates = getLowestPointsCoordinates(rs, (zOffset == Double.MAX_VALUE));
@@ -380,25 +368,25 @@ public class GenericCityObject extends KmlGenericObject{
 						zOrdinate = 0.1;
 					}
 					// draw an X
-					lineString.getCoordinates().add(String.valueOf(reducePrecisionForXorY(ordinatesArrayTopLeft[0]) + "," 
+					lineString.getCoordinates().add(reducePrecisionForXorY(ordinatesArrayTopLeft[0]) + ","
 							+ reducePrecisionForXorY(ordinatesArrayTopLeft[1]) + ","
-							+ reducePrecisionForZ(zOrdinate)));
+							+ reducePrecisionForZ(zOrdinate));
 
-					lineString.getCoordinates().add(String.valueOf(reducePrecisionForXorY(ordinatesArrayBottomRight[0]) + "," 
+					lineString.getCoordinates().add(reducePrecisionForXorY(ordinatesArrayBottomRight[0]) + ","
 							+ reducePrecisionForXorY(ordinatesArrayBottomRight[1]) + ","
-							+ reducePrecisionForZ(zOrdinate)));
+							+ reducePrecisionForZ(zOrdinate));
 
-					lineString.getCoordinates().add(String.valueOf(reducePrecisionForXorY(ordinatesArray[0]) + "," 
+					lineString.getCoordinates().add(reducePrecisionForXorY(ordinatesArray[0]) + ","
 							+ reducePrecisionForXorY(ordinatesArray[1]) + ","
-							+ reducePrecisionForZ(zOrdinate)));
+							+ reducePrecisionForZ(zOrdinate));
 
-					lineString.getCoordinates().add(String.valueOf(reducePrecisionForXorY(ordinatesArrayTopLeft[0]) + "," 
+					lineString.getCoordinates().add(reducePrecisionForXorY(ordinatesArrayTopLeft[0]) + ","
 							+ reducePrecisionForXorY(ordinatesArrayBottomRight[1]) + ","
-							+ reducePrecisionForZ(zOrdinate)));
+							+ reducePrecisionForZ(zOrdinate));
 
-					lineString.getCoordinates().add(String.valueOf(reducePrecisionForXorY(ordinatesArrayBottomRight[0]) + "," 
+					lineString.getCoordinates().add(reducePrecisionForXorY(ordinatesArrayBottomRight[0]) + ","
 							+ reducePrecisionForXorY(ordinatesArrayTopLeft[1]) + ","
-							+ reducePrecisionForZ(zOrdinate)));
+							+ reducePrecisionForZ(zOrdinate));
 
 					if (pacSettings.isPointHighlightingEnabled())
 						placemark.setStyleUrl("#" + getStyleBasisName() + GenericCityObject.POINT + "Style");
@@ -417,9 +405,9 @@ public class GenericCityObject extends KmlGenericObject{
 					placemark.setAbstractGeometryGroup(kmlFactory.createLineString(lineString));
 				}
 				else if (pacSettings.getPointDisplayMode() == PointDisplayMode.ICON) {
-					pointString.getCoordinates().add(String.valueOf(reducePrecisionForXorY(ordinatesArray[0]) + "," 
+					pointString.getCoordinates().add(reducePrecisionForXorY(ordinatesArray[0]) + ","
 							+ reducePrecisionForXorY(ordinatesArray[1]) + ","
-							+ reducePrecisionForZ(zOrdinate)));
+							+ reducePrecisionForZ(zOrdinate));
 					placemark.setStyleUrl("#" + getStyleBasisName() + GenericCityObject.POINT + "Normal");
 					switch (pacSettings.getPointAltitudeMode()) {
 					case ABSOLUTE:
@@ -452,30 +440,30 @@ public class GenericCityObject extends KmlGenericObject{
 						zOrdinate = 0.0;
 					}
 
-					String topLeftFootNode = String.valueOf(reducePrecisionForXorY(ordinatesArrayTopLeft[0]) + "," 
+					String topLeftFootNode = reducePrecisionForXorY(ordinatesArrayTopLeft[0]) + ","
 							+ reducePrecisionForXorY(ordinatesArrayTopLeft[1]) + ","
-							+ reducePrecisionForZ(zOrdinate));
-					String bottomLeftFootNode = String.valueOf(reducePrecisionForXorY(ordinatesArrayTopLeft[0]) + "," 
+							+ reducePrecisionForZ(zOrdinate);
+					String bottomLeftFootNode = reducePrecisionForXorY(ordinatesArrayTopLeft[0]) + ","
 							+ reducePrecisionForXorY(ordinatesArrayBottomRight[1]) + ","
-							+ reducePrecisionForZ(zOrdinate));
-					String bottomRightFootNode = String.valueOf(reducePrecisionForXorY(ordinatesArrayBottomRight[0]) + "," 
+							+ reducePrecisionForZ(zOrdinate);
+					String bottomRightFootNode = reducePrecisionForXorY(ordinatesArrayBottomRight[0]) + ","
 							+ reducePrecisionForXorY(ordinatesArrayBottomRight[1]) + ","
-							+ reducePrecisionForZ(zOrdinate));
-					String topRightFootNode = String.valueOf(reducePrecisionForXorY(ordinatesArrayBottomRight[0]) + "," 
+							+ reducePrecisionForZ(zOrdinate);
+					String topRightFootNode = reducePrecisionForXorY(ordinatesArrayBottomRight[0]) + ","
 							+ reducePrecisionForXorY(ordinatesArrayTopLeft[1]) + ","
-							+ reducePrecisionForZ(zOrdinate));
-					String topLeftRoofNode = String.valueOf(reducePrecisionForXorY(ordinatesArrayTopLeft[0]) + "," 
+							+ reducePrecisionForZ(zOrdinate);
+					String topLeftRoofNode = reducePrecisionForXorY(ordinatesArrayTopLeft[0]) + ","
 							+ reducePrecisionForXorY(ordinatesArrayTopLeft[1]) + ","
-							+ reducePrecisionForZ(zOrdinate + sideLength));
-					String bottomLeftRoofNode = String.valueOf(reducePrecisionForXorY(ordinatesArrayTopLeft[0]) + "," 
+							+ reducePrecisionForZ(zOrdinate + sideLength);
+					String bottomLeftRoofNode = reducePrecisionForXorY(ordinatesArrayTopLeft[0]) + ","
 							+ reducePrecisionForXorY(ordinatesArrayBottomRight[1]) + ","
-							+ reducePrecisionForZ(zOrdinate + sideLength));
-					String bottomRightRoofNode = String.valueOf(reducePrecisionForXorY(ordinatesArrayBottomRight[0]) + "," 
+							+ reducePrecisionForZ(zOrdinate + sideLength);
+					String bottomRightRoofNode = reducePrecisionForXorY(ordinatesArrayBottomRight[0]) + ","
 							+ reducePrecisionForXorY(ordinatesArrayBottomRight[1]) + ","
-							+ reducePrecisionForZ(zOrdinate + sideLength)); 
-					String topRightRoofNode = String.valueOf(reducePrecisionForXorY(ordinatesArrayBottomRight[0]) + "," 
+							+ reducePrecisionForZ(zOrdinate + sideLength);
+					String topRightRoofNode = reducePrecisionForXorY(ordinatesArrayBottomRight[0]) + ","
 							+ reducePrecisionForXorY(ordinatesArrayTopLeft[1]) + ","
-							+ reducePrecisionForZ(zOrdinate + sideLength));				
+							+ reducePrecisionForZ(zOrdinate + sideLength);
 
 					LinearRingType LinearRingElement = kmlFactory.createLinearRingType();
 
@@ -636,9 +624,9 @@ public class GenericCityObject extends KmlGenericObject{
 				pointOrCurveGeometry = convertToWGS84(pointOrCurveGeometry);
 				double[] ordinatesArray = pointOrCurveGeometry.getCoordinates(0);
 				for (int j = 0; j < ordinatesArray.length; j = j+3){
-					lineString.getCoordinates().add(String.valueOf(reducePrecisionForXorY(ordinatesArray[j]) + "," 
-							+ reducePrecisionForXorY(ordinatesArray[j+1]) + ","
-							+ reducePrecisionForZ(ordinatesArray[j+2] + zOffset)));
+					lineString.getCoordinates().add(reducePrecisionForXorY(ordinatesArray[j]) + ","
+							+ reducePrecisionForXorY(ordinatesArray[j + 1]) + ","
+							+ reducePrecisionForZ(ordinatesArray[j + 2] + zOffset));
 				}
 
 				placemark.setName(work.getGmlId());

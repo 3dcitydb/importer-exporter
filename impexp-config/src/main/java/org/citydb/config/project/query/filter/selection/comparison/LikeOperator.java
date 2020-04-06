@@ -47,6 +47,14 @@ public class LikeOperator extends AbstractComparisonOperator {
 	private Boolean matchCase = true;
 	@XmlElement(required = true)
 	private String literal;
+
+	public LikeOperator() {
+	}
+
+	public LikeOperator(String valueReference, String literal) {
+		super(valueReference);
+		this.literal = literal;
+	}
 	
 	public boolean isSetWildCard() {
 		return wildCard != null;
@@ -109,6 +117,7 @@ public class LikeOperator extends AbstractComparisonOperator {
 		wildCard = "*";
 		singleCharacter = ".";
 		escapeCharacter = "\\";
+		matchCase = true;
 		literal = null;
 		super.reset();
 	}

@@ -10,6 +10,8 @@ import javax.xml.bind.annotation.XmlType;
 public class Namespace {
     @XmlAttribute(required = true)
     private String uri;
+    @XmlAttribute
+    private NamespaceMode mode;
     private String prefix;
     private String schemaLocation;
 
@@ -23,6 +25,14 @@ public class Namespace {
 
     public void setURI(String uri) {
         this.uri = uri;
+    }
+
+    public NamespaceMode getMode() {
+        return mode != null ? mode : NamespaceMode.AUTOMATIC;
+    }
+
+    public void setMode(NamespaceMode mode) {
+        this.mode = mode;
     }
 
     public boolean isSetPrefix() {

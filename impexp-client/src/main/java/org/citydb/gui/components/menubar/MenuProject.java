@@ -48,13 +48,15 @@ import org.citydb.registry.ObjectRegistry;
 import org.citydb.util.ClientConstants;
 import org.citydb.util.CoreConstants;
 
-import javax.swing.*;
+import javax.swing.JFileChooser;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.KeyStroke;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.Toolkit;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.io.File;
@@ -121,7 +123,7 @@ public class MenuProject extends JMenu {
             if (mainView.saveProjectSettings())
                 log.info("Settings successfully saved to config file '"
                         + CoreConstants.IMPEXP_DATA_DIR
-                                .resolve(ClientConstants.PROJECT_SETTINGS_FILE)
+                                .resolve(ClientConstants.CONFIG_DIR)
                                 .resolve(ClientConstants.PROJECT_SETTINGS_FILE) + "'.");
         });
 
@@ -151,35 +153,33 @@ public class MenuProject extends JMenu {
             }
         });
 
-		defaults.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {				
-				int res = JOptionPane.showConfirmDialog(getTopLevelAncestor(), 
-						Language.I18N.getString("menu.project.defaults.msg"), 
-						Language.I18N.getString("menu.project.defaults.msg.title"), JOptionPane.YES_NO_OPTION);
+		defaults.addActionListener(e -> {
+			int res = JOptionPane.showConfirmDialog(getTopLevelAncestor(),
+					Language.I18N.getString("menu.project.defaults.msg"),
+					Language.I18N.getString("menu.project.defaults.msg.title"), JOptionPane.YES_NO_OPTION);
 
-				if (res == JOptionPane.YES_OPTION) {
-					mainView.clearConsole();
-					mainView.disconnectFromDatabase();
+			if (res == JOptionPane.YES_OPTION) {
+				mainView.clearConsole();
+				mainView.disconnectFromDatabase();
 
-					config.setProject(new Project());
-					
-					// reset contents of srs combo boxes
-					SrsComboBoxFactory.getInstance(config).resetAll(true);
+				config.setProject(new Project());
 
-					// reset defaults on internal plugins
-					for (InternalPlugin plugin : pluginService.getInternalPlugins())
-						plugin.loadSettings();
+				// reset contents of srs combo boxes
+				SrsComboBoxFactory.getInstance(config).resetAll(true);
 
-					// update plugin configs
-					for (ConfigExtension<?> plugin : pluginService.getExternalPlugins(ConfigExtension.class))
-						plugin.handleEvent(PluginConfigEvent.RESET_DEFAULT_CONFIG);
+				// reset defaults on internal plugins
+				for (InternalPlugin plugin : pluginService.getInternalPlugins())
+					plugin.loadSettings();
 
-					// trigger event
-					ObjectRegistry.getInstance().getEventDispatcher().triggerEvent(new ProjectChangedEvent(this));
+				// update plugin configs
+				for (ConfigExtension<?> plugin : pluginService.getExternalPlugins(ConfigExtension.class))
+					plugin.handleEvent(PluginConfigEvent.RESET_DEFAULT_CONFIG);
 
-					mainView.doTranslation();
-					log.info("Project settings are reset to default values.");
-				}
+				// trigger event
+				ObjectRegistry.getInstance().getEventDispatcher().triggerEvent(new ProjectChangedEvent(this));
+
+				mainView.doTranslation();
+				log.info("Project settings are reset to default values.");
 			}
 		});
 

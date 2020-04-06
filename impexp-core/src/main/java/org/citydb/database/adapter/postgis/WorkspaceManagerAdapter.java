@@ -27,11 +27,11 @@
  */
 package org.citydb.database.adapter.postgis;
 
-import java.sql.Connection;
-
 import org.citydb.config.project.database.Workspace;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.adapter.AbstractWorkspaceManagerAdapter;
+
+import java.sql.Connection;
 
 public class WorkspaceManagerAdapter extends AbstractWorkspaceManagerAdapter {
 	

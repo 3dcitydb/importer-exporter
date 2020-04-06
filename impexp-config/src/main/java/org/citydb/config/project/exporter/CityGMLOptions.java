@@ -30,6 +30,7 @@ package org.citydb.config.project.exporter;
 
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 @XmlType(name="CityGMLOptionsType", propOrder={
@@ -41,7 +42,7 @@ public class CityGMLOptions {
     private Boolean writeProductHeader;
     private GMLEnvelope gmlEnvelope;
     @XmlJavaTypeAdapter(NamespaceAdapter.class)
-    private Map<String, Namespace> namespaces;
+    private LinkedHashMap<String, Namespace> namespaces;
 
     public CityGMLOptions() {
         gmlEnvelope = new GMLEnvelope();
@@ -67,23 +68,11 @@ public class CityGMLOptions {
         return namespaces != null && !namespaces.isEmpty();
     }
 
-    public String getPrefix(String uri) {
-        if (namespaces != null) {
-            Namespace namespace = namespaces.get(uri);
-            if (namespace != null && namespace.isSetPrefix())
-                return namespace.getPrefix();
-        }
-
-        return null;
+    public Namespace getNamespace(String uri) {
+        return namespaces != null ? namespaces.get(uri) : null;
     }
 
-    public String getSchemaLocation(String uri) {
-        if (namespaces != null) {
-            Namespace namespace = namespaces.get(uri);
-            if (namespace != null && namespace.isSetSchemaLocation())
-                return namespace.getSchemaLocation();
-        }
-
-        return null;
+    public Map<String, Namespace> getNamespaces() {
+        return namespaces;
     }
 }

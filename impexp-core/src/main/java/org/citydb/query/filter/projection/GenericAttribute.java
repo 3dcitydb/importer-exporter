@@ -27,11 +27,11 @@
  */
 package org.citydb.query.filter.projection;
 
-import java.util.EnumSet;
-import java.util.Objects;
-
 import org.citydb.query.filter.FilterException;
 import org.citygml4j.model.citygml.CityGMLClass;
+
+import java.util.EnumSet;
+import java.util.Objects;
 
 public class GenericAttribute {
 	private final String name;

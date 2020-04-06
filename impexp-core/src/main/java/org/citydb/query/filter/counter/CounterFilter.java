@@ -27,33 +27,61 @@
  */
 package org.citydb.query.filter.counter;
 
-import org.citydb.query.filter.FilterException;
+import org.citydb.query.filter.selection.operator.comparison.ComparisonOperatorName;
 
 public class CounterFilter {
-	private final long lowerLimit;
-	private final long upperLimit;
-	
-	public CounterFilter(long lowerLimit, long upperLimit) throws FilterException {
-		if (lowerLimit <= 0 || upperLimit <= 0)
-			throw new FilterException("Counter limits must be greater than zero.");
-		
-		if (lowerLimit > upperLimit)
-			throw new FilterException("The upper counter limit must be greater than or equal to the lower limit.");
-		
-		this.lowerLimit = lowerLimit;
-		this.upperLimit = upperLimit;
-	}
-	
-	public CounterFilter(long upperLimit) throws FilterException {
-		this(1, upperLimit);
-	}
-	
-	public long getLowerLimit() {
-		return lowerLimit;
+	private long count = -1;
+	private long startIndex = -1;
+	private long startId = -1;
+	private ComparisonOperatorName comparisonOperator;
+
+	public CounterFilter() {
 	}
 
-	public long getUpperLimit() {
-		return upperLimit;
+	public boolean isSetCount() {
+		return count != -1;
 	}
 	
+	public long getCount() {
+		return isSetCount() ? count : 0;
+	}
+
+	public void setCount(long count) {
+		this.count = Math.max(count, -1);
+	}
+
+	public boolean isSetStartIndex() {
+		return startIndex != -1;
+	}
+
+	public long getStartIndex() {
+		return isSetStartIndex() ? startIndex : 0;
+	}
+
+	public void setStartIndex(long startIndex) {
+		this.startIndex = Math.max(startIndex, -1);
+		startId = -1;
+	}
+
+	public boolean isSetStartId() {
+		return startId != -1;
+	}
+
+	public long getStartId() {
+		return isSetStartId() ? startId : 0;
+	}
+
+	public void setStartId(long startId) {
+		this.startId = Math.max(startId, -1);
+		startIndex = -1;
+	}
+
+	public void setStartId(long startId, ComparisonOperatorName comparisonOperator) {
+		setStartId(startId);
+		this.comparisonOperator = comparisonOperator;
+	}
+
+	public ComparisonOperatorName getStartIdComparisonOperator() {
+		return comparisonOperator != null ? comparisonOperator : ComparisonOperatorName.GREATER_THAN;
+	}
 }

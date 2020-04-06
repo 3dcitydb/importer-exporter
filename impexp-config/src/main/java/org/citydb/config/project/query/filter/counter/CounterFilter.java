@@ -27,48 +27,46 @@
  */
 package org.citydb.config.project.query.filter.counter;
 
-import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 
 @XmlType(name="CounterFilterType", propOrder={
-		"lowerLimit",
-		"upperLimit"
+		"count",
+		"startIndex"
 })
 public class CounterFilter {
 	@XmlSchemaType(name="nonNegativeInteger")
-	private Long lowerLimit;
-	@XmlElement(required = true)
+	private Long count;
 	@XmlSchemaType(name="nonNegativeInteger")
-	private Long upperLimit;
+	private Long startIndex;
 	
-	public boolean isSetLowerLimit() {
-		return lowerLimit != null;
+	public boolean isSetCount() {
+		return count != null;
 	}
 
-	public Long getLowerLimit() {
-		return lowerLimit;
+	public Long getCount() {
+		return count;
 	}
 
-	public void setLowerLimit(Long lowerLimit) {
-		this.lowerLimit = lowerLimit;
+	public void setCount(Long count) {
+		this.count = count;
 	}
 	
-	public boolean isSetUpperLimit() {
-		return upperLimit != null;
+	public boolean isSetStartIndex() {
+		return startIndex != null;
 	}
 
-	public Long getUpperLimit() {
-		return upperLimit;
+	public Long getStartIndex() {
+		return startIndex;
 	}
 
-	public void setUpperLimit(Long upperLimit) {
-		this.upperLimit = upperLimit;
+	public void setStartIndex(Long startIndex) {
+		this.startIndex = startIndex;
 	}
 
 	public void reset() {
-		lowerLimit = null;
-		upperLimit = null;
+		count = null;
+		startIndex = null;
 	}
 
 }

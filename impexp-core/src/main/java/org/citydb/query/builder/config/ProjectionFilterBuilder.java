@@ -51,7 +51,7 @@ public class ProjectionFilterBuilder {
 		this.schemaMapping = schemaMapping;
 	}
 
-	public Projection buildProjectionFilter(org.citydb.config.project.query.filter.projection.ProjectionFilter projectionFilterConfig) throws QueryBuildException {
+	protected Projection buildProjectionFilter(org.citydb.config.project.query.filter.projection.ProjectionFilter projectionFilterConfig) throws QueryBuildException {
 		Projection projection = new Projection();
 		Map<AbstractObjectType<?>, ProjectionFilter> projectionFilters = new IdentityHashMap<>();
 

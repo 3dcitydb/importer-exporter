@@ -68,16 +68,19 @@ public class ImportStatusDialog extends JDialog implements EventHandler {
 	private JLabel details;
 	private JLabel fileCounter;
 	private JLabel featureLabel;
+	private JLabel appearanceLabel;
 	private JLabel textureLabel;
 	private JPanel main;
 	private JPanel row;
 	private JLabel featureCounterLabel;
+	private JLabel appearanceCounterLabel;
 	private JLabel textureCounterLabel;
 	private JLabel fileCounterLabel;
 	private JProgressBar progressBar;
 	public JButton cancelButton;
 	
 	private long featureCounter;
+	private long appearanceCounter;
 	private long textureCounter;
 	private int progressBarCounter;
 	private volatile boolean acceptStatusUpdate = true;
@@ -104,13 +107,16 @@ public class ImportStatusDialog extends JDialog implements EventHandler {
 		mesageLabel = new JLabel(" ");
 		cancelButton = new JButton(Language.I18N.getString("common.button.cancel"));
 		featureLabel = new JLabel(Language.I18N.getString("common.status.dialog.featureCounter"));
+		appearanceLabel = new JLabel(Language.I18N.getString("common.status.dialog.appearanceCounter"));
 		textureLabel = new JLabel(Language.I18N.getString("common.status.dialog.textureCounter"));
 		fileCounter = new JLabel(Language.I18N.getString("common.status.dialog.fileCounter"));
 		fileCounterLabel = new JLabel("n/a", SwingConstants.TRAILING);
 		featureCounterLabel = new JLabel("0", SwingConstants.TRAILING);
+		appearanceCounterLabel = new JLabel("0", SwingConstants.TRAILING);
 		textureCounterLabel = new JLabel("0", SwingConstants.TRAILING);
 
 		featureCounterLabel.setPreferredSize(new Dimension(100, featureLabel.getPreferredSize().height));
+		appearanceCounterLabel.setPreferredSize(new Dimension(100, appearanceLabel.getPreferredSize().height));
 		textureCounterLabel.setPreferredSize(new Dimension(100, textureLabel.getPreferredSize().height));
 
 		progressBar = new JProgressBar();
@@ -136,10 +142,12 @@ public class ImportStatusDialog extends JDialog implements EventHandler {
 				{
 					row.add(featureLabel, GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.HORIZONTAL,5,5,1,5));
 					row.add(featureCounterLabel, GuiUtil.setConstraints(1,0,1.0,0.0,GridBagConstraints.HORIZONTAL,5,5,1,5));
-					row.add(textureLabel, GuiUtil.setConstraints(0,1,0.0,0.0,GridBagConstraints.HORIZONTAL,1,5,5,5));
-					row.add(textureCounterLabel, GuiUtil.setConstraints(1,1,1.0,0.0,GridBagConstraints.HORIZONTAL,1,5,5,5));
-					row.add(fileCounter, GuiUtil.setConstraints(0,2,1.0,0.0,GridBagConstraints.HORIZONTAL,1,5,5,5));
-					row.add(fileCounterLabel, GuiUtil.setConstraints(1,2,1.0,0.0,GridBagConstraints.HORIZONTAL,1,5,5,5));
+					row.add(appearanceLabel, GuiUtil.setConstraints(0,1,0.0,0.0,GridBagConstraints.HORIZONTAL,1,5,1,5));
+					row.add(appearanceCounterLabel, GuiUtil.setConstraints(1,1,1.0,0.0,GridBagConstraints.HORIZONTAL,1,5,1,5));
+					row.add(textureLabel, GuiUtil.setConstraints(0,2,0.0,0.0,GridBagConstraints.HORIZONTAL,1,5,5,5));
+					row.add(textureCounterLabel, GuiUtil.setConstraints(1,2,1.0,0.0,GridBagConstraints.HORIZONTAL,1,5,5,5));
+					row.add(fileCounter, GuiUtil.setConstraints(0,3,1.0,0.0,GridBagConstraints.HORIZONTAL,1,5,5,5));
+					row.add(fileCounterLabel, GuiUtil.setConstraints(1,3,1.0,0.0,GridBagConstraints.HORIZONTAL,1,5,5,5));
 				}
 			}
 
@@ -167,6 +175,12 @@ public class ImportStatusDialog extends JDialog implements EventHandler {
 				((CounterEvent)e).getType() == CounterType.TOPLEVEL_FEATURE) {
 			featureCounter += ((CounterEvent)e).getCounter();
 			featureCounterLabel.setText(String.valueOf(featureCounter));
+		}
+
+		else if (e.getEventType() == EventType.COUNTER &&
+				((CounterEvent)e).getType() == CounterType.GLOBAL_APPEARANCE) {
+			appearanceCounter += ((CounterEvent)e).getCounter();
+			appearanceCounterLabel.setText(String.valueOf(appearanceCounter));
 		}
 
 		else if (e.getEventType() == EventType.COUNTER &&

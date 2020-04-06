@@ -27,11 +27,11 @@
  */
 package org.citydb.config.project.query.filter.selection.logical;
 
+import org.citydb.config.project.query.filter.selection.AbstractPredicate;
+
 import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
-
-import org.citydb.config.project.query.filter.selection.AbstractPredicate;
 
 @XmlRootElement(name="not")
 @XmlType(name="NotOperatorType", propOrder={
@@ -40,6 +40,13 @@ import org.citydb.config.project.query.filter.selection.AbstractPredicate;
 public class NotOperator extends AbstractLogicalOperator {
 	@XmlElementRef
 	private AbstractPredicate operand;
+
+	public NotOperator() {
+	}
+
+	public NotOperator(AbstractPredicate operand) {
+		this.operand = operand;
+	}
 	
 	public boolean isSetOperand() {
 		return operand != null;

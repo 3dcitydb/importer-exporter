@@ -27,8 +27,6 @@
  */
 package org.citydb.writer;
 
-import java.util.concurrent.locks.ReentrantLock;
-
 import org.citydb.concurrent.Worker;
 import org.citydb.config.project.global.LogLevel;
 import org.citydb.event.EventDispatcher;
@@ -36,6 +34,8 @@ import org.citydb.event.global.InterruptEvent;
 import org.citygml4j.builder.cityjson.json.io.writer.CityJSONChunkWriter;
 import org.citygml4j.builder.cityjson.json.io.writer.CityJSONWriteException;
 import org.citygml4j.cityjson.feature.AbstractCityObjectType;
+
+import java.util.concurrent.locks.ReentrantLock;
 
 public class CityJSONWriterWorker extends Worker<AbstractCityObjectType> {
 	private final ReentrantLock runLock = new ReentrantLock();	

@@ -34,22 +34,23 @@ Note that releases of the software before version 3.3.0 continue to be licensed 
 
 Latest release
 --------------
-The latest stable release of the 3D City Database Importer/Exporter is 4.2.
+The latest stable release of the 3D City Database Importer/Exporter is 4.2.3.
 
-Download a Java-based executable installer for the software [here](https://github.com/3dcitydb/importer-exporter/releases/download/v4.2.2/3DCityDB-Importer-Exporter-4.2.2-Setup.jar). Previous releases are available from the [releases section](https://github.com/3dcitydb/importer-exporter/releases).
+Download a Java-based executable installer for the software [here](https://github.com/3dcitydb/importer-exporter/releases/download/v4.2.3/3DCityDB-Importer-Exporter-4.2.3-Setup.jar). Previous
+ releases are available from the [releases section](https://github.com/3dcitydb/importer-exporter/releases).
 
 System requirements
 -------------------
 * Java JRE or JDK >= 1.8
 * [3D City Database](https://github.com/3dcitydb/3dcitydb) on
   - Oracle DBMS >= 10G R2 with Spatial or Locator option
-  - PostgreSQL DBMS >= 9.3 with PostGIS extension >= 2.0
+  - PostgreSQL DBMS >= 9.6 with PostGIS extension >= 2.3
   
 The 3D City Database Importer/Exporter can be run on any platform providing appropriate Java support. 
 
 Documentation and literature
 ----------------------------
-A complete and comprehensive documentation on the 3D City Database and the Importer/Exporter tool is installed with the software and is available [online](http://www.3dcitydb.org/3dcitydb/documentation/).
+A complete and comprehensive documentation on the 3D City Database and the Importer/Exporter tool is available [online](https://3dcitydb-docs.readthedocs.io/en/release-v4.2.3/index.html).
 
 An Open Access paper on the 3DCityDB has been published in the International Journal on Open Geospatial Data, Software and Standards 3 (5), 2018: [Z. Yao, C. Nagel, F. Kunde, G. Hudra, P. Willkomm, A. Donaubauer, T. Adolphi, T. H. Kolbe: 3DCityDB - a 3D geodatabase solution for the management, analysis, and visualization of semantic 3D city models based on CityGML](https://doi.org/10.1186/s40965-018-0046-7). Please use this reference when citing the 3DCityDB project.
 

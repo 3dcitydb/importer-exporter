@@ -35,14 +35,22 @@ import org.citydb.config.project.kmlExporter.KmlTiling;
 import org.citydb.config.project.kmlExporter.SimpleKmlQuery;
 import org.citydb.config.project.kmlExporter.SimpleKmlQueryMode;
 import org.citydb.config.project.query.filter.selection.AbstractPredicate;
+import org.citydb.config.project.query.filter.selection.comparison.GreaterThanOperator;
+import org.citydb.config.project.query.filter.selection.comparison.LessThanOrEqualToOperator;
 import org.citydb.config.project.query.filter.selection.comparison.LikeOperator;
+import org.citydb.config.project.query.filter.selection.comparison.NullOperator;
+import org.citydb.config.project.query.filter.selection.logical.AndOperator;
+import org.citydb.config.project.query.filter.selection.logical.OrOperator;
 import org.citydb.config.project.query.filter.selection.spatial.BBOXOperator;
 import org.citydb.config.project.query.filter.selection.spatial.WithinOperator;
+import org.citydb.config.project.query.simple.SimpleFeatureVersionFilter;
+import org.citydb.config.project.query.simple.SimpleFeatureVersionFilterMode;
 import org.citydb.config.project.query.simple.SimpleSelectionFilter;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.schema.mapping.SchemaMapping;
 import org.citydb.query.Query;
 import org.citydb.query.builder.QueryBuildException;
+import org.citydb.query.builder.util.ValueReferenceBuilder;
 import org.citydb.query.filter.FilterException;
 import org.citydb.query.filter.selection.Predicate;
 import org.citydb.query.filter.selection.SelectionFilter;
@@ -53,6 +61,7 @@ import org.citydb.util.Util;
 import org.citygml4j.model.module.citygml.CityGMLVersion;
 import org.citygml4j.model.module.citygml.CoreModule;
 
+import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.NamespaceContext;
 import java.util.ArrayList;
 import java.util.List;
@@ -68,6 +77,8 @@ public class ConfigQueryBuilder {
 
 	public Query buildQuery(org.citydb.config.project.query.Query queryConfig, NamespaceContext namespaceContext) throws QueryBuildException {
 		Query query = new Query();
+
+		ValueReferenceBuilder valueReferenceBuilder = new ValueReferenceBuilder(query, schemaMapping, namespaceContext);
 
 		// target SRS
 		if (queryConfig.isSetTargetSrs())
@@ -113,7 +124,7 @@ public class ConfigQueryBuilder {
 		// selection filter
 		if (queryConfig.isSetSelectionFilter()) {
 			AbstractPredicate predicate = queryConfig.getSelectionFilter().getPredicate();
-			PredicateBuilder predicateBuilder = new PredicateBuilder(query, schemaMapping, namespaceContext, databaseAdapter);			
+			PredicateBuilder predicateBuilder = new PredicateBuilder(valueReferenceBuilder, databaseAdapter);
 			query.setSelection(new SelectionFilter(predicateBuilder.buildPredicate(predicate)));
 		}
 
@@ -121,6 +132,12 @@ public class ConfigQueryBuilder {
 		if (queryConfig.isSetAppearanceFilter()) {
 			AppearanceFilterBuilder builder = new AppearanceFilterBuilder();
 			query.setAppearanceFilter(builder.buildAppearanceFilter(queryConfig.getAppearanceFilter()));
+		}
+
+		// sorting clause
+		if (queryConfig.isSetSorting() && queryConfig.getSorting().hasSortProperties()) {
+			SortingBuilder sortingBuilder = new SortingBuilder(valueReferenceBuilder);
+			query.setSorting(sortingBuilder.buildSorting(queryConfig.getSorting()));
 		}
 
 		// tiling
@@ -136,8 +153,11 @@ public class ConfigQueryBuilder {
 		// support for legacy CityGML export filter
 		Query query = new Query();
 
+		ValueReferenceBuilder valueReferenceBuilder = new ValueReferenceBuilder(query, schemaMapping, namespaceContext);
+		PredicateBuilder predicateBuilder = new PredicateBuilder(valueReferenceBuilder, databaseAdapter);
+
 		// CityGML version
-		CityGMLVersion version = Util.toCityGMLVersion(queryConfig.getVersion()); 
+		CityGMLVersion version = Util.toCityGMLVersion(queryConfig.getVersion());
 		query.setTargetVersion(version);
 
 		// target SRS
@@ -145,17 +165,6 @@ public class ConfigQueryBuilder {
 			query.setTargetSrs(queryConfig.getTargetSrs());
 		else
 			query.setTargetSrs(databaseAdapter.getConnectionMetaData().getReferenceSystem());
-
-		PredicateBuilder predicateBuilder = new PredicateBuilder(query, schemaMapping, namespaceContext, databaseAdapter);
-
-		// lod filter
-		if (queryConfig.isUseLodFilter() && queryConfig.isSetLodFilter()) {
-			LodFilterBuilder lodFilterBuilder = new LodFilterBuilder();
-			query.setLodFilter(lodFilterBuilder.buildLodFilter(queryConfig.getLodFilter()));
-		}
-
-		// simple filter settings
-		List<Predicate> predicates = new ArrayList<>();
 
 		// feature type filter
 		if (queryConfig.isUseTypeNames()) {
@@ -172,6 +181,39 @@ public class ConfigQueryBuilder {
 			}
 		}
 
+		// lod filter
+		if (queryConfig.isUseLodFilter() && queryConfig.isSetLodFilter()) {
+			LodFilterBuilder lodFilterBuilder = new LodFilterBuilder();
+			query.setLodFilter(lodFilterBuilder.buildLodFilter(queryConfig.getLodFilter()));
+		}
+
+		// simple filter settings
+		List<Predicate> predicates = new ArrayList<>();
+
+		// feature version filter
+		if (queryConfig.isUseFeatureVersionFilter() && queryConfig.isSetFeatureVersionFilter()) {
+			SimpleFeatureVersionFilter featureVersionFilter = queryConfig.getFeatureVersionFilter();
+
+			if (featureVersionFilter.getMode() == SimpleFeatureVersionFilterMode.LATEST)
+				predicates.add(predicateBuilder.buildPredicate(new NullOperator("core:terminationDate")));
+			else if (featureVersionFilter.isSetStartDate()
+					&& (featureVersionFilter.getMode() == SimpleFeatureVersionFilterMode.AT
+					|| featureVersionFilter.isSetEndDate())) {
+				XMLGregorianCalendar creationDate = featureVersionFilter.getMode() == SimpleFeatureVersionFilterMode.AT ?
+						featureVersionFilter.getStartDate() :
+						featureVersionFilter.getEndDate();
+
+				predicates.add(predicateBuilder.buildPredicate(new AndOperator(
+						new LessThanOrEqualToOperator("core:creationDate", creationDate.toXMLFormat()),
+						new OrOperator(
+								new GreaterThanOperator("core:terminationDate", featureVersionFilter.getStartDate().toString()),
+								new NullOperator("core:terminationDate")
+						)
+				)));
+			}
+		}
+
+		// selection filter
 		if (queryConfig.isUseSelectionFilter() && queryConfig.isSetSelectionFilter()) {
 			SimpleSelectionFilter selectionFilter = queryConfig.getSelectionFilter();
 
@@ -183,7 +225,6 @@ public class ConfigQueryBuilder {
 				// gml:name filter
 				if (selectionFilter.isSetGmlNameFilter() && selectionFilter.getGmlNameFilter().isSetLiteral()) {
 					LikeOperator gmlNameFilter = selectionFilter.getGmlNameFilter();
-					gmlNameFilter.setLiteral(gmlNameFilter.getLiteral());
 					gmlNameFilter.setValueReference("gml:name");
 					predicates.add(predicateBuilder.buildPredicate(gmlNameFilter));
 				}
@@ -191,7 +232,6 @@ public class ConfigQueryBuilder {
 				// citydb:lineage filter
 				if (selectionFilter.isSetLineageFilter() && selectionFilter.getLineageFilter().isSetLiteral()) {
 					LikeOperator lineageFilter = selectionFilter.getLineageFilter();
-					lineageFilter.setLiteral(lineageFilter.getLiteral());
 					lineageFilter.setValueReference("citydb:lineage");
 					predicates.add(predicateBuilder.buildPredicate(lineageFilter));
 				}
@@ -257,7 +297,8 @@ public class ConfigQueryBuilder {
 		// always use CityGML 2.0 as target version
 		query.setTargetVersion(CityGMLVersion.v2_0_0);
 
-		PredicateBuilder predicateBuilder = new PredicateBuilder(query, schemaMapping, namespaceContext, databaseAdapter);
+		ValueReferenceBuilder valueReferenceBuilder = new ValueReferenceBuilder(query, schemaMapping, namespaceContext);
+		PredicateBuilder predicateBuilder = new PredicateBuilder(valueReferenceBuilder, databaseAdapter);
 
 		// simple filter settings
 		if (queryConfig.getMode() == SimpleKmlQueryMode.SINGLE) {

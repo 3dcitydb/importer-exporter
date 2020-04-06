@@ -193,10 +193,10 @@ public class DBBridgeInstallation implements DBImporter {
 					String href = geometryProperty.getHref();
 					if (href != null && href.length() != 0) {
 						importer.propagateXlink(new DBXlinkSurfaceGeometry(
-								featureType.getObjectClassId(), 
+								TableEnum.BRIDGE_INSTALLATION.getName(),
 								bridgeInstallationId, 
 								href, 
-								"LOD" + (i + 2) + "_BREP_ID"));
+								"lod" + (i + 2) + "_brep_id"));
 					}
 				}
 			}
@@ -383,10 +383,10 @@ public class DBBridgeInstallation implements DBImporter {
 				String href = geometryProperty.getHref();
 				if (href != null && href.length() != 0) {
 					importer.propagateXlink(new DBXlinkSurfaceGeometry(
-							featureType.getObjectClassId(), 
+							TableEnum.BRIDGE_INSTALLATION.getName(),
 							intBridgeInstallationId, 
 							href, 
-							"LOD4_BREP_ID"));
+							"lod4_brep_id"));
 				}
 			}
 		}

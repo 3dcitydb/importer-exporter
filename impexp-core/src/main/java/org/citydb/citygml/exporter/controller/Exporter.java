@@ -38,7 +38,6 @@ import org.citydb.citygml.exporter.database.content.DBSplitter;
 import org.citydb.citygml.exporter.database.content.DBSplittingResult;
 import org.citydb.citygml.exporter.database.uid.FeatureGmlIdCache;
 import org.citydb.citygml.exporter.database.uid.GeometryGmlIdCache;
-import org.citydb.citygml.exporter.file.OutputFileFactory;
 import org.citydb.citygml.exporter.writer.FeatureWriteException;
 import org.citydb.citygml.exporter.writer.FeatureWriter;
 import org.citydb.citygml.exporter.writer.FeatureWriterFactory;
@@ -47,6 +46,7 @@ import org.citydb.concurrent.PoolSizeAdaptationStrategy;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
+import org.citydb.config.internal.Internal;
 import org.citydb.config.project.database.DatabaseSrs;
 import org.citydb.config.project.database.Workspace;
 import org.citydb.config.project.exporter.SimpleTilingOptions;
@@ -70,6 +70,7 @@ import org.citydb.event.global.StatusDialogProgressBar;
 import org.citydb.event.global.StatusDialogTitle;
 import org.citydb.file.FileType;
 import org.citydb.file.OutputFile;
+import org.citydb.file.output.OutputFileFactory;
 import org.citydb.log.Logger;
 import org.citydb.plugin.PluginManager;
 import org.citydb.plugin.extension.export.CityGMLExportExtension;
@@ -204,10 +205,10 @@ public class Exporter implements EventHandler {
 				targetSrs.getSrid() != databaseAdapter.getConnectionMetaData().getReferenceSystem().getSrid());
 
 		if (config.getInternal().isTransformCoordinates()) {
-			if (targetSrs.is3D() == databaseAdapter.getConnectionMetaData().getReferenceSystem().is3D()) {
-				log.info("Transforming geometry representation to reference system '" + targetSrs.getDescription() + "' (SRID: " + targetSrs.getSrid() + ").");
+			log.info("Transforming geometry representation to reference system '" + targetSrs.getDescription() + "' (SRID: " + targetSrs.getSrid() + ").");
+			if (!targetSrs.is3D() && !databaseAdapter.getConnectionMetaData().getReferenceSystem().is3D()) {
 				log.warn("Transformation is NOT applied to height reference system.");
-			} else {
+			} else if (targetSrs.is3D() != databaseAdapter.getConnectionMetaData().getReferenceSystem().is3D()) {
 				throw new CityGMLExportException("Dimensionality of reference system for geometry transformation does not match.");
 			}
 		}
@@ -472,7 +473,6 @@ public class Exporter implements EventHandler {
 					log.info("Exporting to file: " + file.getFile());
 
 					// get database splitter and start query
-					dbSplitter = null;
 					try {
 						dbSplitter = new DBSplitter(
 								writer,
@@ -486,7 +486,7 @@ public class Exporter implements EventHandler {
 
 						if (shouldRun) {
 							dbSplitter.setMetadataProvider(metadataProvider);
-							dbSplitter.setCalculateNumberMatched(config.getInternal().isGUIMode());
+							dbSplitter.setCalculateNumberMatched(Internal.IS_GUI_MODE);
 							dbSplitter.startQuery();
 						}
 					} catch (SQLException | QueryBuildException | FilterException e) {
@@ -599,7 +599,7 @@ public class Exporter implements EventHandler {
 	@Override
 	public void handleEvent(Event e) throws Exception {
 		if (e.getEventType() == EventType.OBJECT_COUNTER) {
-			HashMap<Integer, Long> counter = ((ObjectCounterEvent)e).getCounter();
+			Map<Integer, Long> counter = ((ObjectCounterEvent)e).getCounter();
 
 			for (Entry<Integer, Long> entry : counter.entrySet()) {
 				Long tmp = objectCounter.get(entry.getKey());
@@ -613,7 +613,7 @@ public class Exporter implements EventHandler {
 		}
 
 		else if (e.getEventType() == EventType.GEOMETRY_COUNTER) {
-			HashMap<GMLClass, Long> counter = ((GeometryCounterEvent)e).getCounter();
+			Map<GMLClass, Long> counter = ((GeometryCounterEvent)e).getCounter();
 
 			for (Entry<GMLClass, Long> entry : counter.entrySet()) {
 				Long tmp = geometryCounter.get(entry.getKey());

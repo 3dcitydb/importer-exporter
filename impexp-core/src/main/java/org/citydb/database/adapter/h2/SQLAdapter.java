@@ -145,6 +145,11 @@ public class SQLAdapter extends AbstractSQLAdapter {
 	}
 
 	@Override
+	public boolean supportsFetchFirstClause() {
+		return true;
+	}
+
+	@Override
 	public String getHierarchicalGeometryQuery() {
 		// not required for cache tables
 		return "";

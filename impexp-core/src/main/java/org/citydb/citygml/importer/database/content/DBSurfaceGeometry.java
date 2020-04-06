@@ -62,6 +62,7 @@ import org.citygml4j.model.gml.geometry.primitives.GeometricPrimitiveProperty;
 import org.citygml4j.model.gml.geometry.primitives.LinearRing;
 import org.citygml4j.model.gml.geometry.primitives.OrientableSurface;
 import org.citygml4j.model.gml.geometry.primitives.Polygon;
+import org.citygml4j.model.gml.geometry.primitives.PolygonPatch;
 import org.citygml4j.model.gml.geometry.primitives.PolygonProperty;
 import org.citygml4j.model.gml.geometry.primitives.Rectangle;
 import org.citygml4j.model.gml.geometry.primitives.Sign;
@@ -70,12 +71,10 @@ import org.citygml4j.model.gml.geometry.primitives.SolidArrayProperty;
 import org.citygml4j.model.gml.geometry.primitives.SolidProperty;
 import org.citygml4j.model.gml.geometry.primitives.Surface;
 import org.citygml4j.model.gml.geometry.primitives.SurfaceArrayProperty;
-import org.citygml4j.model.gml.geometry.primitives.SurfacePatchArrayProperty;
 import org.citygml4j.model.gml.geometry.primitives.SurfaceProperty;
 import org.citygml4j.model.gml.geometry.primitives.Triangle;
 import org.citygml4j.model.gml.geometry.primitives.TrianglePatchArrayProperty;
 import org.citygml4j.model.gml.geometry.primitives.TriangulatedSurface;
-import org.citygml4j.util.child.ChildInfo;
 import org.citygml4j.util.walker.GeometryWalker;
 
 import java.sql.Connection;
@@ -96,12 +95,11 @@ public class DBSurfaceGeometry implements DBImporter {
 	private DBAppearance appearanceImporter;
 	private PrimaryKeyManager pkManager;
 
-	private String schema;
 	private int dbSrid;
 	private boolean replaceGmlId;
 	private boolean importAppearance;
 	private boolean applyTransformation;
-	private boolean isImplicit;	
+	private boolean isImplicit;
 	private int batchCounter;
 	private int nullGeometryType;
 	private String nullGeometryTypeName;
@@ -118,7 +116,7 @@ public class DBSurfaceGeometry implements DBImporter {
 		applyTransformation = config.getProject().getImporter().getAffineTransformation().isEnabled();
 		nullGeometryType = importer.getDatabaseAdapter().getGeometryConverter().getNullGeometryType();
 		nullGeometryTypeName = importer.getDatabaseAdapter().getGeometryConverter().getNullGeometryTypeName();
-		schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
+		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
 
 		String gmlIdCodespace = config.getInternal().getCurrentGmlIdCodespace();
 		if (gmlIdCodespace != null)
@@ -133,7 +131,7 @@ public class DBSurfaceGeometry implements DBImporter {
 			// the current PostGIS JDBC driver lacks support for geometry objects of type PolyhedralSurface
 			// thus, we have to use the database function ST_GeomFromEWKT to insert such geometries
 			// TODO: rework as soon as the JDBC driver supports PolyhedralSurface
-			stmt.append("ST_GeomFromEWKT(?), ");	
+			stmt.append("ST_GeomFromEWKT(?), ");
 		} else
 			stmt.append("?, ");
 
@@ -235,87 +233,18 @@ public class DBSurfaceGeometry implements DBImporter {
 
 		// ok, now we can have a look at different gml geometry objects
 		// firstly, handle simple surface geometries
-		// a single linearRing
-		if (surfaceGeometryType == GMLClass.LINEAR_RING) {
-			LinearRing linearRing = (LinearRing)surfaceGeometry;
-			if (!ringValidator.validate(linearRing))
-				return;
-
-			List<Double> points = linearRing.toList3d(reverse);
-			if (applyTransformation)
-				importer.getAffineTransformer().transformCoordinates(points);
-
-			// well, taking care about geometry is not enough... this ring could
-			// be referenced by a <textureCoordinates> element. since we cannot store
-			// the gml:id of linear rings in the database, we have to remember its id
-			if (importAppearance && !isCopy && linearRing.isSetId()) {
-				if (localAppearanceHandler != null && localAppearanceHandler.hasParameterizedTextures())
-					localAppearanceHandler.registerLinearRing(linearRing.getId(), surfaceGeometryId, reverse);
-
-				// the ring could also be the target of a global appearance
-				importer.propagateXlink(new DBXlinkLinearRing(
-						linearRing.getId(),
-						surfaceGeometryId,
-						0,
-						reverse));
-			}
-
-			double[] coordinates = new double[points.size()];
-
-			int i = 0;
-			for (Double point : points)
-				coordinates[i++] = point;
-
-			GeometryObject geomObj = GeometryObject.createPolygon(coordinates, 3, dbSrid);
-			Object obj = importer.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(geomObj, batchConn);
-
-			if (origGmlId != null && !isCopy)
-				importer.putGeometryUID(origGmlId, surfaceGeometryId, rootId, reverse, gmlId);
-
-			psGeomElem.setLong(1, surfaceGeometryId);
-			psGeomElem.setString(2, gmlId);
-			psGeomElem.setLong(4, rootId);
-			psGeomElem.setInt(5, 0);
-			psGeomElem.setInt(6, 0);
-			psGeomElem.setInt(7, 0);
-			psGeomElem.setInt(8, isXlink ? 1 : 0);
-			psGeomElem.setInt(9, reverse ? 1 : 0);
-			psGeomElem.setNull(11, nullGeometryType, nullGeometryTypeName);
-
-			if (parentId != 0)
-				psGeomElem.setLong(3, parentId);
-			else
-				psGeomElem.setNull(3, Types.NULL);
-
-			if (!isImplicit) {
-				psGeomElem.setObject(10, obj);
-				psGeomElem.setNull(12, nullGeometryType, nullGeometryTypeName);
-			} else {
-				psGeomElem.setNull(10, nullGeometryType, nullGeometryTypeName);
-				psGeomElem.setObject(12, obj);
-			}
-
-			if (cityObjectId != 0) 
-				psGeomElem.setLong(13, cityObjectId);
-			else
-				psGeomElem.setNull(13, Types.NULL);
-
-			addBatch();
-		}
-
 		// a simple polygon
-		else if (surfaceGeometryType == GMLClass.POLYGON) {
+		if (surfaceGeometryType == GMLClass.POLYGON) {
 			Polygon polygon = (Polygon)surfaceGeometry;
 
 			if (polygon.isSetExterior()) {
 				List<List<Double>> pointList = new ArrayList<>();
-				AbstractRing exteriorAbstractRing = polygon.getExterior().getRing();
-				if (exteriorAbstractRing instanceof LinearRing) {
-					LinearRing exteriorLinearRing = (LinearRing)exteriorAbstractRing;
-					if (!ringValidator.validate(exteriorLinearRing))
+				AbstractRing exteriorRing = polygon.getExterior().getRing();
+				if (exteriorRing != null) {
+					List<Double> points = exteriorRing.toList3d(reverse);
+					if (!ringValidator.validate(points, exteriorRing))
 						return;
 
-					List<Double> points = exteriorLinearRing.toList3d(reverse);
 					if (applyTransformation)
 						importer.getAffineTransformer().transformCoordinates(points);
 
@@ -326,54 +255,45 @@ public class DBSurfaceGeometry implements DBImporter {
 					// well, taking care about geometry is not enough... this ring could
 					// be referenced by a <textureCoordinates> element. since we cannot store
 					// the gml:id of linear rings in the database, we have to remember its id
-					if (importAppearance && !isCopy) {
-						if (exteriorLinearRing.isSetId()) {
-							if (localAppearanceHandler != null && localAppearanceHandler.hasParameterizedTextures())
-								localAppearanceHandler.registerLinearRing(exteriorLinearRing.getId(), surfaceGeometryId, reverse);
+					if (importAppearance && !isCopy && exteriorRing.isSetId()) {
+						if (localAppearanceHandler != null && localAppearanceHandler.hasParameterizedTextures())
+							localAppearanceHandler.registerLinearRing(exteriorRing.getId(), surfaceGeometryId, reverse);
 
-							// the ring could also be the target of a global appearance
-							importer.propagateXlink(new DBXlinkLinearRing(
-									exteriorLinearRing.getId(),
-									surfaceGeometryId,
-									ringNo,
-									reverse));
-						}
+						// the ring could also be the target of a global appearance
+						importer.propagateXlink(new DBXlinkLinearRing(
+								exteriorRing.getId(),
+								surfaceGeometryId,
+								ringNo,
+								reverse));
 					}
 
 					if (polygon.isSetInterior()) {
 						for (AbstractRingProperty abstractRingProperty : polygon.getInterior()) {
-							AbstractRing interiorAbstractRing = abstractRingProperty.getRing();
-							if (interiorAbstractRing instanceof LinearRing) {								
-								LinearRing interiorLinearRing = (LinearRing)interiorAbstractRing;
-								if (!ringValidator.validate(interiorLinearRing))
+							AbstractRing interiorRing = abstractRingProperty.getRing();
+							if (interiorRing != null) {
+								List<Double> interiorPoints = interiorRing.toList3d(reverse);
+								if (!ringValidator.validate(interiorPoints, interiorRing))
 									continue;
 
-								List<Double> interiorPoints = interiorLinearRing.toList3d(reverse);
 								if (applyTransformation)
 									importer.getAffineTransformer().transformCoordinates(interiorPoints);
 
 								pointList.add(interiorPoints);
-
 								importer.updateGeometryCounter(GMLClass.LINEAR_RING);
 
 								// also remember the gml:id of interior rings in case it is
 								// referenced by a <textureCoordinates> element
-								if (importAppearance && !isCopy && interiorLinearRing.isSetId()) {
+								if (importAppearance && !isCopy && interiorRing.isSetId()) {
 									if (localAppearanceHandler != null && localAppearanceHandler.hasParameterizedTextures())
-										localAppearanceHandler.registerLinearRing(interiorLinearRing.getId(), surfaceGeometryId, reverse);
+										localAppearanceHandler.registerLinearRing(interiorRing.getId(), surfaceGeometryId, reverse);
 
 									// the ring could also be the target of a global appearance
 									importer.propagateXlink(new DBXlinkLinearRing(
-											interiorLinearRing.getId(),
+											interiorRing.getId(),
 											surfaceGeometryId,
 											++ringNo,
 											reverse));
 								}
-							} else {
-								// invalid ring...
-								importer.logOrThrowErrorMessage(importer.getObjectSignature(polygon, origGmlId) +
-										": Only gml:LinearRing elements are supported as interior rings.");
-								return;
 							}
 						}
 					}
@@ -389,7 +309,7 @@ public class DBSurfaceGeometry implements DBImporter {
 							j++;
 						}
 
-						coordinates[i] = coords;	
+						coordinates[i] = coords;
 						i++;
 					}
 
@@ -422,17 +342,12 @@ public class DBSurfaceGeometry implements DBImporter {
 						psGeomElem.setObject(12, obj);
 					}
 
-					if (cityObjectId != 0) 
+					if (cityObjectId != 0)
 						psGeomElem.setLong(13, cityObjectId);
 					else
 						psGeomElem.setNull(13, Types.NULL);
 
 					addBatch();
-				} else {
-					// invalid ring...
-					importer.logOrThrowErrorMessage(importer.getObjectSignature(polygon, origGmlId) +
-							": Only gml:LinearRing elements are supported as exterior rings.");
-					return;
 				}
 			}
 		}
@@ -503,7 +418,7 @@ public class DBSurfaceGeometry implements DBImporter {
 		// this is a CityGML class, not a GML class.
 		else if (surfaceGeometryType == GMLClass._TEXTURED_SURFACE) {
 			_TexturedSurface texturedSurface = (_TexturedSurface)surfaceGeometry;
-			AbstractSurface abstractSurface = null;
+			AbstractSurface abstractSurface;
 
 			boolean negativeOrientation = false;
 			if (texturedSurface.isSetOrientation() && texturedSurface.getOrientation() == Sign.MINUS) {
@@ -511,7 +426,7 @@ public class DBSurfaceGeometry implements DBImporter {
 				negativeOrientation = true;
 			}
 
-			String targetURI = null;
+			String targetURI;
 
 			if (texturedSurface.isSetBaseSurface()) {
 				SurfaceProperty surfaceProperty = texturedSurface.getBaseSurface();
@@ -531,7 +446,7 @@ public class DBSurfaceGeometry implements DBImporter {
 					switch (abstractSurface.getGMLClass()) {
 					case _TEXTURED_SURFACE:
 					case ORIENTABLE_SURFACE:
-						doImport(abstractSurface, surfaceGeometryId, parentId, rootId, reverse, isXlink, isCopy, cityObjectId);					
+						doImport(abstractSurface, surfaceGeometryId, parentId, rootId, reverse, isXlink, isCopy, cityObjectId);
 						break;
 					case POLYGON:
 						Polygon polygon = (Polygon)abstractSurface;
@@ -608,7 +523,7 @@ public class DBSurfaceGeometry implements DBImporter {
 							continue;
 						}
 
-						boolean isFront = !(appearanceProperty.isSetOrientation() && 
+						boolean isFront = !(appearanceProperty.isSetOrientation() &&
 								appearanceProperty.getOrientation() == Sign.MINUS);
 
 						appearanceImporter.importTexturedSurface(appearance, abstractSurface, cityObjectId, isFront, targetURI);
@@ -646,7 +561,7 @@ public class DBSurfaceGeometry implements DBImporter {
 			else
 				psGeomElem.setNull(3, Types.NULL);
 
-			if (cityObjectId != 0) 
+			if (cityObjectId != 0)
 				psGeomElem.setLong(13, cityObjectId);
 			else
 				psGeomElem.setNull(13, Types.NULL);
@@ -697,70 +612,69 @@ public class DBSurfaceGeometry implements DBImporter {
 		}
 
 		// Surface
-		// since a surface is a geometric primitive we represent it as composite surface
-		// within the database
 		else if (surfaceGeometryType == GMLClass.SURFACE) {
 			Surface surface = (Surface)surfaceGeometry;
 
 			if (origGmlId != null && !isCopy)
 				importer.putGeometryUID(origGmlId, surfaceGeometryId, rootId, reverse, gmlId);
 
-			// set root entry
-			psGeomElem.setLong(1, surfaceGeometryId);
-			psGeomElem.setString(2, gmlId);
-			psGeomElem.setLong(4, rootId);
-			psGeomElem.setInt(5, 0);
-			psGeomElem.setInt(6, 1);
-			psGeomElem.setInt(7, 0);
-			psGeomElem.setInt(8, isXlink ? 1 : 0);
-			psGeomElem.setInt(9, reverse ? 1 : 0);
-			psGeomElem.setNull(10, nullGeometryType, nullGeometryTypeName);
-			psGeomElem.setNull(11, nullGeometryType, nullGeometryTypeName);
-			psGeomElem.setNull(12, nullGeometryType, nullGeometryTypeName);
+			int nrOfPatches = surface.isSetPatches() && surface.getPatches().isSetSurfacePatch() ?
+					surface.getPatches().getSurfacePatch().size() : 0;
 
-			if (parentId != 0)
-				psGeomElem.setLong(3, parentId);
-			else
-				psGeomElem.setNull(3, Types.NULL);
+			// add a composite surface as root unless there is only one surface patch
+			if (nrOfPatches != 1) {
+				psGeomElem.setLong(1, surfaceGeometryId);
+				psGeomElem.setString(2, gmlId);
+				psGeomElem.setLong(4, rootId);
+				psGeomElem.setInt(5, 0);
+				psGeomElem.setInt(6, 1);
+				psGeomElem.setInt(7, 0);
+				psGeomElem.setInt(8, isXlink ? 1 : 0);
+				psGeomElem.setInt(9, reverse ? 1 : 0);
+				psGeomElem.setNull(10, nullGeometryType, nullGeometryTypeName);
+				psGeomElem.setNull(11, nullGeometryType, nullGeometryTypeName);
+				psGeomElem.setNull(12, nullGeometryType, nullGeometryTypeName);
 
-			if (cityObjectId != 0) 
-				psGeomElem.setLong(13, cityObjectId);
-			else
-				psGeomElem.setNull(13, Types.NULL);
+				if (parentId != 0)
+					psGeomElem.setLong(3, parentId);
+				else
+					psGeomElem.setNull(3, Types.NULL);
 
-			addBatch();
+				if (cityObjectId != 0)
+					psGeomElem.setLong(13, cityObjectId);
+				else
+					psGeomElem.setNull(13, Types.NULL);
 
-			// set parentId
-			parentId = surfaceGeometryId;
+				addBatch();
 
-			// get surface patches
-			if (surface.isSetPatches()) {
-				SurfacePatchArrayProperty arrayProperty = surface.getPatches();
-				if (arrayProperty.isSetSurfacePatch()) {
-					for (AbstractSurfacePatch surfacePatch : arrayProperty.getSurfacePatch()) {
+				// set parentId
+				parentId = surfaceGeometryId;
+			}
 
-						if (surfacePatch.getGMLClass() == GMLClass.RECTANGLE) {
-							Rectangle rectangle = (Rectangle)surfacePatch;
-							if (rectangle.isSetExterior()) {
-								LinearRing exteriorLinearRing = (LinearRing)rectangle.getExterior().getRing();
-								if (exteriorLinearRing != null) {
-									surfaceGeometryId = pkManager.nextId();
-									doImport(exteriorLinearRing, surfaceGeometryId, parentId, rootId, reverse, isXlink, isCopy, cityObjectId);
-								}
-							}
-						}
+			// import surface patches
+			if (nrOfPatches > 0) {
+				for (AbstractSurfacePatch surfacePatch : surface.getPatches().getSurfacePatch()) {
+					surfaceGeometryId = pkManager.nextId();
 
-						else if (surfacePatch.getGMLClass() == GMLClass.TRIANGLE) {
-							Triangle triangle = (Triangle)surfacePatch;
-							if (triangle.isSetExterior()) {
-								LinearRing exteriorLinearRing = (LinearRing)triangle.getExterior().getRing();
-								if (exteriorLinearRing != null) {
-									surfaceGeometryId = pkManager.nextId();
-									doImport(exteriorLinearRing, surfaceGeometryId, parentId, rootId, reverse, isXlink, isCopy, cityObjectId);
-								}
-							}
-						}
+					Polygon polygon = new Polygon();
+					if (nrOfPatches == 1)
+						polygon.setId(gmlId);
+
+					if (surfacePatch.getGMLClass() == GMLClass.RECTANGLE) {
+						Rectangle rectangle = (Rectangle) surfacePatch;
+						polygon = new Polygon();
+						polygon.setExterior(rectangle.getExterior());
+					} else if (surfacePatch.getGMLClass() == GMLClass.TRIANGLE) {
+						Triangle triangle = (Triangle) surfacePatch;
+						polygon = new Polygon();
+						polygon.setExterior(triangle.getExterior());
+					} else if (surfacePatch.getGMLClass() == GMLClass.POLYGON_PATCH) {
+						PolygonPatch polygonPatch = (PolygonPatch) surfacePatch;
+						polygon.setExterior(polygonPatch.getExterior());
+						polygon.setInterior(polygonPatch.getInterior());
 					}
+
+					doImport(polygon, surfaceGeometryId, parentId, rootId, reverse, isXlink, isCopy, cityObjectId);
 				}
 			}
 		}
@@ -791,7 +705,7 @@ public class DBSurfaceGeometry implements DBImporter {
 			else
 				psGeomElem.setNull(3, Types.NULL);
 
-			if (cityObjectId != 0) 
+			if (cityObjectId != 0)
 				psGeomElem.setLong(13, cityObjectId);
 			else
 				psGeomElem.setNull(13, Types.NULL);
@@ -805,14 +719,11 @@ public class DBSurfaceGeometry implements DBImporter {
 			if (triangulatedSurface.isSetTrianglePatches()) {
 				TrianglePatchArrayProperty arrayProperty = triangulatedSurface.getTrianglePatches();
 				if (arrayProperty.isSetTriangle()) {
-					for (Triangle trianglePatch : arrayProperty.getTriangle()) {
-						if (trianglePatch.isSetExterior()) {
-							LinearRing exteriorLinearRing = (LinearRing)trianglePatch.getExterior().getRing();
-							if (exteriorLinearRing != null) {
-								surfaceGeometryId = pkManager.nextId();
-								doImport(exteriorLinearRing, surfaceGeometryId, parentId, rootId, reverse, isXlink, isCopy, cityObjectId);
-							}
-						}						
+					for (Triangle triangle : arrayProperty.getTriangle()) {
+						surfaceGeometryId = pkManager.nextId();
+						Polygon polygon = new Polygon();
+						polygon.setExterior(triangle.getExterior());
+						doImport(polygon, surfaceGeometryId, parentId, rootId, reverse, isXlink, isCopy, cityObjectId);
 					}
 				}
 			}
@@ -841,10 +752,10 @@ public class DBSurfaceGeometry implements DBImporter {
 			Object solidObj = null;
 			if (surfaceGeometryId == rootId) {
 				GeometryObject geomObj = geometryConverter.getSolid(solid);
-				if (geomObj != null) 
+				if (geomObj != null)
 					solidObj = importer.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(geomObj, batchConn);
 				else {
-					// we cannot build the solid geometry in main memory 
+					// we cannot build the solid geometry in main memory
 					// possibly the solid references surfaces from another feature per xlink
 					// so, remember its id to build the solid geometry later
 					importer.propagateXlink(new DBXlinkSolidGeometry(surfaceGeometryId));
@@ -861,7 +772,7 @@ public class DBSurfaceGeometry implements DBImporter {
 			else
 				psGeomElem.setNull(3, Types.NULL);
 
-			if (cityObjectId != 0) 
+			if (cityObjectId != 0)
 				psGeomElem.setLong(13, cityObjectId);
 			else
 				psGeomElem.setNull(13, Types.NULL);
@@ -927,10 +838,10 @@ public class DBSurfaceGeometry implements DBImporter {
 			Object compositeSolidObj = null;
 			if (surfaceGeometryId == rootId) {
 				GeometryObject geomObj = geometryConverter.getCompositeSolid(compositeSolid);
-				if (geomObj != null) 
+				if (geomObj != null)
 					compositeSolidObj = importer.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(geomObj, batchConn);
 				else {
-					// we cannot build the solid geometry in main memory 
+					// we cannot build the solid geometry in main memory
 					// possibly the solid references surfaces from another feature per xlink
 					// so, remember its id to build the solid geometry later
 					importer.propagateXlink(new DBXlinkSolidGeometry(surfaceGeometryId));
@@ -947,7 +858,7 @@ public class DBSurfaceGeometry implements DBImporter {
 			else
 				psGeomElem.setNull(3, Types.NULL);
 
-			if (cityObjectId != 0) 
+			if (cityObjectId != 0)
 				psGeomElem.setLong(13, cityObjectId);
 			else
 				psGeomElem.setNull(13, Types.NULL);
@@ -1004,7 +915,7 @@ public class DBSurfaceGeometry implements DBImporter {
 			else
 				psGeomElem.setNull(3, Types.NULL);
 
-			if (cityObjectId != 0) 
+			if (cityObjectId != 0)
 				psGeomElem.setLong(13, cityObjectId);
 			else
 				psGeomElem.setNull(13, Types.NULL);
@@ -1061,7 +972,7 @@ public class DBSurfaceGeometry implements DBImporter {
 			else
 				psGeomElem.setNull(3, Types.NULL);
 
-			if (cityObjectId != 0) 
+			if (cityObjectId != 0)
 				psGeomElem.setLong(13, cityObjectId);
 			else
 				psGeomElem.setNull(13, Types.NULL);
@@ -1165,7 +1076,7 @@ public class DBSurfaceGeometry implements DBImporter {
 			else
 				psGeomElem.setNull(3, Types.NULL);
 
-			if (cityObjectId != 0) 
+			if (cityObjectId != 0)
 				psGeomElem.setLong(13, cityObjectId);
 			else
 				psGeomElem.setNull(13, Types.NULL);
@@ -1261,7 +1172,6 @@ public class DBSurfaceGeometry implements DBImporter {
 	}
 
 	private class PrimaryKeyManager extends GeometryWalker {
-		private final ChildInfo info = new ChildInfo();
 		private long[] ids;
 		private int count;
 		private int index;
@@ -1269,26 +1179,24 @@ public class DBSurfaceGeometry implements DBImporter {
 		@Override
 		public void visit(AbstractGeometry geometry) {
 			switch (geometry.getGMLClass()) {
-			case LINEAR_RING:
-				LinearRing ring = (LinearRing)geometry;
-				if (info.getParentGeometry(ring).getGMLClass() != GMLClass.POLYGON)
-					count++;				
-				break;
-			case POLYGON:
-			case COMPOSITE_SURFACE:
-			case SURFACE:
-			case TRIANGULATED_SURFACE:
-			case TIN:
-			case SOLID:
-			case COMPOSITE_SOLID:
-			case MULTI_POLYGON:
-			case MULTI_SURFACE:
-			case MULTI_SOLID:
-			case MULTI_GEOMETRY:
-				count++;
-			default:
-				break;
+				case POLYGON:
+				case COMPOSITE_SURFACE:
+				case SURFACE:
+				case TRIANGULATED_SURFACE:
+				case TIN:
+				case SOLID:
+				case COMPOSITE_SOLID:
+				case MULTI_POLYGON:
+				case MULTI_SURFACE:
+				case MULTI_SOLID:
+				case MULTI_GEOMETRY:
+					count++;
 			}
+		}
+
+		@Override
+		public void visit(AbstractSurfacePatch surfacePatch) {
+			count++;
 		}
 
 		private void clear() {

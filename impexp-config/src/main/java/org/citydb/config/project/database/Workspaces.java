@@ -33,22 +33,26 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name="WorkspacesType", propOrder={
 		"importWorkspace",
 		"exportWorkspace",
+		"deleteWorkspace",
 		"kmlExportWorkspace",
 		"operationWorkspace"
 })
 public class Workspaces {
-	@XmlElement(name="import", required=true)
+	@XmlElement(name="import")
 	private Workspace importWorkspace;
-	@XmlElement(name="export", required=true)
+	@XmlElement(name="export")
 	private Workspace exportWorkspace;
-	@XmlElement(name="kmlExport", required=true)
+	@XmlElement(name="delete")
+	private Workspace deleteWorkspace;
+	@XmlElement(name="kmlExport")
 	private Workspace kmlExportWorkspace;
-	@XmlElement(name="operations", required=true)
+	@XmlElement(name="operations")
 	private Workspace operationWorkspace;
 
 	public Workspaces() {
 		importWorkspace = new Workspace();
 		exportWorkspace = new Workspace();
+		deleteWorkspace = new Workspace();
 		kmlExportWorkspace = new Workspace();
 		operationWorkspace = new Workspace();
 	}
@@ -69,6 +73,15 @@ public class Workspaces {
 	public void setExportWorkspace(Workspace exportWorkspace) {
 		if (exportWorkspace != null)
 			this.exportWorkspace = exportWorkspace;
+	}
+	
+	public Workspace getDeleteWorkspace() {
+		return exportWorkspace;
+	}
+
+	public void setDeleteWorkspace(Workspace deleteWorkspace) {
+		if (deleteWorkspace != null)
+			this.deleteWorkspace = deleteWorkspace;
 	}
 
 	public void setKmlExportWorkspace(Workspace kmlExportWorkspace) {

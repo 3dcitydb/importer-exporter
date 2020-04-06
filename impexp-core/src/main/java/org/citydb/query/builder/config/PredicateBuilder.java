@@ -27,7 +27,6 @@
  */
 package org.citydb.query.builder.config;
 
-import org.citydb.config.ConfigNamespaceFilter;
 import org.citydb.config.project.query.filter.selection.AbstractPredicate;
 import org.citydb.config.project.query.filter.selection.comparison.AbstractComparisonOperator;
 import org.citydb.config.project.query.filter.selection.id.ResourceIdOperator;
@@ -37,31 +36,22 @@ import org.citydb.config.project.query.filter.selection.logical.NotOperator;
 import org.citydb.config.project.query.filter.selection.spatial.AbstractSpatialOperator;
 import org.citydb.config.project.query.filter.selection.sql.SelectOperator;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
-import org.citydb.database.schema.mapping.SchemaMapping;
-import org.citydb.database.schema.util.SimpleXPathParser;
-import org.citydb.query.Query;
 import org.citydb.query.builder.QueryBuildException;
+import org.citydb.query.builder.util.ValueReferenceBuilder;
 import org.citydb.query.filter.selection.Predicate;
 import org.citydb.query.filter.selection.operator.logical.BinaryLogicalOperator;
 import org.citydb.query.filter.selection.operator.logical.LogicalOperationFactory;
 import org.citydb.query.filter.selection.operator.logical.LogicalOperatorName;
-
-import javax.xml.namespace.NamespaceContext;
 
 public class PredicateBuilder {
 	private final ComparisonOperatorBuilder comparisonBuilder;
 	private final SpatialOperatorBuilder spatialBuilder;
 	private final IdOperatorBuilder idBuilder;
 	private final SelectOperatorBuilder selectBuilder;
-	private final SimpleXPathParser xPathParser;
-	
-	protected PredicateBuilder(Query query, SchemaMapping schemaMapping, NamespaceContext namespaceContext, AbstractDatabaseAdapter databaseAdapter) {
-		if (namespaceContext == null)
-			namespaceContext = new ConfigNamespaceFilter();
-		
-		xPathParser = new SimpleXPathParser(schemaMapping);
-		comparisonBuilder = new ComparisonOperatorBuilder(query, xPathParser, schemaMapping, namespaceContext);
-		spatialBuilder = new SpatialOperatorBuilder(query, xPathParser, schemaMapping, namespaceContext, databaseAdapter);
+
+	protected PredicateBuilder(ValueReferenceBuilder valueReferenceBuilder, AbstractDatabaseAdapter databaseAdapter) {
+		comparisonBuilder = new ComparisonOperatorBuilder(valueReferenceBuilder);
+		spatialBuilder = new SpatialOperatorBuilder(valueReferenceBuilder, databaseAdapter);
 		idBuilder = new IdOperatorBuilder();
 		selectBuilder = new SelectOperatorBuilder();
 	}

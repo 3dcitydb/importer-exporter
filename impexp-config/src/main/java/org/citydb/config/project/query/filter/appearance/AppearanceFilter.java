@@ -27,11 +27,10 @@
  */
 package org.citydb.config.project.query.filter.appearance;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
+import java.util.ArrayList;
+import java.util.List;
 
 @XmlType(name="AppearanceFilterType", propOrder={
 		"includeNullTheme",

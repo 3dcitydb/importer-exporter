@@ -40,6 +40,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 
 public class LocalAppearanceHandler {
 	private final CityGMLImportManager importer;
@@ -102,7 +103,7 @@ public class LocalAppearanceHandler {
 		return !appearances.isEmpty();
 	}
 	
-	public HashMap<Long, List<Appearance>> getAppearances() {
+	public Map<Long, List<Appearance>> getAppearances() {
 		return appearances;
 	}
 

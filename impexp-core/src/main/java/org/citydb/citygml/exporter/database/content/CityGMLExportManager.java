@@ -132,10 +132,10 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class CityGMLExportManager implements CityGMLExportHelper {
@@ -449,12 +449,17 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 	}
 
 	@Override
-	public boolean exportAsGlobalFeature(AbstractFeature feature, long id) throws CityGMLExportException {
+	public boolean exportAsGlobalFeature(AbstractFeature feature) throws CityGMLExportException {
 		if (featureWriter.supportsFlatHierarchies()) {
 			if (!query.getFeatureTypeFilter().containsFeatureType(getFeatureType(feature)))
 				feature.setLocalProperty(CoreConstants.EXPORT_AS_ADDITIONAL_OBJECT, true);
 
-			writeFeatureMember(feature, id);
+			try {
+				featureWriter.write(feature, -1);
+			} catch (FeatureWriteException e) {
+				throw new CityGMLExportException("Failed to write global feature with gml:id '" + feature.getId() + "'.", e);
+			}
+
 			updateExportCounter(feature);
 			return true;
 		}
@@ -707,23 +712,15 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 			appearanceRemover.cleanupAppearance((AbstractCityObject)object);
 	}
 
-	public void writeFeatureMember(AbstractFeature feature, long id) throws CityGMLExportException {
-		try {
-			featureWriter.write(feature);
-		} catch (FeatureWriteException e) {
-			throw new CityGMLExportException("Failed to write feature " + getObjectSignature(getFeatureType(feature.getClass()), id), e);
-		}
-	}
-
 	public void updateExportCounter(AbstractGML object) {
 		exportCounter.updateExportCounter(object);
 	}
 
-	public HashMap<Integer, Long> getAndResetObjectCounter() {
+	public Map<Integer, Long> getAndResetObjectCounter() {
 		return exportCounter.getAndResetObjectCounter();
 	}
 
-	public HashMap<GMLClass, Long> getAndResetGeometryCounter() {
+	public Map<GMLClass, Long> getAndResetGeometryCounter() {
 		return exportCounter.getAndResetGeometryCounter();
 	}
 

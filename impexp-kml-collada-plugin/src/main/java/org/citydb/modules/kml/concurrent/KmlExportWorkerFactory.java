@@ -27,15 +27,14 @@
  */
 package org.citydb.modules.kml.concurrent;
 
-import java.sql.SQLException;
-
-import javax.xml.bind.JAXBContext;
-
+import net.opengis.kml._2.ObjectFactory;
 import org.citydb.concurrent.Worker;
 import org.citydb.concurrent.WorkerFactory;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
-import org.citydb.database.schema.mapping.SchemaMapping;
+import org.citydb.config.project.database.Workspace;
+import org.citydb.database.adapter.AbstractDatabaseAdapter;
+import org.citydb.database.connection.DatabaseConnectionPool;
 import org.citydb.event.EventDispatcher;
 import org.citydb.log.Logger;
 import org.citydb.modules.kml.database.KmlSplittingResult;
@@ -43,14 +42,15 @@ import org.citydb.modules.kml.util.ExportTracker;
 import org.citydb.query.Query;
 import org.citygml4j.util.xml.SAXEventBuffer;
 
-import net.opengis.kml._2.ObjectFactory;
+import javax.xml.bind.JAXBContext;
+import java.sql.Connection;
+import java.sql.SQLException;
 
 public class KmlExportWorkerFactory implements WorkerFactory<KmlSplittingResult> {
-	private final Logger LOG = Logger.getInstance();
+	private final Logger log = Logger.getInstance();
 	
 	private final JAXBContext jaxbKmlContext;
 	private final JAXBContext jaxbColladaContext;
-	private final SchemaMapping schemaMapping;
 	private final WorkerPool<SAXEventBuffer> writerPool;
 	private final Query query;
 	private final ExportTracker tracker;
@@ -61,7 +61,6 @@ public class KmlExportWorkerFactory implements WorkerFactory<KmlSplittingResult>
 	public KmlExportWorkerFactory(
 			JAXBContext jaxbKmlContext,
 			JAXBContext jaxbColladaContext,
-			SchemaMapping schemaMapping,
 			WorkerPool<SAXEventBuffer> writerPool,
 			ExportTracker tracker,
 			Query query,
@@ -70,7 +69,6 @@ public class KmlExportWorkerFactory implements WorkerFactory<KmlSplittingResult>
 			EventDispatcher eventDispatcher) {
 		this.jaxbKmlContext = jaxbKmlContext;
 		this.jaxbColladaContext = jaxbColladaContext;
-		this.schemaMapping = schemaMapping;
 		this.writerPool = writerPool;
 		this.tracker = tracker;
 		this.query = query;
@@ -84,18 +82,20 @@ public class KmlExportWorkerFactory implements WorkerFactory<KmlSplittingResult>
 		KmlExportWorker kmlWorker = null;
 
 		try {
-			kmlWorker = new KmlExportWorker(
-					jaxbKmlContext,
-					jaxbColladaContext,
-					schemaMapping,
-					writerPool,
-					tracker,
-					query,
-					kmlFactory,
-					config,
-					eventDispatcher);
+			Connection connection = DatabaseConnectionPool.getInstance().getConnection();
+			connection.setAutoCommit(false);
+
+			// try and change workspace if needed
+			AbstractDatabaseAdapter databaseAdapter = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter();
+			if (databaseAdapter.hasVersioningSupport()) {
+				Workspace workspace = config.getProject().getDatabase().getWorkspaces().getKmlExportWorkspace();
+				databaseAdapter.getWorkspaceManager().gotoWorkspace(connection, workspace);
+			}
+
+			kmlWorker = new KmlExportWorker(connection, databaseAdapter, jaxbKmlContext, jaxbColladaContext, writerPool,
+					tracker, query, kmlFactory, config, eventDispatcher);
 		} catch (SQLException e) {
-			LOG.error("Failed to create export worker: " + e.getMessage());
+			log.error("Failed to create export worker: " + e.getMessage());
 		}
 
 		return kmlWorker;

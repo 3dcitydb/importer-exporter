@@ -450,7 +450,6 @@ public class KmlExporter implements EventHandler {
 								new KmlExportWorkerFactory(
 										jaxbKmlContext,
 										jaxbColladaContext,
-										schemaMapping,
 										writerPool,
 										tracker,
 										query,
@@ -1514,7 +1513,7 @@ public class KmlExporter implements EventHandler {
 		return success;
 	}
 
-	private static void getAllFiles(File startFolder, List<File> fileList) {
+	private void getAllFiles(File startFolder, List<File> fileList) {
 		File[] files = startFolder.listFiles();
 		for (File file : files) {
 			fileList.add(file);
@@ -1523,7 +1522,7 @@ public class KmlExporter implements EventHandler {
 		}
 	}
 
-	private static void deleteFolder(File folder) {
+	private void deleteFolder(File folder) {
 		if (folder == null) return;
 		File[] files = folder.listFiles();
 		if (files != null) {
@@ -1540,7 +1539,7 @@ public class KmlExporter implements EventHandler {
 	@Override
 	public void handleEvent(Event e) throws Exception {
 		if (e.getEventType() == EventType.OBJECT_COUNTER) {
-			HashMap<Integer, Long> counter = ((ObjectCounterEvent)e).getCounter();
+			Map<Integer, Long> counter = ((ObjectCounterEvent)e).getCounter();
 			
 			for (Entry<Integer, Long> entry : counter.entrySet()) {
 				Long tmp = objectCounter.get(entry.getKey());

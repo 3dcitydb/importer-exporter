@@ -27,10 +27,10 @@
  */
 package org.citydb.query.filter.selection.operator.logical;
 
-import java.util.List;
-
 import org.citydb.query.filter.FilterException;
 import org.citydb.query.filter.selection.Predicate;
+
+import java.util.List;
 
 public class LogicalOperationFactory {
 

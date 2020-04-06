@@ -32,9 +32,10 @@ import org.citydb.log.Logger;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Date;
 
 public abstract class AbstractWorkspaceManagerAdapter {
-	private final Logger LOG = Logger.getInstance();
+	private final Logger log = Logger.getInstance();
 	protected final AbstractDatabaseAdapter databaseAdapter;
 
 	protected AbstractWorkspaceManagerAdapter(AbstractDatabaseAdapter databaseAdapter) {
@@ -49,7 +50,7 @@ public abstract class AbstractWorkspaceManagerAdapter {
 		return existsWorkspace(new Workspace(workspaceName), false);
 	}
 
-	public boolean gotoWorkspace(Connection connection, String workspaceName, String timestamp) throws SQLException {
+	public boolean gotoWorkspace(Connection connection, String workspaceName, Date timestamp) throws SQLException {
 		return gotoWorkspace(connection, new Workspace(workspaceName, timestamp));
 	}
 
@@ -62,9 +63,9 @@ public abstract class AbstractWorkspaceManagerAdapter {
 			boolean exists = gotoWorkspace(conn, workspace);
 			if (logResult) {
 				if (!exists)
-					LOG.error("Database workspace " + workspace + " is not available.");
+					log.error("Database workspace " + workspace + " is not available.");
 				else 
-					LOG.info("Switching to database workspace " + workspace + '.');
+					log.info("Switching to database workspace " + workspace + '.');
 			}
 			
 			return exists;

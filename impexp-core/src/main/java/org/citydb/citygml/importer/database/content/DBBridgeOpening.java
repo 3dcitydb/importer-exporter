@@ -162,10 +162,10 @@ public class DBBridgeOpening implements DBImporter {
 					String href = multiSurfaceProperty.getHref();
 					if (href != null && href.length() != 0) {
 						importer.propagateXlink(new DBXlinkSurfaceGeometry(
-								featureType.getObjectClassId(), 
+								TableEnum.BRIDGE_OPENING.getName(),
 								openingId, 
 								href, 
-								"LOD" + (i + 3) + "_MULTI_SURFACE_ID"));
+								"lod" + (i + 3) + "_multi_surface_id"));
 					}
 				}
 			}

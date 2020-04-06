@@ -27,12 +27,12 @@
  */
 package org.citydb.query.filter.selection.operator.id;
 
+import org.citydb.query.filter.FilterException;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
-
-import org.citydb.query.filter.FilterException;
 
 public class ResourceIdOperator extends AbstractIdOperator {
 	private HashSet<String> resourceIds;

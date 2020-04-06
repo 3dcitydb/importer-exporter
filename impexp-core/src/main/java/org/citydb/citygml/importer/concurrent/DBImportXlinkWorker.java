@@ -77,7 +77,7 @@ public class DBImportXlinkWorker extends Worker<DBXlink> implements EventHandler
 	private volatile boolean shouldRun = true;
 	private volatile boolean shouldWork = true;
 	
-	private DBXlinkImporterManager dbXlinkManager;
+	private final DBXlinkImporterManager dbXlinkManager;
 	private final EventDispatcher eventDispatcher;
 	private int updateCounter = 0;
 	private int commitAfter = 1000;

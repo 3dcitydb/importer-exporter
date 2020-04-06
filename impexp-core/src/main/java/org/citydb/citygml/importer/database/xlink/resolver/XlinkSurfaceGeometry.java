@@ -33,7 +33,6 @@ import org.citydb.citygml.common.database.xlink.DBXlinkSurfaceGeometry;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.config.project.database.DatabaseType;
 import org.citydb.database.schema.SequenceEnum;
-import org.citydb.database.schema.mapping.AbstractObjectType;
 import org.citydb.database.schema.mapping.MappingConstants;
 import org.citydb.util.Util;
 
@@ -62,6 +61,7 @@ public class XlinkSurfaceGeometry implements DBXlinkResolver {
 	private HashMap<String, PreparedStatement> psMap;
 
 	private HashMap<String, Integer> psBatchCounterMap;
+	private String schema;
 	private int parentBatchCounter;
 	private int memberBatchCounter;
 	private int updateBatchCounter;
@@ -72,8 +72,8 @@ public class XlinkSurfaceGeometry implements DBXlinkResolver {
 
 		psMap = new HashMap<String, PreparedStatement>();
 		psBatchCounterMap = new HashMap<String, Integer>();
-		String schema = resolverManager.getDatabaseAdapter().getConnectionDetails().getSchema();
-		
+		schema = resolverManager.getDatabaseAdapter().getConnectionDetails().getSchema();
+
 		psSelectTmpSurfGeom = cacheTable.getConnection().prepareStatement(new StringBuilder("select ID from ").append(cacheTable.getTableName()).append(" where PARENT_ID=? or ROOT_ID=?").toString());
 		psSelectSurfGeom = batchConn.prepareStatement(resolverManager.getDatabaseAdapter().getSQLAdapter().getHierarchicalGeometryQuery());
 		
@@ -105,12 +105,13 @@ public class XlinkSurfaceGeometry implements DBXlinkResolver {
 
 	public boolean insert(DBXlinkSurfaceGeometry xlink) throws SQLException {
 		UIDCacheEntry rootGeometryEntry = resolverManager.getGeometryId(xlink.getGmlId());
-		if (rootGeometryEntry == null || rootGeometryEntry.getRootId() == -1)
+		if (rootGeometryEntry == null || rootGeometryEntry.getRootId() == -1) {
 			// do not return an error in case of implicit geometries since the
 			// the implicit geometry might be a point or curve
-			return xlink.getObjectClassId() == MappingConstants.IMPLICIT_GEOMETRY_OBJECTCLASS_ID;
+			return MappingConstants.IMPLICIT_GEOMETRY_TABLE.equalsIgnoreCase(xlink.getTable());
+		}
 
-		if (xlink.getObjectClassId() != MappingConstants.IMPLICIT_GEOMETRY_OBJECTCLASS_ID) {
+		if (!MappingConstants.IMPLICIT_GEOMETRY_TABLE.equalsIgnoreCase(xlink.getTable())) {
 			ResultSet rs = null;
 
 			try {
@@ -140,13 +141,9 @@ public class XlinkSurfaceGeometry implements DBXlinkResolver {
 
 				// if this is an xlink from a feature table, then we also let
 				// the geometry column of this table point to the geometry object 
-				if (xlink.getObjectClassId() != 0) {
-					AbstractObjectType<?> type = resolverManager.getAbstractObjectType(xlink.getObjectClassId());
-					if (type == null)
-						return false;
-										
-					String key = getKey(type.getTable(), xlink.getFromColumn());
-					PreparedStatement ps = getUpdateStatement(type.getTable(), xlink.getFromColumn(), key);
+				if (xlink.getTable() != null) {
+					String key = getKey(xlink.getTable(), xlink.getFromColumn());
+					PreparedStatement ps = getUpdateStatement(xlink.getTable(), xlink.getFromColumn(), key);
 					if (ps != null) {
 						ps.setLong(1, surfaceGeometryId);
 						ps.setLong(2, xlink.getCityObjectId());
@@ -368,7 +365,7 @@ public class XlinkSurfaceGeometry implements DBXlinkResolver {
 	private PreparedStatement getUpdateStatement(String fromTable, String fromColumn, String key) throws SQLException {
 		PreparedStatement ps = psMap.get(key);
 		if (ps == null) {
-			ps = batchConn.prepareStatement("update " + fromTable + " set " + fromColumn + "=? where ID=?");
+			ps = batchConn.prepareStatement("update " + schema + "." + fromTable + " set " + fromColumn + "=? where ID=?");
 			psMap.put(key, ps);
 			psBatchCounterMap.put(key, 0);
 		}

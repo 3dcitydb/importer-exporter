@@ -27,12 +27,27 @@
  */
 package org.citydb.config.project.query.filter.selection.logical;
 
+import org.citydb.config.project.query.filter.selection.AbstractPredicate;
+
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
+import java.util.List;
 
 @XmlRootElement(name="or")
 @XmlType(name="OrOperatorType")
 public class OrOperator extends AbstractBinaryLogicalOperator {
+
+	public OrOperator() {
+		super();
+	}
+
+	public OrOperator(List<AbstractPredicate> operands) {
+		super(operands);
+	}
+
+	public OrOperator(AbstractPredicate... operands) {
+		super(operands);
+	}
 
 	@Override
 	public LogicalOperatorName getOperatorName() {

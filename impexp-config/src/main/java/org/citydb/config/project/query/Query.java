@@ -33,6 +33,7 @@ import org.citydb.config.project.query.filter.counter.CounterFilter;
 import org.citydb.config.project.query.filter.lod.LodFilter;
 import org.citydb.config.project.query.filter.projection.ProjectionFilter;
 import org.citydb.config.project.query.filter.selection.SelectionFilter;
+import org.citydb.config.project.query.filter.sorting.Sorting;
 import org.citydb.config.project.query.filter.tiling.Tiling;
 import org.citydb.config.project.query.filter.type.FeatureTypeFilter;
 
@@ -49,6 +50,7 @@ import java.util.HashMap;
 		"featureTypeFilter",
 		"projectionFilter",
 		"selectionFilter",
+		"sorting",
 		"counterFilter",
 		"lodFilter",
 		"appearanceFilter",
@@ -68,7 +70,9 @@ public class Query {
 	private ProjectionFilter projectionFilter;
 	@XmlElement(name="filter")
 	private SelectionFilter selectionFilter;
-	@XmlElement(name = "count")
+	@XmlElement(name = "sortBy")
+	private Sorting sorting;
+	@XmlElement(name = "limit")
 	private CounterFilter counterFilter;
 	@XmlElement(name = "lods")
 	private LodFilter lodFilter;
@@ -148,6 +152,18 @@ public class Query {
 
 	public void setSelectionFilter(SelectionFilter selectionFilter) {
 		this.selectionFilter = selectionFilter;
+	}
+
+	public Sorting getSorting() {
+		return sorting;
+	}
+
+	public boolean isSetSorting() {
+		return sorting != null;
+	}
+
+	public void setSorting(Sorting sorting) {
+		this.sorting = sorting;
 	}
 
 	public CounterFilter getCounterFilter() {

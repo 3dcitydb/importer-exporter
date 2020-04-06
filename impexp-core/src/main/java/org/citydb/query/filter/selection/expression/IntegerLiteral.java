@@ -28,7 +28,6 @@
 package org.citydb.query.filter.selection.expression;
 
 import org.citydb.database.schema.mapping.SimpleType;
-
 import org.citydb.sqlbuilder.expression.PlaceHolder;
 
 public class IntegerLiteral extends AbstractLiteral<Integer> {
@@ -38,7 +37,7 @@ public class IntegerLiteral extends AbstractLiteral<Integer> {
 	}
 	
 	@Override
-	public boolean evalutesToSchemaType(SimpleType schemaType) {
+	public boolean evaluatesToSchemaType(SimpleType schemaType) {
 		switch (schemaType) {
 		case INTEGER:
 			return true;

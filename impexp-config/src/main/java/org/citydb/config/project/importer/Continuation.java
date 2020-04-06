@@ -27,6 +27,8 @@
  */
 package org.citydb.config.project.importer;
 
+import org.citydb.config.project.global.UpdatingPersonMode;
+
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
@@ -41,12 +43,12 @@ import javax.xml.bind.annotation.XmlType;
 		})
 public class Continuation {
 	@XmlElement(required=true)
-	private String lineage;
+	private String lineage = "";
 	@XmlElement(required=true)
 	private UpdatingPersonMode updatingPersonMode = UpdatingPersonMode.DATABASE;
-	private String updatingPerson;
+	private String updatingPerson = "";
 	@XmlElement(required=true)
-	private String reasonForUpdate;
+	private String reasonForUpdate = "";
 	private boolean importCityDBMetadata = false;
 	@XmlElement(required=true)
 	private CreationDateMode creationDateMode = CreationDateMode.REPLACE;

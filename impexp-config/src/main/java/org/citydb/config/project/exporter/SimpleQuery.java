@@ -33,6 +33,7 @@ import org.citydb.config.project.query.filter.lod.LodFilter;
 import org.citydb.config.project.query.filter.type.FeatureTypeFilter;
 import org.citydb.config.project.query.filter.version.CityGMLVersionType;
 import org.citydb.config.project.query.simple.SimpleSelectionFilter;
+import org.citydb.config.project.query.simple.SimpleFeatureVersionFilter;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
@@ -41,6 +42,7 @@ import javax.xml.bind.annotation.XmlType;
 
 @XmlType(name="SimpleExportQueryType", propOrder={
 		"featureTypeFilter",
+		"featureVersionFilter",
 		"selectionFilter",
 		"counterFilter",
 		"lodFilter",
@@ -55,6 +57,8 @@ public class SimpleQuery {
 	@XmlAttribute
 	private boolean useTypeNames;
 	@XmlAttribute
+	private boolean useFeatureVersionFilter;
+	@XmlAttribute
 	private boolean useSelectionFilter;
 	@XmlAttribute
 	private boolean useCountFilter;
@@ -65,9 +69,11 @@ public class SimpleQuery {
 
 	@XmlElement(name = "typeNames")
 	protected FeatureTypeFilter featureTypeFilter;
+	@XmlElement(name = "featureVersion")
+	private SimpleFeatureVersionFilter featureVersionFilter;
 	@XmlElement(name = "selection")
 	private SimpleSelectionFilter selectionFilter;
-	@XmlElement(name = "count")
+	@XmlElement(name = "limit")
 	protected CounterFilter counterFilter;
 	@XmlElement(name = "lods")
 	protected LodFilter lodFilter;
@@ -76,6 +82,7 @@ public class SimpleQuery {
 
 	public SimpleQuery() {
 		featureTypeFilter = new FeatureTypeFilter();
+		featureVersionFilter = new SimpleFeatureVersionFilter();
 		selectionFilter = new SimpleSelectionFilter();
 		counterFilter = new CounterFilter();
 		lodFilter = new LodFilter();
@@ -108,6 +115,14 @@ public class SimpleQuery {
 
 	public void setUseTypeNames(boolean useTypeNames) {
 		this.useTypeNames = useTypeNames;
+	}
+
+	public boolean isUseFeatureVersionFilter() {
+		return useFeatureVersionFilter;
+	}
+
+	public void setUseFeatureVersionFilter(boolean useFeatureVersionFilter) {
+		this.useFeatureVersionFilter = useFeatureVersionFilter;
 	}
 
 	public boolean isUseSelectionFilter() {
@@ -152,6 +167,18 @@ public class SimpleQuery {
 
 	public void setFeatureTypeFilter(FeatureTypeFilter featureTypeFilter) {
 		this.featureTypeFilter = featureTypeFilter;
+	}
+
+	public SimpleFeatureVersionFilter getFeatureVersionFilter() {
+		return featureVersionFilter;
+	}
+
+	public boolean isSetFeatureVersionFilter() {
+		return featureVersionFilter != null;
+	}
+
+	public void setFeatureVersionFilter(SimpleFeatureVersionFilter featureVersionFilter) {
+		this.featureVersionFilter = featureVersionFilter;
 	}
 	
 	public SimpleSelectionFilter getSelectionFilter() {
