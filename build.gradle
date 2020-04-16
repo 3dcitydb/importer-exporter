@@ -14,7 +14,7 @@ subprojects {
 
     repositories {
         maven {
-            url 'http://download.osgeo.org/webdav/geotools'
+            url 'https://repo.osgeo.org/repository/release'
         }
         maven {
             url 'https://dl.bintray.com/3dcitydb/maven'
