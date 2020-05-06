@@ -1148,7 +1148,8 @@ public abstract class KmlGenericObject {
 				croppedImageWidth = endX - startX;
 				croppedImageHeight = endY - startY;	
 				BufferedImage imageToCrop = texImage.getBufferedImage().getSubimage(startX, startY, croppedImageWidth, croppedImageHeight);
-				String newImageUri = sgId + "_" + texImageUri;
+				// texImageUri is already unique within the database
+				String newImageUri = "cropped_" + texImageUri;
 				texImageUris.put(sgId, newImageUri);
 				newTexImages.put(newImageUri, new TextureImage(imageToCrop));
 			}
