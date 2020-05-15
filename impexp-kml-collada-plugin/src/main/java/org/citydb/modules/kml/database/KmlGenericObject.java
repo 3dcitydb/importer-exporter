@@ -321,6 +321,14 @@ public abstract class KmlGenericObject {
 		this.ignoreSurfaceOrientation = ignoreSurfaceOrientation;
 	}
 
+	public static HashSet<String> getImplicitIds() {
+		return implicitIds;
+	}
+
+	public static void setImplicitIds(HashSet<String> implicitIds) {
+		KmlGenericObject.implicitIds = implicitIds;
+	}
+
 	protected boolean isIgnoreSurfaceOrientation() {
 		return ignoreSurfaceOrientation;
 	}
