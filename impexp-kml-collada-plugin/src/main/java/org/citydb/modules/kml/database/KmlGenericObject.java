@@ -204,6 +204,8 @@ public abstract class KmlGenericObject {
 	private final ImageReader imageReader;
 
 	protected String implicitId;
+	// to save unique implicit IDs -> avoid redundant export of implicit objects
+	private static HashSet<String> implicitIds = new HashSet<>();
 
 	protected KmlGenericObject(Connection connection,
 			Query query,
@@ -1149,7 +1151,7 @@ public abstract class KmlGenericObject {
 				croppedImageHeight = endY - startY;	
 				BufferedImage imageToCrop = texImage.getBufferedImage().getSubimage(startX, startY, croppedImageWidth, croppedImageHeight);
 				// texImageUri is already unique within the database
-				String newImageUri = "cropped_" + texImageUri;
+				String newImageUri = this.implicitId + "_" + texImageUri;
 				texImageUris.put(sgId, newImageUri);
 				newTexImages.put(newImageUri, new TextureImage(imageToCrop));
 			}
@@ -1223,7 +1225,12 @@ public abstract class KmlGenericObject {
 		taCreator.setScaleFactor(scaleFactor);
 
 		// create texture atlases
-		taCreator.convert(tiInfo, packingAlgorithm);
+		if (this.implicitId != null) {
+			if (!implicitIds.contains(this.implicitId)) {
+				taCreator.convert(tiInfo, packingAlgorithm);
+				implicitIds.add(this.implicitId);
+			}
+		}
 
 		sgIdIterator = sgIdSet.iterator();
 		while (sgIdIterator.hasNext()) {
