@@ -1217,7 +1217,7 @@ public abstract class KmlGenericObject {
 				}
 				vertexInfoIterator = vertexInfoIterator.getNextVertexInfo();
 			}
-		} 
+		}
 
 		tiInfo.setTexCoordinates(tiInfoCoords);
 
@@ -1228,8 +1228,7 @@ public abstract class KmlGenericObject {
 		taCreator.convert(tiInfo, packingAlgorithm);
 
 		// make tex image names and uris unique to each implici objects to remove redundancies
-		System.out.println("TEX IMAGES " + tiInfo.getTexImages().size());
-		ArrayList<String> keysToRemove = new ArrayList<>();
+		HashMap<String, TextureImage> newTexImages = new HashMap<>();
 		Iterator it = tiInfo.getTexImages().entrySet().iterator();
 		int i = 0;
 		while (it.hasNext()) {
@@ -1237,8 +1236,8 @@ public abstract class KmlGenericObject {
 			Map.Entry<String, TextureImage> iPair = (Map.Entry) it.next();
 			String oldTexFileName = iPair.getKey();
 			String imageType = oldTexFileName.substring(oldTexFileName.lastIndexOf('.') + 1);
-			String newTexFileName = "textureAtlas_" + this.implicitId + "_" + (i++) + "." + imageType;
-			tiInfo.getTexImages().put(newTexFileName, iPair.getValue());
+			String newTexFileName = "textureAtlas_" + (this.implicitId == null ? "" : this.implicitId + "_") + (i++) + "." + imageType;
+			newTexImages.put(newTexFileName, iPair.getValue());
 
 			// change tex uris
 			Iterator jt = tiInfo.getTexImageURIs().entrySet().iterator();
@@ -1248,13 +1247,10 @@ public abstract class KmlGenericObject {
 					jPair.setValue(newTexFileName);
 				}
 			}
-
-			keysToRemove.add(oldTexFileName);
 		}
-		// remove the old entries
-		for (String keyToRemove : keysToRemove) {
-			tiInfo.getTexImages().remove(keyToRemove);
-		}
+		// replace the tex image hashmap
+		texImages = newTexImages;
+		tiInfo.setTexImages(newTexImages);
 
 		sgIdIterator = sgIdSet.iterator();
 		while (sgIdIterator.hasNext()) {
