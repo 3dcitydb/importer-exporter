@@ -60,10 +60,10 @@ interior start and end points of the segments were imported into the database. T
 * Optimized COLLADA/KML/glTF export to prevent redundant texture as well as visualization files of implicit geometries
 from being exported repeatedly leading to file redundancy. This includes the following changes:
 
-  + Exported textures are now stored in the folder `Appearance`. 
+  + Exported textures are now stored in the folder `Appearances`. 
   Each texture has a unique name, i.e. no texture shall be overwritten.
   
-  + COLLADA `.dae` and `.gltf` files of implicit geometries shall be exported in the folder `ImplicitGeometry`. 
+  + COLLADA `.dae` and `.gltf` files of implicit geometries shall be exported in the folder `ImplicitObjects`. 
   Similarly, they all have unique name to prevent overwriting.
   The `.kml` file in each tile e.g. `X/Y` shall point to these files, so that the 3DCityDB-Web-Map-Client can visualize
   them as usual. 
