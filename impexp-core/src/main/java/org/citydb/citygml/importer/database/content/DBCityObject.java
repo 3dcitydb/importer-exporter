@@ -61,10 +61,11 @@ import org.citygml4j.util.bbox.BoundingBoxOptions;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.sql.Types;
 import java.time.LocalTime;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 public class DBCityObject implements DBImporter {
@@ -260,26 +261,26 @@ public class DBCityObject implements DBImporter {
 		if (isCityObject && (creationDateMode == CreationDateMode.INHERIT || creationDateMode == CreationDateMode.COMPLEMENT)) {
 			creationDate = Util.getCreationDate((AbstractCityObject) object, creationDateMode == CreationDateMode.INHERIT);
 			if (creationDate != null)
-				creationDate = creationDate.with(LocalTime.now());
+				creationDate = creationDate.withZoneSameInstant(ZoneOffset.UTC).truncatedTo(ChronoUnit.DAYS);
 		}
 
 		if (creationDate == null)
 			creationDate = now;
 
-		psCityObject.setTimestamp(8, Timestamp.valueOf(creationDate.toLocalDateTime()));
+		psCityObject.setObject(8, creationDate.toOffsetDateTime());
 
 		// core:terminationDate
 		ZonedDateTime terminationDate = null;
 		if (isCityObject && (terminationDateMode == TerminationDateMode.INHERIT || terminationDateMode == TerminationDateMode.COMPLEMENT)) {
 			terminationDate = Util.getTerminationDate((AbstractCityObject) object, terminationDateMode == TerminationDateMode.INHERIT);
 			if (terminationDate != null)
-				terminationDate = terminationDate.with(LocalTime.now());
+				terminationDate = terminationDate.withZoneSameInstant(ZoneOffset.UTC).truncatedTo(ChronoUnit.DAYS);
 		}
 
 		if (terminationDate == null)
 			psCityObject.setNull(9, Types.TIMESTAMP);
 		else
-			psCityObject.setTimestamp(9, Timestamp.valueOf(terminationDate.toLocalDateTime()));
+			psCityObject.setObject(9, terminationDate.toOffsetDateTime());
 
 		// core:relativeToTerrain
 		if (isCityObject && ((AbstractCityObject)object).isSetRelativeToTerrain())
@@ -310,7 +311,7 @@ public class DBCityObject implements DBImporter {
 		}
 
 		// citydb:lastModificationDate
-		psCityObject.setTimestamp(12, Timestamp.valueOf(now.toLocalDateTime()));
+		psCityObject.setObject(12, now.toOffsetDateTime());
 
 		// citydb:updatingPerson
 		psCityObject.setString(13, updatingPerson);

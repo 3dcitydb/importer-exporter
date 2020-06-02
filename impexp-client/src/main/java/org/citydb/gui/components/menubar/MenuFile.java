@@ -27,15 +27,12 @@
  */
 package org.citydb.gui.components.menubar;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
-
 import org.citydb.config.i18n.Language;
 import org.citydb.gui.ImpExpGui;
 import org.citydb.gui.util.GuiUtil;
+
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 
 @SuppressWarnings("serial")
 public class MenuFile extends JMenu {
@@ -47,13 +44,7 @@ public class MenuFile extends JMenu {
 	
 	private void init() {
 		exit = new JMenuItem();
-		
-		exit.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				((ImpExpGui)getTopLevelAncestor()).dispose();
-			}
-		});
-		
+		exit.addActionListener(e -> ((ImpExpGui)getTopLevelAncestor()).dispose());
 		add(exit);
 	}
 	

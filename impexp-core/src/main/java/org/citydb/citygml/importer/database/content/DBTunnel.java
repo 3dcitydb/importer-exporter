@@ -27,12 +27,6 @@
  */
 package org.citydb.citygml.importer.database.content;
 
-import java.sql.Connection;
-import java.sql.Date;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Types;
-
 import org.citydb.citygml.common.database.xlink.DBXlinkBasic;
 import org.citydb.citygml.common.database.xlink.DBXlinkSurfaceGeometry;
 import org.citydb.citygml.importer.CityGMLImportException;
@@ -56,6 +50,11 @@ import org.citygml4j.model.gml.basicTypes.Code;
 import org.citygml4j.model.gml.geometry.aggregates.MultiCurveProperty;
 import org.citygml4j.model.gml.geometry.aggregates.MultiSurfaceProperty;
 import org.citygml4j.model.gml.geometry.primitives.SolidProperty;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Types;
 
 public class DBTunnel implements DBImporter {
 	private final Connection batchConn;
@@ -160,14 +159,14 @@ public class DBTunnel implements DBImporter {
 
 		// tun:yearOfConstruction
 		if (tunnel.isSetYearOfConstruction()) {
-			psTunnel.setDate(10, Date.valueOf(tunnel.getYearOfConstruction()));
+			psTunnel.setObject(10, tunnel.getYearOfConstruction());
 		} else {
 			psTunnel.setNull(10, Types.DATE);
 		}
 
 		// tun:yearOfDemolition
 		if (tunnel.isSetYearOfDemolition()) {
-			psTunnel.setDate(11, Date.valueOf(tunnel.getYearOfDemolition()));
+			psTunnel.setObject(11, tunnel.getYearOfDemolition());
 		} else {
 			psTunnel.setNull(11, Types.DATE);
 		}

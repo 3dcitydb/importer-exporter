@@ -13,6 +13,7 @@ import org.citydb.registry.ObjectRegistry;
 import org.citygml4j.builder.cityjson.json.io.reader.CityJSONInputFactory;
 import org.citygml4j.builder.cityjson.json.io.reader.CityJSONReadException;
 import org.citygml4j.model.citygml.CityGML;
+import org.citygml4j.model.citygml.appearance.Appearance;
 import org.citygml4j.model.citygml.core.CityModel;
 import org.citygml4j.model.gml.feature.AbstractFeature;
 import org.citygml4j.model.gml.feature.FeatureProperty;
@@ -70,7 +71,7 @@ public class CityJSONReader implements FeatureReader, EventHandler {
             iter.remove();
 
             if (feature instanceof CityGML) {
-                if (counterFilter != null) {
+                if (counterFilter != null && !(feature instanceof Appearance)) {
                     if (!counterFilter.isStartIndexSatisfied()) {
                         counterFilter.incrementStartIndex();
                         continue;
@@ -78,7 +79,7 @@ public class CityJSONReader implements FeatureReader, EventHandler {
 
                     counterFilter.incrementCount();
                     if (!counterFilter.isCountSatisfied())
-                        break;
+                        continue;
                 }
 
                 workerPool.addWork((CityGML) feature);

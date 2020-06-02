@@ -7,14 +7,14 @@ subprojects {
     apply plugin: 'maven-publish'
 
     group 'org.citydb'
-    version '4.3.0-b20191124.1558'
+    version '4.2.3'
 
     sourceCompatibility = 1.8
     compileJava.options.encoding = 'UTF-8'
 
     repositories {
         maven {
-            url 'http://download.osgeo.org/webdav/geotools'
+            url 'https://repo.osgeo.org/repository/release'
         }
         maven {
             url 'https://dl.bintray.com/3dcitydb/maven'

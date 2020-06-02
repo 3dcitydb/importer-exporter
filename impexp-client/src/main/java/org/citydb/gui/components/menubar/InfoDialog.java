@@ -124,7 +124,7 @@ public class InfoDialog extends JDialog {
 			copy.setEditable(false);
 			copy.setBackground(new Color(255, 255, 255));
 			copy.setFont(supportHeader.getFont());
-			copy.setText("(C) 2013 - 2019\n" +
+			copy.setText("(C) 2013 - 2020\n" +
 					tum_label_text + "\n" +
 					"https://www.gis.bgu.tum.de/\n\n" +
 					"This program is free software and licensed under the\n" +

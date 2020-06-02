@@ -61,10 +61,10 @@ import org.citygml4j.model.gml.geometry.primitives.SolidProperty;
 import org.citygml4j.model.module.citygml.CityGMLModuleType;
 
 import java.sql.Connection;
-import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -215,17 +215,11 @@ public class DBTunnel extends AbstractFeatureExporter<AbstractTunnel> {
 					}
 				}
 
-				if (projectionFilter.containsProperty("yearOfConstruction", tunnelModule)) {
-					Date yearOfConstruction = rs.getDate("year_of_construction");				
-					if (!rs.wasNull())
-						tunnel.setYearOfConstruction(yearOfConstruction.toLocalDate());
-				}
+				if (projectionFilter.containsProperty("yearOfConstruction", tunnelModule))
+					tunnel.setYearOfConstruction(rs.getObject("year_of_construction", LocalDate.class));
 
-				if (projectionFilter.containsProperty("yearOfDemolition", tunnelModule)) {
-					Date yearOfDemolition = rs.getDate("year_of_demolition");
-					if (!rs.wasNull())
-						tunnel.setYearOfDemolition(yearOfDemolition.toLocalDate());
-				}
+				if (projectionFilter.containsProperty("yearOfDemolition", tunnelModule))
+					tunnel.setYearOfDemolition(rs.getObject("year_of_demolition", LocalDate.class));
 
 				// bldg:boundedBy
 				if (projectionFilter.containsProperty("boundedBy", tunnelModule) 

@@ -30,23 +30,24 @@ package org.citydb.query.filter.selection.expression;
 import org.citydb.database.schema.mapping.SimpleType;
 import org.citydb.sqlbuilder.expression.PlaceHolder;
 
+import java.sql.Date;
+import java.time.Instant;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.GregorianCalendar;
 
-public class DateLiteral extends AbstractLiteral<Date> {
+public class DateLiteral extends AbstractLiteral<Instant> {
 	private String xmlLiteral;
 	
-	public DateLiteral(Date value) {
+	public DateLiteral(Instant value) {
 		super(value);
 	}
 	
 	public DateLiteral(Calendar calendar) {
-		this(calendar.getTime());
+		this(calendar.toInstant());
 	}
 	
 	public DateLiteral(GregorianCalendar calendar) {
-		this(calendar.getTime());
+		this(calendar.toInstant());
 	}
 
 	public String getXMLLiteral() {
@@ -58,7 +59,7 @@ public class DateLiteral extends AbstractLiteral<Date> {
 	}
 
 	@Override
-	public boolean evalutesToSchemaType(SimpleType schemaType) {
+	public boolean evaluatesToSchemaType(SimpleType schemaType) {
 		switch (schemaType) {
 		case DATE:
 			return true;
@@ -69,7 +70,7 @@ public class DateLiteral extends AbstractLiteral<Date> {
 
 	@Override
 	public PlaceHolder<?> convertToSQLPlaceHolder() {
-		return new PlaceHolder<>(new java.sql.Date(value.getTime()));
+		return new PlaceHolder<>(new Date(value.toEpochMilli()));
 	}
 
 	@Override

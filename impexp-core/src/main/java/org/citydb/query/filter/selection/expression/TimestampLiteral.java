@@ -30,25 +30,26 @@ package org.citydb.query.filter.selection.expression;
 import org.citydb.database.schema.mapping.SimpleType;
 import org.citydb.sqlbuilder.expression.PlaceHolder;
 
+import java.sql.Date;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.GregorianCalendar;
 
-public class TimestampLiteral extends AbstractLiteral<Date> {
+public class TimestampLiteral extends AbstractLiteral<Instant> {
 	private String xmlLiteral;
 	private boolean isDate;
 	
-	public TimestampLiteral(Date value) {
+	public TimestampLiteral(Instant value) {
 		super(value);
 	}
-	
+
 	public TimestampLiteral(Calendar calendar) {
-		this(calendar.getTime());
+		this(calendar.toInstant());
 	}
 	
 	public TimestampLiteral(GregorianCalendar calendar) {
-		this(calendar.getTime());
+		this(calendar.toInstant());
 	}
 	
 	public String getXMLLiteral() {
@@ -68,7 +69,7 @@ public class TimestampLiteral extends AbstractLiteral<Date> {
 	}
 
 	@Override
-	public boolean evalutesToSchemaType(SimpleType schemaType) {
+	public boolean evaluatesToSchemaType(SimpleType schemaType) {
 		switch (schemaType) {
 		case TIMESTAMP:
 			return true;
@@ -79,7 +80,9 @@ public class TimestampLiteral extends AbstractLiteral<Date> {
 
 	@Override
 	public PlaceHolder<?> convertToSQLPlaceHolder() {
-		return !isDate ? new PlaceHolder<>(new Timestamp(value.getTime())) : new PlaceHolder<>(new java.sql.Date(value.getTime()));
+		return !isDate ?
+				new PlaceHolder<>(Timestamp.from(value)) :
+				new PlaceHolder<>(new Date(value.toEpochMilli()));
 	}
 
 	@Override

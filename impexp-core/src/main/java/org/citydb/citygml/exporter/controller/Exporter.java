@@ -38,7 +38,6 @@ import org.citydb.citygml.exporter.database.content.DBSplitter;
 import org.citydb.citygml.exporter.database.content.DBSplittingResult;
 import org.citydb.citygml.exporter.database.uid.FeatureGmlIdCache;
 import org.citydb.citygml.exporter.database.uid.GeometryGmlIdCache;
-import org.citydb.file.output.OutputFileFactory;
 import org.citydb.citygml.exporter.writer.FeatureWriteException;
 import org.citydb.citygml.exporter.writer.FeatureWriter;
 import org.citydb.citygml.exporter.writer.FeatureWriterFactory;
@@ -71,6 +70,7 @@ import org.citydb.event.global.StatusDialogProgressBar;
 import org.citydb.event.global.StatusDialogTitle;
 import org.citydb.file.FileType;
 import org.citydb.file.OutputFile;
+import org.citydb.file.output.OutputFileFactory;
 import org.citydb.log.Logger;
 import org.citydb.plugin.PluginManager;
 import org.citydb.plugin.extension.export.CityGMLExportExtension;
@@ -205,10 +205,10 @@ public class Exporter implements EventHandler {
 				targetSrs.getSrid() != databaseAdapter.getConnectionMetaData().getReferenceSystem().getSrid());
 
 		if (config.getInternal().isTransformCoordinates()) {
-			if (targetSrs.is3D() == databaseAdapter.getConnectionMetaData().getReferenceSystem().is3D()) {
-				log.info("Transforming geometry representation to reference system '" + targetSrs.getDescription() + "' (SRID: " + targetSrs.getSrid() + ").");
+			log.info("Transforming geometry representation to reference system '" + targetSrs.getDescription() + "' (SRID: " + targetSrs.getSrid() + ").");
+			if (!targetSrs.is3D() && !databaseAdapter.getConnectionMetaData().getReferenceSystem().is3D()) {
 				log.warn("Transformation is NOT applied to height reference system.");
-			} else {
+			} else if (targetSrs.is3D() != databaseAdapter.getConnectionMetaData().getReferenceSystem().is3D()) {
 				throw new CityGMLExportException("Dimensionality of reference system for geometry transformation does not match.");
 			}
 		}

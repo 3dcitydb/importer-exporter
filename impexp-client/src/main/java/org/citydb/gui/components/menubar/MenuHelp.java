@@ -27,22 +27,26 @@
  */
 package org.citydb.gui.components.menubar;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
-import javax.swing.SwingUtilities;
-
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.gui.ImpExpGui;
 import org.citydb.gui.util.GuiUtil;
+import org.citydb.log.Logger;
+
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
+import javax.swing.SwingUtilities;
+import java.awt.Desktop;
+import java.io.IOException;
+import java.net.URI;
+import java.util.Properties;
 
 @SuppressWarnings("serial")
 public class MenuHelp extends JMenu {
+	private final Logger log = Logger.getInstance();
 	private final Config config;
 	private final ImpExpGui mainView;
+	private JMenuItem doc;
 	private JMenuItem info;
 	private JMenuItem readMe;
 	
@@ -53,50 +57,54 @@ public class MenuHelp extends JMenu {
 	}
 	
 	private void init() {
-		info = new JMenuItem();
+		doc = new JMenuItem();
 		readMe = new JMenuItem();
-		
-		info.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				printInfo();
-			}
-		});
-		
-		readMe.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				printReadMe();
-			}
-		});
-		
-		add(info);
+		info = new JMenuItem();
+
+		doc.addActionListener(e -> openOnlineDoc());
+		readMe.addActionListener(e -> printReadMe());
+		info.addActionListener(e -> printInfo());
+
+		add(doc);
 		add(readMe);
+		addSeparator();
+		add(info);
 	}
 	
 	public void doTranslation() {
-		info.setText(Language.I18N.getString("menu.help.info.label"));		
+		doc.setText(Language.I18N.getString("menu.help.doc.citydb.label"));
 		readMe.setText(Language.I18N.getString("menu.help.readMe.label"));
-		
-		GuiUtil.setMnemonic(info, "menu.help.info.label", "menu.help.info.label.mnemonic");
+		info.setText(Language.I18N.getString("menu.help.info.label"));
+
+		GuiUtil.setMnemonic(doc, "menu.help.doc.citydb.label", "menu.help.doc.citydb.label.mnemonic");
 		GuiUtil.setMnemonic(readMe, "menu.help.readMe.label", "menu.help.readMe.label.mnemonic");
+		GuiUtil.setMnemonic(info, "menu.help.info.label", "menu.help.info.label.mnemonic");
 	}
-	
-	public void printInfo() {		
-		final InfoDialog infoDialog = new InfoDialog(config, mainView);
-		SwingUtilities.invokeLater(new Runnable() {
-			public void run() {
-				infoDialog.setLocationRelativeTo(getTopLevelAncestor());
-				infoDialog.setVisible(true);
-			}
-		});
+
+	public void openOnlineDoc() {
+		try {
+			Properties appProperties = new Properties();
+			appProperties.load(getClass().getResourceAsStream("/org/citydb/application.properties"));
+			Desktop.getDesktop().browse(URI.create(appProperties.getProperty("docUrl")));
+		} catch (IOException e) {
+			log.error("Failed to open the 3DCityDB online documentation.");
+			log.error("Cause: " + e.getMessage());
+		}
 	}
 	
 	private void printReadMe() {		
 		final ReadMeDialog readMeDialog = new ReadMeDialog(mainView);
-		SwingUtilities.invokeLater(new Runnable() {
-			public void run() {
-				readMeDialog.setLocationRelativeTo(getTopLevelAncestor());
-				readMeDialog.setVisible(true);
-			}
+		SwingUtilities.invokeLater(() -> {
+			readMeDialog.setLocationRelativeTo(getTopLevelAncestor());
+			readMeDialog.setVisible(true);
+		});
+	}
+
+	public void printInfo() {
+		final InfoDialog infoDialog = new InfoDialog(config, mainView);
+		SwingUtilities.invokeLater(() -> {
+			infoDialog.setLocationRelativeTo(getTopLevelAncestor());
+			infoDialog.setVisible(true);
 		});
 	}
 }

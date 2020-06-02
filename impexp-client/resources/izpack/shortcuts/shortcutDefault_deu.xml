@@ -47,12 +47,6 @@
         <createForPack name="3dcitydb"/>
     </shortcut>
 
-    <shortcut name="Dokumentation" target="$INSTALL_PATH\@manualDir@" commandLine="" workingDirectory="$INSTALL_PATH\@manualDir@"
-        description="Die Dokumentation der ${3DCITYDB_NAME} und des ${APP_SHORTCUT_NAME}" programGroup="yes" desktop="no" applications="no"
-        startMenu="no" startup="no">
-        <createForPack name="manual"/>
-    </shortcut>
-
     <shortcut name="Beispieldaten" target="$INSTALL_PATH\@samplesDir@" commandLine="" workingDirectory="$INSTALL_PATH\@samplesDir@"
         description="CityGML und KML/COLLADA Beispieldaten" programGroup="yes" desktop="no" applications="no" startMenu="no" startup="no">
         <createForPack name="samples"/>

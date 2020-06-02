@@ -17,11 +17,12 @@ Version @version@ (@date@)
 4. System requirements
 5. (Un)Installation
 6. Running the application
-7. Cooperation partners and supporters
-8. Active Developers
-9. Contact
-10. Websites
-11. Disclaimer
+7. Documentation
+8. Cooperation partners and supporters
+9. Active Developers
+10. Contact
+11. Websites
+12. Disclaimer
 
 
 1. License
@@ -60,7 +61,7 @@ loading and extracting 3D city model data.
   in Digital Earth Browsers, 3D GIS, and computer graphics software
 * Generic KML information balloons
 * Export of thematic object data into tables. Supported data formats are
-  CSV, Microsoft Excel, and direct upload into Google Spreadsheets
+  CSV and Microsoft Excel
 * Resolving and preservation of forward and backwards XLinks in 
   CityGML datasets
 * Full support of 3D Coordinate Reference Systems (CRS) and 3D 
@@ -83,14 +84,14 @@ third party applications.
 * Java JRE or JDK >= 1.8
 * @citydbName@ version @citydbVersion@ on
   - Oracle Spatial DBMS >= 10G R2 with Spatial or Locator option
-  - PostgreSQL DBMS >= 9.3 with PostGIS extension >= 2.0
+  - PostgreSQL DBMS >= 9.6 with PostGIS extension >= 2.3
   
 The @name@ can be run on any platform 
 providing appropriate Java support. It has been tested on the 
 following platforms:
   - Microsoft Windows XP, Vista, Windows 7, 8, 10
-  - Apple Mac OS X 10.9, 10.11, macOS 10.12, 10.13
-  - Ubuntu 14 - 18
+  - Apple Mac OS X and macOS
+  - Ubuntu 9 - 18
 
 
 5. (Un)Installation
@@ -154,9 +155,9 @@ a) Recommended:
 b) Alternatively, you can directly run the @jar@
    from within a shell environment without using the start scripts. The
    runnable JAR archive is located in the "lib" subfolder of the
-   installation folder.
+   installation directory.
 
-   Open a shell, change to the installation folder and type the following:
+   Open a shell, change to the installation directory and type the following:
 
        java -jar lib/@jar@ [-options]
 
@@ -173,8 +174,16 @@ b) Alternatively, you can directly run the @jar@
    Type "java -jar lib/@jar@ -help" to get a list of
    the available program arguments.
 
+
+7. Documentation
+----------------------------
+A complete and comprehensive documentation on the @citydbName@
+and the @name@ is available online at:
+
+@docUrl@
+
   
-7. Cooperation partners and supporters
+8. Cooperation partners and supporters
 --------------------------------------
 
 The @name@ v@version@ has been developed by
@@ -188,7 +197,7 @@ and with the support from the following cooperation partners:
   http://www.moss.de/
   
    
-8. Active Developers
+9. Active Developers
 --------------------
 
 Claus Nagel <cnagel@virtualcitysystems.de>
@@ -203,14 +212,14 @@ Version @version@ is based on earlier versions of the
 documentation for the list of all contributors to previous versions. 
 
 
-9. Contact
+10. Contact
 ----------
 
 cnagel@virtualcitysystems.de
 thomas.kolbe@tum.de
 
 
-10. Websites
+11. Websites
 ------------
 
 Official @citydbName@ website: 
@@ -225,7 +234,7 @@ http://www.citygmlwiki.org
 http://www.opengeospatial.org/standards/citygml
 
 
-11. Disclaimer
+12. Disclaimer
 --------------
 
 THIS SOFTWARE IS PROVIDED BY THE CHAIR OF GEOINFORMATION FROM TU MUNICH

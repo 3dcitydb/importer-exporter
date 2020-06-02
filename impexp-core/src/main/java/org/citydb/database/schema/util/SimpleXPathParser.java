@@ -27,18 +27,6 @@
  */
 package org.citydb.database.schema.util;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import javax.xml.XMLConstants;
-import javax.xml.bind.DatatypeConverter;
-import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeConstants;
-import javax.xml.datatype.DatatypeFactory;
-import javax.xml.datatype.XMLGregorianCalendar;
-import javax.xml.namespace.NamespaceContext;
-import javax.xml.namespace.QName;
-
 import org.citydb.database.schema.mapping.AbstractAttribute;
 import org.citydb.database.schema.mapping.AbstractPathElement;
 import org.citydb.database.schema.mapping.AbstractProperty;
@@ -67,6 +55,16 @@ import org.citydb.query.filter.selection.expression.LongLiteral;
 import org.citydb.query.filter.selection.expression.StringLiteral;
 import org.citydb.query.filter.selection.expression.TimestampLiteral;
 
+import javax.xml.XMLConstants;
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeConstants;
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.XMLGregorianCalendar;
+import javax.xml.namespace.NamespaceContext;
+import javax.xml.namespace.QName;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 public class SimpleXPathParser {
 	// this parser only supports XPath subset as defined in OGC 09-026r2, Annex D
 	private final String simplifiedStepExpr_ = "([^\\[]+)(?:\\[(.+)\\]$)?";
@@ -78,15 +76,16 @@ public class SimpleXPathParser {
 	private final String functionCall_ = qName_ + "\\((.*?)\\)";
 
 	private final SchemaMapping schemaMapping;
+	private final DatatypeFactory datatypeFactory;
+	private final Matcher matcher;
+	private final Pattern stepExprTest;
+	private final Pattern nameTest;
+	private final Pattern kindTest;
+	private final Pattern functionCallTest;
+	private final Pattern stringLiteralTest;
+
 	private AbstractType<?> currentType;
 	private SchemaPath schemaPath;
-
-	private Matcher matcher;
-	private Pattern stepExprTest;
-	private Pattern nameTest;
-	private Pattern kindTest;
-	private Pattern functionCallTest;
-	private Pattern stringLiteralTest;
 
 	public SimpleXPathParser(SchemaMapping schemaMapping) {
 		this.schemaMapping = schemaMapping;
@@ -97,6 +96,12 @@ public class SimpleXPathParser {
 		kindTest = Pattern.compile(kindTest_, Pattern.UNICODE_CHARACTER_CLASS);
 		functionCallTest = Pattern.compile(functionCall_, Pattern.UNICODE_CHARACTER_CLASS);
 		stringLiteralTest = Pattern.compile(stringLiteral_, Pattern.UNICODE_CHARACTER_CLASS);
+
+		try {
+			datatypeFactory = DatatypeFactory.newInstance();
+		} catch (DatatypeConfigurationException e) {
+			throw new RuntimeException("Failed to initialize datatype factory.", e);
+		}
 	}
 
 	public SchemaPath parse(String xpath, FeatureType rootNode, NamespaceContext namespaceContext) throws XPathException, InvalidSchemaPathException {
@@ -336,7 +341,7 @@ public class SimpleXPathParser {
 			throw new XPathException("Only equality tests of the form 'child=value' may be used.");
 
 		// try and apply an implicit type conversion if required
-		if (!literal.evalutesToSchemaType(attribute.getType()))
+		if (!literal.evaluatesToSchemaType(attribute.getType()))
 			literal = implicitTypeConversion(literal, attribute.getType());
 
 		return new EqualToPredicate(attribute, literal);
@@ -467,7 +472,8 @@ public class SimpleXPathParser {
 				if (literal.getLiteralType() == LiteralType.STRING) {
 					try {
 						String value = ((StringLiteral)literal).getValue();
-						literal = new DateLiteral(DatatypeConverter.parseDateTime(value));
+						XMLGregorianCalendar cal = datatypeFactory.newXMLGregorianCalendar(value);
+						literal = new DateLiteral(cal.toGregorianCalendar());
 						((DateLiteral)literal).setXMLLiteral(value);
 					} catch (IllegalArgumentException e) {
 						//
@@ -476,14 +482,13 @@ public class SimpleXPathParser {
 				break;
 			case TIMESTAMP:
 				if (literal.getLiteralType() == LiteralType.STRING) {
-					String value = ((StringLiteral)literal).getValue();
-
 					try {
-						XMLGregorianCalendar cal = DatatypeFactory.newInstance().newXMLGregorianCalendar(value);
+						String value = ((StringLiteral)literal).getValue();
+						XMLGregorianCalendar cal = datatypeFactory.newXMLGregorianCalendar(value);
 						literal = new TimestampLiteral(cal.toGregorianCalendar());
 						((TimestampLiteral)literal).setXMLLiteral(value);
 						((TimestampLiteral)literal).setDate(cal.getXMLSchemaType() == DatatypeConstants.DATE);
-					} catch (DatatypeConfigurationException | IllegalArgumentException e) {
+					} catch (IllegalArgumentException e) {
 						//
 					}
 				}

@@ -48,9 +48,8 @@ import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.sql.Types;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
@@ -135,15 +134,15 @@ public class DBDeleteWorker extends Worker<DBSplittingResult> implements EventHa
 			long deletedObjectId;
 
 			if (config.getProject().getDeleter().getMode() == DeleteMode.TERMINATE) {
-				LocalDateTime now = LocalDateTime.now();
+				OffsetDateTime now = OffsetDateTime.now();
 
 				Continuation metadata = config.getProject().getDeleter().getContinuation();
-				LocalDateTime terminationDate = metadata.isSetTerminationDate() ? metadata.getTerminationDate() : now;
+				OffsetDateTime terminationDate = metadata.isSetTerminationDate() ? metadata.getTerminationDate() : now;
 				String updatingPerson = metadata.isUpdatingPersonModeDatabase() || !metadata.isSetUpdatingPerson() ?
 						databaseAdapter.getConnectionDetails().getUser() : metadata.getUpdatingPerson();
 
-				stmt.setTimestamp(1, Timestamp.valueOf(terminationDate));
-				stmt.setTimestamp(2, Timestamp.valueOf(now));
+				stmt.setObject(1, terminationDate);
+				stmt.setObject(2, now);
 				stmt.setString(3, updatingPerson);
 				stmt.setLong(4, objectId);
 

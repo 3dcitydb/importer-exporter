@@ -37,7 +37,7 @@ public class BooleanLiteral extends AbstractLiteral<Boolean> {
 	}
 	
 	@Override
-	public boolean evalutesToSchemaType(SimpleType schemaType) {
+	public boolean evaluatesToSchemaType(SimpleType schemaType) {
 		switch (schemaType) {
 		case BOOLEAN:
 			return true;

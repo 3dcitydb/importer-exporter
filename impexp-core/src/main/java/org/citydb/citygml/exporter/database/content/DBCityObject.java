@@ -75,7 +75,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
+import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.HashSet;
 
@@ -237,16 +237,16 @@ public class DBCityObject implements DBExporter {
 				if (isCityObject) {
 					// core:creationDate
 					if (projectionFilter.containsProperty("creationDate", coreModule)) {
-						Timestamp creationDate = rs.getTimestamp("creation_date");
+						OffsetDateTime creationDate = rs.getObject("creation_date", OffsetDateTime.class);
 						if (!rs.wasNull())
-							((AbstractCityObject)object).setCreationDate(creationDate.toLocalDateTime().atZone(ZoneId.systemDefault()));
+							((AbstractCityObject)object).setCreationDate(creationDate.atZoneSameInstant(ZoneId.systemDefault()));
 					}
 
 					// core:terminationDate
 					if (projectionFilter.containsProperty("terminationDate", coreModule)) {
-						Timestamp terminationDate = rs.getTimestamp("termination_date");
+						OffsetDateTime terminationDate = rs.getObject("termination_date", OffsetDateTime.class);
 						if (terminationDate != null)
-							((AbstractCityObject)object).setTerminationDate(terminationDate.toLocalDateTime().atZone(ZoneId.systemDefault()));
+							((AbstractCityObject)object).setTerminationDate(terminationDate.atZoneSameInstant(ZoneId.systemDefault()));
 					}
 
 					// core:relativeToTerrain
@@ -266,10 +266,10 @@ public class DBCityObject implements DBExporter {
 					// 3DCityDB ADE metadata
 					if (exportCityDBMetadata && isTopLevel) {
 						if (projectionFilter.containsProperty("lastModificationDate", cityDBADEModule)) {
-							Timestamp lastModificationDate = rs.getTimestamp("last_modification_date");
+							OffsetDateTime lastModificationDate = rs.getObject("last_modification_date", OffsetDateTime.class);
 							if (!rs.wasNull()) {
 								LastModificationDateProperty property = new LastModificationDateProperty(
-										lastModificationDate.toLocalDateTime().atZone(ZoneId.systemDefault()));
+										lastModificationDate.atZoneSameInstant(ZoneId.systemDefault()));
 								((AbstractCityObject) object).addGenericApplicationPropertyOfCityObject(property);
 							}
 						}
