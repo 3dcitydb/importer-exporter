@@ -506,11 +506,11 @@ public class KmlExportWorker extends Worker<KmlSplittingResult> {
 		try {
 			double imageScaleFactor = 1;
 			ColladaOptions colladaOptions = objectGroup.getColladaOptions();
-			
+
 			if (colladaOptions.isCropImages()) {
 				objectGroup.cropImages();
 			}
-			
+
 			if (colladaOptions.isGenerateTextureAtlases()) {
 				if (colladaOptions.isScaleImages()) {
 					imageScaleFactor = colladaOptions.getImageScaleFactor();
@@ -518,8 +518,7 @@ public class KmlExportWorker extends Worker<KmlSplittingResult> {
 				objectGroup.createTextureAtlas(colladaOptions.getPackingAlgorithm(),
 						imageScaleFactor,
 						colladaOptions.isTextureAtlasPots());
-			}
-			else if (colladaOptions.isScaleImages()) {
+			} else if (colladaOptions.isScaleImages()) {
 				imageScaleFactor = colladaOptions.getImageScaleFactor();
 				if (imageScaleFactor < 1) {
 					objectGroup.resizeAllImagesByFactor(imageScaleFactor);
@@ -535,7 +534,7 @@ public class KmlExportWorker extends Worker<KmlSplittingResult> {
 			colladaBundle.setId(objectGroup.getId());
 
 			kmlExporterManager.print(colladaBundle,
-					objectGroup.getId(),					
+					objectGroup.getId(),
 					objectGroup.getBalloonSettings().isBalloonContentInSeparateFile(),
 					objectGroup.getImplicitId());
 		}
