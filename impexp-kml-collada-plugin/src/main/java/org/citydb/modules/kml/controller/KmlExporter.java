@@ -348,7 +348,7 @@ public class KmlExporter implements EventHandler {
 
 		// directory to store texture images
 		// (in order to prevent textures of implicit geometries repeatedly exported, but also for all textures)
-		File implicitGeometryAppearanceDirectory = new File(path, "Appearance");
+		File implicitGeometryAppearanceDirectory = new File(path, "Appearances");
 		if (! implicitGeometryAppearanceDirectory.exists()) {
 			implicitGeometryAppearanceDirectory.mkdir();
 		}
