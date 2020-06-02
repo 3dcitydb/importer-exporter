@@ -138,15 +138,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import java.util.StringTokenizer;
+import java.util.*;
 
 public abstract class KmlGenericObject {
 	private final Logger log = Logger.getInstance();
@@ -1233,11 +1225,35 @@ public abstract class KmlGenericObject {
 		taCreator.setScaleFactor(scaleFactor);
 
 		// create texture atlases
-		if (this.implicitId != null) {
-			if (!implicitIds.contains(this.implicitId)) {
-				taCreator.convert(tiInfo, packingAlgorithm);
-				implicitIds.add(this.implicitId);
+		taCreator.convert(tiInfo, packingAlgorithm);
+
+		// make tex image names and uris unique to each implici objects to remove redundancies
+		System.out.println("TEX IMAGES " + tiInfo.getTexImages().size());
+		ArrayList<String> keysToRemove = new ArrayList<>();
+		Iterator it = tiInfo.getTexImages().entrySet().iterator();
+		int i = 0;
+		while (it.hasNext()) {
+			// change tex image names
+			Map.Entry<String, TextureImage> iPair = (Map.Entry) it.next();
+			String oldTexFileName = iPair.getKey();
+			String imageType = oldTexFileName.substring(oldTexFileName.lastIndexOf('.') + 1);
+			String newTexFileName = "textureAtlas_" + this.implicitId + "_" + (i++) + "." + imageType;
+			tiInfo.getTexImages().put(newTexFileName, iPair.getValue());
+
+			// change tex uris
+			Iterator jt = tiInfo.getTexImageURIs().entrySet().iterator();
+			while (jt.hasNext()) {
+				Map.Entry<Object, String> jPair = (Map.Entry) jt.next();
+				if (jPair.getValue().equals(oldTexFileName)) {
+					jPair.setValue(newTexFileName);
+				}
 			}
+
+			keysToRemove.add(oldTexFileName);
+		}
+		// remove the old entries
+		for (String keyToRemove : keysToRemove) {
+			tiInfo.getTexImages().remove(keyToRemove);
 		}
 
 		sgIdIterator = sgIdSet.iterator();
