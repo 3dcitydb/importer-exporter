@@ -188,7 +188,7 @@ public class SQLQueryContext {
 		BuildContext findSubContext(AbstractNode<?> node) {
 			if (children != null && node != null) {
 				for (BuildContext child : children) {
-					if (child.node.isEqualTo(node, true)) {
+					if (child.node.isEqualTo(node, false)) {
 						// only return the context of a property if the types are also identical
 						// otherwise the schema paths substantially differ
 						if (PathElementType.TYPE_PROPERTIES.contains(node.getPathElement().getElementType())
