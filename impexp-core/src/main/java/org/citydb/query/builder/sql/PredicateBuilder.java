@@ -49,12 +49,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PredicateBuilder {
+	private final SchemaPathBuilder schemaPathBuilder;
 	private final ComparisonOperatorBuilder comparisonBuilder;
 	private final SpatialOperatorBuilder spatialBuilder;
 	private final IdOperatorBuilder idBuilder;
 	private final SelectOperatorBuilder selectBuilder;
 
 	protected PredicateBuilder(Query query, SchemaPathBuilder schemaPathBuilder, SchemaMapping schemaMapping, AbstractDatabaseAdapter databaseAdapter, String schemaName) {
+		this.schemaPathBuilder = schemaPathBuilder;
 		comparisonBuilder = new ComparisonOperatorBuilder(schemaPathBuilder, databaseAdapter.getSQLAdapter(), schemaName);
 		spatialBuilder = new SpatialOperatorBuilder(query, schemaPathBuilder, schemaMapping, databaseAdapter, schemaName);
 		idBuilder = new IdOperatorBuilder(query, schemaPathBuilder, schemaMapping, databaseAdapter.getSQLAdapter());
@@ -106,6 +108,8 @@ public class PredicateBuilder {
 			if (binaryOperator.numberOfOperands() == 1) {
 				buildPredicate(binaryOperator.getOperands().get(0), queryContext, negate, useLeftJoins);
 			} else {
+				LogicalOperatorName previous = schemaPathBuilder.getAndSetLogicalContext(binaryOperator.getOperatorName());
+
 				List<PredicateToken> predicates = new ArrayList<>();
 				for (Predicate operand : binaryOperator.getOperands()) {
 					buildPredicate(operand, queryContext, negate, useLeftJoins);
@@ -123,6 +127,8 @@ public class PredicateBuilder {
 				queryContext.addPredicate(binaryOperator.getOperatorName() == LogicalOperatorName.AND ?
 						LogicalOperationFactory.AND(predicates) :
 						LogicalOperationFactory.OR(predicates));
+
+				schemaPathBuilder.setLogicalContext(previous);
 			}
 		}
 	}
