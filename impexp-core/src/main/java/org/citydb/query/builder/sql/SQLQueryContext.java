@@ -42,8 +42,10 @@ import org.citydb.sqlbuilder.schema.Table;
 import org.citydb.sqlbuilder.select.PredicateToken;
 import org.citydb.sqlbuilder.select.Select;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -51,6 +53,8 @@ import java.util.Map;
 public class SQLQueryContext {
 	private final FeatureType featureType;
 	private final BuildContext buildContext;
+	private final Deque<LogicalOperatorName> logicalContexts;
+
 	private Table fromTable;
 	private Select select;
 	private Table toTable;
@@ -64,6 +68,7 @@ public class SQLQueryContext {
 
 		select = new Select();
 		buildContext = new BuildContext(new FeatureTypeNode(featureType), fromTable, new HashMap<>());
+		logicalContexts = new ArrayDeque<>();
 	}
 
 	FeatureType getFeatureType() {
@@ -144,17 +149,24 @@ public class SQLQueryContext {
 		return buildContext;
 	}
 
-	static class BuildContext {
+	void pushLogicalContext(LogicalOperatorName logicalContext) {
+		logicalContexts.push(logicalContext);
+		if (logicalContext == LogicalOperatorName.AND)
+			buildContext.invalidateSubContexts();
+	}
+
+	void popLogicalContext() {
+		logicalContexts.pop();
+		if (logicalContexts.peek() == LogicalOperatorName.AND)
+			buildContext.invalidateSubContexts();
+	}
+
+	class BuildContext {
 		private final AbstractNode<?> node;
 		private final Table currentTable;
 		private final Map<String, Table> tableContext;
 		private List<BuildContext> children;
-		private ReuseMode reuseMode;
-
-		private enum ReuseMode {
-			BLOCKED,
-			REQUIRES_OR_CONTEXT
-		}
+		private LogicalOperatorName logicalContext;
 
 		BuildContext(AbstractNode<?> node, Table currentTable, Map<String, Table> tableContext) {
 			this.node = node;
@@ -178,16 +190,15 @@ public class SQLQueryContext {
 			return children != null && !children.isEmpty();
 		}
 
-		BuildContext addSubContext(AbstractNode<?> node, Table currentTable, Map<String, Table> tableContext, LogicalOperatorName logicalContext) {
+		BuildContext addSubContext(AbstractNode<?> node, Table currentTable, Map<String, Table> tableContext) {
 			BuildContext nodeContext = new BuildContext(node, currentTable, tableContext);
 
+			// remember the logical context for 1:n or n:m joins
 			if (node.getPathElement() instanceof Joinable) {
 				AbstractJoin join = ((Joinable) node.getPathElement()).getJoin();
 				if ((join instanceof Join && ((Join) join).getToRole() == TableRole.CHILD)
 						|| join instanceof JoinTable) {
-					nodeContext.reuseMode = logicalContext == LogicalOperatorName.AND ?
-							ReuseMode.BLOCKED :
-							ReuseMode.REQUIRES_OR_CONTEXT;
+					nodeContext.logicalContext = logicalContexts.peek();
 				}
 			}
 
@@ -199,19 +210,21 @@ public class SQLQueryContext {
 			return nodeContext;
 		}
 
-		BuildContext findSubContext(AbstractNode<?> node, LogicalOperatorName logicalContext) {
+		BuildContext findSubContext(AbstractNode<?> node) {
 			if (children != null && node != null) {
 				for (BuildContext child : children) {
-					if (child.reuseMode == ReuseMode.BLOCKED
-							|| (child.reuseMode == ReuseMode.REQUIRES_OR_CONTEXT
-							&& logicalContext != LogicalOperatorName.OR))
+					// a child context can only be reused if its logical context is either
+					// not set or if it is set to OR and matches the current logical context
+					if (child.logicalContext == LogicalOperatorName.AND
+							|| (child.logicalContext == LogicalOperatorName.OR
+							&& logicalContexts.peek() != LogicalOperatorName.OR))
 						continue;
 
 					if (child.node.isEqualTo(node, false)) {
 						// only return the context of a property if the types are also identical
 						// otherwise the schema paths substantially differ
 						if (PathElementType.TYPE_PROPERTIES.contains(node.getPathElement().getElementType())
-								&& child.findSubContext(node.child(), logicalContext) == null)
+								&& child.findSubContext(node.child()) == null)
 							continue;
 
 						return child;
@@ -222,17 +235,25 @@ public class SQLQueryContext {
 			return null;
 		}
 
+		void invalidateSubContexts() {
+			if (children != null) {
+				for (BuildContext child : children) {
+					if (child.logicalContext == LogicalOperatorName.OR)
+						child.logicalContext = LogicalOperatorName.AND;
+					else
+						child.invalidateSubContexts();
+				}
+			}
+		}
+
 		boolean requiresDistinct() {
 			if (children != null) {
 				for (BuildContext child : children) {
 					if (child.node.getPathElement() instanceof Joinable) {
-						Joinable joinable = (Joinable) child.node.getPathElement();
-						if (joinable.isSetJoin()) {
-							AbstractJoin join = joinable.getJoin();
-							if (join instanceof JoinTable)
-								return true;
-							if (join instanceof Join)
-								return ((Join) join).getToRole() == TableRole.CHILD;
+						AbstractJoin join = ((Joinable) child.node.getPathElement()).getJoin();
+						if ((join instanceof Join && ((Join) join).getToRole() == TableRole.CHILD)
+								|| join instanceof JoinTable) {
+							return true;
 						}
 					}
 

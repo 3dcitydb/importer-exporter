@@ -61,7 +61,6 @@ import org.citydb.query.builder.QueryBuildException;
 import org.citydb.query.builder.sql.SQLQueryContext.BuildContext;
 import org.citydb.query.filter.selection.expression.LiteralType;
 import org.citydb.query.filter.selection.expression.TimestampLiteral;
-import org.citydb.query.filter.selection.operator.logical.LogicalOperatorName;
 import org.citydb.sqlbuilder.expression.AbstractSQLLiteral;
 import org.citydb.sqlbuilder.expression.DoubleLiteral;
 import org.citydb.sqlbuilder.expression.Expression;
@@ -92,7 +91,6 @@ public class SchemaPathBuilder {
 	private final DefaultAliasGenerator aliasGenerator;
 
 	private Map<String, Table> tableContext;
-	private LogicalOperatorName logicalContext;
 	private Table currentTable;
 	private AbstractNode<?> currentNode;
 
@@ -100,21 +98,10 @@ public class SchemaPathBuilder {
 		this.sqlAdapter = sqlAdapter;
 		this.schemaName = schemaName;
 		aliasGenerator = buildProperties.aliasGenerator;
-		logicalContext = LogicalOperatorName.AND;
 	}
 
 	protected AliasGenerator getAliasGenerator() {
 		return aliasGenerator;
-	}
-
-	protected void setLogicalContext(LogicalOperatorName logicalContext) {
-		this.logicalContext = logicalContext;
-	}
-
-	protected LogicalOperatorName getAndSetLogicalContext(LogicalOperatorName logicalContext) {
-		LogicalOperatorName previous = logicalContext;
-		this.logicalContext = logicalContext;
-		return previous;
 	}
 
 	protected SQLQueryContext createQueryContext(FeatureType featureType) {
@@ -147,7 +134,7 @@ public class SchemaPathBuilder {
 
 			BuildContext subContext = currentNode == head ?
 					buildContext :
-					buildContext.findSubContext(currentNode, logicalContext);
+					buildContext.findSubContext(currentNode);
 
 			if (subContext != null) {
 				// restore build context
@@ -157,7 +144,7 @@ public class SchemaPathBuilder {
 				processNode(pathElement, head, select, useLeftJoins);
 
 				// remember build context
-				subContext = buildContext.addSubContext(currentNode, currentTable, tableContext, logicalContext);
+				subContext = buildContext.addSubContext(currentNode, currentTable, tableContext);
 			}
 
 			// translate predicate to where-conditions
