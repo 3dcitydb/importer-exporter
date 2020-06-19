@@ -144,7 +144,7 @@ public class SchemaPathBuilder {
 				processNode(pathElement, head, select, useLeftJoins);
 
 				// remember build context
-				subContext = buildContext.addSubContext(currentNode, currentTable, tableContext, useLeftJoins);
+				subContext = buildContext.addSubContext(currentNode, currentTable, tableContext);
 			}
 
 			// translate predicate to where-conditions

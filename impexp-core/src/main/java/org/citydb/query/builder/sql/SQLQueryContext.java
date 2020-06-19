@@ -190,11 +190,11 @@ public class SQLQueryContext {
 			return children != null && !children.isEmpty();
 		}
 
-		BuildContext addSubContext(AbstractNode<?> node, Table currentTable, Map<String, Table> tableContext, boolean useLeftJoins) {
+		BuildContext addSubContext(AbstractNode<?> node, Table currentTable, Map<String, Table> tableContext) {
 			BuildContext nodeContext = new BuildContext(node, currentTable, tableContext);
 
 			// remember the logical context for 1:n or n:m left joins
-			if (useLeftJoins && node.getPathElement() instanceof Joinable) {
+			if (node.getPathElement() instanceof Joinable) {
 				AbstractJoin join = ((Joinable) node.getPathElement()).getJoin();
 				if ((join instanceof Join && ((Join) join).getToRole() == TableRole.CHILD)
 						|| join instanceof JoinTable) {
