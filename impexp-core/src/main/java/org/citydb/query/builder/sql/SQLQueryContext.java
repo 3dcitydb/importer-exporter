@@ -190,11 +190,11 @@ public class SQLQueryContext {
 			return children != null && !children.isEmpty();
 		}
 
-		BuildContext addSubContext(AbstractNode<?> node, Table currentTable, Map<String, Table> tableContext) {
+		BuildContext addSubContext(AbstractNode<?> node, Table currentTable, Map<String, Table> tableContext, boolean useLeftJoins) {
 			BuildContext nodeContext = new BuildContext(node, currentTable, tableContext);
 
-			// remember the logical context for 1:n or n:m joins
-			if (node.getPathElement() instanceof Joinable) {
+			// remember the logical context for 1:n or n:m left joins
+			if (useLeftJoins && node.getPathElement() instanceof Joinable) {
 				AbstractJoin join = ((Joinable) node.getPathElement()).getJoin();
 				if ((join instanceof Join && ((Join) join).getToRole() == TableRole.CHILD)
 						|| join instanceof JoinTable) {
@@ -220,7 +220,7 @@ public class SQLQueryContext {
 							&& logicalContexts.peek() != LogicalOperatorName.OR))
 						continue;
 
-					if (child.node.isEqualTo(node, false)) {
+					if (child.node.isEqualTo(node, logicalContexts.peek() == LogicalOperatorName.AND)) {
 						// only return the context of a property if the types are also identical
 						// otherwise the schema paths substantially differ
 						if (PathElementType.TYPE_PROPERTIES.contains(node.getPathElement().getElementType())
