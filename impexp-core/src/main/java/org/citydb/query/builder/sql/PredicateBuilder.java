@@ -62,7 +62,7 @@ public class PredicateBuilder {
 	}
 
 	protected void buildPredicate(Predicate predicate, SQLQueryContext queryContext) throws QueryBuildException {
-		buildPredicate(predicate, queryContext, false, requiresLeftJoins(predicate));
+		buildPredicate(predicate, queryContext, false, requiresLeftJoins(predicate, false));
 		if (!queryContext.hasPredicates())
 			throw new QueryBuildException("Failed to build selection predicates.");
 
@@ -96,7 +96,7 @@ public class PredicateBuilder {
 
 	private void buildLogicalOperator(AbstractLogicalOperator operator, SQLQueryContext queryContext, boolean negate, boolean useLeftJoins) throws QueryBuildException {
 		if (operator.getOperatorName() == LogicalOperatorName.NOT) {
-			NotOperator not = (NotOperator)operator;
+			NotOperator not = (NotOperator) operator;
 			buildPredicate(not.getOperand(), queryContext, !negate, useLeftJoins);
 		} else {
 			BinaryLogicalOperator binaryOperator = (BinaryLogicalOperator) operator;
@@ -106,7 +106,11 @@ public class PredicateBuilder {
 			if (binaryOperator.numberOfOperands() == 1) {
 				buildPredicate(binaryOperator.getOperands().get(0), queryContext, negate, useLeftJoins);
 			} else {
-				queryContext.pushLogicalContext(binaryOperator.getOperatorName());
+				LogicalOperatorName operatorName = !negate ?
+						binaryOperator.getOperatorName() :
+						LogicalOperatorName.negate(binaryOperator.getOperatorName());
+
+				queryContext.pushLogicalContext(operatorName);
 
 				List<PredicateToken> predicates = new ArrayList<>();
 				for (Predicate operand : binaryOperator.getOperands()) {
@@ -114,7 +118,7 @@ public class PredicateBuilder {
 					if (!queryContext.hasPredicates())
 						throw new QueryBuildException("Failed to build selection predicates.");
 
-					if (binaryOperator.getOperatorName() == LogicalOperatorName.OR && queryContext.getPredicates().size() > 1)
+					if (operatorName == LogicalOperatorName.OR && queryContext.getPredicates().size() > 1)
 						predicates.add(LogicalOperationFactory.AND(queryContext.getPredicates()));
 					else
 						predicates.addAll(queryContext.getPredicates());
@@ -122,7 +126,7 @@ public class PredicateBuilder {
 					queryContext.unsetPredicates();
 				}
 
-				queryContext.addPredicate(binaryOperator.getOperatorName() == LogicalOperatorName.AND ?
+				queryContext.addPredicate(operatorName == LogicalOperatorName.AND ?
 						LogicalOperationFactory.AND(predicates) :
 						LogicalOperationFactory.OR(predicates));
 
@@ -131,19 +135,26 @@ public class PredicateBuilder {
 		}
 	}
 
-	private boolean requiresLeftJoins(Predicate predicate) {
-		if (predicate instanceof BinaryLogicalOperator) {
-			BinaryLogicalOperator logicalOperator = (BinaryLogicalOperator) predicate;
-			if (logicalOperator.getOperatorName() == LogicalOperatorName.OR)
+	private boolean requiresLeftJoins(Predicate predicate, boolean negate) {
+		if (predicate instanceof NotOperator) {
+			NotOperator not = (NotOperator) predicate;
+			requiresLeftJoins(not.getOperand(), !negate);
+		} else if (predicate instanceof BinaryLogicalOperator) {
+			BinaryLogicalOperator binaryOperator = (BinaryLogicalOperator) predicate;
+
+			LogicalOperatorName operatorName = !negate ?
+					binaryOperator.getOperatorName() :
+					LogicalOperatorName.negate(binaryOperator.getOperatorName());
+
+			if (operatorName == LogicalOperatorName.OR)
 				return true;
 
-			for (Predicate operand : logicalOperator.getOperands()) {
-				if (requiresLeftJoins(operand))
+			for (Predicate operand : binaryOperator.getOperands()) {
+				if (requiresLeftJoins(operand, negate))
 					return true;
 			}
 		}
 
 		return false;
 	}
-
 }

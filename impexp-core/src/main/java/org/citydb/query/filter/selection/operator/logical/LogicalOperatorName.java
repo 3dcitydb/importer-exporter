@@ -44,6 +44,17 @@ public enum LogicalOperatorName implements OperatorName {
 	LogicalOperatorName(String symbol) {
 		this.symbol = symbol;
 	}
+
+	public static LogicalOperatorName negate(LogicalOperatorName operatorName) {
+		switch (operatorName) {
+			case AND:
+				return OR;
+			case OR:
+				return AND;
+		}
+
+		throw new IllegalArgumentException("Illegal to invoke negate on " + operatorName + " operator.");
+	}
 	
 	@Override
 	public String getSymbol() {
