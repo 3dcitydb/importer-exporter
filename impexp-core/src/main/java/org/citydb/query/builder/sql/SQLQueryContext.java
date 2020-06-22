@@ -122,8 +122,17 @@ public class SQLQueryContext {
 		Arrays.stream(predicates).forEach(this::addPredicate);
 	}
 
+	void setPredicate(PredicateToken predicate) {
+		predicates = new ArrayList<>();
+		predicates.add(predicate);
+	}
+
 	List<PredicateToken> getPredicates() {
 		return predicates;
+	}
+
+	void setPredicates(List<PredicateToken> predicates) {
+		this.predicates = predicates;
 	}
 
 	void unsetPredicates() {
