@@ -141,7 +141,7 @@ public class SQLQueryBuilder {
 		}
 
 		// build distinct query if the query involves 1:n or n:m joins
-		if (!buildProperties.isSuppressDistinct() && queryContext.getBuildContext().requiresDistinct())
+		if (!buildProperties.isSuppressDistinct() && queryContext.requiresDistinct())
 			buildDistinctQuery(query, queryContext);
 
 		return queryContext.getSelect();

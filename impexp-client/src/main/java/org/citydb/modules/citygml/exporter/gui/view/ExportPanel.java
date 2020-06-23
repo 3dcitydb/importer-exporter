@@ -91,7 +91,7 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 	private final ReentrantLock mainLock = new ReentrantLock();
 	private final Logger log = Logger.getInstance();
 	private final CityGMLBuilder cityGMLBuilder;
-	private final ViewController viewContoller;
+	private final ViewController viewController;
 	private final DatabaseController databaseController;
 	private final Config config;
 
@@ -112,7 +112,7 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 	private boolean useSimpleFilter;
 
 	public ExportPanel(ViewController viewController, JAXBContext projectContext, Config config) {
-		this.viewContoller = viewController;
+		this.viewController = viewController;
 		this.config = config;
 
 		databaseController = ObjectRegistry.getInstance().getDatabaseController();
@@ -129,7 +129,7 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 		workspaceText.setPromptForeground(Color.LIGHT_GRAY);
 		workspaceText.setFocusBehavior(FocusBehavior.SHOW_PROMPT);
 		datePicker = new DatePicker();
-		filterPanel = new FilterPanel(viewContoller, projectContext, config);
+		filterPanel = new FilterPanel(viewController, projectContext, config);
 		exportButton = new JButton();
 		switchFilterModeButton = new JButton();
 
@@ -279,13 +279,13 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 		lock.lock();
 
 		try {
-			viewContoller.clearConsole();
+			viewController.clearConsole();
 			setSettings();
 
 			int tileAmount = 0;
 
 			if (browseText.getText().trim().isEmpty()) {
-				viewContoller.errorMessage(Language.I18N.getString("export.dialog.error.incompleteData"),
+				viewController.errorMessage(Language.I18N.getString("export.dialog.error.incompleteData"),
 						Language.I18N.getString("export.dialog.error.incompleteData.dataset"));
 				return;
 			}
@@ -300,12 +300,12 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 							&& !selectionFilter.getGmlIdFilter().isSetResourceIds()
 							&& !selectionFilter.getGmlNameFilter().isSetLiteral()
 							&& !selectionFilter.getLineageFilter().isSetLiteral()) {
-						viewContoller.errorMessage(Language.I18N.getString("export.dialog.error.incorrectData"),
+						viewController.errorMessage(Language.I18N.getString("export.dialog.error.incorrectData"),
 								Language.I18N.getString("export.dialog.error.incorrectData.attributes"));
 						return;
 					} else if (selectionFilter.isUseSQLFilter()
 							&& !selectionFilter.getSQLFilter().isSetValue()) {
-						viewContoller.errorMessage(Language.I18N.getString("export.dialog.error.incorrectData"),
+						viewController.errorMessage(Language.I18N.getString("export.dialog.error.incorrectData"),
 								Language.I18N.getString("export.dialog.error.incorrectData.sql"));
 						return;
 					}
@@ -313,7 +313,7 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 
 				// lod filter
 				if (query.isUseLodFilter() && !query.getLodFilter().isSetAnyLod()) {
-					viewContoller.errorMessage(Language.I18N.getString("export.dialog.error.lod"),
+					viewController.errorMessage(Language.I18N.getString("export.dialog.error.lod"),
 							Language.I18N.getString("export.dialog.error.lod.noneSelected"));
 					return;
 				}
@@ -324,7 +324,7 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 					if ((!counterFilter.isSetCount() && !counterFilter.isSetStartIndex())
 							|| (counterFilter.isSetCount() && counterFilter.getCount() < 0)
 							|| (counterFilter.isSetStartIndex() && counterFilter.getStartIndex() < 0)) {
-						viewContoller.errorMessage(Language.I18N.getString("export.dialog.error.incorrectData"),
+						viewController.errorMessage(Language.I18N.getString("export.dialog.error.incorrectData"),
 								Language.I18N.getString("export.dialog.error.incorrectData.counter"));
 						return;
 					}
@@ -341,7 +341,7 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 					Double yMax = bbox.getUpperCorner().getY();
 
 					if (xMin == null || yMin == null || xMax == null || yMax == null) {
-						viewContoller.errorMessage(Language.I18N.getString("export.dialog.error.incorrectData"),
+						viewController.errorMessage(Language.I18N.getString("export.dialog.error.incorrectData"),
 								Language.I18N.getString("common.dialog.error.incorrectData.bbox"));
 						return;
 					}
@@ -352,14 +352,14 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 
 				// feature types
 				if (query.isUseTypeNames() && query.getFeatureTypeFilter().getTypeNames().isEmpty()) {
-					viewContoller.errorMessage(Language.I18N.getString("export.dialog.error.incorrectData"),
+					viewController.errorMessage(Language.I18N.getString("export.dialog.error.incorrectData"),
 							Language.I18N.getString("common.dialog.error.incorrectData.featureClass"));
 					return;
 				}
 			} else {
 				Query query = config.getProject().getExporter().getQuery();
 				if (query.hasLocalProperty("unmarshallingFailed")) {
-					viewContoller.errorMessage(Language.I18N.getString("export.dialog.error.incorrectData"),
+					viewController.errorMessage(Language.I18N.getString("export.dialog.error.incorrectData"),
 							Language.I18N.getString("common.dialog.error.incorrectData.xmlQuery"));
 					return;
 				}
@@ -379,18 +379,18 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 				}
 			}
 
-			viewContoller.setStatusText(Language.I18N.getString("main.status.export.label"));
+			viewController.setStatusText(Language.I18N.getString("main.status.export.label"));
 			log.info("Initializing database export...");
 
 			// initialize event dispatcher
 			final EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
-			final ExportStatusDialog exportDialog = new ExportStatusDialog(viewContoller.getTopFrame(), 
+			final ExportStatusDialog exportDialog = new ExportStatusDialog(viewController.getTopFrame(),
 					Language.I18N.getString("export.dialog.window"),
 					Language.I18N.getString("export.dialog.msg"),
 					tileAmount > 1);
 
 			SwingUtilities.invokeLater(() -> {
-				exportDialog.setLocationRelativeTo(viewContoller.getTopFrame());
+				exportDialog.setLocationRelativeTo(viewController.getTopFrame());
 				exportDialog.setVisible(true);
 			});
 
@@ -443,7 +443,7 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 				log.warn("Database export aborted.");
 			}
 
-			viewContoller.setStatusText(Language.I18N.getString("main.status.ready.label"));
+			viewController.setStatusText(Language.I18N.getString("main.status.ready.label"));
 		} finally {
 			lock.unlock();
 		}
