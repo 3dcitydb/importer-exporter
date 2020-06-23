@@ -36,26 +36,37 @@ import org.citydb.database.schema.mapping.PathElementType;
 import org.citydb.database.schema.mapping.TableRole;
 import org.citydb.database.schema.path.AbstractNode;
 import org.citydb.database.schema.path.FeatureTypeNode;
+import org.citydb.query.filter.selection.operator.logical.LogicalOperatorName;
 import org.citydb.sqlbuilder.schema.Column;
 import org.citydb.sqlbuilder.schema.Table;
 import org.citydb.sqlbuilder.select.PredicateToken;
 import org.citydb.sqlbuilder.select.Select;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class SQLQueryContext {
 	private final FeatureType featureType;
+	private final BuildContext buildContext;
+	private final Deque<LogicalOperatorName> logicalOperators;
+
 	private Table fromTable;
 	private Select select;
 	private Table toTable;
 	private Column targetColumn;
 	private List<PredicateToken> predicates;
 	private Table cityObjectTable;
-	private BuildContext buildContext;
+	private int currentAndContext;
+
+	private enum ReuseMode {
+		NOT_REUSABLE,
+		AND_CONTEXT
+	}
 
 	SQLQueryContext(FeatureType featureType, Table fromTable) {
 		this.featureType = featureType;
@@ -63,6 +74,7 @@ public class SQLQueryContext {
 
 		select = new Select();
 		buildContext = new BuildContext(new FeatureTypeNode(featureType), fromTable, new HashMap<>());
+		logicalOperators = new ArrayDeque<>();
 	}
 
 	FeatureType getFeatureType() {
@@ -116,6 +128,11 @@ public class SQLQueryContext {
 		Arrays.stream(predicates).forEach(this::addPredicate);
 	}
 
+	void setPredicate(PredicateToken predicate) {
+		predicates = new ArrayList<>();
+		predicates.add(predicate);
+	}
+
 	List<PredicateToken> getPredicates() {
 		return predicates;
 	}
@@ -139,8 +156,27 @@ public class SQLQueryContext {
 		this.cityObjectTable = cityObjectTable;
 	}
 
+	boolean requiresDistinct() {
+		return buildContext.requiresDistinct();
+	}
+
 	BuildContext getBuildContext() {
 		return buildContext;
+	}
+
+	void pushLogicalContext(LogicalOperatorName logicalOperator) {
+		logicalOperators.push(logicalOperator);
+		if (logicalOperator == LogicalOperatorName.AND)
+			currentAndContext++;
+	}
+
+	void popLogicalContext() {
+		LogicalOperatorName previous = logicalOperators.pop();
+		if (logicalOperators.peek() == LogicalOperatorName.AND)
+			buildContext.invalidateSubContexts();
+
+		if (previous == LogicalOperatorName.AND)
+			currentAndContext--;
 	}
 
 	class BuildContext {
@@ -148,6 +184,8 @@ public class SQLQueryContext {
 		private final Table currentTable;
 		private final Map<String, Table> tableContext;
 		private List<BuildContext> children;
+		private ReuseMode reuseMode;
+		private int reuseContext;
 
 		BuildContext(AbstractNode<?> node, Table currentTable, Map<String, Table> tableContext) {
 			this.node = node;
@@ -167,28 +205,36 @@ public class SQLQueryContext {
 			return currentTable;
 		}
 
-		boolean hasSubContexts() {
-			return children != null && !children.isEmpty();
-		}
-
 		BuildContext addSubContext(AbstractNode<?> node, Table currentTable, Map<String, Table> tableContext) {
-			BuildContext nodeContext = null;
+			BuildContext nodeContext = new BuildContext(node, currentTable, tableContext);
 
-			if (node != null) {
-				if (children == null)
-					children = new ArrayList<>();
-
-				nodeContext = new BuildContext(node, currentTable, tableContext);
-				children.add(nodeContext);
+			// remember the logical context for 1:n or n:m left joins
+			if (node.getPathElement() instanceof Joinable) {
+				AbstractJoin join = ((Joinable) node.getPathElement()).getJoin();
+				if ((join instanceof Join && ((Join) join).getToRole() == TableRole.CHILD) || join instanceof JoinTable) {
+					nodeContext.reuseContext = currentAndContext;
+					nodeContext.reuseMode = logicalOperators.peek() == LogicalOperatorName.AND ?
+							ReuseMode.NOT_REUSABLE :
+							ReuseMode.AND_CONTEXT;
+				}
 			}
 
+			if (children == null)
+				children = new ArrayList<>();
+
+			children.add(nodeContext);
 			return nodeContext;
 		}
 
 		BuildContext findSubContext(AbstractNode<?> node) {
 			if (children != null && node != null) {
 				for (BuildContext child : children) {
-					if (child.node.isEqualTo(node, false)) {
+					if (child.reuseMode == ReuseMode.NOT_REUSABLE
+							|| (child.reuseMode == ReuseMode.AND_CONTEXT
+							&& child.reuseContext < currentAndContext))
+						continue;
+
+					if (child.node.isEqualTo(node, logicalOperators.peek() == LogicalOperatorName.AND)) {
 						// only return the context of a property if the types are also identical
 						// otherwise the schema paths substantially differ
 						if (PathElementType.TYPE_PROPERTIES.contains(node.getPathElement().getElementType())
@@ -203,17 +249,25 @@ public class SQLQueryContext {
 			return null;
 		}
 
-		boolean requiresDistinct() {
+		void invalidateSubContexts() {
+			if (children != null) {
+				for (BuildContext child : children) {
+					if (child.reuseMode == ReuseMode.AND_CONTEXT && child.reuseContext >= currentAndContext)
+						child.reuseMode = ReuseMode.NOT_REUSABLE;
+
+					child.invalidateSubContexts();
+				}
+			}
+		}
+
+		private boolean requiresDistinct() {
 			if (children != null) {
 				for (BuildContext child : children) {
 					if (child.node.getPathElement() instanceof Joinable) {
-						Joinable joinable = (Joinable) child.node.getPathElement();
-						if (joinable.isSetJoin()) {
-							AbstractJoin join = joinable.getJoin();
-							if (join instanceof JoinTable)
-								return true;
-							if (join instanceof Join)
-								return ((Join) join).getToRole() == TableRole.CHILD;
+						AbstractJoin join = ((Joinable) child.node.getPathElement()).getJoin();
+						if ((join instanceof Join && ((Join) join).getToRole() == TableRole.CHILD)
+								|| join instanceof JoinTable) {
+							return true;
 						}
 					}
 
