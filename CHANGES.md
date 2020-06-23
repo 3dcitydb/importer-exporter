@@ -5,6 +5,7 @@ Change Log
 
 * CityJSON import (already working in `master`). [#88](https://github.com/3dcitydb/importer-exporter/issues/88)
 * CityJSON export. [#89](https://github.com/3dcitydb/importer-exporter/issues/89)
+* Fixed bug in SQL query builder. [#122](https://github.com/3dcitydb/importer-exporter/pull/122)
 
 ### 4.2.3 - 2020-04-06
 
