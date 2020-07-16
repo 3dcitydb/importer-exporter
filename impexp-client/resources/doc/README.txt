@@ -119,10 +119,9 @@ following two options:
 
 a) Recommended:
    Use the start scripts to launch the application. The start scripts
-   are located in the "bin" folder of the installation directory.
-   During setup you can additionally choose to create shortcuts for the
-   start scripts on your desktop and in the start menu of your
-   preferred OS.
+   are located in the installation directory. During setup you can
+   additionally choose to create shortcuts for the start scripts on your
+   desktop and in the start menu of your preferred OS.
 
    Please execute the start script suitable for your platform:
    - @appName@.bat   (Microsoft Windows family)
@@ -143,8 +142,8 @@ a) Recommended:
    and first check whether execution rights are correctly set for the
    start script.
 
-   Change to the "bin" folder and enter the following to make the start
-   script executable for the owner of the file:
+   Change to the installation directory and enter the following to make
+   the start script executable for the owner of the file:
 
        chmod u+x @appName@
 

@@ -154,7 +154,6 @@ task buildInstaller(dependsOn: installDist, group: 'distribution') {
                         pluginsDir: 'plugins',
                         contribsDir: 'contribs',
                         citydbDir: '3dcitydb',
-                        startScriptsDir: 'bin',
                         adeExtensionsDir: 'ade-extensions',
                         templatesDir: 'templates',
                         webMapClientDir: '3d-web-map-client',

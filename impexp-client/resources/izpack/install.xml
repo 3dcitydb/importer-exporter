@@ -102,14 +102,14 @@
         <pack name="core" id="core" required="yes" preselected="yes">
             <description/>
             <fileset dir="@installDir@" targetdir="$INSTALL_PATH"
-                excludes="@pluginsDir@/ @contribsDir@/ @citydbDir@/ @startScriptsDir@/ @samplesDir@/ @webMapClientDir@/" override="true"/>
-            <file src="@installDir@/@startScriptsDir@/3DCityDB-Importer-Exporter.bat" targetdir="$INSTALL_PATH/@startScriptsDir@" os="windows"
+                excludes="@pluginsDir@/ @contribsDir@/ @citydbDir@/ @samplesDir@/ @webMapClientDir@/ 3DCityDB-Importer-Exporter*" override="true"/>
+            <file src="@installDir@/3DCityDB-Importer-Exporter.bat" targetdir="$INSTALL_PATH" os="windows"
                 override="true"/>
-            <file src="@installDir@/@startScriptsDir@/3DCityDB-Importer-Exporter" targetdir="$INSTALL_PATH/@startScriptsDir@" os="unix"
+            <file src="@installDir@/3DCityDB-Importer-Exporter" targetdir="$INSTALL_PATH" os="unix"
                 override="true"/>
-            <file src="images/impexp.ico" targetdir="$INSTALL_PATH/@startScriptsDir@" os="windows" override="true"/>
+            <file src="images/impexp.ico" targetdir="$INSTALL_PATH" os="windows" override="true"/>
             <file src="images/uninstaller.ico" targetdir="$INSTALL_PATH/uninstaller" os="windows" override="true"/>
-            <file src="images/impexp.png" targetdir="$INSTALL_PATH/@startScriptsDir@" os="unix" override="true"/>
+            <file src="images/impexp.png" targetdir="$INSTALL_PATH" os="unix" override="true"/>
             <file src="images/uninstaller.png" targetdir="$INSTALL_PATH/uninstaller" os="unix" override="true"/>
             <fileset dir="@installDir@/@templatesDir@" targetdir="$INSTALL_PATH/@templatesDir@" override="true"/>
             <fileset dir="@installDir@/@contribsDir@/collada2gltf/COLLADA2GLTF-v2.1.3-windows-Release-x64"
@@ -121,7 +121,7 @@
             <!-- the following filesets are just to create empty folders -->
             <fileset dir="@installDir@/@pluginsDir@" targetdir="$INSTALL_PATH/@pluginsDir@" excludes="**/*"/>
             <fileset dir="@installDir@/@adeExtensionsDir@" targetdir="$INSTALL_PATH/@adeExtensionsDir@" excludes="**/*"/>
-            <executable targetfile="$INSTALL_PATH/@startScriptsDir@/3DCityDB-Importer-Exporter" stage="never">
+            <executable targetfile="$INSTALL_PATH/3DCityDB-Importer-Exporter" stage="never">
                 <os family="unix"/>
             </executable>
             <executable targetfile="$INSTALL_PATH/@contribsDir@/collada2gltf/COLLADA2GLTF-v2.1.3-linux/COLLADA2GLTF-bin" condition="!izpack.macinstall"
