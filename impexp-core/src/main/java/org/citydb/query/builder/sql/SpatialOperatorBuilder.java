@@ -54,7 +54,7 @@ import org.citydb.sqlbuilder.select.operator.comparison.ComparisonFactory;
 import org.citydb.sqlbuilder.select.operator.logical.LogicalOperationFactory;
 import org.citygml4j.model.module.gml.GMLCoreModule;
 import org.geotools.measure.Units;
-import org.geotools.resources.CRSUtilities;
+import org.geotools.referencing.util.CRSUtilities;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import si.uom.SI;
