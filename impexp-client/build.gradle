@@ -5,9 +5,6 @@ plugins {
     id 'com.jfrog.bintray' version '1.8.4'
 }
 
-applicationName = project.appName
-mainClassName = 'org.citydb.ImpExp'
-
 configurations {
     izpack
     doc
@@ -70,7 +67,7 @@ javadoc {
 
 jar {
     manifest {
-        attributes('Main-Class': mainClassName,
+        attributes('Main-Class': application.mainClass,
                 'Class-Path': configurations.runtimeClasspath.collect{ it.name }.join(' ')
         )
         into('META-INF') {
@@ -79,20 +76,26 @@ jar {
     }
 }
 
-startScripts {
-    classpath = jar.outputs.files
-    defaultJvmOpts = ['-Xms1G']
+application {
+    mainClass = 'org.citydb.ImpExp'
+    applicationName = project.appName
+    applicationDefaultJvmArgs = ['-Xms1G']
+    executableDir = ''
 
-    doLast {
-        def windowsScript = getWindowsScript()
-        def unixScript = getUnixScript()
-        windowsScript.text = windowsScript.text
-                .replaceFirst('set APP_HOME=.*', '$0\r\nset WORKING_DIR=%CD%')
-                .replaceFirst('"%JAVA_EXE%" %DEFAULT_JVM_OPTS%.*', 'start /min cmd /c "$0"')
-                .replaceAll('3_D_CITY_DB_', '')
-        unixScript.text = unixScript.text
-                .replaceFirst('APP_HOME=.*', '$0\nexport APP_HOME\nexport WORKING_DIR=\\$SAVED')
-                .replaceAll('3_D_CITY_DB_', '')
+    startScripts {
+        classpath = jar.outputs.files
+
+        doLast {
+            def windowsScript = getWindowsScript()
+            def unixScript = getUnixScript()
+            windowsScript.text = windowsScript.text
+                    .replaceFirst('set APP_HOME=.*', '$0\r\nset WORKING_DIR=%CD%')
+                    .replaceFirst('"%JAVA_EXE%" %DEFAULT_JVM_OPTS%.*', 'start /min cmd /c "$0"')
+                    .replaceAll('3_D_CITY_DB_', '')
+            unixScript.text = unixScript.text
+                    .replaceFirst('APP_HOME=.*', '$0\nexport APP_HOME\nexport WORKING_DIR=\\$SAVED')
+                    .replaceAll('3_D_CITY_DB_', '')
+        }
     }
 }
 
