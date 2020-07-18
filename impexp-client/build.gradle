@@ -80,9 +80,9 @@ application {
     mainClass = 'org.citydb.ImpExp'
     applicationName = project.appName
     applicationDefaultJvmArgs = ['-Xms1G']
-    executableDir = ''
 
     startScripts {
+        applicationName = project.impexpCliName
         classpath = jar.outputs.files
 
         doLast {
@@ -90,7 +90,6 @@ application {
             def unixScript = getUnixScript()
             windowsScript.text = windowsScript.text
                     .replaceFirst('set APP_HOME=.*', '$0\r\nset WORKING_DIR=%CD%')
-                    .replaceFirst('"%JAVA_EXE%" %DEFAULT_JVM_OPTS%.*', 'start /min cmd /c "$0"')
                     .replaceAll('3_D_CITY_DB_', '')
             unixScript.text = unixScript.text
                     .replaceFirst('APP_HOME=.*', '$0\nexport APP_HOME\nexport WORKING_DIR=\\$SAVED')
@@ -101,6 +100,15 @@ application {
 
 distributions.main.contents {
     from processReadme
+    from('resources/start') {
+        rename 'start(.*)', project.appName + '$1'
+        fileMode 0755
+        filter(ReplaceTokens, tokens: [
+                name: project.impexpName,
+                cliName: project.impexpCliName,
+                cliDir: application.executableDir
+        ])
+    }
     into('3dcitydb') {
         from "$rootDir/resources/3dcitydb"
     }

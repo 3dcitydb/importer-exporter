@@ -18,6 +18,7 @@ ext {
     // Importer/Exporter
     impexpShortName = 'Importer/Exporter'
     impexpName = citydbName + ' ' + impexpShortName
+    impexpCliName = 'impexp'
     impexpVcsUrl = 'https://github.com/3dcitydb/importer-exporter'
     impexpGit = impexpVcsUrl + '.git'
     impexpIssueTrackerUrl = 'https://github.com/3dcitydb/importer-exporter/issues'

@@ -1,0 +1,27 @@
+#!/usr/bin/env sh
+
+##############################################################################
+##
+##  @name@ start up script for UN*X
+##  This is simply a wrapper, launching the @cliName@ CLI
+##
+##############################################################################
+
+PRG="$0"
+CLI_NAME="@cliName@"
+CLI_DIR="@cliDir@"
+
+# Resolve links: $0 may be a link
+# Need this for relative symlinks.
+while [ -h "$PRG" ] ; do
+    ls=`ls -ld "$PRG"`
+    link=`expr "$ls" : '.*-> \(.*\)$'`
+    if expr "$link" : '/.*' > /dev/null; then
+        PRG="$link"
+    else
+        PRG=`dirname "$PRG"`"/$link"
+    fi
+done
+
+DIRNAME=`dirname "$PRG"`
+/usr/bin/env sh "$DIRNAME"/"$CLI_DIR"/"$CLI_NAME"

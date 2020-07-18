@@ -1,3 +1,7 @@
 # Always convert line endings in shell scripts (.bat and .sh)
 *.bat 		eol=crlf
 *.sh 		eol=lf
+
+# Convert line endings for specific scripts
+gradlew     eol=lf
+start       eol=lf
