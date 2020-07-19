@@ -27,15 +27,15 @@
  */
 package org.citydb.database.adapter;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 import org.citydb.config.project.database.DatabaseType;
 import org.citydb.database.connection.DatabaseConnectionDetails;
 import org.citydb.database.connection.DatabaseConnectionPool;
 import org.citydb.database.connection.DatabaseConnectionWarning;
 import org.citydb.database.connection.DatabaseMetaData;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public abstract class AbstractDatabaseAdapter {
 	protected DatabaseConnectionPool connectionPool;	
