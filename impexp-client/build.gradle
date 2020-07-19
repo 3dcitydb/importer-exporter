@@ -48,6 +48,8 @@ task processReadme(type: Copy) {
                 citydbVersion: project.citydbVersion,
                 jar: jar.archiveFileName.get(),
                 appName: project.appName,
+                cliName: project.impexpCliName,
+                cliDir: application.executableDir,
                 citydbWebsiteUrl: project.citydbWebsiteUrl,
                 citydbVcsUrl: project.citydbVcsUrl,
                 vendorName: project.vendorName,
