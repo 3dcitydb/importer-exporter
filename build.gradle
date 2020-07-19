@@ -3,7 +3,7 @@ import org.apache.tools.ant.filters.ReplaceTokens
 apply from: 'properties.gradle'
 
 subprojects {
-    apply plugin: 'java'
+    apply plugin: 'java-library'
     apply plugin: 'maven-publish'
 
     group 'org.citydb'

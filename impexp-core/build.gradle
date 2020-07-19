@@ -3,23 +3,23 @@ plugins {
 }
 
 dependencies {
-    compile project(':impexp-config')
-    compile project(':impexp-plugin-api')
-    compile 'org.citydb:sqlbuilder:2.2.1'
-    compile 'org.citydb:3dcitydb-ade-citygml4j:1.1.1'
-    compile 'org.citygml4j:citygml4j:2.11.0'
-    compile 'org.geotools:gt-epsg-extension:23.1'
-    compile 'org.geotools:gt-epsg-hsql:23.1'
-    compile 'org.geotools:gt-referencing:23.1'
-    compile 'com.h2database:h2:1.4.200'
-    compile 'org.locationtech.jts:jts-core:1.17.0'
-    compile 'org.postgresql:postgresql:42.2.14'
-    compile 'net.postgis:postgis-jdbc:2.5.0'
-    compile 'org.apache.tomcat:tomcat-jdbc:9.0.36'
-    compile 'org.apache.tomcat:tomcat-juli:9.0.36'
-    compile 'org.apache.tika:tika-core:1.24.1'
-    compile 'org.apache.commons:commons-compress:1.20'
-    compile fileTree(dir: 'lib', include: '*.jar')
+    api project(':impexp-config')
+    api project(':impexp-plugin-api')
+    api 'org.citydb:sqlbuilder:2.2.1'
+    api 'org.citydb:3dcitydb-ade-citygml4j:1.1.1'
+    api 'org.citygml4j:citygml4j:2.11.0'
+    api 'org.geotools:gt-epsg-extension:23.1'
+    api 'org.geotools:gt-epsg-hsql:23.1'
+    api 'org.geotools:gt-referencing:23.1'
+    api 'org.locationtech.jts:jts-core:1.17.0'
+    api 'org.postgresql:postgresql:42.2.14'
+    api 'net.postgis:postgis-jdbc:2.5.0'
+    api 'org.apache.tika:tika-core:1.24.1'
+    api fileTree(dir: 'lib', include: '*.jar')
+    implementation 'com.h2database:h2:1.4.200'
+    implementation 'org.apache.tomcat:tomcat-jdbc:9.0.36'
+    implementation 'org.apache.tomcat:tomcat-juli:9.0.36'
+    implementation 'org.apache.commons:commons-compress:1.20'
 }
 
 javadoc {
