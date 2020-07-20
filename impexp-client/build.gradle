@@ -48,7 +48,7 @@ task processReadme(type: Copy) {
                 citydbVersion: project.citydbVersion,
                 jar: jar.archiveFileName.get(),
                 appName: project.appName,
-                cliName: project.impexpCliName,
+                cliName: project.appCliName,
                 cliDir: application.executableDir,
                 citydbWebsiteUrl: project.citydbWebsiteUrl,
                 citydbVcsUrl: project.citydbVcsUrl,
@@ -84,7 +84,7 @@ application {
     applicationDefaultJvmArgs = ['-Xms1G']
 
     startScripts {
-        applicationName = project.impexpCliName
+        applicationName = project.appCliName
         classpath = jar.outputs.files
 
         doLast {
@@ -107,7 +107,7 @@ distributions.main.contents {
         fileMode 0755
         filter(ReplaceTokens, tokens: [
                 name: project.impexpName,
-                cliName: project.impexpCliName,
+                cliName: project.appCliName,
                 cliDir: application.executableDir
         ])
     }
@@ -158,7 +158,7 @@ task buildInstaller(dependsOn: installDist, group: 'distribution') {
                         appSubPath: '3DCityDB-Importer-Exporter',
                         appShortcut: project.appShortcutName,
                         startScriptName: project.appName,
-                        cliName: project.impexpCliName,
+                        cliName: project.appCliName,
                         url: project.citydbWebsiteUrl,
                         citydbName: project.citydbName,
                         citydbVersion: project.citydbVersion,
