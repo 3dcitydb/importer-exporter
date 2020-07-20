@@ -196,8 +196,6 @@ public abstract class KmlGenericObject {
 	private final ImageReader imageReader;
 
 	protected String implicitId;
-	// to save unique implicit IDs -> avoid redundant export of implicit objects
-	private static HashSet<String> implicitIds = new HashSet<>();
 
 	protected KmlGenericObject(Connection connection,
 			Query query,
@@ -311,14 +309,6 @@ public abstract class KmlGenericObject {
 
 	protected void setIgnoreSurfaceOrientation(boolean ignoreSurfaceOrientation) {
 		this.ignoreSurfaceOrientation = ignoreSurfaceOrientation;
-	}
-
-	public static HashSet<String> getImplicitIds() {
-		return implicitIds;
-	}
-
-	public static void setImplicitIds(HashSet<String> implicitIds) {
-		KmlGenericObject.implicitIds = implicitIds;
 	}
 
 	protected boolean isIgnoreSurfaceOrientation() {

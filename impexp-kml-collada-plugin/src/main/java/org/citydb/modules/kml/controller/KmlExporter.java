@@ -176,9 +176,6 @@ public class KmlExporter implements EventHandler {
 	}
 
 	public boolean doProcess() throws KmlExportException {
-		// reset set of implicit ids for each export
-		KmlGenericObject.setImplicitIds(new HashSet<>());
-
 		// adding listener
 		eventDispatcher.addEventHandler(EventType.OBJECT_COUNTER, this);
 		eventDispatcher.addEventHandler(EventType.GEOMETRY_COUNTER, this);
