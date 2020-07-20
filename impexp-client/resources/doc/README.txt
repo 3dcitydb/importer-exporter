@@ -104,7 +104,7 @@ installation process. Afterwards, you can immediately run the application
 (see next section).
 
 When you successfully install the @name@,
-an uninstaller is automatically generated in the 'uninstaller' subfolder
+an uninstaller is automatically generated in the "uninstaller" subfolder
 of the installation directory. Please use this uninstaller in order to remove
 the @name@ application files from your
 computer. Alternatively, you can simply delete the entire installation
@@ -117,25 +117,17 @@ directory.
 For running the @name@ use one of the
 following two options:
 
-a) Recommended:
-   Use the start scripts to launch the application. The start scripts
-   are located in the installation directory. During setup you can
-   additionally choose to create shortcuts for the start scripts on your
-   desktop and in the start menu of your preferred OS.
+a) Use the start scripts to launch the application with a graphical user
+   interface. The start scripts are located in the installation directory.
+   During setup you can additionally choose to create shortcuts for the
+   start scripts on your desktop and in the start menu of your preferred OS.
 
    Please execute the start script suitable for your platform:
    - @appName@.bat   (Microsoft Windows family)
    - @appName@       (UNIX/Linux family, macOS)
 
-   On most platforms, double-clicking the start script or its shortcut
+   On many platforms, double-clicking the start script or its shortcut
    runs the @name@.
-
-   PLEASE NOTE:
-   The start scripts set the initial heap size of the Java Virtual
-   Machine (JVM) to 1GB using the -Xms parameter of the JVM. This value
-   has been chosen to be reasonable for most platforms. Please edit the
-   start scripts in case you need to adapt the default values (e.g.,
-   in order to increase the available main memory).
 
    For some UNIX/Linux distributions, you will have to run the start
    script from within a shell environment. Please open your favorite shell
@@ -151,27 +143,37 @@ a) Recommended:
 
        ./@appName@
 
-b) Alternatively, you can directly run the @jar@
-   from within a shell environment without using the start scripts. The
-   runnable JAR archive is located in the "lib" subfolder of the
-   installation directory.
+b) The @name@ also offers a
+   Command Line Interface (CLI). The CLI can be used to run single operations
+   like a CityGML import or export and allows for easily embedding the tool
+   in batch processing workflows and third party applications.
 
-   Open a shell, change to the installation directory and type the following:
+   The CLI scripts are located in the "@cliDir@" subfolder of the installation
+   directory. Open a shell, change to the "@cliDir@" folder and use the CLI
+   script suitable for your platform:
+   - @cliName@.bat   (Microsoft Windows family)
+   - @cliName@       (UNIX/Linux family, macOS)
 
-       java -jar lib/@jar@ [-options]
+   To show the help message and all available options, simply type the
+   following command:
 
-   Make sure to define reasonable values for the available main memory.
-   Otherwise you might quickly run into main memory issues due
-   to restrictive JVM default values.
+       @cliName@ -help
 
-   This is also the recommended way to run the program in CLI mode without
-   a graphical user interface. Simply add the "-shell" program argument to
-   the above shell command:
+   To run an operation without a graphical user interface, use the -shell
+   option and the option for the operation. For example, type the following
+   command to import a CityGML file:
 
-       java -jar lib/@jar@ -shell [-options]
+       @cliName@ -shell -import [-options] /path/to/CityGML.gml
 
-   Type "java -jar lib/@jar@ -help" to get a list of
-   the available program arguments.
+   To launch the graphical user interface, simply run the CLI script without
+   additional options.
+
+   PLEASE NOTE:
+   The CLI scripts set the initial heap size of the Java Virtual Machine (JVM)
+   to 1GB using the -Xms parameter of the JVM. This value has been chosen to
+   be reasonable for most platforms. Please edit the CLI scripts in case you
+   need to adapt the default values (e.g., in order to increase the available
+   main memory).
 
 
 7. Documentation
