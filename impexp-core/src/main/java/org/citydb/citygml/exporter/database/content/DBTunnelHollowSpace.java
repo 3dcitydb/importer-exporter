@@ -106,6 +106,7 @@ public class DBTunnelHollowSpace extends AbstractFeatureExporter<HollowSpace> {
 		thematicSurfaceExporter = exporter.getExporter(DBTunnelThematicSurface.class);
 		tunnelFurnitureExporter = exporter.getExporter(DBTunnelFurniture.class);
 		geometryExporter = exporter.getExporter(DBSurfaceGeometry.class);
+		valueSplitter = exporter.getAttributeValueSplitter();
 	}
 
 	protected Collection<HollowSpace> doExport(AbstractTunnel parent, long parentId) throws CityGMLExportException, SQLException {
