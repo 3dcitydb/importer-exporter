@@ -96,6 +96,7 @@ public class DBTunnelFurniture extends AbstractFeatureExporter<TunnelFurniture> 
 
 		cityObjectExporter = exporter.getExporter(DBCityObject.class);
 		geometryExporter = exporter.getExporter(DBSurfaceGeometry.class);
+		implicitGeometryExporter = exporter.getExporter(DBImplicitGeometry.class);
 		gmlConverter = exporter.getGMLConverter();
 		valueSplitter = exporter.getAttributeValueSplitter();
 	}
