@@ -108,6 +108,7 @@ public class DBBridgeInstallation extends AbstractFeatureExporter<AbstractCityOb
 		cityObjectReader = exporter.getExporter(DBCityObject.class);
 		thematicSurfaceExporter = exporter.getExporter(DBBridgeThematicSurface.class);
 		geometryExporter = exporter.getExporter(DBSurfaceGeometry.class);
+		implicitGeometryExporter = exporter.getExporter(DBImplicitGeometry.class);
 		gmlConverter = exporter.getGMLConverter();			
 		valueSplitter = exporter.getAttributeValueSplitter();		
 	}
