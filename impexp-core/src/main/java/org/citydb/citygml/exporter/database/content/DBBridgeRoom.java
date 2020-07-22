@@ -27,15 +27,6 @@
  */
 package org.citydb.citygml.exporter.database.content;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-
 import org.citydb.citygml.exporter.CityGMLExportException;
 import org.citydb.citygml.exporter.util.AttributeValueSplitter;
 import org.citydb.citygml.exporter.util.AttributeValueSplitter.SplitValue;
@@ -44,6 +35,8 @@ import org.citydb.database.schema.mapping.FeatureType;
 import org.citydb.query.filter.lod.LodFilter;
 import org.citydb.query.filter.projection.CombinedProjectionFilter;
 import org.citydb.query.filter.projection.ProjectionFilter;
+import org.citydb.sqlbuilder.schema.Table;
+import org.citydb.sqlbuilder.select.Select;
 import org.citygml4j.model.citygml.bridge.AbstractBoundarySurface;
 import org.citygml4j.model.citygml.bridge.AbstractBridge;
 import org.citygml4j.model.citygml.bridge.BoundarySurfaceProperty;
@@ -61,20 +54,26 @@ import org.citygml4j.model.gml.geometry.primitives.AbstractSolid;
 import org.citygml4j.model.gml.geometry.primitives.SolidProperty;
 import org.citygml4j.model.module.citygml.CityGMLModuleType;
 
-import org.citydb.sqlbuilder.schema.Table;
-import org.citydb.sqlbuilder.select.Select;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
 public class DBBridgeRoom extends AbstractFeatureExporter<BridgeRoom> {
-	private DBSurfaceGeometry geometryExporter;
-	private DBCityObject cityObjectExporter;
-	private DBBridgeInstallation bridgeInstallationExporter;
-	private DBBridgeThematicSurface thematicSurfaceExporter;
-	private DBBridgeFurniture bridgeFurnitureExporter;
+	private final DBSurfaceGeometry geometryExporter;
+	private final DBCityObject cityObjectExporter;
+	private final DBBridgeInstallation bridgeInstallationExporter;
+	private final DBBridgeThematicSurface thematicSurfaceExporter;
+	private final DBBridgeFurniture bridgeFurnitureExporter;
 
-	private String bridgeModule;
-	private LodFilter lodFilter;
-	private AttributeValueSplitter valueSplitter;
-	private boolean hasObjectClassIdColumn;
+	private final String bridgeModule;
+	private final LodFilter lodFilter;
+	private final AttributeValueSplitter valueSplitter;
+	private final boolean hasObjectClassIdColumn;
 	private Set<String> adeHookTables;
 
 	public DBBridgeRoom(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
@@ -122,8 +121,8 @@ public class DBBridgeRoom extends AbstractFeatureExporter<BridgeRoom> {
 
 			while (rs.next()) {
 				long bridgeRoomId = rs.getLong("id");
-				BridgeRoom bridgeRoom = null;
-				FeatureType featureType = null;
+				BridgeRoom bridgeRoom;
+				FeatureType featureType;
 				
 				if (bridgeRoomId == id && root != null) {
 					bridgeRoom = root;

@@ -27,20 +27,19 @@
  */
 package org.citydb.citygml.exporter.database.content;
 
+import org.citydb.citygml.exporter.CityGMLExportException;
+import org.citydb.config.Config;
+import org.citydb.query.Query;
+import org.citydb.sqlbuilder.expression.PlaceHolder;
+import org.citygml4j.model.citygml.appearance.Appearance;
+import org.citygml4j.model.citygml.appearance.AppearanceProperty;
+import org.citygml4j.model.citygml.core.AbstractCityObject;
+
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
-
-import org.citydb.citygml.exporter.CityGMLExportException;
-import org.citydb.config.Config;
-import org.citydb.query.Query;
-import org.citygml4j.model.citygml.appearance.Appearance;
-import org.citygml4j.model.citygml.appearance.AppearanceProperty;
-import org.citygml4j.model.citygml.core.AbstractCityObject;
-
-import org.citydb.sqlbuilder.expression.PlaceHolder;
 
 public class DBLocalAppearance extends AbstractAppearanceExporter {
 
@@ -48,7 +47,7 @@ public class DBLocalAppearance extends AbstractAppearanceExporter {
 		super(false, connection, query, null, exporter, config);
 	}
 
-	public void read(AbstractCityObject cityObject, long cityObjectId, boolean isTopLevelObject, boolean lazyExport) throws CityGMLExportException, SQLException {
+	public void doExport(AbstractCityObject cityObject, long cityObjectId, boolean isTopLevelObject, boolean lazyExport) throws CityGMLExportException, SQLException {
 		// clear texture image cache
 		if (isTopLevelObject)
 			clearTextureImageCache();

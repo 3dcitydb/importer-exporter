@@ -83,26 +83,26 @@ public class DBCityObject implements DBExporter {
 	private final Query query;
 	private final CityGMLExportManager exporter;
 
-	private PreparedStatement ps;
-	private DBLocalAppearance appearanceExporter;
-	private DBGeneralization generalizesToExporter;
-	private DBCityObjectGenericAttrib genericAttributeExporter;
+	private final PreparedStatement ps;
+	private final DBGeneralization generalizesToExporter;
+	private final DBCityObjectGenericAttrib genericAttributeExporter;
 
-	private String gmlSrsName;
-	private boolean exportAppearance;
-	private boolean useTiling;
+	private final String gmlSrsName;
+	private final boolean exportAppearance;
+	private final boolean useTiling;
+	private final boolean exportCityDBMetadata;
+	private final AttributeValueSplitter valueSplitter;
+	private final HashSet<Long> generalizesTos;
+	private final HashSet<Long> externalReferences;
+	private final String coreModule;
+	private final String appearanceModule;
+	private final String gmlModule;
+
+	private DBLocalAppearance appearanceExporter;
 	private boolean setTileInfoAsGenericAttribute;
 	private Tile activeTile;
 	private SimpleTilingOptions tilingOptions;
 
-	private boolean exportCityDBMetadata;
-	private AttributeValueSplitter valueSplitter;
-
-	private HashSet<Long> generalizesTos;
-	private HashSet<Long> externalReferences;
-	private String coreModule;
-	private String appearanceModule;
-	private String gmlModule;
 	private String cityDBADEModule;
 
 	public DBCityObject(Connection connection, Query query, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
@@ -352,23 +352,22 @@ public class DBCityObject implements DBExporter {
 
 						switch (tilingOptions.getGenericAttributeValue()) {
 						case XMIN_YMIN:
-							value = String.valueOf(minX) + ' ' + String.valueOf(minY);
+							value = String.valueOf(minX) + ' ' + minY;
 							break;
 						case XMAX_YMIN:
-							value = String.valueOf(maxX) + ' ' + String.valueOf(minY);
+							value = String.valueOf(maxX) + ' ' + minY;
 							break;
 						case XMIN_YMAX:
-							value = String.valueOf(minX) + ' ' + String.valueOf(maxY);
+							value = String.valueOf(minX) + ' ' + maxY;
 							break;
 						case XMAX_YMAX:
-							value = String.valueOf(maxX) + ' ' + String.valueOf(maxY);
+							value = String.valueOf(maxX) + ' ' + maxY;
 							break;
 						case XMIN_YMIN_XMAX_YMAX:
-							value = String.valueOf(minX) + ' ' + String.valueOf(minY) + ' ' +
-									String.valueOf(maxX) + ' ' + String.valueOf(maxY);
+							value = String.valueOf(minX) + ' ' + minY + ' ' + maxX + ' ' + maxY;
 							break;
 						default:
-							value = String.valueOf(activeTile.getX()) + ' ' + String.valueOf(activeTile.getY());
+							value = String.valueOf(activeTile.getX()) + ' ' + activeTile.getY();
 						} 
 
 						StringAttribute genericStringAttrib = new StringAttribute();
@@ -380,7 +379,7 @@ public class DBCityObject implements DBExporter {
 					// export appearance information associated with the city object
 					if (exportAppearance && projectionFilter.containsProperty("appearance", appearanceModule)) {
 						boolean lazyExport = !exporter.getLodFilter().preservesGeometry();
-						appearanceExporter.read(((AbstractCityObject)object), objectId, isTopLevel, lazyExport);
+						appearanceExporter.doExport(((AbstractCityObject)object), objectId, isTopLevel, lazyExport);
 					}
 				}
 			}

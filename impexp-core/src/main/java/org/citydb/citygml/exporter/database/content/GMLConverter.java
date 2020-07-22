@@ -27,9 +27,6 @@
  */
 package org.citydb.citygml.exporter.database.content;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.config.geometry.GeometryType;
 import org.citygml4j.model.gml.geometry.AbstractGeometry;
@@ -57,6 +54,9 @@ import org.citygml4j.model.gml.geometry.primitives.PointProperty;
 import org.citygml4j.model.gml.geometry.primitives.Polygon;
 import org.citygml4j.model.gml.geometry.primitives.PolygonProperty;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class GMLConverter {
 	private final String srsName;
 
@@ -76,7 +76,7 @@ public class GMLConverter {
 			int dimension = geomObj.getDimension();
 			double[] coordinates = geomObj.getCoordinates(0);
 
-			List<Double> value = new ArrayList<Double>(dimension);
+			List<Double> value = new ArrayList<>(dimension);
 			for (int i = 0; i < dimension; i++)
 				value.add(coordinates[i]);
 
@@ -125,7 +125,7 @@ public class GMLConverter {
 					Point point = new Point();
 					double[] coordiantes = geomObj.getCoordinates(i);
 
-					List<Double> value = new ArrayList<Double>(dimension);
+					List<Double> value = new ArrayList<>(dimension);
 					for (int j = 0; j < dimension; j++)
 						value.add(coordiantes[j]);
 
@@ -302,7 +302,7 @@ public class GMLConverter {
 
 		if (geomObj != null) {
 			if (geomObj.getGeometryType() == GeometryType.MULTI_LINE_STRING) {
-				arrayPropertyList = new ArrayList<LineStringSegmentArrayProperty>();
+				arrayPropertyList = new ArrayList<>();
 				MultiCurve multiCurve = getMultiCurve(geomObj, setSrsName);
 				
 				if (multiCurve != null) {
@@ -315,7 +315,7 @@ public class GMLConverter {
 			}
 
 			else if (geomObj.getGeometryType() == GeometryType.LINE_STRING) {
-				arrayPropertyList = new ArrayList<LineStringSegmentArrayProperty>();
+				arrayPropertyList = new ArrayList<>();
 				LineString lineString = getLineString(geomObj, setSrsName);
 				
 				if (lineString != null) {
@@ -343,7 +343,7 @@ public class GMLConverter {
 				
 				if (multiCurve != null) {
 					for (CurveProperty curveProperty : multiCurve.getCurveMember())
-						complex.addElement(new GeometricPrimitiveProperty((LineString)curveProperty.getCurve()));
+						complex.addElement(new GeometricPrimitiveProperty(curveProperty.getCurve()));
 				}
 			}
 
@@ -425,7 +425,7 @@ public class GMLConverter {
 
 		AbstractGeometry geometry = getPointOrCurveGeometry(geomObj, setSrsName);
 		if (geometry != null) {
-			geometryProperty = new GeometryProperty<AbstractGeometry>();
+			geometryProperty = new GeometryProperty<>();
 			geometryProperty.setGeometry(geometry);
 		}
 

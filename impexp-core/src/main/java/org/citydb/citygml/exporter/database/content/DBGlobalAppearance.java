@@ -27,15 +27,15 @@
  */
 package org.citydb.citygml.exporter.database.content;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-
 import org.citydb.citygml.common.database.cache.CacheTable;
 import org.citydb.citygml.exporter.CityGMLExportException;
 import org.citydb.config.Config;
 import org.citydb.query.Query;
 import org.citygml4j.model.citygml.appearance.Appearance;
+
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 public class DBGlobalAppearance extends AbstractAppearanceExporter {
 

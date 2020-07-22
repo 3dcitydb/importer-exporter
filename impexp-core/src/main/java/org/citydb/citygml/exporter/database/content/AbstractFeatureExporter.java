@@ -27,14 +27,6 @@
  */
 package org.citydb.citygml.exporter.database.content;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
-
 import org.citydb.citygml.exporter.CityGMLExportException;
 import org.citydb.database.schema.mapping.AbstractJoin;
 import org.citydb.database.schema.mapping.AbstractObjectType;
@@ -44,8 +36,6 @@ import org.citydb.database.schema.mapping.FeatureType;
 import org.citydb.database.schema.mapping.Join;
 import org.citydb.database.schema.mapping.JoinTable;
 import org.citydb.database.schema.mapping.MappingConstants;
-import org.citygml4j.model.gml.feature.AbstractFeature;
-
 import org.citydb.sqlbuilder.expression.IntegerLiteral;
 import org.citydb.sqlbuilder.expression.LiteralList;
 import org.citydb.sqlbuilder.expression.PlaceHolder;
@@ -55,6 +45,15 @@ import org.citydb.sqlbuilder.select.Select;
 import org.citydb.sqlbuilder.select.join.JoinFactory;
 import org.citydb.sqlbuilder.select.operator.comparison.ComparisonFactory;
 import org.citydb.sqlbuilder.select.operator.comparison.ComparisonName;
+import org.citygml4j.model.gml.feature.AbstractFeature;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 public abstract class AbstractFeatureExporter<T extends AbstractFeature> extends AbstractTypeExporter {
 	private final Class<T> featureClass;
@@ -103,7 +102,7 @@ public abstract class AbstractFeatureExporter<T extends AbstractFeature> extends
 	}
 	
 	protected PreparedStatement getOrCreateStatement(String columnName, Class<? extends AbstractFeature> filterClass) throws SQLException {
-		String key = new StringBuilder(columnName).append(filterClass.getClass().getName()).toString();		
+		String key = columnName + filterClass.getName();
 		PreparedStatement ps = statements.get(key);
 		if (ps == null) {
 			Select select = new Select(this.select)
@@ -169,7 +168,7 @@ public abstract class AbstractFeatureExporter<T extends AbstractFeature> extends
 		if (objectClassIds.size() == 1)
 			return ComparisonFactory.equalTo(table.getColumn("objectclass_id"), new IntegerLiteral(objectClassIds.iterator().next()));
 		else
-			return ComparisonFactory.in(table.getColumn("objectclass_id"), new LiteralList(objectClassIds.toArray(new Integer[objectClassIds.size()])));
+			return ComparisonFactory.in(table.getColumn("objectclass_id"), new LiteralList(objectClassIds.toArray(new Integer[0])));
 	}
 
 	@Override

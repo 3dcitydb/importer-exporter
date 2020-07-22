@@ -69,23 +69,22 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
 public class DBTunnel extends AbstractFeatureExporter<AbstractTunnel> {
-	private DBSurfaceGeometry geometryExporter;
-	private DBCityObject cityObjectExporter;
-	private DBTunnelThematicSurface thematicSurfaceExporter;
-	private DBTunnelInstallation tunnelInstallationExporter;
-	private DBTunnelHollowSpace hollowSpaceExporter;
-	private GMLConverter gmlConverter;
+	private final DBSurfaceGeometry geometryExporter;
+	private final DBCityObject cityObjectExporter;
+	private final DBTunnelThematicSurface thematicSurfaceExporter;
+	private final DBTunnelInstallation tunnelInstallationExporter;
+	private final DBTunnelHollowSpace hollowSpaceExporter;
+	private final GMLConverter gmlConverter;
 
-	private String tunnelModule;
-	private LodFilter lodFilter;
-	private AttributeValueSplitter valueSplitter;
-	private boolean hasObjectClassIdColumn;
+	private final String tunnelModule;
+	private final LodFilter lodFilter;
+	private final AttributeValueSplitter valueSplitter;
+	private final boolean hasObjectClassIdColumn;
 	private Set<String> adeHookTables;
 
 	public DBTunnel(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
@@ -153,8 +152,8 @@ public class DBTunnel extends AbstractFeatureExporter<AbstractTunnel> {
 
 			while (rs.next()) {
 				long tunnelId = rs.getLong("id");
-				AbstractTunnel tunnel = null;
-				FeatureType featureType = null;
+				AbstractTunnel tunnel;
+				FeatureType featureType;
 
 				if (tunnelId == id && root != null) {
 					tunnel = root;
@@ -250,10 +249,10 @@ public class DBTunnel extends AbstractFeatureExporter<AbstractTunnel> {
 				while (lodIterator.hasNext()) {
 					int lod = lodIterator.next();
 
-					if (!projectionFilter.containsProperty(new StringBuilder("lod").append(lod).append("TerrainIntersection").toString(), tunnelModule))
+					if (!projectionFilter.containsProperty("lod" + lod + "TerrainIntersection", tunnelModule))
 						continue;
 
-					Object terrainIntersectionObj = rs.getObject(new StringBuilder("lod").append(lod).append("_terrain_intersection").toString());
+					Object terrainIntersectionObj = rs.getObject("lod" + lod + "_terrain_intersection");
 					if (rs.wasNull())
 						continue;
 
@@ -284,10 +283,10 @@ public class DBTunnel extends AbstractFeatureExporter<AbstractTunnel> {
 				while (lodIterator.hasNext()) {
 					int lod = lodIterator.next();
 
-					if (!projectionFilter.containsProperty(new StringBuilder("lod").append(lod).append("MultiCurve").toString(), tunnelModule))
+					if (!projectionFilter.containsProperty("lod" + lod + "MultiCurve", tunnelModule))
 						continue;
 
-					Object multiCurveObj = rs.getObject(new StringBuilder("lod").append(lod).append("_multi_curve").toString());
+					Object multiCurveObj = rs.getObject("lod" + lod + "_multi_curve");
 					if (rs.wasNull())
 						continue;
 
@@ -315,10 +314,10 @@ public class DBTunnel extends AbstractFeatureExporter<AbstractTunnel> {
 				while (lodIterator.hasNext()) {
 					int lod = lodIterator.next();
 
-					if (!projectionFilter.containsProperty(new StringBuilder("lod").append(lod).append("Solid").toString(), tunnelModule))
+					if (!projectionFilter.containsProperty("lod" + lod + "Solid", tunnelModule))
 						continue;
 
-					long surfaceGeometryId = rs.getLong(new StringBuilder("lod").append(lod).append("_solid_id").toString());
+					long surfaceGeometryId = rs.getLong("lod" + lod + "_solid_id");
 					if (rs.wasNull())
 						continue;
 
@@ -352,10 +351,10 @@ public class DBTunnel extends AbstractFeatureExporter<AbstractTunnel> {
 				while (lodIterator.hasNext()) {
 					int lod = lodIterator.next();
 
-					if (!projectionFilter.containsProperty(new StringBuilder("lod").append(lod).append("MultiSurface").toString(), tunnelModule))
+					if (!projectionFilter.containsProperty("lod" + lod + "MultiSurface", tunnelModule))
 						continue;
 
-					long surfaceGeometryId = rs.getLong(new StringBuilder("lod").append(lod).append("_multi_surface_id").toString());
+					long surfaceGeometryId = rs.getLong("lod" + lod + "_multi_surface_id");
 					if (rs.wasNull())
 						continue;
 
@@ -423,12 +422,8 @@ public class DBTunnel extends AbstractFeatureExporter<AbstractTunnel> {
 
 			// check whether lod filter is satisfied
 			if (!lodFilter.preservesGeometry()) {
-				for (AbstractTunnel tmp : result) {
-					for (Iterator<TunnelPartProperty> iter = tmp.getConsistsOfTunnelPart().iterator(); iter.hasNext(); ) {
-						if (!exporter.satisfiesLodFilter(iter.next().getTunnelPart()))
-							iter.remove();
-					}
-				}
+				for (AbstractTunnel tmp : result)
+					tmp.getConsistsOfTunnelPart().removeIf(tunnelPartProperty -> !exporter.satisfiesLodFilter(tunnelPartProperty.getTunnelPart()));
 			}
 
 			return result;

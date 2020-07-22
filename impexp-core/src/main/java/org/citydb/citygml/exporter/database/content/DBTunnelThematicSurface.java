@@ -65,13 +65,13 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 public class DBTunnelThematicSurface extends AbstractFeatureExporter<AbstractBoundarySurface> {
-	private DBSurfaceGeometry geometryExporter;
-	private DBCityObject cityObjectExporter;
-	private DBImplicitGeometry implicitGeometryExporter;
+	private final DBSurfaceGeometry geometryExporter;
+	private final DBCityObject cityObjectExporter;
+	private final DBImplicitGeometry implicitGeometryExporter;
 
-	private String tunnelModule;
-	private LodFilter lodFilter;
-	private boolean useXLink;
+	private final String tunnelModule;
+	private final LodFilter lodFilter;
+	private final boolean useXLink;
 	private Set<String> surfaceADEHookTables;
 	private Set<String> openingADEHookTables;
 
@@ -152,7 +152,7 @@ public class DBTunnelThematicSurface extends AbstractFeatureExporter<AbstractBou
 
 					boundarySurface = boundarySurfaces.get(boundarySurfaceId);
 					if (boundarySurface == null) {
-						FeatureType featureType = null;
+						FeatureType featureType;
 						if (boundarySurfaceId == id && root != null) {
 							boundarySurface = root;
 							featureType = rootType;						
@@ -180,10 +180,10 @@ public class DBTunnelThematicSurface extends AbstractFeatureExporter<AbstractBou
 						while (lodIterator.hasNext()) {
 							int lod = lodIterator.next();
 
-							if (!boundarySurfaceProjectionFilter.containsProperty(new StringBuilder("lod").append(lod).append("MultiSurface").toString(), tunnelModule))
+							if (!boundarySurfaceProjectionFilter.containsProperty("lod" + lod + "MultiSurface", tunnelModule))
 								continue;
 
-							long lodMultiSurfaceId = rs.getLong(new StringBuilder("lod").append(lod).append("_multi_surface_id").toString());
+							long lodMultiSurfaceId = rs.getLong("lod" + lod + "_multi_surface_id");
 							if (rs.wasNull())
 								continue;
 
@@ -263,10 +263,10 @@ public class DBTunnelThematicSurface extends AbstractFeatureExporter<AbstractBou
 				while (lodIterator.hasNext()) {
 					int lod = lodIterator.next();
 
-					if (!openingProjectionFilter.containsProperty(new StringBuilder("lod").append(lod).append("MultiSurface").toString(), tunnelModule))
+					if (!openingProjectionFilter.containsProperty("lod" + lod + "MultiSurface", tunnelModule))
 						continue;
 
-					long lodMultiSurfaceId = rs.getLong(new StringBuilder("oplod").append(lod).append("_multi_surface_id").toString());
+					long lodMultiSurfaceId = rs.getLong("oplod" + lod + "_multi_surface_id");
 					if (rs.wasNull()) 
 						continue;
 
@@ -293,20 +293,20 @@ public class DBTunnelThematicSurface extends AbstractFeatureExporter<AbstractBou
 				while (lodIterator.hasNext()) {
 					int lod = lodIterator.next();
 
-					if (!openingProjectionFilter.containsProperty(new StringBuilder("lod").append(lod).append("ImplicitRepresentation").toString(), tunnelModule))
+					if (!openingProjectionFilter.containsProperty("lod" + lod + "ImplicitRepresentation", tunnelModule))
 						continue;
 
 					// get implicit geometry details
-					long implicitGeometryId = rs.getLong(new StringBuilder("lod").append(lod).append("_implicit_rep_id").toString());
+					long implicitGeometryId = rs.getLong("lod" + lod + "_implicit_rep_id");
 					if (rs.wasNull())
 						continue;
 
 					GeometryObject referencePoint = null;
-					Object referencePointObj = rs.getObject(new StringBuilder("lod").append(lod).append("_implicit_ref_point").toString());
+					Object referencePointObj = rs.getObject("lod" + lod + "_implicit_ref_point");
 					if (!rs.wasNull())
 						referencePoint = exporter.getDatabaseAdapter().getGeometryConverter().getPoint(referencePointObj);
 
-					String transformationMatrix = rs.getString(new StringBuilder("lod").append(lod).append("_implicit_transformation").toString());
+					String transformationMatrix = rs.getString("lod" + lod + "_implicit_transformation");
 
 					ImplicitGeometry implicit = implicitGeometryExporter.doExport(implicitGeometryId, referencePoint, transformationMatrix);
 					if (implicit != null) {

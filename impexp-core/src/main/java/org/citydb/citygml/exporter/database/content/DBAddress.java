@@ -92,7 +92,7 @@ public class DBAddress extends AbstractFeatureExporter<Address> {
 				else
 					address = new Address();
 				
-				AddressProperty addressProperty = doExport(addressId, address, rs, false);
+				AddressProperty addressProperty = doExport(address, rs);
 				if (addressProperty != null) {					
 					// delegate export of generic ADE properties
 					if (adeHookTables != null) {
@@ -111,11 +111,11 @@ public class DBAddress extends AbstractFeatureExporter<Address> {
 		}
 	}
 
-	protected AddressProperty doExport(long addressId, ResultSet rs) throws CityGMLExportException, SQLException {
-		return doExport(addressId, null, rs, true);		
+	protected AddressProperty doExport(ResultSet rs) throws CityGMLExportException, SQLException {
+		return doExport(null, rs);
 	}
 
-	private AddressProperty doExport(long addressId, Address address, ResultSet rs, boolean checkForXlink) throws CityGMLExportException, SQLException {
+	private AddressProperty doExport(Address address, ResultSet rs) throws CityGMLExportException, SQLException {
 		AddressObject addressObject = factory.newAddressObject();
 
 		// note: we do not export gml:ids for address objects

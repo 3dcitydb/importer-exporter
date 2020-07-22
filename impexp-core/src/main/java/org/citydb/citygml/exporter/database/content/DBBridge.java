@@ -75,26 +75,24 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
 public class DBBridge extends AbstractFeatureExporter<AbstractBridge> {
-	private DBSurfaceGeometry geometryExporter;
-	private DBCityObject cityObjectExporter;
-	private DBBridgeThematicSurface thematicSurfaceExporter;
-	private DBBridgeInstallation bridgeInstallationExporter;
-	private DBBridgeConstrElement bridgeConstrElemExporter;
-	private DBBridgeRoom bridgeRoomExporter;
-	private DBAddress addressExporter;
-	private GMLConverter gmlConverter;
+	private final DBSurfaceGeometry geometryExporter;
+	private final DBCityObject cityObjectExporter;
+	private final DBBridgeThematicSurface thematicSurfaceExporter;
+	private final DBBridgeInstallation bridgeInstallationExporter;
+	private final DBBridgeConstrElement bridgeConstrElemExporter;
+	private final DBBridgeRoom bridgeRoomExporter;
+	private final DBAddress addressExporter;
+	private final GMLConverter gmlConverter;
 
-	private String bridgeModule;
-	private LodFilter lodFilter;
-	private AttributeValueSplitter valueSplitter;
-
-	private boolean hasObjectClassIdColumn;
+	private final String bridgeModule;
+	private final LodFilter lodFilter;
+	private final AttributeValueSplitter valueSplitter;
+	private final boolean hasObjectClassIdColumn;
 	private Set<String> bridgeADEHookTables;
 	private Set<String> addressADEHookTables;
 
@@ -186,7 +184,7 @@ public class DBBridge extends AbstractFeatureExporter<AbstractBridge> {
 
 					bridge = bridges.get(bridgeId);
 					if (bridge == null) {
-						FeatureType featureType = null;						
+						FeatureType featureType;
 						if (bridgeId == id & root != null) {
 							bridge = root;
 							featureType = rootType;
@@ -293,10 +291,10 @@ public class DBBridge extends AbstractFeatureExporter<AbstractBridge> {
 						while (lodIterator.hasNext()) {
 							int lod = lodIterator.next();
 
-							if (!projectionFilter.containsProperty(new StringBuilder("lod").append(lod).append("TerrainIntersection").toString(), bridgeModule))
+							if (!projectionFilter.containsProperty("lod" + lod + "TerrainIntersection", bridgeModule))
 								continue;
 
-							Object terrainIntersectionObj = rs.getObject(new StringBuilder("lod").append(lod).append("_terrain_intersection").toString());
+							Object terrainIntersectionObj = rs.getObject("lod" + lod + "_terrain_intersection");
 							if (rs.wasNull())
 								continue;
 
@@ -327,10 +325,10 @@ public class DBBridge extends AbstractFeatureExporter<AbstractBridge> {
 						while (lodIterator.hasNext()) {
 							int lod = lodIterator.next();
 
-							if (!projectionFilter.containsProperty(new StringBuilder("lod").append(lod).append("MultiCurve").toString(), bridgeModule))
+							if (!projectionFilter.containsProperty("lod" + lod + "MultiCurve", bridgeModule))
 								continue;
 
-							Object multiCurveObj = rs.getObject(new StringBuilder("lod").append(lod).append("_multi_curve").toString());
+							Object multiCurveObj = rs.getObject("lod" + lod + "_multi_curve");
 							if (rs.wasNull())
 								continue;
 
@@ -358,10 +356,10 @@ public class DBBridge extends AbstractFeatureExporter<AbstractBridge> {
 						while (lodIterator.hasNext()) {
 							int lod = lodIterator.next();
 
-							if (!projectionFilter.containsProperty(new StringBuilder("lod").append(lod).append("Solid").toString(), bridgeModule))
+							if (!projectionFilter.containsProperty("lod" + lod + "Solid", bridgeModule))
 								continue;
 
-							long surfaceGeometryId = rs.getLong(new StringBuilder("lod").append(lod).append("_solid_id").toString());
+							long surfaceGeometryId = rs.getLong("lod" + lod + "_solid_id");
 							if (rs.wasNull())
 								continue;
 
@@ -395,10 +393,10 @@ public class DBBridge extends AbstractFeatureExporter<AbstractBridge> {
 						while (lodIterator.hasNext()) {
 							int lod = lodIterator.next();
 
-							if (!projectionFilter.containsProperty(new StringBuilder("lod").append(lod).append("MultiSurface").toString(), bridgeModule))
+							if (!projectionFilter.containsProperty("lod" + lod + "MultiSurface", bridgeModule))
 								continue;
 
-							long surfaceGeometryId = rs.getLong(new StringBuilder("lod").append(lod).append("_multi_surface_id").toString());
+							long surfaceGeometryId = rs.getLong("lod" + lod + "_multi_surface_id");
 							if (rs.wasNull())
 								continue;
 
@@ -445,7 +443,7 @@ public class DBBridge extends AbstractFeatureExporter<AbstractBridge> {
 				if (projectionFilter.containsProperty("address", bridgeModule)) {
 					long addressId = rs.getLong("addr_id");
 					if (!rs.wasNull()) {
-						AddressProperty addressProperty = addressExporter.doExport(addressId, rs);
+						AddressProperty addressProperty = addressExporter.doExport(rs);
 						if (addressProperty != null) {
 							bridge.addAddress(addressProperty);
 
@@ -490,12 +488,8 @@ public class DBBridge extends AbstractFeatureExporter<AbstractBridge> {
 
 			// check whether lod filter is satisfied
 			if (!lodFilter.preservesGeometry()) {
-				for (AbstractBridge tmp : result) {
-					for (Iterator<BridgePartProperty> iter = tmp.getConsistsOfBridgePart().iterator(); iter.hasNext(); ) {
-						if (!exporter.satisfiesLodFilter(iter.next().getBridgePart()))
-							iter.remove();
-					}
-				}
+				for (AbstractBridge tmp : result)
+					tmp.getConsistsOfBridgePart().removeIf(bridgePartProperty -> !exporter.satisfiesLodFilter(bridgePartProperty.getBridgePart()));
 			}
 
 			return result;

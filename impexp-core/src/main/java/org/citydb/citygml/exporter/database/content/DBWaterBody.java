@@ -67,16 +67,15 @@ import java.util.List;
 import java.util.Set;
 
 public class DBWaterBody extends AbstractFeatureExporter<WaterBody> {
-	private DBSurfaceGeometry geometryExporter;
-	private DBCityObject cityObjectExporter;
-	private GMLConverter gmlConverter;
+	private final DBSurfaceGeometry geometryExporter;
+	private final DBCityObject cityObjectExporter;
+	private final GMLConverter gmlConverter;
 
-	private String waterBodyModule;
-	private LodFilter lodFilter;
-	private AttributeValueSplitter valueSplitter;
-
-	private boolean hasObjectClassIdColumn;
-	private boolean useXLink;
+	private final String waterBodyModule;
+	private final LodFilter lodFilter;
+	private final AttributeValueSplitter valueSplitter;
+	private final boolean hasObjectClassIdColumn;
+	private final boolean useXLink;
 	private Set<String> bodyADEHookTables;
 	private Set<String> surfaceADEHookTables;
 
@@ -150,7 +149,7 @@ public class DBWaterBody extends AbstractFeatureExporter<WaterBody> {
 
 					waterBody = waterBodies.get(waterBodyId);
 					if (waterBody == null) {
-						FeatureType featureType = null;						
+						FeatureType featureType;
 						if (waterBodyId == id & root != null) {
 							waterBody = root;
 							featureType = rootType;
@@ -214,10 +213,10 @@ public class DBWaterBody extends AbstractFeatureExporter<WaterBody> {
 						while (lodIterator.hasNext()) {
 							int lod = lodIterator.next();
 
-							if (!projectionFilter.containsProperty(new StringBuilder("lod").append(lod).append("MultiCurve").toString(), waterBodyModule))
+							if (!projectionFilter.containsProperty("lod" + lod + "MultiCurve", waterBodyModule))
 								continue;
 
-							Object multiCurveObj = rs.getObject(new StringBuilder("lod").append(lod).append("_multi_curve").toString());
+							Object multiCurveObj = rs.getObject("lod" + lod + "_multi_curve");
 							if (rs.wasNull())
 								continue;
 
@@ -241,10 +240,10 @@ public class DBWaterBody extends AbstractFeatureExporter<WaterBody> {
 						while (lodIterator.hasNext()) {
 							int lod = lodIterator.next();
 
-							if (!projectionFilter.containsProperty(new StringBuilder("lod").append(lod).append("MultiSurface").toString(), waterBodyModule))
+							if (!projectionFilter.containsProperty("lod" + lod + "MultiSurface", waterBodyModule))
 								continue;
 
-							long surfaceGeometryId = rs.getLong(new StringBuilder("lod").append(lod).append("_multi_surface_id").toString());
+							long surfaceGeometryId = rs.getLong("lod" + lod + "_multi_surface_id");
 							if (rs.wasNull())
 								continue;
 
@@ -271,10 +270,10 @@ public class DBWaterBody extends AbstractFeatureExporter<WaterBody> {
 						while (lodIterator.hasNext()) {
 							int lod = lodIterator.next();
 
-							if (!projectionFilter.containsProperty(new StringBuilder("lod").append(lod).append("Solid").toString(), waterBodyModule))
+							if (!projectionFilter.containsProperty("lod" + lod + "Solid", waterBodyModule))
 								continue;
 
-							long surfaceGeometryId = rs.getLong(new StringBuilder("lod").append(lod).append("_solid_id").toString());
+							long surfaceGeometryId = rs.getLong("lod" + lod + "_solid_id");
 							if (rs.wasNull())
 								continue;
 
@@ -367,10 +366,10 @@ public class DBWaterBody extends AbstractFeatureExporter<WaterBody> {
 				while (lodIterator.hasNext()) {
 					int lod = lodIterator.next();
 
-					if (!waterBoundarySurfaceProjectionFilter.containsProperty(new StringBuilder("lod").append(lod).append("Surface").toString(), waterBodyModule))
+					if (!waterBoundarySurfaceProjectionFilter.containsProperty("lod" + lod + "Surface", waterBodyModule))
 						continue;
 
-					long surfaceGeometryId = rs.getLong(new StringBuilder("lod").append(lod).append("_surface_id").toString());
+					long surfaceGeometryId = rs.getLong("lod" + lod + "_surface_id");
 					if (rs.wasNull())
 						continue;
 

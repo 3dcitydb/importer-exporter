@@ -57,13 +57,11 @@ import java.util.List;
 
 public class DBImplicitGeometry implements DBExporter {
 	private final CityGMLExportManager exporter;
-
-	private PreparedStatement ps;
-
-	private DBSurfaceGeometry geometryExporter;
-	private GMLConverter gmlConverter;
-	private MessageDigest md5;
-	private AttributeValueSplitter valueSplitter;
+	private final PreparedStatement ps;
+	private final DBSurfaceGeometry geometryExporter;
+	private final GMLConverter gmlConverter;
+	private final MessageDigest md5;
+	private final AttributeValueSplitter valueSplitter;
 
 	public DBImplicitGeometry(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
 		this.exporter = exporter;
@@ -125,7 +123,7 @@ public class DBImplicitGeometry implements DBExporter {
 
 					SurfaceGeometry geometry = geometryExporter.doExportImplicitGeometry(surfaceGeometryId);
 					if (geometry != null) {
-						GeometryProperty<AbstractGeometry> geometryProperty = new GeometryProperty<AbstractGeometry>();
+						GeometryProperty<AbstractGeometry> geometryProperty = new GeometryProperty<>();
 						if (geometry.isSetGeometry())
 							geometryProperty.setGeometry(geometry.getGeometry());
 						else
@@ -142,13 +140,13 @@ public class DBImplicitGeometry implements DBExporter {
 					String uuid = toHexString(md5.digest(String.valueOf(implicitId).getBytes()));
 
 					if (exporter.lookupAndPutObjectUID(uuid, implicitId, MappingConstants.IMPLICIT_GEOMETRY_OBJECTCLASS_ID)) {
-						implicit.setRelativeGeometry(new GeometryProperty<AbstractGeometry>("#UUID_" + uuid));
+						implicit.setRelativeGeometry(new GeometryProperty<>("#UUID_" + uuid));
 					} else {
 						GeometryObject otherGeom = exporter.getDatabaseAdapter().getGeometryConverter().getGeometry(otherGeomObj);
 						AbstractGeometry geometry = gmlConverter.getPointOrCurveGeometry(otherGeom, true);
 						if (geometry != null) {
 							geometry.setId("UUID_" + uuid);
-							implicit.setRelativeGeometry(new GeometryProperty<AbstractGeometry>(geometry));
+							implicit.setRelativeGeometry(new GeometryProperty<>(geometry));
 						} else
 							isValid = false;
 					}
@@ -178,8 +176,8 @@ public class DBImplicitGeometry implements DBExporter {
 
 	private String toHexString(byte[] bytes) {
 		StringBuilder hexString = new StringBuilder();
-		for (int i = 0; i < bytes.length; i++)
-			hexString.append(Integer.toString((bytes[i] & 0xff) + 0x100, 16).substring(1));
+		for (byte b : bytes)
+			hexString.append(Integer.toString((b & 0xff) + 0x100, 16).substring(1));
 
 		return hexString.toString();
 	}
