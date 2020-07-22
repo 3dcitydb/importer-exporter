@@ -83,22 +83,20 @@ import java.util.Set;
 
 public class AbstractAppearanceExporter extends AbstractTypeExporter {
 	private final Logger log = Logger.getInstance();
+	private final DBTextureParam textureParamExporter;
+	private final AttributeValueSplitter valueSplitter;
+	private final boolean exportTextureImage;
+	private final boolean uniqueFileNames;
+	private final String textureURI;
+	private final boolean useBuckets;
+	private final int noOfBuckets;
+	private final boolean useXLink;
+	private final String separator;
+	private final HashSet<Long> texImageIds;
 
 	protected PreparedStatement ps;
-	private DBTextureParam textureParamExporter;
-	private AttributeValueSplitter valueSplitter;
-
-	private boolean exportTextureImage;
-	private boolean uniqueFileNames;
-	private String textureURI;
-	private boolean useBuckets;
-	private int noOfBuckets;
-	private boolean useXLink;
 	private boolean appendOldGmlId;
 	private String gmlIdPrefix;
-	private String separator;
-
-	private HashSet<Long> texImageIds;
 	private List<PlaceHolder<?>> themes;
 	private Set<String> appearanceADEHookTables;
 	private Set<String> surfaceDataADEHookTables;
@@ -316,7 +314,7 @@ public class AbstractAppearanceExporter extends AbstractTypeExporter {
 
 				String fileName = new File(imageURI).getName();
 				if (useBuckets)
-					fileName = String.valueOf(Math.abs(texImageId % noOfBuckets + 1)) + separator + fileName;
+					fileName = Math.abs(texImageId % noOfBuckets + 1) + separator + fileName;
 
 				abstractTexture.setImageURI(textureURI != null ? textureURI + separator + fileName : fileName);
 
