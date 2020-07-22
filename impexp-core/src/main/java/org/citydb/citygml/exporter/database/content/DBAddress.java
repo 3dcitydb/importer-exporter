@@ -52,8 +52,8 @@ import java.util.List;
 import java.util.Set;
 
 public class DBAddress extends AbstractFeatureExporter<Address> {
-	private AddressExportFactory factory;
-	private GMLConverter gmlConverter;
+	private final AddressExportFactory factory;
+	private final GMLConverter gmlConverter;
 	private Set<String> adeHookTables;
 
 	public DBAddress(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
@@ -86,7 +86,7 @@ public class DBAddress extends AbstractFeatureExporter<Address> {
 			while (rs.next()) {
 				long addressId = rs.getLong("id");
 
-				Address address = null;				
+				Address address;
 				if (addressId == id && root != null)
 					address = root;
 				else
