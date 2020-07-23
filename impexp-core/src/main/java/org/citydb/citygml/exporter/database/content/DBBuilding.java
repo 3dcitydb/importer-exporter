@@ -53,7 +53,6 @@ import org.citygml4j.model.citygml.building.IntBuildingInstallationProperty;
 import org.citygml4j.model.citygml.building.InteriorRoomProperty;
 import org.citygml4j.model.citygml.building.Room;
 import org.citygml4j.model.citygml.core.AbstractCityObject;
-import org.citygml4j.model.citygml.core.Address;
 import org.citygml4j.model.citygml.core.AddressProperty;
 import org.citygml4j.model.gml.GMLClass;
 import org.citygml4j.model.gml.basicTypes.Code;
@@ -526,20 +525,9 @@ public class DBBuilding extends AbstractFeatureExporter<AbstractBuilding> {
 				if (projectionFilter.containsProperty("address", buildingModule)) {
 					long addressId = rs.getLong("aid");
 					if (!rs.wasNull()) {
-						AddressProperty addressProperty = addressExporter.doExport("a", rs);
-						if (addressProperty != null) {
+						AddressProperty addressProperty = addressExporter.doExport(addressId, "a", addressADEHookTables, rs);
+						if (addressProperty != null)
 							building.addAddress(addressProperty);
-
-							// delegate export of generic ADE properties
-							if (addressADEHookTables != null) {
-								List<String> adeHookTables = retrieveADEHookTables(addressADEHookTables, rs);
-								if (adeHookTables != null) {
-									Address address = addressProperty.getAddress();
-									FeatureType featureType = exporter.getFeatureType(address);
-									exporter.delegateToADEExporter(adeHookTables, address, addressId, featureType, exporter.getProjectionFilter(featureType));
-								}
-							}
-						}
 					}
 				}
 			}

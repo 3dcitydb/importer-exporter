@@ -97,30 +97,20 @@ public class DBAddress extends AbstractFeatureExporter<Address> {
 				else
 					address = new Address();
 				
-				AddressProperty addressProperty = doExport(address, "", rs);
-				if (addressProperty != null) {					
-					// delegate export of generic ADE properties
-					if (adeHookTables != null) {
-						List<String> adeHookTables = retrieveADEHookTables(this.adeHookTables, rs);
-						if (adeHookTables != null) {
-							FeatureType featureType = exporter.getFeatureType(address);
-							exporter.delegateToADEExporter(adeHookTables, address, addressId, featureType, exporter.getProjectionFilter(featureType));
-						}
-					}
-					
+				AddressProperty addressProperty = doExport(addressId, address, "", adeHookTables, rs);
+				if (addressProperty != null)
 					addresses.add(address);
-				}
 			}
 
 			return addresses;
 		}
 	}
 
-	protected AddressProperty doExport(String prefix, ResultSet rs) throws CityGMLExportException, SQLException {
-		return doExport(null, prefix, rs);
+	protected AddressProperty doExport(long addressId, String prefix, List<Table> adeHookTables, ResultSet rs) throws CityGMLExportException, SQLException {
+		return doExport(addressId, null, prefix, adeHookTables, rs);
 	}
 
-	private AddressProperty doExport(Address address, String prefix, ResultSet rs) throws CityGMLExportException, SQLException {
+	private AddressProperty doExport(long addressId, Address address, String prefix, List<Table> adeHookTables, ResultSet rs) throws CityGMLExportException, SQLException {
 		AddressObject addressObject = factory.newAddressObject();
 
 		// note: we do not export gml:ids for address objects
@@ -146,6 +136,15 @@ public class DBAddress extends AbstractFeatureExporter<Address> {
 				addressProperty = factory.create(addressObject);
 			else
 				addressProperty = factory.create(addressObject, address);
+
+			// delegate export of generic ADE properties
+			if (adeHookTables != null) {
+				List<String> tableNames = retrieveADEHookTables(adeHookTables, rs);
+				if (tableNames != null) {
+					FeatureType featureType = exporter.getFeatureType(Address.class);
+					exporter.delegateToADEExporter(tableNames, address, addressId, featureType, exporter.getProjectionFilter(featureType));
+				}
+			}
 		}
 
 		return addressProperty;

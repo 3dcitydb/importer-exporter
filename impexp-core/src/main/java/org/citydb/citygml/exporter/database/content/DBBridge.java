@@ -55,7 +55,6 @@ import org.citygml4j.model.citygml.bridge.IntBridgeInstallation;
 import org.citygml4j.model.citygml.bridge.IntBridgeInstallationProperty;
 import org.citygml4j.model.citygml.bridge.InteriorBridgeRoomProperty;
 import org.citygml4j.model.citygml.core.AbstractCityObject;
-import org.citygml4j.model.citygml.core.Address;
 import org.citygml4j.model.citygml.core.AddressProperty;
 import org.citygml4j.model.gml.GMLClass;
 import org.citygml4j.model.gml.basicTypes.Code;
@@ -439,20 +438,9 @@ public class DBBridge extends AbstractFeatureExporter<AbstractBridge> {
 				if (projectionFilter.containsProperty("address", bridgeModule)) {
 					long addressId = rs.getLong("aid");
 					if (!rs.wasNull()) {
-						AddressProperty addressProperty = addressExporter.doExport("a", rs);
-						if (addressProperty != null) {
+						AddressProperty addressProperty = addressExporter.doExport(addressId, "a", addressADEHookTables, rs);
+						if (addressProperty != null)
 							bridge.addAddress(addressProperty);
-
-							// delegate export of generic ADE properties
-							if (addressADEHookTables != null) {
-								List<String> adeHookTables = retrieveADEHookTables(addressADEHookTables, rs);
-								if (adeHookTables != null) {
-									Address address = addressProperty.getAddress();
-									FeatureType featureType = exporter.getFeatureType(address);
-									exporter.delegateToADEExporter(adeHookTables, address, addressId, featureType, exporter.getProjectionFilter(featureType));
-								}
-							}
-						}
 					}
 				}
 			}

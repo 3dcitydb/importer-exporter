@@ -48,7 +48,6 @@ import org.citygml4j.model.citygml.bridge.BridgeRoom;
 import org.citygml4j.model.citygml.bridge.Door;
 import org.citygml4j.model.citygml.bridge.IntBridgeInstallation;
 import org.citygml4j.model.citygml.bridge.OpeningProperty;
-import org.citygml4j.model.citygml.core.Address;
 import org.citygml4j.model.citygml.core.AddressProperty;
 import org.citygml4j.model.citygml.core.ImplicitGeometry;
 import org.citygml4j.model.citygml.core.ImplicitRepresentationProperty;
@@ -340,20 +339,9 @@ public class DBBridgeThematicSurface extends AbstractFeatureExporter<AbstractBou
 				if (opening instanceof Door && openingProjectionFilter.containsProperty("address", bridgeModule)) {
 					long addressId = rs.getLong("aid");
 					if (!rs.wasNull()) {
-						AddressProperty addressProperty = addressExporter.doExport("a", rs);
-						if (addressProperty != null) {
+						AddressProperty addressProperty = addressExporter.doExport(addressId, "a", addressADEHookTables, rs);
+						if (addressProperty != null)
 							((Door)opening).addAddress(addressProperty);
-
-							// delegate export of generic ADE properties
-							if (addressADEHookTables != null) {
-								List<String> adeHookTables = retrieveADEHookTables(addressADEHookTables, rs);
-								if (adeHookTables != null) {
-									Address address = addressProperty.getAddress();
-									FeatureType featureType = exporter.getFeatureType(address);
-									exporter.delegateToADEExporter(adeHookTables, address, addressId, featureType, exporter.getProjectionFilter(featureType));
-								}
-							}
-						}
 					}
 				}
 
