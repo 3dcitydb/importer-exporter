@@ -76,6 +76,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
@@ -174,7 +175,7 @@ public class DBBridge extends AbstractFeatureExporter<AbstractBridge> {
 			long currentBridgeId = 0;
 			AbstractBridge bridge = null;
 			ProjectionFilter projectionFilter = null;
-			HashMap<Long, AbstractBridge> bridges = new HashMap<>();
+			Map<Long, AbstractBridge> bridges = new HashMap<>();
 
 			while (rs.next()) {
 				long bridgeId = rs.getLong("id");

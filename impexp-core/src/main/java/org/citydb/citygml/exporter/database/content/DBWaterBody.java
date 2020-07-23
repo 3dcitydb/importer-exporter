@@ -64,6 +64,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class DBWaterBody extends AbstractFeatureExporter<WaterBody> {
@@ -139,7 +140,7 @@ public class DBWaterBody extends AbstractFeatureExporter<WaterBody> {
 			long currentWaterBodyId = 0;
 			WaterBody waterBody = null;
 			ProjectionFilter projectionFilter = null;
-			HashMap<Long, WaterBody> waterBodies = new HashMap<>();
+			Map<Long, WaterBody> waterBodies = new HashMap<>();
 
 			while (rs.next()) {
 				long waterBodyId = rs.getLong("id");

@@ -266,8 +266,8 @@ public class Util {
 			for (Entry<Class<? extends AbstractGML>, Integer> entry : objectClassIds.entrySet()) {
 				if (entry.getValue() == objectClassId && !Modifier.isAbstract(entry.getKey().getModifiers())) {
 					try {
-						return entry.getKey().newInstance();
-					} catch (InstantiationException | IllegalAccessException e) {
+						return entry.getKey().getDeclaredConstructor().newInstance();
+					} catch (Exception e) {
 						// 
 					}
 				}
@@ -468,19 +468,11 @@ public class Util {
 	}
 
 	public static CityGMLVersion toCityGMLVersion(CityGMLVersionType version) {
-		switch (version) {
-		case v1_0_0:
-			return CityGMLVersion.v1_0_0;
-		default:
-			return CityGMLVersion.v2_0_0;
-		}
+		return version == CityGMLVersionType.v1_0_0 ? CityGMLVersion.v1_0_0 : CityGMLVersion.v2_0_0;
 	}
 
 	public static CityGMLVersionType fromCityGMLVersion(CityGMLVersion version) {
-		if (version == CityGMLVersion.v1_0_0)
-			return CityGMLVersionType.v1_0_0;
-		else
-			return CityGMLVersionType.v2_0_0;
+		return version == CityGMLVersion.v1_0_0 ? CityGMLVersionType.v1_0_0 : CityGMLVersionType.v2_0_0;
 	}
 	
 	public static class URLClassLoader extends java.net.URLClassLoader {
@@ -488,7 +480,7 @@ public class Util {
 		public URLClassLoader(ClassLoader parentLoader) {
 			super(new URL[]{}, parentLoader);
 		}
-		
+
 		public URLClassLoader() {
 			this(Util.class.getClassLoader());
 		}

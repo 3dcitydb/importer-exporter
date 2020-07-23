@@ -61,6 +61,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
@@ -142,7 +143,7 @@ public class DBTunnelThematicSurface extends AbstractFeatureExporter<AbstractBou
 			long currentBoundarySurfaceId = 0;
 			AbstractBoundarySurface boundarySurface = null;
 			ProjectionFilter boundarySurfaceProjectionFilter = null;
-			HashMap<Long, AbstractBoundarySurface> boundarySurfaces = new HashMap<>();
+			Map<Long, AbstractBoundarySurface> boundarySurfaces = new HashMap<>();
 
 			while (rs.next()) {
 				long boundarySurfaceId = rs.getLong("tsid");

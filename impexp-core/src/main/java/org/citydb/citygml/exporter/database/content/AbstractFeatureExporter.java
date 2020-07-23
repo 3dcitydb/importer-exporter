@@ -53,12 +53,13 @@ import java.sql.SQLException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 public abstract class AbstractFeatureExporter<T extends AbstractFeature> extends AbstractTypeExporter {
 	private final Class<T> featureClass;
 	private final Connection connection;
-	private final HashMap<String, PreparedStatement> statements;
+	private final Map<String, PreparedStatement> statements;
 		
 	public AbstractFeatureExporter(Class<T> featureClass, Connection connection, CityGMLExportManager exporter) {
 		super(exporter);

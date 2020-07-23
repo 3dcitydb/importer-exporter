@@ -77,6 +77,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -181,7 +182,7 @@ public class DBBuilding extends AbstractFeatureExporter<AbstractBuilding> {
 			long currentBuildingId = 0;
 			AbstractBuilding building = null;
 			ProjectionFilter projectionFilter = null;
-			HashMap<Long, AbstractBuilding> buildings = new HashMap<>();
+			Map<Long, AbstractBuilding> buildings = new HashMap<>();
 
 			while (rs.next()) {
 				long buildingId = rs.getLong("id");

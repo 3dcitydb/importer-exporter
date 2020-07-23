@@ -62,6 +62,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class DBReliefFeature extends AbstractFeatureExporter<ReliefFeature> {
@@ -134,7 +135,7 @@ public class DBReliefFeature extends AbstractFeatureExporter<ReliefFeature> {
 			long currentReliefFeatureId = 0;
 			ReliefFeature reliefFeature = null;
 			ProjectionFilter projectionFilter = null;
-			HashMap<Long, ReliefFeature> reliefFeatures = new HashMap<>();
+			Map<Long, ReliefFeature> reliefFeatures = new HashMap<>();
 
 			while (rs.next()) {	
 				long reliefFeatureId = rs.getLong("id");

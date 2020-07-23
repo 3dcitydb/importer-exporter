@@ -70,6 +70,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
@@ -148,7 +149,7 @@ public class DBTunnel extends AbstractFeatureExporter<AbstractTunnel> {
 		ps.setLong(1, id);
 
 		try (ResultSet rs = ps.executeQuery()) {
-			HashMap<Long, AbstractTunnel> tunnels = new HashMap<>();
+			Map<Long, AbstractTunnel> tunnels = new HashMap<>();
 
 			while (rs.next()) {
 				long tunnelId = rs.getLong("id");

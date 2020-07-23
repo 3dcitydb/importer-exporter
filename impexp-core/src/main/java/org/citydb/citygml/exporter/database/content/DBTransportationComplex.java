@@ -61,6 +61,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class DBTransportationComplex extends AbstractFeatureExporter<TransportationComplex> {
@@ -130,7 +131,7 @@ public class DBTransportationComplex extends AbstractFeatureExporter<Transportat
 			long currentComplexId = 0;
 			TransportationComplex complex = null;
 			ProjectionFilter projectionFilter = null;
-			HashMap<Long, TransportationComplex> complexes = new HashMap<>();
+			Map<Long, TransportationComplex> complexes = new HashMap<>();
 
 			while (rs.next()) {
 				long complexId = rs.getLong("id");

@@ -40,6 +40,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class DBLocalAppearance extends AbstractAppearanceExporter {
 
@@ -60,7 +61,7 @@ public class DBLocalAppearance extends AbstractAppearanceExporter {
 		try (ResultSet rs = ps.executeQuery()) {
 			long currentAppearanceId = 0;
 			Appearance appearance = null;
-			final HashMap<Long, Appearance> appearances = new HashMap<>();
+			Map<Long, Appearance> appearances = new HashMap<>();
 
 			while (rs.next()) {
 				long appearanceId = rs.getLong(1);

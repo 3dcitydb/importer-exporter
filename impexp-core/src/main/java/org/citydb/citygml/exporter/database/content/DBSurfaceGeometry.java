@@ -67,6 +67,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class DBSurfaceGeometry implements DBExporter {
 	private final CityGMLExportManager exporter;
@@ -626,7 +627,7 @@ public class DBSurfaceGeometry implements DBExporter {
 	}
 
 	private static class GeometryTree {
-		private final HashMap<Long, GeometryNode> geometryTree = new HashMap<>();
+		private final Map<Long, GeometryNode> geometryTree = new HashMap<>();
 		long root;
 
 		public void insertNode(GeometryNode geomNode, long parentId) {

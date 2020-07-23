@@ -50,7 +50,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashSet;
+import java.util.Set;
 
 public class DBGeneralization implements DBExporter {
 	private final Connection connection;
@@ -84,7 +84,7 @@ public class DBGeneralization implements DBExporter {
 		}
 	}
 
-	protected void doExport(AbstractCityObject cityObject, long cityObjectId, HashSet<Long> generalizesTos) throws CityGMLExportException, SQLException {
+	protected void doExport(AbstractCityObject cityObject, long cityObjectId, Set<Long> generalizesTos) throws CityGMLExportException, SQLException {
 		// create select statement
 		Select select;
 		try {
