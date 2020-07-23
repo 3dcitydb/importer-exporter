@@ -63,7 +63,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 
 public class DBTunnelThematicSurface extends AbstractFeatureExporter<AbstractBoundarySurface> {
 	private final DBSurfaceGeometry geometryExporter;
@@ -73,8 +72,8 @@ public class DBTunnelThematicSurface extends AbstractFeatureExporter<AbstractBou
 	private final String tunnelModule;
 	private final LodFilter lodFilter;
 	private final boolean useXLink;
-	private Set<String> surfaceADEHookTables;
-	private Set<String> openingADEHookTables;
+	private List<Table> surfaceADEHookTables;
+	private List<Table> openingADEHookTables;
 
 	public DBTunnelThematicSurface(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
 		super(AbstractBoundarySurface.class, connection, exporter);
@@ -100,18 +99,14 @@ public class DBTunnelThematicSurface extends AbstractFeatureExporter<AbstractBou
 			.addProjection(opening.getColumn("id", "opid"), opening.getColumn("objectclass_id", "opobjectclass_id"));
 			if (openingProjectionFilter.containsProperty("lod3MultiSurface", tunnelModule)) select.addProjection(opening.getColumn("lod3_multi_surface_id", "oplod3_multi_surface_id"));
 			if (openingProjectionFilter.containsProperty("lod4MultiSurface", tunnelModule)) select.addProjection(opening.getColumn("lod4_multi_surface_id", "oplod4_multi_surface_id"));
-			if (openingProjectionFilter.containsProperty("lod3ImplicitRepresentation", tunnelModule)) 
-				select.addProjection(opening.getColumn("lod3_implicit_rep_id"), exporter.getGeometryColumn(opening.getColumn("lod3_implicit_ref_point")), opening.getColumn("lod3_implicit_transformation"));
-			if (openingProjectionFilter.containsProperty("lod4ImplicitRepresentation", tunnelModule)) 
-				select.addProjection(opening.getColumn("lod4_implicit_rep_id"), exporter.getGeometryColumn(opening.getColumn("lod4_implicit_ref_point")), opening.getColumn("lod4_implicit_transformation"));
+			if (openingProjectionFilter.containsProperty("lod3ImplicitRepresentation", tunnelModule)) select.addProjection(opening.getColumn("lod3_implicit_rep_id"), exporter.getGeometryColumn(opening.getColumn("lod3_implicit_ref_point")), opening.getColumn("lod3_implicit_transformation"));
+			if (openingProjectionFilter.containsProperty("lod4ImplicitRepresentation", tunnelModule)) select.addProjection(opening.getColumn("lod4_implicit_rep_id"), exporter.getGeometryColumn(opening.getColumn("lod4_implicit_ref_point")), opening.getColumn("lod4_implicit_transformation"));
 		}
 
 		// add joins to ADE hook tables
 		if (exporter.hasADESupport()) {
-			surfaceADEHookTables = exporter.getADEHookTables(TableEnum.TUNNEL_THEMATIC_SURFACE);
-			openingADEHookTables = exporter.getADEHookTables(TableEnum.TUNNEL_OPENING);
-			if (surfaceADEHookTables != null) addJoinsToADEHookTables(surfaceADEHookTables, table);
-			if (openingADEHookTables != null) addJoinsToADEHookTables(openingADEHookTables, opening);
+			surfaceADEHookTables = addJoinsToADEHookTables(TableEnum.TUNNEL_THEMATIC_SURFACE, table);
+			openingADEHookTables = addJoinsToADEHookTables(TableEnum.TUNNEL_OPENING, opening);
 		}
 
 		cityObjectExporter = exporter.getExporter(DBCityObject.class);

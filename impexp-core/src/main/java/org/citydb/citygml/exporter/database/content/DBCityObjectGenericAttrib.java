@@ -85,11 +85,11 @@ public class DBCityObjectGenericAttrib implements DBExporter {
 
 	protected void doExport(long id, AbstractCityObject cityObject, ProjectionFilter projectionFilter, Map<Long, GenericAttributeSet> attributeSets, ResultSet rs) throws SQLException {
 		long parentId = rs.getLong("parent_genattrib_id");
-		String attrName = rs.getString("attrname");
-		CityGMLClass attrType = Util.genericAttributeType2cityGMLClass(rs.getInt("datatype"));
+		String name = rs.getString("attrname");
+		CityGMLClass type = Util.genericAttributeType2cityGMLClass(rs.getInt("datatype"));
 
 		// skip attribute if it is not covered by the projection filter
-		if (!projectionFilter.containsGenericAttribute(attrName, attrType))
+		if (!projectionFilter.containsGenericAttribute(name, type))
 			return;
 
 		AbstractGenericAttribute genericAttribute = null;
@@ -103,7 +103,7 @@ public class DBCityObjectGenericAttrib implements DBExporter {
 			}
 		}
 
-		switch (attrType) {
+		switch (type) {
 			case STRING_ATTRIBUTE:
 				String strVal = rs.getString("strval");
 				if (!rs.wasNull()) {
@@ -161,7 +161,7 @@ public class DBCityObjectGenericAttrib implements DBExporter {
 		}
 
 		if (genericAttribute != null) {
-			genericAttribute.setName(attrName);
+			genericAttribute.setName(name);
 
 			// assign generic attribute to city object or parent attribute set
 			if (parentAttributeSet == null)

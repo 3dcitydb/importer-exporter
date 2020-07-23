@@ -65,7 +65,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public class DBWaterBody extends AbstractFeatureExporter<WaterBody> {
 	private final DBSurfaceGeometry geometryExporter;
@@ -77,8 +76,8 @@ public class DBWaterBody extends AbstractFeatureExporter<WaterBody> {
 	private final AttributeValueSplitter valueSplitter;
 	private final boolean hasObjectClassIdColumn;
 	private final boolean useXLink;
-	private Set<String> bodyADEHookTables;
-	private Set<String> surfaceADEHookTables;
+	private List<Table> bodyADEHookTables;
+	private List<Table> surfaceADEHookTables;
 
 	public DBWaterBody(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
 		super(WaterBody.class, connection, exporter);
@@ -120,10 +119,8 @@ public class DBWaterBody extends AbstractFeatureExporter<WaterBody> {
 
 		// add joins to ADE hook tables
 		if (exporter.hasADESupport()) {
-			bodyADEHookTables = exporter.getADEHookTables(TableEnum.WATERBODY);
-			surfaceADEHookTables = exporter.getADEHookTables(TableEnum.WATERBOUNDARY_SURFACE);			
-			if (bodyADEHookTables != null) addJoinsToADEHookTables(bodyADEHookTables, table);
-			if (surfaceADEHookTables != null) addJoinsToADEHookTables(surfaceADEHookTables, waterBoundarySurface);
+			bodyADEHookTables = addJoinsToADEHookTables(TableEnum.WATERBODY, table);
+			surfaceADEHookTables = addJoinsToADEHookTables(TableEnum.WATERBOUNDARY_SURFACE, waterBoundarySurface);
 		}
 
 		cityObjectExporter = exporter.getExporter(DBCityObject.class);

@@ -67,7 +67,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 
 public class DBBridgeThematicSurface extends AbstractFeatureExporter<AbstractBoundarySurface> {
 	private final DBSurfaceGeometry geometryExporter;
@@ -78,9 +77,9 @@ public class DBBridgeThematicSurface extends AbstractFeatureExporter<AbstractBou
 	private final String bridgeModule;
 	private final LodFilter lodFilter;
 	private final boolean useXLink;
-	private Set<String> surfaceADEHookTables;
-	private Set<String> openingADEHookTables;
-	private Set<String> addressADEHookTables;
+	private List<Table> surfaceADEHookTables;
+	private List<Table> openingADEHookTables;
+	private List<Table> addressADEHookTables;
 
 	public DBBridgeThematicSurface(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
 		super(AbstractBoundarySurface.class, connection, exporter);
@@ -107,10 +106,8 @@ public class DBBridgeThematicSurface extends AbstractFeatureExporter<AbstractBou
 			.addProjection(opening.getColumn("id", "opid"), opening.getColumn("objectclass_id", "opobjectclass_id"));
 			if (openingProjectionFilter.containsProperty("lod3MultiSurface", bridgeModule)) select.addProjection(opening.getColumn("lod3_multi_surface_id", "oplod3_multi_surface_id"));
 			if (openingProjectionFilter.containsProperty("lod4MultiSurface", bridgeModule)) select.addProjection(opening.getColumn("lod4_multi_surface_id", "oplod4_multi_surface_id"));
-			if (openingProjectionFilter.containsProperty("lod3ImplicitRepresentation", bridgeModule)) 
-				select.addProjection(opening.getColumn("lod3_implicit_rep_id"), exporter.getGeometryColumn(opening.getColumn("lod3_implicit_ref_point")), opening.getColumn("lod3_implicit_transformation"));
-			if (openingProjectionFilter.containsProperty("lod4ImplicitRepresentation", bridgeModule)) 
-				select.addProjection(opening.getColumn("lod4_implicit_rep_id"), exporter.getGeometryColumn(opening.getColumn("lod4_implicit_ref_point")), opening.getColumn("lod4_implicit_transformation"));
+			if (openingProjectionFilter.containsProperty("lod3ImplicitRepresentation", bridgeModule))  select.addProjection(opening.getColumn("lod3_implicit_rep_id"), exporter.getGeometryColumn(opening.getColumn("lod3_implicit_ref_point")), opening.getColumn("lod3_implicit_transformation"));
+			if (openingProjectionFilter.containsProperty("lod4ImplicitRepresentation", bridgeModule))  select.addProjection(opening.getColumn("lod4_implicit_rep_id"), exporter.getGeometryColumn(opening.getColumn("lod4_implicit_ref_point")), opening.getColumn("lod4_implicit_transformation"));
 			if (openingProjectionFilter.containsProperty("address", bridgeModule)) {
 				select.addJoin(JoinFactory.left(address, "id", ComparisonName.EQUAL_TO, opening.getColumn("address_id")))
 				.addProjection(opening.getColumn("address_id"), address.getColumn("street"), address.getColumn("house_number"), address.getColumn("po_box"), address.getColumn("zip_code"), address.getColumn("city"),
@@ -120,12 +117,9 @@ public class DBBridgeThematicSurface extends AbstractFeatureExporter<AbstractBou
 
 		// add joins to ADE hook tables
 		if (exporter.hasADESupport()) {
-			surfaceADEHookTables = exporter.getADEHookTables(TableEnum.BRIDGE_THEMATIC_SURFACE);
-			openingADEHookTables = exporter.getADEHookTables(TableEnum.BRIDGE_OPENING);
-			addressADEHookTables = exporter.getADEHookTables(TableEnum.ADDRESS);
-			if (surfaceADEHookTables != null) addJoinsToADEHookTables(surfaceADEHookTables, table);
-			if (openingADEHookTables != null) addJoinsToADEHookTables(openingADEHookTables, opening);
-			if (addressADEHookTables != null) addJoinsToADEHookTables(addressADEHookTables, address);
+			surfaceADEHookTables = addJoinsToADEHookTables(TableEnum.BRIDGE_THEMATIC_SURFACE, table);
+			openingADEHookTables = addJoinsToADEHookTables(TableEnum.BRIDGE_OPENING, opening);
+			addressADEHookTables = addJoinsToADEHookTables(TableEnum.ADDRESS, address);
 		}
 
 		cityObjectExporter = exporter.getExporter(DBCityObject.class);

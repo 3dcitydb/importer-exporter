@@ -62,7 +62,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public class DBTransportationComplex extends AbstractFeatureExporter<TransportationComplex> {
 	private final DBSurfaceGeometry geometryExporter;
@@ -72,8 +71,8 @@ public class DBTransportationComplex extends AbstractFeatureExporter<Transportat
 	private final String transportationModule;
 	private final LodFilter lodFilter;
 	private final AttributeValueSplitter valueSplitter;
-	private Set<String> complexADEHookTables;
-	private Set<String> objectADEHookTables;
+	private List<Table> complexADEHookTables;
+	private List<Table> objectADEHookTables;
 
 	public DBTransportationComplex(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
 		super(TransportationComplex.class, connection, exporter);
@@ -111,10 +110,8 @@ public class DBTransportationComplex extends AbstractFeatureExporter<Transportat
 
 		// add joins to ADE hook tables
 		if (exporter.hasADESupport()) {
-			complexADEHookTables = exporter.getADEHookTables(TableEnum.TRANSPORTATION_COMPLEX);
-			objectADEHookTables = exporter.getADEHookTables(TableEnum.TRAFFIC_AREA);			
-			if (complexADEHookTables != null) addJoinsToADEHookTables(complexADEHookTables, table);
-			if (objectADEHookTables != null) addJoinsToADEHookTables(objectADEHookTables, trafficArea);
+			complexADEHookTables = addJoinsToADEHookTables(TableEnum.TRANSPORTATION_COMPLEX, table);
+			objectADEHookTables = addJoinsToADEHookTables(TableEnum.TRAFFIC_AREA, trafficArea);
 		}
 
 		cityObjectExporter = exporter.getExporter(DBCityObject.class);

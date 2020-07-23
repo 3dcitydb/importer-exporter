@@ -61,7 +61,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 public class DBBridgeRoom extends AbstractFeatureExporter<BridgeRoom> {
 	private final DBSurfaceGeometry geometryExporter;
@@ -74,7 +73,7 @@ public class DBBridgeRoom extends AbstractFeatureExporter<BridgeRoom> {
 	private final LodFilter lodFilter;
 	private final AttributeValueSplitter valueSplitter;
 	private final boolean hasObjectClassIdColumn;
-	private Set<String> adeHookTables;
+	private List<Table> adeHookTables;
 
 	public DBBridgeRoom(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
 		super(BridgeRoom.class, connection, exporter);
@@ -95,10 +94,8 @@ public class DBBridgeRoom extends AbstractFeatureExporter<BridgeRoom> {
 		if (projectionFilter.containsProperty("lod4Solid", bridgeModule)) select.addProjection(table.getColumn("lod4_solid_id"));
 
 		// add joins to ADE hook tables
-		if (exporter.hasADESupport()) {
-			adeHookTables = exporter.getADEHookTables(TableEnum.BRIDGE_ROOM);			
-			if (adeHookTables != null) addJoinsToADEHookTables(adeHookTables, table);
-		}
+		if (exporter.hasADESupport())
+			adeHookTables = addJoinsToADEHookTables(TableEnum.BRIDGE_ROOM, table);
 		
 		cityObjectExporter = exporter.getExporter(DBCityObject.class);
 		bridgeInstallationExporter = exporter.getExporter(DBBridgeInstallation.class);

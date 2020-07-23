@@ -60,7 +60,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 
 public class DBBridgeOpening extends AbstractFeatureExporter<AbstractOpening> {
 	private final DBSurfaceGeometry geometryExporter;
@@ -70,8 +69,8 @@ public class DBBridgeOpening extends AbstractFeatureExporter<AbstractOpening> {
 
 	private final String bridgeModule;
 	private final LodFilter lodFilter;
-	private Set<String> openingADEHookTables;
-	private Set<String> addressADEHookTables;
+	private List<Table> openingADEHookTables;
+	private List<Table> addressADEHookTables;
 
 	public DBBridgeOpening(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
 		super(AbstractOpening.class, connection, exporter);
@@ -97,10 +96,8 @@ public class DBBridgeOpening extends AbstractFeatureExporter<AbstractOpening> {
 
 		// add joins to ADE hook tables
 		if (exporter.hasADESupport()) {
-			openingADEHookTables = exporter.getADEHookTables(TableEnum.BRIDGE_OPENING);
-			addressADEHookTables = exporter.getADEHookTables(TableEnum.ADDRESS);			
-			if (openingADEHookTables != null) addJoinsToADEHookTables(openingADEHookTables, table);
-			if (addressADEHookTables != null) addJoinsToADEHookTables(addressADEHookTables, address);
+			openingADEHookTables = addJoinsToADEHookTables(TableEnum.BRIDGE_OPENING, table);
+			addressADEHookTables = addJoinsToADEHookTables(TableEnum.ADDRESS, address);
 		}
 
 		cityObjectExporter = exporter.getExporter(DBCityObject.class);

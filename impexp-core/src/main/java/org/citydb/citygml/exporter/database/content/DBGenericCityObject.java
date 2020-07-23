@@ -55,7 +55,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 public class DBGenericCityObject extends AbstractFeatureExporter<GenericCityObject> {
 	private final DBSurfaceGeometry geometryExporter;
@@ -67,7 +66,7 @@ public class DBGenericCityObject extends AbstractFeatureExporter<GenericCityObje
 	private final LodFilter lodFilter;
 	private final AttributeValueSplitter valueSplitter;
 	private final boolean hasObjectClassIdColumn;
-	private Set<String> adeHookTables;
+	private List<Table> adeHookTables;
 
 	public DBGenericCityObject(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
 		super(GenericCityObject.class, connection, exporter);		
@@ -94,22 +93,15 @@ public class DBGenericCityObject extends AbstractFeatureExporter<GenericCityObje
 		if (projectionFilter.containsProperty("lod2Geometry", genericsModule)) select.addProjection(table.getColumn("lod2_brep_id"), exporter.getGeometryColumn(table.getColumn("lod2_other_geom")));
 		if (projectionFilter.containsProperty("lod3Geometry", genericsModule)) select.addProjection(table.getColumn("lod3_brep_id"), exporter.getGeometryColumn(table.getColumn("lod3_other_geom")));
 		if (projectionFilter.containsProperty("lod4Geometry", genericsModule)) select.addProjection(table.getColumn("lod4_brep_id"), exporter.getGeometryColumn(table.getColumn("lod4_other_geom")));
-		if (projectionFilter.containsProperty("lod0ImplicitRepresentation", genericsModule))
-			select.addProjection(table.getColumn("lod0_implicit_rep_id"), exporter.getGeometryColumn(table.getColumn("lod0_implicit_ref_point")), table.getColumn("lod0_implicit_transformation"));
-		if (projectionFilter.containsProperty("lod1ImplicitRepresentation", genericsModule))
-			select.addProjection(table.getColumn("lod1_implicit_rep_id"), exporter.getGeometryColumn(table.getColumn("lod1_implicit_ref_point")), table.getColumn("lod1_implicit_transformation"));
-		if (projectionFilter.containsProperty("lod2ImplicitRepresentation", genericsModule))
-			select.addProjection(table.getColumn("lod2_implicit_rep_id"), exporter.getGeometryColumn(table.getColumn("lod2_implicit_ref_point")), table.getColumn("lod2_implicit_transformation"));
-		if (projectionFilter.containsProperty("lod3ImplicitRepresentation", genericsModule))
-			select.addProjection(table.getColumn("lod3_implicit_rep_id"), exporter.getGeometryColumn(table.getColumn("lod3_implicit_ref_point")), table.getColumn("lod3_implicit_transformation"));
-		if (projectionFilter.containsProperty("lod4ImplicitRepresentation", genericsModule))
-			select.addProjection(table.getColumn("lod4_implicit_rep_id"), exporter.getGeometryColumn(table.getColumn("lod4_implicit_ref_point")), table.getColumn("lod4_implicit_transformation"));
+		if (projectionFilter.containsProperty("lod0ImplicitRepresentation", genericsModule)) select.addProjection(table.getColumn("lod0_implicit_rep_id"), exporter.getGeometryColumn(table.getColumn("lod0_implicit_ref_point")), table.getColumn("lod0_implicit_transformation"));
+		if (projectionFilter.containsProperty("lod1ImplicitRepresentation", genericsModule)) select.addProjection(table.getColumn("lod1_implicit_rep_id"), exporter.getGeometryColumn(table.getColumn("lod1_implicit_ref_point")), table.getColumn("lod1_implicit_transformation"));
+		if (projectionFilter.containsProperty("lod2ImplicitRepresentation", genericsModule)) select.addProjection(table.getColumn("lod2_implicit_rep_id"), exporter.getGeometryColumn(table.getColumn("lod2_implicit_ref_point")), table.getColumn("lod2_implicit_transformation"));
+		if (projectionFilter.containsProperty("lod3ImplicitRepresentation", genericsModule)) select.addProjection(table.getColumn("lod3_implicit_rep_id"), exporter.getGeometryColumn(table.getColumn("lod3_implicit_ref_point")), table.getColumn("lod3_implicit_transformation"));
+		if (projectionFilter.containsProperty("lod4ImplicitRepresentation", genericsModule)) select.addProjection(table.getColumn("lod4_implicit_rep_id"), exporter.getGeometryColumn(table.getColumn("lod4_implicit_ref_point")), table.getColumn("lod4_implicit_transformation"));
 
 		// add joins to ADE hook tables
-		if (exporter.hasADESupport()) {
-			adeHookTables = exporter.getADEHookTables(TableEnum.GENERIC_CITYOBJECT);			
-			if (adeHookTables != null) addJoinsToADEHookTables(adeHookTables, table);
-		}
+		if (exporter.hasADESupport())
+			adeHookTables = addJoinsToADEHookTables(TableEnum.GENERIC_CITYOBJECT, table);
 		
 		cityObjectExporter = exporter.getExporter(DBCityObject.class);
 		geometryExporter = exporter.getExporter(DBSurfaceGeometry.class);

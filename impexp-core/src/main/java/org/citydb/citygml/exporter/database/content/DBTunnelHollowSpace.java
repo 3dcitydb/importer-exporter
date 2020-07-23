@@ -61,7 +61,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 public class DBTunnelHollowSpace extends AbstractFeatureExporter<HollowSpace> {
 	private final DBSurfaceGeometry geometryExporter;
@@ -74,7 +73,7 @@ public class DBTunnelHollowSpace extends AbstractFeatureExporter<HollowSpace> {
 	private final LodFilter lodFilter;
 	private final AttributeValueSplitter valueSplitter;
 	private final boolean hasObjectClassIdColumn;
-	private Set<String> adeHookTables;
+	private List<Table> adeHookTables;
 
 	public DBTunnelHollowSpace(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
 		super(HollowSpace.class, connection, exporter);
@@ -95,10 +94,8 @@ public class DBTunnelHollowSpace extends AbstractFeatureExporter<HollowSpace> {
 		if (projectionFilter.containsProperty("lod4Solid", tunnelModule)) select.addProjection(table.getColumn("lod4_solid_id"));
 
 		// add joins to ADE hook tables
-		if (exporter.hasADESupport()) {
-			adeHookTables = exporter.getADEHookTables(TableEnum.TUNNEL_HOLLOW_SPACE);			
-			if (adeHookTables != null) addJoinsToADEHookTables(adeHookTables, table);
-		}
+		if (exporter.hasADESupport())
+			adeHookTables = addJoinsToADEHookTables(TableEnum.TUNNEL_HOLLOW_SPACE, table);
 
 		cityObjectExporter = exporter.getExporter(DBCityObject.class);
 		tunnelInstallationExporter = exporter.getExporter(DBTunnelInstallation.class);

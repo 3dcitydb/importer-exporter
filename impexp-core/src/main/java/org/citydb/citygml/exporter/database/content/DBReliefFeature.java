@@ -63,7 +63,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public class DBReliefFeature extends AbstractFeatureExporter<ReliefFeature> {
 	private GMLConverter gmlConverter;
@@ -74,8 +73,8 @@ public class DBReliefFeature extends AbstractFeatureExporter<ReliefFeature> {
 	private final DBCityObject cityObjectExporter;
 
 	private DBSurfaceGeometry geometryExporter;
-	private Set<String> reliefADEHookTables;
-	private Set<String> componentADEHookTables;
+	private List<Table> reliefADEHookTables;
+	private List<Table> componentADEHookTables;
 
 	public DBReliefFeature(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
 		super(ReliefFeature.class, connection, exporter);
@@ -118,10 +117,8 @@ public class DBReliefFeature extends AbstractFeatureExporter<ReliefFeature> {
 
 		// add joins to ADE hook tables
 		if (exporter.hasADESupport()) {
-			reliefADEHookTables = exporter.getADEHookTables(TableEnum.BRIDGE);
-			componentADEHookTables = exporter.getADEHookTables(TableEnum.RELIEF_COMPONENT);			
-			if (reliefADEHookTables != null) addJoinsToADEHookTables(reliefADEHookTables, table);
-			if (componentADEHookTables != null) addJoinsToADEHookTables(componentADEHookTables, reliefComponent);
+			reliefADEHookTables = addJoinsToADEHookTables(TableEnum.BRIDGE, table);
+			componentADEHookTables = addJoinsToADEHookTables(TableEnum.RELIEF_COMPONENT, reliefComponent);
 		}
 
 		cityObjectExporter = exporter.getExporter(DBCityObject.class);

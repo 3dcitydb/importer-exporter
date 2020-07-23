@@ -61,7 +61,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 public class DBRoom extends AbstractFeatureExporter<Room> {
 	private final DBSurfaceGeometry geometryExporter;
@@ -74,7 +73,7 @@ public class DBRoom extends AbstractFeatureExporter<Room> {
 	private final LodFilter lodFilter;
 	private final AttributeValueSplitter valueSplitter;
 	private final boolean hasObjectClassIdColumn;
-	private Set<String> adeHookTables;
+	private List<Table> adeHookTables;
 
 	public DBRoom(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
 		super(Room.class, connection, exporter);
@@ -95,10 +94,8 @@ public class DBRoom extends AbstractFeatureExporter<Room> {
 		if (projectionFilter.containsProperty("lod4Solid", buildingModule)) select.addProjection(table.getColumn("lod4_solid_id"));
 
 		// add joins to ADE hook tables
-		if (exporter.hasADESupport()) {
-			adeHookTables = exporter.getADEHookTables(TableEnum.ROOM);			
-			if (adeHookTables != null) addJoinsToADEHookTables(adeHookTables, table);
-		}
+		if (exporter.hasADESupport())
+			adeHookTables = addJoinsToADEHookTables(TableEnum.ROOM, table);
 
 		cityObjectExporter = exporter.getExporter(DBCityObject.class);
 		buildingInstallationExporter = exporter.getExporter(DBBuildingInstallation.class);

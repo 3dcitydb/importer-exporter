@@ -79,7 +79,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 public class AbstractAppearanceExporter extends AbstractTypeExporter {
 	private final Logger log = Logger.getInstance();
@@ -98,8 +97,8 @@ public class AbstractAppearanceExporter extends AbstractTypeExporter {
 	private boolean appendOldGmlId;
 	private String gmlIdPrefix;
 	private List<PlaceHolder<?>> themes;
-	private Set<String> appearanceADEHookTables;
-	private Set<String> surfaceDataADEHookTables;
+	private List<Table> appearanceADEHookTables;
+	private List<Table> surfaceDataADEHookTables;
 
 	protected AbstractAppearanceExporter(boolean isGlobal, Connection connection, Query query, CacheTable cacheTable, CityGMLExportManager exporter, Config config) throws CityGMLExportException, SQLException {
 		super(exporter);
@@ -143,10 +142,8 @@ public class AbstractAppearanceExporter extends AbstractTypeExporter {
 
 		// add joins to ADE hook tables
 		if (exporter.hasADESupport()) {
-			appearanceADEHookTables = exporter.getADEHookTables(TableEnum.APPEARANCE);
-			surfaceDataADEHookTables = exporter.getADEHookTables(TableEnum.SURFACE_DATA);			
-			if (appearanceADEHookTables != null) addJoinsToADEHookTables(appearanceADEHookTables, table);
-			if (surfaceDataADEHookTables != null) addJoinsToADEHookTables(surfaceDataADEHookTables, surfaceData);
+			appearanceADEHookTables = addJoinsToADEHookTables(TableEnum.APPEARANCE, table);
+			surfaceDataADEHookTables = addJoinsToADEHookTables(TableEnum.SURFACE_DATA, surfaceData);
 		}
 
 		if (isGlobal)

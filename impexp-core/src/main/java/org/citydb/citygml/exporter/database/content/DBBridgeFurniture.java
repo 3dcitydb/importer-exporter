@@ -54,7 +54,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 public class DBBridgeFurniture extends AbstractFeatureExporter<BridgeFurniture> {
 	private final DBSurfaceGeometry geometryExporter;
@@ -66,7 +65,7 @@ public class DBBridgeFurniture extends AbstractFeatureExporter<BridgeFurniture> 
 	private final LodFilter lodFilter;
 	private final AttributeValueSplitter valueSplitter;
 	private final boolean hasObjectClassIdColumn;
-	private Set<String> adeHookTables;
+	private List<Table> adeHookTables;
 
 	public DBBridgeFurniture(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
 		super(BridgeFurniture.class, connection, exporter);
@@ -88,10 +87,8 @@ public class DBBridgeFurniture extends AbstractFeatureExporter<BridgeFurniture> 
 			select.addProjection(table.getColumn("lod4_implicit_rep_id"), exporter.getGeometryColumn(table.getColumn("lod4_implicit_ref_point")), table.getColumn("lod4_implicit_transformation"));
 
 		// add joins to ADE hook tables
-		if (exporter.hasADESupport()) {
-			adeHookTables = exporter.getADEHookTables(TableEnum.BRIDGE_FURNITURE);			
-			if (adeHookTables != null) addJoinsToADEHookTables(adeHookTables, table);
-		}
+		if (exporter.hasADESupport())
+			adeHookTables = addJoinsToADEHookTables(TableEnum.BRIDGE_FURNITURE, table);
 		
 		cityObjectExporter = exporter.getExporter(DBCityObject.class);
 		geometryExporter = exporter.getExporter(DBSurfaceGeometry.class);

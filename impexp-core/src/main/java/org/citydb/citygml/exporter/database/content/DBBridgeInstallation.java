@@ -61,7 +61,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 public class DBBridgeInstallation extends AbstractFeatureExporter<AbstractCityObject> {
 	private final DBSurfaceGeometry geometryExporter;
@@ -73,7 +72,7 @@ public class DBBridgeInstallation extends AbstractFeatureExporter<AbstractCityOb
 	private final String bridgeModule;
 	private final LodFilter lodFilter;
 	private final AttributeValueSplitter valueSplitter;
-	private Set<String> adeHookTables;
+	private List<Table> adeHookTables;
 	
 	public DBBridgeInstallation(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
 		super(AbstractCityObject.class, connection, exporter);
@@ -91,18 +90,13 @@ public class DBBridgeInstallation extends AbstractFeatureExporter<AbstractCityOb
 		if (projectionFilter.containsProperty("lod2Geometry", bridgeModule)) select.addProjection(table.getColumn("lod2_brep_id"), exporter.getGeometryColumn(table.getColumn("lod2_other_geom")));
 		if (projectionFilter.containsProperty("lod3Geometry", bridgeModule)) select.addProjection(table.getColumn("lod3_brep_id"), exporter.getGeometryColumn(table.getColumn("lod3_other_geom")));
 		if (projectionFilter.containsProperty("lod4Geometry", bridgeModule)) select.addProjection(table.getColumn("lod4_brep_id"), exporter.getGeometryColumn(table.getColumn("lod4_other_geom")));
-		if (projectionFilter.containsProperty("lod2ImplicitRepresentation", bridgeModule))
-			select.addProjection(table.getColumn("lod2_implicit_rep_id"), exporter.getGeometryColumn(table.getColumn("lod2_implicit_ref_point")), table.getColumn("lod2_implicit_transformation"));
-		if (projectionFilter.containsProperty("lod3ImplicitRepresentation", bridgeModule))
-			select.addProjection(table.getColumn("lod3_implicit_rep_id"), exporter.getGeometryColumn(table.getColumn("lod3_implicit_ref_point")), table.getColumn("lod3_implicit_transformation"));
-		if (projectionFilter.containsProperty("lod4ImplicitRepresentation", bridgeModule))
-			select.addProjection(table.getColumn("lod4_implicit_rep_id"), exporter.getGeometryColumn(table.getColumn("lod4_implicit_ref_point")), table.getColumn("lod4_implicit_transformation"));
+		if (projectionFilter.containsProperty("lod2ImplicitRepresentation", bridgeModule)) select.addProjection(table.getColumn("lod2_implicit_rep_id"), exporter.getGeometryColumn(table.getColumn("lod2_implicit_ref_point")), table.getColumn("lod2_implicit_transformation"));
+		if (projectionFilter.containsProperty("lod3ImplicitRepresentation", bridgeModule)) select.addProjection(table.getColumn("lod3_implicit_rep_id"), exporter.getGeometryColumn(table.getColumn("lod3_implicit_ref_point")), table.getColumn("lod3_implicit_transformation"));
+		if (projectionFilter.containsProperty("lod4ImplicitRepresentation", bridgeModule)) select.addProjection(table.getColumn("lod4_implicit_rep_id"), exporter.getGeometryColumn(table.getColumn("lod4_implicit_ref_point")), table.getColumn("lod4_implicit_transformation"));
 
 		// add joins to ADE hook tables
-		if (exporter.hasADESupport()) {
-			adeHookTables = exporter.getADEHookTables(TableEnum.BRIDGE_INSTALLATION);			
-			if (adeHookTables != null) addJoinsToADEHookTables(adeHookTables, table);
-		}
+		if (exporter.hasADESupport())
+			adeHookTables = addJoinsToADEHookTables(TableEnum.BRIDGE_INSTALLATION, table);
 		
 		cityObjectReader = exporter.getExporter(DBCityObject.class);
 		thematicSurfaceExporter = exporter.getExporter(DBBridgeThematicSurface.class);

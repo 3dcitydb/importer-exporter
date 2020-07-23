@@ -49,12 +49,11 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 public class DBAddress extends AbstractFeatureExporter<Address> {
 	private final AddressExportFactory factory;
 	private final GMLConverter gmlConverter;
-	private Set<String> adeHookTables;
+	private List<Table> adeHookTables;
 
 	public DBAddress(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
 		super(Address.class, connection, exporter);
@@ -67,11 +66,9 @@ public class DBAddress extends AbstractFeatureExporter<Address> {
 				exporter.getGeometryColumn(table.getColumn("multi_point")));
 
 		// add joins to ADE hook tables
-		if (exporter.hasADESupport()) {
-			adeHookTables = exporter.getADEHookTables(TableEnum.ADDRESS);			
-			if (adeHookTables != null) addJoinsToADEHookTables(adeHookTables, table);
-		}
-		
+		if (exporter.hasADESupport())
+			adeHookTables = addJoinsToADEHookTables(TableEnum.ADDRESS, table);
+
 		factory = new AddressExportFactory(exporter.getExportConfig());
 		gmlConverter = exporter.getGMLConverter();
 	}

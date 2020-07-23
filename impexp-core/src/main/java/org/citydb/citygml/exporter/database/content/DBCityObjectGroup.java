@@ -54,7 +54,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Set;
 
 public class DBCityObjectGroup extends AbstractTypeExporter {
 	private final PreparedStatement ps;
@@ -64,7 +63,7 @@ public class DBCityObjectGroup extends AbstractTypeExporter {
 
 	private final String groupModule;
 	private final AttributeValueSplitter valueSplitter;
-	private Set<String> adeHookTables;
+	private List<Table> adeHookTables;
 
 	public DBCityObjectGroup(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
 		super(exporter);
@@ -95,10 +94,8 @@ public class DBCityObjectGroup extends AbstractTypeExporter {
 		}
 		
 		// add joins to ADE hook tables
-		if (exporter.hasADESupport()) {
-			adeHookTables = exporter.getADEHookTables(TableEnum.CITYOBJECTGROUP);			
-			if (adeHookTables != null) addJoinsToADEHookTables(adeHookTables, table);
-		}
+		if (exporter.hasADESupport())
+			adeHookTables = addJoinsToADEHookTables(TableEnum.CITYOBJECTGROUP, table);
 
 		select.addSelection(ComparisonFactory.equalTo(table.getColumn("id"), new PlaceHolder<>()));
 		ps = connection.prepareStatement(select.toString());

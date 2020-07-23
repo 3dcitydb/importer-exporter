@@ -66,7 +66,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 
 public class DBThematicSurface extends AbstractFeatureExporter<AbstractBoundarySurface> {
 	private final DBSurfaceGeometry geometryExporter;
@@ -77,9 +76,9 @@ public class DBThematicSurface extends AbstractFeatureExporter<AbstractBoundaryS
 	private final String buildingModule;
 	private final LodFilter lodFilter;
 	private final boolean useXLink;
-	private Set<String> surfaceADEHookTables;
-	private Set<String> openingADEHookTables;
-	private Set<String> addressADEHookTables;
+	private List<Table> surfaceADEHookTables;
+	private List<Table> openingADEHookTables;
+	private List<Table> addressADEHookTables;
 
 	public DBThematicSurface(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
 		super(AbstractBoundarySurface.class, connection, exporter);
@@ -106,10 +105,8 @@ public class DBThematicSurface extends AbstractFeatureExporter<AbstractBoundaryS
 			.addProjection(opening.getColumn("id", "opid"), opening.getColumn("objectclass_id", "opobjectclass_id"));
 			if (openingProjectionFilter.containsProperty("lod3MultiSurface", buildingModule)) select.addProjection(opening.getColumn("lod3_multi_surface_id", "oplod3_multi_surface_id"));
 			if (openingProjectionFilter.containsProperty("lod4MultiSurface", buildingModule)) select.addProjection(opening.getColumn("lod4_multi_surface_id", "oplod4_multi_surface_id"));
-			if (openingProjectionFilter.containsProperty("lod3ImplicitRepresentation", buildingModule)) 
-				select.addProjection(opening.getColumn("lod3_implicit_rep_id"), exporter.getGeometryColumn(opening.getColumn("lod3_implicit_ref_point")), opening.getColumn("lod3_implicit_transformation"));
-			if (openingProjectionFilter.containsProperty("lod4ImplicitRepresentation", buildingModule)) 
-				select.addProjection(opening.getColumn("lod4_implicit_rep_id"), exporter.getGeometryColumn(opening.getColumn("lod4_implicit_ref_point")), opening.getColumn("lod4_implicit_transformation"));
+			if (openingProjectionFilter.containsProperty("lod3ImplicitRepresentation", buildingModule)) select.addProjection(opening.getColumn("lod3_implicit_rep_id"), exporter.getGeometryColumn(opening.getColumn("lod3_implicit_ref_point")), opening.getColumn("lod3_implicit_transformation"));
+			if (openingProjectionFilter.containsProperty("lod4ImplicitRepresentation", buildingModule)) select.addProjection(opening.getColumn("lod4_implicit_rep_id"), exporter.getGeometryColumn(opening.getColumn("lod4_implicit_ref_point")), opening.getColumn("lod4_implicit_transformation"));
 			if (openingProjectionFilter.containsProperty("address", buildingModule)) {
 				select.addJoin(JoinFactory.left(address, "id", ComparisonName.EQUAL_TO, opening.getColumn("address_id")))
 				.addProjection(opening.getColumn("address_id"), address.getColumn("street"), address.getColumn("house_number"), address.getColumn("po_box"), address.getColumn("zip_code"), address.getColumn("city"),
@@ -119,12 +116,9 @@ public class DBThematicSurface extends AbstractFeatureExporter<AbstractBoundaryS
 
 		// add joins to ADE hook tables
 		if (exporter.hasADESupport()) {
-			surfaceADEHookTables = exporter.getADEHookTables(TableEnum.THEMATIC_SURFACE);
-			openingADEHookTables = exporter.getADEHookTables(TableEnum.OPENING);
-			addressADEHookTables = exporter.getADEHookTables(TableEnum.ADDRESS);
-			if (surfaceADEHookTables != null) addJoinsToADEHookTables(surfaceADEHookTables, table);
-			if (openingADEHookTables != null) addJoinsToADEHookTables(openingADEHookTables, opening);
-			if (addressADEHookTables != null) addJoinsToADEHookTables(addressADEHookTables, address);
+			surfaceADEHookTables = addJoinsToADEHookTables(TableEnum.THEMATIC_SURFACE, table);
+			openingADEHookTables = addJoinsToADEHookTables(TableEnum.OPENING, opening);
+			addressADEHookTables = addJoinsToADEHookTables(TableEnum.ADDRESS, address);
 		}
 
 		cityObjectExporter = exporter.getExporter(DBCityObject.class);

@@ -79,7 +79,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.regex.Pattern;
 
 public class DBBuilding extends AbstractFeatureExporter<AbstractBuilding> {
@@ -95,8 +94,8 @@ public class DBBuilding extends AbstractFeatureExporter<AbstractBuilding> {
 	private final LodFilter lodFilter;
 	private final AttributeValueSplitter valueSplitter;
 	private final boolean hasObjectClassIdColumn;
-	private Set<String> buildingADEHookTables;
-	private Set<String> addressADEHookTables;
+	private List<Table> buildingADEHookTables;
+	private List<Table> addressADEHookTables;
 
 	public DBBuilding(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
 		super(AbstractBuilding.class, connection, exporter);
@@ -151,10 +150,8 @@ public class DBBuilding extends AbstractFeatureExporter<AbstractBuilding> {
 
 		// add joins to ADE hook tables
 		if (exporter.hasADESupport()) {
-			buildingADEHookTables = exporter.getADEHookTables(TableEnum.BUILDING);
-			addressADEHookTables = exporter.getADEHookTables(TableEnum.ADDRESS);			
-			if (buildingADEHookTables != null) addJoinsToADEHookTables(buildingADEHookTables, table);
-			if (addressADEHookTables != null) addJoinsToADEHookTables(addressADEHookTables, address);
+			buildingADEHookTables = addJoinsToADEHookTables(TableEnum.BUILDING, table);
+			addressADEHookTables = addJoinsToADEHookTables(TableEnum.ADDRESS, address);
 		}
 
 		thematicSurfaceExporter = exporter.getExporter(DBThematicSurface.class);

@@ -72,7 +72,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 
 public class DBTunnel extends AbstractFeatureExporter<AbstractTunnel> {
 	private final DBSurfaceGeometry geometryExporter;
@@ -86,7 +85,7 @@ public class DBTunnel extends AbstractFeatureExporter<AbstractTunnel> {
 	private final LodFilter lodFilter;
 	private final AttributeValueSplitter valueSplitter;
 	private final boolean hasObjectClassIdColumn;
-	private Set<String> adeHookTables;
+	private List<Table> adeHookTables;
 
 	public DBTunnel(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
 		super(AbstractTunnel.class, connection, exporter);		
@@ -123,10 +122,8 @@ public class DBTunnel extends AbstractFeatureExporter<AbstractTunnel> {
 		if (projectionFilter.containsProperty("lod4MultiSurface", tunnelModule)) select.addProjection(table.getColumn("lod4_multi_surface_id"));
 
 		// add joins to ADE hook tables
-		if (exporter.hasADESupport()) {
-			adeHookTables = exporter.getADEHookTables(TableEnum.TUNNEL);			
-			if (adeHookTables != null) addJoinsToADEHookTables(adeHookTables, table);
-		}
+		if (exporter.hasADESupport())
+			adeHookTables = addJoinsToADEHookTables(TableEnum.TUNNEL, table);
 
 		thematicSurfaceExporter = exporter.getExporter(DBTunnelThematicSurface.class);
 		tunnelInstallationExporter = exporter.getExporter(DBTunnelInstallation.class);

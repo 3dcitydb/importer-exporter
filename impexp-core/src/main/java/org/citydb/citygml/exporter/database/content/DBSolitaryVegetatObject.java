@@ -55,7 +55,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 public class DBSolitaryVegetatObject extends AbstractFeatureExporter<SolitaryVegetationObject> {
 	private final DBSurfaceGeometry geometryExporter;
@@ -67,7 +66,7 @@ public class DBSolitaryVegetatObject extends AbstractFeatureExporter<SolitaryVeg
 	private final LodFilter lodFilter;
 	private final AttributeValueSplitter valueSplitter;
 	private final boolean hasObjectClassIdColumn;
-	private Set<String> adeHookTables;
+	private List<Table> adeHookTables;
 
 	public DBSolitaryVegetatObject(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
 		super(SolitaryVegetationObject.class, connection, exporter);
@@ -92,20 +91,14 @@ public class DBSolitaryVegetatObject extends AbstractFeatureExporter<SolitaryVeg
 		if (projectionFilter.containsProperty("lod2Geometry", vegetationModule)) select.addProjection(table.getColumn("lod2_brep_id"), exporter.getGeometryColumn(table.getColumn("lod2_other_geom")));
 		if (projectionFilter.containsProperty("lod3Geometry", vegetationModule)) select.addProjection(table.getColumn("lod3_brep_id"), exporter.getGeometryColumn(table.getColumn("lod3_other_geom")));
 		if (projectionFilter.containsProperty("lod4Geometry", vegetationModule)) select.addProjection(table.getColumn("lod4_brep_id"), exporter.getGeometryColumn(table.getColumn("lod4_other_geom")));
-		if (projectionFilter.containsProperty("lod1ImplicitRepresentation", vegetationModule))
-			select.addProjection(table.getColumn("lod1_implicit_rep_id"), exporter.getGeometryColumn(table.getColumn("lod1_implicit_ref_point")), table.getColumn("lod1_implicit_transformation"));
-		if (projectionFilter.containsProperty("lod2ImplicitRepresentation", vegetationModule))
-			select.addProjection(table.getColumn("lod2_implicit_rep_id"), exporter.getGeometryColumn(table.getColumn("lod2_implicit_ref_point")), table.getColumn("lod2_implicit_transformation"));
-		if (projectionFilter.containsProperty("lod3ImplicitRepresentation", vegetationModule))
-			select.addProjection(table.getColumn("lod3_implicit_rep_id"), exporter.getGeometryColumn(table.getColumn("lod3_implicit_ref_point")), table.getColumn("lod3_implicit_transformation"));
-		if (projectionFilter.containsProperty("lod4ImplicitRepresentation", vegetationModule))
-			select.addProjection(table.getColumn("lod4_implicit_rep_id"), exporter.getGeometryColumn(table.getColumn("lod4_implicit_ref_point")), table.getColumn("lod4_implicit_transformation"));
+		if (projectionFilter.containsProperty("lod1ImplicitRepresentation", vegetationModule)) select.addProjection(table.getColumn("lod1_implicit_rep_id"), exporter.getGeometryColumn(table.getColumn("lod1_implicit_ref_point")), table.getColumn("lod1_implicit_transformation"));
+		if (projectionFilter.containsProperty("lod2ImplicitRepresentation", vegetationModule)) select.addProjection(table.getColumn("lod2_implicit_rep_id"), exporter.getGeometryColumn(table.getColumn("lod2_implicit_ref_point")), table.getColumn("lod2_implicit_transformation"));
+		if (projectionFilter.containsProperty("lod3ImplicitRepresentation", vegetationModule)) select.addProjection(table.getColumn("lod3_implicit_rep_id"), exporter.getGeometryColumn(table.getColumn("lod3_implicit_ref_point")), table.getColumn("lod3_implicit_transformation"));
+		if (projectionFilter.containsProperty("lod4ImplicitRepresentation", vegetationModule)) select.addProjection(table.getColumn("lod4_implicit_rep_id"), exporter.getGeometryColumn(table.getColumn("lod4_implicit_ref_point")), table.getColumn("lod4_implicit_transformation"));
 
 		// add joins to ADE hook tables
-		if (exporter.hasADESupport()) {
-			adeHookTables = exporter.getADEHookTables(TableEnum.SOLITARY_VEGETAT_OBJECT);			
-			if (adeHookTables != null) addJoinsToADEHookTables(adeHookTables, table);
-		}
+		if (exporter.hasADESupport())
+			adeHookTables = addJoinsToADEHookTables(TableEnum.SOLITARY_VEGETAT_OBJECT, table);
 
 		cityObjectExporter = exporter.getExporter(DBCityObject.class);
 		geometryExporter = exporter.getExporter(DBSurfaceGeometry.class);
