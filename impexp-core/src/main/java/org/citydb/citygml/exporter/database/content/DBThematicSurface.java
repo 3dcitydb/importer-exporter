@@ -83,12 +83,17 @@ public class DBThematicSurface extends AbstractFeatureExporter<AbstractBoundaryS
 	public DBThematicSurface(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
 		super(AbstractBoundarySurface.class, connection, exporter);
 
+		cityObjectExporter = exporter.getExporter(DBCityObject.class);
+		geometryExporter = exporter.getExporter(DBSurfaceGeometry.class);
+		implicitGeometryExporter = exporter.getExporter(DBImplicitGeometry.class);
+		addressExporter = exporter.getExporter(DBAddress.class);
+
 		CombinedProjectionFilter boundarySurfaceProjectionFilter = exporter.getCombinedProjectionFilter(TableEnum.THEMATIC_SURFACE.getName());
 		CombinedProjectionFilter openingProjectionFilter = exporter.getCombinedProjectionFilter(TableEnum.OPENING.getName());
 		buildingModule = exporter.getTargetCityGMLVersion().getCityGMLModule(CityGMLModuleType.BUILDING).getNamespaceURI();		
 		lodFilter = exporter.getLodFilter();
-		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 		useXLink = exporter.getExportConfig().getXlink().getFeature().isModeXLink();
+		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 
 		table = new Table(TableEnum.THEMATIC_SURFACE.getName(), schema);
 		Table opening = new Table(TableEnum.OPENING.getName(), schema);
@@ -108,9 +113,8 @@ public class DBThematicSurface extends AbstractFeatureExporter<AbstractBoundaryS
 			if (openingProjectionFilter.containsProperty("lod3ImplicitRepresentation", buildingModule)) select.addProjection(opening.getColumn("lod3_implicit_rep_id"), exporter.getGeometryColumn(opening.getColumn("lod3_implicit_ref_point")), opening.getColumn("lod3_implicit_transformation"));
 			if (openingProjectionFilter.containsProperty("lod4ImplicitRepresentation", buildingModule)) select.addProjection(opening.getColumn("lod4_implicit_rep_id"), exporter.getGeometryColumn(opening.getColumn("lod4_implicit_ref_point")), opening.getColumn("lod4_implicit_transformation"));
 			if (openingProjectionFilter.containsProperty("address", buildingModule)) {
-				select.addJoin(JoinFactory.left(address, "id", ComparisonName.EQUAL_TO, opening.getColumn("address_id")))
-				.addProjection(opening.getColumn("address_id"), address.getColumn("street"), address.getColumn("house_number"), address.getColumn("po_box"), address.getColumn("zip_code"), address.getColumn("city"),
-						address.getColumn("state"), address.getColumn("country"), address.getColumn("xal_source"), exporter.getGeometryColumn(address.getColumn("multi_point")));
+				addressExporter.addProjection(select, address, "a")
+						.addJoin(JoinFactory.left(address, "id", ComparisonName.EQUAL_TO, opening.getColumn("address_id")));
 			}
 		}
 
@@ -120,11 +124,6 @@ public class DBThematicSurface extends AbstractFeatureExporter<AbstractBoundaryS
 			openingADEHookTables = addJoinsToADEHookTables(TableEnum.OPENING, opening);
 			addressADEHookTables = addJoinsToADEHookTables(TableEnum.ADDRESS, address);
 		}
-
-		cityObjectExporter = exporter.getExporter(DBCityObject.class);
-		geometryExporter = exporter.getExporter(DBSurfaceGeometry.class);
-		implicitGeometryExporter = exporter.getExporter(DBImplicitGeometry.class);
-		addressExporter = exporter.getExporter(DBAddress.class);
 	}
 
 	protected Collection<AbstractBoundarySurface> doExport(AbstractBuilding parent, long parentId) throws CityGMLExportException, SQLException {
@@ -334,9 +333,9 @@ public class DBThematicSurface extends AbstractFeatureExporter<AbstractBoundaryS
 				}
 
 				if (opening instanceof Door && openingProjectionFilter.containsProperty("address", buildingModule)) {
-					long addressId = rs.getLong("address_id");
+					long addressId = rs.getLong("aid");
 					if (!rs.wasNull()) {
-						AddressProperty addressProperty = addressExporter.doExport(rs);
+						AddressProperty addressProperty = addressExporter.doExport("a", rs);
 						if (addressProperty != null) {
 							((Door)opening).addAddress(addressProperty);
 

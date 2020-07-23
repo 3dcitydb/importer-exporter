@@ -99,12 +99,21 @@ public class DBBridge extends AbstractFeatureExporter<AbstractBridge> {
 	public DBBridge(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
 		super(AbstractBridge.class, connection, exporter); 
 
+		thematicSurfaceExporter = exporter.getExporter(DBBridgeThematicSurface.class);
+		bridgeInstallationExporter = exporter.getExporter(DBBridgeInstallation.class);
+		bridgeConstrElemExporter = exporter.getExporter(DBBridgeConstrElement.class);
+		bridgeRoomExporter = exporter.getExporter(DBBridgeRoom.class);
+		cityObjectExporter = exporter.getExporter(DBCityObject.class);
+		geometryExporter = exporter.getExporter(DBSurfaceGeometry.class);
+		addressExporter = exporter.getExporter(DBAddress.class);
+		gmlConverter = exporter.getGMLConverter();
+		valueSplitter = exporter.getAttributeValueSplitter();
+
 		CombinedProjectionFilter projectionFilter = exporter.getCombinedProjectionFilter(TableEnum.BRIDGE.getName());
 		bridgeModule = exporter.getTargetCityGMLVersion().getCityGMLModule(CityGMLModuleType.BRIDGE).getNamespaceURI();
 		lodFilter = exporter.getLodFilter();
-		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
-
 		hasObjectClassIdColumn = exporter.getDatabaseAdapter().getConnectionMetaData().getCityDBVersion().compareTo(4, 0, 0) >= 0;
+		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 
 		table = new Table(TableEnum.BRIDGE.getName(), schema);
 		Table address = new Table(TableEnum.ADDRESS.getName(), schema);
@@ -134,10 +143,9 @@ public class DBBridge extends AbstractFeatureExporter<AbstractBridge> {
 		if (projectionFilter.containsProperty("lod4MultiSurface", bridgeModule)) select.addProjection(table.getColumn("lod4_multi_surface_id"));
 		if (projectionFilter.containsProperty("address", bridgeModule)) {
 			Table addressToBridge = new Table(TableEnum.ADDRESS_TO_BRIDGE.getName(), schema);
-			select.addJoin(JoinFactory.left(addressToBridge, "bridge_id", ComparisonName.EQUAL_TO, table.getColumn("id")))
-			.addJoin(JoinFactory.left(address, "id", ComparisonName.EQUAL_TO, addressToBridge.getColumn("address_id")))
-			.addProjection(address.getColumn("id", "addr_id"), address.getColumn("street"), address.getColumn("house_number"), address.getColumn("po_box"), address.getColumn("zip_code"), address.getColumn("city"),
-					address.getColumn("state"), address.getColumn("country"), address.getColumn("xal_source"), exporter.getGeometryColumn(address.getColumn("multi_point")));
+			addressExporter.addProjection(select, address, "a")
+					.addJoin(JoinFactory.left(addressToBridge, "bridge_id", ComparisonName.EQUAL_TO, table.getColumn("id")))
+					.addJoin(JoinFactory.left(address, "id", ComparisonName.EQUAL_TO, addressToBridge.getColumn("address_id")));
 		}
 
 		// add joins to ADE hook tables
@@ -145,16 +153,6 @@ public class DBBridge extends AbstractFeatureExporter<AbstractBridge> {
 			bridgeADEHookTables = addJoinsToADEHookTables(TableEnum.BRIDGE, table);
 			addressADEHookTables = addJoinsToADEHookTables(TableEnum.ADDRESS, address);
 		}
-
-		thematicSurfaceExporter = exporter.getExporter(DBBridgeThematicSurface.class);
-		bridgeInstallationExporter = exporter.getExporter(DBBridgeInstallation.class);
-		bridgeConstrElemExporter = exporter.getExporter(DBBridgeConstrElement.class);
-		bridgeRoomExporter = exporter.getExporter(DBBridgeRoom.class);
-		cityObjectExporter = exporter.getExporter(DBCityObject.class);
-		geometryExporter = exporter.getExporter(DBSurfaceGeometry.class);
-		addressExporter = exporter.getExporter(DBAddress.class);
-		gmlConverter = exporter.getGMLConverter();
-		valueSplitter = exporter.getAttributeValueSplitter();
 	}
 
 	@Override
@@ -439,9 +437,9 @@ public class DBBridge extends AbstractFeatureExporter<AbstractBridge> {
 
 				// brid:address
 				if (projectionFilter.containsProperty("address", bridgeModule)) {
-					long addressId = rs.getLong("addr_id");
+					long addressId = rs.getLong("aid");
 					if (!rs.wasNull()) {
-						AddressProperty addressProperty = addressExporter.doExport(rs);
+						AddressProperty addressProperty = addressExporter.doExport("a", rs);
 						if (addressProperty != null) {
 							bridge.addAddress(addressProperty);
 

@@ -100,12 +100,20 @@ public class DBBuilding extends AbstractFeatureExporter<AbstractBuilding> {
 	public DBBuilding(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
 		super(AbstractBuilding.class, connection, exporter);
 
+		thematicSurfaceExporter = exporter.getExporter(DBThematicSurface.class);
+		buildingInstallationExporter = exporter.getExporter(DBBuildingInstallation.class);
+		roomExporter = exporter.getExporter(DBRoom.class);
+		cityObjectExporter = exporter.getExporter(DBCityObject.class);
+		geometryExporter = exporter.getExporter(DBSurfaceGeometry.class);
+		addressExporter = exporter.getExporter(DBAddress.class);
+		gmlConverter = exporter.getGMLConverter();
+		valueSplitter = exporter.getAttributeValueSplitter();
+
 		CombinedProjectionFilter projectionFilter = exporter.getCombinedProjectionFilter(TableEnum.BUILDING.getName());
 		buildingModule = exporter.getTargetCityGMLVersion().getCityGMLModule(CityGMLModuleType.BUILDING).getNamespaceURI();		
 		lodFilter = exporter.getLodFilter();
-		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
-
 		hasObjectClassIdColumn = exporter.getDatabaseAdapter().getConnectionMetaData().getCityDBVersion().compareTo(4, 0, 0) >= 0;
+		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 
 		table = new Table(TableEnum.BUILDING.getName(), schema);
 		Table address = new Table(TableEnum.ADDRESS.getName(), schema);
@@ -142,10 +150,9 @@ public class DBBuilding extends AbstractFeatureExporter<AbstractBuilding> {
 		if (projectionFilter.containsProperty("lod4MultiSurface", buildingModule)) select.addProjection(table.getColumn("lod4_multi_surface_id"));
 		if (projectionFilter.containsProperty("address", buildingModule)) {
 			Table addressToBuilding = new Table(TableEnum.ADDRESS_TO_BUILDING.getName(), schema);
-			select.addJoin(JoinFactory.left(addressToBuilding, "building_id", ComparisonName.EQUAL_TO, table.getColumn("id")))
-			.addJoin(JoinFactory.left(address, "id", ComparisonName.EQUAL_TO, addressToBuilding.getColumn("address_id")))
-			.addProjection(address.getColumn("id", "addr_id"), address.getColumn("street"), address.getColumn("house_number"), address.getColumn("po_box"), address.getColumn("zip_code"), address.getColumn("city"),
-					address.getColumn("state"), address.getColumn("country"), address.getColumn("xal_source"), exporter.getGeometryColumn(address.getColumn("multi_point")));
+			addressExporter.addProjection(select, address, "a")
+					.addJoin(JoinFactory.left(addressToBuilding, "building_id", ComparisonName.EQUAL_TO, table.getColumn("id")))
+					.addJoin(JoinFactory.left(address, "id", ComparisonName.EQUAL_TO, addressToBuilding.getColumn("address_id")));
 		}
 
 		// add joins to ADE hook tables
@@ -153,15 +160,6 @@ public class DBBuilding extends AbstractFeatureExporter<AbstractBuilding> {
 			buildingADEHookTables = addJoinsToADEHookTables(TableEnum.BUILDING, table);
 			addressADEHookTables = addJoinsToADEHookTables(TableEnum.ADDRESS, address);
 		}
-
-		thematicSurfaceExporter = exporter.getExporter(DBThematicSurface.class);
-		buildingInstallationExporter = exporter.getExporter(DBBuildingInstallation.class);
-		roomExporter = exporter.getExporter(DBRoom.class);
-		cityObjectExporter = exporter.getExporter(DBCityObject.class);
-		geometryExporter = exporter.getExporter(DBSurfaceGeometry.class);
-		addressExporter = exporter.getExporter(DBAddress.class);
-		gmlConverter = exporter.getGMLConverter();
-		valueSplitter = exporter.getAttributeValueSplitter();
 	}
 
 	@Override
@@ -526,9 +524,9 @@ public class DBBuilding extends AbstractFeatureExporter<AbstractBuilding> {
 
 				// bldg:address
 				if (projectionFilter.containsProperty("address", buildingModule)) {
-					long addressId = rs.getLong("addr_id");
+					long addressId = rs.getLong("aid");
 					if (!rs.wasNull()) {
-						AddressProperty addressProperty = addressExporter.doExport(rs);
+						AddressProperty addressProperty = addressExporter.doExport("a", rs);
 						if (addressProperty != null) {
 							building.addAddress(addressProperty);
 

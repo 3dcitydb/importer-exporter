@@ -75,6 +75,11 @@ public class DBBridgeOpening extends AbstractFeatureExporter<AbstractOpening> {
 	public DBBridgeOpening(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
 		super(AbstractOpening.class, connection, exporter);
 
+		cityObjectExporter = exporter.getExporter(DBCityObject.class);
+		geometryExporter = exporter.getExporter(DBSurfaceGeometry.class);
+		implicitGeometryExporter = exporter.getExporter(DBImplicitGeometry.class);
+		addressExporter = exporter.getExporter(DBAddress.class);
+
 		CombinedProjectionFilter projectionFilter = exporter.getCombinedProjectionFilter(TableEnum.BRIDGE_OPENING.getName());
 		bridgeModule = exporter.getTargetCityGMLVersion().getCityGMLModule(CityGMLModuleType.BRIDGE).getNamespaceURI();
 		lodFilter = exporter.getLodFilter();
@@ -89,9 +94,8 @@ public class DBBridgeOpening extends AbstractFeatureExporter<AbstractOpening> {
 		if (projectionFilter.containsProperty("lod3ImplicitRepresentation", bridgeModule)) select.addProjection(table.getColumn("lod3_implicit_rep_id"), exporter.getGeometryColumn(table.getColumn("lod3_implicit_ref_point")), table.getColumn("lod3_implicit_transformation"));
 		if (projectionFilter.containsProperty("lod4ImplicitRepresentation", bridgeModule)) select.addProjection(table.getColumn("lod4_implicit_rep_id"), exporter.getGeometryColumn(table.getColumn("lod4_implicit_ref_point")), table.getColumn("lod4_implicit_transformation"));
 		if (projectionFilter.containsProperty("address", bridgeModule)) {
-			select.addJoin(JoinFactory.left(address, "id", ComparisonName.EQUAL_TO, table.getColumn("address_id")))
-			.addProjection(table.getColumn("address_id"), address.getColumn("street"), address.getColumn("house_number"), address.getColumn("po_box"), address.getColumn("zip_code"), address.getColumn("city"),
-					address.getColumn("state"), address.getColumn("country"), address.getColumn("xal_source"), exporter.getGeometryColumn(address.getColumn("multi_point")));
+			addressExporter.addProjection(select, address, "a")
+					.addJoin(JoinFactory.left(address, "id", ComparisonName.EQUAL_TO, table.getColumn("address_id")));
 		}
 
 		// add joins to ADE hook tables
@@ -99,11 +103,6 @@ public class DBBridgeOpening extends AbstractFeatureExporter<AbstractOpening> {
 			openingADEHookTables = addJoinsToADEHookTables(TableEnum.BRIDGE_OPENING, table);
 			addressADEHookTables = addJoinsToADEHookTables(TableEnum.ADDRESS, address);
 		}
-
-		cityObjectExporter = exporter.getExporter(DBCityObject.class);
-		geometryExporter = exporter.getExporter(DBSurfaceGeometry.class);
-		implicitGeometryExporter = exporter.getExporter(DBImplicitGeometry.class);
-		addressExporter = exporter.getExporter(DBAddress.class);
 	}
 
 	@Override
@@ -227,9 +226,9 @@ public class DBBridgeOpening extends AbstractFeatureExporter<AbstractOpening> {
 				}
 
 				if (opening instanceof Door && projectionFilter.containsProperty("address", bridgeModule)) {
-					long addressId = rs.getLong("address_id");
+					long addressId = rs.getLong("aid");
 					if (!rs.wasNull()) {
-						AddressProperty addressProperty = addressExporter.doExport(rs);
+						AddressProperty addressProperty = addressExporter.doExport("a", rs);
 						if (addressProperty != null) {
 							((Door)opening).addAddress(addressProperty);
 
