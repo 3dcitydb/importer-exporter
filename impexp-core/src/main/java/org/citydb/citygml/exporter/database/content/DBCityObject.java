@@ -111,8 +111,6 @@ public class DBCityObject implements DBExporter {
 		this.exporter = exporter;
 		this.query = query;
 
-
-
 		coreModule = exporter.getTargetCityGMLVersion().getCityGMLModule(CityGMLModuleType.CORE).getNamespaceURI();
 		appearanceModule = exporter.getTargetCityGMLVersion().getCityGMLModule(CityGMLModuleType.APPEARANCE).getNamespaceURI();
 		gmlModule = GMLCoreModule.v3_1_1.getNamespaceURI();
