@@ -29,10 +29,8 @@ package org.citydb.citygml.exporter.database.content;
 
 import org.citydb.database.schema.TableEnum;
 import org.citydb.query.filter.projection.ProjectionFilter;
-import org.citydb.sqlbuilder.expression.PlaceHolder;
 import org.citydb.sqlbuilder.schema.Table;
 import org.citydb.sqlbuilder.select.Select;
-import org.citydb.sqlbuilder.select.operator.comparison.ComparisonFactory;
 import org.citydb.util.Util;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.core.AbstractCityObject;
@@ -56,37 +54,46 @@ import java.util.Map;
 
 public class DBCityObjectGenericAttrib implements DBExporter {
 	private final Connection connection;
-	private final Select select;
+	private final CityGMLExportManager exporter;
 	private PreparedStatement ps;
 
 	public DBCityObjectGenericAttrib(Connection connection, CityGMLExportManager exporter) {
 		this.connection = connection;
-		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
+		this.exporter = exporter;
+	}
 
-		Table table = new Table(TableEnum.CITYOBJECT_GENERICATTRIB.getName(), schema);
-		select = new Select().addProjection(table.getColumn("id"), table.getColumn("parent_genattrib_id"),
-				table.getColumn("attrname"), table.getColumn("datatype"), table.getColumn("strval"), table.getColumn("intval"), table.getColumn("realval"),
-				table.getColumn("urival"), table.getColumn("dateval"), table.getColumn("unit"), table.getColumn("genattribset_codespace"))
-				.addSelection(ComparisonFactory.equalTo(table.getColumn("cityobject_id"), new PlaceHolder<>()));
+	protected Select addProjection(Select select, Table table, String prefix) {
+		select.addProjection(table.getColumn("id", prefix + "id"), table.getColumn("parent_genattrib_id", prefix + "parent_genattrib_id"),
+				table.getColumn("attrname", prefix + "attrname"), table.getColumn("datatype", prefix + "datatype"),
+				table.getColumn("strval", prefix + "strval"), table.getColumn("intval", prefix +"intval"),
+				table.getColumn("realval", prefix + "realval"), table.getColumn("urival", prefix + "urival"),
+				table.getColumn("dateval", prefix + "dateval"), table.getColumn("unit", prefix + "unit"),
+				table.getColumn("genattribset_codespace", prefix + "genattribset_codespace"));
+
+		return select;
 	}
 
 	protected void doExport(AbstractCityObject cityObject, long cityObjectId, ProjectionFilter projectionFilter) throws SQLException {
-		if (ps == null)
+		if (ps == null) {
+			String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
+			Table table = new Table(TableEnum.CITYOBJECT_GENERICATTRIB.getName(), schema);
+			Select select = addProjection(new Select(), table, "");
 			ps = connection.prepareStatement(select.toString());
+		}
 
 		ps.setLong(1, cityObjectId);
 
 		try (ResultSet rs = ps.executeQuery()) {
 			Map<Long, GenericAttributeSet> attributeSets = new HashMap<>();
 			while (rs.next())
-				doExport(rs.getLong(1), cityObject, projectionFilter, attributeSets, rs);
+				doExport(rs.getLong(1), cityObject, projectionFilter, "", attributeSets, rs);
 		}
 	}
 
-	protected void doExport(long id, AbstractCityObject cityObject, ProjectionFilter projectionFilter, Map<Long, GenericAttributeSet> attributeSets, ResultSet rs) throws SQLException {
-		long parentId = rs.getLong("parent_genattrib_id");
-		String name = rs.getString("attrname");
-		CityGMLClass type = Util.genericAttributeType2cityGMLClass(rs.getInt("datatype"));
+	protected void doExport(long id, AbstractCityObject cityObject, ProjectionFilter projectionFilter, String prefix, Map<Long, GenericAttributeSet> attributeSets, ResultSet rs) throws SQLException {
+		long parentId = rs.getLong(prefix + "parent_genattrib_id");
+		String name = rs.getString(prefix + "attrname");
+		CityGMLClass type = Util.genericAttributeType2cityGMLClass(rs.getInt(prefix + "datatype"));
 
 		// skip attribute if it is not covered by the projection filter
 		if (!projectionFilter.containsGenericAttribute(name, type))
@@ -105,47 +112,47 @@ public class DBCityObjectGenericAttrib implements DBExporter {
 
 		switch (type) {
 			case STRING_ATTRIBUTE:
-				String strVal = rs.getString("strval");
+				String strVal = rs.getString(prefix + "strval");
 				if (!rs.wasNull()) {
 					genericAttribute = new StringAttribute();
 					((StringAttribute)genericAttribute).setValue(strVal);
 				}
 				break;
 			case INT_ATTRIBUTE:
-				int intVal = rs.getInt("intval");
+				int intVal = rs.getInt(prefix + "intval");
 				if (!rs.wasNull()) {
 					genericAttribute = new IntAttribute();
 					((IntAttribute)genericAttribute).setValue(intVal);
 				}
 				break;
 			case DOUBLE_ATTRIBUTE:
-				double realVal = rs.getDouble("realval");
+				double realVal = rs.getDouble(prefix + "realval");
 				if (!rs.wasNull()) {
 					genericAttribute = new DoubleAttribute();
 					((DoubleAttribute)genericAttribute).setValue(realVal);
 				}
 				break;
 			case URI_ATTRIBUTE:
-				String uriVal = rs.getString("urival");
+				String uriVal = rs.getString(prefix + "urival");
 				if (!rs.wasNull()) {
 					genericAttribute = new UriAttribute();
 					((UriAttribute)genericAttribute).setValue(uriVal);
 				}
 				break;
 			case DATE_ATTRIBUTE:
-				Timestamp dateVal = rs.getTimestamp("dateval");
+				Timestamp dateVal = rs.getTimestamp(prefix + "dateval");
 				if (!rs.wasNull()) {
 					genericAttribute = new DateAttribute();
 					((DateAttribute)genericAttribute).setValue(dateVal.toLocalDateTime().toLocalDate());
 				}
 				break;
 			case MEASURE_ATTRIBUTE:
-				double measureVal = rs.getDouble("realval");
+				double measureVal = rs.getDouble(prefix + "realval");
 				if (!rs.wasNull()) {
 					genericAttribute = new MeasureAttribute();
 					Measure measure = new Measure();
 					measure.setValue(measureVal);
-					measure.setUom(rs.getString("unit"));
+					measure.setUom(rs.getString(prefix + "unit"));
 					((MeasureAttribute)genericAttribute).setValue(measure);
 				}
 				break;
@@ -156,7 +163,7 @@ public class DBCityObjectGenericAttrib implements DBExporter {
 					attributeSets.put(id, (GenericAttributeSet)genericAttribute);
 				}
 
-				((GenericAttributeSet)genericAttribute).setCodeSpace(rs.getString("genattribset_codespace"));
+				((GenericAttributeSet)genericAttribute).setCodeSpace(rs.getString(prefix + "genattribset_codespace"));
 				break;
 		}
 

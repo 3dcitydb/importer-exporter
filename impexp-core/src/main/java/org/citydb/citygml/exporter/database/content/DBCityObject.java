@@ -104,16 +104,14 @@ public class DBCityObject implements DBExporter {
 	private boolean setTileInfoAsGenericAttribute;
 	private Tile activeTile;
 	private SimpleTilingOptions tilingOptions;
-
 	private String cityDBADEModule;
 
 	public DBCityObject(Connection connection, Query query, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
 		this.exporter = exporter;
 		this.query = query;
 
-		coreModule = exporter.getTargetCityGMLVersion().getCityGMLModule(CityGMLModuleType.CORE).getNamespaceURI();
-		appearanceModule = exporter.getTargetCityGMLVersion().getCityGMLModule(CityGMLModuleType.APPEARANCE).getNamespaceURI();
-		gmlModule = GMLCoreModule.v3_1_1.getNamespaceURI();
+		gmlSrsName = query.getTargetSrs().getGMLSrsName();
+		exportAppearance = exporter.getExportConfig().getAppearances().isSetExportAppearance();
 
 		useTiling = query.isSetTiling();
 		if (useTiling) {
@@ -129,8 +127,15 @@ public class DBCityObject implements DBExporter {
 					CityDBADE200Module.v3_0.getNamespaceURI() : CityDBADE100Module.v3_0.getNamespaceURI();
 		}
 
-		exportAppearance = exporter.getExportConfig().getAppearances().isSetExportAppearance();
-		gmlSrsName = query.getTargetSrs().getGMLSrsName();
+		generalizesToExporter = exporter.getExporter(DBGeneralization.class);
+		genericAttributeExporter = exporter.getExporter(DBCityObjectGenericAttrib.class);
+		valueSplitter = exporter.getAttributeValueSplitter();
+		if (exportAppearance)
+			appearanceExporter = exporter.getExporter(DBLocalAppearance.class);
+
+		coreModule = exporter.getTargetCityGMLVersion().getCityGMLModule(CityGMLModuleType.CORE).getNamespaceURI();
+		appearanceModule = exporter.getTargetCityGMLVersion().getCityGMLModule(CityGMLModuleType.APPEARANCE).getNamespaceURI();
+		gmlModule = GMLCoreModule.v3_1_1.getNamespaceURI();
 		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 
 		Table cityObject = new Table(TableEnum.CITYOBJECT.getName(), schema);
@@ -142,22 +147,14 @@ public class DBCityObject implements DBExporter {
 				cityObject.getColumn("name"), cityObject.getColumn("name_codespace"), cityObject.getColumn("description"), cityObject.getColumn("creation_date"),
 				cityObject.getColumn("termination_date"), cityObject.getColumn("relative_to_terrain"), cityObject.getColumn("relative_to_water"),
 				externalReference.getColumn("id", "exid"), externalReference.getColumn("infosys"), externalReference.getColumn("name", "exname"), externalReference.getColumn("uri"),
-				generalization.getColumn("generalizes_to_id"),
-				genericAttributes.getColumn("id", "gaid"), genericAttributes.getColumn("parent_genattrib_id"),
-				genericAttributes.getColumn("attrname"), genericAttributes.getColumn("datatype"), genericAttributes.getColumn("strval"), genericAttributes.getColumn("intval"), genericAttributes.getColumn("realval"),
-				genericAttributes.getColumn("urival"), genericAttributes.getColumn("dateval"), genericAttributes.getColumn("unit"), genericAttributes.getColumn("genattribset_codespace"))
+				generalization.getColumn("generalizes_to_id"))
 				.addJoin(JoinFactory.left(externalReference, "cityobject_id", ComparisonName.EQUAL_TO, cityObject.getColumn("id")))
-				.addJoin(JoinFactory.left(generalization, "cityobject_id", ComparisonName.EQUAL_TO, cityObject.getColumn("id")))
+				.addJoin(JoinFactory.left(generalization, "cityobject_id", ComparisonName.EQUAL_TO, cityObject.getColumn("id")));
+		genericAttributeExporter.addProjection(select, genericAttributes, "ga")
 				.addJoin(JoinFactory.left(genericAttributes, "cityobject_id", ComparisonName.EQUAL_TO, cityObject.getColumn("id")))
 				.addSelection(ComparisonFactory.equalTo(cityObject.getColumn("id"), new PlaceHolder<>()));
 		if (exportCityDBMetadata) select.addProjection(cityObject.getColumn("last_modification_date"), cityObject.getColumn("updating_person"), cityObject.getColumn("reason_for_update"), cityObject.getColumn("lineage"));
 		ps = connection.prepareStatement(select.toString());
-
-		generalizesToExporter = exporter.getExporter(DBGeneralization.class);
-		genericAttributeExporter = exporter.getExporter(DBCityObjectGenericAttrib.class);
-		valueSplitter = exporter.getAttributeValueSplitter();
-		if (exportAppearance)
-			appearanceExporter = exporter.getExporter(DBLocalAppearance.class);
 	}
 
 	protected boolean doExport(AbstractGML object, long objectId, AbstractObjectType<?> objectType) throws CityGMLExportException, SQLException {
@@ -343,7 +340,7 @@ public class DBCityObject implements DBExporter {
 						// gen:_genericAttribute
 						long genericAttributeId = rs.getLong("gaid");
 						if (!rs.wasNull() && genericAttributes.add(genericAttributeId))
-							genericAttributeExporter.doExport(genericAttributeId, (AbstractCityObject) object, projectionFilter, genericAttributeSets, rs);
+							genericAttributeExporter.doExport(genericAttributeId, (AbstractCityObject) object, projectionFilter, "ga", genericAttributeSets, rs);
 
 					} while (rs.next());
 
