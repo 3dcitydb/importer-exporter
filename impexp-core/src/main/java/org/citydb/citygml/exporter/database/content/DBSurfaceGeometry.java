@@ -30,6 +30,7 @@ package org.citydb.citygml.exporter.database.content;
 import org.citydb.citygml.common.database.cache.CacheTable;
 import org.citydb.citygml.exporter.CityGMLExportException;
 import org.citydb.citygml.exporter.util.GeometrySetter;
+import org.citydb.citygml.exporter.util.GeometrySetterHandler;
 import org.citydb.config.Config;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.config.project.database.DatabaseType;
@@ -40,6 +41,7 @@ import org.citydb.sqlbuilder.schema.Table;
 import org.citydb.sqlbuilder.select.Select;
 import org.citydb.sqlbuilder.select.operator.comparison.ComparisonFactory;
 import org.citydb.sqlbuilder.select.projection.ConstantColumn;
+import org.citygml4j.model.citygml.core.ImplicitGeometry;
 import org.citygml4j.model.citygml.relief.TinProperty;
 import org.citygml4j.model.gml.GMLClass;
 import org.citygml4j.model.gml.geometry.AbstractGeometry;
@@ -77,15 +79,16 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryBatchExporter {
 	private final CityGMLExportManager exporter;
 	private final PreparedStatement psBulk;
 	private final Connection connection;
-	private final Map<Long, GeometrySetter<?>> setters;
+	private final List<SurfaceGeometryBatch> batches;
 	private final boolean exportAppearance;
 	private final boolean useXLink;
 
@@ -104,7 +107,7 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryBatchExport
 		this.exporter = exporter;
 		this.connection = connection;
 
-		setters = new LinkedHashMap<>();
+		batches = new ArrayList<>();
 		exportAppearance = config.getInternal().isExportGlobalAppearances();
 		useXLink = exporter.getExportConfig().getXlink().getGeometry().isModeXLink();
 		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
@@ -146,118 +149,102 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryBatchExport
 	}
 
 	@Override
+	public void addBatch(long id, GeometrySetterHandler handler) {
+		batches.add(new SurfaceGeometryBatch(id, handler, false));
+	}
+
+	@Override
 	public void addBatch(long id, GeometrySetter.AbstractGeometry setter) {
-		setters.put(id, setter);
+		addBatch(id, new DefaultGeometrySetterHandler(setter));
 	}
 
 	@Override
 	public void addBatch(long id, GeometrySetter.Surface setter) {
-		setters.put(id, setter);
+		addBatch(id, new DefaultGeometrySetterHandler(setter));
 	}
 
 	@Override
 	public void addBatch(long id, GeometrySetter.CompositeSurface setter) {
-		setters.put(id, setter);
+		addBatch(id, new DefaultGeometrySetterHandler(setter));
 	}
-
 
 	@Override
 	public void addBatch(long id, GeometrySetter.MultiSurface setter) {
-		setters.put(id, setter);
+		addBatch(id, new DefaultGeometrySetterHandler(setter));
 	}
 
 	@Override
 	public void addBatch(long id, GeometrySetter.Polygon setter) {
-		setters.put(id, setter);
+		addBatch(id, new DefaultGeometrySetterHandler(setter));
 	}
 
 	@Override
 	public void addBatch(long id, GeometrySetter.MultiPolygon setter) {
-		setters.put(id, setter);
+		addBatch(id, new DefaultGeometrySetterHandler(setter));
 	}
 
 	@Override
 	public void addBatch(long id, GeometrySetter.Solid setter) {
-		setters.put(id, setter);
+		addBatch(id, new DefaultGeometrySetterHandler(setter));
 	}
 
 	@Override
 	public void addBatch(long id, GeometrySetter.CompositeSolid setter) {
-		setters.put(id, setter);
+		addBatch(id, new DefaultGeometrySetterHandler(setter));
 	}
 
 	@Override
 	public void addBatch(long id, GeometrySetter.MultiSolid setter) {
-		setters.put(id, setter);
+		addBatch(id, new DefaultGeometrySetterHandler(setter));
 	}
 
 	@Override
 	public void addBatch(long id, GeometrySetter.Tin setter) {
-		setters.put(id, setter);
+		addBatch(id, new DefaultGeometrySetterHandler(setter));
+	}
+
+	protected void addImplicitGeometryBatch(long id, ImplicitGeometry geometry) {
+		batches.add(new SurfaceGeometryBatch(id,
+				new DefaultGeometrySetterHandler((GeometrySetter.AbstractGeometry) geometry::setRelativeGeometry),
+				true));
 	}
 
 	@Override
 	public void clearBatch() {
-		setters.clear();
+		batches.clear();
 	}
 
 	@Override
 	public void executeBatch() throws CityGMLExportException, SQLException {
-		if (!setters.isEmpty()) {
+		if (!batches.isEmpty()) {
 			try {
-				Map<Long, GeometryTree> geomTrees = new HashMap<>(setters.size());
+				Set<Long> ids = new HashSet<>();
+				Map<Long, GeometryTree> geomTrees = new HashMap<>();
+				for (SurfaceGeometryBatch batch : batches) {
+					ids.add(batch.id);
+					geomTrees.putIfAbsent(batch.id, new GeometryTree(batch.isImplicit));
+				}
 
-				psBulk.setArray(1, exporter.getDatabaseAdapter().getSQLAdapter().createIdArray(setters.keySet().toArray(new Long[0]), connection));
+				psBulk.setArray(1, exporter.getDatabaseAdapter().getSQLAdapter().createIdArray(ids.toArray(new Long[0]), connection));
 				try (ResultSet rs = psBulk.executeQuery()) {
 					while (rs.next()) {
-						GeometryTree geomTree = geomTrees.computeIfAbsent(rs.getLong(11), v -> new GeometryTree(false));
-						readSurface(geomTree, rs);
+						GeometryTree geomTree = geomTrees.get(rs.getLong(11));
+						if (geomTree != null)
+							readSurface(geomTree, rs);
 					}
 				}
 
-				for (Map.Entry<Long, GeometrySetter<?>> entry : setters.entrySet()) {
-					GeometryTree geomTree = geomTrees.get(entry.getKey());
+				for (SurfaceGeometryBatch batch : batches) {
+					GeometryTree geomTree = geomTrees.get(batch.id);
 					if (geomTree != null && geomTree.root != 0) {
 						SurfaceGeometry geometry = rebuildGeometry(geomTree.getNode(geomTree.root), false, false);
-						if (geometry != null) {
-							GeometrySetter<?> value = entry.getValue();
-							if (value instanceof GeometrySetter.MultiSurface) {
-								GeometrySetter.MultiSurface setter = (GeometrySetter.MultiSurface) value;
-								setter.set(geometry.fill(new MultiSurfaceProperty()));
-							} else if (value instanceof GeometrySetter.Solid) {
-								GeometrySetter.Solid setter = (GeometrySetter.Solid) value;
-								setter.set(geometry.fill(new SolidProperty()));
-							} else if (value instanceof GeometrySetter.Surface) {
-								GeometrySetter.Surface setter = (GeometrySetter.Surface) value;
-								setter.set(geometry.fill(new SurfaceProperty()));
-							} else if (value instanceof GeometrySetter.CompositeSurface) {
-								GeometrySetter.CompositeSurface setter = (GeometrySetter.CompositeSurface) value;
-								setter.set(geometry.fill(new CompositeSurfaceProperty()));
-							} else if (value instanceof GeometrySetter.Polygon) {
-								GeometrySetter.Polygon setter = (GeometrySetter.Polygon) value;
-								setter.set(geometry.fill(new PolygonProperty()));
-							} else if (value instanceof GeometrySetter.MultiPolygon) {
-								GeometrySetter.MultiPolygon setter = (GeometrySetter.MultiPolygon) value;
-								setter.set(geometry.fill(new MultiPolygonProperty()));
-							} else if (value instanceof GeometrySetter.CompositeSolid) {
-								GeometrySetter.CompositeSolid setter = (GeometrySetter.CompositeSolid) value;
-								setter.set(geometry.fill(new CompositeSolidProperty()));
-							} else if (value instanceof GeometrySetter.MultiSolid) {
-								GeometrySetter.MultiSolid setter = (GeometrySetter.MultiSolid) value;
-								setter.set(geometry.fill(new MultiSolidProperty()));
-							} else if (value instanceof GeometrySetter.Tin) {
-								GeometrySetter.Tin setter = (GeometrySetter.Tin) value;
-								setter.set(geometry.fill(new TinProperty()));
-							} else if (value instanceof GeometrySetter.AbstractGeometry) {
-								GeometrySetter.AbstractGeometry setter = (GeometrySetter.AbstractGeometry) value;
-								setter.set(geometry.fill(new GeometryProperty<>()));
-							}
-						}
+						if (geometry != null)
+							batch.handler.handle(geometry);
 					} else
-						exporter.logOrThrowErrorMessage("Failed to read surface geometry for root id " + entry.getKey() + ".");
+						exporter.logOrThrowErrorMessage("Failed to read surface geometry for root id " + batch.id + ".");
 				}
 			} finally {
-				setters.clear();
+				batches.clear();
 			}
 		}
 	}
@@ -829,6 +816,60 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryBatchExport
 
 		GeometryNode getNode(long entryId) {
 			return geometryTree.get(entryId);
+		}
+	}
+
+	private static class SurfaceGeometryBatch {
+		final long id;
+		final GeometrySetterHandler handler;
+		final boolean isImplicit;
+
+		SurfaceGeometryBatch(long id, GeometrySetterHandler handler, boolean isImplicit) {
+			this.id = id;
+			this.handler = handler;
+			this.isImplicit = isImplicit;
+		}
+	}
+
+	private static class DefaultGeometrySetterHandler extends GeometrySetterHandler {
+
+		DefaultGeometrySetterHandler(GeometrySetter<?> setter) {
+			super(setter);
+		}
+
+		@Override
+		public void handle(SurfaceGeometry geometry) {
+			if (this.setter instanceof GeometrySetter.MultiSurface) {
+				GeometrySetter.MultiSurface setter = (GeometrySetter.MultiSurface) this.setter;
+				setter.set(geometry.fill(new MultiSurfaceProperty()));
+			} else if (this.setter instanceof GeometrySetter.Solid) {
+				GeometrySetter.Solid setter = (GeometrySetter.Solid) this.setter;
+				setter.set(geometry.fill(new SolidProperty()));
+			} else if (this.setter instanceof GeometrySetter.Surface) {
+				GeometrySetter.Surface setter = (GeometrySetter.Surface) this.setter;
+				setter.set(geometry.fill(new SurfaceProperty()));
+			} else if (this.setter instanceof GeometrySetter.CompositeSurface) {
+				GeometrySetter.CompositeSurface setter = (GeometrySetter.CompositeSurface) this.setter;
+				setter.set(geometry.fill(new CompositeSurfaceProperty()));
+			} else if (this.setter instanceof GeometrySetter.Polygon) {
+				GeometrySetter.Polygon setter = (GeometrySetter.Polygon) this.setter;
+				setter.set(geometry.fill(new PolygonProperty()));
+			} else if (this.setter instanceof GeometrySetter.MultiPolygon) {
+				GeometrySetter.MultiPolygon setter = (GeometrySetter.MultiPolygon) this.setter;
+				setter.set(geometry.fill(new MultiPolygonProperty()));
+			} else if (this.setter instanceof GeometrySetter.CompositeSolid) {
+				GeometrySetter.CompositeSolid setter = (GeometrySetter.CompositeSolid) this.setter;
+				setter.set(geometry.fill(new CompositeSolidProperty()));
+			} else if (this.setter instanceof GeometrySetter.MultiSolid) {
+				GeometrySetter.MultiSolid setter = (GeometrySetter.MultiSolid) this.setter;
+				setter.set(geometry.fill(new MultiSolidProperty()));
+			} else if (this.setter instanceof GeometrySetter.Tin) {
+				GeometrySetter.Tin setter = (GeometrySetter.Tin) this.setter;
+				setter.set(geometry.fill(new TinProperty()));
+			} else if (this.setter instanceof GeometrySetter.AbstractGeometry) {
+				GeometrySetter.AbstractGeometry setter = (GeometrySetter.AbstractGeometry) this.setter;
+				setter.set(geometry.fill(new GeometryProperty<>()));
+			}
 		}
 	}
 }

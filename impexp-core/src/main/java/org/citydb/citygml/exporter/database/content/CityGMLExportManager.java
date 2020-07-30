@@ -446,7 +446,12 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 
 	@Override
 	public ImplicitGeometry exportImplicitGeometry(long id, GeometryObject referencePoint, String transformationMatrix) throws CityGMLExportException, SQLException {
-		return getExporter(DBImplicitGeometry.class).doExport(id, referencePoint, transformationMatrix);
+		return exportImplicitGeometry(id, referencePoint, transformationMatrix, true);
+	}
+
+	@Override
+	public ImplicitGeometry exportImplicitGeometry(long id, GeometryObject referencePoint, String transformationMatrix, boolean useBatchGeometryExport) throws CityGMLExportException, SQLException {
+		return getExporter(DBImplicitGeometry.class).doExport(id, referencePoint, transformationMatrix, useBatchGeometryExport);
 	}
 
 	public Appearance exportGlobalAppearance(long appearanceId) throws CityGMLExportException, SQLException {

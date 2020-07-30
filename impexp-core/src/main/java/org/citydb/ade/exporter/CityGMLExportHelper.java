@@ -59,6 +59,7 @@ public interface CityGMLExportHelper {
 	SurfaceGeometryBatchExporter getSurfaceGeometryBatchExporter() throws CityGMLExportException, SQLException;
 	SurfaceGeometry exportSurfaceGeometry(long surfaceGeometryId) throws CityGMLExportException, SQLException;
 	ImplicitGeometry exportImplicitGeometry(long id, GeometryObject referencePoint, String transformationMatrix) throws CityGMLExportException, SQLException;
+	ImplicitGeometry exportImplicitGeometry(long id, GeometryObject referencePoint, String transformationMatrix, boolean useBatchGeometryExport) throws CityGMLExportException, SQLException;
 	boolean exportAsGlobalFeature(AbstractFeature feature) throws CityGMLExportException;
 	boolean supportsExportOfGlobalFeatures();
 	GMLConverter getGMLConverter();

@@ -88,6 +88,10 @@ public class DBImplicitGeometry implements DBExporter {
 	}
 
 	protected ImplicitGeometry doExport(long id, GeometryObject referencePoint, String transformationMatrix) throws CityGMLExportException, SQLException {
+		return doExport(id, referencePoint, transformationMatrix, true);
+	}
+
+	protected ImplicitGeometry doExport(long id, GeometryObject referencePoint, String transformationMatrix, boolean useBatchGeometryExport) throws CityGMLExportException, SQLException {
 		ps.setLong(1, id);
 		
 		try (ResultSet rs = ps.executeQuery()) {		
@@ -115,40 +119,44 @@ public class DBImplicitGeometry implements DBExporter {
 				}
 
 				// geometry
-				long surfaceGeometryId = rs.getLong(5);
-				Object otherGeomObj = rs.getObject(6);
-
-				if (surfaceGeometryId != 0) {
+				long geometryId = rs.getLong(5);
+				if (!rs.wasNull()) {
 					isValid = true;
 
-					SurfaceGeometry geometry = geometryExporter.doExportImplicitGeometry(surfaceGeometryId);
-					if (geometry != null) {
-						GeometryProperty<AbstractGeometry> geometryProperty = new GeometryProperty<>();
-						if (geometry.isSetGeometry())
-							geometryProperty.setGeometry(geometry.getGeometry());
-						else
-							geometryProperty.setHref(geometry.getReference());
-
-						implicit.setRelativeGeometry(geometryProperty);
-					} else
-						isValid = false;
-
-				} else if (otherGeomObj != null) {
-					isValid = true;
-
-					long implicitId = rs.getLong(1);
-					String uuid = toHexString(md5.digest(String.valueOf(implicitId).getBytes()));
-
-					if (exporter.lookupAndPutObjectUID(uuid, implicitId, MappingConstants.IMPLICIT_GEOMETRY_OBJECTCLASS_ID)) {
-						implicit.setRelativeGeometry(new GeometryProperty<>("#UUID_" + uuid));
-					} else {
-						GeometryObject otherGeom = exporter.getDatabaseAdapter().getGeometryConverter().getGeometry(otherGeomObj);
-						AbstractGeometry geometry = gmlConverter.getPointOrCurveGeometry(otherGeom, true);
+					if (useBatchGeometryExport)
+						geometryExporter.addImplicitGeometryBatch(geometryId, implicit);
+					else {
+						SurfaceGeometry geometry = geometryExporter.doExportImplicitGeometry(geometryId);
 						if (geometry != null) {
-							geometry.setId("UUID_" + uuid);
-							implicit.setRelativeGeometry(new GeometryProperty<>(geometry));
+							GeometryProperty<AbstractGeometry> property = new GeometryProperty<>();
+							if (geometry.isSetGeometry())
+								property.setGeometry(geometry.getGeometry());
+							else
+								property.setHref(geometry.getReference());
+
+							implicit.setRelativeGeometry(property);
 						} else
 							isValid = false;
+					}
+				} else {
+					Object otherGeomObj = rs.getObject(6);
+					if (!rs.wasNull()) {
+						isValid = true;
+
+						long implicitId = rs.getLong(1);
+						String uuid = toHexString(md5.digest(String.valueOf(implicitId).getBytes()));
+
+						if (exporter.lookupAndPutObjectUID(uuid, implicitId, MappingConstants.IMPLICIT_GEOMETRY_OBJECTCLASS_ID)) {
+							implicit.setRelativeGeometry(new GeometryProperty<>("#UUID_" + uuid));
+						} else {
+							GeometryObject otherGeom = exporter.getDatabaseAdapter().getGeometryConverter().getGeometry(otherGeomObj);
+							AbstractGeometry geometry = gmlConverter.getPointOrCurveGeometry(otherGeom, true);
+							if (geometry != null) {
+								geometry.setId("UUID_" + uuid);
+								implicit.setRelativeGeometry(new GeometryProperty<>(geometry));
+							} else
+								isValid = false;
+						}
 					}
 				}
 			}
