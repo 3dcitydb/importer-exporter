@@ -44,12 +44,15 @@ import org.citygml4j.model.citygml.relief.TinProperty;
 import org.citygml4j.model.gml.GMLClass;
 import org.citygml4j.model.gml.geometry.AbstractGeometry;
 import org.citygml4j.model.gml.geometry.GeometryProperty;
+import org.citygml4j.model.gml.geometry.aggregates.MultiPolygonProperty;
 import org.citygml4j.model.gml.geometry.aggregates.MultiSolid;
 import org.citygml4j.model.gml.geometry.aggregates.MultiSolidProperty;
 import org.citygml4j.model.gml.geometry.aggregates.MultiSurface;
 import org.citygml4j.model.gml.geometry.aggregates.MultiSurfaceProperty;
 import org.citygml4j.model.gml.geometry.complexes.CompositeSolid;
+import org.citygml4j.model.gml.geometry.complexes.CompositeSolidProperty;
 import org.citygml4j.model.gml.geometry.complexes.CompositeSurface;
+import org.citygml4j.model.gml.geometry.complexes.CompositeSurfaceProperty;
 import org.citygml4j.model.gml.geometry.primitives.AbstractSolid;
 import org.citygml4j.model.gml.geometry.primitives.AbstractSurface;
 import org.citygml4j.model.gml.geometry.primitives.DirectPositionList;
@@ -58,6 +61,7 @@ import org.citygml4j.model.gml.geometry.primitives.Interior;
 import org.citygml4j.model.gml.geometry.primitives.LinearRing;
 import org.citygml4j.model.gml.geometry.primitives.OrientableSurface;
 import org.citygml4j.model.gml.geometry.primitives.Polygon;
+import org.citygml4j.model.gml.geometry.primitives.PolygonProperty;
 import org.citygml4j.model.gml.geometry.primitives.Sign;
 import org.citygml4j.model.gml.geometry.primitives.Solid;
 import org.citygml4j.model.gml.geometry.primitives.SolidProperty;
@@ -153,12 +157,33 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryBatchExport
 	}
 
 	@Override
+	public void addBatch(long id, GeometrySetter.CompositeSurface setter) {
+		setters.put(id, setter);
+	}
+
+
+	@Override
 	public void addBatch(long id, GeometrySetter.MultiSurface setter) {
 		setters.put(id, setter);
 	}
 
 	@Override
+	public void addBatch(long id, GeometrySetter.Polygon setter) {
+		setters.put(id, setter);
+	}
+
+	@Override
+	public void addBatch(long id, GeometrySetter.MultiPolygon setter) {
+		setters.put(id, setter);
+	}
+
+	@Override
 	public void addBatch(long id, GeometrySetter.Solid setter) {
+		setters.put(id, setter);
+	}
+
+	@Override
+	public void addBatch(long id, GeometrySetter.CompositeSolid setter) {
 		setters.put(id, setter);
 	}
 
@@ -196,25 +221,37 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryBatchExport
 					if (geomTree != null && geomTree.root != 0) {
 						SurfaceGeometry geometry = rebuildGeometry(geomTree.getNode(geomTree.root), false, false);
 						if (geometry != null) {
-							GeometrySetter<?> setter = entry.getValue();
-							if (setter instanceof GeometrySetter.MultiSurface) {
-								GeometrySetter.MultiSurface multiSurfaceSetter = (GeometrySetter.MultiSurface) setter;
-								multiSurfaceSetter.set(geometry.fill(new MultiSurfaceProperty()));
-							} else if (setter instanceof GeometrySetter.Solid) {
-								GeometrySetter.Solid solidSetter = (GeometrySetter.Solid) setter;
-								solidSetter.set(geometry.fill(new SolidProperty()));
-							} else if (setter instanceof GeometrySetter.Surface) {
-								GeometrySetter.Surface surfaceSetter = (GeometrySetter.Surface) setter;
-								surfaceSetter.set(geometry.fill(new SurfaceProperty()));
-							} else if (setter instanceof GeometrySetter.MultiSolid) {
-								GeometrySetter.MultiSolid multiSolidSetter = (GeometrySetter.MultiSolid) setter;
-								multiSolidSetter.set(geometry.fill(new MultiSolidProperty()));
-							} else if (setter instanceof GeometrySetter.Tin) {
-								GeometrySetter.Tin tinSetter = (GeometrySetter.Tin) setter;
-								tinSetter.set(geometry.fill(new TinProperty()));
-							} else if (setter instanceof GeometrySetter.AbstractGeometry) {
-								GeometrySetter.AbstractGeometry solidSetter = (GeometrySetter.AbstractGeometry) setter;
-								solidSetter.set(geometry.fill(new GeometryProperty<>()));
+							GeometrySetter<?> value = entry.getValue();
+							if (value instanceof GeometrySetter.MultiSurface) {
+								GeometrySetter.MultiSurface setter = (GeometrySetter.MultiSurface) value;
+								setter.set(geometry.fill(new MultiSurfaceProperty()));
+							} else if (value instanceof GeometrySetter.Solid) {
+								GeometrySetter.Solid setter = (GeometrySetter.Solid) value;
+								setter.set(geometry.fill(new SolidProperty()));
+							} else if (value instanceof GeometrySetter.Surface) {
+								GeometrySetter.Surface setter = (GeometrySetter.Surface) value;
+								setter.set(geometry.fill(new SurfaceProperty()));
+							} else if (value instanceof GeometrySetter.CompositeSurface) {
+								GeometrySetter.CompositeSurface setter = (GeometrySetter.CompositeSurface) value;
+								setter.set(geometry.fill(new CompositeSurfaceProperty()));
+							} else if (value instanceof GeometrySetter.Polygon) {
+								GeometrySetter.Polygon setter = (GeometrySetter.Polygon) value;
+								setter.set(geometry.fill(new PolygonProperty()));
+							} else if (value instanceof GeometrySetter.MultiPolygon) {
+								GeometrySetter.MultiPolygon setter = (GeometrySetter.MultiPolygon) value;
+								setter.set(geometry.fill(new MultiPolygonProperty()));
+							} else if (value instanceof GeometrySetter.CompositeSolid) {
+								GeometrySetter.CompositeSolid setter = (GeometrySetter.CompositeSolid) value;
+								setter.set(geometry.fill(new CompositeSolidProperty()));
+							} else if (value instanceof GeometrySetter.MultiSolid) {
+								GeometrySetter.MultiSolid setter = (GeometrySetter.MultiSolid) value;
+								setter.set(geometry.fill(new MultiSolidProperty()));
+							} else if (value instanceof GeometrySetter.Tin) {
+								GeometrySetter.Tin setter = (GeometrySetter.Tin) value;
+								setter.set(geometry.fill(new TinProperty()));
+							} else if (value instanceof GeometrySetter.AbstractGeometry) {
+								GeometrySetter.AbstractGeometry setter = (GeometrySetter.AbstractGeometry) value;
+								setter.set(geometry.fill(new GeometryProperty<>()));
 							}
 						}
 					} else

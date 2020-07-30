@@ -30,8 +30,12 @@ package org.citydb.citygml.exporter.util;
 
 import org.citygml4j.model.citygml.relief.TinProperty;
 import org.citygml4j.model.gml.geometry.GeometryProperty;
+import org.citygml4j.model.gml.geometry.aggregates.MultiPolygonProperty;
 import org.citygml4j.model.gml.geometry.aggregates.MultiSolidProperty;
 import org.citygml4j.model.gml.geometry.aggregates.MultiSurfaceProperty;
+import org.citygml4j.model.gml.geometry.complexes.CompositeSolidProperty;
+import org.citygml4j.model.gml.geometry.complexes.CompositeSurfaceProperty;
+import org.citygml4j.model.gml.geometry.primitives.PolygonProperty;
 import org.citygml4j.model.gml.geometry.primitives.SolidProperty;
 import org.citygml4j.model.gml.geometry.primitives.SurfaceProperty;
 
@@ -40,8 +44,12 @@ public interface GeometrySetter<T extends GeometryProperty<?>> {
     void set(T property);
     interface AbstractGeometry extends GeometrySetter<GeometryProperty<?>> { }
     interface Surface extends GeometrySetter<SurfaceProperty> { }
+    interface CompositeSurface extends GeometrySetter<CompositeSurfaceProperty> { }
     interface MultiSurface extends GeometrySetter<MultiSurfaceProperty> { }
+    interface Polygon extends GeometrySetter<PolygonProperty> { }
+    interface MultiPolygon extends GeometrySetter<MultiPolygonProperty> { }
     interface Solid extends GeometrySetter<SolidProperty> { }
+    interface CompositeSolid extends GeometrySetter<CompositeSolidProperty> { }
     interface MultiSolid extends GeometrySetter<MultiSolidProperty> { }
     interface Tin extends GeometrySetter<TinProperty> { }
 }
