@@ -30,6 +30,7 @@ package org.citydb.citygml.exporter.database.content;
 import org.citydb.citygml.exporter.CityGMLExportException;
 import org.citydb.citygml.exporter.util.AttributeValueSplitter;
 import org.citydb.citygml.exporter.util.AttributeValueSplitter.SplitValue;
+import org.citydb.citygml.exporter.util.GeometrySetter;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.database.schema.TableEnum;
 import org.citydb.database.schema.mapping.FeatureType;
@@ -219,40 +220,43 @@ public class DBSolitaryVegetatObject extends AbstractFeatureExporter<SolitaryVeg
 						continue;
 
 					long geometryId = rs.getLong("lod" + lod + "_brep_id");
-					Object geometryObj = rs.getObject("lod" + lod + "_other_geom");
-					if (geometryId == 0 && geometryObj == null)
-						continue;
-
-					GeometryProperty<AbstractGeometry> geometryProperty = null;
-					if (geometryId != 0) {
-						SurfaceGeometry geometry = geometryExporter.doExport(geometryId);
-						if (geometry != null) {
-							geometryProperty = new GeometryProperty<>();
-							if (geometry.isSetGeometry())
-								geometryProperty.setGeometry(geometry.getGeometry());
-							else
-								geometryProperty.setHref(geometry.getReference());
+					if (!rs.wasNull()) {
+						switch (lod) {
+							case 1:
+								geometryExporter.addBatch(geometryId, (GeometrySetter.AbstractGeometry) vegetationObject::setLod1Geometry);
+								break;
+							case 2:
+								geometryExporter.addBatch(geometryId, (GeometrySetter.AbstractGeometry) vegetationObject::setLod2Geometry);
+								break;
+							case 3:
+								geometryExporter.addBatch(geometryId, (GeometrySetter.AbstractGeometry) vegetationObject::setLod3Geometry);
+								break;
+							case 4:
+								geometryExporter.addBatch(geometryId, (GeometrySetter.AbstractGeometry) vegetationObject::setLod4Geometry);
+								break;
 						}
 					} else {
-						GeometryObject geometry = exporter.getDatabaseAdapter().getGeometryConverter().getGeometry(geometryObj);
-						if (geometry != null)
-							geometryProperty = new GeometryProperty<>(gmlConverter.getPointOrCurveGeometry(geometry, true));
-					}
+						Object geometryObj = rs.getObject("lod" + lod + "_other_geom");
+						if (rs.wasNull())
+							continue;
 
-					if (geometryProperty != null) {
-						switch (lod) {
-						case 1:
-							vegetationObject.setLod1Geometry(geometryProperty);
-							break;
-						case 2:
-							vegetationObject.setLod2Geometry(geometryProperty);
-							break;
-						case 3:
-							vegetationObject.setLod3Geometry(geometryProperty);
-							break;
-						case 4:
-							vegetationObject.setLod4Geometry(geometryProperty);
-							break;
+						GeometryObject geometry = exporter.getDatabaseAdapter().getGeometryConverter().getGeometry(geometryObj);
+						if (geometry != null) {
+							GeometryProperty<AbstractGeometry> property = new GeometryProperty<>(gmlConverter.getPointOrCurveGeometry(geometry, true));
+							switch (lod) {
+								case 1:
+									vegetationObject.setLod1Geometry(property);
+									break;
+								case 2:
+									vegetationObject.setLod2Geometry(property);
+									break;
+								case 3:
+									vegetationObject.setLod3Geometry(property);
+									break;
+								case 4:
+									vegetationObject.setLod4Geometry(property);
+									break;
+							}
 						}
 					}
 				}

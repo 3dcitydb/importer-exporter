@@ -30,6 +30,7 @@ package org.citydb.citygml.exporter.database.content;
 import org.citydb.citygml.exporter.CityGMLExportException;
 import org.citydb.citygml.exporter.util.AttributeValueSplitter;
 import org.citydb.citygml.exporter.util.AttributeValueSplitter.SplitValue;
+import org.citydb.citygml.exporter.util.GeometrySetter;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.database.schema.TableEnum;
 import org.citydb.database.schema.mapping.FeatureType;
@@ -222,43 +223,49 @@ public class DBGenericCityObject extends AbstractFeatureExporter<GenericCityObje
 						continue;
 
 					long geometryId = rs.getLong("lod" + lod + "_brep_id");
-					Object geometryObj = rs.getObject("lod" + lod + "_other_geom");
-					if (geometryId == 0 && geometryObj == null)
-						continue;
-
-					GeometryProperty<AbstractGeometry> geometryProperty = null;
-					if (geometryId != 0) {
-						SurfaceGeometry geometry = geometryExporter.doExport(geometryId);
-						if (geometry != null) {
-							geometryProperty = new GeometryProperty<>();
-							if (geometry.isSetGeometry())
-								geometryProperty.setGeometry(geometry.getGeometry());
-							else
-								geometryProperty.setHref(geometry.getReference());
+					if (!rs.wasNull()) {
+						switch (lod) {
+							case 0:
+								geometryExporter.addBatch(geometryId, (GeometrySetter.AbstractGeometry) genericCityObject::setLod0Geometry);
+								break;
+							case 1:
+								geometryExporter.addBatch(geometryId, (GeometrySetter.AbstractGeometry) genericCityObject::setLod1Geometry);
+								break;
+							case 2:
+								geometryExporter.addBatch(geometryId, (GeometrySetter.AbstractGeometry) genericCityObject::setLod2Geometry);
+								break;
+							case 3:
+								geometryExporter.addBatch(geometryId, (GeometrySetter.AbstractGeometry) genericCityObject::setLod3Geometry);
+								break;
+							case 4:
+								geometryExporter.addBatch(geometryId, (GeometrySetter.AbstractGeometry) genericCityObject::setLod4Geometry);
+								break;
 						}
 					} else {
-						GeometryObject geometry = exporter.getDatabaseAdapter().getGeometryConverter().getGeometry(geometryObj);
-						if (geometry != null)
-							geometryProperty = new GeometryProperty<>(gmlConverter.getPointOrCurveGeometry(geometry, true));
-					}
+						Object geometryObj = rs.getObject("lod" + lod + "_other_geom");
+						if (rs.wasNull())
+							continue;
 
-					if (geometryProperty != null) {
-						switch (lod) {
-						case 0:
-							genericCityObject.setLod0Geometry(geometryProperty);
-							break;
-						case 1:
-							genericCityObject.setLod1Geometry(geometryProperty);
-							break;
-						case 2:
-							genericCityObject.setLod2Geometry(geometryProperty);
-							break;
-						case 3:
-							genericCityObject.setLod3Geometry(geometryProperty);
-							break;
-						case 4:
-							genericCityObject.setLod4Geometry(geometryProperty);
-							break;
+						GeometryObject geometry = exporter.getDatabaseAdapter().getGeometryConverter().getGeometry(geometryObj);
+						if (geometry != null) {
+							GeometryProperty<AbstractGeometry> property = new GeometryProperty<>(gmlConverter.getPointOrCurveGeometry(geometry, true));
+							switch (lod) {
+								case 0:
+									genericCityObject.setLod0Geometry(property);
+									break;
+								case 1:
+									genericCityObject.setLod1Geometry(property);
+									break;
+								case 2:
+									genericCityObject.setLod2Geometry(property);
+									break;
+								case 3:
+									genericCityObject.setLod3Geometry(property);
+									break;
+								case 4:
+									genericCityObject.setLod4Geometry(property);
+									break;
+							}
 						}
 					}
 				}

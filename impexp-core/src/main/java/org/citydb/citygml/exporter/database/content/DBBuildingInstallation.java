@@ -30,6 +30,7 @@ package org.citydb.citygml.exporter.database.content;
 import org.citydb.citygml.exporter.CityGMLExportException;
 import org.citydb.citygml.exporter.util.AttributeValueSplitter;
 import org.citydb.citygml.exporter.util.AttributeValueSplitter.SplitValue;
+import org.citydb.citygml.exporter.util.GeometrySetter;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.database.schema.TableEnum;
 import org.citydb.database.schema.mapping.FeatureType;
@@ -231,42 +232,47 @@ public class DBBuildingInstallation extends AbstractFeatureExporter<AbstractCity
 						continue;
 
 					long geometryId = rs.getLong("lod" + lod + "_brep_id");
-					Object geometryObj = rs.getObject("lod" + lod + "_other_geom");
-					if (geometryId == 0 && geometryObj == null)
-						continue;
-
-					GeometryProperty<AbstractGeometry> geometryProperty = null;
-					if (geometryId != 0) {
-						SurfaceGeometry geometry = geometryExporter.doExport(geometryId);
-						if (geometry != null) {
-							geometryProperty = new GeometryProperty<>();
-							if (geometry.isSetGeometry())
-								geometryProperty.setGeometry(geometry.getGeometry());
-							else
-								geometryProperty.setHref(geometry.getReference());
+					if (!rs.wasNull()) {
+						if (isExteriorInstallation) {
+							BuildingInstallation exterior = (BuildingInstallation) installation;
+							switch (lod) {
+								case 2:
+									geometryExporter.addBatch(geometryId, (GeometrySetter.AbstractGeometry) exterior::setLod2Geometry);
+									break;
+								case 3:
+									geometryExporter.addBatch(geometryId, (GeometrySetter.AbstractGeometry) exterior::setLod3Geometry);
+									break;
+								case 4:
+									geometryExporter.addBatch(geometryId, (GeometrySetter.AbstractGeometry) exterior::setLod4Geometry);
+									break;
+							}
+						} else {
+							IntBuildingInstallation interior = (IntBuildingInstallation) installation;
+							geometryExporter.addBatch(geometryId, (GeometrySetter.AbstractGeometry) interior::setLod4Geometry);
 						}
 					} else {
-						GeometryObject geometry = exporter.getDatabaseAdapter().getGeometryConverter().getGeometry(geometryObj);
-						if (geometry != null)
-							geometryProperty = new GeometryProperty<>(gmlConverter.getPointOrCurveGeometry(geometry, true));
-					}
+						Object geometryObj = rs.getObject("lod" + lod + "_other_geom");
+						if (rs.wasNull())
+							continue;
 
-					if (geometryProperty != null) {
-						switch (lod) {
-						case 2:
-							if (isExteriorInstallation)
-								((BuildingInstallation)installation).setLod2Geometry(geometryProperty);
-							break;
-						case 3:
-							if (isExteriorInstallation)
-								((BuildingInstallation)installation).setLod3Geometry(geometryProperty);
-							break;
-						case 4:
-							if (isExteriorInstallation)
-								((BuildingInstallation)installation).setLod4Geometry(geometryProperty);
-							else
-								((IntBuildingInstallation)installation).setLod4Geometry(geometryProperty);
-							break;
+						GeometryObject geometry = exporter.getDatabaseAdapter().getGeometryConverter().getGeometry(geometryObj);
+						if (geometry != null) {
+							GeometryProperty<AbstractGeometry> property = new GeometryProperty<>(gmlConverter.getPointOrCurveGeometry(geometry, true));
+							if (isExteriorInstallation) {
+								BuildingInstallation exterior = (BuildingInstallation) installation;
+								switch (lod) {
+									case 2:
+										exterior.setLod2Geometry(property);
+										break;
+									case 3:
+										exterior.setLod3Geometry(property);
+										break;
+									case 4:
+										exterior.setLod4Geometry(property);
+										break;
+								}
+							} else
+								((IntBuildingInstallation) installation).setLod4Geometry(property);
 						}
 					}
 				}

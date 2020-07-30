@@ -51,13 +51,8 @@ import org.citygml4j.model.citygml.tunnel.TunnelInstallation;
 import org.citygml4j.model.citygml.tunnel.TunnelInstallationProperty;
 import org.citygml4j.model.citygml.tunnel.TunnelPart;
 import org.citygml4j.model.citygml.tunnel.TunnelPartProperty;
-import org.citygml4j.model.gml.GMLClass;
 import org.citygml4j.model.gml.basicTypes.Code;
 import org.citygml4j.model.gml.geometry.aggregates.MultiCurveProperty;
-import org.citygml4j.model.gml.geometry.aggregates.MultiSurface;
-import org.citygml4j.model.gml.geometry.aggregates.MultiSurfaceProperty;
-import org.citygml4j.model.gml.geometry.primitives.AbstractSolid;
-import org.citygml4j.model.gml.geometry.primitives.SolidProperty;
 import org.citygml4j.model.module.citygml.CityGMLModuleType;
 
 import java.sql.Connection;
@@ -315,32 +310,23 @@ public class DBTunnel extends AbstractFeatureExporter<AbstractTunnel> {
 					if (!projectionFilter.containsProperty("lod" + lod + "Solid", tunnelModule))
 						continue;
 
-					long surfaceGeometryId = rs.getLong("lod" + lod + "_solid_id");
+					long geometryId = rs.getLong("lod" + lod + "_solid_id");
 					if (rs.wasNull())
 						continue;
 
-					SurfaceGeometry geometry = geometryExporter.doExport(surfaceGeometryId);
-					if (geometry != null && (geometry.getType() == GMLClass.SOLID || geometry.getType() == GMLClass.COMPOSITE_SOLID)) {
-						SolidProperty solidProperty = new SolidProperty();
-						if (geometry.getGeometry() != null)
-							solidProperty.setSolid((AbstractSolid)geometry.getGeometry());
-						else
-							solidProperty.setHref(geometry.getReference());
-
-						switch (lod) {
+					switch (lod) {
 						case 1:
-							tunnel.setLod1Solid(solidProperty);
+							geometryExporter.addBatch(geometryId, tunnel::setLod1Solid);
 							break;
 						case 2:
-							tunnel.setLod2Solid(solidProperty);
+							geometryExporter.addBatch(geometryId, tunnel::setLod2Solid);
 							break;
 						case 3:
-							tunnel.setLod3Solid(solidProperty);
+							geometryExporter.addBatch(geometryId, tunnel::setLod3Solid);
 							break;
 						case 4:
-							tunnel.setLod4Solid(solidProperty);
+							geometryExporter.addBatch(geometryId, tunnel::setLod4Solid);
 							break;
-						}
 					}
 				}
 
@@ -352,32 +338,23 @@ public class DBTunnel extends AbstractFeatureExporter<AbstractTunnel> {
 					if (!projectionFilter.containsProperty("lod" + lod + "MultiSurface", tunnelModule))
 						continue;
 
-					long surfaceGeometryId = rs.getLong("lod" + lod + "_multi_surface_id");
+					long geometryId = rs.getLong("lod" + lod + "_multi_surface_id");
 					if (rs.wasNull())
 						continue;
 
-					SurfaceGeometry geometry = geometryExporter.doExport(surfaceGeometryId);
-					if (geometry != null && geometry.getType() == GMLClass.MULTI_SURFACE) {
-						MultiSurfaceProperty multiSurfaceProperty = new MultiSurfaceProperty();
-						if (geometry.getGeometry() != null)
-							multiSurfaceProperty.setMultiSurface((MultiSurface)geometry.getGeometry());
-						else
-							multiSurfaceProperty.setHref(geometry.getReference());
-
-						switch (lod) {
+					switch (lod) {
 						case 1:
-							tunnel.setLod1MultiSurface(multiSurfaceProperty);
+							geometryExporter.addBatch(geometryId, tunnel::setLod1MultiSurface);
 							break;
 						case 2:
-							tunnel.setLod2MultiSurface(multiSurfaceProperty);
+							geometryExporter.addBatch(geometryId, tunnel::setLod2MultiSurface);
 							break;
 						case 3:
-							tunnel.setLod3MultiSurface(multiSurfaceProperty);
+							geometryExporter.addBatch(geometryId, tunnel::setLod3MultiSurface);
 							break;
 						case 4:
-							tunnel.setLod4MultiSurface(multiSurfaceProperty);
+							geometryExporter.addBatch(geometryId, tunnel::setLod4MultiSurface);
 							break;
-						}
 					}
 				}
 

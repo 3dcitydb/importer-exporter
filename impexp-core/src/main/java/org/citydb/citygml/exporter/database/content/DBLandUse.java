@@ -39,10 +39,7 @@ import org.citydb.query.filter.projection.ProjectionFilter;
 import org.citydb.sqlbuilder.schema.Table;
 import org.citydb.sqlbuilder.select.Select;
 import org.citygml4j.model.citygml.landuse.LandUse;
-import org.citygml4j.model.gml.GMLClass;
 import org.citygml4j.model.gml.basicTypes.Code;
-import org.citygml4j.model.gml.geometry.aggregates.MultiSurface;
-import org.citygml4j.model.gml.geometry.aggregates.MultiSurfaceProperty;
 import org.citygml4j.model.module.citygml.CityGMLModuleType;
 
 import java.sql.Connection;
@@ -167,35 +164,26 @@ public class DBLandUse extends AbstractFeatureExporter<LandUse> {
 					if (!projectionFilter.containsProperty("lod" + lod + "MultiSurface", landUseModule))
 						continue;
 
-					long surfaceGeometryId = rs.getLong("lod" + lod + "_multi_surface_id");
+					long geometryId = rs.getLong("lod" + lod + "_multi_surface_id");
 					if (rs.wasNull())
 						continue;
 
-					SurfaceGeometry geometry = geometryExporter.doExport(surfaceGeometryId);
-					if (geometry != null && geometry.getType() == GMLClass.MULTI_SURFACE) {
-						MultiSurfaceProperty multiSurfaceProperty = new MultiSurfaceProperty();
-						if (geometry.isSetGeometry())
-							multiSurfaceProperty.setMultiSurface((MultiSurface)geometry.getGeometry());
-						else
-							multiSurfaceProperty.setHref(geometry.getReference());
-
-						switch (lod) {
+					switch (lod) {
 						case 0:
-							landUse.setLod0MultiSurface(multiSurfaceProperty);
+							geometryExporter.addBatch(geometryId, landUse::setLod0MultiSurface);
 							break;
 						case 1:
-							landUse.setLod1MultiSurface(multiSurfaceProperty);
+							geometryExporter.addBatch(geometryId, landUse::setLod1MultiSurface);
 							break;
 						case 2:
-							landUse.setLod2MultiSurface(multiSurfaceProperty);
+							geometryExporter.addBatch(geometryId, landUse::setLod2MultiSurface);
 							break;
 						case 3:
-							landUse.setLod3MultiSurface(multiSurfaceProperty);
+							geometryExporter.addBatch(geometryId, landUse::setLod3MultiSurface);
 							break;
 						case 4:
-							landUse.setLod4MultiSurface(multiSurfaceProperty);
+							geometryExporter.addBatch(geometryId, landUse::setLod4MultiSurface);
 							break;
-						}
 					}
 				}
 				

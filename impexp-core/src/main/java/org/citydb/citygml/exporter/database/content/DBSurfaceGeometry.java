@@ -30,8 +30,6 @@ package org.citydb.citygml.exporter.database.content;
 import org.citydb.citygml.common.database.cache.CacheTable;
 import org.citydb.citygml.exporter.CityGMLExportException;
 import org.citydb.citygml.exporter.util.GeometrySetter;
-import org.citydb.citygml.exporter.util.MultiSurfaceSetter;
-import org.citydb.citygml.exporter.util.SolidSetter;
 import org.citydb.config.Config;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.config.project.database.DatabaseType;
@@ -42,9 +40,12 @@ import org.citydb.sqlbuilder.schema.Table;
 import org.citydb.sqlbuilder.select.Select;
 import org.citydb.sqlbuilder.select.operator.comparison.ComparisonFactory;
 import org.citydb.sqlbuilder.select.projection.ConstantColumn;
+import org.citygml4j.model.citygml.relief.TinProperty;
 import org.citygml4j.model.gml.GMLClass;
 import org.citygml4j.model.gml.geometry.AbstractGeometry;
+import org.citygml4j.model.gml.geometry.GeometryProperty;
 import org.citygml4j.model.gml.geometry.aggregates.MultiSolid;
+import org.citygml4j.model.gml.geometry.aggregates.MultiSolidProperty;
 import org.citygml4j.model.gml.geometry.aggregates.MultiSurface;
 import org.citygml4j.model.gml.geometry.aggregates.MultiSurfaceProperty;
 import org.citygml4j.model.gml.geometry.complexes.CompositeSolid;
@@ -142,12 +143,32 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryBatchExport
 	}
 
 	@Override
-	public void addBatch(long id, MultiSurfaceSetter setter) {
+	public void addBatch(long id, GeometrySetter.AbstractGeometry setter) {
 		setters.put(id, setter);
 	}
 
 	@Override
-	public void addBatch(long id, SolidSetter setter) {
+	public void addBatch(long id, GeometrySetter.Surface setter) {
+		setters.put(id, setter);
+	}
+
+	@Override
+	public void addBatch(long id, GeometrySetter.MultiSurface setter) {
+		setters.put(id, setter);
+	}
+
+	@Override
+	public void addBatch(long id, GeometrySetter.Solid setter) {
+		setters.put(id, setter);
+	}
+
+	@Override
+	public void addBatch(long id, GeometrySetter.MultiSolid setter) {
+		setters.put(id, setter);
+	}
+
+	@Override
+	public void addBatch(long id, GeometrySetter.Tin setter) {
 		setters.put(id, setter);
 	}
 
@@ -176,12 +197,24 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryBatchExport
 						SurfaceGeometry geometry = rebuildGeometry(geomTree.getNode(geomTree.root), false, false);
 						if (geometry != null) {
 							GeometrySetter<?> setter = entry.getValue();
-							if (setter instanceof MultiSurfaceSetter) {
-								MultiSurfaceSetter multiSurfaceSetter = (MultiSurfaceSetter) setter;
+							if (setter instanceof GeometrySetter.MultiSurface) {
+								GeometrySetter.MultiSurface multiSurfaceSetter = (GeometrySetter.MultiSurface) setter;
 								multiSurfaceSetter.set(geometry.fill(new MultiSurfaceProperty()));
-							} else if (setter instanceof SolidSetter) {
-								SolidSetter solidSetter = (SolidSetter) setter;
+							} else if (setter instanceof GeometrySetter.Solid) {
+								GeometrySetter.Solid solidSetter = (GeometrySetter.Solid) setter;
 								solidSetter.set(geometry.fill(new SolidProperty()));
+							} else if (setter instanceof GeometrySetter.Surface) {
+								GeometrySetter.Surface surfaceSetter = (GeometrySetter.Surface) setter;
+								surfaceSetter.set(geometry.fill(new SurfaceProperty()));
+							} else if (setter instanceof GeometrySetter.MultiSolid) {
+								GeometrySetter.MultiSolid multiSolidSetter = (GeometrySetter.MultiSolid) setter;
+								multiSolidSetter.set(geometry.fill(new MultiSolidProperty()));
+							} else if (setter instanceof GeometrySetter.Tin) {
+								GeometrySetter.Tin tinSetter = (GeometrySetter.Tin) setter;
+								tinSetter.set(geometry.fill(new TinProperty()));
+							} else if (setter instanceof GeometrySetter.AbstractGeometry) {
+								GeometrySetter.AbstractGeometry solidSetter = (GeometrySetter.AbstractGeometry) setter;
+								solidSetter.set(geometry.fill(new GeometryProperty<>()));
 							}
 						}
 					} else

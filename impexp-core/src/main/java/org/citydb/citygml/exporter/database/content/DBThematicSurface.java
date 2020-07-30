@@ -187,19 +187,19 @@ public class DBThematicSurface extends AbstractFeatureExporter<AbstractBoundaryS
 							if (!boundarySurfaceProjectionFilter.containsProperty("lod" + lod + "MultiSurface", buildingModule))
 								continue;
 
-							long surfaceGeometryId = rs.getLong("lod" + lod + "_multi_surface_id");
+							long geometryId = rs.getLong("lod" + lod + "_multi_surface_id");
 							if (rs.wasNull())
 								continue;
 
 							switch (lod) {
 								case 2:
-									geometryExporter.addBatch(surfaceGeometryId, boundarySurface::setLod2MultiSurface);
+									geometryExporter.addBatch(geometryId, boundarySurface::setLod2MultiSurface);
 									break;
 								case 3:
-									geometryExporter.addBatch(surfaceGeometryId, boundarySurface::setLod3MultiSurface);
+									geometryExporter.addBatch(geometryId, boundarySurface::setLod3MultiSurface);
 									break;
 								case 4:
-									geometryExporter.addBatch(surfaceGeometryId, boundarySurface::setLod4MultiSurface);
+									geometryExporter.addBatch(geometryId, boundarySurface::setLod4MultiSurface);
 									break;
 							}
 						}
@@ -261,16 +261,16 @@ public class DBThematicSurface extends AbstractFeatureExporter<AbstractBoundaryS
 					if (!openingProjectionFilter.containsProperty("lod" + lod + "MultiSurface", buildingModule))
 						continue;
 
-					long surfaceGeometryId = rs.getLong("oplod" + lod + "_multi_surface_id");
+					long geometryId = rs.getLong("oplod" + lod + "_multi_surface_id");
 					if (rs.wasNull()) 
 						continue;
 
 					switch (lod) {
 						case 3:
-							geometryExporter.addBatch(surfaceGeometryId, opening::setLod3MultiSurface);
+							geometryExporter.addBatch(geometryId, opening::setLod3MultiSurface);
 							break;
 						case 4:
-							geometryExporter.addBatch(surfaceGeometryId, opening::setLod4MultiSurface);
+							geometryExporter.addBatch(geometryId, opening::setLod4MultiSurface);
 							break;
 					}
 				}

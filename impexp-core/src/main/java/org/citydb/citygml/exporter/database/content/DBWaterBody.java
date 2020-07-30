@@ -45,15 +45,8 @@ import org.citygml4j.model.citygml.waterbody.AbstractWaterBoundarySurface;
 import org.citygml4j.model.citygml.waterbody.BoundedByWaterSurfaceProperty;
 import org.citygml4j.model.citygml.waterbody.WaterBody;
 import org.citygml4j.model.citygml.waterbody.WaterSurface;
-import org.citygml4j.model.gml.GMLClass;
 import org.citygml4j.model.gml.basicTypes.Code;
 import org.citygml4j.model.gml.geometry.aggregates.MultiCurveProperty;
-import org.citygml4j.model.gml.geometry.aggregates.MultiSurface;
-import org.citygml4j.model.gml.geometry.aggregates.MultiSurfaceProperty;
-import org.citygml4j.model.gml.geometry.primitives.AbstractSolid;
-import org.citygml4j.model.gml.geometry.primitives.AbstractSurface;
-import org.citygml4j.model.gml.geometry.primitives.SolidProperty;
-import org.citygml4j.model.gml.geometry.primitives.SurfaceProperty;
 import org.citygml4j.model.module.citygml.CityGMLModuleType;
 
 import java.sql.Connection;
@@ -241,26 +234,17 @@ public class DBWaterBody extends AbstractFeatureExporter<WaterBody> {
 							if (!projectionFilter.containsProperty("lod" + lod + "MultiSurface", waterBodyModule))
 								continue;
 
-							long surfaceGeometryId = rs.getLong("lod" + lod + "_multi_surface_id");
+							long geometryId = rs.getLong("lod" + lod + "_multi_surface_id");
 							if (rs.wasNull())
 								continue;
 
-							SurfaceGeometry geometry = geometryExporter.doExport(surfaceGeometryId);
-							if (geometry != null && geometry.getType() == GMLClass.MULTI_SURFACE) {
-								MultiSurfaceProperty multiSurfaceProperty = new MultiSurfaceProperty();
-								if (geometry.isSetGeometry())
-									multiSurfaceProperty.setMultiSurface((MultiSurface)geometry.getGeometry());
-								else
-									multiSurfaceProperty.setHref(geometry.getReference());
-
-								switch (lod) {
+							switch (lod) {
 								case 0:
-									waterBody.setLod0MultiSurface(multiSurfaceProperty);
+									geometryExporter.addBatch(geometryId, waterBody::setLod0MultiSurface);
 									break;
 								case 1:
-									waterBody.setLod1MultiSurface(multiSurfaceProperty);
+									geometryExporter.addBatch(geometryId, waterBody::setLod1MultiSurface);
 									break;
-								}
 							}
 						}
 
@@ -271,32 +255,23 @@ public class DBWaterBody extends AbstractFeatureExporter<WaterBody> {
 							if (!projectionFilter.containsProperty("lod" + lod + "Solid", waterBodyModule))
 								continue;
 
-							long surfaceGeometryId = rs.getLong("lod" + lod + "_solid_id");
+							long geometryId = rs.getLong("lod" + lod + "_solid_id");
 							if (rs.wasNull())
 								continue;
 
-							SurfaceGeometry geometry = geometryExporter.doExport(surfaceGeometryId);
-							if (geometry != null && (geometry.getType() == GMLClass.SOLID || geometry.getType() == GMLClass.COMPOSITE_SOLID)) {
-								SolidProperty solidProperty = new SolidProperty();
-								if (geometry.isSetGeometry())
-									solidProperty.setSolid((AbstractSolid)geometry.getGeometry());
-								else
-									solidProperty.setHref(geometry.getReference());
-
-								switch (lod) {
+							switch (lod) {
 								case 1:
-									waterBody.setLod1Solid(solidProperty);
+									geometryExporter.addBatch(geometryId, waterBody::setLod1Solid);
 									break;
 								case 2:
-									waterBody.setLod2Solid(solidProperty);
+									geometryExporter.addBatch(geometryId, waterBody::setLod2Solid);
 									break;
 								case 3:
-									waterBody.setLod3Solid(solidProperty);
+									geometryExporter.addBatch(geometryId, waterBody::setLod3Solid);
 									break;
 								case 4:
-									waterBody.setLod4Solid(solidProperty);
+									geometryExporter.addBatch(geometryId, waterBody::setLod4Solid);
 									break;
-								}
 							}
 						}
 						
@@ -367,29 +342,20 @@ public class DBWaterBody extends AbstractFeatureExporter<WaterBody> {
 					if (!waterBoundarySurfaceProjectionFilter.containsProperty("lod" + lod + "Surface", waterBodyModule))
 						continue;
 
-					long surfaceGeometryId = rs.getLong("lod" + lod + "_surface_id");
+					long geometryId = rs.getLong("lod" + lod + "_surface_id");
 					if (rs.wasNull())
 						continue;
 
-					SurfaceGeometry geometry = geometryExporter.doExport(surfaceGeometryId);
-					if (geometry != null && geometry.getType().isInstance(GMLClass.ABSTRACT_SURFACE)) {
-						SurfaceProperty surfaceProperty = new SurfaceProperty();
-						if (geometry.isSetGeometry())
-							surfaceProperty.setSurface((AbstractSurface)geometry.getGeometry());
-						else
-							surfaceProperty.setHref(geometry.getReference());
-
-						switch (lod) {
+					switch (lod) {
 						case 2:
-							waterBoundarySurface.setLod2Surface(surfaceProperty);
+							geometryExporter.addBatch(geometryId, waterBoundarySurface::setLod2Surface);
 							break;
 						case 3:
-							waterBoundarySurface.setLod3Surface(surfaceProperty);
+							geometryExporter.addBatch(geometryId, waterBoundarySurface::setLod3Surface);
 							break;
 						case 4:
-							waterBoundarySurface.setLod4Surface(surfaceProperty);
+							geometryExporter.addBatch(geometryId, waterBoundarySurface::setLod4Surface);
 							break;
-						}
 					}
 				}
 				

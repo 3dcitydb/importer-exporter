@@ -38,10 +38,7 @@ import org.citydb.sqlbuilder.schema.Table;
 import org.citydb.sqlbuilder.select.Select;
 import org.citygml4j.model.citygml.waterbody.AbstractWaterBoundarySurface;
 import org.citygml4j.model.citygml.waterbody.WaterSurface;
-import org.citygml4j.model.gml.GMLClass;
 import org.citygml4j.model.gml.basicTypes.Code;
-import org.citygml4j.model.gml.geometry.primitives.AbstractSurface;
-import org.citygml4j.model.gml.geometry.primitives.SurfaceProperty;
 import org.citygml4j.model.module.citygml.CityGMLModuleType;
 
 import java.sql.Connection;
@@ -135,29 +132,20 @@ public class DBWaterBoundarySurface extends AbstractFeatureExporter<AbstractWate
 					if (!projectionFilter.containsProperty("lod" + lod + "Surface", waterBodyModule))
 						continue;
 
-					long surfaceGeometryId = rs.getLong("lod" + lod + "_surface_id");
+					long geometryId = rs.getLong("lod" + lod + "_surface_id");
 					if (rs.wasNull())
 						continue;
 
-					SurfaceGeometry geometry = geometryExporter.doExport(surfaceGeometryId);
-					if (geometry != null && geometry.getType().isInstance(GMLClass.ABSTRACT_SURFACE)) {
-						SurfaceProperty surfaceProperty = new SurfaceProperty();
-						if (geometry.isSetGeometry())
-							surfaceProperty.setSurface((AbstractSurface)geometry.getGeometry());
-						else
-							surfaceProperty.setHref(geometry.getReference());
-
-						switch (lod) {
+					switch (lod) {
 						case 2:
-							waterBoundarySurface.setLod2Surface(surfaceProperty);
+							geometryExporter.addBatch(geometryId, waterBoundarySurface::setLod2Surface);
 							break;
 						case 3:
-							waterBoundarySurface.setLod3Surface(surfaceProperty);
+							geometryExporter.addBatch(geometryId, waterBoundarySurface::setLod3Surface);
 							break;
 						case 4:
-							waterBoundarySurface.setLod4Surface(surfaceProperty);
+							geometryExporter.addBatch(geometryId, waterBoundarySurface::setLod4Surface);
 							break;
-						}
 					}
 				}
 				

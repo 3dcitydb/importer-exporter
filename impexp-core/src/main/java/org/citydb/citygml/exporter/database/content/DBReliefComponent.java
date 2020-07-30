@@ -46,7 +46,6 @@ import org.citygml4j.model.citygml.relief.TinProperty;
 import org.citygml4j.model.gml.GMLClass;
 import org.citygml4j.model.gml.geometry.primitives.LineStringSegmentArrayProperty;
 import org.citygml4j.model.gml.geometry.primitives.Tin;
-import org.citygml4j.model.gml.geometry.primitives.TrianglePatchArrayProperty;
 import org.citygml4j.model.gml.geometry.primitives.TriangulatedSurface;
 import org.citygml4j.model.gml.measures.Length;
 import org.citygml4j.model.module.citygml.CityGMLModuleType;
@@ -150,17 +149,8 @@ public class DBReliefComponent extends AbstractFeatureExporter<AbstractReliefCom
 				if (component instanceof TINRelief && projectionFilter.containsProperty("tin", reliefModule)) {
 					TINRelief tinRelief = (TINRelief)component;
 
-					// create gml:TriangulatedSurface
-					TriangulatedSurface triangulatedSurface = null;
-					long surfaceGeometryId = rs.getLong("surface_geometry_id");
-					if (!rs.wasNull()) {
-						SurfaceGeometry geometry = geometryExporter.doExport(surfaceGeometryId);
-						if (geometry != null && geometry.getType() == GMLClass.TRIANGULATED_SURFACE && geometry.isSetGeometry()) 
-							triangulatedSurface = (TriangulatedSurface)geometry.getGeometry();					
-					}
-
-					// triangle patches are mandatory
-					if (triangulatedSurface == null)
+					long geometryId = rs.getLong("surface_geometry_id");
+					if (rs.wasNull())
 						continue;
 
 					Double maxLength = rs.getDouble("max_length");
@@ -182,17 +172,20 @@ public class DBReliefComponent extends AbstractFeatureExporter<AbstractReliefCom
 					if (!rs.wasNull())
 						controlPoints = exporter.getDatabaseAdapter().getGeometryConverter().getMultiPoint(controlPointsObj);
 
-					// check whether we deal with gml:Tin instead
+					// check whether we deal with a gml:Tin
 					if (maxLength != null || stopLines != null || breakLines != null || controlPoints != null) {
 						// control points are mandatory
 						if (controlPoints == null)
 							continue;
 
-						TrianglePatchArrayProperty patches = triangulatedSurface.getTrianglePatches();
-						triangulatedSurface = new Tin();
-						triangulatedSurface.setTrianglePatches(patches);
+						// get triangulated surface
+						SurfaceGeometry geometry = geometryExporter.doExport(geometryId);
+						if (geometry == null || geometry.getType() != GMLClass.TRIANGULATED_SURFACE || !geometry.isSetGeometry())
+							continue;
 
-						Tin tin = (Tin)triangulatedSurface;
+						Tin tin = new Tin();
+						tin.setTrianglePatches(((TriangulatedSurface) geometry.getGeometry()).getTrianglePatches());
+
 						if (maxLength != null) {
 							Length length = new Length(maxLength);
 							length.setUom(rs.getString("max_length_unit"));
@@ -212,9 +205,9 @@ public class DBReliefComponent extends AbstractFeatureExporter<AbstractReliefCom
 						}
 
 						tin.setControlPoint(gmlConverter.getControlPoint(controlPoints, false));
-					}
-
-					tinRelief.setTin(new TinProperty(triangulatedSurface));
+						tinRelief.setTin(new TinProperty(tin));
+					} else
+						geometryExporter.addBatch(geometryId, tinRelief::setTin);
 				}
 
 				else if (component instanceof MassPointRelief && projectionFilter.containsProperty("reliefPoints", reliefModule)) {

@@ -51,9 +51,6 @@ import org.citygml4j.model.citygml.bridge.OpeningProperty;
 import org.citygml4j.model.citygml.core.AddressProperty;
 import org.citygml4j.model.citygml.core.ImplicitGeometry;
 import org.citygml4j.model.citygml.core.ImplicitRepresentationProperty;
-import org.citygml4j.model.gml.GMLClass;
-import org.citygml4j.model.gml.geometry.aggregates.MultiSurface;
-import org.citygml4j.model.gml.geometry.aggregates.MultiSurfaceProperty;
 import org.citygml4j.model.module.citygml.CityGMLModuleType;
 
 import java.sql.Connection;
@@ -195,29 +192,20 @@ public class DBBridgeThematicSurface extends AbstractFeatureExporter<AbstractBou
 							if (!boundarySurfaceProjectionFilter.containsProperty("lod" + lod + "MultiSurface", bridgeModule))
 								continue;
 
-							long lodMultiSurfaceId = rs.getLong("lod" + lod + "_multi_surface_id");
+							long geometryId = rs.getLong("lod" + lod + "_multi_surface_id");
 							if (rs.wasNull())
 								continue;
 
-							SurfaceGeometry geometry = geometryExporter.doExport(lodMultiSurfaceId);
-							if (geometry != null && geometry.getType() == GMLClass.MULTI_SURFACE) {
-								MultiSurfaceProperty multiSurfaceProperty = new MultiSurfaceProperty();
-								if (geometry.isSetGeometry())
-									multiSurfaceProperty.setMultiSurface((MultiSurface)geometry.getGeometry());
-								else
-									multiSurfaceProperty.setHref(geometry.getReference());
-
-								switch (lod) {
+							switch (lod) {
 								case 2:
-									boundarySurface.setLod2MultiSurface(multiSurfaceProperty);
+									geometryExporter.addBatch(geometryId, boundarySurface::setLod2MultiSurface);
 									break;
 								case 3:
-									boundarySurface.setLod3MultiSurface(multiSurfaceProperty);
+									geometryExporter.addBatch(geometryId, boundarySurface::setLod3MultiSurface);
 									break;
 								case 4:
-									boundarySurface.setLod4MultiSurface(multiSurfaceProperty);
+									geometryExporter.addBatch(geometryId, boundarySurface::setLod4MultiSurface);
 									break;
-								}
 							}
 						}
 
@@ -278,26 +266,17 @@ public class DBBridgeThematicSurface extends AbstractFeatureExporter<AbstractBou
 					if (!openingProjectionFilter.containsProperty("lod" + lod + "MultiSurface", bridgeModule))
 						continue;
 
-					long lodMultiSurfaceId = rs.getLong("oplod" + lod + "_multi_surface_id");
+					long geometryId = rs.getLong("oplod" + lod + "_multi_surface_id");
 					if (rs.wasNull()) 
 						continue;
 
-					SurfaceGeometry geometry = geometryExporter.doExport(lodMultiSurfaceId);
-					if (geometry != null && geometry.getType() == GMLClass.MULTI_SURFACE) {
-						MultiSurfaceProperty multiSurfaceProperty = new MultiSurfaceProperty();
-						if (geometry.isSetGeometry())
-							multiSurfaceProperty.setMultiSurface((MultiSurface)geometry.getGeometry());
-						else
-							multiSurfaceProperty.setHref(geometry.getReference());
-
-						switch (lod) {
+					switch (lod) {
 						case 3:
-							opening.setLod3MultiSurface(multiSurfaceProperty);
+							geometryExporter.addBatch(geometryId, opening::setLod3MultiSurface);
 							break;
 						case 4:
-							opening.setLod4MultiSurface(multiSurfaceProperty);
+							geometryExporter.addBatch(geometryId, opening::setLod4MultiSurface);
 							break;
-						}
 					}
 				}
 

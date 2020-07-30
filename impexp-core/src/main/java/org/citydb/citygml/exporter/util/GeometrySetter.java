@@ -28,9 +28,20 @@
 
 package org.citydb.citygml.exporter.util;
 
+import org.citygml4j.model.citygml.relief.TinProperty;
 import org.citygml4j.model.gml.geometry.GeometryProperty;
+import org.citygml4j.model.gml.geometry.aggregates.MultiSolidProperty;
+import org.citygml4j.model.gml.geometry.aggregates.MultiSurfaceProperty;
+import org.citygml4j.model.gml.geometry.primitives.SolidProperty;
+import org.citygml4j.model.gml.geometry.primitives.SurfaceProperty;
 
 @FunctionalInterface
 public interface GeometrySetter<T extends GeometryProperty<?>> {
     void set(T property);
+    interface AbstractGeometry extends GeometrySetter<GeometryProperty<?>> { }
+    interface Surface extends GeometrySetter<SurfaceProperty> { }
+    interface MultiSurface extends GeometrySetter<MultiSurfaceProperty> { }
+    interface Solid extends GeometrySetter<SolidProperty> { }
+    interface MultiSolid extends GeometrySetter<MultiSolidProperty> { }
+    interface Tin extends GeometrySetter<TinProperty> { }
 }

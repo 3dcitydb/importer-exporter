@@ -47,10 +47,7 @@ import org.citygml4j.model.citygml.transportation.AuxiliaryTrafficAreaProperty;
 import org.citygml4j.model.citygml.transportation.TrafficArea;
 import org.citygml4j.model.citygml.transportation.TrafficAreaProperty;
 import org.citygml4j.model.citygml.transportation.TransportationComplex;
-import org.citygml4j.model.gml.GMLClass;
 import org.citygml4j.model.gml.basicTypes.Code;
-import org.citygml4j.model.gml.geometry.aggregates.MultiSurface;
-import org.citygml4j.model.gml.geometry.aggregates.MultiSurfaceProperty;
 import org.citygml4j.model.module.citygml.CityGMLModuleType;
 
 import java.sql.Connection;
@@ -209,32 +206,23 @@ public class DBTransportationComplex extends AbstractFeatureExporter<Transportat
 							if (!projectionFilter.containsProperty("lod" + lod + "MultiSurface", transportationModule))
 								continue;
 
-							long surfaceGeometryId = rs.getLong("lod" + lod + "_multi_surface_id");
+							long geometryId = rs.getLong("lod" + lod + "_multi_surface_id");
 							if (rs.wasNull())
 								continue;
 
-							SurfaceGeometry geometry = geometryExporter.doExport(surfaceGeometryId);
-							if (geometry != null && geometry.getType() == GMLClass.MULTI_SURFACE) {
-								MultiSurfaceProperty multiSurfaceProperty = new MultiSurfaceProperty();
-								if (geometry.isSetGeometry())
-									multiSurfaceProperty.setMultiSurface((MultiSurface)geometry.getGeometry());
-								else
-									multiSurfaceProperty.setHref(geometry.getReference());
-
-								switch (lod) {
+							switch (lod) {
 								case 1:
-									complex.setLod1MultiSurface(multiSurfaceProperty);
+									geometryExporter.addBatch(geometryId, complex::setLod1MultiSurface);
 									break;
 								case 2:
-									complex.setLod2MultiSurface(multiSurfaceProperty);
+									geometryExporter.addBatch(geometryId, complex::setLod2MultiSurface);
 									break;
 								case 3:
-									complex.setLod3MultiSurface(multiSurfaceProperty);
+									geometryExporter.addBatch(geometryId, complex::setLod3MultiSurface);
 									break;
 								case 4:
-									complex.setLod4MultiSurface(multiSurfaceProperty);
+									geometryExporter.addBatch(geometryId, complex::setLod4MultiSurface);
 									break;
-								}
 							}
 						}
 						
@@ -335,37 +323,35 @@ public class DBTransportationComplex extends AbstractFeatureExporter<Transportat
 					if (!transportationObjectProjectionFilter.containsProperty("lod" + lod + "MultiSurface", transportationModule))
 						continue;
 
-					long surfaceGeometryId = rs.getLong("ta_lod" + lod + "_multi_surface_id");
+					long geometryId = rs.getLong("ta_lod" + lod + "_multi_surface_id");
 					if (rs.wasNull())
 						continue;
 
-					SurfaceGeometry geometry = geometryExporter.doExport(surfaceGeometryId);
-					if (geometry != null && geometry.getType() == GMLClass.MULTI_SURFACE) {
-						MultiSurfaceProperty multiSurfaceProperty = new MultiSurfaceProperty();
-						if (geometry.isSetGeometry())
-							multiSurfaceProperty.setMultiSurface((MultiSurface)geometry.getGeometry());
-						else
-							multiSurfaceProperty.setHref(geometry.getReference());
-
+					if (isTrafficArea) {
+						TrafficArea trafficArea = (TrafficArea) transportationObject;
 						switch (lod) {
-						case 2:
-							if (isTrafficArea)
-								((TrafficArea)transportationObject).setLod2MultiSurface(multiSurfaceProperty);
-							else
-								((AuxiliaryTrafficArea)transportationObject).setLod2MultiSurface(multiSurfaceProperty);
-							break;
-						case 3:
-							if (isTrafficArea)
-								((TrafficArea)transportationObject).setLod3MultiSurface(multiSurfaceProperty);
-							else
-								((AuxiliaryTrafficArea)transportationObject).setLod3MultiSurface(multiSurfaceProperty);
-							break;
-						case 4:
-							if (isTrafficArea)
-								((TrafficArea)transportationObject).setLod4MultiSurface(multiSurfaceProperty);
-							else
-								((AuxiliaryTrafficArea)transportationObject).setLod4MultiSurface(multiSurfaceProperty);
-							break;
+							case 2:
+								geometryExporter.addBatch(geometryId, trafficArea::setLod2MultiSurface);
+								break;
+							case 3:
+								geometryExporter.addBatch(geometryId, trafficArea::setLod3MultiSurface);
+								break;
+							case 4:
+								geometryExporter.addBatch(geometryId, trafficArea::setLod4MultiSurface);
+								break;
+						}
+					} else {
+						AuxiliaryTrafficArea auxiliaryTrafficArea = (AuxiliaryTrafficArea) transportationObject;
+						switch (lod) {
+							case 2:
+								geometryExporter.addBatch(geometryId, auxiliaryTrafficArea::setLod2MultiSurface);
+								break;
+							case 3:
+								geometryExporter.addBatch(geometryId, auxiliaryTrafficArea::setLod3MultiSurface);
+								break;
+							case 4:
+								geometryExporter.addBatch(geometryId, auxiliaryTrafficArea::setLod4MultiSurface);
+								break;
 						}
 					}
 				}

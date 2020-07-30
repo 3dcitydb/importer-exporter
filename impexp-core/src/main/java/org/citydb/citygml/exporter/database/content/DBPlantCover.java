@@ -39,12 +39,7 @@ import org.citydb.query.filter.projection.ProjectionFilter;
 import org.citydb.sqlbuilder.schema.Table;
 import org.citydb.sqlbuilder.select.Select;
 import org.citygml4j.model.citygml.vegetation.PlantCover;
-import org.citygml4j.model.gml.GMLClass;
 import org.citygml4j.model.gml.basicTypes.Code;
-import org.citygml4j.model.gml.geometry.aggregates.MultiSolid;
-import org.citygml4j.model.gml.geometry.aggregates.MultiSolidProperty;
-import org.citygml4j.model.gml.geometry.aggregates.MultiSurface;
-import org.citygml4j.model.gml.geometry.aggregates.MultiSurfaceProperty;
 import org.citygml4j.model.gml.measures.Length;
 import org.citygml4j.model.module.citygml.CityGMLModuleType;
 
@@ -183,32 +178,23 @@ public class DBPlantCover extends AbstractFeatureExporter<PlantCover> {
 					if (!projectionFilter.containsProperty("lod" + lod + "MultiSurface", vegetationModule))
 						continue;
 
-					long surfaceGeometryId = rs.getLong("lod" + lod + "_multi_surface_id");
+					long geometryId = rs.getLong("lod" + lod + "_multi_surface_id");
 					if (rs.wasNull())
 						continue;
 
-					SurfaceGeometry geometry = geometryExporter.doExport(surfaceGeometryId);
-					if (geometry != null && geometry.getType() == GMLClass.MULTI_SURFACE) {
-						MultiSurfaceProperty multiSurfaceProperty = new MultiSurfaceProperty();
-						if (geometry.getGeometry() != null)
-							multiSurfaceProperty.setMultiSurface((MultiSurface)geometry.getGeometry());
-						else
-							multiSurfaceProperty.setHref(geometry.getReference());
-
-						switch (lod) {
+					switch (lod) {
 						case 1:
-							plantCover.setLod1MultiSurface(multiSurfaceProperty);
+							geometryExporter.addBatch(geometryId, plantCover::setLod1MultiSurface);
 							break;
 						case 2:
-							plantCover.setLod2MultiSurface(multiSurfaceProperty);
+							geometryExporter.addBatch(geometryId, plantCover::setLod2MultiSurface);
 							break;
 						case 3:
-							plantCover.setLod3MultiSurface(multiSurfaceProperty);
+							geometryExporter.addBatch(geometryId, plantCover::setLod3MultiSurface);
 							break;
 						case 4:
-							plantCover.setLod4MultiSurface(multiSurfaceProperty);
+							geometryExporter.addBatch(geometryId, plantCover::setLod4MultiSurface);
 							break;
-						}
 					}
 				}
 
@@ -219,32 +205,23 @@ public class DBPlantCover extends AbstractFeatureExporter<PlantCover> {
 					if (!projectionFilter.containsProperty("lod" + lod + "MultiSolid", vegetationModule))
 						continue;
 
-					long surfaceGeometryId = rs.getLong("lod" + lod + "_multi_solid_id");
+					long geometryId = rs.getLong("lod" + lod + "_multi_solid_id");
 					if (rs.wasNull())
 						continue;
 
-					SurfaceGeometry geometry = geometryExporter.doExport(surfaceGeometryId);
-					if (geometry != null && geometry.getType() == GMLClass.MULTI_SOLID) {
-						MultiSolidProperty solidProperty = new MultiSolidProperty();
-						if (geometry.isSetGeometry())
-							solidProperty.setMultiSolid((MultiSolid)geometry.getGeometry());
-						else
-							solidProperty.setHref(geometry.getReference());
-
-						switch (lod) {
+					switch (lod) {
 						case 1:
-							plantCover.setLod1MultiSolid(solidProperty);
+							geometryExporter.addBatch(geometryId, plantCover::setLod1MultiSolid);
 							break;
 						case 2:
-							plantCover.setLod2MultiSolid(solidProperty);
+							geometryExporter.addBatch(geometryId, plantCover::setLod2MultiSolid);
 							break;
 						case 3:
-							plantCover.setLod3MultiSolid(solidProperty);
+							geometryExporter.addBatch(geometryId, plantCover::setLod3MultiSolid);
 							break;
 						case 4:
-							plantCover.setLod4MultiSolid(solidProperty);
+							geometryExporter.addBatch(geometryId, plantCover::setLod4MultiSolid);
 							break;
-						}
 					}
 				}
 				

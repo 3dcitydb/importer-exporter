@@ -56,13 +56,8 @@ import org.citygml4j.model.citygml.bridge.IntBridgeInstallationProperty;
 import org.citygml4j.model.citygml.bridge.InteriorBridgeRoomProperty;
 import org.citygml4j.model.citygml.core.AbstractCityObject;
 import org.citygml4j.model.citygml.core.AddressProperty;
-import org.citygml4j.model.gml.GMLClass;
 import org.citygml4j.model.gml.basicTypes.Code;
 import org.citygml4j.model.gml.geometry.aggregates.MultiCurveProperty;
-import org.citygml4j.model.gml.geometry.aggregates.MultiSurface;
-import org.citygml4j.model.gml.geometry.aggregates.MultiSurfaceProperty;
-import org.citygml4j.model.gml.geometry.primitives.AbstractSolid;
-import org.citygml4j.model.gml.geometry.primitives.SolidProperty;
 import org.citygml4j.model.module.citygml.CityGMLModuleType;
 
 import java.sql.Connection;
@@ -354,32 +349,23 @@ public class DBBridge extends AbstractFeatureExporter<AbstractBridge> {
 							if (!projectionFilter.containsProperty("lod" + lod + "Solid", bridgeModule))
 								continue;
 
-							long surfaceGeometryId = rs.getLong("lod" + lod + "_solid_id");
+							long geometryId = rs.getLong("lod" + lod + "_solid_id");
 							if (rs.wasNull())
 								continue;
 
-							SurfaceGeometry geometry = geometryExporter.doExport(surfaceGeometryId);
-							if (geometry != null && (geometry.getType() == GMLClass.SOLID || geometry.getType() == GMLClass.COMPOSITE_SOLID)) {
-								SolidProperty solidProperty = new SolidProperty();
-								if (geometry.isSetGeometry())
-									solidProperty.setSolid((AbstractSolid)geometry.getGeometry());
-								else
-									solidProperty.setHref(geometry.getReference());
-
-								switch (lod) {
+							switch (lod) {
 								case 1:
-									bridge.setLod1Solid(solidProperty);
+									geometryExporter.addBatch(geometryId, bridge::setLod1Solid);
 									break;
 								case 2:
-									bridge.setLod2Solid(solidProperty);
+									geometryExporter.addBatch(geometryId, bridge::setLod2Solid);
 									break;
 								case 3:
-									bridge.setLod3Solid(solidProperty);
+									geometryExporter.addBatch(geometryId, bridge::setLod3Solid);
 									break;
 								case 4:
-									bridge.setLod4Solid(solidProperty);
+									geometryExporter.addBatch(geometryId, bridge::setLod4Solid);
 									break;
-								}
 							}
 						}
 
@@ -391,32 +377,23 @@ public class DBBridge extends AbstractFeatureExporter<AbstractBridge> {
 							if (!projectionFilter.containsProperty("lod" + lod + "MultiSurface", bridgeModule))
 								continue;
 
-							long surfaceGeometryId = rs.getLong("lod" + lod + "_multi_surface_id");
+							long geometryId = rs.getLong("lod" + lod + "_multi_surface_id");
 							if (rs.wasNull())
 								continue;
 
-							SurfaceGeometry geometry = geometryExporter.doExport(surfaceGeometryId);
-							if (geometry != null && geometry.getType() == GMLClass.MULTI_SURFACE) {
-								MultiSurfaceProperty multiSurfaceProperty = new MultiSurfaceProperty();
-								if (geometry.isSetGeometry())
-									multiSurfaceProperty.setMultiSurface((MultiSurface)geometry.getGeometry());
-								else
-									multiSurfaceProperty.setHref(geometry.getReference());
-
-								switch (lod) {
+							switch (lod) {
 								case 1:
-									bridge.setLod1MultiSurface(multiSurfaceProperty);
+									geometryExporter.addBatch(geometryId, bridge::setLod1MultiSurface);
 									break;
 								case 2:
-									bridge.setLod2MultiSurface(multiSurfaceProperty);
+									geometryExporter.addBatch(geometryId, bridge::setLod2MultiSurface);
 									break;
 								case 3:
-									bridge.setLod3MultiSurface(multiSurfaceProperty);
+									geometryExporter.addBatch(geometryId, bridge::setLod3MultiSurface);
 									break;
 								case 4:
-									bridge.setLod4MultiSurface(multiSurfaceProperty);
+									geometryExporter.addBatch(geometryId, bridge::setLod4MultiSurface);
 									break;
-								}
 							}
 						}
 

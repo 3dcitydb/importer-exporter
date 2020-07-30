@@ -30,6 +30,7 @@ package org.citydb.citygml.exporter.database.content;
 import org.citydb.citygml.exporter.CityGMLExportException;
 import org.citydb.citygml.exporter.util.AttributeValueSplitter;
 import org.citydb.citygml.exporter.util.AttributeValueSplitter.SplitValue;
+import org.citydb.citygml.exporter.util.GeometrySetter;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.database.schema.TableEnum;
 import org.citydb.database.schema.mapping.FeatureType;
@@ -169,26 +170,17 @@ public class DBTunnelFurniture extends AbstractFeatureExporter<TunnelFurniture> 
 				if (lodFilter.isEnabled(4)) {
 					if (projectionFilter.containsProperty("lod4Geometry", tunnelModule)) {					
 						long geometryId = rs.getLong("lod4_brep_id");
-						Object geometryObj = rs.getObject("lod4_other_geom");
-						if (geometryId != 0 || geometryObj != null) {
-							GeometryProperty<AbstractGeometry> geometryProperty = null;
-							if (geometryId != 0) {
-								SurfaceGeometry geometry = geometryExporter.doExport(geometryId);
-								if (geometry != null) {
-									geometryProperty = new GeometryProperty<>();
-									if (geometry.isSetGeometry())
-										geometryProperty.setGeometry(geometry.getGeometry());
-									else
-										geometryProperty.setHref(geometry.getReference());
-								}
-							} else {
+						if (!rs.wasNull())
+							geometryExporter.addBatch(geometryId, (GeometrySetter.AbstractGeometry) tunnelFurniture::setLod4Geometry);
+						else {
+							Object geometryObj = rs.getObject("lod4_other_geom");
+							if (!rs.wasNull()) {
 								GeometryObject geometry = exporter.getDatabaseAdapter().getGeometryConverter().getGeometry(geometryObj);
-								if (geometry != null)
-									geometryProperty = new GeometryProperty<>(gmlConverter.getPointOrCurveGeometry(geometry, true));
+								if (geometry != null) {
+									GeometryProperty<AbstractGeometry> property = new GeometryProperty<>(gmlConverter.getPointOrCurveGeometry(geometry, true));
+									tunnelFurniture.setLod4Geometry(property);
+								}
 							}
-
-							if (geometryProperty != null)
-								tunnelFurniture.setLod4Geometry(geometryProperty);
 						}
 					}
 

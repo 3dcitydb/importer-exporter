@@ -30,6 +30,7 @@ package org.citydb.citygml.exporter.database.content;
 import org.citydb.citygml.exporter.CityGMLExportException;
 import org.citydb.citygml.exporter.util.AttributeValueSplitter;
 import org.citydb.citygml.exporter.util.AttributeValueSplitter.SplitValue;
+import org.citydb.citygml.exporter.util.GeometrySetter;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.database.schema.TableEnum;
 import org.citydb.database.schema.mapping.FeatureType;
@@ -57,7 +58,7 @@ import java.util.List;
 
 public class DBCityObjectGroup extends AbstractTypeExporter {
 	private final PreparedStatement ps;
-	private final DBSurfaceGeometry surfaceGeometryExporter;
+	private final DBSurfaceGeometry geometryExporter;
 	private final DBCityObject cityObjectExporter;
 	private final GMLConverter gmlConverter;
 
@@ -101,7 +102,7 @@ public class DBCityObjectGroup extends AbstractTypeExporter {
 		ps = connection.prepareStatement(select.toString());
 
 		cityObjectExporter = exporter.getExporter(DBCityObject.class);
-		surfaceGeometryExporter = exporter.getExporter(DBSurfaceGeometry.class);
+		geometryExporter = exporter.getExporter(DBSurfaceGeometry.class);
 		gmlConverter = exporter.getGMLConverter();
 		valueSplitter = exporter.getAttributeValueSplitter();
 	}
@@ -149,26 +150,17 @@ public class DBCityObjectGroup extends AbstractTypeExporter {
 
 					if (projectionFilter.containsProperty("geometry", groupModule)) {
 						long geometryId = rs.getLong("brep_id");
-						Object geometryObj = rs.getObject("other_geom");
-						if (geometryId != 0 || geometryObj != null) {
-							GeometryProperty<AbstractGeometry> geometryProperty = null;
-							if (geometryId != 0) {
-								SurfaceGeometry geometry = surfaceGeometryExporter.doExport(geometryId);
-								if (geometry != null) {
-									geometryProperty = new GeometryProperty<>();
-									if (geometry.isSetGeometry())
-										geometryProperty.setGeometry(geometry.getGeometry());
-									else
-										geometryProperty.setHref(geometry.getReference());
-								}
-							} else {
+						if (!rs.wasNull())
+							geometryExporter.addBatch(geometryId, (GeometrySetter.AbstractGeometry) cityObjectGroup::setGeometry);
+						else {
+							Object geometryObj = rs.getObject("other_geom");
+							if (!rs.wasNull()) {
 								GeometryObject geometry = exporter.getDatabaseAdapter().getGeometryConverter().getGeometry(geometryObj);
-								if (geometry != null)
-									geometryProperty = new GeometryProperty<>(gmlConverter.getPointOrCurveGeometry(geometry, true));
+								if (geometry != null) {
+									GeometryProperty<AbstractGeometry> property = new GeometryProperty<>(gmlConverter.getPointOrCurveGeometry(geometry, true));
+									cityObjectGroup.setGeometry(property);
+								}
 							}
-
-							if (geometryProperty != null)
-								cityObjectGroup.setGeometry(geometryProperty);
 						}
 					}
 

@@ -54,13 +54,10 @@ import org.citygml4j.model.citygml.building.InteriorRoomProperty;
 import org.citygml4j.model.citygml.building.Room;
 import org.citygml4j.model.citygml.core.AbstractCityObject;
 import org.citygml4j.model.citygml.core.AddressProperty;
-import org.citygml4j.model.gml.GMLClass;
 import org.citygml4j.model.gml.basicTypes.Code;
 import org.citygml4j.model.gml.basicTypes.DoubleOrNull;
 import org.citygml4j.model.gml.basicTypes.MeasureOrNullList;
 import org.citygml4j.model.gml.geometry.aggregates.MultiCurveProperty;
-import org.citygml4j.model.gml.geometry.aggregates.MultiSurface;
-import org.citygml4j.model.gml.geometry.aggregates.MultiSurfaceProperty;
 import org.citygml4j.model.gml.measures.Length;
 import org.citygml4j.model.module.citygml.CityGMLModuleType;
 
@@ -407,26 +404,17 @@ public class DBBuilding extends AbstractFeatureExporter<AbstractBuilding> {
 								else if (i == 1 && !projectionFilter.containsProperty("lod0RoofEdge", buildingModule))
 									continue;
 
-								long surfaceGeometryId = rs.getLong(i == 0 ? "lod0_footprint_id" : "lod0_roofprint_id");
+								long geometryId = rs.getLong(i == 0 ? "lod0_footprint_id" : "lod0_roofprint_id");
 								if (rs.wasNull())
 									continue;
 
-								SurfaceGeometry geometry = geometryExporter.doExport(surfaceGeometryId);
-								if (geometry != null && geometry.getType() == GMLClass.MULTI_SURFACE) {
-									MultiSurfaceProperty multiSurfaceProperty = new MultiSurfaceProperty();
-									if (geometry.isSetGeometry())
-										multiSurfaceProperty.setMultiSurface((MultiSurface)geometry.getGeometry());
-									else
-										multiSurfaceProperty.setHref(geometry.getReference());
-
-									switch (i) {
+								switch (i) {
 									case 0:
-										building.setLod0FootPrint(multiSurfaceProperty);
+										geometryExporter.addBatch(geometryId, building::setLod0FootPrint);
 										break;
 									case 1:
-										building.setLod0RoofEdge(multiSurfaceProperty);
+										geometryExporter.addBatch(geometryId, building::setLod0RoofEdge);
 										break;
-									}
 								}
 							}
 						}
@@ -439,22 +427,22 @@ public class DBBuilding extends AbstractFeatureExporter<AbstractBuilding> {
 							if (!projectionFilter.containsProperty("lod" + lod + "Solid", buildingModule))
 								continue;
 
-							long surfaceGeometryId = rs.getLong("lod" + lod + "_solid_id");
+							long geometryId = rs.getLong("lod" + lod + "_solid_id");
 							if (rs.wasNull())
 								continue;
 
 							switch (lod) {
 								case 1:
-									geometryExporter.addBatch(surfaceGeometryId, building::setLod1Solid);
+									geometryExporter.addBatch(geometryId, building::setLod1Solid);
 									break;
 								case 2:
-									geometryExporter.addBatch(surfaceGeometryId, building::setLod2Solid);
+									geometryExporter.addBatch(geometryId, building::setLod2Solid);
 									break;
 								case 3:
-									geometryExporter.addBatch(surfaceGeometryId, building::setLod3Solid);
+									geometryExporter.addBatch(geometryId, building::setLod3Solid);
 									break;
 								case 4:
-									geometryExporter.addBatch(surfaceGeometryId, building::setLod4Solid);
+									geometryExporter.addBatch(geometryId, building::setLod4Solid);
 									break;
 							}
 						}
@@ -467,32 +455,23 @@ public class DBBuilding extends AbstractFeatureExporter<AbstractBuilding> {
 							if (!projectionFilter.containsProperty("lod" + lod + "MultiSurface", buildingModule))
 								continue;
 
-							long surfaceGeometryId = rs.getLong("lod" + lod + "_multi_surface_id");
+							long geometryId = rs.getLong("lod" + lod + "_multi_surface_id");
 							if (rs.wasNull())
 								continue;
 
-							SurfaceGeometry geometry = geometryExporter.doExport(surfaceGeometryId);
-							if (geometry != null && geometry.getType() == GMLClass.MULTI_SURFACE) {
-								MultiSurfaceProperty multiSurfaceProperty = new MultiSurfaceProperty();
-								if (geometry.isSetGeometry())
-									multiSurfaceProperty.setMultiSurface((MultiSurface)geometry.getGeometry());
-								else
-									multiSurfaceProperty.setHref(geometry.getReference());
-
-								switch (lod) {
+							switch (lod) {
 								case 1:
-									building.setLod1MultiSurface(multiSurfaceProperty);
+									geometryExporter.addBatch(geometryId, building::setLod1MultiSurface);
 									break;
 								case 2:
-									building.setLod2MultiSurface(multiSurfaceProperty);
+									geometryExporter.addBatch(geometryId, building::setLod2MultiSurface);
 									break;
 								case 3:
-									building.setLod3MultiSurface(multiSurfaceProperty);
+									geometryExporter.addBatch(geometryId, building::setLod3MultiSurface);
 									break;
 								case 4:
-									building.setLod4MultiSurface(multiSurfaceProperty);
+									geometryExporter.addBatch(geometryId, building::setLod4MultiSurface);
 									break;
-								}
 							}
 						}
 
