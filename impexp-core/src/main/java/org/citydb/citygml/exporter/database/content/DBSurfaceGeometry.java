@@ -95,7 +95,6 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryBatchExport
 	private PreparedStatement psSelect;
 	private PreparedStatement psImport;
 	private boolean appendOldGmlId;
-	private boolean isImplicit;
 	private String gmlIdPrefix;
 
 	private int commitAfter;
@@ -211,7 +210,7 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryBatchExport
 				psBulk.setArray(1, exporter.getDatabaseAdapter().getSQLAdapter().createIdArray(setters.keySet().toArray(new Long[0]), connection));
 				try (ResultSet rs = psBulk.executeQuery()) {
 					while (rs.next()) {
-						GeometryTree geomTree = geomTrees.computeIfAbsent(rs.getLong(11), v -> new GeometryTree());
+						GeometryTree geomTree = geomTrees.computeIfAbsent(rs.getLong(11), v -> new GeometryTree(false));
 						readSurface(geomTree, rs);
 					}
 				}
@@ -255,7 +254,7 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryBatchExport
 							}
 						}
 					} else
-						exporter.logOrThrowErrorMessage("Failed to read surface geometry for root_id " + entry.getKey() + ".");
+						exporter.logOrThrowErrorMessage("Failed to read surface geometry for root id " + entry.getKey() + ".");
 				}
 			} finally {
 				setters.clear();
@@ -264,33 +263,33 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryBatchExport
 	}
 
 	protected SurfaceGeometry doExport(long rootId) throws CityGMLExportException, SQLException {
+		return doExport(rootId, false);
+	}
+
+	protected SurfaceGeometry doExportImplicitGeometry(long rootId) throws CityGMLExportException, SQLException {
+		return doExport(rootId, true);
+	}
+
+	private SurfaceGeometry doExport(long rootId, boolean isImplicit) throws CityGMLExportException, SQLException {
 		if (psSelect == null) {
-			Select select = new Select(this.select).addSelection(ComparisonFactory.equalTo(table.getColumn("root_id"), new PlaceHolder<>()));
-			psSelect = connection.prepareStatement(select.toString());
+			psSelect = connection.prepareStatement(new Select(this.select)
+					.addSelection(ComparisonFactory.equalTo(table.getColumn("root_id"), new PlaceHolder<>()))
+					.toString());
 		}
 
 		psSelect.setLong(1, rootId);
 
 		try (ResultSet rs = psSelect.executeQuery()) {
-			GeometryTree geomTree = new GeometryTree();
+			GeometryTree geomTree = new GeometryTree(isImplicit);
 			while (rs.next())
 				readSurface(geomTree, rs);
 
 			if (geomTree.root != 0)
 				return rebuildGeometry(geomTree.getNode(geomTree.root), false, false);
 			else {
-				exporter.logOrThrowErrorMessage("Failed to interpret geometry object.");
+				exporter.logOrThrowErrorMessage("Failed to read surface geometry for root id " + rootId + ".");
 				return null;
 			}
-		}
-	}
-
-	protected SurfaceGeometry doExportImplicitGeometry(long rootId) throws CityGMLExportException, SQLException {
-		try {
-			isImplicit = true;
-			return doExport(rootId);
-		} finally {
-			isImplicit = false;
 		}
 	}
 
@@ -309,7 +308,7 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryBatchExport
 		geomNode.isReverse = rs.getBoolean(8);
 
 		GeometryObject geometry = null;
-		Object object = rs.getObject(!isImplicit ? 9 : 10);
+		Object object = rs.getObject(!geomTree.isImplicit ? 9 : 10);
 		if (!rs.wasNull()) {
 			try {
 				geometry = exporter.getDatabaseAdapter().getGeometryConverter().getPolygon(object);
@@ -763,27 +762,32 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryBatchExport
 	}
 
 	private static class GeometryNode {
-		protected long id;
-		protected String gmlId;
-		protected long parentId;
-		protected boolean isSolid;
-		protected boolean isComposite;
-		protected boolean isTriangulated;
-		protected boolean isXlink;
-		protected boolean isReverse;
-		protected GeometryObject geometry;
-		protected List<GeometryNode> childNodes;
+		long id;
+		String gmlId;
+		long parentId;
+		boolean isSolid;
+		boolean isComposite;
+		boolean isTriangulated;
+		boolean isXlink;
+		boolean isReverse;
+		GeometryObject geometry;
+		List<GeometryNode> childNodes;
 
-		public GeometryNode() {
+		GeometryNode() {
 			childNodes = new ArrayList<>();
 		}
 	}
 
 	private static class GeometryTree {
-		private final Map<Long, GeometryNode> geometryTree = new HashMap<>();
+		final Map<Long, GeometryNode> geometryTree = new HashMap<>();
+		final boolean isImplicit;
 		long root;
 
-		public void insertNode(GeometryNode geomNode, long parentId) {
+		GeometryTree(boolean isImplicit) {
+			this.isImplicit = isImplicit;
+		}
+
+		void insertNode(GeometryNode geomNode, long parentId) {
 			if (parentId == 0)
 				root = geomNode.id;
 
@@ -823,7 +827,7 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryBatchExport
 			}
 		}
 
-		public GeometryNode getNode(long entryId) {
+		GeometryNode getNode(long entryId) {
 			return geometryTree.get(entryId);
 		}
 	}
