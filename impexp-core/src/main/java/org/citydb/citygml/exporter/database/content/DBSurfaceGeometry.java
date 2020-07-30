@@ -255,7 +255,7 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryBatchExport
 							}
 						}
 					} else
-						exporter.logOrThrowErrorMessage("Failed to interpret geometry object.");
+						exporter.logOrThrowErrorMessage("Failed to read surface geometry for root_id " + entry.getKey() + ".");
 				}
 			} finally {
 				setters.clear();
