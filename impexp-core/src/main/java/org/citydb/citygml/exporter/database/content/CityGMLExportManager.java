@@ -648,19 +648,13 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 	@Override
 	public boolean lookupAndPutObjectUID(String gmlId, long id, int objectClassId) {
 		UIDCache cache = uidCacheManager.getCache(UIDCacheType.OBJECT);
-		if (cache != null)
-			return cache.lookupAndPut(gmlId, id, objectClassId);
-		else
-			return false;
+		return cache != null && cache.lookupAndPut(gmlId, id, objectClassId);
 	}
 
 	@Override
 	public boolean lookupObjectUID(String gmlId) {
 		UIDCache cache = uidCacheManager.getCache(UIDCacheType.OBJECT);
-		if (cache != null)
-			return cache.get(gmlId) != null;
-		else
-			return false;
+		return cache != null && cache.get(gmlId) != null;
 	}
 
 	public void putObjectUID(String gmlId, long id, int objectClassId) {
@@ -671,10 +665,12 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 
 	public boolean lookupAndPutGeometryUID(String gmlId, long id) {
 		UIDCache cache = uidCacheManager.getCache(UIDCacheType.GEOMETRY);
-		if (cache != null)
-			return cache.lookupAndPut(gmlId, id, MappingConstants.SURFACE_GEOMETRY_OBJECTCLASS_ID);
-		else 
-			return false;
+		return cache != null && cache.lookupAndPut(gmlId, id, MappingConstants.SURFACE_GEOMETRY_OBJECTCLASS_ID);
+	}
+
+	public boolean lookupGeometryUID(String gmlId) {
+		UIDCache cache = uidCacheManager.getCache(UIDCacheType.GEOMETRY);
+		return cache != null && cache.get(gmlId) != null;
 	}
 
 	public String getGeometrySignature(AbstractGeometry geometry, long id) {
