@@ -435,6 +435,11 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 	}
 
 	@Override
+	public SurfaceGeometryBatchExporter getSurfaceGeometryBatchExporter() throws CityGMLExportException, SQLException {
+		return getExporter(DBSurfaceGeometry.class);
+	}
+
+	@Override
 	public SurfaceGeometry exportSurfaceGeometry(long surfaceGeometryId) throws CityGMLExportException, SQLException {
 		return getExporter(DBSurfaceGeometry.class).doExport(surfaceGeometryId);
 	}

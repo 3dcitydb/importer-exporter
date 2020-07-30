@@ -29,9 +29,14 @@ package org.citydb.citygml.exporter.database.content;
 
 import org.citydb.citygml.common.database.cache.CacheTable;
 import org.citydb.citygml.exporter.CityGMLExportException;
+import org.citydb.citygml.exporter.util.GeometrySetter;
+import org.citydb.citygml.exporter.util.MultiSurfaceSetter;
+import org.citydb.citygml.exporter.util.SolidSetter;
 import org.citydb.config.Config;
 import org.citydb.config.geometry.GeometryObject;
+import org.citydb.config.project.database.DatabaseType;
 import org.citydb.database.schema.TableEnum;
+import org.citydb.sqlbuilder.expression.LiteralSelectExpression;
 import org.citydb.sqlbuilder.expression.PlaceHolder;
 import org.citydb.sqlbuilder.schema.Table;
 import org.citydb.sqlbuilder.select.Select;
@@ -41,6 +46,7 @@ import org.citygml4j.model.gml.GMLClass;
 import org.citygml4j.model.gml.geometry.AbstractGeometry;
 import org.citygml4j.model.gml.geometry.aggregates.MultiSolid;
 import org.citygml4j.model.gml.geometry.aggregates.MultiSurface;
+import org.citygml4j.model.gml.geometry.aggregates.MultiSurfaceProperty;
 import org.citygml4j.model.gml.geometry.complexes.CompositeSolid;
 import org.citygml4j.model.gml.geometry.complexes.CompositeSurface;
 import org.citygml4j.model.gml.geometry.primitives.AbstractSolid;
@@ -66,15 +72,22 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public class DBSurfaceGeometry implements DBExporter {
+public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryBatchExporter {
 	private final CityGMLExportManager exporter;
-	private final PreparedStatement psSelect;
+	private final PreparedStatement psBulk;
+	private final Connection connection;
+	private final Map<Long, GeometrySetter<?>> setters;
 	private final boolean exportAppearance;
 	private final boolean useXLink;
 
+	private final Table table;
+	private final Select select;
+
+	private PreparedStatement psSelect;
 	private PreparedStatement psImport;
 	private boolean appendOldGmlId;
 	private boolean isImplicit;
@@ -85,9 +98,13 @@ public class DBSurfaceGeometry implements DBExporter {
 
 	public DBSurfaceGeometry(Connection connection, CacheTable cacheTable, CityGMLExportManager exporter, Config config) throws SQLException {
 		this.exporter = exporter;
+		this.connection = connection;
+
+		setters = new LinkedHashMap<>();
+		exportAppearance = config.getInternal().isExportGlobalAppearances();
+		useXLink = exporter.getExportConfig().getXlink().getGeometry().isModeXLink();
 		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 
-		exportAppearance = config.getInternal().isExportGlobalAppearances();
 		if (exportAppearance) {
 			commitAfter = exporter.getDatabaseAdapter().getMaxBatchSize();
 			Integer commitAfterProp = config.getProject().getDatabase().getUpdateBatching().getTempBatchValue();
@@ -99,65 +116,96 @@ public class DBSurfaceGeometry implements DBExporter {
 			if (exporter.getDatabaseAdapter().getSQLAdapter().requiresPseudoTableInSelect()) select.setPseudoTable(exporter.getDatabaseAdapter().getSQLAdapter().getPseudoTableName());
 			select.addSelection(ComparisonFactory.exists(new Select().addProjection(new ConstantColumn(1).withFromTable(table))
 					.addSelection(ComparisonFactory.equalTo(table.getColumn("surface_geometry_id"), new PlaceHolder<>()))));
-			
+
 			psImport = cacheTable.getConnection().prepareStatement("insert into " + cacheTable.getTableName() + " " + select.toString());
 		}
 
-		useXLink = exporter.getExportConfig().getXlink().getGeometry().isModeXLink();
 		if (!useXLink) {
 			appendOldGmlId = exporter.getExportConfig().getXlink().getGeometry().isSetAppendId();
 			gmlIdPrefix = exporter.getExportConfig().getXlink().getGeometry().getIdPrefix();
 		}
 
-		Table table = new Table(TableEnum.SURFACE_GEOMETRY.getName(), schema);
-		Select select = new Select().addProjection(table.getColumn("id"), table.getColumn("gmlid"), table.getColumn("parent_id"), table.getColumn("is_solid"), table.getColumn("is_composite"),
-				table.getColumn("is_triangulated"), table.getColumn("is_xlink"), table.getColumn("is_reverse"),
-				exporter.getGeometryColumn(table.getColumn("geometry")), table.getColumn("implicit_geometry"))
-				.addSelection(ComparisonFactory.equalTo(table.getColumn("root_id"), new PlaceHolder<>()));
+		table = new Table(TableEnum.SURFACE_GEOMETRY.getName(), schema);
+		select = new Select().addProjection(table.getColumn("id"), table.getColumn("gmlid"), table.getColumn("parent_id"),
+				table.getColumn("is_solid"), table.getColumn("is_composite"), table.getColumn("is_triangulated"),
+				table.getColumn("is_xlink"), table.getColumn("is_reverse"),
+				exporter.getGeometryColumn(table.getColumn("geometry")), table.getColumn("implicit_geometry"));
 
-		psSelect = connection.prepareStatement(select.toString());
+		String subQuery = exporter.getDatabaseAdapter().getDatabaseType() == DatabaseType.POSTGIS ?
+				"select * from unnest(?)" :
+				"select * from table(?)";
+
+		Select bulkSelect = new Select(select)
+				.addProjection(table.getColumn("root_id"))
+				.addSelection(ComparisonFactory.in(table.getColumn("root_id"), new LiteralSelectExpression(subQuery)));
+		psBulk = connection.prepareStatement(bulkSelect.toString());
+	}
+
+	@Override
+	public void addBatch(long id, MultiSurfaceSetter setter) {
+		setters.put(id, setter);
+	}
+
+	@Override
+	public void addBatch(long id, SolidSetter setter) {
+		setters.put(id, setter);
+	}
+
+	@Override
+	public void clearBatch() {
+		setters.clear();
+	}
+
+	@Override
+	public void executeBatch() throws CityGMLExportException, SQLException {
+		if (!setters.isEmpty()) {
+			try {
+				Map<Long, GeometryTree> geomTrees = new HashMap<>(setters.size());
+
+				psBulk.setArray(1, exporter.getDatabaseAdapter().getSQLAdapter().createIdArray(setters.keySet().toArray(new Long[0]), connection));
+				try (ResultSet rs = psBulk.executeQuery()) {
+					while (rs.next()) {
+						GeometryTree geomTree = geomTrees.computeIfAbsent(rs.getLong(11), v -> new GeometryTree());
+						readSurface(geomTree, rs);
+					}
+				}
+
+				for (Map.Entry<Long, GeometrySetter<?>> entry : setters.entrySet()) {
+					GeometryTree geomTree = geomTrees.get(entry.getKey());
+					if (geomTree != null && geomTree.root != 0) {
+						SurfaceGeometry geometry = rebuildGeometry(geomTree.getNode(geomTree.root), false, false);
+						if (geometry != null) {
+							GeometrySetter<?> setter = entry.getValue();
+							if (setter instanceof MultiSurfaceSetter) {
+								MultiSurfaceSetter multiSurfaceSetter = (MultiSurfaceSetter) setter;
+								multiSurfaceSetter.set(geometry.fill(new MultiSurfaceProperty()));
+							} else if (setter instanceof SolidSetter) {
+								SolidSetter solidSetter = (SolidSetter) setter;
+								solidSetter.set(geometry.fill(new SolidProperty()));
+							}
+						}
+					} else
+						exporter.logOrThrowErrorMessage("Failed to interpret geometry object.");
+				}
+			} finally {
+				setters.clear();
+			}
+		}
 	}
 
 	protected SurfaceGeometry doExport(long rootId) throws CityGMLExportException, SQLException {
+		if (psSelect == null) {
+			Select select = new Select(this.select).addSelection(ComparisonFactory.equalTo(table.getColumn("root_id"), new PlaceHolder<>()));
+			psSelect = connection.prepareStatement(select.toString());
+		}
+
 		psSelect.setLong(1, rootId);
 
 		try (ResultSet rs = psSelect.executeQuery()) {
 			GeometryTree geomTree = new GeometryTree();
+			while (rs.next())
+				readSurface(geomTree, rs);
 
-			// firstly, read the geometry entries into a flat geometry tree structure
-			while (rs.next()) {
-				long id = rs.getLong(1);
-
-				// constructing a geometry node
-				GeometryNode geomNode = new GeometryNode();
-				geomNode.id = id;				
-				geomNode.gmlId = rs.getString(2);
-				geomNode.parentId = rs.getLong(3);
-				geomNode.isSolid = rs.getBoolean(4);
-				geomNode.isComposite = rs.getBoolean(5);
-				geomNode.isTriangulated = rs.getBoolean(6);
-				geomNode.isXlink = rs.getBoolean(7);
-				geomNode.isReverse = rs.getBoolean(8);
-
-				GeometryObject geometry = null;
-				Object object = rs.getObject(!isImplicit ? 9 : 10);
-				if (!rs.wasNull()) {
-					try {
-						geometry = exporter.getDatabaseAdapter().getGeometryConverter().getPolygon(object);
-					} catch (Exception e) {
-						exporter.logOrThrowErrorMessage("Skipping " + exporter.getGeometrySignature(GMLClass.POLYGON, id) +
-								": " + e.getMessage());
-						continue;
-					}
-				}
-
-				geomNode.geometry = geometry;
-
-				// put polygon into the geometry tree
-				geomTree.insertNode(geomNode, geomNode.parentId);
-			}
-
-			// interpret geometry tree as a single abstract geometry
 			if (geomTree.root != 0)
 				return rebuildGeometry(geomTree.getNode(geomTree.root), false, false);
 			else {
@@ -174,6 +222,38 @@ public class DBSurfaceGeometry implements DBExporter {
 		} finally {
 			isImplicit = false;
 		}
+	}
+
+	private void readSurface(GeometryTree geomTree, ResultSet rs) throws CityGMLExportException, SQLException {
+		long id = rs.getLong(1);
+
+		// constructing a geometry node
+		GeometryNode geomNode = new GeometryNode();
+		geomNode.id = id;
+		geomNode.gmlId = rs.getString(2);
+		geomNode.parentId = rs.getLong(3);
+		geomNode.isSolid = rs.getBoolean(4);
+		geomNode.isComposite = rs.getBoolean(5);
+		geomNode.isTriangulated = rs.getBoolean(6);
+		geomNode.isXlink = rs.getBoolean(7);
+		geomNode.isReverse = rs.getBoolean(8);
+
+		GeometryObject geometry = null;
+		Object object = rs.getObject(!isImplicit ? 9 : 10);
+		if (!rs.wasNull()) {
+			try {
+				geometry = exporter.getDatabaseAdapter().getGeometryConverter().getPolygon(object);
+			} catch (Exception e) {
+				exporter.logOrThrowErrorMessage("Skipping " + exporter.getGeometrySignature(GMLClass.POLYGON, id) +
+						": " + e.getMessage());
+				return;
+			}
+		}
+
+		geomNode.geometry = geometry;
+
+		// put polygon into the geometry tree
+		geomTree.insertNode(geomNode, geomNode.parentId);
 	}
 
 	private SurfaceGeometry rebuildGeometry(GeometryNode geomNode, boolean isSetOrientableSurface, boolean wasXlink) throws CityGMLExportException, SQLException {
@@ -201,7 +281,7 @@ public class DBSurfaceGeometry implements DBExporter {
 						}
 					}
 
-					if (isMultiSolid) 
+					if (isMultiSolid)
 						surfaceGeometryType = GMLClass.MULTI_SOLID;
 					else
 						surfaceGeometryType = GMLClass.MULTI_SURFACE;
@@ -218,9 +298,9 @@ public class DBSurfaceGeometry implements DBExporter {
 					if (useXLink) {
 						// check whether we have to embrace the geometry with an orientableSurface
 						if (geomNode.isReverse != isSetOrientableSurface) {
-							OrientableSurface orientableSurface = new OrientableSurface();				
+							OrientableSurface orientableSurface = new OrientableSurface();
 							SurfaceProperty surfaceProperty = new SurfaceProperty();
-							surfaceProperty.setHref("#" + geomNode.gmlId); 
+							surfaceProperty.setHref("#" + geomNode.gmlId);
 							orientableSurface.setBaseSurface(surfaceProperty);
 							orientableSurface.setOrientation(Sign.MINUS);
 
@@ -237,7 +317,7 @@ public class DBSurfaceGeometry implements DBExporter {
 						return rebuildGeometry(geomNode, isSetOrientableSurface, true);
 					}
 				}
-			} 
+			}
 
 			if (exportAppearance && !wasXlink)
 				writeToAppearanceCache(geomNode);
@@ -268,7 +348,7 @@ public class DBSurfaceGeometry implements DBExporter {
 				List<Double> values;
 
 				// check whether we have to reverse the coordinate order
-				if (!geomNode.isReverse) { 
+				if (!geomNode.isReverse) {
 					values = geomNode.geometry.getCoordinatesAsList(ringIndex);
 				} else {
 					values = new ArrayList<>(geomNode.geometry.getCoordinates(ringIndex).length);
@@ -315,7 +395,7 @@ public class DBSurfaceGeometry implements DBExporter {
 
 			// check whether we have to embrace the polygon with an orientableSurface
 			if (initOrientableSurface || (isSetOrientableSurface && !geomNode.isReverse)) {
-				OrientableSurface orientableSurface = new OrientableSurface();				
+				OrientableSurface orientableSurface = new OrientableSurface();
 				SurfaceProperty surfaceProperty = new SurfaceProperty();
 				surfaceProperty.setSurface(polygon);
 				orientableSurface.setBaseSurface(surfaceProperty);
@@ -342,14 +422,14 @@ public class DBSurfaceGeometry implements DBExporter {
 
 					if (absGeom != null) {
 						switch (geomMember.getType()) {
-						case POLYGON:
-						case ORIENTABLE_SURFACE:
-						case COMPOSITE_SURFACE:
-						case TRIANGULATED_SURFACE:
-							surfaceMember.setSurface((AbstractSurface)absGeom);
-							break;						
-						default:
-							surfaceMember = null;
+							case POLYGON:
+							case ORIENTABLE_SURFACE:
+							case COMPOSITE_SURFACE:
+							case TRIANGULATED_SURFACE:
+								surfaceMember.setSurface((AbstractSurface)absGeom);
+								break;
+							default:
+								surfaceMember = null;
 						}
 					} else {
 						surfaceMember.setHref(geomMember.getReference());
@@ -363,7 +443,7 @@ public class DBSurfaceGeometry implements DBExporter {
 			if (compositeSurface.isSetSurfaceMember()) {
 				// check whether we have to embrace the compositeSurface with an orientableSurface
 				if (initOrientableSurface || (isSetOrientableSurface && !geomNode.isReverse)) {
-					OrientableSurface orientableSurface = new OrientableSurface();				
+					OrientableSurface orientableSurface = new OrientableSurface();
 					SurfaceProperty surfaceProperty = new SurfaceProperty();
 					surfaceProperty.setSurface(compositeSurface);
 					orientableSurface.setBaseSurface(surfaceProperty);
@@ -372,7 +452,7 @@ public class DBSurfaceGeometry implements DBExporter {
 					return new SurfaceGeometry(orientableSurface);
 				} else
 					return new SurfaceGeometry(compositeSurface);
-			}					
+			}
 
 			return null;
 		}
@@ -391,14 +471,14 @@ public class DBSurfaceGeometry implements DBExporter {
 					AbstractGeometry absGeom = geomMember.getGeometry();
 					SolidProperty solidMember = new SolidProperty();
 
-					if (absGeom != null) {					
+					if (absGeom != null) {
 						switch (geomMember.getType()) {
-						case SOLID:
-						case COMPOSITE_SOLID:
-							solidMember.setSolid((AbstractSolid)absGeom);
-							break;
-						default:
-							solidMember = null;
+							case SOLID:
+							case COMPOSITE_SOLID:
+								solidMember.setSolid((AbstractSolid)absGeom);
+								break;
+							default:
+								solidMember = null;
 						}
 					} else {
 						solidMember.setHref(geomMember.getReference());
@@ -433,12 +513,12 @@ public class DBSurfaceGeometry implements DBExporter {
 
 					if (absGeom != null) {
 						switch (geomMember.getType()) {
-						case COMPOSITE_SURFACE:
-						case ORIENTABLE_SURFACE:
-							surfaceProperty.setSurface((AbstractSurface)absGeom);
-							break;
-						default:
-							surfaceProperty = null;
+							case COMPOSITE_SURFACE:
+							case ORIENTABLE_SURFACE:
+								surfaceProperty.setSurface((AbstractSurface)absGeom);
+								break;
+							default:
+								surfaceProperty = null;
 						}
 					} else {
 						surfaceProperty.setHref(geomMember.getReference());
@@ -471,12 +551,12 @@ public class DBSurfaceGeometry implements DBExporter {
 
 					if (absGeom != null) {
 						switch (geomMember.getType()) {
-						case SOLID:
-						case COMPOSITE_SOLID:
-							solidMember.setSolid((AbstractSolid)absGeom);
-							break;
-						default:
-							solidMember = null;
+							case SOLID:
+							case COMPOSITE_SOLID:
+								solidMember.setSolid((AbstractSolid)absGeom);
+								break;
+							default:
+								solidMember = null;
 						}
 					} else {
 						solidMember.setHref(geomMember.getReference());
@@ -510,14 +590,14 @@ public class DBSurfaceGeometry implements DBExporter {
 
 					if (absGeom != null) {
 						switch (geomMember.getType()) {
-						case POLYGON:
-						case ORIENTABLE_SURFACE:
-						case COMPOSITE_SURFACE:
-						case TRIANGULATED_SURFACE:
-							surfaceMember.setSurface((AbstractSurface)absGeom);
-							break;
-						default:
-							surfaceMember = null;
+							case POLYGON:
+							case ORIENTABLE_SURFACE:
+							case COMPOSITE_SURFACE:
+							case TRIANGULATED_SURFACE:
+								surfaceMember.setSurface((AbstractSurface)absGeom);
+								break;
+							default:
+								surfaceMember = null;
 						}
 					} else {
 						surfaceMember.setHref(geomMember.getReference());
@@ -547,7 +627,7 @@ public class DBSurfaceGeometry implements DBExporter {
 
 				if (geomMember != null) {
 					// we are only expecting polygons...
-					AbstractGeometry absGeom = geomMember.getGeometry();					
+					AbstractGeometry absGeom = geomMember.getGeometry();
 
 					if (geomMember.getType() == GMLClass.POLYGON) {
 						// we do not have to deal with xlinks here...
@@ -556,10 +636,10 @@ public class DBSurfaceGeometry implements DBExporter {
 							Triangle triangle = new Triangle();
 							Polygon polygon = (Polygon)absGeom;
 
-							if (polygon.isSetExterior()) {								
+							if (polygon.isSetExterior()) {
 								triangle.setExterior(polygon.getExterior());
 								triangleArray.addTriangle(triangle);
-							}							
+							}
 						}
 					}
 				}
@@ -570,7 +650,7 @@ public class DBSurfaceGeometry implements DBExporter {
 
 				// check whether we have to embrace the compositeSurface with an orientableSurface
 				if (initOrientableSurface || (isSetOrientableSurface && !geomNode.isReverse)) {
-					OrientableSurface orientableSurface = new OrientableSurface();				
+					OrientableSurface orientableSurface = new OrientableSurface();
 					SurfaceProperty surfaceProperty = new SurfaceProperty();
 					surfaceProperty.setSurface(triangulatedSurface);
 					orientableSurface.setBaseSurface(surfaceProperty);
@@ -601,7 +681,10 @@ public class DBSurfaceGeometry implements DBExporter {
 
 	@Override
 	public void close() throws SQLException {
-		psSelect.close();
+		psBulk.close();
+
+		if (psSelect != null)
+			psSelect.close();
 
 		if (psImport != null) {
 			psImport.executeBatch();

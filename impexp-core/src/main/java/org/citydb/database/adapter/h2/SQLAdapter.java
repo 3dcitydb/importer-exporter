@@ -38,6 +38,7 @@ import org.citydb.sqlbuilder.schema.Column;
 import org.citydb.sqlbuilder.select.PredicateToken;
 import org.citydb.sqlbuilder.select.projection.Function;
 
+import java.sql.Array;
 import java.sql.Connection;
 import java.sql.SQLException;
 
@@ -147,6 +148,11 @@ public class SQLAdapter extends AbstractSQLAdapter {
 	@Override
 	public boolean supportsFetchFirstClause() {
 		return true;
+	}
+
+	@Override
+	public Array createIdArray(Long[] ids, Connection connection) throws SQLException {
+		return connection.createArrayOf(getInteger(), ids);
 	}
 
 	@Override

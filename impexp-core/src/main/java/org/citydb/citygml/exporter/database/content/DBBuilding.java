@@ -61,8 +61,6 @@ import org.citygml4j.model.gml.basicTypes.MeasureOrNullList;
 import org.citygml4j.model.gml.geometry.aggregates.MultiCurveProperty;
 import org.citygml4j.model.gml.geometry.aggregates.MultiSurface;
 import org.citygml4j.model.gml.geometry.aggregates.MultiSurfaceProperty;
-import org.citygml4j.model.gml.geometry.primitives.AbstractSolid;
-import org.citygml4j.model.gml.geometry.primitives.SolidProperty;
 import org.citygml4j.model.gml.measures.Length;
 import org.citygml4j.model.module.citygml.CityGMLModuleType;
 
@@ -445,28 +443,19 @@ public class DBBuilding extends AbstractFeatureExporter<AbstractBuilding> {
 							if (rs.wasNull())
 								continue;
 
-							SurfaceGeometry geometry = geometryExporter.doExport(surfaceGeometryId);
-							if (geometry != null && (geometry.getType() == GMLClass.SOLID || geometry.getType() == GMLClass.COMPOSITE_SOLID)) {
-								SolidProperty solidProperty = new SolidProperty();
-								if (geometry.isSetGeometry())
-									solidProperty.setSolid((AbstractSolid)geometry.getGeometry());
-								else
-									solidProperty.setHref(geometry.getReference());
-
-								switch (lod) {
+							switch (lod) {
 								case 1:
-									building.setLod1Solid(solidProperty);
+									geometryExporter.addBatch(surfaceGeometryId, building::setLod1Solid);
 									break;
 								case 2:
-									building.setLod2Solid(solidProperty);
+									geometryExporter.addBatch(surfaceGeometryId, building::setLod2Solid);
 									break;
 								case 3:
-									building.setLod3Solid(solidProperty);
+									geometryExporter.addBatch(surfaceGeometryId, building::setLod3Solid);
 									break;
 								case 4:
-									building.setLod4Solid(solidProperty);
+									geometryExporter.addBatch(surfaceGeometryId, building::setLod4Solid);
 									break;
-								}
 							}
 						}
 

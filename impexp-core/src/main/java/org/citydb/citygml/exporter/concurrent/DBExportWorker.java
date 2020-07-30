@@ -175,6 +175,9 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 			else
 				topLevelObject = exporter.exportObject(work.getId(), work.getObjectType(), false);
 
+			// trigger batch export of surface geometries
+			exporter.getSurfaceGeometryBatchExporter().executeBatch();
+
 			if (topLevelObject instanceof AbstractFeature) {
 				// cleanup appearances
 				exporter.cleanupAppearances(topLevelObject);
