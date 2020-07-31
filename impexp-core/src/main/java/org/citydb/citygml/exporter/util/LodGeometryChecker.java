@@ -35,9 +35,8 @@ import org.citygml4j.model.citygml.core.LodRepresentation;
 import org.citygml4j.model.common.base.ModelObject;
 import org.citygml4j.model.common.base.ModelObjects;
 import org.citygml4j.model.common.child.Child;
-import org.citygml4j.model.gml.base.AbstractGML;
+import org.citygml4j.model.gml.feature.AbstractFeature;
 import org.citygml4j.util.walker.FeatureWalker;
-import org.citygml4j.util.walker.GMLWalker;
 
 public class LodGeometryChecker extends FeatureWalker {
 	private final SchemaMapping schemaMapping;
@@ -46,14 +45,14 @@ public class LodGeometryChecker extends FeatureWalker {
 		this.schemaMapping = schemaMapping;
 	}
 
-	public void cleanupCityObjects(AbstractGML object) {
-		object.accept(new GMLWalker() {
+	public void cleanupCityObjects(AbstractFeature feature) {
+		feature.accept(new FeatureWalker() {
 			@Override
 			public void visit(AbstractCityObject cityObject) {
 				FeatureType featureType = schemaMapping.getFeatureType(Util.getObjectClassId(cityObject.getClass()));
 				if (featureType.hasLodProperties()) {
 					LodRepresentation representation = cityObject.getLodRepresentation();
-					if (!representation.hasRepresentations() && cityObject != object) {
+					if (!representation.hasRepresentations() && cityObject != feature) {
 						ModelObject property = cityObject.getParent();
 						if (property instanceof Child)
 							ModelObjects.unsetProperty(((Child) property).getParent(), property);

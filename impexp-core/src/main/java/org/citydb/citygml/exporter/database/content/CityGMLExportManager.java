@@ -707,8 +707,10 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 	}
 
 	public void cleanupCityObjects(AbstractGML object) {
-		if (lodGeometryChecker != null && !query.getLodFilter().preservesGeometry())
-			lodGeometryChecker.cleanupCityObjects(object);
+		if (lodGeometryChecker != null
+				&& !query.getLodFilter().preservesGeometry()
+				&& object instanceof AbstractFeature)
+			lodGeometryChecker.cleanupCityObjects((AbstractFeature) object);
 	}
 
 	public boolean isLazyTextureExport() {
