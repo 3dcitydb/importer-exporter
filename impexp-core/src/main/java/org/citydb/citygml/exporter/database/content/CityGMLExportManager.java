@@ -716,13 +716,16 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 	}
 
 	public void triggerLazyTextureExport(AbstractGML object) throws CityGMLExportException, SQLException {
-		if (getExportConfig().getAppearances().isSetExportAppearance())
-			getExporter(DBLocalAppearance.class).triggerLazyTextureExport(object);
+		if (getExportConfig().getAppearances().isSetExportAppearance()
+				&& object instanceof AbstractCityObject)
+			getExporter(DBLocalAppearance.class).triggerLazyTextureExport((AbstractCityObject) object);
 	}
 
 	public void cleanupAppearances(AbstractGML object) {
-		if (appearanceRemover != null && !query.getLodFilter().preservesGeometry())
-			appearanceRemover.cleanupAppearances(object);
+		if (appearanceRemover != null
+				&& !query.getLodFilter().preservesGeometry()
+				&& object instanceof AbstractFeature)
+			appearanceRemover.cleanupAppearances((AbstractFeature) object);
 	}
 
 	public void updateExportCounter(AbstractGML object) {
