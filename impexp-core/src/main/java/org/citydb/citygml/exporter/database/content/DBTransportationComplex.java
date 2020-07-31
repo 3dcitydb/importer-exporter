@@ -363,10 +363,6 @@ public class DBTransportationComplex extends AbstractFeatureExporter<Transportat
 						exporter.delegateToADEExporter(adeHookTables, transportationObject, transportationObjectId, transportationObjectType, transportationObjectProjectionFilter);
 				}
 
-				// check whether lod filter is satisfied
-				if (!exporter.satisfiesLodFilter(transportationObject))
-					continue;
-
 				if (transportationObject instanceof TrafficArea) {
 					TrafficAreaProperty property = new TrafficAreaProperty((TrafficArea)transportationObject);
 					complex.addTrafficArea(property);

@@ -59,10 +59,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 public class DBBridgeThematicSurface extends AbstractFeatureExporter<AbstractBoundarySurface> {
 	private final DBSurfaceGeometry geometryExporter;
@@ -331,21 +329,8 @@ public class DBBridgeThematicSurface extends AbstractFeatureExporter<AbstractBou
 						exporter.delegateToADEExporter(adeHookTables, opening, openingId, openingType, openingProjectionFilter);
 				}
 
-				// check whether lod filter is satisfied
-				if (!exporter.satisfiesLodFilter(opening))
-					continue;
-
 				OpeningProperty openingProperty = new OpeningProperty(opening);
 				boundarySurface.addOpening(openingProperty);
-			}
-
-			// check whether lod filter is satisfied
-			if (!lodFilter.preservesGeometry()) {
-				for (Iterator<Entry<Long, AbstractBoundarySurface>> iter = boundarySurfaces.entrySet().iterator(); iter.hasNext(); ) {
-					boundarySurface = iter.next().getValue();
-					if (!exporter.satisfiesLodFilter(boundarySurface))
-						iter.remove();
-				}
 			}
 
 			return boundarySurfaces.values();

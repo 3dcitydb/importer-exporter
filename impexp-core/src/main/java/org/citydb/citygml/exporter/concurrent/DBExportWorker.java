@@ -179,8 +179,11 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 			exporter.getSurfaceGeometryBatchExporter().executeBatch();
 
 			if (topLevelObject instanceof AbstractFeature) {
-				// cleanup appearances
-				exporter.cleanupAppearances(topLevelObject);
+				// remove empty city objects and clean up appearances
+				if (!exporter.getLodFilter().preservesGeometry()) {
+					exporter.cleanupCityObjects(topLevelObject);
+					exporter.cleanupAppearances(topLevelObject);
+				}
 
 				// invoke export plugins
 				if (!plugins.isEmpty()) {

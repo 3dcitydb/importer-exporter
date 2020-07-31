@@ -222,10 +222,6 @@ public class DBTrafficArea extends AbstractFeatureExporter<AbstractTransportatio
 						exporter.delegateToADEExporter(adeHookTables, transportationObject, transportationObjectId, featureType, projectionFilter);
 				}
 
-				// check whether lod filter is satisfied
-				if (!exporter.satisfiesLodFilter(transportationObject))
-					continue;
-
 				transportationObjects.add(transportationObject);
 			}
 

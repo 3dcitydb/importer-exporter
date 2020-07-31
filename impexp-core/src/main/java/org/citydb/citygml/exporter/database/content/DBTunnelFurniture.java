@@ -211,10 +211,6 @@ public class DBTunnelFurniture extends AbstractFeatureExporter<TunnelFurniture> 
 						exporter.delegateToADEExporter(adeHookTables, tunnelFurniture, tunnelFurnitureId, featureType, projectionFilter);
 				}
 
-				// check whether lod filter is satisfied
-				if (!exporter.satisfiesLodFilter(tunnelFurniture))
-					continue;
-
 				tunnelFurnitures.add(tunnelFurniture);
 			}
 

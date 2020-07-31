@@ -524,12 +524,6 @@ public class DBBuilding extends AbstractFeatureExporter<AbstractBuilding> {
 						parent.addConsistsOfBuildingPart(new BuildingPartProperty((BuildingPart)building));
 				}
 			}
-
-			// check whether lod filter is satisfied
-			if (!lodFilter.preservesGeometry()) {
-				for (AbstractBuilding tmp : result)
-					tmp.getConsistsOfBuildingPart().removeIf(buildingPartProperty -> !exporter.satisfiesLodFilter(buildingPartProperty.getBuildingPart()));
-			}
 			
 			return result;
 		}

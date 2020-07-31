@@ -156,10 +156,6 @@ public class DBWaterBoundarySurface extends AbstractFeatureExporter<AbstractWate
 						exporter.delegateToADEExporter(adeHookTables, waterBoundarySurface, waterBoundarySurfaceId, featureType, projectionFilter);
 				}
 
-				// check whether lod filter is satisfied
-				if (!exporter.satisfiesLodFilter(waterBoundarySurface))
-					continue;
-
 				waterBoundarySurfaces.add(waterBoundarySurface);
 			}
 

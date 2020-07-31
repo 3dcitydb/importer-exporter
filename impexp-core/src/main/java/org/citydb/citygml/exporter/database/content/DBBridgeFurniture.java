@@ -212,10 +212,6 @@ public class DBBridgeFurniture extends AbstractFeatureExporter<BridgeFurniture> 
 						exporter.delegateToADEExporter(adeHookTables, bridgeFurniture, bridgeFurnitureId, featureType, projectionFilter);
 				}
 
-				// check whether lod filter is satisfied
-				if (!exporter.satisfiesLodFilter(bridgeFurniture))
-					continue;				
-
 				bridgeFurnitures.add(bridgeFurniture);
 			}
 			

@@ -327,10 +327,6 @@ public class DBBuildingInstallation extends AbstractFeatureExporter<AbstractCity
 						exporter.delegateToADEExporter(adeHookTables, installation, installationId, featureType, projectionFilter);
 				}
 				
-				// check whether lod filter is satisfied
-				if (!exporter.satisfiesLodFilter(installation))
-					continue;
-				
 				installations.add(installation);
 			}
 

@@ -210,10 +210,6 @@ public class DBBridgeRoom extends AbstractFeatureExporter<BridgeRoom> {
 						exporter.delegateToADEExporter(adeHookTables, bridgeRoom, bridgeRoomId, featureType, projectionFilter);
 				}
 
-				// check whether lod filter is satisfied
-				if (!exporter.satisfiesLodFilter(bridgeRoom))
-					continue;
-
 				bridgeRooms.add(bridgeRoom);
 			}
 			

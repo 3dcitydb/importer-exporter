@@ -617,11 +617,6 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 		return schemaMapping.getAbstractObjectType(objectClassId);
 	}
 
-	@Override
-	public boolean satisfiesLodFilter(AbstractCityObject cityObject) {
-		return query.getLodFilter().preservesGeometry() || lodGeometryChecker.satisfiesLodFilter(cityObject);
-	}
-
 	protected <T extends AbstractGML> T createObject(int objectClassId, Class<T> type) {
 		AbstractGML object = Util.createObject(objectClassId, query.getTargetVersion());
 		return type.isInstance(object) ? type.cast(object) : null;
@@ -711,11 +706,14 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 		return schemaMapping.getAbstractObjectType(Util.getObjectClassId(objectClass));
 	}
 
+	public void cleanupCityObjects(AbstractGML object) {
+		if (lodGeometryChecker != null && !query.getLodFilter().preservesGeometry())
+			lodGeometryChecker.cleanupCityObjects(object);
+	}
+
 	public void cleanupAppearances(AbstractGML object) {
-		if (appearanceRemover != null 
-				&& !query.getLodFilter().preservesGeometry()
-				&& object instanceof AbstractCityObject)
-			appearanceRemover.cleanupAppearance((AbstractCityObject)object);
+		if (appearanceRemover != null && !query.getLodFilter().preservesGeometry())
+			appearanceRemover.cleanupAppearance(object);
 	}
 
 	public void updateExportCounter(AbstractGML object) {

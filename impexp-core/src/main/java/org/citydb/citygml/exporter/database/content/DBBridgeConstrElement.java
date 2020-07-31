@@ -318,10 +318,6 @@ public class DBBridgeConstrElement extends AbstractFeatureExporter<BridgeConstru
 					if (adeHookTables != null)
 						exporter.delegateToADEExporter(adeHookTables, constructionElement, constructionElementId, featureType, projectionFilter);
 				}
-
-				// check whether lod filter is satisfied
-				if (!exporter.satisfiesLodFilter(constructionElement))
-					continue;
 				
 				constructionElements.add(constructionElement);
 			}

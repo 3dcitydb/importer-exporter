@@ -211,10 +211,6 @@ public class DBBuildingFurniture extends AbstractFeatureExporter<BuildingFurnitu
 						exporter.delegateToADEExporter(adeHookTables, buildingFurniture, buildingFurnitureId, featureType, projectionFilter);
 				}
 
-				// check whether lod filter is satisfied
-				if (!exporter.satisfiesLodFilter(buildingFurniture))
-					continue;
-
 				buildingFurnitures.add(buildingFurniture);
 			}
 			

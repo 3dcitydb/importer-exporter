@@ -93,6 +93,4 @@ public interface CityGMLExportHelper {
 	
 	boolean lookupAndPutObjectUID(String gmlId, long id, int objectClassId);
 	boolean lookupObjectUID(String gmlId);
-	
-	boolean satisfiesLodFilter(AbstractCityObject cityObject);
 }

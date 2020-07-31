@@ -447,12 +447,6 @@ public class DBBridge extends AbstractFeatureExporter<AbstractBridge> {
 				}
 			}
 
-			// check whether lod filter is satisfied
-			if (!lodFilter.preservesGeometry()) {
-				for (AbstractBridge tmp : result)
-					tmp.getConsistsOfBridgePart().removeIf(bridgePartProperty -> !exporter.satisfiesLodFilter(bridgePartProperty.getBridgePart()));
-			}
-
 			return result;
 		}
 	}

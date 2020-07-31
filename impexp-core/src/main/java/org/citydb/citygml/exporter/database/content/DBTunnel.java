@@ -395,12 +395,6 @@ public class DBTunnel extends AbstractFeatureExporter<AbstractTunnel> {
 				}
 			}
 
-			// check whether lod filter is satisfied
-			if (!lodFilter.preservesGeometry()) {
-				for (AbstractTunnel tmp : result)
-					tmp.getConsistsOfTunnelPart().removeIf(tunnelPartProperty -> !exporter.satisfiesLodFilter(tunnelPartProperty.getTunnelPart()));
-			}
-
 			return result;
 		}
 	}

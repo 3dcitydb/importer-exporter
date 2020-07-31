@@ -181,10 +181,6 @@ public class DBTunnelOpening extends AbstractFeatureExporter<AbstractOpening> {
 						exporter.delegateToADEExporter(adeHookTables, opening, openingId, featureType, projectionFilter);
 				}
 
-				// check whether lod filter is satisfied
-				if (!exporter.satisfiesLodFilter(opening))
-					continue;
-
 				openings.add(opening);
 			}
 

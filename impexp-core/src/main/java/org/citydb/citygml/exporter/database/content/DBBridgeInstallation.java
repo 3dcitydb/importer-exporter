@@ -327,10 +327,6 @@ public class DBBridgeInstallation extends AbstractFeatureExporter<AbstractCityOb
 						exporter.delegateToADEExporter(adeHookTables, installation, installationId, featureType, projectionFilter);
 				}
 
-				// check whether lod filter is satisfied
-				if (!exporter.satisfiesLodFilter(installation))
-					continue;
-
 				installations.add(installation);
 			}
 			

@@ -210,10 +210,6 @@ public class DBRoom extends AbstractFeatureExporter<Room> {
 						exporter.delegateToADEExporter(adeHookTables, room, roomId, featureType, projectionFilter);
 				}
 
-				// check whether lod filter is satisfied
-				if (!exporter.satisfiesLodFilter(room))
-					continue;
-
 				rooms.add(room);
 			}
 

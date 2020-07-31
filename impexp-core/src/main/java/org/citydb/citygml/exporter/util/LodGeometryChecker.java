@@ -32,52 +32,36 @@ import org.citydb.database.schema.mapping.SchemaMapping;
 import org.citydb.util.Util;
 import org.citygml4j.model.citygml.core.AbstractCityObject;
 import org.citygml4j.model.citygml.core.LodRepresentation;
+import org.citygml4j.model.common.base.ModelObject;
+import org.citygml4j.model.common.base.ModelObjects;
+import org.citygml4j.model.common.child.Child;
+import org.citygml4j.model.gml.base.AbstractGML;
 import org.citygml4j.util.walker.FeatureWalker;
+import org.citygml4j.util.walker.GMLWalker;
 
 public class LodGeometryChecker extends FeatureWalker {
 	private final SchemaMapping schemaMapping;
-	private final LodWalker lodWalker;
 
 	public LodGeometryChecker(SchemaMapping schemaMapping) {
 		this.schemaMapping = schemaMapping;
-		lodWalker = new LodWalker();
 	}
 
-	public boolean satisfiesLodFilter(AbstractCityObject cityObject) {
-		if (cityObject.getLodRepresentation().hasRepresentations())
-			return true;
-
-		lodWalker.reset(cityObject);
-		cityObject.accept(lodWalker);
-
-		if (!lodWalker.foundGeometry) {
-			FeatureType featureType = schemaMapping.getFeatureType(Util.getObjectClassId(cityObject.getClass()));
-			if (!featureType.hasLodProperties())
-				return true;
-		}
-
-		return lodWalker.foundGeometry;
-	}
-
-	private final class LodWalker extends FeatureWalker {
-		private AbstractCityObject root;
-		private boolean foundGeometry = false;
-
-		@Override
-		public void visit(AbstractCityObject cityObject) {
-			if (cityObject != root) {
-				LodRepresentation lodRepresentation = cityObject.getLodRepresentation();
-				if (lodRepresentation.hasRepresentations()) {
-					foundGeometry = true;
-					shouldWalk = false;
+	public void cleanupCityObjects(AbstractGML object) {
+		object.accept(new GMLWalker() {
+			@Override
+			public void visit(AbstractCityObject cityObject) {
+				FeatureType featureType = schemaMapping.getFeatureType(Util.getObjectClassId(cityObject.getClass()));
+				if (featureType.hasLodProperties()) {
+					LodRepresentation representation = cityObject.getLodRepresentation();
+					if (!representation.hasRepresentations() && cityObject != object) {
+						ModelObject property = cityObject.getParent();
+						if (property instanceof Child)
+							ModelObjects.unsetProperty(((Child) property).getParent(), property);
+					}
 				}
-			}
-		}
 
-		public void reset(AbstractCityObject cityObject) {
-			super.reset();
-			root = cityObject;
-			foundGeometry = false;
-		}
+				super.visit(cityObject);
+			}
+		});
 	}
 }

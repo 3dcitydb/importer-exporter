@@ -366,10 +366,6 @@ public class DBWaterBody extends AbstractFeatureExporter<WaterBody> {
 						exporter.delegateToADEExporter(adeHookTables, waterBoundarySurface, waterBoundarySurfaceId, waterBoundarySurfaceType, waterBoundarySurfaceProjectionFilter);
 				}
 
-				// check whether lod filter is satisfied
-				if (!exporter.satisfiesLodFilter(waterBoundarySurface))
-					continue;
-
 				BoundedByWaterSurfaceProperty boundedByProperty = new BoundedByWaterSurfaceProperty(waterBoundarySurface);
 				waterBody.addBoundedBySurface(boundedByProperty);
 			}

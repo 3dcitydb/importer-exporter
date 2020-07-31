@@ -210,10 +210,6 @@ public class DBTunnelHollowSpace extends AbstractFeatureExporter<HollowSpace> {
 						exporter.delegateToADEExporter(adeHookTables, hollowSpace, hollowSpaceId, featureType, projectionFilter);
 				}
 
-				// check whether lod filter is satisfied
-				if (!exporter.satisfiesLodFilter(hollowSpace))
-					continue;
-
 				hollowSpaces.add(hollowSpace);
 			}
 

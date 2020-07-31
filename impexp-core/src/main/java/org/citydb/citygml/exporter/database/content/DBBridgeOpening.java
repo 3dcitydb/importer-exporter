@@ -52,10 +52,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 public class DBBridgeOpening extends AbstractFeatureExporter<AbstractOpening> {
 	private final DBSurfaceGeometry geometryExporter;
@@ -219,15 +217,6 @@ public class DBBridgeOpening extends AbstractFeatureExporter<AbstractOpening> {
 						if (addressProperty != null)
 							((Door)opening).addAddress(addressProperty);
 					}
-				}
-			}
-
-			// check whether lod filter is satisfied
-			if (!lodFilter.preservesGeometry()) {
-				for (Iterator<Entry<Long, AbstractOpening>> iter = openings.entrySet().iterator(); iter.hasNext(); ) {
-					opening = iter.next().getValue();
-					if (!exporter.satisfiesLodFilter(opening))
-						iter.remove();
 				}
 			}
 
