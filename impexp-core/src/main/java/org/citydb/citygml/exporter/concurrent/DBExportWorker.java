@@ -175,15 +175,19 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 			else
 				topLevelObject = exporter.exportObject(work.getId(), work.getObjectType(), false);
 
-			// trigger batch export of surface geometries
-			exporter.getSurfaceGeometryBatchExporter().executeBatch();
-
 			if (topLevelObject instanceof AbstractFeature) {
-				// remove empty city objects and clean up appearances
+				// trigger batch export of surface geometries
+				exporter.getSurfaceGeometryBatchExporter().executeBatch();
+
+				// remove empty city objects and clean up appearances if LoDs are filtered
 				if (!exporter.getLodFilter().preservesGeometry()) {
 					exporter.cleanupCityObjects(topLevelObject);
 					exporter.cleanupAppearances(topLevelObject);
 				}
+
+				// trigger export of textures if required
+				if (exporter.isLazyTextureExport())
+					exporter.triggerLazyTextureExport(topLevelObject);
 
 				// invoke export plugins
 				if (!plugins.isEmpty()) {

@@ -48,7 +48,7 @@ public class DBLocalAppearance extends AbstractAppearanceExporter {
 		super(false, connection, query, null, exporter, config);
 	}
 
-	public void doExport(AbstractCityObject cityObject, long cityObjectId, boolean isTopLevelObject, boolean lazyExport) throws CityGMLExportException, SQLException {
+	protected void doExport(AbstractCityObject cityObject, long cityObjectId, boolean isTopLevelObject) throws CityGMLExportException, SQLException {
 		// clear texture image cache
 		if (isTopLevelObject)
 			clearTextureImageCache();
@@ -82,7 +82,7 @@ public class DBLocalAppearance extends AbstractAppearanceExporter {
 				}
 
 				// add surface data to appearance
-				addSurfaceData(appearance, rs, lazyExport);
+				addSurfaceData(appearance, rs, exporter.isLazyTextureExport());
 			}
 		}
 	}

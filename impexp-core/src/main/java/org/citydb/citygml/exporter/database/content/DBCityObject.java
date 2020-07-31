@@ -384,10 +384,8 @@ public class DBCityObject implements DBExporter {
 					}
 
 					// export appearance information associated with the city object
-					if (exportAppearance && projectionFilter.containsProperty("appearance", appearanceModule)) {
-						boolean lazyExport = !exporter.getLodFilter().preservesGeometry();
-						appearanceExporter.doExport(((AbstractCityObject)object), objectId, isTopLevel, lazyExport);
-					}
+					if (exportAppearance && projectionFilter.containsProperty("appearance", appearanceModule))
+						appearanceExporter.doExport(((AbstractCityObject) object), objectId, isTopLevel);
 				}
 			}
 			

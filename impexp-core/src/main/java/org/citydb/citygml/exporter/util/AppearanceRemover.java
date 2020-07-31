@@ -27,9 +27,6 @@
  */
 package org.citydb.citygml.exporter.util;
 
-import org.citydb.citygml.common.database.xlink.DBXlink;
-import org.citydb.concurrent.WorkerPool;
-import org.citydb.util.CoreConstants;
 import org.citygml4j.model.citygml.appearance.AbstractSurfaceData;
 import org.citygml4j.model.citygml.appearance.Appearance;
 import org.citygml4j.model.citygml.appearance.AppearanceProperty;
@@ -50,13 +47,8 @@ import java.util.Iterator;
 import java.util.Set;
 
 public class AppearanceRemover {
-    private final WorkerPool<DBXlink> xlinkPool;
 
-    public AppearanceRemover(WorkerPool<DBXlink> xlinkPool) {
-        this.xlinkPool = xlinkPool;
-    }
-
-    public void cleanupAppearance(AbstractGML object) {
+    public void cleanupAppearances(AbstractGML object) {
     	Set<String> targets = getTargets(object);
     	Set<String> removed = unsetSurfaceData(object, targets);
     	unsetAppearance(object, removed);
@@ -104,8 +96,6 @@ public class AppearanceRemover {
 						ParameterizedTexture texture = (ParameterizedTexture) surfaceData;
 						texture.getTarget().removeIf(target -> !targets.contains(target.getUri()));
 						remove = !texture.isSetTarget();
-						if (!remove && texture.hasLocalProperty(CoreConstants.TEXTURE_IMAGE_XLINK))
-							xlinkPool.addWork((DBXlink) texture.getLocalProperty(CoreConstants.TEXTURE_IMAGE_XLINK));
 					} else if (surfaceData instanceof X3DMaterial) {
 						X3DMaterial material = (X3DMaterial) surfaceData;
 						material.getTarget().removeIf(target -> !targets.contains(target));
@@ -114,8 +104,6 @@ public class AppearanceRemover {
 						GeoreferencedTexture texture = (GeoreferencedTexture) surfaceData;
 						texture.getTarget().removeIf(target -> !targets.contains(target));
 						remove = !texture.isSetTarget();
-						if (!remove && texture.hasLocalProperty(CoreConstants.TEXTURE_IMAGE_XLINK))
-							xlinkPool.addWork((DBXlink) texture.getLocalProperty(CoreConstants.TEXTURE_IMAGE_XLINK));
 					}
 
 					if (remove) {
