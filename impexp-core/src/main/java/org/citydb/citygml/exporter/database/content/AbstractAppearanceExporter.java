@@ -63,15 +63,15 @@ import org.citygml4j.model.citygml.appearance.SurfaceDataProperty;
 import org.citygml4j.model.citygml.appearance.TextureType;
 import org.citygml4j.model.citygml.appearance.WrapMode;
 import org.citygml4j.model.citygml.appearance.X3DMaterial;
+import org.citygml4j.model.citygml.core.AbstractCityObject;
 import org.citygml4j.model.citygml.core.TransformationMatrix2x2;
-import org.citygml4j.model.gml.base.AbstractGML;
 import org.citygml4j.model.gml.base.StringOrRef;
 import org.citygml4j.model.gml.basicTypes.Code;
 import org.citygml4j.model.gml.geometry.primitives.DirectPosition;
 import org.citygml4j.model.gml.geometry.primitives.Point;
 import org.citygml4j.model.gml.geometry.primitives.PointProperty;
 import org.citygml4j.util.gmlid.DefaultGMLIdManager;
-import org.citygml4j.util.walker.GMLWalker;
+import org.citygml4j.util.walker.FeatureWalker;
 
 import java.io.File;
 import java.sql.Connection;
@@ -424,9 +424,9 @@ public class AbstractAppearanceExporter extends AbstractTypeExporter {
 		appearance.addSurfaceDataMember(surfaceDataProperty);
 	}
 
-	protected void triggerLazyTextureExport(AbstractGML object) {
+	protected void triggerLazyTextureExport(AbstractCityObject cityObject) {
 		if (exporter.isLazyTextureExport()) {
-			object.accept(new GMLWalker() {
+			cityObject.accept(new FeatureWalker() {
 				@Override
 				public void visit(AbstractTexture texture) {
 					if (texture.hasLocalProperty(CoreConstants.TEXTURE_IMAGE_XLINK))
