@@ -28,6 +28,7 @@
 package org.citydb.citygml.exporter.database.content;
 
 import org.citydb.citygml.common.database.cache.CacheTable;
+import org.citydb.citygml.common.database.xlink.DBXlink;
 import org.citydb.citygml.common.database.xlink.DBXlinkTextureFile;
 import org.citydb.citygml.exporter.CityGMLExportException;
 import org.citydb.citygml.exporter.util.AttributeValueSplitter;
@@ -63,12 +64,14 @@ import org.citygml4j.model.citygml.appearance.TextureType;
 import org.citygml4j.model.citygml.appearance.WrapMode;
 import org.citygml4j.model.citygml.appearance.X3DMaterial;
 import org.citygml4j.model.citygml.core.TransformationMatrix2x2;
+import org.citygml4j.model.gml.base.AbstractGML;
 import org.citygml4j.model.gml.base.StringOrRef;
 import org.citygml4j.model.gml.basicTypes.Code;
 import org.citygml4j.model.gml.geometry.primitives.DirectPosition;
 import org.citygml4j.model.gml.geometry.primitives.Point;
 import org.citygml4j.model.gml.geometry.primitives.PointProperty;
 import org.citygml4j.util.gmlid.DefaultGMLIdManager;
+import org.citygml4j.util.walker.GMLWalker;
 
 import java.io.File;
 import java.sql.Connection;
@@ -419,6 +422,18 @@ public class AbstractAppearanceExporter extends AbstractTypeExporter {
 		// finally add surface data to appearance
 		SurfaceDataProperty surfaceDataProperty = new SurfaceDataProperty(surfaceData);
 		appearance.addSurfaceDataMember(surfaceDataProperty);
+	}
+
+	protected void triggerLazyTextureExport(AbstractGML object) {
+		if (exporter.isLazyTextureExport()) {
+			object.accept(new GMLWalker() {
+				@Override
+				public void visit(AbstractTexture texture) {
+					if (texture.hasLocalProperty(CoreConstants.TEXTURE_IMAGE_XLINK))
+						exporter.propagateXlink((DBXlink) texture.getLocalProperty(CoreConstants.TEXTURE_IMAGE_XLINK));
+				}
+			});
+		}
 	}
 
 	@Override

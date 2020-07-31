@@ -165,7 +165,7 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 	private Document document;
 
 	private boolean failOnError = false;
-	private boolean hasADESupport = false;
+	private boolean hasADESupport;
 
 	public CityGMLExportManager(OutputFile outputFile,
 			Connection connection,
@@ -198,7 +198,7 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 		exportCounter = new ExportCounter(schemaMapping);
 
 		if (config.getProject().getExporter().getAppearances().isSetExportAppearance())
-			appearanceRemover = new AppearanceRemover(xlinkPool);
+			appearanceRemover = new AppearanceRemover();
 
 		try {
 			jaxbUnmarshaller = cityGMLBuilder.createJAXBUnmarshaller();
@@ -701,11 +701,18 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 		return schemaMapping.getAbstractObjectType(Util.getObjectClassId(objectClass));
 	}
 
+	public boolean isLazyTextureExport() {
+		return !query.getLodFilter().preservesGeometry();
+	}
+
+	public void triggerLazyTextureExport(AbstractGML object) throws CityGMLExportException, SQLException {
+		if (getExportConfig().getAppearances().isSetExportAppearance())
+			getExporter(DBLocalAppearance.class).triggerLazyTextureExport(object);
+	}
+
 	public void cleanupAppearances(AbstractGML object) {
-		if (appearanceRemover != null 
-				&& !query.getLodFilter().preservesGeometry()
-				&& object instanceof AbstractCityObject)
-			appearanceRemover.cleanupAppearance((AbstractCityObject)object);
+		if (appearanceRemover != null && !query.getLodFilter().preservesGeometry())
+			appearanceRemover.cleanupAppearances(object);
 	}
 
 	public void updateExportCounter(AbstractGML object) {
