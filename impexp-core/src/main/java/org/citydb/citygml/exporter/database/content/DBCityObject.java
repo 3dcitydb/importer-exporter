@@ -162,7 +162,7 @@ public class DBCityObject implements DBExporter {
 				.addJoin(JoinFactory.left(generalization, "cityobject_id", ComparisonName.EQUAL_TO, table.getColumn("id")));
 		genericAttributeExporter.addProjection(select, genericAttributes, "ga")
 				.addJoin(JoinFactory.left(genericAttributes, "cityobject_id", ComparisonName.EQUAL_TO, table.getColumn("id")));
-		if (exportCityDBMetadata) select.addProjection(table.getColumn("last_modification_date"), table.getColumn("updating_person"), table.getColumn("reason_for_update"), table.getColumn("lineage"));
+		if (exportCityDBMetadata) select.addProjection(table.getColumns("last_modification_date", "updating_person", "reason_for_update", "lineage"));
 
 		String subQuery = exporter.getDatabaseAdapter().getDatabaseType() == DatabaseType.POSTGIS ?
 				"select * from unnest(?)" :
@@ -187,16 +187,14 @@ public class DBCityObject implements DBExporter {
 					while (rs.next()) {
 						long id = rs.getLong("id");
 						ObjectContext context = batches.get(id);
-						if (context == null)
-							throw new CityGMLExportException("Failed to city object for id " + id + ".");
-
-						if (ids.add(id)) {
-							if (!readObject(context, rs))
+						if (context != null) {
+							if (ids.add(id) && !readObject(context, rs))
 								return false;
-						}
 
-						if (context.isCityObject)
-							readProperties(context, rs);
+							if (context.isCityObject)
+								readProperties(context, rs);
+						} else
+							exporter.logOrThrowErrorMessage("Failed to read city object for id " + id + ".");
 					}
 
 					for (Map.Entry<Long, ObjectContext> entry : batches.entrySet())
