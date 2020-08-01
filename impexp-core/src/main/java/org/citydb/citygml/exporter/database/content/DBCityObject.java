@@ -183,18 +183,26 @@ public class DBCityObject implements DBExporter {
 			try {
 				psBulk.setArray(1, exporter.getDatabaseAdapter().getSQLAdapter().createIdArray(batches.keySet().toArray(new Long[0]), connection));
 				try (ResultSet rs = psBulk.executeQuery()) {
-					Set<Long> ids = new HashSet<>();
-					while (rs.next()) {
-						long id = rs.getLong("id");
-						ObjectContext context = batches.get(id);
-						if (context != null) {
-							if (ids.add(id) && !readObject(context, rs))
-								return false;
+					long currentObjectId = 0;
+					ObjectContext context = null;
 
-							if (context.isCityObject)
-								readProperties(context, rs);
-						} else
-							exporter.logOrThrowErrorMessage("Failed to read city object for id " + id + ".");
+					while (rs.next()) {
+						long objectId = rs.getLong("id");
+
+						if (objectId != currentObjectId || context == null) {
+							currentObjectId = objectId;
+							context = batches.get(objectId);
+							if (context != null) {
+								if (context.initialize() && !readObject(context, rs))
+									return false;
+							} else {
+								exporter.logOrThrowErrorMessage("Failed to read city object for id " + objectId + ".");
+								continue;
+							}
+						}
+
+						if (context.isCityObject)
+							readProperties(context, rs);
 					}
 
 					for (Map.Entry<Long, ObjectContext> entry : batches.entrySet())
@@ -486,6 +494,7 @@ public class DBCityObject implements DBExporter {
 		final boolean isCityObject;
 		final boolean isTopLevel;
 
+		boolean isInitialized;
 		Set<Long> generalizesTos;
 		Set<Long> externalReferences;
 		Set<Long> genericAttributes;
@@ -506,6 +515,14 @@ public class DBCityObject implements DBExporter {
 				genericAttributes = new HashSet<>();
 				genericAttributeSets = new HashMap<>();
 			}
+		}
+
+		boolean initialize() {
+			if (!isInitialized) {
+				isInitialized = true;
+				return true;
+			} else
+				return false;
 		}
 	}
 }
