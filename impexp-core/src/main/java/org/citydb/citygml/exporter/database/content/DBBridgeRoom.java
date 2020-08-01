@@ -142,7 +142,7 @@ public class DBBridgeRoom extends AbstractFeatureExporter<BridgeRoom> {
 				ProjectionFilter projectionFilter = exporter.getProjectionFilter(featureType);
 				
 				// export city object information
-				cityObjectExporter.doExport(bridgeRoom, bridgeRoomId, featureType, projectionFilter);
+				cityObjectExporter.addBatch(bridgeRoom, bridgeRoomId, featureType, projectionFilter);
 
 				if (projectionFilter.containsProperty("class", bridgeModule)) {
 					String clazz = rs.getString("class");

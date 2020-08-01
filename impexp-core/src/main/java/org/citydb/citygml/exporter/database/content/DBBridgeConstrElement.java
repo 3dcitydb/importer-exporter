@@ -155,7 +155,7 @@ public class DBBridgeConstrElement extends AbstractFeatureExporter<BridgeConstru
 				ProjectionFilter projectionFilter = exporter.getProjectionFilter(featureType);
 				
 				// export city object information
-				cityObjectExporter.doExport(constructionElement, constructionElementId, featureType, projectionFilter);
+				cityObjectExporter.addBatch(constructionElement, constructionElementId, featureType, projectionFilter);
 
 				if (projectionFilter.containsProperty("class", bridgeModule)) {
 					String clazz = rs.getString("class");

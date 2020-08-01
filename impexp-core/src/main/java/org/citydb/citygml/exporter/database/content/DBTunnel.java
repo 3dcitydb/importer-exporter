@@ -62,7 +62,6 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -174,13 +173,7 @@ public class DBTunnel extends AbstractFeatureExporter<AbstractTunnel> {
 				ProjectionFilter projectionFilter = exporter.getProjectionFilter(featureType);
 
 				// export city object information
-				boolean success = cityObjectExporter.doExport(tunnel, tunnelId, featureType, projectionFilter);
-				if (!success) {
-					if (tunnel == root)
-						return Collections.emptyList();
-					else if (featureType.isSetTopLevel())
-						continue;
-				}
+				cityObjectExporter.addBatch(tunnel, tunnelId, featureType, projectionFilter);
 
 				if (projectionFilter.containsProperty("class", tunnelModule)) {
 					String clazz = rs.getString("class");

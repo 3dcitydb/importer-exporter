@@ -140,7 +140,7 @@ public class DBTunnelFurniture extends AbstractFeatureExporter<TunnelFurniture> 
 				ProjectionFilter projectionFilter = exporter.getProjectionFilter(featureType);
 
 				// export city object information
-				cityObjectExporter.doExport(tunnelFurniture, tunnelFurnitureId, featureType, projectionFilter);
+				cityObjectExporter.addBatch(tunnelFurniture, tunnelFurnitureId, featureType, projectionFilter);
 
 				if (projectionFilter.containsProperty("class", tunnelModule)) {
 					String clazz = rs.getString("class");

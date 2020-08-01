@@ -58,7 +58,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -168,13 +167,7 @@ public class DBReliefFeature extends AbstractFeatureExporter<ReliefFeature> {
 						projectionFilter = exporter.getProjectionFilter(featureType);
 
 						// export city object information
-						boolean success = cityObjectExporter.doExport(reliefFeature, reliefFeatureId, featureType, projectionFilter);
-						if (!success) {
-							if (reliefFeature == root)
-								return Collections.emptyList();
-							else if (featureType.isSetTopLevel())
-								continue;
-						}
+						cityObjectExporter.addBatch(reliefFeature, reliefFeatureId, featureType, projectionFilter);
 
 						int lod = rs.getInt("rf_lod");
 						if (!lodFilter.isEnabled(lod))
@@ -215,7 +208,7 @@ public class DBReliefFeature extends AbstractFeatureExporter<ReliefFeature> {
 				ProjectionFilter componentProjectionFilter = exporter.getProjectionFilter(componentType);
 
 				// export city object information
-				cityObjectExporter.doExport(component, componentId, componentType, componentProjectionFilter);
+				cityObjectExporter.addBatch(component, componentId, componentType, componentProjectionFilter);
 
 				if (component.isSetId()) {
 					// process xlink

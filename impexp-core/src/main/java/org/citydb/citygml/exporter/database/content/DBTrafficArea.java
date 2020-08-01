@@ -121,7 +121,7 @@ public class DBTrafficArea extends AbstractFeatureExporter<AbstractTransportatio
 				ProjectionFilter projectionFilter = exporter.getProjectionFilter(featureType);
 
 				// export city object information
-				cityObjectExporter.doExport(transportationObject, transportationObjectId, featureType, projectionFilter);
+				cityObjectExporter.addBatch(transportationObject, transportationObjectId, featureType, projectionFilter);
 
 				boolean isTrafficArea = transportationObject instanceof TrafficArea;
 

@@ -54,7 +54,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -167,13 +166,7 @@ public class DBWaterBody extends AbstractFeatureExporter<WaterBody> {
 						projectionFilter = exporter.getProjectionFilter(featureType);
 
 						// export city object information
-						boolean success = cityObjectExporter.doExport(waterBody, waterBodyId, featureType, projectionFilter);
-						if (!success) {
-							if (waterBody == root)
-								return Collections.emptyList();
-							else if (featureType.isSetTopLevel())
-								continue;
-						}
+						cityObjectExporter.addBatch(waterBody, waterBodyId, featureType, projectionFilter);
 
 						if (projectionFilter.containsProperty("class", waterBodyModule)) {
 							String clazz = rs.getString("class");
@@ -310,7 +303,7 @@ public class DBWaterBody extends AbstractFeatureExporter<WaterBody> {
 				ProjectionFilter waterBoundarySurfaceProjectionFilter = exporter.getProjectionFilter(waterBoundarySurfaceType);
 
 				// export city object information
-				cityObjectExporter.doExport(waterBoundarySurface, waterBoundarySurfaceId, waterBoundarySurfaceType, waterBoundarySurfaceProjectionFilter);
+				cityObjectExporter.addBatch(waterBoundarySurface, waterBoundarySurfaceId, waterBoundarySurfaceType, waterBoundarySurfaceProjectionFilter);
 
 				if (waterBoundarySurface.isSetId()) {
 					// process xlink

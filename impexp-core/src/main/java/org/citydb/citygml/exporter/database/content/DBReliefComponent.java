@@ -132,7 +132,7 @@ public class DBReliefComponent extends AbstractFeatureExporter<AbstractReliefCom
 				ProjectionFilter projectionFilter = exporter.getProjectionFilter(featureType);
 
 				// export city object information
-				cityObjectExporter.doExport(component, componentId, featureType, projectionFilter);
+				cityObjectExporter.addBatch(component, componentId, featureType, projectionFilter);
 
 				component.setLod(rs.getInt("lod"));
 

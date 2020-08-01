@@ -37,6 +37,7 @@ import org.citydb.citygml.exporter.CityGMLExportException;
 import org.citydb.citygml.exporter.util.AttributeValueSplitter;
 import org.citydb.citygml.exporter.util.AttributeValueSplitter.SplitValue;
 import org.citydb.config.geometry.GeometryObject;
+import org.citydb.config.project.database.DatabaseType;
 import org.citydb.config.project.exporter.FeatureEnvelopeMode;
 import org.citydb.config.project.exporter.SimpleTilingOptions;
 import org.citydb.database.schema.TableEnum;
@@ -47,6 +48,7 @@ import org.citydb.query.filter.FilterException;
 import org.citydb.query.filter.projection.ProjectionFilter;
 import org.citydb.query.filter.tiling.Tile;
 import org.citydb.query.filter.tiling.Tiling;
+import org.citydb.sqlbuilder.expression.LiteralSelectExpression;
 import org.citydb.sqlbuilder.expression.PlaceHolder;
 import org.citydb.sqlbuilder.schema.Table;
 import org.citydb.sqlbuilder.select.Select;
@@ -80,21 +82,27 @@ import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
 public class DBCityObject implements DBExporter {
 	private final Query query;
 	private final CityGMLExportManager exporter;
-
-	private final PreparedStatement ps;
+	private final Connection connection;
+	private final PreparedStatement psBulk;
+	private final Map<Long, ObjectContext> batches;
 	private final DBGeneralization generalizesToExporter;
 	private final DBCityObjectGenericAttrib genericAttributeExporter;
 
+	private final Table table;
+	private final Select select;
 	private final String gmlSrsName;
 	private final boolean exportAppearance;
 	private final boolean useTiling;
 	private final boolean exportCityDBMetadata;
+
+	private PreparedStatement psSelect;
 	private final AttributeValueSplitter valueSplitter;
 	private final String coreModule;
 	private final String appearanceModule;
@@ -107,9 +115,11 @@ public class DBCityObject implements DBExporter {
 	private String cityDBADEModule;
 
 	public DBCityObject(Connection connection, Query query, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
-		this.exporter = exporter;
 		this.query = query;
+		this.connection = connection;
+		this.exporter = exporter;
 
+		batches = new LinkedHashMap<>();
 		gmlSrsName = query.getTargetSrs().getGMLSrsName();
 		exportAppearance = exporter.getExportConfig().getAppearances().isSetExportAppearance();
 
@@ -138,23 +148,66 @@ public class DBCityObject implements DBExporter {
 		gmlModule = GMLCoreModule.v3_1_1.getNamespaceURI();
 		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 
-		Table cityObject = new Table(TableEnum.CITYOBJECT.getName(), schema);
+		table = new Table(TableEnum.CITYOBJECT.getName(), schema);
 		Table externalReference = new Table(TableEnum.EXTERNAL_REFERENCE.getName(), schema);
 		Table generalization = new Table(TableEnum.GENERALIZATION.getName(), schema);
 		Table genericAttributes = new Table(TableEnum.CITYOBJECT_GENERICATTRIB.getName(), schema);
 
-		Select select = new Select().addProjection(cityObject.getColumn("gmlid"), exporter.getGeometryColumn(cityObject.getColumn("envelope")),
-				cityObject.getColumn("name"), cityObject.getColumn("name_codespace"), cityObject.getColumn("description"), cityObject.getColumn("creation_date"),
-				cityObject.getColumn("termination_date"), cityObject.getColumn("relative_to_terrain"), cityObject.getColumn("relative_to_water"),
+		select = new Select().addProjection(table.getColumn("gmlid"), exporter.getGeometryColumn(table.getColumn("envelope")),
+				table.getColumn("name"), table.getColumn("name_codespace"), table.getColumn("description"), table.getColumn("creation_date"),
+				table.getColumn("termination_date"), table.getColumn("relative_to_terrain"), table.getColumn("relative_to_water"),
 				externalReference.getColumn("id", "exid"), externalReference.getColumn("infosys"), externalReference.getColumn("name", "exname"), externalReference.getColumn("uri"),
 				generalization.getColumn("generalizes_to_id"))
-				.addJoin(JoinFactory.left(externalReference, "cityobject_id", ComparisonName.EQUAL_TO, cityObject.getColumn("id")))
-				.addJoin(JoinFactory.left(generalization, "cityobject_id", ComparisonName.EQUAL_TO, cityObject.getColumn("id")));
+				.addJoin(JoinFactory.left(externalReference, "cityobject_id", ComparisonName.EQUAL_TO, table.getColumn("id")))
+				.addJoin(JoinFactory.left(generalization, "cityobject_id", ComparisonName.EQUAL_TO, table.getColumn("id")));
 		genericAttributeExporter.addProjection(select, genericAttributes, "ga")
-				.addJoin(JoinFactory.left(genericAttributes, "cityobject_id", ComparisonName.EQUAL_TO, cityObject.getColumn("id")))
-				.addSelection(ComparisonFactory.equalTo(cityObject.getColumn("id"), new PlaceHolder<>()));
-		if (exportCityDBMetadata) select.addProjection(cityObject.getColumn("last_modification_date"), cityObject.getColumn("updating_person"), cityObject.getColumn("reason_for_update"), cityObject.getColumn("lineage"));
-		ps = connection.prepareStatement(select.toString());
+				.addJoin(JoinFactory.left(genericAttributes, "cityobject_id", ComparisonName.EQUAL_TO, table.getColumn("id")));
+		if (exportCityDBMetadata) select.addProjection(table.getColumn("last_modification_date"), table.getColumn("updating_person"), table.getColumn("reason_for_update"), table.getColumn("lineage"));
+
+		String subQuery = exporter.getDatabaseAdapter().getDatabaseType() == DatabaseType.POSTGIS ?
+				"select * from unnest(?)" :
+				"select * from table(?)";
+
+		Select bulkSelect = new Select(select)
+				.addProjection(table.getColumn("id"))
+				.addSelection(ComparisonFactory.in(table.getColumn("id"), new LiteralSelectExpression(subQuery)));
+		psBulk = connection.prepareStatement(bulkSelect.toString());
+	}
+
+	protected void addBatch(AbstractGML object, long objectId, AbstractObjectType<?> objectType, ProjectionFilter projectionFilter) {
+		batches.put(objectId, new ObjectContext(object, objectType, projectionFilter));
+	}
+
+	public boolean executeBatch() throws CityGMLExportException, SQLException {
+		if (!batches.isEmpty()) {
+			try {
+				psBulk.setArray(1, exporter.getDatabaseAdapter().getSQLAdapter().createIdArray(batches.keySet().toArray(new Long[0]), connection));
+				try (ResultSet rs = psBulk.executeQuery()) {
+					Set<Long> ids = new HashSet<>();
+					while (rs.next()) {
+						long id = rs.getLong("id");
+						ObjectContext context = batches.get(id);
+						if (context == null)
+							throw new CityGMLExportException("Failed to city object for id " + id + ".");
+
+						if (ids.add(id)) {
+							if (!readObject(context, rs))
+								return false;
+						}
+
+						if (context.isCityObject)
+							readProperties(context, rs);
+					}
+
+					for (Map.Entry<Long, ObjectContext> entry : batches.entrySet())
+						postProcess(entry.getValue(), entry.getKey());
+				}
+			} finally {
+				batches.clear();
+			}
+		}
+
+		return true;
 	}
 
 	protected boolean doExport(AbstractGML object, long objectId, AbstractObjectType<?> objectType) throws CityGMLExportException, SQLException {
@@ -162,244 +215,299 @@ public class DBCityObject implements DBExporter {
 	}
 
 	protected boolean doExport(AbstractGML object, long objectId, AbstractObjectType<?> objectType, ProjectionFilter projectionFilter) throws CityGMLExportException, SQLException {
-		boolean isFeature = object instanceof AbstractFeature;
-		boolean isCityObject = object instanceof AbstractCityObject;
-		boolean isTopLevel = objectType instanceof FeatureType && ((FeatureType)objectType).isTopLevel();
+		if (psSelect == null) {
+			psSelect = connection.prepareStatement(new Select(this.select)
+					.addSelection(ComparisonFactory.equalTo(table.getColumn("id"), new PlaceHolder<>()))
+					.toString());
+		}
 
-		boolean setEnvelope = !isCityObject || (projectionFilter.containsProperty("boundedBy", gmlModule)
-				&& (exporter.getExportConfig().getCityGMLOptions().getGMLEnvelope().getFeatureMode() == FeatureEnvelopeMode.ALL
-				|| (exporter.getExportConfig().getCityGMLOptions().getGMLEnvelope().getFeatureMode() == FeatureEnvelopeMode.TOP_LEVEL && isTopLevel)));
-		boolean getEnvelope = isFeature && ((useTiling && isTopLevel) || setEnvelope);
+		psSelect.setLong(1, objectId);
 
-		ps.setLong(1, objectId);
-
-		try (ResultSet rs = ps.executeQuery()) {
+		try (ResultSet rs = psSelect.executeQuery()) {
 			if (rs.next()) {
-				// gml:id
-				object.setId(rs.getString("gmlid"));
+				ObjectContext context = new ObjectContext(object, objectType, projectionFilter);
+				if (!readObject(context, rs))
+					return false;
 
-				// gml:name
-				if (!isCityObject || projectionFilter.containsProperty("name", gmlModule)) {
-					for (SplitValue splitValue : valueSplitter.split(rs.getString("name"), rs.getString("name_codespace"))) {
-						Code name = new Code(splitValue.result(0));
-						name.setCodeSpace(splitValue.result(1));
-						object.addName(name);
-					}
-				}
-
-				// gml:description
-				if (!isCityObject || projectionFilter.containsProperty("description", gmlModule)) {
-					String description = rs.getString("description");
-					if (!rs.wasNull())
-						object.setDescription(new StringOrRef(description));
-				}
-
-				if (getEnvelope) {
-					BoundingShape boundedBy = null;
-					Object geom = rs.getObject("envelope");
-					if (!rs.wasNull() && geom != null) {
-						GeometryObject geomObj = exporter.getDatabaseAdapter().getGeometryConverter().getEnvelope(geom);
-						double[] coordinates = geomObj.getCoordinates(0);
-
-						Envelope envelope = new Envelope();
-						envelope.setLowerCorner(new Point(coordinates[0], coordinates[1], coordinates[2]));
-						envelope.setUpperCorner(new Point(coordinates[3], coordinates[4], coordinates[5]));
-						envelope.setSrsDimension(3);
-						envelope.setSrsName(gmlSrsName);
-
-						boundedBy = new BoundingShape();
-						boundedBy.setEnvelope(envelope);
-					}
-
-					// check bounding volume filter
-					if (useTiling && isTopLevel) {
-						if (boundedBy == null || !boundedBy.isSetEnvelope())
-							return false;
-
-						try {
-							BoundingBox bbox = boundedBy.getEnvelope().toBoundingBox();
-							if (!activeTile.isOnTile(new org.citydb.config.geometry.Point(
-									(bbox.getLowerCorner().getX() + bbox.getUpperCorner().getX()) / 2.0,
-									(bbox.getLowerCorner().getY() + bbox.getUpperCorner().getY()) / 2.0,
-									query.getTargetSrs()),
-									exporter.getDatabaseAdapter()))
-								return false;
-						} catch (FilterException e) {
-							throw new CityGMLExportException("Failed to apply the tiling filter.", e);
-						}
-					}
-
-					// gml:boundedBy
-					if (setEnvelope)
-						((AbstractFeature)object).setBoundedBy(boundedBy);
-				}
-
-				if (isCityObject) {
-					// core:creationDate
-					if (projectionFilter.containsProperty("creationDate", coreModule)) {
-						OffsetDateTime creationDate = rs.getObject("creation_date", OffsetDateTime.class);
-						if (!rs.wasNull())
-							((AbstractCityObject)object).setCreationDate(creationDate.atZoneSameInstant(ZoneId.systemDefault()));
-					}
-
-					// core:terminationDate
-					if (projectionFilter.containsProperty("terminationDate", coreModule)) {
-						OffsetDateTime terminationDate = rs.getObject("termination_date", OffsetDateTime.class);
-						if (terminationDate != null)
-							((AbstractCityObject)object).setTerminationDate(terminationDate.atZoneSameInstant(ZoneId.systemDefault()));
-					}
-
-					// core:relativeToTerrain
-					if (projectionFilter.containsProperty("relativeToTerrain", coreModule)) {
-						String relativeToTerrain = rs.getString("relative_to_terrain");
-						if (!rs.wasNull())
-							((AbstractCityObject)object).setRelativeToTerrain(RelativeToTerrain.fromValue(relativeToTerrain));
-					}
-
-					// core:relativeToWater
-					if (projectionFilter.containsProperty("relativeToWater", coreModule)) {
-						String relativeToWater = rs.getString("relative_to_water");
-						if (!rs.wasNull())
-							((AbstractCityObject)object).setRelativeToWater(RelativeToWater.fromValue(relativeToWater));
-					}
-
-					// 3DCityDB ADE metadata
-					if (exportCityDBMetadata && isTopLevel) {
-						if (projectionFilter.containsProperty("lastModificationDate", cityDBADEModule)) {
-							OffsetDateTime lastModificationDate = rs.getObject("last_modification_date", OffsetDateTime.class);
-							if (!rs.wasNull()) {
-								LastModificationDateProperty property = new LastModificationDateProperty(
-										lastModificationDate.atZoneSameInstant(ZoneId.systemDefault()));
-								((AbstractCityObject) object).addGenericApplicationPropertyOfCityObject(property);
-							}
-						}
-
-						if (projectionFilter.containsProperty("updatingPerson", cityDBADEModule)) {
-							String updatingPerson = rs.getString("updating_person");
-							if (!rs.wasNull()) {
-								UpdatingPersonProperty property = new UpdatingPersonProperty(updatingPerson);
-								((AbstractCityObject) object).addGenericApplicationPropertyOfCityObject(property);
-							}
-						}
-
-						if (projectionFilter.containsProperty("reasonForUpdate", cityDBADEModule)) {
-							String reasonForUpdate = rs.getString("reason_for_update");
-							if (!rs.wasNull()) {
-								ReasonForUpdateProperty property = new ReasonForUpdateProperty(reasonForUpdate);
-								((AbstractCityObject) object).addGenericApplicationPropertyOfCityObject(property);
-							}
-						}
-
-						if (projectionFilter.containsProperty("lineage", cityDBADEModule)) {
-							String lineage = rs.getString("lineage");
-							if (!rs.wasNull()) {
-								LineageProperty property = new LineageProperty(lineage);
-								((AbstractCityObject) object).addGenericApplicationPropertyOfCityObject(property);
-							}
-						}
-					}
-
-					Set<Long> generalizesTos = new HashSet<>();
-					Set<Long> externalReferences = new HashSet<>();
-					Set<Long> genericAttributes = new HashSet<>();
-					Map<Long, GenericAttributeSet> genericAttributeSets = new HashMap<>();
-
+				if (context.isCityObject) {
 					do {
-						// core:generalizesTo
-						if (projectionFilter.containsProperty("generalizesTo", coreModule)) {
-							long generalizesTo = rs.getLong("generalizes_to_id");
-							if (!rs.wasNull())
-								generalizesTos.add(generalizesTo);
-						}
-
-						// core:externalReference
-						if (projectionFilter.containsProperty("externalReference", coreModule)) {
-							long externalReferenceId = rs.getLong("exid");
-							if (!rs.wasNull() && externalReferences.add(externalReferenceId)) {
-								ExternalReference externalReference = new ExternalReference();
-								ExternalObject externalObject = new ExternalObject();
-
-								externalReference.setInformationSystem(rs.getString("infosys"));
-
-								String name = rs.getString("exname");
-								String uri = rs.getString("uri");
-
-								if (name != null || uri != null) {
-									if (name != null)
-										externalObject.setName(name);
-									if (uri != null)
-										externalObject.setUri(uri);
-								} else
-									externalObject.setUri("");
-
-								externalReference.setExternalObject(externalObject);
-								((AbstractCityObject)object).addExternalReference(externalReference);
-							}
-						}
-
-						// gen:_genericAttribute
-						long genericAttributeId = rs.getLong("gaid");
-						if (!rs.wasNull() && genericAttributes.add(genericAttributeId))
-							genericAttributeExporter.doExport(genericAttributeId, (AbstractCityObject) object, projectionFilter, "ga", genericAttributeSets, rs);
-
+						readProperties(context, rs);
 					} while (rs.next());
-
-					// core:generalizesTo
-					if (!generalizesTos.isEmpty())
-						generalizesToExporter.doExport(((AbstractCityObject)object), objectId, generalizesTos);
-
-					// add tile as generic attribute
-					if (isTopLevel && setTileInfoAsGenericAttribute) {
-						String value;
-
-						double minX = activeTile.getExtent().getLowerCorner().getX();
-						double minY = activeTile.getExtent().getLowerCorner().getY();
-						double maxX = activeTile.getExtent().getUpperCorner().getX();
-						double maxY = activeTile.getExtent().getUpperCorner().getY();
-
-						switch (tilingOptions.getGenericAttributeValue()) {
-						case XMIN_YMIN:
-							value = String.valueOf(minX) + ' ' + minY;
-							break;
-						case XMAX_YMIN:
-							value = String.valueOf(maxX) + ' ' + minY;
-							break;
-						case XMIN_YMAX:
-							value = String.valueOf(minX) + ' ' + maxY;
-							break;
-						case XMAX_YMAX:
-							value = String.valueOf(maxX) + ' ' + maxY;
-							break;
-						case XMIN_YMIN_XMAX_YMAX:
-							value = String.valueOf(minX) + ' ' + minY + ' ' + maxX + ' ' + maxY;
-							break;
-						default:
-							value = String.valueOf(activeTile.getX()) + ' ' + activeTile.getY();
-						} 
-
-						StringAttribute genericStringAttrib = new StringAttribute();
-						genericStringAttrib.setName("tile");
-						genericStringAttrib.setValue(value);
-						((AbstractCityObject)object).addGenericAttribute(genericStringAttrib);
-					}
-
-					// export appearance information associated with the city object
-					if (exportAppearance && projectionFilter.containsProperty("appearance", appearanceModule))
-						appearanceExporter.doExport(((AbstractCityObject) object), objectId, isTopLevel);
 				}
+
+				postProcess(context, objectId);
 			}
-			
-			// ADE-specific extensions
-			if (exporter.hasADESupport())
-				exporter.delegateToADEExporter(object, objectId, objectType, projectionFilter);
-			
+
 			return true;
 		}
 	}
 
+	protected boolean readObject(ObjectContext context, ResultSet rs) throws CityGMLExportException, SQLException {
+		boolean setEnvelope = !context.isCityObject || (context.projectionFilter.containsProperty("boundedBy", gmlModule)
+				&& (exporter.getExportConfig().getCityGMLOptions().getGMLEnvelope().getFeatureMode() == FeatureEnvelopeMode.ALL
+				|| (exporter.getExportConfig().getCityGMLOptions().getGMLEnvelope().getFeatureMode() == FeatureEnvelopeMode.TOP_LEVEL && context.isTopLevel)));
+		boolean getEnvelope = context.isFeature && ((useTiling && context.isTopLevel) || setEnvelope);
+
+		// gml:id
+		context.object.setId(rs.getString("gmlid"));
+
+		// gml:name
+		if (!context.isCityObject || context.projectionFilter.containsProperty("name", gmlModule)) {
+			for (SplitValue splitValue : valueSplitter.split(rs.getString("name"), rs.getString("name_codespace"))) {
+				Code name = new Code(splitValue.result(0));
+				name.setCodeSpace(splitValue.result(1));
+				context.object.addName(name);
+			}
+		}
+
+		// gml:description
+		if (!context.isCityObject || context.projectionFilter.containsProperty("description", gmlModule)) {
+			String description = rs.getString("description");
+			if (!rs.wasNull())
+				context.object.setDescription(new StringOrRef(description));
+		}
+
+		if (getEnvelope) {
+			BoundingShape boundedBy = null;
+			Object geom = rs.getObject("envelope");
+			if (!rs.wasNull() && geom != null) {
+				GeometryObject geomObj = exporter.getDatabaseAdapter().getGeometryConverter().getEnvelope(geom);
+				double[] coordinates = geomObj.getCoordinates(0);
+
+				Envelope envelope = new Envelope();
+				envelope.setLowerCorner(new Point(coordinates[0], coordinates[1], coordinates[2]));
+				envelope.setUpperCorner(new Point(coordinates[3], coordinates[4], coordinates[5]));
+				envelope.setSrsDimension(3);
+				envelope.setSrsName(gmlSrsName);
+
+				boundedBy = new BoundingShape();
+				boundedBy.setEnvelope(envelope);
+			}
+
+			// check bounding volume filter
+			if (useTiling && context.isTopLevel) {
+				if (boundedBy == null || !boundedBy.isSetEnvelope())
+					return false;
+
+				try {
+					BoundingBox bbox = boundedBy.getEnvelope().toBoundingBox();
+					if (!activeTile.isOnTile(new org.citydb.config.geometry.Point(
+									(bbox.getLowerCorner().getX() + bbox.getUpperCorner().getX()) / 2.0,
+									(bbox.getLowerCorner().getY() + bbox.getUpperCorner().getY()) / 2.0,
+									query.getTargetSrs()),
+							exporter.getDatabaseAdapter()))
+						return false;
+				} catch (FilterException e) {
+					throw new CityGMLExportException("Failed to apply the tiling filter.", e);
+				}
+			}
+
+			// gml:boundedBy
+			if (setEnvelope)
+				((AbstractFeature) context.object).setBoundedBy(boundedBy);
+		}
+
+		if (context.isCityObject) {
+			AbstractCityObject cityObject = (AbstractCityObject) context.object;
+
+			// core:creationDate
+			if (context.projectionFilter.containsProperty("creationDate", coreModule)) {
+				OffsetDateTime creationDate = rs.getObject("creation_date", OffsetDateTime.class);
+				if (!rs.wasNull())
+					cityObject.setCreationDate(creationDate.atZoneSameInstant(ZoneId.systemDefault()));
+			}
+
+			// core:terminationDate
+			if (context.projectionFilter.containsProperty("terminationDate", coreModule)) {
+				OffsetDateTime terminationDate = rs.getObject("termination_date", OffsetDateTime.class);
+				if (terminationDate != null)
+					cityObject.setTerminationDate(terminationDate.atZoneSameInstant(ZoneId.systemDefault()));
+			}
+
+			// core:relativeToTerrain
+			if (context.projectionFilter.containsProperty("relativeToTerrain", coreModule)) {
+				String relativeToTerrain = rs.getString("relative_to_terrain");
+				if (!rs.wasNull())
+					cityObject.setRelativeToTerrain(RelativeToTerrain.fromValue(relativeToTerrain));
+			}
+
+			// core:relativeToWater
+			if (context.projectionFilter.containsProperty("relativeToWater", coreModule)) {
+				String relativeToWater = rs.getString("relative_to_water");
+				if (!rs.wasNull())
+					cityObject.setRelativeToWater(RelativeToWater.fromValue(relativeToWater));
+			}
+
+			// 3DCityDB ADE metadata
+			if (exportCityDBMetadata && context.isTopLevel) {
+				if (context.projectionFilter.containsProperty("lastModificationDate", cityDBADEModule)) {
+					OffsetDateTime lastModificationDate = rs.getObject("last_modification_date", OffsetDateTime.class);
+					if (!rs.wasNull()) {
+						LastModificationDateProperty property = new LastModificationDateProperty(
+								lastModificationDate.atZoneSameInstant(ZoneId.systemDefault()));
+						cityObject.addGenericApplicationPropertyOfCityObject(property);
+					}
+				}
+
+				if (context.projectionFilter.containsProperty("updatingPerson", cityDBADEModule)) {
+					String updatingPerson = rs.getString("updating_person");
+					if (!rs.wasNull()) {
+						UpdatingPersonProperty property = new UpdatingPersonProperty(updatingPerson);
+						cityObject.addGenericApplicationPropertyOfCityObject(property);
+					}
+				}
+
+				if (context.projectionFilter.containsProperty("reasonForUpdate", cityDBADEModule)) {
+					String reasonForUpdate = rs.getString("reason_for_update");
+					if (!rs.wasNull()) {
+						ReasonForUpdateProperty property = new ReasonForUpdateProperty(reasonForUpdate);
+						cityObject.addGenericApplicationPropertyOfCityObject(property);
+					}
+				}
+
+				if (context.projectionFilter.containsProperty("lineage", cityDBADEModule)) {
+					String lineage = rs.getString("lineage");
+					if (!rs.wasNull()) {
+						LineageProperty property = new LineageProperty(lineage);
+						cityObject.addGenericApplicationPropertyOfCityObject(property);
+					}
+				}
+			}
+
+			// add tile as generic attribute
+			if (context.isTopLevel && setTileInfoAsGenericAttribute) {
+				String value;
+
+				double minX = activeTile.getExtent().getLowerCorner().getX();
+				double minY = activeTile.getExtent().getLowerCorner().getY();
+				double maxX = activeTile.getExtent().getUpperCorner().getX();
+				double maxY = activeTile.getExtent().getUpperCorner().getY();
+
+				switch (tilingOptions.getGenericAttributeValue()) {
+					case XMIN_YMIN:
+						value = String.valueOf(minX) + ' ' + minY;
+						break;
+					case XMAX_YMIN:
+						value = String.valueOf(maxX) + ' ' + minY;
+						break;
+					case XMIN_YMAX:
+						value = String.valueOf(minX) + ' ' + maxY;
+						break;
+					case XMAX_YMAX:
+						value = String.valueOf(maxX) + ' ' + maxY;
+						break;
+					case XMIN_YMIN_XMAX_YMAX:
+						value = String.valueOf(minX) + ' ' + minY + ' ' + maxX + ' ' + maxY;
+						break;
+					default:
+						value = String.valueOf(activeTile.getX()) + ' ' + activeTile.getY();
+				}
+
+				StringAttribute genericStringAttrib = new StringAttribute();
+				genericStringAttrib.setName("tile");
+				genericStringAttrib.setValue(value);
+				cityObject.addGenericAttribute(genericStringAttrib);
+			}
+		}
+
+		return true;
+	}
+
+	private void readProperties(ObjectContext context, ResultSet rs) throws SQLException {
+		AbstractCityObject cityObject = (AbstractCityObject) context.object;
+
+		// core:generalizesTo
+		if (context.projectionFilter.containsProperty("generalizesTo", coreModule)) {
+			long generalizesTo = rs.getLong("generalizes_to_id");
+			if (!rs.wasNull())
+				context.generalizesTos.add(generalizesTo);
+		}
+
+		// core:externalReference
+		if (context.projectionFilter.containsProperty("externalReference", coreModule)) {
+			long externalReferenceId = rs.getLong("exid");
+			if (!rs.wasNull() && context.externalReferences.add(externalReferenceId)) {
+				ExternalReference externalReference = new ExternalReference();
+				ExternalObject externalObject = new ExternalObject();
+
+				externalReference.setInformationSystem(rs.getString("infosys"));
+
+				String name = rs.getString("exname");
+				String uri = rs.getString("uri");
+
+				if (name != null || uri != null) {
+					if (name != null)
+						externalObject.setName(name);
+					if (uri != null)
+						externalObject.setUri(uri);
+				} else
+					externalObject.setUri("");
+
+				externalReference.setExternalObject(externalObject);
+				cityObject.addExternalReference(externalReference);
+			}
+		}
+
+		// gen:_genericAttribute
+		long genericAttributeId = rs.getLong("gaid");
+		if (!rs.wasNull() && context.genericAttributes.add(genericAttributeId))
+			genericAttributeExporter.doExport(genericAttributeId, cityObject, context.projectionFilter, "ga", context.genericAttributeSets, rs);
+	}
+
+	private void postProcess(ObjectContext context, long objectId) throws CityGMLExportException, SQLException {
+		if (context.isCityObject) {
+			AbstractCityObject cityObject = (AbstractCityObject) context.object;
+
+			// export generalization features
+			if (!context.generalizesTos.isEmpty())
+				generalizesToExporter.doExport(cityObject, objectId, context.generalizesTos);
+
+			// export appearance information associated with the city object
+			if (exportAppearance && context.projectionFilter.containsProperty("appearance", appearanceModule))
+				appearanceExporter.doExport(cityObject, objectId, context.isTopLevel);
+		}
+
+		// ADE-specific extensions
+		if (exporter.hasADESupport())
+			exporter.delegateToADEExporter(context.object, objectId, context.objectType, context.projectionFilter);
+	}
+
 	@Override
 	public void close() throws SQLException {
-		ps.close();
+		psBulk.close();
+
+		if (psSelect != null)
+			psSelect.close();
 	}
-	
+
+	private static class ObjectContext {
+		final AbstractGML object;
+		final AbstractObjectType<?> objectType;
+		final ProjectionFilter projectionFilter;
+		final boolean isFeature;
+		final boolean isCityObject;
+		final boolean isTopLevel;
+
+		Set<Long> generalizesTos;
+		Set<Long> externalReferences;
+		Set<Long> genericAttributes;
+		Map<Long, GenericAttributeSet> genericAttributeSets;
+
+		ObjectContext(AbstractGML object, AbstractObjectType<?> objectType, ProjectionFilter projectionFilter) {
+			this.object = object;
+			this.objectType = objectType;
+			this.projectionFilter = projectionFilter;
+
+			isFeature = object instanceof AbstractFeature;
+			isCityObject = object instanceof AbstractCityObject;
+			isTopLevel = objectType instanceof FeatureType && ((FeatureType) objectType).isTopLevel();
+
+			if (isCityObject) {
+				generalizesTos = new HashSet<>();
+				externalReferences = new HashSet<>();
+				genericAttributes = new HashSet<>();
+				genericAttributeSets = new HashMap<>();
+			}
+		}
+	}
 }

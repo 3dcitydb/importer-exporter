@@ -113,7 +113,7 @@ public class DBWaterBoundarySurface extends AbstractFeatureExporter<AbstractWate
 				ProjectionFilter projectionFilter = exporter.getProjectionFilter(featureType);
 
 				// export city object information
-				cityObjectExporter.doExport(waterBoundarySurface, waterBoundarySurfaceId, featureType, projectionFilter);
+				cityObjectExporter.addBatch(waterBoundarySurface, waterBoundarySurfaceId, featureType, projectionFilter);
 
 				if (waterBoundarySurface instanceof WaterSurface
 						&& projectionFilter.containsProperty("waterLevel", waterBodyModule)) {

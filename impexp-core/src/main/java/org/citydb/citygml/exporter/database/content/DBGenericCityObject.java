@@ -149,9 +149,7 @@ public class DBGenericCityObject extends AbstractFeatureExporter<GenericCityObje
 				ProjectionFilter projectionFilter = exporter.getProjectionFilter(featureType);
 				
 				// export city object information
-				boolean success = cityObjectExporter.doExport(genericCityObject, genericCityObjectId, featureType, projectionFilter);
-				if (!success)
-					continue;
+				cityObjectExporter.addBatch(genericCityObject, genericCityObjectId, featureType, projectionFilter);
 
 				if (projectionFilter.containsProperty("class", genericsModule)) {
 					String clazz = rs.getString("class");

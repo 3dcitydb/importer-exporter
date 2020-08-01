@@ -133,10 +133,8 @@ public class DBPlantCover extends AbstractFeatureExporter<PlantCover> {
 				ProjectionFilter projectionFilter = exporter.getProjectionFilter(featureType);
 
 				// export city object information
-				boolean success = cityObjectExporter.doExport(plantCover, plantCoverId, featureType, projectionFilter);
-				if (!success)
-					continue;
-				
+				cityObjectExporter.addBatch(plantCover, plantCoverId, featureType, projectionFilter);
+
 				if (projectionFilter.containsProperty("class", vegetationModule)) {
 					String clazz = rs.getString("class");
 					if (!rs.wasNull()) {

@@ -172,7 +172,7 @@ public class DBTunnelInstallation extends AbstractFeatureExporter<AbstractCityOb
 				ProjectionFilter projectionFilter = exporter.getProjectionFilter(featureType);
 
 				// export city object information
-				cityObjectReader.doExport(installation, installationId, featureType, projectionFilter);
+				cityObjectReader.addBatch(installation, installationId, featureType, projectionFilter);
 
 				boolean isExteriorInstallation = installation instanceof TunnelInstallation;
 

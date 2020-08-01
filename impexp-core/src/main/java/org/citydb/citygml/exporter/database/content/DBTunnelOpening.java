@@ -116,7 +116,7 @@ public class DBTunnelOpening extends AbstractFeatureExporter<AbstractOpening> {
 				ProjectionFilter projectionFilter = exporter.getProjectionFilter(featureType);
 
 				// export city object information
-				cityObjectExporter.doExport(opening, openingId, featureType, projectionFilter);
+				cityObjectExporter.addBatch(opening, openingId, featureType, projectionFilter);
 
 				LodIterator lodIterator = lodFilter.iterator(3, 4);
 				while (lodIterator.hasNext()) {

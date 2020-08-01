@@ -88,7 +88,7 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryBatchExport
 	private final CityGMLExportManager exporter;
 	private final PreparedStatement psBulk;
 	private final Connection connection;
-	private final List<SurfaceGeometryBatch> batches;
+	private final List<SurfaceGeometryContext> batches;
 	private final boolean exportAppearance;
 	private final boolean useXLink;
 
@@ -150,7 +150,7 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryBatchExport
 
 	@Override
 	public void addBatch(long id, GeometrySetterHandler handler) {
-		batches.add(new SurfaceGeometryBatch(id, handler, false));
+		batches.add(new SurfaceGeometryContext(id, handler, false));
 	}
 
 	@Override
@@ -204,7 +204,7 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryBatchExport
 	}
 
 	protected void addImplicitGeometryBatch(long id, ImplicitGeometry geometry) {
-		batches.add(new SurfaceGeometryBatch(id,
+		batches.add(new SurfaceGeometryContext(id,
 				new DefaultGeometrySetterHandler((GeometrySetter.AbstractGeometry) geometry::setRelativeGeometry),
 				true));
 	}
@@ -220,7 +220,7 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryBatchExport
 			try {
 				Set<Long> ids = new HashSet<>();
 				Map<Long, GeometryTree> geomTrees = new HashMap<>();
-				for (SurfaceGeometryBatch batch : batches) {
+				for (SurfaceGeometryContext batch : batches) {
 					ids.add(batch.id);
 					geomTrees.putIfAbsent(batch.id, new GeometryTree(batch.isImplicit));
 				}
@@ -234,7 +234,7 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryBatchExport
 					}
 				}
 
-				for (SurfaceGeometryBatch batch : batches) {
+				for (SurfaceGeometryContext batch : batches) {
 					GeometryTree geomTree = geomTrees.get(batch.id);
 					if (geomTree != null && geomTree.root != 0) {
 						SurfaceGeometry geometry = rebuildGeometry(geomTree.getNode(geomTree.root), false, false);
@@ -819,12 +819,12 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryBatchExport
 		}
 	}
 
-	private static class SurfaceGeometryBatch {
+	private static class SurfaceGeometryContext {
 		final long id;
 		final GeometrySetterHandler handler;
 		final boolean isImplicit;
 
-		SurfaceGeometryBatch(long id, GeometrySetterHandler handler, boolean isImplicit) {
+		SurfaceGeometryContext(long id, GeometrySetterHandler handler, boolean isImplicit) {
 			this.id = id;
 			this.handler = handler;
 			this.isImplicit = isImplicit;

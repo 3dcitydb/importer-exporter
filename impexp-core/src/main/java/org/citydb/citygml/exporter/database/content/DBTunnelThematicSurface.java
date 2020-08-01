@@ -165,7 +165,7 @@ public class DBTunnelThematicSurface extends AbstractFeatureExporter<AbstractBou
 						boundarySurfaceProjectionFilter = exporter.getProjectionFilter(featureType);
 
 						// export city object information
-						cityObjectExporter.doExport(boundarySurface, boundarySurfaceId, featureType, boundarySurfaceProjectionFilter);
+						cityObjectExporter.addBatch(boundarySurface, boundarySurfaceId, featureType, boundarySurfaceProjectionFilter);
 
 						LodIterator lodIterator = lodFilter.iterator(2, 4);
 						while (lodIterator.hasNext()) {
@@ -226,7 +226,7 @@ public class DBTunnelThematicSurface extends AbstractFeatureExporter<AbstractBou
 				ProjectionFilter openingProjectionFilter = exporter.getProjectionFilter(openingType);
 
 				// export city object information
-				cityObjectExporter.doExport(opening, openingId, openingType, openingProjectionFilter);
+				cityObjectExporter.addBatch(opening, openingId, openingType, openingProjectionFilter);
 
 				if (opening.isSetId()) {
 					// process xlink

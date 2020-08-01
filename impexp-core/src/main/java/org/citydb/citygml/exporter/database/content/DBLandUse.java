@@ -128,9 +128,7 @@ public class DBLandUse extends AbstractFeatureExporter<LandUse> {
 				ProjectionFilter projectionFilter = exporter.getProjectionFilter(featureType);				
 
 				// export city object information
-				boolean success = cityObjectExporter.doExport(landUse, landUseId, featureType, projectionFilter);
-				if (!success)
-					continue;
+				cityObjectExporter.addBatch(landUse, landUseId, featureType, projectionFilter);
 
 				if (projectionFilter.containsProperty("class", landUseModule)) {
 					String clazz = rs.getString("class");

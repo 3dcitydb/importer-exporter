@@ -172,7 +172,7 @@ public class DBBuildingInstallation extends AbstractFeatureExporter<AbstractCity
 				ProjectionFilter projectionFilter = exporter.getProjectionFilter(featureType);
 				
 				// export city object information
-				cityObjectExporter.doExport(installation, installationId, featureType, projectionFilter);
+				cityObjectExporter.addBatch(installation, installationId, featureType, projectionFilter);
 
 				boolean isExteriorInstallation = installation instanceof BuildingInstallation;				
 				

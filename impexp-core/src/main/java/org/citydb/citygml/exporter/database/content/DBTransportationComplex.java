@@ -55,7 +55,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -157,13 +156,7 @@ public class DBTransportationComplex extends AbstractFeatureExporter<Transportat
 						projectionFilter = exporter.getProjectionFilter(featureType);
 
 						// export city object information
-						boolean success = cityObjectExporter.doExport(complex, complexId, featureType, projectionFilter);
-						if (!success) {
-							if (complex == root)
-								return Collections.emptyList();
-							else if (featureType.isSetTopLevel())
-								continue;
-						}
+						cityObjectExporter.addBatch(complex, complexId, featureType, projectionFilter);
 
 						if (projectionFilter.containsProperty("class", transportationModule)) {
 							String clazz = rs.getString("class");
@@ -262,7 +255,7 @@ public class DBTransportationComplex extends AbstractFeatureExporter<Transportat
 				ProjectionFilter transportationObjectProjectionFilter = exporter.getProjectionFilter(transportationObjectType);
 
 				// cityobject stuff
-				cityObjectExporter.doExport(transportationObject, transportationObjectId, transportationObjectType, transportationObjectProjectionFilter);
+				cityObjectExporter.addBatch(transportationObject, transportationObjectId, transportationObjectType, transportationObjectProjectionFilter);
 
 				boolean isTrafficArea = transportationObject instanceof TrafficArea;
 

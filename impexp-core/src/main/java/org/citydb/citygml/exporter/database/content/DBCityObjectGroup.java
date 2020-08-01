@@ -119,10 +119,8 @@ public class DBCityObjectGroup extends AbstractTypeExporter {
 			while (rs.next()) {
 				if (!isInited) {
 					// export city object information
-					boolean success = cityObjectExporter.doExport(cityObjectGroup, id, featureType, projectionFilter);
-					if (!success)
-						return false;
-					
+					cityObjectExporter.addBatch(cityObjectGroup, id, featureType, projectionFilter);
+
 					if (projectionFilter.containsProperty("class", groupModule)) {
 						String clazz = rs.getString("class");
 						if (!rs.wasNull()) {

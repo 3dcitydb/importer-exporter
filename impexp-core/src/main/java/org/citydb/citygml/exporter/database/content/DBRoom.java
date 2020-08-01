@@ -142,7 +142,7 @@ public class DBRoom extends AbstractFeatureExporter<Room> {
 				ProjectionFilter projectionFilter = exporter.getProjectionFilter(featureType);
 
 				// export city object information
-				cityObjectExporter.doExport(room, roomId, featureType, projectionFilter);
+				cityObjectExporter.addBatch(room, roomId, featureType, projectionFilter);
 
 				if (projectionFilter.containsProperty("class", buildingModule)) {
 					String clazz = rs.getString("class");

@@ -146,9 +146,7 @@ public class DBSolitaryVegetatObject extends AbstractFeatureExporter<SolitaryVeg
 				ProjectionFilter projectionFilter = exporter.getProjectionFilter(featureType);
 
 				// export city object information
-				boolean success = cityObjectExporter.doExport(vegetationObject, vegetationObjectId, featureType, projectionFilter);
-				if (!success)
-					continue;
+				cityObjectExporter.addBatch(vegetationObject, vegetationObjectId, featureType, projectionFilter);
 
 				if (projectionFilter.containsProperty("class", vegetationModule)) {
 					String clazz = rs.getString("class");

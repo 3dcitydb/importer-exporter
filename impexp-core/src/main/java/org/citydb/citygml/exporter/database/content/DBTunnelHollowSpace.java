@@ -142,7 +142,7 @@ public class DBTunnelHollowSpace extends AbstractFeatureExporter<HollowSpace> {
 				ProjectionFilter projectionFilter = exporter.getProjectionFilter(featureType);
 
 				// export city object information
-				cityObjectExporter.doExport(hollowSpace, hollowSpaceId, featureType, projectionFilter);
+				cityObjectExporter.addBatch(hollowSpace, hollowSpaceId, featureType, projectionFilter);
 
 				if (projectionFilter.containsProperty("class", tunnelModule)) {
 					String clazz = rs.getString("class");

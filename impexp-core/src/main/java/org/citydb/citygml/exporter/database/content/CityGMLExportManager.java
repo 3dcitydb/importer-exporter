@@ -434,6 +434,10 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 			getADEExportManager(adeHookTable).exportGenericApplicationProperties(adeHookTable, parent, parentId, parentType, projectionFilter);
 	}
 
+	public boolean executeCityObjectBatch() throws CityGMLExportException, SQLException {
+		return getExporter(DBCityObject.class).executeBatch();
+	}
+
 	@Override
 	public SurfaceGeometryBatchExporter getSurfaceGeometryBatchExporter() throws CityGMLExportException, SQLException {
 		return getExporter(DBSurfaceGeometry.class);

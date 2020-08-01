@@ -140,7 +140,7 @@ public class DBBuildingFurniture extends AbstractFeatureExporter<BuildingFurnitu
 				ProjectionFilter projectionFilter = exporter.getProjectionFilter(featureType);
 				
 				// export city object information
-				cityObjectExporter.doExport(buildingFurniture, buildingFurnitureId, featureType, projectionFilter);
+				cityObjectExporter.addBatch(buildingFurniture, buildingFurnitureId, featureType, projectionFilter);
 
 				if (projectionFilter.containsProperty("class", buildingModule)) {
 					String clazz = rs.getString("class");

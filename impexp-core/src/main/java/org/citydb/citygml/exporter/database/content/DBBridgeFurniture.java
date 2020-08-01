@@ -140,7 +140,7 @@ public class DBBridgeFurniture extends AbstractFeatureExporter<BridgeFurniture> 
 				ProjectionFilter projectionFilter = exporter.getProjectionFilter(featureType);
 				
 				// export city object information
-				cityObjectExporter.doExport(bridgeFurniture, bridgeFurnitureId, featureType, projectionFilter);
+				cityObjectExporter.addBatch(bridgeFurniture, bridgeFurnitureId, featureType, projectionFilter);
 				
 				if (projectionFilter.containsProperty("class", bridgeModule)) {
 					String clazz = rs.getString("class");
