@@ -76,12 +76,12 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 	private final Connection connection;
 	private final CityGMLExportManager exporter;
 	private final FeatureWriter featureWriter;
+	private final List<CityGMLExportExtension> plugins;
 	private final EventDispatcher eventDispatcher;
 	private final Config config;
 
 	private int globalAppearanceCounter = 0;
 	private int topLevelFeatureCounter = 0;
-	private List<CityGMLExportExtension> plugins;
 
 	public DBExportWorker(OutputFile outputFile,
 			Connection connection,
