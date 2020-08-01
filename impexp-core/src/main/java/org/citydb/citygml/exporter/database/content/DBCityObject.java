@@ -198,7 +198,7 @@ public class DBCityObject implements DBExporter {
 					}
 
 					for (Map.Entry<Long, ObjectContext> entry : batches.entrySet())
-						postProcess(entry.getValue(), entry.getKey());
+						postprocess(entry.getValue(), entry.getKey());
 				}
 			} finally {
 				batches.clear();
@@ -233,7 +233,7 @@ public class DBCityObject implements DBExporter {
 					} while (rs.next());
 				}
 
-				postProcess(context, objectId);
+				postprocess(context, objectId);
 			}
 
 			return true;
@@ -452,7 +452,7 @@ public class DBCityObject implements DBExporter {
 			genericAttributeExporter.doExport(genericAttributeId, cityObject, context.projectionFilter, "ga", context.genericAttributeSets, rs);
 	}
 
-	private void postProcess(ObjectContext context, long objectId) throws CityGMLExportException, SQLException {
+	private void postprocess(ObjectContext context, long objectId) throws CityGMLExportException, SQLException {
 		if (context.isCityObject) {
 			AbstractCityObject cityObject = (AbstractCityObject) context.object;
 
