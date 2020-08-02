@@ -92,19 +92,17 @@ public class DBCityObject implements DBExporter {
 	private final Query query;
 	private final CityGMLExportManager exporter;
 	private final Connection connection;
+	private final PreparedStatement psSelect;
 	private final PreparedStatement psBulk;
 	private final Map<Long, ObjectContext> batches;
 	private final DBGeneralization generalizesToExporter;
 	private final DBCityObjectGenericAttrib genericAttributeExporter;
 
-	private final Table table;
-	private final Select select;
 	private final String gmlSrsName;
 	private final boolean exportAppearance;
 	private final boolean useTiling;
 	private final boolean exportCityDBMetadata;
 
-	private PreparedStatement psSelect;
 	private final AttributeValueSplitter valueSplitter;
 	private final String coreModule;
 	private final String appearanceModule;
@@ -150,12 +148,12 @@ public class DBCityObject implements DBExporter {
 		gmlModule = GMLCoreModule.v3_1_1.getNamespaceURI();
 		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 
-		table = new Table(TableEnum.CITYOBJECT.getName(), schema);
+		Table table = new Table(TableEnum.CITYOBJECT.getName(), schema);
 		Table externalReference = new Table(TableEnum.EXTERNAL_REFERENCE.getName(), schema);
 		Table generalization = new Table(TableEnum.GENERALIZATION.getName(), schema);
 		Table genericAttributes = new Table(TableEnum.CITYOBJECT_GENERICATTRIB.getName(), schema);
 
-		select = new Select().addProjection(table.getColumn("gmlid"), exporter.getGeometryColumn(table.getColumn("envelope")),
+		Select select = new Select().addProjection(table.getColumn("gmlid"), exporter.getGeometryColumn(table.getColumn("envelope")),
 				table.getColumn("name"), table.getColumn("name_codespace"), table.getColumn("description"), table.getColumn("creation_date"),
 				table.getColumn("termination_date"), table.getColumn("relative_to_terrain"), table.getColumn("relative_to_water"),
 				externalReference.getColumn("id", "exid"), externalReference.getColumn("infosys"), externalReference.getColumn("name", "exname"), externalReference.getColumn("uri"),
@@ -170,10 +168,12 @@ public class DBCityObject implements DBExporter {
 				"select * from unnest(?)" :
 				"select * from table(?)";
 
-		Select bulkSelect = new Select(select)
+		psBulk = connection.prepareStatement(new Select(select)
 				.addProjection(table.getColumn("id"))
-				.addSelection(ComparisonFactory.in(table.getColumn("id"), new LiteralSelectExpression(subQuery)));
-		psBulk = connection.prepareStatement(bulkSelect.toString());
+				.addSelection(ComparisonFactory.in(table.getColumn("id"), new LiteralSelectExpression(subQuery))).toString());
+
+		psSelect = connection.prepareStatement(new Select(select)
+				.addSelection(ComparisonFactory.equalTo(table.getColumn("id"), new PlaceHolder<>())).toString());
 	}
 
 	protected void addBatch(AbstractGML object, long objectId, AbstractObjectType<?> objectType, ProjectionFilter projectionFilter) {
@@ -233,12 +233,6 @@ public class DBCityObject implements DBExporter {
 	}
 
 	private boolean doExport(long objectId, ObjectContext context) throws CityGMLExportException, SQLException {
-		if (psSelect == null) {
-			psSelect = connection.prepareStatement(new Select(this.select)
-					.addSelection(ComparisonFactory.equalTo(table.getColumn("id"), new PlaceHolder<>()))
-					.toString());
-		}
-
 		psSelect.setLong(1, objectId);
 
 		try (ResultSet rs = psSelect.executeQuery()) {
@@ -494,9 +488,7 @@ public class DBCityObject implements DBExporter {
 	@Override
 	public void close() throws SQLException {
 		psBulk.close();
-
-		if (psSelect != null)
-			psSelect.close();
+		psSelect.close();
 	}
 
 	private static class ObjectContext {

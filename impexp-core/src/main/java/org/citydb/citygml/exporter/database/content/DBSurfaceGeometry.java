@@ -87,19 +87,15 @@ import java.util.Set;
 public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryBatchExporter {
 	private final CityGMLExportManager exporter;
 	private final PreparedStatement psBulk;
+	private final PreparedStatement psSelect;
 	private final Connection connection;
 	private final List<SurfaceGeometryContext> batches;
 	private final boolean exportAppearance;
 	private final boolean useXLink;
 
-	private final Table table;
-	private final Select select;
-
-	private PreparedStatement psSelect;
 	private PreparedStatement psImport;
 	private boolean appendOldGmlId;
 	private String gmlIdPrefix;
-
 	private int commitAfter;
 	private int batchCounter;
 
@@ -132,20 +128,22 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryBatchExport
 			gmlIdPrefix = exporter.getExportConfig().getXlink().getGeometry().getIdPrefix();
 		}
 
-		table = new Table(TableEnum.SURFACE_GEOMETRY.getName(), schema);
-		select = new Select().addProjection(table.getColumn("id"), table.getColumn("gmlid"), table.getColumn("parent_id"),
-				table.getColumn("is_solid"), table.getColumn("is_composite"), table.getColumn("is_triangulated"),
-				table.getColumn("is_xlink"), table.getColumn("is_reverse"),
-				exporter.getGeometryColumn(table.getColumn("geometry")), table.getColumn("implicit_geometry"));
+		Table table1 = new Table(TableEnum.SURFACE_GEOMETRY.getName(), schema);
+		Select select1 = new Select().addProjection(table1.getColumn("id"), table1.getColumn("gmlid"), table1.getColumn("parent_id"),
+				table1.getColumn("is_solid"), table1.getColumn("is_composite"), table1.getColumn("is_triangulated"),
+				table1.getColumn("is_xlink"), table1.getColumn("is_reverse"),
+				exporter.getGeometryColumn(table1.getColumn("geometry")), table1.getColumn("implicit_geometry"));
 
 		String subQuery = exporter.getDatabaseAdapter().getDatabaseType() == DatabaseType.POSTGIS ?
 				"select * from unnest(?)" :
 				"select * from table(?)";
 
-		Select bulkSelect = new Select(select)
-				.addProjection(table.getColumn("root_id"))
-				.addSelection(ComparisonFactory.in(table.getColumn("root_id"), new LiteralSelectExpression(subQuery)));
-		psBulk = connection.prepareStatement(bulkSelect.toString());
+		psBulk = connection.prepareStatement(new Select(select1)
+				.addProjection(table1.getColumn("root_id"))
+				.addSelection(ComparisonFactory.in(table1.getColumn("root_id"), new LiteralSelectExpression(subQuery))).toString());
+
+		psSelect = connection.prepareStatement(new Select(select1)
+				.addSelection(ComparisonFactory.equalTo(table1.getColumn("root_id"), new PlaceHolder<>())).toString());
 	}
 
 	@Override
@@ -266,12 +264,6 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryBatchExport
 	}
 
 	private SurfaceGeometry doExport(long rootId, boolean isImplicit) throws CityGMLExportException, SQLException {
-		if (psSelect == null) {
-			psSelect = connection.prepareStatement(new Select(this.select)
-					.addSelection(ComparisonFactory.equalTo(table.getColumn("root_id"), new PlaceHolder<>()))
-					.toString());
-		}
-
 		psSelect.setLong(1, rootId);
 
 		try (ResultSet rs = psSelect.executeQuery()) {
@@ -746,9 +738,7 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryBatchExport
 	@Override
 	public void close() throws SQLException {
 		psBulk.close();
-
-		if (psSelect != null)
-			psSelect.close();
+		psSelect.close();
 
 		if (psImport != null) {
 			psImport.executeBatch();
