@@ -57,8 +57,6 @@ import org.citydb.sqlbuilder.select.operator.comparison.ComparisonFactory;
 import org.citydb.sqlbuilder.select.operator.comparison.ComparisonName;
 import org.citygml4j.geometry.BoundingBox;
 import org.citygml4j.geometry.Point;
-import org.citygml4j.model.citygml.appearance.Appearance;
-import org.citygml4j.model.citygml.appearance.AppearanceProperty;
 import org.citygml4j.model.citygml.core.AbstractCityObject;
 import org.citygml4j.model.citygml.core.ExternalObject;
 import org.citygml4j.model.citygml.core.ExternalReference;
@@ -163,6 +161,11 @@ public class DBCityObject implements DBExporter {
 		genericAttributeExporter.addProjection(select, genericAttributes, "ga")
 				.addJoin(JoinFactory.left(genericAttributes, "cityobject_id", ComparisonName.EQUAL_TO, table.getColumn("id")));
 		if (exportCityDBMetadata) select.addProjection(table.getColumns("last_modification_date", "updating_person", "reason_for_update", "lineage"));
+		if (exportAppearance) {
+			Table appearance = new Table(TableEnum.APPEARANCE.getName(), schema);
+			select.addProjection(appearance.getColumn("id", "apid"))
+					.addJoin(JoinFactory.left(appearance, "cityobject_id", ComparisonName.EQUAL_TO, table.getColumn("id")));
+		}
 
 		String subQuery = exporter.getDatabaseAdapter().getDatabaseType() == DatabaseType.POSTGIS ?
 				"select * from unnest(?)" :
@@ -190,6 +193,7 @@ public class DBCityObject implements DBExporter {
 				doExport(entry.getKey(), entry.getValue());
 			} else {
 				psBulk.setArray(1, exporter.getDatabaseAdapter().getSQLAdapter().createIdArray(batches.keySet().toArray(new Long[0]), connection));
+
 				try (ResultSet rs = psBulk.executeQuery()) {
 					long currentObjectId = 0;
 					ObjectContext context = null;
@@ -217,6 +221,9 @@ public class DBCityObject implements DBExporter {
 						postprocess(entry.getValue(), entry.getKey());
 				}
 			}
+
+			if (exportAppearance)
+				appearanceExporter.executeBatch();
 
 			return true;
 		} finally {
@@ -248,6 +255,9 @@ public class DBCityObject implements DBExporter {
 
 				postprocess(context, objectId);
 			}
+
+			if (exportAppearance)
+				appearanceExporter.executeBatch();
 
 			return true;
 		}
@@ -427,6 +437,13 @@ public class DBCityObject implements DBExporter {
 	private void addProperties(ObjectContext context, ResultSet rs) throws SQLException {
 		AbstractCityObject cityObject = (AbstractCityObject) context.object;
 
+		// app::appearance
+		if (exportAppearance && context.projectionFilter.containsProperty("appearance", appearanceModule)) {
+			long appearanceId = rs.getLong("apid");
+			if (!rs.wasNull() && context.appearances.add(appearanceId))
+				appearanceExporter.addBatch(appearanceId, cityObject);
+		}
+
 		// core:generalizesTo
 		if (context.projectionFilter.containsProperty("generalizesTo", coreModule)) {
 			long generalizesTo = rs.getLong("generalizes_to_id");
@@ -472,12 +489,6 @@ public class DBCityObject implements DBExporter {
 			// export generalization features
 			if (!context.generalizesTos.isEmpty())
 				generalizesToExporter.doExport(cityObject, cityObjectId, context.generalizesTos);
-
-			// export appearance information associated with the city object
-			if (exportAppearance && context.projectionFilter.containsProperty("appearance", appearanceModule)) {
-				for (Appearance appearance : appearanceExporter.doExport(cityObjectId, context.isTopLevel))
-					cityObject.addAppearance(new AppearanceProperty(appearance));
-			}
 		}
 
 		// ADE-specific extensions
@@ -500,6 +511,7 @@ public class DBCityObject implements DBExporter {
 		final boolean isTopLevel;
 
 		boolean isInitialized;
+		Set<Long> appearances;
 		Set<Long> generalizesTos;
 		Set<Long> externalReferences;
 		Set<Long> genericAttributes;
@@ -515,6 +527,7 @@ public class DBCityObject implements DBExporter {
 			isTopLevel = objectType instanceof FeatureType && ((FeatureType) objectType).isTopLevel();
 
 			if (isCityObject) {
+				appearances = new HashSet<>();
 				generalizesTos = new HashSet<>();
 				externalReferences = new HashSet<>();
 				genericAttributes = new HashSet<>();

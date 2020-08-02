@@ -39,12 +39,9 @@ import org.citydb.database.schema.TableEnum;
 import org.citydb.database.schema.mapping.FeatureType;
 import org.citydb.log.Logger;
 import org.citydb.query.Query;
-import org.citydb.query.builder.QueryBuildException;
-import org.citydb.query.builder.sql.AppearanceFilterBuilder;
 import org.citydb.sqlbuilder.expression.IntegerLiteral;
 import org.citydb.sqlbuilder.expression.PlaceHolder;
 import org.citydb.sqlbuilder.schema.Table;
-import org.citydb.sqlbuilder.select.PredicateToken;
 import org.citydb.sqlbuilder.select.Select;
 import org.citydb.sqlbuilder.select.join.JoinFactory;
 import org.citydb.sqlbuilder.select.operator.comparison.ComparisonFactory;
@@ -81,18 +78,15 @@ import org.citygml4j.util.walker.FeatureWalker;
 
 import java.io.File;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
-public class AbstractAppearanceExporter extends AbstractTypeExporter {
+public abstract class AbstractAppearanceExporter extends AbstractTypeExporter {
 	private final Logger log = Logger.getInstance();
 	private final AttributeValueSplitter valueSplitter;
 	private final boolean exportTextureImage;
@@ -104,10 +98,8 @@ public class AbstractAppearanceExporter extends AbstractTypeExporter {
 	private final String separator;
 	private final HashSet<Long> texImageIds;
 
-	protected PreparedStatement ps;
 	private boolean appendOldGmlId;
 	private String gmlIdPrefix;
-	private List<PlaceHolder<?>> themes;
 	private List<Table> appearanceADEHookTables;
 	private List<Table> surfaceDataADEHookTables;
 
@@ -115,8 +107,6 @@ public class AbstractAppearanceExporter extends AbstractTypeExporter {
 		super(exporter);
 
 		texImageIds = new HashSet<>();
-		themes = Collections.emptyList();
-
 		exportTextureImage = exporter.getExportConfig().getAppearances().isSetExportTextureFiles();
 		uniqueFileNames = exporter.getExportConfig().getAppearances().isSetUniqueTextureFileNames();
 		noOfBuckets = exporter.getExportConfig().getAppearances().getTexturePath().getNoOfBuckets();
@@ -167,33 +157,10 @@ public class AbstractAppearanceExporter extends AbstractTypeExporter {
 			select.addJoin(JoinFactory.inner(tmp, "id", ComparisonName.EQUAL_TO, textureParam.getColumn("surface_geometry_id")))
 					.addJoin(JoinFactory.inner(surfaceGeometry, "id", ComparisonName.EQUAL_TO, tmp.getColumn("id")))
 					.addSelection(ComparisonFactory.equalTo(table.getColumn("id"), new PlaceHolder<>()));
-			ps = cacheTable.getConnection().prepareStatement(select.toString());
-		} else {
-			select.addJoin(JoinFactory.inner(surfaceGeometry, "id", ComparisonName.EQUAL_TO, textureParam.getColumn("surface_geometry_id")))
-					.addSelection(ComparisonFactory.equalTo(table.getColumn("cityobject_id"), new PlaceHolder<>()));
-
-			if (query.isSetAppearanceFilter()) {
-				try {
-					PredicateToken predicate = new AppearanceFilterBuilder(exporter.getDatabaseAdapter()).buildAppearanceFilter(query.getAppearanceFilter(), table.getColumn("theme"));
-					select.addSelection(predicate);
-					themes = new ArrayList<>();
-					predicate.getInvolvedPlaceHolders(themes);
-				} catch (QueryBuildException e) {
-					throw new CityGMLExportException("Failed to build appearance filter.", e); 
-				}
-			}
-			ps = connection.prepareStatement(select.toString());
-		}			
+		} else
+			select.addJoin(JoinFactory.inner(surfaceGeometry, "id", ComparisonName.EQUAL_TO, textureParam.getColumn("surface_geometry_id")));
 
 		valueSplitter = exporter.getAttributeValueSplitter();
-	}
-
-	protected void clearTextureImageCache() {
-		texImageIds.clear();
-	}
-
-	protected List<PlaceHolder<?>> getThemeTokens() {
-		return themes;
 	}
 
 	protected void triggerLazyTextureExport(AbstractCityObject cityObject) {
@@ -208,7 +175,10 @@ public class AbstractAppearanceExporter extends AbstractTypeExporter {
 		}
 	}
 
-	protected Collection<Appearance> doExport(ResultSet rs) throws CityGMLExportException, SQLException {
+	protected Map<Long, Appearance> doExport(ResultSet rs) throws CityGMLExportException, SQLException {
+		// clear texture image cache
+		texImageIds.clear();
+
 		long currentAppearanceId = 0;
 		Appearance appearance = null;
 		Map<Long, Appearance> appearances = new HashMap<>();
@@ -254,8 +224,8 @@ public class AbstractAppearanceExporter extends AbstractTypeExporter {
 				addTarget(surfaceDataProperty.getSurfaceData(), rs);
 		}
 
-		appearances.values().removeIf(a -> a.getSurfaceDataMember().isEmpty());
-		return appearances.values();
+		appearances.values().removeIf(v -> v.getSurfaceDataMember().isEmpty());
+		return appearances;
 	}
 
 	private Appearance getAppearance(long appearanceId, ResultSet rs) throws CityGMLExportException, SQLException {
@@ -563,10 +533,5 @@ public class AbstractAppearanceExporter extends AbstractTypeExporter {
 				}
 			}
 		}
-	}
-
-	@Override
-	public void close() throws SQLException {
-		ps.close();
 	}
 }

@@ -232,6 +232,7 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryBatchExport
 				}
 
 				psBulk.setArray(1, exporter.getDatabaseAdapter().getSQLAdapter().createIdArray(ids.toArray(new Long[0]), connection));
+
 				try (ResultSet rs = psBulk.executeQuery()) {
 					while (rs.next()) {
 						GeometryTree geomTree = geomTrees.get(rs.getLong(11));
