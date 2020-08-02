@@ -36,6 +36,7 @@ import org.citygml4j.model.citygml.appearance.Appearance;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Collection;
 
 public class DBGlobalAppearance extends AbstractAppearanceExporter {
 
@@ -44,24 +45,14 @@ public class DBGlobalAppearance extends AbstractAppearanceExporter {
 	}
 
 	protected Appearance doExport(long appearanceId) throws CityGMLExportException, SQLException {
+		// clear texture image cache
+		clearTextureImageCache();
+
 		ps.setLong(1, appearanceId);
 
 		try (ResultSet rs = ps.executeQuery()) {
-			Appearance appearance = new Appearance();
-			boolean isInited = false;
-
-			while (rs.next()) {
-				if (!isInited) {
-					getAppearanceProperties(appearance, appearanceId, rs);
-					clearTextureImageCache();
-					isInited = true;
-				}
-
-				// add surface data to appearance
-				addSurfaceData(appearance, rs, false);
-			}
-
-			return appearance.isSetSurfaceDataMember() ? appearance : null;
+			Collection<Appearance> appearances = doExport(rs);
+			return !appearances.isEmpty() ? appearances.iterator().next() : null;
 		}
 	}
 }

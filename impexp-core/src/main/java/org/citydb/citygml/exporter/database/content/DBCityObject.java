@@ -57,6 +57,8 @@ import org.citydb.sqlbuilder.select.operator.comparison.ComparisonFactory;
 import org.citydb.sqlbuilder.select.operator.comparison.ComparisonName;
 import org.citygml4j.geometry.BoundingBox;
 import org.citygml4j.geometry.Point;
+import org.citygml4j.model.citygml.appearance.Appearance;
+import org.citygml4j.model.citygml.appearance.AppearanceProperty;
 import org.citygml4j.model.citygml.core.AbstractCityObject;
 import org.citygml4j.model.citygml.core.ExternalObject;
 import org.citygml4j.model.citygml.core.ExternalReference;
@@ -193,7 +195,7 @@ public class DBCityObject implements DBExporter {
 							currentObjectId = objectId;
 							context = batches.get(objectId);
 							if (context != null) {
-								if (context.initialize() && !readObject(context, rs))
+								if (context.initialize() && !addProperties(context, rs))
 									return false;
 							} else {
 								exporter.logOrThrowErrorMessage("Failed to read city object for id " + objectId + ".");
@@ -202,7 +204,7 @@ public class DBCityObject implements DBExporter {
 						}
 
 						if (context.isCityObject)
-							readProperties(context, rs);
+							addCityObjectProperties(context, rs);
 					}
 
 					for (Map.Entry<Long, ObjectContext> entry : batches.entrySet())
@@ -232,12 +234,12 @@ public class DBCityObject implements DBExporter {
 		try (ResultSet rs = psSelect.executeQuery()) {
 			if (rs.next()) {
 				ObjectContext context = new ObjectContext(object, objectType, projectionFilter);
-				if (!readObject(context, rs))
+				if (!addProperties(context, rs))
 					return false;
 
 				if (context.isCityObject) {
 					do {
-						readProperties(context, rs);
+						addCityObjectProperties(context, rs);
 					} while (rs.next());
 				}
 
@@ -248,7 +250,7 @@ public class DBCityObject implements DBExporter {
 		}
 	}
 
-	protected boolean readObject(ObjectContext context, ResultSet rs) throws CityGMLExportException, SQLException {
+	protected boolean addProperties(ObjectContext context, ResultSet rs) throws CityGMLExportException, SQLException {
 		boolean setEnvelope = !context.isCityObject || (context.projectionFilter.containsProperty("boundedBy", gmlModule)
 				&& (exporter.getExportConfig().getCityGMLOptions().getGMLEnvelope().getFeatureMode() == FeatureEnvelopeMode.ALL
 				|| (exporter.getExportConfig().getCityGMLOptions().getGMLEnvelope().getFeatureMode() == FeatureEnvelopeMode.TOP_LEVEL && context.isTopLevel)));
@@ -419,7 +421,7 @@ public class DBCityObject implements DBExporter {
 		return true;
 	}
 
-	private void readProperties(ObjectContext context, ResultSet rs) throws SQLException {
+	private void addCityObjectProperties(ObjectContext context, ResultSet rs) throws SQLException {
 		AbstractCityObject cityObject = (AbstractCityObject) context.object;
 
 		// core:generalizesTo
@@ -460,22 +462,24 @@ public class DBCityObject implements DBExporter {
 			genericAttributeExporter.doExport(genericAttributeId, cityObject, context.projectionFilter, "ga", context.genericAttributeSets, rs);
 	}
 
-	private void postprocess(ObjectContext context, long objectId) throws CityGMLExportException, SQLException {
+	private void postprocess(ObjectContext context, long cityObjectId) throws CityGMLExportException, SQLException {
 		if (context.isCityObject) {
 			AbstractCityObject cityObject = (AbstractCityObject) context.object;
 
 			// export generalization features
 			if (!context.generalizesTos.isEmpty())
-				generalizesToExporter.doExport(cityObject, objectId, context.generalizesTos);
+				generalizesToExporter.doExport(cityObject, cityObjectId, context.generalizesTos);
 
 			// export appearance information associated with the city object
-			if (exportAppearance && context.projectionFilter.containsProperty("appearance", appearanceModule))
-				appearanceExporter.doExport(cityObject, objectId, context.isTopLevel);
+			if (exportAppearance && context.projectionFilter.containsProperty("appearance", appearanceModule)) {
+				for (Appearance appearance : appearanceExporter.doExport(cityObjectId, context.isTopLevel))
+					cityObject.addAppearance(new AppearanceProperty(appearance));
+			}
 		}
 
 		// ADE-specific extensions
 		if (exporter.hasADESupport())
-			exporter.delegateToADEExporter(context.object, objectId, context.objectType, context.projectionFilter);
+			exporter.delegateToADEExporter(context.object, cityObjectId, context.objectType, context.projectionFilter);
 	}
 
 	@Override

@@ -32,15 +32,12 @@ import org.citydb.config.Config;
 import org.citydb.query.Query;
 import org.citydb.sqlbuilder.expression.PlaceHolder;
 import org.citygml4j.model.citygml.appearance.Appearance;
-import org.citygml4j.model.citygml.appearance.AppearanceProperty;
-import org.citygml4j.model.citygml.core.AbstractCityObject;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashMap;
+import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 public class DBLocalAppearance extends AbstractAppearanceExporter {
 
@@ -48,7 +45,7 @@ public class DBLocalAppearance extends AbstractAppearanceExporter {
 		super(false, connection, query, null, exporter, config);
 	}
 
-	protected void doExport(AbstractCityObject cityObject, long cityObjectId, boolean isTopLevelObject) throws CityGMLExportException, SQLException {
+	protected Collection<Appearance> doExport(long cityObjectId, boolean isTopLevelObject) throws CityGMLExportException, SQLException {
 		// clear texture image cache
 		if (isTopLevelObject)
 			clearTextureImageCache();
@@ -56,34 +53,10 @@ public class DBLocalAppearance extends AbstractAppearanceExporter {
 		List<PlaceHolder<?>> themes = getThemeTokens();
 		ps.setLong(1, cityObjectId);
 		for (int i = 0; i < themes.size(); i++)
-			ps.setString(i + 2, (String)themes.get(i).getValue());
+			ps.setString(i + 2, (String) themes.get(i).getValue());
 
 		try (ResultSet rs = ps.executeQuery()) {
-			long currentAppearanceId = 0;
-			Appearance appearance = null;
-			Map<Long, Appearance> appearances = new HashMap<>();
-
-			while (rs.next()) {
-				long appearanceId = rs.getLong(1);
-
-				if (appearanceId != currentAppearanceId) {
-					currentAppearanceId = appearanceId;
-					
-					appearance = appearances.get(appearanceId);
-					if (appearance == null) {
-						appearance = new Appearance();
-						getAppearanceProperties(appearance, appearanceId, rs);
-
-						// add appearance to cityobject
-						cityObject.addAppearance(new AppearanceProperty(appearance));
-
-						appearances.put(appearanceId, appearance);
-					}
-				}
-
-				// add surface data to appearance
-				addSurfaceData(appearance, rs, exporter.isLazyTextureExport());
-			}
+			return doExport(rs);
 		}
 	}
 }
