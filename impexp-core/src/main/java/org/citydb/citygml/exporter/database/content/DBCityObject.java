@@ -37,7 +37,6 @@ import org.citydb.citygml.exporter.CityGMLExportException;
 import org.citydb.citygml.exporter.util.AttributeValueSplitter;
 import org.citydb.citygml.exporter.util.AttributeValueSplitter.SplitValue;
 import org.citydb.config.geometry.GeometryObject;
-import org.citydb.config.project.database.DatabaseType;
 import org.citydb.config.project.exporter.FeatureEnvelopeMode;
 import org.citydb.config.project.exporter.SimpleTilingOptions;
 import org.citydb.database.schema.TableEnum;
@@ -167,10 +166,7 @@ public class DBCityObject implements DBExporter {
 					.addJoin(JoinFactory.left(appearance, "cityobject_id", ComparisonName.EQUAL_TO, table.getColumn("id")));
 		}
 
-		String subQuery = exporter.getDatabaseAdapter().getDatabaseType() == DatabaseType.POSTGIS ?
-				"select * from unnest(?)" :
-				"select * from table(?)";
-
+		String subQuery = "select * from " + exporter.getDatabaseAdapter().getSQLAdapter().resolveDatabaseOperationName("unnest") + "(?)";
 		psBulk = connection.prepareStatement(new Select(select)
 				.addProjection(table.getColumn("id"))
 				.addSelection(ComparisonFactory.in(table.getColumn("id"), new LiteralSelectExpression(subQuery))).toString());

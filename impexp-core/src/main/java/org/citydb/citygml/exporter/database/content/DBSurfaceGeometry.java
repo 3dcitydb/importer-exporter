@@ -33,7 +33,6 @@ import org.citydb.citygml.exporter.util.GeometrySetter;
 import org.citydb.citygml.exporter.util.GeometrySetterHandler;
 import org.citydb.config.Config;
 import org.citydb.config.geometry.GeometryObject;
-import org.citydb.config.project.database.DatabaseType;
 import org.citydb.database.schema.TableEnum;
 import org.citydb.sqlbuilder.expression.LiteralSelectExpression;
 import org.citydb.sqlbuilder.expression.PlaceHolder;
@@ -134,10 +133,7 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryBatchExport
 				table1.getColumn("is_xlink"), table1.getColumn("is_reverse"),
 				exporter.getGeometryColumn(table1.getColumn("geometry")), table1.getColumn("implicit_geometry"));
 
-		String subQuery = exporter.getDatabaseAdapter().getDatabaseType() == DatabaseType.POSTGIS ?
-				"select * from unnest(?)" :
-				"select * from table(?)";
-
+		String subQuery = "select * from " + exporter.getDatabaseAdapter().getSQLAdapter().resolveDatabaseOperationName("unnest") + "(?)";
 		psBulk = connection.prepareStatement(new Select(select1)
 				.addProjection(table1.getColumn("root_id"))
 				.addSelection(ComparisonFactory.in(table1.getColumn("root_id"), new LiteralSelectExpression(subQuery))).toString());

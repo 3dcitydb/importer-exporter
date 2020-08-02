@@ -29,7 +29,6 @@ package org.citydb.citygml.exporter.database.content;
 
 import org.citydb.citygml.exporter.CityGMLExportException;
 import org.citydb.config.Config;
-import org.citydb.config.project.database.DatabaseType;
 import org.citydb.query.Query;
 import org.citydb.query.builder.QueryBuildException;
 import org.citydb.query.builder.sql.AppearanceFilterBuilder;
@@ -75,10 +74,7 @@ public class DBLocalAppearance extends AbstractAppearanceExporter {
 			}
 		}
 
-		String subQuery = exporter.getDatabaseAdapter().getDatabaseType() == DatabaseType.POSTGIS ?
-				"select * from unnest(?)" :
-				"select * from table(?)";
-
+		String subQuery = "select * from " + exporter.getDatabaseAdapter().getSQLAdapter().resolveDatabaseOperationName("unnest") + "(?)";
 		psBulk = connection.prepareStatement(new Select(select)
 				.addSelection(ComparisonFactory.in(table.getColumn("id"), new LiteralSelectExpression(subQuery))).toString());
 
