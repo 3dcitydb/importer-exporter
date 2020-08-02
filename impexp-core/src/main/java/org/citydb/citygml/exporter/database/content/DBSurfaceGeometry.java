@@ -216,8 +216,16 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryBatchExport
 
 	@Override
 	public void executeBatch() throws CityGMLExportException, SQLException {
-		if (!batches.isEmpty()) {
-			try {
+		if (batches.isEmpty())
+			return;
+
+		try {
+			if (batches.size() == 1) {
+				SurfaceGeometryContext context = batches.get(0);
+				SurfaceGeometry geometry = doExport(context.id, context.isImplicit);
+				if (geometry != null)
+					context.handler.handle(geometry);
+			} else {
 				Set<Long> ids = new HashSet<>();
 				Map<Long, GeometryTree> geomTrees = new HashMap<>();
 				for (SurfaceGeometryContext batch : batches) {
@@ -243,9 +251,9 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryBatchExport
 					} else
 						exporter.logOrThrowErrorMessage("Failed to read surface geometry for root id " + batch.id + ".");
 				}
-			} finally {
-				batches.clear();
 			}
+		} finally {
+			batches.clear();
 		}
 	}
 

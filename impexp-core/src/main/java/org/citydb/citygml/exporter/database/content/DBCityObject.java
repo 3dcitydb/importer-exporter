@@ -181,8 +181,14 @@ public class DBCityObject implements DBExporter {
 	}
 
 	public boolean executeBatch() throws CityGMLExportException, SQLException {
-		if (!batches.isEmpty()) {
-			try {
+		if (batches.isEmpty())
+			return true;
+
+		try {
+			if (batches.size() == 1) {
+				Map.Entry<Long, ObjectContext> entry = batches.entrySet().iterator().next();
+				doExport(entry.getKey(), entry.getValue());
+			} else {
 				psBulk.setArray(1, exporter.getDatabaseAdapter().getSQLAdapter().createIdArray(batches.keySet().toArray(new Long[0]), connection));
 				try (ResultSet rs = psBulk.executeQuery()) {
 					long currentObjectId = 0;
@@ -195,7 +201,7 @@ public class DBCityObject implements DBExporter {
 							currentObjectId = objectId;
 							context = batches.get(objectId);
 							if (context != null) {
-								if (context.initialize() && !addProperties(context, rs))
+								if (context.initialize() && !initializeObject(context, rs))
 									return false;
 							} else {
 								exporter.logOrThrowErrorMessage("Failed to read city object for id " + objectId + ".");
@@ -204,25 +210,29 @@ public class DBCityObject implements DBExporter {
 						}
 
 						if (context.isCityObject)
-							addCityObjectProperties(context, rs);
+							addProperties(context, rs);
 					}
 
 					for (Map.Entry<Long, ObjectContext> entry : batches.entrySet())
 						postprocess(entry.getValue(), entry.getKey());
 				}
-			} finally {
-				batches.clear();
 			}
-		}
 
-		return true;
+			return true;
+		} finally {
+			batches.clear();
+		}
 	}
 
 	protected boolean doExport(AbstractGML object, long objectId, AbstractObjectType<?> objectType) throws CityGMLExportException, SQLException {
-		return doExport(object, objectId, objectType, query.getProjectionFilter(objectType));
+		return doExport(objectId, new ObjectContext(object, objectType, query.getProjectionFilter(objectType)));
 	}
 
 	protected boolean doExport(AbstractGML object, long objectId, AbstractObjectType<?> objectType, ProjectionFilter projectionFilter) throws CityGMLExportException, SQLException {
+		return doExport(objectId, new ObjectContext(object, objectType, projectionFilter));
+	}
+
+	private boolean doExport(long objectId, ObjectContext context) throws CityGMLExportException, SQLException {
 		if (psSelect == null) {
 			psSelect = connection.prepareStatement(new Select(this.select)
 					.addSelection(ComparisonFactory.equalTo(table.getColumn("id"), new PlaceHolder<>()))
@@ -233,13 +243,12 @@ public class DBCityObject implements DBExporter {
 
 		try (ResultSet rs = psSelect.executeQuery()) {
 			if (rs.next()) {
-				ObjectContext context = new ObjectContext(object, objectType, projectionFilter);
-				if (!addProperties(context, rs))
+				if (!initializeObject(context, rs))
 					return false;
 
 				if (context.isCityObject) {
 					do {
-						addCityObjectProperties(context, rs);
+						addProperties(context, rs);
 					} while (rs.next());
 				}
 
@@ -250,7 +259,7 @@ public class DBCityObject implements DBExporter {
 		}
 	}
 
-	protected boolean addProperties(ObjectContext context, ResultSet rs) throws CityGMLExportException, SQLException {
+	protected boolean initializeObject(ObjectContext context, ResultSet rs) throws CityGMLExportException, SQLException {
 		boolean setEnvelope = !context.isCityObject || (context.projectionFilter.containsProperty("boundedBy", gmlModule)
 				&& (exporter.getExportConfig().getCityGMLOptions().getGMLEnvelope().getFeatureMode() == FeatureEnvelopeMode.ALL
 				|| (exporter.getExportConfig().getCityGMLOptions().getGMLEnvelope().getFeatureMode() == FeatureEnvelopeMode.TOP_LEVEL && context.isTopLevel)));
@@ -421,7 +430,7 @@ public class DBCityObject implements DBExporter {
 		return true;
 	}
 
-	private void addCityObjectProperties(ObjectContext context, ResultSet rs) throws SQLException {
+	private void addProperties(ObjectContext context, ResultSet rs) throws SQLException {
 		AbstractCityObject cityObject = (AbstractCityObject) context.object;
 
 		// core:generalizesTo
