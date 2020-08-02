@@ -484,7 +484,7 @@ public class DBCityObject implements DBExporter {
 
 			// export generalization features
 			if (!context.generalizesTos.isEmpty())
-				generalizesToExporter.doExport(cityObject, cityObjectId, context.generalizesTos);
+				generalizesToExporter.doExport(cityObject, context.generalizesTos);
 		}
 
 		// ADE-specific extensions

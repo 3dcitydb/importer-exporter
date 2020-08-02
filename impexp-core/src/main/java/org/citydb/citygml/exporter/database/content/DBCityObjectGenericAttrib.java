@@ -53,135 +53,135 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class DBCityObjectGenericAttrib implements DBExporter {
-	private final Connection connection;
-	private final CityGMLExportManager exporter;
-	private PreparedStatement ps;
+    private final Connection connection;
+    private final CityGMLExportManager exporter;
+    private PreparedStatement ps;
 
-	public DBCityObjectGenericAttrib(Connection connection, CityGMLExportManager exporter) {
-		this.connection = connection;
-		this.exporter = exporter;
-	}
+    public DBCityObjectGenericAttrib(Connection connection, CityGMLExportManager exporter) {
+        this.connection = connection;
+        this.exporter = exporter;
+    }
 
-	protected Select addProjection(Select select, Table table, String prefix) {
-		select.addProjection(table.getColumn("id", prefix + "id"), table.getColumn("parent_genattrib_id", prefix + "parent_genattrib_id"),
-				table.getColumn("attrname", prefix + "attrname"), table.getColumn("datatype", prefix + "datatype"),
-				table.getColumn("strval", prefix + "strval"), table.getColumn("intval", prefix +"intval"),
-				table.getColumn("realval", prefix + "realval"), table.getColumn("urival", prefix + "urival"),
-				table.getColumn("dateval", prefix + "dateval"), table.getColumn("unit", prefix + "unit"),
-				table.getColumn("genattribset_codespace", prefix + "genattribset_codespace"));
+    protected Select addProjection(Select select, Table table, String prefix) {
+        select.addProjection(table.getColumn("id", prefix + "id"), table.getColumn("parent_genattrib_id", prefix + "parent_genattrib_id"),
+                table.getColumn("attrname", prefix + "attrname"), table.getColumn("datatype", prefix + "datatype"),
+                table.getColumn("strval", prefix + "strval"), table.getColumn("intval", prefix + "intval"),
+                table.getColumn("realval", prefix + "realval"), table.getColumn("urival", prefix + "urival"),
+                table.getColumn("dateval", prefix + "dateval"), table.getColumn("unit", prefix + "unit"),
+                table.getColumn("genattribset_codespace", prefix + "genattribset_codespace"));
 
-		return select;
-	}
+        return select;
+    }
 
-	protected void doExport(AbstractCityObject cityObject, long cityObjectId, ProjectionFilter projectionFilter) throws SQLException {
-		if (ps == null) {
-			String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
-			Table table = new Table(TableEnum.CITYOBJECT_GENERICATTRIB.getName(), schema);
-			Select select = addProjection(new Select(), table, "");
-			ps = connection.prepareStatement(select.toString());
-		}
+    protected void doExport(AbstractCityObject cityObject, long cityObjectId, ProjectionFilter projectionFilter) throws SQLException {
+        if (ps == null) {
+            String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
+            Table table = new Table(TableEnum.CITYOBJECT_GENERICATTRIB.getName(), schema);
+            Select select = addProjection(new Select(), table, "");
+            ps = connection.prepareStatement(select.toString());
+        }
 
-		ps.setLong(1, cityObjectId);
+        ps.setLong(1, cityObjectId);
 
-		try (ResultSet rs = ps.executeQuery()) {
-			Map<Long, GenericAttributeSet> attributeSets = new HashMap<>();
-			while (rs.next())
-				doExport(rs.getLong(1), cityObject, projectionFilter, "", attributeSets, rs);
-		}
-	}
+        try (ResultSet rs = ps.executeQuery()) {
+            Map<Long, GenericAttributeSet> attributeSets = new HashMap<>();
+            while (rs.next())
+                doExport(rs.getLong(1), cityObject, projectionFilter, "", attributeSets, rs);
+        }
+    }
 
-	protected void doExport(long id, AbstractCityObject cityObject, ProjectionFilter projectionFilter, String prefix, Map<Long, GenericAttributeSet> attributeSets, ResultSet rs) throws SQLException {
-		long parentId = rs.getLong(prefix + "parent_genattrib_id");
-		String name = rs.getString(prefix + "attrname");
-		CityGMLClass type = Util.genericAttributeType2cityGMLClass(rs.getInt(prefix + "datatype"));
+    protected void doExport(long id, AbstractCityObject cityObject, ProjectionFilter projectionFilter, String prefix, Map<Long, GenericAttributeSet> attributeSets, ResultSet rs) throws SQLException {
+        long parentId = rs.getLong(prefix + "parent_genattrib_id");
+        String name = rs.getString(prefix + "attrname");
+        CityGMLClass type = Util.genericAttributeType2cityGMLClass(rs.getInt(prefix + "datatype"));
 
-		// skip attribute if it is not covered by the projection filter
-		if (!projectionFilter.containsGenericAttribute(name, type))
-			return;
+        // skip attribute if it is not covered by the projection filter
+        if (!projectionFilter.containsGenericAttribute(name, type))
+            return;
 
-		AbstractGenericAttribute genericAttribute = null;
-		GenericAttributeSet parentAttributeSet = null;
+        AbstractGenericAttribute genericAttribute = null;
+        GenericAttributeSet parentAttributeSet = null;
 
-		if (parentId != 0) {
-			parentAttributeSet = attributeSets.get(parentId);
-			if (parentAttributeSet == null) {
-				parentAttributeSet = new GenericAttributeSet();
-				attributeSets.put(parentId, parentAttributeSet);
-			}
-		}
+        if (parentId != 0) {
+            parentAttributeSet = attributeSets.get(parentId);
+            if (parentAttributeSet == null) {
+                parentAttributeSet = new GenericAttributeSet();
+                attributeSets.put(parentId, parentAttributeSet);
+            }
+        }
 
-		switch (type) {
-			case STRING_ATTRIBUTE:
-				String strVal = rs.getString(prefix + "strval");
-				if (!rs.wasNull()) {
-					genericAttribute = new StringAttribute();
-					((StringAttribute)genericAttribute).setValue(strVal);
-				}
-				break;
-			case INT_ATTRIBUTE:
-				int intVal = rs.getInt(prefix + "intval");
-				if (!rs.wasNull()) {
-					genericAttribute = new IntAttribute();
-					((IntAttribute)genericAttribute).setValue(intVal);
-				}
-				break;
-			case DOUBLE_ATTRIBUTE:
-				double realVal = rs.getDouble(prefix + "realval");
-				if (!rs.wasNull()) {
-					genericAttribute = new DoubleAttribute();
-					((DoubleAttribute)genericAttribute).setValue(realVal);
-				}
-				break;
-			case URI_ATTRIBUTE:
-				String uriVal = rs.getString(prefix + "urival");
-				if (!rs.wasNull()) {
-					genericAttribute = new UriAttribute();
-					((UriAttribute)genericAttribute).setValue(uriVal);
-				}
-				break;
-			case DATE_ATTRIBUTE:
-				Timestamp dateVal = rs.getTimestamp(prefix + "dateval");
-				if (!rs.wasNull()) {
-					genericAttribute = new DateAttribute();
-					((DateAttribute)genericAttribute).setValue(dateVal.toLocalDateTime().toLocalDate());
-				}
-				break;
-			case MEASURE_ATTRIBUTE:
-				double measureVal = rs.getDouble(prefix + "realval");
-				if (!rs.wasNull()) {
-					genericAttribute = new MeasureAttribute();
-					Measure measure = new Measure();
-					measure.setValue(measureVal);
-					measure.setUom(rs.getString(prefix + "unit"));
-					((MeasureAttribute)genericAttribute).setValue(measure);
-				}
-				break;
-			case GENERIC_ATTRIBUTE_SET:
-				genericAttribute = attributeSets.get(id);
-				if (genericAttribute == null) {
-					genericAttribute = new GenericAttributeSet();
-					attributeSets.put(id, (GenericAttributeSet)genericAttribute);
-				}
+        switch (type) {
+            case STRING_ATTRIBUTE:
+                String strVal = rs.getString(prefix + "strval");
+                if (!rs.wasNull()) {
+                    genericAttribute = new StringAttribute();
+                    ((StringAttribute) genericAttribute).setValue(strVal);
+                }
+                break;
+            case INT_ATTRIBUTE:
+                int intVal = rs.getInt(prefix + "intval");
+                if (!rs.wasNull()) {
+                    genericAttribute = new IntAttribute();
+                    ((IntAttribute) genericAttribute).setValue(intVal);
+                }
+                break;
+            case DOUBLE_ATTRIBUTE:
+                double realVal = rs.getDouble(prefix + "realval");
+                if (!rs.wasNull()) {
+                    genericAttribute = new DoubleAttribute();
+                    ((DoubleAttribute) genericAttribute).setValue(realVal);
+                }
+                break;
+            case URI_ATTRIBUTE:
+                String uriVal = rs.getString(prefix + "urival");
+                if (!rs.wasNull()) {
+                    genericAttribute = new UriAttribute();
+                    ((UriAttribute) genericAttribute).setValue(uriVal);
+                }
+                break;
+            case DATE_ATTRIBUTE:
+                Timestamp dateVal = rs.getTimestamp(prefix + "dateval");
+                if (!rs.wasNull()) {
+                    genericAttribute = new DateAttribute();
+                    ((DateAttribute) genericAttribute).setValue(dateVal.toLocalDateTime().toLocalDate());
+                }
+                break;
+            case MEASURE_ATTRIBUTE:
+                double measureVal = rs.getDouble(prefix + "realval");
+                if (!rs.wasNull()) {
+                    genericAttribute = new MeasureAttribute();
+                    Measure measure = new Measure();
+                    measure.setValue(measureVal);
+                    measure.setUom(rs.getString(prefix + "unit"));
+                    ((MeasureAttribute) genericAttribute).setValue(measure);
+                }
+                break;
+            case GENERIC_ATTRIBUTE_SET:
+                genericAttribute = attributeSets.get(id);
+                if (genericAttribute == null) {
+                    genericAttribute = new GenericAttributeSet();
+                    attributeSets.put(id, (GenericAttributeSet) genericAttribute);
+                }
 
-				((GenericAttributeSet)genericAttribute).setCodeSpace(rs.getString(prefix + "genattribset_codespace"));
-				break;
-		}
+                ((GenericAttributeSet) genericAttribute).setCodeSpace(rs.getString(prefix + "genattribset_codespace"));
+                break;
+        }
 
-		if (genericAttribute != null) {
-			genericAttribute.setName(name);
+        if (genericAttribute != null) {
+            genericAttribute.setName(name);
 
-			// assign generic attribute to city object or parent attribute set
-			if (parentAttributeSet == null)
-				cityObject.addGenericAttribute(genericAttribute);
-			else
-				parentAttributeSet.addGenericAttribute(genericAttribute);
-		}
-	}
+            // assign generic attribute to city object or parent attribute set
+            if (parentAttributeSet == null)
+                cityObject.addGenericAttribute(genericAttribute);
+            else
+                parentAttributeSet.addGenericAttribute(genericAttribute);
+        }
+    }
 
-	@Override
-	public void close() throws SQLException {
-		if (ps != null)
-			ps.close();
-	}
+    @Override
+    public void close() throws SQLException {
+        if (ps != null)
+            ps.close();
+    }
 
 }

@@ -30,17 +30,11 @@ package org.citydb.citygml.exporter.database.content;
 import org.citydb.citygml.exporter.CityGMLExportException;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.config.geometry.Point;
-import org.citydb.database.schema.mapping.MappingConstants;
+import org.citydb.database.schema.TableEnum;
 import org.citydb.query.Query;
-import org.citydb.query.builder.QueryBuildException;
-import org.citydb.query.builder.sql.BuildProperties;
-import org.citydb.query.builder.sql.SQLQueryBuilder;
 import org.citydb.query.filter.FilterException;
-import org.citydb.query.filter.selection.Predicate;
-import org.citydb.query.filter.selection.SelectionFilter;
-import org.citydb.sqlbuilder.expression.LiteralList;
-import org.citydb.sqlbuilder.expression.LongLiteral;
-import org.citydb.sqlbuilder.schema.Column;
+import org.citydb.sqlbuilder.expression.LiteralSelectExpression;
+import org.citydb.sqlbuilder.schema.Table;
 import org.citydb.sqlbuilder.select.Select;
 import org.citydb.sqlbuilder.select.operator.comparison.ComparisonFactory;
 import org.citygml4j.model.citygml.core.AbstractCityObject;
@@ -55,65 +49,46 @@ import java.util.Set;
 public class DBGeneralization implements DBExporter {
 	private final Connection connection;
 	private final CityGMLExportManager exporter;
-	private final Query generalizationQuery;
-	private final SQLQueryBuilder builder;
+	private final Query query;
+	private final Select select;
 
-	public DBGeneralization(Connection connection, Query query, CityGMLExportManager exporter) throws CityGMLExportException {
+	private PreparedStatement ps;
+
+	public DBGeneralization(Connection connection, Query query, CityGMLExportManager exporter) {
 		this.connection = connection;
 		this.exporter = exporter;
+		this.query = query;
 
-		BuildProperties buildProperties = BuildProperties.defaults().addProjectionColumn(MappingConstants.GMLID);
-		if (query.isSetTiling())
-			buildProperties.addProjectionColumn(MappingConstants.ENVELOPE);
+		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
+		String subQuery = "select * from " + exporter.getDatabaseAdapter().getSQLAdapter().resolveDatabaseOperationName("unnest") + "(?)";
 
-		builder = new SQLQueryBuilder(
-				exporter.getSchemaMapping(), 
-				exporter.getDatabaseAdapter(),
-				buildProperties);
+		Table table = new Table(TableEnum.CITYOBJECT.getName(), schema);
+		select = new Select().addProjection(table.getColumn("gmlid"))
+				.addSelection(ComparisonFactory.in(table.getColumn("id"), new LiteralSelectExpression(subQuery)));
 
-		generalizationQuery = new Query(query);
-
-		// set generic spatial filter
-		if (generalizationQuery.isSetSelection()) {
-			try {
-				Predicate predicate = generalizationQuery.getSelection().getGenericSpatialFilter(exporter.getSchemaMapping().getCommonSuperType(generalizationQuery.getFeatureTypeFilter().getFeatureTypes()));
-				generalizationQuery.setSelection(new SelectionFilter(predicate));
-			} catch (FilterException e) {
-				throw new CityGMLExportException("Failed to build generic spatial filter for generalization objects.", e);
-			}
-		}
+		if (query.isSetTiling()) select.addProjection(table.getColumn("envelope"));
 	}
 
-	protected void doExport(AbstractCityObject cityObject, long cityObjectId, Set<Long> generalizesTos) throws CityGMLExportException, SQLException {
-		// create select statement
-		Select select;
-		try {
-			select = builder.buildQuery(generalizationQuery);
-		} catch (QueryBuildException e) {
-			throw new CityGMLExportException("Failed to build sub-query for generalization objects.", e);
-		}
+	protected void doExport(AbstractCityObject cityObject, Set<Long> generalizesTos) throws CityGMLExportException, SQLException {
+		if (ps == null)
+			ps = connection.prepareStatement(select.toString());
 
-		// add generalization predicate
-		if (generalizesTos.size() == 1)
-			select.addSelection(ComparisonFactory.equalTo((Column)select.getProjection().get(0), new LongLiteral(generalizesTos.iterator().next())));
-		else
-			select.addSelection(ComparisonFactory.in((Column)select.getProjection().get(0), new LiteralList(generalizesTos.toArray(new Long[0]))));
+		ps.setArray(1, exporter.getDatabaseAdapter().getSQLAdapter().createIdArray(generalizesTos.toArray(new Long[0]), connection));
 
-		try (PreparedStatement stmt = exporter.getDatabaseAdapter().getSQLAdapter().prepareStatement(select, connection);
-				ResultSet rs = stmt.executeQuery()) {
+		try (ResultSet rs = ps.executeQuery()) {
 			while (rs.next()) {
-				String gmlId = rs.getString("gmlid");			
+				String gmlId = rs.getString(1);
 				if (rs.wasNull())
 					continue;
 
-				if (generalizationQuery.isSetTiling()) {
-					Object object = rs.getObject("envelope");
+				if (query.isSetTiling()) {
+					Object object = rs.getObject(2);
 					if (!rs.wasNull()) {
 						GeometryObject geomObj = exporter.getDatabaseAdapter().getGeometryConverter().getEnvelope(object);
 						double[] coordinates = geomObj.getCoordinates(0);
 
 						try {
-							if (!generalizationQuery.getTiling().getActiveTile().isOnTile(new Point(
+							if (!query.getTiling().getActiveTile().isOnTile(new Point(
 									(coordinates[0] + coordinates[3]) / 2.0,
 									(coordinates[1] + coordinates[4]) / 2.0), 
 									exporter.getDatabaseAdapter()))
@@ -133,7 +108,7 @@ public class DBGeneralization implements DBExporter {
 
 	@Override
 	public void close() throws SQLException {
-		// nothing to do...
+		if (ps != null)
+			ps.close();
 	}
-
 }
