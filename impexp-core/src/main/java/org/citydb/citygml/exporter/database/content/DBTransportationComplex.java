@@ -86,11 +86,11 @@ public class DBTransportationComplex extends AbstractFeatureExporter<Transportat
 		if (projectionFilter.containsProperty("class", transportationModule)) select.addProjection(table.getColumn("class"), table.getColumn("class_codespace"));
 		if (projectionFilter.containsProperty("function", transportationModule)) select.addProjection(table.getColumn("function"), table.getColumn("function_codespace"));
 		if (projectionFilter.containsProperty("usage", transportationModule)) select.addProjection(table.getColumn("usage"), table.getColumn("usage_codespace"));
-		if (projectionFilter.containsProperty("lod0Network", transportationModule)) select.addProjection(exporter.getGeometryColumn(table.getColumn("lod0_network")));
-		if (projectionFilter.containsProperty("lod1MultiSurface", transportationModule)) select.addProjection(table.getColumn("lod1_multi_surface_id"));
-		if (projectionFilter.containsProperty("lod2MultiSurface", transportationModule)) select.addProjection(table.getColumn("lod2_multi_surface_id"));
-		if (projectionFilter.containsProperty("lod3MultiSurface", transportationModule)) select.addProjection(table.getColumn("lod3_multi_surface_id"));
-		if (projectionFilter.containsProperty("lod4MultiSurface", transportationModule)) select.addProjection(table.getColumn("lod4_multi_surface_id"));
+		if (lodFilter.isEnabled(0) && projectionFilter.containsProperty("lod0Network", transportationModule)) select.addProjection(exporter.getGeometryColumn(table.getColumn("lod0_network")));
+		if (lodFilter.isEnabled(1) && projectionFilter.containsProperty("lod1MultiSurface", transportationModule)) select.addProjection(table.getColumn("lod1_multi_surface_id"));
+		if (lodFilter.isEnabled(2) && projectionFilter.containsProperty("lod2MultiSurface", transportationModule)) select.addProjection(table.getColumn("lod2_multi_surface_id"));
+		if (lodFilter.isEnabled(3) && projectionFilter.containsProperty("lod3MultiSurface", transportationModule)) select.addProjection(table.getColumn("lod3_multi_surface_id"));
+		if (lodFilter.isEnabled(4) && projectionFilter.containsProperty("lod4MultiSurface", transportationModule)) select.addProjection(table.getColumn("lod4_multi_surface_id"));
 		if (projectionFilter.containsProperty("trafficArea", transportationModule)
 				|| projectionFilter.containsProperty("auxiliaryTrafficArea", transportationModule)) {
 			select.addJoin(JoinFactory.left(trafficArea, "transportation_complex_id", ComparisonName.EQUAL_TO, table.getColumn("id")))
@@ -99,9 +99,9 @@ public class DBTransportationComplex extends AbstractFeatureExporter<Transportat
 			if (trafficAreaProjectionFilter.containsProperty("function", transportationModule)) select.addProjection(trafficArea.getColumn("function", "ta_function"), trafficArea.getColumn("function_codespace", "ta_function_codespace"));
 			if (trafficAreaProjectionFilter.containsProperty("usage", transportationModule)) select.addProjection(trafficArea.getColumn("usage", "ta_usage"), trafficArea.getColumn("usage_codespace", "ta_usage_codespace"));
 			if (trafficAreaProjectionFilter.containsProperty("surfaceMaterial", transportationModule)) select.addProjection(trafficArea.getColumn("surface_material"), trafficArea.getColumn("surface_material_codespace"));
-			if (trafficAreaProjectionFilter.containsProperty("lod2MultiSurface", transportationModule)) select.addProjection(trafficArea.getColumn("lod2_multi_surface_id", "ta_lod2_multi_surface_id"));
-			if (trafficAreaProjectionFilter.containsProperty("lod3MultiSurface", transportationModule)) select.addProjection(trafficArea.getColumn("lod3_multi_surface_id", "ta_lod3_multi_surface_id"));
-			if (trafficAreaProjectionFilter.containsProperty("lod4MultiSurface", transportationModule)) select.addProjection(trafficArea.getColumn("lod4_multi_surface_id", "ta_lod4_multi_surface_id"));
+			if (lodFilter.isEnabled(2) && trafficAreaProjectionFilter.containsProperty("lod2MultiSurface", transportationModule)) select.addProjection(trafficArea.getColumn("lod2_multi_surface_id", "ta_lod2_multi_surface_id"));
+			if (lodFilter.isEnabled(3) && trafficAreaProjectionFilter.containsProperty("lod3MultiSurface", transportationModule)) select.addProjection(trafficArea.getColumn("lod3_multi_surface_id", "ta_lod3_multi_surface_id"));
+			if (lodFilter.isEnabled(4) && trafficAreaProjectionFilter.containsProperty("lod4MultiSurface", transportationModule)) select.addProjection(trafficArea.getColumn("lod4_multi_surface_id", "ta_lod4_multi_surface_id"));
 		}
 
 		// add joins to ADE hook tables

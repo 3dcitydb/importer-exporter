@@ -119,21 +119,29 @@ public class DBBridge extends AbstractFeatureExporter<AbstractBridge> {
 		if (projectionFilter.containsProperty("yearOfConstruction", bridgeModule)) select.addProjection(table.getColumn("year_of_construction"));
 		if (projectionFilter.containsProperty("yearOfDemolition", bridgeModule)) select.addProjection(table.getColumn("year_of_demolition"));
 		if (projectionFilter.containsProperty("isMovable", bridgeModule)) select.addProjection(table.getColumn("is_movable"));
-		if (projectionFilter.containsProperty("lod1TerrainIntersection", bridgeModule)) select.addProjection(exporter.getGeometryColumn(table.getColumn("lod1_terrain_intersection")));
-		if (projectionFilter.containsProperty("lod2TerrainIntersection", bridgeModule)) select.addProjection(exporter.getGeometryColumn(table.getColumn("lod2_terrain_intersection")));
-		if (projectionFilter.containsProperty("lod3TerrainIntersection", bridgeModule)) select.addProjection(exporter.getGeometryColumn(table.getColumn("lod3_terrain_intersection")));
-		if (projectionFilter.containsProperty("lod4TerrainIntersection", bridgeModule)) select.addProjection(exporter.getGeometryColumn(table.getColumn("lod4_terrain_intersection")));
-		if (projectionFilter.containsProperty("lod2MultiCurve", bridgeModule)) select.addProjection(exporter.getGeometryColumn(table.getColumn("lod2_multi_curve")));
-		if (projectionFilter.containsProperty("lod3MultiCurve", bridgeModule)) select.addProjection(exporter.getGeometryColumn(table.getColumn("lod3_multi_curve")));
-		if (projectionFilter.containsProperty("lod4MultiCurve", bridgeModule)) select.addProjection(exporter.getGeometryColumn(table.getColumn("lod4_multi_curve")));
-		if (projectionFilter.containsProperty("lod1Solid", bridgeModule)) select.addProjection(table.getColumn("lod1_solid_id"));
-		if (projectionFilter.containsProperty("lod2Solid", bridgeModule)) select.addProjection(table.getColumn("lod2_solid_id"));
-		if (projectionFilter.containsProperty("lod3Solid", bridgeModule)) select.addProjection(table.getColumn("lod3_solid_id"));
-		if (projectionFilter.containsProperty("lod4Solid", bridgeModule)) select.addProjection(table.getColumn("lod4_solid_id"));
-		if (projectionFilter.containsProperty("lod1MultiSurface", bridgeModule)) select.addProjection(table.getColumn("lod1_multi_surface_id"));
-		if (projectionFilter.containsProperty("lod2MultiSurface", bridgeModule)) select.addProjection(table.getColumn("lod2_multi_surface_id"));
-		if (projectionFilter.containsProperty("lod3MultiSurface", bridgeModule)) select.addProjection(table.getColumn("lod3_multi_surface_id"));
-		if (projectionFilter.containsProperty("lod4MultiSurface", bridgeModule)) select.addProjection(table.getColumn("lod4_multi_surface_id"));
+		if (lodFilter.isEnabled(1)) {
+			if (projectionFilter.containsProperty("lod1TerrainIntersection", bridgeModule)) select.addProjection(exporter.getGeometryColumn(table.getColumn("lod1_terrain_intersection")));
+			if (projectionFilter.containsProperty("lod1Solid", bridgeModule)) select.addProjection(table.getColumn("lod1_solid_id"));
+			if (projectionFilter.containsProperty("lod1MultiSurface", bridgeModule)) select.addProjection(table.getColumn("lod1_multi_surface_id"));
+		}
+		if (lodFilter.isEnabled(2)) {
+			if (projectionFilter.containsProperty("lod2TerrainIntersection", bridgeModule)) select.addProjection(exporter.getGeometryColumn(table.getColumn("lod2_terrain_intersection")));
+			if (projectionFilter.containsProperty("lod2MultiCurve", bridgeModule)) select.addProjection(exporter.getGeometryColumn(table.getColumn("lod2_multi_curve")));
+			if (projectionFilter.containsProperty("lod2Solid", bridgeModule)) select.addProjection(table.getColumn("lod2_solid_id"));
+			if (projectionFilter.containsProperty("lod2MultiSurface", bridgeModule)) select.addProjection(table.getColumn("lod2_multi_surface_id"));
+		}
+		if (lodFilter.isEnabled(3)) {
+			if (projectionFilter.containsProperty("lod3TerrainIntersection", bridgeModule)) select.addProjection(exporter.getGeometryColumn(table.getColumn("lod3_terrain_intersection")));
+			if (projectionFilter.containsProperty("lod3MultiCurve", bridgeModule)) select.addProjection(exporter.getGeometryColumn(table.getColumn("lod3_multi_curve")));
+			if (projectionFilter.containsProperty("lod3Solid", bridgeModule)) select.addProjection(table.getColumn("lod3_solid_id"));
+			if (projectionFilter.containsProperty("lod3MultiSurface", bridgeModule)) select.addProjection(table.getColumn("lod3_multi_surface_id"));
+		}
+		if (lodFilter.isEnabled(4)) {
+			if (projectionFilter.containsProperty("lod4TerrainIntersection", bridgeModule)) select.addProjection(exporter.getGeometryColumn(table.getColumn("lod4_terrain_intersection")));
+			if (projectionFilter.containsProperty("lod4MultiCurve", bridgeModule)) select.addProjection(exporter.getGeometryColumn(table.getColumn("lod4_multi_curve")));
+			if (projectionFilter.containsProperty("lod4Solid", bridgeModule)) select.addProjection(table.getColumn("lod4_solid_id"));
+			if (projectionFilter.containsProperty("lod4MultiSurface", bridgeModule)) select.addProjection(table.getColumn("lod4_multi_surface_id"));
+		}
 		if (projectionFilter.containsProperty("address", bridgeModule)) {
 			Table addressToBridge = new Table(TableEnum.ADDRESS_TO_BRIDGE.getName(), schema);
 			addressExporter.addProjection(select, address, "a")

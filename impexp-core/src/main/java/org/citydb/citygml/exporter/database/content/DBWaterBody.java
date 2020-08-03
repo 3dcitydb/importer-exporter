@@ -90,23 +90,27 @@ public class DBWaterBody extends AbstractFeatureExporter<WaterBody> {
 		if (projectionFilter.containsProperty("class", waterBodyModule)) select.addProjection(table.getColumn("class"), table.getColumn("class_codespace"));
 		if (projectionFilter.containsProperty("function", waterBodyModule)) select.addProjection(table.getColumn("function"), table.getColumn("function_codespace"));
 		if (projectionFilter.containsProperty("usage", waterBodyModule)) select.addProjection(table.getColumn("usage"), table.getColumn("usage_codespace"));
-		if (projectionFilter.containsProperty("lod0MultiCurve", waterBodyModule)) select.addProjection(exporter.getGeometryColumn(table.getColumn("lod0_multi_curve")));
-		if (projectionFilter.containsProperty("lod1MultiCurve", waterBodyModule)) select.addProjection(exporter.getGeometryColumn(table.getColumn("lod1_multi_curve")));
-		if (projectionFilter.containsProperty("lod0MultiSurface", waterBodyModule)) select.addProjection(table.getColumn("lod0_multi_surface_id"));
-		if (projectionFilter.containsProperty("lod1MultiSurface", waterBodyModule)) select.addProjection(table.getColumn("lod1_multi_surface_id"));
-		if (projectionFilter.containsProperty("lod1Solid", waterBodyModule)) select.addProjection(table.getColumn("lod1_solid_id"));
-		if (projectionFilter.containsProperty("lod2Solid", waterBodyModule)) select.addProjection(table.getColumn("lod2_solid_id"));
-		if (projectionFilter.containsProperty("lod3Solid", waterBodyModule)) select.addProjection(table.getColumn("lod3_solid_id"));
-		if (projectionFilter.containsProperty("lod4Solid", waterBodyModule)) select.addProjection(table.getColumn("lod4_solid_id"));
+		if (lodFilter.isEnabled(0)) {
+			if (projectionFilter.containsProperty("lod0MultiCurve", waterBodyModule)) select.addProjection(exporter.getGeometryColumn(table.getColumn("lod0_multi_curve")));
+			if (projectionFilter.containsProperty("lod0MultiSurface", waterBodyModule)) select.addProjection(table.getColumn("lod0_multi_surface_id"));
+		}
+		if (lodFilter.isEnabled(1)) {
+			if (projectionFilter.containsProperty("lod1MultiCurve", waterBodyModule)) select.addProjection(exporter.getGeometryColumn(table.getColumn("lod1_multi_curve")));
+			if (projectionFilter.containsProperty("lod1MultiSurface", waterBodyModule)) select.addProjection(table.getColumn("lod1_multi_surface_id"));
+			if (projectionFilter.containsProperty("lod1Solid", waterBodyModule)) select.addProjection(table.getColumn("lod1_solid_id"));
+		}
+		if (lodFilter.isEnabled(2) && projectionFilter.containsProperty("lod2Solid", waterBodyModule)) select.addProjection(table.getColumn("lod2_solid_id"));
+		if (lodFilter.isEnabled(3) && projectionFilter.containsProperty("lod3Solid", waterBodyModule)) select.addProjection(table.getColumn("lod3_solid_id"));
+		if (lodFilter.isEnabled(4) && projectionFilter.containsProperty("lod4Solid", waterBodyModule)) select.addProjection(table.getColumn("lod4_solid_id"));
 		if (projectionFilter.containsProperty("boundedBy", waterBodyModule)) {
 			Table waterBodToWaterBndSrf = new Table(TableEnum.WATERBOD_TO_WATERBND_SRF.getName(), schema);
 			select.addJoin(JoinFactory.left(waterBodToWaterBndSrf, "waterbody_id", ComparisonName.EQUAL_TO, table.getColumn("id")))
 			.addJoin(JoinFactory.left(waterBoundarySurface, "id", ComparisonName.EQUAL_TO, waterBodToWaterBndSrf.getColumn("waterboundary_surface_id")))
 			.addProjection(waterBoundarySurface.getColumn("id", "ws_id"), waterBoundarySurface.getColumn("objectclass_id", "ws_objectclass_id"));
 			if (boundarySurfaceProjectionFilter.containsProperty("waterLevel", waterBodyModule)) select.addProjection(waterBoundarySurface.getColumn("water_level"), waterBoundarySurface.getColumn("water_level_codespace"));
-			if (boundarySurfaceProjectionFilter.containsProperty("lod2Surface", waterBodyModule)) select.addProjection(waterBoundarySurface.getColumn("lod2_surface_id"));
-			if (boundarySurfaceProjectionFilter.containsProperty("lod3Surface", waterBodyModule)) select.addProjection(waterBoundarySurface.getColumn("lod3_surface_id"));
-			if (boundarySurfaceProjectionFilter.containsProperty("lod4Surface", waterBodyModule)) select.addProjection(waterBoundarySurface.getColumn("lod4_surface_id"));
+			if (lodFilter.isEnabled(2) && boundarySurfaceProjectionFilter.containsProperty("lod2Surface", waterBodyModule)) select.addProjection(waterBoundarySurface.getColumn("lod2_surface_id"));
+			if (lodFilter.isEnabled(3) && boundarySurfaceProjectionFilter.containsProperty("lod3Surface", waterBodyModule)) select.addProjection(waterBoundarySurface.getColumn("lod3_surface_id"));
+			if (lodFilter.isEnabled(4) && boundarySurfaceProjectionFilter.containsProperty("lod4Surface", waterBodyModule)) select.addProjection(waterBoundarySurface.getColumn("lod4_surface_id"));
 		}
 
 		// add joins to ADE hook tables

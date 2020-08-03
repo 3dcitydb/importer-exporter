@@ -77,15 +77,23 @@ public class DBPlantCover extends AbstractFeatureExporter<PlantCover> {
 		if (projectionFilter.containsProperty("function", vegetationModule)) select.addProjection(table.getColumn("function"), table.getColumn("function_codespace"));
 		if (projectionFilter.containsProperty("usage", vegetationModule)) select.addProjection(table.getColumn("usage"), table.getColumn("usage_codespace"));
 		if (projectionFilter.containsProperty("averageHeight", vegetationModule)) select.addProjection(table.getColumn("average_height"), table.getColumn("average_height_unit"));
-		if (projectionFilter.containsProperty("lod1MultiSurface", vegetationModule)) select.addProjection(table.getColumn("lod1_multi_surface_id"));
-		if (projectionFilter.containsProperty("lod2MultiSurface", vegetationModule)) select.addProjection(table.getColumn("lod2_multi_surface_id"));
-		if (projectionFilter.containsProperty("lod3MultiSurface", vegetationModule)) select.addProjection(table.getColumn("lod3_multi_surface_id"));
-		if (projectionFilter.containsProperty("lod4MultiSurface", vegetationModule)) select.addProjection(table.getColumn("lod4_multi_surface_id"));
-		if (projectionFilter.containsProperty("lod1MultiSolid", vegetationModule)) select.addProjection(table.getColumn("lod1_multi_solid_id"));
-		if (projectionFilter.containsProperty("lod2MultiSolid", vegetationModule)) select.addProjection(table.getColumn("lod2_multi_solid_id"));
-		if (projectionFilter.containsProperty("lod3MultiSolid", vegetationModule)) select.addProjection(table.getColumn("lod3_multi_solid_id"));
-		if (projectionFilter.containsProperty("lod4MultiSolid", vegetationModule)) select.addProjection(table.getColumn("lod4_multi_solid_id"));
-		
+		if (lodFilter.isEnabled(1)) {
+			if (projectionFilter.containsProperty("lod1MultiSurface", vegetationModule)) select.addProjection(table.getColumn("lod1_multi_surface_id"));
+			if (projectionFilter.containsProperty("lod1MultiSolid", vegetationModule)) select.addProjection(table.getColumn("lod1_multi_solid_id"));
+		}
+		if (lodFilter.isEnabled(2)) {
+			if (projectionFilter.containsProperty("lod2MultiSurface", vegetationModule)) select.addProjection(table.getColumn("lod2_multi_surface_id"));
+			if (projectionFilter.containsProperty("lod2MultiSolid", vegetationModule)) select.addProjection(table.getColumn("lod2_multi_solid_id"));
+		}
+		if (lodFilter.isEnabled(3)) {
+			if (projectionFilter.containsProperty("lod3MultiSurface", vegetationModule)) select.addProjection(table.getColumn("lod3_multi_surface_id"));
+			if (projectionFilter.containsProperty("lod3MultiSolid", vegetationModule)) select.addProjection(table.getColumn("lod3_multi_solid_id"));
+		}
+		if (lodFilter.isEnabled(4)) {
+			if (projectionFilter.containsProperty("lod4MultiSurface", vegetationModule)) select.addProjection(table.getColumn("lod4_multi_surface_id"));
+			if (projectionFilter.containsProperty("lod4MultiSolid", vegetationModule)) select.addProjection(table.getColumn("lod4_multi_solid_id"));
+		}
+
 		// add joins to ADE hook tables
 		if (exporter.hasADESupport())
 			adeHookTables = addJoinsToADEHookTables(TableEnum.PLANT_COVER, table);

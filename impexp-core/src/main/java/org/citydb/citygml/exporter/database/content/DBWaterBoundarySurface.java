@@ -68,9 +68,9 @@ public class DBWaterBoundarySurface extends AbstractFeatureExporter<AbstractWate
 		table = new Table(TableEnum.WATERBOUNDARY_SURFACE.getName(), schema);
 		select = new Select().addProjection(table.getColumn("id"), table.getColumn("objectclass_id"));
 		if (projectionFilter.containsProperty("waterLevel", waterBodyModule)) select.addProjection(table.getColumn("water_level"), table.getColumn("water_level_codespace"));
-		if (projectionFilter.containsProperty("lod2Surface", waterBodyModule)) select.addProjection(table.getColumn("lod2_surface_id"));
-		if (projectionFilter.containsProperty("lod3Surface", waterBodyModule)) select.addProjection(table.getColumn("lod3_surface_id"));
-		if (projectionFilter.containsProperty("lod4Surface", waterBodyModule)) select.addProjection(table.getColumn("lod4_surface_id"));
+		if (lodFilter.isEnabled(2) && projectionFilter.containsProperty("lod2Surface", waterBodyModule)) select.addProjection(table.getColumn("lod2_surface_id"));
+		if (lodFilter.isEnabled(3) && projectionFilter.containsProperty("lod3Surface", waterBodyModule)) select.addProjection(table.getColumn("lod3_surface_id"));
+		if (lodFilter.isEnabled(4) && projectionFilter.containsProperty("lod4Surface", waterBodyModule)) select.addProjection(table.getColumn("lod4_surface_id"));
 
 		// add joins to ADE hook tables
 		if (exporter.hasADESupport())

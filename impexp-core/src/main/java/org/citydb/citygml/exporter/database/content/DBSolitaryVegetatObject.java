@@ -88,14 +88,22 @@ public class DBSolitaryVegetatObject extends AbstractFeatureExporter<SolitaryVeg
 		if (projectionFilter.containsProperty("height", vegetationModule)) select.addProjection(table.getColumn("height"), table.getColumn("height_unit"));
 		if (projectionFilter.containsProperty("trunkDiameter", vegetationModule)) select.addProjection(table.getColumn("trunk_diameter"), table.getColumn("trunk_diameter_unit"));
 		if (projectionFilter.containsProperty("crownDiameter", vegetationModule)) select.addProjection(table.getColumn("crown_diameter"), table.getColumn("crown_diameter_unit"));
-		if (projectionFilter.containsProperty("lod1Geometry", vegetationModule)) select.addProjection(table.getColumn("lod1_brep_id"), exporter.getGeometryColumn(table.getColumn("lod1_other_geom")));
-		if (projectionFilter.containsProperty("lod2Geometry", vegetationModule)) select.addProjection(table.getColumn("lod2_brep_id"), exporter.getGeometryColumn(table.getColumn("lod2_other_geom")));
-		if (projectionFilter.containsProperty("lod3Geometry", vegetationModule)) select.addProjection(table.getColumn("lod3_brep_id"), exporter.getGeometryColumn(table.getColumn("lod3_other_geom")));
-		if (projectionFilter.containsProperty("lod4Geometry", vegetationModule)) select.addProjection(table.getColumn("lod4_brep_id"), exporter.getGeometryColumn(table.getColumn("lod4_other_geom")));
-		if (projectionFilter.containsProperty("lod1ImplicitRepresentation", vegetationModule)) select.addProjection(table.getColumn("lod1_implicit_rep_id"), exporter.getGeometryColumn(table.getColumn("lod1_implicit_ref_point")), table.getColumn("lod1_implicit_transformation"));
-		if (projectionFilter.containsProperty("lod2ImplicitRepresentation", vegetationModule)) select.addProjection(table.getColumn("lod2_implicit_rep_id"), exporter.getGeometryColumn(table.getColumn("lod2_implicit_ref_point")), table.getColumn("lod2_implicit_transformation"));
-		if (projectionFilter.containsProperty("lod3ImplicitRepresentation", vegetationModule)) select.addProjection(table.getColumn("lod3_implicit_rep_id"), exporter.getGeometryColumn(table.getColumn("lod3_implicit_ref_point")), table.getColumn("lod3_implicit_transformation"));
-		if (projectionFilter.containsProperty("lod4ImplicitRepresentation", vegetationModule)) select.addProjection(table.getColumn("lod4_implicit_rep_id"), exporter.getGeometryColumn(table.getColumn("lod4_implicit_ref_point")), table.getColumn("lod4_implicit_transformation"));
+		if (lodFilter.isEnabled(1)) {
+			if (projectionFilter.containsProperty("lod1Geometry", vegetationModule)) select.addProjection(table.getColumn("lod1_brep_id"), exporter.getGeometryColumn(table.getColumn("lod1_other_geom")));
+			if (projectionFilter.containsProperty("lod1ImplicitRepresentation", vegetationModule)) select.addProjection(table.getColumn("lod1_implicit_rep_id"), exporter.getGeometryColumn(table.getColumn("lod1_implicit_ref_point")), table.getColumn("lod1_implicit_transformation"));
+		}
+		if (lodFilter.isEnabled(2)) {
+			if (projectionFilter.containsProperty("lod2Geometry", vegetationModule)) select.addProjection(table.getColumn("lod2_brep_id"), exporter.getGeometryColumn(table.getColumn("lod2_other_geom")));
+			if (projectionFilter.containsProperty("lod2ImplicitRepresentation", vegetationModule)) select.addProjection(table.getColumn("lod2_implicit_rep_id"), exporter.getGeometryColumn(table.getColumn("lod2_implicit_ref_point")), table.getColumn("lod2_implicit_transformation"));
+		}
+		if (lodFilter.isEnabled(3)) {
+			if (projectionFilter.containsProperty("lod3Geometry", vegetationModule)) select.addProjection(table.getColumn("lod3_brep_id"), exporter.getGeometryColumn(table.getColumn("lod3_other_geom")));
+			if (projectionFilter.containsProperty("lod3ImplicitRepresentation", vegetationModule)) select.addProjection(table.getColumn("lod3_implicit_rep_id"), exporter.getGeometryColumn(table.getColumn("lod3_implicit_ref_point")), table.getColumn("lod3_implicit_transformation"));
+		}
+		if (lodFilter.isEnabled(4)) {
+			if (projectionFilter.containsProperty("lod4Geometry", vegetationModule)) select.addProjection(table.getColumn("lod4_brep_id"), exporter.getGeometryColumn(table.getColumn("lod4_other_geom")));
+			if (projectionFilter.containsProperty("lod4ImplicitRepresentation", vegetationModule)) select.addProjection(table.getColumn("lod4_implicit_rep_id"), exporter.getGeometryColumn(table.getColumn("lod4_implicit_ref_point")), table.getColumn("lod4_implicit_transformation"));
+		}
 
 		// add joins to ADE hook tables
 		if (exporter.hasADESupport())

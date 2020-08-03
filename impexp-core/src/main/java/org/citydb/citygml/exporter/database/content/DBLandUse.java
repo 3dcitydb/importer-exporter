@@ -75,11 +75,11 @@ public class DBLandUse extends AbstractFeatureExporter<LandUse> {
 		if (projectionFilter.containsProperty("class", landUseModule)) select.addProjection(table.getColumn("class"), table.getColumn("class_codespace"));
 		if (projectionFilter.containsProperty("function", landUseModule)) select.addProjection(table.getColumn("function"), table.getColumn("function_codespace"));
 		if (projectionFilter.containsProperty("usage", landUseModule)) select.addProjection(table.getColumn("usage"), table.getColumn("usage_codespace"));
-		if (projectionFilter.containsProperty("lod0MultiSurface", landUseModule)) select.addProjection(table.getColumn("lod0_multi_surface_id"));
-		if (projectionFilter.containsProperty("lod1MultiSurface", landUseModule)) select.addProjection(table.getColumn("lod1_multi_surface_id"));
-		if (projectionFilter.containsProperty("lod2MultiSurface", landUseModule)) select.addProjection(table.getColumn("lod2_multi_surface_id"));
-		if (projectionFilter.containsProperty("lod3MultiSurface", landUseModule)) select.addProjection(table.getColumn("lod3_multi_surface_id"));
-		if (projectionFilter.containsProperty("lod4MultiSurface", landUseModule)) select.addProjection(table.getColumn("lod4_multi_surface_id"));
+		if (lodFilter.isEnabled(0) && projectionFilter.containsProperty("lod0MultiSurface", landUseModule)) select.addProjection(table.getColumn("lod0_multi_surface_id"));
+		if (lodFilter.isEnabled(1) && projectionFilter.containsProperty("lod1MultiSurface", landUseModule)) select.addProjection(table.getColumn("lod1_multi_surface_id"));
+		if (lodFilter.isEnabled(2) && projectionFilter.containsProperty("lod2MultiSurface", landUseModule)) select.addProjection(table.getColumn("lod2_multi_surface_id"));
+		if (lodFilter.isEnabled(3) && projectionFilter.containsProperty("lod3MultiSurface", landUseModule)) select.addProjection(table.getColumn("lod3_multi_surface_id"));
+		if (lodFilter.isEnabled(4) && projectionFilter.containsProperty("lod4MultiSurface", landUseModule)) select.addProjection(table.getColumn("lod4_multi_surface_id"));
 
 		// add joins to ADE hook tables
 		if (exporter.hasADESupport())
