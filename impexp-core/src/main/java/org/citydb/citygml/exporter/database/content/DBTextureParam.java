@@ -57,9 +57,8 @@ import java.util.List;
 
 public class DBTextureParam implements DBExporter {
 	private final CityGMLExportManager exporter;
-
-	private PreparedStatement ps;
-	private AttributeValueSplitter valueSplitter;
+	private final PreparedStatement ps;
+	private final AttributeValueSplitter valueSplitter;
 
 	public DBTextureParam(boolean isGlobal, Connection connection, CacheTable cacheTable, CityGMLExportManager exporter) throws SQLException {
 		this.exporter = exporter;
@@ -134,15 +133,15 @@ public class DBTextureParam implements DBExporter {
 									}
 								}
 
-								List<Double> value = new ArrayList<Double>(coordinates.length);
+								List<Double> value = new ArrayList<>(coordinates.length);
 								for (double coordinate : coordinates)
 									value.add(coordinate);
 
-								TextureCoordinates texureCoordinates = new TextureCoordinates();
-								texureCoordinates.setValue(value);
-								texureCoordinates.setRing(target + '_' + i + '_');
+								TextureCoordinates textureCoordinates = new TextureCoordinates();
+								textureCoordinates.setValue(value);
+								textureCoordinates.setRing(target + '_' + i + '_');
 
-								texCoordList.addTextureCoordinates(texureCoordinates);
+								texCoordList.addTextureCoordinates(textureCoordinates);
 							}
 
 							textureAssociation.setTextureParameterization(texCoordList);

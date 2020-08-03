@@ -27,19 +27,16 @@
  */
 package org.citydb.citygml.exporter.database.content;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-
 import org.citydb.citygml.common.database.cache.CacheTable;
 import org.citydb.citygml.exporter.CityGMLExportException;
 import org.citydb.config.Config;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.database.schema.TableEnum;
+import org.citydb.sqlbuilder.expression.PlaceHolder;
+import org.citydb.sqlbuilder.schema.Table;
+import org.citydb.sqlbuilder.select.Select;
+import org.citydb.sqlbuilder.select.operator.comparison.ComparisonFactory;
+import org.citydb.sqlbuilder.select.projection.ConstantColumn;
 import org.citygml4j.model.gml.GMLClass;
 import org.citygml4j.model.gml.geometry.AbstractGeometry;
 import org.citygml4j.model.gml.geometry.aggregates.MultiSolid;
@@ -63,20 +60,21 @@ import org.citygml4j.model.gml.geometry.primitives.TrianglePatchArrayProperty;
 import org.citygml4j.model.gml.geometry.primitives.TriangulatedSurface;
 import org.citygml4j.util.gmlid.DefaultGMLIdManager;
 
-import org.citydb.sqlbuilder.expression.PlaceHolder;
-import org.citydb.sqlbuilder.schema.Table;
-import org.citydb.sqlbuilder.select.Select;
-import org.citydb.sqlbuilder.select.operator.comparison.ComparisonFactory;
-import org.citydb.sqlbuilder.select.projection.ConstantColumn;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 public class DBSurfaceGeometry implements DBExporter {
 	private final CityGMLExportManager exporter;
+	private final PreparedStatement psSelect;
+	private final boolean exportAppearance;
+	private final boolean useXLink;
 
-	private PreparedStatement psSelect;
 	private PreparedStatement psImport;
-
-	private boolean exportAppearance;
-	private boolean useXLink;
 	private boolean appendOldGmlId;
 	private boolean isImplicit;
 	private String gmlIdPrefix;
@@ -146,8 +144,8 @@ public class DBSurfaceGeometry implements DBExporter {
 					try {
 						geometry = exporter.getDatabaseAdapter().getGeometryConverter().getPolygon(object);
 					} catch (Exception e) {
-						exporter.logOrThrowErrorMessage(new StringBuilder("Skipping ").append(exporter.getGeometrySignature(GMLClass.POLYGON, id))
-								.append(": ").append(e.getMessage()).toString());
+						exporter.logOrThrowErrorMessage("Skipping " + exporter.getGeometrySignature(GMLClass.POLYGON, id) +
+								": " + e.getMessage());
 						continue;
 					}
 				}
@@ -179,11 +177,10 @@ public class DBSurfaceGeometry implements DBExporter {
 
 	private SurfaceGeometry rebuildGeometry(GeometryNode geomNode, boolean isSetOrientableSurface, boolean wasXlink) throws CityGMLExportException, SQLException {
 		// try and determine the geometry type
-		GMLClass surfaceGeometryType = null;
+		GMLClass surfaceGeometryType;
 		if (geomNode.geometry != null) {
 			surfaceGeometryType = GMLClass.POLYGON;
 		} else {
-
 			if (geomNode.childNodes == null || geomNode.childNodes.size() == 0)
 				return null;
 
@@ -192,9 +189,9 @@ public class DBSurfaceGeometry implements DBExporter {
 					surfaceGeometryType = GMLClass.COMPOSITE_SURFACE;
 				else if (geomNode.isSolid && !geomNode.isComposite)
 					surfaceGeometryType = GMLClass.SOLID;
-				else if (geomNode.isSolid && geomNode.isComposite)
+				else if (geomNode.isSolid)
 					surfaceGeometryType = GMLClass.COMPOSITE_SOLID;
-				else if (!geomNode.isSolid && !geomNode.isComposite) {
+				else {
 					boolean isMultiSolid = true;
 					for (GeometryNode childNode : geomNode.childNodes) {
 						if (!childNode.isSolid){
@@ -211,10 +208,6 @@ public class DBSurfaceGeometry implements DBExporter {
 			} else
 				surfaceGeometryType = GMLClass.TRIANGULATED_SURFACE;
 		}
-
-		// return if we cannot identify the geometry
-		if (surfaceGeometryType == null)
-			return null;
 
 		// check for xlinks
 		if (geomNode.gmlId != null) {
@@ -237,7 +230,7 @@ public class DBSurfaceGeometry implements DBExporter {
 						geomNode.isXlink = false;
 						String gmlId = DefaultGMLIdManager.getInstance().generateUUID(gmlIdPrefix);
 						if (appendOldGmlId)
-							gmlId = new StringBuilder(gmlId).append("-").append(geomNode.gmlId).toString();
+							gmlId = gmlId + "-" + geomNode.gmlId;
 
 						geomNode.gmlId = gmlId;
 						return rebuildGeometry(geomNode, isSetOrientableSurface, true);
@@ -271,13 +264,13 @@ public class DBSurfaceGeometry implements DBExporter {
 			// we suppose we have one outer ring and one or more inner rings
 			boolean isExterior = true;
 			for (int ringIndex = 0; ringIndex < geomNode.geometry.getNumElements(); ringIndex++) {
-				List<Double> values = null;
+				List<Double> values;
 
 				// check whether we have to reverse the coordinate order
 				if (!geomNode.isReverse) { 
 					values = geomNode.geometry.getCoordinatesAsList(ringIndex);
 				} else {
-					values = new ArrayList<Double>(geomNode.geometry.getCoordinates(ringIndex).length);
+					values = new ArrayList<>(geomNode.geometry.getCoordinates(ringIndex).length);
 					double[] coordinates = geomNode.geometry.getCoordinates(ringIndex);
 					for (int i = coordinates.length - 3; i >= 0; i -= 3) {
 						values.add(coordinates[i]);
@@ -615,7 +608,7 @@ public class DBSurfaceGeometry implements DBExporter {
 		}
 	}
 
-	private class GeometryNode {
+	private static class GeometryNode {
 		protected long id;
 		protected String gmlId;
 		protected long parentId;
@@ -628,25 +621,19 @@ public class DBSurfaceGeometry implements DBExporter {
 		protected List<GeometryNode> childNodes;
 
 		public GeometryNode() {
-			childNodes = new ArrayList<GeometryNode>();
+			childNodes = new ArrayList<>();
 		}
 	}
 
-	private class GeometryTree {
+	private static class GeometryTree {
+		private final HashMap<Long, GeometryNode> geometryTree = new HashMap<>();
 		long root;
-		private HashMap<Long, GeometryNode> geometryTree;
-
-		public GeometryTree() {
-			geometryTree = new HashMap<Long, GeometryNode>();
-		}
 
 		public void insertNode(GeometryNode geomNode, long parentId) {
-
 			if (parentId == 0)
 				root = geomNode.id;
 
 			if (geometryTree.containsKey(geomNode.id)) {
-
 				// we have inserted a pseudo node previously
 				// so fill that one with life...
 				GeometryNode pseudoNode = geometryTree.get(geomNode.id);
@@ -661,7 +648,6 @@ public class DBSurfaceGeometry implements DBExporter {
 				pseudoNode.geometry = geomNode.geometry;
 
 				geomNode = pseudoNode;
-
 			} else {
 				// identify hierarchy nodes and place them
 				// into the tree
@@ -672,7 +658,6 @@ public class DBSurfaceGeometry implements DBExporter {
 			// make the node known to its parent...
 			if (parentId != 0) {
 				GeometryNode parentNode = geometryTree.get(parentId);
-
 				if (parentNode == null) {
 					// there is no entry so far, so lets create a
 					// pseudo node

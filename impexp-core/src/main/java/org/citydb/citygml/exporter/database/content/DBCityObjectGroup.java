@@ -58,13 +58,12 @@ import java.util.Set;
 
 public class DBCityObjectGroup extends AbstractTypeExporter {
 	private final PreparedStatement ps;
+	private final DBSurfaceGeometry surfaceGeometryExporter;
+	private final DBCityObject cityObjectExporter;
+	private final GMLConverter gmlConverter;
 
-	private DBSurfaceGeometry surfaceGeometryExporter;
-	private DBCityObject cityObjectExporter;
-	private GMLConverter gmlConverter;
-
-	private String groupModule;
-	private AttributeValueSplitter valueSplitter;
+	private final String groupModule;
+	private final AttributeValueSplitter valueSplitter;
 	private Set<String> adeHookTables;
 
 	public DBCityObjectGroup(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
@@ -168,7 +167,7 @@ public class DBCityObjectGroup extends AbstractTypeExporter {
 							} else {
 								GeometryObject geometry = exporter.getDatabaseAdapter().getGeometryConverter().getGeometry(geometryObj);
 								if (geometry != null)
-									geometryProperty = new GeometryProperty<AbstractGeometry>(gmlConverter.getPointOrCurveGeometry(geometry, true));
+									geometryProperty = new GeometryProperty<>(gmlConverter.getPointOrCurveGeometry(geometry, true));
 							}
 
 							if (geometryProperty != null)

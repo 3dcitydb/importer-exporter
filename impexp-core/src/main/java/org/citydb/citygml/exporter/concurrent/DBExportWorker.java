@@ -179,6 +179,10 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 				// cleanup appearances
 				exporter.cleanupAppearances(topLevelObject);
 
+				// trigger export of textures if required
+				if (exporter.isLazyTextureExport())
+					exporter.triggerLazyTextureExport(topLevelObject);
+
 				// invoke export plugins
 				if (!plugins.isEmpty()) {
 					for (CityGMLExportExtension plugin : plugins) {

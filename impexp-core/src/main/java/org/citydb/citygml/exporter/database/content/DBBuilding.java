@@ -76,26 +76,24 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.regex.Pattern;
 
 public class DBBuilding extends AbstractFeatureExporter<AbstractBuilding> {
-	private DBSurfaceGeometry geometryExporter;
-	private DBCityObject cityObjectExporter;
-	private DBThematicSurface thematicSurfaceExporter;
-	private DBBuildingInstallation buildingInstallationExporter;
-	private DBRoom roomExporter;
-	private DBAddress addressExporter;
-	private GMLConverter gmlConverter;
+	private final DBSurfaceGeometry geometryExporter;
+	private final DBCityObject cityObjectExporter;
+	private final DBThematicSurface thematicSurfaceExporter;
+	private final DBBuildingInstallation buildingInstallationExporter;
+	private final DBRoom roomExporter;
+	private final DBAddress addressExporter;
+	private final GMLConverter gmlConverter;
 
-	private String buildingModule;
-	private LodFilter lodFilter;
-	private AttributeValueSplitter valueSplitter;
-
-	private boolean hasObjectClassIdColumn;
+	private final String buildingModule;
+	private final LodFilter lodFilter;
+	private final AttributeValueSplitter valueSplitter;
+	private final boolean hasObjectClassIdColumn;
 	private Set<String> buildingADEHookTables;
 	private Set<String> addressADEHookTables;
 
@@ -193,7 +191,7 @@ public class DBBuilding extends AbstractFeatureExporter<AbstractBuilding> {
 
 					building = buildings.get(buildingId);
 					if (building == null) {
-						FeatureType featureType = null;						
+						FeatureType featureType;
 						if (buildingId == id && root != null) {
 							building = root;
 							featureType = rootType;
@@ -348,10 +346,10 @@ public class DBBuilding extends AbstractFeatureExporter<AbstractBuilding> {
 						while (lodIterator.hasNext()) {
 							int lod = lodIterator.next();
 
-							if (!projectionFilter.containsProperty(new StringBuilder("lod").append(lod).append("TerrainIntersection").toString(), buildingModule))
+							if (!projectionFilter.containsProperty("lod" + lod + "TerrainIntersection", buildingModule))
 								continue;
 
-							Object terrainIntersectionObj = rs.getObject(new StringBuilder("lod").append(lod).append("_terrain_intersection").toString());
+							Object terrainIntersectionObj = rs.getObject("lod" + lod + "_terrain_intersection");
 							if (rs.wasNull())
 								continue;
 
@@ -382,10 +380,10 @@ public class DBBuilding extends AbstractFeatureExporter<AbstractBuilding> {
 						while (lodIterator.hasNext()) {
 							int lod = lodIterator.next();
 
-							if (!projectionFilter.containsProperty(new StringBuilder("lod").append(lod).append("MultiCurve").toString(), buildingModule))
+							if (!projectionFilter.containsProperty("lod" + lod + "MultiCurve", buildingModule))
 								continue;
 
-							Object multiCurveObj = rs.getObject(new StringBuilder("lod").append(lod).append("_multi_curve").toString());
+							Object multiCurveObj = rs.getObject("lod" + lod + "_multi_curve");
 							if (rs.wasNull())
 								continue;
 
@@ -445,10 +443,10 @@ public class DBBuilding extends AbstractFeatureExporter<AbstractBuilding> {
 						while (lodIterator.hasNext()) {
 							int lod = lodIterator.next();
 
-							if (!projectionFilter.containsProperty(new StringBuilder("lod").append(lod).append("Solid").toString(), buildingModule))
+							if (!projectionFilter.containsProperty("lod" + lod + "Solid", buildingModule))
 								continue;
 
-							long surfaceGeometryId = rs.getLong(new StringBuilder("lod").append(lod).append("_solid_id").toString());
+							long surfaceGeometryId = rs.getLong("lod" + lod + "_solid_id");
 							if (rs.wasNull())
 								continue;
 
@@ -482,10 +480,10 @@ public class DBBuilding extends AbstractFeatureExporter<AbstractBuilding> {
 						while (lodIterator.hasNext()) {
 							int lod = lodIterator.next();
 
-							if (!projectionFilter.containsProperty(new StringBuilder("lod").append(lod).append("MultiSurface").toString(), buildingModule))
+							if (!projectionFilter.containsProperty("lod" + lod + "MultiSurface", buildingModule))
 								continue;
 
-							long surfaceGeometryId = rs.getLong(new StringBuilder("lod").append(lod).append("_multi_surface_id").toString());
+							long surfaceGeometryId = rs.getLong("lod" + lod + "_multi_surface_id");
 							if (rs.wasNull())
 								continue;
 
@@ -532,7 +530,7 @@ public class DBBuilding extends AbstractFeatureExporter<AbstractBuilding> {
 				if (projectionFilter.containsProperty("address", buildingModule)) {
 					long addressId = rs.getLong("addr_id");
 					if (!rs.wasNull()) {
-						AddressProperty addressProperty = addressExporter.doExport(addressId, rs);
+						AddressProperty addressProperty = addressExporter.doExport(rs);
 						if (addressProperty != null) {
 							building.addAddress(addressProperty);
 
@@ -577,12 +575,8 @@ public class DBBuilding extends AbstractFeatureExporter<AbstractBuilding> {
 
 			// check whether lod filter is satisfied
 			if (!lodFilter.preservesGeometry()) {
-				for (AbstractBuilding tmp : result) {
-					for (Iterator<BuildingPartProperty> iter = tmp.getConsistsOfBuildingPart().iterator(); iter.hasNext(); ) {
-						if (!exporter.satisfiesLodFilter(iter.next().getBuildingPart()))
-							iter.remove();
-					}
-				}
+				for (AbstractBuilding tmp : result)
+					tmp.getConsistsOfBuildingPart().removeIf(buildingPartProperty -> !exporter.satisfiesLodFilter(buildingPartProperty.getBuildingPart()));
 			}
 			
 			return result;

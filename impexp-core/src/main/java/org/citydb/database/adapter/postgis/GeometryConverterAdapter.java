@@ -32,6 +32,7 @@ import org.citydb.config.geometry.GeometryObject;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.adapter.AbstractGeometryConverterAdapter;
 import org.postgis.Geometry;
+import org.postgis.GeometryBuilder;
 import org.postgis.LineString;
 import org.postgis.LinearRing;
 import org.postgis.MultiLineString;
@@ -413,7 +414,7 @@ public class GeometryConverterAdapter extends AbstractGeometryConverterAdapter {
 		case MULTI_POINT:
 		case ENVELOPE:
 		case MULTI_POLYGON:
-			geometry = new PGgeometry(PGgeometry.geomFromString(convertToEWKT(geomObj)));
+			geometry = new PGgeometry(GeometryBuilder.geomFromString(convertToEWKT(geomObj)));
 			break;
 		case SOLID:
 			// the current PostGIS JDBC driver lacks support for geometry objects of type PolyhedralSurface

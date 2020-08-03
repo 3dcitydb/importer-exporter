@@ -1,7 +1,7 @@
 -- 3D City Database - The Open Source CityGML Database
 -- http://www.3dcitydb.org/
 -- 
--- Copyright 2013 - 2019
+-- Copyright 2013 - 2020
 -- Chair of Geoinformatics
 -- Technical University of Munich, Germany
 -- https://www.gis.bgu.tum.de/
@@ -38,10 +38,10 @@ SELECT CASE WHEN upper(:'ACCESS_MODE') = 'RW' THEN 'read-write' ELSE 'read-only'
 
 \echo 'Granting ':priviliges_type' priviliges on schema "':SCHEMA_NAME'" to user "':USERNAME'" ...'
 
-SET tmp.dbname TO :DBNAME;
-SET tmp.username TO :USERNAME;
-SET tmp.schema_name TO :SCHEMA_NAME;
-SET tmp.access_mode TO :ACCESS_MODE;
+SET tmp.dbname TO :"DBNAME";
+SET tmp.username TO :"USERNAME";
+SET tmp.schema_name TO :"SCHEMA_NAME";
+SET tmp.access_mode TO :"ACCESS_MODE";
 
 DO $$
 DECLARE priviliges_type text;

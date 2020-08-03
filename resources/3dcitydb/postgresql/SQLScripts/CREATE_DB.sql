@@ -1,7 +1,7 @@
 -- 3D City Database - The Open Source CityGML Database
 -- http://www.3dcitydb.org/
 -- 
--- Copyright 2013 - 2019
+-- Copyright 2013 - 2020
 -- Chair of Geoinformatics
 -- Technical University of Munich, Germany
 -- https://www.gis.bgu.tum.de/
@@ -33,7 +33,20 @@ SET client_min_messages TO WARNING;
 \set GMLSRSNAME :gmlsrsname
 
 --// check if the PostGIS extension is available
-SELECT postgis_version();
+SELECT postgis_lib_version() AS postgis_version;
+\gset
+
+--// check if the PostGIS raster extension is available
+SELECT EXISTS(SELECT 1 AS create_raster FROM pg_extension WHERE extname = 'postgis_raster') AS postgis_raster_exists;
+\gset
+
+--// break if the PostGIS version >= 3 and the PostGIS raster extension is not installed
+SELECT CASE WHEN :'postgis_version' < '3' OR :'postgis_raster_exists' = 't'
+  THEN 'UTIL/HINTS/DO_NOTHING.sql'
+  ELSE 'UTIL/HINTS/HINT_ON_MISSING_RASTER_EXTENSION.sql'
+  END AS do_action_for_raster_extension_check;
+\gset
+\ir :do_action_for_raster_extension_check
 
 --// create schema
 CREATE SCHEMA citydb;
@@ -46,31 +59,31 @@ SET search_path TO citydb, :current_path;
 --// create TABLES, SEQUENCES, CONSTRAINTS, INDEXES
 \echo
 \echo 'Setting up database schema of 3DCityDB instance ...'
-\i SCHEMA/SCHEMA.sql
+\ir SCHEMA/SCHEMA.sql
 
 --// fill tables OBJECTCLASS
-\i SCHEMA/OBJECTCLASS/OBJECTCLASS_INSTANCES.sql
-\i SCHEMA/OBJECTCLASS/AGGREGATION_INFO_INSTANCES.sql
+\ir SCHEMA/OBJECTCLASS/OBJECTCLASS_INSTANCES.sql
+\ir SCHEMA/OBJECTCLASS/AGGREGATION_INFO_INSTANCES.sql
 
 --// create schema FUNCTIONS
-\i SCHEMA/OBJECTCLASS/OBJCLASS.sql
-\i SCHEMA/ENVELOPE/ENVELOPE.sql
-\i SCHEMA/DELETE/DELETE.sql
+\ir SCHEMA/OBJECTCLASS/OBJCLASS.sql
+\ir SCHEMA/ENVELOPE/ENVELOPE.sql
+\ir SCHEMA/DELETE/DELETE.sql
 
 --// create CITYDB_PKG (additional schema with PL/pgSQL-Functions)
 \echo
 \echo 'Creating additional schema ''citydb_pkg'' ...'
 CREATE SCHEMA citydb_pkg;
 
-\i CITYDB_PKG/TYPES/TYPES.sql
-\i CITYDB_PKG/UTIL/UTIL.sql
-\i CITYDB_PKG/CONSTRAINT/CONSTRAINT.sql
-\i CITYDB_PKG/INDEX/IDX.sql
-\i CITYDB_PKG/SRS/SRS.sql
-\i CITYDB_PKG/STATISTICS/STAT.sql
+\ir CITYDB_PKG/TYPES/TYPES.sql
+\ir CITYDB_PKG/UTIL/UTIL.sql
+\ir CITYDB_PKG/CONSTRAINT/CONSTRAINT.sql
+\ir CITYDB_PKG/INDEX/IDX.sql
+\ir CITYDB_PKG/SRS/SRS.sql
+\ir CITYDB_PKG/STATISTICS/STAT.sql
 
 --// create and fill INDEX_TABLE
-\i SCHEMA/INDEX_TABLE/INDEX_TABLE.sql
+\ir SCHEMA/INDEX_TABLE/INDEX_TABLE.sql
 
 --// update search_path on database level
 ALTER DATABASE :"DBNAME" SET search_path TO citydb, citydb_pkg, :current_path;

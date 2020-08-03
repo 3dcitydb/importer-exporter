@@ -610,9 +610,9 @@ public class ImpExp {
 	}
 
 	private void printUsage(CmdLineParser parser, PrintStream out) {
-		out.println("Usage: java -jar lib/impexp-client-<version>.jar [-options]");
+		out.println("Usage: impexp [-options]");
 		out.println("            (default: to execute gui version)");
-		out.println("   or  java -jar lib/impexp-client-<version>.jar -shell [-command] [-options]");
+		out.println("   or  impexp -shell [-command] [-options]");
 		out.println("            (to execute cli version)");
 		out.println();
 		out.println("where options include:");

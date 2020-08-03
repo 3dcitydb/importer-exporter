@@ -27,21 +27,16 @@
  */
 package org.citydb.citygml.exporter.database.content;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-
 import org.citydb.citygml.exporter.CityGMLExportException;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.database.schema.TableEnum;
 import org.citydb.database.schema.mapping.FeatureType;
 import org.citydb.query.filter.projection.CombinedProjectionFilter;
 import org.citydb.query.filter.projection.ProjectionFilter;
+import org.citydb.sqlbuilder.schema.Table;
+import org.citydb.sqlbuilder.select.Select;
+import org.citydb.sqlbuilder.select.join.JoinFactory;
+import org.citydb.sqlbuilder.select.operator.comparison.ComparisonName;
 import org.citygml4j.model.citygml.relief.AbstractReliefComponent;
 import org.citygml4j.model.citygml.relief.BreaklineRelief;
 import org.citygml4j.model.citygml.relief.MassPointRelief;
@@ -56,17 +51,21 @@ import org.citygml4j.model.gml.geometry.primitives.TriangulatedSurface;
 import org.citygml4j.model.gml.measures.Length;
 import org.citygml4j.model.module.citygml.CityGMLModuleType;
 
-import org.citydb.sqlbuilder.schema.Table;
-import org.citydb.sqlbuilder.select.Select;
-import org.citydb.sqlbuilder.select.join.JoinFactory;
-import org.citydb.sqlbuilder.select.operator.comparison.ComparisonName;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
 public class DBReliefComponent extends AbstractFeatureExporter<AbstractReliefComponent> {
-	private DBSurfaceGeometry geometryExporter;
-	private DBCityObject cityObjectExporter;
-	private GMLConverter gmlConverter;
+	private final DBSurfaceGeometry geometryExporter;
+	private final DBCityObject cityObjectExporter;
+	private final GMLConverter gmlConverter;
 
-	private String reliefModule;
+	private final String reliefModule;
 	private Set<String> adeHookTables;
 
 	public DBReliefComponent(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
@@ -113,8 +112,8 @@ public class DBReliefComponent extends AbstractFeatureExporter<AbstractReliefCom
 
 			while (rs.next()) {	
 				long componentId = rs.getLong("id");
-				AbstractReliefComponent component = null;
-				FeatureType featureType = null;
+				AbstractReliefComponent component;
+				FeatureType featureType;
 
 				if (componentId == id & root != null) {
 					component = root;
@@ -215,8 +214,7 @@ public class DBReliefComponent extends AbstractFeatureExporter<AbstractReliefCom
 								tin.setBreakLines(property);
 						}
 
-						if (controlPoints != null)
-							tin.setControlPoint(gmlConverter.getControlPoint(controlPoints, false));
+						tin.setControlPoint(gmlConverter.getControlPoint(controlPoints, false));
 					}
 
 					tinRelief.setTin(new TinProperty(triangulatedSurface));

@@ -1,7 +1,7 @@
 -- 3D City Database - The Open Source CityGML Database
 -- http://www.3dcitydb.org/
 -- 
--- Copyright 2013 - 2019
+-- Copyright 2013 - 2020
 -- Chair of Geoinformatics
 -- Technical University of Munich, Germany
 -- https://www.gis.bgu.tum.de/
@@ -174,16 +174,12 @@ SELECT
 FROM
   pg_constraint c
 JOIN
-  pg_namespace n
-  ON n.oid = c.connamespace
-JOIN
   pg_trigger t
   ON t.tgconstraint = c.oid
 WHERE
   c.contype = 'f'
-  AND c.confrelid = 'surface_geometry'::regclass::oid
+  AND c.confrelid = (lower($2) || '.surface_geometry')::regclass::oid
   AND c.confdeltype <> 'c'
-  AND n.nspname = $2;
 $$
 LANGUAGE sql STRICT;
 

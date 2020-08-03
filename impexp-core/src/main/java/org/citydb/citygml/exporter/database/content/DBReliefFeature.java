@@ -65,15 +65,14 @@ import java.util.List;
 import java.util.Set;
 
 public class DBReliefFeature extends AbstractFeatureExporter<ReliefFeature> {
-	private DBSurfaceGeometry geometryExporter;
-	private DBCityObject cityObjectExporter;
 	private GMLConverter gmlConverter;
+	private final String reliefModule;
+	private final LodFilter lodFilter;
+	private final boolean hasObjectClassIdColumn;
+	private final boolean useXLink;
+	private final DBCityObject cityObjectExporter;
 
-	private String reliefModule;
-	private LodFilter lodFilter;
-	private boolean hasObjectClassIdColumn;
-
-	private boolean useXLink;
+	private DBSurfaceGeometry geometryExporter;
 	private Set<String> reliefADEHookTables;
 	private Set<String> componentADEHookTables;
 
@@ -145,7 +144,7 @@ public class DBReliefFeature extends AbstractFeatureExporter<ReliefFeature> {
 
 					reliefFeature = reliefFeatures.get(reliefFeatureId);
 					if (reliefFeature == null) {
-						FeatureType featureType = null;						
+						FeatureType featureType;
 						if (reliefFeatureId == id & root != null) {
 							reliefFeature = root;
 							featureType = rootType;
@@ -310,8 +309,7 @@ public class DBReliefFeature extends AbstractFeatureExporter<ReliefFeature> {
 								tin.setBreakLines(property);
 						}
 
-						if (controlPoints != null)
-							tin.setControlPoint(gmlConverter.getControlPoint(controlPoints, false));
+						tin.setControlPoint(gmlConverter.getControlPoint(controlPoints, false));
 					}
 
 					tinRelief.setTin(new TinProperty(triangulatedSurface));

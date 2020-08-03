@@ -31,10 +31,23 @@ import org.citydb.config.i18n.Language;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.util.GuiUtil;
 
-import javax.swing.*;
-import java.awt.*;
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 
 @SuppressWarnings("serial")
 public class ReadMeDialog extends JDialog {
@@ -64,7 +77,7 @@ public class ReadMeDialog extends JDialog {
 
 				try {
 					BufferedReader in = new BufferedReader(
-							new InputStreamReader(this.getClass().getResourceAsStream("/META-INF/README.txt"), "UTF-8"));
+							new InputStreamReader(this.getClass().getResourceAsStream("/META-INF/README.txt"), StandardCharsets.UTF_8));
 
 					// read address template
 					StringBuilder builder = new StringBuilder();

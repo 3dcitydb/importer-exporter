@@ -54,8 +54,8 @@ import java.sql.Timestamp;
 import java.util.HashMap;
 
 public class DBCityObjectGenericAttrib implements DBExporter {
-	private PreparedStatement ps;
-	private HashMap<Long, GenericAttributeSet> attributeSets;
+	private final PreparedStatement ps;
+	private final HashMap<Long, GenericAttributeSet> attributeSets;
 
 	public DBCityObjectGenericAttrib(Connection connection, CityGMLExportManager exporter) throws SQLException {
 		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
@@ -69,7 +69,7 @@ public class DBCityObjectGenericAttrib implements DBExporter {
 		.addSelection(ComparisonFactory.equalTo(table.getColumn("cityobject_id"), new PlaceHolder<>()));
 		ps = connection.prepareStatement(select.toString());
 
-		attributeSets = new HashMap<Long, GenericAttributeSet>();
+		attributeSets = new HashMap<>();
 	}
 
 	protected void doExport(AbstractCityObject cityObject, long cityObjectId, ProjectionFilter projectionFilter) throws SQLException {
@@ -134,7 +134,7 @@ public class DBCityObjectGenericAttrib implements DBExporter {
 					}
 					break;
 				case MEASURE_ATTRIBUTE:
-					Double measureVal = rs.getDouble(7);
+					double measureVal = rs.getDouble(7);
 					if (!rs.wasNull()) {
 						genericAttribute = new MeasureAttribute();
 						Measure measure = new Measure();

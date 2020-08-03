@@ -27,16 +27,6 @@
  */
 package org.citydb.citygml.exporter.database.content;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-
 import org.citydb.citygml.exporter.CityGMLExportException;
 import org.citydb.citygml.exporter.util.AttributeValueSplitter;
 import org.citydb.citygml.exporter.util.AttributeValueSplitter.SplitValue;
@@ -47,6 +37,8 @@ import org.citydb.query.filter.lod.LodFilter;
 import org.citydb.query.filter.lod.LodIterator;
 import org.citydb.query.filter.projection.CombinedProjectionFilter;
 import org.citydb.query.filter.projection.ProjectionFilter;
+import org.citydb.sqlbuilder.schema.Table;
+import org.citydb.sqlbuilder.select.Select;
 import org.citygml4j.model.citygml.bridge.AbstractBoundarySurface;
 import org.citygml4j.model.citygml.bridge.AbstractBridge;
 import org.citygml4j.model.citygml.bridge.BoundarySurfaceProperty;
@@ -61,19 +53,26 @@ import org.citygml4j.model.gml.geometry.AbstractGeometry;
 import org.citygml4j.model.gml.geometry.GeometryProperty;
 import org.citygml4j.model.module.citygml.CityGMLModuleType;
 
-import org.citydb.sqlbuilder.schema.Table;
-import org.citydb.sqlbuilder.select.Select;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 
 public class DBBridgeInstallation extends AbstractFeatureExporter<AbstractCityObject> {
-	private DBSurfaceGeometry geometryExporter;
-	private DBCityObject cityObjectReader;
-	private DBBridgeThematicSurface thematicSurfaceExporter;
-	private DBImplicitGeometry implicitGeometryExporter;
-	private GMLConverter gmlConverter;
+	private final DBSurfaceGeometry geometryExporter;
+	private final DBCityObject cityObjectReader;
+	private final DBBridgeThematicSurface thematicSurfaceExporter;
+	private final DBImplicitGeometry implicitGeometryExporter;
+	private final GMLConverter gmlConverter;
 
-	private String bridgeModule;
-	private LodFilter lodFilter;
-	private AttributeValueSplitter valueSplitter;
+	private final String bridgeModule;
+	private final LodFilter lodFilter;
+	private final AttributeValueSplitter valueSplitter;
 	private Set<String> adeHookTables;
 	
 	public DBBridgeInstallation(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
@@ -108,6 +107,7 @@ public class DBBridgeInstallation extends AbstractFeatureExporter<AbstractCityOb
 		cityObjectReader = exporter.getExporter(DBCityObject.class);
 		thematicSurfaceExporter = exporter.getExporter(DBBridgeThematicSurface.class);
 		geometryExporter = exporter.getExporter(DBSurfaceGeometry.class);
+		implicitGeometryExporter = exporter.getExporter(DBImplicitGeometry.class);
 		gmlConverter = exporter.getGMLConverter();			
 		valueSplitter = exporter.getAttributeValueSplitter();		
 	}
@@ -126,7 +126,7 @@ public class DBBridgeInstallation extends AbstractFeatureExporter<AbstractCityOb
 		if (!exterior && !interior)
 			return Collections.emptyList();
 		
-		PreparedStatement ps = null;
+		PreparedStatement ps;
 		if (!exterior)
 			ps = getOrCreateStatement("bridge_id", IntBridgeInstallation.class);
 		else if (!interior)
@@ -153,8 +153,8 @@ public class DBBridgeInstallation extends AbstractFeatureExporter<AbstractCityOb
 
 			while (rs.next()) {
 				long installationId = rs.getLong("id");
-				AbstractCityObject installation = null;
-				FeatureType featureType = null;
+				AbstractCityObject installation;
+				FeatureType featureType;
 				
 				if (installationId == id && root != null) {
 					installation = root;
@@ -233,11 +233,11 @@ public class DBBridgeInstallation extends AbstractFeatureExporter<AbstractCityOb
 				while (lodIterator.hasNext()) {
 					int lod = lodIterator.next();
 
-					if (!projectionFilter.containsProperty(new StringBuilder("lod").append(lod).append("Geometry").toString(), bridgeModule))
+					if (!projectionFilter.containsProperty("lod" + lod + "Geometry", bridgeModule))
 						continue;
 
-					long geometryId = rs.getLong(new StringBuilder("lod").append(lod).append("_brep_id").toString());
-					Object geometryObj = rs.getObject(new StringBuilder("lod").append(lod).append("_other_geom").toString());
+					long geometryId = rs.getLong("lod" + lod + "_brep_id");
+					Object geometryObj = rs.getObject("lod" + lod + "_other_geom");
 					if (geometryId == 0 && geometryObj == null)
 						continue;
 
@@ -281,20 +281,20 @@ public class DBBridgeInstallation extends AbstractFeatureExporter<AbstractCityOb
 				while (lodIterator.hasNext()) {
 					int lod = lodIterator.next();
 
-					if (!projectionFilter.containsProperty(new StringBuilder("lod").append(lod).append("ImplicitRepresentation").toString(), bridgeModule))
+					if (!projectionFilter.containsProperty("lod" + lod + "ImplicitRepresentation", bridgeModule))
 						continue;
 
 					// get implicit geometry details
-					long implicitGeometryId = rs.getLong(new StringBuilder("lod").append(lod).append("_implicit_rep_id").toString());
+					long implicitGeometryId = rs.getLong("lod" + lod + "_implicit_rep_id");
 					if (rs.wasNull())
 						continue;
 
 					GeometryObject referencePoint = null;
-					Object referencePointObj = rs.getObject(new StringBuilder("lod").append(lod).append("_implicit_ref_point").toString());
+					Object referencePointObj = rs.getObject("lod" + lod + "_implicit_ref_point");
 					if (!rs.wasNull())
 						referencePoint = exporter.getDatabaseAdapter().getGeometryConverter().getPoint(referencePointObj);
 
-					String transformationMatrix = rs.getString(new StringBuilder("lod").append(lod).append("_implicit_transformation").toString());
+					String transformationMatrix = rs.getString("lod" + lod + "_implicit_transformation");
 
 					ImplicitGeometry implicit = implicitGeometryExporter.doExport(implicitGeometryId, referencePoint, transformationMatrix);
 					if (implicit != null) {

@@ -3,18 +3,22 @@ import org.apache.tools.ant.filters.ReplaceTokens
 apply from: 'properties.gradle'
 
 subprojects {
-    apply plugin: 'java'
+    apply plugin: 'java-library'
     apply plugin: 'maven-publish'
 
     group 'org.citydb'
     version '4.3.0-b20200318.1407'
 
-    sourceCompatibility = 1.8
-    compileJava.options.encoding = 'UTF-8'
+    java {
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        compileJava.options.encoding = 'UTF-8'
+        withJavadocJar()
+        withSourcesJar()
+    }
 
     repositories {
         maven {
-            url 'http://download.osgeo.org/webdav/geotools'
+            url 'https://repo.osgeo.org/repository/release'
         }
         maven {
             url 'https://dl.bintray.com/3dcitydb/maven'
@@ -50,6 +54,10 @@ subprojects {
             addStringOption('Xdoclint:none', '-quiet')
         }
 
+        if (JavaVersion.current().isJava9Compatible()) {
+            options.addBooleanOption('html5', true)
+        }
+
         doFirst {
             copy {
                 from("$rootDir/resources/javadoc/overview.html") {
@@ -78,22 +86,10 @@ subprojects {
         }
     }
 
-    task sourcesJar(type: Jar, dependsOn: classes) {
-        archiveClassifier = 'sources'
-        from sourceSets.main.allSource
-    }
-
-    task javadocJar(type: Jar, dependsOn: javadoc) {
-        archiveClassifier = 'javadoc'
-        from javadoc.destinationDir
-    }
-
     publishing {
         publications {
             mavenJava(MavenPublication) {
                 from components.java
-                artifact sourcesJar
-                artifact javadocJar
                 pom {
                     name = project.name
                     url = project.citydbVcsUrl

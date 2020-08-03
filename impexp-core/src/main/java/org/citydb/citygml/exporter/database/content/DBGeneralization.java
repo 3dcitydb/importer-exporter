@@ -86,7 +86,7 @@ public class DBGeneralization implements DBExporter {
 
 	protected void doExport(AbstractCityObject cityObject, long cityObjectId, HashSet<Long> generalizesTos) throws CityGMLExportException, SQLException {
 		// create select statement
-		Select select = null;
+		Select select;
 		try {
 			select = builder.buildQuery(generalizationQuery);
 		} catch (QueryBuildException e) {
@@ -97,11 +97,10 @@ public class DBGeneralization implements DBExporter {
 		if (generalizesTos.size() == 1)
 			select.addSelection(ComparisonFactory.equalTo((Column)select.getProjection().get(0), new LongLiteral(generalizesTos.iterator().next())));
 		else
-			select.addSelection(ComparisonFactory.in((Column)select.getProjection().get(0), new LiteralList(generalizesTos.toArray(new Long[generalizesTos.size()]))));	
+			select.addSelection(ComparisonFactory.in((Column)select.getProjection().get(0), new LiteralList(generalizesTos.toArray(new Long[0]))));
 
 		try (PreparedStatement stmt = exporter.getDatabaseAdapter().getSQLAdapter().prepareStatement(select, connection);
 				ResultSet rs = stmt.executeQuery()) {
-			
 			while (rs.next()) {
 				String gmlId = rs.getString("gmlid");			
 				if (rs.wasNull())

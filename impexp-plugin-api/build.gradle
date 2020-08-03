@@ -3,7 +3,7 @@ plugins {
 }
 
 dependencies {
-    compile project(':impexp-config')
+    api project(':impexp-config')
 }
 
 bintray {

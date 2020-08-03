@@ -17,11 +17,12 @@ Version @version@ (@date@)
 4. System requirements
 5. (Un)Installation
 6. Running the application
-7. Cooperation partners and supporters
-8. Active Developers
-9. Contact
-10. Websites
-11. Disclaimer
+7. Documentation
+8. Cooperation partners and supporters
+9. Active Developers
+10. Contact
+11. Websites
+12. Disclaimer
 
 
 1. License
@@ -60,7 +61,7 @@ loading and extracting 3D city model data.
   in Digital Earth Browsers, 3D GIS, and computer graphics software
 * Generic KML information balloons
 * Export of thematic object data into tables. Supported data formats are
-  CSV, Microsoft Excel, and direct upload into Google Spreadsheets
+  CSV and Microsoft Excel
 * Resolving and preservation of forward and backwards XLinks in 
   CityGML datasets
 * Full support of 3D Coordinate Reference Systems (CRS) and 3D 
@@ -83,14 +84,14 @@ third party applications.
 * Java JRE or JDK >= 1.8
 * @citydbName@ version @citydbVersion@ on
   - Oracle Spatial DBMS >= 10G R2 with Spatial or Locator option
-  - PostgreSQL DBMS >= 9.3 with PostGIS extension >= 2.0
+  - PostgreSQL DBMS >= 9.6 with PostGIS extension >= 2.3
   
 The @name@ can be run on any platform 
 providing appropriate Java support. It has been tested on the 
 following platforms:
   - Microsoft Windows XP, Vista, Windows 7, 8, 10
-  - Apple Mac OS X 10.9, 10.11, macOS 10.12, 10.13
-  - Ubuntu 14 - 18
+  - Apple Mac OS X and macOS
+  - Ubuntu 9 - 18
 
 
 5. (Un)Installation
@@ -103,7 +104,7 @@ installation process. Afterwards, you can immediately run the application
 (see next section).
 
 When you successfully install the @name@,
-an uninstaller is automatically generated in the 'uninstaller' subfolder
+an uninstaller is automatically generated in the "uninstaller" subfolder
 of the installation directory. Please use this uninstaller in order to remove
 the @name@ application files from your
 computer. Alternatively, you can simply delete the entire installation
@@ -116,34 +117,25 @@ directory.
 For running the @name@ use one of the
 following two options:
 
-a) Recommended:
-   Use the start scripts to launch the application. The start scripts
-   are located in the "bin" folder of the installation directory.
+a) Use the start scripts to launch the application with a graphical user
+   interface. The start scripts are located in the installation directory.
    During setup you can additionally choose to create shortcuts for the
-   start scripts on your desktop and in the start menu of your
-   preferred OS.
+   start scripts on your desktop and in the start menu of your preferred OS.
 
    Please execute the start script suitable for your platform:
    - @appName@.bat   (Microsoft Windows family)
    - @appName@       (UNIX/Linux family, macOS)
 
-   On most platforms, double-clicking the start script or its shortcut
+   On many platforms, double-clicking the start script or its shortcut
    runs the @name@.
-
-   PLEASE NOTE:
-   The start scripts set the initial heap size of the Java Virtual
-   Machine (JVM) to 1GB using the -Xms parameter of the JVM. This value
-   has been chosen to be reasonable for most platforms. Please edit the
-   start scripts in case you need to adapt the default values (e.g.,
-   in order to increase the available main memory).
 
    For some UNIX/Linux distributions, you will have to run the start
    script from within a shell environment. Please open your favorite shell
    and first check whether execution rights are correctly set for the
    start script.
 
-   Change to the "bin" folder and enter the following to make the start
-   script executable for the owner of the file:
+   Change to the installation directory and enter the following to make
+   the start script executable for the owner of the file:
 
        chmod u+x @appName@
 
@@ -151,30 +143,48 @@ a) Recommended:
 
        ./@appName@
 
-b) Alternatively, you can directly run the @jar@
-   from within a shell environment without using the start scripts. The
-   runnable JAR archive is located in the "lib" subfolder of the
-   installation folder.
+b) The @name@ also offers a
+   Command Line Interface (CLI). The CLI can be used to run single operations
+   like a CityGML import or export and allows for easily embedding the tool
+   in batch processing workflows and third party applications.
 
-   Open a shell, change to the installation folder and type the following:
+   The CLI scripts are located in the "@cliDir@" subfolder of the installation
+   directory. Open a shell, change to the "@cliDir@" folder and use the CLI
+   script suitable for your platform:
+   - @cliName@.bat   (Microsoft Windows family)
+   - @cliName@       (UNIX/Linux family, macOS)
 
-       java -jar lib/@jar@ [-options]
+   To show the help message and all available options, simply type the
+   following command:
 
-   Make sure to define reasonable values for the available main memory.
-   Otherwise you might quickly run into main memory issues due
-   to restrictive JVM default values.
+       @cliName@ -help
 
-   This is also the recommended way to run the program in CLI mode without
-   a graphical user interface. Simply add the "-shell" program argument to
-   the above shell command:
+   To run an operation without a graphical user interface, use the -shell
+   option and the option for the operation. For example, type the following
+   command to import a CityGML file:
 
-       java -jar lib/@jar@ -shell [-options]
+       @cliName@ -shell -import [-options] /path/to/CityGML.gml
 
-   Type "java -jar lib/@jar@ -help" to get a list of
-   the available program arguments.
+   To launch the graphical user interface, simply run the CLI script without
+   additional options.
+
+   PLEASE NOTE:
+   The CLI scripts set the initial heap size of the Java Virtual Machine (JVM)
+   to 1GB using the -Xms parameter of the JVM. This value has been chosen to
+   be reasonable for most platforms. Please edit the CLI scripts in case you
+   need to adapt the default values (e.g., in order to increase the available
+   main memory).
+
+
+7. Documentation
+----------------------------
+A complete and comprehensive documentation on the @citydbName@
+and the @name@ is available online at:
+
+@docUrl@
 
   
-7. Cooperation partners and supporters
+8. Cooperation partners and supporters
 --------------------------------------
 
 The @name@ v@version@ has been developed by
@@ -188,7 +198,7 @@ and with the support from the following cooperation partners:
   http://www.moss.de/
   
    
-8. Active Developers
+9. Active Developers
 --------------------
 
 Claus Nagel <cnagel@virtualcitysystems.de>
@@ -203,14 +213,14 @@ Version @version@ is based on earlier versions of the
 documentation for the list of all contributors to previous versions. 
 
 
-9. Contact
+10. Contact
 ----------
 
 cnagel@virtualcitysystems.de
 thomas.kolbe@tum.de
 
 
-10. Websites
+11. Websites
 ------------
 
 Official @citydbName@ website: 
@@ -225,7 +235,7 @@ http://www.citygmlwiki.org
 http://www.opengeospatial.org/standards/citygml
 
 
-11. Disclaimer
+12. Disclaimer
 --------------
 
 THIS SOFTWARE IS PROVIDED BY THE CHAIR OF GEOINFORMATION FROM TU MUNICH

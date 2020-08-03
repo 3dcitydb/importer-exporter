@@ -27,17 +27,6 @@
  */
 package org.citydb.citygml.exporter.database.content;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map.Entry;
-import java.util.Set;
-
 import org.citydb.citygml.exporter.CityGMLExportException;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.database.schema.TableEnum;
@@ -46,6 +35,10 @@ import org.citydb.query.filter.lod.LodFilter;
 import org.citydb.query.filter.lod.LodIterator;
 import org.citydb.query.filter.projection.CombinedProjectionFilter;
 import org.citydb.query.filter.projection.ProjectionFilter;
+import org.citydb.sqlbuilder.schema.Table;
+import org.citydb.sqlbuilder.select.Select;
+import org.citydb.sqlbuilder.select.join.JoinFactory;
+import org.citydb.sqlbuilder.select.operator.comparison.ComparisonName;
 import org.citygml4j.model.citygml.building.AbstractOpening;
 import org.citygml4j.model.citygml.building.Door;
 import org.citygml4j.model.citygml.core.Address;
@@ -57,19 +50,25 @@ import org.citygml4j.model.gml.geometry.aggregates.MultiSurface;
 import org.citygml4j.model.gml.geometry.aggregates.MultiSurfaceProperty;
 import org.citygml4j.model.module.citygml.CityGMLModuleType;
 
-import org.citydb.sqlbuilder.schema.Table;
-import org.citydb.sqlbuilder.select.Select;
-import org.citydb.sqlbuilder.select.join.JoinFactory;
-import org.citydb.sqlbuilder.select.operator.comparison.ComparisonName;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.Set;
 
 public class DBOpening extends AbstractFeatureExporter<AbstractOpening> {
-	private DBSurfaceGeometry geometryExporter;
-	private DBCityObject cityObjectExporter;
-	private DBImplicitGeometry implicitGeometryExporter;
-	private DBAddress addressExporter;
+	private final DBSurfaceGeometry geometryExporter;
+	private final DBCityObject cityObjectExporter;
+	private final DBImplicitGeometry implicitGeometryExporter;
+	private final DBAddress addressExporter;
 
-	private String buildingModule;
-	private LodFilter lodFilter;
+	private final String buildingModule;
+	private final LodFilter lodFilter;
 	private Set<String> openingADEHookTables;
 	private Set<String> addressADEHookTables;
 
@@ -129,7 +128,7 @@ public class DBOpening extends AbstractFeatureExporter<AbstractOpening> {
 
 					opening = openings.get(openingId);
 					if (opening == null) {
-						FeatureType featureType = null;
+						FeatureType featureType;
 						if (openingId == id && root != null) {
 							opening = root;
 							featureType = rootType;
@@ -157,10 +156,10 @@ public class DBOpening extends AbstractFeatureExporter<AbstractOpening> {
 						while (lodIterator.hasNext()) {
 							int lod = lodIterator.next();
 
-							if (!projectionFilter.containsProperty(new StringBuilder("lod").append(lod).append("MultiSurface").toString(), buildingModule))
+							if (!projectionFilter.containsProperty("lod" + lod + "MultiSurface", buildingModule))
 								continue;
 
-							long lodMultiSurfaceId = rs.getLong(new StringBuilder("lod").append(lod).append("_multi_surface_id").toString());
+							long lodMultiSurfaceId = rs.getLong("lod" + lod + "_multi_surface_id");
 							if (rs.wasNull()) 
 								continue;
 
@@ -187,20 +186,20 @@ public class DBOpening extends AbstractFeatureExporter<AbstractOpening> {
 						while (lodIterator.hasNext()) {
 							int lod = lodIterator.next();
 
-							if (!projectionFilter.containsProperty(new StringBuilder("lod").append(lod).append("ImplicitRepresentation").toString(), buildingModule))
+							if (!projectionFilter.containsProperty("lod" + lod + "ImplicitRepresentation", buildingModule))
 								continue;
 
 							// get implicit geometry details
-							long implicitGeometryId = rs.getLong(new StringBuilder("lod").append(lod).append("_implicit_rep_id").toString());
+							long implicitGeometryId = rs.getLong("lod" + lod + "_implicit_rep_id");
 							if (rs.wasNull())
 								continue;
 
 							GeometryObject referencePoint = null;
-							Object referencePointObj = rs.getObject(new StringBuilder("lod").append(lod).append("_implicit_ref_point").toString());
+							Object referencePointObj = rs.getObject("lod" + lod + "_implicit_ref_point");
 							if (!rs.wasNull())
 								referencePoint = exporter.getDatabaseAdapter().getGeometryConverter().getPoint(referencePointObj);
 
-							String transformationMatrix = rs.getString(new StringBuilder("lod").append(lod).append("_implicit_transformation").toString());
+							String transformationMatrix = rs.getString("lod" + lod + "_implicit_transformation");
 
 							ImplicitGeometry implicit = implicitGeometryExporter.doExport(implicitGeometryId, referencePoint, transformationMatrix);
 							if (implicit != null) {
@@ -234,7 +233,7 @@ public class DBOpening extends AbstractFeatureExporter<AbstractOpening> {
 				if (opening instanceof Door && projectionFilter.containsProperty("address", buildingModule)) {
 					long addressId = rs.getLong("address_id");
 					if (!rs.wasNull()) {
-						AddressProperty addressProperty = addressExporter.doExport(addressId, rs);
+						AddressProperty addressProperty = addressExporter.doExport(rs);
 						if (addressProperty != null) {
 							((Door)opening).addAddress(addressProperty);
 
