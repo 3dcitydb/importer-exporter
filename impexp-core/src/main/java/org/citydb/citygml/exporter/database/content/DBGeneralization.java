@@ -28,11 +28,7 @@
 package org.citydb.citygml.exporter.database.content;
 
 import org.citydb.citygml.exporter.CityGMLExportException;
-import org.citydb.config.geometry.GeometryObject;
-import org.citydb.config.geometry.Point;
 import org.citydb.database.schema.TableEnum;
-import org.citydb.query.Query;
-import org.citydb.query.filter.FilterException;
 import org.citydb.sqlbuilder.expression.LiteralSelectExpression;
 import org.citydb.sqlbuilder.schema.Table;
 import org.citydb.sqlbuilder.select.Select;
@@ -44,64 +40,62 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 
 public class DBGeneralization implements DBExporter {
 	private final Connection connection;
 	private final CityGMLExportManager exporter;
-	private final Query query;
 	private final Select select;
+	private final Map<Long, AbstractCityObject> batches;
 
 	private PreparedStatement ps;
 
-	public DBGeneralization(Connection connection, Query query, CityGMLExportManager exporter) {
+	public DBGeneralization(Connection connection, CityGMLExportManager exporter) {
 		this.connection = connection;
 		this.exporter = exporter;
-		this.query = query;
 
+		batches = new HashMap<>();
 		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 		String subQuery = "select * from " + exporter.getDatabaseAdapter().getSQLAdapter().resolveDatabaseOperationName("unnest") + "(?)";
 
 		Table table = new Table(TableEnum.CITYOBJECT.getName(), schema);
-		select = new Select().addProjection(table.getColumn("gmlid"))
+		select = new Select().addProjection(table.getColumn("id"), table.getColumn("gmlid"))
 				.addSelection(ComparisonFactory.in(table.getColumn("id"), new LiteralSelectExpression(subQuery)));
-
-		if (query.isSetTiling()) select.addProjection(table.getColumn("envelope"));
 	}
 
-	protected void doExport(AbstractCityObject cityObject, Set<Long> generalizesTos) throws CityGMLExportException, SQLException {
-		if (ps == null)
-			ps = connection.prepareStatement(select.toString());
+	protected void addBatch(long generalizesToId, AbstractCityObject cityObject) {
+		batches.put(generalizesToId, cityObject);
+	}
 
-		ps.setArray(1, exporter.getDatabaseAdapter().getSQLAdapter().createIdArray(generalizesTos.toArray(new Long[0]), connection));
+	protected void executeBatch() throws CityGMLExportException, SQLException {
+		if (!batches.isEmpty()) {
+			try {
+				if (ps == null)
+					ps = connection.prepareStatement(select.toString());
 
-		try (ResultSet rs = ps.executeQuery()) {
-			while (rs.next()) {
-				String gmlId = rs.getString(1);
-				if (rs.wasNull())
-					continue;
+				ps.setArray(1, exporter.getDatabaseAdapter().getSQLAdapter().createIdArray(batches.keySet().toArray(new Long[0]), connection));
 
-				if (query.isSetTiling()) {
-					Object object = rs.getObject(2);
-					if (!rs.wasNull()) {
-						GeometryObject geomObj = exporter.getDatabaseAdapter().getGeometryConverter().getEnvelope(object);
-						double[] coordinates = geomObj.getCoordinates(0);
+				try (ResultSet rs = ps.executeQuery()) {
+					while (rs.next()) {
+						long id = rs.getLong(1);
+						String gmlId = rs.getString(2);
+						if (rs.wasNull())
+							continue;
 
-						try {
-							if (!query.getTiling().getActiveTile().isOnTile(new Point(
-									(coordinates[0] + coordinates[3]) / 2.0,
-									(coordinates[1] + coordinates[4]) / 2.0), 
-									exporter.getDatabaseAdapter()))
-								continue;
-						} catch (FilterException e) {
-							throw new CityGMLExportException("Failed to apply the tiling filter to generalization objects.", e);
+						AbstractCityObject cityObject = batches.get(id);
+						if (cityObject == null) {
+							exporter.logOrThrowErrorMessage("Failed to assign generalization with id " + id + " to a city object.");
+							continue;
 						}
-					}	
-				}
 
-				GeneralizationRelation generalizesTo = new GeneralizationRelation();
-				generalizesTo.setHref("#" + gmlId);
-				cityObject.addGeneralizesTo(generalizesTo);
+						GeneralizationRelation generalizesTo = new GeneralizationRelation();
+						generalizesTo.setHref("#" + gmlId);
+						cityObject.addGeneralizesTo(generalizesTo);
+					}
+				}
+			} finally {
+				batches.clear();
 			}
 		}
 	}

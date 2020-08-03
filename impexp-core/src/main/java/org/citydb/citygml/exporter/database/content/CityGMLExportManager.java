@@ -864,7 +864,7 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 			} else if (type == DBCityObject.class)
 				exporter = new DBCityObject(connection, query, this);
 			else if (type == DBGeneralization.class)
-				exporter = new DBGeneralization(connection, query, this);
+				exporter = new DBGeneralization(connection, this);
 			else if (type == DBCityObjectGenericAttrib.class)
 				exporter = new DBCityObjectGenericAttrib(connection, this);
 			else if (type == DBAddress.class)

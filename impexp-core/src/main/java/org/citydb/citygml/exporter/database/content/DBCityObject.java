@@ -201,7 +201,7 @@ public class DBCityObject implements DBExporter {
 							currentObjectId = objectId;
 							context = batches.get(objectId);
 							if (context != null) {
-								if (context.initialize() && !initializeObject(context, rs))
+								if (context.initialize() && !initializeObject(objectId, context, rs))
 									return false;
 							} else {
 								exporter.logOrThrowErrorMessage("Failed to read city object for id " + objectId + ".");
@@ -212,14 +212,10 @@ public class DBCityObject implements DBExporter {
 						if (context.isCityObject)
 							addProperties(context, rs);
 					}
-
-					for (Map.Entry<Long, ObjectContext> entry : batches.entrySet())
-						postprocess(entry.getValue(), entry.getKey());
 				}
 			}
 
-			if (exportAppearance)
-				appearanceExporter.executeBatch();
+			postprocess();
 
 			return true;
 		} finally {
@@ -240,7 +236,7 @@ public class DBCityObject implements DBExporter {
 
 		try (ResultSet rs = psSelect.executeQuery()) {
 			if (rs.next()) {
-				if (!initializeObject(context, rs))
+				if (!initializeObject(objectId, context, rs))
 					return false;
 
 				if (context.isCityObject) {
@@ -248,18 +244,15 @@ public class DBCityObject implements DBExporter {
 						addProperties(context, rs);
 					} while (rs.next());
 				}
-
-				postprocess(context, objectId);
 			}
 
-			if (exportAppearance)
-				appearanceExporter.executeBatch();
-
+			postprocess();
+			
 			return true;
 		}
 	}
 
-	protected boolean initializeObject(ObjectContext context, ResultSet rs) throws CityGMLExportException, SQLException {
+	protected boolean initializeObject(long objectId, ObjectContext context, ResultSet rs) throws CityGMLExportException, SQLException {
 		boolean setEnvelope = !context.isCityObject || (context.projectionFilter.containsProperty("boundedBy", gmlModule)
 				&& (exporter.getExportConfig().getCityGMLOptions().getGMLEnvelope().getFeatureMode() == FeatureEnvelopeMode.ALL
 				|| (exporter.getExportConfig().getCityGMLOptions().getGMLEnvelope().getFeatureMode() == FeatureEnvelopeMode.TOP_LEVEL && context.isTopLevel)));
@@ -427,6 +420,10 @@ public class DBCityObject implements DBExporter {
 			}
 		}
 
+		// ADE-specific extensions
+		if (exporter.hasADESupport())
+			exporter.delegateToADEExporter(context.object, objectId, context.objectType, context.projectionFilter);
+
 		return true;
 	}
 
@@ -442,9 +439,9 @@ public class DBCityObject implements DBExporter {
 
 		// core:generalizesTo
 		if (context.projectionFilter.containsProperty("generalizesTo", coreModule)) {
-			long generalizesTo = rs.getLong("generalizes_to_id");
-			if (!rs.wasNull())
-				context.generalizesTos.add(generalizesTo);
+			long generalizesToId = rs.getLong("generalizes_to_id");
+			if (!rs.wasNull() && context.generalizesTos.add(generalizesToId))
+				generalizesToExporter.addBatch(generalizesToId, cityObject);
 		}
 
 		// core:externalReference
@@ -478,18 +475,11 @@ public class DBCityObject implements DBExporter {
 			genericAttributeExporter.doExport(genericAttributeId, cityObject, context.projectionFilter, "ga", context.genericAttributeSets, rs);
 	}
 
-	private void postprocess(ObjectContext context, long cityObjectId) throws CityGMLExportException, SQLException {
-		if (context.isCityObject) {
-			AbstractCityObject cityObject = (AbstractCityObject) context.object;
+	private void postprocess() throws CityGMLExportException, SQLException {
+		if (exportAppearance)
+			appearanceExporter.executeBatch();
 
-			// export generalization features
-			if (!context.generalizesTos.isEmpty())
-				generalizesToExporter.doExport(cityObject, context.generalizesTos);
-		}
-
-		// ADE-specific extensions
-		if (exporter.hasADESupport())
-			exporter.delegateToADEExporter(context.object, cityObjectId, context.objectType, context.projectionFilter);
+		generalizesToExporter.executeBatch();
 	}
 
 	@Override
