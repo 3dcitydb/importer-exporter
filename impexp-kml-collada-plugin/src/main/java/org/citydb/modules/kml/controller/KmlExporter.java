@@ -82,19 +82,7 @@ import org.citydb.event.global.StatusDialogMessage;
 import org.citydb.event.global.StatusDialogTitle;
 import org.citydb.log.Logger;
 import org.citydb.modules.kml.concurrent.KmlExportWorkerFactory;
-import org.citydb.modules.kml.database.Bridge;
-import org.citydb.modules.kml.database.Building;
-import org.citydb.modules.kml.database.CityFurniture;
-import org.citydb.modules.kml.database.CityObjectGroup;
-import org.citydb.modules.kml.database.GenericCityObject;
-import org.citydb.modules.kml.database.KmlSplitter;
-import org.citydb.modules.kml.database.KmlSplittingResult;
-import org.citydb.modules.kml.database.LandUse;
-import org.citydb.modules.kml.database.Relief;
-import org.citydb.modules.kml.database.SolitaryVegetationObject;
-import org.citydb.modules.kml.database.Transportation;
-import org.citydb.modules.kml.database.Tunnel;
-import org.citydb.modules.kml.database.WaterBody;
+import org.citydb.modules.kml.database.*;
 import org.citydb.modules.kml.datatype.TypeAttributeValueEnum;
 import org.citydb.modules.kml.util.CityObject4JSON;
 import org.citydb.modules.kml.util.ExportTracker;
@@ -135,11 +123,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.zip.ZipEntry;
@@ -358,6 +342,13 @@ public class KmlExporter implements EventHandler {
 		
 		if (!ADEExtensionManager.getInstance().getEnabledExtensions().isEmpty())
 			log.warn("NOTE: This operation does not work on ADE features.");
+
+		// directory to store texture images
+		// (in order to prevent textures of implicit geometries repeatedly exported, but also for all textures)
+		File implicitGeometryAppearanceDirectory = new File(path, "Appearances");
+		if (! implicitGeometryAppearanceDirectory.exists()) {
+			implicitGeometryAppearanceDirectory.mkdir();
+		}
 
 		long start = System.currentTimeMillis();
 

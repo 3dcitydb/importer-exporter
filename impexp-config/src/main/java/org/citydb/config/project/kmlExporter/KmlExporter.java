@@ -79,7 +79,6 @@ import java.util.Locale;
 
 		"lod0FootprintMode",
 		"exportAsKmz",
-		"exportGltfV1",
 		"showBoundingBox",
 		"showTileBorders",
 		"exportEmptyTiles",
@@ -94,6 +93,9 @@ import java.util.Locale;
 		"pathOfGltfConverter",
 		"notCreateColladaFiles",
 		"embedTexturesInGltfFiles",
+		"exportGltfBinary",
+		"enableGltfDracoCompression",
+		"exportGltfV1",
 		"appearanceTheme",
 		"altitudeMode",
 		"altitudeOffsetMode",
@@ -178,8 +180,10 @@ public class KmlExporter {
 	private boolean createGltfModel;
 	private String pathOfGltfConverter;
 	private boolean notCreateColladaFiles;
-	private boolean embedTexturesInGltfFiles;
 	private boolean exportAsKmz;
+	private boolean embedTexturesInGltfFiles;
+	private boolean exportGltfBinary;
+	private boolean enableGltfDracoCompression;
 	private boolean exportGltfV1;
 	private String appearanceTheme;
 	private AltitudeMode altitudeMode;
@@ -247,7 +251,10 @@ public class KmlExporter {
 		callbackNameJSONP = "handle_3DCityDB_data";
 		createGltfModel = false;
 		notCreateColladaFiles = false;
-		embedTexturesInGltfFiles = false;
+		embedTexturesInGltfFiles = true;
+		exportGltfBinary = false;
+		enableGltfDracoCompression = true;
+		exportGltfV1 = false;
 
 		pathOfGltfConverter = "contribs" + File.separator + "collada2gltf";
 		String osName = System.getProperty("os.name").toLowerCase(Locale.ENGLISH);
@@ -455,7 +462,23 @@ public class KmlExporter {
 	}
 
 	public boolean isEmbedTexturesInGltfFiles() {
-		return embedTexturesInGltfFiles;
+		return this.embedTexturesInGltfFiles;
+	}
+
+	public void setExportGltfBinary(boolean exportGltfBinary) {
+		this.exportGltfBinary = exportGltfBinary;
+	}
+
+	public boolean isExportGltfBinary() {
+		return this.exportGltfBinary;
+	}
+
+	public void setEnableGltfDracoCompression(boolean enableGltfDracoCompression) {
+		this.enableGltfDracoCompression = enableGltfDracoCompression;
+	}
+
+	public boolean isEnableGltfDracoCompression() {
+		return this.enableGltfDracoCompression;
 	}
 
 	public void setShowBoundingBox(boolean showBoundingBox) {

@@ -130,6 +130,7 @@ import java.awt.RenderingHints;
 import java.awt.Transparency;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.sql.Connection;
@@ -137,15 +138,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import java.util.StringTokenizer;
+import java.util.*;
 
 public abstract class KmlGenericObject {
 	private final Logger log = Logger.getInstance();
@@ -201,6 +194,8 @@ public abstract class KmlGenericObject {
 
 	private SimpleDateFormat dateFormatter;
 	private final ImageReader imageReader;
+
+	protected String implicitId;
 
 	protected KmlGenericObject(Connection connection,
 			Query query,
@@ -271,6 +266,8 @@ public abstract class KmlGenericObject {
 	public String getGmlId() {
 		return gmlId;
 	}
+
+	public String getImplicitId() { return this.implicitId; }
 
 	protected void updateOrigins(double x, double y, double z) {
 		// update origin and list of lowest points
@@ -1143,7 +1140,8 @@ public abstract class KmlGenericObject {
 				croppedImageWidth = endX - startX;
 				croppedImageHeight = endY - startY;	
 				BufferedImage imageToCrop = texImage.getBufferedImage().getSubimage(startX, startY, croppedImageWidth, croppedImageHeight);
-				String newImageUri = sgId + "_" + texImageUri;
+				// texImageUri is already unique within the database
+				String newImageUri = this.implicitId + "_" + texImageUri;
 				texImageUris.put(sgId, newImageUri);
 				newTexImages.put(newImageUri, new TextureImage(imageToCrop));
 			}
@@ -1209,7 +1207,7 @@ public abstract class KmlGenericObject {
 				}
 				vertexInfoIterator = vertexInfoIterator.getNextVertexInfo();
 			}
-		} 
+		}
 
 		tiInfo.setTexCoordinates(tiInfoCoords);
 
@@ -1218,6 +1216,31 @@ public abstract class KmlGenericObject {
 
 		// create texture atlases
 		taCreator.convert(tiInfo, packingAlgorithm);
+
+		// make tex image names and uris unique to each implici objects to remove redundancies
+		HashMap<String, TextureImage> newTexImages = new HashMap<>();
+		Iterator it = tiInfo.getTexImages().entrySet().iterator();
+		int i = 0;
+		while (it.hasNext()) {
+			// change tex image names
+			Map.Entry<String, TextureImage> iPair = (Map.Entry) it.next();
+			String oldTexFileName = iPair.getKey();
+			String imageType = oldTexFileName.substring(oldTexFileName.lastIndexOf('.') + 1);
+			String newTexFileName = "textureAtlas_" + (this.implicitId == null ? "" : this.implicitId + "_") + (i++) + "." + imageType;
+			newTexImages.put(newTexFileName, iPair.getValue());
+
+			// change tex uris
+			Iterator jt = tiInfo.getTexImageURIs().entrySet().iterator();
+			while (jt.hasNext()) {
+				Map.Entry<Object, String> jPair = (Map.Entry) jt.next();
+				if (jPair.getValue().equals(oldTexFileName)) {
+					jPair.setValue(newTexFileName);
+				}
+			}
+		}
+		// replace the tex image hashmap
+		texImages = newTexImages;
+		tiInfo.setTexImages(newTexImages);
 
 		sgIdIterator = sgIdSet.iterator();
 		while (sgIdIterator.hasNext()) {
@@ -1808,6 +1831,7 @@ public abstract class KmlGenericObject {
 			}
 
 			boolean isImplicit = transformer != null;
+			this.implicitId = (isImplicit ? (rootId + "") : null);
 
 			// skip closure surfaces
 			int surfaceTypeID = _rs.getInt("objectclass_id");
@@ -1944,6 +1968,8 @@ public abstract class KmlGenericObject {
 
 							// textures have priority
 							if (texImageUri != null && texImageUri.trim().length() != 0 && texCoordsObject != null && surfaceInfo != null) {
+								String imageType = texImageUri.substring(texImageUri.lastIndexOf('.') + 1);
+								texImageUri = "img_" + textureImageId + "." + imageType;
 								GeometryObject texCoordsGeometry = geometryConverterAdapter.getPolygon(texCoordsObject);
 								texImageUri = texImageUri.replaceAll(" ", "_"); //replace spaces with underscores
 								hasTexture = true;
@@ -1953,7 +1979,7 @@ public abstract class KmlGenericObject {
 								texImageUri = "_" + texImageUri.substring(fileSeparatorIndex + 1); // for example: _tex4712047.jpeg
 
 								if ((getUnsupportedTexImageId(texImageUri) == -1) && (getTexImage(texImageUri) == null)) { 
-									byte[] imageBytes = textureExportAdapter.getInByteArray(textureImageId, texImageUri);
+									byte[] imageBytes = textureExportAdapter.getInByteArray(textureImageId, rs.getString("tex_image_uri"));
 									if (imageBytes != null) {
 										imageReader.setSupportRGB(generateTextureAtlas);
 
@@ -2079,15 +2105,17 @@ public abstract class KmlGenericObject {
 		model.setOrientation(orientation);
 
 		LinkType link = kmlFactory.createLinkType();
-		if (config.getProject().getKmlExporter().isOneFilePerObject() &&
-				!config.getProject().getKmlExporter().isExportAsKmz() &&
-				query.isSetTiling())
-		{
-			link.setHref(getGmlId() + ".dae");
-		}
-		else {
-			// File.separator would be wrong here, it MUST be "/"
-			link.setHref(getId() + "/" + getGmlId() + ".dae");
+		if (this.implicitId != null) {
+			link.setHref(".." + File.separator + ".." + File.separator + ".." + File.separator + "ImplicitObjects" + File.separator + this.implicitId + ".dae");
+		} else {
+			if (config.getProject().getKmlExporter().isOneFilePerObject() &&
+					!config.getProject().getKmlExporter().isExportAsKmz() &&
+					query.isSetTiling()) {
+				link.setHref(getGmlId() + ".dae");
+			} else {
+				// File.separator would be wrong here, it MUST be "/"
+				link.setHref(getId() + "/" + getGmlId() + ".dae");
+			}
 		}
 		model.setLink(link);
 
