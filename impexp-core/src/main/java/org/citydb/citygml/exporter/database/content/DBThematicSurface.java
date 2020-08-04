@@ -93,7 +93,7 @@ public class DBThematicSurface extends AbstractFeatureExporter<AbstractBoundaryS
 		Table opening = new Table(TableEnum.OPENING.getName(), schema);
 		Table address = new Table(TableEnum.ADDRESS.getName(), schema);
 
-		select = new Select().addProjection(table.getColumn("id", "tsid"), table.getColumn("objectclass_id"));
+		select = new Select().addProjection(table.getColumn("id"), table.getColumn("objectclass_id"));
 		if (lodFilter.isEnabled(2) && boundarySurfaceProjectionFilter.containsProperty("lod2MultiSurface", buildingModule)) select.addProjection(table.getColumn("lod2_multi_surface_id"));
 		if (lodFilter.isEnabled(3) && boundarySurfaceProjectionFilter.containsProperty("lod3MultiSurface", buildingModule)) select.addProjection(table.getColumn("lod3_multi_surface_id"));
 		if (lodFilter.isEnabled(4) && boundarySurfaceProjectionFilter.containsProperty("lod4MultiSurface", buildingModule)) select.addProjection(table.getColumn("lod4_multi_surface_id"));
@@ -151,7 +151,7 @@ public class DBThematicSurface extends AbstractFeatureExporter<AbstractBoundaryS
 			Map<Long, AbstractBoundarySurface> boundarySurfaces = new HashMap<>();
 
 			while (rs.next()) {
-				long boundarySurfaceId = rs.getLong("tsid");
+				long boundarySurfaceId = rs.getLong("id");
 
 				if (boundarySurfaceId != currentBoundarySurfaceId || boundarySurface == null) {
 					currentBoundarySurfaceId = boundarySurfaceId;
