@@ -27,15 +27,6 @@
  */
 package org.citydb.citygml.exporter.database.content;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-
 import org.citydb.citygml.exporter.CityGMLExportException;
 import org.citydb.citygml.exporter.util.AttributeValueSplitter;
 import org.citydb.citygml.exporter.util.AttributeValueSplitter.SplitValue;
@@ -45,6 +36,8 @@ import org.citydb.database.schema.mapping.FeatureType;
 import org.citydb.query.filter.lod.LodFilter;
 import org.citydb.query.filter.projection.CombinedProjectionFilter;
 import org.citydb.query.filter.projection.ProjectionFilter;
+import org.citydb.sqlbuilder.schema.Table;
+import org.citydb.sqlbuilder.select.Select;
 import org.citygml4j.model.citygml.core.ImplicitGeometry;
 import org.citygml4j.model.citygml.core.ImplicitRepresentationProperty;
 import org.citygml4j.model.citygml.tunnel.HollowSpace;
@@ -54,19 +47,25 @@ import org.citygml4j.model.gml.geometry.AbstractGeometry;
 import org.citygml4j.model.gml.geometry.GeometryProperty;
 import org.citygml4j.model.module.citygml.CityGMLModuleType;
 
-import org.citydb.sqlbuilder.schema.Table;
-import org.citydb.sqlbuilder.select.Select;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
 public class DBTunnelFurniture extends AbstractFeatureExporter<TunnelFurniture> {
-	private DBSurfaceGeometry geometryExporter;
-	private DBCityObject cityObjectExporter;
-	private DBImplicitGeometry implicitGeometryExporter;
-	private GMLConverter gmlConverter;
+	private final DBSurfaceGeometry geometryExporter;
+	private final DBCityObject cityObjectExporter;
+	private final DBImplicitGeometry implicitGeometryExporter;
+	private final GMLConverter gmlConverter;
 
-	private String tunnelModule;
-	private LodFilter lodFilter;
-	private AttributeValueSplitter valueSplitter;
-	private boolean hasObjectClassIdColumn;
+	private final String tunnelModule;
+	private final LodFilter lodFilter;
+	private final AttributeValueSplitter valueSplitter;
+	private final boolean hasObjectClassIdColumn;
 	private Set<String> adeHookTables;
 
 	public DBTunnelFurniture(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
@@ -96,6 +95,7 @@ public class DBTunnelFurniture extends AbstractFeatureExporter<TunnelFurniture> 
 
 		cityObjectExporter = exporter.getExporter(DBCityObject.class);
 		geometryExporter = exporter.getExporter(DBSurfaceGeometry.class);
+		implicitGeometryExporter = exporter.getExporter(DBImplicitGeometry.class);
 		gmlConverter = exporter.getGMLConverter();
 		valueSplitter = exporter.getAttributeValueSplitter();
 	}
@@ -113,8 +113,8 @@ public class DBTunnelFurniture extends AbstractFeatureExporter<TunnelFurniture> 
 
 			while (rs.next()) {
 				long tunnelFurnitureId = rs.getLong("id");
-				TunnelFurniture tunnelFurniture = null;
-				FeatureType featureType = null;
+				TunnelFurniture tunnelFurniture;
+				FeatureType featureType;
 
 				if (tunnelFurnitureId == id && root != null) {
 					tunnelFurniture = root;

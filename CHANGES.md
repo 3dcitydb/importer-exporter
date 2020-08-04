@@ -5,7 +5,15 @@ Change Log
 
 * CityJSON import (already working in `master`). [#88](https://github.com/3dcitydb/importer-exporter/issues/88)
 * CityJSON export. [#89](https://github.com/3dcitydb/importer-exporter/issues/89)
-
+* Fixed bug in SQL query builder. [#122](https://github.com/3dcitydb/importer-exporter/pull/122)
+* Optimized COLLADA/KML/glTF export to prevent redundant texture as well as visualization files of implicit geometries
+from being exported repeatedly leading to file redundancy. This includes the following changes:
+  * Exported textures are now stored in the folder `appearance`. Each texture has a unique name, i.e. no texture shall be overwritten.
+  * COLLADA `.dae` and `.gltf` files of implicit geometries shall be exported in the folder `ImplicitGeometry`. Similarly, they all have 
+  unique name to prevent overwriting. The `.kml` file in each tile e.g. `X/Y` shall point to these files, so that the 3DCityDB-Web-Map-Client 
+  can visualize them as usual.Empty folders such as `X/Y/<gmlid>` that used to contain the now relocated `.dae` and `.gltf` files shall be 
+  removed.
+ 
 ### 4.2.3 - 2020-04-06
 
 ##### Additions

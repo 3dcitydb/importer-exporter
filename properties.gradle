@@ -22,10 +22,11 @@ ext {
     impexpGit = impexpVcsUrl + '.git'
     impexpIssueTrackerUrl = 'https://github.com/3dcitydb/importer-exporter/issues'
 
-    // IzPack
+    // application
     appName = citydbShortName + '-Importer-Exporter'
     appShortcutName = citydbShortName + ' Importer Exporter'
+    appCliName = 'impexp'
 
-    // Documentation
+    // documentation
     docUrl = 'https://3dcitydb-docs.readthedocs.io/en/release-v4.2.3/'
 }

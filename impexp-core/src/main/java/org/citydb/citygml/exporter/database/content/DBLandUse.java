@@ -27,15 +27,6 @@
  */
 package org.citydb.citygml.exporter.database.content;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-
 import org.citydb.citygml.exporter.CityGMLExportException;
 import org.citydb.citygml.exporter.util.AttributeValueSplitter;
 import org.citydb.citygml.exporter.util.AttributeValueSplitter.SplitValue;
@@ -45,6 +36,8 @@ import org.citydb.query.filter.lod.LodFilter;
 import org.citydb.query.filter.lod.LodIterator;
 import org.citydb.query.filter.projection.CombinedProjectionFilter;
 import org.citydb.query.filter.projection.ProjectionFilter;
+import org.citydb.sqlbuilder.schema.Table;
+import org.citydb.sqlbuilder.select.Select;
 import org.citygml4j.model.citygml.landuse.LandUse;
 import org.citygml4j.model.gml.GMLClass;
 import org.citygml4j.model.gml.basicTypes.Code;
@@ -52,17 +45,23 @@ import org.citygml4j.model.gml.geometry.aggregates.MultiSurface;
 import org.citygml4j.model.gml.geometry.aggregates.MultiSurfaceProperty;
 import org.citygml4j.model.module.citygml.CityGMLModuleType;
 
-import org.citydb.sqlbuilder.schema.Table;
-import org.citydb.sqlbuilder.select.Select;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
 public class DBLandUse extends AbstractFeatureExporter<LandUse> {
-	private DBSurfaceGeometry geometryExporter;
-	private DBCityObject cityObjectExporter;
+	private final DBSurfaceGeometry geometryExporter;
+	private final DBCityObject cityObjectExporter;
 
-	private String landUseModule;
-	private LodFilter lodFilter;
-	private AttributeValueSplitter valueSplitter;
-	private boolean hasObjectClassIdColumn;
+	private final String landUseModule;
+	private final LodFilter lodFilter;
+	private final AttributeValueSplitter valueSplitter;
+	private final boolean hasObjectClassIdColumn;
 	private Set<String> adeHookTables;
 
 	public DBLandUse(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
@@ -106,8 +105,8 @@ public class DBLandUse extends AbstractFeatureExporter<LandUse> {
 
 			while (rs.next()) {
 				long landUseId = rs.getLong("id");
-				LandUse landUse = null;
-				FeatureType featureType = null;
+				LandUse landUse;
+				FeatureType featureType;
 
 				if (landUseId == id && root != null) {
 					landUse = root;
@@ -168,10 +167,10 @@ public class DBLandUse extends AbstractFeatureExporter<LandUse> {
 				while (lodIterator.hasNext()) {
 					int lod = lodIterator.next();
 
-					if (!projectionFilter.containsProperty(new StringBuilder("lod").append(lod).append("MultiSurface").toString(), landUseModule))
+					if (!projectionFilter.containsProperty("lod" + lod + "MultiSurface", landUseModule))
 						continue;
 
-					long surfaceGeometryId = rs.getLong(new StringBuilder("lod").append(lod).append("_multi_surface_id").toString());
+					long surfaceGeometryId = rs.getLong("lod" + lod + "_multi_surface_id");
 					if (rs.wasNull())
 						continue;
 

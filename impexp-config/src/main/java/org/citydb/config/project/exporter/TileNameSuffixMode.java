@@ -51,6 +51,7 @@ public enum TileNameSuffixMode {
         return value;
     }
 
+    @Override
     public String toString() {
     	switch (this) {
     	case NONE:
@@ -58,7 +59,7 @@ public enum TileNameSuffixMode {
     	case SAME_AS_PATH:
     		return Language.I18N.getString("pref.export.boundingBox.label.tile.nameSuffix.sameAsPath");
     	default:
-    		return null;
+    		return "";
     	}
     }
     

@@ -58,7 +58,8 @@ public enum TileSuffixMode {
     public String value() {
         return value;
     }
-    
+
+    @Override
     public String toString() {
     	switch (this) {
     	case ROW_COLUMN:
@@ -74,7 +75,7 @@ public enum TileSuffixMode {
     	case XMIN_YMIN_XMAX_YMAX:
     		return "Xmin / Ymin / Xmax / Ymax";
     	default:
-    		return null;
+    		return "";
     	}
     }
 

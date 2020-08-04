@@ -68,14 +68,14 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 public class DBThematicSurface extends AbstractFeatureExporter<AbstractBoundarySurface> {
-	private DBSurfaceGeometry geometryExporter;
-	private DBCityObject cityObjectExporter;
-	private DBImplicitGeometry implicitGeometryExporter;
-	private DBAddress addressExporter;
+	private final DBSurfaceGeometry geometryExporter;
+	private final DBCityObject cityObjectExporter;
+	private final DBImplicitGeometry implicitGeometryExporter;
+	private final DBAddress addressExporter;
 
-	private String buildingModule;
-	private LodFilter lodFilter;
-	private boolean useXLink;
+	private final String buildingModule;
+	private final LodFilter lodFilter;
+	private final boolean useXLink;
 	private Set<String> surfaceADEHookTables;
 	private Set<String> openingADEHookTables;
 	private Set<String> addressADEHookTables;
@@ -166,7 +166,7 @@ public class DBThematicSurface extends AbstractFeatureExporter<AbstractBoundaryS
 
 					boundarySurface = boundarySurfaces.get(boundarySurfaceId);
 					if (boundarySurface == null) {
-						FeatureType featureType = null;
+						FeatureType featureType;
 						if (boundarySurfaceId == id && root != null) {
 							boundarySurface = root;
 							featureType = rootType;						
@@ -194,10 +194,10 @@ public class DBThematicSurface extends AbstractFeatureExporter<AbstractBoundaryS
 						while (lodIterator.hasNext()) {
 							int lod = lodIterator.next();
 
-							if (!boundarySurfaceProjectionFilter.containsProperty(new StringBuilder("lod").append(lod).append("MultiSurface").toString(), buildingModule))
+							if (!boundarySurfaceProjectionFilter.containsProperty("lod" + lod + "MultiSurface", buildingModule))
 								continue;
 
-							long lodMultiSurfaceId = rs.getLong(new StringBuilder("lod").append(lod).append("_multi_surface_id").toString());
+							long lodMultiSurfaceId = rs.getLong("lod" + lod + "_multi_surface_id");
 							if (rs.wasNull())
 								continue;
 
@@ -277,10 +277,10 @@ public class DBThematicSurface extends AbstractFeatureExporter<AbstractBoundaryS
 				while (lodIterator.hasNext()) {
 					int lod = lodIterator.next();
 
-					if (!openingProjectionFilter.containsProperty(new StringBuilder("lod").append(lod).append("MultiSurface").toString(), buildingModule))
+					if (!openingProjectionFilter.containsProperty("lod" + lod + "MultiSurface", buildingModule))
 						continue;
 
-					long lodMultiSurfaceId = rs.getLong(new StringBuilder("oplod").append(lod).append("_multi_surface_id").toString());
+					long lodMultiSurfaceId = rs.getLong("oplod" + lod + "_multi_surface_id");
 					if (rs.wasNull()) 
 						continue;
 
@@ -307,20 +307,20 @@ public class DBThematicSurface extends AbstractFeatureExporter<AbstractBoundaryS
 				while (lodIterator.hasNext()) {
 					int lod = lodIterator.next();
 
-					if (!openingProjectionFilter.containsProperty(new StringBuilder("lod").append(lod).append("ImplicitRepresentation").toString(), buildingModule))
+					if (!openingProjectionFilter.containsProperty("lod" + lod + "ImplicitRepresentation", buildingModule))
 						continue;
 
 					// get implicit geometry details
-					long implicitGeometryId = rs.getLong(new StringBuilder("lod").append(lod).append("_implicit_rep_id").toString());
+					long implicitGeometryId = rs.getLong("lod" + lod + "_implicit_rep_id");
 					if (rs.wasNull())
 						continue;
 
 					GeometryObject referencePoint = null;
-					Object referencePointObj = rs.getObject(new StringBuilder("lod").append(lod).append("_implicit_ref_point").toString());
+					Object referencePointObj = rs.getObject("lod" + lod + "_implicit_ref_point");
 					if (!rs.wasNull())
 						referencePoint = exporter.getDatabaseAdapter().getGeometryConverter().getPoint(referencePointObj);
 
-					String transformationMatrix = rs.getString(new StringBuilder("lod").append(lod).append("_implicit_transformation").toString());
+					String transformationMatrix = rs.getString("lod" + lod + "_implicit_transformation");
 
 					ImplicitGeometry implicit = implicitGeometryExporter.doExport(implicitGeometryId, referencePoint, transformationMatrix);
 					if (implicit != null) {
@@ -341,7 +341,7 @@ public class DBThematicSurface extends AbstractFeatureExporter<AbstractBoundaryS
 				if (opening instanceof Door && openingProjectionFilter.containsProperty("address", buildingModule)) {
 					long addressId = rs.getLong("address_id");
 					if (!rs.wasNull()) {
-						AddressProperty addressProperty = addressExporter.doExport(addressId, rs);
+						AddressProperty addressProperty = addressExporter.doExport(rs);
 						if (addressProperty != null) {
 							((Door)opening).addAddress(addressProperty);
 

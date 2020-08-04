@@ -27,15 +27,6 @@
  */
 package org.citydb.citygml.exporter.database.content;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-
 import org.citydb.citygml.exporter.CityGMLExportException;
 import org.citydb.citygml.exporter.util.AttributeValueSplitter;
 import org.citydb.citygml.exporter.util.AttributeValueSplitter.SplitValue;
@@ -45,6 +36,8 @@ import org.citydb.query.filter.lod.LodFilter;
 import org.citydb.query.filter.lod.LodIterator;
 import org.citydb.query.filter.projection.CombinedProjectionFilter;
 import org.citydb.query.filter.projection.ProjectionFilter;
+import org.citydb.sqlbuilder.schema.Table;
+import org.citydb.sqlbuilder.select.Select;
 import org.citygml4j.model.citygml.vegetation.PlantCover;
 import org.citygml4j.model.gml.GMLClass;
 import org.citygml4j.model.gml.basicTypes.Code;
@@ -55,17 +48,23 @@ import org.citygml4j.model.gml.geometry.aggregates.MultiSurfaceProperty;
 import org.citygml4j.model.gml.measures.Length;
 import org.citygml4j.model.module.citygml.CityGMLModuleType;
 
-import org.citydb.sqlbuilder.schema.Table;
-import org.citydb.sqlbuilder.select.Select;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
 public class DBPlantCover extends AbstractFeatureExporter<PlantCover> {
-	private DBSurfaceGeometry geometryExporter;
-	private DBCityObject cityObjectExporter;
+	private final DBSurfaceGeometry geometryExporter;
+	private final DBCityObject cityObjectExporter;
 
-	private String vegetationModule;
-	private LodFilter lodFilter;
-	private AttributeValueSplitter valueSplitter;
-	private boolean hasObjectClassIdColumn;
+	private final String vegetationModule;
+	private final LodFilter lodFilter;
+	private final AttributeValueSplitter valueSplitter;
+	private final boolean hasObjectClassIdColumn;
 	private Set<String> adeHookTables;
 
 	public DBPlantCover(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
@@ -113,8 +112,8 @@ public class DBPlantCover extends AbstractFeatureExporter<PlantCover> {
 
 			while (rs.next()) {
 				long plantCoverId = rs.getLong("id");
-				PlantCover plantCover = null;
-				FeatureType featureType = null;
+				PlantCover plantCover;
+				FeatureType featureType;
 				
 				if (plantCoverId == id && root != null) {
 					plantCover = root;
@@ -184,10 +183,10 @@ public class DBPlantCover extends AbstractFeatureExporter<PlantCover> {
 				while (lodIterator.hasNext()) {
 					int lod = lodIterator.next();
 
-					if (!projectionFilter.containsProperty(new StringBuilder("lod").append(lod).append("MultiSurface").toString(), vegetationModule))
+					if (!projectionFilter.containsProperty("lod" + lod + "MultiSurface", vegetationModule))
 						continue;
 
-					long surfaceGeometryId = rs.getLong(new StringBuilder("lod").append(lod).append("_multi_surface_id").toString());
+					long surfaceGeometryId = rs.getLong("lod" + lod + "_multi_surface_id");
 					if (rs.wasNull())
 						continue;
 
@@ -220,10 +219,10 @@ public class DBPlantCover extends AbstractFeatureExporter<PlantCover> {
 				while (lodIterator.hasNext()) {
 					int lod = lodIterator.next();
 
-					if (!projectionFilter.containsProperty(new StringBuilder("lod").append(lod).append("MultiSolid").toString(), vegetationModule))
+					if (!projectionFilter.containsProperty("lod" + lod + "MultiSolid", vegetationModule))
 						continue;
 
-					long surfaceGeometryId = rs.getLong(new StringBuilder("lod").append(lod).append("_multi_solid_id").toString());
+					long surfaceGeometryId = rs.getLong("lod" + lod + "_multi_solid_id");
 					if (rs.wasNull())
 						continue;
 

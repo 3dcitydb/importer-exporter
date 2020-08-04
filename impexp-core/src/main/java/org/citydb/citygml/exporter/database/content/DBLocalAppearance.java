@@ -27,20 +27,20 @@
  */
 package org.citydb.citygml.exporter.database.content;
 
+import org.citydb.citygml.exporter.CityGMLExportException;
+import org.citydb.config.Config;
+import org.citydb.query.Query;
+import org.citydb.sqlbuilder.expression.PlaceHolder;
+import org.citygml4j.model.citygml.appearance.Appearance;
+import org.citygml4j.model.citygml.appearance.AppearanceProperty;
+import org.citygml4j.model.citygml.core.AbstractCityObject;
+
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
-
-import org.citydb.citygml.exporter.CityGMLExportException;
-import org.citydb.config.Config;
-import org.citydb.query.Query;
-import org.citygml4j.model.citygml.appearance.Appearance;
-import org.citygml4j.model.citygml.appearance.AppearanceProperty;
-import org.citygml4j.model.citygml.core.AbstractCityObject;
-
-import org.citydb.sqlbuilder.expression.PlaceHolder;
+import java.util.Map;
 
 public class DBLocalAppearance extends AbstractAppearanceExporter {
 
@@ -48,7 +48,7 @@ public class DBLocalAppearance extends AbstractAppearanceExporter {
 		super(false, connection, query, null, exporter, config);
 	}
 
-	public void read(AbstractCityObject cityObject, long cityObjectId, boolean isTopLevelObject, boolean lazyExport) throws CityGMLExportException, SQLException {
+	protected void doExport(AbstractCityObject cityObject, long cityObjectId, boolean isTopLevelObject) throws CityGMLExportException, SQLException {
 		// clear texture image cache
 		if (isTopLevelObject)
 			clearTextureImageCache();
@@ -61,7 +61,7 @@ public class DBLocalAppearance extends AbstractAppearanceExporter {
 		try (ResultSet rs = ps.executeQuery()) {
 			long currentAppearanceId = 0;
 			Appearance appearance = null;
-			final HashMap<Long, Appearance> appearances = new HashMap<>();
+			Map<Long, Appearance> appearances = new HashMap<>();
 
 			while (rs.next()) {
 				long appearanceId = rs.getLong(1);
@@ -82,7 +82,7 @@ public class DBLocalAppearance extends AbstractAppearanceExporter {
 				}
 
 				// add surface data to appearance
-				addSurfaceData(appearance, rs, lazyExport);
+				addSurfaceData(appearance, rs, exporter.isLazyTextureExport());
 			}
 		}
 	}

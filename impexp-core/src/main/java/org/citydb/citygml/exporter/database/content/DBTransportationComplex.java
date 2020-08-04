@@ -27,16 +27,6 @@
  */
 package org.citydb.citygml.exporter.database.content;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
-
 import org.citydb.citygml.exporter.CityGMLExportException;
 import org.citydb.citygml.exporter.util.AttributeValueSplitter;
 import org.citydb.citygml.exporter.util.AttributeValueSplitter.SplitValue;
@@ -47,6 +37,10 @@ import org.citydb.query.filter.lod.LodFilter;
 import org.citydb.query.filter.lod.LodIterator;
 import org.citydb.query.filter.projection.CombinedProjectionFilter;
 import org.citydb.query.filter.projection.ProjectionFilter;
+import org.citydb.sqlbuilder.schema.Table;
+import org.citydb.sqlbuilder.select.Select;
+import org.citydb.sqlbuilder.select.join.JoinFactory;
+import org.citydb.sqlbuilder.select.operator.comparison.ComparisonName;
 import org.citygml4j.model.citygml.transportation.AbstractTransportationObject;
 import org.citygml4j.model.citygml.transportation.AuxiliaryTrafficArea;
 import org.citygml4j.model.citygml.transportation.AuxiliaryTrafficAreaProperty;
@@ -59,19 +53,24 @@ import org.citygml4j.model.gml.geometry.aggregates.MultiSurface;
 import org.citygml4j.model.gml.geometry.aggregates.MultiSurfaceProperty;
 import org.citygml4j.model.module.citygml.CityGMLModuleType;
 
-import org.citydb.sqlbuilder.schema.Table;
-import org.citydb.sqlbuilder.select.Select;
-import org.citydb.sqlbuilder.select.join.JoinFactory;
-import org.citydb.sqlbuilder.select.operator.comparison.ComparisonName;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Set;
 
 public class DBTransportationComplex extends AbstractFeatureExporter<TransportationComplex> {
-	private String transportationModule;
-	private LodFilter lodFilter;
-	private AttributeValueSplitter valueSplitter;
+	private final DBSurfaceGeometry geometryExporter;
+	private final DBCityObject cityObjectExporter;
+	private final GMLConverter gmlConverter;
 
-	private DBSurfaceGeometry geometryExporter;
-	private DBCityObject cityObjectExporter;
-	private GMLConverter gmlConverter;
+	private final String transportationModule;
+	private final LodFilter lodFilter;
+	private final AttributeValueSplitter valueSplitter;
 	private Set<String> complexADEHookTables;
 	private Set<String> objectADEHookTables;
 
@@ -141,7 +140,7 @@ public class DBTransportationComplex extends AbstractFeatureExporter<Transportat
 
 					complex = complexes.get(complexId);
 					if (complex == null) {
-						FeatureType featureType = null;						
+						FeatureType featureType;
 						if (complexId == id && root != null) {
 							complex = root;
 							featureType = rootType;
@@ -209,10 +208,10 @@ public class DBTransportationComplex extends AbstractFeatureExporter<Transportat
 						while (lodIterator.hasNext()) {
 							int lod = lodIterator.next();
 
-							if (!projectionFilter.containsProperty(new StringBuilder("lod").append(lod).append("MultiSurface").toString(), transportationModule))
+							if (!projectionFilter.containsProperty("lod" + lod + "MultiSurface", transportationModule))
 								continue;
 
-							long surfaceGeometryId = rs.getLong(new StringBuilder("lod").append(lod).append("_multi_surface_id").toString());
+							long surfaceGeometryId = rs.getLong("lod" + lod + "_multi_surface_id");
 							if (rs.wasNull())
 								continue;
 
@@ -335,10 +334,10 @@ public class DBTransportationComplex extends AbstractFeatureExporter<Transportat
 				while (lodIterator.hasNext()) {
 					int lod = lodIterator.next();
 
-					if (!transportationObjectProjectionFilter.containsProperty(new StringBuilder("lod").append(lod).append("MultiSurface").toString(), transportationModule))
+					if (!transportationObjectProjectionFilter.containsProperty("lod" + lod + "MultiSurface", transportationModule))
 						continue;
 
-					long surfaceGeometryId = rs.getLong(new StringBuilder("ta_lod").append(lod).append("_multi_surface_id").toString());
+					long surfaceGeometryId = rs.getLong("ta_lod" + lod + "_multi_surface_id");
 					if (rs.wasNull())
 						continue;
 

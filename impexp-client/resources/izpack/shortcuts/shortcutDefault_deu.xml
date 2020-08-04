@@ -29,9 +29,9 @@
 <shortcuts>
     <skipIfNotSupported/>
     <programGroup defaultName="${3DCITYDB_NAME}" location="applications"/>
-    <shortcut name="${APP_SHORTCUT_NAME}" target="$INSTALL_PATH\@startScriptsDir@\3DCityDB-Importer-Exporter.bat" commandLine=""
-        workingDirectory="$INSTALL_PATH\@startScriptsDir@" description="${APP_SHORTCUT_NAME} starten" initialState="minimized" programGroup="yes"
-        desktop="yes" applications="no" startMenu="no" startup="no" iconFile="$INSTALL_PATH\@startScriptsDir@\impexp.ico" iconIndex="0">
+    <shortcut name="${APP_SHORTCUT_NAME}" target="$INSTALL_PATH\3DCityDB-Importer-Exporter.bat" commandLine=""
+        workingDirectory="$INSTALL_PATH" description="${APP_SHORTCUT_NAME} starten" initialState="minimized" programGroup="yes"
+        desktop="yes" applications="no" startMenu="no" startup="no" iconFile="$INSTALL_PATH\impexp.ico" iconIndex="0">
         <createForPack name="core"/>
     </shortcut>
 
