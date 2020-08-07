@@ -29,8 +29,8 @@ package org.citydb.modules.kml.gui.preferences;
 
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
-import org.citydb.config.project.ade.ADEKmlExporterPreference;
 import org.citydb.config.project.general.PathMode;
+import org.citydb.config.project.kmlExporter.ADEPreference;
 import org.citydb.config.project.kmlExporter.Balloon;
 import org.citydb.config.project.kmlExporter.BalloonContentMode;
 import org.citydb.gui.factory.PopupMenuDecorator;
@@ -63,9 +63,9 @@ public class ADEDBalloonPanel extends AbstractPreferencesComponent {
 
 	private Balloon internalBalloon = new Balloon();
 
-	private ADEKmlExporterPreference preferenceConfig;
+	private ADEPreference preferenceConfig;
 
-	public ADEDBalloonPanel(ADEKmlExporterPreference preferenceConfig) {
+	public ADEDBalloonPanel(ADEPreference preferenceConfig) {
 		super(new Config());
 		this.preferenceConfig = preferenceConfig;
 		initGui();

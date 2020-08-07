@@ -29,7 +29,7 @@ package org.citydb.modules.kml.gui.preferences;
 
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
-import org.citydb.config.project.ade.ADEKmlExporterPreference;
+import org.citydb.config.project.kmlExporter.ADEPreference;
 import org.citydb.config.project.kmlExporter.ColladaOptions;
 import org.citydb.config.project.kmlExporter.DisplayForm;
 import org.citydb.gui.components.common.AlphaButton;
@@ -109,8 +109,8 @@ public class ADEThreeDRenderingPanel extends AbstractPreferencesComponent {
 	private HashMap<String, Integer> packingAlgorithms = new HashMap<>();
 	private JComboBox<String> packingAlgorithmsComboBox = new JComboBox<>();
 
-	private ADEKmlExporterPreference preferenceConfig;
-	public ADEThreeDRenderingPanel(ADEKmlExporterPreference preferenceConfig) {
+	private ADEPreference preferenceConfig;
+	public ADEThreeDRenderingPanel(ADEPreference preferenceConfig) {
 		super(new Config());
 		this.preferenceConfig = preferenceConfig;
 		initGui();

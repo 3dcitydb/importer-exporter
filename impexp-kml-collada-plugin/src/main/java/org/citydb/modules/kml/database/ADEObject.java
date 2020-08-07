@@ -29,7 +29,7 @@ package org.citydb.modules.kml.database;
 
 import net.opengis.kml._2.PlacemarkType;
 import org.citydb.config.Config;
-import org.citydb.config.project.ade.ADEKmlExporterPreference;
+import org.citydb.config.project.kmlExporter.ADEPreference;
 import org.citydb.config.project.kmlExporter.Balloon;
 import org.citydb.config.project.kmlExporter.ColladaOptions;
 import org.citydb.config.project.kmlExporter.DisplayForm;
@@ -88,7 +88,7 @@ public class ADEObject extends KmlGenericObject{
 		this.adeObjectClassId = adeObjectClassId;
 	}
 
-	private ADEKmlExporterPreference getPreference() {
+	private ADEPreference getPreference() {
 		return ADEKmlExportExtensionManager.getInstance().getPreference(config, adeObjectClassId);
 	}
 	protected List<DisplayForm> getDisplayForms() {

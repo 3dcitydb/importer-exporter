@@ -27,7 +27,6 @@
  */
 package org.citydb.modules.kml.ade;
 
-
 import java.util.HashMap;
 import java.util.Set;
 

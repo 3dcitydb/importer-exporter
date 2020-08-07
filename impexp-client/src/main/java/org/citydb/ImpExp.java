@@ -27,6 +27,7 @@
  */
 package org.citydb;
 
+import org.citydb.ade.ADEExtension;
 import org.citydb.ade.ADEExtensionManager;
 import org.citydb.cli.ImpExpCli;
 import org.citydb.config.Config;
@@ -34,13 +35,14 @@ import org.citydb.config.ConfigUtil;
 import org.citydb.config.gui.Gui;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.Project;
-import org.citydb.config.project.ade.ADEExtension;
 import org.citydb.config.project.global.LanguageType;
 import org.citydb.config.project.global.LogLevel;
 import org.citydb.config.project.global.Logging;
 import org.citydb.config.project.query.util.QueryWrapper;
 import org.citydb.database.DatabaseController;
-import org.citydb.database.schema.mapping.*;
+import org.citydb.database.schema.mapping.SchemaMapping;
+import org.citydb.database.schema.mapping.SchemaMappingException;
+import org.citydb.database.schema.mapping.SchemaMappingValidationException;
 import org.citydb.database.schema.util.SchemaMappingUtil;
 import org.citydb.event.EventDispatcher;
 import org.citydb.event.global.EventType;
@@ -95,7 +97,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class ImpExp {
@@ -168,9 +169,9 @@ public class ImpExp {
 		}
 	}
 	
-	public void doMain(String[] args, org.citydb.ade.ADEExtension... extensions) {
+	public void doMain(String[] args, ADEExtension... extensions) {
 		if (extensions != null) {
-			for (org.citydb.ade.ADEExtension extension : extensions) {
+			for (ADEExtension extension : extensions) {
 				if (extension.getBasePath() == null)
 					extension.setBasePath(Paths.get("."));
 
@@ -348,7 +349,7 @@ public class ImpExp {
 			adeManager.loadExtensions(externalLoader);
 			adeManager.loadSchemaMappings(schemaMapping);
 
-			for (org.citydb.ade.ADEExtension extension : adeManager.getExtensions())
+			for (ADEExtension extension : adeManager.getExtensions())
 				log.info("Initializing ADE extension " + extension.getClass().getName());
 			
 			// exit shell mode if not all extensions could be loaded successfully
@@ -409,25 +410,6 @@ public class ImpExp {
 				throw new JAXBException("Failed to interpret project file.");
 			
 			project = (Project)object;
-
-			// init config settings for ADE KML export
-			List<org.citydb.ade.ADEExtension> adeExtensions = adeManager.getExtensions();
-			for (org.citydb.ade.ADEExtension adeExtension : adeExtensions) {
-				ADEExtension adeExtensionConfig = new ADEExtension();
-				String adeExtensionId = adeExtension.getId();
-				String adeExtensionName = adeExtension.getMetadata().getName();
-				if (!project.getAdeExtensions().containsKey(adeExtensionId)) {
-					adeExtensionConfig.setExtensionId(adeExtensionId);
-					adeExtensionConfig.setExtensionName(adeExtensionName);
-					for (AppSchema appSchema : adeExtension.getSchemas()) {
-						for (FeatureType featureType : appSchema.listTopLevelFeatureTypes(true)) {
-							adeExtensionConfig.getKmlExporter().addPreference(featureType.toString());
-						}
-					}
-					project.getAdeExtensions().put(adeExtensionId, adeExtensionConfig);
-				}
-			}
-			project.getAdeExtensions().keySet().retainAll(adeExtensions.stream().map(v -> v.getId()).collect(Collectors.toList()));
 		} catch (IOException | JAXBException e) {
 			String errMsg = "Failed to read project settings file '" + configFile + "\'.";
 			if (shell) {

@@ -29,7 +29,7 @@ package org.citydb.modules.kml.gui.preferences;
 
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
-import org.citydb.config.project.ade.ADEKmlExporterPreference;
+import org.citydb.config.project.kmlExporter.ADEPreference;
 import org.citydb.config.project.kmlExporter.AltitudeMode;
 import org.citydb.config.project.kmlExporter.DisplayForm;
 import org.citydb.config.project.kmlExporter.PointAndCurve;
@@ -94,9 +94,9 @@ public class ADEPointAndCurveRenderingPanel extends AbstractPreferencesComponent
 	private JLabel curveHighlightingColorLabel = new JLabel();
 	private JButton curveHighlightingColorButton = new AlphaButton();
 
-	private ADEKmlExporterPreference preferenceConfig;
+	private ADEPreference preferenceConfig;
 
-	public ADEPointAndCurveRenderingPanel(ADEKmlExporterPreference preferenceConfig) {
+	public ADEPointAndCurveRenderingPanel(ADEPreference preferenceConfig) {
 		super(new Config());
 		this.preferenceConfig = preferenceConfig;
 		initGui();

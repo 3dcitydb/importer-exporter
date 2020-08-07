@@ -2,7 +2,7 @@
  * 3D City Database - The Open Source CityGML Database
  * http://www.3dcitydb.org/
  *
- * Copyright 2013 - 2019
+ * Copyright 2013 - 2020
  * Chair of Geoinformatics
  * Technical University of Munich, Germany
  * https://www.gis.bgu.tum.de/
@@ -25,12 +25,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.citydb.config.project.ade;
-
-import org.citydb.config.project.kmlExporter.Balloon;
-import org.citydb.config.project.kmlExporter.ColladaOptions;
-import org.citydb.config.project.kmlExporter.DisplayForm;
-import org.citydb.config.project.kmlExporter.PointAndCurve;
+package org.citydb.config.project.kmlExporter;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
@@ -45,20 +40,26 @@ import java.util.List;
 		"balloon",
 		"pointAndCurve"
 })
-public class ADEKmlExporterPreference {
+public class ADEPreference {
+	@XmlElement(required = true)
 	private String target;
-	@XmlElement(name="displayForm", required=true)
-	@XmlElementWrapper(name="displayForms")
+	@XmlElement(name = "displayForm", required = true)
+	@XmlElementWrapper(name = "displayForms")
 	private List<DisplayForm> displayForms;
 	private ColladaOptions colladaOptions;
 	private Balloon balloon;
 	private PointAndCurve pointAndCurve;
 
-	public ADEKmlExporterPreference() {
+	public ADEPreference() {
 		displayForms = new ArrayList<>();
 		colladaOptions = new ColladaOptions();
 		balloon = new Balloon();
 		pointAndCurve = new PointAndCurve();
+	}
+
+	public ADEPreference(String target) {
+		this();
+		this.target = target;
 	}
 
 	public String getTarget() {

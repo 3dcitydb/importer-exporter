@@ -2,7 +2,7 @@
  * 3D City Database - The Open Source CityGML Database
  * http://www.3dcitydb.org/
  *
- * Copyright 2013 - 2019
+ * Copyright 2013 - 2020
  * Chair of Geoinformatics
  * Technical University of Munich, Germany
  * https://www.gis.bgu.tum.de/
@@ -25,35 +25,50 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.citydb.config.project.ade;
+package org.citydb.config.project.kmlExporter;
 
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.util.HashMap;
 import java.util.Map;
 
-@XmlType(name="ADEKmlExporterType", propOrder={
+@XmlType(name="ADEKmlExportPreferencesType", propOrder={
+		"extensionId",
 		"preferences"
 })
-public class ADEKmlExporter {
-	@XmlJavaTypeAdapter(ADEKmlExporterPreferenceAdapter.class)
-	private Map<String, ADEKmlExporterPreference> preferences;
+public class ADEPreferences {
+	@XmlElement(required = true)
+	private String extensionId;
+	@XmlJavaTypeAdapter(ADEPreferenceAdapter.class)
+	private Map<String, ADEPreference> preferences;
 
-	public ADEKmlExporter() {
+	public ADEPreferences() {
 		preferences = new HashMap<>();
 	}
 
-	public void addPreference(String featureId) {
-		ADEKmlExporterPreference preference = new ADEKmlExporterPreference();
-		preference.setTarget(featureId);
-		preferences.put(featureId, preference);
+	public ADEPreferences(String extensionId) {
+		this();
+		this.extensionId = extensionId;
 	}
 
-	public Map<String, ADEKmlExporterPreference> getPreferences() {
+	public String getExtensionId() {
+		return extensionId;
+	}
+
+	public boolean isSetExtensionId() {
+		return extensionId != null;
+	}
+
+	public void setExtensionId(String extensionId) {
+		this.extensionId = extensionId;
+	}
+
+	public Map<String, ADEPreference> getPreferences() {
 		return preferences;
 	}
 
-	public void setPreferences(Map<String, ADEKmlExporterPreference> preferences) {
+	public void setPreferences(Map<String, ADEPreference> preferences) {
 		this.preferences = preferences;
 	}
 

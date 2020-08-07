@@ -30,12 +30,12 @@ package org.citydb.modules.kml.ade;
 import org.citydb.ade.ADEExtension;
 import org.citydb.ade.ADEExtensionManager;
 import org.citydb.config.Config;
-import org.citydb.config.project.ade.ADEKmlExporterPreference;
+import org.citydb.config.project.kmlExporter.ADEPreference;
+import org.citydb.config.project.kmlExporter.ADEPreferences;
+import org.citydb.database.schema.mapping.FeatureType;
 import org.citydb.registry.ObjectRegistry;
 
-import java.util.ArrayList;
 import java.util.IdentityHashMap;
-import java.util.List;
 
 public class ADEKmlExportExtensionManager {
 	private static ADEKmlExportExtensionManager instance;
@@ -55,17 +55,22 @@ public class ADEKmlExportExtensionManager {
 		return null;
 	}
 
-	public ADEKmlExporterPreference getPreference(Config config, int objectClassId) {
-		ADEKmlExporterPreference preference = null;
-		String target = ObjectRegistry.getInstance().getSchemaMapping().getFeatureType(objectClassId).toString();
-
-		ADEExtension adeExtension = ADEExtensionManager.getInstance().getExtensionByObjectClassId(objectClassId);
-		if (adeExtension != null) {
-			String extensionId = ADEExtensionManager.getInstance().getExtensionByObjectClassId(objectClassId).getId();
-			preference = config.getProject().getAdeExtensions().get(extensionId).getKmlExporter().getPreferences().get(target);
-		}
-
-		return preference;
+	public ADEPreference getPreference(Config config, FeatureType featureType) {
+		return getPreference(config, featureType.getObjectClassId(), featureType.toString());
 	}
 
+	public ADEPreference getPreference(Config config, int objectClassId) {
+		return getPreference(config, objectClassId, ObjectRegistry.getInstance().getSchemaMapping().getFeatureType(objectClassId).toString());
+	}
+
+	private ADEPreference getPreference(Config config, int objectClassId, String target) {
+		ADEExtension adeExtension = ADEExtensionManager.getInstance().getExtensionByObjectClassId(objectClassId);
+		if (adeExtension != null) {
+			return config.getProject().getKmlExporter().getADEPreferences()
+					.computeIfAbsent(adeExtension.getId(), v -> new ADEPreferences(adeExtension.getId()))
+					.getPreferences()
+					.computeIfAbsent(target, v -> new ADEPreference(target));
+		} else
+			return new ADEPreference(target);
+	}
 }

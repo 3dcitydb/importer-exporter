@@ -50,16 +50,15 @@ import net.opengis.kml._2.StyleMapType;
 import net.opengis.kml._2.StyleStateEnumType;
 import net.opengis.kml._2.StyleType;
 import net.opengis.kml._2.ViewRefreshModeEnumType;
-import org.citydb.ade.ADEExtensionManager;
 import org.citydb.concurrent.PoolSizeAdaptationStrategy;
 import org.citydb.concurrent.SingleWorkerPool;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
 import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.i18n.Language;
-import org.citydb.config.project.ade.ADEKmlExporterPreference;
 import org.citydb.config.project.database.Database;
 import org.citydb.config.project.database.Workspace;
+import org.citydb.config.project.kmlExporter.ADEPreference;
 import org.citydb.config.project.kmlExporter.AltitudeOffsetMode;
 import org.citydb.config.project.kmlExporter.Balloon;
 import org.citydb.config.project.kmlExporter.BalloonContentMode;
@@ -84,7 +83,20 @@ import org.citydb.event.global.StatusDialogTitle;
 import org.citydb.log.Logger;
 import org.citydb.modules.kml.ade.ADEKmlExportExtensionManager;
 import org.citydb.modules.kml.concurrent.KmlExportWorkerFactory;
-import org.citydb.modules.kml.database.*;
+import org.citydb.modules.kml.database.ADEObject;
+import org.citydb.modules.kml.database.Bridge;
+import org.citydb.modules.kml.database.Building;
+import org.citydb.modules.kml.database.CityFurniture;
+import org.citydb.modules.kml.database.CityObjectGroup;
+import org.citydb.modules.kml.database.GenericCityObject;
+import org.citydb.modules.kml.database.KmlSplitter;
+import org.citydb.modules.kml.database.KmlSplittingResult;
+import org.citydb.modules.kml.database.LandUse;
+import org.citydb.modules.kml.database.Relief;
+import org.citydb.modules.kml.database.SolitaryVegetationObject;
+import org.citydb.modules.kml.database.Transportation;
+import org.citydb.modules.kml.database.Tunnel;
+import org.citydb.modules.kml.database.WaterBody;
 import org.citydb.modules.kml.datatype.TypeAttributeValueEnum;
 import org.citydb.modules.kml.util.CityObject4JSON;
 import org.citydb.modules.kml.util.ExportTracker;
@@ -985,10 +997,10 @@ public class KmlExporter implements EventHandler {
 					saxWriter);
 			break;
 		case ADE_COMPONENT:
-			ADEKmlExporterPreference preference = ADEKmlExportExtensionManager.getInstance().getPreference(config, objectClassId);
+			ADEPreference preference = ADEKmlExportExtensionManager.getInstance().getPreference(config, objectClassId);
 			addADEPointAndCurveStyle(saxWriter, preference);
 			addStyle(currentDisplayForm,
-					ADEKmlExportExtensionManager.getInstance().getPreference(config, objectClassId).getDisplayForms(),
+					preference.getDisplayForms(),
 					preference.getTarget(),
 					saxWriter);
 			break;
@@ -1139,7 +1151,7 @@ public class KmlExporter implements EventHandler {
 		}
 	}
 
-	private void addADEPointAndCurveStyle(SAXWriter saxWriter, ADEKmlExporterPreference preference) throws JAXBException {
+	private void addADEPointAndCurveStyle(SAXWriter saxWriter, ADEPreference preference) throws JAXBException {
 		Marshaller marshaller = jaxbKmlContext.createMarshaller();
 		marshaller.setProperty(Marshaller.JAXB_FRAGMENT, true);
 

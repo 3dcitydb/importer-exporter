@@ -27,14 +27,18 @@
  */
 package org.citydb.modules.kml.gui.preferences;
 
+import org.citydb.ade.ADEExtension;
+import org.citydb.ade.ADEExtensionManager;
 import org.citydb.config.Config;
-import org.citydb.config.project.ade.ADEExtension;
-import org.citydb.config.project.ade.ADEKmlExporterPreference;
+import org.citydb.config.project.kmlExporter.ADEPreference;
+import org.citydb.database.schema.mapping.AppSchema;
+import org.citydb.database.schema.mapping.FeatureType;
 import org.citydb.gui.preferences.AbstractPreferences;
 import org.citydb.gui.preferences.DefaultPreferencesEntry;
+import org.citydb.modules.kml.ade.ADEKmlExportExtensionManager;
 import org.citydb.plugin.extension.view.ViewController;
 
-import java.util.Collection;
+import java.util.List;
 
 public class KMLExportPreferences extends AbstractPreferences {
 	
@@ -74,24 +78,31 @@ public class KMLExportPreferences extends AbstractPreferences {
 		balloonNode.addChildEntry(new DefaultPreferencesEntry(new TunnelBalloonPanel(config)));
 
 		// ADEs
-		Collection<ADEExtension> adeExtensionConfigs = config.getProject().getAdeExtensions().values();
-		if (!adeExtensionConfigs.isEmpty()) {
-			DefaultPreferencesEntry adeRenderingRootNode = new ADEPanel("ADE(s)");
-			DefaultPreferencesEntry adeBalloonRootNode = new ADEPanel("ADE(s)");
-			for (ADEExtension adeExtensionConfig : adeExtensionConfigs) {
-				String adeExtensionName = adeExtensionConfig.getExtensionName();
-				DefaultPreferencesEntry adeRenderingNode = new ADEPanel(adeExtensionName);
-				DefaultPreferencesEntry adeBalloonNode = new ADEPanel(adeExtensionName);
-				for (ADEKmlExporterPreference preference : adeExtensionConfig.getKmlExporter().getPreferences().values()) {
-					DefaultPreferencesEntry adeFeatureRenderingNode = new ADEPanel(preference.getTarget());
-					adeFeatureRenderingNode.addChildEntry(new DefaultPreferencesEntry(new ADEThreeDRenderingPanel(preference)));
-					adeFeatureRenderingNode.addChildEntry(new DefaultPreferencesEntry(new ADEPointAndCurveRenderingPanel(preference)));
-					adeRenderingNode.addChildEntry(adeFeatureRenderingNode);
-					adeBalloonNode.addChildEntry(new DefaultPreferencesEntry(new ADEDBalloonPanel(preference)));
+		List<ADEExtension> adeExtensions = ADEExtensionManager.getInstance().getExtensions();
+		if (!adeExtensions.isEmpty()) {
+			DefaultPreferencesEntry adeRenderingRootNode = new ADEPanel("ADEs");
+			DefaultPreferencesEntry adeBalloonRootNode = new ADEPanel("ADEs");
+
+			for (ADEExtension adeExtension : adeExtensions) {
+				String name = adeExtension.getMetadata().getName();
+				DefaultPreferencesEntry adeRenderingNode = new ADEPanel(name);
+				DefaultPreferencesEntry adeBalloonNode = new ADEPanel(name);
+
+				for (AppSchema schema : adeExtension.getSchemas()) {
+					for (FeatureType topLevelFeature : schema.listTopLevelFeatureTypes(true)) {
+						ADEPreference preference = ADEKmlExportExtensionManager.getInstance().getPreference(config, topLevelFeature);
+						DefaultPreferencesEntry adeFeatureRenderingNode = new ADEPanel(preference.getTarget());
+						adeFeatureRenderingNode.addChildEntry(new DefaultPreferencesEntry(new ADEThreeDRenderingPanel(preference)));
+						adeFeatureRenderingNode.addChildEntry(new DefaultPreferencesEntry(new ADEPointAndCurveRenderingPanel(preference)));
+						adeRenderingNode.addChildEntry(adeFeatureRenderingNode);
+						adeBalloonNode.addChildEntry(new DefaultPreferencesEntry(new ADEDBalloonPanel(preference)));
+					}
 				}
+
 				adeRenderingRootNode.addChildEntry(adeRenderingNode);
 				adeBalloonRootNode.addChildEntry(adeBalloonNode);
 			}
+
 			renderingNode.addChildEntry(adeRenderingRootNode);
 			balloonNode.addChildEntry(adeBalloonRootNode);
 		}

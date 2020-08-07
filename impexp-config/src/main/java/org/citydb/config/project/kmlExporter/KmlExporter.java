@@ -33,16 +33,18 @@ import org.citydb.config.project.resources.Resources;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 @XmlType(name="KmlExportType", propOrder={
 		"query",
 		"path",
 		"lodToExportFrom",
-
 		"buildingDisplayForms",
 		"buildingColladaOptions",
 		"buildingBalloon",
@@ -75,8 +77,7 @@ import java.util.Locale;
 		"bridgeBalloon",		
 		"tunnelDisplayForms",
 		"tunnelColladaOptions",
-		"tunnelBalloon",	
-
+		"tunnelBalloon",
 		"lod0FootprintMode",
 		"exportAsKmz",
 		"exportGltfV1",
@@ -101,13 +102,13 @@ import java.util.Locale;
 		"callGElevationService",
 		"useOriginalZCoords",
 		"idPrefixes",
+		"adePreferences",
 		"resources"
 })
 public class KmlExporter {
 	private SimpleKmlQuery query;
 	private Path path;
 	private int lodToExportFrom;
-
 	@XmlElement(name="displayForm", required=true)
 	@XmlElementWrapper(name="buildingDisplayForms")	
 	private List<DisplayForm> buildingDisplayForms;
@@ -163,7 +164,6 @@ public class KmlExporter {
 	private List<DisplayForm> tunnelDisplayForms;
 	private ColladaOptions tunnelColladaOptions;
 	private Balloon tunnelBalloon;
-
 	private Lod0FootprintMode lod0FootprintMode;
 	private boolean showBoundingBox;
 	private boolean showTileBorders;
@@ -187,8 +187,9 @@ public class KmlExporter {
 	private double altitudeOffsetValue;
 	private boolean callGElevationService;
 	private boolean useOriginalZCoords;
-
 	private IdPrefixes idPrefixes;
+	@XmlJavaTypeAdapter(ADEPreferencesAdapter.class)
+	private Map<String, ADEPreferences> adePreferences;
 	private Resources resources;
 
 	public static final String THEME_NONE = "none";
@@ -266,6 +267,7 @@ public class KmlExporter {
 		setUseOriginalZCoords(true);
 
 		idPrefixes = new IdPrefixes();
+		adePreferences = new HashMap<>();
 		resources = new Resources();
 	}
 
@@ -782,4 +784,11 @@ public class KmlExporter {
 		return tunnelBalloon;
 	}
 
+	public Map<String, ADEPreferences> getADEPreferences() {
+		return adePreferences;
+	}
+
+	public void setADEPreferences(Map<String, ADEPreferences> adePreferences) {
+		this.adePreferences = adePreferences;
+	}
 }

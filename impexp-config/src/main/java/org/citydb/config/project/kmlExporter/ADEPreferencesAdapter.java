@@ -2,7 +2,7 @@
  * 3D City Database - The Open Source CityGML Database
  * http://www.3dcitydb.org/
  *
- * Copyright 2013 - 2019
+ * Copyright 2013 - 2020
  * Chair of Geoinformatics
  * Technical University of Munich, Germany
  * https://www.gis.bgu.tum.de/
@@ -25,7 +25,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.citydb.config.project.ade;
+package org.citydb.config.project.kmlExporter;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
@@ -34,35 +34,35 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ADEExtensionAdapter extends XmlAdapter<ADEExtensionAdapter.ADEExtensionList, Map<String, ADEExtension>> {
+public class ADEPreferencesAdapter extends XmlAdapter<ADEPreferencesAdapter.ADEPreferencesList, Map<String, ADEPreferences>> {
 
-    public static class ADEExtensionList {
-        @XmlElement(name = "adeExtension")
-        private List<ADEExtension> adeExtensions;
+    public static class ADEPreferencesList {
+        @XmlElement(name = "ade")
+        private List<ADEPreferences> preferences;
     }
 
     @Override
-    public Map<String, ADEExtension> unmarshal(ADEExtensionList v) {
-        Map<String, ADEExtension> adeExtensions = null;
+    public Map<String, ADEPreferences> unmarshal(ADEPreferencesList v) {
+        Map<String, ADEPreferences> map = null;
 
-        if (v != null && v.adeExtensions != null && !v.adeExtensions.isEmpty()) {
-            adeExtensions = new HashMap<>();
-            for (ADEExtension adeExtension : v.adeExtensions) {
-                if (adeExtension.isSetExtensionId())
-                    adeExtensions.put(adeExtension.getExtensionId(), adeExtension);
+        if (v != null && v.preferences != null && !v.preferences.isEmpty()) {
+            map = new HashMap<>();
+            for (ADEPreferences preferences : v.preferences) {
+                if (preferences.isSetExtensionId())
+                    map.put(preferences.getExtensionId(), preferences);
             }
         }
 
-        return adeExtensions;
+        return map;
     }
 
     @Override
-    public ADEExtensionList marshal(Map<String, ADEExtension> v) {
-        ADEExtensionList list = null;
+    public ADEPreferencesList marshal(Map<String, ADEPreferences> v) {
+        ADEPreferencesList list = null;
 
         if (v != null && !v.isEmpty()) {
-            list = new ADEExtensionList();
-            list.adeExtensions = new ArrayList<>(v.values());
+            list = new ADEPreferencesList();
+            list.preferences = new ArrayList<>(v.values());
         }
 
         return list;

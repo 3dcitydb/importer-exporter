@@ -30,14 +30,20 @@ package org.citydb.modules.kml.gui.view;
 import org.citydb.config.Config;
 import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.i18n.Language;
-import org.citydb.config.project.ade.ADEExtension;
-import org.citydb.config.project.ade.ADEKmlExporterPreference;
 import org.citydb.config.project.database.DBConnection;
 import org.citydb.config.project.database.Database;
 import org.citydb.config.project.database.DatabaseConfigurationException;
 import org.citydb.config.project.database.Workspace;
 import org.citydb.config.project.global.LogLevel;
-import org.citydb.config.project.kmlExporter.*;
+import org.citydb.config.project.kmlExporter.ADEPreference;
+import org.citydb.config.project.kmlExporter.ADEPreferences;
+import org.citydb.config.project.kmlExporter.AltitudeOffsetMode;
+import org.citydb.config.project.kmlExporter.DisplayForm;
+import org.citydb.config.project.kmlExporter.KmlExporter;
+import org.citydb.config.project.kmlExporter.KmlTiling;
+import org.citydb.config.project.kmlExporter.KmlTilingMode;
+import org.citydb.config.project.kmlExporter.SimpleKmlQuery;
+import org.citydb.config.project.kmlExporter.SimpleKmlQueryMode;
 import org.citydb.config.project.query.filter.selection.id.ResourceIdOperator;
 import org.citydb.config.project.query.filter.type.FeatureTypeFilter;
 import org.citydb.database.DatabaseController;
@@ -62,7 +68,13 @@ import org.citydb.plugin.extension.view.components.BoundingBoxPanel;
 import org.citydb.registry.ObjectRegistry;
 import org.citydb.util.ClientConstants;
 import org.citydb.util.Util;
-import org.citygml4j.model.module.citygml.*;
+import org.citygml4j.model.module.citygml.BridgeModule;
+import org.citygml4j.model.module.citygml.CityFurnitureModule;
+import org.citygml4j.model.module.citygml.CityGMLVersion;
+import org.citygml4j.model.module.citygml.CityObjectGroupModule;
+import org.citygml4j.model.module.citygml.ReliefModule;
+import org.citygml4j.model.module.citygml.TunnelModule;
+import org.citygml4j.model.module.citygml.VegetationModule;
 import org.jdesktop.swingx.JXTextField;
 import org.jdesktop.swingx.prompt.PromptSupport.FocusBehavior;
 
@@ -585,8 +597,8 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		setDisplayFormSettings(kmlExporter.getBridgeDisplayForms());
 		setDisplayFormSettings(kmlExporter.getTunnelDisplayForms());
 
-		for (ADEExtension adeExtensionConfig : config.getProject().getAdeExtensions().values()) {
-			for (ADEKmlExporterPreference preference : adeExtensionConfig.getKmlExporter().getPreferences().values()) {
+		for (ADEPreferences preferences : kmlExporter.getADEPreferences().values()) {
+			for (ADEPreference preference : preferences.getPreferences().values()) {
 				setDisplayFormSettings(preference.getDisplayForms());
 			}
 		}
