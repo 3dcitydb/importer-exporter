@@ -7,7 +7,7 @@ subprojects {
     apply plugin: 'maven-publish'
 
     group 'org.citydb'
-    version '4.3.0-b20200318.1407'
+    version '4.3.0-b20200807.1607'
 
     java {
         sourceCompatibility = JavaVersion.VERSION_1_8
