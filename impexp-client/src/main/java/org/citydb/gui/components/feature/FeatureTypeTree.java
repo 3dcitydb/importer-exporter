@@ -56,6 +56,7 @@ import javax.xml.namespace.QName;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
 
 @SuppressWarnings("serial")
 public class FeatureTypeTree extends CheckboxTree {
@@ -66,11 +67,14 @@ public class FeatureTypeTree extends CheckboxTree {
 	private List<DefaultMutableTreeNode> leafs;
 	private CityGMLVersion version;
 
-	public FeatureTypeTree(boolean withADESupport) {
+	public FeatureTypeTree(Predicate<ADEExtension> adeFilter) {
 		schemaMapping = ObjectRegistry.getInstance().getSchemaMapping();
 		adeManager = ADEExtensionManager.getInstance();
+		populate(adeFilter);
+	}
 
-		populate(withADESupport);
+	public FeatureTypeTree(boolean withADESupport) {
+		this(e -> withADESupport);
 	}
 
 	public FeatureTypeTree() {
@@ -79,6 +83,11 @@ public class FeatureTypeTree extends CheckboxTree {
 
 	public FeatureTypeTree(CityGMLVersion version, boolean withADESupport) {
 		this(withADESupport);
+		this.version = version;
+	}
+
+	public FeatureTypeTree(CityGMLVersion version, Predicate<ADEExtension> adeFilter) {
+		this(adeFilter);
 		this.version = version;
 	}
 
@@ -208,7 +217,7 @@ public class FeatureTypeTree extends CheckboxTree {
 		}
 	}	
 
-	private void populate(boolean withADESupport) {
+	private void populate(Predicate<ADEExtension> adeFilter) {
 		root = new DefaultMutableTreeNode("CityObject");
 		leafs = new ArrayList<>();
 
@@ -224,8 +233,8 @@ public class FeatureTypeTree extends CheckboxTree {
 		root.add(getCityGMLModuleNode(VegetationModule.v2_0_0));
 		root.add(getCityGMLModuleNode(WaterBodyModule.v2_0_0));
 
-		if (withADESupport) {
-			for (DefaultMutableTreeNode adeNode : getADENodes())
+		if (adeFilter != null) {
+			for (DefaultMutableTreeNode adeNode : getADENodes(adeFilter))
 				root.add(adeNode);
 		}
 
@@ -247,22 +256,24 @@ public class FeatureTypeTree extends CheckboxTree {
 		return node;
 	}
 
-	private List<DefaultMutableTreeNode> getADENodes() {
+	private List<DefaultMutableTreeNode> getADENodes(Predicate<ADEExtension> adeFilter) {
 		List<DefaultMutableTreeNode> adeNodes = new ArrayList<>();
 
 		for (ADEExtension extension : adeManager.getExtensions()) {
-			DefaultMutableTreeNode adeNode = new DefaultMutableTreeNode(extension.getMetadata().getName());
+			if (adeFilter.test(extension)) {
+				DefaultMutableTreeNode adeNode = new DefaultMutableTreeNode(extension.getMetadata().getName());
 
-			for (AppSchema schema : extension.getSchemas()) {
-				for (FeatureType featureType : schema.listTopLevelFeatureTypes(true)) {
-					DefaultMutableTreeNode child = new DefaultMutableTreeNode(featureType); 
-					adeNode.add(child);
-					leafs.add(child);
+				for (AppSchema schema : extension.getSchemas()) {
+					for (FeatureType featureType : schema.listTopLevelFeatureTypes(true)) {
+						DefaultMutableTreeNode child = new DefaultMutableTreeNode(featureType);
+						adeNode.add(child);
+						leafs.add(child);
+					}
 				}
-			}
 
-			if (adeNode.getChildCount() > 0)
-				adeNodes.add(adeNode);
+				if (adeNode.getChildCount() > 0)
+					adeNodes.add(adeNode);
+			}
 		}
 
 		return adeNodes;

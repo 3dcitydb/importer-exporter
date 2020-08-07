@@ -127,7 +127,7 @@ public abstract class ADEExtension {
 			if (Files.exists(path)) {
 				try (Stream<Path> stream = Files.walk(path)
 						.filter(candidate -> candidate.getFileName().toString().toLowerCase().endsWith(".xml"))) {
-					stream.forEach(candidate -> candidates.add(candidate));
+					stream.forEach(candidates::add);
 				}
 			}
 			

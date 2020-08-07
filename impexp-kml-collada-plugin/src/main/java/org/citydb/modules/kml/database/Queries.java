@@ -31,13 +31,27 @@ import org.citydb.config.project.kmlExporter.DisplayForm;
 import org.citydb.config.project.kmlExporter.Lod0FootprintMode;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.schema.SequenceEnum;
+import org.citydb.log.Logger;
+import org.citydb.modules.kml.ade.ADEKmlExportException;
+import org.citydb.modules.kml.ade.ADEKmlExportManager;
+import org.citydb.modules.kml.ade.ADEKmlExporter;
 
 public class Queries {
 	private AbstractDatabaseAdapter databaseAdapter;
 	private String schema;
 	private String implicitGeometryNullColumns;
+	private KmlExporterManager exportManager;
+
+	private static int QUERY_POINT_AND_CURVE_GEOMETRY = 0;
+	private static int QUERY_SURFACE_GEOMETRY = 1;
+	private static int QUERY_SURFACE_GEOMETRY_REFERENCE_IDS = 2;
 
 	public Queries(AbstractDatabaseAdapter databaseAdapter, String schema) {
+		this(databaseAdapter, schema, null);
+	}
+
+	public Queries(AbstractDatabaseAdapter databaseAdapter, String schema, KmlExporterManager exporterManager) {
+		this.exportManager = exporterManager;
 		this.databaseAdapter = databaseAdapter;
 		this.schema = schema;
 
@@ -51,6 +65,10 @@ public class Queries {
 			default:
 				implicitGeometryNullColumns = "";
 		}
+	}
+
+	public String getImplicitGeometryNullColumns() {
+		return implicitGeometryNullColumns;
 	}
 
 	// ----------------------------------------------------------------------
@@ -166,14 +184,18 @@ public class Queries {
 
 		if (lod == 0) {
 			if (lod0FootprintMode == Lod0FootprintMode.FOOTPRINT) {
-				query.append("SELECT sg.geometry FROM ").append(schema).append(".surface_geometry sg, ")
+				query.append("SELECT sg.geometry, ")
+				.append(implicitGeometryNullColumns)
+				.append("FROM ").append(schema).append(".surface_geometry sg, ")
 				.append(schema).append(".building b ")
 				.append("WHERE b.lod0_footprint_id = sg.root_id ")
 				.append("AND sg.geometry IS NOT NULL AND b.id = ?");
 			}
 
 			else if (lod0FootprintMode == Lod0FootprintMode.ROOFPRINT || lod0FootprintMode == Lod0FootprintMode.ROOFPRINT_PRIOR_FOOTPRINT) {
-				query.append("SELECT sg.geometry FROM ").append(schema).append(".surface_geometry sg, ")
+				query.append("SELECT sg.geometry, ")
+				.append(implicitGeometryNullColumns)
+				.append("FROM ").append(schema).append(".surface_geometry sg, ")
 				.append(schema).append(".building b ")
 				.append("WHERE b.lod0_roofprint_id = sg.root_id ")
 				.append("AND sg.geometry IS NOT NULL AND b.id = ?");
@@ -198,7 +220,9 @@ public class Queries {
 		}
 
 		else {
-			query.append("SELECT sg.geometry FROM ").append(schema).append(".surface_geometry sg, ")
+			query.append("SELECT sg.geometry, ")
+			.append(implicitGeometryNullColumns)
+			.append("FROM ").append(schema).append(".surface_geometry sg, ")
 			.append(schema).append(".thematic_surface ts ")
 			.append("WHERE ts.building_id = ? AND ts.objectclass_id = 35 ")
 			.append("AND sg.root_id = ts.lod").append(lod).append("_multi_surface_id AND sg.geometry IS NOT NULL ");
@@ -381,7 +405,8 @@ public class Queries {
 	private String getBuildingPartAggregateGeometriesForLOD2OrHigher() {
 		switch (databaseAdapter.getDatabaseType()) {
 		case ORACLE:
-			return new StringBuilder("SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom ")
+			return new StringBuilder("SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom, ")
+			.append(implicitGeometryNullColumns)
 			.append("FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom ")
 			.append("FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom ")
 			.append("FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(simple_geom, <TOLERANCE>)) aggr_geom ")
@@ -421,7 +446,8 @@ public class Queries {
 			.append("GROUP BY mod (rownum, <GROUP_BY_3>) ")
 			.append(")").toString();
 		case POSTGIS:
-			return new StringBuilder("SELECT ST_Union(get_valid_area.simple_geom) ")
+			return new StringBuilder("SELECT ST_Union(get_valid_area.simple_geom), ")
+			.append(implicitGeometryNullColumns)
 			.append("FROM (")
 			.append("SELECT * FROM (")
 			.append("SELECT * FROM (")
@@ -456,7 +482,8 @@ public class Queries {
 	private String getBuildingPartAggregateGeometriesForLOD1() {
 		switch (databaseAdapter.getDatabaseType()) {
 		case ORACLE:
-			return new StringBuilder("SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom ")
+			return new StringBuilder("SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom, ")
+			.append(implicitGeometryNullColumns)
 			.append("FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom ")
 			.append("FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom ")
 			.append("FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(simple_geom, <TOLERANCE>)) aggr_geom ")
@@ -490,7 +517,8 @@ public class Queries {
 			.append("GROUP BY mod (rownum, <GROUP_BY_3>) ")
 			.append(")").toString();
 		case POSTGIS:
-			return new StringBuilder("SELECT ST_Union(get_valid_area.simple_geom) ")
+			return new StringBuilder("SELECT ST_Union(get_valid_area.simple_geom), ")
+			.append(implicitGeometryNullColumns)
 			.append("FROM (")
 			.append("SELECT * FROM (")
 			.append("SELECT * FROM (")
@@ -520,7 +548,8 @@ public class Queries {
 	private String getBuildingPartAggregateGeometriesForLOD0() {
 		switch (databaseAdapter.getDatabaseType()) {
 		case ORACLE:
-			return new StringBuilder("SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom ")
+			return new StringBuilder("SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom, ")
+			.append(implicitGeometryNullColumns)
 			.append("FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom ")
 			.append("FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom ")
 			.append("FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(simple_geom, <TOLERANCE>)) aggr_geom ")
@@ -554,7 +583,8 @@ public class Queries {
 			.append("GROUP BY mod (rownum, <GROUP_BY_3>) ")
 			.append(")").toString();
 		case POSTGIS:
-			return new StringBuilder("SELECT ST_Union(get_valid_area.simple_geom) ")
+			return new StringBuilder("SELECT ST_Union(get_valid_area.simple_geom), ")
+			.append(implicitGeometryNullColumns)
 			.append("FROM (")
 			.append("SELECT * FROM (")
 			.append("SELECT * FROM (")
@@ -581,9 +611,10 @@ public class Queries {
 		}
 	}
 
-	public String getBuildingPartAggregateGeometries(double tolerance, int srid2D, int lodToExportFrom, double groupBy1, double groupBy2, double groupBy3) {
+	public String getBuildingPartAggregateGeometries(double tolerance, int srid2D, int lodToExportFrom, double groupBy1, double groupBy2, double groupBy3, int objectClassId) {
+		String query;
 		if (lodToExportFrom > 1) {
-			return getBuildingPartAggregateGeometriesForLOD2OrHigher().replace("<TOLERANCE>", String.valueOf(tolerance))
+			query = getBuildingPartAggregateGeometriesForLOD2OrHigher().replace("<TOLERANCE>", String.valueOf(tolerance))
 					.replace("<2D_SRID>", String.valueOf(srid2D))
 					.replace("<LoD>", String.valueOf(lodToExportFrom))
 					.replace("<GROUP_BY_1>", String.valueOf(groupBy1))
@@ -591,7 +622,7 @@ public class Queries {
 					.replace("<GROUP_BY_3>", String.valueOf(groupBy3));
 		}
 		else if (lodToExportFrom == 1){
-			return getBuildingPartAggregateGeometriesForLOD1().replace("<TOLERANCE>", String.valueOf(tolerance))
+			query = getBuildingPartAggregateGeometriesForLOD1().replace("<TOLERANCE>", String.valueOf(tolerance))
 					.replace("<2D_SRID>", String.valueOf(srid2D))
 					.replace("<LoD>", String.valueOf(lodToExportFrom))
 					.replace("<GROUP_BY_1>", String.valueOf(groupBy1))
@@ -599,23 +630,26 @@ public class Queries {
 					.replace("<GROUP_BY_3>", String.valueOf(groupBy3));			
 		}
 		else {
-			return getBuildingPartAggregateGeometriesForLOD0().replace("<TOLERANCE>", String.valueOf(tolerance))
+			query = getBuildingPartAggregateGeometriesForLOD0().replace("<TOLERANCE>", String.valueOf(tolerance))
 					.replace("<GROUP_BY_1>", String.valueOf(groupBy1))
 					.replace("<GROUP_BY_2>", String.valueOf(groupBy2))
 					.replace("<GROUP_BY_3>", String.valueOf(groupBy3));					
 		}
+		return unionADEQueries(QUERY_SURFACE_GEOMETRY, query,  lodToExportFrom, objectClassId);
 	}
 
-	public String getBuildingPartQuery(int lodToExportFrom, Lod0FootprintMode lod0FootprintMode, DisplayForm displayForm, boolean lodCheckOnly) {
+	public String getBuildingPartQuery(int lodToExportFrom, Lod0FootprintMode lod0FootprintMode, DisplayForm displayForm, boolean lodCheckOnly, int objectClassId) {
 		String query = null;
 
 		switch (displayForm.getForm()) {
 		case DisplayForm.FOOTPRINT:
 		case DisplayForm.EXTRUDED:
 			query = getBuildingPartFootprint(lodToExportFrom, lod0FootprintMode);
+			query = unionADEQueries(QUERY_SURFACE_GEOMETRY, query, lodToExportFrom, objectClassId);
 			break;
 		default:
 			query = getBuildingPartGeometry(lodToExportFrom, lod0FootprintMode, lodCheckOnly);
+			query = unionADEQueries(QUERY_SURFACE_GEOMETRY_REFERENCE_IDS, query, lodToExportFrom, objectClassId);
 		}
 
 		return query;
@@ -650,7 +684,9 @@ public class Queries {
 		}
 
 		else {
-			query.append("SELECT sg.geometry FROM ").append(schema).append(".surface_geometry sg, ")
+			query.append("SELECT sg.geometry, ")
+			.append(implicitGeometryNullColumns)
+			.append("FROM ").append(schema).append(".surface_geometry sg, ")
 			.append(schema).append(".bridge_thematic_surface ts ")
 			.append("WHERE ts.bridge_id = ? AND ts.objectclass_id = 73 ")
 			.append("AND sg.root_id = ts.lod").append(lod).append("_multi_surface_id AND sg.geometry IS NOT NULL ");
@@ -868,7 +904,8 @@ public class Queries {
 	private String getBridgePartAggregateGeometriesForLOD2OrHigher() {
 		switch (databaseAdapter.getDatabaseType()) {
 		case ORACLE:
-			return new StringBuilder("SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom ")
+			return new StringBuilder("SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom, ")
+			.append(implicitGeometryNullColumns)
 			.append("FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom ")
 			.append("FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom ")
 			.append("FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(simple_geom, <TOLERANCE>)) aggr_geom ")
@@ -908,7 +945,8 @@ public class Queries {
 			.append("GROUP BY mod (rownum, <GROUP_BY_3>) ")
 			.append(")").toString();
 		case POSTGIS:
-			return new StringBuilder("SELECT ST_Union(get_valid_area.simple_geom) ")
+			return new StringBuilder("SELECT ST_Union(get_valid_area.simple_geom), ")
+			.append(implicitGeometryNullColumns)
 			.append("FROM (")
 			.append("SELECT * FROM (")
 			.append("SELECT * FROM (")
@@ -943,7 +981,8 @@ public class Queries {
 	private String getBridgePartAggregateGeometriesForLOD1() {
 		switch (databaseAdapter.getDatabaseType()) {
 		case ORACLE:
-			return new StringBuilder("SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom ")
+			return new StringBuilder("SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom, ")
+			.append(implicitGeometryNullColumns)
 			.append("FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom ")
 			.append("FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom ")
 			.append("FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(simple_geom, <TOLERANCE>)) aggr_geom ")
@@ -977,7 +1016,8 @@ public class Queries {
 			.append("GROUP BY mod (rownum, <GROUP_BY_3>) ")
 			.append(")").toString();
 		case POSTGIS:
-			return new StringBuilder("SELECT ST_Union(get_valid_area.simple_geom) ")
+			return new StringBuilder("SELECT ST_Union(get_valid_area.simple_geom), ")
+			.append(implicitGeometryNullColumns)
 			.append("FROM (")
 			.append("SELECT * FROM (")
 			.append("SELECT * FROM (")
@@ -1004,9 +1044,10 @@ public class Queries {
 		}
 	}
 
-	public String getBridgePartAggregateGeometries (double tolerance, int srid2D, int lodToExportFrom, double groupBy1, double groupBy2, double groupBy3) {
+	public String getBridgePartAggregateGeometries (double tolerance, int srid2D, int lodToExportFrom, double groupBy1, double groupBy2, double groupBy3, int objectClassId) {
+		String query;
 		if (lodToExportFrom > 1) {
-			return getBridgePartAggregateGeometriesForLOD2OrHigher().replace("<TOLERANCE>", String.valueOf(tolerance))
+			query = getBridgePartAggregateGeometriesForLOD2OrHigher().replace("<TOLERANCE>", String.valueOf(tolerance))
 					.replace("<2D_SRID>", String.valueOf(srid2D))
 					.replace("<LoD>", String.valueOf(lodToExportFrom))
 					.replace("<GROUP_BY_1>", String.valueOf(groupBy1))
@@ -1014,25 +1055,28 @@ public class Queries {
 					.replace("<GROUP_BY_3>", String.valueOf(groupBy3));
 		}
 		else {
-			return getBridgePartAggregateGeometriesForLOD1().replace("<TOLERANCE>", String.valueOf(tolerance))
+			query = getBridgePartAggregateGeometriesForLOD1().replace("<TOLERANCE>", String.valueOf(tolerance))
 					.replace("<2D_SRID>", String.valueOf(srid2D))
 					.replace("<LoD>", String.valueOf(lodToExportFrom))
 					.replace("<GROUP_BY_1>", String.valueOf(groupBy1))
 					.replace("<GROUP_BY_2>", String.valueOf(groupBy2))
 					.replace("<GROUP_BY_3>", String.valueOf(groupBy3));			
 		}
+		return unionADEQueries(QUERY_SURFACE_GEOMETRY, query, lodToExportFrom, objectClassId);
 	}
 
-	public String getBridgePartQuery(int lodToExportFrom, DisplayForm displayForm, boolean lodCheckOnly) {
-		String query = null;
+	public String getBridgePartQuery(int lodToExportFrom, DisplayForm displayForm, boolean lodCheckOnly, int objectClassId) {
+		String query;
 
 		switch (displayForm.getForm()) {
 		case DisplayForm.FOOTPRINT:
 		case DisplayForm.EXTRUDED:
 			query = getBridgePartFootprint(lodToExportFrom);
+			query = unionADEQueries(QUERY_SURFACE_GEOMETRY, query, lodToExportFrom, objectClassId);
 			break;
 		default:
 			query = getBridgePartGeometry(lodToExportFrom, lodCheckOnly);
+			query = unionADEQueries(QUERY_SURFACE_GEOMETRY_REFERENCE_IDS, query, lodToExportFrom, objectClassId);
 		}
 
 		return query;
@@ -1067,7 +1111,9 @@ public class Queries {
 		}
 
 		else {
-			query.append("SELECT sg.geometry FROM ").append(schema).append(".surface_geometry sg, ")
+			query.append("SELECT sg.geometry, ")
+			.append(implicitGeometryNullColumns)
+			.append("FROM ").append(schema).append(".surface_geometry sg, ")
 			.append(schema).append(".tunnel_thematic_surface ts ")
 			.append("WHERE ts.tunnel_id = ? AND ts.objectclass_id = 94 ")
 			.append("AND sg.root_id = ts.lod").append(lod).append("_multi_surface_id AND sg.geometry IS NOT NULL ");
@@ -1250,7 +1296,8 @@ public class Queries {
 	private String getTunnelPartAggregateGeometriesForLOD2OrHigher() {
 		switch (databaseAdapter.getDatabaseType()) {
 		case ORACLE:
-			return new StringBuilder("SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom ")
+			return new StringBuilder("SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom, ")
+			.append(implicitGeometryNullColumns)
 			.append("FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom ")
 			.append("FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom ")
 			.append("FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(simple_geom, <TOLERANCE>)) aggr_geom ")
@@ -1290,7 +1337,8 @@ public class Queries {
 			.append("GROUP BY mod (rownum, <GROUP_BY_3>) ")
 			.append(")").toString();
 		case POSTGIS:
-			return new StringBuilder("SELECT ST_Union(get_valid_area.simple_geom) ")
+			return new StringBuilder("SELECT ST_Union(get_valid_area.simple_geom), ")
+			.append(implicitGeometryNullColumns)
 			.append("FROM (")
 			.append("SELECT * FROM (")
 			.append("SELECT * FROM (")
@@ -1325,7 +1373,8 @@ public class Queries {
 	private String getTunnelPartAggregateGeometriesForLOD1() {
 		switch (databaseAdapter.getDatabaseType()) {
 		case ORACLE:
-			return new StringBuilder("SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom ")
+			return new StringBuilder("SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom, ")
+			.append(implicitGeometryNullColumns)
 			.append("FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom ")
 			.append("FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom ")
 			.append("FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(simple_geom, <TOLERANCE>)) aggr_geom ")
@@ -1359,7 +1408,8 @@ public class Queries {
 			.append("GROUP BY mod (rownum, <GROUP_BY_3>) ")
 			.append(")").toString();
 		case POSTGIS:
-			return new StringBuilder("SELECT ST_Union(get_valid_area.simple_geom) ")
+			return new StringBuilder("SELECT ST_Union(get_valid_area.simple_geom), ")
+			.append(implicitGeometryNullColumns)
 			.append("FROM (")
 			.append("SELECT * FROM (")
 			.append("SELECT * FROM (")
@@ -1386,9 +1436,10 @@ public class Queries {
 		}
 	}
 
-	public String getTunnelPartAggregateGeometries(double tolerance, int srid2D, int lodToExportFrom, double groupBy1, double groupBy2, double groupBy3) {
+	public String getTunnelPartAggregateGeometries(double tolerance, int srid2D, int lodToExportFrom, double groupBy1, double groupBy2, double groupBy3, int objectClassId) {
+		String query;
 		if (lodToExportFrom > 1) {
-			return getTunnelPartAggregateGeometriesForLOD2OrHigher().replace("<TOLERANCE>", String.valueOf(tolerance))
+			query = getTunnelPartAggregateGeometriesForLOD2OrHigher().replace("<TOLERANCE>", String.valueOf(tolerance))
 					.replace("<2D_SRID>", String.valueOf(srid2D))
 					.replace("<LoD>", String.valueOf(lodToExportFrom))
 					.replace("<GROUP_BY_1>", String.valueOf(groupBy1))
@@ -1396,25 +1447,28 @@ public class Queries {
 					.replace("<GROUP_BY_3>", String.valueOf(groupBy3));
 		}
 		else {
-			return getTunnelPartAggregateGeometriesForLOD1().replace("<TOLERANCE>", String.valueOf(tolerance))
+			query = getTunnelPartAggregateGeometriesForLOD1().replace("<TOLERANCE>", String.valueOf(tolerance))
 					.replace("<2D_SRID>", String.valueOf(srid2D))
 					.replace("<LoD>", String.valueOf(lodToExportFrom))
 					.replace("<GROUP_BY_1>", String.valueOf(groupBy1))
 					.replace("<GROUP_BY_2>", String.valueOf(groupBy2))
 					.replace("<GROUP_BY_3>", String.valueOf(groupBy3));			
 		}
+		return unionADEQueries(QUERY_SURFACE_GEOMETRY, query, lodToExportFrom, objectClassId);
 	}
 
-	public String getTunnelPartQuery(int lodToExportFrom, DisplayForm displayForm, boolean lodCheckOnly) {
-		String query = null;
+	public String getTunnelPartQuery(int lodToExportFrom, DisplayForm displayForm, boolean lodCheckOnly, int objectClassId) {
+		String query;
 
 		switch (displayForm.getForm()) {
 		case DisplayForm.FOOTPRINT:
 		case DisplayForm.EXTRUDED:
 			query = getTunnelPartFootprint(lodToExportFrom);
+			query = unionADEQueries(QUERY_SURFACE_GEOMETRY, query, lodToExportFrom, objectClassId);
 			break;
 		default:
 			query = getTunnelPartGeometry(lodToExportFrom, lodCheckOnly);
+			query = unionADEQueries(QUERY_SURFACE_GEOMETRY_REFERENCE_IDS, query, lodToExportFrom, objectClassId);
 		}
 		
 		return query;
@@ -1423,17 +1477,19 @@ public class Queries {
 	// ----------------------------------------------------------------------
 	// CITY OBJECT GROUP QUERIES
 	// ----------------------------------------------------------------------
-	public String getCityObjectGroupFootprint() {
-		return new StringBuilder("SELECT sg.geometry ")
+	public String getCityObjectGroupFootprint(int objectClassId) {
+		String query = new StringBuilder("SELECT sg.geometry, ")
+		.append(implicitGeometryNullColumns)
 		.append("FROM ").append(schema).append(".SURFACE_GEOMETRY sg, ")
 		.append(schema).append(".CITYOBJECTGROUP cog ")
 		.append("WHERE ")
 		.append("cog.id = ? ")
 		.append("AND sg.root_id = cog.brep_id ")
 		.append("AND sg.geometry IS NOT NULL ").toString();
+		return unionADEQueries(QUERY_SURFACE_GEOMETRY, query, -1, objectClassId);
 	}
 
-	public String getCityObjectGroupMembers() {
+/*	public String getCityObjectGroupMembers() {
 		return new StringBuilder("SELECT co.id, co.gmlid, co.envelope, co.objectclass_id ")
 		.append("FROM ").append(schema).append(".CITYOBJECT co ")
 		.append("WHERE co.ID IN (SELECT g2co.cityobject_id ")
@@ -1444,52 +1500,60 @@ public class Queries {
 
 	public String getCityObjectGroupMembersInBBOX() {
 		StringBuilder query = new StringBuilder()
-		.append("SELECT co.id, co.gmlid, co.objectclass_id, co.envelope ")
-		.append("FROM ").append(schema).append(".CITYOBJECT co ")
-		.append("WHERE co.ID IN (SELECT g2co.cityobject_id ")
-		.append("FROM ").append(schema).append(".GROUP_TO_CITYOBJECT g2co ")
-		.append("WHERE g2co.cityobjectgroup_id = ?) ")
-		.append("AND ");
+				.append("SELECT co.id, co.gmlid, co.objectclass_id, co.envelope ")
+				.append("FROM ").append(schema).append(".CITYOBJECT co ")
+				.append("WHERE co.ID IN (SELECT g2co.cityobject_id ")
+				.append("FROM ").append(schema).append(".GROUP_TO_CITYOBJECT g2co ")
+				.append("WHERE g2co.cityobjectgroup_id = ?) ")
+				.append("AND ");
 
 		switch (databaseAdapter.getDatabaseType()) {
-		case ORACLE:
-			query.append("SDO_ANYINTERACT(co.envelope, ?) = 'TRUE'");
-			break;
-		case POSTGIS:
-			query.append("co.envelope && ?");
-			break;
-		}	
+			case ORACLE:
+				query.append("SDO_ANYINTERACT(co.envelope, ?) = 'TRUE'");
+				break;
+			case POSTGIS:
+				query.append("co.envelope && ?");
+				break;
+		}
 
 		return query.toString();
-	}
+	}*/
 
 	// ----------------------------------------------------------------------
 	// SOLITARY VEGETATION OBJECT QUERIES
 	// ----------------------------------------------------------------------
 
-	public String getSolitaryVegetationObjectBasisData(int lodToExportFrom) {
-		return new StringBuilder("SELECT ig.relative_brep_id, svo.lod").append(lodToExportFrom).append("_implicit_ref_point, ")
-				.append("svo.lod").append(lodToExportFrom).append("_implicit_transformation, svo.lod").append(lodToExportFrom).append("_brep_id ")
-				.append("FROM ").append(schema).append(".SOLITARY_VEGETAT_OBJECT svo ")
-				.append("LEFT JOIN ").append(schema).append(".IMPLICIT_GEOMETRY ig ON ig.id = svo.lod").append(lodToExportFrom).append("_implicit_rep_id ") 
-				.append("WHERE svo.id = ?").toString();
-	}
-
-	public String getSolitaryVegetationObjectQuery(int lodToExportFrom, DisplayForm displayForm, boolean isImplicit, boolean exportAppearance) {
+	public String getSolitaryVegetationObjectQuery(int lodToExportFrom, DisplayForm displayForm, int  objectClassId) {
 		String query = null;
 
 		switch (displayForm.getForm()) {
 		case DisplayForm.FOOTPRINT:
 		case DisplayForm.EXTRUDED:
-			query = getSurfaceGeometries(exportAppearance, isImplicit);
+			query = new StringBuilder("SELECT sg.geometry, ")
+					.append(implicitGeometryNullColumns)
+					.append("FROM ").append(schema).append(".SURFACE_GEOMETRY sg, ")
+					.append(schema).append(".SOLITARY_VEGETAT_OBJECT svo ")
+					.append("WHERE ")
+					.append("svo.id = ? ")
+					.append("AND sg.root_id = ").append("svo.lod").append(lodToExportFrom).append("_brep_id ")
+					.append("AND sg.geometry IS NOT NULL ")
+					.append("UNION ALL ")
+					.append("SELECT sg.implicit_geometry, svo.lod").append(lodToExportFrom).append("_implicit_rep_id, svo.lod").append(lodToExportFrom).append("_implicit_ref_point, svo.lod").append(lodToExportFrom).append("_implicit_transformation ")
+					.append("FROM ").append(schema).append(".SURFACE_GEOMETRY sg ")
+					.append("LEFT JOIN ").append(schema).append(".IMPLICIT_GEOMETRY ig ON sg.root_id = ig.relative_brep_id ")
+					.append("LEFT JOIN ").append(schema).append(".SOLITARY_VEGETAT_OBJECT svo ON ig.id = svo.lod").append(lodToExportFrom).append("_implicit_rep_id ")
+					.append("WHERE svo.id = ? ")
+					.append("AND sg.implicit_geometry IS NOT NULL").toString();
+			query = unionADEQueries(QUERY_SURFACE_GEOMETRY, query, lodToExportFrom, objectClassId);
 			break;
 		default:
-			StringBuilder tmp = new StringBuilder()
-			.append("SELECT ?, '7' as objectclass_id "); // dummy
-			if (databaseAdapter.getSQLAdapter().requiresPseudoTableInSelect())
-				tmp.append(" FROM ").append(databaseAdapter.getSQLAdapter().getPseudoTableName());
-
-			query = tmp.toString();
+			query = new StringBuilder("SELECT svo.lod").append(lodToExportFrom).append("_brep_id, '7' as objectclass_id, ")
+					.append("ig.relative_brep_id, svo.lod").append(lodToExportFrom).append("_implicit_ref_point, svo.lod").append(lodToExportFrom).append("_implicit_transformation ")
+					.append("FROM ").append(schema).append(".SOLITARY_VEGETAT_OBJECT svo ")
+					.append("LEFT JOIN ").append(schema).append(".IMPLICIT_GEOMETRY ig ON ig.id = svo.lod").append(lodToExportFrom).append("_implicit_rep_id ")
+					.append("WHERE svo.id = ? AND (")
+					.append("svo.lod").append(lodToExportFrom).append("_brep_id IS NOT NULL OR ig.relative_brep_id IS NOT NULL)").toString();
+			query = unionADEQueries(QUERY_SURFACE_GEOMETRY_REFERENCE_IDS, query, lodToExportFrom, objectClassId);
 		}
 
 		return query;
@@ -1499,118 +1563,142 @@ public class Queries {
 	// PLANT COVER QUERIES
 	// ----------------------------------------------------------------------
 
-	public String getPlantCoverQuery(int lodToExportFrom, DisplayForm displayForm) {
-		StringBuilder query = new StringBuilder();
-		query.append("select sub.* from (");
-
+	public String getPlantCoverQuery(int lodToExportFrom, DisplayForm displayForm, int objectClassId) {
+		String query;
 		switch (displayForm.getForm()) {
 		case DisplayForm.FOOTPRINT:
 		case DisplayForm.EXTRUDED:
-			query.append("(SELECT tmp.* FROM (SELECT sg.geometry ")
+			query = new StringBuilder("select sub.* from (").append("(SELECT tmp.* FROM (SELECT sg.geometry, ")
+			.append(implicitGeometryNullColumns)
 			.append("FROM ").append(schema).append(".surface_geometry sg ")
 			.append("JOIN ").append(schema).append(".PLANT_COVER pc ON sg.root_id = pc.lod").append(lodToExportFrom).append("_multi_surface_id ")
 			.append("WHERE pc.id = ? ")
 			.append("AND sg.geometry IS NOT NULL ")
 			.append(") tmp) ")
 			.append("UNION ALL ")
-			.append("(SELECT tmp.* FROM (SELECT sg.geometry ")
+			.append("(SELECT tmp.* FROM (SELECT sg.geometry, ")
+			.append(implicitGeometryNullColumns)
 			.append("FROM ").append(schema).append(".surface_geometry sg ")
 			.append("JOIN ").append(schema).append(".PLANT_COVER pc ON sg.root_id = pc.lod").append(lodToExportFrom).append("_multi_solid_id ")
 			.append("WHERE pc.id = ?")
 			.append("AND sg.geometry IS NOT NULL ")
 			.append(") tmp) ")
-			.append(") sub ");
+			.append(") sub ").toString();
+			query = unionADEQueries(QUERY_SURFACE_GEOMETRY, query, lodToExportFrom, objectClassId);
 			break;
 		default:
-			query.append("(SELECT tmp.* FROM (SELECT pc.lod").append(lodToExportFrom).append("_multi_surface_id, '8' as objectclass_id ")
+			query = new StringBuilder("select sub.* from (").append("(SELECT tmp.* FROM (SELECT pc.lod").append(lodToExportFrom).append("_multi_surface_id, '8' as objectclass_id, ")
+			.append(implicitGeometryNullColumns)
 			.append("FROM ").append(schema).append(".PLANT_COVER pc ")
 			.append("WHERE pc.id = ? ")
 			.append("AND pc.lod").append(lodToExportFrom).append("_multi_surface_id is not null")
 			.append(") tmp) ")
 			.append("UNION ALL ")
-			.append("(SELECT tmp.* FROM (SELECT pc.lod").append(lodToExportFrom).append("_multi_solid_id, '8' as objectclass_id ")
+			.append("(SELECT tmp.* FROM (SELECT pc.lod").append(lodToExportFrom).append("_multi_solid_id, '8' as objectclass_id, ")
+			.append(implicitGeometryNullColumns)
 			.append("FROM ").append(schema).append(".PLANT_COVER pc ")
 			.append("WHERE pc.id = ? ")
 			.append("AND pc.lod").append(lodToExportFrom).append("_multi_solid_id is not null")
 			.append(") tmp) ")
-			.append(") sub ");
+			.append(") sub ").toString();
+			query = unionADEQueries(QUERY_SURFACE_GEOMETRY_REFERENCE_IDS, query, lodToExportFrom, objectClassId);
 		}
 
-		return query.toString();
+		return query;
 	}
 
 	// ----------------------------------------------------------------------
 	// GENERIC CITY OBJECT QUERIES
 	// ----------------------------------------------------------------------
 
-	public String getGenericCityObjectBasisData(int lodToExportFrom) {
-		return new StringBuilder("SELECT ig.relative_brep_id, gco.lod").append(lodToExportFrom).append("_implicit_ref_point, ")
-				.append("gco.lod").append(lodToExportFrom).append("_implicit_transformation, gco.lod").append(lodToExportFrom).append("_brep_id ")
-				.append("FROM ").append(schema).append(".GENERIC_CITYOBJECT gco ")
-				.append("LEFT JOIN ").append(schema).append(".IMPLICIT_GEOMETRY ig ON ig.id = gco.lod").append(lodToExportFrom).append("_implicit_rep_id ") 
-				.append("WHERE gco.id = ?").toString();
-	}
-
-	public String getGenericCityObjectQuery(int lodToExportFrom, DisplayForm displayForm, boolean isImplicit, boolean exportAppearance) {
-		String query = null;
+	public String getGenericCityObjectQuery(int lodToExportFrom, DisplayForm displayForm, int objectClassId) {
+		String query;
 
 		switch (displayForm.getForm()) {
 		case DisplayForm.FOOTPRINT:
 		case DisplayForm.EXTRUDED:
-			query = getSurfaceGeometries(exportAppearance, isImplicit);
+			query = new StringBuilder("SELECT sg.geometry, ")
+					.append(implicitGeometryNullColumns)
+					.append("FROM ").append(schema).append(".SURFACE_GEOMETRY sg, ")
+					.append(schema).append(".GENERIC_CITYOBJECT gco ")
+					.append("WHERE gco.id = ? ")
+					.append("AND sg.root_id = ").append("gco.lod").append(lodToExportFrom).append("_brep_id ")
+					.append("AND sg.geometry IS NOT NULL ")
+					.append("UNION ALL ")
+					.append("SELECT sg.implicit_geometry, gco.lod").append(lodToExportFrom).append("_implicit_rep_id, gco.lod").append(lodToExportFrom).append("_implicit_ref_point, gco.lod").append(lodToExportFrom).append("_implicit_transformation ")
+					.append("FROM ").append(schema).append(".SURFACE_GEOMETRY sg ")
+					.append("LEFT JOIN ").append(schema).append(".IMPLICIT_GEOMETRY ig ON sg.root_id = ig.relative_brep_id ")
+					.append("LEFT JOIN ").append(schema).append(".GENERIC_CITYOBJECT gco ON ig.id = gco.lod").append(lodToExportFrom).append("_implicit_rep_id ")
+					.append("WHERE gco.id = ? ")
+					.append("AND sg.implicit_geometry IS NOT NULL").toString();
+			query = unionADEQueries(QUERY_SURFACE_GEOMETRY, query, lodToExportFrom, objectClassId);
 			break;
 		default:
-			StringBuilder tmp = new StringBuilder()
-			.append("SELECT ?, '5' as objectclass_id "); // dummy
-			if (databaseAdapter.getSQLAdapter().requiresPseudoTableInSelect())
-				tmp.append(" FROM ")
-				.append(databaseAdapter.getSQLAdapter().getPseudoTableName());
-
-			query = tmp.toString();
+			query = new StringBuilder("SELECT gco.lod").append(lodToExportFrom).append("_brep_id, '5' as objectclass_id, ")
+					.append("ig.relative_brep_id, gco.lod").append(lodToExportFrom).append("_implicit_ref_point, gco.lod").append(lodToExportFrom).append("_implicit_transformation ")
+					.append("FROM ").append(schema).append(".GENERIC_CITYOBJECT gco ")
+					.append("LEFT JOIN ").append(schema).append(".IMPLICIT_GEOMETRY ig ON ig.id = gco.lod").append(lodToExportFrom).append("_implicit_rep_id ")
+					.append("WHERE gco.id = ? AND (")
+					.append("gco.lod").append(lodToExportFrom).append("_brep_id IS NOT NULL OR ig.relative_brep_id IS NOT NULL)").toString();
+			query = unionADEQueries(QUERY_SURFACE_GEOMETRY_REFERENCE_IDS, query, lodToExportFrom, objectClassId);
 		}
 
 		return query;
 	}
 
-	public String getGenericCityObjectPointAndCurveQuery(int lodToExportFrom) {
-		StringBuilder query = new StringBuilder();
+	public String getGenericCityObjectPointAndCurveQuery(int lodToExportFrom, int objectClassId) {
+		String query;
 
-		query.append("SELECT gco.lod").append(lodToExportFrom).append("_other_geom ")
-		.append("FROM ").append(schema).append(".generic_cityobject gco ")
-		.append("WHERE gco.id = ? ")
-		.append("AND gco.lod").append(lodToExportFrom).append("_other_geom IS NOT NULL");
+		query = new StringBuilder().append("SELECT gco.lod").append(lodToExportFrom).append("_other_geom, ")
+				.append(implicitGeometryNullColumns)
+				.append("FROM ").append(schema).append(".generic_cityobject gco ")
+				.append("WHERE gco.id = ? ")
+				.append("AND gco.lod").append(lodToExportFrom).append("_other_geom IS NOT NULL ")
+				.append("UNION ALL ")
+				.append("SELECT ig.relative_other_geom, gco.lod").append(lodToExportFrom).append("_implicit_rep_id, gco.lod").append(lodToExportFrom).append("_implicit_ref_point, gco.lod").append(lodToExportFrom).append("_implicit_transformation ")
+				.append("FROM ").append(schema).append(".IMPLICIT_GEOMETRY ig ")
+				.append("LEFT JOIN ").append(schema).append(".GENERIC_CITYOBJECT gco ON ig.id = gco.lod").append(lodToExportFrom).append("_implicit_rep_id ")
+				.append("WHERE gco.id = ? ")
+				.append("AND ig.relative_other_geom IS NOT NULL").toString();
 
-		return query.toString();
+		query = unionADEQueries(QUERY_POINT_AND_CURVE_GEOMETRY, query, lodToExportFrom, objectClassId);
+		return query;
 	}
 
 	// ----------------------------------------------------------------------
 	// CITY FURNITURE QUERIES
 	// ----------------------------------------------------------------------
 
-	public String getCityFurnitureBasisData(int lodToExportFrom) {
-		return new StringBuilder("SELECT ig.relative_brep_id, cf.lod").append(lodToExportFrom).append("_implicit_ref_point, ")
-				.append("cf.lod").append(lodToExportFrom).append("_implicit_transformation, cf.lod").append(lodToExportFrom).append("_brep_id ")
-				.append("FROM ").append(schema).append(".CITY_FURNITURE cf ")
-				.append("LEFT JOIN ").append(schema).append(".IMPLICIT_GEOMETRY ig ON ig.id = cf.lod").append(lodToExportFrom).append("_implicit_rep_id ") 
-				.append("WHERE cf.id = ?").toString();
-	}
-
-	public String getCityFurnitureQuery(int lodToExportFrom, DisplayForm displayForm, boolean isImplicit, boolean exportAppearance) {
+	public String getCityFurnitureQuery(int lodToExportFrom, DisplayForm displayForm, int objectClassId) {
 		String query = null;
 
 		switch (displayForm.getForm()) {
 		case DisplayForm.FOOTPRINT:
 		case DisplayForm.EXTRUDED:
-			query = getSurfaceGeometries(exportAppearance, isImplicit);
+			query = new StringBuilder("SELECT sg.geometry, ")
+					.append(implicitGeometryNullColumns)
+					.append("FROM ").append(schema).append(".SURFACE_GEOMETRY sg, ")
+					.append(schema).append(".CITY_FURNITURE cf ")
+					.append("WHERE cf.id = ? ")
+					.append("AND sg.root_id = ").append("cf.lod").append(lodToExportFrom).append("_brep_id ")
+					.append("AND sg.geometry IS NOT NULL ")
+					.append("UNION ALL ")
+					.append("SELECT sg.implicit_geometry, cf.lod").append(lodToExportFrom).append("_implicit_rep_id, cf.lod").append(lodToExportFrom).append("_implicit_ref_point, cf.lod").append(lodToExportFrom).append("_implicit_transformation ")
+					.append("FROM ").append(schema).append(".SURFACE_GEOMETRY sg ")
+					.append("LEFT JOIN ").append(schema).append(".IMPLICIT_GEOMETRY ig ON sg.root_id = ig.relative_brep_id ")
+					.append("LEFT JOIN ").append(schema).append(".CITY_FURNITURE cf ON ig.id = cf.lod").append(lodToExportFrom).append("_implicit_rep_id ")
+					.append("WHERE cf.id = ? ")
+					.append("AND sg.implicit_geometry IS NOT NULL").toString();
+			query = unionADEQueries(QUERY_SURFACE_GEOMETRY, query, lodToExportFrom, objectClassId);
 			break;
 		default:
-			StringBuilder tmp = new StringBuilder()
-			.append("SELECT ?, '21' as objectclass_id "); // dummy
-			if (databaseAdapter.getSQLAdapter().requiresPseudoTableInSelect())
-				tmp.append(" FROM ")
-				.append(databaseAdapter.getSQLAdapter().getPseudoTableName());
-
-			query = tmp.toString();
+			query = new StringBuilder("SELECT cf.lod").append(lodToExportFrom).append("_brep_id, '21' as objectclass_id, ")
+					.append("ig.relative_brep_id, cf.lod").append(lodToExportFrom).append("_implicit_ref_point, cf.lod").append(lodToExportFrom).append("_implicit_transformation ")
+					.append("FROM ").append(schema).append(".CITY_FURNITURE cf ")
+					.append("LEFT JOIN ").append(schema).append(".IMPLICIT_GEOMETRY ig ON ig.id = cf.lod").append(lodToExportFrom).append("_implicit_rep_id ")
+					.append("WHERE cf.id = ? AND (")
+					.append("cf.lod").append(lodToExportFrom).append("_brep_id IS NOT NULL OR ig.relative_brep_id IS NOT NULL)").toString();
+			query = unionADEQueries(QUERY_SURFACE_GEOMETRY_REFERENCE_IDS, query, lodToExportFrom, objectClassId);
 		}
 
 		return query;
@@ -1624,14 +1712,18 @@ public class Queries {
 		StringBuilder query = new StringBuilder();
 
 		if (lod == 0) {
-			query.append("SELECT sg.geometry FROM ").append(schema).append(".surface_geometry sg, ")
+			query.append("SELECT sg.geometry, ")
+			.append(implicitGeometryNullColumns)
+			.append("FROM ").append(schema).append(".surface_geometry sg, ")
 			.append(schema).append(".waterbody wb ")
 			.append("WHERE wb.lod0_multi_surface_id = sg.root_id ")
 			.append("AND sg.geometry IS NOT NULL AND wb.id = ?");
 		} 
 
 		else if (lod == 1) {
-			query.append("SELECT sg.geometry FROM ").append(schema).append(".surface_geometry sg, ")
+			query.append("SELECT sg.geometry, ")
+			.append(implicitGeometryNullColumns)
+			.append("FROM ").append(schema).append(".surface_geometry sg, ")
 			.append(schema).append(".waterbody wb ")
 			.append("WHERE wb.lod1_multi_surface_id = sg.root_id ")
 			.append("AND sg.geometry IS NOT NULL AND wb.id = ? ")
@@ -1643,7 +1735,9 @@ public class Queries {
 		}
 
 		else {
-			query.append("SELECT sg.geometry FROM ").append(schema).append(".surface_geometry sg, ")
+			query.append("SELECT sg.geometry, ")
+			.append(implicitGeometryNullColumns)
+			.append("FROM ").append(schema).append(".surface_geometry sg, ")
 			.append(schema).append(".waterbod_to_waterbnd_srf wb2wbs, ")
 			.append(schema).append(".waterboundary_surface wbs ")
 			.append("WHERE wb2wbs.waterbody_id = ? ")
@@ -1662,13 +1756,15 @@ public class Queries {
 		query.append("select sub.* from (");
 
 		if (lod == 1) {
-			query.append("(SELECT tmp.* FROM (SELECT wb.lod1_multi_surface_id, 0 as objectclass_id ")
+			query.append("(SELECT tmp.* FROM (SELECT wb.lod1_multi_surface_id, 0 as objectclass_id, ")
+			.append(implicitGeometryNullColumns)
 			.append("FROM ").append(schema).append(".WATERBODY wb ")
 			.append("WHERE wb.id = ? ")
 			.append("AND wb.lod1_multi_surface_id is not null ")
 			.append(") tmp) ")
 			.append("UNION ALL ")
-			.append("(SELECT tmp.* FROM (SELECT wb.lod1_solid_id, 0 as objectclass_id ")
+			.append("(SELECT tmp.* FROM (SELECT wb.lod1_solid_id, 0 as objectclass_id, ")
+			.append(implicitGeometryNullColumns)
 			.append("FROM ").append(schema).append(".WATERBODY wb ")
 			.append("WHERE wb.id = ? ")
 			.append("AND wb.lod1_solid_id is not null ")
@@ -1676,14 +1772,16 @@ public class Queries {
 		}
 
 		else {
-			query.append("(SELECT tmp.* FROM (SELECT wbs.lod").append(lod).append("_surface_id, wbs.objectclass_id ")
+			query.append("(SELECT tmp.* FROM (SELECT wbs.lod").append(lod).append("_surface_id, wbs.objectclass_id, ")
+			.append(implicitGeometryNullColumns)
 			.append("FROM ").append(schema).append(".waterboundary_surface wbs ")
 			.append("JOIN ").append(schema).append(".waterbod_to_waterbnd_srf wb2wbs ON wb2wbs.waterboundary_surface_id = wbs.id ")
 			.append("WHERE wb2wbs.waterbody_id = ? ")
 			.append("AND wbs.lod").append(lod).append("_surface_id is not null ")
 			.append(") tmp) ")
 			.append("UNION ALL ")
-			.append("(SELECT tmp.* FROM (SELECT wb.lod").append(lod).append("_solid_id, 0 as objectclass_id ")
+			.append("(SELECT tmp.* FROM (SELECT wb.lod").append(lod).append("_solid_id, 0 as objectclass_id, ")
+			.append(implicitGeometryNullColumns)
 			.append("FROM ").append(schema).append(".WATERBODY wb ")
 			.append("WHERE wb.id = ? ")
 			.append("AND wb.lod").append(lod).append("_solid_id is not null ")
@@ -1694,16 +1792,18 @@ public class Queries {
 		return query.toString();
 	}
 
-	public String getWaterBodyQuery(int lodToExportFrom, DisplayForm displayForm) {		
-		String query = null;
+	public String getWaterBodyQuery(int lodToExportFrom, DisplayForm displayForm, int objectClassId) {
+		String query;
 		
 		switch (displayForm.getForm()) {
 		case DisplayForm.FOOTPRINT:
 		case DisplayForm.EXTRUDED:
 			query = getWaterBodyFootprint(lodToExportFrom);
+			query = unionADEQueries(QUERY_SURFACE_GEOMETRY, query, lodToExportFrom, objectClassId);
 			break;
 		default:
 			query = getWaterBodyGeometry(lodToExportFrom);
+			query = unionADEQueries(QUERY_SURFACE_GEOMETRY_REFERENCE_IDS, query, lodToExportFrom, objectClassId);
 		}
 
 		return query;
@@ -1713,39 +1813,45 @@ public class Queries {
 	// LAND USE QUERIES
 	// ----------------------------------------------------------------------
 
-	public String getLandUseQuery (int lodToExportFrom, DisplayForm displayForm) {
-		StringBuilder query = new StringBuilder();
+	public String getLandUseQuery (int lodToExportFrom, DisplayForm displayForm, int objectClassId) {
+		String query;
 
 		switch (displayForm.getForm()) {
 		case DisplayForm.FOOTPRINT:
 		case DisplayForm.EXTRUDED:
-			query.append("SELECT sg.geometry ")
+			query = new StringBuilder("SELECT sg.geometry, ")
+			.append(implicitGeometryNullColumns)
 			.append("FROM ").append(schema).append(".surface_geometry sg ")
 			.append("JOIN ").append(schema).append(".LAND_USE lu ON sg.root_id = lu.lod").append(lodToExportFrom).append("_multi_surface_id ")
 			.append("WHERE lu.id = ? ")
-			.append("AND sg.geometry IS NOT NULL");
+			.append("AND sg.geometry IS NOT NULL").toString();
+			query = unionADEQueries(QUERY_SURFACE_GEOMETRY, query, lodToExportFrom, objectClassId);
 			break;
 		default:
-			query.append("SELECT lu.lod").append(lodToExportFrom).append("_multi_surface_id, '4' as objectclass_id ")
+			query = new StringBuilder("SELECT lu.lod").append(lodToExportFrom).append("_multi_surface_id, '4' as objectclass_id, ")
+			.append(implicitGeometryNullColumns)
 			.append("FROM ").append(schema).append(".LAND_USE lu ")
 			.append("WHERE lu.id = ? ")
-			.append("AND lu.lod").append(lodToExportFrom).append("_multi_surface_id is not null");
+			.append("AND lu.lod").append(lodToExportFrom).append("_multi_surface_id is not null").toString();
+			query = unionADEQueries(QUERY_SURFACE_GEOMETRY_REFERENCE_IDS, query, lodToExportFrom, objectClassId);
 		}
 
-		return query.toString();
+		return query;
 	}
 
 	// ----------------------------------------------------------------------
 	// TRANSPORTATION QUERIES
 	// ----------------------------------------------------------------------
 
-	public String getTransportationFootprint(int lod) {
+	private String getTransportationFootprint(int lod) {
 		StringBuilder query = new StringBuilder();
 
 		query.append("select sub.* from (");
 
 		if (lod == 0) {
-			query.append("(SELECT tc.lod0_network FROM ").append(schema).append(".transportation_complex tc ")
+			query.append("(SELECT tmp.* FROM (SELECT tc.lod0_network, ")
+			.append(implicitGeometryNullColumns)
+			.append("FROM ").append(schema).append(".transportation_complex tc ")
 			.append("WHERE tc.id = ? ")
 			.append("AND tc.lod0_network IS NOT NULL")
 			.append(") tmp) ");
@@ -1753,7 +1859,8 @@ public class Queries {
 
 		else {
 			if (lod > 1) {
-				query.append("(SELECT tmp.* FROM (SELECT sg.geometry ")
+				query.append("(SELECT tmp.* FROM (SELECT sg.geometry, ")
+				.append(implicitGeometryNullColumns)
 				.append("FROM ").append(schema).append(".surface_geometry sg ")
 				.append("JOIN ").append(schema).append(".traffic_area ta on sg.root_id = ta.lod").append(lod).append("_multi_surface_id ")
 				.append("WHERE ta.transportation_complex_id = ? ")
@@ -1762,7 +1869,8 @@ public class Queries {
 				.append("UNION ALL ");
 			}
 
-			query.append("(SELECT tmp.* FROM (SELECT sg.geometry ")
+			query.append("(SELECT tmp.* FROM (SELECT sg.geometry, ")
+			.append(implicitGeometryNullColumns)
 			.append("FROM ").append(schema).append(".surface_geometry sg ")
 			.append("JOIN ").append(schema).append(".transportation_complex tc ON sg.root_id = tc.lod").append(lod).append("_multi_surface_id ")
 			.append("WHERE tc.id = ? ")
@@ -1774,13 +1882,14 @@ public class Queries {
 		return query.toString();
 	}
 
-	public String getTransportationGeometry(int lod) {
+	private String getTransportationGeometry(int lod) {
 		StringBuilder query = new StringBuilder();
 
 		query.append("select sub.* from (");
 
 		if (lod > 1) {
-			query.append("(SELECT tmp.* FROM (SELECT ta.lod").append(lod).append("_multi_surface_id, ta.objectclass_id ")
+			query.append("(SELECT tmp.* FROM (SELECT ta.lod").append(lod).append("_multi_surface_id, ta.objectclass_id, ")
+			.append(implicitGeometryNullColumns)
 			.append("FROM ").append(schema).append(".traffic_area ta ")
 			.append("WHERE ta.transportation_complex_id = ? ")
 			.append("AND ta.lod").append(lod).append("_multi_surface_id is not null ")
@@ -1788,7 +1897,8 @@ public class Queries {
 			.append("UNION ALL ");
 		}
 
-		query.append("(SELECT tmp.* FROM (SELECT tc.lod").append(lod).append("_multi_surface_id, tc.objectclass_id ")
+		query.append("(SELECT tmp.* FROM (SELECT tc.lod").append(lod).append("_multi_surface_id, tc.objectclass_id, ")
+		.append(implicitGeometryNullColumns)
 		.append("FROM ").append(schema).append(".transportation_complex tc ")
 		.append("WHERE tc.id = ? ")
 		.append("AND tc.lod").append(lod).append("_multi_surface_id is not null ")
@@ -1798,16 +1908,18 @@ public class Queries {
 		return query.toString();
 	}
 
-	public String getTransportationQuery(int lod, DisplayForm displayForm) {
-		String query = null;
+	public String getTransportationQuery(int lod, DisplayForm displayForm, int objectClassId) {
+		String query;
 
 		switch (displayForm.getForm()) {
 		case DisplayForm.FOOTPRINT:
 		case DisplayForm.EXTRUDED:
 			query = getTransportationFootprint(lod);
+			query = unionADEQueries(QUERY_SURFACE_GEOMETRY, query, lod, objectClassId);
 			break;
 		default:
 			query = getTransportationGeometry(lod);
+			query = unionADEQueries(QUERY_SURFACE_GEOMETRY_REFERENCE_IDS, query, lod, objectClassId);
 		}
 
 		return query;		
@@ -1817,32 +1929,64 @@ public class Queries {
 	// RELIEF QUERIES
 	// ----------------------------------------------------------------------
 
-	public String getReliefQuery(int lod, DisplayForm displayForm) {
-		StringBuilder query = new StringBuilder();
+	public String getReliefQuery(int lod, DisplayForm displayForm, int objectClassId) {
+		String query;
 
 		switch (displayForm.getForm()) {
 		case DisplayForm.FOOTPRINT:
 		case DisplayForm.EXTRUDED:
-			query.append("SELECT sg.geometry ")
+			query = new StringBuilder("SELECT sg.geometry, ")
+			.append(implicitGeometryNullColumns)
 			.append("FROM ").append(schema).append(".surface_geometry sg ")
 			.append("JOIN ").append(schema).append(".tin_relief tr ON sg.root_id = tr.surface_geometry_id ")
 			.append("JOIN ").append(schema).append(".relief_feat_to_rel_comp rf2rc ON rf2rc.relief_component_id = tr.id ")
 			.append("JOIN ").append(schema).append(".relief_feature rf ON rf.id = rf2rc.relief_feature_id ")
 			.append("WHERE rf.id = ? ")
 			.append("AND rf.lod = ").append(lod).append(" ")
-			.append("AND sg.geometry IS NOT NULL");
+			.append("AND sg.geometry IS NOT NULL").toString();
+			query = unionADEQueries(QUERY_SURFACE_GEOMETRY, query, lod, objectClassId);
 			break;
 		default:
-			query.append("SELECT tr.surface_geometry_id, tr.objectclass_id ")
+			query = new StringBuilder("SELECT tr.surface_geometry_id, tr.objectclass_id, ")
+			.append(implicitGeometryNullColumns)
 			.append("FROM ").append(schema).append(".tin_relief tr ")
 			.append("JOIN ").append(schema).append(".relief_feat_to_rel_comp rf2rc ON rf2rc.relief_component_id = tr.id ")
 			.append("JOIN ").append(schema).append(".relief_feature rf ON rf.id = rf2rc.relief_feature_id ")
 			.append("WHERE rf.id = ? ")
 			.append("AND rf.lod = ").append(lod).append(" ")
-			.append("AND tr.surface_geometry_id is not null");
+			.append("AND tr.surface_geometry_id is not null").toString();
+			query = unionADEQueries(QUERY_SURFACE_GEOMETRY_REFERENCE_IDS, query, lod, objectClassId);
 		}
 
-		return query.toString();
+		return query;
+	}
+
+	private String unionADEQueries(int queryType, String baseQuery, int lod, int objectClassId) {
+		StringBuilder builder = new StringBuilder();
+
+		if (exportManager != null) {
+			for (ADEKmlExportManager adeKmlExportManager : exportManager.getADEKmlExportManagers()) {
+				ADEKmlExporter exporter = null;
+				try {
+					exporter = adeKmlExportManager.getKmlExporter(objectClassId);
+				} catch (ADEKmlExportException e) {
+					Logger.getInstance().warn(e.getMessage());
+				}
+				if (exporter != null) {
+					String adeQuery = null;
+					if (queryType == QUERY_POINT_AND_CURVE_GEOMETRY)
+						adeQuery = exporter.getPointAndCurveQuery(lod);
+					else if (queryType == QUERY_SURFACE_GEOMETRY)
+						adeQuery = exporter.getSurfaceGeometryQuery(lod);
+					else if (queryType == QUERY_SURFACE_GEOMETRY_REFERENCE_IDS)
+						adeQuery = exporter.getSurfaceGeometryRefIdsQuery(lod);
+					if (adeQuery != null)
+						builder.append(adeQuery).append(" union all ");
+				}
+			}
+		}
+
+		return builder.append(baseQuery).toString();
 	}
 
 }

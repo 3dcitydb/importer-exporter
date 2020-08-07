@@ -108,7 +108,7 @@ public class Relief extends KmlGenericObject{
 
 				try {
 					// we currently only support TIN reliefs...
-					String query = queries.getReliefQuery(currentLod, work.getDisplayForm());				
+					String query = queries.getReliefQuery(currentLod, work.getDisplayForm(), work.getObjectClassId());
 					psQuery = connection.prepareStatement(query, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 					for (int i = 1; i <= getParameterCount(query); i++)
 						psQuery.setLong(i, work.getId());
@@ -179,20 +179,13 @@ public class Relief extends KmlGenericObject{
 				case DisplayForm.GEOMETRY:
 					setGmlId(work.getGmlId());
 					setId(work.getId());
-					if (query.isSetTiling()) { // region
-						if (work.getDisplayForm().isHighlightingEnabled())
-							kmlExporterManager.print(createPlacemarksForHighlighting(rs, work, false), work, getBalloonSettings().isBalloonContentInSeparateFile());
-
-						kmlExporterManager.print(createPlacemarksForGeometry(rs, work, false), work, getBalloonSettings().isBalloonContentInSeparateFile());
-					} else { // reverse order for single objects
-						kmlExporterManager.print(createPlacemarksForGeometry(rs, work, false), work, getBalloonSettings().isBalloonContentInSeparateFile());
-						if (work.getDisplayForm().isHighlightingEnabled())
-							kmlExporterManager.print(createPlacemarksForHighlighting(rs, work, false), work, getBalloonSettings().isBalloonContentInSeparateFile());
-					}
+					kmlExporterManager.print(createPlacemarksForGeometry(rs, work), work, getBalloonSettings().isBalloonContentInSeparateFile());
+					if (work.getDisplayForm().isHighlightingEnabled())
+						kmlExporterManager.print(createPlacemarksForHighlighting(rs, work), work, getBalloonSettings().isBalloonContentInSeparateFile());
 					break;
 
 				case DisplayForm.COLLADA:
-					fillGenericObjectForCollada(rs, config.getProject().getKmlExporter().getReliefColladaOptions().isGenerateTextureAtlases(), false);
+					fillGenericObjectForCollada(rs, config.getProject().getKmlExporter().getReliefColladaOptions().isGenerateTextureAtlases());
 					String currentgmlId = getGmlId();
 					setGmlId(work.getGmlId());
 					setId(work.getId());
@@ -211,7 +204,7 @@ public class Relief extends KmlGenericObject{
 					setIgnoreSurfaceOrientation(colladaOptions.isIgnoreSurfaceOrientation());
 					try {
 						if (work.getDisplayForm().isHighlightingEnabled())
-							kmlExporterManager.print(createPlacemarksForHighlighting(rs, work, false), work, getBalloonSettings().isBalloonContentInSeparateFile());
+							kmlExporterManager.print(createPlacemarksForHighlighting(rs, work), work, getBalloonSettings().isBalloonContentInSeparateFile());
 					} catch (Exception ioe) {
 						log.logStackTrace(ioe);
 					}

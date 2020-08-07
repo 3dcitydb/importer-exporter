@@ -35,6 +35,7 @@ import org.citydb.config.project.global.Global;
 import org.citydb.config.project.importer.Importer;
 import org.citydb.config.project.kmlExporter.KmlExporter;
 import org.citydb.config.project.plugin.PluginConfig;
+import org.citydb.config.project.plugin.PluginConfigListAdapter;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -65,7 +66,7 @@ public class Project {
 	@XmlElement(name="kmlExport")
 	private KmlExporter kmlExporter;
 	private Global global;
-	@XmlJavaTypeAdapter(org.citydb.config.project.plugin.PluginConfigListAdapter.class)
+	@XmlJavaTypeAdapter(PluginConfigListAdapter.class)
 	private Map<Class<? extends PluginConfig>, PluginConfig> extensions;
 	
 	@XmlTransient
@@ -148,7 +149,7 @@ public class Project {
 	public PluginConfig registerExtension(PluginConfig pluginConfig) {
 		return extensions.put(pluginConfig.getClass(), pluginConfig);
 	}
-
+	
 	public ConfigNamespaceFilter getNamespaceFilter() {
 		return namespaceFilter;
 	}
@@ -156,5 +157,5 @@ public class Project {
 	public void setNamespaceFilter(ConfigNamespaceFilter namespaceFilter) {
 		this.namespaceFilter = namespaceFilter;
 	}
-	
+
 }
