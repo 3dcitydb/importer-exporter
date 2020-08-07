@@ -30,12 +30,10 @@ package org.citydb.modules.kml.gui.preferences;
 import org.citydb.ade.ADEExtension;
 import org.citydb.ade.ADEExtensionManager;
 import org.citydb.config.Config;
-import org.citydb.config.project.kmlExporter.ADEPreference;
 import org.citydb.database.schema.mapping.AppSchema;
 import org.citydb.database.schema.mapping.FeatureType;
 import org.citydb.gui.preferences.AbstractPreferences;
 import org.citydb.gui.preferences.DefaultPreferencesEntry;
-import org.citydb.modules.kml.ade.ADEKmlExportExtensionManager;
 import org.citydb.plugin.extension.view.ViewController;
 
 import java.util.List;
@@ -89,13 +87,12 @@ public class KMLExportPreferences extends AbstractPreferences {
 				DefaultPreferencesEntry adeBalloonNode = new ADEPanel(name);
 
 				for (AppSchema schema : adeExtension.getSchemas()) {
-					for (FeatureType topLevelFeature : schema.listTopLevelFeatureTypes(true)) {
-						ADEPreference preference = ADEKmlExportExtensionManager.getInstance().getPreference(config, topLevelFeature);
-						DefaultPreferencesEntry adeFeatureRenderingNode = new ADEPanel(preference.getTarget());
-						adeFeatureRenderingNode.addChildEntry(new DefaultPreferencesEntry(new ADEThreeDRenderingPanel(preference)));
-						adeFeatureRenderingNode.addChildEntry(new DefaultPreferencesEntry(new ADEPointAndCurveRenderingPanel(preference)));
+					for (FeatureType adeTopLevelFeatureType : schema.listTopLevelFeatureTypes(true)) {
+						DefaultPreferencesEntry adeFeatureRenderingNode = new ADEPanel(adeTopLevelFeatureType.toString());
+						adeFeatureRenderingNode.addChildEntry(new DefaultPreferencesEntry(new ADEThreeDRenderingPanel(config, adeTopLevelFeatureType)));
+						adeFeatureRenderingNode.addChildEntry(new DefaultPreferencesEntry(new ADEPointAndCurveRenderingPanel(config, adeTopLevelFeatureType)));
 						adeRenderingNode.addChildEntry(adeFeatureRenderingNode);
-						adeBalloonNode.addChildEntry(new DefaultPreferencesEntry(new ADEDBalloonPanel(preference)));
+						adeBalloonNode.addChildEntry(new DefaultPreferencesEntry(new ADEDBalloonPanel(config, adeTopLevelFeatureType)));
 					}
 				}
 

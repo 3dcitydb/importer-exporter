@@ -29,13 +29,14 @@ package org.citydb.modules.kml.gui.preferences;
 
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
-import org.citydb.config.project.kmlExporter.ADEPreference;
 import org.citydb.config.project.kmlExporter.ColladaOptions;
 import org.citydb.config.project.kmlExporter.DisplayForm;
+import org.citydb.database.schema.mapping.FeatureType;
 import org.citydb.gui.components.common.AlphaButton;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.preferences.AbstractPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
+import org.citydb.modules.kml.ade.ADEKmlExportExtensionManager;
 import org.citydb.textureAtlas.TextureAtlasCreator;
 
 import javax.swing.*;
@@ -109,23 +110,26 @@ public class ADEThreeDRenderingPanel extends AbstractPreferencesComponent {
 	private HashMap<String, Integer> packingAlgorithms = new HashMap<>();
 	private JComboBox<String> packingAlgorithmsComboBox = new JComboBox<>();
 
-	private ADEPreference preferenceConfig;
-	public ADEThreeDRenderingPanel(ADEPreference preferenceConfig) {
-		super(new Config());
-		this.preferenceConfig = preferenceConfig;
+	private FeatureType adeTopLevelFeatureType;
+	private ADEKmlExportExtensionManager adeKmlExportExtensionManager;
+
+	public ADEThreeDRenderingPanel(Config config, FeatureType adeTopLevelFeatureType) {
+		super(config);
+		this.adeTopLevelFeatureType = adeTopLevelFeatureType;
+		this.adeKmlExportExtensionManager = ADEKmlExportExtensionManager.getInstance();
 		initGui();
 	}
 
 	private ColladaOptions getConfigColladaOptions() {
-		return preferenceConfig.getColladaOptions();
+		return adeKmlExportExtensionManager.getPreference(config, adeTopLevelFeatureType).getColladaOptions();
 	}
 
 	private List<DisplayForm> getConfigDisplayForms() {
-		return preferenceConfig.getDisplayForms();
+		return adeKmlExportExtensionManager.getPreference(config, adeTopLevelFeatureType).getDisplayForms();
 	}
 
 	private void setConfigDisplayForms(List<DisplayForm> displayForms) {
-		preferenceConfig.setDisplayForms(displayForms);
+		adeKmlExportExtensionManager.getPreference(config, adeTopLevelFeatureType).setDisplayForms(displayForms);
 	}
 
 	@Override

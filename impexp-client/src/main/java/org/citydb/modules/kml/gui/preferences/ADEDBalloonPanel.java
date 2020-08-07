@@ -30,12 +30,13 @@ package org.citydb.modules.kml.gui.preferences;
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.general.PathMode;
-import org.citydb.config.project.kmlExporter.ADEPreference;
 import org.citydb.config.project.kmlExporter.Balloon;
 import org.citydb.config.project.kmlExporter.BalloonContentMode;
+import org.citydb.database.schema.mapping.FeatureType;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.preferences.AbstractPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
+import org.citydb.modules.kml.ade.ADEKmlExportExtensionManager;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
@@ -63,21 +64,23 @@ public class ADEDBalloonPanel extends AbstractPreferencesComponent {
 
 	private Balloon internalBalloon = new Balloon();
 
-	private ADEPreference preferenceConfig;
+	private FeatureType adeTopLevelFeatureType;
+	private ADEKmlExportExtensionManager adeKmlExportExtensionManager;
 
-	public ADEDBalloonPanel(ADEPreference preferenceConfig) {
-		super(new Config());
-		this.preferenceConfig = preferenceConfig;
+	public ADEDBalloonPanel(Config config, FeatureType adeTopLevelFeatureType) {
+		super(config);
+		this.adeTopLevelFeatureType = adeTopLevelFeatureType;
+		this.adeKmlExportExtensionManager = ADEKmlExportExtensionManager.getInstance();
 		initGui();
 	}
 
 	private Balloon getConfigBalloon() {
-		return preferenceConfig.getBalloon();
+		return adeKmlExportExtensionManager.getPreference(config, adeTopLevelFeatureType).getBalloon();
 	}
 
 	@Override
 	public String getTitle() {
-		return preferenceConfig.getTarget();
+		return adeKmlExportExtensionManager.getPreference(config, adeTopLevelFeatureType).getTarget();
 	}
 
 	@Override

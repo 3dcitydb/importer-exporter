@@ -29,14 +29,15 @@ package org.citydb.modules.kml.gui.preferences;
 
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
-import org.citydb.config.project.kmlExporter.ADEPreference;
 import org.citydb.config.project.kmlExporter.AltitudeMode;
 import org.citydb.config.project.kmlExporter.DisplayForm;
 import org.citydb.config.project.kmlExporter.PointAndCurve;
 import org.citydb.config.project.kmlExporter.PointDisplayMode;
+import org.citydb.database.schema.mapping.FeatureType;
 import org.citydb.gui.components.common.AlphaButton;
 import org.citydb.gui.preferences.AbstractPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
+import org.citydb.modules.kml.ade.ADEKmlExportExtensionManager;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
@@ -94,11 +95,13 @@ public class ADEPointAndCurveRenderingPanel extends AbstractPreferencesComponent
 	private JLabel curveHighlightingColorLabel = new JLabel();
 	private JButton curveHighlightingColorButton = new AlphaButton();
 
-	private ADEPreference preferenceConfig;
+	private FeatureType adeTopLevelFeatureType;
+	private ADEKmlExportExtensionManager adeKmlExportExtensionManager;
 
-	public ADEPointAndCurveRenderingPanel(ADEPreference preferenceConfig) {
-		super(new Config());
-		this.preferenceConfig = preferenceConfig;
+	public ADEPointAndCurveRenderingPanel(Config config, FeatureType adeTopLevelFeatureType) {
+		super(config);
+		this.adeTopLevelFeatureType = adeTopLevelFeatureType;
+		this.adeKmlExportExtensionManager = ADEKmlExportExtensionManager.getInstance();
 		initGui();
 	}
 
@@ -110,7 +113,7 @@ public class ADEPointAndCurveRenderingPanel extends AbstractPreferencesComponent
 	@Override
 	public boolean isModified() {
 
-		PointAndCurve pacSettings = preferenceConfig.getPointAndCurve();
+		PointAndCurve pacSettings = adeKmlExportExtensionManager.getPreference(config, adeTopLevelFeatureType).getPointAndCurve();
 
 		switch (pacSettings.getPointDisplayMode()) {
 		case CROSS_LINE:
@@ -451,7 +454,7 @@ public class ADEPointAndCurveRenderingPanel extends AbstractPreferencesComponent
         
         pointIconColorLabel.setText(Language.I18N.getString("pref.kmlexport.label.pointIconColor"));
         pointIconScaleLabel.setText(Language.I18N.getString("pref.kmlexport.label.pointIconScale"));
-        pointAltitudeModeComboBox.setSelectedItem(preferenceConfig.getPointAndCurve().getPointAltitudeMode());
+        pointAltitudeModeComboBox.setSelectedItem(adeKmlExportExtensionManager.getPreference(config, adeTopLevelFeatureType).getPointAndCurve().getPointAltitudeMode());
        
         pointCrossLineThicknessLabel.setText(Language.I18N.getString("pref.kmlexport.label.curveThickness"));
         pointCrossLineNormalColorLabel.setText(Language.I18N.getString("pref.kmlexport.label.curveColor"));
@@ -466,7 +469,7 @@ public class ADEPointAndCurveRenderingPanel extends AbstractPreferencesComponent
         	curveAltitudeModeComboBox.addItem(c);
         }
 
-        curveAltitudeModeComboBox.setSelectedItem(preferenceConfig.getPointAndCurve().getCurveAltitudeMode());
+        curveAltitudeModeComboBox.setSelectedItem(adeKmlExportExtensionManager.getPreference(config, adeTopLevelFeatureType).getPointAndCurve().getCurveAltitudeMode());
     	curveThicknessLabel.setText(Language.I18N.getString("pref.kmlexport.label.curveThickness"));
     	curveNormalColorLabel.setText(Language.I18N.getString("pref.kmlexport.label.curveColor"));
 		curveHighlightingCheckbox.setText(Language.I18N.getString("pref.kmlexport.label.highlighting"));
@@ -477,7 +480,7 @@ public class ADEPointAndCurveRenderingPanel extends AbstractPreferencesComponent
 	@Override
 	public void loadSettings() {
 
-		PointAndCurve pacSettings = preferenceConfig.getPointAndCurve();
+		PointAndCurve pacSettings = adeKmlExportExtensionManager.getPreference(config, adeTopLevelFeatureType).getPointAndCurve();
 		
 		switch (pacSettings.getPointDisplayMode()) {
 		case ICON:
@@ -519,7 +522,7 @@ public class ADEPointAndCurveRenderingPanel extends AbstractPreferencesComponent
 	@Override
 	public void setSettings() {
 
-		PointAndCurve pacSettings = preferenceConfig.getPointAndCurve();
+		PointAndCurve pacSettings = adeKmlExportExtensionManager.getPreference(config, adeTopLevelFeatureType).getPointAndCurve();
 
 		if (iconRButton.isSelected()) {
 			pacSettings.setPointDisplayMode(PointDisplayMode.ICON);
