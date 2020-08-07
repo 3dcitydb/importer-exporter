@@ -34,9 +34,11 @@ import org.citydb.database.schema.mapping.AppSchema;
 import org.citydb.database.schema.mapping.FeatureType;
 import org.citydb.gui.preferences.AbstractPreferences;
 import org.citydb.gui.preferences.DefaultPreferencesEntry;
+import org.citydb.modules.kml.ade.ADEKmlExportExtension;
 import org.citydb.plugin.extension.view.ViewController;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class KMLExportPreferences extends AbstractPreferences {
 	
@@ -76,7 +78,10 @@ public class KMLExportPreferences extends AbstractPreferences {
 		balloonNode.addChildEntry(new DefaultPreferencesEntry(new TunnelBalloonPanel(config)));
 
 		// ADEs
-		List<ADEExtension> adeExtensions = ADEExtensionManager.getInstance().getExtensions();
+		List<ADEExtension> adeExtensions = ADEExtensionManager.getInstance().getExtensions().stream()
+				.filter(e -> e instanceof ADEKmlExportExtension)
+				.collect(Collectors.toList());
+		
 		if (!adeExtensions.isEmpty()) {
 			DefaultPreferencesEntry adeRenderingRootNode = new ADEPanel("ADEs");
 			DefaultPreferencesEntry adeBalloonRootNode = new ADEPanel("ADEs");

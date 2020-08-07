@@ -62,6 +62,7 @@ import org.citydb.gui.components.feature.FeatureTypeTree;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.log.Logger;
+import org.citydb.modules.kml.ade.ADEKmlExportExtension;
 import org.citydb.modules.kml.controller.KmlExportException;
 import org.citydb.plugin.extension.view.ViewController;
 import org.citydb.plugin.extension.view.components.BoundingBoxPanel;
@@ -324,7 +325,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		exportAndDisplayPanel.add(Box.createRigidArea(new Dimension(BORDER_THICKNESS, 0)), GuiUtil.setConstraints(1,0,0,0,GridBagConstraints.NONE,0,0,0,0));
 		exportAndDisplayPanel.add(displayAsPanel, GuiUtil.setConstraints(2,0,0.7,0,GridBagConstraints.BOTH,0,0,0,0));
 
-		typeTree = new FeatureTypeTree(CityGMLVersion.v2_0_0, true);
+		typeTree = new FeatureTypeTree(CityGMLVersion.v2_0_0, e -> e instanceof ADEKmlExportExtension);
 		typeTree.setRowHeight((int)(new JCheckBox().getPreferredSize().getHeight()) - 4);		
 		typeTree.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createEtchedBorder(), 
 				BorderFactory.createEmptyBorder(0,0,BORDER_THICKNESS,0)));
