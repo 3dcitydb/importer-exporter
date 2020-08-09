@@ -87,7 +87,7 @@ public class DBBuilding extends AbstractFeatureExporter<AbstractBuilding> {
 	private final LodFilter lodFilter;
 	private final AttributeValueSplitter valueSplitter;
 	private final boolean hasObjectClassIdColumn;
-	private List<Table> buildingADEHookTables;
+	private final List<Table> buildingADEHookTables;
 	private List<Table> addressADEHookTables;
 
 	public DBBuilding(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
@@ -156,13 +156,11 @@ public class DBBuilding extends AbstractFeatureExporter<AbstractBuilding> {
 			addressExporter.addProjection(select, address, "a")
 					.addJoin(JoinFactory.left(addressToBuilding, "building_id", ComparisonName.EQUAL_TO, table.getColumn("id")))
 					.addJoin(JoinFactory.left(address, "id", ComparisonName.EQUAL_TO, addressToBuilding.getColumn("address_id")));
-		}
 
-		// add joins to ADE hook tables
-		if (exporter.hasADESupport()) {
-			buildingADEHookTables = addJoinsToADEHookTables(TableEnum.BUILDING, table);
 			addressADEHookTables = addJoinsToADEHookTables(TableEnum.ADDRESS, address);
 		}
+
+		buildingADEHookTables = addJoinsToADEHookTables(TableEnum.BUILDING, table);
 	}
 
 	@Override

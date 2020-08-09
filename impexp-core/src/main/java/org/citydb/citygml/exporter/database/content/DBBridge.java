@@ -86,7 +86,7 @@ public class DBBridge extends AbstractFeatureExporter<AbstractBridge> {
 	private final LodFilter lodFilter;
 	private final AttributeValueSplitter valueSplitter;
 	private final boolean hasObjectClassIdColumn;
-	private List<Table> bridgeADEHookTables;
+	private final List<Table> bridgeADEHookTables;
 	private List<Table> addressADEHookTables;
 
 	public DBBridge(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
@@ -147,13 +147,11 @@ public class DBBridge extends AbstractFeatureExporter<AbstractBridge> {
 			addressExporter.addProjection(select, address, "a")
 					.addJoin(JoinFactory.left(addressToBridge, "bridge_id", ComparisonName.EQUAL_TO, table.getColumn("id")))
 					.addJoin(JoinFactory.left(address, "id", ComparisonName.EQUAL_TO, addressToBridge.getColumn("address_id")));
-		}
 
-		// add joins to ADE hook tables
-		if (exporter.hasADESupport()) {
-			bridgeADEHookTables = addJoinsToADEHookTables(TableEnum.BRIDGE, table);
 			addressADEHookTables = addJoinsToADEHookTables(TableEnum.ADDRESS, address);
 		}
+
+		bridgeADEHookTables = addJoinsToADEHookTables(TableEnum.BRIDGE, table);
 	}
 
 	@Override

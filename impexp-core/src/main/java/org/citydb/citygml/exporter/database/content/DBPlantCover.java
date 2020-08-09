@@ -59,7 +59,7 @@ public class DBPlantCover extends AbstractFeatureExporter<PlantCover> {
 	private final LodFilter lodFilter;
 	private final AttributeValueSplitter valueSplitter;
 	private final boolean hasObjectClassIdColumn;
-	private List<Table> adeHookTables;
+	private final List<Table> adeHookTables;
 
 	public DBPlantCover(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
 		super(PlantCover.class, connection, exporter);
@@ -94,9 +94,7 @@ public class DBPlantCover extends AbstractFeatureExporter<PlantCover> {
 			if (projectionFilter.containsProperty("lod4MultiSolid", vegetationModule)) select.addProjection(table.getColumn("lod4_multi_solid_id"));
 		}
 
-		// add joins to ADE hook tables
-		if (exporter.hasADESupport())
-			adeHookTables = addJoinsToADEHookTables(TableEnum.PLANT_COVER, table);
+		adeHookTables = addJoinsToADEHookTables(TableEnum.PLANT_COVER, table);
 
 		cityObjectExporter = exporter.getExporter(DBCityObject.class);
 		geometryExporter = exporter.getExporter(DBSurfaceGeometry.class);

@@ -71,7 +71,7 @@ public class DBBridgeThematicSurface extends AbstractFeatureExporter<AbstractBou
 	private final String bridgeModule;
 	private final LodFilter lodFilter;
 	private final boolean useXLink;
-	private List<Table> surfaceADEHookTables;
+	private final List<Table> surfaceADEHookTables;
 	private List<Table> openingADEHookTables;
 	private List<Table> addressADEHookTables;
 
@@ -98,7 +98,8 @@ public class DBBridgeThematicSurface extends AbstractFeatureExporter<AbstractBou
 		if (lodFilter.isEnabled(2) && boundarySurfaceProjectionFilter.containsProperty("lod2MultiSurface", bridgeModule)) select.addProjection(table.getColumn("lod2_multi_surface_id"));
 		if (lodFilter.isEnabled(3) && boundarySurfaceProjectionFilter.containsProperty("lod3MultiSurface", bridgeModule)) select.addProjection(table.getColumn("lod3_multi_surface_id"));
 		if (lodFilter.isEnabled(4) && boundarySurfaceProjectionFilter.containsProperty("lod4MultiSurface", bridgeModule)) select.addProjection(table.getColumn("lod4_multi_surface_id"));
-		if (boundarySurfaceProjectionFilter.containsProperty("opening", bridgeModule)) {
+		if (boundarySurfaceProjectionFilter.containsProperty("opening", bridgeModule)
+				&& lodFilter.containsLodGreaterThanOrEuqalTo(3)) {
 			Table openingToThemSurface = new Table(TableEnum.BRIDGE_OPEN_TO_THEM_SRF.getName(), schema);
 			select.addJoin(JoinFactory.left(openingToThemSurface, "bridge_thematic_surface_id", ComparisonName.EQUAL_TO, table.getColumn("id")))
 			.addJoin(JoinFactory.left(opening, "id", ComparisonName.EQUAL_TO, openingToThemSurface.getColumn("bridge_opening_id")))
@@ -114,15 +115,14 @@ public class DBBridgeThematicSurface extends AbstractFeatureExporter<AbstractBou
 			if (openingProjectionFilter.containsProperty("address", bridgeModule)) {
 				addressExporter.addProjection(select, address, "a")
 						.addJoin(JoinFactory.left(address, "id", ComparisonName.EQUAL_TO, opening.getColumn("address_id")));
+
+				addressADEHookTables = addJoinsToADEHookTables(TableEnum.ADDRESS, address);
 			}
+
+			openingADEHookTables = addJoinsToADEHookTables(TableEnum.BRIDGE_OPENING, opening);
 		}
 
-		// add joins to ADE hook tables
-		if (exporter.hasADESupport()) {
-			surfaceADEHookTables = addJoinsToADEHookTables(TableEnum.BRIDGE_THEMATIC_SURFACE, table);
-			openingADEHookTables = addJoinsToADEHookTables(TableEnum.BRIDGE_OPENING, opening);
-			addressADEHookTables = addJoinsToADEHookTables(TableEnum.ADDRESS, address);
-		}
+		surfaceADEHookTables = addJoinsToADEHookTables(TableEnum.BRIDGE_THEMATIC_SURFACE, table);
 	}
 
 	protected Collection<AbstractBoundarySurface> doExport(AbstractBridge parent, long parentId) throws CityGMLExportException, SQLException {

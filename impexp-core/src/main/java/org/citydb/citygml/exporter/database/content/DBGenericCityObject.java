@@ -67,7 +67,7 @@ public class DBGenericCityObject extends AbstractFeatureExporter<GenericCityObje
 	private final LodFilter lodFilter;
 	private final AttributeValueSplitter valueSplitter;
 	private final boolean hasObjectClassIdColumn;
-	private List<Table> adeHookTables;
+	private final List<Table> adeHookTables;
 
 	public DBGenericCityObject(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
 		super(GenericCityObject.class, connection, exporter);		
@@ -110,9 +110,7 @@ public class DBGenericCityObject extends AbstractFeatureExporter<GenericCityObje
 			if (projectionFilter.containsProperty("lod4ImplicitRepresentation", genericsModule)) select.addProjection(table.getColumn("lod4_implicit_rep_id"), exporter.getGeometryColumn(table.getColumn("lod4_implicit_ref_point")), table.getColumn("lod4_implicit_transformation"));
 		}
 
-		// add joins to ADE hook tables
-		if (exporter.hasADESupport())
-			adeHookTables = addJoinsToADEHookTables(TableEnum.GENERIC_CITYOBJECT, table);
+		adeHookTables = addJoinsToADEHookTables(TableEnum.GENERIC_CITYOBJECT, table);
 		
 		cityObjectExporter = exporter.getExporter(DBCityObject.class);
 		geometryExporter = exporter.getExporter(DBSurfaceGeometry.class);

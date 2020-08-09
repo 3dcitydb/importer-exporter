@@ -64,7 +64,7 @@ public class DBReliefComponent extends AbstractFeatureExporter<AbstractReliefCom
 	private final GMLConverter gmlConverter;
 
 	private final String reliefModule;
-	private List<Table> adeHookTables;
+	private final List<Table> adeHookTables;
 
 	public DBReliefComponent(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
 		super(AbstractReliefComponent.class, connection, exporter);
@@ -90,9 +90,7 @@ public class DBReliefComponent extends AbstractFeatureExporter<AbstractReliefCom
 		if (projectionFilter.containsProperty("ridgeOrValleyLines", reliefModule)) select.addProjection(exporter.getGeometryColumn(breakLineRelief.getColumn("ridge_or_valley_lines")));
 		if (projectionFilter.containsProperty("breaklines", reliefModule)) select.addProjection(exporter.getGeometryColumn(breakLineRelief.getColumn("break_lines")));
 
-		// add joins to ADE hook tables
-		if (exporter.hasADESupport())
-			adeHookTables = addJoinsToADEHookTables(TableEnum.RELIEF_COMPONENT, table);
+		adeHookTables = addJoinsToADEHookTables(TableEnum.RELIEF_COMPONENT, table);
 
 		cityObjectExporter = exporter.getExporter(DBCityObject.class);
 		geometryExporter = exporter.getExporter(DBSurfaceGeometry.class);

@@ -68,7 +68,7 @@ public class DBWaterBody extends AbstractFeatureExporter<WaterBody> {
 	private final AttributeValueSplitter valueSplitter;
 	private final boolean hasObjectClassIdColumn;
 	private final boolean useXLink;
-	private List<Table> bodyADEHookTables;
+	private final List<Table> bodyADEHookTables;
 	private List<Table> surfaceADEHookTables;
 
 	public DBWaterBody(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
@@ -102,7 +102,8 @@ public class DBWaterBody extends AbstractFeatureExporter<WaterBody> {
 		if (lodFilter.isEnabled(2) && projectionFilter.containsProperty("lod2Solid", waterBodyModule)) select.addProjection(table.getColumn("lod2_solid_id"));
 		if (lodFilter.isEnabled(3) && projectionFilter.containsProperty("lod3Solid", waterBodyModule)) select.addProjection(table.getColumn("lod3_solid_id"));
 		if (lodFilter.isEnabled(4) && projectionFilter.containsProperty("lod4Solid", waterBodyModule)) select.addProjection(table.getColumn("lod4_solid_id"));
-		if (projectionFilter.containsProperty("boundedBy", waterBodyModule)) {
+		if (projectionFilter.containsProperty("boundedBy", waterBodyModule)
+				&& lodFilter.containsLodGreaterThanOrEuqalTo(2)) {
 			Table waterBodToWaterBndSrf = new Table(TableEnum.WATERBOD_TO_WATERBND_SRF.getName(), schema);
 			select.addJoin(JoinFactory.left(waterBodToWaterBndSrf, "waterbody_id", ComparisonName.EQUAL_TO, table.getColumn("id")))
 			.addJoin(JoinFactory.left(waterBoundarySurface, "id", ComparisonName.EQUAL_TO, waterBodToWaterBndSrf.getColumn("waterboundary_surface_id")))
@@ -111,13 +112,11 @@ public class DBWaterBody extends AbstractFeatureExporter<WaterBody> {
 			if (lodFilter.isEnabled(2) && boundarySurfaceProjectionFilter.containsProperty("lod2Surface", waterBodyModule)) select.addProjection(waterBoundarySurface.getColumn("lod2_surface_id"));
 			if (lodFilter.isEnabled(3) && boundarySurfaceProjectionFilter.containsProperty("lod3Surface", waterBodyModule)) select.addProjection(waterBoundarySurface.getColumn("lod3_surface_id"));
 			if (lodFilter.isEnabled(4) && boundarySurfaceProjectionFilter.containsProperty("lod4Surface", waterBodyModule)) select.addProjection(waterBoundarySurface.getColumn("lod4_surface_id"));
-		}
 
-		// add joins to ADE hook tables
-		if (exporter.hasADESupport()) {
-			bodyADEHookTables = addJoinsToADEHookTables(TableEnum.WATERBODY, table);
 			surfaceADEHookTables = addJoinsToADEHookTables(TableEnum.WATERBOUNDARY_SURFACE, waterBoundarySurface);
 		}
+
+		bodyADEHookTables = addJoinsToADEHookTables(TableEnum.WATERBODY, table);
 
 		cityObjectExporter = exporter.getExporter(DBCityObject.class);
 		geometryExporter = exporter.getExporter(DBSurfaceGeometry.class);

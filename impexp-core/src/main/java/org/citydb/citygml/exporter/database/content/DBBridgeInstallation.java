@@ -73,7 +73,7 @@ public class DBBridgeInstallation extends AbstractFeatureExporter<AbstractCityOb
 	private final String bridgeModule;
 	private final LodFilter lodFilter;
 	private final AttributeValueSplitter valueSplitter;
-	private List<Table> adeHookTables;
+	private final List<Table> adeHookTables;
 	
 	public DBBridgeInstallation(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
 		super(AbstractCityObject.class, connection, exporter);
@@ -101,9 +101,7 @@ public class DBBridgeInstallation extends AbstractFeatureExporter<AbstractCityOb
 			if (projectionFilter.containsProperty("lod4ImplicitRepresentation", bridgeModule)) select.addProjection(table.getColumn("lod4_implicit_rep_id"), exporter.getGeometryColumn(table.getColumn("lod4_implicit_ref_point")), table.getColumn("lod4_implicit_transformation"));
 		}
 
-		// add joins to ADE hook tables
-		if (exporter.hasADESupport())
-			adeHookTables = addJoinsToADEHookTables(TableEnum.BRIDGE_INSTALLATION, table);
+		adeHookTables = addJoinsToADEHookTables(TableEnum.BRIDGE_INSTALLATION, table);
 		
 		cityObjectReader = exporter.getExporter(DBCityObject.class);
 		thematicSurfaceExporter = exporter.getExporter(DBBridgeThematicSurface.class);

@@ -50,16 +50,16 @@ public abstract class AbstractTypeExporter implements DBExporter {
 	
 	protected List<Table> addJoinsToADEHookTables(TableEnum type, Table fromTable) {
 		List<Table> tables = null;
-		Set<String> tableNames = exporter.getADEHookTables(type);
-
-		if (tableNames != null) {
-			tables = new ArrayList<>();
-			for (String tableName : tableNames) {
-				Table table = new Table(tableName, exporter.getDatabaseAdapter().getConnectionDetails().getSchema());
-				tables.add(table);
-				select.addProjection(table.getColumn("id", table.getAlias() + table.getName()))
-						.addJoin(JoinFactory.left(table, "id", ComparisonName.EQUAL_TO, fromTable.getColumn("id")));
-
+		if (exporter.hasADESupport()) {
+			Set<String> tableNames = exporter.getADEHookTables(type);
+			if (tableNames != null) {
+				tables = new ArrayList<>();
+				for (String tableName : tableNames) {
+					Table table = new Table(tableName, exporter.getDatabaseAdapter().getConnectionDetails().getSchema());
+					tables.add(table);
+					select.addProjection(table.getColumn("id", table.getAlias() + table.getName()))
+							.addJoin(JoinFactory.left(table, "id", ComparisonName.EQUAL_TO, fromTable.getColumn("id")));
+				}
 			}
 		}
 

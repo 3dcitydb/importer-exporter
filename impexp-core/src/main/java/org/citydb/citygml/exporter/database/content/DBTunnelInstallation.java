@@ -73,7 +73,7 @@ public class DBTunnelInstallation extends AbstractFeatureExporter<AbstractCityOb
 	private final String tunnelModule;
 	private final LodFilter lodFilter;
 	private final AttributeValueSplitter valueSplitter;
-	private List<Table> adeHookTables;
+	private final List<Table> adeHookTables;
 
 	public DBTunnelInstallation(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
 		super(AbstractCityObject.class, connection, exporter);
@@ -101,9 +101,7 @@ public class DBTunnelInstallation extends AbstractFeatureExporter<AbstractCityOb
 			if (projectionFilter.containsProperty("lod4ImplicitRepresentation", tunnelModule)) select.addProjection(table.getColumn("lod4_implicit_rep_id"), exporter.getGeometryColumn(table.getColumn("lod4_implicit_ref_point")), table.getColumn("lod4_implicit_transformation"));
 		}
 
-		// add joins to ADE hook tables
-		if (exporter.hasADESupport())
-			adeHookTables = addJoinsToADEHookTables(TableEnum.TUNNEL_INSTALLATION, table);
+		adeHookTables = addJoinsToADEHookTables(TableEnum.TUNNEL_INSTALLATION, table);
 
 		cityObjectReader = exporter.getExporter(DBCityObject.class);
 		thematicSurfaceExporter = exporter.getExporter(DBTunnelThematicSurface.class);

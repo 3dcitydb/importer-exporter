@@ -55,7 +55,7 @@ public class DBWaterBoundarySurface extends AbstractFeatureExporter<AbstractWate
 
 	private final String waterBodyModule;
 	private final LodFilter lodFilter;
-	private List<Table> adeHookTables;
+	private final List<Table> adeHookTables;
 
 	public DBWaterBoundarySurface(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
 		super(AbstractWaterBoundarySurface.class, connection, exporter);
@@ -72,9 +72,7 @@ public class DBWaterBoundarySurface extends AbstractFeatureExporter<AbstractWate
 		if (lodFilter.isEnabled(3) && projectionFilter.containsProperty("lod3Surface", waterBodyModule)) select.addProjection(table.getColumn("lod3_surface_id"));
 		if (lodFilter.isEnabled(4) && projectionFilter.containsProperty("lod4Surface", waterBodyModule)) select.addProjection(table.getColumn("lod4_surface_id"));
 
-		// add joins to ADE hook tables
-		if (exporter.hasADESupport())
-			adeHookTables = addJoinsToADEHookTables(TableEnum.WATERBOUNDARY_SURFACE, table);
+		adeHookTables = addJoinsToADEHookTables(TableEnum.WATERBOUNDARY_SURFACE, table);
 
 		cityObjectExporter = exporter.getExporter(DBCityObject.class);
 		geometryExporter = exporter.getExporter(DBSurfaceGeometry.class);

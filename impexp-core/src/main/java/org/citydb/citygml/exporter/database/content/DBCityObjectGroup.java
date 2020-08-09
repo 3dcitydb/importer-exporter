@@ -64,7 +64,7 @@ public class DBCityObjectGroup extends AbstractTypeExporter {
 
 	private final String groupModule;
 	private final AttributeValueSplitter valueSplitter;
-	private List<Table> adeHookTables;
+	private final List<Table> adeHookTables;
 
 	public DBCityObjectGroup(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
 		super(exporter);
@@ -94,9 +94,7 @@ public class DBCityObjectGroup extends AbstractTypeExporter {
 			.addProjection(groupToCityObject.getColumn("cityobject_id"), groupToCityObject.getColumn("role"), cityObject.getColumn("gmlid", "member_gmlid"));
 		}
 		
-		// add joins to ADE hook tables
-		if (exporter.hasADESupport())
-			adeHookTables = addJoinsToADEHookTables(TableEnum.CITYOBJECTGROUP, table);
+		adeHookTables = addJoinsToADEHookTables(TableEnum.CITYOBJECTGROUP, table);
 
 		select.addSelection(ComparisonFactory.equalTo(table.getColumn("id"), new PlaceHolder<>()));
 		ps = connection.prepareStatement(select.toString());

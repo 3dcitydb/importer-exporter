@@ -53,7 +53,7 @@ import java.util.List;
 public class DBAddress extends AbstractFeatureExporter<Address> {
 	private final AddressExportFactory factory;
 	private final GMLConverter gmlConverter;
-	private List<Table> adeHookTables;
+	private final List<Table> adeHookTables;
 
 	public DBAddress(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
 		super(Address.class, connection, exporter);
@@ -61,10 +61,7 @@ public class DBAddress extends AbstractFeatureExporter<Address> {
 		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 		table = new Table(TableEnum.ADDRESS.getName(), schema);
 		select = addProjection(new Select(), table, "");
-
-		// add joins to ADE hook tables
-		if (exporter.hasADESupport())
-			adeHookTables = addJoinsToADEHookTables(TableEnum.ADDRESS, table);
+		adeHookTables = addJoinsToADEHookTables(TableEnum.ADDRESS, table);
 
 		factory = new AddressExportFactory(exporter.getExportConfig());
 		gmlConverter = exporter.getGMLConverter();

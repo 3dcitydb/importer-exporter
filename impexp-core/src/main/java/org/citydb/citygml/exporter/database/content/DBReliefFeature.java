@@ -71,7 +71,7 @@ public class DBReliefFeature extends AbstractFeatureExporter<ReliefFeature> {
 	private final DBCityObject cityObjectExporter;
 
 	private DBSurfaceGeometry geometryExporter;
-	private List<Table> reliefADEHookTables;
+	private final List<Table> reliefADEHookTables;
 	private List<Table> componentADEHookTables;
 
 	public DBReliefFeature(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
@@ -109,15 +109,13 @@ public class DBReliefFeature extends AbstractFeatureExporter<ReliefFeature> {
 			if (componentProjectionFilter.containsProperty("ridgeOrValleyLines", reliefModule)) select.addProjection(exporter.getGeometryColumn(breakLineRelief.getColumn("ridge_or_valley_lines")));
 			if (componentProjectionFilter.containsProperty("breaklines", reliefModule)) select.addProjection(exporter.getGeometryColumn(breakLineRelief.getColumn("break_lines")));
 
+			componentADEHookTables = addJoinsToADEHookTables(TableEnum.RELIEF_COMPONENT, reliefComponent);
+
 			geometryExporter = exporter.getExporter(DBSurfaceGeometry.class);
 			gmlConverter = exporter.getGMLConverter();
 		}
 
-		// add joins to ADE hook tables
-		if (exporter.hasADESupport()) {
-			reliefADEHookTables = addJoinsToADEHookTables(TableEnum.BRIDGE, table);
-			componentADEHookTables = addJoinsToADEHookTables(TableEnum.RELIEF_COMPONENT, reliefComponent);
-		}
+		reliefADEHookTables = addJoinsToADEHookTables(TableEnum.BRIDGE, table);
 
 		cityObjectExporter = exporter.getExporter(DBCityObject.class);
 	}

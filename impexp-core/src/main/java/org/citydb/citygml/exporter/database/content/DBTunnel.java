@@ -79,7 +79,7 @@ public class DBTunnel extends AbstractFeatureExporter<AbstractTunnel> {
 	private final LodFilter lodFilter;
 	private final AttributeValueSplitter valueSplitter;
 	private final boolean hasObjectClassIdColumn;
-	private List<Table> adeHookTables;
+	private final List<Table> adeHookTables;
 
 	public DBTunnel(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
 		super(AbstractTunnel.class, connection, exporter);		
@@ -123,9 +123,7 @@ public class DBTunnel extends AbstractFeatureExporter<AbstractTunnel> {
 			if (projectionFilter.containsProperty("lod4MultiSurface", tunnelModule)) select.addProjection(table.getColumn("lod4_multi_surface_id"));
 		}
 
-		// add joins to ADE hook tables
-		if (exporter.hasADESupport())
-			adeHookTables = addJoinsToADEHookTables(TableEnum.TUNNEL, table);
+		adeHookTables = addJoinsToADEHookTables(TableEnum.TUNNEL, table);
 
 		thematicSurfaceExporter = exporter.getExporter(DBTunnelThematicSurface.class);
 		tunnelInstallationExporter = exporter.getExporter(DBTunnelInstallation.class);

@@ -59,7 +59,7 @@ public class DBTrafficArea extends AbstractFeatureExporter<AbstractTransportatio
 
 	private final LodFilter lodFilter;
 	private final AttributeValueSplitter valueSplitter;
-	private List<Table> adeHookTables;
+	private final List<Table> adeHookTables;
 
 	public DBTrafficArea(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
 		super(AbstractTransportationObject.class, connection, exporter);
@@ -79,9 +79,7 @@ public class DBTrafficArea extends AbstractFeatureExporter<AbstractTransportatio
 		if (lodFilter.isEnabled(3) && projectionFilter.containsProperty("lod3MultiSurface", transportationModule)) select.addProjection(table.getColumn("lod3_multi_surface_id"));
 		if (lodFilter.isEnabled(4) && projectionFilter.containsProperty("lod4MultiSurface", transportationModule)) select.addProjection(table.getColumn("lod4_multi_surface_id"));
 
-		// add joins to ADE hook tables
-		if (exporter.hasADESupport())
-			adeHookTables = addJoinsToADEHookTables(TableEnum.TRAFFIC_AREA, table);
+		adeHookTables = addJoinsToADEHookTables(TableEnum.TRAFFIC_AREA, table);
 
 		cityObjectExporter = exporter.getExporter(DBCityObject.class);
 		geometryExporter = exporter.getExporter(DBSurfaceGeometry.class);

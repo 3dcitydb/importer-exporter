@@ -98,10 +98,10 @@ public abstract class AbstractAppearanceExporter extends AbstractTypeExporter {
 	private final String separator;
 	private final HashSet<Long> texImageIds;
 
+	private final List<Table> appearanceADEHookTables;
+	private final List<Table> surfaceDataADEHookTables;
 	private boolean appendOldGmlId;
 	private String gmlIdPrefix;
-	private List<Table> appearanceADEHookTables;
-	private List<Table> surfaceDataADEHookTables;
 
 	protected AbstractAppearanceExporter(boolean isGlobal, Connection connection, Query query, CacheTable cacheTable, CityGMLExportManager exporter, Config config) throws CityGMLExportException, SQLException {
 		super(exporter);
@@ -146,11 +146,8 @@ public abstract class AbstractAppearanceExporter extends AbstractTypeExporter {
 				.addJoin(JoinFactory.left(texImage, "id", ComparisonName.EQUAL_TO, surfaceData.getColumn("tex_image_id")))
 				.addJoin(JoinFactory.left(textureParam, "surface_data_id", ComparisonName.EQUAL_TO, surfaceData.getColumn("id")));
 
-		// add joins to ADE hook tables
-		if (exporter.hasADESupport()) {
-			appearanceADEHookTables = addJoinsToADEHookTables(TableEnum.APPEARANCE, table);
-			surfaceDataADEHookTables = addJoinsToADEHookTables(TableEnum.SURFACE_DATA, surfaceData);
-		}
+		appearanceADEHookTables = addJoinsToADEHookTables(TableEnum.APPEARANCE, table);
+		surfaceDataADEHookTables = addJoinsToADEHookTables(TableEnum.SURFACE_DATA, surfaceData);
 
 		if (isGlobal) {
 			Table tmp = new Table(cacheTable.getTableName());

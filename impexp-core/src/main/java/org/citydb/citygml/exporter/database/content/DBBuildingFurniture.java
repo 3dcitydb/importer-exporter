@@ -66,7 +66,7 @@ public class DBBuildingFurniture extends AbstractFeatureExporter<BuildingFurnitu
 	private final LodFilter lodFilter;
 	private final AttributeValueSplitter valueSplitter;
 	private final boolean hasObjectClassIdColumn;
-	private List<Table> adeHookTables;
+	private final List<Table> adeHookTables;
 
 	public DBBuildingFurniture(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
 		super(BuildingFurniture.class, connection, exporter);
@@ -87,9 +87,7 @@ public class DBBuildingFurniture extends AbstractFeatureExporter<BuildingFurnitu
 		if (projectionFilter.containsProperty("lod4ImplicitRepresentation", buildingModule))
 			select.addProjection(table.getColumn("lod4_implicit_rep_id"), exporter.getGeometryColumn(table.getColumn("lod4_implicit_ref_point")), table.getColumn("lod4_implicit_transformation"));
 
-		// add joins to ADE hook tables
-		if (exporter.hasADESupport())
-			adeHookTables = addJoinsToADEHookTables(TableEnum.BUILDING_FURNITURE, table);
+		adeHookTables = addJoinsToADEHookTables(TableEnum.BUILDING_FURNITURE, table);
 
 		cityObjectExporter = exporter.getExporter(DBCityObject.class);
 		geometryExporter = exporter.getExporter(DBSurfaceGeometry.class);

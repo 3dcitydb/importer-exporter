@@ -67,7 +67,7 @@ public class DBTunnelThematicSurface extends AbstractFeatureExporter<AbstractBou
 	private final String tunnelModule;
 	private final LodFilter lodFilter;
 	private final boolean useXLink;
-	private List<Table> surfaceADEHookTables;
+	private final List<Table> surfaceADEHookTables;
 	private List<Table> openingADEHookTables;
 
 	public DBTunnelThematicSurface(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
@@ -87,7 +87,8 @@ public class DBTunnelThematicSurface extends AbstractFeatureExporter<AbstractBou
 		if (lodFilter.isEnabled(2) && boundarySurfaceProjectionFilter.containsProperty("lod2MultiSurface", tunnelModule)) select.addProjection(table.getColumn("lod2_multi_surface_id"));
 		if (lodFilter.isEnabled(3) && boundarySurfaceProjectionFilter.containsProperty("lod3MultiSurface", tunnelModule)) select.addProjection(table.getColumn("lod3_multi_surface_id"));
 		if (lodFilter.isEnabled(4) && boundarySurfaceProjectionFilter.containsProperty("lod4MultiSurface", tunnelModule)) select.addProjection(table.getColumn("lod4_multi_surface_id"));
-		if (boundarySurfaceProjectionFilter.containsProperty("opening", tunnelModule)) {
+		if (boundarySurfaceProjectionFilter.containsProperty("opening", tunnelModule)
+				&& lodFilter.containsLodGreaterThanOrEuqalTo(3)) {
 			Table openingToThemSurface = new Table(TableEnum.TUNNEL_OPEN_TO_THEM_SRF.getName(), schema);
 			select.addJoin(JoinFactory.left(openingToThemSurface, "tunnel_thematic_surface_id", ComparisonName.EQUAL_TO, table.getColumn("id")))
 			.addJoin(JoinFactory.left(opening, "id", ComparisonName.EQUAL_TO, openingToThemSurface.getColumn("tunnel_opening_id")))
@@ -100,13 +101,11 @@ public class DBTunnelThematicSurface extends AbstractFeatureExporter<AbstractBou
 				if (openingProjectionFilter.containsProperty("lod4MultiSurface", tunnelModule)) select.addProjection(opening.getColumn("lod4_multi_surface_id", "oplod4_multi_surface_id"));
 				if (openingProjectionFilter.containsProperty("lod4ImplicitRepresentation", tunnelModule)) select.addProjection(opening.getColumn("lod4_implicit_rep_id"), exporter.getGeometryColumn(opening.getColumn("lod4_implicit_ref_point")), opening.getColumn("lod4_implicit_transformation"));
 			}
-		}
 
-		// add joins to ADE hook tables
-		if (exporter.hasADESupport()) {
-			surfaceADEHookTables = addJoinsToADEHookTables(TableEnum.TUNNEL_THEMATIC_SURFACE, table);
 			openingADEHookTables = addJoinsToADEHookTables(TableEnum.TUNNEL_OPENING, opening);
 		}
+
+		surfaceADEHookTables = addJoinsToADEHookTables(TableEnum.TUNNEL_THEMATIC_SURFACE, table);
 
 		cityObjectExporter = exporter.getExporter(DBCityObject.class);
 		geometryExporter = exporter.getExporter(DBSurfaceGeometry.class);
