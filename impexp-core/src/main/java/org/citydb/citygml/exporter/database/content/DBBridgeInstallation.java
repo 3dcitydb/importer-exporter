@@ -160,17 +160,15 @@ public class DBBridgeInstallation extends AbstractFeatureExporter<AbstractCityOb
 					installation = root;
 					featureType = rootType;
 				} else {
-					int objectClassId = rs.getInt("objectclass_id");
-					featureType = exporter.getFeatureType(objectClassId);
-					if (featureType == null)
-						continue;
-
 					// create bridge installation object
+					int objectClassId = rs.getInt("objectclass_id");
 					installation = exporter.createObject(objectClassId, AbstractCityObject.class);
 					if (installation == null) {
-						exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(featureType, installationId) + " as bridge installation object.");
+						exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(objectClassId, installationId) + " as bridge installation object.");
 						continue;
 					}
+
+					featureType = exporter.getFeatureType(objectClassId);
 				}
 
 				// get projection filter

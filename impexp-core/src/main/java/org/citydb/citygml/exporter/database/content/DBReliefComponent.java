@@ -119,17 +119,15 @@ public class DBReliefComponent extends AbstractFeatureExporter<AbstractReliefCom
 					component = root;
 					featureType = rootType;
 				} else {
-					int objectClassId = rs.getInt("objectclass_id");
-					featureType = exporter.getFeatureType(objectClassId);
-					if (featureType == null)
-						continue;
-
 					// create relief component object
+					int objectClassId = rs.getInt("objectclass_id");
 					component = exporter.createObject(objectClassId, AbstractReliefComponent.class);
 					if (component == null) {
-						exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(featureType, componentId) + " as relief component object.");
+						exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(objectClassId, componentId) + " as relief component object.");
 						continue;
 					}
+
+					featureType = exporter.getFeatureType(objectClassId);
 				}
 
 				// get projection filter

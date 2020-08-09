@@ -131,17 +131,15 @@ public class DBSolitaryVegetatObject extends AbstractFeatureExporter<SolitaryVeg
 					featureType = rootType;
 				} else {
 					if (hasObjectClassIdColumn) {
-						int objectClassId = rs.getInt("objectclass_id");
-						featureType = exporter.getFeatureType(objectClassId);
-						if (featureType == null)
-							continue;
-
 						// create solitary vegetation object
+						int objectClassId = rs.getInt("objectclass_id");
 						vegetationObject = exporter.createObject(objectClassId, SolitaryVegetationObject.class);
 						if (vegetationObject == null) {
-							exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(featureType, vegetationObjectId) + " as solitary vegetation object.");
+							exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(objectClassId, vegetationObjectId) + " as solitary vegetation object.");
 							continue;
 						}
+
+						featureType = exporter.getFeatureType(objectClassId);
 					} else {
 						vegetationObject = new SolitaryVegetationObject();
 						featureType = exporter.getFeatureType(vegetationObject);

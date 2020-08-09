@@ -135,17 +135,15 @@ public class DBGenericCityObject extends AbstractFeatureExporter<GenericCityObje
 					featureType = rootType;
 				} else {
 					if (hasObjectClassIdColumn) {
-						int objectClassId = rs.getInt("objectclass_id");
-						featureType = exporter.getFeatureType(objectClassId);
-						if (featureType == null)
-							continue;
-
 						// create generic city object
+						int objectClassId = rs.getInt("objectclass_id");
 						genericCityObject = exporter.createObject(objectClassId, GenericCityObject.class);
 						if (genericCityObject == null) {
-							exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(featureType, genericCityObjectId) + " as generic city object.");
+							exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(objectClassId, genericCityObjectId) + " as generic city object.");
 							continue;
 						}
+
+						featureType = exporter.getFeatureType(objectClassId);
 					} else {
 						genericCityObject = new GenericCityObject();
 						featureType = exporter.getFeatureType(genericCityObject);

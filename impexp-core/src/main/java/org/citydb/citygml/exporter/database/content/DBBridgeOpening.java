@@ -133,17 +133,15 @@ public class DBBridgeOpening extends AbstractFeatureExporter<AbstractOpening> {
 							opening = root;
 							featureType = rootType;
 						} else {
-							int objectClassId = rs.getInt("objectclass_id");
-							featureType = exporter.getFeatureType(objectClassId);
-							if (featureType == null)
-								continue;
-
 							// create bridge opening object
+							int objectClassId = rs.getInt("objectclass_id");
 							opening = exporter.createObject(objectClassId, AbstractOpening.class);
 							if (opening == null) {
-								exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(featureType, openingId) + " as bridge opening object.");
+								exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(objectClassId, openingId) + " as bridge opening object.");
 								continue;
 							}
+
+							featureType = exporter.getFeatureType(objectClassId);
 						}
 
 						// get projection filter

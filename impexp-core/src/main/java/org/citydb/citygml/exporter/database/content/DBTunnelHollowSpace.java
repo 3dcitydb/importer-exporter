@@ -129,17 +129,15 @@ public class DBTunnelHollowSpace extends AbstractFeatureExporter<HollowSpace> {
 					featureType = rootType;
 				} else {
 					if (hasObjectClassIdColumn) {
-						int objectClassId = rs.getInt("objectclass_id");
-						featureType = exporter.getFeatureType(objectClassId);
-						if (featureType == null)
-							continue;
-
 						// create hollow space object
+						int objectClassId = rs.getInt("objectclass_id");
 						hollowSpace = exporter.createObject(objectClassId, HollowSpace.class);
 						if (hollowSpace == null) {
-							exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(featureType, hollowSpaceId) + " as hollow space object.");
+							exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(objectClassId, hollowSpaceId) + " as hollow space object.");
 							continue;
 						}
+
+						featureType = exporter.getFeatureType(objectClassId);
 					} else {
 						hollowSpace = new HollowSpace();
 						featureType = exporter.getFeatureType(hollowSpace);

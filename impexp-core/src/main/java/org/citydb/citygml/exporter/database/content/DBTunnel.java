@@ -160,17 +160,15 @@ public class DBTunnel extends AbstractFeatureExporter<AbstractTunnel> {
 					featureType = rootType;
 				} else {
 					if (hasObjectClassIdColumn) {
-						int objectClassId = rs.getInt("objectclass_id");
-						featureType = exporter.getFeatureType(objectClassId);
-						if (featureType == null)
-							continue;
-
 						// create tunnel object
+						int objectClassId = rs.getInt("objectclass_id");
 						tunnel = exporter.createObject(objectClassId, AbstractTunnel.class);
 						if (tunnel == null) {
-							exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(featureType, tunnelId) + " as tunnel object.");
+							exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(objectClassId, tunnelId) + " as tunnel object.");
 							continue;
 						}
+
+						featureType = exporter.getFeatureType(objectClassId);
 					} else {
 						tunnel = new TunnelPart();
 						featureType = exporter.getFeatureType(tunnel);

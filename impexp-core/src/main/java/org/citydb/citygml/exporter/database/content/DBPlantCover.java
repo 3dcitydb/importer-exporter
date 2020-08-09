@@ -120,17 +120,15 @@ public class DBPlantCover extends AbstractFeatureExporter<PlantCover> {
 					featureType = rootType;
 				} else {
 					if (hasObjectClassIdColumn) {
-						int objectClassId = rs.getInt("objectclass_id");
-						featureType = exporter.getFeatureType(objectClassId);
-						if (featureType == null)
-							continue;
-
 						// create plant cover object
+						int objectClassId = rs.getInt("objectclass_id");
 						plantCover = exporter.createObject(objectClassId, PlantCover.class);
 						if (plantCover == null) {
-							exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(featureType, plantCoverId) + " as city furniture object.");
+							exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(objectClassId, plantCoverId) + " as city furniture object.");
 							continue;
 						}
+
+						featureType = exporter.getFeatureType(objectClassId);
 					} else {
 						plantCover = new PlantCover();
 						featureType = exporter.getFeatureType(plantCover);

@@ -334,7 +334,7 @@ public class AbstractAppearanceExporter extends AbstractTypeExporter {
 							abstractTexture.setLocalProperty(CoreConstants.TEXTURE_IMAGE_XLINK, xlink);
 
 					} else {
-						log.warn(exporter.getObjectSignature(exporter.getFeatureType(objectClassId), surfaceDataId) +
+						log.warn(exporter.getObjectSignature(objectClassId, surfaceDataId) +
 								": Skipping 0 byte texture file '" + imageURI + "'.");
 					}
 

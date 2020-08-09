@@ -155,17 +155,15 @@ public class DBWaterBody extends AbstractFeatureExporter<WaterBody> {
 							featureType = rootType;
 						} else {
 							if (hasObjectClassIdColumn) {
-								int objectClassId = rs.getInt("objectclass_id");
-								featureType = exporter.getFeatureType(objectClassId);
-								if (featureType == null)
-									continue;
-
 								// create water body object
+								int objectClassId = rs.getInt("objectclass_id");
 								waterBody = exporter.createObject(objectClassId, WaterBody.class);
 								if (waterBody == null) {
-									exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(featureType, waterBodyId) + " as water body object.");
+									exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(objectClassId, waterBodyId) + " as water body object.");
 									continue;
 								}
+
+								featureType = exporter.getFeatureType(objectClassId);
 							} else {
 								waterBody = new WaterBody();
 								featureType = exporter.getFeatureType(waterBody);

@@ -107,17 +107,15 @@ public class DBTunnelOpening extends AbstractFeatureExporter<AbstractOpening> {
 					opening = root;
 					featureType = rootType;
 				} else {
-					int objectClassId = rs.getInt("objectclass_id");
-					featureType = exporter.getFeatureType(objectClassId);
-					if (featureType == null)
-						continue;
-
 					// create opening object
+					int objectClassId = rs.getInt("objectclass_id");
 					opening = exporter.createObject(objectClassId, AbstractOpening.class);
 					if (opening == null) {
-						exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(featureType, openingId) + " as opening object.");
+						exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(objectClassId, openingId) + " as opening object.");
 						continue;
 					}
+
+					featureType = exporter.getFeatureType(objectClassId);
 				}
 
 				// get projection filter

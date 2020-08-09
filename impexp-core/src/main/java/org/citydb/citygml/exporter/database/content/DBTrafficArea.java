@@ -110,17 +110,15 @@ public class DBTrafficArea extends AbstractFeatureExporter<AbstractTransportatio
 					transportationObject = root;
 					featureType = rootType;
 				} else {
-					int objectClassId = rs.getInt("objectclass_id");
-					featureType = exporter.getFeatureType(objectClassId);
-					if (featureType == null)
-						continue;
-
 					// create transportation object
+					int objectClassId = rs.getInt("objectclass_id");
 					transportationObject = exporter.createObject(objectClassId, AbstractTransportationObject.class);
 					if (transportationObject == null) {
-						exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(featureType, transportationObjectId) + " as transportation object.");
+						exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(objectClassId, transportationObjectId) + " as transportation object.");
 						continue;
 					}
+
+					featureType = exporter.getFeatureType(objectClassId);
 				}
 
 				// get projection filter

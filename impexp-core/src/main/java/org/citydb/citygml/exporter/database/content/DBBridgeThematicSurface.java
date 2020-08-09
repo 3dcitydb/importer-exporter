@@ -176,17 +176,15 @@ public class DBBridgeThematicSurface extends AbstractFeatureExporter<AbstractBou
 							boundarySurface = root;
 							featureType = rootType;						
 						} else {
-							int objectClassId = rs.getInt("objectclass_id");
-							featureType = exporter.getFeatureType(objectClassId);
-							if (featureType == null)
-								continue;
-
 							// create boundary surface object
+							int objectClassId = rs.getInt("objectclass_id");
 							boundarySurface = exporter.createObject(objectClassId, AbstractBoundarySurface.class);
 							if (boundarySurface == null) {
-								exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(featureType, boundarySurfaceId) + " as boundary surface object.");
+								exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(objectClassId, boundarySurfaceId) + " as boundary surface object.");
 								continue;
 							}
+
+							featureType = exporter.getFeatureType(objectClassId);
 						}
 
 						// get projection filter

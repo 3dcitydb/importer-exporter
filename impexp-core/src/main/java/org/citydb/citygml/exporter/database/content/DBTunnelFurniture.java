@@ -121,17 +121,15 @@ public class DBTunnelFurniture extends AbstractFeatureExporter<TunnelFurniture> 
 					featureType = rootType;
 				} else {
 					if (hasObjectClassIdColumn) {
-						int objectClassId = rs.getInt("objectclass_id");
-						featureType = exporter.getFeatureType(objectClassId);
-						if (featureType == null)
-							continue;
-
 						// create tunnel furniture object
+						int objectClassId = rs.getInt("objectclass_id");
 						tunnelFurniture = exporter.createObject(objectClassId, TunnelFurniture.class);
 						if (tunnelFurniture == null) {
-							exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(featureType, tunnelFurnitureId) + " as tunnel furniture object.");
+							exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(objectClassId, tunnelFurnitureId) + " as tunnel furniture object.");
 							continue;
 						}
+
+						featureType = exporter.getFeatureType(objectClassId);
 					} else {
 						tunnelFurniture = new TunnelFurniture();
 						featureType = exporter.getFeatureType(tunnelFurniture);

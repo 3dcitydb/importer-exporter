@@ -197,17 +197,15 @@ public class DBBuilding extends AbstractFeatureExporter<AbstractBuilding> {
 							featureType = rootType;
 						} else {
 							if (hasObjectClassIdColumn) {
-								int objectClassId = rs.getInt("objectclass_id");
-								featureType = exporter.getFeatureType(objectClassId);
-								if (featureType == null)
-									continue;
-
 								// create building object
+								int objectClassId = rs.getInt("objectclass_id");
 								building = exporter.createObject(objectClassId, AbstractBuilding.class);
 								if (building == null) {
-									exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(featureType, buildingId) + " as building object.");
+									exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(objectClassId, buildingId) + " as building object.");
 									continue;
 								}
+
+								featureType = exporter.getFeatureType(objectClassId);
 							} else {
 								building = new BuildingPart();
 								featureType = exporter.getFeatureType(building);
