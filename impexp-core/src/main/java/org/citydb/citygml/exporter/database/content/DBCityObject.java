@@ -264,7 +264,8 @@ public class DBCityObject implements DBExporter {
 		boolean getEnvelope = context.isFeature && ((useTiling && context.isTopLevel) || setEnvelope);
 
 		// gml:id
-		context.object.setId(rs.getString("gmlid"));
+		if (!context.object.isSetId())
+			context.object.setId(rs.getString("gmlid"));
 
 		// gml:name
 		if (!context.isCityObject || context.projectionFilter.containsProperty("name", gmlModule)) {

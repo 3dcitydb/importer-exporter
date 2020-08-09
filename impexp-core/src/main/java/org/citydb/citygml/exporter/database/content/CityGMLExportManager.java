@@ -627,11 +627,15 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 	}
 
 	public String generateNewGmlId(AbstractFeature feature) {
+		return generateNewGmlId(feature, feature.getId());
+	}
+
+	public String generateNewGmlId(AbstractFeature feature, String oldGmlId) {
 		String gmlId = DefaultGMLIdManager.getInstance().generateUUID(config.getProject().getExporter().getXlink().getFeature().getIdPrefix());
 
-		if (feature.isSetId()) {
+		if (oldGmlId != null) {
 			if (config.getProject().getExporter().getXlink().getFeature().isSetAppendId())
-				gmlId = gmlId + "-" + feature.getId();
+				gmlId = gmlId + "-" + oldGmlId;
 
 			if (config.getProject().getExporter().getXlink().getFeature().isSetKeepGmlIdAsExternalReference()
 					&& feature instanceof AbstractCityObject) {
@@ -640,7 +644,7 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 					externalReference.setInformationSystem(outputFile.getFile().toString());
 
 				ExternalObject externalObject = new ExternalObject();
-				externalObject.setName(feature.getId());
+				externalObject.setName(oldGmlId);
 				externalReference.setExternalObject(externalObject);
 
 				((AbstractCityObject)feature).addExternalReference(externalReference);
