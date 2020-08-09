@@ -118,17 +118,15 @@ public class DBBridgeFurniture extends AbstractFeatureExporter<BridgeFurniture> 
 					featureType = rootType;
 				} else {
 					if (hasObjectClassIdColumn) {
-						int objectClassId = rs.getInt("objectclass_id");
-						featureType = exporter.getFeatureType(objectClassId);
-						if (featureType == null)
-							continue;
-
 						// create bridge furniture object
+						int objectClassId = rs.getInt("objectclass_id");
 						bridgeFurniture = exporter.createObject(objectClassId, BridgeFurniture.class);
 						if (bridgeFurniture == null) {
-							exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(featureType, bridgeFurnitureId) + " as bridge furniture object.");
+							exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(objectClassId, bridgeFurnitureId) + " as bridge furniture object.");
 							continue;
 						}
+
+						featureType = exporter.getFeatureType(objectClassId);
 					} else {
 						bridgeFurniture = new BridgeFurniture();
 						featureType = exporter.getFeatureType(bridgeFurniture);

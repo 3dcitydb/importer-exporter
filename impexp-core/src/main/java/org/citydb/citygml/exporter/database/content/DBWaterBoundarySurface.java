@@ -96,17 +96,15 @@ public class DBWaterBoundarySurface extends AbstractFeatureExporter<AbstractWate
 					waterBoundarySurface = root;
 					featureType = rootType;
 				} else {
-					int objectClassId = rs.getInt("objectclass_id");
-					featureType = exporter.getFeatureType(objectClassId);
-					if (featureType == null)
-						continue;
-
 					// create water boundary surface object
+					int objectClassId = rs.getInt("objectclass_id");
 					waterBoundarySurface = exporter.createObject(objectClassId, AbstractWaterBoundarySurface.class);
 					if (waterBoundarySurface == null) {
-						exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(featureType, waterBoundarySurfaceId) + " as water boundary surface object.");
+						exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(objectClassId, waterBoundarySurfaceId) + " as water boundary surface object.");
 						continue;
 					}
+
+					featureType = exporter.getFeatureType(objectClassId);
 				}
 
 				// get projection filter

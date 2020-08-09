@@ -121,17 +121,15 @@ public class DBRoom extends AbstractFeatureExporter<Room> {
 					featureType = rootType;
 				} else {
 					if (hasObjectClassIdColumn) {
-						int objectClassId = rs.getInt("objectclass_id");
-						featureType = exporter.getFeatureType(objectClassId);
-						if (featureType == null)
-							continue;
-
 						// create room object
+						int objectClassId = rs.getInt("objectclass_id");
 						room = exporter.createObject(objectClassId, Room.class);
 						if (room == null) {
-							exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(featureType, roomId) + " as room object.");
+							exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(objectClassId, roomId) + " as room object.");
 							continue;
 						}
+
+						featureType = exporter.getFeatureType(objectClassId);
 					} else {
 						room = new Room();
 						featureType = exporter.getFeatureType(room);

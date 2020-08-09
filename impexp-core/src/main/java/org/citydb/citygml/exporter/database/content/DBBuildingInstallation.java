@@ -161,17 +161,15 @@ public class DBBuildingInstallation extends AbstractFeatureExporter<AbstractCity
 					installation = root;
 					featureType = rootType;
 				} else {
-					int objectClassId = rs.getInt("objectclass_id");
-					featureType = exporter.getFeatureType(objectClassId);
-					if (featureType == null)
-						continue;
-					
 					// create building installation object
+					int objectClassId = rs.getInt("objectclass_id");
 					installation = exporter.createObject(objectClassId, AbstractCityObject.class);
 					if (installation == null) {
-						exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(featureType, installationId) + " as building installation object.");
+						exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(objectClassId, installationId) + " as building installation object.");
 						continue;
 					}
+
+					featureType = exporter.getFeatureType(objectClassId);
 				}
 
 				// get projection filter

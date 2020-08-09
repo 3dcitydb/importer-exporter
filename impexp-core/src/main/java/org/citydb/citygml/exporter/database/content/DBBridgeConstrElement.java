@@ -142,17 +142,15 @@ public class DBBridgeConstrElement extends AbstractFeatureExporter<BridgeConstru
 					featureType = rootType;
 				} else {
 					if (hasObjectClassIdColumn) {
-						int objectClassId = rs.getInt("objectclass_id");
-						featureType = exporter.getFeatureType(objectClassId);
-						if (featureType == null)
-							continue;
-
 						// create bridge construction element object
+						int objectClassId = rs.getInt("objectclass_id");
 						constructionElement = exporter.createObject(objectClassId, BridgeConstructionElement.class);
 						if (constructionElement == null) {
-							exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(featureType, constructionElementId) + " as bridge construction element object.");
+							exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(objectClassId, constructionElementId) + " as bridge construction element object.");
 							continue;
 						}
+
+						featureType = exporter.getFeatureType(objectClassId);
 					} else {
 						constructionElement = new BridgeConstructionElement();
 						featureType = exporter.getFeatureType(constructionElement);

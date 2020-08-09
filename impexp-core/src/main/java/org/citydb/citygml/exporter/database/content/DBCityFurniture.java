@@ -133,17 +133,15 @@ public class DBCityFurniture extends AbstractFeatureExporter<CityFurniture> {
 					featureType = rootType;
 				} else {
 					if (hasObjectClassIdColumn) {
-						int objectClassId = rs.getInt("objectclass_id");
-						featureType = exporter.getFeatureType(objectClassId);
-						if (featureType == null)
-							continue;
-
 						// create city furniture object
+						int objectClassId = rs.getInt("objectclass_id");
 						cityFurniture = exporter.createObject(objectClassId, CityFurniture.class);
 						if (cityFurniture == null) {
-							exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(featureType, cityFurnitureId) + " as city furniture object.");
+							exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(objectClassId, cityFurnitureId) + " as city furniture object.");
 							continue;
 						}
+
+						featureType = exporter.getFeatureType(objectClassId);
 					} else {
 						cityFurniture = new CityFurniture();
 						featureType = exporter.getFeatureType(cityFurniture);

@@ -107,17 +107,15 @@ public class DBLandUse extends AbstractFeatureExporter<LandUse> {
 					featureType = rootType;
 				} else {
 					if (hasObjectClassIdColumn) {
-						int objectClassId = rs.getInt("objectclass_id");
-						featureType = exporter.getFeatureType(objectClassId);
-						if (featureType == null)
-							continue;
-
 						// create land use object
+						int objectClassId = rs.getInt("objectclass_id");
 						landUse = exporter.createObject(objectClassId, LandUse.class);
 						if (landUse == null) {
-							exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(featureType, landUseId) + " as land use object.");
+							exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(objectClassId, landUseId) + " as land use object.");
 							continue;
 						}
+
+						featureType = exporter.getFeatureType(objectClassId);
 					} else {
 						landUse = new LandUse();
 						featureType = exporter.getFeatureType(landUse);

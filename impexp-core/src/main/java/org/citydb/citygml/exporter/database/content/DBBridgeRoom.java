@@ -121,17 +121,15 @@ public class DBBridgeRoom extends AbstractFeatureExporter<BridgeRoom> {
 					featureType = rootType;
 				} else {
 					if (hasObjectClassIdColumn) {
-						int objectClassId = rs.getInt("objectclass_id");
-						featureType = exporter.getFeatureType(objectClassId);
-						if (featureType == null)
-							continue;
-
 						// create bridge room object
+						int objectClassId = rs.getInt("objectclass_id");
 						bridgeRoom = exporter.createObject(objectClassId, BridgeRoom.class);
 						if (bridgeRoom == null) {
-							exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(featureType, bridgeRoomId) + " as bridge room object.");
+							exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(objectClassId, bridgeRoomId) + " as bridge room object.");
 							continue;
 						}
+
+						featureType = exporter.getFeatureType(objectClassId);
 					} else {
 						bridgeRoom = new BridgeRoom();
 						featureType = exporter.getFeatureType(bridgeRoom);

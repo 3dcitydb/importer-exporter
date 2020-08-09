@@ -119,17 +119,15 @@ public class DBBuildingFurniture extends AbstractFeatureExporter<BuildingFurnitu
 					featureType = rootType;
 				} else {
 					if (hasObjectClassIdColumn) {
-						int objectClassId = rs.getInt("objectclass_id");
-						featureType = exporter.getFeatureType(objectClassId);
-						if (featureType == null)
-							continue;
-
 						// create building furniture object
+						int objectClassId = rs.getInt("objectclass_id");
 						buildingFurniture = exporter.createObject(objectClassId, BuildingFurniture.class);
 						if (buildingFurniture == null) {
-							exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(featureType, buildingFurnitureId) + " as building furniture object.");
+							exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(objectClassId, buildingFurnitureId) + " as building furniture object.");
 							continue;
 						}
+
+						featureType = exporter.getFeatureType(objectClassId);
 					} else {
 						buildingFurniture = new BuildingFurniture();
 						featureType = exporter.getFeatureType(buildingFurniture);

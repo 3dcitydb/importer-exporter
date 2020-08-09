@@ -146,17 +146,15 @@ public class DBReliefFeature extends AbstractFeatureExporter<ReliefFeature> {
 							featureType = rootType;
 						} else {
 							if (hasObjectClassIdColumn) {
-								int objectClassId = rs.getInt("objectclass_id");
-								featureType = exporter.getFeatureType(objectClassId);
-								if (featureType == null)
-									continue;
-
 								// create relief feature object
+								int objectClassId = rs.getInt("objectclass_id");
 								reliefFeature = exporter.createObject(objectClassId, ReliefFeature.class);
 								if (reliefFeature == null) {
-									exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(featureType, reliefFeatureId) + " as relief feature object.");
+									exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(objectClassId, reliefFeatureId) + " as relief feature object.");
 									continue;
 								}
+
+								featureType = exporter.getFeatureType(objectClassId);
 							} else {
 								reliefFeature = new ReliefFeature();
 								featureType = exporter.getFeatureType(reliefFeature);

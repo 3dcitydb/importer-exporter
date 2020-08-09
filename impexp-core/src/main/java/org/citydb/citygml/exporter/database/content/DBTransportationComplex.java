@@ -139,17 +139,15 @@ public class DBTransportationComplex extends AbstractFeatureExporter<Transportat
 							complex = root;
 							featureType = rootType;
 						} else {
-							int objectClassId = rs.getInt("objectclass_id");
-							featureType = exporter.getFeatureType(objectClassId);
-							if (featureType == null)
-								continue;
-
 							// create transportation complex object
+							int objectClassId = rs.getInt("objectclass_id");
 							complex = exporter.createObject(objectClassId, TransportationComplex.class);
 							if (complex == null) {
-								exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(featureType, complexId) + " as transportation complex object.");
+								exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(objectClassId, complexId) + " as transportation complex object.");
 								continue;
 							}
+
+							featureType = exporter.getFeatureType(objectClassId);
 						}
 
 						// get projection filter
