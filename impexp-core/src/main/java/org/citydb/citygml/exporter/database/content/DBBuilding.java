@@ -203,7 +203,7 @@ public class DBBuilding extends AbstractFeatureExporter<AbstractBuilding> {
 									continue;
 
 								// create building object
-								building = exporter.createObject(featureType.getObjectClassId(), AbstractBuilding.class);						
+								building = exporter.createObject(objectClassId, AbstractBuilding.class);
 								if (building == null) {
 									exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(featureType, buildingId) + " as building object.");
 									continue;

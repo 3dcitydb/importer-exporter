@@ -156,7 +156,7 @@ public class DBReliefFeature extends AbstractFeatureExporter<ReliefFeature> {
 									continue;
 
 								// create relief feature object
-								reliefFeature = exporter.createObject(featureType.getObjectClassId(), ReliefFeature.class);						
+								reliefFeature = exporter.createObject(objectClassId, ReliefFeature.class);
 								if (reliefFeature == null) {
 									exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(featureType, reliefFeatureId) + " as relief feature object.");
 									continue;

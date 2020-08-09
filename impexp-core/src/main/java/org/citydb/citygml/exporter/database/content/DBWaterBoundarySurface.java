@@ -108,7 +108,7 @@ public class DBWaterBoundarySurface extends AbstractFeatureExporter<AbstractWate
 						continue;
 
 					// create water boundary surface object
-					waterBoundarySurface = exporter.createObject(featureType.getObjectClassId(), AbstractWaterBoundarySurface.class);						
+					waterBoundarySurface = exporter.createObject(objectClassId, AbstractWaterBoundarySurface.class);
 					if (waterBoundarySurface == null) {
 						exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(featureType, waterBoundarySurfaceId) + " as water boundary surface object.");
 						continue;
