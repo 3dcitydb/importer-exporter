@@ -79,9 +79,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -91,7 +93,7 @@ public class DBCityObject implements DBExporter {
 	private final Connection connection;
 	private final PreparedStatement psSelect;
 	private final PreparedStatement psBulk;
-	private final Map<Long, ObjectContext> batches;
+	private final Map<Long, List<ObjectContext>> batches;
 	private final DBGeneralization generalizesToExporter;
 	private final DBCityObjectGenericAttrib genericAttributeExporter;
 
@@ -150,7 +152,7 @@ public class DBCityObject implements DBExporter {
 		Table generalization = new Table(TableEnum.GENERALIZATION.getName(), schema);
 		Table genericAttributes = new Table(TableEnum.CITYOBJECT_GENERICATTRIB.getName(), schema);
 
-		Select select = new Select().addProjection(table.getColumn("gmlid"), exporter.getGeometryColumn(table.getColumn("envelope")),
+		Select select = new Select().addProjection(table.getColumn("id"), table.getColumn("gmlid"), exporter.getGeometryColumn(table.getColumn("envelope")),
 				table.getColumn("name"), table.getColumn("name_codespace"), table.getColumn("description"), table.getColumn("creation_date"),
 				table.getColumn("termination_date"), table.getColumn("relative_to_terrain"), table.getColumn("relative_to_water"),
 				externalReference.getColumn("id", "exid"), externalReference.getColumn("infosys"), externalReference.getColumn("name", "exname"), externalReference.getColumn("uri"),
@@ -168,7 +170,6 @@ public class DBCityObject implements DBExporter {
 
 		String subQuery = "select * from " + exporter.getDatabaseAdapter().getSQLAdapter().resolveDatabaseOperationName("unnest") + "(?)";
 		psBulk = connection.prepareStatement(new Select(select)
-				.addProjection(table.getColumn("id"))
 				.addSelection(ComparisonFactory.in(table.getColumn("id"), new LiteralSelectExpression(subQuery))).toString());
 
 		psSelect = connection.prepareStatement(new Select(select)
@@ -176,7 +177,7 @@ public class DBCityObject implements DBExporter {
 	}
 
 	protected void addBatch(AbstractGML object, long objectId, AbstractObjectType<?> objectType, ProjectionFilter projectionFilter) {
-		batches.put(objectId, new ObjectContext(object, objectType, projectionFilter));
+		batches.computeIfAbsent(objectId, v -> new ArrayList<>()).add(new ObjectContext(object, objectType, projectionFilter));
 	}
 
 	public boolean executeBatch() throws CityGMLExportException, SQLException {
@@ -184,31 +185,37 @@ public class DBCityObject implements DBExporter {
 			return true;
 
 		try {
+			PreparedStatement ps;
 			if (batches.size() == 1) {
-				Map.Entry<Long, ObjectContext> entry = batches.entrySet().iterator().next();
-				doExport(entry.getKey(), entry.getValue());
+				psSelect.setLong(1, batches.keySet().iterator().next());
+				ps = psSelect;
 			} else {
 				psBulk.setArray(1, exporter.getDatabaseAdapter().getSQLAdapter().createIdArray(batches.keySet().toArray(new Long[0]), connection));
+				ps = psBulk;
+			}
 
-				try (ResultSet rs = psBulk.executeQuery()) {
-					long currentObjectId = 0;
-					ObjectContext context = null;
+			try (ResultSet rs = ps.executeQuery()) {
+				long currentObjectId = 0;
+				List<ObjectContext> contexts = null;
 
-					while (rs.next()) {
-						long objectId = rs.getLong("id");
+				while (rs.next()) {
+					long objectId = rs.getLong("id");
 
-						if (objectId != currentObjectId || context == null) {
-							currentObjectId = objectId;
-							context = batches.get(objectId);
-							if (context != null) {
+					if (objectId != currentObjectId || contexts == null) {
+						currentObjectId = objectId;
+						contexts = batches.get(objectId);
+						if (contexts != null) {
+							for (ObjectContext context : contexts) {
 								if (context.initialize() && !initializeObject(objectId, context, rs))
 									return false;
-							} else {
-								exporter.logOrThrowErrorMessage("Failed to read city object for id " + objectId + ".");
-								continue;
 							}
+						} else {
+							exporter.logOrThrowErrorMessage("Failed to read city object for id " + objectId + ".");
+							continue;
 						}
+					}
 
+					for (ObjectContext context : contexts) {
 						if (context.isCityObject)
 							addProperties(context, rs);
 					}
@@ -216,7 +223,6 @@ public class DBCityObject implements DBExporter {
 			}
 
 			postprocess();
-
 			return true;
 		} finally {
 			batches.clear();
@@ -247,7 +253,6 @@ public class DBCityObject implements DBExporter {
 			}
 
 			postprocess();
-			
 			return true;
 		}
 	}
