@@ -102,8 +102,8 @@ public class DBWaterBody extends AbstractFeatureExporter<WaterBody> {
 		if (lodFilter.isEnabled(2) && projectionFilter.containsProperty("lod2Solid", waterBodyModule)) select.addProjection(table.getColumn("lod2_solid_id"));
 		if (lodFilter.isEnabled(3) && projectionFilter.containsProperty("lod3Solid", waterBodyModule)) select.addProjection(table.getColumn("lod3_solid_id"));
 		if (lodFilter.isEnabled(4) && projectionFilter.containsProperty("lod4Solid", waterBodyModule)) select.addProjection(table.getColumn("lod4_solid_id"));
-		if (projectionFilter.containsProperty("boundedBy", waterBodyModule)
-				&& lodFilter.containsLodGreaterThanOrEuqalTo(2)) {
+		if (lodFilter.containsLodGreaterThanOrEuqalTo(2)
+				&& projectionFilter.containsProperty("boundedBy", waterBodyModule)) {
 			Table waterBodToWaterBndSrf = new Table(TableEnum.WATERBOD_TO_WATERBND_SRF.getName(), schema);
 			select.addJoin(JoinFactory.left(waterBodToWaterBndSrf, "waterbody_id", ComparisonName.EQUAL_TO, table.getColumn("id")))
 			.addJoin(JoinFactory.left(waterBoundarySurface, "id", ComparisonName.EQUAL_TO, waterBodToWaterBndSrf.getColumn("waterboundary_surface_id")))

@@ -98,8 +98,8 @@ public class DBBridgeThematicSurface extends AbstractFeatureExporter<AbstractBou
 		if (lodFilter.isEnabled(2) && boundarySurfaceProjectionFilter.containsProperty("lod2MultiSurface", bridgeModule)) select.addProjection(table.getColumn("lod2_multi_surface_id"));
 		if (lodFilter.isEnabled(3) && boundarySurfaceProjectionFilter.containsProperty("lod3MultiSurface", bridgeModule)) select.addProjection(table.getColumn("lod3_multi_surface_id"));
 		if (lodFilter.isEnabled(4) && boundarySurfaceProjectionFilter.containsProperty("lod4MultiSurface", bridgeModule)) select.addProjection(table.getColumn("lod4_multi_surface_id"));
-		if (boundarySurfaceProjectionFilter.containsProperty("opening", bridgeModule)
-				&& lodFilter.containsLodGreaterThanOrEuqalTo(3)) {
+		if (lodFilter.containsLodGreaterThanOrEuqalTo(3)
+				&& boundarySurfaceProjectionFilter.containsProperty("opening", bridgeModule)) {
 			Table openingToThemSurface = new Table(TableEnum.BRIDGE_OPEN_TO_THEM_SRF.getName(), schema);
 			select.addJoin(JoinFactory.left(openingToThemSurface, "bridge_thematic_surface_id", ComparisonName.EQUAL_TO, table.getColumn("id")))
 			.addJoin(JoinFactory.left(opening, "id", ComparisonName.EQUAL_TO, openingToThemSurface.getColumn("bridge_opening_id")))

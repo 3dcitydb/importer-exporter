@@ -91,8 +91,9 @@ public class DBTransportationComplex extends AbstractFeatureExporter<Transportat
 		if (lodFilter.isEnabled(2) && projectionFilter.containsProperty("lod2MultiSurface", transportationModule)) select.addProjection(table.getColumn("lod2_multi_surface_id"));
 		if (lodFilter.isEnabled(3) && projectionFilter.containsProperty("lod3MultiSurface", transportationModule)) select.addProjection(table.getColumn("lod3_multi_surface_id"));
 		if (lodFilter.isEnabled(4) && projectionFilter.containsProperty("lod4MultiSurface", transportationModule)) select.addProjection(table.getColumn("lod4_multi_surface_id"));
-		if (projectionFilter.containsProperty("trafficArea", transportationModule)
-				|| projectionFilter.containsProperty("auxiliaryTrafficArea", transportationModule)) {
+		if (lodFilter.containsLodGreaterThanOrEuqalTo(2)
+				&& (projectionFilter.containsProperty("trafficArea", transportationModule)
+				|| projectionFilter.containsProperty("auxiliaryTrafficArea", transportationModule))) {
 			select.addJoin(JoinFactory.left(trafficArea, "transportation_complex_id", ComparisonName.EQUAL_TO, table.getColumn("id")))
 			.addProjection(trafficArea.getColumn("id", "ta_id"), trafficArea.getColumn("objectclass_id", "ta_objectclass_id"));
 			if (trafficAreaProjectionFilter.containsProperty("class", transportationModule)) select.addProjection(trafficArea.getColumn("class", "ta_class"), trafficArea.getColumn("class_codespace", "ta_class_codespace"));

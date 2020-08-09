@@ -90,8 +90,8 @@ public class DBThematicSurface extends AbstractFeatureExporter<AbstractBoundaryS
 		Table address = new Table(TableEnum.ADDRESS.getName(), schema);
 
 		select = addProjection(new Select(), table, boundarySurfaceProjectionFilter, "");
-		if (boundarySurfaceProjectionFilter.containsProperty("opening", buildingModule)
-				&& lodFilter.containsLodGreaterThanOrEuqalTo(3)) {
+		if (lodFilter.containsLodGreaterThanOrEuqalTo(3)
+				&& boundarySurfaceProjectionFilter.containsProperty("opening", buildingModule)) {
 			CombinedProjectionFilter openingProjectionFilter = exporter.getCombinedProjectionFilter(TableEnum.OPENING.getName());
 			Table openingToThemSurface = new Table(TableEnum.OPENING_TO_THEM_SURFACE.getName(), schema);
 			Table cityObject = new Table(TableEnum.CITYOBJECT.getName(), schema);

@@ -174,13 +174,13 @@ public class DBBuilding extends AbstractFeatureExporter<AbstractBuilding> {
 
 			addressADEHookTables = addJoinsToADEHookTables(TableEnum.ADDRESS, address);
 		}
-		if (projectionFilter.containsProperty("boundedBy", buildingModule)
-				&& lodFilter.containsLodGreaterThanOrEuqalTo(2)) {
+		if (lodFilter.containsLodGreaterThanOrEuqalTo(2)
+				&& projectionFilter.containsProperty("boundedBy", buildingModule)) {
 			CombinedProjectionFilter boundarySurfaceProjectionFilter = exporter.getCombinedProjectionFilter(TableEnum.THEMATIC_SURFACE.getName());
 			thematicSurfaceExporter.addProjection(select, thematicSurface, boundarySurfaceProjectionFilter, "ts")
 					.addJoin(JoinFactory.left(thematicSurface, "building_id", ComparisonName.EQUAL_TO, table.getColumn("id")));
-			if (boundarySurfaceProjectionFilter.containsProperty("opening", buildingModule)
-					&& lodFilter.containsLodGreaterThanOrEuqalTo(3)) {
+			if (lodFilter.containsLodGreaterThanOrEuqalTo(3)
+					&& boundarySurfaceProjectionFilter.containsProperty("opening", buildingModule)) {
 				CombinedProjectionFilter openingProjectionFilter = exporter.getCombinedProjectionFilter(TableEnum.OPENING.getName());
 				Table openingToThemSurface = new Table(TableEnum.OPENING_TO_THEM_SURFACE.getName(), schema);
 				Table cityObject = new Table(TableEnum.CITYOBJECT.getName(), schema);
@@ -368,8 +368,8 @@ public class DBBuilding extends AbstractFeatureExporter<AbstractBuilding> {
 						}
 
 						// bldg:interiorRoom
-						if (projectionFilter.containsProperty("interiorRoom", buildingModule)
-								&& lodFilter.isEnabled(4)) {
+						if (lodFilter.isEnabled(4)
+								&& projectionFilter.containsProperty("interiorRoom", buildingModule)) {
 							for (Room room : roomExporter.doExport(building, buildingId))
 								building.addInteriorRoom(new InteriorRoomProperty(room));
 						}
@@ -542,8 +542,8 @@ public class DBBuilding extends AbstractFeatureExporter<AbstractBuilding> {
 					}
 				}
 
-				if (!projectionFilter.containsProperty("boundedBy", buildingModule)
-						|| !lodFilter.containsLodGreaterThanOrEuqalTo(2))
+				if (!lodFilter.containsLodGreaterThanOrEuqalTo(2)
+						|| !projectionFilter.containsProperty("boundedBy", buildingModule))
 					continue;
 
 				// bldg:boundedBy
