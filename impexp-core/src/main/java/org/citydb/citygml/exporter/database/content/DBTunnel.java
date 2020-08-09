@@ -122,7 +122,6 @@ public class DBTunnel extends AbstractFeatureExporter<AbstractTunnel> {
 			if (projectionFilter.containsProperty("lod4Solid", tunnelModule)) select.addProjection(table.getColumn("lod4_solid_id"));
 			if (projectionFilter.containsProperty("lod4MultiSurface", tunnelModule)) select.addProjection(table.getColumn("lod4_multi_surface_id"));
 		}
-
 		adeHookTables = addJoinsToADEHookTables(TableEnum.TUNNEL, table);
 
 		thematicSurfaceExporter = exporter.getExporter(DBTunnelThematicSurface.class);

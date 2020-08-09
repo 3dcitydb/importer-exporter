@@ -86,10 +86,8 @@ public class DBOpening extends AbstractFeatureExporter<AbstractOpening> {
 		if (projectionFilter.containsProperty("address", buildingModule)) {
 			addressExporter.addProjection(select, address, "a")
 					.addJoin(JoinFactory.left(address, "id", ComparisonName.EQUAL_TO, table.getColumn("address_id")));
-
 			addressADEHookTables = addJoinsToADEHookTables(TableEnum.ADDRESS, address);
 		}
-
 		openingADEHookTables = addJoinsToADEHookTables(TableEnum.OPENING, table);
 	}
 

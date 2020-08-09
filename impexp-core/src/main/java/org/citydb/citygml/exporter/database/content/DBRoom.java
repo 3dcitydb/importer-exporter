@@ -87,7 +87,6 @@ public class DBRoom extends AbstractFeatureExporter<Room> {
 		if (projectionFilter.containsProperty("usage", buildingModule)) select.addProjection(table.getColumn("usage"), table.getColumn("usage_codespace"));		
 		if (projectionFilter.containsProperty("lod4MultiSurface", buildingModule)) select.addProjection(table.getColumn("lod4_multi_surface_id"));
 		if (projectionFilter.containsProperty("lod4Solid", buildingModule)) select.addProjection(table.getColumn("lod4_solid_id"));
-
 		adeHookTables = addJoinsToADEHookTables(TableEnum.ROOM, table);
 
 		cityObjectExporter = exporter.getExporter(DBCityObject.class);

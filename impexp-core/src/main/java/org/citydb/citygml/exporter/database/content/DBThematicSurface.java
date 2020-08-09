@@ -103,13 +103,10 @@ public class DBThematicSurface extends AbstractFeatureExporter<AbstractBoundaryS
 			if (openingProjectionFilter.containsProperty("address", buildingModule)) {
 				addressExporter.addProjection(select, address, "oa")
 						.addJoin(JoinFactory.left(address, "id", ComparisonName.EQUAL_TO, opening.getColumn("address_id")));
-
 				addressADEHookTables = addJoinsToADEHookTables(TableEnum.ADDRESS, address);
 			}
-
 			openingADEHookTables = addJoinsToADEHookTables(TableEnum.OPENING, opening);
 		}
-
 		surfaceADEHookTables = addJoinsToADEHookTables(TableEnum.THEMATIC_SURFACE, table);
 	}
 

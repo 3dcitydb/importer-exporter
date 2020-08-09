@@ -71,7 +71,6 @@ public class DBWaterBoundarySurface extends AbstractFeatureExporter<AbstractWate
 		if (lodFilter.isEnabled(2) && projectionFilter.containsProperty("lod2Surface", waterBodyModule)) select.addProjection(table.getColumn("lod2_surface_id"));
 		if (lodFilter.isEnabled(3) && projectionFilter.containsProperty("lod3Surface", waterBodyModule)) select.addProjection(table.getColumn("lod3_surface_id"));
 		if (lodFilter.isEnabled(4) && projectionFilter.containsProperty("lod4Surface", waterBodyModule)) select.addProjection(table.getColumn("lod4_surface_id"));
-
 		adeHookTables = addJoinsToADEHookTables(TableEnum.WATERBOUNDARY_SURFACE, table);
 
 		cityObjectExporter = exporter.getExporter(DBCityObject.class);

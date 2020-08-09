@@ -101,10 +101,8 @@ public class DBTunnelThematicSurface extends AbstractFeatureExporter<AbstractBou
 				if (openingProjectionFilter.containsProperty("lod4MultiSurface", tunnelModule)) select.addProjection(opening.getColumn("lod4_multi_surface_id", "oplod4_multi_surface_id"));
 				if (openingProjectionFilter.containsProperty("lod4ImplicitRepresentation", tunnelModule)) select.addProjection(opening.getColumn("lod4_implicit_rep_id"), exporter.getGeometryColumn(opening.getColumn("lod4_implicit_ref_point")), opening.getColumn("lod4_implicit_transformation"));
 			}
-
 			openingADEHookTables = addJoinsToADEHookTables(TableEnum.TUNNEL_OPENING, opening);
 		}
-
 		surfaceADEHookTables = addJoinsToADEHookTables(TableEnum.TUNNEL_THEMATIC_SURFACE, table);
 
 		cityObjectExporter = exporter.getExporter(DBCityObject.class);

@@ -145,7 +145,6 @@ public abstract class AbstractAppearanceExporter extends AbstractTypeExporter {
 				.addJoin(JoinFactory.inner(surfaceData, "id", ComparisonName.EQUAL_TO, appearToSurfaceData.getColumn("surface_data_id")))
 				.addJoin(JoinFactory.left(texImage, "id", ComparisonName.EQUAL_TO, surfaceData.getColumn("tex_image_id")))
 				.addJoin(JoinFactory.left(textureParam, "surface_data_id", ComparisonName.EQUAL_TO, surfaceData.getColumn("id")));
-
 		appearanceADEHookTables = addJoinsToADEHookTables(TableEnum.APPEARANCE, table);
 		surfaceDataADEHookTables = addJoinsToADEHookTables(TableEnum.SURFACE_DATA, surfaceData);
 

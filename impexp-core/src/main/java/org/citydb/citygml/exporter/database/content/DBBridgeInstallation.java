@@ -100,7 +100,6 @@ public class DBBridgeInstallation extends AbstractFeatureExporter<AbstractCityOb
 			if (projectionFilter.containsProperty("lod4Geometry", bridgeModule)) select.addProjection(table.getColumn("lod4_brep_id"), exporter.getGeometryColumn(table.getColumn("lod4_other_geom")));
 			if (projectionFilter.containsProperty("lod4ImplicitRepresentation", bridgeModule)) select.addProjection(table.getColumn("lod4_implicit_rep_id"), exporter.getGeometryColumn(table.getColumn("lod4_implicit_ref_point")), table.getColumn("lod4_implicit_transformation"));
 		}
-
 		adeHookTables = addJoinsToADEHookTables(TableEnum.BRIDGE_INSTALLATION, table);
 		
 		cityObjectReader = exporter.getExporter(DBCityObject.class);

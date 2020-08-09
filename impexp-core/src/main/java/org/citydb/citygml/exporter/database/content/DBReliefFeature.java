@@ -108,13 +108,11 @@ public class DBReliefFeature extends AbstractFeatureExporter<ReliefFeature> {
 			if (componentProjectionFilter.containsProperty("reliefPoints", reliefModule)) select.addProjection(exporter.getGeometryColumn(massPointRelief.getColumn("relief_points")));
 			if (componentProjectionFilter.containsProperty("ridgeOrValleyLines", reliefModule)) select.addProjection(exporter.getGeometryColumn(breakLineRelief.getColumn("ridge_or_valley_lines")));
 			if (componentProjectionFilter.containsProperty("breaklines", reliefModule)) select.addProjection(exporter.getGeometryColumn(breakLineRelief.getColumn("break_lines")));
-
 			componentADEHookTables = addJoinsToADEHookTables(TableEnum.RELIEF_COMPONENT, reliefComponent);
 
 			geometryExporter = exporter.getExporter(DBSurfaceGeometry.class);
 			gmlConverter = exporter.getGMLConverter();
 		}
-
 		reliefADEHookTables = addJoinsToADEHookTables(TableEnum.BRIDGE, table);
 
 		cityObjectExporter = exporter.getExporter(DBCityObject.class);

@@ -84,9 +84,7 @@ public class DBTunnelFurniture extends AbstractFeatureExporter<TunnelFurniture> 
 		if (projectionFilter.containsProperty("function", tunnelModule)) select.addProjection(table.getColumn("function"), table.getColumn("function_codespace"));
 		if (projectionFilter.containsProperty("usage", tunnelModule)) select.addProjection(table.getColumn("usage"), table.getColumn("usage_codespace"));		
 		if (projectionFilter.containsProperty("lod4Geometry", tunnelModule)) select.addProjection(table.getColumn("lod4_brep_id"), exporter.getGeometryColumn(table.getColumn("lod4_other_geom")));
-		if (projectionFilter.containsProperty("lod4ImplicitRepresentation", tunnelModule))
-			select.addProjection(table.getColumn("lod4_implicit_rep_id"), exporter.getGeometryColumn(table.getColumn("lod4_implicit_ref_point")), table.getColumn("lod4_implicit_transformation"));
-
+		if (projectionFilter.containsProperty("lod4ImplicitRepresentation", tunnelModule)) select.addProjection(table.getColumn("lod4_implicit_rep_id"), exporter.getGeometryColumn(table.getColumn("lod4_implicit_ref_point")), table.getColumn("lod4_implicit_transformation"));
 		adeHookTables = addJoinsToADEHookTables(TableEnum.TUNNEL_FURNITURE, table);
 
 		cityObjectExporter = exporter.getExporter(DBCityObject.class);

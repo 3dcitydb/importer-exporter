@@ -94,10 +94,8 @@ public class DBBridgeOpening extends AbstractFeatureExporter<AbstractOpening> {
 		if (projectionFilter.containsProperty("address", bridgeModule)) {
 			addressExporter.addProjection(select, address, "a")
 					.addJoin(JoinFactory.left(address, "id", ComparisonName.EQUAL_TO, table.getColumn("address_id")));
-
 			addressADEHookTables = addJoinsToADEHookTables(TableEnum.ADDRESS, address);
 		}
-
 		openingADEHookTables = addJoinsToADEHookTables(TableEnum.BRIDGE_OPENING, table);
 	}
 

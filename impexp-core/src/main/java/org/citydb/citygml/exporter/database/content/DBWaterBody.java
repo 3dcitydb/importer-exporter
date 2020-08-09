@@ -115,7 +115,6 @@ public class DBWaterBody extends AbstractFeatureExporter<WaterBody> {
 
 			surfaceADEHookTables = addJoinsToADEHookTables(TableEnum.WATERBOUNDARY_SURFACE, waterBoundarySurface);
 		}
-
 		bodyADEHookTables = addJoinsToADEHookTables(TableEnum.WATERBODY, table);
 
 		cityObjectExporter = exporter.getExporter(DBCityObject.class);

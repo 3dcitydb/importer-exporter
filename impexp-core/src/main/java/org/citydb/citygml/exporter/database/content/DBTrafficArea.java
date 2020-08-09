@@ -78,7 +78,6 @@ public class DBTrafficArea extends AbstractFeatureExporter<AbstractTransportatio
 		if (lodFilter.isEnabled(2) && projectionFilter.containsProperty("lod2MultiSurface", transportationModule)) select.addProjection(table.getColumn("lod2_multi_surface_id"));
 		if (lodFilter.isEnabled(3) && projectionFilter.containsProperty("lod3MultiSurface", transportationModule)) select.addProjection(table.getColumn("lod3_multi_surface_id"));
 		if (lodFilter.isEnabled(4) && projectionFilter.containsProperty("lod4MultiSurface", transportationModule)) select.addProjection(table.getColumn("lod4_multi_surface_id"));
-
 		adeHookTables = addJoinsToADEHookTables(TableEnum.TRAFFIC_AREA, table);
 
 		cityObjectExporter = exporter.getExporter(DBCityObject.class);

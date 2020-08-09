@@ -93,7 +93,6 @@ public class DBCityObjectGroup extends AbstractTypeExporter {
 			.addJoin(JoinFactory.left(cityObject, "id", ComparisonName.EQUAL_TO, groupToCityObject.getColumn("cityobject_id")))
 			.addProjection(groupToCityObject.getColumn("cityobject_id"), groupToCityObject.getColumn("role"), cityObject.getColumn("gmlid", "member_gmlid"));
 		}
-		
 		adeHookTables = addJoinsToADEHookTables(TableEnum.CITYOBJECTGROUP, table);
 
 		select.addSelection(ComparisonFactory.equalTo(table.getColumn("id"), new PlaceHolder<>()));

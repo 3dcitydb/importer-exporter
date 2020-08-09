@@ -93,7 +93,6 @@ public class DBPlantCover extends AbstractFeatureExporter<PlantCover> {
 			if (projectionFilter.containsProperty("lod4MultiSurface", vegetationModule)) select.addProjection(table.getColumn("lod4_multi_surface_id"));
 			if (projectionFilter.containsProperty("lod4MultiSolid", vegetationModule)) select.addProjection(table.getColumn("lod4_multi_solid_id"));
 		}
-
 		adeHookTables = addJoinsToADEHookTables(TableEnum.PLANT_COVER, table);
 
 		cityObjectExporter = exporter.getExporter(DBCityObject.class);

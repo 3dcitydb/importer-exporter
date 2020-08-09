@@ -104,7 +104,6 @@ public class DBCityFurniture extends AbstractFeatureExporter<CityFurniture> {
 			if (projectionFilter.containsProperty("lod4Geometry", cityFurnitureModule)) select.addProjection(table.getColumn("lod4_brep_id"), exporter.getGeometryColumn(table.getColumn("lod4_other_geom")));
 			if (projectionFilter.containsProperty("lod4ImplicitRepresentation", cityFurnitureModule)) select.addProjection(table.getColumn("lod4_implicit_rep_id"), exporter.getGeometryColumn(table.getColumn("lod4_implicit_ref_point")), table.getColumn("lod4_implicit_transformation"));
 		}
-
 		adeHookTables = addJoinsToADEHookTables(TableEnum.CITY_FURNITURE, table);
 		
 		cityObjectExporter = exporter.getExporter(DBCityObject.class);

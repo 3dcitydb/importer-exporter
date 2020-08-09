@@ -87,7 +87,6 @@ public class DBBridgeRoom extends AbstractFeatureExporter<BridgeRoom> {
 		if (projectionFilter.containsProperty("usage", bridgeModule)) select.addProjection(table.getColumn("usage"), table.getColumn("usage_codespace"));		
 		if (projectionFilter.containsProperty("lod4MultiSurface", bridgeModule)) select.addProjection(table.getColumn("lod4_multi_surface_id"));
 		if (projectionFilter.containsProperty("lod4Solid", bridgeModule)) select.addProjection(table.getColumn("lod4_solid_id"));
-
 		adeHookTables = addJoinsToADEHookTables(TableEnum.BRIDGE_ROOM, table);
 		
 		cityObjectExporter = exporter.getExporter(DBCityObject.class);

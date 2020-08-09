@@ -77,7 +77,6 @@ public class DBTunnelOpening extends AbstractFeatureExporter<AbstractOpening> {
 			if (projectionFilter.containsProperty("lod4MultiSurface", tunnelModule)) select.addProjection(table.getColumn("lod4_multi_surface_id"));
 			if (projectionFilter.containsProperty("lod4ImplicitRepresentation", tunnelModule)) select.addProjection(table.getColumn("lod4_implicit_rep_id"), exporter.getGeometryColumn(table.getColumn("lod4_implicit_ref_point")), table.getColumn("lod4_implicit_transformation"));
 		}
-
 		adeHookTables = addJoinsToADEHookTables(TableEnum.TUNNEL_OPENING, table);
 
 		cityObjectExporter = exporter.getExporter(DBCityObject.class);

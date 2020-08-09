@@ -115,10 +115,8 @@ public class DBBridgeThematicSurface extends AbstractFeatureExporter<AbstractBou
 			if (openingProjectionFilter.containsProperty("address", bridgeModule)) {
 				addressExporter.addProjection(select, address, "a")
 						.addJoin(JoinFactory.left(address, "id", ComparisonName.EQUAL_TO, opening.getColumn("address_id")));
-
 				addressADEHookTables = addJoinsToADEHookTables(TableEnum.ADDRESS, address);
 			}
-
 			openingADEHookTables = addJoinsToADEHookTables(TableEnum.BRIDGE_OPENING, opening);
 		}
 
