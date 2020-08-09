@@ -95,7 +95,7 @@ public class CityObjectGroup extends KmlGenericObject{
 		ResultSet rs = null;
 
 		try {
-			String query = queries.getCityObjectGroupFootprint();
+			String query = queries.getCityObjectGroupFootprint(work.getObjectClassId());
 			psQuery = connection.prepareStatement(query, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 			for (int i = 1; i <= getParameterCount(query); i++)
 				psQuery.setLong(i, work.getId());

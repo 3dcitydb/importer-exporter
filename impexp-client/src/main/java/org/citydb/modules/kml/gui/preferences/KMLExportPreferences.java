@@ -27,10 +27,18 @@
  */
 package org.citydb.modules.kml.gui.preferences;
 
+import org.citydb.ade.ADEExtension;
+import org.citydb.ade.ADEExtensionManager;
 import org.citydb.config.Config;
+import org.citydb.database.schema.mapping.AppSchema;
+import org.citydb.database.schema.mapping.FeatureType;
 import org.citydb.gui.preferences.AbstractPreferences;
 import org.citydb.gui.preferences.DefaultPreferencesEntry;
+import org.citydb.modules.kml.ade.ADEKmlExportExtension;
 import org.citydb.plugin.extension.view.ViewController;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class KMLExportPreferences extends AbstractPreferences {
 	
@@ -68,6 +76,38 @@ public class KMLExportPreferences extends AbstractPreferences {
 		balloonNode.addChildEntry(new DefaultPreferencesEntry(new CityObjectGroupBalloonPanel(config)));
 		balloonNode.addChildEntry(new DefaultPreferencesEntry(new BridgeBalloonPanel(config)));
 		balloonNode.addChildEntry(new DefaultPreferencesEntry(new TunnelBalloonPanel(config)));
+
+		// ADEs
+		List<ADEExtension> adeExtensions = ADEExtensionManager.getInstance().getExtensions().stream()
+				.filter(e -> e instanceof ADEKmlExportExtension)
+				.collect(Collectors.toList());
+		
+		if (!adeExtensions.isEmpty()) {
+			DefaultPreferencesEntry adeRenderingRootNode = new ADEPanel("ADEs");
+			DefaultPreferencesEntry adeBalloonRootNode = new ADEPanel("ADEs");
+
+			for (ADEExtension adeExtension : adeExtensions) {
+				String name = adeExtension.getMetadata().getName();
+				DefaultPreferencesEntry adeRenderingNode = new ADEPanel(name);
+				DefaultPreferencesEntry adeBalloonNode = new ADEPanel(name);
+
+				for (AppSchema schema : adeExtension.getSchemas()) {
+					for (FeatureType adeTopLevelFeatureType : schema.listTopLevelFeatureTypes(true)) {
+						DefaultPreferencesEntry adeFeatureRenderingNode = new ADEPanel(adeTopLevelFeatureType.toString());
+						adeFeatureRenderingNode.addChildEntry(new DefaultPreferencesEntry(new ADEThreeDRenderingPanel(config, adeTopLevelFeatureType)));
+						adeFeatureRenderingNode.addChildEntry(new DefaultPreferencesEntry(new ADEPointAndCurveRenderingPanel(config, adeTopLevelFeatureType)));
+						adeRenderingNode.addChildEntry(adeFeatureRenderingNode);
+						adeBalloonNode.addChildEntry(new DefaultPreferencesEntry(new ADEDBalloonPanel(config, adeTopLevelFeatureType)));
+					}
+				}
+
+				adeRenderingRootNode.addChildEntry(adeRenderingNode);
+				adeBalloonRootNode.addChildEntry(adeBalloonNode);
+			}
+
+			renderingNode.addChildEntry(adeRenderingRootNode);
+			balloonNode.addChildEntry(adeBalloonRootNode);
+		}
 
 		root.addChildEntry(new DefaultPreferencesEntry(new GeneralPanel(viewController, config)));
 		root.addChildEntry(renderingNode);

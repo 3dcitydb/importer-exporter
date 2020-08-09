@@ -35,6 +35,8 @@ import org.citydb.config.project.database.Database;
 import org.citydb.config.project.database.DatabaseConfigurationException;
 import org.citydb.config.project.database.Workspace;
 import org.citydb.config.project.global.LogLevel;
+import org.citydb.config.project.kmlExporter.ADEPreference;
+import org.citydb.config.project.kmlExporter.ADEPreferences;
 import org.citydb.config.project.kmlExporter.AltitudeOffsetMode;
 import org.citydb.config.project.kmlExporter.DisplayForm;
 import org.citydb.config.project.kmlExporter.KmlExporter;
@@ -60,6 +62,7 @@ import org.citydb.gui.components.feature.FeatureTypeTree;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.log.Logger;
+import org.citydb.modules.kml.ade.ADEKmlExportExtension;
 import org.citydb.modules.kml.controller.KmlExportException;
 import org.citydb.plugin.extension.view.ViewController;
 import org.citydb.plugin.extension.view.components.BoundingBoxPanel;
@@ -76,31 +79,11 @@ import org.citygml4j.model.module.citygml.VegetationModule;
 import org.jdesktop.swingx.JXTextField;
 import org.jdesktop.swingx.prompt.PromptSupport.FocusBehavior;
 
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.ButtonGroup;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JFileChooser;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JScrollPane;
-import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
-import javax.swing.SwingWorker;
-import javax.swing.UIManager;
+import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.xml.bind.JAXBContext;
-import java.awt.AWTEvent;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -342,7 +325,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		exportAndDisplayPanel.add(Box.createRigidArea(new Dimension(BORDER_THICKNESS, 0)), GuiUtil.setConstraints(1,0,0,0,GridBagConstraints.NONE,0,0,0,0));
 		exportAndDisplayPanel.add(displayAsPanel, GuiUtil.setConstraints(2,0,0.7,0,GridBagConstraints.BOTH,0,0,0,0));
 
-		typeTree = new FeatureTypeTree(CityGMLVersion.v2_0_0, false);		
+		typeTree = new FeatureTypeTree(CityGMLVersion.v2_0_0, e -> e instanceof ADEKmlExportExtension);
 		typeTree.setRowHeight((int)(new JCheckBox().getPreferredSize().getHeight()) - 4);		
 		typeTree.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createEtchedBorder(), 
 				BorderFactory.createEmptyBorder(0,0,BORDER_THICKNESS,0)));
@@ -615,6 +598,12 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		setDisplayFormSettings(kmlExporter.getBridgeDisplayForms());
 		setDisplayFormSettings(kmlExporter.getTunnelDisplayForms());
 
+		for (ADEPreferences preferences : kmlExporter.getADEPreferences().values()) {
+			for (ADEPreference preference : preferences.getPreferences().values()) {
+				setDisplayFormSettings(preference.getDisplayForms());
+			}
+		}
+
 		kmlExporter.setAppearanceTheme((String) themeComboBox.getSelectedItem());
 	}
 
@@ -858,27 +847,6 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 
 			viewController.setStatusText(Language.I18N.getString("main.status.kmlExport.label"));
 			log.info("Initializing database export...");
-
-			// pop up a dialog for warning the non-support of CityGML ADEs  
-			if (config.getGui().isShowKmlExportUnsupportedADEWarning()
-					&& databaseController.getActiveDatabaseAdapter().getConnectionMetaData().hasRegisteredADEs()) {
-				JPanel confirmPanel = new JPanel(new GridBagLayout());
-				JCheckBox confirmDialogNoShow = new JCheckBox(Language.I18N.getString("common.dialog.msg.noShow"));
-				confirmDialogNoShow.setIconTextGap(10);
-				confirmPanel.add(new JLabel(Language.I18N.getString("kmlExport.dialog.warning.ade.unsupported")), GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.BOTH,0,0,0,0));
-				confirmPanel.add(confirmDialogNoShow, GuiUtil.setConstraints(0,2,1.0,0.0,GridBagConstraints.BOTH,10,0,0,0));
-				
-				int selectedOption = JOptionPane.showConfirmDialog(viewController.getTopFrame(), confirmPanel, Language.I18N.getString("common.dialog.warning.title"), JOptionPane.OK_CANCEL_OPTION);
-				
-				if (confirmDialogNoShow.isSelected()) {
-					config.getGui().setShowKmlExportUnsupportedADEWarning(false);
-				}	
-				
-				if (selectedOption != JOptionPane.OK_OPTION) {
-					log.warn("Database export canceled.");
-					return;
-				}					
-			}			
 				
 			final ExportStatusDialog exportDialog = new ExportStatusDialog(viewController.getTopFrame(), 
 					Language.I18N.getString("kmlExport.dialog.window"),
@@ -940,7 +908,9 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 			}
 
 			viewController.setStatusText(Language.I18N.getString("main.status.ready.label"));
-		} finally {
+		} catch (Exception e) {
+			e.printStackTrace();
+		}finally {
 			lock.unlock();
 		}
 	}

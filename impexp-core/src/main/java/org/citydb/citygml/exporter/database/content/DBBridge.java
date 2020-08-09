@@ -193,7 +193,7 @@ public class DBBridge extends AbstractFeatureExporter<AbstractBridge> {
 									continue;
 
 								// create bridge object
-								bridge = exporter.createObject(featureType.getObjectClassId(), AbstractBridge.class);						
+								bridge = exporter.createObject(objectClassId, AbstractBridge.class);
 								if (bridge == null) {
 									exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(featureType, bridgeId) + " as bridge object.");
 									continue;

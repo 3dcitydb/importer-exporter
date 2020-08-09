@@ -121,7 +121,7 @@ public class DBReliefComponent extends AbstractFeatureExporter<AbstractReliefCom
 						continue;
 
 					// create relief component object
-					component = exporter.createObject(featureType.getObjectClassId(), AbstractReliefComponent.class);						
+					component = exporter.createObject(objectClassId, AbstractReliefComponent.class);
 					if (component == null) {
 						exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(featureType, componentId) + " as relief component object.");
 						continue;

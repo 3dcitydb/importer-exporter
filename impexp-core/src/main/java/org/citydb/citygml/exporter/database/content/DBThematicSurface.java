@@ -169,7 +169,7 @@ public class DBThematicSurface extends AbstractFeatureExporter<AbstractBoundaryS
 								continue;
 
 							// create boundary surface object
-							boundarySurface = exporter.createObject(featureType.getObjectClassId(), AbstractBoundarySurface.class);
+							boundarySurface = exporter.createObject(objectClassId, AbstractBoundarySurface.class);
 							if (boundarySurface == null) {
 								exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(featureType, boundarySurfaceId) + " as boundary surface object.");
 								continue;

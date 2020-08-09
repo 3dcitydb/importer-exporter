@@ -28,6 +28,7 @@
 package org.citydb.modules.kml.concurrent;
 
 import net.opengis.kml._2.ObjectFactory;
+import org.citydb.ade.ADEExtensionManager;
 import org.citydb.concurrent.Worker;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
@@ -42,22 +43,10 @@ import org.citydb.database.schema.mapping.FeatureType;
 import org.citydb.event.EventDispatcher;
 import org.citydb.event.global.ObjectCounterEvent;
 import org.citydb.log.Logger;
-import org.citydb.modules.kml.database.Bridge;
-import org.citydb.modules.kml.database.Building;
-import org.citydb.modules.kml.database.CityFurniture;
-import org.citydb.modules.kml.database.CityObjectGroup;
-import org.citydb.modules.kml.database.ColladaBundle;
-import org.citydb.modules.kml.database.GenericCityObject;
-import org.citydb.modules.kml.database.KmlExporterManager;
-import org.citydb.modules.kml.database.KmlGenericObject;
-import org.citydb.modules.kml.database.KmlSplittingResult;
-import org.citydb.modules.kml.database.LandUse;
-import org.citydb.modules.kml.database.PlantCover;
-import org.citydb.modules.kml.database.Relief;
-import org.citydb.modules.kml.database.SolitaryVegetationObject;
-import org.citydb.modules.kml.database.Transportation;
-import org.citydb.modules.kml.database.Tunnel;
-import org.citydb.modules.kml.database.WaterBody;
+import org.citydb.modules.kml.ade.ADEKmlExportExtensionManager;
+import org.citydb.modules.kml.ade.ADEKmlExportManager;
+import org.citydb.modules.kml.controller.KmlExportException;
+import org.citydb.modules.kml.database.*;
 import org.citydb.modules.kml.util.BalloonTemplateHandler;
 import org.citydb.modules.kml.util.ElevationServiceHandler;
 import org.citydb.modules.kml.util.ExportTracker;
@@ -72,6 +61,8 @@ import java.io.File;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class KmlExportWorker extends Worker<KmlSplittingResult> {
@@ -92,7 +83,7 @@ public class KmlExportWorker extends Worker<KmlSplittingResult> {
 	private EnumMap<CityGMLClass, Integer>objectGroupCounter = new EnumMap<>(CityGMLClass.class);
 	private EnumMap<CityGMLClass, Integer>objectGroupSize = new EnumMap<>(CityGMLClass.class);
 	private EnumMap<CityGMLClass, KmlGenericObject>objectGroup = new EnumMap<>(CityGMLClass.class);
-	private EnumMap<CityGMLClass, BalloonTemplateHandler>balloonTemplateHandler = new EnumMap<>(CityGMLClass.class);
+	private Map<Integer, BalloonTemplateHandler> balloonTemplateHandler = new HashMap<>();
 
 	private ElevationServiceHandler elevationServiceHandler;
 
@@ -170,6 +161,10 @@ public class KmlExportWorker extends Worker<KmlSplittingResult> {
 		objectGroupCounter.put(CityGMLClass.BRIDGE, 0);
 		objectGroupSize.put(CityGMLClass.BRIDGE, 1);
 		objectGroup.put(CityGMLClass.BRIDGE, null);
+
+		objectGroupCounter.put(CityGMLClass.ADE_COMPONENT, 0);
+		objectGroupSize.put(CityGMLClass.ADE_COMPONENT, 1);
+		objectGroup.put(CityGMLClass.ADE_COMPONENT, null);
 		
 		for (FeatureType featureType : typeFilter.getFeatureTypes()) {
 			switch (Util.getCityGMLClass(featureType.getObjectClassId())) {
@@ -227,6 +222,12 @@ public class KmlExportWorker extends Worker<KmlSplittingResult> {
 				colladaOptions = config.getProject().getKmlExporter().getBridgeColladaOptions();
 				if (colladaOptions.isGroupObjects())
 					objectGroupSize.put(CityGMLClass.BRIDGE, colladaOptions.getGroupSize());
+				break;
+			case ADE_COMPONENT:
+				// TODO
+				colladaOptions = config.getProject().getKmlExporter().getBridgeColladaOptions();
+				if (colladaOptions.isGroupObjects())
+					objectGroupSize.put(CityGMLClass.ADE_COMPONENT, colladaOptions.getGroupSize());
 				break;
 			default:
 				break;
@@ -301,6 +302,7 @@ public class KmlExportWorker extends Worker<KmlSplittingResult> {
 		runLock.lock();
 
 		CityGMLClass featureClass = work.getCityGMLClass();
+		int objectClassId = work.getObjectClassId();
 		try {
 			switch (featureClass) {
 			case BUILDING:
@@ -311,7 +313,7 @@ public class KmlExportWorker extends Worker<KmlSplittingResult> {
 						databaseAdapter,
 						textureExportAdapter,
 						elevationServiceHandler,
-						getBalloonTemplateHandler(featureClass),
+						getBalloonTemplateHandler(objectClassId),
 						eventDispatcher,
 						config);
 				break;
@@ -324,7 +326,7 @@ public class KmlExportWorker extends Worker<KmlSplittingResult> {
 						databaseAdapter,
 						textureExportAdapter,
 						elevationServiceHandler,
-						getBalloonTemplateHandler(featureClass),
+						getBalloonTemplateHandler(objectClassId),
 						eventDispatcher,
 						config);
 				break;
@@ -337,7 +339,7 @@ public class KmlExportWorker extends Worker<KmlSplittingResult> {
 						databaseAdapter,
 						textureExportAdapter,
 						elevationServiceHandler,
-						getBalloonTemplateHandler(featureClass),
+						getBalloonTemplateHandler(objectClassId),
 						eventDispatcher,
 						config);
 				break;
@@ -350,7 +352,7 @@ public class KmlExportWorker extends Worker<KmlSplittingResult> {
 						databaseAdapter,
 						textureExportAdapter,
 						elevationServiceHandler,
-						getBalloonTemplateHandler(featureClass),
+						getBalloonTemplateHandler(objectClassId),
 						eventDispatcher,
 						config);
 				break;
@@ -363,7 +365,7 @@ public class KmlExportWorker extends Worker<KmlSplittingResult> {
 						databaseAdapter,
 						textureExportAdapter,
 						elevationServiceHandler,
-						getBalloonTemplateHandler(featureClass),
+						getBalloonTemplateHandler(objectClassId),
 						eventDispatcher,
 						config);
 				break;
@@ -380,7 +382,7 @@ public class KmlExportWorker extends Worker<KmlSplittingResult> {
 						databaseAdapter,
 						textureExportAdapter,
 						elevationServiceHandler,
-						getBalloonTemplateHandler(featureClass),
+						getBalloonTemplateHandler(objectClassId),
 						eventDispatcher,
 						config);
 				break;
@@ -393,7 +395,7 @@ public class KmlExportWorker extends Worker<KmlSplittingResult> {
 						databaseAdapter,
 						textureExportAdapter,
 						elevationServiceHandler,
-						getBalloonTemplateHandler(featureClass),
+						getBalloonTemplateHandler(objectClassId),
 						eventDispatcher,
 						config);
 				break;
@@ -406,7 +408,7 @@ public class KmlExportWorker extends Worker<KmlSplittingResult> {
 						databaseAdapter,
 						textureExportAdapter,
 						elevationServiceHandler,
-						getBalloonTemplateHandler(featureClass),
+						getBalloonTemplateHandler(objectClassId),
 						eventDispatcher,
 						config);
 				break;
@@ -419,7 +421,7 @@ public class KmlExportWorker extends Worker<KmlSplittingResult> {
 						databaseAdapter,
 						textureExportAdapter,
 						elevationServiceHandler,
-						getBalloonTemplateHandler(featureClass),
+						getBalloonTemplateHandler(objectClassId),
 						eventDispatcher,
 						config);
 				break;
@@ -432,7 +434,7 @@ public class KmlExportWorker extends Worker<KmlSplittingResult> {
 						databaseAdapter,
 						textureExportAdapter,
 						elevationServiceHandler,
-						getBalloonTemplateHandler(featureClass),
+						getBalloonTemplateHandler(objectClassId),
 						eventDispatcher,
 						config);
 				break;
@@ -444,7 +446,7 @@ public class KmlExportWorker extends Worker<KmlSplittingResult> {
 						databaseAdapter,
 						textureExportAdapter,
 						elevationServiceHandler,
-						getBalloonTemplateHandler(featureClass),
+						getBalloonTemplateHandler(objectClassId),
 						eventDispatcher,
 						config);
 				break;
@@ -456,44 +458,57 @@ public class KmlExportWorker extends Worker<KmlSplittingResult> {
 						databaseAdapter,
 						textureExportAdapter,
 						elevationServiceHandler,
-						getBalloonTemplateHandler(featureClass),
+						getBalloonTemplateHandler(objectClassId),
 						eventDispatcher,
 						config);
 				break;
+				case ADE_COMPONENT:
+					singleObject = new ADEObject(connection,
+							query,
+							kmlExporterManager,
+							kmlFactory,
+							databaseAdapter,
+							textureExportAdapter,
+							elevationServiceHandler,
+							getBalloonTemplateHandler(objectClassId),
+							eventDispatcher,
+							config,
+							work.getObjectClassId());
 			default:
 				break;
-
 			}
 
 			singleObject.read(work);
 
-			if (work.getCityGMLClass() != CityGMLClass.CITY_OBJECT_GROUP && 
-					work.getDisplayForm().getForm() == DisplayForm.COLLADA &&
-					singleObject.getGmlId() != null) { // object is filled
+			if (singleObject != null) {
+				if (work.getCityGMLClass() != CityGMLClass.CITY_OBJECT_GROUP &&
+						work.getDisplayForm().getForm() == DisplayForm.COLLADA &&
+						singleObject.getGmlId() != null) { // object is filled
 
-				// correction for some CityGML Types exported together
-				if (featureClass == CityGMLClass.PLANT_COVER) featureClass = CityGMLClass.SOLITARY_VEGETATION_OBJECT;
+					// correction for some CityGML Types exported together
+					if (featureClass == CityGMLClass.PLANT_COVER) featureClass = CityGMLClass.SOLITARY_VEGETATION_OBJECT;
 
-				if (featureClass == CityGMLClass.TRACK ||
-						featureClass == CityGMLClass.RAILWAY ||
-						featureClass == CityGMLClass.ROAD ||
-						featureClass == CityGMLClass.SQUARE) featureClass = CityGMLClass.TRANSPORTATION_COMPLEX;
+					if (featureClass == CityGMLClass.TRACK ||
+							featureClass == CityGMLClass.RAILWAY ||
+							featureClass == CityGMLClass.ROAD ||
+							featureClass == CityGMLClass.SQUARE) featureClass = CityGMLClass.TRANSPORTATION_COMPLEX;
 
-				KmlGenericObject currentObjectGroup = objectGroup.get(featureClass);
-				if (currentObjectGroup == null) {
-					currentObjectGroup = singleObject;
-					objectGroup.put(featureClass, currentObjectGroup);
-				}
-				else {
-					currentObjectGroup.appendObject(singleObject);
-				}
+					KmlGenericObject currentObjectGroup = objectGroup.get(featureClass);
+					if (currentObjectGroup == null) {
+						currentObjectGroup = singleObject;
+						objectGroup.put(featureClass, currentObjectGroup);
+					}
+					else {
+						currentObjectGroup.appendObject(singleObject);
+					}
 
-				objectGroupCounter.put(featureClass, objectGroupCounter.get(featureClass) + 1);
-				if (objectGroupCounter.get(featureClass).intValue() == objectGroupSize.get(featureClass).intValue()) {
-					sendGroupToFile(currentObjectGroup);
-					currentObjectGroup = null;
-					objectGroup.put(featureClass, currentObjectGroup);
-					objectGroupCounter.put(featureClass, 0);
+					objectGroupCounter.put(featureClass, objectGroupCounter.get(featureClass) + 1);
+					if (objectGroupCounter.get(featureClass).intValue() == objectGroupSize.get(featureClass).intValue()) {
+						sendGroupToFile(currentObjectGroup);
+						currentObjectGroup = null;
+						objectGroup.put(featureClass, currentObjectGroup);
+						objectGroupCounter.put(featureClass, 0);
+					}
 				}
 			}
 		}
@@ -543,17 +558,17 @@ public class KmlExportWorker extends Worker<KmlSplittingResult> {
 		}
 	}
 
-	private BalloonTemplateHandler getBalloonTemplateHandler(CityGMLClass cityObjectType) {
-		BalloonTemplateHandler currentBalloonTemplateHandler = balloonTemplateHandler.get(cityObjectType);
+	private BalloonTemplateHandler getBalloonTemplateHandler(int objectClassId) {
+		BalloonTemplateHandler currentBalloonTemplateHandler = balloonTemplateHandler.get(objectClassId);
 
 		if (currentBalloonTemplateHandler == null) {
-			Balloon balloonSettings = getBalloonSettings(cityObjectType);
+			Balloon balloonSettings = getBalloonSettings(objectClassId);
 			if (balloonSettings != null &&	balloonSettings.isIncludeDescription() &&
 					balloonSettings.getBalloonContentMode() != BalloonContentMode.GEN_ATTRIB) {
 				String balloonTemplateFilename = balloonSettings.getBalloonContentTemplateFile();
 				if (balloonTemplateFilename != null && balloonTemplateFilename.length() > 0) {
 					currentBalloonTemplateHandler = new BalloonTemplateHandler(new File(balloonTemplateFilename), databaseAdapter);
-					balloonTemplateHandler.put(cityObjectType, currentBalloonTemplateHandler);
+					balloonTemplateHandler.put(objectClassId, currentBalloonTemplateHandler);
 				}
 			}
 		}
@@ -561,7 +576,8 @@ public class KmlExportWorker extends Worker<KmlSplittingResult> {
 		return currentBalloonTemplateHandler;
 	}
 
-	private Balloon getBalloonSettings(CityGMLClass cityObjectType) {
+	private Balloon getBalloonSettings(int objectClassId) {
+		CityGMLClass cityObjectType = Util.getCityGMLClass(objectClassId);
 		Balloon balloonSettings;
 		switch (cityObjectType) {
 		case BUILDING:
@@ -606,6 +622,9 @@ public class KmlExportWorker extends Worker<KmlSplittingResult> {
 			break;
 		case TUNNEL:
 			balloonSettings = config.getProject().getKmlExporter().getTunnelBalloon();
+			break;
+		case ADE_COMPONENT:
+			balloonSettings = ADEKmlExportExtensionManager.getInstance().getPreference(config, objectClassId).getBalloon();
 			break;
 		default:
 			return null;

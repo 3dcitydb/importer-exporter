@@ -155,7 +155,7 @@ public class DBWaterBody extends AbstractFeatureExporter<WaterBody> {
 									continue;
 
 								// create water body object
-								waterBody = exporter.createObject(featureType.getObjectClassId(), WaterBody.class);						
+								waterBody = exporter.createObject(objectClassId, WaterBody.class);
 								if (waterBody == null) {
 									exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(featureType, waterBodyId) + " as water body object.");
 									continue;

@@ -180,7 +180,7 @@ public class Tunnel extends KmlGenericObject{
 							break;
 
 						try {
-							String query = queries.getTunnelPartQuery(currentLod, work.getDisplayForm(), true);
+							String query = queries.getTunnelPartQuery(currentLod, work.getDisplayForm(), true, work.getObjectClassId());
 							psQuery = connection.prepareStatement(query, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 							for (int i = 1; i <= getParameterCount(query); i++)
 								psQuery.setLong(i, tunnelPartId);
@@ -203,7 +203,7 @@ public class Tunnel extends KmlGenericObject{
 				// the tunnel geometry including sub-features and appearances 
 				if (currentLod > 0 && work.getDisplayForm().isAchievableFromLoD(currentLod)) {
 					try {
-						String query = queries.getTunnelPartQuery(currentLod, work.getDisplayForm(), false);
+						String query = queries.getTunnelPartQuery(currentLod, work.getDisplayForm(), false, work.getObjectClassId());
 						psQuery = connection.prepareStatement(query, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 						for (int i = 1; i <= getParameterCount(query); i++)
 							psQuery.setLong(i, tunnelPartId);
@@ -231,7 +231,7 @@ public class Tunnel extends KmlGenericObject{
 
 					try {
 						// first, check whether we have an LOD1 geometry or a GroundSurface
-						String query = queries.getTunnelPartQuery(currentLod, work.getDisplayForm(), false);
+						String query = queries.getTunnelPartQuery(currentLod, work.getDisplayForm(), false, work.getObjectClassId());
 						psQuery = connection.prepareStatement(query, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 						for (int i = 1; i <= getParameterCount(query); i++)
 							psQuery.setLong(i, tunnelPartId);
@@ -259,7 +259,7 @@ public class Tunnel extends KmlGenericObject{
 								currentLod,
 								Math.pow(groupBasis, 4),
 								Math.pow(groupBasis, 3),
-								Math.pow(groupBasis, 2));
+								Math.pow(groupBasis, 2), work.getObjectClassId());
 
 						psQuery = connection.prepareStatement(query, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 						for (int i = 1; i <= getParameterCount(query); i++)
@@ -323,22 +323,14 @@ public class Tunnel extends KmlGenericObject{
 				case DisplayForm.GEOMETRY:
 					setGmlId(work.getGmlId());
 					setId(work.getId());
+					List<PlacemarkType> placemarks = createPlacemarksForGeometry(rs, work);
 					if (work.getDisplayForm().isHighlightingEnabled()) {
-						if (query.isSetTiling()) { // region
-							List<PlacemarkType> hlPlacemarks = createPlacemarksForHighlighting(rs, work, true);
-							hlPlacemarks.addAll(createPlacemarksForGeometry(rs, work, true));
-							return hlPlacemarks;
-						}
-						else { // reverse order for single buildings
-							List<PlacemarkType> placemarks = createPlacemarksForGeometry(rs, work, true);
-							placemarks.addAll(createPlacemarksForHighlighting(rs, work, true));
-							return placemarks;
-						}
+						placemarks.addAll(createPlacemarksForHighlighting(rs, work));
 					}
-					return createPlacemarksForGeometry(rs, work, true);
+					return placemarks;
 
 				case DisplayForm.COLLADA:
-					fillGenericObjectForCollada(rs, config.getProject().getKmlExporter().getTunnelColladaOptions().isGenerateTextureAtlases(), true); // fill and refill
+					fillGenericObjectForCollada(rs, config.getProject().getKmlExporter().getTunnelColladaOptions().isGenerateTextureAtlases()); // fill and refill
 					String currentgmlId = getGmlId();
 					setGmlId(work.getGmlId());
 					setId(work.getId());
@@ -357,7 +349,7 @@ public class Tunnel extends KmlGenericObject{
 					setIgnoreSurfaceOrientation(colladaOptions.isIgnoreSurfaceOrientation());
 					try {
 						if (work.getDisplayForm().isHighlightingEnabled()) {
-							return createPlacemarksForHighlighting(rs, work, true);
+							return createPlacemarksForHighlighting(rs, work);
 						}
 						// just COLLADA, no KML
 						List<PlacemarkType> dummy = new ArrayList<>();
