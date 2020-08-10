@@ -80,10 +80,9 @@ public class DBOpening extends AbstractFeatureExporter<AbstractOpening> {
 		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 
 		table = new Table(TableEnum.OPENING.getName(), schema);
-		Table address = new Table(TableEnum.ADDRESS.getName(), schema);
-
 		select = addProjection(new Select(), table, projectionFilter, "");
 		if (projectionFilter.containsProperty("address", buildingModule)) {
+			Table address = new Table(TableEnum.ADDRESS.getName(), schema);
 			addressExporter.addProjection(select, address, "a")
 					.addJoin(JoinFactory.left(address, "id", ComparisonName.EQUAL_TO, table.getColumn("address_id")));
 			addressADEHookTables = addJoinsToADEHookTables(TableEnum.ADDRESS, address);

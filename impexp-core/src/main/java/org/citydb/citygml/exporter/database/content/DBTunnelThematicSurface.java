@@ -83,7 +83,7 @@ public class DBTunnelThematicSurface extends AbstractFeatureExporter<AbstractBou
 		table = new Table(TableEnum.TUNNEL_THEMATIC_SURFACE.getName(), schema);
 		Table opening = new Table(TableEnum.TUNNEL_OPENING.getName(), schema);
 
-		select = new Select().addProjection(table.getColumn("id", "tsid"), table.getColumn("objectclass_id"));
+		select = new Select().addProjection(table.getColumn("id"), table.getColumn("objectclass_id"));
 		if (lodFilter.isEnabled(2) && boundarySurfaceProjectionFilter.containsProperty("lod2MultiSurface", tunnelModule)) select.addProjection(table.getColumn("lod2_multi_surface_id"));
 		if (lodFilter.isEnabled(3) && boundarySurfaceProjectionFilter.containsProperty("lod3MultiSurface", tunnelModule)) select.addProjection(table.getColumn("lod3_multi_surface_id"));
 		if (lodFilter.isEnabled(4) && boundarySurfaceProjectionFilter.containsProperty("lod4MultiSurface", tunnelModule)) select.addProjection(table.getColumn("lod4_multi_surface_id"));
@@ -137,7 +137,7 @@ public class DBTunnelThematicSurface extends AbstractFeatureExporter<AbstractBou
 			Map<Long, AbstractBoundarySurface> boundarySurfaces = new HashMap<>();
 
 			while (rs.next()) {
-				long boundarySurfaceId = rs.getLong("tsid");
+				long boundarySurfaceId = rs.getLong("id");
 
 				if (boundarySurfaceId != currentBoundarySurfaceId || boundarySurface == null) {
 					currentBoundarySurfaceId = boundarySurfaceId;
