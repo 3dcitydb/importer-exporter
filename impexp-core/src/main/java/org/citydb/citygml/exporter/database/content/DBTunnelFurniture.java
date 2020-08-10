@@ -168,7 +168,6 @@ public class DBTunnelFurniture extends AbstractFeatureExporter<TunnelFurniture> 
 		return tunnelFurniture;
 	}
 
-
 	private void doExport(TunnelFurniture object, long id, FeatureType featureType, ProjectionFilter projectionFilter, String prefix, List<Table> adeHookTables, ResultSet rs) throws CityGMLExportException, SQLException {
 		// export city object information
 		cityObjectExporter.addBatch(object, id, featureType, projectionFilter);

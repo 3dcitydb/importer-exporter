@@ -444,7 +444,7 @@ public class DBBridgeConstrElement extends AbstractFeatureExporter<BridgeConstru
 				FeatureType featureType = exporter.getFeatureType(objectClassId);
 				AbstractOpening opening = openingExporter.doExport(openingId, featureType, "op", openingADEHookTables, rs);
 				if (opening == null) {
-					exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(objectClassId, openingId) + " as opening object.");
+					exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(objectClassId, openingId) + " as bridge opening object.");
 					continue;
 				}
 
