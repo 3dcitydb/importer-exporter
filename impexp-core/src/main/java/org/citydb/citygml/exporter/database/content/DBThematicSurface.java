@@ -76,10 +76,10 @@ public class DBThematicSurface extends AbstractFeatureExporter<AbstractBoundaryS
 
 		cityObjectExporter = exporter.getExporter(DBCityObject.class);
 		openingExporter = exporter.getExporter(DBOpening.class);
-		geometryExporter = exporter.getExporter(DBSurfaceGeometry.class);
 		addressExporter = exporter.getExporter(DBAddress.class);
+		geometryExporter = exporter.getExporter(DBSurfaceGeometry.class);
 
-		CombinedProjectionFilter boundarySurfaceProjectionFilter = exporter.getCombinedProjectionFilter(TableEnum.THEMATIC_SURFACE.getName());
+		CombinedProjectionFilter projectionFilter = exporter.getCombinedProjectionFilter(TableEnum.THEMATIC_SURFACE.getName());
 		buildingModule = exporter.getTargetCityGMLVersion().getCityGMLModule(CityGMLModuleType.BUILDING).getNamespaceURI();
 		lodFilter = exporter.getLodFilter();
 		useXLink = exporter.getExportConfig().getXlink().getFeature().isModeXLink();
@@ -89,9 +89,9 @@ public class DBThematicSurface extends AbstractFeatureExporter<AbstractBoundaryS
 		Table opening = new Table(TableEnum.OPENING.getName(), schema);
 		Table address = new Table(TableEnum.ADDRESS.getName(), schema);
 
-		select = addProjection(new Select(), table, boundarySurfaceProjectionFilter, "");
+		select = addProjection(new Select(), table, projectionFilter, "");
 		if (lodFilter.containsLodGreaterThanOrEuqalTo(3)
-				&& boundarySurfaceProjectionFilter.containsProperty("opening", buildingModule)) {
+				&& projectionFilter.containsProperty("opening", buildingModule)) {
 			CombinedProjectionFilter openingProjectionFilter = exporter.getCombinedProjectionFilter(TableEnum.OPENING.getName());
 			Table openingToThemSurface = new Table(TableEnum.OPENING_TO_THEM_SURFACE.getName(), schema);
 			Table cityObject = new Table(TableEnum.CITYOBJECT.getName(), schema);

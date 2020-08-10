@@ -97,9 +97,9 @@ public class DBBuildingInstallation extends AbstractFeatureExporter<AbstractCity
 		cityObjectExporter = exporter.getExporter(DBCityObject.class);
 		thematicSurfaceExporter = exporter.getExporter(DBThematicSurface.class);
 		openingExporter = exporter.getExporter(DBOpening.class);
+		addressExporter = exporter.getExporter(DBAddress.class);
 		geometryExporter = exporter.getExporter(DBSurfaceGeometry.class);
 		implicitGeometryExporter = exporter.getExporter(DBImplicitGeometry.class);
-		addressExporter = exporter.getExporter(DBAddress.class);
 		gmlConverter = exporter.getGMLConverter();
 		valueSplitter = exporter.getAttributeValueSplitter();
 
@@ -402,7 +402,7 @@ public class DBBuildingInstallation extends AbstractFeatureExporter<AbstractCity
 
 						boundarySurface = thematicSurfaceExporter.doExport(boundarySurfaceId, featureType, "ts", surfaceADEHookTables, rs);
 						if (boundarySurface == null) {
-							exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(objectClassId, id) + " as boundary surface object.");
+							exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(objectClassId, boundarySurfaceId) + " as boundary surface object.");
 							continue;
 						}
 
