@@ -122,8 +122,7 @@ public class DBRoom extends AbstractFeatureExporter<Room> {
 				Table thematicSurface = new Table(TableEnum.THEMATIC_SURFACE.getName(), schema);
 				thematicSurfaceExporter.addProjection(select, thematicSurface, boundarySurfaceProjectionFilter, "ts")
 						.addJoin(JoinFactory.left(thematicSurface, "room_id", ComparisonName.EQUAL_TO, table.getColumn("id")));
-				if (lodFilter.containsLodGreaterThanOrEuqalTo(3)
-						&& boundarySurfaceProjectionFilter.containsProperty("opening", buildingModule)) {
+				if (boundarySurfaceProjectionFilter.containsProperty("opening", buildingModule)) {
 					CombinedProjectionFilter openingProjectionFilter = exporter.getCombinedProjectionFilter(TableEnum.OPENING.getName());
 					Table opening = new Table(TableEnum.OPENING.getName(), schema);
 					Table openingToThemSurface = new Table(TableEnum.OPENING_TO_THEM_SURFACE.getName(), schema);
@@ -295,7 +294,8 @@ public class DBRoom extends AbstractFeatureExporter<Room> {
 					}
 				}
 
-				if (!projectionFilter.containsProperty("boundedBy", buildingModule))
+				if (!lodFilter.isEnabled(4)
+						|| !projectionFilter.containsProperty("boundedBy", buildingModule))
 					continue;
 
 				// bldg:boundedBy
@@ -330,7 +330,6 @@ public class DBRoom extends AbstractFeatureExporter<Room> {
 
 				// continue if openings shall not be exported
 				if (boundarySurface == null
-						|| !lodFilter.containsLodGreaterThanOrEuqalTo(3)
 						|| !boundarySurfaceProjectionFilter.containsProperty("opening", buildingModule))
 					continue;
 

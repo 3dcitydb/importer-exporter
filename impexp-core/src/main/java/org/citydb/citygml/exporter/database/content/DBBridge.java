@@ -111,8 +111,8 @@ public class DBBridge extends AbstractFeatureExporter<AbstractBridge> {
 		bridgeConstrElemExporter = exporter.getExporter(DBBridgeConstrElement.class);
 		bridgeRoomExporter = exporter.getExporter(DBBridgeRoom.class);
 		cityObjectExporter = exporter.getExporter(DBCityObject.class);
-		geometryExporter = exporter.getExporter(DBSurfaceGeometry.class);
 		addressExporter = exporter.getExporter(DBAddress.class);
+		geometryExporter = exporter.getExporter(DBSurfaceGeometry.class);
 		gmlConverter = exporter.getGMLConverter();
 		valueSplitter = exporter.getAttributeValueSplitter();
 
@@ -171,7 +171,7 @@ public class DBBridge extends AbstractFeatureExporter<AbstractBridge> {
 			thematicSurfaceExporter.addProjection(select, thematicSurface, boundarySurfaceProjectionFilter, "ts")
 					.addJoin(JoinFactory.left(thematicSurface, "bridge_id", ComparisonName.EQUAL_TO, table.getColumn("id")));
 			if (lodFilter.containsLodGreaterThanOrEuqalTo(3)
-					&& projectionFilter.containsProperty("opening", bridgeModule)) {
+					&& boundarySurfaceProjectionFilter.containsProperty("opening", bridgeModule)) {
 				CombinedProjectionFilter openingProjectionFilter = exporter.getCombinedProjectionFilter(TableEnum.BRIDGE_OPENING.getName());
 				Table opening = new Table(TableEnum.BRIDGE_OPENING.getName(), schema);
 				Table openingToThemSurface = new Table(TableEnum.BRIDGE_OPEN_TO_THEM_SRF.getName(), schema);
@@ -500,7 +500,8 @@ public class DBBridge extends AbstractFeatureExporter<AbstractBridge> {
 				}
 
 				// continue if openings shall not be exported
-				if (!lodFilter.containsLodGreaterThanOrEuqalTo(3)
+				if (boundarySurface == null
+						|| !lodFilter.containsLodGreaterThanOrEuqalTo(3)
 						|| !boundarySurfaceProjectionFilter.containsProperty("opening", bridgeModule))
 					continue;
 
