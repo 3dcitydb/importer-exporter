@@ -124,8 +124,6 @@ public class DBBridge extends AbstractFeatureExporter<AbstractBridge> {
 		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 
 		table = new Table(TableEnum.BRIDGE.getName(), schema);
-		Table address = new Table(TableEnum.ADDRESS.getName(), schema);
-
 		select = new Select().addProjection(table.getColumn("id"), table.getColumn("bridge_parent_id"));
 		if (hasObjectClassIdColumn) select.addProjection(table.getColumn("objectclass_id"));
 		if (projectionFilter.containsProperty("class", bridgeModule)) select.addProjection(table.getColumn("class"), table.getColumn("class_codespace"));
@@ -158,6 +156,7 @@ public class DBBridge extends AbstractFeatureExporter<AbstractBridge> {
 			if (projectionFilter.containsProperty("lod4MultiSurface", bridgeModule)) select.addProjection(table.getColumn("lod4_multi_surface_id"));
 		}
 		if (projectionFilter.containsProperty("address", bridgeModule)) {
+			Table address = new Table(TableEnum.ADDRESS.getName(), schema);
 			Table addressToBridge = new Table(TableEnum.ADDRESS_TO_BRIDGE.getName(), schema);
 			addressExporter.addProjection(select, address, "ba")
 					.addJoin(JoinFactory.left(addressToBridge, "bridge_id", ComparisonName.EQUAL_TO, table.getColumn("id")))
@@ -178,7 +177,7 @@ public class DBBridge extends AbstractFeatureExporter<AbstractBridge> {
 				Table cityObject = new Table(TableEnum.CITYOBJECT.getName(), schema);
 				openingExporter.addProjection(select, opening, openingProjectionFilter, "op")
 						.addProjection(cityObject.getColumn("gmlid", "opgmlid"))
-						.addJoin(JoinFactory.left(openingToThemSurface, "bridge_thematic_surface_id", ComparisonName.EQUAL_TO, table.getColumn("id")))
+						.addJoin(JoinFactory.left(openingToThemSurface, "bridge_thematic_surface_id", ComparisonName.EQUAL_TO, thematicSurface.getColumn("id")))
 						.addJoin(JoinFactory.left(opening, "id", ComparisonName.EQUAL_TO, openingToThemSurface.getColumn("bridge_opening_id")))
 						.addJoin(JoinFactory.left(cityObject, "id", ComparisonName.EQUAL_TO, opening.getColumn("id")));
 				if (openingProjectionFilter.containsProperty("address", bridgeModule)) {

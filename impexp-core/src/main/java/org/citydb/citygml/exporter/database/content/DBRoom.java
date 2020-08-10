@@ -133,10 +133,10 @@ public class DBRoom extends AbstractFeatureExporter<Room> {
 							.addJoin(JoinFactory.left(opening, "id", ComparisonName.EQUAL_TO, openingToThemSurface.getColumn("opening_id")))
 							.addJoin(JoinFactory.left(cityObject, "id", ComparisonName.EQUAL_TO, opening.getColumn("id")));
 					if (openingProjectionFilter.containsProperty("address", buildingModule)) {
-						Table openingAddress = new Table(TableEnum.ADDRESS.getName(), schema);
-						addressExporter.addProjection(select, openingAddress, "oa")
-								.addJoin(JoinFactory.left(openingAddress, "id", ComparisonName.EQUAL_TO, opening.getColumn("address_id")));
-						addressADEHookTables = addJoinsToADEHookTables(TableEnum.ADDRESS, openingAddress);
+						Table address = new Table(TableEnum.ADDRESS.getName(), schema);
+						addressExporter.addProjection(select, address, "oa")
+								.addJoin(JoinFactory.left(address, "id", ComparisonName.EQUAL_TO, opening.getColumn("address_id")));
+						addressADEHookTables = addJoinsToADEHookTables(TableEnum.ADDRESS, address);
 					}
 					openingADEHookTables = addJoinsToADEHookTables(TableEnum.OPENING, opening);
 				}
@@ -385,9 +385,9 @@ public class DBRoom extends AbstractFeatureExporter<Room> {
 
 				if (openingProperty.getOpening() instanceof Door
 						&& openingProjectionFilter.containsProperty("address", buildingModule)) {
-					long openingAddressId = rs.getLong("oaid");
-					if (!rs.wasNull() && addresses.add(currentOpeningId + "_" + openingAddressId)) {
-						AddressProperty addressProperty = addressExporter.doExport(openingAddressId, "oa", addressADEHookTables, rs);
+					long addressId = rs.getLong("oaid");
+					if (!rs.wasNull() && addresses.add(currentOpeningId + "_" + addressId)) {
+						AddressProperty addressProperty = addressExporter.doExport(addressId, "oa", addressADEHookTables, rs);
 						if (addressProperty != null) {
 							Door door = (Door) openingProperty.getOpening();
 							door.addAddress(addressProperty);

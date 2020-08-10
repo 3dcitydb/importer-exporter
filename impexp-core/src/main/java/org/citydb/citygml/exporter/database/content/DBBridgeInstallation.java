@@ -140,14 +140,14 @@ public class DBBridgeInstallation extends AbstractFeatureExporter<AbstractCityOb
 				Table cityObject = new Table(TableEnum.CITYOBJECT.getName(), schema);
 				openingExporter.addProjection(select, opening, openingProjectionFilter, "op")
 						.addProjection(cityObject.getColumn("gmlid", "opgmlid"))
-						.addJoin(JoinFactory.left(openingToThemSurface, "bridge_thematic_surface_id", ComparisonName.EQUAL_TO, table.getColumn("id")))
+						.addJoin(JoinFactory.left(openingToThemSurface, "bridge_thematic_surface_id", ComparisonName.EQUAL_TO, thematicSurface.getColumn("id")))
 						.addJoin(JoinFactory.left(opening, "id", ComparisonName.EQUAL_TO, openingToThemSurface.getColumn("bridge_opening_id")))
 						.addJoin(JoinFactory.left(cityObject, "id", ComparisonName.EQUAL_TO, opening.getColumn("id")));
 				if (openingProjectionFilter.containsProperty("address", bridgeModule)) {
-					Table openingAddress = new Table(TableEnum.ADDRESS.getName(), schema);
-					addressExporter.addProjection(select, openingAddress, "oa")
-							.addJoin(JoinFactory.left(openingAddress, "id", ComparisonName.EQUAL_TO, opening.getColumn("address_id")));
-					addressADEHookTables = addJoinsToADEHookTables(TableEnum.ADDRESS, openingAddress);
+					Table address = new Table(TableEnum.ADDRESS.getName(), schema);
+					addressExporter.addProjection(select, address, "oa")
+							.addJoin(JoinFactory.left(address, "id", ComparisonName.EQUAL_TO, opening.getColumn("address_id")));
+					addressADEHookTables = addJoinsToADEHookTables(TableEnum.ADDRESS, address);
 				}
 				openingADEHookTables = addJoinsToADEHookTables(TableEnum.BRIDGE_OPENING, opening);
 			}
@@ -421,7 +421,8 @@ public class DBBridgeInstallation extends AbstractFeatureExporter<AbstractCityOb
 				}
 
 				// continue if openings shall not be exported
-				if (!lodFilter.containsLodGreaterThanOrEuqalTo(3)
+				if (boundarySurface == null
+						|| !lodFilter.containsLodGreaterThanOrEuqalTo(3)
 						|| !boundarySurfaceProjectionFilter.containsProperty("opening", bridgeModule))
 					continue;
 
@@ -462,13 +463,15 @@ public class DBBridgeInstallation extends AbstractFeatureExporter<AbstractCityOb
 
 				if (opening instanceof Door
 						&& openingProjectionFilter.containsProperty("address", bridgeModule)) {
-					long openingAddressId = rs.getLong("oaid");
+					long addressId = rs.getLong("oaid");
 					if (!rs.wasNull()) {
-						AddressProperty addressProperty = addressExporter.doExport(openingAddressId, "oa", addressADEHookTables, rs);
+						AddressProperty addressProperty = addressExporter.doExport(addressId, "oa", addressADEHookTables, rs);
 						if (addressProperty != null)
 							((Door) opening).addAddress(addressProperty);
 					}
 				}
+
+				boundarySurface.getOpening().add(new OpeningProperty(opening));
 			}
 
 			// export postponed geometries
