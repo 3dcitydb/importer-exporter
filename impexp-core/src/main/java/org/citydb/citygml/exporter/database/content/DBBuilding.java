@@ -75,9 +75,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -219,7 +219,7 @@ public class DBBuilding extends AbstractFeatureExporter<AbstractBuilding> {
 			AbstractBuilding building = null;
 			ProjectionFilter projectionFilter = null;
 			Map<Long, AbstractBuilding> buildings = new HashMap<>();
-			Map<Long, GeometrySetterHandler> geometries = new HashMap<>();
+			Map<Long, GeometrySetterHandler> geometries = new LinkedHashMap<>();
 
 			long currentBoundarySurfaceId = 0;
 			AbstractBoundarySurface boundarySurface = null;
@@ -648,13 +648,13 @@ public class DBBuilding extends AbstractFeatureExporter<AbstractBuilding> {
 				}
 			}
 
-			// export postponed building geometries
-			for (Entry<Long, GeometrySetterHandler> entry : geometries.entrySet())
+			// export postponed geometries
+			for (Map.Entry<Long, GeometrySetterHandler> entry : geometries.entrySet())
 				geometryExporter.addBatch(entry.getKey(), entry.getValue());
 
 			// rebuild building part hierarchy
 			List<AbstractBuilding> result = new ArrayList<>();
-			for (Entry<Long, AbstractBuilding> entry : buildings.entrySet()) {
+			for (Map.Entry<Long, AbstractBuilding> entry : buildings.entrySet()) {
 				building = entry.getValue();
 				long buildingId = entry.getKey();
 				long parentId = (Long)building.getLocalProperty("parent");
