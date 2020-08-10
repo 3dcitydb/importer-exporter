@@ -30,12 +30,7 @@ package org.citydb.citygml.exporter.util;
 
 import org.citydb.citygml.exporter.database.content.SurfaceGeometry;
 
-public abstract class GeometrySetterHandler {
-    protected GeometrySetter<?> setter;
-
-    public GeometrySetterHandler(GeometrySetter<?> setter) {
-        this.setter = setter;
-    }
-
-    public abstract void handle(SurfaceGeometry geometry);
+@FunctionalInterface
+public interface GeometrySetterHandler {
+    void handle(SurfaceGeometry geometry);
 }

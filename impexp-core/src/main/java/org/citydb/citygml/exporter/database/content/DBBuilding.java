@@ -30,6 +30,8 @@ package org.citydb.citygml.exporter.database.content;
 import org.citydb.citygml.exporter.CityGMLExportException;
 import org.citydb.citygml.exporter.util.AttributeValueSplitter;
 import org.citydb.citygml.exporter.util.AttributeValueSplitter.SplitValue;
+import org.citydb.citygml.exporter.util.DefaultGeometrySetterHandler;
+import org.citydb.citygml.exporter.util.GeometrySetterHandler;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.database.schema.TableEnum;
 import org.citydb.database.schema.mapping.FeatureType;
@@ -217,6 +219,7 @@ public class DBBuilding extends AbstractFeatureExporter<AbstractBuilding> {
 			AbstractBuilding building = null;
 			ProjectionFilter projectionFilter = null;
 			Map<Long, AbstractBuilding> buildings = new HashMap<>();
+			Map<Long, GeometrySetterHandler> geometries = new HashMap<>();
 
 			long currentBoundarySurfaceId = 0;
 			AbstractBoundarySurface boundarySurface = null;
@@ -476,16 +479,16 @@ public class DBBuilding extends AbstractFeatureExporter<AbstractBuilding> {
 
 							switch (lod) {
 								case 1:
-									geometryExporter.addBatch(geometryId, building::setLod1Solid);
+									geometries.put(geometryId, new DefaultGeometrySetterHandler(building::setLod1Solid));
 									break;
 								case 2:
-									geometryExporter.addBatch(geometryId, building::setLod2Solid);
+									geometries.put(geometryId, new DefaultGeometrySetterHandler(building::setLod2Solid));
 									break;
 								case 3:
-									geometryExporter.addBatch(geometryId, building::setLod3Solid);
+									geometries.put(geometryId, new DefaultGeometrySetterHandler(building::setLod3Solid));
 									break;
 								case 4:
-									geometryExporter.addBatch(geometryId, building::setLod4Solid);
+									geometries.put(geometryId, new DefaultGeometrySetterHandler(building::setLod4Solid));
 									break;
 							}
 						}
@@ -504,16 +507,16 @@ public class DBBuilding extends AbstractFeatureExporter<AbstractBuilding> {
 
 							switch (lod) {
 								case 1:
-									geometryExporter.addBatch(geometryId, building::setLod1MultiSurface);
+									geometries.put(geometryId, new DefaultGeometrySetterHandler(building::setLod1MultiSurface));
 									break;
 								case 2:
-									geometryExporter.addBatch(geometryId, building::setLod2MultiSurface);
+									geometries.put(geometryId, new DefaultGeometrySetterHandler(building::setLod2MultiSurface));
 									break;
 								case 3:
-									geometryExporter.addBatch(geometryId, building::setLod3MultiSurface);
+									geometries.put(geometryId, new DefaultGeometrySetterHandler(building::setLod3MultiSurface));
 									break;
 								case 4:
-									geometryExporter.addBatch(geometryId, building::setLod4MultiSurface);
+									geometries.put(geometryId, new DefaultGeometrySetterHandler(building::setLod4MultiSurface));
 									break;
 							}
 						}
@@ -644,6 +647,10 @@ public class DBBuilding extends AbstractFeatureExporter<AbstractBuilding> {
 					}
 				}
 			}
+
+			// export postponed building geometries
+			for (Entry<Long, GeometrySetterHandler> entry : geometries.entrySet())
+				geometryExporter.addBatch(entry.getKey(), entry.getValue());
 
 			// rebuild building part hierarchy
 			List<AbstractBuilding> result = new ArrayList<>();

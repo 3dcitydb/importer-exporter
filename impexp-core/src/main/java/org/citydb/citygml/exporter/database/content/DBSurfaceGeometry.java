@@ -29,6 +29,7 @@ package org.citydb.citygml.exporter.database.content;
 
 import org.citydb.citygml.common.database.cache.CacheTable;
 import org.citydb.citygml.exporter.CityGMLExportException;
+import org.citydb.citygml.exporter.util.DefaultGeometrySetterHandler;
 import org.citydb.citygml.exporter.util.GeometrySetter;
 import org.citydb.citygml.exporter.util.GeometrySetterHandler;
 import org.citydb.config.Config;
@@ -41,19 +42,12 @@ import org.citydb.sqlbuilder.select.Select;
 import org.citydb.sqlbuilder.select.operator.comparison.ComparisonFactory;
 import org.citydb.sqlbuilder.select.projection.ConstantColumn;
 import org.citygml4j.model.citygml.core.ImplicitGeometry;
-import org.citygml4j.model.citygml.relief.TinProperty;
 import org.citygml4j.model.gml.GMLClass;
 import org.citygml4j.model.gml.geometry.AbstractGeometry;
-import org.citygml4j.model.gml.geometry.GeometryProperty;
-import org.citygml4j.model.gml.geometry.aggregates.MultiPolygonProperty;
 import org.citygml4j.model.gml.geometry.aggregates.MultiSolid;
-import org.citygml4j.model.gml.geometry.aggregates.MultiSolidProperty;
 import org.citygml4j.model.gml.geometry.aggregates.MultiSurface;
-import org.citygml4j.model.gml.geometry.aggregates.MultiSurfaceProperty;
 import org.citygml4j.model.gml.geometry.complexes.CompositeSolid;
-import org.citygml4j.model.gml.geometry.complexes.CompositeSolidProperty;
 import org.citygml4j.model.gml.geometry.complexes.CompositeSurface;
-import org.citygml4j.model.gml.geometry.complexes.CompositeSurfaceProperty;
 import org.citygml4j.model.gml.geometry.primitives.AbstractSolid;
 import org.citygml4j.model.gml.geometry.primitives.AbstractSurface;
 import org.citygml4j.model.gml.geometry.primitives.DirectPositionList;
@@ -62,7 +56,6 @@ import org.citygml4j.model.gml.geometry.primitives.Interior;
 import org.citygml4j.model.gml.geometry.primitives.LinearRing;
 import org.citygml4j.model.gml.geometry.primitives.OrientableSurface;
 import org.citygml4j.model.gml.geometry.primitives.Polygon;
-import org.citygml4j.model.gml.geometry.primitives.PolygonProperty;
 import org.citygml4j.model.gml.geometry.primitives.Sign;
 import org.citygml4j.model.gml.geometry.primitives.Solid;
 import org.citygml4j.model.gml.geometry.primitives.SolidProperty;
@@ -823,48 +816,6 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryBatchExport
 			this.id = id;
 			this.handler = handler;
 			this.isImplicit = isImplicit;
-		}
-	}
-
-	private static class DefaultGeometrySetterHandler extends GeometrySetterHandler {
-
-		DefaultGeometrySetterHandler(GeometrySetter<?> setter) {
-			super(setter);
-		}
-
-		@Override
-		public void handle(SurfaceGeometry geometry) {
-			if (this.setter instanceof GeometrySetter.MultiSurface) {
-				GeometrySetter.MultiSurface setter = (GeometrySetter.MultiSurface) this.setter;
-				setter.set(geometry.fill(new MultiSurfaceProperty()));
-			} else if (this.setter instanceof GeometrySetter.Solid) {
-				GeometrySetter.Solid setter = (GeometrySetter.Solid) this.setter;
-				setter.set(geometry.fill(new SolidProperty()));
-			} else if (this.setter instanceof GeometrySetter.Surface) {
-				GeometrySetter.Surface setter = (GeometrySetter.Surface) this.setter;
-				setter.set(geometry.fill(new SurfaceProperty()));
-			} else if (this.setter instanceof GeometrySetter.CompositeSurface) {
-				GeometrySetter.CompositeSurface setter = (GeometrySetter.CompositeSurface) this.setter;
-				setter.set(geometry.fill(new CompositeSurfaceProperty()));
-			} else if (this.setter instanceof GeometrySetter.Polygon) {
-				GeometrySetter.Polygon setter = (GeometrySetter.Polygon) this.setter;
-				setter.set(geometry.fill(new PolygonProperty()));
-			} else if (this.setter instanceof GeometrySetter.MultiPolygon) {
-				GeometrySetter.MultiPolygon setter = (GeometrySetter.MultiPolygon) this.setter;
-				setter.set(geometry.fill(new MultiPolygonProperty()));
-			} else if (this.setter instanceof GeometrySetter.CompositeSolid) {
-				GeometrySetter.CompositeSolid setter = (GeometrySetter.CompositeSolid) this.setter;
-				setter.set(geometry.fill(new CompositeSolidProperty()));
-			} else if (this.setter instanceof GeometrySetter.MultiSolid) {
-				GeometrySetter.MultiSolid setter = (GeometrySetter.MultiSolid) this.setter;
-				setter.set(geometry.fill(new MultiSolidProperty()));
-			} else if (this.setter instanceof GeometrySetter.Tin) {
-				GeometrySetter.Tin setter = (GeometrySetter.Tin) this.setter;
-				setter.set(geometry.fill(new TinProperty()));
-			} else if (this.setter instanceof GeometrySetter.AbstractGeometry) {
-				GeometrySetter.AbstractGeometry setter = (GeometrySetter.AbstractGeometry) this.setter;
-				setter.set(geometry.fill(new GeometryProperty<>()));
-			}
 		}
 	}
 }
