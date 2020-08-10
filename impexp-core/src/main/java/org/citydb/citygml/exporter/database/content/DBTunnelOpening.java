@@ -62,6 +62,10 @@ public class DBTunnelOpening extends AbstractFeatureExporter<AbstractOpening> {
 	public DBTunnelOpening(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
 		super(AbstractOpening.class, connection, exporter);
 
+		cityObjectExporter = exporter.getExporter(DBCityObject.class);
+		geometryExporter = exporter.getExporter(DBSurfaceGeometry.class);
+		implicitGeometryExporter = exporter.getExporter(DBImplicitGeometry.class);
+
 		CombinedProjectionFilter projectionFilter = exporter.getCombinedProjectionFilter(TableEnum.TUNNEL_OPENING.getName());
 		tunnelModule = exporter.getTargetCityGMLVersion().getCityGMLModule(CityGMLModuleType.TUNNEL).getNamespaceURI();
 		lodFilter = exporter.getLodFilter();
@@ -70,10 +74,6 @@ public class DBTunnelOpening extends AbstractFeatureExporter<AbstractOpening> {
 		table = new Table(TableEnum.TUNNEL_OPENING.getName(), schema);
 		select = addProjection(new Select(), table, projectionFilter, "");
 		adeHookTables = addJoinsToADEHookTables(TableEnum.TUNNEL_OPENING, table);
-
-		cityObjectExporter = exporter.getExporter(DBCityObject.class);
-		geometryExporter = exporter.getExporter(DBSurfaceGeometry.class);
-		implicitGeometryExporter = exporter.getExporter(DBImplicitGeometry.class);
 	}
 
 	protected Select addProjection(Select select, Table table, CombinedProjectionFilter projectionFilter, String prefix) {

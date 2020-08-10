@@ -411,8 +411,8 @@ public class DBTunnel extends AbstractFeatureExporter<AbstractTunnel> {
 						projectionFilter = (ProjectionFilter) tunnel.getLocalProperty("projection");
 				}
 
-				if (!lodFilter.containsLodGreaterThanOrEuqalTo(2) || !
-						projectionFilter.containsProperty("boundedBy", tunnelModule))
+				if (!lodFilter.containsLodGreaterThanOrEuqalTo(2)
+						|| !projectionFilter.containsProperty("boundedBy", tunnelModule))
 					continue;
 
 				// tun:boundedBy

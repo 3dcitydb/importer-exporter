@@ -73,7 +73,7 @@ import java.util.Map;
 
 public class DBTunnelInstallation extends AbstractFeatureExporter<AbstractCityObject> {
 	private final DBSurfaceGeometry geometryExporter;
-	private final DBCityObject cityObjectReader;
+	private final DBCityObject cityObjectExporter;
 	private final DBTunnelThematicSurface thematicSurfaceExporter;
 	private final DBTunnelOpening openingExporter;
 	private final DBImplicitGeometry implicitGeometryExporter;
@@ -90,7 +90,7 @@ public class DBTunnelInstallation extends AbstractFeatureExporter<AbstractCityOb
 	public DBTunnelInstallation(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
 		super(AbstractCityObject.class, connection, exporter);
 
-		cityObjectReader = exporter.getExporter(DBCityObject.class);
+		cityObjectExporter = exporter.getExporter(DBCityObject.class);
 		thematicSurfaceExporter = exporter.getExporter(DBTunnelThematicSurface.class);
 		openingExporter = exporter.getExporter(DBTunnelOpening.class);
 		geometryExporter = exporter.getExporter(DBSurfaceGeometry.class);
@@ -222,7 +222,7 @@ public class DBTunnelInstallation extends AbstractFeatureExporter<AbstractCityOb
 						projectionFilter = exporter.getProjectionFilter(featureType);
 
 						// export city object information
-						cityObjectReader.addBatch(installation, installationId, featureType, projectionFilter);
+						cityObjectExporter.addBatch(installation, installationId, featureType, projectionFilter);
 
 						isExteriorInstallation = installation instanceof TunnelInstallation;
 
@@ -372,8 +372,8 @@ public class DBTunnelInstallation extends AbstractFeatureExporter<AbstractCityOb
 						projectionFilter = (ProjectionFilter) installation.getLocalProperty("projection");
 				}
 
-				if (!lodFilter.containsLodGreaterThanOrEuqalTo(2) || !
-						projectionFilter.containsProperty("boundedBy", tunnelModule))
+				if (!lodFilter.containsLodGreaterThanOrEuqalTo(2)
+						|| !projectionFilter.containsProperty("boundedBy", tunnelModule))
 					continue;
 
 				// tun:boundedBy
