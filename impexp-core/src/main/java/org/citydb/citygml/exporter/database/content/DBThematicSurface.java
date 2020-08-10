@@ -86,13 +86,11 @@ public class DBThematicSurface extends AbstractFeatureExporter<AbstractBoundaryS
 		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 
 		table = new Table(TableEnum.THEMATIC_SURFACE.getName(), schema);
-		Table opening = new Table(TableEnum.OPENING.getName(), schema);
-		Table address = new Table(TableEnum.ADDRESS.getName(), schema);
-
 		select = addProjection(new Select(), table, projectionFilter, "");
 		if (lodFilter.containsLodGreaterThanOrEuqalTo(3)
 				&& projectionFilter.containsProperty("opening", buildingModule)) {
 			CombinedProjectionFilter openingProjectionFilter = exporter.getCombinedProjectionFilter(TableEnum.OPENING.getName());
+			Table opening = new Table(TableEnum.OPENING.getName(), schema);
 			Table openingToThemSurface = new Table(TableEnum.OPENING_TO_THEM_SURFACE.getName(), schema);
 			Table cityObject = new Table(TableEnum.CITYOBJECT.getName(), schema);
 			openingExporter.addProjection(select, opening, openingProjectionFilter, "op")
@@ -101,6 +99,7 @@ public class DBThematicSurface extends AbstractFeatureExporter<AbstractBoundaryS
 					.addJoin(JoinFactory.left(opening, "id", ComparisonName.EQUAL_TO, openingToThemSurface.getColumn("opening_id")))
 					.addJoin(JoinFactory.left(cityObject, "id", ComparisonName.EQUAL_TO, opening.getColumn("id")));
 			if (openingProjectionFilter.containsProperty("address", buildingModule)) {
+				Table address = new Table(TableEnum.ADDRESS.getName(), schema);
 				addressExporter.addProjection(select, address, "oa")
 						.addJoin(JoinFactory.left(address, "id", ComparisonName.EQUAL_TO, opening.getColumn("address_id")));
 				addressADEHookTables = addJoinsToADEHookTables(TableEnum.ADDRESS, address);
