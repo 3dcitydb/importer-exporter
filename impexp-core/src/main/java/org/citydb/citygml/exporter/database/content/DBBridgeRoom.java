@@ -329,8 +329,7 @@ public class DBBridgeRoom extends AbstractFeatureExporter<BridgeRoom> {
 				}
 
 				// continue if openings shall not be exported
-				if (boundarySurface == null
-						|| !boundarySurfaceProjectionFilter.containsProperty("opening", bridgeModule))
+				if (!boundarySurfaceProjectionFilter.containsProperty("opening", bridgeModule))
 					continue;
 
 				long openingId = rs.getLong("opid");

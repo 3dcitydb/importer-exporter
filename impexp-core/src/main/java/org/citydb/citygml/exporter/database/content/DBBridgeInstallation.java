@@ -421,8 +421,7 @@ public class DBBridgeInstallation extends AbstractFeatureExporter<AbstractCityOb
 				}
 
 				// continue if openings shall not be exported
-				if (boundarySurface == null
-						|| !lodFilter.containsLodGreaterThanOrEuqalTo(3)
+				if (!lodFilter.containsLodGreaterThanOrEuqalTo(3)
 						|| !boundarySurfaceProjectionFilter.containsProperty("opening", bridgeModule))
 					continue;
 

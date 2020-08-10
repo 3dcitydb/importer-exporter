@@ -329,8 +329,7 @@ public class DBRoom extends AbstractFeatureExporter<Room> {
 				}
 
 				// continue if openings shall not be exported
-				if (boundarySurface == null
-						|| !boundarySurfaceProjectionFilter.containsProperty("opening", buildingModule))
+				if (!boundarySurfaceProjectionFilter.containsProperty("opening", buildingModule))
 					continue;
 
 				long openingId = rs.getLong("opid");
