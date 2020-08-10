@@ -110,10 +110,6 @@ public class DBBuildingInstallation extends AbstractFeatureExporter<AbstractCity
 		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 		
 		table = new Table(TableEnum.BUILDING_INSTALLATION.getName(), schema);
-		Table thematicSurface = new Table(TableEnum.THEMATIC_SURFACE.getName(), schema);
-		Table opening = new Table(TableEnum.OPENING.getName(), schema);
-		Table address = new Table(TableEnum.ADDRESS.getName(), schema);
-
 		select = new Select().addProjection(table.getColumn("id"), table.getColumn("objectclass_id"));
 		if (projectionFilter.containsProperty("class", buildingModule)) select.addProjection(table.getColumn("class"), table.getColumn("class_codespace"));
 		if (projectionFilter.containsProperty("function", buildingModule)) select.addProjection(table.getColumn("function"), table.getColumn("function_codespace"));
@@ -133,11 +129,13 @@ public class DBBuildingInstallation extends AbstractFeatureExporter<AbstractCity
 		if (lodFilter.containsLodGreaterThanOrEuqalTo(2)
 				&& projectionFilter.containsProperty("boundedBy", buildingModule)) {
 			CombinedProjectionFilter boundarySurfaceProjectionFilter = exporter.getCombinedProjectionFilter(TableEnum.THEMATIC_SURFACE.getName());
+			Table thematicSurface = new Table(TableEnum.THEMATIC_SURFACE.getName(), schema);
 			thematicSurfaceExporter.addProjection(select, thematicSurface, boundarySurfaceProjectionFilter, "ts")
 					.addJoin(JoinFactory.left(thematicSurface, "building_installation_id", ComparisonName.EQUAL_TO, table.getColumn("id")));
 			if (lodFilter.containsLodGreaterThanOrEuqalTo(3)
 					&& boundarySurfaceProjectionFilter.containsProperty("opening", buildingModule)) {
 				CombinedProjectionFilter openingProjectionFilter = exporter.getCombinedProjectionFilter(TableEnum.OPENING.getName());
+				Table opening = new Table(TableEnum.OPENING.getName(), schema);
 				Table openingToThemSurface = new Table(TableEnum.OPENING_TO_THEM_SURFACE.getName(), schema);
 				Table cityObject = new Table(TableEnum.CITYOBJECT.getName(), schema);
 				openingExporter.addProjection(select, opening, openingProjectionFilter, "op")
@@ -146,6 +144,7 @@ public class DBBuildingInstallation extends AbstractFeatureExporter<AbstractCity
 						.addJoin(JoinFactory.left(opening, "id", ComparisonName.EQUAL_TO, openingToThemSurface.getColumn("opening_id")))
 						.addJoin(JoinFactory.left(cityObject, "id", ComparisonName.EQUAL_TO, opening.getColumn("id")));
 				if (openingProjectionFilter.containsProperty("address", buildingModule)) {
+					Table address = new Table(TableEnum.ADDRESS.getName(), schema);
 					addressExporter.addProjection(select, address, "oa")
 							.addJoin(JoinFactory.left(address, "id", ComparisonName.EQUAL_TO, opening.getColumn("address_id")));
 					addressADEHookTables = addJoinsToADEHookTables(TableEnum.ADDRESS, address);
