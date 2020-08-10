@@ -97,7 +97,7 @@ public class DBBridgeThematicSurface extends AbstractFeatureExporter<AbstractBou
 			openingExporter.addProjection(select, opening, openingProjectionFilter, "op")
 					.addProjection(cityObject.getColumn("gmlid", "opgmlid"))
 					.addJoin(JoinFactory.left(openingToThemSurface, "bridge_thematic_surface_id", ComparisonName.EQUAL_TO, table.getColumn("id")))
-					.addJoin(JoinFactory.left(opening, "id", ComparisonName.EQUAL_TO, openingToThemSurface.getColumn("opening_id")))
+					.addJoin(JoinFactory.left(opening, "id", ComparisonName.EQUAL_TO, openingToThemSurface.getColumn("bridge_opening_id")))
 					.addJoin(JoinFactory.left(cityObject, "id", ComparisonName.EQUAL_TO, opening.getColumn("id")));
 			if (openingProjectionFilter.containsProperty("address", bridgeModule)) {
 				Table address = new Table(TableEnum.ADDRESS.getName(), schema);
