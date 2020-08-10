@@ -63,11 +63,15 @@ public class DBLandUse extends AbstractFeatureExporter<LandUse> {
 	public DBLandUse(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
 		super(LandUse.class, connection, exporter);
 
+		cityObjectExporter = exporter.getExporter(DBCityObject.class);
+		geometryExporter = exporter.getExporter(DBSurfaceGeometry.class);
+		valueSplitter = exporter.getAttributeValueSplitter();
+
 		CombinedProjectionFilter projectionFilter = exporter.getCombinedProjectionFilter(TableEnum.LAND_USE.getName());
 		landUseModule = exporter.getTargetCityGMLVersion().getCityGMLModule(CityGMLModuleType.LAND_USE).getNamespaceURI();
 		lodFilter = exporter.getLodFilter();
-		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 		hasObjectClassIdColumn = exporter.getDatabaseAdapter().getConnectionMetaData().getCityDBVersion().compareTo(4, 0, 0) >= 0;
+		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 
 		table = new Table(TableEnum.LAND_USE.getName(), schema);
 		select = new Select().addProjection(table.getColumn("id"));
@@ -81,10 +85,6 @@ public class DBLandUse extends AbstractFeatureExporter<LandUse> {
 		if (lodFilter.isEnabled(3) && projectionFilter.containsProperty("lod3MultiSurface", landUseModule)) select.addProjection(table.getColumn("lod3_multi_surface_id"));
 		if (lodFilter.isEnabled(4) && projectionFilter.containsProperty("lod4MultiSurface", landUseModule)) select.addProjection(table.getColumn("lod4_multi_surface_id"));
 		adeHookTables = addJoinsToADEHookTables(TableEnum.LAND_USE, table);
-		
-		cityObjectExporter = exporter.getExporter(DBCityObject.class);
-		geometryExporter = exporter.getExporter(DBSurfaceGeometry.class);
-		valueSplitter = exporter.getAttributeValueSplitter();
 	}
 
 	@Override
@@ -193,5 +193,4 @@ public class DBLandUse extends AbstractFeatureExporter<LandUse> {
 			return landUses;
 		}
 	}
-
 }

@@ -70,13 +70,19 @@ public class DBGenericCityObject extends AbstractFeatureExporter<GenericCityObje
 	private final List<Table> adeHookTables;
 
 	public DBGenericCityObject(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
-		super(GenericCityObject.class, connection, exporter);		
+		super(GenericCityObject.class, connection, exporter);
+
+		cityObjectExporter = exporter.getExporter(DBCityObject.class);
+		geometryExporter = exporter.getExporter(DBSurfaceGeometry.class);
+		implicitGeometryExporter = exporter.getExporter(DBImplicitGeometry.class);
+		gmlConverter = exporter.getGMLConverter();
+		valueSplitter = exporter.getAttributeValueSplitter();
 
 		CombinedProjectionFilter projectionFilter = exporter.getCombinedProjectionFilter(TableEnum.GENERIC_CITYOBJECT.getName());
 		genericsModule = exporter.getTargetCityGMLVersion().getCityGMLModule(CityGMLModuleType.GENERICS).getNamespaceURI();
 		lodFilter = exporter.getLodFilter();
-		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 		hasObjectClassIdColumn = exporter.getDatabaseAdapter().getConnectionMetaData().getCityDBVersion().compareTo(4, 0, 0) >= 0;
+		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 
 		table = new Table(TableEnum.GENERIC_CITYOBJECT.getName(), schema);
 		select = new Select().addProjection(table.getColumn("id"));
@@ -110,12 +116,6 @@ public class DBGenericCityObject extends AbstractFeatureExporter<GenericCityObje
 			if (projectionFilter.containsProperty("lod4ImplicitRepresentation", genericsModule)) select.addProjection(table.getColumn("lod4_implicit_rep_id"), exporter.getGeometryColumn(table.getColumn("lod4_implicit_ref_point")), table.getColumn("lod4_implicit_transformation"));
 		}
 		adeHookTables = addJoinsToADEHookTables(TableEnum.GENERIC_CITYOBJECT, table);
-		
-		cityObjectExporter = exporter.getExporter(DBCityObject.class);
-		geometryExporter = exporter.getExporter(DBSurfaceGeometry.class);
-		implicitGeometryExporter = exporter.getExporter(DBImplicitGeometry.class);
-		gmlConverter = exporter.getGMLConverter();
-		valueSplitter = exporter.getAttributeValueSplitter();
 	}
 
 	@Override
@@ -331,5 +331,4 @@ public class DBGenericCityObject extends AbstractFeatureExporter<GenericCityObje
 			return genericCityObjects;
 		}
 	}
-
 }

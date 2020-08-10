@@ -72,11 +72,17 @@ public class DBSolitaryVegetatObject extends AbstractFeatureExporter<SolitaryVeg
 	public DBSolitaryVegetatObject(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
 		super(SolitaryVegetationObject.class, connection, exporter);
 
+		cityObjectExporter = exporter.getExporter(DBCityObject.class);
+		geometryExporter = exporter.getExporter(DBSurfaceGeometry.class);
+		implicitGeometryExporter = exporter.getExporter(DBImplicitGeometry.class);
+		gmlConverter = exporter.getGMLConverter();
+		valueSplitter = exporter.getAttributeValueSplitter();
+
 		CombinedProjectionFilter projectionFilter = exporter.getCombinedProjectionFilter(TableEnum.SOLITARY_VEGETAT_OBJECT.getName());
 		vegetationModule = exporter.getTargetCityGMLVersion().getCityGMLModule(CityGMLModuleType.VEGETATION).getNamespaceURI();
 		lodFilter = exporter.getLodFilter();
-		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 		hasObjectClassIdColumn = exporter.getDatabaseAdapter().getConnectionMetaData().getCityDBVersion().compareTo(4, 0, 0) >= 0;
+		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 
 		table = new Table(TableEnum.SOLITARY_VEGETAT_OBJECT.getName(), schema);
 		select = new Select().addProjection(table.getColumn("id"));
@@ -105,12 +111,6 @@ public class DBSolitaryVegetatObject extends AbstractFeatureExporter<SolitaryVeg
 			if (projectionFilter.containsProperty("lod4ImplicitRepresentation", vegetationModule)) select.addProjection(table.getColumn("lod4_implicit_rep_id"), exporter.getGeometryColumn(table.getColumn("lod4_implicit_ref_point")), table.getColumn("lod4_implicit_transformation"));
 		}
 		adeHookTables = addJoinsToADEHookTables(TableEnum.SOLITARY_VEGETAT_OBJECT, table);
-
-		cityObjectExporter = exporter.getExporter(DBCityObject.class);
-		geometryExporter = exporter.getExporter(DBSurfaceGeometry.class);
-		implicitGeometryExporter = exporter.getExporter(DBImplicitGeometry.class);
-		gmlConverter = exporter.getGMLConverter();
-		valueSplitter = exporter.getAttributeValueSplitter();
 	}
 
 	@Override
@@ -316,5 +316,4 @@ public class DBSolitaryVegetatObject extends AbstractFeatureExporter<SolitaryVeg
 			return vegetationObjects;
 		}
 	}
-
 }

@@ -69,6 +69,10 @@ public class DBReliefComponent extends AbstractFeatureExporter<AbstractReliefCom
 	public DBReliefComponent(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
 		super(AbstractReliefComponent.class, connection, exporter);
 
+		cityObjectExporter = exporter.getExporter(DBCityObject.class);
+		geometryExporter = exporter.getExporter(DBSurfaceGeometry.class);
+		gmlConverter = exporter.getGMLConverter();
+
 		CombinedProjectionFilter projectionFilter = exporter.getCombinedProjectionFilter(TableEnum.RELIEF_COMPONENT.getName());
 		reliefModule = exporter.getTargetCityGMLVersion().getCityGMLModule(CityGMLModuleType.RELIEF).getNamespaceURI();
 		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
@@ -90,10 +94,6 @@ public class DBReliefComponent extends AbstractFeatureExporter<AbstractReliefCom
 		if (projectionFilter.containsProperty("ridgeOrValleyLines", reliefModule)) select.addProjection(exporter.getGeometryColumn(breakLineRelief.getColumn("ridge_or_valley_lines")));
 		if (projectionFilter.containsProperty("breaklines", reliefModule)) select.addProjection(exporter.getGeometryColumn(breakLineRelief.getColumn("break_lines")));
 		adeHookTables = addJoinsToADEHookTables(TableEnum.RELIEF_COMPONENT, table);
-
-		cityObjectExporter = exporter.getExporter(DBCityObject.class);
-		geometryExporter = exporter.getExporter(DBSurfaceGeometry.class);
-		gmlConverter = exporter.getGMLConverter();
 	}
 
 	@Override
@@ -254,5 +254,4 @@ public class DBReliefComponent extends AbstractFeatureExporter<AbstractReliefCom
 			return components;
 		}
 	}
-
 }

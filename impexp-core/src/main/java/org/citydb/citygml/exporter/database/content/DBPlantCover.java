@@ -64,11 +64,15 @@ public class DBPlantCover extends AbstractFeatureExporter<PlantCover> {
 	public DBPlantCover(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
 		super(PlantCover.class, connection, exporter);
 
+		cityObjectExporter = exporter.getExporter(DBCityObject.class);
+		geometryExporter = exporter.getExporter(DBSurfaceGeometry.class);
+		valueSplitter = exporter.getAttributeValueSplitter();
+
 		CombinedProjectionFilter projectionFilter = exporter.getCombinedProjectionFilter(TableEnum.PLANT_COVER.getName());
 		vegetationModule = exporter.getTargetCityGMLVersion().getCityGMLModule(CityGMLModuleType.VEGETATION).getNamespaceURI();
 		lodFilter = exporter.getLodFilter();
-		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 		hasObjectClassIdColumn = exporter.getDatabaseAdapter().getConnectionMetaData().getCityDBVersion().compareTo(4, 0, 0) >= 0;
+		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 
 		table = new Table(TableEnum.PLANT_COVER.getName(), schema);
 		select = new Select().addProjection(table.getColumn("id"));
@@ -94,10 +98,6 @@ public class DBPlantCover extends AbstractFeatureExporter<PlantCover> {
 			if (projectionFilter.containsProperty("lod4MultiSolid", vegetationModule)) select.addProjection(table.getColumn("lod4_multi_solid_id"));
 		}
 		adeHookTables = addJoinsToADEHookTables(TableEnum.PLANT_COVER, table);
-
-		cityObjectExporter = exporter.getExporter(DBCityObject.class);
-		geometryExporter = exporter.getExporter(DBSurfaceGeometry.class);
-		valueSplitter = exporter.getAttributeValueSplitter();
 	}
 
 	@Override
@@ -239,5 +239,4 @@ public class DBPlantCover extends AbstractFeatureExporter<PlantCover> {
 			return plantCovers;
 		}
 	}
-
 }

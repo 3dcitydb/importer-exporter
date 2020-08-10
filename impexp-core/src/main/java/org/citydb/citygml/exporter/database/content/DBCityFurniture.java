@@ -72,11 +72,17 @@ public class DBCityFurniture extends AbstractFeatureExporter<CityFurniture> {
 	public DBCityFurniture(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
 		super(CityFurniture.class, connection, exporter);
 
+		cityObjectExporter = exporter.getExporter(DBCityObject.class);
+		geometryExporter = exporter.getExporter(DBSurfaceGeometry.class);
+		implicitGeometryExporter = exporter.getExporter(DBImplicitGeometry.class);
+		gmlConverter = exporter.getGMLConverter();
+		valueSplitter = exporter.getAttributeValueSplitter();
+
 		CombinedProjectionFilter projectionFilter = exporter.getCombinedProjectionFilter(TableEnum.CITY_FURNITURE.getName());
 		cityFurnitureModule = exporter.getTargetCityGMLVersion().getCityGMLModule(CityGMLModuleType.CITY_FURNITURE).getNamespaceURI();
 		lodFilter = exporter.getLodFilter();
-		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 		hasObjectClassIdColumn = exporter.getDatabaseAdapter().getConnectionMetaData().getCityDBVersion().compareTo(4, 0, 0) >= 0;
+		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 
 		table = new Table(TableEnum.CITY_FURNITURE.getName(), schema);
 		select = new Select().addProjection(table.getColumn("id"));
@@ -105,12 +111,6 @@ public class DBCityFurniture extends AbstractFeatureExporter<CityFurniture> {
 			if (projectionFilter.containsProperty("lod4ImplicitRepresentation", cityFurnitureModule)) select.addProjection(table.getColumn("lod4_implicit_rep_id"), exporter.getGeometryColumn(table.getColumn("lod4_implicit_ref_point")), table.getColumn("lod4_implicit_transformation"));
 		}
 		adeHookTables = addJoinsToADEHookTables(TableEnum.CITY_FURNITURE, table);
-		
-		cityObjectExporter = exporter.getExporter(DBCityObject.class);
-		geometryExporter = exporter.getExporter(DBSurfaceGeometry.class);
-		implicitGeometryExporter = exporter.getExporter(DBImplicitGeometry.class);
-		gmlConverter = exporter.getGMLConverter();
-		valueSplitter = exporter.getAttributeValueSplitter();
 	}
 
 	@Override

@@ -73,15 +73,17 @@ public class DBTransportationComplex extends AbstractFeatureExporter<Transportat
 	public DBTransportationComplex(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
 		super(TransportationComplex.class, connection, exporter);
 
+		cityObjectExporter = exporter.getExporter(DBCityObject.class);
+		geometryExporter = exporter.getExporter(DBSurfaceGeometry.class);
+		gmlConverter = exporter.getGMLConverter();
+		valueSplitter = exporter.getAttributeValueSplitter();
+
 		CombinedProjectionFilter projectionFilter = exporter.getCombinedProjectionFilter(TableEnum.TRANSPORTATION_COMPLEX.getName());
-		CombinedProjectionFilter trafficAreaProjectionFilter = exporter.getCombinedProjectionFilter(TableEnum.TRAFFIC_AREA.getName());
 		transportationModule = exporter.getTargetCityGMLVersion().getCityGMLModule(CityGMLModuleType.TRANSPORTATION).getNamespaceURI();
 		lodFilter = exporter.getLodFilter();
 		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 
 		table = new Table(TableEnum.TRANSPORTATION_COMPLEX.getName(), schema);
-		Table trafficArea = new Table(TableEnum.TRAFFIC_AREA.getName(), schema);
-
 		select = new Select().addProjection(table.getColumn("id"), table.getColumn("objectclass_id"));
 		if (projectionFilter.containsProperty("class", transportationModule)) select.addProjection(table.getColumn("class"), table.getColumn("class_codespace"));
 		if (projectionFilter.containsProperty("function", transportationModule)) select.addProjection(table.getColumn("function"), table.getColumn("function_codespace"));
@@ -94,6 +96,8 @@ public class DBTransportationComplex extends AbstractFeatureExporter<Transportat
 		if (lodFilter.containsLodGreaterThanOrEuqalTo(2)
 				&& (projectionFilter.containsProperty("trafficArea", transportationModule)
 				|| projectionFilter.containsProperty("auxiliaryTrafficArea", transportationModule))) {
+			CombinedProjectionFilter trafficAreaProjectionFilter = exporter.getCombinedProjectionFilter(TableEnum.TRAFFIC_AREA.getName());
+			Table trafficArea = new Table(TableEnum.TRAFFIC_AREA.getName(), schema);
 			select.addJoin(JoinFactory.left(trafficArea, "transportation_complex_id", ComparisonName.EQUAL_TO, table.getColumn("id")))
 			.addProjection(trafficArea.getColumn("id", "ta_id"), trafficArea.getColumn("objectclass_id", "ta_objectclass_id"));
 			if (trafficAreaProjectionFilter.containsProperty("class", transportationModule)) select.addProjection(trafficArea.getColumn("class", "ta_class"), trafficArea.getColumn("class_codespace", "ta_class_codespace"));
@@ -106,11 +110,6 @@ public class DBTransportationComplex extends AbstractFeatureExporter<Transportat
 			objectADEHookTables = addJoinsToADEHookTables(TableEnum.TRAFFIC_AREA, trafficArea);
 		}
 		complexADEHookTables = addJoinsToADEHookTables(TableEnum.TRANSPORTATION_COMPLEX, table);
-
-		cityObjectExporter = exporter.getExporter(DBCityObject.class);
-		geometryExporter = exporter.getExporter(DBSurfaceGeometry.class);
-		gmlConverter = exporter.getGMLConverter();
-		valueSplitter = exporter.getAttributeValueSplitter();
 	}
 
 	@Override
@@ -363,5 +362,4 @@ public class DBTransportationComplex extends AbstractFeatureExporter<Transportat
 			return complexes.values();
 		}
 	}
-
 }

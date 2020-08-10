@@ -68,6 +68,9 @@ public class DBImplicitGeometry implements DBExporter {
 	public DBImplicitGeometry(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
 		this.exporter = exporter;
 
+		geometryExporter = exporter.getExporter(DBSurfaceGeometry.class);
+		gmlConverter = exporter.getGMLConverter();
+		valueSplitter = exporter.getAttributeValueSplitter();
 		String getLength = exporter.getDatabaseAdapter().getSQLAdapter().resolveDatabaseOperationName("blob.get_length");
 		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 
@@ -86,10 +89,6 @@ public class DBImplicitGeometry implements DBExporter {
 				.addJoin(JoinFactory.left(surfaceGeometry, "id", ComparisonName.EQUAL_TO, table.getColumn("relative_brep_id")))
 				.addSelection(ComparisonFactory.equalTo(table.getColumn("id"), new PlaceHolder<>()));
 		ps = connection.prepareStatement(select.toString());
-		
-		geometryExporter = exporter.getExporter(DBSurfaceGeometry.class);
-		gmlConverter = exporter.getGMLConverter();
-		valueSplitter = exporter.getAttributeValueSplitter();
 	}
 
 	protected ImplicitGeometry doExport(long id, GeometryObject referencePoint, String transformationMatrix) throws CityGMLExportException, SQLException {
@@ -201,5 +200,4 @@ public class DBImplicitGeometry implements DBExporter {
 	public void close() throws SQLException {
 		ps.close();
 	}
-
 }

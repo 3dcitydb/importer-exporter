@@ -63,34 +63,38 @@ import java.util.List;
 import java.util.Map;
 
 public class DBReliefFeature extends AbstractFeatureExporter<ReliefFeature> {
-	private GMLConverter gmlConverter;
+	private final DBCityObject cityObjectExporter;
+	private final DBSurfaceGeometry geometryExporter;
+	private final GMLConverter gmlConverter;
+
 	private final String reliefModule;
 	private final LodFilter lodFilter;
 	private final boolean hasObjectClassIdColumn;
 	private final boolean useXLink;
-	private final DBCityObject cityObjectExporter;
 
-	private DBSurfaceGeometry geometryExporter;
 	private final List<Table> reliefADEHookTables;
 	private List<Table> componentADEHookTables;
 
 	public DBReliefFeature(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
 		super(ReliefFeature.class, connection, exporter);
 
+		cityObjectExporter = exporter.getExporter(DBCityObject.class);
+		geometryExporter = exporter.getExporter(DBSurfaceGeometry.class);
+		gmlConverter = exporter.getGMLConverter();
+
 		CombinedProjectionFilter projectionFilter = exporter.getCombinedProjectionFilter(TableEnum.RELIEF_FEATURE.getName());
-		CombinedProjectionFilter componentProjectionFilter = exporter.getCombinedProjectionFilter(TableEnum.RELIEF_COMPONENT.getName());
 		reliefModule = exporter.getTargetCityGMLVersion().getCityGMLModule(CityGMLModuleType.RELIEF).getNamespaceURI();
 		lodFilter = exporter.getLodFilter();
-		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 		hasObjectClassIdColumn = exporter.getDatabaseAdapter().getConnectionMetaData().getCityDBVersion().compareTo(4, 0, 0) >= 0;
 		useXLink = exporter.getExportConfig().getXlink().getFeature().isModeXLink();
+		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 
 		table = new Table(TableEnum.RELIEF_FEATURE.getName(), schema);
-		Table reliefComponent = new Table(TableEnum.RELIEF_COMPONENT.getName(), schema);
-
 		select = new Select().addProjection(table.getColumn("id"), table.getColumn("lod", "rf_lod"));
 		if (hasObjectClassIdColumn) select.addProjection(table.getColumn("objectclass_id"));
 		if (projectionFilter.containsProperty("reliefComponent", reliefModule)) {
+			CombinedProjectionFilter componentProjectionFilter = exporter.getCombinedProjectionFilter(TableEnum.RELIEF_COMPONENT.getName());
+			Table reliefComponent = new Table(TableEnum.RELIEF_COMPONENT.getName(), schema);
 			Table reliefFeatToRelComp = new Table(TableEnum.RELIEF_FEAT_TO_REL_COMP.getName(), schema);
 			Table tinRelief = new Table(TableEnum.TIN_RELIEF.getName(), schema);
 			Table massPointRelief = new Table(TableEnum.MASSPOINT_RELIEF.getName(), schema);
@@ -109,13 +113,8 @@ public class DBReliefFeature extends AbstractFeatureExporter<ReliefFeature> {
 			if (componentProjectionFilter.containsProperty("ridgeOrValleyLines", reliefModule)) select.addProjection(exporter.getGeometryColumn(breakLineRelief.getColumn("ridge_or_valley_lines")));
 			if (componentProjectionFilter.containsProperty("breaklines", reliefModule)) select.addProjection(exporter.getGeometryColumn(breakLineRelief.getColumn("break_lines")));
 			componentADEHookTables = addJoinsToADEHookTables(TableEnum.RELIEF_COMPONENT, reliefComponent);
-
-			geometryExporter = exporter.getExporter(DBSurfaceGeometry.class);
-			gmlConverter = exporter.getGMLConverter();
 		}
 		reliefADEHookTables = addJoinsToADEHookTables(TableEnum.BRIDGE, table);
-
-		cityObjectExporter = exporter.getExporter(DBCityObject.class);
 	}
 
 	@Override
@@ -343,5 +342,4 @@ public class DBReliefFeature extends AbstractFeatureExporter<ReliefFeature> {
 			return reliefFeatures.values();
 		}
 	}
-
 }

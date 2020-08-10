@@ -64,6 +64,10 @@ public class DBTrafficArea extends AbstractFeatureExporter<AbstractTransportatio
 	public DBTrafficArea(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
 		super(AbstractTransportationObject.class, connection, exporter);
 
+		cityObjectExporter = exporter.getExporter(DBCityObject.class);
+		geometryExporter = exporter.getExporter(DBSurfaceGeometry.class);
+		valueSplitter = exporter.getAttributeValueSplitter();
+
 		CombinedProjectionFilter projectionFilter = exporter.getCombinedProjectionFilter(TableEnum.TRAFFIC_AREA.getName());
 		transportationModule = exporter.getTargetCityGMLVersion().getCityGMLModule(CityGMLModuleType.TRANSPORTATION).getNamespaceURI();
 		lodFilter = exporter.getLodFilter();
@@ -79,10 +83,6 @@ public class DBTrafficArea extends AbstractFeatureExporter<AbstractTransportatio
 		if (lodFilter.isEnabled(3) && projectionFilter.containsProperty("lod3MultiSurface", transportationModule)) select.addProjection(table.getColumn("lod3_multi_surface_id"));
 		if (lodFilter.isEnabled(4) && projectionFilter.containsProperty("lod4MultiSurface", transportationModule)) select.addProjection(table.getColumn("lod4_multi_surface_id"));
 		adeHookTables = addJoinsToADEHookTables(TableEnum.TRAFFIC_AREA, table);
-
-		cityObjectExporter = exporter.getExporter(DBCityObject.class);
-		geometryExporter = exporter.getExporter(DBSurfaceGeometry.class);
-		valueSplitter = exporter.getAttributeValueSplitter();
 	}
 
 	@Override
@@ -223,5 +223,4 @@ public class DBTrafficArea extends AbstractFeatureExporter<AbstractTransportatio
 			return transportationObjects;
 		}
 	}
-
 }
