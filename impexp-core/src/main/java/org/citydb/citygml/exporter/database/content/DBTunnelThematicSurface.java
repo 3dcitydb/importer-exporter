@@ -60,7 +60,6 @@ public class DBTunnelThematicSurface extends AbstractFeatureExporter<AbstractBou
 	private final DBSurfaceGeometry geometryExporter;
 	private final DBCityObject cityObjectExporter;
 	private final DBTunnelOpening openingExporter;
-	private final DBImplicitGeometry implicitGeometryExporter;
 
 	private final String tunnelModule;
 	private final LodFilter lodFilter;
@@ -74,7 +73,6 @@ public class DBTunnelThematicSurface extends AbstractFeatureExporter<AbstractBou
 		cityObjectExporter = exporter.getExporter(DBCityObject.class);
 		openingExporter = exporter.getExporter(DBTunnelOpening.class);
 		geometryExporter = exporter.getExporter(DBSurfaceGeometry.class);
-		implicitGeometryExporter = exporter.getExporter(DBImplicitGeometry.class);
 
 		CombinedProjectionFilter projectionFilter = exporter.getCombinedProjectionFilter(TableEnum.TUNNEL_THEMATIC_SURFACE.getName());
 		tunnelModule = exporter.getTargetCityGMLVersion().getCityGMLModule(CityGMLModuleType.TUNNEL).getNamespaceURI();

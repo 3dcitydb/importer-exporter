@@ -457,5 +457,4 @@ public class DBTunnelInstallation extends AbstractFeatureExporter<AbstractCityOb
 			return installations.values();
 		}
 	}
-
 }
