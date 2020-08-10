@@ -30,6 +30,8 @@ package org.citydb.citygml.exporter.database.content;
 import org.citydb.citygml.exporter.CityGMLExportException;
 import org.citydb.citygml.exporter.util.AttributeValueSplitter;
 import org.citydb.citygml.exporter.util.AttributeValueSplitter.SplitValue;
+import org.citydb.citygml.exporter.util.DefaultGeometrySetterHandler;
+import org.citydb.citygml.exporter.util.GeometrySetterHandler;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.database.schema.TableEnum;
 import org.citydb.database.schema.mapping.FeatureType;
@@ -43,6 +45,7 @@ import org.citydb.sqlbuilder.select.join.JoinFactory;
 import org.citydb.sqlbuilder.select.operator.comparison.ComparisonName;
 import org.citygml4j.model.citygml.bridge.AbstractBoundarySurface;
 import org.citygml4j.model.citygml.bridge.AbstractBridge;
+import org.citygml4j.model.citygml.bridge.AbstractOpening;
 import org.citygml4j.model.citygml.bridge.BoundarySurfaceProperty;
 import org.citygml4j.model.citygml.bridge.BridgeConstructionElement;
 import org.citygml4j.model.citygml.bridge.BridgeConstructionElementProperty;
@@ -51,9 +54,11 @@ import org.citygml4j.model.citygml.bridge.BridgeInstallationProperty;
 import org.citygml4j.model.citygml.bridge.BridgePart;
 import org.citygml4j.model.citygml.bridge.BridgePartProperty;
 import org.citygml4j.model.citygml.bridge.BridgeRoom;
+import org.citygml4j.model.citygml.bridge.Door;
 import org.citygml4j.model.citygml.bridge.IntBridgeInstallation;
 import org.citygml4j.model.citygml.bridge.IntBridgeInstallationProperty;
 import org.citygml4j.model.citygml.bridge.InteriorBridgeRoomProperty;
+import org.citygml4j.model.citygml.bridge.OpeningProperty;
 import org.citygml4j.model.citygml.core.AbstractCityObject;
 import org.citygml4j.model.citygml.core.AddressProperty;
 import org.citygml4j.model.gml.basicTypes.Code;
@@ -68,14 +73,18 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 public class DBBridge extends AbstractFeatureExporter<AbstractBridge> {
 	private final DBSurfaceGeometry geometryExporter;
 	private final DBCityObject cityObjectExporter;
 	private final DBBridgeThematicSurface thematicSurfaceExporter;
+	private final DBBridgeOpening openingExporter;
 	private final DBBridgeInstallation bridgeInstallationExporter;
 	private final DBBridgeConstrElement bridgeConstrElemExporter;
 	private final DBBridgeRoom bridgeRoomExporter;
@@ -86,13 +95,18 @@ public class DBBridge extends AbstractFeatureExporter<AbstractBridge> {
 	private final LodFilter lodFilter;
 	private final AttributeValueSplitter valueSplitter;
 	private final boolean hasObjectClassIdColumn;
+	private final boolean useXLink;
 	private final List<Table> bridgeADEHookTables;
 	private List<Table> addressADEHookTables;
+	private List<Table> surfaceADEHookTables;
+	private List<Table> openingADEHookTables;
+	private List<Table> openingAddressADEHookTables;
 
 	public DBBridge(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
 		super(AbstractBridge.class, connection, exporter); 
 
 		thematicSurfaceExporter = exporter.getExporter(DBBridgeThematicSurface.class);
+		openingExporter = exporter.getExporter(DBBridgeOpening.class);
 		bridgeInstallationExporter = exporter.getExporter(DBBridgeInstallation.class);
 		bridgeConstrElemExporter = exporter.getExporter(DBBridgeConstrElement.class);
 		bridgeRoomExporter = exporter.getExporter(DBBridgeRoom.class);
@@ -106,6 +120,7 @@ public class DBBridge extends AbstractFeatureExporter<AbstractBridge> {
 		bridgeModule = exporter.getTargetCityGMLVersion().getCityGMLModule(CityGMLModuleType.BRIDGE).getNamespaceURI();
 		lodFilter = exporter.getLodFilter();
 		hasObjectClassIdColumn = exporter.getDatabaseAdapter().getConnectionMetaData().getCityDBVersion().compareTo(4, 0, 0) >= 0;
+		useXLink = exporter.getExportConfig().getXlink().getFeature().isModeXLink();
 		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 
 		table = new Table(TableEnum.BRIDGE.getName(), schema);
@@ -144,10 +159,37 @@ public class DBBridge extends AbstractFeatureExporter<AbstractBridge> {
 		}
 		if (projectionFilter.containsProperty("address", bridgeModule)) {
 			Table addressToBridge = new Table(TableEnum.ADDRESS_TO_BRIDGE.getName(), schema);
-			addressExporter.addProjection(select, address, "a")
+			addressExporter.addProjection(select, address, "ba")
 					.addJoin(JoinFactory.left(addressToBridge, "bridge_id", ComparisonName.EQUAL_TO, table.getColumn("id")))
 					.addJoin(JoinFactory.left(address, "id", ComparisonName.EQUAL_TO, addressToBridge.getColumn("address_id")));
 			addressADEHookTables = addJoinsToADEHookTables(TableEnum.ADDRESS, address);
+		}
+		if (lodFilter.containsLodGreaterThanOrEuqalTo(2)
+				&& projectionFilter.containsProperty("boundedBy", bridgeModule)) {
+			CombinedProjectionFilter boundarySurfaceProjectionFilter = exporter.getCombinedProjectionFilter(TableEnum.BRIDGE_THEMATIC_SURFACE.getName());
+			Table thematicSurface = new Table(TableEnum.BRIDGE_THEMATIC_SURFACE.getName(), schema);
+			thematicSurfaceExporter.addProjection(select, thematicSurface, boundarySurfaceProjectionFilter, "ts")
+					.addJoin(JoinFactory.left(thematicSurface, "bridge_id", ComparisonName.EQUAL_TO, table.getColumn("id")));
+			if (lodFilter.containsLodGreaterThanOrEuqalTo(3)
+					&& projectionFilter.containsProperty("opening", bridgeModule)) {
+				CombinedProjectionFilter openingProjectionFilter = exporter.getCombinedProjectionFilter(TableEnum.BRIDGE_OPENING.getName());
+				Table opening = new Table(TableEnum.BRIDGE_OPENING.getName(), schema);
+				Table openingToThemSurface = new Table(TableEnum.BRIDGE_OPEN_TO_THEM_SRF.getName(), schema);
+				Table cityObject = new Table(TableEnum.CITYOBJECT.getName(), schema);
+				openingExporter.addProjection(select, opening, openingProjectionFilter, "op")
+						.addProjection(cityObject.getColumn("gmlid", "opgmlid"))
+						.addJoin(JoinFactory.left(openingToThemSurface, "bridge_thematic_surface_id", ComparisonName.EQUAL_TO, table.getColumn("id")))
+						.addJoin(JoinFactory.left(opening, "id", ComparisonName.EQUAL_TO, openingToThemSurface.getColumn("bridge_opening_id")))
+						.addJoin(JoinFactory.left(cityObject, "id", ComparisonName.EQUAL_TO, opening.getColumn("id")));
+				if (openingProjectionFilter.containsProperty("address", bridgeModule)) {
+					Table openingAddress = new Table(TableEnum.ADDRESS.getName(), schema);
+					addressExporter.addProjection(select, openingAddress, "oa")
+							.addJoin(JoinFactory.left(openingAddress, "id", ComparisonName.EQUAL_TO, opening.getColumn("address_id")));
+					openingAddressADEHookTables = addJoinsToADEHookTables(TableEnum.ADDRESS, openingAddress);
+				}
+				openingADEHookTables = addJoinsToADEHookTables(TableEnum.BRIDGE_OPENING, opening);
+			}
+			surfaceADEHookTables = addJoinsToADEHookTables(TableEnum.BRIDGE_THEMATIC_SURFACE, table);
 		}
 		bridgeADEHookTables = addJoinsToADEHookTables(TableEnum.BRIDGE, table);
 	}
@@ -168,6 +210,20 @@ public class DBBridge extends AbstractFeatureExporter<AbstractBridge> {
 			AbstractBridge bridge = null;
 			ProjectionFilter projectionFilter = null;
 			Map<Long, AbstractBridge> bridges = new HashMap<>();
+			Map<Long, GeometrySetterHandler> geometries = new LinkedHashMap<>();
+
+			long currentBoundarySurfaceId = 0;
+			AbstractBoundarySurface boundarySurface = null;
+			ProjectionFilter boundarySurfaceProjectionFilter = null;
+			Map<Long, AbstractBoundarySurface> boundarySurfaces = new HashMap<>();
+
+			long currentOpeningId = 0;
+			OpeningProperty openingProperty = null;
+			ProjectionFilter openingProjectionFilter = null;
+			Map<String, OpeningProperty> openingProperties = new HashMap<>();
+
+			Set<Long> bridgeAddresses = new HashSet<>();
+			Set<String> openingAddresses = new HashSet<>();
 
 			while (rs.next()) {
 				long bridgeId = rs.getLong("id");
@@ -239,13 +295,6 @@ public class DBBridge extends AbstractFeatureExporter<AbstractBridge> {
 							boolean isMovable = rs.getBoolean("is_movable");
 							if (!rs.wasNull())
 								bridge.setIsMovable(isMovable);
-						}
-
-						// brid:boundedBy
-						if (projectionFilter.containsProperty("boundedBy", bridgeModule) 
-								&& lodFilter.containsLodGreaterThanOrEuqalTo(2)) {
-							for (AbstractBoundarySurface boundarySurface : thematicSurfaceExporter.doExport(bridge, bridgeId))
-								bridge.addBoundedBySurface(new BoundarySurfaceProperty(boundarySurface));
 						}
 
 						// brid:outerBridgeInstallation and bldg:interiorBridgeInstallation
@@ -350,16 +399,16 @@ public class DBBridge extends AbstractFeatureExporter<AbstractBridge> {
 
 							switch (lod) {
 								case 1:
-									geometryExporter.addBatch(geometryId, bridge::setLod1Solid);
+									geometries.put(geometryId, new DefaultGeometrySetterHandler(bridge::setLod1Solid));
 									break;
 								case 2:
-									geometryExporter.addBatch(geometryId, bridge::setLod2Solid);
+									geometries.put(geometryId, new DefaultGeometrySetterHandler(bridge::setLod2Solid));
 									break;
 								case 3:
-									geometryExporter.addBatch(geometryId, bridge::setLod3Solid);
+									geometries.put(geometryId, new DefaultGeometrySetterHandler(bridge::setLod3Solid));
 									break;
 								case 4:
-									geometryExporter.addBatch(geometryId, bridge::setLod4Solid);
+									geometries.put(geometryId, new DefaultGeometrySetterHandler(bridge::setLod4Solid));
 									break;
 							}
 						}
@@ -378,16 +427,16 @@ public class DBBridge extends AbstractFeatureExporter<AbstractBridge> {
 
 							switch (lod) {
 								case 1:
-									geometryExporter.addBatch(geometryId, bridge::setLod1MultiSurface);
+									geometries.put(geometryId, new DefaultGeometrySetterHandler(bridge::setLod1MultiSurface));
 									break;
 								case 2:
-									geometryExporter.addBatch(geometryId, bridge::setLod2MultiSurface);
+									geometries.put(geometryId, new DefaultGeometrySetterHandler(bridge::setLod2MultiSurface));
 									break;
 								case 3:
-									geometryExporter.addBatch(geometryId, bridge::setLod3MultiSurface);
+									geometries.put(geometryId, new DefaultGeometrySetterHandler(bridge::setLod3MultiSurface));
 									break;
 								case 4:
-									geometryExporter.addBatch(geometryId, bridge::setLod4MultiSurface);
+									geometries.put(geometryId, new DefaultGeometrySetterHandler(bridge::setLod4MultiSurface));
 									break;
 							}
 						}
@@ -408,14 +457,119 @@ public class DBBridge extends AbstractFeatureExporter<AbstractBridge> {
 
 				// brid:address
 				if (projectionFilter.containsProperty("address", bridgeModule)) {
-					long addressId = rs.getLong("aid");
-					if (!rs.wasNull()) {
-						AddressProperty addressProperty = addressExporter.doExport(addressId, "a", addressADEHookTables, rs);
+					long addressId = rs.getLong("baid");
+					if (!rs.wasNull() && bridgeAddresses.add(addressId)) {
+						AddressProperty addressProperty = addressExporter.doExport(addressId, "ba", addressADEHookTables, rs);
 						if (addressProperty != null)
 							bridge.addAddress(addressProperty);
 					}
 				}
+
+				if (!lodFilter.containsLodGreaterThanOrEuqalTo(2)
+						|| !projectionFilter.containsProperty("boundedBy", bridgeModule))
+					continue;
+
+				// brid:boundedBy
+				long boundarySurfaceId = rs.getLong("tsid");
+				if (rs.wasNull())
+					continue;
+
+				if (boundarySurfaceId != currentBoundarySurfaceId || boundarySurface == null) {
+					currentBoundarySurfaceId = boundarySurfaceId;
+					currentOpeningId = 0;
+
+					boundarySurface = boundarySurfaces.get(boundarySurfaceId);
+					if (boundarySurface == null) {
+						int objectClassId = rs.getInt("tsobjectclass_id");
+						FeatureType featureType = exporter.getFeatureType(objectClassId);
+
+						boundarySurface = thematicSurfaceExporter.doExport(boundarySurfaceId, featureType, "ts", surfaceADEHookTables, rs);
+						if (boundarySurface == null) {
+							exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(objectClassId, boundarySurfaceId) + " as boundary surface object.");
+							continue;
+						}
+
+						// get projection filter
+						boundarySurfaceProjectionFilter = exporter.getProjectionFilter(featureType);
+						boundarySurface.setLocalProperty("projection", boundarySurfaceProjectionFilter);
+
+						bridge.getBoundedBySurface().add(new BoundarySurfaceProperty(boundarySurface));
+						boundarySurfaces.put(boundarySurfaceId, boundarySurface);
+					} else
+						boundarySurfaceProjectionFilter = (ProjectionFilter) boundarySurface.getLocalProperty("projection");
+				}
+
+				// continue if openings shall not be exported
+				if (!lodFilter.containsLodGreaterThanOrEuqalTo(3)
+						|| !projectionFilter.containsProperty("opening", bridgeModule))
+					continue;
+
+				long openingId = rs.getLong("opid");
+				if (rs.wasNull())
+					continue;
+
+				if (currentOpeningId != openingId || openingProperty == null) {
+					currentOpeningId = openingId;
+					String key = currentBoundarySurfaceId + "_" + openingId;
+
+					openingProperty = openingProperties.get(key);
+					if (openingProperty == null) {
+						int objectClassId = rs.getInt("opobjectclass_id");
+
+						// check whether we need an XLink
+						String gmlId = rs.getString("opgmlid");
+						boolean generateNewGmlId = false;
+						if (!rs.wasNull()) {
+							if (exporter.lookupAndPutObjectUID(gmlId, openingId, objectClassId)) {
+								if (useXLink) {
+									openingProperty = new OpeningProperty();
+									openingProperty.setHref("#" + gmlId);
+									boundarySurface.addOpening(openingProperty);
+									openingProperties.put(key, openingProperty);
+									continue;
+								} else
+									generateNewGmlId = true;
+							}
+						}
+
+						// create new opening object
+						FeatureType featureType = exporter.getFeatureType(objectClassId);
+						AbstractOpening opening = openingExporter.doExport(openingId, featureType, "op", openingADEHookTables, rs);
+						if (opening == null) {
+							exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(objectClassId, openingId) + " as opening object.");
+							continue;
+						}
+
+						if (generateNewGmlId)
+							opening.setId(exporter.generateNewGmlId(opening, gmlId));
+
+						// get projection filter
+						openingProjectionFilter = exporter.getProjectionFilter(featureType);
+						opening.setLocalProperty("projection", openingProjectionFilter);
+
+						openingProperty = new OpeningProperty(opening);
+						boundarySurface.getOpening().add(openingProperty);
+						openingProperties.put(key, openingProperty);
+					} else if (openingProperty.isSetOpening())
+						openingProjectionFilter = (ProjectionFilter) openingProperty.getOpening().getLocalProperty("projection");
+				}
+
+				if (openingProperty.getOpening() instanceof Door
+						&& openingProjectionFilter.containsProperty("address", bridgeModule)) {
+					long openingAddressId = rs.getLong("oaid");
+					if (!rs.wasNull() && openingAddresses.add(currentOpeningId + "_" + openingAddressId)) {
+						AddressProperty addressProperty = addressExporter.doExport(openingAddressId, "oa", openingAddressADEHookTables, rs);
+						if (addressProperty != null) {
+							Door door = (Door) openingProperty.getOpening();
+							door.addAddress(addressProperty);
+						}
+					}
+				}
 			}
+
+			// export postponed geometries
+			for (Map.Entry<Long, GeometrySetterHandler> entry : geometries.entrySet())
+				geometryExporter.addBatch(entry.getKey(), entry.getValue());
 
 			// rebuild bridge part hierarchy
 			List<AbstractBridge> result = new ArrayList<>();
@@ -445,5 +599,4 @@ public class DBBridge extends AbstractFeatureExporter<AbstractBridge> {
 			return result;
 		}
 	}
-
 }
