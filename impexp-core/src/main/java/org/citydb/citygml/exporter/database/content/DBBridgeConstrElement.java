@@ -187,7 +187,7 @@ public class DBBridgeConstrElement extends AbstractFeatureExporter<BridgeConstru
 			while (rs.next()) {
 				long constructionElementId = rs.getLong("id");
 
-				if (currentConstructionElementId != constructionElementId || constructionElement == null) {
+				if (constructionElementId != currentConstructionElementId || constructionElement == null) {
 					currentConstructionElementId = constructionElementId;
 
 					constructionElement = constructionElements.get(constructionElementId);

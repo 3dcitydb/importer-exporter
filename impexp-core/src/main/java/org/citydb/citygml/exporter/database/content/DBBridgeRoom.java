@@ -184,7 +184,7 @@ public class DBBridgeRoom extends AbstractFeatureExporter<BridgeRoom> {
 			while (rs.next()) {
 				long bridgeRoomId = rs.getLong("id");
 
-				if (currentBridgeRoomId != bridgeRoomId || bridgeRoom == null) {
+				if (bridgeRoomId != currentBridgeRoomId || bridgeRoom == null) {
 					currentBridgeRoomId = bridgeRoomId;
 
 					bridgeRoom = bridgeRooms.get(bridgeRoomId);
@@ -337,7 +337,7 @@ public class DBBridgeRoom extends AbstractFeatureExporter<BridgeRoom> {
 				if (rs.wasNull())
 					continue;
 
-				if (currentOpeningId != openingId || openingProperty == null) {
+				if (openingId != currentOpeningId || openingProperty == null) {
 					currentOpeningId = openingId;
 					String key = currentBoundarySurfaceId + "_" + openingId;
 

@@ -208,7 +208,7 @@ public class DBBridgeInstallation extends AbstractFeatureExporter<AbstractCityOb
 			while (rs.next()) {
 				long installationId = rs.getLong("id");
 
-				if (currentInstallationId != installationId || installation == null) {
+				if (installationId != currentInstallationId || installation == null) {
 					currentInstallationId = installationId;
 
 					installation = installations.get(installationId);

@@ -238,7 +238,7 @@ public class DBTunnelThematicSurface extends AbstractFeatureExporter<AbstractBou
 			if (!projectionFilter.containsProperty("lod" + lod + "MultiSurface", tunnelModule))
 				continue;
 
-			long geometryId = rs.getLong("lod" + lod + "_multi_surface_id");
+			long geometryId = rs.getLong(prefix + "lod" + lod + "_multi_surface_id");
 			if (rs.wasNull())
 				continue;
 

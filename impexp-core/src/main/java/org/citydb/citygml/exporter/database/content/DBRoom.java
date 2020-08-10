@@ -184,7 +184,7 @@ public class DBRoom extends AbstractFeatureExporter<Room> {
 			while (rs.next()) {
 				long roomId = rs.getLong("id");
 
-				if (currentRoomId != roomId || room == null) {
+				if (roomId != currentRoomId || room == null) {
 					currentRoomId = roomId;
 
 					room = rooms.get(roomId);
@@ -337,7 +337,7 @@ public class DBRoom extends AbstractFeatureExporter<Room> {
 				if (rs.wasNull())
 					continue;
 
-				if (currentOpeningId != openingId || openingProperty == null) {
+				if (openingId != currentOpeningId || openingProperty == null) {
 					currentOpeningId = openingId;
 					String key = currentBoundarySurfaceId + "_" + openingId;
 

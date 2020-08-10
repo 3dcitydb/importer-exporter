@@ -531,7 +531,7 @@ public class DBBuilding extends AbstractFeatureExporter<AbstractBuilding> {
 						building.setLocalProperty("projection", projectionFilter);
 						buildings.put(buildingId, building);						
 					} else
-						projectionFilter = (ProjectionFilter)building.getLocalProperty("projection");
+						projectionFilter = (ProjectionFilter) building.getLocalProperty("projection");
 				}			
 
 				// bldg:address
@@ -588,7 +588,7 @@ public class DBBuilding extends AbstractFeatureExporter<AbstractBuilding> {
 				if (rs.wasNull())
 					continue;
 
-				if (currentOpeningId != openingId || openingProperty == null) {
+				if (openingId != currentOpeningId || openingProperty == null) {
 					currentOpeningId = openingId;
 					String key = currentBoundarySurfaceId + "_" + openingId;
 

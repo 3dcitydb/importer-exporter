@@ -451,7 +451,7 @@ public class DBBridge extends AbstractFeatureExporter<AbstractBridge> {
 						bridge.setLocalProperty("projection", projectionFilter);
 						bridges.put(bridgeId, bridge);
 					} else
-						projectionFilter = (ProjectionFilter)bridge.getLocalProperty("projection");
+						projectionFilter = (ProjectionFilter) bridge.getLocalProperty("projection");
 				}
 
 				// brid:address
@@ -508,7 +508,7 @@ public class DBBridge extends AbstractFeatureExporter<AbstractBridge> {
 				if (rs.wasNull())
 					continue;
 
-				if (currentOpeningId != openingId || openingProperty == null) {
+				if (openingId != currentOpeningId || openingProperty == null) {
 					currentOpeningId = openingId;
 					String key = currentBoundarySurfaceId + "_" + openingId;
 

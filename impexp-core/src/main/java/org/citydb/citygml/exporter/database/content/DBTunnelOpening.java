@@ -120,7 +120,7 @@ public class DBTunnelOpening extends AbstractFeatureExporter<AbstractOpening> {
 					int objectClassId = rs.getInt("objectclass_id");
 					opening = exporter.createObject(objectClassId, AbstractOpening.class);
 					if (opening == null) {
-						exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(objectClassId, openingId) + " as opening object.");
+						exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(objectClassId, openingId) + " as tunnel opening object.");
 						continue;
 					}
 
