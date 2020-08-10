@@ -501,7 +501,7 @@ public class DBBridge extends AbstractFeatureExporter<AbstractBridge> {
 
 				// continue if openings shall not be exported
 				if (!lodFilter.containsLodGreaterThanOrEuqalTo(3)
-						|| !projectionFilter.containsProperty("opening", bridgeModule))
+						|| !boundarySurfaceProjectionFilter.containsProperty("opening", bridgeModule))
 					continue;
 
 				long openingId = rs.getLong("opid");

@@ -83,11 +83,11 @@ public class DBRoom extends AbstractFeatureExporter<Room> {
 	private final AttributeValueSplitter valueSplitter;
 	private final boolean hasObjectClassIdColumn;
 	private final boolean useXLink;
-	private final List<Table> roomAdeHookTables;
+	private final List<Table> roomADEHookTables;
 	private List<Table> surfaceADEHookTables;
 	private List<Table> openingADEHookTables;
 	private List<Table> addressADEHookTables;
-	private List<Table> buildingFurnitureAdeHookTables;
+	private List<Table> buildingFurnitureADEHookTables;
 
 	public DBRoom(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
 		super(Room.class, connection, exporter);
@@ -148,10 +148,10 @@ public class DBRoom extends AbstractFeatureExporter<Room> {
 				Table buildingFurniture = new Table(TableEnum.BUILDING_FURNITURE.getName(), schema);
 				buildingFurnitureExporter.addProjection(select, buildingFurniture, buildingFurnitureProjectionFilter, "bf")
 						.addJoin(JoinFactory.left(buildingFurniture, "room_id", ComparisonName.EQUAL_TO, table.getColumn("id")));
-				buildingFurnitureAdeHookTables = addJoinsToADEHookTables(TableEnum.BUILDING_FURNITURE, buildingFurniture);
+				buildingFurnitureADEHookTables = addJoinsToADEHookTables(TableEnum.BUILDING_FURNITURE, buildingFurniture);
 			}
 		}
-		roomAdeHookTables = addJoinsToADEHookTables(TableEnum.ROOM, table);
+		roomADEHookTables = addJoinsToADEHookTables(TableEnum.ROOM, table);
 	}
 
 	protected Collection<Room> doExport(AbstractBuilding parent, long parentId) throws CityGMLExportException, SQLException {
@@ -265,8 +265,8 @@ public class DBRoom extends AbstractFeatureExporter<Room> {
 						}
 
 						// delegate export of generic ADE properties
-						if (roomAdeHookTables != null) {
-							List<String> adeHookTables = retrieveADEHookTables(this.roomAdeHookTables, rs);
+						if (roomADEHookTables != null) {
+							List<String> adeHookTables = retrieveADEHookTables(this.roomADEHookTables, rs);
 							if (adeHookTables != null)
 								exporter.delegateToADEExporter(adeHookTables, room, roomId, featureType, projectionFilter);
 						}
@@ -285,7 +285,7 @@ public class DBRoom extends AbstractFeatureExporter<Room> {
 						int objectClassId = rs.getInt("bfobjectclass_id");
 						FeatureType featureType = exporter.getFeatureType(objectClassId);
 
-						BuildingFurniture buildingFurniture = buildingFurnitureExporter.doExport(buildingFurnitureId, featureType, "bf", buildingFurnitureAdeHookTables, rs);
+						BuildingFurniture buildingFurniture = buildingFurnitureExporter.doExport(buildingFurnitureId, featureType, "bf", buildingFurnitureADEHookTables, rs);
 						if (buildingFurniture == null) {
 							exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(objectClassId, buildingFurnitureId) + " as building furniture object.");
 							continue;

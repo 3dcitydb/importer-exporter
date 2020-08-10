@@ -86,7 +86,7 @@ public class DBBuildingInstallation extends AbstractFeatureExporter<AbstractCity
 	private final LodFilter lodFilter;
 	private final AttributeValueSplitter valueSplitter;
 	private final boolean useXLink;
-	private final List<Table> installationAdeHookTables;
+	private final List<Table> installationADEHookTables;
 	private List<Table> surfaceADEHookTables;
 	private List<Table> openingADEHookTables;
 	private List<Table> addressADEHookTables;
@@ -153,7 +153,7 @@ public class DBBuildingInstallation extends AbstractFeatureExporter<AbstractCity
 			}
 			surfaceADEHookTables = addJoinsToADEHookTables(TableEnum.THEMATIC_SURFACE, table);
 		}
-		installationAdeHookTables = addJoinsToADEHookTables(TableEnum.BUILDING_INSTALLATION, table);
+		installationADEHookTables = addJoinsToADEHookTables(TableEnum.BUILDING_INSTALLATION, table);
 	}
 
 	protected boolean doExport(BuildingInstallation installation, long id, FeatureType featureType) throws CityGMLExportException, SQLException {
@@ -371,8 +371,8 @@ public class DBBuildingInstallation extends AbstractFeatureExporter<AbstractCity
 						}
 
 						// delegate export of generic ADE properties
-						if (installationAdeHookTables != null) {
-							List<String> adeHookTables = retrieveADEHookTables(this.installationAdeHookTables, rs);
+						if (installationADEHookTables != null) {
+							List<String> adeHookTables = retrieveADEHookTables(this.installationADEHookTables, rs);
 							if (adeHookTables != null)
 								exporter.delegateToADEExporter(adeHookTables, installation, installationId, featureType, projectionFilter);
 						}
