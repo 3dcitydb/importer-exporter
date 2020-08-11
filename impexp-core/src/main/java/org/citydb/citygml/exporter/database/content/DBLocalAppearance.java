@@ -47,6 +47,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -61,7 +62,7 @@ public class DBLocalAppearance extends AbstractAppearanceExporter {
 	public DBLocalAppearance(Connection connection, Query query, CityGMLExportManager exporter, Config config) throws CityGMLExportException, SQLException {
 		super(false, connection, query, null, exporter, config);
 		this.connection = connection;
-		batches = new HashMap<>();
+		batches = new LinkedHashMap<>();
 
 		if (query.isSetAppearanceFilter()) {
 			try {
