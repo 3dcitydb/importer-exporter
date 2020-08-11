@@ -47,19 +47,10 @@ import org.citygml4j.model.citygml.bridge.AbstractBoundarySurface;
 import org.citygml4j.model.citygml.bridge.AbstractBridge;
 import org.citygml4j.model.citygml.bridge.AbstractOpening;
 import org.citygml4j.model.citygml.bridge.BoundarySurfaceProperty;
-import org.citygml4j.model.citygml.bridge.BridgeConstructionElement;
-import org.citygml4j.model.citygml.bridge.BridgeConstructionElementProperty;
-import org.citygml4j.model.citygml.bridge.BridgeInstallation;
-import org.citygml4j.model.citygml.bridge.BridgeInstallationProperty;
 import org.citygml4j.model.citygml.bridge.BridgePart;
 import org.citygml4j.model.citygml.bridge.BridgePartProperty;
-import org.citygml4j.model.citygml.bridge.BridgeRoom;
 import org.citygml4j.model.citygml.bridge.Door;
-import org.citygml4j.model.citygml.bridge.IntBridgeInstallation;
-import org.citygml4j.model.citygml.bridge.IntBridgeInstallationProperty;
-import org.citygml4j.model.citygml.bridge.InteriorBridgeRoomProperty;
 import org.citygml4j.model.citygml.bridge.OpeningProperty;
-import org.citygml4j.model.citygml.core.AbstractCityObject;
 import org.citygml4j.model.citygml.core.AddressProperty;
 import org.citygml4j.model.gml.basicTypes.Code;
 import org.citygml4j.model.gml.geometry.aggregates.MultiCurveProperty;
@@ -190,6 +181,25 @@ public class DBBridge extends AbstractFeatureExporter<AbstractBridge> {
 			}
 			surfaceADEHookTables = addJoinsToADEHookTables(TableEnum.BRIDGE_THEMATIC_SURFACE, table);
 		}
+		if (lodFilter.containsLodGreaterThanOrEuqalTo(2)
+				&& (projectionFilter.containsProperty("outerBridgeInstallation", bridgeModule)
+				|| projectionFilter.containsProperty("interiorBridgeInstallation", bridgeModule))) {
+			Table installation = new Table(TableEnum.BRIDGE_INSTALLATION.getName(), schema);
+			select.addProjection(installation.getColumn("id", "inid"))
+					.addJoin(JoinFactory.left(installation, "bridge_id", ComparisonName.EQUAL_TO, table.getColumn("id")));
+		}
+		if (lodFilter.containsLodGreaterThanOrEuqalTo(1)
+				&& projectionFilter.containsProperty("outerBridgeConstruction", bridgeModule)) {
+			Table constructionElement = new Table(TableEnum.BRIDGE_CONSTR_ELEMENT.getName(), schema);
+			select.addProjection(constructionElement.getColumn("id", "ceid"))
+					.addJoin(JoinFactory.left(constructionElement, "bridge_id", ComparisonName.EQUAL_TO, table.getColumn("id")));
+		}
+		if (lodFilter.isEnabled(4)
+				&& projectionFilter.containsProperty("interiorBridgeRoom", bridgeModule)) {
+			Table bridgeRoom = new Table(TableEnum.BRIDGE_ROOM.getName(), schema);
+			select.addProjection(bridgeRoom.getColumn("id", "roid"))
+					.addJoin(JoinFactory.left(bridgeRoom, "bridge_id", ComparisonName.EQUAL_TO, table.getColumn("id")));
+		}
 		bridgeADEHookTables = addJoinsToADEHookTables(TableEnum.BRIDGE, table);
 	}
 
@@ -221,6 +231,9 @@ public class DBBridge extends AbstractFeatureExporter<AbstractBridge> {
 			ProjectionFilter openingProjectionFilter = null;
 			Map<String, OpeningProperty> openingProperties = new HashMap<>();
 
+			Set<Long> installations = new HashSet<>();
+			Set<Long> constructionElements = new HashSet<>();
+			Set<Long> bridgeRooms = new HashSet<>();
 			Set<Long> bridgeAddresses = new HashSet<>();
 			Set<String> openingAddresses = new HashSet<>();
 
@@ -294,29 +307,6 @@ public class DBBridge extends AbstractFeatureExporter<AbstractBridge> {
 							boolean isMovable = rs.getBoolean("is_movable");
 							if (!rs.wasNull())
 								bridge.setIsMovable(isMovable);
-						}
-
-						// brid:outerBridgeInstallation and bldg:interiorBridgeInstallation
-						if (lodFilter.containsLodGreaterThanOrEuqalTo(2)) {
-							for (AbstractCityObject installation : bridgeInstallationExporter.doExport(bridge, bridgeId, projectionFilter)) {
-								if (installation instanceof BridgeInstallation)
-									bridge.addOuterBridgeInstallation(new BridgeInstallationProperty((BridgeInstallation)installation));
-								else if (installation instanceof IntBridgeInstallation)
-									bridge.addInteriorBridgeInstallation(new IntBridgeInstallationProperty((IntBridgeInstallation)installation));
-							}
-						}
-
-						// brid:outerBridgeConstruction
-						if (projectionFilter.containsProperty("outerBridgeConstruction", bridgeModule)) {
-							for (BridgeConstructionElement constructionElement : bridgeConstrElemExporter.doExport(bridge, bridgeId))
-								bridge.addOuterBridgeConstructionElement(new BridgeConstructionElementProperty(constructionElement));
-						}
-
-						// brid:interiorBridgeRoom
-						if (projectionFilter.containsProperty("interiorBridgeRoom", bridgeModule)
-								&& lodFilter.isEnabled(4)) {
-							for (BridgeRoom bridgeRoom : bridgeRoomExporter.doExport(bridge, bridgeId))
-								bridge.addInteriorBridgeRoom(new InteriorBridgeRoomProperty(bridgeRoom));
 						}
 
 						// brid:lodXTerrainIntersectionCurve
@@ -454,6 +444,31 @@ public class DBBridge extends AbstractFeatureExporter<AbstractBridge> {
 						projectionFilter = (ProjectionFilter) bridge.getLocalProperty("projection");
 				}
 
+				// brid:outerBridgeInstallation and bldg:interiorBridgeInstallation
+				if (lodFilter.containsLodGreaterThanOrEuqalTo(2)
+						&& (projectionFilter.containsProperty("outerBridgeInstallation", bridgeModule)
+						|| projectionFilter.containsProperty("interiorBridgeInstallation", bridgeModule))) {
+					long installationId = rs.getLong("inid");
+					if (!rs.wasNull() && installations.add(installationId))
+						bridgeInstallationExporter.addBatch(installationId, bridge);
+				}
+
+				// brid:outerBridgeConstruction
+				if (lodFilter.containsLodGreaterThanOrEuqalTo(1) &&
+						projectionFilter.containsProperty("outerBridgeConstruction", bridgeModule)) {
+					long constructionElementId = rs.getLong("ceid");
+					if (!rs.wasNull() && constructionElements.add(constructionElementId))
+						bridgeConstrElemExporter.addBatch(constructionElementId, bridge);
+				}
+
+				// brid:interiorBridgeRoom
+				if (lodFilter.isEnabled(4) &&
+						projectionFilter.containsProperty("interiorBridgeRoom", bridgeModule)) {
+					long bridgeRoomId = rs.getLong("roid");
+					if (!rs.wasNull() && bridgeRooms.add(bridgeRoomId))
+						bridgeRoomExporter.addBatch(bridgeRoomId, bridge);
+				}
+
 				// brid:address
 				if (projectionFilter.containsProperty("address", bridgeModule)) {
 					long addressId = rs.getLong("baid");
@@ -565,6 +580,10 @@ public class DBBridge extends AbstractFeatureExporter<AbstractBridge> {
 					}
 				}
 			}
+
+			bridgeInstallationExporter.executeBatch();
+			bridgeConstrElemExporter.executeBatch();
+			bridgeRoomExporter.executeBatch();
 
 			// export postponed geometries
 			for (Map.Entry<Long, GeometrySetterHandler> entry : geometries.entrySet())

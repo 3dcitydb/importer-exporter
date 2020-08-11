@@ -49,6 +49,7 @@ import org.citygml4j.model.citygml.bridge.AbstractBridge;
 import org.citygml4j.model.citygml.bridge.AbstractOpening;
 import org.citygml4j.model.citygml.bridge.BoundarySurfaceProperty;
 import org.citygml4j.model.citygml.bridge.BridgeConstructionElement;
+import org.citygml4j.model.citygml.bridge.BridgeConstructionElementProperty;
 import org.citygml4j.model.citygml.bridge.Door;
 import org.citygml4j.model.citygml.bridge.OpeningProperty;
 import org.citygml4j.model.citygml.core.AddressProperty;
@@ -71,6 +72,7 @@ import java.util.List;
 import java.util.Map;
 
 public class DBBridgeConstrElement extends AbstractFeatureExporter<BridgeConstructionElement> {
+	private final Map<Long, AbstractBridge> batches;
 	private final DBSurfaceGeometry geometryExporter;
 	private final DBCityObject cityObjectExporter;
 	private final DBBridgeThematicSurface thematicSurfaceExporter;
@@ -92,6 +94,7 @@ public class DBBridgeConstrElement extends AbstractFeatureExporter<BridgeConstru
 	public DBBridgeConstrElement(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
 		super(BridgeConstructionElement.class, connection, exporter);
 
+		batches = new HashMap<>();
 		cityObjectExporter = exporter.getExporter(DBCityObject.class);
 		thematicSurfaceExporter = exporter.getExporter(DBBridgeThematicSurface.class);
 		openingExporter = exporter.getExporter(DBBridgeOpening.class);
@@ -164,6 +167,41 @@ public class DBBridgeConstrElement extends AbstractFeatureExporter<BridgeConstru
 		constructionElementADEHookTables = addJoinsToADEHookTables(TableEnum.BRIDGE_CONSTR_ELEMENT, table);
 	}
 
+	protected void addBatch(long id, AbstractBridge parent) {
+		batches.put(id, parent);
+	}
+
+	protected void executeBatch() throws CityGMLExportException, SQLException {
+		if (batches.isEmpty())
+			return;
+
+		try {
+			PreparedStatement ps;
+			if (batches.size() == 1) {
+				ps = getOrCreateStatement("id");
+				ps.setLong(1, batches.keySet().iterator().next());
+			} else {
+				ps = getOrCreateBulkStatement();
+				ps.setArray(1, exporter.getDatabaseAdapter().getSQLAdapter().createIdArray(batches.keySet().toArray(new Long[0]), connection));
+			}
+
+			try (ResultSet rs = ps.executeQuery()) {
+				Map<Long, BridgeConstructionElement> constructionElements = doExport(0, null, null, rs);
+				for (Map.Entry<Long, BridgeConstructionElement> entry : constructionElements.entrySet()) {
+					AbstractBridge bridge = batches.get(entry.getKey());
+					if (bridge == null) {
+						exporter.logOrThrowErrorMessage("Failed to assign bridge construction element with id " + entry.getKey() + " to a bridge.");
+						continue;
+					}
+
+					bridge.addOuterBridgeConstructionElement(new BridgeConstructionElementProperty(entry.getValue()));
+				}
+			}
+		} finally {
+			batches.clear();
+		}
+	}
+
 	protected Collection<BridgeConstructionElement> doExport(AbstractBridge parent, long parentId) throws CityGMLExportException, SQLException {
 		return doExport(parentId, null, null, getOrCreateStatement("bridge_id"));
 	}
@@ -173,304 +211,308 @@ public class DBBridgeConstrElement extends AbstractFeatureExporter<BridgeConstru
 		ps.setLong(1, id);
 
 		try (ResultSet rs = ps.executeQuery()) {
-			long currentConstructionElementId = 0;
-			BridgeConstructionElement constructionElement = null;
-			ProjectionFilter projectionFilter = null;
-			Map<Long, BridgeConstructionElement> constructionElements = new HashMap<>();
-			Map<Long, GeometrySetterHandler> geometries = new LinkedHashMap<>();
+			return doExport(id, root, rootType, rs).values();
+		}
+	}
 
-			long currentBoundarySurfaceId = 0;
-			AbstractBoundarySurface boundarySurface = null;
-			ProjectionFilter boundarySurfaceProjectionFilter = null;
-			Map<Long, AbstractBoundarySurface> boundarySurfaces = new HashMap<>();
+	private Map<Long, BridgeConstructionElement> doExport(long id, BridgeConstructionElement root, FeatureType rootType, ResultSet rs) throws CityGMLExportException, SQLException {
+		long currentConstructionElementId = 0;
+		BridgeConstructionElement constructionElement = null;
+		ProjectionFilter projectionFilter = null;
+		Map<Long, BridgeConstructionElement> constructionElements = new HashMap<>();
+		Map<Long, GeometrySetterHandler> geometries = new LinkedHashMap<>();
 
-			while (rs.next()) {
-				long constructionElementId = rs.getLong("id");
+		long currentBoundarySurfaceId = 0;
+		AbstractBoundarySurface boundarySurface = null;
+		ProjectionFilter boundarySurfaceProjectionFilter = null;
+		Map<Long, AbstractBoundarySurface> boundarySurfaces = new HashMap<>();
 
-				if (constructionElementId != currentConstructionElementId || constructionElement == null) {
-					currentConstructionElementId = constructionElementId;
+		while (rs.next()) {
+			long constructionElementId = rs.getLong("id");
 
-					constructionElement = constructionElements.get(constructionElementId);
-					if (constructionElement == null) {
-						FeatureType featureType;
-						if (constructionElementId == id && root != null) {
-							constructionElement = root;
-							featureType = rootType;
+			if (constructionElementId != currentConstructionElementId || constructionElement == null) {
+				currentConstructionElementId = constructionElementId;
+
+				constructionElement = constructionElements.get(constructionElementId);
+				if (constructionElement == null) {
+					FeatureType featureType;
+					if (constructionElementId == id && root != null) {
+						constructionElement = root;
+						featureType = rootType;
+					} else {
+						if (hasObjectClassIdColumn) {
+							// create bridge construction element object
+							int objectClassId = rs.getInt("objectclass_id");
+							constructionElement = exporter.createObject(objectClassId, BridgeConstructionElement.class);
+							if (constructionElement == null) {
+								exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(objectClassId, constructionElementId) + " as bridge construction element object.");
+								continue;
+							}
+
+							featureType = exporter.getFeatureType(objectClassId);
 						} else {
-							if (hasObjectClassIdColumn) {
-								// create bridge construction element object
-								int objectClassId = rs.getInt("objectclass_id");
-								constructionElement = exporter.createObject(objectClassId, BridgeConstructionElement.class);
-								if (constructionElement == null) {
-									exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(objectClassId, constructionElementId) + " as bridge construction element object.");
-									continue;
+							constructionElement = new BridgeConstructionElement();
+							featureType = exporter.getFeatureType(constructionElement);
+						}
+					}
+
+					// get projection filter
+					projectionFilter = exporter.getProjectionFilter(featureType);
+
+					// export city object information
+					cityObjectExporter.addBatch(constructionElement, constructionElementId, featureType, projectionFilter);
+
+					if (projectionFilter.containsProperty("class", bridgeModule)) {
+						String clazz = rs.getString("class");
+						if (!rs.wasNull()) {
+							Code code = new Code(clazz);
+							code.setCodeSpace(rs.getString("class_codespace"));
+							constructionElement.setClazz(code);
+						}
+					}
+
+					if (projectionFilter.containsProperty("function", bridgeModule)) {
+						for (SplitValue splitValue : valueSplitter.split(rs.getString("function"), rs.getString("function_codespace"))) {
+							Code function = new Code(splitValue.result(0));
+							function.setCodeSpace(splitValue.result(1));
+							constructionElement.addFunction(function);
+						}
+					}
+
+					if (projectionFilter.containsProperty("usage", bridgeModule)) {
+						for (SplitValue splitValue : valueSplitter.split(rs.getString("usage"), rs.getString("usage_codespace"))) {
+							Code usage = new Code(splitValue.result(0));
+							usage.setCodeSpace(splitValue.result(1));
+							constructionElement.addUsage(usage);
+						}
+					}
+
+					LodIterator lodIterator = lodFilter.iterator(1, 4);
+					while (lodIterator.hasNext()) {
+						int lod = lodIterator.next();
+
+						if (!projectionFilter.containsProperty("lod" + lod + "TerrainIntersection", bridgeModule))
+							continue;
+
+						Object terrainIntersectionObj = rs.getObject("lod" + lod + "_terrain_intersection");
+						if (rs.wasNull())
+							continue;
+
+						GeometryObject terrainIntersection = exporter.getDatabaseAdapter().getGeometryConverter().getMultiCurve(terrainIntersectionObj);
+						if (terrainIntersection != null) {
+							MultiCurveProperty multiCurveProperty = gmlConverter.getMultiCurveProperty(terrainIntersection, false);
+							if (multiCurveProperty != null) {
+								switch (lod) {
+									case 1:
+										constructionElement.setLod1TerrainIntersection(multiCurveProperty);
+										break;
+									case 2:
+										constructionElement.setLod2TerrainIntersection(multiCurveProperty);
+										break;
+									case 3:
+										constructionElement.setLod3TerrainIntersection(multiCurveProperty);
+										break;
+									case 4:
+										constructionElement.setLod4TerrainIntersection(multiCurveProperty);
+										break;
 								}
-
-								featureType = exporter.getFeatureType(objectClassId);
-							} else {
-								constructionElement = new BridgeConstructionElement();
-								featureType = exporter.getFeatureType(constructionElement);
 							}
 						}
+					}
 
-						// get projection filter
-						projectionFilter = exporter.getProjectionFilter(featureType);
+					lodIterator.reset();
+					while (lodIterator.hasNext()) {
+						int lod = lodIterator.next();
 
-						// export city object information
-						cityObjectExporter.addBatch(constructionElement, constructionElementId, featureType, projectionFilter);
+						if (!projectionFilter.containsProperty("lod" + lod + "Geometry", bridgeModule))
+							continue;
 
-						if (projectionFilter.containsProperty("class", bridgeModule)) {
-							String clazz = rs.getString("class");
-							if (!rs.wasNull()) {
-								Code code = new Code(clazz);
-								code.setCodeSpace(rs.getString("class_codespace"));
-								constructionElement.setClazz(code);
+						long geometryId = rs.getLong("lod" + lod + "_brep_id");
+						if (!rs.wasNull()) {
+							switch (lod) {
+								case 1:
+									geometries.put(geometryId, new DefaultGeometrySetterHandler((GeometrySetter.AbstractGeometry) constructionElement::setLod1Geometry));
+									break;
+								case 2:
+									geometries.put(geometryId, new DefaultGeometrySetterHandler((GeometrySetter.AbstractGeometry) constructionElement::setLod2Geometry));
+									break;
+								case 3:
+									geometries.put(geometryId, new DefaultGeometrySetterHandler((GeometrySetter.AbstractGeometry) constructionElement::setLod3Geometry));
+									break;
+								case 4:
+									geometries.put(geometryId, new DefaultGeometrySetterHandler((GeometrySetter.AbstractGeometry) constructionElement::setLod4Geometry));
+									break;
 							}
-						}
-
-						if (projectionFilter.containsProperty("function", bridgeModule)) {
-							for (SplitValue splitValue : valueSplitter.split(rs.getString("function"), rs.getString("function_codespace"))) {
-								Code function = new Code(splitValue.result(0));
-								function.setCodeSpace(splitValue.result(1));
-								constructionElement.addFunction(function);
-							}
-						}
-
-						if (projectionFilter.containsProperty("usage", bridgeModule)) {
-							for (SplitValue splitValue : valueSplitter.split(rs.getString("usage"), rs.getString("usage_codespace"))) {
-								Code usage = new Code(splitValue.result(0));
-								usage.setCodeSpace(splitValue.result(1));
-								constructionElement.addUsage(usage);
-							}
-						}
-
-						LodIterator lodIterator = lodFilter.iterator(1, 4);
-						while (lodIterator.hasNext()) {
-							int lod = lodIterator.next();
-
-							if (!projectionFilter.containsProperty("lod" + lod + "TerrainIntersection", bridgeModule))
-								continue;
-
-							Object terrainIntersectionObj = rs.getObject("lod" + lod + "_terrain_intersection");
+						} else {
+							Object geometryObj = rs.getObject("lod" + lod + "_other_geom");
 							if (rs.wasNull())
 								continue;
 
-							GeometryObject terrainIntersection = exporter.getDatabaseAdapter().getGeometryConverter().getMultiCurve(terrainIntersectionObj);
-							if (terrainIntersection != null) {
-								MultiCurveProperty multiCurveProperty = gmlConverter.getMultiCurveProperty(terrainIntersection, false);
-								if (multiCurveProperty != null) {
-									switch (lod) {
-										case 1:
-											constructionElement.setLod1TerrainIntersection(multiCurveProperty);
-											break;
-										case 2:
-											constructionElement.setLod2TerrainIntersection(multiCurveProperty);
-											break;
-										case 3:
-											constructionElement.setLod3TerrainIntersection(multiCurveProperty);
-											break;
-										case 4:
-											constructionElement.setLod4TerrainIntersection(multiCurveProperty);
-											break;
-									}
-								}
-							}
-						}
-
-						lodIterator.reset();
-						while (lodIterator.hasNext()) {
-							int lod = lodIterator.next();
-
-							if (!projectionFilter.containsProperty("lod" + lod + "Geometry", bridgeModule))
-								continue;
-
-							long geometryId = rs.getLong("lod" + lod + "_brep_id");
-							if (!rs.wasNull()) {
+							GeometryObject geometry = exporter.getDatabaseAdapter().getGeometryConverter().getGeometry(geometryObj);
+							if (geometry != null) {
+								GeometryProperty<AbstractGeometry> property = new GeometryProperty<>(gmlConverter.getPointOrCurveGeometry(geometry, true));
 								switch (lod) {
 									case 1:
-										geometries.put(geometryId, new DefaultGeometrySetterHandler((GeometrySetter.AbstractGeometry) constructionElement::setLod1Geometry));
+										constructionElement.setLod1Geometry(property);
 										break;
 									case 2:
-										geometries.put(geometryId, new DefaultGeometrySetterHandler((GeometrySetter.AbstractGeometry) constructionElement::setLod2Geometry));
+										constructionElement.setLod2Geometry(property);
 										break;
 									case 3:
-										geometries.put(geometryId, new DefaultGeometrySetterHandler((GeometrySetter.AbstractGeometry) constructionElement::setLod3Geometry));
+										constructionElement.setLod3Geometry(property);
 										break;
 									case 4:
-										geometries.put(geometryId, new DefaultGeometrySetterHandler((GeometrySetter.AbstractGeometry) constructionElement::setLod4Geometry));
-										break;
-								}
-							} else {
-								Object geometryObj = rs.getObject("lod" + lod + "_other_geom");
-								if (rs.wasNull())
-									continue;
-
-								GeometryObject geometry = exporter.getDatabaseAdapter().getGeometryConverter().getGeometry(geometryObj);
-								if (geometry != null) {
-									GeometryProperty<AbstractGeometry> property = new GeometryProperty<>(gmlConverter.getPointOrCurveGeometry(geometry, true));
-									switch (lod) {
-										case 1:
-											constructionElement.setLod1Geometry(property);
-											break;
-										case 2:
-											constructionElement.setLod2Geometry(property);
-											break;
-										case 3:
-											constructionElement.setLod3Geometry(property);
-											break;
-										case 4:
-											constructionElement.setLod4Geometry(property);
-											break;
-									}
-								}
-							}
-						}
-
-						lodIterator.reset();
-						while (lodIterator.hasNext()) {
-							int lod = lodIterator.next();
-
-							if (!projectionFilter.containsProperty("lod" + lod + "ImplicitRepresentation", bridgeModule))
-								continue;
-
-							// get implicit geometry details
-							long implicitGeometryId = rs.getLong("lod" + lod + "_implicit_rep_id");
-							if (rs.wasNull())
-								continue;
-
-							GeometryObject referencePoint = null;
-							Object referencePointObj = rs.getObject("lod" + lod + "_implicit_ref_point");
-							if (!rs.wasNull())
-								referencePoint = exporter.getDatabaseAdapter().getGeometryConverter().getPoint(referencePointObj);
-
-							String transformationMatrix = rs.getString("lod" + lod + "_implicit_transformation");
-
-							ImplicitGeometry implicit = implicitGeometryExporter.doExport(implicitGeometryId, referencePoint, transformationMatrix);
-							if (implicit != null) {
-								ImplicitRepresentationProperty implicitProperty = new ImplicitRepresentationProperty();
-								implicitProperty.setObject(implicit);
-
-								switch (lod) {
-									case 1:
-										constructionElement.setLod1ImplicitRepresentation(implicitProperty);
-										break;
-									case 2:
-										constructionElement.setLod2ImplicitRepresentation(implicitProperty);
-										break;
-									case 3:
-										constructionElement.setLod3ImplicitRepresentation(implicitProperty);
-										break;
-									case 4:
-										constructionElement.setLod4ImplicitRepresentation(implicitProperty);
+										constructionElement.setLod4Geometry(property);
 										break;
 								}
 							}
 						}
-
-						// delegate export of generic ADE properties
-						if (constructionElementADEHookTables != null) {
-							List<String> adeHookTables = retrieveADEHookTables(this.constructionElementADEHookTables, rs);
-							if (adeHookTables != null)
-								exporter.delegateToADEExporter(adeHookTables, constructionElement, constructionElementId, featureType, projectionFilter);
-						}
-
-						constructionElement.setLocalProperty("projection", projectionFilter);
-						constructionElements.put(constructionElementId, constructionElement);
-					} else
-						projectionFilter = (ProjectionFilter) constructionElement.getLocalProperty("projection");
-				}
-
-				if (!lodFilter.containsLodGreaterThanOrEuqalTo(2)
-						|| !projectionFilter.containsProperty("boundedBy", bridgeModule))
-					continue;
-
-				// brid:boundedBy
-				long boundarySurfaceId = rs.getLong("tsid");
-				if (rs.wasNull())
-					continue;
-
-				if (boundarySurfaceId != currentBoundarySurfaceId || boundarySurface == null) {
-					currentBoundarySurfaceId = boundarySurfaceId;
-
-					boundarySurface = boundarySurfaces.get(boundarySurfaceId);
-					if (boundarySurface == null) {
-						int objectClassId = rs.getInt("tsobjectclass_id");
-						FeatureType featureType = exporter.getFeatureType(objectClassId);
-
-						boundarySurface = thematicSurfaceExporter.doExport(boundarySurfaceId, featureType, "ts", surfaceADEHookTables, rs);
-						if (boundarySurface == null) {
-							exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(objectClassId, boundarySurfaceId) + " as boundary surface object.");
-							continue;
-						}
-
-						// get projection filter
-						boundarySurfaceProjectionFilter = exporter.getProjectionFilter(featureType);
-						boundarySurface.setLocalProperty("projection", boundarySurfaceProjectionFilter);
-
-						constructionElement.getBoundedBySurface().add(new BoundarySurfaceProperty(boundarySurface));
-						boundarySurfaces.put(boundarySurfaceId, boundarySurface);
-					} else
-						boundarySurfaceProjectionFilter = (ProjectionFilter) boundarySurface.getLocalProperty("projection");
-				}
-
-				// continue if openings shall not be exported
-				if (!lodFilter.containsLodGreaterThanOrEuqalTo(3)
-						|| !boundarySurfaceProjectionFilter.containsProperty("opening", bridgeModule))
-					continue;
-
-				long openingId = rs.getLong("opid");
-				if (rs.wasNull())
-					continue;
-
-				int objectClassId = rs.getInt("opobjectclass_id");
-
-				// check whether we need an XLink
-				String gmlId = rs.getString("opgmlid");
-				boolean generateNewGmlId = false;
-				if (!rs.wasNull()) {
-					if (exporter.lookupAndPutObjectUID(gmlId, openingId, objectClassId)) {
-						if (useXLink) {
-							OpeningProperty openingProperty = new OpeningProperty();
-							openingProperty.setHref("#" + gmlId);
-							boundarySurface.addOpening(openingProperty);
-							continue;
-						} else
-							generateNewGmlId = true;
 					}
-				}
 
-				// create new opening object
-				FeatureType featureType = exporter.getFeatureType(objectClassId);
-				AbstractOpening opening = openingExporter.doExport(openingId, featureType, "op", openingADEHookTables, rs);
-				if (opening == null) {
-					exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(objectClassId, openingId) + " as bridge opening object.");
-					continue;
-				}
+					lodIterator.reset();
+					while (lodIterator.hasNext()) {
+						int lod = lodIterator.next();
 
-				if (generateNewGmlId)
-					opening.setId(exporter.generateNewGmlId(opening, gmlId));
+						if (!projectionFilter.containsProperty("lod" + lod + "ImplicitRepresentation", bridgeModule))
+							continue;
 
-				// get projection filter
-				ProjectionFilter openingProjectionFilter = exporter.getProjectionFilter(featureType);
+						// get implicit geometry details
+						long implicitGeometryId = rs.getLong("lod" + lod + "_implicit_rep_id");
+						if (rs.wasNull())
+							continue;
 
-				if (opening instanceof Door
-						&& openingProjectionFilter.containsProperty("address", bridgeModule)) {
-					long addressId = rs.getLong("oaid");
-					if (!rs.wasNull()) {
-						AddressProperty addressProperty = addressExporter.doExport(addressId, "oa", addressADEHookTables, rs);
-						if (addressProperty != null)
-							((Door) opening).addAddress(addressProperty);
+						GeometryObject referencePoint = null;
+						Object referencePointObj = rs.getObject("lod" + lod + "_implicit_ref_point");
+						if (!rs.wasNull())
+							referencePoint = exporter.getDatabaseAdapter().getGeometryConverter().getPoint(referencePointObj);
+
+						String transformationMatrix = rs.getString("lod" + lod + "_implicit_transformation");
+
+						ImplicitGeometry implicit = implicitGeometryExporter.doExport(implicitGeometryId, referencePoint, transformationMatrix);
+						if (implicit != null) {
+							ImplicitRepresentationProperty implicitProperty = new ImplicitRepresentationProperty();
+							implicitProperty.setObject(implicit);
+
+							switch (lod) {
+								case 1:
+									constructionElement.setLod1ImplicitRepresentation(implicitProperty);
+									break;
+								case 2:
+									constructionElement.setLod2ImplicitRepresentation(implicitProperty);
+									break;
+								case 3:
+									constructionElement.setLod3ImplicitRepresentation(implicitProperty);
+									break;
+								case 4:
+									constructionElement.setLod4ImplicitRepresentation(implicitProperty);
+									break;
+							}
+						}
 					}
-				}
 
-				boundarySurface.getOpening().add(new OpeningProperty(opening));
+					// delegate export of generic ADE properties
+					if (constructionElementADEHookTables != null) {
+						List<String> adeHookTables = retrieveADEHookTables(this.constructionElementADEHookTables, rs);
+						if (adeHookTables != null)
+							exporter.delegateToADEExporter(adeHookTables, constructionElement, constructionElementId, featureType, projectionFilter);
+					}
+
+					constructionElement.setLocalProperty("projection", projectionFilter);
+					constructionElements.put(constructionElementId, constructionElement);
+				} else
+					projectionFilter = (ProjectionFilter) constructionElement.getLocalProperty("projection");
 			}
 
-			// export postponed geometries
-			for (Map.Entry<Long, GeometrySetterHandler> entry : geometries.entrySet())
-				geometryExporter.addBatch(entry.getKey(), entry.getValue());
+			if (!lodFilter.containsLodGreaterThanOrEuqalTo(2)
+					|| !projectionFilter.containsProperty("boundedBy", bridgeModule))
+				continue;
 
-			return constructionElements.values();
+			// brid:boundedBy
+			long boundarySurfaceId = rs.getLong("tsid");
+			if (rs.wasNull())
+				continue;
+
+			if (boundarySurfaceId != currentBoundarySurfaceId || boundarySurface == null) {
+				currentBoundarySurfaceId = boundarySurfaceId;
+
+				boundarySurface = boundarySurfaces.get(boundarySurfaceId);
+				if (boundarySurface == null) {
+					int objectClassId = rs.getInt("tsobjectclass_id");
+					FeatureType featureType = exporter.getFeatureType(objectClassId);
+
+					boundarySurface = thematicSurfaceExporter.doExport(boundarySurfaceId, featureType, "ts", surfaceADEHookTables, rs);
+					if (boundarySurface == null) {
+						exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(objectClassId, boundarySurfaceId) + " as boundary surface object.");
+						continue;
+					}
+
+					// get projection filter
+					boundarySurfaceProjectionFilter = exporter.getProjectionFilter(featureType);
+					boundarySurface.setLocalProperty("projection", boundarySurfaceProjectionFilter);
+
+					constructionElement.getBoundedBySurface().add(new BoundarySurfaceProperty(boundarySurface));
+					boundarySurfaces.put(boundarySurfaceId, boundarySurface);
+				} else
+					boundarySurfaceProjectionFilter = (ProjectionFilter) boundarySurface.getLocalProperty("projection");
+			}
+
+			// continue if openings shall not be exported
+			if (!lodFilter.containsLodGreaterThanOrEuqalTo(3)
+					|| !boundarySurfaceProjectionFilter.containsProperty("opening", bridgeModule))
+				continue;
+
+			long openingId = rs.getLong("opid");
+			if (rs.wasNull())
+				continue;
+
+			int objectClassId = rs.getInt("opobjectclass_id");
+
+			// check whether we need an XLink
+			String gmlId = rs.getString("opgmlid");
+			boolean generateNewGmlId = false;
+			if (!rs.wasNull()) {
+				if (exporter.lookupAndPutObjectUID(gmlId, openingId, objectClassId)) {
+					if (useXLink) {
+						OpeningProperty openingProperty = new OpeningProperty();
+						openingProperty.setHref("#" + gmlId);
+						boundarySurface.addOpening(openingProperty);
+						continue;
+					} else
+						generateNewGmlId = true;
+				}
+			}
+
+			// create new opening object
+			FeatureType featureType = exporter.getFeatureType(objectClassId);
+			AbstractOpening opening = openingExporter.doExport(openingId, featureType, "op", openingADEHookTables, rs);
+			if (opening == null) {
+				exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(objectClassId, openingId) + " as bridge opening object.");
+				continue;
+			}
+
+			if (generateNewGmlId)
+				opening.setId(exporter.generateNewGmlId(opening, gmlId));
+
+			// get projection filter
+			ProjectionFilter openingProjectionFilter = exporter.getProjectionFilter(featureType);
+
+			if (opening instanceof Door
+					&& openingProjectionFilter.containsProperty("address", bridgeModule)) {
+				long addressId = rs.getLong("oaid");
+				if (!rs.wasNull()) {
+					AddressProperty addressProperty = addressExporter.doExport(addressId, "oa", addressADEHookTables, rs);
+					if (addressProperty != null)
+						((Door) opening).addAddress(addressProperty);
+				}
+			}
+
+			boundarySurface.getOpening().add(new OpeningProperty(opening));
 		}
+
+		// export postponed geometries
+		for (Map.Entry<Long, GeometrySetterHandler> entry : geometries.entrySet())
+			geometryExporter.addBatch(entry.getKey(), entry.getValue());
+
+		return constructionElements;
 	}
 }

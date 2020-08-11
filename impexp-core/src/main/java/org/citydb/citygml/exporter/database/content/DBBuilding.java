@@ -192,15 +192,15 @@ public class DBBuilding extends AbstractFeatureExporter<AbstractBuilding> {
 			}
 			surfaceADEHookTables = addJoinsToADEHookTables(TableEnum.THEMATIC_SURFACE, table);
 		}
-		if ((projectionFilter.containsProperty("outerBuildingInstallation", buildingModule)
-				|| projectionFilter.containsProperty("interiorBuildingInstallation", buildingModule))
-				&& lodFilter.containsLodGreaterThanOrEuqalTo(2)) {
+		if (lodFilter.containsLodGreaterThanOrEuqalTo(2) &&
+				(projectionFilter.containsProperty("outerBuildingInstallation", buildingModule)
+				|| projectionFilter.containsProperty("interiorBuildingInstallation", buildingModule))) {
 			Table installation = new Table(TableEnum.BUILDING_INSTALLATION.getName(), schema);
 			select.addProjection(installation.getColumn("id", "inid"))
 					.addJoin(JoinFactory.left(installation, "building_id", ComparisonName.EQUAL_TO, table.getColumn("id")));
 		}
-		if (projectionFilter.containsProperty("interiorRoom", buildingModule)
-				&& lodFilter.isEnabled(4)) {
+		if (lodFilter.isEnabled(4) &&
+				projectionFilter.containsProperty("interiorRoom", buildingModule)) {
 			Table room = new Table(TableEnum.ROOM.getName(), schema);
 			select.addProjection(room.getColumn("id", "roid"))
 					.addJoin(JoinFactory.left(room, "building_id", ComparisonName.EQUAL_TO, table.getColumn("id")));
