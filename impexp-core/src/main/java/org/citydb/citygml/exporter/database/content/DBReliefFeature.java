@@ -114,7 +114,7 @@ public class DBReliefFeature extends AbstractFeatureExporter<ReliefFeature> {
 			if (componentProjectionFilter.containsProperty("breaklines", reliefModule)) select.addProjection(exporter.getGeometryColumn(breakLineRelief.getColumn("break_lines")));
 			componentADEHookTables = addJoinsToADEHookTables(TableEnum.RELIEF_COMPONENT, reliefComponent);
 		}
-		reliefADEHookTables = addJoinsToADEHookTables(TableEnum.BRIDGE, table);
+		reliefADEHookTables = addJoinsToADEHookTables(TableEnum.RELIEF_FEATURE, table);
 	}
 
 	@Override

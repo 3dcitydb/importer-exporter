@@ -28,7 +28,6 @@
 package org.citydb.modules.kml.concurrent;
 
 import net.opengis.kml._2.ObjectFactory;
-import org.citydb.ade.ADEExtensionManager;
 import org.citydb.concurrent.Worker;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
@@ -44,23 +43,36 @@ import org.citydb.event.EventDispatcher;
 import org.citydb.event.global.ObjectCounterEvent;
 import org.citydb.log.Logger;
 import org.citydb.modules.kml.ade.ADEKmlExportExtensionManager;
-import org.citydb.modules.kml.ade.ADEKmlExportManager;
-import org.citydb.modules.kml.controller.KmlExportException;
-import org.citydb.modules.kml.database.*;
+import org.citydb.modules.kml.database.ColladaBundle;
+import org.citydb.modules.kml.database.KmlExporterManager;
+import org.citydb.modules.kml.database.KmlGenericObject;
+import org.citydb.modules.kml.database.KmlSplittingResult;
 import org.citydb.modules.kml.util.BalloonTemplateHandler;
 import org.citydb.modules.kml.util.ElevationServiceHandler;
 import org.citydb.modules.kml.util.ExportTracker;
 import org.citydb.query.Query;
 import org.citydb.query.filter.type.FeatureTypeFilter;
 import org.citydb.util.Util;
-import org.citygml4j.model.citygml.CityGMLClass;
+import org.citygml4j.model.citygml.bridge.Bridge;
+import org.citygml4j.model.citygml.building.Building;
+import org.citygml4j.model.citygml.cityfurniture.CityFurniture;
+import org.citygml4j.model.citygml.cityobjectgroup.CityObjectGroup;
+import org.citygml4j.model.citygml.generics.GenericCityObject;
+import org.citygml4j.model.citygml.landuse.LandUse;
+import org.citygml4j.model.citygml.relief.ReliefFeature;
+import org.citygml4j.model.citygml.transportation.*;
+import org.citygml4j.model.citygml.tunnel.Tunnel;
+import org.citygml4j.model.citygml.vegetation.AbstractVegetationObject;
+import org.citygml4j.model.citygml.vegetation.PlantCover;
+import org.citygml4j.model.citygml.vegetation.SolitaryVegetationObject;
+import org.citygml4j.model.citygml.waterbody.WaterBody;
+import org.citygml4j.model.gml.base.AbstractGML;
 import org.citygml4j.util.xml.SAXEventBuffer;
 
 import javax.xml.bind.JAXBContext;
 import java.io.File;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
@@ -78,14 +90,13 @@ public class KmlExportWorker extends Worker<KmlSplittingResult> {
 	private final EventDispatcher eventDispatcher;
 	private final KmlExporterManager kmlExporterManager;
 
-	private KmlGenericObject singleObject = null;
+	private final Map<Class<? extends AbstractGML>, Integer> objectGroupCounter = new HashMap<>();
+	private final Map<Class<? extends AbstractGML>, Integer> objectGroupSize = new HashMap<>();
+	private final Map<Class<? extends AbstractGML>, KmlGenericObject> objectGroup = new HashMap<>();
+	private final Map<Class<? extends AbstractGML>, BalloonTemplateHandler> balloonTemplateHandler = new HashMap<>();
 
-	private EnumMap<CityGMLClass, Integer>objectGroupCounter = new EnumMap<>(CityGMLClass.class);
-	private EnumMap<CityGMLClass, Integer>objectGroupSize = new EnumMap<>(CityGMLClass.class);
-	private EnumMap<CityGMLClass, KmlGenericObject>objectGroup = new EnumMap<>(CityGMLClass.class);
-	private Map<Integer, BalloonTemplateHandler> balloonTemplateHandler = new HashMap<>();
-
-	private ElevationServiceHandler elevationServiceHandler;
+	private final ElevationServiceHandler elevationServiceHandler;
+	private final Logger log = Logger.getInstance();
 
 	public KmlExportWorker(Connection connection,
 			AbstractDatabaseAdapter databaseAdapter,
@@ -120,119 +131,74 @@ public class KmlExportWorker extends Worker<KmlSplittingResult> {
 		elevationServiceHandler = new ElevationServiceHandler(config);
 
 		FeatureTypeFilter typeFilter = query.getFeatureTypeFilter();
-		ColladaOptions colladaOptions;
 
-		objectGroupCounter.put(CityGMLClass.BUILDING, 0);
-		objectGroupSize.put(CityGMLClass.BUILDING, 1);
-		objectGroup.put(CityGMLClass.BUILDING, null);
-		
-		objectGroupCounter.put(CityGMLClass.WATER_BODY, 0);
-		objectGroupSize.put(CityGMLClass.WATER_BODY, 1);
-		objectGroup.put(CityGMLClass.WATER_BODY, null);
-		
-		objectGroupCounter.put(CityGMLClass.LAND_USE, 0);
-		objectGroupSize.put(CityGMLClass.LAND_USE, 1);
-		objectGroup.put(CityGMLClass.LAND_USE, null);
-		
-		objectGroupCounter.put(CityGMLClass.SOLITARY_VEGETATION_OBJECT, 0);
-		objectGroupSize.put(CityGMLClass.SOLITARY_VEGETATION_OBJECT, 1);
-		objectGroup.put(CityGMLClass.SOLITARY_VEGETATION_OBJECT, null);
-		
-		objectGroupCounter.put(CityGMLClass.TRANSPORTATION_COMPLEX, 0);
-		objectGroupSize.put(CityGMLClass.TRANSPORTATION_COMPLEX, 1);
-		objectGroup.put(CityGMLClass.TRANSPORTATION_COMPLEX, null);
-		
-		objectGroupCounter.put(CityGMLClass.RELIEF_FEATURE, 0);
-		objectGroupSize.put(CityGMLClass.RELIEF_FEATURE, 1);
-		objectGroup.put(CityGMLClass.RELIEF_FEATURE, null);
-		
-		objectGroupCounter.put(CityGMLClass.GENERIC_CITY_OBJECT, 0);
-		objectGroupSize.put(CityGMLClass.GENERIC_CITY_OBJECT, 1);
-		objectGroup.put(CityGMLClass.GENERIC_CITY_OBJECT, null);
-		
-		objectGroupCounter.put(CityGMLClass.CITY_FURNITURE, 0);
-		objectGroupSize.put(CityGMLClass.CITY_FURNITURE, 1);
-		objectGroup.put(CityGMLClass.CITY_FURNITURE, null);
-		
-		objectGroupCounter.put(CityGMLClass.TUNNEL, 0);
-		objectGroupSize.put(CityGMLClass.TUNNEL, 1);
-		objectGroup.put(CityGMLClass.TUNNEL, null);
-		
-		objectGroupCounter.put(CityGMLClass.BRIDGE, 0);
-		objectGroupSize.put(CityGMLClass.BRIDGE, 1);
-		objectGroup.put(CityGMLClass.BRIDGE, null);
-
-		objectGroupCounter.put(CityGMLClass.ADE_COMPONENT, 0);
-		objectGroupSize.put(CityGMLClass.ADE_COMPONENT, 1);
-		objectGroup.put(CityGMLClass.ADE_COMPONENT, null);
-		
 		for (FeatureType featureType : typeFilter.getFeatureTypes()) {
-			switch (Util.getCityGMLClass(featureType.getObjectClassId())) {
-			case BUILDING:
-				colladaOptions = config.getProject().getKmlExporter().getBuildingColladaOptions();
-				if (colladaOptions.isGroupObjects())
-					objectGroupSize.put(CityGMLClass.BUILDING, colladaOptions.getGroupSize());
-				break;
-			case WATER_BODY:
-				colladaOptions = config.getProject().getKmlExporter().getWaterBodyColladaOptions();
-				if (colladaOptions.isGroupObjects())
-					objectGroupSize.put(CityGMLClass.WATER_BODY, colladaOptions.getGroupSize());
-				break;
-			case LAND_USE:
-				colladaOptions = config.getProject().getKmlExporter().getLandUseColladaOptions();
-				if (colladaOptions.isGroupObjects())
-					objectGroupSize.put(CityGMLClass.LAND_USE, colladaOptions.getGroupSize());
-				break;
-			case SOLITARY_VEGETATION_OBJECT:
-			case PLANT_COVER:
-				colladaOptions = config.getProject().getKmlExporter().getVegetationColladaOptions();
-				if (colladaOptions.isGroupObjects())
-					objectGroupSize.put(CityGMLClass.SOLITARY_VEGETATION_OBJECT, colladaOptions.getGroupSize());
-				break;
-			case TRANSPORTATION_COMPLEX:
-			case TRACK:
-			case RAILWAY:
-			case ROAD:
-			case SQUARE:
-				colladaOptions = config.getProject().getKmlExporter().getTransportationColladaOptions();
-				if (colladaOptions.isGroupObjects())
-					objectGroupSize.put(CityGMLClass.TRANSPORTATION_COMPLEX, colladaOptions.getGroupSize());
-				break;
-			case RELIEF_FEATURE:
-				colladaOptions = config.getProject().getKmlExporter().getReliefColladaOptions();
-				if (colladaOptions.isGroupObjects())
-					objectGroupSize.put(CityGMLClass.RELIEF_FEATURE, colladaOptions.getGroupSize());
-				break;
-			case GENERIC_CITY_OBJECT:
-				colladaOptions = config.getProject().getKmlExporter().getGenericCityObjectColladaOptions();
-				if (colladaOptions.isGroupObjects())
-					objectGroupSize.put(CityGMLClass.GENERIC_CITY_OBJECT, colladaOptions.getGroupSize());
-				break;
-			case CITY_FURNITURE:
-				colladaOptions = config.getProject().getKmlExporter().getCityFurnitureColladaOptions();
-				if (colladaOptions.isGroupObjects())
-					objectGroupSize.put(CityGMLClass.CITY_FURNITURE, colladaOptions.getGroupSize());
-				break;
-			case TUNNEL:
-				colladaOptions = config.getProject().getKmlExporter().getTunnelColladaOptions();
-				if (colladaOptions.isGroupObjects())
-					objectGroupSize.put(CityGMLClass.TUNNEL, colladaOptions.getGroupSize());
-				break;
-			case BRIDGE:
-				colladaOptions = config.getProject().getKmlExporter().getBridgeColladaOptions();
-				if (colladaOptions.isGroupObjects())
-					objectGroupSize.put(CityGMLClass.BRIDGE, colladaOptions.getGroupSize());
-				break;
-			case ADE_COMPONENT:
-				// TODO
-				colladaOptions = config.getProject().getKmlExporter().getBridgeColladaOptions();
-				if (colladaOptions.isGroupObjects())
-					objectGroupSize.put(CityGMLClass.ADE_COMPONENT, colladaOptions.getGroupSize());
-				break;
-			default:
-				break;
+			AbstractGML object = Util.createObject(featureType.getObjectClassId(), query.getTargetVersion());
+			if (object == null) {
+				log.error("Failed to instantiate citygml4j object for " + featureType.getSchema().getXMLPrefix() + ":" + featureType.getPath() + ".");
+				continue;
 			}
-			// CityGMLClass.CITY_OBJECT_GROUP is left out, it does not make sense to group it without COLLADA DisplayForm 
+			Class<? extends AbstractGML> objectClass = object.getClass();
+			objectGroupCounter.put(objectClass, 0);
+			objectGroupSize.put(objectClass, 1);
+			objectGroup.put(objectClass, null);
+
+			if (Building.class.equals(objectClass)) {
+				ColladaOptions colladaOptions = config.getProject().getKmlExporter().getBuildingColladaOptions();
+				if (colladaOptions.isGroupObjects())
+					objectGroupSize.put(Building.class, colladaOptions.getGroupSize());
+			} else if (WaterBody.class.equals(objectClass)) {
+				ColladaOptions colladaOptions = config.getProject().getKmlExporter().getWaterBodyColladaOptions();
+				if (colladaOptions.isGroupObjects())
+					objectGroupSize.put(WaterBody.class, colladaOptions.getGroupSize());
+			} else if (LandUse.class.equals(objectClass)) {
+				ColladaOptions colladaOptions = config.getProject().getKmlExporter().getLandUseColladaOptions();
+				if (colladaOptions.isGroupObjects())
+					objectGroupSize.put(LandUse.class, colladaOptions.getGroupSize());
+			} else if (SolitaryVegetationObject.class.equals(objectClass) || PlantCover.class.equals(objectClass)) {
+				objectGroupCounter.put(AbstractVegetationObject.class, 0);
+				objectGroupSize.put(AbstractVegetationObject.class, 1);
+				objectGroup.put(AbstractVegetationObject.class, null);
+				ColladaOptions colladaOptions = config.getProject().getKmlExporter().getVegetationColladaOptions();
+				if (colladaOptions.isGroupObjects())
+					objectGroupSize.put(AbstractVegetationObject.class, colladaOptions.getGroupSize());
+			} else if (TransportationComplex.class.equals(objectClass)
+					|| Track.class.equals(objectClass)
+					|| Railway.class.equals(objectClass)
+					|| Road.class.equals(objectClass)
+					|| Square.class.equals(objectClass)) {
+				objectGroupCounter.put(TransportationComplex.class, 0);
+				objectGroupSize.put(TransportationComplex.class, 1);
+				objectGroup.put(TransportationComplex.class, null);
+				ColladaOptions colladaOptions = config.getProject().getKmlExporter().getTransportationColladaOptions();
+				if (colladaOptions.isGroupObjects())
+					objectGroupSize.put(TransportationComplex.class, colladaOptions.getGroupSize());
+			} else if (ReliefFeature.class.equals(objectClass)) {
+				ColladaOptions colladaOptions = config.getProject().getKmlExporter().getReliefColladaOptions();
+				if (colladaOptions.isGroupObjects())
+					objectGroupSize.put(ReliefFeature.class, colladaOptions.getGroupSize());
+			} else if (GenericCityObject.class.equals(objectClass)) {
+				ColladaOptions colladaOptions = config.getProject().getKmlExporter().getGenericCityObjectColladaOptions();
+				if (colladaOptions.isGroupObjects())
+					objectGroupSize.put(GenericCityObject.class, colladaOptions.getGroupSize());
+			} else if (CityFurniture.class.equals(objectClass)) {
+				ColladaOptions colladaOptions = config.getProject().getKmlExporter().getCityFurnitureColladaOptions();
+				if (colladaOptions.isGroupObjects())
+					objectGroupSize.put(CityFurniture.class, colladaOptions.getGroupSize());
+			} else if (Tunnel.class.equals(objectClass)) {
+				ColladaOptions colladaOptions = config.getProject().getKmlExporter().getTunnelColladaOptions();
+				if (colladaOptions.isGroupObjects())
+					objectGroupSize.put(Tunnel.class, colladaOptions.getGroupSize());
+			} else if (Bridge.class.equals(objectClass)) {
+				ColladaOptions colladaOptions = config.getProject().getKmlExporter().getBridgeColladaOptions();
+				if (colladaOptions.isGroupObjects())
+					objectGroupSize.put(Bridge.class, colladaOptions.getGroupSize());
+			} else {
+				ColladaOptions colladaOptions = ADEKmlExportExtensionManager.getInstance().getPreference(config, featureType).getColladaOptions();
+				if (colladaOptions.isGroupObjects())
+					objectGroupSize.put(objectClass, colladaOptions.getGroupSize());
+			}
+			// CityGMLClass.CITY_OBJECT_GROUP is left out, it does not make sense to group it without COLLADA DisplayForm
 		}		
 	}
 
@@ -266,13 +232,12 @@ public class KmlExportWorker extends Worker<KmlSplittingResult> {
 			// so that each worker may process few works (< group size). as a result the exported objects could be
 			// distributed in several groups, one of which may contain less Feature objects.
 
-			for (CityGMLClass cityObjectType: objectGroup.keySet()) {
+			for (Class<? extends AbstractGML> cityObjectType: objectGroup.keySet()) {
 				if (objectGroupCounter.get(cityObjectType) != 0) {  // group is not empty
 					KmlGenericObject currentObjectGroup = objectGroup.get(cityObjectType);
 					if (currentObjectGroup == null || currentObjectGroup.getGmlId() == null) continue;
 					sendGroupToFile(currentObjectGroup);
-					currentObjectGroup = null;
-					objectGroup.put(cityObjectType, currentObjectGroup);
+					objectGroup.put(cityObjectType, null);
 					objectGroupCounter.put(cityObjectType, 0);
 				}
 			}
@@ -301,214 +266,192 @@ public class KmlExportWorker extends Worker<KmlSplittingResult> {
 		final ReentrantLock runLock = this.runLock;
 		runLock.lock();
 
-		CityGMLClass featureClass = work.getCityGMLClass();
 		int objectClassId = work.getObjectClassId();
+		AbstractGML object = Util.createObject(objectClassId, query.getTargetVersion());
+		if (object == null) {
+			log.error("Failed to instantiate citygml4j object for (objectClassId: " + objectClassId + ", id: " + work.getId() + "). Skipping export.");
+			return;
+		}
 		try {
-			switch (featureClass) {
-			case BUILDING:
-				singleObject = new Building(connection,
+			Class<? extends AbstractGML> objectClass = object.getClass();
+			KmlGenericObject singleObject;
+			if (Building.class.equals(objectClass)) {
+				singleObject = new org.citydb.modules.kml.database.Building(connection,
 						query,
 						kmlExporterManager,
 						kmlFactory,
 						databaseAdapter,
 						textureExportAdapter,
 						elevationServiceHandler,
-						getBalloonTemplateHandler(objectClassId),
+						getBalloonTemplateHandler(objectClass),
 						eventDispatcher,
 						config);
-				break;
-
-			case WATER_BODY:
-				singleObject = new WaterBody(connection,
+			} else if (WaterBody.class.equals(objectClass)) {
+				singleObject = new org.citydb.modules.kml.database.WaterBody(connection,
 						query,
 						kmlExporterManager,
 						kmlFactory,
 						databaseAdapter,
 						textureExportAdapter,
 						elevationServiceHandler,
-						getBalloonTemplateHandler(objectClassId),
+						getBalloonTemplateHandler(objectClass),
 						eventDispatcher,
 						config);
-				break;
-
-			case LAND_USE:
-				singleObject = new LandUse(connection,
+			} else if (LandUse.class.equals(objectClass)) {
+				singleObject = new org.citydb.modules.kml.database.LandUse(connection,
 						query,
 						kmlExporterManager,
 						kmlFactory,
 						databaseAdapter,
 						textureExportAdapter,
 						elevationServiceHandler,
-						getBalloonTemplateHandler(objectClassId),
+						getBalloonTemplateHandler(objectClass),
 						eventDispatcher,
 						config);
-				break;
-
-			case SOLITARY_VEGETATION_OBJECT:
-				singleObject = new SolitaryVegetationObject(connection,
+			} else if (SolitaryVegetationObject.class.equals(objectClass)) {
+				singleObject = new org.citydb.modules.kml.database.SolitaryVegetationObject(connection,
 						query,
 						kmlExporterManager,
 						kmlFactory,
 						databaseAdapter,
 						textureExportAdapter,
 						elevationServiceHandler,
-						getBalloonTemplateHandler(objectClassId),
+						getBalloonTemplateHandler(objectClass),
 						eventDispatcher,
 						config);
-				break;
-
-			case PLANT_COVER:
-				singleObject = new PlantCover(connection,
+			} else if (PlantCover.class.equals(objectClass)) {
+				singleObject = new org.citydb.modules.kml.database.PlantCover(connection,
 						query,
 						kmlExporterManager,
 						kmlFactory,
 						databaseAdapter,
 						textureExportAdapter,
 						elevationServiceHandler,
-						getBalloonTemplateHandler(objectClassId),
+						getBalloonTemplateHandler(objectClass),
 						eventDispatcher,
 						config);
-				break;
-
-			case TRANSPORTATION_COMPLEX:
-			case TRACK:
-			case RAILWAY:
-			case ROAD:
-			case SQUARE:
-				singleObject = new Transportation(connection,
+			} else if (TransportationComplex.class.equals(objectClass)
+					|| Track.class.equals(objectClass)
+					|| Railway.class.equals(objectClass)
+					|| Road.class.equals(objectClass)
+					|| Square.class.equals(objectClass)) {
+				singleObject = new org.citydb.modules.kml.database.Transportation(connection,
 						query,
 						kmlExporterManager,
 						kmlFactory,
 						databaseAdapter,
 						textureExportAdapter,
 						elevationServiceHandler,
-						getBalloonTemplateHandler(objectClassId),
+						getBalloonTemplateHandler(objectClass),
 						eventDispatcher,
 						config);
-				break;
-
-			case RELIEF_FEATURE:
-				singleObject = new Relief(connection,
+			} else if (ReliefFeature.class.equals(objectClass)) {
+				singleObject = new org.citydb.modules.kml.database.Relief(connection,
 						query,
 						kmlExporterManager,
 						kmlFactory,
 						databaseAdapter,
 						textureExportAdapter,
 						elevationServiceHandler,
-						getBalloonTemplateHandler(objectClassId),
+						getBalloonTemplateHandler(objectClass),
 						eventDispatcher,
 						config);
-				break;
-
-			case GENERIC_CITY_OBJECT:
-				singleObject = new GenericCityObject(connection,
+			} else if (GenericCityObject.class.equals(objectClass)) {
+				singleObject = new org.citydb.modules.kml.database.GenericCityObject(connection,
 						query,
 						kmlExporterManager,
 						kmlFactory,
 						databaseAdapter,
 						textureExportAdapter,
 						elevationServiceHandler,
-						getBalloonTemplateHandler(objectClassId),
+						getBalloonTemplateHandler(objectClass),
 						eventDispatcher,
 						config);
-				break;
-
-			case CITY_FURNITURE:
-				singleObject = new CityFurniture(connection,
+			} else if (CityFurniture.class.equals(objectClass)) {
+				singleObject = new org.citydb.modules.kml.database.CityFurniture(connection,
 						query,
 						kmlExporterManager,
 						kmlFactory,
 						databaseAdapter,
 						textureExportAdapter,
 						elevationServiceHandler,
-						getBalloonTemplateHandler(objectClassId),
+						getBalloonTemplateHandler(objectClass),
 						eventDispatcher,
 						config);
-				break;
-
-			case CITY_OBJECT_GROUP:
-				singleObject = new CityObjectGroup(connection,
+			} else if (CityObjectGroup.class.equals(objectClass)) {
+				singleObject = new org.citydb.modules.kml.database.CityObjectGroup(connection,
 						query,
 						kmlExporterManager,
 						kmlFactory,
 						databaseAdapter,
 						textureExportAdapter,
 						elevationServiceHandler,
-						getBalloonTemplateHandler(objectClassId),
+						getBalloonTemplateHandler(objectClass),
 						eventDispatcher,
 						config);
-				break;
-			case BRIDGE:
-				singleObject = new Bridge(connection,
+			} else if (Bridge.class.equals(objectClass)) {
+				singleObject = new org.citydb.modules.kml.database.Bridge(connection,
 						query,
 						kmlExporterManager,
 						kmlFactory,
 						databaseAdapter,
 						textureExportAdapter,
 						elevationServiceHandler,
-						getBalloonTemplateHandler(objectClassId),
+						getBalloonTemplateHandler(objectClass),
 						eventDispatcher,
 						config);
-				break;
-			case TUNNEL:
-				singleObject = new Tunnel(connection,
+			} else if (Tunnel.class.equals(objectClass)) {
+				singleObject = new org.citydb.modules.kml.database.Tunnel(connection,
 						query,
 						kmlExporterManager,
 						kmlFactory,
 						databaseAdapter,
 						textureExportAdapter,
 						elevationServiceHandler,
-						getBalloonTemplateHandler(objectClassId),
+						getBalloonTemplateHandler(objectClass),
 						eventDispatcher,
 						config);
-				break;
-				case ADE_COMPONENT:
-					singleObject = new ADEObject(connection,
-							query,
-							kmlExporterManager,
-							kmlFactory,
-							databaseAdapter,
-							textureExportAdapter,
-							elevationServiceHandler,
-							getBalloonTemplateHandler(objectClassId),
-							eventDispatcher,
-							config,
-							work.getObjectClassId());
-			default:
-				break;
+			} else {
+				singleObject = new org.citydb.modules.kml.database.ADEObject(connection,
+						query,
+						kmlExporterManager,
+						kmlFactory,
+						databaseAdapter,
+						textureExportAdapter,
+						elevationServiceHandler,
+						getBalloonTemplateHandler(objectClass),
+						eventDispatcher,
+						config,
+						work.getObjectClassId());
 			}
 
 			singleObject.read(work);
 
-			if (singleObject != null) {
-				if (work.getCityGMLClass() != CityGMLClass.CITY_OBJECT_GROUP &&
-						work.getDisplayForm().getForm() == DisplayForm.COLLADA &&
-						singleObject.getGmlId() != null) { // object is filled
+			if (!CityObjectGroup.class.equals(objectClass) &&
+					work.getDisplayForm().getForm() == DisplayForm.COLLADA &&
+					singleObject.getGmlId() != null) { // object is filled
 
-					// correction for some CityGML Types exported together
-					if (featureClass == CityGMLClass.PLANT_COVER) featureClass = CityGMLClass.SOLITARY_VEGETATION_OBJECT;
+				// correction for some CityGML Types exported together
+				if (PlantCover.class.equals(objectClass) || SolitaryVegetationObject.class.equals(objectClass))
+					objectClass = AbstractVegetationObject.class;
 
-					if (featureClass == CityGMLClass.TRACK ||
-							featureClass == CityGMLClass.RAILWAY ||
-							featureClass == CityGMLClass.ROAD ||
-							featureClass == CityGMLClass.SQUARE) featureClass = CityGMLClass.TRANSPORTATION_COMPLEX;
+				if (Track.class.equals(objectClass) || Railway.class.equals(objectClass) || Road.class.equals(objectClass) || Square.class.equals(objectClass))
+					objectClass = TransportationComplex.class;
 
-					KmlGenericObject currentObjectGroup = objectGroup.get(featureClass);
-					if (currentObjectGroup == null) {
-						currentObjectGroup = singleObject;
-						objectGroup.put(featureClass, currentObjectGroup);
-					}
-					else {
-						currentObjectGroup.appendObject(singleObject);
-					}
+				KmlGenericObject currentObjectGroup = objectGroup.get(objectClass);
+				if (currentObjectGroup == null) {
+					currentObjectGroup = singleObject;
+					objectGroup.put(objectClass, currentObjectGroup);
+				}
+				else {
+					currentObjectGroup.appendObject(singleObject);
+				}
 
-					objectGroupCounter.put(featureClass, objectGroupCounter.get(featureClass) + 1);
-					if (objectGroupCounter.get(featureClass).intValue() == objectGroupSize.get(featureClass).intValue()) {
-						sendGroupToFile(currentObjectGroup);
-						currentObjectGroup = null;
-						objectGroup.put(featureClass, currentObjectGroup);
-						objectGroupCounter.put(featureClass, 0);
-					}
+				objectGroupCounter.put(objectClass, objectGroupCounter.get(objectClass) + 1);
+				if (objectGroupCounter.get(objectClass).intValue() == objectGroupSize.get(objectClass).intValue()) {
+					sendGroupToFile(currentObjectGroup);
+					objectGroup.put(objectClass, null);
+					objectGroupCounter.put(objectClass, 0);
 				}
 			}
 		}
@@ -558,17 +501,17 @@ public class KmlExportWorker extends Worker<KmlSplittingResult> {
 		}
 	}
 
-	private BalloonTemplateHandler getBalloonTemplateHandler(int objectClassId) {
-		BalloonTemplateHandler currentBalloonTemplateHandler = balloonTemplateHandler.get(objectClassId);
+	private BalloonTemplateHandler getBalloonTemplateHandler(Class<? extends AbstractGML> objectClass) {
+		BalloonTemplateHandler currentBalloonTemplateHandler = balloonTemplateHandler.get(objectClass);
 
 		if (currentBalloonTemplateHandler == null) {
-			Balloon balloonSettings = getBalloonSettings(objectClassId);
+			Balloon balloonSettings = getBalloonSettings(objectClass);
 			if (balloonSettings != null &&	balloonSettings.isIncludeDescription() &&
 					balloonSettings.getBalloonContentMode() != BalloonContentMode.GEN_ATTRIB) {
 				String balloonTemplateFilename = balloonSettings.getBalloonContentTemplateFile();
 				if (balloonTemplateFilename != null && balloonTemplateFilename.length() > 0) {
 					currentBalloonTemplateHandler = new BalloonTemplateHandler(new File(balloonTemplateFilename), databaseAdapter);
-					balloonTemplateHandler.put(objectClassId, currentBalloonTemplateHandler);
+					balloonTemplateHandler.put(objectClass, currentBalloonTemplateHandler);
 				}
 			}
 		}
@@ -576,59 +519,38 @@ public class KmlExportWorker extends Worker<KmlSplittingResult> {
 		return currentBalloonTemplateHandler;
 	}
 
-	private Balloon getBalloonSettings(int objectClassId) {
-		CityGMLClass cityObjectType = Util.getCityGMLClass(objectClassId);
+	private Balloon getBalloonSettings(Class<? extends AbstractGML> objectClass) {
 		Balloon balloonSettings;
-		switch (cityObjectType) {
-		case BUILDING:
+		if (Building.class.equals(objectClass)) {
 			balloonSettings = config.getProject().getKmlExporter().getBuildingBalloon();
-			break;
-		case LAND_USE:
+		} else if (LandUse.class.equals(objectClass)) {
 			balloonSettings = config.getProject().getKmlExporter().getLandUseBalloon();
-			break;
-		case WATER_BODY:
-		case WATER_CLOSURE_SURFACE:
-		case WATER_GROUND_SURFACE:
-		case WATER_SURFACE:
+		} else if (WaterBody.class.equals(objectClass)) {
 			balloonSettings = config.getProject().getKmlExporter().getWaterBodyBalloon();
-			break;
-		case SOLITARY_VEGETATION_OBJECT:
-		case PLANT_COVER:
+		} else if (SolitaryVegetationObject.class.equals(objectClass) || PlantCover.class.equals(objectClass)) {
 			balloonSettings = config.getProject().getKmlExporter().getVegetationBalloon();
-			break;
-		case TRAFFIC_AREA:
-		case AUXILIARY_TRAFFIC_AREA:
-		case TRANSPORTATION_COMPLEX:
-		case TRACK:
-		case RAILWAY:
-		case ROAD:
-		case SQUARE:
+		} else if (TransportationComplex.class.equals(objectClass)
+				|| Track.class.equals(objectClass)
+				|| Railway.class.equals(objectClass)
+				|| Road.class.equals(objectClass)
+				|| Square.class.equals(objectClass)) {
 			balloonSettings = config.getProject().getKmlExporter().getTransportationBalloon();
-			break;
-		case RELIEF_FEATURE:
+		} else if (ReliefFeature.class.equals(objectClass)) {
 			balloonSettings = config.getProject().getKmlExporter().getReliefBalloon();
-			break;
-		case GENERIC_CITY_OBJECT:
+		} else if (GenericCityObject.class.equals(objectClass)) {
 			balloonSettings = config.getProject().getKmlExporter().getGenericCityObject3DBalloon();
-			break;
-		case CITY_FURNITURE:
+		} else if (CityFurniture.class.equals(objectClass)) {
 			balloonSettings = config.getProject().getKmlExporter().getCityFurnitureBalloon();
-			break;
-		case CITY_OBJECT_GROUP:
+		} else if (CityObjectGroup.class.equals(objectClass)) {
 			balloonSettings = config.getProject().getKmlExporter().getCityObjectGroupBalloon();
-			break;
-		case BRIDGE:
+		} else if (Bridge.class.equals(objectClass)) {
 			balloonSettings = config.getProject().getKmlExporter().getBridgeBalloon();
-			break;
-		case TUNNEL:
+		} else if (Tunnel.class.equals(objectClass)) {
 			balloonSettings = config.getProject().getKmlExporter().getTunnelBalloon();
-			break;
-		case ADE_COMPONENT:
-			balloonSettings = ADEKmlExportExtensionManager.getInstance().getPreference(config, objectClassId).getBalloon();
-			break;
-		default:
-			return null;
+		} else {
+			balloonSettings = ADEKmlExportExtensionManager.getInstance().getPreference(config, Util.getObjectClassId(objectClass)).getBalloon();
 		}
+
 		return balloonSettings;
 	}
 
