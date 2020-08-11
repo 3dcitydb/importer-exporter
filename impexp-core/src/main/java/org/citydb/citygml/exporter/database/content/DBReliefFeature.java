@@ -117,7 +117,7 @@ public class DBReliefFeature extends AbstractFeatureExporter<ReliefFeature> {
 
 		// add joins to ADE hook tables
 		if (exporter.hasADESupport()) {
-			reliefADEHookTables = exporter.getADEHookTables(TableEnum.BRIDGE);
+			reliefADEHookTables = exporter.getADEHookTables(TableEnum.RELIEF_FEATURE);
 			componentADEHookTables = exporter.getADEHookTables(TableEnum.RELIEF_COMPONENT);			
 			if (reliefADEHookTables != null) addJoinsToADEHookTables(reliefADEHookTables, table);
 			if (componentADEHookTables != null) addJoinsToADEHookTables(componentADEHookTables, reliefComponent);
