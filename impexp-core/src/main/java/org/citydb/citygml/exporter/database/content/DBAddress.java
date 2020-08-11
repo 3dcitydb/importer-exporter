@@ -73,7 +73,7 @@ public class DBAddress extends AbstractFeatureExporter<Address> {
 				table.getColumn("zip_code", prefix + "zip_code"), table.getColumn("city", prefix + "city"),
 				table.getColumn("state", prefix + "state"), table.getColumn("country", prefix + "country"),
 				table.getColumn("xal_source", prefix + "xal_source"),
-				exporter.getGeometryColumn(table.getColumn("multi_point", prefix + "multi_point"), prefix + "multi_point"));
+				exporter.getGeometryColumn(table.getColumn("multi_point"), prefix + "multi_point"));
 
 		return select;
 	}
