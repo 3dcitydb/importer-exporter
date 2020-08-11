@@ -47,17 +47,10 @@ import org.citygml4j.model.citygml.building.AbstractBoundarySurface;
 import org.citygml4j.model.citygml.building.AbstractBuilding;
 import org.citygml4j.model.citygml.building.AbstractOpening;
 import org.citygml4j.model.citygml.building.BoundarySurfaceProperty;
-import org.citygml4j.model.citygml.building.BuildingInstallation;
-import org.citygml4j.model.citygml.building.BuildingInstallationProperty;
 import org.citygml4j.model.citygml.building.BuildingPart;
 import org.citygml4j.model.citygml.building.BuildingPartProperty;
 import org.citygml4j.model.citygml.building.Door;
-import org.citygml4j.model.citygml.building.IntBuildingInstallation;
-import org.citygml4j.model.citygml.building.IntBuildingInstallationProperty;
-import org.citygml4j.model.citygml.building.InteriorRoomProperty;
 import org.citygml4j.model.citygml.building.OpeningProperty;
-import org.citygml4j.model.citygml.building.Room;
-import org.citygml4j.model.citygml.core.AbstractCityObject;
 import org.citygml4j.model.citygml.core.AddressProperty;
 import org.citygml4j.model.gml.basicTypes.Code;
 import org.citygml4j.model.gml.basicTypes.DoubleOrNull;
@@ -199,6 +192,19 @@ public class DBBuilding extends AbstractFeatureExporter<AbstractBuilding> {
 			}
 			surfaceADEHookTables = addJoinsToADEHookTables(TableEnum.THEMATIC_SURFACE, table);
 		}
+		if ((projectionFilter.containsProperty("outerBuildingInstallation", buildingModule)
+				|| projectionFilter.containsProperty("interiorBuildingInstallation", buildingModule))
+				&& lodFilter.containsLodGreaterThanOrEuqalTo(2)) {
+			Table installation = new Table(TableEnum.BUILDING_INSTALLATION.getName(), schema);
+			select.addProjection(installation.getColumn("id", "inid"))
+					.addJoin(JoinFactory.left(installation, "building_id", ComparisonName.EQUAL_TO, table.getColumn("id")));
+		}
+		if (projectionFilter.containsProperty("interiorRoom", buildingModule)
+				&& lodFilter.isEnabled(4)) {
+			Table room = new Table(TableEnum.ROOM.getName(), schema);
+			select.addProjection(room.getColumn("id", "roid"))
+					.addJoin(JoinFactory.left(room, "building_id", ComparisonName.EQUAL_TO, table.getColumn("id")));
+		}
 		buildingADEHookTables = addJoinsToADEHookTables(TableEnum.BUILDING, table);
 	}
 
@@ -230,6 +236,8 @@ public class DBBuilding extends AbstractFeatureExporter<AbstractBuilding> {
 			ProjectionFilter openingProjectionFilter = null;
 			Map<String, OpeningProperty> openingProperties = new HashMap<>();
 
+			Set<Long> installations = new HashSet<>();
+			Set<Long> rooms = new HashSet<>();
 			Set<Long> buildingAddresses = new HashSet<>();
 			Set<String> openingAddresses = new HashSet<>();
 
@@ -357,23 +365,6 @@ public class DBBuilding extends AbstractFeatureExporter<AbstractBuilding> {
 								measureList.setUom(rs.getString("storey_heights_bg_unit"));
 								building.setStoreyHeightsBelowGround(measureList);
 							}
-						}
-
-						// bldg:outerBuildingInstallation and bldg:interiorBuildingInstallation
-						if (lodFilter.containsLodGreaterThanOrEuqalTo(2)) {
-							for (AbstractCityObject installation : buildingInstallationExporter.doExport(building, buildingId, projectionFilter)) {
-								if (installation instanceof BuildingInstallation)
-									building.addOuterBuildingInstallation(new BuildingInstallationProperty((BuildingInstallation)installation));
-								else if (installation instanceof IntBuildingInstallation)
-									building.addInteriorBuildingInstallation(new IntBuildingInstallationProperty((IntBuildingInstallation)installation));
-							}
-						}
-
-						// bldg:interiorRoom
-						if (lodFilter.isEnabled(4)
-								&& projectionFilter.containsProperty("interiorRoom", buildingModule)) {
-							for (Room room : roomExporter.doExport(building, buildingId))
-								building.addInteriorRoom(new InteriorRoomProperty(room));
 						}
 
 						// bldg:lodXTerrainIntersectionCurve
@@ -532,7 +523,24 @@ public class DBBuilding extends AbstractFeatureExporter<AbstractBuilding> {
 						buildings.put(buildingId, building);						
 					} else
 						projectionFilter = (ProjectionFilter) building.getLocalProperty("projection");
-				}			
+				}
+
+				// bldg:outerBuildingInstallation and bldg:interiorBuildingInstallation
+				if (lodFilter.containsLodGreaterThanOrEuqalTo(2)
+						&& (projectionFilter.containsProperty("outerBuildingInstallation", buildingModule)
+						|| projectionFilter.containsProperty("interiorBuildingInstallation", buildingModule))) {
+					long installationId = rs.getLong("inid");
+					if (!rs.wasNull() && installations.add(installationId))
+						buildingInstallationExporter.addBatch(installationId, building);
+				}
+
+				// bldg:interiorRoom
+				if (lodFilter.isEnabled(4)
+						&& projectionFilter.containsProperty("interiorRoom", buildingModule)) {
+					long roomId = rs.getLong("roid");
+					if (!rs.wasNull() && rooms.add(roomId))
+						roomExporter.addBatch(roomId, building);
+				}
 
 				// bldg:address
 				if (projectionFilter.containsProperty("address", buildingModule)) {
@@ -645,6 +653,9 @@ public class DBBuilding extends AbstractFeatureExporter<AbstractBuilding> {
 					}
 				}
 			}
+
+			buildingInstallationExporter.executeBatch();
+			roomExporter.executeBatch();
 
 			// export postponed geometries
 			for (Map.Entry<Long, GeometrySetterHandler> entry : geometries.entrySet())

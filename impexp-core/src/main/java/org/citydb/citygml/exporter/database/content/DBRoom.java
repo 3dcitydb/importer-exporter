@@ -47,12 +47,10 @@ import org.citygml4j.model.citygml.building.AbstractOpening;
 import org.citygml4j.model.citygml.building.BoundarySurfaceProperty;
 import org.citygml4j.model.citygml.building.BuildingFurniture;
 import org.citygml4j.model.citygml.building.Door;
-import org.citygml4j.model.citygml.building.IntBuildingInstallation;
-import org.citygml4j.model.citygml.building.IntBuildingInstallationProperty;
 import org.citygml4j.model.citygml.building.InteriorFurnitureProperty;
+import org.citygml4j.model.citygml.building.InteriorRoomProperty;
 import org.citygml4j.model.citygml.building.OpeningProperty;
 import org.citygml4j.model.citygml.building.Room;
-import org.citygml4j.model.citygml.core.AbstractCityObject;
 import org.citygml4j.model.citygml.core.AddressProperty;
 import org.citygml4j.model.gml.basicTypes.Code;
 import org.citygml4j.model.module.citygml.CityGMLModuleType;
@@ -70,6 +68,7 @@ import java.util.Map;
 import java.util.Set;
 
 public class DBRoom extends AbstractFeatureExporter<Room> {
+	private final Map<Long, AbstractBuilding> batches;
 	private final DBSurfaceGeometry geometryExporter;
 	private final DBCityObject cityObjectExporter;
 	private final DBBuildingInstallation buildingInstallationExporter;
@@ -92,6 +91,7 @@ public class DBRoom extends AbstractFeatureExporter<Room> {
 	public DBRoom(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
 		super(Room.class, connection, exporter);
 
+		batches = new HashMap<>();
 		cityObjectExporter = exporter.getExporter(DBCityObject.class);
 		buildingInstallationExporter = exporter.getExporter(DBBuildingInstallation.class);
 		thematicSurfaceExporter = exporter.getExporter(DBThematicSurface.class);
@@ -149,8 +149,48 @@ public class DBRoom extends AbstractFeatureExporter<Room> {
 						.addJoin(JoinFactory.left(buildingFurniture, "room_id", ComparisonName.EQUAL_TO, table.getColumn("id")));
 				buildingFurnitureADEHookTables = addJoinsToADEHookTables(TableEnum.BUILDING_FURNITURE, buildingFurniture);
 			}
+			if (projectionFilter.containsProperty("roomInstallation", buildingModule)) {
+				Table installation = new Table(TableEnum.BUILDING_INSTALLATION.getName(), schema);
+				select.addProjection(installation.getColumn("id", "inid"))
+						.addJoin(JoinFactory.left(installation, "room_id", ComparisonName.EQUAL_TO, table.getColumn("id")));
+			}
 		}
 		roomADEHookTables = addJoinsToADEHookTables(TableEnum.ROOM, table);
+	}
+
+	protected void addBatch(long id, AbstractBuilding parent) {
+		batches.put(id, parent);
+	}
+
+	protected void executeBatch() throws CityGMLExportException, SQLException {
+		if (batches.isEmpty())
+			return;
+
+		try {
+			PreparedStatement ps;
+			if (batches.size() == 1) {
+				ps = getOrCreateStatement("id");
+				ps.setLong(1, batches.keySet().iterator().next());
+			} else {
+				ps = getOrCreateBulkStatement();
+				ps.setArray(1, exporter.getDatabaseAdapter().getSQLAdapter().createIdArray(batches.keySet().toArray(new Long[0]), connection));
+			}
+
+			try (ResultSet rs = ps.executeQuery()) {
+				Map<Long, Room> rooms = doExport(0, null, null, rs);
+				for (Map.Entry<Long, Room> entry : rooms.entrySet()) {
+					AbstractBuilding building = batches.get(entry.getKey());
+					if (building == null) {
+						exporter.logOrThrowErrorMessage("Failed to assign room with id " + entry.getKey() + " to a building.");
+						continue;
+					}
+
+					building.addInteriorRoom(new InteriorRoomProperty(entry.getValue()));
+				}
+			}
+		} finally {
+			batches.clear();
+		}
 	}
 
 	protected Collection<Room> doExport(AbstractBuilding parent, long parentId) throws CityGMLExportException, SQLException {
@@ -162,244 +202,254 @@ public class DBRoom extends AbstractFeatureExporter<Room> {
 		ps.setLong(1, id);
 
 		try (ResultSet rs = ps.executeQuery()) {
-			long currentRoomId = 0;
-			Room room = null;
-			ProjectionFilter projectionFilter = null;
-			Map<Long, Room> rooms = new HashMap<>();
-			Map<Long, GeometrySetterHandler> geometries = new LinkedHashMap<>();
+			return doExport(id, root, rootType, rs).values();
+		}
+	}
 
-			long currentBoundarySurfaceId = 0;
-			AbstractBoundarySurface boundarySurface = null;
-			ProjectionFilter boundarySurfaceProjectionFilter = null;
-			Map<Long, AbstractBoundarySurface> boundarySurfaces = new HashMap<>();
+	private Map<Long, Room> doExport(long id, Room root, FeatureType rootType, ResultSet rs) throws CityGMLExportException, SQLException {
+		long currentRoomId = 0;
+		Room room = null;
+		ProjectionFilter projectionFilter = null;
+		Map<Long, Room> rooms = new HashMap<>();
+		Map<Long, GeometrySetterHandler> geometries = new LinkedHashMap<>();
 
-			long currentOpeningId = 0;
-			OpeningProperty openingProperty = null;
-			ProjectionFilter openingProjectionFilter = null;
-			Map<String, OpeningProperty> openingProperties = new HashMap<>();
+		long currentBoundarySurfaceId = 0;
+		AbstractBoundarySurface boundarySurface = null;
+		ProjectionFilter boundarySurfaceProjectionFilter = null;
+		Map<Long, AbstractBoundarySurface> boundarySurfaces = new HashMap<>();
 
-			Set<Long> buildingFurnitures = new HashSet<>();
-			Set<String> addresses = new HashSet<>();
+		long currentOpeningId = 0;
+		OpeningProperty openingProperty = null;
+		ProjectionFilter openingProjectionFilter = null;
+		Map<String, OpeningProperty> openingProperties = new HashMap<>();
 
-			while (rs.next()) {
-				long roomId = rs.getLong("id");
+		Set<Long> buildingFurnitures = new HashSet<>();
+		Set<Long> installations = new HashSet<>();
+		Set<String> addresses = new HashSet<>();
 
-				if (roomId != currentRoomId || room == null) {
-					currentRoomId = roomId;
+		while (rs.next()) {
+			long roomId = rs.getLong("id");
 
-					room = rooms.get(roomId);
-					if (room == null) {
-						FeatureType featureType;
-						if (roomId == id && root != null) {
-							room = root;
-							featureType = rootType;
+			if (roomId != currentRoomId || room == null) {
+				currentRoomId = roomId;
+
+				room = rooms.get(roomId);
+				if (room == null) {
+					FeatureType featureType;
+					if (roomId == id && root != null) {
+						room = root;
+						featureType = rootType;
+					} else {
+						if (hasObjectClassIdColumn) {
+							// create room object
+							int objectClassId = rs.getInt("objectclass_id");
+							room = exporter.createObject(objectClassId, Room.class);
+							if (room == null) {
+								exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(objectClassId, roomId) + " as room object.");
+								continue;
+							}
+
+							featureType = exporter.getFeatureType(objectClassId);
 						} else {
-							if (hasObjectClassIdColumn) {
-								// create room object
-								int objectClassId = rs.getInt("objectclass_id");
-								room = exporter.createObject(objectClassId, Room.class);
-								if (room == null) {
-									exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(objectClassId, roomId) + " as room object.");
-									continue;
-								}
-
-								featureType = exporter.getFeatureType(objectClassId);
-							} else {
-								room = new Room();
-								featureType = exporter.getFeatureType(room);
-							}
+							room = new Room();
+							featureType = exporter.getFeatureType(room);
 						}
-
-						// get projection filter
-						projectionFilter = exporter.getProjectionFilter(featureType);
-
-						// export city object information
-						cityObjectExporter.addBatch(room, roomId, featureType, projectionFilter);
-
-						if (projectionFilter.containsProperty("class", buildingModule)) {
-							String clazz = rs.getString("class");
-							if (!rs.wasNull()) {
-								Code code = new Code(clazz);
-								code.setCodeSpace(rs.getString("class_codespace"));
-								room.setClazz(code);
-							}
-						}
-
-						if (projectionFilter.containsProperty("function", buildingModule)) {
-							for (SplitValue splitValue : valueSplitter.split(rs.getString("function"), rs.getString("function_codespace"))) {
-								Code function = new Code(splitValue.result(0));
-								function.setCodeSpace(splitValue.result(1));
-								room.addFunction(function);
-							}
-						}
-
-						if (projectionFilter.containsProperty("usage", buildingModule)) {
-							for (SplitValue splitValue : valueSplitter.split(rs.getString("usage"), rs.getString("usage_codespace"))) {
-								Code usage = new Code(splitValue.result(0));
-								usage.setCodeSpace(splitValue.result(1));
-								room.addUsage(usage);
-							}
-						}
-
-						if (lodFilter.isEnabled(4)) {
-							// bldg:roomInstallation
-							for (AbstractCityObject installation : buildingInstallationExporter.doExport(room, roomId, projectionFilter)) {
-								if (installation instanceof IntBuildingInstallation)
-									room.addRoomInstallation(new IntBuildingInstallationProperty((IntBuildingInstallation)installation));
-							}
-
-							// bldg:lod4MultiSurface
-							if (projectionFilter.containsProperty("lod4MultiSurface", buildingModule)) {
-								long geometryId = rs.getLong("lod4_multi_surface_id");
-								if (!rs.wasNull())
-									geometries.put(geometryId, new DefaultGeometrySetterHandler(room::setLod4MultiSurface));
-							}
-
-							// bldg:lod4Solid
-							if (projectionFilter.containsProperty("lod4Solid", buildingModule)) {
-								long geometryId = rs.getLong("lod4_solid_id");
-								if (!rs.wasNull())
-									geometries.put(geometryId, new DefaultGeometrySetterHandler(room::setLod4Solid));
-							}
-						}
-
-						// delegate export of generic ADE properties
-						if (roomADEHookTables != null) {
-							List<String> adeHookTables = retrieveADEHookTables(this.roomADEHookTables, rs);
-							if (adeHookTables != null)
-								exporter.delegateToADEExporter(adeHookTables, room, roomId, featureType, projectionFilter);
-						}
-
-						room.setLocalProperty("projection", projectionFilter);
-						rooms.put(roomId, room);
-					} else
-						projectionFilter = (ProjectionFilter) room.getLocalProperty("projection");
-				}
-
-				// bldg:interiorFurniture
-				if (lodFilter.isEnabled(4)
-						&& projectionFilter.containsProperty("interiorFurniture", buildingModule)) {
-					long buildingFurnitureId = rs.getLong("bfid");
-					if (!rs.wasNull() && buildingFurnitures.add(buildingFurnitureId)) {
-						int objectClassId = rs.getInt("bfobjectclass_id");
-						FeatureType featureType = exporter.getFeatureType(objectClassId);
-
-						BuildingFurniture buildingFurniture = buildingFurnitureExporter.doExport(buildingFurnitureId, featureType, "bf", buildingFurnitureADEHookTables, rs);
-						if (buildingFurniture == null) {
-							exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(objectClassId, buildingFurnitureId) + " as building furniture object.");
-							continue;
-						}
-
-						room.getInteriorFurniture().add(new InteriorFurnitureProperty(buildingFurniture));
 					}
-				}
 
-				if (!lodFilter.isEnabled(4)
-						|| !projectionFilter.containsProperty("boundedBy", buildingModule))
-					continue;
+					// get projection filter
+					projectionFilter = exporter.getProjectionFilter(featureType);
 
-				// bldg:boundedBy
-				long boundarySurfaceId = rs.getLong("tsid");
-				if (rs.wasNull())
-					continue;
+					// export city object information
+					cityObjectExporter.addBatch(room, roomId, featureType, projectionFilter);
 
-				if (boundarySurfaceId != currentBoundarySurfaceId || boundarySurface == null) {
-					currentBoundarySurfaceId = boundarySurfaceId;
-					currentOpeningId = 0;
-
-					boundarySurface = boundarySurfaces.get(boundarySurfaceId);
-					if (boundarySurface == null) {
-						int objectClassId = rs.getInt("tsobjectclass_id");
-						FeatureType featureType = exporter.getFeatureType(objectClassId);
-
-						boundarySurface = thematicSurfaceExporter.doExport(boundarySurfaceId, featureType, "ts", surfaceADEHookTables, rs);
-						if (boundarySurface == null) {
-							exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(objectClassId, boundarySurfaceId) + " as boundary surface object.");
-							continue;
-						}
-
-						// get projection filter
-						boundarySurfaceProjectionFilter = exporter.getProjectionFilter(featureType);
-						boundarySurface.setLocalProperty("projection", boundarySurfaceProjectionFilter);
-
-						room.getBoundedBySurface().add(new BoundarySurfaceProperty(boundarySurface));
-						boundarySurfaces.put(boundarySurfaceId, boundarySurface);
-					} else
-						boundarySurfaceProjectionFilter = (ProjectionFilter) boundarySurface.getLocalProperty("projection");
-				}
-
-				// continue if openings shall not be exported
-				if (!boundarySurfaceProjectionFilter.containsProperty("opening", buildingModule))
-					continue;
-
-				long openingId = rs.getLong("opid");
-				if (rs.wasNull())
-					continue;
-
-				if (openingId != currentOpeningId || openingProperty == null) {
-					currentOpeningId = openingId;
-					String key = currentBoundarySurfaceId + "_" + openingId;
-
-					openingProperty = openingProperties.get(key);
-					if (openingProperty == null) {
-						int objectClassId = rs.getInt("opobjectclass_id");
-
-						// check whether we need an XLink
-						String gmlId = rs.getString("opgmlid");
-						boolean generateNewGmlId = false;
+					if (projectionFilter.containsProperty("class", buildingModule)) {
+						String clazz = rs.getString("class");
 						if (!rs.wasNull()) {
-							if (exporter.lookupAndPutObjectUID(gmlId, openingId, objectClassId)) {
-								if (useXLink) {
-									openingProperty = new OpeningProperty();
-									openingProperty.setHref("#" + gmlId);
-									boundarySurface.addOpening(openingProperty);
-									openingProperties.put(key, openingProperty);
-									continue;
-								} else
-									generateNewGmlId = true;
-							}
-						}
-
-						// create new opening object
-						FeatureType featureType = exporter.getFeatureType(objectClassId);
-						AbstractOpening opening = openingExporter.doExport(openingId, featureType, "op", openingADEHookTables, rs);
-						if (opening == null) {
-							exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(objectClassId, openingId) + " as opening object.");
-							continue;
-						}
-
-						if (generateNewGmlId)
-							opening.setId(exporter.generateNewGmlId(opening, gmlId));
-
-						// get projection filter
-						openingProjectionFilter = exporter.getProjectionFilter(featureType);
-						opening.setLocalProperty("projection", openingProjectionFilter);
-
-						openingProperty = new OpeningProperty(opening);
-						boundarySurface.getOpening().add(openingProperty);
-						openingProperties.put(key, openingProperty);
-					} else if (openingProperty.isSetOpening())
-						openingProjectionFilter = (ProjectionFilter) openingProperty.getOpening().getLocalProperty("projection");
-				}
-
-				if (openingProperty.getOpening() instanceof Door
-						&& openingProjectionFilter.containsProperty("address", buildingModule)) {
-					long addressId = rs.getLong("oaid");
-					if (!rs.wasNull() && addresses.add(currentOpeningId + "_" + addressId)) {
-						AddressProperty addressProperty = addressExporter.doExport(addressId, "oa", addressADEHookTables, rs);
-						if (addressProperty != null) {
-							Door door = (Door) openingProperty.getOpening();
-							door.addAddress(addressProperty);
+							Code code = new Code(clazz);
+							code.setCodeSpace(rs.getString("class_codespace"));
+							room.setClazz(code);
 						}
 					}
+
+					if (projectionFilter.containsProperty("function", buildingModule)) {
+						for (SplitValue splitValue : valueSplitter.split(rs.getString("function"), rs.getString("function_codespace"))) {
+							Code function = new Code(splitValue.result(0));
+							function.setCodeSpace(splitValue.result(1));
+							room.addFunction(function);
+						}
+					}
+
+					if (projectionFilter.containsProperty("usage", buildingModule)) {
+						for (SplitValue splitValue : valueSplitter.split(rs.getString("usage"), rs.getString("usage_codespace"))) {
+							Code usage = new Code(splitValue.result(0));
+							usage.setCodeSpace(splitValue.result(1));
+							room.addUsage(usage);
+						}
+					}
+
+					if (lodFilter.isEnabled(4)) {
+						// bldg:lod4MultiSurface
+						if (projectionFilter.containsProperty("lod4MultiSurface", buildingModule)) {
+							long geometryId = rs.getLong("lod4_multi_surface_id");
+							if (!rs.wasNull())
+								geometries.put(geometryId, new DefaultGeometrySetterHandler(room::setLod4MultiSurface));
+						}
+
+						// bldg:lod4Solid
+						if (projectionFilter.containsProperty("lod4Solid", buildingModule)) {
+							long geometryId = rs.getLong("lod4_solid_id");
+							if (!rs.wasNull())
+								geometries.put(geometryId, new DefaultGeometrySetterHandler(room::setLod4Solid));
+						}
+					}
+
+					// delegate export of generic ADE properties
+					if (roomADEHookTables != null) {
+						List<String> adeHookTables = retrieveADEHookTables(this.roomADEHookTables, rs);
+						if (adeHookTables != null)
+							exporter.delegateToADEExporter(adeHookTables, room, roomId, featureType, projectionFilter);
+					}
+
+					room.setLocalProperty("projection", projectionFilter);
+					rooms.put(roomId, room);
+				} else
+					projectionFilter = (ProjectionFilter) room.getLocalProperty("projection");
+			}
+
+			// bldg:roomInstallation
+			if (lodFilter.isEnabled(4)
+					&& projectionFilter.containsProperty("roomInstallation", buildingModule)) {
+				long installationId = rs.getLong("inid");
+				if (!rs.wasNull() && installations.add(installationId))
+					buildingInstallationExporter.addBatch(installationId, room);
+			}
+
+			// bldg:interiorFurniture
+			if (lodFilter.isEnabled(4)
+					&& projectionFilter.containsProperty("interiorFurniture", buildingModule)) {
+				long buildingFurnitureId = rs.getLong("bfid");
+				if (!rs.wasNull() && buildingFurnitures.add(buildingFurnitureId)) {
+					int objectClassId = rs.getInt("bfobjectclass_id");
+					FeatureType featureType = exporter.getFeatureType(objectClassId);
+
+					BuildingFurniture buildingFurniture = buildingFurnitureExporter.doExport(buildingFurnitureId, featureType, "bf", buildingFurnitureADEHookTables, rs);
+					if (buildingFurniture == null) {
+						exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(objectClassId, buildingFurnitureId) + " as building furniture object.");
+						continue;
+					}
+
+					room.getInteriorFurniture().add(new InteriorFurnitureProperty(buildingFurniture));
 				}
 			}
 
-			// export postponed geometries
-			for (Map.Entry<Long, GeometrySetterHandler> entry : geometries.entrySet())
-				geometryExporter.addBatch(entry.getKey(), entry.getValue());
+			if (!lodFilter.isEnabled(4)
+					|| !projectionFilter.containsProperty("boundedBy", buildingModule))
+				continue;
 
-			return rooms.values();
+			// bldg:boundedBy
+			long boundarySurfaceId = rs.getLong("tsid");
+			if (rs.wasNull())
+				continue;
+
+			if (boundarySurfaceId != currentBoundarySurfaceId || boundarySurface == null) {
+				currentBoundarySurfaceId = boundarySurfaceId;
+				currentOpeningId = 0;
+
+				boundarySurface = boundarySurfaces.get(boundarySurfaceId);
+				if (boundarySurface == null) {
+					int objectClassId = rs.getInt("tsobjectclass_id");
+					FeatureType featureType = exporter.getFeatureType(objectClassId);
+
+					boundarySurface = thematicSurfaceExporter.doExport(boundarySurfaceId, featureType, "ts", surfaceADEHookTables, rs);
+					if (boundarySurface == null) {
+						exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(objectClassId, boundarySurfaceId) + " as boundary surface object.");
+						continue;
+					}
+
+					// get projection filter
+					boundarySurfaceProjectionFilter = exporter.getProjectionFilter(featureType);
+					boundarySurface.setLocalProperty("projection", boundarySurfaceProjectionFilter);
+
+					room.getBoundedBySurface().add(new BoundarySurfaceProperty(boundarySurface));
+					boundarySurfaces.put(boundarySurfaceId, boundarySurface);
+				} else
+					boundarySurfaceProjectionFilter = (ProjectionFilter) boundarySurface.getLocalProperty("projection");
+			}
+
+			// continue if openings shall not be exported
+			if (!boundarySurfaceProjectionFilter.containsProperty("opening", buildingModule))
+				continue;
+
+			long openingId = rs.getLong("opid");
+			if (rs.wasNull())
+				continue;
+
+			if (openingId != currentOpeningId || openingProperty == null) {
+				currentOpeningId = openingId;
+				String key = currentBoundarySurfaceId + "_" + openingId;
+
+				openingProperty = openingProperties.get(key);
+				if (openingProperty == null) {
+					int objectClassId = rs.getInt("opobjectclass_id");
+
+					// check whether we need an XLink
+					String gmlId = rs.getString("opgmlid");
+					boolean generateNewGmlId = false;
+					if (!rs.wasNull()) {
+						if (exporter.lookupAndPutObjectUID(gmlId, openingId, objectClassId)) {
+							if (useXLink) {
+								openingProperty = new OpeningProperty();
+								openingProperty.setHref("#" + gmlId);
+								boundarySurface.addOpening(openingProperty);
+								openingProperties.put(key, openingProperty);
+								continue;
+							} else
+								generateNewGmlId = true;
+						}
+					}
+
+					// create new opening object
+					FeatureType featureType = exporter.getFeatureType(objectClassId);
+					AbstractOpening opening = openingExporter.doExport(openingId, featureType, "op", openingADEHookTables, rs);
+					if (opening == null) {
+						exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(objectClassId, openingId) + " as opening object.");
+						continue;
+					}
+
+					if (generateNewGmlId)
+						opening.setId(exporter.generateNewGmlId(opening, gmlId));
+
+					// get projection filter
+					openingProjectionFilter = exporter.getProjectionFilter(featureType);
+					opening.setLocalProperty("projection", openingProjectionFilter);
+
+					openingProperty = new OpeningProperty(opening);
+					boundarySurface.getOpening().add(openingProperty);
+					openingProperties.put(key, openingProperty);
+				} else if (openingProperty.isSetOpening())
+					openingProjectionFilter = (ProjectionFilter) openingProperty.getOpening().getLocalProperty("projection");
+			}
+
+			if (openingProperty.getOpening() instanceof Door
+					&& (openingProjectionFilter == null
+					|| openingProjectionFilter.containsProperty("address", buildingModule))) {
+				long addressId = rs.getLong("oaid");
+				if (!rs.wasNull() && addresses.add(currentOpeningId + "_" + addressId)) {
+					AddressProperty addressProperty = addressExporter.doExport(addressId, "oa", addressADEHookTables, rs);
+					if (addressProperty != null) {
+						Door door = (Door) openingProperty.getOpening();
+						door.addAddress(addressProperty);
+					}
+				}
+			}
 		}
+
+		buildingInstallationExporter.executeBatch();
+
+		// export postponed geometries
+		for (Map.Entry<Long, GeometrySetterHandler> entry : geometries.entrySet())
+			geometryExporter.addBatch(entry.getKey(), entry.getValue());
+
+		return rooms;
 	}
 }

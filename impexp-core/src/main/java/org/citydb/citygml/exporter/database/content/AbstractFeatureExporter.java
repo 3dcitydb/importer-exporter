@@ -38,6 +38,7 @@ import org.citydb.database.schema.mapping.JoinTable;
 import org.citydb.database.schema.mapping.MappingConstants;
 import org.citydb.sqlbuilder.expression.IntegerLiteral;
 import org.citydb.sqlbuilder.expression.LiteralList;
+import org.citydb.sqlbuilder.expression.LiteralSelectExpression;
 import org.citydb.sqlbuilder.expression.PlaceHolder;
 import org.citydb.sqlbuilder.schema.Table;
 import org.citydb.sqlbuilder.select.PredicateToken;
@@ -57,8 +58,8 @@ import java.util.Map;
 import java.util.Set;
 
 public abstract class AbstractFeatureExporter<T extends AbstractFeature> extends AbstractTypeExporter {
+	protected final Connection connection;
 	private final Class<T> featureClass;
-	private final Connection connection;
 	private final Map<String, PreparedStatement> statements;
 		
 	public AbstractFeatureExporter(Class<T> featureClass, Connection connection, CityGMLExportManager exporter) {
@@ -89,6 +90,18 @@ public abstract class AbstractFeatureExporter<T extends AbstractFeature> extends
 		}
 		
 		return doExport(parentId, null, null, ps);
+	}
+
+	protected PreparedStatement getOrCreateBulkStatement() throws SQLException {
+		PreparedStatement ps = statements.get("id_bulk");
+		if (ps == null) {
+			String subQuery = "select * from " + exporter.getDatabaseAdapter().getSQLAdapter().resolveDatabaseOperationName("unnest") + "(?)";
+			Select select = new Select(this.select).addSelection(ComparisonFactory.in(table.getColumn("id"), new LiteralSelectExpression(subQuery)));
+			ps = connection.prepareStatement(select.toString());
+			statements.put("id_bulk", ps);
+		}
+
+		return ps;
 	}
 	
 	protected PreparedStatement getOrCreateStatement(String columnName) throws SQLException {
