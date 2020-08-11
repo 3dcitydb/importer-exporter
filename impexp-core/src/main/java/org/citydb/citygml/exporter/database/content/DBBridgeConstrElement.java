@@ -94,7 +94,7 @@ public class DBBridgeConstrElement extends AbstractFeatureExporter<BridgeConstru
 	public DBBridgeConstrElement(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
 		super(BridgeConstructionElement.class, connection, exporter);
 
-		batches = new HashMap<>();
+		batches = new LinkedHashMap<>();
 		cityObjectExporter = exporter.getExporter(DBCityObject.class);
 		thematicSurfaceExporter = exporter.getExporter(DBBridgeThematicSurface.class);
 		openingExporter = exporter.getExporter(DBBridgeOpening.class);

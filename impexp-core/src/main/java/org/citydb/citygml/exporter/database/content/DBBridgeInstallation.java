@@ -97,7 +97,7 @@ public class DBBridgeInstallation extends AbstractFeatureExporter<AbstractCityOb
 	public DBBridgeInstallation(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
 		super(AbstractCityObject.class, connection, exporter);
 
-		batches = new HashMap<>();
+		batches = new LinkedHashMap<>();
 		cityObjectReader = exporter.getExporter(DBCityObject.class);
 		thematicSurfaceExporter = exporter.getExporter(DBBridgeThematicSurface.class);
 		openingExporter = exporter.getExporter(DBBridgeOpening.class);
@@ -183,7 +183,7 @@ public class DBBridgeInstallation extends AbstractFeatureExporter<AbstractCityOb
 				for (Map.Entry<Long, AbstractCityObject> entry : installations.entrySet()) {
 					AbstractCityObject parent = batches.get(entry.getKey());
 					if (parent == null) {
-						exporter.logOrThrowErrorMessage("Failed to assign installation with id " + entry.getKey() + " to a city object.");
+						exporter.logOrThrowErrorMessage("Failed to assign bridge installation with id " + entry.getKey() + " to a city object.");
 						continue;
 					}
 

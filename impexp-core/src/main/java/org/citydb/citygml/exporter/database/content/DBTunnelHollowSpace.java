@@ -41,15 +41,13 @@ import org.citydb.sqlbuilder.schema.Table;
 import org.citydb.sqlbuilder.select.Select;
 import org.citydb.sqlbuilder.select.join.JoinFactory;
 import org.citydb.sqlbuilder.select.operator.comparison.ComparisonName;
-import org.citygml4j.model.citygml.core.AbstractCityObject;
 import org.citygml4j.model.citygml.tunnel.AbstractBoundarySurface;
 import org.citygml4j.model.citygml.tunnel.AbstractOpening;
 import org.citygml4j.model.citygml.tunnel.AbstractTunnel;
 import org.citygml4j.model.citygml.tunnel.BoundarySurfaceProperty;
 import org.citygml4j.model.citygml.tunnel.HollowSpace;
-import org.citygml4j.model.citygml.tunnel.IntTunnelInstallation;
-import org.citygml4j.model.citygml.tunnel.IntTunnelInstallationProperty;
 import org.citygml4j.model.citygml.tunnel.InteriorFurnitureProperty;
+import org.citygml4j.model.citygml.tunnel.InteriorHollowSpaceProperty;
 import org.citygml4j.model.citygml.tunnel.OpeningProperty;
 import org.citygml4j.model.citygml.tunnel.TunnelFurniture;
 import org.citygml4j.model.gml.basicTypes.Code;
@@ -68,6 +66,7 @@ import java.util.Map;
 import java.util.Set;
 
 public class DBTunnelHollowSpace extends AbstractFeatureExporter<HollowSpace> {
+	private final Map<Long, AbstractTunnel> batches;
 	private final DBSurfaceGeometry geometryExporter;
 	private final DBCityObject cityObjectExporter;
 	private final DBTunnelInstallation tunnelInstallationExporter;
@@ -88,6 +87,7 @@ public class DBTunnelHollowSpace extends AbstractFeatureExporter<HollowSpace> {
 	public DBTunnelHollowSpace(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
 		super(HollowSpace.class, connection, exporter);
 
+		batches = new LinkedHashMap<>();
 		cityObjectExporter = exporter.getExporter(DBCityObject.class);
 		tunnelInstallationExporter = exporter.getExporter(DBTunnelInstallation.class);
 		thematicSurfaceExporter = exporter.getExporter(DBTunnelThematicSurface.class);
@@ -138,8 +138,48 @@ public class DBTunnelHollowSpace extends AbstractFeatureExporter<HollowSpace> {
 						.addJoin(JoinFactory.left(tunnelFurniture, "tunnel_hollow_space_id", ComparisonName.EQUAL_TO, table.getColumn("id")));
 				tunnelFurnitureADEHookTables = addJoinsToADEHookTables(TableEnum.TUNNEL_FURNITURE, tunnelFurniture);
 			}
+			if (projectionFilter.containsProperty("hollowSpaceInstallation", tunnelModule)) {
+				Table installation = new Table(TableEnum.TUNNEL_INSTALLATION.getName(), schema);
+				select.addProjection(installation.getColumn("id", "inid"))
+						.addJoin(JoinFactory.left(installation, "tunnel_hollow_space_id", ComparisonName.EQUAL_TO, table.getColumn("id")));
+			}
 		}
 		hollowSpaceADEHookTables = addJoinsToADEHookTables(TableEnum.TUNNEL_HOLLOW_SPACE, table);
+	}
+
+	protected void addBatch(long id, AbstractTunnel parent) {
+		batches.put(id, parent);
+	}
+
+	protected void executeBatch() throws CityGMLExportException, SQLException {
+		if (batches.isEmpty())
+			return;
+
+		try {
+			PreparedStatement ps;
+			if (batches.size() == 1) {
+				ps = getOrCreateStatement("id");
+				ps.setLong(1, batches.keySet().iterator().next());
+			} else {
+				ps = getOrCreateBulkStatement();
+				ps.setArray(1, exporter.getDatabaseAdapter().getSQLAdapter().createIdArray(batches.keySet().toArray(new Long[0]), connection));
+			}
+
+			try (ResultSet rs = ps.executeQuery()) {
+				Map<Long, HollowSpace> hollowSpaces = doExport(0, null, null, rs);
+				for (Map.Entry<Long, HollowSpace> entry : hollowSpaces.entrySet()) {
+					AbstractTunnel tunnel = batches.get(entry.getKey());
+					if (tunnel == null) {
+						exporter.logOrThrowErrorMessage("Failed to assign hollow space with id " + entry.getKey() + " to a tunnel.");
+						continue;
+					}
+
+					tunnel.addInteriorHollowSpace(new InteriorHollowSpaceProperty(entry.getValue()));
+				}
+			}
+		} finally {
+			batches.clear();
+		}
 	}
 
 	protected Collection<HollowSpace> doExport(AbstractTunnel parent, long parentId) throws CityGMLExportException, SQLException {
@@ -151,227 +191,235 @@ public class DBTunnelHollowSpace extends AbstractFeatureExporter<HollowSpace> {
 		ps.setLong(1, id);
 
 		try (ResultSet rs = ps.executeQuery()) {
-			long currentHollowSpaceId = 0;
-			HollowSpace hollowSpace = null;
-			ProjectionFilter projectionFilter = null;
-			Map<Long, HollowSpace> hollowSpaces = new HashMap<>();
-			Map<Long, GeometrySetterHandler> geometries = new LinkedHashMap<>();
-
-			long currentBoundarySurfaceId = 0;
-			AbstractBoundarySurface boundarySurface = null;
-			ProjectionFilter boundarySurfaceProjectionFilter = null;
-			Map<Long, AbstractBoundarySurface> boundarySurfaces = new HashMap<>();
-
-			long currentOpeningId = 0;
-			OpeningProperty openingProperty = null;
-			ProjectionFilter openingProjectionFilter = null;
-			Map<String, OpeningProperty> openingProperties = new HashMap<>();
-
-			Set<Long> tunnelFurnitures = new HashSet<>();
-
-			while (rs.next()) {
-				long hollowSpaceId = rs.getLong("id");
-
-				if (hollowSpaceId != currentHollowSpaceId || hollowSpace == null) {
-					currentHollowSpaceId = hollowSpaceId;
-
-					hollowSpace = hollowSpaces.get(hollowSpaceId);
-					if (hollowSpace == null) {
-						FeatureType featureType;
-						if (hollowSpaceId == id && root != null) {
-							hollowSpace = root;
-							featureType = rootType;
-						} else {
-							if (hasObjectClassIdColumn) {
-								// create hollow space object
-								int objectClassId = rs.getInt("objectclass_id");
-								hollowSpace = exporter.createObject(objectClassId, HollowSpace.class);
-								if (hollowSpace == null) {
-									exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(objectClassId, hollowSpaceId) + " as hollow space object.");
-									continue;
-								}
-
-								featureType = exporter.getFeatureType(objectClassId);
-							} else {
-								hollowSpace = new HollowSpace();
-								featureType = exporter.getFeatureType(hollowSpace);
-							}
-						}
-
-						// get projection filter
-						projectionFilter = exporter.getProjectionFilter(featureType);
-
-						// export city object information
-						cityObjectExporter.addBatch(hollowSpace, hollowSpaceId, featureType, projectionFilter);
-
-						if (projectionFilter.containsProperty("class", tunnelModule)) {
-							String clazz = rs.getString("class");
-							if (!rs.wasNull()) {
-								Code code = new Code(clazz);
-								code.setCodeSpace(rs.getString("class_codespace"));
-								hollowSpace.setClazz(code);
-							}
-						}
-
-						if (projectionFilter.containsProperty("function", tunnelModule)) {
-							for (SplitValue splitValue : valueSplitter.split(rs.getString("function"), rs.getString("function_codespace"))) {
-								Code function = new Code(splitValue.result(0));
-								function.setCodeSpace(splitValue.result(1));
-								hollowSpace.addFunction(function);
-							}
-						}
-
-						if (projectionFilter.containsProperty("usage", tunnelModule)) {
-							for (SplitValue splitValue : valueSplitter.split(rs.getString("usage"), rs.getString("usage_codespace"))) {
-								Code usage = new Code(splitValue.result(0));
-								usage.setCodeSpace(splitValue.result(1));
-								hollowSpace.addUsage(usage);
-							}
-						}
-
-						if (lodFilter.isEnabled(4)) {
-							// tun:hollowSpaceInstallation
-							for (AbstractCityObject installation : tunnelInstallationExporter.doExport(hollowSpace, hollowSpaceId, projectionFilter)) {
-								if (installation instanceof IntTunnelInstallation)
-									hollowSpace.addHollowSpaceInstallation(new IntTunnelInstallationProperty((IntTunnelInstallation)installation));
-							}
-
-							// brid:lod4MultiSurface
-							if (projectionFilter.containsProperty("lod4MultiSurface", tunnelModule)) {
-								long geometryId = rs.getLong("lod4_multi_surface_id");
-								if (!rs.wasNull())
-									geometries.put(geometryId, new DefaultGeometrySetterHandler(hollowSpace::setLod4MultiSurface));
-							}
-
-							// brid:lod4Solid
-							if (projectionFilter.containsProperty("lod4Solid", tunnelModule)) {
-								long geometryId = rs.getLong("lod4_solid_id");
-								if (!rs.wasNull())
-									geometries.put(geometryId, new DefaultGeometrySetterHandler(hollowSpace::setLod4Solid));
-							}
-						}
-
-						// delegate export of generic ADE properties
-						if (hollowSpaceADEHookTables != null) {
-							List<String> adeHookTables = retrieveADEHookTables(this.hollowSpaceADEHookTables, rs);
-							if (adeHookTables != null)
-								exporter.delegateToADEExporter(adeHookTables, hollowSpace, hollowSpaceId, featureType, projectionFilter);
-						}
-
-						hollowSpace.setLocalProperty("projection", projectionFilter);
-						hollowSpaces.put(hollowSpaceId, hollowSpace);
-					} else
-						projectionFilter = (ProjectionFilter) hollowSpace.getLocalProperty("projection");
-				}
-
-				// tun:interiorFurniture
-				if (lodFilter.isEnabled(4)
-						&& projectionFilter.containsProperty("interiorFurniture", tunnelModule)) {
-					long tunnelFurnitureId = rs.getLong("tfid");
-					if (!rs.wasNull() && tunnelFurnitures.add(tunnelFurnitureId)) {
-						int objectClassId = rs.getInt("tfobjectclass_id");
-						FeatureType featureType = exporter.getFeatureType(objectClassId);
-
-						TunnelFurniture tunnelFurniture = tunnelFurnitureExporter.doExport(tunnelFurnitureId, featureType, "tf", tunnelFurnitureADEHookTables, rs);
-						if (tunnelFurniture == null) {
-							exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(objectClassId, tunnelFurnitureId) + " as tunnel furniture object.");
-							continue;
-						}
-
-						hollowSpace.getInteriorFurniture().add(new InteriorFurnitureProperty(tunnelFurniture));
-					}
-				}
-
-				if (!lodFilter.isEnabled(4)
-						|| !projectionFilter.containsProperty("boundedBy", tunnelModule))
-					continue;
-
-				// tun:boundedBy
-				long boundarySurfaceId = rs.getLong("tsid");
-				if (rs.wasNull())
-					continue;
-
-				if (boundarySurfaceId != currentBoundarySurfaceId || boundarySurface == null) {
-					currentBoundarySurfaceId = boundarySurfaceId;
-					currentOpeningId = 0;
-
-					boundarySurface = boundarySurfaces.get(boundarySurfaceId);
-					if (boundarySurface == null) {
-						int objectClassId = rs.getInt("tsobjectclass_id");
-						FeatureType featureType = exporter.getFeatureType(objectClassId);
-
-						boundarySurface = thematicSurfaceExporter.doExport(boundarySurfaceId, featureType, "ts", surfaceADEHookTables, rs);
-						if (boundarySurface == null) {
-							exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(objectClassId, boundarySurfaceId) + " as boundary surface object.");
-							continue;
-						}
-
-						// get projection filter
-						boundarySurfaceProjectionFilter = exporter.getProjectionFilter(featureType);
-						boundarySurface.setLocalProperty("projection", boundarySurfaceProjectionFilter);
-
-						hollowSpace.getBoundedBySurface().add(new BoundarySurfaceProperty(boundarySurface));
-						boundarySurfaces.put(boundarySurfaceId, boundarySurface);
-					} else
-						boundarySurfaceProjectionFilter = (ProjectionFilter) boundarySurface.getLocalProperty("projection");
-				}
-
-				// continue if openings shall not be exported
-				if (!boundarySurfaceProjectionFilter.containsProperty("opening", tunnelModule))
-					continue;
-
-				long openingId = rs.getLong("opid");
-				if (rs.wasNull())
-					continue;
-
-				if (openingId != currentOpeningId || openingProperty == null) {
-					currentOpeningId = openingId;
-					String key = currentBoundarySurfaceId + "_" + openingId;
-
-					openingProperty = openingProperties.get(key);
-					if (openingProperty == null) {
-						int objectClassId = rs.getInt("opobjectclass_id");
-
-						// check whether we need an XLink
-						String gmlId = rs.getString("opgmlid");
-						boolean generateNewGmlId = false;
-						if (!rs.wasNull()) {
-							if (exporter.lookupAndPutObjectUID(gmlId, openingId, objectClassId)) {
-								if (useXLink) {
-									openingProperty = new OpeningProperty();
-									openingProperty.setHref("#" + gmlId);
-									boundarySurface.addOpening(openingProperty);
-									openingProperties.put(key, openingProperty);
-									continue;
-								} else
-									generateNewGmlId = true;
-							}
-						}
-
-						// create new opening object
-						FeatureType featureType = exporter.getFeatureType(objectClassId);
-						AbstractOpening opening = openingExporter.doExport(openingId, featureType, "op", openingADEHookTables, rs);
-						if (opening == null) {
-							exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(objectClassId, openingId) + " as tunnel opening object.");
-							continue;
-						}
-
-						if (generateNewGmlId)
-							opening.setId(exporter.generateNewGmlId(opening, gmlId));
-
-						openingProperty = new OpeningProperty(opening);
-						boundarySurface.getOpening().add(openingProperty);
-						openingProperties.put(key, openingProperty);
-					}
-				}
-			}
-
-			// export postponed geometries
-			for (Map.Entry<Long, GeometrySetterHandler> entry : geometries.entrySet())
-				geometryExporter.addBatch(entry.getKey(), entry.getValue());
-
-			return hollowSpaces.values();
+			return doExport(id, root, rootType, rs).values();
 		}
 	}
 
+	private Map<Long, HollowSpace> doExport(long id, HollowSpace root, FeatureType rootType, ResultSet rs) throws CityGMLExportException, SQLException {
+		long currentHollowSpaceId = 0;
+		HollowSpace hollowSpace = null;
+		ProjectionFilter projectionFilter = null;
+		Map<Long, HollowSpace> hollowSpaces = new HashMap<>();
+		Map<Long, GeometrySetterHandler> geometries = new LinkedHashMap<>();
+
+		long currentBoundarySurfaceId = 0;
+		AbstractBoundarySurface boundarySurface = null;
+		ProjectionFilter boundarySurfaceProjectionFilter = null;
+		Map<Long, AbstractBoundarySurface> boundarySurfaces = new HashMap<>();
+
+		long currentOpeningId = 0;
+		OpeningProperty openingProperty = null;
+		ProjectionFilter openingProjectionFilter = null;
+		Map<String, OpeningProperty> openingProperties = new HashMap<>();
+
+		Set<Long> tunnelFurnitures = new HashSet<>();
+		Set<Long> installations = new HashSet<>();
+
+		while (rs.next()) {
+			long hollowSpaceId = rs.getLong("id");
+
+			if (hollowSpaceId != currentHollowSpaceId || hollowSpace == null) {
+				currentHollowSpaceId = hollowSpaceId;
+
+				hollowSpace = hollowSpaces.get(hollowSpaceId);
+				if (hollowSpace == null) {
+					FeatureType featureType;
+					if (hollowSpaceId == id && root != null) {
+						hollowSpace = root;
+						featureType = rootType;
+					} else {
+						if (hasObjectClassIdColumn) {
+							// create hollow space object
+							int objectClassId = rs.getInt("objectclass_id");
+							hollowSpace = exporter.createObject(objectClassId, HollowSpace.class);
+							if (hollowSpace == null) {
+								exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(objectClassId, hollowSpaceId) + " as hollow space object.");
+								continue;
+							}
+
+							featureType = exporter.getFeatureType(objectClassId);
+						} else {
+							hollowSpace = new HollowSpace();
+							featureType = exporter.getFeatureType(hollowSpace);
+						}
+					}
+
+					// get projection filter
+					projectionFilter = exporter.getProjectionFilter(featureType);
+
+					// export city object information
+					cityObjectExporter.addBatch(hollowSpace, hollowSpaceId, featureType, projectionFilter);
+
+					if (projectionFilter.containsProperty("class", tunnelModule)) {
+						String clazz = rs.getString("class");
+						if (!rs.wasNull()) {
+							Code code = new Code(clazz);
+							code.setCodeSpace(rs.getString("class_codespace"));
+							hollowSpace.setClazz(code);
+						}
+					}
+
+					if (projectionFilter.containsProperty("function", tunnelModule)) {
+						for (SplitValue splitValue : valueSplitter.split(rs.getString("function"), rs.getString("function_codespace"))) {
+							Code function = new Code(splitValue.result(0));
+							function.setCodeSpace(splitValue.result(1));
+							hollowSpace.addFunction(function);
+						}
+					}
+
+					if (projectionFilter.containsProperty("usage", tunnelModule)) {
+						for (SplitValue splitValue : valueSplitter.split(rs.getString("usage"), rs.getString("usage_codespace"))) {
+							Code usage = new Code(splitValue.result(0));
+							usage.setCodeSpace(splitValue.result(1));
+							hollowSpace.addUsage(usage);
+						}
+					}
+
+					if (lodFilter.isEnabled(4)) {
+						// tun:lod4MultiSurface
+						if (projectionFilter.containsProperty("lod4MultiSurface", tunnelModule)) {
+							long geometryId = rs.getLong("lod4_multi_surface_id");
+							if (!rs.wasNull())
+								geometries.put(geometryId, new DefaultGeometrySetterHandler(hollowSpace::setLod4MultiSurface));
+						}
+
+						// tun:lod4Solid
+						if (projectionFilter.containsProperty("lod4Solid", tunnelModule)) {
+							long geometryId = rs.getLong("lod4_solid_id");
+							if (!rs.wasNull())
+								geometries.put(geometryId, new DefaultGeometrySetterHandler(hollowSpace::setLod4Solid));
+						}
+					}
+
+					// delegate export of generic ADE properties
+					if (hollowSpaceADEHookTables != null) {
+						List<String> adeHookTables = retrieveADEHookTables(this.hollowSpaceADEHookTables, rs);
+						if (adeHookTables != null)
+							exporter.delegateToADEExporter(adeHookTables, hollowSpace, hollowSpaceId, featureType, projectionFilter);
+					}
+
+					hollowSpace.setLocalProperty("projection", projectionFilter);
+					hollowSpaces.put(hollowSpaceId, hollowSpace);
+				} else
+					projectionFilter = (ProjectionFilter) hollowSpace.getLocalProperty("projection");
+			}
+
+			// tun:hollowSpaceInstallation
+			if (lodFilter.isEnabled(4)
+					&& projectionFilter.containsProperty("hollowSpaceInstallation", tunnelModule)) {
+				long installationId = rs.getLong("inid");
+				if (!rs.wasNull() && installations.add(installationId))
+					tunnelInstallationExporter.addBatch(installationId, hollowSpace);
+			}
+
+			// tun:interiorFurniture
+			if (lodFilter.isEnabled(4)
+					&& projectionFilter.containsProperty("interiorFurniture", tunnelModule)) {
+				long tunnelFurnitureId = rs.getLong("tfid");
+				if (!rs.wasNull() && tunnelFurnitures.add(tunnelFurnitureId)) {
+					int objectClassId = rs.getInt("tfobjectclass_id");
+					FeatureType featureType = exporter.getFeatureType(objectClassId);
+
+					TunnelFurniture tunnelFurniture = tunnelFurnitureExporter.doExport(tunnelFurnitureId, featureType, "tf", tunnelFurnitureADEHookTables, rs);
+					if (tunnelFurniture == null) {
+						exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(objectClassId, tunnelFurnitureId) + " as tunnel furniture object.");
+						continue;
+					}
+
+					hollowSpace.getInteriorFurniture().add(new InteriorFurnitureProperty(tunnelFurniture));
+				}
+			}
+
+			if (!lodFilter.isEnabled(4)
+					|| !projectionFilter.containsProperty("boundedBy", tunnelModule))
+				continue;
+
+			// tun:boundedBy
+			long boundarySurfaceId = rs.getLong("tsid");
+			if (rs.wasNull())
+				continue;
+
+			if (boundarySurfaceId != currentBoundarySurfaceId || boundarySurface == null) {
+				currentBoundarySurfaceId = boundarySurfaceId;
+				currentOpeningId = 0;
+
+				boundarySurface = boundarySurfaces.get(boundarySurfaceId);
+				if (boundarySurface == null) {
+					int objectClassId = rs.getInt("tsobjectclass_id");
+					FeatureType featureType = exporter.getFeatureType(objectClassId);
+
+					boundarySurface = thematicSurfaceExporter.doExport(boundarySurfaceId, featureType, "ts", surfaceADEHookTables, rs);
+					if (boundarySurface == null) {
+						exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(objectClassId, boundarySurfaceId) + " as boundary surface object.");
+						continue;
+					}
+
+					// get projection filter
+					boundarySurfaceProjectionFilter = exporter.getProjectionFilter(featureType);
+					boundarySurface.setLocalProperty("projection", boundarySurfaceProjectionFilter);
+
+					hollowSpace.getBoundedBySurface().add(new BoundarySurfaceProperty(boundarySurface));
+					boundarySurfaces.put(boundarySurfaceId, boundarySurface);
+				} else
+					boundarySurfaceProjectionFilter = (ProjectionFilter) boundarySurface.getLocalProperty("projection");
+			}
+
+			// continue if openings shall not be exported
+			if (!boundarySurfaceProjectionFilter.containsProperty("opening", tunnelModule))
+				continue;
+
+			long openingId = rs.getLong("opid");
+			if (rs.wasNull())
+				continue;
+
+			if (openingId != currentOpeningId || openingProperty == null) {
+				currentOpeningId = openingId;
+				String key = currentBoundarySurfaceId + "_" + openingId;
+
+				openingProperty = openingProperties.get(key);
+				if (openingProperty == null) {
+					int objectClassId = rs.getInt("opobjectclass_id");
+
+					// check whether we need an XLink
+					String gmlId = rs.getString("opgmlid");
+					boolean generateNewGmlId = false;
+					if (!rs.wasNull()) {
+						if (exporter.lookupAndPutObjectUID(gmlId, openingId, objectClassId)) {
+							if (useXLink) {
+								openingProperty = new OpeningProperty();
+								openingProperty.setHref("#" + gmlId);
+								boundarySurface.addOpening(openingProperty);
+								openingProperties.put(key, openingProperty);
+								continue;
+							} else
+								generateNewGmlId = true;
+						}
+					}
+
+					// create new opening object
+					FeatureType featureType = exporter.getFeatureType(objectClassId);
+					AbstractOpening opening = openingExporter.doExport(openingId, featureType, "op", openingADEHookTables, rs);
+					if (opening == null) {
+						exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(objectClassId, openingId) + " as tunnel opening object.");
+						continue;
+					}
+
+					if (generateNewGmlId)
+						opening.setId(exporter.generateNewGmlId(opening, gmlId));
+
+					openingProperty = new OpeningProperty(opening);
+					boundarySurface.getOpening().add(openingProperty);
+					openingProperties.put(key, openingProperty);
+				}
+			}
+		}
+
+		tunnelInstallationExporter.executeBatch();
+
+		// export postponed geometries
+		for (Map.Entry<Long, GeometrySetterHandler> entry : geometries.entrySet())
+			geometryExporter.addBatch(entry.getKey(), entry.getValue());
+
+		return hollowSpaces;
+	}
 }

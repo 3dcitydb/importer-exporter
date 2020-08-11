@@ -91,7 +91,7 @@ public class DBBridgeRoom extends AbstractFeatureExporter<BridgeRoom> {
 	public DBBridgeRoom(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
 		super(BridgeRoom.class, connection, exporter);
 
-		batches = new HashMap<>();
+		batches = new LinkedHashMap<>();
 		cityObjectExporter = exporter.getExporter(DBCityObject.class);
 		bridgeInstallationExporter = exporter.getExporter(DBBridgeInstallation.class);
 		thematicSurfaceExporter = exporter.getExporter(DBBridgeThematicSurface.class);

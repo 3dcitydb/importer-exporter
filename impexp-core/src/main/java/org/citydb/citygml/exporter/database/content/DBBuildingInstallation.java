@@ -97,7 +97,7 @@ public class DBBuildingInstallation extends AbstractFeatureExporter<AbstractCity
 	public DBBuildingInstallation(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
 		super(AbstractCityObject.class, connection, exporter);
 
-		batches = new HashMap<>();
+		batches = new LinkedHashMap<>();
 		cityObjectExporter = exporter.getExporter(DBCityObject.class);
 		thematicSurfaceExporter = exporter.getExporter(DBThematicSurface.class);
 		openingExporter = exporter.getExporter(DBOpening.class);

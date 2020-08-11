@@ -91,7 +91,7 @@ public class DBRoom extends AbstractFeatureExporter<Room> {
 	public DBRoom(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
 		super(Room.class, connection, exporter);
 
-		batches = new HashMap<>();
+		batches = new LinkedHashMap<>();
 		cityObjectExporter = exporter.getExporter(DBCityObject.class);
 		buildingInstallationExporter = exporter.getExporter(DBBuildingInstallation.class);
 		thematicSurfaceExporter = exporter.getExporter(DBThematicSurface.class);
