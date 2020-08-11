@@ -30,6 +30,8 @@ package org.citydb.citygml.exporter.database.content;
 import org.citydb.citygml.exporter.CityGMLExportException;
 import org.citydb.citygml.exporter.util.AttributeValueSplitter;
 import org.citydb.citygml.exporter.util.AttributeValueSplitter.SplitValue;
+import org.citydb.citygml.exporter.util.DefaultGeometrySetterHandler;
+import org.citydb.citygml.exporter.util.GeometrySetterHandler;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.database.schema.TableEnum;
 import org.citydb.database.schema.mapping.FeatureType;
@@ -56,6 +58,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -117,6 +120,7 @@ public class DBTransportationComplex extends AbstractFeatureExporter<Transportat
 			TransportationComplex complex = null;
 			ProjectionFilter projectionFilter = null;
 			Map<Long, TransportationComplex> complexes = new HashMap<>();
+			Map<Long, GeometrySetterHandler> geometries = new LinkedHashMap<>();
 
 			while (rs.next()) {
 				long complexId = rs.getLong("id");
@@ -195,16 +199,16 @@ public class DBTransportationComplex extends AbstractFeatureExporter<Transportat
 
 							switch (lod) {
 								case 1:
-									geometryExporter.addBatch(geometryId, complex::setLod1MultiSurface);
+									geometries.put(geometryId, new DefaultGeometrySetterHandler(complex::setLod1MultiSurface));
 									break;
 								case 2:
-									geometryExporter.addBatch(geometryId, complex::setLod2MultiSurface);
+									geometries.put(geometryId, new DefaultGeometrySetterHandler(complex::setLod2MultiSurface));
 									break;
 								case 3:
-									geometryExporter.addBatch(geometryId, complex::setLod3MultiSurface);
+									geometries.put(geometryId, new DefaultGeometrySetterHandler(complex::setLod3MultiSurface));
 									break;
 								case 4:
-									geometryExporter.addBatch(geometryId, complex::setLod4MultiSurface);
+									geometries.put(geometryId, new DefaultGeometrySetterHandler(complex::setLod4MultiSurface));
 									break;
 							}
 						}
@@ -250,6 +254,10 @@ public class DBTransportationComplex extends AbstractFeatureExporter<Transportat
 					complex.addAuxiliaryTrafficArea(property);
 				}
 			}
+
+			// export postponed geometries
+			for (Map.Entry<Long, GeometrySetterHandler> entry : geometries.entrySet())
+				geometryExporter.addBatch(entry.getKey(), entry.getValue());
 
 			return complexes.values();
 		}
