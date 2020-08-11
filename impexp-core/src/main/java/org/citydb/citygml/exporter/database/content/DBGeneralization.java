@@ -40,7 +40,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class DBGeneralization implements DBExporter {
@@ -55,7 +55,7 @@ public class DBGeneralization implements DBExporter {
 		this.connection = connection;
 		this.exporter = exporter;
 
-		batches = new HashMap<>();
+		batches = new LinkedHashMap<>();
 		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 		String subQuery = "select * from " + exporter.getDatabaseAdapter().getSQLAdapter().resolveDatabaseOperationName("unnest") + "(?)";
 
