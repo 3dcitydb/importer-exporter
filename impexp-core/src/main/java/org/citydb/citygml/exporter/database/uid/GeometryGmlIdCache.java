@@ -49,15 +49,14 @@ public class GeometryGmlIdCache implements UIDCachingModel {
 	private final CacheTableModel cacheTableModel;
 	private final CacheTableManager cacheTableManager;
 
+	private final CacheTable[] backUpTables;
+	private final PreparedStatement[] psLookupGmlIds;
+	private final PreparedStatement[] psDrains;
+	private final ReentrantLock[] locks;
+	private final int[] batchCounters;
+	private final int batchSize;
+
 	private BranchCacheTable branchTable;
-
-	private CacheTable[] backUpTables;
-	private PreparedStatement[] psLookupGmlIds;
-	private PreparedStatement[] psDrains;
-	private ReentrantLock[] locks;
-	private int[] batchCounters;
-
-	private int batchSize;
 
 	public GeometryGmlIdCache(CacheTableManager cacheTableManager, int partitions, int batchSize) throws SQLException {
 		this.cacheTableManager = cacheTableManager;
@@ -156,11 +155,8 @@ public class GeometryGmlIdCache implements UIDCachingModel {
 		tableLock.lock();
 
 		try {
-			ResultSet rs = null;
-			try {
-				psLookupGmlIds[partition].setString(1, key);
-				rs = psLookupGmlIds[partition].executeQuery();
-
+			psLookupGmlIds[partition].setString(1, key);
+			try (ResultSet rs = psLookupGmlIds[partition].executeQuery()) {
 				if (rs.next()) {
 					long id = rs.getLong(1);
 					long rootId = rs.getLong(2);
@@ -171,16 +167,6 @@ public class GeometryGmlIdCache implements UIDCachingModel {
 				}
 
 				return null;
-			} finally {
-				if (rs != null) {
-					try {
-						rs.close();
-					} catch (SQLException sqlEx) {
-						//
-					}
-
-					rs = null;
-				}
 			}
 		} finally {
 			tableLock.unlock();

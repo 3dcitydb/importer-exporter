@@ -36,6 +36,7 @@ import org.citydb.file.OutputFile;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.Map;
 
 public class DBXlinkExporterManager {
 	private final OutputFile outputFile;
@@ -43,8 +44,7 @@ public class DBXlinkExporterManager {
 	private final AbstractDatabaseAdapter databaseAdapter;
 	private final Config config;
 	private final EventDispatcher eventDispatcher;
-
-	private HashMap<DBXlinkExporterEnum, DBXlinkExporter> dbExporterMap;
+	private final Map<DBXlinkExporterEnum, DBXlinkExporter> dbExporterMap;
 
 	public DBXlinkExporterManager(OutputFile outputFile, Connection connection, AbstractDatabaseAdapter databaseAdapter, Config config, EventDispatcher eventDispatcher) {
 		this.outputFile = outputFile;

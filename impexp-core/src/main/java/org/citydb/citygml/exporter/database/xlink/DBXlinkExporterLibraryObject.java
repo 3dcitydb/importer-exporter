@@ -47,8 +47,8 @@ import java.sql.SQLException;
 public class DBXlinkExporterLibraryObject implements DBXlinkExporter {
 	private final Logger log = Logger.getInstance();
 
-	private OutputFile outputFile;
-	private BlobExportAdapter blobExportAdapter;
+	private final OutputFile outputFile;
+	private final BlobExportAdapter blobExportAdapter;
 	private boolean isFolderCreated;
 
 	public DBXlinkExporterLibraryObject(Connection connection, DBXlinkExporterManager xlinkExporterManager) throws SQLException {

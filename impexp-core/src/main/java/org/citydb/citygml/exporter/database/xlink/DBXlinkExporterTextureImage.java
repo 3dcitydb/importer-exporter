@@ -51,15 +51,15 @@ public class DBXlinkExporterTextureImage implements DBXlinkExporter {
     private final Logger log = Logger.getInstance();
     private final DBXlinkExporterManager xlinkExporterManager;
 
-    private OutputFile outputFile;
-    private BlobExportAdapter textureImageExportAdapter;
-    private String textureURI;
-    private boolean isAbsoluteTextureURI;
-    private String separator;
-    private boolean overwriteTextureImage;
-    private boolean useBuckets;
+    private final OutputFile outputFile;
+    private final BlobExportAdapter textureImageExportAdapter;
+    private final String textureURI;
+    private final boolean isAbsoluteTextureURI;
+    private final String separator;
+    private final boolean overwriteTextureImage;
+    private final CounterEvent counter;
+    private final boolean useBuckets;
     private boolean[] buckets;
-    private CounterEvent counter;
 
     public DBXlinkExporterTextureImage(Connection connection, Config config, DBXlinkExporterManager xlinkExporterManager) throws SQLException {
         this.xlinkExporterManager = xlinkExporterManager;
@@ -70,8 +70,8 @@ public class DBXlinkExporterTextureImage implements DBXlinkExporter {
         separator = isAbsoluteTextureURI ? File.separator : "/";
         overwriteTextureImage = config.getProject().getExporter().getAppearances().isSetOverwriteTextureFiles();
         counter = new CounterEvent(CounterType.TEXTURE_IMAGE, 1, this);
-        useBuckets = config.getProject().getExporter().getAppearances().getTexturePath().isUseBuckets() &&
-                config.getProject().getExporter().getAppearances().getTexturePath().getNoOfBuckets() > 0;
+        useBuckets = config.getProject().getExporter().getAppearances().getTexturePath().isUseBuckets()
+                && config.getProject().getExporter().getAppearances().getTexturePath().getNoOfBuckets() > 0;
 
         if (useBuckets)
             buckets = new boolean[config.getProject().getExporter().getAppearances().getTexturePath().getNoOfBuckets()];
@@ -103,7 +103,7 @@ public class DBXlinkExporterTextureImage implements DBXlinkExporter {
 
         if (useBuckets) {
             try {
-                int bucket = Integer.valueOf(fileURI.substring(0, fileURI.indexOf(separator))) - 1;
+                int bucket = Integer.parseInt(fileURI.substring(0, fileURI.indexOf(separator))) - 1;
                 if (!buckets[bucket]) {
                     buckets[bucket] = true;
 

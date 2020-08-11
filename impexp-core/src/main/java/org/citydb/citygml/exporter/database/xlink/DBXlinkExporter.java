@@ -30,6 +30,6 @@ package org.citydb.citygml.exporter.database.xlink;
 import java.sql.SQLException;
 
 public interface DBXlinkExporter {
-	public void close() throws SQLException;
-	public DBXlinkExporterEnum getDBXlinkExporterType();
+	void close() throws SQLException;
+	DBXlinkExporterEnum getDBXlinkExporterType();
 }
