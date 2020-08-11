@@ -507,6 +507,9 @@ public class DBTunnel extends AbstractFeatureExporter<AbstractTunnel> {
 				}
 			}
 
+			tunnelInstallationExporter.executeBatch();
+			hollowSpaceExporter.executeBatch();
+
 			// export postponed geometries
 			for (Map.Entry<Long, GeometrySetterHandler> entry : geometries.entrySet())
 				geometryExporter.addBatch(entry.getKey(), entry.getValue());
