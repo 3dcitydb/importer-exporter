@@ -210,21 +210,12 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 	}
 
 	@Override
-	public <T extends AbstractGML> T exportObject(long objectId, int objectClassId, Class<T> type) throws CityGMLExportException, SQLException {
-		return exportObject(objectId, objectClassId, type, false);
-	}
-
-	@Override
 	public <T extends AbstractGML> T createObject(long objectId, int objectClassId, Class<T> type) throws CityGMLExportException, SQLException {
-		return exportObject(objectId, objectClassId, type, true);
-	}
-
-	private <T extends AbstractGML> T exportObject(long objectId, int objectClassId, Class<T> type, boolean exportStub) throws CityGMLExportException, SQLException {
 		AbstractObjectType<?> objectType = getAbstractObjectType(objectClassId);
 		if (objectType == null)
 			throw new CityGMLExportException("Failed to determine object type for " + getObjectSignature(objectClassId, objectId) + ". Skipping export.");
 
-		AbstractGML object = exportObject(objectId, objectType, exportStub);
+		AbstractGML object = exportObject(objectId, objectType, true);
 		return type.isInstance(object) ? type.cast(object) : null;
 	}
 
@@ -541,30 +532,34 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 
 	@Override
 	public ProjectionToken getGeometryColumn(Column column) {
-		return (!config.getInternal().isTransformCoordinates()) ? 
-				column : new Function(databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_srs.transform_or_null"),
+		return (!config.getInternal().isTransformCoordinates()) ?
+				column :
+				new Function(databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_srs.transform_or_null"),
 						column.getName(), column, new IntegerLiteral(query.getTargetSrs().getSrid()));
 	}
 
 	@Override
 	public ProjectionToken getGeometryColumn(Column column, String asName) {
-		return (!config.getInternal().isTransformCoordinates()) ? 
-				column : new Function(databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_srs.transform_or_null"),
+		return (!config.getInternal().isTransformCoordinates()) ?
+				new Column(column.getTable(), column.getName(), asName) :
+				new Function(databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_srs.transform_or_null"),
 						asName, column, new IntegerLiteral(query.getTargetSrs().getSrid()));
 	}
 
 	@Override
 	public String getGeometryColumn(String columnName) {
-		return (!config.getInternal().isTransformCoordinates()) ? 
-				columnName : databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_srs.transform_or_null") +
-				"(" + columnName + ", " + query.getTargetSrs().getSrid() + ") as " + columnName.replaceFirst(".*?\\.", "");
+		return (!config.getInternal().isTransformCoordinates()) ?
+				columnName :
+				databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_srs.transform_or_null") +
+						"(" + columnName + ", " + query.getTargetSrs().getSrid() + ") as " + columnName.replaceFirst(".*?\\.", "");
 	}
 
 	@Override
 	public String getGeometryColumn(String columnName, String asName) {
-		return (!config.getInternal().isTransformCoordinates()) ? 
-				columnName : databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_srs.transform_or_null") +
-				"(" + columnName + ", " + query.getTargetSrs().getSrid() + ") as " + asName;
+		return (!config.getInternal().isTransformCoordinates()) ?
+				columnName + " as " + asName :
+				databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_srs.transform_or_null") +
+						"(" + columnName + ", " + query.getTargetSrs().getSrid() + ") as " + asName;
 	}
 
 	@Override
