@@ -44,7 +44,6 @@ import org.citydb.query.filter.projection.CombinedProjectionFilter;
 import org.citydb.query.filter.projection.ProjectionFilter;
 import org.citydb.sqlbuilder.schema.Column;
 import org.citydb.sqlbuilder.select.ProjectionToken;
-import org.citygml4j.model.citygml.core.AbstractCityObject;
 import org.citygml4j.model.citygml.core.ImplicitGeometry;
 import org.citygml4j.model.gml.base.AbstractGML;
 import org.citygml4j.model.gml.feature.AbstractFeature;
@@ -54,6 +53,7 @@ import java.sql.SQLException;
 import java.util.Collection;
 
 public interface CityGMLExportHelper {
+	<T extends AbstractGML> T exportObject(long objectId, int objectClassId, Class<T> type) throws CityGMLExportException, SQLException;
 	<T extends AbstractGML> T createObject(long objectId, int objectClassId, Class<T> type) throws CityGMLExportException, SQLException;
 	<T extends AbstractFeature> Collection<T> exportNestedCityGMLObjects(FeatureProperty featureProperty, long parentId, Class<T> featureClass) throws CityGMLExportException, SQLException;
 	SurfaceGeometryBatchExporter getSurfaceGeometryBatchExporter() throws CityGMLExportException, SQLException;
@@ -84,7 +84,7 @@ public interface CityGMLExportHelper {
 	String getObjectSignature(int objectClassId, long id);
 	String getObjectSignature(AbstractObjectType<?> objectType, long id);
 	
-	FeatureType getFeatureType(AbstractFeature feature);	
+	FeatureType getFeatureType(AbstractFeature feature);
 	ObjectType getObjectType(AbstractGML object);
 	AbstractObjectType<?> getAbstractObjectType(AbstractGML object);
 	FeatureType getFeatureType(int objectClassId);	
