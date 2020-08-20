@@ -253,6 +253,11 @@ public class DBCityObject implements DBExporter {
 			}
 
 			postprocess();
+
+			// ADE-specific extensions
+			if (exporter.hasADESupport())
+				exporter.delegateToADEExporter(context.object, objectId, context.objectType, context.projectionFilter);
+
 			return true;
 		}
 	}
@@ -425,10 +430,6 @@ public class DBCityObject implements DBExporter {
 				cityObject.addGenericAttribute(genericStringAttrib);
 			}
 		}
-
-		// ADE-specific extensions
-		if (exporter.hasADESupport())
-			exporter.delegateToADEExporter(context.object, objectId, context.objectType, context.projectionFilter);
 
 		return true;
 	}
