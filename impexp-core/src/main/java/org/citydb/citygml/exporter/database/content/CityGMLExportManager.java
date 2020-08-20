@@ -210,21 +210,12 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 	}
 
 	@Override
-	public <T extends AbstractGML> T exportObject(long objectId, int objectClassId, Class<T> type) throws CityGMLExportException, SQLException {
-		return exportObject(objectId, objectClassId, type, false);
-	}
-
-	@Override
 	public <T extends AbstractGML> T createObject(long objectId, int objectClassId, Class<T> type) throws CityGMLExportException, SQLException {
-		return exportObject(objectId, objectClassId, type, true);
-	}
-
-	private <T extends AbstractGML> T exportObject(long objectId, int objectClassId, Class<T> type, boolean exportStub) throws CityGMLExportException, SQLException {
 		AbstractObjectType<?> objectType = getAbstractObjectType(objectClassId);
 		if (objectType == null)
 			throw new CityGMLExportException("Failed to determine object type for " + getObjectSignature(objectClassId, objectId) + ". Skipping export.");
 
-		AbstractGML object = exportObject(objectId, objectType, exportStub);
+		AbstractGML object = exportObject(objectId, objectType, true);
 		return type.isInstance(object) ? type.cast(object) : null;
 	}
 
