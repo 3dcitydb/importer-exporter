@@ -541,34 +541,30 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 
 	@Override
 	public ProjectionToken getGeometryColumn(Column column) {
-		return (!config.getInternal().isTransformCoordinates()) ?
-				column :
-				new Function(databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_srs.transform_or_null"),
+		return (!config.getInternal().isTransformCoordinates()) ? 
+				column : new Function(databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_srs.transform_or_null"),
 						column.getName(), column, new IntegerLiteral(query.getTargetSrs().getSrid()));
 	}
 
 	@Override
 	public ProjectionToken getGeometryColumn(Column column, String asName) {
-		return (!config.getInternal().isTransformCoordinates()) ?
-				new Column(column.getTable(), column.getName(), asName) :
-				new Function(databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_srs.transform_or_null"),
+		return (!config.getInternal().isTransformCoordinates()) ? 
+				column : new Function(databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_srs.transform_or_null"),
 						asName, column, new IntegerLiteral(query.getTargetSrs().getSrid()));
 	}
 
 	@Override
 	public String getGeometryColumn(String columnName) {
-		return (!config.getInternal().isTransformCoordinates()) ?
-				columnName :
-				databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_srs.transform_or_null") +
-						"(" + columnName + ", " + query.getTargetSrs().getSrid() + ") as " + columnName.replaceFirst(".*?\\.", "");
+		return (!config.getInternal().isTransformCoordinates()) ? 
+				columnName : databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_srs.transform_or_null") +
+				"(" + columnName + ", " + query.getTargetSrs().getSrid() + ") as " + columnName.replaceFirst(".*?\\.", "");
 	}
 
 	@Override
 	public String getGeometryColumn(String columnName, String asName) {
-		return (!config.getInternal().isTransformCoordinates()) ?
-				columnName + " as " + asName :
-				databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_srs.transform_or_null") +
-						"(" + columnName + ", " + query.getTargetSrs().getSrid() + ") as " + asName;
+		return (!config.getInternal().isTransformCoordinates()) ? 
+				columnName : databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_srs.transform_or_null") +
+				"(" + columnName + ", " + query.getTargetSrs().getSrid() + ") as " + asName;
 	}
 
 	@Override
