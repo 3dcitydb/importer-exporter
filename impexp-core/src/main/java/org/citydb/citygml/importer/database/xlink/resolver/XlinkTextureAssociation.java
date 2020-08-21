@@ -27,14 +27,6 @@
  */
 package org.citydb.citygml.importer.database.xlink.resolver;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Types;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.citydb.citygml.common.database.cache.CacheTable;
 import org.citydb.citygml.common.database.uid.UIDCacheEntry;
 import org.citydb.citygml.common.database.xlink.DBXlinkTextureAssociation;
@@ -43,36 +35,40 @@ import org.citydb.log.Logger;
 import org.citydb.util.Util;
 import org.citygml4j.model.citygml.CityGMLClass;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Types;
+import java.util.ArrayList;
+import java.util.List;
+
 public class XlinkTextureAssociation implements DBXlinkResolver {
-	private final Logger LOG = Logger.getInstance();
-	private final DBXlinkResolverManager resolverManager;
+	private final Logger log = Logger.getInstance();
+	private final DBXlinkResolverManager manager;
+	private final PreparedStatement psTextureParam;
+	private final PreparedStatement psSelectParts;
+	private final PreparedStatement psSelectContent;
 
-	private PreparedStatement psTextureParam;
-	private PreparedStatement psSelectParts;
-	private PreparedStatement psSelectContent;
 	private int batchCounter;
-	
-	private String schema;
 
-	public XlinkTextureAssociation(Connection batchConn, CacheTable cacheTable, DBXlinkResolverManager resolverManager) throws SQLException {
-		this.resolverManager = resolverManager;
-		schema = resolverManager.getDatabaseAdapter().getConnectionDetails().getSchema();
+	public XlinkTextureAssociation(Connection connection, CacheTable cacheTable, DBXlinkResolverManager manager) throws SQLException {
+		this.manager = manager;
+		String schema = manager.getDatabaseAdapter().getConnectionDetails().getSchema();
 
-		StringBuilder insertStmt = new StringBuilder()
-		.append("insert into ").append(schema).append(".TEXTUREPARAM (SURFACE_GEOMETRY_ID, IS_TEXTURE_PARAMETRIZATION, WORLD_TO_TEXTURE, TEXTURE_COORDINATES, SURFACE_DATA_ID) values ")
-		.append("(?, 1, ?, ?, ?)");
-		psTextureParam = batchConn.prepareStatement(insertStmt.toString());
+		psTextureParam = connection.prepareStatement("insert into " + schema + ".TEXTUREPARAM (SURFACE_GEOMETRY_ID, " +
+				"IS_TEXTURE_PARAMETRIZATION, WORLD_TO_TEXTURE, TEXTURE_COORDINATES, SURFACE_DATA_ID) " +
+				"values (?, 1, ?, ?, ?)");
 		
-		psSelectParts = cacheTable.getConnection().prepareStatement("select SURFACE_DATA_ID, SURFACE_GEOMETRY_ID from " + cacheTable.getTableName() + " where GMLID=?");
-		
-		StringBuilder selectStmt = new StringBuilder()
-		.append("select WORLD_TO_TEXTURE, TEXTURE_COORDINATES from ").append(schema).append(".TEXTUREPARAM where SURFACE_DATA_ID=? and SURFACE_GEOMETRY_ID=?");
-		psSelectContent = batchConn.prepareStatement(selectStmt.toString());
+		psSelectParts = cacheTable.getConnection().prepareStatement("select SURFACE_DATA_ID, SURFACE_GEOMETRY_ID from " +
+				cacheTable.getTableName() + " where GMLID=?");
+
+		psSelectContent = connection.prepareStatement("select WORLD_TO_TEXTURE, TEXTURE_COORDINATES from " + schema
+				+ ".TEXTUREPARAM where SURFACE_DATA_ID=? and SURFACE_GEOMETRY_ID=?");
 	}
 
 	public boolean insert(DBXlinkTextureAssociation xlink) throws SQLException {
 		String gmlId = xlink.getGmlId();
-		ResultSet rs = null;
 
 		// check whether we deal with a local gml:id
 		// remote gml:ids are not supported so far...
@@ -81,44 +77,36 @@ public class XlinkTextureAssociation implements DBXlinkResolver {
 
 		// replace leading #
 		gmlId = gmlId.replaceAll("^#", "");
+		psSelectParts.setString(1, gmlId);
 
-		try {
+		List<DBXlinkTextureAssociationTarget> texAssList = new ArrayList<>();
+		try (ResultSet rs = psSelectParts.executeQuery()) {
 			// one gml:id pointing to a texture association may consist of
 			// different parts. so firstly retrieve these parts
-			psSelectParts.setString(1, gmlId);
-			rs = psSelectParts.executeQuery();
-
-			List<DBXlinkTextureAssociationTarget> texAssList = new ArrayList<DBXlinkTextureAssociationTarget>();
 			while (rs.next()) {
 				long surfaceDataId = rs.getLong("SURFACE_DATA_ID");
 				long surfaceGeometryId = rs.getLong("SURFACE_GEOMETRY_ID");
-
 				texAssList.add(new DBXlinkTextureAssociationTarget(surfaceDataId, surfaceGeometryId, null));
 			}
+		}
 
-			rs.close();
+		for (DBXlinkTextureAssociationTarget texAss : texAssList) {
+			psSelectContent.setLong(1, texAss.getSurfaceDataId());
+			psSelectContent.setLong(2, texAss.getSurfaceGeometryId());
 
-			for (DBXlinkTextureAssociationTarget texAss : texAssList) {
-				psSelectContent.setLong(1, texAss.getSurfaceDataId());
-				psSelectContent.setLong(2, texAss.getSurfaceGeometryId());
-				rs = psSelectContent.executeQuery();
-
+			try (ResultSet rs = psSelectContent.executeQuery()) {
 				if (rs.next()) {
 					String worldToTexture = rs.getString("WORLD_TO_TEXTURE");
-
-					if (worldToTexture != null) {
-						UIDCacheEntry entry = resolverManager.getGeometryId(xlink.getTargetURI());
-
+					if (!rs.wasNull()) {
+						UIDCacheEntry entry = manager.getGeometryId(xlink.getTargetURI());
 						if (entry == null || entry.getId() == -1) {
-							LOG.error("Failed to resolve XLink reference '" + xlink.getTargetURI() + "'.");
+							log.error("Failed to resolve XLink reference '" + xlink.getTargetURI() + "'.");
 							continue;
 						}
 
 						psTextureParam.setLong(1, entry.getId());
 						psTextureParam.setString(2, worldToTexture);
 						psTextureParam.setNull(3, Types.VARCHAR);
-						psTextureParam.setLong(4, xlink.getId());
-
 					} else {
 						// ok, if we deal with texture coordinates we can ignore the
 						// uri attribute of the <target> element. it must be the same as
@@ -128,29 +116,16 @@ public class XlinkTextureAssociation implements DBXlinkResolver {
 						psTextureParam.setLong(1, texAss.getSurfaceGeometryId());
 						psTextureParam.setNull(2, Types.VARCHAR);
 						psTextureParam.setObject(3, rs.getObject("TEXTURE_COORDINATES"));
-						psTextureParam.setLong(4, xlink.getId());
 					}
 
+					psTextureParam.setLong(4, xlink.getId());
 					psTextureParam.addBatch();
-					if (++batchCounter == resolverManager.getDatabaseAdapter().getMaxBatchSize())
-						executeBatch();
 
+					if (++batchCounter == manager.getDatabaseAdapter().getMaxBatchSize())
+						manager.executeBatch(this);
 				} else {
-					LOG.warn("Failed to completely resolve XLink reference '" + gmlId + "' to " + CityGMLClass.TEXTURE_ASSOCIATION + ".");
+					log.warn("Failed to completely resolve XLink reference '" + gmlId + "' to " + CityGMLClass.TEXTURE_ASSOCIATION + ".");
 				}
-
-				rs.close();
-			}
-
-		} finally {
-			if (rs != null) {
-				try {
-					rs.close();
-				} catch (SQLException sqlEx) {
-					//
-				}
-
-				rs = null;
 			}
 		}
 

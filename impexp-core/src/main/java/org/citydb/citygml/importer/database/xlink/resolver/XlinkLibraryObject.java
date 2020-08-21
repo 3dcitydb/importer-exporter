@@ -39,16 +39,15 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 public class XlinkLibraryObject implements DBXlinkResolver {
-	private final Logger LOG = Logger.getInstance();
+	private final Logger log = Logger.getInstance();
 	private final DBXlinkResolverManager resolverManager;
+	private final BlobImportAdapter blobImportAdapter;
 
-	private BlobImportAdapter blobImportAdapter;
-
-	public XlinkLibraryObject(Connection externalFileConn, DBXlinkResolverManager resolverManager) throws SQLException {
+	public XlinkLibraryObject(Connection connection, DBXlinkResolverManager resolverManager) throws SQLException {
 		this.resolverManager = resolverManager;
 		
 		blobImportAdapter = resolverManager.getDatabaseAdapter().getSQLAdapter().getBlobImportAdapter(
-				externalFileConn, BlobType.LIBRARY_OBJECT);
+				connection, BlobType.LIBRARY_OBJECT);
 	}
 
 	public boolean insert(DBXlinkLibraryObject xlink) throws SQLException {
@@ -57,7 +56,7 @@ public class XlinkLibraryObject implements DBXlinkResolver {
 		try (InputStream stream = new BufferedInputStream(resolverManager.openStream(fileURI)))  {
 			return blobImportAdapter.insert(xlink.getId(), stream, fileURI);
 		} catch (IOException e) {
-			LOG.error("Failed to read library object file '" + fileURI + "': " + e.getMessage());
+			log.error("Failed to read library object file '" + fileURI + "': " + e.getMessage());
 			return false;
 		}
 	}

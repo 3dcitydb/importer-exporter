@@ -37,7 +37,6 @@ import org.citydb.citygml.common.database.xlink.DBXlink;
 import org.citydb.citygml.importer.database.SequenceHelper;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
-import org.citydb.file.InputFile;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.schema.mapping.AbstractObjectType;
 import org.citydb.database.schema.mapping.FeatureType;
@@ -45,6 +44,7 @@ import org.citydb.database.schema.mapping.ObjectType;
 import org.citydb.database.schema.mapping.SchemaMapping;
 import org.citydb.event.Event;
 import org.citydb.event.EventDispatcher;
+import org.citydb.file.InputFile;
 import org.citydb.registry.ObjectRegistry;
 
 import java.io.IOException;
@@ -56,10 +56,14 @@ import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class DBXlinkResolverManager {
+	private static final ReentrantLock mainLock = new ReentrantLock();
 	private final InputFile inputFile;
 	private final Connection connection;
 	private final AbstractDatabaseAdapter databaseAdapter;
@@ -68,9 +72,9 @@ public class DBXlinkResolverManager {
 	private final CacheTableManager cacheTableManager;
 	private final EventDispatcher eventDispatcher;
 
-	private HashMap<DBXlinkResolverEnum, DBXlinkResolver> dbWriterMap;
-	private DBGmlIdResolver dbGmlIdResolver;
-	private SequenceHelper sequenceHelper;
+	private final Map<DBXlinkResolverEnum, DBXlinkResolver> writers;
+	private final DBGmlIdResolver gmlIdResolvers;
+	private final SequenceHelper sequenceHelper;
 
 	public DBXlinkResolverManager(
 			InputFile inputFile,
@@ -88,18 +92,18 @@ public class DBXlinkResolverManager {
 		this.cacheTableManager = cacheTableManager;
 		this.eventDispatcher = eventDispatcher;
 
-		dbWriterMap = new HashMap<>();
-		dbGmlIdResolver = new DBGmlIdResolver(batchConn, databaseAdapter, uidCacheManager);
+		writers = new HashMap<>();
+		gmlIdResolvers = new DBGmlIdResolver(batchConn, databaseAdapter, uidCacheManager);
 		sequenceHelper = new SequenceHelper(batchConn, databaseAdapter, config);
 
      	schemaMapping = ObjectRegistry.getInstance().getSchemaMapping();
 	}
 
 	public DBXlinkResolver getDBXlinkResolver(DBXlinkResolverEnum dbResolverType) throws SQLException {
-		DBXlinkResolver dbResolver = dbWriterMap.get(dbResolverType);
+		DBXlinkResolver dbResolver = writers.get(dbResolverType);
 
 		if (dbResolver == null) {
-			// initialise DBWriter
+			// initialise writer
 			switch (dbResolverType) {
 			case SURFACE_GEOMETRY:
 				CacheTable surfaceGeomHeapView = cacheTableManager.getCacheTable(CacheTableModel.SURFACE_GEOMETRY).getMirrorTable();
@@ -148,7 +152,7 @@ public class DBXlinkResolverManager {
 			}
 
 			if (dbResolver != null)
-				dbWriterMap.put(dbResolverType, dbResolver);
+				writers.put(dbResolverType, dbResolver);
 		}
 
 		return dbResolver;
@@ -159,15 +163,15 @@ public class DBXlinkResolverManager {
 	}
 	
 	public UIDCacheEntry getObjectId(String gmlId) {
-		return dbGmlIdResolver.getDBId(gmlId, UIDCacheType.OBJECT, false);
+		return gmlIdResolvers.getDBId(gmlId, UIDCacheType.OBJECT, false);
 	}
 
 	public UIDCacheEntry getObjectId(String gmlId, boolean forceCityObjectDatabaseLookup) {
-		return dbGmlIdResolver.getDBId(gmlId, UIDCacheType.OBJECT, forceCityObjectDatabaseLookup);
+		return gmlIdResolvers.getDBId(gmlId, UIDCacheType.OBJECT, forceCityObjectDatabaseLookup);
 	}	
 	
 	public UIDCacheEntry getGeometryId(String gmlId) {
-		return dbGmlIdResolver.getDBId(gmlId, UIDCacheType.GEOMETRY, false);
+		return gmlIdResolvers.getDBId(gmlId, UIDCacheType.GEOMETRY, false);
 	}
 	
 	public FeatureType getFeatureType(int objectClassId) {
@@ -223,15 +227,41 @@ public class DBXlinkResolverManager {
 	}
 	
 	public void executeBatch() throws SQLException {
-		for (DBXlinkResolver dbResolver : dbWriterMap.values())
-			dbResolver.executeBatch();
+		final ReentrantLock lock = mainLock;
+		lock.lock();
+		try {
+			for (DBXlinkResolver resolver : writers.values())
+				resolver.executeBatch();
+		} finally {
+			lock.unlock();
+		}
+	}
+
+	void executeBatch(DBXlinkResolver resolver) throws SQLException {
+		final ReentrantLock lock = mainLock;
+		lock.lock();
+		try {
+			resolver.executeBatch();
+		} finally {
+			lock.unlock();
+		}
+	}
+
+	void executeBatchWithLock(PreparedStatement ps) throws SQLException {
+		final ReentrantLock lock = mainLock;
+		lock.lock();
+		try {
+			ps.executeBatch();
+		} finally {
+			lock.unlock();
+		}
 	}
 
 	public void close() throws SQLException {
-		dbGmlIdResolver.close();
+		gmlIdResolvers.close();
 		sequenceHelper.close();
 
-		for (DBXlinkResolver dbResolver : dbWriterMap.values())
+		for (DBXlinkResolver dbResolver : writers.values())
 			dbResolver.close();
 	}
 }
