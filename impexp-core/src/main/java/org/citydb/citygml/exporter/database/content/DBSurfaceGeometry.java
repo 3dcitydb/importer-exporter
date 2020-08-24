@@ -120,19 +120,19 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryBatchExport
 			gmlIdPrefix = exporter.getExportConfig().getXlink().getGeometry().getIdPrefix();
 		}
 
-		Table table1 = new Table(TableEnum.SURFACE_GEOMETRY.getName(), schema);
-		Select select1 = new Select().addProjection(table1.getColumn("id"), table1.getColumn("gmlid"), table1.getColumn("parent_id"),
-				table1.getColumn("is_solid"), table1.getColumn("is_composite"), table1.getColumn("is_triangulated"),
-				table1.getColumn("is_xlink"), table1.getColumn("is_reverse"),
-				exporter.getGeometryColumn(table1.getColumn("geometry")), table1.getColumn("implicit_geometry"));
+		Table table = new Table(TableEnum.SURFACE_GEOMETRY.getName(), schema);
+		Select select = new Select().addProjection(table.getColumn("id"), table.getColumn("gmlid"), table.getColumn("parent_id"),
+				table.getColumn("is_solid"), table.getColumn("is_composite"), table.getColumn("is_triangulated"),
+				table.getColumn("is_xlink"), table.getColumn("is_reverse"),
+				exporter.getGeometryColumn(table.getColumn("geometry")), table.getColumn("implicit_geometry"));
 
 		String subQuery = "select * from " + exporter.getDatabaseAdapter().getSQLAdapter().resolveDatabaseOperationName("unnest") + "(?)";
-		psBulk = connection.prepareStatement(new Select(select1)
-				.addProjection(table1.getColumn("root_id"))
-				.addSelection(ComparisonFactory.in(table1.getColumn("root_id"), new LiteralSelectExpression(subQuery))).toString());
+		psBulk = connection.prepareStatement(new Select(select)
+				.addProjection(table.getColumn("root_id"))
+				.addSelection(ComparisonFactory.in(table.getColumn("root_id"), new LiteralSelectExpression(subQuery))).toString());
 
-		psSelect = connection.prepareStatement(new Select(select1)
-				.addSelection(ComparisonFactory.equalTo(table1.getColumn("root_id"), new PlaceHolder<>())).toString());
+		psSelect = connection.prepareStatement(new Select(select)
+				.addSelection(ComparisonFactory.equalTo(table.getColumn("root_id"), new PlaceHolder<>())).toString());
 	}
 
 	@Override
