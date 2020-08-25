@@ -27,25 +27,23 @@
  */
 package org.citydb.citygml.importer.database.xlink.resolver;
 
+import org.citydb.citygml.common.database.xlink.DBXlinkSurfaceDataToTexImage;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-import org.citydb.citygml.common.database.xlink.DBXlinkSurfaceDataToTexImage;
-
 public class XlinkSurfaceDataToTexImage implements DBXlinkResolver {
-	private final DBXlinkResolverManager resolverManager;
+	private final DBXlinkResolverManager manager;
+	private final PreparedStatement psUpdate;
 
-	private PreparedStatement psUpdate;
 	private int batchCounter;
 
-	public XlinkSurfaceDataToTexImage(Connection batchConn, DBXlinkResolverManager resolverManager) throws SQLException {
-		this.resolverManager = resolverManager;
-		String schema = resolverManager.getDatabaseAdapter().getConnectionDetails().getSchema();
+	public XlinkSurfaceDataToTexImage(Connection connection, DBXlinkResolverManager manager) throws SQLException {
+		this.manager = manager;
 
-		StringBuilder stmt = new StringBuilder()
-		.append("update ").append(schema).append(".SURFACE_DATA set TEX_IMAGE_ID=? where ID=?");
-		psUpdate = batchConn.prepareStatement(stmt.toString());
+		String schema = manager.getDatabaseAdapter().getConnectionDetails().getSchema();
+		psUpdate = connection.prepareStatement("update " + schema + ".SURFACE_DATA set TEX_IMAGE_ID=? where ID=?");
 	}
 
 	public boolean insert(DBXlinkSurfaceDataToTexImage xlink) throws SQLException {
@@ -53,8 +51,8 @@ public class XlinkSurfaceDataToTexImage implements DBXlinkResolver {
 		psUpdate.setLong(2, xlink.getFromId());
 
 		psUpdate.addBatch();
-		if (++batchCounter == resolverManager.getDatabaseAdapter().getMaxBatchSize())
-			executeBatch();
+		if (++batchCounter == manager.getDatabaseAdapter().getMaxBatchSize())
+			manager.executeBatch(this);
 
 		return true;
 	}

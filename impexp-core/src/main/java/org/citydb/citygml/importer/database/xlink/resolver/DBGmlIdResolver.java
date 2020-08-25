@@ -27,11 +27,6 @@
  */
 package org.citydb.citygml.importer.database.xlink.resolver;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-
 import org.citydb.citygml.common.database.uid.UIDCache;
 import org.citydb.citygml.common.database.uid.UIDCacheEntry;
 import org.citydb.citygml.common.database.uid.UIDCacheManager;
@@ -39,27 +34,22 @@ import org.citydb.citygml.common.database.uid.UIDCacheType;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.log.Logger;
 
-public class DBGmlIdResolver {
-	private final Logger LOG = Logger.getInstance();
-	
-	private final Connection conn;
-	private final UIDCacheManager uidCacheManager;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
-	private PreparedStatement psSurfaceGeometryId;
-	private PreparedStatement psCityObjectId;
+public class DBGmlIdResolver {
+	private final Logger log = Logger.getInstance();
+	private final UIDCacheManager uidCacheManager;
+	private final PreparedStatement psSurfaceGeometryId;
+	private final PreparedStatement psCityObjectId;
 	
-	public DBGmlIdResolver(Connection commitConn, AbstractDatabaseAdapter databaseAdapter, UIDCacheManager uidCacheManager) throws SQLException {
-		this.conn = commitConn;
+	public DBGmlIdResolver(Connection connection, AbstractDatabaseAdapter databaseAdapter, UIDCacheManager uidCacheManager) throws SQLException {
 		this.uidCacheManager = uidCacheManager;
 		String schema = databaseAdapter.getConnectionDetails().getSchema();
-
-		StringBuilder geomStmt = new StringBuilder()
-		.append("select ID from ").append(schema).append(".SURFACE_GEOMETRY where ROOT_ID=? and GMLID=?");
-		psSurfaceGeometryId = conn.prepareStatement(geomStmt.toString());
-		
-		StringBuilder objStmt = new StringBuilder()
-		.append("select ID, OBJECTCLASS_ID from ").append(schema).append(".CITYOBJECT where GMLID=?");
-		psCityObjectId = conn.prepareStatement(objStmt.toString());
+		psSurfaceGeometryId = connection.prepareStatement("select ID from " + schema + ".SURFACE_GEOMETRY where ROOT_ID=? and GMLID=?");
+		psCityObjectId = connection.prepareStatement("select ID, OBJECTCLASS_ID from " + schema + ".CITYOBJECT where GMLID=?");
 	}
 	
 	public UIDCacheEntry getDBId(String gmlId, UIDCacheType type, boolean forceCityObjectDatabaseLookup) {
@@ -72,92 +62,45 @@ public class DBGmlIdResolver {
 		UIDCacheEntry entry = cacheLookup(gmlId, null, cache);
 
 		if (entry == null || entry.getId() == -1) {
-			
-			if (type == UIDCacheType.GEOMETRY) {
-				if (entry == null)
-					return null;
+			try {
+				if (type == UIDCacheType.GEOMETRY) {
+					if (entry == null)
+						return null;
 
-				entry = dbGeometryLookup(entry);			
-			}
-			
-			else if (forceCityObjectDatabaseLookup) {
-				if (entry != null)
-					gmlId = entry.getMapping();
-				
-				entry = dbCityObjectLookup(gmlId);
+					entry = geometryLookup(entry);
+				} else if (forceCityObjectDatabaseLookup) {
+					if (entry != null)
+						gmlId = entry.getMapping();
+
+					entry = cityObjectLookup(gmlId);
+				}
+			} catch (SQLException e) {
+				log.error("SQL error while querying the gml:id cache: " + e.getMessage());
 			}
 		}
 
 		return entry;
 	}
 
-	private UIDCacheEntry dbGeometryLookup(UIDCacheEntry entry) {
-		// init database search
-		long id;
-		ResultSet rs = null;
+	private UIDCacheEntry geometryLookup(UIDCacheEntry entry) throws SQLException {
+		psSurfaceGeometryId.setLong(1, entry.getRootId());
+		psSurfaceGeometryId.setString(2, entry.getMapping());
 
-		try {
-			psSurfaceGeometryId.setLong(1, entry.getRootId());
-			psSurfaceGeometryId.setString(2, entry.getMapping());
-			rs = psSurfaceGeometryId.executeQuery();
-
-			if (rs.next()) {
-				id = rs.getLong(1);
-				
-				return new UIDCacheEntry(id, entry.getRootId(), entry.isReverse(), entry.getMapping());
-			}
-
-		} catch (SQLException sqlEx) {
-			LOG.error("SQL error while querying the gml:id cache: " + sqlEx.getMessage());
-		} finally {
-
-			if (rs != null) {
-				try {
-					rs.close();
-				} catch (SQLException sqlEx) {
-					//
-				}
-
-				rs = null;
-			}
+		try (ResultSet rs = psSurfaceGeometryId.executeQuery()) {
+			return rs.next() ?
+					new UIDCacheEntry(rs.getLong(1), entry.getRootId(), entry.isReverse(), entry.getMapping()) :
+					null;
 		}
-
-		return null;
 	}
 
-	private UIDCacheEntry dbCityObjectLookup(String gmlId) {
-		// init database search
-		long id;
-		int objectClassId;
-		ResultSet rs = null;
+	private UIDCacheEntry cityObjectLookup(String gmlId) throws SQLException {
+		psCityObjectId.setString(1, gmlId);
 
-		try {
-			psCityObjectId.setString(1, gmlId);
-			rs = psCityObjectId.executeQuery();
-
-			if (rs.next()) {
-				id = rs.getLong(1);
-				objectClassId = rs.getInt(2);
-
-				return new UIDCacheEntry(id, 0, false, gmlId, objectClassId);
-			}
-
-		} catch (SQLException sqlEx) {
-			LOG.error("SQL error while querying the gml:id cache: " + sqlEx.getMessage());
-		} finally {
-
-			if (rs != null) {
-				try {
-					rs.close();
-				} catch (SQLException sqlEx) {
-					//
-				}
-
-				rs = null;
-			}
+		try (ResultSet rs = psCityObjectId.executeQuery()) {
+			return rs.next() ?
+					new UIDCacheEntry(rs.getLong(1), 0, false, gmlId, rs.getInt(2)) :
+					null;
 		}
-
-		return null;
 	}
 	
 	private UIDCacheEntry cacheLookup(String gmlId, UIDCacheEntry oldEntry, UIDCache cache) {

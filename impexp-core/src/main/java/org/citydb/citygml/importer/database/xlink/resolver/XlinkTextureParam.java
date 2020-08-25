@@ -27,31 +27,30 @@
  */
 package org.citydb.citygml.importer.database.xlink.resolver;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Types;
-
 import org.citydb.citygml.common.database.uid.UIDCacheEntry;
 import org.citydb.citygml.common.database.xlink.DBXlinkTextureAssociationTarget;
 import org.citydb.citygml.common.database.xlink.DBXlinkTextureParam;
 import org.citydb.citygml.common.database.xlink.DBXlinkTextureParamEnum;
 import org.citydb.util.Util;
 
-public class XlinkTextureParam implements DBXlinkResolver {
-	private final DBXlinkResolverManager resolverManager;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Types;
 
-	private PreparedStatement psTextureParam;
+public class XlinkTextureParam implements DBXlinkResolver {
+	private final DBXlinkResolverManager manager;
+	private final PreparedStatement psTextureParam;
+
 	private int batchCounter;
 
-	public XlinkTextureParam(Connection batchConn, DBXlinkResolverManager resolverManager) throws SQLException {
-		this.resolverManager = resolverManager;
-		String schemaName = resolverManager.getDatabaseAdapter().getConnectionDetails().getSchema();
+	public XlinkTextureParam(Connection connection, DBXlinkResolverManager manager) throws SQLException {
+		this.manager = manager;
 
-		StringBuilder stmt = new StringBuilder()
-		.append("insert into ").append(schemaName).append(".TEXTUREPARAM (SURFACE_GEOMETRY_ID, IS_TEXTURE_PARAMETRIZATION, WORLD_TO_TEXTURE, SURFACE_DATA_ID) values ")
-		.append("(?, ?, ?, ?)");
-		psTextureParam = batchConn.prepareStatement(stmt.toString());
+		String schemaName = manager.getDatabaseAdapter().getConnectionDetails().getSchema();
+		psTextureParam = connection.prepareStatement("insert into " + schemaName + ".TEXTUREPARAM (SURFACE_GEOMETRY_ID, " +
+				"IS_TEXTURE_PARAMETRIZATION, WORLD_TO_TEXTURE, SURFACE_DATA_ID) " +
+				"values (?, ?, ?, ?)");
 	}
 
 	public boolean insert(DBXlinkTextureParam xlink) throws SQLException {
@@ -60,7 +59,7 @@ public class XlinkTextureParam implements DBXlinkResolver {
 		if (Util.isRemoteXlink(xlink.getGmlId()))
 			return false;
 
-		UIDCacheEntry geometryEntry = resolverManager.getGeometryId(xlink.getGmlId());
+		UIDCacheEntry geometryEntry = manager.getGeometryId(xlink.getGmlId());
 		if (geometryEntry == null || geometryEntry.getId() == -1)
 			return false;
 
@@ -75,12 +74,12 @@ public class XlinkTextureParam implements DBXlinkResolver {
 			psTextureParam.setNull(3, Types.VARCHAR);
 		
 		psTextureParam.addBatch();
-		if (++batchCounter == resolverManager.getDatabaseAdapter().getMaxBatchSize())
-			executeBatch();
+		if (++batchCounter == manager.getDatabaseAdapter().getMaxBatchSize())
+			manager.executeBatch(this);
 
 		if (xlink.getType() == DBXlinkTextureParamEnum.TEXCOORDGEN && xlink.getTexParamGmlId() != null) {
 			// make sure xlinks to the corresponding texture parameterization can be resolved
-			resolverManager.propagateXlink(new DBXlinkTextureAssociationTarget(
+			manager.propagateXlink(new DBXlinkTextureAssociationTarget(
 					xlink.getId(),
 					geometryEntry.getId(),
 					xlink.getTexParamGmlId()));

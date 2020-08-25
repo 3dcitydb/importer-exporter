@@ -181,6 +181,13 @@ public class ADEObject extends KmlGenericObject{
 			else { // result not empty
 				kmlExporterManager.updateFeatureTracker(work);
 
+				if (hasPointAndCurve) {
+					// export point and curve geometries for all display forms
+					kmlExporterManager.print(createPlacemarksForPointOrCurve(pointAndCurveQueryRs, work, getPointAndCurve()),
+							work,
+							getBalloonSettings().isBalloonContentInSeparateFile());
+				}
+
 				if (hasBrep) {
 					String query;
 					if (work.getDisplayForm().getForm() == DisplayForm.FOOTPRINT || work.getDisplayForm().getForm() == DisplayForm.EXTRUDED) {
@@ -234,11 +241,6 @@ public class ADEObject extends KmlGenericObject{
 							if (work.getDisplayForm().isHighlightingEnabled())
 								kmlExporterManager.print(createPlacemarksForHighlighting(brepGeometriesQueryRs, work), work, getBalloonSettings().isBalloonContentInSeparateFile());
 
-							if (hasPointAndCurve)  // point or curve geometry
-								kmlExporterManager.print(createPlacemarksForPointOrCurve(pointAndCurveQueryRs, work, getPointAndCurve()),
-										work,
-										getBalloonSettings().isBalloonContentInSeparateFile());
-
 							break;
 
 						case DisplayForm.COLLADA:
@@ -268,7 +270,7 @@ public class ADEObject extends KmlGenericObject{
 
 							break;
 					}
-				}				
+				}
 			}
 		} catch (SQLException sqlEx) {
 			log.error("SQL error while querying city object " + work.getGmlId() + ": " + sqlEx.getMessage());

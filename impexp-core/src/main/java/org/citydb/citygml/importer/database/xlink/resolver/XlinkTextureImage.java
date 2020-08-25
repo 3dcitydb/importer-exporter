@@ -41,28 +41,27 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 public class XlinkTextureImage implements DBXlinkResolver {
-	private final Logger LOG = Logger.getInstance();
-	private final DBXlinkResolverManager resolverManager;
+	private final Logger log = Logger.getInstance();
+	private final DBXlinkResolverManager manager;
+	private final BlobImportAdapter textureImportAdapter;
+	private final CounterEvent counter;
 
-	private BlobImportAdapter textureImportAdapter;	
-	private CounterEvent counter;
-
-	public XlinkTextureImage(Connection externalFileConn, DBXlinkResolverManager resolverManager) throws SQLException {
-		this.resolverManager = resolverManager;
+	public XlinkTextureImage(Connection connection, DBXlinkResolverManager manager) throws SQLException {
+		this.manager = manager;
 		
 		counter = new CounterEvent(CounterType.TEXTURE_IMAGE, 1, this);
-		textureImportAdapter = resolverManager.getDatabaseAdapter().getSQLAdapter().getBlobImportAdapter(
-				externalFileConn, BlobType.TEXTURE_IMAGE);
+		textureImportAdapter = manager.getDatabaseAdapter().getSQLAdapter().getBlobImportAdapter(
+				connection, BlobType.TEXTURE_IMAGE);
 	}
 
 	public boolean insert(DBXlinkTextureFile xlink) throws SQLException {
-		resolverManager.propagateEvent(counter);			
+		manager.propagateEvent(counter);
 		String fileURI = xlink.getFileURI();
 		
-		try (InputStream stream = new BufferedInputStream(resolverManager.openStream(fileURI))) {
+		try (InputStream stream = new BufferedInputStream(manager.openStream(fileURI))) {
 			return textureImportAdapter.insert(xlink.getId(), stream, fileURI);
 		} catch (IOException e) {
-			LOG.error("Failed to read texture file '" + fileURI + "': " + e.getMessage());
+			log.error("Failed to read texture file '" + fileURI + "': " + e.getMessage());
 			return false;
 		}
 	}

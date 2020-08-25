@@ -27,76 +27,63 @@
  */
 package org.citydb.citygml.importer.database.xlink.resolver;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-
 import org.citydb.citygml.common.database.cache.CacheTable;
 import org.citydb.citygml.common.database.uid.UIDCacheEntry;
 import org.citydb.citygml.common.database.xlink.DBXlinkGroupToCityObject;
 import org.citydb.database.schema.mapping.FeatureType;
 
-public class XlinkGroupToCityObject implements DBXlinkResolver {
-	private final DBXlinkResolverManager resolverManager;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
-	private PreparedStatement psSelectTmp;
-	private PreparedStatement psGroupMemberToCityObject;
-	private PreparedStatement psGroupParentToCityObject;
+public class XlinkGroupToCityObject implements DBXlinkResolver {
+	private final DBXlinkResolverManager manager;
+	private final PreparedStatement psSelectTmp;
+	private final PreparedStatement psGroupMemberToCityObject;
+	private final PreparedStatement psGroupParentToCityObject;
+	private final FeatureType cityObjectGroupType;
+
 	private int parentBatchCounter;
 	private int memberBatchCounter;
-	private FeatureType cityObjectGroupType;
-	
-	public XlinkGroupToCityObject(Connection batchConn, CacheTable cacheTable, DBXlinkResolverManager resolverManager) throws SQLException {
-		this.resolverManager = resolverManager;
 
-		String schema = resolverManager.getDatabaseAdapter().getConnectionDetails().getSchema();
-		cityObjectGroupType = resolverManager.getFeatureType(23);
+	public XlinkGroupToCityObject(Connection connection, CacheTable cacheTable, DBXlinkResolverManager manager) throws SQLException {
+		this.manager = manager;
 
-		StringBuilder selectStmt = new StringBuilder("select GROUP_ID from ").append(cacheTable.getTableName()).append(" where GROUP_ID=? and IS_PARENT=?");
-		psSelectTmp = cacheTable.getConnection().prepareStatement(selectStmt.toString());
-		
-		StringBuilder insertStmt = new StringBuilder("insert into ").append(schema).append(".GROUP_TO_CITYOBJECT (CITYOBJECT_ID, CITYOBJECTGROUP_ID, ROLE) values (?, ?, ?)");
-		psGroupMemberToCityObject = batchConn.prepareStatement(insertStmt.toString());
-		
-		StringBuilder updateStmt = new StringBuilder("update ").append(schema).append(".CITYOBJECTGROUP set PARENT_CITYOBJECT_ID=? where ID=?");
-		psGroupParentToCityObject = batchConn.prepareStatement(updateStmt.toString());
+		String schema = manager.getDatabaseAdapter().getConnectionDetails().getSchema();
+		cityObjectGroupType = manager.getFeatureType(23);
+
+		psSelectTmp = cacheTable.getConnection().prepareStatement("select GROUP_ID from " + cacheTable.getTableName()
+				+ " where GROUP_ID=? and IS_PARENT=?");
+
+		psGroupMemberToCityObject = connection.prepareStatement("insert into " + schema + ".GROUP_TO_CITYOBJECT " +
+				"(CITYOBJECT_ID, CITYOBJECTGROUP_ID, ROLE) " +
+				"values (?, ?, ?)");
+
+		psGroupParentToCityObject = connection.prepareStatement("update " + schema + ".CITYOBJECTGROUP " +
+				"set PARENT_CITYOBJECT_ID=? where ID=?");
 	}
 
 	public boolean insert(DBXlinkGroupToCityObject xlink) throws SQLException {
 		// for groupMembers, we do not only lookup gml:ids within the document
 		// but within the whole database
-		UIDCacheEntry cityObjectEntry = resolverManager.getObjectId(xlink.getGmlId(), true);
+		UIDCacheEntry cityObjectEntry = manager.getObjectId(xlink.getGmlId(), true);
 		if (cityObjectEntry == null || cityObjectEntry.getId() == -1)
 			return false;		
 		
-		FeatureType featureType = resolverManager.getFeatureType(cityObjectEntry.getObjectClassId());
+		FeatureType featureType = manager.getFeatureType(cityObjectEntry.getObjectClassId());
 		if (featureType == null)
 			return false;
 
 		// be careful with cyclic groupings
 		if (featureType.isEqualToOrSubTypeOf(cityObjectGroupType)) {
-			ResultSet rs = null;
+			psSelectTmp.setLong(1, cityObjectEntry.getId());
+			psSelectTmp.setLong(2, xlink.isParent() ? 1 : 0);
 
-			try {
-				psSelectTmp.setLong(1, cityObjectEntry.getId());
-				psSelectTmp.setLong(2, xlink.isParent() ? 1 : 0);
-				rs = psSelectTmp.executeQuery();			
-
+			try (ResultSet rs = psSelectTmp.executeQuery()) {
 				if (rs.next()) {
-					resolverManager.propagateXlink(xlink);
+					manager.propagateXlink(xlink);
 					return true;
-				}
-
-			} finally {
-				if (rs != null) {
-					try {
-						rs.close();
-					} catch (SQLException e) {
-						//
-					}
-
-					rs = null;
 				}
 			}
 		}
@@ -106,8 +93,8 @@ public class XlinkGroupToCityObject implements DBXlinkResolver {
 			psGroupParentToCityObject.setLong(2, xlink.getGroupId());
 			
 			psGroupParentToCityObject.addBatch();
-			if (++parentBatchCounter == resolverManager.getDatabaseAdapter().getMaxBatchSize()) {
-				psGroupParentToCityObject.executeBatch();
+			if (++parentBatchCounter == manager.getDatabaseAdapter().getMaxBatchSize()) {
+				manager.executeBatchWithLock(psGroupParentToCityObject);
 				parentBatchCounter = 0;
 			}
 		} else {
@@ -116,15 +103,14 @@ public class XlinkGroupToCityObject implements DBXlinkResolver {
 			psGroupMemberToCityObject.setString(3, xlink.getRole());
 
 			psGroupMemberToCityObject.addBatch();
-			if (++memberBatchCounter == resolverManager.getDatabaseAdapter().getMaxBatchSize()) {
-				psGroupMemberToCityObject.executeBatch();
+			if (++memberBatchCounter == manager.getDatabaseAdapter().getMaxBatchSize()) {
+				manager.executeBatchWithLock(psGroupMemberToCityObject);
 				memberBatchCounter = 0;
 			}
 		}
 		
 		return true;
 	}
-
 
 	@Override
 	public void executeBatch() throws SQLException {
@@ -145,5 +131,4 @@ public class XlinkGroupToCityObject implements DBXlinkResolver {
 	public DBXlinkResolverEnum getDBXlinkResolverType() {
 		return DBXlinkResolverEnum.GROUP_TO_CITYOBJECT;
 	}
-
 }

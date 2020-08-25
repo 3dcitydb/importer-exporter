@@ -44,48 +44,44 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map.Entry;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.Map;
 
 public class XlinkSurfaceGeometry implements DBXlinkResolver {
-	private static final ReentrantLock mainLock = new ReentrantLock();
+	private final Connection connection;
+	private final DBXlinkResolverManager manager;
 
-	private final Connection batchConn;
-	private final DBXlinkResolverManager resolverManager;
+	private final PreparedStatement psSelectTmpSurfGeom;
+	private final PreparedStatement psSelectSurfGeom;
+	private final PreparedStatement psUpdateSurfGeom;
+	private final PreparedStatement psParentElem;
+	private final PreparedStatement psMemberElem;
+	private final Map<String, PreparedStatement> updates;
+	private final Map<String, Integer> counters;
+	private final String schema;
 
-	private PreparedStatement psSelectTmpSurfGeom;
-	private PreparedStatement psSelectSurfGeom;
-	private PreparedStatement psUpdateSurfGeom;
-	private PreparedStatement psParentElem;
-	private PreparedStatement psMemberElem;
-	private HashMap<String, PreparedStatement> psMap;
-
-	private HashMap<String, Integer> psBatchCounterMap;
-	private String schema;
 	private int parentBatchCounter;
 	private int memberBatchCounter;
 	private int updateBatchCounter;
 	
-	public XlinkSurfaceGeometry(Connection batchConn, CacheTable cacheTable, DBXlinkResolverManager resolverManager) throws SQLException {
-		this.batchConn = batchConn;
-		this.resolverManager = resolverManager;
+	public XlinkSurfaceGeometry(Connection connection, CacheTable cacheTable, DBXlinkResolverManager manager) throws SQLException {
+		this.connection = connection;
+		this.manager = manager;
 
-		psMap = new HashMap<String, PreparedStatement>();
-		psBatchCounterMap = new HashMap<String, Integer>();
-		schema = resolverManager.getDatabaseAdapter().getConnectionDetails().getSchema();
+		updates = new HashMap<>();
+		counters = new HashMap<>();
+		schema = manager.getDatabaseAdapter().getConnectionDetails().getSchema();
 
-		psSelectTmpSurfGeom = cacheTable.getConnection().prepareStatement(new StringBuilder("select ID from ").append(cacheTable.getTableName()).append(" where PARENT_ID=? or ROOT_ID=?").toString());
-		psSelectSurfGeom = batchConn.prepareStatement(resolverManager.getDatabaseAdapter().getSQLAdapter().getHierarchicalGeometryQuery());
-		
-		StringBuilder updateStmt = new StringBuilder()
-		.append("update ").append(schema).append(".SURFACE_GEOMETRY set IS_XLINK=1 where ID=?");
-		psUpdateSurfGeom = batchConn.prepareStatement(updateStmt.toString());
+		psSelectTmpSurfGeom = cacheTable.getConnection().prepareStatement("select ID from " + cacheTable.getTableName() +
+				" where PARENT_ID=? or ROOT_ID=?");
+
+		psSelectSurfGeom = connection.prepareStatement(manager.getDatabaseAdapter().getSQLAdapter().getHierarchicalGeometryQuery());
+		psUpdateSurfGeom = connection.prepareStatement("update " + schema + ".SURFACE_GEOMETRY set IS_XLINK=1 where ID=?");
 		
 		StringBuilder parentStmt = new StringBuilder()
 		.append("insert into ").append(schema).append(".SURFACE_GEOMETRY (ID, GMLID, PARENT_ID, ROOT_ID, IS_SOLID, IS_COMPOSITE, IS_TRIANGULATED, IS_XLINK, IS_REVERSE, GEOMETRY, SOLID_GEOMETRY, CITYOBJECT_ID) values ")
 		.append("(?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ");
 		
-		if (resolverManager.getDatabaseAdapter().getDatabaseType() == DatabaseType.POSTGIS) {
+		if (manager.getDatabaseAdapter().getDatabaseType() == DatabaseType.POSTGIS) {
 			// the current PostGIS JDBC driver lacks support for geometry objects of type PolyhedralSurface
 			// thus, we have to use the database function ST_GeomFromEWKT to insert such geometries
 			// TODO: rework as soon as the JDBC driver supports PolyhedralSurface
@@ -94,17 +90,16 @@ public class XlinkSurfaceGeometry implements DBXlinkResolver {
 			parentStmt.append("?, ");
 		
 		parentStmt.append("?)");
-		psParentElem = batchConn.prepareStatement(parentStmt.toString());
-		
-		StringBuilder memberStmt = new StringBuilder()
-		.append("insert into ").append(schema).append(".SURFACE_GEOMETRY (ID, GMLID, PARENT_ID, ROOT_ID, IS_SOLID, IS_COMPOSITE, IS_TRIANGULATED, IS_XLINK, IS_REVERSE, GEOMETRY, CITYOBJECT_ID) values ")
-		.append("(").append(resolverManager.getDatabaseAdapter().getSQLAdapter().getNextSequenceValue(SequenceEnum.SURFACE_GEOMETRY_ID_SEQ.getName()))
-		.append(", ?, ?, ?, 0, 0, 0, 1, ?, ?, ?)");
-		psMemberElem = batchConn.prepareStatement(memberStmt.toString());
+		psParentElem = connection.prepareStatement(parentStmt.toString());
+
+		psMemberElem = connection.prepareStatement("insert into " + schema + ".SURFACE_GEOMETRY (ID, GMLID, PARENT_ID, " +
+				"ROOT_ID, IS_SOLID, IS_COMPOSITE, IS_TRIANGULATED, IS_XLINK, IS_REVERSE, GEOMETRY, CITYOBJECT_ID) " +
+				"values (" + manager.getDatabaseAdapter().getSQLAdapter().getNextSequenceValue(SequenceEnum.SURFACE_GEOMETRY_ID_SEQ.getName()) +
+				", ?, ?, ?, 0, 0, 0, 1, ?, ?, ?)");
 	}
 
 	public boolean insert(DBXlinkSurfaceGeometry xlink) throws SQLException {
-		UIDCacheEntry rootGeometryEntry = resolverManager.getGeometryId(xlink.getGmlId());
+		UIDCacheEntry rootGeometryEntry = manager.getGeometryId(xlink.getGmlId());
 		if (rootGeometryEntry == null || rootGeometryEntry.getRootId() == -1) {
 			// do not return an error in case of implicit geometries since the
 			// the implicit geometry might be a point or curve
@@ -112,23 +107,20 @@ public class XlinkSurfaceGeometry implements DBXlinkResolver {
 		}
 
 		if (!MappingConstants.IMPLICIT_GEOMETRY_TABLE.equalsIgnoreCase(xlink.getTable())) {
-			ResultSet rs = null;
+			// check whether we deal with a local gml:id
+			// remote gml:ids are not supported so far...
+			String gmlId = rootGeometryEntry.getMapping();
+			if (Util.isRemoteXlink(gmlId))
+				return false;
 
-			try {
-				// check whether we deal with a local gml:id
-				// remote gml:ids are not supported so far...
-				String gmlId = rootGeometryEntry.getMapping();
-				if (Util.isRemoteXlink(gmlId))
-					return false;
+			// check whether this geometry is referenced by another xlink
+			psSelectTmpSurfGeom.setLong(1, rootGeometryEntry.getId());
+			psSelectTmpSurfGeom.setLong(2, rootGeometryEntry.getId());
 
-				// check whether this geometry is referenced by another xlink
-				psSelectTmpSurfGeom.setLong(1, rootGeometryEntry.getId());
-				psSelectTmpSurfGeom.setLong(2, rootGeometryEntry.getId());
-				rs = psSelectTmpSurfGeom.executeQuery();
-
+			try (ResultSet rs = psSelectTmpSurfGeom.executeQuery()) {
 				if (rs.next()) {
 					// we need to re-work on this
-					resolverManager.propagateXlink(xlink);
+					manager.propagateXlink(xlink);
 					return true;
 				}
 
@@ -149,31 +141,21 @@ public class XlinkSurfaceGeometry implements DBXlinkResolver {
 						ps.setLong(2, xlink.getCityObjectId());
 
 						ps.addBatch();
-						int counter = psBatchCounterMap.get(key);
-						if (++counter == resolverManager.getDatabaseAdapter().getMaxBatchSize()) {
-							ps.executeBatch();
-							psBatchCounterMap.put(key, 0);
-						} else
-							psBatchCounterMap.put(key, counter);
+						if (counters.merge(key, 1, Integer::sum) == manager.getDatabaseAdapter().getMaxBatchSize()) {
+							manager.executeBatchWithLock(ps);
+							counters.put(key, 0);
+						}
 					}
-				}
-			} finally {
-				if (rs != null) {
-					try {
-						rs.close();
-					} catch (SQLException sqlEx) {
-						//
-					}
-
-					rs = null;
 				}
 			}
 		}
 
 		psUpdateSurfGeom.setLong(1, rootGeometryEntry.getId());
 		psUpdateSurfGeom.addBatch();
-		if (++updateBatchCounter == resolverManager.getDatabaseAdapter().getMaxBatchSize())
-			executeUpdateSurfGeomBatch();
+		if (++updateBatchCounter == manager.getDatabaseAdapter().getMaxBatchSize()) {
+			manager.executeBatchWithLock(psUpdateSurfGeom);
+			updateBatchCounter = 0;
+		}
 
 		return true;
 	}
@@ -183,7 +165,7 @@ public class XlinkSurfaceGeometry implements DBXlinkResolver {
 		long surfaceGeometryId = 0;
 
 		if (node.geometry != null) {
-			Object obj = resolverManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(node.geometry, batchConn);
+			Object obj = manager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(node.geometry, connection);
 
 			psMemberElem.setString(1, gmlId);
 			psMemberElem.setLong(2, parentId);
@@ -197,19 +179,18 @@ public class XlinkSurfaceGeometry implements DBXlinkResolver {
 				psMemberElem.setNull(6, Types.NULL);
 
 			psMemberElem.addBatch();
-			if (++memberBatchCounter == resolverManager.getDatabaseAdapter().getMaxBatchSize()) {
-				psParentElem.executeBatch();
-				psMemberElem.executeBatch();
+			if (++memberBatchCounter == manager.getDatabaseAdapter().getMaxBatchSize()) {
+				manager.executeBatchWithLock(psParentElem);
+				manager.executeBatchWithLock(psMemberElem);
 				parentBatchCounter = 0;
 				memberBatchCounter = 0;
 			}
-
 		} else {
 			// set root entry
 			long isSolid = node.isSolid ? 1 : 0;
 			long isComposite = node.isComposite ? 1 : 0;
 			long isTriangulated = node.isTriangulated ? 1 : 0;
-			surfaceGeometryId = resolverManager.getDBId(SequenceEnum.SURFACE_GEOMETRY_ID_SEQ.getName());
+			surfaceGeometryId = manager.getDBId(SequenceEnum.SURFACE_GEOMETRY_ID_SEQ.getName());
 			if (rootId == 0)
 				rootId = surfaceGeometryId;
 
@@ -220,14 +201,14 @@ public class XlinkSurfaceGeometry implements DBXlinkResolver {
 			psParentElem.setLong(6, isComposite);
 			psParentElem.setLong(7, isTriangulated);
 			psParentElem.setInt(8, node.isReverse ? 1 : 0);
-			psParentElem.setNull(9, resolverManager.getDatabaseAdapter().getGeometryConverter().getNullGeometryType(),
-					resolverManager.getDatabaseAdapter().getGeometryConverter().getNullGeometryTypeName());
+			psParentElem.setNull(9, manager.getDatabaseAdapter().getGeometryConverter().getNullGeometryType(),
+					manager.getDatabaseAdapter().getGeometryConverter().getNullGeometryTypeName());
 
 			if (node.solidGeometry != null)
 				psParentElem.setObject(10, node.solidGeometry);
 			else
-				psParentElem.setNull(10, resolverManager.getDatabaseAdapter().getGeometryConverter().getNullGeometryType(),
-						resolverManager.getDatabaseAdapter().getGeometryConverter().getNullGeometryTypeName());
+				psParentElem.setNull(10, manager.getDatabaseAdapter().getGeometryConverter().getNullGeometryType(),
+						manager.getDatabaseAdapter().getGeometryConverter().getNullGeometryTypeName());
 
 			if (parentId != 0)
 				psParentElem.setLong(3, parentId);
@@ -240,8 +221,8 @@ public class XlinkSurfaceGeometry implements DBXlinkResolver {
 				psParentElem.setNull(11, Types.NULL);
 
 			psParentElem.addBatch();
-			if (++parentBatchCounter == resolverManager.getDatabaseAdapter().getMaxBatchSize()) {
-				psParentElem.executeBatch();
+			if (++parentBatchCounter == manager.getDatabaseAdapter().getMaxBatchSize()) {
+				manager.executeBatchWithLock(psParentElem);
 				parentBatchCounter = 0;
 			}
 
@@ -253,14 +234,11 @@ public class XlinkSurfaceGeometry implements DBXlinkResolver {
 	}
 
 	private GeometryNode read(long rootId, boolean reverse) throws SQLException {
-		ResultSet rs = null;
+		psSelectSurfGeom.setLong(1, rootId);
 
-		try {
-			psSelectSurfGeom.setLong(1, rootId);
-			rs = psSelectSurfGeom.executeQuery();
-
+		try (ResultSet rs = psSelectSurfGeom.executeQuery()) {
 			GeometryNode root = null;
-			HashMap<Long, GeometryNode> parentMap = new HashMap<Long, GeometryNode>();
+			HashMap<Long, GeometryNode> parentMap = new HashMap<>();
 
 			// rebuild geometry hierarchy
 			while (rs.next()) {
@@ -279,7 +257,7 @@ public class XlinkSurfaceGeometry implements DBXlinkResolver {
 				GeometryObject geometry = null;
 				Object object = rs.getObject("GEOMETRY");
 				if (!rs.wasNull() && object != null)
-					geometry = resolverManager.getDatabaseAdapter().getGeometryConverter().getPolygon(object);
+					geometry = manager.getDatabaseAdapter().getGeometryConverter().getPolygon(object);
 
 				// constructing a geometry node
 				GeometryNode geomNode = new GeometryNode();
@@ -307,16 +285,6 @@ public class XlinkSurfaceGeometry implements DBXlinkResolver {
 				return root;
 			} else {
 				return null;
-			}
-		} finally {
-			if (rs != null) {
-				try {
-					rs.close();
-				} catch (SQLException sqlEx) {
-					//
-				}
-
-				rs = null;
 			}
 		}
 	}
@@ -347,7 +315,7 @@ public class XlinkSurfaceGeometry implements DBXlinkResolver {
 		}
 	}
 
-	private class GeometryNode {
+	private static class GeometryNode {
 		private String gmlId;
 		private boolean isSolid;
 		private boolean isComposite;
@@ -355,7 +323,7 @@ public class XlinkSurfaceGeometry implements DBXlinkResolver {
 		private boolean isReverse;
 		private GeometryObject geometry;
 		private Object solidGeometry;
-		private List<GeometryNode> childNodes = new ArrayList<GeometryNode>();
+		private final List<GeometryNode> childNodes = new ArrayList<>();
 	}
 
 	private String getKey(String fromTable, String fromColumn) {
@@ -363,11 +331,10 @@ public class XlinkSurfaceGeometry implements DBXlinkResolver {
 	}
 
 	private PreparedStatement getUpdateStatement(String fromTable, String fromColumn, String key) throws SQLException {
-		PreparedStatement ps = psMap.get(key);
+		PreparedStatement ps = updates.get(key);
 		if (ps == null) {
-			ps = batchConn.prepareStatement("update " + schema + "." + fromTable + " set " + fromColumn + "=? where ID=?");
-			psMap.put(key, ps);
-			psBatchCounterMap.put(key, 0);
+			ps = connection.prepareStatement("update " + schema + "." + fromTable + " set " + fromColumn + "=? where ID=?");
+			updates.put(key, ps);
 		}
 
 		return ps;
@@ -377,27 +344,14 @@ public class XlinkSurfaceGeometry implements DBXlinkResolver {
 	public void executeBatch() throws SQLException {
 		psParentElem.executeBatch();
 		psMemberElem.executeBatch();
-		for (PreparedStatement ps : psMap.values())
-			ps.executeBatch();		
+		psUpdateSurfGeom.executeBatch();
+		for (PreparedStatement ps : updates.values())
+			ps.executeBatch();
 
+		updateBatchCounter = 0;
 		parentBatchCounter = 0;
 		memberBatchCounter = 0;
-		for (Entry<String, Integer> entry : psBatchCounterMap.entrySet())
-			entry.setValue(0);
-
-		executeUpdateSurfGeomBatch();
-	}
-
-	private void executeUpdateSurfGeomBatch() throws SQLException {
-		// we need to synchronize updates otherwise Oracle will run into deadlocks
-		final ReentrantLock lock = mainLock;
-		lock.lock();
-		try {
-			psUpdateSurfGeom.executeBatch();
-			updateBatchCounter = 0;
-		} finally {
-			lock.unlock();
-		}
+		counters.replaceAll((k, v) -> v = 0);
 	}
 
 	@Override
@@ -407,7 +361,7 @@ public class XlinkSurfaceGeometry implements DBXlinkResolver {
 		psUpdateSurfGeom.close();
 		psParentElem.close();
 		psMemberElem.close();
-		for (PreparedStatement ps : psMap.values())
+		for (PreparedStatement ps : updates.values())
 			ps.close();
 	}
 

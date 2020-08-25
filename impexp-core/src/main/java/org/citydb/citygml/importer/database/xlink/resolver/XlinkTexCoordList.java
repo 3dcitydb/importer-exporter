@@ -27,13 +27,6 @@
  */
 package org.citydb.citygml.importer.database.xlink.resolver;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Map.Entry;
-
 import org.citydb.citygml.common.database.cache.CacheTable;
 import org.citydb.citygml.common.database.xlink.DBXlinkTextureAssociationTarget;
 import org.citydb.citygml.common.database.xlink.DBXlinkTextureCoordList;
@@ -41,37 +34,42 @@ import org.citydb.config.geometry.GeometryObject;
 import org.citydb.log.Logger;
 import org.citydb.util.Util;
 
-public class XlinkTexCoordList implements DBXlinkResolver {
-	private final Logger LOG = Logger.getInstance();
-	private final Connection batchConn;
-	private final DBXlinkResolverManager resolverManager;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map.Entry;
 
-	private PreparedStatement psSelectTexCoords;
-	private PreparedStatement psSelectTexCoordsByGmlId;
-	private PreparedStatement psSelectLinearRings;
-	private PreparedStatement psTextureParam;
+public class XlinkTexCoordList implements DBXlinkResolver {
+	private final Logger log = Logger.getInstance();
+	private final Connection connection;
+	private final DBXlinkResolverManager manager;
+
+	private final PreparedStatement psSelectTexCoords;
+	private final PreparedStatement psSelectTexCoordsByGmlId;
+	private final PreparedStatement psSelectLinearRings;
+	private final PreparedStatement psTextureParam;
+
 	private int batchCounter;
 	
-	public XlinkTexCoordList(Connection batchConn, CacheTable texCoords, CacheTable linearRings, DBXlinkResolverManager resolverManager) throws SQLException {
-		this.batchConn = batchConn;
-		this.resolverManager = resolverManager;
-		String schema = resolverManager.getDatabaseAdapter().getConnectionDetails().getSchema();
+	public XlinkTexCoordList(Connection connection, CacheTable texCoords, CacheTable linearRings, DBXlinkResolverManager manager) throws SQLException {
+		this.connection = connection;
+		this.manager = manager;
+		String schema = manager.getDatabaseAdapter().getConnectionDetails().getSchema();
 
-		psSelectTexCoords = texCoords.getConnection().prepareStatement(new StringBuilder()
-		.append("select GMLID, TEXTURE_COORDINATES from ").append(texCoords.getTableName()).append(" ")
-		.append("where TARGET_ID=? and ID=?").toString());
+		psSelectTexCoords = texCoords.getConnection().prepareStatement("select GMLID, TEXTURE_COORDINATES from " +
+				texCoords.getTableName() + " where TARGET_ID=? and ID=?");
 
-		psSelectTexCoordsByGmlId = texCoords.getConnection().prepareStatement(new StringBuilder()
-		.append("select GMLID, TEXTURE_COORDINATES from ").append(texCoords.getTableName()).append(" ")
-		.append("where GMLID=?").toString());
+		psSelectTexCoordsByGmlId = texCoords.getConnection().prepareStatement("select GMLID, TEXTURE_COORDINATES from " +
+				texCoords.getTableName() + " where GMLID=?");
 
-		psSelectLinearRings = linearRings.getConnection().prepareStatement(new StringBuilder()
-		.append("select GMLID, RING_NO from ").append(linearRings.getTableName()).append(" where PARENT_ID = ?").toString());
+		psSelectLinearRings = linearRings.getConnection().prepareStatement("select GMLID, RING_NO from " +
+				linearRings.getTableName() + " where PARENT_ID = ?");
 
-		StringBuilder stmt = new StringBuilder()
-		.append("insert into ").append(schema).append(".TEXTUREPARAM (SURFACE_GEOMETRY_ID, IS_TEXTURE_PARAMETRIZATION, TEXTURE_COORDINATES, SURFACE_DATA_ID) values ")
-		.append("(?, 1, ?, ?)");
-		psTextureParam = batchConn.prepareStatement(stmt.toString());
+		psTextureParam = connection.prepareStatement("insert into " + schema + ".TEXTUREPARAM (SURFACE_GEOMETRY_ID, " +
+				"IS_TEXTURE_PARAMETRIZATION, TEXTURE_COORDINATES, SURFACE_DATA_ID) " +
+				"values (?, 1, ?, ?)");
 	}
 
 	public boolean insert(DBXlinkTextureCoordList xlink) throws SQLException {
@@ -115,7 +113,7 @@ public class XlinkTexCoordList implements DBXlinkResolver {
 			double[][] texCoords = new double[ringNos.size()][];
 			while (rs.next()) {
 				String ringId = rs.getString(1);
-				GeometryObject texCoord = resolverManager.getCacheAdapter().getGeometryConverter().getPolygon(rs.getObject(2));
+				GeometryObject texCoord = manager.getCacheAdapter().getGeometryConverter().getPolygon(rs.getObject(2));
 				if (texCoord != null && ringNos.containsKey(ringId))
 					texCoords[ringNos.get(ringId)] = texCoord.getCoordinates(0);
 			}
@@ -127,7 +125,7 @@ public class XlinkTexCoordList implements DBXlinkResolver {
 				if (texCoords[i] == null) {
 					for (Entry<String, Integer> entry : ringNos.entrySet()) {
 						if (entry.getValue() == i) {
-							LOG.warn("Missing texture coordinates for ring '" + entry.getValue() + "'.");
+							log.warn("Missing texture coordinates for ring '" + entry.getValue() + "'.");
 							return false;
 						}
 					}
@@ -149,16 +147,16 @@ public class XlinkTexCoordList implements DBXlinkResolver {
 
 			// step 5: update textureparam
 			psTextureParam.setLong(1, surfaceGeometryId);
-			psTextureParam.setObject(2, resolverManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(GeometryObject.createPolygon(texCoords, 2, 0), batchConn));
+			psTextureParam.setObject(2, manager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(GeometryObject.createPolygon(texCoords, 2, 0), connection));
 			psTextureParam.setLong(3, xlink.getId());
 
 			psTextureParam.addBatch();
-			if (++batchCounter == resolverManager.getDatabaseAdapter().getMaxBatchSize())
+			if (++batchCounter == manager.getDatabaseAdapter().getMaxBatchSize())
 				executeBatch();
 
 			if (xlink.getTexParamGmlId() != null) {
 				// make sure xlinks to the corresponding texture parameterization can be resolved
-				resolverManager.propagateXlink(new DBXlinkTextureAssociationTarget(
+				manager.propagateXlink(new DBXlinkTextureAssociationTarget(
 						xlink.getId(),
 						surfaceGeometryId,
 						xlink.getTexParamGmlId()));

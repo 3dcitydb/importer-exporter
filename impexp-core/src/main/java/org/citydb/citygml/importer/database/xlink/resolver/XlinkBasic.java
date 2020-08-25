@@ -35,35 +35,36 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.HashMap;
-import java.util.Map.Entry;
+import java.util.Map;
 
 public class XlinkBasic implements DBXlinkResolver {
-	private final Connection batchConn;
-	private final DBXlinkResolverManager resolverManager;
+	private final Connection connection;
+	private final DBXlinkResolverManager manager;
 
-	private HashMap<String, PreparedStatement> psMap;
-	private HashMap<String, Integer> psBatchCounterMap;
-	private String schema;
+	private final Map<String, PreparedStatement> statements;
+	private final Map<String, Integer> counters;
+	private final String schema;
 
-	public XlinkBasic(Connection batchConn, DBXlinkResolverManager resolverManager) {
-		this.batchConn = batchConn;
-		this.resolverManager = resolverManager;
+	public XlinkBasic(Connection connection, DBXlinkResolverManager manager) {
+		this.connection = connection;
+		this.manager = manager;
 
-		psMap = new HashMap<>();
-		psBatchCounterMap = new HashMap<>();
-		schema = resolverManager.getDatabaseAdapter().getConnectionDetails().getSchema();
+		schema = manager.getDatabaseAdapter().getConnectionDetails().getSchema();
+		statements = new HashMap<>();
+		counters = new HashMap<>();
 	}
 
 	public boolean insert(DBXlinkBasic xlink) throws SQLException {
 		UIDCacheEntry entry = TableEnum.SURFACE_GEOMETRY.getName().equalsIgnoreCase(xlink.getTable()) ? 
-				resolverManager.getGeometryId(xlink.getGmlId()) : resolverManager.getObjectId(xlink.getGmlId());
+				manager.getGeometryId(xlink.getGmlId()) :
+				manager.getObjectId(xlink.getGmlId());
+
 		if (entry == null)
 			return false;
 
 		String key = getKey(xlink);
 		PreparedStatement ps = getPreparedStatement(xlink, key);
 		if (ps != null) {
-
 			if (xlink.isReverse()) {
 				ps.setLong(1, xlink.getId());
 				ps.setLong(2, entry.getId());
@@ -73,35 +74,23 @@ public class XlinkBasic implements DBXlinkResolver {
 			}
 
 			ps.addBatch();
-			int counter = psBatchCounterMap.get(key);
-			if (++counter == resolverManager.getDatabaseAdapter().getMaxBatchSize()) {
-				ps.executeBatch();
-				psBatchCounterMap.put(key, 0);
-			} else
-				psBatchCounterMap.put(key, counter);
+			if (counters.merge(key, 1, Integer::sum) == manager.getDatabaseAdapter().getMaxBatchSize()) {
+				manager.executeBatchWithLock(ps);
+				counters.put(key, 0);
+			}
 		}
 
 		return true;
 	}
 
 	private PreparedStatement getPreparedStatement(DBXlinkBasic xlink, String key) throws SQLException {
-		PreparedStatement ps = psMap.get(key);
+		PreparedStatement ps = statements.get(key);
 		if (ps == null) {
-			if (xlink.isBidirectional()) {
-				ps = batchConn.prepareStatement("insert into " + schema + "." + xlink.getTable() +
-						" (" + xlink.getToColumn() + ", " + xlink.getFromColumn() + ") " +
-						"values (?, ?)");
-			}
+			ps = connection.prepareStatement(xlink.isBidirectional() ?
+					"insert into " + schema + "." + xlink.getTable() + " (" + xlink.getToColumn() + ", " + xlink.getFromColumn() + ") values (?, ?)" :
+					"update " + schema + "." + xlink.getTable() + " set " + (xlink.isForward() ? xlink.getFromColumn() : xlink.getToColumn()) + "=? where ID=?");
 
-			else {
-				ps = batchConn.prepareStatement("update " + schema + "." + xlink.getTable() +
-						" set " + (xlink.isForward() ? xlink.getFromColumn() : xlink.getToColumn()) + "=? where ID=?");
-			}
-			
-			if (ps != null) {
-				psMap.put(key, ps);
-				psBatchCounterMap.put(key, 0);
-			}
+			statements.put(key, ps);
 		}
 
 		return ps;
@@ -113,16 +102,15 @@ public class XlinkBasic implements DBXlinkResolver {
 
 	@Override
 	public void executeBatch() throws SQLException {
-		for (PreparedStatement ps : psMap.values())
+		for (PreparedStatement ps : statements.values())
 			ps.executeBatch();
 
-		for (Entry<String, Integer> entry : psBatchCounterMap.entrySet())
-			entry.setValue(0);
+		counters.replaceAll((k, v) -> v = 0);
 	}
 
 	@Override
 	public void close() throws SQLException {
-		for (PreparedStatement ps : psMap.values())
+		for (PreparedStatement ps : statements.values())
 			ps.close();
 	}
 
@@ -130,5 +118,4 @@ public class XlinkBasic implements DBXlinkResolver {
 	public DBXlinkResolverEnum getDBXlinkResolverType() {
 		return DBXlinkResolverEnum.BASIC;
 	}
-
 }
