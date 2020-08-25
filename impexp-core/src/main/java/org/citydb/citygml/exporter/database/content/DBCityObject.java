@@ -176,8 +176,12 @@ public class DBCityObject implements DBExporter {
 				.addSelection(ComparisonFactory.equalTo(table.getColumn("id"), new PlaceHolder<>())).toString());
 	}
 
-	protected void addBatch(AbstractGML object, long objectId, AbstractObjectType<?> objectType, ProjectionFilter projectionFilter) {
+	protected void addBatch(AbstractGML object, long objectId, AbstractObjectType<?> objectType, ProjectionFilter projectionFilter) throws CityGMLExportException, SQLException {
 		batches.computeIfAbsent(objectId, v -> new ArrayList<>()).add(new ObjectContext(object, objectType, projectionFilter));
+
+		// ADE-specific extensions
+		if (exporter.hasADESupport())
+			exporter.delegateToADEExporter(object, objectId, objectType, projectionFilter);
 	}
 
 	public boolean executeBatch() throws CityGMLExportException, SQLException {

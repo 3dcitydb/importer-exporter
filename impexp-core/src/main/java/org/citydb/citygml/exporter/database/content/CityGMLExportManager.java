@@ -160,12 +160,12 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 	private final LodGeometryChecker lodGeometryChecker;
 	private final ExportCounter exportCounter;
 	private final JAXBUnmarshaller jaxbUnmarshaller;
+	private final boolean hasADESupport;
+
 	private GMLConverter gmlConverter;
 	private AppearanceRemover appearanceRemover;
 	private Document document;
-
-	private boolean failOnError = false;
-	private boolean hasADESupport;
+	private boolean failOnError;
 
 	public CityGMLExportManager(OutputFile outputFile,
 			Connection connection,
@@ -310,8 +310,10 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 			success = getExporter(DBAddress.class).doExport((Address)object, objectId, (FeatureType)objectType);
 
 		// generic fallback for any ADE object
-		else
-			success = getExporter(DBCityObject.class).doExport(object, objectId, objectType);
+		else {
+			getExporter(DBCityObject.class).addBatch(object, objectId, objectType, query.getProjectionFilter(objectType));
+			success = true;
+		}
 
 		return success ? object : null;
 	}
