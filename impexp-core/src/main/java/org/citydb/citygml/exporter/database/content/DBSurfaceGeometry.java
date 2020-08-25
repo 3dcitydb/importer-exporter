@@ -197,11 +197,6 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryBatchExport
 	}
 
 	@Override
-	public void clearBatch() {
-		batches.clear();
-	}
-
-	@Override
 	public void executeBatch() throws CityGMLExportException, SQLException {
 		if (batches.isEmpty())
 			return;

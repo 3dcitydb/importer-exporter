@@ -18,6 +18,5 @@ public interface SurfaceGeometryBatchExporter {
     void addBatch(long id, GeometrySetter.CompositeSolid setter);
     void addBatch(long id, GeometrySetter.MultiSolid setter);
     void addBatch(long id, GeometrySetter.Tin setter);
-    void clearBatch();
     void executeBatch() throws CityGMLExportException, SQLException;
 }
