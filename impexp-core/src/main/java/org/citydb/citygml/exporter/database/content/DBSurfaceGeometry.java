@@ -76,7 +76,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryBatchExporter {
+public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryExporter {
 	private final CityGMLExportManager exporter;
 	private final PreparedStatement psBulk;
 	private final PreparedStatement psSelect;
@@ -196,7 +196,6 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryBatchExport
 				true));
 	}
 
-	@Override
 	public void executeBatch() throws CityGMLExportException, SQLException {
 		if (batches.isEmpty())
 			return;

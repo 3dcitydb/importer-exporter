@@ -436,28 +436,20 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 			getADEExportManager(adeHookTable).exportGenericApplicationProperties(adeHookTable, parent, parentId, parentType, projectionFilter);
 	}
 
-	public boolean executeCityObjectBatch() throws CityGMLExportException, SQLException {
-		return getExporter(DBCityObject.class).executeBatch();
+	@Override
+	public void executeBatch() throws CityGMLExportException, SQLException {
+		getExporter(DBCityObject.class).executeBatch();
+		getExporter(DBSurfaceGeometry.class).executeBatch();
 	}
 
 	@Override
-	public SurfaceGeometryBatchExporter getSurfaceGeometryBatchExporter() throws CityGMLExportException, SQLException {
+	public SurfaceGeometryExporter getSurfaceGeometryExporter() throws CityGMLExportException, SQLException {
 		return getExporter(DBSurfaceGeometry.class);
 	}
 
 	@Override
-	public SurfaceGeometry exportSurfaceGeometry(long surfaceGeometryId) throws CityGMLExportException, SQLException {
-		return getExporter(DBSurfaceGeometry.class).doExport(surfaceGeometryId);
-	}
-
-	@Override
-	public ImplicitGeometry exportImplicitGeometry(long id, GeometryObject referencePoint, String transformationMatrix) throws CityGMLExportException, SQLException {
-		return exportImplicitGeometry(id, referencePoint, transformationMatrix, true);
-	}
-
-	@Override
-	public ImplicitGeometry exportImplicitGeometry(long id, GeometryObject referencePoint, String transformationMatrix, boolean useBatchGeometryExport) throws CityGMLExportException, SQLException {
-		return getExporter(DBImplicitGeometry.class).doExport(id, referencePoint, transformationMatrix, useBatchGeometryExport);
+	public ImplicitGeometry createImplicitGeometry(long id, GeometryObject referencePoint, String transformationMatrix) throws CityGMLExportException, SQLException {
+		return getExporter(DBImplicitGeometry.class).doExport(id, referencePoint, transformationMatrix);
 	}
 
 	public Appearance exportGlobalAppearance(long appearanceId) throws CityGMLExportException, SQLException {
@@ -725,6 +717,10 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 				&& !query.getLodFilter().preservesGeometry()
 				&& object instanceof AbstractFeature)
 			lodGeometryChecker.cleanupCityObjects((AbstractFeature) object);
+	}
+
+	public boolean isTiledExport() {
+		return query.isSetTiling();
 	}
 
 	public boolean isLazyTextureExport() {

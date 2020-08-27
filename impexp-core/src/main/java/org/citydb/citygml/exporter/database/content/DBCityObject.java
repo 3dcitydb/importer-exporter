@@ -54,6 +54,7 @@ import org.citydb.sqlbuilder.select.Select;
 import org.citydb.sqlbuilder.select.join.JoinFactory;
 import org.citydb.sqlbuilder.select.operator.comparison.ComparisonFactory;
 import org.citydb.sqlbuilder.select.operator.comparison.ComparisonName;
+import org.citydb.util.CoreConstants;
 import org.citygml4j.geometry.BoundingBox;
 import org.citygml4j.geometry.Point;
 import org.citygml4j.model.citygml.core.AbstractCityObject;
@@ -311,8 +312,10 @@ public class DBCityObject implements DBExporter {
 
 			// check bounding volume filter
 			if (useTiling && context.isTopLevel) {
-				if (boundedBy == null || !boundedBy.isSetEnvelope())
+				if (boundedBy == null || !boundedBy.isSetEnvelope()) {
+					context.object.setLocalProperty(CoreConstants.NOT_ON_TILE, true);
 					return false;
+				}
 
 				try {
 					BoundingBox bbox = boundedBy.getEnvelope().toBoundingBox();
@@ -320,8 +323,10 @@ public class DBCityObject implements DBExporter {
 									(bbox.getLowerCorner().getX() + bbox.getUpperCorner().getX()) / 2.0,
 									(bbox.getLowerCorner().getY() + bbox.getUpperCorner().getY()) / 2.0,
 									query.getTargetSrs()),
-							exporter.getDatabaseAdapter()))
+							exporter.getDatabaseAdapter())) {
+						context.object.setLocalProperty(CoreConstants.NOT_ON_TILE, true);
 						return false;
+					}
 				} catch (FilterException e) {
 					throw new CityGMLExportException("Failed to apply the tiling filter.", e);
 				}

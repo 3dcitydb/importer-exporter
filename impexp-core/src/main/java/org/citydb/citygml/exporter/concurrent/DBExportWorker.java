@@ -58,6 +58,7 @@ import org.citydb.plugin.PluginException;
 import org.citydb.plugin.PluginManager;
 import org.citydb.plugin.extension.export.CityGMLExportExtension;
 import org.citydb.query.Query;
+import org.citydb.util.CoreConstants;
 import org.citygml4j.builder.jaxb.CityGMLBuilder;
 import org.citygml4j.model.citygml.appearance.Appearance;
 import org.citygml4j.model.gml.base.AbstractGML;
@@ -175,11 +176,12 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 			else
 				topLevelObject = exporter.exportObject(work.getId(), work.getObjectType(), false);
 
-			boolean doExport = topLevelObject instanceof AbstractFeature && exporter.executeCityObjectBatch();
-			if (doExport) {
-				// trigger batch export of surface geometries
-				exporter.getSurfaceGeometryBatchExporter().executeBatch();
+			// execute batch export
+			exporter.executeBatch();
 
+			if (topLevelObject instanceof AbstractFeature
+					&& (!exporter.isTiledExport()
+					|| !topLevelObject.hasLocalProperty(CoreConstants.NOT_ON_TILE))) {
 				// remove empty city objects and clean up appearances if LoDs are filtered
 				if (!exporter.getLodFilter().preservesGeometry()) {
 					exporter.cleanupCityObjects(topLevelObject);
@@ -201,7 +203,7 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 					}
 				}
 
-				// write feature to file
+				// write feature
 				featureWriter.write((AbstractFeature) topLevelObject, work.getSequenceId());
 
 				// register gml:id in cache
@@ -239,5 +241,4 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 		if (event.getChannel() == eventChannel)
 			shouldWork = false;
 	}
-
 }

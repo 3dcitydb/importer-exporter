@@ -92,10 +92,6 @@ public class DBImplicitGeometry implements DBExporter {
 	}
 
 	protected ImplicitGeometry doExport(long id, GeometryObject referencePoint, String transformationMatrix) throws CityGMLExportException, SQLException {
-		return doExport(id, referencePoint, transformationMatrix, true);
-	}
-
-	protected ImplicitGeometry doExport(long id, GeometryObject referencePoint, String transformationMatrix, boolean useBatchGeometryExport) throws CityGMLExportException, SQLException {
 		ps.setLong(1, id);
 		
 		try (ResultSet rs = ps.executeQuery()) {		
@@ -130,20 +126,8 @@ public class DBImplicitGeometry implements DBExporter {
 
 					if (exporter.lookupGeometryUID(gmlId)) {
 						implicit.setRelativeGeometry(new GeometryProperty<>("#" + gmlId));
-					} else if (useBatchGeometryExport) {
-						geometryExporter.addImplicitGeometryBatch(geometryId, implicit);
 					} else {
-						SurfaceGeometry geometry = geometryExporter.doExportImplicitGeometry(geometryId);
-						if (geometry != null) {
-							GeometryProperty<AbstractGeometry> property = new GeometryProperty<>();
-							if (geometry.isSetGeometry())
-								property.setGeometry(geometry.getGeometry());
-							else
-								property.setHref(geometry.getReference());
-
-							implicit.setRelativeGeometry(property);
-						} else
-							isValid = false;
+						geometryExporter.addImplicitGeometryBatch(geometryId, implicit);
 					}
 				} else {
 					Object otherGeomObj = rs.getObject(5);
