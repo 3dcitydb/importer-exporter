@@ -113,15 +113,15 @@ public class GeometryConverterAdapter extends AbstractGeometryConverterAdapter {
 		if (dimension == 3) {
 			for (int i = 0; i < exterior.getNumPoints(); i++) {
 				Coordinate coordinate = exterior.getPointN(i).getCoordinate();
-				coordinates[0][element++] = coordinate.getX();
-				coordinates[0][element++] = coordinate.getY();
-				coordinates[0][element++] = coordinate.getZ();
+				coordinates[0][element++] = coordinate.x;
+				coordinates[0][element++] = coordinate.y;
+				coordinates[0][element++] = coordinate.z;
 			}
 		} else {
 			for (int i = 0; i < exterior.getNumPoints(); i++) {
 				Coordinate coordinate = exterior.getPointN(i).getCoordinate();
-				coordinates[0][element++] = coordinate.getX();
-				coordinates[0][element++] = coordinate.getY();
+				coordinates[0][element++] = coordinate.x;
+				coordinates[0][element++] = coordinate.y;
 			}
 		}
 
@@ -132,15 +132,15 @@ public class GeometryConverterAdapter extends AbstractGeometryConverterAdapter {
 			if (dimension == 3) {
 				for (int j = 0; j < interior.getNumPoints(); j++) {
 					Coordinate coordinate = exterior.getPointN(j).getCoordinate();
-					coordinates[i + 1][element++] = coordinate.getX();
-					coordinates[i + 1][element++] = coordinate.getY();
-					coordinates[i + 1][element++] = coordinate.getZ();
+					coordinates[i + 1][element++] = coordinate.x;
+					coordinates[i + 1][element++] = coordinate.y;
+					coordinates[i + 1][element++] = coordinate.z;
 				}
 			} else {
 				for (int j = 0; j < interior.getNumPoints(); j++) {
 					Coordinate coordinate = exterior.getPointN(j).getCoordinate();
-					coordinates[i + 1][element++] = coordinate.getX();
-					coordinates[i + 1][element++] = coordinate.getY();
+					coordinates[i + 1][element++] = coordinate.x;
+					coordinates[i + 1][element++] = coordinate.y;
 				}
 			}
 		}
