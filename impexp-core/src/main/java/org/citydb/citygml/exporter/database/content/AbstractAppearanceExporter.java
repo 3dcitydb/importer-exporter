@@ -63,10 +63,10 @@ import org.citygml4j.model.citygml.appearance.SurfaceDataProperty;
 import org.citygml4j.model.citygml.appearance.TextureType;
 import org.citygml4j.model.citygml.appearance.WrapMode;
 import org.citygml4j.model.citygml.appearance.X3DMaterial;
-import org.citygml4j.model.citygml.core.AbstractCityObject;
 import org.citygml4j.model.citygml.core.TransformationMatrix2x2;
 import org.citygml4j.model.gml.base.StringOrRef;
 import org.citygml4j.model.gml.basicTypes.Code;
+import org.citygml4j.model.gml.feature.AbstractFeature;
 import org.citygml4j.model.gml.geometry.primitives.DirectPosition;
 import org.citygml4j.model.gml.geometry.primitives.Point;
 import org.citygml4j.model.gml.geometry.primitives.PointProperty;
@@ -424,9 +424,9 @@ public class AbstractAppearanceExporter extends AbstractTypeExporter {
 		appearance.addSurfaceDataMember(surfaceDataProperty);
 	}
 
-	protected void triggerLazyTextureExport(AbstractCityObject cityObject) {
+	protected void triggerLazyTextureExport(AbstractFeature feature) {
 		if (exporter.isLazyTextureExport()) {
-			cityObject.accept(new FeatureWalker() {
+			feature.accept(new FeatureWalker() {
 				@Override
 				public void visit(AbstractTexture texture) {
 					if (texture.hasLocalProperty(CoreConstants.TEXTURE_IMAGE_XLINK))
