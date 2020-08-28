@@ -170,33 +170,37 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 			if (!shouldWork)
 				return;
 
-			AbstractGML topLevelObject;
+			AbstractFeature feature = null;
 			if (work.getObjectType().getObjectClassId() == MappingConstants.APPEARANCE_OBJECTCLASS_ID)
-				topLevelObject = exporter.exportGlobalAppearance(work.getId());			
-			else
-				topLevelObject = exporter.exportObject(work.getId(), work.getObjectType(), false);
+				feature = exporter.exportGlobalAppearance(work.getId());
+			else {
+				AbstractGML object = exporter.exportObject(work.getId(), work.getObjectType(), false);
+				if (object instanceof AbstractFeature) {
+					// execute batch export
+					exporter.executeBatch();
 
-			// execute batch export
-			exporter.executeBatch();
+					if (!exporter.isTiledExport() || !object.hasLocalProperty(CoreConstants.NOT_ON_TILE)) {
+						feature = (AbstractFeature) object;
 
-			if (topLevelObject instanceof AbstractFeature
-					&& (!exporter.isTiledExport()
-					|| !topLevelObject.hasLocalProperty(CoreConstants.NOT_ON_TILE))) {
-				// remove empty city objects and clean up appearances if LoDs are filtered
-				if (!exporter.getLodFilter().preservesGeometry()) {
-					exporter.cleanupCityObjects(topLevelObject);
-					exporter.cleanupAppearances(topLevelObject);
+						// remove empty city objects and clean up appearances if LoDs are filtered
+						if (!exporter.getLodFilter().preservesGeometry()) {
+							exporter.cleanupCityObjects(feature);
+							exporter.cleanupAppearances(feature);
+						}
+
+						// trigger export of textures if required
+						if (exporter.isLazyTextureExport())
+							exporter.triggerLazyTextureExport(feature);
+					}
 				}
+			}
 
-				// trigger export of textures if required
-				if (exporter.isLazyTextureExport())
-					exporter.triggerLazyTextureExport(topLevelObject);
-
+			if (feature != null) {
 				// invoke export plugins
 				if (!plugins.isEmpty()) {
 					for (CityGMLExportExtension plugin : plugins) {
-						topLevelObject = plugin.postprocess((AbstractFeature) topLevelObject);
-						if (topLevelObject == null) {
+						feature = plugin.postprocess((AbstractFeature) feature);
+						if (feature == null) {
 							featureWriter.updateSequenceId(work.getSequenceId());
 							return;
 						}
@@ -204,15 +208,15 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 				}
 
 				// write feature
-				featureWriter.write((AbstractFeature) topLevelObject, work.getSequenceId());
+				featureWriter.write((AbstractFeature) feature, work.getSequenceId());
 
 				// register gml:id in cache
-				if (config.getInternal().isRegisterGmlIdInCache() && topLevelObject.isSetId())
-					exporter.putObjectUID(topLevelObject.getId(), work.getId(), work.getObjectType().getObjectClassId());
+				if (config.getInternal().isRegisterGmlIdInCache() && feature.isSetId())
+					exporter.putObjectUID(feature.getId(), work.getId(), work.getObjectType().getObjectClassId());
 				
 				// update export counter
-				exporter.updateExportCounter(topLevelObject);
-				if (topLevelObject instanceof Appearance) {
+				exporter.updateExportCounter(feature);
+				if (feature instanceof Appearance) {
 					if (++globalAppearanceCounter == 20) {
 						eventDispatcher.triggerEvent(new CounterEvent(CounterType.GLOBAL_APPEARANCE, globalAppearanceCounter, this));
 						eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.UPDATE, globalAppearanceCounter, this));

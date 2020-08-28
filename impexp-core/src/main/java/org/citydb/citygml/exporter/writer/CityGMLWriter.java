@@ -142,14 +142,10 @@ public class CityGMLWriter implements FeatureWriter, EventHandler {
 		if (feature instanceof AbstractCityObject) {
 			member = new CityObjectMember();
 			((CityObjectMember)member).setCityObject((AbstractCityObject)feature);
-		} 
-
-		else if (feature instanceof Appearance) {
+		} else if (feature instanceof Appearance) {
 			member = new AppearanceMember();
 			((AppearanceMember)member).setAppearance((Appearance)feature);
-		} 
-
-		else {
+		} else {
 			member = new FeatureMember();
 			((FeatureMember)member).setFeature(feature);
 		}
