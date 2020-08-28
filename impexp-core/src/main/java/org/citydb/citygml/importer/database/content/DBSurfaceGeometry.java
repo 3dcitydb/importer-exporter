@@ -39,6 +39,7 @@ import org.citydb.config.project.database.DatabaseType;
 import org.citydb.database.connection.DatabaseConnectionPool;
 import org.citydb.database.schema.SequenceEnum;
 import org.citydb.database.schema.TableEnum;
+import org.citydb.log.Logger;
 import org.citydb.util.CoreConstants;
 import org.citygml4j.model.citygml.texturedsurface._AbstractAppearance;
 import org.citygml4j.model.citygml.texturedsurface._AppearanceProperty;
@@ -46,19 +47,16 @@ import org.citygml4j.model.citygml.texturedsurface._SimpleTexture;
 import org.citygml4j.model.citygml.texturedsurface._TexturedSurface;
 import org.citygml4j.model.gml.GMLClass;
 import org.citygml4j.model.gml.geometry.AbstractGeometry;
-import org.citygml4j.model.gml.geometry.aggregates.MultiGeometry;
 import org.citygml4j.model.gml.geometry.aggregates.MultiPolygon;
 import org.citygml4j.model.gml.geometry.aggregates.MultiSolid;
 import org.citygml4j.model.gml.geometry.aggregates.MultiSurface;
 import org.citygml4j.model.gml.geometry.complexes.CompositeSolid;
 import org.citygml4j.model.gml.geometry.complexes.CompositeSurface;
-import org.citygml4j.model.gml.geometry.complexes.GeometricComplex;
 import org.citygml4j.model.gml.geometry.primitives.AbstractRing;
 import org.citygml4j.model.gml.geometry.primitives.AbstractRingProperty;
 import org.citygml4j.model.gml.geometry.primitives.AbstractSolid;
 import org.citygml4j.model.gml.geometry.primitives.AbstractSurface;
 import org.citygml4j.model.gml.geometry.primitives.AbstractSurfacePatch;
-import org.citygml4j.model.gml.geometry.primitives.GeometricPrimitiveProperty;
 import org.citygml4j.model.gml.geometry.primitives.LinearRing;
 import org.citygml4j.model.gml.geometry.primitives.OrientableSurface;
 import org.citygml4j.model.gml.geometry.primitives.Polygon;
@@ -93,7 +91,7 @@ public class DBSurfaceGeometry implements DBImporter {
     private final PreparedStatement psNextSeqValues;
     private final GeometryConverter geometryConverter;
     private final DBAppearance appearanceImporter;
-    private final PrimaryKeyManager pkManager;
+    private final IdManager ids;
 	private final LocalAppearanceHandler localAppearanceHandler;
 	private final RingValidator ringValidator;
 
@@ -144,7 +142,7 @@ public class DBSurfaceGeometry implements DBImporter {
         appearanceImporter = importer.getImporter(DBAppearance.class);
         localAppearanceHandler = importer.getLocalAppearanceHandler();
         geometryConverter = importer.getGeometryConverter();
-        pkManager = new PrimaryKeyManager();
+        ids = new IdManager();
         ringValidator = new RingValidator();
     }
 
@@ -156,20 +154,19 @@ public class DBSurfaceGeometry implements DBImporter {
         }
 
         try {
-			long id = pkManager.retrieveIds(geometry);
-			if (id == 0) {
-				importer.logOrThrowErrorMessage("Failed to acquire primary keys from surface geometry sequence.");
-				return 0;
-			}
+            long id = ids.prepare(geometry);
+            if (id == 0) {
+                importer.logOrThrowErrorMessage("Failed to acquire primary keys from surface geometry sequence.");
+                return 0;
+            }
 
-			if (geometry.isSetId())
-				geometry.setLocalProperty(CoreConstants.OBJECT_ORIGINAL_GMLID, geometry.getId());
+            if (geometry.isSetId())
+                geometry.setLocalProperty(CoreConstants.OBJECT_ORIGINAL_GMLID, geometry.getId());
 
-			doImport(geometry, 0, id, false, false, false, cityObjectId);
-			return id;
-		} finally {
-			pkManager.clear();
-		}
+            return doImport(geometry, id, 0, id, false, false, false, cityObjectId);
+        } finally {
+            ids.clear();
+        }
     }
 
     protected long importImplicitGeometry(AbstractGeometry geometry) throws CityGMLImportException, SQLException {
@@ -191,8 +188,11 @@ public class DBSurfaceGeometry implements DBImporter {
         }
     }
 
-    private void doImport(AbstractGeometry geometry, long parentId, long rootId, boolean reverse, boolean isXlink, boolean isCopy, long cityObjectId) throws CityGMLImportException, SQLException {
-		long id = pkManager.nextId(geometry);
+    private long doImport(AbstractGeometry geometry, long parentId, long rootId, boolean reverse, boolean isXlink, boolean isCopy, long cityObjectId) throws CityGMLImportException, SQLException {
+        return doImport(geometry, ids.next(geometry), parentId, rootId, reverse, isXlink, isCopy, cityObjectId);
+    }
+
+    private long doImport(AbstractGeometry geometry, long id, long parentId, long rootId, boolean reverse, boolean isXlink, boolean isCopy, long cityObjectId) throws CityGMLImportException, SQLException {
         importer.updateGeometryCounter(geometry.getGMLClass());
 
         if (!isCopy)
@@ -237,7 +237,7 @@ public class DBSurfaceGeometry implements DBImporter {
                 if (exterior != null) {
                     List<Double> points = exterior.toList3d(reverse);
                     if (!ringValidator.validate(points, exterior))
-                        return;
+                        return 0;
 
                     if (applyTransformation)
                         importer.getAffineTransformer().transformCoordinates(points);
@@ -389,12 +389,12 @@ public class DBSurfaceGeometry implements DBImporter {
 								": Texture information for referenced geometry objects are not supported.");
 					}
 
-					return;
+					return 0;
 				}
 			} else {
 				importer.logOrThrowErrorMessage(importer.getObjectSignature(texturedSurface, origGmlId) +
 						": The textured surface lacks a base surface.");
-				return;
+				return 0;
 			}
 
 			if (importAppearance && !isCopy && texturedSurface.isSetAppearance()) {
@@ -928,28 +928,19 @@ public class DBSurfaceGeometry implements DBImporter {
             }
         }
 
-        // GeometricComplex
-        else if (geometry instanceof GeometricComplex) {
-            GeometricComplex geometricComplex = (GeometricComplex) geometry;
-
-            if (geometricComplex.isSetElement()) {
-                for (GeometricPrimitiveProperty geometricPrimitiveProperty : geometricComplex.getElement()) {
-                    if (geometricPrimitiveProperty.isSetGeometricPrimitive()) {
-						doImport(geometricPrimitiveProperty.getGeometricPrimitive(), parentId, rootId, reverse, isXlink, isCopy, cityObjectId);
-					} else {
-                        String href = geometricPrimitiveProperty.getHref();
-                        if (href != null && href.length() != 0)
-                            importer.propagateXlink(new DBXlinkSurfaceGeometry(id, parentId, rootId, reverse, href, cityObjectId));
-                    }
-                }
+        // fallback
+        else {
+            Logger.getInstance().warn(importer.getObjectSignature(geometry) + ": Unsupported geometry. Trying to map to a MultiSurface geometry.");
+            MultiSurface multiSurface = geometryConverter.convertToMultiSurface(geometry);
+            if (!multiSurface.getSurfaceMember().isEmpty())
+                doImport(multiSurface, id, parentId, rootId, reverse, isXlink, isCopy, cityObjectId);
+            else {
+                importer.logOrThrowErrorMessage("Failed to map " + importer.getObjectSignature(geometry) + " to a MultiSurface geometry.");
+                return 0;
             }
         }
 
-        // MultiGeometry
-        else if (geometry instanceof MultiGeometry) {
-            MultiSurface multiSurface = geometryConverter.convertToMultiSurface((MultiGeometry) geometry);
-            doImport(multiSurface, parentId, rootId, reverse, isXlink, isCopy, cityObjectId);
-        }
+        return id;
     }
 
     private void addBatch() throws CityGMLImportException, SQLException {
@@ -972,7 +963,7 @@ public class DBSurfaceGeometry implements DBImporter {
         psNextSeqValues.close();
     }
 
-    private class PrimaryKeyManager extends GeometryWalker {
+    private class IdManager extends GeometryWalker {
         private long[] ids;
         private int count;
         private int index;
@@ -995,7 +986,7 @@ public class DBSurfaceGeometry implements DBImporter {
             index = 0;
         }
 
-        private long retrieveIds(AbstractGeometry geometry) throws SQLException {
+        private long prepare(AbstractGeometry geometry) throws SQLException {
             clear();
 
             // count number of tuples to be inserted into database
@@ -1012,11 +1003,11 @@ public class DBSurfaceGeometry implements DBImporter {
                 while (rs.next())
                     ids[i++] = rs.getLong(1);
 
-                return ids[0];
+                return next(geometry);
             }
         }
 
-        private long nextId(AbstractGeometry geometry) {
+        private long next(AbstractGeometry geometry) {
         	long id = ids[index];
 			if (!(geometry instanceof OrientableSurface))
 				index++;

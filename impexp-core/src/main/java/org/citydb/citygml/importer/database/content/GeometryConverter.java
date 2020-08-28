@@ -635,12 +635,12 @@ public class GeometryConverter {
 		return null;
 	}
 
-	public MultiSurface convertToMultiSurface(MultiGeometry multiGeometry) {
+	public MultiSurface convertToMultiSurface(AbstractGeometry geometry) {
 		MultiSurface multiSurface = new MultiSurface();
-		multiSurface.setId(multiGeometry.getId());
+		multiSurface.setId(geometry.getId());
 
 		List<SurfaceProperty> properties = multiSurface.getSurfaceMember();
-		multiGeometry.accept(new GeometryWalker() {
+		geometry.accept(new GeometryWalker() {
 			public void visit(AbstractSurface surface) {
 				properties.add(new SurfaceProperty(surface));
 			}
