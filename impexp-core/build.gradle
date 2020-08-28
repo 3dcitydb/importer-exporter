@@ -11,7 +11,7 @@ dependencies {
     api 'org.geotools:gt-epsg-extension:23.1'
     api 'org.geotools:gt-epsg-hsql:23.1'
     api 'org.geotools:gt-referencing:23.1'
-    api 'org.locationtech.jts:jts-core:1.17.0'
+    api 'org.locationtech.jts:jts-core:1.16.1'
     api 'org.postgresql:postgresql:42.2.14'
     api 'net.postgis:postgis-jdbc:2.5.0'
     api 'org.apache.tika:tika-core:1.24.1'
