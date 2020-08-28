@@ -190,7 +190,7 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 				// invoke export plugins
 				if (!plugins.isEmpty()) {
 					for (CityGMLExportExtension plugin : plugins) {
-						feature = plugin.postprocess((AbstractFeature) feature);
+						feature = plugin.postprocess(feature);
 						if (feature == null) {
 							featureWriter.updateSequenceId(work.getSequenceId());
 							return;
@@ -199,7 +199,7 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 				}
 
 				// write feature to file
-				featureWriter.write((AbstractFeature) feature, work.getSequenceId());
+				featureWriter.write(feature, work.getSequenceId());
 
 				// register gml:id in cache
 				if (config.getInternal().isRegisterGmlIdInCache() && feature.isSetId())
