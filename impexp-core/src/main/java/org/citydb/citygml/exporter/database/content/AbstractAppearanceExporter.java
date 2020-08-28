@@ -89,6 +89,7 @@ import java.util.Map;
 public abstract class AbstractAppearanceExporter extends AbstractTypeExporter {
 	private final Logger log = Logger.getInstance();
 	private final AttributeValueSplitter valueSplitter;
+	private final boolean lazyTextureImageExport;
 	private final boolean exportTextureImage;
 	private final boolean uniqueFileNames;
 	private final String textureURI;
@@ -107,6 +108,7 @@ public abstract class AbstractAppearanceExporter extends AbstractTypeExporter {
 		super(exporter);
 
 		texImageIds = new HashSet<>();
+		lazyTextureImageExport = !isGlobal && exporter.isLazyTextureExport();
 		exportTextureImage = exporter.getExportConfig().getAppearances().isSetExportTextureFiles();
 		uniqueFileNames = exporter.getExportConfig().getAppearances().isSetUniqueTextureFileNames();
 		noOfBuckets = exporter.getExportConfig().getAppearances().getTexturePath().getNoOfBuckets();
@@ -207,7 +209,7 @@ public abstract class AbstractAppearanceExporter extends AbstractTypeExporter {
 
 				surfaceDataProperty = surfaceDataProperties.get(surfaceDataId);
 				if (surfaceDataProperty == null) {
-					surfaceDataProperty = getSurfaceData(surfaceDataId, rs, exporter.isLazyTextureExport(), empty);
+					surfaceDataProperty = getSurfaceData(surfaceDataId, rs, empty);
 					surfaceDataProperties.put(surfaceDataId, surfaceDataProperty);
 
 					// add surface data to apperance
@@ -252,7 +254,7 @@ public abstract class AbstractAppearanceExporter extends AbstractTypeExporter {
 		return appearance;
 	}
 
-	private SurfaceDataProperty getSurfaceData(long surfaceDataId, ResultSet rs, boolean lazyExport, SurfaceDataProperty empty) throws CityGMLExportException, SQLException {
+	private SurfaceDataProperty getSurfaceData(long surfaceDataId, ResultSet rs, SurfaceDataProperty empty) throws CityGMLExportException, SQLException {
 		int objectClassId = rs.getInt(8);
 		String gmlId = rs.getString(9);
 
@@ -361,7 +363,7 @@ public abstract class AbstractAppearanceExporter extends AbstractTypeExporter {
 								texImageId,
 								fileName);
 
-						if (!lazyExport)
+						if (!lazyTextureImageExport)
 							exporter.propagateXlink(xlink);
 						else
 							abstractTexture.setLocalProperty(CoreConstants.TEXTURE_IMAGE_XLINK, xlink);
