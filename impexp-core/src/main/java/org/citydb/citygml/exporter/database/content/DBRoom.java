@@ -212,6 +212,7 @@ public class DBRoom extends AbstractFeatureExporter<Room> {
 		ProjectionFilter projectionFilter = null;
 		Map<Long, Room> rooms = new HashMap<>();
 		Map<Long, GeometrySetterHandler> geometries = new LinkedHashMap<>();
+		Map<Long, List<String>> adeHookTables = roomADEHookTables != null ? new HashMap<>() : null;
 
 		long currentBoundarySurfaceId = 0;
 		AbstractBoundarySurface boundarySurface = null;
@@ -303,11 +304,13 @@ public class DBRoom extends AbstractFeatureExporter<Room> {
 						}
 					}
 
-					// delegate export of generic ADE properties
+					// get tables of ADE hook properties
 					if (roomADEHookTables != null) {
-						List<String> adeHookTables = retrieveADEHookTables(this.roomADEHookTables, rs);
-						if (adeHookTables != null)
-							exporter.delegateToADEExporter(adeHookTables, room, roomId, featureType, projectionFilter);
+						List<String> tables = retrieveADEHookTables(roomADEHookTables, rs);
+						if (tables != null) {
+							adeHookTables.put(roomId, tables);
+							room.setLocalProperty("type", featureType);
+						}
 					}
 
 					room.setLocalProperty("projection", projectionFilter);
@@ -449,6 +452,17 @@ public class DBRoom extends AbstractFeatureExporter<Room> {
 		// export postponed geometries
 		for (Map.Entry<Long, GeometrySetterHandler> entry : geometries.entrySet())
 			geometryExporter.addBatch(entry.getKey(), entry.getValue());
+
+		// delegate export of generic ADE properties
+		if (adeHookTables != null) {
+			for (Map.Entry<Long, List<String>> entry : adeHookTables.entrySet()) {
+				long roomId = entry.getKey();
+				room = rooms.get(roomId);
+				exporter.delegateToADEExporter(entry.getValue(), room, roomId,
+						(FeatureType) room.getLocalProperty("type"),
+						(ProjectionFilter) room.getLocalProperty("projection"));
+			}
+		}
 
 		return rooms;
 	}

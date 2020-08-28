@@ -239,6 +239,7 @@ public class DBTunnelInstallation extends AbstractFeatureExporter<AbstractCityOb
 		boolean isExteriorInstallation = false;
 		Map<Long, AbstractCityObject> installations = new HashMap<>();
 		Map<Long, GeometrySetterHandler> geometries = new LinkedHashMap<>();
+		Map<Long, List<String>> adeHookTables = installationADEHookTables != null ? new HashMap<>() : null;
 
 		long currentBoundarySurfaceId = 0;
 		AbstractBoundarySurface boundarySurface = null;
@@ -410,11 +411,13 @@ public class DBTunnelInstallation extends AbstractFeatureExporter<AbstractCityOb
 						}
 					}
 
-					// delegate export of generic ADE properties
+					// get tables of ADE hook properties
 					if (installationADEHookTables != null) {
-						List<String> adeHookTables = retrieveADEHookTables(this.installationADEHookTables, rs);
-						if (adeHookTables != null)
-							exporter.delegateToADEExporter(adeHookTables, installation, installationId, featureType, projectionFilter);
+						List<String> tables = retrieveADEHookTables(installationADEHookTables, rs);
+						if (tables != null) {
+							adeHookTables.put(installationId, tables);
+							installation.setLocalProperty("type", featureType);
+						}
 					}
 
 					installation.setLocalProperty("projection", projectionFilter);
@@ -503,6 +506,17 @@ public class DBTunnelInstallation extends AbstractFeatureExporter<AbstractCityOb
 		// export postponed geometries
 		for (Map.Entry<Long, GeometrySetterHandler> entry : geometries.entrySet())
 			geometryExporter.addBatch(entry.getKey(), entry.getValue());
+
+		// delegate export of generic ADE properties
+		if (adeHookTables != null) {
+			for (Map.Entry<Long, List<String>> entry : adeHookTables.entrySet()) {
+				long installationId = entry.getKey();
+				installation = installations.get(installationId);
+				exporter.delegateToADEExporter(entry.getValue(), installation, installationId,
+						(FeatureType) installation.getLocalProperty("type"),
+						(ProjectionFilter) installation.getLocalProperty("projection"));
+			}
+		}
 
 		return installations;
 	}

@@ -220,6 +220,7 @@ public class DBBridge extends AbstractFeatureExporter<AbstractBridge> {
 			ProjectionFilter projectionFilter = null;
 			Map<Long, AbstractBridge> bridges = new HashMap<>();
 			Map<Long, GeometrySetterHandler> geometries = new LinkedHashMap<>();
+			Map<Long, List<String>> adeHookTables = bridgeADEHookTables != null ? new HashMap<>() : null;
 
 			long currentBoundarySurfaceId = 0;
 			AbstractBoundarySurface boundarySurface = null;
@@ -430,11 +431,13 @@ public class DBBridge extends AbstractFeatureExporter<AbstractBridge> {
 							}
 						}
 
-						// delegate export of generic ADE properties
+						// get tables of ADE hook properties
 						if (bridgeADEHookTables != null) {
-							List<String> adeHookTables = retrieveADEHookTables(bridgeADEHookTables, rs);
-							if (adeHookTables != null)
-								exporter.delegateToADEExporter(adeHookTables, bridge, bridgeId, featureType, projectionFilter);
+							List<String> tables = retrieveADEHookTables(bridgeADEHookTables, rs);
+							if (tables != null) {
+								adeHookTables.put(bridgeId, tables);
+								bridge.setLocalProperty("type", featureType);
+							}
 						}
 
 						bridge.setLocalProperty("parent", rs.getLong("bridge_parent_id"));
@@ -589,29 +592,34 @@ public class DBBridge extends AbstractFeatureExporter<AbstractBridge> {
 			for (Map.Entry<Long, GeometrySetterHandler> entry : geometries.entrySet())
 				geometryExporter.addBatch(entry.getKey(), entry.getValue());
 
-			// rebuild bridge part hierarchy
 			List<AbstractBridge> result = new ArrayList<>();
 			for (Entry<Long, AbstractBridge> entry : bridges.entrySet()) {
 				bridge = entry.getValue();
-				long bridgeId = entry.getKey();			
-				long parentId = (Long)bridge.getLocalProperty("parent");
+				long bridgeId = entry.getKey();
+				long parentId = (Long) bridge.getLocalProperty("parent");
 
+				// delegate export of generic ADE properties
+				if (adeHookTables != null) {
+					List<String> tables = adeHookTables.get(bridgeId);
+					if (tables != null) {
+						exporter.delegateToADEExporter(tables, bridge, bridgeId,
+								(FeatureType) bridge.getLocalProperty("type"),
+								(ProjectionFilter) bridge.getLocalProperty("projection"));
+					}
+				}
+
+				// rebuild bridge part hierarchy
 				if (parentId == 0) {
 					result.add(bridge);
-					continue;
-				}
-
-				if (!(bridge instanceof BridgePart)) {
+				} else if (bridge instanceof BridgePart) {
+					AbstractBridge parent = bridges.get(parentId);
+					if (parent != null) {
+						projectionFilter = (ProjectionFilter) parent.getLocalProperty("projection");
+						if (projectionFilter.containsProperty("consistsOfBridgePart", bridgeModule))
+							parent.addConsistsOfBridgePart(new BridgePartProperty((BridgePart) bridge));
+					}
+				} else
 					exporter.logOrThrowErrorMessage("Expected " + exporter.getObjectSignature(exporter.getFeatureType(bridge), bridgeId) + " to be a bridge part.");
-					continue;
-				}
-
-				AbstractBridge parent = bridges.get(parentId);
-				if (parent != null) {				
-					projectionFilter = (ProjectionFilter)parent.getLocalProperty("projection");				
-					if (projectionFilter.containsProperty("consistsOfBridgePart", bridgeModule))
-						parent.addConsistsOfBridgePart(new BridgePartProperty((BridgePart)bridge));
-				}
 			}
 
 			return result;

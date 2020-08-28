@@ -201,6 +201,7 @@ public class DBTunnelHollowSpace extends AbstractFeatureExporter<HollowSpace> {
 		ProjectionFilter projectionFilter = null;
 		Map<Long, HollowSpace> hollowSpaces = new HashMap<>();
 		Map<Long, GeometrySetterHandler> geometries = new LinkedHashMap<>();
+		Map<Long, List<String>> adeHookTables = hollowSpaceADEHookTables != null ? new HashMap<>() : null;
 
 		long currentBoundarySurfaceId = 0;
 		AbstractBoundarySurface boundarySurface = null;
@@ -291,11 +292,13 @@ public class DBTunnelHollowSpace extends AbstractFeatureExporter<HollowSpace> {
 						}
 					}
 
-					// delegate export of generic ADE properties
+					// get tables of ADE hook properties
 					if (hollowSpaceADEHookTables != null) {
-						List<String> adeHookTables = retrieveADEHookTables(this.hollowSpaceADEHookTables, rs);
-						if (adeHookTables != null)
-							exporter.delegateToADEExporter(adeHookTables, hollowSpace, hollowSpaceId, featureType, projectionFilter);
+						List<String> tables = retrieveADEHookTables(hollowSpaceADEHookTables, rs);
+						if (tables != null) {
+							adeHookTables.put(hollowSpaceId, tables);
+							hollowSpace.setLocalProperty("type", featureType);
+						}
 					}
 
 					hollowSpace.setLocalProperty("projection", projectionFilter);
@@ -419,6 +422,17 @@ public class DBTunnelHollowSpace extends AbstractFeatureExporter<HollowSpace> {
 		// export postponed geometries
 		for (Map.Entry<Long, GeometrySetterHandler> entry : geometries.entrySet())
 			geometryExporter.addBatch(entry.getKey(), entry.getValue());
+
+		// delegate export of generic ADE properties
+		if (adeHookTables != null) {
+			for (Map.Entry<Long, List<String>> entry : adeHookTables.entrySet()) {
+				long hollowSpaceId = entry.getKey();
+				hollowSpace = hollowSpaces.get(hollowSpaceId);
+				exporter.delegateToADEExporter(entry.getValue(), hollowSpace, hollowSpaceId,
+						(FeatureType) hollowSpace.getLocalProperty("type"),
+						(ProjectionFilter) hollowSpace.getLocalProperty("projection"));
+			}
+		}
 
 		return hollowSpaces;
 	}

@@ -191,6 +191,7 @@ public class DBTunnel extends AbstractFeatureExporter<AbstractTunnel> {
 			ProjectionFilter projectionFilter = null;
 			Map<Long, AbstractTunnel> tunnels = new HashMap<>();
 			Map<Long, GeometrySetterHandler> geometries = new LinkedHashMap<>();
+			Map<Long, List<String>> adeHookTables = tunnelADEHookTables != null ? new HashMap<>() : null;
 
 			long currentBoundarySurfaceId = 0;
 			AbstractBoundarySurface boundarySurface = null;
@@ -391,11 +392,13 @@ public class DBTunnel extends AbstractFeatureExporter<AbstractTunnel> {
 							}
 						}
 
-						// delegate export of generic ADE properties
+						// get tables of ADE hook properties
 						if (tunnelADEHookTables != null) {
-							List<String> adeHookTables = retrieveADEHookTables(this.tunnelADEHookTables, rs);
-							if (adeHookTables != null)
-								exporter.delegateToADEExporter(adeHookTables, tunnel, tunnelId, featureType, projectionFilter);
+							List<String> tables = retrieveADEHookTables(this.tunnelADEHookTables, rs);
+							if (tables != null) {
+								adeHookTables.put(tunnelId, tables);
+								tunnel.setLocalProperty("type", featureType);
+							}
 						}
 
 						tunnel.setLocalProperty("parent", rs.getLong("tunnel_parent_id"));
@@ -514,29 +517,34 @@ public class DBTunnel extends AbstractFeatureExporter<AbstractTunnel> {
 			for (Map.Entry<Long, GeometrySetterHandler> entry : geometries.entrySet())
 				geometryExporter.addBatch(entry.getKey(), entry.getValue());
 
-			// rebuild tunnel part hierarchy
 			List<AbstractTunnel> result = new ArrayList<>();
 			for (Entry<Long, AbstractTunnel> entry : tunnels.entrySet()) {
 				tunnel = entry.getValue();
 				long tunnelId = entry.getKey();
-				long parentId = (Long)tunnel.getLocalProperty("parent");
+				long parentId = (Long) tunnel.getLocalProperty("parent");
 
+				// delegate export of generic ADE properties
+				if (adeHookTables != null) {
+					List<String> tables = adeHookTables.get(tunnelId);
+					if (tables != null) {
+						exporter.delegateToADEExporter(tables, tunnel, tunnelId,
+								(FeatureType) tunnel.getLocalProperty("type"),
+								(ProjectionFilter) tunnel.getLocalProperty("projection"));
+					}
+				}
+
+				// rebuild tunnel part hierarchy
 				if (parentId == 0) {
 					result.add(tunnel);
-					continue;
-				}
-
-				if (!(tunnel instanceof TunnelPart)) {
+				} else if (tunnel instanceof TunnelPart) {
+					AbstractTunnel parent = tunnels.get(parentId);
+					if (parent != null) {
+						projectionFilter = (ProjectionFilter) parent.getLocalProperty("projection");
+						if (projectionFilter.containsProperty("consistsOfTunnelPart", tunnelModule))
+							parent.addConsistsOfTunnelPart(new TunnelPartProperty((TunnelPart) tunnel));
+					}
+				} else
 					exporter.logOrThrowErrorMessage("Expected " + exporter.getObjectSignature(exporter.getFeatureType(tunnel), tunnelId) + " to be a tunnel part.");
-					continue;
-				}
-
-				AbstractTunnel parent = tunnels.get(parentId);
-				if (parent != null) {
-					projectionFilter = (ProjectionFilter)parent.getLocalProperty("projection");
-					if (projectionFilter.containsProperty("consistsOfTunnelPart", tunnelModule))
-						parent.addConsistsOfTunnelPart(new TunnelPartProperty((TunnelPart)tunnel));
-				}
 			}
 
 			return result;

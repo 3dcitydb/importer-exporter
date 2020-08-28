@@ -121,6 +121,7 @@ public class DBTransportationComplex extends AbstractFeatureExporter<Transportat
 			ProjectionFilter projectionFilter = null;
 			Map<Long, TransportationComplex> complexes = new HashMap<>();
 			Map<Long, GeometrySetterHandler> geometries = new LinkedHashMap<>();
+			Map<Long, List<String>> adeHookTables = complexADEHookTables != null ? new HashMap<>() : null;
 
 			while (rs.next()) {
 				long complexId = rs.getLong("id");
@@ -212,12 +213,14 @@ public class DBTransportationComplex extends AbstractFeatureExporter<Transportat
 									break;
 							}
 						}
-						
-						// delegate export of generic ADE properties
+
+						// get tables of ADE hook properties
 						if (complexADEHookTables != null) {
-							List<String> adeHookTables = retrieveADEHookTables(complexADEHookTables, rs);
-							if (adeHookTables != null)
-								exporter.delegateToADEExporter(adeHookTables, complex, complexId, featureType, projectionFilter);
+							List<String> tables = retrieveADEHookTables(complexADEHookTables, rs);
+							if (tables != null) {
+								adeHookTables.put(complexId, tables);
+								complex.setLocalProperty("type", featureType);
+							}
 						}
 
 						complex.setLocalProperty("projection", projectionFilter);
@@ -258,6 +261,17 @@ public class DBTransportationComplex extends AbstractFeatureExporter<Transportat
 			// export postponed geometries
 			for (Map.Entry<Long, GeometrySetterHandler> entry : geometries.entrySet())
 				geometryExporter.addBatch(entry.getKey(), entry.getValue());
+
+			// delegate export of generic ADE properties
+			if (adeHookTables != null) {
+				for (Map.Entry<Long, List<String>> entry : adeHookTables.entrySet()) {
+					long complexId = entry.getKey();
+					complex = complexes.get(complexId);
+					exporter.delegateToADEExporter(entry.getValue(), complex, complexId,
+							(FeatureType) complex.getLocalProperty("type"),
+							(ProjectionFilter) complex.getLocalProperty("projection"));
+				}
+			}
 
 			return complexes.values();
 		}

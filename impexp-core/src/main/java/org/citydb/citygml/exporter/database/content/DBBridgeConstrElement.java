@@ -221,6 +221,7 @@ public class DBBridgeConstrElement extends AbstractFeatureExporter<BridgeConstru
 		ProjectionFilter projectionFilter = null;
 		Map<Long, BridgeConstructionElement> constructionElements = new HashMap<>();
 		Map<Long, GeometrySetterHandler> geometries = new LinkedHashMap<>();
+		Map<Long, List<String>> adeHookTables = constructionElementADEHookTables != null ? new HashMap<>() : null;
 
 		long currentBoundarySurfaceId = 0;
 		AbstractBoundarySurface boundarySurface = null;
@@ -410,11 +411,13 @@ public class DBBridgeConstrElement extends AbstractFeatureExporter<BridgeConstru
 						}
 					}
 
-					// delegate export of generic ADE properties
+					// get tables of ADE hook properties
 					if (constructionElementADEHookTables != null) {
-						List<String> adeHookTables = retrieveADEHookTables(this.constructionElementADEHookTables, rs);
-						if (adeHookTables != null)
-							exporter.delegateToADEExporter(adeHookTables, constructionElement, constructionElementId, featureType, projectionFilter);
+						List<String> tables = retrieveADEHookTables(constructionElementADEHookTables, rs);
+						if (tables != null) {
+							adeHookTables.put(constructionElementId, tables);
+							constructionElement.setLocalProperty("type", featureType);
+						}
 					}
 
 					constructionElement.setLocalProperty("projection", projectionFilter);
@@ -512,6 +515,17 @@ public class DBBridgeConstrElement extends AbstractFeatureExporter<BridgeConstru
 		// export postponed geometries
 		for (Map.Entry<Long, GeometrySetterHandler> entry : geometries.entrySet())
 			geometryExporter.addBatch(entry.getKey(), entry.getValue());
+
+		// delegate export of generic ADE properties
+		if (adeHookTables != null) {
+			for (Map.Entry<Long, List<String>> entry : adeHookTables.entrySet()) {
+				long constructionElementId = entry.getKey();
+				constructionElement = constructionElements.get(constructionElementId);
+				exporter.delegateToADEExporter(entry.getValue(), constructionElement, constructionElementId,
+						(FeatureType) constructionElement.getLocalProperty("type"),
+						(ProjectionFilter) constructionElement.getLocalProperty("projection"));
+			}
+		}
 
 		return constructionElements;
 	}

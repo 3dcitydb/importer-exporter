@@ -225,6 +225,7 @@ public class DBBuilding extends AbstractFeatureExporter<AbstractBuilding> {
 			ProjectionFilter projectionFilter = null;
 			Map<Long, AbstractBuilding> buildings = new HashMap<>();
 			Map<Long, GeometrySetterHandler> geometries = new LinkedHashMap<>();
+			Map<Long, List<String>> adeHookTables = buildingADEHookTables != null ? new HashMap<>() : null;
 
 			long currentBoundarySurfaceId = 0;
 			AbstractBoundarySurface boundarySurface = null;
@@ -511,11 +512,13 @@ public class DBBuilding extends AbstractFeatureExporter<AbstractBuilding> {
 							}
 						}
 
-						// delegate export of generic ADE properties
+						// get tables of ADE hook properties
 						if (buildingADEHookTables != null) {
-							List<String> adeHookTables = retrieveADEHookTables(buildingADEHookTables, rs);
-							if (adeHookTables != null)
-								exporter.delegateToADEExporter(adeHookTables, building, buildingId, featureType, projectionFilter);
+							List<String> tables = retrieveADEHookTables(buildingADEHookTables, rs);
+							if (tables != null) {
+								adeHookTables.put(buildingId, tables);
+								building.setLocalProperty("type", featureType);
+							}
 						}
 
 						building.setLocalProperty("parent", rs.getLong("building_parent_id"));
@@ -661,29 +664,34 @@ public class DBBuilding extends AbstractFeatureExporter<AbstractBuilding> {
 			for (Map.Entry<Long, GeometrySetterHandler> entry : geometries.entrySet())
 				geometryExporter.addBatch(entry.getKey(), entry.getValue());
 
-			// rebuild building part hierarchy
 			List<AbstractBuilding> result = new ArrayList<>();
 			for (Map.Entry<Long, AbstractBuilding> entry : buildings.entrySet()) {
 				building = entry.getValue();
 				long buildingId = entry.getKey();
-				long parentId = (Long)building.getLocalProperty("parent");
+				long parentId = (Long) building.getLocalProperty("parent");
 
+				// delegate export of generic ADE properties
+				if (adeHookTables != null) {
+					List<String> tables = adeHookTables.get(buildingId);
+					if (tables != null) {
+						exporter.delegateToADEExporter(tables, building, buildingId,
+								(FeatureType) building.getLocalProperty("type"),
+								(ProjectionFilter) building.getLocalProperty("projection"));
+					}
+				}
+
+				// rebuild building part hierarchy
 				if (parentId == 0) {
 					result.add(building);
-					continue;
-				}
-
-				if (!(building instanceof BuildingPart)) {
+				} else if (building instanceof BuildingPart) {
+					AbstractBuilding parent = buildings.get(parentId);
+					if (parent != null) {
+						projectionFilter = (ProjectionFilter) parent.getLocalProperty("projection");
+						if (projectionFilter.containsProperty("consistsOfBuildingPart", buildingModule))
+							parent.addConsistsOfBuildingPart(new BuildingPartProperty((BuildingPart) building));
+					}
+				} else
 					exporter.logOrThrowErrorMessage("Expected " + exporter.getObjectSignature(exporter.getFeatureType(building), buildingId) + " to be a building part.");
-					continue;
-				}
-
-				AbstractBuilding parent = buildings.get(parentId);
-				if (parent != null) {				
-					projectionFilter = (ProjectionFilter)parent.getLocalProperty("projection");				
-					if (projectionFilter.containsProperty("consistsOfBuildingPart", buildingModule))
-						parent.addConsistsOfBuildingPart(new BuildingPartProperty((BuildingPart)building));
-				}
 			}
 			
 			return result;
