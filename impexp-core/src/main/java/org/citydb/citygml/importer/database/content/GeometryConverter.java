@@ -69,11 +69,15 @@ import org.citygml4j.model.gml.geometry.primitives.PolygonProperty;
 import org.citygml4j.model.gml.geometry.primitives.Sign;
 import org.citygml4j.model.gml.geometry.primitives.Solid;
 import org.citygml4j.model.gml.geometry.primitives.SurfaceProperty;
+import org.citygml4j.util.child.ChildInfo;
 import org.citygml4j.util.walker.GeometryWalker;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 public class GeometryConverter {
 	private AffineTransformer affineTransformer;
@@ -636,41 +640,65 @@ public class GeometryConverter {
 	}
 
 	public MultiSurface convertToMultiSurface(AbstractGeometry geometry) {
+		if (geometry instanceof MultiSurface)
+			return (MultiSurface) geometry;
+
 		MultiSurface multiSurface = new MultiSurface();
-		multiSurface.setId(geometry.getId());
+		if (geometry instanceof AbstractSurface) {
+			multiSurface.addSurfaceMember(new SurfaceProperty((AbstractSurface) geometry));
+		} else {
+			multiSurface.setId(geometry.getId());
 
-		List<SurfaceProperty> properties = multiSurface.getSurfaceMember();
-		geometry.accept(new GeometryWalker() {
-			public void visit(AbstractSurface surface) {
-				properties.add(new SurfaceProperty(surface));
-			}
+			List<SurfaceProperty> properties = multiSurface.getSurfaceMember();
+			Set<AbstractGeometry> visited = Collections.newSetFromMap(new IdentityHashMap<>());
 
-			public void visit(MultiSurface multiSurface) {
-				List<SurfaceProperty> tmp = new ArrayList<>(multiSurface.getSurfaceMember());
-				if (multiSurface.isSetSurfaceMembers()) {
-					for (AbstractSurface surface : multiSurface.getSurfaceMembers().getSurface())
-						tmp.add(new SurfaceProperty(surface));
+			geometry.accept(new GeometryWalker() {
+				final ChildInfo childInfo = new ChildInfo();
+
+				public void visit(AbstractSurface surface) {
+					if (!visited(surface))
+						properties.add(new SurfaceProperty(surface));
 				}
 
-				if (multiSurface.isSetId()) {
-					// mapping a MultiSurface to a CompositeSurface is not correct in terms
-					// of spatial theory. However, a MultiSurface might be referenced by
-					// appearance objects and thus the mapping is required to keep this information
-					CompositeSurface compositeSurface = new CompositeSurface();
-					compositeSurface.setId(multiSurface.getId());
-					compositeSurface.setSurfaceMember(tmp);
-					properties.add(new SurfaceProperty(compositeSurface));
-				} else
-					properties.addAll(tmp);
-			}
+				public void visit(MultiSurface multiSurface) {
+					List<SurfaceProperty> tmp = new ArrayList<>(multiSurface.getSurfaceMember());
+					if (multiSurface.isSetSurfaceMembers()) {
+						for (AbstractSurface surface : multiSurface.getSurfaceMembers().getSurface())
+							tmp.add(new SurfaceProperty(surface));
+					}
 
-			public <T extends AbstractGeometry> void visit(GeometryProperty<T> property) {
-				if (!property.isSetGeometry() && property.isSetHref())
-					properties.add(new SurfaceProperty(property.getHref()));
-				else
-					super.visit(property);
-			}
-		});
+					if (multiSurface.isSetId()) {
+						// mapping a MultiSurface to a CompositeSurface is not correct in terms
+						// of spatial theory. However, a MultiSurface might be referenced by
+						// appearance objects and thus the mapping is required to keep this information
+						CompositeSurface compositeSurface = new CompositeSurface();
+						compositeSurface.setId(multiSurface.getId());
+						compositeSurface.setSurfaceMember(tmp);
+						properties.add(new SurfaceProperty(compositeSurface));
+					} else
+						properties.addAll(tmp);
+				}
+
+				public <T extends AbstractGeometry> void visit(GeometryProperty<T> property) {
+					if (!property.isSetGeometry() && property.isSetHref())
+						properties.add(new SurfaceProperty(property.getHref()));
+					else
+						super.visit(property);
+				}
+
+				private boolean visited(AbstractSurface surface) {
+					if (visited.add(surface)) {
+						while ((surface = childInfo.getParentGeometry(surface, AbstractSurface.class)) != null) {
+							if (visited.contains(surface))
+								return true;
+						}
+
+						return false;
+					} else
+						return true;
+				}
+			});
+		}
 
 		return multiSurface;
 	}
