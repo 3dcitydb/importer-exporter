@@ -54,8 +54,6 @@ import org.citydb.event.global.ObjectCounterEvent;
 import org.citydb.event.global.ProgressBarEventType;
 import org.citydb.event.global.StatusDialogProgressBar;
 import org.citydb.file.OutputFile;
-import org.citydb.plugin.PluginManager;
-import org.citydb.plugin.extension.export.CityGMLExportExtension;
 import org.citydb.query.Query;
 import org.citygml4j.builder.jaxb.CityGMLBuilder;
 import org.citygml4j.model.gml.base.AbstractGML;
@@ -63,7 +61,6 @@ import org.citygml4j.model.gml.feature.AbstractFeature;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class DBExportWorker extends Worker<DBSplittingResult> implements EventHandler {
@@ -74,7 +71,6 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 	private final Connection connection;
 	private final CityGMLExportManager exporter;
 	private final FeatureWriter featureWriter;
-	private final List<CityGMLExportExtension> plugins;
 	private final EventDispatcher eventDispatcher;
 	private final Config config;
 
@@ -111,7 +107,6 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 				cacheTableManager,
 				config);
 
-		plugins = PluginManager.getInstance().getExternalPlugins(CityGMLExportExtension.class);
 		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
 	}
 
