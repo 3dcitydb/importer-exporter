@@ -54,13 +54,10 @@ import org.citydb.event.global.ObjectCounterEvent;
 import org.citydb.event.global.ProgressBarEventType;
 import org.citydb.event.global.StatusDialogProgressBar;
 import org.citydb.file.OutputFile;
-import org.citydb.plugin.PluginException;
 import org.citydb.plugin.PluginManager;
 import org.citydb.plugin.extension.export.CityGMLExportExtension;
 import org.citydb.query.Query;
-import org.citydb.util.CoreConstants;
 import org.citygml4j.builder.jaxb.CityGMLBuilder;
-import org.citygml4j.model.citygml.appearance.Appearance;
 import org.citygml4j.model.gml.base.AbstractGML;
 import org.citygml4j.model.gml.feature.AbstractFeature;
 
@@ -171,42 +168,26 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 				return;
 
 			AbstractFeature feature = null;
-			if (work.getObjectType().getObjectClassId() == MappingConstants.APPEARANCE_OBJECTCLASS_ID)
+			if (work.getObjectType().getObjectClassId() == MappingConstants.APPEARANCE_OBJECTCLASS_ID) {
 				feature = exporter.exportGlobalAppearance(work.getId());
-			else {
-				AbstractGML object = exporter.exportObject(work.getId(), work.getObjectType(), false);
+				if (feature != null && ++globalAppearanceCounter == 20) {
+					eventDispatcher.triggerEvent(new CounterEvent(CounterType.GLOBAL_APPEARANCE, globalAppearanceCounter, this));
+					eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.UPDATE, globalAppearanceCounter, this));
+					globalAppearanceCounter = 0;
+				}
+			} else {
+				AbstractGML object = exporter.exportObject(work.getId(), work.getObjectType());
 				if (object instanceof AbstractFeature) {
-					// execute batch export
-					exporter.executeBatch();
-
-					if (!exporter.isTiledExport() || !object.hasLocalProperty(CoreConstants.NOT_ON_TILE)) {
-						feature = (AbstractFeature) object;
-
-						// remove empty city objects and clean up appearances if LoDs are filtered
-						if (!exporter.getLodFilter().preservesGeometry()) {
-							exporter.cleanupCityObjects(feature);
-							exporter.cleanupAppearances(feature);
-						}
-
-						// trigger export of textures if required
-						if (exporter.isLazyTextureExport())
-							exporter.triggerLazyTextureExport(feature);
+					feature = (AbstractFeature) object;
+					if (++topLevelFeatureCounter == 20) {
+						eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, topLevelFeatureCounter, this));
+						eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.UPDATE, topLevelFeatureCounter, this));
+						topLevelFeatureCounter = 0;
 					}
 				}
 			}
 
 			if (feature != null) {
-				// invoke export plugins
-				if (!plugins.isEmpty()) {
-					for (CityGMLExportExtension plugin : plugins) {
-						feature = plugin.postprocess(feature);
-						if (feature == null) {
-							featureWriter.updateSequenceId(work.getSequenceId());
-							return;
-						}
-					}
-				}
-
 				// write feature
 				featureWriter.write(feature, work.getSequenceId());
 
@@ -216,21 +197,10 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 				
 				// update export counter
 				exporter.updateExportCounter(feature);
-				if (feature instanceof Appearance) {
-					if (++globalAppearanceCounter == 20) {
-						eventDispatcher.triggerEvent(new CounterEvent(CounterType.GLOBAL_APPEARANCE, globalAppearanceCounter, this));
-						eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.UPDATE, globalAppearanceCounter, this));
-						globalAppearanceCounter = 0;
-					}
-				} else if (++topLevelFeatureCounter == 20) {
-					eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, topLevelFeatureCounter, this));
-					eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.UPDATE, topLevelFeatureCounter, this));
-					topLevelFeatureCounter = 0;
-				}
 			} else
 				featureWriter.updateSequenceId(work.getSequenceId());
 
-		} catch (SQLException | CityGMLExportException | FeatureWriteException | PluginException e) {
+		} catch (SQLException | CityGMLExportException | FeatureWriteException e) {
 			eventDispatcher.triggerSyncEvent(new InterruptEvent("Aborting export due to errors.", LogLevel.WARN, e, eventChannel, this));
 		} catch (Throwable e) {
 			// this is to catch general exceptions that may occur during the export

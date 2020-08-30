@@ -62,6 +62,9 @@ import org.citydb.database.schema.mapping.ObjectType;
 import org.citydb.database.schema.mapping.SchemaMapping;
 import org.citydb.file.OutputFile;
 import org.citydb.log.Logger;
+import org.citydb.plugin.PluginException;
+import org.citydb.plugin.PluginManager;
+import org.citydb.plugin.extension.export.CityGMLExportExtension;
 import org.citydb.query.Query;
 import org.citydb.query.filter.lod.LodFilter;
 import org.citydb.query.filter.projection.CombinedProjectionFilter;
@@ -150,6 +153,7 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 	private final SchemaMapping schemaMapping;
 	private final CityGMLBuilder cityGMLBuilder;
 	private final ADEExtensionManager adeManager;
+	private final List<CityGMLExportExtension> plugins;
 	private final FeatureWriter featureWriter;
 	private final WorkerPool<DBXlink> xlinkPool;
 	private final UIDCacheManager uidCacheManager;
@@ -192,6 +196,7 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 
 		adeManager = ADEExtensionManager.getInstance();
 		hasADESupport = !adeManager.getEnabledExtensions().isEmpty();
+		plugins = PluginManager.getInstance().getExternalPlugins(CityGMLExportExtension.class);
 
 		attributeValueSplitter = new AttributeValueSplitter();
 		lodGeometryChecker = new LodGeometryChecker(schemaMapping);
@@ -209,6 +214,50 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 		}
 	}
 
+	public AbstractGML exportObject(long objectId, AbstractObjectType<?> objectType) throws CityGMLExportException, SQLException {
+		AbstractGML object = exportObject(objectId, objectType, false);
+		return object != null ? processObject(object) : null;
+	}
+
+	private AbstractGML processObject(AbstractGML object) throws CityGMLExportException, SQLException {
+		// execute batch export
+		executeBatch();
+
+		// remove empty city objects and clean up appearances if LoDs are filtered
+		if (!query.getLodFilter().preservesGeometry()) {
+			lodGeometryChecker.cleanupCityObjects(object);
+			if (appearanceRemover != null)
+				appearanceRemover.cleanupAppearances(object);
+		}
+
+		if (object instanceof AbstractFeature) {
+			AbstractFeature feature = (AbstractFeature) object;
+
+			// check whether feature is on active tile
+			if (query.isSetTiling() && feature.hasLocalProperty(CoreConstants.NOT_ON_TILE))
+				return null;
+
+			// invoke export plugins
+			if (!plugins.isEmpty()) {
+				for (CityGMLExportExtension plugin : plugins) {
+					try {
+						feature = plugin.postprocess(feature);
+						if (feature == null)
+							return null;
+					} catch (PluginException e) {
+						throw new CityGMLExportException("Export plugin " + plugin.getClass().getName() + " threw an exception.", e);
+					}
+				}
+			}
+
+			// trigger export of textures if required
+			if (isLazyTextureExport() && config.getProject().getExporter().getAppearances().isSetExportAppearance())
+				getExporter(DBLocalAppearance.class).triggerLazyTextureExport(feature);
+		}
+
+		return object;
+	}
+
 	@Override
 	public <T extends AbstractGML> T createObject(long objectId, int objectClassId, Class<T> type) throws CityGMLExportException, SQLException {
 		AbstractObjectType<?> objectType = getAbstractObjectType(objectClassId);
@@ -219,7 +268,12 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 		return type.isInstance(object) ? type.cast(object) : null;
 	}
 
-	public AbstractGML exportObject(long objectId, AbstractObjectType<?> objectType, boolean exportStub) throws CityGMLExportException, SQLException {
+	protected <T extends AbstractGML> T createObject(int objectClassId, Class<T> type) {
+		AbstractGML object = Util.createObject(objectClassId, query.getTargetVersion());
+		return type.isInstance(object) ? type.cast(object) : null;
+	}
+
+	private AbstractGML exportObject(long objectId, AbstractObjectType<?> objectType, boolean exportStub) throws CityGMLExportException, SQLException {
 		AbstractGML object = Util.createObject(objectType.getObjectClassId(), query.getTargetVersion());
 		if (object == null)
 			throw new CityGMLExportException("Failed to instantiate citygml4j object for " + getObjectSignature(objectType, objectId) + ". Skipping export.");
@@ -457,19 +511,24 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 	}
 
 	@Override
-	public boolean exportAsGlobalFeature(AbstractFeature feature) throws CityGMLExportException {
+	public boolean exportAsGlobalFeature(AbstractFeature feature) throws CityGMLExportException, SQLException {
 		if (featureWriter.supportsFlatHierarchies()) {
 			if (!query.getFeatureTypeFilter().containsFeatureType(getFeatureType(feature)))
 				feature.setLocalProperty(CoreConstants.EXPORT_AS_ADDITIONAL_OBJECT, true);
 
-			try {
-				featureWriter.write(feature, -1);
-			} catch (FeatureWriteException e) {
-				throw new CityGMLExportException("Failed to write global feature with gml:id '" + feature.getId() + "'.", e);
-			}
+			AbstractGML object = processObject(feature);
+			if (object instanceof AbstractFeature) {
+				feature = (AbstractFeature) object;
 
-			updateExportCounter(feature);
-			return true;
+				try {
+					featureWriter.write(feature, -1);
+				} catch (FeatureWriteException e) {
+					throw new CityGMLExportException("Failed to write global feature with gml:id '" + feature.getId() + "'.", e);
+				}
+
+				updateExportCounter(feature);
+				return true;
+			}
 		}
 
 		return false;
@@ -619,11 +678,6 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 		return schemaMapping.getAbstractObjectType(objectClassId);
 	}
 
-	protected <T extends AbstractGML> T createObject(int objectClassId, Class<T> type) {
-		AbstractGML object = Util.createObject(objectClassId, query.getTargetVersion());
-		return type.isInstance(object) ? type.cast(object) : null;
-	}
-
 	public String generateNewGmlId(AbstractFeature feature) {
 		return generateNewGmlId(feature, feature.getId());
 	}
@@ -712,33 +766,12 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 		return schemaMapping.getAbstractObjectType(Util.getObjectClassId(objectClass));
 	}
 
-	public void cleanupCityObjects(AbstractFeature feature) {
-		if (lodGeometryChecker != null
-				&& !query.getLodFilter().preservesGeometry())
-			lodGeometryChecker.cleanupCityObjects((AbstractFeature) feature);
-	}
-
-	public boolean isTiledExport() {
-		return query.isSetTiling();
-	}
-
 	public boolean isLazyTextureExport() {
 		return !query.getLodFilter().preservesGeometry();
 	}
 
-	public void triggerLazyTextureExport(AbstractFeature feature) throws CityGMLExportException, SQLException {
-		if (getExportConfig().getAppearances().isSetExportAppearance())
-			getExporter(DBLocalAppearance.class).triggerLazyTextureExport(feature);
-	}
-
-	public void cleanupAppearances(AbstractFeature feature) {
-		if (appearanceRemover != null
-				&& !query.getLodFilter().preservesGeometry())
-			appearanceRemover.cleanupAppearances(feature);
-	}
-
-	public void updateExportCounter(AbstractGML object) {
-		exportCounter.updateExportCounter(object);
+	public void updateExportCounter(AbstractFeature feature) {
+		exportCounter.updateExportCounter(feature);
 	}
 
 	public Map<Integer, Long> getAndResetObjectCounter() {

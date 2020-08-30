@@ -36,11 +36,10 @@ import org.citygml4j.model.citygml.appearance.SurfaceDataProperty;
 import org.citygml4j.model.citygml.appearance.X3DMaterial;
 import org.citygml4j.model.citygml.core.AbstractCityObject;
 import org.citygml4j.model.common.base.ModelObject;
-import org.citygml4j.model.gml.feature.AbstractFeature;
+import org.citygml4j.model.gml.base.AbstractGML;
 import org.citygml4j.model.gml.geometry.AbstractGeometry;
 import org.citygml4j.model.gml.geometry.aggregates.MultiSurface;
 import org.citygml4j.model.gml.geometry.primitives.AbstractSurface;
-import org.citygml4j.util.walker.FeatureWalker;
 import org.citygml4j.util.walker.GMLWalker;
 
 import java.util.HashSet;
@@ -49,16 +48,16 @@ import java.util.Set;
 
 public class AppearanceRemover {
 
-    public void cleanupAppearances(AbstractFeature feature) {
-    	Set<String> targets = getTargets(feature);
-    	Set<String> removed = unsetSurfaceData(feature, targets);
-    	unsetAppearance(feature, removed);
+    public void cleanupAppearances(AbstractGML object) {
+    	Set<String> targets = getTargets(object);
+    	Set<String> removed = unsetSurfaceData(object, targets);
+    	unsetAppearance(object, removed);
     }
 
-    private Set<String> getTargets(AbstractFeature feature) {
+    private Set<String> getTargets(AbstractGML object) {
         Set<String> targets = new HashSet<>();
 
-        feature.accept(new GMLWalker() {
+        object.accept(new GMLWalker() {
 			@Override
 			public void visit(AbstractSurface surface) {
 				addTarget(surface);
@@ -80,10 +79,10 @@ public class AppearanceRemover {
         return targets;
     }
 
-    private Set<String> unsetSurfaceData(AbstractFeature feature, Set<String> targets) {
+    private Set<String> unsetSurfaceData(AbstractGML object, Set<String> targets) {
 		Set<String> removed = new HashSet<>();
 
-		feature.accept(new FeatureWalker() {
+		object.accept(new GMLWalker() {
 			@Override
 			public void visit(Appearance appearance) {
 				Iterator<SurfaceDataProperty> iter = appearance.getSurfaceDataMember().iterator();
@@ -119,8 +118,8 @@ public class AppearanceRemover {
 		return removed;
 	}
 
-	private void unsetAppearance(AbstractFeature feature, Set<String> removed) {
-		feature.accept(new FeatureWalker() {
+	private void unsetAppearance(AbstractGML object, Set<String> removed) {
+		object.accept(new GMLWalker() {
 			@Override
 			public void visit(Appearance appearance) {
 				appearance.getSurfaceDataMember().removeIf(member -> member.isSetHref() && removed.contains(member.getHref()));

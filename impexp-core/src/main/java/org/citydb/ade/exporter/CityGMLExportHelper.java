@@ -60,7 +60,7 @@ public interface CityGMLExportHelper {
 	GMLConverter getGMLConverter();
 
 	void executeBatch() throws CityGMLExportException, SQLException;
-	boolean exportAsGlobalFeature(AbstractFeature feature) throws CityGMLExportException;
+	boolean exportAsGlobalFeature(AbstractFeature feature) throws CityGMLExportException, SQLException;
 	boolean supportsExportOfGlobalFeatures();
 
 	AbstractDatabaseAdapter getDatabaseAdapter();
