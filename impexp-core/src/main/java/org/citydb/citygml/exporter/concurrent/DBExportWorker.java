@@ -38,6 +38,9 @@ import org.citydb.citygml.exporter.writer.FeatureWriter;
 import org.citydb.concurrent.Worker;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
+import org.citydb.config.geometry.GeometryObject;
+import org.citydb.config.geometry.Point;
+import org.citydb.config.project.database.DatabaseSrs;
 import org.citydb.config.project.global.LogLevel;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.schema.mapping.MappingConstants;
@@ -55,6 +58,8 @@ import org.citydb.event.global.ProgressBarEventType;
 import org.citydb.event.global.StatusDialogProgressBar;
 import org.citydb.file.OutputFile;
 import org.citydb.query.Query;
+import org.citydb.query.filter.FilterException;
+import org.citydb.query.filter.tiling.Tile;
 import org.citygml4j.builder.jaxb.CityGMLBuilder;
 import org.citygml4j.model.gml.base.AbstractGML;
 import org.citygml4j.model.gml.feature.AbstractFeature;
@@ -73,7 +78,10 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 	private final FeatureWriter featureWriter;
 	private final EventDispatcher eventDispatcher;
 	private final Config config;
+	private final boolean useTiling;
 
+	private Tile activeTile;
+	private DatabaseSrs targetSrs;
 	private int globalAppearanceCounter = 0;
 	private int topLevelFeatureCounter = 0;
 
@@ -93,6 +101,12 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 		this.featureWriter = featureWriter;
 		this.eventDispatcher = eventDispatcher;
 		this.config = config;
+
+		useTiling = query.isSetTiling();
+		if (useTiling) {
+			activeTile = query.getTiling().getActiveTile();
+			targetSrs = query.getTargetSrs();
+		}
 
 		exporter = new CityGMLExportManager(
 				outputFile,
@@ -171,13 +185,15 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 					globalAppearanceCounter = 0;
 				}
 			} else {
-				AbstractGML object = exporter.exportObject(work.getId(), work.getObjectType());
-				if (object instanceof AbstractFeature) {
-					feature = (AbstractFeature) object;
-					if (++topLevelFeatureCounter == 20) {
-						eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, topLevelFeatureCounter, this));
-						eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.UPDATE, topLevelFeatureCounter, this));
-						topLevelFeatureCounter = 0;
+				if (!useTiling || isOnTile(work.getEnvelope())) {
+					AbstractGML object = exporter.exportObject(work.getId(), work.getObjectType());
+					if (object instanceof AbstractFeature) {
+						feature = (AbstractFeature) object;
+						if (++topLevelFeatureCounter == 20) {
+							eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, topLevelFeatureCounter, this));
+							eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.UPDATE, topLevelFeatureCounter, this));
+							topLevelFeatureCounter = 0;
+						}
 					}
 				}
 			}
@@ -203,6 +219,21 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 		} finally {
 			runLock.unlock();
 		}
+	}
+
+	private boolean isOnTile(Object envelope) throws FilterException, SQLException {
+		// check whether feature is on active tile
+		if (envelope != null) {
+			GeometryObject geometryObject = exporter.getDatabaseAdapter().getGeometryConverter().getEnvelope(envelope);
+			double[] coordinates = geometryObject.getCoordinates(0);
+
+			return activeTile.isOnTile(new Point(
+					(coordinates[0] + coordinates[3]) / 2.0,
+					(coordinates[1] + coordinates[4]) / 2.0,
+					targetSrs),
+					exporter.getDatabaseAdapter());
+		} else
+			return false;
 	}
 
 	@Override

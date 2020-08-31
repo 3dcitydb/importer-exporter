@@ -43,7 +43,6 @@ import org.citydb.database.schema.TableEnum;
 import org.citydb.database.schema.mapping.AbstractObjectType;
 import org.citydb.database.schema.mapping.FeatureType;
 import org.citydb.query.Query;
-import org.citydb.query.filter.FilterException;
 import org.citydb.query.filter.projection.ProjectionFilter;
 import org.citydb.query.filter.tiling.Tile;
 import org.citydb.query.filter.tiling.Tiling;
@@ -54,8 +53,6 @@ import org.citydb.sqlbuilder.select.Select;
 import org.citydb.sqlbuilder.select.join.JoinFactory;
 import org.citydb.sqlbuilder.select.operator.comparison.ComparisonFactory;
 import org.citydb.sqlbuilder.select.operator.comparison.ComparisonName;
-import org.citydb.util.CoreConstants;
-import org.citygml4j.geometry.BoundingBox;
 import org.citygml4j.geometry.Point;
 import org.citygml4j.model.citygml.core.AbstractCityObject;
 import org.citygml4j.model.citygml.core.ExternalObject;
@@ -100,7 +97,6 @@ public class DBCityObject implements DBExporter {
 
 	private final String gmlSrsName;
 	private final boolean exportAppearance;
-	private final boolean useTiling;
 	private final boolean exportCityDBMetadata;
 
 	private final AttributeValueSplitter valueSplitter;
@@ -123,8 +119,7 @@ public class DBCityObject implements DBExporter {
 		gmlSrsName = query.getTargetSrs().getGMLSrsName();
 		exportAppearance = exporter.getExportConfig().getAppearances().isSetExportAppearance();
 
-		useTiling = query.isSetTiling();
-		if (useTiling) {
+		if (query.isSetTiling()) {
 			Tiling tiling = query.getTiling();
 			tilingOptions = tiling.getTilingOptions() instanceof SimpleTilingOptions ? (SimpleTilingOptions) tiling.getTilingOptions() : new SimpleTilingOptions();
 			setTileInfoAsGenericAttribute = tilingOptions.isIncludeTileAsGenericAttribute();
@@ -271,7 +266,6 @@ public class DBCityObject implements DBExporter {
 		boolean setEnvelope = !context.isCityObject || (context.projectionFilter.containsProperty("boundedBy", gmlModule)
 				&& (exporter.getExportConfig().getCityGMLOptions().getGMLEnvelope().getFeatureMode() == FeatureEnvelopeMode.ALL
 				|| (exporter.getExportConfig().getCityGMLOptions().getGMLEnvelope().getFeatureMode() == FeatureEnvelopeMode.TOP_LEVEL && context.isTopLevel)));
-		boolean getEnvelope = context.isFeature && ((useTiling && context.isTopLevel) || setEnvelope);
 
 		// gml:id
 		if (!context.object.isSetId())
@@ -293,10 +287,11 @@ public class DBCityObject implements DBExporter {
 				context.object.setDescription(new StringOrRef(description));
 		}
 
-		if (getEnvelope) {
+		// gml:boundedBy
+		if (setEnvelope) {
 			BoundingShape boundedBy = null;
 			Object geom = rs.getObject("envelope");
-			if (!rs.wasNull() && geom != null) {
+			if (!rs.wasNull()) {
 				GeometryObject geomObj = exporter.getDatabaseAdapter().getGeometryConverter().getEnvelope(geom);
 				double[] coordinates = geomObj.getCoordinates(0);
 
@@ -306,35 +301,8 @@ public class DBCityObject implements DBExporter {
 				envelope.setSrsDimension(3);
 				envelope.setSrsName(gmlSrsName);
 
-				boundedBy = new BoundingShape();
-				boundedBy.setEnvelope(envelope);
+				((AbstractFeature) context.object).setBoundedBy(new BoundingShape(envelope));
 			}
-
-			// check bounding volume filter
-			if (useTiling && context.isTopLevel) {
-				if (boundedBy == null || !boundedBy.isSetEnvelope()) {
-					context.object.setLocalProperty(CoreConstants.NOT_ON_TILE, true);
-					return false;
-				}
-
-				try {
-					BoundingBox bbox = boundedBy.getEnvelope().toBoundingBox();
-					if (!activeTile.isOnTile(new org.citydb.config.geometry.Point(
-									(bbox.getLowerCorner().getX() + bbox.getUpperCorner().getX()) / 2.0,
-									(bbox.getLowerCorner().getY() + bbox.getUpperCorner().getY()) / 2.0,
-									query.getTargetSrs()),
-							exporter.getDatabaseAdapter())) {
-						context.object.setLocalProperty(CoreConstants.NOT_ON_TILE, true);
-						return false;
-					}
-				} catch (FilterException e) {
-					throw new CityGMLExportException("Failed to apply the tiling filter.", e);
-				}
-			}
-
-			// gml:boundedBy
-			if (setEnvelope)
-				((AbstractFeature) context.object).setBoundedBy(boundedBy);
 		}
 
 		if (context.isCityObject) {

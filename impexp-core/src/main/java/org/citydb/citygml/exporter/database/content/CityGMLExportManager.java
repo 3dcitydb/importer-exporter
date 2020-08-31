@@ -233,10 +233,6 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 		if (object instanceof AbstractFeature) {
 			AbstractFeature feature = (AbstractFeature) object;
 
-			// check whether feature is on active tile
-			if (query.isSetTiling() && feature.hasLocalProperty(CoreConstants.NOT_ON_TILE))
-				return null;
-
 			// invoke export plugins
 			if (!plugins.isEmpty()) {
 				for (CityGMLExportExtension plugin : plugins) {
