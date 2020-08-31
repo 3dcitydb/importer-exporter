@@ -29,10 +29,7 @@ package org.citydb.ade.kmlExporter;
 
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 
-import java.util.List;
-
 public interface ADEKmlExportHelper {
 	AbstractDatabaseAdapter getDatabaseAdapter();
-	Queries getSQLQueries();
-	List<ADEKmlExportManager> getADEKmlExportManagers();
+	ADEKmlExportQueryHelper getSQLQueryHelper();
 }
