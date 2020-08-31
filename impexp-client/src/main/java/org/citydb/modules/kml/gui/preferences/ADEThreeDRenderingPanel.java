@@ -36,7 +36,7 @@ import org.citydb.gui.components.common.AlphaButton;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.preferences.AbstractPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
-import org.citydb.modules.kml.ade.ADEKmlExportExtensionManager;
+import org.citydb.ade.kmlExporter.ADEKmlExportExtensionManager;
 import org.citydb.textureAtlas.TextureAtlasCreator;
 
 import javax.swing.*;

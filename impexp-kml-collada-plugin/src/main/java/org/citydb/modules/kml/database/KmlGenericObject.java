@@ -46,6 +46,7 @@ import org.citydb.event.global.CounterEvent;
 import org.citydb.event.global.CounterType;
 import org.citydb.event.global.GeometryCounterEvent;
 import org.citydb.log.Logger;
+import org.citydb.ade.kmlExporter.Queries;
 import org.citydb.modules.kml.datatype.TypeAttributeValueEnum;
 import org.citydb.modules.kml.util.AffineTransformer;
 import org.citydb.modules.kml.util.BalloonTemplateHandler;

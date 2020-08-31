@@ -62,7 +62,7 @@ import org.citydb.gui.components.feature.FeatureTypeTree;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.log.Logger;
-import org.citydb.modules.kml.ade.ADEKmlExportExtension;
+import org.citydb.ade.kmlExporter.ADEKmlExportExtension;
 import org.citydb.modules.kml.controller.KmlExportException;
 import org.citydb.plugin.extension.view.ViewController;
 import org.citydb.plugin.extension.view.components.BoundingBoxPanel;

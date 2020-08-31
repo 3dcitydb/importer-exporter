@@ -42,7 +42,7 @@ import org.citydb.database.schema.mapping.FeatureType;
 import org.citydb.event.EventDispatcher;
 import org.citydb.event.global.ObjectCounterEvent;
 import org.citydb.log.Logger;
-import org.citydb.modules.kml.ade.ADEKmlExportExtensionManager;
+import org.citydb.ade.kmlExporter.ADEKmlExportExtensionManager;
 import org.citydb.modules.kml.database.ColladaBundle;
 import org.citydb.modules.kml.database.KmlExporterManager;
 import org.citydb.modules.kml.database.KmlGenericObject;

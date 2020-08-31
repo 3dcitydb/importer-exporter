@@ -25,22 +25,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.citydb.modules.kml.database;
+package org.citydb.ade.kmlExporter;
 
 import org.citydb.config.project.kmlExporter.DisplayForm;
 import org.citydb.config.project.kmlExporter.Lod0FootprintMode;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.schema.SequenceEnum;
 import org.citydb.log.Logger;
-import org.citydb.modules.kml.ade.ADEKmlExportException;
-import org.citydb.modules.kml.ade.ADEKmlExportManager;
-import org.citydb.modules.kml.ade.ADEKmlExporter;
 
 public class Queries {
 	private AbstractDatabaseAdapter databaseAdapter;
 	private String schema;
 	private String implicitGeometryNullColumns;
-	private KmlExporterManager exportManager;
+	private ADEKmlExportHelper exportManager;
 
 	private static int QUERY_POINT_AND_CURVE_GEOMETRY = 0;
 	private static int QUERY_SURFACE_GEOMETRY = 1;
@@ -50,7 +47,7 @@ public class Queries {
 		this(databaseAdapter, schema, null);
 	}
 
-	public Queries(AbstractDatabaseAdapter databaseAdapter, String schema, KmlExporterManager exporterManager) {
+	public Queries(AbstractDatabaseAdapter databaseAdapter, String schema, ADEKmlExportHelper exporterManager) {
 		this.exportManager = exporterManager;
 		this.databaseAdapter = databaseAdapter;
 		this.schema = schema;

@@ -25,9 +25,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.citydb.modules.kml.ade;
+package org.citydb.ade.kmlExporter;
 
-public interface ADEKmlExportManager {
-	void init(ADEKmlExportHelper helper);
-	ADEKmlExporter getKmlExporter(int objectClassId) throws ADEKmlExportException;
+import java.util.HashMap;
+import java.util.Set;
+
+public interface ADEBalloonManager {
+	ADEBalloonHandler getBalloonHandler(int objectClassId) throws ADEBalloonException;
+	HashMap<String, Set<String>> getTablesAndColumns();
 }
