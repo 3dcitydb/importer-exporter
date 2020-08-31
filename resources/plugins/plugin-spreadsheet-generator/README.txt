@@ -1,6 +1,6 @@
 ﻿3D City Database Importer/Exporter Spreadsheet Generator Plugin
 
-Version 3.2.0-SNAPSHOT (2020-01-16)
+Version 3.2.0-SNAPSHOT (2020-08-31)
 
   This software is free software and is distributed on an "AS IS" BASIS,
   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -53,7 +53,7 @@ formats are Microsoft Excel and CSV.
 ---------------
 
 This version of the Spreadsheet Generator Plugin shall only be used with
-version 4.2.1 of the 3D City Database Importer/Exporter.
+version 4.3.0 of the 3D City Database Importer/Exporter.
 It cannot be guaranteed that the extension does correctly work with any
 previous or later version of the 3D City Database Importer/Exporter.
 
@@ -66,7 +66,7 @@ called "plugin-spreadsheet-generator-3.2.0-SNAPSHOT.zip".
 
 The following simple steps will guide you through the install process:
 * Open the installation directory of your local installation of the
-  3D City Database Importer/Exporter version 4.2.1.
+  3D City Database Importer/Exporter version 4.3.0.
 * Open the "plugins" subfolder. If it is not available, create a new
   subfolder and name it "plugins".
 * Extract the downloaded ZIP file in the plugins folder. As a result a new
