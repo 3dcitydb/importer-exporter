@@ -334,19 +334,11 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryExporter {
 		if (geomNode.gmlId != null) {
 			if (geomNode.isXlink) {
 				if (exporter.lookupAndPutGeometryUID(geomNode.gmlId, geomNode.id)) {
-
 					if (useXLink) {
 						// check whether we have to embrace the geometry with an orientableSurface
-						if (geomNode.isReverse != isSetOrientableSurface) {
-							OrientableSurface orientableSurface = new OrientableSurface();
-							SurfaceProperty surfaceProperty = new SurfaceProperty();
-							surfaceProperty.setHref("#" + geomNode.gmlId);
-							orientableSurface.setBaseSurface(surfaceProperty);
-							orientableSurface.setOrientation(Sign.MINUS);
-
-							return new SurfaceGeometry(orientableSurface);
-						} else
-							return new SurfaceGeometry("#" + geomNode.gmlId, surfaceGeometryType);
+						return geomNode.isReverse != isSetOrientableSurface ?
+								new SurfaceGeometry(reverseSurface("#" + geomNode.gmlId)) :
+								new SurfaceGeometry("#" + geomNode.gmlId, surfaceGeometryType);
 					} else {
 						geomNode.isXlink = false;
 						String gmlId = DefaultGMLIdManager.getInstance().generateUUID(gmlIdPrefix);
@@ -382,8 +374,6 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryExporter {
 				forceRingIds = true;
 			}
 
-			// we suppose we have one outer ring and one or more inner rings
-			boolean isExterior = true;
 			for (int ringIndex = 0; ringIndex < geomNode.geometry.getNumElements(); ringIndex++) {
 				List<Double> values;
 
@@ -400,50 +390,25 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryExporter {
 					}
 				}
 
-				if (isExterior) {
-					LinearRing linearRing = new LinearRing();
-					DirectPositionList directPositionList = new DirectPositionList();
+				LinearRing linearRing = new LinearRing();
+				DirectPositionList posList = new DirectPositionList();
+				if (forceRingIds)
+					linearRing.setId(polygon.getId() + '_' + ringIndex + '_');
 
-					if (forceRingIds)
-						linearRing.setId(polygon.getId() + '_' + ringIndex + '_');
+				posList.setValue(values);
+				posList.setSrsDimension(3);
+				linearRing.setPosList(posList);
 
-					directPositionList.setValue(values);
-					directPositionList.setSrsDimension(3);
-					linearRing.setPosList(directPositionList);
-
-					Exterior exterior = new Exterior();
-					exterior.setRing(linearRing);
-					polygon.setExterior(exterior);
-
-					isExterior = false;
-				} else {
-					LinearRing linearRing = new LinearRing();
-					DirectPositionList directPositionList = new DirectPositionList();
-
-					if (forceRingIds)
-						linearRing.setId(polygon.getId() + '_' + ringIndex + '_');
-
-					directPositionList.setValue(values);
-					directPositionList.setSrsDimension(3);
-					linearRing.setPosList(directPositionList);
-
-					Interior interior = new Interior();
-					interior.setRing(linearRing);
-					polygon.addInterior(interior);
-				}
+				if (ringIndex == 0)
+					polygon.setExterior(new Exterior(linearRing));
+				else
+					polygon.addInterior(new Interior(linearRing));
 			}
 
 			// check whether we have to embrace the polygon with an orientableSurface
-			if (initOrientableSurface || (isSetOrientableSurface && !geomNode.isReverse)) {
-				OrientableSurface orientableSurface = new OrientableSurface();
-				SurfaceProperty surfaceProperty = new SurfaceProperty();
-				surfaceProperty.setSurface(polygon);
-				orientableSurface.setBaseSurface(surfaceProperty);
-				orientableSurface.setOrientation(Sign.MINUS);
-
-				return new SurfaceGeometry(orientableSurface);
-			} else
-				return new SurfaceGeometry(polygon);
+			return initOrientableSurface || (isSetOrientableSurface && !geomNode.isReverse) ?
+					new SurfaceGeometry(reverseSurface(polygon)) :
+					new SurfaceGeometry(polygon);
 		}
 
 		// compositeSurface
@@ -454,44 +419,26 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryExporter {
 				compositeSurface.setId(geomNode.gmlId);
 
 			for (GeometryNode childNode : geomNode.childNodes) {
-				SurfaceGeometry geomMember = rebuildGeometry(childNode, isSetOrientableSurface, wasXlink);
+				SurfaceGeometry member = rebuildGeometry(childNode, isSetOrientableSurface, wasXlink);
+				if (member != null) {
+					AbstractGeometry geometry = member.getGeometry();
+					SurfaceProperty property = null;
 
-				if (geomMember != null) {
-					AbstractGeometry absGeom = geomMember.getGeometry();
-					SurfaceProperty surfaceMember = new SurfaceProperty();
+					if (geometry instanceof AbstractSurface)
+						property = new SurfaceProperty((AbstractSurface) geometry);
+					else if (member.isSetReference())
+						property = new SurfaceProperty(member.getReference());
 
-					if (absGeom != null) {
-						switch (geomMember.getType()) {
-							case POLYGON:
-							case ORIENTABLE_SURFACE:
-							case COMPOSITE_SURFACE:
-							case TRIANGULATED_SURFACE:
-								surfaceMember.setSurface((AbstractSurface)absGeom);
-								break;
-							default:
-								surfaceMember = null;
-						}
-					} else {
-						surfaceMember.setHref(geomMember.getReference());
-					}
-
-					if (surfaceMember != null)
-						compositeSurface.addSurfaceMember(surfaceMember);
+					if (property != null)
+						compositeSurface.addSurfaceMember(property);
 				}
 			}
 
 			if (compositeSurface.isSetSurfaceMember()) {
 				// check whether we have to embrace the compositeSurface with an orientableSurface
-				if (initOrientableSurface || (isSetOrientableSurface && !geomNode.isReverse)) {
-					OrientableSurface orientableSurface = new OrientableSurface();
-					SurfaceProperty surfaceProperty = new SurfaceProperty();
-					surfaceProperty.setSurface(compositeSurface);
-					orientableSurface.setBaseSurface(surfaceProperty);
-					orientableSurface.setOrientation(Sign.MINUS);
-
-					return new SurfaceGeometry(orientableSurface);
-				} else
-					return new SurfaceGeometry(compositeSurface);
+				return initOrientableSurface || (isSetOrientableSurface && !geomNode.isReverse) ?
+						new SurfaceGeometry(reverseSurface(compositeSurface)) :
+						new SurfaceGeometry(compositeSurface);
 			}
 
 			return null;
@@ -505,34 +452,22 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryExporter {
 				compositeSolid.setId(geomNode.gmlId);
 
 			for (GeometryNode childNode : geomNode.childNodes) {
-				SurfaceGeometry geomMember = rebuildGeometry(childNode, isSetOrientableSurface, wasXlink);
+				SurfaceGeometry member = rebuildGeometry(childNode, isSetOrientableSurface, wasXlink);
+				if (member != null) {
+					AbstractGeometry geometry = member.getGeometry();
+					SolidProperty property = null;
 
-				if (geomMember != null) {
-					AbstractGeometry absGeom = geomMember.getGeometry();
-					SolidProperty solidMember = new SolidProperty();
+					if (geometry instanceof AbstractSolid)
+						property = new SolidProperty((AbstractSolid) geometry);
+					else if (member.isSetReference())
+						property = new SolidProperty(member.getReference());
 
-					if (absGeom != null) {
-						switch (geomMember.getType()) {
-							case SOLID:
-							case COMPOSITE_SOLID:
-								solidMember.setSolid((AbstractSolid)absGeom);
-								break;
-							default:
-								solidMember = null;
-						}
-					} else {
-						solidMember.setHref(geomMember.getReference());
-					}
-
-					if (solidMember != null)
-						compositeSolid.addSolidMember(solidMember);
+					if (property != null)
+						compositeSolid.addSolidMember(property);
 				}
 			}
 
-			if (compositeSolid.isSetSolidMember())
-				return new SurfaceGeometry(compositeSolid);
-
-			return null;
+			return compositeSolid.isSetSolidMember() ? new SurfaceGeometry(compositeSolid) : null;
 		}
 
 		// a simple solid
@@ -542,37 +477,23 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryExporter {
 			if (geomNode.gmlId != null)
 				solid.setId(geomNode.gmlId);
 
-			// we strongly assume solids contain one single CompositeSurface
-			// as exterior. Nothing else is interpreted here...
 			if (geomNode.childNodes.size() == 1) {
-				SurfaceGeometry geomMember = rebuildGeometry(geomNode.childNodes.get(0), isSetOrientableSurface, wasXlink);
+				SurfaceGeometry exterior = rebuildGeometry(geomNode.childNodes.get(0), isSetOrientableSurface, wasXlink);
+				if (exterior != null) {
+					AbstractGeometry geometry = exterior.getGeometry();
+					SurfaceProperty property = null;
 
-				if (geomMember != null) {
-					AbstractGeometry absGeom = geomMember.getGeometry();
-					SurfaceProperty surfaceProperty = new SurfaceProperty();
+					if (geometry instanceof AbstractSurface)
+						property = new SurfaceProperty((AbstractSurface) geometry);
+					else if (exterior.isSetReference())
+						property = new SurfaceProperty(exterior.getReference());
 
-					if (absGeom != null) {
-						switch (geomMember.getType()) {
-							case COMPOSITE_SURFACE:
-							case ORIENTABLE_SURFACE:
-								surfaceProperty.setSurface((AbstractSurface)absGeom);
-								break;
-							default:
-								surfaceProperty = null;
-						}
-					} else {
-						surfaceProperty.setHref(geomMember.getReference());
-					}
-
-					if (surfaceProperty != null)
-						solid.setExterior(surfaceProperty);
+					if (property != null)
+						solid.setExterior(property);
 				}
 			}
 
-			if (solid.isSetExterior())
-				return new SurfaceGeometry(solid);
-
-			return null;
+			return solid.isSetExterior() ? new SurfaceGeometry(solid) : null;
 		}
 
 		// multiSolid
@@ -583,35 +504,22 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryExporter {
 				multiSolid.setId(geomNode.gmlId);
 
 			for (GeometryNode childNode : geomNode.childNodes) {
-				SurfaceGeometry geomMember = rebuildGeometry(childNode, isSetOrientableSurface, wasXlink);
+				SurfaceGeometry member = rebuildGeometry(childNode, isSetOrientableSurface, wasXlink);
+				if (member != null) {
+					AbstractGeometry geometry = member.getGeometry();
+					SolidProperty property = null;
 
-				if (geomMember != null) {
-					AbstractGeometry absGeom = geomMember.getGeometry();
-					SolidProperty solidMember = new SolidProperty();
+					if (geometry instanceof AbstractSolid)
+						property = new SolidProperty((AbstractSolid) geometry);
+					else if (member.isSetReference())
+						property = new SolidProperty(member.getReference());
 
-					if (absGeom != null) {
-						switch (geomMember.getType()) {
-							case SOLID:
-							case COMPOSITE_SOLID:
-								solidMember.setSolid((AbstractSolid)absGeom);
-								break;
-							default:
-								solidMember = null;
-						}
-					} else {
-						solidMember.setHref(geomMember.getReference());
-					}
-
-					if (solidMember != null)
-						multiSolid.addSolidMember(solidMember);
+					if (property != null)
+						multiSolid.addSolidMember(property);
 				}
 			}
 
-			if (multiSolid.isSetSolidMember())
-				return new SurfaceGeometry(multiSolid);
-
-			return null;
-
+			return multiSolid.isSetSolidMember() ? new SurfaceGeometry(multiSolid) : null;
 		}
 
 		// multiSurface
@@ -622,36 +530,22 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryExporter {
 				multiSurface.setId(geomNode.gmlId);
 
 			for (GeometryNode childNode : geomNode.childNodes) {
-				SurfaceGeometry geomMember = rebuildGeometry(childNode, isSetOrientableSurface, wasXlink);
+				SurfaceGeometry member = rebuildGeometry(childNode, isSetOrientableSurface, wasXlink);
+				if (member != null) {
+					AbstractGeometry geometry = member.getGeometry();
+					SurfaceProperty property = null;
 
-				if (geomMember != null) {
-					AbstractGeometry absGeom = geomMember.getGeometry();
-					SurfaceProperty surfaceMember = new SurfaceProperty();
+					if (geometry instanceof AbstractSurface)
+						property = new SurfaceProperty((AbstractSurface) geometry);
+					else if (member.isSetReference())
+						property = new SurfaceProperty(member.getReference());
 
-					if (absGeom != null) {
-						switch (geomMember.getType()) {
-							case POLYGON:
-							case ORIENTABLE_SURFACE:
-							case COMPOSITE_SURFACE:
-							case TRIANGULATED_SURFACE:
-								surfaceMember.setSurface((AbstractSurface)absGeom);
-								break;
-							default:
-								surfaceMember = null;
-						}
-					} else {
-						surfaceMember.setHref(geomMember.getReference());
-					}
-
-					if (surfaceMember != null)
-						multiSurface.addSurfaceMember(surfaceMember);
+					if (property != null)
+						multiSurface.addSurfaceMember(property);
 				}
 			}
 
-			if (multiSurface.isSetSurfaceMember())
-				return new SurfaceGeometry(multiSurface);
-
-			return null;
+			return multiSurface.isSetSurfaceMember() ? new SurfaceGeometry(multiSurface) : null;
 		}
 
 		// triangulatedSurface
@@ -661,50 +555,52 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryExporter {
 			if (geomNode.gmlId != null)
 				triangulatedSurface.setId(geomNode.gmlId);
 
-			TrianglePatchArrayProperty triangleArray = new TrianglePatchArrayProperty();
+			TrianglePatchArrayProperty property = new TrianglePatchArrayProperty();
 			for (GeometryNode childNode : geomNode.childNodes) {
-				SurfaceGeometry geomMember = rebuildGeometry(childNode, isSetOrientableSurface, wasXlink);
+				SurfaceGeometry member = rebuildGeometry(childNode, isSetOrientableSurface, wasXlink);
+				if (member != null) {
+					AbstractGeometry geometry = member.getGeometry();
 
-				if (geomMember != null) {
-					// we are only expecting polygons...
-					AbstractGeometry absGeom = geomMember.getGeometry();
+					if (geometry instanceof Polygon) {
+						// we only expect polygons
+						Polygon polygon = (Polygon) geometry;
+						Triangle triangle = new Triangle();
 
-					if (geomMember.getType() == GMLClass.POLYGON) {
-						// we do not have to deal with xlinks here...
-						if (absGeom != null) {
-							// convert polygon to trianglePatch
-							Triangle triangle = new Triangle();
-							Polygon polygon = (Polygon)absGeom;
-
-							if (polygon.isSetExterior()) {
-								triangle.setExterior(polygon.getExterior());
-								triangleArray.addTriangle(triangle);
-							}
+						if (polygon.isSetExterior()) {
+							triangle.setExterior(polygon.getExterior());
+							property.addTriangle(triangle);
 						}
 					}
 				}
 			}
 
-			if (triangleArray.isSetTriangle() && !triangleArray.getTriangle().isEmpty()) {
-				triangulatedSurface.setTrianglePatches(triangleArray);
+			if (property.isSetTriangle() && !property.getTriangle().isEmpty()) {
+				triangulatedSurface.setTrianglePatches(property);
 
 				// check whether we have to embrace the compositeSurface with an orientableSurface
-				if (initOrientableSurface || (isSetOrientableSurface && !geomNode.isReverse)) {
-					OrientableSurface orientableSurface = new OrientableSurface();
-					SurfaceProperty surfaceProperty = new SurfaceProperty();
-					surfaceProperty.setSurface(triangulatedSurface);
-					orientableSurface.setBaseSurface(surfaceProperty);
-					orientableSurface.setOrientation(Sign.MINUS);
-
-					return new SurfaceGeometry(orientableSurface);
-				} else
-					return new SurfaceGeometry(triangulatedSurface);
+				return initOrientableSurface || (isSetOrientableSurface && !geomNode.isReverse) ?
+						new SurfaceGeometry(reverseSurface(triangulatedSurface)) :
+						new SurfaceGeometry(triangulatedSurface);
 			}
 
 			return null;
 		}
 
 		return null;
+	}
+
+	private OrientableSurface reverseSurface(AbstractSurface surface) {
+		OrientableSurface orientableSurface = new OrientableSurface();
+		orientableSurface.setBaseSurface(new SurfaceProperty(surface));
+		orientableSurface.setOrientation(Sign.MINUS);
+		return orientableSurface;
+	}
+
+	private OrientableSurface reverseSurface(String reference) {
+		OrientableSurface orientableSurface = new OrientableSurface();
+		orientableSurface.setBaseSurface(new SurfaceProperty(reference));
+		orientableSurface.setOrientation(Sign.MINUS);
+		return orientableSurface;
 	}
 
 	private void writeToAppearanceCache(GeometryNode geomNode) throws SQLException {

@@ -39,6 +39,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class XlinkSolidGeometry implements DBXlinkResolver {
 	private final Logger log = Logger.getInstance();
@@ -149,24 +150,23 @@ public class XlinkSolidGeometry implements DBXlinkResolver {
 
 		try (ResultSet rs = psSelectSurfGeom.executeQuery()) {
 			GeometryNode root = null;
-			HashMap<Long, GeometryNode> parentMap = new HashMap<>();
+			Map<Long, GeometryNode> parentMap = new HashMap<>();
 
 			// rebuild geometry hierarchy
 			while (rs.next()) {
-				int isSolid = rs.getInt("IS_SOLID");
-				int isComposite = rs.getInt("IS_COMPOSITE");
-				long id = rs.getLong("ID");
-				long parentId = rs.getInt("PARENT_ID");
-
-				GeometryObject geometry = null;
-				Object object = rs.getObject("GEOMETRY");
-				if (!rs.wasNull() && object != null)
-					geometry = manager.getDatabaseAdapter().getGeometryConverter().getPolygon(object);
+				long id = rs.getLong("id");
+				long parentId = rs.getInt("parent_id");
 
 				// constructing a geometry node
 				GeometryNode geomNode = new GeometryNode();
-				geomNode.isSolid = isSolid == 1;
-				geomNode.isComposite = isComposite == 1;
+				geomNode.isSolid = rs.getBoolean("is_solid");
+				geomNode.isComposite = rs.getBoolean("is_composite");
+
+				GeometryObject geometry = null;
+				Object object = rs.getObject("geometry");
+				if (!rs.wasNull() && object != null)
+					geometry = manager.getDatabaseAdapter().getGeometryConverter().getPolygon(object);
+
 				geomNode.geometry = geometry;
 
 				if (root != null) {
