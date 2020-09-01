@@ -29,10 +29,13 @@ package org.citydb.modules.kml.util;
 
 import org.citydb.ade.ADEExtension;
 import org.citydb.ade.ADEExtensionManager;
+import org.citydb.ade.kmlExporter.ADEBalloonException;
+import org.citydb.ade.kmlExporter.ADEBalloonExtensionManager;
+import org.citydb.ade.kmlExporter.ADEBalloonHandler;
+import org.citydb.ade.kmlExporter.ADEBalloonManager;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.log.Logger;
-import org.citydb.modules.kml.ade.*;
 import org.citydb.registry.ObjectRegistry;
 import org.citydb.util.Util;
 import org.citygml4j.model.citygml.CityGMLClass;
@@ -51,7 +54,6 @@ import org.citygml4j.model.citygml.vegetation.PlantCover;
 import org.citygml4j.model.citygml.vegetation.SolitaryVegetationObject;
 import org.citygml4j.model.citygml.waterbody.AbstractWaterBoundarySurface;
 import org.citygml4j.model.citygml.waterbody.WaterBody;
-import org.citygml4j.model.citygml.waterbody.WaterSurface;
 import org.citygml4j.model.gml.base.AbstractGML;
 import org.citygml4j.model.module.citygml.CityGMLVersion;
 

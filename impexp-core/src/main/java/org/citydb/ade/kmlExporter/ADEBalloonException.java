@@ -25,12 +25,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.citydb.modules.kml.ade;
+package org.citydb.ade.kmlExporter;
 
-import java.util.HashMap;
-import java.util.Set;
+public class ADEBalloonException extends Exception {
 
-public interface ADEBalloonManager {
-	ADEBalloonHandler getBalloonHandler(int objectClassId) throws ADEBalloonException;
-	HashMap<String, Set<String>> getTablesAndColumns();
+	private static final long serialVersionUID = 1547143906555672258L;
+
+	public ADEBalloonException() {
+		super();
+	}
+
+	public ADEBalloonException(String message) {
+		super(message);
+	}
+
+	public ADEBalloonException(Throwable cause) {
+		super(cause);
+	}
+
+	public ADEBalloonException(String message, Throwable cause) {
+		super(message, cause);
+	}
+	
 }

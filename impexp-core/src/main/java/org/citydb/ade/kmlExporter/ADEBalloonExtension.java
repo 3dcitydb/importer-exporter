@@ -25,26 +25,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.citydb.modules.kml.ade;
+package org.citydb.ade.kmlExporter;
 
-public class ADEBalloonException extends Exception {
-
-	private static final long serialVersionUID = 1547143906555672258L;
-
-	public ADEBalloonException() {
-		super();
-	}
-
-	public ADEBalloonException(String message) {
-		super(message);
-	}
-
-	public ADEBalloonException(Throwable cause) {
-		super(cause);
-	}
-
-	public ADEBalloonException(String message, Throwable cause) {
-		super(message, cause);
-	}
-	
+public interface ADEBalloonExtension {
+	ADEBalloonManager createBalloonManager();
 }

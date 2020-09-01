@@ -36,7 +36,7 @@ import org.citydb.database.schema.mapping.FeatureType;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.preferences.AbstractPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
-import org.citydb.modules.kml.ade.ADEKmlExportExtensionManager;
+import org.citydb.ade.kmlExporter.ADEKmlExportExtensionManager;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
