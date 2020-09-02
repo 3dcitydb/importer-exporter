@@ -6,6 +6,9 @@ Change Log
 * CityJSON import (already working in `master`). [#88](https://github.com/3dcitydb/importer-exporter/issues/88)
 * CityJSON export. [#89](https://github.com/3dcitydb/importer-exporter/issues/89)
 * Fixed bug in SQL query builder. [#122](https://github.com/3dcitydb/importer-exporter/pull/122)
+* added explicit CLI script in addition to the start script for simplifying the use of Importer/Exporter CLI mode. [#123](https://github.com/3dcitydb/importer-exporter/pull/123)
+* added extension mechanism to KML/COLLADA/glTF-Exporter to support CityGML ADEs. [#124](https://github.com/3dcitydb/importer-exporter/pull/124)
+* added support for importing and exporting arbitrary surfaces as exterior of solids. [#130](https://github.com/3dcitydb/importer-exporter/pull/130)
 
 ### 4.2.3 - 2020-04-06
 
