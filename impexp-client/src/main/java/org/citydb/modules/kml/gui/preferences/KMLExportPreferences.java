@@ -34,7 +34,7 @@ import org.citydb.database.schema.mapping.AppSchema;
 import org.citydb.database.schema.mapping.FeatureType;
 import org.citydb.gui.preferences.AbstractPreferences;
 import org.citydb.gui.preferences.DefaultPreferencesEntry;
-import org.citydb.modules.kml.ade.ADEKmlExportExtension;
+import org.citydb.ade.kmlExporter.ADEKmlExportExtension;
 import org.citydb.plugin.extension.view.ViewController;
 
 import java.util.List;

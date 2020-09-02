@@ -27,30 +27,19 @@
  */
 package org.citydb.modules.kml.database;
 
-import net.opengis.kml._2.DocumentType;
-import net.opengis.kml._2.KmlType;
-import net.opengis.kml._2.LatLonAltBoxType;
-import net.opengis.kml._2.LinkType;
-import net.opengis.kml._2.LodType;
-import net.opengis.kml._2.NetworkLinkType;
-import net.opengis.kml._2.ObjectFactory;
-import net.opengis.kml._2.PlacemarkType;
-import net.opengis.kml._2.RegionType;
-import net.opengis.kml._2.ViewRefreshModeEnumType;
+import net.opengis.kml._2.*;
 import org.citydb.ade.ADEExtension;
 import org.citydb.ade.ADEExtensionManager;
+import org.citydb.ade.kmlExporter.*;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
 import org.citydb.config.project.kmlExporter.DisplayForm;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.adapter.BlobExportAdapter;
-import org.citydb.database.schema.mapping.SchemaMapping;
 import org.citydb.event.EventDispatcher;
 import org.citydb.event.global.CounterEvent;
 import org.citydb.event.global.CounterType;
 import org.citydb.log.Logger;
-import org.citydb.modules.kml.ade.*;
-import org.citydb.modules.kml.controller.KmlExportException;
 import org.citydb.modules.kml.util.BalloonTemplateHandler;
 import org.citydb.modules.kml.util.CityObject4JSON;
 import org.citydb.modules.kml.util.ExportTracker;
@@ -64,12 +53,7 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.StringWriter;
+import java.io.*;
 import java.nio.charset.Charset;
 import java.sql.SQLException;
 import java.util.*;
@@ -87,9 +71,7 @@ public class KmlExporterManager implements ADEKmlExportHelper {
 	private final BlobExportAdapter textureExportAdapter;
 	private final EventDispatcher eventDispatcher;
 	private final Config config;
-	private final ADEExtensionManager adeManager;
-	private final SchemaMapping schemaMapping;
-	private final Queries sqlQueries;
+	private final ADEKmlExportQueryHelper sqlQueries;
 
 	private boolean useTiling;
 	private String mainFilename;
@@ -124,8 +106,6 @@ public class KmlExporterManager implements ADEKmlExportHelper {
 		this.eventDispatcher = eventDispatcher;
 		this.config = config;
 
-		adeManager = ADEExtensionManager.getInstance();
-		schemaMapping = ObjectRegistry.getInstance().getSchemaMapping();
 		sqlQueries = new Queries(databaseAdapter, databaseAdapter.getConnectionDetails().getSchema(), this);
 		adeKmlExportManagers = new IdentityHashMap<>();
 
@@ -154,7 +134,7 @@ public class KmlExporterManager implements ADEKmlExportHelper {
 	}
 
 	@Override
-	public Queries getSQLQueries() {
+	public ADEKmlExportQueryHelper getSQLQueryHelper() {
 		return sqlQueries;
 	}
 

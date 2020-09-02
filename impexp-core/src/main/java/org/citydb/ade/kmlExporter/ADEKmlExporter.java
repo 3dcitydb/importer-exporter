@@ -25,12 +25,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.citydb.modules.kml.ade;
+package org.citydb.ade.kmlExporter;
 
-public interface ADEBalloonHandler {
-	String getSqlStatement(String table,
-	                       String tableShortId,
-	                       String aggregateColumnsClause,
-	                       int lod,
-	                       String schemaName) throws ADEBalloonException;
+public interface ADEKmlExporter {
+	String getPointAndCurveQuery(int lod);
+	String getSurfaceGeometryQuery(int lod);
+	String getSurfaceGeometryRefIdsQuery(int lod);
 }

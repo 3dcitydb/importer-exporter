@@ -25,7 +25,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.citydb.modules.kml.ade;
+package org.citydb.ade.kmlExporter;
 
 import org.citydb.ade.ADEExtension;
 import org.citydb.ade.ADEExtensionManager;
@@ -35,11 +35,8 @@ import org.citydb.config.project.kmlExporter.ADEPreferences;
 import org.citydb.database.schema.mapping.FeatureType;
 import org.citydb.registry.ObjectRegistry;
 
-import java.util.IdentityHashMap;
-
 public class ADEKmlExportExtensionManager {
 	private static ADEKmlExportExtensionManager instance;
-	private final IdentityHashMap<ADEKmlExportExtension, ADEKmlExportManager> adeKmlExportManagers = new IdentityHashMap<>();
 
 	public static synchronized ADEKmlExportExtensionManager getInstance() {
 		if (instance == null)
