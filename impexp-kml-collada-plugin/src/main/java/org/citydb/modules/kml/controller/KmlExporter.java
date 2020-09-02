@@ -81,7 +81,7 @@ import org.citydb.event.global.ObjectCounterEvent;
 import org.citydb.event.global.StatusDialogMessage;
 import org.citydb.event.global.StatusDialogTitle;
 import org.citydb.log.Logger;
-import org.citydb.modules.kml.ade.ADEKmlExportExtensionManager;
+import org.citydb.ade.kmlExporter.ADEKmlExportExtensionManager;
 import org.citydb.modules.kml.concurrent.KmlExportWorkerFactory;
 import org.citydb.modules.kml.database.ADEObject;
 import org.citydb.modules.kml.database.Bridge;

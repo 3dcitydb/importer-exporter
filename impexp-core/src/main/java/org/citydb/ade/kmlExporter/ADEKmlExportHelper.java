@@ -25,8 +25,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.citydb.modules.kml.ade;
+package org.citydb.ade.kmlExporter;
 
-public interface ADEBalloonExtension {
-	ADEBalloonManager createBalloonManager();
+import org.citydb.database.adapter.AbstractDatabaseAdapter;
+
+public interface ADEKmlExportHelper {
+	AbstractDatabaseAdapter getDatabaseAdapter();
+	ADEKmlExportQueryHelper getSQLQueryHelper();
 }

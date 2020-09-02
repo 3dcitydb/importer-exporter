@@ -27,16 +27,14 @@
  */
 package org.citydb.modules.kml.database;
 
+import org.citydb.ade.kmlExporter.*;
 import org.citydb.config.project.kmlExporter.DisplayForm;
 import org.citydb.config.project.kmlExporter.Lod0FootprintMode;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.schema.SequenceEnum;
 import org.citydb.log.Logger;
-import org.citydb.modules.kml.ade.ADEKmlExportException;
-import org.citydb.modules.kml.ade.ADEKmlExportManager;
-import org.citydb.modules.kml.ade.ADEKmlExporter;
 
-public class Queries {
+public class Queries implements ADEKmlExportQueryHelper {
 	private AbstractDatabaseAdapter databaseAdapter;
 	private String schema;
 	private String implicitGeometryNullColumns;
@@ -67,6 +65,7 @@ public class Queries {
 		}
 	}
 
+	@Override
 	public String getImplicitGeometryNullColumns() {
 		return implicitGeometryNullColumns;
 	}
@@ -611,6 +610,7 @@ public class Queries {
 		}
 	}
 
+	@Override
 	public String getBuildingPartAggregateGeometries(double tolerance, int srid2D, int lodToExportFrom, double groupBy1, double groupBy2, double groupBy3, int objectClassId) {
 		String query;
 		if (lodToExportFrom > 1) {
@@ -638,6 +638,7 @@ public class Queries {
 		return unionADEQueries(QUERY_SURFACE_GEOMETRY, query,  lodToExportFrom, objectClassId);
 	}
 
+	@Override
 	public String getBuildingPartQuery(int lodToExportFrom, Lod0FootprintMode lod0FootprintMode, DisplayForm displayForm, boolean lodCheckOnly, int objectClassId) {
 		String query = null;
 
@@ -659,7 +660,7 @@ public class Queries {
 	// 	Bridge QUERIES
 	// ----------------------------------------------------------------------
 
-	public String getBridgePartsFromBridge() { 
+	public String getBridgePartsFromBridge() {
 		return new StringBuilder("SELECT id FROM ").append(schema).append(".BRIDGE WHERE bridge_root_id = ?").toString();
 	}
 
@@ -1044,7 +1045,8 @@ public class Queries {
 		}
 	}
 
-	public String getBridgePartAggregateGeometries (double tolerance, int srid2D, int lodToExportFrom, double groupBy1, double groupBy2, double groupBy3, int objectClassId) {
+	@Override
+	public String getBridgePartAggregateGeometries(double tolerance, int srid2D, int lodToExportFrom, double groupBy1, double groupBy2, double groupBy3, int objectClassId) {
 		String query;
 		if (lodToExportFrom > 1) {
 			query = getBridgePartAggregateGeometriesForLOD2OrHigher().replace("<TOLERANCE>", String.valueOf(tolerance))
@@ -1065,6 +1067,7 @@ public class Queries {
 		return unionADEQueries(QUERY_SURFACE_GEOMETRY, query, lodToExportFrom, objectClassId);
 	}
 
+	@Override
 	public String getBridgePartQuery(int lodToExportFrom, DisplayForm displayForm, boolean lodCheckOnly, int objectClassId) {
 		String query;
 
@@ -1086,7 +1089,7 @@ public class Queries {
 	// 	Tunnel QUERIES
 	// ----------------------------------------------------------------------
 
-	public String getTunnelPartsFromTunnel() { 
+	public String getTunnelPartsFromTunnel() {
 		return new StringBuilder("SELECT id FROM ").append(schema).append(".TUNNEL WHERE tunnel_root_id = ?").toString();
 	}
 
@@ -1436,6 +1439,7 @@ public class Queries {
 		}
 	}
 
+	@Override
 	public String getTunnelPartAggregateGeometries(double tolerance, int srid2D, int lodToExportFrom, double groupBy1, double groupBy2, double groupBy3, int objectClassId) {
 		String query;
 		if (lodToExportFrom > 1) {
@@ -1457,6 +1461,7 @@ public class Queries {
 		return unionADEQueries(QUERY_SURFACE_GEOMETRY, query, lodToExportFrom, objectClassId);
 	}
 
+	@Override
 	public String getTunnelPartQuery(int lodToExportFrom, DisplayForm displayForm, boolean lodCheckOnly, int objectClassId) {
 		String query;
 
@@ -1477,6 +1482,7 @@ public class Queries {
 	// ----------------------------------------------------------------------
 	// CITY OBJECT GROUP QUERIES
 	// ----------------------------------------------------------------------
+	@Override
 	public String getCityObjectGroupFootprint(int objectClassId) {
 		String query = new StringBuilder("SELECT sg.geometry, ")
 		.append(implicitGeometryNullColumns)
@@ -1523,7 +1529,8 @@ public class Queries {
 	// SOLITARY VEGETATION OBJECT QUERIES
 	// ----------------------------------------------------------------------
 
-	public String getSolitaryVegetationObjectQuery(int lodToExportFrom, DisplayForm displayForm, int  objectClassId) {
+	@Override
+	public String getSolitaryVegetationObjectQuery(int lodToExportFrom, DisplayForm displayForm, int objectClassId) {
 		String query = null;
 
 		switch (displayForm.getForm()) {
@@ -1563,6 +1570,7 @@ public class Queries {
 	// PLANT COVER QUERIES
 	// ----------------------------------------------------------------------
 
+	@Override
 	public String getPlantCoverQuery(int lodToExportFrom, DisplayForm displayForm, int objectClassId) {
 		String query;
 		switch (displayForm.getForm()) {
@@ -1611,6 +1619,7 @@ public class Queries {
 	// GENERIC CITY OBJECT QUERIES
 	// ----------------------------------------------------------------------
 
+	@Override
 	public String getGenericCityObjectQuery(int lodToExportFrom, DisplayForm displayForm, int objectClassId) {
 		String query;
 
@@ -1646,6 +1655,7 @@ public class Queries {
 		return query;
 	}
 
+	@Override
 	public String getGenericCityObjectPointAndCurveQuery(int lodToExportFrom, int objectClassId) {
 		String query;
 
@@ -1669,6 +1679,7 @@ public class Queries {
 	// CITY FURNITURE QUERIES
 	// ----------------------------------------------------------------------
 
+	@Override
 	public String getCityFurnitureQuery(int lodToExportFrom, DisplayForm displayForm, int objectClassId) {
 		String query = null;
 
@@ -1792,6 +1803,7 @@ public class Queries {
 		return query.toString();
 	}
 
+	@Override
 	public String getWaterBodyQuery(int lodToExportFrom, DisplayForm displayForm, int objectClassId) {
 		String query;
 		
@@ -1813,7 +1825,8 @@ public class Queries {
 	// LAND USE QUERIES
 	// ----------------------------------------------------------------------
 
-	public String getLandUseQuery (int lodToExportFrom, DisplayForm displayForm, int objectClassId) {
+	@Override
+	public String getLandUseQuery(int lodToExportFrom, DisplayForm displayForm, int objectClassId) {
 		String query;
 
 		switch (displayForm.getForm()) {
@@ -1908,6 +1921,7 @@ public class Queries {
 		return query.toString();
 	}
 
+	@Override
 	public String getTransportationQuery(int lod, DisplayForm displayForm, int objectClassId) {
 		String query;
 
@@ -1929,6 +1943,7 @@ public class Queries {
 	// RELIEF QUERIES
 	// ----------------------------------------------------------------------
 
+	@Override
 	public String getReliefQuery(int lod, DisplayForm displayForm, int objectClassId) {
 		String query;
 

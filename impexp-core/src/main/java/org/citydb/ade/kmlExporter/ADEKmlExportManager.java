@@ -25,8 +25,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.citydb.modules.kml.ade;
+package org.citydb.ade.kmlExporter;
 
-public interface ADEKmlExportExtension extends ADEBalloonExtension {
-	ADEKmlExportManager createADEKmlExportManager();
+public interface ADEKmlExportManager {
+	void init(ADEKmlExportHelper helper);
+	ADEKmlExporter getKmlExporter(int objectClassId) throws ADEKmlExportException;
 }
