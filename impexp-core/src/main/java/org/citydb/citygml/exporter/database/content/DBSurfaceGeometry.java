@@ -136,61 +136,61 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryExporter {
 	}
 
 	@Override
-	public void addBatch(long id, GeometrySetterHandler handler) {
+	public void addBatch(long id, GeometrySetterHandler handler) throws CityGMLExportException, SQLException {
 		batches.add(new SurfaceGeometryContext(id, handler, false));
 	}
 
 	@Override
-	public void addBatch(long id, GeometrySetter.AbstractGeometry setter) {
+	public void addBatch(long id, GeometrySetter.AbstractGeometry setter) throws CityGMLExportException, SQLException {
 		addBatch(id, new DefaultGeometrySetterHandler(setter));
 	}
 
 	@Override
-	public void addBatch(long id, GeometrySetter.Surface setter) {
+	public void addBatch(long id, GeometrySetter.Surface setter) throws CityGMLExportException, SQLException {
 		addBatch(id, new DefaultGeometrySetterHandler(setter));
 	}
 
 	@Override
-	public void addBatch(long id, GeometrySetter.CompositeSurface setter) {
+	public void addBatch(long id, GeometrySetter.CompositeSurface setter) throws CityGMLExportException, SQLException {
 		addBatch(id, new DefaultGeometrySetterHandler(setter));
 	}
 
 	@Override
-	public void addBatch(long id, GeometrySetter.MultiSurface setter) {
+	public void addBatch(long id, GeometrySetter.MultiSurface setter) throws CityGMLExportException, SQLException {
 		addBatch(id, new DefaultGeometrySetterHandler(setter));
 	}
 
 	@Override
-	public void addBatch(long id, GeometrySetter.Polygon setter) {
+	public void addBatch(long id, GeometrySetter.Polygon setter) throws CityGMLExportException, SQLException {
 		addBatch(id, new DefaultGeometrySetterHandler(setter));
 	}
 
 	@Override
-	public void addBatch(long id, GeometrySetter.MultiPolygon setter) {
+	public void addBatch(long id, GeometrySetter.MultiPolygon setter) throws CityGMLExportException, SQLException {
 		addBatch(id, new DefaultGeometrySetterHandler(setter));
 	}
 
 	@Override
-	public void addBatch(long id, GeometrySetter.Solid setter) {
+	public void addBatch(long id, GeometrySetter.Solid setter) throws CityGMLExportException, SQLException {
 		addBatch(id, new DefaultGeometrySetterHandler(setter));
 	}
 
 	@Override
-	public void addBatch(long id, GeometrySetter.CompositeSolid setter) {
+	public void addBatch(long id, GeometrySetter.CompositeSolid setter) throws CityGMLExportException, SQLException {
 		addBatch(id, new DefaultGeometrySetterHandler(setter));
 	}
 
 	@Override
-	public void addBatch(long id, GeometrySetter.MultiSolid setter) {
+	public void addBatch(long id, GeometrySetter.MultiSolid setter) throws CityGMLExportException, SQLException {
 		addBatch(id, new DefaultGeometrySetterHandler(setter));
 	}
 
 	@Override
-	public void addBatch(long id, GeometrySetter.Tin setter) {
+	public void addBatch(long id, GeometrySetter.Tin setter) throws CityGMLExportException, SQLException {
 		addBatch(id, new DefaultGeometrySetterHandler(setter));
 	}
 
-	protected void addImplicitGeometryBatch(long id, ImplicitGeometry geometry) {
+	protected void addImplicitGeometryBatch(long id, ImplicitGeometry geometry) throws CityGMLExportException, SQLException {
 		batches.add(new SurfaceGeometryContext(id,
 				new DefaultGeometrySetterHandler((GeometrySetter.AbstractGeometry) geometry::setRelativeGeometry),
 				true));
