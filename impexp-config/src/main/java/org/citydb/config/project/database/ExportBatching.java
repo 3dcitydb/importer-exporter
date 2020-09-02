@@ -25,42 +25,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.citydb.config.project.resources;
+package org.citydb.config.project.database;
 
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="ResourcesType", propOrder={
-		"gmlIdCache",
-		"threadPool"
+@XmlType(name = "ExportBatchingType", propOrder = {
+		"batchSize"
 })
-public class Resources {
-	@XmlElement(required=true)
-	private UIDCache gmlIdCache;
-	@XmlElement(required=true)
-	private ThreadPool threadPool;
+public class ExportBatching {
+	@XmlElement(required = true, defaultValue = "30")
+	@XmlSchemaType(name = "positiveInteger")
+	private Integer batchSize = 30;
 
-	public Resources() {
-		gmlIdCache = new UIDCache();
-		threadPool = new ThreadPool();
+	public Integer getBatchSize() {
+		return batchSize;
 	}
 
-	public UIDCache getGmlIdCache() {
-		return gmlIdCache;
+	public void setBatchSize(Integer batchSize) {
+		if (batchSize != null && batchSize > 0)
+			this.batchSize = batchSize;
 	}
-
-	public void setGmlIdCache(UIDCache gmlIdCache) {
-		if (gmlIdCache != null)
-			this.gmlIdCache = gmlIdCache;
-	}
-
-	public ThreadPool getThreadPool() {
-		return threadPool;
-	}
-
-	public void setThreadPool(ThreadPool threadPool) {
-		if (threadPool != null)
-			this.threadPool = threadPool;
-	}
-
 }

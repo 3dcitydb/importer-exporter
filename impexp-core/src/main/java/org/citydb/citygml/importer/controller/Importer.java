@@ -155,7 +155,7 @@ public class Importer implements EventHandler {
 		int queueSize = maxThreads * 2;
 
 		// gml:id lookup cache update
-		int lookupCacheBatchSize = databaseConfig.getUpdateBatching().getGmlIdCacheBatchValue();
+		int lookupCacheBatchSize = databaseConfig.getImportBatching().getGmlIdCacheBatchSize();
 
 		// check database workspace
 		Workspace workspace = databaseConfig.getWorkspaces().getImportWorkspace();

@@ -102,7 +102,7 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryExporter {
 
 		if (exportAppearance) {
 			commitAfter = exporter.getDatabaseAdapter().getMaxBatchSize();
-			Integer commitAfterProp = config.getProject().getDatabase().getUpdateBatching().getTempBatchValue();
+			Integer commitAfterProp = config.getProject().getDatabase().getImportBatching().getTempBatchSize();
 			if (commitAfterProp != null && commitAfterProp > 0 && commitAfterProp <= exporter.getDatabaseAdapter().getMaxBatchSize())
 				commitAfter = commitAfterProp;
 
