@@ -46,22 +46,23 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 public class DBLocalAppearance extends AbstractAppearanceExporter {
-	private final Connection connection;
 	private final PreparedStatement psBulk;
 	private final PreparedStatement psSelect;
 	private final Map<Long, AbstractCityObject> batches;
+	private final int batchSize;
 
 	private List<PlaceHolder<?>> themes;
 
 	public DBLocalAppearance(Connection connection, Query query, CityGMLExportManager exporter, Config config) throws CityGMLExportException, SQLException {
 		super(false, connection, query, null, exporter, config);
-		this.connection = connection;
 		batches = new LinkedHashMap<>();
+		batchSize = exporter.getBatchSize();
 
 		if (query.isSetAppearanceFilter()) {
 			try {
@@ -74,16 +75,18 @@ public class DBLocalAppearance extends AbstractAppearanceExporter {
 			}
 		}
 
-		String subQuery = "select * from " + exporter.getDatabaseAdapter().getSQLAdapter().resolveDatabaseOperationName("unnest") + "(?)";
+		String placeHolders = String.join(",", Collections.nCopies(batchSize, "?"));
 		psBulk = connection.prepareStatement(new Select(select)
-				.addSelection(ComparisonFactory.in(table.getColumn("id"), new LiteralSelectExpression(subQuery))).toString());
+				.addSelection(ComparisonFactory.in(table.getColumn("id"), new LiteralSelectExpression(placeHolders))).toString());
 
 		psSelect = connection.prepareStatement(new Select(this.select)
 				.addSelection(ComparisonFactory.equalTo(table.getColumn("id"), new PlaceHolder<>())).toString());
 	}
 
-	protected void addBatch(long appearanceId, AbstractCityObject cityObject) {
+	protected void addBatch(long appearanceId, AbstractCityObject cityObject) throws CityGMLExportException, SQLException {
 		batches.put(appearanceId, cityObject);
+		if (batches.size() == batchSize)
+			executeBatch();
 	}
 
 	protected void executeBatch() throws CityGMLExportException, SQLException {
@@ -103,7 +106,9 @@ public class DBLocalAppearance extends AbstractAppearanceExporter {
 						psSelect.setString(i++, (String) theme.getValue());
 				}
 
-				psBulk.setArray(i, exporter.getDatabaseAdapter().getSQLAdapter().createIdArray(batches.keySet().toArray(new Long[0]), connection));
+				Long[] ids = batches.keySet().toArray(new Long[0]);
+				for (int j = 0; j < batchSize; j++)
+					psBulk.setLong(i + j, j < ids.length ? ids[j] : 0);
 
 				try (ResultSet rs = psBulk.executeQuery()) {
 					Map<Long, Appearance> appearances = doExport(rs);

@@ -74,6 +74,7 @@ public class DBTunnelHollowSpace extends AbstractFeatureExporter<HollowSpace> {
 	private final DBTunnelOpening openingExporter;
 	private final DBTunnelFurniture tunnelFurnitureExporter;
 
+	private final int batchSize;
 	private final String tunnelModule;
 	private final LodFilter lodFilter;
 	private final AttributeValueSplitter valueSplitter;
@@ -88,6 +89,7 @@ public class DBTunnelHollowSpace extends AbstractFeatureExporter<HollowSpace> {
 		super(HollowSpace.class, connection, exporter);
 
 		batches = new LinkedHashMap<>();
+		batchSize = exporter.getBatchSize();
 		cityObjectExporter = exporter.getExporter(DBCityObject.class);
 		tunnelInstallationExporter = exporter.getExporter(DBTunnelInstallation.class);
 		thematicSurfaceExporter = exporter.getExporter(DBTunnelThematicSurface.class);
@@ -147,8 +149,10 @@ public class DBTunnelHollowSpace extends AbstractFeatureExporter<HollowSpace> {
 		hollowSpaceADEHookTables = addJoinsToADEHookTables(TableEnum.TUNNEL_HOLLOW_SPACE, table);
 	}
 
-	protected void addBatch(long id, AbstractTunnel parent) {
+	protected void addBatch(long id, AbstractTunnel parent) throws CityGMLExportException, SQLException {
 		batches.put(id, parent);
+		if (batches.size() == batchSize)
+			executeBatch();
 	}
 
 	protected void executeBatch() throws CityGMLExportException, SQLException {
@@ -161,8 +165,8 @@ public class DBTunnelHollowSpace extends AbstractFeatureExporter<HollowSpace> {
 				ps = getOrCreateStatement("id");
 				ps.setLong(1, batches.keySet().iterator().next());
 			} else {
-				ps = getOrCreateBulkStatement();
-				ps.setArray(1, exporter.getDatabaseAdapter().getSQLAdapter().createIdArray(batches.keySet().toArray(new Long[0]), connection));
+				ps = getOrCreateBulkStatement(batchSize);
+				prepareBulkStatement(ps, batches.keySet().toArray(new Long[0]), batchSize);
 			}
 
 			try (ResultSet rs = ps.executeQuery()) {

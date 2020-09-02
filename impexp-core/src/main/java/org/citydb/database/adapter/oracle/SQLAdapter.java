@@ -27,7 +27,6 @@
  */
 package org.citydb.database.adapter.oracle;
 
-import oracle.jdbc.driver.OracleConnection;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.adapter.AbstractSQLAdapter;
@@ -43,7 +42,6 @@ import org.citydb.sqlbuilder.select.PredicateToken;
 import org.citydb.sqlbuilder.select.operator.comparison.ComparisonFactory;
 import org.citydb.sqlbuilder.select.projection.Function;
 
-import java.sql.Array;
 import java.sql.Connection;
 import java.sql.SQLException;
 
@@ -175,14 +173,6 @@ public class SQLAdapter extends AbstractSQLAdapter {
     @Override
     public boolean supportsFetchFirstClause() {
         return databaseAdapter.getConnectionMetaData().getDatabaseMajorVersion() > 11;
-    }
-
-    @Override
-    public Array createIdArray(Long[] ids, Connection connection) throws SQLException {
-        if (connection.isWrapperFor(OracleConnection.class))
-            return connection.unwrap(OracleConnection.class).createARRAY(databaseAdapter.getConnectionDetails().getSchema() + ".ID_ARRAY", ids);
-        else
-            throw new SQLException("Failed to create an Oracle ARRAY object.");
     }
 
     @Override

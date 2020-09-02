@@ -486,6 +486,13 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 			getADEExportManager(adeHookTable).exportGenericApplicationProperties(adeHookTable, parent, parentId, parentType, projectionFilter);
 	}
 
+	protected int getBatchSize() {
+		Integer batchSize = config.getProject().getDatabase().getExportBatching().getBatchSize();
+		return batchSize != null && batchSize <= databaseAdapter.getSQLAdapter().getMaximumNumberOfItemsForInOperator() ?
+				batchSize :
+				30;
+	}
+
 	@Override
 	public void executeBatch() throws CityGMLExportException, SQLException {
 		getExporter(DBCityObject.class).executeBatch();

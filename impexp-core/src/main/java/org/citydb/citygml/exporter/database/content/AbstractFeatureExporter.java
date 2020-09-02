@@ -52,6 +52,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -92,16 +93,21 @@ public abstract class AbstractFeatureExporter<T extends AbstractFeature> extends
 		return doExport(parentId, null, null, ps);
 	}
 
-	protected PreparedStatement getOrCreateBulkStatement() throws SQLException {
+	protected PreparedStatement getOrCreateBulkStatement(int batchSize) throws SQLException {
 		PreparedStatement ps = statements.get("id_bulk");
 		if (ps == null) {
-			String subQuery = "select * from " + exporter.getDatabaseAdapter().getSQLAdapter().resolveDatabaseOperationName("unnest") + "(?)";
-			Select select = new Select(this.select).addSelection(ComparisonFactory.in(table.getColumn("id"), new LiteralSelectExpression(subQuery)));
+			String placeHolders = String.join(",", Collections.nCopies(batchSize, "?"));
+			Select select = new Select(this.select).addSelection(ComparisonFactory.in(table.getColumn("id"), new LiteralSelectExpression(placeHolders)));
 			ps = connection.prepareStatement(select.toString());
 			statements.put("id_bulk", ps);
 		}
 
 		return ps;
+	}
+
+	protected void prepareBulkStatement(PreparedStatement ps, Long[] ids, int batchSize) throws SQLException {
+		for (int i = 0; i < batchSize; i++)
+			ps.setLong(i + 1, i < ids.length ? ids[i] : 0);
 	}
 	
 	protected PreparedStatement getOrCreateStatement(String columnName) throws SQLException {

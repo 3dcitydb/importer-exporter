@@ -81,6 +81,7 @@ public class DBBridgeConstrElement extends AbstractFeatureExporter<BridgeConstru
 	private final DBImplicitGeometry implicitGeometryExporter;
 	private final GMLConverter gmlConverter;
 
+	private final int batchSize;
 	private final String bridgeModule;
 	private final LodFilter lodFilter;
 	private final AttributeValueSplitter valueSplitter;
@@ -95,6 +96,7 @@ public class DBBridgeConstrElement extends AbstractFeatureExporter<BridgeConstru
 		super(BridgeConstructionElement.class, connection, exporter);
 
 		batches = new LinkedHashMap<>();
+		batchSize = exporter.getBatchSize();
 		cityObjectExporter = exporter.getExporter(DBCityObject.class);
 		thematicSurfaceExporter = exporter.getExporter(DBBridgeThematicSurface.class);
 		openingExporter = exporter.getExporter(DBBridgeOpening.class);
@@ -167,8 +169,10 @@ public class DBBridgeConstrElement extends AbstractFeatureExporter<BridgeConstru
 		constructionElementADEHookTables = addJoinsToADEHookTables(TableEnum.BRIDGE_CONSTR_ELEMENT, table);
 	}
 
-	protected void addBatch(long id, AbstractBridge parent) {
+	protected void addBatch(long id, AbstractBridge parent) throws CityGMLExportException, SQLException {
 		batches.put(id, parent);
+		if (batches.size() == batchSize)
+			executeBatch();
 	}
 
 	protected void executeBatch() throws CityGMLExportException, SQLException {
@@ -181,8 +185,8 @@ public class DBBridgeConstrElement extends AbstractFeatureExporter<BridgeConstru
 				ps = getOrCreateStatement("id");
 				ps.setLong(1, batches.keySet().iterator().next());
 			} else {
-				ps = getOrCreateBulkStatement();
-				ps.setArray(1, exporter.getDatabaseAdapter().getSQLAdapter().createIdArray(batches.keySet().toArray(new Long[0]), connection));
+				ps = getOrCreateBulkStatement(batchSize);
+				prepareBulkStatement(ps, batches.keySet().toArray(new Long[0]), batchSize);
 			}
 
 			try (ResultSet rs = ps.executeQuery()) {

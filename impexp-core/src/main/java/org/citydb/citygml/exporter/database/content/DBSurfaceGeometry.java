@@ -70,18 +70,17 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryExporter {
 	private final CityGMLExportManager exporter;
 	private final PreparedStatement psBulk;
 	private final PreparedStatement psSelect;
-	private final Connection connection;
 	private final List<SurfaceGeometryContext> batches;
+	private final int batchSize;
 	private final boolean exportAppearance;
 	private final boolean useXLink;
 
@@ -93,9 +92,9 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryExporter {
 
 	public DBSurfaceGeometry(Connection connection, CacheTable cacheTable, CityGMLExportManager exporter, Config config) throws SQLException {
 		this.exporter = exporter;
-		this.connection = connection;
 
 		batches = new ArrayList<>();
+		batchSize = exporter.getBatchSize();
 		exportAppearance = config.getInternal().isExportGlobalAppearances();
 		useXLink = exporter.getExportConfig().getXlink().getGeometry().isModeXLink();
 		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
@@ -126,10 +125,10 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryExporter {
 				table.getColumn("is_xlink"), table.getColumn("is_reverse"),
 				exporter.getGeometryColumn(table.getColumn("geometry")), table.getColumn("implicit_geometry"));
 
-		String subQuery = "select * from " + exporter.getDatabaseAdapter().getSQLAdapter().resolveDatabaseOperationName("unnest") + "(?)";
+		String placeHolders = String.join(",", Collections.nCopies(batchSize, "?"));
 		psBulk = connection.prepareStatement(new Select(select)
 				.addProjection(table.getColumn("root_id"))
-				.addSelection(ComparisonFactory.in(table.getColumn("root_id"), new LiteralSelectExpression(subQuery))).toString());
+				.addSelection(ComparisonFactory.in(table.getColumn("root_id"), new LiteralSelectExpression(placeHolders))).toString());
 
 		psSelect = connection.prepareStatement(new Select(select)
 				.addSelection(ComparisonFactory.equalTo(table.getColumn("root_id"), new PlaceHolder<>())).toString());
@@ -138,6 +137,8 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryExporter {
 	@Override
 	public void addBatch(long id, GeometrySetterHandler handler) throws CityGMLExportException, SQLException {
 		batches.add(new SurfaceGeometryContext(id, handler, false));
+		if (batches.size() == batchSize)
+			executeBatch();
 	}
 
 	@Override
@@ -194,6 +195,9 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryExporter {
 		batches.add(new SurfaceGeometryContext(id,
 				new DefaultGeometrySetterHandler((GeometrySetter.AbstractGeometry) geometry::setRelativeGeometry),
 				true));
+
+		if (batches.size() == batchSize)
+			executeBatch();
 	}
 
 	public void executeBatch() throws CityGMLExportException, SQLException {
@@ -207,14 +211,13 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryExporter {
 				if (geometry != null)
 					context.handler.handle(geometry);
 			} else {
-				Set<Long> ids = new HashSet<>();
 				Map<Long, GeometryTree> geomTrees = new HashMap<>();
-				for (SurfaceGeometryContext batch : batches) {
-					ids.add(batch.id);
+				for (SurfaceGeometryContext batch : batches)
 					geomTrees.putIfAbsent(batch.id, new GeometryTree(batch.isImplicit));
-				}
 
-				psBulk.setArray(1, exporter.getDatabaseAdapter().getSQLAdapter().createIdArray(ids.toArray(new Long[0]), connection));
+				Long[] ids = geomTrees.keySet().toArray(new Long[0]);
+				for (int i = 0; i < batchSize; i++)
+					psBulk.setLong(i + 1, i < ids.length ? ids[i] : 0);
 
 				try (ResultSet rs = psBulk.executeQuery()) {
 					while (rs.next()) {

@@ -78,6 +78,7 @@ import java.sql.SQLException;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -88,13 +89,13 @@ import java.util.Set;
 public class DBCityObject implements DBExporter {
 	private final Query query;
 	private final CityGMLExportManager exporter;
-	private final Connection connection;
 	private final PreparedStatement psSelect;
 	private final PreparedStatement psBulk;
 	private final Map<Long, List<ObjectContext>> batches;
 	private final DBGeneralization generalizesToExporter;
 	private final DBCityObjectGenericAttrib genericAttributeExporter;
 
+	private final int batchSize;
 	private final String gmlSrsName;
 	private final boolean exportAppearance;
 	private final boolean exportCityDBMetadata;
@@ -112,10 +113,10 @@ public class DBCityObject implements DBExporter {
 
 	public DBCityObject(Connection connection, Query query, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
 		this.query = query;
-		this.connection = connection;
 		this.exporter = exporter;
 
 		batches = new LinkedHashMap<>();
+		batchSize = exporter.getBatchSize();
 		gmlSrsName = query.getTargetSrs().getGMLSrsName();
 		exportAppearance = exporter.getExportConfig().getAppearances().isSetExportAppearance();
 
@@ -164,9 +165,9 @@ public class DBCityObject implements DBExporter {
 					.addJoin(JoinFactory.left(appearance, "cityobject_id", ComparisonName.EQUAL_TO, table.getColumn("id")));
 		}
 
-		String subQuery = "select * from " + exporter.getDatabaseAdapter().getSQLAdapter().resolveDatabaseOperationName("unnest") + "(?)";
+		String placeHolders = String.join(",", Collections.nCopies(batchSize, "?"));
 		psBulk = connection.prepareStatement(new Select(select)
-				.addSelection(ComparisonFactory.in(table.getColumn("id"), new LiteralSelectExpression(subQuery))).toString());
+				.addSelection(ComparisonFactory.in(table.getColumn("id"), new LiteralSelectExpression(placeHolders))).toString());
 
 		psSelect = connection.prepareStatement(new Select(select)
 				.addSelection(ComparisonFactory.equalTo(table.getColumn("id"), new PlaceHolder<>())).toString());
@@ -174,6 +175,8 @@ public class DBCityObject implements DBExporter {
 
 	protected void addBatch(AbstractGML object, long objectId, AbstractObjectType<?> objectType, ProjectionFilter projectionFilter) throws CityGMLExportException, SQLException {
 		batches.computeIfAbsent(objectId, v -> new ArrayList<>()).add(new ObjectContext(object, objectType, projectionFilter));
+		if (batches.size() == batchSize)
+			executeBatch();
 
 		// ADE-specific extensions
 		if (exporter.hasADESupport())
@@ -190,7 +193,10 @@ public class DBCityObject implements DBExporter {
 				psSelect.setLong(1, batches.keySet().iterator().next());
 				ps = psSelect;
 			} else {
-				psBulk.setArray(1, exporter.getDatabaseAdapter().getSQLAdapter().createIdArray(batches.keySet().toArray(new Long[0]), connection));
+				Long[] ids = batches.keySet().toArray(new Long[0]);
+				for (int i = 0; i < batchSize; i++)
+					psBulk.setLong(i + 1, i < ids.length ? ids[i] : 0);
+
 				ps = psBulk;
 			}
 
@@ -411,7 +417,7 @@ public class DBCityObject implements DBExporter {
 		return true;
 	}
 
-	private void addProperties(ObjectContext context, ResultSet rs) throws SQLException {
+	private void addProperties(ObjectContext context, ResultSet rs) throws CityGMLExportException, SQLException {
 		AbstractCityObject cityObject = (AbstractCityObject) context.object;
 
 		// app::appearance

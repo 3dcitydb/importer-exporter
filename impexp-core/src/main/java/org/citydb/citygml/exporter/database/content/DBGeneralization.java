@@ -40,6 +40,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -48,6 +49,7 @@ public class DBGeneralization implements DBExporter {
 	private final CityGMLExportManager exporter;
 	private final Select select;
 	private final Map<Long, AbstractCityObject> batches;
+	private final int batchSize;
 
 	private PreparedStatement ps;
 
@@ -56,16 +58,19 @@ public class DBGeneralization implements DBExporter {
 		this.exporter = exporter;
 
 		batches = new LinkedHashMap<>();
+		batchSize = exporter.getBatchSize();
 		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
-		String subQuery = "select * from " + exporter.getDatabaseAdapter().getSQLAdapter().resolveDatabaseOperationName("unnest") + "(?)";
+		String placeHolders = String.join(",", Collections.nCopies(batchSize, "?"));
 
 		Table table = new Table(TableEnum.CITYOBJECT.getName(), schema);
 		select = new Select().addProjection(table.getColumn("id"), table.getColumn("gmlid"))
-				.addSelection(ComparisonFactory.in(table.getColumn("id"), new LiteralSelectExpression(subQuery)));
+				.addSelection(ComparisonFactory.in(table.getColumn("id"), new LiteralSelectExpression(placeHolders)));
 	}
 
-	protected void addBatch(long generalizesToId, AbstractCityObject cityObject) {
+	protected void addBatch(long generalizesToId, AbstractCityObject cityObject) throws CityGMLExportException, SQLException {
 		batches.put(generalizesToId, cityObject);
+		if (batches.size() == batchSize)
+			executeBatch();
 	}
 
 	protected void executeBatch() throws CityGMLExportException, SQLException {
@@ -74,7 +79,9 @@ public class DBGeneralization implements DBExporter {
 				if (ps == null)
 					ps = connection.prepareStatement(select.toString());
 
-				ps.setArray(1, exporter.getDatabaseAdapter().getSQLAdapter().createIdArray(batches.keySet().toArray(new Long[0]), connection));
+				Long[] ids = batches.keySet().toArray(new Long[0]);
+				for (int i = 0; i < batchSize; i++)
+					ps.setLong(i + 1, i < ids.length ? ids[i] : 0);
 
 				try (ResultSet rs = ps.executeQuery()) {
 					while (rs.next()) {

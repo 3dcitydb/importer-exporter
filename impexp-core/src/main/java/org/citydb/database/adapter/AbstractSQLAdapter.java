@@ -36,7 +36,6 @@ import org.citydb.sqlbuilder.schema.Column;
 import org.citydb.sqlbuilder.select.PredicateToken;
 import org.citydb.sqlbuilder.select.projection.Function;
 
-import java.sql.Array;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -78,7 +77,6 @@ public abstract class AbstractSQLAdapter {
 	public abstract boolean spatialPredicateRequiresNoIndexHint();
 	public abstract boolean supportsFetchFirstClause();
 
-	public abstract Array createIdArray(Long[] ids, Connection connection) throws SQLException;
 	public abstract String getHierarchicalGeometryQuery();
 	public abstract String getNextSequenceValue(String sequence);
 	public abstract String getCurrentSequenceValue(String sequence);
