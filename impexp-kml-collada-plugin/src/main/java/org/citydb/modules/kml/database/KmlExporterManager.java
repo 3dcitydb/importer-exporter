@@ -522,13 +522,15 @@ public class KmlExporterManager implements ADEKmlExportHelper {
 				Iterator<String> iterator = keySet.iterator();
 				while (iterator.hasNext()) {
 					String imageFilename = iterator.next();
-					byte[] ordImageBytes = textureExportAdapter.getInByteArray(colladaBundle.getUnsupportedTexImageIds().get(imageFilename), imageFilename);
-					zipEntry = imageFilename.startsWith("..") ?
-							new ZipEntry(imageFilename.substring(3)): // skip .. and File.separator
+					byte[] ordImageBytes = textureExportAdapter.getInByteArray(colladaBundle.getUnsupportedTexImageIds().get(imageFilename));
+					if (ordImageBytes != null) {
+						zipEntry = imageFilename.startsWith("..") ?
+								new ZipEntry(imageFilename.substring(3)) : // skip .. and File.separator
 								new ZipEntry(colladaBundle.getId() + "/" + imageFilename);
-							zipOut.putNextEntry(zipEntry);
-							zipOut.write(ordImageBytes, 0, ordImageBytes.length);
-							zipOut.closeEntry();
+						zipOut.putNextEntry(zipEntry);
+						zipOut.write(ordImageBytes, 0, ordImageBytes.length);
+						zipOut.closeEntry();
+					}
 				}
 			}
 
@@ -541,11 +543,11 @@ public class KmlExporterManager implements ADEKmlExportHelper {
 					String imageType = imageFilename.substring(imageFilename.lastIndexOf('.') + 1);
 
 					zipEntry = imageFilename.startsWith("..") ?
-							new ZipEntry(imageFilename.substring(3)): // skip .. and File.separator
-								new ZipEntry(colladaBundle.getId() + "/" + imageFilename);
-							zipOut.putNextEntry(zipEntry);
-							ImageIO.write(texImage, imageType, zipOut);
-							zipOut.closeEntry();
+							new ZipEntry(imageFilename.substring(3)) : // skip .. and File.separator
+							new ZipEntry(colladaBundle.getId() + "/" + imageFilename);
+					zipOut.putNextEntry(zipEntry);
+					ImageIO.write(texImage, imageType, zipOut);
+					zipOut.closeEntry();
 				}
 			}
 
@@ -597,7 +599,7 @@ public class KmlExporterManager implements ADEKmlExportHelper {
 				while (iterator.hasNext()) {
 					String imageFilename = iterator.next();
 					String fileName = buildingDirectory + File.separator + imageFilename;
-					textureExportAdapter.writeToFile(colladaBundle.getUnsupportedTexImageIds().get(imageFilename), imageFilename, fileName);
+					textureExportAdapter.writeToFile(colladaBundle.getUnsupportedTexImageIds().get(imageFilename), fileName);
 				}
 			}
 

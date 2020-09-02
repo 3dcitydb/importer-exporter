@@ -27,26 +27,21 @@
  */
 package org.citydb.database.adapter;
 
-import org.citydb.log.Logger;
-
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class BlobExportAdapter {
-	protected final Logger log = Logger.getInstance();
 	protected final Connection connection;
+	private final BlobType blobType;
 	private final String schema;
 
 	private PreparedStatement psExport;
-	private BlobType blobType;
 
 	public BlobExportAdapter(Connection connection, BlobType blobType, String schema) {
 		this.connection = connection;
@@ -54,67 +49,39 @@ public class BlobExportAdapter {
 		this.schema = schema;
 	}
 
-	public byte[] getInByteArray(long id, String objectName) throws SQLException {
-		if (psExport == null)
+	public byte[] getInByteArray(long id) throws SQLException {
+		if (psExport == null) {
 			psExport = connection.prepareStatement(blobType == BlobType.TEXTURE_IMAGE ?
-					"select TEX_IMAGE_DATA from " + schema + ".TEX_IMAGE where ID=?" : "select LIBRARY_OBJECT from " + schema + ".IMPLICIT_GEOMETRY where ID=?");
+					"select tex_image_data from " + schema + ".tex_image where id=?" :
+					"select library_object from " + schema + ".implicit_geometry where id=?");
+		}
 
 		psExport.setLong(1, id);
-
-		// try and read texture image attribute from SURFACE_DATA table
 		try (ResultSet rs = psExport.executeQuery()) {
-			if (!rs.next()) {
-				log.error("Error while exporting a " + (blobType == BlobType.TEXTURE_IMAGE ? "texture" : "library object") + " file: " + objectName + " does not exist in database.");
-				return null;
-			}
-
-			byte[] buf = rs.getBytes(1);
-			if (rs.wasNull() || buf.length == 0) {
-				log.error("Failed to read " + (blobType == BlobType.TEXTURE_IMAGE ? "texture" : "library object") + " file: " + objectName + " (ID = " + id + ").");
-				return null;
-			}
-
-			return buf;
+            return rs.next() ? rs.getBytes(1) : null;
 		}
 	}
 
-	public boolean writeToFile(long id, String objectName, String fileName) throws SQLException {
-		try (FileOutputStream out = new FileOutputStream(fileName)) {
-			byte[] buf = getInByteArray(id, objectName);
-			if (buf != null) {
-				out.write(buf);
-				return true;
-			} else
-				return false;
-			
-		} catch (IOException e) {
-			log.error("Failed to write " + (blobType == BlobType.TEXTURE_IMAGE ? "texture" : "library object") + " file " + fileName + ": " + e.getMessage());
-			return false;
-		}
+	public boolean writeToFile(long id, String fileName) throws SQLException, IOException {
+        return writeToStream(getInByteArray(id), Files.newOutputStream(Paths.get(fileName)));
 	}
 
-	public boolean writeToStream(long id, String objectName, OutputStream stream) throws SQLException {
-		try (BufferedOutputStream out = new BufferedOutputStream(stream)) {
-			byte[] buf = getInByteArray(id, objectName);
-			if (buf != null) {
-				out.write(buf);
-				return true;
-			} else
-				return false;
-
-		} catch (IOException e) {
-			log.error("Failed to write " + (blobType == BlobType.TEXTURE_IMAGE ? "texture" : "library object") + " file: " + e.getMessage());
-			return false;
-		}
+	public boolean writeToStream(long id, OutputStream stream) throws SQLException, IOException {
+	    return writeToStream(getInByteArray(id), stream);
 	}
 
-	public ByteArrayInputStream getInStream(ResultSet rs, String columnName, String objectName) throws SQLException {
-		return new ByteArrayInputStream(rs.getBytes(columnName));
-	}
+	private boolean writeToStream(byte[] buffer, OutputStream stream) throws IOException {
+	    if (buffer != null && buffer.length != 0) {
+	        try (OutputStream out = stream) {
+                out.write(buffer);
+                return true;
+            }
+        } else
+            return false;
+    }
 
 	public void close() throws SQLException {
 		if (psExport != null)
 			psExport.close();
 	}
-
 }
