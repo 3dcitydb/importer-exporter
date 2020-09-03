@@ -27,44 +27,38 @@
  */
 package org.citydb.database.adapter;
 
-import org.citydb.log.Logger;
-
 import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 public class BlobImportAdapter {
-	protected final Logger log = Logger.getInstance();
 	protected final Connection connection;
+	private final BlobType blobType;
+	private final String schema;
 
 	private PreparedStatement psUpdate;
-	private BlobType blobType;
 
-	public BlobImportAdapter(Connection connection, BlobType blobType, String schema) throws SQLException {
+	public BlobImportAdapter(Connection connection, BlobType blobType, String schema) {
 		this.connection = connection;
 		this.blobType = blobType;
-
-		psUpdate = connection.prepareStatement(blobType == BlobType.TEXTURE_IMAGE ?
-				"update " + schema + ".TEX_IMAGE set TEX_IMAGE_DATA=? where ID=?" : "update " + schema + ".IMPLICIT_GEOMETRY set LIBRARY_OBJECT=? where ID=?");
+		this.schema = schema;
 	}
 
-	public boolean insert(long id, InputStream in, String fileName) throws SQLException {
-		try {
-			psUpdate.setBinaryStream(1, in);
-			psUpdate.setLong(2, id);
-			psUpdate.executeUpdate();		
-			connection.commit();
-			
-			return true;
-		} catch (SQLException e) {
-			log.error("SQL error while importing " + (blobType == BlobType.TEXTURE_IMAGE ? "texture" : "library object") + " file '" + fileName + "': " + e.getMessage());
-			return false;
+	public void insert(long id, InputStream stream) throws SQLException {
+		if (psUpdate == null) {
+			psUpdate = connection.prepareStatement(blobType == BlobType.TEXTURE_IMAGE ?
+					"update " + schema + ".tex_image set tex_image_data=? where id=?" :
+					"update " + schema + ".implicit_geometry set library_object=? where id=?");
 		}
+
+		psUpdate.setBinaryStream(1, stream);
+		psUpdate.setLong(2, id);
+		psUpdate.executeUpdate();
 	}
 
 	public void close() throws SQLException {
-		psUpdate.close();
+		if (psUpdate != null)
+			psUpdate.close();
 	}
-
 }

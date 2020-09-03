@@ -59,7 +59,8 @@ public class XlinkTextureImage implements DBXlinkResolver {
 		String fileURI = xlink.getFileURI();
 		
 		try (InputStream stream = new BufferedInputStream(manager.openStream(fileURI))) {
-			return textureImportAdapter.insert(xlink.getId(), stream, fileURI);
+			textureImportAdapter.insert(xlink.getId(), stream);
+			return true;
 		} catch (IOException e) {
 			log.error("Failed to read texture file '" + fileURI + "': " + e.getMessage());
 			return false;

@@ -94,7 +94,7 @@ public class DBXlinkExporterLibraryObject implements DBXlinkExporter {
 		// read blob into file
 		try (OutputStream stream = file != null ? Files.newOutputStream(file) :
 				outputFile.newOutputStream(outputFile.resolve(CoreConstants.LIBRARY_OBJECTS_DIR, fileURI))) {
-			return blobExportAdapter.writeToStream(xlink.getId(), fileURI, stream);
+			return blobExportAdapter.writeToStream(xlink.getId(), stream);
 		} catch (IOException e) {
 			log.error("Failed to export library object " + fileURI + ": " + e.getMessage());
 			return false;

@@ -54,7 +54,8 @@ public class XlinkLibraryObject implements DBXlinkResolver {
 		String fileURI = xlink.getFileURI();
 		
 		try (InputStream stream = new BufferedInputStream(resolverManager.openStream(fileURI)))  {
-			return blobImportAdapter.insert(xlink.getId(), stream, fileURI);
+			blobImportAdapter.insert(xlink.getId(), stream);
+			return true;
 		} catch (IOException e) {
 			log.error("Failed to read library object file '" + fileURI + "': " + e.getMessage());
 			return false;
