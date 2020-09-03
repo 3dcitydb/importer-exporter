@@ -37,43 +37,42 @@ import javax.xml.bind.annotation.XmlType;
 		"tempBatchSize"
 })
 public class ImportBatching {
-	@XmlElement(required = true, defaultValue = "20")
-	@XmlSchemaType(name = "positiveInteger")
-	private Integer featureBatchSize = 20;
-	@XmlElement(required = true, defaultValue = "1000")
-	@XmlSchemaType(name = "positiveInteger")
-	private Integer gmlIdCacheBatchSize = 1000;
-	@XmlElement(required = true, defaultValue = "1000")
-	@XmlSchemaType(name = "positiveInteger")
-	private Integer tempBatchSize = 1000;
+	public static final int MAX_BATCH_SIZE = 65535;
 
-	public Integer getFeatureBatchSize() {
-		return featureBatchSize;
+	@XmlElement(defaultValue = "20")
+	@XmlSchemaType(name = "positiveInteger")
+	private int featureBatchSize = 20;
+	@XmlElement(defaultValue = "1000")
+	@XmlSchemaType(name = "positiveInteger")
+	private int gmlIdCacheBatchSize = 1000;
+	@XmlElement(defaultValue = "1000")
+	@XmlSchemaType(name = "positiveInteger")
+	private int tempBatchSize = 1000;
+
+	public int getFeatureBatchSize() {
+		return featureBatchSize > 0 ? featureBatchSize : 20;
 	}
 
-	public void setFeatureBatchSize(Integer featureBatchSize) {
-		if (featureBatchSize != null && featureBatchSize > 0 &&
-				featureBatchSize <= Database.MAX_BATCH_SIZE)
+	public void setFeatureBatchSize(int featureBatchSize) {
+		if (featureBatchSize > 0 && featureBatchSize <= MAX_BATCH_SIZE)
 			this.featureBatchSize = featureBatchSize;
 	}
 
-	public Integer getGmlIdCacheBatchSize() {
-		return gmlIdCacheBatchSize;
+	public int getGmlIdCacheBatchSize() {
+		return gmlIdCacheBatchSize > 0 ? gmlIdCacheBatchSize : 1000;
 	}
 
-	public void setGmlIdCacheBatchSize(Integer gmlIdCacheBatchSize) {
-		if (gmlIdCacheBatchSize != null && gmlIdCacheBatchSize > 0 &&
-				gmlIdCacheBatchSize <= Database.MAX_BATCH_SIZE)
+	public void setGmlIdCacheBatchSize(int gmlIdCacheBatchSize) {
+		if (gmlIdCacheBatchSize > 0 && gmlIdCacheBatchSize <= MAX_BATCH_SIZE)
 			this.gmlIdCacheBatchSize = gmlIdCacheBatchSize;
 	}
 
-	public Integer getTempBatchSize() {
-		return tempBatchSize;
+	public int getTempBatchSize() {
+		return tempBatchSize > 0 ? tempBatchSize : 1000;
 	}
 
-	public void setTempBatchSize(Integer tempBatchSize) {
-		if (tempBatchSize != null && tempBatchSize > 0 &&
-				tempBatchSize <= Database.MAX_BATCH_SIZE)
+	public void setTempBatchSize(int tempBatchSize) {
+		if (tempBatchSize > 0 && tempBatchSize <= MAX_BATCH_SIZE)
 			this.tempBatchSize = tempBatchSize;
 	}
 	

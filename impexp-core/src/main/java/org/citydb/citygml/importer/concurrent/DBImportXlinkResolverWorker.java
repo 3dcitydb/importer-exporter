@@ -85,7 +85,7 @@ public class DBImportXlinkResolverWorker extends Worker<DBXlink> implements Even
 	private final EventDispatcher eventDispatcher;
 
 	private int updateCounter = 0;
-	private int commitAfter = 20;
+	private int commitAfter;
 
 	public DBImportXlinkResolverWorker(InputFile inputFile,
 			Connection connection,
@@ -100,9 +100,9 @@ public class DBImportXlinkResolverWorker extends Worker<DBXlink> implements Even
 		this.isManagedTransaction = isManagedTransaction;
 		this.eventDispatcher = eventDispatcher;
 
-		Integer commitAfterProp = config.getProject().getDatabase().getImportBatching().getFeatureBatchSize();
-		if (commitAfterProp != null && commitAfterProp > 0 && commitAfterProp <= databaseAdapter.getMaxBatchSize())
-			commitAfter = commitAfterProp;
+		commitAfter = config.getProject().getDatabase().getImportBatching().getFeatureBatchSize();
+		if (commitAfter > databaseAdapter.getMaxBatchSize())
+			commitAfter = databaseAdapter.getMaxBatchSize();
 
 		xlinkResolverManager = new DBXlinkResolverManager(
 				inputFile,

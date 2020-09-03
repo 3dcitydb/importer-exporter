@@ -27,9 +27,6 @@
  */
 package org.citydb.citygml.importer.concurrent;
 
-import java.sql.SQLException;
-import java.util.concurrent.locks.ReentrantLock;
-
 import org.citydb.citygml.common.database.cache.CacheTableManager;
 import org.citydb.citygml.common.database.xlink.DBXlink;
 import org.citydb.citygml.common.database.xlink.DBXlinkBasic;
@@ -72,6 +69,9 @@ import org.citydb.event.EventHandler;
 import org.citydb.event.global.EventType;
 import org.citydb.event.global.InterruptEvent;
 
+import java.sql.SQLException;
+import java.util.concurrent.locks.ReentrantLock;
+
 public class DBImportXlinkWorker extends Worker<DBXlink> implements EventHandler {
 	private final ReentrantLock runLock = new ReentrantLock();
 	private volatile boolean shouldRun = true;
@@ -80,7 +80,7 @@ public class DBImportXlinkWorker extends Worker<DBXlink> implements EventHandler
 	private final DBXlinkImporterManager dbXlinkManager;
 	private final EventDispatcher eventDispatcher;
 	private int updateCounter = 0;
-	private int commitAfter = 1000;
+	private int commitAfter;
 
 	public DBImportXlinkWorker(CacheTableManager cacheTableManager, Config config, EventDispatcher eventDispatcher) {
 		this.eventDispatcher = eventDispatcher;
@@ -89,9 +89,9 @@ public class DBImportXlinkWorker extends Worker<DBXlink> implements EventHandler
 		AbstractDatabaseAdapter databaseAdapter = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter();
 		Database database = config.getProject().getDatabase();
 
-		Integer commitAfterProp = database.getImportBatching().getTempBatchSize();
-		if (commitAfterProp != null && commitAfterProp > 0 && commitAfterProp <= databaseAdapter.getMaxBatchSize())
-			commitAfter = commitAfterProp;
+		commitAfter = database.getImportBatching().getTempBatchSize();
+		if (commitAfter > databaseAdapter.getMaxBatchSize())
+			commitAfter = databaseAdapter.getMaxBatchSize();
 
 		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
 	}

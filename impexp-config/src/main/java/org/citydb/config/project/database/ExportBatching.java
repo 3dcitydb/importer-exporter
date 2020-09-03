@@ -32,19 +32,35 @@ import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 
 @XmlType(name = "ExportBatchingType", propOrder = {
-		"batchSize"
+		"batchSize",
+		"blobBatchSize"
 })
 public class ExportBatching {
-	@XmlElement(required = true, defaultValue = "30")
-	@XmlSchemaType(name = "positiveInteger")
-	private Integer batchSize = 30;
+	public static final int DEFAULT_BATCH_SIZE = 30;
+	public static final int DEFAULT_BLOB_BATCH_SIZE = 30;
 
-	public Integer getBatchSize() {
-		return batchSize;
+	@XmlElement(defaultValue = "30")
+	@XmlSchemaType(name = "positiveInteger")
+	private int batchSize = DEFAULT_BATCH_SIZE;
+	@XmlElement(defaultValue = "30")
+	@XmlSchemaType(name = "positiveInteger")
+	private int blobBatchSize = DEFAULT_BLOB_BATCH_SIZE;
+
+	public int getBatchSize() {
+		return batchSize > 0 ? batchSize : DEFAULT_BATCH_SIZE;
 	}
 
-	public void setBatchSize(Integer batchSize) {
-		if (batchSize != null && batchSize > 0)
+	public void setBatchSize(int batchSize) {
+		if (batchSize > 0)
 			this.batchSize = batchSize;
+	}
+
+	public int getBlobBatchSize() {
+		return blobBatchSize > 0 ? blobBatchSize : DEFAULT_BLOB_BATCH_SIZE;
+	}
+
+	public void setBlobBatchSize(int blobBatchSize) {
+		if (blobBatchSize > 0)
+			this.blobBatchSize = blobBatchSize;
 	}
 }

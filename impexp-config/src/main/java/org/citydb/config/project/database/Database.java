@@ -47,7 +47,6 @@ import java.util.List;
 public class Database {
 	public static final String CITYDB_PRODUCT_NAME = "3D City Database";
 	public static final String VCDB_PRODUCT_NAME = "virtualcityDATABASE";
-	public static final int MAX_BATCH_SIZE = 65535;
 	public static final EnumMap<PredefinedSrsName, DatabaseSrs> PREDEFINED_SRS = new EnumMap<>(PredefinedSrsName.class);
 
 	public enum PredefinedSrsName {

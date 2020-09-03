@@ -28,6 +28,7 @@
 package org.citydb.citygml.exporter.database.xlink;
 
 import org.citydb.config.Config;
+import org.citydb.config.project.database.ExportBatching;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.event.Event;
 import org.citydb.event.EventDispatcher;
@@ -81,6 +82,13 @@ public class DBXlinkExporterManager {
 
 	public AbstractDatabaseAdapter getDatabaseAdapter() {
 		return databaseAdapter;
+	}
+
+	public int getBlobBatchSize() {
+		int blobBatchSize = config.getProject().getDatabase().getExportBatching().getBlobBatchSize();
+		return blobBatchSize <= databaseAdapter.getSQLAdapter().getMaximumNumberOfItemsForInOperator() ?
+				blobBatchSize :
+				ExportBatching.DEFAULT_BLOB_BATCH_SIZE;
 	}
 
 	public void propagateEvent(Event event) {

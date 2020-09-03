@@ -27,28 +27,22 @@
  */
 package org.citydb.modules.citygml.importer.gui.preferences;
 
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.text.DecimalFormat;
-import java.text.ParseException;
-
-import javax.swing.BorderFactory;
-import javax.swing.JFormattedTextField;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.border.TitledBorder;
-
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
-import org.citydb.config.project.database.Database;
 import org.citydb.config.project.database.ImportBatching;
 import org.citydb.config.project.resources.ThreadPoolConfig;
 import org.citydb.config.project.resources.UIDCacheConfig;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.preferences.AbstractPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
+
+import javax.swing.*;
+import javax.swing.border.TitledBorder;
+import java.awt.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.text.DecimalFormat;
+import java.text.ParseException;
 
 @SuppressWarnings("serial")
 public class ResourcesPanel extends AbstractPreferencesComponent{
@@ -380,16 +374,16 @@ public class ResourcesPanel extends AbstractPreferencesComponent{
 		UIDCacheConfig texImage = config.getProject().getImporter().getResources().getTexImageCache();
 
 		int commitFeature = commit.getFeatureBatchSize();
-		if (commitFeature > Database.MAX_BATCH_SIZE)
-			commitFeature = Database.MAX_BATCH_SIZE;
+		if (commitFeature > ImportBatching.MAX_BATCH_SIZE)
+			commitFeature = ImportBatching.MAX_BATCH_SIZE;
 		
 		int commitCache = commit.getGmlIdCacheBatchSize();
-		if (commitCache > Database.MAX_BATCH_SIZE)
-			commitCache = Database.MAX_BATCH_SIZE;
+		if (commitCache > ImportBatching.MAX_BATCH_SIZE)
+			commitCache = ImportBatching.MAX_BATCH_SIZE;
 		
 		int commitTemp = commit.getTempBatchSize();
-		if (commitTemp > Database.MAX_BATCH_SIZE)
-			commitTemp = Database.MAX_BATCH_SIZE;
+		if (commitTemp > ImportBatching.MAX_BATCH_SIZE)
+			commitTemp = ImportBatching.MAX_BATCH_SIZE;
 		
 		impResMinThreadsText.setValue(threadPool.getMinThreads());
 		impResMaxThreadsText.setValue(threadPool.getMaxThreads());
@@ -426,18 +420,18 @@ public class ResourcesPanel extends AbstractPreferencesComponent{
 			impResMinThreadsText.setValue(minThreads);
 		}
 
-		if (featBatch > Database.MAX_BATCH_SIZE) {
-			featBatch = Database.MAX_BATCH_SIZE;
+		if (featBatch > ImportBatching.MAX_BATCH_SIZE) {
+			featBatch = ImportBatching.MAX_BATCH_SIZE;
 			impResTransaktFeatureText.setValue(featBatch);
 		}
 		
-		if (lookupBatch > Database.MAX_BATCH_SIZE) {
-			lookupBatch = Database.MAX_BATCH_SIZE;
+		if (lookupBatch > ImportBatching.MAX_BATCH_SIZE) {
+			lookupBatch = ImportBatching.MAX_BATCH_SIZE;
 			impResTransaktCacheText.setValue(lookupBatch);
 		}
 		
-		if (tempBatch > Database.MAX_BATCH_SIZE) {
-			tempBatch = Database.MAX_BATCH_SIZE;
+		if (tempBatch > ImportBatching.MAX_BATCH_SIZE) {
+			tempBatch = ImportBatching.MAX_BATCH_SIZE;
 			impResTransaktTempText.setValue(tempBatch);
 		}
 		

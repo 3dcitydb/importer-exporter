@@ -100,10 +100,9 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryExporter {
 		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 
 		if (exportAppearance) {
-			commitAfter = exporter.getDatabaseAdapter().getMaxBatchSize();
-			Integer commitAfterProp = config.getProject().getDatabase().getImportBatching().getTempBatchSize();
-			if (commitAfterProp != null && commitAfterProp > 0 && commitAfterProp <= exporter.getDatabaseAdapter().getMaxBatchSize())
-				commitAfter = commitAfterProp;
+			commitAfter = config.getProject().getDatabase().getImportBatching().getTempBatchSize();
+			if (commitAfter > exporter.getDatabaseAdapter().getMaxBatchSize())
+				commitAfter = exporter.getDatabaseAdapter().getMaxBatchSize();
 
 			Table table = new Table(TableEnum.TEXTUREPARAM.getName(), schema);
 			Select select = new Select().addProjection(new ConstantColumn(new PlaceHolder<>()));

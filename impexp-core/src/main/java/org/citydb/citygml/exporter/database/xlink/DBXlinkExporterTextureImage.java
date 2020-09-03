@@ -48,7 +48,7 @@ import java.sql.SQLException;
 
 public class DBXlinkExporterTextureImage implements DBXlinkExporter {
     private final Logger log = Logger.getInstance();
-    private final DBXlinkExporterManager xlinkExporterManager;
+    private final DBXlinkExporterManager exporterManager;
     private final OutputFile outputFile;
     private final BlobExportAdapter blobExporter;
     private final String textureURI;
@@ -59,10 +59,10 @@ public class DBXlinkExporterTextureImage implements DBXlinkExporter {
 
     private boolean[] buckets;
 
-    public DBXlinkExporterTextureImage(Connection connection, Config config, DBXlinkExporterManager xlinkExporterManager) throws SQLException {
-        this.xlinkExporterManager = xlinkExporterManager;
+    public DBXlinkExporterTextureImage(Connection connection, Config config, DBXlinkExporterManager exporterManager) {
+        this.exporterManager = exporterManager;
 
-        outputFile = xlinkExporterManager.getOutputFile();
+        outputFile = exporterManager.getOutputFile();
         textureURI = config.getInternal().getExportTextureURI();
         isAbsoluteTextureURI = new File(textureURI).isAbsolute();
         separator = isAbsoluteTextureURI ? File.separator : "/";
@@ -73,7 +73,9 @@ public class DBXlinkExporterTextureImage implements DBXlinkExporter {
         if (useBuckets)
             buckets = new boolean[config.getProject().getExporter().getAppearances().getTexturePath().getNoOfBuckets()];
 
-        blobExporter = xlinkExporterManager.getDatabaseAdapter().getSQLAdapter().getBlobExportAdapter(connection, BlobType.TEXTURE_IMAGE);
+        blobExporter = exporterManager.getDatabaseAdapter().getSQLAdapter()
+                .getBlobExportAdapter(connection, BlobType.TEXTURE_IMAGE)
+                .withBatchSize(exporterManager.getBlobBatchSize());
     }
 
     public boolean export(DBXlinkTextureFile xlink) throws SQLException {
@@ -122,7 +124,7 @@ public class DBXlinkExporterTextureImage implements DBXlinkExporter {
                     () -> file == null || overwriteTextureImage || !Files.exists(file)));
 
             if (exported > 0)
-                xlinkExporterManager.propagateEvent(new CounterEvent(CounterType.TEXTURE_IMAGE, exported, this));
+                exporterManager.propagateEvent(new CounterEvent(CounterType.TEXTURE_IMAGE, exported, this));
 
             return true;
         } catch (IOException e) {
@@ -136,7 +138,7 @@ public class DBXlinkExporterTextureImage implements DBXlinkExporter {
         try {
             int exported = blobExporter.executeBatch();
             if (exported > 0)
-                xlinkExporterManager.propagateEvent(new CounterEvent(CounterType.TEXTURE_IMAGE, exported, this));
+                exporterManager.propagateEvent(new CounterEvent(CounterType.TEXTURE_IMAGE, exported, this));
         } catch (IOException e) {
             log.error("Failed to batch export texture files: " + e.getMessage());
         }

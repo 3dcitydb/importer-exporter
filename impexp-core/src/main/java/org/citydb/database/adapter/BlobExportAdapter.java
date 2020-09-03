@@ -27,6 +27,8 @@
  */
 package org.citydb.database.adapter;
 
+import org.citydb.config.project.database.ExportBatching;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
@@ -45,10 +47,10 @@ public class BlobExportAdapter {
 	private final BlobType blobType;
 	private final String schema;
 	private final Map<Long, BatchEntry> batches;
-	private final int batchSize;
 
 	private PreparedStatement psExport;
 	private PreparedStatement psBulk;
+	private int batchSize;
 
 	public BlobExportAdapter(Connection connection, BlobType blobType, String schema) {
 		this.connection = connection;
@@ -56,7 +58,12 @@ public class BlobExportAdapter {
 		this.schema = schema;
 
 		batches = new HashMap<>();
-		batchSize = 30;
+		batchSize = ExportBatching.DEFAULT_BLOB_BATCH_SIZE;
+	}
+
+	public BlobExportAdapter withBatchSize(int batchSize) {
+		this.batchSize = batchSize;
+		return this;
 	}
 
 	public int addBatch(long id, BatchEntry entry) throws IOException, SQLException {

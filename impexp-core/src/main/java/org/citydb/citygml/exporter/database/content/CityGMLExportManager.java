@@ -48,6 +48,7 @@ import org.citydb.citygml.exporter.writer.FeatureWriter;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
 import org.citydb.config.geometry.GeometryObject;
+import org.citydb.config.project.database.ExportBatching;
 import org.citydb.config.project.exporter.Exporter;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.schema.TableEnum;
@@ -487,10 +488,10 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 	}
 
 	protected int getBatchSize() {
-		Integer batchSize = config.getProject().getDatabase().getExportBatching().getBatchSize();
-		return batchSize != null && batchSize <= databaseAdapter.getSQLAdapter().getMaximumNumberOfItemsForInOperator() ?
+		int batchSize = config.getProject().getDatabase().getExportBatching().getBatchSize();
+		return batchSize <= databaseAdapter.getSQLAdapter().getMaximumNumberOfItemsForInOperator() ?
 				batchSize :
-				30;
+				ExportBatching.DEFAULT_BATCH_SIZE;
 	}
 
 	@Override

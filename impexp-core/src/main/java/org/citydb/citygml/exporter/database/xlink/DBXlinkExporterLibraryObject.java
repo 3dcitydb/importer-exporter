@@ -50,9 +50,11 @@ public class DBXlinkExporterLibraryObject implements DBXlinkExporter {
 
 	private boolean isFolderCreated;
 
-	public DBXlinkExporterLibraryObject(Connection connection, DBXlinkExporterManager xlinkExporterManager) {
-		outputFile = xlinkExporterManager.getOutputFile();
-		blobExporter = xlinkExporterManager.getDatabaseAdapter().getSQLAdapter().getBlobExportAdapter(connection, BlobType.LIBRARY_OBJECT);
+	public DBXlinkExporterLibraryObject(Connection connection, DBXlinkExporterManager exporterManager) {
+		outputFile = exporterManager.getOutputFile();
+		blobExporter = exporterManager.getDatabaseAdapter().getSQLAdapter()
+				.getBlobExportAdapter(connection, BlobType.LIBRARY_OBJECT)
+				.withBatchSize(exporterManager.getBlobBatchSize());
 	}
 
 	public boolean export(DBXlinkLibraryObject xlink) throws SQLException {
