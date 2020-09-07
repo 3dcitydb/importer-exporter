@@ -30,7 +30,7 @@ package org.citydb.query.filter.lod;
 import java.util.Arrays;
 
 public class LodFilter {
-	private boolean[] lods;
+	private final boolean[] lods;
 	private LodFilterMode mode;
 	private Integer searchDepth;	
 		
@@ -115,7 +115,7 @@ public class LodFilter {
 		
 		return false;
 	}
-	
+
 	public LodFilterMode getFilterMode() {
 		return mode;
 	}
@@ -123,9 +123,11 @@ public class LodFilter {
 	public void setFilterMode(LodFilterMode mode) {
 		this.mode = mode;
 	}
-	
+
 	public boolean preservesGeometry() {
-		return areAllEnabled();
+		return mode != LodFilterMode.MINIMUM
+				&& mode != LodFilterMode.MAXIMUM
+				&& areAllEnabled();
 	}
 	
 	public LodIterator iterator(int fromLod, int toLod, boolean reverse) {

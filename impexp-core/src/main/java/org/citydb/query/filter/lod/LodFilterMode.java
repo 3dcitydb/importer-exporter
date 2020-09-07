@@ -29,7 +29,9 @@ package org.citydb.query.filter.lod;
 
 public enum LodFilterMode {
 	AND("AND"),
-	OR("OR");
+	OR("OR"),
+	MINIMUM("MIN"),
+	MAXIMUM("MAX");
 
 	final String symbol;
 

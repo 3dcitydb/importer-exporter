@@ -45,12 +45,18 @@ public class LodFilterBuilder {
 		LodFilter lodFilter = new LodFilter(LodFilterMode.OR);
 
 		switch (lodFilterConfig.getMode()) {
-		case OR:
-			lodFilter.setFilterMode(LodFilterMode.OR);
-			break;
-		case AND:
-			lodFilter.setFilterMode(LodFilterMode.AND);
-			break;
+			case OR:
+				lodFilter.setFilterMode(LodFilterMode.OR);
+				break;
+			case AND:
+				lodFilter.setFilterMode(LodFilterMode.AND);
+				break;
+			case MINIMUM:
+				lodFilter.setFilterMode(LodFilterMode.MINIMUM);
+				break;
+			case MAXIMUM:
+				lodFilter.setFilterMode(LodFilterMode.MAXIMUM);
+				break;
 		}
 
 		for (int lod = 0; lod < 5; lod++)
