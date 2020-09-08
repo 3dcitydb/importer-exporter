@@ -162,12 +162,12 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 	private final Config config;
 
 	private final AttributeValueSplitter attributeValueSplitter;
-	private final LodGeometryChecker lodGeometryChecker;
 	private final ExportCounter exportCounter;
 	private final JAXBUnmarshaller jaxbUnmarshaller;
 	private final boolean hasADESupport;
 
 	private GMLConverter gmlConverter;
+	private LodGeometryChecker lodGeometryChecker;
 	private AppearanceRemover appearanceRemover;
 	private Document document;
 	private boolean failOnError;
@@ -200,11 +200,13 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 		plugins = PluginManager.getInstance().getExternalPlugins(CityGMLExportExtension.class);
 
 		attributeValueSplitter = new AttributeValueSplitter();
-		lodGeometryChecker = new LodGeometryChecker(schemaMapping);
 		exportCounter = new ExportCounter(schemaMapping);
 
-		if (config.getProject().getExporter().getAppearances().isSetExportAppearance())
-			appearanceRemover = new AppearanceRemover();
+		if (!query.getLodFilter().preservesGeometry()) {
+			lodGeometryChecker = new LodGeometryChecker(schemaMapping);
+			if (config.getProject().getExporter().getAppearances().isSetExportAppearance())
+				appearanceRemover = new AppearanceRemover();
+		}
 
 		try {
 			jaxbUnmarshaller = cityGMLBuilder.createJAXBUnmarshaller();
@@ -224,12 +226,13 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 		// execute batch export
 		executeBatch();
 
-		// remove empty city objects and clean up appearances if LoDs are filtered
-		if (!query.getLodFilter().preservesGeometry()) {
+		// remove empty city objects
+		if (lodGeometryChecker != null)
 			lodGeometryChecker.cleanupCityObjects(object);
-			if (appearanceRemover != null)
-				appearanceRemover.cleanupAppearances(object);
-		}
+
+		// clean up appearances
+		if (appearanceRemover != null)
+			appearanceRemover.cleanupAppearances(object);
 
 		if (object instanceof AbstractFeature) {
 			AbstractFeature feature = (AbstractFeature) object;

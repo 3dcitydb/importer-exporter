@@ -36,8 +36,13 @@ import org.citygml4j.model.common.base.ModelObject;
 import org.citygml4j.model.common.base.ModelObjects;
 import org.citygml4j.model.common.child.Child;
 import org.citygml4j.model.gml.base.AbstractGML;
+import org.citygml4j.util.child.ChildInfo;
 import org.citygml4j.util.walker.FeatureWalker;
 import org.citygml4j.util.walker.GMLWalker;
+
+import java.util.Collections;
+import java.util.IdentityHashMap;
+import java.util.Set;
 
 public class LodGeometryChecker extends FeatureWalker {
 	private final SchemaMapping schemaMapping;
@@ -47,20 +52,40 @@ public class LodGeometryChecker extends FeatureWalker {
 	}
 
 	public void cleanupCityObjects(AbstractGML object) {
+		Set<AbstractCityObject> keep = Collections.newSetFromMap(new IdentityHashMap<>());
+
+		object.accept(new GMLWalker() {
+			final ChildInfo childInfo = new ChildInfo();
+
+			@Override
+			public void visit(AbstractCityObject cityObject) {
+				if (cityObject != object) {
+					FeatureType featureType = schemaMapping.getFeatureType(Util.getObjectClassId(cityObject.getClass()));
+					if (featureType.hasLodProperties()) {
+						LodRepresentation representation = cityObject.getLodRepresentation();
+						if (!representation.hasRepresentations())
+							return;
+					}
+
+					do {
+						// keep the city object and its parents
+						if (!keep.add(cityObject))
+							break;
+					} while ((cityObject = childInfo.getParentCityObject(cityObject)) != object);
+				}
+			}
+		});
+
 		object.accept(new GMLWalker() {
 			@Override
 			public void visit(AbstractCityObject cityObject) {
-				FeatureType featureType = schemaMapping.getFeatureType(Util.getObjectClassId(cityObject.getClass()));
-				if (featureType.hasLodProperties()) {
-					LodRepresentation representation = cityObject.getLodRepresentation();
-					if (!representation.hasRepresentations() && cityObject != object) {
+				if (cityObject != object) {
+					if (!keep.contains(cityObject)) {
 						ModelObject property = cityObject.getParent();
 						if (property instanceof Child)
 							ModelObjects.unsetProperty(((Child) property).getParent(), property);
 					}
 				}
-
-				super.visit(cityObject);
 			}
 		});
 	}
