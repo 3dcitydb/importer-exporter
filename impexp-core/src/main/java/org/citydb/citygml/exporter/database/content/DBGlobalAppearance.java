@@ -30,21 +30,52 @@ package org.citydb.citygml.exporter.database.content;
 import org.citydb.citygml.common.database.cache.CacheTable;
 import org.citydb.citygml.exporter.CityGMLExportException;
 import org.citydb.config.Config;
+import org.citydb.database.schema.TableEnum;
 import org.citydb.query.Query;
+import org.citydb.sqlbuilder.expression.PlaceHolder;
+import org.citydb.sqlbuilder.schema.Table;
+import org.citydb.sqlbuilder.select.Select;
+import org.citydb.sqlbuilder.select.operator.comparison.ComparisonFactory;
+import org.citydb.sqlbuilder.select.projection.ConstantColumn;
 import org.citygml4j.model.citygml.appearance.Appearance;
+import org.citygml4j.model.gml.base.AbstractGML;
+import org.citygml4j.model.gml.geometry.AbstractGeometry;
+import org.citygml4j.util.walker.GMLWalker;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public class DBGlobalAppearance extends AbstractAppearanceExporter {
 	private final PreparedStatement ps;
+	private final PreparedStatement psImport;
+
+	private int batchSize;
+	private int batchCounter;
 
 	public DBGlobalAppearance(Connection connection, Query query, CacheTable cacheTable, CityGMLExportManager exporter, Config config) throws CityGMLExportException, SQLException {
 		super(true, connection, query, cacheTable, exporter, config);
 		ps = cacheTable.getConnection().prepareStatement(select.toString());
+
+		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
+		batchSize = config.getProject().getDatabase().getImportBatching().getTempBatchSize();
+		if (batchSize > exporter.getDatabaseAdapter().getMaxBatchSize())
+			batchSize = exporter.getDatabaseAdapter().getMaxBatchSize();
+
+		Table table = new Table(TableEnum.TEXTUREPARAM.getName(), schema);
+		Select select = new Select().addProjection(new ConstantColumn(new PlaceHolder<>()))
+				.addSelection(ComparisonFactory.exists(new Select()
+						.addProjection(new ConstantColumn(1).withFromTable(table))
+						.addSelection(ComparisonFactory.equalTo(table.getColumn("surface_geometry_id"), new PlaceHolder<>()))));
+
+		if (exporter.getDatabaseAdapter().getSQLAdapter().requiresPseudoTableInSelect())
+			select.setPseudoTable(exporter.getDatabaseAdapter().getSQLAdapter().getPseudoTableName());
+
+		psImport = cacheTable.getConnection().prepareStatement("insert into " + cacheTable.getTableName() + " " + select.toString());
 	}
 
 	protected Appearance doExport(long appearanceId) throws CityGMLExportException, SQLException {
@@ -56,8 +87,36 @@ public class DBGlobalAppearance extends AbstractAppearanceExporter {
 		}
 	}
 
+	protected void cacheGeometryIds(AbstractGML object) throws SQLException {
+		Set<Long> ids = new HashSet<>();
+
+		object.accept(new GMLWalker() {
+			@Override
+			public void visit(AbstractGeometry geometry) {
+				Long id = (Long) geometry.getLocalProperty("global_app_cache_id");
+				if (id != null)
+					ids.add(id);
+			}
+		});
+
+		for (Long id : ids) {
+			psImport.setLong(1, id);
+			psImport.setLong(2, id);
+			psImport.addBatch();
+
+			if (++batchCounter == batchSize) {
+				psImport.executeBatch();
+				batchCounter = 0;
+			}
+		}
+	}
+
 	@Override
 	public void close() throws SQLException {
+		if (batchCounter > 0)
+			psImport.executeBatch();
+
+		psImport.close();
 		ps.close();
 	}
 }
