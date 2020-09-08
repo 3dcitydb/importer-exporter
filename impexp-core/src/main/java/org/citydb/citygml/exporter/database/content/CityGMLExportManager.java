@@ -203,7 +203,7 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 		exportCounter = new ExportCounter(schemaMapping);
 
 		if (!query.getLodFilter().preservesGeometry()) {
-			lodGeometryChecker = new LodGeometryChecker(schemaMapping);
+			lodGeometryChecker = new LodGeometryChecker(query.getLodFilter(), schemaMapping);
 			if (config.getProject().getExporter().getAppearances().isSetExportAppearance())
 				appearanceRemover = new AppearanceRemover();
 		}
