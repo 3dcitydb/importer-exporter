@@ -31,6 +31,7 @@ import org.citydb.database.schema.mapping.FeatureType;
 import org.citydb.database.schema.mapping.SchemaMapping;
 import org.citydb.query.filter.lod.LodFilter;
 import org.citydb.query.filter.lod.LodFilterMode;
+import org.citydb.query.filter.lod.LodIterator;
 import org.citydb.util.Util;
 import org.citygml4j.model.citygml.core.AbstractCityObject;
 import org.citygml4j.model.citygml.core.LodRepresentation;
@@ -45,64 +46,106 @@ import org.citygml4j.util.walker.GMLWalker;
 
 import java.util.Collections;
 import java.util.IdentityHashMap;
+import java.util.Map;
 import java.util.Set;
 
 public class LodGeometryChecker extends FeatureWalker {
 	private final SchemaMapping schemaMapping;
-	private final int targetLoD;
+	private final ChildInfo childInfo;
+	private final LodFilterMode mode;
+	private final boolean removeGeometries;
+
+	private LodIterator lodIterator;
+	private int selectedLod;
 
 	public LodGeometryChecker(LodFilter lodFilter, SchemaMapping schemaMapping) {
 		this.schemaMapping = schemaMapping;
-		targetLoD = lodFilter.getFilterMode() == LodFilterMode.MINIMUM ? lodFilter.getMinimumLod() :
-				lodFilter.getFilterMode() == LodFilterMode.MAXIMUM ? lodFilter.getMaximumLod() : -1;
+
+		childInfo = new ChildInfo();
+		mode = lodFilter.getFilterMode();
+		removeGeometries = mode == LodFilterMode.MINIMUM || mode == LodFilterMode.MAXIMUM;
+
+		if (removeGeometries) {
+			lodIterator = lodFilter.iterator(0, 4, mode == LodFilterMode.MAXIMUM);
+			selectedLod = mode == LodFilterMode.MINIMUM ?
+					lodFilter.getMinimumLod() :
+					lodFilter.getMaximumLod();
+		}
 	}
 
 	public void cleanupCityObjects(AbstractGML object) {
+		Map<AbstractCityObject, LodRepresentation> cityObjects = new IdentityHashMap<>();
 		Set<AbstractCityObject> keep = Collections.newSetFromMap(new IdentityHashMap<>());
+		int targetLod = -1;
 
+		// collect all city objects with their LoD representations
 		object.accept(new GMLWalker() {
-			final ChildInfo childInfo = new ChildInfo();
-
 			@Override
 			public void visit(AbstractCityObject cityObject) {
-				FeatureType featureType = schemaMapping.getFeatureType(Util.getObjectClassId(cityObject.getClass()));
-				if (featureType.hasLodProperties()) {
-					LodRepresentation representation = cityObject.getLodRepresentation();
-					if (!representation.hasRepresentations())
-						return;
+				cityObjects.put(cityObject, cityObject.getLodRepresentation());
+			}
+		});
 
-					if (targetLoD != -1) {
-						for (int lod = 0; lod < 5; lod++) {
-							if (lod != targetLoD) {
-								for (GeometryProperty<?> property : representation.getGeometry(lod))
-									ModelObjects.unsetProperty(cityObject, property);
-							}
-						}
+		if (removeGeometries) {
+			// determine target LoD
+			targetLod = mode == LodFilterMode.MINIMUM ? Integer.MAX_VALUE : -Integer.MAX_VALUE;
+			for (LodRepresentation representation : cityObjects.values()) {
+				lodIterator.reset();
+				while (lodIterator.hasNext()) {
+					int lod = lodIterator.next();
+					if (!representation.getGeometry(lod).isEmpty()) {
+						if ((mode == LodFilterMode.MINIMUM && lod < targetLod)
+								|| (mode == LodFilterMode.MAXIMUM && lod > targetLod))
+							targetLod = lod;
 
-						if (representation.getGeometry(targetLoD).isEmpty())
-							return;
+						break;
 					}
 				}
 
+				if (targetLod == selectedLod)
+					break;
+			}
+
+			// remove all LoDs besides the target LoD
+			for (Map.Entry<AbstractCityObject, LodRepresentation> entry : cityObjects.entrySet()) {
+				LodRepresentation representation = entry.getValue();
+				lodIterator.reset();
+				while (lodIterator.hasNext()) {
+					int lod = lodIterator.next();
+					if (lod != targetLod) {
+						for (GeometryProperty<?> property : representation.getGeometry(lod))
+							ModelObjects.unsetProperty(entry.getKey(), property);
+					}
+				}
+			}
+		}
+
+		// build list of city objects that can be kept
+		for (Map.Entry<AbstractCityObject, LodRepresentation> entry : cityObjects.entrySet()) {
+			AbstractCityObject cityObject = entry.getKey();
+			LodRepresentation representation = entry.getValue();
+			FeatureType featureType = schemaMapping.getFeatureType(Util.getObjectClassId(cityObject.getClass()));
+
+			if (!featureType.hasLodProperties()
+					|| (!removeGeometries && representation.hasRepresentations())
+					|| !representation.getGeometry(targetLod).isEmpty()) {
 				do {
 					// keep the city object and its parents
 					if (!keep.add(cityObject))
 						break;
 				} while ((cityObject = childInfo.getParentCityObject(cityObject)) != object);
 			}
-		});
+		}
 
-		object.accept(new GMLWalker() {
-			@Override
-			public void visit(AbstractCityObject cityObject) {
-				if (cityObject != object) {
-					if (!keep.contains(cityObject)) {
-						ModelObject property = cityObject.getParent();
-						if (property instanceof Child)
-							ModelObjects.unsetProperty(((Child) property).getParent(), property);
-					}
+		// clean up city objects
+		for (AbstractCityObject cityObject : cityObjects.keySet()) {
+			if (cityObject != object) {
+				if (!keep.contains(cityObject)) {
+					ModelObject property = cityObject.getParent();
+					if (property instanceof Child)
+						ModelObjects.unsetProperty(((Child) property).getParent(), property);
 				}
 			}
-		});
+		}
 	}
 }
