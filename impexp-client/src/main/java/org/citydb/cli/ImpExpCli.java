@@ -33,8 +33,8 @@ import org.citydb.citygml.deleter.controller.Deleter;
 import org.citydb.citygml.exporter.CityGMLExportException;
 import org.citydb.citygml.exporter.controller.Exporter;
 import org.citydb.citygml.importer.CityGMLImportException;
-import org.citydb.citygml.validator.ValidationException;
 import org.citydb.citygml.importer.controller.Importer;
+import org.citydb.citygml.validator.ValidationException;
 import org.citydb.citygml.validator.controller.Validator;
 import org.citydb.config.Config;
 import org.citydb.config.project.database.DBConnection;
@@ -49,6 +49,7 @@ import org.citydb.log.Logger;
 import org.citydb.modules.kml.controller.KmlExportException;
 import org.citydb.modules.kml.controller.KmlExporter;
 import org.citydb.registry.ObjectRegistry;
+import org.citydb.util.ClientConstants;
 import org.citydb.util.Util;
 import org.citygml4j.builder.jaxb.CityGMLBuilder;
 
@@ -258,7 +259,7 @@ public class ImpExpCli {
 
 	private void setExportFile(String exportFile) throws ImpExpException {
 		try {
-			config.getInternal().setExportFile(new File(exportFile).toPath());
+			config.getInternal().setExportFile(ClientConstants.WORKING_DIR.resolve(exportFile));
 		} catch (InvalidPathException e) {
 			throw new ImpExpException("'" + exportFile + "' is not a valid file.", e);
 		}
