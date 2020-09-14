@@ -184,13 +184,14 @@ public abstract class AbstractAppearanceExporter extends AbstractTypeExporter {
 		long currentSurfaceDataId = 0;
 		SurfaceDataProperty surfaceDataProperty = null;
 		SurfaceDataProperty empty = new SurfaceDataProperty();
-		Map<Long, SurfaceDataProperty> surfaceDataProperties = new HashMap<>();
+		Map<String, SurfaceDataProperty> surfaceDataProperties = new HashMap<>();
 
 		while (rs.next()) {
 			long appearanceId = rs.getLong(1);
 
 			if (appearanceId != currentAppearanceId || appearance == null) {
 				currentAppearanceId = appearanceId;
+				currentSurfaceDataId = 0;
 
 				appearance = appearances.get(appearanceId);
 				if (appearance == null) {
@@ -204,15 +205,16 @@ public abstract class AbstractAppearanceExporter extends AbstractTypeExporter {
 			if (rs.wasNull())
 				continue;
 
-			if (currentSurfaceDataId != surfaceDataId || surfaceDataProperty == null) {
+			if (surfaceDataId != currentSurfaceDataId || surfaceDataProperty == null) {
 				currentSurfaceDataId = surfaceDataId;
+				String key = currentAppearanceId + "_" + surfaceDataId;
 
-				surfaceDataProperty = surfaceDataProperties.get(surfaceDataId);
+				surfaceDataProperty = surfaceDataProperties.get(key);
 				if (surfaceDataProperty == null) {
 					surfaceDataProperty = getSurfaceData(surfaceDataId, rs, empty);
-					surfaceDataProperties.put(surfaceDataId, surfaceDataProperty);
+					surfaceDataProperties.put(key, surfaceDataProperty);
 
-					// add surface data to apperance
+					// add surface data to appearance
 					if (surfaceDataProperty != empty)
 						appearance.getSurfaceDataMember().add(surfaceDataProperty);
 				}
