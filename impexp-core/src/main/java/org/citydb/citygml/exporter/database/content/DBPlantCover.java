@@ -39,12 +39,7 @@ import org.citydb.query.filter.projection.ProjectionFilter;
 import org.citydb.sqlbuilder.schema.Table;
 import org.citydb.sqlbuilder.select.Select;
 import org.citygml4j.model.citygml.vegetation.PlantCover;
-import org.citygml4j.model.gml.GMLClass;
 import org.citygml4j.model.gml.basicTypes.Code;
-import org.citygml4j.model.gml.geometry.aggregates.MultiSolid;
-import org.citygml4j.model.gml.geometry.aggregates.MultiSolidProperty;
-import org.citygml4j.model.gml.geometry.aggregates.MultiSurface;
-import org.citygml4j.model.gml.geometry.aggregates.MultiSurfaceProperty;
 import org.citygml4j.model.gml.measures.Length;
 import org.citygml4j.model.module.citygml.CityGMLModuleType;
 
@@ -55,7 +50,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 public class DBPlantCover extends AbstractFeatureExporter<PlantCover> {
 	private final DBSurfaceGeometry geometryExporter;
@@ -65,16 +59,20 @@ public class DBPlantCover extends AbstractFeatureExporter<PlantCover> {
 	private final LodFilter lodFilter;
 	private final AttributeValueSplitter valueSplitter;
 	private final boolean hasObjectClassIdColumn;
-	private Set<String> adeHookTables;
+	private final List<Table> adeHookTables;
 
 	public DBPlantCover(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
 		super(PlantCover.class, connection, exporter);
 
+		cityObjectExporter = exporter.getExporter(DBCityObject.class);
+		geometryExporter = exporter.getExporter(DBSurfaceGeometry.class);
+		valueSplitter = exporter.getAttributeValueSplitter();
+
 		CombinedProjectionFilter projectionFilter = exporter.getCombinedProjectionFilter(TableEnum.PLANT_COVER.getName());
 		vegetationModule = exporter.getTargetCityGMLVersion().getCityGMLModule(CityGMLModuleType.VEGETATION).getNamespaceURI();
 		lodFilter = exporter.getLodFilter();
-		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 		hasObjectClassIdColumn = exporter.getDatabaseAdapter().getConnectionMetaData().getCityDBVersion().compareTo(4, 0, 0) >= 0;
+		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 
 		table = new Table(TableEnum.PLANT_COVER.getName(), schema);
 		select = new Select().addProjection(table.getColumn("id"));
@@ -83,24 +81,23 @@ public class DBPlantCover extends AbstractFeatureExporter<PlantCover> {
 		if (projectionFilter.containsProperty("function", vegetationModule)) select.addProjection(table.getColumn("function"), table.getColumn("function_codespace"));
 		if (projectionFilter.containsProperty("usage", vegetationModule)) select.addProjection(table.getColumn("usage"), table.getColumn("usage_codespace"));
 		if (projectionFilter.containsProperty("averageHeight", vegetationModule)) select.addProjection(table.getColumn("average_height"), table.getColumn("average_height_unit"));
-		if (projectionFilter.containsProperty("lod1MultiSurface", vegetationModule)) select.addProjection(table.getColumn("lod1_multi_surface_id"));
-		if (projectionFilter.containsProperty("lod2MultiSurface", vegetationModule)) select.addProjection(table.getColumn("lod2_multi_surface_id"));
-		if (projectionFilter.containsProperty("lod3MultiSurface", vegetationModule)) select.addProjection(table.getColumn("lod3_multi_surface_id"));
-		if (projectionFilter.containsProperty("lod4MultiSurface", vegetationModule)) select.addProjection(table.getColumn("lod4_multi_surface_id"));
-		if (projectionFilter.containsProperty("lod1MultiSolid", vegetationModule)) select.addProjection(table.getColumn("lod1_multi_solid_id"));
-		if (projectionFilter.containsProperty("lod2MultiSolid", vegetationModule)) select.addProjection(table.getColumn("lod2_multi_solid_id"));
-		if (projectionFilter.containsProperty("lod3MultiSolid", vegetationModule)) select.addProjection(table.getColumn("lod3_multi_solid_id"));
-		if (projectionFilter.containsProperty("lod4MultiSolid", vegetationModule)) select.addProjection(table.getColumn("lod4_multi_solid_id"));
-		
-		// add joins to ADE hook tables
-		if (exporter.hasADESupport()) {
-			adeHookTables = exporter.getADEHookTables(TableEnum.PLANT_COVER);			
-			if (adeHookTables != null) addJoinsToADEHookTables(adeHookTables, table);
+		if (lodFilter.isEnabled(1)) {
+			if (projectionFilter.containsProperty("lod1MultiSurface", vegetationModule)) select.addProjection(table.getColumn("lod1_multi_surface_id"));
+			if (projectionFilter.containsProperty("lod1MultiSolid", vegetationModule)) select.addProjection(table.getColumn("lod1_multi_solid_id"));
 		}
-
-		cityObjectExporter = exporter.getExporter(DBCityObject.class);
-		geometryExporter = exporter.getExporter(DBSurfaceGeometry.class);
-		valueSplitter = exporter.getAttributeValueSplitter();
+		if (lodFilter.isEnabled(2)) {
+			if (projectionFilter.containsProperty("lod2MultiSurface", vegetationModule)) select.addProjection(table.getColumn("lod2_multi_surface_id"));
+			if (projectionFilter.containsProperty("lod2MultiSolid", vegetationModule)) select.addProjection(table.getColumn("lod2_multi_solid_id"));
+		}
+		if (lodFilter.isEnabled(3)) {
+			if (projectionFilter.containsProperty("lod3MultiSurface", vegetationModule)) select.addProjection(table.getColumn("lod3_multi_surface_id"));
+			if (projectionFilter.containsProperty("lod3MultiSolid", vegetationModule)) select.addProjection(table.getColumn("lod3_multi_solid_id"));
+		}
+		if (lodFilter.isEnabled(4)) {
+			if (projectionFilter.containsProperty("lod4MultiSurface", vegetationModule)) select.addProjection(table.getColumn("lod4_multi_surface_id"));
+			if (projectionFilter.containsProperty("lod4MultiSolid", vegetationModule)) select.addProjection(table.getColumn("lod4_multi_solid_id"));
+		}
+		adeHookTables = addJoinsToADEHookTables(TableEnum.PLANT_COVER, table);
 	}
 
 	@Override
@@ -139,10 +136,8 @@ public class DBPlantCover extends AbstractFeatureExporter<PlantCover> {
 				ProjectionFilter projectionFilter = exporter.getProjectionFilter(featureType);
 
 				// export city object information
-				boolean success = cityObjectExporter.doExport(plantCover, plantCoverId, featureType, projectionFilter);
-				if (!success)
-					continue;
-				
+				cityObjectExporter.addBatch(plantCover, plantCoverId, featureType, projectionFilter);
+
 				if (projectionFilter.containsProperty("class", vegetationModule)) {
 					String clazz = rs.getString("class");
 					if (!rs.wasNull()) {
@@ -184,32 +179,23 @@ public class DBPlantCover extends AbstractFeatureExporter<PlantCover> {
 					if (!projectionFilter.containsProperty("lod" + lod + "MultiSurface", vegetationModule))
 						continue;
 
-					long surfaceGeometryId = rs.getLong("lod" + lod + "_multi_surface_id");
+					long geometryId = rs.getLong("lod" + lod + "_multi_surface_id");
 					if (rs.wasNull())
 						continue;
 
-					SurfaceGeometry geometry = geometryExporter.doExport(surfaceGeometryId);
-					if (geometry != null && geometry.getType() == GMLClass.MULTI_SURFACE) {
-						MultiSurfaceProperty multiSurfaceProperty = new MultiSurfaceProperty();
-						if (geometry.getGeometry() != null)
-							multiSurfaceProperty.setMultiSurface((MultiSurface)geometry.getGeometry());
-						else
-							multiSurfaceProperty.setHref(geometry.getReference());
-
-						switch (lod) {
+					switch (lod) {
 						case 1:
-							plantCover.setLod1MultiSurface(multiSurfaceProperty);
+							geometryExporter.addBatch(geometryId, plantCover::setLod1MultiSurface);
 							break;
 						case 2:
-							plantCover.setLod2MultiSurface(multiSurfaceProperty);
+							geometryExporter.addBatch(geometryId, plantCover::setLod2MultiSurface);
 							break;
 						case 3:
-							plantCover.setLod3MultiSurface(multiSurfaceProperty);
+							geometryExporter.addBatch(geometryId, plantCover::setLod3MultiSurface);
 							break;
 						case 4:
-							plantCover.setLod4MultiSurface(multiSurfaceProperty);
+							geometryExporter.addBatch(geometryId, plantCover::setLod4MultiSurface);
 							break;
-						}
 					}
 				}
 
@@ -220,32 +206,23 @@ public class DBPlantCover extends AbstractFeatureExporter<PlantCover> {
 					if (!projectionFilter.containsProperty("lod" + lod + "MultiSolid", vegetationModule))
 						continue;
 
-					long surfaceGeometryId = rs.getLong("lod" + lod + "_multi_solid_id");
+					long geometryId = rs.getLong("lod" + lod + "_multi_solid_id");
 					if (rs.wasNull())
 						continue;
 
-					SurfaceGeometry geometry = geometryExporter.doExport(surfaceGeometryId);
-					if (geometry != null && geometry.getType() == GMLClass.MULTI_SOLID) {
-						MultiSolidProperty solidProperty = new MultiSolidProperty();
-						if (geometry.isSetGeometry())
-							solidProperty.setMultiSolid((MultiSolid)geometry.getGeometry());
-						else
-							solidProperty.setHref(geometry.getReference());
-
-						switch (lod) {
+					switch (lod) {
 						case 1:
-							plantCover.setLod1MultiSolid(solidProperty);
+							geometryExporter.addBatch(geometryId, plantCover::setLod1MultiSolid);
 							break;
 						case 2:
-							plantCover.setLod2MultiSolid(solidProperty);
+							geometryExporter.addBatch(geometryId, plantCover::setLod2MultiSolid);
 							break;
 						case 3:
-							plantCover.setLod3MultiSolid(solidProperty);
+							geometryExporter.addBatch(geometryId, plantCover::setLod3MultiSolid);
 							break;
 						case 4:
-							plantCover.setLod4MultiSolid(solidProperty);
+							geometryExporter.addBatch(geometryId, plantCover::setLod4MultiSolid);
 							break;
-						}
 					}
 				}
 				
@@ -262,5 +239,4 @@ public class DBPlantCover extends AbstractFeatureExporter<PlantCover> {
 			return plantCovers;
 		}
 	}
-
 }

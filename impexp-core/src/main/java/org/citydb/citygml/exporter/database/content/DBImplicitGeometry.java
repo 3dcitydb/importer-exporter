@@ -68,6 +68,9 @@ public class DBImplicitGeometry implements DBExporter {
 	public DBImplicitGeometry(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
 		this.exporter = exporter;
 
+		geometryExporter = exporter.getExporter(DBSurfaceGeometry.class);
+		gmlConverter = exporter.getGMLConverter();
+		valueSplitter = exporter.getAttributeValueSplitter();
 		String getLength = exporter.getDatabaseAdapter().getSQLAdapter().resolveDatabaseOperationName("blob.get_length");
 		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 
@@ -86,10 +89,6 @@ public class DBImplicitGeometry implements DBExporter {
 				.addJoin(JoinFactory.left(surfaceGeometry, "id", ComparisonName.EQUAL_TO, table.getColumn("relative_brep_id")))
 				.addSelection(ComparisonFactory.equalTo(table.getColumn("id"), new PlaceHolder<>()));
 		ps = connection.prepareStatement(select.toString());
-		
-		geometryExporter = exporter.getExporter(DBSurfaceGeometry.class);
-		gmlConverter = exporter.getGMLConverter();
-		valueSplitter = exporter.getAttributeValueSplitter();
 	}
 
 	protected ImplicitGeometry doExport(long id, GeometryObject referencePoint, String transformationMatrix) throws CityGMLExportException, SQLException {
@@ -120,43 +119,34 @@ public class DBImplicitGeometry implements DBExporter {
 				}
 
 				// geometry
-				long surfaceGeometryId = rs.getLong(4);
-				Object otherGeomObj = rs.getObject(5);
-
-				if (surfaceGeometryId != 0) {
+				long geometryId = rs.getLong(4);
+				if (!rs.wasNull()) {
 					isValid = true;
 					String gmlId = rs.getString(7);
 
 					if (exporter.lookupGeometryUID(gmlId)) {
 						implicit.setRelativeGeometry(new GeometryProperty<>("#" + gmlId));
 					} else {
-						SurfaceGeometry geometry = geometryExporter.doExportImplicitGeometry(surfaceGeometryId);
-						if (geometry != null) {
-							GeometryProperty<AbstractGeometry> geometryProperty = new GeometryProperty<>();
-							if (geometry.isSetGeometry())
-								geometryProperty.setGeometry(geometry.getGeometry());
-							else
-								geometryProperty.setHref(geometry.getReference());
-
-							implicit.setRelativeGeometry(geometryProperty);
-						} else
-							isValid = false;
+						geometryExporter.addImplicitGeometryBatch(geometryId, implicit);
 					}
-				} else if (otherGeomObj != null) {
-					isValid = true;
-					long implicitId = rs.getLong(1);
-					String uuid = toHexString(md5.digest(String.valueOf(implicitId).getBytes()));
+				} else {
+					Object otherGeomObj = rs.getObject(5);
+					if (!rs.wasNull()) {
+						isValid = true;
+						long implicitId = rs.getLong(1);
+						String uuid = toHexString(md5.digest(String.valueOf(implicitId).getBytes()));
 
-					if (exporter.lookupAndPutObjectUID(uuid, implicitId, MappingConstants.IMPLICIT_GEOMETRY_OBJECTCLASS_ID)) {
-						implicit.setRelativeGeometry(new GeometryProperty<>("#UUID_" + uuid));
-					} else {
-						GeometryObject otherGeom = exporter.getDatabaseAdapter().getGeometryConverter().getGeometry(otherGeomObj);
-						AbstractGeometry geometry = gmlConverter.getPointOrCurveGeometry(otherGeom, true);
-						if (geometry != null) {
-							geometry.setId("UUID_" + uuid);
-							implicit.setRelativeGeometry(new GeometryProperty<>(geometry));
-						} else
-							isValid = false;
+						if (exporter.lookupAndPutObjectUID(uuid, implicitId, MappingConstants.IMPLICIT_GEOMETRY_OBJECTCLASS_ID)) {
+							implicit.setRelativeGeometry(new GeometryProperty<>("#UUID_" + uuid));
+						} else {
+							GeometryObject otherGeom = exporter.getDatabaseAdapter().getGeometryConverter().getGeometry(otherGeomObj);
+							AbstractGeometry geometry = gmlConverter.getPointOrCurveGeometry(otherGeom, true);
+							if (geometry != null) {
+								geometry.setId("UUID_" + uuid);
+								implicit.setRelativeGeometry(new GeometryProperty<>(geometry));
+							} else
+								isValid = false;
+						}
 					}
 				}
 			}
@@ -194,5 +184,4 @@ public class DBImplicitGeometry implements DBExporter {
 	public void close() throws SQLException {
 		ps.close();
 	}
-
 }

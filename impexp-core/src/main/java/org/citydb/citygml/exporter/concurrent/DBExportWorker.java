@@ -38,6 +38,9 @@ import org.citydb.citygml.exporter.writer.FeatureWriter;
 import org.citydb.concurrent.Worker;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
+import org.citydb.config.geometry.GeometryObject;
+import org.citydb.config.geometry.Point;
+import org.citydb.config.project.database.DatabaseSrs;
 import org.citydb.config.project.global.LogLevel;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.schema.mapping.MappingConstants;
@@ -54,18 +57,15 @@ import org.citydb.event.global.ObjectCounterEvent;
 import org.citydb.event.global.ProgressBarEventType;
 import org.citydb.event.global.StatusDialogProgressBar;
 import org.citydb.file.OutputFile;
-import org.citydb.plugin.PluginException;
-import org.citydb.plugin.PluginManager;
-import org.citydb.plugin.extension.export.CityGMLExportExtension;
 import org.citydb.query.Query;
+import org.citydb.query.filter.FilterException;
+import org.citydb.query.filter.tiling.Tile;
 import org.citygml4j.builder.jaxb.CityGMLBuilder;
-import org.citygml4j.model.citygml.appearance.Appearance;
 import org.citygml4j.model.gml.base.AbstractGML;
 import org.citygml4j.model.gml.feature.AbstractFeature;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class DBExportWorker extends Worker<DBSplittingResult> implements EventHandler {
@@ -78,10 +78,12 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 	private final FeatureWriter featureWriter;
 	private final EventDispatcher eventDispatcher;
 	private final Config config;
+	private final boolean useTiling;
 
+	private Tile activeTile;
+	private DatabaseSrs targetSrs;
 	private int globalAppearanceCounter = 0;
 	private int topLevelFeatureCounter = 0;
-	private List<CityGMLExportExtension> plugins;
 
 	public DBExportWorker(OutputFile outputFile,
 			Connection connection,
@@ -100,6 +102,12 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 		this.eventDispatcher = eventDispatcher;
 		this.config = config;
 
+		useTiling = query.isSetTiling();
+		if (useTiling) {
+			activeTile = query.getTiling().getActiveTile();
+			targetSrs = query.getTargetSrs();
+		}
+
 		exporter = new CityGMLExportManager(
 				outputFile,
 				connection,
@@ -113,7 +121,6 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 				cacheTableManager,
 				config);
 
-		plugins = PluginManager.getInstance().getExternalPlugins(CityGMLExportExtension.class);
 		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
 	}
 
@@ -170,35 +177,29 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 				return;
 
 			AbstractFeature feature = null;
-			if (work.getObjectType().getObjectClassId() == MappingConstants.APPEARANCE_OBJECTCLASS_ID)
+			if (work.getObjectType().getObjectClassId() == MappingConstants.APPEARANCE_OBJECTCLASS_ID) {
 				feature = exporter.exportGlobalAppearance(work.getId());
-			else {
-				AbstractGML object = exporter.exportObject(work.getId(), work.getObjectType(), false);
-				if (object instanceof AbstractFeature) {
-					feature = (AbstractFeature) object;
-
-					// cleanup appearances
-					exporter.cleanupAppearances(feature);
-
-					// trigger export of textures if required
-					if (exporter.isLazyTextureExport())
-						exporter.triggerLazyTextureExport(feature);
+				if (feature != null && ++globalAppearanceCounter == 20) {
+					eventDispatcher.triggerEvent(new CounterEvent(CounterType.GLOBAL_APPEARANCE, globalAppearanceCounter, this));
+					eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.UPDATE, globalAppearanceCounter, this));
+					globalAppearanceCounter = 0;
+				}
+			} else {
+				if (!useTiling || isOnTile(work.getEnvelope())) {
+					AbstractGML object = exporter.exportObject(work.getId(), work.getObjectType());
+					if (object instanceof AbstractFeature) {
+						feature = (AbstractFeature) object;
+						if (++topLevelFeatureCounter == 20) {
+							eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, topLevelFeatureCounter, this));
+							eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.UPDATE, topLevelFeatureCounter, this));
+							topLevelFeatureCounter = 0;
+						}
+					}
 				}
 			}
 
 			if (feature != null) {
-				// invoke export plugins
-				if (!plugins.isEmpty()) {
-					for (CityGMLExportExtension plugin : plugins) {
-						feature = plugin.postprocess(feature);
-						if (feature == null) {
-							featureWriter.updateSequenceId(work.getSequenceId());
-							return;
-						}
-					}
-				}
-
-				// write feature to file
+				// write feature
 				featureWriter.write(feature, work.getSequenceId());
 
 				// register gml:id in cache
@@ -207,21 +208,10 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 				
 				// update export counter
 				exporter.updateExportCounter(feature);
-				if (feature instanceof Appearance) {
-					if (++globalAppearanceCounter == 20) {
-						eventDispatcher.triggerEvent(new CounterEvent(CounterType.GLOBAL_APPEARANCE, globalAppearanceCounter, this));
-						eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.UPDATE, globalAppearanceCounter, this));
-						globalAppearanceCounter = 0;
-					}
-				} else if (++topLevelFeatureCounter == 20) {
-					eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, topLevelFeatureCounter, this));
-					eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.UPDATE, topLevelFeatureCounter, this));
-					topLevelFeatureCounter = 0;
-				}
 			} else
 				featureWriter.updateSequenceId(work.getSequenceId());
 
-		} catch (SQLException | CityGMLExportException | FeatureWriteException | PluginException e) {
+		} catch (SQLException | CityGMLExportException | FeatureWriteException e) {
 			eventDispatcher.triggerSyncEvent(new InterruptEvent("Aborting export due to errors.", LogLevel.WARN, e, eventChannel, this));
 		} catch (Throwable e) {
 			// this is to catch general exceptions that may occur during the export
@@ -231,10 +221,24 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 		}
 	}
 
+	private boolean isOnTile(Object envelope) throws FilterException, SQLException {
+		// check whether feature is on active tile
+		if (envelope != null) {
+			GeometryObject geometryObject = exporter.getDatabaseAdapter().getGeometryConverter().getEnvelope(envelope);
+			double[] coordinates = geometryObject.getCoordinates(0);
+
+			return activeTile.isOnTile(new Point(
+					(coordinates[0] + coordinates[3]) / 2.0,
+					(coordinates[1] + coordinates[4]) / 2.0,
+					targetSrs),
+					exporter.getDatabaseAdapter());
+		} else
+			return false;
+	}
+
 	@Override
 	public void handleEvent(Event event) throws Exception {
 		if (event.getChannel() == eventChannel)
 			shouldWork = false;
 	}
-
 }

@@ -27,28 +27,22 @@
  */
 package org.citydb.modules.citygml.importer.gui.preferences;
 
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.text.DecimalFormat;
-import java.text.ParseException;
-
-import javax.swing.BorderFactory;
-import javax.swing.JFormattedTextField;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.border.TitledBorder;
-
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
-import org.citydb.config.project.database.Database;
-import org.citydb.config.project.database.UpdateBatching;
+import org.citydb.config.project.database.ImportBatching;
 import org.citydb.config.project.resources.ThreadPoolConfig;
 import org.citydb.config.project.resources.UIDCacheConfig;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.preferences.AbstractPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
+
+import javax.swing.*;
+import javax.swing.border.TitledBorder;
+import java.awt.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.text.DecimalFormat;
+import java.text.ParseException;
 
 @SuppressWarnings("serial")
 public class ResourcesPanel extends AbstractPreferencesComponent{
@@ -98,7 +92,7 @@ public class ResourcesPanel extends AbstractPreferencesComponent{
 	@Override
 	public boolean isModified() {
 		ThreadPoolConfig threadPool = config.getProject().getImporter().getResources().getThreadPool().getDefaultPool();
-		UpdateBatching commit = config.getProject().getDatabase().getUpdateBatching();
+		ImportBatching commit = config.getProject().getDatabase().getImportBatching();
 		UIDCacheConfig geometry = config.getProject().getImporter().getResources().getGmlIdCache().getGeometry();
 		UIDCacheConfig feature = config.getProject().getImporter().getResources().getGmlIdCache().getFeature();
 		UIDCacheConfig texImage = config.getProject().getImporter().getResources().getTexImageCache();
@@ -120,9 +114,9 @@ public class ResourcesPanel extends AbstractPreferencesComponent{
 		
 		if (((Number)impResMinThreadsText.getValue()).intValue() != threadPool.getMinThreads()) return true;
 		if (((Number)impResMaxThreadsText.getValue()).intValue() != threadPool.getMaxThreads()) return true;
-		if (((Number)impResTransaktFeatureText.getValue()).intValue() != commit.getFeatureBatchValue()) return true;
-		if (((Number)impResTransaktCacheText.getValue()).intValue() != commit.getGmlIdCacheBatchValue()) return true;
-		if (((Number)impResTransaktTempText.getValue()).intValue() != commit.getTempBatchValue()) return true;
+		if (((Number)impResTransaktFeatureText.getValue()).intValue() != commit.getFeatureBatchSize()) return true;
+		if (((Number)impResTransaktCacheText.getValue()).intValue() != commit.getGmlIdCacheBatchSize()) return true;
+		if (((Number)impResTransaktTempText.getValue()).intValue() != commit.getTempBatchSize()) return true;
 		if (((Number)impResGeomCacheText.getValue()).intValue() != geometry.getCacheSize()) return true;
 		if (((Number)impResGeomDrainText.getValue()).intValue() != (int)(geometry.getPageFactor() * 100)) return true;
 		if (((Number)impResGeomPartText.getValue()).intValue() != geometry.getPartitions()) return true;
@@ -374,22 +368,22 @@ public class ResourcesPanel extends AbstractPreferencesComponent{
 	@Override
 	public void loadSettings() {
 		ThreadPoolConfig threadPool = config.getProject().getImporter().getResources().getThreadPool().getDefaultPool();
-		UpdateBatching commit = config.getProject().getDatabase().getUpdateBatching();
+		ImportBatching commit = config.getProject().getDatabase().getImportBatching();
 		UIDCacheConfig geometry = config.getProject().getImporter().getResources().getGmlIdCache().getGeometry();
 		UIDCacheConfig feature = config.getProject().getImporter().getResources().getGmlIdCache().getFeature();
 		UIDCacheConfig texImage = config.getProject().getImporter().getResources().getTexImageCache();
 
-		int commitFeature = commit.getFeatureBatchValue();
-		if (commitFeature > Database.MAX_BATCH_SIZE)
-			commitFeature = Database.MAX_BATCH_SIZE;
+		int commitFeature = commit.getFeatureBatchSize();
+		if (commitFeature > ImportBatching.MAX_BATCH_SIZE)
+			commitFeature = ImportBatching.MAX_BATCH_SIZE;
 		
-		int commitCache = commit.getGmlIdCacheBatchValue();
-		if (commitCache > Database.MAX_BATCH_SIZE)
-			commitCache = Database.MAX_BATCH_SIZE;
+		int commitCache = commit.getGmlIdCacheBatchSize();
+		if (commitCache > ImportBatching.MAX_BATCH_SIZE)
+			commitCache = ImportBatching.MAX_BATCH_SIZE;
 		
-		int commitTemp = commit.getTempBatchValue();
-		if (commitTemp > Database.MAX_BATCH_SIZE)
-			commitTemp = Database.MAX_BATCH_SIZE;
+		int commitTemp = commit.getTempBatchSize();
+		if (commitTemp > ImportBatching.MAX_BATCH_SIZE)
+			commitTemp = ImportBatching.MAX_BATCH_SIZE;
 		
 		impResMinThreadsText.setValue(threadPool.getMinThreads());
 		impResMaxThreadsText.setValue(threadPool.getMaxThreads());
@@ -410,7 +404,7 @@ public class ResourcesPanel extends AbstractPreferencesComponent{
 	@Override
 	public void setSettings() {
 		ThreadPoolConfig threadPool = config.getProject().getImporter().getResources().getThreadPool().getDefaultPool();
-		UpdateBatching commit = config.getProject().getDatabase().getUpdateBatching();
+		ImportBatching commit = config.getProject().getDatabase().getImportBatching();
 		UIDCacheConfig geometry = config.getProject().getImporter().getResources().getGmlIdCache().getGeometry();
 		UIDCacheConfig feature = config.getProject().getImporter().getResources().getGmlIdCache().getFeature();
 		UIDCacheConfig texImage = config.getProject().getImporter().getResources().getTexImageCache();
@@ -426,27 +420,27 @@ public class ResourcesPanel extends AbstractPreferencesComponent{
 			impResMinThreadsText.setValue(minThreads);
 		}
 
-		if (featBatch > Database.MAX_BATCH_SIZE) {
-			featBatch = Database.MAX_BATCH_SIZE;
+		if (featBatch > ImportBatching.MAX_BATCH_SIZE) {
+			featBatch = ImportBatching.MAX_BATCH_SIZE;
 			impResTransaktFeatureText.setValue(featBatch);
 		}
 		
-		if (lookupBatch > Database.MAX_BATCH_SIZE) {
-			lookupBatch = Database.MAX_BATCH_SIZE;
+		if (lookupBatch > ImportBatching.MAX_BATCH_SIZE) {
+			lookupBatch = ImportBatching.MAX_BATCH_SIZE;
 			impResTransaktCacheText.setValue(lookupBatch);
 		}
 		
-		if (tempBatch > Database.MAX_BATCH_SIZE) {
-			tempBatch = Database.MAX_BATCH_SIZE;
+		if (tempBatch > ImportBatching.MAX_BATCH_SIZE) {
+			tempBatch = ImportBatching.MAX_BATCH_SIZE;
 			impResTransaktTempText.setValue(tempBatch);
 		}
 		
 		threadPool.setMinThreads(minThreads);
 		threadPool.setMaxThreads(maxThreads);
 		
-		commit.setFeatureBatchValue(featBatch);
-		commit.setGmlIdCacheBatchValue(lookupBatch);
-		commit.setTempBatchValue(tempBatch);
+		commit.setFeatureBatchSize(featBatch);
+		commit.setGmlIdCacheBatchSize(lookupBatch);
+		commit.setTempBatchSize(tempBatch);
 
 		geometry.setCacheSize(((Number)impResGeomCacheText.getValue()).intValue());			
 		feature.setCacheSize(((Number)impResFeatCacheText.getValue()).intValue());

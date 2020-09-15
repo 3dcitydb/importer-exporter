@@ -34,34 +34,30 @@ import org.citydb.query.Query;
 import org.citygml4j.model.citygml.appearance.Appearance;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Map;
 
 public class DBGlobalAppearance extends AbstractAppearanceExporter {
+	private final PreparedStatement ps;
 
 	public DBGlobalAppearance(Connection connection, Query query, CacheTable cacheTable, CityGMLExportManager exporter, Config config) throws CityGMLExportException, SQLException {
 		super(true, connection, query, cacheTable, exporter, config);
+		ps = cacheTable.getConnection().prepareStatement(select.toString());
 	}
 
 	protected Appearance doExport(long appearanceId) throws CityGMLExportException, SQLException {
 		ps.setLong(1, appearanceId);
 
 		try (ResultSet rs = ps.executeQuery()) {
-			Appearance appearance = new Appearance();
-			boolean isInited = false;
-
-			while (rs.next()) {
-				if (!isInited) {
-					getAppearanceProperties(appearance, appearanceId, rs);
-					clearTextureImageCache();
-					isInited = true;
-				}
-
-				// add surface data to appearance
-				addSurfaceData(appearance, rs, false);
-			}
-
-			return appearance.isSetSurfaceDataMember() ? appearance : null;
+			Map<Long, Appearance> appearances = doExport(rs);
+			return !appearances.isEmpty() ? appearances.values().iterator().next() : null;
 		}
+	}
+
+	@Override
+	public void close() throws SQLException {
+		ps.close();
 	}
 }

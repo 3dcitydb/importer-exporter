@@ -80,7 +80,7 @@ public class DBImportWorker extends Worker<CityGML> implements EventHandler {
 
 	private int globalAppearanceCounter = 0;
 	private int topLevelFeatureCounter = 0;
-	private int commitAfter = 20;
+	private int commitAfter;
 
 	public DBImportWorker(InputFile inputFile,
 			Connection connection,
@@ -111,9 +111,9 @@ public class DBImportWorker extends Worker<CityGML> implements EventHandler {
 				affineTransformer,
 				config);
 
-		Integer commitAfterProp = config.getProject().getDatabase().getUpdateBatching().getFeatureBatchValue();
-		if (commitAfterProp != null && commitAfterProp > 0)
-			commitAfter = commitAfterProp;
+		commitAfter = config.getProject().getDatabase().getImportBatching().getFeatureBatchSize();
+		if (commitAfter > databaseAdapter.getMaxBatchSize())
+			commitAfter = databaseAdapter.getMaxBatchSize();
 
 		bboxOptions = BoundingBoxOptions.defaults()				
 				.useExistingEnvelopes(true)

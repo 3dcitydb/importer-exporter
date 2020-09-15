@@ -30,6 +30,7 @@ package org.citydb.citygml.exporter.database.content;
 import org.citydb.citygml.exporter.CityGMLExportException;
 import org.citydb.citygml.exporter.util.AttributeValueSplitter;
 import org.citydb.citygml.exporter.util.AttributeValueSplitter.SplitValue;
+import org.citydb.citygml.exporter.util.GeometrySetter;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.database.schema.TableEnum;
 import org.citydb.database.schema.mapping.FeatureType;
@@ -55,7 +56,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 public class DBGenericCityObject extends AbstractFeatureExporter<GenericCityObject> {
 	private final DBSurfaceGeometry geometryExporter;
@@ -67,16 +67,22 @@ public class DBGenericCityObject extends AbstractFeatureExporter<GenericCityObje
 	private final LodFilter lodFilter;
 	private final AttributeValueSplitter valueSplitter;
 	private final boolean hasObjectClassIdColumn;
-	private Set<String> adeHookTables;
+	private final List<Table> adeHookTables;
 
 	public DBGenericCityObject(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
-		super(GenericCityObject.class, connection, exporter);		
+		super(GenericCityObject.class, connection, exporter);
+
+		cityObjectExporter = exporter.getExporter(DBCityObject.class);
+		geometryExporter = exporter.getExporter(DBSurfaceGeometry.class);
+		implicitGeometryExporter = exporter.getExporter(DBImplicitGeometry.class);
+		gmlConverter = exporter.getGMLConverter();
+		valueSplitter = exporter.getAttributeValueSplitter();
 
 		CombinedProjectionFilter projectionFilter = exporter.getCombinedProjectionFilter(TableEnum.GENERIC_CITYOBJECT.getName());
 		genericsModule = exporter.getTargetCityGMLVersion().getCityGMLModule(CityGMLModuleType.GENERICS).getNamespaceURI();
 		lodFilter = exporter.getLodFilter();
-		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 		hasObjectClassIdColumn = exporter.getDatabaseAdapter().getConnectionMetaData().getCityDBVersion().compareTo(4, 0, 0) >= 0;
+		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 
 		table = new Table(TableEnum.GENERIC_CITYOBJECT.getName(), schema);
 		select = new Select().addProjection(table.getColumn("id"));
@@ -84,38 +90,32 @@ public class DBGenericCityObject extends AbstractFeatureExporter<GenericCityObje
 		if (projectionFilter.containsProperty("class", genericsModule)) select.addProjection(table.getColumn("class"), table.getColumn("class_codespace"));
 		if (projectionFilter.containsProperty("function", genericsModule)) select.addProjection(table.getColumn("function"), table.getColumn("function_codespace"));
 		if (projectionFilter.containsProperty("usage", genericsModule)) select.addProjection(table.getColumn("usage"), table.getColumn("usage_codespace"));
-		if (projectionFilter.containsProperty("lod0TerrainIntersection", genericsModule)) select.addProjection(exporter.getGeometryColumn(table.getColumn("lod0_terrain_intersection")));
-		if (projectionFilter.containsProperty("lod1TerrainIntersection", genericsModule)) select.addProjection(exporter.getGeometryColumn(table.getColumn("lod1_terrain_intersection")));
-		if (projectionFilter.containsProperty("lod2TerrainIntersection", genericsModule)) select.addProjection(exporter.getGeometryColumn(table.getColumn("lod2_terrain_intersection")));
-		if (projectionFilter.containsProperty("lod3TerrainIntersection", genericsModule)) select.addProjection(exporter.getGeometryColumn(table.getColumn("lod3_terrain_intersection")));
-		if (projectionFilter.containsProperty("lod4TerrainIntersection", genericsModule)) select.addProjection(exporter.getGeometryColumn(table.getColumn("lod4_terrain_intersection")));
-		if (projectionFilter.containsProperty("lod0Geometry", genericsModule)) select.addProjection(table.getColumn("lod0_brep_id"), exporter.getGeometryColumn(table.getColumn("lod0_other_geom")));
-		if (projectionFilter.containsProperty("lod1Geometry", genericsModule)) select.addProjection(table.getColumn("lod1_brep_id"), exporter.getGeometryColumn(table.getColumn("lod1_other_geom")));
-		if (projectionFilter.containsProperty("lod2Geometry", genericsModule)) select.addProjection(table.getColumn("lod2_brep_id"), exporter.getGeometryColumn(table.getColumn("lod2_other_geom")));
-		if (projectionFilter.containsProperty("lod3Geometry", genericsModule)) select.addProjection(table.getColumn("lod3_brep_id"), exporter.getGeometryColumn(table.getColumn("lod3_other_geom")));
-		if (projectionFilter.containsProperty("lod4Geometry", genericsModule)) select.addProjection(table.getColumn("lod4_brep_id"), exporter.getGeometryColumn(table.getColumn("lod4_other_geom")));
-		if (projectionFilter.containsProperty("lod0ImplicitRepresentation", genericsModule))
-			select.addProjection(table.getColumn("lod0_implicit_rep_id"), exporter.getGeometryColumn(table.getColumn("lod0_implicit_ref_point")), table.getColumn("lod0_implicit_transformation"));
-		if (projectionFilter.containsProperty("lod1ImplicitRepresentation", genericsModule))
-			select.addProjection(table.getColumn("lod1_implicit_rep_id"), exporter.getGeometryColumn(table.getColumn("lod1_implicit_ref_point")), table.getColumn("lod1_implicit_transformation"));
-		if (projectionFilter.containsProperty("lod2ImplicitRepresentation", genericsModule))
-			select.addProjection(table.getColumn("lod2_implicit_rep_id"), exporter.getGeometryColumn(table.getColumn("lod2_implicit_ref_point")), table.getColumn("lod2_implicit_transformation"));
-		if (projectionFilter.containsProperty("lod3ImplicitRepresentation", genericsModule))
-			select.addProjection(table.getColumn("lod3_implicit_rep_id"), exporter.getGeometryColumn(table.getColumn("lod3_implicit_ref_point")), table.getColumn("lod3_implicit_transformation"));
-		if (projectionFilter.containsProperty("lod4ImplicitRepresentation", genericsModule))
-			select.addProjection(table.getColumn("lod4_implicit_rep_id"), exporter.getGeometryColumn(table.getColumn("lod4_implicit_ref_point")), table.getColumn("lod4_implicit_transformation"));
-
-		// add joins to ADE hook tables
-		if (exporter.hasADESupport()) {
-			adeHookTables = exporter.getADEHookTables(TableEnum.GENERIC_CITYOBJECT);			
-			if (adeHookTables != null) addJoinsToADEHookTables(adeHookTables, table);
+		if (lodFilter.isEnabled(0)) {
+			if (projectionFilter.containsProperty("lod0TerrainIntersection", genericsModule)) select.addProjection(exporter.getGeometryColumn(table.getColumn("lod0_terrain_intersection")));
+			if (projectionFilter.containsProperty("lod0Geometry", genericsModule)) select.addProjection(table.getColumn("lod0_brep_id"), exporter.getGeometryColumn(table.getColumn("lod0_other_geom")));
+			if (projectionFilter.containsProperty("lod0ImplicitRepresentation", genericsModule)) select.addProjection(table.getColumn("lod0_implicit_rep_id"), exporter.getGeometryColumn(table.getColumn("lod0_implicit_ref_point")), table.getColumn("lod0_implicit_transformation"));
 		}
-		
-		cityObjectExporter = exporter.getExporter(DBCityObject.class);
-		geometryExporter = exporter.getExporter(DBSurfaceGeometry.class);
-		implicitGeometryExporter = exporter.getExporter(DBImplicitGeometry.class);
-		gmlConverter = exporter.getGMLConverter();
-		valueSplitter = exporter.getAttributeValueSplitter();
+		if (lodFilter.isEnabled(1)) {
+			if (projectionFilter.containsProperty("lod1TerrainIntersection", genericsModule)) select.addProjection(exporter.getGeometryColumn(table.getColumn("lod1_terrain_intersection")));
+			if (projectionFilter.containsProperty("lod1Geometry", genericsModule)) select.addProjection(table.getColumn("lod1_brep_id"), exporter.getGeometryColumn(table.getColumn("lod1_other_geom")));
+			if (projectionFilter.containsProperty("lod1ImplicitRepresentation", genericsModule)) select.addProjection(table.getColumn("lod1_implicit_rep_id"), exporter.getGeometryColumn(table.getColumn("lod1_implicit_ref_point")), table.getColumn("lod1_implicit_transformation"));
+		}
+		if (lodFilter.isEnabled(2)) {
+			if (projectionFilter.containsProperty("lod2TerrainIntersection", genericsModule)) select.addProjection(exporter.getGeometryColumn(table.getColumn("lod2_terrain_intersection")));
+			if (projectionFilter.containsProperty("lod2Geometry", genericsModule)) select.addProjection(table.getColumn("lod2_brep_id"), exporter.getGeometryColumn(table.getColumn("lod2_other_geom")));
+			if (projectionFilter.containsProperty("lod2ImplicitRepresentation", genericsModule)) select.addProjection(table.getColumn("lod2_implicit_rep_id"), exporter.getGeometryColumn(table.getColumn("lod2_implicit_ref_point")), table.getColumn("lod2_implicit_transformation"));
+		}
+		if (lodFilter.isEnabled(3)) {
+			if (projectionFilter.containsProperty("lod3TerrainIntersection", genericsModule)) select.addProjection(exporter.getGeometryColumn(table.getColumn("lod3_terrain_intersection")));
+			if (projectionFilter.containsProperty("lod3Geometry", genericsModule)) select.addProjection(table.getColumn("lod3_brep_id"), exporter.getGeometryColumn(table.getColumn("lod3_other_geom")));
+			if (projectionFilter.containsProperty("lod3ImplicitRepresentation", genericsModule)) select.addProjection(table.getColumn("lod3_implicit_rep_id"), exporter.getGeometryColumn(table.getColumn("lod3_implicit_ref_point")), table.getColumn("lod3_implicit_transformation"));
+		}
+		if (lodFilter.isEnabled(4)) {
+			if (projectionFilter.containsProperty("lod4TerrainIntersection", genericsModule)) select.addProjection(exporter.getGeometryColumn(table.getColumn("lod4_terrain_intersection")));
+			if (projectionFilter.containsProperty("lod4Geometry", genericsModule)) select.addProjection(table.getColumn("lod4_brep_id"), exporter.getGeometryColumn(table.getColumn("lod4_other_geom")));
+			if (projectionFilter.containsProperty("lod4ImplicitRepresentation", genericsModule)) select.addProjection(table.getColumn("lod4_implicit_rep_id"), exporter.getGeometryColumn(table.getColumn("lod4_implicit_ref_point")), table.getColumn("lod4_implicit_transformation"));
+		}
+		adeHookTables = addJoinsToADEHookTables(TableEnum.GENERIC_CITYOBJECT, table);
 	}
 
 	@Override
@@ -154,9 +154,7 @@ public class DBGenericCityObject extends AbstractFeatureExporter<GenericCityObje
 				ProjectionFilter projectionFilter = exporter.getProjectionFilter(featureType);
 				
 				// export city object information
-				boolean success = cityObjectExporter.doExport(genericCityObject, genericCityObjectId, featureType, projectionFilter);
-				if (!success)
-					continue;
+				cityObjectExporter.addBatch(genericCityObject, genericCityObjectId, featureType, projectionFilter);
 
 				if (projectionFilter.containsProperty("class", genericsModule)) {
 					String clazz = rs.getString("class");
@@ -228,43 +226,49 @@ public class DBGenericCityObject extends AbstractFeatureExporter<GenericCityObje
 						continue;
 
 					long geometryId = rs.getLong("lod" + lod + "_brep_id");
-					Object geometryObj = rs.getObject("lod" + lod + "_other_geom");
-					if (geometryId == 0 && geometryObj == null)
-						continue;
-
-					GeometryProperty<AbstractGeometry> geometryProperty = null;
-					if (geometryId != 0) {
-						SurfaceGeometry geometry = geometryExporter.doExport(geometryId);
-						if (geometry != null) {
-							geometryProperty = new GeometryProperty<>();
-							if (geometry.isSetGeometry())
-								geometryProperty.setGeometry(geometry.getGeometry());
-							else
-								geometryProperty.setHref(geometry.getReference());
+					if (!rs.wasNull()) {
+						switch (lod) {
+							case 0:
+								geometryExporter.addBatch(geometryId, (GeometrySetter.AbstractGeometry) genericCityObject::setLod0Geometry);
+								break;
+							case 1:
+								geometryExporter.addBatch(geometryId, (GeometrySetter.AbstractGeometry) genericCityObject::setLod1Geometry);
+								break;
+							case 2:
+								geometryExporter.addBatch(geometryId, (GeometrySetter.AbstractGeometry) genericCityObject::setLod2Geometry);
+								break;
+							case 3:
+								geometryExporter.addBatch(geometryId, (GeometrySetter.AbstractGeometry) genericCityObject::setLod3Geometry);
+								break;
+							case 4:
+								geometryExporter.addBatch(geometryId, (GeometrySetter.AbstractGeometry) genericCityObject::setLod4Geometry);
+								break;
 						}
 					} else {
-						GeometryObject geometry = exporter.getDatabaseAdapter().getGeometryConverter().getGeometry(geometryObj);
-						if (geometry != null)
-							geometryProperty = new GeometryProperty<>(gmlConverter.getPointOrCurveGeometry(geometry, true));
-					}
+						Object geometryObj = rs.getObject("lod" + lod + "_other_geom");
+						if (rs.wasNull())
+							continue;
 
-					if (geometryProperty != null) {
-						switch (lod) {
-						case 0:
-							genericCityObject.setLod0Geometry(geometryProperty);
-							break;
-						case 1:
-							genericCityObject.setLod1Geometry(geometryProperty);
-							break;
-						case 2:
-							genericCityObject.setLod2Geometry(geometryProperty);
-							break;
-						case 3:
-							genericCityObject.setLod3Geometry(geometryProperty);
-							break;
-						case 4:
-							genericCityObject.setLod4Geometry(geometryProperty);
-							break;
+						GeometryObject geometry = exporter.getDatabaseAdapter().getGeometryConverter().getGeometry(geometryObj);
+						if (geometry != null) {
+							GeometryProperty<AbstractGeometry> property = new GeometryProperty<>(gmlConverter.getPointOrCurveGeometry(geometry, true));
+							switch (lod) {
+								case 0:
+									genericCityObject.setLod0Geometry(property);
+									break;
+								case 1:
+									genericCityObject.setLod1Geometry(property);
+									break;
+								case 2:
+									genericCityObject.setLod2Geometry(property);
+									break;
+								case 3:
+									genericCityObject.setLod3Geometry(property);
+									break;
+								case 4:
+									genericCityObject.setLod4Geometry(property);
+									break;
+							}
 						}
 					}
 				}
@@ -327,5 +331,4 @@ public class DBGenericCityObject extends AbstractFeatureExporter<GenericCityObje
 			return genericCityObjects;
 		}
 	}
-
 }

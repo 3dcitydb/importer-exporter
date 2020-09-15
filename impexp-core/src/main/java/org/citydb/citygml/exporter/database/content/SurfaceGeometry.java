@@ -29,6 +29,7 @@ package org.citydb.citygml.exporter.database.content;
 
 import org.citygml4j.model.gml.GMLClass;
 import org.citygml4j.model.gml.geometry.AbstractGeometry;
+import org.citygml4j.model.gml.geometry.GeometryProperty;
 
 public class SurfaceGeometry {
 	private final AbstractGeometry geometry;
@@ -65,5 +66,14 @@ public class SurfaceGeometry {
 
 	public GMLClass getType() {
 		return type;
+	}
+
+	public <S extends AbstractGeometry, T extends GeometryProperty<S>> T fill(T property) {
+		if (property.getAssociableClass().isInstance(geometry))
+			property.setGeometry(property.getAssociableClass().cast(geometry));
+		else if (reference != null)
+			property.setHref(reference);
+
+		return property;
 	}
 }

@@ -44,16 +44,8 @@ import org.citydb.sqlbuilder.select.operator.comparison.ComparisonName;
 import org.citygml4j.model.citygml.waterbody.AbstractWaterBoundarySurface;
 import org.citygml4j.model.citygml.waterbody.BoundedByWaterSurfaceProperty;
 import org.citygml4j.model.citygml.waterbody.WaterBody;
-import org.citygml4j.model.citygml.waterbody.WaterSurface;
-import org.citygml4j.model.gml.GMLClass;
 import org.citygml4j.model.gml.basicTypes.Code;
 import org.citygml4j.model.gml.geometry.aggregates.MultiCurveProperty;
-import org.citygml4j.model.gml.geometry.aggregates.MultiSurface;
-import org.citygml4j.model.gml.geometry.aggregates.MultiSurfaceProperty;
-import org.citygml4j.model.gml.geometry.primitives.AbstractSolid;
-import org.citygml4j.model.gml.geometry.primitives.AbstractSurface;
-import org.citygml4j.model.gml.geometry.primitives.SolidProperty;
-import org.citygml4j.model.gml.geometry.primitives.SurfaceProperty;
 import org.citygml4j.model.module.citygml.CityGMLModuleType;
 
 import java.sql.Connection;
@@ -61,14 +53,14 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 public class DBWaterBody extends AbstractFeatureExporter<WaterBody> {
 	private final DBSurfaceGeometry geometryExporter;
 	private final DBCityObject cityObjectExporter;
+	private final DBWaterBoundarySurface boundarySurfaceExporter;
 	private final GMLConverter gmlConverter;
 
 	private final String waterBodyModule;
@@ -76,59 +68,57 @@ public class DBWaterBody extends AbstractFeatureExporter<WaterBody> {
 	private final AttributeValueSplitter valueSplitter;
 	private final boolean hasObjectClassIdColumn;
 	private final boolean useXLink;
-	private Set<String> bodyADEHookTables;
-	private Set<String> surfaceADEHookTables;
+	private final List<Table> bodyADEHookTables;
+	private List<Table> surfaceADEHookTables;
 
 	public DBWaterBody(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
 		super(WaterBody.class, connection, exporter);
 
+		cityObjectExporter = exporter.getExporter(DBCityObject.class);
+		boundarySurfaceExporter = exporter.getExporter(DBWaterBoundarySurface.class);
+		geometryExporter = exporter.getExporter(DBSurfaceGeometry.class);
+		gmlConverter = exporter.getGMLConverter();
+		valueSplitter = exporter.getAttributeValueSplitter();
+
 		CombinedProjectionFilter projectionFilter = exporter.getCombinedProjectionFilter(TableEnum.WATERBODY.getName());
-		CombinedProjectionFilter boundarySurfaceProjectionFilter = exporter.getCombinedProjectionFilter(TableEnum.WATERBOUNDARY_SURFACE.getName());
 		waterBodyModule = exporter.getTargetCityGMLVersion().getCityGMLModule(CityGMLModuleType.WATER_BODY).getNamespaceURI();
 		lodFilter = exporter.getLodFilter();
-		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();		
 		hasObjectClassIdColumn = exporter.getDatabaseAdapter().getConnectionMetaData().getCityDBVersion().compareTo(4, 0, 0) >= 0;
 		useXLink = exporter.getExportConfig().getXlink().getFeature().isModeXLink();
+		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 
 		table = new Table(TableEnum.WATERBODY.getName(), schema);
-		Table waterBoundarySurface = new Table(TableEnum.WATERBOUNDARY_SURFACE.getName(), schema);
-
 		select = new Select().addProjection(table.getColumn("id"));
 		if (hasObjectClassIdColumn) select.addProjection(table.getColumn("objectclass_id"));
 		if (projectionFilter.containsProperty("class", waterBodyModule)) select.addProjection(table.getColumn("class"), table.getColumn("class_codespace"));
 		if (projectionFilter.containsProperty("function", waterBodyModule)) select.addProjection(table.getColumn("function"), table.getColumn("function_codespace"));
 		if (projectionFilter.containsProperty("usage", waterBodyModule)) select.addProjection(table.getColumn("usage"), table.getColumn("usage_codespace"));
-		if (projectionFilter.containsProperty("lod0MultiCurve", waterBodyModule)) select.addProjection(exporter.getGeometryColumn(table.getColumn("lod0_multi_curve")));
-		if (projectionFilter.containsProperty("lod1MultiCurve", waterBodyModule)) select.addProjection(exporter.getGeometryColumn(table.getColumn("lod1_multi_curve")));
-		if (projectionFilter.containsProperty("lod0MultiSurface", waterBodyModule)) select.addProjection(table.getColumn("lod0_multi_surface_id"));
-		if (projectionFilter.containsProperty("lod1MultiSurface", waterBodyModule)) select.addProjection(table.getColumn("lod1_multi_surface_id"));
-		if (projectionFilter.containsProperty("lod1Solid", waterBodyModule)) select.addProjection(table.getColumn("lod1_solid_id"));
-		if (projectionFilter.containsProperty("lod2Solid", waterBodyModule)) select.addProjection(table.getColumn("lod2_solid_id"));
-		if (projectionFilter.containsProperty("lod3Solid", waterBodyModule)) select.addProjection(table.getColumn("lod3_solid_id"));
-		if (projectionFilter.containsProperty("lod4Solid", waterBodyModule)) select.addProjection(table.getColumn("lod4_solid_id"));
-		if (projectionFilter.containsProperty("boundedBy", waterBodyModule)) {
+		if (lodFilter.isEnabled(0)) {
+			if (projectionFilter.containsProperty("lod0MultiCurve", waterBodyModule)) select.addProjection(exporter.getGeometryColumn(table.getColumn("lod0_multi_curve")));
+			if (projectionFilter.containsProperty("lod0MultiSurface", waterBodyModule)) select.addProjection(table.getColumn("lod0_multi_surface_id"));
+		}
+		if (lodFilter.isEnabled(1)) {
+			if (projectionFilter.containsProperty("lod1MultiCurve", waterBodyModule)) select.addProjection(exporter.getGeometryColumn(table.getColumn("lod1_multi_curve")));
+			if (projectionFilter.containsProperty("lod1MultiSurface", waterBodyModule)) select.addProjection(table.getColumn("lod1_multi_surface_id"));
+			if (projectionFilter.containsProperty("lod1Solid", waterBodyModule)) select.addProjection(table.getColumn("lod1_solid_id"));
+		}
+		if (lodFilter.isEnabled(2) && projectionFilter.containsProperty("lod2Solid", waterBodyModule)) select.addProjection(table.getColumn("lod2_solid_id"));
+		if (lodFilter.isEnabled(3) && projectionFilter.containsProperty("lod3Solid", waterBodyModule)) select.addProjection(table.getColumn("lod3_solid_id"));
+		if (lodFilter.isEnabled(4) && projectionFilter.containsProperty("lod4Solid", waterBodyModule)) select.addProjection(table.getColumn("lod4_solid_id"));
+		if (lodFilter.containsLodGreaterThanOrEuqalTo(2)
+				&& projectionFilter.containsProperty("boundedBy", waterBodyModule)) {
+			CombinedProjectionFilter boundarySurfaceProjectionFilter = exporter.getCombinedProjectionFilter(TableEnum.WATERBOUNDARY_SURFACE.getName());
+			Table waterBoundarySurface = new Table(TableEnum.WATERBOUNDARY_SURFACE.getName(), schema);
 			Table waterBodToWaterBndSrf = new Table(TableEnum.WATERBOD_TO_WATERBND_SRF.getName(), schema);
-			select.addJoin(JoinFactory.left(waterBodToWaterBndSrf, "waterbody_id", ComparisonName.EQUAL_TO, table.getColumn("id")))
-			.addJoin(JoinFactory.left(waterBoundarySurface, "id", ComparisonName.EQUAL_TO, waterBodToWaterBndSrf.getColumn("waterboundary_surface_id")))
-			.addProjection(waterBoundarySurface.getColumn("id", "ws_id"), waterBoundarySurface.getColumn("objectclass_id", "ws_objectclass_id"));
-			if (boundarySurfaceProjectionFilter.containsProperty("waterLevel", waterBodyModule)) select.addProjection(waterBoundarySurface.getColumn("water_level"), waterBoundarySurface.getColumn("water_level_codespace"));
-			if (boundarySurfaceProjectionFilter.containsProperty("lod2Surface", waterBodyModule)) select.addProjection(waterBoundarySurface.getColumn("lod2_surface_id"));
-			if (boundarySurfaceProjectionFilter.containsProperty("lod3Surface", waterBodyModule)) select.addProjection(waterBoundarySurface.getColumn("lod3_surface_id"));
-			if (boundarySurfaceProjectionFilter.containsProperty("lod4Surface", waterBodyModule)) select.addProjection(waterBoundarySurface.getColumn("lod4_surface_id"));
+			Table cityObject = new Table(TableEnum.CITYOBJECT.getName(), schema);
+			boundarySurfaceExporter.addProjection(select, waterBoundarySurface, boundarySurfaceProjectionFilter, "ws")
+					.addProjection(cityObject.getColumn("gmlid", "wsgmlid"))
+					.addJoin(JoinFactory.left(waterBodToWaterBndSrf, "waterbody_id", ComparisonName.EQUAL_TO, table.getColumn("id")))
+					.addJoin(JoinFactory.left(waterBoundarySurface, "id", ComparisonName.EQUAL_TO, waterBodToWaterBndSrf.getColumn("waterboundary_surface_id")))
+					.addJoin(JoinFactory.left(cityObject, "id", ComparisonName.EQUAL_TO, waterBoundarySurface.getColumn("id")));
+			surfaceADEHookTables = addJoinsToADEHookTables(TableEnum.WATERBOUNDARY_SURFACE, waterBoundarySurface);
 		}
-
-		// add joins to ADE hook tables
-		if (exporter.hasADESupport()) {
-			bodyADEHookTables = exporter.getADEHookTables(TableEnum.WATERBODY);
-			surfaceADEHookTables = exporter.getADEHookTables(TableEnum.WATERBOUNDARY_SURFACE);			
-			if (bodyADEHookTables != null) addJoinsToADEHookTables(bodyADEHookTables, table);
-			if (surfaceADEHookTables != null) addJoinsToADEHookTables(surfaceADEHookTables, waterBoundarySurface);
-		}
-
-		cityObjectExporter = exporter.getExporter(DBCityObject.class);
-		geometryExporter = exporter.getExporter(DBSurfaceGeometry.class);
-		gmlConverter = exporter.getGMLConverter();
-		valueSplitter = exporter.getAttributeValueSplitter();
+		bodyADEHookTables = addJoinsToADEHookTables(TableEnum.WATERBODY, table);
 	}
 
 	@Override
@@ -139,7 +129,7 @@ public class DBWaterBody extends AbstractFeatureExporter<WaterBody> {
 			long currentWaterBodyId = 0;
 			WaterBody waterBody = null;
 			ProjectionFilter projectionFilter = null;
-			HashMap<Long, WaterBody> waterBodies = new HashMap<>();
+			Map<Long, WaterBody> waterBodies = new HashMap<>();
 
 			while (rs.next()) {
 				long waterBodyId = rs.getLong("id");
@@ -174,13 +164,7 @@ public class DBWaterBody extends AbstractFeatureExporter<WaterBody> {
 						projectionFilter = exporter.getProjectionFilter(featureType);
 
 						// export city object information
-						boolean success = cityObjectExporter.doExport(waterBody, waterBodyId, featureType, projectionFilter);
-						if (!success) {
-							if (waterBody == root)
-								return Collections.emptyList();
-							else if (featureType.isSetTopLevel())
-								continue;
-						}
+						cityObjectExporter.addBatch(waterBody, waterBodyId, featureType, projectionFilter);
 
 						if (projectionFilter.containsProperty("class", waterBodyModule)) {
 							String clazz = rs.getString("class");
@@ -241,26 +225,17 @@ public class DBWaterBody extends AbstractFeatureExporter<WaterBody> {
 							if (!projectionFilter.containsProperty("lod" + lod + "MultiSurface", waterBodyModule))
 								continue;
 
-							long surfaceGeometryId = rs.getLong("lod" + lod + "_multi_surface_id");
+							long geometryId = rs.getLong("lod" + lod + "_multi_surface_id");
 							if (rs.wasNull())
 								continue;
 
-							SurfaceGeometry geometry = geometryExporter.doExport(surfaceGeometryId);
-							if (geometry != null && geometry.getType() == GMLClass.MULTI_SURFACE) {
-								MultiSurfaceProperty multiSurfaceProperty = new MultiSurfaceProperty();
-								if (geometry.isSetGeometry())
-									multiSurfaceProperty.setMultiSurface((MultiSurface)geometry.getGeometry());
-								else
-									multiSurfaceProperty.setHref(geometry.getReference());
-
-								switch (lod) {
+							switch (lod) {
 								case 0:
-									waterBody.setLod0MultiSurface(multiSurfaceProperty);
+									geometryExporter.addBatch(geometryId, waterBody::setLod0MultiSurface);
 									break;
 								case 1:
-									waterBody.setLod1MultiSurface(multiSurfaceProperty);
+									geometryExporter.addBatch(geometryId, waterBody::setLod1MultiSurface);
 									break;
-								}
 							}
 						}
 
@@ -271,32 +246,23 @@ public class DBWaterBody extends AbstractFeatureExporter<WaterBody> {
 							if (!projectionFilter.containsProperty("lod" + lod + "Solid", waterBodyModule))
 								continue;
 
-							long surfaceGeometryId = rs.getLong("lod" + lod + "_solid_id");
+							long geometryId = rs.getLong("lod" + lod + "_solid_id");
 							if (rs.wasNull())
 								continue;
 
-							SurfaceGeometry geometry = geometryExporter.doExport(surfaceGeometryId);
-							if (geometry != null && (geometry.getType() == GMLClass.SOLID || geometry.getType() == GMLClass.COMPOSITE_SOLID)) {
-								SolidProperty solidProperty = new SolidProperty();
-								if (geometry.isSetGeometry())
-									solidProperty.setSolid((AbstractSolid)geometry.getGeometry());
-								else
-									solidProperty.setHref(geometry.getReference());
-
-								switch (lod) {
+							switch (lod) {
 								case 1:
-									waterBody.setLod1Solid(solidProperty);
+									geometryExporter.addBatch(geometryId, waterBody::setLod1Solid);
 									break;
 								case 2:
-									waterBody.setLod2Solid(solidProperty);
+									geometryExporter.addBatch(geometryId, waterBody::setLod2Solid);
 									break;
 								case 3:
-									waterBody.setLod3Solid(solidProperty);
+									geometryExporter.addBatch(geometryId, waterBody::setLod3Solid);
 									break;
 								case 4:
-									waterBody.setLod4Solid(solidProperty);
+									geometryExporter.addBatch(geometryId, waterBody::setLod4Solid);
 									break;
-								}
 							}
 						}
 						
@@ -318,98 +284,42 @@ public class DBWaterBody extends AbstractFeatureExporter<WaterBody> {
 						|| !projectionFilter.containsProperty("boundedBy", waterBodyModule))
 					break;
 
-				long waterBoundarySurfaceId = rs.getLong("ws_id");
+				long waterBoundarySurfaceId = rs.getLong("wsid");
 				if (rs.wasNull())
 					continue;
 
+				int objectClassId = rs.getInt("wsobjectclass_id");
+
+				// check whether we need an XLink
+				String gmlId = rs.getString("wsgmlid");
+				boolean generateNewGmlId = false;
+				if (!rs.wasNull()) {
+					if (exporter.lookupAndPutObjectUID(gmlId, waterBoundarySurfaceId, objectClassId)) {
+						if (useXLink) {
+							BoundedByWaterSurfaceProperty boundedByProperty = new BoundedByWaterSurfaceProperty();
+							boundedByProperty.setHref("#" + gmlId);
+							waterBody.addBoundedBySurface(boundedByProperty);
+							continue;
+						} else
+							generateNewGmlId = true;
+					}
+				}
+
 				// create new water boundary surface object
-				int objectClassId = rs.getInt("ws_objectclass_id");
-				AbstractWaterBoundarySurface waterBoundarySurface = exporter.createObject(objectClassId, AbstractWaterBoundarySurface.class);
+				FeatureType featureType = exporter.getFeatureType(objectClassId);
+				AbstractWaterBoundarySurface waterBoundarySurface = boundarySurfaceExporter.doExport(waterBoundarySurfaceId, featureType, "ws", surfaceADEHookTables, rs);
 				if (waterBoundarySurface == null) {
 					exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(objectClassId, waterBoundarySurfaceId) + " as water boundary surface object.");
 					continue;
 				}
 
-				// get projection filter
-				FeatureType waterBoundarySurfaceType = exporter.getFeatureType(objectClassId);
-				ProjectionFilter waterBoundarySurfaceProjectionFilter = exporter.getProjectionFilter(waterBoundarySurfaceType);
+				if (generateNewGmlId)
+					waterBoundarySurface.setId(exporter.generateNewGmlId(waterBoundarySurface, gmlId));
 
-				// export city object information
-				cityObjectExporter.doExport(waterBoundarySurface, waterBoundarySurfaceId, waterBoundarySurfaceType, waterBoundarySurfaceProjectionFilter);
-
-				if (waterBoundarySurface.isSetId()) {
-					// process xlink
-					if (exporter.lookupAndPutObjectUID(waterBoundarySurface.getId(), waterBoundarySurfaceId, objectClassId)) {
-						if (useXLink) {
-							BoundedByWaterSurfaceProperty boundedByProperty = new BoundedByWaterSurfaceProperty();
-							boundedByProperty.setHref("#" + waterBoundarySurface.getId());
-							waterBody.addBoundedBySurface(boundedByProperty);
-							continue;
-						} else 
-							waterBoundarySurface.setId(exporter.generateNewGmlId(waterBoundarySurface));
-					}
-				}
-
-				if (waterBoundarySurface instanceof WaterSurface
-						&& waterBoundarySurfaceProjectionFilter.containsProperty("waterLevel", waterBodyModule)) {
-					String waterLevel = rs.getString("water_level");
-					if (!rs.wasNull()) {
-						Code code = new Code(waterLevel);
-						code.setCodeSpace(rs.getString("water_level_codespace"));
-						((WaterSurface)waterBoundarySurface).setWaterLevel(code);
-					}
-				}
-
-				LodIterator lodIterator = lodFilter.iterator(2, 4);
-				while (lodIterator.hasNext()) {
-					int lod = lodIterator.next();
-
-					if (!waterBoundarySurfaceProjectionFilter.containsProperty("lod" + lod + "Surface", waterBodyModule))
-						continue;
-
-					long surfaceGeometryId = rs.getLong("lod" + lod + "_surface_id");
-					if (rs.wasNull())
-						continue;
-
-					SurfaceGeometry geometry = geometryExporter.doExport(surfaceGeometryId);
-					if (geometry != null && geometry.getType().isInstance(GMLClass.ABSTRACT_SURFACE)) {
-						SurfaceProperty surfaceProperty = new SurfaceProperty();
-						if (geometry.isSetGeometry())
-							surfaceProperty.setSurface((AbstractSurface)geometry.getGeometry());
-						else
-							surfaceProperty.setHref(geometry.getReference());
-
-						switch (lod) {
-						case 2:
-							waterBoundarySurface.setLod2Surface(surfaceProperty);
-							break;
-						case 3:
-							waterBoundarySurface.setLod3Surface(surfaceProperty);
-							break;
-						case 4:
-							waterBoundarySurface.setLod4Surface(surfaceProperty);
-							break;
-						}
-					}
-				}
-				
-				// delegate export of generic ADE properties
-				if (surfaceADEHookTables != null) {
-					List<String> adeHookTables = retrieveADEHookTables(surfaceADEHookTables, rs);
-					if (adeHookTables != null)
-						exporter.delegateToADEExporter(adeHookTables, waterBoundarySurface, waterBoundarySurfaceId, waterBoundarySurfaceType, waterBoundarySurfaceProjectionFilter);
-				}
-
-				// check whether lod filter is satisfied
-				if (!exporter.satisfiesLodFilter(waterBoundarySurface))
-					continue;
-
-				BoundedByWaterSurfaceProperty boundedByProperty = new BoundedByWaterSurfaceProperty(waterBoundarySurface);
-				waterBody.addBoundedBySurface(boundedByProperty);
+				waterBody.addBoundedBySurface(new BoundedByWaterSurfaceProperty(waterBoundarySurface));
 			}
 
 			return waterBodies.values();
 		}
 	}
-
 }

@@ -46,7 +46,6 @@ import org.citygml4j.model.citygml.relief.TinProperty;
 import org.citygml4j.model.gml.GMLClass;
 import org.citygml4j.model.gml.geometry.primitives.LineStringSegmentArrayProperty;
 import org.citygml4j.model.gml.geometry.primitives.Tin;
-import org.citygml4j.model.gml.geometry.primitives.TrianglePatchArrayProperty;
 import org.citygml4j.model.gml.geometry.primitives.TriangulatedSurface;
 import org.citygml4j.model.gml.measures.Length;
 import org.citygml4j.model.module.citygml.CityGMLModuleType;
@@ -58,7 +57,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 public class DBReliefComponent extends AbstractFeatureExporter<AbstractReliefComponent> {
 	private final DBSurfaceGeometry geometryExporter;
@@ -66,41 +64,57 @@ public class DBReliefComponent extends AbstractFeatureExporter<AbstractReliefCom
 	private final GMLConverter gmlConverter;
 
 	private final String reliefModule;
-	private Set<String> adeHookTables;
+	private final List<Table> adeHookTables;
 
 	public DBReliefComponent(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
 		super(AbstractReliefComponent.class, connection, exporter);
+
+		cityObjectExporter = exporter.getExporter(DBCityObject.class);
+		geometryExporter = exporter.getExporter(DBSurfaceGeometry.class);
+		gmlConverter = exporter.getGMLConverter();
 
 		CombinedProjectionFilter projectionFilter = exporter.getCombinedProjectionFilter(TableEnum.RELIEF_COMPONENT.getName());
 		reliefModule = exporter.getTargetCityGMLVersion().getCityGMLModule(CityGMLModuleType.RELIEF).getNamespaceURI();
 		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 
 		table = new Table(TableEnum.RELIEF_COMPONENT.getName(), schema);
-		Table tinRelief = new Table(TableEnum.TIN_RELIEF.getName(), schema);
-		Table massPointRelief = new Table(TableEnum.MASSPOINT_RELIEF.getName(), schema);
-		Table breakLineRelief = new Table(TableEnum.BREAKLINE_RELIEF.getName(), schema);
+		select = addProjection(new Select(), table, projectionFilter, "");
+		adeHookTables = addJoinsToADEHookTables(TableEnum.RELIEF_COMPONENT, table);
+	}
 
-		select = new Select().addProjection(table.getColumn("id"), table.getColumn("objectclass_id"), table.getColumn("lod"))
-				.addJoin(JoinFactory.left(tinRelief, "id", ComparisonName.EQUAL_TO, table.getColumn("id")))
-				.addJoin(JoinFactory.left(massPointRelief, "id", ComparisonName.EQUAL_TO, table.getColumn("id")))
-				.addJoin(JoinFactory.left(breakLineRelief, "id", ComparisonName.EQUAL_TO, table.getColumn("id")));
-		if (projectionFilter.containsProperty("extent", reliefModule)) select.addProjection(table.getColumn("extent"));
-		if (projectionFilter.containsProperty("tin", reliefModule)) select.addProjection(tinRelief.getColumn("max_length"), tinRelief.getColumn("max_length_unit"),
-				exporter.getGeometryColumn(tinRelief.getColumn("stop_lines")), exporter.getGeometryColumn(tinRelief.getColumn("break_lines")),
-				exporter.getGeometryColumn(tinRelief.getColumn("control_points")), tinRelief.getColumn("surface_geometry_id"));
-		if (projectionFilter.containsProperty("reliefPoints", reliefModule)) select.addProjection(exporter.getGeometryColumn(massPointRelief.getColumn("relief_points")));
-		if (projectionFilter.containsProperty("ridgeOrValleyLines", reliefModule)) select.addProjection(exporter.getGeometryColumn(breakLineRelief.getColumn("ridge_or_valley_lines")));
-		if (projectionFilter.containsProperty("breaklines", reliefModule)) select.addProjection(exporter.getGeometryColumn(breakLineRelief.getColumn("break_lines")));
+	protected Select addProjection(Select select, Table table, CombinedProjectionFilter projectionFilter, String prefix) {
+		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 
-		// add joins to ADE hook tables
-		if (exporter.hasADESupport()) {
-			adeHookTables = exporter.getADEHookTables(TableEnum.RELIEF_COMPONENT);			
-			if (adeHookTables != null) addJoinsToADEHookTables(adeHookTables, table);
+		select.addProjection(table.getColumn("id", prefix + "id"), table.getColumn("objectclass_id", prefix + "objectclass_id"),
+				table.getColumn("lod", prefix + "lod"));
+		if (projectionFilter.containsProperty("extent", reliefModule))
+			select.addProjection(table.getColumn("extent", prefix + "extent"));
+		if (projectionFilter.containsProperty("tin", reliefModule)) {
+			Table tinRelief = new Table(TableEnum.TIN_RELIEF.getName(), schema);
+			select.addProjection(tinRelief.getColumn("max_length", prefix + "max_length"),
+					tinRelief.getColumn("max_length_unit", prefix + "max_length_unit"),
+					tinRelief.getColumn("surface_geometry_id", prefix + "surface_geometry_id"),
+					exporter.getGeometryColumn(tinRelief.getColumn("stop_lines"), prefix + "stop_lines"),
+					exporter.getGeometryColumn(tinRelief.getColumn("break_lines"), prefix + "break_lines"),
+					exporter.getGeometryColumn(tinRelief.getColumn("control_points"), prefix + "control_points"))
+					.addJoin(JoinFactory.left(tinRelief, "id", ComparisonName.EQUAL_TO, table.getColumn("id")));
+		}
+		if (projectionFilter.containsProperty("reliefPoints", reliefModule)) {
+			Table massPointRelief = new Table(TableEnum.MASSPOINT_RELIEF.getName(), schema);
+			select.addProjection(exporter.getGeometryColumn(massPointRelief.getColumn("relief_points")))
+					.addJoin(JoinFactory.left(massPointRelief, "id", ComparisonName.EQUAL_TO, table.getColumn("id")));
+		}
+		if (projectionFilter.containsProperty("ridgeOrValleyLines", reliefModule)
+				|| projectionFilter.containsProperty("breaklines", reliefModule)) {
+			Table breakLineRelief = new Table(TableEnum.BREAKLINE_RELIEF.getName(), schema);
+			select.addJoin(JoinFactory.left(breakLineRelief, "id", ComparisonName.EQUAL_TO, table.getColumn("id")));
+			if (projectionFilter.containsProperty("ridgeOrValleyLines", reliefModule))
+				select.addProjection(exporter.getGeometryColumn(breakLineRelief.getColumn("ridge_or_valley_lines")));
+			if (projectionFilter.containsProperty("breaklines", reliefModule))
+				select.addProjection(exporter.getGeometryColumn(breakLineRelief.getColumn("break_lines")));
 		}
 
-		cityObjectExporter = exporter.getExporter(DBCityObject.class);
-		geometryExporter = exporter.getExporter(DBSurfaceGeometry.class);
-		gmlConverter = exporter.getGMLConverter();
+		return select;
 	}
 
 	@Override
@@ -133,134 +147,7 @@ public class DBReliefComponent extends AbstractFeatureExporter<AbstractReliefCom
 				// get projection filter
 				ProjectionFilter projectionFilter = exporter.getProjectionFilter(featureType);
 
-				// export city object information
-				cityObjectExporter.doExport(component, componentId, featureType, projectionFilter);
-
-				component.setLod(rs.getInt("lod"));
-
-				if (projectionFilter.containsProperty("extent", reliefModule)) {
-					Object extentObj = rs.getObject("extent");
-					if (!rs.wasNull()) {
-						GeometryObject extent = exporter.getDatabaseAdapter().getGeometryConverter().getPolygon(extentObj);
-						if (extent != null)
-							component.setExtent(gmlConverter.getPolygonProperty(extent, false));
-					}
-				}
-
-				// retrieve further content according to the component types
-				if (component instanceof TINRelief && projectionFilter.containsProperty("tin", reliefModule)) {
-					TINRelief tinRelief = (TINRelief)component;
-
-					// create gml:TriangulatedSurface
-					TriangulatedSurface triangulatedSurface = null;
-					long surfaceGeometryId = rs.getLong("surface_geometry_id");
-					if (!rs.wasNull()) {
-						SurfaceGeometry geometry = geometryExporter.doExport(surfaceGeometryId);
-						if (geometry != null && geometry.getType() == GMLClass.TRIANGULATED_SURFACE && geometry.isSetGeometry()) 
-							triangulatedSurface = (TriangulatedSurface)geometry.getGeometry();					
-					}
-
-					// triangle patches are mandatory
-					if (triangulatedSurface == null)
-						continue;
-
-					Double maxLength = rs.getDouble("max_length");
-					if (rs.wasNull())
-						maxLength = null;
-
-					GeometryObject stopLines = null;
-					Object stopLinesObj = rs.getObject("stop_lines");
-					if (!rs.wasNull())
-						stopLines = exporter.getDatabaseAdapter().getGeometryConverter().getMultiCurve(stopLinesObj);
-
-					GeometryObject breakLines = null;
-					Object breakLinesObj = rs.getObject("break_lines");
-					if (!rs.wasNull())
-						breakLines = exporter.getDatabaseAdapter().getGeometryConverter().getMultiCurve(breakLinesObj);
-
-					GeometryObject controlPoints = null;
-					Object controlPointsObj = rs.getObject("control_points");
-					if (!rs.wasNull())
-						controlPoints = exporter.getDatabaseAdapter().getGeometryConverter().getMultiPoint(controlPointsObj);
-
-					// check whether we deal with gml:Tin instead
-					if (maxLength != null || stopLines != null || breakLines != null || controlPoints != null) {
-						// control points are mandatory
-						if (controlPoints == null)
-							continue;
-
-						TrianglePatchArrayProperty patches = triangulatedSurface.getTrianglePatches();
-						triangulatedSurface = new Tin();
-						triangulatedSurface.setTrianglePatches(patches);
-
-						Tin tin = (Tin)triangulatedSurface;
-						if (maxLength != null) {
-							Length length = new Length(maxLength);
-							length.setUom(rs.getString("max_length_unit"));
-							tin.setMaxLength(length);
-						}
-
-						if (stopLines != null) {
-							List<LineStringSegmentArrayProperty> property = gmlConverter.getListOfLineStringSegmentArrayProperty(stopLines, false);
-							if (property != null)
-								tin.setStopLines(property);
-						}
-
-						if (breakLines != null) {
-							List<LineStringSegmentArrayProperty> property = gmlConverter.getListOfLineStringSegmentArrayProperty(breakLines, false);
-							if (property != null)
-								tin.setBreakLines(property);
-						}
-
-						tin.setControlPoint(gmlConverter.getControlPoint(controlPoints, false));
-					}
-
-					tinRelief.setTin(new TinProperty(triangulatedSurface));
-				}
-
-				else if (component instanceof MassPointRelief && projectionFilter.containsProperty("reliefPoints", reliefModule)) {
-					MassPointRelief massPointRelief = (MassPointRelief)component;
-
-					Object reliefPointsObj = rs.getObject("relief_points");
-					if (!rs.wasNull()) {
-						GeometryObject reliefPoints = exporter.getDatabaseAdapter().getGeometryConverter().getMultiPoint(reliefPointsObj);
-						if (reliefPoints != null)
-							massPointRelief.setReliefPoints(gmlConverter.getMultiPointProperty(reliefPoints, false));
-					}
-				}
-
-				else if (component instanceof BreaklineRelief) {
-					BreaklineRelief breaklineRelief = (BreaklineRelief)component;
-
-					if (projectionFilter.containsProperty("ridgeOrValleyLines", reliefModule)) {
-						Object ridgeOrValleyLinesObj = rs.getObject("ridge_or_valley_lines");
-						if (!rs.wasNull()) {
-							GeometryObject ridgeOrValleyLines = exporter.getDatabaseAdapter().getGeometryConverter().getMultiCurve(ridgeOrValleyLinesObj);
-							if (ridgeOrValleyLines != null)					
-								breaklineRelief.setRidgeOrValleyLines(gmlConverter.getMultiCurveProperty(ridgeOrValleyLines, false));
-						}
-					}
-
-					if (projectionFilter.containsProperty("breaklines", reliefModule)) {
-						Object breakLinesObj = rs.getObject("break_lines");
-						if (!rs.wasNull()) {
-							GeometryObject breakLines = exporter.getDatabaseAdapter().getGeometryConverter().getMultiCurve(breakLinesObj);
-							if (breakLines != null)					
-								breaklineRelief.setBreaklines(gmlConverter.getMultiCurveProperty(breakLines, false));
-						}
-					}
-				}
-
-				else if (component instanceof RasterRelief)
-					exporter.logOrThrowErrorMessage(exporter.getObjectSignature(featureType, componentId) + ": Raster reliefs are not supported.");
-				
-				// delegate export of generic ADE properties
-				if (adeHookTables != null) {
-					List<String> adeHookTables = retrieveADEHookTables(this.adeHookTables, rs);
-					if (adeHookTables != null)
-						exporter.delegateToADEExporter(adeHookTables, component, componentId, featureType, projectionFilter);
-				}
-
+				doExport(component, componentId, featureType, projectionFilter, "", adeHookTables, rs);
 				components.add(component);
 			}
 
@@ -268,4 +155,132 @@ public class DBReliefComponent extends AbstractFeatureExporter<AbstractReliefCom
 		}
 	}
 
+	protected AbstractReliefComponent doExport(long id, FeatureType featureType, String prefix, List<Table> adeHookTables, ResultSet rs) throws CityGMLExportException, SQLException {
+		AbstractReliefComponent component = null;
+		if (featureType != null) {
+			component = exporter.createObject(featureType.getObjectClassId(), AbstractReliefComponent.class);
+			if (component != null)
+				doExport(component, id, featureType, exporter.getProjectionFilter(featureType), prefix, adeHookTables, rs);
+		}
+
+		return component;
+	}
+
+	private void doExport(AbstractReliefComponent component, long id, FeatureType featureType, ProjectionFilter projectionFilter, String prefix, List<Table> adeHookTables, ResultSet rs) throws CityGMLExportException, SQLException {
+		// export city object information
+		cityObjectExporter.addBatch(component, id, featureType, projectionFilter);
+
+		component.setLod(rs.getInt(prefix + "lod"));
+
+		if (projectionFilter.containsProperty("extent", reliefModule)) {
+			Object extentObj = rs.getObject(prefix + "extent");
+			if (!rs.wasNull()) {
+				GeometryObject extent = exporter.getDatabaseAdapter().getGeometryConverter().getPolygon(extentObj);
+				if (extent != null)
+					component.setExtent(gmlConverter.getPolygonProperty(extent, false));
+			}
+		}
+
+		// retrieve further content according to the component types
+		if (component instanceof TINRelief && projectionFilter.containsProperty("tin", reliefModule)) {
+			TINRelief tinRelief = (TINRelief)component;
+
+			long geometryId = rs.getLong(prefix + "surface_geometry_id");
+			if (rs.wasNull())
+				return;
+
+			Double maxLength = rs.getDouble(prefix + "max_length");
+			if (rs.wasNull())
+				maxLength = null;
+
+			GeometryObject stopLines = null;
+			Object stopLinesObj = rs.getObject(prefix + "stop_lines");
+			if (!rs.wasNull())
+				stopLines = exporter.getDatabaseAdapter().getGeometryConverter().getMultiCurve(stopLinesObj);
+
+			GeometryObject breakLines = null;
+			Object breakLinesObj = rs.getObject(prefix + "break_lines");
+			if (!rs.wasNull())
+				breakLines = exporter.getDatabaseAdapter().getGeometryConverter().getMultiCurve(breakLinesObj);
+
+			GeometryObject controlPoints = null;
+			Object controlPointsObj = rs.getObject(prefix + "control_points");
+			if (!rs.wasNull())
+				controlPoints = exporter.getDatabaseAdapter().getGeometryConverter().getMultiPoint(controlPointsObj);
+
+			// check whether we deal with a gml:Tin
+			if (maxLength != null || stopLines != null || breakLines != null || controlPoints != null) {
+				// control points are mandatory
+				if (controlPoints == null)
+					return;
+
+				// get triangulated surface
+				SurfaceGeometry geometry = geometryExporter.doExport(geometryId);
+				if (geometry == null || geometry.getType() != GMLClass.TRIANGULATED_SURFACE || !geometry.isSetGeometry())
+					return;
+
+				Tin tin = new Tin();
+				tin.setTrianglePatches(((TriangulatedSurface) geometry.getGeometry()).getTrianglePatches());
+
+				if (maxLength != null) {
+					Length length = new Length(maxLength);
+					length.setUom(rs.getString(prefix + "max_length_unit"));
+					tin.setMaxLength(length);
+				}
+
+				if (stopLines != null) {
+					List<LineStringSegmentArrayProperty> property = gmlConverter.getListOfLineStringSegmentArrayProperty(stopLines, false);
+					if (property != null)
+						tin.setStopLines(property);
+				}
+
+				if (breakLines != null) {
+					List<LineStringSegmentArrayProperty> property = gmlConverter.getListOfLineStringSegmentArrayProperty(breakLines, false);
+					if (property != null)
+						tin.setBreakLines(property);
+				}
+
+				tin.setControlPoint(gmlConverter.getControlPoint(controlPoints, false));
+				tinRelief.setTin(new TinProperty(tin));
+			} else
+				geometryExporter.addBatch(geometryId, tinRelief::setTin);
+		} else if (component instanceof MassPointRelief && projectionFilter.containsProperty("reliefPoints", reliefModule)) {
+			MassPointRelief massPointRelief = (MassPointRelief)component;
+
+			Object reliefPointsObj = rs.getObject(prefix + "relief_points");
+			if (!rs.wasNull()) {
+				GeometryObject reliefPoints = exporter.getDatabaseAdapter().getGeometryConverter().getMultiPoint(reliefPointsObj);
+				if (reliefPoints != null)
+					massPointRelief.setReliefPoints(gmlConverter.getMultiPointProperty(reliefPoints, false));
+			}
+		} else if (component instanceof BreaklineRelief) {
+			BreaklineRelief breaklineRelief = (BreaklineRelief)component;
+
+			if (projectionFilter.containsProperty("ridgeOrValleyLines", reliefModule)) {
+				Object ridgeOrValleyLinesObj = rs.getObject(prefix + "ridge_or_valley_lines");
+				if (!rs.wasNull()) {
+					GeometryObject ridgeOrValleyLines = exporter.getDatabaseAdapter().getGeometryConverter().getMultiCurve(ridgeOrValleyLinesObj);
+					if (ridgeOrValleyLines != null)
+						breaklineRelief.setRidgeOrValleyLines(gmlConverter.getMultiCurveProperty(ridgeOrValleyLines, false));
+				}
+			}
+
+			if (projectionFilter.containsProperty("breaklines", reliefModule)) {
+				Object breakLinesObj = rs.getObject(prefix + "break_lines");
+				if (!rs.wasNull()) {
+					GeometryObject breakLines = exporter.getDatabaseAdapter().getGeometryConverter().getMultiCurve(breakLinesObj);
+					if (breakLines != null)
+						breaklineRelief.setBreaklines(gmlConverter.getMultiCurveProperty(breakLines, false));
+				}
+			}
+		} else if (component instanceof RasterRelief)
+			exporter.logOrThrowErrorMessage(exporter.getObjectSignature(featureType, id) + ": Raster reliefs are not supported.");
+
+		// delegate export of generic ADE properties
+		if (adeHookTables != null) {
+			List<String> tableNames = retrieveADEHookTables(adeHookTables, rs);
+			if (tableNames != null)
+				exporter.delegateToADEExporter(tableNames, component, id, featureType, projectionFilter);
+		}
+	}
 }

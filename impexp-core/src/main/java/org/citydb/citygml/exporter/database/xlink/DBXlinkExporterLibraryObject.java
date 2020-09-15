@@ -36,7 +36,6 @@ import org.citydb.log.Logger;
 import org.citydb.util.CoreConstants;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
@@ -46,14 +45,16 @@ import java.sql.SQLException;
 
 public class DBXlinkExporterLibraryObject implements DBXlinkExporter {
 	private final Logger log = Logger.getInstance();
-
 	private final OutputFile outputFile;
-	private final BlobExportAdapter blobExportAdapter;
+	private final BlobExportAdapter blobExporter;
+
 	private boolean isFolderCreated;
 
-	public DBXlinkExporterLibraryObject(Connection connection, DBXlinkExporterManager xlinkExporterManager) throws SQLException {
-		outputFile = xlinkExporterManager.getOutputFile();
-		blobExportAdapter = xlinkExporterManager.getDatabaseAdapter().getSQLAdapter().getBlobExportAdapter(connection, BlobType.LIBRARY_OBJECT);
+	public DBXlinkExporterLibraryObject(Connection connection, DBXlinkExporterManager exporterManager) {
+		outputFile = exporterManager.getOutputFile();
+		blobExporter = exporterManager.getDatabaseAdapter().getSQLAdapter()
+				.getBlobExportAdapter(connection, BlobType.LIBRARY_OBJECT)
+				.withBatchSize(exporterManager.getBlobBatchSize());
 	}
 
 	public boolean export(DBXlinkLibraryObject xlink) throws SQLException {
@@ -64,18 +65,14 @@ public class DBXlinkExporterLibraryObject implements DBXlinkExporter {
 			return false;
 		}
 
-		Path file = null;
+		Path file ;
 		try {
 			if (outputFile.getType() != FileType.ARCHIVE)
 				file = Paths.get(outputFile.resolve(CoreConstants.LIBRARY_OBJECTS_DIR, fileURI));
+			else
+				file = null;
 		} catch (InvalidPathException e) {
 			log.error("Failed to export a library object: '" + fileURI + "' is invalid.");
-			return false;
-		}
-
-		if (file != null && Files.exists(file)) {
-			// we could have an action depending on some user input
-			// so far, we silently return
 			return false;
 		}
 
@@ -91,19 +88,29 @@ public class DBXlinkExporterLibraryObject implements DBXlinkExporter {
 			}
 		}
 
-		// read blob into file
-		try (OutputStream stream = file != null ? Files.newOutputStream(file) :
-				outputFile.newOutputStream(outputFile.resolve(CoreConstants.LIBRARY_OBJECTS_DIR, fileURI))) {
-			return blobExportAdapter.writeToStream(xlink.getId(), stream);
+		try {
+			blobExporter.addBatch(xlink.getId(), new BlobExportAdapter.BatchEntry(
+					() -> file != null ?
+							Files.newOutputStream(file) :
+							outputFile.newOutputStream(outputFile.resolve(CoreConstants.LIBRARY_OBJECTS_DIR, fileURI)),
+					() -> file == null || !Files.exists(file)));
+
+			return true;
 		} catch (IOException e) {
-			log.error("Failed to export library object " + fileURI + ": " + e.getMessage());
+			log.error("Failed to batch export library objects: " + e.getMessage());
 			return false;
 		}
 	}
 
 	@Override
 	public void close() throws SQLException {
-		blobExportAdapter.close();
+		try {
+			blobExporter.executeBatch();
+		} catch (IOException e) {
+			log.error("Failed to batch export library objects: " + e.getMessage());
+		}
+
+		blobExporter.close();
 	}
 
 	@Override

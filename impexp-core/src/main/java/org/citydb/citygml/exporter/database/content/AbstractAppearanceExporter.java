@@ -39,12 +39,9 @@ import org.citydb.database.schema.TableEnum;
 import org.citydb.database.schema.mapping.FeatureType;
 import org.citydb.log.Logger;
 import org.citydb.query.Query;
-import org.citydb.query.builder.QueryBuildException;
-import org.citydb.query.builder.sql.AppearanceFilterBuilder;
 import org.citydb.sqlbuilder.expression.IntegerLiteral;
 import org.citydb.sqlbuilder.expression.PlaceHolder;
 import org.citydb.sqlbuilder.schema.Table;
-import org.citydb.sqlbuilder.select.PredicateToken;
 import org.citydb.sqlbuilder.select.Select;
 import org.citydb.sqlbuilder.select.join.JoinFactory;
 import org.citydb.sqlbuilder.select.operator.comparison.ComparisonFactory;
@@ -59,8 +56,14 @@ import org.citygml4j.model.citygml.appearance.Appearance;
 import org.citygml4j.model.citygml.appearance.Color;
 import org.citygml4j.model.citygml.appearance.ColorPlusOpacity;
 import org.citygml4j.model.citygml.appearance.GeoreferencedTexture;
+import org.citygml4j.model.citygml.appearance.ParameterizedTexture;
 import org.citygml4j.model.citygml.appearance.SurfaceDataProperty;
+import org.citygml4j.model.citygml.appearance.TexCoordGen;
+import org.citygml4j.model.citygml.appearance.TexCoordList;
+import org.citygml4j.model.citygml.appearance.TextureAssociation;
+import org.citygml4j.model.citygml.appearance.TextureCoordinates;
 import org.citygml4j.model.citygml.appearance.TextureType;
+import org.citygml4j.model.citygml.appearance.WorldToTexture;
 import org.citygml4j.model.citygml.appearance.WrapMode;
 import org.citygml4j.model.citygml.appearance.X3DMaterial;
 import org.citygml4j.model.citygml.core.TransformationMatrix2x2;
@@ -75,19 +78,18 @@ import org.citygml4j.util.walker.FeatureWalker;
 
 import java.io.File;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
-public class AbstractAppearanceExporter extends AbstractTypeExporter {
+public abstract class AbstractAppearanceExporter extends AbstractTypeExporter {
 	private final Logger log = Logger.getInstance();
-	private final DBTextureParam textureParamExporter;
 	private final AttributeValueSplitter valueSplitter;
+	private final boolean lazyTextureImageExport;
 	private final boolean exportTextureImage;
 	private final boolean uniqueFileNames;
 	private final String textureURI;
@@ -97,19 +99,16 @@ public class AbstractAppearanceExporter extends AbstractTypeExporter {
 	private final String separator;
 	private final HashSet<Long> texImageIds;
 
-	protected PreparedStatement ps;
+	private final List<Table> appearanceADEHookTables;
+	private final List<Table> surfaceDataADEHookTables;
 	private boolean appendOldGmlId;
 	private String gmlIdPrefix;
-	private List<PlaceHolder<?>> themes;
-	private Set<String> appearanceADEHookTables;
-	private Set<String> surfaceDataADEHookTables;
 
 	protected AbstractAppearanceExporter(boolean isGlobal, Connection connection, Query query, CacheTable cacheTable, CityGMLExportManager exporter, Config config) throws CityGMLExportException, SQLException {
 		super(exporter);
 
 		texImageIds = new HashSet<>();
-		themes = Collections.emptyList();
-
+		lazyTextureImageExport = !isGlobal && exporter.isLazyTextureExport();
 		exportTextureImage = exporter.getExportConfig().getAppearances().isSetExportTextureFiles();
 		uniqueFileNames = exporter.getExportConfig().getAppearances().isSetUniqueTextureFileNames();
 		noOfBuckets = exporter.getExportConfig().getAppearances().getTexturePath().getNoOfBuckets();
@@ -130,60 +129,107 @@ public class AbstractAppearanceExporter extends AbstractTypeExporter {
 		Table appearToSurfaceData = new Table(TableEnum.APPEAR_TO_SURFACE_DATA.getName(), schema);
 		Table surfaceData = new Table(TableEnum.SURFACE_DATA.getName(), schema);
 		Table texImage = new Table(TableEnum.TEX_IMAGE.getName(), schema);
+		Table textureParam = new Table(TableEnum.TEXTUREPARAM.getName(), schema);
+		Table surfaceGeometry = new Table(TableEnum.SURFACE_GEOMETRY.getName(), schema);
 
-		select = new Select().addProjection(table.getColumn("id"), table.getColumn("gmlid"), table.getColumn("name"),table.getColumn("name_codespace"), table.getColumn("description"), table.getColumn("theme"),
-				surfaceData.getColumn("id"), surfaceData.getColumn("objectclass_id"), surfaceData.getColumn("gmlid"),surfaceData.getColumn("name"), surfaceData.getColumn("name_codespace"), surfaceData.getColumn("description"),
+		select = new Select().addProjection(table.getColumn("id"), table.getColumn("gmlid"), table.getColumn("name"), table.getColumn("name_codespace"), table.getColumn("description"), table.getColumn("theme"),
+				surfaceData.getColumn("id"), surfaceData.getColumn("objectclass_id"), surfaceData.getColumn("gmlid"), surfaceData.getColumn("name"), surfaceData.getColumn("name_codespace"), surfaceData.getColumn("description"),
 				surfaceData.getColumn("is_front"), surfaceData.getColumn("x3d_shininess"), surfaceData.getColumn("x3d_transparency"), surfaceData.getColumn("x3d_ambient_intensity"),
 				surfaceData.getColumn("x3d_specular_color"), surfaceData.getColumn("x3d_diffuse_color"), surfaceData.getColumn("x3d_emissive_color"), surfaceData.getColumn("x3d_is_smooth"),
 				surfaceData.getColumn("tex_image_id"), new Function("coalesce", new Function(getLength, texImage.getColumn("tex_image_data")), new IntegerLiteral(0)),
 				texImage.getColumn("tex_image_uri"), texImage.getColumn("tex_mime_type"), texImage.getColumn("tex_mime_type_codespace"),
 				new Function("lower", surfaceData.getColumn("tex_texture_type")), new Function("lower", surfaceData.getColumn("tex_wrap_mode")),
 				surfaceData.getColumn("tex_border_color"), surfaceData.getColumn("gt_prefer_worldfile"), surfaceData.getColumn("gt_orientation"),
-				exporter.getGeometryColumn(surfaceData.getColumn("gt_reference_point")))
+				exporter.getGeometryColumn(surfaceData.getColumn("gt_reference_point")),
+				textureParam.getColumn("world_to_texture"), textureParam.getColumn("texture_coordinates"),
+				surfaceGeometry.getColumn("gmlid"), surfaceGeometry.getColumn("is_reverse"))
 				.addJoin(JoinFactory.inner(appearToSurfaceData, "appearance_id", ComparisonName.EQUAL_TO, table.getColumn("id")))
 				.addJoin(JoinFactory.inner(surfaceData, "id", ComparisonName.EQUAL_TO, appearToSurfaceData.getColumn("surface_data_id")))
-				.addJoin(JoinFactory.left(texImage, "id", ComparisonName.EQUAL_TO, surfaceData.getColumn("tex_image_id")));
+				.addJoin(JoinFactory.left(texImage, "id", ComparisonName.EQUAL_TO, surfaceData.getColumn("tex_image_id")))
+				.addJoin(JoinFactory.left(textureParam, "surface_data_id", ComparisonName.EQUAL_TO, surfaceData.getColumn("id")));
+		appearanceADEHookTables = addJoinsToADEHookTables(TableEnum.APPEARANCE, table);
+		surfaceDataADEHookTables = addJoinsToADEHookTables(TableEnum.SURFACE_DATA, surfaceData);
 
-		// add joins to ADE hook tables
-		if (exporter.hasADESupport()) {
-			appearanceADEHookTables = exporter.getADEHookTables(TableEnum.APPEARANCE);
-			surfaceDataADEHookTables = exporter.getADEHookTables(TableEnum.SURFACE_DATA);			
-			if (appearanceADEHookTables != null) addJoinsToADEHookTables(appearanceADEHookTables, table);
-			if (surfaceDataADEHookTables != null) addJoinsToADEHookTables(surfaceDataADEHookTables, surfaceData);
-		}
+		if (isGlobal) {
+			Table tmp = new Table(cacheTable.getTableName());
+			select.addJoin(JoinFactory.inner(tmp, "id", ComparisonName.EQUAL_TO, textureParam.getColumn("surface_geometry_id")))
+					.addJoin(JoinFactory.inner(surfaceGeometry, "id", ComparisonName.EQUAL_TO, tmp.getColumn("id")))
+					.addSelection(ComparisonFactory.equalTo(table.getColumn("id"), new PlaceHolder<>()));
+		} else
+			select.addJoin(JoinFactory.inner(surfaceGeometry, "id", ComparisonName.EQUAL_TO, textureParam.getColumn("surface_geometry_id")));
 
-		if (isGlobal)
-			select.addSelection(ComparisonFactory.equalTo(table.getColumn("id"), new PlaceHolder<>()));
-		else {
-			select.addSelection(ComparisonFactory.equalTo(table.getColumn("cityobject_id"), new PlaceHolder<>()));
-			if (query.isSetAppearanceFilter()) {
-				try {
-					PredicateToken predicate = new AppearanceFilterBuilder(exporter.getDatabaseAdapter()).buildAppearanceFilter(query.getAppearanceFilter(), table.getColumn("theme"));
-					select.addSelection(predicate);
-
-					themes = new ArrayList<>();
-					predicate.getInvolvedPlaceHolders(themes);
-				} catch (QueryBuildException e) {
-					throw new CityGMLExportException("Failed to build appearance filter.", e); 
-				}
-			}
-		}			
-
-		ps = connection.prepareStatement(select.toString());
-
-		textureParamExporter = new DBTextureParam(isGlobal, connection, cacheTable, exporter);
 		valueSplitter = exporter.getAttributeValueSplitter();
 	}
 
-	protected void clearTextureImageCache() {
+	protected void triggerLazyTextureExport(AbstractFeature feature) {
+		if (exporter.isLazyTextureExport()) {
+			feature.accept(new FeatureWalker() {
+				@Override
+				public void visit(AbstractTexture texture) {
+					if (texture.hasLocalProperty(CoreConstants.TEXTURE_IMAGE_XLINK))
+						exporter.propagateXlink((DBXlink) texture.getLocalProperty(CoreConstants.TEXTURE_IMAGE_XLINK));
+				}
+			});
+		}
+	}
+
+	protected Map<Long, Appearance> doExport(ResultSet rs) throws CityGMLExportException, SQLException {
+		// clear texture image cache
 		texImageIds.clear();
+
+		long currentAppearanceId = 0;
+		Appearance appearance = null;
+		Map<Long, Appearance> appearances = new HashMap<>();
+
+		long currentSurfaceDataId = 0;
+		SurfaceDataProperty surfaceDataProperty = null;
+		SurfaceDataProperty empty = new SurfaceDataProperty();
+		Map<String, SurfaceDataProperty> surfaceDataProperties = new HashMap<>();
+
+		while (rs.next()) {
+			long appearanceId = rs.getLong(1);
+
+			if (appearanceId != currentAppearanceId || appearance == null) {
+				currentAppearanceId = appearanceId;
+				currentSurfaceDataId = 0;
+
+				appearance = appearances.get(appearanceId);
+				if (appearance == null) {
+					appearance = getAppearance(appearanceId, rs);
+					appearances.put(appearanceId, appearance);
+				}
+			}
+
+			// get surface data
+			long surfaceDataId = rs.getLong(7);
+			if (rs.wasNull())
+				continue;
+
+			if (surfaceDataId != currentSurfaceDataId || surfaceDataProperty == null) {
+				currentSurfaceDataId = surfaceDataId;
+				String key = currentAppearanceId + "_" + surfaceDataId;
+
+				surfaceDataProperty = surfaceDataProperties.get(key);
+				if (surfaceDataProperty == null) {
+					surfaceDataProperty = getSurfaceData(surfaceDataId, rs, empty);
+					surfaceDataProperties.put(key, surfaceDataProperty);
+
+					// add surface data to appearance
+					if (surfaceDataProperty != empty)
+						appearance.getSurfaceDataMember().add(surfaceDataProperty);
+				}
+			}
+
+			if (surfaceDataProperty.isSetSurfaceData())
+				addTarget(surfaceDataProperty.getSurfaceData(), rs);
+		}
+
+		appearances.values().removeIf(v -> v.getSurfaceDataMember().isEmpty());
+		return appearances;
 	}
 
-	protected List<PlaceHolder<?>> getThemeTokens() {
-		return themes;
-	}
-
-	protected void getAppearanceProperties(Appearance appearance, long appearanceId, ResultSet rs) throws CityGMLExportException, SQLException {
+	private Appearance getAppearance(long appearanceId, ResultSet rs) throws CityGMLExportException, SQLException {
+		Appearance appearance = new Appearance();
 		appearance.setId(rs.getString(2));
 
 		for (SplitValue splitValue : valueSplitter.split(rs.getString(3), rs.getString(4))) {
@@ -206,30 +252,20 @@ public class AbstractAppearanceExporter extends AbstractTypeExporter {
 				exporter.delegateToADEExporter(adeHookTables, appearance, appearanceId, featureType, exporter.getProjectionFilter(featureType));
 			}
 		}
+
+		return appearance;
 	}
 
-	protected void addSurfaceData(Appearance appearance, ResultSet rs, boolean lazyExport) throws CityGMLExportException, SQLException {
-		long surfaceDataId = rs.getLong(7);
-		if (rs.wasNull())
-			return;
-
+	private SurfaceDataProperty getSurfaceData(long surfaceDataId, ResultSet rs, SurfaceDataProperty empty) throws CityGMLExportException, SQLException {
 		int objectClassId = rs.getInt(8);
-		AbstractSurfaceData surfaceData = exporter.createObject(objectClassId, AbstractSurfaceData.class);
-		if (surfaceData == null) {
-			exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(objectClassId, surfaceDataId) + " as surface data object.");
-			return;
-		}
-
 		String gmlId = rs.getString(9);
+
 		if (gmlId != null) {
 			// process xlink
 			if (exporter.lookupAndPutObjectUID(gmlId, surfaceDataId, objectClassId)) {
-				if (useXLink) {
-					SurfaceDataProperty surfaceDataProperty = new SurfaceDataProperty();
-					surfaceDataProperty.setHref("#" + gmlId);
-					appearance.addSurfaceDataMember(surfaceDataProperty);
-					return;
-				} else {
+				if (useXLink)
+					return new SurfaceDataProperty("#" + gmlId);
+				else {
 					String newGmlId = DefaultGMLIdManager.getInstance().generateUUID(gmlIdPrefix);
 					if (appendOldGmlId)
 						newGmlId = newGmlId + "-" + gmlId;
@@ -237,14 +273,15 @@ public class AbstractAppearanceExporter extends AbstractTypeExporter {
 					gmlId = newGmlId;
 				}
 			}
-
-			surfaceData.setId(gmlId);
 		}
 
-		// retrieve targets
-		boolean hasTargets = textureParamExporter.doExport(surfaceData, surfaceDataId);
-		if (!hasTargets)
-			return;
+		AbstractSurfaceData surfaceData = exporter.createObject(objectClassId, AbstractSurfaceData.class);
+		if (surfaceData == null) {
+			exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(objectClassId, surfaceDataId) + " as surface data object.");
+			return empty;
+		}
+
+		surfaceData.setId(gmlId);
 
 		for (SplitValue splitValue : valueSplitter.split(rs.getString(10), rs.getString(11))) {
 			Code name = new Code(splitValue.result(0));
@@ -328,7 +365,7 @@ public class AbstractAppearanceExporter extends AbstractTypeExporter {
 								texImageId,
 								fileName);
 
-						if (!lazyExport)
+						if (!lazyTextureImageExport)
 							exporter.propagateXlink(xlink);
 						else
 							abstractTexture.setLocalProperty(CoreConstants.TEXTURE_IMAGE_XLINK, xlink);
@@ -343,7 +380,7 @@ public class AbstractAppearanceExporter extends AbstractTypeExporter {
 				}
 			} else {
 				// skip texture elements lacking a texture image
-				return;
+				return empty;
 			}
 
 			String mimeType = rs.getString(24);
@@ -419,26 +456,82 @@ public class AbstractAppearanceExporter extends AbstractTypeExporter {
 			}
 		}
 
-		// finally add surface data to appearance
-		SurfaceDataProperty surfaceDataProperty = new SurfaceDataProperty(surfaceData);
-		appearance.addSurfaceDataMember(surfaceDataProperty);
+		return new SurfaceDataProperty(surfaceData);
 	}
 
-	protected void triggerLazyTextureExport(AbstractFeature feature) {
-		if (exporter.isLazyTextureExport()) {
-			feature.accept(new FeatureWalker() {
-				@Override
-				public void visit(AbstractTexture texture) {
-					if (texture.hasLocalProperty(CoreConstants.TEXTURE_IMAGE_XLINK))
-						exporter.propagateXlink((DBXlink) texture.getLocalProperty(CoreConstants.TEXTURE_IMAGE_XLINK));
+	private void addTarget(AbstractSurfaceData surfaceData, ResultSet rs) throws SQLException {
+		String target = rs.getString(34);
+		if (target == null || target.length() == 0)
+			return;
+
+		target = "#" + target;
+
+		if (surfaceData instanceof X3DMaterial) {
+			((X3DMaterial) surfaceData).addTarget(target);
+		} else if (surfaceData instanceof GeoreferencedTexture) {
+			((GeoreferencedTexture) surfaceData).addTarget(target);
+		} else if (surfaceData instanceof ParameterizedTexture) {
+			ParameterizedTexture parameterizedTexture = (ParameterizedTexture) surfaceData;
+
+			String worldToTexture = rs.getString(32);
+			Object texCoordsObj = rs.getObject(33);
+
+			if (texCoordsObj != null) {
+				GeometryObject texCoords = exporter.getDatabaseAdapter().getGeometryConverter().getPolygon(texCoordsObj);
+				if (texCoords != null && texCoords.getDimension() == 2) {
+					TextureAssociation textureAssociation = new TextureAssociation();
+					textureAssociation.setUri(target);
+					TexCoordList texCoordList = new TexCoordList();
+
+					for (int i = 0; i < texCoords.getNumElements(); i++) {
+						double[] coordinates = texCoords.getCoordinates(i);
+
+						// reverse order of texture coordinates if necessary
+						boolean isReverse = rs.getBoolean(35);
+						if (isReverse) {
+							for (int lower = 0, upper = coordinates.length - 2; lower < upper; lower += 2, upper -= 2) {
+								double x = coordinates[lower];
+								double y = coordinates[lower + 1];
+								coordinates[lower] = coordinates[upper];
+								coordinates[lower + 1] = coordinates[upper + 1];
+								coordinates[upper] = x;
+								coordinates[upper + 1] = y;
+							}
+						}
+
+						List<Double> value = new ArrayList<>(coordinates.length);
+						for (double coordinate : coordinates)
+							value.add(coordinate);
+
+						TextureCoordinates textureCoordinates = new TextureCoordinates();
+						textureCoordinates.setValue(value);
+						textureCoordinates.setRing(target + '_' + i + '_');
+
+						texCoordList.addTextureCoordinates(textureCoordinates);
+					}
+
+					textureAssociation.setTextureParameterization(texCoordList);
+					parameterizedTexture.addTarget(textureAssociation);
 				}
-			});
-		}
-	}
+			} else if (worldToTexture != null) {
+				TextureAssociation textureAssociation = new TextureAssociation();
+				textureAssociation.setUri(target);
 
-	@Override
-	public void close() throws SQLException {
-		ps.close();
-		textureParamExporter.close();
+				List<Double> m = valueSplitter.splitDoubleList(worldToTexture);
+				if (m.size() >= 12) {
+					Matrix matrix = new Matrix(3, 4);
+					matrix.setMatrix(m.subList(0, 12));
+
+					WorldToTexture worldToTextureMatrix = new WorldToTexture();
+					worldToTextureMatrix.setMatrix(matrix);
+
+					TexCoordGen texCoordGen = new TexCoordGen();
+					texCoordGen.setWorldToTexture(worldToTextureMatrix);
+
+					textureAssociation.setTextureParameterization(texCoordGen);
+					parameterizedTexture.addTarget(textureAssociation);
+				}
+			}
+		}
 	}
 }

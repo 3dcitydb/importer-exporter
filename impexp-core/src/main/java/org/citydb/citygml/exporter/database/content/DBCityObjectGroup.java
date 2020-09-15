@@ -30,6 +30,7 @@ package org.citydb.citygml.exporter.database.content;
 import org.citydb.citygml.exporter.CityGMLExportException;
 import org.citydb.citygml.exporter.util.AttributeValueSplitter;
 import org.citydb.citygml.exporter.util.AttributeValueSplitter.SplitValue;
+import org.citydb.citygml.exporter.util.GeometrySetter;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.database.schema.TableEnum;
 import org.citydb.database.schema.mapping.FeatureType;
@@ -54,20 +55,24 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Set;
 
 public class DBCityObjectGroup extends AbstractTypeExporter {
 	private final PreparedStatement ps;
-	private final DBSurfaceGeometry surfaceGeometryExporter;
+	private final DBSurfaceGeometry geometryExporter;
 	private final DBCityObject cityObjectExporter;
 	private final GMLConverter gmlConverter;
 
 	private final String groupModule;
 	private final AttributeValueSplitter valueSplitter;
-	private Set<String> adeHookTables;
+	private final List<Table> adeHookTables;
 
 	public DBCityObjectGroup(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
 		super(exporter);
+
+		cityObjectExporter = exporter.getExporter(DBCityObject.class);
+		geometryExporter = exporter.getExporter(DBSurfaceGeometry.class);
+		gmlConverter = exporter.getGMLConverter();
+		valueSplitter = exporter.getAttributeValueSplitter();
 
 		CombinedProjectionFilter projectionFilter = exporter.getCombinedProjectionFilter(TableEnum.CITYOBJECTGROUP.getName());
 		groupModule = exporter.getTargetCityGMLVersion().getCityGMLModule(CityGMLModuleType.CITY_OBJECT_GROUP).getNamespaceURI();
@@ -93,20 +98,10 @@ public class DBCityObjectGroup extends AbstractTypeExporter {
 			.addJoin(JoinFactory.left(cityObject, "id", ComparisonName.EQUAL_TO, groupToCityObject.getColumn("cityobject_id")))
 			.addProjection(groupToCityObject.getColumn("cityobject_id"), groupToCityObject.getColumn("role"), cityObject.getColumn("gmlid", "member_gmlid"));
 		}
-		
-		// add joins to ADE hook tables
-		if (exporter.hasADESupport()) {
-			adeHookTables = exporter.getADEHookTables(TableEnum.CITYOBJECTGROUP);			
-			if (adeHookTables != null) addJoinsToADEHookTables(adeHookTables, table);
-		}
+		adeHookTables = addJoinsToADEHookTables(TableEnum.CITYOBJECTGROUP, table);
 
 		select.addSelection(ComparisonFactory.equalTo(table.getColumn("id"), new PlaceHolder<>()));
 		ps = connection.prepareStatement(select.toString());
-
-		cityObjectExporter = exporter.getExporter(DBCityObject.class);
-		surfaceGeometryExporter = exporter.getExporter(DBSurfaceGeometry.class);
-		gmlConverter = exporter.getGMLConverter();
-		valueSplitter = exporter.getAttributeValueSplitter();
 	}
 
 	protected boolean doExport(CityObjectGroup cityObjectGroup, long id, FeatureType featureType) throws CityGMLExportException, SQLException {
@@ -121,10 +116,8 @@ public class DBCityObjectGroup extends AbstractTypeExporter {
 			while (rs.next()) {
 				if (!isInited) {
 					// export city object information
-					boolean success = cityObjectExporter.doExport(cityObjectGroup, id, featureType, projectionFilter);
-					if (!success)
-						return false;
-					
+					cityObjectExporter.addBatch(cityObjectGroup, id, featureType, projectionFilter);
+
 					if (projectionFilter.containsProperty("class", groupModule)) {
 						String clazz = rs.getString("class");
 						if (!rs.wasNull()) {
@@ -152,26 +145,17 @@ public class DBCityObjectGroup extends AbstractTypeExporter {
 
 					if (projectionFilter.containsProperty("geometry", groupModule)) {
 						long geometryId = rs.getLong("brep_id");
-						Object geometryObj = rs.getObject("other_geom");
-						if (geometryId != 0 || geometryObj != null) {
-							GeometryProperty<AbstractGeometry> geometryProperty = null;
-							if (geometryId != 0) {
-								SurfaceGeometry geometry = surfaceGeometryExporter.doExport(geometryId);
-								if (geometry != null) {
-									geometryProperty = new GeometryProperty<>();
-									if (geometry.isSetGeometry())
-										geometryProperty.setGeometry(geometry.getGeometry());
-									else
-										geometryProperty.setHref(geometry.getReference());
-								}
-							} else {
+						if (!rs.wasNull())
+							geometryExporter.addBatch(geometryId, (GeometrySetter.AbstractGeometry) cityObjectGroup::setGeometry);
+						else {
+							Object geometryObj = rs.getObject("other_geom");
+							if (!rs.wasNull()) {
 								GeometryObject geometry = exporter.getDatabaseAdapter().getGeometryConverter().getGeometry(geometryObj);
-								if (geometry != null)
-									geometryProperty = new GeometryProperty<>(gmlConverter.getPointOrCurveGeometry(geometry, true));
+								if (geometry != null) {
+									GeometryProperty<AbstractGeometry> property = new GeometryProperty<>(gmlConverter.getPointOrCurveGeometry(geometry, true));
+									cityObjectGroup.setGeometry(property);
+								}
 							}
-
-							if (geometryProperty != null)
-								cityObjectGroup.setGeometry(geometryProperty);
 						}
 					}
 

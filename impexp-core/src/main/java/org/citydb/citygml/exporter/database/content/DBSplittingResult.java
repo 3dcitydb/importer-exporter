@@ -32,16 +32,26 @@ import org.citydb.database.schema.mapping.AbstractObjectType;
 public class DBSplittingResult {
 	private final long id;
 	private final AbstractObjectType<?> objectType;
+	private final Object envelope;
 	private final long sequenceId;
 
-	public DBSplittingResult(long id, AbstractObjectType<?> objectType, long sequenceId) {
+	public DBSplittingResult(long id, AbstractObjectType<?> objectType, Object envelope, long sequenceId) {
 		this.id = id;
 		this.objectType = objectType;
+		this.envelope = envelope;
 		this.sequenceId = sequenceId;
 	}
 
+	public DBSplittingResult(long id, AbstractObjectType<?> objectType, Object envelope) {
+		this(id, objectType, envelope, -1);
+	}
+
 	public DBSplittingResult(long id, AbstractObjectType<?> objectType) {
-		this(id, objectType, -1);
+		this(id, objectType, null, -1);
+	}
+
+	public DBSplittingResult(DBSplittingResult other, long sequenceId) {
+		this(other.id, other.objectType, other.envelope, sequenceId);
 	}
 
 	public long getId() {
@@ -50,6 +60,10 @@ public class DBSplittingResult {
 
 	public AbstractObjectType<?> getObjectType() {
 		return objectType;
+	}
+
+	public Object getEnvelope() {
+		return envelope;
 	}
 
 	public long getSequenceId() {

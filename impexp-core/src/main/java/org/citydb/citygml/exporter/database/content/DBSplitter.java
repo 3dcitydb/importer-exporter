@@ -102,11 +102,11 @@ public class DBSplitter {
 	private final String schema;
 	private final SchemaMapping schemaMapping;
 	private final SQLQueryBuilder builder;
+	private final boolean calculateExtent;
 
 	private MetadataProvider metadataProvider;
 	private volatile boolean shouldRun = true;
 	private boolean calculateNumberMatched;
-	private boolean calculateExtent;
 	private long sequenceId;
 
 	public DBSplitter(FeatureWriter writer,
@@ -130,6 +130,7 @@ public class DBSplitter {
 		connection = DatabaseConnectionPool.getInstance().getConnection();
 		connection.setAutoCommit(false);
 		schema = databaseAdapter.getConnectionDetails().getSchema();
+		calculateExtent = config.getProject().getExporter().getCityGMLOptions().getGMLEnvelope().isUseEnvelopeOnCityModel();
 
 		// try and change workspace for connection
 		if (databaseAdapter.hasVersioningSupport()) {
@@ -153,9 +154,8 @@ public class DBSplitter {
 		BuildProperties buildProperties = BuildProperties.defaults()
 				.addProjectionColumn(MappingConstants.GMLID);
 
-		// add envelope column in case we must export the extent of the result set
-		calculateExtent = config.getProject().getExporter().getCityGMLOptions().getGMLEnvelope().isUseEnvelopeOnCityModel();
-		if (calculateExtent)
+		// add envelope column in case of tiled exports or if we must export the extent of the result set
+		if (query.isSetTiling() || calculateExtent)
 			buildProperties.addProjectionColumn(MappingConstants.ENVELOPE);
 
 		builder = new SQLQueryBuilder(
@@ -188,7 +188,7 @@ public class DBSplitter {
 	public void startQuery() throws SQLException, QueryBuildException, FilterException, FeatureWriteException {
 		try {
 			FeatureType cityObjectGroupType = schemaMapping.getFeatureType("CityObjectGroup", CityObjectGroupModule.v2_0_0.getNamespaceURI());
-			Map<Long, AbstractObjectType<?>> cityObjectGroups = new LinkedHashMap<>();
+			Map<Long, DBSplittingResult> cityObjectGroups = new LinkedHashMap<>();
 			sequenceId = 0;
 
 			queryCityObject(cityObjectGroupType, cityObjectGroups);
@@ -222,7 +222,7 @@ public class DBSplitter {
 		}
 	}
 
-	private void queryCityObject(FeatureType cityObjectGroupType, Map<Long, AbstractObjectType<?>> cityObjectGroups) throws SQLException, QueryBuildException, FeatureWriteException {
+	private void queryCityObject(FeatureType cityObjectGroupType, Map<Long, DBSplittingResult> cityObjectGroups) throws SQLException, QueryBuildException, FeatureWriteException {
 		if (!shouldRun)
 			return;
 
@@ -247,6 +247,8 @@ public class DBSplitter {
 					.addProjection(table.getColumn(MappingConstants.GMLID))
 					.addProjection(new Function(databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("geom_extent") +
 					"(" + table.getColumn(MappingConstants.ENVELOPE) + ") over", "extent"));
+			if (query.isSetTiling())
+				select.addProjection(table.getColumn(MappingConstants.ENVELOPE));
 		}
 
 		// issue query
@@ -294,18 +296,20 @@ public class DBSplitter {
 				writeDocumentHeader();
 
 				do {
-					long id = rs.getLong("id");
-					int objectClassId = rs.getInt("objectclass_id");
+					long id = rs.getLong(MappingConstants.ID);
+					int objectClassId = rs.getInt(MappingConstants.OBJECTCLASS_ID);
 
 					AbstractObjectType<?> objectType = schemaMapping.getAbstractObjectType(objectClassId);
 					if (objectType == null) {
 						log.error("Failed to map the object class id '" + objectClassId + "' to an object type (ID: " + id + ").");
 						continue;
 					}
-					
+
+					Object envelope = query.isSetTiling() ? rs.getObject(MappingConstants.ENVELOPE) : null;
+
 					if (objectType.isEqualToOrSubTypeOf(cityObjectGroupType)) {
-						String gmlId = rs.getString("gmlid");
-						cityObjectGroups.put(id, objectType);
+						String gmlId = rs.getString(MappingConstants.GMLID);
+						cityObjectGroups.put(id, new DBSplittingResult(id, objectType, envelope));
 
 						// register group in gml:id cache
 						if (gmlId != null && gmlId.length() > 0)
@@ -315,7 +319,7 @@ public class DBSplitter {
 					}
 
 					// set initial context...
-					DBSplittingResult splitter = new DBSplittingResult(id, objectType, sequenceId++);
+					DBSplittingResult splitter = new DBSplittingResult(id, objectType, envelope, sequenceId++);
 					dbWorkerPool.addWork(splitter);
 				} while (rs.next() && shouldRun);
 			} else {
@@ -337,7 +341,7 @@ public class DBSplitter {
 		}
 	}
 
-	private void queryCityObjectGroups(FeatureType cityObjectGroupType, Map<Long, AbstractObjectType<?>> cityObjectGroups) throws SQLException, FilterException, QueryBuildException {
+	private void queryCityObjectGroups(FeatureType cityObjectGroupType, Map<Long, DBSplittingResult> cityObjectGroups) throws SQLException, FilterException, QueryBuildException {
 		if (!shouldRun)
 			return;
 
@@ -404,8 +408,8 @@ public class DBSplitter {
 					}
 
 					do {
-						long id = rs.getLong("id");
-						int objectClassId = rs.getInt("objectclass_id");
+						long id = rs.getLong(MappingConstants.ID);
+						int objectClassId = rs.getInt(MappingConstants.OBJECTCLASS_ID);
 
 						AbstractObjectType<?> objectType = schemaMapping.getAbstractObjectType(objectClassId);
 						if (objectType == null) {
@@ -413,10 +417,12 @@ public class DBSplitter {
 							continue;
 						}
 
+						Object envelope = query.isSetTiling() ? rs.getObject(MappingConstants.ENVELOPE) : null;
+
 						if (objectType.isEqualToOrSubTypeOf(cityObjectGroupType)) {
 							if (!cityObjectGroups.containsKey(id)) {
-								String gmlId = rs.getString("gmlid");
-								cityObjectGroups.put(id, objectType);
+								String gmlId = rs.getString(MappingConstants.GMLID);
+								cityObjectGroups.put(id, new DBSplittingResult(id, objectType, envelope));
 
 								// register group in gml:id cache
 								if (gmlId != null && gmlId.length() > 0)
@@ -427,7 +433,7 @@ public class DBSplitter {
 						}
 
 						// set initial context...
-						DBSplittingResult splitter = new DBSplittingResult(id, objectType);
+						DBSplittingResult splitter = new DBSplittingResult(id, objectType, envelope);
 						dbWorkerPool.addWork(splitter);
 					} while (rs.next() && shouldRun);
 				}
@@ -447,9 +453,9 @@ public class DBSplitter {
 		if (calculateNumberMatched && hits == 0)
 			eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.INIT, cityObjectGroups.size(), this));
 
-		for (Iterator<Entry<Long, AbstractObjectType<?>>> iter = cityObjectGroups.entrySet().iterator(); shouldRun && iter.hasNext(); ) {
-			Entry<Long, AbstractObjectType<?>> entry = iter.next();
-			DBSplittingResult splitter = new DBSplittingResult(entry.getKey(), entry.getValue(), sequenceId++);
+		for (Iterator<Entry<Long, DBSplittingResult>> iter = cityObjectGroups.entrySet().iterator(); shouldRun && iter.hasNext(); ) {
+			Entry<Long, DBSplittingResult> entry = iter.next();
+			DBSplittingResult splitter = new DBSplittingResult(entry.getValue(), sequenceId++);
 			dbWorkerPool.addWork(splitter);
 		}
 	}

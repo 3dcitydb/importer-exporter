@@ -39,7 +39,6 @@ import org.citydb.log.Logger;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
@@ -49,34 +48,34 @@ import java.sql.SQLException;
 
 public class DBXlinkExporterTextureImage implements DBXlinkExporter {
     private final Logger log = Logger.getInstance();
-    private final DBXlinkExporterManager xlinkExporterManager;
-
+    private final DBXlinkExporterManager exporterManager;
     private final OutputFile outputFile;
-    private final BlobExportAdapter textureImageExportAdapter;
+    private final BlobExportAdapter blobExporter;
     private final String textureURI;
     private final boolean isAbsoluteTextureURI;
     private final String separator;
     private final boolean overwriteTextureImage;
-    private final CounterEvent counter;
     private final boolean useBuckets;
+
     private boolean[] buckets;
 
-    public DBXlinkExporterTextureImage(Connection connection, Config config, DBXlinkExporterManager xlinkExporterManager) throws SQLException {
-        this.xlinkExporterManager = xlinkExporterManager;
+    public DBXlinkExporterTextureImage(Connection connection, Config config, DBXlinkExporterManager exporterManager) {
+        this.exporterManager = exporterManager;
 
-        outputFile = xlinkExporterManager.getOutputFile();
+        outputFile = exporterManager.getOutputFile();
         textureURI = config.getInternal().getExportTextureURI();
         isAbsoluteTextureURI = new File(textureURI).isAbsolute();
         separator = isAbsoluteTextureURI ? File.separator : "/";
         overwriteTextureImage = config.getProject().getExporter().getAppearances().isSetOverwriteTextureFiles();
-        counter = new CounterEvent(CounterType.TEXTURE_IMAGE, 1, this);
         useBuckets = config.getProject().getExporter().getAppearances().getTexturePath().isUseBuckets()
                 && config.getProject().getExporter().getAppearances().getTexturePath().getNoOfBuckets() > 0;
 
         if (useBuckets)
             buckets = new boolean[config.getProject().getExporter().getAppearances().getTexturePath().getNoOfBuckets()];
 
-        textureImageExportAdapter = xlinkExporterManager.getDatabaseAdapter().getSQLAdapter().getBlobExportAdapter(connection, BlobType.TEXTURE_IMAGE);
+        blobExporter = exporterManager.getDatabaseAdapter().getSQLAdapter()
+                .getBlobExportAdapter(connection, BlobType.TEXTURE_IMAGE)
+                .withBatchSize(exporterManager.getBlobBatchSize());
     }
 
     public boolean export(DBXlinkTextureFile xlink) throws SQLException {
@@ -87,19 +86,18 @@ public class DBXlinkExporterTextureImage implements DBXlinkExporter {
             return false;
         }
 
-        Path file = null;
+        Path file;
         try {
             if (isAbsoluteTextureURI)
                 file = Paths.get(textureURI, fileURI);
             else if (outputFile.getType() != FileType.ARCHIVE)
                 file = Paths.get(outputFile.resolve(textureURI, fileURI));
+            else
+                file = null;
         } catch (InvalidPathException e) {
             log.error("Failed to export a texture file: '" + fileURI + "' is invalid.");
             return false;
         }
-
-        if (file != null && !overwriteTextureImage && Files.exists(file))
-            return false;
 
         if (useBuckets) {
             try {
@@ -118,20 +116,34 @@ public class DBXlinkExporterTextureImage implements DBXlinkExporter {
             }
         }
 
-        // load image data into file
-        xlinkExporterManager.propagateEvent(counter);
-        try (OutputStream stream = file != null ? Files.newOutputStream(file) :
-                outputFile.newOutputStream(outputFile.resolve(textureURI, fileURI))) {
-            return textureImageExportAdapter.writeToStream(xlink.getId(), stream);
+        try {
+            int exported = blobExporter.addBatch(xlink.getId(), new BlobExportAdapter.BatchEntry(
+                    () -> file != null ?
+                            Files.newOutputStream(file) :
+                            outputFile.newOutputStream(outputFile.resolve(textureURI, fileURI)),
+                    () -> file == null || overwriteTextureImage || !Files.exists(file)));
+
+            if (exported > 0)
+                exporterManager.propagateEvent(new CounterEvent(CounterType.TEXTURE_IMAGE, exported, this));
+
+            return true;
         } catch (IOException e) {
-            log.error("Failed to export texture file " + fileURI + ": " + e.getMessage());
+            log.error("Failed to batch export texture files: " + e.getMessage());
             return false;
         }
     }
 
     @Override
     public void close() throws SQLException {
-        textureImageExportAdapter.close();
+        try {
+            int exported = blobExporter.executeBatch();
+            if (exported > 0)
+                exporterManager.propagateEvent(new CounterEvent(CounterType.TEXTURE_IMAGE, exported, this));
+        } catch (IOException e) {
+            log.error("Failed to batch export texture files: " + e.getMessage());
+        }
+
+        blobExporter.close();
     }
 
     @Override

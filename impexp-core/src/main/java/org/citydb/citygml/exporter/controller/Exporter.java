@@ -416,7 +416,7 @@ public class Exporter implements EventHandler {
 								UIDCacheType.GEOMETRY,
 								new GeometryGmlIdCache(cacheTableManager,
 										config.getProject().getExporter().getResources().getGmlIdCache().getGeometry().getPartitions(),
-										config.getProject().getDatabase().getUpdateBatching().getGmlIdCacheBatchValue()),
+										config.getProject().getDatabase().getImportBatching().getGmlIdCacheBatchSize()),
 								config.getProject().getExporter().getResources().getGmlIdCache().getGeometry().getCacheSize(),
 								config.getProject().getExporter().getResources().getGmlIdCache().getGeometry().getPageFactor(),
 								config.getProject().getExporter().getResources().getThreadPool().getDefaultPool().getMaxThreads());
@@ -425,7 +425,7 @@ public class Exporter implements EventHandler {
 								UIDCacheType.OBJECT,
 								new FeatureGmlIdCache(cacheTableManager,
 										config.getProject().getExporter().getResources().getGmlIdCache().getFeature().getPartitions(),
-										config.getProject().getDatabase().getUpdateBatching().getGmlIdCacheBatchValue()),
+										config.getProject().getDatabase().getImportBatching().getGmlIdCacheBatchSize()),
 								config.getProject().getExporter().getResources().getGmlIdCache().getFeature().getCacheSize(),
 								config.getProject().getExporter().getResources().getGmlIdCache().getFeature().getPageFactor(),
 								config.getProject().getExporter().getResources().getThreadPool().getDefaultPool().getMaxThreads());

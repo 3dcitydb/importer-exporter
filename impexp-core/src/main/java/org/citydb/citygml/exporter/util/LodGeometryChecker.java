@@ -32,52 +32,61 @@ import org.citydb.database.schema.mapping.SchemaMapping;
 import org.citydb.util.Util;
 import org.citygml4j.model.citygml.core.AbstractCityObject;
 import org.citygml4j.model.citygml.core.LodRepresentation;
+import org.citygml4j.model.common.base.ModelObject;
+import org.citygml4j.model.common.base.ModelObjects;
+import org.citygml4j.model.common.child.Child;
+import org.citygml4j.model.gml.base.AbstractGML;
+import org.citygml4j.util.child.ChildInfo;
 import org.citygml4j.util.walker.FeatureWalker;
+import org.citygml4j.util.walker.GMLWalker;
+
+import java.util.Collections;
+import java.util.IdentityHashMap;
+import java.util.Set;
 
 public class LodGeometryChecker extends FeatureWalker {
 	private final SchemaMapping schemaMapping;
-	private final LodWalker lodWalker;
 
 	public LodGeometryChecker(SchemaMapping schemaMapping) {
 		this.schemaMapping = schemaMapping;
-		lodWalker = new LodWalker();
 	}
 
-	public boolean satisfiesLodFilter(AbstractCityObject cityObject) {
-		if (cityObject.getLodRepresentation().hasRepresentations())
-			return true;
+	public void cleanupCityObjects(AbstractGML object) {
+		Set<AbstractCityObject> keep = Collections.newSetFromMap(new IdentityHashMap<>());
 
-		lodWalker.reset(cityObject);
-		cityObject.accept(lodWalker);
+		object.accept(new GMLWalker() {
+			final ChildInfo childInfo = new ChildInfo();
 
-		if (!lodWalker.foundGeometry) {
-			FeatureType featureType = schemaMapping.getFeatureType(Util.getObjectClassId(cityObject.getClass()));
-			if (!featureType.hasLodProperties())
-				return true;
-		}
+			@Override
+			public void visit(AbstractCityObject cityObject) {
+				if (cityObject != object) {
+					FeatureType featureType = schemaMapping.getFeatureType(Util.getObjectClassId(cityObject.getClass()));
+					if (featureType.hasLodProperties()) {
+						LodRepresentation representation = cityObject.getLodRepresentation();
+						if (!representation.hasRepresentations())
+							return;
+					}
 
-		return lodWalker.foundGeometry;
-	}
-
-	private final class LodWalker extends FeatureWalker {
-		private AbstractCityObject root;
-		private boolean foundGeometry = false;
-
-		@Override
-		public void visit(AbstractCityObject cityObject) {
-			if (cityObject != root) {
-				LodRepresentation lodRepresentation = cityObject.getLodRepresentation();
-				if (lodRepresentation.hasRepresentations()) {
-					foundGeometry = true;
-					shouldWalk = false;
+					do {
+						// keep the city object and its parents
+						if (!keep.add(cityObject))
+							break;
+					} while ((cityObject = childInfo.getParentCityObject(cityObject)) != object);
 				}
 			}
-		}
+		});
 
-		public void reset(AbstractCityObject cityObject) {
-			super.reset();
-			root = cityObject;
-			foundGeometry = false;
-		}
+		object.accept(new GMLWalker() {
+			@Override
+			public void visit(AbstractCityObject cityObject) {
+				if (cityObject != object) {
+					if (!keep.contains(cityObject)) {
+						ModelObject property = cityObject.getParent();
+						if (property instanceof Child)
+							ModelObjects.unsetProperty(((Child) property).getParent(), property);
+					}
+				}
+			}
+		});
 	}
 }

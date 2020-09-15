@@ -25,42 +25,42 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.citydb.config.project.resources;
+package org.citydb.config.project.database;
 
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="ResourcesType", propOrder={
-		"gmlIdCache",
-		"threadPool"
+@XmlType(name = "ExportBatchingType", propOrder = {
+		"batchSize",
+		"blobBatchSize"
 })
-public class Resources {
-	@XmlElement(required=true)
-	private UIDCache gmlIdCache;
-	@XmlElement(required=true)
-	private ThreadPool threadPool;
+public class ExportBatching {
+	public static final int DEFAULT_BATCH_SIZE = 30;
+	public static final int DEFAULT_BLOB_BATCH_SIZE = 30;
 
-	public Resources() {
-		gmlIdCache = new UIDCache();
-		threadPool = new ThreadPool();
+	@XmlElement(defaultValue = "30")
+	@XmlSchemaType(name = "positiveInteger")
+	private int batchSize = DEFAULT_BATCH_SIZE;
+	@XmlElement(defaultValue = "30")
+	@XmlSchemaType(name = "positiveInteger")
+	private int blobBatchSize = DEFAULT_BLOB_BATCH_SIZE;
+
+	public int getBatchSize() {
+		return batchSize > 0 ? batchSize : DEFAULT_BATCH_SIZE;
 	}
 
-	public UIDCache getGmlIdCache() {
-		return gmlIdCache;
+	public void setBatchSize(int batchSize) {
+		if (batchSize > 0)
+			this.batchSize = batchSize;
 	}
 
-	public void setGmlIdCache(UIDCache gmlIdCache) {
-		if (gmlIdCache != null)
-			this.gmlIdCache = gmlIdCache;
+	public int getBlobBatchSize() {
+		return blobBatchSize > 0 ? blobBatchSize : DEFAULT_BLOB_BATCH_SIZE;
 	}
 
-	public ThreadPool getThreadPool() {
-		return threadPool;
+	public void setBlobBatchSize(int blobBatchSize) {
+		if (blobBatchSize > 0)
+			this.blobBatchSize = blobBatchSize;
 	}
-
-	public void setThreadPool(ThreadPool threadPool) {
-		if (threadPool != null)
-			this.threadPool = threadPool;
-	}
-
 }

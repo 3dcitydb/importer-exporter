@@ -30,6 +30,7 @@ package org.citydb.citygml.exporter.database.content;
 import org.citydb.citygml.exporter.CityGMLExportException;
 import org.citydb.citygml.exporter.util.AttributeValueSplitter;
 import org.citydb.citygml.exporter.util.AttributeValueSplitter.SplitValue;
+import org.citydb.citygml.exporter.util.GeometrySetter;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.database.schema.TableEnum;
 import org.citydb.database.schema.mapping.FeatureType;
@@ -55,7 +56,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 public class DBSolitaryVegetatObject extends AbstractFeatureExporter<SolitaryVegetationObject> {
 	private final DBSurfaceGeometry geometryExporter;
@@ -67,16 +67,22 @@ public class DBSolitaryVegetatObject extends AbstractFeatureExporter<SolitaryVeg
 	private final LodFilter lodFilter;
 	private final AttributeValueSplitter valueSplitter;
 	private final boolean hasObjectClassIdColumn;
-	private Set<String> adeHookTables;
+	private final List<Table> adeHookTables;
 
 	public DBSolitaryVegetatObject(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
 		super(SolitaryVegetationObject.class, connection, exporter);
 
+		cityObjectExporter = exporter.getExporter(DBCityObject.class);
+		geometryExporter = exporter.getExporter(DBSurfaceGeometry.class);
+		implicitGeometryExporter = exporter.getExporter(DBImplicitGeometry.class);
+		gmlConverter = exporter.getGMLConverter();
+		valueSplitter = exporter.getAttributeValueSplitter();
+
 		CombinedProjectionFilter projectionFilter = exporter.getCombinedProjectionFilter(TableEnum.SOLITARY_VEGETAT_OBJECT.getName());
 		vegetationModule = exporter.getTargetCityGMLVersion().getCityGMLModule(CityGMLModuleType.VEGETATION).getNamespaceURI();
 		lodFilter = exporter.getLodFilter();
-		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 		hasObjectClassIdColumn = exporter.getDatabaseAdapter().getConnectionMetaData().getCityDBVersion().compareTo(4, 0, 0) >= 0;
+		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 
 		table = new Table(TableEnum.SOLITARY_VEGETAT_OBJECT.getName(), schema);
 		select = new Select().addProjection(table.getColumn("id"));
@@ -88,30 +94,23 @@ public class DBSolitaryVegetatObject extends AbstractFeatureExporter<SolitaryVeg
 		if (projectionFilter.containsProperty("height", vegetationModule)) select.addProjection(table.getColumn("height"), table.getColumn("height_unit"));
 		if (projectionFilter.containsProperty("trunkDiameter", vegetationModule)) select.addProjection(table.getColumn("trunk_diameter"), table.getColumn("trunk_diameter_unit"));
 		if (projectionFilter.containsProperty("crownDiameter", vegetationModule)) select.addProjection(table.getColumn("crown_diameter"), table.getColumn("crown_diameter_unit"));
-		if (projectionFilter.containsProperty("lod1Geometry", vegetationModule)) select.addProjection(table.getColumn("lod1_brep_id"), exporter.getGeometryColumn(table.getColumn("lod1_other_geom")));
-		if (projectionFilter.containsProperty("lod2Geometry", vegetationModule)) select.addProjection(table.getColumn("lod2_brep_id"), exporter.getGeometryColumn(table.getColumn("lod2_other_geom")));
-		if (projectionFilter.containsProperty("lod3Geometry", vegetationModule)) select.addProjection(table.getColumn("lod3_brep_id"), exporter.getGeometryColumn(table.getColumn("lod3_other_geom")));
-		if (projectionFilter.containsProperty("lod4Geometry", vegetationModule)) select.addProjection(table.getColumn("lod4_brep_id"), exporter.getGeometryColumn(table.getColumn("lod4_other_geom")));
-		if (projectionFilter.containsProperty("lod1ImplicitRepresentation", vegetationModule))
-			select.addProjection(table.getColumn("lod1_implicit_rep_id"), exporter.getGeometryColumn(table.getColumn("lod1_implicit_ref_point")), table.getColumn("lod1_implicit_transformation"));
-		if (projectionFilter.containsProperty("lod2ImplicitRepresentation", vegetationModule))
-			select.addProjection(table.getColumn("lod2_implicit_rep_id"), exporter.getGeometryColumn(table.getColumn("lod2_implicit_ref_point")), table.getColumn("lod2_implicit_transformation"));
-		if (projectionFilter.containsProperty("lod3ImplicitRepresentation", vegetationModule))
-			select.addProjection(table.getColumn("lod3_implicit_rep_id"), exporter.getGeometryColumn(table.getColumn("lod3_implicit_ref_point")), table.getColumn("lod3_implicit_transformation"));
-		if (projectionFilter.containsProperty("lod4ImplicitRepresentation", vegetationModule))
-			select.addProjection(table.getColumn("lod4_implicit_rep_id"), exporter.getGeometryColumn(table.getColumn("lod4_implicit_ref_point")), table.getColumn("lod4_implicit_transformation"));
-
-		// add joins to ADE hook tables
-		if (exporter.hasADESupport()) {
-			adeHookTables = exporter.getADEHookTables(TableEnum.SOLITARY_VEGETAT_OBJECT);			
-			if (adeHookTables != null) addJoinsToADEHookTables(adeHookTables, table);
+		if (lodFilter.isEnabled(1)) {
+			if (projectionFilter.containsProperty("lod1Geometry", vegetationModule)) select.addProjection(table.getColumn("lod1_brep_id"), exporter.getGeometryColumn(table.getColumn("lod1_other_geom")));
+			if (projectionFilter.containsProperty("lod1ImplicitRepresentation", vegetationModule)) select.addProjection(table.getColumn("lod1_implicit_rep_id"), exporter.getGeometryColumn(table.getColumn("lod1_implicit_ref_point")), table.getColumn("lod1_implicit_transformation"));
 		}
-
-		cityObjectExporter = exporter.getExporter(DBCityObject.class);
-		geometryExporter = exporter.getExporter(DBSurfaceGeometry.class);
-		implicitGeometryExporter = exporter.getExporter(DBImplicitGeometry.class);
-		gmlConverter = exporter.getGMLConverter();
-		valueSplitter = exporter.getAttributeValueSplitter();
+		if (lodFilter.isEnabled(2)) {
+			if (projectionFilter.containsProperty("lod2Geometry", vegetationModule)) select.addProjection(table.getColumn("lod2_brep_id"), exporter.getGeometryColumn(table.getColumn("lod2_other_geom")));
+			if (projectionFilter.containsProperty("lod2ImplicitRepresentation", vegetationModule)) select.addProjection(table.getColumn("lod2_implicit_rep_id"), exporter.getGeometryColumn(table.getColumn("lod2_implicit_ref_point")), table.getColumn("lod2_implicit_transformation"));
+		}
+		if (lodFilter.isEnabled(3)) {
+			if (projectionFilter.containsProperty("lod3Geometry", vegetationModule)) select.addProjection(table.getColumn("lod3_brep_id"), exporter.getGeometryColumn(table.getColumn("lod3_other_geom")));
+			if (projectionFilter.containsProperty("lod3ImplicitRepresentation", vegetationModule)) select.addProjection(table.getColumn("lod3_implicit_rep_id"), exporter.getGeometryColumn(table.getColumn("lod3_implicit_ref_point")), table.getColumn("lod3_implicit_transformation"));
+		}
+		if (lodFilter.isEnabled(4)) {
+			if (projectionFilter.containsProperty("lod4Geometry", vegetationModule)) select.addProjection(table.getColumn("lod4_brep_id"), exporter.getGeometryColumn(table.getColumn("lod4_other_geom")));
+			if (projectionFilter.containsProperty("lod4ImplicitRepresentation", vegetationModule)) select.addProjection(table.getColumn("lod4_implicit_rep_id"), exporter.getGeometryColumn(table.getColumn("lod4_implicit_ref_point")), table.getColumn("lod4_implicit_transformation"));
+		}
+		adeHookTables = addJoinsToADEHookTables(TableEnum.SOLITARY_VEGETAT_OBJECT, table);
 	}
 
 	@Override
@@ -150,9 +149,7 @@ public class DBSolitaryVegetatObject extends AbstractFeatureExporter<SolitaryVeg
 				ProjectionFilter projectionFilter = exporter.getProjectionFilter(featureType);
 
 				// export city object information
-				boolean success = cityObjectExporter.doExport(vegetationObject, vegetationObjectId, featureType, projectionFilter);
-				if (!success)
-					continue;
+				cityObjectExporter.addBatch(vegetationObject, vegetationObjectId, featureType, projectionFilter);
 
 				if (projectionFilter.containsProperty("class", vegetationModule)) {
 					String clazz = rs.getString("class");
@@ -224,40 +221,43 @@ public class DBSolitaryVegetatObject extends AbstractFeatureExporter<SolitaryVeg
 						continue;
 
 					long geometryId = rs.getLong("lod" + lod + "_brep_id");
-					Object geometryObj = rs.getObject("lod" + lod + "_other_geom");
-					if (geometryId == 0 && geometryObj == null)
-						continue;
-
-					GeometryProperty<AbstractGeometry> geometryProperty = null;
-					if (geometryId != 0) {
-						SurfaceGeometry geometry = geometryExporter.doExport(geometryId);
-						if (geometry != null) {
-							geometryProperty = new GeometryProperty<>();
-							if (geometry.isSetGeometry())
-								geometryProperty.setGeometry(geometry.getGeometry());
-							else
-								geometryProperty.setHref(geometry.getReference());
+					if (!rs.wasNull()) {
+						switch (lod) {
+							case 1:
+								geometryExporter.addBatch(geometryId, (GeometrySetter.AbstractGeometry) vegetationObject::setLod1Geometry);
+								break;
+							case 2:
+								geometryExporter.addBatch(geometryId, (GeometrySetter.AbstractGeometry) vegetationObject::setLod2Geometry);
+								break;
+							case 3:
+								geometryExporter.addBatch(geometryId, (GeometrySetter.AbstractGeometry) vegetationObject::setLod3Geometry);
+								break;
+							case 4:
+								geometryExporter.addBatch(geometryId, (GeometrySetter.AbstractGeometry) vegetationObject::setLod4Geometry);
+								break;
 						}
 					} else {
-						GeometryObject geometry = exporter.getDatabaseAdapter().getGeometryConverter().getGeometry(geometryObj);
-						if (geometry != null)
-							geometryProperty = new GeometryProperty<>(gmlConverter.getPointOrCurveGeometry(geometry, true));
-					}
+						Object geometryObj = rs.getObject("lod" + lod + "_other_geom");
+						if (rs.wasNull())
+							continue;
 
-					if (geometryProperty != null) {
-						switch (lod) {
-						case 1:
-							vegetationObject.setLod1Geometry(geometryProperty);
-							break;
-						case 2:
-							vegetationObject.setLod2Geometry(geometryProperty);
-							break;
-						case 3:
-							vegetationObject.setLod3Geometry(geometryProperty);
-							break;
-						case 4:
-							vegetationObject.setLod4Geometry(geometryProperty);
-							break;
+						GeometryObject geometry = exporter.getDatabaseAdapter().getGeometryConverter().getGeometry(geometryObj);
+						if (geometry != null) {
+							GeometryProperty<AbstractGeometry> property = new GeometryProperty<>(gmlConverter.getPointOrCurveGeometry(geometry, true));
+							switch (lod) {
+								case 1:
+									vegetationObject.setLod1Geometry(property);
+									break;
+								case 2:
+									vegetationObject.setLod2Geometry(property);
+									break;
+								case 3:
+									vegetationObject.setLod3Geometry(property);
+									break;
+								case 4:
+									vegetationObject.setLod4Geometry(property);
+									break;
+							}
 						}
 					}
 				}
@@ -316,5 +316,4 @@ public class DBSolitaryVegetatObject extends AbstractFeatureExporter<SolitaryVeg
 			return vegetationObjects;
 		}
 	}
-
 }

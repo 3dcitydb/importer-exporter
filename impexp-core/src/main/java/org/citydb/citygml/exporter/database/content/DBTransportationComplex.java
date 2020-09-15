@@ -30,6 +30,8 @@ package org.citydb.citygml.exporter.database.content;
 import org.citydb.citygml.exporter.CityGMLExportException;
 import org.citydb.citygml.exporter.util.AttributeValueSplitter;
 import org.citydb.citygml.exporter.util.AttributeValueSplitter.SplitValue;
+import org.citydb.citygml.exporter.util.DefaultGeometrySetterHandler;
+import org.citydb.citygml.exporter.util.GeometrySetterHandler;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.database.schema.TableEnum;
 import org.citydb.database.schema.mapping.FeatureType;
@@ -47,10 +49,7 @@ import org.citygml4j.model.citygml.transportation.AuxiliaryTrafficAreaProperty;
 import org.citygml4j.model.citygml.transportation.TrafficArea;
 import org.citygml4j.model.citygml.transportation.TrafficAreaProperty;
 import org.citygml4j.model.citygml.transportation.TransportationComplex;
-import org.citygml4j.model.gml.GMLClass;
 import org.citygml4j.model.gml.basicTypes.Code;
-import org.citygml4j.model.gml.geometry.aggregates.MultiSurface;
-import org.citygml4j.model.gml.geometry.aggregates.MultiSurfaceProperty;
 import org.citygml4j.model.module.citygml.CityGMLModuleType;
 
 import java.sql.Connection;
@@ -58,68 +57,58 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 public class DBTransportationComplex extends AbstractFeatureExporter<TransportationComplex> {
 	private final DBSurfaceGeometry geometryExporter;
 	private final DBCityObject cityObjectExporter;
+	private final DBTrafficArea trafficAreaExporer;
 	private final GMLConverter gmlConverter;
 
 	private final String transportationModule;
 	private final LodFilter lodFilter;
 	private final AttributeValueSplitter valueSplitter;
-	private Set<String> complexADEHookTables;
-	private Set<String> objectADEHookTables;
+	private final List<Table> complexADEHookTables;
+	private List<Table> trafficAreaADEHookTables;
 
 	public DBTransportationComplex(Connection connection, CityGMLExportManager exporter) throws CityGMLExportException, SQLException {
 		super(TransportationComplex.class, connection, exporter);
 
+		cityObjectExporter = exporter.getExporter(DBCityObject.class);
+		trafficAreaExporer = exporter.getExporter(DBTrafficArea.class);
+		geometryExporter = exporter.getExporter(DBSurfaceGeometry.class);
+		gmlConverter = exporter.getGMLConverter();
+		valueSplitter = exporter.getAttributeValueSplitter();
+
 		CombinedProjectionFilter projectionFilter = exporter.getCombinedProjectionFilter(TableEnum.TRANSPORTATION_COMPLEX.getName());
-		CombinedProjectionFilter trafficAreaProjectionFilter = exporter.getCombinedProjectionFilter(TableEnum.TRAFFIC_AREA.getName());
 		transportationModule = exporter.getTargetCityGMLVersion().getCityGMLModule(CityGMLModuleType.TRANSPORTATION).getNamespaceURI();
 		lodFilter = exporter.getLodFilter();
 		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 
 		table = new Table(TableEnum.TRANSPORTATION_COMPLEX.getName(), schema);
-		Table trafficArea = new Table(TableEnum.TRAFFIC_AREA.getName(), schema);
-
 		select = new Select().addProjection(table.getColumn("id"), table.getColumn("objectclass_id"));
 		if (projectionFilter.containsProperty("class", transportationModule)) select.addProjection(table.getColumn("class"), table.getColumn("class_codespace"));
 		if (projectionFilter.containsProperty("function", transportationModule)) select.addProjection(table.getColumn("function"), table.getColumn("function_codespace"));
 		if (projectionFilter.containsProperty("usage", transportationModule)) select.addProjection(table.getColumn("usage"), table.getColumn("usage_codespace"));
-		if (projectionFilter.containsProperty("lod0Network", transportationModule)) select.addProjection(exporter.getGeometryColumn(table.getColumn("lod0_network")));
-		if (projectionFilter.containsProperty("lod1MultiSurface", transportationModule)) select.addProjection(table.getColumn("lod1_multi_surface_id"));
-		if (projectionFilter.containsProperty("lod2MultiSurface", transportationModule)) select.addProjection(table.getColumn("lod2_multi_surface_id"));
-		if (projectionFilter.containsProperty("lod3MultiSurface", transportationModule)) select.addProjection(table.getColumn("lod3_multi_surface_id"));
-		if (projectionFilter.containsProperty("lod4MultiSurface", transportationModule)) select.addProjection(table.getColumn("lod4_multi_surface_id"));
-		if (projectionFilter.containsProperty("trafficArea", transportationModule)
-				|| projectionFilter.containsProperty("auxiliaryTrafficArea", transportationModule)) {
-			select.addJoin(JoinFactory.left(trafficArea, "transportation_complex_id", ComparisonName.EQUAL_TO, table.getColumn("id")))
-			.addProjection(trafficArea.getColumn("id", "ta_id"), trafficArea.getColumn("objectclass_id", "ta_objectclass_id"));
-			if (trafficAreaProjectionFilter.containsProperty("class", transportationModule)) select.addProjection(trafficArea.getColumn("class", "ta_class"), trafficArea.getColumn("class_codespace", "ta_class_codespace"));
-			if (trafficAreaProjectionFilter.containsProperty("function", transportationModule)) select.addProjection(trafficArea.getColumn("function", "ta_function"), trafficArea.getColumn("function_codespace", "ta_function_codespace"));
-			if (trafficAreaProjectionFilter.containsProperty("usage", transportationModule)) select.addProjection(trafficArea.getColumn("usage", "ta_usage"), trafficArea.getColumn("usage_codespace", "ta_usage_codespace"));
-			if (trafficAreaProjectionFilter.containsProperty("surfaceMaterial", transportationModule)) select.addProjection(trafficArea.getColumn("surface_material"), trafficArea.getColumn("surface_material_codespace"));
-			if (trafficAreaProjectionFilter.containsProperty("lod2MultiSurface", transportationModule)) select.addProjection(trafficArea.getColumn("lod2_multi_surface_id", "ta_lod2_multi_surface_id"));
-			if (trafficAreaProjectionFilter.containsProperty("lod3MultiSurface", transportationModule)) select.addProjection(trafficArea.getColumn("lod3_multi_surface_id", "ta_lod3_multi_surface_id"));
-			if (trafficAreaProjectionFilter.containsProperty("lod4MultiSurface", transportationModule)) select.addProjection(trafficArea.getColumn("lod4_multi_surface_id", "ta_lod4_multi_surface_id"));
+		if (lodFilter.isEnabled(0) && projectionFilter.containsProperty("lod0Network", transportationModule)) select.addProjection(exporter.getGeometryColumn(table.getColumn("lod0_network")));
+		if (lodFilter.isEnabled(1) && projectionFilter.containsProperty("lod1MultiSurface", transportationModule)) select.addProjection(table.getColumn("lod1_multi_surface_id"));
+		if (lodFilter.isEnabled(2) && projectionFilter.containsProperty("lod2MultiSurface", transportationModule)) select.addProjection(table.getColumn("lod2_multi_surface_id"));
+		if (lodFilter.isEnabled(3) && projectionFilter.containsProperty("lod3MultiSurface", transportationModule)) select.addProjection(table.getColumn("lod3_multi_surface_id"));
+		if (lodFilter.isEnabled(4) && projectionFilter.containsProperty("lod4MultiSurface", transportationModule)) select.addProjection(table.getColumn("lod4_multi_surface_id"));
+		if (lodFilter.containsLodGreaterThanOrEuqalTo(2)
+				&& (projectionFilter.containsProperty("trafficArea", transportationModule)
+				|| projectionFilter.containsProperty("auxiliaryTrafficArea", transportationModule))) {
+			CombinedProjectionFilter trafficAreaProjectionFilter = exporter.getCombinedProjectionFilter(TableEnum.TRAFFIC_AREA.getName());
+			Table trafficArea = new Table(TableEnum.TRAFFIC_AREA.getName(), schema);
+			trafficAreaExporer.addProjection(select, trafficArea, trafficAreaProjectionFilter, "ta")
+					.addJoin(JoinFactory.left(trafficArea, "transportation_complex_id", ComparisonName.EQUAL_TO, table.getColumn("id")))
+					.addProjection(trafficArea.getColumn("id", "ta_id"), trafficArea.getColumn("objectclass_id", "ta_objectclass_id"));
+			trafficAreaADEHookTables = addJoinsToADEHookTables(TableEnum.TRAFFIC_AREA, trafficArea);
 		}
-
-		// add joins to ADE hook tables
-		if (exporter.hasADESupport()) {
-			complexADEHookTables = exporter.getADEHookTables(TableEnum.TRANSPORTATION_COMPLEX);
-			objectADEHookTables = exporter.getADEHookTables(TableEnum.TRAFFIC_AREA);			
-			if (complexADEHookTables != null) addJoinsToADEHookTables(complexADEHookTables, table);
-			if (objectADEHookTables != null) addJoinsToADEHookTables(objectADEHookTables, trafficArea);
-		}
-
-		cityObjectExporter = exporter.getExporter(DBCityObject.class);
-		geometryExporter = exporter.getExporter(DBSurfaceGeometry.class);
-		gmlConverter = exporter.getGMLConverter();
-		valueSplitter = exporter.getAttributeValueSplitter();
+		complexADEHookTables = addJoinsToADEHookTables(TableEnum.TRANSPORTATION_COMPLEX, table);
 	}
 
 	@Override
@@ -130,7 +119,9 @@ public class DBTransportationComplex extends AbstractFeatureExporter<Transportat
 			long currentComplexId = 0;
 			TransportationComplex complex = null;
 			ProjectionFilter projectionFilter = null;
-			HashMap<Long, TransportationComplex> complexes = new HashMap<>();
+			Map<Long, TransportationComplex> complexes = new HashMap<>();
+			Map<Long, GeometrySetterHandler> geometries = new LinkedHashMap<>();
+			Map<Long, List<String>> adeHookTables = complexADEHookTables != null ? new HashMap<>() : null;
 
 			while (rs.next()) {
 				long complexId = rs.getLong("id");
@@ -160,13 +151,7 @@ public class DBTransportationComplex extends AbstractFeatureExporter<Transportat
 						projectionFilter = exporter.getProjectionFilter(featureType);
 
 						// export city object information
-						boolean success = cityObjectExporter.doExport(complex, complexId, featureType, projectionFilter);
-						if (!success) {
-							if (complex == root)
-								return Collections.emptyList();
-							else if (featureType.isSetTopLevel())
-								continue;
-						}
+						cityObjectExporter.addBatch(complex, complexId, featureType, projectionFilter);
 
 						if (projectionFilter.containsProperty("class", transportationModule)) {
 							String clazz = rs.getString("class");
@@ -209,40 +194,33 @@ public class DBTransportationComplex extends AbstractFeatureExporter<Transportat
 							if (!projectionFilter.containsProperty("lod" + lod + "MultiSurface", transportationModule))
 								continue;
 
-							long surfaceGeometryId = rs.getLong("lod" + lod + "_multi_surface_id");
+							long geometryId = rs.getLong("lod" + lod + "_multi_surface_id");
 							if (rs.wasNull())
 								continue;
 
-							SurfaceGeometry geometry = geometryExporter.doExport(surfaceGeometryId);
-							if (geometry != null && geometry.getType() == GMLClass.MULTI_SURFACE) {
-								MultiSurfaceProperty multiSurfaceProperty = new MultiSurfaceProperty();
-								if (geometry.isSetGeometry())
-									multiSurfaceProperty.setMultiSurface((MultiSurface)geometry.getGeometry());
-								else
-									multiSurfaceProperty.setHref(geometry.getReference());
-
-								switch (lod) {
+							switch (lod) {
 								case 1:
-									complex.setLod1MultiSurface(multiSurfaceProperty);
+									geometries.put(geometryId, new DefaultGeometrySetterHandler(complex::setLod1MultiSurface));
 									break;
 								case 2:
-									complex.setLod2MultiSurface(multiSurfaceProperty);
+									geometries.put(geometryId, new DefaultGeometrySetterHandler(complex::setLod2MultiSurface));
 									break;
 								case 3:
-									complex.setLod3MultiSurface(multiSurfaceProperty);
+									geometries.put(geometryId, new DefaultGeometrySetterHandler(complex::setLod3MultiSurface));
 									break;
 								case 4:
-									complex.setLod4MultiSurface(multiSurfaceProperty);
+									geometries.put(geometryId, new DefaultGeometrySetterHandler(complex::setLod4MultiSurface));
 									break;
-								}
 							}
 						}
-						
-						// delegate export of generic ADE properties
+
+						// get tables of ADE hook properties
 						if (complexADEHookTables != null) {
-							List<String> adeHookTables = retrieveADEHookTables(complexADEHookTables, rs);
-							if (adeHookTables != null)
-								exporter.delegateToADEExporter(adeHookTables, complex, complexId, featureType, projectionFilter);
+							List<String> tables = retrieveADEHookTables(complexADEHookTables, rs);
+							if (tables != null) {
+								adeHookTables.put(complexId, tables);
+								complex.setLocalProperty("type", featureType);
+							}
 						}
 
 						complex.setLocalProperty("projection", projectionFilter);
@@ -257,141 +235,45 @@ public class DBTransportationComplex extends AbstractFeatureExporter<Transportat
 						&& !projectionFilter.containsProperty("auxiliaryTrafficArea", transportationModule)))
 					continue;
 
-				long transportationObjectId = rs.getLong("ta_id");
+				long transportationObjectId = rs.getLong("taid");
 				if (rs.wasNull())
 					continue;
 
+				int objectClassId = rs.getInt("taobjectclass_id");
+
 				// create new traffic area object
-				int objectClassId = rs.getInt("ta_objectclass_id");
-				AbstractTransportationObject transportationObject = exporter.createObject(objectClassId, AbstractTransportationObject.class);
+				FeatureType featureType = exporter.getFeatureType(objectClassId);
+				AbstractTransportationObject transportationObject = trafficAreaExporer.doExport(transportationObjectId, featureType, "ta", trafficAreaADEHookTables, rs);
 				if (transportationObject == null) {
 					exporter.logOrThrowErrorMessage("Failed to instantiate " + exporter.getObjectSignature(objectClassId, transportationObjectId) + " as transportation object.");
 					continue;
 				}
 
-				// get projection filter
-				FeatureType transportationObjectType = exporter.getFeatureType(objectClassId);
-				ProjectionFilter transportationObjectProjectionFilter = exporter.getProjectionFilter(transportationObjectType);
-
-				// cityobject stuff
-				cityObjectExporter.doExport(transportationObject, transportationObjectId, transportationObjectType, transportationObjectProjectionFilter);
-
-				boolean isTrafficArea = transportationObject instanceof TrafficArea;
-
-				if (transportationObjectProjectionFilter.containsProperty("class", transportationModule)) {
-					String clazz = rs.getString("ta_class");
-					if (!rs.wasNull()) {
-						Code code = new Code(clazz);
-						code.setCodeSpace(rs.getString("ta_class_codespace"));
-
-						if (isTrafficArea)
-							((TrafficArea)transportationObject).setClazz(code);
-						else
-							((AuxiliaryTrafficArea)transportationObject).setClazz(code);
-					}
-				}
-
-				if (transportationObjectProjectionFilter.containsProperty("function", transportationModule)) {
-					for (SplitValue splitValue : valueSplitter.split(rs.getString("ta_function"), rs.getString("ta_function_codespace"))) {
-						Code function = new Code(splitValue.result(0));
-						function.setCodeSpace(splitValue.result(1));
-
-						if (isTrafficArea)
-							((TrafficArea)transportationObject).addFunction(function);
-						else
-							((AuxiliaryTrafficArea)transportationObject).addFunction(function);
-					}
-				}
-
-				if (transportationObjectProjectionFilter.containsProperty("usage", transportationModule)) {
-					for (SplitValue splitValue : valueSplitter.split(rs.getString("ta_usage"), rs.getString("ta_usage_codespace"))) {
-						Code usage = new Code(splitValue.result(0));
-						usage.setCodeSpace(splitValue.result(1));
-
-						if (isTrafficArea)
-							((TrafficArea)transportationObject).addUsage(usage);
-						else
-							((AuxiliaryTrafficArea)transportationObject).addUsage(usage);
-					}
-				}
-
-				if (transportationObjectProjectionFilter.containsProperty("surfaceMaterial", transportationModule)) {
-					String surfaceMaterial = rs.getString("surface_material");
-					if (!rs.wasNull()) {
-						Code code = new Code(surfaceMaterial);
-						code.setCodeSpace(rs.getString("surface_material_codespace"));
-
-						if (isTrafficArea)
-							((TrafficArea)transportationObject).setSurfaceMaterial(code);
-						else
-							((AuxiliaryTrafficArea)transportationObject).setSurfaceMaterial(code);
-					}
-				}
-
-				LodIterator lodIterator = lodFilter.iterator(2, 4);
-				while (lodIterator.hasNext()) {
-					int lod = lodIterator.next();
-
-					if (!transportationObjectProjectionFilter.containsProperty("lod" + lod + "MultiSurface", transportationModule))
-						continue;
-
-					long surfaceGeometryId = rs.getLong("ta_lod" + lod + "_multi_surface_id");
-					if (rs.wasNull())
-						continue;
-
-					SurfaceGeometry geometry = geometryExporter.doExport(surfaceGeometryId);
-					if (geometry != null && geometry.getType() == GMLClass.MULTI_SURFACE) {
-						MultiSurfaceProperty multiSurfaceProperty = new MultiSurfaceProperty();
-						if (geometry.isSetGeometry())
-							multiSurfaceProperty.setMultiSurface((MultiSurface)geometry.getGeometry());
-						else
-							multiSurfaceProperty.setHref(geometry.getReference());
-
-						switch (lod) {
-						case 2:
-							if (isTrafficArea)
-								((TrafficArea)transportationObject).setLod2MultiSurface(multiSurfaceProperty);
-							else
-								((AuxiliaryTrafficArea)transportationObject).setLod2MultiSurface(multiSurfaceProperty);
-							break;
-						case 3:
-							if (isTrafficArea)
-								((TrafficArea)transportationObject).setLod3MultiSurface(multiSurfaceProperty);
-							else
-								((AuxiliaryTrafficArea)transportationObject).setLod3MultiSurface(multiSurfaceProperty);
-							break;
-						case 4:
-							if (isTrafficArea)
-								((TrafficArea)transportationObject).setLod4MultiSurface(multiSurfaceProperty);
-							else
-								((AuxiliaryTrafficArea)transportationObject).setLod4MultiSurface(multiSurfaceProperty);
-							break;
-						}
-					}
-				}
-				
-				// delegate export of generic ADE properties
-				if (objectADEHookTables != null) {
-					List<String> adeHookTables = retrieveADEHookTables(objectADEHookTables, rs);
-					if (adeHookTables != null)
-						exporter.delegateToADEExporter(adeHookTables, transportationObject, transportationObjectId, transportationObjectType, transportationObjectProjectionFilter);
-				}
-
-				// check whether lod filter is satisfied
-				if (!exporter.satisfiesLodFilter(transportationObject))
-					continue;
-
 				if (transportationObject instanceof TrafficArea) {
-					TrafficAreaProperty property = new TrafficAreaProperty((TrafficArea)transportationObject);
+					TrafficAreaProperty property = new TrafficAreaProperty((TrafficArea) transportationObject);
 					complex.addTrafficArea(property);
 				} else {
-					AuxiliaryTrafficAreaProperty property  = new AuxiliaryTrafficAreaProperty((AuxiliaryTrafficArea)transportationObject);
+					AuxiliaryTrafficAreaProperty property  = new AuxiliaryTrafficAreaProperty((AuxiliaryTrafficArea) transportationObject);
 					complex.addAuxiliaryTrafficArea(property);
+				}
+			}
+
+			// export postponed geometries
+			for (Map.Entry<Long, GeometrySetterHandler> entry : geometries.entrySet())
+				geometryExporter.addBatch(entry.getKey(), entry.getValue());
+
+			// delegate export of generic ADE properties
+			if (adeHookTables != null) {
+				for (Map.Entry<Long, List<String>> entry : adeHookTables.entrySet()) {
+					long complexId = entry.getKey();
+					complex = complexes.get(complexId);
+					exporter.delegateToADEExporter(entry.getValue(), complex, complexId,
+							(FeatureType) complex.getLocalProperty("type"),
+							(ProjectionFilter) complex.getLocalProperty("projection"));
 				}
 			}
 
 			return complexes.values();
 		}
 	}
-
 }

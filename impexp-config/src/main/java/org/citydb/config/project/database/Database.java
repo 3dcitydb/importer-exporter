@@ -27,28 +27,27 @@
  */
 package org.citydb.config.project.database;
 
-import java.util.ArrayList;
-import java.util.EnumMap;
-import java.util.List;
-
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.XmlType;
+import java.util.ArrayList;
+import java.util.EnumMap;
+import java.util.List;
 
-@XmlType(name="DatabaseType", propOrder={
+@XmlType(name = "DatabaseType", propOrder = {
 		"referenceSystems",
 		"connections",
 		"activeConnection",
-		"updateBatching",
+		"importBatching",
+		"exportBatching",
 		"workspaces",
 		"operation"
 })
 public class Database {
 	public static final String CITYDB_PRODUCT_NAME = "3D City Database";
 	public static final String VCDB_PRODUCT_NAME = "virtualcityDATABASE";
-	public static final int MAX_BATCH_SIZE = 65535;
-	public static final EnumMap<PredefinedSrsName, DatabaseSrs> PREDEFINED_SRS = new EnumMap<PredefinedSrsName, DatabaseSrs>(PredefinedSrsName.class);
+	public static final EnumMap<PredefinedSrsName, DatabaseSrs> PREDEFINED_SRS = new EnumMap<>(PredefinedSrsName.class);
 
 	public enum PredefinedSrsName {
 		WGS84_2D
@@ -58,20 +57,22 @@ public class Database {
 		PREDEFINED_SRS.put(PredefinedSrsName.WGS84_2D, new DatabaseSrs(4326, "urn:ogc:def:crs:EPSG::4326", "[Default] WGS 84", "", DatabaseSrsType.GEOGRAPHIC2D, true));
 	}
 
-	private DatabaseSrsList referenceSystems;
-	@XmlElement(name="connection", required=true)
-	@XmlElementWrapper(name="connections")	
+	private final DatabaseSrsList referenceSystems;
+	@XmlElement(name = "connection", required = true)
+	@XmlElementWrapper(name = "connections")
 	private List<DBConnection> connections;
 	@XmlIDREF
 	private DBConnection activeConnection;
-	private UpdateBatching updateBatching;
+	private ImportBatching importBatching;
+	private ExportBatching exportBatching;
 	private Workspaces workspaces;
 	private DBOperation operation;
 
 	public Database() {
 		referenceSystems = new DatabaseSrsList();
-		connections = new ArrayList<DBConnection>();
-		updateBatching = new UpdateBatching();
+		connections = new ArrayList<>();
+		importBatching = new ImportBatching();
+		exportBatching = new ExportBatching();
 		workspaces = new Workspaces();
 		operation = new DBOperation();
 	}
@@ -118,15 +119,24 @@ public class Database {
 			this.activeConnection = activeConnection;
 	}
 
-	public UpdateBatching getUpdateBatching() {
-		return updateBatching;
+	public ImportBatching getImportBatching() {
+		return importBatching;
 	}
 
-	public void setUpdateBatching(UpdateBatching updateBatching) {
-		if (updateBatching != null)
-			this.updateBatching = updateBatching;
+	public void setImportBatching(ImportBatching importBatching) {
+		if (importBatching != null)
+			this.importBatching = importBatching;
 	}
-	
+
+	public ExportBatching getExportBatching() {
+		return exportBatching;
+	}
+
+	public void setExportBatching(ExportBatching exportBatching) {
+		if (exportBatching != null)
+			this.exportBatching = exportBatching;
+	}
+
 	public Workspaces getWorkspaces() {
 		return workspaces;
 	}
