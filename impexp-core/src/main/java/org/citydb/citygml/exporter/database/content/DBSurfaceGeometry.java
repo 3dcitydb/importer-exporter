@@ -222,7 +222,7 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryExporter {
 					while (rs.next()) {
 						GeometryTree geomTree = geomTrees.get(rs.getLong(11));
 						if (geomTree != null)
-							addSurfaceGeomtry(geomTree, rs);
+							addSurfaceGeometry(geomTree, rs);
 					}
 				}
 
@@ -255,7 +255,7 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryExporter {
 		try (ResultSet rs = psSelect.executeQuery()) {
 			GeometryTree geomTree = new GeometryTree(isImplicit);
 			while (rs.next())
-				addSurfaceGeomtry(geomTree, rs);
+				addSurfaceGeometry(geomTree, rs);
 
 			if (geomTree.root != 0)
 				return rebuildGeometry(geomTree.getNode(geomTree.root), false, false);
@@ -266,7 +266,7 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryExporter {
 		}
 	}
 
-	private void addSurfaceGeomtry(GeometryTree geomTree, ResultSet rs) throws CityGMLExportException, SQLException {
+	private void addSurfaceGeometry(GeometryTree geomTree, ResultSet rs) throws CityGMLExportException, SQLException {
 		long id = rs.getLong(1);
 
 		// constructing a geometry node
