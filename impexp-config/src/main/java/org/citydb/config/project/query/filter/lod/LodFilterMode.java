@@ -37,7 +37,11 @@ public enum LodFilterMode {
 	@XmlEnumValue("or")
 	OR("Or"),
 	@XmlEnumValue("and")
-	AND("And");
+	AND("And"),
+    @XmlEnumValue("minimum")
+    MINIMUM("Minimum LoD"),
+    @XmlEnumValue("maximum")
+    MAXIMUM("Maximum LoD");
 	
 	private final String value;
 

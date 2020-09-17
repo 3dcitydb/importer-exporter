@@ -125,7 +125,7 @@ public class SQLQueryBuilder {
 		// lod filter
 		if (query.isSetLodFilter()) {
 			LodFilter lodFilter = query.getLodFilter();
-			if (lodFilter.getFilterMode() != LodFilterMode.OR || !lodFilter.areAllEnabled()) {
+			if (lodFilter.getFilterMode() == LodFilterMode.AND || !lodFilter.areAllEnabled()) {
 				LodFilterBuilder lodFilterBuilder = new LodFilterBuilder(schemaMapping, schemaName);
 				lodFilterBuilder.buildLodFilter(query.getLodFilter(), typeFilter, query.getTargetVersion(), queryContext);
 			}

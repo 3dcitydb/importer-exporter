@@ -40,7 +40,6 @@ import org.citydb.sqlbuilder.expression.PlaceHolder;
 import org.citydb.sqlbuilder.schema.Table;
 import org.citydb.sqlbuilder.select.Select;
 import org.citydb.sqlbuilder.select.operator.comparison.ComparisonFactory;
-import org.citydb.sqlbuilder.select.projection.ConstantColumn;
 import org.citygml4j.model.citygml.core.ImplicitGeometry;
 import org.citygml4j.model.gml.GMLClass;
 import org.citygml4j.model.gml.geometry.AbstractGeometry;
@@ -84,11 +83,8 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryExporter {
 	private final boolean exportAppearance;
 	private final boolean useXLink;
 
-	private PreparedStatement psImport;
 	private boolean appendOldGmlId;
 	private String gmlIdPrefix;
-	private int commitAfter;
-	private int batchCounter;
 
 	public DBSurfaceGeometry(Connection connection, CacheTable cacheTable, CityGMLExportManager exporter, Config config) throws SQLException {
 		this.exporter = exporter;
@@ -98,20 +94,6 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryExporter {
 		exportAppearance = config.getInternal().isExportGlobalAppearances();
 		useXLink = exporter.getExportConfig().getXlink().getGeometry().isModeXLink();
 		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
-
-		if (exportAppearance) {
-			commitAfter = config.getProject().getDatabase().getImportBatching().getTempBatchSize();
-			if (commitAfter > exporter.getDatabaseAdapter().getMaxBatchSize())
-				commitAfter = exporter.getDatabaseAdapter().getMaxBatchSize();
-
-			Table table = new Table(TableEnum.TEXTUREPARAM.getName(), schema);
-			Select select = new Select().addProjection(new ConstantColumn(new PlaceHolder<>()));
-			if (exporter.getDatabaseAdapter().getSQLAdapter().requiresPseudoTableInSelect()) select.setPseudoTable(exporter.getDatabaseAdapter().getSQLAdapter().getPseudoTableName());
-			select.addSelection(ComparisonFactory.exists(new Select().addProjection(new ConstantColumn(1).withFromTable(table))
-					.addSelection(ComparisonFactory.equalTo(table.getColumn("surface_geometry_id"), new PlaceHolder<>()))));
-
-			psImport = cacheTable.getConnection().prepareStatement("insert into " + cacheTable.getTableName() + " " + select.toString());
-		}
 
 		if (!useXLink) {
 			appendOldGmlId = exporter.getExportConfig().getXlink().getGeometry().isSetAppendId();
@@ -299,6 +281,8 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryExporter {
 	}
 
 	private SurfaceGeometry rebuildGeometry(GeometryNode geomNode, boolean isSetOrientableSurface, boolean wasXlink) throws CityGMLExportException, SQLException {
+		SurfaceGeometry result = null;
+
 		// try and determine the geometry type
 		GMLClass surfaceGeometryType;
 		if (geomNode.geometry != null) {
@@ -352,9 +336,6 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryExporter {
 					}
 				}
 			}
-
-			if (exportAppearance && !wasXlink)
-				writeToAppearanceCache(geomNode);
 		}
 
 		// check whether we have to initialize an orientableSurface
@@ -408,7 +389,7 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryExporter {
 			}
 
 			// check whether we have to embrace the polygon with an orientableSurface
-			return initOrientableSurface || (isSetOrientableSurface && !geomNode.isReverse) ?
+			result = initOrientableSurface || (isSetOrientableSurface && !geomNode.isReverse) ?
 					new SurfaceGeometry(reverseSurface(polygon)) :
 					new SurfaceGeometry(polygon);
 		}
@@ -438,12 +419,10 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryExporter {
 
 			if (compositeSurface.isSetSurfaceMember()) {
 				// check whether we have to embrace the compositeSurface with an orientableSurface
-				return initOrientableSurface || (isSetOrientableSurface && !geomNode.isReverse) ?
+				result = initOrientableSurface || (isSetOrientableSurface && !geomNode.isReverse) ?
 						new SurfaceGeometry(reverseSurface(compositeSurface)) :
 						new SurfaceGeometry(compositeSurface);
 			}
-
-			return null;
 		}
 
 		// compositeSolid
@@ -469,7 +448,7 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryExporter {
 				}
 			}
 
-			return compositeSolid.isSetSolidMember() ? new SurfaceGeometry(compositeSolid) : null;
+			result = compositeSolid.isSetSolidMember() ? new SurfaceGeometry(compositeSolid) : null;
 		}
 
 		// a simple solid
@@ -495,7 +474,7 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryExporter {
 				}
 			}
 
-			return solid.isSetExterior() ? new SurfaceGeometry(solid) : null;
+			result = solid.isSetExterior() ? new SurfaceGeometry(solid) : null;
 		}
 
 		// multiSolid
@@ -521,7 +500,7 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryExporter {
 				}
 			}
 
-			return multiSolid.isSetSolidMember() ? new SurfaceGeometry(multiSolid) : null;
+			result = multiSolid.isSetSolidMember() ? new SurfaceGeometry(multiSolid) : null;
 		}
 
 		// multiSurface
@@ -547,7 +526,7 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryExporter {
 				}
 			}
 
-			return multiSurface.isSetSurfaceMember() ? new SurfaceGeometry(multiSurface) : null;
+			result = multiSurface.isSetSurfaceMember() ? new SurfaceGeometry(multiSurface) : null;
 		}
 
 		// triangulatedSurface
@@ -580,15 +559,22 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryExporter {
 				triangulatedSurface.setTrianglePatches(property);
 
 				// check whether we have to embrace the compositeSurface with an orientableSurface
-				return initOrientableSurface || (isSetOrientableSurface && !geomNode.isReverse) ?
+				result = initOrientableSurface || (isSetOrientableSurface && !geomNode.isReverse) ?
 						new SurfaceGeometry(reverseSurface(triangulatedSurface)) :
 						new SurfaceGeometry(triangulatedSurface);
 			}
-
-			return null;
 		}
 
-		return null;
+		// cache database id in case we have to export global appearances
+		if (exportAppearance
+				&& !wasXlink
+				&& result != null
+				&& (result.getGeometry() instanceof AbstractSurface
+				|| result.getGeometry() instanceof MultiSurface)) {
+			result.getGeometry().setLocalProperty("global_app_cache_id", geomNode.id);
+		}
+
+		return result;
 	}
 
 	private OrientableSurface reverseSurface(AbstractSurface surface) {
@@ -605,27 +591,10 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryExporter {
 		return orientableSurface;
 	}
 
-	private void writeToAppearanceCache(GeometryNode geomNode) throws SQLException {
-		psImport.setLong(1, geomNode.id);
-		psImport.setLong(2, geomNode.id);
-		psImport.addBatch();
-		batchCounter++;
-
-		if (batchCounter == commitAfter) {
-			psImport.executeBatch();
-			batchCounter = 0;
-		}
-	}
-
 	@Override
 	public void close() throws SQLException {
 		psBulk.close();
 		psSelect.close();
-
-		if (psImport != null) {
-			psImport.executeBatch();
-			psImport.close();
-		}
 	}
 
 	private static class GeometryNode {

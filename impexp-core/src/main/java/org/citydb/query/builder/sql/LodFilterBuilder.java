@@ -250,7 +250,7 @@ public class LodFilterBuilder {
 					if (!lodMatcher.matches())
 						continue;
 
-					lod = Integer.valueOf(lodMatcher.group(1));
+					lod = Integer.parseInt(lodMatcher.group(1));
 				}
 
 				if (!lodFilter.isEnabled(lod))

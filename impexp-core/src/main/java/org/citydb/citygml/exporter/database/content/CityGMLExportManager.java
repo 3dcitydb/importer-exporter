@@ -203,7 +203,7 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 		exportCounter = new ExportCounter(schemaMapping);
 
 		if (!query.getLodFilter().preservesGeometry()) {
-			lodGeometryChecker = new LodGeometryChecker(schemaMapping);
+			lodGeometryChecker = new LodGeometryChecker(this, schemaMapping);
 			if (config.getProject().getExporter().getAppearances().isSetExportAppearance())
 				appearanceRemover = new AppearanceRemover();
 		}
@@ -226,13 +226,17 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 		// execute batch export
 		executeBatch();
 
-		// remove empty city objects
+		// remove empty city objects in case we filter LoDs
 		if (lodGeometryChecker != null)
 			lodGeometryChecker.cleanupCityObjects(object);
 
-		// clean up appearances
+		// remove local appearances in case we filter LoDs
 		if (appearanceRemover != null)
 			appearanceRemover.cleanupAppearances(object);
+
+		// cache geometry ids in case we export global appearances
+		if (config.getInternal().isExportGlobalAppearances())
+			getExporter(DBGlobalAppearance.class).cacheGeometryIds(object);
 
 		if (object instanceof AbstractFeature) {
 			AbstractFeature feature = (AbstractFeature) object;
