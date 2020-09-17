@@ -99,7 +99,7 @@ public class DBBuildingInstallation extends AbstractFeatureExporter<AbstractCity
 		super(AbstractCityObject.class, connection, exporter);
 
 		batches = new LinkedHashMap<>();
-		batchSize = exporter.getBatchSize();
+		batchSize = exporter.getFeatureBatchSize();
 		cityObjectExporter = exporter.getExporter(DBCityObject.class);
 		thematicSurfaceExporter = exporter.getExporter(DBThematicSurface.class);
 		openingExporter = exporter.getExporter(DBOpening.class);

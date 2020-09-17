@@ -307,8 +307,10 @@ public class Exporter implements EventHandler {
 
 		for (int i = 0; shouldRun && i < rows; i++) {
 			for (int j = 0; shouldRun && j < columns; j++) {
-				Path folder = exportFile.getParent();
 				String fileName = exportFile.getFileName().toString();
+				Path folder = exportFile.getParent();
+				if (folder == null)
+					folder = Paths.get("").toAbsolutePath().normalize();
 
 				if (useTiling) {
 					Tile tile;

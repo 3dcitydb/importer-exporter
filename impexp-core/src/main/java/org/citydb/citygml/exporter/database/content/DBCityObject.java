@@ -116,7 +116,7 @@ public class DBCityObject implements DBExporter {
 		this.exporter = exporter;
 
 		batches = new LinkedHashMap<>();
-		batchSize = exporter.getBatchSize();
+		batchSize = exporter.getFeatureBatchSize();
 		gmlSrsName = query.getTargetSrs().getGMLSrsName();
 		exportAppearance = exporter.getExportConfig().getAppearances().isSetExportAppearance();
 

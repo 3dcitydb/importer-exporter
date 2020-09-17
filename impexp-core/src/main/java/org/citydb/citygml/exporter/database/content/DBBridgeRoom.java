@@ -93,7 +93,7 @@ public class DBBridgeRoom extends AbstractFeatureExporter<BridgeRoom> {
 		super(BridgeRoom.class, connection, exporter);
 
 		batches = new LinkedHashMap<>();
-		batchSize = exporter.getBatchSize();
+		batchSize = exporter.getFeatureBatchSize();
 		cityObjectExporter = exporter.getExporter(DBCityObject.class);
 		bridgeInstallationExporter = exporter.getExporter(DBBridgeInstallation.class);
 		thematicSurfaceExporter = exporter.getExporter(DBBridgeThematicSurface.class);

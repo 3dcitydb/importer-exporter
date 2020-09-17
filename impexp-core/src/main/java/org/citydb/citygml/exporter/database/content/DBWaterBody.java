@@ -30,6 +30,8 @@ package org.citydb.citygml.exporter.database.content;
 import org.citydb.citygml.exporter.CityGMLExportException;
 import org.citydb.citygml.exporter.util.AttributeValueSplitter;
 import org.citydb.citygml.exporter.util.AttributeValueSplitter.SplitValue;
+import org.citydb.citygml.exporter.util.DefaultGeometrySetterHandler;
+import org.citydb.citygml.exporter.util.GeometrySetterHandler;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.database.schema.TableEnum;
 import org.citydb.database.schema.mapping.FeatureType;
@@ -47,6 +49,7 @@ import org.citygml4j.model.citygml.waterbody.WaterBody;
 import org.citygml4j.model.gml.basicTypes.Code;
 import org.citygml4j.model.gml.geometry.aggregates.MultiCurveProperty;
 import org.citygml4j.model.module.citygml.CityGMLModuleType;
+import org.citygml4j.model.module.citygml.CityGMLVersion;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -54,6 +57,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -66,6 +70,7 @@ public class DBWaterBody extends AbstractFeatureExporter<WaterBody> {
 	private final String waterBodyModule;
 	private final LodFilter lodFilter;
 	private final AttributeValueSplitter valueSplitter;
+	private final CityGMLVersion targetVersion;
 	private final boolean hasObjectClassIdColumn;
 	private final boolean useXLink;
 	private final List<Table> bodyADEHookTables;
@@ -79,9 +84,10 @@ public class DBWaterBody extends AbstractFeatureExporter<WaterBody> {
 		geometryExporter = exporter.getExporter(DBSurfaceGeometry.class);
 		gmlConverter = exporter.getGMLConverter();
 		valueSplitter = exporter.getAttributeValueSplitter();
+		targetVersion = exporter.getTargetCityGMLVersion();
 
 		CombinedProjectionFilter projectionFilter = exporter.getCombinedProjectionFilter(TableEnum.WATERBODY.getName());
-		waterBodyModule = exporter.getTargetCityGMLVersion().getCityGMLModule(CityGMLModuleType.WATER_BODY).getNamespaceURI();
+		waterBodyModule = targetVersion.getCityGMLModule(CityGMLModuleType.WATER_BODY).getNamespaceURI();
 		lodFilter = exporter.getLodFilter();
 		hasObjectClassIdColumn = exporter.getDatabaseAdapter().getConnectionMetaData().getCityDBVersion().compareTo(4, 0, 0) >= 0;
 		useXLink = exporter.getExportConfig().getXlink().getFeature().isModeXLink();
@@ -130,6 +136,9 @@ public class DBWaterBody extends AbstractFeatureExporter<WaterBody> {
 			WaterBody waterBody = null;
 			ProjectionFilter projectionFilter = null;
 			Map<Long, WaterBody> waterBodies = new HashMap<>();
+			Map<Long, GeometrySetterHandler> geometries = targetVersion == CityGMLVersion.v1_0_0 ?
+					null :
+					new LinkedHashMap<>();
 
 			while (rs.next()) {
 				long waterBodyId = rs.getLong("id");
@@ -252,16 +261,28 @@ public class DBWaterBody extends AbstractFeatureExporter<WaterBody> {
 
 							switch (lod) {
 								case 1:
-									geometryExporter.addBatch(geometryId, waterBody::setLod1Solid);
+									if (targetVersion == CityGMLVersion.v1_0_0)
+										geometryExporter.addBatch(geometryId, waterBody::setLod1Solid);
+									else
+										geometries.put(geometryId, new DefaultGeometrySetterHandler(waterBody::setLod1Solid));
 									break;
 								case 2:
-									geometryExporter.addBatch(geometryId, waterBody::setLod2Solid);
+									if (targetVersion == CityGMLVersion.v1_0_0)
+										geometryExporter.addBatch(geometryId, waterBody::setLod2Solid);
+									else
+										geometries.put(geometryId, new DefaultGeometrySetterHandler(waterBody::setLod2Solid));
 									break;
 								case 3:
-									geometryExporter.addBatch(geometryId, waterBody::setLod3Solid);
+									if (targetVersion == CityGMLVersion.v1_0_0)
+										geometryExporter.addBatch(geometryId, waterBody::setLod3Solid);
+									else
+										geometries.put(geometryId, new DefaultGeometrySetterHandler(waterBody::setLod3Solid));
 									break;
 								case 4:
-									geometryExporter.addBatch(geometryId, waterBody::setLod4Solid);
+									if (targetVersion == CityGMLVersion.v1_0_0)
+										geometryExporter.addBatch(geometryId, waterBody::setLod4Solid);
+									else
+										geometries.put(geometryId, new DefaultGeometrySetterHandler(waterBody::setLod4Solid));
 									break;
 							}
 						}
@@ -317,6 +338,12 @@ public class DBWaterBody extends AbstractFeatureExporter<WaterBody> {
 					waterBoundarySurface.setId(exporter.generateNewGmlId(waterBoundarySurface, gmlId));
 
 				waterBody.addBoundedBySurface(new BoundedByWaterSurfaceProperty(waterBoundarySurface));
+			}
+
+			// export postponed geometries if target CityGML version is 2.0
+			if (targetVersion != CityGMLVersion.v1_0_0) {
+				for (Map.Entry<Long, GeometrySetterHandler> entry : geometries.entrySet())
+					geometryExporter.addBatch(entry.getKey(), entry.getValue());
 			}
 
 			return waterBodies.values();

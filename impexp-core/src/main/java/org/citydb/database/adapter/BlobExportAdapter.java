@@ -58,7 +58,7 @@ public class BlobExportAdapter {
 		this.schema = schema;
 
 		batches = new HashMap<>();
-		batchSize = ExportBatching.DEFAULT_BLOB_BATCH_SIZE;
+		batchSize = ExportBatching.DEFAULT_BATCH_SIZE;
 	}
 
 	public BlobExportAdapter withBatchSize(int batchSize) {

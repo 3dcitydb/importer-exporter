@@ -99,7 +99,7 @@ public class DBBridgeInstallation extends AbstractFeatureExporter<AbstractCityOb
 		super(AbstractCityObject.class, connection, exporter);
 
 		batches = new LinkedHashMap<>();
-		batchSize = exporter.getBatchSize();
+		batchSize = exporter.getFeatureBatchSize();
 		cityObjectReader = exporter.getExporter(DBCityObject.class);
 		thematicSurfaceExporter = exporter.getExporter(DBBridgeThematicSurface.class);
 		openingExporter = exporter.getExporter(DBBridgeOpening.class);

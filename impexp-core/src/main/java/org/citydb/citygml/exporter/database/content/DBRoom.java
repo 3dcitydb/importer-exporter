@@ -93,7 +93,7 @@ public class DBRoom extends AbstractFeatureExporter<Room> {
 		super(Room.class, connection, exporter);
 
 		batches = new LinkedHashMap<>();
-		batchSize = exporter.getBatchSize();
+		batchSize = exporter.getFeatureBatchSize();
 		cityObjectExporter = exporter.getExporter(DBCityObject.class);
 		buildingInstallationExporter = exporter.getExporter(DBBuildingInstallation.class);
 		thematicSurfaceExporter = exporter.getExporter(DBThematicSurface.class);
