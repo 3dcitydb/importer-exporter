@@ -37,13 +37,13 @@ import java.util.LinkedHashSet;
 })
 public class LodFilter {
 	@XmlAttribute
-	private LodFilterMode mode = LodFilterMode.OR;
+	private LodFilterMode mode;
 	@XmlAttribute
-	private LodSearchMode searchMode = LodSearchMode.DEPTH;	
+	private LodSearchMode searchMode;
 	@XmlAttribute
-	private Integer searchDepth = 1;
+	private Integer searchDepth;
 	@XmlElement(name="lod", required = true)
-	private LinkedHashSet<Integer> lods;
+	private final LinkedHashSet<Integer> lods;
 	
 	public LodFilter() {
 		this(false);
@@ -58,7 +58,7 @@ public class LodFilter {
 	}
 	
 	public LodFilterMode getMode() {
-		return mode;
+		return mode != null ? mode : LodFilterMode.OR;
 	}
 
 	public void setMode(LodFilterMode mode) {
@@ -66,7 +66,7 @@ public class LodFilter {
 	}
 	
 	public LodSearchMode getSearchMode() {
-		return searchMode;
+		return searchMode != null ? searchMode : LodSearchMode.DEPTH;
 	}
 
 	public void setSearchMode(LodSearchMode searchMode) {
