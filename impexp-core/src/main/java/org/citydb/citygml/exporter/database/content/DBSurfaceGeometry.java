@@ -94,7 +94,7 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryExporter {
 		this.exporter = exporter;
 
 		batches = new ArrayList<>();
-		batchSize = exporter.getBatchSize();
+		batchSize = exporter.getGeometryBatchSize();
 		exportAppearance = config.getInternal().isExportGlobalAppearances();
 		useXLink = exporter.getExportConfig().getXlink().getGeometry().isModeXLink();
 		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();

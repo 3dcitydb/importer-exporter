@@ -89,7 +89,7 @@ public class DBTunnelHollowSpace extends AbstractFeatureExporter<HollowSpace> {
 		super(HollowSpace.class, connection, exporter);
 
 		batches = new LinkedHashMap<>();
-		batchSize = exporter.getBatchSize();
+		batchSize = exporter.getFeatureBatchSize();
 		cityObjectExporter = exporter.getExporter(DBCityObject.class);
 		tunnelInstallationExporter = exporter.getExporter(DBTunnelInstallation.class);
 		thematicSurfaceExporter = exporter.getExporter(DBTunnelThematicSurface.class);

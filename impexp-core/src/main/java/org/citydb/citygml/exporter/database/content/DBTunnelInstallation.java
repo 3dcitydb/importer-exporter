@@ -95,7 +95,7 @@ public class DBTunnelInstallation extends AbstractFeatureExporter<AbstractCityOb
 		super(AbstractCityObject.class, connection, exporter);
 
 		batches = new LinkedHashMap<>();
-		batchSize = exporter.getBatchSize();
+		batchSize = exporter.getFeatureBatchSize();
 		cityObjectExporter = exporter.getExporter(DBCityObject.class);
 		thematicSurfaceExporter = exporter.getExporter(DBTunnelThematicSurface.class);
 		openingExporter = exporter.getExporter(DBTunnelOpening.class);

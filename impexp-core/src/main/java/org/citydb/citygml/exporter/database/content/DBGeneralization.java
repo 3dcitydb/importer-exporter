@@ -58,7 +58,7 @@ public class DBGeneralization implements DBExporter {
 		this.exporter = exporter;
 
 		batches = new LinkedHashMap<>();
-		batchSize = exporter.getBatchSize();
+		batchSize = exporter.getFeatureBatchSize();
 		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 		String placeHolders = String.join(",", Collections.nCopies(batchSize, "?"));
 

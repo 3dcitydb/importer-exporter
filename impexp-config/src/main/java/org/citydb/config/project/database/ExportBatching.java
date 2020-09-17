@@ -32,31 +32,43 @@ import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 
 @XmlType(name = "ExportBatchingType", propOrder = {
-		"batchSize",
+		"featureBatchSize",
+		"geometryBatchSize",
 		"blobBatchSize"
 })
 public class ExportBatching {
 	public static final int DEFAULT_BATCH_SIZE = 30;
-	public static final int DEFAULT_BLOB_BATCH_SIZE = 30;
 
 	@XmlElement(defaultValue = "30")
 	@XmlSchemaType(name = "positiveInteger")
-	private int batchSize = DEFAULT_BATCH_SIZE;
+	private int featureBatchSize = DEFAULT_BATCH_SIZE;
 	@XmlElement(defaultValue = "30")
 	@XmlSchemaType(name = "positiveInteger")
-	private int blobBatchSize = DEFAULT_BLOB_BATCH_SIZE;
+	private int geometryBatchSize = DEFAULT_BATCH_SIZE;
+	@XmlElement(defaultValue = "30")
+	@XmlSchemaType(name = "positiveInteger")
+	private int blobBatchSize = DEFAULT_BATCH_SIZE;
 
-	public int getBatchSize() {
-		return batchSize > 0 ? batchSize : DEFAULT_BATCH_SIZE;
+	public int getFeatureBatchSize() {
+		return featureBatchSize > 0 ? featureBatchSize : DEFAULT_BATCH_SIZE;
 	}
 
-	public void setBatchSize(int batchSize) {
-		if (batchSize > 0)
-			this.batchSize = batchSize;
+	public void setFeatureBatchSize(int featureBatchSize) {
+		if (featureBatchSize > 0)
+			this.featureBatchSize = featureBatchSize;
+	}
+
+	public int getGeometryBatchSize() {
+		return geometryBatchSize > 0 ? geometryBatchSize : DEFAULT_BATCH_SIZE;
+	}
+
+	public void setGeometryBatchSize(int geometryBatchSize) {
+		if (geometryBatchSize > 0)
+			this.geometryBatchSize = geometryBatchSize;
 	}
 
 	public int getBlobBatchSize() {
-		return blobBatchSize > 0 ? blobBatchSize : DEFAULT_BLOB_BATCH_SIZE;
+		return blobBatchSize > 0 ? blobBatchSize : DEFAULT_BATCH_SIZE;
 	}
 
 	public void setBlobBatchSize(int blobBatchSize) {
