@@ -499,9 +499,9 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 	}
 
 	private int getBatchSize(int batchSize) {
-		return batchSize <= databaseAdapter.getSQLAdapter().getMaximumNumberOfItemsForInOperator() ?
-				batchSize :
-				ExportBatching.DEFAULT_BATCH_SIZE;
+		return batchSize > databaseAdapter.getSQLAdapter().getMaximumNumberOfItemsForInOperator() ?
+				databaseAdapter.getSQLAdapter().getMaximumNumberOfItemsForInOperator() :
+				batchSize;
 	}
 
 	@Override

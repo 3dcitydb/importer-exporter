@@ -37,6 +37,7 @@ import javax.xml.bind.annotation.XmlType;
 		"blobBatchSize"
 })
 public class ExportBatching {
+	public static final int MAX_BATCH_SIZE = 1000;
 	public static final int DEFAULT_BATCH_SIZE = 30;
 
 	@XmlElement(defaultValue = "30")
@@ -54,7 +55,7 @@ public class ExportBatching {
 	}
 
 	public void setFeatureBatchSize(int featureBatchSize) {
-		if (featureBatchSize > 0)
+		if (featureBatchSize > 0 && featureBatchSize <= MAX_BATCH_SIZE)
 			this.featureBatchSize = featureBatchSize;
 	}
 
@@ -63,7 +64,7 @@ public class ExportBatching {
 	}
 
 	public void setGeometryBatchSize(int geometryBatchSize) {
-		if (geometryBatchSize > 0)
+		if (geometryBatchSize > 0 && geometryBatchSize <= MAX_BATCH_SIZE)
 			this.geometryBatchSize = geometryBatchSize;
 	}
 
@@ -72,7 +73,7 @@ public class ExportBatching {
 	}
 
 	public void setBlobBatchSize(int blobBatchSize) {
-		if (blobBatchSize > 0)
+		if (blobBatchSize > 0 && blobBatchSize <= MAX_BATCH_SIZE)
 			this.blobBatchSize = blobBatchSize;
 	}
 }
