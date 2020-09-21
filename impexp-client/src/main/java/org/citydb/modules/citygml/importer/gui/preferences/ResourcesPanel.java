@@ -205,13 +205,13 @@ public class ResourcesPanel extends AbstractPreferencesComponent{
 		
 		impResTransaktCacheText.addPropertyChangeListener(new PropertyChangeListener() {
 			public void propertyChange(PropertyChangeEvent evt) {
-				checkPositive(impResTransaktCacheText, 10000);
+				checkPositive(impResTransaktCacheText, 1000);
 			}
 		});
 		
 		impResTransaktTempText.addPropertyChangeListener(new PropertyChangeListener() {
 			public void propertyChange(PropertyChangeEvent evt) {
-				checkPositive(impResTransaktTempText, 10000);
+				checkPositive(impResTransaktTempText, 1000);
 			}
 		});
 		
