@@ -80,11 +80,10 @@ jar {
 
 application {
     mainClass = 'org.citydb.ImpExp'
-    applicationName = project.appName
+    applicationName = project.appCliName
     applicationDefaultJvmArgs = ['-Xms1G']
 
     startScripts {
-        applicationName = project.appCliName
         classpath = jar.outputs.files
 
         doLast {
