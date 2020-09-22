@@ -61,15 +61,12 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.StringWriter;
+import java.io.*;
 import java.nio.charset.Charset;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -597,7 +594,7 @@ public class KmlExporterManager {
 			boolean exportGltfV1 = config.getProject().getKmlExporter().isExportGltfV1();
 			if (config.getProject().getKmlExporter().isCreateGltfModel() && !config.getProject().getKmlExporter().isEmbedTexturesInGltfFiles()) {
 				if (implicitId != null) {
-					convertColladaToglTF(colladaBundle, implicitGeometryExport, colladaModelFile, gltfModelFile, exportGltfV1);
+					convertColladaToglTF(colladaBundle, implicitGeometryExport, implicitId, colladaModelFile, gltfModelFile, exportGltfV1);
 				} else {
 					convertColladaToglTF(colladaBundle, buildingDirectory, colladaModelFile, gltfModelFile, exportGltfV1);
 				}
@@ -631,7 +628,7 @@ public class KmlExporterManager {
 			// ----------------- create glTF with embedded textures-----------------
 			if (config.getProject().getKmlExporter().isCreateGltfModel() && config.getProject().getKmlExporter().isEmbedTexturesInGltfFiles()) {
 				if (implicitId != null) {
-					convertColladaToglTF(colladaBundle, implicitGeometryExport, colladaModelFile, gltfModelFile, exportGltfV1);
+					convertColladaToglTF(colladaBundle, implicitGeometryExport, implicitId, colladaModelFile, gltfModelFile, exportGltfV1);
 				} else {
 					convertColladaToglTF(colladaBundle, buildingDirectory, colladaModelFile, gltfModelFile, exportGltfV1);
 				}
@@ -683,6 +680,10 @@ public class KmlExporterManager {
 	}
 
 	private void convertColladaToglTF(ColladaBundle colladaBundle, File buildingDirectory, File colladaModelFile, File gltfModelFile, boolean exportGltfV1) {
+		convertColladaToglTF(colladaBundle, buildingDirectory, null, colladaModelFile, gltfModelFile, exportGltfV1);
+	}
+
+	private void convertColladaToglTF(ColladaBundle colladaBundle, File buildingDirectory, String implicitId, File colladaModelFile, File gltfModelFile, boolean exportGltfV1) {
 		String collada2gltfPath = config.getProject().getKmlExporter().getPathOfGltfConverter();
 		File collada2gltfFile = new File(ClientConstants.IMPEXP_HOME.resolve(collada2gltfPath).toString());
 		if (collada2gltfFile.exists()) {
@@ -695,6 +696,7 @@ public class KmlExporterManager {
 			commands.add("-v");
 			commands.add(exportGltfV1 ? "1.0" : "2.0");
 			if (!config.getProject().getKmlExporter().isEmbedTexturesInGltfFiles()) {
+				// always embed textures if glb is enabled, this is handled in the GUI
 				commands.add("-t");
 			}
 			if (config.getProject().getKmlExporter().isExportGltfBinary()) {
@@ -708,8 +710,50 @@ public class KmlExporterManager {
 			try {
 				Process process = pb.start();
 				process.waitFor();
+				// change the image URI in the glTF file
+				if (!config.getProject().getKmlExporter().isExportGltfBinary() && !config.getProject().getKmlExporter().isEmbedTexturesInGltfFiles()) {
+					BufferedReader br = new BufferedReader(new FileReader(gltfModelFile.getAbsoluteFile()));
+					StringBuilder sb = new StringBuilder();
+					String line = br.readLine();
+
+					String texImageUri = "";
+
+					while (line != null) {
+						if (line.contains("images")) {
+							while (!line.contains("uri")) {
+								sb.append(line);
+								sb.append(System.lineSeparator());
+								line = br.readLine();
+							}
+							Pattern p = Pattern.compile("\"([^\"]*)\"");
+							Matcher m = p.matcher(line);
+							while (m.find()) {
+								String found = m.group(1);
+								if (!found.equals("uri")) {
+									texImageUri = m.group(1);
+									if (implicitId != null) {
+										line = line.replace(texImageUri, "../../../" + "Appearances" + "/" + texImageUri);
+									} else {
+										line = line.replace(texImageUri, "../../../../" + "Appearances" + "/" + texImageUri);
+									}
+								}
+							}
+						}
+						sb.append(line);
+						sb.append(System.lineSeparator());
+						line = br.readLine();
+					}
+					br.close();
+
+					Writer writer = new BufferedWriter(new FileWriter(gltfModelFile.getAbsolutePath()));
+					writer.write(sb.toString());
+					writer.close();
+
+					// remove the image file
+					(new File(buildingDirectory + File.separator + texImageUri)).delete();
+				}
 			} catch (IOException | InterruptedException e) {
-				log.debug("Unexpected errors occurred while converting collada to glTF for city object '" + colladaBundle.getGmlId() + "' with output path: '" + gltfModelFile.getAbsolutePath() + "'");
+				log.debug("Unexpected errors occurred while converting collada to glTF for city object '" + colladaBundle.getGmlId() + "' with output path: '" + gltfModelFile.getAbsolutePath() + "'" + "\n" + e.getMessage());
 			} finally {
 				if (config.getProject().getKmlExporter().isNotCreateColladaFiles() && (gltfModelFile.exists() || (new File(gltfModelFile.getAbsolutePath().replace(".gltf", ".glb"))).exists())) {
 					colladaModelFile.delete();

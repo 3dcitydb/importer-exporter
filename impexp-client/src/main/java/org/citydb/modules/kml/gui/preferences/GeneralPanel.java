@@ -42,6 +42,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.DecimalFormat;
@@ -325,6 +327,19 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 				browseGltfConverterFile(Language.I18N.getString("pref.kmlexport.dialog.gltf.title"));
 			}
 		});
+
+		// when glb is enabled, always embed textures
+		exportGltfBinary.addItemListener(new ItemListener() {
+			@Override
+			public void itemStateChanged(ItemEvent e) {
+				if (exportGltfBinary.isSelected()) {
+					embedTexturesInGltfCheckbox.setEnabled(false);
+					embedTexturesInGltfCheckbox.setSelected(true);
+				} else {
+					embedTexturesInGltfCheckbox.setEnabled(true);
+				}
+			}
+		});
 	}
 
 	@Override
@@ -443,7 +458,8 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		gltfConverterBrowseText.setEnabled(createGltfCheckbox.isSelected());
 		gltfConverterBrowseButton.setEnabled(createGltfCheckbox.isSelected());			
 		notCreateColladaCheckbox.setEnabled(createGltfCheckbox.isSelected());
-		embedTexturesInGltfCheckbox.setEnabled(createGltfCheckbox.isSelected());
+		// if glb is enabled, always embed textures
+		embedTexturesInGltfCheckbox.setEnabled(createGltfCheckbox.isSelected() && !exportGltfBinary.isSelected());
 		exportGltfBinary.setEnabled(createGltfCheckbox.isSelected());
 		enableGltfDracoCompression.setEnabled(createGltfCheckbox.isSelected());
 		exportGltfV1.setEnabled(createGltfCheckbox.isSelected());
