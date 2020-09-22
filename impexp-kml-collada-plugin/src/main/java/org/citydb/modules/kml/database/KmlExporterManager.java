@@ -51,6 +51,7 @@ import org.citydb.modules.kml.util.CityObject4JSON;
 import org.citydb.modules.kml.util.ExportTracker;
 import org.citydb.query.Query;
 import org.citydb.util.ClientConstants;
+import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.util.xml.SAXEventBuffer;
 import org.collada._2005._11.colladaschema.Image;
 import org.collada._2005._11.colladaschema.LibraryImages;
@@ -377,10 +378,7 @@ public class KmlExporterManager {
 		}
 	}
 
-	public void print(ColladaBundle colladaBundle, long id, boolean balloonInSeparateFile, String implicitId) throws JAXBException,
-	FileNotFoundException,
-	IOException,
-	SQLException {
+	public void print(ColladaBundle colladaBundle, long id, boolean balloonInSeparateFile, CityGMLClass cityGMLClass, String implicitId) throws JAXBException, FileNotFoundException, IOException, SQLException {
 		ZipOutputStream zipOut = null;
 		OutputStreamWriter fileWriter = null;
 		SAXEventBuffer buffer = new SAXEventBuffer();
@@ -506,7 +504,7 @@ public class KmlExporterManager {
 
 			// marshalling in parallel threads should save some time
 			StringWriter sw = new StringWriter();
-			setInitFromOfColladaImages(colladaBundle, implicitId);
+			setInitFromOfColladaImages(colladaBundle, cityGMLClass, implicitId);
 			colladaMarshaller.marshal(colladaBundle.getCollada(), sw);
 			colladaBundle.setColladaAsString(sw.toString());
 			colladaBundle.setCollada(null); // free heap space
@@ -591,7 +589,7 @@ public class KmlExporterManager {
 			}
 
 			FileOutputStream fos = new FileOutputStream(colladaModelFile);
-			setInitFromOfColladaImages(colladaBundle, implicitId);
+			setInitFromOfColladaImages(colladaBundle, cityGMLClass, implicitId);
 			colladaMarshaller.marshal(colladaBundle.getCollada(), fos);
 			fos.close();
 
@@ -611,7 +609,7 @@ public class KmlExporterManager {
 				Iterator<String> iterator = keySet.iterator();
 				while (iterator.hasNext()) {
 					String imageFilename = iterator.next();
-					String fileName = getTextureExportLocation(buildingDirectory, implicitId) + File.separator + imageFilename;
+					String fileName = getTextureExportLocation(buildingDirectory, implicitId) + File.separator + cityGMLClass + "_" + imageFilename;
 					textureExportAdapter.writeToFile(colladaBundle.getUnsupportedTexImageIds().get(imageFilename), imageFilename, fileName);
 				}
 			}
@@ -624,7 +622,7 @@ public class KmlExporterManager {
 					BufferedImage texImage = colladaBundle.getTexImages().get(imageFilename).getBufferedImage();
 					String imageType = imageFilename.substring(imageFilename.lastIndexOf('.') + 1);
 
-					File imageFile = new File(getTextureExportLocation(buildingDirectory, null), imageFilename);
+					File imageFile = new File(getTextureExportLocation(buildingDirectory, null), cityGMLClass + "_" + imageFilename);
 					if (!imageFile.exists()) // avoid overwriting and access conflicts
 						ImageIO.write(texImage, imageType, imageFile);
 				}
@@ -642,7 +640,7 @@ public class KmlExporterManager {
 					Iterator<String> iterator = keySet.iterator();
 					while (iterator.hasNext()) {
 						String imageFilename = iterator.next();
-						File imageFile = new File(getTextureExportLocation(buildingDirectory, implicitId), imageFilename);
+						File imageFile = new File(getTextureExportLocation(buildingDirectory, implicitId), cityGMLClass + "_" + imageFilename);
 						if (imageFile.exists())
 							imageFile.delete();
 					}
@@ -669,14 +667,14 @@ public class KmlExporterManager {
 	}
 
 	// set paths to images to the same folder of tiles
-	private void setInitFromOfColladaImages(ColladaBundle colladaBundle, String implicitId) {
+	private void setInitFromOfColladaImages(ColladaBundle colladaBundle, CityGMLClass cityGMLClass, String implicitId) {
 		List colladaObj = colladaBundle.getCollada().getLibraryAnimationsOrLibraryAnimationClipsOrLibraryCameras();
 		if (colladaObj.size() > 0) {
 			for (Object obj : colladaObj) {
 				if (obj instanceof LibraryImages) {
 					List<Image> collada_images = ((LibraryImages) obj).getImage();
 					for (Image colladaImage : collada_images) {
-						colladaImage.setInitFrom(getTextureExportLocation(null, implicitId) + File.separator + colladaImage.getInitFrom());
+						colladaImage.setInitFrom(getTextureExportLocation(null, implicitId) + File.separator + cityGMLClass + "_" + colladaImage.getInitFrom());
 					}
 					break;
 				}

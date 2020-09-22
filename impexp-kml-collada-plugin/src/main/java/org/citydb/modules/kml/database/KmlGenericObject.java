@@ -1200,9 +1200,7 @@ public abstract class KmlGenericObject {
 					double s = vertexInfoIterator.getTexCoords(sgId).getS();
 					double t = vertexInfoIterator.getTexCoords(sgId).getT();
 					String tiInfoCoordsForSgId = tiInfoCoords.get(sgId);
-					tiInfoCoordsForSgId = (tiInfoCoordsForSgId == null) ?
-							"" :
-								tiInfoCoordsForSgId + " ";	
+					tiInfoCoordsForSgId = (tiInfoCoordsForSgId == null) ? "" : tiInfoCoordsForSgId + " ";
 					tiInfoCoords.put(sgId, tiInfoCoordsForSgId + String.valueOf(s) + " " + String.valueOf(t));
 				}
 				vertexInfoIterator = vertexInfoIterator.getNextVertexInfo();
@@ -1217,8 +1215,7 @@ public abstract class KmlGenericObject {
 		// create texture atlases
 		taCreator.convert(tiInfo, packingAlgorithm);
 
-		// make tex image names and uris unique to each implici objects to remove redundancies
-		HashMap<String, TextureImage> newTexImages = new HashMap<>();
+		// make tex image names and uris unique to each implicit objects to remove redundancies
 		Iterator it = tiInfo.getTexImages().entrySet().iterator();
 		int i = 0;
 		while (it.hasNext()) {
@@ -1226,21 +1223,23 @@ public abstract class KmlGenericObject {
 			Map.Entry<String, TextureImage> iPair = (Map.Entry) it.next();
 			String oldTexFileName = iPair.getKey();
 			String imageType = oldTexFileName.substring(oldTexFileName.lastIndexOf('.') + 1);
-			String newTexFileName = "textureAtlas_" + (this.implicitId == null ? "" : this.implicitId + "_") + (i++) + "." + imageType;
-			newTexImages.put(newTexFileName, iPair.getValue());
+			if (this.implicitId != null) {
+				String newTexFileName = "textureAtlas_" + this.implicitId + "_" + (i++) + "." + imageType;
+				tiInfo.getTexImages().remove(oldTexFileName);
+				texImages.remove(oldTexFileName);
+				tiInfo.getTexImages().put(newTexFileName, iPair.getValue());
+				texImages.put(newTexFileName, iPair.getValue());
 
-			// change tex uris
-			Iterator jt = tiInfo.getTexImageURIs().entrySet().iterator();
-			while (jt.hasNext()) {
-				Map.Entry<Object, String> jPair = (Map.Entry) jt.next();
-				if (jPair.getValue().equals(oldTexFileName)) {
-					jPair.setValue(newTexFileName);
+				// change tex uris
+				Iterator jt = tiInfo.getTexImageURIs().entrySet().iterator();
+				while (jt.hasNext()) {
+					Map.Entry<Object, String> jPair = (Map.Entry) jt.next();
+					if (jPair.getValue().equals(oldTexFileName)) {
+						jPair.setValue(newTexFileName);
+					}
 				}
 			}
 		}
-		// replace the tex image hashmap
-		texImages = newTexImages;
-		tiInfo.setTexImages(newTexImages);
 
 		sgIdIterator = sgIdSet.iterator();
 		while (sgIdIterator.hasNext()) {
