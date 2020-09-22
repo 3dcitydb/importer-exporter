@@ -162,68 +162,68 @@ public class ResourcesPanel extends AbstractPreferencesComponent{
 		
 		expResMinThreadsText.addPropertyChangeListener(new PropertyChangeListener() {
 			public void propertyChange(PropertyChangeEvent evt) {
-				checkNonNegative(expResMinThreadsText, 1);
+				checkPositive(expResMinThreadsText, 1);
 			}
 		});
 		
 		expResMaxThreadsText.addPropertyChangeListener(new PropertyChangeListener() {
 			public void propertyChange(PropertyChangeEvent evt) {
-				checkNonNegative(expResMaxThreadsText, 1);
+				checkPositive(expResMaxThreadsText, 1);
 			}
 		});
 
 		expResFeatBatchText.addPropertyChangeListener(new PropertyChangeListener() {
 			public void propertyChange(PropertyChangeEvent evt) {
-				checkNonNegative(expResFeatBatchText, ExportBatching.DEFAULT_BATCH_SIZE);
+				checkPositive(expResFeatBatchText, ExportBatching.DEFAULT_BATCH_SIZE);
 			}
 		});
 
 		expResGeomBatchText.addPropertyChangeListener(new PropertyChangeListener() {
 			public void propertyChange(PropertyChangeEvent evt) {
-				checkNonNegative(expResGeomBatchText, ExportBatching.DEFAULT_BATCH_SIZE);
+				checkPositive(expResGeomBatchText, ExportBatching.DEFAULT_BATCH_SIZE);
 			}
 		});
 
 		expResBlobBatchText.addPropertyChangeListener(new PropertyChangeListener() {
 			public void propertyChange(PropertyChangeEvent evt) {
-				checkNonNegative(expResBlobBatchText, ExportBatching.DEFAULT_BATCH_SIZE);
+				checkPositive(expResBlobBatchText, ExportBatching.DEFAULT_BATCH_SIZE);
 			}
 		});
 
 
 		expResGeomCacheText.addPropertyChangeListener(new PropertyChangeListener() {
 			public void propertyChange(PropertyChangeEvent evt) {
-				checkNonNegative(expResGeomCacheText, 200000);
+				checkPositive(expResGeomCacheText, 200000);
 			}
 		});
 		
 		expResFeatCacheText.addPropertyChangeListener(new PropertyChangeListener() {
 			public void propertyChange(PropertyChangeEvent evt) {
-				checkNonNegative(expResFeatCacheText, 200000);
+				checkPositive(expResFeatCacheText, 200000);
 			}
 		});
 
 		expResGeomDrainText.addPropertyChangeListener(new PropertyChangeListener() {
 			public void propertyChange(PropertyChangeEvent evt) {
-				checkNonNegativeRange(expResGeomDrainText, 85, 100);
+				checkPositiveRange(expResGeomDrainText, 85, 100);
 			}
 		});
 		
 		expResFeatDrainText.addPropertyChangeListener(new PropertyChangeListener() {
 			public void propertyChange(PropertyChangeEvent evt) {
-				checkNonNegativeRange(expResFeatDrainText, 85, 100);
+				checkPositiveRange(expResFeatDrainText, 85, 100);
 			}
 		});
 		
 		expResGeomPartText.addPropertyChangeListener(new PropertyChangeListener() {
 			public void propertyChange(PropertyChangeEvent evt) {
-				checkNonNegativeRange(expResGeomPartText, 10, 100);
+				checkPositiveRange(expResGeomPartText, 10, 100);
 			}
 		});
 		
 		expResFeatPartText.addPropertyChangeListener(new PropertyChangeListener() {
 			public void propertyChange(PropertyChangeEvent evt) {
-				checkNonNegativeRange(expResFeatPartText, 10, 100);
+				checkPositiveRange(expResFeatPartText, 10, 100);
 			}
 		});
 		
@@ -270,13 +270,13 @@ public class ResourcesPanel extends AbstractPreferencesComponent{
 		}
 	}
 
-	private void checkNonNegative(JFormattedTextField field, int defaultValue) {
-		if (((Number)field.getValue()).intValue() < 0)
+	private void checkPositive(JFormattedTextField field, int defaultValue) {
+		if (((Number)field.getValue()).intValue() <= 0)
 			field.setValue(defaultValue);
 	}
 	
-	private void checkNonNegativeRange(JFormattedTextField field, int min, int max) {
-		if (((Number)field.getValue()).intValue() < 0)
+	private void checkPositiveRange(JFormattedTextField field, int min, int max) {
+		if (((Number)field.getValue()).intValue() <= 0)
 			field.setValue(min);
 		else if (((Number)field.getValue()).intValue() > 100)
 			field.setValue(max);

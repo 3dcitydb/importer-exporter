@@ -187,85 +187,85 @@ public class ResourcesPanel extends AbstractPreferencesComponent{
 		
 		impResMinThreadsText.addPropertyChangeListener(new PropertyChangeListener() {
 			public void propertyChange(PropertyChangeEvent evt) {
-				checkNonNegative(impResMinThreadsText, 1);
+				checkPositive(impResMinThreadsText, 1);
 			}
 		});
 		
 		impResMaxThreadsText.addPropertyChangeListener(new PropertyChangeListener() {
 			public void propertyChange(PropertyChangeEvent evt) {
-				checkNonNegative(impResMaxThreadsText, 1);
+				checkPositive(impResMaxThreadsText, 1);
 			}
 		});
 		
 		impResTransaktFeatureText.addPropertyChangeListener(new PropertyChangeListener() {
 			public void propertyChange(PropertyChangeEvent evt) {
-				checkNonNegative(impResTransaktFeatureText, 20);
+				checkPositive(impResTransaktFeatureText, 20);
 			}
 		});
 		
 		impResTransaktCacheText.addPropertyChangeListener(new PropertyChangeListener() {
 			public void propertyChange(PropertyChangeEvent evt) {
-				checkNonNegative(impResTransaktCacheText, 10000);
+				checkPositive(impResTransaktCacheText, 1000);
 			}
 		});
 		
 		impResTransaktTempText.addPropertyChangeListener(new PropertyChangeListener() {
 			public void propertyChange(PropertyChangeEvent evt) {
-				checkNonNegative(impResTransaktTempText, 10000);
+				checkPositive(impResTransaktTempText, 1000);
 			}
 		});
 		
 		impResGeomCacheText.addPropertyChangeListener(new PropertyChangeListener() {
 			public void propertyChange(PropertyChangeEvent evt) {
-				checkNonNegative(impResGeomCacheText, 200000);
+				checkPositive(impResGeomCacheText, 200000);
 			}
 		});
 		
 		impResFeatCacheText.addPropertyChangeListener(new PropertyChangeListener() {
 			public void propertyChange(PropertyChangeEvent evt) {
-				checkNonNegative(impResFeatCacheText, 200000);
+				checkPositive(impResFeatCacheText, 200000);
 			}
 		});
 		
 		impResTexCacheText.addPropertyChangeListener(new PropertyChangeListener() {
 			public void propertyChange(PropertyChangeEvent evt) {
-				checkNonNegative(impResTexCacheText, 200000);
+				checkPositive(impResTexCacheText, 200000);
 			}
 		});
 
 		impResGeomDrainText.addPropertyChangeListener(new PropertyChangeListener() {
 			public void propertyChange(PropertyChangeEvent evt) {
-				checkNonNegativeRange(impResGeomDrainText, 85, 100);
+				checkPositiveRange(impResGeomDrainText, 85, 100);
 			}
 		});
 		
 		impResFeatDrainText.addPropertyChangeListener(new PropertyChangeListener() {
 			public void propertyChange(PropertyChangeEvent evt) {
-				checkNonNegativeRange(impResFeatDrainText, 85, 100);
+				checkPositiveRange(impResFeatDrainText, 85, 100);
 			}
 		});
 		
 		impResTexDrainText.addPropertyChangeListener(new PropertyChangeListener() {
 			public void propertyChange(PropertyChangeEvent evt) {
-				checkNonNegativeRange(impResTexDrainText, 85, 100);
+				checkPositiveRange(impResTexDrainText, 85, 100);
 			}
 		});
 		
 		impResGeomPartText.addPropertyChangeListener(new PropertyChangeListener() {
 			public void propertyChange(PropertyChangeEvent evt) {
-				checkNonNegativeRange(impResGeomPartText, 10, 100);
+				checkPositiveRange(impResGeomPartText, 10, 100);
 			}
 		});
 		
 		impResFeatPartText.addPropertyChangeListener(new PropertyChangeListener() {
 			public void propertyChange(PropertyChangeEvent evt) {
-				checkNonNegativeRange(impResFeatPartText, 10, 100);
+				checkPositiveRange(impResFeatPartText, 10, 100);
 			}
 		});
 		
 		impResTexPartText.addPropertyChangeListener(new PropertyChangeListener() {
 			public void propertyChange(PropertyChangeEvent evt) {
-				checkNonNegativeRange(impResTexPartText, 10, 100);
+				checkPositiveRange(impResTexPartText, 10, 100);
 			}
 		});
 		
@@ -324,13 +324,13 @@ public class ResourcesPanel extends AbstractPreferencesComponent{
 		}
 	}
 	
-	private void checkNonNegative(JFormattedTextField field, int defaultValue) {
-		if (((Number)field.getValue()).intValue() < 0)
+	private void checkPositive(JFormattedTextField field, int defaultValue) {
+		if (((Number)field.getValue()).intValue() <= 0)
 			field.setValue(defaultValue);
 	}
 	
-	private void checkNonNegativeRange(JFormattedTextField field, int min, int max) {
-		if (((Number)field.getValue()).intValue() < 0)
+	private void checkPositiveRange(JFormattedTextField field, int min, int max) {
+		if (((Number)field.getValue()).intValue() <= 0)
 			field.setValue(min);
 		else if (((Number)field.getValue()).intValue() > 100)
 			field.setValue(max);
