@@ -678,7 +678,7 @@ public class KmlExporterManager implements ADEKmlExportHelper {
 				Process process = pb.start();
 				process.waitFor();
 			} catch (IOException | InterruptedException e) {
-				log.debug("Unexpected errors occurred while converting collada to glTF for city object '" + colladaBundle.getGmlId() + "' with output path: '" + gltfModelFile.getAbsolutePath() + "'" + "\n" + e.getMessage());
+				log.warn("Unexpected errors occurred while converting collada to glTF for city object '" + colladaBundle.getGmlId() + "' with output path: '" + gltfModelFile.getAbsolutePath() + "'" + "\n" + e.getMessage());
 			} finally {
 				if (config.getProject().getKmlExporter().isNotCreateColladaFiles() && (gltfModelFile.exists() || (new File(gltfModelFile.getAbsolutePath().replace(".gltf", ".glb"))).exists())) {
 					colladaModelFile.delete();
