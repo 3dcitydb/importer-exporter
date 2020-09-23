@@ -655,15 +655,32 @@ public class KmlExporterManager implements ADEKmlExportHelper {
 		String collada2gltfPath = config.getProject().getKmlExporter().getPathOfGltfConverter();
 		File collada2gltfFile = new File(ClientConstants.IMPEXP_HOME.resolve(collada2gltfPath).toString());
 		if (collada2gltfFile.exists()) {
-			ProcessBuilder pb = new ProcessBuilder(collada2gltfFile.getAbsolutePath(), "-i", colladaBundle.getGmlId() + ".dae", "-o", gltfModelFile.getAbsolutePath(), "-v", exportGltfV1 ? "1.0" : "2.0");
+			List<String> commands = new ArrayList<>();
+			commands.add(collada2gltfFile.getAbsolutePath());
+			commands.add("-i");
+			commands.add(colladaModelFile.getAbsolutePath());
+			commands.add("-o");
+			commands.add(gltfModelFile.getAbsolutePath());
+			commands.add("-v");
+			commands.add(exportGltfV1 ? "1.0" : "2.0");
+			if (!config.getProject().getKmlExporter().isEmbedTexturesInGltfFiles()) {
+				commands.add("-t");
+			}
+			if (config.getProject().getKmlExporter().isExportGltfBinary()) {
+				commands.add("-b");
+			}
+			if (config.getProject().getKmlExporter().isEnableGltfDracoCompression()) {
+				commands.add("-d");
+			}
+			ProcessBuilder pb = new ProcessBuilder(commands);
 			pb.directory(buildingDirectory);
 			try {
 				Process process = pb.start();
 				process.waitFor();
 			} catch (IOException | InterruptedException e) {
-				log.debug("Unexpected errors occurred while converting collada to glTF for city object '" + colladaBundle.getGmlId() + "' with output path: '" + gltfModelFile.getAbsolutePath() + "'");
+				log.debug("Unexpected errors occurred while converting collada to glTF for city object '" + colladaBundle.getGmlId() + "' with output path: '" + gltfModelFile.getAbsolutePath() + "'" + "\n" + e.getMessage());
 			} finally {
-				if (config.getProject().getKmlExporter().isNotCreateColladaFiles() && gltfModelFile.exists()) {
+				if (config.getProject().getKmlExporter().isNotCreateColladaFiles() && (gltfModelFile.exists() || (new File(gltfModelFile.getAbsolutePath().replace(".gltf", ".glb"))).exists())) {
 					colladaModelFile.delete();
 				}
 			}
