@@ -95,8 +95,8 @@ import java.util.Map;
 		"notCreateColladaFiles",
 		"embedTexturesInGltfFiles",
 		"exportGltfBinary",
-		"enableGltfDracoCompression",
 		"exportGltfV1",
+		"enableGltfDracoCompression",
 		"appearanceTheme",
 		"altitudeMode",
 		"altitudeOffsetMode",
@@ -183,8 +183,8 @@ public class KmlExporter {
 	private boolean exportAsKmz;
 	private boolean embedTexturesInGltfFiles;
 	private boolean exportGltfBinary;
-	private boolean enableGltfDracoCompression;
 	private boolean exportGltfV1;
+	private boolean enableGltfDracoCompression;
 	private String appearanceTheme;
 	private AltitudeMode altitudeMode;
 	private AltitudeOffsetMode altitudeOffsetMode;
@@ -254,8 +254,8 @@ public class KmlExporter {
 		notCreateColladaFiles = false;
 		embedTexturesInGltfFiles = true;
 		exportGltfBinary = false;
-		enableGltfDracoCompression = true;
 		exportGltfV1 = false;
+		enableGltfDracoCompression = true;
 
 		pathOfGltfConverter = "contribs" + File.separator + "collada2gltf";
 		String osName = System.getProperty("os.name").toLowerCase(Locale.ENGLISH);

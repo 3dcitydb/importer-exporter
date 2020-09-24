@@ -669,7 +669,8 @@ public class KmlExporterManager implements ADEKmlExportHelper {
 			if (config.getProject().getKmlExporter().isExportGltfBinary()) {
 				commands.add("-b");
 			}
-			if (config.getProject().getKmlExporter().isEnableGltfDracoCompression()) {
+			// do not apply Draco to gltF 1.0
+			if (!exportGltfV1 && config.getProject().getKmlExporter().isEnableGltfDracoCompression()) {
 				commands.add("-d");
 			}
 			ProcessBuilder pb = new ProcessBuilder(commands);
