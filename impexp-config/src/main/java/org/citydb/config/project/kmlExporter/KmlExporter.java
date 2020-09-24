@@ -80,7 +80,6 @@ import java.util.Map;
 		"tunnelBalloon",
 		"lod0FootprintMode",
 		"exportAsKmz",
-		"exportGltfV1",
 		"showBoundingBox",
 		"showTileBorders",
 		"exportEmptyTiles",
@@ -95,6 +94,9 @@ import java.util.Map;
 		"pathOfGltfConverter",
 		"notCreateColladaFiles",
 		"embedTexturesInGltfFiles",
+		"exportGltfBinary",
+		"exportGltfV1",
+		"enableGltfDracoCompression",
 		"appearanceTheme",
 		"altitudeMode",
 		"altitudeOffsetMode",
@@ -178,9 +180,11 @@ public class KmlExporter {
 	private boolean createGltfModel;
 	private String pathOfGltfConverter;
 	private boolean notCreateColladaFiles;
-	private boolean embedTexturesInGltfFiles;
 	private boolean exportAsKmz;
+	private boolean embedTexturesInGltfFiles;
+	private boolean exportGltfBinary;
 	private boolean exportGltfV1;
+	private boolean enableGltfDracoCompression;
 	private String appearanceTheme;
 	private AltitudeMode altitudeMode;
 	private AltitudeOffsetMode altitudeOffsetMode;
@@ -248,7 +252,10 @@ public class KmlExporter {
 		callbackNameJSONP = "handle_3DCityDB_data";
 		createGltfModel = false;
 		notCreateColladaFiles = false;
-		embedTexturesInGltfFiles = false;
+		embedTexturesInGltfFiles = true;
+		exportGltfBinary = false;
+		exportGltfV1 = false;
+		enableGltfDracoCompression = true;
 
 		pathOfGltfConverter = "contribs" + File.separator + "collada2gltf";
 		String osName = System.getProperty("os.name").toLowerCase(Locale.ENGLISH);
@@ -457,7 +464,23 @@ public class KmlExporter {
 	}
 
 	public boolean isEmbedTexturesInGltfFiles() {
-		return embedTexturesInGltfFiles;
+		return this.embedTexturesInGltfFiles;
+	}
+
+	public void setExportGltfBinary(boolean exportGltfBinary) {
+		this.exportGltfBinary = exportGltfBinary;
+	}
+
+	public boolean isExportGltfBinary() {
+		return this.exportGltfBinary;
+	}
+
+	public void setEnableGltfDracoCompression(boolean enableGltfDracoCompression) {
+		this.enableGltfDracoCompression = enableGltfDracoCompression;
+	}
+
+	public boolean isEnableGltfDracoCompression() {
+		return this.enableGltfDracoCompression;
 	}
 
 	public void setShowBoundingBox(boolean showBoundingBox) {
