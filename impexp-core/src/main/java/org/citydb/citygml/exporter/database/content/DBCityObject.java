@@ -36,6 +36,7 @@ import org.citydb.ade.model.module.CityDBADE200Module;
 import org.citydb.citygml.exporter.CityGMLExportException;
 import org.citydb.citygml.exporter.util.AttributeValueSplitter;
 import org.citydb.citygml.exporter.util.AttributeValueSplitter.SplitValue;
+import org.citydb.citygml.exporter.util.IdCacheTable;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.config.project.exporter.FeatureEnvelopeMode;
 import org.citydb.config.project.exporter.SimpleTilingOptions;
@@ -46,7 +47,6 @@ import org.citydb.query.Query;
 import org.citydb.query.filter.projection.ProjectionFilter;
 import org.citydb.query.filter.tiling.Tile;
 import org.citydb.query.filter.tiling.Tiling;
-import org.citydb.sqlbuilder.expression.LiteralSelectExpression;
 import org.citydb.sqlbuilder.expression.PlaceHolder;
 import org.citydb.sqlbuilder.schema.Table;
 import org.citydb.sqlbuilder.select.Select;
@@ -54,11 +54,7 @@ import org.citydb.sqlbuilder.select.join.JoinFactory;
 import org.citydb.sqlbuilder.select.operator.comparison.ComparisonFactory;
 import org.citydb.sqlbuilder.select.operator.comparison.ComparisonName;
 import org.citygml4j.geometry.Point;
-import org.citygml4j.model.citygml.core.AbstractCityObject;
-import org.citygml4j.model.citygml.core.ExternalObject;
-import org.citygml4j.model.citygml.core.ExternalReference;
-import org.citygml4j.model.citygml.core.RelativeToTerrain;
-import org.citygml4j.model.citygml.core.RelativeToWater;
+import org.citygml4j.model.citygml.core.*;
 import org.citygml4j.model.citygml.generics.GenericAttributeSet;
 import org.citygml4j.model.citygml.generics.StringAttribute;
 import org.citygml4j.model.gml.base.AbstractGML;
@@ -77,14 +73,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class DBCityObject implements DBExporter {
 	private final Query query;
@@ -94,6 +83,9 @@ public class DBCityObject implements DBExporter {
 	private final Map<Long, List<ObjectContext>> batches;
 	private final DBGeneralization generalizesToExporter;
 	private final DBCityObjectGenericAttrib genericAttributeExporter;
+
+	private final IdCacheTable idCacheTable;
+	private final PreparedStatement psCacheInsert;
 
 	private final int batchSize;
 	private final String gmlSrsName;
@@ -138,6 +130,7 @@ public class DBCityObject implements DBExporter {
 		valueSplitter = exporter.getAttributeValueSplitter();
 		if (exportAppearance)
 			appearanceExporter = exporter.getExporter(DBLocalAppearance.class);
+		idCacheTable = IdCacheTable.newInstance(connection, exporter.getDatabaseAdapter().getSQLAdapter());
 
 		coreModule = exporter.getTargetCityGMLVersion().getCityGMLModule(CityGMLModuleType.CORE).getNamespaceURI();
 		appearanceModule = exporter.getTargetCityGMLVersion().getCityGMLModule(CityGMLModuleType.APPEARANCE).getNamespaceURI();
@@ -148,6 +141,7 @@ public class DBCityObject implements DBExporter {
 		Table externalReference = new Table(TableEnum.EXTERNAL_REFERENCE.getName(), schema);
 		Table generalization = new Table(TableEnum.GENERALIZATION.getName(), schema);
 		Table genericAttributes = new Table(TableEnum.CITYOBJECT_GENERICATTRIB.getName(), schema);
+		Table idListTmpTable = new Table(idCacheTable.getTableName(), schema);
 
 		Select select = new Select().addProjection(table.getColumn("id"), table.getColumn("gmlid"), exporter.getGeometryColumn(table.getColumn("envelope")),
 				table.getColumn("name"), table.getColumn("name_codespace"), table.getColumn("description"), table.getColumn("creation_date"),
@@ -156,6 +150,7 @@ public class DBCityObject implements DBExporter {
 				generalization.getColumn("generalizes_to_id"))
 				.addJoin(JoinFactory.left(externalReference, "cityobject_id", ComparisonName.EQUAL_TO, table.getColumn("id")))
 				.addJoin(JoinFactory.left(generalization, "cityobject_id", ComparisonName.EQUAL_TO, table.getColumn("id")));
+
 		genericAttributeExporter.addProjection(select, genericAttributes, "ga")
 				.addJoin(JoinFactory.left(genericAttributes, "cityobject_id", ComparisonName.EQUAL_TO, table.getColumn("id")));
 		if (exportCityDBMetadata) select.addProjection(table.getColumns("last_modification_date", "updating_person", "reason_for_update", "lineage"));
@@ -165,12 +160,13 @@ public class DBCityObject implements DBExporter {
 					.addJoin(JoinFactory.left(appearance, "cityobject_id", ComparisonName.EQUAL_TO, table.getColumn("id")));
 		}
 
-		String placeHolders = String.join(",", Collections.nCopies(batchSize, "?"));
 		psBulk = connection.prepareStatement(new Select(select)
-				.addSelection(ComparisonFactory.in(table.getColumn("id"), new LiteralSelectExpression(placeHolders))).toString());
+				.addJoin(JoinFactory.inner(idListTmpTable, "id", ComparisonName.EQUAL_TO, table.getColumn("id"))).toString());
 
 		psSelect = connection.prepareStatement(new Select(select)
 				.addSelection(ComparisonFactory.equalTo(table.getColumn("id"), new PlaceHolder<>())).toString());
+
+		psCacheInsert = connection.prepareStatement("insert into " + schema + "." + idCacheTable.getTableName() + "(id) values (?)");
 	}
 
 	protected void addBatch(AbstractGML object, long objectId, AbstractObjectType<?> objectType, ProjectionFilter projectionFilter) throws CityGMLExportException, SQLException {
@@ -194,9 +190,11 @@ public class DBCityObject implements DBExporter {
 				ps = psSelect;
 			} else {
 				Long[] ids = batches.keySet().toArray(new Long[0]);
-				for (int i = 0; i < batchSize; i++)
-					psBulk.setLong(i + 1, i < ids.length ? ids[i] : 0);
-
+				for (int i = 0; i < ids.length; i++) {
+					psCacheInsert.setLong(1, ids[i]);
+					psCacheInsert.addBatch();
+				}
+				psCacheInsert.executeBatch();
 				ps = psBulk;
 			}
 
@@ -232,6 +230,7 @@ public class DBCityObject implements DBExporter {
 			return true;
 		} finally {
 			batches.clear();
+			idCacheTable.truncate();
 		}
 	}
 
@@ -476,6 +475,8 @@ public class DBCityObject implements DBExporter {
 	public void close() throws SQLException {
 		psBulk.close();
 		psSelect.close();
+		psCacheInsert.close();
+		idCacheTable.drop();
 	}
 
 	private static class ObjectContext {

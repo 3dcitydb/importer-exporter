@@ -32,14 +32,16 @@ import org.citydb.citygml.exporter.CityGMLExportException;
 import org.citydb.citygml.exporter.util.DefaultGeometrySetterHandler;
 import org.citydb.citygml.exporter.util.GeometrySetter;
 import org.citydb.citygml.exporter.util.GeometrySetterHandler;
+import org.citydb.citygml.exporter.util.IdCacheTable;
 import org.citydb.config.Config;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.database.schema.TableEnum;
-import org.citydb.sqlbuilder.expression.LiteralSelectExpression;
 import org.citydb.sqlbuilder.expression.PlaceHolder;
 import org.citydb.sqlbuilder.schema.Table;
 import org.citydb.sqlbuilder.select.Select;
+import org.citydb.sqlbuilder.select.join.JoinFactory;
 import org.citydb.sqlbuilder.select.operator.comparison.ComparisonFactory;
+import org.citydb.sqlbuilder.select.operator.comparison.ComparisonName;
 import org.citygml4j.model.citygml.core.ImplicitGeometry;
 import org.citygml4j.model.gml.GMLClass;
 import org.citygml4j.model.gml.geometry.AbstractGeometry;
@@ -47,21 +49,7 @@ import org.citygml4j.model.gml.geometry.aggregates.MultiSolid;
 import org.citygml4j.model.gml.geometry.aggregates.MultiSurface;
 import org.citygml4j.model.gml.geometry.complexes.CompositeSolid;
 import org.citygml4j.model.gml.geometry.complexes.CompositeSurface;
-import org.citygml4j.model.gml.geometry.primitives.AbstractSolid;
-import org.citygml4j.model.gml.geometry.primitives.AbstractSurface;
-import org.citygml4j.model.gml.geometry.primitives.DirectPositionList;
-import org.citygml4j.model.gml.geometry.primitives.Exterior;
-import org.citygml4j.model.gml.geometry.primitives.Interior;
-import org.citygml4j.model.gml.geometry.primitives.LinearRing;
-import org.citygml4j.model.gml.geometry.primitives.OrientableSurface;
-import org.citygml4j.model.gml.geometry.primitives.Polygon;
-import org.citygml4j.model.gml.geometry.primitives.Sign;
-import org.citygml4j.model.gml.geometry.primitives.Solid;
-import org.citygml4j.model.gml.geometry.primitives.SolidProperty;
-import org.citygml4j.model.gml.geometry.primitives.SurfaceProperty;
-import org.citygml4j.model.gml.geometry.primitives.Triangle;
-import org.citygml4j.model.gml.geometry.primitives.TrianglePatchArrayProperty;
-import org.citygml4j.model.gml.geometry.primitives.TriangulatedSurface;
+import org.citygml4j.model.gml.geometry.primitives.*;
 import org.citygml4j.util.gmlid.DefaultGMLIdManager;
 
 import java.sql.Connection;
@@ -69,7 +57,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -86,6 +73,9 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryExporter {
 	private boolean appendOldGmlId;
 	private String gmlIdPrefix;
 
+	private final IdCacheTable idCacheTable;
+	private final PreparedStatement psCacheInsert;
+
 	public DBSurfaceGeometry(Connection connection, CacheTable cacheTable, CityGMLExportManager exporter, Config config) throws SQLException {
 		this.exporter = exporter;
 
@@ -94,6 +84,7 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryExporter {
 		exportAppearance = config.getInternal().isExportGlobalAppearances();
 		useXLink = exporter.getExportConfig().getXlink().getGeometry().isModeXLink();
 		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
+		idCacheTable = IdCacheTable.newInstance(connection, exporter.getDatabaseAdapter().getSQLAdapter());
 
 		if (!useXLink) {
 			appendOldGmlId = exporter.getExportConfig().getXlink().getGeometry().isSetAppendId();
@@ -101,18 +92,21 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryExporter {
 		}
 
 		Table table = new Table(TableEnum.SURFACE_GEOMETRY.getName(), schema);
+		Table idListTmpTable = new Table(idCacheTable.getTableName(), schema);
+
 		Select select = new Select().addProjection(table.getColumn("id"), table.getColumn("gmlid"), table.getColumn("parent_id"),
 				table.getColumn("is_solid"), table.getColumn("is_composite"), table.getColumn("is_triangulated"),
 				table.getColumn("is_xlink"), table.getColumn("is_reverse"),
 				exporter.getGeometryColumn(table.getColumn("geometry")), table.getColumn("implicit_geometry"));
 
-		String placeHolders = String.join(",", Collections.nCopies(batchSize, "?"));
 		psBulk = connection.prepareStatement(new Select(select)
 				.addProjection(table.getColumn("root_id"))
-				.addSelection(ComparisonFactory.in(table.getColumn("root_id"), new LiteralSelectExpression(placeHolders))).toString());
+				.addJoin(JoinFactory.inner(idListTmpTable, "id", ComparisonName.EQUAL_TO, table.getColumn("root_id"))).toString());
 
 		psSelect = connection.prepareStatement(new Select(select)
 				.addSelection(ComparisonFactory.equalTo(table.getColumn("root_id"), new PlaceHolder<>())).toString());
+
+		psCacheInsert = connection.prepareStatement("insert into " + schema + "." + idCacheTable.getTableName() + "(id) values (?)");
 	}
 
 	@Override
@@ -197,8 +191,11 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryExporter {
 					geomTrees.putIfAbsent(batch.id, new GeometryTree(batch.isImplicit));
 
 				Long[] ids = geomTrees.keySet().toArray(new Long[0]);
-				for (int i = 0; i < batchSize; i++)
-					psBulk.setLong(i + 1, i < ids.length ? ids[i] : 0);
+				for (int i = 0; i < ids.length; i++) {
+					psCacheInsert.setLong(1, ids[i]);
+					psCacheInsert.addBatch();
+				}
+				psCacheInsert.executeBatch();
 
 				try (ResultSet rs = psBulk.executeQuery()) {
 					while (rs.next()) {
@@ -220,6 +217,7 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryExporter {
 			}
 		} finally {
 			batches.clear();
+			idCacheTable.truncate();
 		}
 	}
 
@@ -595,6 +593,8 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryExporter {
 	public void close() throws SQLException {
 		psBulk.close();
 		psSelect.close();
+		psCacheInsert.close();
+		idCacheTable.drop();
 	}
 
 	private static class GeometryNode {
