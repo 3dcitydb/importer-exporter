@@ -39,15 +39,12 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 public class Logger {
-	private static Logger instance = new Logger();
+	private static final Logger instance = new Logger();
 
 	private ConsoleLogger consoleLogger;
 	private LogLevel consoleLevel = LogLevel.INFO;
 	private LogLevel fileLevel = LogLevel.INFO;
-
-	private boolean isLogToConsole = true;
-	private boolean isLogToFile = false;
-	private BufferedWriter logFile;
+	private BufferedWriter writer;
 
 	private Logger() {
 		consoleLogger = new DefaultConsoleLogger();
@@ -89,14 +86,14 @@ public class Logger {
 	public void log(LogLevel level, String msg) {
 		msg = getPrefix(level) + msg;
 
-		if (isLogToConsole && consoleLevel.ordinal() >= level.ordinal())
+		if (consoleLevel.ordinal() >= level.ordinal())
 			consoleLogger.log(level, msg);
 
-		if (isLogToFile && fileLevel.ordinal() >= level.ordinal()) {
+		if (writer != null && fileLevel.ordinal() >= level.ordinal()) {
 			try {
-				logFile.write(msg);
-				logFile.newLine();
-				logFile.flush();
+				writer.write(msg);
+				writer.newLine();
+				writer.flush();
 			} catch (IOException e) {
 				//
 			}
@@ -120,18 +117,16 @@ public class Logger {
 	}
 
 	public void print(String msg) {
-		if (isLogToConsole)
-			consoleLogger.log(msg);
-
-		writeToFile(msg);
+		consoleLogger.log(msg);
+		logToFile(msg);
 	}
 
-	public void writeToFile(String msg) {
-		if (isLogToFile) {
+	public void logToFile(String msg) {
+		if (writer != null) {
 			try {
-				logFile.write(msg);
-				logFile.newLine();
-				logFile.flush();
+				writer.write(msg);
+				writer.newLine();
+				writer.flush();
 			} catch (IOException e) {
 				//
 			}
@@ -142,14 +137,6 @@ public class Logger {
 		StringWriter writer = new StringWriter();
 		t.printStackTrace(new PrintWriter(writer, true));
 		log(LogLevel.ERROR, writer.toString());
-	}
-	
-	public void logToConsole(boolean isLogToConsole) {
-		this.isLogToConsole = isLogToConsole;
-	}
-
-	public void logToFile(boolean isLogToFile) {		
-		this.isLogToFile = isLogToFile;
 	}
 
 	public boolean appendLogFile(String logFile, boolean isDirectory) {
@@ -168,8 +155,7 @@ public class Logger {
 			info("Writing log messages to file: '" + file.getAbsolutePath() + "'");
 			detachLogFile();
 
-			this.logFile = new BufferedWriter(new FileWriter(file, file.exists()));
-			isLogToFile = true;
+			this.writer = new BufferedWriter(new FileWriter(file, file.exists()));
 		} catch (IOException e) {
 			error("Failed to open log file '" + logFile + "': " + e.getMessage());
 			error("Not writing log messages to file");
@@ -180,15 +166,14 @@ public class Logger {
 	}
 
 	public void detachLogFile() {
-		if (logFile != null) {
+		if (writer != null) {
 			try {
 				warn("Stopped writing log messages to log file.");
-				logFile.close();
+				writer.close();
 			} catch (IOException e) {
 				//
 			} finally {
-				logFile = null;
-				isLogToFile = false;
+				writer = null;
 			}
 		}
 	}

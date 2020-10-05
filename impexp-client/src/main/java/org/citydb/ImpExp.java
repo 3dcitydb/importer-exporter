@@ -462,7 +462,7 @@ public class ImpExp {
 				logging.getFile().setUseAlternativeLogPath(false);
 				log.detachLogFile();
 			} else {
-				log.writeToFile("*** Starting new log file session on " + LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE));
+				log.logToFile("*** Starting new log file session on " + LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE));
 				config.getInternal().setCurrentLogPath(logPath);
 			}
 		}
@@ -477,7 +477,7 @@ public class ImpExp {
 					msg.append(arg).append(' ');
 			}
 
-			log.writeToFile(msg.toString());
+			log.logToFile(msg.toString());
 		}
 
 		// create pid file
