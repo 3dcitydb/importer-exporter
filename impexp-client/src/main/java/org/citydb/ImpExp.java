@@ -453,8 +453,9 @@ public class ImpExp {
 					logging.getFile().getAlternativeLogPath().trim().length() == 0)
 				logging.getFile().setUseAlternativeLogPath(false);
 
-			String logPath = logging.getFile().isSetUseAlternativeLogPath() ? logging.getFile().getAlternativeLogPath()
-					: CoreConstants.IMPEXP_DATA_DIR.resolve(ClientConstants.LOG_DIR).toString();
+			Path logPath = logging.getFile().isSetUseAlternativeLogPath() ?
+					Paths.get(logging.getFile().getAlternativeLogPath()) :
+					CoreConstants.IMPEXP_DATA_DIR.resolve(ClientConstants.LOG_DIR);
 
 			boolean success = log.appendLogFile(logPath, true);
 			if (!success) {

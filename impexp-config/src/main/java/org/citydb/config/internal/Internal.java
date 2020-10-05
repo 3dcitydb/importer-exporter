@@ -33,7 +33,7 @@ import java.util.List;
 public class Internal {
 	public static boolean IS_GUI_MODE = false;
 
-	private String currentLogPath;
+	private Path currentLogPath;
 	private List<Path> importFiles;
 	private Path exportFile;
 	private String exportTextureURI;
@@ -46,11 +46,11 @@ public class Internal {
 	private boolean exportGlobalAppearances = false;
 	private boolean registerGmlIdInCache = false;
 
-	public String getCurrentLogPath() {
+	public Path getCurrentLogPath() {
 		return currentLogPath;
 	}
 
-	public void setCurrentLogPath(String currentLogPath) {
+	public void setCurrentLogPath(Path currentLogPath) {
 		this.currentLogPath = currentLogPath;
 	}
 

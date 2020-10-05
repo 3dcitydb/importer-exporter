@@ -30,11 +30,13 @@ package org.citydb.log;
 import org.citydb.config.project.global.LogLevel;
 
 import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -139,36 +141,38 @@ public class Logger {
 		log(LogLevel.ERROR, writer.toString());
 	}
 
-	public boolean appendLogFile(String logFile, boolean isDirectory) {
-		File file = new File(logFile);
-		
-		File path = isDirectory ? file : new File(file.getParent());
-		if (!path.exists() && !path.mkdirs()) {
-			error("Could not create folder '" + path.getAbsolutePath() + "' for log file.");
-			return false;
+	public boolean appendLogFile(Path logFile, boolean isDirectory) {
+		Path path = isDirectory ? logFile : logFile.getParent();
+		if (!Files.exists(path)) {
+			try {
+				Files.createDirectories(path);
+			} catch (IOException e) {
+				error("Could not create folder '" + path.toAbsolutePath() + "' for log file.");
+				return false;
+			}
 		}
 
 		if (isDirectory)
-			file = new File(file.getAbsolutePath() + File.separator + getDefaultLogFile());
+			logFile = path.resolve(getDefaultLogFile());
 		
 		try {
-			info("Writing log messages to file: '" + file.getAbsolutePath() + "'");
+			info("Writing log messages to file: '" + logFile.toAbsolutePath() + "'");
 			detachLogFile();
+			writer = Files.newBufferedWriter(logFile, StandardCharsets.UTF_8,
+					StandardOpenOption.CREATE, StandardOpenOption.APPEND, StandardOpenOption.WRITE);
 
-			this.writer = new BufferedWriter(new FileWriter(file, file.exists()));
+			return true;
 		} catch (IOException e) {
 			error("Failed to open log file '" + logFile + "': " + e.getMessage());
 			error("Not writing log messages to file");
 			return false;
 		}
-
-		return true;
 	}
 
 	public void detachLogFile() {
 		if (writer != null) {
 			try {
-				warn("Stopped writing log messages to log file.");
+				info("Stopped writing log messages to log file.");
 				writer.close();
 			} catch (IOException e) {
 				//

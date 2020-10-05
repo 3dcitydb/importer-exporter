@@ -48,6 +48,8 @@ import javax.swing.text.StyleConstants;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.StringJoiner;
 
 @SuppressWarnings("serial")
@@ -367,10 +369,12 @@ public class LoggingPanel extends AbstractPreferencesComponent {
 
         // change log file
         if (isModified && useLogFile.isSelected()) {
-            String logPath = useLogPath.isSelected() ? logging.getFile().getAlternativeLogPath() :
-                    CoreConstants.IMPEXP_DATA_DIR.resolve(ClientConstants.LOG_DIR).toString();
+            Path logPath = useLogPath.isSelected() ?
+                    Paths.get(logging.getFile().getAlternativeLogPath()) :
+                    CoreConstants.IMPEXP_DATA_DIR.resolve(ClientConstants.LOG_DIR);
 
-            if (!logPath.equals(config.getInternal().getCurrentLogPath())) {
+            if (config.getInternal().getCurrentLogPath() == null
+                    || !logPath.equals(config.getInternal().getCurrentLogPath())) {
                 boolean success = log.appendLogFile(logPath, true);
 
                 if (!success) {
@@ -385,7 +389,7 @@ public class LoggingPanel extends AbstractPreferencesComponent {
             }
         } else if (isModified && !useLogFile.isSelected()) {
             log.detachLogFile();
-            config.getInternal().setCurrentLogPath("");
+            config.getInternal().setCurrentLogPath(null);
         }
     }
 
