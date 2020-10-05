@@ -446,39 +446,26 @@ public class ImpExp {
 		// init logging environment
 		Logging logging = config.getProject().getGlobal().getLogging();
 		log.setDefaultConsoleLogLevel(logging.getConsole().getLogLevel());
-		if (logging.getFile().isSet()) {
+		if (logging.getFile().isActive()) {
 			log.setDefaultFileLogLevel(logging.getFile().getLogLevel());
 
-			if (logging.getFile().isSetUseAlternativeLogPath() &&
-					logging.getFile().getAlternativeLogPath().trim().length() == 0)
-				logging.getFile().setUseAlternativeLogPath(false);
+			if (logging.getFile().isUseAlternativeLogFile() &&
+					logging.getFile().getAlternativeLogFile().trim().length() == 0)
+				logging.getFile().setUseAlternativeLogFile(false);
 
-			Path logPath = logging.getFile().isSetUseAlternativeLogPath() ?
-					Paths.get(logging.getFile().getAlternativeLogPath()) :
-					CoreConstants.IMPEXP_DATA_DIR.resolve(ClientConstants.LOG_DIR);
+			Path logFile = logging.getFile().isUseAlternativeLogFile() ?
+					Paths.get(logging.getFile().getAlternativeLogFile()) :
+					CoreConstants.IMPEXP_DATA_DIR.resolve(ClientConstants.LOG_DIR).resolve(log.getDefaultLogFileName());
 
-			boolean success = log.appendLogFile(logPath, true);
+			boolean success = log.appendLogFile(logFile);
 			if (!success) {
 				logging.getFile().setActive(false);
-				logging.getFile().setUseAlternativeLogPath(false);
+				logging.getFile().setUseAlternativeLogFile(false);
 				log.detachLogFile();
 			} else {
 				log.logToFile("*** Starting new log file session on " + LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE));
-				config.getInternal().setCurrentLogPath(logPath);
+				log.logToFile("*** Command line arguments: " +  (args.length == 0 ? "no arguments passed" : String.join(" ", args)));
 			}
-		}
-
-		// printing shell command to log file
-		if (logging.getFile().isSet()) {
-			StringBuilder msg = new StringBuilder("*** Command line arguments: ");
-			if (args.length == 0)
-				msg.append("no arguments passed");
-			else {
-				for (String arg : args)
-					msg.append(arg).append(' ');
-			}
-
-			log.logToFile(msg.toString());
 		}
 
 		// create pid file

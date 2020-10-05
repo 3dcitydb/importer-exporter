@@ -91,9 +91,9 @@ public class LoggingPanel extends AbstractPreferencesComponent {
 
         if (logLevelConsoleCombo.getSelectedItem() != logging.getConsole().getLogLevel()) return true;
         if (wrapTextConsole.isSelected() != logging.getConsole().isWrapText()) return true;
-        if (useLogFile.isSelected() != logging.getFile().isSet()) return true;
-        if (useLogPath.isSelected() != logging.getFile().isSetUseAlternativeLogPath()) return true;
-        if (!logPathText.getText().equals(logging.getFile().getAlternativeLogPath())) return true;
+        if (useLogFile.isSelected() != logging.getFile().isActive()) return true;
+        if (useLogPath.isSelected() != logging.getFile().isUseAlternativeLogFile()) return true;
+        if (!logPathText.getText().equals(logging.getFile().getAlternativeLogFile())) return true;
         if (logLevelFileCombo.getSelectedItem() != logging.getFile().getLogLevel()) return true;
 
         for (int i = 0; i < logColors.getModel().getSize(); i++)
@@ -105,9 +105,9 @@ public class LoggingPanel extends AbstractPreferencesComponent {
     private boolean isLogFileModified() {
         Logging logging = config.getProject().getGlobal().getLogging();
 
-        if (useLogFile.isSelected() != logging.getFile().isSet()) return true;
-        if (useLogPath.isSelected() != logging.getFile().isSetUseAlternativeLogPath()) return true;
-        if (!logPathText.getText().equals(logging.getFile().getAlternativeLogPath())) return true;
+        if (useLogFile.isSelected() != logging.getFile().isActive()) return true;
+        if (useLogPath.isSelected() != logging.getFile().isUseAlternativeLogFile()) return true;
+        if (!logPathText.getText().equals(logging.getFile().getAlternativeLogFile())) return true;
 
         return false;
     }
@@ -313,9 +313,9 @@ public class LoggingPanel extends AbstractPreferencesComponent {
             logColors.setSelectedIndex(index);
         }
 
-        useLogFile.setSelected(logging.getFile().isSet());
-        useLogPath.setSelected(logging.getFile().isSetUseAlternativeLogPath());
-        logPathText.setText(logging.getFile().getAlternativeLogPath());
+        useLogFile.setSelected(logging.getFile().isActive());
+        useLogPath.setSelected(logging.getFile().isUseAlternativeLogFile());
+        logPathText.setText(logging.getFile().getAlternativeLogFile());
 
         logLevelConsoleCombo.removeAllItems();
         logLevelFileCombo.removeAllItems();
@@ -341,8 +341,8 @@ public class LoggingPanel extends AbstractPreferencesComponent {
         }
 
         logging.getFile().setActive(useLogFile.isSelected());
-        logging.getFile().setUseAlternativeLogPath(useLogPath.isSelected());
-        logging.getFile().setAlternativeLogPath(logPathText.getText());
+        logging.getFile().setUseAlternativeLogFile(useLogPath.isSelected());
+        logging.getFile().setAlternativeLogFile(logPathText.getText());
 
         LogLevel consoleLogLevel = (LogLevel) logLevelConsoleCombo.getSelectedItem();
         logging.getConsole().setLogLevel(consoleLogLevel);
@@ -369,27 +369,20 @@ public class LoggingPanel extends AbstractPreferencesComponent {
 
         // change log file
         if (isModified && useLogFile.isSelected()) {
-            Path logPath = useLogPath.isSelected() ?
-                    Paths.get(logging.getFile().getAlternativeLogPath()) :
-                    CoreConstants.IMPEXP_DATA_DIR.resolve(ClientConstants.LOG_DIR);
+            Path logFile = useLogPath.isSelected() ?
+                    Paths.get(logging.getFile().getAlternativeLogFile()) :
+                    CoreConstants.IMPEXP_DATA_DIR.resolve(ClientConstants.LOG_DIR).resolve(log.getDefaultLogFileName());
 
-            if (config.getInternal().getCurrentLogPath() == null
-                    || !logPath.equals(config.getInternal().getCurrentLogPath())) {
-                boolean success = log.appendLogFile(logPath, true);
-
-                if (!success) {
-                    useLogFile.setSelected(false);
-                    useLogPath.setSelected(false);
-                    logging.getFile().setActive(false);
-                    logging.getFile().setUseAlternativeLogPath(false);
-
-                    log.detachLogFile();
-                } else
-                    config.getInternal().setCurrentLogPath(logPath);
+            boolean success = log.appendLogFile(logFile);
+            if (!success) {
+                useLogFile.setSelected(false);
+                useLogPath.setSelected(false);
+                logging.getFile().setActive(false);
+                logging.getFile().setUseAlternativeLogFile(false);
+                log.detachLogFile();
             }
         } else if (isModified && !useLogFile.isSelected()) {
             log.detachLogFile();
-            config.getInternal().setCurrentLogPath(null);
         }
     }
 

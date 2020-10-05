@@ -32,31 +32,21 @@ import javax.xml.bind.annotation.XmlType;
 
 @XmlType(name="LogFileType", propOrder={
 		"logLevel",
-		"useAlternativeLogPath",
-		"alternativeLogPath"
+		"useAlternativeLogFile",
+		"alternativeLogFile"
 		})
 public class LogFile {
-	@XmlAttribute(required=false)
-	private Boolean active = false;
+	@XmlAttribute
+	private boolean active = false;
 	private LogLevel logLevel = LogLevel.INFO;
-	private Boolean useAlternativeLogPath = false;
-	private String alternativeLogPath = "";
-	
-	public LogFile() {
-	}
-	
-	public boolean isSet() {
-		if (active != null)
-			return active.booleanValue();
-		
-		return false;
-	}
-	
-	public Boolean getActive() {
+	private Boolean useAlternativeLogFile = false;
+	private String alternativeLogFile = "";
+
+	public boolean isActive() {
 		return active;
 	}
 
-	public void setActive(Boolean active) {
+	public void setActive(boolean active) {
 		this.active = active;
 	}
 
@@ -68,30 +58,22 @@ public class LogFile {
 		if (logLevel != null)
 			this.logLevel = logLevel;
 	}
-
-	public Boolean getUseAlternativeLogPath() {
-		return useAlternativeLogPath;
-	}
 	
-	public boolean isSetUseAlternativeLogPath() {
-		if (useAlternativeLogPath != null)
-			return useAlternativeLogPath.booleanValue();
-		
-		return false;
+	public boolean isUseAlternativeLogFile() {
+		return useAlternativeLogFile != null ? useAlternativeLogFile : false;
 	}
 
-	public void setUseAlternativeLogPath(Boolean useAlternativeLogPath) {
-		if (useAlternativeLogPath != null)
-			this.useAlternativeLogPath = useAlternativeLogPath;
+	public void setUseAlternativeLogFile(Boolean useAlternativeLogFile) {
+		this.useAlternativeLogFile = useAlternativeLogFile;
 	}
 
-	public String getAlternativeLogPath() {
-		return alternativeLogPath;
+	public String getAlternativeLogFile() {
+		return alternativeLogFile;
 	}
 
-	public void setAlternativeLogPath(String alternativeLogPath) {
-		if (alternativeLogPath != null)
-			this.alternativeLogPath = alternativeLogPath;
+	public void setAlternativeLogFile(String alternativeLogFile) {
+		if (alternativeLogFile != null)
+			this.alternativeLogFile = alternativeLogFile;
 	}
 
 }

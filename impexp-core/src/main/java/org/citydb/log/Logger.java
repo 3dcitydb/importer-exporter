@@ -141,30 +141,28 @@ public class Logger {
 		log(LogLevel.ERROR, writer.toString());
 	}
 
-	public boolean appendLogFile(Path logFile, boolean isDirectory) {
-		Path path = isDirectory ? logFile : logFile.getParent();
-		if (!Files.exists(path)) {
+	public boolean appendLogFile(Path logFile) {
+		if (Files.exists(logFile) && Files.isDirectory(logFile)) {
+			logFile = logFile.resolve(getDefaultLogFileName());
+		} else if (!Files.exists(logFile.getParent())) {
 			try {
-				Files.createDirectories(path);
+				Files.createDirectories(logFile.getParent());
 			} catch (IOException e) {
-				error("Could not create folder '" + path.toAbsolutePath() + "' for log file.");
+				error("Failed to create log file directory '" + logFile.getParent().toAbsolutePath() + "'.");
 				return false;
 			}
 		}
-
-		if (isDirectory)
-			logFile = path.resolve(getDefaultLogFile());
 		
 		try {
-			info("Writing log messages to file: '" + logFile.toAbsolutePath() + "'");
 			detachLogFile();
+			info("Writing log messages to file: '" + logFile.toAbsolutePath() + "'");
 			writer = Files.newBufferedWriter(logFile, StandardCharsets.UTF_8,
 					StandardOpenOption.CREATE, StandardOpenOption.APPEND, StandardOpenOption.WRITE);
 
 			return true;
 		} catch (IOException e) {
 			error("Failed to open log file '" + logFile + "': " + e.getMessage());
-			error("Not writing log messages to file");
+			error("Not writing log messages to file.");
 			return false;
 		}
 	}
@@ -182,7 +180,7 @@ public class Logger {
 		}
 	}
 
-	private String getDefaultLogFile() {
+	public String getDefaultLogFileName() {
 		return "log_3dcitydb_impexp_" +
 				LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE) +
 				".log";
