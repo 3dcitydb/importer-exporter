@@ -57,7 +57,7 @@ public class XlinkLibraryObject implements DBXlinkResolver {
 			blobImportAdapter.insert(xlink.getId(), stream);
 			return true;
 		} catch (IOException e) {
-			log.error("Failed to read library object file '" + fileURI + "': " + e.getMessage());
+			log.error("Failed to read library object file '" + fileURI + "'.", e);
 			return false;
 		}
 	}

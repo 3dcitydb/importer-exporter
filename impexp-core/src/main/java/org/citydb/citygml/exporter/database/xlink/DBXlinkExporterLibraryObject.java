@@ -97,7 +97,7 @@ public class DBXlinkExporterLibraryObject implements DBXlinkExporter {
 
 			return true;
 		} catch (IOException e) {
-			log.error("Failed to batch export library objects: " + e.getMessage());
+			log.error("Failed to batch export library objects.", e);
 			return false;
 		}
 	}
@@ -107,7 +107,7 @@ public class DBXlinkExporterLibraryObject implements DBXlinkExporter {
 		try {
 			blobExporter.executeBatch();
 		} catch (IOException e) {
-			log.error("Failed to batch export library objects: " + e.getMessage());
+			log.error("Failed to batch export library objects.", e);
 		}
 
 		blobExporter.close();

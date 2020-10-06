@@ -43,7 +43,7 @@ import java.sql.SQLException;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class CacheTableManager {
-	private final Logger LOG = Logger.getInstance();
+	private final Logger log = Logger.getInstance();
 	private final AbstractDatabaseAdapter cacheAdapter;	
 	private final Connection cacheConnection;
 	private final Config config;
@@ -63,7 +63,7 @@ public class CacheTableManager {
 
 		else {
 			File tempDir = checkTempDir(config.getProject().getGlobal().getCache().getLocalCachePath());
-			LOG.debug("Local cache directory is '" + tempDir.getAbsolutePath() + "'.");
+			log.debug("Local cache directory is '" + tempDir.getAbsolutePath() + "'.");
 			cacheAdapter = new H2Adapter();
 
 			try {
@@ -185,7 +185,7 @@ public class CacheTableManager {
 				try {
 					deleteTempFiles(new File(cacheDir));
 				} catch (IOException e) {
-					LOG.error("Failed to delete temp directory: " + e.getMessage());
+					log.error("Failed to delete temp directory.", e);
 				}
 			}			
 		}

@@ -104,7 +104,7 @@ public class DBExportWorkerFactory implements WorkerFactory<DBSplittingResult> {
 			dbWorker = new DBExportWorker(outputFile, connection, databaseAdapter, schemaMapping, cityGMLBuilder, featureWriter,
 					xlinkExporterPool, uidCacheManager, cacheTableManager, query, config, eventDispatcher);
 		} catch (CityGMLExportException | SQLException e) {
-			log.error("Failed to create export worker: " + e.getMessage());
+			log.error("Failed to create export worker.", e);
 		}
 
 		return dbWorker;

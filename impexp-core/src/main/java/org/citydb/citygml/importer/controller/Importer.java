@@ -477,7 +477,7 @@ public class Importer implements EventHandler {
 					try {
 						uidCacheManager.shutdownAll();
 					} catch (SQLException e) {
-						log.error("Failed to shutdown gml:id cache: " + e.getMessage());
+						log.error("Failed to shutdown gml:id cache.", e);
 						shouldRun = false;
 					}
 				}
@@ -487,7 +487,7 @@ public class Importer implements EventHandler {
 						log.info("Cleaning temporary cache.");
 						cacheTableManager.dropAll();
 					} catch (SQLException e) {
-						log.error("SQL error while cleaning temporary cache: " + e.getMessage());
+						log.error("SQL error while cleaning temporary cache.", e);
 						shouldRun = false;
 					}
 				}
@@ -496,7 +496,7 @@ public class Importer implements EventHandler {
 					try {
 						importLogger.close(shouldRun);
 					} catch (IOException e) {
-						log.error("Failed to finish logging of imported top-level features.");
+						log.error("Failed to finish logging of imported top-level features.", e);
 						log.warn("The feature import log is most likely corrupt.");
 						shouldRun = false;
 					}
@@ -515,7 +515,7 @@ public class Importer implements EventHandler {
 						manageIndexes(true, false);
 
 				} catch (SQLException e) {
-					log.error("Database error while activating indexes: " + e.getMessage());
+					log.error("Database error while activating indexes.", e);
 					return false;
 				}
 			}
@@ -588,16 +588,10 @@ public class Importer implements EventHandler {
 
 				if (interruptEvent.getCause() != null) {
 					Throwable cause = interruptEvent.getCause();
-
 					if (cause instanceof SQLException) {
-						Iterator<Throwable> iter = ((SQLException)cause).iterator();
-						log.error("A SQL error occurred: " + iter.next().getMessage());
-						while (iter.hasNext())
-							log.error("Cause: " + iter.next().getMessage());
+						log.error("A SQL error occurred.", cause);
 					} else {
-						log.error("An error occurred: " + cause.getMessage());
-						while ((cause = cause.getCause()) != null)
-							log.error(cause.getClass().getTypeName() + ": " + cause.getMessage());
+						log.error("An error occurred.", cause);
 					}
 				}
 

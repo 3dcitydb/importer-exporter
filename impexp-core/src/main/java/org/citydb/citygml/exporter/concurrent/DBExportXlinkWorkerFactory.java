@@ -71,7 +71,7 @@ public class DBExportXlinkWorkerFactory implements WorkerFactory<DBXlink> {
 
 			dbWorker = new DBExportXlinkWorker(outputFile, connection, databaseAdapter, config, eventDispatcher);
 		} catch (SQLException e) {
-			log.error("Failed to create XLink export worker: " + e.getMessage());
+			log.error("Failed to create XLink export worker.", e);
 		}
 
 		return dbWorker;

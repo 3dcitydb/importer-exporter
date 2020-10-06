@@ -143,7 +143,7 @@ public class DBImportWorkerFactory implements WorkerFactory<CityGML> {
 			dbWorker = new DBImportWorker(inputFile, connection, isManagedTransaction, databaseAdapter, schemaMapping, cityGMLBuilder,
 					xlinkWorkerPool, uidCacheManager, filter, affineTransformer, importLogger, config, eventDispatcher);
 		} catch (SQLException e) {
-			log.error("Failed to create import worker: " + e.getMessage());
+			log.error("Failed to create import worker.", e);
 		}
 
 		return dbWorker;

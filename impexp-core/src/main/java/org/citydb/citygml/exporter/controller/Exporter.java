@@ -516,7 +516,7 @@ public class Exporter implements EventHandler {
 						try {
 							writer.close();
 						} catch (FeatureWriteException e) {
-							log.error("Failed to close output writer: " + e.getMessage());
+							log.error("Failed to close output writer.", e);
 							shouldRun = false;
 						}
 					}
@@ -525,7 +525,7 @@ public class Exporter implements EventHandler {
 						try {
 							file.close();
 						} catch (IOException e) {
-							log.error("Failed to close output file: " + e.getMessage());
+							log.error("Failed to close output file.", e);
 							shouldRun = false;
 						}
 					}
@@ -547,7 +547,7 @@ public class Exporter implements EventHandler {
 						try {
 							uidCacheManager.shutdownAll();
 						} catch (SQLException e) {
-							log.error("Failed to clean gml:id caches: " + e.getMessage());
+							log.error("Failed to clean gml:id caches.", e);
 							shouldRun = false;
 						}
 					}
@@ -558,7 +558,7 @@ public class Exporter implements EventHandler {
 							cacheTableManager.dropAll();
 							cacheTableManager = null;
 						} catch (SQLException e) {
-							log.error("Failed to clean temporary cache: " + e.getMessage());
+							log.error("Failed to clean temporary cache.", e);
 							shouldRun = false;
 						}					
 					}
@@ -635,16 +635,10 @@ public class Exporter implements EventHandler {
 
 				if (interruptEvent.getCause() != null) {
 					Throwable cause = interruptEvent.getCause();
-
 					if (cause instanceof SQLException) {
-						Iterator<Throwable> iter = ((SQLException)cause).iterator();
-						log.error("A SQL error occurred: " + iter.next().getMessage());
-						while (iter.hasNext())
-							log.error("Cause: " + iter.next().getMessage());
+						log.error("A SQL error occurred.", cause);
 					} else {
-						log.error("An error occurred: " + cause.getMessage());
-						while ((cause = cause.getCause()) != null)
-							log.error(cause.getClass().getTypeName() + ": " + cause.getMessage());
+						log.error("An error occurred.", cause);
 					}
 				}
 

@@ -173,7 +173,7 @@ public class DBImplicitGeometry implements DBImporter {
 								implicitGeometryId,
 								fileInfo.getKey()));
 					} catch (IOException e) {
-						log.error("Failed to read library object file at '" + libraryURI + "': " + e.getMessage());
+						log.error("Failed to read library object file at '" + libraryURI + "'.", e);
 					}
 				} else
 					psUpdateImplicitGeometry.setNull(1, Types.VARCHAR);

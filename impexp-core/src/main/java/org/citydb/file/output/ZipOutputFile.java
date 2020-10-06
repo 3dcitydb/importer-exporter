@@ -74,8 +74,7 @@ public class ZipOutputFile extends AbstractArchiveOutputFile {
                     try {
                         return new ScatterZipWorker(supplier, eventDispatcher);
                     } catch (IOException e) {
-                        log.error("Failed to create scatter zip writer.");
-                        log.error(e.getClass().getTypeName() + ": " + e.getMessage());
+                        log.error("Failed to create scatter zip writer.", e);
                         return null;
                     }
                 },

@@ -128,7 +128,7 @@ public class DBXlinkExporterTextureImage implements DBXlinkExporter {
 
             return true;
         } catch (IOException e) {
-            log.error("Failed to batch export texture files: " + e.getMessage());
+            log.error("Failed to batch export texture files.", e);
             return false;
         }
     }
@@ -140,7 +140,7 @@ public class DBXlinkExporterTextureImage implements DBXlinkExporter {
             if (exported > 0)
                 exporterManager.propagateEvent(new CounterEvent(CounterType.TEXTURE_IMAGE, exported, this));
         } catch (IOException e) {
-            log.error("Failed to batch export texture files: " + e.getMessage());
+            log.error("Failed to batch export texture files.", e);
         }
 
         blobExporter.close();

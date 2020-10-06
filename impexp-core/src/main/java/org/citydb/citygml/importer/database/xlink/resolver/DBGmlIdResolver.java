@@ -75,7 +75,7 @@ public class DBGmlIdResolver {
 					entry = cityObjectLookup(gmlId);
 				}
 			} catch (SQLException e) {
-				log.error("SQL error while querying the gml:id cache: " + e.getMessage());
+				log.error("SQL error while querying the gml:id cache.", e);
 			}
 		}
 

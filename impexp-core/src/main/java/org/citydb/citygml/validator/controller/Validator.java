@@ -156,13 +156,8 @@ public class Validator implements EventHandler {
 		if (isInterrupted.compareAndSet(false, true)) {
 			shouldRun = false;
 			InterruptEvent interruptEvent = (InterruptEvent)e;
-
-			if (interruptEvent.getCause() != null) {
-				Throwable cause = interruptEvent.getCause();
-				log.error("An error occurred: " + cause.getMessage());
-				while ((cause = cause.getCause()) != null)
-					log.error(cause.getClass().getTypeName() + ": " + cause.getMessage());
-			}
+			if (interruptEvent.getCause() != null)
+				log.error("An error occurred.", interruptEvent.getCause());
 			
 			String log = interruptEvent.getLogMessage();
 			if (log != null)

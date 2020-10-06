@@ -27,8 +27,6 @@
  */
 package org.citydb.citygml.importer.concurrent;
 
-import java.util.concurrent.locks.ReentrantLock;
-
 import org.citydb.concurrent.Worker;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
@@ -41,8 +39,10 @@ import org.citygml4j.xml.io.reader.MissingADESchemaException;
 import org.citygml4j.xml.io.reader.UnmarshalException;
 import org.citygml4j.xml.io.reader.XMLChunk;
 
+import java.util.concurrent.locks.ReentrantLock;
+
 public class FeatureReaderWorker extends Worker<XMLChunk> {
-	private final Logger LOG = Logger.getInstance();
+	private final Logger log = Logger.getInstance();
 	private final ReentrantLock runLock = new ReentrantLock();
 	private volatile boolean shouldRun = true;
 
@@ -91,11 +91,8 @@ public class FeatureReaderWorker extends Worker<XMLChunk> {
 				if (!useValidation || work.hasPassedXMLValidation())
 					dbWorkerPool.addWork(cityGML);
 			} catch (UnmarshalException e) {
-				if (!useValidation || work.hasPassedXMLValidation()) {
-					StringBuilder msg = new StringBuilder();				
-					msg.append("Failed to unmarshal XML chunk: ").append(e.getMessage());			
-					LOG.error(msg.toString());
-				}
+				if (!useValidation || work.hasPassedXMLValidation())
+					log.error("Failed to unmarshal XML chunk.", e);
 			} catch (MissingADESchemaException e) {
 				eventDispatcher.triggerEvent(new InterruptEvent("Failed to read an ADE XML Schema.", LogLevel.ERROR, e, eventChannel, this));
 			} catch (Exception e) {

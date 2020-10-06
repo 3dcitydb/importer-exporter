@@ -148,7 +148,7 @@ public class MenuProject extends JMenu {
                     setLastUsedList();
                     lastUsed.repaint();
                 } catch (JAXBException e1) {
-                    log.error("Failed to save project settings: " + e1.getMessage());
+                    log.error("Failed to save project settings.", e1);
                 }
             }
         });
@@ -191,7 +191,7 @@ public class MenuProject extends JMenu {
                 try {
                     ConfigUtil.generateSchema(ctx, path);
                 } catch (IOException e1) {
-                    log.error("Failed to save project settings: " + e1.getMessage());
+                    log.error("Failed to save project settings.", e1);
                 }
             }
         });

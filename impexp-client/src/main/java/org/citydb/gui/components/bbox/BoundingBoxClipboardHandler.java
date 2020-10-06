@@ -46,7 +46,7 @@ import org.citydb.log.Logger;
 public class BoundingBoxClipboardHandler implements ClipboardOwner {
 	private static BoundingBoxClipboardHandler instance;
 
-	private final Logger LOG = Logger.getInstance();
+	private final Logger log = Logger.getInstance();
 	private final Config config;
 	private boolean isMac;
 	private Clipboard systemClipboard;
@@ -100,7 +100,7 @@ public class BoundingBoxClipboardHandler implements ClipboardOwner {
 			}
 		}
 
-		LOG.error("Failed to interpret clipboard content as bounding box.");
+		log.error("Failed to interpret clipboard content as bounding box.");
 		return null;
 	}
 

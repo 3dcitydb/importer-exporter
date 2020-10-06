@@ -117,7 +117,7 @@ public class DBImportXlinkResolverWorkerFactory implements WorkerFactory<DBXlink
 			dbWorker = new DBImportXlinkResolverWorker(inputFile, connection, isManagedTransaction, databaseAdapter,
 					tmpXlinkPool, uidCacheManager, cacheTableManager, config, eventDispatcher);
 		} catch (SQLException e) {
-			log.error("Failed to create XLink resolver worker: " + e.getMessage());
+			log.error("Failed to create XLink resolver worker.", e);
 		}
 
 		return dbWorker;

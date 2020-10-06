@@ -37,7 +37,7 @@ import org.citydb.config.project.database.DBConnection;
 import org.citydb.log.Logger;
 
 public abstract class AbstractSchemaManagerAdapter {
-	private final Logger LOG = Logger.getInstance();
+	private final Logger log = Logger.getInstance();
 	protected final AbstractDatabaseAdapter databaseAdapter;
 
 	protected AbstractSchemaManagerAdapter(AbstractDatabaseAdapter databaseAdapter) {
@@ -59,9 +59,9 @@ public abstract class AbstractSchemaManagerAdapter {
 			boolean exists = existsSchema(conn, schema);
 			if (logResult) {
 				if (!exists)
-					LOG.error("Database schema '" + schema + "' is not available.");
+					log.error("Database schema '" + schema + "' is not available.");
 				else 
-					LOG.info("Switching to database schema '" + schema + "'.");
+					log.info("Switching to database schema '" + schema + "'.");
 			}
 
 			return exists;

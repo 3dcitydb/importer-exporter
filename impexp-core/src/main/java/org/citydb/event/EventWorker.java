@@ -72,7 +72,7 @@ public class EventWorker extends Worker<Event> {
 		try {
 			eventDispatcher.propagate(work);
 		} catch (Exception e) {
-			log.error("Internal message bus error: " + e.getMessage());
+			log.error("Internal message bus error.", e);
 		} finally {
 			runLock.unlock();
 		}

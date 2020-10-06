@@ -223,7 +223,8 @@ public class DBImportWorker extends Worker<CityGML> implements EventHandler {
 			}
 
 			else {
-				String msg = (work instanceof AbstractGML ? importer.getObjectSignature((AbstractGML) work) : work.getCityGMLClass()) +
+				String msg = (work instanceof AbstractGML ?
+						importer.getObjectSignature((AbstractGML) work) : work.getCityGMLClass()) +
 						": Unsupported top-level object type. Skipping import.";
 
 				if (!importer.isFailOnError())

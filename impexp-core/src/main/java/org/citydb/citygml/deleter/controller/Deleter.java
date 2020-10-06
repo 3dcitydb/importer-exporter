@@ -54,7 +54,6 @@ import org.citydb.util.Util;
 
 import java.sql.SQLException;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -203,16 +202,10 @@ public class Deleter implements EventHandler {
 
 				if (interruptEvent.getCause() != null) {
 					Throwable cause = interruptEvent.getCause();
-
 					if (cause instanceof SQLException) {
-						Iterator<Throwable> iter = ((SQLException)cause).iterator();
-						log.error("A SQL error occurred: " + iter.next().getMessage());
-						while (iter.hasNext())
-							log.error("Cause: " + iter.next().getMessage());
+						log.error("A SQL error occurred.", cause);
 					} else {
-						log.error("An error occurred: " + cause.getMessage());
-						while ((cause = cause.getCause()) != null)
-							log.error(cause.getClass().getTypeName() + ": " + cause.getMessage());
+						log.error("An error occurred.", cause);
 					}
 				}
 

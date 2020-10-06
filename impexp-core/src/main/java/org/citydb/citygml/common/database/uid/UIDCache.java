@@ -141,8 +141,8 @@ public class UIDCache {
 
 				log.debug("Entries written to " + cacheModel.getType() + " cache.");
 
-			} catch (SQLException sqlEx) {
-				log.error("SQL error while writing entries to " + cacheModel.getType() + " cache: " + sqlEx.getMessage());
+			} catch (SQLException e) {
+				log.error("SQL error while writing entries to " + cacheModel.getType() + " cache.", e);
 			}
 		} finally {
 			final ReentrantLock lock = this.mainLock;
@@ -174,8 +174,8 @@ public class UIDCache {
 
 		try {			
 			return cacheModel.lookupDB(key);
-		} catch (SQLException sqlEx) {
-			log.error("SQL error while querying the " + cacheModel.getType() + " cache: " + sqlEx.getMessage());
+		} catch (SQLException e) {
+			log.error("SQL error while querying the " + cacheModel.getType() + " cache.", e);
 			return null;
 		} 
 	}

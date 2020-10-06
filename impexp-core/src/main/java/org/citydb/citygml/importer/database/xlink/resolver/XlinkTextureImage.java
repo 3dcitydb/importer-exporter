@@ -62,7 +62,7 @@ public class XlinkTextureImage implements DBXlinkResolver {
 			textureImportAdapter.insert(xlink.getId(), stream);
 			return true;
 		} catch (IOException e) {
-			log.error("Failed to read texture file '" + fileURI + "': " + e.getMessage());
+			log.error("Failed to read texture file '" + fileURI + "'.", e);
 			return false;
 		}
 	}

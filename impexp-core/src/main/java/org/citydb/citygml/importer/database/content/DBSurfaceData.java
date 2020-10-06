@@ -659,7 +659,7 @@ public class DBSurfaceData implements DBImporter {
 					break;
 				}
 			} catch (IOException e) {
-				log.error("Error while processing world file '" + candidate +"': " + e.getMessage());
+				log.error("Error while processing world file '" + candidate +"'.", e);
 				break;
 			} catch (NumberFormatException e) {
 				log.error("Error while processing world file '" + candidate +"': Content could not be interpreted.");

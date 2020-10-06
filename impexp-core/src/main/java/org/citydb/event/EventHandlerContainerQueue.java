@@ -35,10 +35,10 @@ import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class EventHandlerContainerQueue {
-	private ConcurrentLinkedQueue<EventHandlerContainer> containerQueue;
+	private final ConcurrentLinkedQueue<EventHandlerContainer> containerQueue;
 
 	public EventHandlerContainerQueue() {
-		containerQueue = new ConcurrentLinkedQueue<EventHandlerContainer>();
+		containerQueue = new ConcurrentLinkedQueue<>();
 	}
 
 	public void addEventHandler(EventHandler handler, boolean autoRemove) {
@@ -80,7 +80,7 @@ public class EventHandlerContainerQueue {
 			try {
 				handler.handleEvent(event);
 			} catch (Exception e) {
-				Logger.getInstance().error(e.getMessage());
+				Logger.getInstance().error("Failed to propagate event.", e);
 				break;
 			}
 			
