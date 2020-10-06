@@ -82,7 +82,7 @@ public class Logger {
 		return "[" +
 				LocalDateTime.now().withNano(0).format(DateTimeFormatter.ISO_LOCAL_TIME) +
 				" " +
-				level.value() +
+				level.name() +
 				"] ";
 	}
 
@@ -92,7 +92,12 @@ public class Logger {
 		if (consoleLevel.ordinal() >= level.ordinal())
 			consoleLogger.log(level, msg);
 
-		if (writer != null && fileLevel.ordinal() >= level.ordinal()) {
+		if (fileLevel.ordinal() >= level.ordinal())
+			logToFile(msg);
+	}
+
+	public void logToFile(String msg) {
+		if (writer != null) {
 			try {
 				writer.write(msg);
 				writer.newLine();
@@ -100,6 +105,16 @@ public class Logger {
 			} catch (IOException e) {
 				//
 			}
+		}
+	}
+
+	private void log(LogLevel level, String msg, Throwable e) {
+		log(level, msg);
+		if (e != null) {
+			do {
+				if (e.getMessage() != null)
+					log(level, "Cause: " + e.getClass().getName() + ": " + e.getMessage());
+			} while ((e = e.getCause()) != null);
 		}
 	}
 
@@ -115,25 +130,21 @@ public class Logger {
 		log(LogLevel.WARN, msg);
 	}
 
+	public void warn(String msg, Throwable e) {
+		log(LogLevel.WARN, msg, e);
+	}
+
 	public void error(String msg) {
 		log(LogLevel.ERROR, msg);
+	}
+
+	public void error(String msg, Throwable e) {
+		log(LogLevel.ERROR, msg, e);
 	}
 
 	public void print(String msg) {
 		consoleLogger.log(msg);
 		logToFile(msg);
-	}
-
-	public void logToFile(String msg) {
-		if (writer != null) {
-			try {
-				writer.write(msg);
-				writer.newLine();
-				writer.flush();
-			} catch (IOException e) {
-				//
-			}
-		}
 	}
 
 	public void logStackTrace(Throwable t) {
@@ -195,5 +206,4 @@ public class Logger {
 				LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE) +
 				".log";
 	}
-
 }

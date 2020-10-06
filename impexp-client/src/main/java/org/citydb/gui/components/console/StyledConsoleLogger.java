@@ -61,22 +61,22 @@ public class StyledConsoleLogger implements ConsoleLogger {
 
         // add default styles for each log level
         for (LogLevel level : LogLevel.values())
-            context.addStyle(level.value(), null);
+            context.addStyle(level.name(), null);
 
-        out = getStyledPrintStream(context.getStyle(LogLevel.INFO.value()));
-        err = getStyledPrintStream(context.getStyle(LogLevel.ERROR.value()));
+        out = getStyledPrintStream(context.getStyle(LogLevel.INFO.name()));
+        err = getStyledPrintStream(context.getStyle(LogLevel.ERROR.name()));
     }
 
     public Style getStyle(LogLevel level) {
-        return context.getStyle(level.value());
+        return context.getStyle(level.name());
     }
 
     public void setStyle(LogLevel level, Style style) {
-        context.addStyle(level.value(), style);
+        context.addStyle(level.name(), style);
     }
 
     public void applyLogLevelStyle(LogLevel level, LogLevelStyle logLevelStyle) {
-        Style style = context.getStyle(level.value());
+        Style style = context.getStyle(level.name());
 
         Color foreground = GuiUtil.hexToColor(logLevelStyle.getForeground());
         if (foreground != null)
@@ -93,7 +93,7 @@ public class StyledConsoleLogger implements ConsoleLogger {
 
     @Override
     public void log(LogLevel level, String msg) {
-        log(msg, context.getStyle(level.value()));
+        log(msg, context.getStyle(level.name()));
     }
 
     @Override

@@ -54,7 +54,7 @@ public class ConsoleStyle {
             case ERROR:
                 return error;
             default:
-                throw new IllegalArgumentException("No style definition for log level " + level.value() + ".");
+                throw new IllegalArgumentException("No style definition for log level " + level.name() + ".");
         }
     }
 

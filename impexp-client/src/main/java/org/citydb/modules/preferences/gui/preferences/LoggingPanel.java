@@ -422,7 +422,7 @@ public class LoggingPanel extends AbstractPreferencesComponent {
 
         LogColor(LogLevel level) {
             this.level = level;
-            previewText = log.getPrefix(level) + "This a " + level.value() + " log message.";
+            previewText = log.getPrefix(level) + "This a " + level.name() + " log message.";
         }
 
         void applyForeground() {
@@ -513,7 +513,7 @@ public class LoggingPanel extends AbstractPreferencesComponent {
 
         @Override
         public String toString() {
-            return level.value();
+            return level.name();
         }
     }
 }
