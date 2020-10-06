@@ -41,5 +41,10 @@ public enum LogLevel {
 	@XmlEnumValue("info")
 	INFO,
 	@XmlEnumValue("debug")
-	DEBUG
+	DEBUG;
+
+	@Override
+	public String toString() {
+		return name().toLowerCase();
+	}
 }
