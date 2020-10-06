@@ -27,6 +27,7 @@
  */
 package org.citydb.log;
 
+import org.citydb.config.project.global.LogFileMode;
 import org.citydb.config.project.global.LogLevel;
 
 import java.io.BufferedWriter;
@@ -61,19 +62,19 @@ public class Logger {
 			this.consoleLogger = consoleLogger;
 	}
 
-	public void setDefaultConsoleLogLevel(LogLevel level) {
+	public void setConsoleLogLevel(LogLevel level) {
 		consoleLevel = level;
 	}
 
-	public void setDefaultFileLogLevel(LogLevel level) {
+	public void setFileLogLevel(LogLevel level) {
 		fileLevel = level;
 	}
 
-	public LogLevel getDefaultConsoleLogLevel() {
+	public LogLevel getConsoleLogLevel() {
 		return consoleLevel;
 	}
 
-	public LogLevel getDefaultFileLogLevel() {
+	public LogLevel getFileLogLevel() {
 		return fileLevel;
 	}
 
@@ -141,7 +142,7 @@ public class Logger {
 		log(LogLevel.ERROR, writer.toString());
 	}
 
-	public boolean appendLogFile(Path logFile) {
+	public boolean appendLogFile(Path logFile, LogFileMode mode) {
 		if (Files.exists(logFile) && Files.isDirectory(logFile)) {
 			logFile = logFile.resolve(getDefaultLogFileName());
 		} else if (!Files.exists(logFile.getParent())) {
@@ -156,8 +157,17 @@ public class Logger {
 		try {
 			detachLogFile();
 			info("Writing log messages to file: '" + logFile.toAbsolutePath() + "'");
-			writer = Files.newBufferedWriter(logFile, StandardCharsets.UTF_8,
-					StandardOpenOption.CREATE, StandardOpenOption.APPEND, StandardOpenOption.WRITE);
+			writer = Files.newBufferedWriter(logFile,
+					StandardCharsets.UTF_8,
+					StandardOpenOption.CREATE,
+					StandardOpenOption.WRITE,
+					mode == LogFileMode.TRUNCATE ?
+							StandardOpenOption.TRUNCATE_EXISTING :
+							StandardOpenOption.APPEND);
+
+			logToFile("*** Starting new log file session on " + LocalDateTime.now()
+					.withNano(0)
+					.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
 
 			return true;
 		} catch (IOException e) {

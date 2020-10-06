@@ -30,6 +30,7 @@ package org.citydb.modules.preferences.gui.preferences;
 import org.citydb.config.Config;
 import org.citydb.config.gui.style.LogLevelStyle;
 import org.citydb.config.i18n.Language;
+import org.citydb.config.project.global.LogFileMode;
 import org.citydb.config.project.global.LogLevel;
 import org.citydb.config.project.global.Logging;
 import org.citydb.gui.ImpExpGui;
@@ -65,9 +66,11 @@ public class LoggingPanel extends AbstractPreferencesComponent {
     private JCheckBox useLogFile;
     private JLabel logLevelFileLabel;
     private JComboBox<LogLevel> logLevelFileCombo;
-    private JCheckBox useLogPath;
-    private JTextField logPathText;
-    private JButton logPathButton;
+    private JCheckBox truncateLogFile;
+    private JCheckBox useAlternativeLogFile;
+    private JLabel alternativeLogFileLabel;
+    private JTextField alternativeLogFileText;
+    private JButton alternativeLogFileButton;
 
     private JLabel colorSchemeLabel;
     private JList<LogColor> logColors;
@@ -91,10 +94,10 @@ public class LoggingPanel extends AbstractPreferencesComponent {
 
         if (logLevelConsoleCombo.getSelectedItem() != logging.getConsole().getLogLevel()) return true;
         if (wrapTextConsole.isSelected() != logging.getConsole().isWrapText()) return true;
-        if (useLogFile.isSelected() != logging.getFile().isActive()) return true;
-        if (useLogPath.isSelected() != logging.getFile().isUseAlternativeLogFile()) return true;
-        if (!logPathText.getText().equals(logging.getFile().getAlternativeLogFile())) return true;
-        if (logLevelFileCombo.getSelectedItem() != logging.getFile().getLogLevel()) return true;
+        if (isLogFileModified()) return true;
+        if ((truncateLogFile.isSelected() && logging.getFile().getLogFileMode() == LogFileMode.APPEND) ||
+                (!truncateLogFile.isSelected() && logging.getFile().getLogFileMode() == LogFileMode.TRUNCATE))
+            return true;
 
         for (int i = 0; i < logColors.getModel().getSize(); i++)
             if (logColors.getModel().getElementAt(i).isModified()) return true;
@@ -106,8 +109,9 @@ public class LoggingPanel extends AbstractPreferencesComponent {
         Logging logging = config.getProject().getGlobal().getLogging();
 
         if (useLogFile.isSelected() != logging.getFile().isActive()) return true;
-        if (useLogPath.isSelected() != logging.getFile().isUseAlternativeLogFile()) return true;
-        if (!logPathText.getText().equals(logging.getFile().getAlternativeLogFile())) return true;
+        if (useAlternativeLogFile.isSelected() != logging.getFile().isUseAlternativeLogFile()) return true;
+        if (!alternativeLogFileText.getText().equals(logging.getFile().getAlternativeLogFile())) return true;
+        if (logLevelFileCombo.getSelectedItem() != logging.getFile().getLogLevel()) return true;
 
         return false;
     }
@@ -119,13 +123,16 @@ public class LoggingPanel extends AbstractPreferencesComponent {
         useLogFile = new JCheckBox();
         logLevelFileLabel = new JLabel();
         logLevelFileCombo = new JComboBox<>();
-        useLogPath = new JCheckBox();
-        logPathText = new JTextField();
-        logPathButton = new JButton();
+        truncateLogFile = new JCheckBox();
+        useAlternativeLogFile = new JCheckBox();
+        alternativeLogFileLabel = new JLabel();
+        alternativeLogFileText = new JTextField();
+        alternativeLogFileButton = new JButton();
 
         wrapTextConsole.setIconTextGap(10);
         useLogFile.setIconTextGap(10);
-        useLogPath.setIconTextGap(10);
+        useAlternativeLogFile.setIconTextGap(10);
+        truncateLogFile.setIconTextGap(10);
 
         preview = new JTextPane();
         preview.setFont(new Font(Font.MONOSPACED, Font.PLAIN, UIManager.getFont("Label.font").getSize()));
@@ -195,7 +202,7 @@ public class LoggingPanel extends AbstractPreferencesComponent {
             add(filePanel, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 5, 0, 5, 0));
             filePanel.setBorder(BorderFactory.createTitledBorder(""));
             filePanel.setLayout(new GridBagLayout());
-            int lmargin = (int) (useLogPath.getPreferredSize().getWidth()) + 11;
+            int lmargin = (int) (useAlternativeLogFile.getPreferredSize().getWidth()) + 11;
             {
                 filePanel.add(useLogFile, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.BOTH, 0, 5, 0, 5));
                 JPanel sub1 = new JPanel();
@@ -205,13 +212,15 @@ public class LoggingPanel extends AbstractPreferencesComponent {
                     sub1.add(logLevelFileLabel, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.BOTH, 0, 5, 5, 5));
                     sub1.add(logLevelFileCombo, GuiUtil.setConstraints(1, 0, 1, 1, GridBagConstraints.BOTH, 0, 5, 5, 5));
                 }
-                filePanel.add(useLogPath, GuiUtil.setConstraints(0, 2, 1, 1, GridBagConstraints.BOTH, 0, 5, 0, 5));
+                filePanel.add(truncateLogFile, GuiUtil.setConstraints(0, 2, 1, 1, GridBagConstraints.BOTH, 0, 5, 0, 5));
+                filePanel.add(useAlternativeLogFile, GuiUtil.setConstraints(0, 3, 1, 1, GridBagConstraints.BOTH, 0, 5, 0, 5));
                 JPanel sub2 = new JPanel();
                 sub2.setLayout(new GridBagLayout());
-                filePanel.add(sub2, GuiUtil.setConstraints(0, 3, 0, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+                filePanel.add(sub2, GuiUtil.setConstraints(0, 4, 0, 0, GridBagConstraints.BOTH, 0, lmargin, 5, 5));
                 {
-                    sub2.add(logPathText, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.BOTH, 0, lmargin, 5, 5));
-                    sub2.add(logPathButton, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.BOTH, 0, 5, 5, 5));
+                    sub2.add(alternativeLogFileLabel, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.BOTH, 0, 0, 0, 5));
+                    sub2.add(alternativeLogFileText, GuiUtil.setConstraints(1, 0, 1, 1, GridBagConstraints.BOTH, 0, 5, 0, 5));
+                    sub2.add(alternativeLogFileButton, GuiUtil.setConstraints(2, 0, 0, 0, GridBagConstraints.BOTH, 0, 5, 0, 0));
                 }
             }
         }
@@ -249,26 +258,28 @@ public class LoggingPanel extends AbstractPreferencesComponent {
             }
         });
 
-        logPathButton.addActionListener(e -> {
-            String sExp = browseFile(Language.I18N.getString("pref.general.logging.label.useLogPath"), logPathText.getText());
+        alternativeLogFileButton.addActionListener(e -> {
+            String sExp = browseFile(Language.I18N.getString("pref.general.logging.label.useAltLogFile"), alternativeLogFileText.getText());
             if (!sExp.isEmpty())
-                logPathText.setText(sExp);
+                alternativeLogFileText.setText(sExp);
         });
 
         ActionListener logFileListener = e -> setEnabledLogFile();
         useLogFile.addActionListener(logFileListener);
-        useLogPath.addActionListener(logFileListener);
+        useAlternativeLogFile.addActionListener(logFileListener);
 
-        PopupMenuDecorator.getInstance().decorate(logPathText);
+        PopupMenuDecorator.getInstance().decorate(alternativeLogFileText);
     }
 
     private void setEnabledLogFile() {
-        useLogPath.setEnabled(useLogFile.isSelected());
+        useAlternativeLogFile.setEnabled(useLogFile.isSelected());
         logLevelFileLabel.setEnabled(useLogFile.isSelected());
         logLevelFileCombo.setEnabled(useLogFile.isSelected());
+        truncateLogFile.setEnabled(useLogFile.isSelected());
 
-        logPathText.setEnabled(useLogFile.isSelected() && useLogPath.isSelected());
-        logPathButton.setEnabled(useLogFile.isSelected() && useLogPath.isSelected());
+        alternativeLogFileLabel.setEnabled(useLogFile.isSelected() && useAlternativeLogFile.isSelected());
+        alternativeLogFileText.setEnabled(useLogFile.isSelected() && useAlternativeLogFile.isSelected());
+        alternativeLogFileButton.setEnabled(useLogFile.isSelected() && useAlternativeLogFile.isSelected());
     }
 
     @Override
@@ -283,8 +294,10 @@ public class LoggingPanel extends AbstractPreferencesComponent {
         ((TitledBorder) filePanel.getBorder()).setTitle(Language.I18N.getString("pref.general.logging.border.file"));
         useLogFile.setText(Language.I18N.getString("pref.general.logging.label.useLogFile"));
         logLevelFileLabel.setText(Language.I18N.getString("pref.general.logging.label.logLevel"));
-        useLogPath.setText(Language.I18N.getString("pref.general.logging.label.useLogPath"));
-        logPathButton.setText(Language.I18N.getString("common.button.browse"));
+        truncateLogFile.setText(Language.I18N.getString("pref.general.logging.label.truncateLogFile"));
+        useAlternativeLogFile.setText(Language.I18N.getString("pref.general.logging.label.useAltLogFile"));
+        alternativeLogFileLabel.setText(Language.I18N.getString("pref.general.logging.label.altLogFile"));
+        alternativeLogFileButton.setText(Language.I18N.getString("common.button.browse"));
     }
 
     @Override
@@ -297,10 +310,8 @@ public class LoggingPanel extends AbstractPreferencesComponent {
 
         for (int i = 0; i < logColors.getModel().getSize(); i++) {
             LogColor logColor = logColors.getModel().getElementAt(i);
-
             LogLevelStyle style = config.getGui().getConsoleWindow().getStyle().getLogLevelStyle(logColor.level);
             mainView.getStyledConsoleLogger().applyLogLevelStyle(logColor.level, style);
-
             logColor.reset();
             logColor.updatePreview();
         }
@@ -313,10 +324,6 @@ public class LoggingPanel extends AbstractPreferencesComponent {
             logColors.setSelectedIndex(index);
         }
 
-        useLogFile.setSelected(logging.getFile().isActive());
-        useLogPath.setSelected(logging.getFile().isUseAlternativeLogFile());
-        logPathText.setText(logging.getFile().getAlternativeLogFile());
-
         logLevelConsoleCombo.removeAllItems();
         logLevelFileCombo.removeAllItems();
         for (LogLevel level : LogLevel.values()) {
@@ -327,6 +334,11 @@ public class LoggingPanel extends AbstractPreferencesComponent {
         logLevelConsoleCombo.setSelectedItem(logging.getConsole().getLogLevel());
         logLevelFileCombo.setSelectedItem(logging.getFile().getLogLevel());
 
+        truncateLogFile.setSelected(logging.getFile().getLogFileMode() == LogFileMode.TRUNCATE);
+        useLogFile.setSelected(logging.getFile().isActive());
+        useAlternativeLogFile.setSelected(logging.getFile().isUseAlternativeLogFile());
+        alternativeLogFileText.setText(logging.getFile().getAlternativeLogFile());
+
         setEnabledLogFile();
     }
 
@@ -335,18 +347,9 @@ public class LoggingPanel extends AbstractPreferencesComponent {
         Logging logging = config.getProject().getGlobal().getLogging();
         boolean isModified = isLogFileModified();
 
-        if (useLogPath.isSelected() && logPathText.getText().trim().length() == 0) {
-            useLogPath.setSelected(false);
-            setEnabledLogFile();
-        }
-
-        logging.getFile().setActive(useLogFile.isSelected());
-        logging.getFile().setUseAlternativeLogFile(useLogPath.isSelected());
-        logging.getFile().setAlternativeLogFile(logPathText.getText());
-
         LogLevel consoleLogLevel = (LogLevel) logLevelConsoleCombo.getSelectedItem();
         logging.getConsole().setLogLevel(consoleLogLevel);
-        log.setDefaultConsoleLogLevel(consoleLogLevel);
+        log.setConsoleLogLevel(consoleLogLevel);
 
         logging.getConsole().setWrapText(wrapTextConsole.isSelected());
         mainView.getConsole().setLineWrap(wrapTextConsole.isSelected());
@@ -354,7 +357,6 @@ public class LoggingPanel extends AbstractPreferencesComponent {
 
         for (int i = 0; i < logColors.getModel().getSize(); i++) {
             LogColor logColor = logColors.getModel().getElementAt(i);
-
             LogLevelStyle logLevelStyle = config.getGui().getConsoleWindow().getStyle().getLogLevelStyle(logColor.level);
             Style style = mainView.getStyledConsoleLogger().getStyle(logColor.level);
             logLevelStyle.setForeground(GuiUtil.colorToHex((Color) style.getAttribute(StyleConstants.Foreground)));
@@ -363,26 +365,37 @@ public class LoggingPanel extends AbstractPreferencesComponent {
             logColor.reset();
         }
 
+        if (useAlternativeLogFile.isSelected() && alternativeLogFileText.getText().trim().length() == 0) {
+            useAlternativeLogFile.setSelected(false);
+            setEnabledLogFile();
+        }
+
         LogLevel fileLogLevel = (LogLevel) logLevelFileCombo.getSelectedItem();
+        log.setFileLogLevel(fileLogLevel);
         logging.getFile().setLogLevel(fileLogLevel);
-        log.setDefaultFileLogLevel(fileLogLevel);
+        logging.getFile().setLogFileMode(truncateLogFile.isSelected() ? LogFileMode.TRUNCATE : LogFileMode.APPEND);
+        logging.getFile().setActive(useLogFile.isSelected());
+        logging.getFile().setUseAlternativeLogFile(useAlternativeLogFile.isSelected());
+        logging.getFile().setAlternativeLogFile(alternativeLogFileText.getText());
 
         // change log file
-        if (isModified && useLogFile.isSelected()) {
-            Path logFile = useLogPath.isSelected() ?
-                    Paths.get(logging.getFile().getAlternativeLogFile()) :
-                    CoreConstants.IMPEXP_DATA_DIR.resolve(ClientConstants.LOG_DIR).resolve(log.getDefaultLogFileName());
+        if (isModified) {
+            if (useLogFile.isSelected()) {
+                Path logFile = useAlternativeLogFile.isSelected() ?
+                        Paths.get(logging.getFile().getAlternativeLogFile()) :
+                        CoreConstants.IMPEXP_DATA_DIR.resolve(ClientConstants.LOG_DIR).resolve(log.getDefaultLogFileName());
 
-            boolean success = log.appendLogFile(logFile);
-            if (!success) {
-                useLogFile.setSelected(false);
-                useLogPath.setSelected(false);
-                logging.getFile().setActive(false);
-                logging.getFile().setUseAlternativeLogFile(false);
+                boolean success = log.appendLogFile(logFile, logging.getFile().getLogFileMode());
+                if (!success) {
+                    useLogFile.setSelected(false);
+                    useAlternativeLogFile.setSelected(false);
+                    logging.getFile().setActive(false);
+                    logging.getFile().setUseAlternativeLogFile(false);
+                    log.detachLogFile();
+                }
+            } else {
                 log.detachLogFile();
             }
-        } else if (isModified && !useLogFile.isSelected()) {
-            log.detachLogFile();
         }
     }
 
@@ -394,7 +407,7 @@ public class LoggingPanel extends AbstractPreferencesComponent {
     private String browseFile(String title, String oldDir) {
         JFileChooser chooser = new JFileChooser();
         chooser.setDialogTitle(title);
-        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
         chooser.setCurrentDirectory(new File(oldDir));
 
         int result = chooser.showSaveDialog(mainView);

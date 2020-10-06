@@ -53,10 +53,8 @@ import java.awt.event.ActionListener;
 @SuppressWarnings("serial")
 public class XLinkPanel extends AbstractPreferencesComponent {
 	private JPanel block1;
-	private JPanel block1_1;
 	private JPanel block2;
-	private JPanel block2_1;
-	
+
 	private JRadioButton xlinkToFeature;
 	private JRadioButton copyFeature;
 	private JLabel featureIdPrefixLabel;
@@ -118,9 +116,9 @@ public class XLinkPanel extends AbstractPreferencesComponent {
 		setLayout(new GridBagLayout());
 		{
 			block1 = new JPanel();
-			block1_1 = new JPanel();
+			JPanel block1_1 = new JPanel();
 			block2 = new JPanel();
-			block2_1 = new JPanel();
+			JPanel block2_1 = new JPanel();
 			
 			add(block1, GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.BOTH,5,0,5,0));
 			block1.setBorder(BorderFactory.createTitledBorder(""));

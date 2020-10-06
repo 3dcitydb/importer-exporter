@@ -89,8 +89,6 @@ import java.net.ProxySelector;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -445,25 +443,20 @@ public class ImpExp {
 
 		// init logging environment
 		Logging logging = config.getProject().getGlobal().getLogging();
-		log.setDefaultConsoleLogLevel(logging.getConsole().getLogLevel());
+		log.setConsoleLogLevel(logging.getConsole().getLogLevel());
 		if (logging.getFile().isActive()) {
-			log.setDefaultFileLogLevel(logging.getFile().getLogLevel());
-
-			if (logging.getFile().isUseAlternativeLogFile() &&
-					logging.getFile().getAlternativeLogFile().trim().length() == 0)
-				logging.getFile().setUseAlternativeLogFile(false);
+			log.setFileLogLevel(logging.getFile().getLogLevel());
 
 			Path logFile = logging.getFile().isUseAlternativeLogFile() ?
 					Paths.get(logging.getFile().getAlternativeLogFile()) :
 					CoreConstants.IMPEXP_DATA_DIR.resolve(ClientConstants.LOG_DIR).resolve(log.getDefaultLogFileName());
 
-			boolean success = log.appendLogFile(logFile);
+			boolean success = log.appendLogFile(logFile, logging.getFile().getLogFileMode());
 			if (!success) {
 				logging.getFile().setActive(false);
 				logging.getFile().setUseAlternativeLogFile(false);
 				log.detachLogFile();
 			} else {
-				log.logToFile("*** Starting new log file session on " + LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE));
 				log.logToFile("*** Command line arguments: " +  (args.length == 0 ? "no arguments passed" : String.join(" ", args)));
 			}
 		}

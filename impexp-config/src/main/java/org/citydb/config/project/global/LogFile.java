@@ -30,17 +30,19 @@ package org.citydb.config.project.global;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="LogFileType", propOrder={
+@XmlType(name = "LogFileType", propOrder = {
 		"logLevel",
+		"logFileMode",
 		"useAlternativeLogFile",
 		"alternativeLogFile"
-		})
+})
 public class LogFile {
 	@XmlAttribute
 	private boolean active = false;
-	private LogLevel logLevel = LogLevel.INFO;
+	private LogLevel logLevel;
+	private LogFileMode logFileMode;
 	private Boolean useAlternativeLogFile = false;
-	private String alternativeLogFile = "";
+	private String alternativeLogFile;
 
 	public boolean isActive() {
 		return active;
@@ -51,16 +53,23 @@ public class LogFile {
 	}
 
 	public LogLevel getLogLevel() {
-		return logLevel;
+		return logLevel != null ? logLevel : LogLevel.INFO;
 	}
 
 	public void setLogLevel(LogLevel logLevel) {
-		if (logLevel != null)
-			this.logLevel = logLevel;
+		this.logLevel = logLevel;
+	}
+
+	public LogFileMode getLogFileMode() {
+		return logFileMode != null ? logFileMode : LogFileMode.APPEND;
+	}
+
+	public void setLogFileMode(LogFileMode logFileMode) {
+		this.logFileMode = logFileMode;
 	}
 	
 	public boolean isUseAlternativeLogFile() {
-		return useAlternativeLogFile != null ? useAlternativeLogFile : false;
+		return useAlternativeLogFile != null && alternativeLogFile != null ? useAlternativeLogFile : false;
 	}
 
 	public void setUseAlternativeLogFile(Boolean useAlternativeLogFile) {
@@ -68,12 +77,10 @@ public class LogFile {
 	}
 
 	public String getAlternativeLogFile() {
-		return alternativeLogFile;
+		return alternativeLogFile != null ? alternativeLogFile : "";
 	}
 
 	public void setAlternativeLogFile(String alternativeLogFile) {
-		if (alternativeLogFile != null)
-			this.alternativeLogFile = alternativeLogFile;
+		this.alternativeLogFile = alternativeLogFile;
 	}
-
 }
