@@ -27,7 +27,6 @@
  */
 package org.citydb.plugin;
 
-import org.citydb.log.Logger;
 import org.citydb.plugin.extension.Extension;
 
 import java.util.ArrayList;
@@ -36,13 +35,14 @@ import java.util.ServiceLoader;
 
 public class PluginManager {
     private static PluginManager instance;
-    private final Logger log = Logger.getInstance();
     private final List<InternalPlugin> internalPlugins;
     private final List<Plugin> externalPlugins;
+    private final List<CLICommand> commands;
 
     private PluginManager() {
         internalPlugins = new ArrayList<>();
         externalPlugins = new ArrayList<>();
+        commands = new ArrayList<>();
     }
 
     public static synchronized PluginManager getInstance() {
@@ -59,8 +59,8 @@ public class PluginManager {
     }
 
     public void registerInternalPlugin(InternalPlugin plugin) {
-        for (Plugin internalPlugin : internalPlugins) {
-            if (internalPlugin.getClass() == plugin.getClass())
+        for (Plugin candidate : internalPlugins) {
+            if (candidate.getClass() == plugin.getClass())
                 return;
         }
 
@@ -68,8 +68,8 @@ public class PluginManager {
     }
 
     public void registerExternalPlugin(Plugin plugin) {
-        for (Plugin externalPlugin : externalPlugins) {
-            if (externalPlugin.getClass() == plugin.getClass())
+        for (Plugin candidate : externalPlugins) {
+            if (candidate.getClass() == plugin.getClass())
                 return;
         }
 
@@ -84,11 +84,10 @@ public class PluginManager {
         return externalPlugins;
     }
 
-    @SuppressWarnings("unchecked")
     public <T extends InternalPlugin> T getInternalPlugin(Class<T> pluginClass) {
         for (InternalPlugin plugin : internalPlugins)
             if (pluginClass.isInstance(plugin))
-                return (T) plugin;
+                return pluginClass.cast(plugin);
 
         return null;
     }
@@ -110,4 +109,22 @@ public class PluginManager {
         return plugins;
     }
 
+    public void loadCLICommands(ClassLoader loader) {
+        ServiceLoader<CLICommand> commandLoader = ServiceLoader.load(CLICommand.class, loader);
+        for (CLICommand command : commandLoader)
+            registerCLICommand(command);
+    }
+
+    public void registerCLICommand(CLICommand command) {
+        for (CLICommand candidate : commands) {
+            if (candidate.getClass() == command.getClass())
+                return;
+        }
+
+        commands.add(command);
+    }
+
+    public List<CLICommand> getCLICommands() {
+        return commands;
+    }
 }

@@ -28,13 +28,25 @@
 
 package org.citydb;
 
+import org.citydb.ade.ADEExtension;
+import org.citydb.ade.ADEExtensionManager;
 import org.citydb.config.project.global.LogLevel;
 import org.citydb.log.Logger;
+import org.citydb.plugin.CLICommand;
+import org.citydb.plugin.Plugin;
+import org.citydb.plugin.PluginManager;
 import org.citydb.util.ClientConstants;
+import org.citydb.util.Util;
 import picocli.CommandLine;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.stream.Stream;
 
 @CommandLine.Command(
         name = ClientConstants.CLI_NAME,
@@ -42,17 +54,53 @@ import java.util.concurrent.Callable;
         mixinStandardHelpOptions = true,
         synopsisSubcommandLabel = "COMMAND",
         showAtFileInUsageHelp = true,
-        versionProvider = ImpExpNew.class
+        versionProvider = ImpExpNew.class,
+        subcommands = {
+                CommandLine.HelpCommand.class
+        }
 )
 public class ImpExpNew implements Callable<Integer>, CommandLine.IVersionProvider {
     @CommandLine.Option(names = "--log-level", scope = CommandLine.ScopeType.INHERIT, paramLabel = "<level>",
             defaultValue = "info", description = "Log level: ${COMPLETION-CANDIDATES} (default: ${DEFAULT-VALUE}).")
     private LogLevel logLevel;
 
-    private final Logger log = Logger.getInstance();
+    @CommandLine.Option(names = "--log-file", scope = CommandLine.ScopeType.INHERIT, paramLabel = "<file>",
+            description = "Write log messages to the specified file.")
+    private Path logFile;
 
-    public static void main(String[] args) throws Exception {
-        System.exit(new ImpExpNew().doMain(args));
+    private final Logger log = Logger.getInstance();
+    private final PluginManager pluginManager = PluginManager.getInstance();
+    private final ADEExtensionManager adeManager = ADEExtensionManager.getInstance();
+    private final Util.URLClassLoader classLoader = new Util.URLClassLoader(Thread.currentThread().getContextClassLoader());
+    private String commandLineString;
+    private String subCommandName;
+
+    public static void main(String[] args) {
+        ImpExpNew impExp = new ImpExpNew();
+        try {
+            System.exit(impExp.doMain(args));
+        } catch (Exception e) {
+            impExp.logError(e);
+            System.exit(1);
+        }
+    }
+
+    public ImpExpNew withCLICommand(CLICommand command) {
+        pluginManager.registerCLICommand(command);
+        return this;
+    }
+
+    public ImpExpNew withPlugin(Plugin plugin) {
+        pluginManager.registerExternalPlugin(plugin);
+        return this;
+    }
+
+    public ImpExpNew withADEExtension(ADEExtension extension) {
+        if (extension.getBasePath() == null)
+            extension.setBasePath(Paths.get(""));
+
+        adeManager.loadExtension(extension);
+        return this;
     }
 
     public int doMain(String[] args) throws Exception {
@@ -63,26 +111,69 @@ public class ImpExpNew implements Callable<Integer>, CommandLine.IVersionProvide
                 .setAbbreviatedSubcommandsAllowed(true);
 
         try {
+            // load CLI commands from plugins
+            loadClasses(ClientConstants.IMPEXP_HOME.resolve(ClientConstants.PLUGINS_DIR), classLoader);
+            pluginManager.loadCLICommands(classLoader);
+        } catch (IOException e) {
+            throw new ImpExpException("Failed to initialize plugins.", e);
+        }
+
+        try {
+            for (CLICommand command : pluginManager.getCLICommands()) {
+                commandLine.addSubcommand(command);
+            }
+
             CommandLine.ParseResult parseResult = commandLine.parseArgs(args);
             if (commandLine.isUsageHelpRequested() || commandLine.isVersionHelpRequested()) {
                 return CommandLine.executeHelpRequest(parseResult);
             }
 
-            return 0;
+            // check for required subcommand
+            List<CommandLine> commandLines = parseResult.asCommandLineList();
+            if (commandLines.size() == 1) {
+                throw new CommandLine.ParameterException(commandLine, "Missing required subcommand.");
+            }
+
+            // pre-validate commands
+            for (CommandLine element : commandLines) {
+                Object command = element.getCommand();
+                if (command instanceof CLICommand) {
+                    ((CLICommand) command).validate();
+                }
+            }
+
+            commandLineString = ClientConstants.CLI_NAME + " " + String.join(" ", args);
+            subCommandName = commandLines.get(1).getCommandName();
+
+            // execute command
+            int exitCode = commandLine.getExecutionStrategy().execute(parseResult);
+
+            return exitCode;
         } catch (CommandLine.ParameterException e) {
             commandLine.getParameterExceptionHandler().handleParseException(e, args);
             return commandLine.getCommandSpec().exitCodeOnInvalidInput();
-        } catch (Throwable e) {
-            // exception occurred in business logic
-            log.error("The following unexpected error occurred during execution.");
-            log.logStackTrace(e);
-            return commandLine.getCommandSpec().exitCodeOnExecutionException();
         }
     }
 
     @Override
     public Integer call() throws Exception {
+        log.info("start");
         return 0;
+    }
+
+    private void loadClasses(Path path, Util.URLClassLoader classLoader) throws IOException {
+        if (Files.exists(path)) {
+            try (Stream<Path> stream = Files.walk(path)
+                    .filter(Files::isRegularFile)
+                    .filter(file -> file.getFileName().toString().toLowerCase().endsWith(".jar"))) {
+                stream.forEach(classLoader::addPath);
+            }
+        }
+    }
+
+    private void logError(Exception e) {
+        log.error("Aborting due to a fatal " + e.getClass().getName() + " exception.");
+        log.logStackTrace(e);
     }
 
     @Override

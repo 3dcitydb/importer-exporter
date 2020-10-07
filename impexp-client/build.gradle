@@ -14,7 +14,6 @@ dependencies {
     api project(':impexp-core')
     api project(':impexp-client-common')
     api project(':impexp-kml-collada-plugin')
-    api 'info.picocli:picocli:4.5.1'
     implementation 'args4j:args4j:2.33'
     api 'com.fifesoft:rsyntaxtextarea:3.1.1'
     api ('org.citydb:swingx-ws:1.1.3') {
