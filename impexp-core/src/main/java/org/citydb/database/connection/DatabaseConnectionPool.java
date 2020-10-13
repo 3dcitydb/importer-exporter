@@ -101,7 +101,7 @@ public class DatabaseConnectionPool implements ConnectionManager {
 		properties.setUrl(databaseAdapter.getJDBCUrl(conn.getServer(), conn.getPort(), conn.getSid()));
 		properties.setDriverClassName(databaseAdapter.getConnectionFactoryClassName());
 		properties.setUsername(conn.getUser());
-		properties.setPassword(conn.getInternalPassword());
+		properties.setPassword(conn.getPassword());
 		properties.setName(poolName);
 		properties.setDefaultAutoCommit(true);
 

@@ -76,6 +76,7 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 	private final Logger log = Logger.getInstance();
 	private final ViewController viewController;
 	private final DatabaseController databaseController;
+	private final Config config;
 
 	private JComboBox<DBConnection> connCombo;
 	private JTextField descriptionText;
@@ -96,7 +97,6 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 	private JButton schemaButton;
 
 	private JPanel connectionDetails;
-	private JPanel connectionButtons;
 	private JPanel operations;
 
 	private JLabel connLabel;
@@ -111,7 +111,6 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 
 	private DatabaseOperationsPanel operationsPanel;
 
-	private Config config;
 	private Database databaseConfig;
 	private boolean isSettingsLoaded;
 
@@ -131,7 +130,7 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 		if (databaseTypeCombo.getSelectedItem() != dbConnection.getDatabaseType()) return true;
 		if (!serverText.getText().equals(dbConnection.getServer())) return true;
 		if (!userText.getText().equals(dbConnection.getUser())) return true;		
-		if (!String.valueOf(passwordText.getPassword()).equals(dbConnection.getInternalPassword())) return true;
+		if (!String.valueOf(passwordText.getPassword()).equals(dbConnection.getPassword())) return true;
 		if (!databaseText.getText().equals(dbConnection.getSid())) return true;
 		if (passwordCheck.isSelected() != dbConnection.isSetSavePassword()) return true;		
 		if (portText.getValue() != null && ((Number)portText.getValue()).intValue() != dbConnection.getPort()) return true;
@@ -145,9 +144,9 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 	}
 
 	private void initGui() {
-		connCombo = new JComboBox<DBConnection>();
+		connCombo = new JComboBox<>();
 		descriptionText = new JTextField();
-		databaseTypeCombo = new JComboBox<DatabaseType>();
+		databaseTypeCombo = new JComboBox<>();
 		serverText = new JTextField();
 		DecimalFormat df = new DecimalFormat("#####");
 		df.setMaximumIntegerDigits(5);
@@ -237,7 +236,7 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 		schemaPanel.add(schemaButton, GuiUtil.setConstraints(1,0,0.0,0.0,GridBagConstraints.HORIZONTAL,0,5,0,0));
 		connectionDetails.add(schemaPanel, GuiUtil.setConstraints(1,7,1.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
 
-		connectionButtons = new JPanel();
+		JPanel connectionButtons = new JPanel();
 		connectionDetails.add(connectionButtons, GuiUtil.setConstraints(2,0,1,8,0.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
 		connectionButtons.setLayout(new GridBagLayout());
 		connectionButtons.add(applyButton, GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.HORIZONTAL,0,0,0,0));
@@ -272,18 +271,10 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 		for (DatabaseType type : DatabaseType.values())
 			databaseTypeCombo.addItem(type);
 
-		portText.addPropertyChangeListener(evt -> {
+		portText.addPropertyChangeListener(e -> {
 			if (portText.getValue() != null) {
-				if (((Number)portText.getValue()).intValue() < 0) {
-					switch ((DatabaseType)databaseTypeCombo.getSelectedItem()) {
-					case ORACLE:
-						portText.setValue(1521);
-						break;
-					case POSTGIS:
-						portText.setValue(5432);
-						break;
-					}
-				}
+				DatabaseType type = (DatabaseType) databaseTypeCombo.getSelectedItem();
+				portText.setValue(type == DatabaseType.POSTGIS ? 5432 : 1521);
 			}
 		});
 
@@ -618,7 +609,7 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 		List<DBConnection> dbConnectionList = databaseConfig.getConnections();
 
 		if (dbConnection == null) {
-			if (dbConnectionList != null && !dbConnectionList.isEmpty())
+			if (!dbConnectionList.isEmpty())
 				dbConnection = dbConnectionList.get(0);
 			else {
 				dbConnection = new DBConnection();
@@ -632,10 +623,7 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 			connCombo.addItem(conn);
 
 		connCombo.setSelectedItem(dbConnection);
-		dbConnection.setInternalPassword(dbConnection.getPassword());
-
 		operationsPanel.loadSettings();
-
 		setEnabledDBOperations(false);
 		isSettingsLoaded = true;
 	}
@@ -661,13 +649,8 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 		dbConnection.setSid(databaseText.getText());
 		dbConnection.setSchema((String)(schemaCombo.getSelectedIndex() != -1 ? schemaCombo.getSelectedItem() : schemaCombo.getEditor().getItem()));
 		dbConnection.setUser(userText.getText());
-		dbConnection.setInternalPassword(new String(passwordText.getPassword()));
-
+		dbConnection.setPassword(new String(passwordText.getPassword()));
 		dbConnection.setSavePassword(passwordCheck.isSelected());
-		if (passwordCheck.isSelected())
-			dbConnection.setPassword(new String(passwordText.getPassword()));
-		else
-			dbConnection.setPassword("");
 	}
 
 	private void getDbConnection(DBConnection dbConnection) {
@@ -676,26 +659,17 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 		serverText.setText(dbConnection.getServer());
 		databaseText.setText(dbConnection.getSid());
 		userText.setText(dbConnection.getUser());
+		passwordText.setText(dbConnection.getPassword());
 		passwordCheck.setSelected(dbConnection.isSetSavePassword());
 
 		schemaCombo.removeAllItems();
 		schemaCombo.setSelectedItem(dbConnection.getSchema());
 
-		if (passwordCheck.isSelected())
-			passwordText.setText(dbConnection.getPassword());
-		else
-			passwordText.setText(dbConnection.getInternalPassword());
-
-		if (dbConnection.getInternalPassword() == null)
-			dbConnection.setInternalPassword(dbConnection.getPassword());
-
-		Integer port = dbConnection.getPort();
-		if (port == null || port == 0) {
-			port = 1521;
+		if (dbConnection.getPort() == null || dbConnection.getPort() == 0) {
 			dbConnection.setPort(1521);
 		}
 
-		portText.setValue(port);		
+		portText.setValue(dbConnection.getPort());
 	}
 
 	private String getCopyOfDescription(DBConnection dbConnection) {
