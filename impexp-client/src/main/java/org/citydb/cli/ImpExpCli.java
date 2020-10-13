@@ -281,7 +281,6 @@ public class ImpExpCli {
 			throw new ImpExpException("No valid database connection found in project settings.");
 
 		log.info("Connecting to database profile '" + conn.getDescription() + "'.");
-		conn.setInternalPassword(conn.getPassword());
 
 		try {
 			dbPool.connect(config);
@@ -300,7 +299,6 @@ public class ImpExpCli {
 				for (DatabaseConnectionWarning warning : warnings)
 					log.warn(warning.getMessage());
 			}
-
 		} catch (DatabaseConfigurationException | SQLException e) {
 			throw new ImpExpException("Connection to database could not be established.", e);
 		} catch (DatabaseVersionException e) {

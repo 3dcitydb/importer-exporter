@@ -27,18 +27,18 @@
  */
 package org.citydb.config.project.database;
 
-import java.util.UUID;
+import org.citydb.config.i18n.Language;
 
+import javax.xml.bind.Marshaller;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+import java.util.UUID;
 
-import org.citydb.config.i18n.Language;
-
-@XmlType(name="ConnectionType", propOrder={
+@XmlType(name = "ConnectionType", propOrder = {
 		"description",
 		"type",
 		"server",
@@ -48,28 +48,29 @@ import org.citydb.config.i18n.Language;
 		"user",
 		"password",
 		"savePassword"
-		})
+})
 public class DBConnection implements Comparable<DBConnection> {
-	@XmlAttribute
 	@XmlID
+	@XmlAttribute
 	private String id;
-	private String description = "";
+	private String description;
 	@XmlElement(required=true)
 	private DatabaseType type = DatabaseType.ORACLE;
 	@XmlSchemaType(name="anyURI")
 	@XmlElement(required=true)
-	private String server = "";
+	private String server;
 	@XmlSchemaType(name="positiveInteger")
 	@XmlElement(required=true)
 	private Integer port = 1521;
 	@XmlElement(required=true)
-	private String sid = "";
+	private String sid;
 	private String schema;
 	@XmlElement(required=true)
-	private String user = "";
-	@XmlElement(required=true)
-	private String password = "";
+	private String user;
+	private String password;
 	private Boolean savePassword = false;
+	@XmlTransient
+	private String tempPassword;
 
 	@XmlAttribute
     private Integer loginTimeout = 60;
@@ -123,12 +124,9 @@ public class DBConnection implements Comparable<DBConnection> {
 	private Boolean useEquals;
 	@XmlAttribute
 	private Integer suspectTimeout;
-	
-	@XmlTransient
-	private String internalPassword;
 		
 	public DBConnection() {
-		id = new StringBuilder("UUID_").append(UUID.randomUUID().toString()).toString();
+		id = "UUID_" + UUID.randomUUID().toString();
 	}
 	
 	public String getId() {
@@ -140,7 +138,7 @@ public class DBConnection implements Comparable<DBConnection> {
 	}
 	
 	public String getDescription() {
-		return description;
+		return description != null ? description : "";
 	}
 
 	public void setDescription(String description) {
@@ -208,10 +206,7 @@ public class DBConnection implements Comparable<DBConnection> {
 	}
 	
 	public boolean isSetSavePassword() {
-		if (savePassword != null)
-			return savePassword.booleanValue();
-		
-		return false;
+		return savePassword != null ? savePassword : false;
 	}
 
 	public Boolean getSavePassword() {
@@ -220,14 +215,6 @@ public class DBConnection implements Comparable<DBConnection> {
 
 	public void setSavePassword(Boolean savePassword) {
 		this.savePassword = savePassword;
-	}
-	
-	public String getInternalPassword() {
-		return internalPassword;
-	}
-
-	public void setInternalPassword(String internalPassword) {
-		this.internalPassword = internalPassword;
 	}
 	
 	public DatabaseType getType() {
@@ -453,20 +440,17 @@ public class DBConnection implements Comparable<DBConnection> {
 	
 	@Override
 	public String toString() {
-		return description;
+		return getDescription();
 	}
 
 	@Override
 	public int compareTo(DBConnection o) {
-		return description.toUpperCase().compareTo(o.getDescription().toUpperCase());
+		return getDescription().toUpperCase().compareTo(o.getDescription().toUpperCase());
 	}
 	
 	public void validate() throws DatabaseConfigurationException {
 		if (user == null || user.trim().length() == 0)
 			throw new DatabaseConfigurationException(Language.I18N.getString("db.dialog.error.conn.user"));
-
-		if (internalPassword == null || internalPassword.trim().length() == 0)
-			throw new DatabaseConfigurationException(Language.I18N.getString("db.dialog.error.conn.pass"));
 
 		if (server == null || server.trim().length() == 0)
 			throw new DatabaseConfigurationException(Language.I18N.getString("db.dialog.error.conn.server"));
@@ -481,5 +465,18 @@ public class DBConnection implements Comparable<DBConnection> {
 	public String toConnectString() {
 		return user + "@" + server + ":" + port + "/" + sid;
 	}
-	
+
+	void beforeMarshal(Marshaller marshaller) {
+		if (!isSetSavePassword()) {
+			tempPassword = password;
+			password = null;
+		}
+	}
+
+	void afterMarshal(Marshaller marshaller) {
+		if (!isSetSavePassword()) {
+			password = tempPassword;
+			tempPassword = null;
+		}
+	}
 }
