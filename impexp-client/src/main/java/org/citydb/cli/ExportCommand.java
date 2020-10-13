@@ -26,16 +26,25 @@
  * limitations under the License.
  */
 
-package org.citydb.plugin;
+package org.citydb.cli;
 
+import org.citydb.ImpExpNew;
+import org.citydb.plugin.CLICommand;
+import org.citydb.plugin.cli.DatabaseOptions;
 import picocli.CommandLine;
 
-import java.util.concurrent.Callable;
-
 @CommandLine.Command(
-        mixinStandardHelpOptions = true,
-        showAtFileInUsageHelp = true
+        name = "export",
+        description = "Exports data in CityGML format.",
+        versionProvider = ImpExpNew.class
 )
-public abstract class CLICommand implements Callable<Integer> {
-    public void preprocess() throws CommandLine.ParameterException { }
+public class ExportCommand extends CLICommand {
+
+    @CommandLine.ArgGroup(exclusive = false)
+    private DatabaseOptions databaseOptions;
+
+    @Override
+    public Integer call() throws Exception {
+        return 0;
+    }
 }

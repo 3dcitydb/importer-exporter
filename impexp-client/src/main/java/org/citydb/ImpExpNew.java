@@ -30,6 +30,7 @@ package org.citydb;
 
 import org.citydb.ade.ADEExtension;
 import org.citydb.ade.ADEExtensionManager;
+import org.citydb.cli.ExportCommand;
 import org.citydb.config.project.global.LogLevel;
 import org.citydb.log.Logger;
 import org.citydb.plugin.CLICommand;
@@ -39,34 +40,38 @@ import org.citydb.util.ClientConstants;
 import org.citydb.util.Util;
 import picocli.CommandLine;
 
+import java.io.Console;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.concurrent.Callable;
+import java.util.Scanner;
 import java.util.stream.Stream;
 
 @CommandLine.Command(
         name = ClientConstants.CLI_NAME,
         description = "Command-line interface for the 3D City Database.",
-        mixinStandardHelpOptions = true,
         synopsisSubcommandLabel = "COMMAND",
-        showAtFileInUsageHelp = true,
-        versionProvider = ImpExpNew.class,
-        subcommands = {
-                CommandLine.HelpCommand.class
-        }
+        versionProvider = ImpExpNew.class
 )
-public class ImpExpNew implements Callable<Integer>, CommandLine.IVersionProvider {
+public class ImpExpNew extends CLICommand implements CommandLine.IVersionProvider {
+    @CommandLine.Option(names = {"-c", "--config"}, scope = CommandLine.ScopeType.INHERIT, paramLabel = "<file>",
+            description = "Use configuration from this file.")
+    private Path configFile;
+
     @CommandLine.Option(names = "--log-level", scope = CommandLine.ScopeType.INHERIT, paramLabel = "<level>",
-            defaultValue = "info", description = "Log level: ${COMPLETION-CANDIDATES} (default: ${DEFAULT-VALUE}).")
-    private LogLevel logLevel;
+            description = "Log level: ${COMPLETION-CANDIDATES} (default: ${DEFAULT-VALUE}).")
+    private LogLevel logLevel = LogLevel.INFO;
 
     @CommandLine.Option(names = "--log-file", scope = CommandLine.ScopeType.INHERIT, paramLabel = "<file>",
             description = "Write log messages to the specified file.")
     private Path logFile;
+
+    @CommandLine.Option(names = "--pid-file", scope = CommandLine.ScopeType.INHERIT, paramLabel = "<file>",
+            description = "Create a file containing the current process ID.")
+    private Path pidFile;
 
     private final Logger log = Logger.getInstance();
     private final PluginManager pluginManager = PluginManager.getInstance();
@@ -104,41 +109,55 @@ public class ImpExpNew implements Callable<Integer>, CommandLine.IVersionProvide
     }
 
     public int doMain(String[] args) throws Exception {
-        CommandLine commandLine = new CommandLine(this)
-                .setCaseInsensitiveEnumValuesAllowed(true)
-                .setExecutionStrategy(new CommandLine.RunAll())
-                .setAbbreviatedOptionsAllowed(true)
-                .setAbbreviatedSubcommandsAllowed(true);
+        CommandLine cmd = new CommandLine(this);
+
+        // add predefined commands
+        cmd.addSubcommand(new CommandLine.HelpCommand());
+        cmd.addSubcommand(new ExportCommand());
 
         try {
             // load CLI commands from plugins
             loadClasses(ClientConstants.IMPEXP_HOME.resolve(ClientConstants.PLUGINS_DIR), classLoader);
             pluginManager.loadCLICommands(classLoader);
+            for (CLICommand command : pluginManager.getCLICommands()) {
+                cmd.addSubcommand(command);
+            }
         } catch (IOException e) {
-            throw new ImpExpException("Failed to initialize plugins.", e);
+            throw new ImpExpException("Failed to initialize CLI commands from plugins.", e);
         }
 
+        cmd.setCaseInsensitiveEnumValuesAllowed(true)
+                .setAbbreviatedOptionsAllowed(true)
+                .setAbbreviatedSubcommandsAllowed(true)
+                .setExecutionStrategy(new CommandLine.RunAll());
+
         try {
-            for (CLICommand command : pluginManager.getCLICommands()) {
-                commandLine.addSubcommand(command);
-            }
-
-            CommandLine.ParseResult parseResult = commandLine.parseArgs(args);
-            if (commandLine.isUsageHelpRequested() || commandLine.isVersionHelpRequested()) {
-                return CommandLine.executeHelpRequest(parseResult);
-            }
-
-            // check for required subcommand
+            CommandLine.ParseResult parseResult = cmd.parseArgs(args);
             List<CommandLine> commandLines = parseResult.asCommandLineList();
-            if (commandLines.size() == 1) {
-                throw new CommandLine.ParameterException(commandLine, "Missing required subcommand.");
+
+            // check for help options
+            for (CommandLine commandLine : commandLines) {
+                if (commandLine.isUsageHelpRequested() || commandLine.isVersionHelpRequested()) {
+                    return CommandLine.executeHelpRequest(parseResult);
+                }
             }
 
-            // pre-validate commands
-            for (CommandLine element : commandLines) {
-                Object command = element.getCommand();
+            // check for subcommand
+            if (!parseResult.hasSubcommand()) {
+                throw new CommandLine.ParameterException(cmd, "Missing required subcommand.");
+            }
+
+            for (CommandLine commandLine : commandLines) {
+                // read password from keyboard
+                CommandLine.Model.OptionSpec passwordOption = commandLine.getParseResult().matchedOption("-p");
+                if (passwordOption != null && passwordOption.getValue().equals("")) {
+                    passwordOption.setValue(readPassword(commandLine.getParseResult()));
+                }
+
+                // preprocess commands
+                Object command = commandLine.getCommand();
                 if (command instanceof CLICommand) {
-                    ((CLICommand) command).validate();
+                    ((CLICommand) command).preprocess();
                 }
             }
 
@@ -146,18 +165,20 @@ public class ImpExpNew implements Callable<Integer>, CommandLine.IVersionProvide
             subCommandName = commandLines.get(1).getCommandName();
 
             // execute command
-            int exitCode = commandLine.getExecutionStrategy().execute(parseResult);
+            int exitCode = cmd.getExecutionStrategy().execute(parseResult);
 
             return exitCode;
         } catch (CommandLine.ParameterException e) {
-            commandLine.getParameterExceptionHandler().handleParseException(e, args);
-            return commandLine.getCommandSpec().exitCodeOnInvalidInput();
+            cmd.getParameterExceptionHandler().handleParseException(e, args);
+            return cmd.getCommandSpec().exitCodeOnInvalidInput();
         }
     }
 
     @Override
     public Integer call() throws Exception {
-        log.info("start");
+        log.info("Starting " + getClass().getPackage().getImplementationTitle() +
+                ", version " + this.getClass().getPackage().getImplementationVersion());
+
         return 0;
     }
 
@@ -176,12 +197,25 @@ public class ImpExpNew implements Callable<Integer>, CommandLine.IVersionProvide
         log.logStackTrace(e);
     }
 
+    private String readPassword(CommandLine.ParseResult parseResult) {
+        String prompt = "Enter password for " + parseResult.matchedOptionValue("-u", "") +": ";
+        Console console = System.console();
+        if (console != null) {
+            char[] input = console.readPassword(prompt);
+            return input != null ? new String(input) : null;
+        } else {
+            System.out.print(prompt);
+            Scanner scanner = new Scanner(System.in);
+            return scanner.nextLine();
+        }
+    }
+
     @Override
     public String[] getVersion() {
         return new String[]{
                 getClass().getPackage().getImplementationTitle() +
                         ", version " + this.getClass().getPackage().getImplementationVersion(),
-                "(c) 2013-" + LocalDate.now().getYear() + " " + getClass().getPackage().getImplementationVendor()
+                "(C) 2013-" + LocalDate.now().getYear() + " " + getClass().getPackage().getImplementationVendor()
         };
     }
 }
