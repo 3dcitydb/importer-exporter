@@ -50,8 +50,7 @@ public class ConfigUtil {
 
 	public static void marshal(Object object, File file, JAXBContext ctx) throws JAXBException {
 		Marshaller m = ctx.createMarshaller();	
-		m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT,Boolean.TRUE);
-
+		m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
 		m.marshal(object, file);
 	}
 
@@ -68,11 +67,9 @@ public class ConfigUtil {
 		SAXParserFactory factory = SAXParserFactory.newInstance();
 		factory.setNamespaceAware(true);
 
-		XMLReader reader = null;
-		ConfigNamespaceFilter namespaceFilter = null;
-
+		ConfigNamespaceFilter namespaceFilter;
 		try {
-			reader = factory.newSAXParser().getXMLReader();
+			XMLReader reader = factory.newSAXParser().getXMLReader();
 			namespaceFilter = new ConfigNamespaceFilter(reader);	
 			namespaceFilter.setContentHandler(handler);
 			namespaceFilter.parse(new InputSource(inputStream));			
@@ -84,7 +81,7 @@ public class ConfigUtil {
 
 		Object result = handler.getResult();
 		if (result instanceof Project)
-			((Project)result).setNamespaceFilter(namespaceFilter);
+			((Project) result).setNamespaceFilter(namespaceFilter);
 
 		return result;
 	}
@@ -92,5 +89,4 @@ public class ConfigUtil {
 	public static void generateSchema(JAXBContext ctx, File file) throws IOException {
 		ctx.generateSchema(new ProjectSchemaWriter(file));
 	}
-
 }

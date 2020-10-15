@@ -31,17 +31,37 @@ package org.citydb;
 import org.citydb.ade.ADEExtension;
 import org.citydb.ade.ADEExtensionManager;
 import org.citydb.cli.ExportCommand;
+import org.citydb.cli.GuiCommand;
+import org.citydb.cli.StartupProgressListener;
+import org.citydb.config.Config;
 import org.citydb.config.project.global.LogLevel;
+import org.citydb.database.DatabaseController;
+import org.citydb.database.schema.mapping.SchemaMapping;
+import org.citydb.database.schema.mapping.SchemaMappingException;
+import org.citydb.database.schema.mapping.SchemaMappingValidationException;
+import org.citydb.database.schema.util.SchemaMappingUtil;
+import org.citydb.event.EventDispatcher;
+import org.citydb.event.global.EventType;
 import org.citydb.log.Logger;
 import org.citydb.plugin.CLICommand;
+import org.citydb.plugin.IllegalEventSourceChecker;
 import org.citydb.plugin.Plugin;
 import org.citydb.plugin.PluginManager;
+import org.citydb.registry.ObjectRegistry;
 import org.citydb.util.ClientConstants;
+import org.citydb.util.CoreConstants;
+import org.citydb.util.InternalProxySelector;
 import org.citydb.util.Util;
+import org.citygml4j.CityGMLContext;
+import org.citygml4j.builder.jaxb.CityGMLBuilderException;
+import org.citygml4j.model.citygml.ade.ADEException;
+import org.citygml4j.model.citygml.ade.binding.ADEContext;
 import picocli.CommandLine;
 
+import javax.xml.bind.JAXBException;
 import java.io.Console;
 import java.io.IOException;
+import java.net.ProxySelector;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -77,8 +97,12 @@ public class ImpExpNew extends CLICommand implements CommandLine.IVersionProvide
     private final PluginManager pluginManager = PluginManager.getInstance();
     private final ADEExtensionManager adeManager = ADEExtensionManager.getInstance();
     private final Util.URLClassLoader classLoader = new Util.URLClassLoader(Thread.currentThread().getContextClassLoader());
+    private final Config config = new Config();
+
+    private StartupProgressListener progressListener;
     private String commandLineString;
     private String subCommandName;
+    private boolean guiMode;
 
     public static void main(String[] args) {
         ImpExpNew impExp = new ImpExpNew();
@@ -108,11 +132,17 @@ public class ImpExpNew extends CLICommand implements CommandLine.IVersionProvide
         return this;
     }
 
+    public ImpExpNew withStartupProgressListener(StartupProgressListener progressListener) {
+        this.progressListener = progressListener;
+        return this;
+    }
+
     public int doMain(String[] args) throws Exception {
         CommandLine cmd = new CommandLine(this);
 
         // add predefined commands
         cmd.addSubcommand(new CommandLine.HelpCommand());
+        cmd.addSubcommand(new GuiCommand());
         cmd.addSubcommand(new ExportCommand());
 
         try {
@@ -163,6 +193,7 @@ public class ImpExpNew extends CLICommand implements CommandLine.IVersionProvide
 
             commandLineString = ClientConstants.CLI_NAME + " " + String.join(" ", args);
             subCommandName = commandLines.get(1).getCommandName();
+            guiMode = commandLines.get(1).getCommand() instanceof GuiCommand;
 
             // execute command
             int exitCode = cmd.getExecutionStrategy().execute(parseResult);
@@ -170,7 +201,12 @@ public class ImpExpNew extends CLICommand implements CommandLine.IVersionProvide
             return exitCode;
         } catch (CommandLine.ParameterException e) {
             cmd.getParameterExceptionHandler().handleParseException(e, args);
-            return cmd.getCommandSpec().exitCodeOnInvalidInput();
+            return 2;
+        } catch (CommandLine.ExecutionException e) {
+            logError(e.getCause());
+            return 1;
+        } finally {
+            log.close();
         }
     }
 
@@ -179,7 +215,94 @@ public class ImpExpNew extends CLICommand implements CommandLine.IVersionProvide
         log.info("Starting " + getClass().getPackage().getImplementationTitle() +
                 ", version " + this.getClass().getPackage().getImplementationVersion());
 
+        int startupSteps = 7;
+        int step = 1;
+
+        // load plugins
+        logProgress("Loading plugins", step++, startupSteps);
+        loadPlugins();
+
+        // initialize application environment
+        logProgress("Initializing application environment", step++, startupSteps);
+        initializeEnvironment();
+
+        // load database schema mapping
+        logProgress("Loading database schema mapping", step++, startupSteps);
+        loadSchemaMapping();
+
+        // load ADE extensions
+        logProgress("Loading ADE extensions", step++, startupSteps);
+        loadADEExtensions();
+
+        // load CityGML and ADE contexts
+        logProgress("Loading CityGML and ADE contexts", step++, startupSteps);
+        createCityGMLBuilder();
+
+        log.info("Executing '" + subCommandName + "' command");
         return 0;
+    }
+
+    private void loadPlugins() {
+        pluginManager.loadPlugins(classLoader);
+        for (Plugin plugin : pluginManager.getExternalPlugins()) {
+            log.info("Initializing plugin " + plugin.getClass().getName());
+        }
+    }
+
+    private void initializeEnvironment() {
+        // create application-wide event dispatcher
+        EventDispatcher eventDispatcher = new EventDispatcher();
+        eventDispatcher.addEventHandler(EventType.DATABASE_CONNECTION_STATE, IllegalEventSourceChecker.getInstance());
+        eventDispatcher.addEventHandler(EventType.SWITCH_LOCALE, IllegalEventSourceChecker.getInstance());
+        ObjectRegistry.getInstance().setEventDispatcher(eventDispatcher);
+
+        // create database controller
+        ObjectRegistry.getInstance().setDatabaseController(new DatabaseController(config));
+
+        // set internal proxy selector as default selector
+        ProxySelector.setDefault(InternalProxySelector.getInstance(config));
+    }
+
+    private void loadSchemaMapping() throws ImpExpException {
+        try {
+            SchemaMapping schemaMapping = SchemaMappingUtil.getInstance().unmarshal(CoreConstants.CITYDB_SCHEMA_MAPPING_FILE);
+            ObjectRegistry.getInstance().setSchemaMapping(schemaMapping);
+        } catch (JAXBException | SchemaMappingException | SchemaMappingValidationException e) {
+            throw new ImpExpException("Failed to process 3DCityDB schema mapping file.", e);
+        }
+    }
+
+    private void loadADEExtensions() throws ImpExpException {
+        try {
+            loadClasses(ClientConstants.IMPEXP_HOME.resolve(ClientConstants.ADE_EXTENSIONS_DIR), classLoader);
+        } catch (IOException e) {
+            throw new ImpExpException("Failed to initialize ADE extension support.", e);
+        }
+
+        adeManager.loadExtensions(classLoader);
+        adeManager.loadSchemaMappings(ObjectRegistry.getInstance().getSchemaMapping());
+        for (ADEExtension extension : adeManager.getExtensions()) {
+            log.info("Initializing ADE extension " + extension.getClass().getName());
+        }
+
+        // fail if loading ADEs threw errors and we are not in GUI mode
+        if (adeManager.hasExceptions() && !guiMode) {
+            adeManager.logExceptions();
+            throw new ImpExpException("Failed to load ADE extensions.");
+        }
+    }
+
+    private void createCityGMLBuilder() throws ImpExpException {
+        try {
+            CityGMLContext context = CityGMLContext.getInstance();
+            for (ADEContext adeContext : adeManager.getADEContexts()) {
+                context.registerADEContext(adeContext);
+            }
+
+            ObjectRegistry.getInstance().setCityGMLBuilder(context.createCityGMLBuilder(classLoader));
+        } catch (CityGMLBuilderException | ADEException e) {
+            throw new ImpExpException("CityGML context could not be initialized.", e);
+        }
     }
 
     private void loadClasses(Path path, Util.URLClassLoader classLoader) throws IOException {
@@ -192,9 +315,17 @@ public class ImpExpNew extends CLICommand implements CommandLine.IVersionProvide
         }
     }
 
-    private void logError(Exception e) {
-        log.error("Aborting due to a fatal " + e.getClass().getName() + " exception.");
-        log.logStackTrace(e);
+    private void logProgress(String message, int current, int maximum) {
+        log.info(message);
+        if (progressListener != null) {
+            progressListener.setMessage(message);
+            progressListener.nextStep(current, maximum);
+        }
+    }
+
+    private void logError(Throwable t) {
+        log.error("Aborting due to a fatal " + t.getClass().getName() + " exception.");
+        log.logStackTrace(t);
     }
 
     private String readPassword(CommandLine.ParseResult parseResult) {

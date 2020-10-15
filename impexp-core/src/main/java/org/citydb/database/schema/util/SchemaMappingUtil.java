@@ -60,6 +60,7 @@ import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 
 public class SchemaMappingUtil {
 	private static SchemaMappingUtil instance;
@@ -201,7 +202,7 @@ public class SchemaMappingUtil {
 	}
 	
 	public void marshal(SchemaMapping schemaMapping, File file) throws SchemaMappingException, SchemaMappingValidationException, JAXBException {
-		try (Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), "UTF-8"))) {
+		try (Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8))) {
 			marshal(schemaMapping, writer);
 		} catch (UnsupportedEncodingException e) {
 			throw new JAXBException("Failed to marshal schema mapping.", e);

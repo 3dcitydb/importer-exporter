@@ -26,16 +26,9 @@
  * limitations under the License.
  */
 
-package org.citydb.plugin;
+package org.citydb.cli;
 
-import picocli.CommandLine;
-
-import java.util.concurrent.Callable;
-
-@CommandLine.Command(
-        mixinStandardHelpOptions = true,
-        showAtFileInUsageHelp = true
-)
-public abstract class CLICommand implements Callable<Integer> {
-    public void preprocess() throws Exception { }
+public interface StartupProgressListener {
+    void setMessage(String message);
+    void nextStep(int current, int maximum);
 }

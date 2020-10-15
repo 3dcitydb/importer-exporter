@@ -144,6 +144,9 @@ public class ImpExp {
 	private boolean useSplashScreen;
 	private Map<LogLevel, String> logMessages = new HashMap<>();
 
+	private final int maximumSteps = 7;
+	private int currentStep = 1;
+
 	public static void main(String[] args) {
 		ImpExp impExp = new ImpExp();
 
@@ -241,7 +244,7 @@ public class ImpExp {
 
 			if (!noSplash) {
 				useSplashScreen = true;
-				splashScreen = new SplashScreen(7, 3, 477, Color.BLACK);
+				splashScreen = new SplashScreen(3, 477, Color.BLACK);
 				splashScreen.setMessage("Version \"" + this.getClass().getPackage().getImplementationVersion() + "\"");
 				SwingUtilities.invokeLater(() -> splashScreen.setVisible(true));
 
@@ -568,7 +571,7 @@ public class ImpExp {
 		log.info(message);
 		if (useSplashScreen) {
 			splashScreen.setMessage(message);
-			splashScreen.nextStep();
+			splashScreen.nextStep(currentStep++, maximumSteps);
 		}
 	}
 

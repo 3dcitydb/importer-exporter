@@ -168,10 +168,8 @@ public class Logger {
 		try {
 			detachLogFile();
 			info("Writing log messages to file: '" + logFile.toAbsolutePath() + "'");
-			writer = Files.newBufferedWriter(logFile,
-					StandardCharsets.UTF_8,
-					StandardOpenOption.CREATE,
-					StandardOpenOption.WRITE,
+			writer = Files.newBufferedWriter(logFile, StandardCharsets.UTF_8,
+					StandardOpenOption.CREATE, StandardOpenOption.WRITE,
 					mode == LogFileMode.TRUNCATE ?
 							StandardOpenOption.TRUNCATE_EXISTING :
 							StandardOpenOption.APPEND);
@@ -190,8 +188,14 @@ public class Logger {
 
 	public void detachLogFile() {
 		if (writer != null) {
+			info("Stopped writing log messages to log file.");
+			close();
+		}
+	}
+
+	public void close() {
+		if (writer != null) {
 			try {
-				info("Stopped writing log messages to log file.");
 				writer.close();
 			} catch (IOException e) {
 				//
