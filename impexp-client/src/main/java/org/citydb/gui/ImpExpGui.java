@@ -79,7 +79,6 @@ import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import javax.swing.plaf.basic.BasicSplitPaneDivider;
 import javax.swing.plaf.basic.BasicSplitPaneUI;
-import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
@@ -103,8 +102,6 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 	private final EventDispatcher eventDispatcher; 
 
 	private Config config;
-	private JAXBContext jaxbProjectContext;
-	private JAXBContext jaxbGuiContext;
 	private PluginManager pluginManager;
 	private DatabaseConnectionPool dbPool;
 
@@ -150,12 +147,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		Internal.IS_GUI_MODE = true;
 	}
 
-	public void invoke(JAXBContext jaxbProjectContext,
-			JAXBContext jaxbGuiContext,
-			Map<LogLevel, String> logMessages) {
-		this.jaxbProjectContext = jaxbProjectContext;
-		this.jaxbGuiContext = jaxbGuiContext;		
-		
+	public void invoke(Map<LogLevel, String> logMessages) {
 		// init GUI elements
 		initGui(logMessages);
 		doTranslation();
@@ -187,7 +179,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		activePosition = 0;
 		main = new JPanel();
 
-		menuBar = new MenuBar(this, jaxbProjectContext, config);
+		menuBar = new MenuBar(this, config);
 		setJMenuBar(menuBar);
 
 		console = new JPanel();
@@ -488,7 +480,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 
 		try {
 			Path projectFile = configDir.resolve(ClientConstants.PROJECT_SETTINGS_FILE);
-			ConfigUtil.marshal(config.getProject(), projectFile.toFile(), jaxbProjectContext);
+			ConfigUtil.getInstance().marshal(config.getProject(), projectFile.toFile());
 			return true;
 		} catch (JAXBException jaxbE) {
 			errorMessage(Language.I18N.getString("common.dialog.error.io.title"),
@@ -517,7 +509,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		consoleWindow.setSettings();
 
 		try {
-			ConfigUtil.marshal(config.getGui(), guiFile.toFile(), jaxbGuiContext);
+			ConfigUtil.getInstance().marshal(config.getGui(), guiFile.toFile());
 		} catch (JAXBException jaxbE) {
 			errorMessage(Language.I18N.getString("common.dialog.error.io.title"), 
 					Language.I18N.getString("common.dialog.error.io.general"));

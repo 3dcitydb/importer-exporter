@@ -26,9 +26,9 @@
  * limitations under the License.
  */
 
-package org.citydb.cli;
+package org.citydb.plugin.cli;
 
-public interface StartupProgressListener {
+public interface StartupProcessListener {
     void setMessage(String message);
     void nextStep(int current, int maximum);
 }

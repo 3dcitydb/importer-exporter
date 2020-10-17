@@ -33,6 +33,7 @@ import org.citydb.ImpExpNew;
 import org.citydb.gui.components.SplashScreen;
 import org.citydb.gui.util.OSXAdapter;
 import org.citydb.plugin.CLICommand;
+import org.citydb.plugin.cli.StartupProcessListener;
 import picocli.CommandLine;
 
 import javax.swing.*;
@@ -44,7 +45,7 @@ import java.awt.*;
         hidden = true,
         versionProvider = ImpExpNew.class
 )
-public class GuiCommand extends CLICommand {
+public class GuiCommand extends CLICommand implements StartupProcessListener {
 
     @CommandLine.Option(names = "--no-splash", description = "Hide the splash screen during startup.")
     private boolean hideSplash;
@@ -83,7 +84,7 @@ public class GuiCommand extends CLICommand {
             splashScreen = new SplashScreen(3, 477, Color.BLACK);
             splashScreen.setMessage("Version \"" + parent.getClass().getPackage().getImplementationVersion() + "\"");
             SwingUtilities.invokeLater(() -> splashScreen.setVisible(true));
-            parent.withStartupProgressListener(splashScreen);
+            parent.withStartupProgressListener(this);
 
             try {
                 Thread.sleep(1000);
@@ -91,5 +92,15 @@ public class GuiCommand extends CLICommand {
                 //
             }
         }
+    }
+
+    @Override
+    public void setMessage(String message) {
+        splashScreen.setMessage(message);
+    }
+
+    @Override
+    public void nextStep(int current, int maximum) {
+        splashScreen.nextStep(current, maximum);
     }
 }

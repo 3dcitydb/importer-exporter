@@ -48,15 +48,10 @@ import org.citydb.registry.ObjectRegistry;
 import org.citydb.util.ClientConstants;
 import org.citydb.util.CoreConstants;
 
-import javax.swing.JFileChooser;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.KeyStroke;
+import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
-import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
-import java.awt.Toolkit;
+import java.awt.*;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.io.File;
@@ -68,7 +63,6 @@ public class MenuProject extends JMenu {
 	private final Logger log = Logger.getInstance();
 	private final PluginManager pluginService;
 	private final Config config;
-	private final JAXBContext ctx;
 	private final ImpExpGui mainView;
 
 	private JMenuItem openProject;
@@ -81,10 +75,9 @@ public class MenuProject extends JMenu {
 	private String exportPath;
 	private String importPath;
 
-	MenuProject(PluginManager pluginService, JAXBContext ctx, ImpExpGui mainView, Config config) {
+	MenuProject(PluginManager pluginService, ImpExpGui mainView, Config config) {
 		this.pluginService = pluginService;
 		this.config = config;
-		this.ctx = ctx;
 		this.mainView = mainView;
 
 		init();
@@ -141,7 +134,7 @@ public class MenuProject extends JMenu {
                     for (ConfigExtension<?> plugin : pluginService.getExternalPlugins(ConfigExtension.class))
                         plugin.handleEvent(PluginConfigEvent.PRE_SAVE_CONFIG);
 
-                    ConfigUtil.marshal(config.getProject(), file, ctx);
+                    ConfigUtil.getInstance().marshal(config.getProject(), file);
 
                     addLastUsedProject(file.getAbsolutePath());
                     lastUsed.setEnabled(true);
@@ -189,8 +182,8 @@ public class MenuProject extends JMenu {
             if (path != null) {
                 log.info("Saving project XSD at location '" + path.toString() + "'.");
                 try {
-                    ConfigUtil.generateSchema(ctx, path);
-                } catch (IOException e1) {
+                    ConfigUtil.getInstance().generateSchema(path);
+                } catch (JAXBException | IOException e1) {
                     log.error("Failed to save project settings.", e1);
                 }
             }
@@ -238,7 +231,7 @@ public class MenuProject extends JMenu {
 
 		try {
 			Logging logging = config.getProject().getGlobal().getLogging();
-			Object object = ConfigUtil.unmarshal(file, ctx);
+			Object object = ConfigUtil.getInstance().unmarshal(file);
 			if (!(object instanceof Project)) {
 				log.error("Failed to read project settings.");
 				return false;

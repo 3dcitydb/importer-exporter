@@ -27,8 +27,10 @@
  */
 package org.citydb.config;
 
+import org.citydb.config.gui.Gui;
 import org.citydb.config.project.Project;
 import org.citydb.config.project.ProjectSchemaWriter;
+import org.citydb.config.project.query.util.QueryWrapper;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
@@ -44,26 +46,71 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 public class ConfigUtil {
 	public static final String CITYDB_CONFIG_NAMESPACE_URI = "http://www.3dcitydb.org/importer-exporter/config";
+	private static ConfigUtil instance;
 
-	public static void marshal(Object object, File file, JAXBContext ctx) throws JAXBException {
-		Marshaller m = ctx.createMarshaller();	
-		m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-		m.marshal(object, file);
+	private Set<Class<?>> configClasses;
+	private JAXBContext context;
+
+	public static synchronized ConfigUtil getInstance() {
+		if (instance == null) {
+			instance = new ConfigUtil();
+		}
+
+		return instance;
 	}
 
-	public static Object unmarshal(File file, JAXBContext ctx) throws JAXBException, IOException {
+	public ConfigUtil withConfigClass(Class<?> configClass) {
+		if (context != null) {
+			throw new IllegalStateException("JAXB context has already been initialized.");
+		}
+
+		if (configClasses == null) {
+			configClasses = new HashSet<>();
+		}
+
+		configClasses.add(configClass);
+		return this;
+	}
+
+	public ConfigUtil withConfigClasses(Class<?>... configClasses) {
+		Arrays.stream(configClasses).forEach(this::withConfigClass);
+		return this;
+	}
+
+	private void lazyInit() throws JAXBException {
+		if (context == null) {
+			withConfigClasses(Project.class, Gui.class, QueryWrapper.class);
+			context = JAXBContext.newInstance(configClasses.toArray(new Class[]{}));
+			configClasses = null;
+		}
+	}
+
+	public void marshal(Object object, File file) throws JAXBException {
+		lazyInit();
+
+		Marshaller marshaller = context.createMarshaller();
+		marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+		marshaller.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");
+		marshaller.marshal(object, file);
+	}
+
+	public Object unmarshal(File file) throws JAXBException, IOException {
 		try (FileInputStream inputStream = new FileInputStream(file)) {
-			return unmarshal(inputStream, ctx);
+			return unmarshal(inputStream);
 		}
 	}
 	
-	public static Object unmarshal(InputStream inputStream, JAXBContext ctx) throws JAXBException, IOException {
-		Unmarshaller um = ctx.createUnmarshaller();
-		UnmarshallerHandler handler = um.getUnmarshallerHandler();
+	public Object unmarshal(InputStream inputStream) throws JAXBException, IOException {
+		lazyInit();
 
+		Unmarshaller unmarshaller = context.createUnmarshaller();
+		UnmarshallerHandler handler = unmarshaller.getUnmarshallerHandler();
 		SAXParserFactory factory = SAXParserFactory.newInstance();
 		factory.setNamespaceAware(true);
 
@@ -86,7 +133,13 @@ public class ConfigUtil {
 		return result;
 	}
 
-	public static void generateSchema(JAXBContext ctx, File file) throws IOException {
-		ctx.generateSchema(new ProjectSchemaWriter(file));
+	public void generateSchema(File file) throws JAXBException, IOException {
+		lazyInit();
+		context.generateSchema(new ProjectSchemaWriter(file));
+	}
+
+	public JAXBContext getJAXBContext() throws JAXBException {
+		lazyInit();
+		return context;
 	}
 }

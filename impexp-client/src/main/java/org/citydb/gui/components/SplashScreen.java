@@ -27,14 +27,13 @@
  */
 package org.citydb.gui.components;
 
-import org.citydb.cli.StartupProgressListener;
 import org.citydb.gui.util.GuiUtil;
 
 import javax.swing.*;
 import java.awt.*;
 
 @SuppressWarnings("serial")
-public class SplashScreen extends JWindow implements StartupProgressListener {
+public class SplashScreen extends JWindow {
 	private final JLabel message;
 	private final JProgressBar progressBar;
 
@@ -95,12 +94,10 @@ public class SplashScreen extends JWindow implements StartupProgressListener {
 		setAlwaysOnTop(true);
 	}
 
-	@Override
 	public void setMessage(String message) {
 		this.message.setText(message);
 	}
 
-	@Override
 	public void nextStep(int current, int maximum) {
 		if (current == 1) {
 			progressBar.setMaximum(maximum);

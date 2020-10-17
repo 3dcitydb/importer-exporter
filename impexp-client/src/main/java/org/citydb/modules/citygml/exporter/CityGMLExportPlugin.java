@@ -37,15 +37,14 @@ import org.citydb.plugin.extension.view.View;
 import org.citydb.plugin.extension.view.ViewController;
 import org.citydb.plugin.extension.view.ViewExtension;
 
-import javax.xml.bind.JAXBContext;
 import java.util.Locale;
 
 public class CityGMLExportPlugin implements InternalPlugin, ViewExtension, PreferencesExtension {
 	private CityGMLExportView view;
 	private CityGMLExportPreferences preferences;
 	
-	public CityGMLExportPlugin(ViewController viewController, JAXBContext projectContext, Config config) {
-		view = new CityGMLExportView(viewController, projectContext, config);
+	public CityGMLExportPlugin(ViewController viewController, Config config) {
+		view = new CityGMLExportView(viewController, config);
 		preferences = new CityGMLExportPreferences(config);
 	}
 		

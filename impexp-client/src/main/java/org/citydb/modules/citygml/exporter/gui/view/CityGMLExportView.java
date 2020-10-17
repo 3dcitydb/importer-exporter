@@ -32,15 +32,14 @@ import org.citydb.config.i18n.Language;
 import org.citydb.plugin.extension.view.View;
 import org.citydb.plugin.extension.view.ViewController;
 
-import javax.swing.Icon;
-import javax.xml.bind.JAXBContext;
-import java.awt.Component;
+import javax.swing.*;
+import java.awt.*;
 
 public class CityGMLExportView extends View {
 	private final ExportPanel component;
 	
-	public CityGMLExportView(ViewController viewController, JAXBContext projectContext, Config config) {
-		component = new ExportPanel(viewController, projectContext, config);
+	public CityGMLExportView(ViewController viewController, Config config) {
+		component = new ExportPanel(viewController, config);
 	}
 	
 	@Override

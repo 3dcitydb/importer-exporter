@@ -38,7 +38,6 @@ import org.citydb.config.project.Project;
 import org.citydb.config.project.global.LanguageType;
 import org.citydb.config.project.global.LogLevel;
 import org.citydb.config.project.global.Logging;
-import org.citydb.config.project.query.util.QueryWrapper;
 import org.citydb.database.DatabaseController;
 import org.citydb.database.schema.mapping.SchemaMapping;
 import org.citydb.database.schema.mapping.SchemaMappingException;
@@ -89,9 +88,7 @@ import java.net.ProxySelector;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -136,7 +133,7 @@ public class ImpExp {
 	private boolean noSplash;
 
 	private final Logger log = Logger.getInstance();
-	private JAXBContext kmlContext, colladaContext, projectContext, guiContext;
+	private JAXBContext kmlContext, colladaContext;
 	private PluginManager pluginManager = PluginManager.getInstance();
 	private ADEExtensionManager adeManager = ADEExtensionManager.getInstance();
 
@@ -281,13 +278,9 @@ public class ImpExp {
 		}
 
 		// get plugin config classes
-		List<Class<?>> projectConfigClasses = new ArrayList<>();
-		projectConfigClasses.add(Project.class);
-		projectConfigClasses.add(QueryWrapper.class);
-
 		for (ConfigExtension<?> plugin : pluginManager.getExternalPlugins(ConfigExtension.class)) {
 			try {
-				projectConfigClasses.add(plugin.getClass().getMethod("getConfig").getReturnType());
+				ConfigUtil.getInstance().withConfigClass(plugin.getClass().getMethod("getConfig").getReturnType());
 			} catch (SecurityException | NoSuchMethodException e) {
 				throw new ImpExpException("Failed to instantiate config for plugin " + plugin.getClass().getName() + ".", e);
 			}
@@ -320,8 +313,6 @@ public class ImpExp {
 		try {
 			kmlContext = JAXBContext.newInstance("net.opengis.kml._2", this.getClass().getClassLoader());
 			colladaContext = JAXBContext.newInstance("org.collada._2005._11.colladaschema", this.getClass().getClassLoader());
-			projectContext = JAXBContext.newInstance(projectConfigClasses.toArray(new Class<?>[]{}));
-			guiContext = JAXBContext.newInstance(Gui.class);
 		} catch (JAXBException e) {
 			throw new ImpExpException("Application environment could not be initialized.", e);
 		}
@@ -406,7 +397,7 @@ public class ImpExp {
 
 		Project project = config.getProject();
 		try {
-			Object object = ConfigUtil.unmarshal(configFile.toFile(), projectContext);
+			Object object = ConfigUtil.getInstance().unmarshal(configFile.toFile());
 			if (!(object instanceof Project))
 				throw new JAXBException("Failed to interpret project file.");
 			
@@ -427,7 +418,7 @@ public class ImpExp {
 			Path guiFile = CoreConstants.IMPEXP_DATA_DIR
 					.resolve(ClientConstants.CONFIG_DIR).resolve(ClientConstants.GUI_SETTINGS_FILE);
 			try {
-				Object object = ConfigUtil.unmarshal(guiFile.toFile(), guiContext);
+				Object object = ConfigUtil.getInstance().unmarshal(guiFile.toFile());
 				if (object instanceof Gui)
 					config.setGui((Gui)object);
 			} catch (JAXBException | IOException e) {
@@ -496,7 +487,7 @@ public class ImpExp {
 
 			// register internal plugins
 			pluginManager.registerInternalPlugin(new CityGMLImportPlugin(mainView, config));		
-			pluginManager.registerInternalPlugin(new CityGMLExportPlugin(mainView, projectContext, config));
+			pluginManager.registerInternalPlugin(new CityGMLExportPlugin(mainView, config));
 			pluginManager.registerInternalPlugin(new KMLExportPlugin(mainView, kmlContext, colladaContext, config));
 			pluginManager.registerInternalPlugin(databasePlugin);
 			pluginManager.registerInternalPlugin(new PreferencesPlugin(mainView, config));
@@ -512,7 +503,7 @@ public class ImpExp {
 
 			// initialize gui
 			printInfoMessage("Starting graphical user interface");
-			SwingUtilities.invokeLater(() -> mainView.invoke(projectContext, guiContext, logMessages));
+			SwingUtilities.invokeLater(() -> mainView.invoke(logMessages));
 
 			try {
 				// clean up heap space

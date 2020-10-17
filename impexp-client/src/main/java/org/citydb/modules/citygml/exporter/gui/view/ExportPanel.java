@@ -68,7 +68,6 @@ import org.jdesktop.swingx.prompt.PromptSupport.FocusBehavior;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
-import javax.xml.bind.JAXBContext;
 import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.UnsupportedFlavorException;
@@ -111,7 +110,7 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 	private JButton switchFilterModeButton;
 	private boolean useSimpleFilter;
 
-	public ExportPanel(ViewController viewController, JAXBContext projectContext, Config config) {
+	public ExportPanel(ViewController viewController, Config config) {
 		this.viewController = viewController;
 		this.config = config;
 
@@ -119,17 +118,17 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 		cityGMLBuilder = ObjectRegistry.getInstance().getCityGMLBuilder();		
 		ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(EventType.DATABASE_CONNECTION_STATE, this);
 
-		initGui(projectContext);
+		initGui();
 	}
 
-	private void initGui(JAXBContext projectContext) {
+	private void initGui() {
 		browseText = new JTextField();
 		browseButton = new JButton();
 		workspaceText = new JXTextField();
 		workspaceText.setPromptForeground(Color.LIGHT_GRAY);
 		workspaceText.setFocusBehavior(FocusBehavior.SHOW_PROMPT);
 		datePicker = new DatePicker();
-		filterPanel = new FilterPanel(viewController, projectContext, config);
+		filterPanel = new FilterPanel(viewController, config);
 		exportButton = new JButton();
 		switchFilterModeButton = new JButton();
 

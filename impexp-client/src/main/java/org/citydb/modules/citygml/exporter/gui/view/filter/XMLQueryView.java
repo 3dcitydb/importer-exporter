@@ -85,7 +85,6 @@ import org.xml.sax.SAXParseException;
 
 import javax.swing.*;
 import javax.xml.XMLConstants;
-import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
@@ -109,7 +108,6 @@ public class XMLQueryView extends FilterView {
     private final Logger log = Logger.getInstance();
     private final FilterPanel filterPanel;
     private final ViewController viewController;
-    private final JAXBContext projectContext;
     private final SchemaMapping schemaMapping;
     private final DatabaseConnectionPool connectionPool;
 
@@ -120,11 +118,10 @@ public class XMLQueryView extends FilterView {
     private JButton duplicateButton;
     private JButton validateButton;
 
-    public XMLQueryView(FilterPanel filterPanel, ViewController viewController, JAXBContext projectContext, Config config) {
+    public XMLQueryView(FilterPanel filterPanel, ViewController viewController, Config config) {
         super(config);
         this.filterPanel = filterPanel;
         this.viewController = viewController;
-        this.projectContext = projectContext;
 
         schemaMapping = ObjectRegistry.getInstance().getSchemaMapping();
         connectionPool = DatabaseConnectionPool.getInstance();
@@ -381,7 +378,7 @@ public class XMLQueryView extends FilterView {
         Query query = null;
 
         try {
-            Unmarshaller unmarshaller = projectContext.createUnmarshaller();
+            Unmarshaller unmarshaller = ConfigUtil.getInstance().getJAXBContext().createUnmarshaller();
             Object object = unmarshaller.unmarshal(new StringReader(wrapQuery(xmlText.getText().trim())));
             if (object instanceof QueryWrapper)
                 query = ((QueryWrapper) object).getQuery();
@@ -404,7 +401,7 @@ public class XMLQueryView extends FilterView {
             saxWriter.setWriteReportedNamespaces(true);
             saxWriter.setIndentString("  ");
 
-            Marshaller marshaller = projectContext.createMarshaller();
+            Marshaller marshaller = ConfigUtil.getInstance().getJAXBContext().createMarshaller();
             marshaller.setProperty(Marshaller.JAXB_FRAGMENT, true);
             marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
             marshaller.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");

@@ -40,7 +40,6 @@ import org.citydb.plugin.extension.menu.MenuExtension;
 import javax.swing.*;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
-import javax.xml.bind.JAXBContext;
 
 @SuppressWarnings("serial")
 public class MenuBar extends JMenuBar {
@@ -53,11 +52,11 @@ public class MenuBar extends JMenuBar {
 
 	private JMenu extensions;
 
-	public MenuBar(ImpExpGui mainView, JAXBContext ctx, Config config) {
+	public MenuBar(ImpExpGui mainView, Config config) {
 		pluginManager = PluginManager.getInstance();
 		
 		file = new MenuFile();
-		project = new MenuProject(pluginManager, ctx, mainView, config);
+		project = new MenuProject(pluginManager, mainView, config);
 		view = new MenuView(mainView, config);
 		help = new MenuHelp(mainView, config);
 

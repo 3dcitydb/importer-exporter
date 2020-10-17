@@ -59,7 +59,6 @@ import org.citygml4j.model.module.citygml.CityGMLVersion;
 import org.jdesktop.swingx.JXTitledSeparator;
 
 import javax.swing.*;
-import javax.xml.bind.JAXBContext;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -112,14 +111,14 @@ public class FilterPanel extends JPanel implements EventHandler {
 
 	private FeatureTypeTree featureTree;
 
-	public FilterPanel(ViewController viewController, JAXBContext projectContext, Config config) {
+	public FilterPanel(ViewController viewController, Config config) {
 		this.config = config;
 
 		ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(EventType.PROPERTY_CHANGE_EVENT, this);		
-		initGui(viewController, projectContext);
+		initGui(viewController);
 	}
 
-	private void initGui(ViewController viewController, JAXBContext projectContext) {
+	private void initGui(ViewController viewController) {
 		useSelectionFilter = new JCheckBox();
 		useCounterFilter = new JCheckBox();
 		useLodFilter = new JCheckBox();
@@ -190,7 +189,7 @@ public class FilterPanel extends JPanel implements EventHandler {
 		add(mainPanel, GuiUtil.setConstraints(0,0,1,1,GridBagConstraints.BOTH,0,0,0,0));
 
 		JPanel guiPanel = new JPanel();
-		xmlQuery = new XMLQueryView(this, viewController, projectContext, config);
+		xmlQuery = new XMLQueryView(this, viewController, config);
 		mainPanel.add(guiPanel, "simple");
 		mainPanel.add(xmlQuery.getViewComponent(), "advanced");
 

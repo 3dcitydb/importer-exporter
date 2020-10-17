@@ -54,7 +54,6 @@ import org.citydb.util.ClientConstants;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
-import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
@@ -109,8 +108,6 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 	private JButton addFileButton;
 	private JButton replaceWithFileButton;
 	private JButton saveFileButton;
-
-	private JAXBContext projectContext;
 
 	public SrsPanel(ViewController viewController, Config config) {
 		super(config);
@@ -532,7 +529,7 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 				return;
 			}
 
-			Object object = ConfigUtil.unmarshal(file, getJAXBContext());
+			Object object = ConfigUtil.getInstance().unmarshal(file);
 			if (object instanceof DatabaseSrsList) {
 				DatabaseSrsList refSyss = (DatabaseSrsList)object;				
 				if (replace)
@@ -622,7 +619,7 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 				log.info("Writing reference system '" + tmp.getDescription() + "' (SRID: " + tmp.getSrid() + ").");
 			}
 
-			ConfigUtil.marshal(refSys, file, getJAXBContext());			
+			ConfigUtil.getInstance().marshal(refSys, file);
 			log.info("Reference systems successfully written to file '" + file.getAbsolutePath() + "'.");
 		} catch (JAXBException jaxb) {
 			String msg = jaxb.getMessage();
@@ -654,13 +651,6 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 		}
 
 		return true;
-	}
-
-	private JAXBContext getJAXBContext() throws JAXBException {
-		if (projectContext == null)
-			projectContext = JAXBContext.newInstance(DatabaseSrsList.class);
-
-		return projectContext;
 	}
 
 	private void browseReferenceSystemFile(String title) {

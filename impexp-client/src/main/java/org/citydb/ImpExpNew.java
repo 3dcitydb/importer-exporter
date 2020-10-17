@@ -32,8 +32,9 @@ import org.citydb.ade.ADEExtension;
 import org.citydb.ade.ADEExtensionManager;
 import org.citydb.cli.ExportCommand;
 import org.citydb.cli.GuiCommand;
-import org.citydb.cli.StartupProgressListener;
 import org.citydb.config.Config;
+import org.citydb.config.ConfigUtil;
+import org.citydb.config.project.Project;
 import org.citydb.config.project.global.LogLevel;
 import org.citydb.database.DatabaseController;
 import org.citydb.database.schema.mapping.SchemaMapping;
@@ -47,6 +48,8 @@ import org.citydb.plugin.CLICommand;
 import org.citydb.plugin.IllegalEventSourceChecker;
 import org.citydb.plugin.Plugin;
 import org.citydb.plugin.PluginManager;
+import org.citydb.plugin.cli.StartupProcessListener;
+import org.citydb.plugin.extension.config.ConfigExtension;
 import org.citydb.registry.ObjectRegistry;
 import org.citydb.util.ClientConstants;
 import org.citydb.util.CoreConstants;
@@ -99,7 +102,7 @@ public class ImpExpNew extends CLICommand implements CommandLine.IVersionProvide
     private final Util.URLClassLoader classLoader = new Util.URLClassLoader(Thread.currentThread().getContextClassLoader());
     private final Config config = new Config();
 
-    private StartupProgressListener progressListener;
+    private StartupProcessListener progressListener;
     private String commandLineString;
     private String subCommandName;
     private boolean guiMode;
@@ -132,7 +135,7 @@ public class ImpExpNew extends CLICommand implements CommandLine.IVersionProvide
         return this;
     }
 
-    public ImpExpNew withStartupProgressListener(StartupProgressListener progressListener) {
+    public ImpExpNew withStartupProgressListener(StartupProcessListener progressListener) {
         this.progressListener = progressListener;
         return this;
     }
@@ -215,16 +218,17 @@ public class ImpExpNew extends CLICommand implements CommandLine.IVersionProvide
         log.info("Starting " + getClass().getPackage().getImplementationTitle() +
                 ", version " + this.getClass().getPackage().getImplementationVersion());
 
-        int startupSteps = 7;
+        boolean loadConfig = guiMode || configFile != null;
+        int startupSteps = loadConfig ? 7 : 6;
         int step = 1;
-
-        // load plugins
-        logProgress("Loading plugins", step++, startupSteps);
-        loadPlugins();
 
         // initialize application environment
         logProgress("Initializing application environment", step++, startupSteps);
         initializeEnvironment();
+
+        // load plugins
+        logProgress("Loading plugins", step++, startupSteps);
+        loadPlugins();
 
         // load database schema mapping
         logProgress("Loading database schema mapping", step++, startupSteps);
@@ -238,18 +242,20 @@ public class ImpExpNew extends CLICommand implements CommandLine.IVersionProvide
         logProgress("Loading CityGML and ADE contexts", step++, startupSteps);
         createCityGMLBuilder();
 
-        log.info("Executing '" + subCommandName + "' command");
+        // load configuration
+        if (loadConfig) {
+            logProgress("Loading project settings", step, startupSteps);
+            loadConfig();
+        }
+
+        if (!guiMode) {
+            log.info("Executing '" + subCommandName + "' command");
+        }
+
         return 0;
     }
 
-    private void loadPlugins() {
-        pluginManager.loadPlugins(classLoader);
-        for (Plugin plugin : pluginManager.getExternalPlugins()) {
-            log.info("Initializing plugin " + plugin.getClass().getName());
-        }
-    }
-
-    private void initializeEnvironment() {
+    private void initializeEnvironment()  {
         // create application-wide event dispatcher
         EventDispatcher eventDispatcher = new EventDispatcher();
         eventDispatcher.addEventHandler(EventType.DATABASE_CONNECTION_STATE, IllegalEventSourceChecker.getInstance());
@@ -261,6 +267,22 @@ public class ImpExpNew extends CLICommand implements CommandLine.IVersionProvide
 
         // set internal proxy selector as default selector
         ProxySelector.setDefault(InternalProxySelector.getInstance(config));
+    }
+
+    private void loadPlugins() throws ImpExpException {
+        pluginManager.loadPlugins(classLoader);
+        for (Plugin plugin : pluginManager.getExternalPlugins()) {
+            log.info("Initializing plugin " + plugin.getClass().getName());
+        }
+
+        // load config classes from plugins
+        for (ConfigExtension<?> plugin : pluginManager.getExternalPlugins(ConfigExtension.class)) {
+            try {
+                ConfigUtil.getInstance().withConfigClass(plugin.getClass().getMethod("getConfig").getReturnType());
+            } catch (SecurityException | NoSuchMethodException e) {
+                throw new ImpExpException("Failed to initialize config context for plugin " + plugin.getClass().getName() + ".", e);
+            }
+        }
     }
 
     private void loadSchemaMapping() throws ImpExpException {
@@ -301,7 +323,29 @@ public class ImpExpNew extends CLICommand implements CommandLine.IVersionProvide
 
             ObjectRegistry.getInstance().setCityGMLBuilder(context.createCityGMLBuilder(classLoader));
         } catch (CityGMLBuilderException | ADEException e) {
-            throw new ImpExpException("CityGML context could not be initialized.", e);
+            throw new ImpExpException("Failed to initialize CityGML and ADE contexts.", e);
+        }
+    }
+
+    private void loadConfig() throws ImpExpException {
+        if (configFile == null) {
+            configFile = CoreConstants.IMPEXP_DATA_DIR
+                    .resolve(ClientConstants.CONFIG_DIR)
+                    .resolve(ClientConstants.PROJECT_SETTINGS_FILE);
+        } else if (!configFile.isAbsolute()) {
+            configFile = ClientConstants.WORKING_DIR.resolve(configFile);
+        }
+
+        try {
+            Object object = ConfigUtil.getInstance().unmarshal(configFile.toFile());
+            if (!(object instanceof Project)) {
+                throw new JAXBException("Failed to parse project settings.");
+            }
+
+            config.setProject((Project) object);
+        } catch (JAXBException | IOException e) {
+            // TODO log messages
+            throw new ImpExpException("Failed to load configuration from file " + configFile + ".", e);
         }
     }
 
