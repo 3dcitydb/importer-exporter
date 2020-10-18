@@ -34,8 +34,12 @@ import org.citydb.cli.ExportCommand;
 import org.citydb.cli.GuiCommand;
 import org.citydb.config.Config;
 import org.citydb.config.ConfigUtil;
+import org.citydb.config.i18n.Language;
 import org.citydb.config.project.Project;
+import org.citydb.config.project.global.LanguageType;
+import org.citydb.config.project.global.LogFileMode;
 import org.citydb.config.project.global.LogLevel;
+import org.citydb.config.project.global.Logging;
 import org.citydb.database.DatabaseController;
 import org.citydb.database.schema.mapping.SchemaMapping;
 import org.citydb.database.schema.mapping.SchemaMappingException;
@@ -55,6 +59,7 @@ import org.citydb.registry.ObjectRegistry;
 import org.citydb.util.ClientConstants;
 import org.citydb.util.CoreConstants;
 import org.citydb.util.InternalProxySelector;
+import org.citydb.util.PidFile;
 import org.citydb.util.Util;
 import org.citygml4j.CityGMLContext;
 import org.citygml4j.builder.jaxb.CityGMLBuilderException;
@@ -71,6 +76,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Locale;
+import java.util.ResourceBundle;
 import java.util.Scanner;
 import java.util.stream.Stream;
 
@@ -107,7 +114,8 @@ public class ImpExpNew extends CliCommand implements CommandLine.IVersionProvide
     private String commandLineString;
     private String subCommandName;
     private boolean useDefaultConfiguration;
-    private boolean failOnADEExceptions;
+    private boolean useDefaultLogLevel = true;
+    private boolean failOnADEExceptions = true;
 
     public static void main(String[] args) {
         ImpExpNew impExp = new ImpExpNew();
@@ -176,6 +184,8 @@ public class ImpExpNew extends CliCommand implements CommandLine.IVersionProvide
                 .setAbbreviatedSubcommandsAllowed(true)
                 .setExecutionStrategy(new CommandLine.RunAll());
 
+        commandLineString = cmd.getCommandName() + " " + String.join(" ", args);
+
         try {
             CommandLine.ParseResult parseResult = cmd.parseArgs(args);
             List<CommandLine> commandLines = parseResult.asCommandLineList();
@@ -193,6 +203,11 @@ public class ImpExpNew extends CliCommand implements CommandLine.IVersionProvide
             }
 
             for (CommandLine commandLine : commandLines) {
+                // check for user-defined log level
+                if (commandLine.getParseResult().hasMatchedOption("--log-level")) {
+                    useDefaultLogLevel = false;
+                }
+
                 // read password from keyboard
                 CommandLine.Model.OptionSpec passwordOption = commandLine.getParseResult().matchedOption("-p");
                 if (passwordOption != null && passwordOption.getValue().equals("")) {
@@ -215,7 +230,7 @@ public class ImpExpNew extends CliCommand implements CommandLine.IVersionProvide
                 useDefaultConfiguration = false;
             }
 
-            commandLineString = ClientConstants.CLI_NAME + " " + String.join(" ", args);
+            log.setConsoleLogLevel(logLevel);
             subCommandName = commandLines.get(1).getCommandName();
 
             // execute command
@@ -242,10 +257,6 @@ public class ImpExpNew extends CliCommand implements CommandLine.IVersionProvide
         int startupSteps = loadConfig ? 6 : 5;
         int step = 1;
 
-        // initialize application environment
-        logProgress("Initializing application environment", step++, startupSteps);
-        initializeEnvironment();
-
         // load plugins
         logProgress("Loading plugins", step++, startupSteps);
         loadPlugins();
@@ -264,26 +275,18 @@ public class ImpExpNew extends CliCommand implements CommandLine.IVersionProvide
 
         // load configuration
         if (loadConfig) {
-            logProgress("Loading project settings", step, startupSteps);
+            logProgress("Loading project settings", step++, startupSteps);
             loadConfig();
         }
 
-        log.info("Executing '" + subCommandName + "' command");
+        // initialize application environment
+        logProgress("Initializing application environment", step, startupSteps);
+        initializeEnvironment();
+        initializeLogging();
+        createPidFile();
+
+        log.info("Executing '" + subCommandName + "' command.");
         return 0;
-    }
-
-    private void initializeEnvironment()  {
-        // create application-wide event dispatcher
-        EventDispatcher eventDispatcher = new EventDispatcher();
-        eventDispatcher.addEventHandler(EventType.DATABASE_CONNECTION_STATE, IllegalEventSourceChecker.getInstance());
-        eventDispatcher.addEventHandler(EventType.SWITCH_LOCALE, IllegalEventSourceChecker.getInstance());
-        ObjectRegistry.getInstance().setEventDispatcher(eventDispatcher);
-
-        // create database controller
-        ObjectRegistry.getInstance().setDatabaseController(new DatabaseController(config));
-
-        // set internal proxy selector as default selector
-        ProxySelector.setDefault(InternalProxySelector.getInstance(config));
     }
 
     private void loadPlugins() throws ImpExpException {
@@ -370,6 +373,79 @@ public class ImpExpNew extends CliCommand implements CommandLine.IVersionProvide
                 pluginManager.propagatePluginConfig(plugin, config);
             } catch (PluginException e) {
                 throw new ImpExpException("Failed to load configuration for plugin " + plugin.getClass().getName() + ".", e);
+            }
+        }
+    }
+
+    private void initializeEnvironment()  {
+        // create application-wide event dispatcher
+        EventDispatcher eventDispatcher = new EventDispatcher();
+        eventDispatcher.addEventHandler(EventType.DATABASE_CONNECTION_STATE, IllegalEventSourceChecker.getInstance());
+        eventDispatcher.addEventHandler(EventType.SWITCH_LOCALE, IllegalEventSourceChecker.getInstance());
+        ObjectRegistry.getInstance().setEventDispatcher(eventDispatcher);
+
+        // create database controller
+        ObjectRegistry.getInstance().setDatabaseController(new DatabaseController(config));
+
+        // set internal proxy selector as default selector
+        ProxySelector.setDefault(InternalProxySelector.getInstance(config));
+
+        // set internationalization
+        Locale locale = new Locale(config.getProject().getGlobal().getLanguage().value());
+        if (!Language.existsLanguagePack(locale)) {
+            config.getProject().getGlobal().setLanguage(LanguageType.EN);
+            locale = new Locale(LanguageType.EN.value());
+        }
+
+        Language.I18N = ResourceBundle.getBundle("org.citydb.config.i18n.language", locale);
+    }
+
+    private void initializeLogging() {
+        Logging logging = config.getProject().getGlobal().getLogging();
+
+        // set console log level
+        if (!useDefaultLogLevel) {
+            logging.getConsole().setLogLevel(logLevel);
+        } else if (!useDefaultConfiguration) {
+            log.setConsoleLogLevel(logging.getConsole().getLogLevel());
+        }
+
+        // overwrite log file settings in configuration
+        if (logFile != null) {
+            logging.getFile().setActive(true);
+            logging.getFile().setUseAlternativeLogFile(true);
+            logging.getFile().setAlternativeLogFile(logFile.normalize().toAbsolutePath().toString());
+            logging.getFile().setLogFileMode(LogFileMode.TRUNCATE);
+
+            if (!useDefaultLogLevel) {
+                logging.getFile().setLogLevel(logLevel);
+            }
+        }
+
+        // enable writing to log file
+        if (logging.getFile().isActive()) {
+            Path file = logging.getFile().isUseAlternativeLogFile() ?
+                    Paths.get(logging.getFile().getAlternativeLogFile()) :
+                    CoreConstants.IMPEXP_DATA_DIR.resolve(ClientConstants.LOG_DIR).resolve(log.getDefaultLogFileName());
+
+            log.setFileLogLevel(logging.getFile().getLogLevel());
+            if (log.appendLogFile(file, logging.getFile().getLogFileMode())) {
+                log.logToFile("*** Command line: " + commandLineString);
+            } else {
+                logging.getFile().setActive(false);
+                logging.getFile().setUseAlternativeLogFile(false);
+                log.detachLogFile();
+            }
+        }
+    }
+
+    private void createPidFile() throws ImpExpException {
+        if (pidFile != null) {
+            try {
+                log.debug("Creating PID file '" + pidFile.normalize().toAbsolutePath() + "'.");
+                PidFile.create(pidFile, true);
+            } catch (IOException e) {
+                throw new ImpExpException("Failed to create PID file.", e);
             }
         }
     }

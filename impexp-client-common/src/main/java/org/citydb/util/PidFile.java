@@ -51,7 +51,7 @@ public class PidFile {
         // TODO: Java 8 hack for getting the process ID.
         // change when updating to Java 9 or higher
         String processName = ManagementFactory.getRuntimeMXBean().getName();
-        int pid = Integer.valueOf(processName.substring(0, processName.indexOf('@')));
+        int pid = Integer.parseInt(processName.substring(0, processName.indexOf('@')));
         return create(path, deleteOnExit, pid);
     }
 

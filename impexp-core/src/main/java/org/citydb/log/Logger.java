@@ -167,7 +167,7 @@ public class Logger {
 		
 		try {
 			detachLogFile();
-			info("Writing log messages to file: '" + logFile.toAbsolutePath() + "'");
+			info("Writing log messages to file '" + logFile.toAbsolutePath() + "'.");
 			writer = Files.newBufferedWriter(logFile, StandardCharsets.UTF_8,
 					StandardOpenOption.CREATE, StandardOpenOption.WRITE,
 					mode == LogFileMode.TRUNCATE ?
@@ -180,7 +180,7 @@ public class Logger {
 
 			return true;
 		} catch (IOException e) {
-			error("Failed to open log file '" + logFile + "': " + e.getMessage());
+			error("Failed to open log file '" + logFile + "'.", e);
 			error("Not writing log messages to file.");
 			return false;
 		}
