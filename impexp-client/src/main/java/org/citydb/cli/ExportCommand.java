@@ -29,7 +29,7 @@
 package org.citydb.cli;
 
 import org.citydb.ImpExpNew;
-import org.citydb.plugin.CLICommand;
+import org.citydb.plugin.CliCommand;
 import org.citydb.plugin.cli.DatabaseOptions;
 import picocli.CommandLine;
 
@@ -38,7 +38,7 @@ import picocli.CommandLine;
         description = "Exports data in CityGML format.",
         versionProvider = ImpExpNew.class
 )
-public class ExportCommand extends CLICommand {
+public class ExportCommand extends CliCommand {
 
     @CommandLine.ArgGroup(exclusive = false)
     private DatabaseOptions databaseOptions;

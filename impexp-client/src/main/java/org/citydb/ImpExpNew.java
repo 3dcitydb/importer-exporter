@@ -44,7 +44,7 @@ import org.citydb.database.schema.util.SchemaMappingUtil;
 import org.citydb.event.EventDispatcher;
 import org.citydb.event.global.EventType;
 import org.citydb.log.Logger;
-import org.citydb.plugin.CLICommand;
+import org.citydb.plugin.CliCommand;
 import org.citydb.plugin.IllegalEventSourceChecker;
 import org.citydb.plugin.Plugin;
 import org.citydb.plugin.PluginException;
@@ -80,7 +80,7 @@ import java.util.stream.Stream;
         synopsisSubcommandLabel = "COMMAND",
         versionProvider = ImpExpNew.class
 )
-public class ImpExpNew extends CLICommand implements CommandLine.IVersionProvider {
+public class ImpExpNew extends CliCommand implements CommandLine.IVersionProvider {
     @CommandLine.Option(names = {"-c", "--config"}, scope = CommandLine.ScopeType.INHERIT, paramLabel = "<file>",
             description = "Use configuration from this file.")
     private Path configFile;
@@ -119,8 +119,8 @@ public class ImpExpNew extends CLICommand implements CommandLine.IVersionProvide
         }
     }
 
-    public ImpExpNew withCLICommand(CLICommand command) {
-        pluginManager.registerCLICommand(command);
+    public ImpExpNew withCLICommand(CliCommand command) {
+        pluginManager.registerCliCommand(command);
         return this;
     }
 
@@ -163,8 +163,8 @@ public class ImpExpNew extends CLICommand implements CommandLine.IVersionProvide
         try {
             // load CLI commands from plugins
             loadClasses(ClientConstants.IMPEXP_HOME.resolve(ClientConstants.PLUGINS_DIR), classLoader);
-            pluginManager.loadCLICommands(classLoader);
-            for (CLICommand command : pluginManager.getCLICommands()) {
+            pluginManager.loadCliCommands(classLoader);
+            for (CliCommand command : pluginManager.getCliCommands()) {
                 cmd.addSubcommand(command);
             }
         } catch (IOException e) {
@@ -201,8 +201,8 @@ public class ImpExpNew extends CLICommand implements CommandLine.IVersionProvide
 
                 // preprocess commands
                 Object command = commandLine.getCommand();
-                if (command instanceof CLICommand) {
-                    ((CLICommand) command).preprocess();
+                if (command instanceof CliCommand) {
+                    ((CliCommand) command).preprocess();
                 }
             }
 

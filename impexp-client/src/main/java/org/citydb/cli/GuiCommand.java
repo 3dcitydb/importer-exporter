@@ -32,7 +32,7 @@ import org.citydb.ImpExpException;
 import org.citydb.ImpExpNew;
 import org.citydb.gui.components.SplashScreen;
 import org.citydb.gui.util.OSXAdapter;
-import org.citydb.plugin.CLICommand;
+import org.citydb.plugin.CliCommand;
 import org.citydb.plugin.cli.StartupProgressListener;
 import picocli.CommandLine;
 
@@ -44,7 +44,7 @@ import java.awt.*;
         description = "Starts the graphical user interface.",
         versionProvider = ImpExpNew.class
 )
-public class GuiCommand extends CLICommand implements StartupProgressListener {
+public class GuiCommand extends CliCommand implements StartupProgressListener {
 
     @CommandLine.Option(names = "--no-splash", description = "Hide the splash screen during startup.")
     private boolean hideSplash;

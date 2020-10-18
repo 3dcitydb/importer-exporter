@@ -36,6 +36,6 @@ import java.util.concurrent.Callable;
         mixinStandardHelpOptions = true,
         showAtFileInUsageHelp = true
 )
-public abstract class CLICommand implements Callable<Integer> {
+public abstract class CliCommand implements Callable<Integer> {
     public void preprocess() throws Exception { }
 }

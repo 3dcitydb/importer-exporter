@@ -40,7 +40,7 @@ public class PluginManager {
     private static PluginManager instance;
     private final List<InternalPlugin> internalPlugins;
     private final List<Plugin> externalPlugins;
-    private final List<CLICommand> commands;
+    private final List<CliCommand> commands;
 
     private PluginManager() {
         internalPlugins = new ArrayList<>();
@@ -112,14 +112,14 @@ public class PluginManager {
         return plugins;
     }
 
-    public void loadCLICommands(ClassLoader loader) {
-        ServiceLoader<CLICommand> commandLoader = ServiceLoader.load(CLICommand.class, loader);
-        for (CLICommand command : commandLoader)
-            registerCLICommand(command);
+    public void loadCliCommands(ClassLoader loader) {
+        ServiceLoader<CliCommand> commandLoader = ServiceLoader.load(CliCommand.class, loader);
+        for (CliCommand command : commandLoader)
+            registerCliCommand(command);
     }
 
-    public void registerCLICommand(CLICommand command) {
-        for (CLICommand candidate : commands) {
+    public void registerCliCommand(CliCommand command) {
+        for (CliCommand candidate : commands) {
             if (candidate.getClass() == command.getClass())
                 return;
         }
@@ -127,7 +127,7 @@ public class PluginManager {
         commands.add(command);
     }
 
-    public List<CLICommand> getCLICommands() {
+    public List<CliCommand> getCliCommands() {
         return commands;
     }
 
