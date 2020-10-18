@@ -27,7 +27,10 @@
  */
 package org.citydb.plugin;
 
+import org.citydb.config.Config;
+import org.citydb.config.project.plugin.PluginConfig;
 import org.citydb.plugin.extension.Extension;
+import org.citydb.plugin.extension.config.ConfigExtension;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -84,19 +87,19 @@ public class PluginManager {
         return externalPlugins;
     }
 
-    public <T extends InternalPlugin> T getInternalPlugin(Class<T> pluginClass) {
+    public <T extends InternalPlugin> T getInternalPlugin(Class<T> type) {
         for (InternalPlugin plugin : internalPlugins)
-            if (pluginClass.isInstance(plugin))
-                return pluginClass.cast(plugin);
+            if (type.isInstance(plugin))
+                return type.cast(plugin);
 
         return null;
     }
 
-    public <T extends Extension> List<T> getExternalPlugins(Class<T> extensionClass) {
+    public <T extends Extension> List<T> getExternalPlugins(Class<T> type) {
         List<T> plugins = new ArrayList<>();
         for (Plugin plugin : externalPlugins) {
-            if (extensionClass.isAssignableFrom(plugin.getClass()))
-                plugins.add(extensionClass.cast(plugin));
+            if (type.isAssignableFrom(plugin.getClass()))
+                plugins.add(type.cast(plugin));
         }
 
         return plugins;
@@ -126,5 +129,30 @@ public class PluginManager {
 
     public List<CLICommand> getCLICommands() {
         return commands;
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T extends PluginConfig> Class<T> getConfigClass(ConfigExtension<T> plugin) throws PluginException {
+        try {
+            return (Class<T>) plugin.getClass().getMethod("getConfig").getReturnType();
+        } catch (Exception e) {
+            throw new PluginException("Failed to determine config type of plugin " + plugin.getClass().getName() + ".", e);
+        }
+    }
+
+    public <T extends PluginConfig> void propagatePluginConfig(ConfigExtension<T> plugin, Config config) throws PluginException {
+        Class<T> type = getConfigClass(plugin);
+        T pluginConfig = config.getProject().getExtension(type);
+
+        if (pluginConfig == null) {
+            try {
+                pluginConfig = type.getDeclaredConstructor().newInstance();
+                config.getProject().registerExtension(pluginConfig);
+            } catch (Exception e) {
+                throw new PluginException("Failed to invoke default constructor of " + type.getName() + ".", e);
+            }
+        }
+
+        plugin.configLoaded(pluginConfig);
     }
 }

@@ -33,7 +33,7 @@ import org.citydb.ImpExpNew;
 import org.citydb.gui.components.SplashScreen;
 import org.citydb.gui.util.OSXAdapter;
 import org.citydb.plugin.CLICommand;
-import org.citydb.plugin.cli.StartupProcessListener;
+import org.citydb.plugin.cli.StartupProgressListener;
 import picocli.CommandLine;
 
 import javax.swing.*;
@@ -42,10 +42,9 @@ import java.awt.*;
 @CommandLine.Command(
         name = "gui",
         description = "Starts the graphical user interface.",
-        hidden = true,
         versionProvider = ImpExpNew.class
 )
-public class GuiCommand extends CLICommand implements StartupProcessListener {
+public class GuiCommand extends CLICommand implements StartupProgressListener {
 
     @CommandLine.Option(names = "--no-splash", description = "Hide the splash screen during startup.")
     private boolean hideSplash;
@@ -60,7 +59,7 @@ public class GuiCommand extends CLICommand implements StartupProcessListener {
         try {
             return 0;
         } finally {
-            if (splashScreen != null) {
+            if (!hideSplash) {
                 splashScreen.close();
             }
         }
@@ -68,8 +67,12 @@ public class GuiCommand extends CLICommand implements StartupProcessListener {
 
     @Override
     public void preprocess() throws Exception {
+        // set options on parent command
+        parent.useDefaultConfiguration(true)
+                .failOnADEExceptions(false);
+
+        // set look & feel
         try {
-            // set look & feel
             javax.swing.UIManager.setLookAndFeel(javax.swing.UIManager.getSystemLookAndFeelClassName());
             if (OSXAdapter.IS_MAC_OS_X) {
                 OSXAdapter.setDockIconImage(Toolkit.getDefaultToolkit().getImage(parent.getClass().getResource("/org/citydb/gui/images/common/logo_small.png")));
@@ -79,23 +82,18 @@ public class GuiCommand extends CLICommand implements StartupProcessListener {
             throw new ImpExpException("Failed to initialize user interface.", e);
         }
 
-        // show splash screen
+        // splash screen
         if (!hideSplash) {
             splashScreen = new SplashScreen(3, 477, Color.BLACK);
             splashScreen.setMessage("Version \"" + parent.getClass().getPackage().getImplementationVersion() + "\"");
-            SwingUtilities.invokeLater(() -> splashScreen.setVisible(true));
             parent.withStartupProgressListener(this);
-
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                //
-            }
+            SwingUtilities.invokeLater(() -> splashScreen.setVisible(true));
+            Thread.sleep(1000);
         }
     }
 
     @Override
-    public void setMessage(String message) {
+    public void printMessage(String message) {
         splashScreen.setMessage(message);
     }
 

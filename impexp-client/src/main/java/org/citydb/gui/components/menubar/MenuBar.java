@@ -56,7 +56,7 @@ public class MenuBar extends JMenuBar {
 		pluginManager = PluginManager.getInstance();
 		
 		file = new MenuFile();
-		project = new MenuProject(pluginManager, mainView, config);
+		project = new MenuProject(mainView, config);
 		view = new MenuView(mainView, config);
 		help = new MenuHelp(mainView, config);
 

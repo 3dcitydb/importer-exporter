@@ -67,7 +67,7 @@ public class Project {
 	private KmlExporter kmlExporter;
 	private Global global;
 	@XmlJavaTypeAdapter(PluginConfigListAdapter.class)
-	private Map<Class<? extends PluginConfig>, PluginConfig> extensions;
+	private final Map<Class<? extends PluginConfig>, PluginConfig> extensions;
 	
 	@XmlTransient
 	private ConfigNamespaceFilter namespaceFilter;
@@ -142,12 +142,13 @@ public class Project {
 			this.global = global;
 	}
 
-	public PluginConfig getExtension(Class<? extends PluginConfig> pluginConfigClass) {
-		return extensions.get(pluginConfigClass);
+	public <T extends PluginConfig> T getExtension(Class<T> type) {
+		PluginConfig config = extensions.get(type);
+		return type.isInstance(config) ? type.cast(config) : null;
 	}
 	
-	public PluginConfig registerExtension(PluginConfig pluginConfig) {
-		return extensions.put(pluginConfig.getClass(), pluginConfig);
+	public PluginConfig registerExtension(PluginConfig config) {
+		return extensions.put(config.getClass(), config);
 	}
 	
 	public ConfigNamespaceFilter getNamespaceFilter() {
@@ -157,5 +158,4 @@ public class Project {
 	public void setNamespaceFilter(ConfigNamespaceFilter namespaceFilter) {
 		this.namespaceFilter = namespaceFilter;
 	}
-
 }

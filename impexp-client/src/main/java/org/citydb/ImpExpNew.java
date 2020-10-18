@@ -47,8 +47,9 @@ import org.citydb.log.Logger;
 import org.citydb.plugin.CLICommand;
 import org.citydb.plugin.IllegalEventSourceChecker;
 import org.citydb.plugin.Plugin;
+import org.citydb.plugin.PluginException;
 import org.citydb.plugin.PluginManager;
-import org.citydb.plugin.cli.StartupProcessListener;
+import org.citydb.plugin.cli.StartupProgressListener;
 import org.citydb.plugin.extension.config.ConfigExtension;
 import org.citydb.registry.ObjectRegistry;
 import org.citydb.util.ClientConstants;
@@ -102,10 +103,11 @@ public class ImpExpNew extends CLICommand implements CommandLine.IVersionProvide
     private final Util.URLClassLoader classLoader = new Util.URLClassLoader(Thread.currentThread().getContextClassLoader());
     private final Config config = new Config();
 
-    private StartupProcessListener progressListener;
+    private StartupProgressListener progressListener;
     private String commandLineString;
     private String subCommandName;
-    private boolean guiMode;
+    private boolean useDefaultConfiguration;
+    private boolean failOnADEExceptions;
 
     public static void main(String[] args) {
         ImpExpNew impExp = new ImpExpNew();
@@ -135,8 +137,18 @@ public class ImpExpNew extends CLICommand implements CommandLine.IVersionProvide
         return this;
     }
 
-    public ImpExpNew withStartupProgressListener(StartupProcessListener progressListener) {
+    public ImpExpNew withStartupProgressListener(StartupProgressListener progressListener) {
         this.progressListener = progressListener;
+        return this;
+    }
+
+    public ImpExpNew useDefaultConfiguration(boolean useDefaultConfiguration) {
+        this.useDefaultConfiguration = useDefaultConfiguration;
+        return this;
+    }
+
+    public ImpExpNew failOnADEExceptions(boolean failOnADEExceptions) {
+        this.failOnADEExceptions = failOnADEExceptions;
         return this;
     }
 
@@ -194,9 +206,17 @@ public class ImpExpNew extends CLICommand implements CommandLine.IVersionProvide
                 }
             }
 
+            // set default configuration file if required
+            if (useDefaultConfiguration && configFile == null) {
+                configFile = CoreConstants.IMPEXP_DATA_DIR
+                        .resolve(ClientConstants.CONFIG_DIR)
+                        .resolve(ClientConstants.PROJECT_SETTINGS_FILE);
+            } else {
+                useDefaultConfiguration = false;
+            }
+
             commandLineString = ClientConstants.CLI_NAME + " " + String.join(" ", args);
             subCommandName = commandLines.get(1).getCommandName();
-            guiMode = commandLines.get(1).getCommand() instanceof GuiCommand;
 
             // execute command
             int exitCode = cmd.getExecutionStrategy().execute(parseResult);
@@ -218,8 +238,8 @@ public class ImpExpNew extends CLICommand implements CommandLine.IVersionProvide
         log.info("Starting " + getClass().getPackage().getImplementationTitle() +
                 ", version " + this.getClass().getPackage().getImplementationVersion());
 
-        boolean loadConfig = guiMode || configFile != null;
-        int startupSteps = loadConfig ? 7 : 6;
+        boolean loadConfig = configFile != null;
+        int startupSteps = loadConfig ? 6 : 5;
         int step = 1;
 
         // initialize application environment
@@ -248,10 +268,7 @@ public class ImpExpNew extends CLICommand implements CommandLine.IVersionProvide
             loadConfig();
         }
 
-        if (!guiMode) {
-            log.info("Executing '" + subCommandName + "' command");
-        }
-
+        log.info("Executing '" + subCommandName + "' command");
         return 0;
     }
 
@@ -278,8 +295,8 @@ public class ImpExpNew extends CLICommand implements CommandLine.IVersionProvide
         // load config classes from plugins
         for (ConfigExtension<?> plugin : pluginManager.getExternalPlugins(ConfigExtension.class)) {
             try {
-                ConfigUtil.getInstance().withConfigClass(plugin.getClass().getMethod("getConfig").getReturnType());
-            } catch (SecurityException | NoSuchMethodException e) {
+                ConfigUtil.getInstance().withConfigClass(pluginManager.getConfigClass(plugin));
+            } catch (PluginException e) {
                 throw new ImpExpException("Failed to initialize config context for plugin " + plugin.getClass().getName() + ".", e);
             }
         }
@@ -307,8 +324,7 @@ public class ImpExpNew extends CLICommand implements CommandLine.IVersionProvide
             log.info("Initializing ADE extension " + extension.getClass().getName());
         }
 
-        // fail if loading ADEs threw errors and we are not in GUI mode
-        if (adeManager.hasExceptions() && !guiMode) {
+        if (adeManager.hasExceptions() && failOnADEExceptions) {
             adeManager.logExceptions();
             throw new ImpExpException("Failed to load ADE extensions.");
         }
@@ -328,11 +344,7 @@ public class ImpExpNew extends CLICommand implements CommandLine.IVersionProvide
     }
 
     private void loadConfig() throws ImpExpException {
-        if (configFile == null) {
-            configFile = CoreConstants.IMPEXP_DATA_DIR
-                    .resolve(ClientConstants.CONFIG_DIR)
-                    .resolve(ClientConstants.PROJECT_SETTINGS_FILE);
-        } else if (!configFile.isAbsolute()) {
+        if (!configFile.isAbsolute()) {
             configFile = ClientConstants.WORKING_DIR.resolve(configFile);
         }
 
@@ -344,8 +356,21 @@ public class ImpExpNew extends CLICommand implements CommandLine.IVersionProvide
 
             config.setProject((Project) object);
         } catch (JAXBException | IOException e) {
-            // TODO log messages
-            throw new ImpExpException("Failed to load configuration from file " + configFile + ".", e);
+            if (useDefaultConfiguration) {
+                log.error("Failed to load configuration from file " + configFile + ".", e);
+                log.info("Using default configuration settings instead.");
+            } else {
+                throw new ImpExpException("Failed to load configuration from file " + configFile + ".", e);
+            }
+        }
+
+        // propagate configuration to plugins
+        for (ConfigExtension<?> plugin : pluginManager.getExternalPlugins(ConfigExtension.class)) {
+            try {
+                pluginManager.propagatePluginConfig(plugin, config);
+            } catch (PluginException e) {
+                throw new ImpExpException("Failed to load configuration for plugin " + plugin.getClass().getName() + ".", e);
+            }
         }
     }
 
@@ -362,7 +387,7 @@ public class ImpExpNew extends CLICommand implements CommandLine.IVersionProvide
     private void logProgress(String message, int current, int maximum) {
         log.info(message);
         if (progressListener != null) {
-            progressListener.setMessage(message);
+            progressListener.printMessage(message);
             progressListener.nextStep(current, maximum);
         }
     }

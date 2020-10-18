@@ -39,7 +39,6 @@ import org.citydb.gui.util.GuiUtil;
 import org.citydb.log.Logger;
 import org.citydb.modules.preferences.PreferencesPlugin;
 import org.citydb.plugin.InternalPlugin;
-import org.citydb.plugin.PluginConfigController;
 import org.citydb.plugin.PluginException;
 import org.citydb.plugin.PluginManager;
 import org.citydb.plugin.extension.config.ConfigExtension;
@@ -61,9 +60,9 @@ import java.util.List;
 @SuppressWarnings("serial")
 public class MenuProject extends JMenu {
 	private final Logger log = Logger.getInstance();
-	private final PluginManager pluginService;
 	private final Config config;
 	private final ImpExpGui mainView;
+	private final PluginManager pluginManager;
 
 	private JMenuItem openProject;
 	private JMenuItem saveProject;
@@ -75,10 +74,10 @@ public class MenuProject extends JMenu {
 	private String exportPath;
 	private String importPath;
 
-	MenuProject(PluginManager pluginService, ImpExpGui mainView, Config config) {
-		this.pluginService = pluginService;
+	MenuProject(ImpExpGui mainView, Config config) {
 		this.config = config;
 		this.mainView = mainView;
+		pluginManager = PluginManager.getInstance();
 
 		init();
 	}
@@ -106,11 +105,11 @@ public class MenuProject extends JMenu {
 
 		saveProject.addActionListener(e -> {
             // set settings on internal plugins
-            for (InternalPlugin plugin : pluginService.getInternalPlugins())
+            for (InternalPlugin plugin : pluginManager.getInternalPlugins())
                 plugin.setSettings();
 
             // fire event to external plugins
-            for (ConfigExtension<?> plugin : pluginService.getExternalPlugins(ConfigExtension.class))
+            for (ConfigExtension<?> plugin : pluginManager.getExternalPlugins(ConfigExtension.class))
                 plugin.handleEvent(PluginConfigEvent.PRE_SAVE_CONFIG);
 
             if (mainView.saveProjectSettings())
@@ -127,11 +126,11 @@ public class MenuProject extends JMenu {
                 log.info("Saving project settings as file '" + file.toString() + "'.");
                 try {
                     // set settings on internal plugins
-                    for (InternalPlugin plugin : pluginService.getInternalPlugins())
+                    for (InternalPlugin plugin : pluginManager.getInternalPlugins())
                         plugin.setSettings();
 
                     // fire event to external plugins
-                    for (ConfigExtension<?> plugin : pluginService.getExternalPlugins(ConfigExtension.class))
+                    for (ConfigExtension<?> plugin : pluginManager.getExternalPlugins(ConfigExtension.class))
                         plugin.handleEvent(PluginConfigEvent.PRE_SAVE_CONFIG);
 
                     ConfigUtil.getInstance().marshal(config.getProject(), file);
@@ -161,11 +160,11 @@ public class MenuProject extends JMenu {
 				SrsComboBoxFactory.getInstance(config).resetAll(true);
 
 				// reset defaults on internal plugins
-				for (InternalPlugin plugin : pluginService.getInternalPlugins())
+				for (InternalPlugin plugin : pluginManager.getInternalPlugins())
 					plugin.loadSettings();
 
 				// update plugin configs
-				for (ConfigExtension<?> plugin : pluginService.getExternalPlugins(ConfigExtension.class))
+				for (ConfigExtension<?> plugin : pluginManager.getExternalPlugins(ConfigExtension.class))
 					plugin.handleEvent(PluginConfigEvent.RESET_DEFAULT_CONFIG);
 
 				// trigger event
@@ -245,16 +244,15 @@ public class MenuProject extends JMenu {
 			SrsComboBoxFactory.getInstance(config).resetAll(true);
 
 			// load settings for internal plugins
-			for (InternalPlugin plugin : pluginService.getInternalPlugins())
+			for (InternalPlugin plugin : pluginManager.getInternalPlugins())
 				plugin.loadSettings();
 
 			// update plugin configs
-			PluginConfigController pluginConfigController = PluginConfigController.getInstance(config);
-			for (ConfigExtension<?> plugin : pluginService.getExternalPlugins(ConfigExtension.class)) {
+			for (ConfigExtension<?> plugin : pluginManager.getExternalPlugins(ConfigExtension.class)) {
 				try {
-					pluginConfigController.setOrCreatePluginConfig(plugin);
+					pluginManager.propagatePluginConfig(plugin, config);
 				} catch (PluginException e) {
-					log.warn("Failed to load config for plugin " + plugin.getClass().getName());
+					log.error("Failed to load configuration for plugin " + plugin.getClass().getName() + ".");
 					log.warn("The plugin will most likely not work.");
 				}
 			}
@@ -263,7 +261,7 @@ public class MenuProject extends JMenu {
 			project.getGlobal().setLogging(logging);
 
 			// reset logging settings
-			pluginService.getInternalPlugin(PreferencesPlugin.class).setLoggingSettings();
+			pluginManager.getInternalPlugin(PreferencesPlugin.class).setLoggingSettings();
 			
 			// trigger event
 			ObjectRegistry.getInstance().getEventDispatcher().triggerEvent(new ProjectChangedEvent(this));

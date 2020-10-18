@@ -57,7 +57,6 @@ import org.citydb.modules.preferences.PreferencesPlugin;
 import org.citydb.plugin.IllegalEventSourceChecker;
 import org.citydb.plugin.InternalPlugin;
 import org.citydb.plugin.Plugin;
-import org.citydb.plugin.PluginConfigController;
 import org.citydb.plugin.PluginException;
 import org.citydb.plugin.PluginManager;
 import org.citydb.plugin.extension.config.ConfigExtension;
@@ -280,8 +279,8 @@ public class ImpExp {
 		// get plugin config classes
 		for (ConfigExtension<?> plugin : pluginManager.getExternalPlugins(ConfigExtension.class)) {
 			try {
-				ConfigUtil.getInstance().withConfigClass(plugin.getClass().getMethod("getConfig").getReturnType());
-			} catch (SecurityException | NoSuchMethodException e) {
+				ConfigUtil.getInstance().withConfigClass(pluginManager.getConfigClass(plugin));
+			} catch (PluginException e) {
 				throw new ImpExpException("Failed to instantiate config for plugin " + plugin.getClass().getName() + ".", e);
 			}
 		}
@@ -429,7 +428,7 @@ public class ImpExp {
 		// load plugin configs to plugins
 		for (ConfigExtension<?> plugin : pluginManager.getExternalPlugins(ConfigExtension.class)) {
 			try {
-				PluginConfigController.getInstance(config).setOrCreatePluginConfig(plugin);
+				pluginManager.propagatePluginConfig(plugin, config);
 			} catch (PluginException e) {
 				throw new ImpExpException("Failed to load config for plugin " + plugin.getClass().getName() + ".", e);
 			}
