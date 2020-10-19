@@ -29,14 +29,36 @@
 package org.citydb.cli;
 
 import org.citydb.ImpExpException;
+import org.citydb.config.Config;
+import org.citydb.config.ConfigUtil;
+import org.citydb.config.gui.Gui;
+import org.citydb.database.DatabaseController;
+import org.citydb.gui.ImpExpGui;
 import org.citydb.gui.components.SplashScreen;
 import org.citydb.gui.util.OSXAdapter;
+import org.citydb.modules.citygml.exporter.CityGMLExportPlugin;
+import org.citydb.modules.citygml.importer.CityGMLImportPlugin;
+import org.citydb.modules.database.DatabasePlugin;
+import org.citydb.modules.kml.KMLExportPlugin;
+import org.citydb.modules.preferences.PreferencesPlugin;
 import org.citydb.plugin.CliCommand;
+import org.citydb.plugin.InternalPlugin;
+import org.citydb.plugin.Plugin;
+import org.citydb.plugin.PluginManager;
 import org.citydb.plugin.cli.StartupProgressListener;
+import org.citydb.plugin.extension.view.ViewExtension;
+import org.citydb.registry.ObjectRegistry;
+import org.citydb.util.ClientConstants;
+import org.citydb.util.CoreConstants;
 import picocli.CommandLine;
 
 import javax.swing.*;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
 import java.awt.*;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.Locale;
 
 @CommandLine.Command(
         name = GuiCommand.NAME,
@@ -52,16 +74,71 @@ public class GuiCommand extends CliCommand implements StartupProgressListener {
     @CommandLine.ParentCommand
     private ImpExpCli parent;
 
+    private final PluginManager pluginManager = PluginManager.getInstance();
+    private int processSteps;
     private SplashScreen splashScreen;
 
     @Override
     public Integer call() throws Exception {
+        Config config = ObjectRegistry.getInstance().getConfig();
+        DatabaseController databaseController = ObjectRegistry.getInstance().getDatabaseController();
+
+        // load GUI configuration
+        loadGuiConfig(config);
+
+        JAXBContext kmlContext, colladaContext;
         try {
-            return 0;
-        } finally {
-            if (!hideSplash) {
-                splashScreen.close();
+            kmlContext = JAXBContext.newInstance("net.opengis.kml._2", getClass().getClassLoader());
+            colladaContext = JAXBContext.newInstance("org.collada._2005._11.colladaschema", getClass().getClassLoader());
+        } catch (JAXBException e) {
+            throw new ImpExpException("Failed to initialize KML/COLLADA context.", e);
+        }
+
+        ImpExpGui impExpGui = new ImpExpGui(config);
+
+        // create database plugin
+        DatabasePlugin databasePlugin = new DatabasePlugin(impExpGui, config);
+        databaseController.setConnectionViewHandler(databasePlugin.getConnectionViewHandler());
+
+        // register internal plugins
+        pluginManager.registerInternalPlugin(new CityGMLImportPlugin(impExpGui, config));
+        pluginManager.registerInternalPlugin(new CityGMLExportPlugin(impExpGui, config));
+        pluginManager.registerInternalPlugin(new KMLExportPlugin(impExpGui, kmlContext, colladaContext, config));
+        pluginManager.registerInternalPlugin(databasePlugin);
+        pluginManager.registerInternalPlugin(new PreferencesPlugin(impExpGui, config));
+
+        // initialize plugins
+        Locale locale = new Locale(config.getProject().getGlobal().getLanguage().value());
+        for (Plugin plugin : pluginManager.getPlugins()) {
+            if (plugin instanceof ViewExtension) {
+                ((ViewExtension) plugin).initViewExtension(impExpGui, locale);
+                if (!hideSplash && !(plugin instanceof InternalPlugin)) {
+                    splashScreen.setMessage("Initializing plugin " + plugin.getClass().getName());
+                }
             }
+        }
+
+        parent.logProgress("Starting graphical user interface");
+        SwingUtilities.invokeLater(impExpGui::invoke);
+        if (!hideSplash) {
+            splashScreen.close();
+        }
+
+        return 0;
+    }
+
+    private void loadGuiConfig(Config config) {
+        Path guiConfigFile = CoreConstants.IMPEXP_DATA_DIR
+                .resolve(ClientConstants.CONFIG_DIR)
+                .resolve(ClientConstants.GUI_SETTINGS_FILE);
+
+        try {
+            Object object = ConfigUtil.getInstance().unmarshal(guiConfigFile.toFile());
+            if (object instanceof Gui) {
+                config.setGui((Gui) object);
+            }
+        } catch (JAXBException | IOException e) {
+            //
         }
     }
 
@@ -75,7 +152,7 @@ public class GuiCommand extends CliCommand implements StartupProgressListener {
         try {
             javax.swing.UIManager.setLookAndFeel(javax.swing.UIManager.getSystemLookAndFeelClassName());
             if (OSXAdapter.IS_MAC_OS_X) {
-                OSXAdapter.setDockIconImage(Toolkit.getDefaultToolkit().getImage(parent.getClass().getResource("/org/citydb/gui/images/common/logo_small.png")));
+                OSXAdapter.setDockIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/org/citydb/gui/images/common/logo_small.png")));
                 System.setProperty("apple.laf.useScreenMenuBar", "true");
             }
         } catch (Exception e) {
@@ -85,20 +162,20 @@ public class GuiCommand extends CliCommand implements StartupProgressListener {
         // splash screen
         if (!hideSplash) {
             splashScreen = new SplashScreen(3, 477, Color.BLACK);
-            splashScreen.setMessage("Version \"" + parent.getClass().getPackage().getImplementationVersion() + "\"");
+            splashScreen.setMessage("Version \"" + getClass().getPackage().getImplementationVersion() + "\"");
             parent.withStartupProgressListener(this);
             SwingUtilities.invokeLater(() -> splashScreen.setVisible(true));
-            Thread.sleep(1000);
         }
     }
 
     @Override
-    public void printMessage(String message) {
-        splashScreen.setMessage(message);
+    public void setProcessSteps(int processSteps) {
+        this.processSteps = processSteps + 1;
     }
 
     @Override
-    public void nextStep(int current, int maximum) {
-        splashScreen.nextStep(current, maximum);
+    public void nextStep(String message, int step) {
+        splashScreen.setMessage(message);
+        splashScreen.nextStep(step, processSteps);
     }
 }

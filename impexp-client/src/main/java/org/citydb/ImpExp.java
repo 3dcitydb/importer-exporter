@@ -33,8 +33,12 @@ import org.citydb.cli.ImpExpCli;
 public class ImpExp {
 
     public static void main(String[] args) {
-        System.exit(new ImpExpCli()
+        int exitCode = new ImpExpCli()
                 .startWithGuiAsDefault(true)
-                .doMain(args));
+                .doMain(args);
+
+        if (exitCode != 0) {
+            System.exit(exitCode);
+        }
     }
 }

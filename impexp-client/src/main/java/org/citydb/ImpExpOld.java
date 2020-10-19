@@ -36,7 +36,6 @@ import org.citydb.config.gui.Gui;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.Project;
 import org.citydb.config.project.global.LanguageType;
-import org.citydb.config.project.global.LogLevel;
 import org.citydb.config.project.global.Logging;
 import org.citydb.database.DatabaseController;
 import org.citydb.database.schema.mapping.SchemaMapping;
@@ -87,9 +86,7 @@ import java.net.ProxySelector;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
 import java.util.Locale;
-import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.stream.Stream;
 
@@ -138,7 +135,6 @@ public class ImpExpOld {
 
 	private SplashScreen splashScreen;
 	private boolean useSplashScreen;
-	private Map<LogLevel, String> logMessages = new HashMap<>();
 
 	private final int maximumSteps = 7;
 	private int currentStep = 1;
@@ -406,8 +402,8 @@ public class ImpExpOld {
 			if (shell) {
 				throw new ImpExpException(errMsg);
 			} else {
-				logMessages.put(LogLevel.ERROR, errMsg);
-				logMessages.put(LogLevel.INFO, "Project settings initialized using default values.");
+				log.error(errMsg);
+				log.info("Project settings initialized using default values.");
 			}
 		} finally {
 			config.setProject(project);
@@ -502,7 +498,7 @@ public class ImpExpOld {
 
 			// initialize gui
 			printInfoMessage("Starting graphical user interface");
-			SwingUtilities.invokeLater(() -> mainView.invoke(logMessages));
+			SwingUtilities.invokeLater(mainView::invoke);
 
 			try {
 				// clean up heap space

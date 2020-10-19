@@ -110,18 +110,22 @@ public class ImpExpCli extends CliCommand implements CommandLine.IVersionProvide
     private final PluginManager pluginManager = PluginManager.getInstance();
     private final ADEExtensionManager adeManager = ADEExtensionManager.getInstance();
     private final Util.URLClassLoader classLoader = new Util.URLClassLoader(Thread.currentThread().getContextClassLoader());
-    private final Config config = new Config();
 
     private StartupProgressListener progressListener;
     private String commandLineString;
     private String subCommandName;
+    private int processStep;
+
     private boolean startWithGuiAsDefault;
     private boolean useDefaultConfiguration;
     private boolean useDefaultLogLevel = true;
     private boolean failOnADEExceptions = true;
 
     public static void main(String[] args) {
-        System.exit(new ImpExpCli().doMain(args));
+        int exitCode = new ImpExpCli().doMain(args);
+        if (exitCode != 0) {
+            System.exit(exitCode);
+        }
     }
 
     public int doMain(String[] args) {
@@ -247,17 +251,13 @@ public class ImpExpCli extends CliCommand implements CommandLine.IVersionProvide
             commandLineString = cmd.getCommandName() + " " + String.join(" ", args);
 
             // execute command
-            int exitCode = cmd.getExecutionStrategy().execute(parseResult);
-
-            return exitCode;
+            return cmd.getExecutionStrategy().execute(parseResult);
         } catch (CommandLine.ParameterException e) {
             cmd.getParameterExceptionHandler().handleParseException(e, args);
             return 2;
         } catch (CommandLine.ExecutionException e) {
             logError(e.getCause());
             return 1;
-        } finally {
-            log.close();
         }
     }
 
@@ -266,39 +266,43 @@ public class ImpExpCli extends CliCommand implements CommandLine.IVersionProvide
         log.info("Starting " + getClass().getPackage().getImplementationTitle() +
                 ", version " + this.getClass().getPackage().getImplementationVersion());
 
+        Config config = new Config();
+        ObjectRegistry.getInstance().setConfig(config);
+
         boolean loadConfig = configFile != null;
-        int startupSteps = loadConfig ? 6 : 5;
-        int step = 1;
+        if (progressListener != null) {
+            progressListener.setProcessSteps(loadConfig ? 6 : 5);
+        }
 
         // load plugins
-        logProgress("Loading plugins", step++, startupSteps);
+        logProgress("Loading plugins");
         loadPlugins();
 
         // load database schema mapping
-        logProgress("Loading database schema mapping", step++, startupSteps);
+        logProgress("Loading database schema mapping");
         loadSchemaMapping();
 
         // load ADE extensions
-        logProgress("Loading ADE extensions", step++, startupSteps);
+        logProgress("Loading ADE extensions");
         loadADEExtensions();
 
         // load CityGML and ADE contexts
-        logProgress("Loading CityGML and ADE contexts", step++, startupSteps);
+        logProgress("Loading CityGML and ADE contexts");
         createCityGMLBuilder();
 
         // load configuration
         if (loadConfig) {
-            logProgress("Loading project settings", step++, startupSteps);
-            loadConfig();
+            logProgress("Loading project settings");
+            loadConfig(config);
         }
 
         // initialize application environment
-        logProgress("Initializing application environment", step, startupSteps);
-        initializeEnvironment();
-        initializeLogging();
+        logProgress("Initializing application environment");
+        initializeEnvironment(config);
+        initializeLogging(config);
         createPidFile();
 
-        log.info("Executing '" + subCommandName + "' command.");
+        log.info("Executing '" + subCommandName + "' command");
         return 0;
     }
 
@@ -359,7 +363,7 @@ public class ImpExpCli extends CliCommand implements CommandLine.IVersionProvide
         }
     }
 
-    private void loadConfig() throws ImpExpException {
+    private void loadConfig(Config config) throws ImpExpException {
         if (!configFile.isAbsolute()) {
             configFile = ClientConstants.WORKING_DIR.resolve(configFile);
         }
@@ -390,7 +394,7 @@ public class ImpExpCli extends CliCommand implements CommandLine.IVersionProvide
         }
     }
 
-    private void initializeEnvironment()  {
+    private void initializeEnvironment(Config config)  {
         // create application-wide event dispatcher
         EventDispatcher eventDispatcher = new EventDispatcher();
         eventDispatcher.addEventHandler(EventType.DATABASE_CONNECTION_STATE, IllegalEventSourceChecker.getInstance());
@@ -413,7 +417,7 @@ public class ImpExpCli extends CliCommand implements CommandLine.IVersionProvide
         Language.I18N = ResourceBundle.getBundle("org.citydb.config.i18n.language", locale);
     }
 
-    private void initializeLogging() {
+    private void initializeLogging(Config config) {
         Logging logging = config.getProject().getGlobal().getLogging();
 
         // set console log level
@@ -473,11 +477,10 @@ public class ImpExpCli extends CliCommand implements CommandLine.IVersionProvide
         }
     }
 
-    private void logProgress(String message, int current, int maximum) {
+    void logProgress(String message) {
         log.info(message);
         if (progressListener != null) {
-            progressListener.printMessage(message);
-            progressListener.nextStep(current, maximum);
+            progressListener.nextStep(message, ++processStep);
         }
     }
 

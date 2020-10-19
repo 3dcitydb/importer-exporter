@@ -35,7 +35,6 @@ import org.citydb.config.gui.window.WindowSize;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.internal.Internal;
 import org.citydb.config.project.global.LanguageType;
-import org.citydb.config.project.global.LogLevel;
 import org.citydb.database.connection.DatabaseConnectionPool;
 import org.citydb.event.Event;
 import org.citydb.event.EventDispatcher;
@@ -92,7 +91,6 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
@@ -101,9 +99,13 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 	private final Logger log = Logger.getInstance();
 	private final EventDispatcher eventDispatcher; 
 
-	private Config config;
-	private PluginManager pluginManager;
-	private DatabaseConnectionPool dbPool;
+	private final Config config;
+	private final PluginManager pluginManager;
+	private final DatabaseConnectionPool dbPool;
+	private final ConsoleTextPane consoleText;
+	private final StyledConsoleLogger consoleLogger;
+	private final PrintStream out = System.out;
+	private final PrintStream err = System.err;
 
 	private JPanel main;
 	private JLabel statusText;
@@ -116,20 +118,13 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 	private JLabel consoleLabel;
 	private ConsolePopupMenuWrapper consolePopup;
 	private ConsoleWindow consoleWindow;
-	private ConsoleTextPane consoleText;
-	private StyledConsoleLogger consoleLogger;
 
 	private int tmpConsoleWidth;
 	private int activePosition;
 
 	private List<View> views;
 	private PreferencesPlugin preferencesPlugin;
-
-	private PrintStream out = System.out;
-	private PrintStream err = System.err;
-
-	// internal state
-	private LanguageType currentLang = null;
+	private LanguageType currentLang;
 
 	public ImpExpGui(Config config) {
 		this.config = config;
@@ -147,19 +142,14 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		Internal.IS_GUI_MODE = true;
 	}
 
-	public void invoke(Map<LogLevel, String> logMessages) {
+	public void invoke() {
 		// init GUI elements
-		initGui(logMessages);
+		initGui();
 		doTranslation();
 		showWindow();
 
 		// initConsole;
 		initConsole();
-
-		if (!logMessages.isEmpty()) {
-			for (Map.Entry<LogLevel, String> entry : logMessages.entrySet())
-				log.log(entry.getKey(), entry.getValue());
-		}
 
 		// log exceptions for disabled ADE extensions
 		ADEExtensionManager.getInstance().logExceptions();
@@ -173,7 +163,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		showWindow();
 	}
 
-	private void initGui(Map<LogLevel, String> logMessages) {
+	private void initGui() {
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
 		activePosition = 0;
@@ -216,7 +206,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		for (ViewExtension viewExtension : pluginManager.getExternalPlugins(ViewExtension.class)) {
 			View view = viewExtension.getView();
 			if (view == null || view.getViewComponent() == null) {
-				logMessages.put(LogLevel.ERROR, "Failed to get view component from plugin " + viewExtension.getClass().getName() + ".");
+				log.error("Failed to get view component for plugin " + viewExtension.getClass().getName() + ".");
 				continue;
 			}
 
@@ -618,6 +608,8 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		} catch (Throwable e) {
 			log.logStackTrace(e);
 			log.info("Application did not terminate normally");
+		} finally {
+			log.close();
 		}
 	}
 
@@ -627,8 +619,8 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 	}
 
 	private final class ConsolePopupMenuWrapper {
-		private JMenuItem clear;
-		private JMenuItem detach;
+		private final JMenuItem clear;
+		private final JMenuItem detach;
 
 		ConsolePopupMenuWrapper(JPopupMenu popupMenu) {
 			clear = new JMenuItem();
@@ -652,14 +644,10 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 				}
 
 				@Override
-				public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
-					// nothing to do
-				}
+				public void popupMenuWillBecomeInvisible(PopupMenuEvent e) { }
 
 				@Override
-				public void popupMenuCanceled(PopupMenuEvent e) {
-					// nothing to do
-				}
+				public void popupMenuCanceled(PopupMenuEvent e) { }
 			});
 
 		}

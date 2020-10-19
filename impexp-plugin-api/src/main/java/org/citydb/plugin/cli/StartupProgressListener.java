@@ -29,6 +29,6 @@
 package org.citydb.plugin.cli;
 
 public interface StartupProgressListener {
-    void printMessage(String message);
-    void nextStep(int current, int maximum);
+    void setProcessSteps(int processSteps);
+    void nextStep(String message, int step);
 }

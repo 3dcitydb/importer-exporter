@@ -28,6 +28,7 @@
 package org.citydb.registry;
 
 import org.citydb.ade.CityDBADEContext;
+import org.citydb.config.Config;
 import org.citydb.database.DatabaseController;
 import org.citydb.database.schema.mapping.SchemaMapping;
 import org.citydb.event.EventDispatcher;
@@ -35,7 +36,8 @@ import org.citygml4j.CityGMLContext;
 import org.citygml4j.builder.jaxb.CityGMLBuilder;
 import org.citygml4j.model.citygml.ade.ADEException;
 
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.HashMap;
+import java.util.Map;
 
 public class ObjectRegistry {
 	private static ObjectRegistry instance;
@@ -49,7 +51,8 @@ public class ObjectRegistry {
 		}
 	}
 
-	private ConcurrentHashMap<String, Object> properties;
+	private Map<String, Object> properties;
+	private Config config;
 	private EventDispatcher eventDispatcher;
 	private DatabaseController databaseController;
 	private CityGMLBuilder cityGMLBuilder;
@@ -68,7 +71,7 @@ public class ObjectRegistry {
 
 	public void register(String name, Object object) {
 		if (properties == null)
-			properties = new ConcurrentHashMap<>();
+			properties = new HashMap<>();
 
 		properties.put(name, object);
 	}
@@ -94,13 +97,24 @@ public class ObjectRegistry {
 		return type.isInstance(object) ? type.cast(object) : null;
 	}
 
+	public Config getConfig() {
+		return config;
+	}
+
+	public void setConfig(Config config) {
+		if (this.config != null)
+			throw new IllegalArgumentException("Config is already registered.");
+
+		this.config = config;
+	}
+
 	public EventDispatcher getEventDispatcher() {
 		return eventDispatcher;
 	}
 
 	public void setEventDispatcher(EventDispatcher eventDispatcher) {
 		if (this.eventDispatcher != null)
-			throw new IllegalArgumentException("Event dispatcher is already registered with the object registry.");
+			throw new IllegalArgumentException("Event dispatcher is already registered.");
 
 		this.eventDispatcher = eventDispatcher;
 	}
@@ -111,7 +125,7 @@ public class ObjectRegistry {
 
 	public void setDatabaseController(DatabaseController databaseController) {
 		if (this.databaseController != null)
-			throw new IllegalArgumentException("Database controller is already registered with the object registry.");
+			throw new IllegalArgumentException("Database controller is already registered.");
 
 		this.databaseController = databaseController;
 	}
@@ -122,7 +136,7 @@ public class ObjectRegistry {
 
 	public void setCityGMLBuilder(CityGMLBuilder cityGMLBuilder) {
 		if (this.cityGMLBuilder != null)
-			throw new IllegalArgumentException("CityGML Builder is already registered with the object registry.");
+			throw new IllegalArgumentException("CityGML builder is already registered.");
 
 		this.cityGMLBuilder = cityGMLBuilder;
 	}
@@ -133,7 +147,7 @@ public class ObjectRegistry {
 
 	public void setSchemaMapping(SchemaMapping schemaMapping) {
 		if (this.schemaMapping != null)
-			throw new IllegalArgumentException("Schema mapping is already registered with the object registry.");
+			throw new IllegalArgumentException("Schema mapping is already registered.");
 
 		this.schemaMapping = schemaMapping;
 	}
@@ -141,11 +155,11 @@ public class ObjectRegistry {
 	public void cleanup() {
 		if (properties != null)
 			properties.clear();
-		
+
+		config = null;
 		eventDispatcher = null;
 		databaseController = null;
 		cityGMLBuilder = null;
 		schemaMapping = null;
 	}
-
 }

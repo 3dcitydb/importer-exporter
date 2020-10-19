@@ -38,7 +38,6 @@ import picocli.CommandLine;
         versionProvider = ImpExpCli.class
 )
 public class ExportCommand extends CliCommand {
-
     @CommandLine.ArgGroup(exclusive = false)
     private DatabaseOptions databaseOptions;
 
