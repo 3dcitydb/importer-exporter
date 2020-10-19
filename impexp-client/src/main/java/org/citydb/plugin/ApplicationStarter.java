@@ -27,12 +27,12 @@
  */
 package org.citydb.plugin;
 
-import org.citydb.ImpExp;
+import org.citydb.ImpExpOld;
 
 public class ApplicationStarter {
 
 	public void run(String[] args, Plugin... plugins) {
-		ImpExp impexp = new ImpExp();
+		ImpExpOld impexp = new ImpExpOld();
 		impexp.printInfoMessage("Starting 3D City Database Importer/Exporter through Plugin API");	
 		impexp.doMain(args, plugins);
 	}

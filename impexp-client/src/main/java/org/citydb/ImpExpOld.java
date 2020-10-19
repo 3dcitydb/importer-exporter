@@ -29,7 +29,7 @@ package org.citydb;
 
 import org.citydb.ade.ADEExtension;
 import org.citydb.ade.ADEExtensionManager;
-import org.citydb.cli.ImpExpCli;
+import org.citydb.cli.ImpExpCliOld;
 import org.citydb.config.Config;
 import org.citydb.config.ConfigUtil;
 import org.citydb.config.gui.Gui;
@@ -93,7 +93,7 @@ import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.stream.Stream;
 
-public class ImpExp {
+public class ImpExpOld {
 
 	@Option(name="-config", usage="config file containing project settings", metaVar="fileName")
 	private Path configFile;
@@ -144,12 +144,12 @@ public class ImpExp {
 	private int currentStep = 1;
 
 	public static void main(String[] args) {
-		ImpExp impExp = new ImpExp();
+		ImpExpOld impExpOld = new ImpExpOld();
 
 		try {
-			impExp.doMain(args);
+			impExpOld.doMain(args);
 		} catch (ImpExpException e) {
-			impExp.logErrorAndExit(e);
+			impExpOld.logErrorAndExit(e);
 		}
 	}
 
@@ -258,7 +258,7 @@ public class ImpExp {
 
 		// load external plugins
 		printInfoMessage("Loading plugins");
-		URLClassLoader externalLoader = new URLClassLoader(ImpExp.class.getClassLoader());
+		URLClassLoader externalLoader = new URLClassLoader(ImpExpOld.class.getClassLoader());
 		try {
 			Path pluginsDir = ClientConstants.IMPEXP_HOME.resolve(ClientConstants.PLUGINS_DIR);
 			if (Files.exists(pluginsDir)) {
@@ -517,7 +517,7 @@ public class ImpExp {
 		}	
 
 		else {
-			ImpExpCli cmd = new ImpExpCli(kmlContext, colladaContext, config);
+			ImpExpCliOld cmd = new ImpExpCliOld(kmlContext, colladaContext, config);
 			boolean success = false;
 
 			if (validateFile != null)
@@ -543,7 +543,7 @@ public class ImpExp {
 			// set look & feel
 			javax.swing.UIManager.setLookAndFeel(javax.swing.UIManager.getSystemLookAndFeelClassName());
 			if (OSXAdapter.IS_MAC_OS_X) {
-				OSXAdapter.setDockIconImage(Toolkit.getDefaultToolkit().getImage(ImpExp.class.getResource("/org/citydb/gui/images/common/logo_small.png")));
+				OSXAdapter.setDockIconImage(Toolkit.getDefaultToolkit().getImage(ImpExpOld.class.getResource("/org/citydb/gui/images/common/logo_small.png")));
 				System.setProperty("apple.laf.useScreenMenuBar", "true");
 			}
 		} catch (Exception e) {

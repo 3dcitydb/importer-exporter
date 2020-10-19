@@ -29,7 +29,6 @@
 package org.citydb.cli;
 
 import org.citydb.ImpExpException;
-import org.citydb.ImpExpNew;
 import org.citydb.gui.components.SplashScreen;
 import org.citydb.gui.util.OSXAdapter;
 import org.citydb.plugin.CliCommand;
@@ -40,17 +39,18 @@ import javax.swing.*;
 import java.awt.*;
 
 @CommandLine.Command(
-        name = "gui",
+        name = GuiCommand.NAME,
         description = "Starts the graphical user interface.",
-        versionProvider = ImpExpNew.class
+        versionProvider = ImpExpCli.class
 )
 public class GuiCommand extends CliCommand implements StartupProgressListener {
+    public static final String NAME = "gui";
 
     @CommandLine.Option(names = "--no-splash", description = "Hide the splash screen during startup.")
     private boolean hideSplash;
 
     @CommandLine.ParentCommand
-    private ImpExpNew parent;
+    private ImpExpCli parent;
 
     private SplashScreen splashScreen;
 

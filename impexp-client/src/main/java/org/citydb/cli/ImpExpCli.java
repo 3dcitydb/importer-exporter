@@ -2,7 +2,7 @@
  * 3D City Database - The Open Source CityGML Database
  * http://www.3dcitydb.org/
  *
- * Copyright 2013 - 2019
+ * Copyright 2013 - 2020
  * Chair of Geoinformatics
  * Technical University of Munich, Germany
  * https://www.gis.bgu.tum.de/
@@ -25,319 +25,503 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.citydb.cli;
 
 import org.citydb.ImpExpException;
-import org.citydb.citygml.deleter.CityGMLDeleteException;
-import org.citydb.citygml.deleter.controller.Deleter;
-import org.citydb.citygml.exporter.CityGMLExportException;
-import org.citydb.citygml.exporter.controller.Exporter;
-import org.citydb.citygml.importer.CityGMLImportException;
-import org.citydb.citygml.importer.controller.Importer;
-import org.citydb.citygml.validator.ValidationException;
-import org.citydb.citygml.validator.controller.Validator;
+import org.citydb.ade.ADEExtension;
+import org.citydb.ade.ADEExtensionManager;
 import org.citydb.config.Config;
-import org.citydb.config.project.database.DBConnection;
-import org.citydb.config.project.database.DatabaseConfigurationException;
-import org.citydb.config.project.database.DatabaseSrs;
-import org.citydb.database.connection.DatabaseConnectionPool;
-import org.citydb.database.connection.DatabaseConnectionWarning;
+import org.citydb.config.ConfigUtil;
+import org.citydb.config.i18n.Language;
+import org.citydb.config.project.Project;
+import org.citydb.config.project.global.LanguageType;
+import org.citydb.config.project.global.LogFileMode;
+import org.citydb.config.project.global.LogLevel;
+import org.citydb.config.project.global.Logging;
+import org.citydb.database.DatabaseController;
 import org.citydb.database.schema.mapping.SchemaMapping;
-import org.citydb.database.version.DatabaseVersionException;
+import org.citydb.database.schema.mapping.SchemaMappingException;
+import org.citydb.database.schema.mapping.SchemaMappingValidationException;
+import org.citydb.database.schema.util.SchemaMappingUtil;
 import org.citydb.event.EventDispatcher;
+import org.citydb.event.global.EventType;
 import org.citydb.log.Logger;
-import org.citydb.modules.kml.controller.KmlExportException;
-import org.citydb.modules.kml.controller.KmlExporter;
+import org.citydb.plugin.CliCommand;
+import org.citydb.plugin.IllegalEventSourceChecker;
+import org.citydb.plugin.Plugin;
+import org.citydb.plugin.PluginException;
+import org.citydb.plugin.PluginManager;
+import org.citydb.plugin.cli.StartupProgressListener;
+import org.citydb.plugin.extension.config.ConfigExtension;
 import org.citydb.registry.ObjectRegistry;
 import org.citydb.util.ClientConstants;
+import org.citydb.util.CoreConstants;
+import org.citydb.util.InternalProxySelector;
+import org.citydb.util.PidFile;
 import org.citydb.util.Util;
-import org.citygml4j.builder.jaxb.CityGMLBuilder;
+import org.citygml4j.CityGMLContext;
+import org.citygml4j.builder.jaxb.CityGMLBuilderException;
+import org.citygml4j.model.citygml.ade.ADEException;
+import org.citygml4j.model.citygml.ade.binding.ADEContext;
+import picocli.CommandLine;
 
-import javax.xml.bind.JAXBContext;
-import java.io.File;
-import java.nio.file.InvalidPathException;
+import javax.xml.bind.JAXBException;
+import java.io.Console;
+import java.io.IOException;
+import java.net.ProxySelector;
+import java.nio.file.Files;
 import java.nio.file.Path;
-import java.sql.SQLException;
-import java.util.ArrayList;
+import java.nio.file.Paths;
+import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
+import java.util.ResourceBundle;
+import java.util.Scanner;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-public class ImpExpCli {
-	private final Logger log = Logger.getInstance();
-	private final DatabaseConnectionPool dbPool;
-	private final SchemaMapping schemaMapping;
-	private CityGMLBuilder cityGMLBuilder;
-	private JAXBContext jaxbKmlContext;
-	private JAXBContext jaxbColladaContext;
-	private Config config;
+@CommandLine.Command(
+        name = ClientConstants.CLI_NAME,
+        description = "Command-line interface for the 3D City Database.",
+        synopsisSubcommandLabel = "COMMAND",
+        versionProvider = ImpExpCli.class
+)
+public class ImpExpCli extends CliCommand implements CommandLine.IVersionProvider {
+    @CommandLine.Option(names = {"-c", "--config"}, scope = CommandLine.ScopeType.INHERIT, paramLabel = "<file>",
+            description = "Use configuration from this file.")
+    private Path configFile;
 
-	public ImpExpCli(JAXBContext jaxbKmlContext,
-			JAXBContext jaxbColladaContext,
-			Config config) {
-		this.jaxbKmlContext = jaxbKmlContext;
-		this.jaxbColladaContext = jaxbColladaContext;
-		this.config = config;
+    @CommandLine.Option(names = "--log-level", scope = CommandLine.ScopeType.INHERIT, paramLabel = "<level>",
+            description = "Log level: ${COMPLETION-CANDIDATES} (default: ${DEFAULT-VALUE}).")
+    private LogLevel logLevel = LogLevel.INFO;
 
-		dbPool = DatabaseConnectionPool.getInstance();
-		cityGMLBuilder = ObjectRegistry.getInstance().getCityGMLBuilder();
-		schemaMapping = ObjectRegistry.getInstance().getSchemaMapping();
-	}
+    @CommandLine.Option(names = "--log-file", scope = CommandLine.ScopeType.INHERIT, paramLabel = "<file>",
+            description = "Write log messages to the specified file.")
+    private Path logFile;
 
-	public boolean doImport(String importFiles) throws ImpExpException {
-		// prepare list of files to be validated
-		List<Path> files = getFiles(importFiles);
-		if (files.size() == 0)
-			throw new ImpExpException("Invalid list of files to be imported.");
+    @CommandLine.Option(names = "--pid-file", scope = CommandLine.ScopeType.INHERIT, paramLabel = "<file>",
+            description = "Create a file containing the current process ID.")
+    private Path pidFile;
 
-		initDBPool();
-		if (!dbPool.isConnected())
-			throw new ImpExpException("Connection to database could not be established.");
+    private final Logger log = Logger.getInstance();
+    private final PluginManager pluginManager = PluginManager.getInstance();
+    private final ADEExtensionManager adeManager = ADEExtensionManager.getInstance();
+    private final Util.URLClassLoader classLoader = new Util.URLClassLoader(Thread.currentThread().getContextClassLoader());
+    private final Config config = new Config();
 
-		log.info("Initializing database import...");
+    private StartupProgressListener progressListener;
+    private String commandLineString;
+    private String subCommandName;
+    private boolean startWithGuiAsDefault;
+    private boolean useDefaultConfiguration;
+    private boolean useDefaultLogLevel = true;
+    private boolean failOnADEExceptions = true;
 
-		config.getInternal().setImportFiles(files);
-		EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
-		Importer importer = new Importer(cityGMLBuilder, schemaMapping, config, eventDispatcher);
-		boolean success = false;
+    public static void main(String[] args) {
+        System.exit(new ImpExpCli().doMain(args));
+    }
 
-		try {
-			success = importer.doProcess();
-		} catch (CityGMLImportException e) {
-			throw new ImpExpException("CityGML import failed due to an internal error.", e);
-		} finally {
-			try {
-				eventDispatcher.flushEvents();
-			} catch (InterruptedException e) {
-				//
-			}
+    public int doMain(String[] args) {
+        try {
+            return process(args);
+        } catch (Exception e) {
+            logError(e);
+            return 1;
+        }
+    }
 
-			dbPool.disconnect();
-		}
+    public ImpExpCli withCLICommand(CliCommand command) {
+        pluginManager.registerCliCommand(command);
+        return this;
+    }
 
-		if (success)
-			log.info("Database import successfully finished.");
-		else
-			log.warn("Database import aborted.");
+    public ImpExpCli withPlugin(Plugin plugin) {
+        pluginManager.registerExternalPlugin(plugin);
+        return this;
+    }
 
-		return success;
-	}
+    public ImpExpCli withADEExtension(ADEExtension extension) {
+        if (extension.getBasePath() == null)
+            extension.setBasePath(Paths.get(""));
 
-	public boolean doValidate(String validateFiles) throws ImpExpException {
-		// prepare list of files to be validated
-		List<Path> files = getFiles(validateFiles);
-		if (files.size() == 0)
-			throw new ImpExpException("Invalid list of files to be validated.");
+        adeManager.loadExtension(extension);
+        return this;
+    }
 
-		log.info("Initializing data validation...");
+    public ImpExpCli withStartupProgressListener(StartupProgressListener progressListener) {
+        this.progressListener = progressListener;
+        return this;
+    }
 
-		config.getInternal().setImportFiles(files);
-		EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
-		Validator validator = new Validator(config, eventDispatcher);
-		boolean success = false;
+    public ImpExpCli startWithGuiAsDefault(boolean startWithGuiAsDefault) {
+        this.startWithGuiAsDefault = startWithGuiAsDefault;
+        return this;
+    }
 
-		try {
-			success = validator.doProcess();
-		} catch (ValidationException e) {
-			throw new ImpExpException("Data validation failed due to an internal error.", e);
-		} finally {
-			try {
-				eventDispatcher.flushEvents();
-			} catch (InterruptedException e) {
-				//
-			}
-		}
+    public ImpExpCli useDefaultConfiguration(boolean useDefaultConfiguration) {
+        this.useDefaultConfiguration = useDefaultConfiguration;
+        return this;
+    }
 
-		if (success)
-			log.info("Data validation finished.");
-		else
-			log.warn("Data validation aborted.");
+    public ImpExpCli failOnADEExceptions(boolean failOnADEExceptions) {
+        this.failOnADEExceptions = failOnADEExceptions;
+        return this;
+    }
 
-		return success;
-	}
+    private int process(String[] args) throws Exception {
+        CommandLine cmd = new CommandLine(this);
 
-	public boolean doExport(String exportFile) throws ImpExpException {
-		setExportFile(exportFile);
+        // add predefined commands
+        cmd.addSubcommand(new CommandLine.HelpCommand());
+        cmd.addSubcommand(new GuiCommand());
+        cmd.addSubcommand(new ExportCommand());
 
-		initDBPool();
-		if (!dbPool.isConnected())
-			throw new ImpExpException("Connection to database could not be established.");
+        try {
+            // load CLI commands from plugins
+            loadClasses(ClientConstants.IMPEXP_HOME.resolve(ClientConstants.PLUGINS_DIR), classLoader);
+            pluginManager.loadCliCommands(classLoader);
+            for (CliCommand command : pluginManager.getCliCommands()) {
+                cmd.addSubcommand(command);
+            }
+        } catch (IOException e) {
+            throw new ImpExpException("Failed to initialize CLI commands from plugins.", e);
+        }
 
-		log.info("Initializing database export...");
+        cmd.setCaseInsensitiveEnumValuesAllowed(true)
+                .setAbbreviatedSubcommandsAllowed(true)
+                .setExecutionStrategy(new CommandLine.RunAll());
 
-		EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
-		Exporter exporter = new Exporter(cityGMLBuilder, schemaMapping, config, eventDispatcher);
-		boolean success = false;
+        if (startWithGuiAsDefault) {
+            args = addGuiCommand(cmd, args);
+        }
 
-		try {
-			success = exporter.doProcess();
-		} catch (CityGMLExportException e) {
-			throw new ImpExpException("CityGML export failed due to an internal error.", e);
-		} finally {
-			try {
-				eventDispatcher.flushEvents();
-			} catch (InterruptedException e) {
-				//
-			}
+        try {
+            CommandLine.ParseResult parseResult = cmd.parseArgs(args);
+            List<CommandLine> commandLines = parseResult.asCommandLineList();
 
-			dbPool.disconnect();
-		}
+            // check for help options
+            for (CommandLine commandLine : commandLines) {
+                if (commandLine.isUsageHelpRequested() || commandLine.isVersionHelpRequested()) {
+                    return CommandLine.executeHelpRequest(parseResult);
+                }
+            }
 
-		if (success)
-			log.info("Database export successfully finished.");
-		else
-			log.warn("Database export aborted.");
+            // check for subcommand
+            if (!parseResult.hasSubcommand()) {
+                throw new CommandLine.ParameterException(cmd, "Missing required subcommand.");
+            }
 
-		return success;
-	}
+            for (CommandLine commandLine : commandLines) {
+                // check for user-defined log level
+                if (commandLine.getParseResult().hasMatchedOption("--log-level")) {
+                    useDefaultLogLevel = false;
+                }
 
-	public boolean doDelete() throws ImpExpException {
-		initDBPool();
-		if (!dbPool.isConnected())
-			throw new ImpExpException("Connection to database could not be established.");
+                // read password from keyboard
+                CommandLine.Model.OptionSpec passwordOption = commandLine.getParseResult().matchedOption("-p");
+                if (passwordOption != null && passwordOption.getValue().equals("")) {
+                    passwordOption.setValue(readPassword(commandLine.getParseResult()));
+                }
 
-		log.info("Initializing database delete...");
+                // preprocess commands
+                Object command = commandLine.getCommand();
+                if (command instanceof CliCommand) {
+                    ((CliCommand) command).preprocess();
+                }
+            }
 
-		EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
-		Deleter deleter = new Deleter(config, schemaMapping, eventDispatcher);
-		boolean success = false;
+            // set default configuration file if required
+            if (useDefaultConfiguration && configFile == null) {
+                configFile = CoreConstants.IMPEXP_DATA_DIR
+                        .resolve(ClientConstants.CONFIG_DIR)
+                        .resolve(ClientConstants.PROJECT_SETTINGS_FILE);
+            } else {
+                useDefaultConfiguration = false;
+            }
 
-		try {
-			success = deleter.doProcess();
-		} catch (CityGMLDeleteException e) {
-			throw new ImpExpException("CityGML delete failed due to an internal error.", e);
-		} finally {
-			try {
-				eventDispatcher.flushEvents();
-			} catch (InterruptedException e) {
-				//
-			}
+            log.setConsoleLogLevel(logLevel);
+            subCommandName = commandLines.get(1).getCommandName();
+            commandLineString = cmd.getCommandName() + " " + String.join(" ", args);
 
-			dbPool.disconnect();
-		}
+            // execute command
+            int exitCode = cmd.getExecutionStrategy().execute(parseResult);
 
-		if (success)
-			log.info("Database delete successfully finished.");
-		else
-			log.warn("Database delete aborted.");
+            return exitCode;
+        } catch (CommandLine.ParameterException e) {
+            cmd.getParameterExceptionHandler().handleParseException(e, args);
+            return 2;
+        } catch (CommandLine.ExecutionException e) {
+            logError(e.getCause());
+            return 1;
+        } finally {
+            log.close();
+        }
+    }
 
-		return success;
-	}
-	
-	public boolean doKmlExport(String kmlExportFile) throws ImpExpException {
-		setExportFile(kmlExportFile);
+    @Override
+    public Integer call() throws Exception {
+        log.info("Starting " + getClass().getPackage().getImplementationTitle() +
+                ", version " + this.getClass().getPackage().getImplementationVersion());
 
-		initDBPool();
-		if (!dbPool.isConnected())
-			throw new ImpExpException("Connection to database could not be established.");
+        boolean loadConfig = configFile != null;
+        int startupSteps = loadConfig ? 6 : 5;
+        int step = 1;
 
-		log.info("Initializing database export...");
+        // load plugins
+        logProgress("Loading plugins", step++, startupSteps);
+        loadPlugins();
 
-		EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
-		KmlExporter kmlExporter = new KmlExporter(jaxbKmlContext, jaxbColladaContext, schemaMapping, config, eventDispatcher);
-		boolean success = false;
-		
-		try {
-			success = kmlExporter.doProcess();
-		} catch (KmlExportException e) {
-			throw new ImpExpException("KML/COLLADA/glTF export failed due to an internal error.", e);
-		} finally {
-			try {
-				eventDispatcher.flushEvents();
-			} catch (InterruptedException e) {
-				//
-			}
+        // load database schema mapping
+        logProgress("Loading database schema mapping", step++, startupSteps);
+        loadSchemaMapping();
 
-			dbPool.disconnect();
-		}
+        // load ADE extensions
+        logProgress("Loading ADE extensions", step++, startupSteps);
+        loadADEExtensions();
 
-		if (success)
-			log.info("Database export successfully finished.");
-		else
-			log.warn("Database export aborted.");
+        // load CityGML and ADE contexts
+        logProgress("Loading CityGML and ADE contexts", step++, startupSteps);
+        createCityGMLBuilder();
 
-		return success;
-	}
+        // load configuration
+        if (loadConfig) {
+            logProgress("Loading project settings", step++, startupSteps);
+            loadConfig();
+        }
 
-	private void setExportFile(String exportFile) throws ImpExpException {
-		try {
-			config.getInternal().setExportFile(ClientConstants.WORKING_DIR.resolve(exportFile));
-		} catch (InvalidPathException e) {
-			throw new ImpExpException("'" + exportFile + "' is not a valid file.", e);
-		}
-	}
+        // initialize application environment
+        logProgress("Initializing application environment", step, startupSteps);
+        initializeEnvironment();
+        initializeLogging();
+        createPidFile();
 
-	public boolean doTestConnection() throws ImpExpException {
-		initDBPool();
-		if (!dbPool.isConnected())
-			throw new ImpExpException("Connection to database could not be established");
+        log.info("Executing '" + subCommandName + "' command.");
+        return 0;
+    }
 
-		dbPool.disconnect();
-		return true;
-	}
+    private void loadPlugins() throws ImpExpException {
+        pluginManager.loadPlugins(classLoader);
+        for (Plugin plugin : pluginManager.getExternalPlugins()) {
+            log.info("Initializing plugin " + plugin.getClass().getName());
+        }
 
-	private void initDBPool() throws ImpExpException {
-		// check active connection
-		DBConnection conn = config.getProject().getDatabase().getActiveConnection();
-		if (conn == null)
-			throw new ImpExpException("No valid database connection found in project settings.");
+        // load config classes from plugins
+        for (ConfigExtension<?> plugin : pluginManager.getExternalPlugins(ConfigExtension.class)) {
+            try {
+                ConfigUtil.getInstance().withConfigClass(pluginManager.getConfigClass(plugin));
+            } catch (PluginException e) {
+                throw new ImpExpException("Failed to initialize config context for plugin " + plugin.getClass().getName() + ".", e);
+            }
+        }
+    }
 
-		log.info("Connecting to database profile '" + conn.getDescription() + "'.");
+    private void loadSchemaMapping() throws ImpExpException {
+        try {
+            SchemaMapping schemaMapping = SchemaMappingUtil.getInstance().unmarshal(CoreConstants.CITYDB_SCHEMA_MAPPING_FILE);
+            ObjectRegistry.getInstance().setSchemaMapping(schemaMapping);
+        } catch (JAXBException | SchemaMappingException | SchemaMappingValidationException e) {
+            throw new ImpExpException("Failed to process 3DCityDB schema mapping file.", e);
+        }
+    }
 
-		try {
-			dbPool.connect(config);
-			log.info("Database connection established.");
-			dbPool.getActiveDatabaseAdapter().getConnectionMetaData().printToConsole();
+    private void loadADEExtensions() throws ImpExpException {
+        try {
+            loadClasses(ClientConstants.IMPEXP_HOME.resolve(ClientConstants.ADE_EXTENSIONS_DIR), classLoader);
+        } catch (IOException e) {
+            throw new ImpExpException("Failed to initialize ADE extension support.", e);
+        }
 
-			// log unsupported user-defined SRSs
-			for (DatabaseSrs refSys : config.getProject().getDatabase().getReferenceSystems()) {
-				if (!refSys.isSupported())
-					log.warn("Reference system '" + refSys.getDescription() + "' (SRID: " + refSys.getSrid() + ") is not supported.");
-			}
+        adeManager.loadExtensions(classLoader);
+        adeManager.loadSchemaMappings(ObjectRegistry.getInstance().getSchemaMapping());
+        for (ADEExtension extension : adeManager.getExtensions()) {
+            log.info("Initializing ADE extension " + extension.getClass().getName());
+        }
 
-			// print connection warnings
-			List<DatabaseConnectionWarning> warnings = dbPool.getActiveDatabaseAdapter().getConnectionWarnings();
-			if (!warnings.isEmpty()) {
-				for (DatabaseConnectionWarning warning : warnings)
-					log.warn(warning.getMessage());
-			}
-		} catch (DatabaseConfigurationException | SQLException e) {
-			throw new ImpExpException("Connection to database could not be established.", e);
-		} catch (DatabaseVersionException e) {
-			log.error(e.getMessage());
-			log.error("Supported versions are '" + Util.collection2string(e.getSupportedVersions(), ", ") + "'.");
-			throw new ImpExpException("Connection to database could not be established.");
-		}
-	}
+        if (adeManager.hasExceptions() && failOnADEExceptions) {
+            adeManager.logExceptions();
+            throw new ImpExpException("Failed to load ADE extensions.");
+        }
+    }
 
-	private List<Path> getFiles(String fileNames) {
-		List<Path> files = new ArrayList<>();
+    private void createCityGMLBuilder() throws ImpExpException {
+        try {
+            CityGMLContext context = CityGMLContext.getInstance();
+            for (ADEContext adeContext : adeManager.getADEContexts()) {
+                context.registerADEContext(adeContext);
+            }
 
-		for (String part : fileNames.split(";")) {
-			if (part == null || part.trim().isEmpty())
-				continue;
+            ObjectRegistry.getInstance().setCityGMLBuilder(context.createCityGMLBuilder(classLoader));
+        } catch (CityGMLBuilderException | ADEException e) {
+            throw new ImpExpException("Failed to initialize CityGML and ADE contexts.", e);
+        }
+    }
 
-			File file = new File(part.trim());
-			if (file.isDirectory()) {
-				files.add(file.toPath());
-				continue;
-			}
+    private void loadConfig() throws ImpExpException {
+        if (!configFile.isAbsolute()) {
+            configFile = ClientConstants.WORKING_DIR.resolve(configFile);
+        }
 
-			final String pathName = new File(file.getAbsolutePath()).getParent();
-			final String fileName = file.getName().replace("?", ".?").replace("*", ".*?");
+        try {
+            Object object = ConfigUtil.getInstance().unmarshal(configFile.toFile());
+            if (!(object instanceof Project)) {
+                throw new JAXBException("Failed to parse project settings.");
+            }
 
-			file = new File(pathName);
-			if (!file.exists()) {
-				log.error("'" + file.toString() + "' does not exist");
-				continue;
-			}
+            config.setProject((Project) object);
+        } catch (JAXBException | IOException e) {
+            if (useDefaultConfiguration) {
+                log.error("Failed to load configuration from file " + configFile + ".", e);
+                log.info("Using default configuration settings instead.");
+            } else {
+                throw new ImpExpException("Failed to load configuration from file " + configFile + ".", e);
+            }
+        }
 
-			File[] wildcardList = file.listFiles((dir, name) -> (name.matches(fileName)));
+        // propagate configuration to plugins
+        for (ConfigExtension<?> plugin : pluginManager.getExternalPlugins(ConfigExtension.class)) {
+            try {
+                pluginManager.propagatePluginConfig(plugin, config);
+            } catch (PluginException e) {
+                throw new ImpExpException("Failed to load configuration for plugin " + plugin.getClass().getName() + ".", e);
+            }
+        }
+    }
 
-			if (wildcardList != null && wildcardList.length != 0) {
-				for (File item : wildcardList)
-					files.add(item.toPath());
-			}
-		}
+    private void initializeEnvironment()  {
+        // create application-wide event dispatcher
+        EventDispatcher eventDispatcher = new EventDispatcher();
+        eventDispatcher.addEventHandler(EventType.DATABASE_CONNECTION_STATE, IllegalEventSourceChecker.getInstance());
+        eventDispatcher.addEventHandler(EventType.SWITCH_LOCALE, IllegalEventSourceChecker.getInstance());
+        ObjectRegistry.getInstance().setEventDispatcher(eventDispatcher);
 
-		return files;
-	}
+        // create database controller
+        ObjectRegistry.getInstance().setDatabaseController(new DatabaseController(config));
+
+        // set internal proxy selector as default selector
+        ProxySelector.setDefault(InternalProxySelector.getInstance(config));
+
+        // set internationalization
+        Locale locale = new Locale(config.getProject().getGlobal().getLanguage().value());
+        if (!Language.existsLanguagePack(locale)) {
+            config.getProject().getGlobal().setLanguage(LanguageType.EN);
+            locale = new Locale(LanguageType.EN.value());
+        }
+
+        Language.I18N = ResourceBundle.getBundle("org.citydb.config.i18n.language", locale);
+    }
+
+    private void initializeLogging() {
+        Logging logging = config.getProject().getGlobal().getLogging();
+
+        // set console log level
+        if (!useDefaultLogLevel) {
+            logging.getConsole().setLogLevel(logLevel);
+        } else if (!useDefaultConfiguration) {
+            log.setConsoleLogLevel(logging.getConsole().getLogLevel());
+        }
+
+        // overwrite log file settings in configuration
+        if (logFile != null) {
+            logging.getFile().setActive(true);
+            logging.getFile().setUseAlternativeLogFile(true);
+            logging.getFile().setAlternativeLogFile(logFile.normalize().toAbsolutePath().toString());
+            logging.getFile().setLogFileMode(LogFileMode.TRUNCATE);
+
+            if (!useDefaultLogLevel) {
+                logging.getFile().setLogLevel(logLevel);
+            }
+        }
+
+        // enable writing to log file
+        if (logging.getFile().isActive()) {
+            Path file = logging.getFile().isUseAlternativeLogFile() ?
+                    Paths.get(logging.getFile().getAlternativeLogFile()) :
+                    CoreConstants.IMPEXP_DATA_DIR.resolve(ClientConstants.LOG_DIR).resolve(log.getDefaultLogFileName());
+
+            log.setFileLogLevel(logging.getFile().getLogLevel());
+            if (log.appendLogFile(file, logging.getFile().getLogFileMode())) {
+                log.logToFile("*** Command line: " + commandLineString);
+            } else {
+                logging.getFile().setActive(false);
+                logging.getFile().setUseAlternativeLogFile(false);
+                log.detachLogFile();
+            }
+        }
+    }
+
+    private void createPidFile() throws ImpExpException {
+        if (pidFile != null) {
+            try {
+                log.debug("Creating PID file '" + pidFile.normalize().toAbsolutePath() + "'.");
+                PidFile.create(pidFile, true);
+            } catch (IOException e) {
+                throw new ImpExpException("Failed to create PID file.", e);
+            }
+        }
+    }
+
+    private void loadClasses(Path path, Util.URLClassLoader classLoader) throws IOException {
+        if (Files.exists(path)) {
+            try (Stream<Path> stream = Files.walk(path)
+                    .filter(Files::isRegularFile)
+                    .filter(file -> file.getFileName().toString().toLowerCase().endsWith(".jar"))) {
+                stream.forEach(classLoader::addPath);
+            }
+        }
+    }
+
+    private void logProgress(String message, int current, int maximum) {
+        log.info(message);
+        if (progressListener != null) {
+            progressListener.printMessage(message);
+            progressListener.nextStep(current, maximum);
+        }
+    }
+
+    private void logError(Throwable t) {
+        log.error("Aborting due to a fatal " + t.getClass().getName() + " exception.");
+        log.logStackTrace(t);
+    }
+
+    private String readPassword(CommandLine.ParseResult parseResult) {
+        String prompt = "Enter password for " + parseResult.matchedOptionValue("-u", "") +": ";
+        Console console = System.console();
+        if (console != null) {
+            char[] input = console.readPassword(prompt);
+            return input != null ? new String(input) : null;
+        } else {
+            System.out.print(prompt);
+            Scanner scanner = new Scanner(System.in);
+            return scanner.nextLine();
+        }
+    }
+
+    private String[] addGuiCommand(CommandLine cmd, String[] args) {
+        Set<String> subcommands = cmd.getSubcommands().keySet().stream()
+                .map(String::toLowerCase)
+                .collect(Collectors.toSet());
+
+        CommandLine.Model.CommandSpec commandSpec = cmd.getCommandSpec().mixins().get("mixinStandardHelpOptions");
+        for (String arg : args) {
+            if (subcommands.contains(arg.toLowerCase())
+                    || (commandSpec != null
+                    && commandSpec.findOption(arg) != null)) {
+                return args;
+            }
+        }
+
+        return Stream.concat(Stream.of(GuiCommand.NAME), Arrays.stream(args)).toArray(String[]::new);
+    }
+
+    @Override
+    public String[] getVersion() {
+        return new String[]{
+                getClass().getPackage().getImplementationTitle() +
+                        ", version " + this.getClass().getPackage().getImplementationVersion(),
+                "(C) 2013-" + LocalDate.now().getYear() + " " + getClass().getPackage().getImplementationVendor()
+        };
+    }
 }

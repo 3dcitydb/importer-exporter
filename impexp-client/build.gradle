@@ -79,7 +79,7 @@ jar {
 }
 
 application {
-    mainClass = 'org.citydb.ImpExp'
+    mainClass = 'org.citydb.ImpExpOld'
     applicationName = project.appCliName
     applicationDefaultJvmArgs = ['-Xms1G']
 
@@ -212,7 +212,7 @@ bintray {
 
 // just for developing the new CLI, delete afterwards
 task newCLI(type: CreateStartScripts) {
-    mainClass = 'org.citydb.ImpExpNew'
+    mainClass = 'org.citydb.cli.ImpExpCli'
     applicationName = 'impexp-new'
     defaultJvmOpts = ['-Xms1G']
     classpath = startScripts.classpath
