@@ -27,9 +27,14 @@
  */
 package org.citydb.util;
 
+import org.citydb.config.Config;
+import org.citydb.config.project.global.ProxyConfig;
+import org.citydb.event.EventDispatcher;
+import org.citydb.event.global.ProxyServerUnavailableEvent;
+import org.citydb.log.Logger;
+import org.citydb.registry.ObjectRegistry;
+
 import java.io.IOException;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.net.Authenticator;
 import java.net.InetSocketAddress;
 import java.net.PasswordAuthentication;
@@ -38,35 +43,23 @@ import java.net.ProxySelector;
 import java.net.SocketAddress;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.concurrent.locks.ReentrantLock;
-
-import org.citydb.config.Config;
-import org.citydb.config.project.global.ProxyConfig;
-import org.citydb.event.EventDispatcher;
-import org.citydb.event.global.ProxyServerUnavailableEvent;
-import org.citydb.log.Logger;
-import org.citydb.registry.ObjectRegistry;
 
 public class InternalProxySelector extends ProxySelector {
 	private static InternalProxySelector instance;
 	private final ReentrantLock mainLock = new ReentrantLock();
-
-	private final Logger LOG = Logger.getInstance();
+	private final Logger log = Logger.getInstance();
 	private final ProxySelector parent;
 	private final Config config;
 	private final EventDispatcher eventDispatcher;
-	private final int maxConnectAttempts = 3;
 
 	private InternalProxySelector(Config config) {
 		this.parent = ProxySelector.getDefault();
 		this.config = config;
 
-		Authenticator.setDefault(new InternalAuthenticator());
 		eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
+		setAuthentication();
 	}
 
 	public static synchronized InternalProxySelector getInstance(Config config) {
@@ -78,17 +71,10 @@ public class InternalProxySelector extends ProxySelector {
 
 	@Override
 	public List<Proxy> select(URI uri) {
-		if (uri == null)
-			throw new IllegalArgumentException("URI can't be null.");
-
-		List<Proxy> proxies = new ArrayList<Proxy>();
+		List<Proxy> proxies = new ArrayList<>();
 		ProxyConfig proxy = config.getProject().getGlobal().getProxies().getProxyForProtocol(uri.getScheme());
 
-		/*System.out.println(uri.getHost());
-		InetSocketAddress a = new InetSocketAddress(uri.getHost(), 0);
-		System.out.println(a.getHostName());*/
-		
-		if (proxy != null && proxy.isEnabled() && proxy.hasValidProxySettings())		
+		if (proxy != null && proxy.isEnabled() && proxy.hasValidProxySettings())
 			proxies.add(proxy.toProxy());
 		else if (parent != null)
 			proxies = parent.select(uri);
@@ -99,29 +85,26 @@ public class InternalProxySelector extends ProxySelector {
 	}
 
 	@Override
-	public void connectFailed(URI uri, SocketAddress sa, IOException ioe) {
-		if (uri == null || sa == null || ioe == null)
-			throw new IllegalArgumentException("Arguments can't be null.");
-
+	public void connectFailed(URI uri, SocketAddress socketAddress, IOException e) {
 		ProxyConfig proxy = config.getProject().getGlobal().getProxies().getProxyForProtocol(uri.getScheme());
-
 		if (proxy != null) {
 			if (proxy.isCopy())
 				proxy = proxy.getCopiedFrom();
 
 			InetSocketAddress proxyAddress = new InetSocketAddress(proxy.getHost(), proxy.getPort());
-			if (proxyAddress.equals(sa)) {
+			if (proxyAddress.equals(socketAddress)) {
 				final ReentrantLock lock = this.mainLock;
 				lock.lock();
-
 				try {
-					int connectAttempts = proxy.failed();					
+					int connectAttempts = proxy.failed();
+					int maxConnectAttempts = 3;
 					if (connectAttempts <= maxConnectAttempts)
-						LOG.warn("Could not connect to " + proxy.getType().toString() + " proxy server at " + proxy.getHost() + ":" + proxy.getPort() + ".");
+						log.warn("Could not connect to " + proxy.getType().toString() + " proxy server at " + proxy.getHost() + ":" + proxy.getPort() + ".");
 
 					if (connectAttempts == maxConnectAttempts) {
-						LOG.error("Failed " + maxConnectAttempts + " times to connect to " + proxy.getType().toString() + " proxy server.");
+						log.error("Failed " + maxConnectAttempts + " times to connect to " + proxy.getType().toString() + " proxy server.");
 						proxy.setEnabled(false);
+						Authenticator.setDefault(null);
 						eventDispatcher.triggerEvent(new ProxyServerUnavailableEvent(proxy, this));
 					}
 				} finally {
@@ -129,73 +112,26 @@ public class InternalProxySelector extends ProxySelector {
 				}
 			}
 		} else
-			parent.connectFailed(uri, sa, ioe);
+			parent.connectFailed(uri, socketAddress, e);
 	}
 
-	@SuppressWarnings("unchecked")
-	public void resetAuthenticationCache(ProxyConfig proxy) {
-		// the following is a hack to overcome a bug in Oracle's Java 6
-
-		try {
-			Class<?> containerClass = Class.forName("sun.net.www.protocol.http.AuthCacheValue");
-			Class<?> cacheClass = Class.forName("sun.net.www.protocol.http.AuthCacheImpl");
-			Class<?> authInfoClass = Class.forName("sun.net.www.protocol.http.AuthenticationInfo");
-
-			// static field holding the AuthCacheImpl cache
-			Field cacheField = containerClass.getDeclaredField("cache");
-			cacheField.setAccessible(true);
-			Object authCacheImplObj = cacheField.get(containerClass);
-
-			// field holding the authInfo entries
-			Field hashtableField = cacheClass.getDeclaredField("hashtable");
-			hashtableField.setAccessible(true);
-
-			// methods for querying authInfo information
-			Method getHostMethod = authInfoClass.getDeclaredMethod("getHost", (Class<?>[])null);
-			Method getPortMethod = authInfoClass.getDeclaredMethod("getPort", (Class<?>[])null);
-			Method removeFromCacheMethod = authInfoClass.getDeclaredMethod("removeFromCache", (Class<?>[])null);
-			getHostMethod.setAccessible(true);
-			getPortMethod.setAccessible(true);
-			removeFromCacheMethod.setAccessible(true);
-
-			HashMap<String, Object> hashtable = (HashMap<String, Object>)hashtableField.get(authCacheImplObj);
-			for (String key : hashtable.keySet()) {
-				if (key.startsWith("p")) {
-					LinkedList<Object> authInfos = (LinkedList<Object>)hashtable.get(key); 
-					ArrayList<Object> authInfosCopy = new ArrayList<Object>();				
-					ListIterator<Object> iter = authInfos.listIterator();
-					while (iter.hasNext())
-						authInfosCopy.add(iter.next());
-
-					for (Object authInfoObj : authInfosCopy) {	
-						String host = (String)getHostMethod.invoke(authInfoObj, (Object[])null);
-						int port = (Integer)getPortMethod.invoke(authInfoObj, (Object[])null);
-
-						if (proxy.getHost().equals(host) && proxy.getPort() == port)
-							removeFromCacheMethod.invoke(authInfoObj, (Object[])null);
+	public void setAuthentication() {
+		Authenticator.setDefault(new Authenticator() {
+			@Override
+			protected PasswordAuthentication getPasswordAuthentication() {
+				if (getRequestorType() == RequestorType.PROXY) {
+					ProxyConfig proxy = config.getProject().getGlobal().getProxies().getProxyForProtocol(getRequestingProtocol());
+					if (proxy != null
+							&& proxy.requiresAuthentication()
+							&& proxy.hasValidUserCredentials()
+							&& proxy.getHost().equals(getRequestingHost())
+							&& proxy.getPort() == getRequestingPort()) {
+						return new PasswordAuthentication(proxy.getUsername(), proxy.getInternalPassword().toCharArray());
 					}
 				}
+
+				return super.getPasswordAuthentication();
 			}
-
-		} catch (Exception e) {
-			Authenticator.setDefault(null);
-			Authenticator.setDefault(new InternalAuthenticator());
-		}
-	}
-
-	private final class InternalAuthenticator extends Authenticator {
-
-		@Override
-		protected PasswordAuthentication getPasswordAuthentication() {	
-			if (getRequestorType() == RequestorType.PROXY) {
-				ProxyConfig proxy = config.getProject().getGlobal().getProxies().getProxyForProtocol(getRequestingProtocol());
-				if (proxy != null && proxy.requiresAuthentication() && proxy.hasValidUserCredentials() &&
-						proxy.getHost().equals(getRequestingHost()) && proxy.getPort() == getRequestingPort()) {
-					return new PasswordAuthentication(proxy.getUsername(), proxy.getInternalPassword().toCharArray());				
-				}
-			}
-
-			return super.getPasswordAuthentication();
-		}
+		});
 	}
 }

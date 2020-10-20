@@ -27,38 +27,6 @@
  */
 package org.citydb.modules.preferences.gui.preferences;
 
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.text.DecimalFormat;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.swing.BorderFactory;
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.DefaultListModel;
-import javax.swing.JCheckBox;
-import javax.swing.JFormattedTextField;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JPasswordField;
-import javax.swing.JTextField;
-import javax.swing.ListSelectionModel;
-import javax.swing.border.TitledBorder;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.global.Proxies;
@@ -75,6 +43,17 @@ import org.citydb.log.Logger;
 import org.citydb.registry.ObjectRegistry;
 import org.citydb.util.InternalProxySelector;
 
+import javax.swing.*;
+import javax.swing.border.TitledBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import java.awt.*;
+import java.awt.event.ItemEvent;
+import java.text.DecimalFormat;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.List;
+
 @SuppressWarnings("serial")
 public class ProxyPanel extends AbstractPreferencesComponent implements EventHandler {
 	private final Logger LOG = Logger.getInstance();
@@ -85,9 +64,7 @@ public class ProxyPanel extends AbstractPreferencesComponent implements EventHan
 
 	private ProxyConfig currentProxy;
 	private ProxyConfig previousSingleProxy;
-
 	private JLabel configureLabel;
-	private JPanel proxyListPanel;
 	private JCheckBox useSingleProxy;
 
 	private JPanel proxySettingsPanel;
@@ -128,16 +105,16 @@ public class ProxyPanel extends AbstractPreferencesComponent implements EventHan
 	}
 
 	private void initGui() {
-		proxyList = new JList<ProxyConfig>();
+		proxyList = new JList<>();
 		proxyList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		renderer = new DisabledListCellRenderer();
 		proxyList.setCellRenderer(renderer);
-		proxyList.setModel(new DefaultListModel<ProxyConfig>());
-		listDecorator = new CheckBoxListDecorator<ProxyConfig>(proxyList);		
+		proxyList.setModel(new DefaultListModel<>());
+		listDecorator = new CheckBoxListDecorator<>(proxyList);
 
-		proxies = new ArrayList<ProxyConfig>(config.getProject().getGlobal().getProxies().getProxyList().size());
+		proxies = new ArrayList<>(config.getProject().getGlobal().getProxies().getProxyList().size());
 
-		proxyListPanel = new JPanel();
+		JPanel proxyListPanel = new JPanel();
 		proxySettingsPanel = new JPanel();
 		useSingleProxy = new JCheckBox();
 		useSingleProxy.setIconTextGap(10);
@@ -186,40 +163,29 @@ public class ProxyPanel extends AbstractPreferencesComponent implements EventHan
 
 		PopupMenuDecorator.getInstance().decorate(proxyHostText, proxyPortText, proxyUserText, proxyPasswordText);
 
-		proxyList.addListSelectionListener(new ListSelectionListener() {
-			public void valueChanged(ListSelectionEvent e) {
-				if (!e.getValueIsAdjusting()) {
-					if (useSingleProxy.isSelected() && proxyList.getSelectedIndex() != renderer.singleIndex) {
-						proxyList.setSelectedIndex(renderer.singleIndex);
-						return;
+		proxyList.addListSelectionListener(e -> {
+			if (!e.getValueIsAdjusting()) {
+				if (useSingleProxy.isSelected() && proxyList.getSelectedIndex() != renderer.singleIndex) {
+					proxyList.setSelectedIndex(renderer.singleIndex);
+					return;
+				}
+
+				ProxyConfig selectedProxy = proxyList.getSelectedValue();
+				if (selectedProxy != null) {
+					proxySettingsPanel.setBorder(BorderFactory.createTitledBorder(selectedProxy.toString()));
+					if (currentProxy != null && currentProxy != selectedProxy) {
+						setProxySettings(currentProxy);
+						loadProxySettings(selectedProxy);
+						setEnabledUserSettings();
 					}
 
-					ProxyConfig selectedProxy = (ProxyConfig)proxyList.getSelectedValue();
-					if (selectedProxy != null) {
-						proxySettingsPanel.setBorder(BorderFactory.createTitledBorder(selectedProxy.toString()));
-						if (currentProxy != null && currentProxy != selectedProxy) {
-							setProxySettings(currentProxy);
-							loadProxySettings(selectedProxy);
-							setEnabledUserSettings();
-						}
-
-						currentProxy = selectedProxy;
-					}
+					currentProxy = selectedProxy;
 				}
 			}
 		});
 
-		proxyPortText.addPropertyChangeListener(new PropertyChangeListener() {
-			public void propertyChange(PropertyChangeEvent evt) {
-				checkNonNegativeRange(proxyPortText, 0, 65535);
-			}
-		});
-
-		requiresAuthenticationBox.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				setEnabledUserSettings();
-			}
-		});
+		proxyPortText.addPropertyChangeListener(evt -> checkNonNegativeRange(proxyPortText, 0, 65535));
+		requiresAuthenticationBox.addActionListener(e -> setEnabledUserSettings());
 
 		proxyHostText.getDocument().addDocumentListener(new DocumentListener() {
 			private void setEnabled(boolean enable) {
@@ -241,30 +207,22 @@ public class ProxyPanel extends AbstractPreferencesComponent implements EventHan
 			}
 		});
 
-		useSingleProxy.addItemListener(new ItemListener() {
-			public void itemStateChanged(ItemEvent e) {
-				renderer.enable = e.getStateChange() != ItemEvent.SELECTED;
-				Proxies proxyConfig = config.getProject().getGlobal().getProxies();
+		useSingleProxy.addItemListener(e -> {
+			renderer.enable = e.getStateChange() != ItemEvent.SELECTED;
+			Proxies proxyConfig = config.getProject().getGlobal().getProxies();
 
-				if (!renderer.enable) {
-					renderer.singleIndex = proxies.indexOf(currentProxy);
-					proxyConfig.setSingleProxy(currentProxy.getType());
-					for (ProxyConfig proxy : proxies)
-						resetAuthenticationCache(proxy);
-				} else {
-					resetAuthenticationCache(currentProxy);
-					proxyConfig.unsetSingleProxy();
-				}
-
-				proxyList.repaint();
+			if (!renderer.enable) {
+				renderer.singleIndex = proxies.indexOf(currentProxy);
+				proxyConfig.setSingleProxy(currentProxy.getType());
+			} else {
+				proxyConfig.unsetSingleProxy();
 			}
+
+			proxyList.repaint();
 		});
 	}
 
 	private void initProxyList() {
-		for (ProxyConfig proxy : proxies)
-			resetAuthenticationCache(proxy);
-
 		proxies.clear();
 		proxies.addAll(config.getProject().getGlobal().getProxies().getProxyList());
 
@@ -307,14 +265,9 @@ public class ProxyPanel extends AbstractPreferencesComponent implements EventHan
 		proxyPasswordText.setEnabled(enabled);
 	}
 
-	private void resetAuthenticationCache(ProxyConfig proxy) {
-		if (proxy != null && proxy.hasValidProxySettings())
-			InternalProxySelector.getInstance(config).resetAuthenticationCache(proxy);
-	}
-
 	@Override
 	public void doTranslation() {
-		ProxyConfig proxy = (ProxyConfig)proxyList.getSelectedValue();
+		ProxyConfig proxy = proxyList.getSelectedValue();
 		proxySettingsPanel.setBorder(BorderFactory.createTitledBorder(proxy.toString()));
 
 		configureLabel.setText(Language.I18N.getString("pref.proxy.label.configure"));
@@ -343,8 +296,6 @@ public class ProxyPanel extends AbstractPreferencesComponent implements EventHan
 	}
 
 	public void setProxySettings(ProxyConfig proxy) {
-		resetAuthenticationCache(proxy);
-
 		proxy.setRequiresAuthentication(requiresAuthenticationBox.isSelected());
 		proxy.setHost(proxyHostText.getText().trim());
 		proxy.setPort(((Number)proxyPortText.getValue()).intValue());
@@ -372,8 +323,9 @@ public class ProxyPanel extends AbstractPreferencesComponent implements EventHan
 			useSingleProxy.setSelected(previousSingleProxy != null);
 		} else
 			loadProxySettings(currentProxy);
-		
+
 		setEnabledUserSettings();
+		InternalProxySelector.getInstance(config).setAuthentication();
 	}
 
 	@Override
@@ -381,6 +333,7 @@ public class ProxyPanel extends AbstractPreferencesComponent implements EventHan
 		setProxySettings(currentProxy);
 		disableInvalidProxies();
 		previousSingleProxy = config.getProject().getGlobal().getProxies().getSingleProxy();
+		InternalProxySelector.getInstance(config).setAuthentication();
 	}
 
 	@Override
@@ -404,7 +357,7 @@ public class ProxyPanel extends AbstractPreferencesComponent implements EventHan
 		LOG.error("Disabling " + proxy.getType().toString() + " proxy server settings in preferences.");
 	}
 
-	private final class DisabledListCellRenderer extends DefaultListCellRenderer { 
+	private static final class DisabledListCellRenderer extends DefaultListCellRenderer {
 		private boolean enable = true;
 		private int singleIndex = 0;
 		
@@ -412,10 +365,10 @@ public class ProxyPanel extends AbstractPreferencesComponent implements EventHan
 			boolean select = isSelected;
 			boolean focus = cellHasFocus;
 			if (!enable)
-				select = focus = index == singleIndex ? true : false;
+				select = focus = index == singleIndex;
 
 			super.getListCellRendererComponent(list, value, index, select, focus); 
-			this.setEnabled(index == singleIndex ? true : enable);
+			this.setEnabled(index == singleIndex || enable);
 			return this; 
 		} 
 	}
