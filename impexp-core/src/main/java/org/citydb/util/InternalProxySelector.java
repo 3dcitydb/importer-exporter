@@ -59,7 +59,7 @@ public class InternalProxySelector extends ProxySelector {
 		this.config = config;
 
 		eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
-		setAuthentication();
+		setDefaultAuthentication();
 	}
 
 	public static synchronized InternalProxySelector getInstance(Config config) {
@@ -115,7 +115,7 @@ public class InternalProxySelector extends ProxySelector {
 			parent.connectFailed(uri, socketAddress, e);
 	}
 
-	public void setAuthentication() {
+	public void setDefaultAuthentication() {
 		Authenticator.setDefault(new Authenticator() {
 			@Override
 			protected PasswordAuthentication getPasswordAuthentication() {
@@ -126,7 +126,7 @@ public class InternalProxySelector extends ProxySelector {
 							&& proxy.hasValidUserCredentials()
 							&& proxy.getHost().equals(getRequestingHost())
 							&& proxy.getPort() == getRequestingPort()) {
-						return new PasswordAuthentication(proxy.getUsername(), proxy.getInternalPassword().toCharArray());
+						return new PasswordAuthentication(proxy.getUsername(), proxy.getPassword().toCharArray());
 					}
 				}
 

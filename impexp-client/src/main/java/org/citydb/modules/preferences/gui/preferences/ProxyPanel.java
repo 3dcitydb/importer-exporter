@@ -95,7 +95,7 @@ public class ProxyPanel extends AbstractPreferencesComponent implements EventHan
 		if (((Number)proxyPortText.getValue()).intValue() != currentProxy.getPort()) return true;
 		if (!proxyUserText.getText().trim().equals(currentProxy.getUsername())) return true;
 		if (passwordCheck.isSelected() != currentProxy.isSavePassword()) return true;		
-		if (!String.valueOf(proxyPasswordText.getPassword()).equals(currentProxy.getInternalPassword())) return true;
+		if (!String.valueOf(proxyPasswordText.getPassword()).equals(currentProxy.getPassword())) return true;
 		if (previousSingleProxy != config.getProject().getGlobal().getProxies().getSingleProxy()) return true;
 
 		disableInvalidProxies();
@@ -286,13 +286,8 @@ public class ProxyPanel extends AbstractPreferencesComponent implements EventHan
 		proxyPortText.setValue(proxy.getPort());
 		proxyUserText.setText(proxy.getUsername());
 		passwordCheck.setSelected(proxy.isSavePassword());		
-		listDecorator.setCheckBoxSelected(proxies.indexOf(proxy), proxy.isEnabled());	
-
-		if (proxy.isSavePassword()) {
-			proxyPasswordText.setText(proxy.getExternalPassword());
-			proxy.setInternalPassword(proxy.getExternalPassword());
-		} else
-			proxyPasswordText.setText(proxy.getInternalPassword());
+		listDecorator.setCheckBoxSelected(proxies.indexOf(proxy), proxy.isEnabled());
+		proxyPasswordText.setText(proxy.getPassword());
 	}
 
 	public void setProxySettings(ProxyConfig proxy) {
@@ -300,15 +295,10 @@ public class ProxyPanel extends AbstractPreferencesComponent implements EventHan
 		proxy.setHost(proxyHostText.getText().trim());
 		proxy.setPort(((Number)proxyPortText.getValue()).intValue());
 		proxy.setUsername(proxyUserText.getText().trim());
-		proxy.setInternalPassword(String.valueOf(proxyPasswordText.getPassword()));
+		proxy.setPassword(String.valueOf(proxyPasswordText.getPassword()));
 		proxy.setSavePassword(passwordCheck.isSelected());
 		proxy.setEnabled(listDecorator.isCheckBoxSelected(proxies.indexOf(proxy)));
 		proxy.resetFailedConnectAttempts();
-
-		if (passwordCheck.isSelected()) 
-			proxy.setExternalPassword(String.valueOf(proxyPasswordText.getPassword()));
-		else
-			proxy.setExternalPassword("");
 	}
 
 	@Override
@@ -325,7 +315,7 @@ public class ProxyPanel extends AbstractPreferencesComponent implements EventHan
 			loadProxySettings(currentProxy);
 
 		setEnabledUserSettings();
-		InternalProxySelector.getInstance(config).setAuthentication();
+		InternalProxySelector.getInstance(config).setDefaultAuthentication();
 	}
 
 	@Override
@@ -333,7 +323,7 @@ public class ProxyPanel extends AbstractPreferencesComponent implements EventHan
 		setProxySettings(currentProxy);
 		disableInvalidProxies();
 		previousSingleProxy = config.getProject().getGlobal().getProxies().getSingleProxy();
-		InternalProxySelector.getInstance(config).setAuthentication();
+		InternalProxySelector.getInstance(config).setDefaultAuthentication();
 	}
 
 	@Override
