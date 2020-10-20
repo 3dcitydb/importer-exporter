@@ -87,7 +87,12 @@ import java.util.stream.Stream;
         name = ClientConstants.CLI_NAME,
         description = "Command-line interface for the 3D City Database.",
         synopsisSubcommandLabel = "COMMAND",
-        versionProvider = ImpExpCli.class
+        versionProvider = ImpExpCli.class,
+        subcommands = {
+                CommandLine.HelpCommand.class,
+                GuiCommand.class,
+                ExportCommand.class
+        }
 )
 public class ImpExpCli extends CliCommand implements CommandLine.IVersionProvider {
     @CommandLine.Option(names = {"-c", "--config"}, scope = CommandLine.ScopeType.INHERIT, paramLabel = "<file>",
@@ -110,6 +115,7 @@ public class ImpExpCli extends CliCommand implements CommandLine.IVersionProvide
     private final PluginManager pluginManager = PluginManager.getInstance();
     private final ADEExtensionManager adeManager = ADEExtensionManager.getInstance();
     private final Util.URLClassLoader classLoader = new Util.URLClassLoader(Thread.currentThread().getContextClassLoader());
+    private final Config config = new Config();
 
     private StartupProgressListener progressListener;
     private String commandLineString;
@@ -175,13 +181,12 @@ public class ImpExpCli extends CliCommand implements CommandLine.IVersionProvide
         return this;
     }
 
+    public Config getConfig() {
+        return config;
+    }
+
     private int process(String[] args) throws Exception {
         CommandLine cmd = new CommandLine(this);
-
-        // add predefined commands
-        cmd.addSubcommand(new CommandLine.HelpCommand());
-        cmd.addSubcommand(new GuiCommand());
-        cmd.addSubcommand(new ExportCommand());
 
         try {
             // load CLI commands from plugins
@@ -266,9 +271,6 @@ public class ImpExpCli extends CliCommand implements CommandLine.IVersionProvide
         log.info("Starting " + getClass().getPackage().getImplementationTitle() +
                 ", version " + this.getClass().getPackage().getImplementationVersion());
 
-        Config config = new Config();
-        ObjectRegistry.getInstance().setConfig(config);
-
         boolean loadConfig = configFile != null;
         if (progressListener != null) {
             progressListener.setProcessSteps(loadConfig ? 6 : 5);
@@ -293,13 +295,13 @@ public class ImpExpCli extends CliCommand implements CommandLine.IVersionProvide
         // load configuration
         if (loadConfig) {
             logProgress("Loading project settings");
-            loadConfig(config);
+            loadConfig();
         }
 
         // initialize application environment
         logProgress("Initializing application environment");
-        initializeEnvironment(config);
-        initializeLogging(config);
+        initializeEnvironment();
+        initializeLogging();
         createPidFile();
 
         log.info("Executing '" + subCommandName + "' command");
@@ -363,7 +365,7 @@ public class ImpExpCli extends CliCommand implements CommandLine.IVersionProvide
         }
     }
 
-    private void loadConfig(Config config) throws ImpExpException {
+    private void loadConfig() throws ImpExpException {
         if (!configFile.isAbsolute()) {
             configFile = ClientConstants.WORKING_DIR.resolve(configFile);
         }
@@ -394,7 +396,7 @@ public class ImpExpCli extends CliCommand implements CommandLine.IVersionProvide
         }
     }
 
-    private void initializeEnvironment(Config config)  {
+    private void initializeEnvironment()  {
         // create application-wide event dispatcher
         EventDispatcher eventDispatcher = new EventDispatcher();
         eventDispatcher.addEventHandler(EventType.DATABASE_CONNECTION_STATE, IllegalEventSourceChecker.getInstance());
@@ -408,16 +410,18 @@ public class ImpExpCli extends CliCommand implements CommandLine.IVersionProvide
         ProxySelector.setDefault(InternalProxySelector.getInstance(config));
 
         // set internationalization
-        Locale locale = new Locale(config.getProject().getGlobal().getLanguage().value());
-        if (!Language.existsLanguagePack(locale)) {
-            config.getProject().getGlobal().setLanguage(LanguageType.EN);
-            locale = new Locale(LanguageType.EN.value());
+        LanguageType language = config.getProject().getGlobal().getLanguage();
+        if (language != LanguageType.EN) {
+            Locale locale = new Locale(language.value());
+            if (Language.existsLanguagePack(locale)) {
+                Language.I18N = ResourceBundle.getBundle("org.citydb.config.i18n.language", locale);
+            } else {
+                config.getProject().getGlobal().setLanguage(LanguageType.EN);
+            }
         }
-
-        Language.I18N = ResourceBundle.getBundle("org.citydb.config.i18n.language", locale);
     }
 
-    private void initializeLogging(Config config) {
+    private void initializeLogging() {
         Logging logging = config.getProject().getGlobal().getLogging();
 
         // set console log level

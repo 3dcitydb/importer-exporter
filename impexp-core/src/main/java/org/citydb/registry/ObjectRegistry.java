@@ -28,7 +28,6 @@
 package org.citydb.registry;
 
 import org.citydb.ade.CityDBADEContext;
-import org.citydb.config.Config;
 import org.citydb.database.DatabaseController;
 import org.citydb.database.schema.mapping.SchemaMapping;
 import org.citydb.event.EventDispatcher;
@@ -52,7 +51,6 @@ public class ObjectRegistry {
 	}
 
 	private Map<String, Object> properties;
-	private Config config;
 	private EventDispatcher eventDispatcher;
 	private DatabaseController databaseController;
 	private CityGMLBuilder cityGMLBuilder;
@@ -95,17 +93,6 @@ public class ObjectRegistry {
 	public <T> T lookup(Class<T> type) {
 		Object object = lookup(type.getName());
 		return type.isInstance(object) ? type.cast(object) : null;
-	}
-
-	public Config getConfig() {
-		return config;
-	}
-
-	public void setConfig(Config config) {
-		if (this.config != null)
-			throw new IllegalArgumentException("Config is already registered.");
-
-		this.config = config;
 	}
 
 	public EventDispatcher getEventDispatcher() {
@@ -156,7 +143,6 @@ public class ObjectRegistry {
 		if (properties != null)
 			properties.clear();
 
-		config = null;
 		eventDispatcher = null;
 		databaseController = null;
 		cityGMLBuilder = null;

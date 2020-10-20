@@ -80,8 +80,7 @@ public class GuiCommand extends CliCommand implements StartupProgressListener {
 
     @Override
     public Integer call() throws Exception {
-        Config config = ObjectRegistry.getInstance().getConfig();
-        DatabaseController databaseController = ObjectRegistry.getInstance().getDatabaseController();
+        Config config = parent.getConfig();
 
         // load GUI configuration
         loadGuiConfig(config);
@@ -98,6 +97,7 @@ public class GuiCommand extends CliCommand implements StartupProgressListener {
 
         // create database plugin
         DatabasePlugin databasePlugin = new DatabasePlugin(impExpGui, config);
+        DatabaseController databaseController = ObjectRegistry.getInstance().getDatabaseController();
         databaseController.setConnectionViewHandler(databasePlugin.getConnectionViewHandler());
 
         // register internal plugins
