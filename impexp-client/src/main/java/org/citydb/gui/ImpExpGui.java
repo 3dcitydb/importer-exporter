@@ -92,16 +92,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.MissingResourceException;
+import java.util.Objects;
 import java.util.ResourceBundle;
 
 @SuppressWarnings("serial")
 public final class ImpExpGui extends JFrame implements ViewController, EventHandler {
 	private final Logger log = Logger.getInstance();
-	private final EventDispatcher eventDispatcher; 
-
 	private final Config config;
+	private final Path configFile;
 	private final PluginManager pluginManager;
 	private final DatabaseConnectionPool dbPool;
+	private final EventDispatcher eventDispatcher;
 	private final ConsoleTextPane consoleText;
 	private final StyledConsoleLogger consoleLogger;
 	private final PrintStream out = System.out;
@@ -113,7 +114,6 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 	private MenuBar menuBar;
 	private JTabbedPane menu;
 	private JSplitPane splitPane;
-
 	private JPanel console;
 	private JLabel consoleLabel;
 	private ConsolePopupMenuWrapper consolePopup;
@@ -121,17 +121,16 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 
 	private int tmpConsoleWidth;
 	private int activePosition;
-
 	private List<View> views;
 	private PreferencesPlugin preferencesPlugin;
 	private LanguageType currentLang;
 
-	public ImpExpGui(Config config) {
-		this.config = config;
+	public ImpExpGui(Config config, Path configFile) {
+		this.config = Objects.requireNonNull(config, "config cannot be null.");
+		this.configFile = Objects.requireNonNull(configFile, "configFile cannot be null.");
 
 		dbPool = DatabaseConnectionPool.getInstance();
 		pluginManager = PluginManager.getInstance();
-
 		eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
 		eventDispatcher.addEventHandler(EventType.DATABASE_CONNECTION_STATE, this);
 
@@ -464,15 +463,13 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 	}
 
 	public boolean saveProjectSettings() {
-		Path configDir = getConfigDir();
-		if (configDir == null)
+		if (!createConfigDir(configFile.getParent()))
 			return false;
 
 		try {
-			Path projectFile = configDir.resolve(ClientConstants.PROJECT_SETTINGS_FILE);
-			ConfigUtil.getInstance().marshal(config.getProject(), projectFile.toFile());
+			ConfigUtil.getInstance().marshal(config.getProject(), configFile.toFile());
 			return true;
-		} catch (JAXBException jaxbE) {
+		} catch (JAXBException e) {
 			errorMessage(Language.I18N.getString("common.dialog.error.io.title"),
 					Language.I18N.getString("common.dialog.error.io.general"));
 			return false;
@@ -480,11 +477,12 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 	}
 
 	private void saveGUISettings() {
-		Path configDir = getConfigDir();
-		if (configDir == null)
-			return;
+		Path guiConfigFile = CoreConstants.IMPEXP_DATA_DIR
+				.resolve(ClientConstants.CONFIG_DIR)
+				.resolve(ClientConstants.GUI_SETTINGS_FILE);
 
-		Path guiFile = configDir.resolve(ClientConstants.GUI_SETTINGS_FILE);
+		if (!createConfigDir(guiConfigFile.getParent()))
+			return;
 
 		// set window size
 		Rectangle rect = getBounds();
@@ -499,29 +497,25 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		consoleWindow.setSettings();
 
 		try {
-			ConfigUtil.getInstance().marshal(config.getGui(), guiFile.toFile());
+			ConfigUtil.getInstance().marshal(config.getGui(), guiConfigFile.toFile());
 		} catch (JAXBException jaxbE) {
 			errorMessage(Language.I18N.getString("common.dialog.error.io.title"), 
 					Language.I18N.getString("common.dialog.error.io.general"));
 		}
 	}
 
-	private Path getConfigDir() {
-		Path configDir = CoreConstants.IMPEXP_DATA_DIR.resolve(ClientConstants.CONFIG_DIR);
-		if (!Files.exists(configDir)) {
+	private boolean createConfigDir(Path dir) {
+		if (!Files.exists(dir)) {
 			try {
-				Files.createDirectories(configDir);
+				Files.createDirectories(dir);
 			} catch (IOException e) {
 				String text = Language.I18N.getString("common.dialog.error.io.configPath");
-				Object[] args = new Object[]{ configDir.toString() };
-				String result = MessageFormat.format(text, args);
-
-				errorMessage(Language.I18N.getString("common.dialog.error.io.title"), result);
-				return null;
+				errorMessage(Language.I18N.getString("common.dialog.error.io.title"), MessageFormat.format(text, dir.toString()));
+				return false;
 			}
 		}
 
-		return configDir;
+		return true;
 	}
 
 	@Override
@@ -557,6 +551,10 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		return consoleLogger;
 	}
 
+	public Path getConfigFile() {
+		return configFile;
+	}
+
 	public void disconnectFromDatabase() {
 		ObjectRegistry.getInstance().getDatabaseController().disconnect();
 	}
@@ -568,9 +566,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		} else {
 			setTitle(Language.I18N.getString("main.window.title") + " : " + dbPool.getActiveDatabaseAdapter().getConnectionDetails().getDescription());
 			String text = Language.I18N.getString("main.status.database.connected.label");
-			Object[] args = new Object[]{ dbPool.getActiveDatabaseAdapter().getDatabaseType().toString() };
-			String result = MessageFormat.format(text, args);
-			connectText.setText(result);
+			connectText.setText(MessageFormat.format(text, dbPool.getActiveDatabaseAdapter().getDatabaseType().toString()));
 		}
 	}
 

@@ -190,6 +190,10 @@ public class ImpExpCli extends CliCommand implements CommandLine.IVersionProvide
         return this;
     }
 
+    public Path getConfigFile() {
+        return configFile;
+    }
+
     public Config getConfig() {
         return config;
     }

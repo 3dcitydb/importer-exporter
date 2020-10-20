@@ -44,8 +44,6 @@ import org.citydb.plugin.PluginManager;
 import org.citydb.plugin.extension.config.ConfigExtension;
 import org.citydb.plugin.extension.config.PluginConfigEvent;
 import org.citydb.registry.ObjectRegistry;
-import org.citydb.util.ClientConstants;
-import org.citydb.util.CoreConstants;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -112,11 +110,9 @@ public class MenuProject extends JMenu {
             for (ConfigExtension<?> plugin : pluginManager.getExternalPlugins(ConfigExtension.class))
                 plugin.handleEvent(PluginConfigEvent.PRE_SAVE_CONFIG);
 
-            if (mainView.saveProjectSettings())
-                log.info("Settings successfully saved to config file '"
-                        + CoreConstants.IMPEXP_DATA_DIR
-                                .resolve(ClientConstants.CONFIG_DIR)
-                                .resolve(ClientConstants.PROJECT_SETTINGS_FILE) + "'.");
+            if (mainView.saveProjectSettings()) {
+				log.info("Settings successfully saved to config file '" + mainView.getConfigFile() + "'.");
+			}
         });
 
 		saveProjectAs.addActionListener(e -> {
