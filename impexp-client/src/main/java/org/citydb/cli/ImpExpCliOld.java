@@ -53,7 +53,6 @@ import org.citydb.util.ClientConstants;
 import org.citydb.util.Util;
 import org.citygml4j.builder.jaxb.CityGMLBuilder;
 
-import javax.xml.bind.JAXBContext;
 import java.io.File;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
@@ -66,15 +65,9 @@ public class ImpExpCliOld {
 	private final DatabaseConnectionPool dbPool;
 	private final SchemaMapping schemaMapping;
 	private CityGMLBuilder cityGMLBuilder;
-	private JAXBContext jaxbKmlContext;
-	private JAXBContext jaxbColladaContext;
 	private Config config;
 
-	public ImpExpCliOld(JAXBContext jaxbKmlContext,
-                        JAXBContext jaxbColladaContext,
-                        Config config) {
-		this.jaxbKmlContext = jaxbKmlContext;
-		this.jaxbColladaContext = jaxbColladaContext;
+	public ImpExpCliOld(Config config) {
 		this.config = config;
 
 		dbPool = DatabaseConnectionPool.getInstance();
@@ -232,7 +225,7 @@ public class ImpExpCliOld {
 		log.info("Initializing database export...");
 
 		EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
-		KmlExporter kmlExporter = new KmlExporter(jaxbKmlContext, jaxbColladaContext, schemaMapping, config, eventDispatcher);
+		KmlExporter kmlExporter = new KmlExporter(schemaMapping, config, eventDispatcher);
 		boolean success = false;
 		
 		try {

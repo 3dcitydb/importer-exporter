@@ -27,6 +27,7 @@
  */
 package org.citydb.modules.kml.gui.view;
 
+import org.citydb.ade.kmlExporter.ADEKmlExportExtension;
 import org.citydb.config.Config;
 import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.i18n.Language;
@@ -62,7 +63,6 @@ import org.citydb.gui.components.feature.FeatureTypeTree;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.log.Logger;
-import org.citydb.ade.kmlExporter.ADEKmlExportExtension;
 import org.citydb.modules.kml.controller.KmlExportException;
 import org.citydb.plugin.extension.view.ViewController;
 import org.citydb.plugin.extension.view.components.BoundingBoxPanel;
@@ -82,7 +82,6 @@ import org.jdesktop.swingx.prompt.PromptSupport.FocusBehavior;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
-import javax.xml.bind.JAXBContext;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -110,7 +109,6 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 	private static final int PREFERRED_HEIGHT = 780;
 
 	private final ReentrantLock mainLock = new ReentrantLock();
-	private final JAXBContext jaxbKmlContext, jaxbColladaContext;
 	private final ViewController viewController;
 	private final DatabaseController databaseController;
 	private final Config config;
@@ -172,9 +170,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 	private FeatureTypeTree typeTree;
 	private JButton exportButton = new JButton("");
 
-	public KmlExportPanel(ViewController viewController, JAXBContext jaxbKmlContext, JAXBContext jaxbColladaContext, Config config) {
-		this.jaxbKmlContext = jaxbKmlContext;
-		this.jaxbColladaContext = jaxbColladaContext;
+	public KmlExportPanel(ViewController viewController, Config config) {
 		this.viewController = viewController;
 		this.config = config;
 		
@@ -861,7 +857,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 			// get schema mapping
 			final SchemaMapping schemaMapping = ObjectRegistry.getInstance().getSchemaMapping();
 
-			org.citydb.modules.kml.controller.KmlExporter kmlExporter = new org.citydb.modules.kml.controller.KmlExporter(jaxbKmlContext, jaxbColladaContext, schemaMapping, config, eventDispatcher);
+			org.citydb.modules.kml.controller.KmlExporter kmlExporter = new org.citydb.modules.kml.controller.KmlExporter(schemaMapping, config, eventDispatcher);
 
 			exportDialog.getCancelButton().addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {

@@ -53,7 +53,6 @@ import org.citydb.util.CoreConstants;
 import picocli.CommandLine;
 
 import javax.swing.*;
-import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import java.awt.*;
 import java.io.IOException;
@@ -85,14 +84,6 @@ public class GuiCommand extends CliCommand implements StartupProgressListener {
         // load GUI configuration
         loadGuiConfig(config);
 
-        JAXBContext kmlContext, colladaContext;
-        try {
-            kmlContext = JAXBContext.newInstance("net.opengis.kml._2", getClass().getClassLoader());
-            colladaContext = JAXBContext.newInstance("org.collada._2005._11.colladaschema", getClass().getClassLoader());
-        } catch (JAXBException e) {
-            throw new ImpExpException("Failed to initialize KML/COLLADA context.", e);
-        }
-
         ImpExpGui impExpGui = new ImpExpGui(config);
 
         // create database plugin
@@ -103,7 +94,7 @@ public class GuiCommand extends CliCommand implements StartupProgressListener {
         // register internal plugins
         pluginManager.registerInternalPlugin(new CityGMLImportPlugin(impExpGui, config));
         pluginManager.registerInternalPlugin(new CityGMLExportPlugin(impExpGui, config));
-        pluginManager.registerInternalPlugin(new KMLExportPlugin(impExpGui, kmlContext, colladaContext, config));
+        pluginManager.registerInternalPlugin(new KMLExportPlugin(impExpGui, config));
         pluginManager.registerInternalPlugin(databasePlugin);
         pluginManager.registerInternalPlugin(new PreferencesPlugin(impExpGui, config));
 

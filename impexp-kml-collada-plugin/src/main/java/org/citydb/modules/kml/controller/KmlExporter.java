@@ -50,6 +50,7 @@ import net.opengis.kml._2.StyleMapType;
 import net.opengis.kml._2.StyleStateEnumType;
 import net.opengis.kml._2.StyleType;
 import net.opengis.kml._2.ViewRefreshModeEnumType;
+import org.citydb.ade.kmlExporter.ADEKmlExportExtensionManager;
 import org.citydb.concurrent.PoolSizeAdaptationStrategy;
 import org.citydb.concurrent.SingleWorkerPool;
 import org.citydb.concurrent.WorkerPool;
@@ -81,7 +82,6 @@ import org.citydb.event.global.ObjectCounterEvent;
 import org.citydb.event.global.StatusDialogMessage;
 import org.citydb.event.global.StatusDialogTitle;
 import org.citydb.log.Logger;
-import org.citydb.ade.kmlExporter.ADEKmlExportExtensionManager;
 import org.citydb.modules.kml.concurrent.KmlExportWorkerFactory;
 import org.citydb.modules.kml.database.ADEObject;
 import org.citydb.modules.kml.database.Bridge;
@@ -110,6 +110,7 @@ import org.citydb.query.filter.selection.operator.logical.LogicalOperationFactor
 import org.citydb.query.filter.tiling.Tile;
 import org.citydb.query.filter.tiling.Tiling;
 import org.citydb.query.filter.type.FeatureTypeFilter;
+import org.citydb.registry.ObjectRegistry;
 import org.citydb.util.ClientConstants;
 import org.citydb.util.Util;
 import org.citydb.writer.XMLWriterWorkerFactory;
@@ -150,14 +151,14 @@ import java.util.zip.ZipOutputStream;
 public class KmlExporter implements EventHandler {
 	private final Logger log = Logger.getInstance();
 
-	private final JAXBContext jaxbKmlContext;
-	private final JAXBContext jaxbColladaContext;
 	private final AbstractDatabaseAdapter databaseAdapter;
 	private final SchemaMapping schemaMapping;
 	private final Config config;
 	private final EventDispatcher eventDispatcher;
 
-	private ObjectFactory kmlFactory; 
+	private JAXBContext jaxbKmlContext;
+	private JAXBContext jaxbColladaContext;
+	private ObjectFactory kmlFactory;
 	private WorkerPool<KmlSplittingResult> kmlWorkerPool;
 	private SingleWorkerPool<SAXEventBuffer> writerPool;
 	private KmlSplitter kmlSplitter;
@@ -174,13 +175,7 @@ public class KmlExporter implements EventHandler {
 	private Map<Integer, Long> totalObjectCounter = new HashMap<>();
 	private long geometryCounter;
 
-	public KmlExporter (JAXBContext jaxbKmlContext,
-			JAXBContext jaxbColladaContext,
-			SchemaMapping schemaMapping,
-			Config config,
-			EventDispatcher eventDispatcher) {
-		this.jaxbKmlContext = jaxbKmlContext;
-		this.jaxbColladaContext = jaxbColladaContext;
+	public KmlExporter(SchemaMapping schemaMapping, Config config, EventDispatcher eventDispatcher) {
 		this.schemaMapping = schemaMapping;
 		this.config = config;
 		this.eventDispatcher = eventDispatcher;
@@ -194,6 +189,15 @@ public class KmlExporter implements EventHandler {
 	}
 
 	public boolean doProcess() throws KmlExportException {
+		// get JAXB contexts for KML and COLLADA
+		try {
+			log.debug("Initializing KML/COLLADA context.");
+			jaxbKmlContext = getKmlContext();
+			jaxbColladaContext = getColladaContext();
+		} catch (JAXBException e) {
+			throw new KmlExportException("Failed to initialize KML/COLLADA context.", e);
+		}
+
 		// adding listener
 		eventDispatcher.addEventHandler(EventType.OBJECT_COUNTER, this);
 		eventDispatcher.addEventHandler(EventType.GEOMETRY_COUNTER, this);
@@ -1710,16 +1714,10 @@ public class KmlExporter implements EventHandler {
 
 				if (interruptEvent.getCause() != null) {
 					Throwable cause = interruptEvent.getCause();
-
 					if (cause instanceof SQLException) {
-						Iterator<Throwable> iter = ((SQLException)cause).iterator();
-						log.error("A SQL error occurred: " + iter.next().getMessage());
-						while (iter.hasNext())
-							log.error("Cause: " + iter.next().getMessage());
+						log.error("A SQL error occurred.", cause);
 					} else {
-						log.error("An error occurred: " + cause.getMessage());
-						while ((cause = cause.getCause()) != null)
-							log.error(cause.getClass().getTypeName() + ": " + cause.getMessage());
+						log.error("An error occurred.", cause);
 					}
 				}
 
@@ -1738,5 +1736,25 @@ public class KmlExporter implements EventHandler {
 				if (lastTempFolder != null && lastTempFolder.exists()) deleteFolder(lastTempFolder); // just in case
 			}
 		}
+	}
+
+	private JAXBContext getKmlContext() throws JAXBException {
+		JAXBContext kmlContext = (JAXBContext) ObjectRegistry.getInstance().lookup("net.opengis.kml._2.JAXBContext");
+		if (kmlContext == null) {
+			kmlContext = JAXBContext.newInstance("net.opengis.kml._2", getClass().getClassLoader());
+			ObjectRegistry.getInstance().register("net.opengis.kml._2.JAXBContext", kmlContext);
+		}
+
+		return kmlContext;
+	}
+
+	private JAXBContext getColladaContext() throws JAXBException {
+		JAXBContext colladaContext = (JAXBContext) ObjectRegistry.getInstance().lookup("org.collada._2005._11.colladaschema.JAXBContext");
+		if (colladaContext == null) {
+			colladaContext = JAXBContext.newInstance("org.collada._2005._11.colladaschema", getClass().getClassLoader());
+			ObjectRegistry.getInstance().register("org.collada._2005._11.colladaschema.JAXBContext", colladaContext);
+		}
+
+		return colladaContext;
 	}
 }

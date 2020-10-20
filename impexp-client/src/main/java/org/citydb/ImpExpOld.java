@@ -77,7 +77,6 @@ import org.kohsuke.args4j.Option;
 import org.kohsuke.args4j.ParserProperties;
 
 import javax.swing.*;
-import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import java.awt.*;
 import java.io.IOException;
@@ -129,7 +128,6 @@ public class ImpExpOld {
 	private boolean noSplash;
 
 	private final Logger log = Logger.getInstance();
-	private JAXBContext kmlContext, colladaContext;
 	private PluginManager pluginManager = PluginManager.getInstance();
 	private ADEExtensionManager adeManager = ADEExtensionManager.getInstance();
 
@@ -304,14 +302,6 @@ public class ImpExpOld {
 		// set internal proxy selector as default
 		ProxySelector.setDefault(InternalProxySelector.getInstance(config));
 
-		// create JAXB contexts
-		try {
-			kmlContext = JAXBContext.newInstance("net.opengis.kml._2", this.getClass().getClassLoader());
-			colladaContext = JAXBContext.newInstance("org.collada._2005._11.colladaschema", this.getClass().getClassLoader());
-		} catch (JAXBException e) {
-			throw new ImpExpException("Application environment could not be initialized.", e);
-		}
-		
 		// read database schema mapping and register with ObjectRegistry
 		printInfoMessage("Loading database schema mapping");
 		SchemaMapping schemaMapping = null;
@@ -483,7 +473,7 @@ public class ImpExpOld {
 			// register internal plugins
 			pluginManager.registerInternalPlugin(new CityGMLImportPlugin(mainView, config));		
 			pluginManager.registerInternalPlugin(new CityGMLExportPlugin(mainView, config));
-			pluginManager.registerInternalPlugin(new KMLExportPlugin(mainView, kmlContext, colladaContext, config));
+			pluginManager.registerInternalPlugin(new KMLExportPlugin(mainView, config));
 			pluginManager.registerInternalPlugin(databasePlugin);
 			pluginManager.registerInternalPlugin(new PreferencesPlugin(mainView, config));
 
@@ -513,7 +503,7 @@ public class ImpExpOld {
 		}	
 
 		else {
-			ImpExpCliOld cmd = new ImpExpCliOld(kmlContext, colladaContext, config);
+			ImpExpCliOld cmd = new ImpExpCliOld(config);
 			boolean success = false;
 
 			if (validateFile != null)

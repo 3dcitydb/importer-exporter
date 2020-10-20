@@ -27,10 +27,6 @@
  */
 package org.citydb.modules.kml;
 
-import java.util.Locale;
-
-import javax.xml.bind.JAXBContext;
-
 import org.citydb.config.Config;
 import org.citydb.modules.kml.gui.preferences.KMLExportPreferences;
 import org.citydb.modules.kml.gui.view.KMLExportView;
@@ -41,12 +37,14 @@ import org.citydb.plugin.extension.view.View;
 import org.citydb.plugin.extension.view.ViewController;
 import org.citydb.plugin.extension.view.ViewExtension;
 
+import java.util.Locale;
+
 public class KMLExportPlugin implements InternalPlugin, ViewExtension, PreferencesExtension {
 	private KMLExportView view;
 	private KMLExportPreferences preferences;
 	
-	public KMLExportPlugin(ViewController viewController, JAXBContext kmlContext, JAXBContext colladaContext, Config config) {
-		view = new KMLExportView(viewController, kmlContext, colladaContext, config);
+	public KMLExportPlugin(ViewController viewController, Config config) {
+		view = new KMLExportView(viewController, config);
 		preferences = new KMLExportPreferences(viewController, config);
 	}
 		

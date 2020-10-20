@@ -27,21 +27,19 @@
  */
 package org.citydb.modules.kml.gui.view;
 
-import java.awt.Component;
-
-import javax.swing.Icon;
-import javax.xml.bind.JAXBContext;
-
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.plugin.extension.view.View;
 import org.citydb.plugin.extension.view.ViewController;
 
+import javax.swing.*;
+import java.awt.*;
+
 public class KMLExportView extends View {
 	private final KmlExportPanel component;
 	
-	public KMLExportView(ViewController viewController, JAXBContext jaxbKmlContext, JAXBContext jaxbColladaContext, Config config) {
-		component = new KmlExportPanel(viewController, jaxbKmlContext, jaxbColladaContext, config);
+	public KMLExportView(ViewController viewController, Config config) {
+		component = new KmlExportPanel(viewController, config);
 	}
 	
 	@Override
