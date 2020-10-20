@@ -28,14 +28,46 @@
 
 package org.citydb;
 
+import org.citydb.ade.ADEExtension;
 import org.citydb.cli.ImpExpCli;
+import org.citydb.plugin.CliCommand;
+import org.citydb.plugin.Plugin;
 
-public class ImpExp {
+public class ImpExpLauncher {
+    private final ImpExpCli impExpCli = new ImpExpCli();
+    private String[] args = new String[0];
 
     public static void main(String[] args) {
+        new ImpExpLauncher().withArgs(args).start();
+    }
+
+    public ImpExpLauncher withCliCommand(CliCommand command) {
+        impExpCli.withCliCommand(command);
+        return this;
+    }
+
+    public ImpExpLauncher withPlugin(Plugin plugin) {
+        impExpCli.withPlugin(plugin);
+        return this;
+    }
+
+    public ImpExpLauncher withADEExtension(ADEExtension extension) {
+        impExpCli.withADEExtension(extension);
+        return this;
+    }
+
+    public ImpExpLauncher withArgs(String[] args) {
+        if (args != null) {
+            this.args = args;
+        }
+
+        return this;
+    }
+
+    public void start() {
         int exitCode = new ImpExpCli()
                 .startWithGuiAsDefault(true)
-                .doMain(args);
+                .start(args);
 
         if (exitCode != 0) {
             System.exit(exitCode);

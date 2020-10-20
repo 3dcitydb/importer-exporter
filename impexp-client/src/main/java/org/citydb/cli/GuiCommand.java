@@ -88,9 +88,6 @@ public class GuiCommand extends CliCommand implements StartupProgressListener {
         ImpExpGui impExpGui = new ImpExpGui(config);
         initializeViewComponents(impExpGui, config);
 
-        // initialize GUI plugins
-        initializePlugins(impExpGui, config);
-
         parent.logProgress("Starting graphical user interface");
         SwingUtilities.invokeLater(impExpGui::invoke);
         if (!hideSplash) {
@@ -121,15 +118,14 @@ public class GuiCommand extends CliCommand implements StartupProgressListener {
         DatabaseController databaseController = ObjectRegistry.getInstance().getDatabaseController();
         databaseController.setConnectionViewHandler(databasePlugin.getConnectionViewHandler());
 
-        // register internal plugins
+        // register predefined internal plugins
         pluginManager.registerInternalPlugin(new CityGMLImportPlugin(impExpGui, config));
         pluginManager.registerInternalPlugin(new CityGMLExportPlugin(impExpGui, config));
         pluginManager.registerInternalPlugin(new KMLExportPlugin(impExpGui, config));
         pluginManager.registerInternalPlugin(databasePlugin);
         pluginManager.registerInternalPlugin(new PreferencesPlugin(impExpGui, config));
-    }
 
-    private void initializePlugins(ImpExpGui impExpGui, Config config) {
+        // initialize all GUI plugins
         Locale locale = new Locale(config.getProject().getGlobal().getLanguage().value());
         for (Plugin plugin : pluginManager.getPlugins()) {
             if (plugin instanceof ViewExtension) {

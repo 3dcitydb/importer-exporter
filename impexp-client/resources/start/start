@@ -24,4 +24,4 @@ while [ -h "$PRG" ] ; do
 done
 
 DIRNAME=`dirname "$PRG"`
-/usr/bin/env sh "$DIRNAME"/"$CLI_DIR"/"$CLI_NAME"
+/usr/bin/env sh "$DIRNAME"/"$CLI_DIR"/"$CLI_NAME gui"

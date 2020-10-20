@@ -128,13 +128,13 @@ public class ImpExpCli extends CliCommand implements CommandLine.IVersionProvide
     private boolean failOnADEExceptions = true;
 
     public static void main(String[] args) {
-        int exitCode = new ImpExpCli().doMain(args);
+        int exitCode = new ImpExpCli().start(args);
         if (exitCode != 0) {
             System.exit(exitCode);
         }
     }
 
-    public int doMain(String[] args) {
+    public int start(String[] args) {
         try {
             return process(args);
         } catch (Exception e) {
@@ -143,21 +143,30 @@ public class ImpExpCli extends CliCommand implements CommandLine.IVersionProvide
         }
     }
 
-    public ImpExpCli withCLICommand(CliCommand command) {
-        pluginManager.registerCliCommand(command);
+    public ImpExpCli withCliCommand(CliCommand command) {
+        if (command != null) {
+            pluginManager.registerCliCommand(command);
+        }
+
         return this;
     }
 
     public ImpExpCli withPlugin(Plugin plugin) {
-        pluginManager.registerExternalPlugin(plugin);
+        if (plugin != null) {
+            pluginManager.registerExternalPlugin(plugin);
+        }
+
         return this;
     }
 
     public ImpExpCli withADEExtension(ADEExtension extension) {
-        if (extension.getBasePath() == null)
-            extension.setBasePath(Paths.get(""));
+        if (extension != null) {
+            if (extension.getBasePath() == null)
+                extension.setBasePath(Paths.get(""));
 
-        adeManager.loadExtension(extension);
+            adeManager.loadExtension(extension);
+        }
+
         return this;
     }
 
@@ -507,13 +516,13 @@ public class ImpExpCli extends CliCommand implements CommandLine.IVersionProvide
     }
 
     private String[] addGuiCommand(CommandLine cmd, String[] args) {
-        Set<String> subcommands = cmd.getSubcommands().keySet().stream()
+        Set<String> subCommands = cmd.getSubcommands().keySet().stream()
                 .map(String::toLowerCase)
                 .collect(Collectors.toSet());
 
         CommandLine.Model.CommandSpec commandSpec = cmd.getCommandSpec().mixins().get("mixinStandardHelpOptions");
         for (String arg : args) {
-            if (subcommands.contains(arg.toLowerCase())
+            if (subCommands.contains(arg.toLowerCase())
                     || (commandSpec != null
                     && commandSpec.findOption(arg) != null)) {
                 return args;

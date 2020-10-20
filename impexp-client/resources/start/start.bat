@@ -14,4 +14,4 @@ set CLI_DIR=@cliDir@
 set DIRNAME=%~dp0
 if "%DIRNAME%" == "" set DIRNAME=.
 
-start /min cmd /c "%DIRNAME%%CLI_DIR%\%CLI_NAME%"
+start /min cmd /c "%DIRNAME%%CLI_DIR%\%CLI_NAME% gui"
