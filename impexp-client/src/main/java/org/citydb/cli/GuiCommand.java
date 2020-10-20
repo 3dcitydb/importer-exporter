@@ -84,30 +84,12 @@ public class GuiCommand extends CliCommand implements StartupProgressListener {
         // load GUI configuration
         loadGuiConfig(config);
 
+        // initialize predefined GUI components
         ImpExpGui impExpGui = new ImpExpGui(config);
+        initializeViewComponents(impExpGui, config);
 
-        // create database plugin
-        DatabasePlugin databasePlugin = new DatabasePlugin(impExpGui, config);
-        DatabaseController databaseController = ObjectRegistry.getInstance().getDatabaseController();
-        databaseController.setConnectionViewHandler(databasePlugin.getConnectionViewHandler());
-
-        // register internal plugins
-        pluginManager.registerInternalPlugin(new CityGMLImportPlugin(impExpGui, config));
-        pluginManager.registerInternalPlugin(new CityGMLExportPlugin(impExpGui, config));
-        pluginManager.registerInternalPlugin(new KMLExportPlugin(impExpGui, config));
-        pluginManager.registerInternalPlugin(databasePlugin);
-        pluginManager.registerInternalPlugin(new PreferencesPlugin(impExpGui, config));
-
-        // initialize plugins
-        Locale locale = new Locale(config.getProject().getGlobal().getLanguage().value());
-        for (Plugin plugin : pluginManager.getPlugins()) {
-            if (plugin instanceof ViewExtension) {
-                ((ViewExtension) plugin).initViewExtension(impExpGui, locale);
-                if (!hideSplash && !(plugin instanceof InternalPlugin)) {
-                    splashScreen.setMessage("Initializing plugin " + plugin.getClass().getName());
-                }
-            }
-        }
+        // initialize GUI plugins
+        initializePlugins(impExpGui, config);
 
         parent.logProgress("Starting graphical user interface");
         SwingUtilities.invokeLater(impExpGui::invoke);
@@ -130,6 +112,32 @@ public class GuiCommand extends CliCommand implements StartupProgressListener {
             }
         } catch (JAXBException | IOException e) {
             //
+        }
+    }
+
+    private void initializeViewComponents(ImpExpGui impExpGui, Config config) {
+        // create database plugin
+        DatabasePlugin databasePlugin = new DatabasePlugin(impExpGui, config);
+        DatabaseController databaseController = ObjectRegistry.getInstance().getDatabaseController();
+        databaseController.setConnectionViewHandler(databasePlugin.getConnectionViewHandler());
+
+        // register internal plugins
+        pluginManager.registerInternalPlugin(new CityGMLImportPlugin(impExpGui, config));
+        pluginManager.registerInternalPlugin(new CityGMLExportPlugin(impExpGui, config));
+        pluginManager.registerInternalPlugin(new KMLExportPlugin(impExpGui, config));
+        pluginManager.registerInternalPlugin(databasePlugin);
+        pluginManager.registerInternalPlugin(new PreferencesPlugin(impExpGui, config));
+    }
+
+    private void initializePlugins(ImpExpGui impExpGui, Config config) {
+        Locale locale = new Locale(config.getProject().getGlobal().getLanguage().value());
+        for (Plugin plugin : pluginManager.getPlugins()) {
+            if (plugin instanceof ViewExtension) {
+                ((ViewExtension) plugin).initViewExtension(impExpGui, locale);
+                if (!hideSplash && !(plugin instanceof InternalPlugin)) {
+                    splashScreen.setMessage("Initializing plugin " + plugin.getClass().getName());
+                }
+            }
         }
     }
 
