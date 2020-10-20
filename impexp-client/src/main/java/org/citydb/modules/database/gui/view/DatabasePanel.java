@@ -649,7 +649,7 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 		dbConnection.setSid(databaseText.getText());
 		dbConnection.setSchema((String)(schemaCombo.getSelectedIndex() != -1 ? schemaCombo.getSelectedItem() : schemaCombo.getEditor().getItem()));
 		dbConnection.setUser(userText.getText());
-		dbConnection.setPassword(new String(passwordText.getPassword()));
+		dbConnection.setPassword(String.valueOf(passwordText.getPassword()));
 		dbConnection.setSavePassword(passwordCheck.isSelected());
 	}
 
