@@ -37,33 +37,26 @@ import org.citydb.citygml.importer.controller.Importer;
 import org.citydb.citygml.validator.ValidationException;
 import org.citydb.citygml.validator.controller.Validator;
 import org.citydb.config.Config;
-import org.citydb.config.project.database.DBConnection;
-import org.citydb.config.project.database.DatabaseConfigurationException;
-import org.citydb.config.project.database.DatabaseSrs;
-import org.citydb.database.connection.DatabaseConnectionPool;
-import org.citydb.database.connection.DatabaseConnectionWarning;
+import org.citydb.database.DatabaseController;
 import org.citydb.database.schema.mapping.SchemaMapping;
-import org.citydb.database.version.DatabaseVersionException;
 import org.citydb.event.EventDispatcher;
 import org.citydb.log.Logger;
 import org.citydb.modules.kml.controller.KmlExportException;
 import org.citydb.modules.kml.controller.KmlExporter;
 import org.citydb.registry.ObjectRegistry;
 import org.citydb.util.ClientConstants;
-import org.citydb.util.Util;
 import org.citygml4j.builder.jaxb.CityGMLBuilder;
 
 import javax.xml.bind.JAXBContext;
 import java.io.File;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class ImpExpCli {
 	private final Logger log = Logger.getInstance();
-	private final DatabaseConnectionPool dbPool;
+	private final DatabaseController databaseController;
 	private final SchemaMapping schemaMapping;
 	private CityGMLBuilder cityGMLBuilder;
 	private JAXBContext jaxbKmlContext;
@@ -77,7 +70,7 @@ public class ImpExpCli {
 		this.jaxbColladaContext = jaxbColladaContext;
 		this.config = config;
 
-		dbPool = DatabaseConnectionPool.getInstance();
+		databaseController = ObjectRegistry.getInstance().getDatabaseController();
 		cityGMLBuilder = ObjectRegistry.getInstance().getCityGMLBuilder();
 		schemaMapping = ObjectRegistry.getInstance().getSchemaMapping();
 	}
@@ -88,9 +81,8 @@ public class ImpExpCli {
 		if (files.size() == 0)
 			throw new ImpExpException("Invalid list of files to be imported.");
 
-		initDBPool();
-		if (!dbPool.isConnected())
-			throw new ImpExpException("Connection to database could not be established.");
+		if (!databaseController.connect())
+			return false;
 
 		log.info("Initializing database import...");
 
@@ -110,7 +102,7 @@ public class ImpExpCli {
 				//
 			}
 
-			dbPool.disconnect();
+			databaseController.disconnect();
 		}
 
 		if (success)
@@ -157,9 +149,8 @@ public class ImpExpCli {
 	public boolean doExport(String exportFile) throws ImpExpException {
 		setExportFile(exportFile);
 
-		initDBPool();
-		if (!dbPool.isConnected())
-			throw new ImpExpException("Connection to database could not be established.");
+		if (!databaseController.connect())
+			return false;
 
 		log.info("Initializing database export...");
 
@@ -178,7 +169,7 @@ public class ImpExpCli {
 				//
 			}
 
-			dbPool.disconnect();
+			databaseController.disconnect();
 		}
 
 		if (success)
@@ -190,9 +181,8 @@ public class ImpExpCli {
 	}
 
 	public boolean doDelete() throws ImpExpException {
-		initDBPool();
-		if (!dbPool.isConnected())
-			throw new ImpExpException("Connection to database could not be established.");
+		if (!databaseController.connect())
+			return false;
 
 		log.info("Initializing database delete...");
 
@@ -211,7 +201,7 @@ public class ImpExpCli {
 				//
 			}
 
-			dbPool.disconnect();
+			databaseController.disconnect();
 		}
 
 		if (success)
@@ -225,9 +215,8 @@ public class ImpExpCli {
 	public boolean doKmlExport(String kmlExportFile) throws ImpExpException {
 		setExportFile(kmlExportFile);
 
-		initDBPool();
-		if (!dbPool.isConnected())
-			throw new ImpExpException("Connection to database could not be established.");
+		if (!databaseController.connect())
+			return false;
 
 		log.info("Initializing database export...");
 
@@ -246,7 +235,7 @@ public class ImpExpCli {
 				//
 			}
 
-			dbPool.disconnect();
+			databaseController.disconnect();
 		}
 
 		if (success)
@@ -266,45 +255,11 @@ public class ImpExpCli {
 	}
 
 	public boolean doTestConnection() throws ImpExpException {
-		initDBPool();
-		if (!dbPool.isConnected())
-			throw new ImpExpException("Connection to database could not be established");
-
-		dbPool.disconnect();
-		return true;
-	}
-
-	private void initDBPool() throws ImpExpException {
-		// check active connection
-		DBConnection conn = config.getProject().getDatabase().getActiveConnection();
-		if (conn == null)
-			throw new ImpExpException("No valid database connection found in project settings.");
-
-		log.info("Connecting to database profile '" + conn.getDescription() + "'.");
-
-		try {
-			dbPool.connect(config);
-			log.info("Database connection established.");
-			dbPool.getActiveDatabaseAdapter().getConnectionMetaData().printToConsole();
-
-			// log unsupported user-defined SRSs
-			for (DatabaseSrs refSys : config.getProject().getDatabase().getReferenceSystems()) {
-				if (!refSys.isSupported())
-					log.warn("Reference system '" + refSys.getDescription() + "' (SRID: " + refSys.getSrid() + ") is not supported.");
-			}
-
-			// print connection warnings
-			List<DatabaseConnectionWarning> warnings = dbPool.getActiveDatabaseAdapter().getConnectionWarnings();
-			if (!warnings.isEmpty()) {
-				for (DatabaseConnectionWarning warning : warnings)
-					log.warn(warning.getMessage());
-			}
-		} catch (DatabaseConfigurationException | SQLException e) {
-			throw new ImpExpException("Connection to database could not be established.", e);
-		} catch (DatabaseVersionException e) {
-			log.error(e.getMessage());
-			log.error("Supported versions are '" + Util.collection2string(e.getSupportedVersions(), ", ") + "'.");
-			throw new ImpExpException("Connection to database could not be established.");
+		if (databaseController.connect()) {
+			databaseController.disconnect();
+			return true;
+		} else {
+			return false;
 		}
 	}
 

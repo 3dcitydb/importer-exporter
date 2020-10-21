@@ -34,13 +34,11 @@ import org.citydb.citygml.validator.controller.Validator;
 import org.citydb.config.Config;
 import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.i18n.Language;
-import org.citydb.config.project.database.DatabaseConfigurationException;
 import org.citydb.config.project.global.LogLevel;
 import org.citydb.config.project.importer.ImportFilter;
 import org.citydb.config.project.query.filter.counter.CounterFilter;
 import org.citydb.database.DatabaseController;
 import org.citydb.database.schema.mapping.SchemaMapping;
-import org.citydb.database.version.DatabaseVersionException;
 import org.citydb.event.Event;
 import org.citydb.event.EventDispatcher;
 import org.citydb.event.EventHandler;
@@ -80,7 +78,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -337,14 +334,8 @@ public class ImportPanel extends JPanel implements EventHandler {
 					return;				
 			}
 
-			if (!databaseController.isConnected()) {
-				try {
-					boolean isConnected = databaseController.connect(true);
-					if (!isConnected)
-						return;
-				} catch (DatabaseConfigurationException | DatabaseVersionException | SQLException e) {
-					return;
-				}
+			if (!databaseController.connect()) {
+				return;
 			}
 
 			viewController.setStatusText(Language.I18N.getString("main.status.import.label"));

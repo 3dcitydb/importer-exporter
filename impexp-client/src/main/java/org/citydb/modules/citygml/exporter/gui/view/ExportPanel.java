@@ -32,7 +32,6 @@ import org.citydb.citygml.exporter.controller.Exporter;
 import org.citydb.config.Config;
 import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.i18n.Language;
-import org.citydb.config.project.database.DatabaseConfigurationException;
 import org.citydb.config.project.database.DatabaseSrs;
 import org.citydb.config.project.exporter.SimpleQuery;
 import org.citydb.config.project.exporter.SimpleTiling;
@@ -44,7 +43,6 @@ import org.citydb.config.project.query.filter.counter.CounterFilter;
 import org.citydb.config.project.query.simple.SimpleSelectionFilter;
 import org.citydb.database.DatabaseController;
 import org.citydb.database.schema.mapping.SchemaMapping;
-import org.citydb.database.version.DatabaseVersionException;
 import org.citydb.event.Event;
 import org.citydb.event.EventDispatcher;
 import org.citydb.event.EventHandler;
@@ -82,7 +80,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -369,14 +366,8 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 					query.getTiling().setTilingOptions(config.getProject().getExporter().getSimpleQuery().getBboxFilter().getTilingOptions());
 			}
 
-			if (!databaseController.isConnected()) {
-				try {
-					boolean isConnected = databaseController.connect(true);
-					if (!isConnected)
-						return;
-				} catch (DatabaseConfigurationException | DatabaseVersionException | SQLException e) {
-					return;
-				}
+			if (!databaseController.connect()) {
+				return;
 			}
 
 			viewController.setStatusText(Language.I18N.getString("main.status.export.label"));

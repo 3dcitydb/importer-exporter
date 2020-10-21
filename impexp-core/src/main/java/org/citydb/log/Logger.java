@@ -113,7 +113,7 @@ public class Logger {
 		if (e != null) {
 			do {
 				if (e.getMessage() != null)
-					log(level, "Cause: " + e.getClass().getName() + ": " + e.getMessage());
+					log(level, "Caused by: " + e.getClass().getName() + ": " + e.getMessage());
 			} while ((e = e.getCause()) != null);
 		}
 	}

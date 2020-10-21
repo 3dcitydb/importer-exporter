@@ -27,16 +27,16 @@
  */
 package org.citydb.database.connection;
 
-import java.sql.SQLException;
-
 import org.citydb.config.project.database.DatabaseConfigurationException;
 import org.citydb.database.version.DatabaseVersionException;
 
+import java.sql.SQLException;
+
 public interface ConnectionViewHandler {
 	void commitConnectionDetails();
-	void printConnectionState(ConnectionState state);
-	void printError(DatabaseConfigurationException e, boolean showErrorDialog);
-	void printError(DatabaseVersionException e, boolean showErrorDialog);
-	void printError(SQLException e, boolean showErrorDialog);
-	int printWarning(DatabaseConnectionWarning warning, boolean showWarningDialog);
+	void showConnectionStatus(ConnectionState state);
+	void showError(DatabaseConfigurationException e);
+	void showError(DatabaseVersionException e);
+	void showError(SQLException e);
+	boolean showWarning(DatabaseConnectionWarning warning);
 }
