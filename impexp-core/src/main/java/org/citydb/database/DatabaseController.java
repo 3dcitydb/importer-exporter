@@ -70,7 +70,7 @@ public class DatabaseController implements ConnectionManager {
 
 	public synchronized boolean connect(boolean suppressDialog) {
 		if (!connectionPool.isConnected()) {
-			// request to commit connection detail
+			// request to commit connection details
 			if (viewHandler != null) {
 				viewHandler.commitConnectionDetails();
 			}
