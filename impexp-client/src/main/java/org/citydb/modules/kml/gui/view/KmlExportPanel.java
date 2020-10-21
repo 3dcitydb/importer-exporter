@@ -33,7 +33,6 @@ import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.database.DBConnection;
 import org.citydb.config.project.database.Database;
-import org.citydb.config.project.database.DatabaseConfigurationException;
 import org.citydb.config.project.database.Workspace;
 import org.citydb.config.project.global.LogLevel;
 import org.citydb.config.project.kmlExporter.ADEPreference;
@@ -49,7 +48,6 @@ import org.citydb.config.project.query.filter.selection.id.ResourceIdOperator;
 import org.citydb.config.project.query.filter.type.FeatureTypeFilter;
 import org.citydb.database.DatabaseController;
 import org.citydb.database.schema.mapping.SchemaMapping;
-import org.citydb.database.version.DatabaseVersionException;
 import org.citydb.event.Event;
 import org.citydb.event.EventDispatcher;
 import org.citydb.event.EventHandler;
@@ -831,14 +829,8 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 				}
 			}
 
-			if (!databaseController.isConnected()) {
-				try {
-					boolean isConnected = databaseController.connect(true);
-					if (!isConnected)
-						return;
-				} catch (DatabaseConfigurationException | DatabaseVersionException | SQLException e) {
-					return;
-				}				
+			if (!databaseController.connect()) {
+				return;
 			}
 
 			viewController.setStatusText(Language.I18N.getString("main.status.kmlExport.label"));
@@ -1040,11 +1032,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 								connectConfirm,
 								Language.I18N.getString("pref.kmlexport.connectDialog.title"),
 								JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-					try {
-						databaseController.connect(true);
-					} catch (DatabaseConfigurationException | DatabaseVersionException e) {
-						//
-					}
+					databaseController.connect();
 				}
 
 				if (databaseController.isConnected()) {

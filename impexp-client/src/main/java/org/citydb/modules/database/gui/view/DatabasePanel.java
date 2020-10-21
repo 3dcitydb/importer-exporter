@@ -32,7 +32,6 @@ import org.citydb.config.i18n.Language;
 import org.citydb.config.project.database.DBConnection;
 import org.citydb.config.project.database.Database;
 import org.citydb.config.project.database.DatabaseConfigurationException;
-import org.citydb.config.project.database.DatabaseSrs;
 import org.citydb.config.project.database.DatabaseType;
 import org.citydb.database.DatabaseController;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
@@ -54,7 +53,6 @@ import org.citydb.plugin.extension.view.ViewController;
 import org.citydb.plugin.extension.view.ViewEvent;
 import org.citydb.plugin.extension.view.ViewListener;
 import org.citydb.registry.ObjectRegistry;
-import org.citydb.util.Util;
 import org.jdesktop.swingx.JXTextField;
 import org.jdesktop.swingx.combobox.JXTextFieldComboBoxEditor;
 import org.jdesktop.swingx.prompt.PromptSupport.FocusBehavior;
@@ -272,7 +270,7 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 			databaseTypeCombo.addItem(type);
 
 		portText.addPropertyChangeListener(e -> {
-			if (portText.getValue() != null) {
+			if (portText.getValue() == null) {
 				DatabaseType type = (DatabaseType) databaseTypeCombo.getSelectedItem();
 				portText.setValue(type == DatabaseType.POSTGIS ? 5432 : 1521);
 			}
@@ -335,9 +333,9 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 						schemaCombo.setPopupVisible(true);
 					}
 				} catch (SQLException e) {
-					printError(e, true);
+					showError(e);
 				} catch (DatabaseConfigurationException e) {
-					printError(e, true);
+					showError(e);
 				}
 
 				return null;
@@ -449,9 +447,8 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 	public void connect(boolean showErrorDialog) throws DatabaseConfigurationException, DatabaseVersionException, SQLException {
 		final ReentrantLock lock = this.mainLock;
 		lock.lock();
-
 		try {
-			databaseController.connect(true);
+			databaseController.connect();
 		} finally {
 			lock.unlock();
 		}
@@ -460,7 +457,6 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 	public void disconnect() {
 		final ReentrantLock lock = this.mainLock;
 		lock.lock();
-
 		try {
 			databaseController.disconnect();
 		} finally {
@@ -474,127 +470,97 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 	}
 
 	@Override
-	public void printConnectionState(ConnectionState state) {
-		DBConnection conn = config.getProject().getDatabase().getActiveConnection();			
-
+	public void showConnectionStatus(ConnectionState state) {
 		switch (state) {
-		case INIT_CONNECT:
-			viewController.setStatusText(Language.I18N.getString("main.status.database.connect.label"));
-			log.info("Connecting to database profile '" + conn.getDescription() + "'.");
-			break;
-		case FINISH_CONNECT:
-			if (databaseController.isConnected()) {
-				log.info("Database connection established.");
-				databaseController.getActiveDatabaseAdapter().getConnectionMetaData().printToConsole();
-
-				// log unsupported user-defined SRSs
-				for (DatabaseSrs refSys : config.getProject().getDatabase().getReferenceSystems()) {
-					if (!refSys.isSupported())
-						log.warn("Reference system '" + refSys.getDescription() + "' (SRID: " + refSys.getSrid() + ") is not supported.");
-				}					
-			}
-
-			viewController.setStatusText(Language.I18N.getString("main.status.ready.label"));	
-			break;
-		case INIT_DISCONNECT:
-			viewController.setStatusText(Language.I18N.getString("main.status.database.disconnect.label"));
-			break;
-		case FINISH_DISCONNECT:
-			log.info("Disconnected from database.");
-			viewController.setStatusText(Language.I18N.getString("main.status.ready.label"));
-			break;
+			case INIT_CONNECT:
+				viewController.setStatusText(Language.I18N.getString("main.status.database.connect.label"));
+				break;
+			case INIT_DISCONNECT:
+				viewController.setStatusText(Language.I18N.getString("main.status.database.disconnect.label"));
+				break;
+			case FINISH_CONNECT:
+			case FINISH_DISCONNECT:
+				viewController.setStatusText(Language.I18N.getString("main.status.ready.label"));
+				break;
 		}
 	}
 
 	@Override
-	public void printError(DatabaseConfigurationException e, boolean showErrorDialog) {
-		if (showErrorDialog)
-			viewController.errorMessage(Language.I18N.getString("db.dialog.error.conn.title"), e.getMessage());
-		else
-			log.error(e.getMessage());
-
-		log.error("Connection to database could not be established.");
-		viewController.setStatusText(Language.I18N.getString("main.status.ready.label"));
-	}
-
-	@Override
-	public void printError(DatabaseVersionException e, boolean showErrorDialog) {
-		if (showErrorDialog)
-			viewController.errorMessage(Language.I18N.getString("db.dialog.error.version.title"), e.getFormattedMessage());
-		else {
-			log.error(e.getMessage());
-			log.error("Supported versions are '" + Util.collection2string(e.getSupportedVersions(), ", ") + "'.");
+	public void showError(DatabaseConfigurationException e) {
+		String message;
+		switch (e.getReason()) {
+			case MISSING_USERNAME:
+				message = Language.I18N.getString("db.dialog.error.conn.user");
+				break;
+			case MISSING_HOSTNAME:
+				message = Language.I18N.getString("db.dialog.error.conn.server");
+				break;
+			case MISSING_PORT:
+				message = Language.I18N.getString("db.dialog.error.conn.port");
+				break;
+			case MISSING_DB_NAME:
+				message = Language.I18N.getString("db.dialog.error.conn.sid");
+				break;
+			default:
+				message = e.getMessage();
 		}
 
-		log.error("Connection to database could not be established.");
-		viewController.setStatusText(Language.I18N.getString("main.status.ready.label"));
+		viewController.errorMessage(Language.I18N.getString("db.dialog.error.conn.title"), message);
 	}
 
 	@Override
-	public void printError(SQLException e, boolean showErrorDialog) {
-		if (showErrorDialog) {
-			String text = Language.I18N.getString("db.dialog.error.openConn");
-			Object[] args = new Object[]{ e.getMessage().replaceAll("\\n", "") };
-			String result = MessageFormat.format(text, args);					
-
-			viewController.errorMessage(Language.I18N.getString("common.dialog.error.db.title"), result);
-		} else if (e.getMessage() != null)
-			log.error(e.getMessage());
-
-		log.error("Connection to database could not be established.");
-		log.error("Check the following stack trace for details:");
-		log.logStackTrace(e);
-
-		viewController.setStatusText(Language.I18N.getString("main.status.ready.label"));	
+	public void showError(DatabaseVersionException e) {
+		viewController.errorMessage(Language.I18N.getString("db.dialog.error.version.title"), e.getFormattedMessage());
 	}
 
 	@Override
-	public int printWarning(DatabaseConnectionWarning warning, boolean showWarningDialog) {
+	public void showError(SQLException e) {
+		String text = Language.I18N.getString("db.dialog.error.openConn");
+		viewController.errorMessage(Language.I18N.getString("common.dialog.error.db.title"),
+				MessageFormat.format(text, e.getMessage().replaceAll("\\n", "")));
+	}
+
+	@Override
+	public boolean showWarning(DatabaseConnectionWarning warning) {
 		int option = JOptionPane.OK_OPTION;
 
-		if (showWarningDialog) {
-			if (!(warning.getType() instanceof ConnectionWarningType)) {
-				String text = Language.I18N.getString("db.dialog.warn.general");
-				Object[] args = new Object[]{ warning.getMessage() };
-				String result = MessageFormat.format(text, args);
+		if (!(warning.getType() instanceof ConnectionWarningType)) {
+			String text = Language.I18N.getString("db.dialog.warn.general");
+			option = viewController.warnMessage(Language.I18N.getString("db.dialog.warn.title"), MessageFormat.format(text, warning.getMessage()));
+		} else {
+			boolean showWarning = false;
+			switch ((ConnectionWarningType) warning.getType()) {
+				case OUTDATED_DATABASE_VERSION:
+					showWarning = config.getGui().isShowOutdatedDatabaseVersionWarning();
+					break;
+				case UNSUPPORTED_ADE:
+					showWarning = config.getGui().isShowUnsupportedADEWarning();
+					break;
+			}
 
-				option = viewController.warnMessage(Language.I18N.getString("db.dialog.warn.title"), result);
-			} else {
-				boolean showWarning = false;
-				switch ((ConnectionWarningType)warning.getType()) {
-					case OUTDATED_DATABASE_VERSION:
-						showWarning = config.getGui().isShowOutdatedDatabaseVersionWarning();
-						break;
-					case UNSUPPORTED_ADE:
-						showWarning = config.getGui().isShowUnsupportedADEWarning();
-						break;
-				}
+			if (showWarning) {
+				JPanel confirmPanel = new JPanel(new GridBagLayout());
+				JCheckBox confirmDialogNoShow = new JCheckBox(Language.I18N.getString("common.dialog.msg.noShow"));
+				confirmDialogNoShow.setIconTextGap(10);
+				confirmPanel.add(new JLabel(warning.getFormattedMessage()), GuiUtil.setConstraints(0, 0, 1.0, 0.0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+				confirmPanel.add(confirmDialogNoShow, GuiUtil.setConstraints(0, 2, 1.0, 0.0, GridBagConstraints.BOTH, 10, 0, 0, 0));
 
-				if (showWarning) {
-					JPanel confirmPanel = new JPanel(new GridBagLayout());
-					JCheckBox confirmDialogNoShow = new JCheckBox(Language.I18N.getString("common.dialog.msg.noShow"));
-					confirmDialogNoShow.setIconTextGap(10);
-					confirmPanel.add(new JLabel(warning.getFormattedMessage()), GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.BOTH,0,0,0,0));
-					confirmPanel.add(confirmDialogNoShow, GuiUtil.setConstraints(0,2,1.0,0.0,GridBagConstraints.BOTH,10,0,0,0));
+				option = JOptionPane.showConfirmDialog(viewController.getTopFrame(), confirmPanel, Language.I18N.getString("db.dialog.warn.title"), JOptionPane.OK_CANCEL_OPTION);
 
-					option = JOptionPane.showConfirmDialog(viewController.getTopFrame(), confirmPanel, Language.I18N.getString("db.dialog.warn.title"), JOptionPane.OK_CANCEL_OPTION);
-					
-					if (confirmDialogNoShow.isSelected()) {
-						switch ((ConnectionWarningType)warning.getType()) {
-							case OUTDATED_DATABASE_VERSION:
-								config.getGui().setShowOutdatedDatabaseVersionWarning(false);
-								break;
-							case UNSUPPORTED_ADE:
-								config.getGui().setShowUnsupportedADEWarning(false);
-								break;
-						}
+				if (confirmDialogNoShow.isSelected()) {
+					switch ((ConnectionWarningType) warning.getType()) {
+						case OUTDATED_DATABASE_VERSION:
+							config.getGui().setShowOutdatedDatabaseVersionWarning(false);
+							break;
+						case UNSUPPORTED_ADE:
+							config.getGui().setShowUnsupportedADEWarning(false);
+							break;
 					}
 				}
 			}
 		}
 
-		log.warn(warning.getMessage());
-		return option;
+		return option == JOptionPane.OK_OPTION;
 	}
 
 	public void loadSettings() {

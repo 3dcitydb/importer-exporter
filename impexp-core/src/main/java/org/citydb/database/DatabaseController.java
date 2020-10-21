@@ -27,102 +27,131 @@
  */
 package org.citydb.database;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.swing.JOptionPane;
-
 import org.citydb.config.Config;
 import org.citydb.config.project.database.DBConnection;
+import org.citydb.config.project.database.DatabaseConfigurationException;
 import org.citydb.config.project.database.DatabaseSrs;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.connection.ConnectionManager;
 import org.citydb.database.connection.ConnectionState;
 import org.citydb.database.connection.ConnectionViewHandler;
-import org.citydb.config.project.database.DatabaseConfigurationException;
 import org.citydb.database.connection.DatabaseConnectionDetails;
 import org.citydb.database.connection.DatabaseConnectionPool;
 import org.citydb.database.connection.DatabaseConnectionWarning;
 import org.citydb.database.version.DatabaseVersionChecker;
 import org.citydb.database.version.DatabaseVersionException;
 import org.citydb.log.Logger;
+import org.citydb.util.Util;
+
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DatabaseController implements ConnectionManager {
 	private final Logger log = Logger.getInstance();
 	private final Config config;
-	private final DatabaseConnectionPool dbPool;
+	private final DatabaseConnectionPool connectionPool;
 
 	private ConnectionViewHandler viewHandler;
 
 	public DatabaseController(Config config) {
 		this.config = config;
-		dbPool = DatabaseConnectionPool.getInstance();
+		connectionPool = DatabaseConnectionPool.getInstance();
 	}	
 
 	public void setConnectionViewHandler(ConnectionViewHandler viewHandler) {
 		this.viewHandler = viewHandler;
 	}
 
-	public synchronized boolean connect(boolean showErrorDialog) throws DatabaseConfigurationException, DatabaseVersionException, SQLException {
-		if (!dbPool.isConnected()) {
-			viewHandler.commitConnectionDetails();
-			viewHandler.printConnectionState(ConnectionState.INIT_CONNECT);
+	public synchronized boolean connect() {
+		return connect(false);
+	}
 
-			try {
-				dbPool.connect(config);
-			} catch (DatabaseConfigurationException e) {
-				viewHandler.printError(e, showErrorDialog);
-				throw e;
-			} catch (DatabaseVersionException e) {
-				viewHandler.printError(e, showErrorDialog);
-				throw e;
-			} catch (SQLException e) {
-				viewHandler.printError(e, showErrorDialog);
-				throw e;
+	public synchronized boolean connect(boolean suppressDialog) {
+		if (!connectionPool.isConnected()) {
+			// request to commit connection detail
+			if (viewHandler != null) {
+				viewHandler.commitConnectionDetails();
 			}
 
-			// print connection warnings
-			List<DatabaseConnectionWarning> warnings = dbPool.getActiveDatabaseAdapter().getConnectionWarnings();
-			if (!warnings.isEmpty()) {
-				for (DatabaseConnectionWarning warning : warnings) {
-					int option = viewHandler.printWarning(warning, showErrorDialog);
-					if (option == JOptionPane.CANCEL_OPTION) {
+			// fail if there is no active database connection
+			DBConnection connection = config.getProject().getDatabase().getActiveConnection();
+			if (connection == null) {
+				log.error("Connection to database could not be established.");
+				log.error("No valid database connection details provided.");
+				return false;
+			}
+
+			try {
+				log.info("Connecting to database profile '" + connection + "'.");
+				showConnectionStatus(ConnectionState.INIT_CONNECT);
+
+				// connect to database
+				connectionPool.connect(config);
+
+				// show connection warnings
+				for (DatabaseConnectionWarning warning : connectionPool.getActiveDatabaseAdapter().getConnectionWarnings()) {
+					log.warn(warning.getMessage());
+					boolean connect = showWarning(warning, suppressDialog);
+					if (!connect) {
 						log.warn("Database connection attempt aborted.");
-						dbPool.disconnect();
+						connectionPool.disconnect();
+						return false;
 					}
 				}
-			}			
-			
-			viewHandler.printConnectionState(ConnectionState.FINISH_CONNECT);
+
+				log.info("Database connection established.");
+				connectionPool.getActiveDatabaseAdapter().getConnectionMetaData().printToConsole();
+
+				// log unsupported user-defined SRSs
+				for (DatabaseSrs refSys : config.getProject().getDatabase().getReferenceSystems()) {
+					if (!refSys.isSupported()) {
+						log.warn("Reference system '" + refSys.getDescription() +
+								"' (SRID: " + refSys.getSrid() + ") is not supported.");
+					}
+				}
+			} catch (DatabaseConfigurationException | SQLException e) {
+				log.error("Connection to database could not be established.", e);
+				showError(e, suppressDialog);
+				return false;
+			} catch (DatabaseVersionException e) {
+				log.error("Connection to database could not be established.", e);
+				log.error("Supported versions are '" + Util.collection2string(e.getSupportedVersions(), ", ") + "'.");
+				showError(e, suppressDialog);
+				return false;
+			} finally {
+				showConnectionStatus(ConnectionState.FINISH_CONNECT);
+			}
 		}
-		
-		return dbPool.isConnected();
+
+		return connectionPool.isConnected();
 	}
 
 	public void disconnect() {
-		if (dbPool.isConnected()) {
-			viewHandler.printConnectionState(ConnectionState.INIT_DISCONNECT);
-			dbPool.disconnect();
-			viewHandler.printConnectionState(ConnectionState.FINISH_DISCONNECT);
+		if (connectionPool.isConnected()) {
+			showConnectionStatus(ConnectionState.INIT_DISCONNECT);
+			connectionPool.disconnect();
+			log.info("Disconnected from database.");
+			showConnectionStatus(ConnectionState.FINISH_DISCONNECT);
 		}
 	}
 
 	public boolean isConnected() {
-		return dbPool.isConnected();
+		return connectionPool.isConnected();
 	}
 
 	public Connection getConnection() throws SQLException {
-		return dbPool.getConnection();
+		return connectionPool.getConnection();
 	}
 
 	public List<DatabaseConnectionDetails> getConnectionDetails() {
-		ArrayList<DatabaseConnectionDetails> tmp = new ArrayList<DatabaseConnectionDetails>();
-		for (DBConnection conn : config.getProject().getDatabase().getConnections())
-			tmp.add(new DatabaseConnectionDetails(conn));
+		ArrayList<DatabaseConnectionDetails> result = new ArrayList<>();
+		for (DBConnection connection : config.getProject().getDatabase().getConnections()) {
+			result.add(new DatabaseConnectionDetails(connection));
+		}
 
-		return tmp;
+		return result;
 	}
 
 	public List<DatabaseSrs> getDatabaseSrs() {
@@ -130,11 +159,32 @@ public class DatabaseController implements ConnectionManager {
 	}
 
 	public AbstractDatabaseAdapter getActiveDatabaseAdapter() {
-		return dbPool.getActiveDatabaseAdapter();
+		return connectionPool.getActiveDatabaseAdapter();
 	}
 
 	public DatabaseVersionChecker getDatabaseVersionChecker() {
-		return dbPool.getDatabaseVersionChecker();
+		return connectionPool.getDatabaseVersionChecker();
 	}
 
+	private void showConnectionStatus(ConnectionState state) {
+		if (viewHandler != null) {
+			viewHandler.showConnectionStatus(state);
+		}
+	}
+
+	private boolean showWarning(DatabaseConnectionWarning warning, boolean suppressDialog) {
+		return viewHandler == null || (!suppressDialog && viewHandler.showWarning(warning));
+	}
+
+	private void showError(Exception e, boolean suppressDialog) {
+		if (!suppressDialog && viewHandler != null) {
+			if (e instanceof DatabaseConfigurationException) {
+				viewHandler.showError((DatabaseConfigurationException) e);
+			} else if (e instanceof DatabaseVersionException) {
+				viewHandler.showError((DatabaseVersionException) e);
+			} else if (e instanceof SQLException) {
+				viewHandler.showError((SQLException) e);
+			}
+		}
+	}
 }

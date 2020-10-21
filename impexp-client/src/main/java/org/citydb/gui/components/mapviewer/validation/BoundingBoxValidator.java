@@ -32,10 +32,8 @@ import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.database.Database;
 import org.citydb.config.project.database.Database.PredefinedSrsName;
-import org.citydb.config.project.database.DatabaseConfigurationException;
 import org.citydb.config.project.database.DatabaseSrs;
 import org.citydb.database.DatabaseController;
-import org.citydb.database.version.DatabaseVersionException;
 import org.citydb.gui.components.mapviewer.MapWindow;
 import org.citydb.gui.factory.SrsComboBoxFactory;
 import org.citydb.gui.factory.SrsComboBoxFactory.SrsComboBox;
@@ -43,24 +41,12 @@ import org.citydb.gui.util.GuiUtil;
 import org.citydb.log.Logger;
 import org.citydb.registry.ObjectRegistry;
 
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JSeparator;
-import javax.swing.SwingUtilities;
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import javax.swing.*;
+import java.awt.*;
 import java.sql.SQLException;
 
 public class BoundingBoxValidator {
-	private final Logger LOG = Logger.getInstance();
+	private final Logger log = Logger.getInstance();
 	private final MapWindow map;
 	private final Config config;
 	private final DatabaseController dbController;
@@ -110,21 +96,19 @@ public class BoundingBoxValidator {
 			validator.showDialog();
 
 			switch (validator.result) {
-			case TRANSFORM:
-				bbox.setSrs(validator.srsComboBox.getSelectedItem());
-				return transformBoundingBox(bbox);
-			case SKIP:
-				return ValidationResult.SKIP;
-			case CLOSE:
-				return ValidationResult.CANCEL;
-			default:
-				return ValidationResult.CANCEL;
+				case TRANSFORM:
+					bbox.setSrs(validator.srsComboBox.getSelectedItem());
+					return transformBoundingBox(bbox);
+				case SKIP:
+					return ValidationResult.SKIP;
+				case CLOSE:
+				default:
+					return ValidationResult.CANCEL;
 			}			
 		} 
 
 		// srs is known but not wgs84
 		else if (bbox.getSrs().getSrid() != Database.PREDEFINED_SRS.get(PredefinedSrsName.WGS84_2D).getSrid()) {
-
 			if (isDBConnected) {
 				if (bbox.getSrs().isSupported())
 					return transformBoundingBox(bbox);
@@ -137,14 +121,13 @@ public class BoundingBoxValidator {
 				validator.showDialog();
 
 				switch (validator.result) {
-				case TRANSFORM:
-					return transformBoundingBox(bbox);
-				case SKIP:
-					return ValidationResult.SKIP;
-				case CLOSE:
-					return ValidationResult.CANCEL;
-				default:
-					return ValidationResult.CANCEL;
+					case TRANSFORM:
+						return transformBoundingBox(bbox);
+					case SKIP:
+						return ValidationResult.SKIP;
+					case CLOSE:
+					default:
+						return ValidationResult.CANCEL;
 				}				
 			}
 
@@ -153,7 +136,6 @@ public class BoundingBoxValidator {
 
 		// srs is wgs84...
 		else if (bbox.getSrs().getSrid() == Database.PREDEFINED_SRS.get(PredefinedSrsName.WGS84_2D).getSrid()) {
-
 			// ...but coordinate values are out of range
 			if (!(bbox.getLowerCorner().getX() != null && bbox.getLowerCorner().getX() >= -180 && bbox.getLowerCorner().getX() <= 180 && 
 					bbox.getUpperCorner().getX() != null && bbox.getUpperCorner().getX() >= -180 && bbox.getUpperCorner().getX() <= 180 &&
@@ -166,12 +148,9 @@ public class BoundingBoxValidator {
 				validator.addOkButton();
 				validator.showDialog();
 
-				switch (validator.result) {
-				case CLOSE:
-					return ValidationResult.CANCEL;
-				default:
-					return ValidationResult.OUT_OF_RANGE;
-				}	
+				return validator.result == ValidatorDialogAction.CLOSE ?
+						ValidationResult.CANCEL :
+						ValidationResult.OUT_OF_RANGE;
 			}
 			
 			// ...but coordinate values are invalid
@@ -182,13 +161,10 @@ public class BoundingBoxValidator {
 				validator.addBoundingBox();
 				validator.addOkButton();
 				validator.showDialog();
-				
-				switch (validator.result) {
-				case CLOSE:
-					return ValidationResult.CANCEL;
-				default:
-					return ValidationResult.NO_AREA;
-				}
+
+				return validator.result == ValidatorDialogAction.CLOSE ?
+						ValidationResult.CANCEL :
+						ValidationResult.NO_AREA;
 			}
 
 			// ...but bounding box is not visible on screen
@@ -198,13 +174,10 @@ public class BoundingBoxValidator {
 				validator.addBoundingBox();
 				validator.addOkButton();
 				validator.showDialog();
-				
-				switch (validator.result) {
-				case CLOSE:
-					return ValidationResult.CANCEL;
-				default:
-					return ValidationResult.INVISIBLE;
-				}
+
+				return validator.result == ValidatorDialogAction.CLOSE ?
+						ValidationResult.CANCEL :
+						ValidationResult.INVISIBLE;
 			}
 		}
 
@@ -212,31 +185,19 @@ public class BoundingBoxValidator {
 	}
 
 	private ValidationResult transformBoundingBox(BoundingBox bbox) {
-		final TransformDialog transform = new TransformDialog();
+		TransformDialog transform = new TransformDialog();
+		SwingUtilities.invokeLater(() -> transform.setVisible(true));
 
-		SwingUtilities.invokeLater(new Runnable() {
-			public void run() {
-				transform.setVisible(true);
+		if (!dbController.isConnected()) {
+			SwingUtilities.invokeLater(() -> transform.setMessage(Language.I18N.getString("main.status.database.connect.label")));
+			if (!dbController.connect(true)) {
+				SwingUtilities.invokeLater(() -> transform.setErrorMessage(Language.I18N.getString("map.dialog.label.error.db")));
+				return ValidationResult.SKIP;
 			}
-		});
+		}
 
+		SwingUtilities.invokeLater(() -> transform.setMessage(Language.I18N.getString("map.dialog.label.transform")));
 		try {
-			if (!dbController.isConnected()) {
-				SwingUtilities.invokeLater(new Runnable() {
-					public void run() {
-						transform.setMessage(Language.I18N.getString("main.status.database.connect.label"));
-					}
-				});
-
-				dbController.connect(false);
-			}
-
-			SwingUtilities.invokeLater(new Runnable() {
-				public void run() {
-					transform.setMessage(Language.I18N.getString("map.dialog.label.transform"));
-				}
-			});
-
 			if (bbox.getSrs().isSupported()) {
 				DatabaseSrs wgs84 = Database.PREDEFINED_SRS.get(PredefinedSrsName.WGS84_2D);
 				for (DatabaseSrs srs : config.getProject().getDatabase().getReferenceSystems()) {
@@ -247,52 +208,30 @@ public class BoundingBoxValidator {
 				}
 				
 				bbox.copyFrom(dbController.getActiveDatabaseAdapter().getUtil().transformBoundingBox(bbox, bbox.getSrs(), wgs84));
-				
-				SwingUtilities.invokeLater(new Runnable() {
-					public void run() {
-						transform.dispose();
-					}
-				});
-
+				SwingUtilities.invokeLater(transform::dispose);
 				return validate(bbox);
 			} else
 				throw new SQLException("The spatial reference system '" + bbox.getSrs().getDescription() + "' is not supported.");
-
 		} catch (SQLException e) {
-			LOG.error("Failed to transform bounding box to WGS 84: " + e.getMessage());
-			SwingUtilities.invokeLater(new Runnable() {
-				public void run() {
-					transform.setErrorMessage(Language.I18N.getString("map.dialog.label.error.transform"));
-				}
-			});
-		} catch (DatabaseConfigurationException | DatabaseVersionException e) {
-			SwingUtilities.invokeLater(new Runnable() {
-				public void run() {
-					transform.setErrorMessage(Language.I18N.getString("map.dialog.label.error.db"));
-				}
-			});
+			log.error("Failed to transform bounding box to WGS 84: " + e.getMessage());
+			SwingUtilities.invokeLater(() -> transform.setErrorMessage(Language.I18N.getString("map.dialog.label.error.transform")));
+			return ValidationResult.SKIP;
 		}
-
-		return ValidationResult.SKIP;
 	}
 
 	@SuppressWarnings("serial")
 	public final class ValidatorDialog extends JDialog {
 		private final BoundingBox bbox;
-		private SrsComboBox srsComboBox;
-		private int row = 0;
+		private final SrsComboBox srsComboBox;
 
 		private ValidatorDialogAction result = ValidatorDialogAction.SKIP;
+		private int row = 0;
 
 		ValidatorDialog(BoundingBox bbox, String title, Config config) {
 			super(map, title, true);
-
 			this.bbox = bbox;
 			srsComboBox = SrsComboBoxFactory.getInstance(config).createSrsComboBox(true);
-			init();
-		}
 
-		private void init() {
 			setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 			setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/org/citydb/gui/images/map/map_icon.png")));
 			setLayout(new GridBagLayout());
@@ -302,7 +241,6 @@ public class BoundingBoxValidator {
 		private void addErrorMessage(String message) {
 			message = message.replaceAll("\\n", "<br>");
 			JLabel messageLabel = new JLabel("<html>" + message + "</html>");
-
 			add(messageLabel, GuiUtil.setConstraints(0, row++, 1, 0, GridBagConstraints.BOTH, 10, 10, 10, 10));
 		}
 
@@ -318,8 +256,8 @@ public class BoundingBoxValidator {
 			JLabel lowerLabel = new JLabel("Xmin / Ymin");
 			JLabel upperLabel = new JLabel("Xmax / Ymax");
 
-			JLabel lower = new JLabel(String.valueOf(bbox.getLowerCorner().getX()) + " / " + String.valueOf(bbox.getLowerCorner().getY()));
-			JLabel upper = new JLabel(String.valueOf(bbox.getUpperCorner().getX()) + " / " + String.valueOf(bbox.getUpperCorner().getY()));
+			JLabel lower = new JLabel(bbox.getLowerCorner().getX() + " / " + bbox.getLowerCorner().getY());
+			JLabel upper = new JLabel(bbox.getUpperCorner().getX() + " / " + bbox.getUpperCorner().getY());
 
 			bboxPanel.add(title, GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.HORIZONTAL,0,2,0,5));
 			bboxPanel.add(new JSeparator(JSeparator.HORIZONTAL), GuiUtil.setConstraints(1,0,1.0,0.0,GridBagConstraints.HORIZONTAL,0,10,0,5));
@@ -401,25 +339,19 @@ public class BoundingBoxValidator {
 			buttons.add(skip, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.NONE, 10, 5, 0, 5));
 			buttons.add(close, GuiUtil.setConstraints(2, 0, 0, 0, GridBagConstraints.NONE, 10, 5, 0, 5));
 
-			transform.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					result = ValidatorDialogAction.TRANSFORM;
-					dispose();
-				}
+			transform.addActionListener(e -> {
+				result = ValidatorDialogAction.TRANSFORM;
+				dispose();
 			});
 
-			skip.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					result = ValidatorDialogAction.SKIP;
-					dispose();
-				}
+			skip.addActionListener(e -> {
+				result = ValidatorDialogAction.SKIP;
+				dispose();
 			});
 
-			close.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					result = ValidatorDialogAction.CLOSE;
-					dispose();
-				}
+			close.addActionListener(e -> {
+				result = ValidatorDialogAction.CLOSE;
+				dispose();
 			});
 
 			add(buttons, GuiUtil.setConstraints(0, row++, 1, 0, GridBagConstraints.BOTH, 5, 5, 5, 5));
@@ -437,18 +369,14 @@ public class BoundingBoxValidator {
 			c.anchor = GridBagConstraints.EAST;
 			buttons.add(close, c);
 
-			ok.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					result = ValidatorDialogAction.OK;
-					dispose();
-				}
+			ok.addActionListener(e -> {
+				result = ValidatorDialogAction.OK;
+				dispose();
 			});
 
-			close.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					result = ValidatorDialogAction.CLOSE;
-					dispose();
-				}
+			close.addActionListener(e -> {
+				result = ValidatorDialogAction.CLOSE;
+				dispose();
 			});
 
 			add(buttons, GuiUtil.setConstraints(0, row++, 1, 0, GridBagConstraints.BOTH, 5, 5, 5, 5));
@@ -460,7 +388,6 @@ public class BoundingBoxValidator {
 			setResizable(false);
 			setVisible(true);
 		}
-
 	}
 
 	@SuppressWarnings("serial")
@@ -489,11 +416,7 @@ public class BoundingBoxValidator {
 			add(messageLabel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.HORIZONTAL, 10, 10, 10, 10));
 			add(button, GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.NONE, 10, 5, 10, 5));
 
-			button.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					dispose();
-				}
-			});
+			button.addActionListener(e -> dispose());
 
 			pack();
 			setLocationRelativeTo(getOwner());
