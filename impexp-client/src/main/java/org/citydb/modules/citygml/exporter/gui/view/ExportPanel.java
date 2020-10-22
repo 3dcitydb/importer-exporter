@@ -361,8 +361,10 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 				}
 
 				// copy tiling options if required
-				if (query.isSetTiling() && !(query.getTiling().getTilingOptions() instanceof SimpleTilingOptions))
+				if (query.isSetTiling() && !(query.getTiling().getTilingOptions() instanceof SimpleTilingOptions)) {
 					query.getTiling().setTilingOptions(config.getProject().getExporter().getSimpleQuery().getBboxFilter().getTilingOptions());
+					tileAmount = query.getTiling().getRows() * query.getTiling().getColumns();
+				}
 			}
 
 			if (!databaseController.connect()) {

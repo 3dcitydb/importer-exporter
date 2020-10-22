@@ -37,32 +37,31 @@ import org.citydb.query.filter.FilterException;
 import java.sql.SQLException;
 
 public class Tiling {
+	private final double[] rows;
+	private final double[] columns;
+
 	private BoundingBox extent;
-	private int rows;
-	private int columns;
-	
 	private Tile activeTile;
-	private double tileHeight;
-	private double tileWidth;
-	
 	private Object tilingOptions;
 
 	public Tiling(BoundingBox extent, int rows, int columns) throws FilterException {
-		if (extent == null)
+		if (extent == null) {
 			throw new FilterException("The spatial tiling extent must not be null.");
+		}
 
-		if (!extent.isValid())
+		if (!extent.isValid()) {
 			throw new FilterException("The bounding box extent is invalid.");
+		}
 
-		if (extent.getSrs() != null && !extent.getSrs().isSupported())
-			throw new FilterException("The reference system " + extent.getSrs().getDescription() + " of the tiling extent is not supported.");
+		if (extent.getSrs() != null && !extent.getSrs().isSupported()) {
+			throw new FilterException("The reference system " + extent.getSrs().getDescription() +
+					" of the tiling extent is not supported.");
+		}
 
 		this.extent = extent;
-		this.rows = rows > 0 ? rows : 1;
-		this.columns = columns > 0 ? columns : 1;
-		
-		tileHeight = (extent.getUpperCorner().getY() - extent.getLowerCorner().getY()) / this.rows;
-		tileWidth = (extent.getUpperCorner().getX() - extent.getLowerCorner().getX()) / this.columns;
+		this.rows = new double[rows > 0 ? rows + 1 : 2];
+		this.columns = new double[columns > 0 ? columns + 1 : 2];
+		calculateTilingScheme();
 	}
 
 	public BoundingBox getExtent() {
@@ -70,11 +69,11 @@ public class Tiling {
 	}
 
 	public int getRows() {
-		return rows;
+		return rows.length - 1;
 	}
 
 	public int getColumns() {
-		return columns;
+		return columns.length - 1;
 	}
 
 	public Object getTilingOptions() {
@@ -90,12 +89,14 @@ public class Tiling {
 	}
 
 	public void transformExtent(DatabaseSrs targetSrs, AbstractDatabaseAdapter databaseAdapter) throws FilterException {
-		if (!targetSrs.isSupported())
+		if (!targetSrs.isSupported()) {
 			throw new FilterException("The reference system " + targetSrs.getDescription() + " is not supported.");
+		}
 
 		DatabaseSrs extentSrs = extent.isSetSrs() ? extent.getSrs() : databaseAdapter.getConnectionMetaData().getReferenceSystem();
-		if (targetSrs.getSrid() == extentSrs.getSrid())
+		if (targetSrs.getSrid() == extentSrs.getSrid()) {
 			return;
+		}
 
 		// convert extent into polygon
 		GeometryObject extentObj = GeometryObject.createPolygon(new double[]{
@@ -107,40 +108,38 @@ public class Tiling {
 		}, 2, extentSrs.getSrid());
 
 		// transform polygon to new srs
-		GeometryObject transformedExtent = null;
+		GeometryObject transformedExtent;
 		try {
 			transformedExtent = databaseAdapter.getUtil().transform(extentObj, targetSrs);
-			if (transformedExtent == null)
+			if (transformedExtent == null) {
 				throw new FilterException("Failed to transform tiling extent to SRS " + targetSrs.getDescription() + ".");
+			}
 		} catch (SQLException e) {
 			throw new FilterException("Failed to transform tiling extent to SRS " + targetSrs.getDescription() + ".", e);
 		}
 
 		// create new extent from transformed polygon
-		double[] coordinates = transformedExtent.getCoordinates(0);		
+		double[] coordinates = transformedExtent.getCoordinates(0);
 		extent = new BoundingBox(
 				new Position(Math.min(coordinates[0], coordinates[6]), Math.min(coordinates[1], coordinates[3])),
 				new Position(Math.max(coordinates[2], coordinates[4]), Math.max(coordinates[5], coordinates[7])),
 				targetSrs
-				);
+		);
 		
-		// adapt tile height and width
-		tileHeight = (extent.getUpperCorner().getY() - extent.getLowerCorner().getY()) / rows;
-		tileWidth = (extent.getUpperCorner().getX() - extent.getLowerCorner().getX()) / columns;
+		// adapt tiling scheme
+		calculateTilingScheme();
 	}
 
 	public Tile getTileAt(int x, int y) throws FilterException {
-		if (x < 0 || y < 0 || x >= rows || y >= columns)
+		if (x < 0 || y < 0 || x >= getRows() || y >= getColumns()) {
 			throw new FilterException("Tile coordinates are out of bounds.");
-		
-		double minX = extent.getLowerCorner().getX() + (y * tileWidth);
-		double minY = extent.getLowerCorner().getY() + (x * tileHeight);
+		}
 
 		BoundingBox tileExtent = new BoundingBox(
-				new Position(minX, minY),
-				new Position(minX + tileWidth, minY + tileHeight),
+				new Position(columns[x], rows[y]),
+				new Position(columns[x + 1], rows[y + 1]),
 				extent.getSrs()
-				);
+		);
 
 		return new Tile(tileExtent, x, y);
 	}
@@ -153,4 +152,19 @@ public class Tiling {
 		this.activeTile = activeTile;
 	}
 
+	private void calculateTilingScheme() {
+		double tileHeight = (extent.getUpperCorner().getY() - extent.getLowerCorner().getY()) / getRows();
+		rows[0] = extent.getLowerCorner().getY();
+		rows[rows.length - 1] = extent.getUpperCorner().getY();
+		for (int i = 1; i < rows.length - 1; i++) {
+			rows[i] = rows[i - 1] + tileHeight;
+		}
+
+		double tileWidth = (extent.getUpperCorner().getX() - extent.getLowerCorner().getX()) / getColumns();
+		columns[0] = extent.getLowerCorner().getX();
+		columns[columns.length - 1] = extent.getUpperCorner().getX();
+		for (int i = 1; i < columns.length - 1; i++) {
+			columns[i] = columns[i - 1] + tileWidth;
+		}
+	}
 }
