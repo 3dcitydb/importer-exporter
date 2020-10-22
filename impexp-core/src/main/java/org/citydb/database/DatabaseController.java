@@ -93,7 +93,7 @@ public class DatabaseController implements ConnectionManager {
 				// show connection warnings
 				for (DatabaseConnectionWarning warning : connectionPool.getActiveDatabaseAdapter().getConnectionWarnings()) {
 					log.warn(warning.getMessage());
-					boolean connect = showWarning(warning, suppressDialog);
+					boolean connect = suppressDialog || showWarning(warning);
 					if (!connect) {
 						log.warn("Database connection attempt aborted.");
 						connectionPool.disconnect();
@@ -172,8 +172,8 @@ public class DatabaseController implements ConnectionManager {
 		}
 	}
 
-	private boolean showWarning(DatabaseConnectionWarning warning, boolean suppressDialog) {
-		return viewHandler == null || (!suppressDialog && viewHandler.showWarning(warning));
+	private boolean showWarning(DatabaseConnectionWarning warning) {
+		return viewHandler == null || viewHandler.showWarning(warning);
 	}
 
 	private void showError(Exception e, boolean suppressDialog) {
