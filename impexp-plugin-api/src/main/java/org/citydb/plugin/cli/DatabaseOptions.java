@@ -106,7 +106,7 @@ public class DatabaseOptions {
         connection.setPort(getPort());
         connection.setUser(user);
         connection.setPassword(password);
-        
+
         return connection;
     }
 }

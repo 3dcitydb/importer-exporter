@@ -75,14 +75,7 @@ public class DatabaseController implements ConnectionManager {
 			viewHandler.commitConnectionDetails();
 		}
 
-		// fail if there is no active database connection
 		DBConnection connection = config.getProject().getDatabase().getActiveConnection();
-		if (connection == null) {
-			log.error("Connection to database could not be established.");
-			log.error("No valid database connection details provided in configuration.");
-			return false;
-		}
-
 		return connect(connection, suppressDialog);
 	}
 
@@ -92,6 +85,12 @@ public class DatabaseController implements ConnectionManager {
 
 	public synchronized boolean connect(DBConnection connection, boolean suppressDialog) {
 		if (!connectionPool.isConnected()) {
+			if (connection == null) {
+				log.error("Connection to database could not be established.");
+				log.error("No valid database connection details provided in configuration.");
+				return false;
+			}
+
 			try {
 				log.info("Connecting to database '" + connection + "'.");
 				showConnectionStatus(ConnectionState.INIT_CONNECT);
