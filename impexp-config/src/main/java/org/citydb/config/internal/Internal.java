@@ -34,7 +34,6 @@ public class Internal {
 	public static boolean IS_GUI_MODE = false;
 
 	private List<Path> importFiles;
-	private Path exportFile;
 	private String exportTextureURI;
 
 	// internal variables
@@ -51,14 +50,6 @@ public class Internal {
 
 	public void setImportFiles(List<Path> importFiles) {
 		this.importFiles = importFiles;
-	}
-
-	public Path getExportFile() {
-		return exportFile;
-	}
-
-	public void setExportFile(Path exportFile) {
-		this.exportFile = exportFile;
 	}
 
 	public String getExportTextureURI() {

@@ -43,12 +43,12 @@ import org.citydb.log.Logger;
 import org.citydb.modules.kml.controller.KmlExportException;
 import org.citydb.modules.kml.controller.KmlExporter;
 import org.citydb.registry.ObjectRegistry;
-import org.citydb.util.ClientConstants;
 import org.citygml4j.builder.jaxb.CityGMLBuilder;
 
 import java.io.File;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -123,9 +123,7 @@ public class ImpExpCliOld {
 		return success;
 	}
 
-	public boolean doExport(String exportFile) throws ImpExpException {
-		setExportFile(exportFile);
-
+	public boolean doExport(String outputFile) throws ImpExpException {
 		if (!databaseController.connect())
 			return false;
 
@@ -135,9 +133,11 @@ public class ImpExpCliOld {
 		boolean success;
 
 		try {
-			success = exporter.doExport();
+			success = exporter.doExport(Paths.get(outputFile));
 		} catch (CityGMLExportException e) {
 			throw new ImpExpException("CityGML export failed due to an internal error.", e);
+		} catch (InvalidPathException e) {
+			throw new ImpExpException("'" + outputFile + "' is not a valid file.", e);
 		} finally {
 			databaseController.disconnect();
 		}
@@ -175,9 +175,7 @@ public class ImpExpCliOld {
 		return success;
 	}
 
-	public boolean doKmlExport(String kmlExportFile) throws ImpExpException {
-		setExportFile(kmlExportFile);
-
+	public boolean doKmlExport(String outputFile) throws ImpExpException {
 		if (!databaseController.connect())
 			return false;
 
@@ -186,9 +184,11 @@ public class ImpExpCliOld {
 		KmlExporter kmlExporter = new KmlExporter();
 		boolean success;
 		try {
-			success = kmlExporter.doExport();
+			success = kmlExporter.doExport(Paths.get(outputFile));
 		} catch (KmlExportException e) {
 			throw new ImpExpException("KML/COLLADA/glTF export failed due to an internal error.", e);
+		} catch (InvalidPathException e) {
+			throw new ImpExpException("'" + outputFile + "' is not a valid file.", e);
 		} finally {
 			databaseController.disconnect();
 		}
@@ -199,14 +199,6 @@ public class ImpExpCliOld {
 			log.warn("Database export aborted.");
 
 		return success;
-	}
-
-	private void setExportFile(String exportFile) throws ImpExpException {
-		try {
-			config.getInternal().setExportFile(ClientConstants.WORKING_DIR.resolve(exportFile));
-		} catch (InvalidPathException e) {
-			throw new ImpExpException("'" + exportFile + "' is not a valid file.", e);
-		}
 	}
 
 	public boolean doTestConnection() throws ImpExpException {

@@ -77,6 +77,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -251,13 +253,6 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 		config.getProject().getDatabase().getWorkspaces().getExportWorkspace().setName(workspaceText.getText());
 		config.getProject().getDatabase().getWorkspaces().getExportWorkspace().setTimestamp(datePicker.getDate());
 
-		try {
-			config.getInternal().setExportFile(new File(browseText.getText().trim()).toPath());
-		} catch (Throwable e) {
-			log.error("'" + browseText.getText().trim() + "' is not a valid file.");
-			browseText.setText("");
-		}
-
 		filterPanel.setSettings();
 
 		DatabaseSrs targetSrs = srsComboBox.getSelectedItem();
@@ -400,7 +395,10 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 
 			boolean success = false;
 			try {
-				success = exporter.doExport();
+				success = exporter.doExport(Paths.get(browseText.getText()));
+			} catch (InvalidPathException e) {
+				log.error("'" + browseText.getText() + "' is not a valid file.");
+				browseText.setText("");
 			} catch (CityGMLExportException e) {
 				log.error(e.getMessage(), e.getCause());
 			}

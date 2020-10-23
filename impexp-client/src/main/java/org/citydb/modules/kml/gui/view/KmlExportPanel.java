@@ -86,6 +86,7 @@ import java.awt.event.ItemEvent;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.PosixFilePermission;
@@ -526,13 +527,6 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		config.getProject().getDatabase().getWorkspaces().getKmlExportWorkspace().setName(workspaceText.getText());
 		config.getProject().getDatabase().getWorkspaces().getKmlExportWorkspace().setTimestamp(datePicker.getDate());
 
-		try {
-			config.getInternal().setExportFile(new File(browseText.getText().trim()).toPath());
-		} catch (Throwable e) {
-			log.error("'" + browseText.getText().trim() + "' is not a valid file.");
-			browseText.setText("");
-		}
-
 		// filter
 		SimpleKmlQuery query = config.getProject().getKmlExporter().getQuery();
 		query.setMode(singleBuildingRadioButton.isSelected() ? SimpleKmlQueryMode.SINGLE : SimpleKmlQueryMode.BBOX);
@@ -863,7 +857,10 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 
 			boolean success = false;
 			try {
-				success = kmlExporter.doExport();
+				success = kmlExporter.doExport(Paths.get(browseText.getText()));
+			} catch (InvalidPathException e) {
+				log.error("'" + browseText.getText().trim() + "' is not a valid file.");
+				browseText.setText("");
 			} catch (KmlExportException e) {
 				log.error(e.getMessage(), e.getCause());
 			}

@@ -28,6 +28,7 @@
 package org.citydb.modules.kml.concurrent;
 
 import net.opengis.kml._2.ObjectFactory;
+import org.citydb.ade.kmlExporter.ADEKmlExportExtensionManager;
 import org.citydb.concurrent.Worker;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
@@ -42,7 +43,6 @@ import org.citydb.database.schema.mapping.FeatureType;
 import org.citydb.event.EventDispatcher;
 import org.citydb.event.global.ObjectCounterEvent;
 import org.citydb.log.Logger;
-import org.citydb.ade.kmlExporter.ADEKmlExportExtensionManager;
 import org.citydb.modules.kml.database.ColladaBundle;
 import org.citydb.modules.kml.database.KmlExporterManager;
 import org.citydb.modules.kml.database.KmlGenericObject;
@@ -60,7 +60,11 @@ import org.citygml4j.model.citygml.cityobjectgroup.CityObjectGroup;
 import org.citygml4j.model.citygml.generics.GenericCityObject;
 import org.citygml4j.model.citygml.landuse.LandUse;
 import org.citygml4j.model.citygml.relief.ReliefFeature;
-import org.citygml4j.model.citygml.transportation.*;
+import org.citygml4j.model.citygml.transportation.Railway;
+import org.citygml4j.model.citygml.transportation.Road;
+import org.citygml4j.model.citygml.transportation.Square;
+import org.citygml4j.model.citygml.transportation.Track;
+import org.citygml4j.model.citygml.transportation.TransportationComplex;
 import org.citygml4j.model.citygml.tunnel.Tunnel;
 import org.citygml4j.model.citygml.vegetation.AbstractVegetationObject;
 import org.citygml4j.model.citygml.vegetation.PlantCover;
@@ -71,6 +75,7 @@ import org.citygml4j.util.xml.SAXEventBuffer;
 
 import javax.xml.bind.JAXBContext;
 import java.io.File;
+import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.HashMap;
@@ -98,7 +103,8 @@ public class KmlExportWorker extends Worker<KmlSplittingResult> {
 	private final ElevationServiceHandler elevationServiceHandler;
 	private final Logger log = Logger.getInstance();
 
-	public KmlExportWorker(Connection connection,
+	public KmlExportWorker(Path outputFile,
+			Connection connection,
 			AbstractDatabaseAdapter databaseAdapter,
 			JAXBContext jaxbKmlContext,
 			JAXBContext jaxbColladaContext,
@@ -117,7 +123,8 @@ public class KmlExportWorker extends Worker<KmlSplittingResult> {
 
 		textureExportAdapter = databaseAdapter.getSQLAdapter().getBlobExportAdapter(connection, BlobType.TEXTURE_IMAGE);
 
-		kmlExporterManager = new KmlExporterManager(jaxbKmlContext,
+		kmlExporterManager = new KmlExporterManager(outputFile,
+				jaxbKmlContext,
 				jaxbColladaContext,
 				databaseAdapter,
 				writerPool,

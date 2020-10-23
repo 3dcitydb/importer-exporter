@@ -27,10 +27,24 @@
  */
 package org.citydb.modules.kml.database;
 
-import net.opengis.kml._2.*;
+import net.opengis.kml._2.DocumentType;
+import net.opengis.kml._2.KmlType;
+import net.opengis.kml._2.LatLonAltBoxType;
+import net.opengis.kml._2.LinkType;
+import net.opengis.kml._2.LodType;
+import net.opengis.kml._2.NetworkLinkType;
+import net.opengis.kml._2.ObjectFactory;
+import net.opengis.kml._2.PlacemarkType;
+import net.opengis.kml._2.RegionType;
+import net.opengis.kml._2.ViewRefreshModeEnumType;
 import org.citydb.ade.ADEExtension;
 import org.citydb.ade.ADEExtensionManager;
-import org.citydb.ade.kmlExporter.*;
+import org.citydb.ade.kmlExporter.ADEKmlExportException;
+import org.citydb.ade.kmlExporter.ADEKmlExportExtension;
+import org.citydb.ade.kmlExporter.ADEKmlExportExtensionManager;
+import org.citydb.ade.kmlExporter.ADEKmlExportHelper;
+import org.citydb.ade.kmlExporter.ADEKmlExportManager;
+import org.citydb.ade.kmlExporter.ADEKmlExportQueryHelper;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
 import org.citydb.config.project.kmlExporter.DisplayForm;
@@ -53,10 +67,21 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import java.awt.image.BufferedImage;
-import java.io.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.StringWriter;
 import java.nio.charset.Charset;
+import java.nio.file.Path;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.IdentityHashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -73,20 +98,18 @@ public class KmlExporterManager implements ADEKmlExportHelper {
 	private final Config config;
 	private final ADEKmlExportQueryHelper sqlQueries;
 
-	private boolean useTiling;
-	private String mainFilename;
-	private HashMap<Integer, Long> objectCounter;
+	private final boolean useTiling;
+	private final HashMap<Integer, Long> objectCounter;
+	private final IdentityHashMap<ADEKmlExportExtension, ADEKmlExportManager> adeKmlExportManagers;
 
+	private String mainFilename;
 	private final String ENCODING = "UTF-8";
 	private final Charset CHARSET = Charset.forName(ENCODING);
 	private final String TEMP_FOLDER = "__temp";
-
 	private long implicitId;
 
-	private final IdentityHashMap<ADEKmlExportExtension, ADEKmlExportManager> adeKmlExportManagers;
-
-
-	public KmlExporterManager(JAXBContext jaxbKmlContext,
+	public KmlExporterManager(Path outputFile,
+			JAXBContext jaxbKmlContext,
 			JAXBContext jaxbColladaContext,
 			AbstractDatabaseAdapter databaseAdapter,
 			WorkerPool<SAXEventBuffer> writerPool,
@@ -110,7 +133,7 @@ public class KmlExporterManager implements ADEKmlExportHelper {
 		adeKmlExportManagers = new IdentityHashMap<>();
 
 		useTiling = query.isSetTiling();
-		mainFilename = config.getInternal().getExportFile().toAbsolutePath().normalize().toString();
+		mainFilename = outputFile.toAbsolutePath().normalize().toString();
 		if (mainFilename.lastIndexOf(File.separator) != -1) {
 			if (mainFilename.lastIndexOf(".") == -1) {
 				mainFilename = mainFilename.substring(mainFilename.lastIndexOf(File.separator) + 1);

@@ -140,13 +140,17 @@ public class Exporter implements EventHandler {
 		totalGeometryCounter = new EnumMap<>(GMLClass.class);
 	}
 
-	public boolean doExport() throws CityGMLExportException {
+	public boolean doExport(Path outputFile) throws CityGMLExportException {
+		if (outputFile == null || outputFile.getFileName() == null) {
+			throw new CityGMLExportException("The output file '" + outputFile + "' is invalid.");
+		}
+
 		eventDispatcher.addEventHandler(EventType.OBJECT_COUNTER, this);
 		eventDispatcher.addEventHandler(EventType.GEOMETRY_COUNTER, this);
 		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
 
 		try {
-			return process();
+			return process(outputFile);
 		} finally {
 			try {
 				eventDispatcher.flushEvents();
@@ -158,7 +162,7 @@ public class Exporter implements EventHandler {
 		}
 	}
 
-	private boolean process() throws CityGMLExportException {
+	private boolean process(Path outputFile) throws CityGMLExportException {
 		// checking workspace
 		Workspace workspace = config.getProject().getDatabase().getWorkspaces().getExportWorkspace();
 		if (shouldRun && databaseAdapter.hasVersioningSupport() && 
@@ -264,9 +268,6 @@ public class Exporter implements EventHandler {
 
 		// create output file factory
 		OutputFileFactory fileFactory = new OutputFileFactory(config, eventDispatcher);
-		Path exportFile = config.getInternal().getExportFile();
-		if (exportFile.getFileName() == null)
-			throw new CityGMLExportException("The export file '" + exportFile + "' is invalid.");
 
 		// process export folder for texture files
 		String textureFolder = null;
@@ -299,7 +300,7 @@ public class Exporter implements EventHandler {
 
 			// check for unique texture filenames when exporting an archiv
 			if (!config.getProject().getExporter().getAppearances().isSetUniqueTextureFileNames()
-				&& fileFactory.getFileType(exportFile.getFileName()) == FileType.ARCHIVE) {
+				&& fileFactory.getFileType(outputFile.getFileName()) == FileType.ARCHIVE) {
 				log.warn("Using unique texture filenames because of writing to an archive file.");
 				config.getProject().getExporter().getAppearances().setUniqueTextureFileNames(true);
 			}
@@ -310,8 +311,8 @@ public class Exporter implements EventHandler {
 
 		for (int i = 0; shouldRun && i < rows; i++) {
 			for (int j = 0; shouldRun && j < columns; j++) {
-				String fileName = exportFile.getFileName().toString();
-				Path folder = exportFile.getParent();
+				String fileName = outputFile.getFileName().toString();
+				Path folder = outputFile.getParent();
 				if (folder == null)
 					folder = Paths.get("").toAbsolutePath().normalize();
 

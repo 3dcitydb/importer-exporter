@@ -179,13 +179,17 @@ public class KmlExporter implements EventHandler {
 		kmlFactory = new ObjectFactory();
 	}
 
-	public boolean doExport() throws KmlExportException {
+	public boolean doExport(Path outputFile) throws KmlExportException {
+		if (outputFile == null || outputFile.getFileName() == null) {
+			throw new KmlExportException("The output file '" + outputFile + "' is invalid.");
+		}
+
 		eventDispatcher.addEventHandler(EventType.OBJECT_COUNTER, this);
 		eventDispatcher.addEventHandler(EventType.GEOMETRY_COUNTER, this);
 		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
 
 		try {
-			return process();
+			return process(outputFile);
 		} finally {
 			try {
 				eventDispatcher.flushEvents();
@@ -197,7 +201,7 @@ public class KmlExporter implements EventHandler {
 		}
 	}
 
-	private boolean process() throws KmlExportException {
+	private boolean process(Path outputFile) throws KmlExportException {
 		// get JAXB contexts for KML and COLLADA
 		JAXBContext jaxbColladaContext;
 		try {
@@ -329,7 +333,7 @@ public class KmlExporter implements EventHandler {
 		saxWriter.setPrefix("xal", "urn:oasis:names:tc:ciq:xsdschema:xAL:2.0");
 
 		// set export filename and path
-		String path = config.getInternal().getExportFile().toAbsolutePath().normalize().toString();
+		String path = outputFile.toAbsolutePath().normalize().toString();
 		String fileExtension = config.getProject().getKmlExporter().isExportAsKmz() ? ".kmz" : ".kml";
 		String fileName = null;
 
@@ -455,7 +459,7 @@ public class KmlExporter implements EventHandler {
 								config.getProject().getKmlExporter().getResources().getThreadPool().getDefaultPool().getMinThreads(),
 								config.getProject().getKmlExporter().getResources().getThreadPool().getDefaultPool().getMaxThreads(),
 								PoolSizeAdaptationStrategy.AGGRESSIVE,
-								new KmlExportWorkerFactory(
+								new KmlExportWorkerFactory(outputFile,
 										jaxbKmlContext,
 										jaxbColladaContext,
 										writerPool,
