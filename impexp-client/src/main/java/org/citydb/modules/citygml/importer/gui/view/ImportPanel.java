@@ -368,7 +368,7 @@ public class ImportPanel extends JPanel implements EventHandler {
 			try {
 				success = importer.doImport();
 			} catch (CityGMLImportException e) {
-				log.error("An error occurred while importing into the database.", e);
+				log.error(e.getMessage(), e.getCause());
 			}
 
 			SwingUtilities.invokeLater(importDialog::dispose);
@@ -438,7 +438,7 @@ public class ImportPanel extends JPanel implements EventHandler {
 			try {
 				success = validator.doValidate();
 			} catch (ValidationException e) {
-				log.error("An error occurred while validating the input file(s).", e);
+				log.error(e.getMessage(), e.getCause());
 			}
 
 			SwingUtilities.invokeLater(validatorDialog::dispose);

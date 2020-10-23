@@ -865,7 +865,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 			try {
 				success = kmlExporter.doExport();
 			} catch (KmlExportException e) {
-				log.error("An error occurred while exporting from the database.", e);
+				log.error(e.getMessage(), e.getCause());
 			}
 
 			SwingUtilities.invokeLater(exportDialog::dispose);

@@ -39,7 +39,6 @@ import org.citydb.citygml.validator.controller.Validator;
 import org.citydb.config.Config;
 import org.citydb.database.DatabaseController;
 import org.citydb.database.schema.mapping.SchemaMapping;
-import org.citydb.event.EventDispatcher;
 import org.citydb.log.Logger;
 import org.citydb.modules.kml.controller.KmlExportException;
 import org.citydb.modules.kml.controller.KmlExporter;
@@ -79,21 +78,14 @@ public class ImpExpCliOld {
 		log.info("Initializing database import...");
 
 		config.getInternal().setImportFiles(files);
-		EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
-		Importer importer = new Importer(cityGMLBuilder, schemaMapping, config, eventDispatcher);
-		boolean success = false;
+		Importer importer = new Importer();
+		boolean success;
 
 		try {
-			success = importer.doProcess();
+			success = importer.doImport();
 		} catch (CityGMLImportException e) {
 			throw new ImpExpException("CityGML import failed due to an internal error.", e);
 		} finally {
-			try {
-				eventDispatcher.flushEvents();
-			} catch (InterruptedException e) {
-				//
-			}
-
 			databaseController.disconnect();
 		}
 
@@ -114,20 +106,13 @@ public class ImpExpCliOld {
 		log.info("Initializing data validation...");
 
 		config.getInternal().setImportFiles(files);
-		EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
-		Validator validator = new Validator(config, eventDispatcher);
-		boolean success = false;
+		Validator validator = new Validator();
+		boolean success;
 
 		try {
-			success = validator.doProcess();
+			success = validator.doValidate();
 		} catch (ValidationException e) {
 			throw new ImpExpException("Data validation failed due to an internal error.", e);
-		} finally {
-			try {
-				eventDispatcher.flushEvents();
-			} catch (InterruptedException e) {
-				//
-			}
 		}
 
 		if (success)
@@ -146,21 +131,14 @@ public class ImpExpCliOld {
 
 		log.info("Initializing database export...");
 
-		EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
-		Exporter exporter = new Exporter(cityGMLBuilder, schemaMapping, config, eventDispatcher);
-		boolean success = false;
+		Exporter exporter = new Exporter();
+		boolean success;
 
 		try {
-			success = exporter.doProcess();
+			success = exporter.doExport();
 		} catch (CityGMLExportException e) {
 			throw new ImpExpException("CityGML export failed due to an internal error.", e);
 		} finally {
-			try {
-				eventDispatcher.flushEvents();
-			} catch (InterruptedException e) {
-				//
-			}
-
 			databaseController.disconnect();
 		}
 
@@ -178,21 +156,14 @@ public class ImpExpCliOld {
 
 		log.info("Initializing database delete...");
 
-		EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
-		Deleter deleter = new Deleter(config, schemaMapping, eventDispatcher);
-		boolean success = false;
+		Deleter deleter = new Deleter();
+		boolean success;
 
 		try {
-			success = deleter.doProcess();
+			success = deleter.doDelete();
 		} catch (CityGMLDeleteException e) {
 			throw new ImpExpException("CityGML delete failed due to an internal error.", e);
 		} finally {
-			try {
-				eventDispatcher.flushEvents();
-			} catch (InterruptedException e) {
-				//
-			}
-
 			databaseController.disconnect();
 		}
 
@@ -212,21 +183,13 @@ public class ImpExpCliOld {
 
 		log.info("Initializing database export...");
 
-		EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
-		KmlExporter kmlExporter = new KmlExporter(schemaMapping, config, eventDispatcher);
-		boolean success = false;
-
+		KmlExporter kmlExporter = new KmlExporter();
+		boolean success;
 		try {
-			success = kmlExporter.doProcess();
+			success = kmlExporter.doExport();
 		} catch (KmlExportException e) {
 			throw new ImpExpException("KML/COLLADA/glTF export failed due to an internal error.", e);
 		} finally {
-			try {
-				eventDispatcher.flushEvents();
-			} catch (InterruptedException e) {
-				//
-			}
-
 			databaseController.disconnect();
 		}
 
