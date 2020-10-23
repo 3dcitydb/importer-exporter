@@ -33,7 +33,6 @@ import org.citydb.citygml.validator.reader.ValidatorFactory;
 import org.citydb.citygml.validator.reader.ValidatorFactoryBuilder;
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
-import org.citydb.config.internal.Internal;
 import org.citydb.event.Event;
 import org.citydb.event.EventDispatcher;
 import org.citydb.event.EventHandler;
@@ -71,11 +70,15 @@ public class Validator implements EventHandler {
 		eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
 	}
 
-	public boolean doValidate() throws ValidationException {
+	public boolean doValidate(List<Path> inputFiles) throws ValidationException {
+		if (inputFiles == null || inputFiles.isEmpty()) {
+			throw new ValidationException("No input file(s) provided.");
+		}
+
 		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
 
 		try {
-			return process();
+			return process(inputFiles);
 		} finally {
 			try {
 				eventDispatcher.flushEvents();
@@ -87,14 +90,14 @@ public class Validator implements EventHandler {
 		}
 	}
 
-	private boolean process() throws ValidationException {
+	private boolean process(List<Path> inputFiles) throws ValidationException {
 		// build list of files to be validated
-		List<InputFile> importFiles;
+		List<InputFile> files;
 		try {
 			log.info("Creating list of CityGML files to be validated...");
 			directoryScanner = new DirectoryScanner(true);
-			importFiles = directoryScanner.listFiles(config.getInternal().getImportFiles());
-			if (importFiles.isEmpty()) {
+			files = directoryScanner.listFiles(inputFiles);
+			if (files.isEmpty()) {
 				log.warn("Failed to find CityGML files at the specified locations.");
 				return false;
 			}
@@ -106,7 +109,7 @@ public class Validator implements EventHandler {
 			return false;
 
 		int fileCounter = 0;
-		int remainingFiles = importFiles.size();
+		int remainingFiles = files.size();
 		log.info("List of files to be validated successfully created.");
 		log.info(remainingFiles + " file(s) will be validated.");
 
@@ -115,8 +118,8 @@ public class Validator implements EventHandler {
 
 		long start = System.currentTimeMillis();
 		
-		while (shouldRun && fileCounter < importFiles.size()) {
-			try (InputFile file = importFiles.get(fileCounter++)) {
+		while (shouldRun && fileCounter < files.size()) {
+			try (InputFile file = files.get(fileCounter++)) {
 				Path contentFile = file.getType() != FileType.ARCHIVE ?
 						file.getFile() : Paths.get(file.getFile().toString(), ((AbstractArchiveInputFile) file).getContentFile());
 

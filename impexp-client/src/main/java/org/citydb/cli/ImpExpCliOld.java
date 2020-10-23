@@ -77,12 +77,11 @@ public class ImpExpCliOld {
 
 		log.info("Initializing database import...");
 
-		config.getInternal().setImportFiles(files);
 		Importer importer = new Importer();
 		boolean success;
 
 		try {
-			success = importer.doImport();
+			success = importer.doImport(files);
 		} catch (CityGMLImportException e) {
 			throw new ImpExpException("CityGML import failed due to an internal error.", e);
 		} finally {
@@ -105,12 +104,11 @@ public class ImpExpCliOld {
 
 		log.info("Initializing data validation...");
 
-		config.getInternal().setImportFiles(files);
 		Validator validator = new Validator();
 		boolean success;
 
 		try {
-			success = validator.doValidate();
+			success = validator.doValidate(files);
 		} catch (ValidationException e) {
 			throw new ImpExpException("Data validation failed due to an internal error.", e);
 		}

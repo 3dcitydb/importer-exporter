@@ -127,13 +127,17 @@ public class Importer implements EventHandler {
 		geometryCounter = new EnumMap<>(GMLClass.class);
 	}
 
-	public boolean doImport() throws CityGMLImportException {
+	public boolean doImport(List<Path> inputFiles) throws CityGMLImportException {
+		if (inputFiles == null || inputFiles.isEmpty()) {
+			throw new CityGMLImportException("No input file(s) provided.");
+		}
+
 		eventDispatcher.addEventHandler(EventType.OBJECT_COUNTER, this);
 		eventDispatcher.addEventHandler(EventType.GEOMETRY_COUNTER, this);
 		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
 
 		try {
-			return process();
+			return process(inputFiles);
 		} finally {
 			try {
 				eventDispatcher.flushEvents();
@@ -145,7 +149,7 @@ public class Importer implements EventHandler {
 		}
 	}
 
-	private boolean process() throws CityGMLImportException {
+	private boolean process(List<Path> inputFiles) throws CityGMLImportException {
 		// get config shortcuts
 		Database databaseConfig = config.getProject().getDatabase();
 		Internal internalConfig = config.getInternal();		
@@ -195,12 +199,12 @@ public class Importer implements EventHandler {
 		}
 
 		// build list of import files
-		List<InputFile> importFiles;
+		List<InputFile> files;
 		try {
 			log.info("Creating list of CityGML files to be imported...");
 			directoryScanner = new DirectoryScanner(true);
-			importFiles = directoryScanner.listFiles(internalConfig.getImportFiles());
-			if (importFiles.isEmpty()) {
+			files = directoryScanner.listFiles(inputFiles);
+			if (files.isEmpty()) {
 				log.warn("Failed to find CityGML files at the specified locations.");
 				return false;
 			}
@@ -212,7 +216,7 @@ public class Importer implements EventHandler {
 			return false;
 
 		int fileCounter = 0;
-		int remainingFiles = importFiles.size();
+		int remainingFiles = files.size();
 		log.info("List of import files successfully created.");
 		log.info(remainingFiles + " file(s) will be imported.");
 
@@ -249,12 +253,12 @@ public class Importer implements EventHandler {
 
 		long start = System.currentTimeMillis();
 
-		while (shouldRun && fileCounter < importFiles.size()) {
+		while (shouldRun && fileCounter < files.size()) {
 			// check whether we reached the counter limit
 			if (filter.isSetCounterFilter() && !filter.getCounterFilter().isCountSatisfied())
 				break;
 
-			try (InputFile file = importFiles.get(fileCounter++)) {
+			try (InputFile file = files.get(fileCounter++)) {
 				Path contentFile = file.getType() != FileType.ARCHIVE ?
 						file.getFile() : Paths.get(file.getFile().toString(), ((AbstractArchiveInputFile) file).getContentFile());
 

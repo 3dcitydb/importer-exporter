@@ -33,24 +33,11 @@ import java.util.List;
 public class Internal {
 	public static boolean IS_GUI_MODE = false;
 
-	private List<Path> importFiles;
 	private String exportTextureURI;
-
-	// internal variables
 	private String currentGmlIdCodespace = null;
-
-	// internal flags
 	private boolean transformCoordinates = false;
 	private boolean exportGlobalAppearances = false;
 	private boolean registerGmlIdInCache = false;
-
-	public List<Path> getImportFiles() {
-		return importFiles;
-	}
-
-	public void setImportFiles(List<Path> importFiles) {
-		this.importFiles = importFiles;
-	}
 
 	public String getExportTextureURI() {
 		return exportTextureURI;

@@ -243,20 +243,7 @@ public class ImportPanel extends JPanel implements EventHandler {
 	}
 
 	public void setSettings() {
-		List<Path> importFiles = new ArrayList<>();
-		for (int i = 0; i < fileListModel.size(); ++i) {
-			try {
-				importFiles.add(fileListModel.get(i).toPath());
-			} catch (InvalidPathException e) {
-				log.error("'" + fileListModel.get(i) + "' is not a valid file or folder.");
-				importFiles = Collections.emptyList();
-				break;
-			}
-		}
-
-		config.getInternal().setImportFiles(importFiles);		
 		config.getProject().getDatabase().getWorkspaces().getImportWorkspace().setName(workspaceText.getText());
-
 		filterPanel.setSettings();
 	}
 
@@ -271,7 +258,8 @@ public class ImportPanel extends JPanel implements EventHandler {
 			ImportFilter filter = config.getProject().getImporter().getFilter();
 
 			// check all input values...
-			if (config.getInternal().getImportFiles() == null || config.getInternal().getImportFiles().isEmpty()) {
+			List<Path> inputFiles = getInputFiles();
+			if (inputFiles.isEmpty()) {
 				viewController.errorMessage(Language.I18N.getString("import.dialog.error.incompleteData"), 
 						Language.I18N.getString("import.dialog.error.incompleteData.dataset"));
 				return;
@@ -366,7 +354,7 @@ public class ImportPanel extends JPanel implements EventHandler {
 
 			boolean success = false;
 			try {
-				success = importer.doImport();
+				success = importer.doImport(inputFiles);
 			} catch (CityGMLImportException e) {
 				log.error(e.getMessage(), e.getCause());
 			}
@@ -394,7 +382,8 @@ public class ImportPanel extends JPanel implements EventHandler {
 			setSettings();
 
 			// check for input files...
-			if (config.getInternal().getImportFiles() == null || config.getInternal().getImportFiles().isEmpty()) {
+			List<Path> inputFiles = getInputFiles();
+			if (inputFiles.isEmpty()) {
 				viewController.errorMessage(Language.I18N.getString("validate.dialog.error.incompleteData"),
 						Language.I18N.getString("validate.dialog.error.incompleteData.dataset"));
 				return;
@@ -436,7 +425,7 @@ public class ImportPanel extends JPanel implements EventHandler {
 
 			boolean success = false;
 			try {
-				success = validator.doValidate();
+				success = validator.doValidate(inputFiles);
 			} catch (ValidationException e) {
 				log.error(e.getMessage(), e.getCause());
 			}
@@ -453,6 +442,21 @@ public class ImportPanel extends JPanel implements EventHandler {
 		} finally {
 			lock.unlock();
 		}
+	}
+
+	private List<Path> getInputFiles() {
+		List<Path> importFiles = new ArrayList<>();
+		for (int i = 0; i < fileListModel.size(); ++i) {
+			try {
+				importFiles.add(fileListModel.get(i).toPath());
+			} catch (InvalidPathException e) {
+				log.error("'" + fileListModel.get(i) + "' is not a valid file or folder.");
+				importFiles = Collections.emptyList();
+				break;
+			}
+		}
+
+		return importFiles;
 	}
 
 	private void loadFile(String title) {
