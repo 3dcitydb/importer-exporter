@@ -179,11 +179,25 @@ public class KmlExporter implements EventHandler {
 		kmlFactory = new ObjectFactory();
 	}
 
-	public void cleanup() {
-		eventDispatcher.removeEventHandler(this);
+	public boolean doExport() throws KmlExportException {
+		eventDispatcher.addEventHandler(EventType.OBJECT_COUNTER, this);
+		eventDispatcher.addEventHandler(EventType.GEOMETRY_COUNTER, this);
+		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
+
+		try {
+			return process();
+		} finally {
+			try {
+				eventDispatcher.flushEvents();
+			} catch (InterruptedException e) {
+				//
+			}
+
+			eventDispatcher.removeEventHandler(this);
+		}
 	}
 
-	public boolean doProcess() throws KmlExportException {
+	private boolean process() throws KmlExportException {
 		// get JAXB contexts for KML and COLLADA
 		JAXBContext jaxbColladaContext;
 		try {
@@ -193,11 +207,6 @@ public class KmlExporter implements EventHandler {
 		} catch (JAXBException e) {
 			throw new KmlExportException("Failed to initialize KML/COLLADA context.", e);
 		}
-
-		// adding listener
-		eventDispatcher.addEventHandler(EventType.OBJECT_COUNTER, this);
-		eventDispatcher.addEventHandler(EventType.GEOMETRY_COUNTER, this);
-		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
 
 		// checking workspace
 		Workspace workspace = config.getProject().getDatabase().getWorkspaces().getKmlExportWorkspace();
@@ -607,12 +616,6 @@ public class KmlExporter implements EventHandler {
 
 						if (kmlWorkerPool != null && !kmlWorkerPool.isTerminated())
 							kmlWorkerPool.shutdownNow();
-
-						try {
-							eventDispatcher.flushEvents();
-						} catch (InterruptedException e) {
-							e.printStackTrace();
-						}
 					}
 				}
 

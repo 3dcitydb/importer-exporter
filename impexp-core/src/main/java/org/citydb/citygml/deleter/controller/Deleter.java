@@ -82,19 +82,28 @@ public class Deleter implements EventHandler {
 		objectCounter = new HashMap<>();
 	}
 
-	public void cleanup() {
-		eventDispatcher.removeEventHandler(this);
+	public boolean doDelete() throws CityGMLDeleteException {
+		eventDispatcher.addEventHandler(EventType.OBJECT_COUNTER, this);
+		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
+
+		try {
+			return process();
+		} finally {
+			try {
+				eventDispatcher.flushEvents();
+			} catch (InterruptedException e) {
+				//
+			}
+
+			eventDispatcher.removeEventHandler(this);
+		}
 	}
 
-	public boolean doProcess() throws CityGMLDeleteException {
+	private boolean process() throws CityGMLDeleteException {
 		long start = System.currentTimeMillis();
 		int minThreads = 2;
 		int maxThreads = Math.max(minThreads, Runtime.getRuntime().availableProcessors());
 		
-		// adding listeners
-		eventDispatcher.addEventHandler(EventType.OBJECT_COUNTER, this);
-		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
-
 		// checking workspace
 		Workspace workspace = config.getProject().getDatabase().getWorkspaces().getDeleteWorkspace();
 		if (shouldRun && databaseAdapter.hasVersioningSupport() && 
@@ -160,12 +169,6 @@ public class Deleter implements EventHandler {
 			// clean up
 			if (dbWorkerPool != null)
 				dbWorkerPool.shutdownNow();
-
-			try {
-				eventDispatcher.flushEvents();
-			} catch (InterruptedException e) {
-				//
-			}
 		}		
 		
 		// show deleted features

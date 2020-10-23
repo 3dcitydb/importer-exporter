@@ -71,21 +71,29 @@ public class Validator implements EventHandler {
 		eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
 	}
 
-	public void cleanup() {
-		eventDispatcher.removeEventHandler(this);
+	public boolean doValidate() throws ValidationException {
+		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
+
+		try {
+			return process();
+		} finally {
+			try {
+				eventDispatcher.flushEvents();
+			} catch (InterruptedException e) {
+				//
+			}
+
+			eventDispatcher.removeEventHandler(this);
+		}
 	}
 
-	public boolean doProcess() throws ValidationException {
-		// adding listeners
-		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
-		Internal internalConfig = config.getInternal();
-
+	private boolean process() throws ValidationException {
 		// build list of files to be validated
 		List<InputFile> importFiles;
 		try {
 			log.info("Creating list of CityGML files to be validated...");
 			directoryScanner = new DirectoryScanner(true);
-			importFiles = directoryScanner.listFiles(internalConfig.getImportFiles());
+			importFiles = directoryScanner.listFiles(config.getInternal().getImportFiles());
 			if (importFiles.isEmpty()) {
 				log.warn("Failed to find CityGML files at the specified locations.");
 				return false;

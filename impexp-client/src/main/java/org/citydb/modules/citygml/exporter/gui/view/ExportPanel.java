@@ -400,11 +400,9 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 
 			boolean success = false;
 			try {
-				success = exporter.doProcess();
+				success = exporter.doExport();
 			} catch (CityGMLExportException e) {
 				log.error("An error occurred while exporting from the database.", e);
-			} finally {
-				exporter.cleanup();
 			}
 
 			SwingUtilities.invokeLater(exportDialog::dispose);

@@ -141,16 +141,25 @@ public class Exporter implements EventHandler {
 		totalGeometryCounter = new EnumMap<>(GMLClass.class);
 	}
 
-	public void cleanup() {
-		eventDispatcher.removeEventHandler(this);
-	}
-
-	public boolean doProcess() throws CityGMLExportException {
-		// adding listeners
+	public boolean doExport() throws CityGMLExportException {
 		eventDispatcher.addEventHandler(EventType.OBJECT_COUNTER, this);
 		eventDispatcher.addEventHandler(EventType.GEOMETRY_COUNTER, this);
 		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
 
+		try {
+			return process();
+		} finally {
+			try {
+				eventDispatcher.flushEvents();
+			} catch (InterruptedException e) {
+				//
+			}
+
+			eventDispatcher.removeEventHandler(this);
+		}
+	}
+
+	private boolean process() throws CityGMLExportException {
 		// checking workspace
 		Workspace workspace = config.getProject().getDatabase().getWorkspaces().getExportWorkspace();
 		if (shouldRun && databaseAdapter.hasVersioningSupport() && 
@@ -531,12 +540,6 @@ public class Exporter implements EventHandler {
 
 					if (dbWorkerPool != null && !dbWorkerPool.isTerminated())
 						dbWorkerPool.shutdownNow();
-
-					try {
-						eventDispatcher.flushEvents();
-					} catch (InterruptedException e) {
-						//
-					}
 
 					if (uidCacheManager != null) {
 						try {

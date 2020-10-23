@@ -127,23 +127,31 @@ public class Importer implements EventHandler {
 		geometryCounter = new EnumMap<>(GMLClass.class);
 	}
 
-	public void cleanup() {
-		eventDispatcher.removeEventHandler(this);
-	}
-
-	public boolean doProcess() throws CityGMLImportException {
-		// adding listeners
+	public boolean doImport() throws CityGMLImportException {
 		eventDispatcher.addEventHandler(EventType.OBJECT_COUNTER, this);
 		eventDispatcher.addEventHandler(EventType.GEOMETRY_COUNTER, this);
 		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
 
+		try {
+			return process();
+		} finally {
+			try {
+				eventDispatcher.flushEvents();
+			} catch (InterruptedException e) {
+				//
+			}
+
+			eventDispatcher.removeEventHandler(this);
+		}
+	}
+
+	private boolean process() throws CityGMLImportException {
 		// get config shortcuts
-		final org.citydb.config.project.importer.Importer importerConfig = config.getProject().getImporter();
 		Database databaseConfig = config.getProject().getDatabase();
 		Internal internalConfig = config.getInternal();		
-		ImportResources resourcesConfig = importerConfig.getResources();
-		Index indexConfig = importerConfig.getIndexes();
-		ImportGmlId gmlIdConfig = importerConfig.getGmlId();
+		ImportResources resourcesConfig = config.getProject().getImporter().getResources();
+		Index indexConfig = config.getProject().getImporter().getIndexes();
+		ImportGmlId gmlIdConfig = config.getProject().getImporter().getGmlId();
 
 		// worker pool settings 
 		int minThreads = resourcesConfig.getThreadPool().getDefaultPool().getMinThreads();
@@ -210,7 +218,7 @@ public class Importer implements EventHandler {
 
 		// affine transformation
 		AffineTransformer affineTransformer = null;
-		if (importerConfig.getAffineTransformation().isEnabled()) {
+		if (config.getProject().getImporter().getAffineTransformation().isEnabled()) {
 			try {
 				log.info("Applying affine coordinates transformation.");
 				affineTransformer = new AffineTransformer(config);
@@ -272,9 +280,10 @@ public class Importer implements EventHandler {
 					internalConfig.setCurrentGmlIdCodespace(null);
 
 				// create import logger
-				if (importerConfig.getImportLog().isSetLogImportedFeatures()) {
+				if (config.getProject().getImporter().getImportLog().isSetLogImportedFeatures()) {
 					try {
-						String logPath = importerConfig.getImportLog().isSetLogPath() ? importerConfig.getImportLog().getLogPath()
+						String logPath = config.getProject().getImporter().getImportLog().isSetLogPath() ?
+								config.getProject().getImporter().getImportLog().getLogPath()
 								: CoreConstants.IMPEXP_DATA_DIR.resolve(CoreConstants.IMPORT_LOG_DIR).toString();
 						importLogger = new ImportLogger(logPath, contentFile, databaseConfig.getActiveConnection());
 						log.info("Log file of imported top-level features: " + importLogger.getLogFilePath().toString());
@@ -462,12 +471,6 @@ public class Importer implements EventHandler {
 
 				if (tmpXlinkPool != null && !tmpXlinkPool.isTerminated())
 					tmpXlinkPool.shutdownNow();
-
-				try {
-					eventDispatcher.flushEvents();
-				} catch (InterruptedException e) {
-					//
-				}
 
 				if (uidCacheManager != null) {
 					try {
