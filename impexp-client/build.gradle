@@ -98,41 +98,45 @@ application {
     }
 }
 
-distributions.main.contents {
-    from processReadme
-    from('resources/start') {
-        rename 'start(.*)', project.appName + '$1'
-        fileMode 0755
-        filter(ReplaceTokens, tokens: [
-                name: project.impexpName,
-                cliName: project.appCliName,
-                cliDir: application.executableDir
-        ])
-    }
-    into('3dcitydb') {
-        from "$rootDir/resources/3dcitydb"
-    }
-    into('3d-web-map-client') {
-        from "$rootDir/resources/3d-web-map-client"
-    }
-    into('contribs') {
-        from 'contribs'
-    }
-    into('plugins') {
-        from "$rootDir/resources/plugins"
-    }
-    into('templates') {
-        from "$rootDir/resources/templates"
-    }
-    into('samples') {
-        from "$rootDir/resources/samples"
-    }
-    into('license') {
-        from "$rootDir/resources/license/APACHE-2.0.txt"
-        from processLicense
-    }
-    from(file("$buildDir/tmp/dir")) {
-        mkdir "$buildDir/tmp/dir/ade-extensions"
+distributions.main {
+    distributionBaseName = project.appName
+
+    contents {
+        from processReadme
+        from('resources/start') {
+            rename 'start(.*)', project.appName + '$1'
+            fileMode 0755
+            filter(ReplaceTokens, tokens: [
+                    name: project.impexpName,
+                    cliName: project.appCliName,
+                    cliDir: application.executableDir
+            ])
+        }
+        into('3dcitydb') {
+            from "$rootDir/resources/3dcitydb"
+        }
+        into('3d-web-map-client') {
+            from "$rootDir/resources/3d-web-map-client"
+        }
+        into('contribs') {
+            from 'contribs'
+        }
+        into('plugins') {
+            from "$rootDir/resources/plugins"
+        }
+        into('templates') {
+            from "$rootDir/resources/templates"
+        }
+        into('samples') {
+            from "$rootDir/resources/samples"
+        }
+        into('license') {
+            from "$rootDir/resources/license/APACHE-2.0.txt"
+            from processLicense
+        }
+        from(file("$buildDir/tmp/dir")) {
+            mkdir "$buildDir/tmp/dir/ade-extensions"
+        }
     }
 }
 
