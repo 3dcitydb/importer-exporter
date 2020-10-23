@@ -438,7 +438,7 @@ public class DBConnection implements Comparable<DBConnection> {
 	
 	@Override
 	public String toString() {
-		return getDescription();
+		return description != null ? getDescription() : toConnectString();
 	}
 
 	@Override

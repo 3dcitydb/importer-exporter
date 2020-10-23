@@ -28,6 +28,7 @@
 
 package org.citydb.plugin.cli;
 
+import org.citydb.config.project.database.DBConnection;
 import org.citydb.config.project.database.DatabaseType;
 import picocli.CommandLine;
 
@@ -38,10 +39,6 @@ public class DatabaseOptions {
             description = "Database type: ${COMPLETION-CANDIDATES} (default: ${DEFAULT-VALUE}).")
     private Type type;
 
-    @CommandLine.Option(names = {"-d", "--db-name"}, paramLabel = "<name>",
-            required = true, description = "Name of the 3DCityDB instance to connect to.")
-    private String name;
-
     @CommandLine.Option(names = {"-H", "--db-host"}, paramLabel = "<host>",
             required = true, description = "Name of the host on which the 3DCityDB is running.")
     private String host;
@@ -50,8 +47,16 @@ public class DatabaseOptions {
             description = "Port of the 3DCityDB server (default: 5432 | 1521).")
     private Integer port;
 
+    @CommandLine.Option(names = {"-d", "--db-name"}, paramLabel = "<name>",
+            required = true, description = "Name of the 3DCityDB database to connect to.")
+    private String name;
+
+    @CommandLine.Option(names = {"-s", "--db-schema"}, paramLabel = "<schema>",
+            description = "Schema to use when connecting to the 3DCityDB (default: citydb | username).")
+    private String schema;
+
     @CommandLine.Option(names = {"-u", "--db-user"}, paramLabel = "<name>",
-            required = true, description = "User name to use when connecting to the 3DCityDB.")
+            required = true, description = "Username to use when connecting to the 3DCityDB.")
     private String user;
 
     @CommandLine.Option(names = {"-p", "--db-password"}, paramLabel = "<password>", arity = "0..1",
@@ -84,5 +89,24 @@ public class DatabaseOptions {
 
     public String getPassword() {
         return password;
+    }
+
+    public boolean isValid() {
+        return name != null
+                && host != null
+                && user != null;
+    }
+
+    public DBConnection toDBConnection() {
+        DBConnection connection = new DBConnection();
+        connection.setDatabaseType(getType());
+        connection.setSid(name);
+        connection.setSchema(schema);
+        connection.setServer(host);
+        connection.setPort(getPort());
+        connection.setUser(user);
+        connection.setPassword(password);
+        
+        return connection;
     }
 }

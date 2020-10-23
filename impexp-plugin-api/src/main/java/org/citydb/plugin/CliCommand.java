@@ -34,7 +34,8 @@ import java.util.concurrent.Callable;
 
 @CommandLine.Command(
         mixinStandardHelpOptions = true,
-        showAtFileInUsageHelp = true
+        showAtFileInUsageHelp = true,
+        sortOptions = false
 )
 public abstract class CliCommand implements Callable<Integer> {
     public void preprocess() throws Exception { }

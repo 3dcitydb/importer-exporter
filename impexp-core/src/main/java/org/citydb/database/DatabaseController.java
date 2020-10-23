@@ -79,7 +79,7 @@ public class DatabaseController implements ConnectionManager {
 		DBConnection connection = config.getProject().getDatabase().getActiveConnection();
 		if (connection == null) {
 			log.error("Connection to database could not be established.");
-			log.error("No valid database connection details provided.");
+			log.error("No valid database connection details provided in configuration.");
 			return false;
 		}
 
@@ -93,7 +93,7 @@ public class DatabaseController implements ConnectionManager {
 	public synchronized boolean connect(DBConnection connection, boolean suppressDialog) {
 		if (!connectionPool.isConnected()) {
 			try {
-				log.info("Connecting to database profile '" + connection + "'.");
+				log.info("Connecting to database '" + connection + "'.");
 				showConnectionStatus(ConnectionState.INIT_CONNECT);
 
 				// connect to database
