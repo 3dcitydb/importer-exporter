@@ -42,7 +42,6 @@ import org.citydb.config.project.query.Query;
 import org.citydb.config.project.query.filter.counter.CounterFilter;
 import org.citydb.config.project.query.simple.SimpleSelectionFilter;
 import org.citydb.database.DatabaseController;
-import org.citydb.database.schema.mapping.SchemaMapping;
 import org.citydb.event.Event;
 import org.citydb.event.EventDispatcher;
 import org.citydb.event.EventHandler;
@@ -59,7 +58,6 @@ import org.citydb.plugin.extension.view.ViewController;
 import org.citydb.plugin.extension.view.components.DatabaseSrsComboBox;
 import org.citydb.registry.ObjectRegistry;
 import org.citydb.util.Util;
-import org.citygml4j.builder.jaxb.CityGMLBuilder;
 import org.jdesktop.swingx.JXTextField;
 import org.jdesktop.swingx.prompt.PromptSupport.FocusBehavior;
 
@@ -86,7 +84,6 @@ import java.util.concurrent.locks.ReentrantLock;
 public class ExportPanel extends JPanel implements DropTargetListener, EventHandler {
 	private final ReentrantLock mainLock = new ReentrantLock();
 	private final Logger log = Logger.getInstance();
-	private final CityGMLBuilder cityGMLBuilder;
 	private final ViewController viewController;
 	private final DatabaseController databaseController;
 	private final Config config;
@@ -112,7 +109,6 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 		this.config = config;
 
 		databaseController = ObjectRegistry.getInstance().getDatabaseController();
-		cityGMLBuilder = ObjectRegistry.getInstance().getCityGMLBuilder();		
 		ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(EventType.DATABASE_CONNECTION_STATE, this);
 
 		initGui();
@@ -386,10 +382,7 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 				exportDialog.setVisible(true);
 			});
 
-			// get schema mapping
-			final SchemaMapping schemaMapping = ObjectRegistry.getInstance().getSchemaMapping();
-
-			Exporter exporter = new Exporter(cityGMLBuilder, schemaMapping, config, eventDispatcher);
+			Exporter exporter = new Exporter();
 
 			exportDialog.getCancelButton().addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
@@ -409,25 +402,12 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 			try {
 				success = exporter.doProcess();
 			} catch (CityGMLExportException e) {
-				log.error(e.getMessage());
-
-				Throwable cause = e.getCause();
-				while (cause != null) {
-					log.error(cause.getClass().getTypeName() + ": " + cause.getMessage());
-					cause = cause.getCause();
-				}
-			}
-
-			try {
-				eventDispatcher.flushEvents();
-			} catch (InterruptedException e1) {
-				//
+				log.error("An error occurred while exporting from the database.", e);
+			} finally {
+				exporter.cleanup();
 			}
 
 			SwingUtilities.invokeLater(exportDialog::dispose);
-
-			// cleanup
-			exporter.cleanup();
 
 			if (success) {
 				log.info("Database export successfully finished.");

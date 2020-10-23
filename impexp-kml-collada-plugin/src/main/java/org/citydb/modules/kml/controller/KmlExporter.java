@@ -150,36 +150,31 @@ import java.util.zip.ZipOutputStream;
 
 public class KmlExporter implements EventHandler {
 	private final Logger log = Logger.getInstance();
-
 	private final AbstractDatabaseAdapter databaseAdapter;
 	private final SchemaMapping schemaMapping;
 	private final Config config;
 	private final EventDispatcher eventDispatcher;
 
+	private final AtomicBoolean isInterrupted = new AtomicBoolean(false);
+	private final ObjectFactory kmlFactory;
+	private final Map<Integer, Long> objectCounter = new HashMap<>();
+	private final Map<Integer, Long> totalObjectCounter = new HashMap<>();
+
 	private JAXBContext jaxbKmlContext;
-	private JAXBContext jaxbColladaContext;
-	private ObjectFactory kmlFactory;
 	private WorkerPool<KmlSplittingResult> kmlWorkerPool;
 	private SingleWorkerPool<SAXEventBuffer> writerPool;
 	private KmlSplitter kmlSplitter;
 
 	private volatile boolean shouldRun = true;
-	private AtomicBoolean isInterrupted = new AtomicBoolean(false);
-
 	private final String ENCODING = "UTF-8";
 	private final Charset CHARSET = Charset.forName(ENCODING);
-	private final String TEMP_FOLDER = "__temp";
 	private File lastTempFolder = null;
-
-	private Map<Integer, Long> objectCounter = new HashMap<>();
-	private Map<Integer, Long> totalObjectCounter = new HashMap<>();
 	private long geometryCounter;
 
-	public KmlExporter(SchemaMapping schemaMapping, Config config, EventDispatcher eventDispatcher) {
-		this.schemaMapping = schemaMapping;
-		this.config = config;
-		this.eventDispatcher = eventDispatcher;
-
+	public KmlExporter() {
+		schemaMapping = ObjectRegistry.getInstance().getSchemaMapping();
+		config = ObjectRegistry.getInstance().getConfig();
+		eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
 		databaseAdapter = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter();
 		kmlFactory = new ObjectFactory();
 	}
@@ -190,6 +185,7 @@ public class KmlExporter implements EventHandler {
 
 	public boolean doProcess() throws KmlExportException {
 		// get JAXB contexts for KML and COLLADA
+		JAXBContext jaxbColladaContext;
 		try {
 			log.debug("Initializing KML/COLLADA context.");
 			jaxbKmlContext = getKmlContext();
@@ -554,6 +550,7 @@ public class KmlExporter implements EventHandler {
 									zipOut.closeEntry();
 
 									List<File> filesToZip = new ArrayList<File>();
+									String TEMP_FOLDER = "__temp";
 									File tempFolder = new File(currentWorkingDirectoryPath, TEMP_FOLDER);
 									lastTempFolder = tempFolder;
 									int indexOfZipFilePath = tempFolder.getCanonicalPath().length() + 1;

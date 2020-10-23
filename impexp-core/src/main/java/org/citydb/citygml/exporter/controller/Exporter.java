@@ -84,6 +84,7 @@ import org.citydb.query.filter.selection.SelectionFilter;
 import org.citydb.query.filter.selection.operator.logical.LogicalOperationFactory;
 import org.citydb.query.filter.tiling.Tile;
 import org.citydb.query.filter.tiling.Tiling;
+import org.citydb.registry.ObjectRegistry;
 import org.citydb.util.Util;
 import org.citygml4j.builder.jaxb.CityGMLBuilder;
 import org.citygml4j.model.citygml.cityobjectgroup.CityObjectGroup;
@@ -101,45 +102,39 @@ import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.EnumMap;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Exporter implements EventHandler {
 	private final Logger log = Logger.getInstance();
-
 	private final CityGMLBuilder cityGMLBuilder;
 	private final AbstractDatabaseAdapter databaseAdapter;
 	private final SchemaMapping schemaMapping;
 	private final Config config;
 	private final EventDispatcher eventDispatcher;
-	private DBSplitter dbSplitter;
+	private final AtomicBoolean isInterrupted = new AtomicBoolean(false);
+
+	private final HashMap<Integer, Long> objectCounter;
+	private final EnumMap<GMLClass, Long> geometryCounter;
+	private final HashMap<Integer, Long> totalObjectCounter;
+	private final EnumMap<GMLClass, Long> totalGeometryCounter;
 
 	private volatile boolean shouldRun = true;
-	private AtomicBoolean isInterrupted = new AtomicBoolean(false);
-
+	private DBSplitter dbSplitter;
 	private WorkerPool<DBSplittingResult> dbWorkerPool;
 	private WorkerPool<DBXlink> xlinkExporterPool;
 	private CacheTableManager cacheTableManager;
 	private UIDCacheManager uidCacheManager;
 	private boolean useTiling;
 
-	private HashMap<Integer, Long> objectCounter;
-	private EnumMap<GMLClass, Long> geometryCounter;
-	private HashMap<Integer, Long> totalObjectCounter;
-	private EnumMap<GMLClass, Long> totalGeometryCounter;	
-
-	public Exporter(CityGMLBuilder cityGMLBuilder, 
-			SchemaMapping schemaMapping, 
-			Config config, 
-			EventDispatcher eventDispatcher) {
-		this.cityGMLBuilder = cityGMLBuilder;
-		this.schemaMapping = schemaMapping;
-		this.config = config;
-		this.eventDispatcher = eventDispatcher;
-
+	public Exporter() {
+		cityGMLBuilder = ObjectRegistry.getInstance().getCityGMLBuilder();
+		schemaMapping = ObjectRegistry.getInstance().getSchemaMapping();
+		config = ObjectRegistry.getInstance().getConfig();
+		eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
 		databaseAdapter = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter();
+
 		objectCounter = new HashMap<>();
 		geometryCounter = new EnumMap<>(GMLClass.class);
 		totalObjectCounter = new HashMap<>();
@@ -339,22 +334,22 @@ public class Exporter implements EventHandler {
 
 					switch (suffixMode) {
 						case XMIN_YMIN:
-							suffix = String.valueOf(minX) + '_' + String.valueOf(minY);
+							suffix = String.valueOf(minX) + '_' + minY;
 							break;
 						case XMAX_YMIN:
-							suffix = String.valueOf(maxX) + '_' + String.valueOf(minY);
+							suffix = String.valueOf(maxX) + '_' + minY;
 							break;
 						case XMIN_YMAX:
-							suffix = String.valueOf(minX) + '_' + String.valueOf(maxY);
+							suffix = String.valueOf(minX) + '_' + maxY;
 							break;
 						case XMAX_YMAX:
-							suffix = String.valueOf(maxX) + '_' + String.valueOf(maxY);
+							suffix = String.valueOf(maxX) + '_' + maxY;
 							break;
 						case XMIN_YMIN_XMAX_YMAX:
-							suffix = String.valueOf(minX) + '_' + String.valueOf(minY) + '_' + String.valueOf(maxX) + '_' + String.valueOf(maxY);
+							suffix = String.valueOf(minX) + '_' + minY + '_' + maxX + '_' + maxY;
 							break;
 						default:
-							suffix = String.valueOf(i) + '_' + String.valueOf(j);
+							suffix = String.valueOf(i) + '_' + j;
 					}
 
 					folder = folder.resolve(tilingOptions.getTilePath() + '_' + suffix);

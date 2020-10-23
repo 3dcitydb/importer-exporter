@@ -47,7 +47,6 @@ import org.citydb.config.project.kmlExporter.SimpleKmlQueryMode;
 import org.citydb.config.project.query.filter.selection.id.ResourceIdOperator;
 import org.citydb.config.project.query.filter.type.FeatureTypeFilter;
 import org.citydb.database.DatabaseController;
-import org.citydb.database.schema.mapping.SchemaMapping;
 import org.citydb.event.Event;
 import org.citydb.event.EventDispatcher;
 import org.citydb.event.EventHandler;
@@ -846,10 +845,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 				exportDialog.setVisible(true);
 			});
 			
-			// get schema mapping
-			final SchemaMapping schemaMapping = ObjectRegistry.getInstance().getSchemaMapping();
-
-			org.citydb.modules.kml.controller.KmlExporter kmlExporter = new org.citydb.modules.kml.controller.KmlExporter(schemaMapping, config, eventDispatcher);
+			org.citydb.modules.kml.controller.KmlExporter kmlExporter = new org.citydb.modules.kml.controller.KmlExporter();
 
 			exportDialog.getCancelButton().addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
@@ -869,25 +865,12 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 			try {
 				success = kmlExporter.doProcess();
 			} catch (KmlExportException e) {
-				log.error(e.getMessage());
-
-				Throwable cause = e.getCause();
-				while (cause != null) {
-					log.error(cause.getClass().getTypeName() + ": " + cause.getMessage());
-					cause = cause.getCause();
-				}
-			}
-
-			try {
-				eventDispatcher.flushEvents();
-			} catch (InterruptedException e1) {
-				//
+				log.error("An error occurred while exporting from the database.", e);
+			} finally {
+				kmlExporter.cleanup();
 			}
 
 			SwingUtilities.invokeLater(exportDialog::dispose);
-
-			// cleanup
-			kmlExporter.cleanup();
 
 			if (success) {
 				log.info("Database export successfully finished.");

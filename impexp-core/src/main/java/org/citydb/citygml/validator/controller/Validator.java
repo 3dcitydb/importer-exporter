@@ -48,6 +48,7 @@ import org.citydb.file.InputFile;
 import org.citydb.file.input.AbstractArchiveInputFile;
 import org.citydb.file.input.DirectoryScanner;
 import org.citydb.log.Logger;
+import org.citydb.registry.ObjectRegistry;
 import org.citydb.util.Util;
 
 import java.io.IOException;
@@ -58,17 +59,16 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Validator implements EventHandler {
 	private final Logger log = Logger.getInstance();
-
 	private final Config config;
 	private final EventDispatcher eventDispatcher;
+	private final AtomicBoolean isInterrupted = new AtomicBoolean(false);
 
 	private volatile boolean shouldRun = true;
-	private AtomicBoolean isInterrupted = new AtomicBoolean(false);
 	private DirectoryScanner directoryScanner;
 
-	public Validator(Config config, EventDispatcher eventDispatcher) {
-		this.config = config;
-		this.eventDispatcher = eventDispatcher;
+	public Validator() {
+		config = ObjectRegistry.getInstance().getConfig();
+		eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
 	}
 
 	public void cleanup() {

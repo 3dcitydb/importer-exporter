@@ -50,6 +50,7 @@ import org.citydb.log.Logger;
 import org.citydb.query.Query;
 import org.citydb.query.builder.QueryBuildException;
 import org.citydb.query.builder.config.ConfigQueryBuilder;
+import org.citydb.registry.ObjectRegistry;
 import org.citydb.util.Util;
 
 import java.sql.SQLException;
@@ -64,22 +65,21 @@ public class Deleter implements EventHandler {
 	private final EventDispatcher eventDispatcher;
 	private final AbstractDatabaseAdapter databaseAdapter;
 	private final Config config;
-	
-	private DBSplitter dbSplitter;
+
+	private final AtomicBoolean isInterrupted = new AtomicBoolean(false);
+	private final Map<Integer, Long> objectCounter;
+
 	private volatile boolean shouldRun = true;
-	private AtomicBoolean isInterrupted = new AtomicBoolean(false);
+	private DBSplitter dbSplitter;
 	private WorkerPool<DBSplittingResult> dbWorkerPool;
-	private Map<Integer, Long> objectCounter;
 	private BundledConnection bundledConnection;
 	
-	public Deleter(Config config, 
-			SchemaMapping schemaMapping, 
-			EventDispatcher eventDispatcher) {
-		this.config = config;
-		this.schemaMapping = schemaMapping;
-		this.eventDispatcher = eventDispatcher;
-		this.databaseAdapter = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter();
-		this.objectCounter = new HashMap<>();
+	public Deleter() {
+		config = ObjectRegistry.getInstance().getConfig();
+		schemaMapping = ObjectRegistry.getInstance().getSchemaMapping();
+		eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
+		databaseAdapter = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter();
+		objectCounter = new HashMap<>();
 	}
 
 	public void cleanup() {

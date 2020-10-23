@@ -38,7 +38,6 @@ import org.citydb.config.project.global.LogLevel;
 import org.citydb.config.project.importer.ImportFilter;
 import org.citydb.config.project.query.filter.counter.CounterFilter;
 import org.citydb.database.DatabaseController;
-import org.citydb.database.schema.mapping.SchemaMapping;
 import org.citydb.event.Event;
 import org.citydb.event.EventDispatcher;
 import org.citydb.event.EventHandler;
@@ -52,7 +51,6 @@ import org.citydb.gui.util.GuiUtil;
 import org.citydb.log.Logger;
 import org.citydb.plugin.extension.view.ViewController;
 import org.citydb.registry.ObjectRegistry;
-import org.citygml4j.builder.jaxb.CityGMLBuilder;
 import org.jdesktop.swingx.JXTextField;
 import org.jdesktop.swingx.prompt.PromptSupport.FocusBehavior;
 
@@ -87,7 +85,6 @@ import java.util.concurrent.locks.ReentrantLock;
 public class ImportPanel extends JPanel implements EventHandler {
 	private final ReentrantLock mainLock = new ReentrantLock();
 	private final Logger log = Logger.getInstance();
-	private final CityGMLBuilder cityGMLBuilder;
 	private final ViewController viewController;
 	private final DatabaseController databaseController;
 	private final Config config;
@@ -109,7 +106,6 @@ public class ImportPanel extends JPanel implements EventHandler {
 		this.viewController = viewController;
 
 		databaseController = ObjectRegistry.getInstance().getDatabaseController();
-		cityGMLBuilder = ObjectRegistry.getInstance().getCityGMLBuilder();
 		ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(EventType.DATABASE_CONNECTION_STATE, this);
 
 		initGui();
@@ -352,10 +348,7 @@ public class ImportPanel extends JPanel implements EventHandler {
 				importDialog.setVisible(true);
 			});
 
-			// get schema mapping
-			final SchemaMapping schemaMapping = ObjectRegistry.getInstance().getSchemaMapping();
-
-			Importer importer = new Importer(cityGMLBuilder, schemaMapping, config, eventDispatcher);
+			Importer importer = new Importer();
 
 			importDialog.getCancelButton().addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
@@ -375,25 +368,12 @@ public class ImportPanel extends JPanel implements EventHandler {
 			try {
 				success = importer.doProcess();
 			} catch (CityGMLImportException e) {
-				log.error(e.getMessage());
-
-				Throwable cause = e.getCause();
-				while (cause != null) {
-					log.error(cause.getClass().getTypeName() + ": " + cause.getMessage());
-					cause = cause.getCause();
-				}
-			}
-
-			try {
-				eventDispatcher.flushEvents();
-			} catch (InterruptedException e) {
-				//
+				log.error("An error occurred while importing into the database.", e);
+			} finally {
+				importer.cleanup();
 			}
 
 			SwingUtilities.invokeLater(importDialog::dispose);
-
-			// cleanup
-			importer.cleanup();
 
 			if (success) {
 				log.info("Database import successfully finished.");
@@ -440,7 +420,7 @@ public class ImportPanel extends JPanel implements EventHandler {
 				validatorDialog.setVisible(true);
 			});
 
-			Validator validator = new Validator(config, eventDispatcher);
+			Validator validator = new Validator();
 
 			validatorDialog.getButton().addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
@@ -460,25 +440,12 @@ public class ImportPanel extends JPanel implements EventHandler {
 			try {
 				success = validator.doProcess();
 			} catch (ValidationException e) {
-				log.error(e.getMessage());
-
-				Throwable cause = e.getCause();
-				while (cause != null) {
-					log.error(cause.getClass().getTypeName() + ": " + cause.getMessage());
-					cause = cause.getCause();
-				}
-			}
-
-			try {
-				eventDispatcher.flushEvents();
-			} catch (InterruptedException e) {
-				//
+				log.error("An error occurred while validating the input file(s).", e);
+			} finally {
+				validator.cleanup();
 			}
 
 			SwingUtilities.invokeLater(validatorDialog::dispose);
-
-			// cleanup
-			validator.cleanup();
 
 			if (success) {
 				log.info("Data validation finished.");

@@ -84,6 +84,7 @@ import org.citydb.file.input.AbstractArchiveInputFile;
 import org.citydb.file.input.DirectoryScanner;
 import org.citydb.log.Logger;
 import org.citydb.query.filter.FilterException;
+import org.citydb.registry.ObjectRegistry;
 import org.citydb.util.CoreConstants;
 import org.citydb.util.Util;
 import org.citygml4j.builder.jaxb.CityGMLBuilder;
@@ -96,7 +97,6 @@ import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.EnumMap;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -104,28 +104,24 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Importer implements EventHandler {
 	private final Logger log = Logger.getInstance();
-
 	private final CityGMLBuilder cityGMLBuilder;
 	private final AbstractDatabaseAdapter databaseAdapter;
 	private final SchemaMapping schemaMapping;
 	private final Config config;
 	private final EventDispatcher eventDispatcher;
 
+	private final AtomicBoolean isInterrupted = new AtomicBoolean(false);
+	private final HashMap<Integer, Long> objectCounter;
+	private final EnumMap<GMLClass, Long> geometryCounter;
+
 	private volatile boolean shouldRun = true;
-	private AtomicBoolean isInterrupted = new AtomicBoolean(false);
-	private HashMap<Integer, Long> objectCounter;
-	private EnumMap<GMLClass, Long> geometryCounter;
 	private DirectoryScanner directoryScanner;
 
-	public Importer(CityGMLBuilder cityGMLBuilder, 
-			SchemaMapping schemaMapping,
-			Config config, 
-			EventDispatcher eventDispatcher) {
-		this.cityGMLBuilder = cityGMLBuilder;
-		this.schemaMapping = schemaMapping;
-		this.config = config;
-		this.eventDispatcher = eventDispatcher;
-
+	public Importer() {
+		cityGMLBuilder = ObjectRegistry.getInstance().getCityGMLBuilder();
+		schemaMapping = ObjectRegistry.getInstance().getSchemaMapping();
+		config = ObjectRegistry.getInstance().getConfig();
+		eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
 		databaseAdapter = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter();
 		objectCounter = new HashMap<>();
 		geometryCounter = new EnumMap<>(GMLClass.class);
