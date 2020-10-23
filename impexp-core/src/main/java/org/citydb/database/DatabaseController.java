@@ -41,6 +41,7 @@ import org.citydb.database.connection.DatabaseConnectionWarning;
 import org.citydb.database.version.DatabaseVersionChecker;
 import org.citydb.database.version.DatabaseVersionException;
 import org.citydb.log.Logger;
+import org.citydb.registry.ObjectRegistry;
 import org.citydb.util.Util;
 
 import java.sql.Connection;
@@ -55,8 +56,8 @@ public class DatabaseController implements ConnectionManager {
 
 	private ConnectionViewHandler viewHandler;
 
-	public DatabaseController(Config config) {
-		this.config = config;
+	public DatabaseController() {
+		config = ObjectRegistry.getInstance().getConfig();
 		connectionPool = DatabaseConnectionPool.getInstance();
 	}	
 

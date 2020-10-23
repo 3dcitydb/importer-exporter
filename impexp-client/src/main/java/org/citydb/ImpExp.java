@@ -292,18 +292,8 @@ public class ImpExp {
 
 		// initialize application environment
 		printInfoMessage("Initializing application environment");
-		Config config = new Config();
-
-		// initialize object registry
-		ObjectRegistry registry = ObjectRegistry.getInstance();
-
-		// create and register application-wide event dispatcher
-		EventDispatcher eventDispatcher = new EventDispatcher();		
-		registry.setEventDispatcher(eventDispatcher);
-
-		// create and register database controller
-		DatabaseController databaseController = new DatabaseController(config);
-		registry.setDatabaseController(databaseController);
+		Config config = ObjectRegistry.getInstance().getConfig();
+		EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
 
 		// register illegal plugin event checker with event dispatcher
 		IllegalEventSourceChecker checker = IllegalEventSourceChecker.getInstance();
@@ -311,7 +301,7 @@ public class ImpExp {
 		eventDispatcher.addEventHandler(EventType.SWITCH_LOCALE, checker);
 
 		// set internal proxy selector as default
-		ProxySelector.setDefault(InternalProxySelector.getInstance(config));
+		ProxySelector.setDefault(InternalProxySelector.getInstance());
 
 		// create JAXB contexts
 		try {
@@ -328,7 +318,7 @@ public class ImpExp {
 		SchemaMapping schemaMapping = null;
 		try {
 			schemaMapping = SchemaMappingUtil.getInstance().unmarshal(CoreConstants.CITYDB_SCHEMA_MAPPING_FILE);
-			registry.setSchemaMapping(schemaMapping);
+			ObjectRegistry.getInstance().setSchemaMapping(schemaMapping);
 		} catch (JAXBException | SchemaMappingException | SchemaMappingValidationException e) {
 			throw new ImpExpException("Failed to process 3DCityDB schema mapping file.", e);
 		}
@@ -367,8 +357,8 @@ public class ImpExp {
 				context.registerADEContext(adeContext);
 			
 			// create CityGML builder and register with object registry
-			CityGMLBuilder cityGMLBuilder = context.createCityGMLBuilder(externalLoader);			
-			registry.setCityGMLBuilder(cityGMLBuilder);
+			CityGMLBuilder cityGMLBuilder = context.createCityGMLBuilder(externalLoader);
+			ObjectRegistry.getInstance().setCityGMLBuilder(cityGMLBuilder);
 		} catch (CityGMLBuilderException | ADEException e) {
 			throw new ImpExpException("CityGML context could not be initialized.", e);
 		}
@@ -435,7 +425,7 @@ public class ImpExp {
 		// load plugin configs to plugins
 		for (ConfigExtension<?> plugin : pluginManager.getExternalPlugins(ConfigExtension.class)) {
 			try {
-				PluginConfigController.getInstance(config).setOrCreatePluginConfig(plugin);
+				PluginConfigController.getInstance().setOrCreatePluginConfig(plugin);
 			} catch (PluginException e) {
 				throw new ImpExpException("Failed to load config for plugin " + plugin.getClass().getName() + ".", e);
 			}
@@ -485,10 +475,11 @@ public class ImpExp {
 		// start application
 		if (!shell) {
 			// create main view instance
-			final ImpExpGui mainView = new ImpExpGui(config);
+			final ImpExpGui mainView = new ImpExpGui();
 
 			// create database plugin
 			final DatabasePlugin databasePlugin = new DatabasePlugin(mainView, config);
+			DatabaseController databaseController = ObjectRegistry.getInstance().getDatabaseController();
 			databaseController.setConnectionViewHandler(databasePlugin.getConnectionViewHandler());
 
 			// register internal plugins

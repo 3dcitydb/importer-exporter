@@ -34,10 +34,7 @@ import org.citydb.gui.ImpExpGui;
 import org.citydb.gui.components.mapviewer.MapWindow;
 import org.citydb.gui.util.GuiUtil;
 
-import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import java.util.List;
 
 @SuppressWarnings("serial")
@@ -62,8 +59,7 @@ public class MenuView extends JMenu {
 		defaults = new JMenuItem();
 		
 		map.addActionListener(e -> {
-			final MapWindow map = MapWindow.getInstance(mainView, config);
-			SwingUtilities.invokeLater(() -> map.setVisible(true));
+			SwingUtilities.invokeLater(() -> MapWindow.getInstance(mainView).setVisible(true));
 		});
 		
 		detachConsole.addActionListener(e -> mainView.enableConsoleWindow(!config.getGui().getConsoleWindow().isDetached(), true));

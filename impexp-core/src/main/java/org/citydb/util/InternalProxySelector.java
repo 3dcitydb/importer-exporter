@@ -54,17 +54,17 @@ public class InternalProxySelector extends ProxySelector {
 	private final Config config;
 	private final EventDispatcher eventDispatcher;
 
-	private InternalProxySelector(Config config) {
+	private InternalProxySelector() {
 		this.parent = ProxySelector.getDefault();
-		this.config = config;
-
+		config = ObjectRegistry.getInstance().getConfig();
 		eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
 		setDefaultAuthentication();
 	}
 
-	public static synchronized InternalProxySelector getInstance(Config config) {
-		if (instance == null)
-			instance = new InternalProxySelector(config);
+	public static synchronized InternalProxySelector getInstance() {
+		if (instance == null) {
+			instance = new InternalProxySelector();
+		}
 
 		return instance;
 	}

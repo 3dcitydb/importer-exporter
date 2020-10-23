@@ -27,7 +27,13 @@
  */
 package org.citydb.gui.components.bbox;
 
-import java.awt.Toolkit;
+import org.citydb.config.Config;
+import org.citydb.config.geometry.BoundingBox;
+import org.citydb.config.project.database.DatabaseSrs;
+import org.citydb.log.Logger;
+import org.citydb.registry.ObjectRegistry;
+
+import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.ClipboardOwner;
 import java.awt.datatransfer.DataFlavor;
@@ -38,29 +44,25 @@ import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.citydb.config.Config;
-import org.citydb.config.geometry.BoundingBox;
-import org.citydb.config.project.database.DatabaseSrs;
-import org.citydb.log.Logger;
-
 public class BoundingBoxClipboardHandler implements ClipboardOwner {
 	private static BoundingBoxClipboardHandler instance;
 
 	private final Logger log = Logger.getInstance();
 	private final Config config;
-	private boolean isMac;
-	private Clipboard systemClipboard;
+	private final boolean isMac;
+	private final Clipboard clipboard;
 
-	private BoundingBoxClipboardHandler(Config config) {
+	private BoundingBoxClipboardHandler() {
 		// just to thwart instantiation
-		this.config = config;
+		config = ObjectRegistry.getInstance().getConfig();
 		isMac = System.getProperty("os.name").toLowerCase().contains("mac");
-		systemClipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+		clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
 	}
 
-	public static synchronized BoundingBoxClipboardHandler getInstance(Config config) {
-		if (instance == null)
-			instance = new BoundingBoxClipboardHandler(config);
+	public static synchronized BoundingBoxClipboardHandler getInstance() {
+		if (instance == null) {
+			instance = new BoundingBoxClipboardHandler();
+		}
 
 		return instance;
 	}
@@ -78,13 +80,13 @@ public class BoundingBoxClipboardHandler implements ClipboardOwner {
 			.append(bbox.getSrs().getId());
 		}
 
-		systemClipboard.setContents(new StringSelection(content.toString()), this);
+		clipboard.setContents(new StringSelection(content.toString()), this);
 	}
 
 	public BoundingBox getBoundingBox() {
-		if (systemClipboard.isDataFlavorAvailable(DataFlavor.stringFlavor)) {
+		if (clipboard.isDataFlavorAvailable(DataFlavor.stringFlavor)) {
 			try {
-				Transferable content = systemClipboard.getContents(null);
+				Transferable content = clipboard.getContents(null);
 				String bbox = (String)content.getTransferData(DataFlavor.stringFlavor);
 
 				BoundingBox result = parseWebServiceRepresentation(bbox);
@@ -107,7 +109,7 @@ public class BoundingBoxClipboardHandler implements ClipboardOwner {
 	public boolean containsPossibleBoundingBox() {
 		if (!isMac) {		
 			try {
-				return systemClipboard.isDataFlavorAvailable(DataFlavor.stringFlavor);			
+				return clipboard.isDataFlavorAvailable(DataFlavor.stringFlavor);
 			} catch (Exception e) {
 				// we face strange access issues on Windows sometimes
 				// silently discard them...

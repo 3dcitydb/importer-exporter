@@ -31,19 +31,21 @@ import org.citydb.config.Config;
 import org.citydb.config.project.plugin.PluginConfig;
 import org.citydb.log.Logger;
 import org.citydb.plugin.extension.config.ConfigExtension;
+import org.citydb.registry.ObjectRegistry;
 
 public class PluginConfigController {
 	public static PluginConfigController instance;
 	private final Logger log = Logger.getInstance();
 	private final Config config;
 
-	private PluginConfigController(Config config) {
-		this.config = config;
+	private PluginConfigController() {
+		config = ObjectRegistry.getInstance().getConfig();
 	}
 	
-	public static synchronized PluginConfigController getInstance(Config config) {
-		if (instance == null)
-			instance = new PluginConfigController(config);
+	public static synchronized PluginConfigController getInstance() {
+		if (instance == null) {
+			instance = new PluginConfigController();
+		}
 		
 		return instance;
 	}

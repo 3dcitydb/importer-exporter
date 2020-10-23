@@ -67,36 +67,11 @@ import org.jdesktop.swingx.mapviewer.AbstractTileFactory;
 import org.jdesktop.swingx.mapviewer.GeoPosition;
 import org.jdesktop.swingx.mapviewer.TileFactory;
 
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JDialog;
-import javax.swing.JFormattedTextField;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JTextPane;
-import javax.swing.SwingUtilities;
-import javax.swing.SwingWorker;
-import javax.swing.UIManager;
+import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.text.html.HTMLDocument;
-import java.awt.Color;
-import java.awt.Desktop;
+import java.awt.*;
 import java.awt.Desktop.Action;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.Rectangle;
-import java.awt.Toolkit;
 import java.awt.event.ItemEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
@@ -175,9 +150,9 @@ public class MapWindow extends JDialog implements EventHandler {
 	private BoundingBoxClipboardHandler clipboardHandler;
 	private BoundingBoxValidator validator;
 
-	private MapWindow(ViewController viewController, Config config) {
+	private MapWindow(ViewController viewController) {
 		super(viewController.getTopFrame(), true);
-		this.config = config;
+		config = ObjectRegistry.getInstance().getConfig();
 
 		// register for events
 		ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(EventType.SWITCH_LOCALE, this);
@@ -186,41 +161,33 @@ public class MapWindow extends JDialog implements EventHandler {
 		ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(MapEvents.REVERSE_GEOCODER, this);
 
 		mainFrame = viewController.getTopFrame();
-		clipboardHandler = BoundingBoxClipboardHandler.getInstance(config);
+		clipboardHandler = BoundingBoxClipboardHandler.getInstance();
 		validator = new BoundingBoxValidator(this, config);
 
 		init();
 		doTranslation();
 	}
 
-	public static synchronized MapWindow getInstance(ViewController viewController, Config config) {
-		if (instance == null)
-			instance = new MapWindow(viewController, config);
+	public static synchronized MapWindow getInstance(ViewController viewController) {
+		if (instance == null) {
+			instance = new MapWindow(viewController);
+		}
 
 		instance.applyButton.setVisible(false);
+		instance.listener = null;
+		instance.clearBoundingBox();
 		instance.setSizeOnScreen();
 
 		// update geocoder
 		GeocodingService service = null;
 		try {
-			service = instance.getGeocodingService(config.getGui().getMapWindow().getGeocoder());
+			service = instance.getGeocodingService(instance.config.getGui().getMapWindow().getGeocoder());
 		} catch (GeocodingServiceException e) {
 			service = new OSMGeocoder();
-			config.getGui().getMapWindow().setGeocoder(GeocodingServiceName.OSM_NOMINATIM);
+			instance.config.getGui().getMapWindow().setGeocoder(GeocodingServiceName.OSM_NOMINATIM);
 		} finally {
 			Geocoder.getInstance().setGeocodingService(service);
-			instance.geocoderCombo.setSelectedItem(config.getGui().getMapWindow().getGeocoder());
-		}
-
-		return instance;
-	}
-
-	public static synchronized MapWindow getInstance(ViewController viewController, BoundingBoxListener listener, Config config) {
-		instance = getInstance(viewController, config);
-
-		if (listener != null) {
-			instance.listener = listener;
-			instance.applyButton.setVisible(true);
+			instance.geocoderCombo.setSelectedItem(instance.config.getGui().getMapWindow().getGeocoder());
 		}
 
 		return instance;
@@ -667,7 +634,13 @@ public class MapWindow extends JDialog implements EventHandler {
 		});
 	}
 
-	public void setBoundingBox(final BoundingBox bbox) {
+	public MapWindow withBoundingBoxListener(BoundingBoxListener listener) {
+		this.listener = listener;
+		applyButton.setVisible(listener != null);
+		return this;
+	}
+
+	public MapWindow withBoundingBox(final BoundingBox bbox) {
 		new SwingWorker<ValidationResult, Void>() {
 			protected ValidationResult doInBackground() throws Exception {
 				return validator.validate(bbox);
@@ -676,36 +649,37 @@ public class MapWindow extends JDialog implements EventHandler {
 			protected void done() {
 				try {
 					switch (get()) {
-					case CANCEL:
-						dispose();
-						break;
-					case SKIP:
-					case OUT_OF_RANGE:
-					case NO_AREA:
-						clearBoundingBox();
-						break;
-					case INVISIBLE:
-						clearBoundingBox();
-						indicateInvisibleBoundingBox(bbox);
-						break;
-					default:
-						minX.setValue(bbox.getLowerCorner().getX());
-						minY.setValue(bbox.getLowerCorner().getY());
-						maxX.setValue(bbox.getUpperCorner().getX());
-						maxY.setValue(bbox.getUpperCorner().getY());
-						showBoundingBox();
+						case CANCEL:
+							dispose();
+							break;
+						case SKIP:
+						case OUT_OF_RANGE:
+						case NO_AREA:
+							clearBoundingBox();
+							break;
+						case INVISIBLE:
+							clearBoundingBox();
+							indicateInvisibleBoundingBox(bbox);
+							break;
+						default:
+							minX.setValue(bbox.getLowerCorner().getX());
+							minY.setValue(bbox.getLowerCorner().getY());
+							maxX.setValue(bbox.getUpperCorner().getX());
+							maxY.setValue(bbox.getUpperCorner().getY());
+							showBoundingBox();
 					}
 				} catch (InterruptedException | ExecutionException e) {
 					//
 				}
 			}
 		}.execute();
+
+		return this;
 	}
 
 	public boolean isBoundingBoxVisible(BoundingBox bbox) {
 		GeoPosition southWest = new GeoPosition(bbox.getLowerCorner().getY(), bbox.getLowerCorner().getX());
 		GeoPosition northEast = new GeoPosition(bbox.getUpperCorner().getY(), bbox.getUpperCorner().getX());
-
 		return map.getSelectionPainter().isVisibleOnScreen(southWest, northEast);
 	}
 
@@ -736,7 +710,7 @@ public class MapWindow extends JDialog implements EventHandler {
 	}
 
 	private void pasteBoundingBoxFromClipboard() {
-		setBoundingBox(clipboardHandler.getBoundingBox());
+		withBoundingBox(clipboardHandler.getBoundingBox());
 	}
 
 	private void showBoundingBox() {

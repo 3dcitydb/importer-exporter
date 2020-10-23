@@ -48,15 +48,11 @@ import org.citydb.registry.ObjectRegistry;
 import org.citydb.util.ClientConstants;
 import org.citydb.util.CoreConstants;
 
-import javax.swing.JFileChooser;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.KeyStroke;
+import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
-import java.awt.Toolkit;
+import java.awt.*;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.io.File;
@@ -165,7 +161,7 @@ public class MenuProject extends JMenu {
 				config.setProject(new Project());
 
 				// reset contents of srs combo boxes
-				SrsComboBoxFactory.getInstance(config).resetAll(true);
+				SrsComboBoxFactory.getInstance().resetAll(true);
 
 				// reset defaults on internal plugins
 				for (InternalPlugin plugin : pluginService.getInternalPlugins())
@@ -249,14 +245,14 @@ public class MenuProject extends JMenu {
 			mainView.doTranslation();
 
 			// reset contents of srs combo boxes
-			SrsComboBoxFactory.getInstance(config).resetAll(true);
+			SrsComboBoxFactory.getInstance().resetAll(true);
 
 			// load settings for internal plugins
 			for (InternalPlugin plugin : pluginService.getInternalPlugins())
 				plugin.loadSettings();
 
 			// update plugin configs
-			PluginConfigController pluginConfigController = PluginConfigController.getInstance(config);
+			PluginConfigController pluginConfigController = PluginConfigController.getInstance();
 			for (ConfigExtension<?> plugin : pluginService.getExternalPlugins(ConfigExtension.class)) {
 				try {
 					pluginConfigController.setOrCreatePluginConfig(plugin);

@@ -121,6 +121,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 	private ConsoleWindow consoleWindow;
 	private ConsoleTextPane consoleText;
 	private StyledConsoleLogger consoleLogger;
+	private ComponentFactory componentFactory;
 
 	private int tmpConsoleWidth;
 	private int activePosition;
@@ -134,11 +135,11 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 	// internal state
 	private LanguageType currentLang = null;
 
-	public ImpExpGui(Config config) {
-		this.config = config;
-
+	public ImpExpGui() {
+		config = ObjectRegistry.getInstance().getConfig();
 		dbPool = DatabaseConnectionPool.getInstance();
 		pluginManager = PluginManager.getInstance();
+		componentFactory = new DefaultComponentFactory(this);
 
 		eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
 		eventDispatcher.addEventHandler(EventType.DATABASE_CONNECTION_STATE, this);
@@ -564,7 +565,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 
 	@Override
 	public ComponentFactory getComponentFactory() {
-		return DefaultComponentFactory.getInstance(this, config);
+		return componentFactory;
 	}
 
 	public ConsoleTextPane getConsole() {
