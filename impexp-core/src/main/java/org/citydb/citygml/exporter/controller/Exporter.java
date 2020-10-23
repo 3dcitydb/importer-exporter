@@ -94,7 +94,6 @@ import org.citygml4j.model.module.citygml.CityGMLModuleType;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
@@ -396,7 +395,8 @@ public class Exporter implements EventHandler {
 
 					// create output writer
 					try {
-						writer = writerFactory.createFeatureWriter(new OutputStreamWriter(file.openStream(), StandardCharsets.UTF_8));
+						writer = writerFactory.createFeatureWriter(new OutputStreamWriter(file.openStream(),
+								config.getProject().getExporter().getCityGMLOptions().getFileEncoding()));
 						writer.useIndentation(file.getType() == FileType.REGULAR);
 					} catch (FeatureWriteException | IOException e) {
 						throw new CityGMLExportException("Failed to open file '" + file.getFile() + "' for writing.", e);
