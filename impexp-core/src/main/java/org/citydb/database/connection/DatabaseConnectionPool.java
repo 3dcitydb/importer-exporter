@@ -61,17 +61,19 @@ public class DatabaseConnectionPool implements ConnectionManager {
 	private final int DEFAULT_LOGIN_TIMEOUT = 60;
 
 	private final String poolName = DefaultGMLIdManager.getInstance().generateUUID();
+	private final Config config;
 	private final EventDispatcher eventDispatcher;
+	private final ADEExtensionManager adeManager;
 	private AbstractDatabaseAdapter databaseAdapter;
 	private DataSource dataSource;
 	private DatabaseVersionChecker versionChecker;
-	private ADEExtensionManager adeManager;
 
 	private DatabaseConnectionPool() {
 		// just to thwart instantiation
-		versionChecker = new DefaultDatabaseVersionChecker();
+		config = ObjectRegistry.getInstance().getConfig();
 		eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
 		adeManager = ADEExtensionManager.getInstance();
+		versionChecker = new DefaultDatabaseVersionChecker();
 	}
 
 	public static synchronized DatabaseConnectionPool getInstance() {
@@ -81,70 +83,66 @@ public class DatabaseConnectionPool implements ConnectionManager {
 		return instance;
 	}
 
-	public synchronized void connect(Config config) throws DatabaseConfigurationException, DatabaseVersionException, SQLException {
-		DBConnection conn = config.getProject().getDatabase().getActiveConnection();
-		if (conn == null)
-			throw new DatabaseConfigurationException("No valid database connection details provided.");
-
+	public synchronized void connect(DBConnection connection) throws DatabaseConfigurationException, DatabaseVersionException, SQLException {
 		// check valid connection details
-		conn.validate();
+		connection.validate();
 
 		// disconnect if we are currently connected to another database
 		if (isConnected())
 			disconnect();
 
 		// get database adapter
-		databaseAdapter = DatabaseAdapterFactory.getInstance().createDatabaseAdapter(conn.getDatabaseType());
+		databaseAdapter = DatabaseAdapterFactory.getInstance().createDatabaseAdapter(connection.getDatabaseType());
 
 		// general pool properties
 		PoolProperties properties = new PoolProperties();
-		properties.setUrl(databaseAdapter.getJDBCUrl(conn.getServer(), conn.getPort(), conn.getSid()));
+		properties.setUrl(databaseAdapter.getJDBCUrl(connection.getServer(), connection.getPort(), connection.getSid()));
 		properties.setDriverClassName(databaseAdapter.getConnectionFactoryClassName());
-		properties.setUsername(conn.getUser());
-		properties.setPassword(conn.getPassword());
+		properties.setUsername(connection.getUser());
+		properties.setPassword(connection.getPassword());
 		properties.setName(poolName);
 		properties.setDefaultAutoCommit(true);
 
 		// set user-definable pool properties	
-		if (conn.getMaxActive() != null) properties.setMaxActive(conn.getMaxActive());
-		if (conn.getMaxIdle() != null) properties.setMaxIdle(conn.getMaxIdle());
-		if (conn.getMinIdle() != null) properties.setMinIdle(conn.getMinIdle());
-		if (conn.getInitialSize() != null) properties.setInitialSize(conn.getInitialSize());
-		if (conn.getMaxWait() != null) properties.setMaxWait(conn.getMaxWait());
-		if (conn.getTestOnBorrow() != null) properties.setTestOnBorrow(conn.getTestOnBorrow());
-		if (conn.getTestOnReturn() != null) properties.setTestOnReturn(conn.getTestOnReturn());
-		if (conn.getTestWhileIdle() != null) properties.setTestWhileIdle(conn.getTestWhileIdle());
-		if (conn.getValidationQuery() != null) properties.setValidationQuery(conn.getValidationQuery());
-		if (conn.getValidatorClassName() != null) properties.setValidatorClassName(conn.getValidatorClassName());
-		if (conn.getTimeBetweenEvictionRunsMillis() != null) properties.setTimeBetweenEvictionRunsMillis(conn.getTimeBetweenEvictionRunsMillis());
-		if (conn.getNumTestsPerEvictionRun() != null) properties.setNumTestsPerEvictionRun(conn.getNumTestsPerEvictionRun());
-		if (conn.getMinEvictableIdleTimeMillis() != null) properties.setMinEvictableIdleTimeMillis(conn.getMinEvictableIdleTimeMillis());
-		if (conn.getRemoveAbandoned() != null) properties.setRemoveAbandoned(conn.getRemoveAbandoned());
-		if (conn.getRemoveAbandonedTimeout() != null) properties.setRemoveAbandonedTimeout(conn.getRemoveAbandonedTimeout());
-		if (conn.getLogAbandoned() != null) properties.setLogAbandoned(conn.getLogAbandoned());
-		if (conn.getConnectionProperties() != null) properties.setConnectionProperties(conn.getConnectionProperties());
-		if (conn.getInitSQL() != null) properties.setInitSQL(conn.getInitSQL());
-		if (conn.getValidationInterval() != null) properties.setValidationInterval(conn.getValidationInterval());
-		if (conn.getJmxEnabled() != null) properties.setJmxEnabled(conn.getJmxEnabled());
-		if (conn.getFairQueue() != null) properties.setFairQueue(conn.getFairQueue());
-		if (conn.getAbandonWhenPercentageFull() != null) properties.setAbandonWhenPercentageFull(conn.getAbandonWhenPercentageFull());
-		if (conn.getMaxAge() != null) properties.setMaxAge(conn.getMaxAge());
-		if (conn.getUseEquals() != null) properties.setUseEquals(conn.getUseEquals());
-		if (conn.getSuspectTimeout() != null) properties.setSuspectTimeout(conn.getSuspectTimeout());
+		if (connection.getMaxActive() != null) properties.setMaxActive(connection.getMaxActive());
+		if (connection.getMaxIdle() != null) properties.setMaxIdle(connection.getMaxIdle());
+		if (connection.getMinIdle() != null) properties.setMinIdle(connection.getMinIdle());
+		if (connection.getInitialSize() != null) properties.setInitialSize(connection.getInitialSize());
+		if (connection.getMaxWait() != null) properties.setMaxWait(connection.getMaxWait());
+		if (connection.getTestOnBorrow() != null) properties.setTestOnBorrow(connection.getTestOnBorrow());
+		if (connection.getTestOnReturn() != null) properties.setTestOnReturn(connection.getTestOnReturn());
+		if (connection.getTestWhileIdle() != null) properties.setTestWhileIdle(connection.getTestWhileIdle());
+		if (connection.getValidationQuery() != null) properties.setValidationQuery(connection.getValidationQuery());
+		if (connection.getValidatorClassName() != null) properties.setValidatorClassName(connection.getValidatorClassName());
+		if (connection.getTimeBetweenEvictionRunsMillis() != null) properties.setTimeBetweenEvictionRunsMillis(connection.getTimeBetweenEvictionRunsMillis());
+		if (connection.getNumTestsPerEvictionRun() != null) properties.setNumTestsPerEvictionRun(connection.getNumTestsPerEvictionRun());
+		if (connection.getMinEvictableIdleTimeMillis() != null) properties.setMinEvictableIdleTimeMillis(connection.getMinEvictableIdleTimeMillis());
+		if (connection.getRemoveAbandoned() != null) properties.setRemoveAbandoned(connection.getRemoveAbandoned());
+		if (connection.getRemoveAbandonedTimeout() != null) properties.setRemoveAbandonedTimeout(connection.getRemoveAbandonedTimeout());
+		if (connection.getLogAbandoned() != null) properties.setLogAbandoned(connection.getLogAbandoned());
+		if (connection.getConnectionProperties() != null) properties.setConnectionProperties(connection.getConnectionProperties());
+		if (connection.getInitSQL() != null) properties.setInitSQL(connection.getInitSQL());
+		if (connection.getValidationInterval() != null) properties.setValidationInterval(connection.getValidationInterval());
+		if (connection.getJmxEnabled() != null) properties.setJmxEnabled(connection.getJmxEnabled());
+		if (connection.getFairQueue() != null) properties.setFairQueue(connection.getFairQueue());
+		if (connection.getAbandonWhenPercentageFull() != null) properties.setAbandonWhenPercentageFull(connection.getAbandonWhenPercentageFull());
+		if (connection.getMaxAge() != null) properties.setMaxAge(connection.getMaxAge());
+		if (connection.getUseEquals() != null) properties.setUseEquals(connection.getUseEquals());
+		if (connection.getSuspectTimeout() != null) properties.setSuspectTimeout(connection.getSuspectTimeout());
 
 		// pool maintenance
 		properties.setJdbcInterceptors("StatementFinalizer");
 
 		// create new data source
 		dataSource = new DataSource(properties);
-		dataSource.setLoginTimeout(conn.isSetLoginTimeout() ? conn.getLoginTimeout() : DEFAULT_LOGIN_TIMEOUT);
+		dataSource.setLoginTimeout(connection.isSetLoginTimeout() ? connection.getLoginTimeout() : DEFAULT_LOGIN_TIMEOUT);
 
 		try {
 			// create connection pool
 			dataSource.createPool();
 						
 			// set connection details
-			DatabaseConnectionDetails connectionDetails = new DatabaseConnectionDetails(conn);
+			DatabaseConnectionDetails connectionDetails = new DatabaseConnectionDetails(connection);
 			databaseAdapter.setConnectionDetails(connectionDetails);
 
 			// check database schema
@@ -236,10 +234,6 @@ public class DatabaseConnectionPool implements ConnectionManager {
 
 	public ADEExtensionManager getADEExtensionManager() {
 		return adeManager;
-	}
-
-	public void setADEExtensionManager(ADEExtensionManager adeManager) {
-		this.adeManager = adeManager;
 	}
 
 	private DatabaseConnectionWarning checkADESupport(List<ADEMetadata> ades) {

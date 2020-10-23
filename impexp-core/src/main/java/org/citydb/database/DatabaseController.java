@@ -70,26 +70,34 @@ public class DatabaseController implements ConnectionManager {
 	}
 
 	public synchronized boolean connect(boolean suppressDialog) {
+		// request to commit connection details
+		if (viewHandler != null) {
+			viewHandler.commitConnectionDetails();
+		}
+
+		// fail if there is no active database connection
+		DBConnection connection = config.getProject().getDatabase().getActiveConnection();
+		if (connection == null) {
+			log.error("Connection to database could not be established.");
+			log.error("No valid database connection details provided.");
+			return false;
+		}
+
+		return connect(connection, suppressDialog);
+	}
+
+	public synchronized boolean connect(DBConnection connection) {
+		return connect(connection, false);
+	}
+
+	public synchronized boolean connect(DBConnection connection, boolean suppressDialog) {
 		if (!connectionPool.isConnected()) {
-			// request to commit connection details
-			if (viewHandler != null) {
-				viewHandler.commitConnectionDetails();
-			}
-
-			// fail if there is no active database connection
-			DBConnection connection = config.getProject().getDatabase().getActiveConnection();
-			if (connection == null) {
-				log.error("Connection to database could not be established.");
-				log.error("No valid database connection details provided.");
-				return false;
-			}
-
 			try {
 				log.info("Connecting to database profile '" + connection + "'.");
 				showConnectionStatus(ConnectionState.INIT_CONNECT);
 
 				// connect to database
-				connectionPool.connect(config);
+				connectionPool.connect(connection);
 
 				// show connection warnings
 				for (DatabaseConnectionWarning warning : connectionPool.getActiveDatabaseAdapter().getConnectionWarnings()) {

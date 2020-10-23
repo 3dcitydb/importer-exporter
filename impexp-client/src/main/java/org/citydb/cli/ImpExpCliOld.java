@@ -276,7 +276,7 @@ public class ImpExpCliOld {
 		log.info("Connecting to database profile '" + conn.getDescription() + "'.");
 
 		try {
-			dbPool.connect(config);
+			dbPool.connect(conn);
 			log.info("Database connection established.");
 			dbPool.getActiveDatabaseAdapter().getConnectionMetaData().printToConsole();
 
