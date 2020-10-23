@@ -39,7 +39,6 @@ import org.citydb.config.project.global.LanguageType;
 import org.citydb.config.project.global.LogFileMode;
 import org.citydb.config.project.global.LogLevel;
 import org.citydb.config.project.global.Logging;
-import org.citydb.database.DatabaseController;
 import org.citydb.database.schema.mapping.SchemaMapping;
 import org.citydb.database.schema.mapping.SchemaMappingException;
 import org.citydb.database.schema.mapping.SchemaMappingValidationException;
@@ -115,7 +114,6 @@ public class ImpExpCli extends CliCommand implements CommandLine.IVersionProvide
     private final PluginManager pluginManager = PluginManager.getInstance();
     private final ADEExtensionManager adeManager = ADEExtensionManager.getInstance();
     private final Util.URLClassLoader classLoader = new Util.URLClassLoader(Thread.currentThread().getContextClassLoader());
-    private final Config config = new Config();
 
     private StartupProgressListener progressListener;
     private String commandLineString;
@@ -192,10 +190,6 @@ public class ImpExpCli extends CliCommand implements CommandLine.IVersionProvide
 
     public Path getConfigFile() {
         return configFile;
-    }
-
-    public Config getConfig() {
-        return config;
     }
 
     private int process(String[] args) throws Exception {
@@ -284,6 +278,7 @@ public class ImpExpCli extends CliCommand implements CommandLine.IVersionProvide
         log.info("Starting " + getClass().getPackage().getImplementationTitle() +
                 ", version " + this.getClass().getPackage().getImplementationVersion());
 
+        Config config = ObjectRegistry.getInstance().getConfig();
         boolean loadConfig = configFile != null;
         if (progressListener != null) {
             progressListener.setProcessSteps(loadConfig ? 6 : 5);
@@ -308,13 +303,13 @@ public class ImpExpCli extends CliCommand implements CommandLine.IVersionProvide
         // load configuration
         if (loadConfig) {
             logProgress("Loading project settings");
-            loadConfig();
+            loadConfig(config);
         }
 
         // initialize application environment
         logProgress("Initializing application environment");
-        initializeEnvironment();
-        initializeLogging();
+        initializeEnvironment(config);
+        initializeLogging(config);
         createPidFile();
 
         log.info("Executing '" + subCommandName + "' command");
@@ -378,7 +373,7 @@ public class ImpExpCli extends CliCommand implements CommandLine.IVersionProvide
         }
     }
 
-    private void loadConfig() throws ImpExpException {
+    private void loadConfig(Config config) throws ImpExpException {
         if (!configFile.isAbsolute()) {
             configFile = ClientConstants.WORKING_DIR.resolve(configFile);
         }
@@ -409,18 +404,14 @@ public class ImpExpCli extends CliCommand implements CommandLine.IVersionProvide
         }
     }
 
-    private void initializeEnvironment()  {
+    private void initializeEnvironment(Config config)  {
         // create application-wide event dispatcher
         EventDispatcher eventDispatcher = new EventDispatcher();
         eventDispatcher.addEventHandler(EventType.DATABASE_CONNECTION_STATE, IllegalEventSourceChecker.getInstance());
         eventDispatcher.addEventHandler(EventType.SWITCH_LOCALE, IllegalEventSourceChecker.getInstance());
-        ObjectRegistry.getInstance().setEventDispatcher(eventDispatcher);
-
-        // create database controller
-        ObjectRegistry.getInstance().setDatabaseController(new DatabaseController(config));
 
         // set internal proxy selector as default selector
-        ProxySelector.setDefault(InternalProxySelector.getInstance(config));
+        ProxySelector.setDefault(InternalProxySelector.getInstance());
 
         // set internationalization
         LanguageType language = config.getProject().getGlobal().getLanguage();
@@ -434,7 +425,7 @@ public class ImpExpCli extends CliCommand implements CommandLine.IVersionProvide
         }
     }
 
-    private void initializeLogging() {
+    private void initializeLogging(Config config) {
         Logging logging = config.getProject().getGlobal().getLogging();
 
         // set console log level

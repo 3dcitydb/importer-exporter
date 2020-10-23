@@ -27,7 +27,6 @@
  */
 package org.citydb.gui.components.bbox;
 
-import org.citydb.config.Config;
 import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.geometry.Position;
 import org.citydb.config.i18n.Language;
@@ -77,13 +76,13 @@ public class BoundingBoxPanelImpl extends BoundingBoxPanel implements EventHandl
     private BBoxPopupMenuWrapper[] bboxPopups;
     private BoundingBoxClipboardHandler clipboardHandler;
 
-    public BoundingBoxPanelImpl(ViewController viewController, Config config) {
+    public BoundingBoxPanelImpl(ViewController viewController) {
         ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(EventType.SWITCH_LOCALE, this);
-        clipboardHandler = BoundingBoxClipboardHandler.getInstance(config);
+        clipboardHandler = BoundingBoxClipboardHandler.getInstance();
         isEnabled = isEditable = true;
 
         srsLabel = new JLabel();
-        srsComboBox = SrsComboBoxFactory.getInstance(config).createSrsComboBox(true);
+        srsComboBox = SrsComboBoxFactory.getInstance().createSrsComboBox(true);
 
         NumberFormatter bboxFormat = new BlankNumberFormatter(new DecimalFormat("##########.##############",
                 DecimalFormatSymbols.getInstance(Locale.ENGLISH)));
@@ -155,9 +154,10 @@ public class BoundingBoxPanelImpl extends BoundingBoxPanel implements EventHandl
 
         // button actions
         map.addActionListener(e -> {
-            final MapWindow map = MapWindow.getInstance(viewController, isEditable ? BoundingBoxPanelImpl.this : null, config);
-            SwingUtilities.invokeLater(() -> map.setVisible(true));
-            map.setBoundingBox(getBoundingBox());
+            SwingUtilities.invokeLater(() -> MapWindow.getInstance(viewController)
+                    .withBoundingBoxListener(isEditable ? this : null)
+                    .withBoundingBox(getBoundingBox())
+                    .setVisible(true));
         });
 
         copy.addActionListener(e -> copyBoundingBoxToClipboard());

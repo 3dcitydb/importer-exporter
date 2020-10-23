@@ -153,7 +153,7 @@ public class MenuProject extends JMenu {
 				config.setProject(new Project());
 
 				// reset contents of srs combo boxes
-				SrsComboBoxFactory.getInstance(config).resetAll(true);
+				SrsComboBoxFactory.getInstance().resetAll(true);
 
 				// reset defaults on internal plugins
 				for (InternalPlugin plugin : pluginManager.getInternalPlugins())
@@ -237,7 +237,7 @@ public class MenuProject extends JMenu {
 			mainView.doTranslation();
 
 			// reset contents of srs combo boxes
-			SrsComboBoxFactory.getInstance(config).resetAll(true);
+			SrsComboBoxFactory.getInstance().resetAll(true);
 
 			// load settings for internal plugins
 			for (InternalPlugin plugin : pluginManager.getInternalPlugins())

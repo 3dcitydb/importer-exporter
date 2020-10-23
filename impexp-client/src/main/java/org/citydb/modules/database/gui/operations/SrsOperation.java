@@ -361,7 +361,7 @@ public class SrsOperation extends DatabaseOperationView {
 					dbSrs.setGMLSrsName(srs.getGMLSrsName());
 
 				// reset contents of SRS combo boxes
-				SrsComboBoxFactory.getInstance(config).resetAll(true);
+				SrsComboBoxFactory.getInstance().resetAll(true);
 
 				// trigger SRS property event
 				ObjectRegistry.getInstance().getEventDispatcher().triggerEvent(

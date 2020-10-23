@@ -79,13 +79,13 @@ public class GuiCommand extends CliCommand implements StartupProgressListener {
 
     @Override
     public Integer call() throws Exception {
-        Config config = parent.getConfig();
+        Config config = ObjectRegistry.getInstance().getConfig();
 
         // load GUI configuration
         loadGuiConfig(config);
 
         // initialize predefined GUI components
-        ImpExpGui impExpGui = new ImpExpGui(config, parent.getConfigFile());
+        ImpExpGui impExpGui = new ImpExpGui(parent.getConfigFile());
         initializeViewComponents(impExpGui, config);
 
         parent.logProgress("Starting graphical user interface");

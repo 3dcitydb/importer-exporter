@@ -27,7 +27,6 @@
  */
 package org.citydb.gui.factory;
 
-import org.citydb.config.Config;
 import org.citydb.gui.components.bbox.BoundingBoxPanelImpl;
 import org.citydb.plugin.extension.view.ViewController;
 import org.citydb.plugin.extension.view.components.BoundingBoxPanel;
@@ -36,25 +35,15 @@ import org.citydb.plugin.extension.view.components.DatabaseSrsComboBox;
 import org.citydb.plugin.extension.view.components.StandardEditingPopupMenuDecorator;
 
 public class DefaultComponentFactory implements ComponentFactory {
-	private static DefaultComponentFactory instance;
 	private final ViewController viewController;
-	private final Config config;
-	
-	private DefaultComponentFactory(ViewController viewController, Config config) {
+
+	public DefaultComponentFactory(ViewController viewController) {
 		this.viewController = viewController;
-		this.config = config;
-	}
-	
-	public static synchronized ComponentFactory getInstance(ViewController viewController, Config config) {
-		if (instance == null)
-			instance = new DefaultComponentFactory(viewController, config);
-		
-		return instance;
 	}
 	
 	@Override
 	public DatabaseSrsComboBox createDatabaseSrsComboBox() {
-		return SrsComboBoxFactory.getInstance(config).createSrsComboBox(true);
+		return SrsComboBoxFactory.getInstance().createSrsComboBox(true);
 	}
 
 	@Override
@@ -64,7 +53,7 @@ public class DefaultComponentFactory implements ComponentFactory {
 
 	@Override
 	public BoundingBoxPanel createBoundingBoxPanel() {
-		return new BoundingBoxPanelImpl(viewController, config);
+		return new BoundingBoxPanelImpl(viewController);
 	}
 
 }

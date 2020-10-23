@@ -164,7 +164,7 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 		workspaceLabel = new JLabel();
 		timestampLabel = new JLabel();
 		srsComboBoxLabel = new JLabel();
-		srsComboBox = SrsComboBoxFactory.getInstance(config).createSrsComboBox(true);
+		srsComboBox = SrsComboBoxFactory.getInstance().createSrsComboBox(true);
 		srsComboBox.setShowOnlySameDimension(true);
 		srsComboBox.setPreferredSize(new Dimension(50, srsComboBox.getPreferredSize().height));
 

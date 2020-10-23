@@ -56,7 +56,7 @@ import java.util.List;
 
 @SuppressWarnings("serial")
 public class ProxyPanel extends AbstractPreferencesComponent implements EventHandler {
-	private final Logger LOG = Logger.getInstance();
+	private final Logger log = Logger.getInstance();
 	private JList<ProxyConfig> proxyList;
 	private CheckBoxListDecorator<ProxyConfig> listDecorator;
 	private DisabledListCellRenderer renderer;
@@ -315,7 +315,7 @@ public class ProxyPanel extends AbstractPreferencesComponent implements EventHan
 			loadProxySettings(currentProxy);
 
 		setEnabledUserSettings();
-		InternalProxySelector.getInstance(config).setDefaultAuthentication();
+		InternalProxySelector.getInstance().setDefaultAuthentication();
 	}
 
 	@Override
@@ -323,7 +323,7 @@ public class ProxyPanel extends AbstractPreferencesComponent implements EventHan
 		setProxySettings(currentProxy);
 		disableInvalidProxies();
 		previousSingleProxy = config.getProject().getGlobal().getProxies().getSingleProxy();
-		InternalProxySelector.getInstance(config).setDefaultAuthentication();
+		InternalProxySelector.getInstance().setDefaultAuthentication();
 	}
 
 	@Override
@@ -344,7 +344,7 @@ public class ProxyPanel extends AbstractPreferencesComponent implements EventHan
 	public void handleEvent(Event event) throws Exception {
 		ProxyConfig proxy = ((ProxyServerUnavailableEvent)event).getProxy();
 		listDecorator.setCheckBoxSelected(proxies.indexOf(proxy), false);
-		LOG.error("Disabling " + proxy.getType().toString() + " proxy server settings in preferences.");
+		log.error("Disabling " + proxy.getType().toString() + " proxy server settings in preferences.");
 	}
 
 	private static final class DisabledListCellRenderer extends DefaultListCellRenderer {

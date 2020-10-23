@@ -27,16 +27,6 @@
  */
 package org.citydb.gui.factory;
 
-import java.awt.Component;
-import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-
-import javax.swing.JList;
-import javax.swing.ListCellRenderer;
-
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.database.DatabaseSrs;
@@ -47,24 +37,32 @@ import org.citydb.event.global.EventType;
 import org.citydb.plugin.extension.view.components.DatabaseSrsComboBox;
 import org.citydb.registry.ObjectRegistry;
 
+import javax.swing.*;
+import java.awt.*;
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+
 public class SrsComboBoxFactory {
 	private static SrsComboBoxFactory instance = null;
 	private final DatabaseSrs dbRefSys;
-	private final List<WeakReference<SrsComboBox>> srsBoxes = new ArrayList<WeakReference<SrsComboBox>>();
+	private final List<WeakReference<SrsComboBox>> srsBoxes = new ArrayList<>();
 	private final DatabaseConnectionPool dbPool;
 	private final Config config;
 
-	private SrsComboBoxFactory(Config config) {
+	private SrsComboBoxFactory() {
 		// just to thwart instantiation
-		this.dbPool = DatabaseConnectionPool.getInstance();
-		this.config = config;
+		dbPool = DatabaseConnectionPool.getInstance();
+		config = ObjectRegistry.getInstance().getConfig();
 		dbRefSys = DatabaseSrs.createDefaultSrs();
 		dbRefSys.setSupported(true);
 	}
 
-	public static synchronized SrsComboBoxFactory getInstance(Config config) {
+	public static synchronized SrsComboBoxFactory getInstance() {
 		if (instance == null) {
-			instance = new SrsComboBoxFactory(config);
+			instance = new SrsComboBoxFactory();
 			instance.resetAll(true);
 		}
 
@@ -75,7 +73,7 @@ public class SrsComboBoxFactory {
 		SrsComboBox srsBox = new SrsComboBox(onlyShowSupported);
 		srsBox.init();
 
-		WeakReference<SrsComboBox> ref = new WeakReference<SrsComboBox>(srsBox);
+		WeakReference<SrsComboBox> ref = new WeakReference<>(srsBox);
 		srsBoxes.add(ref);
 
 		return srsBox;

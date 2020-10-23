@@ -105,6 +105,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 	private final EventDispatcher eventDispatcher;
 	private final ConsoleTextPane consoleText;
 	private final StyledConsoleLogger consoleLogger;
+	private final ComponentFactory componentFactory;
 	private final PrintStream out = System.out;
 	private final PrintStream err = System.err;
 
@@ -125,12 +126,13 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 	private PreferencesPlugin preferencesPlugin;
 	private LanguageType currentLang;
 
-	public ImpExpGui(Config config, Path configFile) {
-		this.config = Objects.requireNonNull(config, "config cannot be null.");
+	public ImpExpGui(Path configFile) {
 		this.configFile = Objects.requireNonNull(configFile, "configFile cannot be null.");
 
+		config = ObjectRegistry.getInstance().getConfig();
 		dbPool = DatabaseConnectionPool.getInstance();
 		pluginManager = PluginManager.getInstance();
+		componentFactory = new DefaultComponentFactory(this);
 		eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
 		eventDispatcher.addEventHandler(EventType.DATABASE_CONNECTION_STATE, this);
 
@@ -540,7 +542,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 
 	@Override
 	public ComponentFactory getComponentFactory() {
-		return DefaultComponentFactory.getInstance(this, config);
+		return componentFactory;
 	}
 
 	public ConsoleTextPane getConsole() {

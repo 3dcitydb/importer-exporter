@@ -86,7 +86,7 @@ public class BoundingBoxValidator {
 
 		// unknown srs
 		else if (!bbox.isSetSrs()) {
-			ValidatorDialog validator = new ValidatorDialog(bbox, Language.I18N.getString("map.dialog.title.error"), config);
+			ValidatorDialog validator = new ValidatorDialog(bbox, Language.I18N.getString("map.dialog.title.error"));
 			validator.addErrorMessage(Language.I18N.getString("map.dialog.label.error.noSRS"));
 			validator.addBoundingBox();
 			validator.addAction(Language.I18N.getString("map.dialog.label.error.noSRS.hint"), 
@@ -113,7 +113,7 @@ public class BoundingBoxValidator {
 				if (bbox.getSrs().isSupported())
 					return transformBoundingBox(bbox);
 			} else {
-				ValidatorDialog validator = new ValidatorDialog(bbox, Language.I18N.getString("map.dialog.title.error"), config);
+				ValidatorDialog validator = new ValidatorDialog(bbox, Language.I18N.getString("map.dialog.title.error"));
 				validator.addErrorMessage(Language.I18N.getString("map.dialog.label.error.wgs84"));
 				validator.addBoundingBox();
 				validator.addAction(Language.I18N.getString("map.dialog.label.error.wgs84.hint"), Language.I18N.getString("map.dialog.label.note.text"));
@@ -142,7 +142,7 @@ public class BoundingBoxValidator {
 					bbox.getLowerCorner().getY() != null && bbox.getLowerCorner().getY() >= -90 && bbox.getLowerCorner().getY() <= 90 &&
 					bbox.getUpperCorner().getY() != null && bbox.getUpperCorner().getY() >= -90 && bbox.getUpperCorner().getY() <= 90)) {
 
-				ValidatorDialog validator = new ValidatorDialog(bbox, Language.I18N.getString("map.dialog.title.error"), config);
+				ValidatorDialog validator = new ValidatorDialog(bbox, Language.I18N.getString("map.dialog.title.error"));
 				validator.addErrorMessage(Language.I18N.getString("map.dialog.label.error.range"));
 				validator.addBoundingBox();
 				validator.addOkButton();
@@ -156,7 +156,7 @@ public class BoundingBoxValidator {
 			// ...but coordinate values are invalid
 			else if (bbox.getLowerCorner().getX() >= bbox.getUpperCorner().getX() ||
 					bbox.getLowerCorner().getY() >= bbox.getUpperCorner().getY()) {
-				ValidatorDialog validator = new ValidatorDialog(bbox, Language.I18N.getString("map.dialog.title.error"), config);
+				ValidatorDialog validator = new ValidatorDialog(bbox, Language.I18N.getString("map.dialog.title.error"));
 				validator.addErrorMessage(Language.I18N.getString("map.dialog.label.error.noArea"));
 				validator.addBoundingBox();
 				validator.addOkButton();
@@ -169,7 +169,7 @@ public class BoundingBoxValidator {
 
 			// ...but bounding box is not visible on screen
 			else if (!map.isBoundingBoxVisible(bbox)) {
-				ValidatorDialog validator = new ValidatorDialog(bbox, Language.I18N.getString("map.dialog.title.error"), config);
+				ValidatorDialog validator = new ValidatorDialog(bbox, Language.I18N.getString("map.dialog.title.error"));
 				validator.addErrorMessage(Language.I18N.getString("map.dialog.label.error.notVisible"));
 				validator.addBoundingBox();
 				validator.addOkButton();
@@ -227,10 +227,10 @@ public class BoundingBoxValidator {
 		private ValidatorDialogAction result = ValidatorDialogAction.SKIP;
 		private int row = 0;
 
-		ValidatorDialog(BoundingBox bbox, String title, Config config) {
+		ValidatorDialog(BoundingBox bbox, String title) {
 			super(map, title, true);
 			this.bbox = bbox;
-			srsComboBox = SrsComboBoxFactory.getInstance(config).createSrsComboBox(true);
+			srsComboBox = SrsComboBoxFactory.getInstance().createSrsComboBox(true);
 
 			setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 			setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/org/citydb/gui/images/map/map_icon.png")));
