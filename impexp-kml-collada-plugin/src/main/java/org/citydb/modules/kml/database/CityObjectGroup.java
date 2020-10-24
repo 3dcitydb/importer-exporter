@@ -75,7 +75,7 @@ public class CityObjectGroup extends KmlGenericObject{
 	}
 
 	protected List<DisplayForm> getDisplayForms() {
-		return config.getProject().getKmlExportConfig().getCityObjectGroupDisplayForms();
+		return config.getKmlExportConfig().getCityObjectGroupDisplayForms();
 	}
 
 	public ColladaOptions getColladaOptions() {
@@ -83,7 +83,7 @@ public class CityObjectGroup extends KmlGenericObject{
 	}
 
 	public Balloon getBalloonSettings() {
-		return config.getProject().getKmlExportConfig().getCityObjectGroupBalloon();
+		return config.getKmlExportConfig().getCityObjectGroupBalloon();
 	}
 
 	public String getStyleBasisName() {

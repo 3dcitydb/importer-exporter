@@ -164,7 +164,7 @@ public class Exporter implements EventHandler {
 
 	private boolean process(Path outputFile) throws CityGMLExportException {
 		// checking workspace
-		Workspace workspace = config.getProject().getDatabaseConfig().getWorkspaces().getExportWorkspace();
+		Workspace workspace = config.getDatabaseConfig().getWorkspaces().getExportWorkspace();
 		if (shouldRun && databaseAdapter.hasVersioningSupport() && 
 				!databaseAdapter.getWorkspaceManager().equalsDefaultWorkspaceName(workspace.getName()) &&
 				!databaseAdapter.getWorkspaceManager().existsWorkspace(workspace, true))
@@ -174,10 +174,10 @@ public class Exporter implements EventHandler {
 		Query query;
 		try {
 			ConfigQueryBuilder queryBuilder = new ConfigQueryBuilder(schemaMapping, databaseAdapter);
-			if (config.getProject().getExportConfig().isUseSimpleQuery())
-				query = queryBuilder.buildQuery(config.getProject().getExportConfig().getSimpleQuery(), config.getProject().getNamespaceFilter());
+			if (config.getExportConfig().isUseSimpleQuery())
+				query = queryBuilder.buildQuery(config.getExportConfig().getSimpleQuery(), config.getNamespaceFilter());
 			else
-				query = queryBuilder.buildQuery(config.getProject().getExportConfig().getQuery(), config.getProject().getNamespaceFilter());
+				query = queryBuilder.buildQuery(config.getExportConfig().getQuery(), config.getNamespaceFilter());
 
 		} catch (QueryBuildException e) {
 			throw new CityGMLExportException("Failed to build the export query expression.", e);
@@ -193,17 +193,17 @@ public class Exporter implements EventHandler {
 
 		// get metadata provider
 		MetadataProvider metadataProvider = null;
-		if (config.getProject().getExportConfig().isSetMetadataProvider()) {
+		if (config.getExportConfig().isSetMetadataProvider()) {
 			for (CityGMLExportExtension plugin : PluginManager.getInstance().getExternalPlugins(CityGMLExportExtension.class)) {
 				if (plugin instanceof MetadataProvider
-						&& plugin.getClass().getCanonicalName().equals(config.getProject().getExportConfig().getMetadataProvider())) {
+						&& plugin.getClass().getCanonicalName().equals(config.getExportConfig().getMetadataProvider())) {
 					metadataProvider = (MetadataProvider) plugin;
 					break;
 				}
 			}
 
 			if (metadataProvider == null)
-				throw new CityGMLExportException("Failed to load metadata provider '" + config.getProject().getExportConfig().getMetadataProvider() + "'.");
+				throw new CityGMLExportException("Failed to load metadata provider '" + config.getExportConfig().getMetadataProvider() + "'.");
 		}
 
 		// set target reference system for export
@@ -237,14 +237,14 @@ public class Exporter implements EventHandler {
 
 		// check whether database contains global appearances and set internal flag
 		try {
-			config.getInternal().setExportGlobalAppearances(config.getProject().getExportConfig().getAppearances().isSetExportAppearance() &&
+			config.getInternal().setExportGlobalAppearances(config.getExportConfig().getAppearances().isSetExportAppearance() &&
 					databaseAdapter.getUtil().containsGlobalAppearances(workspace));
 		} catch (SQLException e) {
 			throw new CityGMLExportException("Database error while querying the number of global appearances.", e);
 		}
 
 		// cache gml:ids of city objects in case we have to export groups
-		config.getInternal().setRegisterGmlIdInCache(!config.getProject().getExportConfig().getCityObjectGroup().isExportMemberAsXLinks()
+		config.getInternal().setRegisterGmlIdInCache(!config.getExportConfig().getCityObjectGroup().isExportMemberAsXLinks()
 				&& query.getFeatureTypeFilter().containsFeatureType(schemaMapping.getFeatureType(query.getTargetVersion().getCityGMLModule(CityGMLModuleType.CITY_OBJECT_GROUP).getFeatureName(CityObjectGroup.class))));
 
 		// tiling
@@ -272,10 +272,10 @@ public class Exporter implements EventHandler {
 		// process export folder for texture files
 		String textureFolder = null;
 		boolean textureFolderIsAbsolute = false;
-		boolean exportAppearance = config.getProject().getExportConfig().getAppearances().isSetExportAppearance();
+		boolean exportAppearance = config.getExportConfig().getAppearances().isSetExportAppearance();
 
 		if (exportAppearance) {
-			textureFolder = config.getProject().getExportConfig().getAppearances().getTexturePath().getPath();
+			textureFolder = config.getExportConfig().getAppearances().getTexturePath().getPath();
 			if (textureFolder == null || textureFolder.isEmpty())
 				textureFolder = "appearance";
 
@@ -299,10 +299,10 @@ public class Exporter implements EventHandler {
 			config.getInternal().setExportTextureURI(textureFolder);
 
 			// check for unique texture filenames when exporting an archiv
-			if (!config.getProject().getExportConfig().getAppearances().isSetUniqueTextureFileNames()
+			if (!config.getExportConfig().getAppearances().isSetUniqueTextureFileNames()
 				&& fileFactory.getFileType(outputFile.getFileName()) == FileType.ARCHIVE) {
 				log.warn("Using unique texture filenames because of writing to an archive file.");
-				config.getProject().getExportConfig().getAppearances().setUniqueTextureFileNames(true);
+				config.getExportConfig().getAppearances().setUniqueTextureFileNames(true);
 			}
 		}
 
@@ -397,7 +397,7 @@ public class Exporter implements EventHandler {
 					// create output writer
 					try {
 						writer = writerFactory.createFeatureWriter(new OutputStreamWriter(file.openStream(),
-								config.getProject().getExportConfig().getCityGMLOptions().getFileEncoding()));
+								config.getExportConfig().getCityGMLOptions().getFileEncoding()));
 						writer.useIndentation(file.getType() == FileType.REGULAR);
 					} catch (FeatureWriteException | IOException e) {
 						throw new CityGMLExportException("Failed to open file '" + file.getFile() + "' for writing.", e);
@@ -406,7 +406,7 @@ public class Exporter implements EventHandler {
 					// create instance of temp table manager
 					try {
 						cacheTableManager = new CacheTableManager(
-								config.getProject().getExportConfig().getResources().getThreadPool().getDefaultPool().getMaxThreads(),
+								config.getExportConfig().getResources().getThreadPool().getDefaultPool().getMaxThreads(),
 								config);
 					} catch (SQLException | IOException e) {
 						throw new CityGMLExportException("Failed to initialize internal cache manager.", e);
@@ -420,20 +420,20 @@ public class Exporter implements EventHandler {
 						uidCacheManager.initCache(
 								UIDCacheType.GEOMETRY,
 								new GeometryGmlIdCache(cacheTableManager,
-										config.getProject().getExportConfig().getResources().getGmlIdCache().getGeometry().getPartitions(),
-										config.getProject().getDatabaseConfig().getImportBatching().getGmlIdCacheBatchSize()),
-								config.getProject().getExportConfig().getResources().getGmlIdCache().getGeometry().getCacheSize(),
-								config.getProject().getExportConfig().getResources().getGmlIdCache().getGeometry().getPageFactor(),
-								config.getProject().getExportConfig().getResources().getThreadPool().getDefaultPool().getMaxThreads());
+										config.getExportConfig().getResources().getGmlIdCache().getGeometry().getPartitions(),
+										config.getDatabaseConfig().getImportBatching().getGmlIdCacheBatchSize()),
+								config.getExportConfig().getResources().getGmlIdCache().getGeometry().getCacheSize(),
+								config.getExportConfig().getResources().getGmlIdCache().getGeometry().getPageFactor(),
+								config.getExportConfig().getResources().getThreadPool().getDefaultPool().getMaxThreads());
 
 						uidCacheManager.initCache(
 								UIDCacheType.OBJECT,
 								new FeatureGmlIdCache(cacheTableManager,
-										config.getProject().getExportConfig().getResources().getGmlIdCache().getFeature().getPartitions(),
-										config.getProject().getDatabaseConfig().getImportBatching().getGmlIdCacheBatchSize()),
-								config.getProject().getExportConfig().getResources().getGmlIdCache().getFeature().getCacheSize(),
-								config.getProject().getExportConfig().getResources().getGmlIdCache().getFeature().getPageFactor(),
-								config.getProject().getExportConfig().getResources().getThreadPool().getDefaultPool().getMaxThreads());
+										config.getExportConfig().getResources().getGmlIdCache().getFeature().getPartitions(),
+										config.getDatabaseConfig().getImportBatching().getGmlIdCacheBatchSize()),
+								config.getExportConfig().getResources().getGmlIdCache().getFeature().getCacheSize(),
+								config.getExportConfig().getResources().getGmlIdCache().getFeature().getPageFactor(),
+								config.getExportConfig().getResources().getThreadPool().getDefaultPool().getMaxThreads());
 					} catch (SQLException e) {
 						throw new CityGMLExportException("Failed to initialize internal gml:id caches.", e);
 					}
@@ -443,7 +443,7 @@ public class Exporter implements EventHandler {
 					xlinkExporterPool = new WorkerPool<>(
 							"xlink_exporter_pool",
 							1,
-							Math.max(1, config.getProject().getExportConfig().getResources().getThreadPool().getDefaultPool().getMaxThreads() / 2),
+							Math.max(1, config.getExportConfig().getResources().getThreadPool().getDefaultPool().getMaxThreads() / 2),
 							PoolSizeAdaptationStrategy.AGGRESSIVE,
 							new DBExportXlinkWorkerFactory(file, config, eventDispatcher),
 							300,
@@ -451,8 +451,8 @@ public class Exporter implements EventHandler {
 
 					dbWorkerPool = new WorkerPool<>(
 							"db_exporter_pool",
-							config.getProject().getExportConfig().getResources().getThreadPool().getDefaultPool().getMinThreads(),
-							config.getProject().getExportConfig().getResources().getThreadPool().getDefaultPool().getMaxThreads(),
+							config.getExportConfig().getResources().getThreadPool().getDefaultPool().getMinThreads(),
+							config.getExportConfig().getResources().getThreadPool().getDefaultPool().getMaxThreads(),
 							PoolSizeAdaptationStrategy.AGGRESSIVE,
 							new DBExportWorkerFactory(
 									file,

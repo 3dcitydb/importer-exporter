@@ -107,10 +107,10 @@ public class DBSurfaceData implements DBImporter {
 		this.batchConn = batchConn;
 		this.importer = importer;
 
-		affineTransformation = config.getProject().getImportConfig().getAffineTransformation().isEnabled();
-		replaceGmlId = config.getProject().getImportConfig().getGmlId().isUUIDModeReplace();
+		affineTransformation = config.getImportConfig().getAffineTransformation().isEnabled();
+		replaceGmlId = config.getImportConfig().getGmlId().isUUIDModeReplace();
 		dbSrid = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter().getConnectionMetaData().getReferenceSystem().getSrid();
-		affineTransformation = config.getProject().getImportConfig().getAffineTransformation().isEnabled();
+		affineTransformation = config.getImportConfig().getAffineTransformation().isEnabled();
 		nullGeometryType = importer.getDatabaseAdapter().getGeometryConverter().getNullGeometryType();
 		nullGeometryTypeName = importer.getDatabaseAdapter().getGeometryConverter().getNullGeometryTypeName();
 		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();

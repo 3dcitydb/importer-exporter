@@ -200,7 +200,7 @@ public class BoundingBoxValidator {
 		try {
 			if (bbox.getSrs().isSupported()) {
 				DatabaseSrs wgs84 = DatabaseConfig.PREDEFINED_SRS.get(PredefinedSrsName.WGS84_2D);
-				for (DatabaseSrs srs : config.getProject().getDatabaseConfig().getReferenceSystems()) {
+				for (DatabaseSrs srs : config.getDatabaseConfig().getReferenceSystems()) {
 					if (srs.getSrid() == DatabaseConfig.PREDEFINED_SRS.get(PredefinedSrsName.WGS84_2D).getSrid()) {
 						wgs84 = srs;
 						break;

@@ -65,7 +65,7 @@ public class TilingOptionsPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public boolean isModified() {
-		SimpleTilingOptions tilingOptions = config.getProject().getExportConfig().getSimpleQuery().getBboxFilter().getTilingOptions();
+		SimpleTilingOptions tilingOptions = config.getExportConfig().getSimpleQuery().getBboxFilter().getTilingOptions();
 		if (!tilingOptions.getTilePath().equals(tilePathName.getText().trim())) return true;
 		if (tilePathSuffixComboBox.getSelectedItem() != tilingOptions.getTilePathSuffix()) return true;
 		if (tileNameSuffixComboBox.getSelectedItem() != tilingOptions.getTileNameSuffix()) return true;
@@ -168,7 +168,7 @@ public class TilingOptionsPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void loadSettings() {
-		SimpleTilingOptions tilingOptions = config.getProject().getExportConfig().getSimpleQuery().getBboxFilter().getTilingOptions();
+		SimpleTilingOptions tilingOptions = config.getExportConfig().getSimpleQuery().getBboxFilter().getTilingOptions();
 		tilePathName.setText(tilingOptions.getTilePath());
 		tilePathSuffixComboBox.setSelectedItem(tilingOptions.getTilePathSuffix());
 		tileNameSuffixComboBox.setSelectedItem(tilingOptions.getTileNameSuffix());		
@@ -184,7 +184,7 @@ public class TilingOptionsPanel extends AbstractPreferencesComponent {
 			tilePathName.setText("tile");
 
 		// tiling options
-		SimpleTilingOptions tilingOptions = config.getProject().getExportConfig().getSimpleQuery().getBboxFilter().getTilingOptions();
+		SimpleTilingOptions tilingOptions = config.getExportConfig().getSimpleQuery().getBboxFilter().getTilingOptions();
 		tilingOptions.setTilePath(tilePathName.getText());
 		tilingOptions.setTilePathSuffix((TileSuffixMode)tilePathSuffixComboBox.getSelectedItem());
 		tilingOptions.setTileNameSuffix((TileNameSuffixMode)tileNameSuffixComboBox.getSelectedItem());

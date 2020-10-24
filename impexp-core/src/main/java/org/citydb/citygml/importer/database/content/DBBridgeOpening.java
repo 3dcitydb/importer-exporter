@@ -71,7 +71,7 @@ public class DBBridgeOpening implements DBImporter {
 		this.batchConn = batchConn;
 		this.importer = importer;
 
-		affineTransformation = config.getProject().getImportConfig().getAffineTransformation().isEnabled();
+		affineTransformation = config.getImportConfig().getAffineTransformation().isEnabled();
 		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
 
 		String stmt = "insert into " + schema + ".bridge_opening (id, objectclass_id, address_id, lod3_multi_surface_id, lod4_multi_surface_id, " +

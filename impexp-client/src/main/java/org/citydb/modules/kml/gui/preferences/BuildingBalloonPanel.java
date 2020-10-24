@@ -78,7 +78,7 @@ public class BuildingBalloonPanel extends AbstractPreferencesComponent {
 	}
 
 	private Balloon getConfigBalloon() {
-		return config.getProject().getKmlExportConfig().getBuildingBalloon();
+		return config.getKmlExportConfig().getBuildingBalloon();
 	}
 
 	@Override

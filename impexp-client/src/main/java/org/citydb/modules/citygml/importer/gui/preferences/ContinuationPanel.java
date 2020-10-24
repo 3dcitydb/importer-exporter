@@ -78,7 +78,7 @@ public class ContinuationPanel extends AbstractPreferencesComponent {
 	
 	@Override
 	public boolean isModified() {
-		Continuation continuation = config.getProject().getImportConfig().getContinuation();
+		Continuation continuation = config.getImportConfig().getContinuation();
 
 		if (!lineageText.getText().equals(continuation.getLineage())) return true;
 		if (!reasonForUpdateText.getText().equals(continuation.getReasonForUpdate())) return true;
@@ -217,7 +217,7 @@ public class ContinuationPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void loadSettings() {
-		Continuation continuation = config.getProject().getImportConfig().getContinuation();
+		Continuation continuation = config.getImportConfig().getContinuation();
 		
 		lineageText.setText(continuation.getLineage());
 		reasonForUpdateText.setText(continuation.getReasonForUpdate());
@@ -247,7 +247,7 @@ public class ContinuationPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void setSettings() {
-		Continuation continuation = config.getProject().getImportConfig().getContinuation();
+		Continuation continuation = config.getImportConfig().getContinuation();
 
 		String lineage = lineageText.getText().trim();
 		continuation.setLineage(lineage);

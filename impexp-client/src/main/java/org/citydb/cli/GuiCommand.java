@@ -31,7 +31,7 @@ package org.citydb.cli;
 import org.citydb.ImpExpException;
 import org.citydb.config.Config;
 import org.citydb.config.ConfigUtil;
-import org.citydb.config.gui.Gui;
+import org.citydb.config.Gui;
 import org.citydb.database.DatabaseController;
 import org.citydb.gui.ImpExpGui;
 import org.citydb.gui.components.SplashScreen;
@@ -126,7 +126,7 @@ public class GuiCommand extends CliCommand implements StartupProgressListener {
         pluginManager.registerInternalPlugin(new PreferencesPlugin(impExpGui, config));
 
         // initialize all GUI plugins
-        Locale locale = new Locale(config.getProject().getGlobalConfig().getLanguage().value());
+        Locale locale = new Locale(config.getGlobalConfig().getLanguage().value());
         for (Plugin plugin : pluginManager.getPlugins()) {
             if (plugin instanceof ViewExtension) {
                 ((ViewExtension) plugin).initViewExtension(impExpGui, locale);

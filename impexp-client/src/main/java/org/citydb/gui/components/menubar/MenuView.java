@@ -28,7 +28,7 @@
 package org.citydb.gui.components.menubar;
 
 import org.citydb.config.Config;
-import org.citydb.config.gui.Gui;
+import org.citydb.config.Gui;
 import org.citydb.config.i18n.Language;
 import org.citydb.gui.ImpExpGui;
 import org.citydb.gui.components.mapviewer.MapWindow;

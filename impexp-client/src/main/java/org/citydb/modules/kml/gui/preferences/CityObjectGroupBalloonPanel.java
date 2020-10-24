@@ -78,7 +78,7 @@ public class CityObjectGroupBalloonPanel extends AbstractPreferencesComponent {
 	}
 
 	private Balloon getConfigBalloon() {
-		return config.getProject().getKmlExportConfig().getCityObjectGroupBalloon();
+		return config.getKmlExportConfig().getCityObjectGroupBalloon();
 	}
 
 	@Override

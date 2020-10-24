@@ -126,7 +126,7 @@ public class DatabaseOperationsPanel extends JPanel implements EventHandler {
 	}
 
 	public void loadSettings() {
-		DatabaseConfig db = config.getProject().getDatabaseConfig();
+		DatabaseConfig db = config.getDatabaseConfig();
 		workspace.setText(db.getWorkspaces().getOperationWorkspace().getName());
 		datePicker.setDate(db.getWorkspaces().getOperationWorkspace().getTimestamp());
 
@@ -142,7 +142,7 @@ public class DatabaseOperationsPanel extends JPanel implements EventHandler {
 	}
 
 	public void setSettings() {
-		DatabaseConfig db = config.getProject().getDatabaseConfig();
+		DatabaseConfig db = config.getDatabaseConfig();
 		db.getOperation().setLastUsed(operations[operationsTab.getSelectedIndex()].getType());
 		db.getWorkspaces().getOperationWorkspace().setName(workspace.getText());
 		db.getWorkspaces().getOperationWorkspace().setTimestamp(datePicker.getDate());
@@ -180,7 +180,7 @@ public class DatabaseOperationsPanel extends JPanel implements EventHandler {
 	
 	public Workspace getWorkspace() {
 		setSettings();
-		return config.getProject().getDatabaseConfig().getWorkspaces().getOperationWorkspace();
+		return config.getDatabaseConfig().getWorkspaces().getOperationWorkspace();
 	}
 
 	protected ViewController getViewController() {

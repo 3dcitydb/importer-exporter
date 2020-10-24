@@ -40,8 +40,8 @@ public class CityGMLReader implements FeatureReader, EventHandler {
         this.factory = factory;
         this.config = config;
 
-        minThreads = config.getProject().getImportConfig().getResources().getThreadPool().getDefaultPool().getMinThreads();
-        maxThreads = config.getProject().getImportConfig().getResources().getThreadPool().getDefaultPool().getMaxThreads();
+        minThreads = config.getImportConfig().getResources().getThreadPool().getDefaultPool().getMinThreads();
+        maxThreads = config.getImportConfig().getResources().getThreadPool().getDefaultPool().getMaxThreads();
 
         eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
         eventDispatcher.addEventHandler(EventType.INTERRUPT,this);

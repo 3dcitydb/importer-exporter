@@ -114,15 +114,15 @@ public class WaterBodyRenderingPanel extends AbstractPreferencesComponent {
 	}
 
 	private ColladaOptions getConfigColladaOptions() {
-		return config.getProject().getKmlExportConfig().getWaterBodyColladaOptions();
+		return config.getKmlExportConfig().getWaterBodyColladaOptions();
 	}
 
 	private List<DisplayForm> getConfigDisplayForms() {
-		return config.getProject().getKmlExportConfig().getWaterBodyDisplayForms();
+		return config.getKmlExportConfig().getWaterBodyDisplayForms();
 	}
 
 	private void setConfigDisplayForms(List<DisplayForm> displayForms) {
-		config.getProject().getKmlExportConfig().setWaterBodyDisplayForms(displayForms);
+		config.getKmlExportConfig().setWaterBodyDisplayForms(displayForms);
 	}
 
 	@Override

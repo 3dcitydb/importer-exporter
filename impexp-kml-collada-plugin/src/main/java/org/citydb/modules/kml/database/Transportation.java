@@ -84,15 +84,15 @@ public class Transportation extends KmlGenericObject{
 	}
 
 	protected List<DisplayForm> getDisplayForms() {
-		return config.getProject().getKmlExportConfig().getTransportationDisplayForms();
+		return config.getKmlExportConfig().getTransportationDisplayForms();
 	}
 
 	public ColladaOptions getColladaOptions() {
-		return config.getProject().getKmlExportConfig().getTransportationColladaOptions();
+		return config.getKmlExportConfig().getTransportationColladaOptions();
 	}
 
 	public Balloon getBalloonSettings() {
-		return config.getProject().getKmlExportConfig().getTransportationBalloon();
+		return config.getKmlExportConfig().getTransportationBalloon();
 	}
 
 	public String getStyleBasisName() {
@@ -104,7 +104,7 @@ public class Transportation extends KmlGenericObject{
 		ResultSet rs = null;
 
 		try {
-			int lodToExportFrom = currentLod = config.getProject().getKmlExportConfig().getLodToExportFrom();
+			int lodToExportFrom = currentLod = config.getKmlExportConfig().getLodToExportFrom();
 			currentLod = lodToExportFrom == 5 ? 4 : lodToExportFrom;
 			int minLod = lodToExportFrom == 5 ? 0 : lodToExportFrom;
 			boolean found = false;
@@ -197,7 +197,7 @@ public class Transportation extends KmlGenericObject{
 						break;
 
 					case DisplayForm.COLLADA:
-						fillGenericObjectForCollada(rs, config.getProject().getKmlExportConfig().getTransportationColladaOptions().isGenerateTextureAtlases());
+						fillGenericObjectForCollada(rs, config.getKmlExportConfig().getTransportationColladaOptions().isGenerateTextureAtlases());
 						String currentgmlId = getGmlId();
 						setGmlId(work.getGmlId());
 						setId(work.getId());
@@ -306,7 +306,7 @@ public class Transportation extends KmlGenericObject{
 						}
 					}
 					
-					switch (config.getProject().getKmlExportConfig().getAltitudeMode()) {
+					switch (config.getKmlExportConfig().getAltitudeMode()) {
 					case ABSOLUTE:
 						lineString.setAltitudeModeGroup(kmlFactory.createAltitudeMode(AltitudeModeEnumType.ABSOLUTE));
 						break;

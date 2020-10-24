@@ -383,7 +383,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 
 	public void doTranslation() {
 		try {
-			LanguageType lang = config.getProject().getGlobalConfig().getLanguage();
+			LanguageType lang = config.getGlobalConfig().getLanguage();
 			if (lang == currentLang)
 				return;
 

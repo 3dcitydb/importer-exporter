@@ -126,7 +126,7 @@ public class AttributeFilterView extends FilterView {
 
     @Override
     public void loadSettings() {
-        SimpleQuery query = config.getProject().getExportConfig().getSimpleQuery();
+        SimpleQuery query = config.getExportConfig().getSimpleQuery();
 
         // gml:id filter
         ResourceIdOperator gmlIdFilter = query.getSelectionFilter().getGmlIdFilter();
@@ -143,7 +143,7 @@ public class AttributeFilterView extends FilterView {
 
     @Override
     public void setSettings() {
-        SimpleQuery query = config.getProject().getExportConfig().getSimpleQuery();
+        SimpleQuery query = config.getExportConfig().getSimpleQuery();
 
         // gml:id filter
         ResourceIdOperator gmlIdFilter = query.getSelectionFilter().getGmlIdFilter();

@@ -34,7 +34,7 @@ import org.citydb.ade.ADEExtensionManager;
 import org.citydb.config.Config;
 import org.citydb.config.ConfigUtil;
 import org.citydb.config.i18n.Language;
-import org.citydb.config.project.Project;
+import org.citydb.config.Project;
 import org.citydb.config.project.global.LanguageType;
 import org.citydb.config.project.global.LogFileMode;
 import org.citydb.config.project.global.LogLevel;
@@ -414,19 +414,19 @@ public class ImpExpCli extends CliCommand implements CommandLine.IVersionProvide
         ProxySelector.setDefault(InternalProxySelector.getInstance());
 
         // set internationalization
-        LanguageType language = config.getProject().getGlobalConfig().getLanguage();
+        LanguageType language = config.getGlobalConfig().getLanguage();
         if (language != LanguageType.EN) {
             Locale locale = new Locale(language.value());
             if (Language.existsLanguagePack(locale)) {
                 Language.I18N = ResourceBundle.getBundle("org.citydb.config.i18n.language", locale);
             } else {
-                config.getProject().getGlobalConfig().setLanguage(LanguageType.EN);
+                config.getGlobalConfig().setLanguage(LanguageType.EN);
             }
         }
     }
 
     private void initializeLogging(Config config) {
-        Logging logging = config.getProject().getGlobalConfig().getLogging();
+        Logging logging = config.getGlobalConfig().getLogging();
 
         // set console log level
         if (!useDefaultLogLevel) {

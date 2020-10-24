@@ -75,7 +75,7 @@ public class DBTunnelInstallation implements DBImporter {
 		this.batchConn = batchConn;
 		this.importer = importer;
 
-		affineTransformation = config.getProject().getImportConfig().getAffineTransformation().isEnabled();
+		affineTransformation = config.getImportConfig().getAffineTransformation().isEnabled();
 		nullGeometryType = importer.getDatabaseAdapter().getGeometryConverter().getNullGeometryType();
 		nullGeometryTypeName = importer.getDatabaseAdapter().getGeometryConverter().getNullGeometryTypeName();
 		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();

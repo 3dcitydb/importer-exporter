@@ -81,7 +81,7 @@ public class IdHandlingPanel extends AbstractPreferencesComponent implements Eve
 
 	@Override
 	public boolean isModified() {
-		ImportGmlId gmlId = config.getProject().getImportConfig().getGmlId();
+		ImportGmlId gmlId = config.getImportConfig().getGmlId();
 
 		if (!idPrefix.getText().equals(gmlId.getIdPrefix())) return true;
 		if (impIdCheckExtRef.isSelected() != gmlId.isSetKeepGmlIdAsExternalReference()) return true;
@@ -215,7 +215,7 @@ public class IdHandlingPanel extends AbstractPreferencesComponent implements Eve
 
 	@Override
 	public void loadSettings() {
-		ImportGmlId gmlId = config.getProject().getImportConfig().getGmlId();
+		ImportGmlId gmlId = config.getImportConfig().getGmlId();
 
 		if (gmlId.getIdPrefix() != null && gmlId.getIdPrefix().trim().length() != 0)
 			idPrefix.setText(gmlId.getIdPrefix());
@@ -249,7 +249,7 @@ public class IdHandlingPanel extends AbstractPreferencesComponent implements Eve
 
 	@Override
 	public void setSettings() {
-		ImportGmlId gmlId = config.getProject().getImportConfig().getGmlId();
+		ImportGmlId gmlId = config.getImportConfig().getGmlId();
 
 		if (idPrefix.getText() != null && DefaultGMLIdManager.getInstance().isValidPrefix(idPrefix.getText()))
 			gmlId.setIdPrefix(idPrefix.getText());

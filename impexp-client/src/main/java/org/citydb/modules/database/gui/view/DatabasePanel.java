@@ -567,7 +567,7 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 		if (databaseController.isConnected())
 			disconnect();
 
-		databaseConfig = config.getProject().getDatabaseConfig();
+		databaseConfig = config.getDatabaseConfig();
 		isSettingsLoaded = false;
 
 		connCombo.removeAllItems();

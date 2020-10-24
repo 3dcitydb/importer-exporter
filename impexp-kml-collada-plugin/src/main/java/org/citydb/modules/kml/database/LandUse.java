@@ -77,15 +77,15 @@ public class LandUse extends KmlGenericObject{
 	}
 
 	protected List<DisplayForm> getDisplayForms() {
-		return config.getProject().getKmlExportConfig().getLandUseDisplayForms();
+		return config.getKmlExportConfig().getLandUseDisplayForms();
 	}
 
 	public ColladaOptions getColladaOptions() {
-		return config.getProject().getKmlExportConfig().getLandUseColladaOptions();
+		return config.getKmlExportConfig().getLandUseColladaOptions();
 	}
 
 	public Balloon getBalloonSettings() {
-		return config.getProject().getKmlExportConfig().getLandUseBalloon();
+		return config.getKmlExportConfig().getLandUseBalloon();
 	}
 
 	public String getStyleBasisName() {
@@ -97,7 +97,7 @@ public class LandUse extends KmlGenericObject{
 		ResultSet rs = null;
 
 		try {
-			int lodToExportFrom = currentLod = config.getProject().getKmlExportConfig().getLodToExportFrom();
+			int lodToExportFrom = currentLod = config.getKmlExportConfig().getLodToExportFrom();
 			currentLod = lodToExportFrom == 5 ? 4 : lodToExportFrom;
 			int minLod = lodToExportFrom == 5 ? 0 : lodToExportFrom;
 			boolean found = false;
@@ -184,7 +184,7 @@ public class LandUse extends KmlGenericObject{
 					break;
 
 				case DisplayForm.COLLADA:
-					fillGenericObjectForCollada(rs, config.getProject().getKmlExportConfig().getLandUseColladaOptions().isGenerateTextureAtlases());
+					fillGenericObjectForCollada(rs, config.getKmlExportConfig().getLandUseColladaOptions().isGenerateTextureAtlases());
 					String currentgmlId = getGmlId();
 					setGmlId(work.getGmlId());
 					setId(work.getId());

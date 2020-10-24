@@ -78,7 +78,7 @@ public class ReliefBalloonPanel extends AbstractPreferencesComponent {
 	}
 
 	private Balloon getConfigBalloon() {
-		return config.getProject().getKmlExportConfig().getReliefBalloon();
+		return config.getKmlExportConfig().getReliefBalloon();
 	}
 
 	@Override

@@ -57,7 +57,7 @@ public class XMLValidationPanel extends AbstractPreferencesComponent {
 	
 	@Override
 	public boolean isModified() {
-		XMLValidation xmlValidation = config.getProject().getImportConfig().getXMLValidation();
+		XMLValidation xmlValidation = config.getImportConfig().getXMLValidation();
 		
 		if (useXMLValidation.isSelected() != xmlValidation.isSetUseXMLValidation()) return true;		
 		if (oneError.isSelected() != xmlValidation.isSetReportOneErrorPerFeature()) return true;
@@ -98,7 +98,7 @@ public class XMLValidationPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void loadSettings() {
-		XMLValidation xmlValidation = config.getProject().getImportConfig().getXMLValidation();
+		XMLValidation xmlValidation = config.getImportConfig().getXMLValidation();
 
 		useXMLValidation.setSelected(xmlValidation.isSetUseXMLValidation());
 		oneError.setSelected(xmlValidation.isSetReportOneErrorPerFeature());	
@@ -106,7 +106,7 @@ public class XMLValidationPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void setSettings() {
-		XMLValidation xmlValidation = config.getProject().getImportConfig().getXMLValidation();
+		XMLValidation xmlValidation = config.getImportConfig().getXMLValidation();
 
 		xmlValidation.setUseXMLValidation(useXMLValidation.isSelected());
 		xmlValidation.setReportOneErrorPerFeature(oneError.isSelected());

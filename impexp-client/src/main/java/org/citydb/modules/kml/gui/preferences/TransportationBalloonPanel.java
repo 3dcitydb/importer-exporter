@@ -78,7 +78,7 @@ public class TransportationBalloonPanel extends AbstractPreferencesComponent {
 	}
 
 	private Balloon getConfigBalloon() {
-		return config.getProject().getKmlExportConfig().getTransportationBalloon();
+		return config.getKmlExportConfig().getTransportationBalloon();
 	}
 
 	@Override

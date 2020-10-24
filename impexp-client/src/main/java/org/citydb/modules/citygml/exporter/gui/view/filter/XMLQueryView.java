@@ -198,7 +198,7 @@ public class XMLQueryView extends FilterView {
 
     private void setSimpleSettings() {
         filterPanel.setSimpleQuerySettings();
-        SimpleQuery simpleQuery = config.getProject().getExportConfig().getSimpleQuery();
+        SimpleQuery simpleQuery = config.getExportConfig().getSimpleQuery();
         CityGMLVersion version = Util.toCityGMLVersion(simpleQuery.getVersion());
 
         QueryConfig query = new QueryConfig();
@@ -471,14 +471,14 @@ public class XMLQueryView extends FilterView {
 
     @Override
     public void loadSettings() {
-        QueryConfig query = config.getProject().getExportConfig().getQuery();
-        xmlText.setText(marshalQuery(query, config.getProject().getNamespaceFilter()));
+        QueryConfig query = config.getExportConfig().getQuery();
+        xmlText.setText(marshalQuery(query, config.getNamespaceFilter()));
     }
 
     @Override
     public void setSettings() {
         QueryConfig query = unmarshalQuery();
-        config.getProject().getExportConfig().setQuery(query);
+        config.getExportConfig().setQuery(query);
     }
 
     private boolean isDefaultDatabaseSrs(DatabaseSrs srs) {

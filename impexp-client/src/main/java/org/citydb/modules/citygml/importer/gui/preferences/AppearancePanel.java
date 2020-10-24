@@ -67,7 +67,7 @@ public class AppearancePanel extends AbstractPreferencesComponent {
 
 	@Override
 	public boolean isModified() {
-		ImportAppearance appearances = config.getProject().getImportConfig().getAppearances();
+		ImportAppearance appearances = config.getImportConfig().getAppearances();
 		
 		if (!impAppOldText.getText().equals(appearances.getThemeForTexturedSurface())) return true;
 		if (impAppRadioImp.isSelected() && !(appearances.isSetImportAppearance() && appearances.isSetImportTextureFiles())) return true;
@@ -153,7 +153,7 @@ public class AppearancePanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void loadSettings() {
-		ImportAppearance appearances = config.getProject().getImportConfig().getAppearances();
+		ImportAppearance appearances = config.getImportConfig().getAppearances();
 		
 		if (appearances.isSetImportAppearance()) {			
 			if (appearances.isSetImportTextureFiles()) 
@@ -170,7 +170,7 @@ public class AppearancePanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void setSettings() {
-		ImportAppearance appearances = config.getProject().getImportConfig().getAppearances();
+		ImportAppearance appearances = config.getImportConfig().getAppearances();
 
 		if (impAppRadioImp.isSelected()) {
 			appearances.setImportAppearances(true);

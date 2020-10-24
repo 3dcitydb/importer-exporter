@@ -111,7 +111,7 @@ public class DBImportWorker extends Worker<CityGML> implements EventHandler {
 				affineTransformer,
 				config);
 
-		commitAfter = config.getProject().getDatabaseConfig().getImportBatching().getFeatureBatchSize();
+		commitAfter = config.getDatabaseConfig().getImportBatching().getFeatureBatchSize();
 		if (commitAfter > databaseAdapter.getMaxBatchSize())
 			commitAfter = databaseAdapter.getMaxBatchSize();
 

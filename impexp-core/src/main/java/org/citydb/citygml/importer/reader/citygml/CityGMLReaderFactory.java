@@ -52,24 +52,24 @@ public class CityGMLReaderFactory implements FeatureReaderFactory {
         }
 
         // prepare XML validation
-        if (config.getProject().getImportConfig().getXMLValidation().isSetUseXMLValidation()) {
+        if (config.getImportConfig().getXMLValidation().isSetUseXMLValidation()) {
             log.info("Applying XML validation to CityGML input features.");
 
             factory.setProperty(CityGMLInputFactory.USE_VALIDATION, true);
             factory.setProperty(CityGMLInputFactory.PARSE_SCHEMA, true);
 
             validationHandler = new ValidationErrorHandler();
-            validationHandler.setReportAllErrors(!config.getProject().getImportConfig().getXMLValidation().isSetReportOneErrorPerFeature());
+            validationHandler.setReportAllErrors(!config.getImportConfig().getXMLValidation().isSetReportOneErrorPerFeature());
             factory.setValidationEventHandler(validationHandler);
         }
 
         // build XSLT transformer chain
-        if (config.getProject().getImportConfig().getXSLTransformation().isEnabled()
-                && config.getProject().getImportConfig().getXSLTransformation().isSetStylesheets()) {
+        if (config.getImportConfig().getXSLTransformation().isEnabled()
+                && config.getImportConfig().getXSLTransformation().isSetStylesheets()) {
             try {
                 log.info("Applying XSL transformations to CityGML input features.");
 
-                List<String> stylesheets = config.getProject().getImportConfig().getXSLTransformation().getStylesheets();
+                List<String> stylesheets = config.getImportConfig().getXSLTransformation().getStylesheets();
                 SAXTransformerFactory factory = (SAXTransformerFactory) TransformerFactory.newInstance();
                 Templates[] templates = new Templates[stylesheets.size()];
 
@@ -88,7 +88,7 @@ public class CityGMLReaderFactory implements FeatureReaderFactory {
         typeFilter = name -> {
             Module module = Modules.getModule(name.getNamespaceURI());
             if (module != null && module.getType() == CityGMLModuleType.APPEARANCE && name.getLocalPart().equals("Appearance"))
-                return config.getProject().getImportConfig().getAppearances().isSetImportAppearance();
+                return config.getImportConfig().getAppearances().isSetImportAppearance();
             else
                 return filter.getFeatureTypeFilter().isSatisfiedBy(name, true);
         };

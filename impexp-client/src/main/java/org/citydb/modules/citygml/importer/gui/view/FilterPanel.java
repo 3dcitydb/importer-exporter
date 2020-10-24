@@ -307,7 +307,7 @@ public class FilterPanel extends JPanel {
 	}
 
 	public void loadSettings() {
-		ImportFilter filter = config.getProject().getImportConfig().getFilter();
+		ImportFilter filter = config.getImportConfig().getFilter();
 
 		useAttributeFilter.setSelected(filter.isUseAttributeFilter());
 		useCounterFilter.setSelected(filter.isUseCountFilter());
@@ -350,7 +350,7 @@ public class FilterPanel extends JPanel {
 	}
 
 	public void setSettings() {
-		ImportFilter filter = config.getProject().getImportConfig().getFilter();
+		ImportFilter filter = config.getImportConfig().getFilter();
 
 		filter.setUseAttributeFilter(useAttributeFilter.isSelected());
 		filter.setUseCountFilter(useCounterFilter.isSelected());

@@ -87,7 +87,7 @@ public class DBImportXlinkWorker extends Worker<DBXlink> implements EventHandler
 		dbXlinkManager = new DBXlinkImporterManager(cacheTableManager, eventDispatcher);
 
 		AbstractDatabaseAdapter databaseAdapter = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter();
-		DatabaseConfig databaseConfig = config.getProject().getDatabaseConfig();
+		DatabaseConfig databaseConfig = config.getDatabaseConfig();
 
 		commitAfter = databaseConfig.getImportBatching().getTempBatchSize();
 		if (commitAfter > databaseAdapter.getMaxBatchSize())

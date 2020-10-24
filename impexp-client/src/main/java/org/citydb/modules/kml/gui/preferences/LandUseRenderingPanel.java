@@ -114,15 +114,15 @@ public class LandUseRenderingPanel extends AbstractPreferencesComponent {
 	}
 
 	private ColladaOptions getConfigColladaOptions() {
-		return config.getProject().getKmlExportConfig().getLandUseColladaOptions();
+		return config.getKmlExportConfig().getLandUseColladaOptions();
 	}
 
 	private List<DisplayForm> getConfigDisplayForms() {
-		return config.getProject().getKmlExportConfig().getLandUseDisplayForms();
+		return config.getKmlExportConfig().getLandUseDisplayForms();
 	}
 
 	private void setConfigDisplayForms(List<DisplayForm> displayForms) {
-		config.getProject().getKmlExportConfig().setLandUseDisplayForms(displayForms);
+		config.getKmlExportConfig().setLandUseDisplayForms(displayForms);
 	}
 
 	@Override

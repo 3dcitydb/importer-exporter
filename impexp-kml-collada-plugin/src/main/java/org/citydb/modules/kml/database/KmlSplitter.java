@@ -94,7 +94,7 @@ public class KmlSplitter {
 
 		// try and change workspace for connection if needed
 		if (databaseAdapter.hasVersioningSupport()) {
-			DatabaseConfig databaseConfig = config.getProject().getDatabaseConfig();
+			DatabaseConfig databaseConfig = config.getDatabaseConfig();
 			databaseAdapter.getWorkspaceManager().gotoWorkspace(connection, 
 					databaseConfig.getWorkspaces().getKmlExportWorkspace());
 		}

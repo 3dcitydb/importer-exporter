@@ -61,7 +61,7 @@ public class IndexPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public boolean isModified() {
-		Index index = config.getProject().getImportConfig().getIndexes();
+		Index index = config.getImportConfig().getIndexes();
 
 		if (impSIRadioNoDeac.isSelected() != index.isSpatialIndexModeUnchanged()) return true;
 		if (impSIRadioDeacAc.isSelected() != index.isSpatialIndexModeDeactivateActivate()) return true;
@@ -137,7 +137,7 @@ public class IndexPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void loadSettings() {
-		Index index = config.getProject().getImportConfig().getIndexes();
+		Index index = config.getImportConfig().getIndexes();
 
 		if (index.isSpatialIndexModeUnchanged())
 			impSIRadioNoDeac.setSelected(true);
@@ -156,7 +156,7 @@ public class IndexPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void setSettings() {
-		Index index = config.getProject().getImportConfig().getIndexes();
+		Index index = config.getImportConfig().getIndexes();
 
 		if (impSIRadioNoDeac.isSelected())
 			index.setSpatial(IndexMode.UNCHANGED);

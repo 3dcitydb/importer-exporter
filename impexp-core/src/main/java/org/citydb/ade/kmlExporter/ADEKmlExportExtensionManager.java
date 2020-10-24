@@ -63,7 +63,7 @@ public class ADEKmlExportExtensionManager {
 	private ADEPreference getPreference(Config config, int objectClassId, String target) {
 		ADEExtension adeExtension = ADEExtensionManager.getInstance().getExtensionByObjectClassId(objectClassId);
 		if (adeExtension != null) {
-			return config.getProject().getKmlExportConfig().getADEPreferences()
+			return config.getKmlExportConfig().getADEPreferences()
 					.computeIfAbsent(adeExtension.getId(), v -> new ADEPreferences(adeExtension.getId()))
 					.getPreferences()
 					.computeIfAbsent(target, v -> new ADEPreference(target));

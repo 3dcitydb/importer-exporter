@@ -121,15 +121,15 @@ public class BridgeRenderingPanel extends AbstractPreferencesComponent {
 	}
 
 	private ColladaOptions getConfigColladaOptions() {
-		return config.getProject().getKmlExportConfig().getBridgeColladaOptions();
+		return config.getKmlExportConfig().getBridgeColladaOptions();
 	}
 
 	private List<DisplayForm> getConfigDisplayForms() {
-		return config.getProject().getKmlExportConfig().getBridgeDisplayForms();
+		return config.getKmlExportConfig().getBridgeDisplayForms();
 	}
 
 	private void setConfigDisplayForms(List<DisplayForm> displayForms) {
-		config.getProject().getKmlExportConfig().setBridgeDisplayForms(displayForms);
+		config.getKmlExportConfig().setBridgeDisplayForms(displayForms);
 	}
 
 	@Override

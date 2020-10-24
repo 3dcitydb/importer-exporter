@@ -98,7 +98,7 @@ public class DBExportWorkerFactory implements WorkerFactory<DBSplittingResult> {
 			if (databaseAdapter.hasVersioningSupport()) {
 				databaseAdapter.getWorkspaceManager().gotoWorkspace(
 						connection,
-						config.getProject().getDatabaseConfig().getWorkspaces().getExportWorkspace());
+						config.getDatabaseConfig().getWorkspaces().getExportWorkspace());
 			}
 
 			dbWorker = new DBExportWorker(outputFile, connection, databaseAdapter, schemaMapping, cityGMLBuilder, featureWriter,

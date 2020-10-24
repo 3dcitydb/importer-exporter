@@ -175,7 +175,7 @@ public class DatabaseConnectionPool implements ConnectionManager {
 				databaseAdapter.addConnectionWarning(warning);
 
 			// check whether user-defined reference systems are supported
-			for (DatabaseSrs refSys : config.getProject().getDatabaseConfig().getReferenceSystems())
+			for (DatabaseSrs refSys : config.getDatabaseConfig().getReferenceSystems())
 				databaseAdapter.getUtil().getSrsInfo(refSys);			
 
 		} catch (DatabaseVersionException | SQLException e) {

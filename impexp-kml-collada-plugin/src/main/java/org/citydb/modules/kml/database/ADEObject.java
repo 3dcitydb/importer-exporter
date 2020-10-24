@@ -125,7 +125,7 @@ public class ADEObject extends KmlGenericObject{
 			ADEKmlExportManager adeKmlExportManager = kmlExporterManager.getADEKmlExportManager(adeObjectClassId);
 			ADEKmlExporter adeKmlExporter = adeKmlExportManager.getKmlExporter(adeObjectClassId);
 
-			int lodToExportFrom = config.getProject().getKmlExportConfig().getLodToExportFrom();
+			int lodToExportFrom = config.getKmlExportConfig().getLodToExportFrom();
 			currentLod = lodToExportFrom == 5 ? 4: lodToExportFrom;
 			int minLod = lodToExportFrom == 5 ? 0: lodToExportFrom;
 

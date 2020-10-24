@@ -27,9 +27,14 @@
  */
 package org.citydb.config;
 
-import org.citydb.config.gui.Gui;
 import org.citydb.config.internal.Internal;
-import org.citydb.config.project.Project;
+import org.citydb.config.project.database.DatabaseConfig;
+import org.citydb.config.project.deleter.DeleteConfig;
+import org.citydb.config.project.exporter.ExportConfig;
+import org.citydb.config.project.global.GlobalConfig;
+import org.citydb.config.project.importer.ImportConfig;
+import org.citydb.config.project.kmlExporter.KmlExportConfig;
+import org.citydb.config.project.plugin.PluginConfig;
 
 public class Config {
 	private Project project;
@@ -58,6 +63,70 @@ public class Config {
 			// (e.g., after unmarshalling the config file) here 
 			project.getDatabaseConfig().addDefaultReferenceSystems();
 		}
+	}
+
+	public DatabaseConfig getDatabaseConfig() {
+		return project.getDatabaseConfig();
+	}
+
+	public void setDatabaseConfig(DatabaseConfig databaseConfig) {
+		project.setDatabaseConfig(databaseConfig);
+	}
+
+	public ImportConfig getImportConfig() {
+		return project.getImportConfig();
+	}
+
+	public void setImportConfig(ImportConfig importConfig) {
+		project.setImportConfig(importConfig);
+	}
+
+	public ExportConfig getExportConfig() {
+		return project.getExportConfig();
+	}
+
+	public void setExportConfig(ExportConfig exportConfig) {
+		project.setExportConfig(exportConfig);
+	}
+
+	public DeleteConfig getDeleteConfig() {
+		return project.getDeleteConfig();
+	}
+
+	public void setDeleteConfig(DeleteConfig deleteConfig) {
+		project.setDeleteConfig(deleteConfig);
+	}
+
+	public KmlExportConfig getKmlExportConfig() {
+		return project.getKmlExportConfig();
+	}
+
+	public void setKmlExportConfig(KmlExportConfig kmlExportConfig) {
+		project.setKmlExportConfig(kmlExportConfig);
+	}
+
+	public GlobalConfig getGlobalConfig() {
+		return project.getGlobalConfig();
+	}
+
+	public void setGlobalConfig(GlobalConfig globalConfig) {
+		project.setGlobalConfig(globalConfig);
+	}
+
+	public <T extends PluginConfig> T getPluginConfig(Class<T> type) {
+		return project.getPluginConfig(type);
+	}
+
+	public PluginConfig registerPluginConfig(PluginConfig pluginConfig) {
+		return project.registerPluginConfig(pluginConfig);
+	}
+
+	public ConfigNamespaceFilter getNamespaceFilter() {
+		return project.getNamespaceFilter();
+	}
+
+	public void setNamespaceFilter(ConfigNamespaceFilter namespaceFilter) {
+		project.setNamespaceFilter(namespaceFilter);
 	}
 
 	public Gui getGui() {

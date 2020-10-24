@@ -77,15 +77,15 @@ public class PlantCover extends KmlGenericObject{
 	}
 
 	protected List<DisplayForm> getDisplayForms() {
-		return config.getProject().getKmlExportConfig().getVegetationDisplayForms();
+		return config.getKmlExportConfig().getVegetationDisplayForms();
 	}
 
 	public ColladaOptions getColladaOptions() {
-		return config.getProject().getKmlExportConfig().getVegetationColladaOptions();
+		return config.getKmlExportConfig().getVegetationColladaOptions();
 	}
 
 	public Balloon getBalloonSettings() {
-		return config.getProject().getKmlExportConfig().getVegetationBalloon();
+		return config.getKmlExportConfig().getVegetationBalloon();
 	}
 
 	public String getStyleBasisName() {
@@ -97,7 +97,7 @@ public class PlantCover extends KmlGenericObject{
 		ResultSet rs = null;
 
 		try {
-			int lodToExportFrom = currentLod = config.getProject().getKmlExportConfig().getLodToExportFrom();
+			int lodToExportFrom = currentLod = config.getKmlExportConfig().getLodToExportFrom();
 			currentLod = lodToExportFrom == 5 ? 4 : lodToExportFrom;
 			int minLod = lodToExportFrom == 5 ? 0 : lodToExportFrom;
 			boolean found = false;
@@ -184,7 +184,7 @@ public class PlantCover extends KmlGenericObject{
 					break;
 
 				case DisplayForm.COLLADA:
-					fillGenericObjectForCollada(rs, config.getProject().getKmlExportConfig().getVegetationColladaOptions().isGenerateTextureAtlases());
+					fillGenericObjectForCollada(rs, config.getKmlExportConfig().getVegetationColladaOptions().isGenerateTextureAtlases());
 					String currentgmlId = getGmlId();
 					setGmlId(work.getGmlId());
 					setId(work.getId());

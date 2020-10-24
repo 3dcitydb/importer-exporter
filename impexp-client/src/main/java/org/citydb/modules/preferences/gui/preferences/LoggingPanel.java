@@ -90,7 +90,7 @@ public class LoggingPanel extends AbstractPreferencesComponent {
 
     @Override
     public boolean isModified() {
-        Logging logging = config.getProject().getGlobalConfig().getLogging();
+        Logging logging = config.getGlobalConfig().getLogging();
 
         if (logLevelConsoleCombo.getSelectedItem() != logging.getConsole().getLogLevel()) return true;
         if (wrapTextConsole.isSelected() != logging.getConsole().isWrapText()) return true;
@@ -106,7 +106,7 @@ public class LoggingPanel extends AbstractPreferencesComponent {
     }
 
     private boolean isLogFileModified() {
-        Logging logging = config.getProject().getGlobalConfig().getLogging();
+        Logging logging = config.getGlobalConfig().getLogging();
 
         if (useLogFile.isSelected() != logging.getFile().isActive()) return true;
         if (useAlternativeLogFile.isSelected() != logging.getFile().isUseAlternativeLogFile()) return true;
@@ -302,7 +302,7 @@ public class LoggingPanel extends AbstractPreferencesComponent {
 
     @Override
     public void loadSettings() {
-        Logging logging = config.getProject().getGlobalConfig().getLogging();
+        Logging logging = config.getGlobalConfig().getLogging();
 
         wrapTextConsole.setSelected(logging.getConsole().isWrapText());
         mainView.getConsole().setLineWrap(wrapTextConsole.isSelected());
@@ -344,7 +344,7 @@ public class LoggingPanel extends AbstractPreferencesComponent {
 
     @Override
     public void setSettings() {
-        Logging logging = config.getProject().getGlobalConfig().getLogging();
+        Logging logging = config.getGlobalConfig().getLogging();
         boolean isModified = isLogFileModified();
 
         LogLevel consoleLogLevel = (LogLevel) logLevelConsoleCombo.getSelectedItem();

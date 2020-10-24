@@ -2,7 +2,7 @@
  * 3D City Database - The Open Source CityGML Database
  * http://www.3dcitydb.org/
  *
- * Copyright 2013 - 2019
+ * Copyright 2013 - 2020
  * Chair of Geoinformatics
  * Technical University of Munich, Germany
  * https://www.gis.bgu.tum.de/
@@ -25,9 +25,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.citydb.config.project;
+package org.citydb.config;
 
-import org.citydb.config.ConfigNamespaceFilter;
 import org.citydb.config.project.database.DatabaseConfig;
 import org.citydb.config.project.deleter.DeleteConfig;
 import org.citydb.config.project.exporter.ExportConfig;
@@ -90,74 +89,74 @@ public class Project {
         this(new DatabaseConfig(), new ImportConfig(), new ExportConfig(), new DeleteConfig(), new KmlExportConfig(), new GlobalConfig());
     }
 
-    public DatabaseConfig getDatabaseConfig() {
+    DatabaseConfig getDatabaseConfig() {
         return databaseConfig;
     }
 
-    public void setDatabaseConfig(DatabaseConfig databaseConfig) {
+    void setDatabaseConfig(DatabaseConfig databaseConfig) {
         if (databaseConfig != null)
             this.databaseConfig = databaseConfig;
     }
 
-    public ImportConfig getImportConfig() {
+    ImportConfig getImportConfig() {
         return importConfig;
     }
 
-    public void setImportConfig(ImportConfig importConfig) {
+    void setImportConfig(ImportConfig importConfig) {
         if (importConfig != null)
             this.importConfig = importConfig;
     }
 
-    public ExportConfig getExportConfig() {
+    ExportConfig getExportConfig() {
         return exportConfig;
     }
 
-    public void setExportConfig(ExportConfig exportConfig) {
+    void setExportConfig(ExportConfig exportConfig) {
         if (exportConfig != null)
             this.exportConfig = exportConfig;
     }
 
-    public DeleteConfig getDeleteConfig() {
+    DeleteConfig getDeleteConfig() {
         return deleteConfig;
     }
 
-    public void setDeleteConfig(DeleteConfig deleteConfig) {
+    void setDeleteConfig(DeleteConfig deleteConfig) {
         if (deleteConfig != null)
             this.deleteConfig = deleteConfig;
     }
 
-    public void setKmlExportConfig(KmlExportConfig kmlExportConfig) {
+    KmlExportConfig getKmlExportConfig() {
+        return kmlExportConfig;
+    }
+
+    void setKmlExportConfig(KmlExportConfig kmlExportConfig) {
         if (kmlExportConfig != null)
             this.kmlExportConfig = kmlExportConfig;
     }
 
-    public KmlExportConfig getKmlExportConfig() {
-        return kmlExportConfig;
-    }
-
-    public GlobalConfig getGlobalConfig() {
+    GlobalConfig getGlobalConfig() {
         return globalConfig;
     }
 
-    public void setGlobalConfig(GlobalConfig globalConfig) {
+    void setGlobalConfig(GlobalConfig globalConfig) {
         if (globalConfig != null)
             this.globalConfig = globalConfig;
     }
 
-    public <T extends PluginConfig> T getPluginConfig(Class<T> type) {
+    <T extends PluginConfig> T getPluginConfig(Class<T> type) {
         PluginConfig config = extensions.get(type);
         return type.isInstance(config) ? type.cast(config) : null;
     }
 
-    public PluginConfig registerPluginConfig(PluginConfig pluginConfig) {
+    PluginConfig registerPluginConfig(PluginConfig pluginConfig) {
         return extensions.put(pluginConfig.getClass(), pluginConfig);
     }
 
-    public ConfigNamespaceFilter getNamespaceFilter() {
+    ConfigNamespaceFilter getNamespaceFilter() {
         return namespaceFilter;
     }
 
-    public void setNamespaceFilter(ConfigNamespaceFilter namespaceFilter) {
+    void setNamespaceFilter(ConfigNamespaceFilter namespaceFilter) {
         this.namespaceFilter = namespaceFilter;
     }
 }

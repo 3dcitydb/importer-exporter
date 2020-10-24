@@ -66,12 +66,12 @@ public class DBXlinkExporterTextureImage implements DBXlinkExporter {
         textureURI = config.getInternal().getExportTextureURI();
         isAbsoluteTextureURI = new File(textureURI).isAbsolute();
         separator = isAbsoluteTextureURI ? File.separator : "/";
-        overwriteTextureImage = config.getProject().getExportConfig().getAppearances().isSetOverwriteTextureFiles();
-        useBuckets = config.getProject().getExportConfig().getAppearances().getTexturePath().isUseBuckets()
-                && config.getProject().getExportConfig().getAppearances().getTexturePath().getNoOfBuckets() > 0;
+        overwriteTextureImage = config.getExportConfig().getAppearances().isSetOverwriteTextureFiles();
+        useBuckets = config.getExportConfig().getAppearances().getTexturePath().isUseBuckets()
+                && config.getExportConfig().getAppearances().getTexturePath().getNoOfBuckets() > 0;
 
         if (useBuckets)
-            buckets = new boolean[config.getProject().getExportConfig().getAppearances().getTexturePath().getNoOfBuckets()];
+            buckets = new boolean[config.getExportConfig().getAppearances().getTexturePath().getNoOfBuckets()];
 
         blobExporter = exporterManager.getDatabaseAdapter().getSQLAdapter()
                 .getBlobExportAdapter(connection, BlobType.TEXTURE_IMAGE)

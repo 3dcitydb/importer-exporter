@@ -421,11 +421,11 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 
 	public void loadSettings() {
 		// database-specific content
-		workspaceText.setText(config.getProject().getDatabaseConfig().getWorkspaces().getKmlExportWorkspace().getName());
-		datePicker.setDate(config.getProject().getDatabaseConfig().getWorkspaces().getKmlExportWorkspace().getTimestamp());
+		workspaceText.setText(config.getDatabaseConfig().getWorkspaces().getKmlExportWorkspace().getName());
+		datePicker.setDate(config.getDatabaseConfig().getWorkspaces().getKmlExportWorkspace().getTimestamp());
 
 		// filter
-		SimpleKmlQuery query = config.getProject().getKmlExportConfig().getQuery();
+		SimpleKmlQuery query = config.getKmlExportConfig().getQuery();
 		if (query.getMode() == SimpleKmlQueryMode.SINGLE)
 			singleBuildingRadioButton.setSelected(true);
 		else
@@ -462,7 +462,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		columnsText.setText(String.valueOf(bboxFilter.getColumns()));
 
 		// display options
-		KmlExportConfig kmlExportConfig = config.getProject().getKmlExportConfig();
+		KmlExportConfig kmlExportConfig = config.getKmlExportConfig();
 
 		int lod = kmlExportConfig.getLodToExportFrom();
 		lod = lod >= lodComboBox.getItemCount() ? lodComboBox.getItemCount() - 1: lod; 
@@ -524,11 +524,11 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 	}
 
 	public void setSettings() {
-		config.getProject().getDatabaseConfig().getWorkspaces().getKmlExportWorkspace().setName(workspaceText.getText());
-		config.getProject().getDatabaseConfig().getWorkspaces().getKmlExportWorkspace().setTimestamp(datePicker.getDate());
+		config.getDatabaseConfig().getWorkspaces().getKmlExportWorkspace().setName(workspaceText.getText());
+		config.getDatabaseConfig().getWorkspaces().getKmlExportWorkspace().setTimestamp(datePicker.getDate());
 
 		// filter
-		SimpleKmlQuery query = config.getProject().getKmlExportConfig().getQuery();
+		SimpleKmlQuery query = config.getKmlExportConfig().getQuery();
 		query.setMode(singleBuildingRadioButton.isSelected() ? SimpleKmlQueryMode.SINGLE : SimpleKmlQueryMode.BBOX);
 
 		// feature type filter
@@ -569,7 +569,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		}
 
 		// display options
-		KmlExportConfig kmlExportConfig = config.getProject().getKmlExportConfig();
+		KmlExportConfig kmlExportConfig = config.getKmlExportConfig();
 
 		kmlExportConfig.setLodToExportFrom(lodComboBox.getSelectedIndex());
 
@@ -602,7 +602,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		} else { // should never happen
 			displayForms.add(df);
 		}
-		if (colladaCheckbox.isSelected() && config.getProject().getKmlExportConfig().getLodToExportFrom()>0) {
+		if (colladaCheckbox.isSelected() && config.getKmlExportConfig().getLodToExportFrom()>0) {
 			int levelVisibility = 0;
 			try {
 				levelVisibility = Integer.parseInt(colladaVisibleFromText.getText().trim());
@@ -620,7 +620,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		} else { // should never happen
 			displayForms.add(df);
 		}
-		if (geometryCheckbox.isSelected() && config.getProject().getKmlExportConfig().getLodToExportFrom()>0) {
+		if (geometryCheckbox.isSelected() && config.getKmlExportConfig().getLodToExportFrom()>0) {
 			int levelVisibility = 0;
 			try {
 				levelVisibility = Integer.parseInt(geometryVisibleFromText.getText().trim());
@@ -638,7 +638,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		} else { // should never happen
 			displayForms.add(df);
 		}
-		if (extrudedCheckbox.isSelected() && config.getProject().getKmlExportConfig().getLodToExportFrom()>0) {
+		if (extrudedCheckbox.isSelected() && config.getKmlExportConfig().getLodToExportFrom()>0) {
 			int levelVisibility = 0;
 			try {
 				levelVisibility = Integer.parseInt(extrudedVisibleFromText.getText().trim());
@@ -720,8 +720,8 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 			viewController.clearConsole();
 			setSettings();
 
-			SimpleKmlQuery query = config.getProject().getKmlExportConfig().getQuery();
-			DatabaseConfig db = config.getProject().getDatabaseConfig();
+			SimpleKmlQuery query = config.getKmlExportConfig().getQuery();
+			DatabaseConfig db = config.getDatabaseConfig();
 
 			// check all input values...
 			if (browseText.getText().trim().isEmpty()) {
@@ -739,7 +739,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 			}
 
 			// DisplayForms
-			int activeDisplayFormsAmount = config.getProject().getKmlExportConfig().getActiveDisplayFormsAmount(config.getProject().getKmlExportConfig().getBuildingDisplayForms());
+			int activeDisplayFormsAmount = config.getKmlExportConfig().getActiveDisplayFormsAmount(config.getKmlExportConfig().getBuildingDisplayForms());
 			if (activeDisplayFormsAmount == 0) {
 				viewController.errorMessage(Language.I18N.getString("export.dialog.error.incorrectData"), 
 						Language.I18N.getString("kmlExport.dialog.error.incorrectData.displayForms"));
@@ -747,9 +747,9 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 			}
 
 			// check API key when using the elevation API
-			if (config.getProject().getKmlExportConfig().getAltitudeOffsetMode() == AltitudeOffsetMode.GENERIC_ATTRIBUTE
-					&& config.getProject().getKmlExportConfig().isCallGElevationService()
-					&& !config.getProject().getGlobalConfig().getApiKeys().isSetGoogleElevation()) {
+			if (config.getKmlExportConfig().getAltitudeOffsetMode() == AltitudeOffsetMode.GENERIC_ATTRIBUTE
+					&& config.getKmlExportConfig().isCallGElevationService()
+					&& !config.getGlobalConfig().getApiKeys().isSetGoogleElevation()) {
 				log.error("The Google Elevation API cannot be used due to a missing API key.");
 				log.error("Please enter an API key or change the export preferences.");
 				viewController.errorMessage(Language.I18N.getString("kmlExport.dialog.error.elevation"),
@@ -785,8 +785,8 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 			}
 
 			// check collada2gltf tool
-			if (config.getProject().getKmlExportConfig().isCreateGltfModel()) {
-				Path collada2gltf = Paths.get(config.getProject().getKmlExportConfig().getPathOfGltfConverter());
+			if (config.getKmlExportConfig().isCreateGltfModel()) {
+				Path collada2gltf = Paths.get(config.getKmlExportConfig().getPathOfGltfConverter());
 				if (!collada2gltf.isAbsolute())
 					collada2gltf = ClientConstants.IMPEXP_HOME.resolve(collada2gltf);
 
@@ -811,7 +811,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 					permissions.add(PosixFilePermission.OTHERS_EXECUTE);
 
 					try {
-						Files.setPosixFilePermissions(Paths.get(config.getProject().getKmlExportConfig().getPathOfGltfConverter()), permissions);
+						Files.setPosixFilePermissions(Paths.get(config.getKmlExportConfig().getPathOfGltfConverter()), permissions);
 					} catch (IOException e) {
 						String text = Language.I18N.getString("kmlExport.dialog.error.collada2gltf.notExecutable");
 						Object[] args = new Object[] { collada2gltf.toString() };
@@ -953,10 +953,10 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		fileChooser.addChoosableFileFilter(fileChooser.getAcceptAllFileFilter());
 		fileChooser.setFileFilter(filter);
 
-		if (config.getProject().getKmlExportConfig().getPath().isSetLastUsedMode()) {
-			fileChooser.setCurrentDirectory(new File(config.getProject().getKmlExportConfig().getPath().getLastUsedPath()));
+		if (config.getKmlExportConfig().getPath().isSetLastUsedMode()) {
+			fileChooser.setCurrentDirectory(new File(config.getKmlExportConfig().getPath().getLastUsedPath()));
 		} else {
-			fileChooser.setCurrentDirectory(new File(config.getProject().getExportConfig().getPath().getStandardPath()));
+			fileChooser.setCurrentDirectory(new File(config.getExportConfig().getPath().getStandardPath()));
 		}
 		int result = fileChooser.showSaveDialog(getTopLevelAncestor());
 		if (result == JFileChooser.CANCEL_OPTION) return;
@@ -966,12 +966,12 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 					exportString.lastIndexOf('.') > exportString.lastIndexOf(File.separator)) {
 				exportString = exportString.substring(0, exportString.lastIndexOf('.'));
 			}
-			exportString = config.getProject().getKmlExportConfig().isExportAsKmz() ?
+			exportString = config.getKmlExportConfig().isExportAsKmz() ?
 					exportString + ".kmz":
 						exportString + ".kml";
 
 			browseText.setText(exportString);
-			config.getProject().getKmlExportConfig().getPath().setLastUsedPath(fileChooser.getCurrentDirectory().getAbsolutePath());
+			config.getKmlExportConfig().getPath().setLastUsedPath(fileChooser.getCurrentDirectory().getAbsolutePath());
 		}
 		catch (Exception e) {
 			//
@@ -998,7 +998,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 
 			try {
 				String text = Language.I18N.getString("pref.kmlexport.connectDialog.line2");
-				DatabaseConnection conn = config.getProject().getDatabaseConfig().getActiveConnection();
+				DatabaseConnection conn = config.getDatabaseConfig().getActiveConnection();
 				Object[] args = new Object[]{conn.getDescription(), conn.toConnectString()};
 				String formattedMsg = MessageFormat.format(text, args);
 				String[] connectConfirm = {Language.I18N.getString("pref.kmlexport.connectDialog.line1"),
@@ -1031,7 +1031,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 					for (String theme : databaseController.getActiveDatabaseAdapter().getUtil().getAppearanceThemeList(workspace)) {
 						if (theme == null) continue; 
 						themeComboBox.addItem(theme);
-						if (theme.equals(config.getProject().getKmlExportConfig().getAppearanceTheme())) {
+						if (theme.equals(config.getKmlExportConfig().getAppearanceTheme())) {
 							themeComboBox.setSelectedItem(theme);
 						}
 					}

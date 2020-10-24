@@ -70,8 +70,8 @@ public class PathPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public boolean isModified() {
-		Path importPath = config.getProject().getImportConfig().getPath();
-		Path exportPath = config.getProject().getExportConfig().getPath();;
+		Path importPath = config.getImportConfig().getPath();
+		Path exportPath = config.getExportConfig().getPath();;
 		
 		if (importPathRadioLast.isSelected() != importPath.isSetLastUsedMode()) return true;
 		if (importPathRadioDef.isSelected() != importPath.isSetStandardMode()) return true;
@@ -197,7 +197,7 @@ public class PathPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void loadSettings() {
-		Path path = config.getProject().getImportConfig().getPath();
+		Path path = config.getImportConfig().getPath();
 
 		if (path.isSetLastUsedMode())
 			importPathRadioLast.setSelected(true);
@@ -206,7 +206,7 @@ public class PathPanel extends AbstractPreferencesComponent {
 
 		importPathText.setText(path.getStandardPath());
 
-		path = config.getProject().getExportConfig().getPath();
+		path = config.getExportConfig().getPath();
 		if (path.isSetLastUsedMode())
 			exportPathRadioLast.setSelected(true);
 		else
@@ -220,7 +220,7 @@ public class PathPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void setSettings() {
-		Path path = config.getProject().getImportConfig().getPath();
+		Path path = config.getImportConfig().getPath();
 		
 		if (importPathRadioDef.isSelected()) {
 			path.setPathMode(PathMode.STANDARD);
@@ -230,7 +230,7 @@ public class PathPanel extends AbstractPreferencesComponent {
 		}
 
 		path.setStandardPath(importPathText.getText());
-		path = config.getProject().getExportConfig().getPath();
+		path = config.getExportConfig().getPath();
 		
 		if (exportPathRadioDef.isSelected()) {
 			path.setPathMode(PathMode.STANDARD);

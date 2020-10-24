@@ -27,8 +27,6 @@
  */
 package org.citydb.config;
 
-import org.citydb.config.gui.Gui;
-import org.citydb.config.project.Project;
 import org.citydb.config.project.ProjectSchemaWriter;
 import org.citydb.config.project.query.util.QueryWrapper;
 import org.xml.sax.InputSource;

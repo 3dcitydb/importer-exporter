@@ -172,7 +172,7 @@ public class SQLFilterView extends FilterView {
 
     @Override
     public void loadSettings() {
-        SimpleQuery query = config.getProject().getExportConfig().getSimpleQuery();
+        SimpleQuery query = config.getExportConfig().getSimpleQuery();
 
         SelectOperator sql = query.getSelectionFilter().getSQLFilter();
         sqlText.setText(sql.getValue());
@@ -195,7 +195,7 @@ public class SQLFilterView extends FilterView {
 
     @Override
     public void setSettings() {
-        SimpleQuery query = config.getProject().getExportConfig().getSimpleQuery();
+        SimpleQuery query = config.getExportConfig().getSimpleQuery();
 
         SelectOperator sql = query.getSelectionFilter().getSQLFilter();
         sql.reset();

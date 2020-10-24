@@ -70,11 +70,11 @@ public class CityObjectGroupRenderingPanel extends AbstractPreferencesComponent 
 	}
 
 	private List<DisplayForm> getConfigDisplayForms() {
-		return config.getProject().getKmlExportConfig().getCityObjectGroupDisplayForms();
+		return config.getKmlExportConfig().getCityObjectGroupDisplayForms();
 	}
 
 	private void setConfigDisplayForms(List<DisplayForm> displayForms) {
-		config.getProject().getKmlExportConfig().setCityObjectGroupDisplayForms(displayForms);
+		config.getKmlExportConfig().setCityObjectGroupDisplayForms(displayForms);
 	}
 
 	@Override

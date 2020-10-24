@@ -100,7 +100,7 @@ public class DBImportXlinkResolverWorker extends Worker<DBXlink> implements Even
 		this.isManagedTransaction = isManagedTransaction;
 		this.eventDispatcher = eventDispatcher;
 
-		commitAfter = config.getProject().getDatabaseConfig().getImportBatching().getFeatureBatchSize();
+		commitAfter = config.getDatabaseConfig().getImportBatching().getFeatureBatchSize();
 		if (commitAfter > databaseAdapter.getMaxBatchSize())
 			commitAfter = databaseAdapter.getMaxBatchSize();
 

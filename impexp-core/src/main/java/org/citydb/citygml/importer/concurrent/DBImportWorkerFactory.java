@@ -136,7 +136,7 @@ public class DBImportWorkerFactory implements WorkerFactory<CityGML> {
 
 			// try and change workspace for both connections if needed
 			if (databaseAdapter.hasVersioningSupport()) {
-				Workspace workspace = config.getProject().getDatabaseConfig().getWorkspaces().getImportWorkspace();
+				Workspace workspace = config.getDatabaseConfig().getWorkspaces().getImportWorkspace();
 				databaseAdapter.getWorkspaceManager().gotoWorkspace(connection, workspace);
 			}
 

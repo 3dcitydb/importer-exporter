@@ -78,7 +78,7 @@ public class VegetationBalloonPanel extends AbstractPreferencesComponent {
 	}
 
 	private Balloon getConfigBalloon() {
-		return config.getProject().getKmlExportConfig().getVegetationBalloon();
+		return config.getKmlExportConfig().getVegetationBalloon();
 	}
 
 	@Override

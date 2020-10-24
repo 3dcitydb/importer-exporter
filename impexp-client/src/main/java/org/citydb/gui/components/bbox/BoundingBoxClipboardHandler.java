@@ -153,7 +153,7 @@ public class BoundingBoxClipboardHandler implements ClipboardOwner {
 							}
 						}
 					} else if ("3dcitydb_srs".equals(key.toLowerCase())) {
-						for (DatabaseSrs srs : config.getProject().getDatabaseConfig().getReferenceSystems()) {
+						for (DatabaseSrs srs : config.getDatabaseConfig().getReferenceSystems()) {
 							if (value.equals(srs.getId())) {
 								bbox.setSrs(srs);
 								break;

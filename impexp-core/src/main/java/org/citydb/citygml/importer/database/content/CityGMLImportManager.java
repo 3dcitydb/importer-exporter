@@ -194,16 +194,16 @@ public class CityGMLImportManager implements CityGMLImportHelper {
 		attributeValueJoiner = new AttributeValueJoiner();
 		externalFileChecker = new ExternalFileChecker(inputFile);
 
-		if (config.getProject().getImportConfig().getAppearances().isSetImportAppearance())
+		if (config.getImportConfig().getAppearances().isSetImportAppearance())
 			localAppearanceHandler = new LocalAppearanceHandler(this);
 
-		if (config.getProject().getImportConfig().getImportLog().isSetLogImportedFeatures())
+		if (config.getImportConfig().getImportLog().isSetLogImportedFeatures())
 			importLogEntries = new ArrayList<>();
 
-		if (config.getProject().getImportConfig().getAffineTransformation().isEnabled())
+		if (config.getImportConfig().getAffineTransformation().isEnabled())
 			this.affineTransformer = affineTransformer;
 
-		if (config.getProject().getImportConfig().getAddress().isSetImportXAL()) {
+		if (config.getImportConfig().getAddress().isSetImportXAL()) {
 			cityGMLVersion = CityGMLVersion.DEFAULT;
 			jaxbMarshaller = cityGMLBuilder.createJAXBMarshaller(cityGMLVersion);
 			saxWriter = new SAXWriter();
@@ -525,7 +525,7 @@ public class CityGMLImportManager implements CityGMLImportHelper {
 
 	@Override
 	public ImportConfig getImportConfig() {
-		return config.getProject().getImportConfig();
+		return config.getImportConfig();
 	}
 
 	public void setFailOnError(boolean failOnError) {
@@ -537,7 +537,7 @@ public class CityGMLImportManager implements CityGMLImportHelper {
 	}
 
 	public String generateNewGmlId() {
-		return DefaultGMLIdManager.getInstance().generateUUID(config.getProject().getImportConfig().getGmlId().getIdPrefix());
+		return DefaultGMLIdManager.getInstance().generateUUID(config.getImportConfig().getGmlId().getIdPrefix());
 	}
 
 	public InputFile getInputFile() {

@@ -71,7 +71,7 @@ class ValidationErrorHandler implements ErrorHandler {
 
     void reset() {
         validationErrors = 0;
-        isReportAllErrors = !config.getProject().getImportConfig().getXMLValidation().isSetReportOneErrorPerFeature();
+        isReportAllErrors = !config.getImportConfig().getXMLValidation().isSetReportOneErrorPerFeature();
         isAborted = false;
         hasFatalErrors = false;
     }

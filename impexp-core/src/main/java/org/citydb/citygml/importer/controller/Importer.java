@@ -151,11 +151,11 @@ public class Importer implements EventHandler {
 
 	private boolean process(List<Path> inputFiles) throws CityGMLImportException {
 		// get config shortcuts
-		DatabaseConfig databaseConfig = config.getProject().getDatabaseConfig();
+		DatabaseConfig databaseConfig = config.getDatabaseConfig();
 		Internal internalConfig = config.getInternal();		
-		ImportResources resourcesConfig = config.getProject().getImportConfig().getResources();
-		Index indexConfig = config.getProject().getImportConfig().getIndexes();
-		ImportGmlId gmlIdConfig = config.getProject().getImportConfig().getGmlId();
+		ImportResources resourcesConfig = config.getImportConfig().getResources();
+		Index indexConfig = config.getImportConfig().getIndexes();
+		ImportGmlId gmlIdConfig = config.getImportConfig().getGmlId();
 
 		// worker pool settings 
 		int minThreads = resourcesConfig.getThreadPool().getDefaultPool().getMinThreads();
@@ -222,7 +222,7 @@ public class Importer implements EventHandler {
 
 		// affine transformation
 		AffineTransformer affineTransformer = null;
-		if (config.getProject().getImportConfig().getAffineTransformation().isEnabled()) {
+		if (config.getImportConfig().getAffineTransformation().isEnabled()) {
 			try {
 				log.info("Applying affine coordinates transformation.");
 				affineTransformer = new AffineTransformer(config);
@@ -235,7 +235,7 @@ public class Importer implements EventHandler {
 		CityGMLFilter filter;
 		try {
 			CityGMLFilterBuilder builder = new CityGMLFilterBuilder(schemaMapping, databaseAdapter);
-			filter = builder.buildCityGMLFilter(config.getProject().getImportConfig().getFilter());
+			filter = builder.buildCityGMLFilter(config.getImportConfig().getFilter());
 		} catch (FilterException e) {
 			throw new CityGMLImportException("Failed to build the import filter.", e);
 		}
@@ -284,10 +284,10 @@ public class Importer implements EventHandler {
 					internalConfig.setCurrentGmlIdCodespace(null);
 
 				// create import logger
-				if (config.getProject().getImportConfig().getImportLog().isSetLogImportedFeatures()) {
+				if (config.getImportConfig().getImportLog().isSetLogImportedFeatures()) {
 					try {
-						String logPath = config.getProject().getImportConfig().getImportLog().isSetLogPath() ?
-								config.getProject().getImportConfig().getImportLog().getLogPath()
+						String logPath = config.getImportConfig().getImportLog().isSetLogPath() ?
+								config.getImportConfig().getImportLog().getLogPath()
 								: CoreConstants.IMPEXP_DATA_DIR.resolve(CoreConstants.IMPORT_LOG_DIR).toString();
 						importLogger = new ImportLogger(logPath, contentFile, databaseConfig.getActiveConnection());
 						log.info("Log file of imported top-level features: " + importLogger.getLogFilePath().toString());
@@ -328,8 +328,8 @@ public class Importer implements EventHandler {
 							resourcesConfig.getGmlIdCache().getFeature().getPageFactor(),
 							maxThreads);
 
-					if (config.getProject().getImportConfig().getAppearances().isSetImportAppearance() &&
-							config.getProject().getImportConfig().getAppearances().isSetImportTextureFiles()) {
+					if (config.getImportConfig().getAppearances().isSetImportAppearance() &&
+							config.getImportConfig().getAppearances().isSetImportTextureFiles()) {
 						uidCacheManager.initCache(
 								UIDCacheType.TEXTURE_IMAGE,
 								new TextureImageCache(cacheTableManager, 

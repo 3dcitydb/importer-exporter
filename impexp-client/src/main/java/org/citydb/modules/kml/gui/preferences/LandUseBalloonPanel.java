@@ -78,7 +78,7 @@ public class LandUseBalloonPanel extends AbstractPreferencesComponent {
 	}
 
 	private Balloon getConfigBalloon() {
-		return config.getProject().getKmlExportConfig().getLandUseBalloon();
+		return config.getKmlExportConfig().getLandUseBalloon();
 	}
 
 	@Override

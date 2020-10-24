@@ -111,7 +111,7 @@ public class PointAndCurveRenderingPanel extends AbstractPreferencesComponent {
 	@Override
 	public boolean isModified() {
 
-		PointAndCurve pacSettings = config.getProject().getKmlExportConfig().getGenericCityObjectPointAndCurve();
+		PointAndCurve pacSettings = config.getKmlExportConfig().getGenericCityObjectPointAndCurve();
 
 		switch (pacSettings.getPointDisplayMode()) {
 		case CROSS_LINE:
@@ -452,7 +452,7 @@ public class PointAndCurveRenderingPanel extends AbstractPreferencesComponent {
         
         pointIconColorLabel.setText(Language.I18N.getString("pref.kmlexport.label.pointIconColor"));
         pointIconScaleLabel.setText(Language.I18N.getString("pref.kmlexport.label.pointIconScale"));
-        pointAltitudeModeComboBox.setSelectedItem(config.getProject().getKmlExportConfig().getGenericCityObjectPointAndCurve().getPointAltitudeMode());
+        pointAltitudeModeComboBox.setSelectedItem(config.getKmlExportConfig().getGenericCityObjectPointAndCurve().getPointAltitudeMode());
        
         pointCrossLineThicknessLabel.setText(Language.I18N.getString("pref.kmlexport.label.curveThickness"));
         pointCrossLineNormalColorLabel.setText(Language.I18N.getString("pref.kmlexport.label.curveColor"));
@@ -467,7 +467,7 @@ public class PointAndCurveRenderingPanel extends AbstractPreferencesComponent {
         	curveAltitudeModeComboBox.addItem(c);
         }
 
-        curveAltitudeModeComboBox.setSelectedItem(config.getProject().getKmlExportConfig().getGenericCityObjectPointAndCurve().getCurveAltitudeMode());
+        curveAltitudeModeComboBox.setSelectedItem(config.getKmlExportConfig().getGenericCityObjectPointAndCurve().getCurveAltitudeMode());
     	curveThicknessLabel.setText(Language.I18N.getString("pref.kmlexport.label.curveThickness"));
     	curveNormalColorLabel.setText(Language.I18N.getString("pref.kmlexport.label.curveColor"));
 		curveHighlightingCheckbox.setText(Language.I18N.getString("pref.kmlexport.label.highlighting"));
@@ -478,7 +478,7 @@ public class PointAndCurveRenderingPanel extends AbstractPreferencesComponent {
 	@Override
 	public void loadSettings() {
 
-		PointAndCurve pacSettings = config.getProject().getKmlExportConfig().getGenericCityObjectPointAndCurve();
+		PointAndCurve pacSettings = config.getKmlExportConfig().getGenericCityObjectPointAndCurve();
 		
 		switch (pacSettings.getPointDisplayMode()) {
 		case ICON:
@@ -520,7 +520,7 @@ public class PointAndCurveRenderingPanel extends AbstractPreferencesComponent {
 	@Override
 	public void setSettings() {
 
-		PointAndCurve pacSettings = config.getProject().getKmlExportConfig().getGenericCityObjectPointAndCurve();
+		PointAndCurve pacSettings = config.getKmlExportConfig().getGenericCityObjectPointAndCurve();
 
 		if (iconRButton.isSelected()) {
 			pacSettings.setPointDisplayMode(PointDisplayMode.ICON);

@@ -114,15 +114,15 @@ public class TransportationRenderingPanel extends AbstractPreferencesComponent {
 	}
 
 	private ColladaOptions getConfigColladaOptions() {
-		return config.getProject().getKmlExportConfig().getTransportationColladaOptions();
+		return config.getKmlExportConfig().getTransportationColladaOptions();
 	}
 
 	private List<DisplayForm> getConfigDisplayForms() {
-		return config.getProject().getKmlExportConfig().getTransportationDisplayForms();
+		return config.getKmlExportConfig().getTransportationDisplayForms();
 	}
 
 	private void setConfigDisplayForms(List<DisplayForm> displayForms) {
-		config.getProject().getKmlExportConfig().setTransportationDisplayForms(displayForms);
+		config.getKmlExportConfig().setTransportationDisplayForms(displayForms);
 	}
 
 	@Override

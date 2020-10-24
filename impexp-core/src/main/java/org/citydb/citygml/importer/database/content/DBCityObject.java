@@ -97,18 +97,18 @@ public class DBCityObject implements DBImporter {
 		this.batchConn = batchConn;	
 		this.importer = importer;
 
-		affineTransformation = config.getProject().getImportConfig().getAffineTransformation().isEnabled();
+		affineTransformation = config.getImportConfig().getAffineTransformation().isEnabled();
 		dbSrid = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter().getConnectionMetaData().getReferenceSystem().getSrid();
-		importAppearance = config.getProject().getImportConfig().getAppearances().isSetImportAppearance();
-		creationDateMode = config.getProject().getImportConfig().getContinuation().getCreationDateMode();
-		terminationDateMode = config.getProject().getImportConfig().getContinuation().getTerminationDateMode();
+		importAppearance = config.getImportConfig().getAppearances().isSetImportAppearance();
+		creationDateMode = config.getImportConfig().getContinuation().getCreationDateMode();
+		terminationDateMode = config.getImportConfig().getContinuation().getTerminationDateMode();
 
-		importCityDBMetadata = config.getProject().getImportConfig().getContinuation().isImportCityDBMetadata();
-		reasonForUpdate = config.getProject().getImportConfig().getContinuation().getReasonForUpdate();
-		lineage = config.getProject().getImportConfig().getContinuation().getLineage();
-		updatingPerson = config.getProject().getImportConfig().getContinuation().isUpdatingPersonModeDatabase() ?
+		importCityDBMetadata = config.getImportConfig().getContinuation().isImportCityDBMetadata();
+		reasonForUpdate = config.getImportConfig().getContinuation().getReasonForUpdate();
+		lineage = config.getImportConfig().getContinuation().getLineage();
+		updatingPerson = config.getImportConfig().getContinuation().isUpdatingPersonModeDatabase() ?
 				importer.getDatabaseAdapter().getConnectionDetails().getUser() :
-				config.getProject().getImportConfig().getContinuation().getUpdatingPerson();
+				config.getImportConfig().getContinuation().getUpdatingPerson();
 
 		if (reasonForUpdate != null && reasonForUpdate.trim().isEmpty())
 			reasonForUpdate = null;
@@ -123,8 +123,8 @@ public class DBCityObject implements DBImporter {
 		if (gmlIdCodespace != null)
 			gmlIdCodespace = "'" + gmlIdCodespace + "', ";
 
-		replaceGmlId = config.getProject().getImportConfig().getGmlId().isUUIDModeReplace();
-		rememberGmlId = config.getProject().getImportConfig().getGmlId().isSetKeepGmlIdAsExternalReference();
+		replaceGmlId = config.getImportConfig().getGmlId().isUUIDModeReplace();
+		rememberGmlId = config.getImportConfig().getGmlId().isSetKeepGmlIdAsExternalReference();
 		if (replaceGmlId && rememberGmlId && importer.getInputFile() != null)
 			importFileName = importer.getInputFile().getFile().toString();
 

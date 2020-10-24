@@ -61,13 +61,13 @@ public class ExportCommand extends CliCommand {
 
         DatabaseConnection connection = databaseOptions != null && databaseOptions.isValid() ?
                 databaseOptions.toDatabaseConnection() :
-                config.getProject().getDatabaseConfig().getActiveConnection();
+                config.getDatabaseConfig().getActiveConnection();
 
         if (!controller.connect(connection)) {
             return 1;
         }
 
-        config.getProject().getExportConfig().getCityGMLOptions().setFileEncoding(encoding);
+        config.getExportConfig().getCityGMLOptions().setFileEncoding(encoding);
 
         Exporter exporter = new Exporter();
         exporter.doExport(outputOptions.getFile());

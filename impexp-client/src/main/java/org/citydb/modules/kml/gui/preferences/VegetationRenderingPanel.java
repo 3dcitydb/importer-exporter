@@ -114,15 +114,15 @@ public class VegetationRenderingPanel extends AbstractPreferencesComponent {
 	}
 
 	private ColladaOptions getConfigColladaOptions() {
-		return config.getProject().getKmlExportConfig().getVegetationColladaOptions();
+		return config.getKmlExportConfig().getVegetationColladaOptions();
 	}
 
 	private List<DisplayForm> getConfigDisplayForms() {
-		return config.getProject().getKmlExportConfig().getVegetationDisplayForms();
+		return config.getKmlExportConfig().getVegetationDisplayForms();
 	}
 
 	private void setConfigDisplayForms(List<DisplayForm> displayForms) {
-		config.getProject().getKmlExportConfig().setVegetationDisplayForms(displayForms);
+		config.getKmlExportConfig().setVegetationDisplayForms(displayForms);
 	}
 
 	@Override

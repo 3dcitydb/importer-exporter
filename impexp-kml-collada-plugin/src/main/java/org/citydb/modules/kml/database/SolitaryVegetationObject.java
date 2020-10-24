@@ -77,15 +77,15 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 	}
 
 	protected List<DisplayForm> getDisplayForms() {
-		return config.getProject().getKmlExportConfig().getVegetationDisplayForms();
+		return config.getKmlExportConfig().getVegetationDisplayForms();
 	}
 
 	public ColladaOptions getColladaOptions() {
-		return config.getProject().getKmlExportConfig().getVegetationColladaOptions();
+		return config.getKmlExportConfig().getVegetationColladaOptions();
 	}
 
 	public Balloon getBalloonSettings() {
-		return config.getProject().getKmlExportConfig().getVegetationBalloon();
+		return config.getKmlExportConfig().getVegetationBalloon();
 	}
 
 	public String getStyleBasisName() {
@@ -97,7 +97,7 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 		ResultSet rs = null;
 
 		try {
-			int lodToExportFrom = config.getProject().getKmlExportConfig().getLodToExportFrom();
+			int lodToExportFrom = config.getKmlExportConfig().getLodToExportFrom();
 			currentLod = lodToExportFrom == 5 ? 4: lodToExportFrom;
 			int minLod = lodToExportFrom == 5 ? 1: lodToExportFrom;
 
@@ -198,7 +198,7 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 					String currentgmlId = getGmlId();
 					setGmlId(work.getGmlId());
 					setId(work.getId());
-					fillGenericObjectForCollada(rs, config.getProject().getKmlExportConfig().getVegetationColladaOptions().isGenerateTextureAtlases());
+					fillGenericObjectForCollada(rs, config.getKmlExportConfig().getVegetationColladaOptions().isGenerateTextureAtlases());
 
 					if (currentgmlId != null && !currentgmlId.equals(work.getGmlId()) && getGeometryAmount() > GEOMETRY_AMOUNT_WARNING)
 						log.info("Object " + work.getGmlId() + " has more than " + GEOMETRY_AMOUNT_WARNING + " geometries. This may take a while to process...");

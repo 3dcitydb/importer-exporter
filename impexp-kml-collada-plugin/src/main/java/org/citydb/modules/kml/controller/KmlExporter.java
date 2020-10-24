@@ -214,16 +214,16 @@ public class KmlExporter implements EventHandler {
 		}
 
 		// checking workspace
-		Workspace workspace = config.getProject().getDatabaseConfig().getWorkspaces().getKmlExportWorkspace();
+		Workspace workspace = config.getDatabaseConfig().getWorkspaces().getKmlExportWorkspace();
 		if (shouldRun && databaseAdapter.hasVersioningSupport() && 
 				!databaseAdapter.getWorkspaceManager().equalsDefaultWorkspaceName(workspace.getName()) &&
 				!databaseAdapter.getWorkspaceManager().existsWorkspace(workspace, true))
 			return false;
 
 		// check API key when using the elevation API
-		if (config.getProject().getKmlExportConfig().getAltitudeOffsetMode() == AltitudeOffsetMode.GENERIC_ATTRIBUTE
-			&& config.getProject().getKmlExportConfig().isCallGElevationService()
-			&& !config.getProject().getGlobalConfig().getApiKeys().isSetGoogleElevation()) {
+		if (config.getKmlExportConfig().getAltitudeOffsetMode() == AltitudeOffsetMode.GENERIC_ATTRIBUTE
+			&& config.getKmlExportConfig().isCallGElevationService()
+			&& !config.getGlobalConfig().getApiKeys().isSetGoogleElevation()) {
 			log.error("The Google Elevation API cannot be used due to a missing API key.");
 			log.error("Please enter an API key or change the export preferences.");
 			return false;
@@ -243,11 +243,11 @@ public class KmlExporter implements EventHandler {
 		}
 
 		// check whether the selected theme existed in the database,just for Building Class...
-		String selectedTheme = config.getProject().getKmlExportConfig().getAppearanceTheme();
+		String selectedTheme = config.getKmlExportConfig().getAppearanceTheme();
 		if (!selectedTheme.equals(KmlExportConfig.THEME_NONE)) {
 			try {
 				// displayForms Could be e.g. Footprint, Extruded, Geometry and COLLADA
-				for (DisplayForm displayForm : config.getProject().getKmlExportConfig().getBuildingDisplayForms()) {
+				for (DisplayForm displayForm : config.getKmlExportConfig().getBuildingDisplayForms()) {
 					if (displayForm.getForm() == DisplayForm.COLLADA && displayForm.isActive()) {
 						if (!databaseAdapter.getUtil().getAppearanceThemeList(workspace).contains(selectedTheme)) {
 							log.error("Database does not contain appearance theme \"" + selectedTheme + "\"");
@@ -261,8 +261,8 @@ public class KmlExporter implements EventHandler {
 		}
 
 		// check collada2gltf tool
-		if (config.getProject().getKmlExportConfig().isCreateGltfModel()) {
-			Path collada2gltf = Paths.get(config.getProject().getKmlExportConfig().getPathOfGltfConverter());
+		if (config.getKmlExportConfig().isCreateGltfModel()) {
+			Path collada2gltf = Paths.get(config.getKmlExportConfig().getPathOfGltfConverter());
 			if (!collada2gltf.isAbsolute())
 				collada2gltf = ClientConstants.IMPEXP_HOME.resolve(collada2gltf);
 
@@ -276,7 +276,7 @@ public class KmlExporter implements EventHandler {
 		Query query = null;
 		try {
 			ConfigQueryBuilder queryBuilder = new ConfigQueryBuilder(schemaMapping, databaseAdapter);
-			query = queryBuilder.buildQuery(config.getProject().getKmlExportConfig().getQuery(), config.getProject().getNamespaceFilter());
+			query = queryBuilder.buildQuery(config.getKmlExportConfig().getQuery(), config.getNamespaceFilter());
 		} catch (QueryBuildException e) {
 			throw new KmlExportException("Failed to build the export filter expression.", e);
 		}
@@ -298,7 +298,7 @@ public class KmlExporter implements EventHandler {
 				predicate = query.isSetSelection() ? query.getSelection().getPredicate() : null;
 
 				// calculate and display number of tiles to be exported
-				int displayFormats = config.getProject().getKmlExportConfig().getActiveDisplayFormsAmount(config.getProject().getKmlExportConfig().getBuildingDisplayForms());
+				int displayFormats = config.getKmlExportConfig().getActiveDisplayFormsAmount(config.getKmlExportConfig().getBuildingDisplayForms());
 				remainingTiles = rows * columns * displayFormats;
 				log.info(remainingTiles + " (" + rows + "x" + columns + "x" + displayFormats + ") tiles will be generated.");	
 			} catch (FilterException e) {
@@ -335,7 +335,7 @@ public class KmlExporter implements EventHandler {
 
 		// set export filename and path
 		String path = outputFile.toAbsolutePath().normalize().toString();
-		String fileExtension = config.getProject().getKmlExportConfig().isExportAsKmz() ? ".kmz" : ".kml";
+		String fileExtension = config.getKmlExportConfig().isExportAsKmz() ? ".kmz" : ".kml";
 		String fileName = null;
 
 		if (path.lastIndexOf(File.separator) == -1) {
@@ -359,12 +359,12 @@ public class KmlExporter implements EventHandler {
 		// start writing cityobject JSON file if required
 		FileOutputStream jsonFileWriter = null;
 		boolean jsonHasContent = false;
-		if (config.getProject().getKmlExportConfig().isWriteJSONFile() && useTiling) {
+		if (config.getKmlExportConfig().isWriteJSONFile() && useTiling) {
 			try {
 				File jsonFile = new File(path + File.separator + fileName + ".json");
 				jsonFileWriter = new FileOutputStream(jsonFile);
-				if (config.getProject().getKmlExportConfig().isWriteJSONPFile())
-					jsonFileWriter.write((config.getProject().getKmlExportConfig().getCallbackNameJSONP() + "({\n").getBytes(CHARSET));
+				if (config.getKmlExportConfig().isWriteJSONPFile())
+					jsonFileWriter.write((config.getKmlExportConfig().getCallbackNameJSONP() + "({\n").getBytes(CHARSET));
 				else
 					jsonFileWriter.write("{\n".getBytes(CHARSET));
 			} catch (IOException e) {
@@ -400,7 +400,7 @@ public class KmlExporter implements EventHandler {
 				}
 
 				// iterate over display forms
-				for (DisplayForm displayForm : config.getProject().getKmlExportConfig().getBuildingDisplayForms()) {
+				for (DisplayForm displayForm : config.getKmlExportConfig().getBuildingDisplayForms()) {
 					if (!displayForm.isActive()) 
 						continue;
 
@@ -433,7 +433,7 @@ public class KmlExporter implements EventHandler {
 						// open file for writing
 						try {
 							OutputStreamWriter fileWriter = null;
-							if (config.getProject().getKmlExportConfig().isExportAsKmz()) {
+							if (config.getKmlExportConfig().isExportAsKmz()) {
 								zipOut = new ZipOutputStream(new FileOutputStream(file));
 								ZipEntry zipEntry = new ZipEntry("doc.kml");
 								zipOut.putNextEntry(zipEntry);
@@ -457,8 +457,8 @@ public class KmlExporter implements EventHandler {
 
 						kmlWorkerPool = new WorkerPool<KmlSplittingResult>(
 								"db_exporter_pool",
-								config.getProject().getKmlExportConfig().getResources().getThreadPool().getDefaultPool().getMinThreads(),
-								config.getProject().getKmlExportConfig().getResources().getThreadPool().getDefaultPool().getMaxThreads(),
+								config.getKmlExportConfig().getResources().getThreadPool().getDefaultPool().getMinThreads(),
+								config.getKmlExportConfig().getResources().getThreadPool().getDefaultPool().getMaxThreads(),
 								PoolSizeAdaptationStrategy.AGGRESSIVE,
 								new KmlExportWorkerFactory(outputFile,
 										jaxbKmlContext,
@@ -506,7 +506,7 @@ public class KmlExporter implements EventHandler {
 							fragmentWriter.setWriteMode(WriteMode.HEAD);
 							marshaller.marshal(kml, fragmentWriter);
 
-							if (useTiling && config.getProject().getKmlExportConfig().isShowTileBorders())
+							if (useTiling && config.getKmlExportConfig().isShowTileBorders())
 								addBorder(tile.getExtent(), null, saxWriter);
 
 						} catch (JAXBException e) {
@@ -539,7 +539,7 @@ public class KmlExporter implements EventHandler {
 						try {
 							// add styles
 							if (!objectCounter.isEmpty() &&
-									(!config.getProject().getKmlExportConfig().isOneFilePerObject() || !useTiling)) {
+									(!config.getKmlExportConfig().isOneFilePerObject() || !useTiling)) {
 								for (int objectClassId : objectCounter.keySet()) {
 									if (objectCounter.get(objectClassId) > 0)
 										addStyle(displayForm, objectClassId, saxWriter);
@@ -560,7 +560,7 @@ public class KmlExporter implements EventHandler {
 						try {
 							if (!objectCounter.isEmpty()) {
 								saxWriter.flush();
-								if (config.getProject().getKmlExportConfig().isExportAsKmz()) {
+								if (config.getKmlExportConfig().isExportAsKmz()) {
 									zipOut.closeEntry();
 
 									List<File> filesToZip = new ArrayList<File>();
@@ -569,7 +569,7 @@ public class KmlExporter implements EventHandler {
 									lastTempFolder = tempFolder;
 									int indexOfZipFilePath = tempFolder.getCanonicalPath().length() + 1;
 
-									if (tempFolder.exists()) { // !config.getProject().getKmlExporter().isOneFilePerObject()
+									if (tempFolder.exists()) { // !config.getKmlExporter().isOneFilePerObject()
 										log.info("Zipping to kmz archive from temporary folder...");
 										getAllFiles(tempFolder, filesToZip);
 										for (File fileToZip : filesToZip) {
@@ -608,7 +608,7 @@ public class KmlExporter implements EventHandler {
 						}
 
 						// delete empty tile file if requested
-						if (useTiling && objectCounter.isEmpty() && !config.getProject().getKmlExportConfig().isExportEmptyTiles()) {
+						if (useTiling && objectCounter.isEmpty() && !config.getKmlExportConfig().isExportEmptyTiles()) {
 							log.debug("Tile_" + i + "_" + j + " is empty. Deleting file " + file.getName() + ".");
 							file.delete();
 						}
@@ -682,7 +682,7 @@ public class KmlExporter implements EventHandler {
 		// close cityobject JSON file
 		if (jsonFileWriter != null) {
 			try {
-				if (config.getProject().getKmlExportConfig().isWriteJSONPFile())
+				if (config.getKmlExportConfig().isWriteJSONPFile())
 					jsonFileWriter.write("\n});\n".getBytes(CHARSET));
 				else
 					jsonFileWriter.write("\n}\n".getBytes(CHARSET));
@@ -752,33 +752,33 @@ public class KmlExporter implements EventHandler {
 		fragmentWriter.setWriteMode(WriteMode.HEAD);
 		marshaller.marshal(kml, fragmentWriter);				
 
-		if (config.getProject().getKmlExportConfig().isOneFilePerObject()) {
+		if (config.getKmlExportConfig().isOneFilePerObject()) {
 			for (FeatureType featureType : query.getFeatureTypeFilter().getFeatureTypes()) {
 				int objectClassId = featureType.getObjectClassId();
 				
 				switch (Util.getCityGMLClass(objectClassId)) {
 				case BUILDING:
-					for (DisplayForm displayForm : config.getProject().getKmlExportConfig().getBuildingDisplayForms())
+					for (DisplayForm displayForm : config.getKmlExportConfig().getBuildingDisplayForms())
 						addStyle(displayForm, objectClassId, saxWriter);
 					break;
 				case CITY_FURNITURE:
-					for (DisplayForm displayForm : config.getProject().getKmlExportConfig().getCityFurnitureDisplayForms())
+					for (DisplayForm displayForm : config.getKmlExportConfig().getCityFurnitureDisplayForms())
 						addStyle(displayForm, objectClassId, saxWriter);
 					break;
 				case CITY_OBJECT_GROUP:
-					for (DisplayForm displayForm : config.getProject().getKmlExportConfig().getCityObjectGroupDisplayForms())
+					for (DisplayForm displayForm : config.getKmlExportConfig().getCityObjectGroupDisplayForms())
 						addStyle(displayForm, objectClassId, saxWriter);
 					break;
 				case GENERIC_CITY_OBJECT:
-					for (DisplayForm displayForm : config.getProject().getKmlExportConfig().getGenericCityObjectDisplayForms())
+					for (DisplayForm displayForm : config.getKmlExportConfig().getGenericCityObjectDisplayForms())
 						addStyle(displayForm, objectClassId, saxWriter);
 					break;
 				case LAND_USE:
-					for (DisplayForm displayForm : config.getProject().getKmlExportConfig().getLandUseDisplayForms())
+					for (DisplayForm displayForm : config.getKmlExportConfig().getLandUseDisplayForms())
 						addStyle(displayForm, objectClassId, saxWriter);
 					break;
 				case RELIEF_FEATURE:
-					for (DisplayForm displayForm : config.getProject().getKmlExportConfig().getReliefDisplayForms())
+					for (DisplayForm displayForm : config.getKmlExportConfig().getReliefDisplayForms())
 						addStyle(displayForm, objectClassId, saxWriter);
 					break;
 				case TRANSPORTATION_COMPLEX:
@@ -786,24 +786,24 @@ public class KmlExporter implements EventHandler {
 				case RAILWAY:
 				case ROAD:
 				case SQUARE:
-					for (DisplayForm displayForm : config.getProject().getKmlExportConfig().getTransportationDisplayForms())
+					for (DisplayForm displayForm : config.getKmlExportConfig().getTransportationDisplayForms())
 						addStyle(displayForm, objectClassId, saxWriter);
 					break;
 				case SOLITARY_VEGETATION_OBJECT:
 				case PLANT_COVER:
-					for (DisplayForm displayForm : config.getProject().getKmlExportConfig().getVegetationDisplayForms())
+					for (DisplayForm displayForm : config.getKmlExportConfig().getVegetationDisplayForms())
 						addStyle(displayForm, objectClassId, saxWriter);
 					break;
 				case WATER_BODY:
-					for (DisplayForm displayForm : config.getProject().getKmlExportConfig().getWaterBodyDisplayForms())
+					for (DisplayForm displayForm : config.getKmlExportConfig().getWaterBodyDisplayForms())
 						addStyle(displayForm, objectClassId, saxWriter);
 					break;
 				case BRIDGE:
-					for (DisplayForm displayForm : config.getProject().getKmlExportConfig().getBridgeDisplayForms())
+					for (DisplayForm displayForm : config.getKmlExportConfig().getBridgeDisplayForms())
 						addStyle(displayForm, objectClassId, saxWriter);
 					break;
 				case TUNNEL:
-					for (DisplayForm displayForm : config.getProject().getKmlExportConfig().getTunnelDisplayForms())
+					for (DisplayForm displayForm : config.getKmlExportConfig().getTunnelDisplayForms())
 						addStyle(displayForm, objectClassId, saxWriter);
 					break;
 				default:
@@ -812,7 +812,7 @@ public class KmlExporter implements EventHandler {
 			}
 		}
 
-		if (config.getProject().getKmlExportConfig().isShowBoundingBox()) {
+		if (config.getKmlExportConfig().isShowBoundingBox()) {
 			StyleType style = kmlFactory.createStyleType();
 			style.setId("frameStyle");
 			LineStyleType frameLineStyleType = kmlFactory.createLineStyleType();
@@ -839,11 +839,11 @@ public class KmlExporter implements EventHandler {
 		FolderType folderType = kmlFactory.createFolderType();
 		folderType.setName(tileName);
 
-		for (DisplayForm displayForm : config.getProject().getKmlExportConfig().getBuildingDisplayForms()) {
+		for (DisplayForm displayForm : config.getKmlExportConfig().getBuildingDisplayForms()) {
 			if (!displayForm.isActive()) 
 				continue;
 
-			String fileExtension = config.getProject().getKmlExportConfig().isExportAsKmz() ? ".kmz" : ".kml";
+			String fileExtension = config.getKmlExportConfig().isExportAsKmz() ? ".kmz" : ".kml";
 			String tilenameForDisplayForm = tileName + "_" + displayForm.getName() + fileExtension; 
 
 			NetworkLinkType networkLinkType = kmlFactory.createNetworkLinkType();
@@ -867,10 +867,10 @@ public class KmlExporter implements EventHandler {
 
 			LinkType linkType = kmlFactory.createLinkType();
 			linkType.setHref("Tiles/" + tile.getX() + "/" + tile.getY() + "/" + tilenameForDisplayForm);
-			linkType.setViewRefreshMode(ViewRefreshModeEnumType.fromValue(config.getProject().getKmlExportConfig().getViewRefreshMode()));
+			linkType.setViewRefreshMode(ViewRefreshModeEnumType.fromValue(config.getKmlExportConfig().getViewRefreshMode()));
 			linkType.setViewFormat("");
 			if (linkType.getViewRefreshMode() == ViewRefreshModeEnumType.ON_STOP)
-				linkType.setViewRefreshTime(config.getProject().getKmlExportConfig().getViewRefreshTime());
+				linkType.setViewRefreshTime(config.getKmlExportConfig().getViewRefreshTime());
 
 			// confusion between atom:link and kml:Link in ogckml22.xsd
 			networkLinkType.getRest().add(kmlFactory.createLink(linkType));
@@ -898,7 +898,7 @@ public class KmlExporter implements EventHandler {
 	}
 
 	private void writeMasterJsonFileTileReference(String path, String fileName, String fileExtension, Tiling tiling) throws IOException {
-		for (DisplayForm displayForm : config.getProject().getKmlExportConfig().getBuildingDisplayForms()) {
+		for (DisplayForm displayForm : config.getKmlExportConfig().getBuildingDisplayForms()) {
 			if (displayForm.isActive()) {
 				File jsonFileForMasterFile = new File(path + File.separator + fileName + "_" + displayForm.getName() + "_MasterJSON" + ".json");
 				FileOutputStream jsonFileWriterForMasterFile = new FileOutputStream(jsonFileForMasterFile);
@@ -930,7 +930,7 @@ public class KmlExporter implements EventHandler {
 		case SOLITARY_VEGETATION_OBJECT:
 		case PLANT_COVER:
 			addStyle(currentDisplayForm,
-					config.getProject().getKmlExportConfig().getVegetationDisplayForms(),
+					config.getKmlExportConfig().getVegetationDisplayForms(),
 					SolitaryVegetationObject.STYLE_BASIS_NAME,
 					saxWriter);
 			break;
@@ -941,27 +941,27 @@ public class KmlExporter implements EventHandler {
 		case ROAD:
 		case SQUARE:
 			addStyle(currentDisplayForm,
-					config.getProject().getKmlExportConfig().getTransportationDisplayForms(),
+					config.getKmlExportConfig().getTransportationDisplayForms(),
 					Transportation.STYLE_BASIS_NAME,
 					saxWriter);
 			break;
 		case RELIEF_FEATURE:
 			addStyle(currentDisplayForm,
-					config.getProject().getKmlExportConfig().getReliefDisplayForms(),
+					config.getKmlExportConfig().getReliefDisplayForms(),
 					Relief.STYLE_BASIS_NAME,
 					saxWriter);
 			break;
 
 		case CITY_OBJECT_GROUP:
 			addStyle(new DisplayForm(DisplayForm.FOOTPRINT, -1, -1), // hard-coded for groups
-					config.getProject().getKmlExportConfig().getCityObjectGroupDisplayForms(),
+					config.getKmlExportConfig().getCityObjectGroupDisplayForms(),
 					CityObjectGroup.STYLE_BASIS_NAME,
 					saxWriter);
 			break;
 
 		case CITY_FURNITURE:
 			addStyle(currentDisplayForm,
-					config.getProject().getKmlExportConfig().getCityFurnitureDisplayForms(),
+					config.getKmlExportConfig().getCityFurnitureDisplayForms(),
 					CityFurniture.STYLE_BASIS_NAME,
 					saxWriter);
 			break;
@@ -969,39 +969,39 @@ public class KmlExporter implements EventHandler {
 		case GENERIC_CITY_OBJECT:
 			addGenericCityObjectPointAndCurveStyle(saxWriter);
 			addStyle(currentDisplayForm,
-					config.getProject().getKmlExportConfig().getGenericCityObjectDisplayForms(),
+					config.getKmlExportConfig().getGenericCityObjectDisplayForms(),
 					GenericCityObject.STYLE_BASIS_NAME,
 					saxWriter);
 			break;
 
 		case LAND_USE:
 			addStyle(currentDisplayForm,
-					config.getProject().getKmlExportConfig().getLandUseDisplayForms(),
+					config.getKmlExportConfig().getLandUseDisplayForms(),
 					LandUse.STYLE_BASIS_NAME,
 					saxWriter);
 			break;
 
 		case WATER_BODY:
 			addStyle(currentDisplayForm,
-					config.getProject().getKmlExportConfig().getWaterBodyDisplayForms(),
+					config.getKmlExportConfig().getWaterBodyDisplayForms(),
 					WaterBody.STYLE_BASIS_NAME,
 					saxWriter);
 			break;
 		case BRIDGE:
 			addStyle(currentDisplayForm, 
-					config.getProject().getKmlExportConfig().getBridgeDisplayForms(),
+					config.getKmlExportConfig().getBridgeDisplayForms(),
 					Bridge.STYLE_BASIS_NAME,
 					saxWriter);
 			break;
 		case TUNNEL:
 			addStyle(currentDisplayForm, 
-					config.getProject().getKmlExportConfig().getTunnelDisplayForms(),
+					config.getKmlExportConfig().getTunnelDisplayForms(),
 					Tunnel.STYLE_BASIS_NAME,
 					saxWriter);
 			break;
 		case BUILDING: // must be last, why?
 			addStyle(currentDisplayForm,
-					config.getProject().getKmlExportConfig().getBuildingDisplayForms(),
+					config.getKmlExportConfig().getBuildingDisplayForms(),
 					Building.STYLE_BASIS_NAME,
 					saxWriter);
 			break;
@@ -1023,7 +1023,7 @@ public class KmlExporter implements EventHandler {
 		BalloonStyleType balloonStyle = new BalloonStyleType();
 		balloonStyle.setText("$[description]");
 
-		PointAndCurve pacSettings = config.getProject().getKmlExportConfig().getGenericCityObjectPointAndCurve();
+		PointAndCurve pacSettings = config.getKmlExportConfig().getGenericCityObjectPointAndCurve();
 
 		if (pacSettings.getPointDisplayMode() == PointDisplayMode.ICON) {
 			StyleType pointStyleNormal = kmlFactory.createStyleType();
@@ -1611,39 +1611,39 @@ public class KmlExporter implements EventHandler {
 		Balloon[] balloonSettings = null;
 		switch (cityObjectType) {
 		case BUILDING:
-			balloonSettings = new Balloon[]{config.getProject().getKmlExportConfig().getBuildingBalloon()};
+			balloonSettings = new Balloon[]{config.getKmlExportConfig().getBuildingBalloon()};
 			break;
 		case WATER_BODY:
-			balloonSettings = new Balloon[]{config.getProject().getKmlExportConfig().getWaterBodyBalloon()};
+			balloonSettings = new Balloon[]{config.getKmlExportConfig().getWaterBodyBalloon()};
 			break;
 		case LAND_USE:
-			balloonSettings = new Balloon[]{config.getProject().getKmlExportConfig().getLandUseBalloon()};
+			balloonSettings = new Balloon[]{config.getKmlExportConfig().getLandUseBalloon()};
 			break;
 		case SOLITARY_VEGETATION_OBJECT:
-			balloonSettings = new Balloon[]{config.getProject().getKmlExportConfig().getVegetationBalloon()};
+			balloonSettings = new Balloon[]{config.getKmlExportConfig().getVegetationBalloon()};
 			break;
 		case TRANSPORTATION_COMPLEX:
-			balloonSettings = new Balloon[]{config.getProject().getKmlExportConfig().getTransportationBalloon()};
+			balloonSettings = new Balloon[]{config.getKmlExportConfig().getTransportationBalloon()};
 			break;
 		case RELIEF_FEATURE:
-			balloonSettings = new Balloon[]{config.getProject().getKmlExportConfig().getReliefBalloon()};
+			balloonSettings = new Balloon[]{config.getKmlExportConfig().getReliefBalloon()};
 			break;
 		case CITY_FURNITURE:
-			balloonSettings = new Balloon[]{config.getProject().getKmlExportConfig().getCityFurnitureBalloon()};
+			balloonSettings = new Balloon[]{config.getKmlExportConfig().getCityFurnitureBalloon()};
 			break;
 		case GENERIC_CITY_OBJECT:
-			balloonSettings = new Balloon[]{config.getProject().getKmlExportConfig().getGenericCityObject3DBalloon(),
-					config.getProject().getKmlExportConfig().getGenericCityObjectPointAndCurve().getPointBalloon(),
-					config.getProject().getKmlExportConfig().getGenericCityObjectPointAndCurve().getCurveBalloon()};
+			balloonSettings = new Balloon[]{config.getKmlExportConfig().getGenericCityObject3DBalloon(),
+					config.getKmlExportConfig().getGenericCityObjectPointAndCurve().getPointBalloon(),
+					config.getKmlExportConfig().getGenericCityObjectPointAndCurve().getCurveBalloon()};
 			break;
 		case CITY_OBJECT_GROUP:
-			balloonSettings = new Balloon[]{config.getProject().getKmlExportConfig().getCityObjectGroupBalloon()};
+			balloonSettings = new Balloon[]{config.getKmlExportConfig().getCityObjectGroupBalloon()};
 			break;
 		case BRIDGE:
-			balloonSettings = new Balloon[]{config.getProject().getKmlExportConfig().getBridgeBalloon()};
+			balloonSettings = new Balloon[]{config.getKmlExportConfig().getBridgeBalloon()};
 			break;
 		case TUNNEL:
-			balloonSettings = new Balloon[]{config.getProject().getKmlExportConfig().getTunnelBalloon()};
+			balloonSettings = new Balloon[]{config.getKmlExportConfig().getTunnelBalloon()};
 			break;
 		default:
 			return false;

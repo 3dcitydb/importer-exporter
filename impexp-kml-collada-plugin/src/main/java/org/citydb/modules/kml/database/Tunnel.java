@@ -80,15 +80,15 @@ public class Tunnel extends KmlGenericObject{
 	}
 
 	protected List<DisplayForm> getDisplayForms() {
-		return config.getProject().getKmlExportConfig().getTunnelDisplayForms();
+		return config.getKmlExportConfig().getTunnelDisplayForms();
 	}
 
 	public ColladaOptions getColladaOptions() {
-		return config.getProject().getKmlExportConfig().getTunnelColladaOptions();
+		return config.getKmlExportConfig().getTunnelColladaOptions();
 	}
 
 	public Balloon getBalloonSettings() {
-		return config.getProject().getKmlExportConfig().getTunnelBalloon();
+		return config.getKmlExportConfig().getTunnelBalloon();
 	}
 
 	public String getStyleBasisName() {
@@ -121,7 +121,7 @@ public class Tunnel extends KmlGenericObject{
 		}
 		
 		if (placemarks.size() == 0) {
-			int lodToExportFrom = config.getProject().getKmlExportConfig().getLodToExportFrom();
+			int lodToExportFrom = config.getKmlExportConfig().getLodToExportFrom();
 			String fromMessage = " from LoD" + lodToExportFrom;
 			if (lodToExportFrom == 5) {
 				if (work.getDisplayForm().getForm() == DisplayForm.COLLADA)
@@ -165,7 +165,7 @@ public class Tunnel extends KmlGenericObject{
 		boolean reversePointOrder = false;
 
 		try {
-			currentLod = config.getProject().getKmlExportConfig().getLodToExportFrom();
+			currentLod = config.getKmlExportConfig().getLodToExportFrom();
 			int displayForm = work.getDisplayForm().getForm();
 
 			// we handle FOOTPRINT/EXTRUDED differently than GEOMETRY/COLLADA
@@ -330,7 +330,7 @@ public class Tunnel extends KmlGenericObject{
 					return placemarks;
 
 				case DisplayForm.COLLADA:
-					fillGenericObjectForCollada(rs, config.getProject().getKmlExportConfig().getTunnelColladaOptions().isGenerateTextureAtlases()); // fill and refill
+					fillGenericObjectForCollada(rs, config.getKmlExportConfig().getTunnelColladaOptions().isGenerateTextureAtlases()); // fill and refill
 					String currentgmlId = getGmlId();
 					setGmlId(work.getGmlId());
 					setId(work.getId());

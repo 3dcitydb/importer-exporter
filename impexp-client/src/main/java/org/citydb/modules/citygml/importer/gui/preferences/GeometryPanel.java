@@ -73,7 +73,7 @@ public class GeometryPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public boolean isModified() {
-		AffineTransformation affineTransformation = config.getProject().getImportConfig().getAffineTransformation();
+		AffineTransformation affineTransformation = config.getImportConfig().getAffineTransformation();
 
 		if (useAffineTransformation.isSelected() != affineTransformation.isEnabled()) return true;
 		
@@ -231,7 +231,7 @@ public class GeometryPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void loadSettings() {
-		AffineTransformation affineTransformation = config.getProject().getImportConfig().getAffineTransformation();
+		AffineTransformation affineTransformation = config.getImportConfig().getAffineTransformation();
 			
 		useAffineTransformation.setSelected(affineTransformation.isEnabled());
 
@@ -247,7 +247,7 @@ public class GeometryPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void setSettings() {
-		AffineTransformation affineTransformation = config.getProject().getImportConfig().getAffineTransformation();
+		AffineTransformation affineTransformation = config.getImportConfig().getAffineTransformation();
 		
 		affineTransformation.setEnabled(useAffineTransformation.isSelected());
 		

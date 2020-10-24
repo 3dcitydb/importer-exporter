@@ -79,7 +79,7 @@ public class ThreeDBalloonPanel extends AbstractPreferencesComponent {
 
 	private Balloon getConfigBalloon() {
 
-		return config.getProject().getKmlExportConfig().getGenericCityObject3DBalloon();
+		return config.getKmlExportConfig().getGenericCityObject3DBalloon();
 	}
 
 	@Override
@@ -222,8 +222,8 @@ public class ThreeDBalloonPanel extends AbstractPreferencesComponent {
 		copyBalloonContents(internalBalloon, configBalloon);
 		
 		// this setting affect all geometry type of the genericcityoject (3D. Curve and point)
-		config.getProject().getKmlExportConfig().getGenericCityObjectPointAndCurve().getPointBalloon().setBalloonContentInSeparateFile(configBalloon.isBalloonContentInSeparateFile());
-		config.getProject().getKmlExportConfig().getGenericCityObjectPointAndCurve().getCurveBalloon().setBalloonContentInSeparateFile(configBalloon.isBalloonContentInSeparateFile());
+		config.getKmlExportConfig().getGenericCityObjectPointAndCurve().getPointBalloon().setBalloonContentInSeparateFile(configBalloon.isBalloonContentInSeparateFile());
+		config.getKmlExportConfig().getGenericCityObjectPointAndCurve().getCurveBalloon().setBalloonContentInSeparateFile(configBalloon.isBalloonContentInSeparateFile());
 	}
 	
 	private void loadFile() {

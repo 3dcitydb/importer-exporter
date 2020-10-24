@@ -78,7 +78,7 @@ public class WaterBodyBalloonPanel extends AbstractPreferencesComponent {
 	}
 
 	private Balloon getConfigBalloon() {
-		return config.getProject().getKmlExportConfig().getWaterBodyBalloon();
+		return config.getKmlExportConfig().getWaterBodyBalloon();
 	}
 
 	@Override

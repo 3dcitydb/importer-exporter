@@ -114,15 +114,15 @@ public class ThreeDRenderingPanel extends AbstractPreferencesComponent {
 	}
 
 	private ColladaOptions getConfigColladaOptions() {
-		return config.getProject().getKmlExportConfig().getGenericCityObjectColladaOptions();
+		return config.getKmlExportConfig().getGenericCityObjectColladaOptions();
 	}
 
 	private List<DisplayForm> getConfigDisplayForms() {
-		return config.getProject().getKmlExportConfig().getGenericCityObjectDisplayForms();
+		return config.getKmlExportConfig().getGenericCityObjectDisplayForms();
 	}
 
 	private void setConfigDisplayForms(List<DisplayForm> displayForms) {
-		config.getProject().getKmlExportConfig().setGenericCityObjectDisplayForms(displayForms);
+		config.getKmlExportConfig().setGenericCityObjectDisplayForms(displayForms);
 	}
 
 	@Override

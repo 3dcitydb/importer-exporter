@@ -29,8 +29,8 @@ package org.citydb.gui.components.menubar;
 
 import org.citydb.config.Config;
 import org.citydb.config.ConfigUtil;
+import org.citydb.config.Project;
 import org.citydb.config.i18n.Language;
-import org.citydb.config.project.Project;
 import org.citydb.config.project.global.Logging;
 import org.citydb.event.global.ProjectChangedEvent;
 import org.citydb.gui.ImpExpGui;
@@ -225,7 +225,7 @@ public class MenuProject extends JMenu {
 		boolean success = false;
 
 		try {
-			Logging logging = config.getProject().getGlobalConfig().getLogging();
+			Logging logging = config.getGlobalConfig().getLogging();
 			Object object = ConfigUtil.getInstance().unmarshal(file);
 			if (!(object instanceof Project)) {
 				log.error("Failed to read project settings.");
@@ -254,7 +254,7 @@ public class MenuProject extends JMenu {
 			}
 
 			// adapt logging subsystem
-			project.getGlobalConfig().setLogging(logging);
+			config.getGlobalConfig().setLogging(logging);
 
 			// reset logging settings
 			pluginManager.getInternalPlugin(PreferencesPlugin.class).setLoggingSettings();

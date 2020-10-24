@@ -91,7 +91,7 @@ public class KmlExportWorkerFactory implements WorkerFactory<KmlSplittingResult>
 			// try and change workspace if needed
 			AbstractDatabaseAdapter databaseAdapter = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter();
 			if (databaseAdapter.hasVersioningSupport()) {
-				Workspace workspace = config.getProject().getDatabaseConfig().getWorkspaces().getKmlExportWorkspace();
+				Workspace workspace = config.getDatabaseConfig().getWorkspaces().getKmlExportWorkspace();
 				databaseAdapter.getWorkspaceManager().gotoWorkspace(connection, workspace);
 			}
 

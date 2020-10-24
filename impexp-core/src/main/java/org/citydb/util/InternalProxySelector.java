@@ -72,7 +72,7 @@ public class InternalProxySelector extends ProxySelector {
 	@Override
 	public List<Proxy> select(URI uri) {
 		List<Proxy> proxies = new ArrayList<>();
-		ProxyConfig proxy = config.getProject().getGlobalConfig().getProxies().getProxyForProtocol(uri.getScheme());
+		ProxyConfig proxy = config.getGlobalConfig().getProxies().getProxyForProtocol(uri.getScheme());
 
 		if (proxy != null && proxy.isEnabled() && proxy.hasValidProxySettings())
 			proxies.add(proxy.toProxy());
@@ -86,7 +86,7 @@ public class InternalProxySelector extends ProxySelector {
 
 	@Override
 	public void connectFailed(URI uri, SocketAddress socketAddress, IOException e) {
-		ProxyConfig proxy = config.getProject().getGlobalConfig().getProxies().getProxyForProtocol(uri.getScheme());
+		ProxyConfig proxy = config.getGlobalConfig().getProxies().getProxyForProtocol(uri.getScheme());
 		if (proxy != null) {
 			if (proxy.isCopy())
 				proxy = proxy.getCopiedFrom();
@@ -120,7 +120,7 @@ public class InternalProxySelector extends ProxySelector {
 			@Override
 			protected PasswordAuthentication getPasswordAuthentication() {
 				if (getRequestorType() == RequestorType.PROXY) {
-					ProxyConfig proxy = config.getProject().getGlobalConfig().getProxies().getProxyForProtocol(getRequestingProtocol());
+					ProxyConfig proxy = config.getGlobalConfig().getProxies().getProxyForProtocol(getRequestingProtocol());
 					if (proxy != null
 							&& proxy.requiresAuthentication()
 							&& proxy.hasValidUserCredentials()

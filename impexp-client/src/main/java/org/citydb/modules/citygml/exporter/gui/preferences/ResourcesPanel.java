@@ -82,10 +82,10 @@ public class ResourcesPanel extends AbstractPreferencesComponent{
 
 	@Override
 	public boolean isModified() {
-		ThreadPoolConfig threadPool = config.getProject().getExportConfig().getResources().getThreadPool().getDefaultPool();
-		ExportBatching exportBatching = config.getProject().getDatabaseConfig().getExportBatching();
-		UIDCacheConfig geometry = config.getProject().getExportConfig().getResources().getGmlIdCache().getGeometry();
-		UIDCacheConfig feature = config.getProject().getExportConfig().getResources().getGmlIdCache().getFeature();
+		ThreadPoolConfig threadPool = config.getExportConfig().getResources().getThreadPool().getDefaultPool();
+		ExportBatching exportBatching = config.getDatabaseConfig().getExportBatching();
+		UIDCacheConfig geometry = config.getExportConfig().getResources().getGmlIdCache().getGeometry();
+		UIDCacheConfig feature = config.getExportConfig().getResources().getGmlIdCache().getFeature();
 
 		try { expResMinThreadsText.commitEdit(); } catch (ParseException e) { }
 		try { expResMaxThreadsText.commitEdit(); } catch (ParseException e) { }
@@ -308,10 +308,10 @@ public class ResourcesPanel extends AbstractPreferencesComponent{
 
 	@Override
 	public void loadSettings() {
-		ThreadPoolConfig threadPool = config.getProject().getExportConfig().getResources().getThreadPool().getDefaultPool();
-		ExportBatching exportBatching = config.getProject().getDatabaseConfig().getExportBatching();
-		UIDCacheConfig geometry = config.getProject().getExportConfig().getResources().getGmlIdCache().getGeometry();
-		UIDCacheConfig feature = config.getProject().getExportConfig().getResources().getGmlIdCache().getFeature();
+		ThreadPoolConfig threadPool = config.getExportConfig().getResources().getThreadPool().getDefaultPool();
+		ExportBatching exportBatching = config.getDatabaseConfig().getExportBatching();
+		UIDCacheConfig geometry = config.getExportConfig().getResources().getGmlIdCache().getGeometry();
+		UIDCacheConfig feature = config.getExportConfig().getResources().getGmlIdCache().getFeature();
 
 		int featureBatchSize = exportBatching.getFeatureBatchSize();
 		if (featureBatchSize >  ExportBatching.MAX_BATCH_SIZE)
@@ -340,10 +340,10 @@ public class ResourcesPanel extends AbstractPreferencesComponent{
 
 	@Override
 	public void setSettings() {
-		ThreadPoolConfig threadPool = config.getProject().getExportConfig().getResources().getThreadPool().getDefaultPool();
-		ExportBatching exportBatching = config.getProject().getDatabaseConfig().getExportBatching();
-		UIDCacheConfig geometry = config.getProject().getExportConfig().getResources().getGmlIdCache().getGeometry();
-		UIDCacheConfig feature = config.getProject().getExportConfig().getResources().getGmlIdCache().getFeature();
+		ThreadPoolConfig threadPool = config.getExportConfig().getResources().getThreadPool().getDefaultPool();
+		ExportBatching exportBatching = config.getDatabaseConfig().getExportBatching();
+		UIDCacheConfig geometry = config.getExportConfig().getResources().getGmlIdCache().getGeometry();
+		UIDCacheConfig feature = config.getExportConfig().getResources().getGmlIdCache().getFeature();
 
 		int minThreads = ((Number)expResMinThreadsText.getValue()).intValue();
 		int maxThreads = ((Number)expResMaxThreadsText.getValue()).intValue();

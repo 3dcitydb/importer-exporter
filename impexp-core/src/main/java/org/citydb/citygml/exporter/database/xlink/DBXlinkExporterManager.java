@@ -84,10 +84,8 @@ public class DBXlinkExporterManager {
 	}
 
 	public int getBlobBatchSize() {
-		int blobBatchSize = config.getProject().getDatabaseConfig().getExportBatching().getBlobBatchSize();
-		return blobBatchSize > databaseAdapter.getSQLAdapter().getMaximumNumberOfItemsForInOperator() ?
-				databaseAdapter.getSQLAdapter().getMaximumNumberOfItemsForInOperator() :
-				blobBatchSize;
+		int blobBatchSize = config.getDatabaseConfig().getExportBatching().getBlobBatchSize();
+		return Math.min(blobBatchSize, databaseAdapter.getSQLAdapter().getMaximumNumberOfItemsForInOperator());
 	}
 
 	public void propagateEvent(Event event) {

@@ -64,7 +64,7 @@ public class DBAppearance implements DBImporter {
 	public DBAppearance(Connection batchConn, Config config, CityGMLImportManager importer) throws CityGMLImportException, SQLException {
 		this.importer = importer;
 
-		replaceGmlId = config.getProject().getImportConfig().getGmlId().isUUIDModeReplace();
+		replaceGmlId = config.getImportConfig().getGmlId().isUUIDModeReplace();
 		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
 
 		String gmlIdCodespace = config.getInternal().getCurrentGmlIdCodespace();

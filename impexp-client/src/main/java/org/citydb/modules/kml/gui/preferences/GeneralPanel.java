@@ -93,7 +93,7 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public boolean isModified() {
-		KmlExportConfig kmlExportConfig = config.getProject().getKmlExportConfig();
+		KmlExportConfig kmlExportConfig = config.getKmlExportConfig();
 
 		if (kmzCheckbox.isSelected() != kmlExportConfig.isExportAsKmz()) return true;
 		if (showBoundingBoxCheckbox.isSelected() != kmlExportConfig.isShowBoundingBox()) return true;
@@ -369,7 +369,7 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void loadSettings() {
-		KmlExportConfig kmlExportConfig = config.getProject().getKmlExportConfig();
+		KmlExportConfig kmlExportConfig = config.getKmlExportConfig();
 
 		kmzCheckbox.setSelected(kmlExportConfig.isExportAsKmz());
 		showBoundingBoxCheckbox.setSelected(kmlExportConfig.isShowBoundingBox());
@@ -397,7 +397,7 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void setSettings() {
-		KmlExportConfig kmlExportConfig = config.getProject().getKmlExportConfig();
+		KmlExportConfig kmlExportConfig = config.getKmlExportConfig();
 
 		kmlExportConfig.setExportAsKmz(kmzCheckbox.isSelected());
 		kmlExportConfig.setShowBoundingBox(showBoundingBoxCheckbox.isEnabled() && showBoundingBoxCheckbox.isSelected());

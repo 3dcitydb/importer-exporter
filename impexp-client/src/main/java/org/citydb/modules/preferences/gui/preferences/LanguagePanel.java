@@ -59,7 +59,7 @@ public class LanguagePanel extends AbstractPreferencesComponent {
 	
 	@Override
 	public boolean isModified() {
-		LanguageType language = config.getProject().getGlobalConfig().getLanguage();
+		LanguageType language = config.getGlobalConfig().getLanguage();
 		
 		if (importLanguageRadioDe.isSelected() && !(language == LanguageType.DE)) return true;
 		if (importLanguageRadioEn.isSelected() && !(language == LanguageType.EN)) return true;
@@ -97,7 +97,7 @@ public class LanguagePanel extends AbstractPreferencesComponent {
 	
 	@Override
 	public void loadSettings() {		
-		LanguageType language = config.getProject().getGlobalConfig().getLanguage();
+		LanguageType language = config.getGlobalConfig().getLanguage();
 		
 		if (language == LanguageType.DE) {
 			importLanguageRadioDe.setSelected(true);
@@ -109,7 +109,7 @@ public class LanguagePanel extends AbstractPreferencesComponent {
 	
 	@Override
 	public void setSettings() {
-		GlobalConfig globalConfig = config.getProject().getGlobalConfig();
+		GlobalConfig globalConfig = config.getGlobalConfig();
 		
 		if (importLanguageRadioDe.isSelected()) {
 			globalConfig.setLanguage(LanguageType.DE);

@@ -56,7 +56,7 @@ public class FeatureReaderWorker extends Worker<XMLChunk> {
 		this.dbWorkerPool = dbWorkerPool;
 		this.eventDispatcher = eventDispatcher;
 
-		useValidation = config.getProject().getImportConfig().getXMLValidation().isSetUseXMLValidation();
+		useValidation = config.getImportConfig().getXMLValidation().isSetUseXMLValidation();
 	}
 	
 	@Override

@@ -293,7 +293,7 @@ public class PointAndCurveBalloonPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void loadSettings() {
-		pointBalloon = config.getProject().getKmlExportConfig().getGenericCityObjectPointAndCurve().getPointBalloon();
+		pointBalloon = config.getKmlExportConfig().getGenericCityObjectPointAndCurve().getPointBalloon();
 
 		pointIncludeDescription.setSelected(pointBalloon.isIncludeDescription());
 		switch (pointBalloon.getBalloonContentMode()) {
@@ -309,7 +309,7 @@ public class PointAndCurveBalloonPanel extends AbstractPreferencesComponent {
 		}
 		pointBrowseText.setText(pointBalloon.getBalloonContentTemplateFile());
 	
-		curveBalloon = config.getProject().getKmlExportConfig().getGenericCityObjectPointAndCurve().getCurveBalloon();
+		curveBalloon = config.getKmlExportConfig().getGenericCityObjectPointAndCurve().getCurveBalloon();
 
 		curveIncludeDescription.setSelected(curveBalloon.isIncludeDescription());
 		switch (curveBalloon.getBalloonContentMode()) {

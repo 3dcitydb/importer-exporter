@@ -86,7 +86,7 @@ public class SrsComboBoxFactory {
 	public void resetAll(boolean sort) {
 		// by default, any reference system is not supported. In GUI mode we can
 		// override this because the SRS combo boxes will take care.
-		for (DatabaseSrs refSys : config.getProject().getDatabaseConfig().getReferenceSystems())
+		for (DatabaseSrs refSys : config.getDatabaseConfig().getReferenceSystems())
 			refSys.setSupported(true);
 		
 		processSrsComboBoxes(sort, false);
@@ -94,7 +94,7 @@ public class SrsComboBoxFactory {
 
 	private void processSrsComboBoxes(boolean sort, boolean update) {
 		if (sort)
-			Collections.sort(config.getProject().getDatabaseConfig().getReferenceSystems());
+			Collections.sort(config.getDatabaseConfig().getReferenceSystems());
 
 		Iterator<WeakReference<SrsComboBox>> iter = srsBoxes.iterator();
 		while (iter.hasNext()) {
@@ -133,7 +133,7 @@ public class SrsComboBoxFactory {
 			if (anObject instanceof DatabaseSrs) {
 				DatabaseSrs refSys = (DatabaseSrs)anObject;
 
-				if (refSys == dbRefSys || config.getProject().getDatabaseConfig().getReferenceSystems().contains(refSys))
+				if (refSys == dbRefSys || config.getDatabaseConfig().getReferenceSystems().contains(refSys))
 					super.setSelectedItem(refSys);
 				else {
 					DatabaseSrs cand = null;
@@ -178,7 +178,7 @@ public class SrsComboBoxFactory {
 			addItem(dbRefSys);
 
 			// user-defined reference systems
-			for (DatabaseSrs refSys : config.getProject().getDatabaseConfig().getReferenceSystems()) {
+			for (DatabaseSrs refSys : config.getDatabaseConfig().getReferenceSystems()) {
 				if (showOnlySupported && !refSys.isSupported())
 					continue;
 

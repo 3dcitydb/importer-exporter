@@ -110,7 +110,7 @@ public class DBImportXlinkResolverWorkerFactory implements WorkerFactory<DBXlink
 
 			// try and change workspace for the connection if needed
 			if (databaseAdapter.hasVersioningSupport()) {
-				Workspace workspace = config.getProject().getDatabaseConfig().getWorkspaces().getImportWorkspace();
+				Workspace workspace = config.getDatabaseConfig().getWorkspaces().getImportWorkspace();
 				databaseAdapter.getWorkspaceManager().gotoWorkspace(connection, workspace);
 			}
 

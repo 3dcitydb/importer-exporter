@@ -99,7 +99,7 @@ public class GeometryConverter {
 	public GeometryConverter(AbstractDatabaseAdapter databaseAdapter, AffineTransformer affineTransformer, Config config) {
 		this(databaseAdapter);
 
-		affineTransformation = config.getProject().getImportConfig().getAffineTransformation().isEnabled();
+		affineTransformation = config.getImportConfig().getAffineTransformation().isEnabled();
 		if (affineTransformation)
 			this.affineTransformer = affineTransformer;
 	}

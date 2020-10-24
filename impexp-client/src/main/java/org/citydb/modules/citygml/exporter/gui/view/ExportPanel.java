@@ -214,11 +214,11 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 	}
 
 	public void loadSettings() {
-		useSimpleFilter = config.getProject().getExportConfig().isUseSimpleQuery();
-		workspaceText.setText(config.getProject().getDatabaseConfig().getWorkspaces().getExportWorkspace().getName());
-		datePicker.setDate(config.getProject().getDatabaseConfig().getWorkspaces().getExportWorkspace().getTimestamp());
+		useSimpleFilter = config.getExportConfig().isUseSimpleQuery();
+		workspaceText.setText(config.getDatabaseConfig().getWorkspaces().getExportWorkspace().getName());
+		datePicker.setDate(config.getDatabaseConfig().getWorkspaces().getExportWorkspace().getTimestamp());
 
-		QueryConfig query = config.getProject().getExportConfig().getQuery();
+		QueryConfig query = config.getExportConfig().getQuery();
 		DatabaseSrs targetSrs = query.getTargetSrs();
 
 		if (query.isSetTargetSrs()) {
@@ -239,7 +239,7 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 		}
 
 		if (useSimpleFilter)
-			targetSrs = config.getProject().getExportConfig().getSimpleQuery().getTargetSrs();
+			targetSrs = config.getExportConfig().getSimpleQuery().getTargetSrs();
 
 		srsComboBox.setSelectedItem(targetSrs);
 
@@ -249,16 +249,16 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 	}
 
 	public void setSettings() {
-		config.getProject().getExportConfig().setUseSimpleQuery(useSimpleFilter);
-		config.getProject().getDatabaseConfig().getWorkspaces().getExportWorkspace().setName(workspaceText.getText());
-		config.getProject().getDatabaseConfig().getWorkspaces().getExportWorkspace().setTimestamp(datePicker.getDate());
+		config.getExportConfig().setUseSimpleQuery(useSimpleFilter);
+		config.getDatabaseConfig().getWorkspaces().getExportWorkspace().setName(workspaceText.getText());
+		config.getDatabaseConfig().getWorkspaces().getExportWorkspace().setTimestamp(datePicker.getDate());
 
 		filterPanel.setSettings();
 
 		DatabaseSrs targetSrs = srsComboBox.getSelectedItem();
-		config.getProject().getExportConfig().getSimpleQuery().setTargetSrs(targetSrs);
-		if (!config.getProject().getExportConfig().getQuery().isSetTargetSrs())
-			config.getProject().getExportConfig().getQuery().setTargetSrs(targetSrs);
+		config.getExportConfig().getSimpleQuery().setTargetSrs(targetSrs);
+		if (!config.getExportConfig().getQuery().isSetTargetSrs())
+			config.getExportConfig().getQuery().setTargetSrs(targetSrs);
 	}
 
 	private void doExport() {
@@ -277,8 +277,8 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 				return;
 			}
 
-			if (config.getProject().getExportConfig().isUseSimpleQuery()) {
-				SimpleQuery query = config.getProject().getExportConfig().getSimpleQuery();
+			if (config.getExportConfig().isUseSimpleQuery()) {
+				SimpleQuery query = config.getExportConfig().getSimpleQuery();
 
 				// simple selection filter
 				if (query.isUseSelectionFilter()) {
@@ -344,7 +344,7 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 					return;
 				}
 			} else {
-				QueryConfig query = config.getProject().getExportConfig().getQuery();
+				QueryConfig query = config.getExportConfig().getQuery();
 				if (query.hasLocalProperty("unmarshallingFailed")) {
 					viewController.errorMessage(Language.I18N.getString("export.dialog.error.incorrectData"),
 							Language.I18N.getString("common.dialog.error.incorrectData.xmlQuery"));
@@ -353,7 +353,7 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 
 				// copy tiling options if required
 				if (query.isSetTiling() && !(query.getTiling().getTilingOptions() instanceof SimpleTilingOptions)) {
-					query.getTiling().setTilingOptions(config.getProject().getExportConfig().getSimpleQuery().getBboxFilter().getTilingOptions());
+					query.getTiling().setTilingOptions(config.getExportConfig().getSimpleQuery().getBboxFilter().getTilingOptions());
 					tileAmount = query.getTiling().getRows() * query.getTiling().getColumns();
 				}
 			}
@@ -431,9 +431,9 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 		chooser.setFileFilter(filter);
 
 		if (browseText.getText().trim().isEmpty()) {
-			chooser.setCurrentDirectory(config.getProject().getExportConfig().getPath().isSetLastUsedMode() ?
-					new File(config.getProject().getExportConfig().getPath().getLastUsedPath()) :
-					new File(config.getProject().getExportConfig().getPath().getStandardPath()));
+			chooser.setCurrentDirectory(config.getExportConfig().getPath().isSetLastUsedMode() ?
+					new File(config.getExportConfig().getPath().getLastUsedPath()) :
+					new File(config.getExportConfig().getPath().getStandardPath()));
 		} else {
 			File file = new File(browseText.getText().trim());
 			if (!file.isDirectory())
@@ -459,7 +459,7 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 			}
 
 			browseText.setText(exportString);
-			config.getProject().getExportConfig().getPath().setLastUsedPath(chooser.getCurrentDirectory().getAbsolutePath());
+			config.getExportConfig().getPath().setLastUsedPath(chooser.getCurrentDirectory().getAbsolutePath());
 		} catch (Exception e) {
 			//
 		}

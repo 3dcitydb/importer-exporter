@@ -114,15 +114,15 @@ public class ReliefRenderingPanel extends AbstractPreferencesComponent {
 	}
 
 	private ColladaOptions getConfigColladaOptions() {
-		return config.getProject().getKmlExportConfig().getReliefColladaOptions();
+		return config.getKmlExportConfig().getReliefColladaOptions();
 	}
 
 	private List<DisplayForm> getConfigDisplayForms() {
-		return config.getProject().getKmlExportConfig().getReliefDisplayForms();
+		return config.getKmlExportConfig().getReliefDisplayForms();
 	}
 
 	private void setConfigDisplayForms(List<DisplayForm> displayForms) {
-		config.getProject().getKmlExportConfig().setReliefDisplayForms(displayForms);
+		config.getKmlExportConfig().setReliefDisplayForms(displayForms);
 	}
 
 	@Override
