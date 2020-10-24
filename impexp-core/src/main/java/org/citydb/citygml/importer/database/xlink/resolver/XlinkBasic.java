@@ -75,7 +75,7 @@ public class XlinkBasic implements DBXlinkResolver {
 
 			ps.addBatch();
 			if (counters.merge(key, 1, Integer::sum) == manager.getDatabaseAdapter().getMaxBatchSize()) {
-				manager.executeBatchWithLock(ps);
+				manager.executeBatchWithLock(ps, this);
 				counters.put(key, 0);
 			}
 		}

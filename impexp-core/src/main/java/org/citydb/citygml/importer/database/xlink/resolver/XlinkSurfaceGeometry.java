@@ -142,7 +142,7 @@ public class XlinkSurfaceGeometry implements DBXlinkResolver {
 
 						ps.addBatch();
 						if (counters.merge(key, 1, Integer::sum) == manager.getDatabaseAdapter().getMaxBatchSize()) {
-							manager.executeBatchWithLock(ps);
+							manager.executeBatchWithLock(ps, this);
 							counters.put(key, 0);
 						}
 					}
@@ -153,7 +153,7 @@ public class XlinkSurfaceGeometry implements DBXlinkResolver {
 		psUpdateSurfGeom.setLong(1, rootGeometryEntry.getId());
 		psUpdateSurfGeom.addBatch();
 		if (++updateBatchCounter == manager.getDatabaseAdapter().getMaxBatchSize()) {
-			manager.executeBatchWithLock(psUpdateSurfGeom);
+			manager.executeBatchWithLock(psUpdateSurfGeom, this);
 			updateBatchCounter = 0;
 		}
 
@@ -180,8 +180,8 @@ public class XlinkSurfaceGeometry implements DBXlinkResolver {
 
 			psMemberElem.addBatch();
 			if (++memberBatchCounter == manager.getDatabaseAdapter().getMaxBatchSize()) {
-				manager.executeBatchWithLock(psParentElem);
-				manager.executeBatchWithLock(psMemberElem);
+				manager.executeBatchWithLock(psParentElem, this);
+				manager.executeBatchWithLock(psMemberElem, this);
 				parentBatchCounter = 0;
 				memberBatchCounter = 0;
 			}
@@ -222,7 +222,7 @@ public class XlinkSurfaceGeometry implements DBXlinkResolver {
 
 			psParentElem.addBatch();
 			if (++parentBatchCounter == manager.getDatabaseAdapter().getMaxBatchSize()) {
-				manager.executeBatchWithLock(psParentElem);
+				manager.executeBatchWithLock(psParentElem, this);
 				parentBatchCounter = 0;
 			}
 

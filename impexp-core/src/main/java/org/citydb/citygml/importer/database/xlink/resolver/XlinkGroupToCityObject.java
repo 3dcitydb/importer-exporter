@@ -94,7 +94,7 @@ public class XlinkGroupToCityObject implements DBXlinkResolver {
 			
 			psGroupParentToCityObject.addBatch();
 			if (++parentBatchCounter == manager.getDatabaseAdapter().getMaxBatchSize()) {
-				manager.executeBatchWithLock(psGroupParentToCityObject);
+				manager.executeBatchWithLock(psGroupParentToCityObject, this);
 				parentBatchCounter = 0;
 			}
 		} else {
@@ -104,7 +104,7 @@ public class XlinkGroupToCityObject implements DBXlinkResolver {
 
 			psGroupMemberToCityObject.addBatch();
 			if (++memberBatchCounter == manager.getDatabaseAdapter().getMaxBatchSize()) {
-				manager.executeBatchWithLock(psGroupMemberToCityObject);
+				manager.executeBatchWithLock(psGroupMemberToCityObject, this);
 				memberBatchCounter = 0;
 			}
 		}
