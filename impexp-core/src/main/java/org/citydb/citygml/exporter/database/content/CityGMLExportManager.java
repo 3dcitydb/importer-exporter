@@ -42,6 +42,7 @@ import org.citydb.citygml.exporter.CityGMLExportException;
 import org.citydb.citygml.exporter.util.AppearanceRemover;
 import org.citydb.citygml.exporter.util.AttributeValueSplitter;
 import org.citydb.citygml.exporter.util.ExportCounter;
+import org.citydb.citygml.exporter.util.InternalConfig;
 import org.citydb.citygml.exporter.util.LodGeometryChecker;
 import org.citydb.citygml.exporter.writer.FeatureWriteException;
 import org.citydb.citygml.exporter.writer.FeatureWriter;
@@ -60,7 +61,6 @@ import org.citydb.database.schema.mapping.InjectedProperty;
 import org.citydb.database.schema.mapping.MappingConstants;
 import org.citydb.database.schema.mapping.ObjectType;
 import org.citydb.database.schema.mapping.SchemaMapping;
-import org.citydb.file.OutputFile;
 import org.citydb.log.Logger;
 import org.citydb.plugin.PluginException;
 import org.citydb.plugin.PluginManager;
@@ -146,7 +146,6 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 	private final IdentityHashMap<Class<? extends DBExporter>, DBExporter> exporters = new IdentityHashMap<>();
 	private final IdentityHashMap<ADEExtension, ADEExportManager> adeExporters = new IdentityHashMap<>();
 
-	private final OutputFile outputFile;
 	private final Connection connection;
 	private final Query query;
 	private final AbstractDatabaseAdapter databaseAdapter;
@@ -158,6 +157,7 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 	private final WorkerPool<DBXlink> xlinkPool;
 	private final UIDCacheManager uidCacheManager;
 	private final CacheTableManager cacheTableManager;
+	private final InternalConfig internalConfig;
 	private final Config config;
 
 	private final AttributeValueSplitter attributeValueSplitter;
@@ -171,8 +171,7 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 	private Document document;
 	private boolean failOnError;
 
-	public CityGMLExportManager(OutputFile outputFile,
-			Connection connection,
+	public CityGMLExportManager(Connection connection,
 			Query query,
 			AbstractDatabaseAdapter databaseAdapter,
 			SchemaMapping schemaMapping,
@@ -181,8 +180,8 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 			WorkerPool<DBXlink> xlinkPool,
 			UIDCacheManager uidCacheManager,
 			CacheTableManager cacheTableManager,
+			InternalConfig internalConfig,
 			Config config) throws CityGMLExportException {
-		this.outputFile = outputFile;
 		this.connection = connection;
 		this.query = query;
 		this.databaseAdapter = databaseAdapter;
@@ -192,6 +191,7 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 		this.xlinkPool = xlinkPool;
 		this.uidCacheManager = uidCacheManager;
 		this.cacheTableManager = cacheTableManager;
+		this.internalConfig = internalConfig;
 		this.config = config;
 
 		adeManager = ADEExtensionManager.getInstance();
@@ -234,7 +234,7 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 			appearanceRemover.cleanupAppearances(object);
 
 		// cache geometry ids in case we export global appearances
-		if (config.getInternal().isExportGlobalAppearances())
+		if (internalConfig.isExportGlobalAppearances())
 			getExporter(DBGlobalAppearance.class).cacheGeometryIds(object);
 
 		if (object instanceof AbstractFeature) {
@@ -502,9 +502,7 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 	}
 
 	private int getBatchSize(int batchSize) {
-		return batchSize > databaseAdapter.getSQLAdapter().getMaximumNumberOfItemsForInOperator() ?
-				databaseAdapter.getSQLAdapter().getMaximumNumberOfItemsForInOperator() :
-				batchSize;
+		return Math.min(batchSize, databaseAdapter.getSQLAdapter().getMaximumNumberOfItemsForInOperator());
 	}
 
 	@Override
@@ -609,6 +607,10 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 		return config.getExportConfig();
 	}
 
+	public InternalConfig getInternalConfig() {
+		return internalConfig;
+	}
+
 	@Override
 	public String getTableNameWithSchema(String tableName) {
 		return databaseAdapter.getConnectionDetails().getSchema() + '.' + tableName;
@@ -616,7 +618,7 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 
 	@Override
 	public ProjectionToken getGeometryColumn(Column column) {
-		return (!config.getInternal().isTransformCoordinates()) ? 
+		return (!internalConfig.isTransformCoordinates()) ?
 				column :
 				new Function(databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_srs.transform_or_null"),
 						column.getName(), column, new IntegerLiteral(query.getTargetSrs().getSrid()));
@@ -624,7 +626,7 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 
 	@Override
 	public ProjectionToken getGeometryColumn(Column column, String asName) {
-		return (!config.getInternal().isTransformCoordinates()) ?
+		return (!internalConfig.isTransformCoordinates()) ?
 				new Column(column.getTable(), column.getName(), asName) :
 				new Function(databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_srs.transform_or_null"),
 						asName, column, new IntegerLiteral(query.getTargetSrs().getSrid()));
@@ -632,7 +634,7 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 
 	@Override
 	public String getGeometryColumn(String columnName) {
-		return (!config.getInternal().isTransformCoordinates()) ?
+		return (!internalConfig.isTransformCoordinates()) ?
 				columnName :
 				databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_srs.transform_or_null") +
 						"(" + columnName + ", " + query.getTargetSrs().getSrid() + ") as " + columnName.replaceFirst(".*?\\.", "");
@@ -640,7 +642,7 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 
 	@Override
 	public String getGeometryColumn(String columnName, String asName) {
-		return (!config.getInternal().isTransformCoordinates()) ?
+		return (!internalConfig.isTransformCoordinates()) ?
 				columnName + " as " + asName :
 				databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_srs.transform_or_null") +
 						"(" + columnName + ", " + query.getTargetSrs().getSrid() + ") as " + asName;
@@ -709,8 +711,8 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 			if (config.getExportConfig().getXlink().getFeature().isSetKeepGmlIdAsExternalReference()
 					&& feature instanceof AbstractCityObject) {
 				ExternalReference externalReference = new ExternalReference();
-				if (outputFile != null)
-					externalReference.setInformationSystem(outputFile.getFile().toString());
+				if (internalConfig.getOutputFile() != null)
+					externalReference.setInformationSystem(internalConfig.getOutputFile().getFile().toString());
 
 				ExternalObject externalObject = new ExternalObject();
 				externalObject.setName(oldGmlId);
@@ -906,7 +908,7 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 		if (exporter == null) {
 			// core module
 			if (type == DBSurfaceGeometry.class)
-				exporter = new DBSurfaceGeometry(connection, this, config);
+				exporter = new DBSurfaceGeometry(connection, this);
 			else if (type == DBCityObject.class)
 				exporter = new DBCityObject(connection, query, this);
 			else if (type == DBGeneralization.class)
@@ -1005,13 +1007,13 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 			// appearance module
 			else if (type == DBGlobalAppearance.class) {
 				CacheTable cacheTable = null;
-				if (config.getInternal().isExportGlobalAppearances()) {
+				if (internalConfig.isExportGlobalAppearances()) {
 					cacheTable = cacheTableManager.getCacheTable(CacheTableModel.GLOBAL_APPEARANCE);
 					if (cacheTable == null)
 						logOrThrowErrorMessage("Failed to access temporary table for global appearances.");
 				}
 
-				exporter = new DBGlobalAppearance(connection, query, cacheTable, this, config);
+				exporter = new DBGlobalAppearance(cacheTable, this, config);
 			} else if (type == DBLocalAppearance.class)
 				exporter = new DBLocalAppearance(connection, query, this, config);
 

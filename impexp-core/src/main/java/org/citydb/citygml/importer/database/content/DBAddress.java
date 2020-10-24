@@ -75,7 +75,7 @@ public class DBAddress implements DBImporter {
 		String gmlIdCodespace = null;
 
 		if (hasGmlIdColumn) {
-			gmlIdCodespace = config.getInternal().getCurrentGmlIdCodespace();
+			gmlIdCodespace = importer.getInternalConfig().getCurrentGmlIdCodespace();
 			if (gmlIdCodespace != null)
 				gmlIdCodespace = "'" + gmlIdCodespace + "', ";
 		}

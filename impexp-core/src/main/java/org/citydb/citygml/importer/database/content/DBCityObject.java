@@ -119,14 +119,14 @@ public class DBCityObject implements DBImporter {
 		if (updatingPerson != null && updatingPerson.trim().isEmpty())
 			updatingPerson = null;
 
-		String gmlIdCodespace = config.getInternal().getCurrentGmlIdCodespace();
+		String gmlIdCodespace = importer.getInternalConfig().getCurrentGmlIdCodespace();
 		if (gmlIdCodespace != null)
 			gmlIdCodespace = "'" + gmlIdCodespace + "', ";
 
 		replaceGmlId = config.getImportConfig().getGmlId().isUUIDModeReplace();
 		rememberGmlId = config.getImportConfig().getGmlId().isSetKeepGmlIdAsExternalReference();
-		if (replaceGmlId && rememberGmlId && importer.getInputFile() != null)
-			importFileName = importer.getInputFile().getFile().toString();
+		if (replaceGmlId && rememberGmlId && importer.getInternalConfig().getInputFile() != null)
+			importFileName = importer.getInternalConfig().getInputFile().getFile().toString();
 
 		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
 		bboxOptions = BoundingBoxOptions.defaults()

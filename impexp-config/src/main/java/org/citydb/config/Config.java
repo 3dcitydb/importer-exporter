@@ -28,7 +28,6 @@
 package org.citydb.config;
 
 import org.citydb.config.gui.GuiConfig;
-import org.citydb.config.internal.Internal;
 import org.citydb.config.project.database.DatabaseConfig;
 import org.citydb.config.project.deleter.DeleteConfig;
 import org.citydb.config.project.exporter.ExportConfig;
@@ -41,16 +40,14 @@ import org.citydb.config.util.ConfigNamespaceFilter;
 public class Config {
 	private ProjectConfig projectConfig;
 	private GuiConfig guiConfig;
-	private Internal internal;
 
-	public Config(ProjectConfig projectConfig, GuiConfig guiConfig, Internal internal) {
+	public Config(ProjectConfig projectConfig, GuiConfig guiConfig) {
 		this.projectConfig = projectConfig;
 		this.guiConfig = guiConfig;
-		this.internal = internal;
 	}
 	
 	public Config() {
-		this(new ProjectConfig(), new GuiConfig(), new Internal());
+		this(new ProjectConfig(), new GuiConfig());
 	}
 
 	public ProjectConfig getProjectConfig() {
@@ -139,9 +136,4 @@ public class Config {
 		if (guiConfig != null)
 			this.guiConfig = guiConfig;
 	}
-
-	public Internal getInternal() {
-		return internal;
-	}
-
 }

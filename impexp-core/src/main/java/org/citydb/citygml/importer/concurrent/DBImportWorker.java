@@ -35,6 +35,7 @@ import org.citydb.citygml.importer.filter.CityGMLFilter;
 import org.citydb.citygml.importer.util.AffineTransformer;
 import org.citydb.citygml.importer.util.ImportLogger;
 import org.citydb.citygml.importer.util.ImportLogger.ImportLogEntry;
+import org.citydb.citygml.importer.util.InternalConfig;
 import org.citydb.concurrent.Worker;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
@@ -50,7 +51,6 @@ import org.citydb.event.global.EventType;
 import org.citydb.event.global.GeometryCounterEvent;
 import org.citydb.event.global.InterruptEvent;
 import org.citydb.event.global.ObjectCounterEvent;
-import org.citydb.file.InputFile;
 import org.citydb.log.Logger;
 import org.citygml4j.builder.jaxb.CityGMLBuilder;
 import org.citygml4j.model.citygml.CityGML;
@@ -82,8 +82,7 @@ public class DBImportWorker extends Worker<CityGML> implements EventHandler {
 	private int topLevelFeatureCounter = 0;
 	private int commitAfter;
 
-	public DBImportWorker(InputFile inputFile,
-			Connection connection,
+	public DBImportWorker(Connection connection,
 			boolean isManagedTransaction,
 			AbstractDatabaseAdapter databaseAdapter,
 			SchemaMapping schemaMapping,
@@ -93,6 +92,7 @@ public class DBImportWorker extends Worker<CityGML> implements EventHandler {
 			CityGMLFilter filter,
 			AffineTransformer affineTransformer,
 			ImportLogger importLogger,
+			InternalConfig internalConfig,
 			Config config,
 			EventDispatcher eventDispatcher) throws SQLException {
 		this.connection = connection;
@@ -101,14 +101,14 @@ public class DBImportWorker extends Worker<CityGML> implements EventHandler {
 		this.importLogger = importLogger;
 		this.eventDispatcher = eventDispatcher;
 
-		importer = new CityGMLImportManager(inputFile,
-				connection,
+		importer = new CityGMLImportManager(connection,
 				databaseAdapter,
 				schemaMapping,
 				cityGMLBuilder,
 				xlinkPool,
 				uidCacheManager,
 				affineTransformer,
+				internalConfig,
 				config);
 
 		commitAfter = config.getDatabaseConfig().getImportBatching().getFeatureBatchSize();

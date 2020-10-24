@@ -62,8 +62,8 @@ public class DBXlinkExporterTextureImage implements DBXlinkExporter {
     public DBXlinkExporterTextureImage(Connection connection, Config config, DBXlinkExporterManager exporterManager) {
         this.exporterManager = exporterManager;
 
-        outputFile = exporterManager.getOutputFile();
-        textureURI = config.getInternal().getExportTextureURI();
+        outputFile = exporterManager.getInternalConfig().getOutputFile();
+        textureURI = exporterManager.getInternalConfig().getExportTextureURI();
         isAbsoluteTextureURI = new File(textureURI).isAbsolute();
         separator = isAbsoluteTextureURI ? File.separator : "/";
         overwriteTextureImage = config.getExportConfig().getAppearances().isSetOverwriteTextureFiles();

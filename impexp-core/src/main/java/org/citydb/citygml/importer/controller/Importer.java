@@ -48,16 +48,12 @@ import org.citydb.citygml.importer.reader.FeatureReaderFactory;
 import org.citydb.citygml.importer.reader.FeatureReaderFactoryBuilder;
 import org.citydb.citygml.importer.util.AffineTransformer;
 import org.citydb.citygml.importer.util.ImportLogger;
+import org.citydb.citygml.importer.util.InternalConfig;
 import org.citydb.concurrent.PoolSizeAdaptationStrategy;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
-import org.citydb.config.internal.Internal;
-import org.citydb.config.project.database.DatabaseConfig;
 import org.citydb.config.project.database.Workspace;
-import org.citydb.config.project.importer.ImportGmlId;
-import org.citydb.config.project.importer.ImportResources;
-import org.citydb.config.project.importer.Index;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.adapter.AbstractUtilAdapter;
 import org.citydb.database.adapter.IndexStatusInfo;
@@ -150,38 +146,35 @@ public class Importer implements EventHandler {
 	}
 
 	private boolean process(List<Path> inputFiles) throws CityGMLImportException {
-		// get config shortcuts
-		DatabaseConfig databaseConfig = config.getDatabaseConfig();
-		Internal internalConfig = config.getInternal();		
-		ImportResources resourcesConfig = config.getImportConfig().getResources();
-		Index indexConfig = config.getImportConfig().getIndexes();
-		ImportGmlId gmlIdConfig = config.getImportConfig().getGmlId();
-
-		// worker pool settings 
-		int minThreads = resourcesConfig.getThreadPool().getDefaultPool().getMinThreads();
-		int maxThreads = resourcesConfig.getThreadPool().getDefaultPool().getMaxThreads();
+		// worker pool settings
+		int minThreads = config.getImportConfig().getResources().getThreadPool().getDefaultPool().getMinThreads();
+		int maxThreads = config.getImportConfig().getResources().getThreadPool().getDefaultPool().getMaxThreads();
 		int queueSize = maxThreads * 2;
 
 		// gml:id lookup cache update
-		int lookupCacheBatchSize = databaseConfig.getImportBatching().getGmlIdCacheBatchSize();
+		int lookupCacheBatchSize = config.getDatabaseConfig().getImportBatching().getGmlIdCacheBatchSize();
 
 		// check database workspace
-		Workspace workspace = databaseConfig.getWorkspaces().getImportWorkspace();
+		Workspace workspace = config.getDatabaseConfig().getWorkspaces().getImportWorkspace();
 		if (shouldRun && databaseAdapter.hasVersioningSupport() && 
 				!databaseAdapter.getWorkspaceManager().equalsDefaultWorkspaceName(workspace.getName()) &&
 				!databaseAdapter.getWorkspaceManager().existsWorkspace(workspace, true))
 			return false;
 
 		// deactivate database indexes
-		if (shouldRun && (indexConfig.isSpatialIndexModeDeactivate() || indexConfig.isSpatialIndexModeDeactivateActivate() 
-				|| indexConfig.isNormalIndexModeDeactivate() || indexConfig.isNormalIndexModeDeactivateActivate())) {
+		if (shouldRun && (config.getImportConfig().getIndexes().isSpatialIndexModeDeactivate()
+				|| config.getImportConfig().getIndexes().isSpatialIndexModeDeactivateActivate()
+				|| config.getImportConfig().getIndexes().isNormalIndexModeDeactivate()
+				|| config.getImportConfig().getIndexes().isNormalIndexModeDeactivateActivate())) {
 			try {
-				if (shouldRun && (indexConfig.isSpatialIndexModeDeactivate() || indexConfig.isSpatialIndexModeDeactivateActivate()))
+				if (shouldRun && (config.getImportConfig().getIndexes().isSpatialIndexModeDeactivate()
+						|| config.getImportConfig().getIndexes().isSpatialIndexModeDeactivateActivate()))
 					manageIndexes(false, true);
 				else
 					databaseAdapter.getUtil().getIndexStatus(IndexType.SPATIAL).printStatusToConsole();
 
-				if (shouldRun && (indexConfig.isNormalIndexModeDeactivate() || indexConfig.isNormalIndexModeDeactivateActivate()))
+				if (shouldRun && (config.getImportConfig().getIndexes().isNormalIndexModeDeactivate()
+						|| config.getImportConfig().getIndexes().isNormalIndexModeDeactivateActivate()))
 					manageIndexes(false, false);
 				else
 					databaseAdapter.getUtil().getIndexStatus(IndexType.NORMAL).printStatusToConsole();
@@ -258,7 +251,10 @@ public class Importer implements EventHandler {
 			if (filter.isSetCounterFilter() && !filter.getCounterFilter().isCountSatisfied())
 				break;
 
+			InternalConfig internalConfig = new InternalConfig();
+
 			try (InputFile file = files.get(fileCounter++)) {
+				internalConfig.setInputFile(file);
 				Path contentFile = file.getType() != FileType.ARCHIVE ?
 						file.getFile() : Paths.get(file.getFile().toString(), ((AbstractArchiveInputFile) file).getContentFile());
 
@@ -269,14 +265,14 @@ public class Importer implements EventHandler {
 
 				// set gml:id codespace starting from version 3.1
 				if (databaseAdapter.getConnectionMetaData().getCityDBVersion().compareTo(3, 1, 0) >= 0) {
-					if (gmlIdConfig.isSetNoneCodeSpaceMode())
+					if (config.getImportConfig().getGmlId().isSetNoneCodeSpaceMode())
 						internalConfig.setCurrentGmlIdCodespace(null);
-					else if (gmlIdConfig.isSetRelativeCodeSpaceMode())
+					else if (config.getImportConfig().getGmlId().isSetRelativeCodeSpaceMode())
 						internalConfig.setCurrentGmlIdCodespace(file.getFile().getFileName().toString());
-					else if (gmlIdConfig.isSetAbsoluteCodeSpaceMode())
+					else if (config.getImportConfig().getGmlId().isSetAbsoluteCodeSpaceMode())
 						internalConfig.setCurrentGmlIdCodespace(file.getFile().toString());
-					else if (gmlIdConfig.isSetUserCodeSpaceMode()) {
-						String codespace = gmlIdConfig.getCodeSpace();
+					else if (config.getImportConfig().getGmlId().isSetUserCodeSpaceMode()) {
+						String codespace = config.getImportConfig().getGmlId().getCodeSpace();
 						if (codespace != null && codespace.length() > 0)
 							internalConfig.setCurrentGmlIdCodespace(codespace);
 					}
@@ -289,7 +285,7 @@ public class Importer implements EventHandler {
 						String logPath = config.getImportConfig().getImportLog().isSetLogPath() ?
 								config.getImportConfig().getImportLog().getLogPath()
 								: CoreConstants.IMPEXP_DATA_DIR.resolve(CoreConstants.IMPORT_LOG_DIR).toString();
-						importLogger = new ImportLogger(logPath, contentFile, databaseConfig.getActiveConnection());
+						importLogger = new ImportLogger(logPath, contentFile, config.getDatabaseConfig().getActiveConnection());
 						log.info("Log file of imported top-level features: " + importLogger.getLogFilePath().toString());
 					} catch (IOException e) {
 						throw new CityGMLImportException("Failed to create log file for imported top-level features. Aborting.", e);
@@ -312,31 +308,31 @@ public class Importer implements EventHandler {
 				try {
 					uidCacheManager.initCache(
 							UIDCacheType.GEOMETRY,
-							new GeometryGmlIdCache(cacheTableManager, 
-									resourcesConfig.getGmlIdCache().getGeometry().getPartitions(), 
+							new GeometryGmlIdCache(cacheTableManager,
+									config.getImportConfig().getResources().getGmlIdCache().getGeometry().getPartitions(),
 									lookupCacheBatchSize),
-							resourcesConfig.getGmlIdCache().getGeometry().getCacheSize(),
-							resourcesConfig.getGmlIdCache().getGeometry().getPageFactor(),
+							config.getImportConfig().getResources().getGmlIdCache().getGeometry().getCacheSize(),
+							config.getImportConfig().getResources().getGmlIdCache().getGeometry().getPageFactor(),
 							maxThreads);
 
 					uidCacheManager.initCache(
 							UIDCacheType.OBJECT,
-							new FeatureGmlIdCache(cacheTableManager, 
-									resourcesConfig.getGmlIdCache().getFeature().getPartitions(),
+							new FeatureGmlIdCache(cacheTableManager,
+									config.getImportConfig().getResources().getGmlIdCache().getFeature().getPartitions(),
 									lookupCacheBatchSize),
-							resourcesConfig.getGmlIdCache().getFeature().getCacheSize(),
-							resourcesConfig.getGmlIdCache().getFeature().getPageFactor(),
+							config.getImportConfig().getResources().getGmlIdCache().getFeature().getCacheSize(),
+							config.getImportConfig().getResources().getGmlIdCache().getFeature().getPageFactor(),
 							maxThreads);
 
 					if (config.getImportConfig().getAppearances().isSetImportAppearance() &&
 							config.getImportConfig().getAppearances().isSetImportTextureFiles()) {
 						uidCacheManager.initCache(
 								UIDCacheType.TEXTURE_IMAGE,
-								new TextureImageCache(cacheTableManager, 
-										resourcesConfig.getTexImageCache().getPartitions(),
+								new TextureImageCache(cacheTableManager,
+										config.getImportConfig().getResources().getTexImageCache().getPartitions(),
 										lookupCacheBatchSize),
-								resourcesConfig.getTexImageCache().getCacheSize(),
-								resourcesConfig.getTexImageCache().getPageFactor(),
+								config.getImportConfig().getResources().getTexImageCache().getCacheSize(),
+								config.getImportConfig().getResources().getTexImageCache().getPageFactor(),
 								maxThreads);
 					}
 				} catch (SQLException e) {
@@ -360,14 +356,14 @@ public class Importer implements EventHandler {
 						minThreads,
 						maxThreads,
 						PoolSizeAdaptationStrategy.AGGRESSIVE,
-						new DBImportWorkerFactory(file,
-								schemaMapping,
+						new DBImportWorkerFactory(schemaMapping,
 								cityGMLBuilder,
 								tmpXlinkPool,
 								uidCacheManager,
 								filter,
 								affineTransformer,
 								importLogger,
+								internalConfig,
 								config,
 								eventDispatcher),
 						queueSize,
@@ -509,12 +505,13 @@ public class Importer implements EventHandler {
 
 		// reactivate database indexes
 		if (shouldRun) {
-			if (indexConfig.isSpatialIndexModeDeactivateActivate() || indexConfig.isNormalIndexModeDeactivateActivate()) {
+			if (config.getImportConfig().getIndexes().isSpatialIndexModeDeactivateActivate()
+					|| config.getImportConfig().getIndexes().isNormalIndexModeDeactivateActivate()) {
 				try {
-					if (indexConfig.isSpatialIndexModeDeactivateActivate())
+					if (config.getImportConfig().getIndexes().isSpatialIndexModeDeactivateActivate())
 						manageIndexes(true, true);
 
-					if (indexConfig.isNormalIndexModeDeactivateActivate())
+					if (config.getImportConfig().getIndexes().isNormalIndexModeDeactivateActivate())
 						manageIndexes(true, false);
 
 				} catch (SQLException e) {

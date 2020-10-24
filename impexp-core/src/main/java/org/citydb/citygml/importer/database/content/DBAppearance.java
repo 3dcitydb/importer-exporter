@@ -67,7 +67,7 @@ public class DBAppearance implements DBImporter {
 		replaceGmlId = config.getImportConfig().getGmlId().isUUIDModeReplace();
 		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
 
-		String gmlIdCodespace = config.getInternal().getCurrentGmlIdCodespace();
+		String gmlIdCodespace = importer.getInternalConfig().getCurrentGmlIdCodespace();
 		if (gmlIdCodespace != null)
 			gmlIdCodespace = "'" + gmlIdCodespace + "', ";
 

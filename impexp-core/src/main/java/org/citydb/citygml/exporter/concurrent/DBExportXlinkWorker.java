@@ -35,6 +35,7 @@ import org.citydb.citygml.exporter.database.xlink.DBXlinkExporterEnum;
 import org.citydb.citygml.exporter.database.xlink.DBXlinkExporterLibraryObject;
 import org.citydb.citygml.exporter.database.xlink.DBXlinkExporterManager;
 import org.citydb.citygml.exporter.database.xlink.DBXlinkExporterTextureImage;
+import org.citydb.citygml.exporter.util.InternalConfig;
 import org.citydb.concurrent.Worker;
 import org.citydb.config.Config;
 import org.citydb.config.project.global.LogLevel;
@@ -44,7 +45,6 @@ import org.citydb.event.EventDispatcher;
 import org.citydb.event.EventHandler;
 import org.citydb.event.global.EventType;
 import org.citydb.event.global.InterruptEvent;
-import org.citydb.file.OutputFile;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -59,11 +59,11 @@ public class DBExportXlinkWorker extends Worker<DBXlink> implements EventHandler
 	private final DBXlinkExporterManager xlinkExporterManager;
 	private final EventDispatcher eventDispatcher;
 
-	public DBExportXlinkWorker(OutputFile outputFile, Connection connection, AbstractDatabaseAdapter databaseAdapter, Config config, EventDispatcher eventDispatcher) {
+	public DBExportXlinkWorker(Connection connection, AbstractDatabaseAdapter databaseAdapter, InternalConfig internalConfig, Config config, EventDispatcher eventDispatcher) {
 		this.connection = connection;
 		this.eventDispatcher = eventDispatcher;
 
-		xlinkExporterManager = new DBXlinkExporterManager(outputFile, connection, databaseAdapter, config, eventDispatcher);
+		xlinkExporterManager = new DBXlinkExporterManager(connection, databaseAdapter, internalConfig, config, eventDispatcher);
 		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
 	}
 

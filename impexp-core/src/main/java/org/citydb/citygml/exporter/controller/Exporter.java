@@ -38,6 +38,7 @@ import org.citydb.citygml.exporter.database.content.DBSplitter;
 import org.citydb.citygml.exporter.database.content.DBSplittingResult;
 import org.citydb.citygml.exporter.database.uid.FeatureGmlIdCache;
 import org.citydb.citygml.exporter.database.uid.GeometryGmlIdCache;
+import org.citydb.citygml.exporter.util.InternalConfig;
 import org.citydb.citygml.exporter.writer.FeatureWriteException;
 import org.citydb.citygml.exporter.writer.FeatureWriter;
 import org.citydb.citygml.exporter.writer.FeatureWriterFactory;
@@ -46,7 +47,6 @@ import org.citydb.concurrent.PoolSizeAdaptationStrategy;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
-import org.citydb.config.internal.Internal;
 import org.citydb.config.project.database.DatabaseSrs;
 import org.citydb.config.project.database.Workspace;
 import org.citydb.config.project.exporter.SimpleTilingOptions;
@@ -85,6 +85,7 @@ import org.citydb.query.filter.selection.operator.logical.LogicalOperationFactor
 import org.citydb.query.filter.tiling.Tile;
 import org.citydb.query.filter.tiling.Tiling;
 import org.citydb.registry.ObjectRegistry;
+import org.citydb.util.CoreConstants;
 import org.citydb.util.Util;
 import org.citygml4j.builder.jaxb.CityGMLBuilder;
 import org.citygml4j.model.citygml.cityobjectgroup.CityObjectGroup;
@@ -163,6 +164,8 @@ public class Exporter implements EventHandler {
 	}
 
 	private boolean process(Path outputFile) throws CityGMLExportException {
+		InternalConfig internalConfig = new InternalConfig();
+
 		// checking workspace
 		Workspace workspace = config.getDatabaseConfig().getWorkspaces().getExportWorkspace();
 		if (shouldRun && databaseAdapter.hasVersioningSupport() && 
@@ -208,10 +211,10 @@ public class Exporter implements EventHandler {
 
 		// set target reference system for export
 		DatabaseSrs targetSrs = query.getTargetSrs();
-		config.getInternal().setTransformCoordinates(targetSrs.isSupported() &&
-				targetSrs.getSrid() != databaseAdapter.getConnectionMetaData().getReferenceSystem().getSrid());
+		internalConfig.setTransformCoordinates(targetSrs.isSupported()
+				&& targetSrs.getSrid() != databaseAdapter.getConnectionMetaData().getReferenceSystem().getSrid());
 
-		if (config.getInternal().isTransformCoordinates()) {
+		if (internalConfig.isTransformCoordinates()) {
 			log.info("Transforming geometry representation to reference system '" + targetSrs.getDescription() + "' (SRID: " + targetSrs.getSrid() + ").");
 			if (!targetSrs.is3D() && !databaseAdapter.getConnectionMetaData().getReferenceSystem().is3D()) {
 				log.warn("Transformation is NOT applied to height reference system.");
@@ -237,14 +240,14 @@ public class Exporter implements EventHandler {
 
 		// check whether database contains global appearances and set internal flag
 		try {
-			config.getInternal().setExportGlobalAppearances(config.getExportConfig().getAppearances().isSetExportAppearance() &&
+			internalConfig.setExportGlobalAppearances(config.getExportConfig().getAppearances().isSetExportAppearance() &&
 					databaseAdapter.getUtil().containsGlobalAppearances(workspace));
 		} catch (SQLException e) {
 			throw new CityGMLExportException("Database error while querying the number of global appearances.", e);
 		}
 
 		// cache gml:ids of city objects in case we have to export groups
-		config.getInternal().setRegisterGmlIdInCache(!config.getExportConfig().getCityObjectGroup().isExportMemberAsXLinks()
+		internalConfig.setRegisterGmlIdInCache(!config.getExportConfig().getCityObjectGroup().isExportMemberAsXLinks()
 				&& query.getFeatureTypeFilter().containsFeatureType(schemaMapping.getFeatureType(query.getTargetVersion().getCityGMLModule(CityGMLModuleType.CITY_OBJECT_GROUP).getFeatureName(CityObjectGroup.class))));
 
 		// tiling
@@ -296,7 +299,7 @@ public class Exporter implements EventHandler {
 				}
 			}
 
-			config.getInternal().setExportTextureURI(textureFolder);
+			internalConfig.setExportTextureURI(textureFolder);
 
 			// check for unique texture filenames when exporting an archiv
 			if (!config.getExportConfig().getAppearances().isSetUniqueTextureFileNames()
@@ -379,6 +382,7 @@ public class Exporter implements EventHandler {
 
 					try {
 						file = fileFactory.createOutputFile(folder.resolve(fileName));
+						internalConfig.setOutputFile(file);
 					} catch (IOException e) {
 						throw new CityGMLExportException("Failed to create output file '" + folder.resolve(fileName) + "'.", e);
 					}
@@ -445,7 +449,7 @@ public class Exporter implements EventHandler {
 							1,
 							Math.max(1, config.getExportConfig().getResources().getThreadPool().getDefaultPool().getMaxThreads() / 2),
 							PoolSizeAdaptationStrategy.AGGRESSIVE,
-							new DBExportXlinkWorkerFactory(file, config, eventDispatcher),
+							new DBExportXlinkWorkerFactory(internalConfig, config, eventDispatcher),
 							300,
 							false);
 
@@ -455,7 +459,6 @@ public class Exporter implements EventHandler {
 							config.getExportConfig().getResources().getThreadPool().getDefaultPool().getMaxThreads(),
 							PoolSizeAdaptationStrategy.AGGRESSIVE,
 							new DBExportWorkerFactory(
-									file,
 									schemaMapping,
 									cityGMLBuilder,
 									writer,
@@ -463,6 +466,7 @@ public class Exporter implements EventHandler {
 									uidCacheManager,
 									cacheTableManager,
 									query,
+									internalConfig,
 									config,
 									eventDispatcher),
 							300,
@@ -489,11 +493,12 @@ public class Exporter implements EventHandler {
 								uidCacheManager.getCache(UIDCacheType.OBJECT),
 								cacheTableManager,
 								eventDispatcher,
+								internalConfig,
 								config);
 
 						if (shouldRun) {
 							dbSplitter.setMetadataProvider(metadataProvider);
-							dbSplitter.setCalculateNumberMatched(Internal.IS_GUI_MODE);
+							dbSplitter.setCalculateNumberMatched(CoreConstants.IS_GUI_MODE);
 							dbSplitter.startQuery();
 						}
 					} catch (SQLException | QueryBuildException | FilterException e) {

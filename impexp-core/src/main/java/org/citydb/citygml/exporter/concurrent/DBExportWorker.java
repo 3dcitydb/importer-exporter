@@ -33,6 +33,7 @@ import org.citydb.citygml.common.database.xlink.DBXlink;
 import org.citydb.citygml.exporter.CityGMLExportException;
 import org.citydb.citygml.exporter.database.content.CityGMLExportManager;
 import org.citydb.citygml.exporter.database.content.DBSplittingResult;
+import org.citydb.citygml.exporter.util.InternalConfig;
 import org.citydb.citygml.exporter.writer.FeatureWriteException;
 import org.citydb.citygml.exporter.writer.FeatureWriter;
 import org.citydb.concurrent.Worker;
@@ -56,7 +57,6 @@ import org.citydb.event.global.InterruptEvent;
 import org.citydb.event.global.ObjectCounterEvent;
 import org.citydb.event.global.ProgressBarEventType;
 import org.citydb.event.global.StatusDialogProgressBar;
-import org.citydb.file.OutputFile;
 import org.citydb.query.Query;
 import org.citydb.query.filter.FilterException;
 import org.citydb.query.filter.tiling.Tile;
@@ -77,7 +77,7 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 	private final CityGMLExportManager exporter;
 	private final FeatureWriter featureWriter;
 	private final EventDispatcher eventDispatcher;
-	private final Config config;
+	private final InternalConfig internalConfig;
 	private final boolean useTiling;
 
 	private Tile activeTile;
@@ -85,8 +85,7 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 	private int globalAppearanceCounter = 0;
 	private int topLevelFeatureCounter = 0;
 
-	public DBExportWorker(OutputFile outputFile,
-			Connection connection,
+	public DBExportWorker(Connection connection,
 			AbstractDatabaseAdapter databaseAdapter,
 			SchemaMapping schemaMapping,
 			CityGMLBuilder cityGMLBuilder,
@@ -95,12 +94,13 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 			UIDCacheManager uidCacheManager,
 			CacheTableManager cacheTableManager,
 			Query query,
+			InternalConfig internalConfig,
 			Config config,
 			EventDispatcher eventDispatcher) throws CityGMLExportException {
 		this.connection = connection;
 		this.featureWriter = featureWriter;
 		this.eventDispatcher = eventDispatcher;
-		this.config = config;
+		this.internalConfig = internalConfig;
 
 		useTiling = query.isSetTiling();
 		if (useTiling) {
@@ -109,7 +109,6 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 		}
 
 		exporter = new CityGMLExportManager(
-				outputFile,
 				connection,
 				query,
 				databaseAdapter,
@@ -119,6 +118,7 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 				xlinkPool,
 				uidCacheManager,
 				cacheTableManager,
+				internalConfig,
 				config);
 
 		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
@@ -203,7 +203,7 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 				featureWriter.write(feature, work.getSequenceId());
 
 				// register gml:id in cache
-				if (config.getInternal().isRegisterGmlIdInCache() && feature.isSetId())
+				if (internalConfig.isRegisterGmlIdInCache() && feature.isSetId())
 					exporter.putObjectUID(feature.getId(), work.getId(), work.getObjectType().getObjectClassId());
 				
 				// update export counter

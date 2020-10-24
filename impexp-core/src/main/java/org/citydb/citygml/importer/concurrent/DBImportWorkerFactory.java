@@ -32,6 +32,7 @@ import org.citydb.citygml.common.database.xlink.DBXlink;
 import org.citydb.citygml.importer.filter.CityGMLFilter;
 import org.citydb.citygml.importer.util.AffineTransformer;
 import org.citydb.citygml.importer.util.ImportLogger;
+import org.citydb.citygml.importer.util.InternalConfig;
 import org.citydb.concurrent.Worker;
 import org.citydb.concurrent.WorkerFactory;
 import org.citydb.concurrent.WorkerPool;
@@ -42,7 +43,6 @@ import org.citydb.database.connection.ConnectionManager;
 import org.citydb.database.connection.DatabaseConnectionPool;
 import org.citydb.database.schema.mapping.SchemaMapping;
 import org.citydb.event.EventDispatcher;
-import org.citydb.file.InputFile;
 import org.citydb.log.Logger;
 import org.citygml4j.builder.jaxb.CityGMLBuilder;
 import org.citygml4j.model.citygml.CityGML;
@@ -53,7 +53,6 @@ import java.sql.SQLException;
 public class DBImportWorkerFactory implements WorkerFactory<CityGML> {
 	private final Logger log = Logger.getInstance();
 
-	private final InputFile inputFile;
 	private final ConnectionManager connectionManager;
 	private final boolean isManagedTransaction;
 	private final AbstractDatabaseAdapter databaseAdapter;
@@ -64,11 +63,11 @@ public class DBImportWorkerFactory implements WorkerFactory<CityGML> {
 	private final CityGMLFilter filter;
 	private final AffineTransformer affineTransformer;
 	private final ImportLogger importLogger;
+	private final InternalConfig internalConfig;
 	private final Config config;
 	private final EventDispatcher eventDispatcher;
 
-	public DBImportWorkerFactory(InputFile inputFile,
-			ConnectionManager connectionManager,
+	public DBImportWorkerFactory(ConnectionManager connectionManager,
 			boolean isManagedTransaction,
 			AbstractDatabaseAdapter databaseAdapter,
 			SchemaMapping schemaMapping,
@@ -78,9 +77,9 @@ public class DBImportWorkerFactory implements WorkerFactory<CityGML> {
 			CityGMLFilter filter,
 			AffineTransformer affineTransformer,
 			ImportLogger importLogger,
+			InternalConfig internalConfig,
 			Config config,
 			EventDispatcher eventDispatcher) {
-		this.inputFile = inputFile;
 		this.connectionManager = connectionManager;
 		this.isManagedTransaction = isManagedTransaction;
 		this.databaseAdapter = databaseAdapter;
@@ -91,26 +90,27 @@ public class DBImportWorkerFactory implements WorkerFactory<CityGML> {
 		this.filter = filter;
 		this.affineTransformer = affineTransformer;
 		this.importLogger = importLogger;
+		this.internalConfig = internalConfig;
 		this.config = config;
 		this.eventDispatcher = eventDispatcher;
 	}
 
-	public DBImportWorkerFactory(InputFile inputFile,
-			SchemaMapping schemaMapping,
+	public DBImportWorkerFactory(SchemaMapping schemaMapping,
 			CityGMLBuilder cityGMLBuilder,
 			WorkerPool<DBXlink> xlinkWorkerPool,
 			UIDCacheManager uidCacheManager,
 			CityGMLFilter filter,
 			AffineTransformer affineTransformer,
 			ImportLogger importLogger,
+			InternalConfig internalConfig,
 			Config config,
 			EventDispatcher eventDispatcher) {
-		this(inputFile, DatabaseConnectionPool.getInstance(), false, DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter(), schemaMapping,
-				cityGMLBuilder, xlinkWorkerPool, uidCacheManager, filter, affineTransformer, importLogger, config, eventDispatcher);
+		this(DatabaseConnectionPool.getInstance(), false, DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter(),
+				schemaMapping, cityGMLBuilder, xlinkWorkerPool, uidCacheManager, filter, affineTransformer, importLogger,
+				internalConfig, config, eventDispatcher);
 	}
 
-	public DBImportWorkerFactory(InputFile inputFile,
-			ConnectionManager connectionManager,
+	public DBImportWorkerFactory(ConnectionManager connectionManager,
 			AbstractDatabaseAdapter databaseAdapter,
 			SchemaMapping schemaMapping,
 			CityGMLBuilder cityGMLBuilder,
@@ -119,10 +119,11 @@ public class DBImportWorkerFactory implements WorkerFactory<CityGML> {
 			CityGMLFilter filter,
 			AffineTransformer affineTransformer,
 			ImportLogger importLogger,
+			InternalConfig internalConfig,
 			Config config,
 			EventDispatcher eventDispatcher) {
-		this(inputFile, connectionManager, true, databaseAdapter, schemaMapping, cityGMLBuilder, xlinkWorkerPool, uidCacheManager,
-				filter, affineTransformer, importLogger, config, eventDispatcher);
+		this(connectionManager, true, databaseAdapter, schemaMapping, cityGMLBuilder, xlinkWorkerPool, uidCacheManager,
+				filter, affineTransformer, importLogger, internalConfig, config, eventDispatcher);
 	}
 
 	@Override
@@ -140,8 +141,8 @@ public class DBImportWorkerFactory implements WorkerFactory<CityGML> {
 				databaseAdapter.getWorkspaceManager().gotoWorkspace(connection, workspace);
 			}
 
-			dbWorker = new DBImportWorker(inputFile, connection, isManagedTransaction, databaseAdapter, schemaMapping, cityGMLBuilder,
-					xlinkWorkerPool, uidCacheManager, filter, affineTransformer, importLogger, config, eventDispatcher);
+			dbWorker = new DBImportWorker(connection, isManagedTransaction, databaseAdapter, schemaMapping, cityGMLBuilder,
+					xlinkWorkerPool, uidCacheManager, filter, affineTransformer, importLogger, internalConfig, config, eventDispatcher);
 		} catch (SQLException e) {
 			log.error("Failed to create import worker.", e);
 		}

@@ -31,6 +31,7 @@ import org.citydb.citygml.common.database.cache.CacheTable;
 import org.citydb.citygml.common.database.cache.CacheTableManager;
 import org.citydb.citygml.common.database.cache.model.CacheTableModel;
 import org.citydb.citygml.common.database.uid.UIDCache;
+import org.citydb.citygml.exporter.util.InternalConfig;
 import org.citydb.citygml.exporter.writer.FeatureWriteException;
 import org.citydb.citygml.exporter.writer.FeatureWriter;
 import org.citydb.concurrent.WorkerPool;
@@ -94,6 +95,7 @@ public class DBSplitter {
 	private final FeatureWriter writer;
 	private final UIDCache featureGmlIdCache;
 	private final CacheTableManager cacheTableManager;
+	private final InternalConfig internalConfig;
 	private final Config config;
 	private final EventDispatcher eventDispatcher;
 
@@ -115,7 +117,8 @@ public class DBSplitter {
 			Query query,
 			UIDCache featureGmlIdCache,
 			CacheTableManager cacheTableManager,
-			EventDispatcher eventDispatcher, 
+			EventDispatcher eventDispatcher,
+			InternalConfig internalConfig,
 			Config config) throws SQLException {
 		this.writer = writer;
 		this.schemaMapping = schemaMapping;
@@ -124,6 +127,7 @@ public class DBSplitter {
 		this.featureGmlIdCache = featureGmlIdCache;
 		this.cacheTableManager = cacheTableManager;
 		this.eventDispatcher = eventDispatcher;
+		this.internalConfig = internalConfig;
 		this.config = config;
 
 		databaseAdapter = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter();
@@ -140,7 +144,7 @@ public class DBSplitter {
 		}
 
 		// create temporary table for global appearances if needed
-		if (config.getInternal().isExportGlobalAppearances()) {
+		if (internalConfig.isExportGlobalAppearances()) {
 			CacheTable temp = cacheTableManager.createCacheTableInDatabase(CacheTableModel.GLOBAL_APPEARANCE);
 
 			// try and change workspace for temporary table
@@ -213,7 +217,7 @@ public class DBSplitter {
 				}
 			}
 
-			if (config.getInternal().isExportGlobalAppearances() && sequenceId > 0)
+			if (internalConfig.isExportGlobalAppearances() && sequenceId > 0)
 				queryGlobalAppearance();
 
 		} finally {
@@ -540,7 +544,7 @@ public class DBSplitter {
 	}
 
 	private BoundingBox getSpatialExtent(GeometryObject extentObj) throws SQLException {
-		if (config.getInternal().isTransformCoordinates())
+		if (internalConfig.isTransformCoordinates())
 			extentObj = databaseAdapter.getUtil().transform(extentObj, query.getTargetSrs());
 
 		double[] coordinates = extentObj.getCoordinates(0);

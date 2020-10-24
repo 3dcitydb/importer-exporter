@@ -38,7 +38,6 @@ import org.citydb.config.geometry.GeometryObject;
 import org.citydb.database.schema.TableEnum;
 import org.citydb.database.schema.mapping.FeatureType;
 import org.citydb.log.Logger;
-import org.citydb.query.Query;
 import org.citydb.sqlbuilder.expression.IntegerLiteral;
 import org.citydb.sqlbuilder.expression.PlaceHolder;
 import org.citydb.sqlbuilder.schema.Table;
@@ -77,7 +76,6 @@ import org.citygml4j.util.gmlid.DefaultGMLIdManager;
 import org.citygml4j.util.walker.FeatureWalker;
 
 import java.io.File;
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -104,7 +102,7 @@ public abstract class AbstractAppearanceExporter extends AbstractTypeExporter {
 	private boolean appendOldGmlId;
 	private String gmlIdPrefix;
 
-	protected AbstractAppearanceExporter(boolean isGlobal, Connection connection, Query query, CacheTable cacheTable, CityGMLExportManager exporter, Config config) throws CityGMLExportException, SQLException {
+	protected AbstractAppearanceExporter(boolean isGlobal, CacheTable cacheTable, CityGMLExportManager exporter, Config config) throws CityGMLExportException, SQLException {
 		super(exporter);
 
 		texImageIds = new HashSet<>();
@@ -114,7 +112,7 @@ public abstract class AbstractAppearanceExporter extends AbstractTypeExporter {
 		noOfBuckets = exporter.getExportConfig().getAppearances().getTexturePath().getNoOfBuckets();
 		useBuckets = exporter.getExportConfig().getAppearances().getTexturePath().isUseBuckets() && noOfBuckets > 0;
 
-		textureURI = config.getInternal().getExportTextureURI();
+		textureURI = exporter.getInternalConfig().getExportTextureURI();
 		separator = new File(textureURI).isAbsolute() ? File.separator : "/";
 		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 		String getLength = exporter.getDatabaseAdapter().getSQLAdapter().resolveDatabaseOperationName("blob.get_length");

@@ -48,6 +48,7 @@ import org.citydb.citygml.importer.util.AffineTransformer;
 import org.citydb.citygml.importer.util.AttributeValueJoiner;
 import org.citydb.citygml.importer.util.ExternalFileChecker;
 import org.citydb.citygml.importer.util.ImportLogger.ImportLogEntry;
+import org.citydb.citygml.importer.util.InternalConfig;
 import org.citydb.citygml.importer.util.LocalAppearanceHandler;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
@@ -58,7 +59,6 @@ import org.citydb.database.schema.mapping.AbstractObjectType;
 import org.citydb.database.schema.mapping.FeatureType;
 import org.citydb.database.schema.mapping.ObjectType;
 import org.citydb.database.schema.mapping.SchemaMapping;
-import org.citydb.file.InputFile;
 import org.citydb.log.Logger;
 import org.citydb.util.CoreConstants;
 import org.citydb.util.Util;
@@ -136,7 +136,6 @@ public class CityGMLImportManager implements CityGMLImportHelper {
 	private final IdentityHashMap<Class<? extends DBImporter>, DBImporter> importers = new IdentityHashMap<>();
 	private final IdentityHashMap<ADEExtension, ADEImportManager> adeImporters = new IdentityHashMap<>();
 
-	private final InputFile inputFile;
 	private final Connection connection;
 	private final AbstractDatabaseAdapter databaseAdapter;
 	private final SchemaMapping schemaMapping;
@@ -144,6 +143,7 @@ public class CityGMLImportManager implements CityGMLImportHelper {
 	private final CityGMLBuilder cityGMLBuilder;
 	private final WorkerPool<DBXlink> xlinkPool;
 	private final UIDCacheManager uidCacheManager;
+	private final InternalConfig internalConfig;
 	private final Config config;
 
 	private final TableHelper tableHelper;
@@ -152,35 +152,34 @@ public class CityGMLImportManager implements CityGMLImportHelper {
 	private final Map<Integer, Long> objectCounter;
 	private final Map<GMLClass, Long> geometryCounter;
 	private final AttributeValueJoiner attributeValueJoiner;
+	private final ExternalFileChecker externalFileChecker;
+	private final boolean hasADESupport;
 
 	private ADEPropertyCollector propertyCollector;
 	private LocalAppearanceHandler localAppearanceHandler;
 	private List<ImportLogEntry> importLogEntries;
 	private AffineTransformer affineTransformer;
-	private ExternalFileChecker externalFileChecker;
 	private CityGMLVersion cityGMLVersion;
 	private JAXBMarshaller jaxbMarshaller;
 	private SAXWriter saxWriter;
-
 	private boolean failOnError = false;
-	private boolean hasADESupport = false;
 
-	public CityGMLImportManager(InputFile inputFile,
-			Connection connection,
+	public CityGMLImportManager(Connection connection,
 			AbstractDatabaseAdapter databaseAdapter, 
 			SchemaMapping schemaMapping,
 			CityGMLBuilder cityGMLBuilder,
 			WorkerPool<DBXlink> xlinkPool,
 			UIDCacheManager uidCacheManager,
 			AffineTransformer affineTransformer,
+			InternalConfig internalConfig,
 			Config config) throws SQLException {
-		this.inputFile = inputFile;
 		this.connection = connection;
 		this.databaseAdapter = databaseAdapter;
 		this.schemaMapping = schemaMapping;
 		this.cityGMLBuilder = cityGMLBuilder;
 		this.xlinkPool = xlinkPool;
 		this.uidCacheManager = uidCacheManager;
+		this.internalConfig = internalConfig;
 		this.config = config;
 
 		adeManager = ADEExtensionManager.getInstance();		
@@ -192,7 +191,7 @@ public class CityGMLImportManager implements CityGMLImportHelper {
 		objectCounter = new HashMap<>();
 		geometryCounter = new HashMap<>();
 		attributeValueJoiner = new AttributeValueJoiner();
-		externalFileChecker = new ExternalFileChecker(inputFile);
+		externalFileChecker = new ExternalFileChecker(internalConfig.getInputFile());
 
 		if (config.getImportConfig().getAppearances().isSetImportAppearance())
 			localAppearanceHandler = new LocalAppearanceHandler(this);
@@ -528,6 +527,10 @@ public class CityGMLImportManager implements CityGMLImportHelper {
 		return config.getImportConfig();
 	}
 
+	public InternalConfig getInternalConfig() {
+		return internalConfig;
+	}
+
 	public void setFailOnError(boolean failOnError) {
 		this.failOnError = failOnError;
 	}
@@ -538,10 +541,6 @@ public class CityGMLImportManager implements CityGMLImportHelper {
 
 	public String generateNewGmlId() {
 		return DefaultGMLIdManager.getInstance().generateUUID(config.getImportConfig().getGmlId().getIdPrefix());
-	}
-
-	public InputFile getInputFile() {
-		return inputFile;
 	}
 
 	public LocalAppearanceHandler getLocalAppearanceHandler() {

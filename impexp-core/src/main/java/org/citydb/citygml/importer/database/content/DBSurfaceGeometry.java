@@ -117,7 +117,7 @@ public class DBSurfaceGeometry implements DBImporter {
         nullGeometryTypeName = importer.getDatabaseAdapter().getGeometryConverter().getNullGeometryTypeName();
         String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
 
-        String gmlIdCodespace = config.getInternal().getCurrentGmlIdCodespace();
+        String gmlIdCodespace = importer.getInternalConfig().getCurrentGmlIdCodespace();
         if (gmlIdCodespace != null)
             gmlIdCodespace = "'" + gmlIdCodespace + "', ";
 
