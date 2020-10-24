@@ -148,8 +148,6 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		initGui();
 		doTranslation();
 		showWindow();
-
-		// initConsole;
 		initConsole();
 
 		// log exceptions for disabled ADE extensions
@@ -383,7 +381,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		}
 	}
 
-	public void doTranslation () {
+	public void doTranslation() {
 		try {
 			LanguageType lang = config.getProject().getGlobal().getLanguage();
 			if (lang == currentLang)
@@ -465,6 +463,10 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 	}
 
 	public boolean saveProjectSettings() {
+		return saveProjectSettings(false);
+	}
+
+	private boolean saveProjectSettings(boolean isShuttingDown) {
 		if (!createConfigDir(configFile.getParent()))
 			return false;
 
@@ -472,8 +474,12 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 			ConfigUtil.getInstance().marshal(config.getProject(), configFile.toFile());
 			return true;
 		} catch (JAXBException e) {
-			errorMessage(Language.I18N.getString("common.dialog.error.io.title"),
-					Language.I18N.getString("common.dialog.error.io.general"));
+			if (!isShuttingDown) {
+				errorMessage(Language.I18N.getString("common.dialog.error.io.title"),
+						Language.I18N.getString("common.dialog.error.io.general"));
+			} else {
+				log.error("Failed to write configuration file.", e);
+			}
 			return false;
 		}
 	}
@@ -500,9 +506,8 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 
 		try {
 			ConfigUtil.getInstance().marshal(config.getGui(), guiConfigFile.toFile());
-		} catch (JAXBException jaxbE) {
-			errorMessage(Language.I18N.getString("common.dialog.error.io.title"), 
-					Language.I18N.getString("common.dialog.error.io.general"));
+		} catch (JAXBException e) {
+			log.error("Failed to write GUI configuration file.", e);
 		}
 	}
 
@@ -594,7 +599,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 				plugin.shutdown();
 
 			log.info("Saving project settings");
-			saveProjectSettings();
+			saveProjectSettings(true);
 			saveGUISettings();
 
 			if (dbPool.isConnected()) {
