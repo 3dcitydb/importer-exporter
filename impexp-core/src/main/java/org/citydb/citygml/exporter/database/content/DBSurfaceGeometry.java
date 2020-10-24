@@ -86,7 +86,7 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryExporter {
 	private boolean appendOldGmlId;
 	private String gmlIdPrefix;
 
-	public DBSurfaceGeometry(Connection connection, CacheTable cacheTable, CityGMLExportManager exporter, Config config) throws SQLException {
+	public DBSurfaceGeometry(Connection connection, CityGMLExportManager exporter, Config config) throws SQLException {
 		this.exporter = exporter;
 
 		batches = new ArrayList<>();

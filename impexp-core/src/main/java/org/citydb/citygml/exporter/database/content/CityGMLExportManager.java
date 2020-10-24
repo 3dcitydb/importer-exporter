@@ -48,7 +48,6 @@ import org.citydb.citygml.exporter.writer.FeatureWriter;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
 import org.citydb.config.geometry.GeometryObject;
-import org.citydb.config.project.database.ExportBatching;
 import org.citydb.config.project.exporter.Exporter;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.schema.TableEnum;
@@ -906,16 +905,9 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 
 		if (exporter == null) {
 			// core module
-			if (type == DBSurfaceGeometry.class) {
-				CacheTable cacheTable = null;
-				if (config.getInternal().isExportGlobalAppearances()) {
-					cacheTable = cacheTableManager.getCacheTable(CacheTableModel.GLOBAL_APPEARANCE);
-					if (cacheTable == null)
-						logOrThrowErrorMessage("Failed to access temporary table for global appearances.");
-				}
-
-				exporter = new DBSurfaceGeometry(connection, cacheTable, this, config);
-			} else if (type == DBCityObject.class)
+			if (type == DBSurfaceGeometry.class)
+				exporter = new DBSurfaceGeometry(connection, this, config);
+			else if (type == DBCityObject.class)
 				exporter = new DBCityObject(connection, query, this);
 			else if (type == DBGeneralization.class)
 				exporter = new DBGeneralization(connection, this);
