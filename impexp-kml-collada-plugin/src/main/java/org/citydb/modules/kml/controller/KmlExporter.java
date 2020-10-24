@@ -215,10 +215,15 @@ public class KmlExporter implements EventHandler {
 
 		// checking workspace
 		Workspace workspace = config.getDatabaseConfig().getWorkspaces().getKmlExportWorkspace();
-		if (shouldRun && databaseAdapter.hasVersioningSupport() && 
-				!databaseAdapter.getWorkspaceManager().equalsDefaultWorkspaceName(workspace.getName()) &&
-				!databaseAdapter.getWorkspaceManager().existsWorkspace(workspace, true))
-			return false;
+		if (shouldRun && databaseAdapter.hasVersioningSupport()
+				&& !databaseAdapter.getWorkspaceManager().equalsDefaultWorkspaceName(workspace.getName())) {
+			try {
+				log.info("Switching to database workspace " + workspace + ".");
+				databaseAdapter.getWorkspaceManager().checkWorkspace(workspace);
+			} catch (SQLException e) {
+				throw new KmlExportException("Failed to switch to database workspace.", e);
+			}
+		}
 
 		// check API key when using the elevation API
 		if (config.getKmlExportConfig().getAltitudeOffsetMode() == AltitudeOffsetMode.GENERIC_ATTRIBUTE

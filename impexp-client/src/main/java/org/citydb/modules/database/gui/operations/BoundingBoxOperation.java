@@ -242,7 +242,7 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 			viewController.setStatusText(Language.I18N.getString("main.status.database.bbox.label"));
 
 			log.info("Calculating bounding box...");			
-			if (dbConnectionPool.getActiveDatabaseAdapter().hasVersioningSupport() && !parent.existsWorkspace())
+			if (dbConnectionPool.getActiveDatabaseAdapter().hasVersioningSupport() && !parent.checkWorkspace())
 				return;
 
 			final StatusDialog bboxDialog = new StatusDialog(viewController.getTopFrame(), 
@@ -343,7 +343,7 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 			if (featureType == cityObject && !adeManager.getEnabledExtensions().isEmpty())
 				log.warn("NOTE: This operation does not work on ADE features.");
 			
-			if (dbConnectionPool.getActiveDatabaseAdapter().hasVersioningSupport() && !parent.existsWorkspace())
+			if (dbConnectionPool.getActiveDatabaseAdapter().hasVersioningSupport() && !parent.checkWorkspace())
 				return;
 
 			final StatusDialog bboxDialog = new StatusDialog(viewController.getTopFrame(), 

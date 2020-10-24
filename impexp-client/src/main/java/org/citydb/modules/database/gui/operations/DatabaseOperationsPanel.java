@@ -39,29 +39,27 @@ import org.citydb.event.global.EventType;
 import org.citydb.gui.components.common.DatePicker;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.util.GuiUtil;
+import org.citydb.log.Logger;
 import org.citydb.plugin.extension.view.ViewController;
 import org.citydb.registry.ObjectRegistry;
 import org.jdesktop.swingx.JXTextField;
 import org.jdesktop.swingx.prompt.PromptSupport.FocusBehavior;
 
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTabbedPane;
-import java.awt.Color;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
+import javax.swing.*;
+import java.awt.*;
+import java.sql.SQLException;
 
 @SuppressWarnings("serial")
 public class DatabaseOperationsPanel extends JPanel implements EventHandler {
+	private final Logger log = Logger.getInstance();
 	private final Config config;
+	private final DatabaseConnectionPool dbConnectionPool;
+	private final ViewController viewController;
 
 	private JLabel workspaceLabel;
 	private JLabel timestampLabel;
 	private JXTextField workspace;
 	private DatePicker datePicker;
-	
-	private DatabaseConnectionPool dbConnectionPool;
-	private ViewController viewController;
 
 	private JTabbedPane operationsTab;
 	private DatabaseOperationView[] operations;
@@ -169,10 +167,16 @@ public class DatabaseOperationsPanel extends JPanel implements EventHandler {
 		datePicker.setEnabled(enable);
 	}
 	
-	public boolean existsWorkspace() {		
+	public boolean checkWorkspace() {
 		if (!dbConnectionPool.getActiveDatabaseAdapter().getWorkspaceManager().equalsDefaultWorkspaceName(workspace.getText())) {
-			Workspace tmp = new Workspace(workspace.getText().trim(), datePicker.getDate());
-			return dbConnectionPool.getActiveDatabaseAdapter().getWorkspaceManager().existsWorkspace(tmp, true);
+			try {
+				Workspace tmp = new Workspace(workspace.getText().trim(), datePicker.getDate());
+				log.info("Switching to database workspace " + tmp + ".");
+				dbConnectionPool.getActiveDatabaseAdapter().getWorkspaceManager().checkWorkspace(tmp);
+			} catch (SQLException e) {
+				log.error(e.getMessage(), e.getCause());
+				return false;
+			}
 		}
 
 		return true;

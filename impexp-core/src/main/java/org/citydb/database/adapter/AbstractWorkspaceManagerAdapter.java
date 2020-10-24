@@ -28,14 +28,12 @@
 package org.citydb.database.adapter;
 
 import org.citydb.config.project.database.Workspace;
-import org.citydb.log.Logger;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Date;
 
 public abstract class AbstractWorkspaceManagerAdapter {
-	private final Logger log = Logger.getInstance();
 	protected final AbstractDatabaseAdapter databaseAdapter;
 
 	protected AbstractWorkspaceManagerAdapter(AbstractDatabaseAdapter databaseAdapter) {
@@ -46,32 +44,19 @@ public abstract class AbstractWorkspaceManagerAdapter {
 	public abstract boolean equalsDefaultWorkspaceName(String workspaceName);
 	public abstract boolean gotoWorkspace(Connection connection, Workspace workspace);
 
-	public boolean existsWorkspace(String workspaceName) {
-		return existsWorkspace(new Workspace(workspaceName), false);
-	}
-
-	public boolean gotoWorkspace(Connection connection, String workspaceName, Date timestamp) throws SQLException {
-		return gotoWorkspace(connection, new Workspace(workspaceName, timestamp));
-	}
-
-	public boolean gotoWorkspace(Connection connection, String workspaceName) throws SQLException {
-		return gotoWorkspace(connection, workspaceName, null);
-	}
-
-	public boolean existsWorkspace(Workspace workspace, boolean logResult) {
+	public void checkWorkspace(Workspace workspace) throws SQLException {
 		try (Connection conn = databaseAdapter.connectionPool.getConnection()) {
-			boolean exists = gotoWorkspace(conn, workspace);
-			if (logResult) {
-				if (!exists)
-					log.error("Database workspace " + workspace + " is not available.");
-				else 
-					log.info("Switching to database workspace " + workspace + '.');
+			if (!gotoWorkspace(conn, workspace)) {
+				throw new SQLException("The database workspace " + workspace + " is not available.");
 			}
-			
-			return exists;
-		} catch (SQLException e) {
-			return false;
 		}
 	}
 
+	public boolean gotoWorkspace(Connection connection, String workspaceName, Date timestamp) {
+		return gotoWorkspace(connection, new Workspace(workspaceName, timestamp));
+	}
+
+	public boolean gotoWorkspace(Connection connection, String workspaceName) {
+		return gotoWorkspace(connection, workspaceName, null);
+	}
 }

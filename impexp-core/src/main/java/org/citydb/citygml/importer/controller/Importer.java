@@ -156,10 +156,15 @@ public class Importer implements EventHandler {
 
 		// check database workspace
 		Workspace workspace = config.getDatabaseConfig().getWorkspaces().getImportWorkspace();
-		if (shouldRun && databaseAdapter.hasVersioningSupport() && 
-				!databaseAdapter.getWorkspaceManager().equalsDefaultWorkspaceName(workspace.getName()) &&
-				!databaseAdapter.getWorkspaceManager().existsWorkspace(workspace, true))
-			return false;
+		if (shouldRun && databaseAdapter.hasVersioningSupport()
+				&& !databaseAdapter.getWorkspaceManager().equalsDefaultWorkspaceName(workspace.getName())) {
+			try {
+				log.info("Switching to database workspace " + workspace + ".");
+				databaseAdapter.getWorkspaceManager().checkWorkspace(workspace);
+			} catch (SQLException e) {
+				throw new CityGMLImportException("Failed to switch to database workspace.", e);
+			}
+		}
 
 		// deactivate database indexes
 		if (shouldRun && (config.getImportConfig().getIndexes().isSpatialIndexModeDeactivate()

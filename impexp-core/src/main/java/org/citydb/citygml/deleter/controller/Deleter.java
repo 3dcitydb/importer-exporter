@@ -106,10 +106,15 @@ public class Deleter implements EventHandler {
 		
 		// checking workspace
 		Workspace workspace = config.getDatabaseConfig().getWorkspaces().getDeleteWorkspace();
-		if (shouldRun && databaseAdapter.hasVersioningSupport() && 
-				!databaseAdapter.getWorkspaceManager().equalsDefaultWorkspaceName(workspace.getName()) &&
-				!databaseAdapter.getWorkspaceManager().existsWorkspace(workspace, true))
-			return false;
+		if (shouldRun && databaseAdapter.hasVersioningSupport()
+				&& !databaseAdapter.getWorkspaceManager().equalsDefaultWorkspaceName(workspace.getName())) {
+			try {
+				log.info("Switching to database workspace " + workspace + ".");
+				databaseAdapter.getWorkspaceManager().checkWorkspace(workspace);
+			} catch (SQLException e) {
+				throw new CityGMLDeleteException("Failed to switch to database workspace.", e);
+			}
+		}
 		
 		// build query from filter settings
 		Query query;

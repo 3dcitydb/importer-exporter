@@ -143,7 +143,7 @@ public class ReportOperation extends DatabaseOperationView {
 			viewController.setStatusText(Language.I18N.getString("main.status.database.report.label"));
 
 			log.info("Generating database report...");
-			if (dbConnectionPool.getActiveDatabaseAdapter().hasVersioningSupport() && !parent.existsWorkspace())
+			if (dbConnectionPool.getActiveDatabaseAdapter().hasVersioningSupport() && !parent.checkWorkspace())
 				return;
 
 			final StatusDialog reportDialog = new StatusDialog(viewController.getTopFrame(), 

@@ -31,8 +31,8 @@ import org.citydb.ade.kmlExporter.ADEKmlExportExtension;
 import org.citydb.config.Config;
 import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.i18n.Language;
-import org.citydb.config.project.database.DatabaseConnection;
 import org.citydb.config.project.database.DatabaseConfig;
+import org.citydb.config.project.database.DatabaseConnection;
 import org.citydb.config.project.database.Workspace;
 import org.citydb.config.project.global.LogLevel;
 import org.citydb.config.project.kmlExporter.ADEPreference;
@@ -1020,11 +1020,10 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 
 					// checking workspace
 					Workspace workspace = new Workspace(workspaceText.getText().trim(), datePicker.getDate());
-					if (databaseController.getActiveDatabaseAdapter().hasVersioningSupport() && 
-							!databaseController.getActiveDatabaseAdapter().getWorkspaceManager().equalsDefaultWorkspaceName(workspace.getName()) &&
-							!databaseController.getActiveDatabaseAdapter().getWorkspaceManager().existsWorkspace(workspace, true)) {
-						themeComboBox.setEnabled(false);
-						return null;
+					if (databaseController.getActiveDatabaseAdapter().hasVersioningSupport()
+							&& !databaseController.getActiveDatabaseAdapter().getWorkspaceManager().equalsDefaultWorkspaceName(workspace.getName())) {
+						log.info("Switching to database workspace " + workspace + ".");
+						databaseController.getActiveDatabaseAdapter().getWorkspaceManager().checkWorkspace(workspace);
 					}
 
 					// fetching themes
@@ -1040,7 +1039,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 					themeComboBox.setPopupVisible(true);
 				}
 			} catch (SQLException e) {
-				log.error("Failed to query appearance themes from database: " + e.getMessage());
+				log.error("Failed to query appearance themes from database.", e);
 			} finally {
 				fetchThemesButton.setEnabled(true);
 			}
