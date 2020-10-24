@@ -39,27 +39,27 @@ public class DatabaseOptions {
             description = "Database type: ${COMPLETION-CANDIDATES} (default: ${DEFAULT-VALUE}).")
     private Type type;
 
-    @CommandLine.Option(names = {"-H", "--db-host"}, paramLabel = "<host>",
-            required = true, description = "Name of the host on which the 3DCityDB is running.")
+    @CommandLine.Option(names = {"-H", "--db-host"}, required = true,
+            description = "Name of the host on which the 3DCityDB is running.")
     private String host;
 
-    @CommandLine.Option(names = {"-P", "--db-port"}, paramLabel = "<port>",
+    @CommandLine.Option(names = {"-P", "--db-port"},
             description = "Port of the 3DCityDB server (default: 5432 | 1521).")
     private Integer port;
 
-    @CommandLine.Option(names = {"-d", "--db-name"}, paramLabel = "<name>",
-            required = true, description = "Name of the 3DCityDB database to connect to.")
+    @CommandLine.Option(names = {"-d", "--db-name"}, required = true,
+            description = "Name of the 3DCityDB database to connect to.")
     private String name;
 
-    @CommandLine.Option(names = {"-s", "--db-schema"}, paramLabel = "<schema>",
+    @CommandLine.Option(names = {"-s", "--db-schema"},
             description = "Schema to use when connecting to the 3DCityDB (default: citydb | username).")
     private String schema;
 
-    @CommandLine.Option(names = {"-u", "--db-user"}, paramLabel = "<name>",
+    @CommandLine.Option(names = {"-u", "--db-username"}, paramLabel = "<name>",
             required = true, description = "Username to use when connecting to the 3DCityDB.")
     private String user;
 
-    @CommandLine.Option(names = {"-p", "--db-password"}, paramLabel = "<password>", arity = "0..1",
+    @CommandLine.Option(names = {"-p", "--db-password"}, arity = "0..1",
             description = "Password to use when connecting to the 3DCityDB (leave empty to be prompted).")
     private String password;
 

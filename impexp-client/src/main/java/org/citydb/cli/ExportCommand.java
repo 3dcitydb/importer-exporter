@@ -28,11 +28,13 @@
 
 package org.citydb.cli;
 
+import org.citydb.citygml.exporter.controller.Exporter;
 import org.citydb.config.Config;
 import org.citydb.config.project.database.DBConnection;
 import org.citydb.database.DatabaseController;
 import org.citydb.plugin.CliCommand;
 import org.citydb.plugin.cli.DatabaseOptions;
+import org.citydb.plugin.cli.FileOutputOptions;
 import org.citydb.registry.ObjectRegistry;
 import picocli.CommandLine;
 
@@ -44,6 +46,13 @@ import picocli.CommandLine;
 public class ExportCommand extends CliCommand {
     @CommandLine.ArgGroup(exclusive = false)
     private DatabaseOptions databaseOptions;
+
+    @CommandLine.Mixin
+    private FileOutputOptions outputOptions;
+
+    @CommandLine.Option(names = "--output-encoding", defaultValue = "UTF-8",
+            description = "Encoding used for the output file (default: ${DEFAULT-VALUE}).")
+    private String encoding;
 
     @Override
     public Integer call() throws Exception {
@@ -57,6 +66,11 @@ public class ExportCommand extends CliCommand {
         if (!controller.connect(connection)) {
             return 1;
         }
+
+        config.getProject().getExporter().getCityGMLOptions().setFileEncoding(encoding);
+
+        Exporter exporter = new Exporter();
+        exporter.doExport(outputOptions.getFile());
 
         return 0;
     }
