@@ -905,16 +905,9 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 
 		if (exporter == null) {
 			// core module
-			if (type == DBSurfaceGeometry.class) {
-				CacheTable cacheTable = null;
-				if (config.getInternal().isExportGlobalAppearances()) {
-					cacheTable = cacheTableManager.getCacheTable(CacheTableModel.GLOBAL_APPEARANCE);
-					if (cacheTable == null)
-						logOrThrowErrorMessage("Failed to access temporary table for global appearances.");
-				}
-
-				exporter = new DBSurfaceGeometry(connection, cacheTable, this, config);
-			} else if (type == DBCityObject.class)
+			if (type == DBSurfaceGeometry.class)
+				exporter = new DBSurfaceGeometry(connection, this, config);
+			else if (type == DBCityObject.class)
 				exporter = new DBCityObject(connection, query, this);
 			else if (type == DBGeneralization.class)
 				exporter = new DBGeneralization(connection, this);
