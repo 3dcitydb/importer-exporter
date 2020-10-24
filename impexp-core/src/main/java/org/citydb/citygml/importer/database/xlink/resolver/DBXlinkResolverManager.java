@@ -35,6 +35,7 @@ import org.citydb.citygml.common.database.uid.UIDCacheManager;
 import org.citydb.citygml.common.database.uid.UIDCacheType;
 import org.citydb.citygml.common.database.xlink.DBXlink;
 import org.citydb.citygml.importer.database.SequenceHelper;
+import org.citydb.citygml.importer.util.ConcurrentLockManager;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
@@ -63,7 +64,7 @@ import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class DBXlinkResolverManager {
-	private static final ReentrantLock mainLock = new ReentrantLock();
+	private final ConcurrentLockManager lockManager = ConcurrentLockManager.getInstance(DBXlinkResolverManager.class);
 	private final InputFile inputFile;
 	private final Connection connection;
 	private final AbstractDatabaseAdapter databaseAdapter;
@@ -72,8 +73,8 @@ public class DBXlinkResolverManager {
 	private final CacheTableManager cacheTableManager;
 	private final EventDispatcher eventDispatcher;
 
-	private final Map<DBXlinkResolverEnum, DBXlinkResolver> writers;
-	private final DBGmlIdResolver gmlIdResolvers;
+	private final Map<DBXlinkResolverEnum, DBXlinkResolver> resolvers;
+	private final DBGmlIdResolver gmlIdResolver;
 	private final SequenceHelper sequenceHelper;
 
 	public DBXlinkResolverManager(
@@ -92,15 +93,14 @@ public class DBXlinkResolverManager {
 		this.cacheTableManager = cacheTableManager;
 		this.eventDispatcher = eventDispatcher;
 
-		writers = new HashMap<>();
-		gmlIdResolvers = new DBGmlIdResolver(batchConn, databaseAdapter, uidCacheManager);
+		resolvers = new HashMap<>();
+		gmlIdResolver = new DBGmlIdResolver(batchConn, databaseAdapter, uidCacheManager);
 		sequenceHelper = new SequenceHelper(batchConn, databaseAdapter, config);
-
      	schemaMapping = ObjectRegistry.getInstance().getSchemaMapping();
 	}
 
 	public DBXlinkResolver getDBXlinkResolver(DBXlinkResolverEnum dbResolverType) throws SQLException {
-		DBXlinkResolver dbResolver = writers.get(dbResolverType);
+		DBXlinkResolver dbResolver = resolvers.get(dbResolverType);
 
 		if (dbResolver == null) {
 			// initialise writer
@@ -152,7 +152,7 @@ public class DBXlinkResolverManager {
 			}
 
 			if (dbResolver != null)
-				writers.put(dbResolverType, dbResolver);
+				resolvers.put(dbResolverType, dbResolver);
 		}
 
 		return dbResolver;
@@ -163,15 +163,15 @@ public class DBXlinkResolverManager {
 	}
 	
 	public UIDCacheEntry getObjectId(String gmlId) {
-		return gmlIdResolvers.getDBId(gmlId, UIDCacheType.OBJECT, false);
+		return gmlIdResolver.getDBId(gmlId, UIDCacheType.OBJECT, false);
 	}
 
 	public UIDCacheEntry getObjectId(String gmlId, boolean forceCityObjectDatabaseLookup) {
-		return gmlIdResolvers.getDBId(gmlId, UIDCacheType.OBJECT, forceCityObjectDatabaseLookup);
+		return gmlIdResolver.getDBId(gmlId, UIDCacheType.OBJECT, forceCityObjectDatabaseLookup);
 	}	
 	
 	public UIDCacheEntry getGeometryId(String gmlId) {
-		return gmlIdResolvers.getDBId(gmlId, UIDCacheType.GEOMETRY, false);
+		return gmlIdResolver.getDBId(gmlId, UIDCacheType.GEOMETRY, false);
 	}
 	
 	public FeatureType getFeatureType(int objectClassId) {
@@ -227,18 +227,19 @@ public class DBXlinkResolverManager {
 	}
 	
 	public void executeBatch() throws SQLException {
-		final ReentrantLock lock = mainLock;
-		lock.lock();
-		try {
-			for (DBXlinkResolver resolver : writers.values())
+		for (DBXlinkResolver resolver : resolvers.values()) {
+			final ReentrantLock lock = lockManager.getLock(resolver.getClass().getName());
+			lock.lock();
+			try {
 				resolver.executeBatch();
-		} finally {
-			lock.unlock();
+			} finally {
+				lock.unlock();
+			}
 		}
 	}
 
 	void executeBatch(DBXlinkResolver resolver) throws SQLException {
-		final ReentrantLock lock = mainLock;
+		final ReentrantLock lock = lockManager.getLock(resolver.getClass().getName());
 		lock.lock();
 		try {
 			resolver.executeBatch();
@@ -247,8 +248,8 @@ public class DBXlinkResolverManager {
 		}
 	}
 
-	void executeBatchWithLock(PreparedStatement ps) throws SQLException {
-		final ReentrantLock lock = mainLock;
+	void executeBatchWithLock(PreparedStatement ps, DBXlinkResolver resolver) throws SQLException {
+		final ReentrantLock lock = lockManager.getLock(resolver.getClass().getName());
 		lock.lock();
 		try {
 			ps.executeBatch();
@@ -258,10 +259,10 @@ public class DBXlinkResolverManager {
 	}
 
 	public void close() throws SQLException {
-		gmlIdResolvers.close();
+		gmlIdResolver.close();
 		sequenceHelper.close();
 
-		for (DBXlinkResolver dbResolver : writers.values())
+		for (DBXlinkResolver dbResolver : resolvers.values())
 			dbResolver.close();
 	}
 }
