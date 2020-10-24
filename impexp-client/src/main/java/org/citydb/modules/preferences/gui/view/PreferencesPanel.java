@@ -284,7 +284,7 @@ public class PreferencesPanel extends JPanel implements TreeSelectionListener {
 		if (activeEntry.isModified()) {			
 			int res = -1;
 
-			if (config.getGui().isShowPreferencesConfirmDialog()) {
+			if (config.getGuiConfig().isShowPreferencesConfirmDialog()) {
 				confirmPanel = new JPanel(new GridBagLayout());
 				confirmDialogNoShow = new JCheckBox(Language.I18N.getString("common.dialog.msg.noShow"));
 				confirmDialogNoShow.setIconTextGap(10);
@@ -296,7 +296,7 @@ public class PreferencesPanel extends JPanel implements TreeSelectionListener {
 						Language.I18N.getString("pref.dialog.apply.title"), 
 						JOptionPane.YES_NO_CANCEL_OPTION);
 
-				config.getGui().setShowPreferencesConfirmDialog(!confirmDialogNoShow.isSelected());
+				config.getGuiConfig().setShowPreferencesConfirmDialog(!confirmDialogNoShow.isSelected());
 			} else
 				res = JOptionPane.YES_OPTION;
 

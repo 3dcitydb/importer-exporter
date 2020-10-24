@@ -34,7 +34,7 @@ import org.citydb.ade.ADEExtensionManager;
 import org.citydb.config.Config;
 import org.citydb.config.ConfigUtil;
 import org.citydb.config.i18n.Language;
-import org.citydb.config.Project;
+import org.citydb.config.ProjectConfig;
 import org.citydb.config.project.global.LanguageType;
 import org.citydb.config.project.global.LogFileMode;
 import org.citydb.config.project.global.LogLevel;
@@ -380,11 +380,11 @@ public class ImpExpCli extends CliCommand implements CommandLine.IVersionProvide
 
         try {
             Object object = ConfigUtil.getInstance().unmarshal(configFile.toFile());
-            if (!(object instanceof Project)) {
+            if (!(object instanceof ProjectConfig)) {
                 throw new JAXBException("Failed to parse project settings.");
             }
 
-            config.setProject((Project) object);
+            config.setProjectConfig((ProjectConfig) object);
         } catch (JAXBException | IOException e) {
             if (useDefaultConfiguration) {
                 log.error("Failed to load configuration from file " + configFile + ".", e);

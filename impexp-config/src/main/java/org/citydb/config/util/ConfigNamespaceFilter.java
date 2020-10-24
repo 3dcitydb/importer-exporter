@@ -2,7 +2,7 @@
  * 3D City Database - The Open Source CityGML Database
  * http://www.3dcitydb.org/
  *
- * Copyright 2013 - 2019
+ * Copyright 2013 - 2020
  * Chair of Geoinformatics
  * Technical University of Munich, Germany
  * https://www.gis.bgu.tum.de/
@@ -25,8 +25,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.citydb.config;
+package org.citydb.config.util;
 
+import org.citydb.config.ConfigUtil;
 import org.citygml4j.model.module.Module;
 import org.citygml4j.model.module.ModuleContext;
 import org.citygml4j.model.module.citygml.CityGMLVersion;
@@ -101,7 +102,7 @@ public class ConfigNamespaceFilter extends XMLFilterImpl implements NamespaceCon
 		if (uriToPrefix.containsKey(namespaceURI))
 			return uriToPrefix.get(namespaceURI).iterator();
 
-		return Collections.<String>emptySet().iterator();
+		return Collections.emptyIterator();
 	}
 
 	public Iterator<String> getPrefixes() {

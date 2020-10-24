@@ -27,8 +27,10 @@
  */
 package org.citydb.config;
 
-import org.citydb.config.project.ProjectSchemaWriter;
+import org.citydb.config.gui.GuiConfig;
+import org.citydb.config.util.ProjectSchemaWriter;
 import org.citydb.config.project.query.util.QueryWrapper;
+import org.citydb.config.util.ConfigNamespaceFilter;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
@@ -83,7 +85,7 @@ public class ConfigUtil {
 
 	private void lazyInit() throws JAXBException {
 		if (context == null) {
-			withConfigClasses(Project.class, Gui.class, QueryWrapper.class);
+			withConfigClasses(ProjectConfig.class, GuiConfig.class, QueryWrapper.class);
 			context = JAXBContext.newInstance(configClasses.toArray(new Class[]{}));
 			configClasses = null;
 		}
@@ -125,8 +127,8 @@ public class ConfigUtil {
 		}
 
 		Object result = handler.getResult();
-		if (result instanceof Project)
-			((Project) result).setNamespaceFilter(namespaceFilter);
+		if (result instanceof ProjectConfig)
+			((ProjectConfig) result).setNamespaceFilter(namespaceFilter);
 
 		return result;
 	}

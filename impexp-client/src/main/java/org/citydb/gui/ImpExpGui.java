@@ -155,8 +155,8 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 	}
 
 	public void restoreDefaults() {
-		if (consoleWindow.isVisible() != config.getGui().getConsoleWindow().isDetached())
-			enableConsoleWindow(config.getGui().getConsoleWindow().isDetached(), false);
+		if (consoleWindow.isVisible() != config.getGuiConfig().getConsoleWindow().isDetached())
+			enableConsoleWindow(config.getGuiConfig().getConsoleWindow().isDetached(), false);
 
 		consoleWindow.setSize(0, 0);
 		showWindow();
@@ -311,7 +311,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 	}
 
 	private void showWindow() {
-		WindowSize size = config.getGui().getMainWindow().getSize();
+		WindowSize size = config.getGuiConfig().getMainWindow().getSize();
 
 		Toolkit t = Toolkit.getDefaultToolkit();
 		Insets frame_insets = t.getScreenInsets(GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration());
@@ -333,7 +333,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		Integer y = size.getY();
 		Integer width = size.getWidth();
 		Integer height = size.getHeight();
-		Integer dividerLocation = config.getGui().getMainWindow().getDividerLocation();
+		Integer dividerLocation = config.getGuiConfig().getMainWindow().getDividerLocation();
 
 		// create default values for main window
 		if (x == null || y == null || width == null || height == null || 
@@ -348,7 +348,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 			y = user_insets_y / 2 + frame_insets.top;
 
 			// if console is detached, also create default values for console window
-			if (config.getGui().getConsoleWindow().isDetached()) {
+			if (config.getGuiConfig().getConsoleWindow().isDetached()) {
 				x -= 15;
 				width = width / 2 + 30;
 				consoleWindow.setLocation(x + width, y);
@@ -361,7 +361,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		setSize(width, height);
 		setVisible(true);
 
-		if (!config.getGui().getConsoleWindow().isDetached())
+		if (!config.getGuiConfig().getConsoleWindow().isDetached())
 			main.setPreferredSize(new Dimension((int)(width * .5) + 20, 1));
 
 		if (dividerLocation != null && dividerLocation > 0 && dividerLocation < width)
@@ -375,7 +375,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		System.setErr(consoleLogger.err());
 
 		// show console window if required
-		if (config.getGui().getConsoleWindow().isDetached()) {
+		if (config.getGuiConfig().getConsoleWindow().isDetached()) {
 			enableConsoleWindow(true, false);
 			requestFocus();
 		}
@@ -459,7 +459,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 			splitPane.setDividerLocation(dividerLocation);
 		}
 
-		config.getGui().getConsoleWindow().setDetached(enable);
+		config.getGuiConfig().getConsoleWindow().setDetached(enable);
 	}
 
 	public boolean saveProjectSettings() {
@@ -471,7 +471,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 			return false;
 
 		try {
-			ConfigUtil.getInstance().marshal(config.getProject(), configFile.toFile());
+			ConfigUtil.getInstance().marshal(config.getProjectConfig(), configFile.toFile());
 			return true;
 		} catch (JAXBException e) {
 			if (!isShuttingDown) {
@@ -494,7 +494,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 
 		// set window size
 		Rectangle rect = getBounds();
-		MainWindow window = config.getGui().getMainWindow();
+		MainWindow window = config.getGuiConfig().getMainWindow();
 		window.getSize().setX(rect.x);
 		window.getSize().setY(rect.y);
 		window.getSize().setWidth(rect.width);
@@ -505,7 +505,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		consoleWindow.setSettings();
 
 		try {
-			ConfigUtil.getInstance().marshal(config.getGui(), guiConfigFile.toFile());
+			ConfigUtil.getInstance().marshal(config.getGuiConfig(), guiConfigFile.toFile());
 		} catch (JAXBException e) {
 			log.error("Failed to write GUI configuration file.", e);
 		}
@@ -635,13 +635,13 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 			popupMenu.add(detach);
 
 			clear.addActionListener(e -> clearConsole());
-			detach.addActionListener(e -> enableConsoleWindow(!config.getGui().getConsoleWindow().isDetached(), true));
+			detach.addActionListener(e -> enableConsoleWindow(!config.getGuiConfig().getConsoleWindow().isDetached(), true));
 
 			popupMenu.addPopupMenuListener(new PopupMenuListener() {
 				@Override
 				public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
 					clear.setEnabled(consoleText.getDocument().getLength() != 0);
-					detach.setText(config.getGui().getConsoleWindow().isDetached() ?
+					detach.setText(config.getGuiConfig().getConsoleWindow().isDetached() ?
 							Language.I18N.getString("console.label.attach") :
 							Language.I18N.getString("console.label.detach"));
 				}
@@ -657,7 +657,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 
 		private void doTranslation() {
 			clear.setText(Language.I18N.getString("main.console.popup.clear"));
-			detach.setText(config.getGui().getConsoleWindow().isDetached() ?
+			detach.setText(config.getGuiConfig().getConsoleWindow().isDetached() ?
 					Language.I18N.getString("console.label.attach") :
 					Language.I18N.getString("console.label.detach"));
 		}

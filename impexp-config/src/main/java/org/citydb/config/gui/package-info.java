@@ -25,34 +25,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.citydb.config.project;
 
-import javax.xml.bind.SchemaOutputResolver;
-import javax.xml.transform.Result;
-import javax.xml.transform.stream.StreamResult;
-import java.io.File;
-import java.io.IOException;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
+@javax.xml.bind.annotation.XmlAccessorType(javax.xml.bind.annotation.XmlAccessType.FIELD)
+@javax.xml.bind.annotation.XmlSchema(namespace = ConfigUtil.CITYDB_CONFIG_NAMESPACE_URI,
+        elementFormDefault = javax.xml.bind.annotation.XmlNsForm.QUALIFIED)
+package org.citydb.config.gui;
 
-public class ProjectSchemaWriter extends SchemaOutputResolver {
-	private Path targetDir;
-
-	public ProjectSchemaWriter(File path) {
-		this.targetDir = path.toPath();
-	}
-
-	@Override
-	public Result createOutput(String namespaceUri, String suggestedFileName) throws IOException {
-		Path file = namespaceUri.equals("http://www.3dcitydb.org/importer-exporter/config") ?
-				targetDir.resolve("config.xsd") :
-				targetDir.resolve("plugin_" + suggestedFileName);
-
-		StreamResult res = new StreamResult(file.toFile());
-		res.setSystemId(URLDecoder.decode(file.toUri().toURL().toString(), StandardCharsets.UTF_8.name()));
-
-		return res;
-	}
-
-}
+import org.citydb.config.ConfigUtil;

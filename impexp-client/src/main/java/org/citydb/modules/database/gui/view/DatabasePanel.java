@@ -531,10 +531,10 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 			boolean showWarning = false;
 			switch ((ConnectionWarningType) warning.getType()) {
 				case OUTDATED_DATABASE_VERSION:
-					showWarning = config.getGui().isShowOutdatedDatabaseVersionWarning();
+					showWarning = config.getGuiConfig().isShowOutdatedDatabaseVersionWarning();
 					break;
 				case UNSUPPORTED_ADE:
-					showWarning = config.getGui().isShowUnsupportedADEWarning();
+					showWarning = config.getGuiConfig().isShowUnsupportedADEWarning();
 					break;
 			}
 
@@ -550,10 +550,10 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 				if (confirmDialogNoShow.isSelected()) {
 					switch ((ConnectionWarningType) warning.getType()) {
 						case OUTDATED_DATABASE_VERSION:
-							config.getGui().setShowOutdatedDatabaseVersionWarning(false);
+							config.getGuiConfig().setShowOutdatedDatabaseVersionWarning(false);
 							break;
 						case UNSUPPORTED_ADE:
-							config.getGui().setShowUnsupportedADEWarning(false);
+							config.getGuiConfig().setShowUnsupportedADEWarning(false);
 							break;
 					}
 				}

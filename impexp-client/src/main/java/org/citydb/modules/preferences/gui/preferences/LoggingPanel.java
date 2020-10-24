@@ -310,7 +310,7 @@ public class LoggingPanel extends AbstractPreferencesComponent {
 
         for (int i = 0; i < logColors.getModel().getSize(); i++) {
             LogColor logColor = logColors.getModel().getElementAt(i);
-            LogLevelStyle style = config.getGui().getConsoleWindow().getStyle().getLogLevelStyle(logColor.level);
+            LogLevelStyle style = config.getGuiConfig().getConsoleWindow().getStyle().getLogLevelStyle(logColor.level);
             mainView.getStyledConsoleLogger().applyLogLevelStyle(logColor.level, style);
             logColor.reset();
             logColor.updatePreview();
@@ -357,7 +357,7 @@ public class LoggingPanel extends AbstractPreferencesComponent {
 
         for (int i = 0; i < logColors.getModel().getSize(); i++) {
             LogColor logColor = logColors.getModel().getElementAt(i);
-            LogLevelStyle logLevelStyle = config.getGui().getConsoleWindow().getStyle().getLogLevelStyle(logColor.level);
+            LogLevelStyle logLevelStyle = config.getGuiConfig().getConsoleWindow().getStyle().getLogLevelStyle(logColor.level);
             Style style = mainView.getStyledConsoleLogger().getStyle(logColor.level);
             logLevelStyle.setForeground(GuiUtil.colorToHex((Color) style.getAttribute(StyleConstants.Foreground)));
             logLevelStyle.setBackground(GuiUtil.colorToHex((Color) style.getAttribute(StyleConstants.Background)));
@@ -484,7 +484,7 @@ public class LoggingPanel extends AbstractPreferencesComponent {
         }
 
         boolean isModified() {
-            LogLevelStyle logLevelStyle = config.getGui().getConsoleWindow().getStyle().getLogLevelStyle(level);
+            LogLevelStyle logLevelStyle = config.getGuiConfig().getConsoleWindow().getStyle().getLogLevelStyle(level);
             Style style = mainView.getStyledConsoleLogger().getStyle(level);
 
             if (logLevelStyle.isSetForeground() && !logLevelStyle.getForeground().equals(

@@ -35,6 +35,7 @@ import org.citydb.config.project.importer.ImportConfig;
 import org.citydb.config.project.kmlExporter.KmlExportConfig;
 import org.citydb.config.project.plugin.PluginConfig;
 import org.citydb.config.project.plugin.PluginConfigListAdapter;
+import org.citydb.config.util.ConfigNamespaceFilter;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -54,7 +55,7 @@ import java.util.Map;
         "globalConfig",
         "extensions"
 })
-public class Project {
+public class ProjectConfig {
     @XmlElement(name = "database")
     private DatabaseConfig databaseConfig;
     @XmlElement(name = "import")
@@ -73,7 +74,7 @@ public class Project {
     @XmlTransient
     private ConfigNamespaceFilter namespaceFilter;
 
-    public Project(DatabaseConfig databaseConfig, ImportConfig importConfig, ExportConfig exportConfig, DeleteConfig deleteConfig, KmlExportConfig kmlExportConfig, GlobalConfig globalConfig) {
+    public ProjectConfig(DatabaseConfig databaseConfig, ImportConfig importConfig, ExportConfig exportConfig, DeleteConfig deleteConfig, KmlExportConfig kmlExportConfig, GlobalConfig globalConfig) {
         this.databaseConfig = databaseConfig;
         this.importConfig = importConfig;
         this.exportConfig = exportConfig;
@@ -85,7 +86,7 @@ public class Project {
         extensions = new HashMap<>();
     }
 
-    public Project() {
+    public ProjectConfig() {
         this(new DatabaseConfig(), new ImportConfig(), new ExportConfig(), new DeleteConfig(), new KmlExportConfig(), new GlobalConfig());
     }
 

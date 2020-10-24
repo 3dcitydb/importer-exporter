@@ -2,7 +2,7 @@
  * 3D City Database - The Open Source CityGML Database
  * http://www.3dcitydb.org/
  *
- * Copyright 2013 - 2019
+ * Copyright 2013 - 2020
  * Chair of Geoinformatics
  * Technical University of Munich, Germany
  * https://www.gis.bgu.tum.de/
@@ -25,31 +25,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.citydb.query.builder.config;
+package org.citydb.config.util;
 
-import org.citydb.query.builder.QueryBuildException;
-import org.citydb.query.filter.apperance.AppearanceFilter;
+import javax.xml.bind.SchemaOutputResolver;
+import javax.xml.transform.Result;
+import javax.xml.transform.stream.StreamResult;
+import java.io.File;
+import java.io.IOException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 
-public class AppearanceFilterBuilder {
-	
-	protected AppearanceFilterBuilder() {
-		
+public class ProjectSchemaWriter extends SchemaOutputResolver {
+	private final Path targetDir;
+
+	public ProjectSchemaWriter(File path) {
+		this.targetDir = path.toPath();
 	}
 
-	protected AppearanceFilter buildAppearanceFilter(org.citydb.config.project.query.filter.appearance.AppearanceFilter appearanceFilterConfig) throws QueryBuildException {
-		AppearanceFilter appearanceFilter = new AppearanceFilter();
-		
-		appearanceFilter.setIncludeNullTheme(appearanceFilterConfig.isIncludeNullTheme());
-		
-		for (String theme : appearanceFilterConfig.getThemes()) {
-			if (theme != null && !theme.isEmpty())
-				appearanceFilter.addTheme(theme);
-		}
-		
-		if (!appearanceFilter.containsThemes())
-			throw new QueryBuildException("No valid themes provided for appearance filter.");
-		
-		return appearanceFilter;
+	@Override
+	public Result createOutput(String namespaceUri, String suggestedFileName) throws IOException {
+		Path file = namespaceUri.equals("http://www.3dcitydb.org/importer-exporter/config") ?
+				targetDir.resolve("config.xsd") :
+				targetDir.resolve("plugin_" + suggestedFileName);
+
+		StreamResult res = new StreamResult(file.toFile());
+		res.setSystemId(URLDecoder.decode(file.toUri().toURL().toString(), StandardCharsets.UTF_8.name()));
+
+		return res;
 	}
-	
+
 }

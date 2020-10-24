@@ -31,7 +31,7 @@ package org.citydb.cli;
 import org.citydb.ImpExpException;
 import org.citydb.config.Config;
 import org.citydb.config.ConfigUtil;
-import org.citydb.config.Gui;
+import org.citydb.config.gui.GuiConfig;
 import org.citydb.database.DatabaseController;
 import org.citydb.gui.ImpExpGui;
 import org.citydb.gui.components.SplashScreen;
@@ -104,8 +104,8 @@ public class GuiCommand extends CliCommand implements StartupProgressListener {
 
         try {
             Object object = ConfigUtil.getInstance().unmarshal(guiConfigFile.toFile());
-            if (object instanceof Gui) {
-                config.setGui((Gui) object);
+            if (object instanceof GuiConfig) {
+                config.setGuiConfig((GuiConfig) object);
             }
         } catch (JAXBException | IOException e) {
             //

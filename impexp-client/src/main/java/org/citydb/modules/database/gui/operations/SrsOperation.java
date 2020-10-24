@@ -292,7 +292,7 @@ public class SrsOperation extends DatabaseOperationView {
 				return;
 			}
 
-			if (changeSrid && config.getGui().isShowChangeSridWarning()) {
+			if (changeSrid && config.getGuiConfig().isShowChangeSridWarning()) {
 				JPanel confirmPanel = new JPanel(new GridBagLayout());
 				JCheckBox confirmDialogNoShow = new JCheckBox(Language.I18N.getString("common.dialog.msg.noShow"));
 				confirmDialogNoShow.setIconTextGap(10);
@@ -320,7 +320,7 @@ public class SrsOperation extends DatabaseOperationView {
 						Language.I18N.getString("db.dialog.srs.window"),
 						JOptionPane.YES_NO_CANCEL_OPTION);
 
-				config.getGui().setShowChangeSridWarning(!confirmDialogNoShow.isSelected());
+				config.getGuiConfig().setShowChangeSridWarning(!confirmDialogNoShow.isSelected());
 				if (result != JOptionPane.YES_OPTION)
 					return;
 			}

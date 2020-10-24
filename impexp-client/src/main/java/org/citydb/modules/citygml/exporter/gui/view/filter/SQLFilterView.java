@@ -177,7 +177,7 @@ public class SQLFilterView extends FilterView {
         SelectOperator sql = query.getSelectionFilter().getSQLFilter();
         sqlText.setText(sql.getValue());
 
-        additionalRows = config.getGui().getSQLExportFilterComponent().getAdditionalRows();
+        additionalRows = config.getGuiConfig().getSQLExportFilterComponent().getAdditionalRows();
         SwingUtilities.invokeLater(() -> {
             if (additionalRows > 0) {
                 Dimension size = scrollPane.getPreferredSize();
@@ -203,6 +203,6 @@ public class SQLFilterView extends FilterView {
         if (!value.isEmpty())
             sql.setValue(value.replaceAll(";", " "));
 
-        config.getGui().getSQLExportFilterComponent().setAdditionalRows(additionalRows);
+        config.getGuiConfig().getSQLExportFilterComponent().setAdditionalRows(additionalRows);
     }
 }

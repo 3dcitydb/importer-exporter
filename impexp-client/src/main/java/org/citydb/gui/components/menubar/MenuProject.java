@@ -29,7 +29,7 @@ package org.citydb.gui.components.menubar;
 
 import org.citydb.config.Config;
 import org.citydb.config.ConfigUtil;
-import org.citydb.config.Project;
+import org.citydb.config.ProjectConfig;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.global.Logging;
 import org.citydb.event.global.ProjectChangedEvent;
@@ -129,7 +129,7 @@ public class MenuProject extends JMenu {
                     for (ConfigExtension<?> plugin : pluginManager.getExternalPlugins(ConfigExtension.class))
                         plugin.handleEvent(PluginConfigEvent.PRE_SAVE_CONFIG);
 
-                    ConfigUtil.getInstance().marshal(config.getProject(), file);
+                    ConfigUtil.getInstance().marshal(config.getProjectConfig(), file);
 
                     addLastUsedProject(file.getAbsolutePath());
                     lastUsed.setEnabled(true);
@@ -150,7 +150,7 @@ public class MenuProject extends JMenu {
 				mainView.clearConsole();
 				mainView.disconnectFromDatabase();
 
-				config.setProject(new Project());
+				config.setProjectConfig(new ProjectConfig());
 
 				// reset contents of srs combo boxes
 				SrsComboBoxFactory.getInstance().resetAll(true);
@@ -198,7 +198,7 @@ public class MenuProject extends JMenu {
 		saveProject.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
 		saveProjectAs.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask() | InputEvent.SHIFT_MASK));
 
-		if (!config.getGui().getRecentlyUsedProjectFiles().isEmpty())
+		if (!config.getGuiConfig().getRecentlyUsedProjectFiles().isEmpty())
 			setLastUsedList();			
 		else
 			lastUsed.setEnabled(false);
@@ -227,13 +227,13 @@ public class MenuProject extends JMenu {
 		try {
 			Logging logging = config.getGlobalConfig().getLogging();
 			Object object = ConfigUtil.getInstance().unmarshal(file);
-			if (!(object instanceof Project)) {
+			if (!(object instanceof ProjectConfig)) {
 				log.error("Failed to read project settings.");
 				return false;
 			}
 
-			Project project = (Project)object;
-			config.setProject(project);
+			ProjectConfig projectConfig = (ProjectConfig)object;
+			config.setProjectConfig(projectConfig);
 			mainView.doTranslation();
 
 			// reset contents of srs combo boxes
@@ -272,18 +272,18 @@ public class MenuProject extends JMenu {
 	}
 
 	private void addLastUsedProject(String fileName) {
-		List<String> lastUsedList = config.getGui().getRecentlyUsedProjectFiles();
+		List<String> lastUsedList = config.getGuiConfig().getRecentlyUsedProjectFiles();
 		lastUsedList.remove(fileName);
 		lastUsedList.add(0, fileName);
 
-		if (lastUsedList.size() > config.getGui().getMaxLastUsedEntries())
-			config.getGui().setRecentlyUsedProjectFiles(lastUsedList.subList(0, config.getGui().getMaxLastUsedEntries()));
+		if (lastUsedList.size() > config.getGuiConfig().getMaxLastUsedEntries())
+			config.getGuiConfig().setRecentlyUsedProjectFiles(lastUsedList.subList(0, config.getGuiConfig().getMaxLastUsedEntries()));
 	}
 
 	private void setLastUsedList() {
 		lastUsed.removeAll();
 
-		for (final String fileName : config.getGui().getRecentlyUsedProjectFiles()) {
+		for (final String fileName : config.getGuiConfig().getRecentlyUsedProjectFiles()) {
 			final JMenuItem item = new JMenuItem();
 
 			File tmp = new File(fileName);
@@ -309,7 +309,7 @@ public class MenuProject extends JMenu {
 			item.addActionListener(e -> {
                 boolean success = openProject(file);
                 if (!success) {
-                    config.getGui().getRecentlyUsedProjectFiles().remove(fileName);
+                    config.getGuiConfig().getRecentlyUsedProjectFiles().remove(fileName);
                     lastUsed.remove(item);
                     if (lastUsed.getItemCount() == 0)
                         lastUsed.setEnabled(false);

@@ -181,13 +181,13 @@ public class MapWindow extends JDialog implements EventHandler {
 		// update geocoder
 		GeocodingService service = null;
 		try {
-			service = instance.getGeocodingService(instance.config.getGui().getMapWindow().getGeocoder());
+			service = instance.getGeocodingService(instance.config.getGuiConfig().getMapWindow().getGeocoder());
 		} catch (GeocodingServiceException e) {
 			service = new OSMGeocoder();
-			instance.config.getGui().getMapWindow().setGeocoder(GeocodingServiceName.OSM_NOMINATIM);
+			instance.config.getGuiConfig().getMapWindow().setGeocoder(GeocodingServiceName.OSM_NOMINATIM);
 		} finally {
 			Geocoder.getInstance().setGeocodingService(service);
-			instance.geocoderCombo.setSelectedItem(instance.config.getGui().getMapWindow().getGeocoder());
+			instance.geocoderCombo.setSelectedItem(instance.config.getGuiConfig().getMapWindow().getGeocoder());
 		}
 
 		return instance;
@@ -537,7 +537,7 @@ public class MapWindow extends JDialog implements EventHandler {
 				((AbstractTileFactory)map.getMapKit().getMiniMap().getTileFactory()).clearTileCache();
 				((AbstractTileFactory)map.getMapKit().getMiniMap().getTileFactory()).shutdownTileServicePool();
 
-				WindowSize size = config.getGui().getMapWindow().getSize();
+				WindowSize size = config.getGuiConfig().getMapWindow().getSize();
 				Rectangle rect = MapWindow.this.getBounds();
 				size.setX(rect.x);
 				size.setY(rect.y);
@@ -580,7 +580,7 @@ public class MapWindow extends JDialog implements EventHandler {
 
 		geocoderCombo.addItemListener(l -> {
 			if (l.getStateChange() == ItemEvent.SELECTED
-					&& geocoderCombo.getSelectedItem() != config.getGui().getMapWindow().getGeocoder()) {
+					&& geocoderCombo.getSelectedItem() != config.getGuiConfig().getMapWindow().getGeocoder()) {
 				try {
 					GeocodingService service = getGeocodingService((GeocodingServiceName) geocoderCombo.getSelectedItem());
 					Geocoder.getInstance().setGeocodingService(service);
@@ -590,7 +590,7 @@ public class MapWindow extends JDialog implements EventHandler {
 								Language.I18N.getString("map.error.geocoder.title"), JOptionPane.ERROR_MESSAGE);
 					});
 
-					geocoderCombo.setSelectedItem(config.getGui().getMapWindow().getGeocoder());
+					geocoderCombo.setSelectedItem(config.getGuiConfig().getMapWindow().getGeocoder());
 				}
 			}
 		});
@@ -826,13 +826,13 @@ public class MapWindow extends JDialog implements EventHandler {
 		}
 
 		if (service != null)
-			config.getGui().getMapWindow().setGeocoder(serviceName);
+			config.getGuiConfig().getMapWindow().setGeocoder(serviceName);
 
 		return service;
 	}
 
 	private void setSizeOnScreen() {
-		WindowSize size = config.getGui().getMapWindow().getSize();
+		WindowSize size = config.getGuiConfig().getMapWindow().getSize();
 
 		Integer x = size.getX();
 		Integer y = size.getY();

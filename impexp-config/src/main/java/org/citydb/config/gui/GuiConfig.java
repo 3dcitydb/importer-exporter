@@ -25,7 +25,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.citydb.config;
+package org.citydb.config.gui;
 
 import org.citydb.config.gui.components.SQLExportFilterComponent;
 import org.citydb.config.gui.window.ConsoleWindow;
@@ -53,7 +53,7 @@ import java.util.List;
         "showChangeSridWarning",
         "recentlyUsedProjects"
 })
-public class Gui {
+public class GuiConfig {
     private MainWindow main;
     private ConsoleWindow console;
     private MapWindow map;
@@ -70,7 +70,7 @@ public class Gui {
     @XmlTransient
     private final int maxLastUsedEntries = 5;
 
-    public Gui() {
+    public GuiConfig() {
         main = new MainWindow();
         console = new ConsoleWindow();
         map = new MapWindow();
