@@ -25,47 +25,42 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.citydb.config.project.general;
+package org.citydb.config.project.common;
 
 import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
-import java.util.ArrayList;
-import java.util.List;
 
-@XmlType(name="XSLTransformationType", propOrder={
-        "stylesheets"
+@XmlType(name="AffineTransformationType", propOrder={
+		"transformationMatrix"
 })
-public class XSLTransformation {
-    @XmlAttribute(required=true)
-    private boolean isEnabled = false;
-    @XmlElement(name="stylesheet")
-    private List<String> stylesheets;
+public class AffineTransformation {
+	@XmlAttribute(required=true)
+	private boolean isEnabled = false;
+	private TransformationMatrix transformationMatrix;
 
-    public boolean isEnabled() {
-        return isEnabled;
-    }
+	public AffineTransformation() {
+		transformationMatrix = new TransformationMatrix();
+	}
 
-    public void setEnabled(boolean enabled) {
-        isEnabled = enabled;
-    }
+	public boolean isEnabled() {
+		return isEnabled;
+	}
 
-    public boolean isSetStylesheets() {
-        return stylesheets != null && !stylesheets.isEmpty();
-    }
+	public void setEnabled(boolean isEnabled) {
+		this.isEnabled = isEnabled;
+	}
 
-    public List<String> getStylesheets() {
-        return stylesheets;
-    }
+	public TransformationMatrix getTransformationMatrix() {
+		return transformationMatrix;
+	}
 
-    public void addStylesheet(String stylesheet) {
-        if (stylesheets == null)
-            stylesheets = new ArrayList<>();
-
-        stylesheets.add(stylesheet);
-    }
-
-    public void setStylesheets(List<String> stylesheets) {
-        this.stylesheets = stylesheets;
-    }
+	public void setTransformationMatrix(TransformationMatrix transformationMatrix) {
+		if (transformationMatrix != null)
+			this.transformationMatrix = transformationMatrix;
+	}
+	
+	public boolean isSetTransformationMatrix() {
+		return transformationMatrix != null;
+	}
+	
 }

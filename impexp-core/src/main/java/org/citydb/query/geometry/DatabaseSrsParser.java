@@ -54,7 +54,7 @@ public class DatabaseSrsParser extends SrsNameParser {
 
 		// check whether SRS is supported by database
 		DatabaseSrs targetSrs = null;
-		for (DatabaseSrs srs: config.getProject().getDatabase().getReferenceSystems()) {
+		for (DatabaseSrs srs: config.getProject().getDatabaseConfig().getReferenceSystems()) {
 			if (srs.getSrid() == epsgCode) {
 				if (!srs.isSupported())
 					throw new SrsParseException("The CRS '" + srsName + "' is advertised but not supported by the database.");

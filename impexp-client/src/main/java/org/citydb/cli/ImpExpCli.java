@@ -414,19 +414,19 @@ public class ImpExpCli extends CliCommand implements CommandLine.IVersionProvide
         ProxySelector.setDefault(InternalProxySelector.getInstance());
 
         // set internationalization
-        LanguageType language = config.getProject().getGlobal().getLanguage();
+        LanguageType language = config.getProject().getGlobalConfig().getLanguage();
         if (language != LanguageType.EN) {
             Locale locale = new Locale(language.value());
             if (Language.existsLanguagePack(locale)) {
                 Language.I18N = ResourceBundle.getBundle("org.citydb.config.i18n.language", locale);
             } else {
-                config.getProject().getGlobal().setLanguage(LanguageType.EN);
+                config.getProject().getGlobalConfig().setLanguage(LanguageType.EN);
             }
         }
     }
 
     private void initializeLogging(Config config) {
-        Logging logging = config.getProject().getGlobal().getLogging();
+        Logging logging = config.getProject().getGlobalConfig().getLogging();
 
         // set console log level
         if (!useDefaultLogLevel) {

@@ -80,15 +80,15 @@ public class Tunnel extends KmlGenericObject{
 	}
 
 	protected List<DisplayForm> getDisplayForms() {
-		return config.getProject().getKmlExporter().getTunnelDisplayForms();
+		return config.getProject().getKmlExportConfig().getTunnelDisplayForms();
 	}
 
 	public ColladaOptions getColladaOptions() {
-		return config.getProject().getKmlExporter().getTunnelColladaOptions();
+		return config.getProject().getKmlExportConfig().getTunnelColladaOptions();
 	}
 
 	public Balloon getBalloonSettings() {
-		return config.getProject().getKmlExporter().getTunnelBalloon();
+		return config.getProject().getKmlExportConfig().getTunnelBalloon();
 	}
 
 	public String getStyleBasisName() {
@@ -121,7 +121,7 @@ public class Tunnel extends KmlGenericObject{
 		}
 		
 		if (placemarks.size() == 0) {
-			int lodToExportFrom = config.getProject().getKmlExporter().getLodToExportFrom();
+			int lodToExportFrom = config.getProject().getKmlExportConfig().getLodToExportFrom();
 			String fromMessage = " from LoD" + lodToExportFrom;
 			if (lodToExportFrom == 5) {
 				if (work.getDisplayForm().getForm() == DisplayForm.COLLADA)
@@ -165,7 +165,7 @@ public class Tunnel extends KmlGenericObject{
 		boolean reversePointOrder = false;
 
 		try {
-			currentLod = config.getProject().getKmlExporter().getLodToExportFrom();
+			currentLod = config.getProject().getKmlExportConfig().getLodToExportFrom();
 			int displayForm = work.getDisplayForm().getForm();
 
 			// we handle FOOTPRINT/EXTRUDED differently than GEOMETRY/COLLADA
@@ -330,7 +330,7 @@ public class Tunnel extends KmlGenericObject{
 					return placemarks;
 
 				case DisplayForm.COLLADA:
-					fillGenericObjectForCollada(rs, config.getProject().getKmlExporter().getTunnelColladaOptions().isGenerateTextureAtlases()); // fill and refill
+					fillGenericObjectForCollada(rs, config.getProject().getKmlExportConfig().getTunnelColladaOptions().isGenerateTextureAtlases()); // fill and refill
 					String currentgmlId = getGmlId();
 					setGmlId(work.getGmlId());
 					setId(work.getId());

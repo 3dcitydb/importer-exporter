@@ -123,15 +123,15 @@ public class BuildingRenderingPanel extends AbstractPreferencesComponent {
 	}
 
 	private ColladaOptions getConfigColladaOptions() {
-		return config.getProject().getKmlExporter().getBuildingColladaOptions();
+		return config.getProject().getKmlExportConfig().getBuildingColladaOptions();
 	}
 
 	private List<DisplayForm> getConfigDisplayForms() {
-		return config.getProject().getKmlExporter().getBuildingDisplayForms();
+		return config.getProject().getKmlExportConfig().getBuildingDisplayForms();
 	}
 
 	private void setConfigDisplayForms(List<DisplayForm> displayForms) {
-		config.getProject().getKmlExporter().setBuildingDisplayForms(displayForms);
+		config.getProject().getKmlExportConfig().setBuildingDisplayForms(displayForms);
 	}
 
 	@Override
@@ -160,7 +160,7 @@ public class BuildingRenderingPanel extends AbstractPreferencesComponent {
 			if (areDisplayFormsContentsDifferent(internalDf, configDf)) return true;
 		}
 
-		if (lod0FootprintComboBox.getSelectedItem() != config.getProject().getKmlExporter().getLod0FootprintMode()) return true;
+		if (lod0FootprintComboBox.getSelectedItem() != config.getProject().getKmlExportConfig().getLod0FootprintMode()) return true;
 		if (ignoreSurfaceOrientationCheckbox.isSelected() != colladaOptions.isIgnoreSurfaceOrientation()) return true;
 		if (generateSurfaceNormalsCheckbox.isSelected() != colladaOptions.isGenerateSurfaceNormals()) return true;
 		if (cropImagesCheckbox.isSelected() != colladaOptions.isCropImages()) return true;
@@ -707,7 +707,7 @@ public class BuildingRenderingPanel extends AbstractPreferencesComponent {
 			internalDfs.add(internalDf);
 		}
 
-		lod0FootprintComboBox.setSelectedItem(config.getProject().getKmlExporter().getLod0FootprintMode());
+		lod0FootprintComboBox.setSelectedItem(config.getProject().getKmlExportConfig().getLod0FootprintMode());
 		
 		geometryHLSurfaceDistanceLabel.setEnabled(false);
 		geometryHLSurfaceDistanceText.setEnabled(false);
@@ -830,7 +830,7 @@ public class BuildingRenderingPanel extends AbstractPreferencesComponent {
 			}
 		}
 
-		config.getProject().getKmlExporter().setLod0FootprintMode((Lod0FootprintMode)lod0FootprintComboBox.getSelectedItem());
+		config.getProject().getKmlExportConfig().setLod0FootprintMode((Lod0FootprintMode)lod0FootprintComboBox.getSelectedItem());
 		
 		colladaOptions.setIgnoreSurfaceOrientation(ignoreSurfaceOrientationCheckbox.isSelected());
 		colladaOptions.setGenerateSurfaceNormals(generateSurfaceNormalsCheckbox.isSelected());

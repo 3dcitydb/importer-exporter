@@ -47,7 +47,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
-import org.citydb.config.project.general.PathMode;
+import org.citydb.config.project.common.PathMode;
 import org.citydb.config.project.kmlExporter.Balloon;
 import org.citydb.config.project.kmlExporter.BalloonContentMode;
 import org.citydb.gui.factory.PopupMenuDecorator;
@@ -293,7 +293,7 @@ public class PointAndCurveBalloonPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void loadSettings() {
-		pointBalloon = config.getProject().getKmlExporter().getGenericCityObjectPointAndCurve().getPointBalloon(); 
+		pointBalloon = config.getProject().getKmlExportConfig().getGenericCityObjectPointAndCurve().getPointBalloon();
 
 		pointIncludeDescription.setSelected(pointBalloon.isIncludeDescription());
 		switch (pointBalloon.getBalloonContentMode()) {
@@ -309,7 +309,7 @@ public class PointAndCurveBalloonPanel extends AbstractPreferencesComponent {
 		}
 		pointBrowseText.setText(pointBalloon.getBalloonContentTemplateFile());
 	
-		curveBalloon = config.getProject().getKmlExporter().getGenericCityObjectPointAndCurve().getCurveBalloon();
+		curveBalloon = config.getProject().getKmlExportConfig().getGenericCityObjectPointAndCurve().getCurveBalloon();
 
 		curveIncludeDescription.setSelected(curveBalloon.isIncludeDescription());
 		switch (curveBalloon.getBalloonContentMode()) {

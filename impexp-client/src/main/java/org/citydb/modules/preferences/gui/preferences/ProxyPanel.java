@@ -96,7 +96,7 @@ public class ProxyPanel extends AbstractPreferencesComponent implements EventHan
 		if (!proxyUserText.getText().trim().equals(currentProxy.getUsername())) return true;
 		if (passwordCheck.isSelected() != currentProxy.isSavePassword()) return true;		
 		if (!String.valueOf(proxyPasswordText.getPassword()).equals(currentProxy.getPassword())) return true;
-		if (previousSingleProxy != config.getProject().getGlobal().getProxies().getSingleProxy()) return true;
+		if (previousSingleProxy != config.getProject().getGlobalConfig().getProxies().getSingleProxy()) return true;
 
 		disableInvalidProxies();
 		if (listDecorator.isCheckBoxSelected(proxies.indexOf(currentProxy)) != currentProxy.isEnabled()) return true;
@@ -112,7 +112,7 @@ public class ProxyPanel extends AbstractPreferencesComponent implements EventHan
 		proxyList.setModel(new DefaultListModel<>());
 		listDecorator = new CheckBoxListDecorator<>(proxyList);
 
-		proxies = new ArrayList<>(config.getProject().getGlobal().getProxies().getProxyList().size());
+		proxies = new ArrayList<>(config.getProject().getGlobalConfig().getProxies().getProxyList().size());
 
 		JPanel proxyListPanel = new JPanel();
 		proxySettingsPanel = new JPanel();
@@ -209,7 +209,7 @@ public class ProxyPanel extends AbstractPreferencesComponent implements EventHan
 
 		useSingleProxy.addItemListener(e -> {
 			renderer.enable = e.getStateChange() != ItemEvent.SELECTED;
-			Proxies proxyConfig = config.getProject().getGlobal().getProxies();
+			Proxies proxyConfig = config.getProject().getGlobalConfig().getProxies();
 
 			if (!renderer.enable) {
 				renderer.singleIndex = proxies.indexOf(currentProxy);
@@ -224,7 +224,7 @@ public class ProxyPanel extends AbstractPreferencesComponent implements EventHan
 
 	private void initProxyList() {
 		proxies.clear();
-		proxies.addAll(config.getProject().getGlobal().getProxies().getProxyList());
+		proxies.addAll(config.getProject().getGlobalConfig().getProxies().getProxyList());
 
 		DefaultListModel<ProxyConfig> model = (DefaultListModel<ProxyConfig>)proxyList.getModel();
 		model.clear();
@@ -307,7 +307,7 @@ public class ProxyPanel extends AbstractPreferencesComponent implements EventHan
 			initProxyList();
 
 			// single proxy settings
-			previousSingleProxy = config.getProject().getGlobal().getProxies().getSingleProxy();
+			previousSingleProxy = config.getProject().getGlobalConfig().getProxies().getSingleProxy();
 			renderer.singleIndex = previousSingleProxy != null ? proxies.indexOf(previousSingleProxy) : 0;
 			proxyList.setSelectedIndex(renderer.singleIndex);
 			useSingleProxy.setSelected(previousSingleProxy != null);
@@ -322,13 +322,13 @@ public class ProxyPanel extends AbstractPreferencesComponent implements EventHan
 	public void setSettings() {		
 		setProxySettings(currentProxy);
 		disableInvalidProxies();
-		previousSingleProxy = config.getProject().getGlobal().getProxies().getSingleProxy();
+		previousSingleProxy = config.getProject().getGlobalConfig().getProxies().getSingleProxy();
 		InternalProxySelector.getInstance().setDefaultAuthentication();
 	}
 
 	@Override
 	public void resetSettings() {
-		config.getProject().getGlobal().getProxies().reset();
+		config.getProject().getGlobalConfig().getProxies().reset();
 		useSingleProxy.setSelected(false);
 		previousSingleProxy = null;
 

@@ -66,7 +66,7 @@ public class DBExportXlinkWorkerFactory implements WorkerFactory<DBXlink> {
 			if (databaseAdapter.hasVersioningSupport()) {
 				databaseAdapter.getWorkspaceManager().gotoWorkspace(
 						connection,
-						config.getProject().getDatabase().getWorkspaces().getExportWorkspace());
+						config.getProject().getDatabaseConfig().getWorkspaces().getExportWorkspace());
 			}
 
 			dbWorker = new DBExportXlinkWorker(outputFile, connection, databaseAdapter, config, eventDispatcher);

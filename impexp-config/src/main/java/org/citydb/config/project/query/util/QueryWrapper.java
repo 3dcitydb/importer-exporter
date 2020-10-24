@@ -28,7 +28,7 @@
 
 package org.citydb.config.project.query.util;
 
-import org.citydb.config.project.query.Query;
+import org.citydb.config.project.query.QueryConfig;
 
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
@@ -38,13 +38,13 @@ import javax.xml.bind.annotation.XmlType;
         "query"
 })
 public class QueryWrapper {
-    private Query query;
+    private QueryConfig query;
 
-    public Query getQuery() {
+    public QueryConfig getQuery() {
         return query;
     }
 
-    public void setQuery(Query query) {
+    public void setQuery(QueryConfig query) {
         this.query = query;
     }
 }

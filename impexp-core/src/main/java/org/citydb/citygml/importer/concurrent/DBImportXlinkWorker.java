@@ -59,7 +59,7 @@ import org.citydb.citygml.importer.database.xlink.importer.DBXlinkImporterTextur
 import org.citydb.citygml.importer.database.xlink.importer.DBXlinkImporterTextureParam;
 import org.citydb.concurrent.Worker;
 import org.citydb.config.Config;
-import org.citydb.config.project.database.Database;
+import org.citydb.config.project.database.DatabaseConfig;
 import org.citydb.config.project.global.LogLevel;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.connection.DatabaseConnectionPool;
@@ -87,9 +87,9 @@ public class DBImportXlinkWorker extends Worker<DBXlink> implements EventHandler
 		dbXlinkManager = new DBXlinkImporterManager(cacheTableManager, eventDispatcher);
 
 		AbstractDatabaseAdapter databaseAdapter = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter();
-		Database database = config.getProject().getDatabase();
+		DatabaseConfig databaseConfig = config.getProject().getDatabaseConfig();
 
-		commitAfter = database.getImportBatching().getTempBatchSize();
+		commitAfter = databaseConfig.getImportBatching().getTempBatchSize();
 		if (commitAfter > databaseAdapter.getMaxBatchSize())
 			commitAfter = databaseAdapter.getMaxBatchSize();
 

@@ -80,15 +80,15 @@ public class Bridge extends KmlGenericObject{
 	}
 
 	protected List<DisplayForm> getDisplayForms() {
-		return config.getProject().getKmlExporter().getBridgeDisplayForms();
+		return config.getProject().getKmlExportConfig().getBridgeDisplayForms();
 	}
 
 	public ColladaOptions getColladaOptions() {
-		return config.getProject().getKmlExporter().getBridgeColladaOptions();
+		return config.getProject().getKmlExportConfig().getBridgeColladaOptions();
 	}
 
 	public Balloon getBalloonSettings() {
-		return config.getProject().getKmlExporter().getBridgeBalloon();
+		return config.getProject().getKmlExportConfig().getBridgeBalloon();
 	}
 
 	public String getStyleBasisName() {
@@ -123,7 +123,7 @@ public class Bridge extends KmlGenericObject{
 		}
 
 		if (placemarks.size() == 0) {
-			int lodToExportFrom = config.getProject().getKmlExporter().getLodToExportFrom();
+			int lodToExportFrom = config.getProject().getKmlExportConfig().getLodToExportFrom();
 			String fromMessage = " from LoD" + lodToExportFrom;
 			if (lodToExportFrom == 5) {
 				if (work.getDisplayForm().getForm() == DisplayForm.COLLADA)
@@ -167,7 +167,7 @@ public class Bridge extends KmlGenericObject{
 		boolean reversePointOrder = false;
 
 		try {
-			currentLod = config.getProject().getKmlExporter().getLodToExportFrom();
+			currentLod = config.getProject().getKmlExportConfig().getLodToExportFrom();
 			int displayForm = work.getDisplayForm().getForm();
 
 			// we handle FOOTPRINT/EXTRUDED differently than GEOMETRY/COLLADA
@@ -332,7 +332,7 @@ public class Bridge extends KmlGenericObject{
 					return placemarks;
 
 				case DisplayForm.COLLADA:
-					fillGenericObjectForCollada(rs, config.getProject().getKmlExporter().getBridgeColladaOptions().isGenerateTextureAtlases()); // fill and refill
+					fillGenericObjectForCollada(rs, config.getProject().getKmlExportConfig().getBridgeColladaOptions().isGenerateTextureAtlases()); // fill and refill
 					String currentgmlId = getGmlId();
 					setGmlId(work.getGmlId());
 					setId(work.getId());

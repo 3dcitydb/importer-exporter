@@ -77,15 +77,15 @@ public class Relief extends KmlGenericObject{
 	}
 
 	protected List<DisplayForm> getDisplayForms() {
-		return config.getProject().getKmlExporter().getReliefDisplayForms();
+		return config.getProject().getKmlExportConfig().getReliefDisplayForms();
 	}
 
 	public ColladaOptions getColladaOptions() {
-		return config.getProject().getKmlExporter().getReliefColladaOptions();
+		return config.getProject().getKmlExportConfig().getReliefColladaOptions();
 	}
 
 	public Balloon getBalloonSettings() {
-		return config.getProject().getKmlExporter().getReliefBalloon();
+		return config.getProject().getKmlExportConfig().getReliefBalloon();
 	}
 
 	public String getStyleBasisName() {
@@ -97,7 +97,7 @@ public class Relief extends KmlGenericObject{
 		ResultSet rs = null;
 
 		try {
-			int lodToExportFrom = currentLod = config.getProject().getKmlExporter().getLodToExportFrom();
+			int lodToExportFrom = currentLod = config.getProject().getKmlExportConfig().getLodToExportFrom();
 			currentLod = lodToExportFrom == 5 ? 4 : lodToExportFrom;
 			int minLod = lodToExportFrom == 5 ? 0 : lodToExportFrom;
 			boolean found = false;
@@ -185,7 +185,7 @@ public class Relief extends KmlGenericObject{
 					break;
 
 				case DisplayForm.COLLADA:
-					fillGenericObjectForCollada(rs, config.getProject().getKmlExporter().getReliefColladaOptions().isGenerateTextureAtlases());
+					fillGenericObjectForCollada(rs, config.getProject().getKmlExportConfig().getReliefColladaOptions().isGenerateTextureAtlases());
 					String currentgmlId = getGmlId();
 					setGmlId(work.getGmlId());
 					setId(work.getId());

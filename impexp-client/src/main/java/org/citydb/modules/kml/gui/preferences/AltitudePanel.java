@@ -73,20 +73,20 @@ public class AltitudePanel extends AbstractPreferencesComponent {
 
 	@Override
 	public boolean isModified() {
-		if (!modeComboBox.getSelectedItem().equals(config.getProject().getKmlExporter().getAltitudeMode()))
+		if (!modeComboBox.getSelectedItem().equals(config.getProject().getKmlExportConfig().getAltitudeMode()))
 			return true;
 
 		double altitudeOffsetValue = 0;
 		try {
 			altitudeOffsetValue = Double.parseDouble(constantOffsetText.getText().trim());
-			if (altitudeOffsetValue != config.getProject().getKmlExporter().getAltitudeOffsetValue())
+			if (altitudeOffsetValue != config.getProject().getKmlExportConfig().getAltitudeOffsetValue())
 				return true;
 		}
 		catch (NumberFormatException nfe) {
 			return true; // saved altitudeOffsetValues are always valid, so an invalid one must have been changed
 		}
 
-		switch (config.getProject().getKmlExporter().getAltitudeOffsetMode()) {
+		switch (config.getProject().getKmlExportConfig().getAltitudeOffsetMode()) {
 			case NO_OFFSET:
 				if (!noOffsetRadioButton.isSelected())
 					return true;
@@ -105,10 +105,10 @@ public class AltitudePanel extends AbstractPreferencesComponent {
 				break;
 		}
 
-		if (callGElevationService.isSelected() != config.getProject().getKmlExporter().isCallGElevationService())
+		if (callGElevationService.isSelected() != config.getProject().getKmlExportConfig().isCallGElevationService())
 			return true;
 
-		if (useOriginalZCoords.isSelected() != config.getProject().getKmlExporter().isUseOriginalZCoords())
+		if (useOriginalZCoords.isSelected() != config.getProject().getKmlExportConfig().isUseOriginalZCoords())
 			return true;
 
 		return false;
@@ -169,7 +169,7 @@ public class AltitudePanel extends AbstractPreferencesComponent {
         for (AltitudeMode c: AltitudeMode.values()) {
     		modeComboBox.addItem(c);
         }
-		modeComboBox.setSelectedItem(config.getProject().getKmlExporter().getAltitudeMode());
+		modeComboBox.setSelectedItem(config.getProject().getKmlExportConfig().getAltitudeMode());
 		
 		noOffsetRadioButton.setText(Language.I18N.getString("pref.kmlexport.altitude.label.noOffset"));
 		constantOffsetRadioButton.setText(Language.I18N.getString("pref.kmlexport.altitude.label.constantOffset"));
@@ -182,9 +182,9 @@ public class AltitudePanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void loadSettings() {
-		modeComboBox.setSelectedItem(config.getProject().getKmlExporter().getAltitudeMode());
-		constantOffsetText.setText(String.valueOf(config.getProject().getKmlExporter().getAltitudeOffsetValue()));
-		switch (config.getProject().getKmlExporter().getAltitudeOffsetMode()) {
+		modeComboBox.setSelectedItem(config.getProject().getKmlExportConfig().getAltitudeMode());
+		constantOffsetText.setText(String.valueOf(config.getProject().getKmlExportConfig().getAltitudeOffsetValue()));
+		switch (config.getProject().getKmlExportConfig().getAltitudeOffsetMode()) {
 			case NO_OFFSET:
 				noOffsetRadioButton.setSelected(true);
 				break;
@@ -198,19 +198,19 @@ public class AltitudePanel extends AbstractPreferencesComponent {
 				genericAttributeRadioButton.setSelected(true);
 				break;
 		}
-		callGElevationService.setSelected(config.getProject().getKmlExporter().isCallGElevationService());
-		useOriginalZCoords.setSelected(config.getProject().getKmlExporter().isUseOriginalZCoords());
+		callGElevationService.setSelected(config.getProject().getKmlExportConfig().isCallGElevationService());
+		useOriginalZCoords.setSelected(config.getProject().getKmlExportConfig().isUseOriginalZCoords());
 		setEnabledComponents();
 	}
 
 	@Override
 	public void setSettings() {
-		config.getProject().getKmlExporter().setAltitudeMode((AltitudeMode)modeComboBox.getSelectedItem());
+		config.getProject().getKmlExportConfig().setAltitudeMode((AltitudeMode)modeComboBox.getSelectedItem());
 
 		double altitudeOffsetValue = 0;
 		try {
 			altitudeOffsetValue = Double.parseDouble(constantOffsetText.getText().trim());
-			config.getProject().getKmlExporter().setAltitudeOffsetValue(altitudeOffsetValue);
+			config.getProject().getKmlExportConfig().setAltitudeOffsetValue(altitudeOffsetValue);
 		}
 		catch (NumberFormatException nfe) {
 			JOptionPane.showMessageDialog(this, Language.I18N.getString("pref.kmlexport.altitude.invalidOffsetValue"),
@@ -219,19 +219,19 @@ public class AltitudePanel extends AbstractPreferencesComponent {
 		}
 
 		if (noOffsetRadioButton.isSelected()) {
-			config.getProject().getKmlExporter().setAltitudeOffsetMode(AltitudeOffsetMode.NO_OFFSET);
+			config.getProject().getKmlExportConfig().setAltitudeOffsetMode(AltitudeOffsetMode.NO_OFFSET);
 		}
 		else if (constantOffsetRadioButton.isSelected()) {
-			config.getProject().getKmlExporter().setAltitudeOffsetMode(AltitudeOffsetMode.CONSTANT);
+			config.getProject().getKmlExportConfig().setAltitudeOffsetMode(AltitudeOffsetMode.CONSTANT);
 		}
 		else if (bottomZeroRadioButton.isSelected()) {
-			config.getProject().getKmlExporter().setAltitudeOffsetMode(AltitudeOffsetMode.BOTTOM_ZERO);
+			config.getProject().getKmlExportConfig().setAltitudeOffsetMode(AltitudeOffsetMode.BOTTOM_ZERO);
 		}
 		else if (genericAttributeRadioButton.isSelected()) {
-			config.getProject().getKmlExporter().setAltitudeOffsetMode(AltitudeOffsetMode.GENERIC_ATTRIBUTE);
+			config.getProject().getKmlExportConfig().setAltitudeOffsetMode(AltitudeOffsetMode.GENERIC_ATTRIBUTE);
 		}
-		config.getProject().getKmlExporter().setCallGElevationService(callGElevationService.isSelected());
-		config.getProject().getKmlExporter().setUseOriginalZCoords(useOriginalZCoords.isSelected());
+		config.getProject().getKmlExportConfig().setCallGElevationService(callGElevationService.isSelected());
+		config.getProject().getKmlExportConfig().setUseOriginalZCoords(useOriginalZCoords.isSelected());
 	}
 	
 	@Override

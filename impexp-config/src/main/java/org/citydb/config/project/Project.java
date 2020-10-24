@@ -28,12 +28,12 @@
 package org.citydb.config.project;
 
 import org.citydb.config.ConfigNamespaceFilter;
-import org.citydb.config.project.database.Database;
-import org.citydb.config.project.deleter.Deleter;
-import org.citydb.config.project.exporter.Exporter;
-import org.citydb.config.project.global.Global;
-import org.citydb.config.project.importer.Importer;
-import org.citydb.config.project.kmlExporter.KmlExporter;
+import org.citydb.config.project.database.DatabaseConfig;
+import org.citydb.config.project.deleter.DeleteConfig;
+import org.citydb.config.project.exporter.ExportConfig;
+import org.citydb.config.project.global.GlobalConfig;
+import org.citydb.config.project.importer.ImportConfig;
+import org.citydb.config.project.kmlExporter.KmlExportConfig;
 import org.citydb.config.project.plugin.PluginConfig;
 import org.citydb.config.project.plugin.PluginConfigListAdapter;
 
@@ -45,110 +45,112 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.util.HashMap;
 import java.util.Map;
 
-@XmlRootElement
-@XmlType(name="ProjectType", propOrder={
-		"database",
-		"importer",
-		"exporter",
-		"deleter",
-		"kmlExporter",
-		"global",
+@XmlRootElement(name = "project")
+@XmlType(name = "ProjectType", propOrder = {
+		"databaseConfig",
+		"importConfig",
+		"exportConfig",
+		"deleteConfig",
+		"kmlExportConfig",
+		"globalConfig",
 		"extensions"
 })
 public class Project {
-	private Database database;
-	@XmlElement(name="import")
-	private Importer importer;
-	@XmlElement(name="export")
-	private Exporter exporter;
-	@XmlElement(name="delete")
-	private Deleter deleter;
-	@XmlElement(name="kmlExport")
-	private KmlExporter kmlExporter;
-	private Global global;
+	@XmlElement(name = "database")
+	private DatabaseConfig databaseConfig;
+	@XmlElement(name = "import")
+	private ImportConfig importConfig;
+	@XmlElement(name = "export")
+	private ExportConfig exportConfig;
+	@XmlElement(name = "delete")
+	private DeleteConfig deleteConfig;
+	@XmlElement(name = "kmlExport")
+	private KmlExportConfig kmlExportConfig;
+	@XmlElement(name = "global")
+	private GlobalConfig globalConfig;
 	@XmlJavaTypeAdapter(PluginConfigListAdapter.class)
 	private final Map<Class<? extends PluginConfig>, PluginConfig> extensions;
 	
 	@XmlTransient
 	private ConfigNamespaceFilter namespaceFilter;
 
-	public Project(Database database, Importer importer, Exporter exporter, Deleter deleter, KmlExporter kmlExporter, Global global) {
-		this.database = database;
-		this.importer = importer;
-		this.exporter = exporter;
-		this.deleter = deleter;
-		this.kmlExporter = kmlExporter;
-		this.global = global;
+	public Project(DatabaseConfig databaseConfig, ImportConfig importConfig, ExportConfig exportConfig, DeleteConfig deleteConfig, KmlExportConfig kmlExportConfig, GlobalConfig globalConfig) {
+		this.databaseConfig = databaseConfig;
+		this.importConfig = importConfig;
+		this.exportConfig = exportConfig;
+		this.deleteConfig = deleteConfig;
+		this.kmlExportConfig = kmlExportConfig;
+		this.globalConfig = globalConfig;
 
 		namespaceFilter = new ConfigNamespaceFilter();
 		extensions = new HashMap<>();
 	}
 
 	public Project() {
-		this(new Database(), new Importer(), new Exporter(), new Deleter(), new KmlExporter(), new Global());
+		this(new DatabaseConfig(), new ImportConfig(), new ExportConfig(), new DeleteConfig(), new KmlExportConfig(), new GlobalConfig());
 	}
 
-	public Database getDatabase() {
-		return database;
+	public DatabaseConfig getDatabaseConfig() {
+		return databaseConfig;
 	}
 
-	public void setDatabase(Database database) {
-		if (database != null)
-			this.database = database;
+	public void setDatabaseConfig(DatabaseConfig databaseConfig) {
+		if (databaseConfig != null)
+			this.databaseConfig = databaseConfig;
 	}
 
-	public Importer getImporter() {
-		return importer;
+	public ImportConfig getImportConfig() {
+		return importConfig;
 	}
 
-	public void setImporter(Importer importer) {
-		if (importer != null)
-			this.importer = importer;
+	public void setImportConfig(ImportConfig importConfig) {
+		if (importConfig != null)
+			this.importConfig = importConfig;
 	}
 
-	public Exporter getExporter() {
-		return exporter;
+	public ExportConfig getExportConfig() {
+		return exportConfig;
 	}
 
-	public void setExporter(Exporter exporter) {
-		if (exporter != null)
-			this.exporter = exporter;
+	public void setExportConfig(ExportConfig exportConfig) {
+		if (exportConfig != null)
+			this.exportConfig = exportConfig;
 	}
 	
-	public Deleter getDeleter() {
-		return deleter;
+	public DeleteConfig getDeleteConfig() {
+		return deleteConfig;
 	}
 
-	public void setDeleter(Deleter deleter) {
-		if (deleter != null)
-			this.deleter = deleter;
+	public void setDeleteConfig(DeleteConfig deleteConfig) {
+		if (deleteConfig != null)
+			this.deleteConfig = deleteConfig;
 	}
 
-	public void setKmlExporter(KmlExporter kmlExporter) {
-		if (kmlExporter != null)
-			this.kmlExporter = kmlExporter;
+	public void setKmlExportConfig(KmlExportConfig kmlExportConfig) {
+		if (kmlExportConfig != null)
+			this.kmlExportConfig = kmlExportConfig;
 	}
 
-	public KmlExporter getKmlExporter() {
-		return kmlExporter;
+	public KmlExportConfig getKmlExportConfig() {
+		return kmlExportConfig;
 	}
 
-	public Global getGlobal() {
-		return global;
+	public GlobalConfig getGlobalConfig() {
+		return globalConfig;
 	}
 
-	public void setGlobal(Global global) {
-		if (global != null)
-			this.global = global;
+	public void setGlobalConfig(GlobalConfig globalConfig) {
+		if (globalConfig != null)
+			this.globalConfig = globalConfig;
 	}
 
-	public <T extends PluginConfig> T getExtension(Class<T> type) {
+	public <T extends PluginConfig> T getPluginConfig(Class<T> type) {
 		PluginConfig config = extensions.get(type);
 		return type.isInstance(config) ? type.cast(config) : null;
 	}
 	
-	public PluginConfig registerExtension(PluginConfig config) {
-		return extensions.put(config.getClass(), config);
+	public PluginConfig registerPluginConfig(PluginConfig pluginConfig) {
+		return extensions.put(pluginConfig.getClass(), pluginConfig);
 	}
 	
 	public ConfigNamespaceFilter getNamespaceFilter() {

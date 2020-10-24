@@ -33,8 +33,8 @@ import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.config.geometry.GeometryType;
 import org.citydb.config.geometry.Position;
-import org.citydb.config.project.database.Database;
-import org.citydb.config.project.database.Database.PredefinedSrsName;
+import org.citydb.config.project.database.DatabaseConfig;
+import org.citydb.config.project.database.DatabaseConfig.PredefinedSrsName;
 import org.citydb.config.project.database.DatabaseSrs;
 import org.citydb.config.project.kmlExporter.DisplayForm;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
@@ -94,9 +94,9 @@ public class KmlSplitter {
 
 		// try and change workspace for connection if needed
 		if (databaseAdapter.hasVersioningSupport()) {
-			Database database = config.getProject().getDatabase();
+			DatabaseConfig databaseConfig = config.getProject().getDatabaseConfig();
 			databaseAdapter.getWorkspaceManager().gotoWorkspace(connection, 
-					database.getWorkspaces().getKmlExportWorkspace());
+					databaseConfig.getWorkspaces().getKmlExportWorkspace());
 		}
 
 		schema = databaseAdapter.getConnectionDetails().getSchema();
@@ -245,7 +245,7 @@ public class KmlSplitter {
 
 		double[] coordinates = envelope.getCoordinates(0);
 		BoundingBox bbox = new BoundingBox(new Position(coordinates[0], coordinates[1]), new Position(coordinates[3], coordinates[4]));
-		BoundingBox wgs84 = databaseAdapter.getUtil().transformBoundingBox(bbox, dbSrs, Database.PREDEFINED_SRS.get(PredefinedSrsName.WGS84_2D));
+		BoundingBox wgs84 = databaseAdapter.getUtil().transformBoundingBox(bbox, dbSrs, DatabaseConfig.PREDEFINED_SRS.get(PredefinedSrsName.WGS84_2D));
 
 		double[] result = new double[6];
 		result[0] = wgs84.getLowerCorner().getX();

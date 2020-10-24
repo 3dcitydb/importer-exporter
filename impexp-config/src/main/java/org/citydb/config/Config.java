@@ -56,7 +56,7 @@ public class Config {
 			
 			// add things to be done after changing the project settings
 			// (e.g., after unmarshalling the config file) here 
-			project.getDatabase().addDefaultReferenceSystems();
+			project.getDatabaseConfig().addDefaultReferenceSystems();
 		}
 	}
 

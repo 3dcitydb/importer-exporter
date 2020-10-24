@@ -25,42 +25,47 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.citydb.config.project.general;
+package org.citydb.config.project.common;
 
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
+import java.util.ArrayList;
+import java.util.List;
 
-@XmlType(name="AffineTransformationType", propOrder={
-		"transformationMatrix"
+@XmlType(name="XSLTransformationType", propOrder={
+        "stylesheets"
 })
-public class AffineTransformation {
-	@XmlAttribute(required=true)
-	private boolean isEnabled = false;
-	private TransformationMatrix transformationMatrix;
+public class XSLTransformation {
+    @XmlAttribute(required=true)
+    private boolean isEnabled = false;
+    @XmlElement(name="stylesheet")
+    private List<String> stylesheets;
 
-	public AffineTransformation() {
-		transformationMatrix = new TransformationMatrix();
-	}
+    public boolean isEnabled() {
+        return isEnabled;
+    }
 
-	public boolean isEnabled() {
-		return isEnabled;
-	}
+    public void setEnabled(boolean enabled) {
+        isEnabled = enabled;
+    }
 
-	public void setEnabled(boolean isEnabled) {
-		this.isEnabled = isEnabled;
-	}
+    public boolean isSetStylesheets() {
+        return stylesheets != null && !stylesheets.isEmpty();
+    }
 
-	public TransformationMatrix getTransformationMatrix() {
-		return transformationMatrix;
-	}
+    public List<String> getStylesheets() {
+        return stylesheets;
+    }
 
-	public void setTransformationMatrix(TransformationMatrix transformationMatrix) {
-		if (transformationMatrix != null)
-			this.transformationMatrix = transformationMatrix;
-	}
-	
-	public boolean isSetTransformationMatrix() {
-		return transformationMatrix != null;
-	}
-	
+    public void addStylesheet(String stylesheet) {
+        if (stylesheets == null)
+            stylesheets = new ArrayList<>();
+
+        stylesheets.add(stylesheet);
+    }
+
+    public void setStylesheets(List<String> stylesheets) {
+        this.stylesheets = stylesheets;
+    }
 }

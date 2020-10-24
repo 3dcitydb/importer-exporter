@@ -126,7 +126,7 @@ public class GuiCommand extends CliCommand implements StartupProgressListener {
         pluginManager.registerInternalPlugin(new PreferencesPlugin(impExpGui, config));
 
         // initialize all GUI plugins
-        Locale locale = new Locale(config.getProject().getGlobal().getLanguage().value());
+        Locale locale = new Locale(config.getProject().getGlobalConfig().getLanguage().value());
         for (Plugin plugin : pluginManager.getPlugins()) {
             if (plugin instanceof ViewExtension) {
                 ((ViewExtension) plugin).initViewExtension(impExpGui, locale);

@@ -121,15 +121,15 @@ public class TunnelRenderingPanel extends AbstractPreferencesComponent {
 	}
 
 	private ColladaOptions getConfigColladaOptions() {
-		return config.getProject().getKmlExporter().getTunnelColladaOptions();
+		return config.getProject().getKmlExportConfig().getTunnelColladaOptions();
 	}
 
 	private List<DisplayForm> getConfigDisplayForms() {
-		return config.getProject().getKmlExporter().getTunnelDisplayForms();
+		return config.getProject().getKmlExportConfig().getTunnelDisplayForms();
 	}
 
 	private void setConfigDisplayForms(List<DisplayForm> displayForms) {
-		config.getProject().getKmlExporter().setTunnelDisplayForms(displayForms);
+		config.getProject().getKmlExportConfig().setTunnelDisplayForms(displayForms);
 	}
 
 	@Override

@@ -47,7 +47,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
-import org.citydb.config.project.general.PathMode;
+import org.citydb.config.project.common.PathMode;
 import org.citydb.config.project.kmlExporter.Balloon;
 import org.citydb.config.project.kmlExporter.BalloonContentMode;
 import org.citydb.gui.factory.PopupMenuDecorator;
@@ -79,7 +79,7 @@ public class ThreeDBalloonPanel extends AbstractPreferencesComponent {
 
 	private Balloon getConfigBalloon() {
 
-		return config.getProject().getKmlExporter().getGenericCityObject3DBalloon();
+		return config.getProject().getKmlExportConfig().getGenericCityObject3DBalloon();
 	}
 
 	@Override
@@ -222,8 +222,8 @@ public class ThreeDBalloonPanel extends AbstractPreferencesComponent {
 		copyBalloonContents(internalBalloon, configBalloon);
 		
 		// this setting affect all geometry type of the genericcityoject (3D. Curve and point)
-		config.getProject().getKmlExporter().getGenericCityObjectPointAndCurve().getPointBalloon().setBalloonContentInSeparateFile(configBalloon.isBalloonContentInSeparateFile());
-		config.getProject().getKmlExporter().getGenericCityObjectPointAndCurve().getCurveBalloon().setBalloonContentInSeparateFile(configBalloon.isBalloonContentInSeparateFile());
+		config.getProject().getKmlExportConfig().getGenericCityObjectPointAndCurve().getPointBalloon().setBalloonContentInSeparateFile(configBalloon.isBalloonContentInSeparateFile());
+		config.getProject().getKmlExportConfig().getGenericCityObjectPointAndCurve().getCurveBalloon().setBalloonContentInSeparateFile(configBalloon.isBalloonContentInSeparateFile());
 	}
 	
 	private void loadFile() {

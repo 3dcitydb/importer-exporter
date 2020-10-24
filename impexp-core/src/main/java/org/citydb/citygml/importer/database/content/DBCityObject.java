@@ -62,7 +62,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
-import java.time.LocalTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
@@ -98,18 +97,18 @@ public class DBCityObject implements DBImporter {
 		this.batchConn = batchConn;	
 		this.importer = importer;
 
-		affineTransformation = config.getProject().getImporter().getAffineTransformation().isEnabled();
+		affineTransformation = config.getProject().getImportConfig().getAffineTransformation().isEnabled();
 		dbSrid = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter().getConnectionMetaData().getReferenceSystem().getSrid();
-		importAppearance = config.getProject().getImporter().getAppearances().isSetImportAppearance();
-		creationDateMode = config.getProject().getImporter().getContinuation().getCreationDateMode();
-		terminationDateMode = config.getProject().getImporter().getContinuation().getTerminationDateMode();
+		importAppearance = config.getProject().getImportConfig().getAppearances().isSetImportAppearance();
+		creationDateMode = config.getProject().getImportConfig().getContinuation().getCreationDateMode();
+		terminationDateMode = config.getProject().getImportConfig().getContinuation().getTerminationDateMode();
 
-		importCityDBMetadata = config.getProject().getImporter().getContinuation().isImportCityDBMetadata();
-		reasonForUpdate = config.getProject().getImporter().getContinuation().getReasonForUpdate();
-		lineage = config.getProject().getImporter().getContinuation().getLineage();
-		updatingPerson = config.getProject().getImporter().getContinuation().isUpdatingPersonModeDatabase() ?
+		importCityDBMetadata = config.getProject().getImportConfig().getContinuation().isImportCityDBMetadata();
+		reasonForUpdate = config.getProject().getImportConfig().getContinuation().getReasonForUpdate();
+		lineage = config.getProject().getImportConfig().getContinuation().getLineage();
+		updatingPerson = config.getProject().getImportConfig().getContinuation().isUpdatingPersonModeDatabase() ?
 				importer.getDatabaseAdapter().getConnectionDetails().getUser() :
-				config.getProject().getImporter().getContinuation().getUpdatingPerson();
+				config.getProject().getImportConfig().getContinuation().getUpdatingPerson();
 
 		if (reasonForUpdate != null && reasonForUpdate.trim().isEmpty())
 			reasonForUpdate = null;
@@ -124,8 +123,8 @@ public class DBCityObject implements DBImporter {
 		if (gmlIdCodespace != null)
 			gmlIdCodespace = "'" + gmlIdCodespace + "', ";
 
-		replaceGmlId = config.getProject().getImporter().getGmlId().isUUIDModeReplace();
-		rememberGmlId = config.getProject().getImporter().getGmlId().isSetKeepGmlIdAsExternalReference();
+		replaceGmlId = config.getProject().getImportConfig().getGmlId().isUUIDModeReplace();
+		rememberGmlId = config.getProject().getImportConfig().getGmlId().isSetKeepGmlIdAsExternalReference();
 		if (replaceGmlId && rememberGmlId && importer.getInputFile() != null)
 			importFileName = importer.getInputFile().getFile().toString();
 

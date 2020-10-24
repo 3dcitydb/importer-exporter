@@ -48,8 +48,7 @@ import org.citydb.citygml.exporter.writer.FeatureWriter;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
 import org.citydb.config.geometry.GeometryObject;
-import org.citydb.config.project.database.ExportBatching;
-import org.citydb.config.project.exporter.Exporter;
+import org.citydb.config.project.exporter.ExportConfig;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.schema.TableEnum;
 import org.citydb.database.schema.mapping.AbstractObjectType;
@@ -204,7 +203,7 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 
 		if (!query.getLodFilter().preservesGeometry()) {
 			lodGeometryChecker = new LodGeometryChecker(this, schemaMapping);
-			if (config.getProject().getExporter().getAppearances().isSetExportAppearance())
+			if (config.getProject().getExportConfig().getAppearances().isSetExportAppearance())
 				appearanceRemover = new AppearanceRemover();
 		}
 
@@ -255,7 +254,7 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 			}
 
 			// trigger export of textures if required
-			if (isLazyTextureExport() && config.getProject().getExporter().getAppearances().isSetExportAppearance())
+			if (isLazyTextureExport() && config.getProject().getExportConfig().getAppearances().isSetExportAppearance())
 				getExporter(DBLocalAppearance.class).triggerLazyTextureExport(feature);
 		}
 
@@ -495,11 +494,11 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 	}
 
 	protected int getFeatureBatchSize() {
-		return getBatchSize(config.getProject().getDatabase().getExportBatching().getFeatureBatchSize());
+		return getBatchSize(config.getProject().getDatabaseConfig().getExportBatching().getFeatureBatchSize());
 	}
 
 	protected int getGeometryBatchSize() {
-		return getBatchSize(config.getProject().getDatabase().getExportBatching().getGeometryBatchSize());
+		return getBatchSize(config.getProject().getDatabaseConfig().getExportBatching().getGeometryBatchSize());
 	}
 
 	private int getBatchSize(int batchSize) {
@@ -606,8 +605,8 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 	}
 
 	@Override
-	public Exporter getExportConfig() {
-		return config.getProject().getExporter();
+	public ExportConfig getExportConfig() {
+		return config.getProject().getExportConfig();
 	}
 
 	@Override
@@ -701,13 +700,13 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 	}
 
 	public String generateNewGmlId(AbstractFeature feature, String oldGmlId) {
-		String gmlId = DefaultGMLIdManager.getInstance().generateUUID(config.getProject().getExporter().getXlink().getFeature().getIdPrefix());
+		String gmlId = DefaultGMLIdManager.getInstance().generateUUID(config.getProject().getExportConfig().getXlink().getFeature().getIdPrefix());
 
 		if (oldGmlId != null) {
-			if (config.getProject().getExporter().getXlink().getFeature().isSetAppendId())
+			if (config.getProject().getExportConfig().getXlink().getFeature().isSetAppendId())
 				gmlId = gmlId + "-" + oldGmlId;
 
-			if (config.getProject().getExporter().getXlink().getFeature().isSetKeepGmlIdAsExternalReference()
+			if (config.getProject().getExportConfig().getXlink().getFeature().isSetKeepGmlIdAsExternalReference()
 					&& feature instanceof AbstractCityObject) {
 				ExternalReference externalReference = new ExternalReference();
 				if (outputFile != null)

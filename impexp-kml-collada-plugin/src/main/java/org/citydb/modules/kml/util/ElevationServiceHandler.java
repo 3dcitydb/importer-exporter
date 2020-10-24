@@ -73,8 +73,8 @@ public class ElevationServiceHandler {
 	double lastLong = 0;
 
 	public ElevationServiceHandler(Config config) {
-		apiKey = config.getProject().getGlobal().getApiKeys().isSetGoogleElevation() ?
-				config.getProject().getGlobal().getApiKeys().getGoogleElevation() : "";
+		apiKey = config.getProject().getGlobalConfig().getApiKeys().isSetGoogleElevation() ?
+				config.getProject().getGlobalConfig().getApiKeys().getGoogleElevation() : "";
 	}
 
 	public double getZOffset(double[] candidateCoords) throws Exception {

@@ -34,6 +34,7 @@ import org.citydb.config.project.exporter.SimpleTilingMode;
 import org.citydb.config.project.kmlExporter.KmlTiling;
 import org.citydb.config.project.kmlExporter.SimpleKmlQuery;
 import org.citydb.config.project.kmlExporter.SimpleKmlQueryMode;
+import org.citydb.config.project.query.QueryConfig;
 import org.citydb.config.project.query.filter.selection.AbstractPredicate;
 import org.citydb.config.project.query.filter.selection.comparison.GreaterThanOperator;
 import org.citydb.config.project.query.filter.selection.comparison.LessThanOrEqualToOperator;
@@ -75,7 +76,7 @@ public class ConfigQueryBuilder {
 		this.databaseAdapter = databaseAdapter;
 	}
 
-	public Query buildQuery(org.citydb.config.project.query.Query queryConfig, NamespaceContext namespaceContext) throws QueryBuildException {
+	public Query buildQuery(QueryConfig queryConfig, NamespaceContext namespaceContext) throws QueryBuildException {
 		Query query = new Query();
 
 		ValueReferenceBuilder valueReferenceBuilder = new ValueReferenceBuilder(query, schemaMapping, namespaceContext);

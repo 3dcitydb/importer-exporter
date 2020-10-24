@@ -114,15 +114,15 @@ public class CityFurnitureRenderingPanel extends AbstractPreferencesComponent {
 	}
 
 	private ColladaOptions getConfigColladaOptions() {
-		return config.getProject().getKmlExporter().getCityFurnitureColladaOptions();
+		return config.getProject().getKmlExportConfig().getCityFurnitureColladaOptions();
 	}
 
 	private List<DisplayForm> getConfigDisplayForms() {
-		return config.getProject().getKmlExporter().getCityFurnitureDisplayForms();
+		return config.getProject().getKmlExportConfig().getCityFurnitureDisplayForms();
 	}
 
 	private void setConfigDisplayForms(List<DisplayForm> displayForms) {
-		config.getProject().getKmlExporter().setCityFurnitureDisplayForms(displayForms);
+		config.getProject().getKmlExportConfig().setCityFurnitureDisplayForms(displayForms);
 	}
 
 	@Override

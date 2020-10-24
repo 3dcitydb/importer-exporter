@@ -44,8 +44,8 @@ import javax.swing.border.TitledBorder;
 
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
-import org.citydb.config.project.general.Path;
-import org.citydb.config.project.general.PathMode;
+import org.citydb.config.project.common.Path;
+import org.citydb.config.project.common.PathMode;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.preferences.AbstractPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
@@ -70,8 +70,8 @@ public class PathPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public boolean isModified() {
-		Path importPath = config.getProject().getImporter().getPath();
-		Path exportPath = config.getProject().getExporter().getPath();;
+		Path importPath = config.getProject().getImportConfig().getPath();
+		Path exportPath = config.getProject().getExportConfig().getPath();;
 		
 		if (importPathRadioLast.isSelected() != importPath.isSetLastUsedMode()) return true;
 		if (importPathRadioDef.isSelected() != importPath.isSetStandardMode()) return true;
@@ -197,7 +197,7 @@ public class PathPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void loadSettings() {
-		Path path = config.getProject().getImporter().getPath();
+		Path path = config.getProject().getImportConfig().getPath();
 
 		if (path.isSetLastUsedMode())
 			importPathRadioLast.setSelected(true);
@@ -206,7 +206,7 @@ public class PathPanel extends AbstractPreferencesComponent {
 
 		importPathText.setText(path.getStandardPath());
 
-		path = config.getProject().getExporter().getPath();
+		path = config.getProject().getExportConfig().getPath();
 		if (path.isSetLastUsedMode())
 			exportPathRadioLast.setSelected(true);
 		else
@@ -220,7 +220,7 @@ public class PathPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void setSettings() {
-		Path path = config.getProject().getImporter().getPath();
+		Path path = config.getProject().getImportConfig().getPath();
 		
 		if (importPathRadioDef.isSelected()) {
 			path.setPathMode(PathMode.STANDARD);
@@ -230,7 +230,7 @@ public class PathPanel extends AbstractPreferencesComponent {
 		}
 
 		path.setStandardPath(importPathText.getText());
-		path = config.getProject().getExporter().getPath();
+		path = config.getProject().getExportConfig().getPath();
 		
 		if (exportPathRadioDef.isSelected()) {
 			path.setPathMode(PathMode.STANDARD);

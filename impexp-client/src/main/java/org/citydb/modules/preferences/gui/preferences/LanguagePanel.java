@@ -38,7 +38,7 @@ import javax.swing.border.TitledBorder;
 
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
-import org.citydb.config.project.global.Global;
+import org.citydb.config.project.global.GlobalConfig;
 import org.citydb.config.project.global.LanguageType;
 import org.citydb.gui.ImpExpGui;
 import org.citydb.gui.preferences.AbstractPreferencesComponent;
@@ -59,7 +59,7 @@ public class LanguagePanel extends AbstractPreferencesComponent {
 	
 	@Override
 	public boolean isModified() {
-		LanguageType language = config.getProject().getGlobal().getLanguage();
+		LanguageType language = config.getProject().getGlobalConfig().getLanguage();
 		
 		if (importLanguageRadioDe.isSelected() && !(language == LanguageType.DE)) return true;
 		if (importLanguageRadioEn.isSelected() && !(language == LanguageType.EN)) return true;
@@ -97,7 +97,7 @@ public class LanguagePanel extends AbstractPreferencesComponent {
 	
 	@Override
 	public void loadSettings() {		
-		LanguageType language = config.getProject().getGlobal().getLanguage();
+		LanguageType language = config.getProject().getGlobalConfig().getLanguage();
 		
 		if (language == LanguageType.DE) {
 			importLanguageRadioDe.setSelected(true);
@@ -109,13 +109,13 @@ public class LanguagePanel extends AbstractPreferencesComponent {
 	
 	@Override
 	public void setSettings() {
-		Global global = config.getProject().getGlobal();
+		GlobalConfig globalConfig = config.getProject().getGlobalConfig();
 		
 		if (importLanguageRadioDe.isSelected()) {
-			global.setLanguage(LanguageType.DE);
+			globalConfig.setLanguage(LanguageType.DE);
 		}
 		else if (importLanguageRadioEn.isSelected()) {
-			global.setLanguage(LanguageType.EN);
+			globalConfig.setLanguage(LanguageType.EN);
 		}
 		
 		mainView.doTranslation();

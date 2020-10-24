@@ -172,7 +172,7 @@ public class FilterPanel extends JPanel implements EventHandler {
 		tilingRowsText = new JFormattedTextField(tileFormat);
 		tilingColumnsText = new JFormattedTextField(tileFormat);
 
-		featureTree = new FeatureTypeTree(Util.toCityGMLVersion(config.getProject().getExporter().getSimpleQuery().getVersion()));
+		featureTree = new FeatureTypeTree(Util.toCityGMLVersion(config.getProject().getExportConfig().getSimpleQuery().getVersion()));
 		featureTree.setRowHeight((int)(new JCheckBox().getPreferredSize().getHeight()) - 4);
 		featureTree.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createEtchedBorder(),
 				BorderFactory.createEmptyBorder(0, 0, 4, 4)));
@@ -453,7 +453,7 @@ public class FilterPanel extends JPanel implements EventHandler {
 	}
 
 	public void loadSettings() {
-		SimpleQuery query = config.getProject().getExporter().getSimpleQuery();
+		SimpleQuery query = config.getProject().getExportConfig().getSimpleQuery();
 
 		useSelectionFilter.setSelected(query.isUseSelectionFilter());
 		useLodFilter.setSelected(query.isUseLodFilter());
@@ -519,7 +519,7 @@ public class FilterPanel extends JPanel implements EventHandler {
 	}
 
 	public void setSimpleQuerySettings() {
-		SimpleQuery query = config.getProject().getExporter().getSimpleQuery();
+		SimpleQuery query = config.getProject().getExportConfig().getSimpleQuery();
 
 		query.setUseSelectionFilter(useSelectionFilter.isSelected());
 		query.setUseCountFilter(useCounterFilter.isSelected());

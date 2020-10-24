@@ -29,7 +29,7 @@ package org.citydb.modules.citygml.common.gui.preferences;
 
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
-import org.citydb.config.project.general.XSLTransformation;
+import org.citydb.config.project.common.XSLTransformation;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.preferences.AbstractPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
@@ -85,8 +85,8 @@ public class XSLTransformationPanel extends AbstractPreferencesComponent {
 
     @Override
     public boolean isModified() {
-        XSLTransformation transformation = isExport ? config.getProject().getExporter().getXSLTransformation() :
-                config.getProject().getImporter().getXSLTransformation();
+        XSLTransformation transformation = isExport ? config.getProject().getExportConfig().getXSLTransformation() :
+                config.getProject().getImportConfig().getXSLTransformation();
 
         if (transformation.isEnabled() != applyStylesheets.isSelected()) return true;
         if (!transformation.isSetStylesheets() && !first.stylesheet.getText().trim().isEmpty()) return true;
@@ -129,8 +129,8 @@ public class XSLTransformationPanel extends AbstractPreferencesComponent {
 
     @Override
     public void setSettings() {
-        XSLTransformation transformation = isExport ? config.getProject().getExporter().getXSLTransformation() :
-                config.getProject().getImporter().getXSLTransformation();
+        XSLTransformation transformation = isExport ? config.getProject().getExportConfig().getXSLTransformation() :
+                config.getProject().getImportConfig().getXSLTransformation();
 
         transformation.setEnabled(applyStylesheets.isSelected());
 
@@ -172,8 +172,8 @@ public class XSLTransformationPanel extends AbstractPreferencesComponent {
 
     @Override
     public void loadSettings() {
-        XSLTransformation transformation = isExport ? config.getProject().getExporter().getXSLTransformation() :
-                config.getProject().getImporter().getXSLTransformation();
+        XSLTransformation transformation = isExport ? config.getProject().getExportConfig().getXSLTransformation() :
+                config.getProject().getImportConfig().getXSLTransformation();
 
         applyStylesheets.setSelected(transformation.isEnabled());
 

@@ -76,7 +76,7 @@ public class AppearancePanel extends AbstractPreferencesComponent {
 
 	@Override
 	public boolean isModified() {
-		ExportAppearance appearances = config.getProject().getExporter().getAppearances();
+		ExportAppearance appearances = config.getProject().getExportConfig().getAppearances();
 
 		try { noOfBuckets.commitEdit(); } catch (ParseException ignored) { }
 
@@ -207,7 +207,7 @@ public class AppearancePanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void loadSettings() {
-		ExportAppearance appearances = config.getProject().getExporter().getAppearances();
+		ExportAppearance appearances = config.getProject().getExportConfig().getAppearances();
 
 		if (appearances.isSetExportAppearance())
 			exportAll.setSelected(true);
@@ -226,7 +226,7 @@ public class AppearancePanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void setSettings() {
-		ExportAppearance appearances = config.getProject().getExporter().getAppearances();
+		ExportAppearance appearances = config.getProject().getExportConfig().getAppearances();
 
 		if (exportAll.isSelected())
 			appearances.setExportAppearances(true);

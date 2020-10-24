@@ -34,7 +34,7 @@ import org.citydb.ade.ADEExtensionManager;
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.database.DBConnection;
-import org.citydb.config.project.database.Database;
+import org.citydb.config.project.database.DatabaseConfig;
 import org.citydb.config.project.database.DatabaseConfigurationException;
 import org.citydb.config.project.database.DatabaseSrs;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
@@ -175,7 +175,7 @@ public class DatabaseConnectionPool implements ConnectionManager {
 				databaseAdapter.addConnectionWarning(warning);
 
 			// check whether user-defined reference systems are supported
-			for (DatabaseSrs refSys : config.getProject().getDatabase().getReferenceSystems())
+			for (DatabaseSrs refSys : config.getProject().getDatabaseConfig().getReferenceSystems())
 				databaseAdapter.getUtil().getSrsInfo(refSys);			
 
 		} catch (DatabaseVersionException | SQLException e) {
@@ -260,7 +260,7 @@ public class DatabaseConnectionPool implements ConnectionManager {
 			String message = "The following CityGML ADEs are registered in the database but are not supported:\n" + Util.collection2string(unsupported, "\n");
 			String formattedMessage = MessageFormat.format(Language.I18N.getString("db.dialog.warn.ade.unsupported"),
 					Util.collection2string(unsupported, "<br>"));
-			warning = new DatabaseConnectionWarning(message, formattedMessage, Database.CITYDB_PRODUCT_NAME, ConnectionWarningType.UNSUPPORTED_ADE);
+			warning = new DatabaseConnectionWarning(message, formattedMessage, DatabaseConfig.CITYDB_PRODUCT_NAME, ConnectionWarningType.UNSUPPORTED_ADE);
 		}
 
 		return warning;

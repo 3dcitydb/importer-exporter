@@ -65,7 +65,7 @@ public class CachePanel extends AbstractPreferencesComponent {
 
 	@Override
 	public boolean isModified() {
-		Cache cache = config.getProject().getGlobal().getCache();
+		Cache cache = config.getProject().getGlobalConfig().getCache();
 
 		if (useDatabase.isSelected() != cache.isUseDatabase()) return true;
 		if (useLocalCache.isSelected() != cache.isUseLocal()) return true;
@@ -138,7 +138,7 @@ public class CachePanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void loadSettings() {
-		Cache cache = config.getProject().getGlobal().getCache();
+		Cache cache = config.getProject().getGlobalConfig().getCache();
 		if (cache.isUseDatabase())
 			useDatabase.setSelected(true);
 		else
@@ -150,7 +150,7 @@ public class CachePanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void setSettings() {		
-		Cache cache = config.getProject().getGlobal().getCache();
+		Cache cache = config.getProject().getGlobalConfig().getCache();
 		
 		cache.setCacheMode(useDatabase.isSelected() ? CacheMode.DATABASE : CacheMode.LOCAL);
 		cache.setLocalCachePath(localCachePath.getText());

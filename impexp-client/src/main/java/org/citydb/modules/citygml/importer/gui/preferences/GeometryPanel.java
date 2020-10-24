@@ -29,8 +29,8 @@ package org.citydb.modules.citygml.importer.gui.preferences;
 
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
-import org.citydb.config.project.general.AffineTransformation;
-import org.citydb.config.project.general.TransformationMatrix;
+import org.citydb.config.project.common.AffineTransformation;
+import org.citydb.config.project.common.TransformationMatrix;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.preferences.AbstractPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
@@ -73,7 +73,7 @@ public class GeometryPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public boolean isModified() {
-		AffineTransformation affineTransformation = config.getProject().getImporter().getAffineTransformation();
+		AffineTransformation affineTransformation = config.getProject().getImportConfig().getAffineTransformation();
 
 		if (useAffineTransformation.isSelected() != affineTransformation.isEnabled()) return true;
 		
@@ -231,7 +231,7 @@ public class GeometryPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void loadSettings() {
-		AffineTransformation affineTransformation = config.getProject().getImporter().getAffineTransformation();
+		AffineTransformation affineTransformation = config.getProject().getImportConfig().getAffineTransformation();
 			
 		useAffineTransformation.setSelected(affineTransformation.isEnabled());
 
@@ -247,7 +247,7 @@ public class GeometryPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void setSettings() {
-		AffineTransformation affineTransformation = config.getProject().getImporter().getAffineTransformation();
+		AffineTransformation affineTransformation = config.getProject().getImportConfig().getAffineTransformation();
 		
 		affineTransformation.setEnabled(useAffineTransformation.isSelected());
 		

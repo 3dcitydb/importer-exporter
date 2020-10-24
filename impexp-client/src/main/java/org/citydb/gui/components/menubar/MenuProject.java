@@ -225,7 +225,7 @@ public class MenuProject extends JMenu {
 		boolean success = false;
 
 		try {
-			Logging logging = config.getProject().getGlobal().getLogging();
+			Logging logging = config.getProject().getGlobalConfig().getLogging();
 			Object object = ConfigUtil.getInstance().unmarshal(file);
 			if (!(object instanceof Project)) {
 				log.error("Failed to read project settings.");
@@ -254,7 +254,7 @@ public class MenuProject extends JMenu {
 			}
 
 			// adapt logging subsystem
-			project.getGlobal().setLogging(logging);
+			project.getGlobalConfig().setLogging(logging);
 
 			// reset logging settings
 			pluginManager.getInternalPlugin(PreferencesPlugin.class).setLoggingSettings();

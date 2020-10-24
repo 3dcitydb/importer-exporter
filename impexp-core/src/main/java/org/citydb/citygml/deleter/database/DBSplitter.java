@@ -138,7 +138,7 @@ public class DBSplitter {
 			return;
 
 		// do not terminate city objects that have already been terminated
-		if (config.getProject().getDeleter().getMode() == DeleteMode.TERMINATE) {
+		if (config.getProject().getDeleteConfig().getMode() == DeleteMode.TERMINATE) {
 			try {
 				FeatureType superType = schemaMapping.getCommonSuperType(query.getFeatureTypeFilter().getFeatureTypes());
 				SchemaPath schemaPath = new SchemaPath(superType)

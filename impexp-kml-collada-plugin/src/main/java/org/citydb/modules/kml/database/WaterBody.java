@@ -77,15 +77,15 @@ public class WaterBody extends KmlGenericObject{
 	}
 
 	protected List<DisplayForm> getDisplayForms() {
-		return config.getProject().getKmlExporter().getWaterBodyDisplayForms();
+		return config.getProject().getKmlExportConfig().getWaterBodyDisplayForms();
 	}
 
 	public ColladaOptions getColladaOptions() {
-		return config.getProject().getKmlExporter().getWaterBodyColladaOptions();
+		return config.getProject().getKmlExportConfig().getWaterBodyColladaOptions();
 	}
 
 	public Balloon getBalloonSettings() {
-		return config.getProject().getKmlExporter().getWaterBodyBalloon();
+		return config.getProject().getKmlExportConfig().getWaterBodyBalloon();
 	}
 
 	public String getStyleBasisName() {
@@ -97,7 +97,7 @@ public class WaterBody extends KmlGenericObject{
 		ResultSet rs = null;
 
 		try {
-			int lodToExportFrom = currentLod = config.getProject().getKmlExporter().getLodToExportFrom();
+			int lodToExportFrom = currentLod = config.getProject().getKmlExportConfig().getLodToExportFrom();
 			currentLod = lodToExportFrom == 5 ? 4 : lodToExportFrom;
 			int minLod = lodToExportFrom == 5 ? 0 : lodToExportFrom;
 			boolean found = false;
@@ -184,7 +184,7 @@ public class WaterBody extends KmlGenericObject{
 					break;
 
 				case DisplayForm.COLLADA:
-					fillGenericObjectForCollada(rs, config.getProject().getKmlExporter().getWaterBodyColladaOptions().isGenerateTextureAtlases());
+					fillGenericObjectForCollada(rs, config.getProject().getKmlExportConfig().getWaterBodyColladaOptions().isGenerateTextureAtlases());
 					String currentgmlId = getGmlId();
 					setGmlId(work.getGmlId());
 					setId(work.getId());

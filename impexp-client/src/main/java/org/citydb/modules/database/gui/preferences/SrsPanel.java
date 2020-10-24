@@ -284,7 +284,7 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 				refSys.setDescription(getNewRefSysDescription());
 				refSys.setSupported(!dbPool.isConnected());
 
-				config.getProject().getDatabase().addReferenceSystem(refSys);
+				config.getProject().getDatabaseConfig().addReferenceSystem(refSys);
 				updateSrsComboBoxes(false);
 				srsComboBox.setSelectedItem(refSys);
 
@@ -299,7 +299,7 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 					DatabaseSrs copy = new DatabaseSrs(orig);
 					copy.setDescription(getCopyOfDescription(orig));
 
-					config.getProject().getDatabase().addReferenceSystem(copy);
+					config.getProject().getDatabaseConfig().addReferenceSystem(copy);
 					updateSrsComboBoxes(false);
 					srsComboBox.setSelectedItem(copy);
 
@@ -323,7 +323,7 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 				String formattedMsg = MessageFormat.format(text, args);
 
 				if (JOptionPane.showConfirmDialog(getTopLevelAncestor(), formattedMsg, Language.I18N.getString("pref.db.srs.dialog.delete.title"), JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-					config.getProject().getDatabase().getReferenceSystems().remove(refSys);
+					config.getProject().getDatabaseConfig().getReferenceSystems().remove(refSys);
 					updateSrsComboBoxes(false);
 					srsComboBox.setSelectedIndex(index < srsComboBox.getItemCount() ? index : index - 1);
 					displaySelectedValues();
@@ -388,7 +388,7 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 
 	@Override
 	public void resetSettings() {
-		config.getProject().getDatabase().addDefaultReferenceSystems();
+		config.getProject().getDatabaseConfig().addDefaultReferenceSystems();
 		srsComboBoxFactory.updateAll(true);
 	}
 
@@ -478,7 +478,7 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 		if (Language.I18N.getString("common.label.boundingBox.crs.sameAsInDB").replaceAll("\\s*-\\s*" + Language.I18N.getString("pref.db.srs.label.copyReferenceSystem") + ".*$", "").toLowerCase().equals(name.toLowerCase()))
 			nr++;
 
-		for (DatabaseSrs tmp : config.getProject().getDatabase().getReferenceSystems()) 
+		for (DatabaseSrs tmp : config.getProject().getDatabaseConfig().getReferenceSystems())
 			if (tmp.getDescription().replaceAll("\\s*-\\s*" + Language.I18N.getString("pref.db.srs.label.copyReferenceSystem") + ".*$", "").toLowerCase().equals(name.toLowerCase()))
 				nr++;
 
@@ -491,7 +491,7 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 	private String getNewRefSysDescription() {
 		int nr = 1;
 		String name = Language.I18N.getString("pref.db.srs.label.newReferenceSystem");
-		for (DatabaseSrs refSys : config.getProject().getDatabase().getReferenceSystems()) 
+		for (DatabaseSrs refSys : config.getProject().getDatabaseConfig().getReferenceSystems())
 			if (refSys.getDescription().toLowerCase().startsWith(name.toLowerCase()))
 				nr++;
 
@@ -533,7 +533,7 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 			if (object instanceof DatabaseSrsList) {
 				DatabaseSrsList refSyss = (DatabaseSrsList)object;				
 				if (replace)
-					config.getProject().getDatabase().getReferenceSystems().clear();
+					config.getProject().getDatabaseConfig().getReferenceSystems().clear();
 
 				if (dbPool.isConnected())
 					log.info("Checking whether reference systems are supported by database profile.");
@@ -554,7 +554,7 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 						}
 					}
 
-					config.getProject().getDatabase().getReferenceSystems().add(refSys);
+					config.getProject().getDatabaseConfig().getReferenceSystems().add(refSys);
 					log.info(msg);
 				}
 
@@ -587,7 +587,7 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 		try {
 			setSettings();
 
-			if (config.getProject().getDatabase().getReferenceSystems().isEmpty()) {
+			if (config.getProject().getDatabaseConfig().getReferenceSystems().isEmpty()) {
 				log.error("There are no user-defined reference systems to be exported.");
 				return;
 			}
@@ -611,7 +611,7 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 			log.info("Writing reference systems to file '" + file.getAbsolutePath() + "'.");
 
 			DatabaseSrsList refSys = new DatabaseSrsList();
-			for (DatabaseSrs tmp : config.getProject().getDatabase().getReferenceSystems()) {
+			for (DatabaseSrs tmp : config.getProject().getDatabaseConfig().getReferenceSystems()) {
 				DatabaseSrs copy = new DatabaseSrs(tmp);
 				copy.setId(null);				
 				refSys.addItem(copy);
@@ -689,7 +689,7 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 
 		if (!isConnected) {
 			DatabaseSrs tmp = DatabaseSrs.createDefaultSrs();
-			for (DatabaseSrs refSys : config.getProject().getDatabase().getReferenceSystems()) {
+			for (DatabaseSrs refSys : config.getProject().getDatabaseConfig().getReferenceSystems()) {
 				refSys.setSupported(true);
 				refSys.setDatabaseSrsName(tmp.getDatabaseSrsName());
 				refSys.setType(tmp.getType());

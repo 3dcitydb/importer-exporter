@@ -74,8 +74,8 @@ public class XLinkPanel extends AbstractPreferencesComponent {
 	
 	@Override
 	public boolean isModified() {
-		XLinkFeatureConfig feature = config.getProject().getExporter().getXlink().getFeature();
-		XLinkConfig geometry = config.getProject().getExporter().getXlink().getGeometry();
+		XLinkFeatureConfig feature = config.getProject().getExportConfig().getXlink().getFeature();
+		XLinkConfig geometry = config.getProject().getExportConfig().getXlink().getGeometry();
 
 		if (!featureIdPrefix.getText().equals(feature.getIdPrefix())) return true;
 		if (xlinkToFeature.isSelected() != feature.isModeXLink()) return true;
@@ -218,8 +218,8 @@ public class XLinkPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void loadSettings() {
-		XLinkFeatureConfig feature = config.getProject().getExporter().getXlink().getFeature();
-		XLinkConfig geometry = config.getProject().getExporter().getXlink().getGeometry();
+		XLinkFeatureConfig feature = config.getProject().getExportConfig().getXlink().getFeature();
+		XLinkConfig geometry = config.getProject().getExportConfig().getXlink().getGeometry();
 		
 		if (feature.getIdPrefix() != null && feature.getIdPrefix().trim().length() != 0)
 			featureIdPrefix.setText(feature.getIdPrefix());
@@ -256,8 +256,8 @@ public class XLinkPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void setSettings() {
-		XLinkFeatureConfig feature = config.getProject().getExporter().getXlink().getFeature();
-		XLinkConfig geometry = config.getProject().getExporter().getXlink().getGeometry();
+		XLinkFeatureConfig feature = config.getProject().getExportConfig().getXlink().getFeature();
+		XLinkConfig geometry = config.getProject().getExportConfig().getXlink().getGeometry();
 		
 		if (featureIdPrefix.getText() != null && DefaultGMLIdManager.getInstance().isValidPrefix(featureIdPrefix.getText()))
 			feature.setIdPrefix(featureIdPrefix.getText().trim());

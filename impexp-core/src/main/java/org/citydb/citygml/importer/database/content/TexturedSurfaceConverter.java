@@ -67,7 +67,7 @@ public class TexturedSurfaceConverter {
 		this.appearanceImporter = appearanceImporter;
 		this.importer = importer;
 
-		theme = config.getProject().getImporter().getAppearances().getThemeForTexturedSurface();
+		theme = config.getProject().getImportConfig().getAppearances().getThemeForTexturedSurface();
 	}
 
 	protected void convertTexturedSurface(_AbstractAppearance _appearance, AbstractSurface abstractSurface, long parentId, boolean isFront, String target) throws CityGMLImportException, SQLException {

@@ -60,7 +60,7 @@ public class VersionPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public boolean isModified() {
-		CityGMLVersionType version = config.getProject().getExporter().getSimpleQuery().getVersion();
+		CityGMLVersionType version = config.getProject().getExportConfig().getSimpleQuery().getVersion();
 
 		for (int i = 0; i < CityGMLVersionType.values().length; i++)
 			if (cityGMLVersionBox[i].isSelected())
@@ -114,7 +114,7 @@ public class VersionPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void loadSettings() {
-		CityGMLVersionType version = config.getProject().getExporter().getSimpleQuery().getVersion();
+		CityGMLVersionType version = config.getProject().getExportConfig().getSimpleQuery().getVersion();
 		if (version != null) {
 			for (int i = 0; i < CityGMLVersionType.values().length; i++) {
 				if (CityGMLVersionType.values()[i] == version) {
@@ -130,7 +130,7 @@ public class VersionPanel extends AbstractPreferencesComponent {
 	public void setSettings() {
 		for (int i = 0; i < CityGMLVersionType.values().length; i++) {
 			if (cityGMLVersionBox[i].isSelected()) {
-				config.getProject().getExporter().getSimpleQuery().setVersion(CityGMLVersionType.fromValue(cityGMLVersionBox[i].getText()));
+				config.getProject().getExportConfig().getSimpleQuery().setVersion(CityGMLVersionType.fromValue(cityGMLVersionBox[i].getText()));
 				break;
 			}
 		}

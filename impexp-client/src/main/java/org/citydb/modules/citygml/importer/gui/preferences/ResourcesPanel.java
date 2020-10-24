@@ -91,11 +91,11 @@ public class ResourcesPanel extends AbstractPreferencesComponent{
 
 	@Override
 	public boolean isModified() {
-		ThreadPoolConfig threadPool = config.getProject().getImporter().getResources().getThreadPool().getDefaultPool();
-		ImportBatching commit = config.getProject().getDatabase().getImportBatching();
-		UIDCacheConfig geometry = config.getProject().getImporter().getResources().getGmlIdCache().getGeometry();
-		UIDCacheConfig feature = config.getProject().getImporter().getResources().getGmlIdCache().getFeature();
-		UIDCacheConfig texImage = config.getProject().getImporter().getResources().getTexImageCache();
+		ThreadPoolConfig threadPool = config.getProject().getImportConfig().getResources().getThreadPool().getDefaultPool();
+		ImportBatching commit = config.getProject().getDatabaseConfig().getImportBatching();
+		UIDCacheConfig geometry = config.getProject().getImportConfig().getResources().getGmlIdCache().getGeometry();
+		UIDCacheConfig feature = config.getProject().getImportConfig().getResources().getGmlIdCache().getFeature();
+		UIDCacheConfig texImage = config.getProject().getImportConfig().getResources().getTexImageCache();
 		
 		try { impResMinThreadsText.commitEdit(); } catch (ParseException e) { }
 		try { impResMaxThreadsText.commitEdit(); } catch (ParseException e) { }
@@ -367,11 +367,11 @@ public class ResourcesPanel extends AbstractPreferencesComponent{
 
 	@Override
 	public void loadSettings() {
-		ThreadPoolConfig threadPool = config.getProject().getImporter().getResources().getThreadPool().getDefaultPool();
-		ImportBatching commit = config.getProject().getDatabase().getImportBatching();
-		UIDCacheConfig geometry = config.getProject().getImporter().getResources().getGmlIdCache().getGeometry();
-		UIDCacheConfig feature = config.getProject().getImporter().getResources().getGmlIdCache().getFeature();
-		UIDCacheConfig texImage = config.getProject().getImporter().getResources().getTexImageCache();
+		ThreadPoolConfig threadPool = config.getProject().getImportConfig().getResources().getThreadPool().getDefaultPool();
+		ImportBatching commit = config.getProject().getDatabaseConfig().getImportBatching();
+		UIDCacheConfig geometry = config.getProject().getImportConfig().getResources().getGmlIdCache().getGeometry();
+		UIDCacheConfig feature = config.getProject().getImportConfig().getResources().getGmlIdCache().getFeature();
+		UIDCacheConfig texImage = config.getProject().getImportConfig().getResources().getTexImageCache();
 
 		int commitFeature = commit.getFeatureBatchSize();
 		if (commitFeature > ImportBatching.MAX_BATCH_SIZE)
@@ -403,11 +403,11 @@ public class ResourcesPanel extends AbstractPreferencesComponent{
 
 	@Override
 	public void setSettings() {
-		ThreadPoolConfig threadPool = config.getProject().getImporter().getResources().getThreadPool().getDefaultPool();
-		ImportBatching commit = config.getProject().getDatabase().getImportBatching();
-		UIDCacheConfig geometry = config.getProject().getImporter().getResources().getGmlIdCache().getGeometry();
-		UIDCacheConfig feature = config.getProject().getImporter().getResources().getGmlIdCache().getFeature();
-		UIDCacheConfig texImage = config.getProject().getImporter().getResources().getTexImageCache();
+		ThreadPoolConfig threadPool = config.getProject().getImportConfig().getResources().getThreadPool().getDefaultPool();
+		ImportBatching commit = config.getProject().getDatabaseConfig().getImportBatching();
+		UIDCacheConfig geometry = config.getProject().getImportConfig().getResources().getGmlIdCache().getGeometry();
+		UIDCacheConfig feature = config.getProject().getImportConfig().getResources().getGmlIdCache().getFeature();
+		UIDCacheConfig texImage = config.getProject().getImportConfig().getResources().getTexImageCache();
 
 		int minThreads = ((Number)impResMinThreadsText.getValue()).intValue();
 		int maxThreads = ((Number)impResMaxThreadsText.getValue()).intValue();

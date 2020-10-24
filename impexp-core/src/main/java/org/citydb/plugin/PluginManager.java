@@ -142,12 +142,12 @@ public class PluginManager {
 
     public <T extends PluginConfig> void propagatePluginConfig(ConfigExtension<T> plugin, Config config) throws PluginException {
         Class<T> type = getConfigClass(plugin);
-        T pluginConfig = config.getProject().getExtension(type);
+        T pluginConfig = config.getProject().getPluginConfig(type);
 
         if (pluginConfig == null) {
             try {
                 pluginConfig = type.getDeclaredConstructor().newInstance();
-                config.getProject().registerExtension(pluginConfig);
+                config.getProject().registerPluginConfig(pluginConfig);
             } catch (Exception e) {
                 throw new PluginException("Failed to invoke default constructor of " + type.getName() + ".", e);
             }

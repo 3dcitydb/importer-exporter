@@ -238,12 +238,12 @@ public class ImportPanel extends JPanel implements EventHandler {
 	}
 
 	public void loadSettings() {
-		workspaceText.setText(config.getProject().getDatabase().getWorkspaces().getImportWorkspace().getName());
+		workspaceText.setText(config.getProject().getDatabaseConfig().getWorkspaces().getImportWorkspace().getName());
 		filterPanel.loadSettings();
 	}
 
 	public void setSettings() {
-		config.getProject().getDatabase().getWorkspaces().getImportWorkspace().setName(workspaceText.getText());
+		config.getProject().getDatabaseConfig().getWorkspaces().getImportWorkspace().setName(workspaceText.getText());
 		filterPanel.setSettings();
 	}
 
@@ -255,7 +255,7 @@ public class ImportPanel extends JPanel implements EventHandler {
 			viewController.clearConsole();
 			setSettings();
 
-			ImportFilter filter = config.getProject().getImporter().getFilter();
+			ImportFilter filter = config.getProject().getImportConfig().getFilter();
 
 			// check all input values...
 			List<Path> inputFiles = getInputFiles();
@@ -309,7 +309,7 @@ public class ImportPanel extends JPanel implements EventHandler {
 			}
 
 			// affine transformation
-			if (config.getProject().getImporter().getAffineTransformation().isEnabled()) {
+			if (config.getProject().getImportConfig().getAffineTransformation().isEnabled()) {
 				if (JOptionPane.showConfirmDialog(
 						viewController.getTopFrame(), 
 						Language.I18N.getString("import.dialog.warning.affineTransformation"),
@@ -476,9 +476,9 @@ public class ImportPanel extends JPanel implements EventHandler {
 		chooser.setFileFilter(filter);
 
 		if (fileListModel.isEmpty()) {
-			chooser.setCurrentDirectory(config.getProject().getImporter().getPath().isSetLastUsedMode() ?
-					new File(config.getProject().getImporter().getPath().getLastUsedPath()) :
-					new File(config.getProject().getImporter().getPath().getStandardPath()));
+			chooser.setCurrentDirectory(config.getProject().getImportConfig().getPath().isSetLastUsedMode() ?
+					new File(config.getProject().getImportConfig().getPath().getLastUsedPath()) :
+					new File(config.getProject().getImportConfig().getPath().getStandardPath()));
 		} else
 			chooser.setCurrentDirectory(fileListModel.get(0));
 
@@ -490,7 +490,7 @@ public class ImportPanel extends JPanel implements EventHandler {
 		for (File file : chooser.getSelectedFiles())
 			fileListModel.addElement(file);
 
-		config.getProject().getImporter().getPath().setLastUsedPath(chooser.getCurrentDirectory().getAbsolutePath());
+		config.getProject().getImportConfig().getPath().setLastUsedPath(chooser.getCurrentDirectory().getAbsolutePath());
 	}
 
 	// JList handler for drop, cut, copy, and paste support
@@ -609,7 +609,7 @@ public class ImportPanel extends JPanel implements EventHandler {
 			for (File file : files)
 				fileListModel.add(index++, file);
 
-			config.getProject().getImporter().getPath().setLastUsedPath(fileListModel.getElementAt(0).getAbsolutePath());
+			config.getProject().getImportConfig().getPath().setLastUsedPath(fileListModel.getElementAt(0).getAbsolutePath());
 		}
 
 		@Override

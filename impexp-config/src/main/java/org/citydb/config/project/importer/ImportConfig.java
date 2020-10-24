@@ -27,13 +27,15 @@
  */
 package org.citydb.config.project.importer;
 
+import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
-import org.citydb.config.project.general.AffineTransformation;
-import org.citydb.config.project.general.Path;
-import org.citydb.config.project.general.XSLTransformation;
+import org.citydb.config.project.common.AffineTransformation;
+import org.citydb.config.project.common.Path;
+import org.citydb.config.project.common.XSLTransformation;
 
-@XmlType(name="ImportType", propOrder={
+@XmlRootElement(name = "import")
+@XmlType(name = "ImportType", propOrder = {
 		"filter",
 		"continuation",
 		"path",
@@ -47,7 +49,7 @@ import org.citydb.config.project.general.XSLTransformation;
 		"importLog",
 		"resources"
 })
-public class Importer {
+public class ImportConfig {
 	private ImportFilter filter;
 	private Continuation continuation;
 	private Path path;
@@ -61,7 +63,7 @@ public class Importer {
 	private ImportLog importLog;
 	private ImportResources resources;
 
-	public Importer() {
+	public ImportConfig() {
 		continuation = new Continuation();
 		path = new Path();
 		gmlId = new ImportGmlId();

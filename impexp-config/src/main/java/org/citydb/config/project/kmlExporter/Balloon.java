@@ -28,7 +28,7 @@
 package org.citydb.config.project.kmlExporter;
 
 
-import org.citydb.config.project.general.Path;
+import org.citydb.config.project.common.Path;
 
 import javax.xml.bind.annotation.XmlType;
 

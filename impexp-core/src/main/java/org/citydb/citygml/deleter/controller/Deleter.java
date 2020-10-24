@@ -105,7 +105,7 @@ public class Deleter implements EventHandler {
 		int maxThreads = Math.max(minThreads, Runtime.getRuntime().availableProcessors());
 		
 		// checking workspace
-		Workspace workspace = config.getProject().getDatabase().getWorkspaces().getDeleteWorkspace();
+		Workspace workspace = config.getProject().getDatabaseConfig().getWorkspaces().getDeleteWorkspace();
 		if (shouldRun && databaseAdapter.hasVersioningSupport() && 
 				!databaseAdapter.getWorkspaceManager().equalsDefaultWorkspaceName(workspace.getName()) &&
 				!databaseAdapter.getWorkspaceManager().existsWorkspace(workspace, true))
@@ -115,10 +115,10 @@ public class Deleter implements EventHandler {
 		Query query;
 		try {
 			ConfigQueryBuilder queryBuilder = new ConfigQueryBuilder(schemaMapping, databaseAdapter);
-			if (config.getProject().getExporter().isUseSimpleQuery())
-				query = queryBuilder.buildQuery(config.getProject().getDeleter().getSimpleQuery(), config.getProject().getNamespaceFilter());
+			if (config.getProject().getExportConfig().isUseSimpleQuery())
+				query = queryBuilder.buildQuery(config.getProject().getDeleteConfig().getSimpleQuery(), config.getProject().getNamespaceFilter());
 			else
-				query = queryBuilder.buildQuery(config.getProject().getDeleter().getQuery(), config.getProject().getNamespaceFilter());
+				query = queryBuilder.buildQuery(config.getProject().getDeleteConfig().getQuery(), config.getProject().getNamespaceFilter());
 
 		} catch (QueryBuildException e) {
 			throw new CityGMLDeleteException("Failed to build the delete query expression.", e);

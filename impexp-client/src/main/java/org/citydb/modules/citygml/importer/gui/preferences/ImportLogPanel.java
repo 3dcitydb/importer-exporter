@@ -62,7 +62,7 @@ public class ImportLogPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public boolean isModified() {
-		ImportLog log = config.getProject().getImporter().getImportLog();
+		ImportLog log = config.getProject().getImportConfig().getImportLog();
 		
 		if (logFeatures.isSelected() != log.isSetLogImportedFeatures()) return true;
 		if (!logPath.getText().equals(log.getLogPath())) return true;
@@ -124,7 +124,7 @@ public class ImportLogPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void loadSettings() {
-		ImportLog log = config.getProject().getImporter().getImportLog();
+		ImportLog log = config.getProject().getImportConfig().getImportLog();
 		
 		logFeatures.setSelected(log.isSetLogImportedFeatures());
 		if (log.isSetLogPath())
@@ -140,7 +140,7 @@ public class ImportLogPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void setSettings() {
-		ImportLog log = config.getProject().getImporter().getImportLog();
+		ImportLog log = config.getProject().getImportConfig().getImportLog();
 
 		log.setLogImportedFeatures(logFeatures.isSelected());
 		if (!logPath.getText().isEmpty())

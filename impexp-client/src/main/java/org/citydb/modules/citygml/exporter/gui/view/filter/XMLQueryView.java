@@ -37,7 +37,7 @@ import org.citydb.config.project.database.DatabaseSrs;
 import org.citydb.config.project.exporter.SimpleQuery;
 import org.citydb.config.project.exporter.SimpleTiling;
 import org.citydb.config.project.exporter.SimpleTilingMode;
-import org.citydb.config.project.query.Query;
+import org.citydb.config.project.query.QueryConfig;
 import org.citydb.config.project.query.filter.appearance.AppearanceFilter;
 import org.citydb.config.project.query.filter.counter.CounterFilter;
 import org.citydb.config.project.query.filter.lod.LodFilter;
@@ -179,7 +179,7 @@ public class XMLQueryView extends FilterView {
     }
 
     private void setEmptyQuery() {
-        Query query = new Query();
+        QueryConfig query = new QueryConfig();
         query.setFeatureTypeFilter(new FeatureTypeFilter());
         query.setAppearanceFilter(new AppearanceFilter());
         query.setCounterFilter(new CounterFilter());
@@ -198,10 +198,10 @@ public class XMLQueryView extends FilterView {
 
     private void setSimpleSettings() {
         filterPanel.setSimpleQuerySettings();
-        SimpleQuery simpleQuery = config.getProject().getExporter().getSimpleQuery();
+        SimpleQuery simpleQuery = config.getProject().getExportConfig().getSimpleQuery();
         CityGMLVersion version = Util.toCityGMLVersion(simpleQuery.getVersion());
 
-        Query query = new Query();
+        QueryConfig query = new QueryConfig();
 
         FeatureTypeFilter typeFilter = new FeatureTypeFilter();
         if (simpleQuery.isUseTypeNames()) {
@@ -374,8 +374,8 @@ public class XMLQueryView extends FilterView {
             log.info("The XML query is valid.");
     }
 
-    private Query unmarshalQuery() {
-        Query query = null;
+    private QueryConfig unmarshalQuery() {
+        QueryConfig query = null;
 
         try {
             Unmarshaller unmarshaller = ConfigUtil.getInstance().getJAXBContext().createUnmarshaller();
@@ -387,14 +387,14 @@ public class XMLQueryView extends FilterView {
         }
 
         if (query == null) {
-            query = new Query();
+            query = new QueryConfig();
             query.setLocalProperty("unmarshallingFailed", true);
         }
 
         return query;
     }
 
-    private String marshalQuery(Query query, NamespaceContext namespaceContext) {
+    private String marshalQuery(QueryConfig query, NamespaceContext namespaceContext) {
         try {
             StringWriter content = new StringWriter();
             SAXWriter saxWriter = new SAXWriter(new BufferedWriter(content));
@@ -471,14 +471,14 @@ public class XMLQueryView extends FilterView {
 
     @Override
     public void loadSettings() {
-        Query query = config.getProject().getExporter().getQuery();
+        QueryConfig query = config.getProject().getExportConfig().getQuery();
         xmlText.setText(marshalQuery(query, config.getProject().getNamespaceFilter()));
     }
 
     @Override
     public void setSettings() {
-        Query query = unmarshalQuery();
-        config.getProject().getExporter().setQuery(query);
+        QueryConfig query = unmarshalQuery();
+        config.getProject().getExportConfig().setQuery(query);
     }
 
     private boolean isDefaultDatabaseSrs(DatabaseSrs srs) {

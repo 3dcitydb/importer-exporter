@@ -30,7 +30,7 @@ package org.citydb.modules.kml.gui.preferences;
 import net.opengis.kml._2.ViewRefreshModeEnumType;
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
-import org.citydb.config.project.kmlExporter.KmlExporter;
+import org.citydb.config.project.kmlExporter.KmlExportConfig;
 import org.citydb.config.project.kmlExporter.KmlTilingOptions;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.preferences.AbstractPreferencesComponent;
@@ -93,12 +93,12 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public boolean isModified() {
-		KmlExporter kmlExporter = config.getProject().getKmlExporter();
+		KmlExportConfig kmlExportConfig = config.getProject().getKmlExportConfig();
 
-		if (kmzCheckbox.isSelected() != kmlExporter.isExportAsKmz()) return true;
-		if (showBoundingBoxCheckbox.isSelected() != kmlExporter.isShowBoundingBox()) return true;
-		if (showTileBordersCheckbox.isSelected() != kmlExporter.isShowTileBorders()) return true;
-		if (exportEmptyTilesCheckbox.isSelected() != kmlExporter.isExportEmptyTiles()) return true;
+		if (kmzCheckbox.isSelected() != kmlExportConfig.isExportAsKmz()) return true;
+		if (showBoundingBoxCheckbox.isSelected() != kmlExportConfig.isShowBoundingBox()) return true;
+		if (showTileBordersCheckbox.isSelected() != kmlExportConfig.isShowTileBorders()) return true;
+		if (exportEmptyTilesCheckbox.isSelected() != kmlExportConfig.isExportEmptyTiles()) return true;
 
 		try { autoTileSideLengthText.commitEdit(); } catch (ParseException e) {}
 		double autoTileSideLength = 125.0;
@@ -109,9 +109,9 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 			}
 		}
 		catch (NumberFormatException nfe) {return true;}
-		if (autoTileSideLength != kmlExporter.getQuery().getBboxFilter().getTilingOptions().getAutoTileSideLength()) return true;
+		if (autoTileSideLength != kmlExportConfig.getQuery().getBboxFilter().getTilingOptions().getAutoTileSideLength()) return true;
 
-		if (oneFilePerObjectCheckbox.isSelected() != kmlExporter.isOneFilePerObject()) return true;
+		if (oneFilePerObjectCheckbox.isSelected() != kmlExportConfig.isOneFilePerObject()) return true;
 
 		try { visibleFromText.commitEdit(); } catch (ParseException e) {}
 		double objectRegionSize = 50;
@@ -119,9 +119,9 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 			objectRegionSize = Double.parseDouble(visibleFromText.getText().trim());
 		}
 		catch (NumberFormatException nfe) {return true;}
-		if (objectRegionSize != kmlExporter.getSingleObjectRegionSize()) return true;
+		if (objectRegionSize != kmlExportConfig.getSingleObjectRegionSize()) return true;
 
-		if (!viewRefreshModeComboBox.getSelectedItem().equals(kmlExporter.getViewRefreshMode())) return true;
+		if (!viewRefreshModeComboBox.getSelectedItem().equals(kmlExportConfig.getViewRefreshMode())) return true;
 
 		try { viewRefreshTimeText.commitEdit(); } catch (ParseException e) {}
 		double viewRefreshTime = 50;
@@ -129,20 +129,20 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 			viewRefreshTime = Double.parseDouble(viewRefreshTimeText.getText().trim());
 		}
 		catch (NumberFormatException nfe) {return true;}
-		if (viewRefreshTime != kmlExporter.getViewRefreshTime()) return true;
+		if (viewRefreshTime != kmlExportConfig.getViewRefreshTime()) return true;
 
-		if (writeJSONCheckbox.isSelected() != kmlExporter.isWriteJSONFile()) return true;
-		if (writeJSONPCheckbox.isSelected() != kmlExporter.isWriteJSONPFile()) return true;
-		if (!callbackNameJSONPText.getText().trim().equals(kmlExporter.getCallbackNameJSONP())) return true;
+		if (writeJSONCheckbox.isSelected() != kmlExportConfig.isWriteJSONFile()) return true;
+		if (writeJSONPCheckbox.isSelected() != kmlExportConfig.isWriteJSONPFile()) return true;
+		if (!callbackNameJSONPText.getText().trim().equals(kmlExportConfig.getCallbackNameJSONP())) return true;
 
-		if (createGltfCheckbox.isSelected() != kmlExporter.isCreateGltfModel()) return true;
-		if (!gltfConverterBrowseText.getText().equals(kmlExporter.getPathOfGltfConverter())) return true;
-		if (notCreateColladaCheckbox.isSelected() != kmlExporter.isNotCreateColladaFiles()) return true;
-		if (embedTexturesInGltfCheckbox.isSelected() != kmlExporter.isEmbedTexturesInGltfFiles()) return true;
-		if (exportGltfBinary.isSelected() != kmlExporter.isExportGltfBinary()) return true;
-		if (exportGltfV1.isSelected() != kmlExporter.isExportGltfV1()) return true;
-		if (exportGltfV2.isSelected() != kmlExporter.isExportGltfV2()) return true;
-		if (enableGltfDracoCompression.isSelected() != kmlExporter.isEnableGltfDracoCompression()) return true;
+		if (createGltfCheckbox.isSelected() != kmlExportConfig.isCreateGltfModel()) return true;
+		if (!gltfConverterBrowseText.getText().equals(kmlExportConfig.getPathOfGltfConverter())) return true;
+		if (notCreateColladaCheckbox.isSelected() != kmlExportConfig.isNotCreateColladaFiles()) return true;
+		if (embedTexturesInGltfCheckbox.isSelected() != kmlExportConfig.isEmbedTexturesInGltfFiles()) return true;
+		if (exportGltfBinary.isSelected() != kmlExportConfig.isExportGltfBinary()) return true;
+		if (exportGltfV1.isSelected() != kmlExportConfig.isExportGltfV1()) return true;
+		if (exportGltfV2.isSelected() != kmlExportConfig.isExportGltfV2()) return true;
+		if (enableGltfDracoCompression.isSelected() != kmlExportConfig.isEnableGltfDracoCompression()) return true;
 		
 		return false;
 	}
@@ -369,44 +369,44 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void loadSettings() {
-		KmlExporter kmlExporter = config.getProject().getKmlExporter();
+		KmlExportConfig kmlExportConfig = config.getProject().getKmlExportConfig();
 
-		kmzCheckbox.setSelected(kmlExporter.isExportAsKmz());
-		showBoundingBoxCheckbox.setSelected(kmlExporter.isShowBoundingBox());
-		showTileBordersCheckbox.setSelected(kmlExporter.isShowTileBorders());
-		exportEmptyTilesCheckbox.setSelected(kmlExporter.isExportEmptyTiles());
-		autoTileSideLengthText.setText(String.valueOf(kmlExporter.getQuery().getBboxFilter().getTilingOptions().getAutoTileSideLength()));
-		oneFilePerObjectCheckbox.setSelected(kmlExporter.isOneFilePerObject());
-		visibleFromText.setText(String.valueOf(kmlExporter.getSingleObjectRegionSize()));
-		viewRefreshModeComboBox.setSelectedItem(kmlExporter.getViewRefreshMode());
-		viewRefreshTimeText.setText(String.valueOf(kmlExporter.getViewRefreshTime()));
-		writeJSONCheckbox.setSelected(kmlExporter.isWriteJSONFile());
-		writeJSONPCheckbox.setSelected(kmlExporter.isWriteJSONPFile());
-		callbackNameJSONPText.setText(kmlExporter.getCallbackNameJSONP());
-		createGltfCheckbox.setSelected(kmlExporter.isCreateGltfModel());
-		gltfConverterBrowseText.setText(kmlExporter.getPathOfGltfConverter());
-		notCreateColladaCheckbox.setSelected(kmlExporter.isNotCreateColladaFiles());
-		embedTexturesInGltfCheckbox.setSelected(kmlExporter.isEmbedTexturesInGltfFiles());
-		exportGltfBinary.setSelected(kmlExporter.isExportGltfBinary());
-		exportGltfV1.setSelected(kmlExporter.isExportGltfV1());
-		exportGltfV2.setSelected(kmlExporter.isExportGltfV2());
-		enableGltfDracoCompression.setSelected(kmlExporter.isEnableGltfDracoCompression());
+		kmzCheckbox.setSelected(kmlExportConfig.isExportAsKmz());
+		showBoundingBoxCheckbox.setSelected(kmlExportConfig.isShowBoundingBox());
+		showTileBordersCheckbox.setSelected(kmlExportConfig.isShowTileBorders());
+		exportEmptyTilesCheckbox.setSelected(kmlExportConfig.isExportEmptyTiles());
+		autoTileSideLengthText.setText(String.valueOf(kmlExportConfig.getQuery().getBboxFilter().getTilingOptions().getAutoTileSideLength()));
+		oneFilePerObjectCheckbox.setSelected(kmlExportConfig.isOneFilePerObject());
+		visibleFromText.setText(String.valueOf(kmlExportConfig.getSingleObjectRegionSize()));
+		viewRefreshModeComboBox.setSelectedItem(kmlExportConfig.getViewRefreshMode());
+		viewRefreshTimeText.setText(String.valueOf(kmlExportConfig.getViewRefreshTime()));
+		writeJSONCheckbox.setSelected(kmlExportConfig.isWriteJSONFile());
+		writeJSONPCheckbox.setSelected(kmlExportConfig.isWriteJSONPFile());
+		callbackNameJSONPText.setText(kmlExportConfig.getCallbackNameJSONP());
+		createGltfCheckbox.setSelected(kmlExportConfig.isCreateGltfModel());
+		gltfConverterBrowseText.setText(kmlExportConfig.getPathOfGltfConverter());
+		notCreateColladaCheckbox.setSelected(kmlExportConfig.isNotCreateColladaFiles());
+		embedTexturesInGltfCheckbox.setSelected(kmlExportConfig.isEmbedTexturesInGltfFiles());
+		exportGltfBinary.setSelected(kmlExportConfig.isExportGltfBinary());
+		exportGltfV1.setSelected(kmlExportConfig.isExportGltfV1());
+		exportGltfV2.setSelected(kmlExportConfig.isExportGltfV2());
+		enableGltfDracoCompression.setSelected(kmlExportConfig.isEnableGltfDracoCompression());
 		
 		setEnabledComponents();
 	}
 
 	@Override
 	public void setSettings() {
-		KmlExporter kmlExporter = config.getProject().getKmlExporter();
+		KmlExportConfig kmlExportConfig = config.getProject().getKmlExportConfig();
 
-		kmlExporter.setExportAsKmz(kmzCheckbox.isSelected());
-		kmlExporter.setShowBoundingBox(showBoundingBoxCheckbox.isEnabled() && showBoundingBoxCheckbox.isSelected());
+		kmlExportConfig.setExportAsKmz(kmzCheckbox.isSelected());
+		kmlExportConfig.setShowBoundingBox(showBoundingBoxCheckbox.isEnabled() && showBoundingBoxCheckbox.isSelected());
 
-		kmlExporter.setShowTileBorders(showTileBordersCheckbox.isEnabled() && showTileBordersCheckbox.isSelected());
-		kmlExporter.setExportEmptyTiles(exportEmptyTilesCheckbox.isSelected());
+		kmlExportConfig.setShowTileBorders(showTileBordersCheckbox.isEnabled() && showTileBordersCheckbox.isSelected());
+		kmlExportConfig.setExportEmptyTiles(exportEmptyTilesCheckbox.isSelected());
 		
 		try {
-			KmlTilingOptions tilingOptions = kmlExporter.getQuery().getBboxFilter().getTilingOptions();
+			KmlTilingOptions tilingOptions = kmlExportConfig.getQuery().getBboxFilter().getTilingOptions();
 			tilingOptions.setAutoTileSideLength(Double.parseDouble(autoTileSideLengthText.getText().trim()));
 			if (tilingOptions.getAutoTileSideLength() <= 1.0) {
 				tilingOptions.setAutoTileSideLength(125.0);
@@ -414,29 +414,29 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		}
 		catch (NumberFormatException nfe) {}
 
-		kmlExporter.setOneFilePerObject(oneFilePerObjectCheckbox.isSelected());
+		kmlExportConfig.setOneFilePerObject(oneFilePerObjectCheckbox.isSelected());
 		try {
-			kmlExporter.setSingleObjectRegionSize(Double.parseDouble(visibleFromText.getText().trim()));
+			kmlExportConfig.setSingleObjectRegionSize(Double.parseDouble(visibleFromText.getText().trim()));
 		}
 		catch (NumberFormatException nfe) {}
 
-		kmlExporter.setViewRefreshMode(viewRefreshModeComboBox.getSelectedItem().toString());
+		kmlExportConfig.setViewRefreshMode(viewRefreshModeComboBox.getSelectedItem().toString());
 		try {
-			kmlExporter.setViewRefreshTime(Double.parseDouble(viewRefreshTimeText.getText().trim()));
+			kmlExportConfig.setViewRefreshTime(Double.parseDouble(viewRefreshTimeText.getText().trim()));
 		}
 		catch (NumberFormatException nfe) {}
 
-		kmlExporter.setWriteJSONFile(writeJSONCheckbox.isSelected());
-		kmlExporter.setWriteJSONPFile(writeJSONPCheckbox.isSelected());
-		kmlExporter.setCallbackNameJSONP(callbackNameJSONPText.getText().trim());
-		kmlExporter.setCreateGltfModel(createGltfCheckbox.isSelected());
-		kmlExporter.setPathOfGltfConverter(gltfConverterBrowseText.getText());
-		kmlExporter.setNotCreateColladaFiles(notCreateColladaCheckbox.isSelected());
-		kmlExporter.setEmbedTexturesInGltfFiles(embedTexturesInGltfCheckbox.isSelected());
-		kmlExporter.setExportGltfBinary(exportGltfBinary.isSelected());
-		kmlExporter.setExportGltfV1(exportGltfV1.isSelected());
-		kmlExporter.setExportGltfV2(exportGltfV2.isSelected());
-		kmlExporter.setEnableGltfDracoCompression(enableGltfDracoCompression.isSelected());
+		kmlExportConfig.setWriteJSONFile(writeJSONCheckbox.isSelected());
+		kmlExportConfig.setWriteJSONPFile(writeJSONPCheckbox.isSelected());
+		kmlExportConfig.setCallbackNameJSONP(callbackNameJSONPText.getText().trim());
+		kmlExportConfig.setCreateGltfModel(createGltfCheckbox.isSelected());
+		kmlExportConfig.setPathOfGltfConverter(gltfConverterBrowseText.getText());
+		kmlExportConfig.setNotCreateColladaFiles(notCreateColladaCheckbox.isSelected());
+		kmlExportConfig.setEmbedTexturesInGltfFiles(embedTexturesInGltfCheckbox.isSelected());
+		kmlExportConfig.setExportGltfBinary(exportGltfBinary.isSelected());
+		kmlExportConfig.setExportGltfV1(exportGltfV1.isSelected());
+		kmlExportConfig.setExportGltfV2(exportGltfV2.isSelected());
+		kmlExportConfig.setEnableGltfDracoCompression(enableGltfDracoCompression.isSelected());
 	}
 
 	private void setEnabledComponents() {

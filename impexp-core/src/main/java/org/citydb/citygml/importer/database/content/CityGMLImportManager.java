@@ -51,7 +51,7 @@ import org.citydb.citygml.importer.util.ImportLogger.ImportLogEntry;
 import org.citydb.citygml.importer.util.LocalAppearanceHandler;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
-import org.citydb.config.project.importer.Importer;
+import org.citydb.config.project.importer.ImportConfig;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.schema.TableEnum;
 import org.citydb.database.schema.mapping.AbstractObjectType;
@@ -194,16 +194,16 @@ public class CityGMLImportManager implements CityGMLImportHelper {
 		attributeValueJoiner = new AttributeValueJoiner();
 		externalFileChecker = new ExternalFileChecker(inputFile);
 
-		if (config.getProject().getImporter().getAppearances().isSetImportAppearance())
+		if (config.getProject().getImportConfig().getAppearances().isSetImportAppearance())
 			localAppearanceHandler = new LocalAppearanceHandler(this);
 
-		if (config.getProject().getImporter().getImportLog().isSetLogImportedFeatures())
+		if (config.getProject().getImportConfig().getImportLog().isSetLogImportedFeatures())
 			importLogEntries = new ArrayList<>();
 
-		if (config.getProject().getImporter().getAffineTransformation().isEnabled())
+		if (config.getProject().getImportConfig().getAffineTransformation().isEnabled())
 			this.affineTransformer = affineTransformer;
 
-		if (config.getProject().getImporter().getAddress().isSetImportXAL()) {
+		if (config.getProject().getImportConfig().getAddress().isSetImportXAL()) {
 			cityGMLVersion = CityGMLVersion.DEFAULT;
 			jaxbMarshaller = cityGMLBuilder.createJAXBMarshaller(cityGMLVersion);
 			saxWriter = new SAXWriter();
@@ -524,8 +524,8 @@ public class CityGMLImportManager implements CityGMLImportHelper {
 	}
 
 	@Override
-	public Importer getImportConfig() {
-		return config.getProject().getImporter();
+	public ImportConfig getImportConfig() {
+		return config.getProject().getImportConfig();
 	}
 
 	public void setFailOnError(boolean failOnError) {
@@ -537,7 +537,7 @@ public class CityGMLImportManager implements CityGMLImportHelper {
 	}
 
 	public String generateNewGmlId() {
-		return DefaultGMLIdManager.getInstance().generateUUID(config.getProject().getImporter().getGmlId().getIdPrefix());
+		return DefaultGMLIdManager.getInstance().generateUUID(config.getProject().getImportConfig().getGmlId().getIdPrefix());
 	}
 
 	public InputFile getInputFile() {

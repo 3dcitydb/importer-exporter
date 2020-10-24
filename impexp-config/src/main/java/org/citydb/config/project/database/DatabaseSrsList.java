@@ -29,14 +29,13 @@ package org.citydb.config.project.database;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
-import org.citydb.config.project.database.Database.PredefinedSrsName;
+import org.citydb.config.project.database.DatabaseConfig.PredefinedSrsName;
 
 @XmlRootElement(name="referenceSystems")
 public class DatabaseSrsList {
@@ -60,12 +59,12 @@ public class DatabaseSrsList {
 	}
 
 	public void addDefaultItems() {
-		HashMap<PredefinedSrsName, Boolean> addSrs = new HashMap<>(Database.PREDEFINED_SRS.size());
+		HashMap<PredefinedSrsName, Boolean> addSrs = new HashMap<>(DatabaseConfig.PREDEFINED_SRS.size());
 		for (PredefinedSrsName name : PredefinedSrsName.values())
 			addSrs.put(name, Boolean.TRUE);
 						
 		for (DatabaseSrs refSys : items) {
-			for (Entry<PredefinedSrsName, DatabaseSrs> entry : Database.PREDEFINED_SRS.entrySet()) {
+			for (Entry<PredefinedSrsName, DatabaseSrs> entry : DatabaseConfig.PREDEFINED_SRS.entrySet()) {
 				if (addSrs.get(entry.getKey()) && refSys.getSrid() == entry.getValue().getSrid()) {
 					addSrs.put(entry.getKey(), Boolean.FALSE);
 					break;
@@ -75,7 +74,7 @@ public class DatabaseSrsList {
 
 		for (Entry<PredefinedSrsName, Boolean> entry : addSrs.entrySet()) {
 			if (entry.getValue())
-				items.add(Database.PREDEFINED_SRS.get(entry.getKey()));
+				items.add(DatabaseConfig.PREDEFINED_SRS.get(entry.getKey()));
 		}
 	}
 

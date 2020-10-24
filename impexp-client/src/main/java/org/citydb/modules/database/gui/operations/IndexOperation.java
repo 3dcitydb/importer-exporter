@@ -179,14 +179,14 @@ public class IndexOperation extends DatabaseOperationView {
 
 	@Override
 	public void loadSettings() {
-		spatial.setSelected(config.getProject().getDatabase().getOperation().isSetSpatialIndex());
-		normal.setSelected(config.getProject().getDatabase().getOperation().isSetNormalIndex());
+		spatial.setSelected(config.getProject().getDatabaseConfig().getOperation().isSetSpatialIndex());
+		normal.setSelected(config.getProject().getDatabaseConfig().getOperation().isSetNormalIndex());
 	}
 
 	@Override
 	public void setSettings() {
-		config.getProject().getDatabase().getOperation().setSpatialIndex(spatial.isSelected());
-		config.getProject().getDatabase().getOperation().setNormalIndex(normal.isSelected());
+		config.getProject().getDatabaseConfig().getOperation().setSpatialIndex(spatial.isSelected());
+		config.getProject().getDatabaseConfig().getOperation().setNormalIndex(normal.isSelected());
 	}
 
 	private void createIndex() {

@@ -27,11 +27,12 @@
  */
 package org.citydb.config.project.kmlExporter;
 
-import org.citydb.config.project.general.Path;
+import org.citydb.config.project.common.Path;
 import org.citydb.config.project.resources.Resources;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
+import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.io.File;
@@ -41,7 +42,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-@XmlType(name="KmlExportType", propOrder={
+@XmlRootElement(name = "kmlExport")
+@XmlType(name = "KmlExportType", propOrder = {
 		"query",
 		"path",
 		"lodToExportFrom",
@@ -74,7 +76,7 @@ import java.util.Map;
 		"cityObjectGroupBalloon",
 		"bridgeDisplayForms",
 		"bridgeColladaOptions",
-		"bridgeBalloon",		
+		"bridgeBalloon",
 		"tunnelDisplayForms",
 		"tunnelColladaOptions",
 		"tunnelBalloon",
@@ -107,62 +109,62 @@ import java.util.Map;
 		"adePreferences",
 		"resources"
 })
-public class KmlExporter {
+public class KmlExportConfig {
 	private SimpleKmlQuery query;
 	private Path path;
 	private int lodToExportFrom;
-	@XmlElement(name="displayForm", required=true)
-	@XmlElementWrapper(name="buildingDisplayForms")	
+	@XmlElement(name = "displayForm", required = true)
+	@XmlElementWrapper(name = "buildingDisplayForms")
 	private List<DisplayForm> buildingDisplayForms;
 	private ColladaOptions buildingColladaOptions;
 	private Balloon buildingBalloon;
-	@XmlElement(name="displayForm", required=true)
-	@XmlElementWrapper(name="waterBodyDisplayForms")	
+	@XmlElement(name = "displayForm", required = true)
+	@XmlElementWrapper(name = "waterBodyDisplayForms")
 	private List<DisplayForm> waterBodyDisplayForms;
 	private ColladaOptions waterBodyColladaOptions;
 	private Balloon waterBodyBalloon;
-	@XmlElement(name="displayForm", required=true)
-	@XmlElementWrapper(name="landUseDisplayForms")	
+	@XmlElement(name = "displayForm", required = true)
+	@XmlElementWrapper(name = "landUseDisplayForms")
 	private List<DisplayForm> landUseDisplayForms;
 	private ColladaOptions landUseColladaOptions;
 	private Balloon landUseBalloon;
-	@XmlElement(name="displayForm", required=true)
-	@XmlElementWrapper(name="vegetationDisplayForms")	
+	@XmlElement(name = "displayForm", required = true)
+	@XmlElementWrapper(name = "vegetationDisplayForms")
 	private List<DisplayForm> vegetationDisplayForms;
 	private ColladaOptions vegetationColladaOptions;
 	private Balloon vegetationBalloon;
-	@XmlElement(name="displayForm", required=true)
-	@XmlElementWrapper(name="transportationDisplayForms")	
+	@XmlElement(name = "displayForm", required = true)
+	@XmlElementWrapper(name = "transportationDisplayForms")
 	private List<DisplayForm> transportationDisplayForms;
 	private ColladaOptions transportationColladaOptions;
 	private Balloon transportationBalloon;
-	@XmlElement(name="displayForm", required=true)
-	@XmlElementWrapper(name="reliefDisplayForms")	
+	@XmlElement(name = "displayForm", required = true)
+	@XmlElementWrapper(name = "reliefDisplayForms")
 	private List<DisplayForm> reliefDisplayForms;
 	private ColladaOptions reliefColladaOptions;
 	private Balloon reliefBalloon;
-	@XmlElement(name="displayForm", required=true)
-	@XmlElementWrapper(name="cityFurnitureDisplayForms")	
+	@XmlElement(name = "displayForm", required = true)
+	@XmlElementWrapper(name = "cityFurnitureDisplayForms")
 	private List<DisplayForm> cityFurnitureDisplayForms;
 	private ColladaOptions cityFurnitureColladaOptions;
 	private Balloon cityFurnitureBalloon;
-	@XmlElement(name="displayForm", required=true)
-	@XmlElementWrapper(name="genericCityObjectDisplayForms")	
+	@XmlElement(name = "displayForm", required = true)
+	@XmlElementWrapper(name = "genericCityObjectDisplayForms")
 	private List<DisplayForm> genericCityObjectDisplayForms;
 	private ColladaOptions genericCityObjectColladaOptions;
 	private Balloon genericCityObject3DBalloon;
 	private PointAndCurve genericCityObjectPointAndCurve;
-	@XmlElement(name="displayForm", required=true)
-	@XmlElementWrapper(name="cityObjectGroupDisplayForms")	
+	@XmlElement(name = "displayForm", required = true)
+	@XmlElementWrapper(name = "cityObjectGroupDisplayForms")
 	private List<DisplayForm> cityObjectGroupDisplayForms;
 	private Balloon cityObjectGroupBalloon;
-	@XmlElement(name="displayForm", required=true)
-	@XmlElementWrapper(name="bridgeDisplayForms")	
+	@XmlElement(name = "displayForm", required = true)
+	@XmlElementWrapper(name = "bridgeDisplayForms")
 	private List<DisplayForm> bridgeDisplayForms;
 	private ColladaOptions bridgeColladaOptions;
 	private Balloon bridgeBalloon;
-	@XmlElement(name="displayForm", required=true)
-	@XmlElementWrapper(name="tunnelDisplayForms")	
+	@XmlElement(name = "displayForm", required = true)
+	@XmlElementWrapper(name = "tunnelDisplayForms")
 	private List<DisplayForm> tunnelDisplayForms;
 	private ColladaOptions tunnelColladaOptions;
 	private Balloon tunnelBalloon;
@@ -198,7 +200,7 @@ public class KmlExporter {
 
 	public static final String THEME_NONE = "none";
 
-	public KmlExporter() {
+	public KmlExportConfig() {
 		query = new SimpleKmlQuery();
 		path = new Path();
 		lodToExportFrom = 2;

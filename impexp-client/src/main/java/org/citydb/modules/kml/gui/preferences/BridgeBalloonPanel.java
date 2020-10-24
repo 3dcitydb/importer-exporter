@@ -47,7 +47,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
-import org.citydb.config.project.general.PathMode;
+import org.citydb.config.project.common.PathMode;
 import org.citydb.config.project.kmlExporter.Balloon;
 import org.citydb.config.project.kmlExporter.BalloonContentMode;
 import org.citydb.gui.factory.PopupMenuDecorator;
@@ -78,7 +78,7 @@ public class BridgeBalloonPanel extends AbstractPreferencesComponent {
 	}
 
 	private Balloon getConfigBalloon() {
-		return config.getProject().getKmlExporter().getBridgeBalloon();
+		return config.getProject().getKmlExportConfig().getBridgeBalloon();
 	}
 
 	@Override

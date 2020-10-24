@@ -34,7 +34,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.citydb.config.i18n.Language;
-import org.citydb.config.project.database.Database;
+import org.citydb.config.project.database.DatabaseConfig;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.connection.DatabaseConnectionWarning;
 import org.citydb.database.connection.DatabaseConnectionWarning.ConnectionWarningType;
@@ -53,25 +53,25 @@ public class DefaultDatabaseVersionChecker implements DatabaseVersionChecker {
 
 		// check for unsupported version
 		if (!version.isSupportedBy(supportedVersions)) {
-			String message = "The version " + version + " of the " + Database.CITYDB_PRODUCT_NAME + " is not supported.";
+			String message = "The version " + version + " of the " + DatabaseConfig.CITYDB_PRODUCT_NAME + " is not supported.";
 
 			String text = Language.I18N.getString("db.dialog.error.version.error");
-			Object[] args = new Object[]{ version, Database.CITYDB_PRODUCT_NAME, Util.collection2string(Arrays.asList(supportedVersions), ", ") };
+			Object[] args = new Object[]{ version, DatabaseConfig.CITYDB_PRODUCT_NAME, Util.collection2string(Arrays.asList(supportedVersions), ", ") };
 			String formattedMessage = MessageFormat.format(text, args);	
 
-			throw new DatabaseVersionException(message, formattedMessage, Database.CITYDB_PRODUCT_NAME, Arrays.asList(supportedVersions));
+			throw new DatabaseVersionException(message, formattedMessage, DatabaseConfig.CITYDB_PRODUCT_NAME, Arrays.asList(supportedVersions));
 		}
 
 		// check for outdated version
 		for (DatabaseVersionSupport supportedVersion : supportedVersions) {
 			if (supportedVersion.getTargetVersion().compareTo(version) > 0) {
-				String message = "The version " + version + " of the " + Database.CITYDB_PRODUCT_NAME + " is out of date. Consider upgrading.";
+				String message = "The version " + version + " of the " + DatabaseConfig.CITYDB_PRODUCT_NAME + " is out of date. Consider upgrading.";
 
 				String text = Language.I18N.getString("db.dialog.warn.version.outofdate");
-				Object[] args = new Object[]{ version, Database.CITYDB_PRODUCT_NAME };
+				Object[] args = new Object[]{ version, DatabaseConfig.CITYDB_PRODUCT_NAME };
 				String formattedMessage = MessageFormat.format(text, args);
 
-				warnings.add(new DatabaseConnectionWarning(message, formattedMessage, Database.CITYDB_PRODUCT_NAME, ConnectionWarningType.OUTDATED_DATABASE_VERSION));				
+				warnings.add(new DatabaseConnectionWarning(message, formattedMessage, DatabaseConfig.CITYDB_PRODUCT_NAME, ConnectionWarningType.OUTDATED_DATABASE_VERSION));
 				break;
 			}
 		}
@@ -81,7 +81,7 @@ public class DefaultDatabaseVersionChecker implements DatabaseVersionChecker {
 
 	@Override
 	public List<DatabaseVersionSupport> getSupportedVersions(String productName) {
-		return Database.CITYDB_PRODUCT_NAME.equals(productName) ? Arrays.asList(supportedVersions) : Collections.<DatabaseVersionSupport>emptyList();
+		return DatabaseConfig.CITYDB_PRODUCT_NAME.equals(productName) ? Arrays.asList(supportedVersions) : Collections.<DatabaseVersionSupport>emptyList();
 	}
 
 }

@@ -82,22 +82,22 @@ public class GenericCityObject extends KmlGenericObject{
 	}
 
 	protected List<DisplayForm> getDisplayForms() {
-		return config.getProject().getKmlExporter().getGenericCityObjectDisplayForms();
+		return config.getProject().getKmlExportConfig().getGenericCityObjectDisplayForms();
 	}
 
 	public ColladaOptions getColladaOptions() {
-		return config.getProject().getKmlExporter().getGenericCityObjectColladaOptions();
+		return config.getProject().getKmlExportConfig().getGenericCityObjectColladaOptions();
 	}
 
 	public Balloon getBalloonSettings() {
 		if (isPointOrCurve) {
 			if (isPoint)
-				return config.getProject().getKmlExporter().getGenericCityObjectPointAndCurve().getPointBalloon();
+				return config.getProject().getKmlExportConfig().getGenericCityObjectPointAndCurve().getPointBalloon();
 			else
-				return config.getProject().getKmlExporter().getGenericCityObjectPointAndCurve().getCurveBalloon();
+				return config.getProject().getKmlExportConfig().getGenericCityObjectPointAndCurve().getCurveBalloon();
 		}
 		// default
-		return config.getProject().getKmlExporter().getGenericCityObject3DBalloon();
+		return config.getProject().getKmlExportConfig().getGenericCityObject3DBalloon();
 	}
 
 	public String getStyleBasisName() {
@@ -109,7 +109,7 @@ public class GenericCityObject extends KmlGenericObject{
 		ResultSet rs = null;
 
 		try {
-			int lodToExportFrom = config.getProject().getKmlExporter().getLodToExportFrom();
+			int lodToExportFrom = config.getProject().getKmlExportConfig().getLodToExportFrom();
 			currentLod = lodToExportFrom == 5 ? 4: lodToExportFrom;
 			int minLod = lodToExportFrom == 5 ? 0: lodToExportFrom;
 
@@ -173,7 +173,7 @@ public class GenericCityObject extends KmlGenericObject{
 				kmlExporterManager.updateFeatureTracker(work);
 
 				if (isPointOrCurve) { // point or curve geometry
-					kmlExporterManager.print(createPlacemarksForPointOrCurve(rs, work, config.getProject().getKmlExporter().getGenericCityObjectPointAndCurve()),
+					kmlExporterManager.print(createPlacemarksForPointOrCurve(rs, work, config.getProject().getKmlExportConfig().getGenericCityObjectPointAndCurve()),
 							work,
 							getBalloonSettings().isBalloonContentInSeparateFile());
 				}
@@ -233,7 +233,7 @@ public class GenericCityObject extends KmlGenericObject{
 					String currentgmlId = getGmlId();
 					setGmlId(work.getGmlId());
 					setId(work.getId());
-					fillGenericObjectForCollada(rs, config.getProject().getKmlExporter().getGenericCityObjectColladaOptions().isGenerateTextureAtlases());
+					fillGenericObjectForCollada(rs, config.getProject().getKmlExportConfig().getGenericCityObjectColladaOptions().isGenerateTextureAtlases());
 
 					if (currentgmlId != null && !currentgmlId.equals(work.getGmlId()) && getGeometryAmount() > GEOMETRY_AMOUNT_WARNING)
 						log.info("Object " + work.getGmlId() + " has more than " + GEOMETRY_AMOUNT_WARNING + " geometries. This may take a while to process...");

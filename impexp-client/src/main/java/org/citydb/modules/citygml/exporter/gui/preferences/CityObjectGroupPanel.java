@@ -56,7 +56,7 @@ public class CityObjectGroupPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public boolean isModified() {
-		ExportCityObjectGroup group = config.getProject().getExporter().getCityObjectGroup();
+		ExportCityObjectGroup group = config.getProject().getExportConfig().getCityObjectGroup();
 		if (exportMemberAsXLink.isSelected() != group.isExportMemberAsXLinks()) return true;
 		return false;
 	}
@@ -83,13 +83,13 @@ public class CityObjectGroupPanel extends AbstractPreferencesComponent {
 	
 	@Override
 	public void loadSettings() {
-		ExportCityObjectGroup group = config.getProject().getExporter().getCityObjectGroup();
+		ExportCityObjectGroup group = config.getProject().getExportConfig().getCityObjectGroup();
 		exportMemberAsXLink.setSelected(group.isExportMemberAsXLinks());
 	}
 
 	@Override
 	public void setSettings() {
-		ExportCityObjectGroup group = config.getProject().getExporter().getCityObjectGroup();
+		ExportCityObjectGroup group = config.getProject().getExportConfig().getCityObjectGroup();
 		group.setExportMemberAsXLinks(exportMemberAsXLink.isSelected());
 	}
 

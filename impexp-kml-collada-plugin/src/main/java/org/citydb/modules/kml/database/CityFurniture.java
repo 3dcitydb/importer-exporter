@@ -36,7 +36,6 @@ import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.adapter.BlobExportAdapter;
 import org.citydb.event.EventDispatcher;
 import org.citydb.log.Logger;
-import org.citydb.modules.kml.util.AffineTransformer;
 import org.citydb.modules.kml.util.BalloonTemplateHandler;
 import org.citydb.modules.kml.util.ElevationServiceHandler;
 import org.citydb.query.Query;
@@ -78,15 +77,15 @@ public class CityFurniture extends KmlGenericObject{
 	}
 
 	protected List<DisplayForm> getDisplayForms() {
-		return config.getProject().getKmlExporter().getCityFurnitureDisplayForms();
+		return config.getProject().getKmlExportConfig().getCityFurnitureDisplayForms();
 	}
 
 	public ColladaOptions getColladaOptions() {
-		return config.getProject().getKmlExporter().getCityFurnitureColladaOptions();
+		return config.getProject().getKmlExportConfig().getCityFurnitureColladaOptions();
 	}
 
 	public Balloon getBalloonSettings() {
-		return config.getProject().getKmlExporter().getCityFurnitureBalloon();
+		return config.getProject().getKmlExportConfig().getCityFurnitureBalloon();
 	}
 
 	public String getStyleBasisName() {
@@ -98,7 +97,7 @@ public class CityFurniture extends KmlGenericObject{
 		ResultSet rs = null;
 
 		try {
-			int lodToExportFrom = config.getProject().getKmlExporter().getLodToExportFrom();
+			int lodToExportFrom = config.getProject().getKmlExportConfig().getLodToExportFrom();
 			currentLod = lodToExportFrom == 5 ? 4: lodToExportFrom;
 			int minLod = lodToExportFrom == 5 ? 1: lodToExportFrom;
 
@@ -199,7 +198,7 @@ public class CityFurniture extends KmlGenericObject{
 					String currentgmlId = getGmlId();
 					setGmlId(work.getGmlId());
 					setId(work.getId());
-					fillGenericObjectForCollada(rs, config.getProject().getKmlExporter().getCityFurnitureColladaOptions().isGenerateTextureAtlases());
+					fillGenericObjectForCollada(rs, config.getProject().getKmlExportConfig().getCityFurnitureColladaOptions().isGenerateTextureAtlases());
 
 					if (currentgmlId != null && !currentgmlId.equals(work.getGmlId()) && getGeometryAmount() > GEOMETRY_AMOUNT_WARNING)
 						log.info("Object " + work.getGmlId() + " has more than " + GEOMETRY_AMOUNT_WARNING + " geometries. This may take a while to process...");

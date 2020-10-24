@@ -30,11 +30,13 @@ package org.citydb.config.project.database;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlIDREF;
+import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
 
+@XmlRootElement(name = "database")
 @XmlType(name = "DatabaseType", propOrder = {
 		"referenceSystems",
 		"connections",
@@ -44,7 +46,7 @@ import java.util.List;
 		"workspaces",
 		"operation"
 })
-public class Database {
+public class DatabaseConfig {
 	public static final String CITYDB_PRODUCT_NAME = "3D City Database";
 	public static final EnumMap<PredefinedSrsName, DatabaseSrs> PREDEFINED_SRS = new EnumMap<>(PredefinedSrsName.class);
 
@@ -67,7 +69,7 @@ public class Database {
 	private Workspaces workspaces;
 	private DBOperation operation;
 
-	public Database() {
+	public DatabaseConfig() {
 		referenceSystems = new DatabaseSrsList();
 		connections = new ArrayList<>();
 		importBatching = new ImportBatching();

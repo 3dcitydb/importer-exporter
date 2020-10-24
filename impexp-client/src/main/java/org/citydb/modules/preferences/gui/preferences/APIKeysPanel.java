@@ -55,7 +55,7 @@ public class APIKeysPanel extends AbstractPreferencesComponent {
 
     @Override
     public boolean isModified() {
-        APIKeys apiKeys = config.getProject().getGlobal().getApiKeys();
+        APIKeys apiKeys = config.getProject().getGlobalConfig().getApiKeys();
 
         if (!googleGeocodingText.getText().equals(apiKeys.getGoogleGeocoding())) return true;
         if (!googleElevationText.getText().equals(apiKeys.getGoogleElevation())) return true;
@@ -95,14 +95,14 @@ public class APIKeysPanel extends AbstractPreferencesComponent {
 
     @Override
     public void loadSettings() {
-        APIKeys apiKeys = config.getProject().getGlobal().getApiKeys();
+        APIKeys apiKeys = config.getProject().getGlobalConfig().getApiKeys();
         googleGeocodingText.setText(apiKeys.getGoogleGeocoding());
         googleElevationText.setText(apiKeys.getGoogleElevation());
     }
 
     @Override
     public void setSettings() {
-        APIKeys apiKeys = config.getProject().getGlobal().getApiKeys();
+        APIKeys apiKeys = config.getProject().getGlobalConfig().getApiKeys();
 
         String googleGeocoding = googleGeocodingText.getText().trim();
         apiKeys.setGoogleGeocoding(googleGeocoding);

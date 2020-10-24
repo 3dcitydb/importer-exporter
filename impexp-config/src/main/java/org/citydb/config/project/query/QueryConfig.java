@@ -45,8 +45,8 @@ import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import java.util.HashMap;
 
-@XmlRootElement(name="query")
-@XmlType(name="QueryType", propOrder={
+@XmlRootElement(name = "query")
+@XmlType(name = "QueryType", propOrder = {
 		"featureTypeFilter",
 		"projectionFilter",
 		"selectionFilter",
@@ -56,7 +56,7 @@ import java.util.HashMap;
 		"appearanceFilter",
 		"tiling"
 })
-public class Query {
+public class QueryConfig {
 	@XmlIDREF
 	@XmlAttribute
 	private DatabaseSrs targetSrs;
@@ -66,9 +66,9 @@ public class Query {
 	private String targetSrsName;
 	@XmlElement(name = "typeNames")
 	private FeatureTypeFilter featureTypeFilter;
-	@XmlElement(name="propertyNames")
+	@XmlElement(name = "propertyNames")
 	private ProjectionFilter projectionFilter;
-	@XmlElement(name="filter")
+	@XmlElement(name = "filter")
 	private SelectionFilter selectionFilter;
 	@XmlElement(name = "sortBy")
 	private Sorting sorting;

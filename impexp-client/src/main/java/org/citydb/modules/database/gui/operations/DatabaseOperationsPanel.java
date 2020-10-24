@@ -29,7 +29,7 @@ package org.citydb.modules.database.gui.operations;
 
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
-import org.citydb.config.project.database.Database;
+import org.citydb.config.project.database.DatabaseConfig;
 import org.citydb.config.project.database.Workspace;
 import org.citydb.database.connection.DatabaseConnectionPool;
 import org.citydb.event.Event;
@@ -126,7 +126,7 @@ public class DatabaseOperationsPanel extends JPanel implements EventHandler {
 	}
 
 	public void loadSettings() {
-		Database db = config.getProject().getDatabase();
+		DatabaseConfig db = config.getProject().getDatabaseConfig();
 		workspace.setText(db.getWorkspaces().getOperationWorkspace().getName());
 		datePicker.setDate(db.getWorkspaces().getOperationWorkspace().getTimestamp());
 
@@ -142,7 +142,7 @@ public class DatabaseOperationsPanel extends JPanel implements EventHandler {
 	}
 
 	public void setSettings() {
-		Database db = config.getProject().getDatabase();
+		DatabaseConfig db = config.getProject().getDatabaseConfig();
 		db.getOperation().setLastUsed(operations[operationsTab.getSelectedIndex()].getType());
 		db.getWorkspaces().getOperationWorkspace().setName(workspace.getText());
 		db.getWorkspaces().getOperationWorkspace().setTimestamp(datePicker.getDate());
@@ -180,7 +180,7 @@ public class DatabaseOperationsPanel extends JPanel implements EventHandler {
 	
 	public Workspace getWorkspace() {
 		setSettings();
-		return config.getProject().getDatabase().getWorkspaces().getOperationWorkspace();
+		return config.getProject().getDatabaseConfig().getWorkspaces().getOperationWorkspace();
 	}
 
 	protected ViewController getViewController() {

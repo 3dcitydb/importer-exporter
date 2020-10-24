@@ -73,8 +73,8 @@ public class DBDeleteWorker extends Worker<DBSplittingResult> implements EventHa
 
 		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
 
-		if (config.getProject().getDeleter().getMode() == DeleteMode.TERMINATE) {
-			Continuation metadata = config.getProject().getDeleter().getContinuation();
+		if (config.getProject().getDeleteConfig().getMode() == DeleteMode.TERMINATE) {
+			Continuation metadata = config.getProject().getDeleteConfig().getContinuation();
 			StringBuilder update = new StringBuilder("update cityobject set termination_date = ?, last_modification_date = ?, updating_person = ? ");
 			if (metadata.isSetReasonForUpdate()) update.append(", reason_for_update = '").append(metadata.getReasonForUpdate()).append("'");
 			if (metadata.isSetLineage()) update.append(", lineage = '").append(metadata.getLineage()).append("' ");
@@ -133,10 +133,10 @@ public class DBDeleteWorker extends Worker<DBSplittingResult> implements EventHa
 			long objectId = work.getId();
 			long deletedObjectId;
 
-			if (config.getProject().getDeleter().getMode() == DeleteMode.TERMINATE) {
+			if (config.getProject().getDeleteConfig().getMode() == DeleteMode.TERMINATE) {
 				OffsetDateTime now = OffsetDateTime.now();
 
-				Continuation metadata = config.getProject().getDeleter().getContinuation();
+				Continuation metadata = config.getProject().getDeleteConfig().getContinuation();
 				OffsetDateTime terminationDate = metadata.isSetTerminationDate() ? metadata.getTerminationDate() : now;
 				String updatingPerson = metadata.isUpdatingPersonModeDatabase() || !metadata.isSetUpdatingPerson() ?
 						databaseAdapter.getConnectionDetails().getUser() : metadata.getUpdatingPerson();

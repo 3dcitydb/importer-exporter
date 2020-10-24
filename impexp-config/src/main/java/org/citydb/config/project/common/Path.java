@@ -25,34 +25,56 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.citydb.config.project.general;
+package org.citydb.config.project.common;
 
-import java.util.Arrays;
-import java.util.List;
-
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.XmlValue;
 
-@XmlType(name="TransformationMatrixType", propOrder={
-		"value"
+
+@XmlType(name="PathType", propOrder={
+		"mode",
+		"standardPath",
+		"lastUsedPath"
 })
-public class TransformationMatrix {
-	@XmlValue
-	private List<Double> value;
-
-	public List<Double> getValue() {
-		if (value == null)
-			value = Arrays.asList(new Double[]{1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0});
-
-		return value;
+public class Path {
+	@XmlElement(required=true)
+	private PathMode mode = PathMode.LASTUSED;
+	private String standardPath = "";
+	private String lastUsedPath = "";
+	
+	public Path() {
+	}
+	
+	public boolean isSetLastUsedMode() {
+		return mode == PathMode.LASTUSED;
 	}
 
-	public void setValue(List<Double> value) {
-		this.value = value;
+	public boolean isSetStandardMode() {
+		return mode == PathMode.STANDARD;
+	}
+	
+	public PathMode getPathMode() {
+		return mode;
 	}
 
-	public boolean isSetValue() {
-		return value != null && !value.isEmpty();
+	public void setPathMode(PathMode mode) {
+		this.mode = mode;
 	}
 
+	public String getStandardPath() {	
+		return standardPath;
+	}
+
+	public void setStandardPath(String standardPath) {
+		this.standardPath = standardPath;
+	}
+
+	public String getLastUsedPath() {
+		return lastUsedPath;
+	}
+
+	public void setLastUsedPath(String lastUsedPath) {
+		this.lastUsedPath = lastUsedPath;
+	}
+	
 }

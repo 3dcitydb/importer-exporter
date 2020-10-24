@@ -75,7 +75,7 @@ public class DatabaseController implements ConnectionManager {
 			viewHandler.commitConnectionDetails();
 		}
 
-		DBConnection connection = config.getProject().getDatabase().getActiveConnection();
+		DBConnection connection = config.getProject().getDatabaseConfig().getActiveConnection();
 		return connect(connection, suppressDialog);
 	}
 
@@ -113,7 +113,7 @@ public class DatabaseController implements ConnectionManager {
 				connectionPool.getActiveDatabaseAdapter().getConnectionMetaData().printToConsole();
 
 				// log unsupported user-defined SRSs
-				for (DatabaseSrs refSys : config.getProject().getDatabase().getReferenceSystems()) {
+				for (DatabaseSrs refSys : config.getProject().getDatabaseConfig().getReferenceSystems()) {
 					if (!refSys.isSupported()) {
 						log.warn("Reference system '" + refSys.getDescription() +
 								"' (SRID: " + refSys.getSrid() + ") is not supported.");
@@ -155,7 +155,7 @@ public class DatabaseController implements ConnectionManager {
 
 	public List<DatabaseConnectionDetails> getConnectionDetails() {
 		ArrayList<DatabaseConnectionDetails> result = new ArrayList<>();
-		for (DBConnection connection : config.getProject().getDatabase().getConnections()) {
+		for (DBConnection connection : config.getProject().getDatabaseConfig().getConnections()) {
 			result.add(new DatabaseConnectionDetails(connection));
 		}
 
@@ -163,7 +163,7 @@ public class DatabaseController implements ConnectionManager {
 	}
 
 	public List<DatabaseSrs> getDatabaseSrs() {
-		return config.getProject().getDatabase().getReferenceSystems();
+		return config.getProject().getDatabaseConfig().getReferenceSystems();
 	}
 
 	public AbstractDatabaseAdapter getActiveDatabaseAdapter() {

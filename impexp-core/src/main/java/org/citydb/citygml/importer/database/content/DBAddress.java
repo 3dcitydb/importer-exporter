@@ -68,10 +68,10 @@ public class DBAddress implements DBImporter {
 		this.batchConn = batchConn;
 		this.importer = importer;
 
-		importXALSource = config.getProject().getImporter().getAddress().isSetImportXAL();
+		importXALSource = config.getProject().getImportConfig().getAddress().isSetImportXAL();
 		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
 		hasGmlIdColumn = importer.getDatabaseAdapter().getConnectionMetaData().getCityDBVersion().compareTo(3, 1, 0) >= 0;
-		replaceGmlId = config.getProject().getImporter().getGmlId().isUUIDModeReplace();
+		replaceGmlId = config.getProject().getImportConfig().getGmlId().isUUIDModeReplace();
 		String gmlIdCodespace = null;
 
 		if (hasGmlIdColumn) {

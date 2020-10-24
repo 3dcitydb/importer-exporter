@@ -27,23 +27,25 @@
  */
 package org.citydb.config.project.global;
 
+import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="GlobalType", propOrder={
+@XmlRootElement(name = "global")
+@XmlType(name = "GlobalType", propOrder = {
 		"cache",
 		"logging",
 		"language",
 		"proxies",
 		"apiKeys"
-		})
-public class Global {
+})
+public class GlobalConfig {
 	private Cache cache;
 	private Logging logging;
 	private LanguageType language = LanguageType.fromValue(System.getProperty("user.language"));
 	private Proxies proxies;
 	private APIKeys apiKeys;
 
-	public Global() {
+	public GlobalConfig() {
 		cache = new Cache();
 		logging = new Logging();
 		proxies = new Proxies();

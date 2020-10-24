@@ -30,7 +30,7 @@ package org.citydb.modules.database.gui.view;
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.database.DBConnection;
-import org.citydb.config.project.database.Database;
+import org.citydb.config.project.database.DatabaseConfig;
 import org.citydb.config.project.database.DatabaseConfigurationException;
 import org.citydb.config.project.database.DatabaseType;
 import org.citydb.database.DatabaseController;
@@ -109,7 +109,7 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 
 	private DatabaseOperationsPanel operationsPanel;
 
-	private Database databaseConfig;
+	private DatabaseConfig databaseConfig;
 	private boolean isSettingsLoaded;
 
 	public DatabasePanel(ViewController viewController, Config config) {
@@ -567,7 +567,7 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 		if (databaseController.isConnected())
 			disconnect();
 
-		databaseConfig = config.getProject().getDatabase();
+		databaseConfig = config.getProject().getDatabaseConfig();
 		isSettingsLoaded = false;
 
 		connCombo.removeAllItems();

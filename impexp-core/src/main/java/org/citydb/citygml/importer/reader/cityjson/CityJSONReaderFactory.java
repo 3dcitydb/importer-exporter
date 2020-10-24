@@ -33,7 +33,7 @@ public class CityJSONReaderFactory implements FeatureReaderFactory {
         typeFilter = name -> {
             Module module = Modules.getModule(name.getNamespaceURI());
             if (module != null && module.getType() == CityGMLModuleType.APPEARANCE && name.getLocalPart().equals("Appearance"))
-                return config.getProject().getImporter().getAppearances().isSetImportAppearance();
+                return config.getProject().getImportConfig().getAppearances().isSetImportAppearance();
             else
                 return filter.getFeatureTypeFilter().isSatisfiedBy(name, true);
         };

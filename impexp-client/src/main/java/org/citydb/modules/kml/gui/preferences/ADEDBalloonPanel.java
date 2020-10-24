@@ -29,7 +29,7 @@ package org.citydb.modules.kml.gui.preferences;
 
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
-import org.citydb.config.project.general.PathMode;
+import org.citydb.config.project.common.PathMode;
 import org.citydb.config.project.kmlExporter.Balloon;
 import org.citydb.config.project.kmlExporter.BalloonContentMode;
 import org.citydb.database.schema.mapping.FeatureType;

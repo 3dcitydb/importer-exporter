@@ -28,7 +28,7 @@
 package org.citydb.citygml.common.xal;
 
 import org.citydb.config.project.exporter.AddressMode;
-import org.citydb.config.project.exporter.Exporter;
+import org.citydb.config.project.exporter.ExportConfig;
 import org.citygml4j.model.citygml.core.Address;
 import org.citygml4j.model.citygml.core.AddressProperty;
 import org.citygml4j.model.citygml.core.XalAddressProperty;
@@ -50,7 +50,7 @@ public class AddressExportFactory {
 	protected final AddressMode fallback;
 	protected final boolean useFallback;
 
-	public AddressExportFactory(Exporter exportConfig) {
+	public AddressExportFactory(ExportConfig exportConfig) {
 		primary = exportConfig.getAddress().getMode();
 		fallback = primary == AddressMode.DB ? AddressMode.XAL : AddressMode.DB;		
 		useFallback = exportConfig.getAddress().isSetUseFallback();

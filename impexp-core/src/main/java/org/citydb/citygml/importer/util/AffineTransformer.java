@@ -30,7 +30,7 @@ package org.citydb.citygml.importer.util;
 import java.util.List;
 
 import org.citydb.config.Config;
-import org.citydb.config.project.general.TransformationMatrix;
+import org.citydb.config.project.common.TransformationMatrix;
 import org.citygml4j.geometry.Matrix;
 
 public class AffineTransformer {
@@ -40,7 +40,7 @@ public class AffineTransformer {
 	private final Matrix inverse2x2;
 	
 	public AffineTransformer(Config config) throws Exception {
-		matrix4x4 = toMatrix4x4(config.getProject().getImporter().getAffineTransformation().getTransformationMatrix());
+		matrix4x4 = toMatrix4x4(config.getProject().getImportConfig().getAffineTransformation().getTransformationMatrix());
 		matrix3x4 = matrix4x4.getMatrix(3, 4);
 		inverse4x4 = matrix4x4.inverse();
 		inverse2x2 = inverse4x4.getMatrix(2, 2);

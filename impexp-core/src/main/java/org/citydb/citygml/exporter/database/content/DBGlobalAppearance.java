@@ -62,7 +62,7 @@ public class DBGlobalAppearance extends AbstractAppearanceExporter {
 		ps = cacheTable.getConnection().prepareStatement(select.toString());
 
 		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
-		batchSize = config.getProject().getDatabase().getImportBatching().getTempBatchSize();
+		batchSize = config.getProject().getDatabaseConfig().getImportBatching().getTempBatchSize();
 		if (batchSize > exporter.getDatabaseAdapter().getMaxBatchSize())
 			batchSize = exporter.getDatabaseAdapter().getMaxBatchSize();
 
