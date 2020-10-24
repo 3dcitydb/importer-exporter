@@ -30,20 +30,20 @@ package org.citydb.config.project.query.filter.selection.comparison;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlRootElement(name="propertyIsLessThan")
-@XmlType(name="LessThanOperatorType")
+@XmlRootElement(name = "propertyIsLessThan")
+@XmlType(name = "LessThanOperatorType")
 public class LessThanOperator extends AbstractBinaryComparisonOperator {
 
-	public LessThanOperator() {
-	}
+    public LessThanOperator() {
+    }
 
-	public LessThanOperator(String valueReference, String literal) {
-		super(valueReference, literal);
-	}
+    public LessThanOperator(String valueReference, String literal) {
+        super(valueReference, literal);
+    }
 
-	@Override
-	public ComparisonOperatorName getOperatorName() {
-		return ComparisonOperatorName.LESS_THAN;
-	}
-	
+    @Override
+    public ComparisonOperatorName getOperatorName() {
+        return ComparisonOperatorName.LESS_THAN;
+    }
+
 }

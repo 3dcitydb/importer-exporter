@@ -31,35 +31,35 @@ import javax.xml.bind.annotation.XmlEnum;
 import javax.xml.bind.annotation.XmlEnumValue;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="DatabaseTypeType")
+@XmlType(name = "DatabaseTypeType")
 @XmlEnum
 public enum DatabaseType {
-	@XmlEnumValue("Oracle")
-	ORACLE("Oracle"),
-	@XmlEnumValue("PostGIS")
-	POSTGIS("PostgreSQL/PostGIS");
+    @XmlEnumValue("Oracle")
+    ORACLE("Oracle"),
+    @XmlEnumValue("PostGIS")
+    POSTGIS("PostgreSQL/PostGIS");
 
-	private String value;
+    private final String value;
 
-	private DatabaseType(String value) {
-		this.value = value;
-	}
+    DatabaseType(String value) {
+        this.value = value;
+    }
 
-	public String value() {
-		return value;
-	}
+    public String value() {
+        return value;
+    }
 
-	public static DatabaseType fromValue(String v) {
-		for (DatabaseType c : DatabaseType.values()) {
-			if (c.value.toLowerCase().equals(v.toLowerCase())) {
-				return c;
-			}
-		}
+    public static DatabaseType fromValue(String v) {
+        for (DatabaseType c : DatabaseType.values()) {
+            if (c.value.toLowerCase().equals(v.toLowerCase())) {
+                return c;
+            }
+        }
 
-		return ORACLE;
-	}
+        return ORACLE;
+    }
 
-	public String toString() {
-		return value;
-	}
+    public String toString() {
+        return value;
+    }
 }

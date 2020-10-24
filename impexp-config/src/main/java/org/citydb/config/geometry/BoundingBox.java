@@ -33,110 +33,110 @@ import javax.xml.bind.annotation.XmlType;
 
 import org.citydb.config.project.database.DatabaseSrs;
 
-@XmlRootElement(name="envelope")
-@XmlType(name="BoundingBoxType", propOrder = {
-		"lowerCorner",
-		"upperCorner"
+@XmlRootElement(name = "envelope")
+@XmlType(name = "BoundingBoxType", propOrder = {
+        "lowerCorner",
+        "upperCorner"
 })
 public class BoundingBox extends AbstractGeometry {
-	@XmlElement(required = true)
-	private Position lowerCorner;
-	@XmlElement(required = true)
-	private Position upperCorner;
-	
-	public BoundingBox() {
-		lowerCorner = new Position();
-		upperCorner = new Position();
-	}
-	
-	public BoundingBox(Position lowerCorner, Position upperCorner) {
-		this.lowerCorner = lowerCorner;
-		this.upperCorner = upperCorner;
-	}
-	
-	public BoundingBox(Position lowerCorner, Position upperCorner, DatabaseSrs srs) {
-		this.lowerCorner = lowerCorner;
-		this.upperCorner = upperCorner;
-		setSrs(srs);
-	}
-	
-	public BoundingBox(BoundingBox other) {
-		copyFrom(other);
-	}
-	
-	public Position getLowerCorner() {
-		return lowerCorner;
-	}
+    @XmlElement(required = true)
+    private Position lowerCorner;
+    @XmlElement(required = true)
+    private Position upperCorner;
 
-	public void setLowerCorner(Position lowerCorner) {
-		this.lowerCorner = lowerCorner;
-	}
+    public BoundingBox() {
+        lowerCorner = new Position();
+        upperCorner = new Position();
+    }
 
-	public Position getUpperCorner() {
-		return upperCorner;
-	}
+    public BoundingBox(Position lowerCorner, Position upperCorner) {
+        this.lowerCorner = lowerCorner;
+        this.upperCorner = upperCorner;
+    }
 
-	public void setUpperCorner(Position upperCorner) {
-		this.upperCorner = upperCorner;
-	}
-	
-	public void update(Position lowerCorner, Position upperCorner) {
-		if (lowerCorner.getX() < this.lowerCorner.getX())
-			this.lowerCorner.setX(lowerCorner.getX());
+    public BoundingBox(Position lowerCorner, Position upperCorner, DatabaseSrs srs) {
+        this.lowerCorner = lowerCorner;
+        this.upperCorner = upperCorner;
+        setSrs(srs);
+    }
 
-		if (lowerCorner.getY() < this.lowerCorner.getY())
-			this.lowerCorner.setY(lowerCorner.getY());
-		
-		if (upperCorner.getX() > this.upperCorner.getX())
-			this.upperCorner.setX(upperCorner.getX());
+    public BoundingBox(BoundingBox other) {
+        copyFrom(other);
+    }
 
-		if (upperCorner.getY() > this.upperCorner.getY())
-			this.upperCorner.setY(upperCorner.getY());
-		
-		if (is3D()) {
-			if (lowerCorner.isSetZ() && lowerCorner.getZ() < this.lowerCorner.getZ())
-				this.lowerCorner.setZ(lowerCorner.getZ());
-			
-			if (upperCorner.isSetZ() && upperCorner.getZ() > this.upperCorner.getZ())
-				this.upperCorner.setZ(upperCorner.getZ());
-		}
-	}
-	
-	public void update(BoundingBox other) {
-		update(other.lowerCorner, other.upperCorner);
-	}
-	
-	public void copyFrom(BoundingBox other) {
-		setSrs(other.getSrs());
+    public Position getLowerCorner() {
+        return lowerCorner;
+    }
 
-		if (!other.is3D()) {
-			lowerCorner = new Position(other.getLowerCorner().getX(), other.getLowerCorner().getY());
-			upperCorner = new Position(other.getUpperCorner().getX(), other.getUpperCorner().getY());
-		} else {
-			lowerCorner = new Position(other.getLowerCorner().getX(), other.getLowerCorner().getY(), other.getLowerCorner().getZ());
-			upperCorner = new Position(other.getUpperCorner().getX(), other.getUpperCorner().getY(), other.getUpperCorner().getZ());
-		}
-	}
-	
-	@Override
-	public BoundingBox toBoundingBox() {
-		return this;
-	}
-	
-	@Override
-	public boolean is3D() {
-		return isValid() && lowerCorner.is3D() && upperCorner.is3D();
-	}
-	
-	@Override
-	public boolean isValid() {
-		return lowerCorner != null && lowerCorner.isValid()
-				&& upperCorner != null && upperCorner.isValid();
-	}
+    public void setLowerCorner(Position lowerCorner) {
+        this.lowerCorner = lowerCorner;
+    }
 
-	@Override
-	public GeometryType getGeometryType() {
-		return GeometryType.ENVELOPE;
-	}
-	
+    public Position getUpperCorner() {
+        return upperCorner;
+    }
+
+    public void setUpperCorner(Position upperCorner) {
+        this.upperCorner = upperCorner;
+    }
+
+    public void update(Position lowerCorner, Position upperCorner) {
+        if (lowerCorner.getX() < this.lowerCorner.getX())
+            this.lowerCorner.setX(lowerCorner.getX());
+
+        if (lowerCorner.getY() < this.lowerCorner.getY())
+            this.lowerCorner.setY(lowerCorner.getY());
+
+        if (upperCorner.getX() > this.upperCorner.getX())
+            this.upperCorner.setX(upperCorner.getX());
+
+        if (upperCorner.getY() > this.upperCorner.getY())
+            this.upperCorner.setY(upperCorner.getY());
+
+        if (is3D()) {
+            if (lowerCorner.isSetZ() && lowerCorner.getZ() < this.lowerCorner.getZ())
+                this.lowerCorner.setZ(lowerCorner.getZ());
+
+            if (upperCorner.isSetZ() && upperCorner.getZ() > this.upperCorner.getZ())
+                this.upperCorner.setZ(upperCorner.getZ());
+        }
+    }
+
+    public void update(BoundingBox other) {
+        update(other.lowerCorner, other.upperCorner);
+    }
+
+    public void copyFrom(BoundingBox other) {
+        setSrs(other.getSrs());
+
+        if (!other.is3D()) {
+            lowerCorner = new Position(other.getLowerCorner().getX(), other.getLowerCorner().getY());
+            upperCorner = new Position(other.getUpperCorner().getX(), other.getUpperCorner().getY());
+        } else {
+            lowerCorner = new Position(other.getLowerCorner().getX(), other.getLowerCorner().getY(), other.getLowerCorner().getZ());
+            upperCorner = new Position(other.getUpperCorner().getX(), other.getUpperCorner().getY(), other.getUpperCorner().getZ());
+        }
+    }
+
+    @Override
+    public BoundingBox toBoundingBox() {
+        return this;
+    }
+
+    @Override
+    public boolean is3D() {
+        return isValid() && lowerCorner.is3D() && upperCorner.is3D();
+    }
+
+    @Override
+    public boolean isValid() {
+        return lowerCorner != null && lowerCorner.isValid()
+                && upperCorner != null && upperCorner.isValid();
+    }
+
+    @Override
+    public GeometryType getGeometryType() {
+        return GeometryType.ENVELOPE;
+    }
+
 }

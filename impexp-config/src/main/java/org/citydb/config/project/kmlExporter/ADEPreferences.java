@@ -33,43 +33,43 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.util.HashMap;
 import java.util.Map;
 
-@XmlType(name="ADEKmlExportPreferencesType", propOrder={
-		"extensionId",
-		"preferences"
+@XmlType(name = "ADEKmlExportPreferencesType", propOrder = {
+        "extensionId",
+        "preferences"
 })
 public class ADEPreferences {
-	@XmlElement(required = true)
-	private String extensionId;
-	@XmlJavaTypeAdapter(ADEPreferenceAdapter.class)
-	private Map<String, ADEPreference> preferences;
+    @XmlElement(required = true)
+    private String extensionId;
+    @XmlJavaTypeAdapter(ADEPreferenceAdapter.class)
+    private Map<String, ADEPreference> preferences;
 
-	public ADEPreferences() {
-		preferences = new HashMap<>();
-	}
+    public ADEPreferences() {
+        preferences = new HashMap<>();
+    }
 
-	public ADEPreferences(String extensionId) {
-		this();
-		this.extensionId = extensionId;
-	}
+    public ADEPreferences(String extensionId) {
+        this();
+        this.extensionId = extensionId;
+    }
 
-	public String getExtensionId() {
-		return extensionId;
-	}
+    public String getExtensionId() {
+        return extensionId;
+    }
 
-	public boolean isSetExtensionId() {
-		return extensionId != null;
-	}
+    public boolean isSetExtensionId() {
+        return extensionId != null;
+    }
 
-	public void setExtensionId(String extensionId) {
-		this.extensionId = extensionId;
-	}
+    public void setExtensionId(String extensionId) {
+        this.extensionId = extensionId;
+    }
 
-	public Map<String, ADEPreference> getPreferences() {
-		return preferences;
-	}
+    public Map<String, ADEPreference> getPreferences() {
+        return preferences;
+    }
 
-	public void setPreferences(Map<String, ADEPreference> preferences) {
-		this.preferences = preferences;
-	}
+    public void setPreferences(Map<String, ADEPreference> preferences) {
+        this.preferences = preferences;
+    }
 
 }

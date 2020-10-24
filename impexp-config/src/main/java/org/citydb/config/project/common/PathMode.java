@@ -31,10 +31,10 @@ import javax.xml.bind.annotation.XmlEnum;
 import javax.xml.bind.annotation.XmlEnumValue;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="PathModeType")
+@XmlType(name = "PathMode")
 @XmlEnum
 public enum PathMode {
-	@XmlEnumValue("lastUsed")
+    @XmlEnumValue("lastUsed")
     LASTUSED("lastUsed"),
     @XmlEnumValue("standard")
     STANDARD("standard");
@@ -50,7 +50,7 @@ public enum PathMode {
     }
 
     public static PathMode fromValue(String v) {
-        for (PathMode c: PathMode.values()) {
+        for (PathMode c : PathMode.values()) {
             if (c.value.equals(v)) {
                 return c;
             }

@@ -29,31 +29,31 @@ package org.citydb.config.project.global;
 
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="LogConsoleType", propOrder={
-		"wrapText",
-		"logLevel"
-		})
+@XmlType(name = "LogConsoleType", propOrder = {
+        "wrapText",
+        "logLevel"
+})
 public class LogConsole {
-	private boolean wrapText = false;
-	private LogLevel logLevel = LogLevel.INFO;
-	
-	public LogConsole() {
-	}
+    private boolean wrapText = false;
+    private LogLevel logLevel = LogLevel.INFO;
 
-	public LogLevel getLogLevel() {
-		return logLevel;
-	}
+    public LogConsole() {
+    }
 
-	public void setLogLevel(LogLevel logLevel) {
-		this.logLevel = logLevel;
-	}
+    public LogLevel getLogLevel() {
+        return logLevel;
+    }
 
-	public void setWrapText(boolean wrapText) {
-		this.wrapText = wrapText;
-	}
+    public void setLogLevel(LogLevel logLevel) {
+        this.logLevel = logLevel;
+    }
 
-	public boolean isWrapText() {
-		return wrapText;
-	}
-	
+    public void setWrapText(boolean wrapText) {
+        this.wrapText = wrapText;
+    }
+
+    public boolean isWrapText() {
+        return wrapText;
+    }
+
 }

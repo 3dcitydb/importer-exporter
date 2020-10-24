@@ -36,154 +36,154 @@ import org.citydb.config.project.common.XSLTransformation;
 
 @XmlRootElement(name = "import")
 @XmlType(name = "ImportType", propOrder = {
-		"filter",
-		"continuation",
-		"path",
-		"gmlId",
-		"address",
-		"appearances",
-		"affineTransformation",
-		"indexes",
-		"xmlValidation",
-		"xslTransformation",
-		"importLog",
-		"resources"
+        "filter",
+        "continuation",
+        "path",
+        "gmlId",
+        "address",
+        "appearances",
+        "affineTransformation",
+        "indexes",
+        "xmlValidation",
+        "xslTransformation",
+        "importLog",
+        "resources"
 })
 public class ImportConfig {
-	private ImportFilter filter;
-	private Continuation continuation;
-	private Path path;
-	private ImportGmlId gmlId;
-	private ImportAddress address;
-	private ImportAppearance appearances;
-	private AffineTransformation affineTransformation;
-	private Index indexes;
-	private XMLValidation xmlValidation;
-	private XSLTransformation xslTransformation;
-	private ImportLog importLog;
-	private ImportResources resources;
+    private ImportFilter filter;
+    private Continuation continuation;
+    private Path path;
+    private ImportGmlId gmlId;
+    private ImportAddress address;
+    private ImportAppearance appearances;
+    private AffineTransformation affineTransformation;
+    private Index indexes;
+    private XMLValidation xmlValidation;
+    private XSLTransformation xslTransformation;
+    private ImportLog importLog;
+    private ImportResources resources;
 
-	public ImportConfig() {
-		continuation = new Continuation();
-		path = new Path();
-		gmlId = new ImportGmlId();
-		address = new ImportAddress();
-		appearances = new ImportAppearance();
-		filter = new ImportFilter();
-		affineTransformation = new AffineTransformation();
-		indexes = new Index();
-		xmlValidation = new XMLValidation();
-		xslTransformation = new XSLTransformation();
-		importLog = new ImportLog();
-		resources = new ImportResources();
-	}
+    public ImportConfig() {
+        continuation = new Continuation();
+        path = new Path();
+        gmlId = new ImportGmlId();
+        address = new ImportAddress();
+        appearances = new ImportAppearance();
+        filter = new ImportFilter();
+        affineTransformation = new AffineTransformation();
+        indexes = new Index();
+        xmlValidation = new XMLValidation();
+        xslTransformation = new XSLTransformation();
+        importLog = new ImportLog();
+        resources = new ImportResources();
+    }
 
-	public Continuation getContinuation() {
-		return continuation;
-	}
+    public Continuation getContinuation() {
+        return continuation;
+    }
 
-	public void setContinuation(Continuation continuation) {
-		if (continuation != null)
-			this.continuation = continuation;
-	}
+    public void setContinuation(Continuation continuation) {
+        if (continuation != null)
+            this.continuation = continuation;
+    }
 
-	public Path getPath() {
-		return path;
-	}
+    public Path getPath() {
+        return path;
+    }
 
-	public void setPath(Path path) {
-		if (path != null)
-			this.path = path;
-	}
+    public void setPath(Path path) {
+        if (path != null)
+            this.path = path;
+    }
 
-	public ImportGmlId getGmlId() {
-		return gmlId;
-	}
+    public ImportGmlId getGmlId() {
+        return gmlId;
+    }
 
-	public void setGmlId(ImportGmlId gmlId) {
-		if (gmlId != null)
-			this.gmlId = gmlId;
-	}
+    public void setGmlId(ImportGmlId gmlId) {
+        if (gmlId != null)
+            this.gmlId = gmlId;
+    }
 
-	public ImportAddress getAddress() {
-		return address;
-	}
+    public ImportAddress getAddress() {
+        return address;
+    }
 
-	public void setAddress(ImportAddress address) {
-		if (address != null)
-			this.address = address;
-	}
+    public void setAddress(ImportAddress address) {
+        if (address != null)
+            this.address = address;
+    }
 
-	public ImportAppearance getAppearances() {
-		return appearances;
-	}
+    public ImportAppearance getAppearances() {
+        return appearances;
+    }
 
-	public void setAppearances(ImportAppearance appearances) {
-		if (appearances != null)
-			this.appearances = appearances;
-	}
+    public void setAppearances(ImportAppearance appearances) {
+        if (appearances != null)
+            this.appearances = appearances;
+    }
 
-	public ImportFilter getFilter() {
-		return filter;
-	}
+    public ImportFilter getFilter() {
+        return filter;
+    }
 
-	public void setFilter(ImportFilter filter) {
-		if (filter != null)
-			this.filter = filter;
-	}
+    public void setFilter(ImportFilter filter) {
+        if (filter != null)
+            this.filter = filter;
+    }
 
-	public Index getIndexes() {
-		return indexes;
-	}
+    public Index getIndexes() {
+        return indexes;
+    }
 
-	public void setIndexes(Index indexes) {
-		if (indexes != null)
-			this.indexes = indexes;
-	}
+    public void setIndexes(Index indexes) {
+        if (indexes != null)
+            this.indexes = indexes;
+    }
 
-	public XMLValidation getXMLValidation() {
-		return xmlValidation;
-	}
+    public XMLValidation getXMLValidation() {
+        return xmlValidation;
+    }
 
-	public void setXMLValidation(XMLValidation xmlValidation) {
-		if (xmlValidation != null)
-			this.xmlValidation = xmlValidation;
-	}
+    public void setXMLValidation(XMLValidation xmlValidation) {
+        if (xmlValidation != null)
+            this.xmlValidation = xmlValidation;
+    }
 
-	public XSLTransformation getXSLTransformation() {
-		return xslTransformation;
-	}
+    public XSLTransformation getXSLTransformation() {
+        return xslTransformation;
+    }
 
-	public void setXSLTransformation(XSLTransformation xslTransformation) {
-		if (xslTransformation != null)
-			this.xslTransformation = xslTransformation;
-	}
+    public void setXSLTransformation(XSLTransformation xslTransformation) {
+        if (xslTransformation != null)
+            this.xslTransformation = xslTransformation;
+    }
 
-	public AffineTransformation getAffineTransformation() {
-		return affineTransformation;
-	}
+    public AffineTransformation getAffineTransformation() {
+        return affineTransformation;
+    }
 
-	public void setAffineTransformation(AffineTransformation affineTransformation) {
-		if (affineTransformation != null)
-			this.affineTransformation = affineTransformation;
-	}
+    public void setAffineTransformation(AffineTransformation affineTransformation) {
+        if (affineTransformation != null)
+            this.affineTransformation = affineTransformation;
+    }
 
-	public ImportLog getImportLog() {
-		return importLog;
-	}
+    public ImportLog getImportLog() {
+        return importLog;
+    }
 
-	public void setImportLog(ImportLog importLog) {
-		if (importLog != null)
-			this.importLog = importLog;
-	}
+    public void setImportLog(ImportLog importLog) {
+        if (importLog != null)
+            this.importLog = importLog;
+    }
 
-	public ImportResources getResources() {
-		return resources;
-	}
+    public ImportResources getResources() {
+        return resources;
+    }
 
-	public void setResources(ImportResources resources) {
-		if (resources != null)
-			this.resources = resources;
-	}	
+    public void setResources(ImportResources resources) {
+        if (resources != null)
+            this.resources = resources;
+    }
 
 }

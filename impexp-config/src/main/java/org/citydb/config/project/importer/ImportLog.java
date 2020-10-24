@@ -30,41 +30,38 @@ package org.citydb.config.project.importer;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="ImportLogType", propOrder={
-		"logImportedFeatures",
-		"logPath"
+@XmlType(name = "ImportLogType", propOrder = {
+        "logImportedFeatures",
+        "logPath"
 })
 public class ImportLog {
-	@XmlElement(required=true, defaultValue="false")
-	private Boolean logImportedFeatures = false;
-	private String logPath;
-	
-	public boolean isSetLogImportedFeatures() {
-		if (logImportedFeatures != null)
-			return logImportedFeatures.booleanValue();
+    @XmlElement(required = true, defaultValue = "false")
+    private Boolean logImportedFeatures = false;
+    private String logPath;
 
-		return false;
-	}
+    public boolean isSetLogImportedFeatures() {
+        return logImportedFeatures != null ? logImportedFeatures : false;
+    }
 
-	public Boolean getLogImportedFeatures() {
-		return logImportedFeatures;
-	}
+    public Boolean getLogImportedFeatures() {
+        return logImportedFeatures;
+    }
 
-	public void setLogImportedFeatures(Boolean logImportedFeatures) {
-		this.logImportedFeatures = logImportedFeatures;
-	}
-	
-	public boolean isSetLogPath() {
-		return logPath != null;
-	}
+    public void setLogImportedFeatures(Boolean logImportedFeatures) {
+        this.logImportedFeatures = logImportedFeatures;
+    }
 
-	public String getLogPath() {
-		return logPath;
-	}
+    public boolean isSetLogPath() {
+        return logPath != null;
+    }
 
-	public void setLogPath(String logPath) {
-		if (logPath != null && !logPath.isEmpty())
-			this.logPath = logPath;
-	}
-	
+    public String getLogPath() {
+        return logPath;
+    }
+
+    public void setLogPath(String logPath) {
+        if (logPath != null && !logPath.isEmpty())
+            this.logPath = logPath;
+    }
+
 }

@@ -33,11 +33,10 @@ import org.citydb.config.project.kmlExporter.KmlTilingOptions;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="AbstractTilingOptionsType")
+@XmlType(name = "AbstractTilingOptionsType")
 @XmlSeeAlso({
-	SimpleTilingOptions.class,
-	KmlTilingOptions.class
+        SimpleTilingOptions.class,
+        KmlTilingOptions.class
 })
 public abstract class AbstractTilingOptions {
-
 }

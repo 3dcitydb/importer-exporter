@@ -37,45 +37,45 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 import org.citydb.config.project.database.DatabaseConfig.PredefinedSrsName;
 
-@XmlRootElement(name="referenceSystems")
+@XmlRootElement(name = "referenceSystems")
 public class DatabaseSrsList {
-	@XmlElement(name="referenceSystem")
-	private List<DatabaseSrs> items;
+    @XmlElement(name = "referenceSystem")
+    private List<DatabaseSrs> items;
 
-	public DatabaseSrsList() {
-		items = new ArrayList<DatabaseSrs>();
-	}
+    public DatabaseSrsList() {
+        items = new ArrayList<>();
+    }
 
-	public List<DatabaseSrs> getItems() {
-		return items;
-	}
+    public List<DatabaseSrs> getItems() {
+        return items;
+    }
 
-	public void setItems(List<DatabaseSrs> items) {
-		this.items = items;
-	}
+    public void setItems(List<DatabaseSrs> items) {
+        this.items = items;
+    }
 
-	public boolean addItem(DatabaseSrs item) {
-		return items.add(item);
-	}
+    public boolean addItem(DatabaseSrs item) {
+        return items.add(item);
+    }
 
-	public void addDefaultItems() {
-		HashMap<PredefinedSrsName, Boolean> addSrs = new HashMap<>(DatabaseConfig.PREDEFINED_SRS.size());
-		for (PredefinedSrsName name : PredefinedSrsName.values())
-			addSrs.put(name, Boolean.TRUE);
-						
-		for (DatabaseSrs refSys : items) {
-			for (Entry<PredefinedSrsName, DatabaseSrs> entry : DatabaseConfig.PREDEFINED_SRS.entrySet()) {
-				if (addSrs.get(entry.getKey()) && refSys.getSrid() == entry.getValue().getSrid()) {
-					addSrs.put(entry.getKey(), Boolean.FALSE);
-					break;
-				}
-			}
-		}
+    public void addDefaultItems() {
+        HashMap<PredefinedSrsName, Boolean> addSrs = new HashMap<>(DatabaseConfig.PREDEFINED_SRS.size());
+        for (PredefinedSrsName name : PredefinedSrsName.values())
+            addSrs.put(name, Boolean.TRUE);
 
-		for (Entry<PredefinedSrsName, Boolean> entry : addSrs.entrySet()) {
-			if (entry.getValue())
-				items.add(DatabaseConfig.PREDEFINED_SRS.get(entry.getKey()));
-		}
-	}
+        for (DatabaseSrs refSys : items) {
+            for (Entry<PredefinedSrsName, DatabaseSrs> entry : DatabaseConfig.PREDEFINED_SRS.entrySet()) {
+                if (addSrs.get(entry.getKey()) && refSys.getSrid() == entry.getValue().getSrid()) {
+                    addSrs.put(entry.getKey(), Boolean.FALSE);
+                    break;
+                }
+            }
+        }
+
+        for (Entry<PredefinedSrsName, Boolean> entry : addSrs.entrySet()) {
+            if (entry.getValue())
+                items.add(DatabaseConfig.PREDEFINED_SRS.get(entry.getKey()));
+        }
+    }
 
 }

@@ -33,10 +33,10 @@ import javax.xml.bind.annotation.XmlType;
 
 import org.citydb.config.i18n.Language;
 
-@XmlType(name="TileSuffixModeType")
+@XmlType(name = "TileSuffixModeType")
 @XmlEnum
 public enum TileSuffixMode {
-	@XmlEnumValue("row_column")
+    @XmlEnumValue("row_column")
     ROW_COLUMN("row_column"),
     @XmlEnumValue("xMin_yMin")
     XMIN_YMIN("xMin_yMin"),
@@ -61,26 +61,26 @@ public enum TileSuffixMode {
 
     @Override
     public String toString() {
-    	switch (this) {
-    	case ROW_COLUMN:
-    		return Language.I18N.getString("pref.export.boundingBox.label.tile.pathSuffix.rowColumn");
-    	case XMIN_YMIN:
-    		return "Xmin / Ymin";
-    	case XMIN_YMAX:
-    		return "Xmin / Ymax";
-    	case XMAX_YMIN:
-    		return "Xmax / Ymin";
-    	case XMAX_YMAX:
-    		return "Xmax / Ymax";
-    	case XMIN_YMIN_XMAX_YMAX:
-    		return "Xmin / Ymin / Xmax / Ymax";
-    	default:
-    		return "";
-    	}
+        switch (this) {
+            case ROW_COLUMN:
+                return Language.I18N.getString("pref.export.boundingBox.label.tile.pathSuffix.rowColumn");
+            case XMIN_YMIN:
+                return "Xmin / Ymin";
+            case XMIN_YMAX:
+                return "Xmin / Ymax";
+            case XMAX_YMIN:
+                return "Xmax / Ymin";
+            case XMAX_YMAX:
+                return "Xmax / Ymax";
+            case XMIN_YMIN_XMAX_YMAX:
+                return "Xmin / Ymin / Xmax / Ymax";
+            default:
+                return "";
+        }
     }
 
     public static TileSuffixMode fromValue(String v) {
-        for (TileSuffixMode c: TileSuffixMode.values()) {
+        for (TileSuffixMode c : TileSuffixMode.values()) {
             if (c.value.equals(v)) {
                 return c;
             }

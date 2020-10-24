@@ -34,69 +34,69 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlRootElement(name="multiPolygon")
-@XmlType(name="MultiPolygonType", propOrder={
-		"polygons"
+@XmlRootElement(name = "multiPolygon")
+@XmlType(name = "MultiPolygonType", propOrder = {
+        "polygons"
 })
 public class MultiPolygon extends AbstractGeometry {
-	@XmlElement(name="polygon", required=true)
-	private List<Polygon> polygons;
-	
-	public MultiPolygon() {
-		polygons = new ArrayList<>();
-	}
+    @XmlElement(name = "polygon", required = true)
+    private List<Polygon> polygons;
 
-	public List<Polygon> getPolygons() {
-		return polygons;
-	}
+    public MultiPolygon() {
+        polygons = new ArrayList<>();
+    }
 
-	public void setPolygons(List<Polygon> polygons) {
-		this.polygons = polygons;
-	}
-	
-	@Override
-	public BoundingBox toBoundingBox() {
-		int dim = is3D() ? 3 : 2;
-		BoundingBox bbox = new BoundingBox(new Position(Double.MAX_VALUE, dim), new Position(-Double.MAX_VALUE, dim));
-		
-		for (Polygon polygon : polygons)
-			bbox.update(polygon.toBoundingBox());
-		
-		return bbox;
-	}
+    public List<Polygon> getPolygons() {
+        return polygons;
+    }
 
-	@Override
-	public boolean is3D() {
-		if (isValid()) {
-			for (Polygon polygon : polygons) {
-				if (!polygon.is3D())
-					return false;
-			}
-			
-			return true;
-		}
-		
-		return false;
-	}
+    public void setPolygons(List<Polygon> polygons) {
+        this.polygons = polygons;
+    }
 
-	@Override
-	public boolean isValid() {
-		if (polygons != null && !polygons.isEmpty()) {
-			for (Polygon polygon : polygons) {
-				if (!polygon.isValid())
-					return false;
-			}
-			
-			return true;
-		}
-		
-		return false;
-	}
+    @Override
+    public BoundingBox toBoundingBox() {
+        int dim = is3D() ? 3 : 2;
+        BoundingBox bbox = new BoundingBox(new Position(Double.MAX_VALUE, dim), new Position(-Double.MAX_VALUE, dim));
 
-	@Override
-	public GeometryType getGeometryType() {
-		return GeometryType.MULTI_POLYGON;
-	}
-	
-	
+        for (Polygon polygon : polygons)
+            bbox.update(polygon.toBoundingBox());
+
+        return bbox;
+    }
+
+    @Override
+    public boolean is3D() {
+        if (isValid()) {
+            for (Polygon polygon : polygons) {
+                if (!polygon.is3D())
+                    return false;
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
+    @Override
+    public boolean isValid() {
+        if (polygons != null && !polygons.isEmpty()) {
+            for (Polygon polygon : polygons) {
+                if (!polygon.isValid())
+                    return false;
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
+    @Override
+    public GeometryType getGeometryType() {
+        return GeometryType.MULTI_POLYGON;
+    }
+
+
 }

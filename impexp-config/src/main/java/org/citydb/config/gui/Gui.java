@@ -41,130 +41,130 @@ import java.util.ArrayList;
 import java.util.List;
 
 @XmlRootElement
-@XmlType(name="GuiType", propOrder={
-		"main",
-		"console",
-		"map",
-		"sqlExportFilter",
-		"showPreferencesConfirmDialog",
-		"showOutdatedDatabaseVersionWarning",
-		"showUnsupportedADEWarning",
-		"showKmlExportUnsupportedADEWarning",
-		"showChangeSridWarning",
-		"recentlyUsedProjects"
+@XmlType(name = "GuiType", propOrder = {
+        "main",
+        "console",
+        "map",
+        "sqlExportFilter",
+        "showPreferencesConfirmDialog",
+        "showOutdatedDatabaseVersionWarning",
+        "showUnsupportedADEWarning",
+        "showKmlExportUnsupportedADEWarning",
+        "showChangeSridWarning",
+        "recentlyUsedProjects"
 })
 public class Gui {
-	private MainWindow main; 
-	private ConsoleWindow console;
-	private MapWindow map;
-	private SQLExportFilterComponent sqlExportFilter;
-	private boolean showPreferencesConfirmDialog = true;
-	private boolean showOutdatedDatabaseVersionWarning = true;
-	private boolean showUnsupportedADEWarning = true;
-	private boolean showKmlExportUnsupportedADEWarning = true;
-	private boolean showChangeSridWarning = true;
-	@XmlElementWrapper(name="recentlyUsedProjects")
-	@XmlElement(name="fileName")
-	private List<String> recentlyUsedProjects;
+    private MainWindow main;
+    private ConsoleWindow console;
+    private MapWindow map;
+    private SQLExportFilterComponent sqlExportFilter;
+    private boolean showPreferencesConfirmDialog = true;
+    private boolean showOutdatedDatabaseVersionWarning = true;
+    private boolean showUnsupportedADEWarning = true;
+    private boolean showKmlExportUnsupportedADEWarning = true;
+    private boolean showChangeSridWarning = true;
+    @XmlElementWrapper(name = "recentlyUsedProjects")
+    @XmlElement(name = "fileName")
+    private List<String> recentlyUsedProjects;
 
-	@XmlTransient
-	private final int maxLastUsedEntries = 5;
+    @XmlTransient
+    private final int maxLastUsedEntries = 5;
 
-	public Gui() {
-		main = new MainWindow();
-		console = new ConsoleWindow();
-		map = new MapWindow();
-		sqlExportFilter = new SQLExportFilterComponent();
-		recentlyUsedProjects = new ArrayList<>(maxLastUsedEntries + 1);
-	}
+    public Gui() {
+        main = new MainWindow();
+        console = new ConsoleWindow();
+        map = new MapWindow();
+        sqlExportFilter = new SQLExportFilterComponent();
+        recentlyUsedProjects = new ArrayList<>(maxLastUsedEntries + 1);
+    }
 
-	public MainWindow getMainWindow() {
-		return main;
-	}
+    public MainWindow getMainWindow() {
+        return main;
+    }
 
-	public void setMainWindow(MainWindow main) {
-		if (main != null)
-			this.main = main;
-	}
+    public void setMainWindow(MainWindow main) {
+        if (main != null)
+            this.main = main;
+    }
 
-	public ConsoleWindow getConsoleWindow() {
-		return console;
-	}
+    public ConsoleWindow getConsoleWindow() {
+        return console;
+    }
 
-	public void setConsoleWindow(ConsoleWindow console) {
-		if (console != null)
-			this.console = console;
-	}
+    public void setConsoleWindow(ConsoleWindow console) {
+        if (console != null)
+            this.console = console;
+    }
 
-	public MapWindow getMapWindow() {
-		return map;
-	}
+    public MapWindow getMapWindow() {
+        return map;
+    }
 
-	public void setMapWindow(MapWindow map) {
-		if (map != null)
-			this.map = map;
-	}
+    public void setMapWindow(MapWindow map) {
+        if (map != null)
+            this.map = map;
+    }
 
-	public void setSQLExportFilterComponent(SQLExportFilterComponent sqlExportFilter) {
-		if (sqlExportFilter != null)
-			this.sqlExportFilter = sqlExportFilter;
-	}
+    public void setSQLExportFilterComponent(SQLExportFilterComponent sqlExportFilter) {
+        if (sqlExportFilter != null)
+            this.sqlExportFilter = sqlExportFilter;
+    }
 
-	public SQLExportFilterComponent getSQLExportFilterComponent() {
-		return sqlExportFilter;
-	}
+    public SQLExportFilterComponent getSQLExportFilterComponent() {
+        return sqlExportFilter;
+    }
 
-	public boolean isShowPreferencesConfirmDialog() {
-		return showPreferencesConfirmDialog;
-	}
+    public boolean isShowPreferencesConfirmDialog() {
+        return showPreferencesConfirmDialog;
+    }
 
-	public void setShowPreferencesConfirmDialog(boolean showPreferencesConfirmDialog) {
-		this.showPreferencesConfirmDialog = showPreferencesConfirmDialog;
-	}
+    public void setShowPreferencesConfirmDialog(boolean showPreferencesConfirmDialog) {
+        this.showPreferencesConfirmDialog = showPreferencesConfirmDialog;
+    }
 
-	public boolean isShowOutdatedDatabaseVersionWarning() {
-		return showOutdatedDatabaseVersionWarning;
-	}
+    public boolean isShowOutdatedDatabaseVersionWarning() {
+        return showOutdatedDatabaseVersionWarning;
+    }
 
-	public void setShowOutdatedDatabaseVersionWarning(boolean showOutdatedDatabaseVersionWarning) {
-		this.showOutdatedDatabaseVersionWarning = showOutdatedDatabaseVersionWarning;
-	}
+    public void setShowOutdatedDatabaseVersionWarning(boolean showOutdatedDatabaseVersionWarning) {
+        this.showOutdatedDatabaseVersionWarning = showOutdatedDatabaseVersionWarning;
+    }
 
-	public boolean isShowUnsupportedADEWarning() {
-		return showUnsupportedADEWarning;
-	}
+    public boolean isShowUnsupportedADEWarning() {
+        return showUnsupportedADEWarning;
+    }
 
-	public void setShowUnsupportedADEWarning(boolean showUnsupportedADEWarning) {
-		this.showUnsupportedADEWarning = showUnsupportedADEWarning;
-	}
-	
-	public boolean isShowKmlExportUnsupportedADEWarning() {
-		return showKmlExportUnsupportedADEWarning;
-	}
+    public void setShowUnsupportedADEWarning(boolean showUnsupportedADEWarning) {
+        this.showUnsupportedADEWarning = showUnsupportedADEWarning;
+    }
 
-	public void setShowKmlExportUnsupportedADEWarning(boolean showKmlExportUnsupportedADEWarning) {
-		this.showKmlExportUnsupportedADEWarning = showKmlExportUnsupportedADEWarning;
-	}
+    public boolean isShowKmlExportUnsupportedADEWarning() {
+        return showKmlExportUnsupportedADEWarning;
+    }
 
-	public boolean isShowChangeSridWarning() {
-		return showChangeSridWarning;
-	}
+    public void setShowKmlExportUnsupportedADEWarning(boolean showKmlExportUnsupportedADEWarning) {
+        this.showKmlExportUnsupportedADEWarning = showKmlExportUnsupportedADEWarning;
+    }
 
-	public void setShowChangeSridWarning(boolean showChangeSridWarning) {
-		this.showChangeSridWarning = showChangeSridWarning;
-	}
+    public boolean isShowChangeSridWarning() {
+        return showChangeSridWarning;
+    }
 
-	public List<String> getRecentlyUsedProjectFiles() {
-		return recentlyUsedProjects;
-	}
+    public void setShowChangeSridWarning(boolean showChangeSridWarning) {
+        this.showChangeSridWarning = showChangeSridWarning;
+    }
 
-	public void setRecentlyUsedProjectFiles(List<String> recentlyUsedProjects) {
-		if (recentlyUsedProjects != null)
-			this.recentlyUsedProjects = recentlyUsedProjects;
-	}
+    public List<String> getRecentlyUsedProjectFiles() {
+        return recentlyUsedProjects;
+    }
 
-	public int getMaxLastUsedEntries() {
-		return maxLastUsedEntries;
-	}
+    public void setRecentlyUsedProjectFiles(List<String> recentlyUsedProjects) {
+        if (recentlyUsedProjects != null)
+            this.recentlyUsedProjects = recentlyUsedProjects;
+    }
+
+    public int getMaxLastUsedEntries() {
+        return maxLastUsedEntries;
+    }
 
 }

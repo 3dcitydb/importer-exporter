@@ -34,68 +34,68 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlRootElement(name="multiPoint")
-@XmlType(name="MultiPointType", propOrder={
-		"points"
+@XmlRootElement(name = "multiPoint")
+@XmlType(name = "MultiPointType", propOrder = {
+        "points"
 })
 public class MultiPoint extends AbstractGeometry {
-	@XmlElement(name="point", required=true)
-	private List<Point> points;
-	
-	public MultiPoint() {
-		points = new ArrayList<>();
-	}
-	
-	public List<Point> getPoints() {
-		return points;
-	}
-	
-	public void setPoints(List<Point> points) {
-		this.points = points;
-	}
+    @XmlElement(name = "point", required = true)
+    private List<Point> points;
 
-	@Override
-	public BoundingBox toBoundingBox() {
-		int dim = is3D() ? 3 : 2;
-		BoundingBox bbox = new BoundingBox(new Position(Double.MAX_VALUE, dim), new Position(-Double.MAX_VALUE, dim));
-		
-		for (Point point : points)
-			bbox.update(point.toBoundingBox());
-		
-		return bbox;
-	}
+    public MultiPoint() {
+        points = new ArrayList<>();
+    }
 
-	@Override
-	public boolean is3D() {
-		if (isValid()) {
-			for (Point point : points) {
-				if (!point.is3D())
-					return false;
-			}
-			
-			return true;
-		}
-		
-		return false;
-	}
-	
-	@Override
-	public boolean isValid() {
-		if (points != null && !points.isEmpty()) {
-			for (Point point : points) {
-				if (!point.isValid())
-					return false;
-			}
-			
-			return true;
-		}
-		
-		return false;
-	}
+    public List<Point> getPoints() {
+        return points;
+    }
 
-	@Override
-	public GeometryType getGeometryType() {
-		return GeometryType.MULTI_POINT;
-	}
+    public void setPoints(List<Point> points) {
+        this.points = points;
+    }
+
+    @Override
+    public BoundingBox toBoundingBox() {
+        int dim = is3D() ? 3 : 2;
+        BoundingBox bbox = new BoundingBox(new Position(Double.MAX_VALUE, dim), new Position(-Double.MAX_VALUE, dim));
+
+        for (Point point : points)
+            bbox.update(point.toBoundingBox());
+
+        return bbox;
+    }
+
+    @Override
+    public boolean is3D() {
+        if (isValid()) {
+            for (Point point : points) {
+                if (!point.is3D())
+                    return false;
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
+    @Override
+    public boolean isValid() {
+        if (points != null && !points.isEmpty()) {
+            for (Point point : points) {
+                if (!point.isValid())
+                    return false;
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
+    @Override
+    public GeometryType getGeometryType() {
+        return GeometryType.MULTI_POINT;
+    }
 
 }

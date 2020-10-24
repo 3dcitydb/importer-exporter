@@ -32,85 +32,85 @@ import org.citydb.config.project.common.Path;
 
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="BalloonType", propOrder={
-		"includeDescription",
-		"balloonContentMode",
-		"balloonContentPath",
-		"balloonContentTemplateFile",
-		"balloonContentInSeparateFile"
+@XmlType(name = "BalloonType", propOrder = {
+        "includeDescription",
+        "balloonContentMode",
+        "balloonContentPath",
+        "balloonContentTemplateFile",
+        "balloonContentInSeparateFile"
 })
 public class Balloon {
-	private boolean includeDescription;
-	private BalloonContentMode balloonContentMode;
-	private Path balloonContentPath;
-	private String balloonContentTemplateFile;
-	private boolean balloonContentInSeparateFile;
+    private boolean includeDescription;
+    private BalloonContentMode balloonContentMode;
+    private Path balloonContentPath;
+    private String balloonContentTemplateFile;
+    private boolean balloonContentInSeparateFile;
 
-	public Balloon() {
-		includeDescription = false;
-		setBalloonContentMode(BalloonContentMode.GEN_ATTRIB);
-		balloonContentPath = new Path();
-		balloonContentTemplateFile = "";
-		balloonContentInSeparateFile = false;
-	}
+    public Balloon() {
+        includeDescription = false;
+        setBalloonContentMode(BalloonContentMode.GEN_ATTRIB);
+        balloonContentPath = new Path();
+        balloonContentTemplateFile = "";
+        balloonContentInSeparateFile = false;
+    }
 
 
-	public void setIncludeDescription(boolean includeDescription) {
-		this.includeDescription = includeDescription;
-	}
+    public void setIncludeDescription(boolean includeDescription) {
+        this.includeDescription = includeDescription;
+    }
 
-	public boolean isIncludeDescription() {
-		return includeDescription;
-	}
+    public boolean isIncludeDescription() {
+        return includeDescription;
+    }
 
-	public void setBalloonContentMode(BalloonContentMode balloonContentMode) {
-		this.balloonContentMode = balloonContentMode;
-	}
+    public void setBalloonContentMode(BalloonContentMode balloonContentMode) {
+        this.balloonContentMode = balloonContentMode;
+    }
 
-	public BalloonContentMode getBalloonContentMode() {
-		return balloonContentMode;
-	}
+    public BalloonContentMode getBalloonContentMode() {
+        return balloonContentMode;
+    }
 
-	public Path getBalloonContentPath() {
-		return balloonContentPath;
-	}
+    public Path getBalloonContentPath() {
+        return balloonContentPath;
+    }
 
-	public void setBalloonContentPath(Path balloonContentPath) {
-		if (balloonContentPath != null)
-			this.balloonContentPath = balloonContentPath;
-	}
+    public void setBalloonContentPath(Path balloonContentPath) {
+        if (balloonContentPath != null)
+            this.balloonContentPath = balloonContentPath;
+    }
 
-	public void setBalloonContentTemplateFile(String balloonContentTemplateFile) {
-		this.balloonContentTemplateFile = balloonContentTemplateFile;
-	}
+    public void setBalloonContentTemplateFile(String balloonContentTemplateFile) {
+        this.balloonContentTemplateFile = balloonContentTemplateFile;
+    }
 
-	public String getBalloonContentTemplateFile() {
-		return balloonContentTemplateFile;
-	}
+    public String getBalloonContentTemplateFile() {
+        return balloonContentTemplateFile;
+    }
 
-	public void setBalloonContentInSeparateFile(boolean balloonContentInSeparateFile) {
-		this.balloonContentInSeparateFile = balloonContentInSeparateFile;
-	}
+    public void setBalloonContentInSeparateFile(boolean balloonContentInSeparateFile) {
+        this.balloonContentInSeparateFile = balloonContentInSeparateFile;
+    }
 
-	public boolean isBalloonContentInSeparateFile() {
-		return balloonContentInSeparateFile;
-	}
-	
-	public boolean equals (Object o) {
-		try {
-			Balloon balloonToCompare = (Balloon) o;
-			if (balloonToCompare.getBalloonContentMode() != this.getBalloonContentMode()) return false;
-			if (!balloonToCompare.getBalloonContentTemplateFile().equals(this.getBalloonContentTemplateFile())) return false;
-			if (balloonToCompare.isBalloonContentInSeparateFile() != this.isBalloonContentInSeparateFile()) return false;
-			if (balloonToCompare.isIncludeDescription() != this.isIncludeDescription()) return false;
-			if (balloonToCompare.getBalloonContentPath().getPathMode() != this.getBalloonContentPath().getPathMode()) return false;
-			if (!balloonToCompare.getBalloonContentPath().getLastUsedPath().equals(this.getBalloonContentPath().getLastUsedPath())) return false;
-			if (!balloonToCompare.getBalloonContentPath().getStandardPath().equals(this.getBalloonContentPath().getStandardPath())) return false;
-		}
-		catch (ClassCastException e) {
-			return false;
-		}
-		return true;
-	}
+    public boolean isBalloonContentInSeparateFile() {
+        return balloonContentInSeparateFile;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof Balloon))
+            return false;
+
+        Balloon balloonToCompare = (Balloon) o;
+        if (balloonToCompare.getBalloonContentMode() != getBalloonContentMode()) return false;
+        if (!balloonToCompare.getBalloonContentTemplateFile().equals(getBalloonContentTemplateFile())) return false;
+        if (balloonToCompare.isBalloonContentInSeparateFile() != isBalloonContentInSeparateFile()) return false;
+        if (balloonToCompare.isIncludeDescription() != isIncludeDescription()) return false;
+        if (balloonToCompare.getBalloonContentPath().getPathMode() != getBalloonContentPath().getPathMode()) return false;
+        if (!balloonToCompare.getBalloonContentPath().getLastUsedPath().equals(getBalloonContentPath().getLastUsedPath())) return false;
+        if (!balloonToCompare.getBalloonContentPath().getStandardPath().equals(getBalloonContentPath().getStandardPath())) return false;
+
+        return true;
+    }
 
 }

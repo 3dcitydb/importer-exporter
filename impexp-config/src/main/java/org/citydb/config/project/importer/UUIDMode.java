@@ -31,10 +31,10 @@ import javax.xml.bind.annotation.XmlEnum;
 import javax.xml.bind.annotation.XmlEnumValue;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="UUIDModeType")
+@XmlType(name = "UUIDModeType")
 @XmlEnum
 public enum UUIDMode {
-	@XmlEnumValue("complement")
+    @XmlEnumValue("complement")
     COMPLEMENT("complement"),
     @XmlEnumValue("replace")
     REPLACE("replace");
@@ -50,7 +50,7 @@ public enum UUIDMode {
     }
 
     public static UUIDMode fromValue(String v) {
-        for (UUIDMode c: UUIDMode.values()) {
+        for (UUIDMode c : UUIDMode.values()) {
             if (c.value.equals(v)) {
                 return c;
             }

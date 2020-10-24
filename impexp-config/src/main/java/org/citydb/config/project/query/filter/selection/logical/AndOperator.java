@@ -33,24 +33,24 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 import java.util.List;
 
-@XmlRootElement(name="and")
-@XmlType(name="AndOperatorType")
+@XmlRootElement(name = "and")
+@XmlType(name = "AndOperatorType")
 public class AndOperator extends AbstractBinaryLogicalOperator {
 
-	public AndOperator() {
-	}
+    public AndOperator() {
+    }
 
-	public AndOperator(List<AbstractPredicate> operands) {
-		super(operands);
-	}
+    public AndOperator(List<AbstractPredicate> operands) {
+        super(operands);
+    }
 
-	public AndOperator(AbstractPredicate... operands) {
-		super(operands);
-	}
+    public AndOperator(AbstractPredicate... operands) {
+        super(operands);
+    }
 
-	@Override
-	public LogicalOperatorName getOperatorName() {
-		return LogicalOperatorName.AND;
-	}
+    @Override
+    public LogicalOperatorName getOperatorName() {
+        return LogicalOperatorName.AND;
+    }
 
 }

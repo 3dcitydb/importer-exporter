@@ -31,31 +31,31 @@ import javax.xml.bind.annotation.XmlEnum;
 import javax.xml.bind.annotation.XmlEnumValue;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="CityGMLVersionType")
+@XmlType(name = "CityGMLVersionType")
 @XmlEnum
 public enum CityGMLVersionType {
-	@XmlEnumValue("2.0.0")
-	v2_0_0("v2.0.0 (OGC Encoding Standard)"),
-	@XmlEnumValue("1.0.0")
-	v1_0_0("v1.0.0");
+    @XmlEnumValue("2.0.0")
+    v2_0_0("v2.0.0 (OGC Encoding Standard)"),
+    @XmlEnumValue("1.0.0")
+    v1_0_0("v1.0.0");
 
-	private final String value;
+    private final String value;
 
-	CityGMLVersionType(String value) {
-		this.value = value;
-	}
+    CityGMLVersionType(String value) {
+        this.value = value;
+    }
 
-	@Override
-	public String toString() {
-		return value;
-	}
-	
-	public static CityGMLVersionType fromValue(String value) {
-		for (CityGMLVersionType type : values())
-			if (type.toString().equals(value))
-				return type;
-		
-		return v2_0_0;
-	}
+    @Override
+    public String toString() {
+        return value;
+    }
+
+    public static CityGMLVersionType fromValue(String value) {
+        for (CityGMLVersionType type : values())
+            if (type.toString().equals(value))
+                return type;
+
+        return v2_0_0;
+    }
 
 }

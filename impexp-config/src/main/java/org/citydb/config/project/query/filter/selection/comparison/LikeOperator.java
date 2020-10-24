@@ -32,99 +32,99 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlRootElement(name="propertyIsLike")
-@XmlType(name="LikeOperatorType", propOrder={
-		"literal"
+@XmlRootElement(name = "propertyIsLike")
+@XmlType(name = "LikeOperatorType", propOrder = {
+        "literal"
 })
 public class LikeOperator extends AbstractComparisonOperator {
-	@XmlAttribute
-	private String wildCard = "*";
-	@XmlAttribute
-	private String singleCharacter = ".";
-	@XmlAttribute
-	private String escapeCharacter = "\\";
-	@XmlAttribute
-	private Boolean matchCase = true;
-	@XmlElement(required = true)
-	private String literal;
+    @XmlAttribute
+    private String wildCard = "*";
+    @XmlAttribute
+    private String singleCharacter = ".";
+    @XmlAttribute
+    private String escapeCharacter = "\\";
+    @XmlAttribute
+    private Boolean matchCase = true;
+    @XmlElement(required = true)
+    private String literal;
 
-	public LikeOperator() {
-	}
+    public LikeOperator() {
+    }
 
-	public LikeOperator(String valueReference, String literal) {
-		super(valueReference);
-		this.literal = literal;
-	}
-	
-	public boolean isSetWildCard() {
-		return wildCard != null;
-	}
-	
-	public String getWildCard() {
-		return wildCard;
-	}
+    public LikeOperator(String valueReference, String literal) {
+        super(valueReference);
+        this.literal = literal;
+    }
 
-	public void setWildCard(String wildCard) {
-		this.wildCard = wildCard;
-	}
-	
-	public boolean isSetSingleCharacter() {
-		return singleCharacter != null;
-	}
+    public boolean isSetWildCard() {
+        return wildCard != null;
+    }
 
-	public String getSingleCharacter() {
-		return singleCharacter;
-	}
+    public String getWildCard() {
+        return wildCard;
+    }
 
-	public void setSingleCharacter(String singleCharacter) {
-		this.singleCharacter = singleCharacter;
-	}
+    public void setWildCard(String wildCard) {
+        this.wildCard = wildCard;
+    }
 
-	public boolean isSetEscapeCharacter() {
-		return escapeCharacter != null;
-	}
-	
-	public String getEscapeCharacter() {
-		return escapeCharacter;
-	}
+    public boolean isSetSingleCharacter() {
+        return singleCharacter != null;
+    }
 
-	public void setEscapeCharacter(String escapeCharacter) {
-		this.escapeCharacter = escapeCharacter;
-	}
+    public String getSingleCharacter() {
+        return singleCharacter;
+    }
 
-	public boolean isMatchCase() {
-		return matchCase;
-	}
+    public void setSingleCharacter(String singleCharacter) {
+        this.singleCharacter = singleCharacter;
+    }
 
-	public void setMatchCase(boolean matchCase) {
-		this.matchCase = matchCase;
-	}
+    public boolean isSetEscapeCharacter() {
+        return escapeCharacter != null;
+    }
 
-	public boolean isSetLiteral() {
-		return literal != null;
-	}
-	
-	public String getLiteral() {
-		return literal;
-	}
+    public String getEscapeCharacter() {
+        return escapeCharacter;
+    }
 
-	public void setLiteral(String literal) {
-		this.literal = literal;
-	}
-	
-	@Override
-	public void reset() {
-		wildCard = "*";
-		singleCharacter = ".";
-		escapeCharacter = "\\";
-		matchCase = true;
-		literal = null;
-		super.reset();
-	}
+    public void setEscapeCharacter(String escapeCharacter) {
+        this.escapeCharacter = escapeCharacter;
+    }
 
-	@Override
-	public ComparisonOperatorName getOperatorName() {
-		return ComparisonOperatorName.LIKE;
-	}
+    public boolean isMatchCase() {
+        return matchCase;
+    }
+
+    public void setMatchCase(boolean matchCase) {
+        this.matchCase = matchCase;
+    }
+
+    public boolean isSetLiteral() {
+        return literal != null;
+    }
+
+    public String getLiteral() {
+        return literal;
+    }
+
+    public void setLiteral(String literal) {
+        this.literal = literal;
+    }
+
+    @Override
+    public void reset() {
+        wildCard = "*";
+        singleCharacter = ".";
+        escapeCharacter = "\\";
+        matchCase = true;
+        literal = null;
+        super.reset();
+    }
+
+    @Override
+    public ComparisonOperatorName getOperatorName() {
+        return ComparisonOperatorName.LIKE;
+    }
 
 }

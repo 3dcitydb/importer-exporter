@@ -33,26 +33,26 @@ import java.util.List;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlValue;
 
-@XmlType(name="TransformationMatrixType", propOrder={
-		"value"
+@XmlType(name = "TransformationMatrixType", propOrder = {
+        "value"
 })
 public class TransformationMatrix {
-	@XmlValue
-	private List<Double> value;
+    @XmlValue
+    private List<Double> value;
 
-	public List<Double> getValue() {
-		if (value == null)
-			value = Arrays.asList(new Double[]{1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0});
+    public List<Double> getValue() {
+        if (value == null)
+            value = Arrays.asList(1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
 
-		return value;
-	}
+        return value;
+    }
 
-	public void setValue(List<Double> value) {
-		this.value = value;
-	}
+    public void setValue(List<Double> value) {
+        this.value = value;
+    }
 
-	public boolean isSetValue() {
-		return value != null && !value.isEmpty();
-	}
+    public boolean isSetValue() {
+        return value != null && !value.isEmpty();
+    }
 
 }

@@ -27,48 +27,47 @@
  */
 package org.citydb.config.project.database;
 
-@SuppressWarnings("serial")
 public class DatabaseConfigurationException extends Exception {
-	private final Reason reason;
+    private final Reason reason;
 
-	public DatabaseConfigurationException(Reason reason, Throwable cause) {
-		super(reason.toString(), cause);
-		this.reason = reason;
-	}
+    public DatabaseConfigurationException(Reason reason, Throwable cause) {
+        super(reason.toString(), cause);
+        this.reason = reason;
+    }
 
-	public DatabaseConfigurationException(Reason reason) {
-		this(reason, null);
-	}
+    public DatabaseConfigurationException(Reason reason) {
+        this(reason, null);
+    }
 
-	public DatabaseConfigurationException(String message, Throwable cause) {
-		super(message, cause);
-		reason = Reason.OTHER;
-	}
+    public DatabaseConfigurationException(String message, Throwable cause) {
+        super(message, cause);
+        reason = Reason.OTHER;
+    }
 
-	public DatabaseConfigurationException(String message) {
-		this(message, null);
-	}
+    public DatabaseConfigurationException(String message) {
+        this(message, null);
+    }
 
-	public Reason getReason() {
-		return reason;
-	}
+    public Reason getReason() {
+        return reason;
+    }
 
-	public enum Reason {
-		MISSING_HOSTNAME("Missing server hostname."),
-		MISSING_USERNAME("Missing username."),
-		MISSING_DB_NAME("Missing database name."),
-		MISSING_PORT("Missing server port."),
-		OTHER("Other configuration exception.");
+    public enum Reason {
+        MISSING_HOSTNAME("Missing server hostname."),
+        MISSING_USERNAME("Missing username."),
+        MISSING_DB_NAME("Missing database name."),
+        MISSING_PORT("Missing server port."),
+        OTHER("Other configuration exception.");
 
-		private final String message;
+        private final String message;
 
-		Reason(String message) {
-			this.message = message;
-		}
+        Reason(String message) {
+            this.message = message;
+        }
 
-		@Override
-		public String toString() {
-			return message;
-		}
-	}
+        @Override
+        public String toString() {
+            return message;
+        }
+    }
 }

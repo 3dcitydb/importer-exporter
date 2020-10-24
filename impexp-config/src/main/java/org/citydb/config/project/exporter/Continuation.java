@@ -29,18 +29,18 @@ package org.citydb.config.project.exporter;
 
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="ExportCityDBADEType", propOrder={
-		"exportCityDBMetadata"
+@XmlType(name = "ExportContinuationType", propOrder = {
+        "exportCityDBMetadata"
 })
 public class Continuation {
-	private boolean exportCityDBMetadata = false;
-	
-	public boolean isExportCityDBMetadata() {
-		return exportCityDBMetadata;
-	}
-	
-	public void setExportCityDBMetadata(boolean exportCityDBMetadata) {
-		this.exportCityDBMetadata = exportCityDBMetadata;
-	}
-	
+    private boolean exportCityDBMetadata = false;
+
+    public boolean isExportCityDBMetadata() {
+        return exportCityDBMetadata;
+    }
+
+    public void setExportCityDBMetadata(boolean exportCityDBMetadata) {
+        this.exportCityDBMetadata = exportCityDBMetadata;
+    }
+
 }

@@ -4,7 +4,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlValue;
 
-@XmlType(name="CityModelEnvelopeModeType")
+@XmlType(name = "CityModelEnvelopeModeType")
 public class CityModelEnvelopeMode {
     @XmlAttribute
     private Boolean useTileExtent;

@@ -10,51 +10,51 @@ import javax.xml.bind.annotation.XmlType;
 
 @XmlRootElement(name = "delete")
 @XmlType(name = "DeleteType", propOrder = {
-		"query",
-		"simpleQuery",
-		"mode",
-		"continuation"
+        "query",
+        "simpleQuery",
+        "mode",
+        "continuation"
 })
 public class DeleteConfig {
-	@XmlAttribute
-	private boolean useSimpleQuery = true;
-	private QueryConfig query;
-	private SimpleQuery simpleQuery;
+    @XmlAttribute
+    private boolean useSimpleQuery = true;
+    private QueryConfig query;
+    private SimpleQuery simpleQuery;
     @XmlElement(required = true)
     private DeleteMode mode = DeleteMode.DELETE;
     private Continuation continuation;
 
     public DeleteConfig() {
-		query = new QueryConfig();
-		simpleQuery = new SimpleQuery();
+        query = new QueryConfig();
+        simpleQuery = new SimpleQuery();
         continuation = new Continuation();
     }
-    
-	public boolean isUseSimpleQuery() {
-		return useSimpleQuery;
-	}
 
-	public void setUseSimpleQuery(boolean useSimpleQuery) {
-		this.useSimpleQuery = useSimpleQuery;
-	}
+    public boolean isUseSimpleQuery() {
+        return useSimpleQuery;
+    }
 
-	public QueryConfig getQuery() {
-		return query;
-	}
+    public void setUseSimpleQuery(boolean useSimpleQuery) {
+        this.useSimpleQuery = useSimpleQuery;
+    }
 
-	public void setQuery(QueryConfig query) {
-		if (query != null)
-			this.query = query;
-	}
+    public QueryConfig getQuery() {
+        return query;
+    }
 
-	public SimpleQuery getSimpleQuery() {
-		return simpleQuery;
-	}
+    public void setQuery(QueryConfig query) {
+        if (query != null)
+            this.query = query;
+    }
 
-	public void setSimpleQuery(SimpleQuery query) {
-		if (query != null)
-			this.simpleQuery = query;
-	}
+    public SimpleQuery getSimpleQuery() {
+        return simpleQuery;
+    }
+
+    public void setSimpleQuery(SimpleQuery query) {
+        if (query != null)
+            this.simpleQuery = query;
+    }
 
     public DeleteMode getMode() {
         return mode != null ? mode : DeleteMode.DELETE;

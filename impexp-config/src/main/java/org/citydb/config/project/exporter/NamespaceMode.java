@@ -31,10 +31,10 @@ import javax.xml.bind.annotation.XmlEnum;
 import javax.xml.bind.annotation.XmlEnumValue;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="NamespaceModeType")
+@XmlType(name = "NamespaceModeType")
 @XmlEnum
 public enum NamespaceMode {
-	@XmlEnumValue("automatic")
+    @XmlEnumValue("automatic")
     AUTOMATIC("automatic"),
     @XmlEnumValue("force")
     FORCE("force"),
@@ -52,7 +52,7 @@ public enum NamespaceMode {
     }
 
     public static NamespaceMode fromValue(String v) {
-        for (NamespaceMode c: NamespaceMode.values()) {
+        for (NamespaceMode c : NamespaceMode.values()) {
             if (c.value.equals(v)) {
                 return c;
             }

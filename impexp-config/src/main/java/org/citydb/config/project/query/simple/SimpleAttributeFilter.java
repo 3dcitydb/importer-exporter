@@ -33,59 +33,59 @@ import org.citydb.config.project.query.filter.selection.id.ResourceIdOperator;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="SimpleAttributeFilterType", propOrder={
-		"gmlIdFilter",
-		"gmlNameFilter",
-		"lineageFilter"
+@XmlType(name = "SimpleAttributeFilterType", propOrder = {
+        "gmlIdFilter",
+        "gmlNameFilter",
+        "lineageFilter"
 })
 public class SimpleAttributeFilter {
-	@XmlElement(name = "gmlIds")
-	private ResourceIdOperator gmlIdFilter;
-	@XmlElement(name = "gmlName")
-	private LikeOperator gmlNameFilter;
-	@XmlElement(name = "lineage")
-	private LikeOperator lineageFilter;
+    @XmlElement(name = "gmlIds")
+    private ResourceIdOperator gmlIdFilter;
+    @XmlElement(name = "gmlName")
+    private LikeOperator gmlNameFilter;
+    @XmlElement(name = "lineage")
+    private LikeOperator lineageFilter;
 
-	public SimpleAttributeFilter() {
-		gmlIdFilter = new ResourceIdOperator();
-		gmlNameFilter = new LikeOperator();
-		lineageFilter = new LikeOperator();
-	}
-	
-	public ResourceIdOperator getGmlIdFilter() {
-		return gmlIdFilter;
-	}
-	
-	public boolean isSetGmlIdFilter() {
-		return gmlIdFilter != null;
-	}
+    public SimpleAttributeFilter() {
+        gmlIdFilter = new ResourceIdOperator();
+        gmlNameFilter = new LikeOperator();
+        lineageFilter = new LikeOperator();
+    }
 
-	public void setGmlIdFilter(ResourceIdOperator gmlIdFilter) {
-		this.gmlIdFilter = gmlIdFilter;
-	}
+    public ResourceIdOperator getGmlIdFilter() {
+        return gmlIdFilter;
+    }
 
-	public LikeOperator getGmlNameFilter() {
-		return gmlNameFilter;
-	}
-	
-	public boolean isSetGmlNameFilter() {
-		return gmlNameFilter != null;
-	}
+    public boolean isSetGmlIdFilter() {
+        return gmlIdFilter != null;
+    }
 
-	public void setGmlNameFilter(LikeOperator gmlNameFilter) {
-		this.gmlNameFilter = gmlNameFilter;
-	}
+    public void setGmlIdFilter(ResourceIdOperator gmlIdFilter) {
+        this.gmlIdFilter = gmlIdFilter;
+    }
 
-	public LikeOperator getLineageFilter() {
-		return lineageFilter;
-	}
+    public LikeOperator getGmlNameFilter() {
+        return gmlNameFilter;
+    }
 
-	public boolean isSetLineageFilter() {
-		return lineageFilter != null;
-	}
+    public boolean isSetGmlNameFilter() {
+        return gmlNameFilter != null;
+    }
 
-	public void setLineageFilter(LikeOperator lineageFilter) {
-		this.lineageFilter = lineageFilter;
-	}
+    public void setGmlNameFilter(LikeOperator gmlNameFilter) {
+        this.gmlNameFilter = gmlNameFilter;
+    }
+
+    public LikeOperator getLineageFilter() {
+        return lineageFilter;
+    }
+
+    public boolean isSetLineageFilter() {
+        return lineageFilter != null;
+    }
+
+    public void setLineageFilter(LikeOperator lineageFilter) {
+        this.lineageFilter = lineageFilter;
+    }
 
 }

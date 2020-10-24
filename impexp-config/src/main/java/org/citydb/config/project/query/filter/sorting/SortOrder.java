@@ -32,7 +32,7 @@ import javax.xml.bind.annotation.XmlEnum;
 import javax.xml.bind.annotation.XmlEnumValue;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="SortOrderType")
+@XmlType(name = "SortOrderType")
 @XmlEnum
 public enum SortOrder {
     @XmlEnumValue("asc")

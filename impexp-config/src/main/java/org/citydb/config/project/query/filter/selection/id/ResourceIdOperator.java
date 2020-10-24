@@ -36,38 +36,38 @@ import javax.xml.bind.annotation.XmlType;
 import java.util.ArrayList;
 import java.util.List;
 
-@XmlRootElement(name="resourceIds")
-@XmlType(name="ResourceIdType", propOrder={
-		"ids"
+@XmlRootElement(name = "resourceIds")
+@XmlType(name = "ResourceIdType", propOrder = {
+        "ids"
 })
 public class ResourceIdOperator extends AbstractPredicate {
-	@XmlElement(name="id")
-	private List<String> ids;
-	
-	public ResourceIdOperator() {
-		ids = new ArrayList<>();
-	}
-	
-	public boolean isSetResourceIds() {
-		return !ids.isEmpty();
-	}
+    @XmlElement(name = "id")
+    private List<String> ids;
 
-	public List<String> getResourceIds() {
-		return ids;
-	}
+    public ResourceIdOperator() {
+        ids = new ArrayList<>();
+    }
 
-	public void setResourceIds(List<String> ids) {
-		if (ids != null && !ids.isEmpty())
-			this.ids = ids;
-	}
-	
-	@Override
-	public void reset() {
-		ids.clear();
-	}
-	
-	@Override
-	public PredicateName getPredicateName() {
-		return PredicateName.ID_OPERATOR;
-	}
+    public boolean isSetResourceIds() {
+        return !ids.isEmpty();
+    }
+
+    public List<String> getResourceIds() {
+        return ids;
+    }
+
+    public void setResourceIds(List<String> ids) {
+        if (ids != null && !ids.isEmpty())
+            this.ids = ids;
+    }
+
+    @Override
+    public void reset() {
+        ids.clear();
+    }
+
+    @Override
+    public PredicateName getPredicateName() {
+        return PredicateName.ID_OPERATOR;
+    }
 }

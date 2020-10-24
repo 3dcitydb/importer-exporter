@@ -28,7 +28,7 @@
 package org.citydb.database;
 
 import org.citydb.config.Config;
-import org.citydb.config.project.database.DBConnection;
+import org.citydb.config.project.database.DatabaseConnection;
 import org.citydb.config.project.database.DatabaseConfigurationException;
 import org.citydb.config.project.database.DatabaseSrs;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
@@ -75,15 +75,15 @@ public class DatabaseController implements ConnectionManager {
 			viewHandler.commitConnectionDetails();
 		}
 
-		DBConnection connection = config.getProject().getDatabaseConfig().getActiveConnection();
+		DatabaseConnection connection = config.getProject().getDatabaseConfig().getActiveConnection();
 		return connect(connection, suppressDialog);
 	}
 
-	public synchronized boolean connect(DBConnection connection) {
+	public synchronized boolean connect(DatabaseConnection connection) {
 		return connect(connection, false);
 	}
 
-	public synchronized boolean connect(DBConnection connection, boolean suppressDialog) {
+	public synchronized boolean connect(DatabaseConnection connection, boolean suppressDialog) {
 		if (!connectionPool.isConnected()) {
 			if (connection == null) {
 				log.error("Connection to database could not be established.");
@@ -155,7 +155,7 @@ public class DatabaseController implements ConnectionManager {
 
 	public List<DatabaseConnectionDetails> getConnectionDetails() {
 		ArrayList<DatabaseConnectionDetails> result = new ArrayList<>();
-		for (DBConnection connection : config.getProject().getDatabaseConfig().getConnections()) {
+		for (DatabaseConnection connection : config.getProject().getDatabaseConfig().getConnections()) {
 			result.add(new DatabaseConnectionDetails(connection));
 		}
 

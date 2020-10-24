@@ -32,119 +32,115 @@ import org.citydb.config.project.global.UpdatingPersonMode;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="ContinuationType", propOrder={
-		"lineage",
-		"updatingPersonMode",
-		"updatingPerson",
-		"reasonForUpdate",
-		"importCityDBMetadata",
-		"creationDateMode",
-		"terminationDateMode"
-		})
+@XmlType(name = "ImportContinuationType", propOrder = {
+        "lineage",
+        "updatingPersonMode",
+        "updatingPerson",
+        "reasonForUpdate",
+        "importCityDBMetadata",
+        "creationDateMode",
+        "terminationDateMode"
+})
 public class Continuation {
-	@XmlElement(required=true)
-	private String lineage = "";
-	@XmlElement(required=true)
-	private UpdatingPersonMode updatingPersonMode = UpdatingPersonMode.DATABASE;
-	private String updatingPerson = "";
-	@XmlElement(required=true)
-	private String reasonForUpdate = "";
-	private boolean importCityDBMetadata = false;
-	@XmlElement(required=true)
-	private CreationDateMode creationDateMode = CreationDateMode.REPLACE;
-	@XmlElement(required=true)
-	private TerminationDateMode terminationDateMode = TerminationDateMode.REPLACE;
-	
-	public Continuation() {
-		
-	}
-	
-	public String getLineage() {
-		return lineage;
-	}
+    @XmlElement(required = true)
+    private String lineage = "";
+    @XmlElement(required = true)
+    private UpdatingPersonMode updatingPersonMode = UpdatingPersonMode.DATABASE;
+    private String updatingPerson = "";
+    @XmlElement(required = true)
+    private String reasonForUpdate = "";
+    private boolean importCityDBMetadata = false;
+    @XmlElement(required = true)
+    private CreationDateMode creationDateMode = CreationDateMode.REPLACE;
+    @XmlElement(required = true)
+    private TerminationDateMode terminationDateMode = TerminationDateMode.REPLACE;
 
-	public void setLineage(String lineage) {
-		this.lineage = lineage;
-	}
+    public String getLineage() {
+        return lineage;
+    }
 
-	public boolean isUpdatingPersonModeDatabase() {
-		return updatingPersonMode == UpdatingPersonMode.DATABASE;
-	}
-	
-	public boolean isUpdatingPersonModeUser() {
-		return updatingPersonMode == UpdatingPersonMode.USER;
-	}
-	
-	public UpdatingPersonMode getUpdatingPersonMode() {
-		return updatingPersonMode;
-	}
+    public void setLineage(String lineage) {
+        this.lineage = lineage;
+    }
 
-	public void setUpdatingPersonMode(UpdatingPersonMode updatingPersonMode) {
-		this.updatingPersonMode = updatingPersonMode;
-	}
+    public boolean isUpdatingPersonModeDatabase() {
+        return updatingPersonMode == UpdatingPersonMode.DATABASE;
+    }
 
-	public String getUpdatingPerson() {
-		return updatingPerson;
-	}
+    public boolean isUpdatingPersonModeUser() {
+        return updatingPersonMode == UpdatingPersonMode.USER;
+    }
 
-	public void setUpdatingPerson(String updatingPerson) {
-		this.updatingPerson = updatingPerson;
-	}
+    public UpdatingPersonMode getUpdatingPersonMode() {
+        return updatingPersonMode;
+    }
 
-	public String getReasonForUpdate() {
-		return reasonForUpdate;
-	}
+    public void setUpdatingPersonMode(UpdatingPersonMode updatingPersonMode) {
+        this.updatingPersonMode = updatingPersonMode;
+    }
 
-	public void setReasonForUpdate(String reasonForUpdate) {
-		this.reasonForUpdate = reasonForUpdate;
-	}
+    public String getUpdatingPerson() {
+        return updatingPerson;
+    }
 
-	public boolean isImportCityDBMetadata() {
-		return importCityDBMetadata;
-	}
+    public void setUpdatingPerson(String updatingPerson) {
+        this.updatingPerson = updatingPerson;
+    }
 
-	public void setImportCityDBMetadata(boolean importCityDBMetadata) {
-		this.importCityDBMetadata = importCityDBMetadata;
-	}
+    public String getReasonForUpdate() {
+        return reasonForUpdate;
+    }
 
-	public boolean isCreationDateModeInherit() {
-		return creationDateMode == CreationDateMode.INHERIT;
-	}
+    public void setReasonForUpdate(String reasonForUpdate) {
+        this.reasonForUpdate = reasonForUpdate;
+    }
 
-	public boolean isCreationDateModeComplement() {
-		return creationDateMode == CreationDateMode.COMPLEMENT;
-	}
+    public boolean isImportCityDBMetadata() {
+        return importCityDBMetadata;
+    }
 
-	public boolean isCreationDateModeReplace() {
-		return creationDateMode == CreationDateMode.REPLACE;
-	}
+    public void setImportCityDBMetadata(boolean importCityDBMetadata) {
+        this.importCityDBMetadata = importCityDBMetadata;
+    }
 
-	public CreationDateMode getCreationDateMode() {
-		return creationDateMode;
-	}
+    public boolean isCreationDateModeInherit() {
+        return creationDateMode == CreationDateMode.INHERIT;
+    }
 
-	public void setCreationDateMode(CreationDateMode creationDateMode) {
-		this.creationDateMode = creationDateMode;
-	}
+    public boolean isCreationDateModeComplement() {
+        return creationDateMode == CreationDateMode.COMPLEMENT;
+    }
 
-	public boolean isTerminationDateModeInherit() {
-		return terminationDateMode == TerminationDateMode.INHERIT;
-	}
+    public boolean isCreationDateModeReplace() {
+        return creationDateMode == CreationDateMode.REPLACE;
+    }
 
-	public boolean isTerminationDateModeComplement() {
-		return terminationDateMode == TerminationDateMode.COMPLEMENT;
-	}
+    public CreationDateMode getCreationDateMode() {
+        return creationDateMode;
+    }
 
-	public boolean isTerminationDateModeReplace() {
-		return terminationDateMode == TerminationDateMode.REPLACE;
-	}
+    public void setCreationDateMode(CreationDateMode creationDateMode) {
+        this.creationDateMode = creationDateMode;
+    }
 
-	public TerminationDateMode getTerminationDateMode() {
-		return terminationDateMode;
-	}
+    public boolean isTerminationDateModeInherit() {
+        return terminationDateMode == TerminationDateMode.INHERIT;
+    }
 
-	public void setTerminationDateMode(TerminationDateMode terminationDateMode) {
-		this.terminationDateMode = terminationDateMode;
-	}
-  
+    public boolean isTerminationDateModeComplement() {
+        return terminationDateMode == TerminationDateMode.COMPLEMENT;
+    }
+
+    public boolean isTerminationDateModeReplace() {
+        return terminationDateMode == TerminationDateMode.REPLACE;
+    }
+
+    public TerminationDateMode getTerminationDateMode() {
+        return terminationDateMode;
+    }
+
+    public void setTerminationDateMode(TerminationDateMode terminationDateMode) {
+        this.terminationDateMode = terminationDateMode;
+    }
+
 }

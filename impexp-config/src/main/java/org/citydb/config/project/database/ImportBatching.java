@@ -32,48 +32,48 @@ import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 
 @XmlType(name = "ImportBatchingType", propOrder = {
-		"featureBatchSize",
-		"gmlIdCacheBatchSize",
-		"tempBatchSize"
+        "featureBatchSize",
+        "gmlIdCacheBatchSize",
+        "tempBatchSize"
 })
 public class ImportBatching {
-	public static final int MAX_BATCH_SIZE = 65535;
+    public static final int MAX_BATCH_SIZE = 65535;
 
-	@XmlElement(defaultValue = "20")
-	@XmlSchemaType(name = "positiveInteger")
-	private int featureBatchSize = 20;
-	@XmlElement(defaultValue = "1000")
-	@XmlSchemaType(name = "positiveInteger")
-	private int gmlIdCacheBatchSize = 1000;
-	@XmlElement(defaultValue = "1000")
-	@XmlSchemaType(name = "positiveInteger")
-	private int tempBatchSize = 1000;
+    @XmlElement(defaultValue = "20")
+    @XmlSchemaType(name = "positiveInteger")
+    private int featureBatchSize = 20;
+    @XmlElement(defaultValue = "1000")
+    @XmlSchemaType(name = "positiveInteger")
+    private int gmlIdCacheBatchSize = 1000;
+    @XmlElement(defaultValue = "1000")
+    @XmlSchemaType(name = "positiveInteger")
+    private int tempBatchSize = 1000;
 
-	public int getFeatureBatchSize() {
-		return featureBatchSize > 0 ? featureBatchSize : 20;
-	}
+    public int getFeatureBatchSize() {
+        return featureBatchSize > 0 ? featureBatchSize : 20;
+    }
 
-	public void setFeatureBatchSize(int featureBatchSize) {
-		if (featureBatchSize > 0 && featureBatchSize <= MAX_BATCH_SIZE)
-			this.featureBatchSize = featureBatchSize;
-	}
+    public void setFeatureBatchSize(int featureBatchSize) {
+        if (featureBatchSize > 0 && featureBatchSize <= MAX_BATCH_SIZE)
+            this.featureBatchSize = featureBatchSize;
+    }
 
-	public int getGmlIdCacheBatchSize() {
-		return gmlIdCacheBatchSize > 0 ? gmlIdCacheBatchSize : 1000;
-	}
+    public int getGmlIdCacheBatchSize() {
+        return gmlIdCacheBatchSize > 0 ? gmlIdCacheBatchSize : 1000;
+    }
 
-	public void setGmlIdCacheBatchSize(int gmlIdCacheBatchSize) {
-		if (gmlIdCacheBatchSize > 0 && gmlIdCacheBatchSize <= MAX_BATCH_SIZE)
-			this.gmlIdCacheBatchSize = gmlIdCacheBatchSize;
-	}
+    public void setGmlIdCacheBatchSize(int gmlIdCacheBatchSize) {
+        if (gmlIdCacheBatchSize > 0 && gmlIdCacheBatchSize <= MAX_BATCH_SIZE)
+            this.gmlIdCacheBatchSize = gmlIdCacheBatchSize;
+    }
 
-	public int getTempBatchSize() {
-		return tempBatchSize > 0 ? tempBatchSize : 1000;
-	}
+    public int getTempBatchSize() {
+        return tempBatchSize > 0 ? tempBatchSize : 1000;
+    }
 
-	public void setTempBatchSize(int tempBatchSize) {
-		if (tempBatchSize > 0 && tempBatchSize <= MAX_BATCH_SIZE)
-			this.tempBatchSize = tempBatchSize;
-	}
-	
+    public void setTempBatchSize(int tempBatchSize) {
+        if (tempBatchSize > 0 && tempBatchSize <= MAX_BATCH_SIZE)
+            this.tempBatchSize = tempBatchSize;
+    }
+
 }

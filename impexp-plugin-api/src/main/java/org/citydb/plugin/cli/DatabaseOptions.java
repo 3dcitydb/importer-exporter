@@ -28,7 +28,7 @@
 
 package org.citydb.plugin.cli;
 
-import org.citydb.config.project.database.DBConnection;
+import org.citydb.config.project.database.DatabaseConnection;
 import org.citydb.config.project.database.DatabaseType;
 import picocli.CommandLine;
 
@@ -97,8 +97,8 @@ public class DatabaseOptions {
                 && user != null;
     }
 
-    public DBConnection toDBConnection() {
-        DBConnection connection = new DBConnection();
+    public DatabaseConnection toDatabaseConnection() {
+        DatabaseConnection connection = new DatabaseConnection();
         connection.setDatabaseType(getType());
         connection.setSid(name);
         connection.setSchema(schema);

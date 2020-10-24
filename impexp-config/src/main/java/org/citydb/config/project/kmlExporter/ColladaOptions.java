@@ -29,139 +29,139 @@ package org.citydb.config.project.kmlExporter;
 
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="ColladaOptions", propOrder={
-		"ignoreSurfaceOrientation",
-		"generateSurfaceNormals",
-		"cropImages",
-		"generateTextureAtlases",
-		"packingAlgorithm",
-		"textureAtlasPots",
-		"scaleImages",
-		"imageScaleFactor",
-		"groupObjects",
-		"groupSize"
+@XmlType(name = "ColladaOptions", propOrder = {
+        "ignoreSurfaceOrientation",
+        "generateSurfaceNormals",
+        "cropImages",
+        "generateTextureAtlases",
+        "packingAlgorithm",
+        "textureAtlasPots",
+        "scaleImages",
+        "imageScaleFactor",
+        "groupObjects",
+        "groupSize"
 })
 public class ColladaOptions {
-	private boolean ignoreSurfaceOrientation;
-	private boolean generateSurfaceNormals;
-	private boolean cropImages;
-	private boolean generateTextureAtlases;
-	private int packingAlgorithm;
-	private boolean textureAtlasPots;
-	private boolean scaleImages;
-	private double imageScaleFactor;
-	private boolean groupObjects;
-	private int groupSize;
+    private boolean ignoreSurfaceOrientation;
+    private boolean generateSurfaceNormals;
+    private boolean cropImages;
+    private boolean generateTextureAtlases;
+    private int packingAlgorithm;
+    private boolean textureAtlasPots;
+    private boolean scaleImages;
+    private double imageScaleFactor;
+    private boolean groupObjects;
+    private int groupSize;
 
-	public ColladaOptions() {
-		ignoreSurfaceOrientation = false;
-		generateSurfaceNormals = true;
-		cropImages = false;
-		generateTextureAtlases = true;
-		packingAlgorithm = 1; // TextureAtlasGenerator.TPIM
-		textureAtlasPots = true;
-		scaleImages = false;
-		imageScaleFactor = 1.0;
-		groupObjects = false;
-		groupSize = 1;
-	}
-	
-	public static void resetSettings(ColladaOptions old) {
-		ColladaOptions colladaOptionsDefault = new ColladaOptions();
+    public ColladaOptions() {
+        ignoreSurfaceOrientation = false;
+        generateSurfaceNormals = true;
+        cropImages = false;
+        generateTextureAtlases = true;
+        packingAlgorithm = 1; // TextureAtlasGenerator.TPIM
+        textureAtlasPots = true;
+        scaleImages = false;
+        imageScaleFactor = 1.0;
+        groupObjects = false;
+        groupSize = 1;
+    }
 
-		old.setIgnoreSurfaceOrientation(colladaOptionsDefault.isIgnoreSurfaceOrientation());
-		old.setGenerateSurfaceNormals(colladaOptionsDefault.isGenerateSurfaceNormals());
-		old.setCropImages(colladaOptionsDefault.isCropImages());
-		old.setGenerateTextureAtlases(colladaOptionsDefault.isGenerateTextureAtlases());
-		old.setTextureAtlasPots(colladaOptionsDefault.isTextureAtlasPots());
-		old.setPackingAlgorithm(colladaOptionsDefault.getPackingAlgorithm()); // TextureAtlasCreator.BASIC
+    public static void resetSettings(ColladaOptions old) {
+        ColladaOptions colladaOptionsDefault = new ColladaOptions();
 
-		old.setScaleImages(colladaOptionsDefault.isScaleImages());
-		old.setImageScaleFactor(colladaOptionsDefault.getImageScaleFactor());
+        old.setIgnoreSurfaceOrientation(colladaOptionsDefault.isIgnoreSurfaceOrientation());
+        old.setGenerateSurfaceNormals(colladaOptionsDefault.isGenerateSurfaceNormals());
+        old.setCropImages(colladaOptionsDefault.isCropImages());
+        old.setGenerateTextureAtlases(colladaOptionsDefault.isGenerateTextureAtlases());
+        old.setTextureAtlasPots(colladaOptionsDefault.isTextureAtlasPots());
+        old.setPackingAlgorithm(colladaOptionsDefault.getPackingAlgorithm()); // TextureAtlasCreator.BASIC
 
-		old.setGroupObjects(colladaOptionsDefault.isGroupObjects());
-		old.setGroupSize(colladaOptionsDefault.getGroupSize());
-	}
+        old.setScaleImages(colladaOptionsDefault.isScaleImages());
+        old.setImageScaleFactor(colladaOptionsDefault.getImageScaleFactor());
 
-	public void setIgnoreSurfaceOrientation(boolean ignoreSurfaceOrientation) {
-		this.ignoreSurfaceOrientation = ignoreSurfaceOrientation;
-	}
+        old.setGroupObjects(colladaOptionsDefault.isGroupObjects());
+        old.setGroupSize(colladaOptionsDefault.getGroupSize());
+    }
 
-	public boolean isIgnoreSurfaceOrientation() {
-		return ignoreSurfaceOrientation;
-	}
+    public void setIgnoreSurfaceOrientation(boolean ignoreSurfaceOrientation) {
+        this.ignoreSurfaceOrientation = ignoreSurfaceOrientation;
+    }
 
-	public void setGenerateSurfaceNormals(boolean generateSurfaceNormals) {
-		this.generateSurfaceNormals = generateSurfaceNormals;
-	}
+    public boolean isIgnoreSurfaceOrientation() {
+        return ignoreSurfaceOrientation;
+    }
 
-	public boolean isGenerateSurfaceNormals() {
-		return generateSurfaceNormals;
-	}
-	
-	public void setCropImages(boolean cropImages) {
-		this.cropImages = cropImages;
-	}
+    public void setGenerateSurfaceNormals(boolean generateSurfaceNormals) {
+        this.generateSurfaceNormals = generateSurfaceNormals;
+    }
 
-	public boolean isCropImages() {
-		return cropImages;
-	}
-	
-	public void setGenerateTextureAtlases(boolean generateTextureAtlases) {
-		this.generateTextureAtlases = generateTextureAtlases;
-	}
+    public boolean isGenerateSurfaceNormals() {
+        return generateSurfaceNormals;
+    }
 
-	public boolean isGenerateTextureAtlases() {
-		return generateTextureAtlases;
-	}
+    public void setCropImages(boolean cropImages) {
+        this.cropImages = cropImages;
+    }
 
-	public void setPackingAlgorithm(int packingAlgorithm) {
-		this.packingAlgorithm = packingAlgorithm;
-	}
+    public boolean isCropImages() {
+        return cropImages;
+    }
 
-	public int getPackingAlgorithm() {
-		return packingAlgorithm;
-	}
+    public void setGenerateTextureAtlases(boolean generateTextureAtlases) {
+        this.generateTextureAtlases = generateTextureAtlases;
+    }
 
-	public void setTextureAtlasPots(boolean textureAtlasPots) {
-		this.textureAtlasPots = textureAtlasPots;
-	}
+    public boolean isGenerateTextureAtlases() {
+        return generateTextureAtlases;
+    }
 
-	public boolean isTextureAtlasPots() {
-		return textureAtlasPots;
-	}
+    public void setPackingAlgorithm(int packingAlgorithm) {
+        this.packingAlgorithm = packingAlgorithm;
+    }
 
-	public void setScaleImages(boolean scaleImages) {
-		this.scaleImages = scaleImages;
-	}
+    public int getPackingAlgorithm() {
+        return packingAlgorithm;
+    }
 
-	public boolean isScaleImages() {
-		return scaleImages;
-	}
+    public void setTextureAtlasPots(boolean textureAtlasPots) {
+        this.textureAtlasPots = textureAtlasPots;
+    }
 
-	public void setImageScaleFactor(double imageScaleFactor) {
-		this.imageScaleFactor = imageScaleFactor;
-	}
+    public boolean isTextureAtlasPots() {
+        return textureAtlasPots;
+    }
 
-	public double getImageScaleFactor() {
-		return imageScaleFactor;
-	}
+    public void setScaleImages(boolean scaleImages) {
+        this.scaleImages = scaleImages;
+    }
 
-	public void setGroupObjects(boolean groupObjects) {
-		this.groupObjects = groupObjects;
-	}
+    public boolean isScaleImages() {
+        return scaleImages;
+    }
 
-	public boolean isGroupObjects() {
-		return groupObjects;
-	}
+    public void setImageScaleFactor(double imageScaleFactor) {
+        this.imageScaleFactor = imageScaleFactor;
+    }
 
-	public void setGroupSize(int groupSize) {
-		this.groupSize = groupSize;
-	}
+    public double getImageScaleFactor() {
+        return imageScaleFactor;
+    }
 
-	public int getGroupSize() {
-		return groupSize;
-	}
+    public void setGroupObjects(boolean groupObjects) {
+        this.groupObjects = groupObjects;
+    }
 
-	
+    public boolean isGroupObjects() {
+        return groupObjects;
+    }
+
+    public void setGroupSize(int groupSize) {
+        this.groupSize = groupSize;
+    }
+
+    public int getGroupSize() {
+        return groupSize;
+    }
+
+
 }

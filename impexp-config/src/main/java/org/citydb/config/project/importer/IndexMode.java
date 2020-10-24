@@ -31,12 +31,12 @@ import javax.xml.bind.annotation.XmlEnum;
 import javax.xml.bind.annotation.XmlEnumValue;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="IndexModeType")
+@XmlType(name = "IndexModeType")
 @XmlEnum
 public enum IndexMode {
-	@XmlEnumValue("unchanged")
+    @XmlEnumValue("unchanged")
     UNCHANGED("unchanged"),
-	@XmlEnumValue("deactivate")
+    @XmlEnumValue("deactivate")
     DEACTIVATE("deactivate"),
     @XmlEnumValue("deactivate_activate")
     DEACTIVATE_ACTIVATE("deactivate_activate");
@@ -52,7 +52,7 @@ public enum IndexMode {
     }
 
     public static IndexMode fromValue(String v) {
-        for (IndexMode c: IndexMode.values()) {
+        for (IndexMode c : IndexMode.values()) {
             if (c.value.equals(v)) {
                 return c;
             }

@@ -34,68 +34,68 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlRootElement(name="multiLineString")
-@XmlType(name="MultiLineStringType", propOrder={
-		"lineStrings"
+@XmlRootElement(name = "multiLineString")
+@XmlType(name = "MultiLineStringType", propOrder = {
+        "lineStrings"
 })
 public class MultiLineString extends AbstractGeometry {
-	@XmlElement(name="lineString", required=true)
-	private List<LineString> lineStrings;
-	
-	public MultiLineString() {
-		lineStrings = new ArrayList<>();
-	}
-	
-	public List<LineString> getLineStrings() {
-		return lineStrings;
-	}
+    @XmlElement(name = "lineString", required = true)
+    private List<LineString> lineStrings;
 
-	public void setLineStrings(List<LineString> lineStrings) {
-		this.lineStrings = lineStrings;
-	}
+    public MultiLineString() {
+        lineStrings = new ArrayList<>();
+    }
 
-	@Override
-	public BoundingBox toBoundingBox() {
-		int dim = is3D() ? 3 : 2;
-		BoundingBox bbox = new BoundingBox(new Position(Double.MAX_VALUE, dim), new Position(-Double.MAX_VALUE, dim));
-		
-		for (LineString lineString : lineStrings)
-			bbox.update(lineString.toBoundingBox());
-		
-		return bbox;
-	}
+    public List<LineString> getLineStrings() {
+        return lineStrings;
+    }
 
-	@Override
-	public boolean is3D() {
-		if (isValid()) {
-			for (LineString lineString : lineStrings) {
-				if (!lineString.is3D())
-					return false;
-			}
-			
-			return true;
-		}
-		
-		return false;
-	}
+    public void setLineStrings(List<LineString> lineStrings) {
+        this.lineStrings = lineStrings;
+    }
 
-	@Override
-	public boolean isValid() {
-		if (lineStrings != null && !lineStrings.isEmpty()) {
-			for (LineString lineString : lineStrings) {
-				if (!lineString.isValid())
-					return false;
-			}
-			
-			return true;
-		}
-		
-		return false;
-	}
+    @Override
+    public BoundingBox toBoundingBox() {
+        int dim = is3D() ? 3 : 2;
+        BoundingBox bbox = new BoundingBox(new Position(Double.MAX_VALUE, dim), new Position(-Double.MAX_VALUE, dim));
 
-	@Override
-	public GeometryType getGeometryType() {
-		return GeometryType.MULTI_LINE_STRING;
-	}
+        for (LineString lineString : lineStrings)
+            bbox.update(lineString.toBoundingBox());
+
+        return bbox;
+    }
+
+    @Override
+    public boolean is3D() {
+        if (isValid()) {
+            for (LineString lineString : lineStrings) {
+                if (!lineString.is3D())
+                    return false;
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
+    @Override
+    public boolean isValid() {
+        if (lineStrings != null && !lineStrings.isEmpty()) {
+            for (LineString lineString : lineStrings) {
+                if (!lineString.isValid())
+                    return false;
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
+    @Override
+    public GeometryType getGeometryType() {
+        return GeometryType.MULTI_LINE_STRING;
+    }
 
 }

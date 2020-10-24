@@ -33,7 +33,7 @@ import org.citydb.ade.ADEExtension;
 import org.citydb.ade.ADEExtensionManager;
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
-import org.citydb.config.project.database.DBConnection;
+import org.citydb.config.project.database.DatabaseConnection;
 import org.citydb.config.project.database.DatabaseConfig;
 import org.citydb.config.project.database.DatabaseConfigurationException;
 import org.citydb.config.project.database.DatabaseSrs;
@@ -83,7 +83,7 @@ public class DatabaseConnectionPool implements ConnectionManager {
 		return instance;
 	}
 
-	public synchronized void connect(DBConnection connection) throws DatabaseConfigurationException, DatabaseVersionException, SQLException {
+	public synchronized void connect(DatabaseConnection connection) throws DatabaseConfigurationException, DatabaseVersionException, SQLException {
 		// check valid connection details
 		connection.validate();
 

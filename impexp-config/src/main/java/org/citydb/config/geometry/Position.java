@@ -35,108 +35,108 @@ import java.util.Arrays;
 
 @XmlType(name = "PositionType")
 public class Position {
-	@XmlValue
-	@XmlList
-	private Double[] coords;
+    @XmlValue
+    @XmlList
+    private Double[] coords;
 
-	@XmlTransient
-	private int dimension;
+    @XmlTransient
+    private int dimension;
 
-	private Position(int dimension) {
-		if (dimension < 2 || dimension > 3)
-			throw new IllegalArgumentException("Dimension must be 2 or 3.");
+    private Position(int dimension) {
+        if (dimension < 2 || dimension > 3)
+            throw new IllegalArgumentException("Dimension must be 2 or 3.");
 
-		this.dimension = dimension;
-		coords = new Double[3];
-	}
+        this.dimension = dimension;
+        coords = new Double[3];
+    }
 
-	public Position() {
-		this(2);
-	}
+    public Position() {
+        this(2);
+    }
 
-	public Position(Double x, Double y) {
-		this(2);
-		coords[0] = x;
-		coords[1] = y;
-	}
+    public Position(Double x, Double y) {
+        this(2);
+        coords[0] = x;
+        coords[1] = y;
+    }
 
-	public Position(Double x, Double y, Double z) {
-		this(3);
-		coords[0] = x;
-		coords[1] = y;
-		coords[2] = z;
-	}
+    public Position(Double x, Double y, Double z) {
+        this(3);
+        coords[0] = x;
+        coords[1] = y;
+        coords[2] = z;
+    }
 
-	public Position(Double value, int dimension) {
-		this(dimension);
-		for (int i = 0; i < coords.length; i++)
-			coords[i] = value;
-	}
+    public Position(Double value, int dimension) {
+        this(dimension);
+        for (int i = 0; i < coords.length; i++)
+            coords[i] = value;
+    }
 
-	public Double getX() {
-		prepareCoords(false);
-		return coords[0];
-	}
+    public Double getX() {
+        prepareCoords(false);
+        return coords[0];
+    }
 
-	public boolean isSetX() {
-		return coords.length == 3 && coords[0] != null;
-	}
+    public boolean isSetX() {
+        return coords.length == 3 && coords[0] != null;
+    }
 
-	public void setX(Double x) {
-		prepareCoords(false);
-		coords[0] = x;
-	}
+    public void setX(Double x) {
+        prepareCoords(false);
+        coords[0] = x;
+    }
 
-	public Double getY() {
-		prepareCoords(false);
-		return coords[1];
-	}
+    public Double getY() {
+        prepareCoords(false);
+        return coords[1];
+    }
 
-	public boolean isSetY() {
-		return coords.length == 3 && coords[1] != null;
-	}
+    public boolean isSetY() {
+        return coords.length == 3 && coords[1] != null;
+    }
 
-	public void setY(Double y) {
-		prepareCoords(false);
-		coords[1] = y;
-	}
+    public void setY(Double y) {
+        prepareCoords(false);
+        coords[1] = y;
+    }
 
-	public Double getZ() {
-		prepareCoords(true);
-		return coords[2];
-	}
+    public Double getZ() {
+        prepareCoords(true);
+        return coords[2];
+    }
 
-	public boolean isSetZ() {
-		return coords.length == 3 && dimension == 3 && coords[2] != null;
-	}
+    public boolean isSetZ() {
+        return coords.length == 3 && dimension == 3 && coords[2] != null;
+    }
 
-	public void setZ(Double z) {
-		prepareCoords(true);
-		coords[2] = z;
-		dimension = z != null ? 3 : 2;
-	}
+    public void setZ(Double z) {
+        prepareCoords(true);
+        coords[2] = z;
+        dimension = z != null ? 3 : 2;
+    }
 
-	public boolean is3D() {
-		return isSetZ();
-	}
+    public boolean is3D() {
+        return isSetZ();
+    }
 
-	public boolean isValid() {
-		if (coords != null && coords.length > 1) {
-			for (int i = 0; i < dimension; i++) {
-				if (coords[i] == null)
-					return false;
-			}
+    public boolean isValid() {
+        if (coords != null && coords.length > 1) {
+            for (int i = 0; i < dimension; i++) {
+                if (coords[i] == null)
+                    return false;
+            }
 
-			return true;
-		}
+            return true;
+        }
 
-		return false;
-	}
+        return false;
+    }
 
-	private void prepareCoords(boolean extent) {
-		if (coords.length < 2 || (extent && coords.length == 2)) {
-			dimension = 2;
-			coords = Arrays.copyOf(coords, 3);
-		}
-	}
+    private void prepareCoords(boolean extent) {
+        if (coords.length < 2 || (extent && coords.length == 2)) {
+            dimension = 2;
+            coords = Arrays.copyOf(coords, 3);
+        }
+    }
 }

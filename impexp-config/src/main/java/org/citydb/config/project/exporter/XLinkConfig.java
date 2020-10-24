@@ -30,59 +30,59 @@ package org.citydb.config.project.exporter;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="XLinkConfigType", propOrder={
-		"mode",
-		"idPrefix",
-		"appendId"
-		})
+@XmlType(name = "XLinkConfigType", propOrder = {
+        "mode",
+        "idPrefix",
+        "appendId"
+})
 public class XLinkConfig {
-	@XmlElement(name="multipleRepresentationMode", required=true)
-	private XLinkMode mode = XLinkMode.XLINK;
-	@XmlElement(defaultValue="UUID_")
-	private String idPrefix = "UUID_";
-	@XmlElement(defaultValue="false")
-	private Boolean appendId = false;
-	
-	public XLinkConfig() {
-	}
+    @XmlElement(name = "multipleRepresentationMode", required = true)
+    private XLinkMode mode = XLinkMode.XLINK;
+    @XmlElement(defaultValue = "UUID_")
+    private String idPrefix = "UUID_";
+    @XmlElement(defaultValue = "false")
+    private Boolean appendId = false;
 
-	public boolean isModeXLink() {
-		return mode == XLinkMode.XLINK;
-	}
-	
-	public boolean isModeCopy() {
-		return mode == XLinkMode.COPY;
-	}
-	
-	public XLinkMode getMode() {
-		return mode;
-	}
+    public XLinkConfig() {
+    }
 
-	public void setMode(XLinkMode mode) {
-		this.mode = mode;
-	}
+    public boolean isModeXLink() {
+        return mode == XLinkMode.XLINK;
+    }
 
-	public String getIdPrefix() {
-		return idPrefix;
-	}
+    public boolean isModeCopy() {
+        return mode == XLinkMode.COPY;
+    }
 
-	public void setIdPrefix(String idPrefix) {
-		this.idPrefix = idPrefix;
-	}
+    public XLinkMode getMode() {
+        return mode;
+    }
 
-	public boolean isSetAppendId() {
-		if (appendId != null)
-			return appendId.booleanValue();
-		
-		return false;
-	}
+    public void setMode(XLinkMode mode) {
+        this.mode = mode;
+    }
 
-	public Boolean getAppendId() {
-		return appendId;
-	}
+    public String getIdPrefix() {
+        return idPrefix;
+    }
 
-	public void setAppendId(Boolean appendId) {
-		this.appendId = appendId;
-	}
-	
+    public void setIdPrefix(String idPrefix) {
+        this.idPrefix = idPrefix;
+    }
+
+    public boolean isSetAppendId() {
+        if (appendId != null)
+            return appendId.booleanValue();
+
+        return false;
+    }
+
+    public Boolean getAppendId() {
+        return appendId;
+    }
+
+    public void setAppendId(Boolean appendId) {
+        this.appendId = appendId;
+    }
+
 }

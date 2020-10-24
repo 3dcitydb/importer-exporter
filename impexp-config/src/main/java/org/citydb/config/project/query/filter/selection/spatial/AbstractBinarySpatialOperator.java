@@ -33,41 +33,41 @@ import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="AbstractBinarySpatialOperatorType", propOrder={
-		"operand"
+@XmlType(name = "AbstractBinarySpatialOperatorType", propOrder = {
+        "operand"
 })
 @XmlSeeAlso({
-	EqualsOperator.class,
-	DisjointOperator.class,
-	TouchesOperator.class,
-	WithinOperator.class,
-	OverlapsOperator.class,
-	IntersectsOperator.class,
-	ContainsOperator.class,
-	AbstractDistanceOperator.class
+        EqualsOperator.class,
+        DisjointOperator.class,
+        TouchesOperator.class,
+        WithinOperator.class,
+        OverlapsOperator.class,
+        IntersectsOperator.class,
+        ContainsOperator.class,
+        AbstractDistanceOperator.class
 })
 public abstract class AbstractBinarySpatialOperator extends AbstractSpatialOperator {
-	@XmlElementRef
-	private AbstractGeometry operand;
-	
-	public abstract SpatialOperatorName getOperatorName();
+    @XmlElementRef
+    private AbstractGeometry operand;
 
-	public boolean isSetSpatialOperand() {
-		return operand != null;
-	}
+    public abstract SpatialOperatorName getOperatorName();
 
-	public AbstractGeometry getSpatialOperand() {
-		return operand;
-	}
+    public boolean isSetSpatialOperand() {
+        return operand != null;
+    }
 
-	public void setSpatialOperand(AbstractGeometry operand) {
-		this.operand = operand;
-	}
-	
-	@Override
-	public void reset() {
-		operand = null;
-		super.reset();
-	}
-	
+    public AbstractGeometry getSpatialOperand() {
+        return operand;
+    }
+
+    public void setSpatialOperand(AbstractGeometry operand) {
+        this.operand = operand;
+    }
+
+    @Override
+    public void reset() {
+        operand = null;
+        super.reset();
+    }
+
 }

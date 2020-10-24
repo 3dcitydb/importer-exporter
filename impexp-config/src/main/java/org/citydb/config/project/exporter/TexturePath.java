@@ -30,39 +30,39 @@ package org.citydb.config.project.exporter;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="TexturePathType", propOrder={
-		"path",
-		"noOfBuckets"
+@XmlType(name = "TexturePathType", propOrder = {
+        "path",
+        "noOfBuckets"
 })
 public class TexturePath {
-	@XmlAttribute
-	private boolean useBuckets = false;
-	private String path = "appearance";
-	private Integer noOfBuckets;
+    @XmlAttribute
+    private boolean useBuckets = false;
+    private String path = "appearance";
+    private Integer noOfBuckets;
 
-	public boolean isUseBuckets() {
-		return useBuckets;
-	}
+    public boolean isUseBuckets() {
+        return useBuckets;
+    }
 
-	public void setUseBuckets(boolean useBuckets) {
-		this.useBuckets = useBuckets;
-	}
+    public void setUseBuckets(boolean useBuckets) {
+        this.useBuckets = useBuckets;
+    }
 
-	public String getPath() {
-		return path;
-	}
+    public String getPath() {
+        return path;
+    }
 
-	public void setPath(String path) {
-		this.path = path;
-	}
+    public void setPath(String path) {
+        this.path = path;
+    }
 
-	public int getNoOfBuckets() {
-		return noOfBuckets != null ? noOfBuckets : 0;
-	}
+    public int getNoOfBuckets() {
+        return noOfBuckets != null ? noOfBuckets : 0;
+    }
 
-	public void setNoOfBuckets(Integer noOfBuckets) {
-		if (noOfBuckets != null)
-			this.noOfBuckets = noOfBuckets;
-	}
+    public void setNoOfBuckets(Integer noOfBuckets) {
+        if (noOfBuckets != null)
+            this.noOfBuckets = noOfBuckets;
+    }
 
 }

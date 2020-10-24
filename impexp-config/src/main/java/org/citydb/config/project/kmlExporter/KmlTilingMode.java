@@ -31,10 +31,10 @@ import javax.xml.bind.annotation.XmlEnum;
 import javax.xml.bind.annotation.XmlEnumValue;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="KmlTilingModeType")
+@XmlType(name = "KmlTilingModeType")
 @XmlEnum
 public enum KmlTilingMode {
-	@XmlEnumValue("no_tiling")
+    @XmlEnumValue("no_tiling")
     NO_TILING("no_tiling"),
     @XmlEnumValue("automatic")
     AUTOMATIC("automatic"),
@@ -52,7 +52,7 @@ public enum KmlTilingMode {
     }
 
     public static KmlTilingMode fromValue(String v) {
-        for (KmlTilingMode c: KmlTilingMode.values()) {
+        for (KmlTilingMode c : KmlTilingMode.values()) {
             if (c.value.equals(v)) {
                 return c;
             }

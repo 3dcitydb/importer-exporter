@@ -28,27 +28,27 @@
 package org.citydb.config.project.database;
 
 public enum DatabaseSrsType {
-	PROJECTED("Projected"),
-	GEOGRAPHIC2D("Geographic2D"),
-	GEOCENTRIC("Geocentric"),
-	VERTICAL("Vertical"),
-	ENGINEERING("Engineering"),
-	COMPOUND("Compound"),
-	GEOGENTRIC("Geogentric"),
-	GEOGRAPHIC3D("Geographic3D"),
-	UNKNOWN("n/a");
-	
-	private final String value;
+    PROJECTED("Projected"),
+    GEOGRAPHIC2D("Geographic2D"),
+    GEOCENTRIC("Geocentric"),
+    VERTICAL("Vertical"),
+    ENGINEERING("Engineering"),
+    COMPOUND("Compound"),
+    GEOGENTRIC("Geogentric"),
+    GEOGRAPHIC3D("Geographic3D"),
+    UNKNOWN("n/a");
 
-	DatabaseSrsType(String v) {
+    private final String value;
+
+    DatabaseSrsType(String v) {
         value = v;
     }
 
     public String value() {
         return value;
     }
-    
+
     public String toString() {
-		return value;
-	}
+        return value;
+    }
 }

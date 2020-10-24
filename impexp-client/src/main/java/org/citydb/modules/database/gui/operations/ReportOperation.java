@@ -28,7 +28,7 @@
 package org.citydb.modules.database.gui.operations;
 
 import org.citydb.config.i18n.Language;
-import org.citydb.config.project.database.DBOperationType;
+import org.citydb.config.project.database.DatabaseOperationType;
 import org.citydb.config.project.database.Workspace;
 import org.citydb.database.connection.DatabaseConnectionPool;
 import org.citydb.gui.components.dialog.StatusDialog;
@@ -106,8 +106,8 @@ public class ReportOperation extends DatabaseOperationView {
 	}
 
 	@Override
-	public DBOperationType getType() {
-		return DBOperationType.REPORT;
+	public DatabaseOperationType getType() {
+		return DatabaseOperationType.REPORT;
 	}
 
 	@Override

@@ -29,7 +29,7 @@ package org.citydb.modules.database.gui.operations;
 
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
-import org.citydb.config.project.database.DBOperationType;
+import org.citydb.config.project.database.DatabaseOperationType;
 import org.citydb.config.project.database.DatabaseSrs;
 import org.citydb.config.project.database.DatabaseType;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
@@ -211,8 +211,8 @@ public class SrsOperation extends DatabaseOperationView {
 	}
 
 	@Override
-	public DBOperationType getType() {
-		return DBOperationType.SRS;
+	public DatabaseOperationType getType() {
+		return DatabaseOperationType.SRS;
 	}
 
 	@Override

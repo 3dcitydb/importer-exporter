@@ -30,7 +30,7 @@ package org.citydb.cli;
 
 import org.citydb.citygml.exporter.controller.Exporter;
 import org.citydb.config.Config;
-import org.citydb.config.project.database.DBConnection;
+import org.citydb.config.project.database.DatabaseConnection;
 import org.citydb.database.DatabaseController;
 import org.citydb.plugin.CliCommand;
 import org.citydb.plugin.cli.DatabaseOptions;
@@ -59,8 +59,8 @@ public class ExportCommand extends CliCommand {
         Config config = ObjectRegistry.getInstance().getConfig();
         DatabaseController controller = ObjectRegistry.getInstance().getDatabaseController();
 
-        DBConnection connection = databaseOptions != null && databaseOptions.isValid() ?
-                databaseOptions.toDBConnection() :
+        DatabaseConnection connection = databaseOptions != null && databaseOptions.isValid() ?
+                databaseOptions.toDatabaseConnection() :
                 config.getProject().getDatabaseConfig().getActiveConnection();
 
         if (!controller.connect(connection)) {

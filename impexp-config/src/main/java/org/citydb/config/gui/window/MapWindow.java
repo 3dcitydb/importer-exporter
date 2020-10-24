@@ -29,33 +29,33 @@ package org.citydb.config.gui.window;
 
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="MapWindowType", propOrder={
-		"size",
-		"geocoder"
-		})
+@XmlType(name = "MapWindowType", propOrder = {
+        "size",
+        "geocoder"
+})
 public class MapWindow {
-	private WindowSize size;
-	private GeocodingServiceName geocoder = GeocodingServiceName.OSM_NOMINATIM;
+    private WindowSize size;
+    private GeocodingServiceName geocoder = GeocodingServiceName.OSM_NOMINATIM;
 
-	public MapWindow() {
-		size = new WindowSize();
-	}
+    public MapWindow() {
+        size = new WindowSize();
+    }
 
-	public WindowSize getSize() {
-		return size;
-	}
+    public WindowSize getSize() {
+        return size;
+    }
 
-	public void setSize(WindowSize size) {
-		if (size != null)
-			this.size = size;
-	}
+    public void setSize(WindowSize size) {
+        if (size != null)
+            this.size = size;
+    }
 
-	public GeocodingServiceName getGeocoder() {
-		return geocoder != null ? geocoder : GeocodingServiceName.OSM_NOMINATIM;
-	}
+    public GeocodingServiceName getGeocoder() {
+        return geocoder != null ? geocoder : GeocodingServiceName.OSM_NOMINATIM;
+    }
 
-	public void setGeocoder(GeocodingServiceName geocoder) {
-		this.geocoder = geocoder;
-	}
-	
+    public void setGeocoder(GeocodingServiceName geocoder) {
+        this.geocoder = geocoder;
+    }
+
 }

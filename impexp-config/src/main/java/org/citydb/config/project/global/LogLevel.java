@@ -31,20 +31,20 @@ import javax.xml.bind.annotation.XmlEnum;
 import javax.xml.bind.annotation.XmlEnumValue;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="LogLevelType")
+@XmlType(name = "LogLevelType")
 @XmlEnum
 public enum LogLevel {
-	@XmlEnumValue("error")
-	ERROR,
-	@XmlEnumValue("warn")
-	WARN,
-	@XmlEnumValue("info")
-	INFO,
-	@XmlEnumValue("debug")
-	DEBUG;
+    @XmlEnumValue("error")
+    ERROR,
+    @XmlEnumValue("warn")
+    WARN,
+    @XmlEnumValue("info")
+    INFO,
+    @XmlEnumValue("debug")
+    DEBUG;
 
-	@Override
-	public String toString() {
-		return name().toLowerCase();
-	}
+    @Override
+    public String toString() {
+        return name().toLowerCase();
+    }
 }

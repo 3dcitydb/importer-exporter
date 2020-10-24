@@ -29,7 +29,7 @@ package org.citydb.modules.database.gui.operations;
 
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
-import org.citydb.config.project.database.DBOperationType;
+import org.citydb.config.project.database.DatabaseOperationType;
 import org.citydb.config.project.database.DatabaseType;
 import org.citydb.database.adapter.IndexStatusInfo;
 import org.citydb.database.adapter.IndexStatusInfo.IndexInfoObject;
@@ -153,8 +153,8 @@ public class IndexOperation extends DatabaseOperationView {
 	}
 
 	@Override
-	public DBOperationType getType() {
-		return DBOperationType.INDEXES;
+	public DatabaseOperationType getType() {
+		return DatabaseOperationType.INDEXES;
 	}
 
 	@Override

@@ -29,22 +29,22 @@ package org.citydb.config.project.plugin;
 
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="PluginConfigItemType", propOrder={
-		"config"
+@XmlType(name = "PluginConfigItemType", propOrder = {
+        "config"
 })
 public class PluginConfigItem {
-	private PluginConfig config;
+    private PluginConfig config;
 
-	public PluginConfigItem() {
-	}
+    public PluginConfigItem() {
+    }
 
-	public PluginConfig getConfig() {
-		return config;
-	}
+    public PluginConfig getConfig() {
+        return config;
+    }
 
-	public void setConfig(PluginConfig config) {
-		if (config != null)
-			this.config = config;
-	}
+    public void setConfig(PluginConfig config) {
+        if (config != null)
+            this.config = config;
+    }
 
 }

@@ -32,38 +32,38 @@ import javax.xml.bind.annotation.XmlType;
 import java.util.ArrayList;
 import java.util.List;
 
-@XmlType(name="AppearanceFilterType", propOrder={
-		"includeNullTheme",
-		"themes"
+@XmlType(name = "AppearanceFilterType", propOrder = {
+        "includeNullTheme",
+        "themes"
 })
 public class AppearanceFilter {
-	@XmlElement(name="nullTheme")
-	private Boolean includeNullTheme;
-	@XmlElement(name="theme")
-	private List<String> themes;
-		
-	public AppearanceFilter() {
-		themes = new ArrayList<>();
-	}
-		
-	public boolean isIncludeNullTheme() {
-		return includeNullTheme != null && includeNullTheme;
-	}
+    @XmlElement(name = "nullTheme")
+    private Boolean includeNullTheme;
+    @XmlElement(name = "theme")
+    private List<String> themes;
 
-	public void setIncludeNullTheme(boolean includeNullTheme) {
-		this.includeNullTheme = includeNullTheme;
-	}
+    public AppearanceFilter() {
+        themes = new ArrayList<>();
+    }
 
-	public boolean containsThemes() {
-		return isIncludeNullTheme() || !themes.isEmpty();
-	}
+    public boolean isIncludeNullTheme() {
+        return includeNullTheme != null && includeNullTheme;
+    }
 
-	public List<String> getThemes() {
-		return themes;
-	}
+    public void setIncludeNullTheme(boolean includeNullTheme) {
+        this.includeNullTheme = includeNullTheme;
+    }
 
-	public void setThemes(List<String> themes) {
-		if (themes != null && !themes.isEmpty())
-			this.themes = themes;
-	}
+    public boolean containsThemes() {
+        return isIncludeNullTheme() || !themes.isEmpty();
+    }
+
+    public List<String> getThemes() {
+        return themes;
+    }
+
+    public void setThemes(List<String> themes) {
+        if (themes != null && !themes.isEmpty())
+            this.themes = themes;
+    }
 }

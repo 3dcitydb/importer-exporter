@@ -34,38 +34,38 @@ import javax.xml.bind.annotation.XmlElements;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlRootElement(name="bbox")
-@XmlType(name="BBOXOperatorType", propOrder={
-		"operand"
+@XmlRootElement(name = "bbox")
+@XmlType(name = "BBOXOperatorType", propOrder = {
+        "operand"
 })
 public class BBOXOperator extends AbstractSpatialOperator {
-	@XmlElements({
-			@XmlElement(name = "operand", type = BoundingBox.class),
-			@XmlElement(name = "envelope", type = BoundingBox.class)
-	})
-	private BoundingBox operand;
+    @XmlElements({
+            @XmlElement(name = "operand", type = BoundingBox.class),
+            @XmlElement(name = "envelope", type = BoundingBox.class)
+    })
+    private BoundingBox operand;
 
-	public boolean isSetEnvelope() {
-		return operand != null;
-	}
+    public boolean isSetEnvelope() {
+        return operand != null;
+    }
 
-	public BoundingBox getEnvelope() {
-		return operand;
-	}
+    public BoundingBox getEnvelope() {
+        return operand;
+    }
 
-	public void setEnvelope(BoundingBox operand) {
-		this.operand = operand;
-	}
-	
-	@Override
-	public void reset() {
-		operand = null;
-		super.reset();
-	}
-	
-	@Override
-	public SpatialOperatorName getOperatorName() {
-		return SpatialOperatorName.BBOX;
-	}
-	
+    public void setEnvelope(BoundingBox operand) {
+        this.operand = operand;
+    }
+
+    @Override
+    public void reset() {
+        operand = null;
+        super.reset();
+    }
+
+    @Override
+    public SpatialOperatorName getOperatorName() {
+        return SpatialOperatorName.BBOX;
+    }
+
 }

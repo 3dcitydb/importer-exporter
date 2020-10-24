@@ -38,122 +38,122 @@ import java.util.List;
 
 @XmlRootElement(name = "database")
 @XmlType(name = "DatabaseType", propOrder = {
-		"referenceSystems",
-		"connections",
-		"activeConnection",
-		"importBatching",
-		"exportBatching",
-		"workspaces",
-		"operation"
+        "referenceSystems",
+        "connections",
+        "activeConnection",
+        "importBatching",
+        "exportBatching",
+        "workspaces",
+        "operation"
 })
 public class DatabaseConfig {
-	public static final String CITYDB_PRODUCT_NAME = "3D City Database";
-	public static final EnumMap<PredefinedSrsName, DatabaseSrs> PREDEFINED_SRS = new EnumMap<>(PredefinedSrsName.class);
+    public static final String CITYDB_PRODUCT_NAME = "3D City Database";
+    public static final EnumMap<PredefinedSrsName, DatabaseSrs> PREDEFINED_SRS = new EnumMap<>(PredefinedSrsName.class);
 
-	public enum PredefinedSrsName {
-		WGS84_2D
-	}
+    public enum PredefinedSrsName {
+        WGS84_2D
+    }
 
-	static {
-		PREDEFINED_SRS.put(PredefinedSrsName.WGS84_2D, new DatabaseSrs(4326, "urn:ogc:def:crs:EPSG::4326", "[Default] WGS 84", "", DatabaseSrsType.GEOGRAPHIC2D, true));
-	}
+    static {
+        PREDEFINED_SRS.put(PredefinedSrsName.WGS84_2D, new DatabaseSrs(4326, "urn:ogc:def:crs:EPSG::4326", "[Default] WGS 84", "", DatabaseSrsType.GEOGRAPHIC2D, true));
+    }
 
-	private final DatabaseSrsList referenceSystems;
-	@XmlElement(name = "connection", required = true)
-	@XmlElementWrapper(name = "connections")
-	private List<DBConnection> connections;
-	@XmlIDREF
-	private DBConnection activeConnection;
-	private ImportBatching importBatching;
-	private ExportBatching exportBatching;
-	private Workspaces workspaces;
-	private DBOperation operation;
+    private final DatabaseSrsList referenceSystems;
+    @XmlElement(name = "connection", required = true)
+    @XmlElementWrapper(name = "connections")
+    private List<DatabaseConnection> connections;
+    @XmlIDREF
+    private DatabaseConnection activeConnection;
+    private ImportBatching importBatching;
+    private ExportBatching exportBatching;
+    private Workspaces workspaces;
+    private DatabaseOperation operation;
 
-	public DatabaseConfig() {
-		referenceSystems = new DatabaseSrsList();
-		connections = new ArrayList<>();
-		importBatching = new ImportBatching();
-		exportBatching = new ExportBatching();
-		workspaces = new Workspaces();
-		operation = new DBOperation();
-	}
+    public DatabaseConfig() {
+        referenceSystems = new DatabaseSrsList();
+        connections = new ArrayList<>();
+        importBatching = new ImportBatching();
+        exportBatching = new ExportBatching();
+        workspaces = new Workspaces();
+        operation = new DatabaseOperation();
+    }
 
-	public List<DatabaseSrs> getReferenceSystems() {
-		return referenceSystems.getItems();
-	}
+    public List<DatabaseSrs> getReferenceSystems() {
+        return referenceSystems.getItems();
+    }
 
-	public void setReferenceSystems(List<DatabaseSrs> referenceSystems) {
-		if (referenceSystems != null)
-			this.referenceSystems.setItems(referenceSystems);
-	}
+    public void setReferenceSystems(List<DatabaseSrs> referenceSystems) {
+        if (referenceSystems != null)
+            this.referenceSystems.setItems(referenceSystems);
+    }
 
-	public void addReferenceSystem(DatabaseSrs referenceSystem) {
-		referenceSystems.addItem(referenceSystem);
-	}
+    public void addReferenceSystem(DatabaseSrs referenceSystem) {
+        referenceSystems.addItem(referenceSystem);
+    }
 
-	public void addDefaultReferenceSystems() {
-		referenceSystems.addDefaultItems();
-	}
+    public void addDefaultReferenceSystems() {
+        referenceSystems.addDefaultItems();
+    }
 
-	public List<DBConnection> getConnections() {
-		return connections;
-	}
+    public List<DatabaseConnection> getConnections() {
+        return connections;
+    }
 
-	public void setConnections(List<DBConnection> connections) {
-		if (connections != null)
-			this.connections = connections;
-	}
+    public void setConnections(List<DatabaseConnection> connections) {
+        if (connections != null)
+            this.connections = connections;
+    }
 
-	public void addConnection(DBConnection connection) {
-		connections.add(connection);
-	}
+    public void addConnection(DatabaseConnection connection) {
+        connections.add(connection);
+    }
 
-	public DBConnection getActiveConnection() {
-		if (activeConnection == null && !connections.isEmpty())
-			activeConnection = connections.get(0);
+    public DatabaseConnection getActiveConnection() {
+        if (activeConnection == null && !connections.isEmpty())
+            activeConnection = connections.get(0);
 
-		return activeConnection;
-	}
+        return activeConnection;
+    }
 
-	public void setActiveConnection(DBConnection activeConnection) {
-		if (activeConnection != null)
-			this.activeConnection = activeConnection;
-	}
+    public void setActiveConnection(DatabaseConnection activeConnection) {
+        if (activeConnection != null)
+            this.activeConnection = activeConnection;
+    }
 
-	public ImportBatching getImportBatching() {
-		return importBatching;
-	}
+    public ImportBatching getImportBatching() {
+        return importBatching;
+    }
 
-	public void setImportBatching(ImportBatching importBatching) {
-		if (importBatching != null)
-			this.importBatching = importBatching;
-	}
+    public void setImportBatching(ImportBatching importBatching) {
+        if (importBatching != null)
+            this.importBatching = importBatching;
+    }
 
-	public ExportBatching getExportBatching() {
-		return exportBatching;
-	}
+    public ExportBatching getExportBatching() {
+        return exportBatching;
+    }
 
-	public void setExportBatching(ExportBatching exportBatching) {
-		if (exportBatching != null)
-			this.exportBatching = exportBatching;
-	}
+    public void setExportBatching(ExportBatching exportBatching) {
+        if (exportBatching != null)
+            this.exportBatching = exportBatching;
+    }
 
-	public Workspaces getWorkspaces() {
-		return workspaces;
-	}
+    public Workspaces getWorkspaces() {
+        return workspaces;
+    }
 
-	public void setWorkspaces(Workspaces workspaces) {
-		if (workspaces != null)
-			this.workspaces = workspaces;
-	}
-	
-	public DBOperation getOperation() {
-		return operation;
-	}
+    public void setWorkspaces(Workspaces workspaces) {
+        if (workspaces != null)
+            this.workspaces = workspaces;
+    }
 
-	public void setOperation(DBOperation operation) {
-		if (operation != null)
-			this.operation = operation;
-	}
+    public DatabaseOperation getOperation() {
+        return operation;
+    }
+
+    public void setOperation(DatabaseOperation operation) {
+        if (operation != null)
+            this.operation = operation;
+    }
 
 }

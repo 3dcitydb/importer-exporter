@@ -33,43 +33,43 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
 
-@XmlType(name="CacheType", propOrder={
-		"mode",
-		"localPath"
+@XmlType(name = "CacheType", propOrder = {
+        "mode",
+        "localPath"
 })
 public class Cache {
-	@XmlElement(required=true)
-	private CacheMode mode = CacheMode.DATABASE;
-	private String localPath;
+    @XmlElement(required = true)
+    private CacheMode mode = CacheMode.DATABASE;
+    private String localPath;
 
-	public Cache() {
-		File tmp = new File(System.getProperty("java.io.tmpdir"), "3dcitydb");
-		if ((tmp.exists() || tmp.mkdir()) && tmp.canWrite())
-			localPath = tmp.getAbsolutePath();
-	}
+    public Cache() {
+        File tmp = new File(System.getProperty("java.io.tmpdir"), "3dcitydb");
+        if ((tmp.exists() || tmp.mkdir()) && tmp.canWrite())
+            localPath = tmp.getAbsolutePath();
+    }
 
-	public boolean isUseDatabase() {
-		return mode == CacheMode.DATABASE;
-	}
+    public boolean isUseDatabase() {
+        return mode == CacheMode.DATABASE;
+    }
 
-	public boolean isUseLocal() {
-		return mode == CacheMode.LOCAL;
-	}
+    public boolean isUseLocal() {
+        return mode == CacheMode.LOCAL;
+    }
 
-	public CacheMode getCacheMode() {
-		return mode;
-	}
+    public CacheMode getCacheMode() {
+        return mode;
+    }
 
-	public void setCacheMode(CacheMode mode) {
-		this.mode = mode;
-	}
+    public void setCacheMode(CacheMode mode) {
+        this.mode = mode;
+    }
 
-	public String getLocalCachePath() {	
-		return localPath;
-	}
+    public String getLocalCachePath() {
+        return localPath;
+    }
 
-	public void setLocalCachePath(String localPath) {
-		this.localPath = localPath;
-	}
+    public void setLocalCachePath(String localPath) {
+        this.localPath = localPath;
+    }
 
 }

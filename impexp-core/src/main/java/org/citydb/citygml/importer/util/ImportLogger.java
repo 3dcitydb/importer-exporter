@@ -27,7 +27,7 @@
  */
 package org.citydb.citygml.importer.util;
 
-import org.citydb.config.project.database.DBConnection;
+import org.citydb.config.project.database.DatabaseConnection;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -48,7 +48,7 @@ public class ImportLogger {
 	private BufferedWriter writer;
 	private Date date;
 
-	public ImportLogger(String logDir, Path importFile, DBConnection connection) throws IOException {
+	public ImportLogger(String logDir, Path importFile, DatabaseConnection connection) throws IOException {
 		Path path = Paths.get(logDir, connection.getDescription().replaceAll("[^a-zA-Z0-9\\.\\-]", "_"));
 		if (!Files.exists(path))
 			Files.createDirectories(path);
@@ -68,7 +68,7 @@ public class ImportLogger {
 		return logFile;
 	}
 
-	private void writeHeader(Path fileName, DBConnection connection) throws IOException {
+	private void writeHeader(Path fileName, DatabaseConnection connection) throws IOException {
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss.SSS");
 
 		writer.write('#' + this.getClass().getPackage().getImplementationTitle() + ", version \"" +

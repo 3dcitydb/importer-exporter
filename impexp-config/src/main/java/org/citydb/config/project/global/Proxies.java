@@ -36,89 +36,89 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@XmlType(name="ProxiesType", propOrder={
-		"proxies"
+@XmlType(name = "ProxiesType", propOrder = {
+        "proxies"
 })
 public class Proxies {
-	@XmlAttribute
-	private Boolean useSingleProxy = false;
-	@XmlAttribute
-	private ProxyType singleProxy;
-	@XmlJavaTypeAdapter(ProxyConfigAdapter.class)
-	@XmlElement(name="proxyList")
-	private Map<ProxyType, ProxyConfig> proxies;
+    @XmlAttribute
+    private Boolean useSingleProxy = false;
+    @XmlAttribute
+    private ProxyType singleProxy;
+    @XmlJavaTypeAdapter(ProxyConfigAdapter.class)
+    @XmlElement(name = "proxyList")
+    private Map<ProxyType, ProxyConfig> proxies;
 
-	public Proxies() {
-		proxies = new HashMap<ProxyType, ProxyConfig>();
-	}
+    public Proxies() {
+        proxies = new HashMap<ProxyType, ProxyConfig>();
+    }
 
-	public ProxyConfig getProxy(ProxyType type) {
-		ProxyConfig proxy = proxies.get(type);
-		if (proxy == null) {
-			proxy = new ProxyConfig(type);
-			proxies.put(type, proxy);
-		}
+    public ProxyConfig getProxy(ProxyType type) {
+        ProxyConfig proxy = proxies.get(type);
+        if (proxy == null) {
+            proxy = new ProxyConfig(type);
+            proxies.put(type, proxy);
+        }
 
-		return proxy;
-	}
-	
-	public ProxyConfig getProxyForProtocol(ProxyType type) {
-		ProxyConfig proxy = null;
-		if (type != null) {
-			proxy = isSetSingleProxy() ? getSingleProxy() : getProxy(type);
-			if (proxy.getType() != type)
-				proxy = new ProxyConfig(type, proxy);
-		}
+        return proxy;
+    }
 
-		return proxy;
-	}
+    public ProxyConfig getProxyForProtocol(ProxyType type) {
+        ProxyConfig proxy = null;
+        if (type != null) {
+            proxy = isSetSingleProxy() ? getSingleProxy() : getProxy(type);
+            if (proxy.getType() != type)
+                proxy = new ProxyConfig(type, proxy);
+        }
 
-	public ProxyConfig getProxyForProtocol(String protocol) {
-		return getProxyForProtocol(ProxyType.fromProtocol(protocol));
-	}
+        return proxy;
+    }
 
-	public void setProxy(ProxyConfig proxy) {
-		if (proxy != null)
-			proxies.put(proxy.getType(), proxy);
-	}
+    public ProxyConfig getProxyForProtocol(String protocol) {
+        return getProxyForProtocol(ProxyType.fromProtocol(protocol));
+    }
 
-	public List<ProxyConfig> getProxyList() {
-		List<ProxyConfig> proxies = new ArrayList<ProxyConfig>();
-		for (ProxyType type : ProxyType.values())
-			proxies.add(getProxy(type));
-		
-		return proxies;
-	}
+    public void setProxy(ProxyConfig proxy) {
+        if (proxy != null)
+            proxies.put(proxy.getType(), proxy);
+    }
 
-	public Boolean isSetSingleProxy() {
-		return useSingleProxy && singleProxy != null;
-	}
+    public List<ProxyConfig> getProxyList() {
+        List<ProxyConfig> proxies = new ArrayList<ProxyConfig>();
+        for (ProxyType type : ProxyType.values())
+            proxies.add(getProxy(type));
 
-	public void setSingleProxy(ProxyType type) {
-		if (type != null) {
-			useSingleProxy = true;
-			singleProxy = type;
-		}
-	}
+        return proxies;
+    }
 
-	public void unsetSingleProxy() {
-		useSingleProxy = false;
-		singleProxy = null;
-	}
+    public Boolean isSetSingleProxy() {
+        return useSingleProxy && singleProxy != null;
+    }
 
-	public ProxyConfig getSingleProxy() {
-		if (isSetSingleProxy())
-			return proxies.get(singleProxy);
+    public void setSingleProxy(ProxyType type) {
+        if (type != null) {
+            useSingleProxy = true;
+            singleProxy = type;
+        }
+    }
 
-		return null;
-	}
+    public void unsetSingleProxy() {
+        useSingleProxy = false;
+        singleProxy = null;
+    }
 
-	public ProxyType getSingleProxyType() {
-		return singleProxy;
-	}
-	
-	public void reset() {
-		proxies.clear();
-	}
+    public ProxyConfig getSingleProxy() {
+        if (isSetSingleProxy())
+            return proxies.get(singleProxy);
+
+        return null;
+    }
+
+    public ProxyType getSingleProxyType() {
+        return singleProxy;
+    }
+
+    public void reset() {
+        proxies.clear();
+    }
 
 }

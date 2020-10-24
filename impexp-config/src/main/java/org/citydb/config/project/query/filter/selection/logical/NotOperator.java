@@ -33,41 +33,41 @@ import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlRootElement(name="not")
-@XmlType(name="NotOperatorType", propOrder={
-		"operand"
+@XmlRootElement(name = "not")
+@XmlType(name = "NotOperatorType", propOrder = {
+        "operand"
 })
 public class NotOperator extends AbstractLogicalOperator {
-	@XmlElementRef
-	private AbstractPredicate operand;
+    @XmlElementRef
+    private AbstractPredicate operand;
 
-	public NotOperator() {
-	}
+    public NotOperator() {
+    }
 
-	public NotOperator(AbstractPredicate operand) {
-		this.operand = operand;
-	}
-	
-	public boolean isSetOperand() {
-		return operand != null;
-	}
+    public NotOperator(AbstractPredicate operand) {
+        this.operand = operand;
+    }
 
-	public AbstractPredicate getOperand() {
-		return operand;
-	}
+    public boolean isSetOperand() {
+        return operand != null;
+    }
 
-	public void setOperand(AbstractPredicate operand) {
-		this.operand = operand;
-	}
-	
-	@Override
-	public void reset() {
-		operand = null;
-	}
-	
-	@Override
-	public LogicalOperatorName getOperatorName() {
-		return LogicalOperatorName.NOT;
-	}
-	
+    public AbstractPredicate getOperand() {
+        return operand;
+    }
+
+    public void setOperand(AbstractPredicate operand) {
+        this.operand = operand;
+    }
+
+    @Override
+    public void reset() {
+        operand = null;
+    }
+
+    @Override
+    public LogicalOperatorName getOperatorName() {
+        return LogicalOperatorName.NOT;
+    }
+
 }

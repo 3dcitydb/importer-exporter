@@ -33,7 +33,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="SimpleSelectionFilterType", propOrder={
+@XmlType(name = "SimpleSelectionFilterType", propOrder = {
         "sqlFilter"
 })
 public class SimpleSelectionFilter extends SimpleAttributeFilter {

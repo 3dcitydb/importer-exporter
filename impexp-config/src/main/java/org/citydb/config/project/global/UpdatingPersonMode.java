@@ -30,16 +30,16 @@ package org.citydb.config.project.global;
 import javax.xml.bind.annotation.XmlEnumValue;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="UpdatingPersonModeType")
+@XmlType(name = "UpdatingPersonModeType")
 public enum UpdatingPersonMode {
-	@XmlEnumValue("database")
+    @XmlEnumValue("database")
     DATABASE("database"),
-	@XmlEnumValue("user")
+    @XmlEnumValue("user")
     USER("user");
-	
-	private final String value;
 
-	UpdatingPersonMode(String v) {
+    private final String value;
+
+    UpdatingPersonMode(String v) {
         value = v;
     }
 
@@ -48,7 +48,7 @@ public enum UpdatingPersonMode {
     }
 
     public static UpdatingPersonMode fromValue(String v) {
-        for (UpdatingPersonMode c: UpdatingPersonMode.values()) {
+        for (UpdatingPersonMode c : UpdatingPersonMode.values()) {
             if (c.value.equals(v)) {
                 return c;
             }

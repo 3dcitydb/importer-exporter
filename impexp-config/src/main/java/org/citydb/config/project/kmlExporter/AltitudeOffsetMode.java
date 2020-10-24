@@ -31,10 +31,10 @@ import javax.xml.bind.annotation.XmlEnum;
 import javax.xml.bind.annotation.XmlEnumValue;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="AltitudeOffsetMode")
+@XmlType(name = "AltitudeOffsetMode")
 @XmlEnum
 public enum AltitudeOffsetMode {
-	@XmlEnumValue("no_offset")
+    @XmlEnumValue("no_offset")
     NO_OFFSET("no_offset"),
     @XmlEnumValue("constant")
     CONSTANT("constant"),
@@ -54,7 +54,7 @@ public enum AltitudeOffsetMode {
     }
 
     public static AltitudeOffsetMode fromValue(String v) {
-        for (AltitudeOffsetMode c: AltitudeOffsetMode.values()) {
+        for (AltitudeOffsetMode c : AltitudeOffsetMode.values()) {
             if (c.value.equals(v)) {
                 return c;
             }

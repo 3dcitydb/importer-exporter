@@ -30,21 +30,23 @@ package org.citydb.config.project.query.util;
 
 import org.citydb.config.project.query.QueryConfig;
 
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlRootElement(name="wrapper")
-@XmlType(name="QueryWrapperType", propOrder={
-        "query"
+@XmlRootElement(name = "wrapper")
+@XmlType(name = "QueryWrapperType", propOrder = {
+        "queryConfig"
 })
 public class QueryWrapper {
-    private QueryConfig query;
+    @XmlElement(name = "query")
+    private QueryConfig queryConfig;
 
-    public QueryConfig getQuery() {
-        return query;
+    public QueryConfig getQueryConfig() {
+        return queryConfig;
     }
 
-    public void setQuery(QueryConfig query) {
-        this.query = query;
+    public void setQueryConfig(QueryConfig queryConfig) {
+        this.queryConfig = queryConfig;
     }
 }

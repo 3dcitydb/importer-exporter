@@ -33,7 +33,7 @@ import org.citydb.config.project.query.filter.tiling.AbstractTiling;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="SimpleTilingType", propOrder={
+@XmlType(name = "SimpleTilingType", propOrder = {
         "tilingOptions"
 })
 public class SimpleTiling extends AbstractTiling {

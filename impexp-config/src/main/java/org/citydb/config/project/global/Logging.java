@@ -29,35 +29,35 @@ package org.citydb.config.project.global;
 
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="LoggingType", propOrder={
-		"console",
-		"file"
-		})
+@XmlType(name = "LoggingType", propOrder = {
+        "console",
+        "file"
+})
 public class Logging {
-	private LogConsole console;
-	private LogFile file;
-	
-	public Logging() {
-		console = new LogConsole();
-		file = new LogFile();
-	}
+    private LogConsole console;
+    private LogFile file;
 
-	public LogConsole getConsole() {
-		return console;
-	}
+    public Logging() {
+        console = new LogConsole();
+        file = new LogFile();
+    }
 
-	public void setConsole(LogConsole console) {
-		if (console != null)
-			this.console = console;
-	}
+    public LogConsole getConsole() {
+        return console;
+    }
 
-	public LogFile getFile() {
-		return file;
-	}
+    public void setConsole(LogConsole console) {
+        if (console != null)
+            this.console = console;
+    }
 
-	public void setFile(LogFile file) {
-		if (file != null)
-			this.file = file;
-	}
-	
+    public LogFile getFile() {
+        return file;
+    }
+
+    public void setFile(LogFile file) {
+        if (file != null)
+            this.file = file;
+    }
+
 }

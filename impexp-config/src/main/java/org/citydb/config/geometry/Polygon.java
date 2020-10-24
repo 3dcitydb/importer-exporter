@@ -33,107 +33,106 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlRootElement(name="polygon")
-@XmlType(name="PolygonType", propOrder={
-		"exterior",
-		"interior"
+@XmlRootElement(name = "polygon")
+@XmlType(name = "PolygonType", propOrder = {
+        "exterior",
+        "interior"
 })
 public class Polygon extends AbstractGeometry {
-	@XmlElement(required=true)
+    @XmlElement(required = true)
     private PositionList exterior;
-	@XmlElement(required=false)
-	private List<PositionList> interior;
-	
-	public Polygon() {
-		exterior = new PositionList();
-	}
-	
-	public PositionList getExterior() {
-		return exterior;
-	}
+    private List<PositionList> interior;
 
-	public void setExterior(PositionList exterior) {
-		this.exterior = exterior;
-	}
+    public Polygon() {
+        exterior = new PositionList();
+    }
 
-	public List<PositionList> getInterior() {
-		return interior;
-	}
-	
-	public boolean isSetInterior() {
-		return interior != null;
-	}
+    public PositionList getExterior() {
+        return exterior;
+    }
 
-	public void setInterior(List<PositionList> interior) {
-		this.interior = interior;
-	}
+    public void setExterior(PositionList exterior) {
+        this.exterior = exterior;
+    }
 
-	@Override
-	public BoundingBox toBoundingBox() {
-		int dim = is3D() ? 3 : 2;
-		BoundingBox bbox = new BoundingBox(new Position(Double.MAX_VALUE, dim), new Position(-Double.MAX_VALUE, dim));
-		
-		List<Double> coords = exterior.getCoords();
-		for (int i = 0; i < coords.size(); i += dim) {
-			if (coords.get(i) < bbox.getLowerCorner().getX())
-				bbox.getLowerCorner().setX(coords.get(i));
-			else if (coords.get(i) > bbox.getUpperCorner().getX())
-				bbox.getUpperCorner().setX(coords.get(i));
-			
-			if (coords.get(i + 1) < bbox.getLowerCorner().getY())
-				bbox.getLowerCorner().setY(coords.get(i + 1));
-			else if (coords.get(i + 1) > bbox.getUpperCorner().getY())
-				bbox.getUpperCorner().setY(coords.get(i + 1));
-			
-			if (dim == 3) {
-				if (coords.get(i + 2) < bbox.getLowerCorner().getZ())
-					bbox.getLowerCorner().setZ(coords.get(i + 2));
-				else if (coords.get(i + 2) > bbox.getUpperCorner().getZ())
-					bbox.getUpperCorner().setZ(coords.get(i + 2));
-			}
-		}
-		
-		return bbox;
-	}
+    public List<PositionList> getInterior() {
+        return interior;
+    }
 
-	@Override
-	public boolean is3D() {
-		if (isValid()) {
-			if (exterior.getDimension() != 3)
-				return false;
-			
-			if (interior != null) {
-				for (PositionList tmp : interior) {
-					if (tmp.getDimension() != 3)
-						return false;
-				}
-			}
-			
-			return true;
-		}
-		
-		return false;
-	}
+    public boolean isSetInterior() {
+        return interior != null;
+    }
 
-	@Override
-	public boolean isValid() {
-		if (exterior != null && exterior.isValid()) {
-			if (interior != null) {
-				for (PositionList tmp : interior) {
-					if (!tmp.isValid())
-						return false;
-				}
-			}
-			
-			return true;
-		}
-		
-		return false;
-	}
+    public void setInterior(List<PositionList> interior) {
+        this.interior = interior;
+    }
 
-	@Override
-	public GeometryType getGeometryType() {
-		return GeometryType.POLYGON;
-	}
+    @Override
+    public BoundingBox toBoundingBox() {
+        int dim = is3D() ? 3 : 2;
+        BoundingBox bbox = new BoundingBox(new Position(Double.MAX_VALUE, dim), new Position(-Double.MAX_VALUE, dim));
+
+        List<Double> coords = exterior.getCoords();
+        for (int i = 0; i < coords.size(); i += dim) {
+            if (coords.get(i) < bbox.getLowerCorner().getX())
+                bbox.getLowerCorner().setX(coords.get(i));
+            else if (coords.get(i) > bbox.getUpperCorner().getX())
+                bbox.getUpperCorner().setX(coords.get(i));
+
+            if (coords.get(i + 1) < bbox.getLowerCorner().getY())
+                bbox.getLowerCorner().setY(coords.get(i + 1));
+            else if (coords.get(i + 1) > bbox.getUpperCorner().getY())
+                bbox.getUpperCorner().setY(coords.get(i + 1));
+
+            if (dim == 3) {
+                if (coords.get(i + 2) < bbox.getLowerCorner().getZ())
+                    bbox.getLowerCorner().setZ(coords.get(i + 2));
+                else if (coords.get(i + 2) > bbox.getUpperCorner().getZ())
+                    bbox.getUpperCorner().setZ(coords.get(i + 2));
+            }
+        }
+
+        return bbox;
+    }
+
+    @Override
+    public boolean is3D() {
+        if (isValid()) {
+            if (exterior.getDimension() != 3)
+                return false;
+
+            if (interior != null) {
+                for (PositionList tmp : interior) {
+                    if (tmp.getDimension() != 3)
+                        return false;
+                }
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
+    @Override
+    public boolean isValid() {
+        if (exterior != null && exterior.isValid()) {
+            if (interior != null) {
+                for (PositionList tmp : interior) {
+                    if (!tmp.isValid())
+                        return false;
+                }
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
+    @Override
+    public GeometryType getGeometryType() {
+        return GeometryType.POLYGON;
+    }
 
 }

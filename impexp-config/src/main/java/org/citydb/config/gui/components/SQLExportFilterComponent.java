@@ -30,7 +30,7 @@ package org.citydb.config.gui.components;
 
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="SQLExportFilterComponentType", propOrder={
+@XmlType(name = "SQLExportFilterComponentType", propOrder = {
         "additionalRows"
 })
 public class SQLExportFilterComponent {

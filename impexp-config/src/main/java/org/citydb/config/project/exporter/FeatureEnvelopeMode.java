@@ -32,7 +32,7 @@ import javax.xml.bind.annotation.XmlEnum;
 import javax.xml.bind.annotation.XmlEnumValue;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="GMLEnvelopeModeType")
+@XmlType(name = "FeatureEnvelopeModeType")
 @XmlEnum
 public enum FeatureEnvelopeMode {
     @XmlEnumValue("none")
@@ -53,7 +53,7 @@ public enum FeatureEnvelopeMode {
     }
 
     public static FeatureEnvelopeMode fromValue(String v) {
-        for (FeatureEnvelopeMode c: FeatureEnvelopeMode.values()) {
+        for (FeatureEnvelopeMode c : FeatureEnvelopeMode.values()) {
             if (c.value.equals(v)) {
                 return c;
             }

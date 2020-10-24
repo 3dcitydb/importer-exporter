@@ -31,10 +31,10 @@ import javax.xml.bind.annotation.XmlEnum;
 import javax.xml.bind.annotation.XmlEnumValue;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="BalloonContentMode")
+@XmlType(name = "BalloonContentMode")
 @XmlEnum
 public enum BalloonContentMode {
-	@XmlEnumValue("gen_attrib")
+    @XmlEnumValue("gen_attrib")
     GEN_ATTRIB("gen_attrib"),
     @XmlEnumValue("file")
     FILE("file"),
@@ -52,7 +52,7 @@ public enum BalloonContentMode {
     }
 
     public static BalloonContentMode fromValue(String v) {
-        for (BalloonContentMode c: BalloonContentMode.values()) {
+        for (BalloonContentMode c : BalloonContentMode.values()) {
             if (c.value.equals(v)) {
                 return c;
             }

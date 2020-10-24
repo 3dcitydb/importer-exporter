@@ -32,68 +32,68 @@ import javax.xml.bind.annotation.XmlType;
 
 @XmlRootElement(name = "global")
 @XmlType(name = "GlobalType", propOrder = {
-		"cache",
-		"logging",
-		"language",
-		"proxies",
-		"apiKeys"
+        "cache",
+        "logging",
+        "language",
+        "proxies",
+        "apiKeys"
 })
 public class GlobalConfig {
-	private Cache cache;
-	private Logging logging;
-	private LanguageType language = LanguageType.fromValue(System.getProperty("user.language"));
-	private Proxies proxies;
-	private APIKeys apiKeys;
+    private Cache cache;
+    private Logging logging;
+    private LanguageType language = LanguageType.fromValue(System.getProperty("user.language"));
+    private Proxies proxies;
+    private APIKeys apiKeys;
 
-	public GlobalConfig() {
-		cache = new Cache();
-		logging = new Logging();
-		proxies = new Proxies();
-		apiKeys = new APIKeys();
-	}
-	
-	public Cache getCache() {
-		return cache;
-	}
-	
-	public void setCache(Cache cache) {
-		if (cache != null)
-			this.cache = cache;
-	}
-	
-	public Logging getLogging() {
-		return logging;
-	}
+    public GlobalConfig() {
+        cache = new Cache();
+        logging = new Logging();
+        proxies = new Proxies();
+        apiKeys = new APIKeys();
+    }
 
-	public void setLogging(Logging logging) {
-		if (logging != null)
-			this.logging = logging;
-	}
+    public Cache getCache() {
+        return cache;
+    }
 
-	public LanguageType getLanguage() {
-		return language;
-	}
+    public void setCache(Cache cache) {
+        if (cache != null)
+            this.cache = cache;
+    }
 
-	public void setLanguage(LanguageType language) {
-		if (language != null)
-			this.language = language;
-	}
+    public Logging getLogging() {
+        return logging;
+    }
 
-	public Proxies getProxies() {
-		return proxies;
-	}
+    public void setLogging(Logging logging) {
+        if (logging != null)
+            this.logging = logging;
+    }
 
-	public void setProxies(Proxies proxies) {
-		if (proxies != null)
-			this.proxies = proxies;
-	}
+    public LanguageType getLanguage() {
+        return language;
+    }
 
-	public APIKeys getApiKeys() {
-		return apiKeys;
-	}
+    public void setLanguage(LanguageType language) {
+        if (language != null)
+            this.language = language;
+    }
 
-	public void setApiKeys(APIKeys apiKeys) {
-		if (apiKeys != null)
-			this.apiKeys = apiKeys;
-	}
+    public Proxies getProxies() {
+        return proxies;
+    }
+
+    public void setProxies(Proxies proxies) {
+        if (proxies != null)
+            this.proxies = proxies;
+    }
+
+    public APIKeys getApiKeys() {
+        return apiKeys;
+    }
+
+    public void setApiKeys(APIKeys apiKeys) {
+        if (apiKeys != null)
+            this.apiKeys = apiKeys;
+    }
 }

@@ -30,32 +30,32 @@ package org.citydb.config.project.importer;
 import javax.xml.bind.annotation.XmlEnumValue;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="CreationDateModeType")
+@XmlType(name = "CreationDateModeType")
 public enum CreationDateMode {
-	@XmlEnumValue("inherit")
-	INHERIT("inherit"),
-	@XmlEnumValue("complement")
-	COMPLEMENT("complement"),
-	@XmlEnumValue("replace")
-	REPLACE("replace");
+    @XmlEnumValue("inherit")
+    INHERIT("inherit"),
+    @XmlEnumValue("complement")
+    COMPLEMENT("complement"),
+    @XmlEnumValue("replace")
+    REPLACE("replace");
 
-	private final String value;
+    private final String value;
 
-	CreationDateMode(String v) {
-		value = v;
-	}
+    CreationDateMode(String v) {
+        value = v;
+    }
 
-	public String value() {
-		return value;
-	}
+    public String value() {
+        return value;
+    }
 
-	public static CreationDateMode fromValue(String v) {
-		for (CreationDateMode c: CreationDateMode.values()) {
-			if (c.value.equals(v)) {
-				return c;
-			}
-		}
+    public static CreationDateMode fromValue(String v) {
+        for (CreationDateMode c : CreationDateMode.values()) {
+            if (c.value.equals(v)) {
+                return c;
+            }
+        }
 
-		return REPLACE;
-	}
+        return REPLACE;
+    }
 }

@@ -33,10 +33,10 @@ import javax.xml.bind.annotation.XmlType;
 
 import org.citydb.config.i18n.Language;
 
-@XmlType(name="TileNameSuffixModeType")
+@XmlType(name = "TileNameSuffixModeType")
 @XmlEnum
 public enum TileNameSuffixMode {
-	@XmlEnumValue("none")
+    @XmlEnumValue("none")
     NONE("none"),
     @XmlEnumValue("sameAsPath")
     SAME_AS_PATH("sameAsPath");
@@ -53,18 +53,18 @@ public enum TileNameSuffixMode {
 
     @Override
     public String toString() {
-    	switch (this) {
-    	case NONE:
-    		return Language.I18N.getString("pref.export.boundingBox.label.tile.nameSuffix.none");
-    	case SAME_AS_PATH:
-    		return Language.I18N.getString("pref.export.boundingBox.label.tile.nameSuffix.sameAsPath");
-    	default:
-    		return "";
-    	}
+        switch (this) {
+            case NONE:
+                return Language.I18N.getString("pref.export.boundingBox.label.tile.nameSuffix.none");
+            case SAME_AS_PATH:
+                return Language.I18N.getString("pref.export.boundingBox.label.tile.nameSuffix.sameAsPath");
+            default:
+                return "";
+        }
     }
-    
+
     public static TileNameSuffixMode fromValue(String v) {
-        for (TileNameSuffixMode c: TileNameSuffixMode.values()) {
+        for (TileNameSuffixMode c : TileNameSuffixMode.values()) {
             if (c.value.equals(v)) {
                 return c;
             }

@@ -30,37 +30,37 @@ package org.citydb.config.project.resources;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="ResourcesType", propOrder={
-		"gmlIdCache",
-		"threadPool"
+@XmlType(name = "ResourcesType", propOrder = {
+        "gmlIdCache",
+        "threadPool"
 })
 public class Resources {
-	@XmlElement(required=true)
-	private UIDCache gmlIdCache;
-	@XmlElement(required=true)
-	private ThreadPool threadPool;
+    @XmlElement(required = true)
+    private UIDCache gmlIdCache;
+    @XmlElement(required = true)
+    private ThreadPool threadPool;
 
-	public Resources() {
-		gmlIdCache = new UIDCache();
-		threadPool = new ThreadPool();
-	}
+    public Resources() {
+        gmlIdCache = new UIDCache();
+        threadPool = new ThreadPool();
+    }
 
-	public UIDCache getGmlIdCache() {
-		return gmlIdCache;
-	}
+    public UIDCache getGmlIdCache() {
+        return gmlIdCache;
+    }
 
-	public void setGmlIdCache(UIDCache gmlIdCache) {
-		if (gmlIdCache != null)
-			this.gmlIdCache = gmlIdCache;
-	}
+    public void setGmlIdCache(UIDCache gmlIdCache) {
+        if (gmlIdCache != null)
+            this.gmlIdCache = gmlIdCache;
+    }
 
-	public ThreadPool getThreadPool() {
-		return threadPool;
-	}
+    public ThreadPool getThreadPool() {
+        return threadPool;
+    }
 
-	public void setThreadPool(ThreadPool threadPool) {
-		if (threadPool != null)
-			this.threadPool = threadPool;
-	}
+    public void setThreadPool(ThreadPool threadPool) {
+        if (threadPool != null)
+            this.threadPool = threadPool;
+    }
 
 }

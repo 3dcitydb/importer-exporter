@@ -31,10 +31,10 @@ import javax.xml.bind.annotation.XmlEnum;
 import javax.xml.bind.annotation.XmlEnumValue;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="CacheModeType")
+@XmlType(name = "CacheModeType")
 @XmlEnum
 public enum CacheMode {
-	@XmlEnumValue("database")
+    @XmlEnumValue("database")
     DATABASE("database"),
     @XmlEnumValue("local")
     LOCAL("local");
@@ -50,7 +50,7 @@ public enum CacheMode {
     }
 
     public static CacheMode fromValue(String v) {
-        for (CacheMode c: CacheMode.values()) {
+        for (CacheMode c : CacheMode.values()) {
             if (c.value.equals(v)) {
                 return c;
             }

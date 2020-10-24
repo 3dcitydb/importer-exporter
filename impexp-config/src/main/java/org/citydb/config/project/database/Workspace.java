@@ -36,69 +36,69 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-@XmlType(name="WorkspaceType", propOrder={
-		"name",
-		"timestamp"
+@XmlType(name = "WorkspaceType", propOrder = {
+        "name",
+        "timestamp"
 })
 public class Workspace {
-	@XmlElement(required = true)
-	private String name;
-	@XmlSchemaType(name = "date")
-	private XMLGregorianCalendar timestamp;
+    @XmlElement(required = true)
+    private String name;
+    @XmlSchemaType(name = "date")
+    private XMLGregorianCalendar timestamp;
 
-	public Workspace() {
-	}
-	
-	public Workspace(String name) {
-		setName(name);
-	}
-	
-	public Workspace(String name, Date timestamp) {
-		this(name);
-		setTimestamp(timestamp);
-	}
+    public Workspace() {
+    }
 
-	public String getName() {
-		return name;
-	}
+    public Workspace(String name) {
+        setName(name);
+    }
 
-	public void setName(String name) {
-		if (name != null)
-			this.name = name.trim();
-	}
-	
-	public boolean isSetName() {
-		return name != null && !name.trim().isEmpty();
-	}
+    public Workspace(String name, Date timestamp) {
+        this(name);
+        setTimestamp(timestamp);
+    }
 
-	public Date getTimestamp() {
-		return timestamp != null ? timestamp.toGregorianCalendar().getTime() : null;
-	}
+    public String getName() {
+        return name;
+    }
 
-	public boolean isSetTimestamp() {
-		return timestamp != null;
-	}
+    public void setName(String name) {
+        if (name != null)
+            this.name = name.trim();
+    }
 
-	public void setTimestamp(Date timestamp) {
-		if (timestamp != null) {
-			try {
-				SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
-				this.timestamp = DatatypeFactory.newInstance().newXMLGregorianCalendar(format.format(timestamp));
-			} catch (DatatypeConfigurationException e) {
-				this.timestamp = null;
-			}
-		} else
-			this.timestamp = null;
-	}
+    public boolean isSetName() {
+        return name != null && !name.trim().isEmpty();
+    }
 
-	@Override
-	public String toString() {
-		StringBuilder builder = new StringBuilder()
-		.append("'").append(getName()).append("'");
-		if (timestamp != null)
-			builder.append(" at timestamp ").append(timestamp.toXMLFormat());
-		
-		return builder.toString();
-	}
-	
+    public Date getTimestamp() {
+        return timestamp != null ? timestamp.toGregorianCalendar().getTime() : null;
+    }
+
+    public boolean isSetTimestamp() {
+        return timestamp != null;
+    }
+
+    public void setTimestamp(Date timestamp) {
+        if (timestamp != null) {
+            try {
+                SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+                this.timestamp = DatatypeFactory.newInstance().newXMLGregorianCalendar(format.format(timestamp));
+            } catch (DatatypeConfigurationException e) {
+                this.timestamp = null;
+            }
+        } else
+            this.timestamp = null;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder()
+                .append("'").append(getName()).append("'");
+        if (timestamp != null)
+            builder.append(" at timestamp ").append(timestamp.toXMLFormat());
+
+        return builder.toString();
+    }
+
 }

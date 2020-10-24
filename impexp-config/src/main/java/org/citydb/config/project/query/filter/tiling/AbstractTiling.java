@@ -32,52 +32,52 @@ import org.citydb.config.geometry.BoundingBox;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="AbstractTilingType", propOrder={
-		"extent",
-		"rows",
-		"columns"
+@XmlType(name = "AbstractTilingType", propOrder = {
+        "extent",
+        "rows",
+        "columns"
 })
 public abstract class AbstractTiling {
-	@XmlElement(required=true)
-	private BoundingBox extent;
-	@XmlElement(required=true, defaultValue="1")
-	private int rows = 1;
-	@XmlElement(required=true, defaultValue="1")
-	private int columns = 1;
+    @XmlElement(required = true)
+    private BoundingBox extent;
+    @XmlElement(required = true, defaultValue = "1")
+    private int rows = 1;
+    @XmlElement(required = true, defaultValue = "1")
+    private int columns = 1;
 
-	public AbstractTiling() {
-		extent = new BoundingBox();
-	}
+    public AbstractTiling() {
+        extent = new BoundingBox();
+    }
 
-	public abstract AbstractTilingOptions getTilingOptions();
-	public abstract boolean isSetTilingOptions();
+    public abstract AbstractTilingOptions getTilingOptions();
+    public abstract boolean isSetTilingOptions();
 
-	public boolean isSetExtent() {
-		return extent != null;
-	}
+    public boolean isSetExtent() {
+        return extent != null;
+    }
 
-	public BoundingBox getExtent() {
-		return extent;
-	}
+    public BoundingBox getExtent() {
+        return extent;
+    }
 
-	public void setExtent(BoundingBox extent) {
-		this.extent = extent;
-	}
+    public void setExtent(BoundingBox extent) {
+        this.extent = extent;
+    }
 
-	public int getRows() {
-		return rows;
-	}
+    public int getRows() {
+        return rows;
+    }
 
-	public void setRows(int rows) {
-		this.rows = rows;
-	}
+    public void setRows(int rows) {
+        this.rows = rows;
+    }
 
-	public int getColumns() {
-		return columns;
-	}
+    public int getColumns() {
+        return columns;
+    }
 
-	public void setColumns(int columns) {
-		this.columns = columns;
-	}
+    public void setColumns(int columns) {
+        this.columns = columns;
+    }
 
 }

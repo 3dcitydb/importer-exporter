@@ -33,13 +33,13 @@ import javax.xml.bind.annotation.XmlType;
 import java.util.ArrayList;
 import java.util.List;
 
-@XmlType(name="XSLTransformationType", propOrder={
+@XmlType(name = "XSLTransformationType", propOrder = {
         "stylesheets"
 })
 public class XSLTransformation {
-    @XmlAttribute(required=true)
+    @XmlAttribute(required = true)
     private boolean isEnabled = false;
-    @XmlElement(name="stylesheet")
+    @XmlElement(name = "stylesheet")
     private List<String> stylesheets;
 
     public boolean isEnabled() {

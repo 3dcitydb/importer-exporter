@@ -37,55 +37,55 @@ import java.util.Objects;
 
 @XmlType(name = "ProjectionContextType")
 public class ProjectionContext {
-	@XmlAttribute(required = true)
-	private QName typeName;
-	@XmlAttribute(name="mode")
-	private ProjectionMode mode;
-	@XmlElements({
-        @XmlElement(name = "propertyName", type = PropertyName.class),
-        @XmlElement(name = "genericAttributeName", type = GenericAttributeName.class)
+    @XmlAttribute(required = true)
+    private QName typeName;
+    @XmlAttribute(name = "mode")
+    private ProjectionMode mode;
+    @XmlElements({
+            @XmlElement(name = "propertyName", type = PropertyName.class),
+            @XmlElement(name = "genericAttributeName", type = GenericAttributeName.class)
     })
-	private LinkedHashSet<AbstractPropertyName> propertyNames;
+    private LinkedHashSet<AbstractPropertyName> propertyNames;
 
-	public QName getTypeName() {
-		return typeName;
-	}
+    public QName getTypeName() {
+        return typeName;
+    }
 
-	public void setTypeName(QName typeName) {
-		this.typeName = typeName;
-	}
+    public void setTypeName(QName typeName) {
+        this.typeName = typeName;
+    }
 
-	public ProjectionMode getMode() {
-		return mode != null ? mode : ProjectionMode.KEEP;
-	}
+    public ProjectionMode getMode() {
+        return mode != null ? mode : ProjectionMode.KEEP;
+    }
 
-	public void setMode(ProjectionMode mode) {
-		this.mode = mode;
-	}
+    public void setMode(ProjectionMode mode) {
+        this.mode = mode;
+    }
 
-	public LinkedHashSet<AbstractPropertyName> getPropertyNames() {
-		return propertyNames;
-	}
+    public LinkedHashSet<AbstractPropertyName> getPropertyNames() {
+        return propertyNames;
+    }
 
-	public void setPropertyNames(LinkedHashSet<AbstractPropertyName> propertyNames) {
-		this.propertyNames = propertyNames;
-	}
-	
-	public boolean isSetPropertyNames() {
-		return propertyNames != null && !propertyNames.isEmpty();
-	}
+    public void setPropertyNames(LinkedHashSet<AbstractPropertyName> propertyNames) {
+        this.propertyNames = propertyNames;
+    }
 
-	@Override
-	public final boolean equals(Object obj) {
-		if (!(obj instanceof ProjectionContext))
-			return false;
-		
-		return typeName != null && typeName.equals(((ProjectionContext)obj).typeName);
-	}
+    public boolean isSetPropertyNames() {
+        return propertyNames != null && !propertyNames.isEmpty();
+    }
 
-	@Override
-	public final int hashCode() {
-		return Objects.hash(typeName);
-	}
-	
+    @Override
+    public final boolean equals(Object obj) {
+        if (!(obj instanceof ProjectionContext))
+            return false;
+
+        return typeName != null && typeName.equals(((ProjectionContext) obj).typeName);
+    }
+
+    @Override
+    public final int hashCode() {
+        return Objects.hash(typeName);
+    }
+
 }

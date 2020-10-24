@@ -32,7 +32,7 @@ import org.citydb.ade.ADEExtensionManager;
 import org.citydb.config.Config;
 import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.i18n.Language;
-import org.citydb.config.project.database.DBOperationType;
+import org.citydb.config.project.database.DatabaseOperationType;
 import org.citydb.config.project.database.DatabaseSrs;
 import org.citydb.config.project.database.Workspace;
 import org.citydb.database.connection.DatabaseConnectionPool;
@@ -179,8 +179,8 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 	}
 
 	@Override
-	public DBOperationType getType() {
-		return DBOperationType.BOUNDING_BOX;
+	public DatabaseOperationType getType() {
+		return DatabaseOperationType.BOUNDING_BOX;
 	}
 
 	@Override

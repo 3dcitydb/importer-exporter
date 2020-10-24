@@ -30,37 +30,37 @@ package org.citydb.config.project.resources;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="UIDCacheType", propOrder={
-		"feature",
-		"geometry"		
+@XmlType(name = "UIDCacheType", propOrder = {
+        "feature",
+        "geometry"
 })
 public class UIDCache {
-	@XmlElement(required=true)
-	private UIDCacheConfig feature;
-	@XmlElement(required=true)
-	private UIDCacheConfig geometry;
+    @XmlElement(required = true)
+    private UIDCacheConfig feature;
+    @XmlElement(required = true)
+    private UIDCacheConfig geometry;
 
-	public UIDCache() {
-		feature = new UIDCacheConfig();
-		geometry = new UIDCacheConfig();
-	}
+    public UIDCache() {
+        feature = new UIDCacheConfig();
+        geometry = new UIDCacheConfig();
+    }
 
-	public UIDCacheConfig getFeature() {
-		return feature;
-	}
+    public UIDCacheConfig getFeature() {
+        return feature;
+    }
 
-	public void setFeature(UIDCacheConfig feature) {
-		if (feature != null)
-			this.feature = feature;
-	}
+    public void setFeature(UIDCacheConfig feature) {
+        if (feature != null)
+            this.feature = feature;
+    }
 
-	public UIDCacheConfig getGeometry() {
-		return geometry;
-	}
+    public UIDCacheConfig getGeometry() {
+        return geometry;
+    }
 
-	public void setGeometry(UIDCacheConfig geometry) {
-		if (geometry != null)
-			this.geometry = geometry;
-	}
+    public void setGeometry(UIDCacheConfig geometry) {
+        if (geometry != null)
+            this.geometry = geometry;
+    }
 
 }

@@ -35,117 +35,117 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="SimpleImportFilterType", propOrder={
-		"featureTypeFilter",
-		"attributeFilter",
-		"counterFilter",
-		"bboxFilter"
+@XmlType(name = "SimpleImportFilterType", propOrder = {
+        "featureTypeFilter",
+        "attributeFilter",
+        "counterFilter",
+        "bboxFilter"
 
 })
 public class ImportFilter {
-	@XmlAttribute
-	private boolean useTypeNames;
-	@XmlAttribute
-	private boolean useAttributeFilter;
-	@XmlAttribute
-	private boolean useCountFilter;
-	@XmlAttribute
-	private boolean useBboxFilter;
-	
-	@XmlElement(name = "typeNames")
-	private FeatureTypeFilter featureTypeFilter;
-	@XmlElement(name="attributes")
-	private SimpleAttributeFilter attributeFilter;
-	@XmlElement(name = "limit")
-	private CounterFilter counterFilter;
-	@XmlElement(name = "bbox", required = true)
-	private SimpleBBOXOperator bboxFilter;
+    @XmlAttribute
+    private boolean useTypeNames;
+    @XmlAttribute
+    private boolean useAttributeFilter;
+    @XmlAttribute
+    private boolean useCountFilter;
+    @XmlAttribute
+    private boolean useBboxFilter;
 
-	public ImportFilter() {
-		featureTypeFilter = new FeatureTypeFilter();
-		attributeFilter = new SimpleAttributeFilter();
-		counterFilter = new CounterFilter();
-		bboxFilter = new SimpleBBOXOperator();
-	}
-	
-	public boolean isUseTypeNames() {
-		return useTypeNames;
-	}
+    @XmlElement(name = "typeNames")
+    private FeatureTypeFilter featureTypeFilter;
+    @XmlElement(name = "attributes")
+    private SimpleAttributeFilter attributeFilter;
+    @XmlElement(name = "limit")
+    private CounterFilter counterFilter;
+    @XmlElement(name = "bbox", required = true)
+    private SimpleBBOXOperator bboxFilter;
 
-	public void setUseTypeNames(boolean useTypeNames) {
-		this.useTypeNames = useTypeNames;
-	}
+    public ImportFilter() {
+        featureTypeFilter = new FeatureTypeFilter();
+        attributeFilter = new SimpleAttributeFilter();
+        counterFilter = new CounterFilter();
+        bboxFilter = new SimpleBBOXOperator();
+    }
 
-	public boolean isUseAttributeFilter() {
-		return useAttributeFilter;
-	}
+    public boolean isUseTypeNames() {
+        return useTypeNames;
+    }
 
-	public void setUseAttributeFilter(boolean useAttributeFilter) {
-		this.useAttributeFilter = useAttributeFilter;
-	}
+    public void setUseTypeNames(boolean useTypeNames) {
+        this.useTypeNames = useTypeNames;
+    }
 
-	public boolean isUseCountFilter() {
-		return useCountFilter;
-	}
+    public boolean isUseAttributeFilter() {
+        return useAttributeFilter;
+    }
 
-	public void setUseCountFilter(boolean useCountFilter) {
-		this.useCountFilter = useCountFilter;
-	}
+    public void setUseAttributeFilter(boolean useAttributeFilter) {
+        this.useAttributeFilter = useAttributeFilter;
+    }
 
-	public boolean isUseBboxFilter() {
-		return useBboxFilter;
-	}
+    public boolean isUseCountFilter() {
+        return useCountFilter;
+    }
 
-	public void setUseBboxFilter(boolean useBboxFilter) {
-		this.useBboxFilter = useBboxFilter;
-	}
-	
-	public FeatureTypeFilter getFeatureTypeFilter() {
-		return featureTypeFilter;
-	}
-	
-	public boolean isSetFeatureTypeFilter() {
-		return featureTypeFilter != null;
-	}
-	
-	public void setFeatureTypeFilter(FeatureTypeFilter featureTypeFilter) {
-		this.featureTypeFilter = featureTypeFilter;
-	}
+    public void setUseCountFilter(boolean useCountFilter) {
+        this.useCountFilter = useCountFilter;
+    }
 
-	public SimpleAttributeFilter getAttributeFilter() {
-		return attributeFilter;
-	}
-	
-	public boolean isSetAttributeFilter() {
-		return attributeFilter != null;
-	}
+    public boolean isUseBboxFilter() {
+        return useBboxFilter;
+    }
 
-	public void setAttributeFilter(SimpleAttributeFilter attributeFilter) {
-		this.attributeFilter = attributeFilter;
-	}
-	
-	public CounterFilter getCounterFilter() {
-		return counterFilter;
-	}
-	
-	public boolean isSetCounterFilter() {
-		return counterFilter != null;
-	}
+    public void setUseBboxFilter(boolean useBboxFilter) {
+        this.useBboxFilter = useBboxFilter;
+    }
 
-	public void setCounterFilter(CounterFilter counterFilter) {
-		this.counterFilter = counterFilter;
-	}
+    public FeatureTypeFilter getFeatureTypeFilter() {
+        return featureTypeFilter;
+    }
 
-	public SimpleBBOXOperator getBboxFilter() {
-		return bboxFilter;
-	}
+    public boolean isSetFeatureTypeFilter() {
+        return featureTypeFilter != null;
+    }
 
-	public boolean isSetBboxFilter() {
-		return bboxFilter != null;
-	}
+    public void setFeatureTypeFilter(FeatureTypeFilter featureTypeFilter) {
+        this.featureTypeFilter = featureTypeFilter;
+    }
 
-	public void setBboxFilter(SimpleBBOXOperator bboxFilter) {
-		this.bboxFilter = bboxFilter;
-	}
-	
+    public SimpleAttributeFilter getAttributeFilter() {
+        return attributeFilter;
+    }
+
+    public boolean isSetAttributeFilter() {
+        return attributeFilter != null;
+    }
+
+    public void setAttributeFilter(SimpleAttributeFilter attributeFilter) {
+        this.attributeFilter = attributeFilter;
+    }
+
+    public CounterFilter getCounterFilter() {
+        return counterFilter;
+    }
+
+    public boolean isSetCounterFilter() {
+        return counterFilter != null;
+    }
+
+    public void setCounterFilter(CounterFilter counterFilter) {
+        this.counterFilter = counterFilter;
+    }
+
+    public SimpleBBOXOperator getBboxFilter() {
+        return bboxFilter;
+    }
+
+    public boolean isSetBboxFilter() {
+        return bboxFilter != null;
+    }
+
+    public void setBboxFilter(SimpleBBOXOperator bboxFilter) {
+        this.bboxFilter = bboxFilter;
+    }
+
 }

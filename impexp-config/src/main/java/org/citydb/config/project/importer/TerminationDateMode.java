@@ -30,32 +30,32 @@ package org.citydb.config.project.importer;
 import javax.xml.bind.annotation.XmlEnumValue;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="TerminationDateModeType")
+@XmlType(name = "TerminationDateModeType")
 public enum TerminationDateMode {
-	@XmlEnumValue("inherit")
-	INHERIT("inherit"),
-	@XmlEnumValue("complement")
-	COMPLEMENT("complement"),
-	@XmlEnumValue("replace")
-	REPLACE("replace");
+    @XmlEnumValue("inherit")
+    INHERIT("inherit"),
+    @XmlEnumValue("complement")
+    COMPLEMENT("complement"),
+    @XmlEnumValue("replace")
+    REPLACE("replace");
 
-	private final String value;
+    private final String value;
 
-	TerminationDateMode(String v) {
-		value = v;
-	}
+    TerminationDateMode(String v) {
+        value = v;
+    }
 
-	public String value() {
-		return value;
-	}
+    public String value() {
+        return value;
+    }
 
-	public static TerminationDateMode fromValue(String v) {
-		for (TerminationDateMode c: TerminationDateMode.values()) {
-			if (c.value.equals(v)) {
-				return c;
-			}
-		}
+    public static TerminationDateMode fromValue(String v) {
+        for (TerminationDateMode c : TerminationDateMode.values()) {
+            if (c.value.equals(v)) {
+                return c;
+            }
+        }
 
-		return REPLACE;
-	}
+        return REPLACE;
+    }
 }

@@ -31,31 +31,31 @@ import javax.xml.bind.annotation.XmlEnum;
 import javax.xml.bind.annotation.XmlEnumValue;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="DeleteModeType")
+@XmlType(name = "DeleteModeType")
 @XmlEnum
 public enum DeleteMode {
-	@XmlEnumValue("delete")
-	DELETE("delete"),
-	@XmlEnumValue("terminate")
-	TERMINATE("terminate");
+    @XmlEnumValue("delete")
+    DELETE("delete"),
+    @XmlEnumValue("terminate")
+    TERMINATE("terminate");
 
-	private final String value;
+    private final String value;
 
-	DeleteMode(String v) {
-		value = v;
-	}
+    DeleteMode(String v) {
+        value = v;
+    }
 
-	public String value() {
-		return value;
-	}
+    public String value() {
+        return value;
+    }
 
-	public static DeleteMode fromValue(String v) {
-		for (DeleteMode c: DeleteMode.values()) {
-			if (c.value.equals(v)) {
-				return c;
-			}
-		}
+    public static DeleteMode fromValue(String v) {
+        for (DeleteMode c : DeleteMode.values()) {
+            if (c.value.equals(v)) {
+                return c;
+            }
+        }
 
-		return DELETE;
-	}
+        return DELETE;
+    }
 }

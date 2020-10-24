@@ -30,7 +30,7 @@ package org.citydb.modules.database.gui.operations;
 import org.citydb.ade.ADEExtension;
 import org.citydb.ade.ADEExtensionManager;
 import org.citydb.config.i18n.Language;
-import org.citydb.config.project.database.DBOperationType;
+import org.citydb.config.project.database.DatabaseOperationType;
 import org.citydb.database.connection.ADEMetadata;
 import org.citydb.database.connection.DatabaseConnectionPool;
 import org.citydb.database.schema.mapping.Metadata;
@@ -160,8 +160,8 @@ public class ADEInfoOperation extends DatabaseOperationView {
     }
 
     @Override
-    public DBOperationType getType() {
-        return DBOperationType.ADE;
+    public DatabaseOperationType getType() {
+        return DatabaseOperationType.ADE;
     }
 
     @Override

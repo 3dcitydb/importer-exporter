@@ -30,37 +30,37 @@ package org.citydb.config.project.common;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="AffineTransformationType", propOrder={
-		"transformationMatrix"
+@XmlType(name = "AffineTransformationType", propOrder = {
+        "transformationMatrix"
 })
 public class AffineTransformation {
-	@XmlAttribute(required=true)
-	private boolean isEnabled = false;
-	private TransformationMatrix transformationMatrix;
+    @XmlAttribute(required = true)
+    private boolean isEnabled = false;
+    private TransformationMatrix transformationMatrix;
 
-	public AffineTransformation() {
-		transformationMatrix = new TransformationMatrix();
-	}
+    public AffineTransformation() {
+        transformationMatrix = new TransformationMatrix();
+    }
 
-	public boolean isEnabled() {
-		return isEnabled;
-	}
+    public boolean isEnabled() {
+        return isEnabled;
+    }
 
-	public void setEnabled(boolean isEnabled) {
-		this.isEnabled = isEnabled;
-	}
+    public void setEnabled(boolean isEnabled) {
+        this.isEnabled = isEnabled;
+    }
 
-	public TransformationMatrix getTransformationMatrix() {
-		return transformationMatrix;
-	}
+    public TransformationMatrix getTransformationMatrix() {
+        return transformationMatrix;
+    }
 
-	public void setTransformationMatrix(TransformationMatrix transformationMatrix) {
-		if (transformationMatrix != null)
-			this.transformationMatrix = transformationMatrix;
-	}
-	
-	public boolean isSetTransformationMatrix() {
-		return transformationMatrix != null;
-	}
-	
+    public void setTransformationMatrix(TransformationMatrix transformationMatrix) {
+        if (transformationMatrix != null)
+            this.transformationMatrix = transformationMatrix;
+    }
+
+    public boolean isSetTransformationMatrix() {
+        return transformationMatrix != null;
+    }
+
 }

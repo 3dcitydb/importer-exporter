@@ -30,29 +30,26 @@ package org.citydb.config.project.exporter;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="XLinkFeatureConfigType", propOrder={
-		"keepGmlIdAsExternalReference"
-		})
+@XmlType(name = "XLinkFeatureConfigType", propOrder = {
+        "keepGmlIdAsExternalReference"
+})
 public class XLinkFeatureConfig extends XLinkConfig {
-	@XmlElement(defaultValue="false")
-	private Boolean keepGmlIdAsExternalReference = false;
-	
-	public XLinkFeatureConfig() {
-	}
+    @XmlElement(defaultValue = "false")
+    private Boolean keepGmlIdAsExternalReference = false;
 
-	public boolean isSetKeepGmlIdAsExternalReference() {
-		if (keepGmlIdAsExternalReference != null)
-			return keepGmlIdAsExternalReference.booleanValue();
-		
-		return false;
-	}
-	
-	public Boolean getKeepGmlIdAsExternalReference() {
-		return keepGmlIdAsExternalReference;
-	}
+    public XLinkFeatureConfig() {
+    }
 
-	public void setKeepGmlIdAsExternalReference(Boolean keepGmlIdAsExternalReference) {
-		this.keepGmlIdAsExternalReference = keepGmlIdAsExternalReference;
-	}
+    public boolean isSetKeepGmlIdAsExternalReference() {
+        return keepGmlIdAsExternalReference != null ? keepGmlIdAsExternalReference : false;
+    }
+
+    public Boolean getKeepGmlIdAsExternalReference() {
+        return keepGmlIdAsExternalReference;
+    }
+
+    public void setKeepGmlIdAsExternalReference(Boolean keepGmlIdAsExternalReference) {
+        this.keepGmlIdAsExternalReference = keepGmlIdAsExternalReference;
+    }
 
 }

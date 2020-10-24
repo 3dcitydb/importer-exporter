@@ -31,7 +31,7 @@ import org.citydb.ade.kmlExporter.ADEKmlExportExtension;
 import org.citydb.config.Config;
 import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.i18n.Language;
-import org.citydb.config.project.database.DBConnection;
+import org.citydb.config.project.database.DatabaseConnection;
 import org.citydb.config.project.database.DatabaseConfig;
 import org.citydb.config.project.database.Workspace;
 import org.citydb.config.project.global.LogLevel;
@@ -998,7 +998,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 
 			try {
 				String text = Language.I18N.getString("pref.kmlexport.connectDialog.line2");
-				DBConnection conn = config.getProject().getDatabaseConfig().getActiveConnection();
+				DatabaseConnection conn = config.getProject().getDatabaseConfig().getActiveConnection();
 				Object[] args = new Object[]{conn.getDescription(), conn.toConnectString()};
 				String formattedMsg = MessageFormat.format(text, args);
 				String[] connectConfirm = {Language.I18N.getString("pref.kmlexport.connectDialog.line1"),

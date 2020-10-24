@@ -27,12 +27,12 @@
  */
 package org.citydb.modules.database.gui.operations;
 
-import org.citydb.config.project.database.DBOperationType;
+import org.citydb.config.project.database.DatabaseOperationType;
 import org.citydb.event.global.DatabaseConnectionStateEvent;
 import org.citydb.plugin.extension.view.View;
 
 public abstract class DatabaseOperationView extends View {
-	public abstract DBOperationType getType();
+	public abstract DatabaseOperationType getType();
 	public abstract void doTranslation();
 	public abstract void setEnabled(boolean enable);
 	public abstract void loadSettings();

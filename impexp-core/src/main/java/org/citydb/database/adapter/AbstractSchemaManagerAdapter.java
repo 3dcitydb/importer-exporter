@@ -27,7 +27,7 @@
  */
 package org.citydb.database.adapter;
 
-import org.citydb.config.project.database.DBConnection;
+import org.citydb.config.project.database.DatabaseConnection;
 import org.citydb.log.Logger;
 
 import java.sql.Connection;
@@ -70,13 +70,13 @@ public abstract class AbstractSchemaManagerAdapter {
 		}
 	}
 
-	public List<String> fetchSchemasFromDatabase(DBConnection dbConnection) throws SQLException {
+	public List<String> fetchSchemasFromDatabase(DatabaseConnection databaseConnection) throws SQLException {
 		Properties properties = new Properties();
-		properties.setProperty("user", dbConnection.getUser());
-		properties.setProperty("password", dbConnection.getPassword());
+		properties.setProperty("user", databaseConnection.getUser());
+		properties.setProperty("password", databaseConnection.getPassword());
 
 		try (Connection conn = DriverManager.getConnection(databaseAdapter.getJDBCUrl(
-				dbConnection.getServer(), dbConnection.getPort(), dbConnection.getSid()), properties)) {
+				databaseConnection.getServer(), databaseConnection.getPort(), databaseConnection.getSid()), properties)) {
 			return fetchSchemasFromDatabase(conn);
 		}
 	}

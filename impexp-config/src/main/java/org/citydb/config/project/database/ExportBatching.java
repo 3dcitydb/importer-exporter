@@ -32,48 +32,48 @@ import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 
 @XmlType(name = "ExportBatchingType", propOrder = {
-		"featureBatchSize",
-		"geometryBatchSize",
-		"blobBatchSize"
+        "featureBatchSize",
+        "geometryBatchSize",
+        "blobBatchSize"
 })
 public class ExportBatching {
-	public static final int MAX_BATCH_SIZE = 1000;
-	public static final int DEFAULT_BATCH_SIZE = 30;
+    public static final int MAX_BATCH_SIZE = 1000;
+    public static final int DEFAULT_BATCH_SIZE = 30;
 
-	@XmlElement(defaultValue = "30")
-	@XmlSchemaType(name = "positiveInteger")
-	private int featureBatchSize = DEFAULT_BATCH_SIZE;
-	@XmlElement(defaultValue = "30")
-	@XmlSchemaType(name = "positiveInteger")
-	private int geometryBatchSize = DEFAULT_BATCH_SIZE;
-	@XmlElement(defaultValue = "30")
-	@XmlSchemaType(name = "positiveInteger")
-	private int blobBatchSize = DEFAULT_BATCH_SIZE;
+    @XmlElement(defaultValue = "30")
+    @XmlSchemaType(name = "positiveInteger")
+    private int featureBatchSize = DEFAULT_BATCH_SIZE;
+    @XmlElement(defaultValue = "30")
+    @XmlSchemaType(name = "positiveInteger")
+    private int geometryBatchSize = DEFAULT_BATCH_SIZE;
+    @XmlElement(defaultValue = "30")
+    @XmlSchemaType(name = "positiveInteger")
+    private int blobBatchSize = DEFAULT_BATCH_SIZE;
 
-	public int getFeatureBatchSize() {
-		return featureBatchSize > 0 ? featureBatchSize : DEFAULT_BATCH_SIZE;
-	}
+    public int getFeatureBatchSize() {
+        return featureBatchSize > 0 ? featureBatchSize : DEFAULT_BATCH_SIZE;
+    }
 
-	public void setFeatureBatchSize(int featureBatchSize) {
-		if (featureBatchSize > 0 && featureBatchSize <= MAX_BATCH_SIZE)
-			this.featureBatchSize = featureBatchSize;
-	}
+    public void setFeatureBatchSize(int featureBatchSize) {
+        if (featureBatchSize > 0 && featureBatchSize <= MAX_BATCH_SIZE)
+            this.featureBatchSize = featureBatchSize;
+    }
 
-	public int getGeometryBatchSize() {
-		return geometryBatchSize > 0 ? geometryBatchSize : DEFAULT_BATCH_SIZE;
-	}
+    public int getGeometryBatchSize() {
+        return geometryBatchSize > 0 ? geometryBatchSize : DEFAULT_BATCH_SIZE;
+    }
 
-	public void setGeometryBatchSize(int geometryBatchSize) {
-		if (geometryBatchSize > 0 && geometryBatchSize <= MAX_BATCH_SIZE)
-			this.geometryBatchSize = geometryBatchSize;
-	}
+    public void setGeometryBatchSize(int geometryBatchSize) {
+        if (geometryBatchSize > 0 && geometryBatchSize <= MAX_BATCH_SIZE)
+            this.geometryBatchSize = geometryBatchSize;
+    }
 
-	public int getBlobBatchSize() {
-		return blobBatchSize > 0 ? blobBatchSize : DEFAULT_BATCH_SIZE;
-	}
+    public int getBlobBatchSize() {
+        return blobBatchSize > 0 ? blobBatchSize : DEFAULT_BATCH_SIZE;
+    }
 
-	public void setBlobBatchSize(int blobBatchSize) {
-		if (blobBatchSize > 0 && blobBatchSize <= MAX_BATCH_SIZE)
-			this.blobBatchSize = blobBatchSize;
-	}
+    public void setBlobBatchSize(int blobBatchSize) {
+        if (blobBatchSize > 0 && blobBatchSize <= MAX_BATCH_SIZE)
+            this.blobBatchSize = blobBatchSize;
+    }
 }

@@ -30,7 +30,7 @@ package org.citydb.config.project.exporter;
 
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="GMLEnvelopeType", propOrder={
+@XmlType(name = "GMLEnvelopeType", propOrder = {
         "cityModel",
         "features"
 })

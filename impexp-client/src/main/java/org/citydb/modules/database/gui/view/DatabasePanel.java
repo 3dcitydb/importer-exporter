@@ -29,7 +29,7 @@ package org.citydb.modules.database.gui.view;
 
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
-import org.citydb.config.project.database.DBConnection;
+import org.citydb.config.project.database.DatabaseConnection;
 import org.citydb.config.project.database.DatabaseConfig;
 import org.citydb.config.project.database.DatabaseConfigurationException;
 import org.citydb.config.project.database.DatabaseType;
@@ -76,7 +76,7 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 	private final DatabaseController databaseController;
 	private final Config config;
 
-	private JComboBox<DBConnection> connCombo;
+	private JComboBox<DatabaseConnection> connCombo;
 	private JTextField descriptionText;
 	private JComboBox<DatabaseType> databaseTypeCombo;
 	private JTextField serverText;
@@ -123,20 +123,20 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 	}
 
 	private boolean isModified() {
-		DBConnection dbConnection = (DBConnection)connCombo.getSelectedItem();	
-		if (!descriptionText.getText().trim().equals(dbConnection.getDescription())) return true;
-		if (databaseTypeCombo.getSelectedItem() != dbConnection.getDatabaseType()) return true;
-		if (!serverText.getText().equals(dbConnection.getServer())) return true;
-		if (!userText.getText().equals(dbConnection.getUser())) return true;		
-		if (!String.valueOf(passwordText.getPassword()).equals(dbConnection.getPassword())) return true;
-		if (!databaseText.getText().equals(dbConnection.getSid())) return true;
-		if (passwordCheck.isSelected() != dbConnection.isSetSavePassword()) return true;		
-		if (portText.getValue() != null && ((Number)portText.getValue()).intValue() != dbConnection.getPort()) return true;
+		DatabaseConnection databaseConnection = (DatabaseConnection)connCombo.getSelectedItem();
+		if (!descriptionText.getText().trim().equals(databaseConnection.getDescription())) return true;
+		if (databaseTypeCombo.getSelectedItem() != databaseConnection.getDatabaseType()) return true;
+		if (!serverText.getText().equals(databaseConnection.getServer())) return true;
+		if (!userText.getText().equals(databaseConnection.getUser())) return true;
+		if (!String.valueOf(passwordText.getPassword()).equals(databaseConnection.getPassword())) return true;
+		if (!databaseText.getText().equals(databaseConnection.getSid())) return true;
+		if (passwordCheck.isSelected() != databaseConnection.isSetSavePassword()) return true;
+		if (portText.getValue() != null && ((Number)portText.getValue()).intValue() != databaseConnection.getPort()) return true;
 
 		String schema = (String)(schemaCombo.getSelectedIndex() != -1 ? schemaCombo.getSelectedItem() : schemaCombo.getEditor().getItem());
 		if (schema != null && schema.trim().length() == 0) schema = null;
-		if (schema != null && !schema.equals(dbConnection.getSchema())) return true;
-		if (schema == null && dbConnection.getSchema() != null) return true;	
+		if (schema != null && !schema.equals(databaseConnection.getSchema())) return true;
+		if (schema == null && databaseConnection.getSchema() != null) return true;
 
 		return false;
 	}
@@ -319,7 +319,7 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 			protected Void doInBackground() throws Exception {
 				try {
 					commitConnectionDetails();
-					DBConnection connection = (DBConnection)connCombo.getSelectedItem();
+					DatabaseConnection connection = (DatabaseConnection)connCombo.getSelectedItem();
 					connection.validate();
 
 					AbstractDatabaseAdapter adapter = DatabaseAdapterFactory.getInstance().createDatabaseAdapter(connection.getDatabaseType());
@@ -393,44 +393,44 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 		if (isSettingsLoaded)
 			setDbConnection(databaseConfig.getActiveConnection());
 
-		DBConnection dbConnection = (DBConnection)connCombo.getSelectedItem();
-		databaseConfig.setActiveConnection(dbConnection);
-		getDbConnection(dbConnection);
+		DatabaseConnection databaseConnection = (DatabaseConnection)connCombo.getSelectedItem();
+		databaseConfig.setActiveConnection(databaseConnection);
+		getDbConnection(databaseConnection);
 	}
 
 	private void apply() {
-		DBConnection dbConnection = (DBConnection)connCombo.getSelectedItem();
-		setDbConnection(dbConnection);
+		DatabaseConnection databaseConnection = (DatabaseConnection)connCombo.getSelectedItem();
+		setDbConnection(databaseConnection);
 
-		List<DBConnection> connList = databaseConfig.getConnections();
+		List<DatabaseConnection> connList = databaseConfig.getConnections();
 		Collections.sort(connList);
 
 		connCombo.removeAllItems();
-		for (DBConnection conn : connList)
+		for (DatabaseConnection conn : connList)
 			connCombo.addItem(conn);
 
-		connCombo.setSelectedItem(dbConnection);
+		connCombo.setSelectedItem(databaseConnection);
 		log.info("Settings successfully applied.");
 	}
 
 	private void copy() {
-		DBConnection source = (DBConnection)connCombo.getSelectedItem();
-		DBConnection dbConnection = new DBConnection();
-		setDbConnection(dbConnection);
-		dbConnection.setDescription(getCopyOfDescription(source));
+		DatabaseConnection source = (DatabaseConnection)connCombo.getSelectedItem();
+		DatabaseConnection databaseConnection = new DatabaseConnection();
+		setDbConnection(databaseConnection);
+		databaseConnection.setDescription(getCopyOfDescription(source));
 
-		databaseConfig.getConnections().add(0, dbConnection);
-		connCombo.insertItemAt(dbConnection, 0);
-		connCombo.setSelectedItem(dbConnection);
+		databaseConfig.getConnections().add(0, databaseConnection);
+		connCombo.insertItemAt(databaseConnection, 0);
+		connCombo.setSelectedItem(databaseConnection);
 	}
 
 	private void newConn() {
-		DBConnection dbConnection = new DBConnection();
-		dbConnection.setDescription(getNewConnDescription());
+		DatabaseConnection databaseConnection = new DatabaseConnection();
+		databaseConnection.setDescription(getNewConnDescription());
 
-		databaseConfig.getConnections().add(0, dbConnection);
-		connCombo.insertItemAt(dbConnection, 0);
-		connCombo.setSelectedItem(dbConnection);
+		databaseConfig.getConnections().add(0, databaseConnection);
+		connCombo.insertItemAt(databaseConnection, 0);
+		connCombo.setSelectedItem(databaseConnection);
 	}
 
 	private void delete() {
@@ -571,81 +571,81 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 		isSettingsLoaded = false;
 
 		connCombo.removeAllItems();
-		DBConnection dbConnection = databaseConfig.getActiveConnection();
-		List<DBConnection> dbConnectionList = databaseConfig.getConnections();
+		DatabaseConnection databaseConnection = databaseConfig.getActiveConnection();
+		List<DatabaseConnection> connections = databaseConfig.getConnections();
 
-		if (dbConnection == null) {
-			if (!dbConnectionList.isEmpty())
-				dbConnection = dbConnectionList.get(0);
+		if (databaseConnection == null) {
+			if (!connections.isEmpty())
+				databaseConnection = connections.get(0);
 			else {
-				dbConnection = new DBConnection();
-				dbConnection.setDescription(Language.I18N.getString("db.label.newConnection"));
-				databaseConfig.addConnection(dbConnection);
+				databaseConnection = new DatabaseConnection();
+				databaseConnection.setDescription(Language.I18N.getString("db.label.newConnection"));
+				databaseConfig.addConnection(databaseConnection);
 			}
 		}
 
-		Collections.sort(dbConnectionList);
-		for (DBConnection conn : dbConnectionList)
+		Collections.sort(connections);
+		for (DatabaseConnection conn : connections)
 			connCombo.addItem(conn);
 
-		connCombo.setSelectedItem(dbConnection);
+		connCombo.setSelectedItem(databaseConnection);
 		operationsPanel.loadSettings();
 		setEnabledDBOperations(false);
 		isSettingsLoaded = true;
 	}
 
 	public void setSettings() {
-		setDbConnection((DBConnection)connCombo.getSelectedItem());
+		setDbConnection((DatabaseConnection)connCombo.getSelectedItem());
 		operationsPanel.setSettings();
 	}
 
-	private void setDbConnection(DBConnection dbConnection) {
+	private void setDbConnection(DatabaseConnection databaseConnection) {
 		String description = descriptionText.getText().trim();		
 		if (description.length() > 0) {
-			boolean repaint = dbConnection == databaseConfig.getActiveConnection() && !description.equals(dbConnection.getDescription());
-			dbConnection.setDescription(description);
+			boolean repaint = databaseConnection == databaseConfig.getActiveConnection() && !description.equals(databaseConnection.getDescription());
+			databaseConnection.setDescription(description);
 			if (repaint) 
 				connCombo.repaint();			
 		} else
-			descriptionText.setText(dbConnection.getDescription());
+			descriptionText.setText(databaseConnection.getDescription());
 
-		dbConnection.setDatabaseType((DatabaseType)databaseTypeCombo.getSelectedItem());
-		dbConnection.setServer(serverText.getText().trim());	
-		dbConnection.setPort(((Number)portText.getValue()).intValue());
-		dbConnection.setSid(databaseText.getText());
-		dbConnection.setSchema((String)(schemaCombo.getSelectedIndex() != -1 ? schemaCombo.getSelectedItem() : schemaCombo.getEditor().getItem()));
-		dbConnection.setUser(userText.getText());
-		dbConnection.setPassword(String.valueOf(passwordText.getPassword()));
-		dbConnection.setSavePassword(passwordCheck.isSelected());
+		databaseConnection.setDatabaseType((DatabaseType)databaseTypeCombo.getSelectedItem());
+		databaseConnection.setServer(serverText.getText().trim());
+		databaseConnection.setPort(((Number)portText.getValue()).intValue());
+		databaseConnection.setSid(databaseText.getText());
+		databaseConnection.setSchema((String)(schemaCombo.getSelectedIndex() != -1 ? schemaCombo.getSelectedItem() : schemaCombo.getEditor().getItem()));
+		databaseConnection.setUser(userText.getText());
+		databaseConnection.setPassword(String.valueOf(passwordText.getPassword()));
+		databaseConnection.setSavePassword(passwordCheck.isSelected());
 	}
 
-	private void getDbConnection(DBConnection dbConnection) {
-		descriptionText.setText(dbConnection.getDescription());
-		databaseTypeCombo.setSelectedItem(dbConnection.getDatabaseType());
-		serverText.setText(dbConnection.getServer());
-		databaseText.setText(dbConnection.getSid());
-		userText.setText(dbConnection.getUser());
-		passwordText.setText(dbConnection.getPassword());
-		passwordCheck.setSelected(dbConnection.isSetSavePassword());
+	private void getDbConnection(DatabaseConnection databaseConnection) {
+		descriptionText.setText(databaseConnection.getDescription());
+		databaseTypeCombo.setSelectedItem(databaseConnection.getDatabaseType());
+		serverText.setText(databaseConnection.getServer());
+		databaseText.setText(databaseConnection.getSid());
+		userText.setText(databaseConnection.getUser());
+		passwordText.setText(databaseConnection.getPassword());
+		passwordCheck.setSelected(databaseConnection.isSetSavePassword());
 
 		schemaCombo.removeAllItems();
-		schemaCombo.setSelectedItem(dbConnection.getSchema());
+		schemaCombo.setSelectedItem(databaseConnection.getSchema());
 
-		if (dbConnection.getPort() == null || dbConnection.getPort() == 0) {
-			dbConnection.setPort(1521);
+		if (databaseConnection.getPort() == null || databaseConnection.getPort() == 0) {
+			databaseConnection.setPort(1521);
 		}
 
-		portText.setValue(dbConnection.getPort());
+		portText.setValue(databaseConnection.getPort());
 	}
 
-	private String getCopyOfDescription(DBConnection dbConnection) {
+	private String getCopyOfDescription(DatabaseConnection databaseConnection) {
 		// pattern: "connectionName - copy 1"
 		// so to retrieve connectionName, " - copy*" has to be deleted...
 
 		int nr = 0;
-		String name = dbConnection.getDescription().replaceAll("\\s*-\\s*" + Language.I18N.getString("db.label.copyConnection") + ".*$", "");
+		String name = databaseConnection.getDescription().replaceAll("\\s*-\\s*" + Language.I18N.getString("db.label.copyConnection") + ".*$", "");
 		String copy = name + " - " + Language.I18N.getString("db.label.copyConnection");
-		for (DBConnection conn : databaseConfig.getConnections()) 
+		for (DatabaseConnection conn : databaseConfig.getConnections())
 			if (conn.getDescription().replaceAll("\\s*-\\s*" + Language.I18N.getString("db.label.copyConnection") + ".*$", "").toLowerCase().equals(name.toLowerCase()))
 				nr++;
 
@@ -658,7 +658,7 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 	private String getNewConnDescription() {
 		int nr = 1;
 		String name = Language.I18N.getString("db.label.newConnection");
-		for (DBConnection conn : databaseConfig.getConnections()) 
+		for (DatabaseConnection conn : databaseConfig.getConnections())
 			if (conn.getDescription().toLowerCase().startsWith(name.toLowerCase()))
 				nr++;
 
@@ -677,16 +677,16 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 			else if (res==JOptionPane.YES_OPTION)
 				apply();
 			else
-				getDbConnection((DBConnection)connCombo.getSelectedItem());
+				getDbConnection((DatabaseConnection)connCombo.getSelectedItem());
 		}
 
 		return true;
 	}
 
 	private boolean requestDelete() {
-		DBConnection dbConnection = (DBConnection)connCombo.getSelectedItem();
+		DatabaseConnection databaseConnection = (DatabaseConnection)connCombo.getSelectedItem();
 		String text = Language.I18N.getString("db.dialog.delete.msg");
-		Object[] args = new Object[]{ dbConnection.getDescription() };
+		Object[] args = new Object[]{ databaseConnection.getDescription() };
 		String result = MessageFormat.format(text, args);
 
 		int res = JOptionPane.showConfirmDialog(getTopLevelAncestor(), result, Language.I18N.getString("db.dialog.delete.title"), JOptionPane.YES_NO_OPTION);
@@ -724,7 +724,7 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 	@Override
 	public void viewDeactivated(ViewEvent e) {
 		if (isModified())
-			setDbConnection((DBConnection)connCombo.getSelectedItem());
+			setDbConnection((DatabaseConnection)connCombo.getSelectedItem());
 	}
 
 }

@@ -31,10 +31,10 @@ import javax.xml.bind.annotation.XmlEnum;
 import javax.xml.bind.annotation.XmlEnumValue;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="SimpleBBOXFilterModeType")
+@XmlType(name = "SimpleBBOXFilterModeType")
 @XmlEnum
 public enum SimpleBBOXMode {
-	@XmlEnumValue("within")
+    @XmlEnumValue("within")
     WITHIN("within"),
     @XmlEnumValue("overlap")
     BBOX("overlap");
@@ -50,7 +50,7 @@ public enum SimpleBBOXMode {
     }
 
     public static SimpleBBOXMode fromValue(String v) {
-        for (SimpleBBOXMode c: SimpleBBOXMode.values()) {
+        for (SimpleBBOXMode c : SimpleBBOXMode.values()) {
             if (c.value.equals(v)) {
                 return c;
             }

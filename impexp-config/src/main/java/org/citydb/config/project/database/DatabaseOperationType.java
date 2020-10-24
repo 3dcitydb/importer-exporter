@@ -25,61 +25,43 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.citydb.config.project.common;
+package org.citydb.config.project.database;
 
 import javax.xml.bind.annotation.XmlEnum;
 import javax.xml.bind.annotation.XmlEnumValue;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="FeatureClassModeType")
+@XmlType(name = "DatabaseOperationTypeType")
 @XmlEnum
-public enum FeatureClassMode {
-	@XmlEnumValue("CityObject")
-    CITYOBJECT("CityObject"),
-	@XmlEnumValue("Building")
-    BUILDING("Building"),
-    @XmlEnumValue("Bridge")
-    BRIDGE("Bridge"),
-	@XmlEnumValue("CityFurniture")
-    CITYFURNITURE("CityFurniture"),
-	@XmlEnumValue("CityObjectGroup")
-    CITYOBJECTGROUP("CityObjectGroup"),
-	@XmlEnumValue("GenericCityObject")
-    GENERICCITYOBJECT("GenericCityObject"),
-	@XmlEnumValue("LandUse")
-    LANDUSE("LandUse"),
-	@XmlEnumValue("ReliefFeature")
-    RELIEFFEATURE("ReliefFeature"),
-	@XmlEnumValue("Transportation")
-    TRANSPORTATION("Transportation"),
-    @XmlEnumValue("Tunnel")
-    TUNNEL("Tunnel"),
-	@XmlEnumValue("Vegetation")
-    VEGETATION("Vegetation"),
-	@XmlEnumValue("WaterBody")
-    WATERBODY("WaterBody");
-	
-	private final String value;
+public enum DatabaseOperationType {
+    @XmlEnumValue("report")
+    REPORT("report"),
+    @XmlEnumValue("boundingBox")
+    BOUNDING_BOX("boundingBox"),
+    @XmlEnumValue("indexes")
+    INDEXES("indexes"),
+    @XmlEnumValue("srs")
+    SRS("srs"),
+    @XmlEnumValue("ade")
+    ADE("ade");
 
-	FeatureClassMode(String value) {
-        this.value = value;
+    private final String value;
+
+    DatabaseOperationType(String v) {
+        value = v;
     }
 
     public String value() {
         return value;
     }
-    
-    public String toString() {
-    	return value;
-    }
 
-    public static FeatureClassMode fromValue(String v) {
-        for (FeatureClassMode c: FeatureClassMode.values()) {
+    public static DatabaseOperationType fromValue(String v) {
+        for (DatabaseOperationType c : DatabaseOperationType.values()) {
             if (c.value.equals(v)) {
                 return c;
             }
         }
 
-        return CITYOBJECT;
+        return REPORT;
     }
 }
