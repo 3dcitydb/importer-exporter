@@ -347,6 +347,7 @@ public class DBSplitter {
 
 		log.info("Processing CityObjectGroup features.");
 		eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("export.dialog.group.msg"), this));
+		eventDispatcher.triggerEvent(new StatusDialogProgressBar(true, this));
 
 		// first step: export group members
 		long hits = 0;
@@ -466,6 +467,7 @@ public class DBSplitter {
 
 		log.info("Processing global appearance features.");
 		eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("export.dialog.globalApp.msg"), this));
+		eventDispatcher.triggerEvent(new StatusDialogProgressBar(true, this));
 
 		CacheTable globalAppTempTable = cacheTableManager.getCacheTable(CacheTableModel.GLOBAL_APPEARANCE);
 		globalAppTempTable.createIndexes();

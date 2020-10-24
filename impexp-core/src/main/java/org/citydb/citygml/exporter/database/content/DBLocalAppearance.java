@@ -79,7 +79,7 @@ public class DBLocalAppearance extends AbstractAppearanceExporter {
 		psBulk = connection.prepareStatement(new Select(select)
 				.addSelection(ComparisonFactory.in(table.getColumn("id"), new LiteralSelectExpression(placeHolders))).toString());
 
-		psSelect = connection.prepareStatement(new Select(this.select)
+		psSelect = connection.prepareStatement(new Select(select)
 				.addSelection(ComparisonFactory.equalTo(table.getColumn("id"), new PlaceHolder<>())).toString());
 	}
 
