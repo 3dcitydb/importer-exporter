@@ -68,27 +68,23 @@ public class ExportCommand extends CliCommand {
                 config.getDatabaseConfig().getActiveConnection();
 
         if (!database.connect(connection)) {
+            log.warn("Database export aborted.");
             return 1;
         }
 
         config.getExportConfig().getCityGMLOptions().setFileEncoding(encoding);
 
-        boolean success = true;
         try {
             new Exporter().doExport(outputOptions.getFile());
+            log.info("Database export successfully finished.");
         } catch (CityGMLExportException e) {
             log.error(e.getMessage(), e.getCause());
-            success = false;
-        } finally {
-            database.disconnect();
-        }
-
-        if (success) {
-            log.info("Database export successfully finished.");
-            return 0;
-        } else {
             log.warn("Database export aborted.");
             return 1;
+        } finally {
+            database.disconnect(true);
         }
+
+        return 0;
     }
 }

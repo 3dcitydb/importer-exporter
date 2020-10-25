@@ -137,11 +137,18 @@ public class DatabaseController implements ConnectionManager {
 	}
 
 	public void disconnect() {
+		disconnect(false);
+	}
+
+	public void disconnect(boolean suppressLogMessages) {
 		if (connectionPool.isConnected()) {
 			showConnectionStatus(ConnectionState.INIT_DISCONNECT);
 			connectionPool.disconnect();
-			log.info("Disconnected from database.");
 			showConnectionStatus(ConnectionState.FINISH_DISCONNECT);
+
+			if (!suppressLogMessages) {
+				log.info("Disconnected from database.");
+			}
 		}
 	}
 
