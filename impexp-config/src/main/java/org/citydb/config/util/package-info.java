@@ -28,7 +28,7 @@
 
 @javax.xml.bind.annotation.XmlAccessorType(javax.xml.bind.annotation.XmlAccessType.FIELD)
 @javax.xml.bind.annotation.XmlSchema(namespace = ConfigUtil.CITYDB_CONFIG_NAMESPACE_URI,
-        elementFormDefault = javax.xml.bind.annotation.XmlNsForm.QUALIFIED)
-package org.citydb.config.project.query.util;
+		elementFormDefault = javax.xml.bind.annotation.XmlNsForm.QUALIFIED)
+package org.citydb.config.util;
 
 import org.citydb.config.ConfigUtil;

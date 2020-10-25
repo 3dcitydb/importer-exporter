@@ -29,7 +29,7 @@ package org.citydb.config;
 
 import org.citydb.config.gui.GuiConfig;
 import org.citydb.config.util.ProjectSchemaWriter;
-import org.citydb.config.project.query.util.QueryWrapper;
+import org.citydb.config.util.QueryWrapper;
 import org.citydb.config.util.ConfigNamespaceFilter;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;

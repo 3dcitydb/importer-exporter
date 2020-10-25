@@ -29,7 +29,6 @@
 package org.citydb.config.util;
 
 import org.citydb.config.ConfigUtil;
-import org.citydb.config.project.query.util.QueryWrapper;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.SchemaOutputResolver;
