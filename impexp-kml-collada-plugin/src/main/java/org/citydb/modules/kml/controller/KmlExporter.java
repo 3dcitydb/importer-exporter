@@ -55,6 +55,7 @@ import org.citydb.concurrent.PoolSizeAdaptationStrategy;
 import org.citydb.concurrent.SingleWorkerPool;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
+import org.citydb.config.exception.ErrorCode;
 import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.database.DatabaseConfig;
@@ -166,11 +167,13 @@ public class KmlExporter implements EventHandler {
 	private SingleWorkerPool<SAXEventBuffer> writerPool;
 	private KmlSplitter kmlSplitter;
 
-	private volatile boolean shouldRun = true;
 	private final String ENCODING = "UTF-8";
 	private final Charset CHARSET = Charset.forName(ENCODING);
 	private File lastTempFolder = null;
 	private long geometryCounter;
+
+	private volatile boolean shouldRun = true;
+	private KmlExportException exception;
 
 	public KmlExporter() {
 		schemaMapping = ObjectRegistry.getInstance().getSchemaMapping();
@@ -192,12 +195,6 @@ public class KmlExporter implements EventHandler {
 		try {
 			return process(outputFile);
 		} finally {
-			try {
-				eventDispatcher.flushEvents();
-			} catch (InterruptedException e) {
-				//
-			}
-
 			eventDispatcher.removeEventHandler(this);
 		}
 	}
@@ -227,21 +224,17 @@ public class KmlExporter implements EventHandler {
 
 		// check API key when using the elevation API
 		if (config.getKmlExportConfig().getAltitudeOffsetMode() == AltitudeOffsetMode.GENERIC_ATTRIBUTE
-			&& config.getKmlExportConfig().isCallGElevationService()
-			&& !config.getGlobalConfig().getApiKeys().isSetGoogleElevation()) {
-			log.error("The Google Elevation API cannot be used due to a missing API key.");
-			log.error("Please enter an API key or change the export preferences.");
-			return false;
+				&& config.getKmlExportConfig().isCallGElevationService()
+				&& !config.getGlobalConfig().getApiKeys().isSetGoogleElevation()) {
+			throw new KmlExportException(ErrorCode.MISSING_GOOGLE_API_KEY, "The Google Elevation API cannot be used due to a missing API key.");
 		}
 
 		// check whether spatial indexes are enabled
 		log.info("Checking for spatial indexes on geometry columns of involved tables...");
 		try {
-			if (!databaseAdapter.getUtil().isIndexEnabled("CITYOBJECT", "ENVELOPE") ||
-					!databaseAdapter.getUtil().isIndexEnabled("SURFACE_GEOMETRY", "GEOMETRY")) {
-				log.error("Spatial indexes are not activated.");
-				log.error("Please use the database tab to activate the spatial indexes.");
-				return false;
+			if (!databaseAdapter.getUtil().isIndexEnabled("CITYOBJECT", "ENVELOPE")
+					|| !databaseAdapter.getUtil().isIndexEnabled("SURFACE_GEOMETRY", "GEOMETRY")) {
+				throw new KmlExportException(ErrorCode.SPATIAL_INDEXES_NOT_ACTIVATED, "Spatial indexes are not activated.");
 			}
 		} catch (SQLException e) {
 			throw new KmlExportException("Failed to retrieve status of spatial indexes.", e);
@@ -255,13 +248,12 @@ public class KmlExporter implements EventHandler {
 				for (DisplayForm displayForm : config.getKmlExportConfig().getBuildingDisplayForms()) {
 					if (displayForm.getForm() == DisplayForm.COLLADA && displayForm.isActive()) {
 						if (!databaseAdapter.getUtil().getAppearanceThemeList(workspace).contains(selectedTheme)) {
-							log.error("Database does not contain appearance theme \"" + selectedTheme + "\"");
-							return false;
+							throw new KmlExportException("The database does not contain the appearance theme '" + selectedTheme + "'");
 						}
 					}
 				}
 			} catch (SQLException e) {
-				throw new KmlExportException("Generic database error.", e);
+				throw new KmlExportException("Failed to check the appearance theme.", e);
 			}
 		}
 
@@ -278,7 +270,7 @@ public class KmlExporter implements EventHandler {
 		}
 
 		// build query from filter settings
-		Query query = null;
+		Query query;
 		try {
 			ConfigQueryBuilder queryBuilder = new ConfigQueryBuilder(schemaMapping, databaseAdapter);
 			query = queryBuilder.buildQuery(config.getKmlExportConfig().getQuery(), config.getNamespaceFilter());
@@ -626,6 +618,12 @@ public class KmlExporter implements EventHandler {
 
 						if (kmlWorkerPool != null && !kmlWorkerPool.isTerminated())
 							kmlWorkerPool.shutdownNow();
+
+						try {
+							eventDispatcher.flushEvents();
+						} catch (InterruptedException e) {
+							//
+						}
 					}
 				}
 
@@ -710,8 +708,11 @@ public class KmlExporter implements EventHandler {
 		if (lastTempFolder != null && lastTempFolder.exists()) 
 			deleteFolder(lastTempFolder); // just in case
 
-		if (shouldRun)
+		if (shouldRun) {
 			log.info("Total export time: " + Util.formatElapsedTime(System.currentTimeMillis() - start) + ".");
+		} else if (exception != null) {
+			throw exception;
+		}
 
 		return shouldRun;
 	}
@@ -1704,46 +1705,38 @@ public class KmlExporter implements EventHandler {
 	@Override
 	public void handleEvent(Event e) throws Exception {
 		if (e.getEventType() == EventType.OBJECT_COUNTER) {
-			Map<Integer, Long> counter = ((ObjectCounterEvent)e).getCounter();
-			
+			Map<Integer, Long> counter = ((ObjectCounterEvent) e).getCounter();
 			for (Entry<Integer, Long> entry : counter.entrySet()) {
 				Long tmp = objectCounter.get(entry.getKey());
 				objectCounter.put(entry.getKey(), tmp == null ? entry.getValue() : tmp + entry.getValue());
-				
 				tmp = totalObjectCounter.get(entry.getKey());
 				totalObjectCounter.put(entry.getKey(), tmp == null ? entry.getValue() : tmp + entry.getValue());
 			}
-		}
-		else if (e.getEventType() == EventType.GEOMETRY_COUNTER) {
+		} else if (e.getEventType() == EventType.GEOMETRY_COUNTER) {
 			geometryCounter++;
-		}
-		else if (e.getEventType() == EventType.INTERRUPT) {
+		} else if (e.getEventType() == EventType.INTERRUPT) {
 			if (isInterrupted.compareAndSet(false, true)) {
 				shouldRun = false;
-				InterruptEvent interruptEvent = (InterruptEvent)e;
+				InterruptEvent event = (InterruptEvent) e;
 
-				if (interruptEvent.getCause() != null) {
-					Throwable cause = interruptEvent.getCause();
-					if (cause instanceof SQLException) {
-						log.error("A SQL error occurred.", cause);
-					} else {
-						log.error("An error occurred.", cause);
-					}
+				log.log(event.getLogLevelType(), event.getLogMessage());
+				if (event.getCause() != null) {
+					exception = new KmlExportException("Aborting export due to errors.", event.getCause());
 				}
-
-				String msg = interruptEvent.getLogMessage();
-				if (msg != null)
-					log.log(interruptEvent.getLogLevelType(), msg);
 
 				log.info("Waiting for objects being currently processed to end...");
 
-				if (kmlSplitter != null)
+				if (kmlSplitter != null) {
 					kmlSplitter.shutdown();
+				}
 
-				if (kmlWorkerPool != null)
+				if (kmlWorkerPool != null) {
 					kmlWorkerPool.drainWorkQueue();
+				}
 
-				if (lastTempFolder != null && lastTempFolder.exists()) deleteFolder(lastTempFolder); // just in case
+				if (lastTempFolder != null && lastTempFolder.exists()) {
+					deleteFolder(lastTempFolder); // just in case
+				}
 			}
 		}
 	}

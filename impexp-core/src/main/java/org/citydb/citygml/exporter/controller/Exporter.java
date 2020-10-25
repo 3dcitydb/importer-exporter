@@ -154,19 +154,12 @@ public class Exporter implements EventHandler {
         try {
             return process(outputFile);
         } finally {
-            try {
-                eventDispatcher.flushEvents();
-            } catch (InterruptedException e) {
-                //
-            }
-
             eventDispatcher.removeEventHandler(this);
         }
     }
 
     private boolean process(Path outputFile) throws CityGMLExportException {
         InternalConfig internalConfig = new InternalConfig();
-        exception = null;
 
         // checking workspace
         Workspace workspace = config.getDatabaseConfig().getWorkspaces().getExportWorkspace();
@@ -233,7 +226,7 @@ public class Exporter implements EventHandler {
         try {
             if ((query.isSetTiling() || (query.isSetSelection() && query.getSelection().containsSpatialOperators()))
                     && !databaseAdapter.getUtil().isIndexEnabled("CITYOBJECT", "ENVELOPE")) {
-                throw new CityGMLExportException(ErrorCode.SPATIAL_INDEXES_NOT_ACTIVATED, "The spatial indexes are not activated.");
+                throw new CityGMLExportException(ErrorCode.SPATIAL_INDEXES_NOT_ACTIVATED, "Spatial indexes are not activated.");
             }
 
             for (IndexType type : IndexType.values()) {
@@ -536,7 +529,7 @@ public class Exporter implements EventHandler {
                         try {
                             writer.close();
                         } catch (FeatureWriteException e) {
-                            log.error("Failed to close output writer.", e);
+                            setException("Failed to close output writer.", e);
                             shouldRun = false;
                         }
                     }
@@ -545,7 +538,7 @@ public class Exporter implements EventHandler {
                         try {
                             file.close();
                         } catch (IOException e) {
-                            log.error("Failed to close output file.", e);
+                            setException("Failed to close output file.", e);
                             shouldRun = false;
                         }
                     }
@@ -559,11 +552,17 @@ public class Exporter implements EventHandler {
                     	dbWorkerPool.shutdownNow();
 					}
 
+                    try {
+                        eventDispatcher.flushEvents();
+                    } catch (InterruptedException e) {
+                        //
+                    }
+
                     if (uidCacheManager != null) {
                         try {
                             uidCacheManager.shutdownAll();
                         } catch (SQLException e) {
-                            log.error("Failed to clean gml:id caches.", e);
+                            setException("Failed to clean the gml:id caches.", e);
                             shouldRun = false;
                         }
                     }
@@ -573,7 +572,7 @@ public class Exporter implements EventHandler {
                             log.info("Cleaning temporary cache.");
                             cacheTableManager.dropAll();
                         } catch (SQLException e) {
-                            log.error("Failed to clean temporary cache.", e);
+                            setException("Failed to clean the temporary cache.", e);
                             shouldRun = false;
                         }
                     }
@@ -618,6 +617,12 @@ public class Exporter implements EventHandler {
         return shouldRun;
     }
 
+    private void setException(String message, Throwable cause) {
+	    if (exception == null) {
+	        exception = new CityGMLExportException(message, cause);
+        }
+    }
+
     @Override
     public void handleEvent(Event e) throws Exception {
         if (e.getEventType() == EventType.OBJECT_COUNTER) {
@@ -643,20 +648,12 @@ public class Exporter implements EventHandler {
         } else if (e.getEventType() == EventType.INTERRUPT) {
             if (isInterrupted.compareAndSet(false, true)) {
                 shouldRun = false;
-                InterruptEvent interruptEvent = (InterruptEvent) e;
+                InterruptEvent event = (InterruptEvent) e;
 
-                if (interruptEvent.getCause() != null) {
-                    Throwable cause = interruptEvent.getCause();
-                    if (cause instanceof SQLException) {
-                        exception = new CityGMLExportException("A database error occurred during export.", cause);
-                    } else {
-                        exception = new CityGMLExportException("An error occurred during export.", cause);
-                    }
+                log.log(event.getLogLevelType(), event.getLogMessage());
+                if (event.getCause() != null) {
+                    setException("Aborting export due to errors.", event.getCause());
                 }
-
-                if (interruptEvent.getLogMessage() != null) {
-                	log.log(interruptEvent.getLogLevelType(), interruptEvent.getLogMessage());
-				}
 
                 if (dbSplitter != null) {
                 	dbSplitter.shutdown();

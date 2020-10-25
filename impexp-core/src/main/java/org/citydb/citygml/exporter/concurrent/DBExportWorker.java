@@ -34,7 +34,6 @@ import org.citydb.citygml.exporter.CityGMLExportException;
 import org.citydb.citygml.exporter.database.content.CityGMLExportManager;
 import org.citydb.citygml.exporter.database.content.DBSplittingResult;
 import org.citydb.citygml.exporter.util.InternalConfig;
-import org.citydb.citygml.exporter.writer.FeatureWriteException;
 import org.citydb.citygml.exporter.writer.FeatureWriter;
 import org.citydb.concurrent.Worker;
 import org.citydb.concurrent.WorkerPool;
@@ -211,11 +210,9 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 			} else
 				featureWriter.updateSequenceId(work.getSequenceId());
 
-		} catch (SQLException | CityGMLExportException | FeatureWriteException e) {
-			eventDispatcher.triggerSyncEvent(new InterruptEvent("Aborting export due to errors.", LogLevel.WARN, e, eventChannel, this));
 		} catch (Throwable e) {
-			// this is to catch general exceptions that may occur during the export
-			eventDispatcher.triggerSyncEvent(new InterruptEvent("Aborting due to an unexpected " + e.getClass().getName() + " error.", LogLevel.ERROR, e, eventChannel, this));
+			eventDispatcher.triggerSyncEvent(new InterruptEvent("A fatal error occurred during export of " +
+					exporter.getObjectSignature(work.getObjectType(), work.getId()) + ".", LogLevel.ERROR, e, eventChannel, this));
 		} finally {
 			runLock.unlock();
 		}

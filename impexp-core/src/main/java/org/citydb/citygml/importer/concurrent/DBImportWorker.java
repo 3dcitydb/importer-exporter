@@ -153,7 +153,9 @@ public class DBImportWorker extends Worker<CityGML> implements EventHandler {
 
 					updateImportContext();
 				}
-			} catch (CityGMLImportException | SQLException e) {
+			} catch (IOException e) {
+				eventDispatcher.triggerSyncEvent(new InterruptEvent("A fatal error occurred during update of import log.", LogLevel.ERROR, e, eventChannel, this));
+			} catch (Throwable e) {
 				if (!isManagedTransaction) {
 					try {
 						connection.rollback();
@@ -162,11 +164,8 @@ public class DBImportWorker extends Worker<CityGML> implements EventHandler {
 					}
 				}
 
-				eventDispatcher.triggerEvent(new InterruptEvent("Aborting import due to errors.", LogLevel.WARN, e, eventChannel, this));
-			} catch (IOException e) {
-				eventDispatcher.triggerEvent(new InterruptEvent("Aborting import due to I/O errors.", LogLevel.WARN, e, eventChannel, this));
+				eventDispatcher.triggerSyncEvent(new InterruptEvent("A fatal error occurred during import.", LogLevel.ERROR, e, eventChannel, this));
 			}
-
 		} finally {
 			try {
 				importer.close();
@@ -194,7 +193,7 @@ public class DBImportWorker extends Worker<CityGML> implements EventHandler {
 			if (!shouldWork)
 				return;
 
-			long id = 0;
+			long id;
 
 			if (work instanceof Appearance) {
 				// global appearances
@@ -241,17 +240,16 @@ public class DBImportWorker extends Worker<CityGML> implements EventHandler {
 				updateImportContext();
 			}
 
-		} catch (CityGMLImportException | SQLException e) {
+		} catch (IOException e) {
+			eventDispatcher.triggerSyncEvent(new InterruptEvent("A fatal error occurred during update of import log.", LogLevel.ERROR, e, eventChannel, this));
+		} catch (Throwable e) {
 			try {
 				connection.rollback();
 			} catch (SQLException sql) {
 				//
 			}
 
-			eventDispatcher.triggerSyncEvent(new InterruptEvent("Aborting import due to errors.", LogLevel.WARN, e, eventChannel, this));
-		} catch (Throwable e) {
-			// this is to catch general exceptions that may occur during the import
-			eventDispatcher.triggerSyncEvent(new InterruptEvent("Aborting due to an unexpected " + e.getClass().getName() + " error.", LogLevel.ERROR, e, eventChannel, this));
+			eventDispatcher.triggerSyncEvent(new InterruptEvent("A fatal error occurred during import.", LogLevel.ERROR, e, eventChannel, this));
 		} finally {
 			runLock.unlock();
 		}

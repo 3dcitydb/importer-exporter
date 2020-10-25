@@ -121,9 +121,8 @@ public class DBXlinkSplitter implements EventHandler {
 			// rebuild solid geometry objects referencing surfaces from other features
 			// this requires that we have resolved surface geometry xlinks first
 			solidGeometryXlinks();
-		} catch (SQLException e) {
-			// fire interrupt event to stop other import workers
-			eventDispatcher.triggerEvent(new InterruptEvent("Aborting import due to SQL errors.", LogLevel.WARN, e, eventChannel, this));
+		} catch (Throwable e) {
+			eventDispatcher.triggerSyncEvent(new InterruptEvent("A fatal error occurred during XLink resolving.", LogLevel.ERROR, e, eventChannel, this));
 		} finally {
 			eventDispatcher.removeEventHandler(this);
 		}

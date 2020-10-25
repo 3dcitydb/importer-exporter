@@ -360,14 +360,13 @@ public class ImportPanel extends JPanel implements EventHandler {
 			}
 
 			SwingUtilities.invokeLater(importDialog::dispose);
+			viewController.setStatusText(Language.I18N.getString("main.status.ready.label"));
 
 			if (success) {
 				log.info("Database import successfully finished.");
 			} else {
 				log.warn("Database import aborted.");
 			}
-
-			viewController.setStatusText(Language.I18N.getString("main.status.ready.label"));
 		} finally {
 			lock.unlock();
 		}

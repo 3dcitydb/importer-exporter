@@ -28,24 +28,40 @@
 
 package org.citydb.citygml.deleter;
 
-public class CityGMLDeleteException extends Exception {
+import org.citydb.config.exception.ApplicationException;
+import org.citydb.config.exception.ErrorCode;
 
-	private static final long serialVersionUID = -3399011994826829781L;
+public class CityGMLDeleteException extends ApplicationException {
+
+	public CityGMLDeleteException(ErrorCode errorCode) {
+		super(errorCode);
+	}
+
+	public CityGMLDeleteException(ErrorCode errorCode, String message) {
+		super(errorCode, message);
+	}
+
+	public CityGMLDeleteException(ErrorCode errorCode, String message, Throwable cause) {
+		super(errorCode, message, cause);
+	}
+
+	public CityGMLDeleteException(ErrorCode errorCode, Throwable cause) {
+		super(errorCode, cause);
+	}
 
 	public CityGMLDeleteException() {
 		super();
 	}
-	
+
 	public CityGMLDeleteException(String message) {
 		super(message);
 	}
-	
-	public CityGMLDeleteException(Throwable cause) {
-		super(cause);
-	}
-	
+
 	public CityGMLDeleteException(String message, Throwable cause) {
 		super(message, cause);
 	}
-	
+
+	public CityGMLDeleteException(Throwable cause) {
+		super(cause);
+	}
 }

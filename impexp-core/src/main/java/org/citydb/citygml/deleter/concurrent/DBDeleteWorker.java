@@ -164,10 +164,9 @@ public class DBDeleteWorker extends Worker<DBSplittingResult> implements EventHa
 
 			eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.UPDATE, 1, this));
 		} catch (SQLException e) {
-			eventDispatcher.triggerEvent(new InterruptEvent("Failed to delete " + work.getObjectType().getPath() + " (ID = " + work.getId() + ").", LogLevel.WARN, e, eventChannel, this));
+			eventDispatcher.triggerSyncEvent(new InterruptEvent("Failed to delete " + work.getObjectType().getPath() + " (ID = " + work.getId() + ").", LogLevel.ERROR, e, eventChannel, this));
 		} catch (Throwable e) {
-			// this is to catch general exceptions that may occur during the export
-			eventDispatcher.triggerSyncEvent(new InterruptEvent("Aborting due to an unexpected " + e.getClass().getName() + " error.", LogLevel.ERROR, e, eventChannel, this));
+			eventDispatcher.triggerSyncEvent(new InterruptEvent("A fatal error occurred during delete.", LogLevel.ERROR, e, eventChannel, this));
 		} finally {
 			lock.unlock();
 		}

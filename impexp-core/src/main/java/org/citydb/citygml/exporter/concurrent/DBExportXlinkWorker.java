@@ -136,8 +136,8 @@ public class DBExportXlinkWorker extends Worker<DBXlink> implements EventHandler
 			if (!success)
 				; // do sth reasonable
 
-		} catch (SQLException e) {
-			eventDispatcher.triggerSyncEvent(new InterruptEvent("Aborting export due to SQL errors.", LogLevel.WARN, e, eventChannel, this));
+		} catch (Throwable e) {
+			eventDispatcher.triggerSyncEvent(new InterruptEvent("A fatal error occurred during export.", LogLevel.ERROR, e, eventChannel, this));
 		} finally {
 			runLock.unlock();
 		}

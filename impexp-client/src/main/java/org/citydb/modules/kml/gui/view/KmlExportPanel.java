@@ -61,6 +61,7 @@ import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.log.Logger;
 import org.citydb.modules.kml.controller.KmlExportException;
+import org.citydb.modules.kml.controller.KmlExporter;
 import org.citydb.plugin.extension.view.ViewController;
 import org.citydb.plugin.extension.view.components.BoundingBoxPanel;
 import org.citydb.registry.ObjectRegistry;
@@ -527,6 +528,13 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		config.getDatabaseConfig().getWorkspaces().getKmlExportWorkspace().setName(workspaceText.getText());
 		config.getDatabaseConfig().getWorkspaces().getKmlExportWorkspace().setTimestamp(datePicker.getDate());
 
+		try {
+			Paths.get(browseText.getText());
+		} catch (InvalidPathException e) {
+			log.error("'" + browseText.getText().trim() + "' is not a valid file.");
+			browseText.setText("");
+		}
+
 		// filter
 		SimpleKmlQuery query = config.getKmlExportConfig().getQuery();
 		query.setMode(singleBuildingRadioButton.isSelected() ? SimpleKmlQueryMode.SINGLE : SimpleKmlQueryMode.BBOX);
@@ -838,8 +846,6 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 				exportDialog.setLocationRelativeTo(viewController.getTopFrame());
 				exportDialog.setVisible(true);
 			});
-			
-			org.citydb.modules.kml.controller.KmlExporter kmlExporter = new org.citydb.modules.kml.controller.KmlExporter();
 
 			exportDialog.getCancelButton().addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
@@ -857,26 +863,30 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 
 			boolean success = false;
 			try {
-				success = kmlExporter.doExport(Paths.get(browseText.getText()));
-			} catch (InvalidPathException e) {
-				log.error("'" + browseText.getText().trim() + "' is not a valid file.");
-				browseText.setText("");
+				success = new KmlExporter().doExport(Paths.get(browseText.getText()));
 			} catch (KmlExportException e) {
 				log.error(e.getMessage(), e.getCause());
+				switch (e.getErrorCode()) {
+					case MISSING_GOOGLE_API_KEY:
+						log.error("Please enter an API key or change the export preferences.");
+						break;
+					case SPATIAL_INDEXES_NOT_ACTIVATED:
+						log.error("Please use the database tab to activate the spatial indexes.");
+						break;
+				}
 			}
 
 			SwingUtilities.invokeLater(exportDialog::dispose);
+			viewController.setStatusText(Language.I18N.getString("main.status.ready.label"));
 
 			if (success) {
 				log.info("Database export successfully finished.");
 			} else {
 				log.warn("Database export aborted.");
 			}
-
-			viewController.setStatusText(Language.I18N.getString("main.status.ready.label"));
 		} catch (Exception e) {
-			e.printStackTrace();
-		}finally {
+			log.logStackTrace(e);
+		} finally {
 			lock.unlock();
 		}
 	}
