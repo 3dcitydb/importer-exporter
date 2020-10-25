@@ -27,6 +27,8 @@
  */
 package org.citydb.config.project.database;
 
+import org.citydb.config.exception.ErrorCode;
+
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
@@ -448,16 +450,16 @@ public class DatabaseConnection implements Comparable<DatabaseConnection> {
 
     public void validate() throws DatabaseConfigurationException {
         if (user == null || user.trim().length() == 0)
-            throw new DatabaseConfigurationException(DatabaseConfigurationException.Reason.MISSING_USERNAME);
+            throw new DatabaseConfigurationException(ErrorCode.MISSING_DB_USERNAME, "Missing username.");
 
         if (server == null || server.trim().length() == 0)
-            throw new DatabaseConfigurationException(DatabaseConfigurationException.Reason.MISSING_HOSTNAME);
+            throw new DatabaseConfigurationException(ErrorCode.MISSING_DB_HOSTNAME, "Missing server hostname.");
 
         if (port == null)
-            throw new DatabaseConfigurationException(DatabaseConfigurationException.Reason.MISSING_PORT);
+            throw new DatabaseConfigurationException(ErrorCode.MISSING_DB_PORT, "Missing server port.");
 
         if (sid == null || sid.trim().length() == 0)
-            throw new DatabaseConfigurationException(DatabaseConfigurationException.Reason.MISSING_DB_NAME);
+            throw new DatabaseConfigurationException(ErrorCode.MISSING_DB_NAME, "Missing database name.");
     }
 
     public String toConnectString() {

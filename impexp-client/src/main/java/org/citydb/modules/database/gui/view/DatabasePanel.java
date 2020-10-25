@@ -484,14 +484,14 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 	@Override
 	public void showError(DatabaseConfigurationException e) {
 		String message;
-		switch (e.getReason()) {
-			case MISSING_USERNAME:
+		switch (e.getErrorCode()) {
+			case MISSING_DB_USERNAME:
 				message = Language.I18N.getString("db.dialog.error.conn.user");
 				break;
-			case MISSING_HOSTNAME:
+			case MISSING_DB_HOSTNAME:
 				message = Language.I18N.getString("db.dialog.error.conn.server");
 				break;
-			case MISSING_PORT:
+			case MISSING_DB_PORT:
 				message = Language.I18N.getString("db.dialog.error.conn.port");
 				break;
 			case MISSING_DB_NAME:

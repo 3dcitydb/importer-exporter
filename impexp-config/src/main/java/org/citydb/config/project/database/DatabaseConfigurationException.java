@@ -27,47 +27,40 @@
  */
 package org.citydb.config.project.database;
 
-public class DatabaseConfigurationException extends Exception {
-    private final Reason reason;
+import org.citydb.config.exception.ApplicationException;
+import org.citydb.config.exception.ErrorCode;
 
-    public DatabaseConfigurationException(Reason reason, Throwable cause) {
-        super(reason.toString(), cause);
-        this.reason = reason;
-    }
+public class DatabaseConfigurationException extends ApplicationException {
 
-    public DatabaseConfigurationException(Reason reason) {
-        this(reason, null);
-    }
+	public DatabaseConfigurationException(ErrorCode errorCode) {
+		super(errorCode);
+	}
 
-    public DatabaseConfigurationException(String message, Throwable cause) {
-        super(message, cause);
-        reason = Reason.OTHER;
-    }
+	public DatabaseConfigurationException(ErrorCode errorCode, String message) {
+		super(errorCode, message);
+	}
 
-    public DatabaseConfigurationException(String message) {
-        this(message, null);
-    }
+	public DatabaseConfigurationException(ErrorCode errorCode, String message, Throwable cause) {
+		super(errorCode, message, cause);
+	}
 
-    public Reason getReason() {
-        return reason;
-    }
+	public DatabaseConfigurationException(ErrorCode errorCode, Throwable cause) {
+		super(errorCode, cause);
+	}
 
-    public enum Reason {
-        MISSING_HOSTNAME("Missing server hostname."),
-        MISSING_USERNAME("Missing username."),
-        MISSING_DB_NAME("Missing database name."),
-        MISSING_PORT("Missing server port."),
-        OTHER("Other configuration exception.");
+	public DatabaseConfigurationException() {
+		super();
+	}
 
-        private final String message;
+	public DatabaseConfigurationException(String message) {
+		super(message);
+	}
 
-        Reason(String message) {
-            this.message = message;
-        }
+	public DatabaseConfigurationException(String message, Throwable cause) {
+		super(message, cause);
+	}
 
-        @Override
-        public String toString() {
-            return message;
-        }
-    }
+	public DatabaseConfigurationException(Throwable cause) {
+		super(cause);
+	}
 }
