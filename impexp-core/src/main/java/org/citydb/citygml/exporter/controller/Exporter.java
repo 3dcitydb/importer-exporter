@@ -121,7 +121,6 @@ public class Exporter implements EventHandler {
     private final HashMap<Integer, Long> totalObjectCounter;
     private final EnumMap<GMLClass, Long> totalGeometryCounter;
 
-    private volatile boolean shouldRun = true;
     private DBSplitter dbSplitter;
     private WorkerPool<DBSplittingResult> dbWorkerPool;
     private WorkerPool<DBXlink> xlinkExporterPool;
@@ -129,7 +128,10 @@ public class Exporter implements EventHandler {
     private UIDCacheManager uidCacheManager;
     private boolean useTiling;
 
-    public Exporter() {
+	private volatile boolean shouldRun = true;
+	private CityGMLExportException exception;
+
+	public Exporter() {
         cityGMLBuilder = ObjectRegistry.getInstance().getCityGMLBuilder();
         schemaMapping = ObjectRegistry.getInstance().getSchemaMapping();
         config = ObjectRegistry.getInstance().getConfig();
@@ -142,7 +144,7 @@ public class Exporter implements EventHandler {
         totalGeometryCounter = new EnumMap<>(GMLClass.class);
     }
 
-    public boolean doExport(Path outputFile) throws CityGMLExportException {
+    public void doExport(Path outputFile) throws CityGMLExportException {
         if (outputFile == null || outputFile.getFileName() == null) {
             throw new CityGMLExportException("The output file '" + outputFile + "' is invalid.");
         }
@@ -152,7 +154,7 @@ public class Exporter implements EventHandler {
         eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
 
         try {
-            return process(outputFile);
+            process(outputFile);
         } finally {
             try {
                 eventDispatcher.flushEvents();
@@ -164,7 +166,7 @@ public class Exporter implements EventHandler {
         }
     }
 
-    private boolean process(Path outputFile) throws CityGMLExportException {
+    private void process(Path outputFile) throws CityGMLExportException {
         InternalConfig internalConfig = new InternalConfig();
 
         // checking workspace
@@ -210,8 +212,7 @@ public class Exporter implements EventHandler {
             }
 
             if (metadataProvider == null) {
-                throw new CityGMLExportException("Failed to load metadata provider '" +
-                        config.getExportConfig().getMetadataProvider() + "'.");
+                throw new CityGMLExportException("Failed to load metadata provider '" + config.getExportConfig().getMetadataProvider() + "'.");
             }
         }
 
@@ -488,7 +489,6 @@ public class Exporter implements EventHandler {
                     	throw new CityGMLExportException("Failed to start database export worker pool. Check the database connection pool settings.");
 					}
 
-                    // ok, preparations done. inform user...
                     log.info("Exporting to file: " + file.getFile());
 
                     // get database splitter and start query
@@ -610,16 +610,15 @@ public class Exporter implements EventHandler {
 
         if (shouldRun) {
         	log.info("Total export time: " + Util.formatElapsedTime(System.currentTimeMillis() - start) + ".");
+		} else if (exception != null) {
+        	throw exception;
 		}
-
-        return shouldRun;
     }
 
     @Override
     public void handleEvent(Event e) throws Exception {
         if (e.getEventType() == EventType.OBJECT_COUNTER) {
             Map<Integer, Long> counter = ((ObjectCounterEvent) e).getCounter();
-
             for (Entry<Integer, Long> entry : counter.entrySet()) {
                 Long tmp = objectCounter.get(entry.getKey());
                 objectCounter.put(entry.getKey(), tmp == null ? entry.getValue() : tmp + entry.getValue());
@@ -630,7 +629,6 @@ public class Exporter implements EventHandler {
             }
         } else if (e.getEventType() == EventType.GEOMETRY_COUNTER) {
             Map<GMLClass, Long> counter = ((GeometryCounterEvent) e).getCounter();
-
             for (Entry<GMLClass, Long> entry : counter.entrySet()) {
                 Long tmp = geometryCounter.get(entry.getKey());
                 geometryCounter.put(entry.getKey(), tmp == null ? entry.getValue() : tmp + entry.getValue());
@@ -647,15 +645,14 @@ public class Exporter implements EventHandler {
                 if (interruptEvent.getCause() != null) {
                     Throwable cause = interruptEvent.getCause();
                     if (cause instanceof SQLException) {
-                        log.error("A SQL error occurred.", cause);
+                        exception = new CityGMLExportException("A database error occurred during export.", cause);
                     } else {
-                        log.error("An error occurred.", cause);
+                        exception = new CityGMLExportException("An error occurred during export.", cause);
                     }
                 }
 
-                String msg = interruptEvent.getLogMessage();
-                if (msg != null) {
-                	log.log(interruptEvent.getLogLevelType(), msg);
+                if (interruptEvent.getLogMessage() != null) {
+                	log.log(interruptEvent.getLogLevelType(), interruptEvent.getLogMessage());
 				}
 
                 if (dbSplitter != null) {

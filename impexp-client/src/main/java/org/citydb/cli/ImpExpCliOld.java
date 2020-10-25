@@ -127,11 +127,10 @@ public class ImpExpCliOld {
 
 		log.info("Initializing database export...");
 
-		Exporter exporter = new Exporter();
-		boolean success;
-
 		try {
-			success = exporter.doExport(Paths.get(outputFile));
+			Exporter exporter = new Exporter();
+			exporter.doExport(Paths.get(outputFile));
+			log.info("Database export successfully finished.");
 		} catch (CityGMLExportException e) {
 			throw new ImpExpException("CityGML export failed due to an internal error.", e);
 		} catch (InvalidPathException e) {
@@ -140,12 +139,7 @@ public class ImpExpCliOld {
 			databaseController.disconnect();
 		}
 
-		if (success)
-			log.info("Database export successfully finished.");
-		else
-			log.warn("Database export aborted.");
-
-		return success;
+		return true;
 	}
 
 	public boolean doDelete() throws ImpExpException {

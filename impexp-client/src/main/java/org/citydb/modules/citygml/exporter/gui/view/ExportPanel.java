@@ -30,6 +30,7 @@ package org.citydb.modules.citygml.exporter.gui.view;
 import org.citydb.citygml.exporter.CityGMLExportException;
 import org.citydb.citygml.exporter.controller.Exporter;
 import org.citydb.config.Config;
+import org.citydb.config.exception.ErrorCode;
 import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.database.DatabaseSrs;
@@ -253,6 +254,13 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 		config.getDatabaseConfig().getWorkspaces().getExportWorkspace().setName(workspaceText.getText());
 		config.getDatabaseConfig().getWorkspaces().getExportWorkspace().setTimestamp(datePicker.getDate());
 
+		try {
+			Paths.get(browseText.getText());
+		} catch (InvalidPathException e) {
+			log.error("The provided output file '" + browseText.getText() + "' is not a valid file.");
+			browseText.setText("");
+		}
+
 		filterPanel.setSettings();
 
 		DatabaseSrs targetSrs = srsComboBox.getSelectedItem();
@@ -377,8 +385,6 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 				exportDialog.setVisible(true);
 			});
 
-			Exporter exporter = new Exporter();
-
 			exportDialog.getCancelButton().addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					SwingUtilities.invokeLater(new Runnable() {
@@ -393,29 +399,19 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 				}
 			});
 
-			boolean success = false;
 			try {
-				success = exporter.doExport(Paths.get(browseText.getText()));
-			} catch (InvalidPathException e) {
-				log.error("'" + browseText.getText() + "' is not a valid file.");
-				browseText.setText("");
+				new Exporter().doExport(Paths.get(browseText.getText()));
+				log.info("Database export successfully finished.");
 			} catch (CityGMLExportException e) {
 				log.error(e.getMessage(), e.getCause());
-				switch (e.getErrorCode()) {
-					case SPATIAL_INDEXES_NOT_ACTIVATED:
-						log.error("Please use the database tab to activate the spatial indexes.");
-						break;
+				if (e.getErrorCode() == ErrorCode.SPATIAL_INDEXES_NOT_ACTIVATED) {
+					log.error("Please use the database tab to activate the spatial indexes.");
 				}
-			}
 
-			SwingUtilities.invokeLater(exportDialog::dispose);
-
-			if (success) {
-				log.info("Database export successfully finished.");
-			} else {
 				log.warn("Database export aborted.");
 			}
 
+			SwingUtilities.invokeLater(exportDialog::dispose);
 			viewController.setStatusText(Language.I18N.getString("main.status.ready.label"));
 		} finally {
 			lock.unlock();

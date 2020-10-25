@@ -28,10 +28,12 @@
 
 package org.citydb.cli;
 
+import org.citydb.citygml.exporter.CityGMLExportException;
 import org.citydb.citygml.exporter.controller.Exporter;
 import org.citydb.config.Config;
 import org.citydb.config.project.database.DatabaseConnection;
 import org.citydb.database.DatabaseController;
+import org.citydb.log.Logger;
 import org.citydb.plugin.CliCommand;
 import org.citydb.plugin.cli.DatabaseOptions;
 import org.citydb.plugin.cli.FileOutputOptions;
@@ -54,24 +56,39 @@ public class ExportCommand extends CliCommand {
             description = "Encoding used for the output file (default: ${DEFAULT-VALUE}).")
     private String encoding;
 
+    private final Logger log = Logger.getInstance();
+
     @Override
     public Integer call() throws Exception {
         Config config = ObjectRegistry.getInstance().getConfig();
-        DatabaseController controller = ObjectRegistry.getInstance().getDatabaseController();
+        DatabaseController database = ObjectRegistry.getInstance().getDatabaseController();
 
         DatabaseConnection connection = databaseOptions != null && databaseOptions.isValid() ?
                 databaseOptions.toDatabaseConnection() :
                 config.getDatabaseConfig().getActiveConnection();
 
-        if (!controller.connect(connection)) {
+        if (!database.connect(connection)) {
             return 1;
         }
 
         config.getExportConfig().getCityGMLOptions().setFileEncoding(encoding);
 
-        Exporter exporter = new Exporter();
-        exporter.doExport(outputOptions.getFile());
+        boolean success = true;
+        try {
+            new Exporter().doExport(outputOptions.getFile());
+        } catch (CityGMLExportException e) {
+            log.error(e.getMessage(), e.getCause());
+            success = false;
+        } finally {
+            database.disconnect();
+        }
 
-        return 0;
+        if (success) {
+            log.info("Database export successfully finished.");
+            return 0;
+        } else {
+            log.warn("Database export aborted.");
+            return 1;
+        }
     }
 }
