@@ -29,9 +29,9 @@ package org.citydb.modules.database.gui.view;
 
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
-import org.citydb.config.project.database.DatabaseConnection;
 import org.citydb.config.project.database.DatabaseConfig;
 import org.citydb.config.project.database.DatabaseConfigurationException;
+import org.citydb.config.project.database.DatabaseConnection;
 import org.citydb.config.project.database.DatabaseType;
 import org.citydb.database.DatabaseController;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
@@ -296,11 +296,7 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 		connectButton.addActionListener(e -> new SwingWorker<Void, Void>() {
 			protected Void doInBackground() {
 				if (!databaseController.isConnected()) {
-					try {
-						connect(true);
-					} catch (DatabaseConfigurationException | DatabaseVersionException | SQLException e) {
-						//
-					}
+					connect();
 				} else {
 					disconnect();
 				}
@@ -444,7 +440,7 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 			connCombo.setSelectedIndex(index < connCombo.getItemCount() ? index : index - 1);		
 	}
 
-	public void connect(boolean showErrorDialog) throws DatabaseConfigurationException, DatabaseVersionException, SQLException {
+	public void connect() {
 		final ReentrantLock lock = this.mainLock;
 		lock.lock();
 		try {
