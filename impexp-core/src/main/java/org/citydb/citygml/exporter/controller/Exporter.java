@@ -124,12 +124,10 @@ public class Exporter implements EventHandler {
     private DBSplitter dbSplitter;
     private WorkerPool<DBSplittingResult> dbWorkerPool;
     private WorkerPool<DBXlink> xlinkExporterPool;
-    private CacheTableManager cacheTableManager;
-    private UIDCacheManager uidCacheManager;
     private boolean useTiling;
 
-	private volatile boolean shouldRun = true;
-	private CityGMLExportException exception;
+    private volatile boolean shouldRun = true;
+    private CityGMLExportException exception;
 
 	public Exporter() {
         cityGMLBuilder = ObjectRegistry.getInstance().getCityGMLBuilder();
@@ -144,7 +142,7 @@ public class Exporter implements EventHandler {
         totalGeometryCounter = new EnumMap<>(GMLClass.class);
     }
 
-    public void doExport(Path outputFile) throws CityGMLExportException {
+    public boolean doExport(Path outputFile) throws CityGMLExportException {
         if (outputFile == null || outputFile.getFileName() == null) {
             throw new CityGMLExportException("The output file '" + outputFile + "' is invalid.");
         }
@@ -154,7 +152,7 @@ public class Exporter implements EventHandler {
         eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
 
         try {
-            process(outputFile);
+            return process(outputFile);
         } finally {
             try {
                 eventDispatcher.flushEvents();
@@ -166,8 +164,9 @@ public class Exporter implements EventHandler {
         }
     }
 
-    private void process(Path outputFile) throws CityGMLExportException {
+    private boolean process(Path outputFile) throws CityGMLExportException {
         InternalConfig internalConfig = new InternalConfig();
+        exception = null;
 
         // checking workspace
         Workspace workspace = config.getDatabaseConfig().getWorkspaces().getExportWorkspace();
@@ -381,8 +380,11 @@ public class Exporter implements EventHandler {
                     }
                 }
 
+                CacheTableManager cacheTableManager = null;
+                UIDCacheManager uidCacheManager = null;
                 FeatureWriter writer = null;
                 OutputFile file = null;
+
                 try {
                     eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("export.dialog.cityObj.msg"), this));
                     eventDispatcher.triggerEvent(new StatusDialogTitle(fileName, this));
@@ -570,7 +572,6 @@ public class Exporter implements EventHandler {
                         try {
                             log.info("Cleaning temporary cache.");
                             cacheTableManager.dropAll();
-                            cacheTableManager = null;
                         } catch (SQLException e) {
                             log.error("Failed to clean temporary cache.", e);
                             shouldRun = false;
@@ -611,8 +612,10 @@ public class Exporter implements EventHandler {
         if (shouldRun) {
         	log.info("Total export time: " + Util.formatElapsedTime(System.currentTimeMillis() - start) + ".");
 		} else if (exception != null) {
-        	throw exception;
-		}
+            throw exception;
+        }
+
+        return shouldRun;
     }
 
     @Override

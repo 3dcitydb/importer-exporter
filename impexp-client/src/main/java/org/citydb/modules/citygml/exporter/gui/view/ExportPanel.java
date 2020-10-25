@@ -399,20 +399,24 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 				}
 			});
 
+			boolean success = false;
 			try {
-				new Exporter().doExport(Paths.get(browseText.getText()));
-				log.info("Database export successfully finished.");
+				success = new Exporter().doExport(Paths.get(browseText.getText()));
 			} catch (CityGMLExportException e) {
 				log.error(e.getMessage(), e.getCause());
 				if (e.getErrorCode() == ErrorCode.SPATIAL_INDEXES_NOT_ACTIVATED) {
 					log.error("Please use the database tab to activate the spatial indexes.");
 				}
-
-				log.warn("Database export aborted.");
 			}
 
 			SwingUtilities.invokeLater(exportDialog::dispose);
 			viewController.setStatusText(Language.I18N.getString("main.status.ready.label"));
+
+			if (success) {
+				log.info("Database export successfully finished.");
+			} else {
+				log.warn("Database export aborted.");
+			}
 		} finally {
 			lock.unlock();
 		}
