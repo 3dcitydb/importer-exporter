@@ -46,6 +46,7 @@ import org.citydb.citygml.exporter.writer.FeatureWriterFactoryBuilder;
 import org.citydb.concurrent.PoolSizeAdaptationStrategy;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
+import org.citydb.config.exception.ErrorCode;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.database.DatabaseSrs;
 import org.citydb.config.project.database.Workspace;
@@ -107,563 +108,568 @@ import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Exporter implements EventHandler {
-	private final Logger log = Logger.getInstance();
-	private final CityGMLBuilder cityGMLBuilder;
-	private final AbstractDatabaseAdapter databaseAdapter;
-	private final SchemaMapping schemaMapping;
-	private final Config config;
-	private final EventDispatcher eventDispatcher;
-	private final AtomicBoolean isInterrupted = new AtomicBoolean(false);
+    private final Logger log = Logger.getInstance();
+    private final CityGMLBuilder cityGMLBuilder;
+    private final AbstractDatabaseAdapter databaseAdapter;
+    private final SchemaMapping schemaMapping;
+    private final Config config;
+    private final EventDispatcher eventDispatcher;
+    private final AtomicBoolean isInterrupted = new AtomicBoolean(false);
 
-	private final HashMap<Integer, Long> objectCounter;
-	private final EnumMap<GMLClass, Long> geometryCounter;
-	private final HashMap<Integer, Long> totalObjectCounter;
-	private final EnumMap<GMLClass, Long> totalGeometryCounter;
+    private final HashMap<Integer, Long> objectCounter;
+    private final EnumMap<GMLClass, Long> geometryCounter;
+    private final HashMap<Integer, Long> totalObjectCounter;
+    private final EnumMap<GMLClass, Long> totalGeometryCounter;
 
-	private volatile boolean shouldRun = true;
-	private DBSplitter dbSplitter;
-	private WorkerPool<DBSplittingResult> dbWorkerPool;
-	private WorkerPool<DBXlink> xlinkExporterPool;
-	private CacheTableManager cacheTableManager;
-	private UIDCacheManager uidCacheManager;
-	private boolean useTiling;
+    private volatile boolean shouldRun = true;
+    private DBSplitter dbSplitter;
+    private WorkerPool<DBSplittingResult> dbWorkerPool;
+    private WorkerPool<DBXlink> xlinkExporterPool;
+    private CacheTableManager cacheTableManager;
+    private UIDCacheManager uidCacheManager;
+    private boolean useTiling;
 
-	public Exporter() {
-		cityGMLBuilder = ObjectRegistry.getInstance().getCityGMLBuilder();
-		schemaMapping = ObjectRegistry.getInstance().getSchemaMapping();
-		config = ObjectRegistry.getInstance().getConfig();
-		eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
-		databaseAdapter = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter();
+    public Exporter() {
+        cityGMLBuilder = ObjectRegistry.getInstance().getCityGMLBuilder();
+        schemaMapping = ObjectRegistry.getInstance().getSchemaMapping();
+        config = ObjectRegistry.getInstance().getConfig();
+        eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
+        databaseAdapter = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter();
 
-		objectCounter = new HashMap<>();
-		geometryCounter = new EnumMap<>(GMLClass.class);
-		totalObjectCounter = new HashMap<>();
-		totalGeometryCounter = new EnumMap<>(GMLClass.class);
-	}
+        objectCounter = new HashMap<>();
+        geometryCounter = new EnumMap<>(GMLClass.class);
+        totalObjectCounter = new HashMap<>();
+        totalGeometryCounter = new EnumMap<>(GMLClass.class);
+    }
 
-	public boolean doExport(Path outputFile) throws CityGMLExportException {
-		if (outputFile == null || outputFile.getFileName() == null) {
-			throw new CityGMLExportException("The output file '" + outputFile + "' is invalid.");
-		}
+    public boolean doExport(Path outputFile) throws CityGMLExportException {
+        if (outputFile == null || outputFile.getFileName() == null) {
+            throw new CityGMLExportException("The output file '" + outputFile + "' is invalid.");
+        }
 
-		eventDispatcher.addEventHandler(EventType.OBJECT_COUNTER, this);
-		eventDispatcher.addEventHandler(EventType.GEOMETRY_COUNTER, this);
-		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
+        eventDispatcher.addEventHandler(EventType.OBJECT_COUNTER, this);
+        eventDispatcher.addEventHandler(EventType.GEOMETRY_COUNTER, this);
+        eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
 
-		try {
-			return process(outputFile);
-		} finally {
-			try {
-				eventDispatcher.flushEvents();
-			} catch (InterruptedException e) {
-				//
+        try {
+            return process(outputFile);
+        } finally {
+            try {
+                eventDispatcher.flushEvents();
+            } catch (InterruptedException e) {
+                //
+            }
+
+            eventDispatcher.removeEventHandler(this);
+        }
+    }
+
+    private boolean process(Path outputFile) throws CityGMLExportException {
+        InternalConfig internalConfig = new InternalConfig();
+
+        // checking workspace
+        Workspace workspace = config.getDatabaseConfig().getWorkspaces().getExportWorkspace();
+        if (shouldRun && databaseAdapter.hasVersioningSupport()
+                && !databaseAdapter.getWorkspaceManager().equalsDefaultWorkspaceName(workspace.getName())) {
+            try {
+                log.info("Switching to database workspace " + workspace + ".");
+                databaseAdapter.getWorkspaceManager().checkWorkspace(workspace);
+            } catch (SQLException e) {
+                throw new CityGMLExportException("Failed to switch to database workspace.", e);
+            }
+        }
+
+        // build query from filter settings
+        Query query;
+        try {
+            ConfigQueryBuilder queryBuilder = new ConfigQueryBuilder(schemaMapping, databaseAdapter);
+            query = config.getExportConfig().isUseSimpleQuery() ?
+                    queryBuilder.buildQuery(config.getExportConfig().getSimpleQuery(), config.getNamespaceFilter()) :
+                    queryBuilder.buildQuery(config.getExportConfig().getQuery(), config.getNamespaceFilter());
+        } catch (QueryBuildException e) {
+            throw new CityGMLExportException("Failed to build the export query expression.", e);
+        }
+
+        // create feature writer factory
+        FeatureWriterFactory writerFactory;
+        try {
+            writerFactory = FeatureWriterFactoryBuilder.buildFactory(query, schemaMapping, config);
+        } catch (FeatureWriteException e) {
+            throw new CityGMLExportException("Failed to build the feature writer factory.", e);
+        }
+
+        // get metadata provider
+        MetadataProvider metadataProvider = null;
+        if (config.getExportConfig().isSetMetadataProvider()) {
+            for (CityGMLExportExtension plugin : PluginManager.getInstance().getExternalPlugins(CityGMLExportExtension.class)) {
+                if (plugin instanceof MetadataProvider
+                        && plugin.getClass().getCanonicalName().equals(config.getExportConfig().getMetadataProvider())) {
+                    metadataProvider = (MetadataProvider) plugin;
+                    break;
+                }
+            }
+
+            if (metadataProvider == null) {
+                throw new CityGMLExportException("Failed to load metadata provider '" +
+                        config.getExportConfig().getMetadataProvider() + "'.");
+            }
+        }
+
+        // set target reference system for export
+        DatabaseSrs targetSrs = query.getTargetSrs();
+        internalConfig.setTransformCoordinates(targetSrs.isSupported()
+                && targetSrs.getSrid() != databaseAdapter.getConnectionMetaData().getReferenceSystem().getSrid());
+
+        if (internalConfig.isTransformCoordinates()) {
+            log.info("Transforming geometry representation to reference system '" + targetSrs.getDescription() + "' (SRID: " + targetSrs.getSrid() + ").");
+            if (!targetSrs.is3D() && !databaseAdapter.getConnectionMetaData().getReferenceSystem().is3D()) {
+                log.warn("Transformation is NOT applied to height reference system.");
+            } else if (targetSrs.is3D() != databaseAdapter.getConnectionMetaData().getReferenceSystem().is3D()) {
+                throw new CityGMLExportException("Dimensionality of reference system for geometry transformation does not match.");
+            }
+        }
+
+        // check and log index status
+        try {
+            if ((query.isSetTiling() || (query.isSetSelection() && query.getSelection().containsSpatialOperators()))
+                    && !databaseAdapter.getUtil().isIndexEnabled("CITYOBJECT", "ENVELOPE")) {
+                throw new CityGMLExportException(ErrorCode.SPATIAL_INDEXES_NOT_ACTIVATED, "The spatial indexes are not activated.");
+            }
+
+            for (IndexType type : IndexType.values()) {
+            	databaseAdapter.getUtil().getIndexStatus(type).printStatusToConsole();
+			}
+        } catch (SQLException e) {
+            throw new CityGMLExportException("Database error while querying index status.", e);
+        }
+
+        // check whether database contains global appearances and set internal flag
+        try {
+            internalConfig.setExportGlobalAppearances(config.getExportConfig().getAppearances().isSetExportAppearance()
+					&& databaseAdapter.getUtil().containsGlobalAppearances(workspace));
+        } catch (SQLException e) {
+            throw new CityGMLExportException("Database error while querying the number of global appearances.", e);
+        }
+
+        // cache gml:ids of city objects in case we have to export groups
+        internalConfig.setRegisterGmlIdInCache(!config.getExportConfig().getCityObjectGroup().isExportMemberAsXLinks()
+                && query.getFeatureTypeFilter().containsFeatureType(
+                		schemaMapping.getFeatureType(query.getTargetVersion()
+								.getCityGMLModule(CityGMLModuleType.CITY_OBJECT_GROUP)
+								.getFeatureName(CityObjectGroup.class))));
+
+        // tiling
+        Tiling tiling = query.getTiling();
+        SimpleTilingOptions tilingOptions = null;
+        Predicate predicate = null;
+        useTiling = query.isSetTiling();
+        int rows = useTiling ? tiling.getRows() : 1;
+        int columns = useTiling ? tiling.getColumns() : 1;
+
+        if (useTiling) {
+            try {
+                // transform tiling extent to database srs
+                tiling.transformExtent(databaseAdapter.getConnectionMetaData().getReferenceSystem(), databaseAdapter);
+                predicate = query.isSetSelection() ? query.getSelection().getPredicate() : null;
+                tilingOptions = tiling.getTilingOptions() instanceof SimpleTilingOptions ? (SimpleTilingOptions) tiling.getTilingOptions() : new SimpleTilingOptions();
+            } catch (FilterException e) {
+                throw new CityGMLExportException("Failed to transform tiling extent.", e);
+            }
+        }
+
+        // create output file factory
+        OutputFileFactory fileFactory = new OutputFileFactory(config, eventDispatcher);
+
+        // process export folder for texture files
+        String textureFolder = null;
+        boolean textureFolderIsAbsolute = false;
+        boolean exportAppearance = config.getExportConfig().getAppearances().isSetExportAppearance();
+
+        if (exportAppearance) {
+            textureFolder = config.getExportConfig().getAppearances().getTexturePath().getPath();
+            if (textureFolder == null || textureFolder.isEmpty()) {
+            	textureFolder = "appearance";
 			}
 
-			eventDispatcher.removeEventHandler(this);
-		}
-	}
-
-	private boolean process(Path outputFile) throws CityGMLExportException {
-		InternalConfig internalConfig = new InternalConfig();
-
-		// checking workspace
-		Workspace workspace = config.getDatabaseConfig().getWorkspaces().getExportWorkspace();
-		if (shouldRun && databaseAdapter.hasVersioningSupport()
-				&& !databaseAdapter.getWorkspaceManager().equalsDefaultWorkspaceName(workspace.getName())) {
-			try {
-				log.info("Switching to database workspace " + workspace + ".");
-				databaseAdapter.getWorkspaceManager().checkWorkspace(workspace);
-			} catch (SQLException e) {
-				throw new CityGMLExportException("Failed to switch to database workspace.", e);
-			}
-		}
-
-		// build query from filter settings
-		Query query;
-		try {
-			ConfigQueryBuilder queryBuilder = new ConfigQueryBuilder(schemaMapping, databaseAdapter);
-			if (config.getExportConfig().isUseSimpleQuery())
-				query = queryBuilder.buildQuery(config.getExportConfig().getSimpleQuery(), config.getNamespaceFilter());
-			else
-				query = queryBuilder.buildQuery(config.getExportConfig().getQuery(), config.getNamespaceFilter());
-
-		} catch (QueryBuildException e) {
-			throw new CityGMLExportException("Failed to build the export query expression.", e);
-		}
-
-		// create feature writer factory
-		FeatureWriterFactory writerFactory;
-		try {
-			writerFactory = FeatureWriterFactoryBuilder.buildFactory(query, schemaMapping, config);
-		} catch (FeatureWriteException e) {
-			throw new CityGMLExportException("Failed to build the feature writer factory.", e);
-		}
-
-		// get metadata provider
-		MetadataProvider metadataProvider = null;
-		if (config.getExportConfig().isSetMetadataProvider()) {
-			for (CityGMLExportExtension plugin : PluginManager.getInstance().getExternalPlugins(CityGMLExportExtension.class)) {
-				if (plugin instanceof MetadataProvider
-						&& plugin.getClass().getCanonicalName().equals(config.getExportConfig().getMetadataProvider())) {
-					metadataProvider = (MetadataProvider) plugin;
-					break;
-				}
+            textureFolderIsAbsolute = new File(textureFolder).isAbsolute();
+            if (!textureFolderIsAbsolute) {
+            	textureFolder = textureFolder.replace("\\", "/");
 			}
 
-			if (metadataProvider == null)
-				throw new CityGMLExportException("Failed to load metadata provider '" + config.getExportConfig().getMetadataProvider() + "'.");
-		}
+            if (textureFolderIsAbsolute) {
+                try {
+                    Path path = Paths.get(textureFolder).toAbsolutePath().normalize();
+                    textureFolder = path.toString();
+                    if (!Files.isDirectory(path)) {
+                        Files.createDirectories(path);
+                        log.info("Created texture files folder '" + textureFolder + "'.");
+                    }
+                } catch (IOException | InvalidPathException e) {
+                    throw new CityGMLExportException("Failed to create texture files folder '" + textureFolder + "'.", e);
+                }
+            }
 
-		// set target reference system for export
-		DatabaseSrs targetSrs = query.getTargetSrs();
-		internalConfig.setTransformCoordinates(targetSrs.isSupported()
-				&& targetSrs.getSrid() != databaseAdapter.getConnectionMetaData().getReferenceSystem().getSrid());
+            internalConfig.setExportTextureURI(textureFolder);
 
-		if (internalConfig.isTransformCoordinates()) {
-			log.info("Transforming geometry representation to reference system '" + targetSrs.getDescription() + "' (SRID: " + targetSrs.getSrid() + ").");
-			if (!targetSrs.is3D() && !databaseAdapter.getConnectionMetaData().getReferenceSystem().is3D()) {
-				log.warn("Transformation is NOT applied to height reference system.");
-			} else if (targetSrs.is3D() != databaseAdapter.getConnectionMetaData().getReferenceSystem().is3D()) {
-				throw new CityGMLExportException("Dimensionality of reference system for geometry transformation does not match.");
-			}
-		}
+            // check for unique texture filenames when exporting an archiv
+            if (!config.getExportConfig().getAppearances().isSetUniqueTextureFileNames()
+                    && fileFactory.getFileType(outputFile.getFileName()) == FileType.ARCHIVE) {
+                log.warn("Using unique texture filenames because of writing to an archive file.");
+                config.getExportConfig().getAppearances().setUniqueTextureFileNames(true);
+            }
+        }
 
-		// check and log index status
-		try {
-			if ((query.isSetTiling() || (query.isSetSelection() && query.getSelection().containsSpatialOperators()))
-					&& !databaseAdapter.getUtil().isIndexEnabled("CITYOBJECT", "ENVELOPE")) {
-				log.error("Spatial indexes are not activated.");
-				log.error("Please use the database tab to activate the spatial indexes.");
-				return false;
-			}
+        int remainingTiles = rows * columns;
+        long start = System.currentTimeMillis();
 
-			for (IndexType type : IndexType.values())
-				databaseAdapter.getUtil().getIndexStatus(type).printStatusToConsole();
-		} catch (SQLException e) {
-			throw new CityGMLExportException("Database error while querying index status.", e);
-		}
+        for (int i = 0; shouldRun && i < rows; i++) {
+            for (int j = 0; shouldRun && j < columns; j++) {
+                String fileName = outputFile.getFileName().toString();
+                Path folder = outputFile.getParent();
+                if (folder == null)
+                    folder = Paths.get("").toAbsolutePath().normalize();
 
-		// check whether database contains global appearances and set internal flag
-		try {
-			internalConfig.setExportGlobalAppearances(config.getExportConfig().getAppearances().isSetExportAppearance() &&
-					databaseAdapter.getUtil().containsGlobalAppearances(workspace));
-		} catch (SQLException e) {
-			throw new CityGMLExportException("Database error while querying the number of global appearances.", e);
-		}
+                if (useTiling) {
+                    Tile tile;
+                    try {
+                        tile = tiling.getTileAt(i, j);
+                        tiling.setActiveTile(tile);
 
-		// cache gml:ids of city objects in case we have to export groups
-		internalConfig.setRegisterGmlIdInCache(!config.getExportConfig().getCityObjectGroup().isExportMemberAsXLinks()
-				&& query.getFeatureTypeFilter().containsFeatureType(schemaMapping.getFeatureType(query.getTargetVersion().getCityGMLModule(CityGMLModuleType.CITY_OBJECT_GROUP).getFeatureName(CityObjectGroup.class))));
+                        Predicate bboxFilter = tile.getFilterPredicate(databaseAdapter);
+						query.setSelection(predicate != null ?
+								new SelectionFilter(LogicalOperationFactory.AND(predicate, bboxFilter)) :
+								new SelectionFilter(bboxFilter));
+                    } catch (FilterException e) {
+                        throw new CityGMLExportException("Failed to get tile at [" + i + "," + j + "].", e);
+                    }
 
-		// tiling
-		Tiling tiling = query.getTiling();
-		SimpleTilingOptions tilingOptions = null;
-		Predicate predicate = null;
-		useTiling = query.isSetTiling();
-		int rows = useTiling ? tiling.getRows() : 1;  
-		int columns = useTiling ? tiling.getColumns() : 1;
+                    // create suffix for folderName and fileName
+                    TileSuffixMode suffixMode = tilingOptions.getTilePathSuffix();
+                    double minX = tile.getExtent().getLowerCorner().getX();
+                    double minY = tile.getExtent().getLowerCorner().getY();
+                    double maxX = tile.getExtent().getUpperCorner().getX();
+                    double maxY = tile.getExtent().getUpperCorner().getY();
 
-		if (useTiling) {
-			try {
-				// transform tiling extent to database srs
-				tiling.transformExtent(databaseAdapter.getConnectionMetaData().getReferenceSystem(), databaseAdapter);
-				predicate = query.isSetSelection() ? query.getSelection().getPredicate() : null;
-				tilingOptions = tiling.getTilingOptions() instanceof SimpleTilingOptions ? (SimpleTilingOptions)tiling.getTilingOptions() : new SimpleTilingOptions();
-			} catch (FilterException e) {
-				throw new CityGMLExportException("Failed to transform tiling extent.", e);
-			}
-		}
-
-		// create output file factory
-		OutputFileFactory fileFactory = new OutputFileFactory(config, eventDispatcher);
-
-		// process export folder for texture files
-		String textureFolder = null;
-		boolean textureFolderIsAbsolute = false;
-		boolean exportAppearance = config.getExportConfig().getAppearances().isSetExportAppearance();
-
-		if (exportAppearance) {
-			textureFolder = config.getExportConfig().getAppearances().getTexturePath().getPath();
-			if (textureFolder == null || textureFolder.isEmpty())
-				textureFolder = "appearance";
-
-			textureFolderIsAbsolute = new File(textureFolder).isAbsolute();
-			if (!textureFolderIsAbsolute)
-				textureFolder = textureFolder.replace("\\", "/");
-
-			if (textureFolderIsAbsolute) {
-				try {
-					Path path = Paths.get(textureFolder).toAbsolutePath().normalize();
-					textureFolder = path.toString();
-					if (!Files.isDirectory(path)) {
-						Files.createDirectories(path);
-						log.info("Created texture files folder '" + textureFolder + "'.");
-					}
-				} catch (IOException | InvalidPathException e) {
-					throw new CityGMLExportException("Failed to create texture files folder '" + textureFolder + "'.", e);
-				}
-			}
-
-			internalConfig.setExportTextureURI(textureFolder);
-
-			// check for unique texture filenames when exporting an archiv
-			if (!config.getExportConfig().getAppearances().isSetUniqueTextureFileNames()
-				&& fileFactory.getFileType(outputFile.getFileName()) == FileType.ARCHIVE) {
-				log.warn("Using unique texture filenames because of writing to an archive file.");
-				config.getExportConfig().getAppearances().setUniqueTextureFileNames(true);
-			}
-		}
-
-		int remainingTiles = rows * columns;
-		long start = System.currentTimeMillis();
-
-		for (int i = 0; shouldRun && i < rows; i++) {
-			for (int j = 0; shouldRun && j < columns; j++) {
-				String fileName = outputFile.getFileName().toString();
-				Path folder = outputFile.getParent();
-				if (folder == null)
-					folder = Paths.get("").toAbsolutePath().normalize();
-
-				if (useTiling) {
-					Tile tile;
-					try {
-						tile = tiling.getTileAt(i, j);
-						tiling.setActiveTile(tile);
-
-						Predicate bboxFilter = tile.getFilterPredicate(databaseAdapter);
-						if (predicate != null)
-							query.setSelection(new SelectionFilter(LogicalOperationFactory.AND(predicate, bboxFilter)));
-						else
-							query.setSelection(new SelectionFilter(bboxFilter));
-
-					} catch (FilterException e) {
-						throw new CityGMLExportException("Failed to get tile at [" + i + "," + j + "].", e);
-					}
-
-					// create suffix for folderName and fileName
-					TileSuffixMode suffixMode = tilingOptions.getTilePathSuffix();
 					String suffix;
+                    switch (suffixMode) {
+                        case XMIN_YMIN:
+                            suffix = String.valueOf(minX) + '_' + minY;
+                            break;
+                        case XMAX_YMIN:
+                            suffix = String.valueOf(maxX) + '_' + minY;
+                            break;
+                        case XMIN_YMAX:
+                            suffix = String.valueOf(minX) + '_' + maxY;
+                            break;
+                        case XMAX_YMAX:
+                            suffix = String.valueOf(maxX) + '_' + maxY;
+                            break;
+                        case XMIN_YMIN_XMAX_YMAX:
+                            suffix = String.valueOf(minX) + '_' + minY + '_' + maxX + '_' + maxY;
+                            break;
+                        default:
+                            suffix = String.valueOf(i) + '_' + j;
+                    }
 
-					double minX = tile.getExtent().getLowerCorner().getX();
-					double minY = tile.getExtent().getLowerCorner().getY();
-					double maxX = tile.getExtent().getUpperCorner().getX();
-					double maxY = tile.getExtent().getUpperCorner().getY();
+                    folder = folder.resolve(tilingOptions.getTilePath() + '_' + suffix);
+                    if (tilingOptions.getTileNameSuffix() == TileNameSuffixMode.SAME_AS_PATH) {
+                        int index = fileName.indexOf('.');
+                        fileName = index > 0 ?
+                                fileName.substring(0, index) + '_' + suffix + fileName.substring(index) :
+                                fileName + '_' + suffix;
+                    }
+                }
 
-					switch (suffixMode) {
-						case XMIN_YMIN:
-							suffix = String.valueOf(minX) + '_' + minY;
-							break;
-						case XMAX_YMIN:
-							suffix = String.valueOf(maxX) + '_' + minY;
-							break;
-						case XMIN_YMAX:
-							suffix = String.valueOf(minX) + '_' + maxY;
-							break;
-						case XMAX_YMAX:
-							suffix = String.valueOf(maxX) + '_' + maxY;
-							break;
-						case XMIN_YMIN_XMAX_YMAX:
-							suffix = String.valueOf(minX) + '_' + minY + '_' + maxX + '_' + maxY;
-							break;
-						default:
-							suffix = String.valueOf(i) + '_' + j;
+                FeatureWriter writer = null;
+                OutputFile file = null;
+                try {
+                    eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("export.dialog.cityObj.msg"), this));
+                    eventDispatcher.triggerEvent(new StatusDialogTitle(fileName, this));
+                    eventDispatcher.triggerEvent(new CounterEvent(CounterType.REMAINING_TILES, --remainingTiles, this));
+
+                    try {
+                        file = fileFactory.createOutputFile(folder.resolve(fileName));
+                        internalConfig.setOutputFile(file);
+                    } catch (IOException e) {
+                        throw new CityGMLExportException("Failed to create output file '" + folder.resolve(fileName) + "'.", e);
+                    }
+
+                    // create relative folder for texture files
+                    if (exportAppearance && !textureFolderIsAbsolute &&
+                            (file.getType() == FileType.ARCHIVE || !Files.isDirectory(Paths.get(file.resolve(textureFolder))))) {
+                        try {
+                            file.createDirectories(textureFolder);
+                            log.info("Created texture files folder '" + textureFolder + "'.");
+                        } catch (IOException e) {
+                            throw new CityGMLExportException("Failed to create texture files folder '" + textureFolder + "'.", e);
+                        }
+                    }
+
+                    // create output writer
+                    try {
+                        writer = writerFactory.createFeatureWriter(new OutputStreamWriter(file.openStream(),
+                                config.getExportConfig().getCityGMLOptions().getFileEncoding()));
+                        writer.useIndentation(file.getType() == FileType.REGULAR);
+                    } catch (FeatureWriteException | IOException e) {
+                        throw new CityGMLExportException("Failed to open file '" + file.getFile() + "' for writing.", e);
+                    }
+
+                    // create instance of temp table manager
+                    try {
+                        cacheTableManager = new CacheTableManager(
+                                config.getExportConfig().getResources().getThreadPool().getDefaultPool().getMaxThreads(),
+                                config);
+                    } catch (SQLException | IOException e) {
+                        throw new CityGMLExportException("Failed to initialize internal cache manager.", e);
+                    }
+
+                    // create instance of gml:id lookup server manager...
+                    uidCacheManager = new UIDCacheManager();
+
+                    // ...and start servers
+                    try {
+                        uidCacheManager.initCache(
+                                UIDCacheType.GEOMETRY,
+                                new GeometryGmlIdCache(cacheTableManager,
+                                        config.getExportConfig().getResources().getGmlIdCache().getGeometry().getPartitions(),
+                                        config.getDatabaseConfig().getImportBatching().getGmlIdCacheBatchSize()),
+                                config.getExportConfig().getResources().getGmlIdCache().getGeometry().getCacheSize(),
+                                config.getExportConfig().getResources().getGmlIdCache().getGeometry().getPageFactor(),
+                                config.getExportConfig().getResources().getThreadPool().getDefaultPool().getMaxThreads());
+
+                        uidCacheManager.initCache(
+                                UIDCacheType.OBJECT,
+                                new FeatureGmlIdCache(cacheTableManager,
+                                        config.getExportConfig().getResources().getGmlIdCache().getFeature().getPartitions(),
+                                        config.getDatabaseConfig().getImportBatching().getGmlIdCacheBatchSize()),
+                                config.getExportConfig().getResources().getGmlIdCache().getFeature().getCacheSize(),
+                                config.getExportConfig().getResources().getGmlIdCache().getFeature().getPageFactor(),
+                                config.getExportConfig().getResources().getThreadPool().getDefaultPool().getMaxThreads());
+                    } catch (SQLException e) {
+                        throw new CityGMLExportException("Failed to initialize internal gml:id caches.", e);
+                    }
+
+                    // create worker pools
+                    // here we have an open issue: queue sizes are fix...
+                    xlinkExporterPool = new WorkerPool<>(
+                            "xlink_exporter_pool",
+                            1,
+                            Math.max(1, config.getExportConfig().getResources().getThreadPool().getDefaultPool().getMaxThreads() / 2),
+                            PoolSizeAdaptationStrategy.AGGRESSIVE,
+                            new DBExportXlinkWorkerFactory(internalConfig, config, eventDispatcher),
+                            300,
+                            false);
+
+                    dbWorkerPool = new WorkerPool<>(
+                            "db_exporter_pool",
+                            config.getExportConfig().getResources().getThreadPool().getDefaultPool().getMinThreads(),
+                            config.getExportConfig().getResources().getThreadPool().getDefaultPool().getMaxThreads(),
+                            PoolSizeAdaptationStrategy.AGGRESSIVE,
+                            new DBExportWorkerFactory(
+                                    schemaMapping,
+                                    cityGMLBuilder,
+                                    writer,
+                                    xlinkExporterPool,
+                                    uidCacheManager,
+                                    cacheTableManager,
+                                    query,
+                                    internalConfig,
+                                    config,
+                                    eventDispatcher),
+                            300,
+                            false);
+
+                    // prestart pool workers
+                    xlinkExporterPool.prestartCoreWorkers();
+                    dbWorkerPool.prestartCoreWorkers();
+
+                    // fail if we could not start a single import worker
+                    if (dbWorkerPool.getPoolSize() == 0) {
+                    	throw new CityGMLExportException("Failed to start database export worker pool. Check the database connection pool settings.");
 					}
 
-					folder = folder.resolve(tilingOptions.getTilePath() + '_' + suffix);
-					if (tilingOptions.getTileNameSuffix() == TileNameSuffixMode.SAME_AS_PATH) {
-						int index = fileName.indexOf('.');
-						fileName = index > 0 ?
-								fileName.substring(0, index) + '_' + suffix + fileName.substring(index) :
-								fileName + '_' + suffix;
+                    // ok, preparations done. inform user...
+                    log.info("Exporting to file: " + file.getFile());
+
+                    // get database splitter and start query
+                    try {
+                        dbSplitter = new DBSplitter(
+                                writer,
+                                schemaMapping,
+                                dbWorkerPool,
+                                query,
+                                uidCacheManager.getCache(UIDCacheType.OBJECT),
+                                cacheTableManager,
+                                eventDispatcher,
+                                internalConfig,
+                                config);
+
+                        if (shouldRun) {
+                            dbSplitter.setMetadataProvider(metadataProvider);
+                            dbSplitter.setCalculateNumberMatched(CoreConstants.IS_GUI_MODE);
+                            dbSplitter.startQuery();
+                        }
+                    } catch (SQLException | QueryBuildException | FilterException e) {
+                        throw new CityGMLExportException("Failed to query the database.", e);
+                    } catch (FeatureWriteException e) {
+                        throw new CityGMLExportException("Failed to write to output file.", e);
+                    }
+
+                    try {
+                        dbWorkerPool.shutdownAndWait();
+                        xlinkExporterPool.shutdownAndWait();
+                    } catch (InterruptedException e) {
+                        throw new CityGMLExportException("Failed to shutdown worker pools.", e);
+                    }
+
+                    eventDispatcher.triggerEvent(new StatusDialogProgressBar(true, this));
+                    eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("export.dialog.finish.msg"), this));
+                } catch (CityGMLExportException e) {
+                    throw e;
+                } catch (Throwable e) {
+                    throw new CityGMLExportException("An unexpected error occurred.", e);
+                } finally {
+                    // close writer before closing output file
+                    if (writer != null) {
+                        try {
+                            writer.close();
+                        } catch (FeatureWriteException e) {
+                            log.error("Failed to close output writer.", e);
+                            shouldRun = false;
+                        }
+                    }
+
+                    if (file != null) {
+                        try {
+                            file.close();
+                        } catch (IOException e) {
+                            log.error("Failed to close output file.", e);
+                            shouldRun = false;
+                        }
+                    }
+
+                    // clean up
+                    if (xlinkExporterPool != null && !xlinkExporterPool.isTerminated()) {
+                    	xlinkExporterPool.shutdownNow();
 					}
+
+                    if (dbWorkerPool != null && !dbWorkerPool.isTerminated()) {
+                    	dbWorkerPool.shutdownNow();
+					}
+
+                    if (uidCacheManager != null) {
+                        try {
+                            uidCacheManager.shutdownAll();
+                        } catch (SQLException e) {
+                            log.error("Failed to clean gml:id caches.", e);
+                            shouldRun = false;
+                        }
+                    }
+
+                    if (cacheTableManager != null) {
+                        try {
+                            log.info("Cleaning temporary cache.");
+                            cacheTableManager.dropAll();
+                            cacheTableManager = null;
+                        } catch (SQLException e) {
+                            log.error("Failed to clean temporary cache.", e);
+                            shouldRun = false;
+                        }
+                    }
+                }
+
+                // show exported features
+                if (!objectCounter.isEmpty()) {
+                    log.info("Exported city objects:");
+                    Map<String, Long> typeNames = Util.mapObjectCounter(objectCounter, schemaMapping);
+                    typeNames.keySet().stream().sorted().forEach(object -> log.info(object + ": " + typeNames.get(object)));
+                }
+
+                // show processed geometries
+                if (!geometryCounter.isEmpty()) {
+                	log.info("Processed geometry objects: " + geometryCounter.values().stream().reduce(0L, Long::sum));
 				}
 
-				FeatureWriter writer = null;
-				OutputFile file = null;
-				try {
-					eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("export.dialog.cityObj.msg"), this));
-					eventDispatcher.triggerEvent(new StatusDialogTitle(fileName, this));
-					eventDispatcher.triggerEvent(new CounterEvent(CounterType.REMAINING_TILES, --remainingTiles, this));
+                objectCounter.clear();
+                geometryCounter.clear();
+            }
+        }
 
-					try {
-						file = fileFactory.createOutputFile(folder.resolve(fileName));
-						internalConfig.setOutputFile(file);
-					} catch (IOException e) {
-						throw new CityGMLExportException("Failed to create output file '" + folder.resolve(fileName) + "'.", e);
-					}
+        // show totally exported features
+        if (useTiling && (rows > 1 || columns > 1)) {
+            if (!totalObjectCounter.isEmpty()) {
+                log.info("Total exported CityGML features:");
+                Map<String, Long> typeNames = Util.mapObjectCounter(totalObjectCounter, schemaMapping);
+                typeNames.keySet().forEach(object -> log.info(object + ": " + typeNames.get(object)));
+            }
 
-					// create relative folder for texture files
-					if (exportAppearance && !textureFolderIsAbsolute &&
-							(file.getType() == FileType.ARCHIVE || !Files.isDirectory(Paths.get(file.resolve(textureFolder))))) {
-						try {
-							file.createDirectories(textureFolder);
-							log.info("Created texture files folder '" + textureFolder + "'.");
-						} catch (IOException e) {
-							throw new CityGMLExportException("Failed to create texture files folder '" + textureFolder + "'.", e);
-						}
-					}
-
-					// create output writer
-					try {
-						writer = writerFactory.createFeatureWriter(new OutputStreamWriter(file.openStream(),
-								config.getExportConfig().getCityGMLOptions().getFileEncoding()));
-						writer.useIndentation(file.getType() == FileType.REGULAR);
-					} catch (FeatureWriteException | IOException e) {
-						throw new CityGMLExportException("Failed to open file '" + file.getFile() + "' for writing.", e);
-					}
-
-					// create instance of temp table manager
-					try {
-						cacheTableManager = new CacheTableManager(
-								config.getExportConfig().getResources().getThreadPool().getDefaultPool().getMaxThreads(),
-								config);
-					} catch (SQLException | IOException e) {
-						throw new CityGMLExportException("Failed to initialize internal cache manager.", e);
-					}
-
-					// create instance of gml:id lookup server manager...
-					uidCacheManager = new UIDCacheManager();
-
-					// ...and start servers
-					try {
-						uidCacheManager.initCache(
-								UIDCacheType.GEOMETRY,
-								new GeometryGmlIdCache(cacheTableManager,
-										config.getExportConfig().getResources().getGmlIdCache().getGeometry().getPartitions(),
-										config.getDatabaseConfig().getImportBatching().getGmlIdCacheBatchSize()),
-								config.getExportConfig().getResources().getGmlIdCache().getGeometry().getCacheSize(),
-								config.getExportConfig().getResources().getGmlIdCache().getGeometry().getPageFactor(),
-								config.getExportConfig().getResources().getThreadPool().getDefaultPool().getMaxThreads());
-
-						uidCacheManager.initCache(
-								UIDCacheType.OBJECT,
-								new FeatureGmlIdCache(cacheTableManager,
-										config.getExportConfig().getResources().getGmlIdCache().getFeature().getPartitions(),
-										config.getDatabaseConfig().getImportBatching().getGmlIdCacheBatchSize()),
-								config.getExportConfig().getResources().getGmlIdCache().getFeature().getCacheSize(),
-								config.getExportConfig().getResources().getGmlIdCache().getFeature().getPageFactor(),
-								config.getExportConfig().getResources().getThreadPool().getDefaultPool().getMaxThreads());
-					} catch (SQLException e) {
-						throw new CityGMLExportException("Failed to initialize internal gml:id caches.", e);
-					}
-
-					// create worker pools
-					// here we have an open issue: queue sizes are fix...
-					xlinkExporterPool = new WorkerPool<>(
-							"xlink_exporter_pool",
-							1,
-							Math.max(1, config.getExportConfig().getResources().getThreadPool().getDefaultPool().getMaxThreads() / 2),
-							PoolSizeAdaptationStrategy.AGGRESSIVE,
-							new DBExportXlinkWorkerFactory(internalConfig, config, eventDispatcher),
-							300,
-							false);
-
-					dbWorkerPool = new WorkerPool<>(
-							"db_exporter_pool",
-							config.getExportConfig().getResources().getThreadPool().getDefaultPool().getMinThreads(),
-							config.getExportConfig().getResources().getThreadPool().getDefaultPool().getMaxThreads(),
-							PoolSizeAdaptationStrategy.AGGRESSIVE,
-							new DBExportWorkerFactory(
-									schemaMapping,
-									cityGMLBuilder,
-									writer,
-									xlinkExporterPool,
-									uidCacheManager,
-									cacheTableManager,
-									query,
-									internalConfig,
-									config,
-									eventDispatcher),
-							300,
-							false);
-
-					// prestart pool workers
-					xlinkExporterPool.prestartCoreWorkers();
-					dbWorkerPool.prestartCoreWorkers();
-
-					// fail if we could not start a single import worker
-					if (dbWorkerPool.getPoolSize() == 0)
-						throw new CityGMLExportException("Failed to start database export worker pool. Check the database connection pool settings.");
-
-					// ok, preparations done. inform user...
-					log.info("Exporting to file: " + file.getFile());
-
-					// get database splitter and start query
-					try {
-						dbSplitter = new DBSplitter(
-								writer,
-								schemaMapping,
-								dbWorkerPool,
-								query,
-								uidCacheManager.getCache(UIDCacheType.OBJECT),
-								cacheTableManager,
-								eventDispatcher,
-								internalConfig,
-								config);
-
-						if (shouldRun) {
-							dbSplitter.setMetadataProvider(metadataProvider);
-							dbSplitter.setCalculateNumberMatched(CoreConstants.IS_GUI_MODE);
-							dbSplitter.startQuery();
-						}
-					} catch (SQLException | QueryBuildException | FilterException e) {
-						throw new CityGMLExportException("Failed to query the database.", e);
-					} catch (FeatureWriteException e) {
-						throw new CityGMLExportException("Failed to write to output file.", e);
-					}
-
-					try {
-						dbWorkerPool.shutdownAndWait();
-						xlinkExporterPool.shutdownAndWait();
-					} catch (InterruptedException e) {
-						throw new CityGMLExportException("Failed to shutdown worker pools.", e);
-					}
-
-					eventDispatcher.triggerEvent(new StatusDialogProgressBar(true, this));
-					eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("export.dialog.finish.msg"), this));
-				} catch (CityGMLExportException e) {
-					throw e;
-				} catch (Throwable e) {
-					throw new CityGMLExportException("An unexpected error occurred.", e);
-				} finally {
-					// close writer before closing output file
-					if (writer != null) {
-						try {
-							writer.close();
-						} catch (FeatureWriteException e) {
-							log.error("Failed to close output writer.", e);
-							shouldRun = false;
-						}
-					}
-
-					if (file != null) {
-						try {
-							file.close();
-						} catch (IOException e) {
-							log.error("Failed to close output file.", e);
-							shouldRun = false;
-						}
-					}
-					
-					// clean up
-					if (xlinkExporterPool != null && !xlinkExporterPool.isTerminated())
-						xlinkExporterPool.shutdownNow();
-
-					if (dbWorkerPool != null && !dbWorkerPool.isTerminated())
-						dbWorkerPool.shutdownNow();
-
-					if (uidCacheManager != null) {
-						try {
-							uidCacheManager.shutdownAll();
-						} catch (SQLException e) {
-							log.error("Failed to clean gml:id caches.", e);
-							shouldRun = false;
-						}
-					}
-
-					if (cacheTableManager != null) {
-						try {
-							log.info("Cleaning temporary cache.");
-							cacheTableManager.dropAll();
-							cacheTableManager = null;
-						} catch (SQLException e) {
-							log.error("Failed to clean temporary cache.", e);
-							shouldRun = false;
-						}					
-					}
-				}
-
-				// show exported features
-				if (!objectCounter.isEmpty()) {
-					log.info("Exported city objects:");
-					Map<String, Long> typeNames = Util.mapObjectCounter(objectCounter, schemaMapping);					
-					typeNames.keySet().stream().sorted().forEach(object -> log.info(object + ": " + typeNames.get(object)));			
-				}
-
-				// show processed geometries
-				if (!geometryCounter.isEmpty())
-					log.info("Processed geometry objects: " + geometryCounter.values().stream().reduce(0L, Long::sum));
-
-				objectCounter.clear();
-				geometryCounter.clear();
+            if (!totalGeometryCounter.isEmpty()) {
+            	log.info("Total processed objects: " + totalGeometryCounter.values().stream().reduce(0L, Long::sum));
 			}
+        }
+
+        if (shouldRun) {
+        	log.info("Total export time: " + Util.formatElapsedTime(System.currentTimeMillis() - start) + ".");
 		}
 
-		// show totally exported features
-		if (useTiling && (rows > 1 || columns > 1)) {
-			if (!totalObjectCounter.isEmpty()) {
-				log.info("Total exported CityGML features:");
-				Map<String, Long> typeNames = Util.mapObjectCounter(totalObjectCounter, schemaMapping);
-				typeNames.keySet().forEach(object -> log.info(object + ": " + typeNames.get(object)));	
-			}
+        return shouldRun;
+    }
 
-			if (!totalGeometryCounter.isEmpty())
-				log.info("Total processed objects: " + totalGeometryCounter.values().stream().reduce(0L, Long::sum));
-		}
+    @Override
+    public void handleEvent(Event e) throws Exception {
+        if (e.getEventType() == EventType.OBJECT_COUNTER) {
+            Map<Integer, Long> counter = ((ObjectCounterEvent) e).getCounter();
 
-		if (shouldRun)
-			log.info("Total export time: " + Util.formatElapsedTime(System.currentTimeMillis() - start) + ".");
+            for (Entry<Integer, Long> entry : counter.entrySet()) {
+                Long tmp = objectCounter.get(entry.getKey());
+                objectCounter.put(entry.getKey(), tmp == null ? entry.getValue() : tmp + entry.getValue());
+                if (useTiling) {
+                    tmp = totalObjectCounter.get(entry.getKey());
+                    totalObjectCounter.put(entry.getKey(), tmp == null ? entry.getValue() : tmp + entry.getValue());
+                }
+            }
+        } else if (e.getEventType() == EventType.GEOMETRY_COUNTER) {
+            Map<GMLClass, Long> counter = ((GeometryCounterEvent) e).getCounter();
 
-		return shouldRun;
-	}
+            for (Entry<GMLClass, Long> entry : counter.entrySet()) {
+                Long tmp = geometryCounter.get(entry.getKey());
+                geometryCounter.put(entry.getKey(), tmp == null ? entry.getValue() : tmp + entry.getValue());
+                if (useTiling) {
+                    tmp = totalGeometryCounter.get(entry.getKey());
+                    totalGeometryCounter.put(entry.getKey(), tmp == null ? entry.getValue() : tmp + entry.getValue());
+                }
+            }
+        } else if (e.getEventType() == EventType.INTERRUPT) {
+            if (isInterrupted.compareAndSet(false, true)) {
+                shouldRun = false;
+                InterruptEvent interruptEvent = (InterruptEvent) e;
 
-	@Override
-	public void handleEvent(Event e) throws Exception {
-		if (e.getEventType() == EventType.OBJECT_COUNTER) {
-			Map<Integer, Long> counter = ((ObjectCounterEvent)e).getCounter();
+                if (interruptEvent.getCause() != null) {
+                    Throwable cause = interruptEvent.getCause();
+                    if (cause instanceof SQLException) {
+                        log.error("A SQL error occurred.", cause);
+                    } else {
+                        log.error("An error occurred.", cause);
+                    }
+                }
 
-			for (Entry<Integer, Long> entry : counter.entrySet()) {
-				Long tmp = objectCounter.get(entry.getKey());
-				objectCounter.put(entry.getKey(), tmp == null ? entry.getValue() : tmp + entry.getValue());
-
-				if (useTiling) {
-					tmp = totalObjectCounter.get(entry.getKey());
-					totalObjectCounter.put(entry.getKey(), tmp == null ? entry.getValue() : tmp + entry.getValue());
-				}
-			}
-		}
-
-		else if (e.getEventType() == EventType.GEOMETRY_COUNTER) {
-			Map<GMLClass, Long> counter = ((GeometryCounterEvent)e).getCounter();
-
-			for (Entry<GMLClass, Long> entry : counter.entrySet()) {
-				Long tmp = geometryCounter.get(entry.getKey());
-				geometryCounter.put(entry.getKey(), tmp == null ? entry.getValue() : tmp + entry.getValue());
-
-				if (useTiling) {
-					tmp = totalGeometryCounter.get(entry.getKey());
-					totalGeometryCounter.put(entry.getKey(), tmp == null ? entry.getValue() : tmp + entry.getValue());
-				}
-			}
-		}
-
-		else if (e.getEventType() == EventType.INTERRUPT) {
-			if (isInterrupted.compareAndSet(false, true)) {
-				shouldRun = false;
-				InterruptEvent interruptEvent = (InterruptEvent)e;
-
-				if (interruptEvent.getCause() != null) {
-					Throwable cause = interruptEvent.getCause();
-					if (cause instanceof SQLException) {
-						log.error("A SQL error occurred.", cause);
-					} else {
-						log.error("An error occurred.", cause);
-					}
+                String msg = interruptEvent.getLogMessage();
+                if (msg != null) {
+                	log.log(interruptEvent.getLogLevelType(), msg);
 				}
 
-				String msg = interruptEvent.getLogMessage();
-				if (msg != null)
-					log.log(interruptEvent.getLogLevelType(), msg);
+                if (dbSplitter != null) {
+                	dbSplitter.shutdown();
+				}
 
-				if (dbSplitter != null)
-					dbSplitter.shutdown();
+                if (dbWorkerPool != null) {
+                	dbWorkerPool.drainWorkQueue();
+				}
 
-				if (dbWorkerPool != null)
-					dbWorkerPool.drainWorkQueue();
-
-				if (xlinkExporterPool != null)
-					xlinkExporterPool.drainWorkQueue();
-			}
-		}
-	}
+                if (xlinkExporterPool != null) {
+                	xlinkExporterPool.drainWorkQueue();
+				}
+            }
+        }
+    }
 }

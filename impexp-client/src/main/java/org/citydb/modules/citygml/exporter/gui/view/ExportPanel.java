@@ -401,6 +401,11 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 				browseText.setText("");
 			} catch (CityGMLExportException e) {
 				log.error(e.getMessage(), e.getCause());
+				switch (e.getErrorCode()) {
+					case SPATIAL_INDEXES_NOT_ACTIVATED:
+						log.error("Please use the database tab to activate the spatial indexes.");
+						break;
+				}
 			}
 
 			SwingUtilities.invokeLater(exportDialog::dispose);
