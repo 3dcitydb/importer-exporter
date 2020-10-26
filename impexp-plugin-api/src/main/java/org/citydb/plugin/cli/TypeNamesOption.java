@@ -30,7 +30,6 @@ package org.citydb.plugin.cli;
 
 import org.citydb.config.project.query.filter.type.FeatureTypeFilter;
 import org.citygml4j.model.module.Module;
-import org.citygml4j.model.module.ModuleContext;
 import org.citygml4j.model.module.Modules;
 import org.citygml4j.model.module.citygml.CityGMLVersion;
 import org.citygml4j.xml.CityGMLNamespaceContext;
@@ -42,13 +41,13 @@ import javax.xml.namespace.QName;
 import java.util.Map;
 import java.util.stream.Stream;
 
-public class TypeNamesOption {
+public class TypeNamesOption implements CliOption {
     @CommandLine.Option(names = "--type-names", split = ",", paramLabel = "<[prefix:]name>",
-            description = "Names of the top-level features to be exported.")
+            description = "Names of the top-level features to process.")
     private String[] typeNames;
 
     @CommandLine.Option(names = "--namespaces", split = ",", paramLabel = "<prefix=name>",
-            description = "Namespaces and their prefixes used in the query.")
+            description = "Definition of namespaces and their prefixes.")
     private Map<String, String> namespaces;
 
     @CommandLine.Spec
@@ -73,9 +72,12 @@ public class TypeNamesOption {
         return featureTypeFilter;
     }
 
+    @Override
     public void preprocess() throws Exception {
         namespaceContext = new CityGMLNamespaceContext();
-        namespaceContext.setPrefixes(new ModuleContext(CityGMLVersion.v2_0_0));
+        Modules.getADEModules().forEach(m -> namespaceContext.setPrefix(m.getNamespacePrefix(), m.getNamespaceURI()));
+        namespaceContext.setPrefixes(CityGMLVersion.v2_0_0);
+
         if (namespaces != null) {
             namespaces.forEach(namespaceContext::setPrefix);
         }

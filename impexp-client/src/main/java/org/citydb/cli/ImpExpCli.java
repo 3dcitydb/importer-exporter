@@ -51,6 +51,7 @@ import org.citydb.plugin.IllegalEventSourceChecker;
 import org.citydb.plugin.Plugin;
 import org.citydb.plugin.PluginException;
 import org.citydb.plugin.PluginManager;
+import org.citydb.plugin.cli.CliOption;
 import org.citydb.plugin.cli.StartupProgressListener;
 import org.citydb.plugin.extension.config.ConfigExtension;
 import org.citydb.registry.ObjectRegistry;
@@ -68,6 +69,7 @@ import picocli.CommandLine;
 import javax.xml.bind.JAXBException;
 import java.io.Console;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.net.ProxySelector;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -244,8 +246,19 @@ public class ImpExpCli extends CliCommand implements CommandLine.IVersionProvide
                     passwordOption.setValue(readPassword(subParseResult));
                 }
 
-                // preprocess commands
+                // preprocess options
                 Object command = commandLine.getCommand();
+                for (Field field : command.getClass().getDeclaredFields()) {
+                    if (CliOption.class.isAssignableFrom(field.getType())) {
+                        field.setAccessible(true);
+                        CliOption option = (CliOption) field.get(command);
+                        if (option != null) {
+                            option.preprocess();
+                        }
+                    }
+                }
+
+                // preprocess command
                 if (command instanceof CliCommand) {
                     ((CliCommand) command).preprocess();
                 }

@@ -37,7 +37,6 @@ import org.citydb.log.Logger;
 import org.citydb.plugin.CliCommand;
 import org.citydb.plugin.cli.DatabaseOption;
 import org.citydb.plugin.cli.FileOutputOption;
-import org.citydb.plugin.cli.TypeNamesOption;
 import org.citydb.registry.ObjectRegistry;
 import picocli.CommandLine;
 
@@ -56,9 +55,6 @@ public class ExportCommand extends CliCommand {
     @CommandLine.Option(names = "--output-encoding", defaultValue = "UTF-8",
             description = "Encoding used for the output file (default: ${DEFAULT-VALUE}).")
     private String encoding;
-
-    @CommandLine.Mixin
-    private TypeNamesOption typeNamesOption;
 
     private final Logger log = Logger.getInstance();
 
@@ -90,12 +86,5 @@ public class ExportCommand extends CliCommand {
         }
 
         return 0;
-    }
-
-    @Override
-    public void preprocess() throws Exception {
-        if (typeNamesOption != null) {
-            typeNamesOption.preprocess();
-        }
     }
 }

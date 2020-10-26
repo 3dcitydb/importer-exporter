@@ -28,16 +28,6 @@
 
 package org.citydb.plugin.cli;
 
-import picocli.CommandLine;
-
-import java.nio.file.Path;
-
-public class FileOutputOption implements CliOption {
-    @CommandLine.Option(names = {"-o", "--output"}, required = true,
-            description = "Name of the output file.")
-    private Path file;
-
-    public Path getFile() {
-        return file;
-    }
+public interface CliOption {
+    default void preprocess() throws Exception {}
 }
