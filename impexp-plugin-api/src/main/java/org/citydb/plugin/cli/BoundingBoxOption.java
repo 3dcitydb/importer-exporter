@@ -62,7 +62,7 @@ public class BoundingBoxOption implements CliOption {
                     boundingBox.getUpperCorner().setY(Double.parseDouble(parts[3]));
                 } catch (NumberFormatException e) {
                     throw new CommandLine.ParameterException(spec.commandLine(),
-                            "The coordinates of a bounding box should be floating point numbers but were " +
+                            "The coordinates of a bounding box must be floating point numbers but were " +
                                     String.join(",", parts[0], parts[1], parts[2], parts[3]) + ".");
                 }
 
@@ -71,7 +71,7 @@ public class BoundingBoxOption implements CliOption {
                         boundingBox.setSrs(Integer.parseInt(parts[4]));
                     } catch (NumberFormatException e) {
                         throw new CommandLine.ParameterException(spec.commandLine(),
-                                "The SRID of a bounding box should be an integer but was " + parts[4] + ".");
+                                "The SRID of a bounding box must be an integer but was " + parts[4] + ".");
                     }
                 }
             } else {
