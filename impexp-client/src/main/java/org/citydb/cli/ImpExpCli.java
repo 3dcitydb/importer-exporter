@@ -231,15 +231,17 @@ public class ImpExpCli extends CliCommand implements CommandLine.IVersionProvide
             }
 
             for (CommandLine commandLine : commandLines) {
+                CommandLine.ParseResult subParseResult = commandLine.getParseResult();
+
                 // check for user-defined log level
-                if (commandLine.getParseResult().hasMatchedOption("--log-level")) {
+                if (subParseResult.hasMatchedOption("--log-level")) {
                     useDefaultLogLevel = false;
                 }
 
                 // read password from keyboard
-                CommandLine.Model.OptionSpec passwordOption = commandLine.getParseResult().matchedOption("-p");
+                CommandLine.Model.OptionSpec passwordOption = subParseResult.matchedOption("-p");
                 if (passwordOption != null && passwordOption.getValue().equals("")) {
-                    passwordOption.setValue(readPassword(commandLine.getParseResult()));
+                    passwordOption.setValue(readPassword(subParseResult));
                 }
 
                 // preprocess commands

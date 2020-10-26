@@ -29,6 +29,7 @@
 package org.citydb.plugin.cli;
 
 import org.citygml4j.model.module.Module;
+import org.citygml4j.model.module.ModuleContext;
 import org.citygml4j.model.module.Modules;
 import org.citygml4j.model.module.citygml.CityGMLVersion;
 import org.citygml4j.xml.CityGMLNamespaceContext;
@@ -38,7 +39,6 @@ import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -57,15 +57,15 @@ public class QueryOptions {
     private final Set<QName> featureTypes = new HashSet<>();
 
     public void validate() throws CommandLine.ParameterException {
-        CityGMLNamespaceContext namespaceContext = processNamespaces();
-        processTypeNames(namespaceContext);
+        if (typeNames != null) {
+            CityGMLNamespaceContext namespaceContext = processNamespaces();
+            processTypeNames(namespaceContext);
+        }
     }
 
     private CityGMLNamespaceContext processNamespaces() {
         CityGMLNamespaceContext namespaceContext = new CityGMLNamespaceContext();
-        namespaceContext.setPrefixes(CityGMLVersion.v2_0_0);
-        Modules.getADEModules().forEach(m -> namespaceContext.setPrefix(m.getNamespacePrefix(), m.getNamespaceURI()));
-
+        namespaceContext.setPrefixes(new ModuleContext(CityGMLVersion.v2_0_0));
         if (namespaces != null) {
             namespaces.forEach(namespaceContext::setPrefix);
         }
@@ -76,30 +76,26 @@ public class QueryOptions {
     private void processTypeNames(CityGMLNamespaceContext namespaceContext) {
         for (String typeName : typeNames) {
             String[] parts = typeName.split(":");
-            if (parts.length > 2) {
-                throw new CommandLine.ParameterException(spec.commandLine(), "A typename should be in [PREFIX:]NAME " +
-                        "format but was " + typeName + ".");
-            }
-
             if (parts.length == 2) {
                 String namespace = namespaceContext.getNamespaceURI(parts[0]);
                 if (namespace.equals(XMLConstants.NULL_NS_URI)) {
-                    throw new CommandLine.ParameterException(spec.commandLine(), "prefix cannt be mapped.");
+                    throw new CommandLine.ParameterException(spec.commandLine(), "Failed to map the prefix " + parts[0] +
+                            " to a namespace.\nPossible solutions: --namespaces");
                 }
 
                 featureTypes.add(new QName(namespace, parts[1]));
-            } else {
-                Optional<Module> module = Stream.concat(CityGMLVersion.v2_0_0.getCityGMLModules().stream(),
+            } else if (parts.length == 1) {
+                Module module = Stream.concat(CityGMLVersion.v2_0_0.getCityGMLModules().stream(),
                         Modules.getADEModules().stream())
                         .filter(m -> m.hasFeature(parts[0]))
-                        .findFirst();
+                        .findFirst()
+                        .orElseThrow(() -> new CommandLine.ParameterException(spec.commandLine(), "Failed to find " +
+                                "a namespace for the type name " + typeName + "\nPossible solutions: --namespaces"));
 
-                if (module.isPresent()) {
-                    featureTypes.add(new QName(module.get().getNamespaceURI(), parts[0]));
-                } else {
-                    throw new CommandLine.ParameterException(spec.commandLine(), "Failed to find the namespace for " +
-                            "type name " + typeName + "\n" + "Possible solutions: --namespaces");
-                }
+                featureTypes.add(new QName(module.getNamespaceURI(), parts[0]));
+            } else {
+                throw new CommandLine.ParameterException(spec.commandLine(), "A typename should be in [PREFIX:]NAME " +
+                        "format but was " + typeName + ".");
             }
         }
     }
