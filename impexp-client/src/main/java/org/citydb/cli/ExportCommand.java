@@ -67,7 +67,7 @@ public class ExportCommand extends CliCommand {
         Config config = ObjectRegistry.getInstance().getConfig();
 
         DatabaseController database = ObjectRegistry.getInstance().getDatabaseController();
-        DatabaseConnection connection = databaseOption != null && databaseOption.isValid() ?
+        DatabaseConnection connection = databaseOption != null ?
                 databaseOption.toDatabaseConnection() :
                 config.getDatabaseConfig().getActiveConnection();
 
@@ -95,7 +95,7 @@ public class ExportCommand extends CliCommand {
     @Override
     public void preprocess() throws Exception {
         if (typeNamesOption != null) {
-            typeNamesOption.validate();
+            typeNamesOption.preprocess();
         }
     }
 }

@@ -28,6 +28,7 @@
 
 package org.citydb.plugin.cli;
 
+import org.citydb.config.project.query.filter.type.FeatureTypeFilter;
 import org.citygml4j.model.module.Module;
 import org.citygml4j.model.module.ModuleContext;
 import org.citygml4j.model.module.Modules;
@@ -36,10 +37,9 @@ import org.citygml4j.xml.CityGMLNamespaceContext;
 import picocli.CommandLine;
 
 import javax.xml.XMLConstants;
+import javax.xml.namespace.NamespaceContext;
 import javax.xml.namespace.QName;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Stream;
 
 public class TypeNamesOption {
@@ -54,48 +54,66 @@ public class TypeNamesOption {
     @CommandLine.Spec
     private CommandLine.Model.CommandSpec spec;
 
-    private final Set<QName> featureTypes = new HashSet<>();
+    private FeatureTypeFilter featureTypeFilter;
+    private CityGMLNamespaceContext namespaceContext;
 
-    public void validate() throws CommandLine.ParameterException {
-        if (typeNames != null) {
-            CityGMLNamespaceContext namespaceContext = processNamespaces();
-            processTypeNames(namespaceContext);
-        }
+    public String[] getTypeNames() {
+        return typeNames;
     }
 
-    private CityGMLNamespaceContext processNamespaces() {
-        CityGMLNamespaceContext namespaceContext = new CityGMLNamespaceContext();
+    public Map<String, String> getNamespaces() {
+        return namespaces;
+    }
+
+    private NamespaceContext toNamespaceContext() {
+        return namespaceContext;
+    }
+
+    public FeatureTypeFilter toFeatureTypeFilter() {
+        return featureTypeFilter;
+    }
+
+    public void preprocess() throws Exception {
+        namespaceContext = new CityGMLNamespaceContext();
         namespaceContext.setPrefixes(new ModuleContext(CityGMLVersion.v2_0_0));
         if (namespaces != null) {
             namespaces.forEach(namespaceContext::setPrefix);
         }
 
-        return namespaceContext;
-    }
+        if (typeNames != null) {
+            FeatureTypeFilter featureTypeFilter = new FeatureTypeFilter();
+            for (String typeName : typeNames) {
+                String[] parts = typeName.split(":");
+                if (parts.length == 2) {
+                    String namespace = namespaceContext.getNamespaceURI(parts[0]);
+                    if (namespace.equals(XMLConstants.NULL_NS_URI)) {
+                        throw new CommandLine.ParameterException(spec.commandLine(),
+                                "Unknown prefix: " + parts[0] + "\nPossible solutions: --namespaces");
+                    }
 
-    private void processTypeNames(CityGMLNamespaceContext namespaceContext) {
-        for (String typeName : typeNames) {
-            String[] parts = typeName.split(":");
-            if (parts.length == 2) {
-                String namespace = namespaceContext.getNamespaceURI(parts[0]);
-                if (namespace.equals(XMLConstants.NULL_NS_URI)) {
-                    throw new CommandLine.ParameterException(spec.commandLine(), "Unknown prefix: " + parts[0] +
-                            "\nPossible solutions: --namespaces");
+                    Module module = Modules.getModule(namespace);
+                    if (module == null || !module.hasFeature(parts[1])) {
+                        throw new CommandLine.ParameterException(spec.commandLine(), "Unknown type name: " + typeName);
+                    }
+
+                    featureTypeFilter.addTypeName(new QName(namespace, parts[1]));
+                } else if (parts.length == 1) {
+                    Module module = Stream.concat(CityGMLVersion.v2_0_0.getCityGMLModules().stream(),
+                            Modules.getADEModules().stream())
+                            .filter(m -> m.hasFeature(parts[0]))
+                            .findFirst()
+                            .orElseThrow(() -> new CommandLine.ParameterException(spec.commandLine(),
+                                    "Unknown type name: " + typeName + "\nPossible solutions: --namespaces"));
+
+                    featureTypeFilter.addTypeName(new QName(module.getNamespaceURI(), parts[0]));
+                } else {
+                    throw new CommandLine.ParameterException(spec.commandLine(),
+                            "A type name should be in [PREFIX:]NAME format but was " + typeName + ".");
                 }
+            }
 
-                featureTypes.add(new QName(namespace, parts[1]));
-            } else if (parts.length == 1) {
-                Module module = Stream.concat(CityGMLVersion.v2_0_0.getCityGMLModules().stream(),
-                        Modules.getADEModules().stream())
-                        .filter(m -> m.hasFeature(parts[0]))
-                        .findFirst()
-                        .orElseThrow(() -> new CommandLine.ParameterException(spec.commandLine(), "Unknown type name: " +
-                                typeName + "\nPossible solutions: --namespaces"));
-
-                featureTypes.add(new QName(module.getNamespaceURI(), parts[0]));
-            } else {
-                throw new CommandLine.ParameterException(spec.commandLine(), "A type name should be in [PREFIX:]NAME " +
-                        "format but was " + typeName + ".");
+            if (!featureTypeFilter.isEmpty()) {
+                this.featureTypeFilter = featureTypeFilter;
             }
         }
     }

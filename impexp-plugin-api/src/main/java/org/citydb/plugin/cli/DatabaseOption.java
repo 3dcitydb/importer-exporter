@@ -91,12 +91,6 @@ public class DatabaseOption {
         return password;
     }
 
-    public boolean isValid() {
-        return name != null
-                && host != null
-                && user != null;
-    }
-
     public DatabaseConnection toDatabaseConnection() {
         DatabaseConnection connection = new DatabaseConnection();
         connection.setDatabaseType(getType());
