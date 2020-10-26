@@ -35,9 +35,9 @@ import org.citydb.config.project.database.DatabaseConnection;
 import org.citydb.database.DatabaseController;
 import org.citydb.log.Logger;
 import org.citydb.plugin.CliCommand;
-import org.citydb.plugin.cli.DatabaseOptions;
-import org.citydb.plugin.cli.FileOutputOptions;
-import org.citydb.plugin.cli.QueryOptions;
+import org.citydb.plugin.cli.DatabaseOption;
+import org.citydb.plugin.cli.FileOutputOption;
+import org.citydb.plugin.cli.TypeNamesOption;
 import org.citydb.registry.ObjectRegistry;
 import picocli.CommandLine;
 
@@ -48,17 +48,17 @@ import picocli.CommandLine;
 )
 public class ExportCommand extends CliCommand {
     @CommandLine.ArgGroup(exclusive = false)
-    private DatabaseOptions databaseOptions;
+    private DatabaseOption databaseOption;
 
     @CommandLine.Mixin
-    private FileOutputOptions outputOptions;
+    private FileOutputOption outputOption;
 
     @CommandLine.Option(names = "--output-encoding", defaultValue = "UTF-8",
             description = "Encoding used for the output file (default: ${DEFAULT-VALUE}).")
     private String encoding;
 
     @CommandLine.Mixin
-    private QueryOptions queryOptions;
+    private TypeNamesOption typeNamesOption;
 
     private final Logger log = Logger.getInstance();
 
@@ -67,8 +67,8 @@ public class ExportCommand extends CliCommand {
         Config config = ObjectRegistry.getInstance().getConfig();
 
         DatabaseController database = ObjectRegistry.getInstance().getDatabaseController();
-        DatabaseConnection connection = databaseOptions != null && databaseOptions.isValid() ?
-                databaseOptions.toDatabaseConnection() :
+        DatabaseConnection connection = databaseOption != null && databaseOption.isValid() ?
+                databaseOption.toDatabaseConnection() :
                 config.getDatabaseConfig().getActiveConnection();
 
         if (!database.connect(connection)) {
@@ -79,7 +79,7 @@ public class ExportCommand extends CliCommand {
         config.getExportConfig().getCityGMLOptions().setFileEncoding(encoding);
 
         try {
-            new Exporter().doExport(outputOptions.getFile());
+            new Exporter().doExport(outputOption.getFile());
             log.info("Database export successfully finished.");
         } catch (CityGMLExportException e) {
             log.error(e.getMessage(), e.getCause());
@@ -94,8 +94,8 @@ public class ExportCommand extends CliCommand {
 
     @Override
     public void preprocess() throws Exception {
-        if (queryOptions != null) {
-            queryOptions.validate();
+        if (typeNamesOption != null) {
+            typeNamesOption.validate();
         }
     }
 }

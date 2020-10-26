@@ -32,7 +32,7 @@ import org.citydb.config.project.database.DatabaseConnection;
 import org.citydb.config.project.database.DatabaseType;
 import picocli.CommandLine;
 
-public class DatabaseOptions {
+public class DatabaseOption {
     enum Type {postgresql, oracle}
 
     @CommandLine.Option(names = {"-t", "--db-type"}, paramLabel = "<database>", defaultValue = "postgresql",

@@ -32,7 +32,7 @@ import picocli.CommandLine;
 
 import java.nio.file.Path;
 
-public class FileOutputOptions {
+public class FileOutputOption {
     @CommandLine.Option(names = {"-o", "--output"}, required = true,
             description = "Name of the output file.")
     private Path file;

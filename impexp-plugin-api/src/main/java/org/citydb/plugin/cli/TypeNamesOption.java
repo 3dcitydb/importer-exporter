@@ -42,7 +42,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
-public class QueryOptions {
+public class TypeNamesOption {
     @CommandLine.Option(names = "--type-names", split = ",", paramLabel = "<[prefix:]name>",
             description = "Names of the top-level features to be exported.")
     private String[] typeNames;
@@ -79,8 +79,8 @@ public class QueryOptions {
             if (parts.length == 2) {
                 String namespace = namespaceContext.getNamespaceURI(parts[0]);
                 if (namespace.equals(XMLConstants.NULL_NS_URI)) {
-                    throw new CommandLine.ParameterException(spec.commandLine(), "Failed to map the prefix " + parts[0] +
-                            " to a namespace.\nPossible solutions: --namespaces");
+                    throw new CommandLine.ParameterException(spec.commandLine(), "Unknown prefix: " + parts[0] +
+                            "\nPossible solutions: --namespaces");
                 }
 
                 featureTypes.add(new QName(namespace, parts[1]));
@@ -89,12 +89,12 @@ public class QueryOptions {
                         Modules.getADEModules().stream())
                         .filter(m -> m.hasFeature(parts[0]))
                         .findFirst()
-                        .orElseThrow(() -> new CommandLine.ParameterException(spec.commandLine(), "Failed to find " +
-                                "a namespace for the type name " + typeName + "\nPossible solutions: --namespaces"));
+                        .orElseThrow(() -> new CommandLine.ParameterException(spec.commandLine(), "Unknown type name: " +
+                                typeName + "\nPossible solutions: --namespaces"));
 
                 featureTypes.add(new QName(module.getNamespaceURI(), parts[0]));
             } else {
-                throw new CommandLine.ParameterException(spec.commandLine(), "A typename should be in [PREFIX:]NAME " +
+                throw new CommandLine.ParameterException(spec.commandLine(), "A type name should be in [PREFIX:]NAME " +
                         "format but was " + typeName + ".");
             }
         }
