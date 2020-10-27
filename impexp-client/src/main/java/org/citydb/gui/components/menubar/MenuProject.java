@@ -37,7 +37,7 @@ import org.citydb.gui.ImpExpGui;
 import org.citydb.gui.factory.SrsComboBoxFactory;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.log.Logger;
-import org.citydb.modules.preferences.PreferencesPlugin;
+import org.citydb.gui.modules.preferences.PreferencesPlugin;
 import org.citydb.plugin.InternalPlugin;
 import org.citydb.plugin.PluginException;
 import org.citydb.plugin.PluginManager;

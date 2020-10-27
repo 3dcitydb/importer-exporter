@@ -40,8 +40,8 @@ import org.citydb.config.Config;
 import org.citydb.database.DatabaseController;
 import org.citydb.database.schema.mapping.SchemaMapping;
 import org.citydb.log.Logger;
-import org.citydb.modules.kml.controller.KmlExportException;
-import org.citydb.modules.kml.controller.KmlExporter;
+import org.citydb.gui.modules.kml.controller.KmlExportException;
+import org.citydb.gui.modules.kml.controller.KmlExporter;
 import org.citydb.registry.ObjectRegistry;
 import org.citygml4j.builder.jaxb.CityGMLBuilder;
 
