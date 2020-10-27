@@ -37,9 +37,10 @@ import org.citydb.database.DatabaseController;
 import org.citydb.log.Logger;
 import org.citydb.plugin.CliCommand;
 import org.citydb.plugin.cli.DatabaseOption;
-import org.citydb.plugin.cli.FileOutputOption;
 import org.citydb.registry.ObjectRegistry;
 import picocli.CommandLine;
+
+import java.nio.file.Path;
 
 @CommandLine.Command(
         name = "export",
@@ -47,17 +48,18 @@ import picocli.CommandLine;
         versionProvider = ImpExpCli.class
 )
 public class ExportCommand extends CliCommand {
-    @CommandLine.ArgGroup(exclusive = false)
-    private DatabaseOption databaseOption;
-
-    @CommandLine.Mixin
-    private FileOutputOption outputOption;
+    @CommandLine.Option(names = {"-o", "--output"}, required = true,
+            description = "Name of the output file.")
+    private Path file;
 
     @CommandLine.Option(names = "--output-encoding", defaultValue = "UTF-8",
             description = "Encoding used for the output file (default: ${DEFAULT-VALUE}).")
     private String encoding;
 
-    @CommandLine.Mixin
+    @CommandLine.ArgGroup(exclusive = false, heading = "Database connection options:%n")
+    private DatabaseOption databaseOption;
+
+    @CommandLine.ArgGroup(validate = false, heading = "Query and filter options:%n")
     private QueryOption queryOption;
 
     private final Logger log = Logger.getInstance();
@@ -81,12 +83,12 @@ public class ExportCommand extends CliCommand {
         config.getExportConfig().getCityGMLOptions().setFileEncoding(encoding);
 
         // set user-defined query options
-        if (queryOption.isSpecified()) {
+        if (queryOption != null) {
             config.getExportConfig().setQuery(queryOption.toQueryConfig());
         }
 
         try {
-            new Exporter().doExport(outputOption.getFile());
+            new Exporter().doExport(file);
             log.info("Database export successfully finished.");
         } catch (CityGMLExportException e) {
             log.error(e.getMessage(), e.getCause());

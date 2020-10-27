@@ -47,11 +47,6 @@ public class XMLQueryOption implements CliOption {
     }
 
     @Override
-    public boolean isSpecified() {
-        return xmlQuery != null;
-    }
-
-    @Override
     public void preprocess(CommandLine commandLine) throws Exception {
         queryConfig = CliOptionBuilder.xmlQueryConfig(xmlQuery, commandLine);
     }

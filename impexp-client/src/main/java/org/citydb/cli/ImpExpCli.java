@@ -252,7 +252,7 @@ public class ImpExpCli extends CliCommand implements CommandLine.IVersionProvide
                     if (CliOption.class.isAssignableFrom(field.getType())) {
                         field.setAccessible(true);
                         CliOption option = (CliOption) field.get(command);
-                        if (option != null && option.isSpecified()) {
+                        if (option != null) {
                             option.preprocess(commandLine);
                         }
                     }

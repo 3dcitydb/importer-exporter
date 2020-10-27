@@ -63,12 +63,6 @@ public class TypeNamesOption implements CliOption {
     }
 
     @Override
-    public boolean isSpecified() {
-        return typeNames != null
-                || namespaces != null;
-    }
-
-    @Override
     public void preprocess(CommandLine commandLine) throws Exception {
         namespaceContext = CliOptionBuilder.namespaceContext(namespaces, commandLine);
         featureTypeFilter = CliOptionBuilder.featureTypeFilter(typeNames, namespaceContext, commandLine);

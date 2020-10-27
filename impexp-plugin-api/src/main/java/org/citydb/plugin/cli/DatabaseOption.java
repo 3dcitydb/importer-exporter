@@ -103,11 +103,4 @@ public class DatabaseOption implements CliOption {
 
         return connection;
     }
-
-    @Override
-    public boolean isSpecified() {
-        return name != null
-                && host != null
-                && user != null;
-    }
 }

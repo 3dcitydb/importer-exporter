@@ -45,11 +45,6 @@ public class BoundingBoxOption implements CliOption {
     }
 
     @Override
-    public boolean isSpecified() {
-        return bbox != null;
-    }
-
-    @Override
     public void preprocess(CommandLine commandLine) throws Exception {
         boundingBox = CliOptionBuilder.boundingBox(bbox, commandLine);
     }

@@ -38,26 +38,26 @@ import org.citydb.plugin.cli.XMLQueryOption;
 import picocli.CommandLine;
 
 public class QueryOption implements CliOption {
-    @CommandLine.Mixin
+    @CommandLine.ArgGroup(validate = false)
     private TypeNamesOption typeNamesOption;
 
-    @CommandLine.Mixin
+    @CommandLine.ArgGroup(validate = false)
     BoundingBoxOption boundingBoxOption;
 
-    @CommandLine.Mixin
+    @CommandLine.ArgGroup(validate = false)
     private XMLQueryOption xmlQueryOption;
 
     public QueryConfig toQueryConfig() {
-        if (xmlQueryOption.isSpecified()) {
+        if (xmlQueryOption != null) {
             return xmlQueryOption.toQueryConfig();
         } else {
             QueryConfig queryConfig = new QueryConfig();
 
-            if (typeNamesOption.isSpecified()) {
+            if (typeNamesOption != null) {
                 queryConfig.setFeatureTypeFilter(typeNamesOption.toFeatureTypeFilter());
             }
 
-            if (boundingBoxOption.isSpecified()) {
+            if (boundingBoxOption != null) {
                 BoundingBox bbox = boundingBoxOption.toBoundingBox();
                 if (bbox != null) {
                     BBOXOperator bboxOperator = new BBOXOperator();
@@ -76,21 +76,14 @@ public class QueryOption implements CliOption {
     }
 
     @Override
-    public boolean isSpecified() {
-        return typeNamesOption.isSpecified()
-                || boundingBoxOption.isSpecified()
-                || xmlQueryOption.isSpecified();
-    }
-
-    @Override
     public void preprocess(CommandLine commandLine) throws Exception {
-        if (xmlQueryOption.isSpecified()) {
-            if (typeNamesOption.isSpecified()) {
+        if (xmlQueryOption != null) {
+            if (typeNamesOption != null) {
                 throw new CommandLine.ParameterException(commandLine,
                         "Options --type-names and --xml-query are mutually exclusive.");
             }
 
-            if (boundingBoxOption.isSpecified()) {
+            if (boundingBoxOption != null) {
                 throw new CommandLine.ParameterException(commandLine,
                         "Options --bbox and --xml-query are mutually exclusive.");
             }
@@ -98,11 +91,11 @@ public class QueryOption implements CliOption {
             xmlQueryOption.preprocess(commandLine);
         }
 
-        if (typeNamesOption.isSpecified()) {
+        if (typeNamesOption != null) {
             typeNamesOption.preprocess(commandLine);
         }
 
-        if (boundingBoxOption.isSpecified()) {
+        if (boundingBoxOption != null) {
             boundingBoxOption.preprocess(commandLine);
         }
     }
