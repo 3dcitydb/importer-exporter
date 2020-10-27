@@ -42,16 +42,13 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 public class TypeNamesOption implements CliOption {
-    @CommandLine.Option(names = "--type-names", split = ",", paramLabel = "<[prefix:]name>",
+    @CommandLine.Option(names = {"-t", "--type-names"}, split = ",", paramLabel = "<[prefix:]name>",
             description = "Names of the top-level features to process.")
     private String[] typeNames;
 
     @CommandLine.Option(names = "--namespaces", split = ",", paramLabel = "<prefix=name>",
             description = "Definition of namespaces and their prefixes.")
     private Map<String, String> namespaces;
-
-    @CommandLine.Spec
-    private CommandLine.Model.CommandSpec spec;
 
     private FeatureTypeFilter featureTypeFilter;
     private CityGMLNamespaceContext namespaceContext;
@@ -73,7 +70,13 @@ public class TypeNamesOption implements CliOption {
     }
 
     @Override
-    public void preprocess() throws Exception {
+    public boolean isSpecified() {
+        return typeNames != null
+                || namespaces != null;
+    }
+
+    @Override
+    public void preprocess(CommandLine commandLine) throws Exception {
         namespaceContext = new CityGMLNamespaceContext();
         Modules.getADEModules().forEach(m -> namespaceContext.setPrefix(m.getNamespacePrefix(), m.getNamespaceURI()));
         namespaceContext.setPrefixes(CityGMLVersion.v2_0_0);
@@ -89,13 +92,13 @@ public class TypeNamesOption implements CliOption {
                 if (parts.length == 2) {
                     String namespace = namespaceContext.getNamespaceURI(parts[0]);
                     if (namespace.equals(XMLConstants.NULL_NS_URI)) {
-                        throw new CommandLine.ParameterException(spec.commandLine(),
+                        throw new CommandLine.ParameterException(commandLine,
                                 "Unknown prefix: " + parts[0] + "\nPossible solutions: --namespaces");
                     }
 
                     Module module = Modules.getModule(namespace);
                     if (module == null || !module.hasFeature(parts[1])) {
-                        throw new CommandLine.ParameterException(spec.commandLine(), "Unknown type name: " + typeName);
+                        throw new CommandLine.ParameterException(commandLine, "Unknown type name: " + typeName);
                     }
 
                     featureTypeFilter.addTypeName(new QName(namespace, parts[1]));
@@ -104,12 +107,12 @@ public class TypeNamesOption implements CliOption {
                             Modules.getADEModules().stream())
                             .filter(m -> m.hasFeature(parts[0]))
                             .findFirst()
-                            .orElseThrow(() -> new CommandLine.ParameterException(spec.commandLine(),
+                            .orElseThrow(() -> new CommandLine.ParameterException(commandLine,
                                     "Unknown type name: " + typeName + "\nPossible solutions: --namespaces"));
 
                     featureTypeFilter.addTypeName(new QName(module.getNamespaceURI(), parts[0]));
                 } else {
-                    throw new CommandLine.ParameterException(spec.commandLine(),
+                    throw new CommandLine.ParameterException(commandLine,
                             "A type name should be in [PREFIX:]NAME format but was " + typeName + ".");
                 }
             }

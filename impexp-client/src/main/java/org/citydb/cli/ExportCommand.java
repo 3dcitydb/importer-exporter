@@ -37,6 +37,7 @@ import org.citydb.log.Logger;
 import org.citydb.plugin.CliCommand;
 import org.citydb.plugin.cli.DatabaseOption;
 import org.citydb.plugin.cli.FileOutputOption;
+import org.citydb.plugin.cli.QueryOption;
 import org.citydb.registry.ObjectRegistry;
 import picocli.CommandLine;
 
@@ -56,12 +57,16 @@ public class ExportCommand extends CliCommand {
             description = "Encoding used for the output file (default: ${DEFAULT-VALUE}).")
     private String encoding;
 
+    @CommandLine.Mixin
+    private QueryOption queryOption;
+
     private final Logger log = Logger.getInstance();
 
     @Override
     public Integer call() throws Exception {
         Config config = ObjectRegistry.getInstance().getConfig();
 
+        // connect to database
         DatabaseController database = ObjectRegistry.getInstance().getDatabaseController();
         DatabaseConnection connection = databaseOption != null ?
                 databaseOption.toDatabaseConnection() :
@@ -72,7 +77,13 @@ public class ExportCommand extends CliCommand {
             return 1;
         }
 
+        // set file encoding
         config.getExportConfig().getCityGMLOptions().setFileEncoding(encoding);
+
+        // set user-defined query options
+        if (queryOption.isSpecified()) {
+            config.getExportConfig().setQuery(queryOption.toQueryConfig());
+        }
 
         try {
             new Exporter().doExport(outputOption.getFile());

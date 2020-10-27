@@ -28,6 +28,9 @@
 
 package org.citydb.plugin.cli;
 
+import picocli.CommandLine;
+
 public interface CliOption {
-    default void preprocess() throws Exception {}
+    boolean isSpecified();
+    default void preprocess(CommandLine commandLine) throws Exception {}
 }

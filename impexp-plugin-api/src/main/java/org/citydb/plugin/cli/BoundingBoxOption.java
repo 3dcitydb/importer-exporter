@@ -36,9 +36,6 @@ public class BoundingBoxOption implements CliOption {
             description = "Bounding box filter to use.")
     private String bbox;
 
-    @CommandLine.Spec
-    private CommandLine.Model.CommandSpec spec;
-
     private BoundingBox boundingBox;
 
     public String getBBox() {
@@ -50,7 +47,12 @@ public class BoundingBoxOption implements CliOption {
     }
 
     @Override
-    public void preprocess() throws Exception {
+    public boolean isSpecified() {
+        return bbox != null;
+    }
+
+    @Override
+    public void preprocess(CommandLine commandLine) throws Exception {
         if (bbox != null) {
             String[] parts = bbox.split(",");
             if (parts.length == 4 || parts.length == 5) {
@@ -61,7 +63,7 @@ public class BoundingBoxOption implements CliOption {
                     boundingBox.getUpperCorner().setX(Double.parseDouble(parts[2]));
                     boundingBox.getUpperCorner().setY(Double.parseDouble(parts[3]));
                 } catch (NumberFormatException e) {
-                    throw new CommandLine.ParameterException(spec.commandLine(),
+                    throw new CommandLine.ParameterException(commandLine,
                             "The coordinates of a bounding box must be floating point numbers but were " +
                                     String.join(",", parts[0], parts[1], parts[2], parts[3]) + ".");
                 }
@@ -70,12 +72,12 @@ public class BoundingBoxOption implements CliOption {
                     try {
                         boundingBox.setSrs(Integer.parseInt(parts[4]));
                     } catch (NumberFormatException e) {
-                        throw new CommandLine.ParameterException(spec.commandLine(),
+                        throw new CommandLine.ParameterException(commandLine,
                                 "The SRID of a bounding box must be an integer but was " + parts[4] + ".");
                     }
                 }
             } else {
-                throw new CommandLine.ParameterException(spec.commandLine(),
+                throw new CommandLine.ParameterException(commandLine,
                         "A bounding box should be in MINX,MINY,MAXX,MAXY[,SRID] format but was " + bbox + ".");
             }
         }

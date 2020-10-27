@@ -35,7 +35,7 @@ import picocli.CommandLine;
 public class DatabaseOption implements CliOption {
     enum Type {postgresql, oracle}
 
-    @CommandLine.Option(names = {"-t", "--db-type"}, paramLabel = "<database>", defaultValue = "postgresql",
+    @CommandLine.Option(names = {"-T", "--db-type"}, paramLabel = "<database>", defaultValue = "postgresql",
             description = "Database type: ${COMPLETION-CANDIDATES} (default: ${DEFAULT-VALUE}).")
     private Type type;
 
@@ -102,5 +102,12 @@ public class DatabaseOption implements CliOption {
         connection.setPassword(password);
 
         return connection;
+    }
+
+    @Override
+    public boolean isSpecified() {
+        return name != null
+                && host != null
+                && user != null;
     }
 }

@@ -40,4 +40,9 @@ public class FileOutputOption implements CliOption {
     public Path getFile() {
         return file;
     }
+
+    @Override
+    public boolean isSpecified() {
+        return file != null;
+    }
 }

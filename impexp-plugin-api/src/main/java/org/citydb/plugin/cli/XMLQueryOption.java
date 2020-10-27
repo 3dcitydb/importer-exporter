@@ -48,9 +48,6 @@ public class XMLQueryOption implements CliOption {
             description = "XML query expression to use when exporting.")
     private String xmlQuery;
 
-    @CommandLine.Spec
-    private CommandLine.Model.CommandSpec spec;
-
     private QueryConfig queryConfig;
 
     public String getXMLQuery() {
@@ -62,7 +59,12 @@ public class XMLQueryOption implements CliOption {
     }
 
     @Override
-    public void preprocess() throws Exception {
+    public boolean isSpecified() {
+        return xmlQuery != null;
+    }
+
+    @Override
+    public void preprocess(CommandLine commandLine) throws Exception {
         if (xmlQuery != null) {
             try {
                 SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
@@ -75,7 +77,7 @@ public class XMLQueryOption implements CliOption {
                     queryConfig = ((QueryWrapper) object).getQueryConfig();
                 }
             } catch (JAXBException e) {
-                throw new CommandLine.ParameterException(spec.commandLine(),
+                throw new CommandLine.ParameterException(commandLine,
                         "An XML query must validate against the XML schema definition.");
             }
         }
