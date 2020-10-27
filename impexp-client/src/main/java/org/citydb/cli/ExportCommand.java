@@ -59,7 +59,7 @@ public class ExportCommand extends CliCommand {
     @CommandLine.ArgGroup(exclusive = false, heading = "Database connection options:%n")
     private DatabaseOption databaseOption;
 
-    @CommandLine.ArgGroup(validate = false, heading = "Query and filter options:%n")
+    @CommandLine.ArgGroup(exclusive = false, heading = "Query and filter options:%n")
     private QueryOption queryOption;
 
     private final Logger log = Logger.getInstance();

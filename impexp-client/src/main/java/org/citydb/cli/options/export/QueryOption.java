@@ -38,13 +38,16 @@ import org.citydb.plugin.cli.XMLQueryOption;
 import picocli.CommandLine;
 
 public class QueryOption implements CliOption {
-    @CommandLine.ArgGroup(validate = false)
+    @CommandLine.ArgGroup(exclusive = false)
     private TypeNamesOption typeNamesOption;
 
-    @CommandLine.ArgGroup(validate = false)
-    BoundingBoxOption boundingBoxOption;
+    @CommandLine.ArgGroup
+    private BoundingBoxOption boundingBoxOption;
 
-    @CommandLine.ArgGroup(validate = false)
+    @CommandLine.ArgGroup(exclusive = false)
+    private LodOption lodOption;
+
+    @CommandLine.ArgGroup
     private XMLQueryOption xmlQueryOption;
 
     public QueryConfig toQueryConfig() {
@@ -97,6 +100,10 @@ public class QueryOption implements CliOption {
 
         if (boundingBoxOption != null) {
             boundingBoxOption.preprocess(commandLine);
+        }
+
+        if (lodOption != null) {
+            lodOption.preprocess(commandLine);
         }
     }
 }

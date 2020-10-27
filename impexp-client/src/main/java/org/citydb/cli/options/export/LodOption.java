@@ -28,24 +28,17 @@
 
 package org.citydb.cli.options.export;
 
-import org.citydb.config.geometry.BoundingBox;
 import org.citydb.plugin.cli.CliOption;
-import org.citydb.plugin.cli.CliOptionBuilder;
 import picocli.CommandLine;
 
-public class BoundingBoxOption implements CliOption {
-    @CommandLine.Option(names = "--bbox", paramLabel = "<minx,miny,maxx,maxy[,srid]>",
-            description = "Bounding box filter to use when exporting.")
-    private String bbox;
+public class LodOption implements CliOption {
+    enum LodMode {or, and, minimum, maximum}
 
-    private BoundingBox boundingBox;
+    @CommandLine.Option(names = "--lod", split = ",", paramLabel = "<0..4>", required = true,
+            description = "LoD representations to export.")
+    private int[] lods;
 
-    public BoundingBox toBoundingBox() {
-        return boundingBox;
-    }
-
-    @Override
-    public void preprocess(CommandLine commandLine) throws Exception {
-        boundingBox = CliOptionBuilder.boundingBox(bbox, commandLine);
-    }
+    @CommandLine.Option(names = "--lod-mode", defaultValue = "or",
+            description = "LoD filter mode: ${COMPLETION-CANDIDATES} (default: ${DEFAULT-VALUE}).")
+    private LodMode mode;
 }
