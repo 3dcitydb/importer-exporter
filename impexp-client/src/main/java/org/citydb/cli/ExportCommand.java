@@ -30,6 +30,7 @@ package org.citydb.cli;
 
 import org.citydb.citygml.exporter.CityGMLExportException;
 import org.citydb.citygml.exporter.controller.Exporter;
+import org.citydb.cli.option.export.QueryOption;
 import org.citydb.config.Config;
 import org.citydb.config.project.database.DatabaseConnection;
 import org.citydb.database.DatabaseController;
@@ -37,7 +38,6 @@ import org.citydb.log.Logger;
 import org.citydb.plugin.CliCommand;
 import org.citydb.plugin.cli.DatabaseOption;
 import org.citydb.plugin.cli.FileOutputOption;
-import org.citydb.plugin.cli.QueryOption;
 import org.citydb.registry.ObjectRegistry;
 import picocli.CommandLine;
 

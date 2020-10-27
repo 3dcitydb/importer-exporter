@@ -26,33 +26,31 @@
  * limitations under the License.
  */
 
-package org.citydb.plugin.cli;
+package org.citydb.cli.option.export;
 
-import org.citydb.config.project.query.QueryConfig;
+import org.citydb.config.geometry.BoundingBox;
+import org.citydb.plugin.cli.CliOption;
+import org.citydb.plugin.cli.CliOptionBuilder;
 import picocli.CommandLine;
 
-public class XMLQueryOption implements CliOption {
-    @CommandLine.Option(names = {"-q", "--xml-query"}, paramLabel = "<xml>",
-            description = "XML query expression to use when exporting.")
-    private String xmlQuery;
+public class BoundingBoxOption implements CliOption {
+    @CommandLine.Option(names = "--bbox", paramLabel = "<minx,miny,maxx,maxy[,srid]>",
+            description = "Bounding box filter to use.")
+    private String bbox;
 
-    private QueryConfig queryConfig;
+    private BoundingBox boundingBox;
 
-    public String getXMLQuery() {
-        return xmlQuery;
-    }
-
-    public QueryConfig toQueryConfig() {
-        return queryConfig;
+    public BoundingBox toBoundingBox() {
+        return boundingBox;
     }
 
     @Override
     public boolean isSpecified() {
-        return xmlQuery != null;
+        return bbox != null;
     }
 
     @Override
     public void preprocess(CommandLine commandLine) throws Exception {
-        queryConfig = CliOptionBuilder.xmlQueryConfig(xmlQuery, commandLine);
+        boundingBox = CliOptionBuilder.boundingBox(bbox, commandLine);
     }
 }

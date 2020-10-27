@@ -500,7 +500,7 @@ public class ImpExpCli extends CliCommand implements CommandLine.IVersionProvide
         }
     }
 
-    void logProgress(String message) {
+    public void logProgress(String message) {
         log.info(message);
         if (progressListener != null) {
             progressListener.nextStep(message, ++processStep);
