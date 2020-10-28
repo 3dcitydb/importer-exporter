@@ -28,27 +28,17 @@
 
 package org.citydb.plugin.cli;
 
-import org.citydb.config.ConfigUtil;
 import org.citydb.config.geometry.BoundingBox;
-import org.citydb.config.project.query.QueryConfig;
 import org.citydb.config.project.query.filter.type.FeatureTypeFilter;
-import org.citydb.config.util.QueryWrapper;
 import org.citygml4j.model.module.Module;
-import org.citygml4j.model.module.ModuleContext;
 import org.citygml4j.model.module.Modules;
 import org.citygml4j.model.module.citygml.CityGMLVersion;
 import org.citygml4j.xml.CityGMLNamespaceContext;
-import org.xml.sax.SAXException;
 import picocli.CommandLine;
 
 import javax.xml.XMLConstants;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.namespace.QName;
-import javax.xml.validation.Schema;
-import javax.xml.validation.SchemaFactory;
-import java.io.StringReader;
 import java.util.Map;
 import java.util.stream.Stream;
 
@@ -135,41 +125,6 @@ public class CliOptionBuilder {
 
             if (!featureTypeFilter.isEmpty()) {
                 return featureTypeFilter;
-            }
-        }
-
-        return null;
-    }
-
-    public static QueryConfig xmlQueryConfig(String xmlQuery, CommandLine commandLine) {
-        if (xmlQuery != null) {
-            try {
-                SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-                Schema schema = schemaFactory.newSchema(CliOptionBuilder.class.getResource("/org/citydb/config/schema/query.xsd"));
-                Unmarshaller unmarshaller = ConfigUtil.getInstance().getJAXBContext().createUnmarshaller();
-                unmarshaller.setSchema(schema);
-
-                StringBuilder wrapper = new StringBuilder("<wrapper xmlns=\"")
-                        .append(ConfigUtil.CITYDB_CONFIG_NAMESPACE_URI).append("\" ");
-
-                ModuleContext context = new ModuleContext(CityGMLVersion.v2_0_0);
-                for (Module module : context.getModules()) {
-                    wrapper.append("xmlns:")
-                            .append(module.getNamespacePrefix()).append("=\"")
-                            .append(module.getNamespaceURI()).append("\" ");
-                }
-
-                wrapper.append(">\n")
-                        .append(xmlQuery)
-                        .append("</wrapper>");
-
-                Object object = unmarshaller.unmarshal(new StringReader(wrapper.toString()));
-                if (object instanceof QueryWrapper) {
-                    return ((QueryWrapper) object).getQueryConfig();
-                }
-            } catch (JAXBException | SAXException e) {
-                throw new CommandLine.ParameterException(commandLine,
-                        "An XML query must validate against the XML schema definition.");
             }
         }
 

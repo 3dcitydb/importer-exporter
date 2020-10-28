@@ -51,11 +51,10 @@ public class QueryOption implements CliOption {
     private XMLQueryOption xmlQueryOption;
 
     public QueryConfig toQueryConfig() {
-        if (xmlQueryOption != null) {
-            return xmlQueryOption.toQueryConfig();
-        } else {
+        if (typeNamesOption != null
+                || boundingBoxOption != null
+                || lodOption != null) {
             QueryConfig queryConfig = new QueryConfig();
-
             if (typeNamesOption != null) {
                 queryConfig.setFeatureTypeFilter(typeNamesOption.toFeatureTypeFilter());
             }
@@ -71,10 +70,9 @@ public class QueryOption implements CliOption {
                 }
             }
 
-            return queryConfig.isSetFeatureTypeFilter()
-                    || queryConfig.isSetSelectionFilter() ?
-                    queryConfig :
-                    null;
+            return queryConfig;
+        } else {
+            return xmlQueryOption.toQueryConfig();
         }
     }
 
@@ -89,6 +87,11 @@ public class QueryOption implements CliOption {
             if (boundingBoxOption != null) {
                 throw new CommandLine.ParameterException(commandLine,
                         "Options --bbox and --xml-query are mutually exclusive.");
+            }
+
+            if (lodOption != null) {
+                throw new CommandLine.ParameterException(commandLine,
+                        "Options --lod and --xml-query are mutually exclusive.");
             }
 
             xmlQueryOption.preprocess(commandLine);

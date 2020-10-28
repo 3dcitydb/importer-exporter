@@ -28,8 +28,24 @@
 
 package org.citydb.plugin.cli;
 
+import org.citydb.config.ConfigUtil;
 import org.citydb.config.project.query.QueryConfig;
+import org.citydb.config.util.QueryWrapper;
+import org.citygml4j.model.module.Module;
+import org.citygml4j.model.module.ModuleContext;
+import org.citygml4j.model.module.citygml.CityGMLVersion;
+import org.xml.sax.SAXException;
 import picocli.CommandLine;
+
+import javax.xml.XMLConstants;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
+import javax.xml.transform.stream.StreamSource;
+import javax.xml.validation.Schema;
+import javax.xml.validation.SchemaFactory;
+import javax.xml.validation.Validator;
+import java.io.IOException;
+import java.io.StringReader;
 
 public class XMLQueryOption implements CliOption {
     @CommandLine.Option(names = {"-q", "--xml-query"}, paramLabel = "<xml>",
@@ -43,11 +59,46 @@ public class XMLQueryOption implements CliOption {
     }
 
     public QueryConfig toQueryConfig() {
-        return queryConfig;
+        try {
+            Unmarshaller unmarshaller = ConfigUtil.getInstance().getJAXBContext().createUnmarshaller();
+            Object object = unmarshaller.unmarshal(new StringReader(wrapQuery(xmlQuery)));
+            if (object instanceof QueryWrapper) {
+                return ((QueryWrapper) object).getQueryConfig();
+            }
+        } catch (JAXBException ignored) {
+            //
+        }
+
+        return null;
     }
 
     @Override
     public void preprocess(CommandLine commandLine) throws Exception {
-        queryConfig = CliOptionBuilder.xmlQueryConfig(xmlQuery, commandLine);
+        try {
+            SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+            Schema schema = schemaFactory.newSchema(getClass().getResource("/org/citydb/config/schema/query.xsd"));
+            Validator validator = schema.newValidator();
+            validator.validate(new StreamSource(new StringReader(wrapQuery(xmlQuery))));
+        } catch (SAXException | IOException e) {
+            throw new CommandLine.ParameterException(commandLine,
+                    "An XML query must validate against the XML schema definition.");
+        }
+    }
+
+    private String wrapQuery(String query) {
+        StringBuilder wrapper = new StringBuilder("<wrapper xmlns=\"")
+                .append(ConfigUtil.CITYDB_CONFIG_NAMESPACE_URI)
+                .append("\" ");
+
+        ModuleContext context = new ModuleContext(CityGMLVersion.v2_0_0);
+        for (Module module : context.getModules()) {
+            wrapper.append("xmlns:")
+                    .append(module.getNamespacePrefix()).append("=\"")
+                    .append(module.getNamespaceURI()).append("\" ");
+        }
+
+        return wrapper.append(">\n")
+                .append(query)
+                .append("</wrapper>").toString();
     }
 }
