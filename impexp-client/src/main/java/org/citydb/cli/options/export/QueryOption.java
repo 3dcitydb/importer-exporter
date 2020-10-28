@@ -70,6 +70,10 @@ public class QueryOption implements CliOption {
                 }
             }
 
+            if (lodOption != null) {
+                queryConfig.setLodFilter(lodOption.toLodFilter());
+            }
+
             return queryConfig;
         } else {
             return xmlQueryOption.toQueryConfig();

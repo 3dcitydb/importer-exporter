@@ -56,11 +56,11 @@ public class ExportCommand extends CliCommand {
             description = "Encoding used for the output file (default: ${DEFAULT-VALUE}).")
     private String encoding;
 
-    @CommandLine.ArgGroup(exclusive = false, heading = "Database connection options:%n")
-    private DatabaseOption databaseOption;
-
     @CommandLine.ArgGroup(exclusive = false, heading = "Query and filter options:%n")
     private QueryOption queryOption;
+
+    @CommandLine.ArgGroup(exclusive = false, heading = "Database connection options:%n")
+    private DatabaseOption databaseOption;
 
     private final Logger log = Logger.getInstance();
 

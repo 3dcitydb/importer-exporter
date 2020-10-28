@@ -28,6 +28,9 @@
 
 package org.citydb.cli.options.export;
 
+import org.citydb.config.project.query.filter.lod.LodFilter;
+import org.citydb.config.project.query.filter.lod.LodFilterMode;
+import org.citydb.config.project.query.filter.lod.LodSearchMode;
 import org.citydb.plugin.cli.CliOption;
 import picocli.CommandLine;
 
@@ -41,4 +44,63 @@ public class LodOption implements CliOption {
     @CommandLine.Option(names = "--lod-mode", defaultValue = "or",
             description = "LoD filter mode: ${COMPLETION-CANDIDATES} (default: ${DEFAULT-VALUE}).")
     private LodMode mode;
+
+    @CommandLine.Option(names = "--lod-search-depth", paramLabel = "<0..n|all>", defaultValue = "1",
+            description = "Levels of sub-features to search for matching LoDs (default: ${DEFAULT-VALUE}).")
+    private String searchDepth;
+
+    private LodFilter lodFilter;
+
+    public LodFilter toLodFilter() {
+        return lodFilter;
+    }
+
+    @Override
+    public void preprocess(CommandLine commandLine) throws Exception {
+        lodFilter = new LodFilter();
+        for (int lod : lods) {
+            if (lod < 0 || lod > 4) {
+                throw new CommandLine.ParameterException(commandLine,
+                        "An LoD value must be between 0 and 4 but was " + lod);
+            }
+
+            lodFilter.setLod(lod);
+        }
+
+        if (mode != null) {
+            switch (mode) {
+                case and:
+                    lodFilter.setMode(LodFilterMode.AND);
+                    break;
+                case minimum:
+                    lodFilter.setMode(LodFilterMode.MINIMUM);
+                    break;
+                case maximum:
+                    lodFilter.setMode(LodFilterMode.MAXIMUM);
+                    break;
+                default:
+                    lodFilter.setMode(LodFilterMode.OR);
+            }
+        }
+
+        if (searchDepth != null) {
+            if ("all".equalsIgnoreCase(searchDepth)) {
+                lodFilter.setSearchMode(LodSearchMode.ALL);
+            } else {
+                try {
+                    int level = Integer.parseInt(searchDepth);
+                    if (level < 0) {
+                        throw new CommandLine.ParameterException(commandLine,
+                                "The LoD search depth must be a non-negative integer but was " + searchDepth);
+                    }
+
+                    lodFilter.setSearchMode(LodSearchMode.DEPTH);
+                    lodFilter.setSearchDepth(level);
+                } catch (NumberFormatException e) {
+                    throw new CommandLine.ParameterException(commandLine,
+                            "The LoD search depth must be an integer or 'all' but was " + searchDepth);
+                }
+            }
+        }
+    }
 }
