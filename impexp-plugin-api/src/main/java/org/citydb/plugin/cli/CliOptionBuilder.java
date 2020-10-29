@@ -56,7 +56,7 @@ public class CliOptionBuilder {
                     boundingBox.getUpperCorner().setY(Double.parseDouble(parts[3]));
                 } catch (NumberFormatException e) {
                     throw new CommandLine.ParameterException(commandLine,
-                            "The coordinates of a bounding box must be floating point numbers but were " +
+                            "Error: The coordinates of a bounding box must be floating point numbers but were " +
                                     String.join(",", parts[0], parts[1], parts[2], parts[3]) + ".");
                 }
 
@@ -65,7 +65,7 @@ public class CliOptionBuilder {
                         boundingBox.setSrs(Integer.parseInt(parts[4]));
                     } catch (NumberFormatException e) {
                         throw new CommandLine.ParameterException(commandLine,
-                                "The SRID of a bounding box must be an integer but was " + parts[4] + ".");
+                                "Error: The SRID of a bounding box must be an integer but was " + parts[4] + ".");
                     }
                 }
 

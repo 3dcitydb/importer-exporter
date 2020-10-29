@@ -40,7 +40,7 @@ public class TypeNamesOption implements CliOption {
     private String[] typeNames;
 
     @CommandLine.Option(names = "--namespaces", split = ",", paramLabel = "<prefix=name>",
-            description = "Definition of prefix to namespace mappings.")
+            description = "Prefix-to-namespace mappings.")
     private Map<String, String> namespaces;
 
     private FeatureTypeFilter featureTypeFilter;

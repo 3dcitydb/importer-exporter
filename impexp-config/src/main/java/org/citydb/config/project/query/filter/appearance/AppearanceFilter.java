@@ -62,6 +62,10 @@ public class AppearanceFilter {
         return themes;
     }
 
+    public void addTheme(String theme) {
+        themes.add(theme);
+    }
+
     public void setThemes(List<String> themes) {
         if (themes != null && !themes.isEmpty())
             this.themes = themes;

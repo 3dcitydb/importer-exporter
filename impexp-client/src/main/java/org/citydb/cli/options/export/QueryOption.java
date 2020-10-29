@@ -29,12 +29,14 @@
 package org.citydb.cli.options.export;
 
 import org.citydb.config.geometry.BoundingBox;
+import org.citydb.config.project.exporter.ExportAppearance;
 import org.citydb.config.project.query.QueryConfig;
 import org.citydb.config.project.query.filter.selection.SelectionFilter;
 import org.citydb.config.project.query.filter.selection.spatial.BBOXOperator;
 import org.citydb.plugin.cli.CliOption;
 import org.citydb.plugin.cli.TypeNamesOption;
 import org.citydb.plugin.cli.XMLQueryOption;
+import org.citydb.registry.ObjectRegistry;
 import picocli.CommandLine;
 
 public class QueryOption implements CliOption {
@@ -48,12 +50,16 @@ public class QueryOption implements CliOption {
     private LodOption lodOption;
 
     @CommandLine.ArgGroup
+    private AppearanceOption appearanceOption;
+
+    @CommandLine.ArgGroup
     private XMLQueryOption xmlQueryOption;
 
     public QueryConfig toQueryConfig() {
         if (typeNamesOption != null
                 || boundingBoxOption != null
-                || lodOption != null) {
+                || lodOption != null
+                || appearanceOption != null) {
             QueryConfig queryConfig = new QueryConfig();
             if (typeNamesOption != null) {
                 queryConfig.setFeatureTypeFilter(typeNamesOption.toFeatureTypeFilter());
@@ -74,6 +80,15 @@ public class QueryOption implements CliOption {
                 queryConfig.setLodFilter(lodOption.toLodFilter());
             }
 
+            if (appearanceOption != null) {
+                if (appearanceOption.isExportAppearances()) {
+                    queryConfig.setAppearanceFilter(appearanceOption.toAppearanceFilter());
+                } else {
+                    ExportAppearance appearance = ObjectRegistry.getInstance().getConfig().getExportConfig().getAppearances();
+                    appearance.setExportAppearances(false);
+                }
+            }
+
             return queryConfig;
         } else {
             return xmlQueryOption.toQueryConfig();
@@ -85,17 +100,22 @@ public class QueryOption implements CliOption {
         if (xmlQueryOption != null) {
             if (typeNamesOption != null) {
                 throw new CommandLine.ParameterException(commandLine,
-                        "Options --type-names and --xml-query are mutually exclusive.");
+                        "Error: --type-names and --xml-query are mutually exclusive (specify only one)");
             }
 
             if (boundingBoxOption != null) {
                 throw new CommandLine.ParameterException(commandLine,
-                        "Options --bbox and --xml-query are mutually exclusive.");
+                        "Error: --bbox and --xml-query are mutually exclusive (specify only one)");
             }
 
             if (lodOption != null) {
                 throw new CommandLine.ParameterException(commandLine,
-                        "Options --lod and --xml-query are mutually exclusive.");
+                        "Error: --lod and --xml-query are mutually exclusive (specify only one)");
+            }
+
+            if (appearanceOption != null) {
+                throw new CommandLine.ParameterException(commandLine,
+                        "Error: Appearance options and --xml-query are mutually exclusive (specify only one)");
             }
 
             xmlQueryOption.preprocess(commandLine);
@@ -111,6 +131,10 @@ public class QueryOption implements CliOption {
 
         if (lodOption != null) {
             lodOption.preprocess(commandLine);
+        }
+
+        if (appearanceOption != null) {
+            appearanceOption.preprocess(commandLine);
         }
     }
 }

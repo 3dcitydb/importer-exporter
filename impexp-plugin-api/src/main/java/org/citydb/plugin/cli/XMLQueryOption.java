@@ -81,7 +81,7 @@ public class XMLQueryOption implements CliOption {
             validator.validate(new StreamSource(new StringReader(wrapQuery(xmlQuery))));
         } catch (SAXException | IOException e) {
             throw new CommandLine.ParameterException(commandLine,
-                    "An XML query must validate against the XML schema definition.");
+                    "Error: An XML query must validate against the XML schema definition.");
         }
     }
 

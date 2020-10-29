@@ -37,7 +37,7 @@ import picocli.CommandLine;
 public class LodOption implements CliOption {
     enum LodMode {or, and, minimum, maximum}
 
-    @CommandLine.Option(names = "--lod", split = ",", paramLabel = "<0..4>", required = true,
+    @CommandLine.Option(names = "--lods", split = ",", paramLabel = "<0..4>", required = true,
             description = "LoD representations to export.")
     private int[] lods;
 
@@ -61,7 +61,7 @@ public class LodOption implements CliOption {
         for (int lod : lods) {
             if (lod < 0 || lod > 4) {
                 throw new CommandLine.ParameterException(commandLine,
-                        "An LoD value must be between 0 and 4 but was " + lod);
+                        "Error: An LoD value must be between 0 and 4 but was " + lod);
             }
 
             lodFilter.setLod(lod);
@@ -91,14 +91,14 @@ public class LodOption implements CliOption {
                     int level = Integer.parseInt(searchDepth);
                     if (level < 0) {
                         throw new CommandLine.ParameterException(commandLine,
-                                "The LoD search depth must be a non-negative integer but was " + searchDepth);
+                                "Error: The LoD search depth must be a non-negative integer but was " + searchDepth);
                     }
 
                     lodFilter.setSearchMode(LodSearchMode.DEPTH);
                     lodFilter.setSearchDepth(level);
                 } catch (NumberFormatException e) {
                     throw new CommandLine.ParameterException(commandLine,
-                            "The LoD search depth must be an integer or 'all' but was " + searchDepth);
+                            "Error: The LoD search depth must be an integer or 'all' but was " + searchDepth);
                 }
             }
         }
