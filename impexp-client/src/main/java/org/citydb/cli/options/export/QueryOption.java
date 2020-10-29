@@ -46,6 +46,9 @@ public class QueryOption implements CliOption {
     private BoundingBoxOption boundingBoxOption;
 
     @CommandLine.ArgGroup(exclusive = false)
+    private CounterOption counterOption;
+
+    @CommandLine.ArgGroup(exclusive = false)
     private LodOption lodOption;
 
     @CommandLine.ArgGroup
@@ -57,6 +60,7 @@ public class QueryOption implements CliOption {
     public QueryConfig toQueryConfig() {
         if (typeNamesOption != null
                 || boundingBoxOption != null
+                || counterOption != null
                 || lodOption != null
                 || appearanceOption != null) {
             QueryConfig queryConfig = new QueryConfig();
@@ -71,6 +75,10 @@ public class QueryOption implements CliOption {
                     selectionFilter.setPredicate(spatialOperator);
                     queryConfig.setSelectionFilter(selectionFilter);
                 }
+            }
+
+            if (counterOption != null) {
+                queryConfig.setCounterFilter(counterOption.toCounterFilter());
             }
 
             if (lodOption != null) {
@@ -105,6 +113,11 @@ public class QueryOption implements CliOption {
                         "Error: --bbox and --xml-query are mutually exclusive (specify only one)");
             }
 
+            if (counterOption != null) {
+                throw new CommandLine.ParameterException(commandLine,
+                        "Error: Counter options and --xml-query are mutually exclusive (specify only one)");
+            }
+
             if (lodOption != null) {
                 throw new CommandLine.ParameterException(commandLine,
                         "Error: --lod and --xml-query are mutually exclusive (specify only one)");
@@ -124,6 +137,10 @@ public class QueryOption implements CliOption {
 
         if (boundingBoxOption != null) {
             boundingBoxOption.preprocess(commandLine);
+        }
+
+        if (counterOption != null) {
+            counterOption.preprocess(commandLine);
         }
 
         if (lodOption != null) {

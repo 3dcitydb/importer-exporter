@@ -39,7 +39,7 @@ import picocli.CommandLine;
 public class BoundingBoxOption implements CliOption {
     enum Mode {overlaps, within}
 
-    @CommandLine.Option(names = "--bbox", paramLabel = "<minx,miny,maxx,maxy[,srid]>", required = true,
+    @CommandLine.Option(names = {"-b", "--bbox"}, paramLabel = "<minx,miny,maxx,maxy[,srid]>", required = true,
             description = "Bounding box to use as spatial filter.")
     private String bbox;
 

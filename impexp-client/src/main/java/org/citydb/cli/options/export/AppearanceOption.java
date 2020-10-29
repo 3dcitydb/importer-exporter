@@ -37,7 +37,7 @@ public class AppearanceOption implements CliOption {
             description = "Do not export appearances.")
     private boolean exportAppearances = true;
 
-    @CommandLine.Option(names = "--appearance-themes", split = ",", paramLabel = "<theme>",
+    @CommandLine.Option(names = {"-a", "--appearance-themes"}, split = ",", paramLabel = "<theme>",
             description = "Only export appearances from these themes. Use 'none' for the null theme.")
     private String[] themes;
 
