@@ -35,7 +35,7 @@ import org.citydb.plugin.cli.CliOption;
 import picocli.CommandLine;
 
 public class LodOption implements CliOption {
-    enum LodMode {or, and, minimum, maximum}
+    enum Mode {or, and, minimum, maximum}
 
     @CommandLine.Option(names = "--lods", split = ",", paramLabel = "<0..4>", required = true,
             description = "LoD representations to export.")
@@ -43,7 +43,7 @@ public class LodOption implements CliOption {
 
     @CommandLine.Option(names = "--lod-mode", defaultValue = "or",
             description = "LoD filter mode: ${COMPLETION-CANDIDATES} (default: ${DEFAULT-VALUE}).")
-    private LodMode mode;
+    private Mode mode;
 
     @CommandLine.Option(names = "--lod-search-depth", paramLabel = "<0..n|all>", defaultValue = "1",
             description = "Levels of sub-features to search for matching LoDs (default: ${DEFAULT-VALUE}).")

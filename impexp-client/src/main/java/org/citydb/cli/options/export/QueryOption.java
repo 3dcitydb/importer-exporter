@@ -28,11 +28,10 @@
 
 package org.citydb.cli.options.export;
 
-import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.project.exporter.ExportAppearance;
 import org.citydb.config.project.query.QueryConfig;
 import org.citydb.config.project.query.filter.selection.SelectionFilter;
-import org.citydb.config.project.query.filter.selection.spatial.BBOXOperator;
+import org.citydb.config.project.query.filter.selection.spatial.AbstractSpatialOperator;
 import org.citydb.plugin.cli.CliOption;
 import org.citydb.plugin.cli.TypeNamesOption;
 import org.citydb.plugin.cli.XMLQueryOption;
@@ -43,7 +42,7 @@ public class QueryOption implements CliOption {
     @CommandLine.ArgGroup(exclusive = false)
     private TypeNamesOption typeNamesOption;
 
-    @CommandLine.ArgGroup
+    @CommandLine.ArgGroup(exclusive = false)
     private BoundingBoxOption boundingBoxOption;
 
     @CommandLine.ArgGroup(exclusive = false)
@@ -66,12 +65,10 @@ public class QueryOption implements CliOption {
             }
 
             if (boundingBoxOption != null) {
-                BoundingBox bbox = boundingBoxOption.toBoundingBox();
-                if (bbox != null) {
-                    BBOXOperator bboxOperator = new BBOXOperator();
-                    bboxOperator.setEnvelope(bbox);
+                AbstractSpatialOperator spatialOperator = boundingBoxOption.toSpatialOperator();
+                if (spatialOperator != null) {
                     SelectionFilter selectionFilter = new SelectionFilter();
-                    selectionFilter.setPredicate(bboxOperator);
+                    selectionFilter.setPredicate(spatialOperator);
                     queryConfig.setSelectionFilter(selectionFilter);
                 }
             }

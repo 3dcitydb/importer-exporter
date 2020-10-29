@@ -29,23 +29,43 @@
 package org.citydb.cli.options.export;
 
 import org.citydb.config.geometry.BoundingBox;
+import org.citydb.config.project.query.filter.selection.spatial.AbstractSpatialOperator;
+import org.citydb.config.project.query.filter.selection.spatial.BBOXOperator;
+import org.citydb.config.project.query.filter.selection.spatial.WithinOperator;
 import org.citydb.plugin.cli.CliOption;
 import org.citydb.plugin.cli.CliOptionBuilder;
 import picocli.CommandLine;
 
 public class BoundingBoxOption implements CliOption {
-    @CommandLine.Option(names = "--bbox", paramLabel = "<minx,miny,maxx,maxy[,srid]>",
-            description = "Bounding box filter to use when exporting.")
+    enum Mode {overlaps, within}
+
+    @CommandLine.Option(names = "--bbox", paramLabel = "<minx,miny,maxx,maxy[,srid]>", required = true,
+            description = "Bounding box to use as spatial filter.")
     private String bbox;
 
-    private BoundingBox boundingBox;
+    @CommandLine.Option(names = "--bbox-mode", paramLabel = "<mode>", defaultValue = "overlaps",
+            description = "Bounding box filter mode: ${COMPLETION-CANDIDATES} (default: ${DEFAULT-VALUE}).")
+    private Mode mode;
 
-    public BoundingBox toBoundingBox() {
-        return boundingBox;
+    private AbstractSpatialOperator spatialOperator;
+
+    public AbstractSpatialOperator toSpatialOperator() {
+        return spatialOperator;
     }
 
     @Override
     public void preprocess(CommandLine commandLine) throws Exception {
-        boundingBox = CliOptionBuilder.boundingBox(bbox, commandLine);
+        BoundingBox envelope = CliOptionBuilder.boundingBox(bbox, commandLine);
+        if (envelope != null) {
+            if (mode == Mode.within) {
+                WithinOperator within = new WithinOperator();
+                within.setSpatialOperand(envelope);
+                spatialOperator = within;
+            } else {
+                BBOXOperator bbox = new BBOXOperator();
+                bbox.setEnvelope(envelope);
+                spatialOperator = bbox;
+            }
+        }
     }
 }
