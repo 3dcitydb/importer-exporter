@@ -29,6 +29,8 @@
 package org.citydb.plugin.cli;
 
 import org.citydb.config.geometry.BoundingBox;
+import org.citydb.config.project.query.filter.selection.id.ResourceIdOperator;
+import org.citydb.config.project.query.filter.selection.sql.SelectOperator;
 import org.citydb.config.project.query.filter.type.FeatureTypeFilter;
 import org.citygml4j.model.module.Module;
 import org.citygml4j.model.module.Modules;
@@ -39,6 +41,7 @@ import picocli.CommandLine;
 import javax.xml.XMLConstants;
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.namespace.QName;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.stream.Stream;
 
@@ -126,6 +129,26 @@ public class CliOptionBuilder {
             if (!featureTypeFilter.isEmpty()) {
                 return featureTypeFilter;
             }
+        }
+
+        return null;
+    }
+
+    public static ResourceIdOperator resourceIdOperator(String[] ids) {
+        if (ids != null) {
+            ResourceIdOperator idOperator = new ResourceIdOperator();
+            Arrays.stream(ids).forEach(idOperator::addResourceId);
+            return idOperator;
+        }
+
+        return null;
+    }
+
+    public static SelectOperator selectOperator(String select) {
+        if (select != null) {
+            SelectOperator selectOperator = new SelectOperator();
+            selectOperator.setValue(select);
+            return selectOperator;
         }
 
         return null;

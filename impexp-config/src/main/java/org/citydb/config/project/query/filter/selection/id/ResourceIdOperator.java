@@ -56,6 +56,10 @@ public class ResourceIdOperator extends AbstractPredicate {
         return ids;
     }
 
+    public void addResourceId(String id) {
+        ids.add(id);
+    }
+
     public void setResourceIds(List<String> ids) {
         if (ids != null && !ids.isEmpty())
             this.ids = ids;

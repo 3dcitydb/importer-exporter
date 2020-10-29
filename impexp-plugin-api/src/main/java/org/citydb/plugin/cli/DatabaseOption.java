@@ -51,7 +51,7 @@ public class DatabaseOption implements CliOption {
             description = "Name of the 3DCityDB database to connect to.")
     private String name;
 
-    @CommandLine.Option(names = {"-s", "--db-schema"},
+    @CommandLine.Option(names = {"-S", "--db-schema"},
             description = "Schema to use when connecting to the 3DCityDB (default: citydb | username).")
     private String schema;
 

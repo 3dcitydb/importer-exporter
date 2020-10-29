@@ -30,17 +30,29 @@ package org.citydb.cli.options.export;
 
 import org.citydb.config.project.exporter.ExportAppearance;
 import org.citydb.config.project.query.QueryConfig;
+import org.citydb.config.project.query.filter.selection.AbstractPredicate;
 import org.citydb.config.project.query.filter.selection.SelectionFilter;
+import org.citydb.config.project.query.filter.selection.id.ResourceIdOperator;
+import org.citydb.config.project.query.filter.selection.logical.AndOperator;
 import org.citydb.config.project.query.filter.selection.spatial.AbstractSpatialOperator;
+import org.citydb.config.project.query.filter.selection.sql.SelectOperator;
 import org.citydb.plugin.cli.CliOption;
+import org.citydb.plugin.cli.ResourceIdOption;
+import org.citydb.plugin.cli.SQLSelectOption;
 import org.citydb.plugin.cli.TypeNamesOption;
 import org.citydb.plugin.cli.XMLQueryOption;
 import org.citydb.registry.ObjectRegistry;
 import picocli.CommandLine;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class QueryOption implements CliOption {
     @CommandLine.ArgGroup(exclusive = false)
     private TypeNamesOption typeNamesOption;
+
+    @CommandLine.ArgGroup
+    private ResourceIdOption idOption;
 
     @CommandLine.ArgGroup(exclusive = false)
     private BoundingBoxOption boundingBoxOption;
@@ -55,25 +67,37 @@ public class QueryOption implements CliOption {
     private AppearanceOption appearanceOption;
 
     @CommandLine.ArgGroup
+    private SQLSelectOption sqlSelectOption;
+
+    @CommandLine.ArgGroup
     private XMLQueryOption xmlQueryOption;
 
     public QueryConfig toQueryConfig() {
         if (typeNamesOption != null
+                || idOption != null
                 || boundingBoxOption != null
                 || counterOption != null
                 || lodOption != null
-                || appearanceOption != null) {
+                || appearanceOption != null
+                || sqlSelectOption != null) {
             QueryConfig queryConfig = new QueryConfig();
+            List<AbstractPredicate> predicates = new ArrayList<>();
+
             if (typeNamesOption != null) {
                 queryConfig.setFeatureTypeFilter(typeNamesOption.toFeatureTypeFilter());
+            }
+
+            if (idOption != null) {
+                ResourceIdOperator idOperator = idOption.toResourceIdOperator();
+                if (idOperator != null) {
+                    predicates.add(idOperator);
+                }
             }
 
             if (boundingBoxOption != null) {
                 AbstractSpatialOperator spatialOperator = boundingBoxOption.toSpatialOperator();
                 if (spatialOperator != null) {
-                    SelectionFilter selectionFilter = new SelectionFilter();
-                    selectionFilter.setPredicate(spatialOperator);
-                    queryConfig.setSelectionFilter(selectionFilter);
+                    predicates.add(spatialOperator);
                 }
             }
 
@@ -94,6 +118,21 @@ public class QueryOption implements CliOption {
                 }
             }
 
+            if (sqlSelectOption != null) {
+                SelectOperator selectOperator = sqlSelectOption.toSelectOperator();
+                if (selectOperator != null) {
+                    predicates.add(selectOperator);
+                }
+            }
+
+            if (!predicates.isEmpty()) {
+                AndOperator andOperator = new AndOperator();
+                andOperator.setOperands(predicates);
+                SelectionFilter selectionFilter = new SelectionFilter();
+                selectionFilter.setPredicate(andOperator);
+                queryConfig.setSelectionFilter(selectionFilter);
+            }
+
             return queryConfig;
         } else {
             return xmlQueryOption.toQueryConfig();
@@ -108,6 +147,11 @@ public class QueryOption implements CliOption {
                         "Error: --type-names and --xml-query are mutually exclusive (specify only one)");
             }
 
+            if (idOption != null) {
+                throw new CommandLine.ParameterException(commandLine,
+                        "Error: --ids and --xml-query are mutually exclusive (specify only one)");
+            }
+
             if (boundingBoxOption != null) {
                 throw new CommandLine.ParameterException(commandLine,
                         "Error: --bbox and --xml-query are mutually exclusive (specify only one)");
@@ -120,12 +164,17 @@ public class QueryOption implements CliOption {
 
             if (lodOption != null) {
                 throw new CommandLine.ParameterException(commandLine,
-                        "Error: --lod and --xml-query are mutually exclusive (specify only one)");
+                        "Error: --lods and --xml-query are mutually exclusive (specify only one)");
             }
 
             if (appearanceOption != null) {
                 throw new CommandLine.ParameterException(commandLine,
                         "Error: Appearance options and --xml-query are mutually exclusive (specify only one)");
+            }
+
+            if (sqlSelectOption != null) {
+                throw new CommandLine.ParameterException(commandLine,
+                        "Error: --sql-select and --xml-query are mutually exclusive (specify only one)");
             }
 
             xmlQueryOption.preprocess(commandLine);
@@ -145,10 +194,6 @@ public class QueryOption implements CliOption {
 
         if (lodOption != null) {
             lodOption.preprocess(commandLine);
-        }
-
-        if (appearanceOption != null) {
-            appearanceOption.preprocess(commandLine);
         }
     }
 }
