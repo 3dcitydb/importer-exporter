@@ -38,5 +38,5 @@ import java.util.concurrent.Callable;
         sortOptions = false
 )
 public abstract class CliCommand implements Callable<Integer> {
-    public void preprocess() throws Exception { }
+    public void preprocess(CommandLine commandLine) throws Exception { }
 }

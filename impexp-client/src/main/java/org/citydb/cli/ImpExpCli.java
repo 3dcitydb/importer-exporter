@@ -260,7 +260,7 @@ public class ImpExpCli extends CliCommand implements CommandLine.IVersionProvide
 
                 // preprocess command
                 if (command instanceof CliCommand) {
-                    ((CliCommand) command).preprocess();
+                    ((CliCommand) command).preprocess(commandLine);
                 }
             }
 

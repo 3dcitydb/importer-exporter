@@ -138,7 +138,7 @@ public class GuiCommand extends CliCommand implements StartupProgressListener {
     }
 
     @Override
-    public void preprocess() throws Exception {
+    public void preprocess(CommandLine commandLine) throws Exception {
         // set options on parent command
         parent.useDefaultConfiguration(true)
                 .failOnADEExceptions(false);
