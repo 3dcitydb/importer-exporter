@@ -41,11 +41,54 @@ import picocli.CommandLine;
 import javax.xml.XMLConstants;
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.namespace.QName;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.PathMatcher;
+import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
 public class CliOptionBuilder {
+
+    public static List<Path> inputFiles(String[] files, Path baseDir) throws IOException {
+        if (files != null) {
+            List<Path> inputFiles = new ArrayList<>();
+
+            for (String file : files) {
+                LinkedList<String> elements = parseInputFile(file, baseDir);
+                Path path = Paths.get(elements.pop());
+
+                if (elements.isEmpty()) {
+                    inputFiles.add(path);
+                } else {
+                    // construct a glob pattern from the path and the truncated elements
+                    StringBuilder glob = new StringBuilder("glob:").append(path.toAbsolutePath().normalize());
+                    glob.append(File.separator).append(String.join(File.separator, elements));
+
+                    PathMatcher matcher = FileSystems.getDefault().getPathMatcher(glob.toString().replace("\\", "\\\\"));
+                    try (Stream<Path> stream = Files.walk(path)) {
+                        stream.forEach(p -> {
+                            if (matcher.matches(p.toAbsolutePath().normalize())) {
+                                inputFiles.add(p);
+                            }
+                        });
+                    }
+                }
+            }
+
+            return inputFiles;
+        }
+
+        return Collections.emptyList();
+    }
 
     public static BoundingBox boundingBox(String bbox, CommandLine commandLine) {
         if (bbox != null) {
@@ -60,7 +103,7 @@ public class CliOptionBuilder {
                 } catch (NumberFormatException e) {
                     throw new CommandLine.ParameterException(commandLine,
                             "Error: The coordinates of a bounding box must be floating point numbers but were " +
-                                    String.join(",", parts[0], parts[1], parts[2], parts[3]) + ".");
+                                    String.join(",", parts[0], parts[1], parts[2], parts[3]));
                 }
 
                 if (parts.length == 5) {
@@ -68,14 +111,14 @@ public class CliOptionBuilder {
                         boundingBox.setSrs(Integer.parseInt(parts[4]));
                     } catch (NumberFormatException e) {
                         throw new CommandLine.ParameterException(commandLine,
-                                "Error: The SRID of a bounding box must be an integer but was " + parts[4] + ".");
+                                "Error: The SRID of a bounding box must be an integer but was " + parts[4]);
                     }
                 }
 
                 return boundingBox;
             } else {
                 throw new CommandLine.ParameterException(commandLine,
-                        "A bounding box should be in MINX,MINY,MAXX,MAXY[,SRID] format but was " + bbox + ".");
+                        "A bounding box should be in MINX,MINY,MAXX,MAXY[,SRID] format but was " + bbox);
             }
         }
 
@@ -122,7 +165,7 @@ public class CliOptionBuilder {
                     featureTypeFilter.addTypeName(new QName(module.getNamespaceURI(), parts[0]));
                 } else {
                     throw new CommandLine.ParameterException(commandLine,
-                            "A type name should be in [PREFIX:]NAME format but was " + typeName + ".");
+                            "A type name should be in [PREFIX:]NAME format but was " + typeName);
                 }
             }
 
@@ -152,5 +195,31 @@ public class CliOptionBuilder {
         }
 
         return null;
+    }
+
+    private static LinkedList<String> parseInputFile(String file, Path baseDir) {
+        LinkedList<String> elements = new LinkedList<>();
+        Path path = null;
+
+        do {
+            try {
+                path = Paths.get(file);
+            } catch (Exception e) {
+                // the file is not a valid path, possibly because of glob patterns.
+                // so, let's iteratively truncate the last path element and try again.
+                int index = file.lastIndexOf(File.separator);
+                String pathElement = file.substring(index + 1);
+                file = file.substring(0, index != -1 ? index : 0);
+
+                // remember the truncated element
+                elements.addFirst(pathElement);
+            }
+        } while (path == null && file.length() > 0);
+
+        // resolve path against the working directory
+        path = path == null ? baseDir : baseDir.resolve(path);
+        elements.addFirst(path.toAbsolutePath().toString());
+
+        return elements;
     }
 }

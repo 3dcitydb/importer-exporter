@@ -91,8 +91,9 @@ import java.util.stream.Stream;
         versionProvider = ImpExpCli.class,
         subcommands = {
                 CommandLine.HelpCommand.class,
-                GuiCommand.class,
-                ExportCommand.class
+                ImportCommand.class,
+                ExportCommand.class,
+                GuiCommand.class
         }
 )
 public class ImpExpCli extends CliCommand implements CommandLine.IVersionProvider {
