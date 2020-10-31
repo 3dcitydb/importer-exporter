@@ -44,8 +44,9 @@ public class ImportLogger {
 	private final BufferedWriter writer;
 
 	public ImportLogger(Path logFile, Path importFile, DatabaseConnection connection) throws IOException {
-		if (logFile.toAbsolutePath().normalize().startsWith(CoreConstants.IMPEXP_DATA_DIR.resolve(CoreConstants.IMPORT_LOG_DIR))) {
-			Files.createDirectories(CoreConstants.IMPEXP_DATA_DIR.resolve(CoreConstants.IMPORT_LOG_DIR));
+		Path defaultDir = CoreConstants.IMPEXP_DATA_DIR.resolve(CoreConstants.IMPORT_LOG_DIR);
+		if (logFile.toAbsolutePath().normalize().startsWith(defaultDir)) {
+			Files.createDirectories(defaultDir);
 		}
 
 		if (Files.exists(logFile) && Files.isDirectory(logFile)) {
@@ -92,7 +93,7 @@ public class ImportLogger {
 	}
 
 	public String getDefaultLogFileName() {
-		return "imported_features-" + date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss-SSS")) + ".log";
+		return "imported-features-" + date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss-SSS")) + ".log";
 	}
 
 	public void close(boolean success) throws IOException {

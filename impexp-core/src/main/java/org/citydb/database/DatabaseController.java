@@ -80,6 +80,7 @@ public class DatabaseController implements ConnectionManager {
 	}
 
 	public synchronized boolean connect(DatabaseConnection connection) {
+		config.getDatabaseConfig().setActiveConnection(connection);
 		return connect(connection, false);
 	}
 

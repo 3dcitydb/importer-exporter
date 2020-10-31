@@ -29,6 +29,10 @@ public class ImportCommand extends CliCommand {
             description = "Files or directories to import (glob patterns allowed).")
     private String[] files;
 
+    @CommandLine.Option(names = "--import-log", paramLabel = "<file>",
+            description = "Record imported top-level features to this file.")
+    private Path importLogFile;
+
     @CommandLine.ArgGroup(exclusive = false, heading = "Import filter options:%n")
     private FilterOption filterOption;
 
@@ -64,6 +68,11 @@ public class ImportCommand extends CliCommand {
         if (!database.connect(connection)) {
             log.warn("Database import aborted.");
             return 1;
+        }
+
+        if (importLogFile != null) {
+            config.getImportConfig().getImportLog().setLogFile(importLogFile.toAbsolutePath().toString());
+            config.getImportConfig().getImportLog().setLogImportedFeatures(true);
         }
 
         if (filterOption != null) {

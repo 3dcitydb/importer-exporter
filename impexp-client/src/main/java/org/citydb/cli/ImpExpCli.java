@@ -106,7 +106,7 @@ public class ImpExpCli extends CliCommand implements CommandLine.IVersionProvide
     private LogLevel logLevel = LogLevel.INFO;
 
     @CommandLine.Option(names = "--log-file", scope = CommandLine.ScopeType.INHERIT, paramLabel = "<file>",
-            description = "Write log messages to the specified file.")
+            description = "Write log messages to this file.")
     private Path logFile;
 
     @CommandLine.Option(names = "--pid-file", scope = CommandLine.ScopeType.INHERIT, paramLabel = "<file>",
