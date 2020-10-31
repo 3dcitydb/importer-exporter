@@ -28,6 +28,7 @@
 package org.citydb.citygml.importer.util;
 
 import org.citydb.config.project.database.DBConnection;
+import org.citydb.util.CoreConstants;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -43,6 +44,10 @@ public class ImportLogger {
 	private final BufferedWriter writer;
 
 	public ImportLogger(Path logFile, Path importFile, DBConnection connection) throws IOException {
+		if (Files.isSameFile(CoreConstants.IMPEXP_DATA_DIR.resolve(CoreConstants.IMPORT_LOG_DIR), logFile)) {
+			logFile = logFile.resolve(getDefaultLogFileName());
+		}
+
 		if (Files.exists(logFile) && Files.isDirectory(logFile)) {
 			logFile = logFile.resolve(getDefaultLogFileName());
 		} else if (!Files.exists(logFile.getParent())) {
