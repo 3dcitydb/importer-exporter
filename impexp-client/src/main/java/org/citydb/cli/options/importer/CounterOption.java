@@ -26,19 +26,20 @@
  * limitations under the License.
  */
 
-package org.citydb.cli.options.export;
+package org.citydb.cli.options.importer;
 
 import org.citydb.config.project.query.filter.counter.CounterFilter;
 import org.citydb.plugin.cli.CliOption;
+import org.citydb.plugin.cli.CliOptionBuilder;
 import picocli.CommandLine;
 
 public class CounterOption implements CliOption {
     @CommandLine.Option(names = "--count",
-            description = "Maximum number of top-level features to export.")
+            description = "Maximum number of top-level features to import.")
     private Long count;
 
     @CommandLine.Option(names = "--start-index", paramLabel = "<index>",
-            description = "Index within the result set from which to export.")
+            description = "Index within the input set from which to import.")
     private Long startIndex;
 
     private CounterFilter counterFilter;
@@ -49,23 +50,6 @@ public class CounterOption implements CliOption {
 
     @Override
     public void preprocess(CommandLine commandLine) throws Exception {
-        counterFilter = new CounterFilter();
-        if (count != null) {
-            if (count < 0) {
-                throw new CommandLine.ParameterException(commandLine,
-                        "Error: Count must be a non-negative integer but was " + count);
-            }
-
-            counterFilter.setCount(count);
-        }
-
-        if (startIndex != null) {
-            if (startIndex < 0) {
-                throw new CommandLine.ParameterException(commandLine,
-                        "Error: Start index must be a non-negative integer but was " + startIndex);
-            }
-
-            counterFilter.setStartIndex(startIndex);
-        }
+        counterFilter = CliOptionBuilder.counterFilter(count, startIndex, commandLine);
     }
 }

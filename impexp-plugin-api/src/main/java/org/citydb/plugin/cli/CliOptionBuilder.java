@@ -29,6 +29,7 @@
 package org.citydb.plugin.cli;
 
 import org.citydb.config.geometry.BoundingBox;
+import org.citydb.config.project.query.filter.counter.CounterFilter;
 import org.citydb.config.project.query.filter.selection.id.ResourceIdOperator;
 import org.citydb.config.project.query.filter.selection.sql.SelectOperator;
 import org.citydb.config.project.query.filter.type.FeatureTypeFilter;
@@ -125,7 +126,7 @@ public class CliOptionBuilder {
         return null;
     }
 
-    public static NamespaceContext namespaceContext(Map<String, String> namespaces, CommandLine commandLine) {
+    public static NamespaceContext namespaceContext(Map<String, String> namespaces) {
         CityGMLNamespaceContext namespaceContext = new CityGMLNamespaceContext();
         Modules.getADEModules().forEach(m -> namespaceContext.setPrefix(m.getNamespacePrefix(), m.getNamespaceURI()));
         namespaceContext.setPrefixes(CityGMLVersion.v2_0_0);
@@ -192,6 +193,33 @@ public class CliOptionBuilder {
             SelectOperator selectOperator = new SelectOperator();
             selectOperator.setValue(select);
             return selectOperator;
+        }
+
+        return null;
+    }
+
+    public static CounterFilter counterFilter(Long count, Long startIndex, CommandLine commandLine) {
+        if (count != null || startIndex != null) {
+            CounterFilter counterFilter = new CounterFilter();
+            if (count != null) {
+                if (count < 0) {
+                    throw new CommandLine.ParameterException(commandLine,
+                            "Error: Count must be a non-negative integer but was " + count);
+                }
+
+                counterFilter.setCount(count);
+            }
+
+            if (startIndex != null) {
+                if (startIndex < 0) {
+                    throw new CommandLine.ParameterException(commandLine,
+                            "Error: Start index must be a non-negative integer but was " + startIndex);
+                }
+
+                counterFilter.setStartIndex(startIndex);
+            }
+
+            return counterFilter;
         }
 
         return null;

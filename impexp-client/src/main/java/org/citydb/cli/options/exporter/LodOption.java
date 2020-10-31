@@ -26,7 +26,7 @@
  * limitations under the License.
  */
 
-package org.citydb.cli.options.export;
+package org.citydb.cli.options.exporter;
 
 import org.citydb.config.project.query.filter.lod.LodFilter;
 import org.citydb.config.project.query.filter.lod.LodFilterMode;

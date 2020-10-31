@@ -26,12 +26,11 @@
  * limitations under the License.
  */
 
-package org.citydb.cli.options.export;
+package org.citydb.cli.options.importer;
 
 import org.citydb.config.geometry.BoundingBox;
-import org.citydb.config.project.query.filter.selection.spatial.AbstractSpatialOperator;
-import org.citydb.config.project.query.filter.selection.spatial.BBOXOperator;
-import org.citydb.config.project.query.filter.selection.spatial.WithinOperator;
+import org.citydb.config.project.importer.SimpleBBOXMode;
+import org.citydb.config.project.importer.SimpleBBOXOperator;
 import org.citydb.plugin.cli.CliOption;
 import org.citydb.plugin.cli.CliOptionBuilder;
 import picocli.CommandLine;
@@ -47,25 +46,19 @@ public class BoundingBoxOption implements CliOption {
             description = "Bounding box filter mode: ${COMPLETION-CANDIDATES} (default: ${DEFAULT-VALUE}).")
     private Mode mode;
 
-    private AbstractSpatialOperator spatialOperator;
+    private SimpleBBOXOperator bboxOperator;
 
-    public AbstractSpatialOperator toSpatialOperator() {
-        return spatialOperator;
+    public SimpleBBOXOperator toBBOXOperator() {
+        return bboxOperator;
     }
 
     @Override
     public void preprocess(CommandLine commandLine) throws Exception {
         BoundingBox envelope = CliOptionBuilder.boundingBox(bbox, commandLine);
         if (envelope != null) {
-            if (mode == Mode.within) {
-                WithinOperator within = new WithinOperator();
-                within.setSpatialOperand(envelope);
-                spatialOperator = within;
-            } else {
-                BBOXOperator bbox = new BBOXOperator();
-                bbox.setEnvelope(envelope);
-                spatialOperator = bbox;
-            }
+            bboxOperator = new SimpleBBOXOperator();
+            bboxOperator.setExtent(envelope);
+            bboxOperator.setMode(mode == Mode.within ? SimpleBBOXMode.WITHIN : SimpleBBOXMode.BBOX);
         }
     }
 }

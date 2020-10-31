@@ -30,7 +30,7 @@ package org.citydb.cli;
 
 import org.citydb.citygml.exporter.CityGMLExportException;
 import org.citydb.citygml.exporter.controller.Exporter;
-import org.citydb.cli.options.export.QueryOption;
+import org.citydb.cli.options.exporter.QueryOption;
 import org.citydb.config.Config;
 import org.citydb.config.project.database.DatabaseConnection;
 import org.citydb.database.DatabaseController;

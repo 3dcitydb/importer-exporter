@@ -64,7 +64,7 @@ public class TypeNamesOption implements CliOption {
 
     @Override
     public void preprocess(CommandLine commandLine) throws Exception {
-        namespaceContext = CliOptionBuilder.namespaceContext(namespaces, commandLine);
+        namespaceContext = CliOptionBuilder.namespaceContext(namespaces);
         featureTypeFilter = CliOptionBuilder.featureTypeFilter(typeNames, namespaceContext, commandLine);
     }
 }

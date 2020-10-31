@@ -3,6 +3,7 @@ package org.citydb.cli;
 import org.citydb.ImpExpException;
 import org.citydb.citygml.importer.CityGMLImportException;
 import org.citydb.citygml.importer.controller.Importer;
+import org.citydb.cli.options.importer.FilterOption;
 import org.citydb.config.Config;
 import org.citydb.config.project.database.DatabaseConnection;
 import org.citydb.database.DatabaseController;
@@ -27,6 +28,9 @@ public class ImportCommand extends CliCommand {
     @CommandLine.Parameters(paramLabel = "<file>", arity = "1",
             description = "Files or directories to import (glob patterns allowed).")
     private String[] files;
+
+    @CommandLine.ArgGroup(exclusive = false, heading = "Import filter options:%n")
+    private FilterOption filterOption;
 
     @CommandLine.ArgGroup(exclusive = false, heading = "Database connection options:%n")
     private DatabaseOption databaseOption;
@@ -60,6 +64,10 @@ public class ImportCommand extends CliCommand {
         if (!database.connect(connection)) {
             log.warn("Database import aborted.");
             return 1;
+        }
+
+        if (filterOption != null) {
+            config.getImportConfig().setFilter(filterOption.toImportFilter());
         }
 
         try {
