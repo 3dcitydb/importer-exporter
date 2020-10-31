@@ -31,36 +31,26 @@ import org.citydb.config.project.database.DatabaseConnection;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.concurrent.locks.ReentrantLock;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class ImportLogger {
-	private static int counter;
-	private final ReentrantLock lock = new ReentrantLock();
-	
-	private Path logFile;
-	private BufferedWriter writer;
-	private Date date;
+	private final LocalDateTime date = LocalDateTime.now();
+	private final Path logFile;
+	private final BufferedWriter writer;
 
-	public ImportLogger(String logDir, Path importFile, DatabaseConnection connection) throws IOException {
-		Path path = Paths.get(logDir, connection.getDescription().replaceAll("[^a-zA-Z0-9\\.\\-]", "_"));
-		if (!Files.exists(path))
-			Files.createDirectories(path);
+	public ImportLogger(Path logFile, Path importFile, DatabaseConnection connection) throws IOException {
+		if (Files.exists(logFile) && Files.isDirectory(logFile)) {
+			logFile = logFile.resolve(getDefaultLogFileName());
+		} else if (!Files.exists(logFile.getParent())) {
+			Files.createDirectories(logFile.getParent());
+		}
 
-		date = Calendar.getInstance().getTime();
-		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy_MM_dd-HH_mm_ss_SSS");
-
-		logFile = Paths.get(path.toString(), "imported_features-" + dateFormat.format(date) + "_" + (++counter) + ".log");
-		if (Files.exists(logFile))
-			throw new IOException("The log file '" + logFile.getFileName() + "' for imported-top level features already exists.");
-
-		writer = Files.newBufferedWriter(logFile, Charset.defaultCharset());
+		this.logFile = logFile;
+		writer = Files.newBufferedWriter(logFile, StandardCharsets.UTF_8);
 		writeHeader(importFile, connection);
 	}
 
@@ -69,11 +59,9 @@ public class ImportLogger {
 	}
 
 	private void writeHeader(Path fileName, DatabaseConnection connection) throws IOException {
-		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss.SSS");
-
-		writer.write('#' + this.getClass().getPackage().getImplementationTitle() + ", version \"" +
-				this.getClass().getPackage().getImplementationVersion() + "\"");
-		writer.newLine();		
+		writer.write('#' + getClass().getPackage().getImplementationTitle() +
+				", version \"" + getClass().getPackage().getImplementationVersion() + "\"");
+		writer.newLine();
 		writer.write("#Imported top-level features from file: ");
 		writer.write(fileName.toAbsolutePath().toString());
 		writer.newLine();
@@ -81,7 +69,7 @@ public class ImportLogger {
 		writer.write(connection.toConnectString());
 		writer.newLine();
 		writer.write("#Timestamp: ");
-		writer.write(dateFormat.format(date));
+		writer.write(date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
 		writer.newLine();
 		writer.write("FEATURE_TYPE,CITYOBJECT_ID,GMLID_IN_FILE");
 		writer.newLine();
@@ -95,19 +83,11 @@ public class ImportLogger {
 	}
 	
 	public void write(ImportLogEntry entry) throws IOException {
-		final ReentrantLock lock = this.lock;
-		lock.lock();
-		
-		try {
-			writer.write(entry.type);
-			writer.write(',');
-			writer.write(String.valueOf(entry.id));
-			writer.write(',');
-			writer.write(entry.gmlId);
-			writer.newLine();
-		} finally {
-			lock.unlock();
-		}
+		writer.write(entry.type + "," + entry.id + "," + entry.gmlId + System.lineSeparator());
+	}
+
+	public String getDefaultLogFileName() {
+		return "imported_features-" + date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss-SSS")) + ".log";
 	}
 
 	public void close(boolean success) throws IOException {

@@ -28,31 +28,24 @@
 package org.citydb.gui.modules.importer.preferences;
 
 import org.citydb.config.Config;
-import org.citydb.util.CoreConstants;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.importer.ImportLog;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.modules.common.AbstractPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
+import org.citydb.util.CoreConstants;
 
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JFileChooser;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
+import javax.swing.*;
 import javax.swing.border.TitledBorder;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.event.ActionEvent;
+import java.awt.*;
 import java.awt.event.ActionListener;
 import java.io.File;
 
-@SuppressWarnings("serial")
 public class ImportLogPanel extends AbstractPreferencesComponent {
 	private JPanel block1;
 	private JCheckBox logFeatures;
-	private JTextField logPath;
+	private JLabel logFileLabel;
+	private JTextField logFile;
 	private JButton browseButton;
 	
 	public ImportLogPanel(Config config) {
@@ -63,25 +56,23 @@ public class ImportLogPanel extends AbstractPreferencesComponent {
 	@Override
 	public boolean isModified() {
 		ImportLog log = config.getImportConfig().getImportLog();
-		
 		if (logFeatures.isSelected() != log.isSetLogImportedFeatures()) return true;
-		if (!logPath.getText().equals(log.getLogPath())) return true;
+		if (!logFile.getText().equals(log.getLogFile())) return true;
 		return false;
 	}
 
 	private void initGui() {
 		logFeatures = new JCheckBox();
-		logPath = new JTextField();
+		logFileLabel = new JLabel();
+		logFile = new JTextField();
 		browseButton = new JButton();
 		
-		PopupMenuDecorator.getInstance().decorate(logPath);
+		PopupMenuDecorator.getInstance().decorate(logFile);
 		
-		browseButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				String dir = browseFile(Language.I18N.getString("pref.import.log.label.useLog"), logPath.getText());
-				if (!dir.isEmpty())
-					logPath.setText(dir);
-			}
+		browseButton.addActionListener(e -> {
+			String dir = browseFile(Language.I18N.getString("pref.import.log.label.useLog"), logFile.getText());
+			if (!dir.isEmpty())
+				logFile.setText(dir);
 		});
 		
 		setLayout(new GridBagLayout());
@@ -92,26 +83,23 @@ public class ImportLogPanel extends AbstractPreferencesComponent {
 			block1.setBorder(BorderFactory.createTitledBorder(""));
 			block1.setLayout(new GridBagLayout());
 			logFeatures.setIconTextGap(10);
-			logPath.setPreferredSize(logPath.getSize());
+			logFile.setPreferredSize(logFile.getSize());
 			int lmargin = (int)(logFeatures.getPreferredSize().getWidth()) + 11;
 			{
-				block1.add(logFeatures, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
-				block1.add(logPath, GuiUtil.setConstraints(0,1,1.0,1.0,GridBagConstraints.BOTH,0,lmargin,5,5));
-				block1.add(browseButton, GuiUtil.setConstraints(1,1,0.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
+				block1.add(logFeatures, GuiUtil.setConstraints(0, 0, 3, 1, 1, 1, GridBagConstraints.BOTH, 0, 5, 0, 5));
+				block1.add(logFileLabel, GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.BOTH, 0, lmargin, 5, 5));
+				block1.add(logFile, GuiUtil.setConstraints(1, 1, 1, 1, GridBagConstraints.BOTH, 0, 5, 5, 5));
+				block1.add(browseButton, GuiUtil.setConstraints(2, 1, 0, 0, GridBagConstraints.BOTH, 0, 5, 5, 5));
 			}
 		}
 		
-		ActionListener cacheListener = new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				setEnabledLocalCachePath();
-			}
-		};
-		
+		ActionListener cacheListener = e -> setEnabledLocalCachePath();
 		logFeatures.addActionListener(cacheListener);
 	}
 	
 	private void setEnabledLocalCachePath() {
-		logPath.setEnabled(logFeatures.isSelected());
+		logFileLabel.setEnabled(logFeatures.isSelected());
+		logFile.setEnabled(logFeatures.isSelected());
 		browseButton.setEnabled(logFeatures.isSelected());
 	}
 	
@@ -119,20 +107,21 @@ public class ImportLogPanel extends AbstractPreferencesComponent {
 	public void doTranslation() {
 		((TitledBorder)block1.getBorder()).setTitle(Language.I18N.getString("pref.import.log.border"));
 		logFeatures.setText(Language.I18N.getString("pref.import.log.label.useLog"));
-		browseButton.setText(Language.I18N.getString("common.button.browse"));		
+		logFileLabel.setText(Language.I18N.getString("pref.import.log.label.logFile"));
+		browseButton.setText(Language.I18N.getString("common.button.browse"));
 	}
 
 	@Override
 	public void loadSettings() {
 		ImportLog log = config.getImportConfig().getImportLog();
-		
 		logFeatures.setSelected(log.isSetLogImportedFeatures());
-		if (log.isSetLogPath())
-			logPath.setText(log.getLogPath());
-		else {
-			String defaultImportPath = CoreConstants.IMPEXP_DATA_DIR.resolve(CoreConstants.IMPORT_LOG_DIR).toString();
-			logPath.setText(defaultImportPath);
-			log.setLogPath(defaultImportPath);
+
+		if (log.isSetLogFile()) {
+			logFile.setText(log.getLogFile());
+		} else {
+			String defaultDir = CoreConstants.IMPEXP_DATA_DIR.resolve(CoreConstants.IMPORT_LOG_DIR).toString();
+			logFile.setText(defaultDir);
+			log.setLogFile(defaultDir);
 		}
 		
 		setEnabledLocalCachePath();
@@ -141,14 +130,14 @@ public class ImportLogPanel extends AbstractPreferencesComponent {
 	@Override
 	public void setSettings() {
 		ImportLog log = config.getImportConfig().getImportLog();
-
 		log.setLogImportedFeatures(logFeatures.isSelected());
-		if (!logPath.getText().isEmpty())
-			log.setLogPath(logPath.getText());
-		else {
-			String defaultImportPath = CoreConstants.IMPEXP_DATA_DIR.resolve(CoreConstants.IMPORT_LOG_DIR).toString();
-			logPath.setText(defaultImportPath);
-			log.setLogPath(defaultImportPath);
+
+		if (!logFile.getText().isEmpty()) {
+			log.setLogFile(logFile.getText());
+		} else {
+			String defaultDir = CoreConstants.IMPEXP_DATA_DIR.resolve(CoreConstants.IMPORT_LOG_DIR).toString();
+			logFile.setText(defaultDir);
+			log.setLogFile(defaultDir);
 		}
 	}
 	
@@ -157,15 +146,13 @@ public class ImportLogPanel extends AbstractPreferencesComponent {
 		return Language.I18N.getString("pref.tree.import.log");
 	}
 
-	private String browseFile(String title, String oldDir) {
+	private String browseFile(String title, String currentFile) {
 		JFileChooser chooser = new JFileChooser();
 		chooser.setDialogTitle(title);
-		chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-		chooser.setCurrentDirectory(new File(oldDir));
+		chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+		chooser.setCurrentDirectory(new File(currentFile));
 
 		int result = chooser.showSaveDialog(getTopLevelAncestor());
-		if (result == JFileChooser.CANCEL_OPTION) return "";
-		String browseString = chooser.getSelectedFile().toString();
-		return browseString;
+		return result == JFileChooser.CANCEL_OPTION ? "" : chooser.getSelectedFile().toString();
 	}
 }

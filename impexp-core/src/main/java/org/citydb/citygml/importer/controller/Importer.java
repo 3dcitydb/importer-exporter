@@ -286,10 +286,10 @@ public class Importer implements EventHandler {
                 // create import logger
                 if (config.getImportConfig().getImportLog().isSetLogImportedFeatures()) {
                     try {
-                        String logPath = config.getImportConfig().getImportLog().isSetLogPath() ?
-                                config.getImportConfig().getImportLog().getLogPath() :
-								CoreConstants.IMPEXP_DATA_DIR.resolve(CoreConstants.IMPORT_LOG_DIR).toString();
-                        importLogger = new ImportLogger(logPath, contentFile, config.getDatabaseConfig().getActiveConnection());
+                        Path logFile = config.getImportConfig().getImportLog().isSetLogFile() ?
+                                Paths.get(config.getImportConfig().getImportLog().getLogFile()) :
+								CoreConstants.IMPEXP_DATA_DIR.resolve(CoreConstants.IMPORT_LOG_DIR);
+                        importLogger = new ImportLogger(logFile, contentFile, config.getDatabaseConfig().getActiveConnection());
                         log.info("Log file of imported top-level features: " + importLogger.getLogFilePath().toString());
                     } catch (IOException e) {
                         throw new CityGMLImportException("Failed to create log file for imported top-level features.", e);
