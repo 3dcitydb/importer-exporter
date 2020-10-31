@@ -202,7 +202,7 @@ public class Logger {
 	}
 
 	public String getDefaultLogFileName() {
-		return "log_3dcitydb_impexp_" +
+		return "impexp-" +
 				LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE) +
 				".log";
 	}

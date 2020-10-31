@@ -404,14 +404,14 @@ public class LoggingPanel extends AbstractPreferencesComponent {
         return Language.I18N.getString("pref.tree.general.logging");
     }
 
-    private String browseFile(String title, String oldDir) {
+    private String browseFile(String title, String currentFile) {
         JFileChooser chooser = new JFileChooser();
         chooser.setDialogTitle(title);
         chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-        chooser.setCurrentDirectory(new File(oldDir));
+        chooser.setCurrentDirectory(new File(currentFile));
 
         int result = chooser.showSaveDialog(mainView);
-        return (result == JFileChooser.CANCEL_OPTION) ? "" : chooser.getSelectedFile().toString();
+        return result == JFileChooser.CANCEL_OPTION ? "" : chooser.getSelectedFile().toString();
     }
 
     private class LogColor {

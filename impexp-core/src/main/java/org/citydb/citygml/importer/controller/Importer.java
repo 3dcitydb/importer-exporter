@@ -96,7 +96,6 @@ import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.EnumMap;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -278,10 +277,11 @@ public class Importer implements EventHandler {
 				// create import logger
 				if (importerConfig.getImportLog().isSetLogImportedFeatures()) {
 					try {
-						String logPath = importerConfig.getImportLog().isSetLogPath() ? importerConfig.getImportLog().getLogPath()
-								: CoreConstants.IMPEXP_DATA_DIR.resolve(CoreConstants.IMPORT_LOG_DIR).toString();
-						importLogger = new ImportLogger(logPath, contentFile, databaseConfig.getActiveConnection());
-						log.info("Log file of imported top-level features: " + importLogger.getLogFilePath().toString());
+						Path logFile = importerConfig.getImportLog().isSetLogFile() ?
+								Paths.get(importerConfig.getImportLog().getLogFile()) :
+								CoreConstants.IMPEXP_DATA_DIR.resolve(CoreConstants.IMPORT_LOG_DIR);
+						importLogger = new ImportLogger(logFile, contentFile, databaseConfig.getActiveConnection());
+						log.info("Log file of imported top-level features: " + importLogger.getLogFilePath());
 					} catch (IOException e) {
 						throw new CityGMLImportException("Failed to create log file for imported top-level features. Aborting.", e);
 					}
