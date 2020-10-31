@@ -44,8 +44,8 @@ public class ImportLogger {
 	private final BufferedWriter writer;
 
 	public ImportLogger(Path logFile, Path importFile, DatabaseConnection connection) throws IOException {
-		if (Files.isSameFile(CoreConstants.IMPEXP_DATA_DIR.resolve(CoreConstants.IMPORT_LOG_DIR), logFile)) {
-			logFile = logFile.resolve(getDefaultLogFileName());
+		if (logFile.toAbsolutePath().normalize().startsWith(CoreConstants.IMPEXP_DATA_DIR.resolve(CoreConstants.IMPORT_LOG_DIR))) {
+			Files.createDirectories(CoreConstants.IMPEXP_DATA_DIR.resolve(CoreConstants.IMPORT_LOG_DIR));
 		}
 
 		if (Files.exists(logFile) && Files.isDirectory(logFile)) {
