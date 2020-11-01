@@ -35,7 +35,6 @@ import org.citydb.database.schema.path.InvalidSchemaPathException;
 import org.citydb.database.schema.path.SchemaPath;
 import org.citydb.query.Query;
 import org.citydb.query.builder.QueryBuildException;
-import org.citydb.query.filter.selection.expression.ValueReference;
 import org.citydb.query.filter.selection.operator.sql.SelectOperator;
 import org.citydb.sqlbuilder.expression.LiteralSelectExpression;
 import org.citydb.sqlbuilder.select.operator.comparison.InOperator;
@@ -55,19 +54,17 @@ public class SelectOperatorBuilder {
         if (!operator.isSetSelect())
             throw new QueryBuildException("No select statement provided for the SQL operator.");
 
-        FeatureType superType = schemaMapping.getCommonSuperType(query.getFeatureTypeFilter().getFeatureTypes());
-        ValueReference valueReference;
-
+        SchemaPath schemaPath;
         try {
-            SchemaPath path = new SchemaPath(superType);
-            path.appendChild(superType.getProperty(MappingConstants.ID, CityDBADE200Module.v3_0.getNamespaceURI(), true));
-            valueReference = new ValueReference(path);
+            FeatureType superType = schemaMapping.getCommonSuperType(query.getFeatureTypeFilter().getFeatureTypes());
+            schemaPath = new SchemaPath(superType)
+                    .appendChild(superType.getProperty(MappingConstants.ID, CityDBADE200Module.v3_0.getNamespaceURI(), true));
         } catch (InvalidSchemaPathException e) {
             throw new QueryBuildException(e.getMessage());
         }
 
         // build the value reference
-        schemaPathBuilder.addSchemaPath(valueReference.getSchemaPath(), queryContext, useLeftJoins);
+        schemaPathBuilder.addSchemaPath(schemaPath, queryContext, useLeftJoins);
         LiteralSelectExpression subQuery = new LiteralSelectExpression(operator.getSelect());
         queryContext.addPredicate(new InOperator(queryContext.getTargetColumn(), subQuery, negate));
     }

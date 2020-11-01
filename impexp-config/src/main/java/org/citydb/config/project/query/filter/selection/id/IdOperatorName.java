@@ -25,22 +25,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.citydb.query.filter.selection.operator.id;
+package org.citydb.config.project.query.filter.selection.id;
 
-import org.citydb.query.filter.selection.operator.OperatorName;
+public enum IdOperatorName {
+    RESOURCE_ID("gml:id"),
+    DATABASE_ID("cityobject.id");
 
-public enum IdOperationName implements OperatorName {
-	RESOURCE_ID("gml:id"),
-	DATABASE_ID("cityobject.id");
-	
-	final String symbol;
-	
-	IdOperationName(String symbol) {
-		this.symbol = symbol;
-	}
-	
-	@Override
-	public String getSymbol() {
-		return symbol;
-	}
+    final String name;
+
+    IdOperatorName(String name) {
+        this.name = name;
+    }
+
+    @Override
+    public String toString() {
+        return name;
+    }
 }

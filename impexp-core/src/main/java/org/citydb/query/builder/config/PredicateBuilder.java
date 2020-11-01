@@ -29,6 +29,7 @@ package org.citydb.query.builder.config;
 
 import org.citydb.config.project.query.filter.selection.AbstractPredicate;
 import org.citydb.config.project.query.filter.selection.comparison.AbstractComparisonOperator;
+import org.citydb.config.project.query.filter.selection.id.AbstractIdOperator;
 import org.citydb.config.project.query.filter.selection.id.ResourceIdOperator;
 import org.citydb.config.project.query.filter.selection.logical.AbstractBinaryLogicalOperator;
 import org.citydb.config.project.query.filter.selection.logical.AbstractLogicalOperator;
@@ -61,23 +62,23 @@ public class PredicateBuilder {
 			throw new QueryBuildException("No valid filter predicate provided.");
 
 		Predicate predicate = null;
-		
+
 		switch (predicateConfig.getPredicateName()) {
-		case COMPARISON_OPERATOR:
-			predicate = comparisonBuilder.buildComparisonOperator((AbstractComparisonOperator)predicateConfig);
-			break;
-		case SPATIAL_OPERATOR:
-			predicate = spatialBuilder.buildSpatialOperator((AbstractSpatialOperator)predicateConfig);
-			break;
-		case LOGICAL_OPERATOR:
-			predicate = buildLogicalOperator((AbstractLogicalOperator)predicateConfig);
-			break;
-		case ID_OPERATOR:
-			predicate = idBuilder.buildResourceIdOperator((ResourceIdOperator)predicateConfig);
-			break;
-		case SQL_OPERATOR:
-			predicate = selectBuilder.buildSelectOperator((SelectOperator)predicateConfig);
-			break;
+			case COMPARISON_OPERATOR:
+				predicate = comparisonBuilder.buildComparisonOperator((AbstractComparisonOperator) predicateConfig);
+				break;
+			case SPATIAL_OPERATOR:
+				predicate = spatialBuilder.buildSpatialOperator((AbstractSpatialOperator) predicateConfig);
+				break;
+			case LOGICAL_OPERATOR:
+				predicate = buildLogicalOperator((AbstractLogicalOperator) predicateConfig);
+				break;
+			case ID_OPERATOR:
+				predicate = idBuilder.buildIdOperator((AbstractIdOperator) predicateConfig);
+				break;
+			case SQL_OPERATOR:
+				predicate = selectBuilder.buildSelectOperator((SelectOperator) predicateConfig);
+				break;
 		}
 		
 		return predicate;

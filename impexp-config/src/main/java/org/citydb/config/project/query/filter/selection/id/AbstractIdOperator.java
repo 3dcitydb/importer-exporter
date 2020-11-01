@@ -2,7 +2,7 @@
  * 3D City Database - The Open Source CityGML Database
  * http://www.3dcitydb.org/
  *
- * Copyright 2013 - 2019
+ * Copyright 2013 - 2020
  * Chair of Geoinformatics
  * Technical University of Munich, Germany
  * https://www.gis.bgu.tum.de/
@@ -25,22 +25,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.citydb.query.filter.selection.operator.id;
 
-import org.citydb.query.filter.selection.operator.OperatorName;
+package org.citydb.config.project.query.filter.selection.id;
 
-public enum IdOperationName implements OperatorName {
-	RESOURCE_ID("gml:id"),
-	DATABASE_ID("cityobject.id");
-	
-	final String symbol;
-	
-	IdOperationName(String symbol) {
-		this.symbol = symbol;
-	}
-	
-	@Override
-	public String getSymbol() {
-		return symbol;
-	}
+import org.citydb.config.project.query.filter.selection.AbstractPredicate;
+import org.citydb.config.project.query.filter.selection.PredicateName;
+
+import javax.xml.bind.annotation.XmlSeeAlso;
+import javax.xml.bind.annotation.XmlType;
+
+@XmlType(name = "AbstractIdOperatorType")
+@XmlSeeAlso({
+        ResourceIdOperator.class,
+        DatabaseIdOperator.class
+})
+public abstract class AbstractIdOperator extends AbstractPredicate {
+
+    public abstract IdOperatorName getOperatorName();
+
+    @Override
+    public PredicateName getPredicateName() {
+        return PredicateName.ID_OPERATOR;
+    }
 }

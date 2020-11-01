@@ -27,20 +27,25 @@
  */
 package org.citydb.query.filter.selection.operator.id;
 
-import org.citydb.query.filter.selection.operator.OperatorName;
+import org.citydb.query.filter.FilterException;
 
-public enum IdOperationName implements OperatorName {
-	RESOURCE_ID("gml:id"),
-	DATABASE_ID("cityobject.id");
-	
-	final String symbol;
-	
-	IdOperationName(String symbol) {
-		this.symbol = symbol;
+import java.util.List;
+
+public class IdOperationFactory {
+
+	public static ResourceIdOperator resourceIds(List<String> ids) throws FilterException {
+		return new ResourceIdOperator(ids);
 	}
 	
-	@Override
-	public String getSymbol() {
-		return symbol;
+	public static ResourceIdOperator resourceIds(String... ids) throws FilterException {
+		return new ResourceIdOperator(ids);
+	}
+
+	public static DatabaseIdOperator databaseIds(List<Long> ids) throws FilterException {
+		return new DatabaseIdOperator(ids);
+	}
+
+	public static DatabaseIdOperator databaseIds(Long... ids) throws FilterException {
+		return new DatabaseIdOperator(ids);
 	}
 }

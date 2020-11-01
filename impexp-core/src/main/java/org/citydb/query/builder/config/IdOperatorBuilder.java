@@ -28,8 +28,10 @@
 package org.citydb.query.builder.config;
 
 import org.citydb.query.builder.QueryBuildException;
+import org.citydb.query.filter.FilterException;
 import org.citydb.query.filter.selection.Predicate;
-import org.citydb.query.filter.selection.operator.id.ResourceIdOperator;
+import org.citydb.query.filter.selection.operator.id.AbstractIdOperator;
+import org.citydb.query.filter.selection.operator.id.IdOperationFactory;
 
 public class IdOperatorBuilder {
 	
@@ -37,17 +39,38 @@ public class IdOperatorBuilder {
 		
 	}
 
-	protected Predicate buildResourceIdOperator(org.citydb.config.project.query.filter.selection.id.ResourceIdOperator idOperatorConfig) throws QueryBuildException {
-		ResourceIdOperator idOperator = new ResourceIdOperator();
-		for (String id : idOperatorConfig.getResourceIds()) {
-			if (id != null && !id.isEmpty())
-				idOperator.addResourceId(id);
-		}
-		
-		if (idOperator.isEmpty())
-			throw new QueryBuildException("No valid gml:ids provided for resource id filter.");
+	protected Predicate buildIdOperator(org.citydb.config.project.query.filter.selection.id.AbstractIdOperator operatorConfig) throws QueryBuildException {
+		AbstractIdOperator operator = null;
 
-		return idOperator;
+		try {
+			switch (operatorConfig.getOperatorName()) {
+				case RESOURCE_ID:
+					operator = buildResourceIdOperator((org.citydb.config.project.query.filter.selection.id.ResourceIdOperator) operatorConfig);
+					break;
+				case DATABASE_ID:
+					operator = buildDatabaseIdOperator((org.citydb.config.project.query.filter.selection.id.DatabaseIdOperator) operatorConfig);
+					break;
+			}
+		} catch (FilterException e) {
+			throw new QueryBuildException("Failed to build the " + operatorConfig.getOperatorName() + " operator.", e);
+		}
+
+		return operator;
 	}
-	
+
+	private AbstractIdOperator buildResourceIdOperator(org.citydb.config.project.query.filter.selection.id.ResourceIdOperator operatorConfig) throws FilterException, QueryBuildException {
+		if (operatorConfig.getResourceIds().isEmpty())  {
+			throw new QueryBuildException("No valid gml:ids provided for resource id filter.");
+		}
+
+		return IdOperationFactory.resourceIds(operatorConfig.getResourceIds());
+	}
+
+	private AbstractIdOperator buildDatabaseIdOperator(org.citydb.config.project.query.filter.selection.id.DatabaseIdOperator operatorConfig) throws FilterException, QueryBuildException {
+		if (operatorConfig.getDatabaseIds().isEmpty())  {
+			throw new QueryBuildException("No valid ids provided for database id filter.");
+		}
+
+		return IdOperationFactory.databaseIds(operatorConfig.getDatabaseIds());
+	}
 }
