@@ -211,7 +211,7 @@ public class ImpExpCli extends CliCommand implements CommandLine.IVersionProvide
         }
 
         cmd.setCaseInsensitiveEnumValuesAllowed(true)
-                .setAbbreviatedSubcommandsAllowed(true)
+                .setAbbreviatedOptionsAllowed(true)
                 .setExecutionStrategy(new CommandLine.RunAll());
 
         if (startWithGuiAsDefault) {
