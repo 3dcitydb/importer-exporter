@@ -86,12 +86,17 @@ public class GuiCommand extends CliCommand implements StartupProgressListener {
 
         // initialize predefined GUI components
         ImpExpGui impExpGui = new ImpExpGui(parent.getConfigFile());
-        initializeViewComponents(impExpGui, config);
 
-        parent.logProgress("Starting graphical user interface");
-        SwingUtilities.invokeLater(impExpGui::invoke);
-        if (!hideSplash) {
-            splashScreen.close();
+        try {
+            parent.logProgress("Starting graphical user interface");
+            initializeViewComponents(impExpGui, config);
+            SwingUtilities.invokeLater(impExpGui::invoke);
+        } catch (Throwable e) {
+            throw new ImpExpException("Failed to initialize the graphical user interface.", e);
+        } finally {
+            if (!hideSplash) {
+                splashScreen.close();
+            }
         }
 
         return 0;
