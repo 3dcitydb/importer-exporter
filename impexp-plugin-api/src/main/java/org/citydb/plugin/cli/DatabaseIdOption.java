@@ -32,7 +32,7 @@ import org.citydb.config.project.query.filter.selection.id.DatabaseIdOperator;
 import picocli.CommandLine;
 
 public class DatabaseIdOption implements CliOption {
-    @CommandLine.Option(names = "--db-ids", split = ",", paramLabel = "<id>",
+    @CommandLine.Option(names = "--db-id", split = ",", paramLabel = "<id>",
             description = "Process top-level features with a matching database id.")
     private Long[] ids;
 

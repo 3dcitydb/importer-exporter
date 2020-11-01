@@ -35,11 +35,11 @@ import javax.xml.namespace.NamespaceContext;
 import java.util.Map;
 
 public class TypeNamesOption implements CliOption {
-    @CommandLine.Option(names = {"-t", "--type-names"}, split = ",", paramLabel = "<[prefix:]name>",
+    @CommandLine.Option(names = {"-t", "--type-name"}, split = ",", paramLabel = "<[prefix:]name>",
             description = "Names of the top-level features to process.")
     private String[] typeNames;
 
-    @CommandLine.Option(names = "--namespaces", split = ",", paramLabel = "<prefix=name>",
+    @CommandLine.Option(names = "--namespace", split = ",", paramLabel = "<prefix=name>",
             description = "Prefix-to-namespace mappings.")
     private Map<String, String> namespaces;
 

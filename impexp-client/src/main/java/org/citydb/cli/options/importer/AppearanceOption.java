@@ -32,8 +32,8 @@ import org.citydb.plugin.cli.CliOption;
 import picocli.CommandLine;
 
 public class AppearanceOption implements CliOption {
-    @CommandLine.Option(names = "--no-appearances",
-            description = "Do not import appearances.")
+    @CommandLine.Option(names = "--no-appearance",
+            description = "Do not import appearance information.")
     private boolean exportAppearances = true;
 
     public boolean isExportAppearances() {

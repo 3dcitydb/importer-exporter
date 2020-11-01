@@ -37,7 +37,7 @@ import picocli.CommandLine;
 public class LodOption implements CliOption {
     enum Mode {or, and, minimum, maximum}
 
-    @CommandLine.Option(names = {"-l", "--lods"}, split = ",", paramLabel = "<0..4>", required = true,
+    @CommandLine.Option(names = {"-l", "--lod"}, split = ",", paramLabel = "<0..4>", required = true,
             description = "LoD representations to export.")
     private int[] lods;
 

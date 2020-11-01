@@ -32,7 +32,7 @@ import org.citydb.config.project.query.filter.selection.id.ResourceIdOperator;
 import picocli.CommandLine;
 
 public class ResourceIdOption implements CliOption {
-    @CommandLine.Option(names = {"-i", "--gml-ids"}, split = ",", paramLabel = "<id>",
+    @CommandLine.Option(names = {"-i", "--gml-id"}, split = ",", paramLabel = "<id>",
             description = "Process top-level features with a matching gml:id.")
     private String[] ids;
 

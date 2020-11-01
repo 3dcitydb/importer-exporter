@@ -33,12 +33,12 @@ import org.citydb.plugin.cli.CliOption;
 import picocli.CommandLine;
 
 public class AppearanceOption implements CliOption {
-    @CommandLine.Option(names = "--no-appearances",
-            description = "Do not export appearances.")
+    @CommandLine.Option(names = "--no-appearance",
+            description = "Do not export appearance information.")
     private boolean exportAppearances = true;
 
-    @CommandLine.Option(names = {"-a", "--appearance-themes"}, split = ",", paramLabel = "<theme>",
-            description = "Only export appearances from these themes. Use 'none' for the null theme.")
+    @CommandLine.Option(names = {"-a", "--appearance-theme"}, split = ",", paramLabel = "<theme>",
+            description = "Only export appearances with a matching theme. Use 'none' for the null theme.")
     private String[] themes;
 
     public boolean isExportAppearances() {
