@@ -55,6 +55,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.zip.GZIPInputStream;
 
 public class DirectoryScanner {
@@ -89,15 +90,18 @@ public class DirectoryScanner {
     }
 
     public List<InputFile> listFiles(List<Path> bases, String... fileEndings) throws IOException {
-        if (fileEndings.length == 0)
+        if (fileEndings.length == 0) {
             fileEndings = getDefaultFileEndings();
+        }
 
         Pattern pattern = Pattern.compile("(?i).+\\.((" + Arrays.stream(fileEndings)
-                .map(Pattern::quote).collect(Collectors.joining(")|(")) + "))$");
+                .map(Pattern::quote)
+                .collect(Collectors.joining(")|(")) + "))$");
 
         List<InputFile> files = new ArrayList<>();
-        for (Path base : bases)
+        for (Path base : bases) {
             listFiles(base, files, pattern);
+        }
 
         return files;
     }
@@ -112,18 +116,20 @@ public class DirectoryScanner {
                 @Override
                 public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
                     matcher.reset(file.getFileName().toString()).usePattern(filePattern);
-                    if (matcher.matches())
+                    if (matcher.matches()) {
                         processFile(file, files, false);
+                    }
 
                     return shouldRun ? FileVisitResult.CONTINUE : FileVisitResult.TERMINATE;
                 }
 
                 @Override
                 public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-                    if (shouldRun)
+                    if (shouldRun) {
                         return recursive || base.equals(dir) ? super.preVisitDirectory(dir, attrs) : FileVisitResult.SKIP_SUBTREE;
-                    else
+                    } else {
                         return FileVisitResult.TERMINATE;
+                    }
                 }
 
                 @Override
@@ -131,8 +137,9 @@ public class DirectoryScanner {
                     return shouldRun ? FileVisitResult.SKIP_SUBTREE : FileVisitResult.TERMINATE;
                 }
             });
-        } else
+        } else {
             processFile(base, files, true);
+        }
     }
 
     private void processFile(Path file, List<InputFile> files, boolean force) throws IOException {
@@ -140,12 +147,11 @@ public class DirectoryScanner {
             return;
 
         MediaType mediaType = getMediaType(file);
-
-        if (mediaType.equals(InputFile.APPLICATION_ZIP))
+        if (mediaType.equals(InputFile.APPLICATION_ZIP)) {
             processZipFile(file, files);
-        else if (mediaType.equals(InputFile.APPLICATION_GZIP))
+        } else if (mediaType.equals(InputFile.APPLICATION_GZIP)) {
             processGZipFile(file, files);
-        else if (isSupportedContentType(mediaType) || force) {
+        } else if (isSupportedContentType(mediaType) || force) {
             files.add(new RegularInputFile(file, mediaType));
         }
     }
@@ -153,8 +159,9 @@ public class DirectoryScanner {
     private void processGZipFile(Path gzipFile, List<InputFile> files) {
         try (InputStream stream = new GZIPInputStream(new FileInputStream(gzipFile.toFile()))) {
             MediaType mediaType = getMediaType(stream);
-            if (isSupportedContentType(mediaType))
+            if (isSupportedContentType(mediaType)) {
                 files.add(new GZipInputFile(gzipFile, mediaType));
+            }
         } catch (IOException ignored) {
             //
         }
@@ -180,8 +187,8 @@ public class DirectoryScanner {
             }
         }
 
-        try {
-            Files.walk(fileSystem.getPath("/")).filter(Files::isRegularFile).forEach(path -> {
+        try (Stream<Path> stream = Files.walk(fileSystem.getPath("/")).filter(Files::isRegularFile)) {
+            stream.forEach(path -> {
                 matcher.reset(path.getFileName().toString()).usePattern(contentFile);
                 if (matcher.matches()) {
                     MediaType mediaType = getMediaType(path);
@@ -191,6 +198,8 @@ public class DirectoryScanner {
                     }
                 }
             });
+        } catch (Throwable e) {
+            throw new IOException("Failed to read zip file entries.", e);
         } finally {
             fileSystem.close();
         }
@@ -218,5 +227,4 @@ public class DirectoryScanner {
         return mediaType.equals(InputFile.APPLICATION_XML)
                 || mediaType.equals(InputFile.APPLICATION_JSON);
     }
-
 }
