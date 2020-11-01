@@ -27,49 +27,18 @@
  */
 package org.citydb.config.project.query.filter.selection.id;
 
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlType;
-import java.util.ArrayList;
-import java.util.List;
+public enum IdOperatorName {
+    RESOURCE_ID("gml:id"),
+    DATABASE_ID("cityobject.id");
 
-@XmlRootElement(name = "resourceIds")
-@XmlType(name = "ResourceIdType", propOrder = {
-        "ids"
-})
-public class ResourceIdOperator extends AbstractIdOperator {
-    @XmlElement(name = "id")
-    private List<String> ids;
+    final String name;
 
-    public ResourceIdOperator() {
-        ids = new ArrayList<>();
-    }
-
-    public boolean isSetResourceIds() {
-        return !ids.isEmpty();
-    }
-
-    public List<String> getResourceIds() {
-        return ids;
-    }
-
-    public void addResourceId(String id) {
-        ids.add(id);
-    }
-
-    public void setResourceIds(List<String> ids) {
-        if (ids != null && !ids.isEmpty()) {
-            this.ids = ids;
-        }
+    IdOperatorName(String name) {
+        this.name = name;
     }
 
     @Override
-    public void reset() {
-        ids.clear();
-    }
-
-    @Override
-    public IdOperatorName getOperatorName() {
-        return IdOperatorName.RESOURCE_ID;
+    public String toString() {
+        return name;
     }
 }

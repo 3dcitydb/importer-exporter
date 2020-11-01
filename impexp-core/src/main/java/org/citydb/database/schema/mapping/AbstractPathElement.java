@@ -85,7 +85,7 @@ public abstract class AbstractPathElement {
     }
 
     public boolean isQueryable() {
-        return queryable == null ? true : queryable.booleanValue();
+        return queryable == null || queryable;
     }
 
     public boolean isSetQueryable() {

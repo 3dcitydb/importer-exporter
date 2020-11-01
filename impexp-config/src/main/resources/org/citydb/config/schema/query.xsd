@@ -1,90 +1,92 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<xs:schema elementFormDefault="qualified" version="1.0" targetNamespace="http://www.3dcitydb.org/importer-exporter/config" xmlns="http://www.3dcitydb.org/importer-exporter/config" xmlns:tns="http://www.3dcitydb.org/importer-exporter/config" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+<xs:schema elementFormDefault="qualified" version="1.0" targetNamespace="http://www.3dcitydb.org/importer-exporter/config" xmlns:tns="http://www.3dcitydb.org/importer-exporter/config" xmlns:xs="http://www.w3.org/2001/XMLSchema">
 
-  <xs:element name="and" type="AndOperatorType"/>
+  <xs:element name="and" type="tns:AndOperatorType"/>
 
-  <xs:element name="bbox" type="BBOXOperatorType"/>
+  <xs:element name="bbox" type="tns:BBOXOperatorType"/>
 
-  <xs:element name="beyond" type="BeyondOperatorType"/>
+  <xs:element name="beyond" type="tns:BeyondOperatorType"/>
 
-  <xs:element name="contains" type="ContainsOperatorType"/>
+  <xs:element name="contains" type="tns:ContainsOperatorType"/>
 
-  <xs:element name="dWithin" type="DWithinOperatorType"/>
+  <xs:element name="dWithin" type="tns:DWithinOperatorType"/>
 
-  <xs:element name="disjoint" type="DisjointOperatorType"/>
+  <xs:element name="databaseIds" type="tns:DatabaseIdType"/>
 
-  <xs:element name="envelope" type="BoundingBoxType"/>
+  <xs:element name="disjoint" type="tns:DisjointOperatorType"/>
 
-  <xs:element name="equals" type="EqualsOperatorType"/>
+  <xs:element name="envelope" type="tns:BoundingBoxType"/>
 
-  <xs:element name="filter" type="SelectionFilterType"/>
+  <xs:element name="equals" type="tns:EqualsOperatorType"/>
 
-  <xs:element name="intersects" type="IntersectsOperatorType"/>
+  <xs:element name="filter" type="tns:SelectionFilterType"/>
 
-  <xs:element name="lineString" type="LineStringType"/>
+  <xs:element name="intersects" type="tns:IntersectsOperatorType"/>
 
-  <xs:element name="multiLineString" type="MultiLineStringType"/>
+  <xs:element name="lineString" type="tns:LineStringType"/>
 
-  <xs:element name="multiPoint" type="MultiPointType"/>
+  <xs:element name="multiLineString" type="tns:MultiLineStringType"/>
 
-  <xs:element name="multiPolygon" type="MultiPolygonType"/>
+  <xs:element name="multiPoint" type="tns:MultiPointType"/>
 
-  <xs:element name="not" type="NotOperatorType"/>
+  <xs:element name="multiPolygon" type="tns:MultiPolygonType"/>
 
-  <xs:element name="or" type="OrOperatorType"/>
+  <xs:element name="not" type="tns:NotOperatorType"/>
 
-  <xs:element name="overlaps" type="OverlapsOperatorType"/>
+  <xs:element name="or" type="tns:OrOperatorType"/>
 
-  <xs:element name="point" type="PointType"/>
+  <xs:element name="overlaps" type="tns:OverlapsOperatorType"/>
 
-  <xs:element name="polygon" type="PolygonType"/>
+  <xs:element name="point" type="tns:PointType"/>
 
-  <xs:element name="propertyIsBetween" type="BetweenOperatorType"/>
+  <xs:element name="polygon" type="tns:PolygonType"/>
 
-  <xs:element name="propertyIsEqualTo" type="EqualToOperatorType"/>
+  <xs:element name="propertyIsBetween" type="tns:BetweenOperatorType"/>
 
-  <xs:element name="propertyIsGreaterThan" type="GreaterThanOperatorType"/>
+  <xs:element name="propertyIsEqualTo" type="tns:EqualToOperatorType"/>
 
-  <xs:element name="propertyIsGreaterThanOrEqualTo" type="GreaterThanOrEqualToOperatorType"/>
+  <xs:element name="propertyIsGreaterThan" type="tns:GreaterThanOperatorType"/>
 
-  <xs:element name="propertyIsLessThan" type="LessThanOperatorType"/>
+  <xs:element name="propertyIsGreaterThanOrEqualTo" type="tns:GreaterThanOrEqualToOperatorType"/>
 
-  <xs:element name="propertyIsLessThanOrEqualTo" type="LessThanOrEqualToOperatorType"/>
+  <xs:element name="propertyIsLessThan" type="tns:LessThanOperatorType"/>
 
-  <xs:element name="propertyIsLike" type="LikeOperatorType"/>
+  <xs:element name="propertyIsLessThanOrEqualTo" type="tns:LessThanOrEqualToOperatorType"/>
 
-  <xs:element name="propertyIsNotEqualTo" type="NotEqualToOperatorType"/>
+  <xs:element name="propertyIsLike" type="tns:LikeOperatorType"/>
 
-  <xs:element name="propertyIsNull" type="NullOperatorType"/>
+  <xs:element name="propertyIsNotEqualTo" type="tns:NotEqualToOperatorType"/>
 
-  <xs:element name="query" type="QueryType"/>
+  <xs:element name="propertyIsNull" type="tns:NullOperatorType"/>
 
-  <xs:element name="resourceIds" type="ResourceIdType"/>
+  <xs:element name="query" type="tns:QueryType"/>
 
-  <xs:element name="sql" type="SelectOperatorType"/>
+  <xs:element name="resourceIds" type="tns:ResourceIdType"/>
 
-  <xs:element name="touches" type="TouchesOperatorType"/>
+  <xs:element name="sql" type="tns:SelectOperatorType"/>
 
-  <xs:element name="within" type="WithinOperatorType"/>
+  <xs:element name="touches" type="tns:TouchesOperatorType"/>
 
-  <xs:element name="wrapper" type="QueryWrapperType"/>
+  <xs:element name="within" type="tns:WithinOperatorType"/>
+
+  <xs:element name="wrapper" type="tns:QueryWrapperType"/>
 
   <xs:complexType name="QueryWrapperType">
     <xs:sequence>
-      <xs:element ref="query" minOccurs="0"/>
+      <xs:element ref="tns:query" minOccurs="0"/>
     </xs:sequence>
   </xs:complexType>
 
   <xs:complexType name="QueryType">
     <xs:sequence>
-      <xs:element name="typeNames" type="FeatureTypeFilterType" minOccurs="0"/>
-      <xs:element name="propertyNames" type="ProjectionFilterType" minOccurs="0"/>
-      <xs:element ref="filter" minOccurs="0"/>
-      <xs:element name="sortBy" type="SortingType" minOccurs="0"/>
-      <xs:element name="limit" type="CounterFilterType" minOccurs="0"/>
-      <xs:element name="lods" type="LodFilterType" minOccurs="0"/>
-      <xs:element name="appearance" type="AppearanceFilterType" minOccurs="0"/>
-      <xs:element name="tiling" type="TilingType" minOccurs="0"/>
+      <xs:element name="typeNames" type="tns:FeatureTypeFilterType" minOccurs="0"/>
+      <xs:element name="propertyNames" type="tns:ProjectionFilterType" minOccurs="0"/>
+      <xs:element ref="tns:filter" minOccurs="0"/>
+      <xs:element name="sortBy" type="tns:SortingType" minOccurs="0"/>
+      <xs:element name="limit" type="tns:CounterFilterType" minOccurs="0"/>
+      <xs:element name="lods" type="tns:LodFilterType" minOccurs="0"/>
+      <xs:element name="appearance" type="tns:AppearanceFilterType" minOccurs="0"/>
+      <xs:element name="tiling" type="tns:TilingType" minOccurs="0"/>
     </xs:sequence>
     <xs:attribute name="targetSrs" type="xs:IDREF"/>
     <xs:attribute name="targetSrid" type="xs:int"/>
@@ -99,19 +101,19 @@
 
   <xs:complexType name="ProjectionFilterType">
     <xs:sequence>
-      <xs:element name="context" type="ProjectionContextType" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="context" type="tns:ProjectionContextType" minOccurs="0" maxOccurs="unbounded"/>
     </xs:sequence>
   </xs:complexType>
 
   <xs:complexType name="ProjectionContextType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:element name="propertyName" type="PropertyNameType"/>
-        <xs:element name="genericAttributeName" type="GenericAttributeNameType"/>
+        <xs:element name="propertyName" type="tns:PropertyNameType"/>
+        <xs:element name="genericAttributeName" type="tns:GenericAttributeNameType"/>
       </xs:choice>
     </xs:sequence>
     <xs:attribute name="typeName" type="xs:QName" use="required"/>
-    <xs:attribute name="mode" type="ProjectionModeType"/>
+    <xs:attribute name="mode" type="tns:ProjectionModeType"/>
   </xs:complexType>
 
   <xs:simpleType name="PropertyNameType">
@@ -121,37 +123,38 @@
   <xs:complexType name="GenericAttributeNameType">
     <xs:simpleContent>
       <xs:extension base="xs:string">
-        <xs:attribute name="type" type="GenericAttributeTypeType"/>
+        <xs:attribute name="type" type="tns:GenericAttributeTypeType"/>
       </xs:extension>
     </xs:simpleContent>
   </xs:complexType>
 
   <xs:complexType name="SelectionFilterType">
     <xs:choice>
-      <xs:element ref="and"/>
-      <xs:element ref="or"/>
-      <xs:element ref="not"/>
-      <xs:element ref="propertyIsEqualTo"/>
-      <xs:element ref="propertyIsNotEqualTo"/>
-      <xs:element ref="propertyIsLessThan"/>
-      <xs:element ref="propertyIsLessThanOrEqualTo"/>
-      <xs:element ref="propertyIsGreaterThan"/>
-      <xs:element ref="propertyIsGreaterThanOrEqualTo"/>
-      <xs:element ref="propertyIsBetween"/>
-      <xs:element ref="propertyIsLike"/>
-      <xs:element ref="propertyIsNull"/>
-      <xs:element ref="bbox"/>
-      <xs:element ref="equals"/>
-      <xs:element ref="disjoint"/>
-      <xs:element ref="touches"/>
-      <xs:element ref="within"/>
-      <xs:element ref="overlaps"/>
-      <xs:element ref="intersects"/>
-      <xs:element ref="contains"/>
-      <xs:element ref="beyond"/>
-      <xs:element ref="dWithin"/>
-      <xs:element ref="resourceIds"/>
-      <xs:element ref="sql"/>
+      <xs:element ref="tns:and"/>
+      <xs:element ref="tns:or"/>
+      <xs:element ref="tns:not"/>
+      <xs:element ref="tns:propertyIsEqualTo"/>
+      <xs:element ref="tns:propertyIsNotEqualTo"/>
+      <xs:element ref="tns:propertyIsLessThan"/>
+      <xs:element ref="tns:propertyIsLessThanOrEqualTo"/>
+      <xs:element ref="tns:propertyIsGreaterThan"/>
+      <xs:element ref="tns:propertyIsGreaterThanOrEqualTo"/>
+      <xs:element ref="tns:propertyIsBetween"/>
+      <xs:element ref="tns:propertyIsLike"/>
+      <xs:element ref="tns:propertyIsNull"/>
+      <xs:element ref="tns:bbox"/>
+      <xs:element ref="tns:equals"/>
+      <xs:element ref="tns:disjoint"/>
+      <xs:element ref="tns:touches"/>
+      <xs:element ref="tns:within"/>
+      <xs:element ref="tns:overlaps"/>
+      <xs:element ref="tns:intersects"/>
+      <xs:element ref="tns:contains"/>
+      <xs:element ref="tns:beyond"/>
+      <xs:element ref="tns:dWithin"/>
+      <xs:element ref="tns:resourceIds"/>
+      <xs:element ref="tns:databaseIds"/>
+      <xs:element ref="tns:sql"/>
     </xs:choice>
   </xs:complexType>
 
@@ -161,7 +164,7 @@
 
   <xs:complexType name="AbstractLogicalOperatorType" abstract="true">
     <xs:complexContent>
-      <xs:extension base="AbstractPredicateType">
+      <xs:extension base="tns:AbstractPredicateType">
         <xs:sequence/>
       </xs:extension>
     </xs:complexContent>
@@ -169,33 +172,34 @@
 
   <xs:complexType name="AbstractBinaryLogicalOperatorType" abstract="true">
     <xs:complexContent>
-      <xs:extension base="AbstractLogicalOperatorType">
+      <xs:extension base="tns:AbstractLogicalOperatorType">
         <xs:sequence>
           <xs:choice minOccurs="0" maxOccurs="unbounded">
-            <xs:element ref="and"/>
-            <xs:element ref="or"/>
-            <xs:element ref="not"/>
-            <xs:element ref="propertyIsEqualTo"/>
-            <xs:element ref="propertyIsNotEqualTo"/>
-            <xs:element ref="propertyIsLessThan"/>
-            <xs:element ref="propertyIsLessThanOrEqualTo"/>
-            <xs:element ref="propertyIsGreaterThan"/>
-            <xs:element ref="propertyIsGreaterThanOrEqualTo"/>
-            <xs:element ref="propertyIsBetween"/>
-            <xs:element ref="propertyIsLike"/>
-            <xs:element ref="propertyIsNull"/>
-            <xs:element ref="bbox"/>
-            <xs:element ref="equals"/>
-            <xs:element ref="disjoint"/>
-            <xs:element ref="touches"/>
-            <xs:element ref="within"/>
-            <xs:element ref="overlaps"/>
-            <xs:element ref="intersects"/>
-            <xs:element ref="contains"/>
-            <xs:element ref="beyond"/>
-            <xs:element ref="dWithin"/>
-            <xs:element ref="resourceIds"/>
-            <xs:element ref="sql"/>
+            <xs:element ref="tns:and"/>
+            <xs:element ref="tns:or"/>
+            <xs:element ref="tns:not"/>
+            <xs:element ref="tns:propertyIsEqualTo"/>
+            <xs:element ref="tns:propertyIsNotEqualTo"/>
+            <xs:element ref="tns:propertyIsLessThan"/>
+            <xs:element ref="tns:propertyIsLessThanOrEqualTo"/>
+            <xs:element ref="tns:propertyIsGreaterThan"/>
+            <xs:element ref="tns:propertyIsGreaterThanOrEqualTo"/>
+            <xs:element ref="tns:propertyIsBetween"/>
+            <xs:element ref="tns:propertyIsLike"/>
+            <xs:element ref="tns:propertyIsNull"/>
+            <xs:element ref="tns:bbox"/>
+            <xs:element ref="tns:equals"/>
+            <xs:element ref="tns:disjoint"/>
+            <xs:element ref="tns:touches"/>
+            <xs:element ref="tns:within"/>
+            <xs:element ref="tns:overlaps"/>
+            <xs:element ref="tns:intersects"/>
+            <xs:element ref="tns:contains"/>
+            <xs:element ref="tns:beyond"/>
+            <xs:element ref="tns:dWithin"/>
+            <xs:element ref="tns:resourceIds"/>
+            <xs:element ref="tns:databaseIds"/>
+            <xs:element ref="tns:sql"/>
           </xs:choice>
         </xs:sequence>
       </xs:extension>
@@ -204,7 +208,7 @@
 
   <xs:complexType name="AndOperatorType">
     <xs:complexContent>
-      <xs:extension base="AbstractBinaryLogicalOperatorType">
+      <xs:extension base="tns:AbstractBinaryLogicalOperatorType">
         <xs:sequence/>
       </xs:extension>
     </xs:complexContent>
@@ -212,7 +216,7 @@
 
   <xs:complexType name="OrOperatorType">
     <xs:complexContent>
-      <xs:extension base="AbstractBinaryLogicalOperatorType">
+      <xs:extension base="tns:AbstractBinaryLogicalOperatorType">
         <xs:sequence/>
       </xs:extension>
     </xs:complexContent>
@@ -220,32 +224,33 @@
 
   <xs:complexType name="NotOperatorType">
     <xs:complexContent>
-      <xs:extension base="AbstractLogicalOperatorType">
+      <xs:extension base="tns:AbstractLogicalOperatorType">
         <xs:choice>
-          <xs:element ref="and"/>
-          <xs:element ref="or"/>
-          <xs:element ref="not"/>
-          <xs:element ref="propertyIsEqualTo"/>
-          <xs:element ref="propertyIsNotEqualTo"/>
-          <xs:element ref="propertyIsLessThan"/>
-          <xs:element ref="propertyIsLessThanOrEqualTo"/>
-          <xs:element ref="propertyIsGreaterThan"/>
-          <xs:element ref="propertyIsGreaterThanOrEqualTo"/>
-          <xs:element ref="propertyIsBetween"/>
-          <xs:element ref="propertyIsLike"/>
-          <xs:element ref="propertyIsNull"/>
-          <xs:element ref="bbox"/>
-          <xs:element ref="equals"/>
-          <xs:element ref="disjoint"/>
-          <xs:element ref="touches"/>
-          <xs:element ref="within"/>
-          <xs:element ref="overlaps"/>
-          <xs:element ref="intersects"/>
-          <xs:element ref="contains"/>
-          <xs:element ref="beyond"/>
-          <xs:element ref="dWithin"/>
-          <xs:element ref="resourceIds"/>
-          <xs:element ref="sql"/>
+          <xs:element ref="tns:and"/>
+          <xs:element ref="tns:or"/>
+          <xs:element ref="tns:not"/>
+          <xs:element ref="tns:propertyIsEqualTo"/>
+          <xs:element ref="tns:propertyIsNotEqualTo"/>
+          <xs:element ref="tns:propertyIsLessThan"/>
+          <xs:element ref="tns:propertyIsLessThanOrEqualTo"/>
+          <xs:element ref="tns:propertyIsGreaterThan"/>
+          <xs:element ref="tns:propertyIsGreaterThanOrEqualTo"/>
+          <xs:element ref="tns:propertyIsBetween"/>
+          <xs:element ref="tns:propertyIsLike"/>
+          <xs:element ref="tns:propertyIsNull"/>
+          <xs:element ref="tns:bbox"/>
+          <xs:element ref="tns:equals"/>
+          <xs:element ref="tns:disjoint"/>
+          <xs:element ref="tns:touches"/>
+          <xs:element ref="tns:within"/>
+          <xs:element ref="tns:overlaps"/>
+          <xs:element ref="tns:intersects"/>
+          <xs:element ref="tns:contains"/>
+          <xs:element ref="tns:beyond"/>
+          <xs:element ref="tns:dWithin"/>
+          <xs:element ref="tns:resourceIds"/>
+          <xs:element ref="tns:databaseIds"/>
+          <xs:element ref="tns:sql"/>
         </xs:choice>
       </xs:extension>
     </xs:complexContent>
@@ -253,7 +258,7 @@
 
   <xs:complexType name="AbstractComparisonOperatorType" abstract="true">
     <xs:complexContent>
-      <xs:extension base="AbstractPredicateType">
+      <xs:extension base="tns:AbstractPredicateType">
         <xs:sequence>
           <xs:element name="valueReference" type="xs:string"/>
         </xs:sequence>
@@ -263,7 +268,7 @@
 
   <xs:complexType name="AbstractBinaryComparisonOperatorType" abstract="true">
     <xs:complexContent>
-      <xs:extension base="AbstractComparisonOperatorType">
+      <xs:extension base="tns:AbstractComparisonOperatorType">
         <xs:sequence>
           <xs:element name="literal" type="xs:string"/>
         </xs:sequence>
@@ -274,7 +279,7 @@
 
   <xs:complexType name="EqualToOperatorType">
     <xs:complexContent>
-      <xs:extension base="AbstractBinaryComparisonOperatorType">
+      <xs:extension base="tns:AbstractBinaryComparisonOperatorType">
         <xs:sequence/>
       </xs:extension>
     </xs:complexContent>
@@ -282,7 +287,7 @@
 
   <xs:complexType name="NotEqualToOperatorType">
     <xs:complexContent>
-      <xs:extension base="AbstractBinaryComparisonOperatorType">
+      <xs:extension base="tns:AbstractBinaryComparisonOperatorType">
         <xs:sequence/>
       </xs:extension>
     </xs:complexContent>
@@ -290,7 +295,7 @@
 
   <xs:complexType name="LessThanOperatorType">
     <xs:complexContent>
-      <xs:extension base="AbstractBinaryComparisonOperatorType">
+      <xs:extension base="tns:AbstractBinaryComparisonOperatorType">
         <xs:sequence/>
       </xs:extension>
     </xs:complexContent>
@@ -298,7 +303,7 @@
 
   <xs:complexType name="LessThanOrEqualToOperatorType">
     <xs:complexContent>
-      <xs:extension base="AbstractBinaryComparisonOperatorType">
+      <xs:extension base="tns:AbstractBinaryComparisonOperatorType">
         <xs:sequence/>
       </xs:extension>
     </xs:complexContent>
@@ -306,7 +311,7 @@
 
   <xs:complexType name="GreaterThanOperatorType">
     <xs:complexContent>
-      <xs:extension base="AbstractBinaryComparisonOperatorType">
+      <xs:extension base="tns:AbstractBinaryComparisonOperatorType">
         <xs:sequence/>
       </xs:extension>
     </xs:complexContent>
@@ -314,7 +319,7 @@
 
   <xs:complexType name="GreaterThanOrEqualToOperatorType">
     <xs:complexContent>
-      <xs:extension base="AbstractBinaryComparisonOperatorType">
+      <xs:extension base="tns:AbstractBinaryComparisonOperatorType">
         <xs:sequence/>
       </xs:extension>
     </xs:complexContent>
@@ -322,7 +327,7 @@
 
   <xs:complexType name="BetweenOperatorType">
     <xs:complexContent>
-      <xs:extension base="AbstractComparisonOperatorType">
+      <xs:extension base="tns:AbstractComparisonOperatorType">
         <xs:sequence>
           <xs:element name="lowerBoundary" type="xs:string"/>
           <xs:element name="upperBoundary" type="xs:string"/>
@@ -333,7 +338,7 @@
 
   <xs:complexType name="LikeOperatorType">
     <xs:complexContent>
-      <xs:extension base="AbstractComparisonOperatorType">
+      <xs:extension base="tns:AbstractComparisonOperatorType">
         <xs:sequence>
           <xs:element name="literal" type="xs:string"/>
         </xs:sequence>
@@ -347,7 +352,7 @@
 
   <xs:complexType name="NullOperatorType">
     <xs:complexContent>
-      <xs:extension base="AbstractComparisonOperatorType">
+      <xs:extension base="tns:AbstractComparisonOperatorType">
         <xs:sequence/>
       </xs:extension>
     </xs:complexContent>
@@ -355,7 +360,7 @@
 
   <xs:complexType name="AbstractSpatialOperatorType" abstract="true">
     <xs:complexContent>
-      <xs:extension base="AbstractPredicateType">
+      <xs:extension base="tns:AbstractPredicateType">
         <xs:sequence>
           <xs:element name="valueReference" type="xs:string" minOccurs="0"/>
         </xs:sequence>
@@ -365,11 +370,11 @@
 
   <xs:complexType name="BBOXOperatorType">
     <xs:complexContent>
-      <xs:extension base="AbstractSpatialOperatorType">
+      <xs:extension base="tns:AbstractSpatialOperatorType">
         <xs:sequence>
           <xs:choice minOccurs="0">
-            <xs:element name="operand" type="BoundingBoxType"/>
-            <xs:element ref="envelope"/>
+            <xs:element name="operand" type="tns:BoundingBoxType"/>
+            <xs:element ref="tns:envelope"/>
           </xs:choice>
         </xs:sequence>
       </xs:extension>
@@ -378,10 +383,10 @@
 
   <xs:complexType name="BoundingBoxType">
     <xs:complexContent>
-      <xs:extension base="AbstractGeometryType">
+      <xs:extension base="tns:AbstractGeometryType">
         <xs:sequence>
-          <xs:element name="lowerCorner" type="PositionType"/>
-          <xs:element name="upperCorner" type="PositionType"/>
+          <xs:element name="lowerCorner" type="tns:PositionType"/>
+          <xs:element name="upperCorner" type="tns:PositionType"/>
         </xs:sequence>
       </xs:extension>
     </xs:complexContent>
@@ -408,9 +413,9 @@
 
   <xs:complexType name="PointType">
     <xs:complexContent>
-      <xs:extension base="AbstractGeometryType">
+      <xs:extension base="tns:AbstractGeometryType">
         <xs:sequence>
-          <xs:element name="pos" type="PositionType"/>
+          <xs:element name="pos" type="tns:PositionType"/>
         </xs:sequence>
       </xs:extension>
     </xs:complexContent>
@@ -418,9 +423,9 @@
 
   <xs:complexType name="MultiPointType">
     <xs:complexContent>
-      <xs:extension base="AbstractGeometryType">
+      <xs:extension base="tns:AbstractGeometryType">
         <xs:sequence>
-          <xs:element ref="point" maxOccurs="unbounded"/>
+          <xs:element ref="tns:point" maxOccurs="unbounded"/>
         </xs:sequence>
       </xs:extension>
     </xs:complexContent>
@@ -428,9 +433,9 @@
 
   <xs:complexType name="LineStringType">
     <xs:complexContent>
-      <xs:extension base="AbstractGeometryType">
+      <xs:extension base="tns:AbstractGeometryType">
         <xs:sequence>
-          <xs:element name="posList" type="PositionListType"/>
+          <xs:element name="posList" type="tns:PositionListType"/>
         </xs:sequence>
       </xs:extension>
     </xs:complexContent>
@@ -438,7 +443,7 @@
 
   <xs:complexType name="PositionListType">
     <xs:simpleContent>
-      <xs:extension base="DoubleListType">
+      <xs:extension base="tns:DoubleListType">
         <xs:attribute name="dimension" type="xs:int"/>
       </xs:extension>
     </xs:simpleContent>
@@ -450,9 +455,9 @@
 
   <xs:complexType name="MultiLineStringType">
     <xs:complexContent>
-      <xs:extension base="AbstractGeometryType">
+      <xs:extension base="tns:AbstractGeometryType">
         <xs:sequence>
-          <xs:element ref="lineString" maxOccurs="unbounded"/>
+          <xs:element ref="tns:lineString" maxOccurs="unbounded"/>
         </xs:sequence>
       </xs:extension>
     </xs:complexContent>
@@ -460,10 +465,10 @@
 
   <xs:complexType name="PolygonType">
     <xs:complexContent>
-      <xs:extension base="AbstractGeometryType">
+      <xs:extension base="tns:AbstractGeometryType">
         <xs:sequence>
-          <xs:element name="exterior" type="PositionListType"/>
-          <xs:element name="interior" type="PositionListType" minOccurs="0" maxOccurs="unbounded"/>
+          <xs:element name="exterior" type="tns:PositionListType"/>
+          <xs:element name="interior" type="tns:PositionListType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
       </xs:extension>
     </xs:complexContent>
@@ -471,9 +476,9 @@
 
   <xs:complexType name="MultiPolygonType">
     <xs:complexContent>
-      <xs:extension base="AbstractGeometryType">
+      <xs:extension base="tns:AbstractGeometryType">
         <xs:sequence>
-          <xs:element ref="polygon" maxOccurs="unbounded"/>
+          <xs:element ref="tns:polygon" maxOccurs="unbounded"/>
         </xs:sequence>
       </xs:extension>
     </xs:complexContent>
@@ -481,15 +486,15 @@
 
   <xs:complexType name="AbstractBinarySpatialOperatorType" abstract="true">
     <xs:complexContent>
-      <xs:extension base="AbstractSpatialOperatorType">
+      <xs:extension base="tns:AbstractSpatialOperatorType">
         <xs:choice>
-          <xs:element ref="envelope"/>
-          <xs:element ref="point"/>
-          <xs:element ref="multiPoint"/>
-          <xs:element ref="lineString"/>
-          <xs:element ref="multiLineString"/>
-          <xs:element ref="polygon"/>
-          <xs:element ref="multiPolygon"/>
+          <xs:element ref="tns:envelope"/>
+          <xs:element ref="tns:point"/>
+          <xs:element ref="tns:multiPoint"/>
+          <xs:element ref="tns:lineString"/>
+          <xs:element ref="tns:multiLineString"/>
+          <xs:element ref="tns:polygon"/>
+          <xs:element ref="tns:multiPolygon"/>
         </xs:choice>
       </xs:extension>
     </xs:complexContent>
@@ -497,7 +502,7 @@
 
   <xs:complexType name="EqualsOperatorType">
     <xs:complexContent>
-      <xs:extension base="AbstractBinarySpatialOperatorType">
+      <xs:extension base="tns:AbstractBinarySpatialOperatorType">
         <xs:sequence/>
       </xs:extension>
     </xs:complexContent>
@@ -505,7 +510,7 @@
 
   <xs:complexType name="DisjointOperatorType">
     <xs:complexContent>
-      <xs:extension base="AbstractBinarySpatialOperatorType">
+      <xs:extension base="tns:AbstractBinarySpatialOperatorType">
         <xs:sequence/>
       </xs:extension>
     </xs:complexContent>
@@ -513,7 +518,7 @@
 
   <xs:complexType name="TouchesOperatorType">
     <xs:complexContent>
-      <xs:extension base="AbstractBinarySpatialOperatorType">
+      <xs:extension base="tns:AbstractBinarySpatialOperatorType">
         <xs:sequence/>
       </xs:extension>
     </xs:complexContent>
@@ -521,7 +526,7 @@
 
   <xs:complexType name="WithinOperatorType">
     <xs:complexContent>
-      <xs:extension base="AbstractBinarySpatialOperatorType">
+      <xs:extension base="tns:AbstractBinarySpatialOperatorType">
         <xs:sequence/>
       </xs:extension>
     </xs:complexContent>
@@ -529,7 +534,7 @@
 
   <xs:complexType name="OverlapsOperatorType">
     <xs:complexContent>
-      <xs:extension base="AbstractBinarySpatialOperatorType">
+      <xs:extension base="tns:AbstractBinarySpatialOperatorType">
         <xs:sequence/>
       </xs:extension>
     </xs:complexContent>
@@ -537,7 +542,7 @@
 
   <xs:complexType name="IntersectsOperatorType">
     <xs:complexContent>
-      <xs:extension base="AbstractBinarySpatialOperatorType">
+      <xs:extension base="tns:AbstractBinarySpatialOperatorType">
         <xs:sequence/>
       </xs:extension>
     </xs:complexContent>
@@ -545,7 +550,7 @@
 
   <xs:complexType name="ContainsOperatorType">
     <xs:complexContent>
-      <xs:extension base="AbstractBinarySpatialOperatorType">
+      <xs:extension base="tns:AbstractBinarySpatialOperatorType">
         <xs:sequence/>
       </xs:extension>
     </xs:complexContent>
@@ -553,9 +558,9 @@
 
   <xs:complexType name="AbstractDistanceOperatorType" abstract="true">
     <xs:complexContent>
-      <xs:extension base="AbstractBinarySpatialOperatorType">
+      <xs:extension base="tns:AbstractBinarySpatialOperatorType">
         <xs:sequence>
-          <xs:element name="distance" type="DistanceType"/>
+          <xs:element name="distance" type="tns:DistanceType"/>
         </xs:sequence>
       </xs:extension>
     </xs:complexContent>
@@ -571,7 +576,7 @@
 
   <xs:complexType name="BeyondOperatorType">
     <xs:complexContent>
-      <xs:extension base="AbstractDistanceOperatorType">
+      <xs:extension base="tns:AbstractDistanceOperatorType">
         <xs:sequence/>
       </xs:extension>
     </xs:complexContent>
@@ -579,7 +584,7 @@
 
   <xs:complexType name="DWithinOperatorType">
     <xs:complexContent>
-      <xs:extension base="AbstractDistanceOperatorType">
+      <xs:extension base="tns:AbstractDistanceOperatorType">
         <xs:sequence/>
       </xs:extension>
     </xs:complexContent>
@@ -587,7 +592,7 @@
 
   <xs:complexType name="ResourceIdType">
     <xs:complexContent>
-      <xs:extension base="AbstractPredicateType">
+      <xs:extension base="tns:AbstractIdOperatorType">
         <xs:sequence>
           <xs:element name="id" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
@@ -595,9 +600,27 @@
     </xs:complexContent>
   </xs:complexType>
 
+  <xs:complexType name="AbstractIdOperatorType" abstract="true">
+    <xs:complexContent>
+      <xs:extension base="tns:AbstractPredicateType">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="DatabaseIdType">
+    <xs:complexContent>
+      <xs:extension base="tns:AbstractIdOperatorType">
+        <xs:sequence>
+          <xs:element name="id" type="xs:long" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
   <xs:complexType name="SelectOperatorType">
     <xs:complexContent>
-      <xs:extension base="AbstractPredicateType">
+      <xs:extension base="tns:AbstractPredicateType">
         <xs:sequence>
           <xs:element name="select" type="xs:string"/>
         </xs:sequence>
@@ -607,14 +630,14 @@
 
   <xs:complexType name="SortingType">
     <xs:sequence>
-      <xs:element name="sortProperty" type="SortPropertyType" maxOccurs="unbounded"/>
+      <xs:element name="sortProperty" type="tns:SortPropertyType" maxOccurs="unbounded"/>
     </xs:sequence>
   </xs:complexType>
 
   <xs:complexType name="SortPropertyType">
     <xs:sequence>
       <xs:element name="valueReference" type="xs:string"/>
-      <xs:element name="sortOrder" type="SortOrderType" minOccurs="0"/>
+      <xs:element name="sortOrder" type="tns:SortOrderType" minOccurs="0"/>
     </xs:sequence>
   </xs:complexType>
 
@@ -629,8 +652,8 @@
     <xs:sequence>
       <xs:element name="lod" type="xs:int" maxOccurs="unbounded"/>
     </xs:sequence>
-    <xs:attribute name="mode" type="LodFilterModeType"/>
-    <xs:attribute name="searchMode" type="LodSearchDepthModeType"/>
+    <xs:attribute name="mode" type="tns:LodFilterModeType"/>
+    <xs:attribute name="searchMode" type="tns:LodSearchDepthModeType"/>
     <xs:attribute name="searchDepth" type="xs:int"/>
   </xs:complexType>
 
@@ -643,11 +666,11 @@
 
   <xs:complexType name="TilingType">
     <xs:complexContent>
-      <xs:extension base="AbstractTilingType">
+      <xs:extension base="tns:AbstractTilingType">
         <xs:sequence>
           <xs:choice minOccurs="0">
-            <xs:element name="cityGMLTilingOptions" type="CityGMLTilingOptionsType"/>
-            <xs:element name="kmlTilingOptions" type="KmlTilingOptionsType"/>
+            <xs:element name="cityGMLTilingOptions" type="tns:CityGMLTilingOptionsType"/>
+            <xs:element name="kmlTilingOptions" type="tns:KmlTilingOptionsType"/>
           </xs:choice>
         </xs:sequence>
       </xs:extension>
@@ -656,7 +679,7 @@
 
   <xs:complexType name="AbstractTilingType" abstract="true">
     <xs:sequence>
-      <xs:element name="extent" type="BoundingBoxType"/>
+      <xs:element name="extent" type="tns:BoundingBoxType"/>
       <xs:element name="rows" type="xs:int" default="1"/>
       <xs:element name="columns" type="xs:int" default="1"/>
     </xs:sequence>
@@ -664,13 +687,13 @@
 
   <xs:complexType name="CityGMLTilingOptionsType">
     <xs:complexContent>
-      <xs:extension base="AbstractTilingOptionsType">
+      <xs:extension base="tns:AbstractTilingOptionsType">
         <xs:sequence>
           <xs:element name="tilePath" type="xs:string" minOccurs="0"/>
-          <xs:element name="tilePathSuffix" type="TileSuffixModeType" minOccurs="0"/>
-          <xs:element name="tileNameSuffix" type="TileNameSuffixModeType" minOccurs="0"/>
+          <xs:element name="tilePathSuffix" type="tns:TileSuffixModeType" minOccurs="0"/>
+          <xs:element name="tileNameSuffix" type="tns:TileNameSuffixModeType" minOccurs="0"/>
           <xs:element name="includeTileAsGenericAttribute" type="xs:boolean" default="false" minOccurs="0"/>
-          <xs:element name="genericAttributeValue" type="TileSuffixModeType" minOccurs="0"/>
+          <xs:element name="genericAttributeValue" type="tns:TileSuffixModeType" minOccurs="0"/>
         </xs:sequence>
       </xs:extension>
     </xs:complexContent>
@@ -682,7 +705,7 @@
 
   <xs:complexType name="KmlTilingOptionsType">
     <xs:complexContent>
-      <xs:extension base="AbstractTilingOptionsType">
+      <xs:extension base="tns:AbstractTilingOptionsType">
         <xs:sequence>
           <xs:element name="autoTileSideLength" type="xs:double"/>
         </xs:sequence>
@@ -720,6 +743,8 @@
     <xs:restriction base="xs:string">
       <xs:enumeration value="or"/>
       <xs:enumeration value="and"/>
+      <xs:enumeration value="minimum"/>
+      <xs:enumeration value="maximum"/>
     </xs:restriction>
   </xs:simpleType>
 

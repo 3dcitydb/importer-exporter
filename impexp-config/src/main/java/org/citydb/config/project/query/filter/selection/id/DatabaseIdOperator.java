@@ -2,7 +2,7 @@
  * 3D City Database - The Open Source CityGML Database
  * http://www.3dcitydb.org/
  *
- * Copyright 2013 - 2019
+ * Copyright 2013 - 2020
  * Chair of Geoinformatics
  * Technical University of Munich, Germany
  * https://www.gis.bgu.tum.de/
@@ -25,6 +25,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.citydb.config.project.query.filter.selection.id;
 
 import javax.xml.bind.annotation.XmlElement;
@@ -33,31 +34,31 @@ import javax.xml.bind.annotation.XmlType;
 import java.util.ArrayList;
 import java.util.List;
 
-@XmlRootElement(name = "resourceIds")
-@XmlType(name = "ResourceIdType", propOrder = {
+@XmlRootElement(name = "databaseIds")
+@XmlType(name = "DatabaseIdType", propOrder = {
         "ids"
 })
-public class ResourceIdOperator extends AbstractIdOperator {
+public class DatabaseIdOperator extends AbstractIdOperator {
     @XmlElement(name = "id")
-    private List<String> ids;
+    private List<Long> ids;
 
-    public ResourceIdOperator() {
+    public DatabaseIdOperator() {
         ids = new ArrayList<>();
     }
 
-    public boolean isSetResourceIds() {
+    public boolean isSetDatabaseIds() {
         return !ids.isEmpty();
     }
 
-    public List<String> getResourceIds() {
+    public List<Long> getDatabaseIds() {
         return ids;
     }
 
-    public void addResourceId(String id) {
+    public void addDatabaseId(Long id) {
         ids.add(id);
     }
 
-    public void setResourceIds(List<String> ids) {
+    public void setDatabaseIds(List<Long> ids) {
         if (ids != null && !ids.isEmpty()) {
             this.ids = ids;
         }
@@ -70,6 +71,6 @@ public class ResourceIdOperator extends AbstractIdOperator {
 
     @Override
     public IdOperatorName getOperatorName() {
-        return IdOperatorName.RESOURCE_ID;
+        return IdOperatorName.DATABASE_ID;
     }
 }

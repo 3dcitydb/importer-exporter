@@ -34,52 +34,52 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-public class ResourceIdOperator extends AbstractIdOperator {
-	private final Set<String> resourceIds;
+public class DatabaseIdOperator extends AbstractIdOperator {
+	private final Set<Long> databaseIds;
 	
-	public ResourceIdOperator() {
-		resourceIds = new HashSet<>();
+	public DatabaseIdOperator() {
+		databaseIds = new HashSet<>();
 	}
 	
-	public ResourceIdOperator(Collection<String> resourceIds) throws FilterException {
-		if (resourceIds == null)
-			throw new FilterException("List of resource ids may not be null.");
+	public DatabaseIdOperator(Collection<Long> databaseIds) throws FilterException {
+		if (databaseIds == null)
+			throw new FilterException("List of database ids may not be null.");
 		
-		this.resourceIds = new HashSet<>(resourceIds);
+		this.databaseIds = new HashSet<>(databaseIds);
 	}
 	
-	public ResourceIdOperator(String... resourceIds) throws FilterException {
-		this(Arrays.asList(resourceIds));
+	public DatabaseIdOperator(Long... databaseIds) throws FilterException {
+		this(Arrays.asList(databaseIds));
 	}
 	
 	public boolean isEmpty() {
-		return resourceIds.isEmpty();
+		return databaseIds.isEmpty();
 	}
 	
 	public void clear() {
-		resourceIds.clear();
+		databaseIds.clear();
 	}
 
-	public int numberOfResourceIds() {
-		return resourceIds.size();
+	public int numberOfDatabaseIds() {
+		return databaseIds.size();
 	}
 	
-	public boolean addResourceId(String resourceId) {
-		return resourceIds.add(resourceId);
+	public boolean addDatabaseId(Long databaseId) {
+		return databaseIds.add(databaseId);
 	}
 	
-	public Set<String> getResourceIds() {
-		return resourceIds;
+	public Set<Long> getDatabaseIds() {
+		return databaseIds;
 	}
 	
 	@Override
 	public IdOperationName getOperatorName() {
-		return IdOperationName.RESOURCE_ID;
+		return IdOperationName.DATABASE_ID;
 	}
 
 	@Override
-	public ResourceIdOperator copy() throws FilterException {
-		return new ResourceIdOperator(resourceIds);
+	public DatabaseIdOperator copy() throws FilterException {
+		return new DatabaseIdOperator(databaseIds);
 	}
 
 }

@@ -34,8 +34,6 @@ import org.citydb.query.builder.QueryBuildException;
 import org.citydb.query.filter.selection.Predicate;
 import org.citydb.query.filter.selection.operator.comparison.AbstractComparisonOperator;
 import org.citydb.query.filter.selection.operator.id.AbstractIdOperator;
-import org.citydb.query.filter.selection.operator.id.IdOperationName;
-import org.citydb.query.filter.selection.operator.id.ResourceIdOperator;
 import org.citydb.query.filter.selection.operator.logical.AbstractLogicalOperator;
 import org.citydb.query.filter.selection.operator.logical.BinaryLogicalOperator;
 import org.citydb.query.filter.selection.operator.logical.LogicalOperatorName;
@@ -81,17 +79,12 @@ public class PredicateBuilder {
 			buildLogicalOperator((AbstractLogicalOperator)predicate, queryContext, negate, useLeftJoins);
 			break;
 		case ID_OPERATOR:
-			buildIdOperator((AbstractIdOperator)predicate, queryContext, negate, useLeftJoins);
+			idBuilder.buildIdOperator((AbstractIdOperator)predicate, queryContext, negate, useLeftJoins);
 			break;
 		case SQL_OPERATOR:
 			selectBuilder.buildSelectOperator((SelectOperator)predicate, queryContext, negate, useLeftJoins);
 			break;
 		}
-	}
-
-	private void buildIdOperator(AbstractIdOperator operator, SQLQueryContext queryContext, boolean negate, boolean useLeftJoins) throws QueryBuildException {
-		if (operator.getOperatorName() == IdOperationName.RESOURCE_ID)
-			idBuilder.buildResourceIdOperator((ResourceIdOperator) operator, queryContext, negate, useLeftJoins);
 	}
 
 	private void buildLogicalOperator(AbstractLogicalOperator operator, SQLQueryContext queryContext, boolean negate, boolean useLeftJoins) throws QueryBuildException {

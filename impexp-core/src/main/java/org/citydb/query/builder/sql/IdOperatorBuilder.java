@@ -27,6 +27,7 @@
  */
 package org.citydb.query.builder.sql;
 
+import org.citydb.ade.model.module.CityDBADE200Module;
 import org.citydb.database.adapter.AbstractSQLAdapter;
 import org.citydb.database.schema.mapping.FeatureType;
 import org.citydb.database.schema.mapping.MappingConstants;
@@ -35,7 +36,8 @@ import org.citydb.database.schema.path.InvalidSchemaPathException;
 import org.citydb.database.schema.path.SchemaPath;
 import org.citydb.query.Query;
 import org.citydb.query.builder.QueryBuildException;
-import org.citydb.query.filter.selection.expression.ValueReference;
+import org.citydb.query.filter.selection.operator.id.AbstractIdOperator;
+import org.citydb.query.filter.selection.operator.id.DatabaseIdOperator;
 import org.citydb.query.filter.selection.operator.id.ResourceIdOperator;
 import org.citydb.sqlbuilder.expression.LiteralList;
 import org.citydb.sqlbuilder.expression.PlaceHolder;
@@ -46,6 +48,7 @@ import org.citydb.sqlbuilder.select.operator.logical.LogicalOperationName;
 import org.citygml4j.model.module.gml.GMLCoreModule;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
@@ -62,31 +65,48 @@ public class IdOperatorBuilder {
 		this.sqlAdapter = sqlAdapter;
 	}
 
-	@SuppressWarnings("unchecked")
-	protected void buildResourceIdOperator(ResourceIdOperator operator, SQLQueryContext queryContext, boolean negate, boolean useLeftJoins) throws QueryBuildException {
-		FeatureType superType = schemaMapping.getCommonSuperType(query.getFeatureTypeFilter().getFeatureTypes());		
-		ValueReference valueReference;
+	protected void buildIdOperator(AbstractIdOperator operator, SQLQueryContext queryContext, boolean negate, boolean useLeftJoins) throws QueryBuildException {
+		switch (operator.getOperatorName()) {
+			case RESOURCE_ID:
+				buildResourceIdOperator((ResourceIdOperator) operator, queryContext, negate, useLeftJoins);
+				break;
+			case DATABASE_ID:
+				buildDatabaseIdOperator((DatabaseIdOperator) operator, queryContext, negate, useLeftJoins);
+				break;
+		}
+	}
 
+	private void buildResourceIdOperator(ResourceIdOperator operator, SQLQueryContext queryContext, boolean negate, boolean useLeftJoins) throws QueryBuildException {
+		buildIdOperator(operator.getResourceIds(), GMLCoreModule.v3_1_1.getNamespaceURI(), queryContext, negate, useLeftJoins);
+	}
+
+	private void buildDatabaseIdOperator(DatabaseIdOperator operator, SQLQueryContext queryContext, boolean negate, boolean useLeftJoins) throws QueryBuildException {
+		buildIdOperator(operator.getDatabaseIds(), CityDBADE200Module.v3_0.getNamespaceURI(), queryContext, negate, useLeftJoins);
+	}
+
+	@SuppressWarnings("unchecked")
+	private <T> void buildIdOperator(Collection<T> ids, String namespaceURI, SQLQueryContext queryContext, boolean negate, boolean useLeftJoins) throws QueryBuildException {
+		SchemaPath schemaPath;
 		try {
-			SchemaPath path = new SchemaPath(superType);	
-			path.appendChild(superType.getProperty(MappingConstants.ID, GMLCoreModule.v3_1_1.getNamespaceURI(), true));
-			valueReference = new ValueReference(path);
+			FeatureType superType = schemaMapping.getCommonSuperType(query.getFeatureTypeFilter().getFeatureTypes());
+			schemaPath = new SchemaPath(superType).appendChild(superType.getProperty(MappingConstants.ID, namespaceURI, true));
 		} catch (InvalidSchemaPathException e) {
 			throw new QueryBuildException(e.getMessage());
 		}
 
 		// build the value reference
-		schemaPathBuilder.addSchemaPath(valueReference.getSchemaPath(), queryContext, useLeftJoins);
-		List<PredicateToken> predicates = new ArrayList<>();
+		schemaPathBuilder.addSchemaPath(schemaPath, queryContext, useLeftJoins);
 
-		if (operator.getResourceIds().size() == 1) {
-			queryContext.addPredicate(ComparisonFactory.equalTo(queryContext.getTargetColumn(), new PlaceHolder<>(operator.getResourceIds().iterator().next())));
+		// build predicates
+		if (ids.size() == 1) {
+			queryContext.addPredicate(ComparisonFactory.equalTo(queryContext.getTargetColumn(), new PlaceHolder<>(ids.iterator().next())));
 		} else {
-			List<PlaceHolder<String>> placeHolders = new ArrayList<>();
+			List<PredicateToken> predicates = new ArrayList<>();
+			List<PlaceHolder<T>> placeHolders = new ArrayList<>();
+			Iterator<T> iter = ids.iterator();
 			int maxItems = sqlAdapter.getMaximumNumberOfItemsForInOperator();
 			int i = 0;
 
-			Iterator<String> iter = operator.getResourceIds().iterator();
 			while (iter.hasNext()) {
 				placeHolders.add(new PlaceHolder<>(iter.next()));
 
@@ -105,5 +125,4 @@ public class IdOperatorBuilder {
 			}
 		}
 	}
-
 }
