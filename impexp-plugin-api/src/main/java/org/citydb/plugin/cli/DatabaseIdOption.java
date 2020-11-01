@@ -28,15 +28,22 @@
 
 package org.citydb.plugin.cli;
 
-import org.citydb.config.project.query.filter.selection.id.ResourceIdOperator;
+import org.citydb.config.project.query.filter.selection.id.DatabaseIdOperator;
 import picocli.CommandLine;
 
-public class ResourceIdOption implements CliOption {
-    @CommandLine.Option(names = {"-i", "--gml-ids"}, split = ",", paramLabel = "<id>",
-            description = "Process top-level features with a matching gml:id.")
-    private String[] ids;
+public class DatabaseIdOption implements CliOption {
+    @CommandLine.Option(names = "--db-ids", split = ",", paramLabel = "<id>",
+            description = "Process top-level features with a matching database id.")
+    private Long[] ids;
 
-    public ResourceIdOperator toResourceIdOperator() {
-        return CliOptionBuilder.resourceIdOperator(ids);
+    private DatabaseIdOperator databaseIdOperator;
+
+    public DatabaseIdOperator toDatabaseIdOperator() {
+        return databaseIdOperator;
+    }
+
+    @Override
+    public void preprocess(CommandLine commandLine) throws Exception {
+        databaseIdOperator = CliOptionBuilder.databaseIdOperator(ids, commandLine);
     }
 }

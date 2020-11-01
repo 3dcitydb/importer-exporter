@@ -30,6 +30,7 @@ package org.citydb.plugin.cli;
 
 import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.project.query.filter.counter.CounterFilter;
+import org.citydb.config.project.query.filter.selection.id.DatabaseIdOperator;
 import org.citydb.config.project.query.filter.selection.id.ResourceIdOperator;
 import org.citydb.config.project.query.filter.selection.sql.SelectOperator;
 import org.citydb.config.project.query.filter.type.FeatureTypeFilter;
@@ -182,6 +183,24 @@ public class CliOptionBuilder {
         if (ids != null) {
             ResourceIdOperator idOperator = new ResourceIdOperator();
             Arrays.stream(ids).forEach(idOperator::addResourceId);
+            return idOperator;
+        }
+
+        return null;
+    }
+
+    public static DatabaseIdOperator databaseIdOperator(Long[] ids, CommandLine commandLine) {
+        if (ids != null) {
+            DatabaseIdOperator idOperator = new DatabaseIdOperator();
+            for (Long id : ids) {
+                if (id <= 0) {
+                    throw new CommandLine.ParameterException(commandLine,
+                            "Error: A database ID must be a positive integer but was " + id);
+                }
+
+                idOperator.addDatabaseId(id);
+            }
+
             return idOperator;
         }
 
