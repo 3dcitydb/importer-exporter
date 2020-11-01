@@ -264,7 +264,7 @@ public class DBSplitter {
 
 					if (query.isSetCounterFilter() && query.getCounterFilter().isSetCount()) {
 						long count = query.getCounterFilter().getCount();
-						long startIndex = query.getCounterFilter().isSetStartIndex() ?query.getCounterFilter().getStartIndex() : 0;
+						long startIndex = query.getCounterFilter().isSetStartIndex() ? query.getCounterFilter().getStartIndex() : 0;
 						long numberReturned = Math.min(Math.max(hits - startIndex, 0), count);
 						if (numberReturned < hits) {
 							log.info("Exporting " + numberReturned + " top-level feature(s) due to counter settings.");
@@ -275,7 +275,7 @@ public class DBSplitter {
 					if (query.isSetTiling())
 						log.info("The total number of exported features might be less due to tiling settings.");
 
-					eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.INIT, (int)hits, this));
+					eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.INIT, (int) hits, this));
 				}
 
 				if (calculateExtent) {
