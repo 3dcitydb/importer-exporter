@@ -157,7 +157,6 @@ public class DBSplitter {
 
 		// create query statement
 		Select select = builder.buildQuery(query);
-		select.unsetOrderBy();
 
 		// calculate hits
 		long hits = 0;
@@ -175,8 +174,10 @@ public class DBSplitter {
 
 					if (query.isSetCounterFilter() && query.getCounterFilter().isSetCount()) {
 						long count = query.getCounterFilter().getCount();
-						if (count < hits) {
-							log.info("Deleting at maximum " + count + " top-level feature(s) due to counter settings.");
+						long startIndex = query.getCounterFilter().isSetStartIndex() ? query.getCounterFilter().getStartIndex() : 0;
+						long numberReturned = Math.min(Math.max(hits - startIndex, 0), count);
+						if (numberReturned < hits) {
+							log.info("Deleting at maximum " + numberReturned + " top-level feature(s) due to counter settings.");
 							hits = count;
 						}
 					}
