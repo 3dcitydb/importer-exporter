@@ -123,12 +123,12 @@ public class QueryOption implements CliOption {
         if (xmlQueryOption != null) {
             if (typeNamesOption != null) {
                 throw new CommandLine.ParameterException(commandLine,
-                        "Error: --type-names and --xml-query are mutually exclusive (specify only one)");
+                        "Error: --type-name and --xml-query are mutually exclusive (specify only one)");
             }
 
             if (idOption != null) {
                 throw new CommandLine.ParameterException(commandLine,
-                        "Error: --ids and --xml-query are mutually exclusive (specify only one)");
+                        "Error: --gml-id and --xml-query are mutually exclusive (specify only one)");
             }
 
             if (boundingBoxOption != null) {
