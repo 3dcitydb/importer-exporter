@@ -130,6 +130,8 @@ public class Deleter implements EventHandler {
 			if (dbWorkerPool.getPoolSize() == 0)
 				throw new CityGMLDeleteException("Failed to start database delete worker pool. Check the database connection pool settings.");
 
+			log.info("Deleting city objects from database.");
+
 			// get database splitter and start query
 			try {
 				dbSplitter = new DBSplitter(schemaMapping, dbWorkerPool, query, config, eventDispatcher);
