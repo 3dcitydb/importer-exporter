@@ -54,7 +54,7 @@ public class QueryOption implements CliOption {
     private TypeNamesOption typeNamesOption;
 
     @CommandLine.ArgGroup
-    private ResourceIdOption idOption;
+    private ResourceIdOption resourceIdOption;
 
     @CommandLine.ArgGroup(exclusive = false)
     private BoundingBoxOption boundingBoxOption;
@@ -76,7 +76,7 @@ public class QueryOption implements CliOption {
 
     public QueryConfig toQueryConfig() {
         if (typeNamesOption != null
-                || idOption != null
+                || resourceIdOption != null
                 || boundingBoxOption != null
                 || counterOption != null
                 || lodOption != null
@@ -89,8 +89,8 @@ public class QueryOption implements CliOption {
                 queryConfig.setFeatureTypeFilter(typeNamesOption.toFeatureTypeFilter());
             }
 
-            if (idOption != null) {
-                ResourceIdOperator idOperator = idOption.toResourceIdOperator();
+            if (resourceIdOption != null) {
+                ResourceIdOperator idOperator = resourceIdOption.toResourceIdOperator();
                 if (idOperator != null) {
                     predicates.add(idOperator);
                 }
@@ -149,7 +149,7 @@ public class QueryOption implements CliOption {
                         "Error: --type-name and --xml-query are mutually exclusive (specify only one)");
             }
 
-            if (idOption != null) {
+            if (resourceIdOption != null) {
                 throw new CommandLine.ParameterException(commandLine,
                         "Error: --gml-id and --xml-query are mutually exclusive (specify only one)");
             }

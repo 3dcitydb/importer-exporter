@@ -32,12 +32,14 @@ import org.citydb.cli.options.common.BoundingBoxOption;
 import org.citydb.config.project.query.QueryConfig;
 import org.citydb.config.project.query.filter.selection.AbstractPredicate;
 import org.citydb.config.project.query.filter.selection.SelectionFilter;
+import org.citydb.config.project.query.filter.selection.id.DatabaseIdOperator;
 import org.citydb.config.project.query.filter.selection.id.ResourceIdOperator;
 import org.citydb.config.project.query.filter.selection.logical.AndOperator;
 import org.citydb.config.project.query.filter.selection.spatial.AbstractSpatialOperator;
 import org.citydb.config.project.query.filter.selection.sql.SelectOperator;
 import org.citydb.plugin.cli.CliOption;
 import org.citydb.plugin.cli.CounterOption;
+import org.citydb.plugin.cli.DatabaseIdOption;
 import org.citydb.plugin.cli.ResourceIdOption;
 import org.citydb.plugin.cli.SQLSelectOption;
 import org.citydb.plugin.cli.TypeNamesOption;
@@ -52,7 +54,10 @@ public class QueryOption implements CliOption {
     private TypeNamesOption typeNamesOption;
 
     @CommandLine.ArgGroup
-    private ResourceIdOption idOption;
+    private ResourceIdOption resourceIdOption;
+
+    @CommandLine.ArgGroup
+    private DatabaseIdOption databaseIdOption;
 
     @CommandLine.ArgGroup(exclusive = false)
     private BoundingBoxOption boundingBoxOption;
@@ -68,7 +73,8 @@ public class QueryOption implements CliOption {
 
     public QueryConfig toQueryConfig() {
         if (typeNamesOption != null
-                || idOption != null
+                || resourceIdOption != null
+                || databaseIdOption != null
                 || boundingBoxOption != null
                 || counterOption != null
                 || sqlSelectOption != null) {
@@ -79,8 +85,15 @@ public class QueryOption implements CliOption {
                 queryConfig.setFeatureTypeFilter(typeNamesOption.toFeatureTypeFilter());
             }
 
-            if (idOption != null) {
-                ResourceIdOperator idOperator = idOption.toResourceIdOperator();
+            if (resourceIdOption != null) {
+                ResourceIdOperator idOperator = resourceIdOption.toResourceIdOperator();
+                if (idOperator != null) {
+                    predicates.add(idOperator);
+                }
+            }
+
+            if (databaseIdOption != null) {
+                DatabaseIdOperator idOperator = databaseIdOption.toDatabaseIdOperator();
                 if (idOperator != null) {
                     predicates.add(idOperator);
                 }
@@ -126,9 +139,14 @@ public class QueryOption implements CliOption {
                         "Error: --type-name and --xml-query are mutually exclusive (specify only one)");
             }
 
-            if (idOption != null) {
+            if (resourceIdOption != null) {
                 throw new CommandLine.ParameterException(commandLine,
                         "Error: --gml-id and --xml-query are mutually exclusive (specify only one)");
+            }
+
+            if (databaseIdOption != null) {
+                throw new CommandLine.ParameterException(commandLine,
+                        "Error: --db-id and --xml-query are mutually exclusive (specify only one)");
             }
 
             if (boundingBoxOption != null) {
@@ -151,6 +169,10 @@ public class QueryOption implements CliOption {
 
         if (typeNamesOption != null) {
             typeNamesOption.preprocess(commandLine);
+        }
+
+        if (databaseIdOption != null) {
+            databaseIdOption.preprocess(commandLine);
         }
 
         if (boundingBoxOption != null) {
