@@ -106,7 +106,7 @@ public class Deleter implements EventHandler {
 		Query query;
 		try {
 			ConfigQueryBuilder queryBuilder = new ConfigQueryBuilder(schemaMapping, databaseAdapter);
-			if (config.getProject().getExporter().isUseSimpleQuery())
+			if (config.getProject().getDeleter().isUseSimpleQuery())
 				query = queryBuilder.buildQuery(config.getProject().getDeleter().getSimpleQuery(), config.getProject().getNamespaceFilter());
 			else
 				query = queryBuilder.buildQuery(config.getProject().getDeleter().getQuery(), config.getProject().getNamespaceFilter());
