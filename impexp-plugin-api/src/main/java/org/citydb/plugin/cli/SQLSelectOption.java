@@ -33,7 +33,7 @@ import picocli.CommandLine;
 
 public class SQLSelectOption {
     @CommandLine.Option(names = {"-s", "--sql-select"}, paramLabel = "<select>",
-            description = "SQL select statement to use as export filter.")
+            description = "SQL select statement to use as filter.")
     private String select;
 
     public SelectOperator toSelectOperator() {

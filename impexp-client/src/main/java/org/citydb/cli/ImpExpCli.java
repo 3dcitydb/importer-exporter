@@ -93,6 +93,7 @@ import java.util.stream.Stream;
                 CommandLine.HelpCommand.class,
                 ImportCommand.class,
                 ExportCommand.class,
+                DeleteCommand.class,
                 GuiCommand.class
         }
 )

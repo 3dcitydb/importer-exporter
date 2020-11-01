@@ -49,7 +49,7 @@ import java.io.StringReader;
 
 public class XMLQueryOption implements CliOption {
     @CommandLine.Option(names = {"-q", "--xml-query"}, paramLabel = "<xml>",
-            description = "XML query expression to use when exporting.")
+            description = "XML query expression to use as database query.")
     private String xmlQuery;
 
     private QueryConfig queryConfig;

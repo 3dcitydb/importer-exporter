@@ -26,10 +26,9 @@
  * limitations under the License.
  */
 
-package org.citydb.cli.options.exporter;
+package org.citydb.cli.options.deleter;
 
 import org.citydb.cli.options.common.BoundingBoxOption;
-import org.citydb.config.project.exporter.ExportAppearance;
 import org.citydb.config.project.query.QueryConfig;
 import org.citydb.config.project.query.filter.selection.AbstractPredicate;
 import org.citydb.config.project.query.filter.selection.SelectionFilter;
@@ -43,7 +42,6 @@ import org.citydb.plugin.cli.ResourceIdOption;
 import org.citydb.plugin.cli.SQLSelectOption;
 import org.citydb.plugin.cli.TypeNamesOption;
 import org.citydb.plugin.cli.XMLQueryOption;
-import org.citydb.registry.ObjectRegistry;
 import picocli.CommandLine;
 
 import java.util.ArrayList;
@@ -62,12 +60,6 @@ public class QueryOption implements CliOption {
     @CommandLine.ArgGroup(exclusive = false)
     private CounterOption counterOption;
 
-    @CommandLine.ArgGroup(exclusive = false)
-    private LodOption lodOption;
-
-    @CommandLine.ArgGroup
-    private AppearanceOption appearanceOption;
-
     @CommandLine.ArgGroup
     private SQLSelectOption sqlSelectOption;
 
@@ -79,8 +71,6 @@ public class QueryOption implements CliOption {
                 || idOption != null
                 || boundingBoxOption != null
                 || counterOption != null
-                || lodOption != null
-                || appearanceOption != null
                 || sqlSelectOption != null) {
             QueryConfig queryConfig = new QueryConfig();
             List<AbstractPredicate> predicates = new ArrayList<>();
@@ -105,19 +95,6 @@ public class QueryOption implements CliOption {
 
             if (counterOption != null) {
                 queryConfig.setCounterFilter(counterOption.toCounterFilter());
-            }
-
-            if (lodOption != null) {
-                queryConfig.setLodFilter(lodOption.toLodFilter());
-            }
-
-            if (appearanceOption != null) {
-                if (appearanceOption.isExportAppearances()) {
-                    queryConfig.setAppearanceFilter(appearanceOption.toAppearanceFilter());
-                } else {
-                    ExportAppearance appearance = ObjectRegistry.getInstance().getConfig().getExportConfig().getAppearances();
-                    appearance.setExportAppearances(false);
-                }
             }
 
             if (sqlSelectOption != null) {
@@ -164,16 +141,6 @@ public class QueryOption implements CliOption {
                         "Error: Counter options and --xml-query are mutually exclusive (specify only one)");
             }
 
-            if (lodOption != null) {
-                throw new CommandLine.ParameterException(commandLine,
-                        "Error: --lods and --xml-query are mutually exclusive (specify only one)");
-            }
-
-            if (appearanceOption != null) {
-                throw new CommandLine.ParameterException(commandLine,
-                        "Error: Appearance options and --xml-query are mutually exclusive (specify only one)");
-            }
-
             if (sqlSelectOption != null) {
                 throw new CommandLine.ParameterException(commandLine,
                         "Error: --sql-select and --xml-query are mutually exclusive (specify only one)");
@@ -192,10 +159,6 @@ public class QueryOption implements CliOption {
 
         if (counterOption != null) {
             counterOption.preprocess(commandLine);
-        }
-
-        if (lodOption != null) {
-            lodOption.preprocess(commandLine);
         }
     }
 }

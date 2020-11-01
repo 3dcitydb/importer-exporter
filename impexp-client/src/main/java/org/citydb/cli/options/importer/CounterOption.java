@@ -39,7 +39,7 @@ public class CounterOption implements CliOption {
     private Long count;
 
     @CommandLine.Option(names = "--start-index", paramLabel = "<index>",
-            description = "Index within the input set from which to import.")
+            description = "Index within the input set to import from.")
     private Long startIndex;
 
     private CounterFilter counterFilter;

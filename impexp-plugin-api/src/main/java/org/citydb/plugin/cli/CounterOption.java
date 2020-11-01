@@ -26,7 +26,7 @@
  * limitations under the License.
  */
 
-package org.citydb.cli.options.exporter;
+package org.citydb.plugin.cli;
 
 import org.citydb.config.project.query.filter.counter.CounterFilter;
 import org.citydb.plugin.cli.CliOption;
@@ -35,11 +35,11 @@ import picocli.CommandLine;
 
 public class CounterOption implements CliOption {
     @CommandLine.Option(names = "--count",
-            description = "Maximum number of top-level features to export.")
+            description = "Maximum number of top-level features to process.")
     private Long count;
 
     @CommandLine.Option(names = "--start-index", paramLabel = "<index>",
-            description = "Index within the result set from which to export.")
+            description = "Index within the result set to process top-level features from.")
     private Long startIndex;
 
     private CounterFilter counterFilter;
