@@ -169,7 +169,7 @@ public class QueryOption implements CliOption {
                         "Error: --lod and --xml-query are mutually exclusive (specify only one)");
             }
 
-            if (appearanceOption != null) {
+            if (appearanceOption != null && appearanceOption.isExportAppearances()) {
                 throw new CommandLine.ParameterException(commandLine,
                         "Error: Appearance options and --xml-query are mutually exclusive (specify only one)");
             }
