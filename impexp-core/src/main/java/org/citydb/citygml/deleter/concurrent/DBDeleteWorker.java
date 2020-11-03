@@ -160,7 +160,7 @@ public class DBDeleteWorker extends Worker<DBSplittingResult> implements EventHa
 				objectCounter.put(work.getObjectType().getObjectClassId(), 1L);
 				eventDispatcher.triggerEvent(new ObjectCounterEvent(objectCounter, eventChannel, this));
 			} else
-				log.warn("Failed to delete " + work.getObjectType().getPath() + " (ID = " + objectId + ").");
+				log.debug(work.getObjectType().getPath() + " (ID = " + objectId + ") is already deleted.");
 
 			eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.UPDATE, 1, this));
 		} catch (SQLException e) {
