@@ -97,8 +97,12 @@ public class Deleter implements EventHandler {
 
 	private boolean process() throws CityGMLDeleteException {
 		long start = System.currentTimeMillis();
-		int minThreads = 2;
-		int maxThreads = Math.max(minThreads, Runtime.getRuntime().availableProcessors());
+
+		// Multithreading may cause DB-Deadlock. It may occur when deleting a CityObjectGroup within
+		// one thread, and the cityObjectMembers are being deleted within other threads at the same time.
+		// Hence, we use single thread per-default to avoid this issue.
+		int minThreads = 1;
+		int maxThreads = 1;
 		
 		// checking workspace
 		Workspace workspace = config.getDatabaseConfig().getWorkspaces().getDeleteWorkspace();
