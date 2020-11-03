@@ -99,7 +99,7 @@ public class DBSplitter {
 		if (databaseAdapter.hasVersioningSupport()) {
 			databaseAdapter.getWorkspaceManager().gotoWorkspace(
 					connection,
-					config.getProject().getDatabase().getWorkspaces().getDeleteWorkspace());
+					config.getDatabaseConfig().getWorkspaces().getDeleteWorkspace());
 		}
 
 		builder = new SQLQueryBuilder(
