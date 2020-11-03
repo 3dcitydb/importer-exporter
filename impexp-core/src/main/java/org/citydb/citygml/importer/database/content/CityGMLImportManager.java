@@ -577,8 +577,11 @@ public class CityGMLImportManager implements CityGMLImportHelper {
 		updateObjectCounter(object, type.getObjectClassId(), id);
 
 		// create import log entry for top-level features
-		if (!object.isSetParent() && importLogEntries != null)
+		if (importLogEntries != null
+				&& !object.isSetParent()
+				&& !(object instanceof Appearance)) {
 			importLogEntries.add(new ImportLogEntry(type.getPath(), id, (String)object.getLocalProperty(CoreConstants.OBJECT_ORIGINAL_GMLID)));
+		}
 	}
 
 	protected void updateGeometryCounter(GMLClass type) {
