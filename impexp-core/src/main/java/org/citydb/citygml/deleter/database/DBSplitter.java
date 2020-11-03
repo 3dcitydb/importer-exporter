@@ -95,6 +95,13 @@ public class DBSplitter {
 		databaseAdapter = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter();
 		connection = DatabaseConnectionPool.getInstance().getConnection();
 
+		// try and change workspace for connection
+		if (databaseAdapter.hasVersioningSupport()) {
+			databaseAdapter.getWorkspaceManager().gotoWorkspace(
+					connection,
+					config.getProject().getDatabase().getWorkspaces().getDeleteWorkspace());
+		}
+
 		builder = new SQLQueryBuilder(
 				schemaMapping, 
 				databaseAdapter,
