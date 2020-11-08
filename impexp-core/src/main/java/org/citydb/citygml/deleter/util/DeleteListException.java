@@ -2,7 +2,7 @@
  * 3D City Database - The Open Source CityGML Database
  * http://www.3dcitydb.org/
  *
- * Copyright 2013 - 2020
+ * Copyright 2013 - 2019
  * Chair of Geoinformatics
  * Technical University of Munich, Germany
  * https://www.gis.bgu.tum.de/
@@ -26,17 +26,23 @@
  * limitations under the License.
  */
 
-package org.citydb.cli.options.importer;
+package org.citydb.citygml.deleter.util;
 
-import org.citydb.plugin.cli.CliOption;
-import picocli.CommandLine;
+public class DeleteListException extends RuntimeException {
 
-public class AppearanceOption implements CliOption {
-    @CommandLine.Option(names = "--no-appearance", defaultValue = "true",
-            description = "Do not import appearance information.")
-    private boolean exportAppearances;
+	public DeleteListException() {
+		super();
+	}
 
-    public boolean isExportAppearances() {
-        return exportAppearances;
-    }
+	public DeleteListException(String message) {
+		super(message);
+	}
+
+	public DeleteListException(Throwable cause) {
+		super(cause);
+	}
+
+	public DeleteListException(String message, Throwable cause) {
+		super(message, cause);
+	}
 }

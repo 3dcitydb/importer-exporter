@@ -141,7 +141,7 @@ public class DBSplitter {
 		if (!shouldRun)
 			return;
 
-		if (query.getFeatureTypeFilter().isEmpty())
+		if (!query.isSetFeatureTypeFilter() || query.getFeatureTypeFilter().isEmpty())
 			return;
 
 		// do not terminate city objects that have already been terminated

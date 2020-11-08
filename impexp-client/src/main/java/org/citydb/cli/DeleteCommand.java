@@ -30,6 +30,7 @@ package org.citydb.cli;
 
 import org.citydb.citygml.deleter.CityGMLDeleteException;
 import org.citydb.citygml.deleter.controller.Deleter;
+import org.citydb.cli.options.deleter.DeleteListOption;
 import org.citydb.cli.options.deleter.QueryOption;
 import org.citydb.config.Config;
 import org.citydb.config.project.database.DatabaseConnection;
@@ -48,6 +49,9 @@ import picocli.CommandLine;
 public class DeleteCommand extends CliCommand {
     @CommandLine.ArgGroup(exclusive = false, heading = "Query and filter options:%n")
     private QueryOption queryOption;
+
+    @CommandLine.ArgGroup(exclusive = false, heading = "Delete list options:%n")
+    private DeleteListOption deleteListOption;
 
     @CommandLine.ArgGroup(exclusive = false, heading = "Database connection options:%n")
     private DatabaseOption databaseOption;
@@ -69,13 +73,19 @@ public class DeleteCommand extends CliCommand {
             return 1;
         }
 
-        // set user-defined query options
-        if (queryOption != null) {
-            config.getDeleteConfig().setQuery(queryOption.toQueryConfig());
-        }
-
         try {
-            new Deleter().doDelete();
+            Deleter deleter = new Deleter();
+            if (deleteListOption != null) {
+                deleter.doDelete(deleteListOption.toDeleteListParser());
+            } else {
+                // set user-defined query options
+                if (queryOption != null) {
+                    config.getDeleteConfig().setQuery(queryOption.toQueryConfig());
+                }
+
+                deleter.doDelete();
+            }
+
             log.info("Database delete successfully finished.");
         } catch (CityGMLDeleteException e) {
             log.error(e.getMessage(), e.getCause());
@@ -86,5 +96,13 @@ public class DeleteCommand extends CliCommand {
         }
 
         return 0;
+    }
+
+    @Override
+    public void preprocess(CommandLine commandLine) {
+        if (queryOption != null && deleteListOption != null) {
+            throw new CommandLine.ParameterException(commandLine,
+                    "Error: Query options and delete file options are mutually exclusive (specify only one)");
+        }
     }
 }

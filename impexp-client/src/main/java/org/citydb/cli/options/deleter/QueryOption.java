@@ -137,29 +137,19 @@ public class QueryOption implements CliOption {
             if (typeNamesOption != null) {
                 throw new CommandLine.ParameterException(commandLine,
                         "Error: --type-name and --xml-query are mutually exclusive (specify only one)");
-            }
-
-            if (resourceIdOption != null) {
+            } else if (resourceIdOption != null) {
                 throw new CommandLine.ParameterException(commandLine,
                         "Error: --gml-id and --xml-query are mutually exclusive (specify only one)");
-            }
-
-            if (databaseIdOption != null) {
+            } else if (databaseIdOption != null) {
                 throw new CommandLine.ParameterException(commandLine,
                         "Error: --db-id and --xml-query are mutually exclusive (specify only one)");
-            }
-
-            if (boundingBoxOption != null) {
+            } else if (boundingBoxOption != null) {
                 throw new CommandLine.ParameterException(commandLine,
                         "Error: --bbox and --xml-query are mutually exclusive (specify only one)");
-            }
-
-            if (counterOption != null) {
+            } else if (counterOption != null) {
                 throw new CommandLine.ParameterException(commandLine,
                         "Error: Counter options and --xml-query are mutually exclusive (specify only one)");
-            }
-
-            if (sqlSelectOption != null) {
+            } else if (sqlSelectOption != null) {
                 throw new CommandLine.ParameterException(commandLine,
                         "Error: --sql-select and --xml-query are mutually exclusive (specify only one)");
             }

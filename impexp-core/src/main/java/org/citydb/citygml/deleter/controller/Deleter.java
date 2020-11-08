@@ -31,6 +31,7 @@ import org.citydb.citygml.deleter.CityGMLDeleteException;
 import org.citydb.citygml.deleter.concurrent.DBDeleteWorkerFactory;
 import org.citydb.citygml.deleter.database.BundledConnection;
 import org.citydb.citygml.deleter.database.DBSplitter;
+import org.citydb.citygml.deleter.util.DeleteListParser;
 import org.citydb.citygml.exporter.database.content.DBSplittingResult;
 import org.citydb.concurrent.PoolSizeAdaptationStrategy;
 import org.citydb.concurrent.WorkerPool;
@@ -54,7 +55,9 @@ import org.citydb.util.CoreConstants;
 import org.citydb.util.Util;
 
 import java.sql.SQLException;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -80,22 +83,40 @@ public class Deleter implements EventHandler {
 		schemaMapping = ObjectRegistry.getInstance().getSchemaMapping();
 		eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
 		databaseAdapter = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter();
-
 		objectCounter = new HashMap<>();
 	}
 
 	public boolean doDelete() throws CityGMLDeleteException {
+		try {
+			// build query from configuration
+			ConfigQueryBuilder queryBuilder = new ConfigQueryBuilder(schemaMapping, databaseAdapter);
+			Query query = config.getDeleteConfig().isUseSimpleQuery() ?
+					queryBuilder.buildQuery(config.getDeleteConfig().getSimpleQuery(), config.getNamespaceFilter()) :
+					queryBuilder.buildQuery(config.getDeleteConfig().getQuery(), config.getNamespaceFilter());
+
+			return doDelete(Collections.singletonList(query).iterator());
+		} catch (QueryBuildException e) {
+			throw new CityGMLDeleteException("Failed to build the delete query expression.", e);
+		}
+	}
+
+	public boolean doDelete(DeleteListParser parser) throws CityGMLDeleteException {
+		log.info("Using delete list from CSV file: " + parser.getFile());
+		return doDelete(parser.queryIterator(schemaMapping, databaseAdapter));
+	}
+
+	private boolean doDelete(Iterator<Query> queries) throws CityGMLDeleteException {
 		eventDispatcher.addEventHandler(EventType.OBJECT_COUNTER, this);
 		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
 
 		try {
-			return process();
+			return process(queries);
 		} finally {
 			eventDispatcher.removeEventHandler(this);
 		}
 	}
 
-	private boolean process() throws CityGMLDeleteException {
+	private boolean process(Iterator<Query> queries) throws CityGMLDeleteException {
 		long start = System.currentTimeMillis();
 
 		// Multithreading may cause DB-Deadlock. It may occur when deleting a CityObjectGroup within
@@ -116,17 +137,6 @@ public class Deleter implements EventHandler {
 			}
 		}
 		
-		// build query from filter settings
-		Query query;
-		try {
-			ConfigQueryBuilder queryBuilder = new ConfigQueryBuilder(schemaMapping, databaseAdapter);
-			query = config.getDeleteConfig().isUseSimpleQuery() ?
-					queryBuilder.buildQuery(config.getDeleteConfig().getSimpleQuery(), config.getNamespaceFilter()) :
-					queryBuilder.buildQuery(config.getDeleteConfig().getQuery(), config.getNamespaceFilter());
-		} catch (QueryBuildException e) {
-			throw new CityGMLDeleteException("Failed to build the delete query expression.", e);
-		}
-		
 		bundledConnection = new BundledConnection();
 		try {				
 			dbWorkerPool = new WorkerPool<>(
@@ -145,15 +155,15 @@ public class Deleter implements EventHandler {
 
 			log.info("Deleting city objects from database.");
 
-			// get database splitter and start query
-			try {
-				dbSplitter = new DBSplitter(schemaMapping, dbWorkerPool, query, config, eventDispatcher);
-				if (shouldRun) {
+			while (shouldRun && queries.hasNext()) {
+				// get database splitter and start query
+				try {
+					dbSplitter = new DBSplitter(schemaMapping, dbWorkerPool, queries.next(), config, eventDispatcher);
 					dbSplitter.setCalculateNumberMatched(CoreConstants.IS_GUI_MODE);
 					dbSplitter.startQuery();
+				} catch (SQLException | QueryBuildException e) {
+					throw new CityGMLDeleteException("Failed to query the database.", e);
 				}
-			} catch (SQLException | QueryBuildException e) {
-				throw new CityGMLDeleteException("Failed to query the database.", e);
 			}
 
 			try {
@@ -228,5 +238,4 @@ public class Deleter implements EventHandler {
 			}
 		}
 	}
-	
 }
