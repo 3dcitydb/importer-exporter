@@ -111,10 +111,12 @@ public class Logger {
 	private void log(LogLevel level, String msg, Throwable e) {
 		log(level, msg);
 		if (e != null) {
-			do {
-				if (e.getMessage() != null)
-					log(level, "Caused by: " + e.getClass().getName() + ": " + e.getMessage());
-			} while ((e = e.getCause()) != null);
+			msg = "Caused by: " + e.getClass().getName();
+			if (e.getMessage() != null) {
+				msg += ": " + e.getMessage();
+			}
+
+			log(level, msg, e.getCause());
 		}
 	}
 
