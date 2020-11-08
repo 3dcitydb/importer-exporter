@@ -34,6 +34,7 @@ import org.citydb.cli.options.deleter.DeleteListOption;
 import org.citydb.cli.options.deleter.QueryOption;
 import org.citydb.config.Config;
 import org.citydb.config.project.database.DatabaseConnection;
+import org.citydb.config.project.deleter.DeleteMode;
 import org.citydb.database.DatabaseController;
 import org.citydb.log.Logger;
 import org.citydb.plugin.CliCommand;
@@ -47,6 +48,12 @@ import picocli.CommandLine;
         versionProvider = ImpExpCli.class
 )
 public class DeleteCommand extends CliCommand {
+    enum Mode {delete, terminate};
+
+    @CommandLine.Option(names = {"-m", "--delete-mode"}, paramLabel = "<mode>", defaultValue = "delete",
+            description = "Delete mode: ${COMPLETION-CANDIDATES} (default: ${DEFAULT-VALUE}).")
+    private Mode mode;
+
     @CommandLine.ArgGroup(exclusive = false, heading = "Query and filter options:%n")
     private QueryOption queryOption;
 
@@ -72,6 +79,11 @@ public class DeleteCommand extends CliCommand {
             log.warn("Database delete aborted.");
             return 1;
         }
+
+        // set delete mode
+        config.getDeleteConfig().setMode(mode == Mode.terminate ?
+                DeleteMode.TERMINATE :
+                DeleteMode.DELETE);
 
         try {
             Deleter deleter = new Deleter();
