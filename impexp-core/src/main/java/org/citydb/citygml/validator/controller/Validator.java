@@ -65,6 +65,7 @@ public class Validator implements EventHandler {
 	private volatile boolean shouldRun = true;
 	private DirectoryScanner directoryScanner;
 	private ValidationException exception;
+	private int invalidFiles;
 
 	public Validator() {
 		config = ObjectRegistry.getInstance().getConfig();
@@ -92,18 +93,20 @@ public class Validator implements EventHandler {
 	}
 
 	private boolean process(List<Path> inputFiles) throws ValidationException {
+		invalidFiles = 0;
+
 		// build list of files to be validated
 		List<InputFile> files;
 		try {
-			log.info("Creating list of CityGML files to be validated...");
+			log.info("Creating list of files to be validated...");
 			directoryScanner = new DirectoryScanner(true);
 			files = directoryScanner.listFiles(inputFiles);
 			if (files.isEmpty()) {
-				log.warn("Failed to find CityGML files at the specified locations.");
+				log.warn("Failed to find files at the specified locations.");
 				return false;
 			}
 		} catch (TikaException | IOException e) {
-			throw new ValidationException("Fatal error while searching for CityGML files.", e);
+			throw new ValidationException("Fatal error while searching for files.", e);
 		}
 
 		if (!shouldRun)
@@ -136,16 +139,16 @@ public class Validator implements EventHandler {
 					throw new ValidationException("Failed to validate input file '" + contentFile + "'.", e);
 				}
 
-				// ok, preparation done. inform user and start validating the input file
 				log.info("Validating file: " + contentFile.toString());
+
 				try (org.citydb.citygml.validator.reader.Validator validator = validatorFactory.createValidator()) {
 					validator.validate(file);
 
-					// show XML validation errors
 					if (validator.getValidationErrors() == 0) {
 						log.info("The file is valid.");
 					} else {
 						log.warn("The file is invalid. Found " + validator.getValidationErrors() + " error(s).");
+						invalidFiles++;
 					}
 				}
 
@@ -166,6 +169,10 @@ public class Validator implements EventHandler {
 		}
 
 		return shouldRun;
+	}
+
+	public int getNumberOfInvalidFiles() {
+		return invalidFiles;
 	}
 
 	@Override

@@ -197,14 +197,14 @@ public class Importer implements EventHandler {
         // build list of import files
         List<InputFile> files;
         try {
-            log.info("Creating list of CityGML files to be imported...");
+            log.info("Creating list of files to be imported...");
             directoryScanner = new DirectoryScanner(true);
             files = directoryScanner.listFiles(inputFiles);
             if (files.isEmpty()) {
-                throw new CityGMLImportException("Failed to find CityGML files at the specified locations.");
+                throw new CityGMLImportException("Failed to find files at the specified locations.");
             }
         } catch (TikaException | IOException e) {
-            throw new CityGMLImportException("Fatal error while searching for CityGML files.", e);
+            throw new CityGMLImportException("Fatal error while searching for files.", e);
         }
 
         if (!shouldRun)

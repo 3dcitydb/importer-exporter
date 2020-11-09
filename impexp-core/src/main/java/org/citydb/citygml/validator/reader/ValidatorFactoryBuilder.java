@@ -39,7 +39,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ValidatorFactoryBuilder {
-    private Map<MediaType, ValidatorFactory> factories = new HashMap<>();
+    private final Map<MediaType, ValidatorFactory> factories = new HashMap<>();
 
     public ValidatorFactory buildFactory(InputFile file, Config config) throws ValidationException {
         ValidatorFactory factory = factories.get(file.getMediaType());
