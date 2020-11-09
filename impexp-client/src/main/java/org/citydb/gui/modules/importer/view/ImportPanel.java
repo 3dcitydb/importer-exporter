@@ -432,12 +432,6 @@ public class ImportPanel extends JPanel implements EventHandler {
 			SwingUtilities.invokeLater(validatorDialog::dispose);
 
 			if (success) {
-				if (validator.getNumberOfInvalidFiles() == 0) {
-					log.info("All files are valid.");
-				} else {
-					log.warn("Found " + validator.getNumberOfInvalidFiles() + " invalid file(s).");
-				}
-
 				log.info("Data validation successfully finished.");
 			} else {
 				log.warn("Data validation aborted.");

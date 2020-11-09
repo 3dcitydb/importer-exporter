@@ -94,6 +94,7 @@ import java.util.stream.Stream;
                 ImportCommand.class,
                 ExportCommand.class,
                 DeleteCommand.class,
+                ValidateCommand.class,
                 GuiCommand.class
         }
 )

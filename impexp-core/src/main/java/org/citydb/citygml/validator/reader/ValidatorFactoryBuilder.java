@@ -44,13 +44,15 @@ public class ValidatorFactoryBuilder {
     public ValidatorFactory buildFactory(InputFile file, Config config) throws ValidationException {
         ValidatorFactory factory = factories.get(file.getMediaType());
         if (factory == null) {
-            if (file.getMediaType().equals(InputFile.APPLICATION_XML))
+            if (file.getMediaType().equals(InputFile.APPLICATION_XML)) {
                 factory = new CityGMLValidatorFactory();
-            else if (file.getMediaType().equals(InputFile.APPLICATION_JSON))
+            } else if (file.getMediaType().equals(InputFile.APPLICATION_JSON)) {
                 factory = new CityJSONValidatorFactory();
+            }
 
-            if (factory == null)
+            if (factory == null) {
                 throw new ValidationException("No validator available for media type '" + file.getMediaType() + "'.");
+            }
 
             factory.initializeContext(config);
             factories.put(file.getMediaType(), factory);

@@ -161,6 +161,14 @@ public class Validator implements EventHandler {
 				throw new ValidationException("An unexpected error occurred.", e);
 			}
 		}
+
+		if (files.size() > 1) {
+			if (invalidFiles == 0) {
+				log.info("All files were successfully validated.");
+			} else {
+				log.warn("Found " + invalidFiles + " invalid file(s).");
+			}
+		}
 		
 		if (shouldRun) {
 			log.info("Total validation time: " + Util.formatElapsedTime(System.currentTimeMillis() - start) + ".");

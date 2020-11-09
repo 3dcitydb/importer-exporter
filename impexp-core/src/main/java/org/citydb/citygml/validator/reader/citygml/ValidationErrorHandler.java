@@ -50,10 +50,6 @@ class ValidationErrorHandler implements ErrorHandler {
         reset();
     }
 
-    void setReportAllErrors(boolean reportAllErrors) {
-        this.isReportAllErrors = reportAllErrors;
-    }
-
     long getValidationErrors() {
         return validationErrors;
     }
