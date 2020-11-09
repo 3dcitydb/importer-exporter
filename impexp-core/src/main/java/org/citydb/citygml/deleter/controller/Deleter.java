@@ -27,7 +27,7 @@
  */
 package org.citydb.citygml.deleter.controller;
 
-import org.citydb.citygml.deleter.CityGMLDeleteException;
+import org.citydb.citygml.deleter.DeleteException;
 import org.citydb.citygml.deleter.concurrent.DBDeleteWorkerFactory;
 import org.citydb.citygml.deleter.database.BundledConnection;
 import org.citydb.citygml.deleter.database.DBSplitter;
@@ -76,7 +76,7 @@ public class Deleter implements EventHandler {
 	private BundledConnection bundledConnection;
 
 	private volatile boolean shouldRun = true;
-	private CityGMLDeleteException exception;
+	private DeleteException exception;
 
 	public Deleter() {
 		config = ObjectRegistry.getInstance().getConfig();
@@ -86,7 +86,7 @@ public class Deleter implements EventHandler {
 		objectCounter = new HashMap<>();
 	}
 
-	public boolean doDelete() throws CityGMLDeleteException {
+	public boolean doDelete() throws DeleteException {
 		try {
 			// build query from configuration
 			ConfigQueryBuilder queryBuilder = new ConfigQueryBuilder(schemaMapping, databaseAdapter);
@@ -96,16 +96,16 @@ public class Deleter implements EventHandler {
 
 			return doDelete(Collections.singletonList(query).iterator());
 		} catch (QueryBuildException e) {
-			throw new CityGMLDeleteException("Failed to build the delete query expression.", e);
+			throw new DeleteException("Failed to build the delete query expression.", e);
 		}
 	}
 
-	public boolean doDelete(DeleteListParser parser) throws CityGMLDeleteException {
+	public boolean doDelete(DeleteListParser parser) throws DeleteException {
 		log.info("Using delete list from CSV file: " + parser.getFile());
 		return doDelete(parser.queryIterator(schemaMapping, databaseAdapter));
 	}
 
-	private boolean doDelete(Iterator<Query> queries) throws CityGMLDeleteException {
+	private boolean doDelete(Iterator<Query> queries) throws DeleteException {
 		eventDispatcher.addEventHandler(EventType.OBJECT_COUNTER, this);
 		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
 
@@ -116,7 +116,7 @@ public class Deleter implements EventHandler {
 		}
 	}
 
-	private boolean process(Iterator<Query> queries) throws CityGMLDeleteException {
+	private boolean process(Iterator<Query> queries) throws DeleteException {
 		long start = System.currentTimeMillis();
 
 		// Multithreading may cause DB-Deadlock. It may occur when deleting a CityObjectGroup within
@@ -133,7 +133,7 @@ public class Deleter implements EventHandler {
 				log.info("Switching to database workspace " + workspace + ".");
 				databaseAdapter.getWorkspaceManager().checkWorkspace(workspace);
 			} catch (SQLException e) {
-				throw new CityGMLDeleteException("Failed to switch to database workspace.", e);
+				throw new DeleteException("Failed to switch to database workspace.", e);
 			}
 		}
 		
@@ -150,7 +150,7 @@ public class Deleter implements EventHandler {
 
 			dbWorkerPool.prestartCoreWorkers();
 			if (dbWorkerPool.getPoolSize() == 0) {
-				throw new CityGMLDeleteException("Failed to start database delete worker pool. Check the database connection pool settings.");
+				throw new DeleteException("Failed to start database delete worker pool. Check the database connection pool settings.");
 			}
 
 			log.info("Deleting city objects from database.");
@@ -162,19 +162,19 @@ public class Deleter implements EventHandler {
 					dbSplitter.setCalculateNumberMatched(CoreConstants.IS_GUI_MODE);
 					dbSplitter.startQuery();
 				} catch (SQLException | QueryBuildException e) {
-					throw new CityGMLDeleteException("Failed to query the database.", e);
+					throw new DeleteException("Failed to query the database.", e);
 				}
 			}
 
 			try {
 				dbWorkerPool.shutdownAndWait();
 			} catch (InterruptedException e) {
-				throw new CityGMLDeleteException("Failed to shutdown worker pools.", e);
+				throw new DeleteException("Failed to shutdown worker pools.", e);
 			}
-		} catch (CityGMLDeleteException e) {
+		} catch (DeleteException e) {
 			throw e;
 		} catch (Throwable e) {
-			throw new CityGMLDeleteException("An unexpected error occurred.", e);
+			throw new DeleteException("An unexpected error occurred.", e);
 		} finally {
 			try {
 				bundledConnection.close();
@@ -225,7 +225,7 @@ public class Deleter implements EventHandler {
 
 				log.log(event.getLogLevelType(), event.getLogMessage());
 				if (event.getCause() != null) {
-					exception = new CityGMLDeleteException("Aborting delete due to errors.", event.getCause());
+					exception = new DeleteException("Aborting delete due to errors.", event.getCause());
 				}
 
 				if (dbSplitter != null) {

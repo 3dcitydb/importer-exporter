@@ -28,7 +28,7 @@
 package org.citydb.cli;
 
 import org.citydb.ImpExpException;
-import org.citydb.citygml.deleter.CityGMLDeleteException;
+import org.citydb.citygml.deleter.DeleteException;
 import org.citydb.citygml.deleter.controller.Deleter;
 import org.citydb.citygml.exporter.CityGMLExportException;
 import org.citydb.citygml.exporter.controller.Exporter;
@@ -153,7 +153,7 @@ public class ImpExpCliOld {
 
 		try {
 			success = deleter.doDelete();
-		} catch (CityGMLDeleteException e) {
+		} catch (DeleteException e) {
 			throw new ImpExpException("CityGML delete failed due to an internal error.", e);
 		} finally {
 			databaseController.disconnect();

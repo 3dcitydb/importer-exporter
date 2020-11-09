@@ -28,7 +28,7 @@
 
 package org.citydb.cli;
 
-import org.citydb.citygml.deleter.CityGMLDeleteException;
+import org.citydb.citygml.deleter.DeleteException;
 import org.citydb.citygml.deleter.controller.Deleter;
 import org.citydb.cli.options.deleter.DeleteListOption;
 import org.citydb.cli.options.deleter.QueryOption;
@@ -99,7 +99,7 @@ public class DeleteCommand extends CliCommand {
             }
 
             log.info("Database delete successfully finished.");
-        } catch (CityGMLDeleteException e) {
+        } catch (DeleteException e) {
             log.error(e.getMessage(), e.getCause());
             log.warn("Database delete aborted.");
             return 1;
