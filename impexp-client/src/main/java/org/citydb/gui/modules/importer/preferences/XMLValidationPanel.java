@@ -27,21 +27,14 @@
  */
 package org.citydb.gui.modules.importer.preferences;
 
-import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-
-import javax.swing.BorderFactory;
-import javax.swing.JCheckBox;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.border.TitledBorder;
-
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
-import org.citydb.config.project.importer.XMLValidation;
 import org.citydb.gui.modules.common.AbstractPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
+
+import javax.swing.*;
+import javax.swing.border.TitledBorder;
+import java.awt.*;
 
 @SuppressWarnings("serial")
 public class XMLValidationPanel extends AbstractPreferencesComponent {
@@ -57,10 +50,8 @@ public class XMLValidationPanel extends AbstractPreferencesComponent {
 	
 	@Override
 	public boolean isModified() {
-		XMLValidation xmlValidation = config.getImportConfig().getXMLValidation();
-		
-		if (useXMLValidation.isSelected() != xmlValidation.isSetUseXMLValidation()) return true;		
-		if (oneError.isSelected() != xmlValidation.isSetReportOneErrorPerFeature()) return true;
+		if (useXMLValidation.isSelected() != config.getImportConfig().isSetUseValidation()) return true;
+		if (oneError.isSelected() != config.getValidationConfig().isSetReportOneErrorPerFeature()) return true;
 		
 		return false;
 	}
@@ -98,18 +89,14 @@ public class XMLValidationPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void loadSettings() {
-		XMLValidation xmlValidation = config.getImportConfig().getXMLValidation();
-
-		useXMLValidation.setSelected(xmlValidation.isSetUseXMLValidation());
-		oneError.setSelected(xmlValidation.isSetReportOneErrorPerFeature());	
+		useXMLValidation.setSelected(config.getImportConfig().isSetUseValidation());
+		oneError.setSelected(config.getValidationConfig().isSetReportOneErrorPerFeature());
 	}
 
 	@Override
 	public void setSettings() {
-		XMLValidation xmlValidation = config.getImportConfig().getXMLValidation();
-
-		xmlValidation.setUseXMLValidation(useXMLValidation.isSelected());
-		xmlValidation.setReportOneErrorPerFeature(oneError.isSelected());
+		config.getImportConfig().setUseValidation(useXMLValidation.isSelected());
+		config.getValidationConfig().setReportOneErrorPerFeature(oneError.isSelected());
 	}
 	
 	@Override

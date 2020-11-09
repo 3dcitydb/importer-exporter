@@ -64,6 +64,7 @@ public class Validator implements EventHandler {
 
 	private volatile boolean shouldRun = true;
 	private DirectoryScanner directoryScanner;
+	private ValidationException exception;
 
 	public Validator() {
 		config = ObjectRegistry.getInstance().getConfig();
@@ -121,7 +122,8 @@ public class Validator implements EventHandler {
 		while (shouldRun && fileCounter < files.size()) {
 			try (InputFile file = files.get(fileCounter++)) {
 				Path contentFile = file.getType() != FileType.ARCHIVE ?
-						file.getFile() : Paths.get(file.getFile().toString(), ((AbstractArchiveInputFile) file).getContentFile());
+						file.getFile() :
+						Paths.get(file.getFile().toString(), ((AbstractArchiveInputFile) file).getContentFile());
 
 				eventDispatcher.triggerEvent(new StatusDialogTitle(contentFile.getFileName().toString(), this));
 				eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("validate.dialog.validate.msg"), this));
@@ -140,10 +142,11 @@ public class Validator implements EventHandler {
 					validator.validate(file);
 
 					// show XML validation errors
-					if (validator.getValidationErrors() > 0)
-						log.warn(validator.getValidationErrors() + " error(s) encountered while validating the document.");
-					else if (shouldRun)
-						log.info("The input file is valid.");
+					if (validator.getValidationErrors() == 0) {
+						log.info("The file is valid.");
+					} else {
+						log.warn("The file is invalid. Found " + validator.getValidationErrors() + " error(s).");
+					}
 				}
 
 				eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("validate.dialog.finish.msg"), this));
@@ -156,8 +159,11 @@ public class Validator implements EventHandler {
 			}
 		}
 		
-		if (shouldRun)
+		if (shouldRun) {
 			log.info("Total validation time: " + Util.formatElapsedTime(System.currentTimeMillis() - start) + ".");
+		} else if (exception != null) {
+			throw exception;
+		}
 
 		return shouldRun;
 	}
@@ -166,17 +172,16 @@ public class Validator implements EventHandler {
 	public void handleEvent(Event e) throws Exception {
 		if (isInterrupted.compareAndSet(false, true)) {
 			shouldRun = false;
-			InterruptEvent interruptEvent = (InterruptEvent)e;
-			if (interruptEvent.getCause() != null)
-				log.error("An error occurred.", interruptEvent.getCause());
-			
-			String log = interruptEvent.getLogMessage();
-			if (log != null)
-				this.log.log(interruptEvent.getLogLevelType(), log);
-			
-			if (directoryScanner != null)
+			InterruptEvent event = (InterruptEvent) e;
+
+			log.log(event.getLogLevelType(), event.getLogMessage());
+			if (event.getCause() != null) {
+				exception = new ValidationException("Aborting validation due to errors.", event.getCause());
+			}
+
+			if (directoryScanner != null) {
 				directoryScanner.cancel();
+			}
 		}
 	}
-
 }

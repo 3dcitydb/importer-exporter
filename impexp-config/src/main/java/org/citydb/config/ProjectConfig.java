@@ -35,6 +35,7 @@ import org.citydb.config.project.importer.ImportConfig;
 import org.citydb.config.project.kmlExporter.KmlExportConfig;
 import org.citydb.config.project.plugin.PluginConfig;
 import org.citydb.config.project.plugin.PluginConfigListAdapter;
+import org.citydb.config.project.validation.ValidationConfig;
 import org.citydb.config.util.ConfigNamespaceFilter;
 
 import javax.xml.bind.annotation.XmlElement;
@@ -52,6 +53,7 @@ import java.util.Map;
         "exportConfig",
         "deleteConfig",
         "kmlExportConfig",
+        "validationConfig",
         "globalConfig",
         "extensions"
 })
@@ -66,6 +68,8 @@ public class ProjectConfig {
     private DeleteConfig deleteConfig;
     @XmlElement(name = "kmlExport")
     private KmlExportConfig kmlExportConfig;
+    @XmlElement(name = "validation")
+    private ValidationConfig validationConfig;
     @XmlElement(name = "global")
     private GlobalConfig globalConfig;
     @XmlJavaTypeAdapter(PluginConfigListAdapter.class)
@@ -74,12 +78,19 @@ public class ProjectConfig {
     @XmlTransient
     private ConfigNamespaceFilter namespaceFilter;
 
-    public ProjectConfig(DatabaseConfig databaseConfig, ImportConfig importConfig, ExportConfig exportConfig, DeleteConfig deleteConfig, KmlExportConfig kmlExportConfig, GlobalConfig globalConfig) {
+    public ProjectConfig(DatabaseConfig databaseConfig,
+                         ImportConfig importConfig,
+                         ExportConfig exportConfig,
+                         DeleteConfig deleteConfig,
+                         KmlExportConfig kmlExportConfig,
+                         ValidationConfig validationConfig,
+                         GlobalConfig globalConfig) {
         this.databaseConfig = databaseConfig;
         this.importConfig = importConfig;
         this.exportConfig = exportConfig;
         this.deleteConfig = deleteConfig;
         this.kmlExportConfig = kmlExportConfig;
+        this.validationConfig = validationConfig;
         this.globalConfig = globalConfig;
 
         namespaceFilter = new ConfigNamespaceFilter();
@@ -87,7 +98,13 @@ public class ProjectConfig {
     }
 
     public ProjectConfig() {
-        this(new DatabaseConfig(), new ImportConfig(), new ExportConfig(), new DeleteConfig(), new KmlExportConfig(), new GlobalConfig());
+        this(new DatabaseConfig(),
+                new ImportConfig(),
+                new ExportConfig(),
+                new DeleteConfig(),
+                new KmlExportConfig(),
+                new ValidationConfig(),
+                new GlobalConfig());
     }
 
     DatabaseConfig getDatabaseConfig() {
@@ -95,8 +112,9 @@ public class ProjectConfig {
     }
 
     void setDatabaseConfig(DatabaseConfig databaseConfig) {
-        if (databaseConfig != null)
+        if (databaseConfig != null) {
             this.databaseConfig = databaseConfig;
+        }
     }
 
     ImportConfig getImportConfig() {
@@ -104,8 +122,9 @@ public class ProjectConfig {
     }
 
     void setImportConfig(ImportConfig importConfig) {
-        if (importConfig != null)
+        if (importConfig != null) {
             this.importConfig = importConfig;
+        }
     }
 
     ExportConfig getExportConfig() {
@@ -113,8 +132,9 @@ public class ProjectConfig {
     }
 
     void setExportConfig(ExportConfig exportConfig) {
-        if (exportConfig != null)
+        if (exportConfig != null) {
             this.exportConfig = exportConfig;
+        }
     }
 
     DeleteConfig getDeleteConfig() {
@@ -122,8 +142,9 @@ public class ProjectConfig {
     }
 
     void setDeleteConfig(DeleteConfig deleteConfig) {
-        if (deleteConfig != null)
+        if (deleteConfig != null) {
             this.deleteConfig = deleteConfig;
+        }
     }
 
     KmlExportConfig getKmlExportConfig() {
@@ -131,8 +152,19 @@ public class ProjectConfig {
     }
 
     void setKmlExportConfig(KmlExportConfig kmlExportConfig) {
-        if (kmlExportConfig != null)
+        if (kmlExportConfig != null) {
             this.kmlExportConfig = kmlExportConfig;
+        }
+    }
+
+    ValidationConfig getValidationConfig() {
+        return validationConfig;
+    }
+
+    void setValidationConfig(ValidationConfig validationConfig) {
+        if (validationConfig != null) {
+            this.validationConfig = validationConfig;
+        }
     }
 
     GlobalConfig getGlobalConfig() {
@@ -140,8 +172,9 @@ public class ProjectConfig {
     }
 
     void setGlobalConfig(GlobalConfig globalConfig) {
-        if (globalConfig != null)
+        if (globalConfig != null) {
             this.globalConfig = globalConfig;
+        }
     }
 
     <T extends PluginConfig> T getPluginConfig(Class<T> type) {

@@ -35,6 +35,7 @@ import org.citydb.config.project.global.GlobalConfig;
 import org.citydb.config.project.importer.ImportConfig;
 import org.citydb.config.project.kmlExporter.KmlExportConfig;
 import org.citydb.config.project.plugin.PluginConfig;
+import org.citydb.config.project.validation.ValidationConfig;
 import org.citydb.config.util.ConfigNamespaceFilter;
 
 public class Config {
@@ -102,6 +103,14 @@ public class Config {
 
 	public void setKmlExportConfig(KmlExportConfig kmlExportConfig) {
 		projectConfig.setKmlExportConfig(kmlExportConfig);
+	}
+
+	public ValidationConfig getValidationConfig() {
+		return projectConfig.getValidationConfig();
+	}
+
+	public void setValidationConfig(ValidationConfig validationConfig) {
+		projectConfig.setValidationConfig(validationConfig);
 	}
 
 	public GlobalConfig getGlobalConfig() {

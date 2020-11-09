@@ -26,41 +26,9 @@
  * limitations under the License.
  */
 
-package org.citydb.citygml.validator;
+@javax.xml.bind.annotation.XmlAccessorType(javax.xml.bind.annotation.XmlAccessType.FIELD)
+@javax.xml.bind.annotation.XmlSchema(namespace = ConfigUtil.CITYDB_CONFIG_NAMESPACE_URI,
+        elementFormDefault = javax.xml.bind.annotation.XmlNsForm.QUALIFIED)
+package org.citydb.config.project.validation;
 
-import org.citydb.config.exception.ApplicationException;
-import org.citydb.config.exception.ErrorCode;
-
-public class ValidationException extends ApplicationException {
-	public ValidationException(ErrorCode errorCode) {
-		super(errorCode);
-	}
-
-	public ValidationException(ErrorCode errorCode, String message) {
-		super(errorCode, message);
-	}
-
-	public ValidationException(ErrorCode errorCode, String message, Throwable cause) {
-		super(errorCode, message, cause);
-	}
-
-	public ValidationException(ErrorCode errorCode, Throwable cause) {
-		super(errorCode, cause);
-	}
-
-	public ValidationException() {
-		super();
-	}
-
-	public ValidationException(String message) {
-		super(message);
-	}
-
-	public ValidationException(String message, Throwable cause) {
-		super(message, cause);
-	}
-
-	public ValidationException(Throwable cause) {
-		super(cause);
-	}
-}
+import org.citydb.config.ConfigUtil;
