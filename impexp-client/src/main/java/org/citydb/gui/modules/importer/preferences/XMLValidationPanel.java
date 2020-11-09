@@ -29,6 +29,7 @@ package org.citydb.gui.modules.importer.preferences;
 
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
+import org.citydb.config.project.importer.XMLValidation;
 import org.citydb.gui.modules.common.AbstractPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 
@@ -50,8 +51,10 @@ public class XMLValidationPanel extends AbstractPreferencesComponent {
 	
 	@Override
 	public boolean isModified() {
-		if (useXMLValidation.isSelected() != config.getImportConfig().isSetUseValidation()) return true;
-		if (oneError.isSelected() != config.getValidationConfig().isSetReportOneErrorPerFeature()) return true;
+		XMLValidation xmlValidation = config.getImportConfig().getXMLValidation();
+		
+		if (useXMLValidation.isSelected() != xmlValidation.isSetUseXMLValidation()) return true;		
+		if (oneError.isSelected() != xmlValidation.isSetReportOneErrorPerFeature()) return true;
 		
 		return false;
 	}
@@ -89,14 +92,18 @@ public class XMLValidationPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void loadSettings() {
-		useXMLValidation.setSelected(config.getImportConfig().isSetUseValidation());
-		oneError.setSelected(config.getValidationConfig().isSetReportOneErrorPerFeature());
+		XMLValidation xmlValidation = config.getImportConfig().getXMLValidation();
+
+		useXMLValidation.setSelected(xmlValidation.isSetUseXMLValidation());
+		oneError.setSelected(xmlValidation.isSetReportOneErrorPerFeature());	
 	}
 
 	@Override
 	public void setSettings() {
-		config.getImportConfig().setUseValidation(useXMLValidation.isSelected());
-		config.getValidationConfig().setReportOneErrorPerFeature(oneError.isSelected());
+		XMLValidation xmlValidation = config.getImportConfig().getXMLValidation();
+
+		xmlValidation.setUseXMLValidation(useXMLValidation.isSelected());
+		xmlValidation.setReportOneErrorPerFeature(oneError.isSelected());
 	}
 	
 	@Override

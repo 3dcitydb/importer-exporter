@@ -27,12 +27,12 @@
  */
 package org.citydb.config.project.importer;
 
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlType;
+
 import org.citydb.config.project.common.AffineTransformation;
 import org.citydb.config.project.common.Path;
 import org.citydb.config.project.common.XSLTransformation;
-
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlType;
 
 @XmlRootElement(name = "import")
 @XmlType(name = "ImportType", propOrder = {
@@ -44,7 +44,7 @@ import javax.xml.bind.annotation.XmlType;
         "appearances",
         "affineTransformation",
         "indexes",
-        "useValidation",
+        "xmlValidation",
         "xslTransformation",
         "importLog",
         "resources"
@@ -58,7 +58,7 @@ public class ImportConfig {
     private ImportAppearance appearances;
     private AffineTransformation affineTransformation;
     private Index indexes;
-    private Boolean useValidation;
+    private XMLValidation xmlValidation;
     private XSLTransformation xslTransformation;
     private ImportLog importLog;
     private ImportResources resources;
@@ -72,6 +72,7 @@ public class ImportConfig {
         filter = new ImportFilter();
         affineTransformation = new AffineTransformation();
         indexes = new Index();
+        xmlValidation = new XMLValidation();
         xslTransformation = new XSLTransformation();
         importLog = new ImportLog();
         resources = new ImportResources();
@@ -140,16 +141,13 @@ public class ImportConfig {
             this.indexes = indexes;
     }
 
-    public boolean isSetUseValidation() {
-        return useValidation != null ? useValidation : false;
+    public XMLValidation getXMLValidation() {
+        return xmlValidation;
     }
 
-    public Boolean getUseValidation() {
-        return useValidation;
-    }
-
-    public void setUseValidation(Boolean useValidation) {
-        this.useValidation = useValidation;
+    public void setXMLValidation(XMLValidation xmlValidation) {
+        if (xmlValidation != null)
+            this.xmlValidation = xmlValidation;
     }
 
     public XSLTransformation getXSLTransformation() {

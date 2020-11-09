@@ -52,14 +52,14 @@ public class CityGMLReaderFactory implements FeatureReaderFactory {
         }
 
         // prepare XML validation
-        if (config.getImportConfig().isSetUseValidation()) {
+        if (config.getImportConfig().getXMLValidation().isSetUseXMLValidation()) {
             log.info("Applying XML validation to CityGML input features.");
 
             factory.setProperty(CityGMLInputFactory.USE_VALIDATION, true);
             factory.setProperty(CityGMLInputFactory.PARSE_SCHEMA, true);
 
             validationHandler = new ValidationErrorHandler();
-            validationHandler.setReportAllErrors(!config.getValidationConfig().isSetReportOneErrorPerFeature());
+            validationHandler.setReportAllErrors(!config.getImportConfig().getXMLValidation().isSetReportOneErrorPerFeature());
             factory.setValidationEventHandler(validationHandler);
         }
 

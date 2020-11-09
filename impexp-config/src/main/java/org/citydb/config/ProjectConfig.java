@@ -35,7 +35,6 @@ import org.citydb.config.project.importer.ImportConfig;
 import org.citydb.config.project.kmlExporter.KmlExportConfig;
 import org.citydb.config.project.plugin.PluginConfig;
 import org.citydb.config.project.plugin.PluginConfigListAdapter;
-import org.citydb.config.project.validation.ValidationConfig;
 import org.citydb.config.util.ConfigNamespaceFilter;
 
 import javax.xml.bind.annotation.XmlElement;
@@ -53,7 +52,6 @@ import java.util.Map;
         "exportConfig",
         "deleteConfig",
         "kmlExportConfig",
-        "validationConfig",
         "globalConfig",
         "extensions"
 })
@@ -68,8 +66,6 @@ public class ProjectConfig {
     private DeleteConfig deleteConfig;
     @XmlElement(name = "kmlExport")
     private KmlExportConfig kmlExportConfig;
-    @XmlElement(name = "validation")
-    private ValidationConfig validationConfig;
     @XmlElement(name = "global")
     private GlobalConfig globalConfig;
     @XmlJavaTypeAdapter(PluginConfigListAdapter.class)
@@ -83,14 +79,12 @@ public class ProjectConfig {
                          ExportConfig exportConfig,
                          DeleteConfig deleteConfig,
                          KmlExportConfig kmlExportConfig,
-                         ValidationConfig validationConfig,
                          GlobalConfig globalConfig) {
         this.databaseConfig = databaseConfig;
         this.importConfig = importConfig;
         this.exportConfig = exportConfig;
         this.deleteConfig = deleteConfig;
         this.kmlExportConfig = kmlExportConfig;
-        this.validationConfig = validationConfig;
         this.globalConfig = globalConfig;
 
         namespaceFilter = new ConfigNamespaceFilter();
@@ -103,7 +97,6 @@ public class ProjectConfig {
                 new ExportConfig(),
                 new DeleteConfig(),
                 new KmlExportConfig(),
-                new ValidationConfig(),
                 new GlobalConfig());
     }
 
@@ -154,16 +147,6 @@ public class ProjectConfig {
     void setKmlExportConfig(KmlExportConfig kmlExportConfig) {
         if (kmlExportConfig != null) {
             this.kmlExportConfig = kmlExportConfig;
-        }
-    }
-
-    ValidationConfig getValidationConfig() {
-        return validationConfig;
-    }
-
-    void setValidationConfig(ValidationConfig validationConfig) {
-        if (validationConfig != null) {
-            this.validationConfig = validationConfig;
         }
     }
 

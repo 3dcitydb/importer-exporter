@@ -25,17 +25,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.citydb.config.project.validation;
+package org.citydb.config.project.importer;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name = "ValidationType", propOrder = {
+@XmlType(name = "XMLValidationType", propOrder = {
+        "useXMLValidation",
         "reportOneErrorPerFeature"
 })
-public class ValidationConfig {
+public class XMLValidation {
+    @XmlElement(required = true, defaultValue = "false")
+    private Boolean useXMLValidation = false;
     @XmlElement(defaultValue = "false")
     private Boolean reportOneErrorPerFeature = false;
+
+    public XMLValidation() {
+    }
+
+    public boolean isSetUseXMLValidation() {
+        return useXMLValidation != null ? useXMLValidation : false;
+    }
+
+    public Boolean getUseXMLValidation() {
+        return useXMLValidation;
+    }
+
+    public void setUseXMLValidation(Boolean useXMLValidation) {
+        this.useXMLValidation = useXMLValidation;
+    }
 
     public boolean isSetReportOneErrorPerFeature() {
         return reportOneErrorPerFeature != null ? reportOneErrorPerFeature : false;
@@ -48,4 +66,5 @@ public class ValidationConfig {
     public void setReportOneErrorPerFeature(Boolean reportOneErrorPerFeature) {
         this.reportOneErrorPerFeature = reportOneErrorPerFeature;
     }
+
 }
