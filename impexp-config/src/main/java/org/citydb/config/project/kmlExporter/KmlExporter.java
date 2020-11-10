@@ -197,6 +197,7 @@ public class KmlExporter {
 	private Resources resources;
 
 	public static final String THEME_NONE = "none";
+	public static final String THEME_NULL = "<unknown>";
 
 	public KmlExporter() {
 		query = new SimpleKmlQuery();
