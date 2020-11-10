@@ -27,8 +27,12 @@
  */
 package org.citydb.gui.modules.kml.database;
 
-import org.citydb.ade.kmlExporter.*;
+import org.citydb.ade.kmlExporter.ADEKmlExportException;
+import org.citydb.ade.kmlExporter.ADEKmlExportManager;
+import org.citydb.ade.kmlExporter.ADEKmlExportQueryHelper;
+import org.citydb.ade.kmlExporter.ADEKmlExporter;
 import org.citydb.config.project.kmlExporter.DisplayForm;
+import org.citydb.config.project.kmlExporter.KmlExportConfig;
 import org.citydb.config.project.kmlExporter.Lod0FootprintMode;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.schema.SequenceEnum;
@@ -83,7 +87,7 @@ public class Queries implements ADEKmlExportQueryHelper {
 		if (exportAppearance) {
 			query.append(", sd.x3d_shininess, sd.x3d_transparency, sd.x3d_ambient_intensity, ")
 			.append("sd.x3d_specular_color, sd.x3d_diffuse_color, sd.x3d_emissive_color, sd.x3d_is_smooth, ")
-			.append("sd.tex_image_id, ti.tex_image_uri, tp.texture_coordinates, coalesce(a.theme, '<unknown>') theme ");
+			.append("sd.tex_image_id, ti.tex_image_uri, tp.texture_coordinates, coalesce(a.theme, '" + KmlExportConfig.THEME_NULL + "') theme ");
 		}
 
 		query.append("FROM ").append(schema).append(".surface_geometry sg ");

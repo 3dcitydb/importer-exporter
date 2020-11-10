@@ -31,6 +31,7 @@ import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.config.project.database.DatabaseSrs;
 import org.citydb.config.project.database.Workspace;
+import org.citydb.config.project.kmlExporter.KmlExportConfig;
 import org.citydb.database.adapter.IndexStatusInfo.IndexType;
 import org.citydb.database.connection.ADEMetadata;
 import org.citydb.database.connection.DatabaseMetaData;
@@ -320,7 +321,6 @@ public abstract class AbstractUtilAdapter {
     }
 
     public List<String> getAppearanceThemeList(Workspace workspace) throws SQLException {
-        final String THEME_UNKNOWN = "<unknown>";
         ArrayList<String> appearanceThemes = new ArrayList<>();
 
         try (Connection conn = databaseAdapter.connectionPool.getConnection()) {
@@ -336,7 +336,7 @@ public abstract class AbstractUtilAdapter {
                     if (thema != null)
                         appearanceThemes.add(rs.getString(1));
                     else
-                        appearanceThemes.add(THEME_UNKNOWN);
+                        appearanceThemes.add(KmlExportConfig.THEME_NULL);
                 }
             }
 
