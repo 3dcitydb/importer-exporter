@@ -41,27 +41,27 @@ import java.sql.SQLException;
 
 public class Tile {
 	private final BoundingBox extent;
-	private final int x;
-	private final int y;
+	private final int row;
+	private final int column;
 
 	private GeometryObject filterGeometry;
 	
-	public Tile(BoundingBox extent, int x, int y) {
+	public Tile(BoundingBox extent, int row, int column) {
 		this.extent = extent;
-		this.x = x;
-		this.y = y;
+		this.row = row;
+		this.column = column;
 	}
 
 	public BoundingBox getExtent() {
 		return extent;
 	}
 
-	public int getX() {
-		return x;
+	public int getRow() {
+		return row;
 	}
 
-	public int getY() {
-		return y;
+	public int getColumn() {
+		return column;
 	}
 	
 	public GeometryObject getFilterGeometry(AbstractDatabaseAdapter databaseAdapter) throws FilterException {

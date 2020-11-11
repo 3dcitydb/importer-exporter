@@ -372,8 +372,8 @@ public class KmlExporter implements EventHandler {
 		long start = System.currentTimeMillis();
 
 		// iterate over tiles
-		for (int i = 0; shouldRun && i < rows; i++) {
-			for (int j = 0; shouldRun && j < columns; j++) {
+		for (int row = 0; shouldRun && row < rows; row++) {
+			for (int column = 0; shouldRun && column < columns; column++) {
 
 				// track exported objects
 				ExportTracker tracker = new ExportTracker();
@@ -382,7 +382,7 @@ public class KmlExporter implements EventHandler {
 				Tile tile = null;
 				if (useTiling) {
 					try {
-						tile = tiling.getTileAt(i, j);
+						tile = tiling.getTileAt(row, column);
 						tiling.setActiveTile(tile);
 
 						Predicate bboxFilter = tile.getFilterPredicate(databaseAdapter);
@@ -392,7 +392,7 @@ public class KmlExporter implements EventHandler {
 							query.setSelection(new SelectionFilter(bboxFilter));
 					} catch (FilterException e) {
 						if (jsonFileWriter != null) try { jsonFileWriter.close(); } catch (IOException ioe) { }
-						throw new KmlExportException("Failed to get tile at [" + i + "," + j + "].", e);
+						throw new KmlExportException("Failed to get tile at [" + row + "," + column + "].", e);
 					}
 				}
 
@@ -411,11 +411,11 @@ public class KmlExporter implements EventHandler {
 						if (useTiling) {
 							File tilesRootDirectory = new File(path, "Tiles");
 							tilesRootDirectory.mkdir();
-							File rowTilesDirectory = new File(tilesRootDirectory.getPath(),  String.valueOf(i));
+							File rowTilesDirectory = new File(tilesRootDirectory.getPath(),  String.valueOf(row));
 							rowTilesDirectory.mkdir();
-							File columnTilesDirectory = new File(rowTilesDirectory.getPath(),  String.valueOf(j));
+							File columnTilesDirectory = new File(rowTilesDirectory.getPath(),  String.valueOf(column));
 							columnTilesDirectory.mkdir();
-							file = new File(columnTilesDirectory.getPath() + File.separator + fileName + "_Tile_" + i + "_" + j + "_" + displayForm.getName() + fileExtension);
+							file = new File(columnTilesDirectory.getPath() + File.separator + fileName + "_Tile_" + row + "_" + column + "_" + displayForm.getName() + fileExtension);
 							currentWorkingDirectoryPath = columnTilesDirectory.getPath();
 						} else {
 							file = new File(path + File.separator + fileName + "_" + displayForm.getName() + fileExtension);
@@ -489,7 +489,7 @@ public class KmlExporter implements EventHandler {
 
 						DocumentType document = kmlFactory.createDocumentType();
 						if (useTiling)
-							document.setName(fileName + "_Tile_" + i + "_" + j + "_" + displayForm.getName());
+							document.setName(fileName + "_Tile_" + row + "_" + column + "_" + displayForm.getName());
 						else 
 							document.setName(fileName + "_" + displayForm.getName());
 
@@ -606,7 +606,7 @@ public class KmlExporter implements EventHandler {
 
 						// delete empty tile file if requested
 						if (useTiling && objectCounter.isEmpty() && !config.getKmlExportConfig().isExportEmptyTiles()) {
-							log.debug("Tile_" + i + "_" + j + " is empty. Deleting file " + file.getName() + ".");
+							log.debug("Tile_" + row + "_" + column + " is empty. Deleting file " + file.getName() + ".");
 							file.delete();
 						}
 
@@ -840,7 +840,7 @@ public class KmlExporter implements EventHandler {
 
 		// tileName should not contain special characters,
 		// since it will be used as filename for all displayForm files
-		tileName = tileName + "_Tile_" + tile.getX() + "_" + tile.getY();
+		tileName = tileName + "_Tile_" + tile.getRow() + "_" + tile.getColumn();
 
 		FolderType folderType = kmlFactory.createFolderType();
 		folderType.setName(tileName);
@@ -872,7 +872,7 @@ public class KmlExporter implements EventHandler {
 			regionType.setLod(lodType);
 
 			LinkType linkType = kmlFactory.createLinkType();
-			linkType.setHref("Tiles/" + tile.getX() + "/" + tile.getY() + "/" + tilenameForDisplayForm);
+			linkType.setHref("Tiles/" + tile.getRow() + "/" + tile.getColumn() + "/" + tilenameForDisplayForm);
 			linkType.setViewRefreshMode(ViewRefreshModeEnumType.fromValue(config.getKmlExportConfig().getViewRefreshMode()));
 			linkType.setViewFormat("");
 			if (linkType.getViewRefreshMode() == ViewRefreshModeEnumType.ON_STOP)

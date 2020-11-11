@@ -142,7 +142,7 @@ public class KmlSplitter {
 			}
 
 			if (query.isSetTiling())
-				Logger.getInstance().debug(objectCount + " candidate objects found for Tile_" + activeTile.getX() + "_" + activeTile.getY() + ".");
+				Logger.getInstance().debug(objectCount + " candidate objects found for Tile_" + activeTile.getRow() + "_" + activeTile.getColumn() + ".");
 		}
 	}
 
@@ -193,8 +193,8 @@ public class KmlSplitter {
 
 			// create json
 			CityObject4JSON cityObject4Json = new CityObject4JSON(gmlId);
-			cityObject4Json.setTileRow(activeTile != null ? activeTile.getX() : 0);
-			cityObject4Json.setTileColumn(activeTile != null ? activeTile.getY() : 0);
+			cityObject4Json.setTileRow(activeTile != null ? activeTile.getRow() : 0);
+			cityObject4Json.setTileColumn(activeTile != null ? activeTile.getColumn() : 0);
 			cityObject4Json.setEnvelope(getEnvelopeInWGS84(envelope));
 
 			// put on work queue
