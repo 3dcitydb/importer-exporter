@@ -32,6 +32,7 @@ import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.project.query.filter.selection.spatial.AbstractSpatialOperator;
 import org.citydb.config.project.query.filter.selection.spatial.BBOXOperator;
 import org.citydb.config.project.query.filter.selection.spatial.WithinOperator;
+import org.citydb.config.project.query.filter.tiling.Tiling;
 import org.citydb.plugin.cli.CliOption;
 import org.citydb.plugin.cli.CliOptionBuilder;
 import picocli.CommandLine;
@@ -47,17 +48,47 @@ public class BoundingBoxOption implements CliOption {
             description = "Bounding box filter mode: ${COMPLETION-CANDIDATES} (default: ${DEFAULT-VALUE}).")
     private Mode mode;
 
+    @CommandLine.Option(names = "--bbox-tiling", paramLabel = "<rows,columns>",
+            description = "Tile the bounding box into a rows x columns grid.")
+    private String tiling;
+
     private AbstractSpatialOperator spatialOperator;
+    private Tiling tilingOperator;
+
+    public boolean isSetTiling() {
+        return tilingOperator != null;
+    }
 
     public AbstractSpatialOperator toSpatialOperator() {
         return spatialOperator;
+    }
+
+    public Tiling toTiling() {
+        return tilingOperator;
     }
 
     @Override
     public void preprocess(CommandLine commandLine) throws Exception {
         BoundingBox envelope = CliOptionBuilder.boundingBox(bbox, commandLine);
         if (envelope != null) {
-            if (mode == Mode.within) {
+            if (tiling != null) {
+                String[] numbers = tiling.split(",");
+                if (numbers.length != 2) {
+                    throw new CommandLine.ParameterException(commandLine,
+                            "Error: The value for '--bbox-tiling' is expected to be 'rows,columns' but was " + tiling);
+                }
+
+                try {
+                    tilingOperator = new Tiling();
+                    tilingOperator.setExtent(envelope);
+                    tilingOperator.setRows(Integer.parseInt(numbers[0]));
+                    tilingOperator.setColumns(Integer.parseInt(numbers[1]));
+                } catch (NumberFormatException e) {
+                    throw new CommandLine.ParameterException(commandLine,
+                            "Error: The number of rows and columns for tiling must be integers but were " +
+                                    String.join(",", numbers));
+                }
+            } else if (mode == Mode.within) {
                 WithinOperator within = new WithinOperator();
                 within.setSpatialOperand(envelope);
                 spatialOperator = within;

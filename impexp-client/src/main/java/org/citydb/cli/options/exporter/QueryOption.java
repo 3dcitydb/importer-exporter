@@ -96,9 +96,13 @@ public class QueryOption implements CliOption {
             }
 
             if (boundingBoxOption != null) {
-                AbstractSpatialOperator spatialOperator = boundingBoxOption.toSpatialOperator();
-                if (spatialOperator != null) {
-                    predicates.add(spatialOperator);
+                if (boundingBoxOption.isSetTiling()) {
+                    queryConfig.setTiling(boundingBoxOption.toTiling());
+                } else {
+                    AbstractSpatialOperator spatialOperator = boundingBoxOption.toSpatialOperator();
+                    if (spatialOperator != null) {
+                        predicates.add(spatialOperator);
+                    }
                 }
             }
 
