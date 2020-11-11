@@ -116,10 +116,10 @@ public class Exporter implements EventHandler {
     private final EventDispatcher eventDispatcher;
     private final AtomicBoolean isInterrupted = new AtomicBoolean(false);
 
-    private final HashMap<Integer, Long> objectCounter;
-    private final EnumMap<GMLClass, Long> geometryCounter;
-    private final HashMap<Integer, Long> totalObjectCounter;
-    private final EnumMap<GMLClass, Long> totalGeometryCounter;
+    private final Map<Integer, Long> objectCounter;
+    private final Map<GMLClass, Long> geometryCounter;
+    private final Map<Integer, Long> totalObjectCounter;
+    private final Map<GMLClass, Long> totalGeometryCounter;
 
     private DBSplitter dbSplitter;
     private WorkerPool<DBSplittingResult> dbWorkerPool;
@@ -315,8 +315,8 @@ public class Exporter implements EventHandler {
         int remainingTiles = rows * columns;
         long start = System.currentTimeMillis();
 
-        for (int i = 0; shouldRun && i < rows; i++) {
-            for (int j = 0; shouldRun && j < columns; j++) {
+        for (int row = 0; shouldRun && row < rows; row++) {
+            for (int column = 0; shouldRun && column < columns; column++) {
                 String fileName = outputFile.getFileName().toString();
                 Path folder = outputFile.getParent();
                 if (folder == null)
@@ -325,7 +325,7 @@ public class Exporter implements EventHandler {
                 if (useTiling) {
                     Tile tile;
                     try {
-                        tile = tiling.getTileAt(i, j);
+                        tile = tiling.getTileAt(row, column);
                         tiling.setActiveTile(tile);
 
                         Predicate bboxFilter = tile.getFilterPredicate(databaseAdapter);
@@ -333,7 +333,7 @@ public class Exporter implements EventHandler {
 								new SelectionFilter(LogicalOperationFactory.AND(predicate, bboxFilter)) :
 								new SelectionFilter(bboxFilter));
                     } catch (FilterException e) {
-                        throw new CityGMLExportException("Failed to get tile at [" + i + "," + j + "].", e);
+                        throw new CityGMLExportException("Failed to get tile at [" + row + "," + column + "].", e);
                     }
 
                     // create suffix for folderName and fileName
@@ -361,7 +361,7 @@ public class Exporter implements EventHandler {
                             suffix = String.valueOf(minX) + '_' + minY + '_' + maxX + '_' + maxY;
                             break;
                         default:
-                            suffix = String.valueOf(i) + '_' + j;
+                            suffix = String.valueOf(row) + '_' + column;
                     }
 
                     folder = folder.resolve(tilingOptions.getTilePath() + '_' + suffix);
