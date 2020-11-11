@@ -28,7 +28,6 @@
 
 package org.citydb.cli.options.exporter;
 
-import org.citydb.cli.options.common.BoundingBoxOption;
 import org.citydb.config.project.exporter.ExportAppearance;
 import org.citydb.config.project.query.QueryConfig;
 import org.citydb.config.project.query.filter.selection.AbstractPredicate;

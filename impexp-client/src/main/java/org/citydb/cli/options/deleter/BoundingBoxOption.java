@@ -26,7 +26,7 @@
  * limitations under the License.
  */
 
-package org.citydb.cli.options.common;
+package org.citydb.cli.options.deleter;
 
 import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.project.query.filter.selection.spatial.AbstractSpatialOperator;
