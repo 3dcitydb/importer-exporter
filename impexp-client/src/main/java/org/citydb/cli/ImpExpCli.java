@@ -93,6 +93,7 @@ import java.util.stream.Stream;
                 CommandLine.HelpCommand.class,
                 ImportCommand.class,
                 ExportCommand.class,
+                ExportVisCommand.class,
                 DeleteCommand.class,
                 ValidateCommand.class,
                 GuiCommand.class
@@ -449,7 +450,7 @@ public class ImpExpCli extends CliCommand implements CommandLine.IVersionProvide
         // set console log level
         if (!useDefaultLogLevel) {
             logging.getConsole().setLogLevel(logLevel);
-        } else if (!useDefaultConfiguration) {
+        } else {
             log.setConsoleLogLevel(logging.getConsole().getLogLevel());
         }
 
