@@ -130,8 +130,14 @@ public class Tiling {
 		calculateTilingScheme();
 	}
 
+	/**
+	 * @param x column index
+	 * @param y row index
+	 * @return a Tile at the target position
+	 * @throws FilterException
+	 */
 	public Tile getTileAt(int x, int y) throws FilterException {
-		if (x < 0 || y < 0 || x >= getRows() || y >= getColumns()) {
+		if (x < 0 || y < 0 || x >= getColumns() || y >= getRows()) {
 			throw new FilterException("Tile coordinates are out of bounds.");
 		}
 

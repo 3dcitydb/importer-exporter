@@ -371,7 +371,7 @@ public class KmlExporter implements EventHandler {
 				Tile tile = null;
 				if (useTiling) {
 					try {
-						tile = tiling.getTileAt(i, j);
+						tile = tiling.getTileAt(j, i);
 						tiling.setActiveTile(tile);
 
 						Predicate bboxFilter = tile.getFilterPredicate(databaseAdapter);

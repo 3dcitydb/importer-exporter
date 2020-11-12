@@ -315,7 +315,7 @@ public class Exporter implements EventHandler {
 				if (useTiling) {
 					Tile tile;
 					try {
-						tile = tiling.getTileAt(i, j);
+						tile = tiling.getTileAt(j, i);
 						tiling.setActiveTile(tile);
 
 						Predicate bboxFilter = tile.getFilterPredicate(databaseAdapter);
