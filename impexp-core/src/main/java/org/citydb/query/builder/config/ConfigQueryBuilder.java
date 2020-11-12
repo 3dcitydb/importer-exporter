@@ -301,37 +301,26 @@ public class ConfigQueryBuilder {
 		ValueReferenceBuilder valueReferenceBuilder = new ValueReferenceBuilder(query, schemaMapping, namespaceContext);
 		PredicateBuilder predicateBuilder = new PredicateBuilder(valueReferenceBuilder, databaseAdapter);
 
-		// simple filter settings
-		if (queryConfig.getMode() == SimpleKmlQueryMode.SINGLE) {
-			// set feature type filter
+		// feature type filter
+		if (queryConfig.isSetFeatureTypeFilter()) {
+			if (queryConfig.getFeatureTypeFilter().isEmpty())
+				throw new QueryBuildException("The feature type filter must not be empty.");
+
+			FeatureTypeFilterBuilder featureTypeFilterBuilder = new FeatureTypeFilterBuilder(query, schemaMapping);
+			query.setFeatureTypeFilter(featureTypeFilterBuilder.buildFeatureTypeFilter(queryConfig.getFeatureTypeFilter(), CityGMLVersion.v2_0_0));
+		} else {
 			try {
 				query.setFeatureTypeFilter(new FeatureTypeFilter(schemaMapping.getFeatureType("_CityObject", CoreModule.v2_0_0.getNamespaceURI())));
 			} catch (FilterException e) {
 				throw new QueryBuildException("Failed to build the export filter.", e);
 			}
+		}
 
+		if (queryConfig.getMode() == SimpleKmlQueryMode.SINGLE) {
 			// gml:id filter
 			if (queryConfig.isSetGmlIdFilter() && queryConfig.getGmlIdFilter().isSetResourceIds())
 				query.setSelection(new SelectionFilter(predicateBuilder.buildPredicate(queryConfig.getGmlIdFilter())));
-		}
-
-		// complex filter settings
-		else {
-			// feature type filter
-			if (queryConfig.isSetFeatureTypeFilter()) {
-				if (queryConfig.getFeatureTypeFilter().isEmpty())
-					throw new QueryBuildException("The feature type filter must not be empty.");
-				
-				FeatureTypeFilterBuilder featureTypeFilterBuilder = new FeatureTypeFilterBuilder(query, schemaMapping);
-				query.setFeatureTypeFilter(featureTypeFilterBuilder.buildFeatureTypeFilter(queryConfig.getFeatureTypeFilter(), CityGMLVersion.v2_0_0));
-			} else {
-				try {
-					query.setFeatureTypeFilter(new FeatureTypeFilter(schemaMapping.getFeatureType("_CityObject", CoreModule.v2_0_0.getNamespaceURI())));
-				} catch (FilterException e) {
-					throw new QueryBuildException("Failed to build the export filter.", e);
-				}
-			}
-
+		} else {
 			// bbox filter
 			if (queryConfig.isSetBboxFilter()) {
 				KmlTiling bboxFilter = queryConfig.getBboxFilter();

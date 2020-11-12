@@ -81,9 +81,11 @@ public class DeleteCommand extends CliCommand {
         }
 
         // set delete mode
-        config.getDeleteConfig().setMode(mode == Mode.terminate ?
-                DeleteMode.TERMINATE :
-                DeleteMode.DELETE);
+        if (mode != null) {
+            config.getDeleteConfig().setMode(mode == Mode.terminate ?
+                    DeleteMode.TERMINATE :
+                    DeleteMode.DELETE);
+        }
 
         try {
             Deleter deleter = new Deleter();

@@ -58,10 +58,10 @@ import org.citydb.gui.components.common.DatePicker;
 import org.citydb.gui.components.dialog.ExportStatusDialog;
 import org.citydb.gui.components.feature.FeatureTypeTree;
 import org.citydb.gui.factory.PopupMenuDecorator;
-import org.citydb.gui.util.GuiUtil;
-import org.citydb.log.Logger;
 import org.citydb.gui.modules.kml.controller.KmlExportException;
 import org.citydb.gui.modules.kml.controller.KmlExporter;
+import org.citydb.gui.util.GuiUtil;
+import org.citydb.log.Logger;
 import org.citydb.plugin.extension.view.ViewController;
 import org.citydb.plugin.extension.view.components.BoundingBoxPanel;
 import org.citydb.registry.ObjectRegistry;
@@ -896,9 +896,6 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		gmlIdText.setEnabled(singleBuildingRadioButton.isSelected());
 
 		bboxComponent.setEnabled(boundingBoxRadioButton.isSelected());
-
-		typeTree.setPathsEnabled(boundingBoxRadioButton.isSelected());
-		typeTree.repaint();
 
 		tilingLabel.setEnabled(boundingBoxRadioButton.isSelected());
 		noTilingRadioButton.setEnabled(boundingBoxRadioButton.isSelected());

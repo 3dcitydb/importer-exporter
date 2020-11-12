@@ -57,18 +57,18 @@ public class ExportVisCommand extends CliCommand {
             description = "Name of the master KML output file.")
     private Path file;
 
-    @CommandLine.Option(names = {"-z", "--export-as-kmz"},
-            description = "Export KML/COLLADA as zipped KMZ file(s).")
+    @CommandLine.Option(names = {"-z", "--kmz"},
+            description = "Compress KML/COLLADA output and save as KMZ.")
     private boolean exportAsKmz;
 
     @CommandLine.Option(names = {"-j", "--json-metadata"},
             description = "Write JSON metadata file.")
     private boolean json;
 
-    @CommandLine.ArgGroup(exclusive = false, multiplicity = "1", heading = "Display options:%n")
+    @CommandLine.ArgGroup(exclusive = false, heading = "Display options:%n")
     private DisplayOption displayOption;
 
-    @CommandLine.ArgGroup(exclusive = false, multiplicity = "1", heading = "Query and filter options:%n")
+    @CommandLine.ArgGroup(exclusive = false, heading = "Query and filter options:%n")
     private QueryOption queryOption;
 
     @CommandLine.ArgGroup(exclusive = false, heading = "glTF export options:%n")
@@ -95,17 +95,24 @@ public class ExportVisCommand extends CliCommand {
             return 1;
         }
 
+        // set general export options
+        setExportSettings(kmlExportConfig);
+
         // set display options
         setDisplayOptions(kmlExportConfig);
 
         // set user-defined query options
-        kmlExportConfig.setQuery(queryOption.toSimpleKmlQuery());
+        if (queryOption != null) {
+            kmlExportConfig.setQuery(queryOption.toSimpleKmlQuery());
+        }
 
         // set glTF options
         setGltfOptions(kmlExportConfig);
 
-        kmlExportConfig.setExportAsKmz(exportAsKmz);
-        kmlExportConfig.setWriteJSONFile(json);
+        if (kmlExportConfig.isCreateGltfModel() && kmlExportConfig.isExportAsKmz()) {
+            log.warn("glTF export cannot be used with KMZ compression. Deactivating KMZ.");
+            kmlExportConfig.setExportAsKmz(false);
+        }
 
         try {
             new KmlExporter().doExport(file);
@@ -121,25 +128,37 @@ public class ExportVisCommand extends CliCommand {
         return 0;
     }
 
+    private void setExportSettings(KmlExportConfig kmlExportConfig) {
+        if (exportAsKmz) {
+            kmlExportConfig.setExportAsKmz(exportAsKmz);
+        }
+
+        if (json) {
+            kmlExportConfig.setWriteJSONFile(json);
+        }
+    }
+
     private void setDisplayOptions(KmlExportConfig kmlExportConfig) {
-        kmlExportConfig.setLodToExportFrom(displayOption.getLod());
-        kmlExportConfig.setAppearanceTheme(displayOption.getAppearanceTheme());
+        if (displayOption != null) {
+            kmlExportConfig.setLodToExportFrom(displayOption.getLod());
+            kmlExportConfig.setAppearanceTheme(displayOption.getAppearanceTheme());
 
-        displayOption.toDisplayForms(kmlExportConfig.getBuildingDisplayForms());
-        displayOption.toDisplayForms(kmlExportConfig.getWaterBodyDisplayForms());
-        displayOption.toDisplayForms(kmlExportConfig.getLandUseDisplayForms());
-        displayOption.toDisplayForms(kmlExportConfig.getVegetationDisplayForms());
-        displayOption.toDisplayForms(kmlExportConfig.getTransportationDisplayForms());
-        displayOption.toDisplayForms(kmlExportConfig.getReliefDisplayForms());
-        displayOption.toDisplayForms(kmlExportConfig.getCityFurnitureDisplayForms());
-        displayOption.toDisplayForms(kmlExportConfig.getGenericCityObjectDisplayForms());
-        displayOption.toDisplayForms(kmlExportConfig.getCityObjectGroupDisplayForms());
-        displayOption.toDisplayForms(kmlExportConfig.getBridgeDisplayForms());
-        displayOption.toDisplayForms(kmlExportConfig.getTunnelDisplayForms());
+            displayOption.toDisplayForms(kmlExportConfig.getBuildingDisplayForms());
+            displayOption.toDisplayForms(kmlExportConfig.getWaterBodyDisplayForms());
+            displayOption.toDisplayForms(kmlExportConfig.getLandUseDisplayForms());
+            displayOption.toDisplayForms(kmlExportConfig.getVegetationDisplayForms());
+            displayOption.toDisplayForms(kmlExportConfig.getTransportationDisplayForms());
+            displayOption.toDisplayForms(kmlExportConfig.getReliefDisplayForms());
+            displayOption.toDisplayForms(kmlExportConfig.getCityFurnitureDisplayForms());
+            displayOption.toDisplayForms(kmlExportConfig.getGenericCityObjectDisplayForms());
+            displayOption.toDisplayForms(kmlExportConfig.getCityObjectGroupDisplayForms());
+            displayOption.toDisplayForms(kmlExportConfig.getBridgeDisplayForms());
+            displayOption.toDisplayForms(kmlExportConfig.getTunnelDisplayForms());
 
-        for (ADEPreferences preferences : kmlExportConfig.getADEPreferences().values()) {
-            for (ADEPreference preference : preferences.getPreferences().values()) {
-                displayOption.toDisplayForms(preference.getDisplayForms());
+            for (ADEPreferences preferences : kmlExportConfig.getADEPreferences().values()) {
+                for (ADEPreference preference : preferences.getPreferences().values()) {
+                    displayOption.toDisplayForms(preference.getDisplayForms());
+                }
             }
         }
     }
@@ -161,16 +180,9 @@ public class ExportVisCommand extends CliCommand {
 
     @Override
     public void preprocess(CommandLine commandLine) throws Exception {
-        if (gltfOption != null) {
-            if (exportAsKmz) {
-                throw new CommandLine.ParameterException(commandLine,
-                        "Error: --export-as-kmz and --gltf are mutually exclusive (specify only one)");
-            }
-
-            if (!displayOption.getModes().contains(DisplayOption.Mode.collada)) {
-                throw new CommandLine.ParameterException(commandLine,
-                        "Error: --gltf requires to use --display-mode with the value '" + DisplayOption.Mode.collada + "'");
-            }
+        if (gltfOption != null && exportAsKmz) {
+            throw new CommandLine.ParameterException(commandLine,
+                    "Error: --gltf and --kmz are mutually exclusive (specify only one)");
         }
     }
 }

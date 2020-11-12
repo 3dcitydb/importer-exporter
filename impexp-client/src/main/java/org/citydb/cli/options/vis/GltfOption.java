@@ -39,7 +39,7 @@ import java.util.regex.Pattern;
 
 public class GltfOption implements CliOption {
     @CommandLine.Option(names = {"-G", "--gltf"}, required = true,
-            description = "Export in glTF by converting the COLLADA output.")
+            description = "Convert COLLADA output to glTF.")
     private boolean exportGltf;
 
     @CommandLine.Option(names = "--gltf-converter", paramLabel = "<file>",
