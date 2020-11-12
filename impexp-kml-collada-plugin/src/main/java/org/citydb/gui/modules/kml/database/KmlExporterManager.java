@@ -728,13 +728,11 @@ public class KmlExporterManager implements ADEKmlExportHelper {
 
 		ADEKmlExportExtension adeKmlExportExtension = ADEKmlExportExtensionManager.getInstance().getADEKmlExportExtension(adeExtension);
 		if (adeKmlExportExtension != null) {
-			adeKmlExportManager = adeKmlExportManagers.get(adeExtension);
+			adeKmlExportManager = adeKmlExportManagers.get(adeKmlExportExtension);
 			if (adeKmlExportManager == null) {
 				adeKmlExportManager = adeKmlExportExtension.createADEKmlExportManager();
 				adeKmlExportManager.init(this);
-				if (adeKmlExportManager != null) {
-					adeKmlExportManagers.put(adeKmlExportExtension, adeKmlExportManager);
-				}
+				adeKmlExportManagers.put(adeKmlExportExtension, adeKmlExportManager);
 			}
 		}
 

@@ -129,7 +129,7 @@ public class XlinkSurfaceGeometry implements DBXlinkResolver {
 				if (geomNode == null)
 					return false;
 
-				long surfaceGeometryId = insert(geomNode, xlink.getId(), xlink.getRootId(), xlink.getCityObjectId());
+				long surfaceGeometryId = insert(geomNode, xlink.getParentId(), xlink.getRootId(), xlink.getCityObjectId());
 
 				// if this is an xlink from a feature table, then we also let
 				// the geometry column of this table point to the geometry object 
