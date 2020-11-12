@@ -31,8 +31,60 @@ package org.citydb.cli.options.vis;
 import org.citydb.plugin.cli.CliOption;
 import picocli.CommandLine;
 
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 public class GltfOption implements CliOption {
-    @CommandLine.Option(names = {"-G", "--gltf"}, defaultValue = "false", required = true,
+    @CommandLine.Option(names = {"-G", "--gltf"}, required = true,
             description = "Export in glTF by converting the COLLADA output.")
     private boolean exportGltf;
+
+    @CommandLine.Option(names = "--gltf-converter", paramLabel = "<file>",
+            description = "Path to the COLLADA2GLTF converter executable.")
+    private Path file;
+
+    @CommandLine.Option(names = {"-O", "--gltf-option"}, split = ",", paramLabel = "'<option>'",
+            description = "CLI option to be passed to the COLLADA2GLTF converter (embrace with single quotes)")
+    private String[] options;
+
+    @CommandLine.Option(names = {"-s", "--suppress-collada"},
+            description = "Only keep glTF and remove the COLLADA output.")
+    private boolean suppressCollada;
+
+    private List<String> parsedOptions;
+
+    public Path getConverterPath() {
+        return file;
+    }
+
+    public List<String> getOptions() {
+        return parsedOptions;
+    }
+
+    public boolean isSuppressCollada() {
+        return suppressCollada;
+    }
+
+    @Override
+    public void preprocess(CommandLine commandLine) throws Exception {
+        if (options != null) {
+            parsedOptions = new ArrayList<>();
+            Pattern pattern = Pattern.compile("\"([^\"]*)\"|(\\S+)");
+            Matcher matcher = pattern.matcher("");
+
+            for (String option : options) {
+                if (option.charAt(0) == '\'' && option.charAt(option.length() - 1) == '\'') {
+                    option = option.substring(1, option.length() - 1);
+                }
+
+                matcher.reset(option);
+                while (matcher.find()) {
+                    parsedOptions.add(matcher.group(1) != null ? matcher.group(1) : matcher.group(2));
+                }
+            }
+        }
+    }
 }

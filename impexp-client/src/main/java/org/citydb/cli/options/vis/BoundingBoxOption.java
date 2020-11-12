@@ -65,7 +65,7 @@ public class BoundingBoxOption implements CliOption {
                     if (numbers.length != 2) {
                         throw new CommandLine.ParameterException(commandLine,
                                 "Error: The value for '--bbox-tiling' is expected to be 'rows,columns' or 'automatic' " +
-                                        "but was " + tiling);
+                                        "but was '" + tiling + "'");
                     }
 
                     try {
@@ -74,8 +74,8 @@ public class BoundingBoxOption implements CliOption {
                         kmlTiling.setColumns(Integer.parseInt(numbers[1]));
                     } catch (NumberFormatException e) {
                         throw new CommandLine.ParameterException(commandLine,
-                                "Error: The number of rows and columns for tiling must be integers but were " +
-                                        String.join(",", numbers));
+                                "Error: The number of rows and columns for tiling must be integers but were '" +
+                                        String.join(",", numbers) + "'");
                     }
                 }
             } else {

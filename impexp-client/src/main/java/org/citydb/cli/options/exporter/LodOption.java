@@ -61,7 +61,7 @@ public class LodOption implements CliOption {
         for (int lod : lods) {
             if (lod < 0 || lod > 4) {
                 throw new CommandLine.ParameterException(commandLine,
-                        "Error: An LoD value must be between 0 and 4 but was " + lod);
+                        "Error: An LoD value must be between 0 and 4 but was '" + lod + "'");
             }
 
             lodFilter.setLod(lod);
@@ -91,14 +91,14 @@ public class LodOption implements CliOption {
                     int level = Integer.parseInt(searchDepth);
                     if (level < 0) {
                         throw new CommandLine.ParameterException(commandLine,
-                                "Error: The LoD search depth must be a non-negative integer but was " + searchDepth);
+                                "Error: The LoD search depth must be a non-negative integer but was '" + searchDepth + "'");
                     }
 
                     lodFilter.setSearchMode(LodSearchMode.DEPTH);
                     lodFilter.setSearchDepth(level);
                 } catch (NumberFormatException e) {
                     throw new CommandLine.ParameterException(commandLine,
-                            "Error: The LoD search depth must be an integer or 'all' but was " + searchDepth);
+                            "Error: The LoD search depth must be an integer or 'all' but was '" + searchDepth + "'");
                 }
             }
         }

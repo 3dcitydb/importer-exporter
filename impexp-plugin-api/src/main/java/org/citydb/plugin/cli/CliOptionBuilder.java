@@ -104,8 +104,8 @@ public class CliOptionBuilder {
                     boundingBox.getUpperCorner().setY(Double.parseDouble(parts[3]));
                 } catch (NumberFormatException e) {
                     throw new CommandLine.ParameterException(commandLine,
-                            "Error: The coordinates of a bounding box must be floating point numbers but were " +
-                                    String.join(",", parts[0], parts[1], parts[2], parts[3]));
+                            "Error: The coordinates of a bounding box must be floating point numbers but were '" +
+                                    String.join(",", parts[0], parts[1], parts[2], parts[3]) + "'");
                 }
 
                 if (parts.length == 5) {
@@ -113,14 +113,14 @@ public class CliOptionBuilder {
                         boundingBox.setSrs(Integer.parseInt(parts[4]));
                     } catch (NumberFormatException e) {
                         throw new CommandLine.ParameterException(commandLine,
-                                "Error: The SRID of a bounding box must be an integer but was " + parts[4]);
+                                "Error: The SRID of a bounding box must be an integer but was '" + parts[4] + "'");
                     }
                 }
 
                 return boundingBox;
             } else {
                 throw new CommandLine.ParameterException(commandLine,
-                        "A bounding box should be in MINX,MINY,MAXX,MAXY[,SRID] format but was " + bbox);
+                        "A bounding box should be in MINX,MINY,MAXX,MAXY[,SRID] format but was '" + bbox + "'");
             }
         }
 
@@ -167,7 +167,7 @@ public class CliOptionBuilder {
                     featureTypeFilter.addTypeName(new QName(module.getNamespaceURI(), parts[0]));
                 } else {
                     throw new CommandLine.ParameterException(commandLine,
-                            "A type name should be in [PREFIX:]NAME format but was " + typeName);
+                            "A type name should be in [PREFIX:]NAME format but was '" + typeName + "'");
                 }
             }
 
@@ -195,7 +195,7 @@ public class CliOptionBuilder {
             for (Long id : ids) {
                 if (id <= 0) {
                     throw new CommandLine.ParameterException(commandLine,
-                            "Error: A database ID must be a positive integer but was " + id);
+                            "Error: A database ID must be a positive integer but was '" + id + "'");
                 }
 
                 idOperator.addDatabaseId(id);
@@ -223,7 +223,7 @@ public class CliOptionBuilder {
             if (count != null) {
                 if (count < 0) {
                     throw new CommandLine.ParameterException(commandLine,
-                            "Error: Count must be a non-negative integer but was " + count);
+                            "Error: Count must be a non-negative integer but was '" + count + "'");
                 }
 
                 counterFilter.setCount(count);
@@ -232,7 +232,7 @@ public class CliOptionBuilder {
             if (startIndex != null) {
                 if (startIndex < 0) {
                     throw new CommandLine.ParameterException(commandLine,
-                            "Error: Start index must be a non-negative integer but was " + startIndex);
+                            "Error: Start index must be a non-negative integer but was '" + startIndex + "'");
                 }
 
                 counterFilter.setStartIndex(startIndex);

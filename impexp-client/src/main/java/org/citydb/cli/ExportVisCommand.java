@@ -57,6 +57,14 @@ public class ExportVisCommand extends CliCommand {
             description = "Name of the master KML output file.")
     private Path file;
 
+    @CommandLine.Option(names = {"-z", "--export-as-kmz"},
+            description = "Export KML/COLLADA as zipped KMZ file(s).")
+    private boolean exportAsKmz;
+
+    @CommandLine.Option(names = {"-j", "--json-metadata"},
+            description = "Write JSON metadata file.")
+    private boolean json;
+
     @CommandLine.ArgGroup(exclusive = false, multiplicity = "1", heading = "Display options:%n")
     private DisplayOption displayOption;
 
@@ -74,6 +82,7 @@ public class ExportVisCommand extends CliCommand {
     @Override
     public Integer call() throws Exception {
         Config config = ObjectRegistry.getInstance().getConfig();
+        KmlExportConfig kmlExportConfig = config.getKmlExportConfig();
 
         // connect to database
         DatabaseController database = ObjectRegistry.getInstance().getDatabaseController();
@@ -86,17 +95,17 @@ public class ExportVisCommand extends CliCommand {
             return 1;
         }
 
-        KmlExportConfig kmlExportConfig = config.getKmlExportConfig();
-
         // set display options
-        setDisplayForms(kmlExportConfig);
-        kmlExportConfig.setLodToExportFrom(displayOption.getLod());
-        kmlExportConfig.setAppearanceTheme(displayOption.getAppearanceTheme());
+        setDisplayOptions(kmlExportConfig);
 
         // set user-defined query options
-        if (queryOption != null) {
-            kmlExportConfig.setQuery(queryOption.toSimpleKmlQuery());
-        }
+        kmlExportConfig.setQuery(queryOption.toSimpleKmlQuery());
+
+        // set glTF options
+        setGltfOptions(kmlExportConfig);
+
+        kmlExportConfig.setExportAsKmz(exportAsKmz);
+        kmlExportConfig.setWriteJSONFile(json);
 
         try {
             new KmlExporter().doExport(file);
@@ -112,7 +121,10 @@ public class ExportVisCommand extends CliCommand {
         return 0;
     }
 
-    private void setDisplayForms(KmlExportConfig kmlExportConfig) {
+    private void setDisplayOptions(KmlExportConfig kmlExportConfig) {
+        kmlExportConfig.setLodToExportFrom(displayOption.getLod());
+        kmlExportConfig.setAppearanceTheme(displayOption.getAppearanceTheme());
+
         displayOption.toDisplayForms(kmlExportConfig.getBuildingDisplayForms());
         displayOption.toDisplayForms(kmlExportConfig.getWaterBodyDisplayForms());
         displayOption.toDisplayForms(kmlExportConfig.getLandUseDisplayForms());
@@ -128,6 +140,36 @@ public class ExportVisCommand extends CliCommand {
         for (ADEPreferences preferences : kmlExportConfig.getADEPreferences().values()) {
             for (ADEPreference preference : preferences.getPreferences().values()) {
                 displayOption.toDisplayForms(preference.getDisplayForms());
+            }
+        }
+    }
+
+    private void setGltfOptions(KmlExportConfig kmlExportConfig) {
+        if (gltfOption != null) {
+            kmlExportConfig.setCreateGltfModel(true);
+            kmlExportConfig.setNotCreateColladaFiles(gltfOption.isSuppressCollada());
+
+            if (gltfOption.getConverterPath() != null) {
+                kmlExportConfig.setPathOfGltfConverter(gltfOption.getConverterPath().toAbsolutePath().toString());
+            }
+
+            if (gltfOption.getOptions() != null) {
+                kmlExportConfig.setGltfConverterOptions(gltfOption.getOptions());
+            }
+        }
+    }
+
+    @Override
+    public void preprocess(CommandLine commandLine) throws Exception {
+        if (gltfOption != null) {
+            if (exportAsKmz) {
+                throw new CommandLine.ParameterException(commandLine,
+                        "Error: --export-as-kmz and --gltf are mutually exclusive (specify only one)");
+            }
+
+            if (!displayOption.getModes().contains(DisplayOption.Mode.collada)) {
+                throw new CommandLine.ParameterException(commandLine,
+                        "Error: --gltf requires to use --display-mode with the value '" + DisplayOption.Mode.collada + "'");
             }
         }
     }

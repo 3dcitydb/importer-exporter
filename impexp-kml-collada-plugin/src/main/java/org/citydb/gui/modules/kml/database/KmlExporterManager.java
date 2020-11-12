@@ -53,10 +53,10 @@ import org.citydb.database.adapter.BlobExportAdapter;
 import org.citydb.event.EventDispatcher;
 import org.citydb.event.global.CounterEvent;
 import org.citydb.event.global.CounterType;
-import org.citydb.log.Logger;
 import org.citydb.gui.modules.kml.util.BalloonTemplateHandler;
 import org.citydb.gui.modules.kml.util.CityObject4JSON;
 import org.citydb.gui.modules.kml.util.ExportTracker;
+import org.citydb.log.Logger;
 import org.citydb.query.Query;
 import org.citydb.registry.ObjectRegistry;
 import org.citydb.util.ClientConstants;
@@ -684,27 +684,39 @@ public class KmlExporterManager implements ADEKmlExportHelper {
 			commands.add(colladaModelFile.getAbsolutePath());
 			commands.add("-o");
 			commands.add(gltfModelFile.getAbsolutePath());
-			commands.add("-v");
-			commands.add(exportGltfV1 ? "1.0" : "2.0");
-			if (!config.getKmlExportConfig().isEmbedTexturesInGltfFiles()) {
-				commands.add("-t");
+
+			if (!config.getKmlExportConfig().isSetGltfConverterOptions()) {
+				commands.add("-v");
+				commands.add(exportGltfV1 ? "1.0" : "2.0");
+				if (!config.getKmlExportConfig().isEmbedTexturesInGltfFiles()) {
+					commands.add("-t");
+				}
+				if (config.getKmlExportConfig().isExportGltfBinary()) {
+					commands.add("-b");
+				}
+				// do not apply Draco to gltF 1.0
+				if (!exportGltfV1 && config.getKmlExportConfig().isEnableGltfDracoCompression()) {
+					commands.add("-d");
+				}
+			} else {
+				commands.addAll(config.getKmlExportConfig().getGltfConverterOptions());
 			}
-			if (config.getKmlExportConfig().isExportGltfBinary()) {
-				commands.add("-b");
-			}
-			// do not apply Draco to gltF 1.0
-			if (!exportGltfV1 && config.getKmlExportConfig().isEnableGltfDracoCompression()) {
-				commands.add("-d");
-			}
-			ProcessBuilder pb = new ProcessBuilder(commands);
-			pb.directory(buildingDirectory);
+
 			try {
-				Process process = pb.start();
-				process.waitFor();
-			} catch (IOException | InterruptedException e) {
-				log.warn("Unexpected errors occurred while converting collada to glTF for city object '" + colladaBundle.getGmlId() + "' with output path: '" + gltfModelFile.getAbsolutePath() + "'" + "\n" + e.getMessage());
+				Process process = new ProcessBuilder(commands)
+						.directory(buildingDirectory)
+						.start();
+
+				int exitCode = process.waitFor();
+				if (exitCode != 0) {
+					throw new IOException("Exit code: " + exitCode);
+				}
+			} catch (Exception e) {
+				log.error("COLLADA2GLTF failed to convert '" + colladaModelFile.getAbsolutePath() + "'.", e);
 			} finally {
-				if (config.getKmlExportConfig().isNotCreateColladaFiles() && (gltfModelFile.exists() || (new File(gltfModelFile.getAbsolutePath().replace(".gltf", ".glb"))).exists())) {
+				if (config.getKmlExportConfig().isNotCreateColladaFiles()
+						&& (gltfModelFile.exists()
+						|| (new File(gltfModelFile.getAbsolutePath().replace(".gltf", ".glb"))).exists())) {
 					colladaModelFile.delete();
 				}
 			}

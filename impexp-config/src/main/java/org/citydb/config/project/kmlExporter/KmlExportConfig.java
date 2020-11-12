@@ -33,6 +33,7 @@ import org.citydb.config.project.resources.Resources;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.io.File;
@@ -200,6 +201,9 @@ public class KmlExportConfig {
 
     public static final String THEME_NONE = "none";
     public static final String THEME_NULL = "<unknown>";
+
+    @XmlTransient
+    private List<String> gltfConverterOptions;
 
     public KmlExportConfig() {
         query = new SimpleKmlQuery();
@@ -816,5 +820,17 @@ public class KmlExportConfig {
 
     public void setADEPreferences(Map<String, ADEPreferences> adePreferences) {
         this.adePreferences = adePreferences;
+    }
+
+    public boolean isSetGltfConverterOptions() {
+        return  gltfConverterOptions != null;
+    }
+
+    public List<String> getGltfConverterOptions() {
+        return gltfConverterOptions;
+    }
+
+    public void setGltfConverterOptions(List<String> gltfConverterOptions) {
+        this.gltfConverterOptions = gltfConverterOptions;
     }
 }

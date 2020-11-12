@@ -75,7 +75,8 @@ public class BoundingBoxOption implements CliOption {
                 String[] numbers = tiling.split(",");
                 if (numbers.length != 2) {
                     throw new CommandLine.ParameterException(commandLine,
-                            "Error: The value for '--bbox-tiling' is expected to be 'rows,columns' but was " + tiling);
+                            "Error: The value for '--bbox-tiling' is expected to be 'rows,columns' " +
+                                    "but was '" + tiling + "'");
                 }
 
                 try {
@@ -85,8 +86,8 @@ public class BoundingBoxOption implements CliOption {
                     tilingOperator.setColumns(Integer.parseInt(numbers[1]));
                 } catch (NumberFormatException e) {
                     throw new CommandLine.ParameterException(commandLine,
-                            "Error: The number of rows and columns for tiling must be integers but were " +
-                                    String.join(",", numbers));
+                            "Error: The number of rows and columns for tiling must be integers but were '" +
+                                    String.join(",", numbers) + "'");
                 }
             } else if (mode == Mode.within) {
                 WithinOperator within = new WithinOperator();

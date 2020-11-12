@@ -108,7 +108,7 @@ public class DeleteListOption implements CliOption {
 
         if (quote != null && quote.length() > 1) {
             throw new CommandLine.ParameterException(commandLine,
-                    "Error: --quote must be a single character but was " + quote);
+                    "Error: --quote must be a single character but was '" + quote + "'");
         }
     }
 }

@@ -55,6 +55,10 @@ public class DisplayOption implements CliOption {
             description = "Appearance theme to use for COLLADA/glTF exports. Use 'none' for the null theme.")
     private String theme;
 
+    public Set<Mode> getModes() {
+        return modes;
+    }
+
     public int getLod() {
         return lod.ordinal();
     }
@@ -90,7 +94,7 @@ public class DisplayOption implements CliOption {
         });
     }
 
-    enum Mode {
+    public enum Mode {
         collada("collada", DisplayForm.COLLADA, 1),
         geometry("geometry", DisplayForm.GEOMETRY, 1),
         extruded("extruded", DisplayForm.EXTRUDED, 1),
