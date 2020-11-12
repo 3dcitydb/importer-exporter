@@ -64,7 +64,7 @@ public class BoundingBoxOption implements CliOption {
                     String[] numbers = tiling.split(",");
                     if (numbers.length != 2) {
                         throw new CommandLine.ParameterException(commandLine,
-                                "Error: The value for '--bbox-tiling' is expected to be 'rows,columns' or 'automatic' " +
+                                "Error: The value for '--bbox-tiling' is expected to be 'rows,columns' or 'auto' " +
                                         "but was '" + tiling + "'");
                     }
 
