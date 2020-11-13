@@ -82,7 +82,7 @@ public class Queries implements ADEKmlExportQueryHelper {
 		.append(", sg.id, sg.parent_id, sg.root_id, sg.gmlid, sg.is_xlink ");
 
 		if (exportAppearance) {
-			query.append(", sd.x3d_shininess, sd.x3d_transparency, sd.x3d_ambient_intensity, ")
+			query.append(", a2sd.appearance_id, sd.x3d_shininess, sd.x3d_transparency, sd.x3d_ambient_intensity, ")
 			.append("sd.x3d_specular_color, sd.x3d_diffuse_color, sd.x3d_emissive_color, sd.x3d_is_smooth, ")
 			.append("sd.tex_image_id, ti.tex_image_uri, tp.texture_coordinates, coalesce(a.theme, '" + KmlExporter.THEME_NULL + "') theme ");
 		}

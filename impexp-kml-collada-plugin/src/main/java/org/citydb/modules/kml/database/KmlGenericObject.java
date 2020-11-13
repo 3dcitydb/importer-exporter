@@ -2253,7 +2253,7 @@ public abstract class KmlGenericObject {
 								parentId = tmp;
 						}
 
-						if (selectedTheme.equalsIgnoreCase(theme)) {
+						if (selectedTheme.equalsIgnoreCase(theme) && rs.getLong("appearance_id") > 0) {
 							long textureImageId = rs.getLong("tex_image_id");
 							String texImageUri = rs.getString("tex_image_uri");
 							Object texCoordsObject = rs.getObject("texture_coordinates");
