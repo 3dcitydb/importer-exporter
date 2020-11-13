@@ -47,15 +47,15 @@ import org.citydb.gui.components.console.StyledConsoleLogger;
 import org.citydb.gui.components.menubar.MenuBar;
 import org.citydb.gui.factory.DefaultComponentFactory;
 import org.citydb.gui.factory.PopupMenuDecorator;
+import org.citydb.gui.modules.database.DatabasePlugin;
+import org.citydb.gui.modules.exporter.CityGMLExportPlugin;
+import org.citydb.gui.modules.importer.CityGMLImportPlugin;
+import org.citydb.gui.modules.kml.KMLExportPlugin;
+import org.citydb.gui.modules.preferences.PreferencesPlugin;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.gui.util.OSXAdapter;
 import org.citydb.log.DefaultConsoleLogger;
 import org.citydb.log.Logger;
-import org.citydb.gui.modules.exporter.CityGMLExportPlugin;
-import org.citydb.gui.modules.importer.CityGMLImportPlugin;
-import org.citydb.gui.modules.database.DatabasePlugin;
-import org.citydb.gui.modules.kml.KMLExportPlugin;
-import org.citydb.gui.modules.preferences.PreferencesPlugin;
 import org.citydb.plugin.Plugin;
 import org.citydb.plugin.PluginManager;
 import org.citydb.plugin.extension.view.View;
@@ -94,7 +94,6 @@ import java.util.MissingResourceException;
 import java.util.Objects;
 import java.util.ResourceBundle;
 
-@SuppressWarnings("serial")
 public final class ImpExpGui extends JFrame implements ViewController, EventHandler {
 	private final Logger log = Logger.getInstance();
 	private final Config config;
@@ -173,7 +172,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		console = new JPanel();
 		consoleLabel = new JLabel();
 		consoleText.setAutoscrolls(true);
-		consoleText.setFont(new Font(Font.MONOSPACED, Font.PLAIN, UIManager.getFont("Label.font").getSize()));
+		consoleText.setFont(new Font(Font.MONOSPACED, Font.PLAIN, UIManager.getFont("defaultFont").getSize()));
 		consoleText.setEditable(false);
 		consoleWindow = new ConsoleWindow(console, config, this);
 		consolePopup = new ConsolePopupMenuWrapper(PopupMenuDecorator.getInstance().decorateAndGet(consoleText));
@@ -247,8 +246,8 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 			}
 		});
 
-		// settings specific to Mac OS X
-		if (OSXAdapter.IS_MAC_OS_X) {
+		// settings specific to macOS
+		if (OSXAdapter.IS_MAC_OS) {
 			try {
 				OSXAdapter.setQuitHandler(this, getClass().getDeclaredMethod("shutdown"));
 				OSXAdapter.setAboutHandler(menuBar, menuBar.getClass().getDeclaredMethod("printInfo"));
@@ -258,7 +257,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 			}
 		}
 
-		//layout
+		// layout
 		setIconImage(Toolkit.getDefaultToolkit().getImage(ImpExpGui.class.getResource("/org/citydb/gui/images/common/logo_small.png")));
 		setLayout(new GridBagLayout());
 

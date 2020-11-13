@@ -57,7 +57,6 @@ public class SplashScreen extends JWindow {
 		message.setForeground(messageColor);
 		
 		progressBar = new JProgressBar();
-		progressBar.setPreferredSize(new Dimension(icon.getIconWidth(), 18));
 		progressBar.setIndeterminate(false);
 		progressBar.setVisible(false);
 		

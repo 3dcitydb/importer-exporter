@@ -131,9 +131,9 @@ public class AppearancePanel extends AbstractPreferencesComponent {
 	}
 	
 	private void setEnabledTheme() {
-		((TitledBorder)block2.getBorder()).setTitleColor(!impAppRadioNoImp.isSelected() ? 
-				UIManager.getColor("TitledBorder.titleColor"):
-					UIManager.getColor("Label.disabledForeground"));
+		((TitledBorder) block2.getBorder()).setTitleColor(!impAppRadioNoImp.isSelected() ?
+				UIManager.getColor("TitledBorder.titleColor") :
+				UIManager.getColor("Label.disabledForeground"));
 		block2.repaint();
 		
 		impAppOldLabel.setEnabled(!impAppRadioNoImp.isSelected());

@@ -51,8 +51,6 @@ import org.citydb.gui.util.GuiUtil;
 import org.citydb.log.Logger;
 import org.citydb.plugin.extension.view.ViewController;
 import org.citydb.registry.ObjectRegistry;
-import org.jdesktop.swingx.JXTextField;
-import org.jdesktop.swingx.prompt.PromptSupport.FocusBehavior;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
@@ -96,7 +94,7 @@ public class ImportPanel extends JPanel implements EventHandler {
 	private JButton importButton;
 	private JButton validateButton;
 	private FilterPanel filterPanel;
-	private JXTextField workspaceText;
+	private JTextField workspaceText;
 
 	private JPanel workspacePanel;
 	private JLabel workspaceLabel;
@@ -118,9 +116,7 @@ public class ImportPanel extends JPanel implements EventHandler {
 		filterPanel = new FilterPanel(viewController, config);
 		importButton = new JButton();
 		validateButton = new JButton();
-		workspaceText = new JXTextField();
-		workspaceText.setPromptForeground(Color.LIGHT_GRAY);
-		workspaceText.setFocusBehavior(FocusBehavior.SHOW_PROMPT);
+		workspaceText = new JTextField();
 
 		DropCutCopyPasteHandler handler = new DropCutCopyPasteHandler();
 
@@ -217,9 +213,9 @@ public class ImportPanel extends JPanel implements EventHandler {
 	}
 
 	public void setEnabledWorkspace(boolean enable) {
-		((TitledBorder)workspacePanel.getBorder()).setTitleColor(enable ? 
-				UIManager.getColor("TitledBorder.titleColor"):
-					UIManager.getColor("Label.disabledForeground"));
+		((TitledBorder) workspacePanel.getBorder()).setTitleColor(enable ?
+				UIManager.getColor("TitledBorder.titleColor") :
+				UIManager.getColor("Label.disabledForeground"));
 		workspacePanel.repaint();
 
 		workspaceLabel.setEnabled(enable);
@@ -232,7 +228,7 @@ public class ImportPanel extends JPanel implements EventHandler {
 		importButton.setText(Language.I18N.getString("import.button.import"));
 		validateButton.setText(Language.I18N.getString("import.button.validate"));
 		workspaceLabel.setText(Language.I18N.getString("common.label.workspace"));
-		workspaceText.setPrompt(Language.I18N.getString("common.label.workspace.prompt"));
+		workspaceText.putClientProperty("JTextField.placeholderText", Language.I18N.getString("common.label.workspace.prompt"));
 		((TitledBorder)workspacePanel.getBorder()).setTitle(Language.I18N.getString("common.border.versioning"));
 		filterPanel.doTranslation();
 	}

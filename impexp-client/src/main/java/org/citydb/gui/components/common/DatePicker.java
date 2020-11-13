@@ -31,7 +31,7 @@ public class DatePicker extends JXDatePicker implements EventHandler {
     private JLabel todayLink;
 
     static {
-        UIManager.put("JXDatePicker.border", UIManager.getLookAndFeel().getDefaults().getBorder("TextField.border"));
+        UIManager.put("JXDatePicker.border", UIManager.getBorder("TextField.border"));
         UIManager.put("JXMonthView.monthDownFileName", new ImageIcon(DatePicker.class.getResource("/org/citydb/gui/images/common/left_arrow.png")));
         UIManager.put("JXMonthView.monthUpFileName", new ImageIcon(DatePicker.class.getResource("/org/citydb/gui/images/common/right_arrow.png")));
         UIManager.put(CalendarHeaderHandler.uiControllerID, SpinningCalendarHeaderHandler.class.getName());
@@ -42,9 +42,7 @@ public class DatePicker extends JXDatePicker implements EventHandler {
         ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(EventType.SWITCH_LOCALE, this);
         setFormats("yyyy-MM-dd", "dd.MM.yyyy");
         getMonthView().setZoomable(true);
-        getEditor().setPromptForeground(Color.LIGHT_GRAY);
-        getEditor().setFocusBehavior(PromptSupport.FocusBehavior.SHOW_PROMPT);
-        getEditor().setPrompt("YYYY-MM-DD");
+        getEditor().putClientProperty("JTextField.placeholderText", "YYYY-MM-DD");
     }
 
     @Override

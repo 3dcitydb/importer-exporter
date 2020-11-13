@@ -124,6 +124,10 @@ public class Logger {
 		log(LogLevel.DEBUG, msg);
 	}
 
+	public void debug(String msg, Throwable e) {
+		log(LogLevel.DEBUG, msg, e);
+	}
+
 	public void info(String msg) {
 		log(LogLevel.INFO, msg);
 	}

@@ -103,9 +103,4 @@ public class ADEInfoRow {
     public void setImpexpSupport(boolean impexpSupport) {
         this.impexpSupport = impexpSupport;
     }
-
-    public static int getDefaultRowHeight() {
-        return Math.max(UIManager.getFont("Table.font").getSize(), isSupported.getIconHeight()) + 2;
-    }
-
 }

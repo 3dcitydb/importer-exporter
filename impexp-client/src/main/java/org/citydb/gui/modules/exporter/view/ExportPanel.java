@@ -59,8 +59,6 @@ import org.citydb.plugin.extension.view.ViewController;
 import org.citydb.plugin.extension.view.components.DatabaseSrsComboBox;
 import org.citydb.registry.ObjectRegistry;
 import org.citydb.util.Util;
-import org.jdesktop.swingx.JXTextField;
-import org.jdesktop.swingx.prompt.PromptSupport.FocusBehavior;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
@@ -93,7 +91,7 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 
 	private JTextField browseText;
 	private JButton browseButton;
-	private JXTextField workspaceText;
+	private JTextField workspaceText;
 	private DatePicker datePicker;
 	private FilterPanel filterPanel;
 	private JButton exportButton;
@@ -120,9 +118,7 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 	private void initGui() {
 		browseText = new JTextField();
 		browseButton = new JButton();
-		workspaceText = new JXTextField();
-		workspaceText.setPromptForeground(Color.LIGHT_GRAY);
-		workspaceText.setFocusBehavior(FocusBehavior.SHOW_PROMPT);
+		workspaceText = new JTextField();
 		datePicker = new DatePicker();
 		filterPanel = new FilterPanel(viewController, config);
 		exportButton = new JButton();
@@ -205,7 +201,7 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 	public void doTranslation() {
 		((TitledBorder)operations.getBorder()).setTitle(Language.I18N.getString("export.border.settings"));
 		workspaceLabel.setText(Language.I18N.getString("common.label.workspace"));
-		workspaceText.setPrompt(Language.I18N.getString("common.label.workspace.prompt"));
+		workspaceText.putClientProperty("JTextField.placeholderText", Language.I18N.getString("common.label.workspace.prompt"));
 		timestampLabel.setText(Language.I18N.getString("common.label.timestamp"));
 		browseButton.setText(Language.I18N.getString("common.button.browse"));
 		exportButton.setText(Language.I18N.getString("export.button.export"));

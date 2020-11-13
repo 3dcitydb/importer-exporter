@@ -28,6 +28,7 @@
 
 package org.citydb.cli;
 
+import com.formdev.flatlaf.FlatLightLaf;
 import org.citydb.ImpExpException;
 import org.citydb.config.Config;
 import org.citydb.config.ConfigUtil;
@@ -148,24 +149,33 @@ public class GuiCommand extends CliCommand implements StartupProgressListener {
         parent.useDefaultConfiguration(true)
                 .failOnADEExceptions(false);
 
-        // set look & feel
-        try {
-            javax.swing.UIManager.setLookAndFeel(javax.swing.UIManager.getSystemLookAndFeelClassName());
-            if (OSXAdapter.IS_MAC_OS_X) {
-                OSXAdapter.setDockIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/org/citydb/gui/images/common/logo_small.png")));
-                System.setProperty("apple.laf.useScreenMenuBar", "true");
+        SwingUtilities.invokeLater(() -> {
+            try {
+                // set look&feel
+                UIManager.setLookAndFeel(new FlatLightLaf());
+            } catch (UnsupportedLookAndFeelException e) {
+                FlatLightLaf.install();
             }
-        } catch (Exception e) {
-            throw new ImpExpException("Failed to initialize user interface.", e);
-        }
 
-        // splash screen
-        if (!hideSplash) {
-            splashScreen = new SplashScreen(3, 477, Color.BLACK);
-            splashScreen.setMessage("Version \"" + getClass().getPackage().getImplementationVersion() + "\"");
-            parent.withStartupProgressListener(this);
-            SwingUtilities.invokeLater(() -> splashScreen.setVisible(true));
-        }
+            if (OSXAdapter.IS_MAC_OS) {
+                OSXAdapter.setDockIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/org/citydb/gui/images/common/logo_small.png")));
+                if (System.getProperty("apple.laf.useScreenMenuBar") == null) {
+                    System.setProperty("apple.laf.useScreenMenuBar", "true");
+                }
+            }
+
+            // enable window decorations
+            JFrame.setDefaultLookAndFeelDecorated(true);
+            JDialog.setDefaultLookAndFeelDecorated(true);
+
+            // splash screen
+            if (!hideSplash) {
+                splashScreen = new SplashScreen(3, 477, Color.BLACK);
+                splashScreen.setMessage("Version \"" + getClass().getPackage().getImplementationVersion() + "\"");
+                parent.withStartupProgressListener(this);
+                splashScreen.setVisible(true);
+            }
+        });
     }
 
     @Override

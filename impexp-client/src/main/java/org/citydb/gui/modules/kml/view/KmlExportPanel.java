@@ -74,8 +74,6 @@ import org.citygml4j.model.module.citygml.CityObjectGroupModule;
 import org.citygml4j.model.module.citygml.ReliefModule;
 import org.citygml4j.model.module.citygml.TunnelModule;
 import org.citygml4j.model.module.citygml.VegetationModule;
-import org.jdesktop.swingx.JXTextField;
-import org.jdesktop.swingx.prompt.PromptSupport.FocusBehavior;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
@@ -117,7 +115,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 
 	private JPanel versioningPanel;
 	private JLabel workspaceLabel = new JLabel();
-	private JXTextField workspaceText = new JXTextField("");
+	private JTextField workspaceText = new JTextField();
 	private JLabel timestampLabel = new JLabel();
 	private DatePicker datePicker = new DatePicker();
 
@@ -190,8 +188,6 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		versioningPanel.setLayout(new GridBagLayout());
 		versioningPanel.setBorder(BorderFactory.createTitledBorder(""));
 		
-		workspaceText.setPromptForeground(Color.LIGHT_GRAY);
-		workspaceText.setFocusBehavior(FocusBehavior.SHOW_PROMPT);
 		versioningPanel.add(workspaceLabel, GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.HORIZONTAL,0,BORDER_THICKNESS,BORDER_THICKNESS,BORDER_THICKNESS));
 		versioningPanel.add(workspaceText, GuiUtil.setConstraints(1,0,1.0,0.0,GridBagConstraints.HORIZONTAL,0,BORDER_THICKNESS,BORDER_THICKNESS,BORDER_THICKNESS));
 		versioningPanel.add(timestampLabel, GuiUtil.setConstraints(2,0,0.0,0.0,GridBagConstraints.HORIZONTAL,0,BORDER_THICKNESS * 2,BORDER_THICKNESS,BORDER_THICKNESS));
@@ -374,7 +370,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 
 		((TitledBorder)versioningPanel.getBorder()).setTitle(Language.I18N.getString("common.border.versioning"));
 		workspaceLabel.setText(Language.I18N.getString("common.label.workspace"));
-		workspaceText.setPrompt(Language.I18N.getString("common.label.workspace.prompt"));
+		workspaceText.putClientProperty("JTextField.placeholderText", Language.I18N.getString("common.label.workspace.prompt"));
 		timestampLabel.setText(Language.I18N.getString("common.label.timestamp"));
 
 		((TitledBorder)filterPanel.getBorder()).setTitle(Language.I18N.getString("kmlExport.label.exportContents"));

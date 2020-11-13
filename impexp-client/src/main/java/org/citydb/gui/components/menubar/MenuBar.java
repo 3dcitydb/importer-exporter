@@ -62,7 +62,7 @@ public class MenuBar extends JMenuBar {
 
 		// as long as the file menu only allows to close the application
 		// we do not need it on Mac OS X
-		if (!OSXAdapter.IS_MAC_OS_X)
+		if (!OSXAdapter.IS_MAC_OS)
 			add(file);
 		
 		add(project);

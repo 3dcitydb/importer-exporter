@@ -42,8 +42,6 @@ import org.citydb.gui.util.GuiUtil;
 import org.citydb.log.Logger;
 import org.citydb.plugin.extension.view.ViewController;
 import org.citydb.registry.ObjectRegistry;
-import org.jdesktop.swingx.JXTextField;
-import org.jdesktop.swingx.prompt.PromptSupport.FocusBehavior;
 
 import javax.swing.*;
 import java.awt.*;
@@ -58,7 +56,7 @@ public class DatabaseOperationsPanel extends JPanel implements EventHandler {
 
 	private JLabel workspaceLabel;
 	private JLabel timestampLabel;
-	private JXTextField workspace;
+	private JTextField workspace;
 	private DatePicker datePicker;
 
 	private JTabbedPane operationsTab;
@@ -77,9 +75,7 @@ public class DatabaseOperationsPanel extends JPanel implements EventHandler {
 	private void init() {
 		setLayout(new GridBagLayout());
 
-		workspace = new JXTextField();
-		workspace.setPromptForeground(Color.LIGHT_GRAY);
-		workspace.setFocusBehavior(FocusBehavior.SHOW_PROMPT);
+		workspace = new JTextField();
 		datePicker = new DatePicker();
 		workspaceLabel = new JLabel();
 		timestampLabel = new JLabel();
@@ -114,7 +110,7 @@ public class DatabaseOperationsPanel extends JPanel implements EventHandler {
 
 	public void doTranslation() {
 		workspaceLabel.setText(Language.I18N.getString("common.label.workspace"));
-		workspace.setPrompt(Language.I18N.getString("common.label.workspace.prompt"));
+		workspace.putClientProperty("JTextField.placeholderText", Language.I18N.getString("common.label.workspace.prompt"));
 		timestampLabel.setText(Language.I18N.getString("common.label.timestamp"));
 		
 		for (int i = 0; i < operations.length; ++i) {

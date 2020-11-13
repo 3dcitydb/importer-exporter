@@ -34,7 +34,6 @@ import org.citydb.config.project.global.APIKeys;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.modules.common.AbstractPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
-import org.jdesktop.swingx.JXTextField;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
@@ -44,9 +43,9 @@ public class APIKeysPanel extends AbstractPreferencesComponent {
     private JPanel google;
 
     private JLabel googleGeocodingLabel;
-    private JXTextField googleGeocodingText;
+    private JTextField googleGeocodingText;
     private JLabel googleElevationLabel;
-    private JXTextField googleElevationText;
+    private JTextField googleElevationText;
 
     public APIKeysPanel(Config config) {
         super(config);
@@ -65,9 +64,9 @@ public class APIKeysPanel extends AbstractPreferencesComponent {
 
     private void initGui() {
         googleGeocodingLabel = new JLabel();
-        googleGeocodingText = new JXTextField();
+        googleGeocodingText = new JTextField();
         googleElevationLabel = new JLabel();
-        googleElevationText = new JXTextField();
+        googleElevationText = new JTextField();
 
         setLayout(new GridBagLayout());
         {

@@ -186,9 +186,9 @@ public class IdHandlingPanel extends AbstractPreferencesComponent implements Eve
 	}
 	
 	private void setEnabledCodespaceDialog(boolean enable) {
-		((TitledBorder)block2.getBorder()).setTitleColor(enable ? 
-				UIManager.getColor("TitledBorder.titleColor"):
-					UIManager.getColor("Label.disabledForeground"));
+		((TitledBorder) block2.getBorder()).setTitleColor(enable ?
+				UIManager.getColor("TitledBorder.titleColor") :
+				UIManager.getColor("Label.disabledForeground"));
 		block2.repaint();
 		
 		impIdCSRadioNone.setEnabled(enable);

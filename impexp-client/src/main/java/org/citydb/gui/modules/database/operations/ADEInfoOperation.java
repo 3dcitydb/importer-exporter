@@ -88,7 +88,6 @@ public class ADEInfoOperation extends DatabaseOperationView {
         adeTableModel.addRow(ADEInfoRow.NO_ADES_ENTRY);
 
         adeTable = new JTable(adeTableModel);
-        adeTable.setRowHeight(ADEInfoRow.getDefaultRowHeight());
         adeTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
         adeTable.getTableHeader().setDefaultRenderer(new ADETableCellRenderer(adeTable.getTableHeader().getDefaultRenderer()));

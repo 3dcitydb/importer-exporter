@@ -46,16 +46,13 @@ import org.citydb.event.EventHandler;
 import org.citydb.event.global.DatabaseConnectionStateEvent;
 import org.citydb.event.global.EventType;
 import org.citydb.gui.factory.PopupMenuDecorator;
+import org.citydb.gui.modules.database.operations.DatabaseOperationsPanel;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.log.Logger;
-import org.citydb.gui.modules.database.operations.DatabaseOperationsPanel;
 import org.citydb.plugin.extension.view.ViewController;
 import org.citydb.plugin.extension.view.ViewEvent;
 import org.citydb.plugin.extension.view.ViewListener;
 import org.citydb.registry.ObjectRegistry;
-import org.jdesktop.swingx.JXTextField;
-import org.jdesktop.swingx.combobox.JXTextFieldComboBoxEditor;
-import org.jdesktop.swingx.prompt.PromptSupport.FocusBehavior;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
@@ -158,12 +155,7 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 		passwordCheck = new JCheckBox();
 
 		schemaCombo = new JComboBox<>();
-		JXTextFieldComboBoxEditor editor = new JXTextFieldComboBoxEditor();
-		editor.getEditorComponent().setPromptForeground(Color.LIGHT_GRAY);
-		editor.getEditorComponent().setFocusBehavior(FocusBehavior.SHOW_PROMPT);
-		schemaCombo.setEditor(editor);
 		schemaCombo.setEditable(true);
-		schemaCombo.setBorder(UIManager.getLookAndFeel().getDefaults().getBorder("TextField.border"));
 
 		applyButton = new JButton();
 		newButton = new JButton();
@@ -174,7 +166,7 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 		schemaButton = new JButton();
 
 		PopupMenuDecorator.getInstance().decorate(descriptionText, serverText, portText, databaseText, 
-				userText, passwordText, (JXTextField)schemaCombo.getEditor().getEditorComponent());
+				userText, passwordText, (JTextField) schemaCombo.getEditor().getEditorComponent());
 
 		JScrollPane scrollPane = new JScrollPane();
 		scrollPane.setBorder(BorderFactory.createEmptyBorder());
@@ -368,7 +360,7 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 		portLabel.setText(Language.I18N.getString("common.label.port"));
 		databaseLabel.setText(Language.I18N.getString("db.label.sid"));
 		schemaLabel.setText(Language.I18N.getString("common.label.schema"));
-		((JXTextField)schemaCombo.getEditor().getEditorComponent()).setPrompt(Language.I18N.getString("common.label.schema.prompt"));
+		schemaCombo.putClientProperty("JTextField.placeholderText", Language.I18N.getString("common.label.schema.prompt"));
 		passwordCheck.setText(Language.I18N.getString("common.label.passwordCheck"));
 		applyButton.setText(Language.I18N.getString("common.button.apply"));
 		newButton.setText(Language.I18N.getString("db.button.new"));
@@ -690,9 +682,9 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 	}
 
 	private void setEnabledDBOperations(boolean enable) {
-		((TitledBorder)operations.getBorder()).setTitleColor(enable ? 
-				UIManager.getColor("TitledBorder.titleColor"):
-					UIManager.getColor("Label.disabledForeground"));
+		((TitledBorder) operations.getBorder()).setTitleColor(enable ?
+				UIManager.getColor("TitledBorder.titleColor") :
+				UIManager.getColor("Label.disabledForeground"));
 		operations.repaint();
 
 		infoButton.setEnabled(enable);		
