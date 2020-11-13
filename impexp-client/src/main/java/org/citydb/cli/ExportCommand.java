@@ -33,10 +33,12 @@ import org.citydb.citygml.exporter.controller.Exporter;
 import org.citydb.cli.options.exporter.QueryOption;
 import org.citydb.config.Config;
 import org.citydb.config.project.database.DatabaseConnection;
+import org.citydb.config.project.exporter.ExportConfig;
 import org.citydb.database.DatabaseController;
 import org.citydb.log.Logger;
 import org.citydb.plugin.CliCommand;
 import org.citydb.plugin.cli.DatabaseOption;
+import org.citydb.plugin.cli.ThreadPoolOption;
 import org.citydb.registry.ObjectRegistry;
 import picocli.CommandLine;
 
@@ -55,6 +57,9 @@ public class ExportCommand extends CliCommand {
     @CommandLine.Option(names = "--output-encoding", defaultValue = "UTF-8",
             description = "Encoding used for the output file (default: ${DEFAULT-VALUE}).")
     private String encoding;
+
+    @CommandLine.ArgGroup
+    private ThreadPoolOption threadPoolOption;
 
     @CommandLine.ArgGroup(exclusive = false, heading = "Query and filter options:%n")
     private QueryOption queryOption;
@@ -79,8 +84,8 @@ public class ExportCommand extends CliCommand {
             return 1;
         }
 
-        // set file encoding
-        config.getExportConfig().getCityGMLOptions().setFileEncoding(encoding);
+        // set general export options
+        setExportOptions(config.getExportConfig());
 
         // set user-defined query options
         if (queryOption != null) {
@@ -99,5 +104,13 @@ public class ExportCommand extends CliCommand {
         }
 
         return 0;
+    }
+
+    private void setExportOptions(ExportConfig exportConfig) {
+        exportConfig.getCityGMLOptions().setFileEncoding(encoding);
+
+        if (threadPoolOption != null) {
+            exportConfig.getResources().getThreadPool().setDefaultPool(threadPoolOption.toThreadPool());
+        }
     }
 }

@@ -2,7 +2,7 @@
  * 3D City Database - The Open Source CityGML Database
  * http://www.3dcitydb.org/
  *
- * Copyright 2013 - 2019
+ * Copyright 2013 - 2020
  * Chair of Geoinformatics
  * Technical University of Munich, Germany
  * https://www.gis.bgu.tum.de/
@@ -25,29 +25,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.citydb.config.project.resources;
 
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlType;
+package org.citydb.plugin.cli;
 
-@XmlType(name = "ThreadPoolType", propOrder = {
-        "defaultPool"
-})
-public class ThreadPool {
-    @XmlElement(name = "default", required = true)
-    private ThreadPoolConfig defaultPool;
+import org.citydb.config.project.resources.ThreadPoolConfig;
+import picocli.CommandLine;
 
-    public ThreadPool() {
-        defaultPool = new ThreadPoolConfig();
+public class ThreadPoolOption implements CliOption {
+    @CommandLine.Option(names = "--worker-threads",  paramLabel = "<threads[,max]>",
+            description = "Number of worker threads to use.")
+    private String threads;
+
+    private ThreadPoolConfig threadPool;
+
+    public ThreadPoolConfig toThreadPool() {
+        return threadPool;
     }
 
-    public ThreadPoolConfig getDefaultPool() {
-        return defaultPool;
+    @Override
+    public void preprocess(CommandLine commandLine) throws Exception {
+        threadPool = CliOptionBuilder.threadPool(threads, commandLine);
     }
-
-    public void setDefaultPool(ThreadPoolConfig defaultPool) {
-        if (defaultPool != null)
-            this.defaultPool = defaultPool;
-    }
-
 }

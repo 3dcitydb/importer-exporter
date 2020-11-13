@@ -6,11 +6,13 @@ import org.citydb.citygml.importer.controller.Importer;
 import org.citydb.cli.options.importer.FilterOption;
 import org.citydb.config.Config;
 import org.citydb.config.project.database.DatabaseConnection;
+import org.citydb.config.project.importer.ImportConfig;
 import org.citydb.database.DatabaseController;
 import org.citydb.log.Logger;
 import org.citydb.plugin.CliCommand;
 import org.citydb.plugin.cli.CliOptionBuilder;
 import org.citydb.plugin.cli.DatabaseOption;
+import org.citydb.plugin.cli.ThreadPoolOption;
 import org.citydb.registry.ObjectRegistry;
 import org.citydb.util.ClientConstants;
 import picocli.CommandLine;
@@ -32,6 +34,9 @@ public class ImportCommand extends CliCommand {
     @CommandLine.Option(names = "--import-log", paramLabel = "<file>",
             description = "Record imported top-level features to this file.")
     private Path importLogFile;
+
+    @CommandLine.ArgGroup
+    private ThreadPoolOption threadPoolOption;
 
     @CommandLine.ArgGroup(exclusive = false, heading = "Import filter options:%n")
     private FilterOption filterOption;
@@ -70,10 +75,8 @@ public class ImportCommand extends CliCommand {
             return 1;
         }
 
-        if (importLogFile != null) {
-            config.getImportConfig().getImportLog().setLogFile(importLogFile.toAbsolutePath().toString());
-            config.getImportConfig().getImportLog().setLogImportedFeatures(true);
-        }
+        // set general import options
+        setImportOptions(config.getImportConfig());
 
         if (filterOption != null) {
             config.getImportConfig().setFilter(filterOption.toImportFilter());
@@ -91,5 +94,16 @@ public class ImportCommand extends CliCommand {
         }
 
         return 0;
+    }
+
+    private void setImportOptions(ImportConfig importConfig) {
+        if (importLogFile != null) {
+            importConfig.getImportLog().setLogFile(importLogFile.toAbsolutePath().toString());
+            importConfig.getImportLog().setLogImportedFeatures(true);
+        }
+
+        if (threadPoolOption != null) {
+            importConfig.getResources().getThreadPool().setDefaultPool(threadPoolOption.toThreadPool());
+        }
     }
 }

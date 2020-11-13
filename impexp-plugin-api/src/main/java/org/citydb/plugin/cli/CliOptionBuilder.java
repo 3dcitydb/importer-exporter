@@ -34,6 +34,7 @@ import org.citydb.config.project.query.filter.selection.id.DatabaseIdOperator;
 import org.citydb.config.project.query.filter.selection.id.ResourceIdOperator;
 import org.citydb.config.project.query.filter.selection.sql.SelectOperator;
 import org.citydb.config.project.query.filter.type.FeatureTypeFilter;
+import org.citydb.config.project.resources.ThreadPoolConfig;
 import org.citygml4j.model.module.Module;
 import org.citygml4j.model.module.Modules;
 import org.citygml4j.model.module.citygml.CityGMLVersion;
@@ -120,7 +121,7 @@ public class CliOptionBuilder {
                 return boundingBox;
             } else {
                 throw new CommandLine.ParameterException(commandLine,
-                        "A bounding box should be in MINX,MINY,MAXX,MAXY[,SRID] format but was '" + bbox + "'");
+                        "A bounding box must be in MINX,MINY,MAXX,MAXY[,SRID] format but was '" + bbox + "'");
             }
         }
 
@@ -202,6 +203,42 @@ public class CliOptionBuilder {
             }
 
             return idOperator;
+        }
+
+        return null;
+    }
+
+    public static ThreadPoolConfig threadPool(String threads, CommandLine commandLine) {
+        if (threads != null) {
+            String[] limits = threads.split(",");
+            if (limits.length == 0 || limits.length > 2) {
+                throw new CommandLine.ParameterException(commandLine,
+                        "Error: The number of threads must be in THREADS[,MAX] format but was '" + threads + "'");
+            }
+
+            int i = 0, lower, upper;
+            try {
+                lower = Integer.parseInt(limits[i]);
+                upper = limits.length == 2 ? Integer.parseInt(limits[++i]) : lower;
+            } catch (NumberFormatException e) {
+                throw new CommandLine.ParameterException(commandLine,
+                        "Error: The number of threads must be a positive integer but was '" + limits[i] + "'");
+            }
+
+            if (lower <= 0) {
+                throw new CommandLine.ParameterException(commandLine,
+                        "Error: The number of threads must be a positive integer but was '" + lower + "'");
+            }
+
+            if (upper < lower) {
+                throw new CommandLine.ParameterException(commandLine,
+                        "Error: The upper limit of threads must be greater than or equal to the lower limit");
+            }
+
+            ThreadPoolConfig threadPool = new ThreadPoolConfig();
+            threadPool.setMinThreads(lower);
+            threadPool.setMaxThreads(upper);
+            return threadPool;
         }
 
         return null;

@@ -240,7 +240,7 @@ public class KmlExporter implements EventHandler {
 			throw new KmlExportException("Failed to retrieve status of spatial indexes.", e);
 		}
 
-		// check whether the selected theme existed in the database,just for Building Class...
+		// check whether the selected theme existed in the database, just for Building Class...
 		String selectedTheme = config.getKmlExportConfig().getAppearanceTheme();
 		if (!selectedTheme.equals(KmlExportConfig.THEME_NONE)) {
 			try {
@@ -267,6 +267,12 @@ public class KmlExporter implements EventHandler {
 				throw new KmlExportException("Failed to find the COLLADA2glTF tool at the provided path " + collada2gltf + ".");
 			else if (!Files.isExecutable(collada2gltf))
 				throw new KmlExportException("Failed to execute the COLLADA2glTF tool at " + collada2gltf + ".");
+		}
+
+		// check whether we have to deactivate KMZ
+		if (config.getKmlExportConfig().isCreateGltfModel() && config.getKmlExportConfig().isExportAsKmz()) {
+			log.warn("glTF export cannot be used with KMZ compression. Deactivating KMZ.");
+			config.getKmlExportConfig().setExportAsKmz(false);
 		}
 
 		// build query from filter settings

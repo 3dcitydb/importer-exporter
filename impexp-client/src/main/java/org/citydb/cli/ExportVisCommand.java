@@ -42,6 +42,7 @@ import org.citydb.gui.modules.kml.controller.KmlExporter;
 import org.citydb.log.Logger;
 import org.citydb.plugin.CliCommand;
 import org.citydb.plugin.cli.DatabaseOption;
+import org.citydb.plugin.cli.ThreadPoolOption;
 import org.citydb.registry.ObjectRegistry;
 import picocli.CommandLine;
 
@@ -65,6 +66,9 @@ public class ExportVisCommand extends CliCommand {
             description = "Write JSON metadata file.")
     private boolean json;
 
+    @CommandLine.ArgGroup
+    private ThreadPoolOption threadPoolOption;
+
     @CommandLine.ArgGroup(exclusive = false, heading = "Display options:%n")
     private DisplayOption displayOption;
 
@@ -82,7 +86,6 @@ public class ExportVisCommand extends CliCommand {
     @Override
     public Integer call() throws Exception {
         Config config = ObjectRegistry.getInstance().getConfig();
-        KmlExportConfig kmlExportConfig = config.getKmlExportConfig();
 
         // connect to database
         DatabaseController database = ObjectRegistry.getInstance().getDatabaseController();
@@ -96,23 +99,18 @@ public class ExportVisCommand extends CliCommand {
         }
 
         // set general export options
-        setExportSettings(kmlExportConfig);
+        setExportOptions(config.getKmlExportConfig());
 
         // set display options
-        setDisplayOptions(kmlExportConfig);
+        setDisplayOptions(config.getKmlExportConfig());
 
         // set user-defined query options
         if (queryOption != null) {
-            kmlExportConfig.setQuery(queryOption.toSimpleKmlQuery());
+            config.getKmlExportConfig().setQuery(queryOption.toSimpleKmlQuery());
         }
 
         // set glTF options
-        setGltfOptions(kmlExportConfig);
-
-        if (kmlExportConfig.isCreateGltfModel() && kmlExportConfig.isExportAsKmz()) {
-            log.warn("glTF export cannot be used with KMZ compression. Deactivating KMZ.");
-            kmlExportConfig.setExportAsKmz(false);
-        }
+        setGltfOptions(config.getKmlExportConfig());
 
         try {
             new KmlExporter().doExport(file);
@@ -128,13 +126,17 @@ public class ExportVisCommand extends CliCommand {
         return 0;
     }
 
-    private void setExportSettings(KmlExportConfig kmlExportConfig) {
+    private void setExportOptions(KmlExportConfig kmlExportConfig) {
         if (exportAsKmz) {
             kmlExportConfig.setExportAsKmz(exportAsKmz);
         }
 
         if (json) {
             kmlExportConfig.setWriteJSONFile(json);
+        }
+
+        if (threadPoolOption != null) {
+            kmlExportConfig.getResources().getThreadPool().setDefaultPool(threadPoolOption.toThreadPool());
         }
     }
 
