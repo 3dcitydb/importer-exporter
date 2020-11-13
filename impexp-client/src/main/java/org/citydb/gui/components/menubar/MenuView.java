@@ -37,7 +37,6 @@ import org.citydb.gui.util.GuiUtil;
 import javax.swing.*;
 import java.util.List;
 
-@SuppressWarnings("serial")
 public class MenuView extends JMenu {
 	private final ImpExpGui mainView;
 	private final Config config;
@@ -66,9 +65,9 @@ public class MenuView extends JMenu {
 		
 		defaults.addActionListener(e -> {
 			// do not loose recently used projects
-			List<String> recentlyUsedProjects = config.getGuiConfig().getRecentlyUsedProjectFiles();
+			List<String> recentlyUsedProjects = config.getGuiConfig().getRecentlyUsedConfigFiles();
 			config.setGuiConfig(new GuiConfig());
-			config.getGuiConfig().setRecentlyUsedProjectFiles(recentlyUsedProjects);
+			config.getGuiConfig().setRecentlyUsedConfigFiles(recentlyUsedProjects);
 			mainView.restoreDefaults();
 		});
 		

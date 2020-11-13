@@ -40,7 +40,6 @@ import javax.swing.text.html.HTMLDocument;
 import java.awt.*;
 import java.text.MessageFormat;
 
-@SuppressWarnings("serial")
 public class InfoDialog extends JDialog {
 	private final Config config;
 

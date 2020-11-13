@@ -29,9 +29,9 @@ package org.citydb.event.global;
 
 import org.citydb.event.Event;
 
-public final class ProjectChangedEvent extends Event {
+public final class ConfigChangedEvent extends Event {
 
-	public ProjectChangedEvent(Object source) {
+	public ConfigChangedEvent(Object source) {
 		super(EventType.PROJECT_CHANGED, GLOBAL_CHANNEL, source);
 	}
 	

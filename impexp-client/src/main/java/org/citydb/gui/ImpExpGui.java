@@ -460,11 +460,11 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		config.getGuiConfig().getConsoleWindow().setDetached(enable);
 	}
 
-	public boolean saveProjectSettings() {
-		return saveProjectSettings(false);
+	public boolean saveSettings() {
+		return saveSettings(false);
 	}
 
-	private boolean saveProjectSettings(boolean isShuttingDown) {
+	private boolean saveSettings(boolean isShuttingDown) {
 		if (!createConfigDir(configFile.getParent()))
 			return false;
 
@@ -597,7 +597,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 				plugin.shutdown();
 
 			log.info("Saving project settings");
-			saveProjectSettings(true);
+			saveSettings(true);
 			saveGUISettings();
 
 			if (dbPool.isConnected()) {

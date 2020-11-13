@@ -154,11 +154,11 @@ public class GuiConfig {
         this.showChangeSridWarning = showChangeSridWarning;
     }
 
-    public List<String> getRecentlyUsedProjectFiles() {
+    public List<String> getRecentlyUsedConfigFiles() {
         return recentlyUsedProjects;
     }
 
-    public void setRecentlyUsedProjectFiles(List<String> recentlyUsedProjects) {
+    public void setRecentlyUsedConfigFiles(List<String> recentlyUsedProjects) {
         if (recentlyUsedProjects != null)
             this.recentlyUsedProjects = recentlyUsedProjects;
     }

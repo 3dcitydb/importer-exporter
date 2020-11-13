@@ -33,15 +33,12 @@ import org.citydb.gui.ImpExpGui;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.log.Logger;
 
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
-import javax.swing.SwingUtilities;
-import java.awt.Desktop;
+import javax.swing.*;
+import java.awt.*;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Properties;
 
-@SuppressWarnings("serial")
 public class MenuHelp extends JMenu {
 	private final Logger log = Logger.getInstance();
 	private final Config config;
