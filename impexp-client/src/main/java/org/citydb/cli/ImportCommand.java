@@ -103,7 +103,7 @@ public class ImportCommand extends CliCommand {
         }
 
         if (threadPoolOption != null) {
-            importConfig.getResources().getThreadPool().setDefaultPool(threadPoolOption.toThreadPool());
+            importConfig.getResources().setThreadPool(threadPoolOption.toThreadPool());
         }
     }
 }

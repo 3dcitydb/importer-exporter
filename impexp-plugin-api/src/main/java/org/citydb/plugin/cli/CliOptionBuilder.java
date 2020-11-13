@@ -34,7 +34,7 @@ import org.citydb.config.project.query.filter.selection.id.DatabaseIdOperator;
 import org.citydb.config.project.query.filter.selection.id.ResourceIdOperator;
 import org.citydb.config.project.query.filter.selection.sql.SelectOperator;
 import org.citydb.config.project.query.filter.type.FeatureTypeFilter;
-import org.citydb.config.project.resources.ThreadPoolConfig;
+import org.citydb.config.project.resources.ThreadPool;
 import org.citygml4j.model.module.Module;
 import org.citygml4j.model.module.Modules;
 import org.citygml4j.model.module.citygml.CityGMLVersion;
@@ -208,7 +208,7 @@ public class CliOptionBuilder {
         return null;
     }
 
-    public static ThreadPoolConfig threadPool(String threads, CommandLine commandLine) {
+    public static ThreadPool threadPool(String threads, CommandLine commandLine) {
         if (threads != null) {
             String[] limits = threads.split(",");
             if (limits.length == 0 || limits.length > 2) {
@@ -235,7 +235,7 @@ public class CliOptionBuilder {
                         "Error: The upper limit of threads must be greater than or equal to the lower limit");
             }
 
-            ThreadPoolConfig threadPool = new ThreadPoolConfig();
+            ThreadPool threadPool = new ThreadPool();
             threadPool.setMinThreads(lower);
             threadPool.setMaxThreads(upper);
             return threadPool;

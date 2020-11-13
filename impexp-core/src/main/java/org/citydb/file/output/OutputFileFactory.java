@@ -68,7 +68,7 @@ public class OutputFileFactory {
                 return new ZipOutputFile(Util.stripFileExtension(file.getFileName().toString()) + ".gml",
                         file,
                         file.getParent(),
-                        config.getExportConfig().getResources().getThreadPool().getDefaultPool().getMaxThreads(),
+                        config.getExportConfig().getResources().getThreadPool().getMaxThreads(),
                         eventDispatcher,
                         eventChannel);
             case "gzip":

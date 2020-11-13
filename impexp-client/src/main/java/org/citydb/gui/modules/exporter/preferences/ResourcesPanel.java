@@ -30,7 +30,7 @@ package org.citydb.gui.modules.exporter.preferences;
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.database.ExportBatching;
-import org.citydb.config.project.resources.ThreadPoolConfig;
+import org.citydb.config.project.resources.ThreadPool;
 import org.citydb.config.project.resources.UIDCacheConfig;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.modules.common.AbstractPreferencesComponent;
@@ -82,7 +82,7 @@ public class ResourcesPanel extends AbstractPreferencesComponent{
 
 	@Override
 	public boolean isModified() {
-		ThreadPoolConfig threadPool = config.getExportConfig().getResources().getThreadPool().getDefaultPool();
+		ThreadPool threadPool = config.getExportConfig().getResources().getThreadPool();
 		ExportBatching exportBatching = config.getDatabaseConfig().getExportBatching();
 		UIDCacheConfig geometry = config.getExportConfig().getResources().getGmlIdCache().getGeometry();
 		UIDCacheConfig feature = config.getExportConfig().getResources().getGmlIdCache().getFeature();
@@ -308,7 +308,7 @@ public class ResourcesPanel extends AbstractPreferencesComponent{
 
 	@Override
 	public void loadSettings() {
-		ThreadPoolConfig threadPool = config.getExportConfig().getResources().getThreadPool().getDefaultPool();
+		ThreadPool threadPool = config.getExportConfig().getResources().getThreadPool();
 		ExportBatching exportBatching = config.getDatabaseConfig().getExportBatching();
 		UIDCacheConfig geometry = config.getExportConfig().getResources().getGmlIdCache().getGeometry();
 		UIDCacheConfig feature = config.getExportConfig().getResources().getGmlIdCache().getFeature();
@@ -340,7 +340,7 @@ public class ResourcesPanel extends AbstractPreferencesComponent{
 
 	@Override
 	public void setSettings() {
-		ThreadPoolConfig threadPool = config.getExportConfig().getResources().getThreadPool().getDefaultPool();
+		ThreadPool threadPool = config.getExportConfig().getResources().getThreadPool();
 		ExportBatching exportBatching = config.getDatabaseConfig().getExportBatching();
 		UIDCacheConfig geometry = config.getExportConfig().getResources().getGmlIdCache().getGeometry();
 		UIDCacheConfig feature = config.getExportConfig().getResources().getGmlIdCache().getFeature();

@@ -28,7 +28,7 @@
 
 package org.citydb.plugin.cli;
 
-import org.citydb.config.project.resources.ThreadPoolConfig;
+import org.citydb.config.project.resources.ThreadPool;
 import picocli.CommandLine;
 
 public class ThreadPoolOption implements CliOption {
@@ -36,9 +36,9 @@ public class ThreadPoolOption implements CliOption {
             description = "Number of worker threads to use.")
     private String threads;
 
-    private ThreadPoolConfig threadPool;
+    private ThreadPool threadPool;
 
-    public ThreadPoolConfig toThreadPool() {
+    public ThreadPool toThreadPool() {
         return threadPool;
     }
 

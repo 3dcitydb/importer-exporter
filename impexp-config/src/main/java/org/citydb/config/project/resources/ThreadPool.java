@@ -28,26 +28,41 @@
 package org.citydb.config.project.resources;
 
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 
 @XmlType(name = "ThreadPoolType", propOrder = {
-        "defaultPool"
+        "minThreads",
+        "maxThreads"
 })
 public class ThreadPool {
-    @XmlElement(name = "default", required = true)
-    private ThreadPoolConfig defaultPool;
+    @XmlElement(required = true)
+    @XmlSchemaType(name = "positiveInteger")
+    private Integer minThreads;
+    @XmlElement(required = true)
+    @XmlSchemaType(name = "positiveInteger")
+    private Integer maxThreads;
 
     public ThreadPool() {
-        defaultPool = new ThreadPoolConfig();
+        minThreads = 2;
+        maxThreads = Math.max(minThreads, Runtime.getRuntime().availableProcessors());
     }
 
-    public ThreadPoolConfig getDefaultPool() {
-        return defaultPool;
+    public Integer getMinThreads() {
+        return minThreads;
     }
 
-    public void setDefaultPool(ThreadPoolConfig defaultPool) {
-        if (defaultPool != null)
-            this.defaultPool = defaultPool;
+    public void setMinThreads(Integer minThreads) {
+        if (minThreads != null && minThreads > 0)
+            this.minThreads = minThreads;
     }
 
+    public Integer getMaxThreads() {
+        return maxThreads;
+    }
+
+    public void setMaxThreads(Integer maxThreads) {
+        if (maxThreads != null && maxThreads > 0)
+            this.maxThreads = maxThreads;
+    }
 }

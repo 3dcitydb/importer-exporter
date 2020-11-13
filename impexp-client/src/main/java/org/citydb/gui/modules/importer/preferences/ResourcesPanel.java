@@ -30,7 +30,7 @@ package org.citydb.gui.modules.importer.preferences;
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.database.ImportBatching;
-import org.citydb.config.project.resources.ThreadPoolConfig;
+import org.citydb.config.project.resources.ThreadPool;
 import org.citydb.config.project.resources.UIDCacheConfig;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.modules.common.AbstractPreferencesComponent;
@@ -91,7 +91,7 @@ public class ResourcesPanel extends AbstractPreferencesComponent{
 
 	@Override
 	public boolean isModified() {
-		ThreadPoolConfig threadPool = config.getImportConfig().getResources().getThreadPool().getDefaultPool();
+		ThreadPool threadPool = config.getImportConfig().getResources().getThreadPool();
 		ImportBatching commit = config.getDatabaseConfig().getImportBatching();
 		UIDCacheConfig geometry = config.getImportConfig().getResources().getGmlIdCache().getGeometry();
 		UIDCacheConfig feature = config.getImportConfig().getResources().getGmlIdCache().getFeature();
@@ -367,7 +367,7 @@ public class ResourcesPanel extends AbstractPreferencesComponent{
 
 	@Override
 	public void loadSettings() {
-		ThreadPoolConfig threadPool = config.getImportConfig().getResources().getThreadPool().getDefaultPool();
+		ThreadPool threadPool = config.getImportConfig().getResources().getThreadPool();
 		ImportBatching commit = config.getDatabaseConfig().getImportBatching();
 		UIDCacheConfig geometry = config.getImportConfig().getResources().getGmlIdCache().getGeometry();
 		UIDCacheConfig feature = config.getImportConfig().getResources().getGmlIdCache().getFeature();
@@ -403,7 +403,7 @@ public class ResourcesPanel extends AbstractPreferencesComponent{
 
 	@Override
 	public void setSettings() {
-		ThreadPoolConfig threadPool = config.getImportConfig().getResources().getThreadPool().getDefaultPool();
+		ThreadPool threadPool = config.getImportConfig().getResources().getThreadPool();
 		ImportBatching commit = config.getDatabaseConfig().getImportBatching();
 		UIDCacheConfig geometry = config.getImportConfig().getResources().getGmlIdCache().getGeometry();
 		UIDCacheConfig feature = config.getImportConfig().getResources().getGmlIdCache().getFeature();

@@ -460,8 +460,8 @@ public class KmlExporter implements EventHandler {
 
 						kmlWorkerPool = new WorkerPool<KmlSplittingResult>(
 								"db_exporter_pool",
-								config.getKmlExportConfig().getResources().getThreadPool().getDefaultPool().getMinThreads(),
-								config.getKmlExportConfig().getResources().getThreadPool().getDefaultPool().getMaxThreads(),
+								config.getKmlExportConfig().getResources().getThreadPool().getMinThreads(),
+								config.getKmlExportConfig().getResources().getThreadPool().getMaxThreads(),
 								PoolSizeAdaptationStrategy.AGGRESSIVE,
 								new KmlExportWorkerFactory(outputFile,
 										jaxbKmlContext,

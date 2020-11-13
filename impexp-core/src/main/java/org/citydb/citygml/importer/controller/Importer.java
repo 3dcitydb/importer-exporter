@@ -143,8 +143,8 @@ public class Importer implements EventHandler {
 
     private boolean process(List<Path> inputFiles) throws CityGMLImportException {
         // worker pool settings
-        int minThreads = config.getImportConfig().getResources().getThreadPool().getDefaultPool().getMinThreads();
-        int maxThreads = config.getImportConfig().getResources().getThreadPool().getDefaultPool().getMaxThreads();
+        int minThreads = config.getImportConfig().getResources().getThreadPool().getMinThreads();
+        int maxThreads = config.getImportConfig().getResources().getThreadPool().getMaxThreads();
         int queueSize = maxThreads * 2;
 
         // gml:id lookup cache update

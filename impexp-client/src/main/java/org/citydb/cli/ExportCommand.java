@@ -110,7 +110,7 @@ public class ExportCommand extends CliCommand {
         exportConfig.getCityGMLOptions().setFileEncoding(encoding);
 
         if (threadPoolOption != null) {
-            exportConfig.getResources().getThreadPool().setDefaultPool(threadPoolOption.toThreadPool());
+            exportConfig.getResources().setThreadPool(threadPoolOption.toThreadPool());
         }
     }
 }

@@ -413,7 +413,7 @@ public class Exporter implements EventHandler {
                     // create instance of temp table manager
                     try {
                         cacheTableManager = new CacheTableManager(
-                                config.getExportConfig().getResources().getThreadPool().getDefaultPool().getMaxThreads(),
+                                config.getExportConfig().getResources().getThreadPool().getMaxThreads(),
                                 config);
                     } catch (SQLException | IOException e) {
                         throw new CityGMLExportException("Failed to initialize internal cache manager.", e);
@@ -431,7 +431,7 @@ public class Exporter implements EventHandler {
                                         config.getDatabaseConfig().getImportBatching().getGmlIdCacheBatchSize()),
                                 config.getExportConfig().getResources().getGmlIdCache().getGeometry().getCacheSize(),
                                 config.getExportConfig().getResources().getGmlIdCache().getGeometry().getPageFactor(),
-                                config.getExportConfig().getResources().getThreadPool().getDefaultPool().getMaxThreads());
+                                config.getExportConfig().getResources().getThreadPool().getMaxThreads());
 
                         uidCacheManager.initCache(
                                 UIDCacheType.OBJECT,
@@ -440,7 +440,7 @@ public class Exporter implements EventHandler {
                                         config.getDatabaseConfig().getImportBatching().getGmlIdCacheBatchSize()),
                                 config.getExportConfig().getResources().getGmlIdCache().getFeature().getCacheSize(),
                                 config.getExportConfig().getResources().getGmlIdCache().getFeature().getPageFactor(),
-                                config.getExportConfig().getResources().getThreadPool().getDefaultPool().getMaxThreads());
+                                config.getExportConfig().getResources().getThreadPool().getMaxThreads());
                     } catch (SQLException e) {
                         throw new CityGMLExportException("Failed to initialize internal gml:id caches.", e);
                     }
@@ -450,7 +450,7 @@ public class Exporter implements EventHandler {
                     xlinkExporterPool = new WorkerPool<>(
                             "xlink_exporter_pool",
                             1,
-                            Math.max(1, config.getExportConfig().getResources().getThreadPool().getDefaultPool().getMaxThreads() / 2),
+                            Math.max(1, config.getExportConfig().getResources().getThreadPool().getMaxThreads() / 2),
                             PoolSizeAdaptationStrategy.AGGRESSIVE,
                             new DBExportXlinkWorkerFactory(internalConfig, config, eventDispatcher),
                             300,
@@ -458,8 +458,8 @@ public class Exporter implements EventHandler {
 
                     dbWorkerPool = new WorkerPool<>(
                             "db_exporter_pool",
-                            config.getExportConfig().getResources().getThreadPool().getDefaultPool().getMinThreads(),
-                            config.getExportConfig().getResources().getThreadPool().getDefaultPool().getMaxThreads(),
+                            config.getExportConfig().getResources().getThreadPool().getMinThreads(),
+                            config.getExportConfig().getResources().getThreadPool().getMaxThreads(),
                             PoolSizeAdaptationStrategy.AGGRESSIVE,
                             new DBExportWorkerFactory(
                                     schemaMapping,

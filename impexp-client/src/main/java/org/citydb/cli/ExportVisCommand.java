@@ -136,7 +136,7 @@ public class ExportVisCommand extends CliCommand {
         }
 
         if (threadPoolOption != null) {
-            kmlExportConfig.getResources().getThreadPool().setDefaultPool(threadPoolOption.toThreadPool());
+            kmlExportConfig.getResources().setThreadPool(threadPoolOption.toThreadPool());
         }
     }
 
