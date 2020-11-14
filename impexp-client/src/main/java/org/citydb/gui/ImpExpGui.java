@@ -27,6 +27,7 @@
  */
 package org.citydb.gui;
 
+import com.formdev.flatlaf.ui.FlatTabbedPaneUI;
 import org.citydb.ade.ADEExtensionManager;
 import org.citydb.config.Config;
 import org.citydb.config.ConfigUtil;
@@ -75,8 +76,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
-import javax.swing.plaf.basic.BasicSplitPaneDivider;
-import javax.swing.plaf.basic.BasicSplitPaneUI;
 import javax.xml.bind.JAXBException;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
@@ -114,7 +113,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 	private JTabbedPane menu;
 	private JSplitPane splitPane;
 	private JPanel console;
-	private JLabel consoleLabel;
+	private JTabbedPane consolePane;
 	private ConsolePopupMenuWrapper consolePopup;
 	private ConsoleWindow consoleWindow;
 
@@ -163,34 +162,29 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 	private void initGui() {
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
-		activePosition = 0;
-		main = new JPanel();
-
 		menuBar = new MenuBar(this, config);
 		setJMenuBar(menuBar);
 
 		console = new JPanel();
-		consoleLabel = new JLabel();
+		consolePane = new JTabbedPane();
 		consoleText.setAutoscrolls(true);
 		consoleText.setFont(new Font(Font.MONOSPACED, Font.PLAIN, UIManager.getFont("Label.font").getSize()));
+		consoleText.setBackground(UIManager.getColor("TextField.background"));
 		consoleText.setEditable(false);
+
 		consoleWindow = new ConsoleWindow(console, config, this);
 		consolePopup = new ConsolePopupMenuWrapper(PopupMenuDecorator.getInstance().decorateAndGet(consoleText));
 
 		statusText = new JLabel();
 		connectText = new JLabel();
-
 		Border border = BorderFactory.createEtchedBorder();
 		Border margin = BorderFactory.createEmptyBorder(0, 2, 0, 2);
 		statusText.setBorder(new CompoundBorder(border, margin));
 		statusText.setOpaque(true);
-		statusText.setBackground(new Color(255,255,255));		
-
+		statusText.setBackground(new Color(255,255,255));
 		connectText.setBorder(new CompoundBorder(border, margin));
 		connectText.setBackground(new Color(255,255,255));
 		connectText.setOpaque(true);
-
-		menu = new JTabbedPane();
 
 		// retrieve all views
 		views = new ArrayList<>();
@@ -214,13 +208,16 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		views.add(preferencesPlugin.getView());
 
 		// attach views to gui
+		menu = new JTabbedPane();
+		menu.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
+
 		int index = 0;
 		for (View view : views)
 			menu.insertTab(null, view.getIcon(), view.getViewComponent(), view.getToolTip(), index++);
 
 		menu.addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent e) {
-				if (menu.getSelectedIndex() == activePosition) 
+				if (menu.getSelectedIndex() == activePosition)
 					return;
 
 				if (menu.getComponentAt(activePosition) == preferencesPlugin.getView().getViewComponent()) {
@@ -262,47 +259,40 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		setLayout(new GridBagLayout());
 
 		// main panel
-		main.setBorder(BorderFactory.createEmptyBorder());
-		main.setBackground(this.getBackground());
+		main = new JPanel();
 		main.setLayout(new GridBagLayout());
 		{
-			main.add(menu, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,5,5,5,5));
 			JPanel status = new JPanel();
-			status.setBorder(BorderFactory.createEmptyBorder());
-			status.setBackground(this.getBackground());
-			main.add(status, GuiUtil.setConstraints(0,1,1.0,0.0,GridBagConstraints.HORIZONTAL,5,5,0,5));
 			status.setLayout(new GridBagLayout());
 			{
 				status.add(statusText, GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.HORIZONTAL,0,0,0,2));
 				status.add(connectText, GuiUtil.setConstraints(1,0,0.0,0.0,GridBagConstraints.HORIZONTAL,0,2,0,0));
 			}
+			main.add(menu, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,5,5,5,5));
+			main.add(status, GuiUtil.setConstraints(0,1,1.0,0.0,GridBagConstraints.HORIZONTAL,5,5,0,5));
 		}
 
 		// console panel
-		console.setBorder(BorderFactory.createEmptyBorder());
-		console.setBackground(this.getBackground());
 		console.setLayout(new GridBagLayout());
 		{
-			console.add(consoleLabel, GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.BOTH,5,5,0,5));
 			JScrollPane scroll = new JScrollPane(consoleText);
-			scroll.setBorder(BorderFactory.createEtchedBorder());
+			scroll.setBorder(BorderFactory.createEmptyBorder());
 			scroll.setViewportBorder(BorderFactory.createEmptyBorder());
-			console.add(scroll, GuiUtil.setConstraints(0,1,1.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
+
+			consolePane.addTab(null, scroll);
+			consolePane.putClientProperty("JTabbedPane.hasFullBorder", true);
+			consolePane.setUI(new FlatTabbedPaneUI() {
+				protected void paintTabBackground(Graphics g, int p, int i, int x, int y, int w, int h, boolean s) {
+					// do not paint tab background
+				}
+			});
+
+			console.add(consolePane, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,5,5,5,5));
 		}
 
 		splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
 		splitPane.setContinuousLayout(true);
 		splitPane.setBorder(BorderFactory.createEmptyBorder());
-		splitPane.setOpaque(false);
-		splitPane.setUI(new BasicSplitPaneUI() {
-			public BasicSplitPaneDivider createDefaultDivider() {
-				return new BasicSplitPaneDivider(this) {
-					public void setBorder(Border b) {
-					}
-				};
-			}
-		});
-
 		splitPane.setLeftComponent(main);
 		splitPane.setRightComponent(console);
 		add(splitPane, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,0,0,0,0));
@@ -334,7 +324,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		Integer dividerLocation = config.getGuiConfig().getMainWindow().getDividerLocation();
 
 		// create default values for main window
-		if (x == null || y == null || width == null || height == null || 
+		if (x == null || y == null || width == null || height == null ||
 				!virtualBounds.contains(x , y, frame_insets_x != 0 ? frame_insets_x : 40, frame_insets_y != 0 ? frame_insets_y : 40)) {
 			Dimension dim = t.getScreenSize();
 			int user_insets_x = 100;
@@ -368,7 +358,6 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 
 	private void initConsole() {
 		log.setConsoleLogger(consoleLogger);
-
 		System.setOut(consoleLogger.out());
 		System.setErr(consoleLogger.err());
 
@@ -391,7 +380,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 
 			setDatabaseStatus(dbPool.isConnected());
 			statusText.setText(Language.I18N.getString("main.status.ready.label"));
-			consoleLabel.setText(Language.I18N.getString("main.console.label"));
+			consolePane.setTitleAt(0, Language.I18N.getString("main.console.label"));
 
 			// fire translation notification to plugins
 			for (Plugin plugin : pluginManager.getPlugins()) {
@@ -433,13 +422,13 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 					Insets insets = t.getScreenInsets(getGraphicsConfiguration());
 					Rectangle bounds = getGraphicsConfiguration().getBounds();
 					setLocation(bounds.x, bounds.y);
-					setSize(bounds.width - insets.left - tmpConsoleWidth - insets.right, 
-							bounds.height - insets.top - insets.bottom);					
-				} else				
+					setSize(bounds.width - insets.left - tmpConsoleWidth - insets.right,
+							bounds.height - insets.top - insets.bottom);
+				} else
 					setSize(getWidth() - tmpConsoleWidth, getHeight());
 			}
 
-			consoleWindow.activate();			
+			consoleWindow.activate();
 		} else {
 			consoleWindow.dispose();
 
@@ -447,7 +436,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 			if (width == 0)
 				width = consoleWindow.getWidth();
 
-			if (resizeMain)	
+			if (resizeMain)
 				setSize(getWidth() + width, getHeight());
 
 			width = main.getWidth();

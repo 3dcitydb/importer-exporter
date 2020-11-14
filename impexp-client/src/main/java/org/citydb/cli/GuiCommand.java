@@ -153,7 +153,7 @@ public class GuiCommand extends CliCommand implements StartupProgressListener {
             try {
                 // set look&feel
                 UIManager.setLookAndFeel(new FlatLightLaf());
-            } catch (UnsupportedLookAndFeelException e) {
+            } catch (Exception e) {
                 FlatLightLaf.install();
             }
 
