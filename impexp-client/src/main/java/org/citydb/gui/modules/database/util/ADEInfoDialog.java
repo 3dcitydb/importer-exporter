@@ -237,7 +237,7 @@ public class ADEInfoDialog extends JDialog {
         textArea.setEditable(false);
         textArea.setLineWrap(true);
         textArea.setRows(rows);
-        textArea.setFont(UIManager.getFont("defaultFont"));
+        textArea.setFont(UIManager.getFont("Label.font"));
         textArea.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
         return textArea;
     }

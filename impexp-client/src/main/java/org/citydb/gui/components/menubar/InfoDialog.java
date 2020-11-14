@@ -153,7 +153,7 @@ public class InfoDialog extends JDialog {
 			logos.setBorder(BorderFactory.createEtchedBorder());
 			logos.setLayout(new GridBagLayout());
 			{
-				Font font = UIManager.getFont("defaultFont");
+				Font font = UIManager.getFont("Label.font");
 				String bodyRule = "body { font-family: " + font.getFamily() + "; " + "font-size: " + font.getSize() + "pt; }";
 
 				String tum_label_text = config.getGlobalConfig().getLanguage() == LanguageType.EN ?

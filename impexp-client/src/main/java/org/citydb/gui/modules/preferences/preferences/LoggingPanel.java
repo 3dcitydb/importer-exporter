@@ -135,7 +135,7 @@ public class LoggingPanel extends AbstractPreferencesComponent {
         truncateLogFile.setIconTextGap(10);
 
         preview = new JTextPane();
-        preview.setFont(new Font(Font.MONOSPACED, Font.PLAIN, UIManager.getFont("defaultFont").getSize()));
+        preview.setFont(new Font(Font.MONOSPACED, Font.PLAIN, UIManager.getFont("Label.font").getSize()));
         preview.setEditable(false);
         preview.setBorder(BorderFactory.createEtchedBorder());
 

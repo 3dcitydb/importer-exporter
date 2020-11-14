@@ -172,7 +172,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		console = new JPanel();
 		consoleLabel = new JLabel();
 		consoleText.setAutoscrolls(true);
-		consoleText.setFont(new Font(Font.MONOSPACED, Font.PLAIN, UIManager.getFont("defaultFont").getSize()));
+		consoleText.setFont(new Font(Font.MONOSPACED, Font.PLAIN, UIManager.getFont("Label.font").getSize()));
 		consoleText.setEditable(false);
 		consoleWindow = new ConsoleWindow(console, config, this);
 		consolePopup = new ConsolePopupMenuWrapper(PopupMenuDecorator.getInstance().decorateAndGet(consoleText));
