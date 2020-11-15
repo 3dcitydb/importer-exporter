@@ -70,10 +70,8 @@ public class XMLValidationPanel extends AbstractPreferencesComponent {
 			add(block1, GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.BOTH,5,0,5,0));
 			block1.setBorder(BorderFactory.createTitledBorder(""));
 			block1.setLayout(new GridBagLayout());
-			useXMLValidation.setIconTextGap(10);
 			useXMLValidationDescr.setFont(useXMLValidationDescr.getFont().deriveFont(Font.ITALIC));
-			int lmargin = (int)(useXMLValidation.getPreferredSize().getWidth()) + 11;
-			oneError.setIconTextGap(10);
+			int lmargin = GuiUtil.getTextOffset(useXMLValidation) + 5;
 			{
 				block1.add(useXMLValidation, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
 				block1.add(useXMLValidationDescr, GuiUtil.setConstraints(0,1,1.0,0.0,GridBagConstraints.BOTH,0,lmargin,5,5));		

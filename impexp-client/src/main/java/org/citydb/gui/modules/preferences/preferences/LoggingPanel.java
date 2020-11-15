@@ -129,25 +129,18 @@ public class LoggingPanel extends AbstractPreferencesComponent {
         alternativeLogFileText = new JTextField();
         alternativeLogFileButton = new JButton();
 
-        wrapTextConsole.setIconTextGap(10);
-        useLogFile.setIconTextGap(10);
-        useAlternativeLogFile.setIconTextGap(10);
-        truncateLogFile.setIconTextGap(10);
-
         preview = new JTextPane();
         preview.setFont(new Font(Font.MONOSPACED, Font.PLAIN, UIManager.getFont("Label.font").getSize()));
         preview.setEditable(false);
         preview.setBorder(BorderFactory.createEtchedBorder());
 
         useForeground = new JCheckBox();
-        useForeground.setIconTextGap(10);
         foregroundColor = new AlphaButton();
         foregroundColor.setPreferredSize(new Dimension(80, 1));
         foregroundColor.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1));
         foregroundColor.setContentAreaFilled(false);
 
         useBackground = new JCheckBox();
-        useBackground.setIconTextGap(10);
         backgroundColor = new AlphaButton();
         backgroundColor.setPreferredSize(new Dimension(80, 1));
         backgroundColor.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1));
@@ -202,7 +195,7 @@ public class LoggingPanel extends AbstractPreferencesComponent {
             add(filePanel, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 5, 0, 5, 0));
             filePanel.setBorder(BorderFactory.createTitledBorder(""));
             filePanel.setLayout(new GridBagLayout());
-            int lmargin = (int) (useAlternativeLogFile.getPreferredSize().getWidth()) + 11;
+            int lmargin = GuiUtil.getTextOffset(useAlternativeLogFile) + 5;
             {
                 filePanel.add(useLogFile, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.BOTH, 0, 5, 0, 5));
                 JPanel sub1 = new JPanel();

@@ -128,12 +128,7 @@ public class AppearancePanel extends AbstractPreferencesComponent {
 			exportBlock.setBorder(BorderFactory.createTitledBorder(""));
 			exportBlock.setLayout(new GridBagLayout());
 			{
-				exportAll.setIconTextGap(10);
-				noTexturesCheck.setIconTextGap(10);
-				noExport.setIconTextGap(10);
-				overwriteCheck.setIconTextGap(10);
-				generateUniqueCheck.setIconTextGap(10);
-				int lmargin = (int) (exportAll.getPreferredSize().getWidth()) + 11;
+				int lmargin = GuiUtil.getTextOffset(exportAll) + 5;
 				{
 					exportBlock.add(exportAll, GuiUtil.setConstraints(0, 0, 0, 1, GridBagConstraints.BOTH, 0, 5, 0, 5));
 					exportBlock.add(overwriteCheck, GuiUtil.setConstraints(0, 1, 1, 1, GridBagConstraints.BOTH, 0, lmargin, 0, 5));
@@ -156,7 +151,6 @@ public class AppearancePanel extends AbstractPreferencesComponent {
 				box.add(useBuckets);
 				box.add(Box.createHorizontalStrut(5));
 				box.add(noOfBuckets);
-				useBuckets.setIconTextGap(10);
 				pathBlock.add(box, GuiUtil.setConstraints(0, 1, 2, 1, 0, 0, GridBagConstraints.BOTH, 5, 5, 5, 5));
 			}
 

@@ -69,14 +69,11 @@ public class AddressPanel extends AbstractPreferencesComponent {
 
 	private void initGui() {
 		exportXAL = new JRadioButton();
-		exportXAL.setIconTextGap(10);
 		exportDB = new JRadioButton();
-		exportDB.setIconTextGap(10);
 		ButtonGroup exportGroup = new ButtonGroup();
 		exportGroup.add(exportXAL);
 		exportGroup.add(exportDB);
 		exportFallback = new JCheckBox();
-		exportFallback.setIconTextGap(10);
 
 		setLayout(new GridBagLayout());
 		{

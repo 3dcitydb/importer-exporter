@@ -79,8 +79,6 @@ public class LanguagePanel extends AbstractPreferencesComponent {
 			add(language, GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.BOTH,5,0,5,0));
 			language.setBorder(BorderFactory.createTitledBorder(""));
 			language.setLayout(new GridBagLayout());
-			importLanguageRadioDe.setIconTextGap(10);
-			importLanguageRadioEn.setIconTextGap(10);
 			{
 				language.add(importLanguageRadioDe, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
 				language.add(importLanguageRadioEn, GuiUtil.setConstraints(0,1,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));

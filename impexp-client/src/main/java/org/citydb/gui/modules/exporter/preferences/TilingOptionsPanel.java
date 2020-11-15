@@ -118,8 +118,7 @@ public class TilingOptionsPanel extends AbstractPreferencesComponent {
 			block2.setBorder(BorderFactory.createTitledBorder(""));
 			block2.setLayout(new GridBagLayout());
 			{	
-				setGenAttr.setIconTextGap(10);
-				int lmargin = (int)(setGenAttr.getPreferredSize().getWidth()) + 11;
+				int lmargin = GuiUtil.getTextOffset(setGenAttr) + 5;
 				GridBagConstraints c = GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5);
 				c.gridwidth = 2;
 

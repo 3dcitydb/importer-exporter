@@ -117,7 +117,6 @@ public class ProxyPanel extends AbstractPreferencesComponent implements EventHan
 		JPanel proxyListPanel = new JPanel();
 		proxySettingsPanel = new JPanel();
 		useSingleProxy = new JCheckBox();
-		useSingleProxy.setIconTextGap(10);
 		configureLabel = new JLabel();
 		requiresAuthenticationBox = new JCheckBox();
 		proxyHostLabel = new JLabel();
@@ -133,7 +132,6 @@ public class ProxyPanel extends AbstractPreferencesComponent implements EventHan
 		proxyUserText = new JTextField();
 		proxyPasswordText = new JPasswordField();
 		passwordCheck = new JCheckBox();
-		passwordCheck.setIconTextGap(10);
 
 		setLayout(new GridBagLayout());
 		add(configureLabel, GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.BOTH,5,TitledBorder.LEFT,0,0));
@@ -148,7 +146,6 @@ public class ProxyPanel extends AbstractPreferencesComponent implements EventHan
 		proxySettingsPanel.setBorder(BorderFactory.createTitledBorder(""));
 		proxySettingsPanel.setLayout(new GridBagLayout());
 		{
-			requiresAuthenticationBox.setIconTextGap(10);
 			proxySettingsPanel.add(proxyHostLabel, GuiUtil.setConstraints(0,0,0.0,1.0,GridBagConstraints.BOTH,5,5,5,5));
 			proxySettingsPanel.add(proxyHostText, GuiUtil.setConstraints(1,0,1.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
 			proxySettingsPanel.add(proxyPortLabel, GuiUtil.setConstraints(0,1,0.0,1.0,GridBagConstraints.BOTH,0,5,5,5));

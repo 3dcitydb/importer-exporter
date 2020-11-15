@@ -189,10 +189,7 @@ public class PointAndCurveRenderingPanel extends AbstractPreferencesComponent {
 		pointRadioGroup.add(crossLineRButton);
 		pointRadioGroup.add(iconRButton);
 		pointRadioGroup.add(cubeRButton);
-		iconRButton.setIconTextGap(10);
-		crossLineRButton.setIconTextGap(10);
-		cubeRButton.setIconTextGap(10);
-		
+
 		GridBagConstraints gc = GuiUtil.setConstraints(0,2,0.0,1.0,GridBagConstraints.NONE,0,0,BORDER_THICKNESS,0);		
 		gc.anchor = GridBagConstraints.WEST;
 		pointPanel.add(crossLineRButton, gc);		
@@ -212,7 +209,6 @@ public class PointAndCurveRenderingPanel extends AbstractPreferencesComponent {
         pcb.anchor = GridBagConstraints.WEST;
         pointPanel.add(pointCrossLineNormalColorButton, pcb);
 		
-        pointCrossLineHighlightingCheckbox.setIconTextGap(10);
 		GridBagConstraints phlc = GuiUtil.setConstraints(1,5,0.0,1.0,GridBagConstraints.BOTH,0,0,BORDER_THICKNESS,0);
 		phlc.gridwidth = 3;
 		pointPanel.add(pointCrossLineHighlightingCheckbox, phlc);
@@ -264,7 +260,6 @@ public class PointAndCurveRenderingPanel extends AbstractPreferencesComponent {
         pcfcb.anchor = GridBagConstraints.WEST;
         pointPanel.add(pointCubeFillColorButton, pcfcb);
         
-        pointCubeHighlightingCheckbox.setIconTextGap(10);
 		GridBagConstraints pchc = GuiUtil.setConstraints(1,14,0.0,1.0,GridBagConstraints.BOTH,0,0,BORDER_THICKNESS,0);
 		pchc.gridwidth = 3;
 		pointPanel.add(pointCubeHighlightingCheckbox, pchc);
@@ -306,7 +301,6 @@ public class PointAndCurveRenderingPanel extends AbstractPreferencesComponent {
         ccb.anchor = GridBagConstraints.WEST;
         curveDisplayFormPanel.add(curveNormalColorButton, ccb);
 		
-		curveHighlightingCheckbox.setIconTextGap(10);
 		GridBagConstraints chlc = GuiUtil.setConstraints(0,4,0.0,1.0,GridBagConstraints.BOTH,0,0,BORDER_THICKNESS,0);
 		chlc.gridwidth = 2;
 		curveDisplayFormPanel.add(curveHighlightingCheckbox, chlc);

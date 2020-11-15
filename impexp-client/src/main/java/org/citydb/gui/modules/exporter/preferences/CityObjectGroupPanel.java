@@ -27,21 +27,15 @@
  */
 package org.citydb.gui.modules.exporter.preferences;
 
-import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-
-import javax.swing.BorderFactory;
-import javax.swing.JCheckBox;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.border.TitledBorder;
-
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.exporter.ExportCityObjectGroup;
 import org.citydb.gui.modules.common.AbstractPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
+
+import javax.swing.*;
+import javax.swing.border.TitledBorder;
+import java.awt.*;
 
 @SuppressWarnings("serial")
 public class CityObjectGroupPanel extends AbstractPreferencesComponent {
@@ -63,7 +57,6 @@ public class CityObjectGroupPanel extends AbstractPreferencesComponent {
 
 	private void initGui() {
 		exportMemberAsXLink = new JCheckBox();
-		exportMemberAsXLink.setIconTextGap(10);
 		exportMemberAsXLinkDescr = new JLabel();
 
 		setLayout(new GridBagLayout());
@@ -72,7 +65,7 @@ public class CityObjectGroupPanel extends AbstractPreferencesComponent {
 			add(exportGroupPanel, GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.BOTH,5,0,5,0));
 			exportGroupPanel.setBorder(BorderFactory.createTitledBorder(""));
 			exportMemberAsXLinkDescr.setFont(exportMemberAsXLinkDescr.getFont().deriveFont(Font.ITALIC));
-			int lmargin = (int)(exportMemberAsXLink.getPreferredSize().getWidth()) + 11;
+			int lmargin = GuiUtil.getTextOffset(exportMemberAsXLink) + 5;
 			exportGroupPanel.setLayout(new GridBagLayout());
 			{
 				exportGroupPanel.add(exportMemberAsXLink, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));

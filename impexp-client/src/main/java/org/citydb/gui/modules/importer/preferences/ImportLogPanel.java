@@ -82,9 +82,8 @@ public class ImportLogPanel extends AbstractPreferencesComponent {
 
 			block1.setBorder(BorderFactory.createTitledBorder(""));
 			block1.setLayout(new GridBagLayout());
-			logFeatures.setIconTextGap(10);
 			logFile.setPreferredSize(logFile.getSize());
-			int lmargin = (int)(logFeatures.getPreferredSize().getWidth()) + 11;
+			int lmargin = GuiUtil.getTextOffset(logFeatures) + 5;
 			{
 				block1.add(logFeatures, GuiUtil.setConstraints(0, 0, 3, 1, 1, 1, GridBagConstraints.BOTH, 0, 5, 0, 5));
 				block1.add(logFileLabel, GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.BOTH, 0, lmargin, 5, 5));

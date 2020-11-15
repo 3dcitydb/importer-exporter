@@ -113,7 +113,6 @@ public class XSLTransformationPanel extends AbstractPreferencesComponent {
         add(panel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 5, 0, 5, 0));
 
         applyStylesheets = new JCheckBox();
-        applyStylesheets.setIconTextGap(10);
         componentsPanel = new JPanel();
         componentsPanel.setLayout(new GridLayout(0, 1));
 

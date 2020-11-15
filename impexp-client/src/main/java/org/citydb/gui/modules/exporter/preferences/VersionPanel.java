@@ -76,7 +76,6 @@ public class VersionPanel extends AbstractPreferencesComponent {
 		for (int i = 0; i < CityGMLVersionType.values().length; i++) {			
 			cityGMLVersionBox[i] = new JRadioButton();
 			cityGMLVersionBox[i].setText(CityGMLVersionType.values()[i].toString());
-			cityGMLVersionBox[i].setIconTextGap(10);
 			group.add(cityGMLVersionBox[i]);
 
 			if (Util.toCityGMLVersion(CityGMLVersionType.values()[i]) == CityGMLVersion.DEFAULT)

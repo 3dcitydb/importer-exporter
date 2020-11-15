@@ -235,7 +235,6 @@ public class FilterPanel extends JPanel implements EventHandler {
 					lods = new JCheckBox[5];
 					for (int lod = 0; lod < lods.length; lod++) {
 						lods[lod] = new JCheckBox("LoD" + lod);
-						lods[lod].setIconTextGap(10);
 						lodPanel.add(lods[lod], GuiUtil.setConstraints(lod,0,0,0,GridBagConstraints.NONE,0,0,0,15));
 					}
 
@@ -279,9 +278,6 @@ public class FilterPanel extends JPanel implements EventHandler {
 			JPanel bboxModePanel = new JPanel();
 			bboxModePanel.setLayout(new GridBagLayout());
 			{
-				bboxOverlaps.setIconTextGap(10);
-				bboxWithin.setIconTextGap(10);
-				bboxTiling.setIconTextGap(10);
 				bboxModePanel.add(bboxMode, GuiUtil.setConstraints(0,0,0,0,GridBagConstraints.HORIZONTAL,0,0,0,5));
 				bboxModePanel.add(bboxOverlaps, GuiUtil.setConstraints(1,0,0,0,GridBagConstraints.HORIZONTAL,0,15,0,5));
 				bboxModePanel.add(bboxWithin, GuiUtil.setConstraints(2,0,0,0,GridBagConstraints.HORIZONTAL,0,5,0,5));

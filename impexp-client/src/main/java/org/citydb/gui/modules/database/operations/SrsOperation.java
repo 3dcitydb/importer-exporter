@@ -108,8 +108,6 @@ public class SrsOperation extends DatabaseOperationView {
 
 		metadataButton = new JRadioButton();
 		transformButton = new JRadioButton();
-		metadataButton.setIconTextGap(10);
-		transformButton.setIconTextGap(10);
 
 		ButtonGroup group = new ButtonGroup();
 		group.add(transformButton);
@@ -295,7 +293,6 @@ public class SrsOperation extends DatabaseOperationView {
 			if (changeSrid && config.getGuiConfig().isShowChangeSridWarning()) {
 				JPanel confirmPanel = new JPanel(new GridBagLayout());
 				JCheckBox confirmDialogNoShow = new JCheckBox(Language.I18N.getString("common.dialog.msg.noShow"));
-				confirmDialogNoShow.setIconTextGap(10);
 
 				JLabel headerLabel = new JLabel(Language.I18N.getString("db.dialog.srs.changeSrid"));
 				JLabel sridLabel = new JLabel(Language.I18N.getString("pref.db.srs.label.srid") + ":");

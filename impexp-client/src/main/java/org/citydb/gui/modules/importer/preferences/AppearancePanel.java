@@ -96,9 +96,6 @@ public class AppearancePanel extends AbstractPreferencesComponent {
 			add(block1, GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.BOTH,5,0,5,0));
 			block1.setBorder(BorderFactory.createTitledBorder(""));
 			block1.setLayout(new GridBagLayout());
-			impAppRadioImp.setIconTextGap(10);
-			impAppRadioAppImp.setIconTextGap(10);
-			impAppRadioNoImp.setIconTextGap(10);
 			{
 				block1.add(impAppRadioImp, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
 				block1.add(impAppRadioAppImp, GuiUtil.setConstraints(0,1,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));

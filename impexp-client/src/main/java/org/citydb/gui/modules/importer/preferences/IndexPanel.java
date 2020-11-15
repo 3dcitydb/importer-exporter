@@ -97,9 +97,6 @@ public class IndexPanel extends AbstractPreferencesComponent {
 			add(block1, GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.BOTH,5,0,5,0));
 			block1.setBorder(BorderFactory.createTitledBorder(""));
 			block1.setLayout(new GridBagLayout());
-			impSIRadioNoDeac.setIconTextGap(10);
-			impSIRadioDeacAc.setIconTextGap(10);
-			impSIRadioDeac.setIconTextGap(10);
 			{
 				block1.add(impSIRadioNoDeac, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
 				block1.add(impSIRadioDeacAc, GuiUtil.setConstraints(0,1,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
@@ -110,9 +107,6 @@ public class IndexPanel extends AbstractPreferencesComponent {
 			add(block2, GuiUtil.setConstraints(0,2,1.0,0.0,GridBagConstraints.BOTH,5,0,5,0));
 			block2.setBorder(BorderFactory.createTitledBorder(""));
 			block2.setLayout(new GridBagLayout());
-			impNIRadioNoDeac.setIconTextGap(10);
-			impNIRadioDeacAc.setIconTextGap(10);
-			impNIRadioDeac.setIconTextGap(10);
 			{
 				block2.add(impNIRadioNoDeac, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
 				block2.add(impNIRadioDeacAc, GuiUtil.setConstraints(0,1,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));

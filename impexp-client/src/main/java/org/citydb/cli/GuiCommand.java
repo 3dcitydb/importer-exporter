@@ -168,6 +168,10 @@ public class GuiCommand extends CliCommand implements StartupProgressListener {
             JFrame.setDefaultLookAndFeelDecorated(true);
             JDialog.setDefaultLookAndFeelDecorated(true);
 
+            // set UI defaults
+            UIManager.put("CheckBox.iconTextGap", 6);
+            UIManager.put("RadioButton.iconTextGap", 6);
+
             // splash screen
             if (!hideSplash) {
                 splashScreen = new SplashScreen(3, 477, Color.BLACK);

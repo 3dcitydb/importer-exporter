@@ -84,8 +84,6 @@ public class IndexOperation extends DatabaseOperationView {
 
 		spatial = new JCheckBox();
 		normal = new JCheckBox();
-		spatial.setIconTextGap(10);
-		normal.setIconTextGap(10);
 
 		Box checkBox = Box.createVerticalBox();
 		checkBox.add(spatial);

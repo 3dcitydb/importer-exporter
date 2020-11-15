@@ -60,7 +60,6 @@ public class AddressPanel extends AbstractPreferencesComponent {
 
 	private void initGui() {
 		importXAL = new JCheckBox();
-		importXAL.setIconTextGap(10);
 
 		setLayout(new GridBagLayout());
 		{

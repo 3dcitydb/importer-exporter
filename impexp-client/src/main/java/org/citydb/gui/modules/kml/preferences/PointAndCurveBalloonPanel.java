@@ -144,11 +144,6 @@ public class PointAndCurveBalloonPanel extends AbstractPreferencesComponent {
 		pointContentSourcePanel.setBorder(BorderFactory.createTitledBorder(""));
 		add(pointContentSourcePanel, GuiUtil.setConstraints(0,0,2,1,1.0,0.0,GridBagConstraints.BOTH,BORDER_THICKNESS,0,BORDER_THICKNESS,0));
 
-		pointGenAttribRadioButton.setIconTextGap(10);
-		pointFileRadioButton.setIconTextGap(10);
-		pointGenAttribAndFileRadioButton.setIconTextGap(10);
-
-		pointIncludeDescription.setIconTextGap(10);
 		pointContentSourcePanel.add(pointIncludeDescription, GuiUtil.setConstraints(0,0,2,1,1.0,0.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,BORDER_THICKNESS,BORDER_THICKNESS));
 		GridBagConstraints pgarb = GuiUtil.setConstraints(0,1,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS*5,0,BORDER_THICKNESS);
 		pgarb.gridwidth = 2;
@@ -163,11 +158,6 @@ public class PointAndCurveBalloonPanel extends AbstractPreferencesComponent {
 		pgaafrb.gridwidth = 2;
 		pointContentSourcePanel.add(pointGenAttribAndFileRadioButton, pgaafrb);
 
-//		pointContentInSeparateFile.setIconTextGap(10);
-//		pointContentSourcePanel.add(pointContentInSeparateFile, GuiUtil.setConstraints(0,5,2,1,1.0,0.0,GridBagConstraints.BOTH,BORDER_THICKNESS*2,BORDER_THICKNESS,0,0));
-//		pointContentSourcePanel.add(pointWarningLabel, GuiUtil.setConstraints(0,6,2,1,1.0,0.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS*6,BORDER_THICKNESS,0));
-
-
 		ButtonGroup curveContentSourceRadioGroup = new ButtonGroup();
 		curveContentSourceRadioGroup.add(curveGenAttribRadioButton);
 		curveContentSourceRadioGroup.add(curveFileRadioButton);
@@ -178,11 +168,6 @@ public class PointAndCurveBalloonPanel extends AbstractPreferencesComponent {
 		curveContentSourcePanel.setBorder(BorderFactory.createTitledBorder(""));
 		add(curveContentSourcePanel, GuiUtil.setConstraints(0,1,2,1,1.0,0.0,GridBagConstraints.BOTH,BORDER_THICKNESS,0,BORDER_THICKNESS,0));
 
-		curveGenAttribRadioButton.setIconTextGap(10);
-		curveFileRadioButton.setIconTextGap(10);
-		curveGenAttribAndFileRadioButton.setIconTextGap(10);
-
-		curveIncludeDescription.setIconTextGap(10);
 		curveContentSourcePanel.add(curveIncludeDescription, GuiUtil.setConstraints(0,0,2,1,1.0,0.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,BORDER_THICKNESS,BORDER_THICKNESS));
 		GridBagConstraints cgarb = GuiUtil.setConstraints(0,1,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS*5,0,BORDER_THICKNESS);
 		cgarb.gridwidth = 2;
@@ -196,10 +181,6 @@ public class PointAndCurveBalloonPanel extends AbstractPreferencesComponent {
 		GridBagConstraints cgaafrb = GuiUtil.setConstraints(0,4,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS*5,0,BORDER_THICKNESS);
 		cgaafrb.gridwidth = 2;
 		curveContentSourcePanel.add(curveGenAttribAndFileRadioButton, cgaafrb);
-
-//		curveContentInSeparateFile.setIconTextGap(10);
-//		curveContentSourcePanel.add(curveContentInSeparateFile, GuiUtil.setConstraints(0,5,2,1,1.0,0.0,GridBagConstraints.BOTH,BORDER_THICKNESS*2,BORDER_THICKNESS,0,0));
-//		curveContentSourcePanel.add(curveWarningLabel, GuiUtil.setConstraints(0,6,2,1,1.0,0.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS*6,BORDER_THICKNESS,0));
 
 		add(warningLabel1, GuiUtil.setConstraints(0,2,1.0,0.0,GridBagConstraints.NONE,BORDER_THICKNESS*3,BORDER_THICKNESS,BORDER_THICKNESS,BORDER_THICKNESS));
 		add(warningLabel2, GuiUtil.setConstraints(0,3,1.0,0.0,GridBagConstraints.NONE,0,BORDER_THICKNESS,BORDER_THICKNESS,BORDER_THICKNESS));

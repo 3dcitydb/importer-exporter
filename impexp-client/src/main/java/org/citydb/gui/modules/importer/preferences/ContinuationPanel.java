@@ -143,9 +143,7 @@ public class ContinuationPanel extends AbstractPreferencesComponent {
 			add(block2, GuiUtil.setConstraints(0,1,1.0,0.0,GridBagConstraints.BOTH,5,0,5,0));
 			block2.setBorder(BorderFactory.createTitledBorder(""));
 			block2.setLayout(new GridBagLayout());
-			int lmargin = (int)(updatingPersonUser.getPreferredSize().getWidth()) + 11;
-			updatingPersonDBAccount.setIconTextGap(10);
-			updatingPersonUser.setIconTextGap(10);
+			int lmargin = GuiUtil.getTextOffset(updatingPersonUser) + 5;
 			{
 				block2.add(updatingPersonDBAccount, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
 				block2.add(updatingPersonUser, GuiUtil.setConstraints(0,1,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
@@ -156,9 +154,6 @@ public class ContinuationPanel extends AbstractPreferencesComponent {
 			add(block3, GuiUtil.setConstraints(0,2,1.0,0.0,GridBagConstraints.BOTH,5,0,5,0));
 			block3.setBorder(BorderFactory.createTitledBorder(""));
 			block3.setLayout(new GridBagLayout());
-			creDateRadioInherit.setIconTextGap(10);
-			creDateRadioOnlyMissing.setIconTextGap(10);
-			creDateRadioAll.setIconTextGap(10);
 			{
 				block3.add(creDateRadioInherit, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
 				block3.add(creDateRadioOnlyMissing, GuiUtil.setConstraints(0,1,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
@@ -169,9 +164,6 @@ public class ContinuationPanel extends AbstractPreferencesComponent {
 			add(block4, GuiUtil.setConstraints(0,3,1.0,0.0,GridBagConstraints.BOTH,5,0,5,0));
 			block4.setBorder(BorderFactory.createTitledBorder(""));
 			block4.setLayout(new GridBagLayout());
-			termDateRadioInherit.setIconTextGap(10);
-			termDateRadioOnlyMissing.setIconTextGap(10);
-			termDateRadioAll.setIconTextGap(10);
 			{
 				block4.add(termDateRadioInherit, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
 				block4.add(termDateRadioOnlyMissing, GuiUtil.setConstraints(0,1,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));

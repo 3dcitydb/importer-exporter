@@ -195,7 +195,6 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 		portLabel = new JLabel();
 		databaseLabel = new JLabel();
 		schemaLabel = new JLabel();
-		passwordCheck.setIconTextGap(10);
 
 		connectionDetails.add(descriptionLabel, GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
 		connectionDetails.add(descriptionText, GuiUtil.setConstraints(1,0,1.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
@@ -529,7 +528,6 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 			if (showWarning) {
 				JPanel confirmPanel = new JPanel(new GridBagLayout());
 				JCheckBox confirmDialogNoShow = new JCheckBox(Language.I18N.getString("common.dialog.msg.noShow"));
-				confirmDialogNoShow.setIconTextGap(10);
 				confirmPanel.add(new JLabel(warning.getFormattedMessage()), GuiUtil.setConstraints(0, 0, 1.0, 0.0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 				confirmPanel.add(confirmDialogNoShow, GuiUtil.setConstraints(0, 2, 1.0, 0.0, GridBagConstraints.BOTH, 10, 0, 0, 0));
 

@@ -141,7 +141,6 @@ public class CityObjectGroupRenderingPanel extends AbstractPreferencesComponent 
 		GridBagConstraints fhlcb = GuiUtil.setConstraints(0,2,0.5,1.0,GridBagConstraints.NONE,0,BORDER_THICKNESS,2*BORDER_THICKNESS,0);
 		fhlcb.anchor = GridBagConstraints.WEST;
 		fhlcb.gridwidth = 2;
-		footprintHighlightingCheckbox.setIconTextGap(10);
 		footprintPanel.add(footprintHighlightingCheckbox, fhlcb);
 
 		GridBagConstraints fhlfcl = GuiUtil.setConstraints(0,3,0.25,1.0,GridBagConstraints.NONE,0,BORDER_THICKNESS,2*BORDER_THICKNESS,BORDER_THICKNESS);

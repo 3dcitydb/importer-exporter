@@ -224,7 +224,6 @@ public class CityFurnitureRenderingPanel extends AbstractPreferencesComponent {
 		GridBagConstraints fhlcb = GuiUtil.setConstraints(0,2,0.5,1.0,GridBagConstraints.NONE,0,BORDER_THICKNESS,2*BORDER_THICKNESS,0);
 		fhlcb.anchor = GridBagConstraints.WEST;
 		fhlcb.gridwidth = 2;
-		footprintHighlightingCheckbox.setIconTextGap(10);
 		footprintPanel.add(footprintHighlightingCheckbox, fhlcb);
 
 		GridBagConstraints fhlfcl = GuiUtil.setConstraints(0,3,0.25,1.0,GridBagConstraints.NONE,0,BORDER_THICKNESS,2*BORDER_THICKNESS,BORDER_THICKNESS);
@@ -277,7 +276,6 @@ public class CityFurnitureRenderingPanel extends AbstractPreferencesComponent {
 		geometryWallLineColorButton.setContentAreaFilled(false);
 		geometryPanel.add(geometryWallLineColorButton, GuiUtil.setConstraints(3,1,0.25,1.0,GridBagConstraints.HORIZONTAL,BORDER_THICKNESS,0,2*BORDER_THICKNESS,BORDER_THICKNESS));
 
-		geometryHighlightingCheckbox.setIconTextGap(10);
 		GridBagConstraints ghcb = GuiUtil.setConstraints(0,2,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,2*BORDER_THICKNESS,0);
 		ghcb.gridwidth = 2;
 		geometryPanel.add(geometryHighlightingCheckbox, ghcb);
@@ -311,17 +309,14 @@ public class CityFurnitureRenderingPanel extends AbstractPreferencesComponent {
 		colladaPanel.setLayout(new GridBagLayout());
 		colladaPanel.setBorder(BorderFactory.createTitledBorder(""));
 
-		ignoreSurfaceOrientationCheckbox.setIconTextGap(10);
 		GridBagConstraints isoc = GuiUtil.setConstraints(0,0,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,0,0);
 		isoc.gridwidth = 2;
 		colladaPanel.add(ignoreSurfaceOrientationCheckbox, isoc);
 		
-		generateSurfaceNormalsCheckbox.setIconTextGap(10);
 		GridBagConstraints gsnc = GuiUtil.setConstraints(0,1,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,0,0);
 		gsnc.gridwidth = 2;
 		colladaPanel.add(generateSurfaceNormalsCheckbox, gsnc);
 
-		cropImagesCheckbox.setIconTextGap(10);
 		GridBagConstraints cI = GuiUtil.setConstraints(0,2,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,0,0);
 		cI.gridwidth = 2;
 		colladaPanel.add(cropImagesCheckbox, cI);
@@ -334,16 +329,14 @@ public class CityFurnitureRenderingPanel extends AbstractPreferencesComponent {
 		packingAlgorithmsComboBox.addItem("TPIM");
 		packingAlgorithmsComboBox.addItem("TPIM w/o image rotation");
 
-		textureAtlasCheckbox.setIconTextGap(10);
 		colladaPanel.add(textureAtlasCheckbox, GuiUtil.setConstraints(0,3,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,2,0));
 		colladaPanel.add(packingAlgorithmsComboBox, GuiUtil.setConstraints(1,3,1.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,2,BORDER_THICKNESS));
 
-		textureAtlasPotsCheckbox.setIconTextGap(10);
-		GridBagConstraints tapc = GuiUtil.setConstraints(0,4,0.0,1.0,GridBagConstraints.BOTH,BORDER_THICKNESS,BORDER_THICKNESS + 23,BORDER_THICKNESS,0);
+		int lmargin = GuiUtil.getTextOffset(textureAtlasCheckbox) + BORDER_THICKNESS;
+		GridBagConstraints tapc = GuiUtil.setConstraints(0,4,0.0,1.0,GridBagConstraints.BOTH,BORDER_THICKNESS,lmargin,BORDER_THICKNESS,0);
 		tapc.gridwidth = 2;
 		colladaPanel.add(textureAtlasPotsCheckbox, tapc);
 		
-		scaleTexImagesCheckbox.setIconTextGap(10);
 		colladaPanel.add(scaleTexImagesCheckbox, GuiUtil.setConstraints(0,5,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,2,0));
 		colladaPanel.add(scaleFactorText, GuiUtil.setConstraints(1,5,1.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,2,BORDER_THICKNESS));
 		
@@ -378,11 +371,9 @@ public class CityFurnitureRenderingPanel extends AbstractPreferencesComponent {
 		colladaRadioGroup.add(groupObjectsRButton);
 		colladaRadioGroup.add(colladaHighlightingRButton);
 
-		groupObjectsRButton.setIconTextGap(10);
 		colladaPanel.add(groupObjectsRButton, GuiUtil.setConstraints(0,7,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,2,0));
 		colladaPanel.add(groupSizeText, GuiUtil.setConstraints(1,7,1.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,2,BORDER_THICKNESS));
 
-		colladaHighlightingRButton.setIconTextGap(10);
 		GridBagConstraints chrb = GuiUtil.setConstraints(0,8,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,2*BORDER_THICKNESS,0);
 		chrb.gridwidth = 2;
 		colladaPanel.add(colladaHighlightingRButton, chrb);

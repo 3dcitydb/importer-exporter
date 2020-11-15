@@ -34,18 +34,9 @@ import org.citydb.config.project.kmlExporter.AltitudeOffsetMode;
 import org.citydb.gui.modules.common.AbstractPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 
-import javax.swing.BorderFactory;
-import javax.swing.ButtonGroup;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JTextField;
+import javax.swing.*;
 import javax.swing.border.TitledBorder;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
+import java.awt.*;
 
 @SuppressWarnings("serial")
 public class AltitudePanel extends AbstractPreferencesComponent {
@@ -117,7 +108,6 @@ public class AltitudePanel extends AbstractPreferencesComponent {
 	private void initGui() {
 		setLayout(new GridBagLayout());
 
-		useOriginalZCoords.setIconTextGap(10);
 		add(useOriginalZCoords, GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.BOTH,BORDER_THICKNESS,0,BORDER_THICKNESS,0));
 
 		modePanel = new JPanel();
@@ -134,14 +124,9 @@ public class AltitudePanel extends AbstractPreferencesComponent {
 
 		ButtonGroup offsetRadioGroup = new ButtonGroup();
 		offsetRadioGroup.add(noOffsetRadioButton);
-		noOffsetRadioButton.setIconTextGap(10);
 		offsetRadioGroup.add(constantOffsetRadioButton);
-		constantOffsetRadioButton.setIconTextGap(10);
 		offsetRadioGroup.add(bottomZeroRadioButton);
-		bottomZeroRadioButton.setIconTextGap(10);
 		offsetRadioGroup.add(genericAttributeRadioButton);
-		genericAttributeRadioButton.setIconTextGap(10);
-		callGElevationService.setIconTextGap(10);
 
 		offsetPanel.add(noOffsetRadioButton, GuiUtil.setConstraints(0,0,2,1,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,0,BORDER_THICKNESS));
 		offsetPanel.add(constantOffsetRadioButton, GuiUtil.setConstraints(0,1,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,0,BORDER_THICKNESS));
@@ -149,9 +134,9 @@ public class AltitudePanel extends AbstractPreferencesComponent {
 		offsetPanel.add(bottomZeroRadioButton, GuiUtil.setConstraints(0,2,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,0,BORDER_THICKNESS));
 		offsetPanel.add(genericAttributeRadioButton, GuiUtil.setConstraints(0,3,2,1,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,0,BORDER_THICKNESS));
 
-		int lmargin = genericAttributeRadioButton.getPreferredSize().width + 6;
+		int lmargin = GuiUtil.getTextOffset(genericAttributeRadioButton) + BORDER_THICKNESS;
 		offsetPanel.add(callGElevationService, GuiUtil.setConstraints(0,4,2,1,0.0,1.0,GridBagConstraints.BOTH,0,lmargin,0,BORDER_THICKNESS));
-		lmargin += callGElevationService.getPreferredSize().width + 6;
+		lmargin += GuiUtil.getTextOffset(callGElevationService);
 		offsetPanel.add(callGElevationServiceHint, GuiUtil.setConstraints(0,5,2,1,0.0,1.0,GridBagConstraints.BOTH,0,lmargin,0,BORDER_THICKNESS));
 
 		noOffsetRadioButton.addActionListener(e -> setEnabledComponents());

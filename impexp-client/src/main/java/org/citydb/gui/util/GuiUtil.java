@@ -29,10 +29,8 @@ package org.citydb.gui.util;
 
 import org.citydb.config.i18n.Language;
 
-import javax.swing.JMenuItem;
-import java.awt.Color;
-import java.awt.GridBagConstraints;
-import java.awt.Insets;
+import javax.swing.*;
+import java.awt.*;
 
 public class GuiUtil {
 
@@ -117,4 +115,11 @@ public class GuiUtil {
 		return color != null ? "#" + Integer.toHexString(color.getRGB()) : null;
 	}
 
+	public static int getTextOffset(JCheckBox checkBox) {
+		return new JCheckBox().getPreferredSize().width + checkBox.getIconTextGap() - 2;
+	}
+
+	public static int getTextOffset(JRadioButton radioButton) {
+		return new JRadioButton().getPreferredSize().width + radioButton.getIconTextGap() - 2;
+	}
 }

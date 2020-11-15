@@ -164,24 +164,20 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		JPanel collada2gltfConverterPanel = new JPanel();
 		collada2gltfConverterPanel.setLayout(new GridBagLayout());
 		gltfSettingsPanel.add(collada2gltfConverterPanel, GuiUtil.setConstraints(0,1,1.0,0.0,GridBagConstraints.BOTH,BORDER_THICKNESS,0,0,0));
-		createGltfCheckbox.setIconTextGap(10);
-		notCreateColladaCheckbox.setIconTextGap(10);
-		embedTexturesInGltfCheckbox.setIconTextGap(10);
-		exportGltfBinary.setIconTextGap(10);
-		exportGltfV1.setIconTextGap(10);
-		exportGltfV2.setIconTextGap(10);
-		enableGltfDracoCompression.setIconTextGap(10);
+
+		int lmargin = GuiUtil.getTextOffset(createGltfCheckbox) + BORDER_THICKNESS;
 		gltfConverterBrowseText.setPreferredSize(gltfConverterBrowseText.getSize());
 		collada2gltfConverterPanel.add(createGltfCheckbox, GuiUtil.setConstraints(0,0,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,0,BORDER_THICKNESS));
-		collada2gltfConverterPanel.add(gltfConverterBrowseText, GuiUtil.setConstraints(0,1,1.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS*6,0,BORDER_THICKNESS));
+		collada2gltfConverterPanel.add(gltfConverterBrowseText, GuiUtil.setConstraints(0,1,1.0,1.0,GridBagConstraints.BOTH,0,lmargin,0,BORDER_THICKNESS));
 		collada2gltfConverterPanel.add(gltfConverterBrowseButton, GuiUtil.setConstraints(1,1,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,0,BORDER_THICKNESS));
-		collada2gltfConverterPanel.add(notCreateColladaCheckbox, GuiUtil.setConstraints(0,2,1.0,1.0,GridBagConstraints.BOTH,BORDER_THICKNESS,BORDER_THICKNESS*5,0,BORDER_THICKNESS));
-		collada2gltfConverterPanel.add(embedTexturesInGltfCheckbox, GuiUtil.setConstraints(0,3,1.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS*5,0,BORDER_THICKNESS));
-		collada2gltfConverterPanel.add(exportGltfBinary, GuiUtil.setConstraints(0,4,1.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS*5,0,BORDER_THICKNESS));
-		collada2gltfConverterPanel.add(exportGltfV1, GuiUtil.setConstraints(0,5,1.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS*5,0,BORDER_THICKNESS));
-		collada2gltfConverterPanel.add(exportGltfV2, GuiUtil.setConstraints(0,6,1.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS*5,0,BORDER_THICKNESS));
-		int lmargin = exportGltfV2.getPreferredSize().width + 27;
-		collada2gltfConverterPanel.add(enableGltfDracoCompression, GuiUtil.setConstraints(0,7,1.0,1.0,GridBagConstraints.BOTH,0, lmargin,0,BORDER_THICKNESS));
+		collada2gltfConverterPanel.add(notCreateColladaCheckbox, GuiUtil.setConstraints(0,2,1.0,1.0,GridBagConstraints.BOTH,BORDER_THICKNESS,lmargin,0,BORDER_THICKNESS));
+		collada2gltfConverterPanel.add(embedTexturesInGltfCheckbox, GuiUtil.setConstraints(0,3,1.0,1.0,GridBagConstraints.BOTH,0,lmargin,0,BORDER_THICKNESS));
+		collada2gltfConverterPanel.add(exportGltfBinary, GuiUtil.setConstraints(0,4,1.0,1.0,GridBagConstraints.BOTH,0,lmargin,0,BORDER_THICKNESS));
+		collada2gltfConverterPanel.add(exportGltfV1, GuiUtil.setConstraints(0,5,1.0,1.0,GridBagConstraints.BOTH,0,lmargin,0,BORDER_THICKNESS));
+		collada2gltfConverterPanel.add(exportGltfV2, GuiUtil.setConstraints(0,6,1.0,1.0,GridBagConstraints.BOTH,0,lmargin,0,BORDER_THICKNESS));
+
+		lmargin += GuiUtil.getTextOffset(exportGltfV2);
+		collada2gltfConverterPanel.add(enableGltfDracoCompression, GuiUtil.setConstraints(0,7,1.0,1.0,GridBagConstraints.BOTH,0,lmargin,0,BORDER_THICKNESS));
 		ButtonGroup exportGltfVersions = new ButtonGroup();
 		exportGltfVersions.add(exportGltfV1);
 		exportGltfVersions.add(exportGltfV2);
@@ -189,21 +185,9 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		JPanel generalPanel = new JPanel();
 		add(generalPanel, GuiUtil.setConstraints(0,1,1.0,0.0,GridBagConstraints.BOTH,BORDER_THICKNESS,0,BORDER_THICKNESS,0));
 		generalPanel.setLayout(new GridBagLayout());
-		kmzCheckbox.setIconTextGap(10);
-		showBoundingBoxCheckbox.setIconTextGap(10);
-		showTileBordersCheckbox.setIconTextGap(10);
-		exportEmptyTilesCheckbox.setIconTextGap(10);
-		oneFilePerObjectCheckbox.setIconTextGap(10);
-		writeJSONCheckbox.setIconTextGap(10);
-		writeJSONPCheckbox.setIconTextGap(10);
-
 		generalPanel.add(kmzCheckbox, GuiUtil.setConstraints(0,0,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,0,0));
-
 		generalPanel.add(showBoundingBoxCheckbox, GuiUtil.setConstraints(0,1,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,0,0));
-
 		generalPanel.add(showTileBordersCheckbox, GuiUtil.setConstraints(0,2,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,0,0));
-
-	//	generalPanel.add(exportEmptyTilesCheckbox, GuiUtil.setConstraints(0,3,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,0,0));
 
 		autoTileSideLengthText = new JFormattedTextField(fourIntFormat);
 		generalPanel.add(autoTileSideLengthLabel, GuiUtil.setConstraints(0,4,0.0,1.0,GridBagConstraints.WEST,GridBagConstraints.NONE,BORDER_THICKNESS,BORDER_THICKNESS * 2,0,BORDER_THICKNESS));

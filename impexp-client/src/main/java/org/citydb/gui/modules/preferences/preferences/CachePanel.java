@@ -101,10 +101,8 @@ public class CachePanel extends AbstractPreferencesComponent {
 
 			block1.setBorder(BorderFactory.createTitledBorder(""));
 			block1.setLayout(new GridBagLayout());
-			useDatabase.setIconTextGap(10);
-			useLocalCache.setIconTextGap(10);
 			localCachePath.setPreferredSize(localCachePath.getSize());
-			int lmargin = (int)(useDatabase.getPreferredSize().getWidth()) + 11;
+			int lmargin = GuiUtil.getTextOffset(useDatabase) + 5;
 			{
 				block1.add(useDatabase, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
 				block1.add(useLocalCache, GuiUtil.setConstraints(0,1,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));

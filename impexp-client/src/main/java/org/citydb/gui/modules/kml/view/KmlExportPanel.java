@@ -198,8 +198,6 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		filterButtonGroup.add(boundingBoxRadioButton);
 
 		Box filterContentPanel = Box.createVerticalBox();
-		singleBuildingRadioButton.setIconTextGap(10);
-		boundingBoxRadioButton.setIconTextGap(10);
 		boundingBoxRadioButton.setSelected(true);
 		int lmargin = (int)(singleBuildingRadioButton.getPreferredSize().getWidth()) + 6;
 
@@ -229,9 +227,6 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		tilingButtonGroup.add(automaticTilingRadioButton);
 		tilingButtonGroup.add(manualTilingRadioButton);
 
-		noTilingRadioButton.setIconTextGap(10);
-		automaticTilingRadioButton.setIconTextGap(10);
-		manualTilingRadioButton.setIconTextGap(10);
 		automaticTilingRadioButton.setSelected(true);
 
 		JPanel tilingPanel = new JPanel();
@@ -277,32 +272,28 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		displayAsPanel.setLayout(new GridBagLayout());
 		displayAsPanel.setBorder(BorderFactory.createTitledBorder(""));
 
-		footprintCheckbox.setIconTextGap(10);
 		displayAsPanel.add(footprintCheckbox, GuiUtil.setConstraints(0,0,1,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,0,0));
 		displayAsPanel.add(visibleFromFootprintLabel, GuiUtil.setConstraints(1,0,0.0,1.0,GridBagConstraints.EAST,GridBagConstraints.NONE,0,BORDER_THICKNESS,0,0));
 		displayAsPanel.add(footprintVisibleFromText, GuiUtil.setConstraints(2,0,0,1.0,GridBagConstraints.HORIZONTAL,0,BORDER_THICKNESS,0,0));
 		displayAsPanel.add(pixelsFootprintLabel, GuiUtil.setConstraints(3,0,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,0,BORDER_THICKNESS));
 
-		extrudedCheckbox.setIconTextGap(10);
 		displayAsPanel.add(extrudedCheckbox, GuiUtil.setConstraints(0,1,1.0,1.0,GridBagConstraints.BOTH,2,BORDER_THICKNESS,0,0));
 		displayAsPanel.add(visibleFromExtrudedLabel, GuiUtil.setConstraints(1,1,0.0,1.0,GridBagConstraints.EAST,GridBagConstraints.NONE,0,BORDER_THICKNESS,0,0));
 		displayAsPanel.add(extrudedVisibleFromText, GuiUtil.setConstraints(2,1,0,1.0,GridBagConstraints.HORIZONTAL,2,BORDER_THICKNESS,0,0));
 		displayAsPanel.add(pixelsExtrudedLabel, GuiUtil.setConstraints(3,1,0.0,1.0,GridBagConstraints.BOTH,2,BORDER_THICKNESS,0,BORDER_THICKNESS));
 
-		geometryCheckbox.setIconTextGap(10);
 		displayAsPanel.add(geometryCheckbox, GuiUtil.setConstraints(0,2,1.0,1.0,GridBagConstraints.BOTH,2,BORDER_THICKNESS,0,0));
 		displayAsPanel.add(visibleFromGeometryLabel, GuiUtil.setConstraints(1,2,0.0,1.0,GridBagConstraints.EAST,GridBagConstraints.NONE,0,BORDER_THICKNESS,0,0));
 		displayAsPanel.add(geometryVisibleFromText, GuiUtil.setConstraints(2,2,0,1.0,GridBagConstraints.HORIZONTAL,2,BORDER_THICKNESS,0,0));
 		displayAsPanel.add(pixelsGeometryLabel, GuiUtil.setConstraints(3,2,0.0,1.0,GridBagConstraints.BOTH,2,BORDER_THICKNESS,0,BORDER_THICKNESS));
 
-		colladaCheckbox.setIconTextGap(10);
 		displayAsPanel.add(colladaCheckbox, GuiUtil.setConstraints(0,3,1.0,1.0,GridBagConstraints.BOTH,2,BORDER_THICKNESS,0,0));
 		displayAsPanel.add(visibleFromColladaLabel, GuiUtil.setConstraints(1,3,0.0,1.0,GridBagConstraints.EAST,GridBagConstraints.NONE,0,BORDER_THICKNESS,0,0));
 		displayAsPanel.add(colladaVisibleFromText, GuiUtil.setConstraints(2,3,0,1.0,GridBagConstraints.HORIZONTAL,2,BORDER_THICKNESS,0,0));
 		displayAsPanel.add(pixelsColladaLabel, GuiUtil.setConstraints(3,3,0.0,1.0,GridBagConstraints.BOTH,2,BORDER_THICKNESS,0,BORDER_THICKNESS));
 
 		JPanel appearancePanel = new JPanel();
-		lmargin = colladaCheckbox.getPreferredSize().width + 11;
+		lmargin = GuiUtil.getTextOffset(colladaCheckbox) + 5;
 		appearancePanel.setLayout(new GridBagLayout());
 		appearancePanel.add(themeLabel, GuiUtil.setConstraints(0,0,0.0,1.0,GridBagConstraints.BOTH,BORDER_THICKNESS,0,BORDER_THICKNESS,0));
 		appearancePanel.add(themeComboBox, GuiUtil.setConstraints(1,0,1.0,1.0,GridBagConstraints.HORIZONTAL,BORDER_THICKNESS,BORDER_THICKNESS * 2,BORDER_THICKNESS,0));

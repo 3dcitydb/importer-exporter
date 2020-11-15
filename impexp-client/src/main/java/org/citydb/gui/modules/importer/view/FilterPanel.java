@@ -196,8 +196,6 @@ public class FilterPanel extends JPanel {
 			JPanel bboxModePanel = new JPanel();
 			bboxModePanel.setLayout(new GridBagLayout());
 			{
-				bboxOverlaps.setIconTextGap(10);
-				bboxWithin.setIconTextGap(10);
 				bboxModePanel.add(bboxMode, GuiUtil.setConstraints(0,0,0,0,GridBagConstraints.HORIZONTAL,0,0,0,5));
 				bboxModePanel.add(bboxOverlaps, GuiUtil.setConstraints(1,0,0,0,GridBagConstraints.HORIZONTAL,0,15,0,5));
 				bboxModePanel.add(bboxWithin, GuiUtil.setConstraints(2,0,1,0,GridBagConstraints.HORIZONTAL,0,5,0,0));

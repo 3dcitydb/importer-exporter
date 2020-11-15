@@ -101,17 +101,12 @@ public class BridgeBalloonPanel extends AbstractPreferencesComponent {
 		contentSourceRadioGroup.add(fileRadioButton);
 		contentSourceRadioGroup.add(genAttribAndFileRadioButton);
 
-		includeDescription.setIconTextGap(10);
 		add(includeDescription, GuiUtil.setConstraints(0,1,2,1,1.0,0.0,GridBagConstraints.BOTH,BORDER_THICKNESS,0,BORDER_THICKNESS,0));
 
 		contentSourcePanel = new JPanel();
 		contentSourcePanel.setLayout(new GridBagLayout());
 		contentSourcePanel.setBorder(BorderFactory.createTitledBorder(""));
 		add(contentSourcePanel, GuiUtil.setConstraints(0,2,2,1,1.0,0.0,GridBagConstraints.BOTH,BORDER_THICKNESS,0,BORDER_THICKNESS,0));
-
-		genAttribRadioButton.setIconTextGap(10);
-		fileRadioButton.setIconTextGap(10);
-		genAttribAndFileRadioButton.setIconTextGap(10);
 
 		GridBagConstraints garb = GuiUtil.setConstraints(0,0,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,0,BORDER_THICKNESS);
 		garb.gridwidth = 2;
@@ -126,7 +121,6 @@ public class BridgeBalloonPanel extends AbstractPreferencesComponent {
 		gaafrb.gridwidth = 2;
 		contentSourcePanel.add(genAttribAndFileRadioButton, gaafrb);
 
-		contentInSeparateFile.setIconTextGap(10);
 		add(contentInSeparateFile, GuiUtil.setConstraints(0,3,2,1,1.0,0.0,GridBagConstraints.BOTH,BORDER_THICKNESS,0,0,0));
 		add(warningLabel, GuiUtil.setConstraints(0,4,2,1,1.0,0.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS * 6,0,0));
 

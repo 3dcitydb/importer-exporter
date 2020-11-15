@@ -123,11 +123,7 @@ public class XLinkPanel extends AbstractPreferencesComponent {
 			add(block1, GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.BOTH,5,0,5,0));
 			block1.setBorder(BorderFactory.createTitledBorder(""));
 			block1.setLayout(new GridBagLayout());
-			int lmargin = (int)(copyFeature.getPreferredSize().getWidth()) + 11;
-			xlinkToFeature.setIconTextGap(10);
-			copyFeature.setIconTextGap(10);
-			featureKeepExtRef.setIconTextGap(10);
-			featureAppendId.setIconTextGap(10);
+			int lmargin = GuiUtil.getTextOffset(copyFeature) + 5;
 			{
 				block1.add(xlinkToFeature, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
 				block1.add(copyFeature, GuiUtil.setConstraints(0,1,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
@@ -147,10 +143,7 @@ public class XLinkPanel extends AbstractPreferencesComponent {
 			add(block2, GuiUtil.setConstraints(0,1,1.0,0.0,GridBagConstraints.BOTH,5,0,5,0));
 			block2.setBorder(BorderFactory.createTitledBorder(""));
 			block2.setLayout(new GridBagLayout());
-			lmargin = (int)(copyGeometry.getPreferredSize().getWidth()) + 11;
-			xlinkToGeometry.setIconTextGap(10);
-			copyGeometry.setIconTextGap(10);
-			geometryAppendId.setIconTextGap(10);
+			lmargin = GuiUtil.getTextOffset(copyGeometry) + 5;
 			{
 				block2.add(xlinkToGeometry, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
 				block2.add(copyGeometry, GuiUtil.setConstraints(0,1,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));

@@ -122,11 +122,8 @@ public class IdHandlingPanel extends AbstractPreferencesComponent implements Eve
 			add(block1, GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.BOTH,5,0,5,0));
 			block1.setBorder(BorderFactory.createTitledBorder(""));
 			block1.setLayout(new GridBagLayout());
-			impIdRadioAdd.setIconTextGap(10);
-			impIdRadioExchange.setIconTextGap(10);
-			impIdCheckExtRef.setIconTextGap(10);
 			JPanel block1_1 = new JPanel();
-			int lmargin = (int)(impIdRadioAdd.getPreferredSize().getWidth()) + 11;
+			int lmargin = GuiUtil.getTextOffset(impIdRadioAdd) + 5;
 			{
 				block1_1.setLayout(new GridBagLayout());
 				block1_1.setBorder(BorderFactory.createEmptyBorder());
@@ -143,10 +140,6 @@ public class IdHandlingPanel extends AbstractPreferencesComponent implements Eve
 			add(block2, GuiUtil.setConstraints(0,1,1.0,0.0,GridBagConstraints.BOTH,5,0,5,0));
 			block2.setBorder(BorderFactory.createTitledBorder(""));
 			block2.setLayout(new GridBagLayout());
-			impIdCSRadioNone.setIconTextGap(10);
-			impIdCSRadioFile.setIconTextGap(10);
-			impIdCSRadioFilePath.setIconTextGap(10);
-			impIdCSRadioUser.setIconTextGap(10);
 			{
 				block2.add(impIdCSRadioNone, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
 				block2.add(impIdCSRadioFile, GuiUtil.setConstraints(0,1,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));

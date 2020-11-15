@@ -130,10 +130,8 @@ public class PathPanel extends AbstractPreferencesComponent {
 
 			block1.setBorder(BorderFactory.createTitledBorder(""));
 			block1.setLayout(new GridBagLayout());
-			importPathRadioLast.setIconTextGap(10);
-			importPathRadioDef.setIconTextGap(10);
 			importPathText.setPreferredSize(importPathText.getSize());
-			int lmargin = (int)(importPathRadioLast.getPreferredSize().getWidth()) + 11;
+			int lmargin = GuiUtil.getTextOffset(importPathRadioLast) + 5;
 			{
 				block1.add(importPathRadioLast, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
 				block1.add(importPathRadioDef, GuiUtil.setConstraints(0,1,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
@@ -143,8 +141,6 @@ public class PathPanel extends AbstractPreferencesComponent {
 			
 			block2.setBorder(BorderFactory.createTitledBorder(""));
 			block2.setLayout(new GridBagLayout());
-			exportPathRadioLast.setIconTextGap(10);
-			exportPathRadioDef.setIconTextGap(10);
 			exportPathText.setPreferredSize(exportPathText.getSize());
 			{
 				block2.add(exportPathRadioLast, GuiUtil.setConstraints(0,0,0.0,1.0,GridBagConstraints.BOTH,0,5,0,5));

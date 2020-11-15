@@ -110,7 +110,6 @@ public class GeometryPanel extends AbstractPreferencesComponent {
 				block1.add(row1, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,0,0,5,0));
 				row1.setLayout(new GridBagLayout());
 				{
-					useAffineTransformation.setIconTextGap(10);
 					matrixDescr.setFont(matrixDescr.getFont().deriveFont(Font.BOLD));
 					row1.add(useAffineTransformation, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,0,5,15,5));
 					row1.add(matrixDescr, GuiUtil.setConstraints(0,1,1.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
