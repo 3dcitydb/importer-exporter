@@ -40,20 +40,15 @@ import org.citydb.config.project.query.filter.counter.CounterFilter;
 import org.citydb.database.DatabaseController;
 import org.citydb.event.Event;
 import org.citydb.event.EventDispatcher;
-import org.citydb.event.EventHandler;
-import org.citydb.event.global.DatabaseConnectionStateEvent;
-import org.citydb.event.global.EventType;
 import org.citydb.event.global.InterruptEvent;
 import org.citydb.gui.components.dialog.ImportStatusDialog;
 import org.citydb.gui.components.dialog.XMLValidationStatusDialog;
-import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.log.Logger;
 import org.citydb.plugin.extension.view.ViewController;
 import org.citydb.registry.ObjectRegistry;
 
 import javax.swing.*;
-import javax.swing.border.TitledBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
@@ -80,7 +75,7 @@ import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
 @SuppressWarnings("serial")
-public class ImportPanel extends JPanel implements EventHandler {
+public class ImportPanel extends JPanel {
 	private final ReentrantLock mainLock = new ReentrantLock();
 	private final Logger log = Logger.getInstance();
 	private final ViewController viewController;
@@ -94,18 +89,12 @@ public class ImportPanel extends JPanel implements EventHandler {
 	private JButton importButton;
 	private JButton validateButton;
 	private FilterPanel filterPanel;
-	private JTextField workspaceText;
-
-	private JPanel workspacePanel;
-	private JLabel workspaceLabel;
 
 	public ImportPanel(ViewController viewController, Config config) {
 		this.config = config;
 		this.viewController = viewController;
 
 		databaseController = ObjectRegistry.getInstance().getDatabaseController();
-		ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(EventType.DATABASE_CONNECTION_STATE, this);
-
 		initGui();
 	}
 
@@ -116,7 +105,6 @@ public class ImportPanel extends JPanel implements EventHandler {
 		filterPanel = new FilterPanel(viewController, config);
 		importButton = new JButton();
 		validateButton = new JButton();
-		workspaceText = new JTextField();
 
 		DropCutCopyPasteHandler handler = new DropCutCopyPasteHandler();
 
@@ -124,6 +112,7 @@ public class ImportPanel extends JPanel implements EventHandler {
 		fileList.setModel(fileListModel);
 		fileList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 		fileList.setTransferHandler(handler);
+		fileList.setVisibleRowCount(6);
 
 		DropTarget dropTarget = new DropTarget(fileList, handler);
 		fileList.setDropTarget(dropTarget);
@@ -140,8 +129,6 @@ public class ImportPanel extends JPanel implements EventHandler {
 		inputMap.put(KeyStroke.getKeyStroke('V', InputEvent.CTRL_DOWN_MASK), TransferHandler.getPasteAction().getValue(Action.NAME));
 		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0), TransferHandler.getCutAction().getValue(Action.NAME));
 		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, 0), TransferHandler.getCutAction().getValue(Action.NAME));
-
-		PopupMenuDecorator.getInstance().decorate(fileList, workspaceText);
 
 		browseButton.addActionListener(e -> loadFile(Language.I18N.getString("main.tabbedPane.import")));
 
@@ -175,71 +162,46 @@ public class ImportPanel extends JPanel implements EventHandler {
 
 		setLayout(new GridBagLayout());
 
-		JPanel filePanel = new JPanel();
-		JPanel fileButton = new JPanel();
-		add(filePanel,GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.HORIZONTAL,10,5,5,5));
-		filePanel.setLayout(new GridBagLayout());
-		JScrollPane fileScroll = new JScrollPane(fileList);
+        JPanel filePanel = new JPanel();
+        filePanel.setLayout(new GridBagLayout());
+        JScrollPane fileScroll = new JScrollPane(fileList);
 		fileScroll.setPreferredSize(fileScroll.getPreferredSize());
 
-		filePanel.add(fileScroll, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,5,5,5,5));
-		filePanel.add(fileButton, GuiUtil.setConstraints(1,0,0.0,0.0,GridBagConstraints.BOTH,5,5,5,5));
-		fileButton.setLayout(new GridBagLayout());
-		fileButton.add(browseButton, GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.HORIZONTAL,0,0,0,0));
-		fileButton.add(removeButton, GuiUtil.setConstraints(0,1,0.0,1.0,GridBagConstraints.NORTH,GridBagConstraints.HORIZONTAL,5,0,15,0));
+        filePanel.add(fileScroll, GuiUtil.setConstraints(0, 0, 1, 0, 1, 2, GridBagConstraints.BOTH, 0, 0, 5, 5));
+		filePanel.add(browseButton, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 5, 5, 0));
+		filePanel.add(removeButton, GuiUtil.setConstraints(1, 1, 0, 0, GridBagConstraints.NORTH, GridBagConstraints.HORIZONTAL, 0, 5, 20, 0));
 
-		JPanel view = new JPanel();
-		view.setLayout(new GridBagLayout());
-		JScrollPane scrollPane = new JScrollPane(view);
-		scrollPane.setBorder(BorderFactory.createEmptyBorder());
-		scrollPane.setViewportBorder(BorderFactory.createEmptyBorder());
-		add(scrollPane, GuiUtil.setConstraints(0,1,1.0,1.0,GridBagConstraints.BOTH,0,0,0,0));
+        JPanel view = new JPanel();
+        view.setLayout(new GridBagLayout());
+		view.add(filterPanel, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.NORTH, GridBagConstraints.HORIZONTAL, 0, 10, 0, 10));
 
-		workspacePanel = new JPanel();
-		view.add(workspacePanel, GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.HORIZONTAL,0,5,5,5));
-		workspacePanel.setBorder(BorderFactory.createTitledBorder(""));
-		workspacePanel.setLayout(new GridBagLayout());
-		workspaceLabel = new JLabel();
-		workspacePanel.add(workspaceLabel, GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
-		workspacePanel.add(workspaceText, GuiUtil.setConstraints(1,0,1.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
+        JScrollPane scrollPane = new JScrollPane(view);
+        scrollPane.setBorder(BorderFactory.createEmptyBorder());
+        scrollPane.setViewportBorder(BorderFactory.createEmptyBorder());
 
-		view.add(filterPanel, GuiUtil.setConstraints(0,2,1.0,1.0,GridBagConstraints.NORTH,GridBagConstraints.HORIZONTAL,0,5,0,5));
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.setLayout(new GridBagLayout());
+        buttonPanel.add(importButton, GuiUtil.setConstraints(0, 0, 2, 1, 1, 0, GridBagConstraints.NONE, 5, 5, 5, 5));
+        buttonPanel.add(validateButton, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.EAST, GridBagConstraints.NONE, 5, 5, 5, 5));
 
-		JPanel buttonPanel = new JPanel();
-		add(buttonPanel, GuiUtil.setConstraints(0,2,1.0,0.0,GridBagConstraints.BOTH,5,5,5,5));
-		buttonPanel.setLayout(new GridBagLayout());
-		buttonPanel.add(importButton, GuiUtil.setConstraints(0,0,2,1,1.0,0.0,GridBagConstraints.NONE,5,5,5,5));				
-		buttonPanel.add(validateButton, GuiUtil.setConstraints(1,0,0.0,0.0,GridBagConstraints.EAST,GridBagConstraints.NONE,5,5,5,5));
-	}
-
-	public void setEnabledWorkspace(boolean enable) {
-		((TitledBorder) workspacePanel.getBorder()).setTitleColor(enable ?
-				UIManager.getColor("TitledBorder.titleColor") :
-				UIManager.getColor("Label.disabledForeground"));
-		workspacePanel.repaint();
-
-		workspaceLabel.setEnabled(enable);
-		workspaceText.setEnabled(enable);
-	}
+        add(filePanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.HORIZONTAL, 15, 10, 15, 10));
+        add(scrollPane, GuiUtil.setConstraints(0, 1, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
+		add(buttonPanel, GuiUtil.setConstraints(0, 2, 1, 0, GridBagConstraints.HORIZONTAL, 5, 10, 5, 10));
+    }
 
 	public void doTranslation() {
 		browseButton.setText(Language.I18N.getString("common.button.browse"));
 		removeButton.setText(Language.I18N.getString("import.button.remove"));
 		importButton.setText(Language.I18N.getString("import.button.import"));
 		validateButton.setText(Language.I18N.getString("import.button.validate"));
-		workspaceLabel.setText(Language.I18N.getString("common.label.workspace"));
-		workspaceText.putClientProperty("JTextField.placeholderText", Language.I18N.getString("common.label.workspace.prompt"));
-		((TitledBorder)workspacePanel.getBorder()).setTitle(Language.I18N.getString("common.border.versioning"));
 		filterPanel.doTranslation();
 	}
 
 	public void loadSettings() {
-		workspaceText.setText(config.getDatabaseConfig().getWorkspaces().getImportWorkspace().getName());
 		filterPanel.loadSettings();
 	}
 
 	public void setSettings() {
-		config.getDatabaseConfig().getWorkspaces().getImportWorkspace().setName(workspaceText.getText());
 		filterPanel.setSettings();
 	}
 
@@ -256,7 +218,7 @@ public class ImportPanel extends JPanel implements EventHandler {
 			// check all input values...
 			List<Path> inputFiles = getInputFiles();
 			if (inputFiles.isEmpty()) {
-				viewController.errorMessage(Language.I18N.getString("import.dialog.error.incompleteData"), 
+				viewController.errorMessage(Language.I18N.getString("import.dialog.error.incompleteData"),
 						Language.I18N.getString("import.dialog.error.incompleteData.dataset"));
 				return;
 			}
@@ -276,7 +238,7 @@ public class ImportPanel extends JPanel implements EventHandler {
 				if ((!counterFilter.isSetCount() && !counterFilter.isSetStartIndex())
 						|| (counterFilter.isSetCount() && counterFilter.getCount() < 0)
 						|| (counterFilter.isSetStartIndex() && counterFilter.getStartIndex() < 0)) {
-					viewController.errorMessage(Language.I18N.getString("import.dialog.error.incorrectData"), 
+					viewController.errorMessage(Language.I18N.getString("import.dialog.error.incorrectData"),
 							Language.I18N.getString("import.dialog.error.incorrectData.counter"));
 					return;
 				}
@@ -307,11 +269,11 @@ public class ImportPanel extends JPanel implements EventHandler {
 			// affine transformation
 			if (config.getImportConfig().getAffineTransformation().isEnabled()) {
 				if (JOptionPane.showConfirmDialog(
-						viewController.getTopFrame(), 
+						viewController.getTopFrame(),
 						Language.I18N.getString("import.dialog.warning.affineTransformation"),
-						Language.I18N.getString("common.dialog.warning.title"), 
+						Language.I18N.getString("common.dialog.warning.title"),
 						JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE) != JOptionPane.YES_OPTION)
-					return;				
+					return;
 			}
 
 			if (!databaseController.connect()) {
@@ -323,8 +285,8 @@ public class ImportPanel extends JPanel implements EventHandler {
 
 			// initialize event dispatcher
 			final EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
-			final ImportStatusDialog importDialog = new ImportStatusDialog(viewController.getTopFrame(), 
-					Language.I18N.getString("import.dialog.window"), 
+			final ImportStatusDialog importDialog = new ImportStatusDialog(viewController.getTopFrame(),
+					Language.I18N.getString("import.dialog.window"),
 					Language.I18N.getString("import.dialog.msg"));
 
 			SwingUtilities.invokeLater(() -> {
@@ -339,8 +301,8 @@ public class ImportPanel extends JPanel implements EventHandler {
 					SwingUtilities.invokeLater(new Runnable() {
 						public void run() {
 							eventDispatcher.triggerEvent(new InterruptEvent(
-									"User abort of database import.", 
-									LogLevel.WARN, 
+									"User abort of database import.",
+									LogLevel.WARN,
 									Event.GLOBAL_CHANNEL,
 									this));
 						}
@@ -389,12 +351,12 @@ public class ImportPanel extends JPanel implements EventHandler {
 
 			// initialize event dispatcher
 			final EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
-			final XMLValidationStatusDialog validatorDialog = new XMLValidationStatusDialog(viewController.getTopFrame(), 
-					Language.I18N.getString("validate.dialog.window"), 
-					Language.I18N.getString("validate.dialog.title"), 
-					" ", 
-					Language.I18N.getString("validate.dialog.details") , 
-					true, 
+			final XMLValidationStatusDialog validatorDialog = new XMLValidationStatusDialog(viewController.getTopFrame(),
+					Language.I18N.getString("validate.dialog.window"),
+					Language.I18N.getString("validate.dialog.title"),
+					" ",
+					Language.I18N.getString("validate.dialog.details") ,
+					true,
 					eventDispatcher);
 
 			SwingUtilities.invokeLater(() -> {
@@ -478,7 +440,7 @@ public class ImportPanel extends JPanel implements EventHandler {
 			chooser.setCurrentDirectory(fileListModel.get(0));
 
 		int result = chooser.showOpenDialog(getTopLevelAncestor());
-		if (result == JFileChooser.CANCEL_OPTION) 
+		if (result == JFileChooser.CANCEL_OPTION)
 			return;
 
 		fileListModel.clear();
@@ -549,7 +511,7 @@ public class ImportPanel extends JPanel implements EventHandler {
 
 			if (!fileList.isSelectionEmpty()) {
 				int[] indices = fileList.getSelectedIndices();
-				int first = indices[0];		
+				int first = indices[0];
 
 				for (int i = indices.length - 1; i >= 0; i--)
 					fileListModel.remove(indices[i]);
@@ -591,7 +553,7 @@ public class ImportPanel extends JPanel implements EventHandler {
 							addFiles(files);
 						}
 
-						dtde.getDropTargetContext().dropComplete(true);	
+						dtde.getDropTargetContext().dropComplete(true);
 					} catch (UnsupportedFlavorException | IOException e) {
 						//
 					}
@@ -621,11 +583,5 @@ public class ImportPanel extends JPanel implements EventHandler {
 		public void dragOver(DropTargetDragEvent dtde) {
 			// nothing to do here
 		}
-	}
-
-	@Override
-	public void handleEvent(Event event) throws Exception {
-		DatabaseConnectionStateEvent state = (DatabaseConnectionStateEvent)event;
-		setEnabledWorkspace(!state.isConnected() || databaseController.getActiveDatabaseAdapter().hasVersioningSupport());
 	}
 }

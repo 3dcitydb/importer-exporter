@@ -116,10 +116,14 @@ public class GuiUtil {
 	}
 
 	public static int getTextOffset(JCheckBox checkBox) {
-		return new JCheckBox().getPreferredSize().width + checkBox.getIconTextGap() - 2;
+		return new JCheckBox().getPreferredSize().width +
+				checkBox.getIconTextGap() -
+				checkBox.getMargin().right;
 	}
 
 	public static int getTextOffset(JRadioButton radioButton) {
-		return new JRadioButton().getPreferredSize().width + radioButton.getIconTextGap() - 2;
+		return new JRadioButton().getPreferredSize().width +
+				radioButton.getIconTextGap() -
+				radioButton.getMargin().right;
 	}
 }
