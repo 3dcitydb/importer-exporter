@@ -30,20 +30,22 @@ package org.citydb.gui.components.checkboxtree;
 import javax.swing.tree.TreePath;
 
 /**
- * SimpleTreeCheckingMode defines a TreeCheckingMode without recursion. In this
+ * SingleTreeCheckingMode defines a TreeCheckingMode without recursion. In this
  * simple mode the check state always changes only the current node: no
- * recursion.
+ * recursion. Also, only a single node of the tree is allowed to have a check at
+ * a given time.
  *
- * @author Enrico Boldrini
+ * @author Boldrini
  */
-public class SimpleTreeCheckingMode extends TreeCheckingMode {
+public class SingleTreeCheckingMode extends TreeCheckingMode {
 
-    SimpleTreeCheckingMode(DefaultTreeCheckingModel model) {
+    SingleTreeCheckingMode(DefaultTreeCheckingModel model) {
         super(model);
     }
 
     @Override
     public void checkPath(TreePath path) {
+        this.model.clearChecking();
         this.model.addToCheckedPathsSet(path);
         this.model.updatePathGreyness(path);
         this.model.updateAncestorsGreyness(path);

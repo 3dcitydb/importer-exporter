@@ -2,7 +2,7 @@
  * 3D City Database - The Open Source CityGML Database
  * http://www.3dcitydb.org/
  *
- * Copyright 2013 - 2019
+ * Copyright 2013 - 2020
  * Chair of Geoinformatics
  * Technical University of Munich, Germany
  * https://www.gis.bgu.tum.de/
@@ -27,30 +27,56 @@
  */
 package org.citydb.gui.components.checkboxtree;
 
+import javax.swing.tree.TreePath;
 import java.util.EventObject;
 
-import javax.swing.tree.TreePath;
-
 /**
- * An event that characterizes a change in the current checking.
- * 
- * @author boldrini
+ * An event that characterizes a change in the current checking. The change is
+ * related to a single checked/unchecked path. TreeCheckingListeners will
+ * generally query the source of the event for the new checked status of each
+ * potentially changed row.
+ *
+ * @author Lorenzo Bigagli
+ * @see TreeCheckingListener
+ * @see TreeCheckingModel
  */
-@SuppressWarnings("serial")
 public class TreeCheckingEvent extends EventObject {
-    /** Paths this event represents. */
-    protected TreePath leadingPath;
 
     /**
-         * Returns the paths that have been added or removed from the selection.
-         */
-    public TreePath getLeadingPath() {
-	return this.leadingPath;
+     * The path related to this event
+     */
+    protected TreePath changedPath;
+
+    private boolean checked;
+
+    /**
+     * Represents a change in the checking of a TreeCheckingModel. The specified
+     * path identifies the path that have been either checked or unchecked.
+     *
+     * @param source  source of event
+     * @param path    the path that has changed in the checking
+     * @param checked whether or not the path is checked, false means that path was
+     *                removed from the checking.
+     */
+    public TreeCheckingEvent(Object source, TreePath path, boolean checked) {
+        super(source);
+        this.changedPath = path;
+        this.checked = checked;
     }
 
-    public TreeCheckingEvent(TreePath path) {
-	super(path);
-	this.leadingPath = path;
+    /**
+     * @return the path that was added or removed from the checking.
+     */
+    public TreePath getPath() {
+        return this.changedPath;
+    }
+
+    /**
+     * @return true if the path related to the event is checked. A return value
+     * of false means that the path has been removed from the checking.
+     */
+    public boolean isCheckedPath() {
+        return checked;
     }
 
 }

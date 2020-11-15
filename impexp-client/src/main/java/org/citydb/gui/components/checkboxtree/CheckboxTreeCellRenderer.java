@@ -2,7 +2,7 @@
  * 3D City Database - The Open Source CityGML Database
  * http://www.3dcitydb.org/
  *
- * Copyright 2013 - 2019
+ * Copyright 2013 - 2020
  * Chair of Geoinformatics
  * Technical University of Munich, Germany
  * https://www.gis.bgu.tum.de/
@@ -27,51 +27,50 @@
  */
 package org.citydb.gui.components.checkboxtree;
 
-import java.awt.Component;
-
-import javax.swing.JTree;
+import javax.swing.*;
 import javax.swing.tree.TreeCellRenderer;
+import java.awt.*;
 
 /**
  * The renderer for a cell in a CheckboxTree.
- * 
+ *
  * @author bigagli
  */
 public interface CheckboxTreeCellRenderer extends TreeCellRenderer {
 
     /**
-         * This method is redeclared just to underline that the implementor has
-         * to properly display the checking/graying state of <code>value</code>.
-         * This should go in the method parameters, but would imply changes to
-         * Swing classes that were considered unpractical. For example in
-         * DefaultCheckboxTreeCellRenderer the following code is used to get the
-         * checking/graying states:
-         * 
-         * <pre>
-         * TreeCheckingModel checkingModel = ((CheckboxTree) tree).getCheckingModel();
-         * 
-         * TreePath path = tree.getPathForRow(row);
-         * 
-         * boolean enabled = checkingModel.isPathEnabled(path);
-         * 
-         * boolean checked = checkingModel.isPathChecked(path);
-         * 
-         * boolean greyed = checkingModel.isPathGreyed(path);
-         * </pre>
-         * 
-         * You could use a QuadristateCheckbox to properly renderer the states
-         * (as in DefaultCheckboxTreeCellRenderer).
-         * 
-         * @see TreeCellRenderer#getTreeCellRendererComponent
-         */
+     * This method is redeclared just to underline that the implementor has to
+     * properly display the checking/graying state of <code>value</code>. This
+     * should go in the method parameters, but would imply changes to Swing
+     * classes that were considered unpractical. For example in
+     * DefaultCheckboxTreeCellRenderer the following code is used to get the
+     * checking/graying states:
+     *
+     * <pre>
+     * TreeCheckingModel checkingModel = ((CheckboxTree) tree).getCheckingModel();
+     *
+     * TreePath path = tree.getPathForRow(row);
+     *
+     * boolean enabled = checkingModel.isPathEnabled(path);
+     *
+     * boolean checked = checkingModel.isPathChecked(path);
+     *
+     * boolean greyed = checkingModel.isPathGreyed(path);
+     * </pre>
+     * <p>
+     * You could use a QuadristateCheckbox to properly renderer the states (as
+     * in DefaultCheckboxTreeCellRenderer).
+     *
+     * @see TreeCellRenderer#getTreeCellRendererComponent
+     */
     Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row,
                                            boolean hasFocus);
 
     /**
-         * Returns whether the specified relative coordinates insist on the
-         * intended checkbox control. May be used by a mouse listener to figure
-         * out whether to toggle a node or not.
-         */
+     * Returns whether the specified relative coordinates insist on the intended
+     * checkbox control. It is used by the CheckboxTree mouse listener to figure
+     * out whether to toggle a node or not.
+     */
     public boolean isOnHotspot(int x, int y);
 
 }

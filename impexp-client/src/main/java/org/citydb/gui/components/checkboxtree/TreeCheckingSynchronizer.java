@@ -25,22 +25,43 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.citydb.gui.components.checkboxtree;
 
-import java.util.EventListener;
+import javax.swing.tree.TreePath;
 
-/**
- * The listener notified when the checking in a TreeCheckingModel changes.
- *
- * @author Enrico Boldrini
- * @see TreeCheckingModel
- * @see CheckboxTree
- */
-public interface TreeCheckingListener extends EventListener {
-    /**
-     * Called whenever the value of the checking changes.
-     *
-     * @param e the event that characterizes the change.
-     */
-    void valueChanged(TreeCheckingEvent e);
+public class TreeCheckingSynchronizer implements TreeCheckingListener {
+
+    protected TreeCheckingModel model1;
+
+    protected TreeCheckingModel model2;
+
+    public TreeCheckingSynchronizer(CheckboxTree tree1, CheckboxTree tree2) {
+
+        this.model1 = tree1.getCheckingModel();
+        this.model2 = tree2.getCheckingModel();
+
+        tree1.addTreeCheckingListener(this);
+        tree2.addTreeCheckingListener(this);
+    }
+
+    public void valueChanged(TreeCheckingEvent e) {
+
+        Object source = e.getSource();
+        TreePath leadingPath = e.getPath();
+
+        boolean checked = e.isCheckedPath();
+
+        TreeCheckingModel dest = source.equals(model1) ? model2 : model1;
+
+        if (checked) {
+            if (!dest.isPathChecked(leadingPath)) {
+                dest.addCheckingPath(leadingPath);
+            }
+        } else {
+            if (dest.isPathChecked(leadingPath)) {
+                dest.removeCheckingPath(leadingPath);
+            }
+        }
+    }
 }

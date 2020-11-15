@@ -38,6 +38,7 @@ import org.citydb.config.project.query.filter.selection.comparison.LikeOperator;
 import org.citydb.config.project.query.filter.selection.id.ResourceIdOperator;
 import org.citydb.config.project.query.filter.type.FeatureTypeFilter;
 import org.citydb.gui.components.checkboxtree.DefaultCheckboxTreeCellRenderer;
+import org.citydb.gui.components.checkboxtree.TreeCheckingModel;
 import org.citydb.gui.components.common.BlankNumberFormatter;
 import org.citydb.gui.components.common.TitledPanel;
 import org.citydb.gui.components.feature.FeatureTypeTree;
@@ -126,6 +127,7 @@ public class FilterPanel extends JPanel {
 		bboxModeGroup.add(bboxWithin);
 
 		featureTree = new FeatureTypeTree();
+		featureTree.setRowHeight((int)(new JCheckBox().getPreferredSize().getHeight()) - 1);
 
 		// get rid of standard icons
 		DefaultCheckboxTreeCellRenderer renderer = (DefaultCheckboxTreeCellRenderer) featureTree.getCellRenderer();
@@ -228,6 +230,7 @@ public class FilterPanel extends JPanel {
 
 	private void setEnabledFeatureFilter() {
 		featureTree.setPathsEnabled(useFeatureFilter.isSelected());
+		featureTree.setEnabled(useFeatureFilter.isSelected());
 		featureTree.repaint();
 	}
 

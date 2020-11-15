@@ -173,7 +173,7 @@ public class FilterPanel extends JPanel implements EventHandler {
 		tilingColumnsText = new JFormattedTextField(tileFormat);
 
 		featureTree = new FeatureTypeTree(Util.toCityGMLVersion(config.getExportConfig().getSimpleQuery().getVersion()));
-		featureTree.setRowHeight((int)(new JCheckBox().getPreferredSize().getHeight()) - 4);
+		featureTree.setRowHeight((int)(new JCheckBox().getPreferredSize().getHeight()) - 1);
 		featureTree.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createEtchedBorder(),
 				BorderFactory.createEmptyBorder(0, 0, 4, 4)));
 
@@ -410,6 +410,7 @@ public class FilterPanel extends JPanel implements EventHandler {
 
 	private void setEnabledFeatureFilter() {
 		featureTree.setPathsEnabled(useFeatureFilter.isSelected());
+		featureTree.setEnabled(useFeatureFilter.isSelected());
 		featureTree.repaint();
 	}
 
