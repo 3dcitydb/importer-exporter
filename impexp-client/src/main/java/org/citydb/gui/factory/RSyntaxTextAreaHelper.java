@@ -28,7 +28,7 @@
 
 package org.citydb.gui.factory;
 
-import com.formdev.flatlaf.FlatDarkLaf;
+import com.formdev.flatlaf.FlatLaf;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.Theme;
 
@@ -41,7 +41,7 @@ public class RSyntaxTextAreaHelper {
 
     public static void installDefaultTheme(RSyntaxTextArea textArea) {
         Consumer<RSyntaxTextArea> applyTheme = input -> {
-            String theme = UIManager.getLookAndFeel() instanceof FlatDarkLaf ?
+            String theme = FlatLaf.isLafDark() ?
                     "/org/fife/ui/rsyntaxtextarea/themes/dark.xml" :
                     "/org/fife/ui/rsyntaxtextarea/themes/idea.xml";
 
