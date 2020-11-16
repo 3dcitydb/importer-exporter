@@ -229,9 +229,13 @@ public class FilterPanel extends JPanel {
 	}
 
 	private void setEnabledFeatureFilter() {
-		featureTree.setPathsEnabled(useFeatureFilter.isSelected());
 		featureTree.setEnabled(useFeatureFilter.isSelected());
-		featureTree.repaint();
+		if (useFeatureFilter.isSelected()) {
+			featureTree.expandRow(0);
+		} else {
+			featureTree.collapseRow(0);
+			featureTree.setSelectionPath(null);
+		}
 	}
 
 	public void doTranslation() {
