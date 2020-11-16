@@ -163,8 +163,8 @@ public class XMLQueryView extends FilterView {
         buttons.add(duplicateButton, GuiUtil.setConstraints(0,1,0,0,GridBagConstraints.NONE,0,5,5,0));
         buttons.add(validateButton, GuiUtil.setConstraints(0,2,0,0,GridBagConstraints.NONE,0,5,0,0));
 
-        component.add(scrollPane, GuiUtil.setConstraints(0,0,1,1,GridBagConstraints.BOTH,10,5,5,0));
-        component.add(buttons, GuiUtil.setConstraints(1,0,0,0,GridBagConstraints.NORTH,GridBagConstraints.NONE,10,0,5,5));
+        component.add(scrollPane, GuiUtil.setConstraints(0,0,1,1,GridBagConstraints.BOTH,0,0,0,0));
+        component.add(buttons, GuiUtil.setConstraints(1,0,0,0,GridBagConstraints.NORTH,GridBagConstraints.NONE,0,0,0,0));
 
         newButton.addActionListener(e -> SwingUtilities.invokeLater(this::setEmptyQuery));
         duplicateButton.addActionListener(e -> SwingUtilities.invokeLater(this::setSimpleSettings));

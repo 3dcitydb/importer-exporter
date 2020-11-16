@@ -83,11 +83,11 @@ public class SQLFilterView extends FilterView {
 
         JPanel buttons = new JPanel();
         buttons.setLayout(new GridBagLayout());
-        buttons.add(addButton, GuiUtil.setConstraints(0,0,0,0,GridBagConstraints.NONE,0,5,5,5));
-        buttons.add(removeButton, GuiUtil.setConstraints(0,1,0,0,GridBagConstraints.NONE,0,5,0,5));
+        buttons.add(addButton, GuiUtil.setConstraints(0,0,0,0,GridBagConstraints.NONE,0,5,5,0));
+        buttons.add(removeButton, GuiUtil.setConstraints(0,1,0,0,GridBagConstraints.NONE,0,5,0,0));
 
-        component.add(scrollPane, GuiUtil.setConstraints(0,0,1,1,GridBagConstraints.BOTH,10,5,10,0));
-        component.add(buttons, GuiUtil.setConstraints(1,0,0,0,GridBagConstraints.NORTH,GridBagConstraints.NONE,10,0,10,0));
+        component.add(scrollPane, GuiUtil.setConstraints(0,0,1,1,GridBagConstraints.BOTH,10,0,0,0));
+        component.add(buttons, GuiUtil.setConstraints(1,0,0,0,GridBagConstraints.NORTH,GridBagConstraints.NONE,10,0,0,0));
 
         addButton.addActionListener(e -> {
             Dimension size = scrollPane.getPreferredSize();

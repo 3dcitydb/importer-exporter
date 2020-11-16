@@ -30,7 +30,6 @@ package org.citydb.gui.components.checkboxtree;
 import org.citydb.gui.components.checkboxtree.QuadristateButtonModel.State;
 
 import javax.swing.*;
-import javax.swing.plaf.ColorUIResource;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreePath;
 import java.awt.*;
@@ -105,9 +104,10 @@ public class DefaultCheckboxTreeCellRenderer extends JPanel implements CheckboxT
         };
 
         label.setBorderSelectionColor(null);
+        checkBox.setOpaque(false);
 
         // CHECK: a user suggested BorderLayout appears to work better than FlowLayout with most L&Fs
-        this.setLayout(new GridBagLayout());
+        this.setLayout(new FlowLayout(FlowLayout.LEFT, 0, 0));
         this.setOpaque(false);
         add(this.checkBox);
         add(this.label);

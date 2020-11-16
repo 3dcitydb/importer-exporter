@@ -167,7 +167,7 @@ public class ImportPanel extends JPanel {
         JScrollPane fileScroll = new JScrollPane(fileList);
 		fileScroll.setPreferredSize(fileScroll.getPreferredSize());
 
-        filePanel.add(fileScroll, GuiUtil.setConstraints(0, 0, 1, 0, 1, 2, GridBagConstraints.BOTH, 0, 0, 5, 5));
+        filePanel.add(fileScroll, GuiUtil.setConstraints(0, 0, 1, 0, 1, 2, GridBagConstraints.BOTH, 0, 0, 0, 5));
 		filePanel.add(browseButton, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 5, 5, 0));
 		filePanel.add(removeButton, GuiUtil.setConstraints(1, 1, 0, 0, GridBagConstraints.NORTH, GridBagConstraints.HORIZONTAL, 0, 5, 20, 0));
 

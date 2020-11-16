@@ -44,24 +44,22 @@ import org.citydb.event.global.EventType;
 import org.citydb.event.global.PropertyChangeEvent;
 import org.citydb.gui.components.checkboxtree.DefaultCheckboxTreeCellRenderer;
 import org.citydb.gui.components.common.BlankNumberFormatter;
+import org.citydb.gui.components.common.TitledPanel;
 import org.citydb.gui.components.feature.FeatureTypeTree;
 import org.citydb.gui.factory.PopupMenuDecorator;
-import org.citydb.gui.util.GuiUtil;
 import org.citydb.gui.modules.exporter.view.filter.AttributeFilterView;
 import org.citydb.gui.modules.exporter.view.filter.FilterView;
 import org.citydb.gui.modules.exporter.view.filter.SQLFilterView;
 import org.citydb.gui.modules.exporter.view.filter.XMLQueryView;
+import org.citydb.gui.util.GuiUtil;
 import org.citydb.plugin.extension.view.ViewController;
 import org.citydb.plugin.extension.view.components.BoundingBoxPanel;
 import org.citydb.registry.ObjectRegistry;
 import org.citydb.util.Util;
 import org.citygml4j.model.module.citygml.CityGMLVersion;
-import org.jdesktop.swingx.JXTitledSeparator;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.text.DecimalFormat;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -79,10 +77,10 @@ public class FilterPanel extends JPanel implements EventHandler {
 	private JCheckBox useBBoxFilter;
 	private JCheckBox useFeatureFilter;
 
-	private JXTitledSeparator counterSeparator;
-	private JXTitledSeparator lodSeparator;
-	private JXTitledSeparator bboxSeparator;
-	private JXTitledSeparator featureSeparator;
+	private TitledPanel lodFilterPanel;
+	private TitledPanel counterFilterPanel;
+	private TitledPanel bboxFilterPanel;
+	private TitledPanel featureFilterPanel;
 
 	private XMLQueryView xmlQuery;
 	private JTabbedPane filterTab;
@@ -125,10 +123,10 @@ public class FilterPanel extends JPanel implements EventHandler {
 		useBBoxFilter = new JCheckBox();
 		useFeatureFilter = new JCheckBox();
 
-		counterSeparator = new JXTitledSeparator();
-		lodSeparator = new JXTitledSeparator();
-		bboxSeparator = new JXTitledSeparator();
-		featureSeparator = new JXTitledSeparator();
+		counterFilterPanel = new TitledPanel().withToggleButton(useCounterFilter);
+		lodFilterPanel = new TitledPanel().withToggleButton(useLodFilter);
+		bboxFilterPanel = new TitledPanel().withToggleButton(useBBoxFilter);
+		featureFilterPanel = new TitledPanel().withToggleButton(useFeatureFilter);
 
 		countLabel = new JLabel();
 		startIndexLabel = new JLabel();
@@ -174,8 +172,6 @@ public class FilterPanel extends JPanel implements EventHandler {
 
 		featureTree = new FeatureTypeTree(Util.toCityGMLVersion(config.getExportConfig().getSimpleQuery().getVersion()));
 		featureTree.setRowHeight((int)(new JCheckBox().getPreferredSize().getHeight()) - 1);
-		featureTree.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createEtchedBorder(),
-				BorderFactory.createEmptyBorder(0, 0, 4, 4)));
 
 		// get rid of standard icons
 		DefaultCheckboxTreeCellRenderer renderer = (DefaultCheckboxTreeCellRenderer) featureTree.getCellRenderer();
@@ -186,7 +182,7 @@ public class FilterPanel extends JPanel implements EventHandler {
 		//layout
 		mainPanel = new JPanel(new CardLayout());
 		setLayout(new GridBagLayout());
-		add(mainPanel, GuiUtil.setConstraints(0,0,1,1,GridBagConstraints.BOTH,0,0,0,0));
+		add(mainPanel, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
 
 		JPanel guiPanel = new JPanel();
 		xmlQuery = new XMLQueryView(this, viewController, config);
@@ -196,15 +192,29 @@ public class FilterPanel extends JPanel implements EventHandler {
 		guiPanel.setLayout(new GridBagLayout());
 		{
 			JPanel filterRow = new JPanel();
-			guiPanel.add(filterRow, GuiUtil.setConstraints(0,0,1,0,GridBagConstraints.BOTH,0,0,0,0));
 			filterRow.setLayout(new GridBagLayout());
 			{
 				filterTab = new JTabbedPane(JTabbedPane.TOP, JTabbedPane.SCROLL_TAB_LAYOUT);
 
-				filterRow.add(useSelectionFilter, GuiUtil.setConstraints(0,0,0,0,GridBagConstraints.NORTH,GridBagConstraints.NONE,5,0,5,5));
-				filterRow.add(filterTab, GuiUtil.setConstraints(1,0,1,0,GridBagConstraints.HORIZONTAL,5,0,5,0));
+				// adapt checkbox to tab height
+				int right = useSelectionFilter.getIconTextGap() - useSelectionFilter.getMargin().right;
+				int top = (UIManager.getInt("TabbedPane.tabHeight") -
+						useSelectionFilter.getPreferredSize().height +
+						useSelectionFilter.getMargin().top) / 2;
 
-				filters = new FilterView[] {
+				Component toogleButton;
+				if (top > 0) {
+					toogleButton = Box.createVerticalBox();
+					((Box) toogleButton).add(Box.createVerticalStrut(top));
+					((Box) toogleButton).add(useSelectionFilter);
+				} else {
+					toogleButton = useSelectionFilter;
+				}
+
+				filterRow.add(toogleButton, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.NORTH, GridBagConstraints.NONE, 0, 0, 0, right));
+				filterRow.add(filterTab, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 0));
+
+				filters = new FilterView[]{
 						new AttributeFilterView(config),
 						new SQLFilterView(config)
 				};
@@ -218,96 +228,72 @@ public class FilterPanel extends JPanel implements EventHandler {
 						filterTab.setComponentAt(i, index == i ? filters[index].getViewComponent() : null);
 				});
 			}
+
+			guiPanel.add(filterRow, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, TitledPanel.PADDING_BOTTOM, 0));
 		}
 		{
-			JPanel lodRow = new JPanel();
-			guiPanel.add(lodRow, GuiUtil.setConstraints(0,1,1,0,GridBagConstraints.HORIZONTAL,0,0,0,0));
-			lodRow.setLayout(new GridBagLayout());
+			JPanel content = new JPanel();
+			content.setLayout(new GridBagLayout());
 			{
-				JPanel lodPanel = new JPanel();
-
-				lodRow.add(useLodFilter, GuiUtil.setConstraints(0,0,0,0,GridBagConstraints.NONE,5,0,0,5));
-				lodRow.add(lodSeparator, GuiUtil.setConstraints(1,0,1,0,GridBagConstraints.HORIZONTAL,5,0,0,5));
-				lodRow.add(lodPanel, GuiUtil.setConstraints(1,1,1,0,GridBagConstraints.HORIZONTAL,0,0,5,5));
-
-				lodPanel.setLayout(new GridBagLayout());
-				{
-					lods = new JCheckBox[5];
-					for (int lod = 0; lod < lods.length; lod++) {
-						lods[lod] = new JCheckBox("LoD" + lod);
-						lodPanel.add(lods[lod], GuiUtil.setConstraints(lod,0,0,0,GridBagConstraints.NONE,0,0,0,15));
-					}
-
-					lodPanel.add(lodModeLabel, GuiUtil.setConstraints(5,0,0,0,GridBagConstraints.NONE,0,20,0,5));
-					lodPanel.add(lodMode, GuiUtil.setConstraints(6,0,0.5,1,GridBagConstraints.HORIZONTAL,0,5,0,5));
-					lodPanel.add(lodDepthLabel, GuiUtil.setConstraints(7,0,0,0,GridBagConstraints.NONE,0,20,0,5));
-					lodPanel.add(lodDepth, GuiUtil.setConstraints(8,0,0.5,0,GridBagConstraints.HORIZONTAL,0,5,0,0));
+				lods = new JCheckBox[5];
+				for (int lod = 0; lod < lods.length; lod++) {
+					lods[lod] = new JCheckBox("LoD" + lod);
+					content.add(lods[lod], GuiUtil.setConstraints(lod, 0, 0, 0, GridBagConstraints.NONE, 0, 0, 0, 15));
 				}
+
+				content.add(lodModeLabel, GuiUtil.setConstraints(5, 0, 0, 0, GridBagConstraints.NONE, 0, 20, 0, 5));
+				content.add(lodMode, GuiUtil.setConstraints(6, 0, 0.5, 1, GridBagConstraints.HORIZONTAL, 0, 5, 0, 5));
+				content.add(lodDepthLabel, GuiUtil.setConstraints(7, 0, 0, 0, GridBagConstraints.NONE, 0, 20, 0, 5));
+				content.add(lodDepth, GuiUtil.setConstraints(8, 0, 0.5, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 0));
 			}
+
+			lodFilterPanel.setContent(content);
+			guiPanel.add(lodFilterPanel, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 		}
 		{
-			JPanel counterFilterRow = new JPanel();
-			guiPanel.add(counterFilterRow, GuiUtil.setConstraints(0,2,1,0,GridBagConstraints.BOTH,0,0,0,0));
-			counterFilterRow.setLayout(new GridBagLayout());
+			JPanel content = new JPanel();
+			content.setLayout(new GridBagLayout());
 			{
-				JPanel counterPanel = new JPanel();
-
-				counterFilterRow.add(useCounterFilter, GuiUtil.setConstraints(0,0,0,0,GridBagConstraints.NONE,5,0,0,5));
-				counterFilterRow.add(counterSeparator, GuiUtil.setConstraints(1,0,1,0,GridBagConstraints.HORIZONTAL,5,0,0,5));
-				counterFilterRow.add(counterPanel, GuiUtil.setConstraints(1,1,1,0,GridBagConstraints.HORIZONTAL,0,0,5,5));
-
-				counterPanel.setLayout(new GridBagLayout());
-				{
-					counterPanel.add(countLabel, GuiUtil.setConstraints(0,0,0,0,GridBagConstraints.NONE,0,0,0,5));
-					counterPanel.add(countText, GuiUtil.setConstraints(1,0,1,0,GridBagConstraints.HORIZONTAL,0,5,0,5));
-					counterPanel.add(startIndexLabel, GuiUtil.setConstraints(2,0,0,0,GridBagConstraints.NONE,0,10,0,5));
-					counterPanel.add(startIndexText, GuiUtil.setConstraints(3,0,1,0,GridBagConstraints.HORIZONTAL,0,5,0,0));
-				}
+				content.add(countLabel, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.NONE, 0, 0, 0, 5));
+				content.add(countText, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 5));
+				content.add(startIndexLabel, GuiUtil.setConstraints(2, 0, 0, 0, GridBagConstraints.NONE, 0, 10, 0, 5));
+				content.add(startIndexText, GuiUtil.setConstraints(3, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 0));
 			}
+
+			counterFilterPanel.setContent(content);
+			guiPanel.add(counterFilterPanel, GuiUtil.setConstraints(0, 2, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 		}
 		{
-			JPanel bboxFilterRow = new JPanel();
-			guiPanel.add(bboxFilterRow, GuiUtil.setConstraints(0,3,1,0,GridBagConstraints.BOTH,0,0,0,0));
-			bboxFilterRow.setLayout(new GridBagLayout());
-			{
-				bboxFilterRow.add(useBBoxFilter, GuiUtil.setConstraints(0,0,0,0,GridBagConstraints.NONE,5,0,0,5));
-				bboxFilterRow.add(bboxSeparator, GuiUtil.setConstraints(1,0,1,0,GridBagConstraints.HORIZONTAL,5,0,0,5));
-				bboxFilterRow.add(bboxPanel, GuiUtil.setConstraints(1,1,1,0,GridBagConstraints.HORIZONTAL,0,0,0,5));
-			}
-
 			JPanel bboxModePanel = new JPanel();
 			bboxModePanel.setLayout(new GridBagLayout());
 			{
-				bboxModePanel.add(bboxMode, GuiUtil.setConstraints(0,0,0,0,GridBagConstraints.HORIZONTAL,0,0,0,5));
-				bboxModePanel.add(bboxOverlaps, GuiUtil.setConstraints(1,0,0,0,GridBagConstraints.HORIZONTAL,0,15,0,5));
-				bboxModePanel.add(bboxWithin, GuiUtil.setConstraints(2,0,0,0,GridBagConstraints.HORIZONTAL,0,5,0,5));
-				bboxModePanel.add(bboxTiling, GuiUtil.setConstraints(3,0,0,0,GridBagConstraints.HORIZONTAL,0,5,0,5));
-				bboxModePanel.add(tilingRowsLabel, GuiUtil.setConstraints(4,0,0,0,GridBagConstraints.HORIZONTAL,0,25,0,5));
-				bboxModePanel.add(tilingRowsText, GuiUtil.setConstraints(5,0,1,0,GridBagConstraints.HORIZONTAL,0,5,0,5));
-				bboxModePanel.add(tilingColumnsLabel, GuiUtil.setConstraints(6,0,0,0,GridBagConstraints.HORIZONTAL,0,10,0,5));
-				bboxModePanel.add(tilingColumnsText, GuiUtil.setConstraints(7,0,1,0,GridBagConstraints.HORIZONTAL,0,5,0,0));
+				bboxModePanel.add(bboxMode, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 5));
+				bboxModePanel.add(bboxOverlaps, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 15, 0, 5));
+				bboxModePanel.add(bboxWithin, GuiUtil.setConstraints(2, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 5));
+				bboxModePanel.add(bboxTiling, GuiUtil.setConstraints(3, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 5));
+				bboxModePanel.add(tilingRowsLabel, GuiUtil.setConstraints(4, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 25, 0, 5));
+				bboxModePanel.add(tilingRowsText, GuiUtil.setConstraints(5, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 5));
+				bboxModePanel.add(tilingColumnsLabel, GuiUtil.setConstraints(6, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 10, 0, 5));
+				bboxModePanel.add(tilingColumnsText, GuiUtil.setConstraints(7, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 0));
 				bboxPanel.addComponent(bboxModePanel);
 			}
+
+			bboxFilterPanel.setContent(bboxPanel);
+			guiPanel.add(bboxFilterPanel, GuiUtil.setConstraints(0, 3, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 		}
 		{
-			JPanel featureClassRow = new JPanel();
-			guiPanel.add(featureClassRow, GuiUtil.setConstraints(0,4,1,0,GridBagConstraints.HORIZONTAL,0,0,0,0));
-			featureClassRow.setLayout(new GridBagLayout());
+			JPanel content = new JPanel();
+			content.setBorder(UIManager.getBorder("TextField.border"));
+			content.setLayout(new GridBagLayout());
 			{
-				JPanel featureClassPanel = new JPanel();
-
-				featureClassRow.add(useFeatureFilter, GuiUtil.setConstraints(0,0,0,0,GridBagConstraints.NONE,5,0,0,5));
-				featureClassRow.add(featureSeparator, GuiUtil.setConstraints(1,0,1,0,GridBagConstraints.HORIZONTAL,5,0,0,5));
-				featureClassRow.add(featureClassPanel, GuiUtil.setConstraints(1,1,1,0,GridBagConstraints.HORIZONTAL,0,0,5,5));
-
-				featureClassPanel.setLayout(new GridBagLayout());
-				{
-					featureClassPanel.add(featureTree, GuiUtil.setConstraints(0,0,1,1,GridBagConstraints.BOTH,0,0,0,0));
-				}
+				content.add(featureTree, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
 			}
+
+			featureFilterPanel.setContent(content);
+			guiPanel.add(featureFilterPanel, GuiUtil.setConstraints(0, 4, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 		}
 		{
-			guiPanel.add(Box.createVerticalGlue(), GuiUtil.setConstraints(0,5,1,1,GridBagConstraints.BOTH,0,0,0,0));
+			guiPanel.add(Box.createVerticalGlue(), GuiUtil.setConstraints(0, 5, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
 		}
 
 		useSelectionFilter.addActionListener(e -> setEnabledFilterTab());
@@ -315,30 +301,6 @@ public class FilterPanel extends JPanel implements EventHandler {
 		useLodFilter.addActionListener(e -> setEnabledLodFilter());
 		useBBoxFilter.addActionListener(e -> setEnabledBBoxFilter());
 		useFeatureFilter.addActionListener(e -> setEnabledFeatureFilter());
-
-		lodSeparator.addMouseListener(new MouseAdapter() {
-			public void mouseClicked(MouseEvent e) {
-				useLodFilter.doClick();
-			}
-		});
-
-		counterSeparator.addMouseListener(new MouseAdapter() {
-			public void mouseClicked(MouseEvent e) {
-				useCounterFilter.doClick();
-			}
-		});
-
-		bboxSeparator.addMouseListener(new MouseAdapter() {
-			public void mouseClicked(MouseEvent e) {
-				useBBoxFilter.doClick();
-			}
-		});
-
-		featureSeparator.addMouseListener(new MouseAdapter() {
-			public void mouseClicked(MouseEvent e) {
-				useFeatureFilter.doClick();
-			}
-		});
 
 		for (JCheckBox lod : lods)
 			lod.addItemListener(e -> setEnabledLodFilterMode());
@@ -411,7 +373,12 @@ public class FilterPanel extends JPanel implements EventHandler {
 	private void setEnabledFeatureFilter() {
 		featureTree.setPathsEnabled(useFeatureFilter.isSelected());
 		featureTree.setEnabled(useFeatureFilter.isSelected());
-		featureTree.repaint();
+		if (useFeatureFilter.isSelected()) {
+			featureTree.expandRow(0);
+		} else {
+			featureTree.collapseRow(0);
+			featureTree.setSelectionPath(null);
+		}
 	}
 
 	private void checkNonNegative(JFormattedTextField field) {
@@ -425,10 +392,10 @@ public class FilterPanel extends JPanel implements EventHandler {
 	}
 
 	public void doTranslation() {
-		lodSeparator.setTitle(Language.I18N.getString("filter.border.lod"));
-		counterSeparator.setTitle(Language.I18N.getString("filter.border.counter"));
-		bboxSeparator.setTitle(Language.I18N.getString("filter.border.boundingBox"));
-		featureSeparator.setTitle(Language.I18N.getString("filter.border.featureClass"));
+		lodFilterPanel.setTitle(Language.I18N.getString("filter.border.lod"));
+		counterFilterPanel.setTitle(Language.I18N.getString("filter.border.counter"));
+		bboxFilterPanel.setTitle(Language.I18N.getString("filter.border.boundingBox"));
+		featureFilterPanel.setTitle(Language.I18N.getString("filter.border.featureClass"));
 
 		lodModeLabel.setText(Language.I18N.getString("filter.label.lod.mode"));
 		lodDepthLabel.setText(Language.I18N.getString("filter.label.lod.depth"));
@@ -592,5 +559,4 @@ public class FilterPanel extends JPanel implements EventHandler {
 		if (e.getPropertyName().equals("citygml.version"))
 			featureTree.updateCityGMLVersion((CityGMLVersion)e.getNewValue(), useFeatureFilter.isSelected());
 	}
-
 }

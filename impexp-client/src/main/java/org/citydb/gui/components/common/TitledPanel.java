@@ -37,12 +37,14 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 public class TitledPanel extends JPanel {
+    public static final int PADDING_TOP = 0;
+    public static final int PADDING_BOTTOM = 15;
     private final JXTitledSeparator separator;
 
     public TitledPanel(String title) {
         setLayout(new GridBagLayout());
         separator = new JXTitledSeparator(title);
-        add(separator, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 0, 5, 0));
+        add(separator, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.HORIZONTAL, PADDING_TOP, 0, 5, 0));
     }
 
     public TitledPanel(String title, JComponent content) {
@@ -63,12 +65,12 @@ public class TitledPanel extends JPanel {
     }
 
     public void setContent(JComponent content) {
-        add(content, GuiUtil.setConstraints(1, 1, 1, 1, GridBagConstraints.BOTH, 0, 0, 15, 0));
+        add(content, GuiUtil.setConstraints(1, 1, 1, 1, GridBagConstraints.BOTH, 0, 0, PADDING_BOTTOM, 0));
     }
 
     public TitledPanel withToggleButton(JToggleButton toggleButton) {
         int right = toggleButton.getIconTextGap() - toggleButton.getMargin().right;
-        add(toggleButton, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.NONE, 0, 0, 5, right));
+        add(toggleButton, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.NONE, PADDING_TOP, 0, 5, right));
         separator.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
                 toggleButton.doClick();

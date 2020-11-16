@@ -45,11 +45,7 @@ import org.citydb.config.project.query.simple.SimpleSelectionFilter;
 import org.citydb.database.DatabaseController;
 import org.citydb.event.Event;
 import org.citydb.event.EventDispatcher;
-import org.citydb.event.EventHandler;
-import org.citydb.event.global.DatabaseConnectionStateEvent;
-import org.citydb.event.global.EventType;
 import org.citydb.event.global.InterruptEvent;
-import org.citydb.gui.components.common.DatePicker;
 import org.citydb.gui.components.dialog.ExportStatusDialog;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.factory.SrsComboBoxFactory;
@@ -61,7 +57,6 @@ import org.citydb.registry.ObjectRegistry;
 import org.citydb.util.Util;
 
 import javax.swing.*;
-import javax.swing.border.TitledBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
@@ -82,7 +77,7 @@ import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
 @SuppressWarnings("serial")
-public class ExportPanel extends JPanel implements DropTargetListener, EventHandler {
+public class ExportPanel extends JPanel implements DropTargetListener {
 	private final ReentrantLock mainLock = new ReentrantLock();
 	private final Logger log = Logger.getInstance();
 	private final ViewController viewController;
@@ -91,14 +86,9 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 
 	private JTextField browseText;
 	private JButton browseButton;
-	private JTextField workspaceText;
-	private DatePicker datePicker;
 	private FilterPanel filterPanel;
 	private JButton exportButton;
 
-	private JPanel operations;
-	private JLabel workspaceLabel;
-	private JLabel timestampLabel;
 	private JLabel srsComboBoxLabel;
 	private DatabaseSrsComboBox srsComboBox;
 
@@ -110,25 +100,19 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 		this.config = config;
 
 		databaseController = ObjectRegistry.getInstance().getDatabaseController();
-		ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(EventType.DATABASE_CONNECTION_STATE, this);
-
 		initGui();
 	}
 
 	private void initGui() {
 		browseText = new JTextField();
 		browseButton = new JButton();
-		workspaceText = new JTextField();
-		datePicker = new DatePicker();
 		filterPanel = new FilterPanel(viewController, config);
 		exportButton = new JButton();
 		switchFilterModeButton = new JButton();
 
-		workspaceText.setEnabled(true);
-		datePicker.setEnabled(true);
 		browseButton.addActionListener(e -> saveFile(Language.I18N.getString("main.tabbedPane.export")));
 
-		PopupMenuDecorator.getInstance().decorate(workspaceText, datePicker.getEditor(), browseText);
+		PopupMenuDecorator.getInstance().decorate(browseText);
 
 		exportButton.addActionListener(e -> new SwingWorker<Void, Void>() {
 			protected Void doInBackground() {
@@ -140,56 +124,43 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 		setLayout(new GridBagLayout());
 
 		JPanel filePanel = new JPanel();
-		add(filePanel, GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.BOTH,10,5,5,5));
 		filePanel.setLayout(new GridBagLayout());
-		filePanel.add(browseText, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,5,5,5,5));
-		filePanel.add(browseButton, GuiUtil.setConstraints(1,0,0.0,0.0,GridBagConstraints.NONE,5,5,5,5));
+		filePanel.add(browseText, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 5));
+		filePanel.add(browseButton, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.NONE, 0, 5, 0, 0));
 
 		JPanel view = new JPanel();
 		view.setLayout(new GridBagLayout());
+
 		JScrollPane scrollPane = new JScrollPane(view);
 		scrollPane.setBorder(BorderFactory.createEmptyBorder());
 		scrollPane.setViewportBorder(BorderFactory.createEmptyBorder());
-		add(scrollPane, GuiUtil.setConstraints(0,1,1.0,1.0,GridBagConstraints.BOTH,0,0,0,0));
 
-		operations = new JPanel();
-		view.add(operations, GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.HORIZONTAL,0,5,5,5));
-		operations.setBorder(BorderFactory.createTitledBorder(""));
+		JPanel operations = new JPanel();
 		operations.setLayout(new GridBagLayout());
-		workspaceLabel = new JLabel();
-		timestampLabel = new JLabel();
 		srsComboBoxLabel = new JLabel();
 		srsComboBox = SrsComboBoxFactory.getInstance().createSrsComboBox(true);
 		srsComboBox.setShowOnlySameDimension(true);
 		srsComboBox.setPreferredSize(new Dimension(50, srsComboBox.getPreferredSize().height));
+		operations.add(srsComboBoxLabel, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 5));
+		operations.add(srsComboBox, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.BOTH, 0, 5, 0, 0));
 
-		operations.add(workspaceLabel, GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.HORIZONTAL,0,5,5,5));
-		operations.add(workspaceText, GuiUtil.setConstraints(1,0,1.0,0.0,GridBagConstraints.HORIZONTAL,0,5,5,5));
-		operations.add(timestampLabel, GuiUtil.setConstraints(2,0,0.0,0.0,GridBagConstraints.NONE,0,10,5,5));
-		operations.add(datePicker, GuiUtil.setConstraints(3,0,0.0,0.0,GridBagConstraints.HORIZONTAL,0,5,5,5));
-		operations.add(srsComboBoxLabel, GuiUtil.setConstraints(0,1,0.0,0.0,GridBagConstraints.HORIZONTAL,0,5,5,5));
-		operations.add(srsComboBox, GuiUtil.setConstraints(1,1,3,1,1.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
+		view.add(operations, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 10, 15, 10));
+		view.add(filterPanel, GuiUtil.setConstraints(0, 1, 1, 1, GridBagConstraints.NORTH, GridBagConstraints.BOTH, 0, 10, 0, 10));
 
-		view.add(filterPanel, GuiUtil.setConstraints(0,3,1.0,1.0,GridBagConstraints.NORTH,GridBagConstraints.BOTH,0,5,0,5));
+		JPanel buttonPanel = new JPanel();
+		buttonPanel.setLayout(new GridBagLayout());
+		buttonPanel.add(exportButton, GuiUtil.setConstraints(0, 0, 2, 1, 1, 0, GridBagConstraints.NONE, 5, 5, 5, 5));
+		buttonPanel.add(switchFilterModeButton, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.EAST, GridBagConstraints.NONE, 5, 5, 5, 5));
 
-		JPanel buttons = new JPanel();
-		buttons.setLayout(new GridBagLayout());
-		add(buttons, GuiUtil.setConstraints(0,4,1.0,0.0,GridBagConstraints.BOTH,5,5,5,5));
-		buttons.add(exportButton, GuiUtil.setConstraints(0,0,2,1,1.0,0.0,GridBagConstraints.NONE,5,5,5,5));
-		buttons.add(switchFilterModeButton, GuiUtil.setConstraints(1,0,0.0,0.0,GridBagConstraints.EAST,GridBagConstraints.NONE,5,5,5,5));
+		add(filePanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.HORIZONTAL, 15, 10, 15, 10));
+		add(scrollPane, GuiUtil.setConstraints(0, 1, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
+		add(buttonPanel, GuiUtil.setConstraints(0, 2, 1, 0, GridBagConstraints.HORIZONTAL, 5, 10, 5, 10));
 
 		DropTarget dropTarget = new DropTarget(browseText, this);
 		browseText.setDropTarget(dropTarget);
 		setDropTarget(dropTarget);
 
 		switchFilterModeButton.addActionListener(e -> switchFilterMode());
-	}
-
-	private void setEnabledWorkspace(boolean enable) {
-		workspaceLabel.setEnabled(enable);
-		workspaceText.setEnabled(enable);
-		timestampLabel.setEnabled(enable);
-		datePicker.setEnabled(enable);
 	}
 
 	private void switchFilterMode() {
@@ -199,10 +170,6 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 	}
 
 	public void doTranslation() {
-		((TitledBorder)operations.getBorder()).setTitle(Language.I18N.getString("export.border.settings"));
-		workspaceLabel.setText(Language.I18N.getString("common.label.workspace"));
-		workspaceText.putClientProperty("JTextField.placeholderText", Language.I18N.getString("common.label.workspace.prompt"));
-		timestampLabel.setText(Language.I18N.getString("common.label.timestamp"));
 		browseButton.setText(Language.I18N.getString("common.button.browse"));
 		exportButton.setText(Language.I18N.getString("export.button.export"));
 		srsComboBoxLabel.setText(Language.I18N.getString("common.label.boundingBox.crs"));
@@ -212,8 +179,6 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 
 	public void loadSettings() {
 		useSimpleFilter = config.getExportConfig().isUseSimpleQuery();
-		workspaceText.setText(config.getDatabaseConfig().getWorkspaces().getExportWorkspace().getName());
-		datePicker.setDate(config.getDatabaseConfig().getWorkspaces().getExportWorkspace().getTimestamp());
 
 		QueryConfig query = config.getExportConfig().getQuery();
 		DatabaseSrs targetSrs = query.getTargetSrs();
@@ -247,8 +212,6 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 
 	public void setSettings() {
 		config.getExportConfig().setUseSimpleQuery(useSimpleFilter);
-		config.getDatabaseConfig().getWorkspaces().getExportWorkspace().setName(workspaceText.getText());
-		config.getDatabaseConfig().getWorkspaces().getExportWorkspace().setTimestamp(datePicker.getDate());
 
 		try {
 			Paths.get(browseText.getText());
@@ -508,13 +471,6 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 	public void dropActionChanged(DropTargetDragEvent dtde) {
 		// nothing to do here
 	}
-
-	@Override
-	public void handleEvent(Event event) throws Exception {
-		DatabaseConnectionStateEvent state = (DatabaseConnectionStateEvent)event;
-		setEnabledWorkspace(!state.isConnected() || databaseController.getActiveDatabaseAdapter().hasVersioningSupport());
-	}
-
 }
 
 
