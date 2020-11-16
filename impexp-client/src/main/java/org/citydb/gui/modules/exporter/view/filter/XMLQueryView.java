@@ -215,6 +215,11 @@ public class XMLQueryView extends FilterView {
         if (!typeFilter.isEmpty())
             query.setFeatureTypeFilter(typeFilter);
 
+        if (simpleQuery.isSetTargetSrs() && !isDefaultDatabaseSrs(simpleQuery.getTargetSrs())) {
+            DatabaseSrs targetSrs = simpleQuery.getTargetSrs();
+            query.setTargetSrs(targetSrs.getSrid(), targetSrs.getGMLSrsName());
+        }
+
         if (simpleQuery.isUseLodFilter()
                 && simpleQuery.isSetLodFilter()
                 && simpleQuery.getLodFilter().isSetAnyLod())

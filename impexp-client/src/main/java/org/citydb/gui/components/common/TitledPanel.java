@@ -38,7 +38,10 @@ import java.awt.event.MouseEvent;
 
 public class TitledPanel extends JPanel {
     public static final int PADDING_TOP = 0;
+    public static final int PADDING_LEFT = 0;
     public static final int PADDING_BOTTOM = 15;
+    public static final int PADDING_RIGHT = 0;
+
     private final JXTitledSeparator separator;
 
     public TitledPanel(String title) {
@@ -65,7 +68,11 @@ public class TitledPanel extends JPanel {
     }
 
     public void setContent(JComponent content) {
-        add(content, GuiUtil.setConstraints(1, 1, 1, 1, GridBagConstraints.BOTH, 0, 0, PADDING_BOTTOM, 0));
+        setContent(content, PADDING_TOP, PADDING_LEFT, PADDING_BOTTOM, PADDING_RIGHT);
+    }
+
+    public void setContent(JComponent content, int top, int left, int bottom, int right) {
+        add(content, GuiUtil.setConstraints(1, 1, 1, 1, GridBagConstraints.BOTH, top, left, bottom, right));
     }
 
     public TitledPanel withToggleButton(JToggleButton toggleButton) {

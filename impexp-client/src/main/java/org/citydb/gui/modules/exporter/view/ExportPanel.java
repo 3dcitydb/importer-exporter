@@ -33,7 +33,6 @@ import org.citydb.config.Config;
 import org.citydb.config.exception.ErrorCode;
 import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.i18n.Language;
-import org.citydb.config.project.database.DatabaseSrs;
 import org.citydb.config.project.exporter.SimpleQuery;
 import org.citydb.config.project.exporter.SimpleTiling;
 import org.citydb.config.project.exporter.SimpleTilingMode;
@@ -48,11 +47,9 @@ import org.citydb.event.EventDispatcher;
 import org.citydb.event.global.InterruptEvent;
 import org.citydb.gui.components.dialog.ExportStatusDialog;
 import org.citydb.gui.factory.PopupMenuDecorator;
-import org.citydb.gui.factory.SrsComboBoxFactory;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.log.Logger;
 import org.citydb.plugin.extension.view.ViewController;
-import org.citydb.plugin.extension.view.components.DatabaseSrsComboBox;
 import org.citydb.registry.ObjectRegistry;
 import org.citydb.util.Util;
 
@@ -88,10 +85,6 @@ public class ExportPanel extends JPanel implements DropTargetListener {
 	private JButton browseButton;
 	private FilterPanel filterPanel;
 	private JButton exportButton;
-
-	private JLabel srsComboBoxLabel;
-	private DatabaseSrsComboBox srsComboBox;
-
 	private JButton switchFilterModeButton;
 	private boolean useSimpleFilter;
 
@@ -130,22 +123,11 @@ public class ExportPanel extends JPanel implements DropTargetListener {
 
 		JPanel view = new JPanel();
 		view.setLayout(new GridBagLayout());
+		view.add(filterPanel, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.NORTH, GridBagConstraints.BOTH, 0, 10, 0, 10));
 
 		JScrollPane scrollPane = new JScrollPane(view);
 		scrollPane.setBorder(BorderFactory.createEmptyBorder());
 		scrollPane.setViewportBorder(BorderFactory.createEmptyBorder());
-
-		JPanel operations = new JPanel();
-		operations.setLayout(new GridBagLayout());
-		srsComboBoxLabel = new JLabel();
-		srsComboBox = SrsComboBoxFactory.getInstance().createSrsComboBox(true);
-		srsComboBox.setShowOnlySameDimension(true);
-		srsComboBox.setPreferredSize(new Dimension(50, srsComboBox.getPreferredSize().height));
-		operations.add(srsComboBoxLabel, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 5));
-		operations.add(srsComboBox, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.BOTH, 0, 5, 0, 0));
-
-		view.add(operations, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 10, 15, 10));
-		view.add(filterPanel, GuiUtil.setConstraints(0, 1, 1, 1, GridBagConstraints.NORTH, GridBagConstraints.BOTH, 0, 10, 0, 10));
 
 		JPanel buttonPanel = new JPanel();
 		buttonPanel.setLayout(new GridBagLayout());
@@ -172,39 +154,12 @@ public class ExportPanel extends JPanel implements DropTargetListener {
 	public void doTranslation() {
 		browseButton.setText(Language.I18N.getString("common.button.browse"));
 		exportButton.setText(Language.I18N.getString("export.button.export"));
-		srsComboBoxLabel.setText(Language.I18N.getString("common.label.boundingBox.crs"));
 		switchFilterModeButton.setText(Language.I18N.getString(useSimpleFilter ? "filter.label.mode.xml" : "filter.label.mode.simple"));
 		filterPanel.doTranslation();
 	}
 
 	public void loadSettings() {
 		useSimpleFilter = config.getExportConfig().isUseSimpleQuery();
-
-		QueryConfig query = config.getExportConfig().getQuery();
-		DatabaseSrs targetSrs = query.getTargetSrs();
-
-		if (query.isSetTargetSrs()) {
-			boolean keepTargetSrs = true;
-			for (int i = 0; i < srsComboBox.getItemCount(); i++) {
-				DatabaseSrs item = srsComboBox.getItemAt(i);
-				if (item.getSrid() == targetSrs.getSrid() && item.getGMLSrsName().equals(targetSrs.getGMLSrsName())) {
-					targetSrs = item;
-					keepTargetSrs = false;
-					break;
-				}
-			}
-
-			if (keepTargetSrs)
-				query.setTargetSrs(targetSrs.getSrid(), targetSrs.getGMLSrsName());
-			else
-				query.unsetTargetSrs();
-		}
-
-		if (useSimpleFilter)
-			targetSrs = config.getExportConfig().getSimpleQuery().getTargetSrs();
-
-		srsComboBox.setSelectedItem(targetSrs);
-
 		filterPanel.loadSettings();
 		filterPanel.showFilterDialog(useSimpleFilter);
 		switchFilterModeButton.setText(Language.I18N.getString(useSimpleFilter ? "filter.label.mode.xml" : "filter.label.mode.simple"));
@@ -221,11 +176,6 @@ public class ExportPanel extends JPanel implements DropTargetListener {
 		}
 
 		filterPanel.setSettings();
-
-		DatabaseSrs targetSrs = srsComboBox.getSelectedItem();
-		config.getExportConfig().getSimpleQuery().setTargetSrs(targetSrs);
-		if (!config.getExportConfig().getQuery().isSetTargetSrs())
-			config.getExportConfig().getQuery().setTargetSrs(targetSrs);
 	}
 
 	private void doExport() {

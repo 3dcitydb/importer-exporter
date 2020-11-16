@@ -44,6 +44,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import java.util.HashMap;
+import java.util.Map;
 
 @XmlRootElement(name = "query")
 @XmlType(name = "QueryType", propOrder = {
@@ -81,7 +82,7 @@ public class QueryConfig {
     private Tiling tiling;
 
     @XmlTransient
-    private HashMap<String, Object> localProperties;
+    private Map<String, Object> localProperties;
 
     public DatabaseSrs getTargetSrs() {
         if (targetSrs != null)

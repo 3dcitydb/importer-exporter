@@ -47,6 +47,7 @@ import org.citydb.gui.components.common.BlankNumberFormatter;
 import org.citydb.gui.components.common.TitledPanel;
 import org.citydb.gui.components.feature.FeatureTypeTree;
 import org.citydb.gui.factory.PopupMenuDecorator;
+import org.citydb.gui.factory.SrsComboBoxFactory;
 import org.citydb.gui.modules.exporter.view.filter.AttributeFilterView;
 import org.citydb.gui.modules.exporter.view.filter.FilterView;
 import org.citydb.gui.modules.exporter.view.filter.SQLFilterView;
@@ -71,12 +72,14 @@ public class FilterPanel extends JPanel implements EventHandler {
 
 	private JPanel mainPanel;
 
+	private JCheckBox useTargetSrsFilter;
 	private JCheckBox useSelectionFilter;
 	private JCheckBox useLodFilter;
 	private JCheckBox useCounterFilter;
 	private JCheckBox useBBoxFilter;
 	private JCheckBox useFeatureFilter;
 
+	private TitledPanel targetSrsFilterPanel;
 	private TitledPanel lodFilterPanel;
 	private TitledPanel counterFilterPanel;
 	private TitledPanel bboxFilterPanel;
@@ -85,6 +88,9 @@ public class FilterPanel extends JPanel implements EventHandler {
 	private XMLQueryView xmlQuery;
 	private JTabbedPane filterTab;
 	private FilterView[] filters;
+
+	private JLabel srsComboBoxLabel;
+	private SrsComboBoxFactory.SrsComboBox srsComboBox;
 
 	private JLabel countLabel;
 	private JLabel startIndexLabel;
@@ -117,16 +123,23 @@ public class FilterPanel extends JPanel implements EventHandler {
 	}
 
 	private void initGui(ViewController viewController) {
+		useTargetSrsFilter = new JCheckBox();
 		useSelectionFilter = new JCheckBox();
 		useCounterFilter = new JCheckBox();
 		useLodFilter = new JCheckBox();
 		useBBoxFilter = new JCheckBox();
 		useFeatureFilter = new JCheckBox();
 
+		targetSrsFilterPanel = new TitledPanel();//.withToggleButton(useTargetSrsFilter);
 		counterFilterPanel = new TitledPanel().withToggleButton(useCounterFilter);
 		lodFilterPanel = new TitledPanel().withToggleButton(useLodFilter);
 		bboxFilterPanel = new TitledPanel().withToggleButton(useBBoxFilter);
 		featureFilterPanel = new TitledPanel().withToggleButton(useFeatureFilter);
+
+		srsComboBoxLabel = new JLabel();
+		srsComboBox = SrsComboBoxFactory.getInstance().createSrsComboBox(true);
+		srsComboBox.setShowOnlySameDimension(true);
+		srsComboBox.setPreferredSize(new Dimension(50, srsComboBox.getPreferredSize().height));
 
 		countLabel = new JLabel();
 		startIndexLabel = new JLabel();
@@ -191,6 +204,17 @@ public class FilterPanel extends JPanel implements EventHandler {
 
 		guiPanel.setLayout(new GridBagLayout());
 		{
+			JPanel content = new JPanel();
+			content.setLayout(new GridBagLayout());
+			{
+				content.add(srsComboBoxLabel, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 5));
+				content.add(srsComboBox, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.BOTH, 0, 5, 0, 0));
+			}
+
+			targetSrsFilterPanel.setContent(content, TitledPanel.PADDING_TOP, TitledPanel.PADDING_LEFT, 10, TitledPanel.PADDING_RIGHT);
+			guiPanel.add(targetSrsFilterPanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+		}
+		{
 			JPanel filterRow = new JPanel();
 			filterRow.setLayout(new GridBagLayout());
 			{
@@ -229,7 +253,7 @@ public class FilterPanel extends JPanel implements EventHandler {
 				});
 			}
 
-			guiPanel.add(filterRow, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, TitledPanel.PADDING_BOTTOM, 0));
+			guiPanel.add(filterRow, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 0, 0, TitledPanel.PADDING_BOTTOM, 0));
 		}
 		{
 			JPanel content = new JPanel();
@@ -248,7 +272,7 @@ public class FilterPanel extends JPanel implements EventHandler {
 			}
 
 			lodFilterPanel.setContent(content);
-			guiPanel.add(lodFilterPanel, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+			guiPanel.add(lodFilterPanel, GuiUtil.setConstraints(0, 2, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 		}
 		{
 			JPanel content = new JPanel();
@@ -261,7 +285,7 @@ public class FilterPanel extends JPanel implements EventHandler {
 			}
 
 			counterFilterPanel.setContent(content);
-			guiPanel.add(counterFilterPanel, GuiUtil.setConstraints(0, 2, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+			guiPanel.add(counterFilterPanel, GuiUtil.setConstraints(0, 3, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 		}
 		{
 			JPanel bboxModePanel = new JPanel();
@@ -279,7 +303,7 @@ public class FilterPanel extends JPanel implements EventHandler {
 			}
 
 			bboxFilterPanel.setContent(bboxPanel);
-			guiPanel.add(bboxFilterPanel, GuiUtil.setConstraints(0, 3, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+			guiPanel.add(bboxFilterPanel, GuiUtil.setConstraints(0, 4, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 		}
 		{
 			JPanel content = new JPanel();
@@ -290,10 +314,10 @@ public class FilterPanel extends JPanel implements EventHandler {
 			}
 
 			featureFilterPanel.setContent(content);
-			guiPanel.add(featureFilterPanel, GuiUtil.setConstraints(0, 4, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+			guiPanel.add(featureFilterPanel, GuiUtil.setConstraints(0, 5, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 		}
 		{
-			guiPanel.add(Box.createVerticalGlue(), GuiUtil.setConstraints(0, 5, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
+			guiPanel.add(Box.createVerticalGlue(), GuiUtil.setConstraints(0, 6, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
 		}
 
 		useSelectionFilter.addActionListener(e -> setEnabledFilterTab());
@@ -392,11 +416,13 @@ public class FilterPanel extends JPanel implements EventHandler {
 	}
 
 	public void doTranslation() {
+		targetSrsFilterPanel.setTitle(Language.I18N.getString("export.border.targetSrs"));
 		lodFilterPanel.setTitle(Language.I18N.getString("filter.border.lod"));
 		counterFilterPanel.setTitle(Language.I18N.getString("filter.border.counter"));
 		bboxFilterPanel.setTitle(Language.I18N.getString("filter.border.boundingBox"));
 		featureFilterPanel.setTitle(Language.I18N.getString("filter.border.featureClass"));
 
+		srsComboBoxLabel.setText(Language.I18N.getString("common.label.boundingBox.crs"));
 		lodModeLabel.setText(Language.I18N.getString("filter.label.lod.mode"));
 		lodDepthLabel.setText(Language.I18N.getString("filter.label.lod.depth"));
 		countLabel.setText(Language.I18N.getString("filter.label.counter.count"));
@@ -424,6 +450,9 @@ public class FilterPanel extends JPanel implements EventHandler {
 		useCounterFilter.setSelected(query.isUseCountFilter());
 		useBBoxFilter.setSelected(query.isUseBboxFilter());
 		useFeatureFilter.setSelected(query.isUseTypeNames());
+
+		// target SRS
+		srsComboBox.setSelectedItem(query.getTargetSrs());
 
 		// lod filter
 		LodFilter lodFilter = query.getLodFilter();
@@ -490,6 +519,9 @@ public class FilterPanel extends JPanel implements EventHandler {
 		query.setUseLodFilter(useLodFilter.isSelected());
 		query.setUseBboxFilter(useBBoxFilter.isSelected());
 		query.setUseTypeNames(useFeatureFilter.isSelected());
+
+		// target SRS
+		query.setTargetSrs(srsComboBox.getSelectedItem());
 
 		// lod filter
 		LodFilter lodFilter = query.getLodFilter();
