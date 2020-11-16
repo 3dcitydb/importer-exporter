@@ -33,24 +33,14 @@ import org.citydb.config.i18n.Language;
 import org.citydb.config.project.exporter.SimpleQuery;
 import org.citydb.config.project.query.filter.selection.sql.SelectOperator;
 import org.citydb.gui.factory.PopupMenuDecorator;
+import org.citydb.gui.factory.RSyntaxTextAreaHelper;
 import org.citydb.gui.util.GuiUtil;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
-import org.fife.ui.rsyntaxtextarea.Theme;
 import org.fife.ui.rtextarea.RTextScrollPane;
 
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.io.IOException;
-import java.io.InputStream;
+import javax.swing.*;
+import java.awt.*;
 
 public class SQLFilterView extends FilterView {
     private JPanel component;
@@ -82,11 +72,7 @@ public class SQLFilterView extends FilterView {
         removeButton.setMargin(new Insets(0, 0, 0, 0));
 
         sqlText = new RSyntaxTextArea("", 5, 1);
-        try (InputStream in = getClass().getResourceAsStream("/org/fife/ui/rsyntaxtextarea/themes/idea.xml")) {
-            Theme.load(in).apply(sqlText);
-        } catch (IOException e) {
-            throw new IllegalStateException("Failed to initialize SQL editor.", e);
-        }
+        RSyntaxTextAreaHelper.installDefaultTheme(sqlText);
 
         sqlText.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_SQL);
         sqlText.setAutoIndentEnabled(true);

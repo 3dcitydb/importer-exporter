@@ -38,7 +38,6 @@ import org.citydb.config.project.exporter.SimpleQuery;
 import org.citydb.config.project.exporter.SimpleTiling;
 import org.citydb.config.project.exporter.SimpleTilingMode;
 import org.citydb.config.project.query.QueryConfig;
-import org.citydb.config.util.QueryWrapper;
 import org.citydb.config.project.query.filter.appearance.AppearanceFilter;
 import org.citydb.config.project.query.filter.counter.CounterFilter;
 import org.citydb.config.project.query.filter.lod.LodFilter;
@@ -59,10 +58,12 @@ import org.citydb.config.project.query.filter.type.FeatureTypeFilter;
 import org.citydb.config.project.query.simple.SimpleFeatureVersionFilter;
 import org.citydb.config.project.query.simple.SimpleFeatureVersionFilterMode;
 import org.citydb.config.project.query.simple.SimpleSelectionFilter;
+import org.citydb.config.util.QueryWrapper;
 import org.citydb.database.connection.DatabaseConnectionPool;
 import org.citydb.database.schema.mapping.FeatureType;
 import org.citydb.database.schema.mapping.SchemaMapping;
 import org.citydb.gui.factory.PopupMenuDecorator;
+import org.citydb.gui.factory.RSyntaxTextAreaHelper;
 import org.citydb.gui.modules.exporter.view.FilterPanel;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.log.Logger;
@@ -77,7 +78,6 @@ import org.citygml4j.util.xml.SAXWriter;
 import org.citygml4j.xml.CityGMLNamespaceContext;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
-import org.fife.ui.rsyntaxtextarea.Theme;
 import org.fife.ui.rtextarea.RTextScrollPane;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
@@ -98,7 +98,6 @@ import javax.xml.validation.Validator;
 import java.awt.*;
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -134,11 +133,7 @@ public class XMLQueryView extends FilterView {
         component.setLayout(new GridBagLayout());
 
         xmlText = new RSyntaxTextArea("", 5, 1);
-        try (InputStream in = getClass().getResourceAsStream("/org/fife/ui/rsyntaxtextarea/themes/idea.xml")) {
-            Theme.load(in).apply(xmlText);
-        } catch (IOException e) {
-            throw new IllegalStateException("Failed to initialize XML editor.", e);
-        }
+        RSyntaxTextAreaHelper.installDefaultTheme(xmlText);
 
         xmlText.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_XML);
         xmlText.setAutoIndentEnabled(true);
