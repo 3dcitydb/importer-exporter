@@ -251,15 +251,19 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		{
 			statusText = new JLabel();
 			connectText = new JLabel();
+			Box separator = Box.createHorizontalBox();
+			separator.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, UIManager.getColor("Component.borderColor")));
+
 			JPanel status = new JPanel();
 			status.setLayout(new GridBagLayout());
 			{
-				status.add(statusText, GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.HORIZONTAL,0,0,0,0));
-				status.add(connectText, GuiUtil.setConstraints(1,0,0.0,0.0,GridBagConstraints.HORIZONTAL,0,0,0,0));
+				status.add(statusText, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 0));
+				status.add(connectText, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 0));
 			}
-			main.add(menu, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,0,0,0,0));
-			main.add(new JSeparator(), GuiUtil.setConstraints(0,1,0,0,GridBagConstraints.HORIZONTAL,0,0,0,0));
-			main.add(status, GuiUtil.setConstraints(0,2,0.0,0.0,GridBagConstraints.HORIZONTAL,5,5,5,5));
+
+			main.add(menu, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
+			main.add(separator, GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 0));
+			main.add(status, GuiUtil.setConstraints(0, 2, 0, 0, GridBagConstraints.HORIZONTAL, 5, 5, 5, 5));
 		}
 
 		// console panel
@@ -277,7 +281,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 				}
 			});
 
-			console.add(consolePane, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,0,10,10,10));
+			console.add(consolePane, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.BOTH, 0, 10, 10, 10));
 		}
 
 		splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
@@ -285,7 +289,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		splitPane.setBorder(BorderFactory.createEmptyBorder());
 		splitPane.setLeftComponent(main);
 		splitPane.setRightComponent(console);
-		add(splitPane, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,0,0,0,0));
+		add(splitPane, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
 	}
 
 	private void showWindow() {

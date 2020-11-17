@@ -149,37 +149,35 @@ public class GuiCommand extends CliCommand implements StartupProgressListener {
         parent.useDefaultConfiguration(true)
                 .failOnADEExceptions(false);
 
-        SwingUtilities.invokeLater(() -> {
-            try {
-                // set look&feel
-                UIManager.setLookAndFeel(new FlatLightLaf());
-            } catch (Exception e) {
-                FlatLightLaf.install();
+        try {
+            // set look&feel
+            UIManager.setLookAndFeel(new FlatLightLaf());
+        } catch (Exception e) {
+            FlatLightLaf.install();
+        }
+
+        if (OSXAdapter.IS_MAC_OS) {
+            OSXAdapter.setDockIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/org/citydb/gui/images/common/logo_small.png")));
+            if (System.getProperty("apple.laf.useScreenMenuBar") == null) {
+                System.setProperty("apple.laf.useScreenMenuBar", "true");
             }
+        }
 
-            if (OSXAdapter.IS_MAC_OS) {
-                OSXAdapter.setDockIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/org/citydb/gui/images/common/logo_small.png")));
-                if (System.getProperty("apple.laf.useScreenMenuBar") == null) {
-                    System.setProperty("apple.laf.useScreenMenuBar", "true");
-                }
-            }
+        // enable window decorations
+        JFrame.setDefaultLookAndFeelDecorated(true);
+        JDialog.setDefaultLookAndFeelDecorated(true);
 
-            // enable window decorations
-            JFrame.setDefaultLookAndFeelDecorated(true);
-            JDialog.setDefaultLookAndFeelDecorated(true);
+        // set UI defaults
+        UIManager.put("CheckBox.iconTextGap", 6);
+        UIManager.put("RadioButton.iconTextGap", 6);
 
-            // set UI defaults
-            UIManager.put("CheckBox.iconTextGap", 6);
-            UIManager.put("RadioButton.iconTextGap", 6);
-
-            // splash screen
-            if (!hideSplash) {
-                splashScreen = new SplashScreen(3, 477, Color.BLACK);
-                splashScreen.setMessage("Version \"" + getClass().getPackage().getImplementationVersion() + "\"");
-                parent.withStartupProgressListener(this);
-                splashScreen.setVisible(true);
-            }
-        });
+        // splash screen
+        if (!hideSplash) {
+            splashScreen = new SplashScreen(3, 477, Color.BLACK);
+            splashScreen.setMessage("Version \"" + getClass().getPackage().getImplementationVersion() + "\"");
+            parent.withStartupProgressListener(this);
+            splashScreen.setVisible(true);
+        }
     }
 
     @Override
