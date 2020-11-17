@@ -40,9 +40,9 @@ import org.citydb.event.global.PropertyChangeEvent;
 import org.citydb.gui.components.dialog.StatusDialog;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.factory.SrsComboBoxFactory;
+import org.citydb.gui.modules.database.util.SrsNameComboBox;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.log.Logger;
-import org.citydb.gui.modules.database.util.SrsNameComboBox;
 import org.citydb.plugin.extension.view.ViewController;
 import org.citydb.registry.ObjectRegistry;
 
@@ -127,15 +127,15 @@ public class SrsOperation extends DatabaseOperationView {
 		buttonsPanel.add(Box.createRigidArea(new Dimension(10, 0)));
 		buttonsPanel.add(applyButton);
 
-		component.add(sridLabel, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.BOTH, 10, 5, 5, 5));
-		component.add(sridText, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.HORIZONTAL, 10, 5, 5, 5));
-		component.add(editSridButton, GuiUtil.setConstraints(2, 0, 0, 0, GridBagConstraints.HORIZONTAL, 10, 5, 5, 5));
-		component.add(checkSridButton, GuiUtil.setConstraints(3, 0, 0, 0, GridBagConstraints.HORIZONTAL, 10, 5, 5, 5));
-		component.add(srsNameLabel, GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.BOTH, 0, 5, 5, 5));
-		component.add(srsNameComboBox, GuiUtil.setConstraints(1, 1, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, 5, 5));
-		component.add(geometriesLabel, GuiUtil.setConstraints(0, 2, 0, 0, GridBagConstraints.BOTH, 0, 5, 5, 5));
-		component.add(dbContentPanel, GuiUtil.setConstraints(1, 2, 0, 0, GridBagConstraints.BOTH, 0, 5, 5, 5));
-		component.add(buttonsPanel, GuiUtil.setConstraints(0, 3, 4, 1, 0, 0, GridBagConstraints.NONE, 5, 5, 10, 5));
+		component.add(sridLabel, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.BOTH, 15, 0, 5, 5));
+		component.add(sridText, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.HORIZONTAL, 15, 5, 5, 0));
+		component.add(editSridButton, GuiUtil.setConstraints(2, 0, 0, 0, GridBagConstraints.HORIZONTAL, 15, 20, 5, 5));
+		component.add(checkSridButton, GuiUtil.setConstraints(3, 0, 0, 0, GridBagConstraints.HORIZONTAL, 15, 5, 5, 0));
+		component.add(srsNameLabel, GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.BOTH, 0, 0, 5, 5));
+		component.add(srsNameComboBox, GuiUtil.setConstraints(1, 1, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, 5, 0));
+		component.add(geometriesLabel, GuiUtil.setConstraints(0, 2, 0, 0, GridBagConstraints.BOTH, 0, 0, 5, 5));
+		component.add(dbContentPanel, GuiUtil.setConstraints(1, 2, 0, 0, GridBagConstraints.BOTH, 0, 5, 5, 0));
+		component.add(buttonsPanel, GuiUtil.setConstraints(0, 3, 4, 1, 0, 0, GridBagConstraints.NONE, 10, 0, 10, 0));
 
 		PopupMenuDecorator.getInstance().decorate(sridText, srsNameComboBox.getEditor().getEditorComponent());
 

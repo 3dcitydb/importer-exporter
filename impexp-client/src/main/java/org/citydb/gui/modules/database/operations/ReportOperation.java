@@ -36,15 +36,8 @@ import org.citydb.gui.util.GuiUtil;
 import org.citydb.log.Logger;
 import org.citydb.plugin.extension.view.ViewController;
 
-import javax.swing.Icon;
-import javax.swing.JButton;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
-import javax.swing.SwingWorker;
-import java.awt.Component;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
+import javax.swing.*;
+import java.awt.*;
 import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.concurrent.locks.ReentrantLock;
@@ -74,8 +67,8 @@ public class ReportOperation extends DatabaseOperationView {
 		component = new JPanel();
 		component.setLayout(new GridBagLayout());
 
-		reportButton = new JButton();		
-		component.add(reportButton, GuiUtil.setConstraints(0,0,0,0,GridBagConstraints.NONE,10,5,10,5));
+		reportButton = new JButton();
+		component.add(reportButton, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.NONE, 15, 0, 10, 0));
 
 		reportButton.addActionListener(e -> new SwingWorker<Void, Void>() {
 			protected Void doInBackground() {

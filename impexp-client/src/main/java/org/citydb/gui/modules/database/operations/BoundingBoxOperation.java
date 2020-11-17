@@ -78,7 +78,7 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 	private JButton createMissingButton;
 	private JButton calculateButton;
 
-	private FeatureType cityObject;
+	private final FeatureType cityObject;
 	private boolean isCreateBboxSupported;
 
 	private enum BoundingBoxMode {
@@ -113,23 +113,20 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 		featureComboBox = new JComboBox<>();
 		updateFeatureSelection();
 
-		JPanel featureBox = new JPanel();
-		featureBox.setLayout(new GridBagLayout());
-		component.add(featureBox, GuiUtil.setConstraints(0,0,2,1,1.0,0.0,GridBagConstraints.BOTH,10,5,0,5));
-		featureBox.add(featureLabel, GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.BOTH,0,0,0,5));
-		featureBox.add(featureComboBox, GuiUtil.setConstraints(1,0,1.0,0.0,GridBagConstraints.BOTH,0,5,0,0));
-
 		JPanel calcBboxPanel = new JPanel();
 		calcBboxPanel.setLayout(new GridBagLayout());
-		component.add(calcBboxPanel, GuiUtil.setConstraints(0,1,1.0,0.0,GridBagConstraints.BOTH,10,5,0,5));
-		calcBboxPanel.add(bboxPanel, GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.BOTH,5,0,5,5));
+		calcBboxPanel.add(featureLabel, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.BOTH, 0, 0, 0, 5));
+		calcBboxPanel.add(featureComboBox, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.BOTH, 0, 5, 0, 0));
+		calcBboxPanel.add(bboxPanel, GuiUtil.setConstraints(0, 1, 2, 1, 1, 0, GridBagConstraints.BOTH, 5, 0, 0, 0));
 
 		JPanel createBboxPanel = new JPanel();
 		createBboxPanel.setLayout(new GridBagLayout());
-		component.add(createBboxPanel, GuiUtil.setConstraints(1,1,0.0,0.0,GridBagConstraints.BOTH,10,0,0,5));
-		createBboxPanel.add(createMissingButton, GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.HORIZONTAL,5,0,0,0));
-		createBboxPanel.add(createAllButton, GuiUtil.setConstraints(0,1,0.0,1.0,GridBagConstraints.NORTH, GridBagConstraints.HORIZONTAL,5,0,0,0));
-		component.add(calculateButton, GuiUtil.setConstraints(0,2,2,1,0.0,0.0,GridBagConstraints.NONE,10,5,10,5));
+		createBboxPanel.add(createMissingButton, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 0));
+		createBboxPanel.add(createAllButton, GuiUtil.setConstraints(0, 1, 0, 1, GridBagConstraints.NORTH, GridBagConstraints.HORIZONTAL, 5, 0, 0, 0));
+
+		component.add(calcBboxPanel, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 15, 0, 0, 0));
+		component.add(createBboxPanel, GuiUtil.setConstraints(1, 1, 0, 0, GridBagConstraints.BOTH, 15, 20, 0, 0));
+		component.add(calculateButton, GuiUtil.setConstraints(0, 2, 2, 1, 0, 0, GridBagConstraints.NONE, 15, 0, 10, 0));
 
 		featureComboBox.addItemListener(e -> {
 			if (e.getStateChange() == ItemEvent.SELECTED)

@@ -77,7 +77,8 @@ public class ADETableModel extends AbstractTableModel {
     public void reset() {
         int rowCount = getRowCount();
         data.clear();
-        if (rowCount != 0)
+        if (rowCount != 0) {
             fireTableRowsDeleted(0, rowCount - 1);
+        }
     }
 }

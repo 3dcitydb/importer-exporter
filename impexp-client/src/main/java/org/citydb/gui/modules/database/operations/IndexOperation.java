@@ -87,19 +87,20 @@ public class IndexOperation extends DatabaseOperationView {
 
 		Box checkBox = Box.createVerticalBox();
 		checkBox.add(spatial);
+		checkBox.add(Box.createVerticalStrut(5));
 		checkBox.add(normal);
 
 		Box buttonsPanel = Box.createHorizontalBox();
 		buttonsPanel.add(activate);
-		buttonsPanel.add(Box.createRigidArea(new Dimension(10, 0)));
+		buttonsPanel.add(Box.createHorizontalStrut(10));
 		buttonsPanel.add(deactivate);
-		buttonsPanel.add(Box.createRigidArea(new Dimension(10, 0)));
+		buttonsPanel.add(Box.createHorizontalStrut(10));
 		buttonsPanel.add(query);
-		buttonsPanel.add(Box.createRigidArea(new Dimension(10, 0)));
+		buttonsPanel.add(Box.createHorizontalStrut(10));
 		buttonsPanel.add(tableStats);
 
-		component.add(checkBox, GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.NONE,5,5,0,5));
-		component.add(buttonsPanel, GuiUtil.setConstraints(0,1,1,0,GridBagConstraints.NONE,10,5,10,5));
+		component.add(checkBox, GuiUtil.setConstraints(0, 0, 0.0, 0.0, GridBagConstraints.NONE, 15, 0, 5, 0));
+		component.add(buttonsPanel, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.NONE, 10, 0, 10, 0));
 		
 		activate.addActionListener(e -> new SwingWorker<Void, Void>() {
 			protected Void doInBackground() {

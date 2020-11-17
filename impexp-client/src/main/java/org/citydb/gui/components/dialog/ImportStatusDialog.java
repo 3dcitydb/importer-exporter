@@ -27,24 +27,6 @@
  */
 package org.citydb.gui.components.dialog;
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JProgressBar;
-import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
-
 import org.citydb.config.i18n.Language;
 import org.citydb.event.Event;
 import org.citydb.event.EventDispatcher;
@@ -58,6 +40,11 @@ import org.citydb.event.global.StatusDialogProgressBar;
 import org.citydb.event.global.StatusDialogTitle;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.registry.ObjectRegistry;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 @SuppressWarnings("serial")
 public class ImportStatusDialog extends JDialog implements EventHandler {
@@ -151,7 +138,7 @@ public class ImportStatusDialog extends JDialog implements EventHandler {
 				}
 			}
 
-			add(cancelButton, GuiUtil.setConstraints(0,1,0.0,0.5,GridBagConstraints.NONE,5,5,5,5));
+			add(cancelButton, GuiUtil.setConstraints(0,1,0.0,0.5,GridBagConstraints.NONE,5,5,10,5));
 		}
 
 		pack();

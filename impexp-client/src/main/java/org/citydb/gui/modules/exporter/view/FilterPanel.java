@@ -207,7 +207,7 @@ public class FilterPanel extends JPanel implements EventHandler {
 				content.add(srsComboBox, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.BOTH, 0, 5, 0, 0));
 			}
 
-			guiPanel.add(content, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, TitledPanel.BOTTOM, 0));
+			guiPanel.add(content, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.BOTH, 0, 0, TitledPanel.BOTTOM, 0));
 		}
 		{
 			JPanel filterRow = new JPanel();

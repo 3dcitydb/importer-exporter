@@ -27,22 +27,6 @@
  */
 package org.citydb.gui.components.dialog;
 
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JProgressBar;
-import javax.swing.SwingConstants;
-
 import org.citydb.config.i18n.Language;
 import org.citydb.event.Event;
 import org.citydb.event.EventDispatcher;
@@ -53,6 +37,11 @@ import org.citydb.event.global.EventType;
 import org.citydb.event.global.StatusDialogMessage;
 import org.citydb.event.global.StatusDialogTitle;
 import org.citydb.gui.util.GuiUtil;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 @SuppressWarnings("serial")
 public class XMLValidationStatusDialog extends JDialog implements EventHandler {
@@ -159,7 +148,7 @@ public class XMLValidationStatusDialog extends JDialog implements EventHandler {
 			}
 
 			if (setButton)
-				add(button, GuiUtil.setConstraints(0,1,0.0,0.0,GridBagConstraints.NONE,5,5,5,5));
+				add(button, GuiUtil.setConstraints(0,1,0.0,0.0,GridBagConstraints.NONE,5,5,10,5));
 
 			pack();
 			progressBar.setIndeterminate(true);
