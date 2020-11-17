@@ -71,7 +71,7 @@ public class TitledPanel extends JPanel {
         return this;
     }
 
-    public void build(JComponent content) {
+    public TitledPanel build(JComponent content) {
         setLayout(new GridBagLayout());
 
         int top = margin != null ? margin.top : TOP;
@@ -112,6 +112,8 @@ public class TitledPanel extends JPanel {
                 }
             });
         }
+
+        return this;
     }
 
     public void setTitle(String title) {

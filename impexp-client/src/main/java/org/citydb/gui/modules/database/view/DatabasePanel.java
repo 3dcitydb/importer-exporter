@@ -45,6 +45,7 @@ import org.citydb.event.Event;
 import org.citydb.event.EventHandler;
 import org.citydb.event.global.DatabaseConnectionStateEvent;
 import org.citydb.event.global.EventType;
+import org.citydb.gui.components.common.TitledPanel;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.modules.database.operations.DatabaseOperationsPanel;
 import org.citydb.gui.util.GuiUtil;
@@ -55,7 +56,6 @@ import org.citydb.plugin.extension.view.ViewListener;
 import org.citydb.registry.ObjectRegistry;
 
 import javax.swing.*;
-import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.awt.event.ItemEvent;
 import java.sql.SQLException;
@@ -65,7 +65,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
-@SuppressWarnings("serial")
 public class DatabasePanel extends JPanel implements ConnectionViewHandler, EventHandler, ViewListener {
 	private final ReentrantLock mainLock = new ReentrantLock();
 	private final Logger log = Logger.getInstance();
@@ -91,8 +90,7 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 	private JButton infoButton;	
 	private JButton schemaButton;
 
-	private JPanel connectionDetails;
-	private JPanel operations;
+    private TitledPanel connectionDetails;
 
 	private JLabel connLabel;
 	private JLabel descriptionLabel;
@@ -139,6 +137,15 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 	}
 
 	private void initGui() {
+        connLabel = new JLabel();
+        descriptionLabel = new JLabel();
+        databaseTypeLabel = new JLabel();
+        userLabel = new JLabel();
+        passwordLabel = new JLabel();
+        serverLabel = new JLabel();
+        portLabel = new JLabel();
+        databaseLabel = new JLabel();
+        schemaLabel = new JLabel();
 		connCombo = new JComboBox<>();
 		descriptionText = new JTextField();
 		databaseTypeCombo = new JComboBox<>();
@@ -168,83 +175,70 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 		PopupMenuDecorator.getInstance().decorate(descriptionText, serverText, portText, databaseText, 
 				userText, passwordText, (JTextField) schemaCombo.getEditor().getEditorComponent());
 
-		JScrollPane scrollPane = new JScrollPane();
-		scrollPane.setBorder(BorderFactory.createEmptyBorder());
-		scrollPane.setViewportBorder(BorderFactory.createEmptyBorder());
 
-		JPanel view = new JPanel();
-		view.setLayout(new GridBagLayout());
 
 		JPanel chooserPanel = new JPanel();
-		view.add(chooserPanel, GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.BOTH,10,5,5,5));
 		chooserPanel.setLayout(new GridBagLayout());
-		connLabel = new JLabel();
 
-		chooserPanel.add(connLabel, GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.BOTH,5,5,5,5));
-		chooserPanel.add(connCombo, GuiUtil.setConstraints(1,0,1.0,0.0,GridBagConstraints.BOTH,5,5,5,5));
+        chooserPanel.add(connLabel, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.BOTH, 0, 0, 0, 5));
+        chooserPanel.add(connCombo, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.BOTH, 0, 5, 0, 0));
 
-		connectionDetails = new JPanel();
-		view.add(connectionDetails, GuiUtil.setConstraints(0,1,1.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
-		connectionDetails.setBorder(BorderFactory.createTitledBorder(""));
-		connectionDetails.setLayout(new GridBagLayout());
-		descriptionLabel = new JLabel();
-		databaseTypeLabel = new JLabel();
-		userLabel = new JLabel();
-		passwordLabel = new JLabel();
-		serverLabel = new JLabel();
-		portLabel = new JLabel();
-		databaseLabel = new JLabel();
-		schemaLabel = new JLabel();
+        JPanel content = new JPanel();
+        content.setLayout(new GridBagLayout());
 
-		connectionDetails.add(descriptionLabel, GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
-		connectionDetails.add(descriptionText, GuiUtil.setConstraints(1,0,1.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
-		connectionDetails.add(userLabel, GuiUtil.setConstraints(0,1,0.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
-		connectionDetails.add(userText, GuiUtil.setConstraints(1,1,1.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
-		connectionDetails.add(passwordLabel, GuiUtil.setConstraints(0,2,0.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
-		connectionDetails.add(passwordText, GuiUtil.setConstraints(1,2,1.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
-		connectionDetails.add(passwordCheck, GuiUtil.setConstraints(1,3,0.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
-		connectionDetails.add(databaseTypeLabel, GuiUtil.setConstraints(0,4,0.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
-		connectionDetails.add(databaseTypeCombo, GuiUtil.setConstraints(1,4,1.0,0.0,GridBagConstraints.BOTH,0,5,5,5));		
-		connectionDetails.add(serverLabel, GuiUtil.setConstraints(0,5,0.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
+        content.add(descriptionLabel, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.BOTH, 0, 0, 5, 5));
+        content.add(descriptionText, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.BOTH, 0, 5, 5, 0));
+        content.add(userLabel, GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.BOTH, 0, 0, 5, 5));
+        content.add(userText, GuiUtil.setConstraints(1, 1, 1, 0, GridBagConstraints.BOTH, 0, 5, 5, 0));
+        content.add(passwordLabel, GuiUtil.setConstraints(0, 2, 0, 0, GridBagConstraints.BOTH, 0, 0, 5, 5));
+        content.add(passwordText, GuiUtil.setConstraints(1, 2, 1, 0, GridBagConstraints.BOTH, 0, 5, 5, 0));
+        content.add(passwordCheck, GuiUtil.setConstraints(1, 3, 0, 0, GridBagConstraints.BOTH, 0, 5, 15, 0));
+        content.add(databaseTypeLabel, GuiUtil.setConstraints(0, 4, 0, 0, GridBagConstraints.BOTH, 0, 0, 5, 5));
+        content.add(databaseTypeCombo, GuiUtil.setConstraints(1, 4, 1, 0, GridBagConstraints.BOTH, 0, 5, 5, 0));
+        content.add(serverLabel, GuiUtil.setConstraints(0, 5, 0, 0, GridBagConstraints.BOTH, 0, 0, 5, 5));
 
 		JPanel serverPanel = new JPanel();
 		serverPanel.setLayout(new GridBagLayout());
-		serverPanel.add(serverText, GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.BOTH,0,0,0,5));
-		serverPanel.add(portLabel, GuiUtil.setConstraints(1,0,0.0,0.0,GridBagConstraints.BOTH,0,10,0,5));		
-		serverPanel.add(portText, GuiUtil.setConstraints(2,0,0.0,0.0,GridBagConstraints.BOTH,0,5,0,0));
+        serverPanel.add(serverText, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 5));
+        serverPanel.add(portLabel, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.BOTH, 0, 10, 0, 5));
+        serverPanel.add(portText, GuiUtil.setConstraints(2, 0, 0, 0, GridBagConstraints.BOTH, 0, 5, 0, 0));
 		portText.setMinimumSize(portText.getPreferredSize());
 
-		connectionDetails.add(serverPanel, GuiUtil.setConstraints(1,5,1.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
-		connectionDetails.add(databaseLabel, GuiUtil.setConstraints(0,6,0.0,0.0,GridBagConstraints.BOTH,0,5,5,5));		
-		connectionDetails.add(databaseText, GuiUtil.setConstraints(1,6,1.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
-		connectionDetails.add(schemaLabel, GuiUtil.setConstraints(0,7,0.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
+        content.add(serverPanel, GuiUtil.setConstraints(1, 5, 1, 0, GridBagConstraints.BOTH, 0, 5, 5, 0));
+        content.add(databaseLabel, GuiUtil.setConstraints(0, 6, 0, 0, GridBagConstraints.BOTH, 0, 0, 5, 5));
+        content.add(databaseText, GuiUtil.setConstraints(1, 6, 1, 0, GridBagConstraints.BOTH, 0, 5, 5, 0));
+        content.add(schemaLabel, GuiUtil.setConstraints(0, 7, 0, 0, GridBagConstraints.BOTH, 0, 0, 5, 5));
 
 		JPanel schemaPanel = new JPanel();
 		schemaPanel.setLayout(new GridBagLayout());
-		schemaPanel.add(schemaCombo, GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.HORIZONTAL,0,0,0,5));
-		schemaPanel.add(schemaButton, GuiUtil.setConstraints(1,0,0.0,0.0,GridBagConstraints.HORIZONTAL,0,5,0,0));
-		connectionDetails.add(schemaPanel, GuiUtil.setConstraints(1,7,1.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
+        schemaPanel.add(schemaCombo, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 5));
+        schemaPanel.add(schemaButton, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 0));
+        content.add(schemaPanel, GuiUtil.setConstraints(1, 7, 1, 0, GridBagConstraints.BOTH, 0, 5, 5, 0));
 
-		JPanel connectionButtons = new JPanel();
-		connectionDetails.add(connectionButtons, GuiUtil.setConstraints(2,0,1,8,0.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
-		connectionButtons.setLayout(new GridBagLayout());
-		connectionButtons.add(applyButton, GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.HORIZONTAL,0,0,0,0));
-		connectionButtons.add(newButton, GuiUtil.setConstraints(0,1,0.0,0.0,GridBagConstraints.HORIZONTAL,5,0,0,0));
-		connectionButtons.add(copyButton, GuiUtil.setConstraints(0,2,0.0,0.0,GridBagConstraints.HORIZONTAL,5,0,0,0));
-		connectionButtons.add(deleteButton, GuiUtil.setConstraints(0,3,0.0,1.0,GridBagConstraints.NORTH,GridBagConstraints.HORIZONTAL,5,0,0,0));
-		connectionDetails.add(connectButton, GuiUtil.setConstraints(0,8,3,1,0.0,0.0,GridBagConstraints.NONE,10,5,5,5));
-		connectionDetails.add(infoButton, GuiUtil.setConstraints(2,8,0.0,0.0,GridBagConstraints.HORIZONTAL,10,5,5,5));
+        JPanel buttons = new JPanel();
+        buttons.setLayout(new GridBagLayout());
+        buttons.add(applyButton, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 0));
+        buttons.add(newButton, GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.HORIZONTAL, 5, 0, 0, 0));
+        buttons.add(copyButton, GuiUtil.setConstraints(0, 2, 0, 0, GridBagConstraints.HORIZONTAL, 5, 0, 0, 0));
+        buttons.add(deleteButton, GuiUtil.setConstraints(0, 3, 0, 0, GridBagConstraints.HORIZONTAL, 5, 0, 0, 0));
+        buttons.add(infoButton, GuiUtil.setConstraints(0, 4, 0, 1, GridBagConstraints.NORTH, GridBagConstraints.HORIZONTAL, 5, 0, 0, 0));
+        content.add(buttons, GuiUtil.setConstraints(2, 0, 1, 8, 0, 0, GridBagConstraints.BOTH, 0, 20, 0, 0));
 
-		operations = new JPanel();
-		view.add(operations, GuiUtil.setConstraints(0,2,1.0,0.0,GridBagConstraints.BOTH,5,5,5,5));
-		operations.setBorder(BorderFactory.createTitledBorder(""));
-		operations.setLayout(new GridBagLayout());
+        content.add(connectButton, GuiUtil.setConstraints(0, 8, 3, 1, 0, 0, GridBagConstraints.NONE, 15, 0, 0, 0));
 
+		connectionDetails = new TitledPanel().build(content);
 		operationsPanel = new DatabaseOperationsPanel(viewController, config);
-		operations.add(operationsPanel, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,5,5,5,5));
+        JPanel view = new JPanel();
+        view.setLayout(new GridBagLayout());
+        view.add(chooserPanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 15, 10, 15, 10));
+        view.add(connectionDetails, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 0, 10, 0, 10));
+        view.add(operationsPanel, GuiUtil.setConstraints(0, 2, 1, 0, GridBagConstraints.BOTH, 10, 10, 0, 10));
 
-		view.add(Box.createVerticalGlue(), GuiUtil.setConstraints(0,3,1.0,1.0,GridBagConstraints.BOTH,5,5,5,5));
+        view.add(Box.createVerticalGlue(), GuiUtil.setConstraints(0, 3, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
 
+        JScrollPane scrollPane = new JScrollPane();
+        scrollPane.setBorder(BorderFactory.createEmptyBorder());
+        scrollPane.setViewportBorder(BorderFactory.createEmptyBorder());
 		scrollPane.setViewportView(view);
 		setLayout(new BorderLayout());
 		add(scrollPane);
@@ -349,7 +343,7 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 	}
 
 	public void doTranslation() {
-		((TitledBorder)connectionDetails.getBorder()).setTitle(Language.I18N.getString("db.border.connectionDetails"));
+        connectionDetails.setTitle(Language.I18N.getString("db.border.connectionDetails"));
 		connLabel.setText(Language.I18N.getString("db.label.connection"));
 		descriptionLabel.setText(Language.I18N.getString("db.label.description"));
 		databaseTypeLabel.setText(Language.I18N.getString("db.label.databaseType"));
@@ -367,13 +361,11 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 		deleteButton.setText(Language.I18N.getString("db.button.delete"));
 		infoButton.setText(Language.I18N.getString("db.button.info"));
 		schemaButton.setText(Language.I18N.getString("db.button.schema"));
-		((TitledBorder)operations.getBorder()).setTitle(Language.I18N.getString("db.border.databaseOperations"));
 		operationsPanel.doTranslation();
 
-		if (!databaseController.isConnected())
-			connectButton.setText(Language.I18N.getString("db.button.connect"));
-		else
-			connectButton.setText(Language.I18N.getString("db.button.disconnect"));		
+        connectButton.setText(Language.I18N.getString(!databaseController.isConnected() ?
+				"db.button.connect" :
+				"db.button.disconnect"));
 	}
 
 	private void selectConnection() {
@@ -528,8 +520,8 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 			if (showWarning) {
 				JPanel confirmPanel = new JPanel(new GridBagLayout());
 				JCheckBox confirmDialogNoShow = new JCheckBox(Language.I18N.getString("common.dialog.msg.noShow"));
-				confirmPanel.add(new JLabel(warning.getFormattedMessage()), GuiUtil.setConstraints(0, 0, 1.0, 0.0, GridBagConstraints.BOTH, 0, 0, 0, 0));
-				confirmPanel.add(confirmDialogNoShow, GuiUtil.setConstraints(0, 2, 1.0, 0.0, GridBagConstraints.BOTH, 10, 0, 0, 0));
+                confirmPanel.add(new JLabel(warning.getFormattedMessage()), GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+                confirmPanel.add(confirmDialogNoShow, GuiUtil.setConstraints(0, 2, 1, 0, GridBagConstraints.BOTH, 10, 0, 0, 0));
 
 				option = JOptionPane.showConfirmDialog(viewController.getTopFrame(), confirmPanel, Language.I18N.getString("db.dialog.warn.title"), JOptionPane.OK_CANCEL_OPTION);
 
@@ -680,10 +672,6 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 	}
 
 	private void setEnabledDBOperations(boolean enable) {
-		((TitledBorder) operations.getBorder()).setTitleColor(enable ?
-				UIManager.getColor("TitledBorder.titleColor") :
-				UIManager.getColor("Label.disabledForeground"));
-		operations.repaint();
 
 		infoButton.setEnabled(enable);		
 		operationsPanel.setEnabled(enable);
