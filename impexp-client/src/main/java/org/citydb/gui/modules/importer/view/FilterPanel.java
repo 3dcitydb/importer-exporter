@@ -38,7 +38,6 @@ import org.citydb.config.project.query.filter.selection.comparison.LikeOperator;
 import org.citydb.config.project.query.filter.selection.id.ResourceIdOperator;
 import org.citydb.config.project.query.filter.type.FeatureTypeFilter;
 import org.citydb.gui.components.checkboxtree.DefaultCheckboxTreeCellRenderer;
-import org.citydb.gui.components.checkboxtree.TreeCheckingModel;
 import org.citydb.gui.components.common.BlankNumberFormatter;
 import org.citydb.gui.components.common.TitledPanel;
 import org.citydb.gui.components.feature.FeatureTypeTree;
@@ -147,7 +146,7 @@ public class FilterPanel extends JPanel {
 				content.add(gmlNameText, GuiUtil.setConstraints(1, 1, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 0));
 			}
 
-			attributeFilterPanel.setContent(content);
+			attributeFilterPanel.build(content);
 			add(attributeFilterPanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 		}
 		{
@@ -160,7 +159,7 @@ public class FilterPanel extends JPanel {
 				content.add(startIndexText, GuiUtil.setConstraints(3, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 0));
 			}
 
-			counterFilterPanel.setContent(content);
+			counterFilterPanel.build(content);
 			add(counterFilterPanel, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 		}
 		{
@@ -173,7 +172,7 @@ public class FilterPanel extends JPanel {
 				bboxPanel.addComponent(bboxModePanel);
 			}
 
-			bboxFilterPanel.setContent(bboxPanel);
+			bboxFilterPanel.build(bboxPanel);
 			add(bboxFilterPanel, GuiUtil.setConstraints(0, 2, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 		}
 		{
@@ -184,7 +183,7 @@ public class FilterPanel extends JPanel {
 				content.add(featureTree, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
 			}
 
-			featureFilterPanel.setContent(content);
+			featureFilterPanel.build(content);
 			add(featureFilterPanel, GuiUtil.setConstraints(0, 3, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 		}
 

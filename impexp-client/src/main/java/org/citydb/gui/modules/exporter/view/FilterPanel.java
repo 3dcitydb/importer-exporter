@@ -72,14 +72,12 @@ public class FilterPanel extends JPanel implements EventHandler {
 
 	private JPanel mainPanel;
 
-	private JCheckBox useTargetSrsFilter;
 	private JCheckBox useSelectionFilter;
 	private JCheckBox useLodFilter;
 	private JCheckBox useCounterFilter;
 	private JCheckBox useBBoxFilter;
 	private JCheckBox useFeatureFilter;
 
-	private TitledPanel targetSrsFilterPanel;
 	private TitledPanel lodFilterPanel;
 	private TitledPanel counterFilterPanel;
 	private TitledPanel bboxFilterPanel;
@@ -123,14 +121,12 @@ public class FilterPanel extends JPanel implements EventHandler {
 	}
 
 	private void initGui(ViewController viewController) {
-		useTargetSrsFilter = new JCheckBox();
 		useSelectionFilter = new JCheckBox();
 		useCounterFilter = new JCheckBox();
 		useLodFilter = new JCheckBox();
 		useBBoxFilter = new JCheckBox();
 		useFeatureFilter = new JCheckBox();
 
-		targetSrsFilterPanel = new TitledPanel();//.withToggleButton(useTargetSrsFilter);
 		counterFilterPanel = new TitledPanel().withToggleButton(useCounterFilter);
 		lodFilterPanel = new TitledPanel().withToggleButton(useLodFilter);
 		bboxFilterPanel = new TitledPanel().withToggleButton(useBBoxFilter);
@@ -211,8 +207,7 @@ public class FilterPanel extends JPanel implements EventHandler {
 				content.add(srsComboBox, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.BOTH, 0, 5, 0, 0));
 			}
 
-			targetSrsFilterPanel.setContent(content, TitledPanel.PADDING_TOP, TitledPanel.PADDING_LEFT, 10, TitledPanel.PADDING_RIGHT);
-			guiPanel.add(targetSrsFilterPanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+			guiPanel.add(content, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, TitledPanel.BOTTOM, 0));
 		}
 		{
 			JPanel filterRow = new JPanel();
@@ -221,10 +216,9 @@ public class FilterPanel extends JPanel implements EventHandler {
 				filterTab = new JTabbedPane(JTabbedPane.TOP, JTabbedPane.SCROLL_TAB_LAYOUT);
 
 				// adapt checkbox to tab height
-				int right = useSelectionFilter.getIconTextGap() - useSelectionFilter.getMargin().right;
-				int top = (UIManager.getInt("TabbedPane.tabHeight") -
-						useSelectionFilter.getPreferredSize().height +
-						useSelectionFilter.getMargin().top) / 2;
+				useSelectionFilter.setMargin(new Insets(0, 0, 0, 0));
+				int right = useSelectionFilter.getIconTextGap();
+				int top = (UIManager.getInt("TabbedPane.tabHeight") - useSelectionFilter.getPreferredSize().height) / 2;
 
 				Component toogleButton;
 				if (top > 0) {
@@ -253,7 +247,7 @@ public class FilterPanel extends JPanel implements EventHandler {
 				});
 			}
 
-			guiPanel.add(filterRow, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 0, 0, TitledPanel.PADDING_BOTTOM, 0));
+			guiPanel.add(filterRow, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 0, 0, TitledPanel.BOTTOM, 0));
 		}
 		{
 			JPanel content = new JPanel();
@@ -271,7 +265,7 @@ public class FilterPanel extends JPanel implements EventHandler {
 				content.add(lodDepth, GuiUtil.setConstraints(8, 0, 0.5, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 0));
 			}
 
-			lodFilterPanel.setContent(content);
+			lodFilterPanel.build(content);
 			guiPanel.add(lodFilterPanel, GuiUtil.setConstraints(0, 2, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 		}
 		{
@@ -284,7 +278,7 @@ public class FilterPanel extends JPanel implements EventHandler {
 				content.add(startIndexText, GuiUtil.setConstraints(3, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 0));
 			}
 
-			counterFilterPanel.setContent(content);
+			counterFilterPanel.build(content);
 			guiPanel.add(counterFilterPanel, GuiUtil.setConstraints(0, 3, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 		}
 		{
@@ -302,7 +296,7 @@ public class FilterPanel extends JPanel implements EventHandler {
 				bboxPanel.addComponent(bboxModePanel);
 			}
 
-			bboxFilterPanel.setContent(bboxPanel);
+			bboxFilterPanel.build(bboxPanel);
 			guiPanel.add(bboxFilterPanel, GuiUtil.setConstraints(0, 4, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 		}
 		{
@@ -313,7 +307,7 @@ public class FilterPanel extends JPanel implements EventHandler {
 				content.add(featureTree, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
 			}
 
-			featureFilterPanel.setContent(content);
+			featureFilterPanel.build(content);
 			guiPanel.add(featureFilterPanel, GuiUtil.setConstraints(0, 5, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 		}
 		{
@@ -416,13 +410,12 @@ public class FilterPanel extends JPanel implements EventHandler {
 	}
 
 	public void doTranslation() {
-		targetSrsFilterPanel.setTitle(Language.I18N.getString("export.border.targetSrs"));
 		lodFilterPanel.setTitle(Language.I18N.getString("filter.border.lod"));
 		counterFilterPanel.setTitle(Language.I18N.getString("filter.border.counter"));
 		bboxFilterPanel.setTitle(Language.I18N.getString("filter.border.boundingBox"));
 		featureFilterPanel.setTitle(Language.I18N.getString("filter.border.featureClass"));
 
-		srsComboBoxLabel.setText(Language.I18N.getString("common.label.boundingBox.crs"));
+		srsComboBoxLabel.setText(Language.I18N.getString("export.label.targetSrs"));
 		lodModeLabel.setText(Language.I18N.getString("filter.label.lod.mode"));
 		lodDepthLabel.setText(Language.I18N.getString("filter.label.lod.depth"));
 		countLabel.setText(Language.I18N.getString("filter.label.counter.count"));

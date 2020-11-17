@@ -37,60 +37,88 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 public class TitledPanel extends JPanel {
-    public static final int PADDING_TOP = 0;
-    public static final int PADDING_LEFT = 0;
-    public static final int PADDING_BOTTOM = 15;
-    public static final int PADDING_RIGHT = 0;
+    public static final int TOP = 0;
+    public static final int LEFT = 0;
+    public static final int BOTTOM = 15;
+    public static final int RIGHT = 0;
 
-    private final JXTitledSeparator separator;
+    private String title = "";
+    private boolean showSeparator = true;
+    private Insets margin;
 
-    public TitledPanel(String title) {
-        setLayout(new GridBagLayout());
-        separator = new JXTitledSeparator(title);
-        add(separator, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.HORIZONTAL, PADDING_TOP, 0, 5, 0));
-    }
+    private JComponent header;
+    private JToggleButton toggleButton;
 
-    public TitledPanel(String title, JComponent content) {
-        this(title);
-        setContent(content);
-    }
-
-    public TitledPanel() {
-        this("");
-    }
-
-    public TitledPanel(JComponent content) {
-        this("", content);
-    }
-
-    public void setTitle(String title) {
-        separator.setTitle(title);
-    }
-
-    public void setContent(JComponent content) {
-        setContent(content, PADDING_TOP, PADDING_LEFT, PADDING_BOTTOM, PADDING_RIGHT);
-    }
-
-    public void setContent(JComponent content, int top, int left, int bottom, int right) {
-        add(content, GuiUtil.setConstraints(1, 1, 1, 1, GridBagConstraints.BOTH, top, left, bottom, right));
-    }
-
-    public TitledPanel withToggleButton(JToggleButton toggleButton) {
-        int right = toggleButton.getIconTextGap() - toggleButton.getMargin().right;
-        add(toggleButton, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.NONE, PADDING_TOP, 0, 5, right));
-        separator.addMouseListener(new MouseAdapter() {
-            public void mouseClicked(MouseEvent e) {
-                toggleButton.doClick();
-            }
-        });
+    public TitledPanel withTitle(String title) {
+        this.title = title;
         return this;
     }
 
-    public int getIconTextGap() {
-        return separator.getIconTextGap();
+    public TitledPanel withToggleButton(JToggleButton toggleButton) {
+        this.toggleButton = toggleButton;
+        Insets margin = toggleButton.getMargin();
+        toggleButton.setMargin(new Insets(margin.top, 0, margin.bottom, 0));
+        return this;
     }
 
-    public void setIconTextGap(int iconTextGap) {
-        separator.setIconTextGap(iconTextGap);
+    public TitledPanel showSeparator(boolean showSeparator) {
+        this.showSeparator = showSeparator;
+        return this;
+    }
+
+    public TitledPanel withMargin(Insets margin) {
+        this.margin = margin;
+        return this;
+    }
+
+    public void build(JComponent content) {
+        setLayout(new GridBagLayout());
+
+        int top = margin != null ? margin.top : TOP;
+        int left = margin != null ? margin.left : LEFT;
+        int bottom = margin != null ? margin.bottom : BOTTOM;
+        int right = margin != null ? margin.right : RIGHT;
+
+        Component leading;
+        int iconTextGap;
+        int paddingLeft;
+
+        if (toggleButton == null) {
+            JCheckBox dummy = new JCheckBox();
+            dummy.setMargin(new Insets(0, 0, 0, 0));
+            Dimension dimension = dummy.getPreferredSize();
+
+            leading = Box.createVerticalStrut(dimension.height);
+            iconTextGap = 0;
+            paddingLeft = dimension.width + dummy.getIconTextGap();
+        } else {
+            leading = toggleButton;
+            iconTextGap = toggleButton.getIconTextGap();
+            paddingLeft = 0;
+        }
+
+        header = showSeparator ?
+                new JXTitledSeparator(title) :
+                new JLabel(title);
+
+        add(leading, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.NONE, top, left, 5, iconTextGap));
+        add(header, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.HORIZONTAL, top, 0, 5, right));
+        add(content, GuiUtil.setConstraints(1, 1, 1, 1, GridBagConstraints.BOTH, 0, paddingLeft, bottom, 0));
+
+        if (toggleButton != null) {
+            header.addMouseListener(new MouseAdapter() {
+                public void mouseClicked(MouseEvent e) {
+                    toggleButton.doClick();
+                }
+            });
+        }
+    }
+
+    public void setTitle(String title) {
+        if (showSeparator) {
+            ((JXTitledSeparator) header).setTitle(title);
+        } else {
+            ((JLabel) header).setText(title);
+        }
     }
 }
