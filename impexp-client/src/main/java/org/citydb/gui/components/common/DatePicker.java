@@ -25,7 +25,6 @@ public class DatePicker extends JXDatePicker implements EventHandler {
         setFormats("yyyy-MM-dd", "dd.MM.yyyy");
         getEditor().putClientProperty("JTextField.placeholderText", "YYYY-MM-DD");
         getEditor().setColumns(8);
-        getMonthView().setPreferredSize(getMonthView().getPreferredSize());
     }
 
     @Override
@@ -69,5 +68,6 @@ public class DatePicker extends JXDatePicker implements EventHandler {
 
         getMonthView().setDaysOfTheWeek(daysOfTheWeek);
         getMonthView().setFirstDayOfWeek(Calendar.MONDAY);
+        getMonthView().setPreferredSize(null);
     }
 }
