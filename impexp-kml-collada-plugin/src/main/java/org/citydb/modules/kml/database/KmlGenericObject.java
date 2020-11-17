@@ -2241,20 +2241,21 @@ public abstract class KmlGenericObject {
 						previousSurfaceId = surfaceId;
 					}
 
-					// handle appearance
-					if (selectedTheme.equals(KmlExportConfig.THEME_NONE)) {
-						if (surfaceInfo != null && getX3dMaterial(surfaceId) == null) {
-							if (x3dRoofMaterial != null && surfaceTypeID != 0 &&
-									(Util.getCityGMLClass(surfaceTypeID) == CityGMLClass.BUILDING_ROOF_SURFACE ||
-											Util.getCityGMLClass(surfaceTypeID) == CityGMLClass.BRIDGE_ROOF_SURFACE ||
-											Util.getCityGMLClass(surfaceTypeID) == CityGMLClass.TUNNEL_ROOF_SURFACE)) {
-								addX3dMaterial(surfaceId, x3dRoofMaterial);
-							}
-							else {
-								addX3dMaterial(surfaceId, x3dWallMaterial);
-							}
+					// default material
+					if (surfaceInfo != null && getX3dMaterial(surfaceId) == null) {
+						if (x3dRoofMaterial != null && surfaceTypeID != 0 &&
+								(Util.getCityGMLClass(surfaceTypeID) == CityGMLClass.BUILDING_ROOF_SURFACE ||
+										Util.getCityGMLClass(surfaceTypeID) == CityGMLClass.BRIDGE_ROOF_SURFACE ||
+										Util.getCityGMLClass(surfaceTypeID) == CityGMLClass.TUNNEL_ROOF_SURFACE)) {
+							addX3dMaterial(surfaceId, x3dRoofMaterial);
 						}
-					} else {
+						else {
+							addX3dMaterial(surfaceId, x3dWallMaterial);
+						}
+					}
+
+					// handle appearance
+					if (!selectedTheme.equals(KmlExportConfig.THEME_NONE)) {
 						// skip if we have already assigned a texture
 						if (texImageUris.get(surfaceId) != null)
 							continue;
@@ -2270,7 +2271,7 @@ public abstract class KmlGenericObject {
 								parentId = tmp;
 						}
 
-						if (selectedTheme.equalsIgnoreCase(theme)) {
+						if (selectedTheme.equalsIgnoreCase(theme) && rs.getLong("appearance_id") > 0) {
 							long textureImageId = rs.getLong("tex_image_id");
 							String texImageUri = rs.getString("tex_image_uri");
 							Object texCoordsObject = rs.getObject("texture_coordinates");
@@ -2333,13 +2334,11 @@ public abstract class KmlGenericObject {
 						}
 
 						// appearance theme does not match selected theme
-						else if (surfaceInfo != null && getX3dMaterial(surfaceId) == null) {
+						else if (surfaceInfo != null && getX3dMaterial(surfaceId) != null) {
 							if (getX3dMaterial(parentId) != null) // material for parent surface known
 								addX3dMaterial(surfaceId, getX3dMaterial(parentId));
 							else if (getX3dMaterial(rootId) != null) // material for root surface known
 								addX3dMaterial(surfaceId, getX3dMaterial(rootId));
-							else
-								addX3dMaterial(surfaceId, x3dWallMaterial);
 						}
 					}
 				}
