@@ -148,7 +148,7 @@ public class DeleteListParser implements AutoCloseable {
                             "the id value in column " + index + ".");
                 }
 
-                id = columns[index - 1];
+                id = columns[index - 1].trim();
                 if (quoteChar != Character.MIN_VALUE
                         && id.length() > 1
                         && id.charAt(0) == quoteChar
