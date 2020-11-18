@@ -148,27 +148,28 @@ public class CliOptionBuilder {
                 if (parts.length == 2) {
                     String namespace = namespaceContext.getNamespaceURI(parts[0]);
                     if (namespace.equals(XMLConstants.NULL_NS_URI)) {
-                        throw new CommandLine.ParameterException(commandLine, "Unknown prefix: " + parts[0]);
+                        throw new CommandLine.ParameterException(commandLine, "Error: Unknown prefix '" + parts[0] + "'");
                     }
 
                     Module module = Modules.getModule(namespace);
                     if (module == null || !module.hasFeature(parts[1])) {
-                        throw new CommandLine.ParameterException(commandLine, "Unknown type name: " + typeName);
+                        throw new CommandLine.ParameterException(commandLine, "Error: Unknown type name '" + typeName + "'");
                     }
 
                     featureTypeFilter.addTypeName(new QName(namespace, parts[1]));
                 } else if (parts.length == 1) {
-                    Module module = Stream.concat(CityGMLVersion.v2_0_0.getCityGMLModules().stream(),
+                    Stream.concat(CityGMLVersion.v2_0_0.getCityGMLModules().stream(),
                             Modules.getADEModules().stream())
                             .filter(m -> m.hasFeature(parts[0]))
-                            .findFirst()
-                            .orElseThrow(() -> new CommandLine.ParameterException(commandLine,
-                                    "Unknown type name: " + typeName + ". Maybe use a prefix?"));
+                            .forEach(m -> featureTypeFilter.addTypeName(new QName(m.getNamespaceURI(), parts[0])));
 
-                    featureTypeFilter.addTypeName(new QName(module.getNamespaceURI(), parts[0]));
+                    if (featureTypeFilter.isEmpty()) {
+                        throw new CommandLine.ParameterException(commandLine,
+                                "Error: Unknown type name '" + typeName + "'. Maybe use a prefix?");
+                    }
                 } else {
                     throw new CommandLine.ParameterException(commandLine,
-                            "A type name should be in [PREFIX:]NAME format but was '" + typeName + "'");
+                            "A type name must be in [PREFIX:]NAME format but was '" + typeName + "'");
                 }
             }
 
