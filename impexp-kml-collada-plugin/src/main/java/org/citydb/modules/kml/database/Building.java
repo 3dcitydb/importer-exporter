@@ -245,11 +245,13 @@ public class Building extends KmlGenericObject{
 
 						try { rs.close(); } catch (SQLException sqle) {} 
 						try { psQuery.close(); } catch (SQLException sqle) {}
+						rs = null;
 					} catch (SQLException e) {
 						log.error("SQL error while querying geometries in LOD " + currentLod + ": " + e.getMessage());
 						try { if (rs != null) rs.close(); } catch (SQLException sqle) {} 
 						try { if (psQuery != null) psQuery.close(); } catch (SQLException sqle) {}
 						try { connection.commit(); } catch (SQLException sqle) {}
+						rs = null;
 					}
 
 					if (currentLod > 0 || currentLod == 0 && lod0FootprintMode == Lod0FootprintMode.ROOFPRINT_PRIOR_FOOTPRINT) {
