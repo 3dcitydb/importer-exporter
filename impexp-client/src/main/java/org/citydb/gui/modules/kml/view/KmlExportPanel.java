@@ -904,17 +904,15 @@ public class KmlExportPanel extends JPanel implements EventHandler {
         themeComboBox.setEnabled(databaseController.isConnected() && colladaCheckbox.isEnabled() && colladaCheckbox.isSelected());
         fetchThemesButton.setEnabled(colladaCheckbox.isEnabled() && colladaCheckbox.isSelected());
 
-        if (bboxRadioButton.isSelected()) {
-            boolean enable = lodComboBox.getSelectedIndex() > 0;
-            typeTree.setPathEnabled("Bridge", BridgeModule.v2_0_0.getNamespaceURI(), enable);
-            typeTree.setPathEnabled("CityFurniture", CityFurnitureModule.v2_0_0.getNamespaceURI(), enable);
-            typeTree.setPathEnabled("CityObjectGroup", CityObjectGroupModule.v2_0_0.getNamespaceURI(), enable);
-            typeTree.setPathEnabled("ReliefFeature", ReliefModule.v2_0_0.getNamespaceURI(), enable);
-            typeTree.setPathEnabled("Tunnel", TunnelModule.v2_0_0.getNamespaceURI(), enable);
-            typeTree.setPathEnabled("SolitaryVegetationObject", VegetationModule.v2_0_0.getNamespaceURI(), enable);
-            typeTree.setPathEnabled("PlantCover", VegetationModule.v2_0_0.getNamespaceURI(), enable);
-            typeTree.repaint();
-        }
+        boolean enable = lodComboBox.getSelectedIndex() > 0;
+        typeTree.setPathEnabled("Bridge", BridgeModule.v2_0_0.getNamespaceURI(), enable);
+        typeTree.setPathEnabled("CityFurniture", CityFurnitureModule.v2_0_0.getNamespaceURI(), enable);
+        typeTree.setPathEnabled("CityObjectGroup", CityObjectGroupModule.v2_0_0.getNamespaceURI(), enable);
+        typeTree.setPathEnabled("ReliefFeature", ReliefModule.v2_0_0.getNamespaceURI(), enable);
+        typeTree.setPathEnabled("Tunnel", TunnelModule.v2_0_0.getNamespaceURI(), enable);
+        typeTree.setPathEnabled("SolitaryVegetationObject", VegetationModule.v2_0_0.getNamespaceURI(), enable);
+        typeTree.setPathEnabled("PlantCover", VegetationModule.v2_0_0.getNamespaceURI(), enable);
+        typeTree.repaint();
     }
 
     private void setEnabledFeatureFilter() {
