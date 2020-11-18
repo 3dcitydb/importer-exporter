@@ -98,10 +98,6 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class KmlExportPanel extends JPanel implements EventHandler {
     private final Logger log = Logger.getInstance();
-
-    protected static final int BORDER_THICKNESS = 5;
-    protected static final int MAX_TEXTFIELD_HEIGHT = 20;
-
     private final ReentrantLock mainLock = new ReentrantLock();
     private final ViewController viewController;
     private final DatabaseController databaseController;
@@ -175,8 +171,8 @@ public class KmlExportPanel extends JPanel implements EventHandler {
         browseButton = new JButton();
         JPanel browsePanel = new JPanel();
         browsePanel.setLayout(new GridBagLayout());
-        browsePanel.add(browseText, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, BORDER_THICKNESS));
-        browsePanel.add(browseButton, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.NONE, 0, BORDER_THICKNESS, 0, 0));
+        browsePanel.add(browseText, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 5));
+        browsePanel.add(browseButton, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.NONE, 0, 5, 0, 0));
 
         gmlIdRadioButton = new JRadioButton();
         bboxRadioButton = new JRadioButton("");
@@ -914,13 +910,14 @@ public class KmlExportPanel extends JPanel implements EventHandler {
     }
 
     private void setEnabledFeatureFilter() {
-        typeTree.setEnabled(useFeatureFilter.isSelected());
         if (useFeatureFilter.isSelected()) {
             typeTree.expandRow(0);
         } else {
             typeTree.collapseRow(0);
             typeTree.setSelectionPath(null);
         }
+
+        typeTree.setEnabled(useFeatureFilter.isSelected());
     }
 
     private void checkNonNegative(JFormattedTextField field) {

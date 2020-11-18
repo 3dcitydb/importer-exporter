@@ -137,7 +137,7 @@ public class SrsOperation extends DatabaseOperationView {
 		component.add(dbContentPanel, GuiUtil.setConstraints(1, 2, 0, 0, GridBagConstraints.BOTH, 0, 5, 5, 0));
 		component.add(buttonsPanel, GuiUtil.setConstraints(0, 3, 4, 1, 0, 0, GridBagConstraints.NONE, 10, 0, 10, 0));
 
-		PopupMenuDecorator.getInstance().decorate(sridText, srsNameComboBox.getEditor().getEditorComponent());
+		PopupMenuDecorator.getInstance().decorate(sridText, (JTextField) srsNameComboBox.getEditor().getEditorComponent());
 
 		// influence focus behavior
 		checkSridButton.setFocusable(false);
@@ -241,7 +241,7 @@ public class SrsOperation extends DatabaseOperationView {
 		applyButton.setEnabled(enable);
 
 		sridText.setEditable(false);
-		srsNameComboBox.setEditorEditable(enable);
+		srsNameComboBox.setEnabled(enable);
 	}
 
 	@Override

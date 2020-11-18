@@ -42,9 +42,9 @@ import org.citydb.event.global.PropertyChangeEvent;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.factory.SrsComboBoxFactory;
 import org.citydb.gui.factory.SrsComboBoxFactory.SrsComboBox;
+import org.citydb.gui.modules.common.AbstractPreferencesComponent;
 import org.citydb.gui.modules.database.operations.SrsOperation;
 import org.citydb.gui.modules.database.util.SrsNameComboBox;
-import org.citydb.gui.modules.common.AbstractPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.log.Logger;
 import org.citydb.plugin.extension.view.ViewController;
@@ -171,7 +171,7 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 		srsComboBoxFactory = SrsComboBoxFactory.getInstance();
 		srsComboBox = srsComboBoxFactory.createSrsComboBox(false);
 
-		PopupMenuDecorator.getInstance().decorate(sridText, srsNameComboBox.getEditor().getEditorComponent(),
+		PopupMenuDecorator.getInstance().decorate(sridText, (JTextField) srsComboBox.getEditor().getEditorComponent(),
 				descriptionText, fileText, dbSrsTypeText, dbSrsNameText);
 
 		sridText.addPropertyChangeListener(e -> {
@@ -449,7 +449,7 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 
 		boolean isEditable = !srsComboBox.isDBReferenceSystemSelected();
 		sridText.setEditable(isEditable);
-		srsNameComboBox.setEditorEditable(isEditable);
+		srsNameComboBox.setEnabled(isEditable);
 		descriptionText.setEditable(isEditable);
 		applyButton.setEnabled(isEditable);
 		deleteButton.setEnabled(isEditable);

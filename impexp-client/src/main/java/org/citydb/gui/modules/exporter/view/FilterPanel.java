@@ -66,7 +66,6 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-@SuppressWarnings("serial")
 public class FilterPanel extends JPanel implements EventHandler {
 	private final Config config;
 
@@ -389,14 +388,15 @@ public class FilterPanel extends JPanel implements EventHandler {
 	}
 
 	private void setEnabledFeatureFilter() {
-		featureTree.setPathsEnabled(useFeatureFilter.isSelected());
-		featureTree.setEnabled(useFeatureFilter.isSelected());
 		if (useFeatureFilter.isSelected()) {
 			featureTree.expandRow(0);
 		} else {
 			featureTree.collapseRow(0);
 			featureTree.setSelectionPath(null);
 		}
+
+		featureTree.setPathsEnabled(useFeatureFilter.isSelected());
+		featureTree.setEnabled(useFeatureFilter.isSelected());
 	}
 
 	private void checkNonNegative(JFormattedTextField field) {

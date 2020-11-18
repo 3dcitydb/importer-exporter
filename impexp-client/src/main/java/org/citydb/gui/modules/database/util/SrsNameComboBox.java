@@ -28,8 +28,7 @@
 package org.citydb.gui.modules.database.util;
 
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
-import java.awt.event.ActionListener;
+import javax.swing.plaf.basic.BasicComboBoxEditor;
 
 public class SrsNameComboBox extends JComboBox<String> {
     private final SrsNameEditor editor;
@@ -45,6 +44,14 @@ public class SrsNameComboBox extends JComboBox<String> {
         setSelectedItem(null);
     }
 
+    public void setText(String value) {
+        editor.setItem(value);
+    }
+
+    public String getText() {
+        return editor.getItem().toString();
+    }
+
     public void updateSrid(int srid) {
         editor.srid = srid;
     }
@@ -53,60 +60,16 @@ public class SrsNameComboBox extends JComboBox<String> {
         return "<SRID>";
     }
 
-    public void setText(String value) {
-        editor.component.setText(value);
-    }
-
-    public String getText() {
-        return editor.component.getText();
-    }
-
-    @Override
-    public SrsNameEditor getEditor() {
-        return editor;
-    }
-
-    public void setEditorEditable(boolean value) {
-        super.setEnabled(value);
-        editor.component.setEnabled(true);
-        editor.component.setEditable(value);
-    }
-
-    public final class SrsNameEditor implements ComboBoxEditor {
-        private final JTextField component;
+    public static final class SrsNameEditor extends BasicComboBoxEditor {
         private int srid;
-
-        private SrsNameEditor() {
-            component = new JTextField();
-            component.setBorder(new EmptyBorder(0, 2, 0,2));
-        }
-
-        @Override
-        public JTextField getEditorComponent() {
-            return component;
-        }
 
         @Override
         public void setItem(Object anObject) {
             if (anObject != null)
-                component.setText(anObject.toString().replace("<SRID>", String.valueOf(srid)));
+                super.setItem(anObject.toString().replace("<SRID>", String.valueOf(srid)));
             else
-                component.setText("");
+                super.setItem("");
         }
-
-        @Override
-        public Object getItem() {
-            return component.getText();
-        }
-
-        @Override
-        public void selectAll() { }
-
-        @Override
-        public void addActionListener(ActionListener ignored) { }
-
-        @Override
-        public void removeActionListener(ActionListener ignored) { }
     }
 }
 

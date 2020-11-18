@@ -228,13 +228,14 @@ public class FilterPanel extends JPanel {
 	}
 
 	private void setEnabledFeatureFilter() {
-		featureTree.setEnabled(useFeatureFilter.isSelected());
 		if (useFeatureFilter.isSelected()) {
 			featureTree.expandRow(0);
 		} else {
 			featureTree.collapseRow(0);
 			featureTree.setSelectionPath(null);
 		}
+
+		featureTree.setEnabled(useFeatureFilter.isSelected());
 	}
 
 	public void doTranslation() {
