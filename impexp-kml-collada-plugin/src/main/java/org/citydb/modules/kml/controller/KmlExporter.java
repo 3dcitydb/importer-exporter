@@ -50,6 +50,7 @@ import net.opengis.kml._2.StyleMapType;
 import net.opengis.kml._2.StyleStateEnumType;
 import net.opengis.kml._2.StyleType;
 import net.opengis.kml._2.ViewRefreshModeEnumType;
+import org.citydb.ade.kmlExporter.ADEKmlExportExtensionManager;
 import org.citydb.concurrent.PoolSizeAdaptationStrategy;
 import org.citydb.concurrent.SingleWorkerPool;
 import org.citydb.concurrent.WorkerPool;
@@ -81,7 +82,6 @@ import org.citydb.event.global.ObjectCounterEvent;
 import org.citydb.event.global.StatusDialogMessage;
 import org.citydb.event.global.StatusDialogTitle;
 import org.citydb.log.Logger;
-import org.citydb.ade.kmlExporter.ADEKmlExportExtensionManager;
 import org.citydb.modules.kml.concurrent.KmlExportWorkerFactory;
 import org.citydb.modules.kml.database.ADEObject;
 import org.citydb.modules.kml.database.Bridge;
@@ -116,6 +116,8 @@ import org.citydb.writer.XMLWriterWorkerFactory;
 import org.citygml4j.model.citygml.CityGML;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.gml.feature.AbstractFeature;
+import org.citygml4j.model.module.Modules;
+import org.citygml4j.model.module.citygml.CityGMLVersion;
 import org.citygml4j.util.xml.SAXEventBuffer;
 import org.citygml4j.util.xml.SAXFragmentWriter;
 import org.citygml4j.util.xml.SAXFragmentWriter.WriteMode;
@@ -265,6 +267,22 @@ public class KmlExporter implements EventHandler {
 			query = queryBuilder.buildQuery(config.getProject().getKmlExporter().getQuery(), config.getProject().getNamespaceFilter());
 		} catch (QueryBuildException e) {
 			throw new KmlExportException("Failed to build the export filter expression.", e);
+		}
+
+		// check whether CityGML features can be exported from LoD 0
+		if (config.getProject().getKmlExporter().getLodToExportFrom() == 0) {
+			FeatureTypeFilter featureTypeFilter = query.getFeatureTypeFilter();
+			for (FeatureType featureType : featureTypeFilter.getFeatureTypes()) {
+				String namespace = featureType.getSchema().getNamespace(CityGMLVersion.v2_0_0).getURI();
+				if (Modules.isCityGMLModuleNamespace(namespace) && !featureType.isAvailableForLod(0)) {
+					log.warn(featureType + " cannot be exported from LoD 0 and will be skipped.");
+					featureTypeFilter.removeFeatureType(featureType);
+				}
+			}
+
+			if (featureTypeFilter.isEmpty()) {
+				throw new KmlExportException("No valid feature types provided for LoD 0.");
+			}
 		}
 
 		// tiling
