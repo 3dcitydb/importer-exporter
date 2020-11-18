@@ -247,7 +247,7 @@ public class ADEInfoDialog extends JDialog {
         {
             info.add(main, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 15, 10, 0, 10));
             info.add(Box.createVerticalGlue(), GuiUtil.setConstraints(0, 1, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
-            info.add(closeButton, GuiUtil.setConstraints(0, 2, 0, 0, GridBagConstraints.NONE, 0, 10, 10, 10));
+            info.add(closeButton, GuiUtil.setConstraints(0, 2, 1, 0, GridBagConstraints.EAST, GridBagConstraints.NONE, 0, 10, 10, 10));
         }
 
         JTabbedPane infoPane = new JTabbedPane();

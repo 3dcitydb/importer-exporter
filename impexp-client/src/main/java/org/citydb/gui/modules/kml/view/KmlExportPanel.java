@@ -251,6 +251,8 @@ public class KmlExportPanel extends JPanel implements EventHandler {
         renderer.setOpenIcon(null);
         renderer.setClosedIcon(null);
 
+        exportButton = new JButton();
+
         setLayout(new GridBagLayout());
 
         JPanel mainPanel = new JPanel();
@@ -357,13 +359,9 @@ public class KmlExportPanel extends JPanel implements EventHandler {
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
         scrollPane.setViewportBorder(BorderFactory.createEmptyBorder());
 
-        JPanel exportButtonPanel = new JPanel();
-        exportButton = new JButton();
-        exportButtonPanel.add(exportButton);
-
         add(browsePanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 15, 10, 15, 10));
         add(scrollPane, GuiUtil.setConstraints(0, 1, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
-        add(exportButtonPanel, GuiUtil.setConstraints(0, 2, 1, 0, GridBagConstraints.HORIZONTAL, 5, 10, 5, 10));
+        add(exportButton, GuiUtil.setConstraints(0, 2, 0, 0, GridBagConstraints.NONE, 10, 10, 10, 10));
 
         PopupMenuDecorator.getInstance().decorate(browseText, gmlIdText, rowsText, columnsText,
                 footprintVisibleFromText, extrudedVisibleFromText, geometryVisibleFromText, colladaVisibleFromText,
