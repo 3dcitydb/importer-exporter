@@ -58,7 +58,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
 
-@SuppressWarnings("serial")
 public class FeatureTypeTree extends CheckboxTree {
 	private final SchemaMapping schemaMapping;
 	private final ADEExtensionManager adeManager;
@@ -105,8 +104,9 @@ public class FeatureTypeTree extends CheckboxTree {
 
 	public List<FeatureType> getFeatureTypes() {
 		List<FeatureType> featureTypes = new ArrayList<>();
-		for (DefaultMutableTreeNode leaf : leafs)
-			featureTypes.add((FeatureType)leaf.getUserObject());
+		for (DefaultMutableTreeNode leaf : leafs) {
+			featureTypes.add((FeatureType) leaf.getUserObject());
+		}
 
 		return featureTypes;
 	}
@@ -114,8 +114,9 @@ public class FeatureTypeTree extends CheckboxTree {
 	public List<FeatureType> getSelectedFeatureTypes() {
 		List<FeatureType> selection = new ArrayList<>();
 		for (DefaultMutableTreeNode leaf : leafs) {
-			if (getCheckingModel().isPathChecked(new TreePath(leaf.getPath())))
-				selection.add((FeatureType)leaf.getUserObject());
+			TreePath path = new TreePath(leaf.getPath());
+			if (getCheckingModel().isPathChecked(path) && getCheckingModel().isPathEnabled(path))
+				selection.add((FeatureType) leaf.getUserObject());
 		}
 
 		return selection;
@@ -132,8 +133,9 @@ public class FeatureTypeTree extends CheckboxTree {
 				}
 			}
 
-			for (Namespace namespace : featureType.getSchema().getNamespaces())
+			for (Namespace namespace : featureType.getSchema().getNamespaces()) {
 				selection.add(new QName(namespace.getURI(), featureType.getPath()));
+			}
 		}
 
 		return selection;
@@ -143,8 +145,9 @@ public class FeatureTypeTree extends CheckboxTree {
 		if (typeNames != null) {
 			for (QName name : typeNames) {
 				FeatureType featureType = schemaMapping.getFeatureType(name);
-				if (featureType != null)
+				if (featureType != null) {
 					setSelected(featureType);
+				}
 			}
 		}
 	}
@@ -170,13 +173,15 @@ public class FeatureTypeTree extends CheckboxTree {
 
 	public void setPathEnabled(String name, String namespaceURI, boolean enable) {
 		FeatureType featureType = schemaMapping.getFeatureType(name, namespaceURI);
-		if (featureType != null)
+		if (featureType != null) {
 			setPathEnabled(featureType, enable);
+		}
 	}
 
 	public void setPathEnabled(FeatureType featureType, boolean enable) {
-		if (enable && !canBeEnabled(featureType))
+		if (enable && !canBeEnabled(featureType)) {
 			return;
+		}
 
 		for (DefaultMutableTreeNode leaf : leafs) {
 			if (leaf.getUserObject() == featureType) {
@@ -191,15 +196,16 @@ public class FeatureTypeTree extends CheckboxTree {
 	}
 
 	private void propagateBottomUp(DefaultMutableTreeNode node, boolean isSelection, boolean enable) {
-		DefaultMutableTreeNode parent = (DefaultMutableTreeNode)node.getParent();
-		if (parent == root)
+		DefaultMutableTreeNode parent = (DefaultMutableTreeNode) node.getParent();
+		if (parent == root) {
 			return;
+		}
 
 		boolean allEnabled = enable;
 		for (int i = 0; i < parent.getChildCount(); ++i) {
-			DefaultMutableTreeNode child = (DefaultMutableTreeNode)parent.getChildAt(i);
+			DefaultMutableTreeNode child = (DefaultMutableTreeNode) parent.getChildAt(i);
 			TreePath path = new TreePath(child.getPath());
-			boolean check = isSelection ? getCheckingModel().isPathChecked(path) : getCheckingModel().isPathEnabled(path);			
+			boolean check = isSelection ? getCheckingModel().isPathChecked(path) : getCheckingModel().isPathEnabled(path);
 			if (check != enable) {
 				allEnabled = !enable;
 				break;
@@ -208,10 +214,11 @@ public class FeatureTypeTree extends CheckboxTree {
 
 		if (allEnabled == enable) {
 			TreePath path = new TreePath(parent.getPath());
-			if (isSelection)
+			if (isSelection) {
 				getCheckingModel().addCheckingPath(path);
-			else
+			} else {
 				getCheckingModel().setPathEnabled(path, enable);
+			}
 
 			propagateBottomUp(parent, isSelection, enable);
 		}
@@ -234,11 +241,12 @@ public class FeatureTypeTree extends CheckboxTree {
 		root.add(getCityGMLModuleNode(WaterBodyModule.v2_0_0));
 
 		if (adeFilter != null) {
-			for (DefaultMutableTreeNode adeNode : getADENodes(adeFilter))
+			for (DefaultMutableTreeNode adeNode : getADENodes(adeFilter)) {
 				root.add(adeNode);
+			}
 		}
 
-		((DefaultTreeModel)getModel()).setRoot(root);
+		((DefaultTreeModel) getModel()).setRoot(root);
 	}
 
 	private DefaultMutableTreeNode getCityGMLModuleNode(CityGMLModule module) {
@@ -271,12 +279,12 @@ public class FeatureTypeTree extends CheckboxTree {
 					}
 				}
 
-				if (adeNode.getChildCount() > 0)
+				if (adeNode.getChildCount() > 0) {
 					adeNodes.add(adeNode);
+				}
 			}
 		}
 
 		return adeNodes;
 	}
-
 }
