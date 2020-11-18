@@ -287,7 +287,7 @@ public class KmlExporter implements EventHandler {
 		}
 
 		// check whether CityGML features can be exported from LoD 0
-		if (config.getProject().getKmlExporter().getLodToExportFrom() == 0) {
+		if (config.getKmlExportConfig().getLodToExportFrom() == 0) {
 			FeatureTypeFilter featureTypeFilter = query.getFeatureTypeFilter();
 			for (FeatureType featureType : featureTypeFilter.getFeatureTypes()) {
 				String namespace = featureType.getSchema().getNamespace(CityGMLVersion.v2_0_0).getURI();
