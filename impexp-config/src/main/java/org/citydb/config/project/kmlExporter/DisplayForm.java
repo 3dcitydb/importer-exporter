@@ -87,7 +87,11 @@ public class DisplayForm {
     public DisplayForm() {
     }
 
-    public DisplayForm(int form, int visibleFrom, int visibleUpTo) {
+    public static DisplayForm of(int form) {
+        return new DisplayForm(form, -1, -1);
+    }
+
+    private DisplayForm(int form, int visibleFrom, int visibleUpTo) {
         this.form = form;
         this.setVisibleFrom(visibleFrom);
         this.setVisibleUpTo(visibleUpTo);

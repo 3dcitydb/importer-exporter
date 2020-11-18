@@ -77,7 +77,7 @@ public class DisplayOption implements CliOption {
 
         int visibleTo = -1;
         for (Mode mode : Mode.values()) {
-            DisplayForm displayForm = candidates.computeIfAbsent(mode.type, v -> new DisplayForm(mode.type, -1, -1));
+            DisplayForm displayForm = candidates.computeIfAbsent(mode.type, v -> DisplayForm.of(mode.type));
             displayForm.setActive(modes.contains(mode) && lod.ordinal() >= mode.minimumLod);
             if (displayForm.isActive()) {
                 int visibleFrom = this.visibleFrom != null ? this.visibleFrom.getOrDefault(mode, 0) : 0;

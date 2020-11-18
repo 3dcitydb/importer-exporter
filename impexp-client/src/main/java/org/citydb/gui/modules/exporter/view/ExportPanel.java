@@ -282,7 +282,7 @@ public class ExportPanel extends JPanel implements DropTargetListener {
 			viewController.setStatusText(Language.I18N.getString("main.status.export.label"));
 			log.info("Initializing database export...");
 
-			// initialize event dispatcher
+			// get event dispatcher
 			final EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
 			final ExportStatusDialog exportDialog = new ExportStatusDialog(viewController.getTopFrame(),
 					Language.I18N.getString("export.dialog.window"),

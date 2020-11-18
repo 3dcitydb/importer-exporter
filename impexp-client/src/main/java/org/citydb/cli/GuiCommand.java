@@ -28,7 +28,6 @@
 
 package org.citydb.cli;
 
-import com.formdev.flatlaf.FlatDarkLaf;
 import com.formdev.flatlaf.FlatLightLaf;
 import org.citydb.ImpExpException;
 import org.citydb.config.Config;

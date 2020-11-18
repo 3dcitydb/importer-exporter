@@ -144,12 +144,12 @@ public class BridgeRenderingPanel extends AbstractPreferencesComponent {
 		List<DisplayForm> configDfs = getConfigDisplayForms();
 
 		for (int form = DisplayForm.FOOTPRINT; form <= DisplayForm.COLLADA; form++) {
-			DisplayForm configDf = new DisplayForm(form, -1, -1);
+			DisplayForm configDf = DisplayForm.of(form);
 			int indexOfConfigDf = configDfs.indexOf(configDf); 
 			if (indexOfConfigDf != -1) {
 				configDf = configDfs.get(indexOfConfigDf);
 			}
-			DisplayForm internalDf = new DisplayForm(form, -1, -1);
+			DisplayForm internalDf = DisplayForm.of(form);
 			int indexOfInternalDf = internalDfs.indexOf(internalDf); 
 			if (indexOfInternalDf != -1) {
 				internalDf = internalDfs.get(indexOfInternalDf);
@@ -672,7 +672,7 @@ public class BridgeRenderingPanel extends AbstractPreferencesComponent {
 		ColladaOptions colladaOptions = getConfigColladaOptions();
 
 		for (int form = DisplayForm.FOOTPRINT; form <= DisplayForm.COLLADA; form++) {
-			DisplayForm configDf = new DisplayForm(form, -1, -1);
+			DisplayForm configDf = DisplayForm.of(form);
 			int indexOfConfigDf = configDfs.indexOf(configDf); 
 			if (indexOfConfigDf != -1) {
 				configDf = configDfs.get(indexOfConfigDf);
@@ -831,7 +831,7 @@ public class BridgeRenderingPanel extends AbstractPreferencesComponent {
 
 	private void setInternalDisplayFormValues() {
 		for (int form = DisplayForm.FOOTPRINT; form <= DisplayForm.EXTRUDED; form++) {
-			DisplayForm df = new DisplayForm(form, -1, -1);
+			DisplayForm df = DisplayForm.of(form);
 			int indexOfDf = internalDfs.indexOf(df); 
 			if (indexOfDf != -1) {
 				df = internalDfs.get(indexOfDf);
@@ -860,7 +860,7 @@ public class BridgeRenderingPanel extends AbstractPreferencesComponent {
 			}
 		}
 
-		DisplayForm df = new DisplayForm(DisplayForm.GEOMETRY, -1, -1);
+		DisplayForm df = DisplayForm.of(DisplayForm.GEOMETRY);
 		int indexOfDf = internalDfs.indexOf(df); 
 		if (indexOfDf != -1) {
 			df = internalDfs.get(indexOfDf);
@@ -905,7 +905,7 @@ public class BridgeRenderingPanel extends AbstractPreferencesComponent {
 			df.setRgba5(rgba5.getRGB());
 		}
 
-		df = new DisplayForm(DisplayForm.COLLADA, -1, -1);
+		df = DisplayForm.of(DisplayForm.COLLADA);
 		indexOfDf = internalDfs.indexOf(df); 
 		if (indexOfDf != -1) {
 			df = internalDfs.get(indexOfDf);
@@ -948,7 +948,7 @@ public class BridgeRenderingPanel extends AbstractPreferencesComponent {
 		List<DisplayForm> configDfs = getConfigDisplayForms();
 
 		for (int form = DisplayForm.FOOTPRINT; form <= DisplayForm.EXTRUDED; form++) {
-			DisplayForm df = new DisplayForm(form, -1, -1);
+			DisplayForm df = DisplayForm.of(form);
 			int indexOfDf = configDfs.indexOf(df); 
 			if (indexOfDf != -1) {
 				df = configDfs.get(indexOfDf);
@@ -961,7 +961,7 @@ public class BridgeRenderingPanel extends AbstractPreferencesComponent {
 			}
 		}
 
-		DisplayForm df = new DisplayForm(DisplayForm.GEOMETRY, -1, -1);
+		DisplayForm df = DisplayForm.of(DisplayForm.GEOMETRY);
 		int indexOfDf = configDfs.indexOf(df); 
 		if (indexOfDf != -1) {
 			df = configDfs.get(indexOfDf);
@@ -976,7 +976,7 @@ public class BridgeRenderingPanel extends AbstractPreferencesComponent {
 			df.setRgba5(DisplayForm.DEFAULT_LINE_HIGHLIGHTED_COLOR);
 		}
 
-		df = new DisplayForm(DisplayForm.COLLADA, -1, -1);
+		df = DisplayForm.of(DisplayForm.COLLADA);
 		indexOfDf = configDfs.indexOf(df); 
 		if (indexOfDf != -1) {
 			df = configDfs.get(indexOfDf);

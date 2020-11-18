@@ -87,12 +87,12 @@ public class CityObjectGroupRenderingPanel extends AbstractPreferencesComponent 
 		setInternalDisplayFormValues();
 		List<DisplayForm> configDfs = getConfigDisplayForms();
 
-		DisplayForm configDf = new DisplayForm(DisplayForm.FOOTPRINT, -1, -1);
+		DisplayForm configDf = DisplayForm.of(DisplayForm.FOOTPRINT);
 		int indexOfConfigDf = configDfs.indexOf(configDf); 
 		if (indexOfConfigDf != -1) {
 			configDf = configDfs.get(indexOfConfigDf);
 		}
-		DisplayForm internalDf = new DisplayForm(DisplayForm.FOOTPRINT, -1, -1);
+		DisplayForm internalDf = DisplayForm.of(DisplayForm.FOOTPRINT);
 		int indexOfInternalDf = internalDfs.indexOf(internalDf); 
 		if (indexOfInternalDf != -1) {
 			internalDf = internalDfs.get(indexOfInternalDf);
@@ -233,7 +233,7 @@ public class CityObjectGroupRenderingPanel extends AbstractPreferencesComponent 
 		List<DisplayForm> configDfs = getConfigDisplayForms();
 
 		for (int form = DisplayForm.FOOTPRINT; form <= DisplayForm.FOOTPRINT; form++) {
-			DisplayForm configDf = new DisplayForm(form, -1, -1);
+			DisplayForm configDf = DisplayForm.of(form);
 			int indexOfConfigDf = configDfs.indexOf(configDf); 
 			if (indexOfConfigDf != -1) {
 				configDf = configDfs.get(indexOfConfigDf);
@@ -286,7 +286,7 @@ public class CityObjectGroupRenderingPanel extends AbstractPreferencesComponent 
 
 
 	private void setInternalDisplayFormValues() {
-		DisplayForm df = new DisplayForm(DisplayForm.FOOTPRINT, -1, -1);
+		DisplayForm df = DisplayForm.of(DisplayForm.FOOTPRINT);
 		int indexOfDf = internalDfs.indexOf(df); 
 		if (indexOfDf != -1) {
 			df = internalDfs.get(indexOfDf);
@@ -320,7 +320,7 @@ public class CityObjectGroupRenderingPanel extends AbstractPreferencesComponent 
 	public void resetSettings() {
 		List<DisplayForm> configDfs = getConfigDisplayForms();
 
-		DisplayForm df = new DisplayForm(DisplayForm.FOOTPRINT, -1, -1);
+		DisplayForm df = DisplayForm.of(DisplayForm.FOOTPRINT);
 		int indexOfDf = configDfs.indexOf(df); 
 		if (indexOfDf != -1) {
 			df = configDfs.get(indexOfDf);

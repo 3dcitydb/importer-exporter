@@ -250,7 +250,7 @@ public class KmlExporter implements EventHandler {
 				for (DisplayForm displayForm : config.getKmlExportConfig().getBuildingDisplayForms()) {
 					if (displayForm.getForm() == DisplayForm.COLLADA && displayForm.isActive()) {
 						if (!databaseAdapter.getUtil().getAppearanceThemeList(workspace).contains(selectedTheme)) {
-							throw new KmlExportException("The database does not contain the appearance theme '" + selectedTheme + "'");
+							throw new KmlExportException("The database does not contain the appearance theme '" + selectedTheme + "'.");
 						}
 					}
 				}
@@ -983,7 +983,7 @@ public class KmlExporter implements EventHandler {
 			break;
 
 		case CITY_OBJECT_GROUP:
-			addStyle(new DisplayForm(DisplayForm.FOOTPRINT, -1, -1), // hard-coded for groups
+			addStyle(DisplayForm.of(DisplayForm.FOOTPRINT), // hard-coded for groups
 					config.getKmlExportConfig().getCityObjectGroupDisplayForms(),
 					CityObjectGroup.STYLE_BASIS_NAME,
 					saxWriter);

@@ -251,7 +251,7 @@ public class Transportation extends KmlGenericObject{
 	private List<PlacemarkType> createPlacemarksForLoD0Network(ResultSet rs,
 			KmlSplittingResult work) throws SQLException {
 
-		DisplayForm footprintSettings = new DisplayForm(DisplayForm.FOOTPRINT, -1, -1);
+		DisplayForm footprintSettings = DisplayForm.of(DisplayForm.FOOTPRINT);
 		int indexOfDf = getDisplayForms().indexOf(footprintSettings);
 		if (indexOfDf != -1) {
 			footprintSettings = getDisplayForms().get(indexOfDf);
