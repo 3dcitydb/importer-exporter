@@ -38,6 +38,7 @@ import javax.swing.*;
 import java.awt.*;
 
 public class AddressPanel extends AbstractPreferencesComponent {
+	private TitledPanel importXALPanel;
 	private JCheckBox importXAL;
 
 	public AddressPanel(Config config) {
@@ -56,7 +57,7 @@ public class AddressPanel extends AbstractPreferencesComponent {
 		importXAL = new JCheckBox();
 		setLayout(new GridBagLayout());
 		{
-			TitledPanel importXALPanel = new TitledPanel()
+			importXALPanel = new TitledPanel()
 					.withToggleButton(importXAL)
 					.showSeparator(false)
 					.buildWithoutContent();
@@ -79,7 +80,7 @@ public class AddressPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void doTranslation() {
-		importXAL.setText(Language.I18N.getString("pref.import.address.label.importXAL"));
+		importXALPanel.setTitle(Language.I18N.getString("pref.import.address.label.importXAL"));
 	}
 
 	@Override

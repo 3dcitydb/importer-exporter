@@ -70,10 +70,10 @@ public class TitledPanel extends JPanel {
     }
 
     public TitledPanel buildWithoutContent() {
-        return build(null);
+        return build(Box.createVerticalGlue());
     }
 
-    public TitledPanel build(JComponent content) {
+    public TitledPanel build(Component content) {
         setLayout(new GridBagLayout());
 
         int top = margin != null ? margin.top : TOP;
@@ -103,11 +103,8 @@ public class TitledPanel extends JPanel {
                 new JLabel(title);
 
         add(leading, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.NONE, top, left, 5, iconTextGap));
-        add(header, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.HORIZONTAL, top, 0, content != null ? 5 : bottom, right));
-
-        if (content != null) {
-            add(content, GuiUtil.setConstraints(1, 1, 1, 1, GridBagConstraints.BOTH, 0, paddingLeft, bottom, 0));
-        }
+        add(header, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.HORIZONTAL, top, 0, 5, right));
+        add(content, GuiUtil.setConstraints(1, 1, 1, 1, GridBagConstraints.BOTH, 0, paddingLeft, bottom, right));
 
         if (toggleButton != null) {
             header.addMouseListener(new MouseAdapter() {
