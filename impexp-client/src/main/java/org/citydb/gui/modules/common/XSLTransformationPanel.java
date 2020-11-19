@@ -30,26 +30,14 @@ package org.citydb.gui.modules.common;
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.common.XSLTransformation;
+import org.citydb.gui.components.common.TitledPanel;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.util.ClientConstants;
 
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JFileChooser;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
-import javax.swing.border.TitledBorder;
+import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.GridLayout;
-import java.awt.Insets;
+import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.dnd.DnDConstants;
@@ -69,8 +57,8 @@ import java.util.List;
 public class XSLTransformationPanel extends AbstractPreferencesComponent {
     private final boolean isExport;
 
-    private JPanel panel;
-    private JPanel componentsPanel;
+    private TitledPanel transformationPanel;
+    private JPanel content;
     private StylesheetComponent first;
     private JCheckBox applyStylesheets;
     private File lastPath;
@@ -105,22 +93,19 @@ public class XSLTransformationPanel extends AbstractPreferencesComponent {
     }
 
     private void initGui() {
-        setLayout(new GridBagLayout());
-
-        panel = new JPanel();
-        panel.setBorder(BorderFactory.createTitledBorder(""));
-        panel.setLayout(new GridBagLayout());
-        add(panel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 5, 0, 5, 0));
-
         applyStylesheets = new JCheckBox();
-        componentsPanel = new JPanel();
-        componentsPanel.setLayout(new GridLayout(0, 1));
-
-        panel.add(applyStylesheets, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 5, 15, 5));
-        panel.add(componentsPanel, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 0, 5, 0, 5));
-
         first = new StylesheetComponent(true);
-        componentsPanel.add(first.panel);
+
+        content = new JPanel();
+        content.setLayout(new GridLayout(0, 1));
+        content.add(first.panel);
+
+        transformationPanel = new TitledPanel()
+                .withToggleButton(applyStylesheets)
+                .build(content);
+
+        setLayout(new GridBagLayout());
+        add(transformationPanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 
         applyStylesheets.addActionListener(l -> setEnabledComponents());
     }
@@ -195,8 +180,7 @@ public class XSLTransformationPanel extends AbstractPreferencesComponent {
 
     @Override
     public void doTranslation() {
-        ((TitledBorder)panel.getBorder()).setTitle(Language.I18N.getString("common.pref.xslt.border.stylesheets"));
-        applyStylesheets.setText(Language.I18N.getString("common.pref.xslt.label.applyStylesheets"));
+        transformationPanel.setTitle(Language.I18N.getString("common.pref.xslt.label.applyStylesheets"));
 
         StylesheetComponent current = first;
         do {
@@ -218,14 +202,14 @@ public class XSLTransformationPanel extends AbstractPreferencesComponent {
 
     private void updateComponents() {
         SwingUtilities.invokeLater(() -> {
-            componentsPanel.removeAll();
+            content.removeAll();
 
             StylesheetComponent current = first;
             do {
-                componentsPanel.add(current.panel);
+                content.add(current.panel);
             } while ((current = current.next) != null);
 
-            componentsPanel.revalidate();
+            content.revalidate();
         });
     }
 
@@ -266,12 +250,12 @@ public class XSLTransformationPanel extends AbstractPreferencesComponent {
         private StylesheetComponent previous;
         private StylesheetComponent next;
 
-        private JPanel panel;
-        private JLabel label;
-        private JTextField stylesheet;
-        private JButton browseButton;
-        private JButton addButton;
-        private JButton removeButton;
+        private final JPanel panel;
+        private final JLabel label;
+        private final JTextField stylesheet;
+        private final JButton browseButton;
+        private final JButton addButton;
+        private final JButton removeButton;
 
         private StylesheetComponent() {
             this(false);
@@ -301,7 +285,7 @@ public class XSLTransformationPanel extends AbstractPreferencesComponent {
             panel.add(label, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 5, 5));
             panel.add(stylesheet, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.BOTH, 0, 5, 5, 5));
             panel.add(browseButton, GuiUtil.setConstraints(2, 0, 0, 0, GridBagConstraints.VERTICAL, 0, 5, 5, 5));
-            panel.add(addButton, GuiUtil.setConstraints(3, 0, 0, 0, GridBagConstraints.NONE, 0, 10, 5, 5));
+            panel.add(addButton, GuiUtil.setConstraints(3, 0, 0, 0, GridBagConstraints.NONE, 0, 15, 5, 5));
             panel.add(!first ? removeButton : Box.createRigidArea(removeButton.getPreferredSize()),
                     GuiUtil.setConstraints(4, 0, 0, 0, GridBagConstraints.NONE, 0, 0, 5, 0));
 

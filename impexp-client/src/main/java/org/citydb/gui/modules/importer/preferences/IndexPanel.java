@@ -27,23 +27,17 @@
  */
 package org.citydb.gui.modules.importer.preferences;
 
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-
-import javax.swing.BorderFactory;
-import javax.swing.ButtonGroup;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.border.TitledBorder;
-
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.importer.Index;
 import org.citydb.config.project.importer.IndexMode;
+import org.citydb.gui.components.common.TitledPanel;
 import org.citydb.gui.modules.common.AbstractPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 
-@SuppressWarnings("serial")
+import javax.swing.*;
+import java.awt.*;
+
 public class IndexPanel extends AbstractPreferencesComponent {
 	private JRadioButton impSIRadioDeacAc;
 	private JRadioButton impSIRadioDeac;
@@ -51,8 +45,8 @@ public class IndexPanel extends AbstractPreferencesComponent {
 	private JRadioButton impNIRadioDeacAc;
 	private JRadioButton impNIRadioDeac;
 	private JRadioButton impNIRadioNoDeac;
-	private JPanel block1;
-	private JPanel block2;
+	private TitledPanel spatialIndexesPanel;
+	private TitledPanel normalIndexesPanel;
 
 	public IndexPanel(Config config) {
 		super(config);
@@ -89,36 +83,40 @@ public class IndexPanel extends AbstractPreferencesComponent {
 		ButtonGroup impNIRadio = new ButtonGroup();
 		impNIRadio.add(impNIRadioNoDeac);
 		impNIRadio.add(impNIRadioDeacAc);
-		impNIRadio.add(impNIRadioDeac);		
+		impNIRadio.add(impNIRadioDeac);
 
 		setLayout(new GridBagLayout());
 		{
-			block1 = new JPanel();
-			add(block1, GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.BOTH,5,0,5,0));
-			block1.setBorder(BorderFactory.createTitledBorder(""));
-			block1.setLayout(new GridBagLayout());
+			JPanel content = new JPanel();
+			content.setLayout(new GridBagLayout());
 			{
-				block1.add(impSIRadioNoDeac, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
-				block1.add(impSIRadioDeacAc, GuiUtil.setConstraints(0,1,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
-				block1.add(impSIRadioDeac, GuiUtil.setConstraints(0,2,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
+				content.add(impSIRadioNoDeac, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
+				content.add(impSIRadioDeacAc, GuiUtil.setConstraints(0, 1, 1, 1, GridBagConstraints.BOTH, 5, 0, 0, 0));
+				content.add(impSIRadioDeac, GuiUtil.setConstraints(0, 2, 1, 1, GridBagConstraints.BOTH, 5, 0, 0, 0));
 			}
 
-			block2 = new JPanel();
-			add(block2, GuiUtil.setConstraints(0,2,1.0,0.0,GridBagConstraints.BOTH,5,0,5,0));
-			block2.setBorder(BorderFactory.createTitledBorder(""));
-			block2.setLayout(new GridBagLayout());
-			{
-				block2.add(impNIRadioNoDeac, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
-				block2.add(impNIRadioDeacAc, GuiUtil.setConstraints(0,1,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
-				block2.add(impNIRadioDeac, GuiUtil.setConstraints(0,2,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
-			}
+			spatialIndexesPanel = new TitledPanel().build(content);
 		}
+		{
+			JPanel content = new JPanel();
+			content.setLayout(new GridBagLayout());
+			{
+				content.add(impNIRadioNoDeac, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
+				content.add(impNIRadioDeacAc, GuiUtil.setConstraints(0, 1, 1, 1, GridBagConstraints.BOTH, 5, 0, 0, 0));
+				content.add(impNIRadioDeac, GuiUtil.setConstraints(0, 2, 1, 1, GridBagConstraints.BOTH, 5, 0, 0, 0));
+			}
+
+			normalIndexesPanel = new TitledPanel().build(content);
+		}
+
+		add(spatialIndexesPanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+		add(normalIndexesPanel, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 	}
 
 	@Override
 	public void doTranslation() {
-		((TitledBorder)block1.getBorder()).setTitle(Language.I18N.getString("pref.import.index.spatial.border.handling"));	
-		((TitledBorder)block2.getBorder()).setTitle(Language.I18N.getString("pref.import.index.normal.border.handling"));	
+		spatialIndexesPanel.setTitle(Language.I18N.getString("pref.import.index.spatial.border.handling"));
+		normalIndexesPanel.setTitle(Language.I18N.getString("pref.import.index.normal.border.handling"));
 
 		impSIRadioDeacAc.setText(Language.I18N.getString("pref.import.index.spatial.label.autoActivate"));
 		impSIRadioDeac.setText(Language.I18N.getString("pref.import.index.spatial.label.manuActivate"));

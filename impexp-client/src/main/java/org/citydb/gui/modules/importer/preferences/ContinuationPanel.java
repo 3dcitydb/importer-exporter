@@ -29,32 +29,25 @@ package org.citydb.gui.modules.importer.preferences;
 
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
+import org.citydb.config.project.global.UpdatingPersonMode;
 import org.citydb.config.project.importer.Continuation;
 import org.citydb.config.project.importer.CreationDateMode;
 import org.citydb.config.project.importer.TerminationDateMode;
-import org.citydb.config.project.global.UpdatingPersonMode;
+import org.citydb.gui.components.common.TitledPanel;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.modules.common.AbstractPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 
-import javax.swing.BorderFactory;
-import javax.swing.ButtonGroup;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JTextField;
-import javax.swing.border.TitledBorder;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.event.ActionEvent;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionListener;
 
 @SuppressWarnings("serial")
 public class ContinuationPanel extends AbstractPreferencesComponent {
-	private JPanel block1;
-	private JPanel block2;
-	private JPanel block3;
-	private JPanel block4;
+	private TitledPanel metadataPanel;
+	private TitledPanel personPanel;
+	private TitledPanel creationDatePanel;
+	private TitledPanel terminationDatePanel;
 	
 	private JTextField lineageText;
 	private JLabel lineageLabel;
@@ -128,55 +121,57 @@ public class ContinuationPanel extends AbstractPreferencesComponent {
 		
 		setLayout(new GridBagLayout());
 		{
-			block1 = new JPanel();
-			add(block1, GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.BOTH,5,0,5,0));
-			block1.setBorder(BorderFactory.createTitledBorder(""));
-			block1.setLayout(new GridBagLayout());
+			JPanel content = new JPanel();
+			content.setLayout(new GridBagLayout());
 			{
-				block1.add(lineageLabel, GuiUtil.setConstraints(0,0,0.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
-				block1.add(lineageText, GuiUtil.setConstraints(1,0,1.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
-				block1.add(reasonForUpdateLabel, GuiUtil.setConstraints(0,1,0.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
-				block1.add(reasonForUpdateText, GuiUtil.setConstraints(1,1,1.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
-			}
-			
-			block2 = new JPanel();
-			add(block2, GuiUtil.setConstraints(0,1,1.0,0.0,GridBagConstraints.BOTH,5,0,5,0));
-			block2.setBorder(BorderFactory.createTitledBorder(""));
-			block2.setLayout(new GridBagLayout());
-			int lmargin = GuiUtil.getTextOffset(updatingPersonUser) + 5;
-			{
-				block2.add(updatingPersonDBAccount, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
-				block2.add(updatingPersonUser, GuiUtil.setConstraints(0,1,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
-				block2.add(updatingPersonText, GuiUtil.setConstraints(0,2,1.0,1.0,GridBagConstraints.BOTH,0,lmargin,5,5));
-			}
-      
-			block3 = new JPanel();
-			add(block3, GuiUtil.setConstraints(0,2,1.0,0.0,GridBagConstraints.BOTH,5,0,5,0));
-			block3.setBorder(BorderFactory.createTitledBorder(""));
-			block3.setLayout(new GridBagLayout());
-			{
-				block3.add(creDateRadioInherit, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
-				block3.add(creDateRadioOnlyMissing, GuiUtil.setConstraints(0,1,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
-				block3.add(creDateRadioAll, GuiUtil.setConstraints(0,2,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
+				content.add(lineageLabel, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.BOTH, 0, 0, 5, 5));
+				content.add(lineageText, GuiUtil.setConstraints(1, 0, 1, 1, GridBagConstraints.BOTH, 0, 5, 5, 0));
+				content.add(reasonForUpdateLabel, GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.BOTH, 0, 0, 0, 5));
+				content.add(reasonForUpdateText, GuiUtil.setConstraints(1, 1, 1, 1, GridBagConstraints.BOTH, 0, 5, 0, 0));
 			}
 
-			block4 = new JPanel();
-			add(block4, GuiUtil.setConstraints(0,3,1.0,0.0,GridBagConstraints.BOTH,5,0,5,0));
-			block4.setBorder(BorderFactory.createTitledBorder(""));
-			block4.setLayout(new GridBagLayout());
-			{
-				block4.add(termDateRadioInherit, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
-				block4.add(termDateRadioOnlyMissing, GuiUtil.setConstraints(0,1,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
-				block4.add(termDateRadioAll, GuiUtil.setConstraints(0,2,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
-			}
+			metadataPanel = new TitledPanel().build(content);
 		}
-		
-		ActionListener updatingPersonListener = new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				setEnabledUpdatingPerson();
+		{
+			JPanel content = new JPanel();
+			content.setLayout(new GridBagLayout());
+			{
+				content.add(updatingPersonDBAccount, GuiUtil.setConstraints(0, 0, 2, 1, 0, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+				content.add(updatingPersonUser, GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.BOTH, 5, 0, 0, 5));
+				content.add(updatingPersonText, GuiUtil.setConstraints(1, 1, 1, 1, GridBagConstraints.BOTH, 5, 5, 0, 0));
 			}
-		};
-		
+
+			personPanel = new TitledPanel().build(content);
+		}
+		{
+			JPanel content = new JPanel();
+			content.setLayout(new GridBagLayout());
+			{
+				content.add(creDateRadioInherit, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+				content.add(creDateRadioOnlyMissing, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 5, 0, 0, 0));
+				content.add(creDateRadioAll, GuiUtil.setConstraints(0, 2, 1, 0, GridBagConstraints.BOTH, 5, 0, 0, 0));
+			}
+
+			creationDatePanel = new TitledPanel().build(content);
+		}
+		{
+			JPanel content = new JPanel();
+			content.setLayout(new GridBagLayout());
+			{
+				content.add(termDateRadioInherit, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+				content.add(termDateRadioOnlyMissing, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 5, 0, 0, 0));
+				content.add(termDateRadioAll, GuiUtil.setConstraints(0, 2, 1, 0, GridBagConstraints.BOTH, 5, 0, 0, 0));
+			}
+
+			terminationDatePanel = new TitledPanel().build(content);
+		}
+
+		add(metadataPanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+		add(personPanel, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+		add(creationDatePanel, GuiUtil.setConstraints(0, 2, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+		add(terminationDatePanel, GuiUtil.setConstraints(0, 3, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+
+		ActionListener updatingPersonListener = e -> setEnabledUpdatingPerson();
 		updatingPersonDBAccount.addActionListener(updatingPersonListener);
 		updatingPersonUser.addActionListener(updatingPersonListener);
 	}
@@ -187,10 +182,10 @@ public class ContinuationPanel extends AbstractPreferencesComponent {
 	
 	@Override
 	public void doTranslation() {
-		((TitledBorder)block1.getBorder()).setTitle(Language.I18N.getString("pref.import.continuation.border.lineage"));	
-		((TitledBorder)block2.getBorder()).setTitle(Language.I18N.getString("pref.import.continuation.border.updatingPerson"));	
-		((TitledBorder)block3.getBorder()).setTitle(Language.I18N.getString("pref.import.continuation.border.creationDate"));	
-		((TitledBorder)block4.getBorder()).setTitle(Language.I18N.getString("pref.import.continuation.border.terminationDate"));	
+		metadataPanel.setTitle(Language.I18N.getString("pref.import.continuation.border.lineage"));
+		personPanel.setTitle(Language.I18N.getString("pref.import.continuation.border.updatingPerson"));
+		creationDatePanel.setTitle(Language.I18N.getString("pref.import.continuation.border.creationDate"));
+		terminationDatePanel.setTitle(Language.I18N.getString("pref.import.continuation.border.terminationDate"));
 
 		lineageLabel.setText(Language.I18N.getString("pref.import.continuation.label.lineage"));
 		reasonForUpdateLabel.setText(Language.I18N.getString("pref.import.continuation.label.reasonForUpdate"));

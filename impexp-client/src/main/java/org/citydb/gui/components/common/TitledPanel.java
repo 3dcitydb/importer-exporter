@@ -55,9 +55,7 @@ public class TitledPanel extends JPanel {
     }
 
     public TitledPanel withToggleButton(JToggleButton toggleButton) {
-        this.toggleButton = toggleButton;
-        Insets margin = toggleButton.getMargin();
-        toggleButton.setMargin(new Insets(margin.top, 0, margin.bottom, 0));
+        this.toggleButton = adaptMargin(toggleButton);
         return this;
     }
 
@@ -69,6 +67,10 @@ public class TitledPanel extends JPanel {
     public TitledPanel withMargin(Insets margin) {
         this.margin = margin;
         return this;
+    }
+
+    public TitledPanel buildWithoutContent() {
+        return build(null);
     }
 
     public TitledPanel build(JComponent content) {
@@ -84,8 +86,7 @@ public class TitledPanel extends JPanel {
         int paddingLeft;
 
         if (toggleButton == null) {
-            JCheckBox dummy = new JCheckBox();
-            dummy.setMargin(new Insets(0, 0, 0, 0));
+            JToggleButton dummy = adaptMargin(new JCheckBox());
             Dimension dimension = dummy.getPreferredSize();
 
             leading = Box.createVerticalStrut(dimension.height);
@@ -102,8 +103,11 @@ public class TitledPanel extends JPanel {
                 new JLabel(title);
 
         add(leading, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.NONE, top, left, 5, iconTextGap));
-        add(header, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.HORIZONTAL, top, 0, 5, right));
-        add(content, GuiUtil.setConstraints(1, 1, 1, 1, GridBagConstraints.BOTH, 0, paddingLeft, bottom, 0));
+        add(header, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.HORIZONTAL, top, 0, content != null ? 5 : bottom, right));
+
+        if (content != null) {
+            add(content, GuiUtil.setConstraints(1, 1, 1, 1, GridBagConstraints.BOTH, 0, paddingLeft, bottom, 0));
+        }
 
         if (toggleButton != null) {
             header.addMouseListener(new MouseAdapter() {
@@ -121,6 +125,22 @@ public class TitledPanel extends JPanel {
             ((JXTitledSeparator) header).setTitle(title);
         } else {
             ((JLabel) header).setText(title);
+        }
+    }
+
+    private JToggleButton adaptMargin(JToggleButton toggleButton) {
+        Insets margin = toggleButton.getMargin();
+        toggleButton.setMargin(new Insets(margin.top, 0, margin.bottom, 0));
+        return toggleButton;
+    }
+
+    @Override
+    public void setEnabled(boolean enabled) {
+        super.setEnabled(enabled);
+        header.setEnabled(enabled);
+
+        if (toggleButton != null) {
+            toggleButton.setEnabled(enabled);
         }
     }
 }

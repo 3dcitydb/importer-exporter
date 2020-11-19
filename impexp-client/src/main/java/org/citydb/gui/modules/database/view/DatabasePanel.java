@@ -222,7 +222,6 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
         buttons.add(infoButton, GuiUtil.setConstraints(0, 4, 0, 1, GridBagConstraints.NORTH, GridBagConstraints.HORIZONTAL, 5, 0, 0, 0));
 
         content.add(buttons, GuiUtil.setConstraints(2, 0, 1, 8, 0, 0, GridBagConstraints.BOTH, 0, 20, 0, 0));
-        //content.add(connectButton, GuiUtil.setConstraints(0, 8, 3, 1, 0, 0, GridBagConstraints.NONE, 15, 0, 0, 0));
 
 		connectionDetails = new TitledPanel().build(content);
 		operationsPanel = new DatabaseOperationsPanel(viewController, config);

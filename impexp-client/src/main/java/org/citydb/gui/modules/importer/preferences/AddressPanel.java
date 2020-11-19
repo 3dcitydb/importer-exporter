@@ -27,23 +27,17 @@
  */
 package org.citydb.gui.modules.importer.preferences;
 
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-
-import javax.swing.BorderFactory;
-import javax.swing.JCheckBox;
-import javax.swing.JPanel;
-import javax.swing.border.TitledBorder;
-
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.importer.ImportAddress;
+import org.citydb.gui.components.common.TitledPanel;
 import org.citydb.gui.modules.common.AbstractPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 
-@SuppressWarnings("serial")
+import javax.swing.*;
+import java.awt.*;
+
 public class AddressPanel extends AbstractPreferencesComponent {
-	private JPanel importXALPanel;
 	private JCheckBox importXAL;
 
 	public AddressPanel(Config config) {
@@ -60,16 +54,14 @@ public class AddressPanel extends AbstractPreferencesComponent {
 
 	private void initGui() {
 		importXAL = new JCheckBox();
-
 		setLayout(new GridBagLayout());
 		{
-			importXALPanel = new JPanel();
-			add(importXALPanel, GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.BOTH,5,0,5,0));
-			importXALPanel.setBorder(BorderFactory.createTitledBorder(""));
-			importXALPanel.setLayout(new GridBagLayout());
-			{
-				importXALPanel.add(importXAL, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
-			}
+			TitledPanel importXALPanel = new TitledPanel()
+					.withToggleButton(importXAL)
+					.showSeparator(false)
+					.buildWithoutContent();
+
+			add(importXALPanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 		}
 	}
 	
@@ -87,7 +79,6 @@ public class AddressPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void doTranslation() {
-		((TitledBorder)importXALPanel.getBorder()).setTitle(Language.I18N.getString("pref.import.address.border.import"));	
 		importXAL.setText(Language.I18N.getString("pref.import.address.label.importXAL"));
 	}
 

@@ -40,14 +40,14 @@ import javax.xml.bind.annotation.XmlType;
 public class ImportGmlId {
     @XmlElement(required = true)
     private UUIDMode uuidMode = UUIDMode.COMPLEMENT;
-    @XmlElement(defaultValue = "UUID_")
-    private String idPrefix = "UUID_";
+    @XmlElement(defaultValue = "ID_")
+    private String idPrefix = "ID_";
     @XmlElement(defaultValue = "true")
     private Boolean keepGmlIdAsExternalReference = true;
     @XmlElement(required = true)
     private CodeSpaceMode codeSpaceMode = CodeSpaceMode.NONE;
-    @XmlElement(defaultValue = "UUID")
-    private String codeSpace = "UUID";
+    @XmlElement(defaultValue = "ID")
+    private String codeSpace = "ID";
 
     public ImportGmlId() {
     }

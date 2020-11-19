@@ -30,19 +30,18 @@ package org.citydb.gui.modules.importer.preferences;
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.importer.ImportLog;
+import org.citydb.gui.components.common.TitledPanel;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.modules.common.AbstractPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.util.CoreConstants;
 
 import javax.swing.*;
-import javax.swing.border.TitledBorder;
 import java.awt.*;
-import java.awt.event.ActionListener;
 import java.io.File;
 
 public class ImportLogPanel extends AbstractPreferencesComponent {
-	private JPanel block1;
+	private TitledPanel importLogPanel;
 	private JCheckBox logFeatures;
 	private JLabel logFileLabel;
 	private JTextField logFile;
@@ -74,26 +73,25 @@ public class ImportLogPanel extends AbstractPreferencesComponent {
 			if (!dir.isEmpty())
 				logFile.setText(dir);
 		});
-		
+
 		setLayout(new GridBagLayout());
 		{
-			block1 = new JPanel();
-			add(block1, GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.BOTH,5,0,5,0));
-
-			block1.setBorder(BorderFactory.createTitledBorder(""));
-			block1.setLayout(new GridBagLayout());
-			logFile.setPreferredSize(logFile.getSize());
-			int lmargin = GuiUtil.getTextOffset(logFeatures) + 5;
+			JPanel content = new JPanel();
+			content.setLayout(new GridBagLayout());
 			{
-				block1.add(logFeatures, GuiUtil.setConstraints(0, 0, 3, 1, 1, 1, GridBagConstraints.BOTH, 0, 5, 0, 5));
-				block1.add(logFileLabel, GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.BOTH, 0, lmargin, 5, 5));
-				block1.add(logFile, GuiUtil.setConstraints(1, 1, 1, 1, GridBagConstraints.BOTH, 0, 5, 5, 5));
-				block1.add(browseButton, GuiUtil.setConstraints(2, 1, 0, 0, GridBagConstraints.BOTH, 0, 5, 5, 5));
+				content.add(logFileLabel, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.BOTH, 0, 0, 0, 5));
+				content.add(logFile, GuiUtil.setConstraints(1, 0, 1, 1, GridBagConstraints.BOTH, 0, 5, 0, 5));
+				content.add(browseButton, GuiUtil.setConstraints(2, 0, 0, 0, GridBagConstraints.BOTH, 0, 5, 0, 0));
 			}
+
+			importLogPanel = new TitledPanel()
+					.withToggleButton(logFeatures)
+					.build(content);
 		}
-		
-		ActionListener cacheListener = e -> setEnabledLocalCachePath();
-		logFeatures.addActionListener(cacheListener);
+
+		add(importLogPanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+
+		logFeatures.addActionListener(l -> setEnabledLocalCachePath());
 	}
 	
 	private void setEnabledLocalCachePath() {
@@ -104,8 +102,7 @@ public class ImportLogPanel extends AbstractPreferencesComponent {
 	
 	@Override
 	public void doTranslation() {
-		((TitledBorder)block1.getBorder()).setTitle(Language.I18N.getString("pref.import.log.border"));
-		logFeatures.setText(Language.I18N.getString("pref.import.log.label.useLog"));
+		importLogPanel.setTitle(Language.I18N.getString("pref.import.log.label.useLog"));
 		logFileLabel.setText(Language.I18N.getString("pref.import.log.label.logFile"));
 		browseButton.setText(Language.I18N.getString("common.button.browse"));
 	}

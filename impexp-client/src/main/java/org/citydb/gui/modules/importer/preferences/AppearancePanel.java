@@ -27,37 +27,22 @@
  */
 package org.citydb.gui.modules.importer.preferences;
 
-import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.ButtonGroup;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JTextField;
-import javax.swing.UIManager;
-import javax.swing.border.TitledBorder;
-
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.importer.ImportAppearance;
+import org.citydb.gui.components.common.TitledPanel;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.modules.common.AbstractPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 
-@SuppressWarnings("serial")
+import javax.swing.*;
+import java.awt.*;
+
 public class AppearancePanel extends AbstractPreferencesComponent {
-	private JPanel block1;
-	private JPanel block2;
+	private TitledPanel appearancePanel;
 	private JLabel impAppOldLabel;
-	private JRadioButton impAppRadioNoImp;
-	private JRadioButton impAppRadioAppImp;
-	private JRadioButton impAppRadioImp;
+	private JCheckBox importAppearance;
+	private JCheckBox importTextures;
 	private JTextField impAppOldText;
 
 	public AppearancePanel(Config config) {
@@ -68,23 +53,17 @@ public class AppearancePanel extends AbstractPreferencesComponent {
 	@Override
 	public boolean isModified() {
 		ImportAppearance appearances = config.getImportConfig().getAppearances();
-		
+
+		if (importAppearance.isSelected() != appearances.isSetImportAppearance()) return true;
+		if (importTextures.isSelected() != appearances.isSetImportTextureFiles()) return true;
 		if (!impAppOldText.getText().equals(appearances.getThemeForTexturedSurface())) return true;
-		if (impAppRadioImp.isSelected() && !(appearances.isSetImportAppearance() && appearances.isSetImportTextureFiles())) return true;
-		if (impAppRadioAppImp.isSelected() && !(appearances.isSetImportAppearance() && !appearances.isSetImportTextureFiles())) return true;
-		if (impAppRadioNoImp.isSelected() && !(!appearances.isSetImportAppearance() && !appearances.isSetImportTextureFiles())) return true;
-		
+
 		return false;
 	}
 
 	private void initGui() {
-		impAppRadioNoImp = new JRadioButton();
-		impAppRadioAppImp = new JRadioButton();
-		impAppRadioImp = new JRadioButton();
-		ButtonGroup impAppRadio = new ButtonGroup();
-		impAppRadio.add(impAppRadioNoImp);
-		impAppRadio.add(impAppRadioImp);
-		impAppRadio.add(impAppRadioAppImp);
+		importAppearance = new JCheckBox();
+		importTextures = new JCheckBox();
 		impAppOldLabel = new JLabel();
 		impAppOldText = new JTextField();
 
@@ -92,74 +71,41 @@ public class AppearancePanel extends AbstractPreferencesComponent {
 		
 		setLayout(new GridBagLayout());
 		{
-			block1 = new JPanel();
-			add(block1, GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.BOTH,5,0,5,0));
-			block1.setBorder(BorderFactory.createTitledBorder(""));
-			block1.setLayout(new GridBagLayout());
+			JPanel content = new JPanel();
+			content.setLayout(new GridBagLayout());
 			{
-				block1.add(impAppRadioImp, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
-				block1.add(impAppRadioAppImp, GuiUtil.setConstraints(0,1,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
-				block1.add(impAppRadioNoImp, GuiUtil.setConstraints(0,2,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
+				content.add(importTextures, GuiUtil.setConstraints(0, 0, 2, 1, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+				content.add(impAppOldLabel, GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.BOTH, 5, 0, 0, 5));
+				content.add(impAppOldText, GuiUtil.setConstraints(1, 1, 1, 0, GridBagConstraints.BOTH, 5, 5, 0, 0));
 			}
-			
-			block2 = new JPanel();
-			add(block2, GuiUtil.setConstraints(0,1,1.0,0.0,GridBagConstraints.BOTH,5,0,5,0));
-			block2.setBorder(BorderFactory.createTitledBorder(""));
-			block2.setLayout(new GridBagLayout());
-			{
-				Box themeBox = Box.createHorizontalBox();
-				themeBox.add(impAppOldLabel);
-				themeBox.add(Box.createRigidArea(new Dimension(10, 0)));
-				themeBox.add(impAppOldText);
 
-				block2.add(themeBox, GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.BOTH,5,5,0,5));
-			}
+			appearancePanel = new TitledPanel().withToggleButton(importAppearance).build(content);
 		}
-		
-		ActionListener themeListener = new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				setEnabledTheme();
-			}
-		};
-		
-		impAppRadioNoImp.addActionListener(themeListener);
-		impAppRadioAppImp.addActionListener(themeListener);
-		impAppRadioImp.addActionListener(themeListener);
+
+		add(appearancePanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+
+		importAppearance.addActionListener(e -> setEnabledTheme());
 	}
 	
 	private void setEnabledTheme() {
-		((TitledBorder) block2.getBorder()).setTitleColor(!impAppRadioNoImp.isSelected() ?
-				UIManager.getColor("TitledBorder.titleColor") :
-				UIManager.getColor("Label.disabledForeground"));
-		block2.repaint();
-		
-		impAppOldLabel.setEnabled(!impAppRadioNoImp.isSelected());
-		impAppOldText.setEnabled(!impAppRadioNoImp.isSelected());
+		importTextures.setEnabled(importAppearance.isSelected());
+		impAppOldLabel.setEnabled(importAppearance.isSelected());
+		impAppOldText.setEnabled(importAppearance.isSelected());
 	}
 
 	@Override
 	public void doTranslation() {
-		((TitledBorder)block1.getBorder()).setTitle(Language.I18N.getString("pref.import.appearance.border.import"));	
-		((TitledBorder)block2.getBorder()).setTitle(Language.I18N.getString("pref.import.appearance.border.texturedSurface"));	
-
-		impAppRadioNoImp.setText(Language.I18N.getString("pref.import.appearance.label.noImport"));
-		impAppRadioAppImp.setText(Language.I18N.getString("pref.import.appearance.label.importWithoutTexture"));
-		impAppRadioImp.setText(Language.I18N.getString("pref.import.appearance.label.importWithTexture"));
-		impAppOldLabel.setText(Language.I18N.getString("pref.import.appearance.label.theme"));
+		appearancePanel.setTitle(Language.I18N.getString("pref.import.appearance.border.import"));
+		importTextures.setText(Language.I18N.getString("pref.import.appearance.label.importTexture"));
+		impAppOldLabel.setText(Language.I18N.getString("pref.import.appearance.label.texturedSurface.theme"));
 	}
 
 	@Override
 	public void loadSettings() {
 		ImportAppearance appearances = config.getImportConfig().getAppearances();
-		
-		if (appearances.isSetImportAppearance()) {			
-			if (appearances.isSetImportTextureFiles()) 
-				impAppRadioImp.setSelected(true);
-			else
-				impAppRadioAppImp.setSelected(true);
-		} else
-			impAppRadioNoImp.setSelected(true);
 
+		importAppearance.setSelected(appearances.isSetImportAppearance());
+		importTextures.setSelected(appearances.isSetImportTextureFiles());
 		impAppOldText.setText(appearances.getThemeForTexturedSurface());
 		
 		setEnabledTheme();
@@ -169,19 +115,9 @@ public class AppearancePanel extends AbstractPreferencesComponent {
 	public void setSettings() {
 		ImportAppearance appearances = config.getImportConfig().getAppearances();
 
-		if (impAppRadioImp.isSelected()) {
-			appearances.setImportAppearances(true);
-			appearances.setImportTextureFiles(true);
-		}
-		if (impAppRadioAppImp.isSelected()) {
-			appearances.setImportAppearances(true);
-			appearances.setImportTextureFiles(false);
-		}
-		if (impAppRadioNoImp.isSelected()) {
-			appearances.setImportAppearances(false);
-			appearances.setImportTextureFiles(false);
-		}
-		
+		appearances.setImportAppearances(importAppearance.isSelected());
+		appearances.setImportTextureFiles(importTextures.isSelected());
+
 		String theme = impAppOldText.getText();
 		if (theme == null || theme.trim().length() == 0)
 			theme = "rgbTexture";
