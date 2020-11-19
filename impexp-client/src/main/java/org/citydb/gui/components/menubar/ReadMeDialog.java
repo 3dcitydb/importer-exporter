@@ -100,6 +100,6 @@ public class ReadMeDialog extends JDialog {
 		setResizable(true);
 		pack();
 
-		button.addActionListener(l -> dispose());
+		button.addActionListener(e -> dispose());
 	}
 }

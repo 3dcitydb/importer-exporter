@@ -80,7 +80,7 @@ public class XMLValidationPanel extends AbstractPreferencesComponent {
 			add(validationPanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 		}
 
-		useXMLValidation.addActionListener(l -> setEnabledValidation());
+		useXMLValidation.addActionListener(e -> setEnabledValidation());
 	}
 	
 	@Override

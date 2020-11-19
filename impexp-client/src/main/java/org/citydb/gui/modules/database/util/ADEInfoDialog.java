@@ -240,7 +240,7 @@ public class ADEInfoDialog extends JDialog {
         }
 
         JButton closeButton = new JButton(Language.I18N.getString("common.button.ok"));
-        closeButton.addActionListener(l -> dispose());
+        closeButton.addActionListener(e -> dispose());
 
         JPanel info = new JPanel();
         info.setLayout(new GridBagLayout());

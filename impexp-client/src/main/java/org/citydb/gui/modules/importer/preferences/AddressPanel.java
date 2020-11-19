@@ -55,15 +55,14 @@ public class AddressPanel extends AbstractPreferencesComponent {
 
 	private void initGui() {
 		importXAL = new JCheckBox();
-		setLayout(new GridBagLayout());
-		{
-			importXALPanel = new TitledPanel()
-					.withToggleButton(importXAL)
-					.showSeparator(false)
-					.buildWithoutContent();
 
-			add(importXALPanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
-		}
+		setLayout(new GridBagLayout());
+		importXALPanel = new TitledPanel()
+				.withToggleButton(importXAL)
+				.showSeparator(false)
+				.buildWithoutContent();
+
+		add(importXALPanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 	}
 	
 	@Override

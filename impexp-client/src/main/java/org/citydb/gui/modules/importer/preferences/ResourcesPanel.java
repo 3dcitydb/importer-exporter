@@ -128,7 +128,7 @@ public class ResourcesPanel extends AbstractPreferencesComponent{
 		return false;
 	}
 
-	private void initGui(){
+	private void initGui() {
 		impResMinThreadsLabel = new JLabel();
 		impResMaxThreadsLabel = new JLabel();
 		impResTransaktLabel = new JLabel();

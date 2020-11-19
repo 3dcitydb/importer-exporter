@@ -32,28 +32,19 @@ import org.citydb.config.i18n.Language;
 import org.citydb.config.project.exporter.XLinkConfig;
 import org.citydb.config.project.exporter.XLinkFeatureConfig;
 import org.citydb.config.project.exporter.XLinkMode;
+import org.citydb.gui.components.common.TitledPanel;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.modules.common.AbstractPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 import org.citygml4j.util.gmlid.DefaultGMLIdManager;
 
-import javax.swing.BorderFactory;
-import javax.swing.ButtonGroup;
-import javax.swing.JCheckBox;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JTextField;
-import javax.swing.border.TitledBorder;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.event.ActionEvent;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionListener;
 
-@SuppressWarnings("serial")
 public class XLinkPanel extends AbstractPreferencesComponent {
-	private JPanel block1;
-	private JPanel block2;
+	private TitledPanel featurePanel;
+	private TitledPanel geometryPanel;
 
 	private JRadioButton xlinkToFeature;
 	private JRadioButton copyFeature;
@@ -112,65 +103,43 @@ public class XLinkPanel extends AbstractPreferencesComponent {
 		geometryAppendId = new JCheckBox();
 		
 		PopupMenuDecorator.getInstance().decorate(featureIdPrefix, geometryIdPrefix);
-		
+
 		setLayout(new GridBagLayout());
 		{
-			block1 = new JPanel();
-			JPanel block1_1 = new JPanel();
-			block2 = new JPanel();
-			JPanel block2_1 = new JPanel();
-			
-			add(block1, GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.BOTH,5,0,5,0));
-			block1.setBorder(BorderFactory.createTitledBorder(""));
-			block1.setLayout(new GridBagLayout());
-			int lmargin = GuiUtil.getTextOffset(copyFeature) + 5;
+			JPanel content = new JPanel();
+			content.setLayout(new GridBagLayout());
+			int lmargin = GuiUtil.getTextOffset(copyFeature);
 			{
-				block1.add(xlinkToFeature, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
-				block1.add(copyFeature, GuiUtil.setConstraints(0,1,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
-				block1.add(block1_1, GuiUtil.setConstraints(0,2,1.0,1.0,GridBagConstraints.BOTH,0,lmargin,5,5));
-				
-				block1_1.setLayout(new GridBagLayout());
-				block1_1.setBorder(BorderFactory.createEmptyBorder());
-				{
-					block1_1.add(featureIdPrefixLabel, GuiUtil.setConstraints(0,0,0,0,GridBagConstraints.BOTH,0,0,0,5));
-					block1_1.add(featureIdPrefix, GuiUtil.setConstraints(1,0,1.0,1.0,GridBagConstraints.BOTH,0,5,0,0));
-				}
-				
-				block1.add(featureKeepExtRef, GuiUtil.setConstraints(0,3,1.0,1.0,GridBagConstraints.BOTH,0,lmargin,0,5));
-				block1.add(featureAppendId, GuiUtil.setConstraints(0,4,1.0,1.0,GridBagConstraints.BOTH,0,lmargin,0,5));
+				content.add(xlinkToFeature, GuiUtil.setConstraints(0, 0, 2, 1, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+				content.add(copyFeature, GuiUtil.setConstraints(0, 1, 2, 1, 1, 0, GridBagConstraints.BOTH, 5, 0, 0, 0));
+				content.add(featureIdPrefixLabel, GuiUtil.setConstraints(0, 2, 0, 0, GridBagConstraints.BOTH, 5, lmargin, 0, 5));
+				content.add(featureIdPrefix, GuiUtil.setConstraints(1, 2, 1, 1, GridBagConstraints.BOTH, 5, 5, 0, 0));
+				content.add(featureKeepExtRef, GuiUtil.setConstraints(0, 3, 2, 1, 1, 0, GridBagConstraints.BOTH, 5, lmargin, 0, 0));
+				content.add(featureAppendId, GuiUtil.setConstraints(0, 4, 2, 1, 1, 0, GridBagConstraints.BOTH, 5, lmargin, 0, 0));
 			}
-			
-			add(block2, GuiUtil.setConstraints(0,1,1.0,0.0,GridBagConstraints.BOTH,5,0,5,0));
-			block2.setBorder(BorderFactory.createTitledBorder(""));
-			block2.setLayout(new GridBagLayout());
-			lmargin = GuiUtil.getTextOffset(copyGeometry) + 5;
-			{
-				block2.add(xlinkToGeometry, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
-				block2.add(copyGeometry, GuiUtil.setConstraints(0,1,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
-				block2.add(block2_1, GuiUtil.setConstraints(0,2,1.0,1.0,GridBagConstraints.BOTH,0,lmargin,0,5));
-				
-				block2_1.setLayout(new GridBagLayout());
-				block2_1.setBorder(BorderFactory.createEmptyBorder());
-				{
-					block2_1.add(geometryIdPrefixLabel, GuiUtil.setConstraints(0,0,0,0,GridBagConstraints.BOTH,0,0,0,5));
-					block2_1.add(geometryIdPrefix, GuiUtil.setConstraints(1,0,1.0,0.0,GridBagConstraints.BOTH,0,5,0,0));
-				}
-				
-				block2.add(geometryAppendId, GuiUtil.setConstraints(0,3,1.0,1.0,GridBagConstraints.BOTH,0,lmargin,0,5));
-			}
+
+			featurePanel = new TitledPanel().build(content);
 		}
-		
-		ActionListener copyFeatureListener = new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				setEnabledCopyFeature();
+		{
+			JPanel content = new JPanel();
+			content.setLayout(new GridBagLayout());
+			int lmargin = GuiUtil.getTextOffset(copyGeometry);
+			{
+				content.add(xlinkToGeometry, GuiUtil.setConstraints(0, 0, 2, 1, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+				content.add(copyGeometry, GuiUtil.setConstraints(0, 1, 2, 1, 1, 0, GridBagConstraints.BOTH, 5, 0, 0, 0));
+				content.add(geometryIdPrefixLabel, GuiUtil.setConstraints(0, 2, 0, 0, GridBagConstraints.BOTH, 5, lmargin, 0, 5));
+				content.add(geometryIdPrefix, GuiUtil.setConstraints(1, 2, 1, 0, GridBagConstraints.BOTH, 5, 5, 0, 0));
+				content.add(geometryAppendId, GuiUtil.setConstraints(0, 3, 2, 1, 1, 0, GridBagConstraints.BOTH, 5, lmargin, 0, 0));
 			}
-		};
-		
-		ActionListener copyGeometryListener = new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				setEnabledCopyGeometry();
-			}
-		};
+
+			geometryPanel = new TitledPanel().build(content);
+		}
+
+		add(featurePanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+		add(geometryPanel, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+
+		ActionListener copyFeatureListener = e -> setEnabledCopyFeature();
+		ActionListener copyGeometryListener = e -> setEnabledCopyGeometry();
 		
 		xlinkToFeature.addActionListener(copyFeatureListener);
 		copyFeature.addActionListener(copyFeatureListener);
@@ -194,8 +163,8 @@ public class XLinkPanel extends AbstractPreferencesComponent {
 	
 	@Override
 	public void doTranslation() {
-		((TitledBorder)block1.getBorder()).setTitle(Language.I18N.getString("pref.export.xlink.border.feature"));	
-		((TitledBorder)block2.getBorder()).setTitle(Language.I18N.getString("pref.export.xlink.border.geometry"));	
+		featurePanel.setTitle(Language.I18N.getString("pref.export.xlink.border.feature"));
+		geometryPanel.setTitle(Language.I18N.getString("pref.export.xlink.border.geometry"));
 
 		xlinkToFeature.setText(Language.I18N.getString("pref.export.xlink.label.feature.export"));
 		copyFeature.setText(Language.I18N.getString("pref.export.xlink.label.feature.copy"));	

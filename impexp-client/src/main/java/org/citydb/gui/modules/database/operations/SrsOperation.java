@@ -154,7 +154,7 @@ public class SrsOperation extends DatabaseOperationView {
 			}
 		});
 
-		editSridButton.addActionListener(l -> {
+		editSridButton.addActionListener(e -> {
 			sridText.setEditable(true);
 			checkSridButton.setEnabled(true);
 			geometriesLabel.setEnabled(true);
@@ -172,7 +172,7 @@ public class SrsOperation extends DatabaseOperationView {
 				log.warn("SRID " + srs.getSrid() + " is NOT supported.");
 		});
 
-		restoreButton.addActionListener(l -> {
+		restoreButton.addActionListener(e -> {
 			if (dbConnectionPool.isConnected()) {
 				DatabaseSrs srs = dbConnectionPool.getActiveDatabaseAdapter().getConnectionMetaData().getReferenceSystem();
 				sridText.setValue(srs.getSrid());
@@ -180,7 +180,7 @@ public class SrsOperation extends DatabaseOperationView {
 			}
 		});
 
-		applyButton.addActionListener(l -> new SwingWorker<Void, Void>() {
+		applyButton.addActionListener(e -> new SwingWorker<Void, Void>() {
 			protected Void doInBackground() {
 				doOperation();
 				return null;

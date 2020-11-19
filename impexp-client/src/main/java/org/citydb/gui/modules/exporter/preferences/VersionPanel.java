@@ -27,30 +27,22 @@
  */
 package org.citydb.gui.modules.exporter.preferences;
 
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
-import javax.swing.BorderFactory;
-import javax.swing.ButtonGroup;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.border.TitledBorder;
-
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.query.filter.version.CityGMLVersionType;
 import org.citydb.event.global.PropertyChangeEvent;
+import org.citydb.gui.components.common.TitledPanel;
 import org.citydb.gui.modules.common.AbstractPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.registry.ObjectRegistry;
 import org.citydb.util.Util;
 import org.citygml4j.model.module.citygml.CityGMLVersion;
 
-@SuppressWarnings("serial")
+import javax.swing.*;
+import java.awt.*;
+
 public class VersionPanel extends AbstractPreferencesComponent {
-	private JPanel block1;
+	private TitledPanel versionPanel;
 	private JRadioButton[] cityGMLVersionBox;
 
 	public VersionPanel(Config config) {
@@ -61,10 +53,11 @@ public class VersionPanel extends AbstractPreferencesComponent {
 	@Override
 	public boolean isModified() {
 		CityGMLVersionType version = config.getExportConfig().getSimpleQuery().getVersion();
-
-		for (int i = 0; i < CityGMLVersionType.values().length; i++)
-			if (cityGMLVersionBox[i].isSelected())
+		for (int i = 0; i < CityGMLVersionType.values().length; i++) {
+			if (cityGMLVersionBox[i].isSelected()) {
 				return version != CityGMLVersionType.fromValue(cityGMLVersionBox[i].getText());
+			}
+		}
 
 		return false;
 	}
@@ -82,33 +75,34 @@ public class VersionPanel extends AbstractPreferencesComponent {
 				cityGMLVersionBox[i].setSelected(true);
 			
 			// fire property change event
-			cityGMLVersionBox[i].addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					for (int i = 0; i < CityGMLVersionType.values().length; i++) {
-						if (cityGMLVersionBox[i] == e.getSource()) {
-							ObjectRegistry.getInstance().getEventDispatcher().triggerEvent(
-									new PropertyChangeEvent("citygml.version", null, Util.toCityGMLVersion(CityGMLVersionType.values()[i]), VersionPanel.this));
-							break;
-						}
+			cityGMLVersionBox[i].addActionListener(e -> {
+				for (int i1 = 0; i1 < CityGMLVersionType.values().length; i1++) {
+					if (cityGMLVersionBox[i1] == e.getSource()) {
+						ObjectRegistry.getInstance().getEventDispatcher().triggerEvent(
+								new PropertyChangeEvent("citygml.version", null, Util.toCityGMLVersion(CityGMLVersionType.values()[i1]), VersionPanel.this));
+						break;
 					}
 				}
 			});
 		}
 
 		setLayout(new GridBagLayout());
-		block1 = new JPanel();
-		add(block1, GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.BOTH,5,0,5,0));
-		block1.setBorder(BorderFactory.createTitledBorder(""));
-		block1.setLayout(new GridBagLayout());
+		JPanel content = new JPanel();
+		content.setLayout(new GridBagLayout());
 		{
-			for (int i = 0; i < cityGMLVersionBox.length; i++)
-				block1.add(cityGMLVersionBox[i], GuiUtil.setConstraints(0,i,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));										
+			for (int i = 0; i < cityGMLVersionBox.length; i++) {
+				content.add(cityGMLVersionBox[i], GuiUtil.setConstraints(0, i, 1, 1, GridBagConstraints.BOTH, i == 0 ? 0 : 5, 0, 0, 0));
+			}
+
+			versionPanel = new TitledPanel().build(content);
 		}
+
+		add(versionPanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 	}
 
 	@Override
 	public void doTranslation() {
-		((TitledBorder)block1.getBorder()).setTitle(Language.I18N.getString("pref.export.version.border.versions"));	
+		versionPanel.setTitle(Language.I18N.getString("pref.export.version.border.versions"));
 	}
 
 	@Override

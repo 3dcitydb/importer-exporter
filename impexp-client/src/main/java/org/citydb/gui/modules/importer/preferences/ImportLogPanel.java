@@ -91,7 +91,7 @@ public class ImportLogPanel extends AbstractPreferencesComponent {
 
 		add(importLogPanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 
-		logFeatures.addActionListener(l -> setEnabledLocalCachePath());
+		logFeatures.addActionListener(e -> setEnabledLocalCachePath());
 	}
 	
 	private void setEnabledLocalCachePath() {

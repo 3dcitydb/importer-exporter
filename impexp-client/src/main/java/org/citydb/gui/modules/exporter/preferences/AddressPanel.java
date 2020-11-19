@@ -27,26 +27,19 @@
  */
 package org.citydb.gui.modules.exporter.preferences;
 
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-
-import javax.swing.BorderFactory;
-import javax.swing.ButtonGroup;
-import javax.swing.JCheckBox;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.border.TitledBorder;
-
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.exporter.AddressMode;
 import org.citydb.config.project.exporter.ExportAddress;
+import org.citydb.gui.components.common.TitledPanel;
 import org.citydb.gui.modules.common.AbstractPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 
-@SuppressWarnings("serial")
+import javax.swing.*;
+import java.awt.*;
+
 public class AddressPanel extends AbstractPreferencesComponent {
-	private JPanel exportXALPanel;
+	private TitledPanel exportXALPanel;
 	private JRadioButton exportXAL;
 	private JRadioButton exportDB;
 	private JCheckBox exportFallback;
@@ -77,16 +70,18 @@ public class AddressPanel extends AbstractPreferencesComponent {
 
 		setLayout(new GridBagLayout());
 		{
-			exportXALPanel = new JPanel();
-			add(exportXALPanel, GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.BOTH,5,0,5,0));
-			exportXALPanel.setBorder(BorderFactory.createTitledBorder(""));
-			exportXALPanel.setLayout(new GridBagLayout());
+			JPanel content = new JPanel();
+			content.setLayout(new GridBagLayout());
 			{
-				exportXALPanel.add(exportDB, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
-				exportXALPanel.add(exportXAL, GuiUtil.setConstraints(0,1,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
-				exportXALPanel.add(exportFallback, GuiUtil.setConstraints(0,2,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
+				content.add(exportDB, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
+				content.add(exportXAL, GuiUtil.setConstraints(0, 1, 1, 1, GridBagConstraints.BOTH, 5, 0, 0, 0));
+				content.add(exportFallback, GuiUtil.setConstraints(0, 2, 1, 1, GridBagConstraints.BOTH, 5, 0, 0, 0));
 			}
+
+			exportXALPanel = new TitledPanel().build(content);
 		}
+
+		add(exportXALPanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 	}
 
 	@Override
@@ -114,7 +109,7 @@ public class AddressPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void doTranslation() {
-		((TitledBorder)exportXALPanel.getBorder()).setTitle(Language.I18N.getString("pref.export.address.border.export"));	
+		exportXALPanel.setTitle(Language.I18N.getString("pref.export.address.border.export"));
 		exportXAL.setText(Language.I18N.getString("pref.export.address.label.exportXAL"));
 		exportDB.setText(Language.I18N.getString("pref.export.address.label.exportDB"));
 		exportFallback.setText(Language.I18N.getString("pref.export.address.label.exportFallback"));

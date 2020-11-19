@@ -30,16 +30,15 @@ package org.citydb.gui.modules.exporter.preferences;
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.exporter.ExportCityObjectGroup;
+import org.citydb.gui.components.common.TitledPanel;
 import org.citydb.gui.modules.common.AbstractPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 
 import javax.swing.*;
-import javax.swing.border.TitledBorder;
 import java.awt.*;
 
-@SuppressWarnings("serial")
 public class CityObjectGroupPanel extends AbstractPreferencesComponent {
-	private JPanel exportGroupPanel;
+	private TitledPanel exportGroupPanel;
 	private JCheckBox exportMemberAsXLink;
 	private JLabel exportMemberAsXLinkDescr;
 
@@ -58,26 +57,29 @@ public class CityObjectGroupPanel extends AbstractPreferencesComponent {
 	private void initGui() {
 		exportMemberAsXLink = new JCheckBox();
 		exportMemberAsXLinkDescr = new JLabel();
+		exportMemberAsXLinkDescr.setFont(exportMemberAsXLinkDescr.getFont().deriveFont(Font.ITALIC));
 
 		setLayout(new GridBagLayout());
-		{
-			exportGroupPanel = new JPanel();
-			add(exportGroupPanel, GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.BOTH,5,0,5,0));
-			exportGroupPanel.setBorder(BorderFactory.createTitledBorder(""));
-			exportMemberAsXLinkDescr.setFont(exportMemberAsXLinkDescr.getFont().deriveFont(Font.ITALIC));
-			int lmargin = GuiUtil.getTextOffset(exportMemberAsXLink) + 5;
-			exportGroupPanel.setLayout(new GridBagLayout());
-			{
-				exportGroupPanel.add(exportMemberAsXLink, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
-				exportGroupPanel.add(exportMemberAsXLinkDescr, GuiUtil.setConstraints(0,1,1.0,0.0,GridBagConstraints.BOTH,0,lmargin,5,5));
-			}
-		}
+		exportGroupPanel = new TitledPanel()
+				.withToggleButton(exportMemberAsXLink)
+				.showSeparator(false)
+				.build(exportMemberAsXLinkDescr);
+
+		add(exportGroupPanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+
+		exportMemberAsXLink.addActionListener(e -> setEnabledHint());
 	}
-	
+
+	private void setEnabledHint() {
+		exportMemberAsXLinkDescr.setEnabled(exportMemberAsXLink.isSelected());
+	}
+
 	@Override
 	public void loadSettings() {
 		ExportCityObjectGroup group = config.getExportConfig().getCityObjectGroup();
 		exportMemberAsXLink.setSelected(group.isExportMemberAsXLinks());
+
+		setEnabledHint();
 	}
 
 	@Override
@@ -88,8 +90,7 @@ public class CityObjectGroupPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void doTranslation() {
-		((TitledBorder)exportGroupPanel.getBorder()).setTitle(Language.I18N.getString("pref.export.group.border.member"));	
-		exportMemberAsXLink.setText(Language.I18N.getString("pref.export.group.label.exportMember"));
+		exportGroupPanel.setTitle(Language.I18N.getString("pref.export.group.label.exportMember"));
 		exportMemberAsXLinkDescr.setText(Language.I18N.getString("pref.export.group.label.exportMember.description"));
 	}
 

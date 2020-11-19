@@ -93,7 +93,7 @@ public class InfoDialog extends JDialog {
 		setResizable(true);
 		pack();
 
-		button.addActionListener(l -> dispose());
+		button.addActionListener(e -> dispose());
 	}
 
 	private JPanel getGeneralTab() {

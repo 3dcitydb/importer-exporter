@@ -32,23 +32,21 @@ import org.citydb.config.i18n.Language;
 import org.citydb.config.project.database.ExportBatching;
 import org.citydb.config.project.resources.ThreadPool;
 import org.citydb.config.project.resources.UIDCacheConfig;
+import org.citydb.gui.components.common.TitledPanel;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.modules.common.AbstractPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 
 import javax.swing.*;
-import javax.swing.border.TitledBorder;
 import java.awt.*;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 
-@SuppressWarnings("serial")
 public class ResourcesPanel extends AbstractPreferencesComponent{
-	private JPanel block1;
-	private JPanel block2;
-	private JPanel block3;
+	private TitledPanel multithreadingPanel;
+	private TitledPanel batchPanel;
+	private TitledPanel idCachePanel;
+
 	private JLabel expResMinThreadsLabel;
 	private JFormattedTextField expResMinThreadsText;
 	private JLabel expResMaxThreadsLabel;
@@ -114,10 +112,7 @@ public class ResourcesPanel extends AbstractPreferencesComponent{
 		return false;
 	}
 
-	private void initGui(){
-		block1 = new JPanel();
-		block2 = new JPanel();
-		block3 = new JPanel();
+	private void initGui() {
 		expResMinThreadsLabel = new JLabel();
 		expResMaxThreadsLabel = new JLabel();
 		expResBatchLabel = new JLabel();
@@ -142,6 +137,12 @@ public class ResourcesPanel extends AbstractPreferencesComponent{
 		expResFeatDrainText = new JFormattedTextField(threeIntFormat);
 		expResGeomPartText = new JFormattedTextField(threeIntFormat);
 		expResFeatPartText = new JFormattedTextField(threeIntFormat);
+		expResMinThreadsText.setColumns(8);
+		expResMaxThreadsText.setColumns(8);
+		expResGeomDrainText.setColumns(8);
+		expResFeatDrainText.setColumns(8);
+		expResGeomPartText.setColumns(8);
+		expResFeatPartText.setColumns(8);
 
 		DecimalFormat batchFormat = new DecimalFormat("#####");
 		batchFormat.setMaximumIntegerDigits(5);
@@ -149,125 +150,89 @@ public class ResourcesPanel extends AbstractPreferencesComponent{
 		expResFeatBatchText = new JFormattedTextField(batchFormat);
 		expResGeomBatchText = new JFormattedTextField(batchFormat);
 		expResBlobBatchText = new JFormattedTextField(batchFormat);
-		
+		expResFeatBatchText.setColumns(8);
+		expResGeomBatchText.setColumns(8);
+		expResBlobBatchText.setColumns(8);
+
 		DecimalFormat cacheEntryFormat = new DecimalFormat("########");
 		cacheEntryFormat.setMaximumIntegerDigits(8);
 		cacheEntryFormat.setMinimumIntegerDigits(1);		
 		expResGeomCacheText = new JFormattedTextField(cacheEntryFormat);
 		expResFeatCacheText = new JFormattedTextField(cacheEntryFormat);
+		expResGeomCacheText.setColumns(8);
+		expResFeatCacheText.setColumns(8);
 		
 		PopupMenuDecorator.getInstance().decorate(expResMinThreadsText, expResMaxThreadsText, expResGeomDrainText,
 				expResFeatDrainText, expResGeomPartText, expResFeatPartText, expResFeatBatchText, expResGeomBatchText,
 				expResBlobBatchText, expResGeomCacheText, expResFeatCacheText);
-		
-		expResMinThreadsText.addPropertyChangeListener(new PropertyChangeListener() {
-			public void propertyChange(PropertyChangeEvent evt) {
-				checkPositive(expResMinThreadsText, 1);
-			}
-		});
-		
-		expResMaxThreadsText.addPropertyChangeListener(new PropertyChangeListener() {
-			public void propertyChange(PropertyChangeEvent evt) {
-				checkPositive(expResMaxThreadsText, 1);
-			}
-		});
 
-		expResFeatBatchText.addPropertyChangeListener(new PropertyChangeListener() {
-			public void propertyChange(PropertyChangeEvent evt) {
-				checkPositive(expResFeatBatchText, ExportBatching.DEFAULT_BATCH_SIZE);
-			}
-		});
-
-		expResGeomBatchText.addPropertyChangeListener(new PropertyChangeListener() {
-			public void propertyChange(PropertyChangeEvent evt) {
-				checkPositive(expResGeomBatchText, ExportBatching.DEFAULT_BATCH_SIZE);
-			}
-		});
-
-		expResBlobBatchText.addPropertyChangeListener(new PropertyChangeListener() {
-			public void propertyChange(PropertyChangeEvent evt) {
-				checkPositive(expResBlobBatchText, ExportBatching.DEFAULT_BATCH_SIZE);
-			}
-		});
-
-
-		expResGeomCacheText.addPropertyChangeListener(new PropertyChangeListener() {
-			public void propertyChange(PropertyChangeEvent evt) {
-				checkPositive(expResGeomCacheText, 200000);
-			}
-		});
-		
-		expResFeatCacheText.addPropertyChangeListener(new PropertyChangeListener() {
-			public void propertyChange(PropertyChangeEvent evt) {
-				checkPositive(expResFeatCacheText, 200000);
-			}
-		});
-
-		expResGeomDrainText.addPropertyChangeListener(new PropertyChangeListener() {
-			public void propertyChange(PropertyChangeEvent evt) {
-				checkPositiveRange(expResGeomDrainText, 85, 100);
-			}
-		});
-		
-		expResFeatDrainText.addPropertyChangeListener(new PropertyChangeListener() {
-			public void propertyChange(PropertyChangeEvent evt) {
-				checkPositiveRange(expResFeatDrainText, 85, 100);
-			}
-		});
-		
-		expResGeomPartText.addPropertyChangeListener(new PropertyChangeListener() {
-			public void propertyChange(PropertyChangeEvent evt) {
-				checkPositiveRange(expResGeomPartText, 10, 100);
-			}
-		});
-		
-		expResFeatPartText.addPropertyChangeListener(new PropertyChangeListener() {
-			public void propertyChange(PropertyChangeEvent evt) {
-				checkPositiveRange(expResFeatPartText, 10, 100);
-			}
-		});
-		
 		setLayout(new GridBagLayout());
-		add(block1, GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.BOTH,5,0,5,0));
-		block1.setBorder(BorderFactory.createTitledBorder(""));
-		block1.setLayout(new GridBagLayout());
 		{
-			block1.add(expResMinThreadsLabel, GuiUtil.setConstraints(0,0,0.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
-			block1.add(expResMinThreadsText, GuiUtil.setConstraints(1,0,1.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
-			block1.add(expResMaxThreadsLabel, GuiUtil.setConstraints(0,1,0.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
-			block1.add(expResMaxThreadsText, GuiUtil.setConstraints(1,1,1.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
+			JPanel content = new JPanel();
+			content.setLayout(new GridBagLayout());
+			{
+				content.add(expResMinThreadsLabel, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.BOTH, 0, 0, 5, 5));
+				content.add(expResMinThreadsText, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.WEST, GridBagConstraints.NONE, 0, 5, 5, 0));
+				content.add(expResMaxThreadsLabel, GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.BOTH, 0, 0, 0, 5));
+				content.add(expResMaxThreadsText, GuiUtil.setConstraints(1, 1, 1, 0, GridBagConstraints.WEST, GridBagConstraints.NONE, 0, 5, 0, 0));
+			}
+
+			multithreadingPanel = new TitledPanel().build(content);
 		}
-		add(block2, GuiUtil.setConstraints(0,1,1.0,0.0,GridBagConstraints.BOTH,5,0,5,0));
-		block2.setBorder(BorderFactory.createTitledBorder(""));
-		block2.setLayout(new GridBagLayout());
 		{
-			block2.add(expResBatchLabel, GuiUtil.setConstraints(0,0,0.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
-			block2.add(expResFeatBatchText, GuiUtil.setConstraints(1,0,1.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
-			block2.add(expResFeatBatchLabel, GuiUtil.setConstraints(2,0,0.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
-			block2.add(expResGeomBatchText, GuiUtil.setConstraints(1,1,1.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
-			block2.add(expResGeomBatchLabel, GuiUtil.setConstraints(2,1,0.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
-			block2.add(expResBlobBatchText, GuiUtil.setConstraints(1,2,1.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
-			block2.add(expResBlobBatchLabel, GuiUtil.setConstraints(2,2,0.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
+			JPanel content = new JPanel();
+			content.setLayout(new GridBagLayout());
+			{
+				content.add(expResBatchLabel, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.BOTH, 0, 0, 5, 5));
+				content.add(expResFeatBatchText, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.BOTH, 0, 5, 5, 5));
+				content.add(expResFeatBatchLabel, GuiUtil.setConstraints(2, 0, 1, 0, GridBagConstraints.BOTH, 0, 5, 5, 0));
+				content.add(expResGeomBatchText, GuiUtil.setConstraints(1, 1, 0, 0, GridBagConstraints.BOTH, 0, 5, 5, 5));
+				content.add(expResGeomBatchLabel, GuiUtil.setConstraints(2, 1, 1, 0, GridBagConstraints.BOTH, 0, 5, 5, 0));
+				content.add(expResBlobBatchText, GuiUtil.setConstraints(1, 2, 0, 0, GridBagConstraints.BOTH, 0, 5, 0, 5));
+				content.add(expResBlobBatchLabel, GuiUtil.setConstraints(2, 2, 1, 0, GridBagConstraints.BOTH, 0, 5, 0, 0));
+			}
+
+			batchPanel = new TitledPanel().build(content);
 		}
-		add(block3, GuiUtil.setConstraints(0,2,1.0,0.0,GridBagConstraints.BOTH,5,0,5,0));
-		block3.setBorder(BorderFactory.createTitledBorder(""));
-		block3.setLayout(new GridBagLayout());
 		{
-			block3.add(expResGeomLabel, GuiUtil.setConstraints(0,0,0.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
-			block3.add(expResGeomCacheText, GuiUtil.setConstraints(1,0,1.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
-			block3.add(expResGeomCacheLabel, GuiUtil.setConstraints(2,0,0.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
-			block3.add(expResGeomDrainText, GuiUtil.setConstraints(1,1,1.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
-			block3.add(expResGeomDrainLabel, GuiUtil.setConstraints(2,1,0.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
-			block3.add(expResGeomPartText, GuiUtil.setConstraints(1,2,1.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
-			block3.add(expResGeomPartLabel, GuiUtil.setConstraints(2,2,0.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
-			block3.add(expResFeatLabel, GuiUtil.setConstraints(0,3,0.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
-			block3.add(expResFeatCacheText, GuiUtil.setConstraints(1,3,1.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
-			block3.add(expResFeatCacheLabel, GuiUtil.setConstraints(2,3,0.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
-			block3.add(expResFeatDrainText, GuiUtil.setConstraints(1,4,1.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
-			block3.add(expResFeatDrainLabel, GuiUtil.setConstraints(2,4,0.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
-			block3.add(expResFeatPartText, GuiUtil.setConstraints(1,5,1.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
-			block3.add(expResFeatPartLabel, GuiUtil.setConstraints(2,5,0.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
+			JPanel content = new JPanel();
+			content.setLayout(new GridBagLayout());
+			{
+				content.add(expResGeomLabel, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.BOTH, 0, 0, 5, 5));
+				content.add(expResGeomCacheText, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.BOTH, 0, 5, 5, 5));
+				content.add(expResGeomCacheLabel, GuiUtil.setConstraints(2, 0, 1, 0, GridBagConstraints.BOTH, 0, 5, 5, 0));
+				content.add(expResGeomDrainText, GuiUtil.setConstraints(1, 1, 0, 0, GridBagConstraints.BOTH, 0, 5, 5, 5));
+				content.add(expResGeomDrainLabel, GuiUtil.setConstraints(2, 1, 1, 0, GridBagConstraints.BOTH, 0, 5, 5, 0));
+				content.add(expResGeomPartText, GuiUtil.setConstraints(1, 2, 0, 0, GridBagConstraints.BOTH, 0, 5, 5, 5));
+				content.add(expResGeomPartLabel, GuiUtil.setConstraints(2, 2, 1, 0, GridBagConstraints.BOTH, 0, 5, 5, 0));
+
+				content.add(expResFeatLabel, GuiUtil.setConstraints(0, 3, 0, 0, GridBagConstraints.BOTH, 10, 0, 5, 5));
+				content.add(expResFeatCacheText, GuiUtil.setConstraints(1, 3, 0, 0, GridBagConstraints.BOTH, 10, 5, 5, 5));
+				content.add(expResFeatCacheLabel, GuiUtil.setConstraints(2, 3, 1, 0, GridBagConstraints.BOTH, 10, 5, 5, 0));
+				content.add(expResFeatDrainText, GuiUtil.setConstraints(1, 4, 0, 0, GridBagConstraints.BOTH, 0, 5, 5, 5));
+				content.add(expResFeatDrainLabel, GuiUtil.setConstraints(2, 4, 1, 0, GridBagConstraints.BOTH, 0, 5, 5, 0));
+				content.add(expResFeatPartText, GuiUtil.setConstraints(1, 5, 0, 0, GridBagConstraints.BOTH, 0, 5, 0, 5));
+				content.add(expResFeatPartLabel, GuiUtil.setConstraints(2, 5, 1, 0, GridBagConstraints.BOTH, 0, 5, 0, 0));
+			}
+
+			idCachePanel = new TitledPanel().build(content);
 		}
+
+		add(multithreadingPanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+		add(batchPanel, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+		add(idCachePanel, GuiUtil.setConstraints(0, 2, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+
+		expResMinThreadsText.addPropertyChangeListener(evt -> checkPositive(expResMinThreadsText, 1));
+		expResMaxThreadsText.addPropertyChangeListener(evt -> checkPositive(expResMaxThreadsText, 1));
+		expResFeatBatchText.addPropertyChangeListener(evt -> checkPositive(expResFeatBatchText, ExportBatching.DEFAULT_BATCH_SIZE));
+		expResGeomBatchText.addPropertyChangeListener(evt -> checkPositive(expResGeomBatchText, ExportBatching.DEFAULT_BATCH_SIZE));
+		expResBlobBatchText.addPropertyChangeListener(evt -> checkPositive(expResBlobBatchText, ExportBatching.DEFAULT_BATCH_SIZE));
+		expResGeomCacheText.addPropertyChangeListener(evt -> checkPositive(expResGeomCacheText, 200000));
+		expResFeatCacheText.addPropertyChangeListener(evt -> checkPositive(expResFeatCacheText, 200000));
+		expResGeomDrainText.addPropertyChangeListener(evt -> checkPositiveRange(expResGeomDrainText, 85, 100));
+		expResFeatDrainText.addPropertyChangeListener(evt -> checkPositiveRange(expResFeatDrainText, 85, 100));
+		expResGeomPartText.addPropertyChangeListener(evt -> checkPositiveRange(expResGeomPartText, 10, 100));
+		expResFeatPartText.addPropertyChangeListener(evt -> checkPositiveRange(expResFeatPartText, 10, 100));
 	}
 
 	private void checkPositive(JFormattedTextField field, int defaultValue) {
@@ -284,9 +249,9 @@ public class ResourcesPanel extends AbstractPreferencesComponent{
 
 	@Override
 	public void doTranslation() {
-		((TitledBorder)block1.getBorder()).setTitle(Language.I18N.getString("common.pref.resources.border.multiCPU"));
-		((TitledBorder)block2.getBorder()).setTitle(Language.I18N.getString("pref.export.resources.border.batch"));
-		((TitledBorder)block3.getBorder()).setTitle(Language.I18N.getString("common.pref.resources.border.idCache"));
+		multithreadingPanel.setTitle(Language.I18N.getString("common.pref.resources.border.multiCPU"));
+		batchPanel.setTitle(Language.I18N.getString("pref.export.resources.border.batch"));
+		idCachePanel.setTitle(Language.I18N.getString("common.pref.resources.border.idCache"));
 
 		expResMinThreadsLabel.setText(Language.I18N.getString("common.pref.resources.label.minThreads"));
 		expResMaxThreadsLabel.setText(Language.I18N.getString("common.pref.resources.label.maxThreads"));

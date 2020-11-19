@@ -289,17 +289,17 @@ public class XSLTransformationPanel extends AbstractPreferencesComponent {
             panel.add(!first ? removeButton : Box.createRigidArea(removeButton.getPreferredSize()),
                     GuiUtil.setConstraints(4, 0, 0, 0, GridBagConstraints.NONE, 0, 0, 5, 0));
 
-            addButton.addActionListener(l -> {
+            addButton.addActionListener(e -> {
                 add();
                 updateComponents();
             });
 
-            removeButton.addActionListener(l -> {
+            removeButton.addActionListener(e -> {
                 remove();
                 updateComponents();
             });
 
-            browseButton.addActionListener(l -> browseStylesheet(this));
+            browseButton.addActionListener(e -> browseStylesheet(this));
             stylesheet.setDropTarget(new DropTarget(stylesheet, this));
             PopupMenuDecorator.getInstance().decorate(stylesheet);
         }
