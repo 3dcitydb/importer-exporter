@@ -39,6 +39,7 @@ import org.citydb.event.EventHandler;
 import org.citydb.event.global.DatabaseConnectionStateEvent;
 import org.citydb.event.global.EventType;
 import org.citydb.event.global.PropertyChangeEvent;
+import org.citydb.gui.components.common.TitledPanel;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.factory.SrsComboBoxFactory;
 import org.citydb.gui.factory.SrsComboBoxFactory.SrsComboBox;
@@ -52,7 +53,6 @@ import org.citydb.registry.ObjectRegistry;
 import org.citydb.util.ClientConstants;
 
 import javax.swing.*;
-import javax.swing.border.TitledBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.xml.bind.JAXBException;
 import java.awt.*;
@@ -73,12 +73,13 @@ import java.text.MessageFormat;
 import java.text.ParseException;
 import java.util.List;
 
-@SuppressWarnings("serial")
 public class SrsPanel extends AbstractPreferencesComponent implements EventHandler, DropTargetListener {
-	private static final int BORDER_THICKNESS = 5;
 	private final Logger log = Logger.getInstance();
 	private final DatabaseConnectionPool dbPool;
 	private final ViewController viewController;
+
+	private TitledPanel contentsPanel;
+	private TitledPanel impExpPanel;
 
 	private JLabel srsComboBoxLabel;
 	private JLabel sridLabel;
@@ -88,9 +89,9 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 	private JLabel descriptionLabel;
 	private JTextField descriptionText;
 	private JLabel dbSrsTypeLabel;
-	private JTextPane dbSrsTypeText;
+	private JTextField dbSrsTypeText;
 	private JLabel dbSrsNameLabel;
-	private JTextPane dbSrsNameText;
+	private JTextField dbSrsNameText;
 	private JButton newButton;
 	private JButton applyButton;
 	private JButton deleteButton;
@@ -100,8 +101,6 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 	private SrsComboBoxFactory srsComboBoxFactory;
 	private SrsComboBox srsComboBox;
 	private ActionListener srsComboBoxListener;
-	private JPanel contentsPanel;
-	private JPanel impExpPanel;
 	private JLabel fileLabel;
 	private JTextField fileText;
 	private JButton browseFileButton;
@@ -164,9 +163,11 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 		saveFileButton = new JButton();
 
 		dbSrsTypeLabel = new JLabel();
-		dbSrsTypeText = new JTextPane();
+		dbSrsTypeText = new JTextField();
 		dbSrsNameLabel = new JLabel();
-		dbSrsNameText = new JTextPane();
+		dbSrsNameText = new JTextField();
+		dbSrsTypeText.setEditable(false);
+		dbSrsNameText.setEditable(false);
 
 		srsComboBoxFactory = SrsComboBoxFactory.getInstance();
 		srsComboBox = srsComboBoxFactory.createSrsComboBox(false);
@@ -186,90 +187,70 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 		});
 
 		setLayout(new GridBagLayout());
-
-		contentsPanel = new JPanel();
-		contentsPanel.setBorder(BorderFactory.createTitledBorder(""));
-		contentsPanel.setLayout(new GridBagLayout());
-		add(contentsPanel, GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.BOTH,5,0,5,0));
 		{
-			JPanel srsPanel = new JPanel();
-			srsPanel.setLayout(new GridBagLayout());
-
-			srsPanel.add(sridLabel, GuiUtil.setConstraints(0,0,0,0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,0,BORDER_THICKNESS));
-			srsPanel.add(sridText, GuiUtil.setConstraints(1,0,1,0,GridBagConstraints.HORIZONTAL,0,BORDER_THICKNESS,0,BORDER_THICKNESS));
-			srsPanel.add(checkButton, GuiUtil.setConstraints(2,0,0,0,GridBagConstraints.HORIZONTAL,0,BORDER_THICKNESS,0,BORDER_THICKNESS));
-
-			srsPanel.add(srsNameLabel, GuiUtil.setConstraints(0,1,0,0,GridBagConstraints.BOTH,BORDER_THICKNESS,BORDER_THICKNESS,0,BORDER_THICKNESS));
-			srsPanel.add(srsNameComboBox, GuiUtil.setConstraints(1,1,2,1,1,0,GridBagConstraints.HORIZONTAL,BORDER_THICKNESS,BORDER_THICKNESS,0,BORDER_THICKNESS));
-
-			srsPanel.add(descriptionLabel, GuiUtil.setConstraints(0,2,0,0,GridBagConstraints.BOTH,BORDER_THICKNESS,BORDER_THICKNESS,0,BORDER_THICKNESS));
-			srsPanel.add(descriptionText, GuiUtil.setConstraints(1,2,2,1,1,0,GridBagConstraints.HORIZONTAL,BORDER_THICKNESS,BORDER_THICKNESS,0,BORDER_THICKNESS));
-
-			dbSrsTypeText.setEditable(false);
-			dbSrsTypeText.setBorder(sridText.getBorder());
-			dbSrsTypeText.setBackground(srsPanel.getBackground());
-			dbSrsTypeText.setMargin(sridText.getMargin());
-
-			dbSrsNameText.setEditable(false);
-			dbSrsNameText.setBorder(sridText.getBorder());
-			dbSrsNameText.setBackground(srsPanel.getBackground());
-			dbSrsNameText.setMargin(sridText.getMargin());
-
-			srsPanel.add(dbSrsNameLabel, GuiUtil.setConstraints(0,3,0,0,GridBagConstraints.HORIZONTAL,BORDER_THICKNESS,BORDER_THICKNESS,0,BORDER_THICKNESS));
-			srsPanel.add(dbSrsNameText, GuiUtil.setConstraints(1,3,2,1,1,0,GridBagConstraints.BOTH,BORDER_THICKNESS,BORDER_THICKNESS,0,BORDER_THICKNESS));
-			srsPanel.add(dbSrsTypeLabel, GuiUtil.setConstraints(0,4,0,0,GridBagConstraints.HORIZONTAL,BORDER_THICKNESS,BORDER_THICKNESS,BORDER_THICKNESS,BORDER_THICKNESS));
-			srsPanel.add(dbSrsTypeText, GuiUtil.setConstraints(1,4,2,1,1,0,GridBagConstraints.BOTH,BORDER_THICKNESS,BORDER_THICKNESS,BORDER_THICKNESS,BORDER_THICKNESS));
-
-			Box buttonsPanel = Box.createHorizontalBox();
-			buttonsPanel.add(applyButton);
-			buttonsPanel.add(Box.createRigidArea(new Dimension(2*BORDER_THICKNESS, 0)));
-			buttonsPanel.add(newButton);
-			buttonsPanel.add(Box.createRigidArea(new Dimension(2*BORDER_THICKNESS, 0)));
-			buttonsPanel.add(copyButton);
-			buttonsPanel.add(Box.createRigidArea(new Dimension(2*BORDER_THICKNESS, 0)));
-			buttonsPanel.add(deleteButton);
-			buttonsPanel.add(Box.createRigidArea(new Dimension(2*BORDER_THICKNESS, 0)));
-
-			GridBagConstraints c = GuiUtil.setConstraints(0,5,3,1,1,0,GridBagConstraints.NONE,BORDER_THICKNESS*2,BORDER_THICKNESS,BORDER_THICKNESS,BORDER_THICKNESS);
-			c.anchor = GridBagConstraints.CENTER;
-			srsPanel.add(buttonsPanel, c);
-
-			JPanel currentlySupportedContent = new JPanel();
-			currentlySupportedContent.setBorder(BorderFactory.createEmptyBorder());
-			currentlySupportedContent.setLayout(new GridBagLayout());		
-			currentlySupportedContent.add(srsComboBoxLabel, GuiUtil.setConstraints(0,0,0.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
-			currentlySupportedContent.add(srsComboBox, GuiUtil.setConstraints(1,0,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
-
-			contentsPanel.add(currentlySupportedContent, GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.BOTH,0,0,5,0));
-			contentsPanel.add(srsPanel, GuiUtil.setConstraints(0,1,1.0,0.0,GridBagConstraints.BOTH,20,0,5,0));
-		}
-
-		impExpPanel = new JPanel();
-		impExpPanel.setBorder(BorderFactory.createTitledBorder(""));
-		impExpPanel.setLayout(new GridBagLayout());
-		add(impExpPanel, GuiUtil.setConstraints(0,1,1.0,0.0,GridBagConstraints.BOTH,5,0,5,0));
-		{
-			JPanel browse = new JPanel();
-			JPanel button = new JPanel();
-
-			impExpPanel.add(browse, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,0,0,0,0));
-			impExpPanel.add(button, GuiUtil.setConstraints(0,1,0.0,1.0,GridBagConstraints.BOTH,5,0,5,0));
-			fileText.setPreferredSize(fileText.getPreferredSize());
-
-			browse.setLayout(new GridBagLayout());
+			JPanel content = new JPanel();
+			content.setLayout(new GridBagLayout());
 			{
-				browse.add(fileLabel, GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.HORIZONTAL,5,5,0,5));
-				browse.add(fileText, GuiUtil.setConstraints(0,1,0.0,0.0,GridBagConstraints.HORIZONTAL,0,5,5,5));
-				browse.add(browseFileButton, GuiUtil.setConstraints(1,1,0.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
+				JPanel srsPanel = new JPanel();
+				srsPanel.setLayout(new GridBagLayout());
+				srsPanel.add(srsComboBoxLabel, GuiUtil.setConstraints(0, 0, 0, 1, GridBagConstraints.BOTH, 0, 0, 20, 5));
+				srsPanel.add(srsComboBox, GuiUtil.setConstraints(1, 0, 2, 1, 1, 1, GridBagConstraints.BOTH, 0, 5, 20, 0));
+				srsPanel.add(sridLabel, GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+				srsPanel.add(sridText, GuiUtil.setConstraints(1, 1, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 5));
+				srsPanel.add(checkButton, GuiUtil.setConstraints(2, 1, 0, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 0));
+				srsPanel.add(srsNameLabel, GuiUtil.setConstraints(0, 2, 0, 0, GridBagConstraints.BOTH, 5, 0, 0, 5));
+				srsPanel.add(srsNameComboBox, GuiUtil.setConstraints(1, 2, 2, 1, 1, 0, GridBagConstraints.HORIZONTAL, 5, 5, 0, 0));
+				srsPanel.add(descriptionLabel, GuiUtil.setConstraints(0, 3, 0, 0, GridBagConstraints.BOTH, 5, 0, 0, 5));
+				srsPanel.add(descriptionText, GuiUtil.setConstraints(1, 3, 2, 1, 1, 0, GridBagConstraints.HORIZONTAL, 5, 5, 0, 0));
+				srsPanel.add(dbSrsNameLabel, GuiUtil.setConstraints(0, 4, 0, 0, GridBagConstraints.HORIZONTAL, 5, 0, 0, 5));
+				srsPanel.add(dbSrsNameText, GuiUtil.setConstraints(1, 4, 2, 1, 1, 0, GridBagConstraints.BOTH, 5, 5, 0, 0));
+				srsPanel.add(dbSrsTypeLabel, GuiUtil.setConstraints(0, 5, 0, 0, GridBagConstraints.HORIZONTAL, 5, 0, 5, 5));
+				srsPanel.add(dbSrsTypeText, GuiUtil.setConstraints(1, 5, 2, 1, 1, 0, GridBagConstraints.BOTH, 5, 5, 5, 0));
+
+				Box buttonsPanel = Box.createHorizontalBox();
+				buttonsPanel.add(applyButton);
+				buttonsPanel.add(Box.createHorizontalStrut(10));
+				buttonsPanel.add(newButton);
+				buttonsPanel.add(Box.createHorizontalStrut(10));
+				buttonsPanel.add(copyButton);
+				buttonsPanel.add(Box.createHorizontalStrut(10));
+				buttonsPanel.add(deleteButton);
+
+				srsPanel.add(buttonsPanel, GuiUtil.setConstraints(0, 6, 3, 1, 0, 0, GridBagConstraints.NONE, 10, 0, 0, 0));
+				content.add(srsPanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 			}
 
-			button.setLayout(new GridBagLayout());
-			{
-				button.add(addFileButton,GuiUtil.setConstraints(0,0,0,0,GridBagConstraints.NONE,5,5,5,5));
-				button.add(replaceWithFileButton, GuiUtil.setConstraints(1,0,0,0,GridBagConstraints.NONE,5,5,5,5));
-				button.add(saveFileButton, GuiUtil.setConstraints(2,0,0,0,GridBagConstraints.NONE,5,20,5,5));
-			}
+			contentsPanel = new TitledPanel().build(content);
 		}
+		{
+			JPanel content = new JPanel();
+			content.setLayout(new GridBagLayout());
+			{
+				JPanel browse = new JPanel();
+				browse.setLayout(new GridBagLayout());
+				{
+					browse.add(fileLabel, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 5));
+					browse.add(fileText, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 5));
+					browse.add(browseFileButton, GuiUtil.setConstraints(2, 0, 0, 0, GridBagConstraints.BOTH, 0, 5, 0, 0));
+				}
+
+				JPanel button = new JPanel();
+				button.setLayout(new GridBagLayout());
+				{
+					button.add(addFileButton, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.NONE, 0, 0, 0, 5));
+					button.add(replaceWithFileButton, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.NONE, 0, 5, 0, 5));
+					button.add(saveFileButton, GuiUtil.setConstraints(2, 0, 0, 0, GridBagConstraints.NONE, 0, 5, 0, 0));
+				}
+
+				content.add(browse, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
+				content.add(button, GuiUtil.setConstraints(0, 1, 0, 1, GridBagConstraints.BOTH, 15, 0, 0, 0));
+			}
+
+			impExpPanel = new TitledPanel().build(content);
+		}
+
+		add(contentsPanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+		add(impExpPanel, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 
 		DropTarget dropTarget = new DropTarget(fileText, this);
 		fileText.setDropTarget(dropTarget);
@@ -364,8 +345,8 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 
 	@Override
 	public void doTranslation() {
-		((TitledBorder)contentsPanel.getBorder()).setTitle(Language.I18N.getString("pref.db.srs.border.currentlySupported"));	
-		((TitledBorder)impExpPanel.getBorder()).setTitle(Language.I18N.getString("pref.db.srs.border.impexp"));	
+		contentsPanel.setTitle(Language.I18N.getString("pref.db.srs.border.currentlySupported"));
+		impExpPanel.setTitle(Language.I18N.getString("pref.db.srs.border.impexp"));
 
 		srsComboBoxLabel.setText(Language.I18N.getString("common.label.boundingBox.crs"));		
 		sridLabel.setText(Language.I18N.getString("pref.db.srs.label.srid"));
@@ -461,10 +442,9 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 			return in;
 
 		int wrapAt = Math.max(in.substring(0, len).lastIndexOf(' '), in.substring(0, len).lastIndexOf('-'));
-		
 		return wrapAt == -1 ?
-				in.substring(0, len) + '-' + System.getProperty("line.separator") + wrap(in.substring(len, in.length()).trim(), len) :
-				in.substring(0, wrapAt) + System.getProperty("line.separator") + wrap(in.substring(wrapAt, in.length()).trim(), len);
+				in.substring(0, len) + '-' + System.getProperty("line.separator") + wrap(in.substring(len).trim(), len) :
+				in.substring(0, wrapAt) + System.getProperty("line.separator") + wrap(in.substring(wrapAt).trim(), len);
 	}
 
 	private String getCopyOfDescription(DatabaseSrs refSys) {
