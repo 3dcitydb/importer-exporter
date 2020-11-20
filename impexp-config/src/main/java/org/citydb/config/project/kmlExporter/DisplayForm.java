@@ -110,7 +110,7 @@ public class DisplayForm {
         return achievable;
     }
 
-    public static DisplayForm getDisplayForm(int form, List<DisplayForm> displayForms) {
+    public static DisplayForm get(int form, List<DisplayForm> displayForms) {
         for (DisplayForm displayForm : displayForms) {
             if (displayForm.getForm() == form) {
                 return displayForm;
@@ -120,8 +120,8 @@ public class DisplayForm {
         return null;
     }
 
-    public static DisplayForm getOrSetDisplayForm(int form, List<DisplayForm> displayForms) {
-        DisplayForm displayForm = getDisplayForm(form, displayForms);
+    public static DisplayForm getOrSet(int form, List<DisplayForm> displayForms) {
+        DisplayForm displayForm = get(form, displayForms);
         if (displayForm == null) {
             displayForm = DisplayForm.of(form);
             displayForms.add(displayForm);
@@ -131,7 +131,7 @@ public class DisplayForm {
     }
 
     public static DisplayForm getOrDefault(int form, List<DisplayForm> displayForms) {
-        DisplayForm displayForm = getDisplayForm(form, displayForms);
+        DisplayForm displayForm = get(form, displayForms);
         return displayForm != null ? displayForm : DisplayForm.of(form);
     }
 

@@ -89,6 +89,11 @@ public class BuildingRenderingPanel extends AbstractPreferencesComponent {
     }
 
     @Override
+    public void resetSettings() {
+        parent.resetSettings();
+    }
+
+    @Override
     public String getTitle() {
         return parent.getTitle();
     }
