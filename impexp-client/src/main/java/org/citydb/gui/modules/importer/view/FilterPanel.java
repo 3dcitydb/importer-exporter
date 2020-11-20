@@ -177,7 +177,7 @@ public class FilterPanel extends JPanel {
 		}
 		{
 			JPanel content = new JPanel();
-			content.setBorder(UIManager.getBorder("TextField.border"));
+			content.setBorder(UIManager.getBorder("ScrollPane.border"));
 			content.setLayout(new GridBagLayout());
 			{
 				content.add(featureTree, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));

@@ -106,7 +106,7 @@ public class ADEInfoOperation extends DatabaseOperationView {
         tablePanel.setLayout(new GridBagLayout());
         tablePanel.add(adeTable.getTableHeader(), GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
         tablePanel.add(adeTable, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
-        tablePanel.setBorder(UIManager.getBorder("TextField.border"));
+        tablePanel.setBorder(UIManager.getBorder("ScrollPane.border"));
 
         infoButton = new JButton();
 

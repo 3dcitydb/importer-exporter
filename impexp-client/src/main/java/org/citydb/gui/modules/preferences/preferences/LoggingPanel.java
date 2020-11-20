@@ -35,6 +35,7 @@ import org.citydb.config.project.global.LogLevel;
 import org.citydb.config.project.global.Logging;
 import org.citydb.gui.ImpExpGui;
 import org.citydb.gui.components.common.AlphaButton;
+import org.citydb.gui.components.common.TitledPanel;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.modules.common.AbstractPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
@@ -43,7 +44,6 @@ import org.citydb.util.ClientConstants;
 import org.citydb.util.CoreConstants;
 
 import javax.swing.*;
-import javax.swing.border.TitledBorder;
 import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import java.awt.*;
@@ -53,12 +53,11 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.StringJoiner;
 
-@SuppressWarnings("serial")
 public class LoggingPanel extends AbstractPreferencesComponent {
     private final Logger log = Logger.getInstance();
 
-    private JPanel consolePanel;
-    private JPanel filePanel;
+    private TitledPanel consolePanel;
+    private TitledPanel filePanel;
 
     private JLabel logLevelConsoleLabel;
     private JComboBox<LogLevel> logLevelConsoleCombo;
@@ -68,7 +67,6 @@ public class LoggingPanel extends AbstractPreferencesComponent {
     private JComboBox<LogLevel> logLevelFileCombo;
     private JCheckBox truncateLogFile;
     private JCheckBox useAlternativeLogFile;
-    private JLabel alternativeLogFileLabel;
     private JTextField alternativeLogFileText;
     private JButton alternativeLogFileButton;
 
@@ -80,7 +78,7 @@ public class LoggingPanel extends AbstractPreferencesComponent {
     private JButton backgroundColor;
     private JTextPane preview;
 
-    private ImpExpGui mainView;
+    private final ImpExpGui mainView;
 
     public LoggingPanel(ImpExpGui mainView, Config config) {
         super(config);
@@ -125,14 +123,14 @@ public class LoggingPanel extends AbstractPreferencesComponent {
         logLevelFileCombo = new JComboBox<>();
         truncateLogFile = new JCheckBox();
         useAlternativeLogFile = new JCheckBox();
-        alternativeLogFileLabel = new JLabel();
         alternativeLogFileText = new JTextField();
         alternativeLogFileButton = new JButton();
 
         preview = new JTextPane();
         preview.setFont(new Font(Font.MONOSPACED, Font.PLAIN, UIManager.getFont("Label.font").getSize()));
+        preview.setBackground(UIManager.getColor("TextField.background"));
+        preview.setBorder(UIManager.getBorder("ScrollPane.border"));
         preview.setEditable(false);
-        preview.setBorder(BorderFactory.createEtchedBorder());
 
         useForeground = new JCheckBox();
         foregroundColor = new AlphaButton();
@@ -149,7 +147,6 @@ public class LoggingPanel extends AbstractPreferencesComponent {
         colorSchemeLabel = new JLabel();
         logColors = new JList<>();
         logColors.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        logColors.setBorder(BorderFactory.createEtchedBorder());
 
         DefaultListModel<LogColor> model = new DefaultListModel<>();
         logColors.setModel(model);
@@ -165,58 +162,68 @@ public class LoggingPanel extends AbstractPreferencesComponent {
 
         setLayout(new GridBagLayout());
         {
-            consolePanel = new JPanel();
-            add(consolePanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 5, 0, 0, 0));
-            consolePanel.setBorder(BorderFactory.createTitledBorder(""));
-            consolePanel.setLayout(new GridBagLayout());
+            JPanel content = new JPanel();
+            content.setLayout(new GridBagLayout());
             {
-                consolePanel.add(logLevelConsoleLabel, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 5, 5, 5));
-                consolePanel.add(logLevelConsoleCombo, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, 5, 5));
-                consolePanel.add(wrapTextConsole, GuiUtil.setConstraints(0, 1, 2, 1, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, 5, 5));
+                content.add(logLevelConsoleLabel, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 5, 5));
+                content.add(logLevelConsoleCombo, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, 5, 0));
+                content.add(wrapTextConsole, GuiUtil.setConstraints(0, 1, 2, 1, 1, 0, GridBagConstraints.HORIZONTAL, 0, 0, 5, 0));
 
                 JPanel colorPanel = new JPanel();
                 colorPanel.setLayout(new GridBagLayout());
-                colorPanel.add(useForeground, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.HORIZONTAL, 5, 0, 5, 5));
-                colorPanel.add(foregroundColor, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.BOTH, 5, 5, 5, 5));
+                colorPanel.add(useForeground, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 5, 5));
+                colorPanel.add(foregroundColor, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.BOTH, 0, 5, 5, 0));
                 colorPanel.add(useBackground, GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 5, 5));
-                colorPanel.add(backgroundColor, GuiUtil.setConstraints(1, 1, 0, 0, GridBagConstraints.BOTH, 0, 5, 5, 5));
+                colorPanel.add(backgroundColor, GuiUtil.setConstraints(1, 1, 0, 0, GridBagConstraints.BOTH, 0, 5, 5, 0));
+
+                JPanel listPanel = new JPanel();
+                listPanel.setBorder(UIManager.getBorder("ScrollPane.border"));
+                listPanel.setLayout(new BorderLayout());
+                listPanel.add(logColors);
 
                 JPanel stylingPanel = new JPanel();
                 stylingPanel.setLayout(new GridBagLayout());
-                stylingPanel.add(logColors, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 0));
+                stylingPanel.add(listPanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 0));
                 stylingPanel.add(colorPanel, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.NORTH, GridBagConstraints.HORIZONTAL, 0, 10, 0, 0));
 
-                consolePanel.add(colorSchemeLabel, GuiUtil.setConstraints(0, 2, 2, 1, 0, 0, GridBagConstraints.BOTH, 5, 5, 5, 5));
-                consolePanel.add(stylingPanel, GuiUtil.setConstraints(0, 3, 2, 1, 0, 0, GridBagConstraints.BOTH, 0, 5, 5, 5));
-                consolePanel.add(preview, GuiUtil.setConstraints(0, 4, 2, 1, 0, 0, GridBagConstraints.BOTH, 5, 5, 5, 5));
+                content.add(colorSchemeLabel, GuiUtil.setConstraints(0, 2, 2, 1, 0, 0, GridBagConstraints.BOTH, 5, 0, 5, 0));
+                content.add(stylingPanel, GuiUtil.setConstraints(0, 3, 2, 1, 0, 0, GridBagConstraints.BOTH, 0, 0, 5, 0));
+                content.add(preview, GuiUtil.setConstraints(0, 4, 2, 1, 0, 0, GridBagConstraints.BOTH, 5, 0, 0, 0));
             }
 
-            filePanel = new JPanel();
-            add(filePanel, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 5, 0, 5, 0));
-            filePanel.setBorder(BorderFactory.createTitledBorder(""));
-            filePanel.setLayout(new GridBagLayout());
-            int lmargin = GuiUtil.getTextOffset(useAlternativeLogFile) + 5;
+            consolePanel = new TitledPanel().build(content);
+        }
+        {
+            JPanel content = new JPanel();
+            content.setLayout(new GridBagLayout());
             {
-                filePanel.add(useLogFile, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.BOTH, 0, 5, 0, 5));
+
                 JPanel sub1 = new JPanel();
                 sub1.setLayout(new GridBagLayout());
-                filePanel.add(sub1, GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.BOTH, 5, 0, 0, 0));
                 {
-                    sub1.add(logLevelFileLabel, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.BOTH, 0, 5, 5, 5));
-                    sub1.add(logLevelFileCombo, GuiUtil.setConstraints(1, 0, 1, 1, GridBagConstraints.BOTH, 0, 5, 5, 5));
+                    sub1.add(logLevelFileLabel, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.BOTH, 0, 0, 0, 5));
+                    sub1.add(logLevelFileCombo, GuiUtil.setConstraints(1, 0, 1, 1, GridBagConstraints.BOTH, 0, 5, 0,0));
                 }
-                filePanel.add(truncateLogFile, GuiUtil.setConstraints(0, 2, 1, 1, GridBagConstraints.BOTH, 0, 5, 0, 5));
-                filePanel.add(useAlternativeLogFile, GuiUtil.setConstraints(0, 3, 1, 1, GridBagConstraints.BOTH, 0, 5, 0, 5));
+
                 JPanel sub2 = new JPanel();
                 sub2.setLayout(new GridBagLayout());
-                filePanel.add(sub2, GuiUtil.setConstraints(0, 4, 0, 0, GridBagConstraints.BOTH, 0, lmargin, 5, 5));
                 {
-                    sub2.add(alternativeLogFileLabel, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.BOTH, 0, 0, 0, 5));
+                    sub2.add(useAlternativeLogFile, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.BOTH, 0, 0, 0, 5));
                     sub2.add(alternativeLogFileText, GuiUtil.setConstraints(1, 0, 1, 1, GridBagConstraints.BOTH, 0, 5, 0, 5));
                     sub2.add(alternativeLogFileButton, GuiUtil.setConstraints(2, 0, 0, 0, GridBagConstraints.BOTH, 0, 5, 0, 0));
                 }
+
+                content.add(useLogFile, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
+                content.add(sub1, GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.BOTH, 5, 0, 0, 0));
+                content.add(truncateLogFile, GuiUtil.setConstraints(0, 2, 1, 1, GridBagConstraints.BOTH, 5, 0, 0, 0));
+                content.add(sub2, GuiUtil.setConstraints(0, 3, 0, 0, GridBagConstraints.BOTH, 5, 0, 0, 0));
             }
+
+            filePanel = new TitledPanel().build(content);
         }
+
+        add(consolePanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+        add(filePanel, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 
         useForeground.addActionListener(e -> {
             if (!logColors.isSelectionEmpty())
@@ -270,26 +277,24 @@ public class LoggingPanel extends AbstractPreferencesComponent {
         logLevelFileCombo.setEnabled(useLogFile.isSelected());
         truncateLogFile.setEnabled(useLogFile.isSelected());
 
-        alternativeLogFileLabel.setEnabled(useLogFile.isSelected() && useAlternativeLogFile.isSelected());
         alternativeLogFileText.setEnabled(useLogFile.isSelected() && useAlternativeLogFile.isSelected());
         alternativeLogFileButton.setEnabled(useLogFile.isSelected() && useAlternativeLogFile.isSelected());
     }
 
     @Override
     public void doTranslation() {
-        ((TitledBorder) consolePanel.getBorder()).setTitle(Language.I18N.getString("pref.general.logging.border.console"));
+        consolePanel.setTitle(Language.I18N.getString("pref.general.logging.border.console"));
         wrapTextConsole.setText(Language.I18N.getString("pref.general.logging.label.wrapTextConsole"));
         logLevelConsoleLabel.setText(Language.I18N.getString("pref.general.logging.label.logLevel"));
         colorSchemeLabel.setText(Language.I18N.getString("pref.general.logging.title.colorScheme"));
         useForeground.setText(Language.I18N.getString("pref.general.logging.label.foreground"));
         useBackground.setText(Language.I18N.getString("pref.general.logging.label.background"));
 
-        ((TitledBorder) filePanel.getBorder()).setTitle(Language.I18N.getString("pref.general.logging.border.file"));
+        filePanel.setTitle(Language.I18N.getString("pref.general.logging.border.file"));
         useLogFile.setText(Language.I18N.getString("pref.general.logging.label.useLogFile"));
         logLevelFileLabel.setText(Language.I18N.getString("pref.general.logging.label.logLevel"));
         truncateLogFile.setText(Language.I18N.getString("pref.general.logging.label.truncateLogFile"));
         useAlternativeLogFile.setText(Language.I18N.getString("pref.general.logging.label.useAltLogFile"));
-        alternativeLogFileLabel.setText(Language.I18N.getString("pref.general.logging.label.altLogFile"));
         alternativeLogFileButton.setText(Language.I18N.getString("common.button.browse"));
     }
 

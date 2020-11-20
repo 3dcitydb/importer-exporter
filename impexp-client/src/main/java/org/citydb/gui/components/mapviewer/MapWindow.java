@@ -244,7 +244,7 @@ public class MapWindow extends JDialog implements EventHandler {
 		// left components
 		left.setLayout(new GridBagLayout());
 		left.setBackground(Color.WHITE);
-		Border componentBorder = BorderFactory.createCompoundBorder(UIManager.getBorder("TitledBorder.border"), BorderFactory.createEmptyBorder(5, 5, 5, 5));		
+		Border componentBorder = BorderFactory.createCompoundBorder(UIManager.getBorder("ScrollPane.border"), BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
 		// BBox
 		final JPanel bbox = new JPanel();

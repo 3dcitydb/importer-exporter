@@ -35,6 +35,7 @@ import org.citydb.event.Event;
 import org.citydb.event.EventHandler;
 import org.citydb.event.global.EventType;
 import org.citydb.event.global.ProxyServerUnavailableEvent;
+import org.citydb.gui.components.common.TitledPanel;
 import org.citydb.gui.factory.CheckBoxListDecorator;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.modules.common.AbstractPreferencesComponent;
@@ -44,7 +45,6 @@ import org.citydb.registry.ObjectRegistry;
 import org.citydb.util.InternalProxySelector;
 
 import javax.swing.*;
-import javax.swing.border.TitledBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.awt.*;
@@ -54,7 +54,6 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
-@SuppressWarnings("serial")
 public class ProxyPanel extends AbstractPreferencesComponent implements EventHandler {
 	private final Logger log = Logger.getInstance();
 	private JList<ProxyConfig> proxyList;
@@ -64,10 +63,10 @@ public class ProxyPanel extends AbstractPreferencesComponent implements EventHan
 
 	private ProxyConfig currentProxy;
 	private ProxyConfig previousSingleProxy;
-	private JLabel configureLabel;
 	private JCheckBox useSingleProxy;
 
-	private JPanel proxySettingsPanel;
+	private TitledPanel proxyProtocolPanel;
+	private TitledPanel proxySettingsPanel;
 	private JCheckBox requiresAuthenticationBox;
 	private JLabel proxyHostLabel;
 	private JTextField proxyHostText;
@@ -114,10 +113,7 @@ public class ProxyPanel extends AbstractPreferencesComponent implements EventHan
 
 		proxies = new ArrayList<>(config.getGlobalConfig().getProxies().getProxyList().size());
 
-		JPanel proxyListPanel = new JPanel();
-		proxySettingsPanel = new JPanel();
 		useSingleProxy = new JCheckBox();
-		configureLabel = new JLabel();
 		requiresAuthenticationBox = new JCheckBox();
 		proxyHostLabel = new JLabel();
 		proxyPortLabel = new JLabel();
@@ -134,29 +130,44 @@ public class ProxyPanel extends AbstractPreferencesComponent implements EventHan
 		passwordCheck = new JCheckBox();
 
 		setLayout(new GridBagLayout());
-		add(configureLabel, GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.BOTH,5,TitledBorder.LEFT,0,0));
-		add(proxyListPanel, GuiUtil.setConstraints(0,1,1.0,0.0,GridBagConstraints.BOTH,5,TitledBorder.LEFT,5,0));
-		add(useSingleProxy, GuiUtil.setConstraints(0,2,1.0,0.0,GridBagConstraints.BOTH,0,0,5,0));
-		add(proxySettingsPanel, GuiUtil.setConstraints(0,3,1.0,0.0,GridBagConstraints.BOTH,5,0,5,0));
 
-		proxyList.setBorder(BorderFactory.createEtchedBorder());
-		proxyListPanel.setLayout(new BorderLayout());
-		proxyListPanel.add(proxyList);
-
-		proxySettingsPanel.setBorder(BorderFactory.createTitledBorder(""));
-		proxySettingsPanel.setLayout(new GridBagLayout());
 		{
-			proxySettingsPanel.add(proxyHostLabel, GuiUtil.setConstraints(0,0,0.0,1.0,GridBagConstraints.BOTH,5,5,5,5));
-			proxySettingsPanel.add(proxyHostText, GuiUtil.setConstraints(1,0,1.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
-			proxySettingsPanel.add(proxyPortLabel, GuiUtil.setConstraints(0,1,0.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
-			proxySettingsPanel.add(proxyPortText, GuiUtil.setConstraints(1,1,1.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
-			proxySettingsPanel.add(requiresAuthenticationBox, GuiUtil.setConstraints(0,2,2,1,1.0,1.0,GridBagConstraints.BOTH,0,0,5,0));
-			proxySettingsPanel.add(proxyUserLabel, GuiUtil.setConstraints(0,3,0.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
-			proxySettingsPanel.add(proxyUserText, GuiUtil.setConstraints(1,3,1.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
-			proxySettingsPanel.add(proxyPasswordLabel, GuiUtil.setConstraints(0,4,0.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
-			proxySettingsPanel.add(proxyPasswordText, GuiUtil.setConstraints(1,4,1.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
-			proxySettingsPanel.add(passwordCheck, GuiUtil.setConstraints(1,5,0.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
+			JPanel content = new JPanel();
+
+			JPanel proxyListPanel = new JPanel();
+			proxyListPanel.setLayout(new BorderLayout());
+			proxyListPanel.setBorder(UIManager.getBorder("ScrollPane.border"));
+			proxyListPanel.add(proxyList);
+
+			content.setLayout(new GridBagLayout());
+			{
+				content.add(proxyListPanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 5, 0));
+				content.add(useSingleProxy, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 5, 0, 0, 0));
+			}
+
+			proxyProtocolPanel = new TitledPanel().build(content);
 		}
+		{
+			JPanel content = new JPanel();
+			content.setLayout(new GridBagLayout());
+			{
+				content.add(proxyHostLabel, GuiUtil.setConstraints(0, 0, 0, 1, GridBagConstraints.BOTH, 0, 0, 5, 5));
+				content.add(proxyHostText, GuiUtil.setConstraints(1, 0, 1, 1, GridBagConstraints.BOTH, 0, 5, 5, 0));
+				content.add(proxyPortLabel, GuiUtil.setConstraints(0, 1, 0, 1, GridBagConstraints.BOTH, 0, 0, 5, 5));
+				content.add(proxyPortText, GuiUtil.setConstraints(1, 1, 1, 1, GridBagConstraints.BOTH, 0, 5, 5, 0));
+				content.add(requiresAuthenticationBox, GuiUtil.setConstraints(0, 2, 2, 1, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
+				content.add(proxyUserLabel, GuiUtil.setConstraints(0, 3, 0, 1, GridBagConstraints.BOTH, 5, 0, 5, 5));
+				content.add(proxyUserText, GuiUtil.setConstraints(1, 3, 1, 1, GridBagConstraints.BOTH, 5, 5, 5, 0));
+				content.add(proxyPasswordLabel, GuiUtil.setConstraints(0, 4, 0, 1, GridBagConstraints.BOTH, 0, 0, 5, 5));
+				content.add(proxyPasswordText, GuiUtil.setConstraints(1, 4, 1, 1, GridBagConstraints.BOTH, 0, 5, 5, 0));
+				content.add(passwordCheck, GuiUtil.setConstraints(1, 5, 0, 0, GridBagConstraints.BOTH, 0, 5, 0, 0));
+			}
+
+			proxySettingsPanel = new TitledPanel().build(content);
+		}
+
+		add(proxyProtocolPanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+		add(proxySettingsPanel, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 
 		PopupMenuDecorator.getInstance().decorate(proxyHostText, proxyPortText, proxyUserText, proxyPasswordText);
 
@@ -169,7 +180,7 @@ public class ProxyPanel extends AbstractPreferencesComponent implements EventHan
 
 				ProxyConfig selectedProxy = proxyList.getSelectedValue();
 				if (selectedProxy != null) {
-					proxySettingsPanel.setBorder(BorderFactory.createTitledBorder(selectedProxy.toString()));
+					proxySettingsPanel.setTitle(selectedProxy.toString());
 					if (currentProxy != null && currentProxy != selectedProxy) {
 						setProxySettings(currentProxy);
 						loadProxySettings(selectedProxy);
@@ -265,9 +276,8 @@ public class ProxyPanel extends AbstractPreferencesComponent implements EventHan
 	@Override
 	public void doTranslation() {
 		ProxyConfig proxy = proxyList.getSelectedValue();
-		proxySettingsPanel.setBorder(BorderFactory.createTitledBorder(proxy.toString()));
-
-		configureLabel.setText(Language.I18N.getString("pref.proxy.label.configure"));
+		proxySettingsPanel.setTitle(proxy.toString());
+		proxyProtocolPanel.setTitle(Language.I18N.getString("pref.proxy.label.configure"));
 		useSingleProxy.setText(Language.I18N.getString("pref.proxy.label.singleProxy"));
 		requiresAuthenticationBox.setText(Language.I18N.getString("pref.proxy.label.auth"));
 		proxyHostLabel.setText(Language.I18N.getString("common.label.server"));
@@ -347,8 +357,11 @@ public class ProxyPanel extends AbstractPreferencesComponent implements EventHan
 	private static final class DisabledListCellRenderer extends DefaultListCellRenderer {
 		private boolean enable = true;
 		private int singleIndex = 0;
-		
+
+		@Override
 		public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+			super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+
 			boolean select = isSelected;
 			boolean focus = cellHasFocus;
 			if (!enable)

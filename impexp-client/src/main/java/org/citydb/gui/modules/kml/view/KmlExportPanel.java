@@ -334,7 +334,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
         }
         {
             JPanel content = new JPanel();
-            content.setBorder(UIManager.getBorder("TextField.border"));
+            content.setBorder(UIManager.getBorder("ScrollPane.border"));
             content.setLayout(new GridBagLayout());
             {
                 content.add(typeTree, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
