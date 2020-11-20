@@ -56,7 +56,7 @@ public class ThreeDRenderingPanel extends AbstractPreferencesComponent {
 	private final ArrayList<DisplayForm> internalDfs = new ArrayList<>();
 	private final Map<String, Integer> packingAlgorithms = new HashMap<>();
 
-	private JPanel footprintPanel;
+	private JPanel footprintContentPanel;
 	private JCheckBox footprintHighlightingCheckbox;
 	private JLabel footprintFillColorLabel;
 	private JButton footprintFillColorButton;
@@ -69,7 +69,7 @@ public class ThreeDRenderingPanel extends AbstractPreferencesComponent {
 	private JLabel footprintAlphaLabel;
 	private JSpinner footprintAlphaSpinner;
 
-	private JPanel geometryPanel;
+	private JPanel geometryContentPanel;
 	private JLabel geometryAlphaLabel;
 	private JSpinner geometryAlphaSpinner;
 	private JLabel geometryFillColorLabel;
@@ -88,7 +88,7 @@ public class ThreeDRenderingPanel extends AbstractPreferencesComponent {
 	private JLabel geometryRoofLineColorLabel;
 	private JButton geometryRoofLineColorButton;
 
-	private JPanel colladaPanel;
+	private JPanel colladaContentPanel;
 	private JCheckBox ignoreSurfaceOrientationCheckbox;
 	private JCheckBox generateSurfaceNormalsCheckbox;
 	private JCheckBox cropImagesCheckbox;
@@ -209,15 +209,15 @@ public class ThreeDRenderingPanel extends AbstractPreferencesComponent {
 		initColladaPanel();
 
 		if (showFootprintAndExtrudedOptions) {
-			add(footprintPanel, GuiUtil.setConstraints(0, i++, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+			add(footprintContentPanel, GuiUtil.setConstraints(0, i++, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 		}
 
 		if (showGeometryOptions) {
-			add(geometryPanel, GuiUtil.setConstraints(0, i++, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+			add(geometryContentPanel, GuiUtil.setConstraints(0, i++, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 		}
 
 		if (showColladaOptions) {
-			add(colladaPanel, GuiUtil.setConstraints(0, i, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+			add(colladaContentPanel, GuiUtil.setConstraints(0, i, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 		}
 	}
 
@@ -233,9 +233,9 @@ public class ThreeDRenderingPanel extends AbstractPreferencesComponent {
 		footprintHLLineColorButton = new AlphaButton();
 		footprintAlphaLabel = new JLabel();
 
-		footprintPanel = new JPanel();
-		footprintPanel.setLayout(new GridBagLayout());
-		footprintPanel.setBorder(BorderFactory.createTitledBorder(""));
+		footprintContentPanel = new JPanel();
+		footprintContentPanel.setBorder(BorderFactory.createTitledBorder(""));
+		footprintContentPanel.setLayout(new GridBagLayout());
 
 		SpinnerModel falphaValueModel = new SpinnerNumberModel(200, 0, 255, 1);
 		footprintAlphaSpinner = new JSpinner(falphaValueModel);
@@ -244,49 +244,49 @@ public class ThreeDRenderingPanel extends AbstractPreferencesComponent {
 
 		GridBagConstraints fal = GuiUtil.setConstraints(0, 0, 0.25, 1, GridBagConstraints.NONE, 0, 5, 5, 5);
 		fal.anchor = GridBagConstraints.EAST;
-		footprintPanel.add(footprintAlphaLabel, fal);
-		footprintPanel.add(footprintAlphaSpinner, GuiUtil.setConstraints(1, 0, 0.25, 1, GridBagConstraints.HORIZONTAL, 0, 0, 5, 0));
+		footprintContentPanel.add(footprintAlphaLabel, fal);
+		footprintContentPanel.add(footprintAlphaSpinner, GuiUtil.setConstraints(1, 0, 0.25, 1, GridBagConstraints.HORIZONTAL, 0, 0, 5, 0));
 
 		GridBagConstraints ffcl = GuiUtil.setConstraints(0, 1, 0.25, 1, GridBagConstraints.NONE, 5, 5, 2 * 5, 5);
 		ffcl.anchor = GridBagConstraints.EAST;
-		footprintPanel.add(footprintFillColorLabel, ffcl);
+		footprintContentPanel.add(footprintFillColorLabel, ffcl);
 
 		footprintFillColorButton.setPreferredSize(footprintAlphaSpinner.getPreferredSize());
 		footprintFillColorButton.setBackground(new Color(DisplayForm.DEFAULT_FILL_COLOR, true));
 		footprintFillColorButton.setContentAreaFilled(false);
-		footprintPanel.add(footprintFillColorButton, GuiUtil.setConstraints(1, 1, 0.25, 1, GridBagConstraints.HORIZONTAL, 5, 0, 2 * 5, 0));
+		footprintContentPanel.add(footprintFillColorButton, GuiUtil.setConstraints(1, 1, 0.25, 1, GridBagConstraints.HORIZONTAL, 5, 0, 2 * 5, 0));
 
 		GridBagConstraints flcl = GuiUtil.setConstraints(2, 1, 0.25, 1, GridBagConstraints.NONE, 5, 5, 2 * 5, 5);
 		flcl.anchor = GridBagConstraints.EAST;
-		footprintPanel.add(footprintLineColorLabel, flcl);
+		footprintContentPanel.add(footprintLineColorLabel, flcl);
 
 		footprintLineColorButton.setPreferredSize(footprintAlphaSpinner.getPreferredSize());
 		footprintLineColorButton.setBackground(new Color(DisplayForm.DEFAULT_LINE_COLOR, true));
 		footprintLineColorButton.setContentAreaFilled(false);
-		footprintPanel.add(footprintLineColorButton, GuiUtil.setConstraints(3, 1, 0.25, 1, GridBagConstraints.HORIZONTAL, 5, 0, 2 * 5, 5));
+		footprintContentPanel.add(footprintLineColorButton, GuiUtil.setConstraints(3, 1, 0.25, 1, GridBagConstraints.HORIZONTAL, 5, 0, 2 * 5, 5));
 
 		GridBagConstraints fhlcb = GuiUtil.setConstraints(0, 2, 0.5, 1, GridBagConstraints.NONE, 0, 5, 2 * 5, 0);
 		fhlcb.anchor = GridBagConstraints.WEST;
 		fhlcb.gridwidth = 2;
-		footprintPanel.add(footprintHighlightingCheckbox, fhlcb);
+		footprintContentPanel.add(footprintHighlightingCheckbox, fhlcb);
 
 		GridBagConstraints fhlfcl = GuiUtil.setConstraints(0, 3, 0.25, 1, GridBagConstraints.NONE, 0, 5, 2 * 5, 5);
 		fhlfcl.anchor = GridBagConstraints.EAST;
-		footprintPanel.add(footprintHLFillColorLabel, fhlfcl);
+		footprintContentPanel.add(footprintHLFillColorLabel, fhlfcl);
 
 		footprintHLFillColorButton.setPreferredSize(footprintAlphaSpinner.getPreferredSize());
 		footprintHLFillColorButton.setBackground(new Color(DisplayForm.DEFAULT_FILL_HIGHLIGHTED_COLOR, true));
 		footprintHLFillColorButton.setContentAreaFilled(false);
-		footprintPanel.add(footprintHLFillColorButton, GuiUtil.setConstraints(1, 3, 0.25, 1, GridBagConstraints.HORIZONTAL, 0, 0, 2 * 5, 0));
+		footprintContentPanel.add(footprintHLFillColorButton, GuiUtil.setConstraints(1, 3, 0.25, 1, GridBagConstraints.HORIZONTAL, 0, 0, 2 * 5, 0));
 
 		GridBagConstraints fhllcl = GuiUtil.setConstraints(2, 3, 0.25, 1, GridBagConstraints.NONE, 0, 5, 2 * 5, 5);
 		fhllcl.anchor = GridBagConstraints.EAST;
-		footprintPanel.add(footprintHLLineColorLabel, fhllcl);
+		footprintContentPanel.add(footprintHLLineColorLabel, fhllcl);
 
 		footprintHLLineColorButton.setPreferredSize(footprintAlphaSpinner.getPreferredSize());
 		footprintHLLineColorButton.setBackground(new Color(DisplayForm.DEFAULT_LINE_HIGHLIGHTED_COLOR, true));
 		footprintHLLineColorButton.setContentAreaFilled(false);
-		footprintPanel.add(footprintHLLineColorButton, GuiUtil.setConstraints(3, 3, 0.25, 1, GridBagConstraints.HORIZONTAL, 0, 0, 2 * 5, 5));
+		footprintContentPanel.add(footprintHLLineColorButton, GuiUtil.setConstraints(3, 3, 0.25, 1, GridBagConstraints.HORIZONTAL, 0, 0, 2 * 5, 5));
 
 		footprintFillColorButton.addActionListener(e -> {
 			Color fillColor = chooseColor(Language.I18N.getString("pref.kmlexport.label.chooseFillColor"),
@@ -333,9 +333,8 @@ public class ThreeDRenderingPanel extends AbstractPreferencesComponent {
 		geometryHLLineColorLabel = new JLabel();
 		geometryHLLineColorButton = new AlphaButton();
 
-		geometryPanel = new JPanel();
-		geometryPanel.setLayout(new GridBagLayout());
-		geometryPanel.setBorder(BorderFactory.createTitledBorder(""));
+		JPanel content = new JPanel();
+		content.setLayout(new GridBagLayout());
 
 		SpinnerModel galphaValueModel = new SpinnerNumberModel(200, 0, 255, 1);
 		geometryAlphaSpinner = new JSpinner(galphaValueModel);
@@ -344,26 +343,26 @@ public class ThreeDRenderingPanel extends AbstractPreferencesComponent {
 
 		GridBagConstraints gal = GuiUtil.setConstraints(0, 0, 0.25, 1, GridBagConstraints.NONE, 0, 5, 5, 5);
 		gal.anchor = GridBagConstraints.EAST;
-		geometryPanel.add(geometryAlphaLabel, gal);
-		geometryPanel.add(geometryAlphaSpinner, GuiUtil.setConstraints(1, 0, 0.25, 1, GridBagConstraints.HORIZONTAL, 0, 0, 5, 0));
+		content.add(geometryAlphaLabel, gal);
+		content.add(geometryAlphaSpinner, GuiUtil.setConstraints(1, 0, 0.25, 1, GridBagConstraints.HORIZONTAL, 0, 0, 5, 0));
 
 		GridBagConstraints gwcl = GuiUtil.setConstraints(0, 1, 0.25, 1, GridBagConstraints.NONE, 5, 5, 2 * 5, 5);
 		gwcl.anchor = GridBagConstraints.EAST;
-		geometryPanel.add(geometryFillColorLabel, gwcl);
+		content.add(geometryFillColorLabel, gwcl);
 
 		geometryFillColorButton.setPreferredSize(geometryAlphaSpinner.getPreferredSize());
 		geometryFillColorButton.setBackground(new Color(DisplayForm.DEFAULT_WALL_FILL_COLOR, true));
 		geometryFillColorButton.setContentAreaFilled(false);
-		geometryPanel.add(geometryFillColorButton, GuiUtil.setConstraints(1, 1, 0.25, 1, GridBagConstraints.HORIZONTAL, 5, 0, 2 * 5, 0));
+		content.add(geometryFillColorButton, GuiUtil.setConstraints(1, 1, 0.25, 1, GridBagConstraints.HORIZONTAL, 5, 0, 2 * 5, 0));
 
 		GridBagConstraints grcl = GuiUtil.setConstraints(2, 1, 0.25, 1, GridBagConstraints.NONE, 5, 5, 2 * 5, 5);
 		grcl.anchor = GridBagConstraints.EAST;
-		geometryPanel.add(geometryLineColorLabel, grcl);
+		content.add(geometryLineColorLabel, grcl);
 
 		geometryLineColorButton.setPreferredSize(geometryAlphaSpinner.getPreferredSize());
 		geometryLineColorButton.setBackground(new Color(DisplayForm.DEFAULT_WALL_LINE_COLOR, true));
 		geometryLineColorButton.setContentAreaFilled(false);
-		geometryPanel.add(geometryLineColorButton, GuiUtil.setConstraints(3, 1, 0.25, 1, GridBagConstraints.HORIZONTAL, 5, 0, 2 * 5, 5));
+		content.add(geometryLineColorButton, GuiUtil.setConstraints(3, 1, 0.25, 1, GridBagConstraints.HORIZONTAL, 5, 0, 2 * 5, 5));
 
 		if (showThematicSurfaceOptions) {
 			geometryRoofFillColorLabel = new JLabel();
@@ -373,51 +372,58 @@ public class ThreeDRenderingPanel extends AbstractPreferencesComponent {
 
 			GridBagConstraints grfcl = GuiUtil.setConstraints(0, 2, 0.25, 1.0, GridBagConstraints.NONE, 0, 5, 2 * 5, 5);
 			grfcl.anchor = GridBagConstraints.EAST;
-			geometryPanel.add(geometryRoofFillColorLabel, grfcl);
+			content.add(geometryRoofFillColorLabel, grfcl);
 
 			geometryRoofFillColorButton.setPreferredSize(geometryAlphaSpinner.getPreferredSize());
 			geometryRoofFillColorButton.setBackground(new Color(DisplayForm.DEFAULT_ROOF_FILL_COLOR, true));
 			geometryRoofFillColorButton.setContentAreaFilled(false);
-			geometryPanel.add(geometryRoofFillColorButton, GuiUtil.setConstraints(1, 2, 0.25, 1.0, GridBagConstraints.HORIZONTAL, 0, 0, 2 * 5, 0));
+			content.add(geometryRoofFillColorButton, GuiUtil.setConstraints(1, 2, 0.25, 1.0, GridBagConstraints.HORIZONTAL, 0, 0, 2 * 5, 0));
 
 			GridBagConstraints grlcl = GuiUtil.setConstraints(2, 2, 0.25, 1.0, GridBagConstraints.NONE, 0, 5, 2 * 5, 5);
 			grlcl.anchor = GridBagConstraints.EAST;
-			geometryPanel.add(geometryRoofLineColorLabel, grlcl);
+			content.add(geometryRoofLineColorLabel, grlcl);
 
 			geometryRoofLineColorButton.setPreferredSize(geometryAlphaSpinner.getPreferredSize());
 			geometryRoofLineColorButton.setBackground(new Color(DisplayForm.DEFAULT_ROOF_LINE_COLOR, true));
 			geometryRoofLineColorButton.setContentAreaFilled(false);
-			geometryPanel.add(geometryRoofLineColorButton, GuiUtil.setConstraints(3, 2, 0.25, 1.0, GridBagConstraints.HORIZONTAL, 0, 0, 2 * 5, 5));
+			content.add(geometryRoofLineColorButton, GuiUtil.setConstraints(3, 2, 0.25, 1.0, GridBagConstraints.HORIZONTAL, 0, 0, 2 * 5, 5));
 		}
 
 		GridBagConstraints ghcb = GuiUtil.setConstraints(0, 3, 0, 1, GridBagConstraints.BOTH, 0, 5, 2 * 5, 0);
 		ghcb.gridwidth = 2;
-		geometryPanel.add(geometryHighlightingCheckbox, ghcb);
+		content.add(geometryHighlightingCheckbox, ghcb);
 
 		GridBagConstraints ghlfcl = GuiUtil.setConstraints(0, 4, 0.25, 1, GridBagConstraints.NONE, 0, 5, 2 * 5, 5);
 		ghlfcl.anchor = GridBagConstraints.EAST;
-		geometryPanel.add(geometryHLFillColorLabel, ghlfcl);
+		content.add(geometryHLFillColorLabel, ghlfcl);
 
 		geometryHLFillColorButton.setPreferredSize(geometryAlphaSpinner.getPreferredSize());
 		geometryHLFillColorButton.setBackground(new Color(DisplayForm.DEFAULT_FILL_HIGHLIGHTED_COLOR, true));
 		geometryHLFillColorButton.setContentAreaFilled(false);
-		geometryPanel.add(geometryHLFillColorButton, GuiUtil.setConstraints(1, 4, 0.25, 1, GridBagConstraints.HORIZONTAL, 0, 0, 2 * 5, 0));
+		content.add(geometryHLFillColorButton, GuiUtil.setConstraints(1, 4, 0.25, 1, GridBagConstraints.HORIZONTAL, 0, 0, 2 * 5, 0));
 
 		GridBagConstraints ghllcl = GuiUtil.setConstraints(2, 4, 0.25, 1, GridBagConstraints.NONE, 0, 5, 2 * 5, 5);
 		ghllcl.anchor = GridBagConstraints.EAST;
-		geometryPanel.add(geometryHLLineColorLabel, ghllcl);
+		content.add(geometryHLLineColorLabel, ghllcl);
 
 		geometryHLLineColorButton.setPreferredSize(geometryAlphaSpinner.getPreferredSize());
 		geometryHLLineColorButton.setBackground(new Color(DisplayForm.DEFAULT_LINE_HIGHLIGHTED_COLOR, true));
 		geometryHLLineColorButton.setContentAreaFilled(false);
-		geometryPanel.add(geometryHLLineColorButton, GuiUtil.setConstraints(3, 4, 0.25, 1, GridBagConstraints.HORIZONTAL, 0, 0, 2 * 5, 5));
+		content.add(geometryHLLineColorButton, GuiUtil.setConstraints(3, 4, 0.25, 1, GridBagConstraints.HORIZONTAL, 0, 0, 2 * 5, 5));
 
 		GridBagConstraints ghdl = GuiUtil.setConstraints(0, 5, 0, 1, GridBagConstraints.NONE, 0, 2 * 5, 2 * 5, 5);
 		ghdl.anchor = GridBagConstraints.EAST;
-		geometryPanel.add(geometryHLSurfaceDistanceLabel, ghdl);
+		content.add(geometryHLSurfaceDistanceLabel, ghdl);
 
 		GridBagConstraints ghdt = GuiUtil.setConstraints(1, 5, 0, 1, GridBagConstraints.HORIZONTAL, 0, 0, 2 * 5, 0);
-		geometryPanel.add(geometryHLSurfaceDistanceText, ghdt);
+		content.add(geometryHLSurfaceDistanceText, ghdt);
+
+		geometryContentPanel = new JPanel();
+		geometryContentPanel.setBorder(BorderFactory.createTitledBorder(""));
+		geometryContentPanel.setLayout(new GridBagLayout());
+		{
+			geometryContentPanel.add(content, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 0));
+		}
 
 		PopupMenuDecorator.getInstance().decorate(geometryHLSurfaceDistanceText);
 
@@ -494,36 +500,35 @@ public class ThreeDRenderingPanel extends AbstractPreferencesComponent {
 		colladaHLLineColorButton = new AlphaButton();
 		packingAlgorithmsComboBox = new JComboBox<>();
 
-		colladaPanel = new JPanel();
-		colladaPanel.setLayout(new GridBagLayout());
-		colladaPanel.setBorder(BorderFactory.createTitledBorder(""));
+		JPanel content = new JPanel();
+		content.setLayout(new GridBagLayout());
 
 		GridBagConstraints isoc = GuiUtil.setConstraints(0, 0, 0, 1, GridBagConstraints.BOTH, 0, 5, 0, 0);
 		isoc.gridwidth = 2;
-		colladaPanel.add(ignoreSurfaceOrientationCheckbox, isoc);
+		content.add(ignoreSurfaceOrientationCheckbox, isoc);
 
 		GridBagConstraints gsnc = GuiUtil.setConstraints(0, 1, 0, 1, GridBagConstraints.BOTH, 0, 5, 0, 0);
 		gsnc.gridwidth = 2;
-		colladaPanel.add(generateSurfaceNormalsCheckbox, gsnc);
+		content.add(generateSurfaceNormalsCheckbox, gsnc);
 
 		GridBagConstraints cI = GuiUtil.setConstraints(0, 2, 0, 1, GridBagConstraints.BOTH, 0, 5, 0, 0);
 		cI.gridwidth = 2;
-		colladaPanel.add(cropImagesCheckbox, cI);
+		content.add(cropImagesCheckbox, cI);
 
 		packingAlgorithmsComboBox.addItem("BASIC");
 		packingAlgorithmsComboBox.addItem("TPIM");
 		packingAlgorithmsComboBox.addItem("TPIM w/o image rotation");
 
-		colladaPanel.add(textureAtlasCheckbox, GuiUtil.setConstraints(0, 3, 0, 1, GridBagConstraints.BOTH, 0, 5, 2, 0));
-		colladaPanel.add(packingAlgorithmsComboBox, GuiUtil.setConstraints(1, 3, 1, 1, GridBagConstraints.BOTH, 0, 5, 2, 5));
+		content.add(textureAtlasCheckbox, GuiUtil.setConstraints(0, 3, 0, 1, GridBagConstraints.BOTH, 0, 5, 2, 0));
+		content.add(packingAlgorithmsComboBox, GuiUtil.setConstraints(1, 3, 1, 1, GridBagConstraints.BOTH, 0, 5, 2, 5));
 
 		int lmargin = GuiUtil.getTextOffset(textureAtlasCheckbox) + 5;
 		GridBagConstraints tapc = GuiUtil.setConstraints(0, 4, 0, 1, GridBagConstraints.BOTH, 5, lmargin, 5, 0);
 		tapc.gridwidth = 2;
-		colladaPanel.add(textureAtlasPotsCheckbox, tapc);
+		content.add(textureAtlasPotsCheckbox, tapc);
 
-		colladaPanel.add(scaleTexImagesCheckbox, GuiUtil.setConstraints(0, 5, 0, 1, GridBagConstraints.BOTH, 0, 5, 2, 0));
-		colladaPanel.add(scaleFactorText, GuiUtil.setConstraints(1, 5, 1, 1, GridBagConstraints.BOTH, 0, 5, 2, 5));
+		content.add(scaleTexImagesCheckbox, GuiUtil.setConstraints(0, 5, 0, 1, GridBagConstraints.BOTH, 0, 5, 2, 0));
+		content.add(scaleFactorText, GuiUtil.setConstraints(1, 5, 1, 1, GridBagConstraints.BOTH, 0, 5, 2, 5));
 
 		// color settings for collada and gltf
 		colladaColorSubPanel = new JPanel();
@@ -531,7 +536,7 @@ public class ThreeDRenderingPanel extends AbstractPreferencesComponent {
 		colladaColorSubPanel.setBorder(BorderFactory.createTitledBorder(""));
 		GridBagConstraints cclsp = GuiUtil.setConstraints(0, 6, 0, 1, GridBagConstraints.BOTH, 5 * 2, 5, 2 * 5, 5);
 		cclsp.gridwidth = 2;
-		colladaPanel.add(colladaColorSubPanel, cclsp);
+		content.add(colladaColorSubPanel, cclsp);
 
 		SpinnerModel cAlphaValueModel = new SpinnerNumberModel(255, 0, 255, 1);
 		colladaAlphaSpinner = new JSpinner(cAlphaValueModel);
@@ -570,18 +575,18 @@ public class ThreeDRenderingPanel extends AbstractPreferencesComponent {
 		colladaRadioGroup.add(groupObjectsRButton);
 		colladaRadioGroup.add(colladaHighlightingRButton);
 
-		colladaPanel.add(groupObjectsRButton, GuiUtil.setConstraints(0, 7, 0, 1, GridBagConstraints.BOTH, 0, 5, 2, 0));
-		colladaPanel.add(groupSizeText, GuiUtil.setConstraints(1, 7, 1, 1, GridBagConstraints.BOTH, 0, 5, 2, 5));
+		content.add(groupObjectsRButton, GuiUtil.setConstraints(0, 7, 0, 1, GridBagConstraints.BOTH, 0, 5, 2, 0));
+		content.add(groupSizeText, GuiUtil.setConstraints(1, 7, 1, 1, GridBagConstraints.BOTH, 0, 5, 2, 5));
 
 		GridBagConstraints chrb = GuiUtil.setConstraints(0, 8, 0, 1, GridBagConstraints.BOTH, 0, 5, 2 * 5, 0);
 		chrb.gridwidth = 2;
-		colladaPanel.add(colladaHighlightingRButton, chrb);
+		content.add(colladaHighlightingRButton, chrb);
 
 		JPanel colladaHLSubPanel = new JPanel();
 		colladaHLSubPanel.setLayout(new GridBagLayout());
 		GridBagConstraints chlsp = GuiUtil.setConstraints(0, 9, 0, 1, GridBagConstraints.BOTH, 0, 0, 0, 0);
 		chlsp.gridwidth = 2;
-		colladaPanel.add(colladaHLSubPanel, chlsp);
+		content.add(colladaHLSubPanel, chlsp);
 
 		GridBagConstraints chlfcl = GuiUtil.setConstraints(0, 0, 0.25, 1, GridBagConstraints.NONE, 0, 5, 2 * 5, 5);
 		chlfcl.anchor = GridBagConstraints.EAST;
@@ -607,6 +612,13 @@ public class ThreeDRenderingPanel extends AbstractPreferencesComponent {
 
 		GridBagConstraints chldt = GuiUtil.setConstraints(1, 1, 0, 1, GridBagConstraints.HORIZONTAL, 0, 0, 2 * 5, 0);
 		colladaHLSubPanel.add(colladaHLSurfaceDistanceText, chldt);
+
+		colladaContentPanel = new JPanel();
+		colladaContentPanel.setBorder(BorderFactory.createTitledBorder(""));
+		colladaContentPanel.setLayout(new GridBagLayout());
+		{
+			colladaContentPanel.add(content, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 0));
+		}
 
 		PopupMenuDecorator.getInstance().decorate(scaleFactorText, groupSizeText, colladaHLSurfaceDistanceText);
 
@@ -648,17 +660,31 @@ public class ThreeDRenderingPanel extends AbstractPreferencesComponent {
 		textureAtlasCheckbox.addActionListener(e -> setEnabledHighlighting());
 	}
 
-	private Color chooseColor(String title, Color initialColor){
-		return JColorChooser.showDialog(getTopLevelAncestor(), title, initialColor);
+	public void addFootprintAndExtrudedOptions(JLabel label, JComponent component) {
+		if (showFootprintAndExtrudedOptions) {
+			footprintContentPanel.add(label, GuiUtil.setConstraints(0, 4, 0, 0, GridBagConstraints.HORIZONTAL, 5, 0, 0, 5));
+			footprintContentPanel.add(component, GuiUtil.setConstraints(1, 4, 3, 1, 1, 0, GridBagConstraints.HORIZONTAL, 5, 5, 0, 0));
+		}
 	}
 
+	public void addGeometryOptions(JComponent component) {
+		if (showGeometryOptions) {
+			geometryContentPanel.add(component, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.HORIZONTAL, 5, 0, 0, 0));
+		}
+	}
+
+	public void addColladaOptions(JComponent component) {
+		if (showColladaOptions) {
+			colladaContentPanel.add(component, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.HORIZONTAL, 5, 0, 0, 0));
+		}
+	}
 
 	@Override
 	public void doTranslation() {
 
-		((TitledBorder)footprintPanel.getBorder()).setTitle(Language.I18N.getString("pref.kmlexport.border.footprint"));	
-		((TitledBorder)geometryPanel.getBorder()).setTitle(Language.I18N.getString("pref.kmlexport.border.geometry"));	
-		((TitledBorder)colladaPanel.getBorder()).setTitle(Language.I18N.getString("pref.kmlexport.border.collada"));	
+		((TitledBorder) footprintContentPanel.getBorder()).setTitle(Language.I18N.getString("pref.kmlexport.border.footprint"));
+		((TitledBorder) geometryContentPanel.getBorder()).setTitle(Language.I18N.getString("pref.kmlexport.border.geometry"));
+		((TitledBorder) colladaContentPanel.getBorder()).setTitle(Language.I18N.getString("pref.kmlexport.border.collada"));
 
 		footprintAlphaLabel.setText(Language.I18N.getString("pref.kmlexport.label.alpha"));
 		footprintFillColorLabel.setText(Language.I18N.getString("pref.kmlexport.label.fillColor"));
@@ -1091,5 +1117,9 @@ public class ThreeDRenderingPanel extends AbstractPreferencesComponent {
 		copy.setRgba3(original.getRgba3());
 		copy.setRgba4(original.getRgba4());
 		copy.setRgba5(original.getRgba5());
+	}
+
+	private Color chooseColor(String title, Color initialColor){
+		return JColorChooser.showDialog(getTopLevelAncestor(), title, initialColor);
 	}
 }
