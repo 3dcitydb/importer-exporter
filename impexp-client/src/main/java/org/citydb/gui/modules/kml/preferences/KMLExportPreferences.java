@@ -29,12 +29,13 @@ package org.citydb.gui.modules.kml.preferences;
 
 import org.citydb.ade.ADEExtension;
 import org.citydb.ade.ADEExtensionManager;
+import org.citydb.ade.kmlExporter.ADEKmlExportExtension;
 import org.citydb.config.Config;
+import org.citydb.config.project.kmlExporter.KmlExportConfig;
 import org.citydb.database.schema.mapping.AppSchema;
 import org.citydb.database.schema.mapping.FeatureType;
 import org.citydb.gui.modules.common.AbstractPreferences;
 import org.citydb.gui.modules.common.DefaultPreferencesEntry;
-import org.citydb.ade.kmlExporter.ADEKmlExportExtension;
 import org.citydb.plugin.extension.view.ViewController;
 
 import java.util.List;
@@ -44,22 +45,44 @@ public class KMLExportPreferences extends AbstractPreferences {
 	
 	public KMLExportPreferences(ViewController viewController, Config config) {
 		super(new KMLExportEntry());
-		
+		KmlExportConfig exportConfig = config.getKmlExportConfig();
+
 		DefaultPreferencesEntry renderingNode = new RenderingPanel();
-		renderingNode.addChildEntry(new DefaultPreferencesEntry(new BuildingRenderingPanel(config)));
-		renderingNode.addChildEntry(new DefaultPreferencesEntry(new WaterBodyRenderingPanel(config)));
-		renderingNode.addChildEntry(new DefaultPreferencesEntry(new LandUseRenderingPanel(config)));
-		renderingNode.addChildEntry(new DefaultPreferencesEntry(new VegetationRenderingPanel(config)));
-		renderingNode.addChildEntry(new DefaultPreferencesEntry(new TransportationRenderingPanel(config)));
-		renderingNode.addChildEntry(new DefaultPreferencesEntry(new ReliefRenderingPanel(config)));
-		renderingNode.addChildEntry(new DefaultPreferencesEntry(new CityFurnitureRenderingPanel(config)));		
-		DefaultPreferencesEntry genericCityObjectRenderingNode = new GenericCityObjectBalloonPanel();
-		genericCityObjectRenderingNode.addChildEntry(new DefaultPreferencesEntry(new ThreeDRenderingPanel(config)));
-		genericCityObjectRenderingNode.addChildEntry(new DefaultPreferencesEntry(new PointAndCurveRenderingPanel(config)));
-		renderingNode.addChildEntry(genericCityObjectRenderingNode);		
-		renderingNode.addChildEntry(new DefaultPreferencesEntry(new CityObjectGroupRenderingPanel(config)));
 		renderingNode.addChildEntry(new DefaultPreferencesEntry(new BridgeRenderingPanel(config)));
+		renderingNode.addChildEntry(new DefaultPreferencesEntry(new BuildingRenderingPanel(config)));
+		renderingNode.addChildEntry(new DefaultPreferencesEntry(new ThreeDRenderingPanel("pref.tree.kmlExport.cityFurnitureRendering",
+				exportConfig.getCityFurnitureDisplayForms(),
+				exportConfig.getCityFurnitureColladaOptions(),
+				config)));
+		renderingNode.addChildEntry(new DefaultPreferencesEntry(new CityObjectGroupRenderingPanel(config)));
+		DefaultPreferencesEntry genericCityObjectRenderingNode = new EmptyPanel("pref.tree.kmlExport.genericCityObjectRendering");
+		genericCityObjectRenderingNode.addChildEntry(new DefaultPreferencesEntry(new ThreeDRenderingPanel("pref.tree.kmlExport.gco3DRendering",
+				exportConfig.getGenericCityObjectDisplayForms(),
+				exportConfig.getGenericCityObjectColladaOptions(),
+				config)));
+		genericCityObjectRenderingNode.addChildEntry(new DefaultPreferencesEntry(new PointAndCurveRenderingPanel(config)));
+		renderingNode.addChildEntry(genericCityObjectRenderingNode);
+		renderingNode.addChildEntry(new DefaultPreferencesEntry(new ThreeDRenderingPanel("pref.tree.kmlExport.reliefRendering",
+				exportConfig.getReliefDisplayForms(),
+				exportConfig.getReliefColladaOptions(),
+				config)));
+		renderingNode.addChildEntry(new DefaultPreferencesEntry(new ThreeDRenderingPanel("pref.tree.kmlExport.transportationRendering",
+				exportConfig.getTransportationDisplayForms(),
+				exportConfig.getTransportationColladaOptions(),
+				config)));
+		renderingNode.addChildEntry(new DefaultPreferencesEntry(new ThreeDRenderingPanel("pref.tree.kmlExport.transportationRendering",
+				exportConfig.getTransportationDisplayForms(),
+				exportConfig.getTransportationColladaOptions(),
+				config)));
 		renderingNode.addChildEntry(new DefaultPreferencesEntry(new TunnelRenderingPanel(config)));
+		renderingNode.addChildEntry(new DefaultPreferencesEntry(new ThreeDRenderingPanel("pref.tree.kmlExport.vegetationRendering",
+				exportConfig.getVegetationDisplayForms(),
+				exportConfig.getVegetationColladaOptions(),
+				config)));
+		renderingNode.addChildEntry(new DefaultPreferencesEntry(new ThreeDRenderingPanel("pref.tree.kmlExport.waterBodyRendering",
+				exportConfig.getWaterBodyDisplayForms(),
+				exportConfig.getWaterBodyColladaOptions(),
+				config)));
 
 		DefaultPreferencesEntry balloonNode = new BalloonPanel();
 		balloonNode.addChildEntry(new DefaultPreferencesEntry(new BuildingBalloonPanel(config)));

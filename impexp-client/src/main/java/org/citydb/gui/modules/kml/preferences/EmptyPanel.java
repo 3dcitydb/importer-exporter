@@ -31,15 +31,16 @@ import org.citydb.config.i18n.Language;
 import org.citydb.gui.modules.common.DefaultPreferencesEntry;
 import org.citydb.gui.modules.common.NullComponent;
 
-public class GenericCityObjectRenderingPanel extends DefaultPreferencesEntry {
+public class EmptyPanel extends DefaultPreferencesEntry {
+	private  String i18nTitle;
 
-	public GenericCityObjectRenderingPanel() {
+	public EmptyPanel(String i18nTitle) {
 		super(NullComponent.getInstance());
+		this.i18nTitle = i18nTitle;
 	}
 
 	@Override
 	public String getLocalizedTitle() {
-		return Language.I18N.getString("pref.tree.kmlExport.genericCityObjectRendering");
+		return Language.I18N.getString(i18nTitle);
 	}
-	
 }

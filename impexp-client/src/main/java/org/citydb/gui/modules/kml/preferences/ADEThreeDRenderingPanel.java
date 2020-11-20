@@ -27,6 +27,7 @@
  */
 package org.citydb.gui.modules.kml.preferences;
 
+import org.citydb.ade.kmlExporter.ADEKmlExportExtensionManager;
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.kmlExporter.ColladaOptions;
@@ -36,7 +37,6 @@ import org.citydb.gui.components.common.AlphaButton;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.modules.common.AbstractPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
-import org.citydb.ade.kmlExporter.ADEKmlExportExtensionManager;
 import org.citydb.textureAtlas.TextureAtlasCreator;
 
 import javax.swing.*;

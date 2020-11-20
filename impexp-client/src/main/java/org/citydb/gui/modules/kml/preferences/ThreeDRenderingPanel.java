@@ -48,6 +48,9 @@ import java.util.List;
 
 @SuppressWarnings("serial")
 public class ThreeDRenderingPanel extends AbstractPreferencesComponent {
+	private final String i18nTitle;
+	private final List<DisplayForm> displayForms;
+	private final ColladaOptions colladaOptions;
 
 	protected static final int BORDER_THICKNESS = 5;
 	protected static final int MAX_TEXTFIELD_HEIGHT = 20;
@@ -108,39 +111,29 @@ public class ThreeDRenderingPanel extends AbstractPreferencesComponent {
 	private HashMap<String, Integer> packingAlgorithms = new HashMap<>();
 	private JComboBox<String> packingAlgorithmsComboBox = new JComboBox<>();
 
-	public ThreeDRenderingPanel(Config config) {
+	public ThreeDRenderingPanel(String i18nTitle, List<DisplayForm> displayForms, ColladaOptions colladaOptions, Config config) {
 		super(config);
+		this.i18nTitle = i18nTitle;
+		this.displayForms = displayForms;
+		this.colladaOptions = colladaOptions;
+
 		initGui();
-	}
-
-	private ColladaOptions getConfigColladaOptions() {
-		return config.getKmlExportConfig().getGenericCityObjectColladaOptions();
-	}
-
-	private List<DisplayForm> getConfigDisplayForms() {
-		return config.getKmlExportConfig().getGenericCityObjectDisplayForms();
-	}
-
-	private void setConfigDisplayForms(List<DisplayForm> displayForms) {
-		config.getKmlExportConfig().setGenericCityObjectDisplayForms(displayForms);
 	}
 
 	@Override
 	public String getTitle() {
-		return Language.I18N.getString("pref.tree.kmlExport.gco3DRendering");
+		return Language.I18N.getString(i18nTitle);
 	}
 
 	@Override
 	public boolean isModified() {
 		setInternalDisplayFormValues();
-		ColladaOptions colladaOptions = getConfigColladaOptions();
-		List<DisplayForm> configDfs = getConfigDisplayForms();
 
 		for (int form = DisplayForm.FOOTPRINT; form <= DisplayForm.COLLADA; form++) {
 			DisplayForm configDf = DisplayForm.of(form);
-			int indexOfConfigDf = configDfs.indexOf(configDf); 
+			int indexOfConfigDf = displayForms.indexOf(configDf);
 			if (indexOfConfigDf != -1) {
-				configDf = configDfs.get(indexOfConfigDf);
+				configDf = displayForms.get(indexOfConfigDf);
 			}
 			DisplayForm internalDf = DisplayForm.of(form);
 			int indexOfInternalDf = internalDfs.indexOf(internalDf); 
@@ -211,7 +204,7 @@ public class ThreeDRenderingPanel extends AbstractPreferencesComponent {
 		footprintFillColorButton.setBackground(new Color(DisplayForm.DEFAULT_FILL_COLOR, true));
 		footprintFillColorButton.setContentAreaFilled(false);
 		footprintPanel.add(footprintFillColorButton, GuiUtil.setConstraints(1,1,0.25,1.0,GridBagConstraints.HORIZONTAL,BORDER_THICKNESS,0,2*BORDER_THICKNESS,0));
-		
+
 		GridBagConstraints flcl = GuiUtil.setConstraints(2,1,0.25,1.0,GridBagConstraints.NONE,BORDER_THICKNESS,BORDER_THICKNESS,2*BORDER_THICKNESS,BORDER_THICKNESS);
 		flcl.anchor = GridBagConstraints.EAST;
 		footprintPanel.add(footprintLineColorLabel, flcl);
@@ -627,14 +620,12 @@ public class ThreeDRenderingPanel extends AbstractPreferencesComponent {
 	@Override
 	public void loadSettings() {
 		internalDfs.clear();
-		List<DisplayForm> configDfs = getConfigDisplayForms();
-		ColladaOptions colladaOptions = getConfigColladaOptions();
 
 		for (int form = DisplayForm.FOOTPRINT; form <= DisplayForm.COLLADA; form++) {
 			DisplayForm configDf = DisplayForm.of(form);
-			int indexOfConfigDf = configDfs.indexOf(configDf); 
+			int indexOfConfigDf = displayForms.indexOf(configDf);
 			if (indexOfConfigDf != -1) {
-				configDf = configDfs.get(indexOfConfigDf);
+				configDf = displayForms.get(indexOfConfigDf);
 			}
 			DisplayForm internalDf = configDf.clone();
 			internalDfs.add(internalDf);
@@ -744,17 +735,15 @@ public class ThreeDRenderingPanel extends AbstractPreferencesComponent {
 	@Override
 	public void setSettings() {
 		setInternalDisplayFormValues();
-		ColladaOptions colladaOptions = getConfigColladaOptions();
-		List<DisplayForm> configDfs = getConfigDisplayForms();
 
-		if (configDfs.isEmpty()) {
-			setConfigDisplayForms(internalDfs);
+		if (displayForms.isEmpty()) {
+			displayForms.addAll(internalDfs);
 		}
 		else {
 			for (DisplayForm internalDf : internalDfs) {
-				int indexOfConfigDf = configDfs.indexOf(internalDf); 
+				int indexOfConfigDf = displayForms.indexOf(internalDf);
 				if (indexOfConfigDf != -1) {
-					DisplayForm configDf = configDfs.get(indexOfConfigDf);
+					DisplayForm configDf = displayForms.get(indexOfConfigDf);
 					// clone cannot be used here because of isActive() and visibleFrom()
 					copyColorAndHighlightingValues(internalDf, configDf);
 				}
@@ -900,16 +889,12 @@ public class ThreeDRenderingPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void resetSettings() {
-		ColladaOptions colladaOptions = getConfigColladaOptions();
-		List<DisplayForm> configDfs = getConfigDisplayForms();
-
 		for (int form = DisplayForm.FOOTPRINT; form <= DisplayForm.EXTRUDED; form++) {
 			DisplayForm df = DisplayForm.of(form);
-			int indexOfDf = configDfs.indexOf(df); 
+			int indexOfDf = displayForms.indexOf(df);
 			if (indexOfDf != -1) {
-				df = configDfs.get(indexOfDf);
+				df = displayForms.get(indexOfDf);
 				df.setHighlightingEnabled(false);
-
 				df.setRgba0(DisplayForm.DEFAULT_FILL_COLOR);
 				df.setRgba1(DisplayForm.DEFAULT_LINE_COLOR);
 				df.setRgba4(DisplayForm.DEFAULT_FILL_HIGHLIGHTED_COLOR);
@@ -918,12 +903,11 @@ public class ThreeDRenderingPanel extends AbstractPreferencesComponent {
 		}
 
 		DisplayForm df = DisplayForm.of(DisplayForm.GEOMETRY);
-		int indexOfDf = configDfs.indexOf(df); 
+		int indexOfDf = displayForms.indexOf(df);
 		if (indexOfDf != -1) {
-			df = configDfs.get(indexOfDf);
+			df = displayForms.get(indexOfDf);
 			df.setHighlightingEnabled(false);
 			df.setHighlightingDistance(0.75);
-
 			df.setRgba0(DisplayForm.DEFAULT_WALL_FILL_COLOR);
 			df.setRgba1(DisplayForm.DEFAULT_WALL_LINE_COLOR);
 			df.setRgba2(DisplayForm.DEFAULT_ROOF_FILL_COLOR);
@@ -933,20 +917,18 @@ public class ThreeDRenderingPanel extends AbstractPreferencesComponent {
 		}
 
 		df = DisplayForm.of(DisplayForm.COLLADA);
-		indexOfDf = configDfs.indexOf(df); 
+		indexOfDf = displayForms.indexOf(df);
 		if (indexOfDf != -1) {
-			df = configDfs.get(indexOfDf);
+			df = displayForms.get(indexOfDf);
 			df.setHighlightingEnabled(false);
 			df.setHighlightingDistance(0.75);
-			
 			df.setRgba0(DisplayForm.DEFAULT_COLLADA_WALL_FILL_COLOR);
 			df.setRgba4(DisplayForm.DEFAULT_FILL_HIGHLIGHTED_COLOR);
 			df.setRgba5(DisplayForm.DEFAULT_LINE_HIGHLIGHTED_COLOR);
 		}
 
 		ColladaOptions.resetSettings(colladaOptions);
-
-		loadSettings(); // update GUI
+		loadSettings();
 	}
 
 	private void setEnabledHighlighting() {
