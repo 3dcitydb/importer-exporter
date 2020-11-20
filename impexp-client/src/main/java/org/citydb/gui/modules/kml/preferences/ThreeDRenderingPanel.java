@@ -40,9 +40,13 @@ import org.citydb.textureAtlas.TextureAtlasCreator;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 public class ThreeDRenderingPanel extends AbstractPreferencesComponent {
@@ -53,7 +57,7 @@ public class ThreeDRenderingPanel extends AbstractPreferencesComponent {
 	private final boolean showGeometryOptions;
 	private final boolean showColladaOptions;
 	private final boolean showThematicSurfaceOptions;
-	private final ArrayList<DisplayForm> internalDfs = new ArrayList<>();
+	private final ArrayList<DisplayForm> internalDisplayForms = new ArrayList<>();
 	private final Map<String, Integer> packingAlgorithms = new HashMap<>();
 
 	private JPanel footprintContentPanel;
@@ -78,7 +82,7 @@ public class ThreeDRenderingPanel extends AbstractPreferencesComponent {
 	private JButton geometryLineColorButton;
 	private JCheckBox geometryHighlightingCheckbox;
 	private JLabel geometryHLSurfaceDistanceLabel;
-	private JTextField geometryHLSurfaceDistanceText;
+	private JFormattedTextField geometryHLSurfaceDistanceText;
 	private JLabel geometryHLFillColorLabel;
 	private JButton geometryHLFillColorButton;
 	private JLabel geometryHLLineColorLabel;
@@ -95,17 +99,17 @@ public class ThreeDRenderingPanel extends AbstractPreferencesComponent {
 	private JCheckBox textureAtlasCheckbox;
 	private JCheckBox textureAtlasPotsCheckbox;
 	private JCheckBox scaleTexImagesCheckbox;
-	private JTextField scaleFactorText;
+	private JFormattedTextField scaleFactorText;
 	private JPanel colladaColorSubPanel;
 	private JLabel colladaAlphaLabel;
 	private JSpinner colladaAlphaSpinner;
 	private JLabel colladaFillColorLabel;
 	private JButton colladaFillColorButton;
 	private JRadioButton groupObjectsRButton;
-	private JTextField groupSizeText;
+	private JFormattedTextField groupSizeText;
 	private JRadioButton colladaHighlightingRButton;
 	private JLabel colladaHLSurfaceDistanceLabel;
-	private JTextField colladaHLSurfaceDistanceText;
+	private JFormattedTextField colladaHLSurfaceDistanceText;
 	private JLabel colladaHLFillColorLabel;
 	private JButton colladaHLFillColorButton;
 	private JLabel colladaHLLineColorLabel;
@@ -149,21 +153,20 @@ public class ThreeDRenderingPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public boolean isModified() {
+		try { geometryHLSurfaceDistanceText.commitEdit(); } catch (ParseException ignored) { }
+		try { colladaHLSurfaceDistanceText.commitEdit(); } catch (ParseException ignored) { }
+		try { scaleFactorText.commitEdit(); } catch (ParseException ignored) { }
+		try { groupSizeText.commitEdit(); } catch (ParseException ignored) { }
+
 		setInternalDisplayFormValues();
 
 		for (int form = DisplayForm.FOOTPRINT; form <= DisplayForm.COLLADA; form++) {
-			DisplayForm configDf = DisplayForm.of(form);
-			int indexOfConfigDf = displayForms.indexOf(configDf);
-			if (indexOfConfigDf != -1) {
-				configDf = displayForms.get(indexOfConfigDf);
-			}
-			DisplayForm internalDf = DisplayForm.of(form);
-			int indexOfInternalDf = internalDfs.indexOf(internalDf); 
-			if (indexOfInternalDf != -1) {
-				internalDf = internalDfs.get(indexOfInternalDf);
+			DisplayForm displayForm = DisplayForm.getDisplayForm(form, displayForms);
+			if (displayForm == null) {
+				continue;
 			}
 
-			if (areDisplayFormsContentsDifferent(internalDf, configDf)) return true;
+			if (notEqual(displayForm, DisplayForm.getDisplayForm(form, internalDisplayForms))) return true;
 		}
 
 		if (ignoreSurfaceOrientationCheckbox.isSelected() != colladaOptions.isIgnoreSurfaceOrientation()) return true;
@@ -171,53 +174,32 @@ public class ThreeDRenderingPanel extends AbstractPreferencesComponent {
 		if (cropImagesCheckbox.isSelected() != colladaOptions.isCropImages()) return true;
 		if (textureAtlasCheckbox.isSelected() != colladaOptions.isGenerateTextureAtlases()) return true;
 		if (textureAtlasPotsCheckbox.isSelected() != colladaOptions.isTextureAtlasPots()) return true;
-		if (packingAlgorithms.get(packingAlgorithmsComboBox.getSelectedItem()).intValue() != colladaOptions.getPackingAlgorithm()) return true;
-
-		int groupSize = 1;
-		try {
-			groupSize = Integer.parseInt(groupSizeText.getText().trim());
-			if (groupSize < 2) {
-				groupSize = 1;
-			}
-		}
-		catch (NumberFormatException nfe) {return true;}
-		//		groupSizeText.setText(String.valueOf(groupSize));
-		if (groupObjectsRButton.isSelected() != colladaOptions.isGroupObjects() ||
-				groupSize != colladaOptions.getGroupSize()) return true;
-
-		double imageScaleFactor = 1;
-		try {
-			imageScaleFactor = Double.parseDouble(scaleFactorText.getText().trim());
-			if (imageScaleFactor <= 0 || imageScaleFactor > 1) {
-				imageScaleFactor = 1;
-			}
-		}
-		catch (NumberFormatException nfe) {return true;}
-		//		scaleFactorText.setText(String.valueOf(imageScaleFactor));
-		if (scaleTexImagesCheckbox.isSelected() != colladaOptions.isScaleImages() ||
-				imageScaleFactor != colladaOptions.getImageScaleFactor()) return true;
+		if (packingAlgorithms.get(packingAlgorithmsComboBox.getSelectedItem()) != colladaOptions.getPackingAlgorithm()) return true;
+		if (groupObjectsRButton.isSelected() != colladaOptions.isGroupObjects()) return true;
+		if (((Number) groupSizeText.getValue()).intValue() != colladaOptions.getGroupSize()) return true;
+		if (scaleTexImagesCheckbox.isSelected() != colladaOptions.isScaleImages()) return true;
+		if (((Number) scaleFactorText.getValue()).doubleValue() != colladaOptions.getImageScaleFactor()) return true;
 
 		return false;
 	}
 
 	private void initGui() {
 		setLayout(new GridBagLayout());
-		int i = 0;
 
 		initFootprintPanel();
 		initGeometryPanel();
 		initColladaPanel();
 
 		if (showFootprintAndExtrudedOptions) {
-			add(footprintContentPanel, GuiUtil.setConstraints(0, i++, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+			add(footprintContentPanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 		}
 
 		if (showGeometryOptions) {
-			add(geometryContentPanel, GuiUtil.setConstraints(0, i++, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+			add(geometryContentPanel, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 		}
 
 		if (showColladaOptions) {
-			add(colladaContentPanel, GuiUtil.setConstraints(0, i, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+			add(colladaContentPanel, GuiUtil.setConstraints(0, 2, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 		}
 	}
 
@@ -316,7 +298,7 @@ public class ThreeDRenderingPanel extends AbstractPreferencesComponent {
 				footprintHLLineColorButton.setBackground(hlLineColor);
 		});
 
-		footprintHighlightingCheckbox.addActionListener(e -> setEnabledHighlighting());
+		footprintHighlightingCheckbox.addActionListener(e -> setEnabledFootprintHighlighting());
 	}
 
 	private void initGeometryPanel() {
@@ -327,11 +309,15 @@ public class ThreeDRenderingPanel extends AbstractPreferencesComponent {
 		geometryLineColorButton = new AlphaButton();
 		geometryHighlightingCheckbox = new JCheckBox();
 		geometryHLSurfaceDistanceLabel = new JLabel();
-		geometryHLSurfaceDistanceText = new JTextField("", 3);
 		geometryHLFillColorLabel = new JLabel();
 		geometryHLFillColorButton = new AlphaButton();
 		geometryHLLineColorLabel = new JLabel();
 		geometryHLLineColorButton = new AlphaButton();
+
+		DecimalFormat format = new DecimalFormat("#.###", DecimalFormatSymbols.getInstance(Locale.ENGLISH));
+		format.setMaximumIntegerDigits(2);
+		format.setMaximumFractionDigits(3);
+		geometryHLSurfaceDistanceText = new JFormattedTextField(format);
 
 		JPanel content = new JPanel();
 		content.setLayout(new GridBagLayout());
@@ -351,7 +337,10 @@ public class ThreeDRenderingPanel extends AbstractPreferencesComponent {
 		content.add(geometryFillColorLabel, gwcl);
 
 		geometryFillColorButton.setPreferredSize(geometryAlphaSpinner.getPreferredSize());
-		geometryFillColorButton.setBackground(new Color(DisplayForm.DEFAULT_WALL_FILL_COLOR, true));
+		geometryFillColorButton.setBackground(new Color(showThematicSurfaceOptions ?
+				DisplayForm.DEFAULT_WALL_FILL_COLOR :
+				DisplayForm.DEFAULT_FILL_COLOR,
+				true));
 		geometryFillColorButton.setContentAreaFilled(false);
 		content.add(geometryFillColorButton, GuiUtil.setConstraints(1, 1, 0.25, 1, GridBagConstraints.HORIZONTAL, 5, 0, 2 * 5, 0));
 
@@ -360,7 +349,10 @@ public class ThreeDRenderingPanel extends AbstractPreferencesComponent {
 		content.add(geometryLineColorLabel, grcl);
 
 		geometryLineColorButton.setPreferredSize(geometryAlphaSpinner.getPreferredSize());
-		geometryLineColorButton.setBackground(new Color(DisplayForm.DEFAULT_WALL_LINE_COLOR, true));
+		geometryLineColorButton.setBackground(new Color(showThematicSurfaceOptions ?
+				DisplayForm.DEFAULT_WALL_LINE_COLOR :
+				DisplayForm.DEFAULT_LINE_COLOR,
+				true));
 		geometryLineColorButton.setContentAreaFilled(false);
 		content.add(geometryLineColorButton, GuiUtil.setConstraints(3, 1, 0.25, 1, GridBagConstraints.HORIZONTAL, 5, 0, 2 * 5, 5));
 
@@ -475,7 +467,8 @@ public class ThreeDRenderingPanel extends AbstractPreferencesComponent {
 			});
 		}
 
-		geometryHighlightingCheckbox.addActionListener(e -> setEnabledHighlighting());
+		geometryHLSurfaceDistanceText.addPropertyChangeListener(evt -> checkHighlightingDistance(geometryHLSurfaceDistanceText));
+		geometryHighlightingCheckbox.addActionListener(e -> setEnabledGeometryHighlighting());
 	}
 
 	private void initColladaPanel() {
@@ -485,20 +478,32 @@ public class ThreeDRenderingPanel extends AbstractPreferencesComponent {
 		textureAtlasCheckbox = new JCheckBox();
 		textureAtlasPotsCheckbox = new JCheckBox();
 		scaleTexImagesCheckbox = new JCheckBox();
-		scaleFactorText = new JTextField("", 3);
 		colladaAlphaLabel = new JLabel();
 		colladaFillColorLabel = new JLabel();
 		colladaFillColorButton = new AlphaButton();
 		groupObjectsRButton = new JRadioButton();
-		groupSizeText = new JTextField("", 3);
 		colladaHighlightingRButton = new JRadioButton();
 		colladaHLSurfaceDistanceLabel = new JLabel();
-		colladaHLSurfaceDistanceText = new JTextField("", 3);
 		colladaHLFillColorLabel = new JLabel();
 		colladaHLFillColorButton = new AlphaButton();
 		colladaHLLineColorLabel = new JLabel();
 		colladaHLLineColorButton = new AlphaButton();
 		packingAlgorithmsComboBox = new JComboBox<>();
+
+		DecimalFormat scaleFormat = new DecimalFormat("#.###", DecimalFormatSymbols.getInstance(Locale.ENGLISH));
+		scaleFormat.setMaximumIntegerDigits(1);
+		scaleFormat.setMaximumFractionDigits(3);
+		scaleFactorText = new JFormattedTextField(scaleFormat);
+
+		DecimalFormat highlightFormat = new DecimalFormat("##.###", DecimalFormatSymbols.getInstance(Locale.ENGLISH));
+		highlightFormat.setMaximumIntegerDigits(2);
+		highlightFormat.setMaximumFractionDigits(3);
+		colladaHLSurfaceDistanceText = new JFormattedTextField(highlightFormat);
+
+		DecimalFormat groupSizeFormat = new DecimalFormat("#");
+		groupSizeFormat.setMaximumIntegerDigits(8);
+		groupSizeFormat.setMinimumIntegerDigits(1);
+		groupSizeText = new JFormattedTextField(groupSizeFormat);
 
 		JPanel content = new JPanel();
 		content.setLayout(new GridBagLayout());
@@ -654,10 +659,28 @@ public class ThreeDRenderingPanel extends AbstractPreferencesComponent {
 				colladaHLLineColorButton.setBackground(hlLineColor);
 		});
 
+		scaleFactorText.addPropertyChangeListener(evt -> {
+			if (scaleFactorText.getValue() == null
+					|| ((Number) scaleFactorText.getValue()).doubleValue() <= 0
+					|| ((Number) scaleFactorText.getValue()).doubleValue() > 1)
+				scaleFactorText.setValue(1);
+		});
+
+		groupSizeText.addPropertyChangeListener(evt -> {
+			if (groupSizeText.getValue() == null
+					|| ((Number) groupSizeText.getValue()).intValue() < 2)
+				groupSizeText.setValue(1);
+		});
+
+		textureAtlasCheckbox.addActionListener(e -> {
+			packingAlgorithmsComboBox.setEnabled(textureAtlasCheckbox.isSelected());
+			textureAtlasPotsCheckbox.setEnabled(textureAtlasCheckbox.isSelected());
+		});
+
+		colladaHLSurfaceDistanceText.addPropertyChangeListener(evt -> checkHighlightingDistance(colladaHLSurfaceDistanceText));
 		scaleTexImagesCheckbox.addActionListener(e -> scaleFactorText.setEnabled(scaleTexImagesCheckbox.isSelected()));
-		groupObjectsRButton.addActionListener(e -> setEnabledHighlighting());
-		colladaHighlightingRButton.addActionListener(e -> setEnabledHighlighting());
-		textureAtlasCheckbox.addActionListener(e -> setEnabledHighlighting());
+		groupObjectsRButton.addActionListener(e -> setEnabledColladaHighlighting());
+		colladaHighlightingRButton.addActionListener(e -> setEnabledColladaHighlighting());
 	}
 
 	public void addFootprintAndExtrudedOptions(JLabel label, JComponent component) {
@@ -734,9 +757,16 @@ public class ThreeDRenderingPanel extends AbstractPreferencesComponent {
 		colladaHLLineColorLabel.setText(Language.I18N.getString("pref.kmlexport.label.highlightedLineColor"));
 	}
 
+	private void checkHighlightingDistance(JFormattedTextField textField) {
+		if (textField.getValue() == null
+				|| ((Number) textField.getValue()).doubleValue() <= 0
+				|| ((Number) textField.getValue()).doubleValue() > 10)
+			textField.setValue(1);
+	}
+
 	@Override
 	public void loadSettings() {
-		internalDfs.clear();
+		internalDisplayForms.clear();
 
 		for (int form = DisplayForm.FOOTPRINT; form <= DisplayForm.COLLADA; form++) {
 			DisplayForm configDf = DisplayForm.of(form);
@@ -745,84 +775,67 @@ public class ThreeDRenderingPanel extends AbstractPreferencesComponent {
 				configDf = displayForms.get(indexOfConfigDf);
 			}
 			DisplayForm internalDf = configDf.clone();
-			internalDfs.add(internalDf);
+			internalDisplayForms.add(internalDf);
 		}
 
-		geometryHLSurfaceDistanceLabel.setEnabled(false);
-		geometryHLSurfaceDistanceText.setEnabled(false);
-
-		colladaHLSurfaceDistanceLabel.setEnabled(false);
-		colladaHLSurfaceDistanceText.setEnabled(false);
-
-		for (DisplayForm displayForm : internalDfs) {
+		for (DisplayForm displayForm : internalDisplayForms) {
 			switch (displayForm.getForm()) {
-			case DisplayForm.FOOTPRINT:
-			case DisplayForm.EXTRUDED:
-				footprintHighlightingCheckbox.setSelected(displayForm.isHighlightingEnabled());
+				case DisplayForm.FOOTPRINT:
+				case DisplayForm.EXTRUDED:
+					footprintHighlightingCheckbox.setSelected(displayForm.isHighlightingEnabled());
 
-				if (displayForm.isSetRgba0()) {
-					footprintFillColorButton.setBackground(new Color(displayForm.getRgba0()));
-					footprintAlphaSpinner.setValue(new Integer(new Color(displayForm.getRgba0(), true).getAlpha()));
-				}
-				if (displayForm.isSetRgba1())
-					footprintLineColorButton.setBackground(new Color(displayForm.getRgba1()));
-				if (displayForm.isSetRgba4())
-					footprintHLFillColorButton.setBackground(new Color(displayForm.getRgba4()));
-				if (displayForm.isSetRgba5())
-					footprintHLLineColorButton.setBackground(new Color(displayForm.getRgba5()));
-				break;
+					if (displayForm.isSetRgba0()) {
+						footprintFillColorButton.setBackground(new Color(displayForm.getRgba0()));
+						footprintAlphaSpinner.setValue(new Integer(new Color(displayForm.getRgba0(), true).getAlpha()));
+					}
+					if (displayForm.isSetRgba1())
+						footprintLineColorButton.setBackground(new Color(displayForm.getRgba1()));
+					if (displayForm.isSetRgba4())
+						footprintHLFillColorButton.setBackground(new Color(displayForm.getRgba4()));
+					if (displayForm.isSetRgba5())
+						footprintHLLineColorButton.setBackground(new Color(displayForm.getRgba5()));
+					break;
+				case DisplayForm.GEOMETRY:
+					geometryHighlightingCheckbox.setSelected(displayForm.isHighlightingEnabled());
+					geometryHLSurfaceDistanceText.setValue(displayForm.getHighlightingDistance());
 
-			case DisplayForm.GEOMETRY:
-				geometryHighlightingCheckbox.setSelected(displayForm.isHighlightingEnabled());
-				geometryHLSurfaceDistanceText.setText(String.valueOf(displayForm.getHighlightingDistance()));
-				if (displayForm.isHighlightingEnabled()) {
-					geometryHighlightingCheckbox.setSelected(true);
-					geometryHLSurfaceDistanceLabel.setEnabled(true);
-					geometryHLSurfaceDistanceText.setEnabled(true);
-				}
+					if (displayForm.isSetRgba0()) {
+						geometryFillColorButton.setBackground(new Color(displayForm.getRgba0()));
+						geometryAlphaSpinner.setValue(new Integer(new Color(displayForm.getRgba0(), true).getAlpha()));
+					}
+					if (displayForm.isSetRgba1())
+						geometryLineColorButton.setBackground(new Color(displayForm.getRgba1()));
 
-				if (displayForm.isSetRgba0()) {
-					geometryFillColorButton.setBackground(new Color(displayForm.getRgba0()));
-					geometryAlphaSpinner.setValue(new Integer(new Color(displayForm.getRgba0(), true).getAlpha()));
-				}
-				if (displayForm.isSetRgba1())
-					geometryLineColorButton.setBackground(new Color(displayForm.getRgba1()));
+					if (showThematicSurfaceOptions) {
+						if (displayForm.isSetRgba2())
+							geometryRoofFillColorButton.setBackground(new Color(displayForm.getRgba2()));
+						if (displayForm.isSetRgba3())
+							geometryRoofLineColorButton.setBackground(new Color(displayForm.getRgba3()));
+					}
 
-				if (showThematicSurfaceOptions) {
-					if (displayForm.isSetRgba2())
-						geometryRoofFillColorButton.setBackground(new Color(displayForm.getRgba2()));
-					if (displayForm.isSetRgba3())
-						geometryRoofLineColorButton.setBackground(new Color(displayForm.getRgba3()));
-				}
+					if (displayForm.isSetRgba4())
+						geometryHLFillColorButton.setBackground(new Color(displayForm.getRgba4()));
+					if (displayForm.isSetRgba5())
+						geometryHLLineColorButton.setBackground(new Color(displayForm.getRgba5()));
+					break;
+				case DisplayForm.COLLADA:
+					colladaHighlightingRButton.setSelected(displayForm.isHighlightingEnabled());
+					colladaHLSurfaceDistanceText.setValue(displayForm.getHighlightingDistance());
 
-				if (displayForm.isSetRgba4())
-					geometryHLFillColorButton.setBackground(new Color(displayForm.getRgba4()));
-				if (displayForm.isSetRgba5())
-					geometryHLLineColorButton.setBackground(new Color(displayForm.getRgba5()));
-				break;
+					if (displayForm.isSetRgba0()) {
+						colladaFillColorButton.setBackground(new Color(displayForm.getRgba0()));
+						colladaAlphaSpinner.setValue(new Integer(new Color(displayForm.getRgba0(), true).getAlpha()));
+					}
+					if (showThematicSurfaceOptions) {
+						if (displayForm.isSetRgba2())
+							colladaRoofFillColorButton.setBackground(new Color(displayForm.getRgba2()));
+					}
 
-			case DisplayForm.COLLADA:
-				colladaHLSurfaceDistanceText.setText(String.valueOf(displayForm.getHighlightingDistance()));
-				if (displayForm.isHighlightingEnabled()) {
-					colladaHighlightingRButton.setSelected(true);
-					colladaHLSurfaceDistanceLabel.setEnabled(true);
-					colladaHLSurfaceDistanceText.setEnabled(true);
-				}
-				
-				if (displayForm.isSetRgba0()) {
-					colladaFillColorButton.setBackground(new Color(displayForm.getRgba0()));
-					colladaAlphaSpinner.setValue(new Integer(new Color(displayForm.getRgba0(), true).getAlpha()));
-				}
-				if (showThematicSurfaceOptions) {
-					if (displayForm.isSetRgba2())
-						colladaRoofFillColorButton.setBackground(new Color(displayForm.getRgba2()));
-				}
-
-				if (displayForm.isSetRgba4())
-					colladaHLFillColorButton.setBackground(new Color(displayForm.getRgba4()));
-				if (displayForm.isSetRgba5())
-					colladaHLLineColorButton.setBackground(new Color(displayForm.getRgba5()));
-				break;
+					if (displayForm.isSetRgba4())
+						colladaHLFillColorButton.setBackground(new Color(displayForm.getRgba4()));
+					if (displayForm.isSetRgba5())
+						colladaHLLineColorButton.setBackground(new Color(displayForm.getRgba5()));
+					break;
 			}
 		}
 
@@ -838,22 +851,12 @@ public class ThreeDRenderingPanel extends AbstractPreferencesComponent {
 			}
 		}
 
-		scaleTexImagesCheckbox.setSelected(false);
-		scaleFactorText.setEnabled(false);
-		scaleFactorText.setText(String.valueOf(colladaOptions.getImageScaleFactor()));
-		if (colladaOptions.isScaleImages()) {
-			scaleTexImagesCheckbox.setSelected(true);
-			scaleFactorText.setEnabled(true);
-		}
+		scaleTexImagesCheckbox.setSelected(colladaOptions.isScaleImages());
+		scaleFactorText.setValue(colladaOptions.getImageScaleFactor());
+		groupObjectsRButton.setSelected(colladaOptions.isGroupObjects());
+		groupSizeText.setValue(colladaOptions.getGroupSize());
 
-		groupSizeText.setEnabled(false);
-		groupSizeText.setText(String.valueOf(colladaOptions.getGroupSize()));
-		if (colladaOptions.isGroupObjects()) {
-			groupObjectsRButton.setSelected(true);
-			groupSizeText.setEnabled(true);
-		}
-
-		setEnabledHighlighting();
+		setEnabledSettings();
 	}
 
 	@Override
@@ -861,10 +864,9 @@ public class ThreeDRenderingPanel extends AbstractPreferencesComponent {
 		setInternalDisplayFormValues();
 
 		if (displayForms.isEmpty()) {
-			displayForms.addAll(internalDfs);
-		}
-		else {
-			for (DisplayForm internalDf : internalDfs) {
+			displayForms.addAll(internalDisplayForms);
+		} else {
+			for (DisplayForm internalDf : internalDisplayForms) {
 				int indexOfConfigDf = displayForms.indexOf(internalDf);
 				if (indexOfConfigDf != -1) {
 					DisplayForm configDf = displayForms.get(indexOfConfigDf);
@@ -879,34 +881,19 @@ public class ThreeDRenderingPanel extends AbstractPreferencesComponent {
 		colladaOptions.setCropImages(cropImagesCheckbox.isSelected());
 		colladaOptions.setGenerateTextureAtlases(textureAtlasCheckbox.isSelected());
 		colladaOptions.setTextureAtlasPots(textureAtlasPotsCheckbox.isSelected());
-		colladaOptions.setPackingAlgorithm(packingAlgorithms.get(packingAlgorithmsComboBox.getSelectedItem()).intValue()); 
-
+		colladaOptions.setPackingAlgorithm(packingAlgorithms.get(packingAlgorithmsComboBox.getSelectedItem()).intValue());
 		colladaOptions.setScaleImages(scaleTexImagesCheckbox.isSelected());
-		try {
-			colladaOptions.setImageScaleFactor(Double.parseDouble(scaleFactorText.getText().trim()));
-			if (colladaOptions.getImageScaleFactor() <= 0 || colladaOptions.getImageScaleFactor() > 1) {
-				colladaOptions.setImageScaleFactor(1);
-			}
-		}
-		catch (NumberFormatException nfe) {}
-
+		colladaOptions.setImageScaleFactor(((Number) scaleFactorText.getValue()).doubleValue());
 		colladaOptions.setGroupObjects(groupObjectsRButton.isSelected());
-		try {
-			colladaOptions.setGroupSize(Integer.parseInt(groupSizeText.getText().trim()));
-			if (colladaOptions.getGroupSize() < 2) {
-				colladaOptions.setGroupSize(1);
-			}
-		}
-		catch (NumberFormatException nfe) {}
+		colladaOptions.setGroupSize(((Number) groupSizeText.getValue()).intValue());
 	}
-
 
 	private void setInternalDisplayFormValues() {
 		for (int form = DisplayForm.FOOTPRINT; form <= DisplayForm.EXTRUDED; form++) {
 			DisplayForm df = DisplayForm.of(form);
-			int indexOfDf = internalDfs.indexOf(df); 
+			int indexOfDf = internalDisplayForms.indexOf(df);
 			if (indexOfDf != -1) {
-				df = internalDfs.get(indexOfDf);
+				df = internalDisplayForms.get(indexOfDf);
 				df.setHighlightingEnabled(footprintHighlightingCheckbox.isSelected());
 
 				Color rgba0 = new Color(footprintFillColorButton.getBackground().getRed(),
@@ -933,17 +920,11 @@ public class ThreeDRenderingPanel extends AbstractPreferencesComponent {
 		}
 
 		DisplayForm df = DisplayForm.of(DisplayForm.GEOMETRY);
-		int indexOfDf = internalDfs.indexOf(df); 
+		int indexOfDf = internalDisplayForms.indexOf(df);
 		if (indexOfDf != -1) {
-			df = internalDfs.get(indexOfDf);
+			df = internalDisplayForms.get(indexOfDf);
 			df.setHighlightingEnabled(geometryHighlightingCheckbox.isSelected());
-			try {
-				df.setHighlightingDistance(Double.parseDouble(geometryHLSurfaceDistanceText.getText().trim()));
-				if (df.getHighlightingDistance() <= 0 || df.getHighlightingDistance() > 10) {
-					df.setHighlightingDistance(1.0);
-				}
-			}
-			catch (NumberFormatException nfe) {}
+			df.setHighlightingDistance(((Number) geometryHLSurfaceDistanceText.getValue()).doubleValue());
 
 			Color rgba0 = new Color(geometryFillColorButton.getBackground().getRed(),
 					geometryFillColorButton.getBackground().getGreen(),
@@ -982,17 +963,11 @@ public class ThreeDRenderingPanel extends AbstractPreferencesComponent {
 		}
 
 		df = DisplayForm.of(DisplayForm.COLLADA);
-		indexOfDf = internalDfs.indexOf(df); 
+		indexOfDf = internalDisplayForms.indexOf(df);
 		if (indexOfDf != -1) {
-			df = internalDfs.get(indexOfDf);
+			df = internalDisplayForms.get(indexOfDf);
 			df.setHighlightingEnabled(colladaHighlightingRButton.isSelected());
-			try {
-				df.setHighlightingDistance(Double.parseDouble(colladaHLSurfaceDistanceText.getText().trim()));
-				if (df.getHighlightingDistance() <= 0 || df.getHighlightingDistance() >10) {
-					df.setHighlightingDistance(1.0);
-				}
-			}
-			catch (NumberFormatException nfe) {}
+			df.setHighlightingDistance(((Number) colladaHLSurfaceDistanceText.getValue()).doubleValue());
 
 			Color rgba0 = new Color(colladaFillColorButton.getBackground().getRed(),
 					colladaFillColorButton.getBackground().getGreen(),
@@ -1020,7 +995,6 @@ public class ThreeDRenderingPanel extends AbstractPreferencesComponent {
 			df.setRgba5(rgba5.getRGB());
 		}
 	}
-
 
 	@Override
 	public void resetSettings() {
@@ -1067,48 +1041,56 @@ public class ThreeDRenderingPanel extends AbstractPreferencesComponent {
 		loadSettings();
 	}
 
-	private void setEnabledHighlighting() {
+	private void setEnabledSettings() {
+		scaleFactorText.setEnabled(scaleTexImagesCheckbox.isSelected());
+		packingAlgorithmsComboBox.setEnabled(textureAtlasCheckbox.isSelected());
+		textureAtlasPotsCheckbox.setEnabled(textureAtlasCheckbox.isSelected());
+
+		setEnabledFootprintHighlighting();
+		setEnabledGeometryHighlighting();
+		setEnabledColladaHighlighting();
+	}
+
+	private void setEnabledFootprintHighlighting() {
 		footprintHLFillColorLabel.setEnabled(footprintHighlightingCheckbox.isSelected());
 		footprintHLFillColorButton.setEnabled(footprintHighlightingCheckbox.isSelected());
 		footprintHLLineColorLabel.setEnabled(footprintHighlightingCheckbox.isSelected());
 		footprintHLLineColorButton.setEnabled(footprintHighlightingCheckbox.isSelected());
+	}
 
+	private void setEnabledGeometryHighlighting() {
 		geometryHLFillColorLabel.setEnabled(geometryHighlightingCheckbox.isSelected());
 		geometryHLFillColorButton.setEnabled(geometryHighlightingCheckbox.isSelected());
 		geometryHLLineColorLabel.setEnabled(geometryHighlightingCheckbox.isSelected());
 		geometryHLLineColorButton.setEnabled(geometryHighlightingCheckbox.isSelected());
-
 		geometryHLSurfaceDistanceLabel.setEnabled(geometryHighlightingCheckbox.isSelected());
 		geometryHLSurfaceDistanceText.setEnabled(geometryHighlightingCheckbox.isSelected());
+	}
 
-		packingAlgorithmsComboBox.setEnabled(textureAtlasCheckbox.isSelected());
-		textureAtlasPotsCheckbox.setEnabled(textureAtlasCheckbox.isSelected());
-		groupSizeText.setEnabled(groupObjectsRButton.isSelected());
-
+	private void setEnabledColladaHighlighting() {
 		colladaHLFillColorLabel.setEnabled(colladaHighlightingRButton.isSelected());
 		colladaHLFillColorButton.setEnabled(colladaHighlightingRButton.isSelected());
 		colladaHLLineColorLabel.setEnabled(colladaHighlightingRButton.isSelected());
 		colladaHLLineColorButton.setEnabled(colladaHighlightingRButton.isSelected());
-
 		colladaHLSurfaceDistanceLabel.setEnabled(colladaHighlightingRButton.isSelected());
 		colladaHLSurfaceDistanceText.setEnabled(colladaHighlightingRButton.isSelected());
+		groupSizeText.setEnabled(groupObjectsRButton.isSelected());
 	}
 
-	// equals cannot be used, for internal reasons it only compares the form value (FOOTPRINT, EXTRUDED...)
-	private boolean areDisplayFormsContentsDifferent (DisplayForm df1, DisplayForm df2) {
-		if (df1 == null || df2 == null) return true;
-		if (df1.isHighlightingEnabled() != df2.isHighlightingEnabled()) return true;
-		if (df1.getHighlightingDistance() != df2.getHighlightingDistance()) return true;
-		if (df1.getRgba0() != df2.getRgba0()) return true;
-		if (df1.getRgba1() != df2.getRgba1()) return true;
-		if (df1.getRgba2() != df2.getRgba2()) return true;
-		if (df1.getRgba3() != df2.getRgba3()) return true;
-		if (df1.getRgba4() != df2.getRgba4()) return true;
-		if (df1.getRgba5() != df2.getRgba5()) return true;
+	private boolean notEqual(DisplayForm first, DisplayForm second) {
+		if (first == null || second == null) return true;
+		if (first.isHighlightingEnabled() != second.isHighlightingEnabled()) return true;
+		if (first.getHighlightingDistance() != second.getHighlightingDistance()) return true;
+		if (first.getRgba0() != second.getRgba0()) return true;
+		if (first.getRgba1() != second.getRgba1()) return true;
+		if (first.getRgba2() != second.getRgba2()) return true;
+		if (first.getRgba3() != second.getRgba3()) return true;
+		if (first.getRgba4() != second.getRgba4()) return true;
+		if (first.getRgba5() != second.getRgba5()) return true;
 		return false;
 	}
 
-	private void copyColorAndHighlightingValues (DisplayForm original, DisplayForm copy) {
+	private void copyColorAndHighlightingValues(DisplayForm original, DisplayForm copy) {
 		copy.setHighlightingDistance(original.getHighlightingDistance());
 		copy.setHighlightingEnabled(original.isHighlightingEnabled());
 		copy.setRgba0(original.getRgba0());

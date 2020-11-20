@@ -62,7 +62,7 @@ public class ColladaOptions {
         textureAtlasPots = true;
         scaleImages = false;
         imageScaleFactor = 1.0;
-        groupObjects = false;
+        groupObjects = true;
         groupSize = 1;
     }
 

@@ -29,6 +29,7 @@ package org.citydb.config.project.kmlExporter;
 
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+import java.util.List;
 
 @XmlType(name = "DisplayFormType", propOrder = {
         "form",
@@ -107,6 +108,31 @@ public class DisplayForm {
                 break;
         }
         return achievable;
+    }
+
+    public static DisplayForm getDisplayForm(int form, List<DisplayForm> displayForms) {
+        for (DisplayForm displayForm : displayForms) {
+            if (displayForm.getForm() == form) {
+                return displayForm;
+            }
+        }
+
+        return null;
+    }
+
+    public static DisplayForm getOrSetDisplayForm(int form, List<DisplayForm> displayForms) {
+        DisplayForm displayForm = getDisplayForm(form, displayForms);
+        if (displayForm == null) {
+            displayForm = DisplayForm.of(form);
+            displayForms.add(displayForm);
+        }
+
+        return displayForm;
+    }
+
+    public static DisplayForm getOrDefault(int form, List<DisplayForm> displayForms) {
+        DisplayForm displayForm = getDisplayForm(form, displayForms);
+        return displayForm != null ? displayForm : DisplayForm.of(form);
     }
 
     public boolean isAchievableFromLoD(int lod) {
