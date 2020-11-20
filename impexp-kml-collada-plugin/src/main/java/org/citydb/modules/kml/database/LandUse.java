@@ -80,10 +80,6 @@ public class LandUse extends KmlGenericObject{
 		return config.getKmlExportConfig().getLandUseDisplayForms();
 	}
 
-	public ColladaOptions getColladaOptions() {
-		return config.getKmlExportConfig().getLandUseColladaOptions();
-	}
-
 	public Balloon getBalloonSettings() {
 		return config.getKmlExportConfig().getLandUseBalloon();
 	}
@@ -184,7 +180,9 @@ public class LandUse extends KmlGenericObject{
 					break;
 
 				case DisplayForm.COLLADA:
-					fillGenericObjectForCollada(rs, config.getKmlExportConfig().getLandUseColladaOptions().isGenerateTextureAtlases());
+					ColladaOptions colladaOptions = config.getKmlExportConfig().getColladaOptions();
+
+					fillGenericObjectForCollada(rs, colladaOptions.isGenerateTextureAtlases());
 					String currentgmlId = getGmlId();
 					setGmlId(work.getGmlId());
 					setId(work.getId());
@@ -199,7 +197,6 @@ public class LandUse extends KmlGenericObject{
 					}
 					setZOffset(zOffset);
 
-					ColladaOptions colladaOptions = getColladaOptions();
 					setIgnoreSurfaceOrientation(colladaOptions.isIgnoreSurfaceOrientation());
 					try {
 						if (work.getDisplayForm().isHighlightingEnabled())

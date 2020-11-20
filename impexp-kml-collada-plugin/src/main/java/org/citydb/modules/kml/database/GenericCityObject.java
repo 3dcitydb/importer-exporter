@@ -85,10 +85,6 @@ public class GenericCityObject extends KmlGenericObject{
 		return config.getKmlExportConfig().getGenericCityObjectDisplayForms();
 	}
 
-	public ColladaOptions getColladaOptions() {
-		return config.getKmlExportConfig().getGenericCityObjectColladaOptions();
-	}
-
 	public Balloon getBalloonSettings() {
 		if (isPointOrCurve) {
 			if (isPoint)
@@ -114,7 +110,7 @@ public class GenericCityObject extends KmlGenericObject{
 			int minLod = lodToExportFrom == 5 ? 0: lodToExportFrom;
 
 			while (currentLod >= minLod) {
-				if (!work.getDisplayForm().isAchievableFromLoD(currentLod)) 
+				if (!work.getDisplayForm().isAchievableFromLoD(currentLod))
 					break;
 
 				try {
@@ -128,7 +124,7 @@ public class GenericCityObject extends KmlGenericObject{
 						break; // result set not empty
 					}
 
-					try { rs.close(); } catch (SQLException sqle) {} 
+					try { rs.close(); } catch (SQLException sqle) {}
 					try { psQuery.close(); } catch (SQLException sqle) {}
 					rs = null;
 
@@ -139,17 +135,17 @@ public class GenericCityObject extends KmlGenericObject{
 						psQuery.setLong(i, work.getId());
 
 					rs = psQuery.executeQuery();
-					if (rs.isBeforeFirst()) {					
+					if (rs.isBeforeFirst()) {
 						isPointOrCurve = true;
 						break; // result set not empty
 					}
 
-					try { rs.close(); } catch (SQLException sqle) {} 
+					try { rs.close(); } catch (SQLException sqle) {}
 					try { psQuery.close(); } catch (SQLException sqle) {}
 					rs = null;
 				} catch (Exception e) {
 					log.error("SQL error while querying the highest available LOD: " + e.getMessage());
-					try { if (rs != null) rs.close(); } catch (SQLException sqle) {} 
+					try { if (rs != null) rs.close(); } catch (SQLException sqle) {}
 					try { if (psQuery != null) psQuery.close(); } catch (SQLException sqle) {}
 					try { connection.commit(); } catch (SQLException sqle) {}
 					rs = null;
@@ -159,7 +155,7 @@ public class GenericCityObject extends KmlGenericObject{
 			}
 
 			if ((rs == null) || // result empty
-					((!isPointOrCurve) && !work.getDisplayForm().isAchievableFromLoD(currentLod))) { // give up	
+					((!isPointOrCurve) && !work.getDisplayForm().isAchievableFromLoD(currentLod))) { // give up
 				String fromMessage = " from LoD" + lodToExportFrom;
 				if (lodToExportFrom == 5) {
 					if (work.getDisplayForm().getForm() == DisplayForm.COLLADA)
@@ -198,7 +194,7 @@ public class GenericCityObject extends KmlGenericObject{
 								work,
 								getBalloonSettings().isBalloonContentInSeparateFile());
 						break;
-						
+
 					case DisplayForm.EXTRUDED:
 						PreparedStatement psQuery2 = null;
 						ResultSet rs2 = null;
@@ -220,7 +216,7 @@ public class GenericCityObject extends KmlGenericObject{
 							try { if (rs2 != null) rs2.close(); } catch (SQLException e) {}
 							try { if (psQuery2 != null) psQuery2.close(); } catch (SQLException e) {}
 						}
-						
+
 					case DisplayForm.GEOMETRY:
 						setGmlId(work.getGmlId());
 						setId(work.getId());
@@ -228,12 +224,13 @@ public class GenericCityObject extends KmlGenericObject{
 						if (work.getDisplayForm().isHighlightingEnabled())
 							kmlExporterManager.print(createPlacemarksForHighlighting(rs, work), work, getBalloonSettings().isBalloonContentInSeparateFile());
 						break;
-						
+
 					case DisplayForm.COLLADA:
+					ColladaOptions colladaOptions = config.getKmlExportConfig().getColladaOptions();
 					String currentgmlId = getGmlId();
 					setGmlId(work.getGmlId());
 					setId(work.getId());
-					fillGenericObjectForCollada(rs, config.getKmlExportConfig().getGenericCityObjectColladaOptions().isGenerateTextureAtlases());
+					fillGenericObjectForCollada(rs, colladaOptions.isGenerateTextureAtlases());
 
 					if (currentgmlId != null && !currentgmlId.equals(work.getGmlId()) && getGeometryAmount() > GEOMETRY_AMOUNT_WARNING)
 						log.info("Object " + work.getGmlId() + " has more than " + GEOMETRY_AMOUNT_WARNING + " geometries. This may take a while to process...");
@@ -245,10 +242,9 @@ public class GenericCityObject extends KmlGenericObject{
 					}
 					setZOffset(zOffset);
 
-					ColladaOptions colladaOptions = getColladaOptions();
 					setIgnoreSurfaceOrientation(colladaOptions.isIgnoreSurfaceOrientation());
 					try {
-						if (work.getDisplayForm().isHighlightingEnabled()) 
+						if (work.getDisplayForm().isHighlightingEnabled())
 							kmlExporterManager.print(createPlacemarksForHighlighting(rs, work), work, getBalloonSettings().isBalloonContentInSeparateFile());
 					} catch (Exception ioe) {
 						log.logStackTrace(ioe);
@@ -256,7 +252,7 @@ public class GenericCityObject extends KmlGenericObject{
 
 					break;
 					}
-				}				
+				}
 			}
 		} catch (SQLException sqlEx) {
 			log.error("SQL error while querying city object " + work.getGmlId() + ": " + sqlEx.getMessage());

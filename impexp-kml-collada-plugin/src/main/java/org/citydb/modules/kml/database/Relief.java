@@ -80,10 +80,6 @@ public class Relief extends KmlGenericObject{
 		return config.getKmlExportConfig().getReliefDisplayForms();
 	}
 
-	public ColladaOptions getColladaOptions() {
-		return config.getKmlExportConfig().getReliefColladaOptions();
-	}
-
 	public Balloon getBalloonSettings() {
 		return config.getKmlExportConfig().getReliefBalloon();
 	}
@@ -185,7 +181,9 @@ public class Relief extends KmlGenericObject{
 					break;
 
 				case DisplayForm.COLLADA:
-					fillGenericObjectForCollada(rs, config.getKmlExportConfig().getReliefColladaOptions().isGenerateTextureAtlases());
+					ColladaOptions colladaOptions = config.getKmlExportConfig().getColladaOptions();
+					
+					fillGenericObjectForCollada(rs, colladaOptions.isGenerateTextureAtlases());
 					String currentgmlId = getGmlId();
 					setGmlId(work.getGmlId());
 					setId(work.getId());
@@ -200,7 +198,6 @@ public class Relief extends KmlGenericObject{
 					}
 					setZOffset(zOffset);
 
-					ColladaOptions colladaOptions = getColladaOptions();
 					setIgnoreSurfaceOrientation(colladaOptions.isIgnoreSurfaceOrientation());
 					try {
 						if (work.getDisplayForm().isHighlightingEnabled())

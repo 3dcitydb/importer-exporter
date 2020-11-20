@@ -80,10 +80,6 @@ public class PlantCover extends KmlGenericObject{
 		return config.getKmlExportConfig().getVegetationDisplayForms();
 	}
 
-	public ColladaOptions getColladaOptions() {
-		return config.getKmlExportConfig().getVegetationColladaOptions();
-	}
-
 	public Balloon getBalloonSettings() {
 		return config.getKmlExportConfig().getVegetationBalloon();
 	}
@@ -184,7 +180,9 @@ public class PlantCover extends KmlGenericObject{
 					break;
 
 				case DisplayForm.COLLADA:
-					fillGenericObjectForCollada(rs, config.getKmlExportConfig().getVegetationColladaOptions().isGenerateTextureAtlases());
+					ColladaOptions colladaOptions = config.getKmlExportConfig().getColladaOptions();
+
+					fillGenericObjectForCollada(rs, colladaOptions.isGenerateTextureAtlases());
 					String currentgmlId = getGmlId();
 					setGmlId(work.getGmlId());
 					setId(work.getId());
@@ -199,7 +197,6 @@ public class PlantCover extends KmlGenericObject{
 					}
 					setZOffset(zOffset);
 
-					ColladaOptions colladaOptions = getColladaOptions();
 					setIgnoreSurfaceOrientation(colladaOptions.isIgnoreSurfaceOrientation());
 					try {
 						if (work.getDisplayForm().isHighlightingEnabled())

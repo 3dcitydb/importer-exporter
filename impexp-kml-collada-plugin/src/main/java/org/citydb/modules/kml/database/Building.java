@@ -84,10 +84,6 @@ public class Building extends KmlGenericObject{
 		return config.getKmlExportConfig().getBuildingDisplayForms();
 	}
 
-	public ColladaOptions getColladaOptions() {
-		return config.getKmlExportConfig().getBuildingColladaOptions();
-	}
-
 	public Balloon getBalloonSettings() {
 		return config.getKmlExportConfig().getBuildingBalloon();
 	}
@@ -333,7 +329,9 @@ public class Building extends KmlGenericObject{
 					return placemarks;
 
 				case DisplayForm.COLLADA:
-					fillGenericObjectForCollada(rs, config.getKmlExportConfig().getBuildingColladaOptions().isGenerateTextureAtlases()); // fill and refill
+					ColladaOptions colladaOptions = config.getKmlExportConfig().getColladaOptions();
+
+					fillGenericObjectForCollada(rs, colladaOptions.isGenerateTextureAtlases()); // fill and refill
 					String currentgmlId = getGmlId();
 					setGmlId(work.getGmlId());
 					setId(work.getId());
@@ -348,7 +346,6 @@ public class Building extends KmlGenericObject{
 					}
 					setZOffset(zOffset);
 
-					ColladaOptions colladaOptions = getColladaOptions();
 					setIgnoreSurfaceOrientation(colladaOptions.isIgnoreSurfaceOrientation());
 					try {
 						if (work.getDisplayForm().isHighlightingEnabled()) {

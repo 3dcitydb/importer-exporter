@@ -49,38 +49,29 @@ import java.util.Map;
         "path",
         "lodToExportFrom",
         "buildingDisplayForms",
-        "buildingColladaOptions",
         "buildingBalloon",
         "waterBodyDisplayForms",
-        "waterBodyColladaOptions",
         "waterBodyBalloon",
         "landUseDisplayForms",
-        "landUseColladaOptions",
         "landUseBalloon",
         "vegetationDisplayForms",
-        "vegetationColladaOptions",
         "vegetationBalloon",
         "transportationDisplayForms",
-        "transportationColladaOptions",
         "transportationBalloon",
         "reliefDisplayForms",
-        "reliefColladaOptions",
         "reliefBalloon",
         "cityFurnitureDisplayForms",
-        "cityFurnitureColladaOptions",
         "cityFurnitureBalloon",
         "genericCityObjectDisplayForms",
-        "genericCityObjectColladaOptions",
         "genericCityObject3DBalloon",
         "genericCityObjectPointAndCurve",
         "cityObjectGroupDisplayForms",
         "cityObjectGroupBalloon",
         "bridgeDisplayForms",
-        "bridgeColladaOptions",
         "bridgeBalloon",
         "tunnelDisplayForms",
-        "tunnelColladaOptions",
         "tunnelBalloon",
+        "colladaOptions",
         "lod0FootprintMode",
         "exportAsKmz",
         "showBoundingBox",
@@ -115,42 +106,34 @@ public class KmlExportConfig {
     @XmlElement(name = "displayForm", required = true)
     @XmlElementWrapper(name = "buildingDisplayForms")
     private List<DisplayForm> buildingDisplayForms;
-    private ColladaOptions buildingColladaOptions;
     private Balloon buildingBalloon;
     @XmlElement(name = "displayForm", required = true)
     @XmlElementWrapper(name = "waterBodyDisplayForms")
     private List<DisplayForm> waterBodyDisplayForms;
-    private ColladaOptions waterBodyColladaOptions;
     private Balloon waterBodyBalloon;
     @XmlElement(name = "displayForm", required = true)
     @XmlElementWrapper(name = "landUseDisplayForms")
     private List<DisplayForm> landUseDisplayForms;
-    private ColladaOptions landUseColladaOptions;
     private Balloon landUseBalloon;
     @XmlElement(name = "displayForm", required = true)
     @XmlElementWrapper(name = "vegetationDisplayForms")
     private List<DisplayForm> vegetationDisplayForms;
-    private ColladaOptions vegetationColladaOptions;
     private Balloon vegetationBalloon;
     @XmlElement(name = "displayForm", required = true)
     @XmlElementWrapper(name = "transportationDisplayForms")
     private List<DisplayForm> transportationDisplayForms;
-    private ColladaOptions transportationColladaOptions;
     private Balloon transportationBalloon;
     @XmlElement(name = "displayForm", required = true)
     @XmlElementWrapper(name = "reliefDisplayForms")
     private List<DisplayForm> reliefDisplayForms;
-    private ColladaOptions reliefColladaOptions;
     private Balloon reliefBalloon;
     @XmlElement(name = "displayForm", required = true)
     @XmlElementWrapper(name = "cityFurnitureDisplayForms")
     private List<DisplayForm> cityFurnitureDisplayForms;
-    private ColladaOptions cityFurnitureColladaOptions;
     private Balloon cityFurnitureBalloon;
     @XmlElement(name = "displayForm", required = true)
     @XmlElementWrapper(name = "genericCityObjectDisplayForms")
     private List<DisplayForm> genericCityObjectDisplayForms;
-    private ColladaOptions genericCityObjectColladaOptions;
     private Balloon genericCityObject3DBalloon;
     private PointAndCurve genericCityObjectPointAndCurve;
     @XmlElement(name = "displayForm", required = true)
@@ -160,13 +143,12 @@ public class KmlExportConfig {
     @XmlElement(name = "displayForm", required = true)
     @XmlElementWrapper(name = "bridgeDisplayForms")
     private List<DisplayForm> bridgeDisplayForms;
-    private ColladaOptions bridgeColladaOptions;
     private Balloon bridgeBalloon;
     @XmlElement(name = "displayForm", required = true)
     @XmlElementWrapper(name = "tunnelDisplayForms")
     private List<DisplayForm> tunnelDisplayForms;
-    private ColladaOptions tunnelColladaOptions;
     private Balloon tunnelBalloon;
+    private ColladaOptions colladaOptions;
     private Lod0FootprintMode lod0FootprintMode;
     private boolean showBoundingBox;
     private boolean showTileBorders;
@@ -207,39 +189,30 @@ public class KmlExportConfig {
         lodToExportFrom = 2;
 
         setBuildingDisplayForms(new ArrayList<>());
-        setBuildingColladaOptions(new ColladaOptions());
         setBuildingBalloon(new Balloon());
         setWaterBodyDisplayForms(new ArrayList<>());
-        setWaterBodyColladaOptions(new ColladaOptions());
         setWaterBodyBalloon(new Balloon());
         setLandUseDisplayForms(new ArrayList<>());
-        setLandUseColladaOptions(new ColladaOptions());
         setLandUseBalloon(new Balloon());
         setVegetationDisplayForms(new ArrayList<>());
-        setVegetationColladaOptions(new ColladaOptions());
         setVegetationBalloon(new Balloon());
         setTransportationDisplayForms(new ArrayList<>());
-        setTransportationColladaOptions(new ColladaOptions());
         setTransportationBalloon(new Balloon());
         setReliefDisplayForms(new ArrayList<>());
-        setReliefColladaOptions(new ColladaOptions());
         setReliefBalloon(new Balloon());
         setCityFurnitureDisplayForms(new ArrayList<>());
-        setCityFurnitureColladaOptions(new ColladaOptions());
         setCityFurnitureBalloon(new Balloon());
         setGenericCityObjectDisplayForms(new ArrayList<>());
-        setGenericCityObjectColladaOptions(new ColladaOptions());
         setGenericCityObject3DBalloon(new Balloon());
         setGenericCityObjectPointAndCurve(new PointAndCurve());
         setCityObjectGroupDisplayForms(new ArrayList<>());
         setCityObjectGroupBalloon(new Balloon());
         setBridgeDisplayForms(new ArrayList<>());
-        setBridgeColladaOptions(new ColladaOptions());
         setBridgeBalloon(new Balloon());
         setTunnelDisplayForms(new ArrayList<>());
-        setTunnelColladaOptions(new ColladaOptions());
         setTunnelBalloon(new Balloon());
 
+        colladaOptions = new ColladaOptions();
         setLod0FootprintMode(Lod0FootprintMode.FOOTPRINT);
         exportAsKmz = false;
         exportGltfV1 = true;
@@ -331,14 +304,6 @@ public class KmlExportConfig {
         return buildingDisplayForms;
     }
 
-    public void setBuildingColladaOptions(ColladaOptions buildingColladaOptions) {
-        this.buildingColladaOptions = buildingColladaOptions;
-    }
-
-    public ColladaOptions getBuildingColladaOptions() {
-        return buildingColladaOptions;
-    }
-
     public void setWaterBodyDisplayForms(List<DisplayForm> waterBodyDisplayForms) {
         this.waterBodyDisplayForms = waterBodyDisplayForms;
     }
@@ -347,28 +312,12 @@ public class KmlExportConfig {
         return waterBodyDisplayForms;
     }
 
-    public void setWaterBodyColladaOptions(ColladaOptions waterBodyColladaOptions) {
-        this.waterBodyColladaOptions = waterBodyColladaOptions;
-    }
-
-    public ColladaOptions getWaterBodyColladaOptions() {
-        return waterBodyColladaOptions;
-    }
-
     public void setLandUseDisplayForms(List<DisplayForm> landUseDisplayForms) {
         this.landUseDisplayForms = landUseDisplayForms;
     }
 
     public List<DisplayForm> getLandUseDisplayForms() {
         return landUseDisplayForms;
-    }
-
-    public void setLandUseColladaOptions(ColladaOptions landUseColladaOptions) {
-        this.landUseColladaOptions = landUseColladaOptions;
-    }
-
-    public ColladaOptions getLandUseColladaOptions() {
-        return landUseColladaOptions;
     }
 
     public void setCityObjectGroupDisplayForms(List<DisplayForm> cityObjectGroupDisplayForms) {
@@ -387,14 +336,6 @@ public class KmlExportConfig {
         return vegetationDisplayForms;
     }
 
-    public void setVegetationColladaOptions(ColladaOptions vegetationColladaOptions) {
-        this.vegetationColladaOptions = vegetationColladaOptions;
-    }
-
-    public ColladaOptions getVegetationColladaOptions() {
-        return vegetationColladaOptions;
-    }
-
     public int getActiveDisplayFormsAmount(List<DisplayForm> displayForms) {
         int activeAmount = 0;
         for (DisplayForm displayForm : displayForms) {
@@ -403,6 +344,15 @@ public class KmlExportConfig {
         return activeAmount;
     }
 
+    public ColladaOptions getColladaOptions() {
+        return colladaOptions;
+    }
+
+    public void setColladaOptions(ColladaOptions colladaOptions) {
+        if (colladaOptions != null) {
+            this.colladaOptions = colladaOptions;
+        }
+    }
 
     public Lod0FootprintMode getLod0FootprintMode() {
         return lod0FootprintMode;
@@ -652,15 +602,6 @@ public class KmlExportConfig {
         return genericCityObjectDisplayForms;
     }
 
-    public void setGenericCityObjectColladaOptions(
-            ColladaOptions genericCityObjectColladaOptions) {
-        this.genericCityObjectColladaOptions = genericCityObjectColladaOptions;
-    }
-
-    public ColladaOptions getGenericCityObjectColladaOptions() {
-        return genericCityObjectColladaOptions;
-    }
-
     public void setGenericCityObject3DBalloon(Balloon genericCityObject3DBalloon) {
         this.genericCityObject3DBalloon = genericCityObject3DBalloon;
     }
@@ -686,15 +627,6 @@ public class KmlExportConfig {
         return cityFurnitureDisplayForms;
     }
 
-    public void setCityFurnitureColladaOptions(
-            ColladaOptions cityFurnitureColladaOptions) {
-        this.cityFurnitureColladaOptions = cityFurnitureColladaOptions;
-    }
-
-    public ColladaOptions getCityFurnitureColladaOptions() {
-        return cityFurnitureColladaOptions;
-    }
-
     public void setCityFurnitureBalloon(Balloon cityFurnitureBalloon) {
         this.cityFurnitureBalloon = cityFurnitureBalloon;
     }
@@ -709,14 +641,6 @@ public class KmlExportConfig {
 
     public List<DisplayForm> getTransportationDisplayForms() {
         return transportationDisplayForms;
-    }
-
-    public void setTransportationColladaOptions(ColladaOptions transportationColladaOptions) {
-        this.transportationColladaOptions = transportationColladaOptions;
-    }
-
-    public ColladaOptions getTransportationColladaOptions() {
-        return transportationColladaOptions;
     }
 
     public void setTransportationBalloon(Balloon transportationBalloon) {
@@ -735,14 +659,6 @@ public class KmlExportConfig {
         this.reliefDisplayForms = reliefDisplayForms;
     }
 
-    public ColladaOptions getReliefColladaOptions() {
-        return reliefColladaOptions;
-    }
-
-    public void setReliefColladaOptions(ColladaOptions reliefColladaOptions) {
-        this.reliefColladaOptions = reliefColladaOptions;
-    }
-
     public Balloon getReliefBalloon() {
         return reliefBalloon;
     }
@@ -759,14 +675,6 @@ public class KmlExportConfig {
         return bridgeDisplayForms;
     }
 
-    public void setBridgeColladaOptions(ColladaOptions bridgeColladaOptions) {
-        this.bridgeColladaOptions = bridgeColladaOptions;
-    }
-
-    public ColladaOptions getBridgeColladaOptions() {
-        return bridgeColladaOptions;
-    }
-
     public void setBridgeBalloon(Balloon bridgeBalloon) {
         this.bridgeBalloon = bridgeBalloon;
     }
@@ -781,14 +689,6 @@ public class KmlExportConfig {
 
     public List<DisplayForm> getTunnelDisplayForms() {
         return tunnelDisplayForms;
-    }
-
-    public void setTunnelColladaOptions(ColladaOptions tunnelColladaOptions) {
-        this.tunnelColladaOptions = tunnelColladaOptions;
-    }
-
-    public ColladaOptions getTunnelColladaOptions() {
-        return tunnelColladaOptions;
     }
 
     public void setTunnelBalloon(Balloon tunnelBalloon) {

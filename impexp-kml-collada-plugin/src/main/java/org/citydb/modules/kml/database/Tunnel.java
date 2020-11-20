@@ -83,10 +83,6 @@ public class Tunnel extends KmlGenericObject{
 		return config.getKmlExportConfig().getTunnelDisplayForms();
 	}
 
-	public ColladaOptions getColladaOptions() {
-		return config.getKmlExportConfig().getTunnelColladaOptions();
-	}
-
 	public Balloon getBalloonSettings() {
 		return config.getKmlExportConfig().getTunnelBalloon();
 	}
@@ -330,7 +326,9 @@ public class Tunnel extends KmlGenericObject{
 					return placemarks;
 
 				case DisplayForm.COLLADA:
-					fillGenericObjectForCollada(rs, config.getKmlExportConfig().getTunnelColladaOptions().isGenerateTextureAtlases()); // fill and refill
+					ColladaOptions colladaOptions = config.getKmlExportConfig().getColladaOptions();
+
+					fillGenericObjectForCollada(rs, colladaOptions.isGenerateTextureAtlases()); // fill and refill
 					String currentgmlId = getGmlId();
 					setGmlId(work.getGmlId());
 					setId(work.getId());
@@ -345,7 +343,6 @@ public class Tunnel extends KmlGenericObject{
 					}
 					setZOffset(zOffset);
 
-					ColladaOptions colladaOptions = getColladaOptions();
 					setIgnoreSurfaceOrientation(colladaOptions.isIgnoreSurfaceOrientation());
 					try {
 						if (work.getDisplayForm().isHighlightingEnabled()) {

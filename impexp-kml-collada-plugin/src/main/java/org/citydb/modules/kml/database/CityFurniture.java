@@ -80,10 +80,6 @@ public class CityFurniture extends KmlGenericObject{
 		return config.getKmlExportConfig().getCityFurnitureDisplayForms();
 	}
 
-	public ColladaOptions getColladaOptions() {
-		return config.getKmlExportConfig().getCityFurnitureColladaOptions();
-	}
-
 	public Balloon getBalloonSettings() {
 		return config.getKmlExportConfig().getCityFurnitureBalloon();
 	}
@@ -195,10 +191,12 @@ public class CityFurniture extends KmlGenericObject{
 					break;
 
 				case DisplayForm.COLLADA:
+					ColladaOptions colladaOptions = config.getKmlExportConfig().getColladaOptions();
+
 					String currentgmlId = getGmlId();
 					setGmlId(work.getGmlId());
 					setId(work.getId());
-					fillGenericObjectForCollada(rs, config.getKmlExportConfig().getCityFurnitureColladaOptions().isGenerateTextureAtlases());
+					fillGenericObjectForCollada(rs, colladaOptions.isGenerateTextureAtlases());
 
 					if (currentgmlId != null && !currentgmlId.equals(work.getGmlId()) && getGeometryAmount() > GEOMETRY_AMOUNT_WARNING)
 						log.info("Object " + work.getGmlId() + " has more than " + GEOMETRY_AMOUNT_WARNING + " geometries. This may take a while to process...");
@@ -210,7 +208,6 @@ public class CityFurniture extends KmlGenericObject{
 					}
 					setZOffset(zOffset);
 
-					ColladaOptions colladaOptions = getColladaOptions();
 					setIgnoreSurfaceOrientation(colladaOptions.isIgnoreSurfaceOrientation());
 					try {
 						if (work.getDisplayForm().isHighlightingEnabled()) 

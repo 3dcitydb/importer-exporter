@@ -54,7 +54,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
-public class ADEObject extends KmlGenericObject{
+public class ADEObject extends KmlGenericObject {
 	private final Logger log = Logger.getInstance();
 
 	public static final String POINT = "Point";
@@ -93,10 +93,6 @@ public class ADEObject extends KmlGenericObject{
 	}
 	protected List<DisplayForm> getDisplayForms() {
 		return getPreference().getDisplayForms();
-	}
-
-	public ColladaOptions getColladaOptions() {
-		return getPreference().getColladaOptions();
 	}
 
 	public PointAndCurve getPointAndCurve() {
@@ -244,10 +240,12 @@ public class ADEObject extends KmlGenericObject{
 							break;
 
 						case DisplayForm.COLLADA:
+							ColladaOptions colladaOptions = config.getKmlExportConfig().getColladaOptions();
+
 							String currentgmlId = getGmlId();
 							setGmlId(work.getGmlId());
 							setId(work.getId());
-							fillGenericObjectForCollada(brepGeometriesQueryRs, getColladaOptions().isGenerateTextureAtlases());
+							fillGenericObjectForCollada(brepGeometriesQueryRs, colladaOptions.isGenerateTextureAtlases());
 
 							if (currentgmlId != null && !currentgmlId.equals(work.getGmlId()) && getGeometryAmount() > GEOMETRY_AMOUNT_WARNING)
 								log.info("Object " + work.getGmlId() + " has more than " + GEOMETRY_AMOUNT_WARNING + " geometries. This may take a while to process...");
@@ -259,7 +257,6 @@ public class ADEObject extends KmlGenericObject{
 							}
 							setZOffset(zOffset);
 
-							ColladaOptions colladaOptions = getColladaOptions();
 							setIgnoreSurfaceOrientation(colladaOptions.isIgnoreSurfaceOrientation());
 							try {
 								if (work.getDisplayForm().isHighlightingEnabled())

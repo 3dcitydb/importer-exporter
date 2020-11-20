@@ -36,7 +36,6 @@ import java.util.List;
 @XmlType(name = "ADEKmlExportPreferenceType", propOrder = {
         "target",
         "displayForms",
-        "colladaOptions",
         "balloon",
         "pointAndCurve"
 })
@@ -46,13 +45,11 @@ public class ADEPreference {
     @XmlElement(name = "displayForm", required = true)
     @XmlElementWrapper(name = "displayForms")
     private List<DisplayForm> displayForms;
-    private ColladaOptions colladaOptions;
     private Balloon balloon;
     private PointAndCurve pointAndCurve;
 
     public ADEPreference() {
         displayForms = new ArrayList<>();
-        colladaOptions = new ColladaOptions();
         balloon = new Balloon();
         pointAndCurve = new PointAndCurve();
     }
@@ -80,14 +77,6 @@ public class ADEPreference {
 
     public void setDisplayForms(List<DisplayForm> displayForms) {
         this.displayForms = displayForms;
-    }
-
-    public ColladaOptions getColladaOptions() {
-        return colladaOptions;
-    }
-
-    public void setColladaOptions(ColladaOptions colladaOptions) {
-        this.colladaOptions = colladaOptions;
     }
 
     public Balloon getBalloon() {

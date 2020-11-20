@@ -120,7 +120,6 @@ public class ThreeDRenderingPanel extends AbstractPreferencesComponent {
 
 	public ThreeDRenderingPanel(String i18nTitle,
 								List<DisplayForm> displayForms,
-								ColladaOptions colladaOptions,
 								boolean showFootprintAndExtrudedOptions,
 								boolean showGeometryOptions,
 								boolean showColladaOptions,
@@ -129,11 +128,12 @@ public class ThreeDRenderingPanel extends AbstractPreferencesComponent {
 		super(config);
 		this.i18nTitle = i18nTitle;
 		this.displayForms = displayForms;
-		this.colladaOptions = colladaOptions;
 		this.showFootprintAndExtrudedOptions = showFootprintAndExtrudedOptions;
 		this.showGeometryOptions = showGeometryOptions;
 		this.showColladaOptions = showColladaOptions;
 		this.showThematicSurfaceOptions = showThematicSurfaceOptions;
+
+		colladaOptions = config.getKmlExportConfig().getColladaOptions();
 
 		packingAlgorithms.put("BASIC", TextureAtlasCreator.BASIC);
 		packingAlgorithms.put("TPIM", TextureAtlasCreator.TPIM);
@@ -142,8 +142,8 @@ public class ThreeDRenderingPanel extends AbstractPreferencesComponent {
 		initGui();
 	}
 
-	public ThreeDRenderingPanel(String i18nTitle, List<DisplayForm> displayForms, ColladaOptions colladaOptions, Config config) {
-		this(i18nTitle, displayForms, colladaOptions, true, true, true, false, config);
+	public ThreeDRenderingPanel(String i18nTitle, List<DisplayForm> displayForms, Config config) {
+		this(i18nTitle, displayForms, true, true, true, false, config);
 	}
 
 	@Override

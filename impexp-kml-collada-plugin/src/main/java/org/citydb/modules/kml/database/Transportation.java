@@ -87,10 +87,6 @@ public class Transportation extends KmlGenericObject{
 		return config.getKmlExportConfig().getTransportationDisplayForms();
 	}
 
-	public ColladaOptions getColladaOptions() {
-		return config.getKmlExportConfig().getTransportationColladaOptions();
-	}
-
 	public Balloon getBalloonSettings() {
 		return config.getKmlExportConfig().getTransportationBalloon();
 	}
@@ -197,7 +193,9 @@ public class Transportation extends KmlGenericObject{
 						break;
 
 					case DisplayForm.COLLADA:
-						fillGenericObjectForCollada(rs, config.getKmlExportConfig().getTransportationColladaOptions().isGenerateTextureAtlases());
+						ColladaOptions colladaOptions = config.getKmlExportConfig().getColladaOptions();
+
+						fillGenericObjectForCollada(rs, colladaOptions.isGenerateTextureAtlases());
 						String currentgmlId = getGmlId();
 						setGmlId(work.getGmlId());
 						setId(work.getId());
@@ -212,7 +210,6 @@ public class Transportation extends KmlGenericObject{
 						}
 						setZOffset(zOffset);
 
-						ColladaOptions colladaOptions = getColladaOptions();
 						setIgnoreSurfaceOrientation(colladaOptions.isIgnoreSurfaceOrientation());
 						try {
 							if (work.getDisplayForm().isHighlightingEnabled())

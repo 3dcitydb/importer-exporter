@@ -45,8 +45,7 @@ public class BuildingRenderingPanel extends AbstractPreferencesComponent {
         super(config);
         parent = new ThreeDRenderingPanel("pref.tree.kmlExport.buildingRendering",
                 config.getKmlExportConfig().getBuildingDisplayForms(),
-                config.getKmlExportConfig().getBuildingColladaOptions()
-                , true, true, true, true, config);
+                true, true, true, true, config);
 
         initGui();
     }

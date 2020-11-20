@@ -83,10 +83,6 @@ public class Bridge extends KmlGenericObject{
 		return config.getKmlExportConfig().getBridgeDisplayForms();
 	}
 
-	public ColladaOptions getColladaOptions() {
-		return config.getKmlExportConfig().getBridgeColladaOptions();
-	}
-
 	public Balloon getBalloonSettings() {
 		return config.getKmlExportConfig().getBridgeBalloon();
 	}
@@ -332,7 +328,9 @@ public class Bridge extends KmlGenericObject{
 					return placemarks;
 
 				case DisplayForm.COLLADA:
-					fillGenericObjectForCollada(rs, config.getKmlExportConfig().getBridgeColladaOptions().isGenerateTextureAtlases()); // fill and refill
+					ColladaOptions colladaOptions = config.getKmlExportConfig().getColladaOptions();
+
+					fillGenericObjectForCollada(rs, colladaOptions.isGenerateTextureAtlases()); // fill and refill
 					String currentgmlId = getGmlId();
 					setGmlId(work.getGmlId());
 					setId(work.getId());
@@ -347,7 +345,6 @@ public class Bridge extends KmlGenericObject{
 					}
 					setZOffset(zOffset);
 
-					ColladaOptions colladaOptions = getColladaOptions();
 					setIgnoreSurfaceOrientation(colladaOptions.isIgnoreSurfaceOrientation());
 					try {
 						if (work.getDisplayForm().isHighlightingEnabled()) {

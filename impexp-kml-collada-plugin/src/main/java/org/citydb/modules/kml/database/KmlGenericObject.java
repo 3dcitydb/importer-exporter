@@ -248,10 +248,8 @@ public abstract class KmlGenericObject {
 
 	public abstract void read(KmlSplittingResult work);
 	public abstract String getStyleBasisName();
-	public abstract ColladaOptions getColladaOptions();
 	public abstract Balloon getBalloonSettings();
 	protected abstract List<DisplayForm> getDisplayForms();
-
 
 	protected BalloonTemplateHandler getBalloonTemplateHandler() {
 		return balloonTemplateHandler;
@@ -444,7 +442,7 @@ public abstract class KmlGenericObject {
 		Mesh mesh = colladaFactory.createMesh();
 		mesh.getSource().add(positionSource);
 		mesh.setVertices(vertices);
-		if (getColladaOptions().isGenerateSurfaceNormals())
+		if (config.getKmlExportConfig().getColladaOptions().isGenerateSurfaceNormals())
 			mesh.getSource().add(normalSource);
 		if (!config.getKmlExportConfig().getAppearanceTheme().equals(KmlExportConfig.THEME_NONE))
 			mesh.getSource().add(texCoordsSource);
@@ -668,7 +666,7 @@ public abstract class KmlGenericObject {
 				inputV.setOffset(BigInteger.valueOf(offset++));
 				triangles.getInput().add(inputV);
 
-				if (getColladaOptions().isGenerateSurfaceNormals()) {
+				if (config.getKmlExportConfig().getColladaOptions().isGenerateSurfaceNormals()) {
 					InputLocalOffset inputN = colladaFactory.createInputLocalOffset();
 					inputN.setSemantic("NORMAL"); // ColladaConstants.INPUT_NORMAL_VERTEX
 					inputN.setSource("#" + normalSource.getId());
@@ -755,7 +753,7 @@ public abstract class KmlGenericObject {
 				VertexInfo vertexInfo = vertexInfos.get(indexes[i]);
 				triangles.getP().add(vertexInfo.getVertexId());
 
-				if (getColladaOptions().isGenerateSurfaceNormals())
+				if (config.getKmlExportConfig().getColladaOptions().isGenerateSurfaceNormals())
 					triangles.getP().add(BigInteger.valueOf(normalIndexes[i] + normalIndexOffset));
 
 				if (surfaceTextured) {
@@ -2371,7 +2369,7 @@ public abstract class KmlGenericObject {
 		if (getBalloonSettings().isIncludeDescription()
 				&& !colladaDisplayForm.isHighlightingEnabled()) { // avoid double description
 
-			ColladaOptions colladaOptions = getColladaOptions();
+			ColladaOptions colladaOptions = config.getKmlExportConfig().getColladaOptions();
 			if (!colladaOptions.isGroupObjects() || colladaOptions.getGroupSize() == 1) {
 				addBalloonContents(placemark, getId());
 			}
