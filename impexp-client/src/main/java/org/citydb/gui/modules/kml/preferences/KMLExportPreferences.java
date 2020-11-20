@@ -50,7 +50,12 @@ public class KMLExportPreferences extends AbstractPreferences {
 		KmlExportConfig exportConfig = config.getKmlExportConfig();
 
 		DefaultPreferencesEntry renderingNode = new RenderingPanel();
-		renderingNode.addChildEntry(new DefaultPreferencesEntry(new BridgeRenderingPanel(config)));
+		renderingNode.addChildEntry(new DefaultPreferencesEntry(new ThreeDRenderingPanel(
+				"pref.tree.kmlExport.bridgeRendering",
+				exportConfig.getBridgeDisplayForms(),
+				exportConfig.getBridgeColladaOptions(),
+				true, true, true, true,
+				config)));
 		renderingNode.addChildEntry(new DefaultPreferencesEntry(new BuildingRenderingPanel(config)));
 		renderingNode.addChildEntry(new DefaultPreferencesEntry(new ThreeDRenderingPanel(
 				"pref.tree.kmlExport.cityFurnitureRendering",
@@ -61,7 +66,7 @@ public class KMLExportPreferences extends AbstractPreferences {
 				"pref.tree.kmlExport.cityObjectGroupRendering",
 				exportConfig.getReliefDisplayForms(),
 				exportConfig.getReliefColladaOptions(),
-				true, false, false, config)));
+				true, false, false, false, config)));
 		DefaultPreferencesEntry genericCityObjectRenderingNode = new EmptyPanel(
 				"pref.tree.kmlExport.genericCityObjectRendering");
 		genericCityObjectRenderingNode.addChildEntry(new DefaultPreferencesEntry(new ThreeDRenderingPanel(
@@ -86,7 +91,12 @@ public class KMLExportPreferences extends AbstractPreferences {
 				exportConfig.getTransportationDisplayForms(),
 				exportConfig.getTransportationColladaOptions(),
 				config)));
-		renderingNode.addChildEntry(new DefaultPreferencesEntry(new TunnelRenderingPanel(config)));
+		renderingNode.addChildEntry(new DefaultPreferencesEntry(new ThreeDRenderingPanel(
+				"pref.tree.kmlExport.tunnelRendering",
+				exportConfig.getTunnelDisplayForms(),
+				exportConfig.getTunnelColladaOptions(),
+				true, true, true, true,
+				config)));
 		renderingNode.addChildEntry(new DefaultPreferencesEntry(new ThreeDRenderingPanel(
 				"pref.tree.kmlExport.vegetationRendering",
 				exportConfig.getVegetationDisplayForms(),
