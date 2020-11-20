@@ -73,7 +73,7 @@ public class TunnelBalloonPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public String getTitle() {
-		return Language.I18N.getString("pref.tree.kmlExport.tunnelBalloon");
+		return Language.I18N.getString("pref.tree.kmlExport.tunnel.balloon");
 	}
 
 	@Override

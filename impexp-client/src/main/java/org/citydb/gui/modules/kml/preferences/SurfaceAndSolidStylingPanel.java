@@ -29,13 +29,11 @@ package org.citydb.gui.modules.kml.preferences;
 
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
-import org.citydb.config.project.kmlExporter.ColladaOptions;
 import org.citydb.config.project.kmlExporter.DisplayForm;
 import org.citydb.gui.components.common.AlphaButton;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.modules.common.AbstractPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
-import org.citydb.textureAtlas.TextureAtlasCreator;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
@@ -44,21 +42,17 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
-public class ThreeDRenderingPanel extends AbstractPreferencesComponent {
+public class SurfaceAndSolidStylingPanel extends AbstractPreferencesComponent {
 	private final String i18nTitle;
 	private final List<DisplayForm> displayForms;
-	private final ColladaOptions colladaOptions;
 	private final boolean showFootprintAndExtrudedOptions;
 	private final boolean showGeometryOptions;
 	private final boolean showColladaOptions;
 	private final boolean showThematicSurfaceOptions;
 	private final ArrayList<DisplayForm> internalDisplayForms = new ArrayList<>();
-	private final Map<String, Integer> packingAlgorithms = new HashMap<>();
 
 	private JPanel footprintContentPanel;
 	private JCheckBox footprintHighlightingCheckbox;
@@ -93,20 +87,11 @@ public class ThreeDRenderingPanel extends AbstractPreferencesComponent {
 	private JButton geometryRoofLineColorButton;
 
 	private JPanel colladaContentPanel;
-	private JCheckBox ignoreSurfaceOrientationCheckbox;
-	private JCheckBox generateSurfaceNormalsCheckbox;
-	private JCheckBox cropImagesCheckbox;
-	private JCheckBox textureAtlasCheckbox;
-	private JCheckBox textureAtlasPotsCheckbox;
-	private JCheckBox scaleTexImagesCheckbox;
-	private JFormattedTextField scaleFactorText;
 	private JPanel colladaColorSubPanel;
 	private JLabel colladaAlphaLabel;
 	private JSpinner colladaAlphaSpinner;
 	private JLabel colladaFillColorLabel;
 	private JButton colladaFillColorButton;
-	private JRadioButton groupObjectsRButton;
-	private JFormattedTextField groupSizeText;
 	private JRadioButton colladaHighlightingRButton;
 	private JLabel colladaHLSurfaceDistanceLabel;
 	private JFormattedTextField colladaHLSurfaceDistanceText;
@@ -114,17 +99,16 @@ public class ThreeDRenderingPanel extends AbstractPreferencesComponent {
 	private JButton colladaHLFillColorButton;
 	private JLabel colladaHLLineColorLabel;
 	private JButton colladaHLLineColorButton;
-	private JComboBox<String> packingAlgorithmsComboBox;
 	private JLabel colladaRoofFillColorLabel;
 	private JButton colladaRoofFillColorButton;
 
-	public ThreeDRenderingPanel(String i18nTitle,
-								List<DisplayForm> displayForms,
-								boolean showFootprintAndExtrudedOptions,
-								boolean showGeometryOptions,
-								boolean showColladaOptions,
-								boolean showThematicSurfaceOptions,
-								Config config) {
+	public SurfaceAndSolidStylingPanel(String i18nTitle,
+									   List<DisplayForm> displayForms,
+									   boolean showFootprintAndExtrudedOptions,
+									   boolean showGeometryOptions,
+									   boolean showColladaOptions,
+									   boolean showThematicSurfaceOptions,
+									   Config config) {
 		super(config);
 		this.i18nTitle = i18nTitle;
 		this.displayForms = displayForms;
@@ -133,16 +117,10 @@ public class ThreeDRenderingPanel extends AbstractPreferencesComponent {
 		this.showColladaOptions = showColladaOptions;
 		this.showThematicSurfaceOptions = showThematicSurfaceOptions;
 
-		colladaOptions = config.getKmlExportConfig().getColladaOptions();
-
-		packingAlgorithms.put("BASIC", TextureAtlasCreator.BASIC);
-		packingAlgorithms.put("TPIM", TextureAtlasCreator.TPIM);
-		packingAlgorithms.put("TPIM w/o image rotation", TextureAtlasCreator.TPIM_WO_ROTATION);
-
 		initGui();
 	}
 
-	public ThreeDRenderingPanel(String i18nTitle, List<DisplayForm> displayForms, Config config) {
+	public SurfaceAndSolidStylingPanel(String i18nTitle, List<DisplayForm> displayForms, Config config) {
 		this(i18nTitle, displayForms, true, true, true, false, config);
 	}
 
@@ -155,8 +133,6 @@ public class ThreeDRenderingPanel extends AbstractPreferencesComponent {
 	public boolean isModified() {
 		try { geometryHLSurfaceDistanceText.commitEdit(); } catch (ParseException ignored) { }
 		try { colladaHLSurfaceDistanceText.commitEdit(); } catch (ParseException ignored) { }
-		try { scaleFactorText.commitEdit(); } catch (ParseException ignored) { }
-		try { groupSizeText.commitEdit(); } catch (ParseException ignored) { }
 
 		setInternalDisplayFormValues();
 
@@ -168,17 +144,6 @@ public class ThreeDRenderingPanel extends AbstractPreferencesComponent {
 
 			if (notEqual(displayForm, DisplayForm.getDisplayForm(form, internalDisplayForms))) return true;
 		}
-
-		if (ignoreSurfaceOrientationCheckbox.isSelected() != colladaOptions.isIgnoreSurfaceOrientation()) return true;
-		if (generateSurfaceNormalsCheckbox.isSelected() != colladaOptions.isGenerateSurfaceNormals()) return true;
-		if (cropImagesCheckbox.isSelected() != colladaOptions.isCropImages()) return true;
-		if (textureAtlasCheckbox.isSelected() != colladaOptions.isGenerateTextureAtlases()) return true;
-		if (textureAtlasPotsCheckbox.isSelected() != colladaOptions.isTextureAtlasPots()) return true;
-		if (packingAlgorithms.get(packingAlgorithmsComboBox.getSelectedItem()) != colladaOptions.getPackingAlgorithm()) return true;
-		if (groupObjectsRButton.isSelected() != colladaOptions.isGroupObjects()) return true;
-		if (((Number) groupSizeText.getValue()).intValue() != colladaOptions.getGroupSize()) return true;
-		if (scaleTexImagesCheckbox.isSelected() != colladaOptions.isScaleImages()) return true;
-		if (((Number) scaleFactorText.getValue()).doubleValue() != colladaOptions.getImageScaleFactor()) return true;
 
 		return false;
 	}
@@ -472,28 +437,19 @@ public class ThreeDRenderingPanel extends AbstractPreferencesComponent {
 	}
 
 	private void initColladaPanel() {
-		ignoreSurfaceOrientationCheckbox = new JCheckBox();
-		generateSurfaceNormalsCheckbox = new JCheckBox();
-		cropImagesCheckbox = new JCheckBox();
-		textureAtlasCheckbox = new JCheckBox();
-		textureAtlasPotsCheckbox = new JCheckBox();
-		scaleTexImagesCheckbox = new JCheckBox();
 		colladaAlphaLabel = new JLabel();
 		colladaFillColorLabel = new JLabel();
 		colladaFillColorButton = new AlphaButton();
-		groupObjectsRButton = new JRadioButton();
 		colladaHighlightingRButton = new JRadioButton();
 		colladaHLSurfaceDistanceLabel = new JLabel();
 		colladaHLFillColorLabel = new JLabel();
 		colladaHLFillColorButton = new AlphaButton();
 		colladaHLLineColorLabel = new JLabel();
 		colladaHLLineColorButton = new AlphaButton();
-		packingAlgorithmsComboBox = new JComboBox<>();
 
 		DecimalFormat scaleFormat = new DecimalFormat("#.###", DecimalFormatSymbols.getInstance(Locale.ENGLISH));
 		scaleFormat.setMaximumIntegerDigits(1);
 		scaleFormat.setMaximumFractionDigits(3);
-		scaleFactorText = new JFormattedTextField(scaleFormat);
 
 		DecimalFormat highlightFormat = new DecimalFormat("##.###", DecimalFormatSymbols.getInstance(Locale.ENGLISH));
 		highlightFormat.setMaximumIntegerDigits(2);
@@ -503,37 +459,9 @@ public class ThreeDRenderingPanel extends AbstractPreferencesComponent {
 		DecimalFormat groupSizeFormat = new DecimalFormat("#");
 		groupSizeFormat.setMaximumIntegerDigits(8);
 		groupSizeFormat.setMinimumIntegerDigits(1);
-		groupSizeText = new JFormattedTextField(groupSizeFormat);
 
 		JPanel content = new JPanel();
 		content.setLayout(new GridBagLayout());
-
-		GridBagConstraints isoc = GuiUtil.setConstraints(0, 0, 0, 1, GridBagConstraints.BOTH, 0, 5, 0, 0);
-		isoc.gridwidth = 2;
-		content.add(ignoreSurfaceOrientationCheckbox, isoc);
-
-		GridBagConstraints gsnc = GuiUtil.setConstraints(0, 1, 0, 1, GridBagConstraints.BOTH, 0, 5, 0, 0);
-		gsnc.gridwidth = 2;
-		content.add(generateSurfaceNormalsCheckbox, gsnc);
-
-		GridBagConstraints cI = GuiUtil.setConstraints(0, 2, 0, 1, GridBagConstraints.BOTH, 0, 5, 0, 0);
-		cI.gridwidth = 2;
-		content.add(cropImagesCheckbox, cI);
-
-		packingAlgorithmsComboBox.addItem("BASIC");
-		packingAlgorithmsComboBox.addItem("TPIM");
-		packingAlgorithmsComboBox.addItem("TPIM w/o image rotation");
-
-		content.add(textureAtlasCheckbox, GuiUtil.setConstraints(0, 3, 0, 1, GridBagConstraints.BOTH, 0, 5, 2, 0));
-		content.add(packingAlgorithmsComboBox, GuiUtil.setConstraints(1, 3, 1, 1, GridBagConstraints.BOTH, 0, 5, 2, 5));
-
-		int lmargin = GuiUtil.getTextOffset(textureAtlasCheckbox) + 5;
-		GridBagConstraints tapc = GuiUtil.setConstraints(0, 4, 0, 1, GridBagConstraints.BOTH, 5, lmargin, 5, 0);
-		tapc.gridwidth = 2;
-		content.add(textureAtlasPotsCheckbox, tapc);
-
-		content.add(scaleTexImagesCheckbox, GuiUtil.setConstraints(0, 5, 0, 1, GridBagConstraints.BOTH, 0, 5, 2, 0));
-		content.add(scaleFactorText, GuiUtil.setConstraints(1, 5, 1, 1, GridBagConstraints.BOTH, 0, 5, 2, 5));
 
 		// color settings for collada and gltf
 		colladaColorSubPanel = new JPanel();
@@ -574,14 +502,6 @@ public class ThreeDRenderingPanel extends AbstractPreferencesComponent {
 			colladaRoofFillColorButton.setContentAreaFilled(false);
 			colladaColorSubPanel.add(colladaRoofFillColorButton, GuiUtil.setConstraints(1,2,0.25,1.0,GridBagConstraints.HORIZONTAL,5,0,5,5));
 		}
-
-		// highlighting settings (just for collada and Google Earch)
-		ButtonGroup colladaRadioGroup = new ButtonGroup();
-		colladaRadioGroup.add(groupObjectsRButton);
-		colladaRadioGroup.add(colladaHighlightingRButton);
-
-		content.add(groupObjectsRButton, GuiUtil.setConstraints(0, 7, 0, 1, GridBagConstraints.BOTH, 0, 5, 2, 0));
-		content.add(groupSizeText, GuiUtil.setConstraints(1, 7, 1, 1, GridBagConstraints.BOTH, 0, 5, 2, 5));
 
 		GridBagConstraints chrb = GuiUtil.setConstraints(0, 8, 0, 1, GridBagConstraints.BOTH, 0, 5, 2 * 5, 0);
 		chrb.gridwidth = 2;
@@ -625,7 +545,7 @@ public class ThreeDRenderingPanel extends AbstractPreferencesComponent {
 			colladaContentPanel.add(content, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 0));
 		}
 
-		PopupMenuDecorator.getInstance().decorate(scaleFactorText, groupSizeText, colladaHLSurfaceDistanceText);
+		PopupMenuDecorator.getInstance().decorate(colladaHLSurfaceDistanceText);
 
 		colladaFillColorButton.addActionListener(e -> {
 			Color wallFillColor = chooseColor(Language.I18N.getString(showThematicSurfaceOptions ?
@@ -659,27 +579,7 @@ public class ThreeDRenderingPanel extends AbstractPreferencesComponent {
 				colladaHLLineColorButton.setBackground(hlLineColor);
 		});
 
-		scaleFactorText.addPropertyChangeListener(evt -> {
-			if (scaleFactorText.getValue() == null
-					|| ((Number) scaleFactorText.getValue()).doubleValue() <= 0
-					|| ((Number) scaleFactorText.getValue()).doubleValue() > 1)
-				scaleFactorText.setValue(1);
-		});
-
-		groupSizeText.addPropertyChangeListener(evt -> {
-			if (groupSizeText.getValue() == null
-					|| ((Number) groupSizeText.getValue()).intValue() < 2)
-				groupSizeText.setValue(1);
-		});
-
-		textureAtlasCheckbox.addActionListener(e -> {
-			packingAlgorithmsComboBox.setEnabled(textureAtlasCheckbox.isSelected());
-			textureAtlasPotsCheckbox.setEnabled(textureAtlasCheckbox.isSelected());
-		});
-
 		colladaHLSurfaceDistanceText.addPropertyChangeListener(evt -> checkHighlightingDistance(colladaHLSurfaceDistanceText));
-		scaleTexImagesCheckbox.addActionListener(e -> scaleFactorText.setEnabled(scaleTexImagesCheckbox.isSelected()));
-		groupObjectsRButton.addActionListener(e -> setEnabledColladaHighlighting());
 		colladaHighlightingRButton.addActionListener(e -> setEnabledColladaHighlighting());
 	}
 
@@ -734,12 +634,6 @@ public class ThreeDRenderingPanel extends AbstractPreferencesComponent {
 		geometryHLFillColorLabel.setText(Language.I18N.getString("pref.kmlexport.label.highlightedFillColor"));
 		geometryHLLineColorLabel.setText(Language.I18N.getString("pref.kmlexport.label.highlightedLineColor"));
 
-		ignoreSurfaceOrientationCheckbox.setText(Language.I18N.getString("pref.kmlexport.label.ignoreSurfaceOrientation"));
-		generateSurfaceNormalsCheckbox.setText(Language.I18N.getString("pref.kmlexport.label.generateSurfaceNormals"));
-		cropImagesCheckbox.setText(Language.I18N.getString("pref.kmlexport.label.cropTexImages"));
-		textureAtlasCheckbox.setText(Language.I18N.getString("pref.kmlexport.label.generateTextureAtlases"));
-		textureAtlasPotsCheckbox.setText(Language.I18N.getString("pref.kmlexport.label.textureAtlasPots"));
-		scaleTexImagesCheckbox.setText(Language.I18N.getString("pref.kmlexport.label.scaleTexImages"));
 		((TitledBorder)colladaColorSubPanel.getBorder()).setTitle(Language.I18N.getString("pref.kmlexport.label.colladaGltfColorSettings"));
 		colladaAlphaLabel.setText(Language.I18N.getString("pref.kmlexport.label.alpha"));
 		colladaFillColorLabel.setText(Language.I18N.getString(showThematicSurfaceOptions ?
@@ -750,7 +644,6 @@ public class ThreeDRenderingPanel extends AbstractPreferencesComponent {
 			colladaRoofFillColorLabel.setText(Language.I18N.getString("pref.kmlexport.label.roofFillColor"));
 		}
 
-		groupObjectsRButton.setText(Language.I18N.getString("pref.kmlexport.label.groupObjects"));
 		colladaHighlightingRButton.setText(Language.I18N.getString("pref.kmlexport.colladaDisplay.label.highlighting"));
 		colladaHLSurfaceDistanceLabel.setText(Language.I18N.getString("pref.kmlexport.label.highlightingDistance"));
 		colladaHLFillColorLabel.setText(Language.I18N.getString("pref.kmlexport.label.highlightedFillColor"));
@@ -839,23 +732,6 @@ public class ThreeDRenderingPanel extends AbstractPreferencesComponent {
 			}
 		}
 
-		ignoreSurfaceOrientationCheckbox.setSelected(colladaOptions.isIgnoreSurfaceOrientation());
-		generateSurfaceNormalsCheckbox.setSelected(colladaOptions.isGenerateSurfaceNormals());
-		cropImagesCheckbox.setSelected(colladaOptions.isCropImages());
-		textureAtlasCheckbox.setSelected(colladaOptions.isGenerateTextureAtlases());
-		textureAtlasPotsCheckbox.setSelected(colladaOptions.isTextureAtlasPots());
-		for (String key: packingAlgorithms.keySet()) {
-			if (packingAlgorithms.get(key).intValue() == colladaOptions.getPackingAlgorithm()) {
-				packingAlgorithmsComboBox.setSelectedItem(key);
-				break;
-			}
-		}
-
-		scaleTexImagesCheckbox.setSelected(colladaOptions.isScaleImages());
-		scaleFactorText.setValue(colladaOptions.getImageScaleFactor());
-		groupObjectsRButton.setSelected(colladaOptions.isGroupObjects());
-		groupSizeText.setValue(colladaOptions.getGroupSize());
-
 		setEnabledSettings();
 	}
 
@@ -875,17 +751,6 @@ public class ThreeDRenderingPanel extends AbstractPreferencesComponent {
 				}
 			}
 		}
-
-		colladaOptions.setIgnoreSurfaceOrientation(ignoreSurfaceOrientationCheckbox.isSelected());
-		colladaOptions.setGenerateSurfaceNormals(generateSurfaceNormalsCheckbox.isSelected());
-		colladaOptions.setCropImages(cropImagesCheckbox.isSelected());
-		colladaOptions.setGenerateTextureAtlases(textureAtlasCheckbox.isSelected());
-		colladaOptions.setTextureAtlasPots(textureAtlasPotsCheckbox.isSelected());
-		colladaOptions.setPackingAlgorithm(packingAlgorithms.get(packingAlgorithmsComboBox.getSelectedItem()).intValue());
-		colladaOptions.setScaleImages(scaleTexImagesCheckbox.isSelected());
-		colladaOptions.setImageScaleFactor(((Number) scaleFactorText.getValue()).doubleValue());
-		colladaOptions.setGroupObjects(groupObjectsRButton.isSelected());
-		colladaOptions.setGroupSize(((Number) groupSizeText.getValue()).intValue());
 	}
 
 	private void setInternalDisplayFormValues() {
@@ -1037,15 +902,10 @@ public class ThreeDRenderingPanel extends AbstractPreferencesComponent {
 			df.setRgba5(DisplayForm.DEFAULT_LINE_HIGHLIGHTED_COLOR);
 		}
 
-		ColladaOptions.resetSettings(colladaOptions);
 		loadSettings();
 	}
 
 	private void setEnabledSettings() {
-		scaleFactorText.setEnabled(scaleTexImagesCheckbox.isSelected());
-		packingAlgorithmsComboBox.setEnabled(textureAtlasCheckbox.isSelected());
-		textureAtlasPotsCheckbox.setEnabled(textureAtlasCheckbox.isSelected());
-
 		setEnabledFootprintHighlighting();
 		setEnabledGeometryHighlighting();
 		setEnabledColladaHighlighting();
@@ -1074,7 +934,6 @@ public class ThreeDRenderingPanel extends AbstractPreferencesComponent {
 		colladaHLLineColorButton.setEnabled(colladaHighlightingRButton.isSelected());
 		colladaHLSurfaceDistanceLabel.setEnabled(colladaHighlightingRButton.isSelected());
 		colladaHLSurfaceDistanceText.setEnabled(colladaHighlightingRButton.isSelected());
-		groupSizeText.setEnabled(groupObjectsRButton.isSelected());
 	}
 
 	private boolean notEqual(DisplayForm first, DisplayForm second) {

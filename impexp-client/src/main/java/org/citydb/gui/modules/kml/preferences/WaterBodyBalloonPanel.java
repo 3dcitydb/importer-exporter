@@ -73,7 +73,7 @@ public class WaterBodyBalloonPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public String getTitle() {
-		return Language.I18N.getString("pref.tree.kmlExport.waterBodyBalloon");
+		return Language.I18N.getString("pref.tree.kmlExport.waterBody.balloon");
 	}
 
 	@Override

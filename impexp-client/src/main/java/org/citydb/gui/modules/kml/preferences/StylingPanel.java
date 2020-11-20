@@ -31,15 +31,15 @@ import org.citydb.config.i18n.Language;
 import org.citydb.gui.modules.common.DefaultPreferencesEntry;
 import org.citydb.gui.modules.common.NullComponent;
 
-public class RenderingPanel extends DefaultPreferencesEntry {
+public class StylingPanel extends DefaultPreferencesEntry {
 
-	public RenderingPanel() {
+	public StylingPanel() {
 		super(NullComponent.getInstance());
 	}
 
 	@Override
 	public String getLocalizedTitle() {
-		return Language.I18N.getString("pref.tree.kmlExport.rendering");
+		return Language.I18N.getString("pref.tree.kmlExport.styling");
 	}
 	
 }

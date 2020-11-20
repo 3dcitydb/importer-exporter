@@ -39,6 +39,6 @@ public class GenericCityObjectBalloonPanel extends DefaultPreferencesEntry {
 
 	@Override
 	public String getLocalizedTitle() {
-		return Language.I18N.getString("pref.tree.kmlExport.genericCityObjectBalloon");
+		return Language.I18N.getString("pref.tree.kmlExport.genericCityObject.balloon");
 	}
 }

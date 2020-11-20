@@ -37,13 +37,13 @@ import javax.swing.*;
 import java.awt.*;
 
 public class BuildingRenderingPanel extends AbstractPreferencesComponent {
-    private final ThreeDRenderingPanel parent;
+    private final SurfaceAndSolidStylingPanel parent;
     private JLabel lod0FootprintLabel;
     private JComboBox<Lod0FootprintMode> lod0FootprintComboBox;
 
     public BuildingRenderingPanel(Config config) {
         super(config);
-        parent = new ThreeDRenderingPanel("pref.tree.kmlExport.buildingRendering",
+        parent = new SurfaceAndSolidStylingPanel("pref.tree.kmlExport.building.styling",
                 config.getKmlExportConfig().getBuildingDisplayForms(),
                 true, true, true, true, config);
 

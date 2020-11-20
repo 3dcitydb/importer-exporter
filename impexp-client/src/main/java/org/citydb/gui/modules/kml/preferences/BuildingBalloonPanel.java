@@ -73,7 +73,7 @@ public class BuildingBalloonPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public String getTitle() {
-		return Language.I18N.getString("pref.tree.kmlExport.buildingBalloon");
+		return Language.I18N.getString("pref.tree.kmlExport.building.balloon");
 	}
 
 	@Override

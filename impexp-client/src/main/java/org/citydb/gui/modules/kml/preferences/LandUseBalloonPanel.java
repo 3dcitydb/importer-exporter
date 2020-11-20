@@ -73,7 +73,7 @@ public class LandUseBalloonPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public String getTitle() {
-		return Language.I18N.getString("pref.tree.kmlExport.landUseBalloon");
+		return Language.I18N.getString("pref.tree.kmlExport.landUse.balloon");
 	}
 
 	@Override

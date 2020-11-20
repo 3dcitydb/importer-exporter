@@ -83,7 +83,7 @@ public class PointAndCurveBalloonPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public String getTitle() {
-		return Language.I18N.getString("pref.tree.kmlExport.gcoPointAndCurveBalloon");
+		return Language.I18N.getString("pref.tree.kmlExport.pointAndCurve.balloon");
 	}
 
 	@Override

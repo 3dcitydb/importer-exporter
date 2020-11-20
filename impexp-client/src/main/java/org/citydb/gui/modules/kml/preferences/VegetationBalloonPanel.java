@@ -73,7 +73,7 @@ public class VegetationBalloonPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public String getTitle() {
-		return Language.I18N.getString("pref.tree.kmlExport.vegetationBalloon");
+		return Language.I18N.getString("pref.tree.kmlExport.vegetation.balloon");
 	}
 
 	@Override

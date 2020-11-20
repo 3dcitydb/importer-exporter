@@ -74,7 +74,7 @@ public class ThreeDBalloonPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public String getTitle() {
-		return Language.I18N.getString("pref.tree.kmlExport.gco3DBalloon");
+		return Language.I18N.getString("pref.tree.kmlExport.surfaceAndSolid.balloon");
 	}
 
 	@Override

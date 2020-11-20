@@ -73,7 +73,7 @@ public class ReliefBalloonPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public String getTitle() {
-		return Language.I18N.getString("pref.tree.kmlExport.reliefBalloon");
+		return Language.I18N.getString("pref.tree.kmlExport.relief.balloon");
 	}
 
 	@Override

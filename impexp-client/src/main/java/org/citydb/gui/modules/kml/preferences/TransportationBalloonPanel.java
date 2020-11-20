@@ -73,7 +73,7 @@ public class TransportationBalloonPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public String getTitle() {
-		return Language.I18N.getString("pref.tree.kmlExport.transportationBalloon");
+		return Language.I18N.getString("pref.tree.kmlExport.transportation.balloon");
 	}
 
 	@Override

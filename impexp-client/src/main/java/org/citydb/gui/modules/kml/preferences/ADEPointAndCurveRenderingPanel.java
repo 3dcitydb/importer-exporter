@@ -107,7 +107,7 @@ public class ADEPointAndCurveRenderingPanel extends AbstractPreferencesComponent
 
 	@Override
 	public String getTitle() {
-		return Language.I18N.getString("pref.tree.kmlExport.gcoPointAndCurveRendering");
+		return Language.I18N.getString("pref.tree.kmlExport.pointAndCurve.styling");
 	}
 
 	@Override

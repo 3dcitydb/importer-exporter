@@ -73,7 +73,7 @@ public class CityFurnitureBalloonPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public String getTitle() {
-		return Language.I18N.getString("pref.tree.kmlExport.cityFurnitureBalloon");
+		return Language.I18N.getString("pref.tree.kmlExport.cityFurniture.balloon");
 	}
 
 	@Override

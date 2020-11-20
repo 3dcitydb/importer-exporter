@@ -182,7 +182,7 @@ public class Relief extends KmlGenericObject{
 
 				case DisplayForm.COLLADA:
 					ColladaOptions colladaOptions = config.getKmlExportConfig().getColladaOptions();
-					
+
 					fillGenericObjectForCollada(rs, colladaOptions.isGenerateTextureAtlases());
 					String currentgmlId = getGmlId();
 					setGmlId(work.getGmlId());

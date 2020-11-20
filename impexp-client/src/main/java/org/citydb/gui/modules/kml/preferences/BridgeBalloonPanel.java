@@ -73,7 +73,7 @@ public class BridgeBalloonPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public String getTitle() {
-		return Language.I18N.getString("pref.tree.kmlExport.bridgeBalloon");
+		return Language.I18N.getString("pref.tree.kmlExport.bridge.balloon");
 	}
 
 	@Override
