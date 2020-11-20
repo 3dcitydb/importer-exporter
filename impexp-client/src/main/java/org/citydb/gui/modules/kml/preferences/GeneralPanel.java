@@ -27,7 +27,6 @@
  */
 package org.citydb.gui.modules.kml.preferences;
 
-import net.opengis.kml._2.ViewRefreshModeEnumType;
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.kmlExporter.KmlExportConfig;
@@ -61,16 +60,7 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 	private JCheckBox exportEmptyTilesCheckbox = new JCheckBox();
 	private JLabel autoTileSideLengthLabel = new JLabel();
 	private JFormattedTextField autoTileSideLengthText;
-	private JCheckBox oneFilePerObjectCheckbox = new JCheckBox();
-	private JLabel visibleFromLabel = new JLabel();
-	private JFormattedTextField visibleFromText;
-	private JLabel pixelsLabel = new JLabel();
 	private JLabel mLabel = new JLabel("m.");
-	private JLabel viewRefreshModeLabel = new JLabel();
-	private JComboBox<String> viewRefreshModeComboBox = new JComboBox<>();
-	private JLabel viewRefreshTimeLabel = new JLabel();
-	private JLabel sLabel = new JLabel("s.");
-	private JFormattedTextField viewRefreshTimeText;
 	private JCheckBox writeJSONCheckbox = new JCheckBox();
 
 	private JCheckBox createGltfCheckbox = new JCheckBox();
@@ -107,26 +97,6 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		}
 		catch (NumberFormatException nfe) {return true;}
 		if (autoTileSideLength != kmlExportConfig.getQuery().getBboxFilter().getTilingOptions().getAutoTileSideLength()) return true;
-
-		if (oneFilePerObjectCheckbox.isSelected() != kmlExportConfig.isOneFilePerObject()) return true;
-
-		try { visibleFromText.commitEdit(); } catch (ParseException e) {}
-		double objectRegionSize = 50;
-		try {
-			objectRegionSize = Double.parseDouble(visibleFromText.getText().trim());
-		}
-		catch (NumberFormatException nfe) {return true;}
-		if (objectRegionSize != kmlExportConfig.getSingleObjectRegionSize()) return true;
-
-		if (!viewRefreshModeComboBox.getSelectedItem().equals(kmlExportConfig.getViewRefreshMode())) return true;
-
-		try { viewRefreshTimeText.commitEdit(); } catch (ParseException e) {}
-		double viewRefreshTime = 50;
-		try {
-			viewRefreshTime = Double.parseDouble(viewRefreshTimeText.getText().trim());
-		}
-		catch (NumberFormatException nfe) {return true;}
-		if (viewRefreshTime != kmlExportConfig.getViewRefreshTime()) return true;
 
 		if (writeJSONCheckbox.isSelected() != kmlExportConfig.isWriteJSONFile()) return true;
 		if (createGltfCheckbox.isSelected() != kmlExportConfig.isCreateGltfModel()) return true;
@@ -190,37 +160,9 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		ml.anchor = GridBagConstraints.WEST;
 		generalPanel.add(mLabel, ml);
 
-		generalPanel.add(oneFilePerObjectCheckbox, GuiUtil.setConstraints(0,5,0.0,1.0,GridBagConstraints.BOTH,BORDER_THICKNESS,BORDER_THICKNESS,0,0));
-
-		visibleFromText = new JFormattedTextField(threeIntFormat);
-		GridBagConstraints vfl = GuiUtil.setConstraints(0,6,0.0,1.0,GridBagConstraints.NONE,BORDER_THICKNESS,BORDER_THICKNESS * 2,0,BORDER_THICKNESS);
-		vfl.anchor = GridBagConstraints.EAST;
-		generalPanel.add(visibleFromLabel, vfl);
-		generalPanel.add(visibleFromText, GuiUtil.setConstraints(1,6,1.0,1.0,GridBagConstraints.BOTH,BORDER_THICKNESS,BORDER_THICKNESS,0,BORDER_THICKNESS));
-		GridBagConstraints pl = GuiUtil.setConstraints(2,6,0.0,1.0,GridBagConstraints.NONE,BORDER_THICKNESS,BORDER_THICKNESS,0,BORDER_THICKNESS);
-		pl.anchor = GridBagConstraints.WEST;
-		generalPanel.add(pixelsLabel, pl);
-
-		for (ViewRefreshModeEnumType refreshMode: ViewRefreshModeEnumType.values()) {
-			viewRefreshModeComboBox.addItem(refreshMode.value());
-		}
-		GridBagConstraints wrml = GuiUtil.setConstraints(0,7,0.0,1.0,GridBagConstraints.NONE,BORDER_THICKNESS,BORDER_THICKNESS * 2,0,BORDER_THICKNESS);
-		wrml.anchor = GridBagConstraints.EAST;
-		generalPanel.add(viewRefreshModeLabel, wrml);
-		generalPanel.add(viewRefreshModeComboBox, GuiUtil.setConstraints(1,7,1.0,1.0,GridBagConstraints.BOTH,BORDER_THICKNESS,BORDER_THICKNESS,0,BORDER_THICKNESS));
-
-		viewRefreshTimeText = new JFormattedTextField(threeIntFormat);
-		GridBagConstraints vrtl = GuiUtil.setConstraints(0,8,0.0,1.0,GridBagConstraints.NONE,BORDER_THICKNESS,BORDER_THICKNESS * 2,0,BORDER_THICKNESS);
-		vrtl.anchor = GridBagConstraints.EAST;
-		generalPanel.add(viewRefreshTimeLabel, vrtl);
-		generalPanel.add(viewRefreshTimeText, GuiUtil.setConstraints(1,8,1.0,1.0,GridBagConstraints.BOTH,BORDER_THICKNESS,BORDER_THICKNESS,0,BORDER_THICKNESS));
-		GridBagConstraints sl = GuiUtil.setConstraints(2,8,0.0,1.0,GridBagConstraints.NONE,BORDER_THICKNESS,BORDER_THICKNESS,0,BORDER_THICKNESS);
-		sl.anchor = GridBagConstraints.WEST;
-		generalPanel.add(sLabel, sl);
-
 		generalPanel.add(writeJSONCheckbox, GuiUtil.setConstraints(0,9,0.0,1.0,GridBagConstraints.BOTH,BORDER_THICKNESS,BORDER_THICKNESS,0,0));
 
-		PopupMenuDecorator.getInstance().decorate(autoTileSideLengthText, visibleFromText, viewRefreshTimeText);
+		PopupMenuDecorator.getInstance().decorate(autoTileSideLengthText);
 
 		createGltfCheckbox.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -268,18 +210,6 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 			}
 		});
 
-		oneFilePerObjectCheckbox.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				setEnabledComponents();
-			}
-		});
-
-		viewRefreshModeComboBox.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				setEnabledComponents();
-			}
-		});
-
 		writeJSONCheckbox.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				setEnabledComponents();
@@ -318,11 +248,6 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		showTileBordersCheckbox.setText(Language.I18N.getString("pref.kmlexport.label.showTileBorders"));
 		exportEmptyTilesCheckbox.setText(Language.I18N.getString("pref.kmlexport.label.exportEmptyTiles"));
 		autoTileSideLengthLabel.setText(Language.I18N.getString("pref.kmlexport.label.autoTileSideLength"));
-		oneFilePerObjectCheckbox.setText(Language.I18N.getString("kmlExport.label.oneFilePerObject"));
-		visibleFromLabel.setText(Language.I18N.getString("kmlExport.label.visibleFrom"));
-		pixelsLabel.setText(Language.I18N.getString("kmlExport.label.pixels"));
-		viewRefreshModeLabel.setText(Language.I18N.getString("kmlExport.label.viewRefreshMode"));
-		viewRefreshTimeLabel.setText(Language.I18N.getString("kmlExport.label.viewRefreshTime"));
 		writeJSONCheckbox.setText(Language.I18N.getString("pref.kmlexport.label.writeJSONFile"));
 		createGltfCheckbox.setText(Language.I18N.getString("pref.kmlexport.label.createGlTF"));
 		gltfConverterBrowseButton.setText(Language.I18N.getString("common.button.browse"));
@@ -343,10 +268,6 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		showTileBordersCheckbox.setSelected(kmlExportConfig.isShowTileBorders());
 		exportEmptyTilesCheckbox.setSelected(kmlExportConfig.isExportEmptyTiles());
 		autoTileSideLengthText.setText(String.valueOf(kmlExportConfig.getQuery().getBboxFilter().getTilingOptions().getAutoTileSideLength()));
-		oneFilePerObjectCheckbox.setSelected(kmlExportConfig.isOneFilePerObject());
-		visibleFromText.setText(String.valueOf(kmlExportConfig.getSingleObjectRegionSize()));
-		viewRefreshModeComboBox.setSelectedItem(kmlExportConfig.getViewRefreshMode());
-		viewRefreshTimeText.setText(String.valueOf(kmlExportConfig.getViewRefreshTime()));
 		writeJSONCheckbox.setSelected(kmlExportConfig.isWriteJSONFile());
 		createGltfCheckbox.setSelected(kmlExportConfig.isCreateGltfModel());
 		gltfConverterBrowseText.setText(kmlExportConfig.getPathOfGltfConverter());
@@ -379,18 +300,6 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		}
 		catch (NumberFormatException nfe) {}
 
-		kmlExportConfig.setOneFilePerObject(oneFilePerObjectCheckbox.isSelected());
-		try {
-			kmlExportConfig.setSingleObjectRegionSize(Double.parseDouble(visibleFromText.getText().trim()));
-		}
-		catch (NumberFormatException nfe) {}
-
-		kmlExportConfig.setViewRefreshMode(viewRefreshModeComboBox.getSelectedItem().toString());
-		try {
-			kmlExportConfig.setViewRefreshTime(Double.parseDouble(viewRefreshTimeText.getText().trim()));
-		}
-		catch (NumberFormatException nfe) {}
-
 		kmlExportConfig.setWriteJSONFile(writeJSONCheckbox.isSelected());
 		kmlExportConfig.setCreateGltfModel(createGltfCheckbox.isSelected());
 		kmlExportConfig.setPathOfGltfConverter(gltfConverterBrowseText.getText());
@@ -403,17 +312,6 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 	}
 
 	private void setEnabledComponents() {
-		visibleFromLabel.setEnabled(oneFilePerObjectCheckbox.isSelected());
-		visibleFromText.setEnabled(oneFilePerObjectCheckbox.isSelected());
-		pixelsLabel.setEnabled(oneFilePerObjectCheckbox.isSelected());
-
-		viewRefreshModeLabel.setEnabled(oneFilePerObjectCheckbox.isSelected());
-		viewRefreshModeComboBox.setEnabled(oneFilePerObjectCheckbox.isSelected());
-
-		viewRefreshTimeLabel.setEnabled(oneFilePerObjectCheckbox.isSelected() && ViewRefreshModeEnumType.ON_STOP.value().equals(viewRefreshModeComboBox.getSelectedItem()));
-		viewRefreshTimeText.setEnabled(oneFilePerObjectCheckbox.isSelected() && ViewRefreshModeEnumType.ON_STOP.value().equals(viewRefreshModeComboBox.getSelectedItem()));
-		sLabel.setEnabled(oneFilePerObjectCheckbox.isSelected() && ViewRefreshModeEnumType.ON_STOP.value().equals(viewRefreshModeComboBox.getSelectedItem()));
-
 		gltfConverterBrowseText.setEnabled(createGltfCheckbox.isSelected());
 		gltfConverterBrowseButton.setEnabled(createGltfCheckbox.isSelected());			
 		notCreateColladaCheckbox.setEnabled(createGltfCheckbox.isSelected());

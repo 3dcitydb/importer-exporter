@@ -91,8 +91,6 @@ import java.util.Map;
         "viewRefreshMode",
         "viewRefreshTime",
         "writeJSONFile",
-        "writeJSONPFile",
-        "callbackNameJSONP",
         "createGltfModel",
         "pathOfGltfConverter",
         "notCreateColladaFiles",
@@ -562,30 +560,37 @@ public class KmlExportConfig {
         this.oneFilePerObject = oneFilePerObject;
     }
 
+    @Deprecated
     public boolean isOneFilePerObject() {
         return oneFilePerObject;
     }
 
+    @Deprecated
     public void setSingleObjectRegionSize(double singleObjectRegionSize) {
         this.singleObjectRegionSize = singleObjectRegionSize;
     }
 
+    @Deprecated
     public double getSingleObjectRegionSize() {
         return singleObjectRegionSize;
     }
 
+    @Deprecated
     public void setViewRefreshMode(String viewRefreshMode) {
         this.viewRefreshMode = viewRefreshMode;
     }
 
+    @Deprecated
     public String getViewRefreshMode() {
         return viewRefreshMode;
     }
 
+    @Deprecated
     public void setViewRefreshTime(double viewRefreshTime) {
         this.viewRefreshTime = viewRefreshTime;
     }
 
+    @Deprecated
     public double getViewRefreshTime() {
         return viewRefreshTime;
     }
