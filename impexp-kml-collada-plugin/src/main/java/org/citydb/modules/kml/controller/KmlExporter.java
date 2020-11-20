@@ -384,10 +384,7 @@ public class KmlExporter implements EventHandler {
 			try {
 				File jsonFile = new File(path + File.separator + fileName + ".json");
 				jsonFileWriter = new FileOutputStream(jsonFile);
-				if (config.getKmlExportConfig().isWriteJSONPFile())
-					jsonFileWriter.write((config.getKmlExportConfig().getCallbackNameJSONP() + "({\n").getBytes(CHARSET));
-				else
-					jsonFileWriter.write("{\n".getBytes(CHARSET));
+				jsonFileWriter.write("{\n".getBytes(CHARSET));
 			} catch (IOException e) {
 				throw new KmlExportException("Failed to write JSON file header.", e);
 			}			
@@ -709,11 +706,7 @@ public class KmlExporter implements EventHandler {
 		// close cityobject JSON file
 		if (jsonFileWriter != null) {
 			try {
-				if (config.getKmlExportConfig().isWriteJSONPFile())
-					jsonFileWriter.write("\n});\n".getBytes(CHARSET));
-				else
-					jsonFileWriter.write("\n}\n".getBytes(CHARSET));
-
+				jsonFileWriter.write("\n}\n".getBytes(CHARSET));
 				jsonFileWriter.close();
 			} catch (IOException e) {
 				throw new KmlExportException("Failed to close JSON file.", e);

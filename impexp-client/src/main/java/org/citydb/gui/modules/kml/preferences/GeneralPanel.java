@@ -72,10 +72,7 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 	private JLabel sLabel = new JLabel("s.");
 	private JFormattedTextField viewRefreshTimeText;
 	private JCheckBox writeJSONCheckbox = new JCheckBox();
-	private JCheckBox writeJSONPCheckbox = new JCheckBox();
-	private JLabel callbackNameJSONPLabel = new JLabel("s.");
-	private JTextField callbackNameJSONPText = new JTextField();
-	
+
 	private JCheckBox createGltfCheckbox = new JCheckBox();
 	private JTextField gltfConverterBrowseText = new JTextField("");
 	private JButton gltfConverterBrowseButton = new JButton("");
@@ -132,9 +129,6 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		if (viewRefreshTime != kmlExportConfig.getViewRefreshTime()) return true;
 
 		if (writeJSONCheckbox.isSelected() != kmlExportConfig.isWriteJSONFile()) return true;
-		if (writeJSONPCheckbox.isSelected() != kmlExportConfig.isWriteJSONPFile()) return true;
-		if (!callbackNameJSONPText.getText().trim().equals(kmlExportConfig.getCallbackNameJSONP())) return true;
-
 		if (createGltfCheckbox.isSelected() != kmlExportConfig.isCreateGltfModel()) return true;
 		if (!gltfConverterBrowseText.getText().equals(kmlExportConfig.getPathOfGltfConverter())) return true;
 		if (notCreateColladaCheckbox.isSelected() != kmlExportConfig.isNotCreateColladaFiles()) return true;
@@ -225,11 +219,8 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		generalPanel.add(sLabel, sl);
 
 		generalPanel.add(writeJSONCheckbox, GuiUtil.setConstraints(0,9,0.0,1.0,GridBagConstraints.BOTH,BORDER_THICKNESS,BORDER_THICKNESS,0,0));
-		generalPanel.add(writeJSONPCheckbox, GuiUtil.setConstraints(0,10,0.0,1.0,GridBagConstraints.EAST,GridBagConstraints.NONE,0,0,0,1));
-		generalPanel.add(callbackNameJSONPLabel, GuiUtil.setConstraints(0,11,0.0,1.0,GridBagConstraints.EAST,GridBagConstraints.NONE,BORDER_THICKNESS,BORDER_THICKNESS,0,BORDER_THICKNESS));
-		generalPanel.add(callbackNameJSONPText, GuiUtil.setConstraints(1,12,1.0,0.0,GridBagConstraints.HORIZONTAL,BORDER_THICKNESS,BORDER_THICKNESS,0,BORDER_THICKNESS));
 
-		PopupMenuDecorator.getInstance().decorate(autoTileSideLengthText, visibleFromText, viewRefreshTimeText, callbackNameJSONPText);
+		PopupMenuDecorator.getInstance().decorate(autoTileSideLengthText, visibleFromText, viewRefreshTimeText);
 
 		createGltfCheckbox.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -295,12 +286,6 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 			}
 		});
 
-		writeJSONPCheckbox.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				setEnabledComponents();
-			}
-		});
-
 		createGltfCheckbox.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				setEnabledComponents();
@@ -339,8 +324,6 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		viewRefreshModeLabel.setText(Language.I18N.getString("kmlExport.label.viewRefreshMode"));
 		viewRefreshTimeLabel.setText(Language.I18N.getString("kmlExport.label.viewRefreshTime"));
 		writeJSONCheckbox.setText(Language.I18N.getString("pref.kmlexport.label.writeJSONFile"));
-		writeJSONPCheckbox.setText(Language.I18N.getString("pref.kmlexport.label.writeJSONPFile"));
-		callbackNameJSONPLabel.setText(Language.I18N.getString("pref.kmlexport.label.callbackNameJSONP"));
 		createGltfCheckbox.setText(Language.I18N.getString("pref.kmlexport.label.createGlTF"));
 		gltfConverterBrowseButton.setText(Language.I18N.getString("common.button.browse"));
 		notCreateColladaCheckbox.setText(Language.I18N.getString("pref.kmlexport.label.notCreateColladaFiles"));
@@ -365,8 +348,6 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		viewRefreshModeComboBox.setSelectedItem(kmlExportConfig.getViewRefreshMode());
 		viewRefreshTimeText.setText(String.valueOf(kmlExportConfig.getViewRefreshTime()));
 		writeJSONCheckbox.setSelected(kmlExportConfig.isWriteJSONFile());
-		writeJSONPCheckbox.setSelected(kmlExportConfig.isWriteJSONPFile());
-		callbackNameJSONPText.setText(kmlExportConfig.getCallbackNameJSONP());
 		createGltfCheckbox.setSelected(kmlExportConfig.isCreateGltfModel());
 		gltfConverterBrowseText.setText(kmlExportConfig.getPathOfGltfConverter());
 		notCreateColladaCheckbox.setSelected(kmlExportConfig.isNotCreateColladaFiles());
@@ -411,8 +392,6 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		catch (NumberFormatException nfe) {}
 
 		kmlExportConfig.setWriteJSONFile(writeJSONCheckbox.isSelected());
-		kmlExportConfig.setWriteJSONPFile(writeJSONPCheckbox.isSelected());
-		kmlExportConfig.setCallbackNameJSONP(callbackNameJSONPText.getText().trim());
 		kmlExportConfig.setCreateGltfModel(createGltfCheckbox.isSelected());
 		kmlExportConfig.setPathOfGltfConverter(gltfConverterBrowseText.getText());
 		kmlExportConfig.setNotCreateColladaFiles(notCreateColladaCheckbox.isSelected());
@@ -435,10 +414,6 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		viewRefreshTimeText.setEnabled(oneFilePerObjectCheckbox.isSelected() && ViewRefreshModeEnumType.ON_STOP.value().equals(viewRefreshModeComboBox.getSelectedItem()));
 		sLabel.setEnabled(oneFilePerObjectCheckbox.isSelected() && ViewRefreshModeEnumType.ON_STOP.value().equals(viewRefreshModeComboBox.getSelectedItem()));
 
-		writeJSONPCheckbox.setEnabled(writeJSONCheckbox.isSelected());
-		callbackNameJSONPLabel.setEnabled(writeJSONPCheckbox.isEnabled() && writeJSONPCheckbox.isSelected());
-		callbackNameJSONPText.setEnabled(writeJSONPCheckbox.isEnabled() && writeJSONPCheckbox.isSelected());
-		
 		gltfConverterBrowseText.setEnabled(createGltfCheckbox.isSelected());
 		gltfConverterBrowseButton.setEnabled(createGltfCheckbox.isSelected());			
 		notCreateColladaCheckbox.setEnabled(createGltfCheckbox.isSelected());

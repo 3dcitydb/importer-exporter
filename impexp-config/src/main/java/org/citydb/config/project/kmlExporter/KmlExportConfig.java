@@ -178,8 +178,6 @@ public class KmlExportConfig {
     private String viewRefreshMode;
     private double viewRefreshTime;
     private boolean writeJSONFile;
-    private boolean writeJSONPFile;
-    private String callbackNameJSONP;
     private boolean createGltfModel;
     private String pathOfGltfConverter;
     private boolean notCreateColladaFiles;
@@ -255,8 +253,6 @@ public class KmlExportConfig {
         viewRefreshMode = "onRegion";
         viewRefreshTime = 1;
         writeJSONFile = false;
-        writeJSONPFile = false;
-        callbackNameJSONP = "handle_3DCityDB_data";
         createGltfModel = false;
         notCreateColladaFiles = false;
         embedTexturesInGltfFiles = true;
@@ -748,22 +744,6 @@ public class KmlExportConfig {
 
     public void setReliefBalloon(Balloon reliefBalloon) {
         this.reliefBalloon = reliefBalloon;
-    }
-
-    public boolean isWriteJSONPFile() {
-        return writeJSONPFile;
-    }
-
-    public void setWriteJSONPFile(boolean writeJSONPFile) {
-        this.writeJSONPFile = writeJSONPFile;
-    }
-
-    public String getCallbackNameJSONP() {
-        return callbackNameJSONP;
-    }
-
-    public void setCallbackNameJSONP(String callbackNameJSONP) {
-        this.callbackNameJSONP = callbackNameJSONP;
     }
 
     public void setBridgeDisplayForms(List<DisplayForm> bridgeDisplayForms) {
