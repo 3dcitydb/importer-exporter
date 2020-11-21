@@ -65,11 +65,8 @@ public class SurfaceAndSolidStylingPanel extends AbstractPreferencesComponent {
 	private JButton footprintHLFillColorButton;
 	private JLabel footprintHLLineColorLabel;
 	private JButton footprintHLLineColorButton;
-	private JLabel footprintAlphaLabel;
 
 	private JPanel geometryContentPanel;
-	private JLabel geometryAlphaLabel;
-	private JSpinner geometryAlphaSpinner;
 	private JLabel geometryFillColorLabel;
 	private JButton geometryFillColorButton;
 	private JLabel geometryLineColorLabel;
@@ -88,7 +85,6 @@ public class SurfaceAndSolidStylingPanel extends AbstractPreferencesComponent {
 
 	private JPanel colladaContentPanel;
 	private JPanel colladaColorSubPanel;
-	private JLabel colladaAlphaLabel;
 	private JLabel colladaFillColorLabel;
 	private JButton colladaFillColorButton;
 	private JRadioButton colladaHighlightingRButton;
@@ -180,7 +176,6 @@ public class SurfaceAndSolidStylingPanel extends AbstractPreferencesComponent {
 		footprintHLFillColorButton = new AlphaButton();
 		footprintHLLineColorLabel = new JLabel();
 		footprintHLLineColorButton = new AlphaButton();
-		footprintAlphaLabel = new JLabel();
 
 		footprintContentPanel = new JPanel();
 		footprintContentPanel.setBorder(BorderFactory.createTitledBorder(""));
@@ -231,7 +226,6 @@ public class SurfaceAndSolidStylingPanel extends AbstractPreferencesComponent {
 	}
 
 	private void initGeometryPanel(Style style) {
-		geometryAlphaLabel = new JLabel();
 		geometryFillColorLabel = new JLabel();
 		geometryFillColorButton = new AlphaButton();
 		geometryLineColorLabel = new JLabel();
@@ -251,21 +245,10 @@ public class SurfaceAndSolidStylingPanel extends AbstractPreferencesComponent {
 		JPanel content = new JPanel();
 		content.setLayout(new GridBagLayout());
 
-		SpinnerModel galphaValueModel = new SpinnerNumberModel(200, 0, 255, 1);
-		geometryAlphaSpinner = new JSpinner(galphaValueModel);
-		geometryAlphaSpinner.setMinimumSize(new Dimension(geometryAlphaSpinner.getPreferredSize().width, 20));
-		geometryAlphaSpinner.setMaximumSize(new Dimension(geometryAlphaSpinner.getPreferredSize().width, 20));
-
-		GridBagConstraints gal = GuiUtil.setConstraints(0, 0, 0.25, 1, GridBagConstraints.NONE, 0, 5, 5, 5);
-		gal.anchor = GridBagConstraints.EAST;
-		content.add(geometryAlphaLabel, gal);
-		content.add(geometryAlphaSpinner, GuiUtil.setConstraints(1, 0, 0.25, 1, GridBagConstraints.HORIZONTAL, 0, 0, 5, 0));
-
 		GridBagConstraints gwcl = GuiUtil.setConstraints(0, 1, 0.25, 1, GridBagConstraints.NONE, 5, 5, 2 * 5, 5);
 		gwcl.anchor = GridBagConstraints.EAST;
 		content.add(geometryFillColorLabel, gwcl);
 
-		geometryFillColorButton.setPreferredSize(geometryAlphaSpinner.getPreferredSize());
 		geometryFillColorButton.setBackground(new Color(style.getRgba0(), true));
 		geometryFillColorButton.setContentAreaFilled(false);
 		content.add(geometryFillColorButton, GuiUtil.setConstraints(1, 1, 0.25, 1, GridBagConstraints.HORIZONTAL, 5, 0, 2 * 5, 0));
@@ -274,7 +257,6 @@ public class SurfaceAndSolidStylingPanel extends AbstractPreferencesComponent {
 		grcl.anchor = GridBagConstraints.EAST;
 		content.add(geometryLineColorLabel, grcl);
 
-		geometryLineColorButton.setPreferredSize(geometryAlphaSpinner.getPreferredSize());
 		geometryLineColorButton.setBackground(new Color(style.getRgba1(), true));
 		geometryLineColorButton.setContentAreaFilled(false);
 		content.add(geometryLineColorButton, GuiUtil.setConstraints(3, 1, 0.25, 1, GridBagConstraints.HORIZONTAL, 5, 0, 2 * 5, 5));
@@ -289,7 +271,6 @@ public class SurfaceAndSolidStylingPanel extends AbstractPreferencesComponent {
 			grfcl.anchor = GridBagConstraints.EAST;
 			content.add(geometryRoofFillColorLabel, grfcl);
 
-			geometryRoofFillColorButton.setPreferredSize(geometryAlphaSpinner.getPreferredSize());
 			geometryRoofFillColorButton.setBackground(new Color(style.getRgba2(), true));
 			geometryRoofFillColorButton.setContentAreaFilled(false);
 			content.add(geometryRoofFillColorButton, GuiUtil.setConstraints(1, 2, 0.25, 1.0, GridBagConstraints.HORIZONTAL, 0, 0, 2 * 5, 0));
@@ -298,7 +279,6 @@ public class SurfaceAndSolidStylingPanel extends AbstractPreferencesComponent {
 			grlcl.anchor = GridBagConstraints.EAST;
 			content.add(geometryRoofLineColorLabel, grlcl);
 
-			geometryRoofLineColorButton.setPreferredSize(geometryAlphaSpinner.getPreferredSize());
 			geometryRoofLineColorButton.setBackground(new Color(style.getRgba3(), true));
 			geometryRoofLineColorButton.setContentAreaFilled(false);
 			content.add(geometryRoofLineColorButton, GuiUtil.setConstraints(3, 2, 0.25, 1.0, GridBagConstraints.HORIZONTAL, 0, 0, 2 * 5, 5));
@@ -312,7 +292,6 @@ public class SurfaceAndSolidStylingPanel extends AbstractPreferencesComponent {
 		ghlfcl.anchor = GridBagConstraints.EAST;
 		content.add(geometryHLFillColorLabel, ghlfcl);
 
-		geometryHLFillColorButton.setPreferredSize(geometryAlphaSpinner.getPreferredSize());
 		geometryHLFillColorButton.setBackground(new Color(style.getRgba4(), true));
 		geometryHLFillColorButton.setContentAreaFilled(false);
 		content.add(geometryHLFillColorButton, GuiUtil.setConstraints(1, 4, 0.25, 1, GridBagConstraints.HORIZONTAL, 0, 0, 2 * 5, 0));
@@ -321,7 +300,6 @@ public class SurfaceAndSolidStylingPanel extends AbstractPreferencesComponent {
 		ghllcl.anchor = GridBagConstraints.EAST;
 		content.add(geometryHLLineColorLabel, ghllcl);
 
-		geometryHLLineColorButton.setPreferredSize(geometryAlphaSpinner.getPreferredSize());
 		geometryHLLineColorButton.setBackground(new Color(style.getRgba5(), true));
 		geometryHLLineColorButton.setContentAreaFilled(false);
 		content.add(geometryHLLineColorButton, GuiUtil.setConstraints(3, 4, 0.25, 1, GridBagConstraints.HORIZONTAL, 0, 0, 2 * 5, 5));
@@ -366,7 +344,6 @@ public class SurfaceAndSolidStylingPanel extends AbstractPreferencesComponent {
 	}
 
 	private void initColladaPanel(Style style) {
-		colladaAlphaLabel = new JLabel();
 		colladaFillColorLabel = new JLabel();
 		colladaFillColorButton = new AlphaButton();
 		colladaHighlightingRButton = new JRadioButton();
@@ -403,7 +380,6 @@ public class SurfaceAndSolidStylingPanel extends AbstractPreferencesComponent {
 		cwfcl.anchor = GridBagConstraints.EAST;
 		colladaColorSubPanel.add(colladaFillColorLabel, cwfcl);
 
-		colladaFillColorButton.setPreferredSize(geometryAlphaSpinner.getPreferredSize());
 		colladaFillColorButton.setBackground(new Color(style.getRgba0(), true));
 		colladaFillColorButton.setContentAreaFilled(false);
 		colladaColorSubPanel.add(colladaFillColorButton, GuiUtil.setConstraints(1, 1, 0.25, 1, GridBagConstraints.HORIZONTAL, 5, 0, 5, 0));
@@ -416,7 +392,6 @@ public class SurfaceAndSolidStylingPanel extends AbstractPreferencesComponent {
 			crfcl.anchor = GridBagConstraints.EAST;
 			colladaColorSubPanel.add(colladaRoofFillColorLabel, crfcl);
 
-			colladaRoofFillColorButton.setPreferredSize(geometryAlphaSpinner.getPreferredSize());
 			colladaRoofFillColorButton.setBackground(new Color(style.getRgba2(), true));
 			colladaRoofFillColorButton.setContentAreaFilled(false);
 			colladaColorSubPanel.add(colladaRoofFillColorButton, GuiUtil.setConstraints(1,2,0.25,1.0,GridBagConstraints.HORIZONTAL,5,0,5,5));
@@ -436,7 +411,6 @@ public class SurfaceAndSolidStylingPanel extends AbstractPreferencesComponent {
 		chlfcl.anchor = GridBagConstraints.EAST;
 		colladaHLSubPanel.add(colladaHLFillColorLabel, chlfcl);
 
-		colladaHLFillColorButton.setPreferredSize(geometryAlphaSpinner.getPreferredSize());
 		colladaHLFillColorButton.setBackground(new Color(style.getRgba4(), true));
 		colladaHLFillColorButton.setContentAreaFilled(false);
 		colladaHLSubPanel.add(colladaHLFillColorButton, GuiUtil.setConstraints(1, 0, 0.25, 1, GridBagConstraints.HORIZONTAL, 0, 0, 2 * 5, 0));
@@ -445,7 +419,6 @@ public class SurfaceAndSolidStylingPanel extends AbstractPreferencesComponent {
 		chllcl.anchor = GridBagConstraints.EAST;
 		colladaHLSubPanel.add(colladaHLLineColorLabel, chllcl);
 
-		colladaHLLineColorButton.setPreferredSize(geometryAlphaSpinner.getPreferredSize());
 		colladaHLLineColorButton.setBackground(new Color(style.getRgba5(), true));
 		colladaHLLineColorButton.setContentAreaFilled(false);
 		colladaHLSubPanel.add(colladaHLLineColorButton, GuiUtil.setConstraints(3, 0, 0.25, 1, GridBagConstraints.HORIZONTAL, 0, 0, 2 * 5, 5));
@@ -507,14 +480,12 @@ public class SurfaceAndSolidStylingPanel extends AbstractPreferencesComponent {
 		((TitledBorder) geometryContentPanel.getBorder()).setTitle(Language.I18N.getString("pref.kmlexport.border.geometry"));
 		((TitledBorder) colladaContentPanel.getBorder()).setTitle(Language.I18N.getString("pref.kmlexport.border.collada"));
 
-		footprintAlphaLabel.setText(Language.I18N.getString("pref.kmlexport.label.alpha"));
 		footprintFillColorLabel.setText(Language.I18N.getString("pref.kmlexport.label.fillColor"));
 		footprintLineColorLabel.setText(Language.I18N.getString("pref.kmlexport.label.lineColor"));
 		footprintHighlightingCheckbox.setText(Language.I18N.getString("pref.kmlexport.label.highlighting"));
 		footprintHLFillColorLabel.setText(Language.I18N.getString("pref.kmlexport.label.highlightedFillColor"));
 		footprintHLLineColorLabel.setText(Language.I18N.getString("pref.kmlexport.label.highlightedLineColor"));
 
-		geometryAlphaLabel.setText(Language.I18N.getString("pref.kmlexport.label.alpha"));
 		geometryFillColorLabel.setText(Language.I18N.getString(showThematicSurfaceOptions ?
 				"pref.kmlexport.label.wallFillColor" :
 				"pref.kmlexport.label.fillColor"));
@@ -533,7 +504,6 @@ public class SurfaceAndSolidStylingPanel extends AbstractPreferencesComponent {
 		geometryHLLineColorLabel.setText(Language.I18N.getString("pref.kmlexport.label.highlightedLineColor"));
 
 		((TitledBorder)colladaColorSubPanel.getBorder()).setTitle(Language.I18N.getString("pref.kmlexport.label.colladaGltfColorSettings"));
-		colladaAlphaLabel.setText(Language.I18N.getString("pref.kmlexport.label.alpha"));
 		colladaFillColorLabel.setText(Language.I18N.getString(showThematicSurfaceOptions ?
 				"pref.kmlexport.label.wallFillColor" :
 				"pref.kmlexport.label.fillColor"));
