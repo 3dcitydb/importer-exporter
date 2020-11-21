@@ -52,50 +52,50 @@ public class KMLExportPreferences extends AbstractPreferences {
 		DefaultPreferencesEntry renderingNode = new StylingPanel();
 		renderingNode.addChildEntry(new DefaultPreferencesEntry(new SurfaceAndSolidStylingPanel(
 				"pref.tree.kmlExport.bridge.styling",
-				exportConfig.getBridgeDisplayForms(),
+				exportConfig.getBridgeStyles(),
 				true, true, true, true,
 				config)));
-		renderingNode.addChildEntry(new DefaultPreferencesEntry(new BuildingRenderingPanel(config)));
+		renderingNode.addChildEntry(new DefaultPreferencesEntry(new BuildingStylingPanel(config)));
 		renderingNode.addChildEntry(new DefaultPreferencesEntry(new SurfaceAndSolidStylingPanel(
 				"pref.tree.kmlExport.cityFurniture.styling",
-				exportConfig.getCityFurnitureDisplayForms(),
+				exportConfig.getCityFurnitureStyles(),
 				config)));
 		renderingNode.addChildEntry(new DefaultPreferencesEntry(new SurfaceAndSolidStylingPanel(
 				"pref.tree.kmlExport.cityObjectGroup.styling",
-				exportConfig.getReliefDisplayForms(),
+				exportConfig.getReliefStyles(),
 				true, false, false, false, config)));
 		DefaultPreferencesEntry genericCityObjectRenderingNode = new EmptyPanel(
 				"pref.tree.kmlExport.genericCityObject.styling");
 		genericCityObjectRenderingNode.addChildEntry(new DefaultPreferencesEntry(new SurfaceAndSolidStylingPanel(
 				"pref.tree.kmlExport.surfaceAndSolid.styling",
-				exportConfig.getGenericCityObjectDisplayForms(),
+				exportConfig.getGenericCityObjectStyles(),
 				config)));
-		genericCityObjectRenderingNode.addChildEntry(new DefaultPreferencesEntry(new PointAndCurveRenderingPanel(config)));
+		genericCityObjectRenderingNode.addChildEntry(new DefaultPreferencesEntry(new PointAndCurveStylingPanel(config)));
 		renderingNode.addChildEntry(genericCityObjectRenderingNode);
 		renderingNode.addChildEntry(new DefaultPreferencesEntry(new SurfaceAndSolidStylingPanel(
 				"pref.tree.kmlExport.landUse.styling",
-				exportConfig.getLandUseDisplayForms(),
+				exportConfig.getLandUseStyles(),
 				config)));
 		renderingNode.addChildEntry(new DefaultPreferencesEntry(new SurfaceAndSolidStylingPanel(
 				"pref.tree.kmlExport.relief.styling",
-				exportConfig.getReliefDisplayForms(),
+				exportConfig.getReliefStyles(),
 				config)));
 		renderingNode.addChildEntry(new DefaultPreferencesEntry(new SurfaceAndSolidStylingPanel(
 				"pref.tree.kmlExport.transportation.styling",
-				exportConfig.getTransportationDisplayForms(),
+				exportConfig.getTransportationStyles(),
 				config)));
 		renderingNode.addChildEntry(new DefaultPreferencesEntry(new SurfaceAndSolidStylingPanel(
 				"pref.tree.kmlExport.tunnel.styling",
-				exportConfig.getTunnelDisplayForms(),
+				exportConfig.getTunnelStyles(),
 				true, true, true, true,
 				config)));
 		renderingNode.addChildEntry(new DefaultPreferencesEntry(new SurfaceAndSolidStylingPanel(
 				"pref.tree.kmlExport.vegetation.styling",
-				exportConfig.getVegetationDisplayForms(),
+				exportConfig.getVegetationStyles(),
 				config)));
 		renderingNode.addChildEntry(new DefaultPreferencesEntry(new SurfaceAndSolidStylingPanel(
 				"pref.tree.kmlExport.waterBody.styling",
-				exportConfig.getWaterBodyDisplayForms(),
+				exportConfig.getWaterBodyStyles(),
 				config)));
 
 		DefaultPreferencesEntry balloonNode = new BalloonPanel();
@@ -135,10 +135,10 @@ public class KMLExportPreferences extends AbstractPreferences {
 						DefaultPreferencesEntry adeFeatureRenderingNode = new ADEPanel(adeTopLevelFeatureType.toString());
 						adeFeatureRenderingNode.addChildEntry(new DefaultPreferencesEntry(new SurfaceAndSolidStylingPanel(
 								"pref.tree.kmlExport.surfaceAndSolid.styling",
-								preference.getDisplayForms(),
+								preference.getStyles(),
 								config)));
 
-						adeFeatureRenderingNode.addChildEntry(new DefaultPreferencesEntry(new ADEPointAndCurveRenderingPanel(config, adeTopLevelFeatureType)));
+						adeFeatureRenderingNode.addChildEntry(new DefaultPreferencesEntry(new ADEPointAndCurveStylingPanel(config, adeTopLevelFeatureType)));
 						adeRenderingNode.addChildEntry(adeFeatureRenderingNode);
 						adeBalloonNode.addChildEntry(new DefaultPreferencesEntry(new ADEDBalloonPanel(config, adeTopLevelFeatureType)));
 					}

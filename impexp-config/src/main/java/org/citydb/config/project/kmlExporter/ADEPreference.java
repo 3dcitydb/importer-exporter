@@ -33,20 +33,20 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 @XmlType(name = "ADEKmlExportPreferenceType", propOrder = {
         "target",
-        "displayForms",
+        "styles",
         "balloon",
         "pointAndCurve"
 })
 public class ADEPreference {
     @XmlElement(required = true)
     private String target;
-    @XmlJavaTypeAdapter(DisplayFormsAdapter.class)
-    private DisplayForms displayForms;
+    @XmlJavaTypeAdapter(StylesAdapter.class)
+    private Styles styles;
     private Balloon balloon;
     private PointAndCurve pointAndCurve;
 
     public ADEPreference() {
-        displayForms = new DisplayForms();
+        styles = new Styles();
         balloon = new Balloon();
         pointAndCurve = new PointAndCurve();
     }
@@ -68,13 +68,13 @@ public class ADEPreference {
         this.target = target;
     }
 
-    public DisplayForms getDisplayForms() {
-        return displayForms;
+    public Styles getStyles() {
+        return styles;
     }
 
-    public void setDisplayForms(DisplayForms displayForms) {
-        if (displayForms != null) {
-            this.displayForms = displayForms;
+    public void setStyles(Styles styles) {
+        if (styles != null) {
+            this.styles = styles;
         }
     }
 

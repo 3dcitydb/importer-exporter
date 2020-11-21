@@ -31,9 +31,8 @@ import net.opengis.kml._2.PlacemarkType;
 import org.citydb.config.Config;
 import org.citydb.config.project.kmlExporter.Balloon;
 import org.citydb.config.project.kmlExporter.ColladaOptions;
-import org.citydb.config.project.kmlExporter.DisplayForm;
 import org.citydb.config.project.kmlExporter.DisplayFormType;
-import org.citydb.config.project.kmlExporter.DisplayForms;
+import org.citydb.config.project.kmlExporter.Styles;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.adapter.BlobExportAdapter;
 import org.citydb.event.EventDispatcher;
@@ -78,8 +77,8 @@ public class Relief extends KmlGenericObject{
 				config);
 	}
 
-	protected DisplayForms getDisplayForms() {
-		return config.getKmlExportConfig().getReliefDisplayForms();
+	protected Styles getStyles() {
+		return config.getKmlExportConfig().getReliefStyles();
 	}
 
 	public Balloon getBalloonSettings() {
@@ -141,9 +140,6 @@ public class Relief extends KmlGenericObject{
 			else { // result not empty
 				kmlExporterManager.updateFeatureTracker(work);
 
-				// get the proper displayForm (for highlighting)
-				work.setDisplayForm(getDisplayForms().getOrDefault(work.getDisplayForm().getType(), work.getDisplayForm()));
-
 				switch (work.getDisplayForm().getType()) {
 				case FOOTPRINT:
 					kmlExporterManager.print(createPlacemarksForFootprint(rs, work),
@@ -176,7 +172,7 @@ public class Relief extends KmlGenericObject{
 					setGmlId(work.getGmlId());
 					setId(work.getId());
 					kmlExporterManager.print(createPlacemarksForGeometry(rs, work), work, getBalloonSettings().isBalloonContentInSeparateFile());
-					if (work.getDisplayForm().isHighlightingEnabled())
+					if (getStyle(work.getDisplayForm().getType()).isHighlightingEnabled())
 						kmlExporterManager.print(createPlacemarksForHighlighting(rs, work), work, getBalloonSettings().isBalloonContentInSeparateFile());
 					break;
 
@@ -200,7 +196,7 @@ public class Relief extends KmlGenericObject{
 
 					setIgnoreSurfaceOrientation(colladaOptions.isIgnoreSurfaceOrientation());
 					try {
-						if (work.getDisplayForm().isHighlightingEnabled())
+						if (getStyle(work.getDisplayForm().getType()).isHighlightingEnabled())
 							kmlExporterManager.print(createPlacemarksForHighlighting(rs, work), work, getBalloonSettings().isBalloonContentInSeparateFile());
 					} catch (Exception ioe) {
 						log.logStackTrace(ioe);

@@ -36,9 +36,9 @@ import org.citydb.config.geometry.GeometryObject;
 import org.citydb.config.geometry.GeometryType;
 import org.citydb.config.project.kmlExporter.Balloon;
 import org.citydb.config.project.kmlExporter.ColladaOptions;
-import org.citydb.config.project.kmlExporter.DisplayForm;
 import org.citydb.config.project.kmlExporter.DisplayFormType;
-import org.citydb.config.project.kmlExporter.DisplayForms;
+import org.citydb.config.project.kmlExporter.Style;
+import org.citydb.config.project.kmlExporter.Styles;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.adapter.BlobExportAdapter;
 import org.citydb.event.EventDispatcher;
@@ -85,8 +85,8 @@ public class Transportation extends KmlGenericObject{
 				config);
 	}
 
-	protected DisplayForms getDisplayForms() {
-		return config.getKmlExportConfig().getTransportationDisplayForms();
+	protected Styles getStyles() {
+		return config.getKmlExportConfig().getTransportationStyles();
 	}
 
 	public Balloon getBalloonSettings() {
@@ -147,9 +147,6 @@ public class Transportation extends KmlGenericObject{
 			else { // result not empty
 				kmlExporterManager.updateFeatureTracker(work);
 
-				// get the proper displayForm (for highlighting)
-				work.setDisplayForm(getDisplayForms().getOrDefault(work.getDisplayForm().getType(), work.getDisplayForm()));
-
 				if (currentLod == 0) { // LoD0_Network
 					kmlExporterManager.print(createPlacemarksForLoD0Network(rs, work),
 							work,
@@ -188,7 +185,7 @@ public class Transportation extends KmlGenericObject{
 						setGmlId(work.getGmlId());
 						setId(work.getId());
 						kmlExporterManager.print(createPlacemarksForGeometry(rs, work), work, getBalloonSettings().isBalloonContentInSeparateFile());
-						if (work.getDisplayForm().isHighlightingEnabled())
+						if (getStyle(work.getDisplayForm().getType()).isHighlightingEnabled())
 							kmlExporterManager.print(createPlacemarksForHighlighting(rs, work), work, getBalloonSettings().isBalloonContentInSeparateFile());
 						break;
 
@@ -212,7 +209,7 @@ public class Transportation extends KmlGenericObject{
 
 						setIgnoreSurfaceOrientation(colladaOptions.isIgnoreSurfaceOrientation());
 						try {
-							if (work.getDisplayForm().isHighlightingEnabled())
+							if (getStyle(work.getDisplayForm().getType()).isHighlightingEnabled())
 								kmlExporterManager.print(createPlacemarksForHighlighting(rs, work), work, getBalloonSettings().isBalloonContentInSeparateFile());
 						} catch (Exception ioe) {
 							log.logStackTrace(ioe);
@@ -248,7 +245,7 @@ public class Transportation extends KmlGenericObject{
 	private List<PlacemarkType> createPlacemarksForLoD0Network(ResultSet rs,
 			KmlSplittingResult work) throws SQLException {
 
-		DisplayForm footprintSettings = getDisplayForms().getOrDefault(DisplayFormType.FOOTPRINT);
+		Style style = getStyles().getOrDefault(DisplayFormType.FOOTPRINT);
 
 		List<PlacemarkType> placemarkList= new ArrayList<>();
 		
@@ -263,7 +260,7 @@ public class Transportation extends KmlGenericObject{
 			PlacemarkType placemark = kmlFactory.createPlacemarkType();
 			placemark.setName(work.getGmlId());
 			placemark.setId(/* DisplayForm.FOOTPRINT_PLACEMARK_ID + */ placemark.getName());
-			if (footprintSettings.isHighlightingEnabled())
+			if (style.isHighlightingEnabled())
 				placemark.setStyleUrl("#" + getStyleBasisName() + DisplayFormType.FOOTPRINT.getName() + "Style");
 			else
 				placemark.setStyleUrl("#" + getStyleBasisName() + DisplayFormType.FOOTPRINT.getName() + "Normal");

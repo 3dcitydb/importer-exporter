@@ -47,8 +47,8 @@ import org.citydb.ade.kmlExporter.ADEKmlExportManager;
 import org.citydb.ade.kmlExporter.ADEKmlExportQueryHelper;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
-import org.citydb.config.project.kmlExporter.DisplayForm;
 import org.citydb.config.project.kmlExporter.DisplayFormType;
+import org.citydb.config.project.kmlExporter.Style;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.adapter.BlobExportAdapter;
 import org.citydb.event.EventDispatcher;
@@ -279,7 +279,7 @@ public class KmlExporterManager implements ADEKmlExportHelper {
 
 							String filename = gmlId + "_" + displayFormName;
 							if (placemark.getId().startsWith(config.getKmlExportConfig().getIdPrefixes().getPlacemarkHighlight())) {
-								filename = filename + "_" + DisplayForm.HIGHLIGTHTED_STR;
+								filename = filename + "_" + Style.HIGHLIGTHTED_STR;
 								isHighlighting = true;
 							}
 
@@ -314,8 +314,8 @@ public class KmlExporterManager implements ADEKmlExportHelper {
 							LinkType linkType = kmlFactory.createLinkType();
 
 							if (isHighlighting) {
-								networkLinkType.setName(gmlId + " " + displayFormName + " " + DisplayForm.HIGHLIGTHTED_STR);
-								linkType.setHref(work.getId() + "/" + gmlId + "_" + displayFormName + "_" + DisplayForm.HIGHLIGTHTED_STR + fileExtension);
+								networkLinkType.setName(gmlId + " " + displayFormName + " " + Style.HIGHLIGTHTED_STR);
+								linkType.setHref(work.getId() + "/" + gmlId + "_" + displayFormName + "_" + Style.HIGHLIGTHTED_STR + fileExtension);
 							}
 							else { // actual placemark, non-highlighting
 								networkLinkType.setName(gmlId + " " + displayFormName);

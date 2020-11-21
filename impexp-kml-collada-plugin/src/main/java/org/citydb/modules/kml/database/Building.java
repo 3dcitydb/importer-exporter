@@ -33,8 +33,8 @@ import org.citydb.config.Config;
 import org.citydb.config.project.kmlExporter.Balloon;
 import org.citydb.config.project.kmlExporter.ColladaOptions;
 import org.citydb.config.project.kmlExporter.DisplayFormType;
-import org.citydb.config.project.kmlExporter.DisplayForms;
 import org.citydb.config.project.kmlExporter.Lod0FootprintMode;
+import org.citydb.config.project.kmlExporter.Styles;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.adapter.BlobExportAdapter;
 import org.citydb.database.connection.DatabaseConnectionPool;
@@ -81,8 +81,8 @@ public class Building extends KmlGenericObject{
 				config);
 	}
 
-	protected DisplayForms getDisplayForms() {
-		return config.getKmlExportConfig().getBuildingDisplayForms();
+	protected Styles getStyles() {
+		return config.getKmlExportConfig().getBuildingStyles();
 	}
 
 	public Balloon getBalloonSettings() {
@@ -295,7 +295,6 @@ public class Building extends KmlGenericObject{
 			}
 
 			if (rs != null && rs.isBeforeFirst()) { // result not empty
-
 				switch (work.getDisplayForm().getType()) {
 				case FOOTPRINT:
 					return createPlacemarksForFootprint(rs, work);
@@ -324,7 +323,7 @@ public class Building extends KmlGenericObject{
 					setGmlId(work.getGmlId());
 					setId(work.getId());
 					List<PlacemarkType> placemarks = createPlacemarksForGeometry(rs, work);
-					if (work.getDisplayForm().isHighlightingEnabled()) {
+					if (getStyle(work.getDisplayForm().getType()).isHighlightingEnabled()) {
 						placemarks.addAll(createPlacemarksForHighlighting(rs, work));
 					}
 					return placemarks;
@@ -349,7 +348,7 @@ public class Building extends KmlGenericObject{
 
 					setIgnoreSurfaceOrientation(colladaOptions.isIgnoreSurfaceOrientation());
 					try {
-						if (work.getDisplayForm().isHighlightingEnabled()) {
+						if (getStyle(work.getDisplayForm().getType()).isHighlightingEnabled()) {
 							return createPlacemarksForHighlighting(rs, work);
 						}
 						// just COLLADA, no KML

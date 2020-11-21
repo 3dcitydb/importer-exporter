@@ -71,10 +71,12 @@ public class DisplayOption implements CliOption {
         return "none".equalsIgnoreCase(theme) ? KmlExportConfig.THEME_NULL : theme;
     }
 
-    public void toDisplayForms(DisplayForms displayForms, boolean withSemanticSurfaces) {
+    public DisplayForms toDisplayForms() {
+        DisplayForms displayForms = new DisplayForms();
+
         int visibleTo = -1;
         for (Mode mode : Mode.values()) {
-            DisplayForm displayForm = displayForms.computeIfAbsent(mode.type, v -> DisplayForm.of(mode.type, withSemanticSurfaces));
+            DisplayForm displayForm = DisplayForm.of(mode.type);
             displayForm.setActive(modes.contains(mode) && mode.type.isAchievableFromLoD(lod.ordinal()));
             if (displayForm.isActive()) {
                 int visibleFrom = this.visibleFrom != null ? this.visibleFrom.getOrDefault(mode, 0) : 0;
@@ -82,7 +84,11 @@ public class DisplayOption implements CliOption {
                 displayForm.setVisibleTo(visibleTo);
                 visibleTo = visibleFrom;
             }
+
+            displayForms.add(displayForm);
         }
+
+        return displayForms;
     }
 
     public enum Mode {

@@ -53,12 +53,12 @@ import org.citydb.config.project.kmlExporter.AltitudeMode;
 import org.citydb.config.project.kmlExporter.AltitudeOffsetMode;
 import org.citydb.config.project.kmlExporter.Balloon;
 import org.citydb.config.project.kmlExporter.ColladaOptions;
-import org.citydb.config.project.kmlExporter.DisplayForm;
 import org.citydb.config.project.kmlExporter.DisplayFormType;
-import org.citydb.config.project.kmlExporter.DisplayForms;
 import org.citydb.config.project.kmlExporter.KmlExportConfig;
 import org.citydb.config.project.kmlExporter.PointAndCurve;
 import org.citydb.config.project.kmlExporter.PointDisplayMode;
+import org.citydb.config.project.kmlExporter.Style;
+import org.citydb.config.project.kmlExporter.Styles;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.adapter.AbstractGeometryConverterAdapter;
 import org.citydb.database.adapter.BlobExportAdapter;
@@ -251,7 +251,11 @@ public abstract class KmlGenericObject {
 	public abstract void read(KmlSplittingResult work);
 	public abstract String getStyleBasisName();
 	public abstract Balloon getBalloonSettings();
-	protected abstract DisplayForms getDisplayForms();
+	protected abstract Styles getStyles();
+
+	protected Style getStyle(DisplayFormType type) {
+		return getStyles().getOrDefault(type);
+	}
 
 	protected BalloonTemplateHandler getBalloonTemplateHandler() {
 		return balloonTemplateHandler;
@@ -1370,7 +1374,7 @@ public abstract class KmlGenericObject {
 		placemark.setName(work.getGmlId());
 		placemark.setId(config.getKmlExportConfig().getIdPrefixes().getPlacemarkFootprint() + placemark.getName());
 
-		if (work.getDisplayForm().isHighlightingEnabled()) {
+		if (getStyle(work.getDisplayForm().getType()).isHighlightingEnabled()) {
 			placemark.setStyleUrl("#" + getStyleBasisName() + DisplayFormType.FOOTPRINT.getName() + "Style");
 		}
 		else {
@@ -1439,7 +1443,7 @@ public abstract class KmlGenericObject {
 		PlacemarkType placemark = kmlFactory.createPlacemarkType();
 		placemark.setName(work.getGmlId());
 		placemark.setId(config.getKmlExportConfig().getIdPrefixes().getPlacemarkExtruded() + placemark.getName());
-		if (work.getDisplayForm().isHighlightingEnabled()) {
+		if (getStyle(work.getDisplayForm().getType()).isHighlightingEnabled()) {
 			placemark.setStyleUrl("#" + getStyleBasisName() + DisplayFormType.EXTRUDED.getName() + "Style");
 		}
 		else {
@@ -1739,7 +1743,7 @@ public abstract class KmlGenericObject {
 			}
 
 			if (getBalloonSettings().isIncludeDescription() &&
-					!work.getDisplayForm().isHighlightingEnabled()) { // avoid double description
+					!getStyle(work.getDisplayForm().getType()).isHighlightingEnabled()) { // avoid double description
 				addBalloonContents(placemark, work.getId());
 			}
 			multiGeometry = multiGeometries.get(surfaceType);
@@ -1750,9 +1754,10 @@ public abstract class KmlGenericObject {
 		return placemarkList;
 	}
 
-	protected List<PlacemarkType> createPlacemarksForPointOrCurve(ResultSet rs,
-	                                                              KmlSplittingResult work,
-	                                                              PointAndCurve pacSettings) throws SQLException {
+	protected List<PlacemarkType> createPlacemarksForPointOrCurve(
+			ResultSet rs,
+			KmlSplittingResult work,
+			PointAndCurve pacSettings) throws SQLException {
 		List<PlacemarkType> placemarkList= new ArrayList<>();
 
 		double zOffset = getZOffsetFromConfigOrDB(work.getId());
@@ -2106,7 +2111,7 @@ public abstract class KmlGenericObject {
 		X3DMaterial x3dMaterial =  new X3DMaterial();
 		x3dMaterial.setAmbientIntensity(0.2d);
 		x3dMaterial.setShininess(0.2d);
-		x3dMaterial.setTransparency(Double.valueOf(1 - floatAlpha));
+		x3dMaterial.setTransparency(1 - floatAlpha);
 		x3dMaterial.setDiffuseColor(getX3dColorFromString(String.valueOf(floatRed) + " " + String.valueOf(floatGreen) + " " + String.valueOf(floatBlue)));
 		x3dMaterial.setSpecularColor(getX3dColorFromString("1.0 1.0 1.0"));
 		x3dMaterial.setEmissiveColor(getX3dColorFromString("0.0 0.0 0.0"));
@@ -2120,13 +2125,11 @@ public abstract class KmlGenericObject {
 		boolean exportAppearance = !selectedTheme.equals(KmlExportConfig.THEME_NONE);
 		int texImageCounter = 0;
 
-		boolean withSemanticSurfaces = this instanceof Building || this instanceof Bridge || this instanceof Tunnel;
-		DisplayForm colladaDisplayForm = getDisplayForms().getOrDefault(DisplayFormType.COLLADA, withSemanticSurfaces);
-
-		X3DMaterial x3dWallMaterial = getX3dMaterialFromIntColor(colladaDisplayForm.getRgba0());
+		Style style = getStyle(DisplayFormType.COLLADA);
+		X3DMaterial x3dWallMaterial = getX3dMaterialFromIntColor(style.getRgba0());
 		X3DMaterial x3dRoofMaterial = null;
-		if (colladaDisplayForm.isSetRgba2())
-			x3dRoofMaterial = getX3dMaterialFromIntColor(colladaDisplayForm.getRgba2());
+		if (style.isSetRgba2())
+			x3dRoofMaterial = getX3dMaterialFromIntColor(style.getRgba2());
 
 		HashMap<Long, Long> implicitIdMap = new HashMap<Long, Long>();
 
@@ -2355,12 +2358,10 @@ public abstract class KmlGenericObject {
 		placemark.setName(getGmlId());
 		placemark.setId(config.getKmlExportConfig().getIdPrefixes().getPlacemarkCollada() + placemark.getName());
 
-		boolean withSemanticSurfaces = this instanceof Building || this instanceof Bridge || this instanceof Tunnel;
-		DisplayForm colladaDisplayForm = getDisplayForms().getOrDefault(DisplayFormType.COLLADA, withSemanticSurfaces);
+		Style style = getStyle(DisplayFormType.COLLADA);
 
 		if (getBalloonSettings().isIncludeDescription()
-				&& !colladaDisplayForm.isHighlightingEnabled()) { // avoid double description
-
+				&& !style.isHighlightingEnabled()) { // avoid double description
 			ColladaOptions colladaOptions = config.getKmlExportConfig().getColladaOptions();
 			if (!colladaOptions.isGroupObjects() || colladaOptions.getGroupSize() == 1) {
 				addBalloonContents(placemark, getId());
@@ -2435,7 +2436,7 @@ public abstract class KmlGenericObject {
 		MultiGeometryType multiGeometry =  kmlFactory.createMultiGeometryType();
 		placemark.setAbstractGeometryGroup(kmlFactory.createMultiGeometry(multiGeometry));
 
-		double hlDistance = work.getDisplayForm().getHighlightingDistance();
+		double hlDistance = getStyle(work.getDisplayForm().getType()).getHighlightingDistance();
 
 		_rs.beforeFirst(); // return cursor to beginning
 		double zOffset = getZOffsetFromConfigOrDB(work.getId());

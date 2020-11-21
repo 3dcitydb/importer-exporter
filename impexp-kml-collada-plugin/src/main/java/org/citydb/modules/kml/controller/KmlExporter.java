@@ -66,11 +66,11 @@ import org.citydb.config.project.kmlExporter.Balloon;
 import org.citydb.config.project.kmlExporter.BalloonContentMode;
 import org.citydb.config.project.kmlExporter.DisplayForm;
 import org.citydb.config.project.kmlExporter.DisplayFormType;
-import org.citydb.config.project.kmlExporter.DisplayForms;
 import org.citydb.config.project.kmlExporter.KmlExportConfig;
 import org.citydb.config.project.kmlExporter.KmlTilingOptions;
 import org.citydb.config.project.kmlExporter.PointAndCurve;
 import org.citydb.config.project.kmlExporter.PointDisplayMode;
+import org.citydb.config.project.kmlExporter.Style;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.connection.DatabaseConnectionPool;
 import org.citydb.database.schema.mapping.FeatureType;
@@ -248,7 +248,7 @@ public class KmlExporter implements EventHandler {
 		String selectedTheme = config.getKmlExportConfig().getAppearanceTheme();
 		if (!selectedTheme.equals(KmlExportConfig.THEME_NONE)) {
 			try {
-				DisplayForm displayForm = config.getKmlExportConfig().getBuildingDisplayForms().get(DisplayFormType.COLLADA);
+				DisplayForm displayForm = config.getKmlExportConfig().getDisplayForms().get(DisplayFormType.COLLADA);
 				if (displayForm != null
 						&& displayForm.isActive()
 						&& !databaseAdapter.getUtil().getAppearanceThemeList(workspace).contains(selectedTheme)) {
@@ -319,7 +319,7 @@ public class KmlExporter implements EventHandler {
 				predicate = query.isSetSelection() ? query.getSelection().getPredicate() : null;
 
 				// calculate and display number of tiles to be exported
-				int displayFormats = config.getKmlExportConfig().getBuildingDisplayForms().getActiveDisplayFormsAmount();
+				int displayFormats = config.getKmlExportConfig().getDisplayForms().getActiveDisplayFormsAmount();
 				remainingTiles = rows * columns * displayFormats;
 				log.info(remainingTiles + " (" + rows + "x" + columns + "x" + displayFormats + ") tiles will be generated.");	
 			} catch (FilterException e) {
@@ -418,7 +418,7 @@ public class KmlExporter implements EventHandler {
 				}
 
 				// iterate over display forms
-				for (DisplayForm displayForm : config.getKmlExportConfig().getBuildingDisplayForms().values()) {
+				for (DisplayForm displayForm : config.getKmlExportConfig().getDisplayForms().values()) {
 					if (!displayForm.isActive()) 
 						continue;
 
@@ -467,13 +467,13 @@ public class KmlExporter implements EventHandler {
 
 						// create worker pools
 						// here we have an open issue: queue sizes are fix...
-						writerPool = new SingleWorkerPool<SAXEventBuffer>(
+						writerPool = new SingleWorkerPool<>(
 								"kml_writer_pool",
 								new XMLWriterWorkerFactory(saxWriter, eventDispatcher),
 								100,
 								true);
 
-						kmlWorkerPool = new WorkerPool<KmlSplittingResult>(
+						kmlWorkerPool = new WorkerPool<>(
 								"db_exporter_pool",
 								config.getKmlExportConfig().getResources().getThreadPool().getMinThreads(),
 								config.getKmlExportConfig().getResources().getThreadPool().getMaxThreads(),
@@ -556,8 +556,9 @@ public class KmlExporter implements EventHandler {
 
 						try {
 							// add styles
-							if (!objectCounter.isEmpty() &&
-									(!config.getKmlExportConfig().isOneFilePerObject() || !useTiling)) {
+							if (!objectCounter.isEmpty()
+									&& (!config.getKmlExportConfig().isOneFilePerObject()
+									|| !useTiling)) {
 								for (int objectClassId : objectCounter.keySet()) {
 									if (objectCounter.get(objectClassId) > 0)
 										addStyle(displayForm, objectClassId, saxWriter);
@@ -776,61 +777,9 @@ public class KmlExporter implements EventHandler {
 		marshaller.marshal(kml, fragmentWriter);				
 
 		if (config.getKmlExportConfig().isOneFilePerObject()) {
-			for (FeatureType featureType : query.getFeatureTypeFilter().getFeatureTypes()) {
-				int objectClassId = featureType.getObjectClassId();
-				
-				switch (Util.getCityGMLClass(objectClassId)) {
-				case BUILDING:
-					for (DisplayForm displayForm : config.getKmlExportConfig().getBuildingDisplayForms().values())
-						addStyle(displayForm, objectClassId, saxWriter);
-					break;
-				case CITY_FURNITURE:
-					for (DisplayForm displayForm : config.getKmlExportConfig().getCityFurnitureDisplayForms().values())
-						addStyle(displayForm, objectClassId, saxWriter);
-					break;
-				case CITY_OBJECT_GROUP:
-					for (DisplayForm displayForm : config.getKmlExportConfig().getCityObjectGroupDisplayForms().values())
-						addStyle(displayForm, objectClassId, saxWriter);
-					break;
-				case GENERIC_CITY_OBJECT:
-					for (DisplayForm displayForm : config.getKmlExportConfig().getGenericCityObjectDisplayForms().values())
-						addStyle(displayForm, objectClassId, saxWriter);
-					break;
-				case LAND_USE:
-					for (DisplayForm displayForm : config.getKmlExportConfig().getLandUseDisplayForms().values())
-						addStyle(displayForm, objectClassId, saxWriter);
-					break;
-				case RELIEF_FEATURE:
-					for (DisplayForm displayForm : config.getKmlExportConfig().getReliefDisplayForms().values())
-						addStyle(displayForm, objectClassId, saxWriter);
-					break;
-				case TRANSPORTATION_COMPLEX:
-				case TRACK:
-				case RAILWAY:
-				case ROAD:
-				case SQUARE:
-					for (DisplayForm displayForm : config.getKmlExportConfig().getTransportationDisplayForms().values())
-						addStyle(displayForm, objectClassId, saxWriter);
-					break;
-				case SOLITARY_VEGETATION_OBJECT:
-				case PLANT_COVER:
-					for (DisplayForm displayForm : config.getKmlExportConfig().getVegetationDisplayForms().values())
-						addStyle(displayForm, objectClassId, saxWriter);
-					break;
-				case WATER_BODY:
-					for (DisplayForm displayForm : config.getKmlExportConfig().getWaterBodyDisplayForms().values())
-						addStyle(displayForm, objectClassId, saxWriter);
-					break;
-				case BRIDGE:
-					for (DisplayForm displayForm : config.getKmlExportConfig().getBridgeDisplayForms().values())
-						addStyle(displayForm, objectClassId, saxWriter);
-					break;
-				case TUNNEL:
-					for (DisplayForm displayForm : config.getKmlExportConfig().getTunnelDisplayForms().values())
-						addStyle(displayForm, objectClassId, saxWriter);
-					break;
-				default:
-					break;
+			for (DisplayForm displayForm : config.getKmlExportConfig().getDisplayForms().values()) {
+				for (FeatureType featureType : query.getFeatureTypeFilter().getFeatureTypes()) {
+					addStyle(displayForm, featureType.getObjectClassId(), saxWriter);
 				}
 			}
 		}
@@ -862,7 +811,7 @@ public class KmlExporter implements EventHandler {
 		FolderType folderType = kmlFactory.createFolderType();
 		folderType.setName(tileName);
 
-		for (DisplayForm displayForm : config.getKmlExportConfig().getBuildingDisplayForms().values()) {
+		for (DisplayForm displayForm : config.getKmlExportConfig().getDisplayForms().values()) {
 			if (!displayForm.isActive()) 
 				continue;
 
@@ -921,7 +870,7 @@ public class KmlExporter implements EventHandler {
 	}
 
 	private void writeMasterJsonFileTileReference(String path, String fileName, String fileExtension, Tiling tiling) throws IOException {
-		for (DisplayForm displayForm : config.getKmlExportConfig().getBuildingDisplayForms().values()) {
+		for (DisplayForm displayForm : config.getKmlExportConfig().getDisplayForms().values()) {
 			if (displayForm.isActive()) {
 				File jsonFileForMasterFile = new File(path + File.separator + fileName + "_" + displayForm.getName() + "_MasterJSON" + ".json");
 				FileOutputStream jsonFileWriterForMasterFile = new FileOutputStream(jsonFileForMasterFile);
@@ -952,106 +901,72 @@ public class KmlExporter implements EventHandler {
 			return;
 		}
 
+		DisplayFormType type = displayForm.getType();
+		Style style;
+		String styleBasisName;
+
 		switch (Util.getCityGMLClass(objectClassId)) {
-		case SOLITARY_VEGETATION_OBJECT:
-		case PLANT_COVER:
-			addStyle(displayForm.getType(),
-					config.getKmlExportConfig().getVegetationDisplayForms(),
-					false,
-					SolitaryVegetationObject.STYLE_BASIS_NAME,
-					saxWriter);
-			break;
-
-		case TRANSPORTATION_COMPLEX:
-		case TRACK:
-		case RAILWAY:
-		case ROAD:
-		case SQUARE:
-			addStyle(displayForm.getType(),
-					config.getKmlExportConfig().getTransportationDisplayForms(),
-					false,
-					Transportation.STYLE_BASIS_NAME,
-					saxWriter);
-			break;
-		case RELIEF_FEATURE:
-			addStyle(displayForm.getType(),
-					config.getKmlExportConfig().getReliefDisplayForms(),
-					false,
-					Relief.STYLE_BASIS_NAME,
-					saxWriter);
-			break;
-
-		case CITY_OBJECT_GROUP:
-			addStyle(DisplayFormType.FOOTPRINT, // hard-coded for groups
-					config.getKmlExportConfig().getCityObjectGroupDisplayForms(),
-					false,
-					CityObjectGroup.STYLE_BASIS_NAME,
-					saxWriter);
-			break;
-
-		case CITY_FURNITURE:
-			addStyle(displayForm.getType(),
-					config.getKmlExportConfig().getCityFurnitureDisplayForms(),
-					false,
-					CityFurniture.STYLE_BASIS_NAME,
-					saxWriter);
-			break;
-
-		case GENERIC_CITY_OBJECT:
-			addGenericCityObjectPointAndCurveStyle(saxWriter);
-			addStyle(displayForm.getType(),
-					config.getKmlExportConfig().getGenericCityObjectDisplayForms(),
-					false,
-					GenericCityObject.STYLE_BASIS_NAME,
-					saxWriter);
-			break;
-
-		case LAND_USE:
-			addStyle(displayForm.getType(),
-					config.getKmlExportConfig().getLandUseDisplayForms(),
-					false,
-					LandUse.STYLE_BASIS_NAME,
-					saxWriter);
-			break;
-
-		case WATER_BODY:
-			addStyle(displayForm.getType(),
-					config.getKmlExportConfig().getWaterBodyDisplayForms(),
-					false,
-					WaterBody.STYLE_BASIS_NAME,
-					saxWriter);
-			break;
-		case BRIDGE:
-			addStyle(displayForm.getType(),
-					config.getKmlExportConfig().getBridgeDisplayForms(),
-					true,
-					Bridge.STYLE_BASIS_NAME,
-					saxWriter);
-			break;
-		case TUNNEL:
-			addStyle(displayForm.getType(),
-					config.getKmlExportConfig().getTunnelDisplayForms(),
-					true,
-					Tunnel.STYLE_BASIS_NAME,
-					saxWriter);
-			break;
-		case BUILDING: // must be last, why?
-			addStyle(displayForm.getType(),
-					config.getKmlExportConfig().getBuildingDisplayForms(),
-					true,
-					Building.STYLE_BASIS_NAME,
-					saxWriter);
-			break;
-		case ADE_COMPONENT:
-			ADEPreference preference = ADEKmlExportExtensionManager.getInstance().getPreference(config, objectClassId);
-			addADEPointAndCurveStyle(saxWriter, preference);
-			addStyle(displayForm.getType(),
-					preference.getDisplayForms(),
-					false,
-					preference.getTarget(),
-					saxWriter);
-			break;
+			case SOLITARY_VEGETATION_OBJECT:
+			case PLANT_COVER:
+				style = config.getKmlExportConfig().getVegetationStyles().getOrDefault(type);
+				styleBasisName = SolitaryVegetationObject.STYLE_BASIS_NAME;
+				break;
+			case TRANSPORTATION_COMPLEX:
+			case TRACK:
+			case RAILWAY:
+			case ROAD:
+			case SQUARE:
+				style = config.getKmlExportConfig().getTransportationStyles().getOrDefault(type);
+				styleBasisName = Transportation.STYLE_BASIS_NAME;
+				break;
+			case RELIEF_FEATURE:
+				style = config.getKmlExportConfig().getReliefStyles().getOrDefault(type);
+				styleBasisName = Relief.STYLE_BASIS_NAME;
+				break;
+			case CITY_OBJECT_GROUP:
+				style = Style.of(DisplayFormType.FOOTPRINT); // hard-coded for groups
+				styleBasisName = CityObjectGroup.STYLE_BASIS_NAME;
+				break;
+			case CITY_FURNITURE:
+				style = config.getKmlExportConfig().getCityFurnitureStyles().getOrDefault(type);
+				styleBasisName = CityFurniture.STYLE_BASIS_NAME;
+				break;
+			case GENERIC_CITY_OBJECT:
+				addGenericCityObjectPointAndCurveStyle(saxWriter);
+				style = config.getKmlExportConfig().getGenericCityObjectStyles().getOrDefault(type);
+				styleBasisName = GenericCityObject.STYLE_BASIS_NAME;
+				break;
+			case LAND_USE:
+				style = config.getKmlExportConfig().getLandUseStyles().getOrDefault(type);
+				styleBasisName = LandUse.STYLE_BASIS_NAME;
+				break;
+			case WATER_BODY:
+				style = config.getKmlExportConfig().getWaterBodyStyles().getOrDefault(type);
+				styleBasisName = WaterBody.STYLE_BASIS_NAME;
+				break;
+			case BRIDGE:
+				style = config.getKmlExportConfig().getBridgeStyles().getOrDefault(type);
+				styleBasisName = Bridge.STYLE_BASIS_NAME;
+				break;
+			case TUNNEL:
+				style = config.getKmlExportConfig().getTunnelStyles().getOrDefault(type);
+				styleBasisName = Tunnel.STYLE_BASIS_NAME;
+				break;
+			case BUILDING:
+				style = config.getKmlExportConfig().getBuildingStyles().getOrDefault(type);
+				styleBasisName = Building.STYLE_BASIS_NAME;
+				break;
+			case ADE_COMPONENT:
+				ADEPreference preference = ADEKmlExportExtensionManager.getInstance().getPreference(config, objectClassId);
+				addADEPointAndCurveStyle(saxWriter, preference);
+				style = preference.getStyles().getOrDefault(type);
+				styleBasisName = preference.getTarget();
+				break;
+			default:
+				return;
 		}
+
+		addStyle(style, styleBasisName, saxWriter);
 	}
 
 	private void addGenericCityObjectPointAndCurveStyle(SAXWriter saxWriter) throws JAXBException {
@@ -1071,7 +986,7 @@ public class KmlExporter implements EventHandler {
 
 			IconStyleType iconStyleType = kmlFactory.createIconStyleType();
 			iconStyleType.setScale(pacSettings.getPointIconScale());
-			iconStyleType.setColor(hexStringToByteArray(DisplayForm.formatColorStringForKML(Integer.toHexString(pacSettings.getPointIconColor()))));
+			iconStyleType.setColor(hexStringToByteArray(Style.formatColorStringForKML(Integer.toHexString(pacSettings.getPointIconColor()))));
 			BasicLinkType icon = kmlFactory.createBasicLinkType();
 			icon.setHref(PointAndCurve.DefaultIconHref);
 			iconStyleType.setIcon(icon);
@@ -1082,10 +997,10 @@ public class KmlExporter implements EventHandler {
 			marshaller.marshal(kmlFactory.createStyle(pointStyleNormal), saxWriter);
 		}
 		else if (pacSettings.getPointDisplayMode() == PointDisplayMode.CUBE) {
-			String fillColor = DisplayForm.formatColorStringForKML(Integer.toHexString(pacSettings.getPointCubeFillColor()));
-			String lineColor = DisplayForm.formatColorStringForKML(Integer.toHexString(pacSettings.getPointCubeFillColor()));
-			String hlFillColor = DisplayForm.formatColorStringForKML(Integer.toHexString(pacSettings.getPointCubeHighlightedColor()));
-			String hlLineColor = DisplayForm.formatColorStringForKML(Integer.toHexString(pacSettings.getPointCubeHighlightedColor()));
+			String fillColor = Style.formatColorStringForKML(Integer.toHexString(pacSettings.getPointCubeFillColor()));
+			String lineColor = Style.formatColorStringForKML(Integer.toHexString(pacSettings.getPointCubeFillColor()));
+			String hlFillColor = Style.formatColorStringForKML(Integer.toHexString(pacSettings.getPointCubeHighlightedColor()));
+			String hlLineColor = Style.formatColorStringForKML(Integer.toHexString(pacSettings.getPointCubeHighlightedColor()));
 
 			LineStyleType lineStyleCubeNormal = kmlFactory.createLineStyleType();
 			lineStyleCubeNormal.setColor(hexStringToByteArray(lineColor));
@@ -1129,7 +1044,7 @@ public class KmlExporter implements EventHandler {
 		}
 		else {
 			LineStyleType pointLineStyleNormal = kmlFactory.createLineStyleType();
-			pointLineStyleNormal.setColor(hexStringToByteArray(DisplayForm.formatColorStringForKML(Integer.toHexString(pacSettings.getPointNormalColor()))));
+			pointLineStyleNormal.setColor(hexStringToByteArray(Style.formatColorStringForKML(Integer.toHexString(pacSettings.getPointNormalColor()))));
 			pointLineStyleNormal.setWidth(pacSettings.getPointThickness());
 			StyleType pointStyleNormal = kmlFactory.createStyleType();
 			pointStyleNormal.setId(GenericCityObject.STYLE_BASIS_NAME + GenericCityObject.POINT + "Normal");
@@ -1140,7 +1055,7 @@ public class KmlExporter implements EventHandler {
 
 			if (pacSettings.isPointHighlightingEnabled()) {
 				LineStyleType pointLineStyleHighlight = kmlFactory.createLineStyleType();
-				pointLineStyleHighlight.setColor(hexStringToByteArray(DisplayForm.formatColorStringForKML(Integer.toHexString(pacSettings.getPointHighlightedColor()))));
+				pointLineStyleHighlight.setColor(hexStringToByteArray(Style.formatColorStringForKML(Integer.toHexString(pacSettings.getPointHighlightedColor()))));
 				pointLineStyleHighlight.setWidth(pacSettings.getPointHighlightedThickness());
 				StyleType pointStyleHighlight = kmlFactory.createStyleType();
 				pointStyleHighlight.setId(GenericCityObject.STYLE_BASIS_NAME + GenericCityObject.POINT + "Highlight");
@@ -1164,7 +1079,7 @@ public class KmlExporter implements EventHandler {
 		}
 
 		LineStyleType lineStyleNormal = kmlFactory.createLineStyleType();
-		lineStyleNormal.setColor(hexStringToByteArray(DisplayForm.formatColorStringForKML(Integer.toHexString(pacSettings.getCurveNormalColor()))));
+		lineStyleNormal.setColor(hexStringToByteArray(Style.formatColorStringForKML(Integer.toHexString(pacSettings.getCurveNormalColor()))));
 		lineStyleNormal.setWidth(pacSettings.getCurveThickness());
 		StyleType curveStyleNormal = kmlFactory.createStyleType();
 		curveStyleNormal.setId(GenericCityObject.STYLE_BASIS_NAME + GenericCityObject.CURVE + "Normal");
@@ -1175,7 +1090,7 @@ public class KmlExporter implements EventHandler {
 
 		if (pacSettings.isCurveHighlightingEnabled()) {
 			LineStyleType lineStyleHighlight = kmlFactory.createLineStyleType();
-			lineStyleHighlight.setColor(hexStringToByteArray(DisplayForm.formatColorStringForKML(Integer.toHexString(pacSettings.getCurveHighlightedColor()))));
+			lineStyleHighlight.setColor(hexStringToByteArray(Style.formatColorStringForKML(Integer.toHexString(pacSettings.getCurveHighlightedColor()))));
 			lineStyleHighlight.setWidth(pacSettings.getCurveHighlightedThickness());
 			StyleType curveStyleHighlight = kmlFactory.createStyleType();
 			curveStyleHighlight.setId(GenericCityObject.STYLE_BASIS_NAME + GenericCityObject.CURVE + "Highlight");
@@ -1215,7 +1130,7 @@ public class KmlExporter implements EventHandler {
 
 			IconStyleType iconStyleType = kmlFactory.createIconStyleType();
 			iconStyleType.setScale(pacSettings.getPointIconScale());
-			iconStyleType.setColor(hexStringToByteArray(DisplayForm.formatColorStringForKML(Integer.toHexString(pacSettings.getPointIconColor()))));
+			iconStyleType.setColor(hexStringToByteArray(Style.formatColorStringForKML(Integer.toHexString(pacSettings.getPointIconColor()))));
 			BasicLinkType icon = kmlFactory.createBasicLinkType();
 			icon.setHref(PointAndCurve.DefaultIconHref);
 			iconStyleType.setIcon(icon);
@@ -1226,10 +1141,10 @@ public class KmlExporter implements EventHandler {
 			marshaller.marshal(kmlFactory.createStyle(pointStyleNormal), saxWriter);
 		}
 		else if (pacSettings.getPointDisplayMode() == PointDisplayMode.CUBE) {
-			String fillColor = DisplayForm.formatColorStringForKML(Integer.toHexString(pacSettings.getPointCubeFillColor()));
-			String lineColor = DisplayForm.formatColorStringForKML(Integer.toHexString(pacSettings.getPointCubeFillColor()));
-			String hlFillColor = DisplayForm.formatColorStringForKML(Integer.toHexString(pacSettings.getPointCubeHighlightedColor()));
-			String hlLineColor = DisplayForm.formatColorStringForKML(Integer.toHexString(pacSettings.getPointCubeHighlightedColor()));
+			String fillColor = Style.formatColorStringForKML(Integer.toHexString(pacSettings.getPointCubeFillColor()));
+			String lineColor = Style.formatColorStringForKML(Integer.toHexString(pacSettings.getPointCubeFillColor()));
+			String hlFillColor = Style.formatColorStringForKML(Integer.toHexString(pacSettings.getPointCubeHighlightedColor()));
+			String hlLineColor = Style.formatColorStringForKML(Integer.toHexString(pacSettings.getPointCubeHighlightedColor()));
 
 			LineStyleType lineStyleCubeNormal = kmlFactory.createLineStyleType();
 			lineStyleCubeNormal.setColor(hexStringToByteArray(lineColor));
@@ -1273,7 +1188,7 @@ public class KmlExporter implements EventHandler {
 		}
 		else {
 			LineStyleType pointLineStyleNormal = kmlFactory.createLineStyleType();
-			pointLineStyleNormal.setColor(hexStringToByteArray(DisplayForm.formatColorStringForKML(Integer.toHexString(pacSettings.getPointNormalColor()))));
+			pointLineStyleNormal.setColor(hexStringToByteArray(Style.formatColorStringForKML(Integer.toHexString(pacSettings.getPointNormalColor()))));
 			pointLineStyleNormal.setWidth(pacSettings.getPointThickness());
 			StyleType pointStyleNormal = kmlFactory.createStyleType();
 			pointStyleNormal.setId(preference.getTarget() + ADEObject.POINT + "Normal");
@@ -1284,7 +1199,7 @@ public class KmlExporter implements EventHandler {
 
 			if (pacSettings.isPointHighlightingEnabled()) {
 				LineStyleType pointLineStyleHighlight = kmlFactory.createLineStyleType();
-				pointLineStyleHighlight.setColor(hexStringToByteArray(DisplayForm.formatColorStringForKML(Integer.toHexString(pacSettings.getPointHighlightedColor()))));
+				pointLineStyleHighlight.setColor(hexStringToByteArray(Style.formatColorStringForKML(Integer.toHexString(pacSettings.getPointHighlightedColor()))));
 				pointLineStyleHighlight.setWidth(pacSettings.getPointHighlightedThickness());
 				StyleType pointStyleHighlight = kmlFactory.createStyleType();
 				pointStyleHighlight.setId(preference.getTarget() + ADEObject.POINT + "Highlight");
@@ -1308,7 +1223,7 @@ public class KmlExporter implements EventHandler {
 		}
 
 		LineStyleType lineStyleNormal = kmlFactory.createLineStyleType();
-		lineStyleNormal.setColor(hexStringToByteArray(DisplayForm.formatColorStringForKML(Integer.toHexString(pacSettings.getCurveNormalColor()))));
+		lineStyleNormal.setColor(hexStringToByteArray(Style.formatColorStringForKML(Integer.toHexString(pacSettings.getCurveNormalColor()))));
 		lineStyleNormal.setWidth(pacSettings.getCurveThickness());
 		StyleType curveStyleNormal = kmlFactory.createStyleType();
 		curveStyleNormal.setId(preference.getTarget() + ADEObject.CURVE + "Normal");
@@ -1319,7 +1234,7 @@ public class KmlExporter implements EventHandler {
 
 		if (pacSettings.isCurveHighlightingEnabled()) {
 			LineStyleType lineStyleHighlight = kmlFactory.createLineStyleType();
-			lineStyleHighlight.setColor(hexStringToByteArray(DisplayForm.formatColorStringForKML(Integer.toHexString(pacSettings.getCurveHighlightedColor()))));
+			lineStyleHighlight.setColor(hexStringToByteArray(Style.formatColorStringForKML(Integer.toHexString(pacSettings.getCurveHighlightedColor()))));
 			lineStyleHighlight.setWidth(pacSettings.getCurveHighlightedThickness());
 			StyleType curveStyleHighlight = kmlFactory.createStyleType();
 			curveStyleHighlight.setId(preference.getTarget() + ADEObject.CURVE + "Highlight");
@@ -1342,222 +1257,166 @@ public class KmlExporter implements EventHandler {
 		}
 	}
 
-	private void addStyle(
-			DisplayFormType type,
-			DisplayForms displayFormsForObjectType,
-			boolean withSemanticSurfaces,
-			String styleBasisName,
-			SAXWriter saxWriter) throws JAXBException {
+	private void addStyle(Style style, String styleBasisName, SAXWriter saxWriter) throws JAXBException {
 		Marshaller marshaller = jaxbKmlContext.createMarshaller();
 		marshaller.setProperty(Marshaller.JAXB_FRAGMENT, true);
 
 		BalloonStyleType balloonStyle = new BalloonStyleType();
 		balloonStyle.setText("$[description]");
 
-		DisplayForm defaultStyle = DisplayForm.of(type, withSemanticSurfaces);
-		String fillColor = Integer.toHexString(defaultStyle.getRgba0());
-		String lineColor = Integer.toHexString(defaultStyle.getRgba1());
-		String roofFillColor = Integer.toHexString(defaultStyle.getRgba0());
-		String roofLineColor = Integer.toHexString(defaultStyle.getRgba1());
-		String highlightFillColor = Integer.toHexString(defaultStyle.getRgba4());
-		String highlightLineColor = Integer.toHexString(defaultStyle.getRgba5());
+		String fillColor = Style.formatColorStringForKML(Integer.toHexString(style.getRgba0()));
+		String lineColor = Style.formatColorStringForKML(Integer.toHexString(style.getRgba1()));
+		String roofFillColor = Style.formatColorStringForKML(Integer.toHexString(style.getRgba2()));
+		String roofLineColor = Style.formatColorStringForKML(Integer.toHexString(style.getRgba3()));
+		String highlightFillColor = Style.formatColorStringForKML(Integer.toHexString(style.getRgba4()));
+		String highlightLineColor = Style.formatColorStringForKML(Integer.toHexString(style.getRgba5()));
 
-		DisplayForm displayForm;
+		switch (style.getType()) {
+			case FOOTPRINT:
+			case EXTRUDED:
+				LineStyleType lineStyleFootprintNormal = kmlFactory.createLineStyleType();
+				lineStyleFootprintNormal.setColor(hexStringToByteArray(lineColor));
+				lineStyleFootprintNormal.setWidth(1.5);
+				PolyStyleType polyStyleFootprintNormal = kmlFactory.createPolyStyleType();
+				polyStyleFootprintNormal.setColor(hexStringToByteArray(fillColor));
+				StyleType styleFootprintNormal = kmlFactory.createStyleType();
+				styleFootprintNormal.setId(styleBasisName + style.getType().getName() + "Normal");
+				styleFootprintNormal.setLineStyle(lineStyleFootprintNormal);
+				styleFootprintNormal.setPolyStyle(polyStyleFootprintNormal);
+				styleFootprintNormal.setBalloonStyle(balloonStyle);
 
-		switch (type) {
-		case FOOTPRINT:
-		case EXTRUDED:
-			displayForm = displayFormsForObjectType.get(type);
-			if (displayForm != null) {
-				if (displayForm.isSetRgba0()) {
-					fillColor = DisplayForm.formatColorStringForKML(Integer.toHexString(displayForm.getRgba0()));
-				}
-				if (displayForm.isSetRgba1()) {
-					lineColor = DisplayForm.formatColorStringForKML(Integer.toHexString(displayForm.getRgba1()));
-				}
-				if (displayForm.isSetRgba4()) {
-					highlightFillColor = DisplayForm.formatColorStringForKML(Integer.toHexString(displayForm.getRgba4()));
-				}
-				if (displayForm.isSetRgba5()) {
-					highlightLineColor = DisplayForm.formatColorStringForKML(Integer.toHexString(displayForm.getRgba5()));
-				}
-			}
+				marshaller.marshal(kmlFactory.createStyle(styleFootprintNormal), saxWriter);
 
-			LineStyleType lineStyleFootprintNormal = kmlFactory.createLineStyleType();
-			lineStyleFootprintNormal.setColor(hexStringToByteArray(lineColor));
-			lineStyleFootprintNormal.setWidth(1.5);
-			PolyStyleType polyStyleFootprintNormal = kmlFactory.createPolyStyleType();
-			polyStyleFootprintNormal.setColor(hexStringToByteArray(fillColor));
-			StyleType styleFootprintNormal = kmlFactory.createStyleType();
-			styleFootprintNormal.setId(styleBasisName + type.getName() + "Normal");
-			styleFootprintNormal.setLineStyle(lineStyleFootprintNormal);
-			styleFootprintNormal.setPolyStyle(polyStyleFootprintNormal);
-			styleFootprintNormal.setBalloonStyle(balloonStyle);
+				if (style.isHighlightingEnabled()) {
+					LineStyleType lineStyleFootprintHighlight = kmlFactory.createLineStyleType();
+					lineStyleFootprintHighlight.setColor(hexStringToByteArray(highlightLineColor));
+					lineStyleFootprintHighlight.setWidth(1.5);
+					PolyStyleType polyStyleFootprintHighlight = kmlFactory.createPolyStyleType();
+					polyStyleFootprintHighlight.setColor(hexStringToByteArray(highlightFillColor));
+					StyleType styleFootprintHighlight = kmlFactory.createStyleType();
+					styleFootprintHighlight.setId(styleBasisName + style.getType().getName() + "Highlight");
+					styleFootprintHighlight.setLineStyle(lineStyleFootprintHighlight);
+					styleFootprintHighlight.setPolyStyle(polyStyleFootprintHighlight);
+					styleFootprintHighlight.setBalloonStyle(balloonStyle);
 
-			marshaller.marshal(kmlFactory.createStyle(styleFootprintNormal), saxWriter);
+					PairType pairFootprintNormal = kmlFactory.createPairType();
+					pairFootprintNormal.setKey(StyleStateEnumType.NORMAL);
+					pairFootprintNormal.setStyleUrl("#" + styleFootprintNormal.getId());
+					PairType pairFootprintHighlight = kmlFactory.createPairType();
+					pairFootprintHighlight.setKey(StyleStateEnumType.HIGHLIGHT);
+					pairFootprintHighlight.setStyleUrl("#" + styleFootprintHighlight.getId());
+					StyleMapType styleMapFootprint = kmlFactory.createStyleMapType();
+					styleMapFootprint.setId(styleBasisName + style.getType().getName() + "Style");
+					styleMapFootprint.getPair().add(pairFootprintNormal);
+					styleMapFootprint.getPair().add(pairFootprintHighlight);
 
-			if (displayForm != null && displayForm.isHighlightingEnabled()) {
-				LineStyleType lineStyleFootprintHighlight = kmlFactory.createLineStyleType();
-				lineStyleFootprintHighlight.setColor(hexStringToByteArray(highlightLineColor));
-				lineStyleFootprintHighlight.setWidth(1.5);
-				PolyStyleType polyStyleFootprintHighlight = kmlFactory.createPolyStyleType();
-				polyStyleFootprintHighlight.setColor(hexStringToByteArray(highlightFillColor));
-				StyleType styleFootprintHighlight = kmlFactory.createStyleType();
-				styleFootprintHighlight.setId(styleBasisName + type.getName() + "Highlight");
-				styleFootprintHighlight.setLineStyle(lineStyleFootprintHighlight);
-				styleFootprintHighlight.setPolyStyle(polyStyleFootprintHighlight);
-				styleFootprintHighlight.setBalloonStyle(balloonStyle);
-
-				PairType pairFootprintNormal = kmlFactory.createPairType();
-				pairFootprintNormal.setKey(StyleStateEnumType.NORMAL);
-				pairFootprintNormal.setStyleUrl("#" + styleFootprintNormal.getId());
-				PairType pairFootprintHighlight = kmlFactory.createPairType();
-				pairFootprintHighlight.setKey(StyleStateEnumType.HIGHLIGHT);
-				pairFootprintHighlight.setStyleUrl("#" + styleFootprintHighlight.getId());
-				StyleMapType styleMapFootprint = kmlFactory.createStyleMapType();
-				styleMapFootprint.setId(styleBasisName + type.getName() + "Style");
-				styleMapFootprint.getPair().add(pairFootprintNormal);
-				styleMapFootprint.getPair().add(pairFootprintHighlight);
-
-				marshaller.marshal(kmlFactory.createStyle(styleFootprintHighlight), saxWriter);
-				marshaller.marshal(kmlFactory.createStyleMap(styleMapFootprint), saxWriter);
-			}
-
-			break;
-
-		case GEOMETRY:
-			boolean isBuilding = Building.STYLE_BASIS_NAME.equals(styleBasisName);
-			boolean isBridge = Bridge.STYLE_BASIS_NAME.equals(styleBasisName); 
-			boolean isTunnel = Tunnel.STYLE_BASIS_NAME.equals(styleBasisName);
-
-			displayForm = displayFormsForObjectType.get(type);
-			if (displayForm != null) {
-				if (displayForm.isSetRgba0()) {
-					fillColor = DisplayForm.formatColorStringForKML(Integer.toHexString(displayForm.getRgba0()));
-				}
-				if (displayForm.isSetRgba1()) {
-					lineColor = DisplayForm.formatColorStringForKML(Integer.toHexString(displayForm.getRgba1()));
-				}
-				if (displayForm.isSetRgba2()) {
-					roofFillColor = DisplayForm.formatColorStringForKML(Integer.toHexString(displayForm.getRgba2()));
-				}
-				if (displayForm.isSetRgba3()) {
-					roofLineColor = DisplayForm.formatColorStringForKML(Integer.toHexString(displayForm.getRgba3()));
-				}
-			}
-
-			LineStyleType lineStyleWallNormal = kmlFactory.createLineStyleType();
-			lineStyleWallNormal.setColor(hexStringToByteArray(lineColor));
-			PolyStyleType polyStyleWallNormal = kmlFactory.createPolyStyleType();
-			polyStyleWallNormal.setColor(hexStringToByteArray(fillColor));
-			StyleType styleWallNormal = kmlFactory.createStyleType();
-
-			styleWallNormal.setLineStyle(lineStyleWallNormal);
-			styleWallNormal.setPolyStyle(polyStyleWallNormal);
-			styleWallNormal.setBalloonStyle(balloonStyle);
-
-			if (isBuilding)
-				styleWallNormal.setId(TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BUILDING_WALL_SURFACE).toString() + "Normal");
-			else if (isBridge)
-				styleWallNormal.setId(TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BRIDGE_WALL_SURFACE).toString() + "Normal");
-			else if (isTunnel)
-				styleWallNormal.setId(TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.TUNNEL_WALL_SURFACE).toString() + "Normal");
-			else
-				styleWallNormal.setId(styleBasisName + type.getName() + "Normal");
-
-			marshaller.marshal(kmlFactory.createStyle(styleWallNormal), saxWriter);
-
-			if (isBuilding)
-				styleWallNormal.setId(TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BUILDING_GROUND_SURFACE).toString() + "Normal");
-			else if (isBridge)
-				styleWallNormal.setId(TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BRIDGE_GROUND_SURFACE).toString() + "Normal");
-			else if (isTunnel)
-				styleWallNormal.setId(TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.TUNNEL_GROUND_SURFACE).toString() + "Normal");
-
-			marshaller.marshal(kmlFactory.createStyle(styleWallNormal), saxWriter);
-
-			LineStyleType lineStyleRoofNormal = kmlFactory.createLineStyleType();
-			lineStyleRoofNormal.setColor(hexStringToByteArray(roofLineColor));
-			PolyStyleType polyStyleRoofNormal = kmlFactory.createPolyStyleType();
-			polyStyleRoofNormal.setColor(hexStringToByteArray(roofFillColor));
-			StyleType styleRoofNormal = kmlFactory.createStyleType();
-
-			styleRoofNormal.setLineStyle(lineStyleRoofNormal);
-			styleRoofNormal.setPolyStyle(polyStyleRoofNormal);
-			styleRoofNormal.setBalloonStyle(balloonStyle);
-
-			if (isBuilding)
-				styleRoofNormal.setId(TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BUILDING_ROOF_SURFACE).toString() + "Normal");
-			else if (isBridge)
-				styleRoofNormal.setId(TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BRIDGE_ROOF_SURFACE).toString() + "Normal");
-			else if (isTunnel)
-				styleRoofNormal.setId(TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.TUNNEL_ROOF_SURFACE).toString() + "Normal");
-
-			marshaller.marshal(kmlFactory.createStyle(styleRoofNormal), saxWriter);
-
-			if (displayForm != null && displayForm.isHighlightingEnabled()) {
-				if (displayForm.isSetRgba4()) {
-					highlightFillColor = DisplayForm.formatColorStringForKML(Integer.toHexString(displayForm.getRgba4()));
-				}
-				if (displayForm.isSetRgba5()) {
-					highlightLineColor = DisplayForm.formatColorStringForKML(Integer.toHexString(displayForm.getRgba5()));
+					marshaller.marshal(kmlFactory.createStyle(styleFootprintHighlight), saxWriter);
+					marshaller.marshal(kmlFactory.createStyleMap(styleMapFootprint), saxWriter);
 				}
 
-				LineStyleType lineStyleGeometryInvisible = kmlFactory.createLineStyleType();
-				lineStyleGeometryInvisible.setColor(hexStringToByteArray("01" + highlightLineColor.substring(2)));
-				PolyStyleType polyStyleGeometryInvisible = kmlFactory.createPolyStyleType();
-				polyStyleGeometryInvisible.setColor(hexStringToByteArray("00" + highlightFillColor.substring(2)));
-				StyleType styleGeometryInvisible = kmlFactory.createStyleType();
-				styleGeometryInvisible.setId(styleBasisName + type.getName() + "StyleInvisible");
-				styleGeometryInvisible.setLineStyle(lineStyleGeometryInvisible);
-				styleGeometryInvisible.setPolyStyle(polyStyleGeometryInvisible);
-				styleGeometryInvisible.setBalloonStyle(balloonStyle);
+				break;
 
-				LineStyleType lineStyleGeometryHighlight = kmlFactory.createLineStyleType();
-				lineStyleGeometryHighlight.setColor(hexStringToByteArray(highlightLineColor));
-				PolyStyleType polyStyleGeometryHighlight = kmlFactory.createPolyStyleType();
-				polyStyleGeometryHighlight.setColor(hexStringToByteArray(highlightFillColor));
-				StyleType styleGeometryHighlight = kmlFactory.createStyleType();
-				styleGeometryHighlight.setId(styleBasisName + type.getName() + "StyleHighlight");
-				styleGeometryHighlight.setLineStyle(lineStyleGeometryHighlight);
-				styleGeometryHighlight.setPolyStyle(polyStyleGeometryHighlight);
-				styleGeometryHighlight.setBalloonStyle(balloonStyle);
+			case GEOMETRY:
+				boolean isBuilding = Building.STYLE_BASIS_NAME.equals(styleBasisName);
+				boolean isBridge = Bridge.STYLE_BASIS_NAME.equals(styleBasisName);
+				boolean isTunnel = Tunnel.STYLE_BASIS_NAME.equals(styleBasisName);
 
-				PairType pairGeometryNormal = kmlFactory.createPairType();
-				pairGeometryNormal.setKey(StyleStateEnumType.NORMAL);
-				pairGeometryNormal.setStyleUrl("#" + styleGeometryInvisible.getId());
-				PairType pairGeometryHighlight = kmlFactory.createPairType();
-				pairGeometryHighlight.setKey(StyleStateEnumType.HIGHLIGHT);
-				pairGeometryHighlight.setStyleUrl("#" + styleGeometryHighlight.getId());
-				StyleMapType styleMapGeometry = kmlFactory.createStyleMapType();
-				styleMapGeometry.setId(styleBasisName + type.getName() +"Style");
-				styleMapGeometry.getPair().add(pairGeometryNormal);
-				styleMapGeometry.getPair().add(pairGeometryHighlight);
+				LineStyleType lineStyleWallNormal = kmlFactory.createLineStyleType();
+				lineStyleWallNormal.setColor(hexStringToByteArray(lineColor));
+				PolyStyleType polyStyleWallNormal = kmlFactory.createPolyStyleType();
+				polyStyleWallNormal.setColor(hexStringToByteArray(fillColor));
+				StyleType styleWallNormal = kmlFactory.createStyleType();
 
-				marshaller.marshal(kmlFactory.createStyle(styleGeometryInvisible), saxWriter);
-				marshaller.marshal(kmlFactory.createStyle(styleGeometryHighlight), saxWriter);
-				marshaller.marshal(kmlFactory.createStyleMap(styleMapGeometry), saxWriter);
-			}
+				styleWallNormal.setLineStyle(lineStyleWallNormal);
+				styleWallNormal.setPolyStyle(polyStyleWallNormal);
+				styleWallNormal.setBalloonStyle(balloonStyle);
 
-			break;
+				if (isBuilding)
+					styleWallNormal.setId(TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BUILDING_WALL_SURFACE).toString() + "Normal");
+				else if (isBridge)
+					styleWallNormal.setId(TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BRIDGE_WALL_SURFACE).toString() + "Normal");
+				else if (isTunnel)
+					styleWallNormal.setId(TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.TUNNEL_WALL_SURFACE).toString() + "Normal");
+				else
+					styleWallNormal.setId(styleBasisName + style.getType().getName() + "Normal");
 
-		case COLLADA:
-			displayForm = displayFormsForObjectType.get(type);
-			if (displayForm != null) {
-				if (displayForm.isHighlightingEnabled()) {
-					if (displayForm.isSetRgba4()) {
-						highlightFillColor = DisplayForm.formatColorStringForKML(Integer.toHexString(displayForm.getRgba4()));
-					}
-					if (displayForm.isSetRgba5()) {
-						highlightLineColor = DisplayForm.formatColorStringForKML(Integer.toHexString(displayForm.getRgba5()));
-					}
+				marshaller.marshal(kmlFactory.createStyle(styleWallNormal), saxWriter);
 
+				if (isBuilding)
+					styleWallNormal.setId(TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BUILDING_GROUND_SURFACE).toString() + "Normal");
+				else if (isBridge)
+					styleWallNormal.setId(TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BRIDGE_GROUND_SURFACE).toString() + "Normal");
+				else if (isTunnel)
+					styleWallNormal.setId(TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.TUNNEL_GROUND_SURFACE).toString() + "Normal");
+
+				marshaller.marshal(kmlFactory.createStyle(styleWallNormal), saxWriter);
+
+				LineStyleType lineStyleRoofNormal = kmlFactory.createLineStyleType();
+				lineStyleRoofNormal.setColor(hexStringToByteArray(roofLineColor));
+				PolyStyleType polyStyleRoofNormal = kmlFactory.createPolyStyleType();
+				polyStyleRoofNormal.setColor(hexStringToByteArray(roofFillColor));
+				StyleType styleRoofNormal = kmlFactory.createStyleType();
+
+				styleRoofNormal.setLineStyle(lineStyleRoofNormal);
+				styleRoofNormal.setPolyStyle(polyStyleRoofNormal);
+				styleRoofNormal.setBalloonStyle(balloonStyle);
+
+				if (isBuilding)
+					styleRoofNormal.setId(TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BUILDING_ROOF_SURFACE).toString() + "Normal");
+				else if (isBridge)
+					styleRoofNormal.setId(TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BRIDGE_ROOF_SURFACE).toString() + "Normal");
+				else if (isTunnel)
+					styleRoofNormal.setId(TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.TUNNEL_ROOF_SURFACE).toString() + "Normal");
+
+				marshaller.marshal(kmlFactory.createStyle(styleRoofNormal), saxWriter);
+
+				if (style.isHighlightingEnabled()) {
+					LineStyleType lineStyleGeometryInvisible = kmlFactory.createLineStyleType();
+					lineStyleGeometryInvisible.setColor(hexStringToByteArray("01" + highlightLineColor.substring(2)));
+					PolyStyleType polyStyleGeometryInvisible = kmlFactory.createPolyStyleType();
+					polyStyleGeometryInvisible.setColor(hexStringToByteArray("00" + highlightFillColor.substring(2)));
+					StyleType styleGeometryInvisible = kmlFactory.createStyleType();
+					styleGeometryInvisible.setId(styleBasisName + style.getType().getName() + "StyleInvisible");
+					styleGeometryInvisible.setLineStyle(lineStyleGeometryInvisible);
+					styleGeometryInvisible.setPolyStyle(polyStyleGeometryInvisible);
+					styleGeometryInvisible.setBalloonStyle(balloonStyle);
+
+					LineStyleType lineStyleGeometryHighlight = kmlFactory.createLineStyleType();
+					lineStyleGeometryHighlight.setColor(hexStringToByteArray(highlightLineColor));
+					PolyStyleType polyStyleGeometryHighlight = kmlFactory.createPolyStyleType();
+					polyStyleGeometryHighlight.setColor(hexStringToByteArray(highlightFillColor));
+					StyleType styleGeometryHighlight = kmlFactory.createStyleType();
+					styleGeometryHighlight.setId(styleBasisName + style.getType().getName() + "StyleHighlight");
+					styleGeometryHighlight.setLineStyle(lineStyleGeometryHighlight);
+					styleGeometryHighlight.setPolyStyle(polyStyleGeometryHighlight);
+					styleGeometryHighlight.setBalloonStyle(balloonStyle);
+
+					PairType pairGeometryNormal = kmlFactory.createPairType();
+					pairGeometryNormal.setKey(StyleStateEnumType.NORMAL);
+					pairGeometryNormal.setStyleUrl("#" + styleGeometryInvisible.getId());
+					PairType pairGeometryHighlight = kmlFactory.createPairType();
+					pairGeometryHighlight.setKey(StyleStateEnumType.HIGHLIGHT);
+					pairGeometryHighlight.setStyleUrl("#" + styleGeometryHighlight.getId());
+					StyleMapType styleMapGeometry = kmlFactory.createStyleMapType();
+					styleMapGeometry.setId(styleBasisName + style.getType().getName() + "Style");
+					styleMapGeometry.getPair().add(pairGeometryNormal);
+					styleMapGeometry.getPair().add(pairGeometryHighlight);
+
+					marshaller.marshal(kmlFactory.createStyle(styleGeometryInvisible), saxWriter);
+					marshaller.marshal(kmlFactory.createStyle(styleGeometryHighlight), saxWriter);
+					marshaller.marshal(kmlFactory.createStyleMap(styleMapGeometry), saxWriter);
+				}
+
+				break;
+
+			case COLLADA:
+				if (style.isHighlightingEnabled()) {
 					LineStyleType lineStyleColladaInvisible = kmlFactory.createLineStyleType();
 					lineStyleColladaInvisible.setColor(hexStringToByteArray("01" + highlightLineColor.substring(2)));
 					PolyStyleType polyStyleColladaInvisible = kmlFactory.createPolyStyleType();
 					polyStyleColladaInvisible.setColor(hexStringToByteArray("00" + highlightFillColor.substring(2)));
 					StyleType styleColladaInvisible = kmlFactory.createStyleType();
-					styleColladaInvisible.setId(styleBasisName + type.getName() + "StyleInvisible");
+					styleColladaInvisible.setId(styleBasisName + style.getType().getName() + "StyleInvisible");
 					styleColladaInvisible.setLineStyle(lineStyleColladaInvisible);
 					styleColladaInvisible.setPolyStyle(polyStyleColladaInvisible);
 					styleColladaInvisible.setBalloonStyle(balloonStyle);
@@ -1567,7 +1426,7 @@ public class KmlExporter implements EventHandler {
 					PolyStyleType polyStyleColladaHighlight = kmlFactory.createPolyStyleType();
 					polyStyleColladaHighlight.setColor(hexStringToByteArray(highlightFillColor));
 					StyleType styleColladaHighlight = kmlFactory.createStyleType();
-					styleColladaHighlight.setId(styleBasisName + type.getName() + "StyleHighlight");
+					styleColladaHighlight.setId(styleBasisName + style.getType().getName() + "StyleHighlight");
 					styleColladaHighlight.setLineStyle(lineStyleColladaHighlight);
 					styleColladaHighlight.setPolyStyle(polyStyleColladaHighlight);
 					styleColladaHighlight.setBalloonStyle(balloonStyle);
@@ -1579,7 +1438,7 @@ public class KmlExporter implements EventHandler {
 					pairColladaHighlight.setKey(StyleStateEnumType.HIGHLIGHT);
 					pairColladaHighlight.setStyleUrl("#" + styleColladaHighlight.getId());
 					StyleMapType styleMapCollada = kmlFactory.createStyleMapType();
-					styleMapCollada.setId(styleBasisName + type.getName() + "Style");
+					styleMapCollada.setId(styleBasisName + style.getType().getName() + "Style");
 					styleMapCollada.getPair().add(pairColladaNormal);
 					styleMapCollada.getPair().add(pairColladaHighlight);
 
@@ -1587,12 +1446,7 @@ public class KmlExporter implements EventHandler {
 					marshaller.marshal(kmlFactory.createStyle(styleColladaHighlight), saxWriter);
 					marshaller.marshal(kmlFactory.createStyleMap(styleMapCollada), saxWriter);
 				}
-			}
-			break;
-
-		default:
-			// no style
-			break;
+				break;
 		}
 	}
 

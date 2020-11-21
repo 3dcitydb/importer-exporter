@@ -32,37 +32,34 @@ import java.util.Collection;
 import java.util.EnumMap;
 import java.util.Map;
 
-public class DisplayForms {
-    private final Map<DisplayFormType, DisplayForm> displayForms = new EnumMap<>(DisplayFormType.class);
+public class Styles {
+    private final Map<DisplayFormType, Style> styles = new EnumMap<>(DisplayFormType.class);
 
-    public DisplayForms() {
+    public Styles() {
     }
 
     public boolean isEmpty() {
-        return displayForms.isEmpty();
+        return styles.isEmpty();
     }
 
-    public DisplayForm get(DisplayFormType type) {
-        return displayForms.get(type);
+    public boolean contains(DisplayFormType type) {
+        return styles.containsKey(type);
     }
 
-    public DisplayForm getOrDefault(DisplayFormType type) {
-        DisplayForm displayForm = displayForms.get(type);
-        return displayForm != null ? displayForm : DisplayForm.of(type);
+    public Style get(DisplayFormType type) {
+        return styles.get(type);
     }
 
-    public void add(DisplayForm displayForm) {
-        displayForms.put(displayForm.getType(), displayForm);
+    public Style getOrDefault(DisplayFormType type) {
+        Style displayForm = styles.get(type);
+        return displayForm != null ? displayForm : Style.of(type);
     }
 
-    public int getActiveDisplayFormsAmount() {
-        return displayForms.values().stream()
-                .filter(DisplayForm::isActive)
-                .mapToInt(v -> 1)
-                .sum();
+    public void add(Style style) {
+        styles.put(style.getType(), style);
     }
 
-    public Collection<DisplayForm> values() {
-        return displayForms.values();
+    Collection<Style> values() {
+        return styles.values();
     }
 }

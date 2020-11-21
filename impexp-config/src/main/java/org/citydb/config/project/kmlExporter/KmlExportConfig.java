@@ -45,30 +45,31 @@ import java.util.Map;
         "query",
         "path",
         "lodToExportFrom",
-        "buildingDisplayForms",
+        "displayForms",
+        "colladaOptions",
+        "buildingStyles",
         "buildingBalloon",
-        "waterBodyDisplayForms",
+        "waterBodyStyles",
         "waterBodyBalloon",
-        "landUseDisplayForms",
+        "landUseStyles",
         "landUseBalloon",
-        "vegetationDisplayForms",
+        "vegetationStyles",
         "vegetationBalloon",
-        "transportationDisplayForms",
+        "transportationStyles",
         "transportationBalloon",
-        "reliefDisplayForms",
+        "reliefStyles",
         "reliefBalloon",
-        "cityFurnitureDisplayForms",
+        "cityFurnitureStyles",
         "cityFurnitureBalloon",
-        "genericCityObjectDisplayForms",
+        "genericCityObjectStyles",
         "genericCityObject3DBalloon",
         "genericCityObjectPointAndCurve",
-        "cityObjectGroupDisplayForms",
+        "cityObjectGroupStyles",
         "cityObjectGroupBalloon",
-        "bridgeDisplayForms",
+        "bridgeStyles",
         "bridgeBalloon",
-        "tunnelDisplayForms",
+        "tunnelStyles",
         "tunnelBalloon",
-        "colladaOptions",
         "lod0FootprintMode",
         "exportAsKmz",
         "showBoundingBox",
@@ -101,40 +102,42 @@ public class KmlExportConfig {
     private Path path;
     private int lodToExportFrom;
     @XmlJavaTypeAdapter(DisplayFormsAdapter.class)
-    private DisplayForms buildingDisplayForms;
+    private DisplayForms displayForms;
+    private ColladaOptions colladaOptions;
+    @XmlJavaTypeAdapter(StylesAdapter.class)
+    private Styles buildingStyles;
     private Balloon buildingBalloon;
-    @XmlJavaTypeAdapter(DisplayFormsAdapter.class)
-    private DisplayForms waterBodyDisplayForms;
+    @XmlJavaTypeAdapter(StylesAdapter.class)
+    private Styles waterBodyStyles;
     private Balloon waterBodyBalloon;
-    @XmlJavaTypeAdapter(DisplayFormsAdapter.class)
-    private DisplayForms landUseDisplayForms;
+    @XmlJavaTypeAdapter(StylesAdapter.class)
+    private Styles landUseStyles;
     private Balloon landUseBalloon;
-    @XmlJavaTypeAdapter(DisplayFormsAdapter.class)
-    private DisplayForms vegetationDisplayForms;
+    @XmlJavaTypeAdapter(StylesAdapter.class)
+    private Styles vegetationStyles;
     private Balloon vegetationBalloon;
-    @XmlJavaTypeAdapter(DisplayFormsAdapter.class)
-    private DisplayForms transportationDisplayForms;
+    @XmlJavaTypeAdapter(StylesAdapter.class)
+    private Styles transportationStyles;
     private Balloon transportationBalloon;
-    @XmlJavaTypeAdapter(DisplayFormsAdapter.class)
-    private DisplayForms reliefDisplayForms;
+    @XmlJavaTypeAdapter(StylesAdapter.class)
+    private Styles reliefStyles;
     private Balloon reliefBalloon;
-    @XmlJavaTypeAdapter(DisplayFormsAdapter.class)
-    private DisplayForms cityFurnitureDisplayForms;
+    @XmlJavaTypeAdapter(StylesAdapter.class)
+    private Styles cityFurnitureStyles;
     private Balloon cityFurnitureBalloon;
-    @XmlJavaTypeAdapter(DisplayFormsAdapter.class)
-    private DisplayForms genericCityObjectDisplayForms;
+    @XmlJavaTypeAdapter(StylesAdapter.class)
+    private Styles genericCityObjectStyles;
     private Balloon genericCityObject3DBalloon;
     private PointAndCurve genericCityObjectPointAndCurve;
-    @XmlJavaTypeAdapter(DisplayFormsAdapter.class)
-    private DisplayForms cityObjectGroupDisplayForms;
+    @XmlJavaTypeAdapter(StylesAdapter.class)
+    private Styles cityObjectGroupStyles;
     private Balloon cityObjectGroupBalloon;
-    @XmlJavaTypeAdapter(DisplayFormsAdapter.class)
-    private DisplayForms bridgeDisplayForms;
+    @XmlJavaTypeAdapter(StylesAdapter.class)
+    private Styles bridgeStyles;
     private Balloon bridgeBalloon;
-    @XmlJavaTypeAdapter(DisplayFormsAdapter.class)
-    private DisplayForms tunnelDisplayForms;
+    @XmlJavaTypeAdapter(StylesAdapter.class)
+    private Styles tunnelStyles;
     private Balloon tunnelBalloon;
-    private ColladaOptions colladaOptions;
     private Lod0FootprintMode lod0FootprintMode;
     private boolean showBoundingBox;
     private boolean showTileBorders;
@@ -173,33 +176,34 @@ public class KmlExportConfig {
         query = new SimpleKmlQuery();
         path = new Path();
         lodToExportFrom = 2;
+        displayForms = new DisplayForms();
+        colladaOptions = new ColladaOptions();
 
-        setBuildingDisplayForms(new DisplayForms());
-        setBuildingBalloon(new Balloon());
-        setWaterBodyDisplayForms(new DisplayForms());
-        setWaterBodyBalloon(new Balloon());
-        setLandUseDisplayForms(new DisplayForms());
-        setLandUseBalloon(new Balloon());
-        setVegetationDisplayForms(new DisplayForms());
-        setVegetationBalloon(new Balloon());
-        setTransportationDisplayForms(new DisplayForms());
-        setTransportationBalloon(new Balloon());
-        setReliefDisplayForms(new DisplayForms());
-        setReliefBalloon(new Balloon());
-        setCityFurnitureDisplayForms(new DisplayForms());
-        setCityFurnitureBalloon(new Balloon());
-        setGenericCityObjectDisplayForms(new DisplayForms());
-        setGenericCityObject3DBalloon(new Balloon());
-        setGenericCityObjectPointAndCurve(new PointAndCurve());
-        setCityObjectGroupDisplayForms(new DisplayForms());
-        setCityObjectGroupBalloon(new Balloon());
-        setBridgeDisplayForms(new DisplayForms());
-        setBridgeBalloon(new Balloon());
-        setTunnelDisplayForms(new DisplayForms());
-        setTunnelBalloon(new Balloon());
-        setColladaOptions(new ColladaOptions());
-        setLod0FootprintMode(Lod0FootprintMode.FOOTPRINT);
+        buildingStyles = new Styles();
+        buildingBalloon = new Balloon();
+        waterBodyStyles = new Styles();
+        waterBodyBalloon = new Balloon();
+        landUseStyles = new Styles();
+        landUseBalloon = new Balloon();
+        vegetationStyles = new Styles();
+        vegetationBalloon = new Balloon();
+        transportationStyles = new Styles();
+        transportationBalloon = new Balloon();
+        reliefStyles = new Styles();
+        reliefBalloon = new Balloon();
+        cityFurnitureStyles = new Styles();
+        cityFurnitureBalloon = new Balloon();
+        genericCityObjectStyles = new Styles();
+        genericCityObject3DBalloon = new Balloon();
+        genericCityObjectPointAndCurve = new PointAndCurve();
+        cityObjectGroupStyles = new Styles();
+        cityObjectGroupBalloon = new Balloon();
+        bridgeStyles = new Styles();
+        bridgeBalloon = new Balloon();
+        tunnelStyles = new Styles();
+        tunnelBalloon = new Balloon();
 
+        lod0FootprintMode = Lod0FootprintMode.FOOTPRINT;
         exportAsKmz = false;
         exportGltfV1 = true;
         showBoundingBox = false;
@@ -226,12 +230,12 @@ public class KmlExportConfig {
         else if (osName.contains("nux"))
             pathOfGltfConverter += File.separator + "COLLADA2GLTF-v2.1.3-linux" + File.separator + "COLLADA2GLTF-bin";
 
-        setAppearanceTheme(THEME_NONE);
-        setAltitudeMode(AltitudeMode.ABSOLUTE);
-        setAltitudeOffsetMode(AltitudeOffsetMode.NO_OFFSET);
+        appearanceTheme = THEME_NONE;
+        altitudeMode = AltitudeMode.ABSOLUTE;
+        altitudeOffsetMode = AltitudeOffsetMode.NO_OFFSET;
         altitudeOffsetValue = 0;
         callGElevationService = false;
-        setUseOriginalZCoords(true);
+        useOriginalZCoords = true;
 
         idPrefixes = new IdPrefixes();
         adePreferences = new HashMap<>();
@@ -256,24 +260,6 @@ public class KmlExportConfig {
             this.path = path;
     }
 
-    public Resources getResources() {
-        return resources;
-    }
-
-    public void setResources(Resources resources) {
-        if (resources != null)
-            this.resources = resources;
-    }
-
-    public IdPrefixes getIdPrefixes() {
-        return idPrefixes;
-    }
-
-    public void setIdPrefixes(IdPrefixes idPrefixes) {
-        if (idPrefixes != null)
-            this.idPrefixes = idPrefixes;
-    }
-
     public void setLodToExportFrom(int lodToExportFrom) {
         this.lodToExportFrom = lodToExportFrom;
     }
@@ -282,54 +268,14 @@ public class KmlExportConfig {
         return lodToExportFrom;
     }
 
-    public void setBuildingDisplayForms(DisplayForms buildingDisplayForms) {
-        if (buildingDisplayForms != null) {
-            this.buildingDisplayForms = buildingDisplayForms;
+    public DisplayForms getDisplayForms() {
+        return displayForms;
+    }
+
+    public void setDisplayForms(DisplayForms displayForms) {
+        if (displayForms != null) {
+            this.displayForms = displayForms;
         }
-    }
-
-    public DisplayForms getBuildingDisplayForms() {
-        return buildingDisplayForms;
-    }
-
-    public void setWaterBodyDisplayForms(DisplayForms waterBodyDisplayForms) {
-        if (waterBodyDisplayForms != null) {
-            this.waterBodyDisplayForms = waterBodyDisplayForms;
-        }
-    }
-
-    public DisplayForms getWaterBodyDisplayForms() {
-        return waterBodyDisplayForms;
-    }
-
-    public void setLandUseDisplayForms(DisplayForms landUseDisplayForms) {
-        if (landUseDisplayForms != null) {
-            this.landUseDisplayForms = landUseDisplayForms;
-        }
-    }
-
-    public DisplayForms getLandUseDisplayForms() {
-        return landUseDisplayForms;
-    }
-
-    public void setCityObjectGroupDisplayForms(DisplayForms cityObjectGroupDisplayForms) {
-        if (cityObjectGroupDisplayForms != null) {
-            this.cityObjectGroupDisplayForms = cityObjectGroupDisplayForms;
-        }
-    }
-
-    public DisplayForms getCityObjectGroupDisplayForms() {
-        return cityObjectGroupDisplayForms;
-    }
-
-    public void setVegetationDisplayForms(DisplayForms vegetationDisplayForms) {
-        if (vegetationDisplayForms != null) {
-            this.vegetationDisplayForms = vegetationDisplayForms;
-        }
-    }
-
-    public DisplayForms getVegetationDisplayForms() {
-        return vegetationDisplayForms;
     }
 
     public ColladaOptions getColladaOptions() {
@@ -340,6 +286,56 @@ public class KmlExportConfig {
         if (colladaOptions != null) {
             this.colladaOptions = colladaOptions;
         }
+    }
+
+    public void setBuildingStyles(Styles buildingStyles) {
+        if (buildingStyles != null) {
+            this.buildingStyles = buildingStyles;
+        }
+    }
+
+    public Styles getBuildingStyles() {
+        return buildingStyles;
+    }
+
+    public void setWaterBodyStyles(Styles waterBodyStyles) {
+        if (waterBodyStyles != null) {
+            this.waterBodyStyles = waterBodyStyles;
+        }
+    }
+
+    public Styles getWaterBodyStyles() {
+        return waterBodyStyles;
+    }
+
+    public void setLandUseStyles(Styles landUseStyles) {
+        if (landUseStyles != null) {
+            this.landUseStyles = landUseStyles;
+        }
+    }
+
+    public Styles getLandUseStyles() {
+        return landUseStyles;
+    }
+
+    public void setCityObjectGroupStyles(Styles cityObjectGroupStyles) {
+        if (cityObjectGroupStyles != null) {
+            this.cityObjectGroupStyles = cityObjectGroupStyles;
+        }
+    }
+
+    public Styles getCityObjectGroupStyles() {
+        return cityObjectGroupStyles;
+    }
+
+    public void setVegetationStyles(Styles vegetationStyles) {
+        if (vegetationStyles != null) {
+            this.vegetationStyles = vegetationStyles;
+        }
+    }
+
+    public Styles getVegetationStyles() {
+        return vegetationStyles;
     }
 
     public Lod0FootprintMode getLod0FootprintMode() {
@@ -574,14 +570,14 @@ public class KmlExportConfig {
         return vegetationBalloon;
     }
 
-    public void setGenericCityObjectDisplayForms(DisplayForms genericCityObjectDisplayForms) {
-        if (genericCityObjectDisplayForms != null) {
-            this.genericCityObjectDisplayForms = genericCityObjectDisplayForms;
+    public void setGenericCityObjectStyles(Styles genericCityObjectStyles) {
+        if (genericCityObjectStyles != null) {
+            this.genericCityObjectStyles = genericCityObjectStyles;
         }
     }
 
-    public DisplayForms getGenericCityObjectDisplayForms() {
-        return genericCityObjectDisplayForms;
+    public Styles getGenericCityObjectStyles() {
+        return genericCityObjectStyles;
     }
 
     public void setGenericCityObject3DBalloon(Balloon genericCityObject3DBalloon) {
@@ -600,14 +596,14 @@ public class KmlExportConfig {
         return genericCityObjectPointAndCurve;
     }
 
-    public void setCityFurnitureDisplayForms(DisplayForms cityFurnitureDisplayForms) {
-        if (cityFurnitureDisplayForms != null) {
-            this.cityFurnitureDisplayForms = cityFurnitureDisplayForms;
+    public void setCityFurnitureStyles(Styles cityFurnitureStyles) {
+        if (cityFurnitureStyles != null) {
+            this.cityFurnitureStyles = cityFurnitureStyles;
         }
     }
 
-    public DisplayForms getCityFurnitureDisplayForms() {
-        return cityFurnitureDisplayForms;
+    public Styles getCityFurnitureStyles() {
+        return cityFurnitureStyles;
     }
 
     public void setCityFurnitureBalloon(Balloon cityFurnitureBalloon) {
@@ -618,14 +614,14 @@ public class KmlExportConfig {
         return cityFurnitureBalloon;
     }
 
-    public void setTransportationDisplayForms(DisplayForms transportationDisplayForms) {
-        if (transportationDisplayForms != null) {
-            this.transportationDisplayForms = transportationDisplayForms;
+    public void setTransportationStyles(Styles transportationStyles) {
+        if (transportationStyles != null) {
+            this.transportationStyles = transportationStyles;
         }
     }
 
-    public DisplayForms getTransportationDisplayForms() {
-        return transportationDisplayForms;
+    public Styles getTransportationStyles() {
+        return transportationStyles;
     }
 
     public void setTransportationBalloon(Balloon transportationBalloon) {
@@ -636,13 +632,13 @@ public class KmlExportConfig {
         return transportationBalloon;
     }
 
-    public DisplayForms getReliefDisplayForms() {
-        return reliefDisplayForms;
+    public Styles getReliefStyles() {
+        return reliefStyles;
     }
 
-    public void setReliefDisplayForms(DisplayForms reliefDisplayForms) {
-        if (reliefDisplayForms != null) {
-            this.reliefDisplayForms = reliefDisplayForms;
+    public void setReliefStyles(Styles reliefStyles) {
+        if (reliefStyles != null) {
+            this.reliefStyles = reliefStyles;
         }
     }
 
@@ -654,14 +650,14 @@ public class KmlExportConfig {
         this.reliefBalloon = reliefBalloon;
     }
 
-    public void setBridgeDisplayForms(DisplayForms bridgeDisplayForms) {
-        if (bridgeDisplayForms != null) {
-            this.bridgeDisplayForms = bridgeDisplayForms;
+    public void setBridgeStyles(Styles bridgeStyles) {
+        if (bridgeStyles != null) {
+            this.bridgeStyles = bridgeStyles;
         }
     }
 
-    public DisplayForms getBridgeDisplayForms() {
-        return bridgeDisplayForms;
+    public Styles getBridgeStyles() {
+        return bridgeStyles;
     }
 
     public void setBridgeBalloon(Balloon bridgeBalloon) {
@@ -672,14 +668,14 @@ public class KmlExportConfig {
         return bridgeBalloon;
     }
 
-    public void setTunnelDisplayForms(DisplayForms tunnelDisplayForms) {
-        if (tunnelDisplayForms != null) {
-            this.tunnelDisplayForms = tunnelDisplayForms;
+    public void setTunnelStyles(Styles tunnelStyles) {
+        if (tunnelStyles != null) {
+            this.tunnelStyles = tunnelStyles;
         }
     }
 
-    public DisplayForms getTunnelDisplayForms() {
-        return tunnelDisplayForms;
+    public Styles getTunnelStyles() {
+        return tunnelStyles;
     }
 
     public void setTunnelBalloon(Balloon tunnelBalloon) {
@@ -708,5 +704,23 @@ public class KmlExportConfig {
 
     public void setGltfConverterOptions(List<String> gltfConverterOptions) {
         this.gltfConverterOptions = gltfConverterOptions;
+    }
+
+    public Resources getResources() {
+        return resources;
+    }
+
+    public void setResources(Resources resources) {
+        if (resources != null)
+            this.resources = resources;
+    }
+
+    public IdPrefixes getIdPrefixes() {
+        return idPrefixes;
+    }
+
+    public void setIdPrefixes(IdPrefixes idPrefixes) {
+        if (idPrefixes != null)
+            this.idPrefixes = idPrefixes;
     }
 }

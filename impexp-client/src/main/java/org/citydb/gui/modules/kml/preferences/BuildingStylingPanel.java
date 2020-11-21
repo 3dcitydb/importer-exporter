@@ -36,15 +36,15 @@ import org.citydb.gui.modules.common.AbstractPreferencesComponent;
 import javax.swing.*;
 import java.awt.*;
 
-public class BuildingRenderingPanel extends AbstractPreferencesComponent {
+public class BuildingStylingPanel extends AbstractPreferencesComponent {
     private final SurfaceAndSolidStylingPanel parent;
     private JLabel lod0FootprintLabel;
     private JComboBox<Lod0FootprintMode> lod0FootprintComboBox;
 
-    public BuildingRenderingPanel(Config config) {
+    public BuildingStylingPanel(Config config) {
         super(config);
         parent = new SurfaceAndSolidStylingPanel("pref.tree.kmlExport.building.styling",
-                config.getKmlExportConfig().getBuildingDisplayForms(),
+                config.getKmlExportConfig().getBuildingStyles(),
                 true, true, true, true, config);
 
         initGui();
