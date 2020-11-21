@@ -31,6 +31,7 @@ import org.citydb.config.Config;
 import org.citydb.config.project.kmlExporter.Balloon;
 import org.citydb.config.project.kmlExporter.ColladaOptions;
 import org.citydb.config.project.kmlExporter.DisplayForm;
+import org.citydb.config.project.kmlExporter.DisplayForms;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.adapter.BlobExportAdapter;
 import org.citydb.event.EventDispatcher;
@@ -73,7 +74,7 @@ public class CityObjectGroup extends KmlGenericObject{
 				config);
 	}
 
-	protected List<DisplayForm> getDisplayForms() {
+	protected DisplayForms getDisplayForms() {
 		return config.getKmlExportConfig().getCityObjectGroupDisplayForms();
 	}
 
@@ -111,9 +112,7 @@ public class CityObjectGroup extends KmlGenericObject{
 			}
 			else { // result not empty
 				// get the proper displayForm (for highlighting)
-				int indexOfDf = getDisplayForms().indexOf(work.getDisplayForm());
-				if (indexOfDf != -1)
-					work.setDisplayForm(getDisplayForms().get(indexOfDf));
+				work.setDisplayForm(getDisplayForms().getOrDefault(work.getDisplayForm().getType(), work.getDisplayForm()));
 
 				// hard-coded for groups
 				kmlExporterManager.updateFeatureTracker(work);

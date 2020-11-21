@@ -30,6 +30,8 @@ package org.citydb.gui.modules.kml.preferences;
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.kmlExporter.DisplayForm;
+import org.citydb.config.project.kmlExporter.DisplayFormType;
+import org.citydb.config.project.kmlExporter.DisplayForms;
 import org.citydb.gui.components.common.AlphaButton;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.modules.common.AbstractPreferencesComponent;
@@ -41,8 +43,7 @@ import java.awt.*;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.EnumSet;
 import java.util.Locale;
 
 public class SurfaceAndSolidStylingPanel extends AbstractPreferencesComponent {
@@ -51,8 +52,8 @@ public class SurfaceAndSolidStylingPanel extends AbstractPreferencesComponent {
 	private final boolean showGeometryOptions;
 	private final boolean showColladaOptions;
 	private final boolean showThematicSurfaceOptions;
-	private final ArrayList<DisplayForm> internalDisplayForms = new ArrayList<>();
-	private List<DisplayForm> displayForms;
+	private final DisplayForms internalDisplayForms = new DisplayForms();
+	private DisplayForms displayForms;
 
 	private JPanel footprintContentPanel;
 	private JCheckBox footprintHighlightingCheckbox;
@@ -102,7 +103,7 @@ public class SurfaceAndSolidStylingPanel extends AbstractPreferencesComponent {
 
 	public SurfaceAndSolidStylingPanel(
 			String i18nTitle,
-			List<DisplayForm> displayForms,
+			DisplayForms displayForms,
 			boolean showFootprintAndExtrudedOptions,
 			boolean showGeometryOptions,
 			boolean showColladaOptions,
@@ -117,13 +118,13 @@ public class SurfaceAndSolidStylingPanel extends AbstractPreferencesComponent {
 		this.showThematicSurfaceOptions = showThematicSurfaceOptions;
 
 		if (displayForms.isEmpty()) {
-			displayForms.addAll(getDefaultDisplayForms());
+			displayForms.copyFrom(getDefaultDisplayForms());
 		}
 
 		initGui();
 	}
 
-	public SurfaceAndSolidStylingPanel(String i18nTitle, List<DisplayForm> displayForms, Config config) {
+	public SurfaceAndSolidStylingPanel(String i18nTitle, DisplayForms displayForms, Config config) {
 		this(i18nTitle, displayForms, true, true, true, false, config);
 	}
 
@@ -138,9 +139,8 @@ public class SurfaceAndSolidStylingPanel extends AbstractPreferencesComponent {
 		try { colladaHLSurfaceDistanceText.commitEdit(); } catch (ParseException ignored) { }
 
 		setInternalDisplayFormValues();
-		for (int form = DisplayForm.FOOTPRINT; form <= DisplayForm.COLLADA; form++) {
-			DisplayForm displayForm = DisplayForm.get(form, displayForms);
-			if (notEqual(displayForm, DisplayForm.get(form, internalDisplayForms))) {
+		for (DisplayFormType type : DisplayFormType.values()) {
+			if (notEqual(displayForms.get(type), internalDisplayForms.get(type))) {
 				return true;
 			}
 		}
@@ -151,10 +151,10 @@ public class SurfaceAndSolidStylingPanel extends AbstractPreferencesComponent {
 	private void initGui() {
 		setLayout(new GridBagLayout());
 
-		List<DisplayForm> defaults = getDefaultDisplayForms();
-		initFootprintPanel(DisplayForm.getOrDefault(DisplayForm.FOOTPRINT, defaults));
-		initGeometryPanel(DisplayForm.getOrDefault(DisplayForm.GEOMETRY, defaults));
-		initColladaPanel(DisplayForm.getOrDefault(DisplayForm.COLLADA, defaults));
+		DisplayForms defaults = getDefaultDisplayForms();
+		initFootprintPanel(defaults.get(DisplayFormType.FOOTPRINT));
+		initGeometryPanel(defaults.get(DisplayFormType.GEOMETRY));
+		initColladaPanel(defaults.get(DisplayFormType.COLLADA));
 
 		if (showFootprintAndExtrudedOptions) {
 			add(footprintContentPanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
@@ -551,22 +551,22 @@ public class SurfaceAndSolidStylingPanel extends AbstractPreferencesComponent {
 	public void loadSettings() {
 		internalDisplayForms.clear();
 
-		for (int form = DisplayForm.FOOTPRINT; form <= DisplayForm.COLLADA; form++) {
-			DisplayForm displayForm = DisplayForm.getOrDefault(form, displayForms);
-			internalDisplayForms.add(displayForm.clone());
+		for (DisplayFormType type : DisplayFormType.values()) {
+			DisplayForm displayForm = displayForms.getOrDefault(type, showThematicSurfaceOptions);
+			internalDisplayForms.add(displayForm.copy());
 		}
 
-		for (DisplayForm displayForm : internalDisplayForms) {
-			switch (displayForm.getForm()) {
-				case DisplayForm.FOOTPRINT:
-				case DisplayForm.EXTRUDED:
+		for (DisplayForm displayForm : internalDisplayForms.values()) {
+			switch (displayForm.getType()) {
+				case FOOTPRINT:
+				case EXTRUDED:
 					footprintHighlightingCheckbox.setSelected(displayForm.isHighlightingEnabled());
 					footprintFillColorButton.setBackground(new Color(displayForm.getRgba0(), true));
 					footprintLineColorButton.setBackground(new Color(displayForm.getRgba1(), true));
 					footprintHLFillColorButton.setBackground(new Color(displayForm.getRgba4(), true));
 					footprintHLLineColorButton.setBackground(new Color(displayForm.getRgba5(), true));
 					break;
-				case DisplayForm.GEOMETRY:
+				case GEOMETRY:
 					geometryHighlightingCheckbox.setSelected(displayForm.isHighlightingEnabled());
 					geometryHLSurfaceDistanceText.setValue(displayForm.getHighlightingDistance());
 					geometryFillColorButton.setBackground(new Color(displayForm.getRgba0(), true));
@@ -579,7 +579,7 @@ public class SurfaceAndSolidStylingPanel extends AbstractPreferencesComponent {
 						geometryRoofLineColorButton.setBackground(new Color(displayForm.getRgba3(), true));
 					}
 					break;
-				case DisplayForm.COLLADA:
+				case COLLADA:
 					colladaHighlightingRButton.setSelected(displayForm.isHighlightingEnabled());
 					colladaHLSurfaceDistanceText.setValue(displayForm.getHighlightingDistance());
 					colladaFillColorButton.setBackground(new Color(displayForm.getRgba0(), true));
@@ -601,18 +601,20 @@ public class SurfaceAndSolidStylingPanel extends AbstractPreferencesComponent {
 		setInternalDisplayFormValues();
 
 		if (displayForms.isEmpty()) {
-			displayForms.addAll(internalDisplayForms);
+			displayForms.copyFrom(internalDisplayForms);
 		} else {
-			for (DisplayForm source : internalDisplayForms) {
-				DisplayForm target = DisplayForm.getOrSet(source.getForm(), displayForms);
+			for (DisplayForm source : internalDisplayForms.values()) {
+				DisplayForm target = displayForms.computeIfAbsent(source.getType(),
+						v -> DisplayForm.of(source.getType(), showThematicSurfaceOptions));
 				copyColorAndHighlightingValues(source, target);
 			}
 		}
 	}
 
 	private void setInternalDisplayFormValues() {
-		for (int form = DisplayForm.FOOTPRINT; form <= DisplayForm.EXTRUDED; form++) {
-			DisplayForm displayForm = DisplayForm.getOrSet(form, internalDisplayForms);
+		for (DisplayFormType type : EnumSet.of(DisplayFormType.FOOTPRINT, DisplayFormType.EXTRUDED)) {
+			DisplayForm displayForm = internalDisplayForms.computeIfAbsent(type,
+					v -> DisplayForm.of(type, showThematicSurfaceOptions));
 			displayForm.setHighlightingEnabled(footprintHighlightingCheckbox.isSelected());
 			displayForm.setRgba0(footprintFillColorButton.getBackground().getRGB());
 			displayForm.setRgba1(footprintLineColorButton.getBackground().getRGB());
@@ -620,7 +622,8 @@ public class SurfaceAndSolidStylingPanel extends AbstractPreferencesComponent {
 			displayForm.setRgba5(footprintHLLineColorButton.getBackground().getRGB());
 		}
 		{
-			DisplayForm displayForm = DisplayForm.getOrSet(DisplayForm.GEOMETRY, internalDisplayForms);
+			DisplayForm displayForm = internalDisplayForms.computeIfAbsent(DisplayFormType.GEOMETRY,
+					v -> DisplayForm.of(DisplayFormType.GEOMETRY, showThematicSurfaceOptions));
 			displayForm.setHighlightingEnabled(geometryHighlightingCheckbox.isSelected());
 			displayForm.setHighlightingDistance(((Number) geometryHLSurfaceDistanceText.getValue()).doubleValue());
 			displayForm.setRgba0(geometryFillColorButton.getBackground().getRGB());
@@ -634,7 +637,8 @@ public class SurfaceAndSolidStylingPanel extends AbstractPreferencesComponent {
 			}
 		}
 		{
-			DisplayForm displayForm = DisplayForm.getOrSet(DisplayForm.COLLADA, internalDisplayForms);
+			DisplayForm displayForm = internalDisplayForms.computeIfAbsent(DisplayFormType.COLLADA,
+					v -> DisplayForm.of(DisplayFormType.COLLADA, showThematicSurfaceOptions));
 			displayForm.setHighlightingEnabled(colladaHighlightingRButton.isSelected());
 			displayForm.setHighlightingDistance(((Number) colladaHLSurfaceDistanceText.getValue()).doubleValue());
 			displayForm.setRgba0(colladaFillColorButton.getBackground().getRGB());
@@ -649,7 +653,7 @@ public class SurfaceAndSolidStylingPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void resetSettings() {
-		List<DisplayForm> tmp = displayForms;
+		DisplayForms tmp = displayForms;
 		displayForms = getDefaultDisplayForms();
 		loadSettings();
 		displayForms = tmp;
@@ -686,33 +690,13 @@ public class SurfaceAndSolidStylingPanel extends AbstractPreferencesComponent {
 		colladaHLSurfaceDistanceText.setEnabled(colladaHighlightingRButton.isSelected());
 	}
 
-	private List<DisplayForm> getDefaultDisplayForms() {
-		List<DisplayForm> defaults = new ArrayList<>();
-		for (int form = DisplayForm.FOOTPRINT; form <= DisplayForm.EXTRUDED; form++) {
-			DisplayForm displayForm = DisplayForm.getOrSet(form, defaults);
-			displayForm.setRgba0(DisplayForm.DEFAULT_FILL_COLOR);
-			displayForm.setRgba1(DisplayForm.DEFAULT_LINE_COLOR);
-			displayForm.setRgba4(DisplayForm.DEFAULT_FILL_HIGHLIGHTED_COLOR);
-			displayForm.setRgba5(DisplayForm.DEFAULT_LINE_HIGHLIGHTED_COLOR);
-		}
-		{
-			DisplayForm displayForm = DisplayForm.getOrSet(DisplayForm.GEOMETRY, defaults);
-			displayForm.setRgba0(showThematicSurfaceOptions ? DisplayForm.DEFAULT_WALL_FILL_COLOR : DisplayForm.DEFAULT_FILL_COLOR);
-			displayForm.setRgba1(showThematicSurfaceOptions ? DisplayForm.DEFAULT_WALL_LINE_COLOR : DisplayForm.DEFAULT_LINE_COLOR);
-			displayForm.setRgba2(DisplayForm.DEFAULT_ROOF_FILL_COLOR);
-			displayForm.setRgba3(DisplayForm.DEFAULT_ROOF_LINE_COLOR);
-			displayForm.setRgba4(DisplayForm.DEFAULT_FILL_HIGHLIGHTED_COLOR);
-			displayForm.setRgba5(DisplayForm.DEFAULT_LINE_HIGHLIGHTED_COLOR);
-		}
-		{
-			DisplayForm displayForm = DisplayForm.getOrSet(DisplayForm.COLLADA, defaults);
-			displayForm.setRgba0(DisplayForm.DEFAULT_COLLADA_FILL_COLOR);
-			displayForm.setRgba2(DisplayForm.DEFAULT_COLLADA_ROOF_FILL_COLOR);
-			displayForm.setRgba4(DisplayForm.DEFAULT_FILL_HIGHLIGHTED_COLOR);
-			displayForm.setRgba5(DisplayForm.DEFAULT_LINE_HIGHLIGHTED_COLOR);
+	private DisplayForms getDefaultDisplayForms() {
+		DisplayForms displayForms = new DisplayForms();
+		for (DisplayFormType type : DisplayFormType.values()) {
+			displayForms.add(DisplayForm.of(type, showThematicSurfaceOptions));
 		}
 
-		return defaults;
+		return displayForms;
 	}
 
 	private boolean notEqual(DisplayForm first, DisplayForm second) {

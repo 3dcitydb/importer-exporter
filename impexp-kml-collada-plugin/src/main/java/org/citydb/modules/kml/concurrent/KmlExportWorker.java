@@ -35,7 +35,7 @@ import org.citydb.config.Config;
 import org.citydb.config.project.kmlExporter.Balloon;
 import org.citydb.config.project.kmlExporter.BalloonContentMode;
 import org.citydb.config.project.kmlExporter.ColladaOptions;
-import org.citydb.config.project.kmlExporter.DisplayForm;
+import org.citydb.config.project.kmlExporter.DisplayFormType;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.adapter.BlobExportAdapter;
 import org.citydb.database.adapter.BlobType;
@@ -363,7 +363,7 @@ public class KmlExportWorker extends Worker<KmlSplittingResult> {
 			singleObject.read(work);
 
 			if (!CityObjectGroup.class.equals(objectClass) &&
-					work.getDisplayForm().getForm() == DisplayForm.COLLADA &&
+					work.getDisplayForm().getType() == DisplayFormType.COLLADA &&
 					singleObject.getGmlId() != null) { // object is filled
 				KmlGenericObject currentObjectGroup = objectGroup.get(objectClass);
 				if (currentObjectGroup == null) {

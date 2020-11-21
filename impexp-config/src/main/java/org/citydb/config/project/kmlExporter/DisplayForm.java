@@ -27,12 +27,11 @@
  */
 package org.citydb.config.project.kmlExporter;
 
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
-import java.util.List;
 
 @XmlType(name = "DisplayFormType", propOrder = {
-        "form",
         "active",
         "visibleFrom",
         "rgba0",
@@ -45,15 +44,6 @@ import java.util.List;
         "highlightingDistance"
 })
 public class DisplayForm {
-    public static final int FOOTPRINT = 1;
-    public static final int EXTRUDED = 2;
-    public static final int GEOMETRY = 3;
-    public static final int COLLADA = 4;
-
-    public static final String FOOTPRINT_STR = "footprint";
-    public static final String EXTRUDED_STR = "extruded";
-    public static final String GEOMETRY_STR = "geometry";
-    public static final String COLLADA_STR = "collada";
     public static final String HIGHLIGTHTED_STR = "highlighted";
 
     public static final int DEFAULT_FILL_COLOR = 0xc8ffcc00;
@@ -69,101 +59,78 @@ public class DisplayForm {
 
     public static final int DEFAULT_ALPHA_VALUE = 200; // 0xc8;
 
-    private int form;
+    @XmlAttribute(required = true)
+    private DisplayFormType type;
+    @XmlAttribute
     private boolean active = false;
-    private int visibleFrom = 0;
+    private Integer visibleFrom;
     @XmlTransient
-    private int visibleUpTo = -1;
-    //colors
-    private int rgba0 = -1;
-    private int rgba1 = -1;
-    private int rgba2 = -1;
-    private int rgba3 = -1;
-    private int rgba4 = -1;
-    private int rgba5 = -1;
+    private int visibleTo = -1;
 
-    private boolean highlightingEnabled = false;
-    private double highlightingDistance = 0.75;
+    private Integer rgba0;
+    private Integer rgba1;
+    private Integer rgba2;
+    private Integer rgba3;
+    private Integer rgba4;
+    private Integer rgba5;
+
+    private Boolean highlightingEnabled;
+    private Double highlightingDistance;
 
     public DisplayForm() {
     }
 
-    public static DisplayForm of(int form) {
-        return new DisplayForm(form, -1, -1);
+    DisplayForm(DisplayFormType type) {
+        this.type = type;
     }
 
-    private DisplayForm(int form, int visibleFrom, int visibleUpTo) {
-        this.form = form;
-        this.setVisibleFrom(visibleFrom);
-        this.setVisibleUpTo(visibleUpTo);
+    public static DisplayForm of(DisplayFormType type) {
+        return of(type, false);
     }
 
-    public static boolean isAchievableFromLoD(int displayForm, int lod) {
-        boolean achievable = true; // FOOTPRINT always achievable
-        switch (displayForm) {
+    public static DisplayForm of(DisplayFormType type, boolean withSemanticSurfaces) {
+        DisplayForm displayForm = new DisplayForm(type);
+        switch (type) {
+            case FOOTPRINT:
             case EXTRUDED:
-            case GEOMETRY:
-            case COLLADA:
-                achievable = (lod > 0);
+                displayForm.setRgba0(DisplayForm.DEFAULT_FILL_COLOR);
+                displayForm.setRgba1(DisplayForm.DEFAULT_LINE_COLOR);
+                displayForm.setRgba4(DisplayForm.DEFAULT_FILL_HIGHLIGHTED_COLOR);
+                displayForm.setRgba5(DisplayForm.DEFAULT_LINE_HIGHLIGHTED_COLOR);
                 break;
-        }
-        return achievable;
-    }
-
-    public static DisplayForm get(int form, List<DisplayForm> displayForms) {
-        for (DisplayForm displayForm : displayForms) {
-            if (displayForm.getForm() == form) {
-                return displayForm;
-            }
-        }
-
-        return null;
-    }
-
-    public static DisplayForm getOrSet(int form, List<DisplayForm> displayForms) {
-        DisplayForm displayForm = get(form, displayForms);
-        if (displayForm == null) {
-            displayForm = DisplayForm.of(form);
-            displayForms.add(displayForm);
+            case GEOMETRY:
+                displayForm.setRgba0(withSemanticSurfaces ? DisplayForm.DEFAULT_WALL_FILL_COLOR : DisplayForm.DEFAULT_FILL_COLOR);
+                displayForm.setRgba1(withSemanticSurfaces ? DisplayForm.DEFAULT_WALL_LINE_COLOR : DisplayForm.DEFAULT_LINE_COLOR);
+                displayForm.setRgba2(DisplayForm.DEFAULT_ROOF_FILL_COLOR);
+                displayForm.setRgba3(DisplayForm.DEFAULT_ROOF_LINE_COLOR);
+                displayForm.setRgba4(DisplayForm.DEFAULT_FILL_HIGHLIGHTED_COLOR);
+                displayForm.setRgba5(DisplayForm.DEFAULT_LINE_HIGHLIGHTED_COLOR);
+                break;
+            case COLLADA:
+                displayForm.setRgba0(DisplayForm.DEFAULT_COLLADA_FILL_COLOR);
+                displayForm.setRgba2(DisplayForm.DEFAULT_COLLADA_ROOF_FILL_COLOR);
+                displayForm.setRgba4(DisplayForm.DEFAULT_FILL_HIGHLIGHTED_COLOR);
+                displayForm.setRgba5(DisplayForm.DEFAULT_LINE_HIGHLIGHTED_COLOR);
+                break;
         }
 
         return displayForm;
     }
 
-    public static DisplayForm getOrDefault(int form, List<DisplayForm> displayForms) {
-        DisplayForm displayForm = get(form, displayForms);
-        return displayForm != null ? displayForm : DisplayForm.of(form);
-    }
-
     public boolean isAchievableFromLoD(int lod) {
-        return isAchievableFromLoD(form, lod);
+        return type != null && type.isAchievableFromLoD(lod);
     }
 
     public String getName() {
-        String formByName = "unknown";
-        switch (form) {
-            case FOOTPRINT:
-                formByName = FOOTPRINT_STR;
-                break;
-            case EXTRUDED:
-                formByName = EXTRUDED_STR;
-                break;
-            case GEOMETRY:
-                formByName = GEOMETRY_STR;
-                break;
-            case COLLADA:
-                formByName = COLLADA_STR;
-                break;
-        }
-        return formByName;
+        return type != null ? type.getName() : "unknown";
     }
 
-    public int getForm() {
-        return form;
+    public DisplayFormType getType() {
+        return type;
     }
 
-    public void setForm(int form) {
-        this.form = form;
+    public void setType(DisplayFormType type) {
+        this.type = type;
     }
 
     public void setVisibleFrom(int visibleFrom) {
@@ -171,15 +138,15 @@ public class DisplayForm {
     }
 
     public int getVisibleFrom() {
-        return visibleFrom;
+        return visibleFrom != null ? visibleFrom : 0;
     }
 
-    public void setVisibleUpTo(int visibleUpTo) {
-        this.visibleUpTo = visibleUpTo;
+    public void setVisibleTo(int visibleTo) {
+        this.visibleTo = visibleTo;
     }
 
-    public int getVisibleUpTo() {
-        return visibleUpTo;
+    public int getVisibleTo() {
+        return visibleTo;
     }
 
     public void setRgba0(int rgba0) {
@@ -187,11 +154,11 @@ public class DisplayForm {
     }
 
     public int getRgba0() {
-        return rgba0;
+        return rgba0 != null ? rgba0 : -1;
     }
 
     public boolean isSetRgba0() {
-        return this.rgba0 != -1;
+        return rgba0 != null;
     }
 
     public void setRgba1(int rgba1) {
@@ -199,11 +166,11 @@ public class DisplayForm {
     }
 
     public int getRgba1() {
-        return rgba1;
+        return rgba1 != null ? rgba1 : -1;
     }
 
     public boolean isSetRgba1() {
-        return this.rgba1 != -1;
+        return rgba1 != null;
     }
 
     public void setRgba2(int rgba2) {
@@ -211,11 +178,11 @@ public class DisplayForm {
     }
 
     public int getRgba2() {
-        return rgba2;
+        return rgba2 != null ? rgba2 : -1;
     }
 
     public boolean isSetRgba2() {
-        return this.rgba2 != -1;
+        return rgba2 != null;
     }
 
     public void setRgba3(int rgba3) {
@@ -223,11 +190,11 @@ public class DisplayForm {
     }
 
     public int getRgba3() {
-        return rgba3;
+        return rgba3 != null ? rgba3 : -1;
     }
 
     public boolean isSetRgba3() {
-        return this.rgba3 != -1;
+        return rgba3 != null;
     }
 
     public void setRgba4(int rgba4) {
@@ -235,11 +202,11 @@ public class DisplayForm {
     }
 
     public int getRgba4() {
-        return rgba4;
+        return rgba4 != null ? rgba4 : -1;
     }
 
     public boolean isSetRgba4() {
-        return this.rgba4 != -1;
+        return rgba4 != null;
     }
 
     public void setRgba5(int rgba5) {
@@ -247,11 +214,11 @@ public class DisplayForm {
     }
 
     public int getRgba5() {
-        return rgba5;
+        return rgba5 != null ? rgba5 : -1;
     }
 
     public boolean isSetRgba5() {
-        return this.rgba5 != -1;
+        return rgba5 != null;
     }
 
     public void setActive(boolean active) {
@@ -267,7 +234,7 @@ public class DisplayForm {
     }
 
     public boolean isHighlightingEnabled() {
-        return highlightingEnabled;
+        return highlightingEnabled != null ? highlightingEnabled : false;
     }
 
     public void setHighlightingDistance(double highlightingDistance) {
@@ -275,44 +242,40 @@ public class DisplayForm {
     }
 
     public double getHighlightingDistance() {
-        return highlightingDistance;
+        return highlightingDistance != null ? highlightingDistance : 0.75;
     }
 
     @Override
     public boolean equals(Object obj) {
-        boolean value = false;
-        if (obj instanceof DisplayForm) {
-            DisplayForm dl = (DisplayForm) obj;
-            value = dl.getForm() == this.getForm();
+        if (this == obj) {
+            return true;
         }
-        return value;
+
+        return obj instanceof DisplayForm && type == ((DisplayForm) obj).type;
     }
 
     public static String formatColorStringForKML(String rgbColor) {
-        String bgrColor;
         // red and blue component change places in KML
-        String red = rgbColor.substring(2, 4);
-        String blue = rgbColor.substring(6);
-        bgrColor = rgbColor.substring(0, 2) + blue + rgbColor.substring(4, 6) + red;
-        return bgrColor;
+        return rgbColor.substring(0, 2) +
+                rgbColor.substring(6) +
+                rgbColor.substring(4, 6) +
+                rgbColor.substring(2, 4);
     }
 
-    @Override
-    public DisplayForm clone() {
-        DisplayForm clonedDisplayForm = new DisplayForm();
-        clonedDisplayForm.setActive(this.isActive());
-        clonedDisplayForm.setForm(this.getForm());
-        clonedDisplayForm.setHighlightingDistance(this.getHighlightingDistance());
-        clonedDisplayForm.setHighlightingEnabled(this.isHighlightingEnabled());
-        clonedDisplayForm.setRgba0(this.getRgba0());
-        clonedDisplayForm.setRgba1(this.getRgba1());
-        clonedDisplayForm.setRgba2(this.getRgba2());
-        clonedDisplayForm.setRgba3(this.getRgba3());
-        clonedDisplayForm.setRgba4(this.getRgba4());
-        clonedDisplayForm.setRgba5(this.getRgba5());
-        clonedDisplayForm.setVisibleFrom(this.getVisibleFrom());
-        clonedDisplayForm.setVisibleUpTo(this.getVisibleUpTo());
-        return clonedDisplayForm;
+    public DisplayForm copy() {
+        DisplayForm copy = new DisplayForm();
+        copy.setType(getType());
+        copy.setActive(isActive());
+        copy.setVisibleFrom(getVisibleFrom());
+        copy.setVisibleTo(getVisibleTo());
+        copy.setRgba0(getRgba0());
+        copy.setRgba1(getRgba1());
+        copy.setRgba2(getRgba2());
+        copy.setRgba3(getRgba3());
+        copy.setRgba4(getRgba4());
+        copy.setRgba5(getRgba5());
+        copy.setHighlightingDistance(getHighlightingDistance());
+        copy.setHighlightingEnabled(isHighlightingEnabled());
+        return copy;
     }
-
 }

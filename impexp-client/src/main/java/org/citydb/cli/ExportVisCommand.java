@@ -145,21 +145,21 @@ public class ExportVisCommand extends CliCommand {
             kmlExportConfig.setLodToExportFrom(displayOption.getLod());
             kmlExportConfig.setAppearanceTheme(displayOption.getAppearanceTheme());
 
-            displayOption.toDisplayForms(kmlExportConfig.getBuildingDisplayForms());
-            displayOption.toDisplayForms(kmlExportConfig.getWaterBodyDisplayForms());
-            displayOption.toDisplayForms(kmlExportConfig.getLandUseDisplayForms());
-            displayOption.toDisplayForms(kmlExportConfig.getVegetationDisplayForms());
-            displayOption.toDisplayForms(kmlExportConfig.getTransportationDisplayForms());
-            displayOption.toDisplayForms(kmlExportConfig.getReliefDisplayForms());
-            displayOption.toDisplayForms(kmlExportConfig.getCityFurnitureDisplayForms());
-            displayOption.toDisplayForms(kmlExportConfig.getGenericCityObjectDisplayForms());
-            displayOption.toDisplayForms(kmlExportConfig.getCityObjectGroupDisplayForms());
-            displayOption.toDisplayForms(kmlExportConfig.getBridgeDisplayForms());
-            displayOption.toDisplayForms(kmlExportConfig.getTunnelDisplayForms());
+            displayOption.toDisplayForms(kmlExportConfig.getBuildingDisplayForms(), true);
+            displayOption.toDisplayForms(kmlExportConfig.getWaterBodyDisplayForms(), false);
+            displayOption.toDisplayForms(kmlExportConfig.getLandUseDisplayForms(), false);
+            displayOption.toDisplayForms(kmlExportConfig.getVegetationDisplayForms(), false);
+            displayOption.toDisplayForms(kmlExportConfig.getTransportationDisplayForms(), false);
+            displayOption.toDisplayForms(kmlExportConfig.getReliefDisplayForms(), false);
+            displayOption.toDisplayForms(kmlExportConfig.getCityFurnitureDisplayForms(), false);
+            displayOption.toDisplayForms(kmlExportConfig.getGenericCityObjectDisplayForms(), false);
+            displayOption.toDisplayForms(kmlExportConfig.getCityObjectGroupDisplayForms(), false);
+            displayOption.toDisplayForms(kmlExportConfig.getBridgeDisplayForms(), true);
+            displayOption.toDisplayForms(kmlExportConfig.getTunnelDisplayForms(), true);
 
             for (ADEPreferences preferences : kmlExportConfig.getADEPreferences().values()) {
                 for (ADEPreference preference : preferences.getPreferences().values()) {
-                    displayOption.toDisplayForms(preference.getDisplayForms());
+                    displayOption.toDisplayForms(preference.getDisplayForms(), false);
                 }
             }
         }

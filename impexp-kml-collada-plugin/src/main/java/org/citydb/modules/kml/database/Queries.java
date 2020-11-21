@@ -646,9 +646,9 @@ public class Queries implements ADEKmlExportQueryHelper {
 	public String getBuildingPartQuery(int lodToExportFrom, Lod0FootprintMode lod0FootprintMode, DisplayForm displayForm, boolean lodCheckOnly, int objectClassId) {
 		String query = null;
 
-		switch (displayForm.getForm()) {
-		case DisplayForm.FOOTPRINT:
-		case DisplayForm.EXTRUDED:
+		switch (displayForm.getType()) {
+		case FOOTPRINT:
+		case EXTRUDED:
 			query = getBuildingPartFootprint(lodToExportFrom, lod0FootprintMode);
 			query = unionADEQueries(QUERY_SURFACE_GEOMETRY, query, lodToExportFrom, objectClassId);
 			break;
@@ -1075,9 +1075,9 @@ public class Queries implements ADEKmlExportQueryHelper {
 	public String getBridgePartQuery(int lodToExportFrom, DisplayForm displayForm, boolean lodCheckOnly, int objectClassId) {
 		String query;
 
-		switch (displayForm.getForm()) {
-		case DisplayForm.FOOTPRINT:
-		case DisplayForm.EXTRUDED:
+		switch (displayForm.getType()) {
+		case FOOTPRINT:
+		case EXTRUDED:
 			query = getBridgePartFootprint(lodToExportFrom);
 			query = unionADEQueries(QUERY_SURFACE_GEOMETRY, query, lodToExportFrom, objectClassId);
 			break;
@@ -1469,9 +1469,9 @@ public class Queries implements ADEKmlExportQueryHelper {
 	public String getTunnelPartQuery(int lodToExportFrom, DisplayForm displayForm, boolean lodCheckOnly, int objectClassId) {
 		String query;
 
-		switch (displayForm.getForm()) {
-		case DisplayForm.FOOTPRINT:
-		case DisplayForm.EXTRUDED:
+		switch (displayForm.getType()) {
+		case FOOTPRINT:
+		case EXTRUDED:
 			query = getTunnelPartFootprint(lodToExportFrom);
 			query = unionADEQueries(QUERY_SURFACE_GEOMETRY, query, lodToExportFrom, objectClassId);
 			break;
@@ -1537,9 +1537,9 @@ public class Queries implements ADEKmlExportQueryHelper {
 	public String getSolitaryVegetationObjectQuery(int lodToExportFrom, DisplayForm displayForm, int objectClassId) {
 		String query = null;
 
-		switch (displayForm.getForm()) {
-		case DisplayForm.FOOTPRINT:
-		case DisplayForm.EXTRUDED:
+		switch (displayForm.getType()) {
+		case FOOTPRINT:
+		case EXTRUDED:
 			query = new StringBuilder("SELECT sg.geometry, ")
 					.append(implicitGeometryNullColumns)
 					.append("FROM ").append(schema).append(".SURFACE_GEOMETRY sg, ")
@@ -1577,9 +1577,9 @@ public class Queries implements ADEKmlExportQueryHelper {
 	@Override
 	public String getPlantCoverQuery(int lodToExportFrom, DisplayForm displayForm, int objectClassId) {
 		String query;
-		switch (displayForm.getForm()) {
-		case DisplayForm.FOOTPRINT:
-		case DisplayForm.EXTRUDED:
+		switch (displayForm.getType()) {
+		case FOOTPRINT:
+		case EXTRUDED:
 			query = new StringBuilder("select sub.* from (").append("(SELECT tmp.* FROM (SELECT sg.geometry, ")
 			.append(implicitGeometryNullColumns)
 			.append("FROM ").append(schema).append(".surface_geometry sg ")
@@ -1627,9 +1627,9 @@ public class Queries implements ADEKmlExportQueryHelper {
 	public String getGenericCityObjectQuery(int lodToExportFrom, DisplayForm displayForm, int objectClassId) {
 		String query;
 
-		switch (displayForm.getForm()) {
-		case DisplayForm.FOOTPRINT:
-		case DisplayForm.EXTRUDED:
+		switch (displayForm.getType()) {
+		case FOOTPRINT:
+		case EXTRUDED:
 			query = new StringBuilder("SELECT sg.geometry, ")
 					.append(implicitGeometryNullColumns)
 					.append("FROM ").append(schema).append(".SURFACE_GEOMETRY sg, ")
@@ -1687,9 +1687,9 @@ public class Queries implements ADEKmlExportQueryHelper {
 	public String getCityFurnitureQuery(int lodToExportFrom, DisplayForm displayForm, int objectClassId) {
 		String query = null;
 
-		switch (displayForm.getForm()) {
-		case DisplayForm.FOOTPRINT:
-		case DisplayForm.EXTRUDED:
+		switch (displayForm.getType()) {
+		case FOOTPRINT:
+		case EXTRUDED:
 			query = new StringBuilder("SELECT sg.geometry, ")
 					.append(implicitGeometryNullColumns)
 					.append("FROM ").append(schema).append(".SURFACE_GEOMETRY sg, ")
@@ -1811,9 +1811,9 @@ public class Queries implements ADEKmlExportQueryHelper {
 	public String getWaterBodyQuery(int lodToExportFrom, DisplayForm displayForm, int objectClassId) {
 		String query;
 		
-		switch (displayForm.getForm()) {
-		case DisplayForm.FOOTPRINT:
-		case DisplayForm.EXTRUDED:
+		switch (displayForm.getType()) {
+		case FOOTPRINT:
+		case EXTRUDED:
 			query = getWaterBodyFootprint(lodToExportFrom);
 			query = unionADEQueries(QUERY_SURFACE_GEOMETRY, query, lodToExportFrom, objectClassId);
 			break;
@@ -1833,9 +1833,9 @@ public class Queries implements ADEKmlExportQueryHelper {
 	public String getLandUseQuery(int lodToExportFrom, DisplayForm displayForm, int objectClassId) {
 		String query;
 
-		switch (displayForm.getForm()) {
-		case DisplayForm.FOOTPRINT:
-		case DisplayForm.EXTRUDED:
+		switch (displayForm.getType()) {
+		case FOOTPRINT:
+		case EXTRUDED:
 			query = new StringBuilder("SELECT sg.geometry, ")
 			.append(implicitGeometryNullColumns)
 			.append("FROM ").append(schema).append(".surface_geometry sg ")
@@ -1929,9 +1929,9 @@ public class Queries implements ADEKmlExportQueryHelper {
 	public String getTransportationQuery(int lod, DisplayForm displayForm, int objectClassId) {
 		String query;
 
-		switch (displayForm.getForm()) {
-		case DisplayForm.FOOTPRINT:
-		case DisplayForm.EXTRUDED:
+		switch (displayForm.getType()) {
+		case FOOTPRINT:
+		case EXTRUDED:
 			query = getTransportationFootprint(lod);
 			query = unionADEQueries(QUERY_SURFACE_GEOMETRY, query, lod, objectClassId);
 			break;
@@ -1951,9 +1951,9 @@ public class Queries implements ADEKmlExportQueryHelper {
 	public String getReliefQuery(int lod, DisplayForm displayForm, int objectClassId) {
 		String query;
 
-		switch (displayForm.getForm()) {
-		case DisplayForm.FOOTPRINT:
-		case DisplayForm.EXTRUDED:
+		switch (displayForm.getType()) {
+		case FOOTPRINT:
+		case EXTRUDED:
 			query = new StringBuilder("SELECT sg.geometry, ")
 			.append(implicitGeometryNullColumns)
 			.append("FROM ").append(schema).append(".surface_geometry sg ")

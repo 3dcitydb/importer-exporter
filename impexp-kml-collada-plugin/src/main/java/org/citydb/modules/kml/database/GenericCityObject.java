@@ -31,7 +31,8 @@ import net.opengis.kml._2.PlacemarkType;
 import org.citydb.config.Config;
 import org.citydb.config.project.kmlExporter.Balloon;
 import org.citydb.config.project.kmlExporter.ColladaOptions;
-import org.citydb.config.project.kmlExporter.DisplayForm;
+import org.citydb.config.project.kmlExporter.DisplayFormType;
+import org.citydb.config.project.kmlExporter.DisplayForms;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.adapter.BlobExportAdapter;
 import org.citydb.event.EventDispatcher;
@@ -81,7 +82,7 @@ public class GenericCityObject extends KmlGenericObject{
 				config);
 	}
 
-	protected List<DisplayForm> getDisplayForms() {
+	protected DisplayForms getDisplayForms() {
 		return config.getKmlExportConfig().getGenericCityObjectDisplayForms();
 	}
 
@@ -158,7 +159,7 @@ public class GenericCityObject extends KmlGenericObject{
 					((!isPointOrCurve) && !work.getDisplayForm().isAchievableFromLoD(currentLod))) { // give up
 				String fromMessage = " from LoD" + lodToExportFrom;
 				if (lodToExportFrom == 5) {
-					if (work.getDisplayForm().getForm() == DisplayForm.COLLADA)
+					if (work.getDisplayForm().getType() == DisplayFormType.COLLADA)
 						fromMessage = ". LoD1 or higher required";
 					else
 						fromMessage = " from any LoD";
@@ -184,18 +185,16 @@ public class GenericCityObject extends KmlGenericObject{
 					rs = psQuery.executeQuery();
 
 					// get the proper displayForm (for highlighting)
-					int indexOfDf = getDisplayForms().indexOf(work.getDisplayForm());
-					if (indexOfDf != -1)
-						work.setDisplayForm(getDisplayForms().get(indexOfDf));
+					work.setDisplayForm(getDisplayForms().getOrDefault(work.getDisplayForm().getType(), work.getDisplayForm()));
 
-					switch (work.getDisplayForm().getForm()) {
-					case DisplayForm.FOOTPRINT:
+					switch (work.getDisplayForm().getType()) {
+					case FOOTPRINT:
 						kmlExporterManager.print(createPlacemarksForFootprint(rs, work),
 								work,
 								getBalloonSettings().isBalloonContentInSeparateFile());
 						break;
 
-					case DisplayForm.EXTRUDED:
+					case EXTRUDED:
 						PreparedStatement psQuery2 = null;
 						ResultSet rs2 = null;
 
@@ -217,7 +216,7 @@ public class GenericCityObject extends KmlGenericObject{
 							try { if (psQuery2 != null) psQuery2.close(); } catch (SQLException e) {}
 						}
 
-					case DisplayForm.GEOMETRY:
+					case GEOMETRY:
 						setGmlId(work.getGmlId());
 						setId(work.getId());
 						kmlExporterManager.print(createPlacemarksForGeometry(rs, work), work, getBalloonSettings().isBalloonContentInSeparateFile());
@@ -225,7 +224,7 @@ public class GenericCityObject extends KmlGenericObject{
 							kmlExporterManager.print(createPlacemarksForHighlighting(rs, work), work, getBalloonSettings().isBalloonContentInSeparateFile());
 						break;
 
-					case DisplayForm.COLLADA:
+					case COLLADA:
 					ColladaOptions colladaOptions = config.getKmlExportConfig().getColladaOptions();
 					String currentgmlId = getGmlId();
 					setGmlId(work.getGmlId());

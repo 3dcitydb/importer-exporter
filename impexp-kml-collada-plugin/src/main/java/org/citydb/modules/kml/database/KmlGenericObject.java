@@ -54,6 +54,8 @@ import org.citydb.config.project.kmlExporter.AltitudeOffsetMode;
 import org.citydb.config.project.kmlExporter.Balloon;
 import org.citydb.config.project.kmlExporter.ColladaOptions;
 import org.citydb.config.project.kmlExporter.DisplayForm;
+import org.citydb.config.project.kmlExporter.DisplayFormType;
+import org.citydb.config.project.kmlExporter.DisplayForms;
 import org.citydb.config.project.kmlExporter.KmlExportConfig;
 import org.citydb.config.project.kmlExporter.PointAndCurve;
 import org.citydb.config.project.kmlExporter.PointDisplayMode;
@@ -249,7 +251,7 @@ public abstract class KmlGenericObject {
 	public abstract void read(KmlSplittingResult work);
 	public abstract String getStyleBasisName();
 	public abstract Balloon getBalloonSettings();
-	protected abstract List<DisplayForm> getDisplayForms();
+	protected abstract DisplayForms getDisplayForms();
 
 	protected BalloonTemplateHandler getBalloonTemplateHandler() {
 		return balloonTemplateHandler;
@@ -1369,10 +1371,10 @@ public abstract class KmlGenericObject {
 		placemark.setId(config.getKmlExportConfig().getIdPrefixes().getPlacemarkFootprint() + placemark.getName());
 
 		if (work.getDisplayForm().isHighlightingEnabled()) {
-			placemark.setStyleUrl("#" + getStyleBasisName() + DisplayForm.FOOTPRINT_STR + "Style");
+			placemark.setStyleUrl("#" + getStyleBasisName() + DisplayFormType.FOOTPRINT.getName() + "Style");
 		}
 		else {
-			placemark.setStyleUrl("#" + getStyleBasisName() + DisplayForm.FOOTPRINT_STR + "Normal");
+			placemark.setStyleUrl("#" + getStyleBasisName() + DisplayFormType.FOOTPRINT.getName() + "Normal");
 		}
 
 		if (getBalloonSettings().isIncludeDescription()) {
@@ -1438,10 +1440,10 @@ public abstract class KmlGenericObject {
 		placemark.setName(work.getGmlId());
 		placemark.setId(config.getKmlExportConfig().getIdPrefixes().getPlacemarkExtruded() + placemark.getName());
 		if (work.getDisplayForm().isHighlightingEnabled()) {
-			placemark.setStyleUrl("#" + getStyleBasisName() + DisplayForm.EXTRUDED_STR + "Style");
+			placemark.setStyleUrl("#" + getStyleBasisName() + DisplayFormType.EXTRUDED.getName() + "Style");
 		}
 		else {
-			placemark.setStyleUrl("#" + getStyleBasisName() + DisplayForm.EXTRUDED_STR + "Normal");
+			placemark.setStyleUrl("#" + getStyleBasisName() + DisplayFormType.EXTRUDED.getName() + "Normal");
 		}
 		if (getBalloonSettings().isIncludeDescription()) {
 			addBalloonContents(placemark, work.getId());
@@ -1733,7 +1735,7 @@ public abstract class KmlGenericObject {
 			else{
 				placemark.setName(work.getGmlId());
 				placemark.setId(config.getKmlExportConfig().getIdPrefixes().getPlacemarkGeometry() + placemark.getName());
-				placemark.setStyleUrl("#" + getStyleBasisName() + DisplayForm.GEOMETRY_STR + "Normal");
+				placemark.setStyleUrl("#" + getStyleBasisName() + DisplayFormType.GEOMETRY.getName() + "Normal");
 			}
 
 			if (getBalloonSettings().isIncludeDescription() &&
@@ -2118,13 +2120,8 @@ public abstract class KmlGenericObject {
 		boolean exportAppearance = !selectedTheme.equals(KmlExportConfig.THEME_NONE);
 		int texImageCounter = 0;
 
-		DisplayForm colladaDisplayForm = null;
-		for (DisplayForm displayForm: getDisplayForms()) {
-			if (displayForm.getForm() == DisplayForm.COLLADA) {
-				colladaDisplayForm = displayForm;
-				break;
-			}
-		}
+		boolean withSemanticSurfaces = this instanceof Building || this instanceof Bridge || this instanceof Tunnel;
+		DisplayForm colladaDisplayForm = getDisplayForms().getOrDefault(DisplayFormType.COLLADA, withSemanticSurfaces);
 
 		X3DMaterial x3dWallMaterial = getX3dMaterialFromIntColor(colladaDisplayForm.getRgba0());
 		X3DMaterial x3dRoofMaterial = null;
@@ -2358,13 +2355,8 @@ public abstract class KmlGenericObject {
 		placemark.setName(getGmlId());
 		placemark.setId(config.getKmlExportConfig().getIdPrefixes().getPlacemarkCollada() + placemark.getName());
 
-		DisplayForm colladaDisplayForm = null;
-		for (DisplayForm displayForm: getDisplayForms()) {
-			if (displayForm.getForm() == DisplayForm.COLLADA) {
-				colladaDisplayForm = displayForm;
-				break;
-			}
-		}
+		boolean withSemanticSurfaces = this instanceof Building || this instanceof Bridge || this instanceof Tunnel;
+		DisplayForm colladaDisplayForm = getDisplayForms().getOrDefault(DisplayFormType.COLLADA, withSemanticSurfaces);
 
 		if (getBalloonSettings().isIncludeDescription()
 				&& !colladaDisplayForm.isHighlightingEnabled()) { // avoid double description

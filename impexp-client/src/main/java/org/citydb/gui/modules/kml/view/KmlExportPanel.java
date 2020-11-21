@@ -38,6 +38,8 @@ import org.citydb.config.project.kmlExporter.ADEPreference;
 import org.citydb.config.project.kmlExporter.ADEPreferences;
 import org.citydb.config.project.kmlExporter.AltitudeOffsetMode;
 import org.citydb.config.project.kmlExporter.DisplayForm;
+import org.citydb.config.project.kmlExporter.DisplayFormType;
+import org.citydb.config.project.kmlExporter.DisplayForms;
 import org.citydb.config.project.kmlExporter.KmlExportConfig;
 import org.citydb.config.project.kmlExporter.KmlTiling;
 import org.citydb.config.project.kmlExporter.KmlTilingMode;
@@ -92,7 +94,6 @@ import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.text.MessageFormat;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -452,27 +453,27 @@ public class KmlExportPanel extends JPanel implements EventHandler {
         lod = lod >= lodComboBox.getItemCount() ? lodComboBox.getItemCount() - 1 : lod;
         lodComboBox.setSelectedIndex(lod);
 
-        for (DisplayForm displayForm : kmlExportConfig.getBuildingDisplayForms()) {
-            switch (displayForm.getForm()) {
-                case DisplayForm.FOOTPRINT:
+        for (DisplayForm displayForm : kmlExportConfig.getBuildingDisplayForms().values()) {
+            switch (displayForm.getType()) {
+                case FOOTPRINT:
                     if (displayForm.isActive()) {
                         footprintCheckbox.setSelected(true);
                         footprintVisibleFromText.setText(String.valueOf(displayForm.getVisibleFrom()));
                     }
                     break;
-                case DisplayForm.EXTRUDED:
+                case EXTRUDED:
                     if (displayForm.isActive()) {
                         extrudedCheckbox.setSelected(true);
                         extrudedVisibleFromText.setText(String.valueOf(displayForm.getVisibleFrom()));
                     }
                     break;
-                case DisplayForm.GEOMETRY:
+                case GEOMETRY:
                     if (displayForm.isActive()) {
                         geometryCheckbox.setSelected(true);
                         geometryVisibleFromText.setText(String.valueOf(displayForm.getVisibleFrom()));
                     }
                     break;
-                case DisplayForm.COLLADA:
+                case COLLADA:
                     if (displayForm.isActive()) {
                         colladaCheckbox.setSelected(true);
                         colladaVisibleFromText.setText(String.valueOf(displayForm.getVisibleFrom()));
@@ -544,113 +545,96 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 
         kmlExportConfig.setLodToExportFrom(lodComboBox.getSelectedIndex());
 
-        setDisplayFormSettings(kmlExportConfig.getBuildingDisplayForms());
-        setDisplayFormSettings(kmlExportConfig.getWaterBodyDisplayForms());
-        setDisplayFormSettings(kmlExportConfig.getLandUseDisplayForms());
-        setDisplayFormSettings(kmlExportConfig.getVegetationDisplayForms());
-        setDisplayFormSettings(kmlExportConfig.getTransportationDisplayForms());
-        setDisplayFormSettings(kmlExportConfig.getReliefDisplayForms());
-        setDisplayFormSettings(kmlExportConfig.getCityFurnitureDisplayForms());
-        setDisplayFormSettings(kmlExportConfig.getGenericCityObjectDisplayForms());
-        setDisplayFormSettings(kmlExportConfig.getCityObjectGroupDisplayForms());
-        setDisplayFormSettings(kmlExportConfig.getBridgeDisplayForms());
-        setDisplayFormSettings(kmlExportConfig.getTunnelDisplayForms());
+        setDisplayFormSettings(kmlExportConfig.getBuildingDisplayForms(), true);
+        setDisplayFormSettings(kmlExportConfig.getWaterBodyDisplayForms(), false);
+        setDisplayFormSettings(kmlExportConfig.getLandUseDisplayForms(), false);
+        setDisplayFormSettings(kmlExportConfig.getVegetationDisplayForms(), false);
+        setDisplayFormSettings(kmlExportConfig.getTransportationDisplayForms(), false);
+        setDisplayFormSettings(kmlExportConfig.getReliefDisplayForms(), false);
+        setDisplayFormSettings(kmlExportConfig.getCityFurnitureDisplayForms(), false);
+        setDisplayFormSettings(kmlExportConfig.getGenericCityObjectDisplayForms(), false);
+        setDisplayFormSettings(kmlExportConfig.getCityObjectGroupDisplayForms(), false);
+        setDisplayFormSettings(kmlExportConfig.getBridgeDisplayForms(), true);
+        setDisplayFormSettings(kmlExportConfig.getTunnelDisplayForms(), true);
 
         for (ADEPreferences preferences : kmlExportConfig.getADEPreferences().values()) {
             for (ADEPreference preference : preferences.getPreferences().values()) {
-                setDisplayFormSettings(preference.getDisplayForms());
+                setDisplayFormSettings(preference.getDisplayForms(), false);
             }
         }
 
         kmlExportConfig.setAppearanceTheme((String) themeComboBox.getSelectedItem());
     }
 
-    private void setDisplayFormSettings(List<DisplayForm> displayForms) {
-        DisplayForm df = DisplayForm.of(DisplayForm.COLLADA);
-        int indexOfDf = displayForms.indexOf(df);
-        if (indexOfDf != -1) {
-            df = displayForms.get(indexOfDf);
-        } else { // should never happen
-            displayForms.add(df);
-        }
+    private void setDisplayFormSettings(DisplayForms displayForms, boolean withSemanticSurfaces) {
+        DisplayForm displayForm = displayForms.computeIfAbsent(DisplayFormType.COLLADA,
+                v -> DisplayForm.of(DisplayFormType.COLLADA, withSemanticSurfaces));
+
         if (colladaCheckbox.isSelected() && config.getKmlExportConfig().getLodToExportFrom() > 0) {
             int levelVisibility = 0;
             try {
                 levelVisibility = Integer.parseInt(colladaVisibleFromText.getText().trim());
             } catch (NumberFormatException ignored) {
             }
-            df.setActive(true);
-            df.setVisibleFrom(levelVisibility);
+            displayForm.setActive(true);
+            displayForm.setVisibleFrom(levelVisibility);
         } else {
-            df.setActive(false);
+            displayForm.setActive(false);
         }
 
-        df = DisplayForm.of(DisplayForm.GEOMETRY);
-        indexOfDf = displayForms.indexOf(df);
-        if (indexOfDf != -1) {
-            df = displayForms.get(indexOfDf);
-        } else { // should never happen
-            displayForms.add(df);
-        }
+        displayForm = displayForms.computeIfAbsent(DisplayFormType.GEOMETRY,
+                v -> DisplayForm.of(DisplayFormType.GEOMETRY, withSemanticSurfaces));
+
         if (geometryCheckbox.isSelected() && config.getKmlExportConfig().getLodToExportFrom() > 0) {
             int levelVisibility = 0;
             try {
                 levelVisibility = Integer.parseInt(geometryVisibleFromText.getText().trim());
             } catch (NumberFormatException ignored) {
             }
-            df.setActive(true);
-            df.setVisibleFrom(levelVisibility);
+            displayForm.setActive(true);
+            displayForm.setVisibleFrom(levelVisibility);
         } else {
-            df.setActive(false);
+            displayForm.setActive(false);
         }
 
-        df = DisplayForm.of(DisplayForm.EXTRUDED);
-        indexOfDf = displayForms.indexOf(df);
-        if (indexOfDf != -1) {
-            df = displayForms.get(indexOfDf);
-        } else { // should never happen
-            displayForms.add(df);
-        }
+        displayForm = displayForms.computeIfAbsent(DisplayFormType.EXTRUDED,
+                v -> DisplayForm.of(DisplayFormType.EXTRUDED, withSemanticSurfaces));
+
         if (extrudedCheckbox.isSelected() && config.getKmlExportConfig().getLodToExportFrom() > 0) {
             int levelVisibility = 0;
             try {
                 levelVisibility = Integer.parseInt(extrudedVisibleFromText.getText().trim());
             } catch (NumberFormatException ignored) {
             }
-            df.setActive(true);
-            df.setVisibleFrom(levelVisibility);
+            displayForm.setActive(true);
+            displayForm.setVisibleFrom(levelVisibility);
         } else {
-            df.setActive(false);
+            displayForm.setActive(false);
         }
 
-        df = DisplayForm.of(DisplayForm.FOOTPRINT);
-        indexOfDf = displayForms.indexOf(df);
-        if (indexOfDf != -1) {
-            df = displayForms.get(indexOfDf);
-        } else { // should never happen
-            displayForms.add(df);
-        }
+        displayForm = displayForms.computeIfAbsent(DisplayFormType.FOOTPRINT,
+                v -> DisplayForm.of(DisplayFormType.FOOTPRINT, withSemanticSurfaces));
+
         if (footprintCheckbox.isSelected()) {
             int levelVisibility = 0;
             try {
                 levelVisibility = Integer.parseInt(footprintVisibleFromText.getText().trim());
             } catch (NumberFormatException ignored) {
             }
-            df.setActive(true);
-            df.setVisibleFrom(levelVisibility);
+            displayForm.setActive(true);
+            displayForm.setVisibleFrom(levelVisibility);
         } else {
-            df.setActive(false);
+            displayForm.setActive(false);
         }
 
         int upperLevelVisibility = -1;
-        for (int i = DisplayForm.COLLADA; i >= DisplayForm.FOOTPRINT; i--) {
-            df = DisplayForm.of(i);
-            indexOfDf = displayForms.indexOf(df);
-            df = displayForms.get(indexOfDf);
 
-            if (df.isActive()) {
-                df.setVisibleUpTo(upperLevelVisibility);
-                upperLevelVisibility = df.getVisibleFrom();
+        DisplayFormType[] values = DisplayFormType.values();
+        for (int i = values.length - 1; i >= 0; i--) {
+            displayForm = displayForms.get(values[i]);
+            if (displayForm.isActive()) {
+                displayForm.setVisibleTo(upperLevelVisibility);
+                upperLevelVisibility = displayForm.getVisibleFrom();
             }
         }
     }
@@ -713,7 +697,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
             }
 
             // DisplayForms
-            int activeDisplayFormsAmount = config.getKmlExportConfig().getActiveDisplayFormsAmount(config.getKmlExportConfig().getBuildingDisplayForms());
+            int activeDisplayFormsAmount = config.getKmlExportConfig().getBuildingDisplayForms().getActiveDisplayFormsAmount();
             if (activeDisplayFormsAmount == 0) {
                 viewController.errorMessage(Language.I18N.getString("export.dialog.error.incorrectData"),
                         Language.I18N.getString("kmlExport.dialog.error.incorrectData.displayForms"));
@@ -874,9 +858,9 @@ public class KmlExportPanel extends JPanel implements EventHandler {
     }
 
     private void setVisibilityEnabledValues() {
-        extrudedCheckbox.setEnabled(DisplayForm.isAchievableFromLoD(DisplayForm.EXTRUDED, lodComboBox.getSelectedIndex()));
-        geometryCheckbox.setEnabled(DisplayForm.isAchievableFromLoD(DisplayForm.GEOMETRY, lodComboBox.getSelectedIndex()));
-        colladaCheckbox.setEnabled(DisplayForm.isAchievableFromLoD(DisplayForm.COLLADA, lodComboBox.getSelectedIndex()));
+        extrudedCheckbox.setEnabled(DisplayFormType.EXTRUDED.isAchievableFromLoD(lodComboBox.getSelectedIndex()));
+        geometryCheckbox.setEnabled(DisplayFormType.GEOMETRY.isAchievableFromLoD(lodComboBox.getSelectedIndex()));
+        colladaCheckbox.setEnabled(DisplayFormType.COLLADA.isAchievableFromLoD(lodComboBox.getSelectedIndex()));
 
         visibleFromFootprintLabel.setEnabled(bboxRadioButton.isSelected() && footprintCheckbox.isEnabled() && footprintCheckbox.isSelected());
         footprintVisibleFromText.setEnabled(bboxRadioButton.isSelected() && footprintCheckbox.isEnabled() && footprintCheckbox.isSelected());

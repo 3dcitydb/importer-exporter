@@ -32,7 +32,8 @@ import net.opengis.kml._2.PlacemarkType;
 import org.citydb.config.Config;
 import org.citydb.config.project.kmlExporter.Balloon;
 import org.citydb.config.project.kmlExporter.ColladaOptions;
-import org.citydb.config.project.kmlExporter.DisplayForm;
+import org.citydb.config.project.kmlExporter.DisplayFormType;
+import org.citydb.config.project.kmlExporter.DisplayForms;
 import org.citydb.config.project.kmlExporter.Lod0FootprintMode;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.adapter.BlobExportAdapter;
@@ -80,7 +81,7 @@ public class Building extends KmlGenericObject{
 				config);
 	}
 
-	protected List<DisplayForm> getDisplayForms() {
+	protected DisplayForms getDisplayForms() {
 		return config.getKmlExportConfig().getBuildingDisplayForms();
 	}
 
@@ -122,7 +123,7 @@ public class Building extends KmlGenericObject{
 			int lodToExportFrom = config.getKmlExportConfig().getLodToExportFrom();
 			String fromMessage = " from LoD" + lodToExportFrom;
 			if (lodToExportFrom == 5) {
-				if (work.getDisplayForm().getForm() == DisplayForm.COLLADA)
+				if (work.getDisplayForm().getType() == DisplayFormType.COLLADA)
 					fromMessage = ". LoD1 or higher required";
 				else
 					fromMessage = " from any LoD";
@@ -164,11 +165,11 @@ public class Building extends KmlGenericObject{
 
 		try {
 			currentLod = config.getKmlExportConfig().getLodToExportFrom();
-			int displayForm = work.getDisplayForm().getForm();
 			Lod0FootprintMode lod0FootprintMode = config.getKmlExportConfig().getLod0FootprintMode();
 
 			// we handle FOOTPRINT/EXTRUDED differently than GEOMETRY/COLLADA
-			if (displayForm >= DisplayForm.GEOMETRY) {
+			if (work.getDisplayForm().getType() == DisplayFormType.GEOMETRY
+					|| work.getDisplayForm().getType() == DisplayFormType.COLLADA) {
 
 				if (currentLod == 5) {
 					// find the highest available LOD to export from. to increase performance, 
@@ -295,11 +296,11 @@ public class Building extends KmlGenericObject{
 
 			if (rs != null && rs.isBeforeFirst()) { // result not empty
 
-				switch (work.getDisplayForm().getForm()) {
-				case DisplayForm.FOOTPRINT:
+				switch (work.getDisplayForm().getType()) {
+				case FOOTPRINT:
 					return createPlacemarksForFootprint(rs, work);
 
-				case DisplayForm.EXTRUDED:
+				case EXTRUDED:
 					PreparedStatement psQuery2 = null;
 					ResultSet rs2 = null;
 
@@ -319,7 +320,7 @@ public class Building extends KmlGenericObject{
 						try { if (psQuery2 != null) psQuery2.close(); } catch (SQLException e) {}
 					}
 
-				case DisplayForm.GEOMETRY:
+				case GEOMETRY:
 					setGmlId(work.getGmlId());
 					setId(work.getId());
 					List<PlacemarkType> placemarks = createPlacemarksForGeometry(rs, work);
@@ -328,7 +329,7 @@ public class Building extends KmlGenericObject{
 					}
 					return placemarks;
 
-				case DisplayForm.COLLADA:
+				case COLLADA:
 					ColladaOptions colladaOptions = config.getKmlExportConfig().getColladaOptions();
 
 					fillGenericObjectForCollada(rs, colladaOptions.isGenerateTextureAtlases()); // fill and refill

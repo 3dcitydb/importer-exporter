@@ -30,14 +30,11 @@ package org.citydb.config.project.kmlExporter;
 import org.citydb.config.project.common.Path;
 import org.citydb.config.project.resources.Resources;
 
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.io.File;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -103,50 +100,39 @@ public class KmlExportConfig {
     private SimpleKmlQuery query;
     private Path path;
     private int lodToExportFrom;
-    @XmlElement(name = "displayForm", required = true)
-    @XmlElementWrapper(name = "buildingDisplayForms")
-    private List<DisplayForm> buildingDisplayForms;
+    @XmlJavaTypeAdapter(DisplayFormsAdapter.class)
+    private DisplayForms buildingDisplayForms;
     private Balloon buildingBalloon;
-    @XmlElement(name = "displayForm", required = true)
-    @XmlElementWrapper(name = "waterBodyDisplayForms")
-    private List<DisplayForm> waterBodyDisplayForms;
+    @XmlJavaTypeAdapter(DisplayFormsAdapter.class)
+    private DisplayForms waterBodyDisplayForms;
     private Balloon waterBodyBalloon;
-    @XmlElement(name = "displayForm", required = true)
-    @XmlElementWrapper(name = "landUseDisplayForms")
-    private List<DisplayForm> landUseDisplayForms;
+    @XmlJavaTypeAdapter(DisplayFormsAdapter.class)
+    private DisplayForms landUseDisplayForms;
     private Balloon landUseBalloon;
-    @XmlElement(name = "displayForm", required = true)
-    @XmlElementWrapper(name = "vegetationDisplayForms")
-    private List<DisplayForm> vegetationDisplayForms;
+    @XmlJavaTypeAdapter(DisplayFormsAdapter.class)
+    private DisplayForms vegetationDisplayForms;
     private Balloon vegetationBalloon;
-    @XmlElement(name = "displayForm", required = true)
-    @XmlElementWrapper(name = "transportationDisplayForms")
-    private List<DisplayForm> transportationDisplayForms;
+    @XmlJavaTypeAdapter(DisplayFormsAdapter.class)
+    private DisplayForms transportationDisplayForms;
     private Balloon transportationBalloon;
-    @XmlElement(name = "displayForm", required = true)
-    @XmlElementWrapper(name = "reliefDisplayForms")
-    private List<DisplayForm> reliefDisplayForms;
+    @XmlJavaTypeAdapter(DisplayFormsAdapter.class)
+    private DisplayForms reliefDisplayForms;
     private Balloon reliefBalloon;
-    @XmlElement(name = "displayForm", required = true)
-    @XmlElementWrapper(name = "cityFurnitureDisplayForms")
-    private List<DisplayForm> cityFurnitureDisplayForms;
+    @XmlJavaTypeAdapter(DisplayFormsAdapter.class)
+    private DisplayForms cityFurnitureDisplayForms;
     private Balloon cityFurnitureBalloon;
-    @XmlElement(name = "displayForm", required = true)
-    @XmlElementWrapper(name = "genericCityObjectDisplayForms")
-    private List<DisplayForm> genericCityObjectDisplayForms;
+    @XmlJavaTypeAdapter(DisplayFormsAdapter.class)
+    private DisplayForms genericCityObjectDisplayForms;
     private Balloon genericCityObject3DBalloon;
     private PointAndCurve genericCityObjectPointAndCurve;
-    @XmlElement(name = "displayForm", required = true)
-    @XmlElementWrapper(name = "cityObjectGroupDisplayForms")
-    private List<DisplayForm> cityObjectGroupDisplayForms;
+    @XmlJavaTypeAdapter(DisplayFormsAdapter.class)
+    private DisplayForms cityObjectGroupDisplayForms;
     private Balloon cityObjectGroupBalloon;
-    @XmlElement(name = "displayForm", required = true)
-    @XmlElementWrapper(name = "bridgeDisplayForms")
-    private List<DisplayForm> bridgeDisplayForms;
+    @XmlJavaTypeAdapter(DisplayFormsAdapter.class)
+    private DisplayForms bridgeDisplayForms;
     private Balloon bridgeBalloon;
-    @XmlElement(name = "displayForm", required = true)
-    @XmlElementWrapper(name = "tunnelDisplayForms")
-    private List<DisplayForm> tunnelDisplayForms;
+    @XmlJavaTypeAdapter(DisplayFormsAdapter.class)
+    private DisplayForms tunnelDisplayForms;
     private Balloon tunnelBalloon;
     private ColladaOptions colladaOptions;
     private Lod0FootprintMode lod0FootprintMode;
@@ -188,32 +174,32 @@ public class KmlExportConfig {
         path = new Path();
         lodToExportFrom = 2;
 
-        setBuildingDisplayForms(new ArrayList<>());
+        setBuildingDisplayForms(new DisplayForms());
         setBuildingBalloon(new Balloon());
-        setWaterBodyDisplayForms(new ArrayList<>());
+        setWaterBodyDisplayForms(new DisplayForms());
         setWaterBodyBalloon(new Balloon());
-        setLandUseDisplayForms(new ArrayList<>());
+        setLandUseDisplayForms(new DisplayForms());
         setLandUseBalloon(new Balloon());
-        setVegetationDisplayForms(new ArrayList<>());
+        setVegetationDisplayForms(new DisplayForms());
         setVegetationBalloon(new Balloon());
-        setTransportationDisplayForms(new ArrayList<>());
+        setTransportationDisplayForms(new DisplayForms());
         setTransportationBalloon(new Balloon());
-        setReliefDisplayForms(new ArrayList<>());
+        setReliefDisplayForms(new DisplayForms());
         setReliefBalloon(new Balloon());
-        setCityFurnitureDisplayForms(new ArrayList<>());
+        setCityFurnitureDisplayForms(new DisplayForms());
         setCityFurnitureBalloon(new Balloon());
-        setGenericCityObjectDisplayForms(new ArrayList<>());
+        setGenericCityObjectDisplayForms(new DisplayForms());
         setGenericCityObject3DBalloon(new Balloon());
         setGenericCityObjectPointAndCurve(new PointAndCurve());
-        setCityObjectGroupDisplayForms(new ArrayList<>());
+        setCityObjectGroupDisplayForms(new DisplayForms());
         setCityObjectGroupBalloon(new Balloon());
-        setBridgeDisplayForms(new ArrayList<>());
+        setBridgeDisplayForms(new DisplayForms());
         setBridgeBalloon(new Balloon());
-        setTunnelDisplayForms(new ArrayList<>());
+        setTunnelDisplayForms(new DisplayForms());
         setTunnelBalloon(new Balloon());
-
-        colladaOptions = new ColladaOptions();
+        setColladaOptions(new ColladaOptions());
         setLod0FootprintMode(Lod0FootprintMode.FOOTPRINT);
+
         exportAsKmz = false;
         exportGltfV1 = true;
         showBoundingBox = false;
@@ -296,52 +282,54 @@ public class KmlExportConfig {
         return lodToExportFrom;
     }
 
-    public void setBuildingDisplayForms(List<DisplayForm> buildingDisplayForms) {
-        this.buildingDisplayForms = buildingDisplayForms;
+    public void setBuildingDisplayForms(DisplayForms buildingDisplayForms) {
+        if (buildingDisplayForms != null) {
+            this.buildingDisplayForms = buildingDisplayForms;
+        }
     }
 
-    public List<DisplayForm> getBuildingDisplayForms() {
+    public DisplayForms getBuildingDisplayForms() {
         return buildingDisplayForms;
     }
 
-    public void setWaterBodyDisplayForms(List<DisplayForm> waterBodyDisplayForms) {
-        this.waterBodyDisplayForms = waterBodyDisplayForms;
+    public void setWaterBodyDisplayForms(DisplayForms waterBodyDisplayForms) {
+        if (waterBodyDisplayForms != null) {
+            this.waterBodyDisplayForms = waterBodyDisplayForms;
+        }
     }
 
-    public List<DisplayForm> getWaterBodyDisplayForms() {
+    public DisplayForms getWaterBodyDisplayForms() {
         return waterBodyDisplayForms;
     }
 
-    public void setLandUseDisplayForms(List<DisplayForm> landUseDisplayForms) {
-        this.landUseDisplayForms = landUseDisplayForms;
+    public void setLandUseDisplayForms(DisplayForms landUseDisplayForms) {
+        if (landUseDisplayForms != null) {
+            this.landUseDisplayForms = landUseDisplayForms;
+        }
     }
 
-    public List<DisplayForm> getLandUseDisplayForms() {
+    public DisplayForms getLandUseDisplayForms() {
         return landUseDisplayForms;
     }
 
-    public void setCityObjectGroupDisplayForms(List<DisplayForm> cityObjectGroupDisplayForms) {
-        this.cityObjectGroupDisplayForms = cityObjectGroupDisplayForms;
+    public void setCityObjectGroupDisplayForms(DisplayForms cityObjectGroupDisplayForms) {
+        if (cityObjectGroupDisplayForms != null) {
+            this.cityObjectGroupDisplayForms = cityObjectGroupDisplayForms;
+        }
     }
 
-    public List<DisplayForm> getCityObjectGroupDisplayForms() {
+    public DisplayForms getCityObjectGroupDisplayForms() {
         return cityObjectGroupDisplayForms;
     }
 
-    public void setVegetationDisplayForms(List<DisplayForm> vegetationDisplayForms) {
-        this.vegetationDisplayForms = vegetationDisplayForms;
-    }
-
-    public List<DisplayForm> getVegetationDisplayForms() {
-        return vegetationDisplayForms;
-    }
-
-    public int getActiveDisplayFormsAmount(List<DisplayForm> displayForms) {
-        int activeAmount = 0;
-        for (DisplayForm displayForm : displayForms) {
-            if (displayForm.isActive()) activeAmount++;
+    public void setVegetationDisplayForms(DisplayForms vegetationDisplayForms) {
+        if (vegetationDisplayForms != null) {
+            this.vegetationDisplayForms = vegetationDisplayForms;
         }
-        return activeAmount;
+    }
+
+    public DisplayForms getVegetationDisplayForms() {
+        return vegetationDisplayForms;
     }
 
     public ColladaOptions getColladaOptions() {
@@ -510,37 +498,30 @@ public class KmlExportConfig {
         this.oneFilePerObject = oneFilePerObject;
     }
 
-    @Deprecated
     public boolean isOneFilePerObject() {
         return oneFilePerObject;
     }
 
-    @Deprecated
     public void setSingleObjectRegionSize(double singleObjectRegionSize) {
         this.singleObjectRegionSize = singleObjectRegionSize;
     }
 
-    @Deprecated
     public double getSingleObjectRegionSize() {
         return singleObjectRegionSize;
     }
 
-    @Deprecated
     public void setViewRefreshMode(String viewRefreshMode) {
         this.viewRefreshMode = viewRefreshMode;
     }
 
-    @Deprecated
     public String getViewRefreshMode() {
         return viewRefreshMode;
     }
 
-    @Deprecated
     public void setViewRefreshTime(double viewRefreshTime) {
         this.viewRefreshTime = viewRefreshTime;
     }
 
-    @Deprecated
     public double getViewRefreshTime() {
         return viewRefreshTime;
     }
@@ -593,12 +574,13 @@ public class KmlExportConfig {
         return vegetationBalloon;
     }
 
-    public void setGenericCityObjectDisplayForms(
-            List<DisplayForm> genericCityObjectDisplayForms) {
-        this.genericCityObjectDisplayForms = genericCityObjectDisplayForms;
+    public void setGenericCityObjectDisplayForms(DisplayForms genericCityObjectDisplayForms) {
+        if (genericCityObjectDisplayForms != null) {
+            this.genericCityObjectDisplayForms = genericCityObjectDisplayForms;
+        }
     }
 
-    public List<DisplayForm> getGenericCityObjectDisplayForms() {
+    public DisplayForms getGenericCityObjectDisplayForms() {
         return genericCityObjectDisplayForms;
     }
 
@@ -618,12 +600,13 @@ public class KmlExportConfig {
         return genericCityObjectPointAndCurve;
     }
 
-    public void setCityFurnitureDisplayForms(
-            List<DisplayForm> cityFurnitureDisplayForms) {
-        this.cityFurnitureDisplayForms = cityFurnitureDisplayForms;
+    public void setCityFurnitureDisplayForms(DisplayForms cityFurnitureDisplayForms) {
+        if (cityFurnitureDisplayForms != null) {
+            this.cityFurnitureDisplayForms = cityFurnitureDisplayForms;
+        }
     }
 
-    public List<DisplayForm> getCityFurnitureDisplayForms() {
+    public DisplayForms getCityFurnitureDisplayForms() {
         return cityFurnitureDisplayForms;
     }
 
@@ -635,11 +618,13 @@ public class KmlExportConfig {
         return cityFurnitureBalloon;
     }
 
-    public void setTransportationDisplayForms(List<DisplayForm> transportationDisplayForms) {
-        this.transportationDisplayForms = transportationDisplayForms;
+    public void setTransportationDisplayForms(DisplayForms transportationDisplayForms) {
+        if (transportationDisplayForms != null) {
+            this.transportationDisplayForms = transportationDisplayForms;
+        }
     }
 
-    public List<DisplayForm> getTransportationDisplayForms() {
+    public DisplayForms getTransportationDisplayForms() {
         return transportationDisplayForms;
     }
 
@@ -651,12 +636,14 @@ public class KmlExportConfig {
         return transportationBalloon;
     }
 
-    public List<DisplayForm> getReliefDisplayForms() {
+    public DisplayForms getReliefDisplayForms() {
         return reliefDisplayForms;
     }
 
-    public void setReliefDisplayForms(List<DisplayForm> reliefDisplayForms) {
-        this.reliefDisplayForms = reliefDisplayForms;
+    public void setReliefDisplayForms(DisplayForms reliefDisplayForms) {
+        if (reliefDisplayForms != null) {
+            this.reliefDisplayForms = reliefDisplayForms;
+        }
     }
 
     public Balloon getReliefBalloon() {
@@ -667,11 +654,13 @@ public class KmlExportConfig {
         this.reliefBalloon = reliefBalloon;
     }
 
-    public void setBridgeDisplayForms(List<DisplayForm> bridgeDisplayForms) {
-        this.bridgeDisplayForms = bridgeDisplayForms;
+    public void setBridgeDisplayForms(DisplayForms bridgeDisplayForms) {
+        if (bridgeDisplayForms != null) {
+            this.bridgeDisplayForms = bridgeDisplayForms;
+        }
     }
 
-    public List<DisplayForm> getBridgeDisplayForms() {
+    public DisplayForms getBridgeDisplayForms() {
         return bridgeDisplayForms;
     }
 
@@ -683,11 +672,13 @@ public class KmlExportConfig {
         return bridgeBalloon;
     }
 
-    public void setTunnelDisplayForms(List<DisplayForm> tunnelDisplayForms) {
-        this.tunnelDisplayForms = tunnelDisplayForms;
+    public void setTunnelDisplayForms(DisplayForms tunnelDisplayForms) {
+        if (tunnelDisplayForms != null) {
+            this.tunnelDisplayForms = tunnelDisplayForms;
+        }
     }
 
-    public List<DisplayForm> getTunnelDisplayForms() {
+    public DisplayForms getTunnelDisplayForms() {
         return tunnelDisplayForms;
     }
 

@@ -28,10 +28,8 @@
 package org.citydb.config.project.kmlExporter;
 
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlType;
-import java.util.ArrayList;
-import java.util.List;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 @XmlType(name = "ADEKmlExportPreferenceType", propOrder = {
         "target",
@@ -42,14 +40,13 @@ import java.util.List;
 public class ADEPreference {
     @XmlElement(required = true)
     private String target;
-    @XmlElement(name = "displayForm", required = true)
-    @XmlElementWrapper(name = "displayForms")
-    private List<DisplayForm> displayForms;
+    @XmlJavaTypeAdapter(DisplayFormsAdapter.class)
+    private DisplayForms displayForms;
     private Balloon balloon;
     private PointAndCurve pointAndCurve;
 
     public ADEPreference() {
-        displayForms = new ArrayList<>();
+        displayForms = new DisplayForms();
         balloon = new Balloon();
         pointAndCurve = new PointAndCurve();
     }
@@ -71,12 +68,14 @@ public class ADEPreference {
         this.target = target;
     }
 
-    public List<DisplayForm> getDisplayForms() {
+    public DisplayForms getDisplayForms() {
         return displayForms;
     }
 
-    public void setDisplayForms(List<DisplayForm> displayForms) {
-        this.displayForms = displayForms;
+    public void setDisplayForms(DisplayForms displayForms) {
+        if (displayForms != null) {
+            this.displayForms = displayForms;
+        }
     }
 
     public Balloon getBalloon() {
