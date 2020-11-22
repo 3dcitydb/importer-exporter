@@ -205,7 +205,7 @@ public class ADEPointAndCurveStylingPanel extends AbstractPreferencesComponent {
 
         pointPanel.add(pointCrossLineNormalColorLabel, GuiUtil.setConstraints(1,4,0,0,GridBagConstraints.HORIZONTAL,0,BORDER_THICKNESS,BORDER_THICKNESS,0));
         pointCrossLineNormalColorButton.setPreferredSize(pointCrossLineThicknessSpinner.getPreferredSize());
-        pointCrossLineNormalColorButton.setBackground(new Color(Style.DEFAULT_LINE_COLOR, true));
+        pointCrossLineNormalColorButton.setBackground(new Color(Style.DEFAULT_GEOMETRY_OUTLINE_COLOR, true));
         pointCrossLineNormalColorButton.setContentAreaFilled(false);
         GridBagConstraints pcb = GuiUtil.setConstraints(2,4,0.25,1.0,GridBagConstraints.NONE,0,0,BORDER_THICKNESS,0);
         pcb.anchor = GridBagConstraints.WEST;
@@ -224,7 +224,7 @@ public class ADEPointAndCurveStylingPanel extends AbstractPreferencesComponent {
 
         pointPanel.add(pointCrossLineHighlightingColorLabel, GuiUtil.setConstraints(1,7,0,0,GridBagConstraints.HORIZONTAL,0,BORDER_THICKNESS,BORDER_THICKNESS,BORDER_THICKNESS));
         pointCrossLineHighlightingColorButton.setPreferredSize(pointCrossLineThicknessSpinner.getPreferredSize());
-        pointCrossLineHighlightingColorButton.setBackground(new Color(Style.DEFAULT_LINE_HIGHLIGHTED_COLOR, true));
+        pointCrossLineHighlightingColorButton.setBackground(new Color(Style.DEFAULT_HIGHLIGHT_OUTLINE_COLOR, true));
         pointCrossLineHighlightingColorButton.setContentAreaFilled(false);
         GridBagConstraints phlcb = GuiUtil.setConstraints(2,7,0.25,1.0,GridBagConstraints.NONE,0,0,BORDER_THICKNESS,0);
         phlcb.anchor = GridBagConstraints.WEST;
@@ -256,7 +256,7 @@ public class ADEPointAndCurveStylingPanel extends AbstractPreferencesComponent {
         
         pointPanel.add(pointCubeFillColorLabel, GuiUtil.setConstraints(1,13,0,0,GridBagConstraints.HORIZONTAL,0,BORDER_THICKNESS,BORDER_THICKNESS,0));
         pointCubeFillColorButton.setPreferredSize(pointCrossLineThicknessSpinner.getPreferredSize());
-        pointCubeFillColorButton.setBackground(new Color(Style.DEFAULT_FILL_COLOR, true));
+        pointCubeFillColorButton.setBackground(new Color(Style.DEFAULT_GEOMETRY_FILL_COLOR, true));
         pointCubeFillColorButton.setContentAreaFilled(false);
         GridBagConstraints pcfcb = GuiUtil.setConstraints(2,13,0.25,1.0,GridBagConstraints.NONE,0,0,BORDER_THICKNESS,0);
         pcfcb.anchor = GridBagConstraints.WEST;
@@ -268,7 +268,7 @@ public class ADEPointAndCurveStylingPanel extends AbstractPreferencesComponent {
 		
         pointPanel.add(pointCubeHighlightingColorLabel, GuiUtil.setConstraints(1,15,0,0,GridBagConstraints.HORIZONTAL,0,BORDER_THICKNESS,BORDER_THICKNESS,0));
         pointCubeHighlightingColorButton.setPreferredSize(pointCrossLineThicknessSpinner.getPreferredSize());
-        pointCubeHighlightingColorButton.setBackground(new Color(Style.DEFAULT_FILL_HIGHLIGHTED_COLOR, true));
+        pointCubeHighlightingColorButton.setBackground(new Color(Style.DEFAULT_HIGHLIGHT_FILL_COLOR, true));
         pointCubeHighlightingColorButton.setContentAreaFilled(false);
         GridBagConstraints pchcb = GuiUtil.setConstraints(2,15,0.25,1.0,GridBagConstraints.NONE,0,0,BORDER_THICKNESS,0);
         pchcb.anchor = GridBagConstraints.WEST;
@@ -297,7 +297,7 @@ public class ADEPointAndCurveStylingPanel extends AbstractPreferencesComponent {
 
         curveDisplayFormPanel.add(curveNormalColorLabel, GuiUtil.setConstraints(0,3,0,0,GridBagConstraints.HORIZONTAL,0,BORDER_THICKNESS,BORDER_THICKNESS,0));
 		curveNormalColorButton.setPreferredSize(curveThicknessSpinner.getPreferredSize());
-		curveNormalColorButton.setBackground(new Color(Style.DEFAULT_LINE_COLOR, true));
+		curveNormalColorButton.setBackground(new Color(Style.DEFAULT_GEOMETRY_OUTLINE_COLOR, true));
 		curveNormalColorButton.setContentAreaFilled(false);
         GridBagConstraints ccb = GuiUtil.setConstraints(1,3,0.25,1.0,GridBagConstraints.NONE,0,0,BORDER_THICKNESS,0);
         ccb.anchor = GridBagConstraints.WEST;
@@ -316,7 +316,7 @@ public class ADEPointAndCurveStylingPanel extends AbstractPreferencesComponent {
 
         curveDisplayFormPanel.add(curveHighlightingColorLabel, GuiUtil.setConstraints(0,6,0,0,GridBagConstraints.HORIZONTAL,0,BORDER_THICKNESS,BORDER_THICKNESS,BORDER_THICKNESS));
 		curveHighlightingColorButton.setPreferredSize(curveThicknessSpinner.getPreferredSize());
-		curveHighlightingColorButton.setBackground(new Color(Style.DEFAULT_LINE_HIGHLIGHTED_COLOR, true));
+		curveHighlightingColorButton.setBackground(new Color(Style.DEFAULT_HIGHLIGHT_OUTLINE_COLOR, true));
 		curveHighlightingColorButton.setContentAreaFilled(false);
         GridBagConstraints chlcb = GuiUtil.setConstraints(1,6,0.25,1.0,GridBagConstraints.NONE,0,0,BORDER_THICKNESS,0);
         chlcb.anchor = GridBagConstraints.WEST;
@@ -390,7 +390,7 @@ public class ADEPointAndCurveStylingPanel extends AbstractPreferencesComponent {
 		
 		pointCubeHighlightingColorButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				Color pointCubeHighlightingColor = chooseColor(Language.I18N.getString("pref.kmlexport.label.chooseHighlightedFillColor"),
+				Color pointCubeHighlightingColor = chooseColor(Language.I18N.getString("pref.kmlexport.label.chooseFillColor"),
 						pointCubeHighlightingColorButton.getBackground());
 				if (pointCubeHighlightingColor != null)
 					pointCubeHighlightingColorButton.setBackground(pointCubeHighlightingColor);
@@ -443,8 +443,8 @@ public class ADEPointAndCurveStylingPanel extends AbstractPreferencesComponent {
         cubeRButton.setText("Cube");
         pointCubeLengthOfSideLabel.setText("Length of Side");
         pointCubeFillColorLabel.setText(Language.I18N.getString("pref.kmlexport.label.fillColor"));
-        pointCubeHighlightingCheckbox.setText(Language.I18N.getString("pref.kmlexport.label.highlighting"));
-        pointCubeHighlightingColorLabel.setText(Language.I18N.getString("pref.kmlexport.label.highlightedFillColor"));
+        pointCubeHighlightingCheckbox.setText(Language.I18N.getString("pref.kmlexport.label.useHighlighting"));
+        pointCubeHighlightingColorLabel.setText(Language.I18N.getString("pref.kmlexport.label.fillColor"));
         
         pointIconColorLabel.setText(Language.I18N.getString("pref.kmlexport.label.pointIconColor"));
         pointIconScaleLabel.setText(Language.I18N.getString("pref.kmlexport.label.pointIconScale"));
@@ -452,7 +452,7 @@ public class ADEPointAndCurveStylingPanel extends AbstractPreferencesComponent {
        
         pointCrossLineThicknessLabel.setText(Language.I18N.getString("pref.kmlexport.label.curveThickness"));
         pointCrossLineNormalColorLabel.setText(Language.I18N.getString("pref.kmlexport.label.curveColor"));
-		pointCrossLineHighlightingCheckbox.setText(Language.I18N.getString("pref.kmlexport.label.highlighting"));
+		pointCrossLineHighlightingCheckbox.setText(Language.I18N.getString("pref.kmlexport.label.useHighlighting"));
 		pointCrossLineHighlightingThicknessLabel.setText(Language.I18N.getString("pref.kmlexport.label.curveHighlightingThickness"));
 		pointCrossLineHighlightingColorLabel.setText(Language.I18N.getString("pref.kmlexport.label.curveHighlightingColor"));
 
@@ -466,7 +466,7 @@ public class ADEPointAndCurveStylingPanel extends AbstractPreferencesComponent {
         curveAltitudeModeComboBox.setSelectedItem(adeKmlExportExtensionManager.getPreference(config, adeTopLevelFeatureType).getPointAndCurve().getCurveAltitudeMode());
     	curveThicknessLabel.setText(Language.I18N.getString("pref.kmlexport.label.curveThickness"));
     	curveNormalColorLabel.setText(Language.I18N.getString("pref.kmlexport.label.curveColor"));
-		curveHighlightingCheckbox.setText(Language.I18N.getString("pref.kmlexport.label.highlighting"));
+		curveHighlightingCheckbox.setText(Language.I18N.getString("pref.kmlexport.label.useHighlighting"));
     	curveHighlightingThicknessLabel.setText(Language.I18N.getString("pref.kmlexport.label.curveHighlightingThickness"));
     	curveHighlightingColorLabel.setText(Language.I18N.getString("pref.kmlexport.label.curveHighlightingColor"));
 	}

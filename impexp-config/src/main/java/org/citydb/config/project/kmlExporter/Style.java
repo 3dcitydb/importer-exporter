@@ -43,12 +43,14 @@ import javax.xml.bind.annotation.XmlType;
 public class Style {
     public static final String HIGHLIGTHTED_STR = "highlighted";
 
-    public static final int DEFAULT_FILL_COLOR = 0xc8cccccc;
-    public static final int DEFAULT_LINE_COLOR = 0xc8666666;
-    public static final int DEFAULT_FILL_HIGHLIGHTED_COLOR = 0xc866ff66;
-    public static final int DEFAULT_LINE_HIGHLIGHTED_COLOR = 0xc8ffff66;
-    public static final int DEFAULT_ROOF_FILL_COLOR = 0xc8ff3333;
-    public static final int DEFAULT_ROOF_LINE_COLOR = 0xc8990000;
+    public static final int DEFAULT_FOOTPRINT_FILL_COLOR = 0xc8ffcc00;
+    public static final int DEFAULT_FOOTPRINT_OUTLINE_COLOR = 0xc8ff6633;
+    public static final int DEFAULT_GEOMETRY_FILL_COLOR = 0xc8cccccc;
+    public static final int DEFAULT_GEOMETRY_OUTLINE_COLOR = 0xc8666666;
+    public static final int DEFAULT_GEOMETRY_ROOF_FILL_COLOR = 0xc8ff3333;
+    public static final int DEFAULT_GEOMETRY_ROOF_OUTLINE_COLOR = 0xc8990000;
+    public static final int DEFAULT_HIGHLIGHT_FILL_COLOR = 0xc866ff66;
+    public static final int DEFAULT_HIGHLIGHT_OUTLINE_COLOR = 0xc8ffff66;
     public static final int DEFAULT_COLLADA_FILL_COLOR = 0xffcccccc;
     public static final int DEFAULT_COLLADA_ROOF_FILL_COLOR = 0xffff3333;
 
@@ -77,24 +79,24 @@ public class Style {
         switch (type) {
             case FOOTPRINT:
             case EXTRUDED:
-                style.setRgba0(Style.DEFAULT_FILL_COLOR);
-                style.setRgba1(Style.DEFAULT_LINE_COLOR);
-                style.setRgba4(Style.DEFAULT_FILL_HIGHLIGHTED_COLOR);
-                style.setRgba5(Style.DEFAULT_LINE_HIGHLIGHTED_COLOR);
+                style.setRgba0(Style.DEFAULT_FOOTPRINT_FILL_COLOR);
+                style.setRgba1(Style.DEFAULT_FOOTPRINT_OUTLINE_COLOR);
+                style.setRgba4(Style.DEFAULT_HIGHLIGHT_FILL_COLOR);
+                style.setRgba5(Style.DEFAULT_HIGHLIGHT_OUTLINE_COLOR);
                 break;
             case GEOMETRY:
-                style.setRgba0(Style.DEFAULT_FILL_COLOR);
-                style.setRgba1(Style.DEFAULT_LINE_COLOR);
-                style.setRgba2(Style.DEFAULT_ROOF_FILL_COLOR);
-                style.setRgba3(Style.DEFAULT_ROOF_LINE_COLOR);
-                style.setRgba4(Style.DEFAULT_FILL_HIGHLIGHTED_COLOR);
-                style.setRgba5(Style.DEFAULT_LINE_HIGHLIGHTED_COLOR);
+                style.setRgba0(Style.DEFAULT_GEOMETRY_FILL_COLOR);
+                style.setRgba1(Style.DEFAULT_GEOMETRY_OUTLINE_COLOR);
+                style.setRgba2(Style.DEFAULT_GEOMETRY_ROOF_FILL_COLOR);
+                style.setRgba3(Style.DEFAULT_GEOMETRY_ROOF_OUTLINE_COLOR);
+                style.setRgba4(Style.DEFAULT_HIGHLIGHT_FILL_COLOR);
+                style.setRgba5(Style.DEFAULT_HIGHLIGHT_OUTLINE_COLOR);
                 break;
             case COLLADA:
                 style.setRgba0(Style.DEFAULT_COLLADA_FILL_COLOR);
                 style.setRgba2(Style.DEFAULT_COLLADA_ROOF_FILL_COLOR);
-                style.setRgba4(Style.DEFAULT_FILL_HIGHLIGHTED_COLOR);
-                style.setRgba5(Style.DEFAULT_LINE_HIGHLIGHTED_COLOR);
+                style.setRgba4(Style.DEFAULT_HIGHLIGHT_FILL_COLOR);
+                style.setRgba5(Style.DEFAULT_HIGHLIGHT_OUTLINE_COLOR);
                 break;
         }
 

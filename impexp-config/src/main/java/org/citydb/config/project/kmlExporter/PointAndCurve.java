@@ -82,23 +82,23 @@ public class PointAndCurve {
         setPointDisplayMode(PointDisplayMode.CROSS_LINE);
         setPointAltitudeMode(AltitudeMode.CLAMP_TO_GROUND);
         setPointThickness(3);
-        setPointNormalColor(Style.DEFAULT_LINE_COLOR);
+        setPointNormalColor(Style.DEFAULT_GEOMETRY_OUTLINE_COLOR);
         setPointHighlightingEnabled(true);
         setPointHighlightedThickness(6);
-        setPointNormalColor(Style.DEFAULT_LINE_HIGHLIGHTED_COLOR);
-        setPointIconColor(Style.DEFAULT_LINE_COLOR);
+        setPointNormalColor(Style.DEFAULT_HIGHLIGHT_OUTLINE_COLOR);
+        setPointIconColor(Style.DEFAULT_GEOMETRY_OUTLINE_COLOR);
         setPointIconScale(1);
         setPointCubeLengthOfSide(1);
-        setPointCubeFillColor(Style.DEFAULT_FILL_COLOR);
+        setPointCubeFillColor(Style.DEFAULT_GEOMETRY_FILL_COLOR);
         setPointCubeHighlightingEnabled(true);
-        setPointCubeHighlightedColor(Style.DEFAULT_FILL_HIGHLIGHTED_COLOR);
+        setPointCubeHighlightedColor(Style.DEFAULT_HIGHLIGHT_FILL_COLOR);
         setCurveBalloon(new Balloon());
         setCurveAltitudeMode(AltitudeMode.CLAMP_TO_GROUND);
         setCurveThickness(3);
-        setCurveNormalColor(Style.DEFAULT_LINE_COLOR);
+        setCurveNormalColor(Style.DEFAULT_GEOMETRY_OUTLINE_COLOR);
         setCurveHighlightingEnabled(true);
         setCurveHighlightedThickness(6);
-        setCurveNormalColor(Style.DEFAULT_LINE_HIGHLIGHTED_COLOR);
+        setCurveNormalColor(Style.DEFAULT_HIGHLIGHT_OUTLINE_COLOR);
     }
 
     public void setPointBalloon(Balloon pointBalloon) {

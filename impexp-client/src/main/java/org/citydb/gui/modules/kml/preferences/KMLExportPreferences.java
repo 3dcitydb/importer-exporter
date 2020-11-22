@@ -50,50 +50,50 @@ public class KMLExportPreferences extends AbstractPreferences {
 		KmlExportConfig exportConfig = config.getKmlExportConfig();
 
 		DefaultPreferencesEntry renderingNode = new StylingPanel();
-		renderingNode.addChildEntry(new DefaultPreferencesEntry(new SurfaceAndSolidStylingPanel(
+		renderingNode.addChildEntry(new DefaultPreferencesEntry(new SurfaceStylingPanel(
 				"pref.tree.kmlExport.bridge.styling",
 				exportConfig.getBridgeStyles(),
 				true, true, true, true,
 				config)));
 		renderingNode.addChildEntry(new DefaultPreferencesEntry(new BuildingStylingPanel(config)));
-		renderingNode.addChildEntry(new DefaultPreferencesEntry(new SurfaceAndSolidStylingPanel(
+		renderingNode.addChildEntry(new DefaultPreferencesEntry(new SurfaceStylingPanel(
 				"pref.tree.kmlExport.cityFurniture.styling",
 				exportConfig.getCityFurnitureStyles(),
 				config)));
-		renderingNode.addChildEntry(new DefaultPreferencesEntry(new SurfaceAndSolidStylingPanel(
+		renderingNode.addChildEntry(new DefaultPreferencesEntry(new SurfaceStylingPanel(
 				"pref.tree.kmlExport.cityObjectGroup.styling",
 				exportConfig.getReliefStyles(),
 				true, false, false, false, config)));
 		DefaultPreferencesEntry genericCityObjectRenderingNode = new EmptyPanel(
 				"pref.tree.kmlExport.genericCityObject.styling");
-		genericCityObjectRenderingNode.addChildEntry(new DefaultPreferencesEntry(new SurfaceAndSolidStylingPanel(
+		genericCityObjectRenderingNode.addChildEntry(new DefaultPreferencesEntry(new SurfaceStylingPanel(
 				"pref.tree.kmlExport.surfaceAndSolid.styling",
 				exportConfig.getGenericCityObjectStyles(),
 				config)));
 		genericCityObjectRenderingNode.addChildEntry(new DefaultPreferencesEntry(new PointAndCurveStylingPanel(config)));
 		renderingNode.addChildEntry(genericCityObjectRenderingNode);
-		renderingNode.addChildEntry(new DefaultPreferencesEntry(new SurfaceAndSolidStylingPanel(
+		renderingNode.addChildEntry(new DefaultPreferencesEntry(new SurfaceStylingPanel(
 				"pref.tree.kmlExport.landUse.styling",
 				exportConfig.getLandUseStyles(),
 				config)));
-		renderingNode.addChildEntry(new DefaultPreferencesEntry(new SurfaceAndSolidStylingPanel(
+		renderingNode.addChildEntry(new DefaultPreferencesEntry(new SurfaceStylingPanel(
 				"pref.tree.kmlExport.relief.styling",
 				exportConfig.getReliefStyles(),
 				config)));
-		renderingNode.addChildEntry(new DefaultPreferencesEntry(new SurfaceAndSolidStylingPanel(
+		renderingNode.addChildEntry(new DefaultPreferencesEntry(new SurfaceStylingPanel(
 				"pref.tree.kmlExport.transportation.styling",
 				exportConfig.getTransportationStyles(),
 				config)));
-		renderingNode.addChildEntry(new DefaultPreferencesEntry(new SurfaceAndSolidStylingPanel(
+		renderingNode.addChildEntry(new DefaultPreferencesEntry(new SurfaceStylingPanel(
 				"pref.tree.kmlExport.tunnel.styling",
 				exportConfig.getTunnelStyles(),
 				true, true, true, true,
 				config)));
-		renderingNode.addChildEntry(new DefaultPreferencesEntry(new SurfaceAndSolidStylingPanel(
+		renderingNode.addChildEntry(new DefaultPreferencesEntry(new SurfaceStylingPanel(
 				"pref.tree.kmlExport.vegetation.styling",
 				exportConfig.getVegetationStyles(),
 				config)));
-		renderingNode.addChildEntry(new DefaultPreferencesEntry(new SurfaceAndSolidStylingPanel(
+		renderingNode.addChildEntry(new DefaultPreferencesEntry(new SurfaceStylingPanel(
 				"pref.tree.kmlExport.waterBody.styling",
 				exportConfig.getWaterBodyStyles(),
 				config)));
@@ -133,7 +133,7 @@ public class KMLExportPreferences extends AbstractPreferences {
 						ADEPreference preference = ADEKmlExportExtensionManager.getInstance().getPreference(config, adeTopLevelFeatureType);
 
 						DefaultPreferencesEntry adeFeatureRenderingNode = new ADEPanel(adeTopLevelFeatureType.toString());
-						adeFeatureRenderingNode.addChildEntry(new DefaultPreferencesEntry(new SurfaceAndSolidStylingPanel(
+						adeFeatureRenderingNode.addChildEntry(new DefaultPreferencesEntry(new SurfaceStylingPanel(
 								"pref.tree.kmlExport.surfaceAndSolid.styling",
 								preference.getStyles(),
 								config)));
