@@ -34,7 +34,7 @@ import org.citydb.config.project.global.LogFileMode;
 import org.citydb.config.project.global.LogLevel;
 import org.citydb.config.project.global.Logging;
 import org.citydb.gui.ImpExpGui;
-import org.citydb.gui.components.common.AlphaButton;
+import org.citydb.gui.components.common.ColorPicker;
 import org.citydb.gui.components.common.TitledPanel;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.modules.common.AbstractPreferencesComponent;
@@ -73,9 +73,9 @@ public class LoggingPanel extends AbstractPreferencesComponent {
     private JLabel colorSchemeLabel;
     private JList<LogColor> logColors;
     private JCheckBox useForeground;
-    private JButton foregroundColor;
+    private ColorPicker foregroundColor;
     private JCheckBox useBackground;
-    private JButton backgroundColor;
+    private ColorPicker backgroundColor;
     private JTextPane preview;
 
     private final ImpExpGui mainView;
@@ -133,16 +133,9 @@ public class LoggingPanel extends AbstractPreferencesComponent {
         preview.setEditable(false);
 
         useForeground = new JCheckBox();
-        foregroundColor = new AlphaButton();
-        foregroundColor.setPreferredSize(new Dimension(80, 1));
-        foregroundColor.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1));
-        foregroundColor.setContentAreaFilled(false);
-
+        foregroundColor = new ColorPicker();
         useBackground = new JCheckBox();
-        backgroundColor = new AlphaButton();
-        backgroundColor.setPreferredSize(new Dimension(80, 1));
-        backgroundColor.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1));
-        backgroundColor.setContentAreaFilled(false);
+        backgroundColor = new ColorPicker();
 
         colorSchemeLabel = new JLabel();
         logColors = new JList<>();
@@ -235,14 +228,14 @@ public class LoggingPanel extends AbstractPreferencesComponent {
                 logColors.getSelectedValue().selectBackground();
         });
 
-        foregroundColor.addActionListener(e -> {
+        foregroundColor.addColorPickedListener(c -> {
             if (useForeground.isSelected() && !logColors.isSelectionEmpty())
-                logColors.getSelectedValue().applyForeground();
+                logColors.getSelectedValue().applyForeground(c);
         });
 
-        backgroundColor.addActionListener(e -> {
+        backgroundColor.addColorPickedListener(c -> {
             if (useBackground.isSelected() && !logColors.isSelectionEmpty())
-                logColors.getSelectedValue().applyBackground();
+                logColors.getSelectedValue().applyBackground(c);
         });
 
         logColors.addListSelectionListener(e -> {
@@ -252,8 +245,8 @@ public class LoggingPanel extends AbstractPreferencesComponent {
                 else {
                     useForeground.setSelected(false);
                     useBackground.setSelected(false);
-                    foregroundColor.setBackground(null);
-                    backgroundColor.setBackground(null);
+                    foregroundColor.setColor(null);
+                    backgroundColor.setColor(null);
                 }
             }
         });
@@ -288,7 +281,9 @@ public class LoggingPanel extends AbstractPreferencesComponent {
         logLevelConsoleLabel.setText(Language.I18N.getString("pref.general.logging.label.logLevel"));
         colorSchemeLabel.setText(Language.I18N.getString("pref.general.logging.title.colorScheme"));
         useForeground.setText(Language.I18N.getString("pref.general.logging.label.foreground"));
+        foregroundColor.setDialogTitle(Language.I18N.getString("pref.general.logging.title.select"));
         useBackground.setText(Language.I18N.getString("pref.general.logging.label.background"));
+        backgroundColor.setDialogTitle(Language.I18N.getString("pref.general.logging.title.select"));
 
         filePanel.setTitle(Language.I18N.getString("pref.general.logging.border.file"));
         useLogFile.setText(Language.I18N.getString("pref.general.logging.label.useLogFile"));
@@ -423,27 +418,19 @@ public class LoggingPanel extends AbstractPreferencesComponent {
             previewText = log.getPrefix(level) + "This a " + level.name() + " log message.";
         }
 
-        void applyForeground() {
-            foreground = apply(StyleConstants.Foreground, foregroundColor);
+        void applyForeground(Color color) {
+            foreground = apply(StyleConstants.Foreground, color);
         }
 
-        void applyBackground() {
-            background = apply(StyleConstants.Background, backgroundColor);
+        void applyBackground(Color color) {
+            background = apply(StyleConstants.Background, color);
         }
 
-        Color apply(Object key, JButton button) {
+        Color apply(Object key, Color color) {
             Style style = mainView.getStyledConsoleLogger().getStyle(level);
-            Color tmp = (Color) style.getAttribute(key);
-
-            Color color = JColorChooser.showDialog(mainView, Language.I18N.getString("pref.general.logging.title.select"), tmp);
-            if (color != null) {
-                style.addAttribute(key, color);
-                button.setBackground(color);
-                updatePreview();
-
-                return color;
-            } else
-                return tmp;
+            style.addAttribute(key, color);
+            updatePreview();
+            return color;
         }
 
         void selectForeground() {
@@ -454,16 +441,16 @@ public class LoggingPanel extends AbstractPreferencesComponent {
             select(background, Color.WHITE, StyleConstants.Background, useBackground, backgroundColor);
         }
 
-        void select(Color color, Color defaultColor, Object key, JCheckBox checkBox, JButton button) {
+        void select(Color color, Color defaultColor, Object key, JCheckBox checkBox, ColorPicker colorPicker) {
             Style style = mainView.getStyledConsoleLogger().getStyle(level);
-            button.setEnabled(checkBox.isSelected());
+            colorPicker.setEnabled(checkBox.isSelected());
 
             if (checkBox.isSelected()) {
                 style.addAttribute(key, color != null ? color : defaultColor);
-                button.setBackground(color != null ? color : defaultColor);
+                colorPicker.setColor(color != null ? color : defaultColor);
             } else {
                 style.removeAttribute(key);
-                button.setBackground(null);
+                colorPicker.setColor(null);
             }
 
             updatePreview();
@@ -475,10 +462,10 @@ public class LoggingPanel extends AbstractPreferencesComponent {
             applyListSelection((Color) style.getAttribute(StyleConstants.Background), useBackground, backgroundColor);
         }
 
-        void applyListSelection(Color color, JCheckBox checkBox, JButton button) {
+        void applyListSelection(Color color, JCheckBox checkBox, ColorPicker colorPicker) {
             checkBox.setSelected(color != null);
-            button.setEnabled(color != null);
-            button.setBackground(color);
+            colorPicker.setEnabled(color != null);
+            colorPicker.setColor(color);
         }
 
         boolean isModified() {

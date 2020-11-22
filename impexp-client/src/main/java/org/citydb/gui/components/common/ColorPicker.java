@@ -32,18 +32,15 @@ import com.formdev.flatlaf.FlatLaf;
 
 import javax.swing.*;
 import java.awt.*;
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.function.Consumer;
 
 public class ColorPicker extends JButton {
     private final boolean isFlatLaf;
-    private Color color;
     private String dialogTitle;
 
-    private List<WeakReference<Consumer<Color>>> listeners;
+    private List<Consumer<Color>> listeners;
 
     public ColorPicker() {
         isFlatLaf = UIManager.getLookAndFeel() instanceof FlatLaf;
@@ -54,7 +51,7 @@ public class ColorPicker extends JButton {
 
         JCheckBox dummy = new JCheckBox();
         Dimension size = dummy.getPreferredSize();
-        setPreferredSize(new Dimension(size.width * 2, (int) (size.height * 1.5)));
+        setPreferredSize(new Dimension(size.width * 3, size.height));
 
         addActionListener(e -> pickColor());
     }
@@ -65,21 +62,20 @@ public class ColorPicker extends JButton {
         this.dialogTitle = dialogTitle;
     }
 
-    public void addColorChangedListener(Consumer<Color> listener) {
+    public void addColorPickedListener(Consumer<Color> listener) {
         if (listeners == null) {
             listeners = new ArrayList<>();
         }
 
-        listeners.add(new WeakReference<>(listener));
+        listeners.add(listener);
     }
 
     public Color getColor() {
-        return color;
+        return getBackground();
     }
 
     public void setColor(Color color) {
-        this.color = color;
-        super.setBackground(color);
+        setBackground(color);
     }
 
     public void setDialogTitle(String dialogTitle) {
@@ -89,26 +85,6 @@ public class ColorPicker extends JButton {
     @Override
     public boolean isOpaque() {
         return isFlatLaf && super.isOpaque();
-    }
-
-    @Override
-    public Color getForeground() {
-        return color;
-    }
-
-    @Override
-    public void setForeground(Color color) {
-        setColor(color);
-    }
-
-    @Override
-    public Color getBackground() {
-        return color;
-    }
-
-    @Override
-    public void setBackground(Color color) {
-        setColor(color);
     }
 
     @Override
@@ -122,16 +98,11 @@ public class ColorPicker extends JButton {
     }
 
     private void pickColor() {
-        Color color = JColorChooser.showDialog(getTopLevelAncestor(), dialogTitle, this.color);
+        Color color = JColorChooser.showDialog(getTopLevelAncestor(), dialogTitle, getBackground());
         if (color != null) {
-            this.color = color;
             setBackground(color);
-
             if (listeners != null) {
-                listeners.stream().map(WeakReference::get)
-                        .filter(Objects::nonNull)
-                        .forEach(l -> SwingUtilities.invokeLater(() -> l.accept(color)));
-                listeners.removeIf(r -> r.get() == null);
+                listeners.forEach(listener -> listener.accept(color));
             }
         }
     }
