@@ -185,11 +185,11 @@ public class ResourcesPanel extends AbstractPreferencesComponent{
 			{
 				content.add(expResBatchLabel, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.BOTH, 0, 0, 5, 5));
 				content.add(expResFeatBatchText, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.BOTH, 0, 5, 5, 5));
-				content.add(expResFeatBatchLabel, GuiUtil.setConstraints(2, 0, 1, 0, GridBagConstraints.BOTH, 0, 5, 5, 0));
+				content.add(expResFeatBatchLabel, GuiUtil.setConstraints(2, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 5, 0));
 				content.add(expResGeomBatchText, GuiUtil.setConstraints(1, 1, 0, 0, GridBagConstraints.BOTH, 0, 5, 5, 5));
-				content.add(expResGeomBatchLabel, GuiUtil.setConstraints(2, 1, 1, 0, GridBagConstraints.BOTH, 0, 5, 5, 0));
+				content.add(expResGeomBatchLabel, GuiUtil.setConstraints(2, 1, 1, 0, GridBagConstraints.BOTH, 0, 0, 5, 0));
 				content.add(expResBlobBatchText, GuiUtil.setConstraints(1, 2, 0, 0, GridBagConstraints.BOTH, 0, 5, 0, 5));
-				content.add(expResBlobBatchLabel, GuiUtil.setConstraints(2, 2, 1, 0, GridBagConstraints.BOTH, 0, 5, 0, 0));
+				content.add(expResBlobBatchLabel, GuiUtil.setConstraints(2, 2, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 			}
 
 			batchPanel = new TitledPanel().build(content);
@@ -200,19 +200,19 @@ public class ResourcesPanel extends AbstractPreferencesComponent{
 			{
 				content.add(expResGeomLabel, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.BOTH, 0, 0, 5, 5));
 				content.add(expResGeomCacheText, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.BOTH, 0, 5, 5, 5));
-				content.add(expResGeomCacheLabel, GuiUtil.setConstraints(2, 0, 1, 0, GridBagConstraints.BOTH, 0, 5, 5, 0));
+				content.add(expResGeomCacheLabel, GuiUtil.setConstraints(2, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 5, 0));
 				content.add(expResGeomDrainText, GuiUtil.setConstraints(1, 1, 0, 0, GridBagConstraints.BOTH, 0, 5, 5, 5));
-				content.add(expResGeomDrainLabel, GuiUtil.setConstraints(2, 1, 1, 0, GridBagConstraints.BOTH, 0, 5, 5, 0));
+				content.add(expResGeomDrainLabel, GuiUtil.setConstraints(2, 1, 1, 0, GridBagConstraints.BOTH, 0, 0, 5, 0));
 				content.add(expResGeomPartText, GuiUtil.setConstraints(1, 2, 0, 0, GridBagConstraints.BOTH, 0, 5, 5, 5));
-				content.add(expResGeomPartLabel, GuiUtil.setConstraints(2, 2, 1, 0, GridBagConstraints.BOTH, 0, 5, 5, 0));
+				content.add(expResGeomPartLabel, GuiUtil.setConstraints(2, 2, 1, 0, GridBagConstraints.BOTH, 0, 0, 5, 0));
 
 				content.add(expResFeatLabel, GuiUtil.setConstraints(0, 3, 0, 0, GridBagConstraints.BOTH, 10, 0, 5, 5));
 				content.add(expResFeatCacheText, GuiUtil.setConstraints(1, 3, 0, 0, GridBagConstraints.BOTH, 10, 5, 5, 5));
-				content.add(expResFeatCacheLabel, GuiUtil.setConstraints(2, 3, 1, 0, GridBagConstraints.BOTH, 10, 5, 5, 0));
+				content.add(expResFeatCacheLabel, GuiUtil.setConstraints(2, 3, 1, 0, GridBagConstraints.BOTH, 10, 0, 5, 0));
 				content.add(expResFeatDrainText, GuiUtil.setConstraints(1, 4, 0, 0, GridBagConstraints.BOTH, 0, 5, 5, 5));
-				content.add(expResFeatDrainLabel, GuiUtil.setConstraints(2, 4, 1, 0, GridBagConstraints.BOTH, 0, 5, 5, 0));
+				content.add(expResFeatDrainLabel, GuiUtil.setConstraints(2, 4, 1, 0, GridBagConstraints.BOTH, 0, 0, 5, 0));
 				content.add(expResFeatPartText, GuiUtil.setConstraints(1, 5, 0, 0, GridBagConstraints.BOTH, 0, 5, 0, 5));
-				content.add(expResFeatPartLabel, GuiUtil.setConstraints(2, 5, 1, 0, GridBagConstraints.BOTH, 0, 5, 0, 0));
+				content.add(expResFeatPartLabel, GuiUtil.setConstraints(2, 5, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 			}
 
 			idCachePanel = new TitledPanel().build(content);

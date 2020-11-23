@@ -79,6 +79,7 @@ public class ImportLogPanel extends AbstractPreferencesComponent {
 			JPanel content = new JPanel();
 			content.setLayout(new GridBagLayout());
 			{
+				logFile.setPreferredSize(new Dimension(0, 0));
 				content.add(logFileLabel, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.BOTH, 0, 0, 0, 5));
 				content.add(logFile, GuiUtil.setConstraints(1, 0, 1, 1, GridBagConstraints.BOTH, 0, 5, 0, 5));
 				content.add(browseButton, GuiUtil.setConstraints(2, 0, 0, 0, GridBagConstraints.BOTH, 0, 5, 0, 0));

@@ -45,7 +45,7 @@ import java.util.stream.Collectors;
 
 public class KMLExportPreferences extends AbstractPreferences {
 	
-	public KMLExportPreferences(ViewController viewController, Config config) {
+	public KMLExportPreferences(Config config) {
 		super(new KMLExportEntry());
 		KmlExportConfig exportConfig = config.getKmlExportConfig();
 
@@ -152,7 +152,7 @@ public class KMLExportPreferences extends AbstractPreferences {
 			balloonNode.addChildEntry(adeBalloonRootNode);
 		}
 
-		root.addChildEntry(new DefaultPreferencesEntry(new GeneralPanel(viewController, config)));
+		root.addChildEntry(new DefaultPreferencesEntry(new GeneralPanel(config)));
 		root.addChildEntry(renderingNode);
 		root.addChildEntry(balloonNode);
 		root.addChildEntry(new DefaultPreferencesEntry(new AltitudePanel(config)));

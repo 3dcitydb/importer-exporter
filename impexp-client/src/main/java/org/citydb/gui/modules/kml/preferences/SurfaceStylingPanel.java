@@ -196,16 +196,17 @@ public class SurfaceStylingPanel extends AbstractPreferencesComponent {
 
 		footprintContentPanel = new JPanel();
 		footprintContentPanel.setLayout(new GridBagLayout());
+		{
+			JPanel defaultStyle = createColorPanel(footprintFillColorLabel, footprintFillColorButton, footprintLineColorLabel, footprintLineColorButton);
+			JPanel highlightStyle = createColorPanel(footprintHLFillColorLabel, footprintHLFillColorButton, footprintHLLineColorLabel, footprintHLLineColorButton);
+			int lmargin = GuiUtil.getTextOffset(footprintHighlightingCheckbox);
 
-		JPanel defaultStyle = createColorPanel(footprintFillColorLabel, footprintFillColorButton, footprintLineColorLabel, footprintLineColorButton);
-		JPanel highlightStyle = createColorPanel(footprintHLFillColorLabel, footprintHLFillColorButton, footprintHLLineColorLabel, footprintHLLineColorButton);
-		int lmargin = GuiUtil.getTextOffset(footprintHighlightingCheckbox);
-
-		footprintContentPanel.add(footprintDefaultStyleLabel, GuiUtil.setConstraints(0, footprintContentRows, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 10));
-		footprintContentPanel.add(defaultStyle, GuiUtil.setConstraints(1, footprintContentRows++, 1, 0, GridBagConstraints.WEST, GridBagConstraints.NONE, 0, 0, 0, 0));
-		footprintContentPanel.add(footprintHighlightingCheckbox, GuiUtil.setConstraints(0, footprintContentRows++, 2, 1, 0, 0, GridBagConstraints.HORIZONTAL, 5, 0, 0, 0));
-		footprintContentPanel.add(footprintHLStyleLabel, GuiUtil.setConstraints(0, footprintContentRows, 0, 0, GridBagConstraints.HORIZONTAL, 5, lmargin, 0, 10));
-		footprintContentPanel.add(highlightStyle, GuiUtil.setConstraints(1, footprintContentRows++, 1, 0, GridBagConstraints.WEST, GridBagConstraints.NONE, 5, 0, 0, 0));
+			footprintContentPanel.add(footprintDefaultStyleLabel, GuiUtil.setConstraints(0, footprintContentRows, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 10));
+			footprintContentPanel.add(defaultStyle, GuiUtil.setConstraints(1, footprintContentRows++, 1, 0, GridBagConstraints.WEST, GridBagConstraints.NONE, 0, 0, 0, 0));
+			footprintContentPanel.add(footprintHighlightingCheckbox, GuiUtil.setConstraints(0, footprintContentRows++, 2, 1, 0, 0, GridBagConstraints.HORIZONTAL, 5, 0, 0, 0));
+			footprintContentPanel.add(footprintHLStyleLabel, GuiUtil.setConstraints(0, footprintContentRows, 0, 0, GridBagConstraints.HORIZONTAL, 5, lmargin, 0, 10));
+			footprintContentPanel.add(highlightStyle, GuiUtil.setConstraints(1, footprintContentRows++, 1, 0, GridBagConstraints.WEST, GridBagConstraints.NONE, 5, 0, 0, 0));
+		}
 
 		footprintPanel = new TitledPanel().build(footprintContentPanel);
 		footprintHighlightingCheckbox.addActionListener(e -> setEnabledFootprintHighlighting());
@@ -234,33 +235,34 @@ public class SurfaceStylingPanel extends AbstractPreferencesComponent {
 		geometryContentPanel = new JPanel();
 		geometryContentPanel = new JPanel();
 		geometryContentPanel.setLayout(new GridBagLayout());
+		{
+			JPanel defaultStyle = createColorPanel(geometryFillColorLabel, geometryFillColorButton, geometryLineColorLabel, geometryLineColorButton);
+			JPanel highlightStyle = createColorPanel(geometryHLFillColorLabel, geometryHLFillColorButton, geometryHLLineColorLabel, geometryHLLineColorButton);
+			int lmargin = GuiUtil.getTextOffset(geometryHighlightingCheckbox);
 
-		JPanel defaultStyle = createColorPanel(geometryFillColorLabel, geometryFillColorButton, geometryLineColorLabel, geometryLineColorButton);
-		JPanel highlightStyle = createColorPanel(geometryHLFillColorLabel, geometryHLFillColorButton, geometryHLLineColorLabel, geometryHLLineColorButton);
-		int lmargin = GuiUtil.getTextOffset(geometryHighlightingCheckbox);
+			geometryContentPanel.add(geometryDefaultStyleLabel, GuiUtil.setConstraints(0, geometryContentRows, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 10));
+			geometryContentPanel.add(defaultStyle, GuiUtil.setConstraints(1, geometryContentRows++, 1, 0, GridBagConstraints.WEST, GridBagConstraints.NONE, 0, 0, 0, 0));
 
-		geometryContentPanel.add(geometryDefaultStyleLabel, GuiUtil.setConstraints(0, geometryContentRows, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 10));
-		geometryContentPanel.add(defaultStyle, GuiUtil.setConstraints(1, geometryContentRows++, 1, 0, GridBagConstraints.WEST, GridBagConstraints.NONE, 0, 0, 0, 0));
+			if (showThematicSurfaceOptions) {
+				geometryRoofStyleLabel = new JLabel();
+				geometryRoofFillColorLabel = new JLabel();
+				geometryRoofFillColorButton = new ColorPicker();
+				geometryRoofLineColorLabel = new JLabel();
+				geometryRoofLineColorButton = new ColorPicker();
 
-		if (showThematicSurfaceOptions) {
-			geometryRoofStyleLabel = new JLabel();
-			geometryRoofFillColorLabel = new JLabel();
-			geometryRoofFillColorButton = new ColorPicker();
-			geometryRoofLineColorLabel = new JLabel();
-			geometryRoofLineColorButton = new ColorPicker();
+				JPanel roofStyle = createColorPanel(geometryRoofFillColorLabel, geometryRoofFillColorButton, geometryRoofLineColorLabel, geometryRoofLineColorButton);
+				geometryContentPanel.add(geometryRoofStyleLabel, GuiUtil.setConstraints(0, geometryContentRows, 0, 0, GridBagConstraints.HORIZONTAL, 5, 0, 0, 10));
+				geometryContentPanel.add(roofStyle, GuiUtil.setConstraints(1, geometryContentRows++, 1, 0, GridBagConstraints.WEST, GridBagConstraints.NONE, 5, 0, 0, 0));
+			}
 
-			JPanel roofStyle = createColorPanel(geometryRoofFillColorLabel, geometryRoofFillColorButton, geometryRoofLineColorLabel, geometryRoofLineColorButton);
-			geometryContentPanel.add(geometryRoofStyleLabel, GuiUtil.setConstraints(0, geometryContentRows, 0, 0, GridBagConstraints.HORIZONTAL, 5, 0, 0, 10));
-			geometryContentPanel.add(roofStyle, GuiUtil.setConstraints(1, geometryContentRows++, 1, 0, GridBagConstraints.WEST, GridBagConstraints.NONE, 5, 0, 0, 0));
+			geometryContentPanel.add(geometryHighlightingCheckbox, GuiUtil.setConstraints(0, geometryContentRows++, 2, 1, 0, 0, GridBagConstraints.HORIZONTAL, 5, 0, 0, 0));
+			geometryContentPanel.add(geometryHLStyleLabel, GuiUtil.setConstraints(0, geometryContentRows, 0, 0, GridBagConstraints.HORIZONTAL, 5, lmargin, 0, 10));
+			geometryContentPanel.add(highlightStyle, GuiUtil.setConstraints(1, geometryContentRows++, 1, 0, GridBagConstraints.WEST, GridBagConstraints.NONE, 5, 0, 0, 0));
+			geometryContentPanel.add(geometryHLSurfaceDistanceLabel, GuiUtil.setConstraints(0, geometryContentRows, 0, 0, GridBagConstraints.HORIZONTAL, 5, lmargin, 0, 10));
+			geometryContentPanel.add(geometryHLSurfaceDistanceText, GuiUtil.setConstraints(1, geometryContentRows++, 1, 0, GridBagConstraints.WEST, GridBagConstraints.NONE, 5, 0, 0, 0));
+
+			geometryPanel = new TitledPanel().build(geometryContentPanel);
 		}
-
-		geometryContentPanel.add(geometryHighlightingCheckbox, GuiUtil.setConstraints(0, geometryContentRows++, 2, 1, 0, 0, GridBagConstraints.HORIZONTAL, 5, 0, 0, 0));
-		geometryContentPanel.add(geometryHLStyleLabel, GuiUtil.setConstraints(0, geometryContentRows, 0, 0, GridBagConstraints.HORIZONTAL, 5, lmargin, 0, 10));
-		geometryContentPanel.add(highlightStyle, GuiUtil.setConstraints(1, geometryContentRows++, 1, 0, GridBagConstraints.WEST, GridBagConstraints.NONE, 5, 0, 0, 0));
-		geometryContentPanel.add(geometryHLSurfaceDistanceLabel, GuiUtil.setConstraints(0, geometryContentRows, 0, 0, GridBagConstraints.HORIZONTAL, 5, lmargin, 0, 10));
-		geometryContentPanel.add(geometryHLSurfaceDistanceText, GuiUtil.setConstraints(1, geometryContentRows++, 1, 0, GridBagConstraints.WEST, GridBagConstraints.NONE, 5, 0, 0, 0));
-
-		geometryPanel = new TitledPanel().build(geometryContentPanel);
 
 		PopupMenuDecorator.getInstance().decorate(geometryHLSurfaceDistanceText);
 
@@ -289,33 +291,34 @@ public class SurfaceStylingPanel extends AbstractPreferencesComponent {
 
 		colladaContentPanel = new JPanel();
 		colladaContentPanel.setLayout(new GridBagLayout());
+		{
+			JPanel defaultStyle = createColorPanel(colladaFillColorLabel, colladaFillColorButton);
+			JPanel highlightStyle = createColorPanel(colladaHLFillColorLabel, colladaHLFillColorButton, colladaHLLineColorLabel, colladaHLLineColorButton);
+			int lmargin = GuiUtil.getTextOffset(colladaHighlightingCheckbox);
 
-		JPanel defaultStyle = createColorPanel(colladaFillColorLabel, colladaFillColorButton);
-		JPanel highlightStyle = createColorPanel(colladaHLFillColorLabel, colladaHLFillColorButton, colladaHLLineColorLabel, colladaHLLineColorButton);
-		int lmargin = GuiUtil.getTextOffset(colladaHighlightingCheckbox);
+			colladaColorNote.setFont(colladaColorNote.getFont().deriveFont(Font.ITALIC));
+			colladaContentPanel.add(colladaColorNote, GuiUtil.setConstraints(0, colladaContentRows++, 2, 1, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 0));
+			colladaContentPanel.add(colladaDefaultStyleLabel, GuiUtil.setConstraints(0, colladaContentRows, 0, 0, GridBagConstraints.HORIZONTAL, 10, 0, 0, 10));
+			colladaContentPanel.add(defaultStyle, GuiUtil.setConstraints(1, colladaContentRows++, 1, 0, GridBagConstraints.WEST, GridBagConstraints.NONE, 10, 0, 0, 0));
 
-		colladaColorNote.setFont(colladaColorNote.getFont().deriveFont(Font.ITALIC));
-		colladaContentPanel.add(colladaColorNote, GuiUtil.setConstraints(0, colladaContentRows++, 2, 1, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 0));
-		colladaContentPanel.add(colladaDefaultStyleLabel, GuiUtil.setConstraints(0, colladaContentRows, 0, 0, GridBagConstraints.HORIZONTAL, 10, 0, 0, 10));
-		colladaContentPanel.add(defaultStyle, GuiUtil.setConstraints(1, colladaContentRows++, 1, 0, GridBagConstraints.WEST, GridBagConstraints.NONE, 10, 0, 0, 0));
+			if (showThematicSurfaceOptions) {
+				colladaRoofStyleLabel = new JLabel();
+				colladaRoofFillColorLabel = new JLabel();
+				colladaRoofFillColorButton = new ColorPicker();
 
-		if (showThematicSurfaceOptions) {
-			colladaRoofStyleLabel = new JLabel();
-			colladaRoofFillColorLabel = new JLabel();
-			colladaRoofFillColorButton = new ColorPicker();
+				JPanel roofStyle = createColorPanel(colladaRoofFillColorLabel, colladaRoofFillColorButton);
+				colladaContentPanel.add(colladaRoofStyleLabel, GuiUtil.setConstraints(0, colladaContentRows, 0, 0, GridBagConstraints.HORIZONTAL, 5, 0, 0, 10));
+				colladaContentPanel.add(roofStyle, GuiUtil.setConstraints(1, colladaContentRows++, 1, 0, GridBagConstraints.WEST, GridBagConstraints.NONE, 5, 0, 0, 0));
+			}
 
-			JPanel roofStyle = createColorPanel(colladaRoofFillColorLabel, colladaRoofFillColorButton);
-			colladaContentPanel.add(colladaRoofStyleLabel, GuiUtil.setConstraints(0, colladaContentRows, 0, 0, GridBagConstraints.HORIZONTAL, 5, 0, 0, 10));
-			colladaContentPanel.add(roofStyle, GuiUtil.setConstraints(1, colladaContentRows++, 1, 0, GridBagConstraints.WEST, GridBagConstraints.NONE, 5, 0, 0, 0));
+			colladaContentPanel.add(colladaHighlightingCheckbox, GuiUtil.setConstraints(0, colladaContentRows++, 2, 1, 0, 0, GridBagConstraints.HORIZONTAL, 5, 0, 0, 0));
+			colladaContentPanel.add(colladaHLStyleLabel, GuiUtil.setConstraints(0, colladaContentRows, 0, 0, GridBagConstraints.HORIZONTAL, 5, lmargin, 0, 10));
+			colladaContentPanel.add(highlightStyle, GuiUtil.setConstraints(1, colladaContentRows++, 1, 0, GridBagConstraints.WEST, GridBagConstraints.NONE, 5, 0, 0, 0));
+			colladaContentPanel.add(colladaHLSurfaceDistanceLabel, GuiUtil.setConstraints(0, colladaContentRows, 0, 0, GridBagConstraints.HORIZONTAL, 5, lmargin, 0, 10));
+			colladaContentPanel.add(colladaHLSurfaceDistanceText, GuiUtil.setConstraints(1, colladaContentRows++, 1, 0, GridBagConstraints.WEST, GridBagConstraints.NONE, 5, 0, 0, 0));
+
+			colladaPanel = new TitledPanel().build(colladaContentPanel);
 		}
-
-		colladaContentPanel.add(colladaHighlightingCheckbox, GuiUtil.setConstraints(0, colladaContentRows++, 2, 1, 0, 0, GridBagConstraints.HORIZONTAL, 5, 0, 0, 0));
-		colladaContentPanel.add(colladaHLStyleLabel, GuiUtil.setConstraints(0, colladaContentRows, 0, 0, GridBagConstraints.HORIZONTAL, 5, lmargin, 0, 10));
-		colladaContentPanel.add(highlightStyle, GuiUtil.setConstraints(1, colladaContentRows++, 1, 0, GridBagConstraints.WEST, GridBagConstraints.NONE, 5, 0, 0, 0));
-		colladaContentPanel.add(colladaHLSurfaceDistanceLabel, GuiUtil.setConstraints(0, colladaContentRows, 0, 0, GridBagConstraints.HORIZONTAL, 5, lmargin, 0, 10));
-		colladaContentPanel.add(colladaHLSurfaceDistanceText, GuiUtil.setConstraints(1, colladaContentRows++, 1, 0, GridBagConstraints.WEST, GridBagConstraints.NONE, 5, 0, 0, 0));
-
-		colladaPanel = new TitledPanel().build(colladaContentPanel);
 
 		PopupMenuDecorator.getInstance().decorate(colladaHLSurfaceDistanceText);
 
@@ -328,10 +331,10 @@ public class SurfaceStylingPanel extends AbstractPreferencesComponent {
 		panel.setLayout(new GridBagLayout());
 		{
 			panel.add(fillColor, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.NONE, 0, 0, 0, 0));
-			panel.add(fillColorLabel, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 10, 0, 0));
+			panel.add(fillColorLabel, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 0));
 			if (outlineColorLabel != null && outlineColor != null) {
 				panel.add(outlineColor, GuiUtil.setConstraints(2, 0, 0, 0, GridBagConstraints.NONE, 0, 40, 0, 0));
-				panel.add(outlineColorLabel, GuiUtil.setConstraints(3, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 10, 0, 0));
+				panel.add(outlineColorLabel, GuiUtil.setConstraints(3, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 0));
 			}
 		}
 

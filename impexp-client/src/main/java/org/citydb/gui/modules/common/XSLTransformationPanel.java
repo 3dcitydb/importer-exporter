@@ -280,7 +280,7 @@ public class XSLTransformationPanel extends AbstractPreferencesComponent {
             removeButton.setIcon(remove);
             removeButton.setMargin(new Insets(0, 0, 0, 0));
 
-            stylesheet.setPreferredSize(stylesheet.getPreferredSize());
+            stylesheet.setPreferredSize(new Dimension(0, 0));
 
             panel.add(label, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 5, 5));
             panel.add(stylesheet, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.BOTH, 0, 5, 5, 5));
