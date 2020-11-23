@@ -66,7 +66,9 @@ public class KMLExportPreferences extends AbstractPreferences {
 				"pref.tree.kmlExport.surfaceAndSolid.styling",
 				() -> config.getKmlExportConfig().getGenericCityObjectStyles(),
 				config)));
-		genericCityObjectRenderingNode.addChildEntry(new DefaultPreferencesEntry(new PointAndCurveStylingPanel(config)));
+		genericCityObjectRenderingNode.addChildEntry(new DefaultPreferencesEntry(new PointAndCurveStylingPanel(
+				() -> config.getKmlExportConfig().getGenericCityObjectPointAndCurve(),
+				config)));
 		renderingNode.addChildEntry(genericCityObjectRenderingNode);
 		renderingNode.addChildEntry(new DefaultPreferencesEntry(new SurfaceStylingPanel(
 				"pref.tree.kmlExport.landUse.styling",
@@ -127,12 +129,16 @@ public class KMLExportPreferences extends AbstractPreferences {
 				for (AppSchema schema : adeExtension.getSchemas()) {
 					for (FeatureType adeTopLevelFeatureType : schema.listTopLevelFeatureTypes(true)) {
 						DefaultPreferencesEntry adeFeatureRenderingNode = new ADEPanel(adeTopLevelFeatureType.toString());
+
 						adeFeatureRenderingNode.addChildEntry(new DefaultPreferencesEntry(new SurfaceStylingPanel(
 								"pref.tree.kmlExport.surfaceAndSolid.styling",
 								() -> ADEKmlExportExtensionManager.getInstance().getPreference(config, adeTopLevelFeatureType).getStyles(),
 								config)));
 
-						adeFeatureRenderingNode.addChildEntry(new DefaultPreferencesEntry(new ADEPointAndCurveStylingPanel(config, adeTopLevelFeatureType)));
+						adeFeatureRenderingNode.addChildEntry(new DefaultPreferencesEntry(new PointAndCurveStylingPanel(
+								() -> ADEKmlExportExtensionManager.getInstance().getPreference(config, adeTopLevelFeatureType).getPointAndCurve(),
+								config)));
+
 						adeRenderingNode.addChildEntry(adeFeatureRenderingNode);
 						adeBalloonNode.addChildEntry(new DefaultPreferencesEntry(new ADEDBalloonPanel(config, adeTopLevelFeatureType)));
 					}
