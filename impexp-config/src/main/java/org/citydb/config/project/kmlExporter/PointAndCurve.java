@@ -54,16 +54,25 @@ import javax.xml.bind.annotation.XmlType;
 })
 public class PointAndCurve {
     public static final String DefaultIconHref = "http://maps.google.com/mapfiles/kml/paddle/wht-circle.png";
+
+    public static final int DEFAULT_POINT_COLOR = 0xc8ffff66;
+    public static final int DEFAULT_POINT_HIGHLIGHT_COLOR = 0xc866ff66;
+    public static final int DEFAULT_POINT_ICON_COLOR = 0xc8ff3333;
+    public static final int DEFAULT_POINT_CUBE_FILL_COLOR = 0xc8ffcc00;
+    public static final int DEFAULT_POINT_CUBE_HIGHLIGHT_COLOR = 0xc866ff66;
+    public static final int DEFAULT_CURVE_COLOR = 0xc8ffff66;
+    public static final int DEFAULT_CURVE_HIGHLIGHT_COLOR = 0xc866ff66;
+
     private Balloon pointBalloon;
     private AltitudeMode pointAltitudeMode;
     private PointDisplayMode pointDisplayMode;
     private double pointThickness;
-    private int pointNormalColor = -1;
-    private boolean pointHighlightingEnabled = false;
+    private int pointNormalColor;
+    private boolean pointHighlightingEnabled;
     private double pointHighlightedThickness;
-    private int pointHighlightedColor = -1;
+    private int pointHighlightedColor;
     private double pointIconScale;
-    private int pointIconColor = -1;
+    private int pointIconColor;
     private double pointCubeLengthOfSide;
     private int pointCubeFillColor;
     private boolean pointCubeHighlightingEnabled;
@@ -72,37 +81,40 @@ public class PointAndCurve {
     private Balloon curveBalloon;
     private AltitudeMode curveAltitudeMode;
     private double curveThickness;
-    private int curveNormalColor = -1;
-    private boolean curveHighlightingEnabled = false;
+    private int curveNormalColor;
+    private boolean curveHighlightingEnabled;
     private double curveHighlightedThickness;
-    private int curveHighlightedColor = -1;
+    private int curveHighlightedColor;
 
     public PointAndCurve() {
-        setPointBalloon(new Balloon());
-        setPointDisplayMode(PointDisplayMode.CROSS_LINE);
-        setPointAltitudeMode(AltitudeMode.CLAMP_TO_GROUND);
-        setPointThickness(3);
-        setPointNormalColor(Style.DEFAULT_GEOMETRY_OUTLINE_COLOR);
-        setPointHighlightingEnabled(true);
-        setPointHighlightedThickness(6);
-        setPointNormalColor(Style.DEFAULT_HIGHLIGHT_OUTLINE_COLOR);
-        setPointIconColor(Style.DEFAULT_GEOMETRY_OUTLINE_COLOR);
-        setPointIconScale(1);
-        setPointCubeLengthOfSide(1);
-        setPointCubeFillColor(Style.DEFAULT_GEOMETRY_FILL_COLOR);
-        setPointCubeHighlightingEnabled(true);
-        setPointCubeHighlightedColor(Style.DEFAULT_HIGHLIGHT_FILL_COLOR);
-        setCurveBalloon(new Balloon());
-        setCurveAltitudeMode(AltitudeMode.CLAMP_TO_GROUND);
-        setCurveThickness(3);
-        setCurveNormalColor(Style.DEFAULT_GEOMETRY_OUTLINE_COLOR);
-        setCurveHighlightingEnabled(true);
-        setCurveHighlightedThickness(6);
-        setCurveNormalColor(Style.DEFAULT_HIGHLIGHT_OUTLINE_COLOR);
+        pointBalloon = new Balloon();
+        pointAltitudeMode = AltitudeMode.CLAMP_TO_GROUND;
+        pointDisplayMode = PointDisplayMode.CROSS_LINE;
+        pointThickness = 3;
+        pointNormalColor = DEFAULT_POINT_COLOR;
+        pointHighlightingEnabled = false;
+        pointHighlightedThickness = 6;
+        pointHighlightedColor = DEFAULT_POINT_HIGHLIGHT_COLOR;
+        pointIconScale = 1;
+        pointIconColor = DEFAULT_POINT_ICON_COLOR;
+        pointCubeLengthOfSide = 1;
+        pointCubeFillColor = DEFAULT_POINT_CUBE_FILL_COLOR;
+        pointCubeHighlightingEnabled = false;
+        pointCubeHighlightedColor = DEFAULT_POINT_CUBE_HIGHLIGHT_COLOR;
+
+        curveBalloon = new Balloon();
+        curveAltitudeMode = AltitudeMode.CLAMP_TO_GROUND;
+        curveThickness = 3;
+        curveNormalColor = DEFAULT_CURVE_COLOR;
+        curveHighlightingEnabled = false;
+        curveHighlightedThickness = 6;
+        curveHighlightedColor = DEFAULT_CURVE_HIGHLIGHT_COLOR;
     }
 
     public void setPointBalloon(Balloon pointBalloon) {
-        this.pointBalloon = pointBalloon;
+        if (pointBalloon != null) {
+            this.pointBalloon = pointBalloon;
+        }
     }
 
     public Balloon getPointBalloon() {
@@ -110,7 +122,9 @@ public class PointAndCurve {
     }
 
     public void setPointDisplayMode(PointDisplayMode pointDisplayMode) {
-        this.pointDisplayMode = pointDisplayMode;
+        if (pointDisplayMode != null) {
+            this.pointDisplayMode = pointDisplayMode;
+        }
     }
 
     public PointDisplayMode getPointDisplayMode() {
@@ -118,7 +132,9 @@ public class PointAndCurve {
     }
 
     public void setPointAltitudeMode(AltitudeMode pointAltitudeMode) {
-        this.pointAltitudeMode = pointAltitudeMode;
+        if (pointAltitudeMode != null) {
+            this.pointAltitudeMode = pointAltitudeMode;
+        }
     }
 
     public AltitudeMode getPointAltitudeMode() {
@@ -166,7 +182,9 @@ public class PointAndCurve {
     }
 
     public void setCurveBalloon(Balloon curveBalloon) {
-        this.curveBalloon = curveBalloon;
+        if (curveBalloon != null) {
+            this.curveBalloon = curveBalloon;
+        }
     }
 
     public Balloon getCurveBalloon() {
@@ -174,7 +192,9 @@ public class PointAndCurve {
     }
 
     public void setCurveAltitudeMode(AltitudeMode curveAltitudeMode) {
-        this.curveAltitudeMode = curveAltitudeMode;
+        if (curveAltitudeMode != null) {
+            this.curveAltitudeMode = curveAltitudeMode;
+        }
     }
 
     public AltitudeMode getCurveAltitudeMode() {
@@ -220,7 +240,6 @@ public class PointAndCurve {
     public void setCurveHighlightedThickness(double curveHighlightedThickness) {
         this.curveHighlightedThickness = curveHighlightedThickness;
     }
-
 
     public int getPointIconColor() {
         return pointIconColor;

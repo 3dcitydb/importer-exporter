@@ -51,8 +51,12 @@ public class Styles {
     }
 
     public Style getOrDefault(DisplayFormType type) {
-        Style displayForm = styles.get(type);
-        return displayForm != null ? displayForm : Style.of(type);
+        Style style = styles.get(type);
+        return style != null ? style : Style.of(type);
+    }
+
+    public Style getOrSet(DisplayFormType type) {
+        return styles.computeIfAbsent(type, Style::of);
     }
 
     public void add(Style style) {
