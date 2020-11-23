@@ -128,12 +128,6 @@ public class SurfaceStylingPanel extends AbstractPreferencesComponent {
 		this.showColladaOptions = showColladaOptions;
 		this.showThematicSurfaceOptions = showThematicSurfaceOptions;
 
-		for (DisplayFormType type : DisplayFormType.values()) {
-			if (!styles.contains(type)) {
-				styles.add(Style.of(type));
-			}
-		}
-
 		initGui();
 	}
 
@@ -153,7 +147,7 @@ public class SurfaceStylingPanel extends AbstractPreferencesComponent {
 
 		setInternalStyles();
 		for (DisplayFormType type : DisplayFormType.values()) {
-			if (notEqual(styles.get(type), internalStyles.get(type))) {
+			if (notEqual(styles.getOrDefault(type), internalStyles.get(type))) {
 				return true;
 			}
 		}
@@ -476,7 +470,7 @@ public class SurfaceStylingPanel extends AbstractPreferencesComponent {
 	public void setSettings() {
 		setInternalStyles();
 		for (DisplayFormType type : DisplayFormType.values()) {
-			copyColorAndHighlightingValues(internalStyles.get(type), styles.get(type));
+			copyColorAndHighlightingValues(internalStyles.get(type), styles.getOrDefault(type));
 		}
 	}
 
