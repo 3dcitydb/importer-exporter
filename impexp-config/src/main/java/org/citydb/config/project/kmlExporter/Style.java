@@ -54,8 +54,6 @@ public class Style {
     public static final int DEFAULT_COLLADA_FILL_COLOR = 0xffcccccc;
     public static final int DEFAULT_COLLADA_ROOF_FILL_COLOR = 0xffff3333;
 
-    public static final int DEFAULT_ALPHA_VALUE = 200; // 0xc8;
-
     @XmlAttribute(required = true)
     private DisplayFormType type;
     private Integer rgba0;
