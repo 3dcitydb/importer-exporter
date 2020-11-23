@@ -92,6 +92,7 @@ public class SurfaceStylingPanel extends AbstractPreferencesComponent {
 	private ColorPicker geometryRoofFillColorButton;
 	private JLabel geometryRoofLineColorLabel;
 	private ColorPicker geometryRoofLineColorButton;
+	private JLabel geometryHLDistanceHint;
 
 	private int colladaContentRows;
 	private JPanel colladaContentPanel;
@@ -109,6 +110,7 @@ public class SurfaceStylingPanel extends AbstractPreferencesComponent {
 	private ColorPicker colladaHLLineColorButton;
 	private JLabel colladaRoofFillColorLabel;
 	private ColorPicker colladaRoofFillColorButton;
+	private JLabel colladaHLDistanceHint;
 
 	public SurfaceStylingPanel(
 			String i18nTitle,
@@ -215,6 +217,7 @@ public class SurfaceStylingPanel extends AbstractPreferencesComponent {
 		geometryHLFillColorButton = new ColorPicker();
 		geometryHLLineColorLabel = new JLabel();
 		geometryHLLineColorButton = new ColorPicker();
+		geometryHLDistanceHint = new JLabel("(0-10m)");
 
 		DecimalFormat format = new DecimalFormat("#.###", DecimalFormatSymbols.getInstance(Locale.ENGLISH));
 		format.setMaximumIntegerDigits(2);
@@ -228,6 +231,13 @@ public class SurfaceStylingPanel extends AbstractPreferencesComponent {
 		{
 			JPanel defaultStyle = createStylePanel(geometryFillColorLabel, geometryFillColorButton, geometryLineColorLabel, geometryLineColorButton);
 			JPanel highlightStyle = createStylePanel(geometryHLFillColorLabel, geometryHLFillColorButton, geometryHLLineColorLabel, geometryHLLineColorButton);
+
+			Box box = Box.createHorizontalBox();
+			box.add(geometryHLSurfaceDistanceText);
+			box.add(Box.createHorizontalStrut(5));
+			box.add(geometryHLDistanceHint);
+
+			int lmargin = GuiUtil.getTextOffset(geometryHighlightingCheckbox);
 
 			geometryContentPanel.add(geometryDefaultStyleLabel, GuiUtil.setConstraints(0, geometryContentRows, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 10));
 			geometryContentPanel.add(defaultStyle, GuiUtil.setConstraints(1, geometryContentRows++, 1, 0, GridBagConstraints.WEST, GridBagConstraints.NONE, 0, 0, 0, 0));
@@ -246,8 +256,8 @@ public class SurfaceStylingPanel extends AbstractPreferencesComponent {
 
 			geometryContentPanel.add(geometryHighlightingCheckbox, GuiUtil.setConstraints(0, geometryContentRows, 0, 0, GridBagConstraints.HORIZONTAL, 5, 0, 0, 10));
 			geometryContentPanel.add(highlightStyle, GuiUtil.setConstraints(1, geometryContentRows++, 1, 0, GridBagConstraints.WEST, GridBagConstraints.NONE, 5, 0, 0, 0));
-			geometryContentPanel.add(geometryHLSurfaceDistanceLabel, GuiUtil.setConstraints(0, geometryContentRows, 0, 0, GridBagConstraints.HORIZONTAL, 5, 0, 0, 10));
-			geometryContentPanel.add(geometryHLSurfaceDistanceText, GuiUtil.setConstraints(1, geometryContentRows++, 1, 0, GridBagConstraints.WEST, GridBagConstraints.NONE, 5, 0, 0, 0));
+			geometryContentPanel.add(geometryHLSurfaceDistanceLabel, GuiUtil.setConstraints(0, geometryContentRows, 0, 0, GridBagConstraints.HORIZONTAL, 5, lmargin, 0, 10));
+			geometryContentPanel.add(box, GuiUtil.setConstraints(1, geometryContentRows++, 1, 0, GridBagConstraints.WEST, GridBagConstraints.NONE, 5, 0, 0, 0));
 
 			geometryPanel = new TitledPanel().build(geometryContentPanel);
 		}
@@ -269,6 +279,7 @@ public class SurfaceStylingPanel extends AbstractPreferencesComponent {
 		colladaHLFillColorButton = new ColorPicker();
 		colladaHLLineColorLabel = new JLabel();
 		colladaHLLineColorButton = new ColorPicker();
+		colladaHLDistanceHint = new JLabel("(0-10m)");
 
 		DecimalFormat highlightFormat = new DecimalFormat("##.###", DecimalFormatSymbols.getInstance(Locale.ENGLISH));
 		highlightFormat.setMaximumIntegerDigits(2);
@@ -281,6 +292,13 @@ public class SurfaceStylingPanel extends AbstractPreferencesComponent {
 		{
 			JPanel defaultStyle = createStylePanel(colladaFillColorLabel, colladaFillColorButton);
 			JPanel highlightStyle = createStylePanel(colladaHLFillColorLabel, colladaHLFillColorButton, colladaHLLineColorLabel, colladaHLLineColorButton);
+
+			Box box = Box.createHorizontalBox();
+			box.add(colladaHLSurfaceDistanceText);
+			box.add(Box.createHorizontalStrut(5));
+			box.add(colladaHLDistanceHint);
+
+			int lmargin = GuiUtil.getTextOffset(geometryHighlightingCheckbox);
 
 			colladaColorNote.setFont(colladaColorNote.getFont().deriveFont(Font.ITALIC));
 			colladaContentPanel.add(colladaColorNote, GuiUtil.setConstraints(0, colladaContentRows++, 2, 1, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 0));
@@ -299,8 +317,8 @@ public class SurfaceStylingPanel extends AbstractPreferencesComponent {
 
 			colladaContentPanel.add(colladaHighlightingCheckbox, GuiUtil.setConstraints(0, colladaContentRows, 0, 0, GridBagConstraints.HORIZONTAL, 5, 0, 0, 10));
 			colladaContentPanel.add(highlightStyle, GuiUtil.setConstraints(1, colladaContentRows++, 1, 0, GridBagConstraints.WEST, GridBagConstraints.NONE, 5, 0, 0, 0));
-			colladaContentPanel.add(colladaHLSurfaceDistanceLabel, GuiUtil.setConstraints(0, colladaContentRows, 0, 0, GridBagConstraints.HORIZONTAL, 5, 0, 0, 10));
-			colladaContentPanel.add(colladaHLSurfaceDistanceText, GuiUtil.setConstraints(1, colladaContentRows++, 1, 0, GridBagConstraints.WEST, GridBagConstraints.NONE, 5, 0, 0, 0));
+			colladaContentPanel.add(colladaHLSurfaceDistanceLabel, GuiUtil.setConstraints(0, colladaContentRows, 0, 0, GridBagConstraints.HORIZONTAL, 5, lmargin, 0, 10));
+			colladaContentPanel.add(box, GuiUtil.setConstraints(1, colladaContentRows++, 1, 0, GridBagConstraints.WEST, GridBagConstraints.NONE, 5, 0, 0, 0));
 
 			colladaPanel = new TitledPanel().build(colladaContentPanel);
 		}
@@ -523,6 +541,7 @@ public class SurfaceStylingPanel extends AbstractPreferencesComponent {
 		geometryHLLineColorButton.setEnabled(geometryHighlightingCheckbox.isSelected());
 		geometryHLSurfaceDistanceLabel.setEnabled(geometryHighlightingCheckbox.isSelected());
 		geometryHLSurfaceDistanceText.setEnabled(geometryHighlightingCheckbox.isSelected());
+		geometryHLDistanceHint.setEnabled(geometryHighlightingCheckbox.isSelected());
 	}
 
 	private void setEnabledColladaHighlighting() {
@@ -532,6 +551,7 @@ public class SurfaceStylingPanel extends AbstractPreferencesComponent {
 		colladaHLLineColorButton.setEnabled(colladaHighlightingCheckbox.isSelected());
 		colladaHLSurfaceDistanceLabel.setEnabled(colladaHighlightingCheckbox.isSelected());
 		colladaHLSurfaceDistanceText.setEnabled(colladaHighlightingCheckbox.isSelected());
+		colladaHLDistanceHint.setEnabled(colladaHighlightingCheckbox.isSelected());
 	}
 
 	private boolean notEqual(Style first, Style second) {
