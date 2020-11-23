@@ -44,7 +44,7 @@ public class BuildingStylingPanel extends AbstractPreferencesComponent {
     public BuildingStylingPanel(Config config) {
         super(config);
         parent = new SurfaceStylingPanel("pref.tree.kmlExport.building.styling",
-                config.getKmlExportConfig().getBuildingStyles(),
+                () -> config.getKmlExportConfig().getBuildingStyles(),
                 true, true, true, true, config);
 
         initGui();

@@ -45,6 +45,7 @@ import java.text.DecimalFormatSymbols;
 import java.text.ParseException;
 import java.util.EnumSet;
 import java.util.Locale;
+import java.util.function.Supplier;
 
 public class SurfaceStylingPanel extends AbstractPreferencesComponent {
 	private final String i18nTitle;
@@ -53,7 +54,7 @@ public class SurfaceStylingPanel extends AbstractPreferencesComponent {
 	private final boolean showColladaOptions;
 	private final boolean showThematicSurfaceOptions;
 	private final Styles internalStyles = new Styles();
-	private Styles styles;
+	private Supplier<Styles> stylesSupplier;
 
 	private TitledPanel footprintPanel;
 	private TitledPanel geometryPanel;
@@ -114,7 +115,7 @@ public class SurfaceStylingPanel extends AbstractPreferencesComponent {
 
 	public SurfaceStylingPanel(
 			String i18nTitle,
-			Styles styles,
+			Supplier<Styles> stylesSupplier,
 			boolean showFootprintAndExtrudedOptions,
 			boolean showGeometryOptions,
 			boolean showColladaOptions,
@@ -122,7 +123,7 @@ public class SurfaceStylingPanel extends AbstractPreferencesComponent {
 			Config config) {
 		super(config);
 		this.i18nTitle = i18nTitle;
-		this.styles = styles;
+		this.stylesSupplier = stylesSupplier;
 		this.showFootprintAndExtrudedOptions = showFootprintAndExtrudedOptions;
 		this.showGeometryOptions = showGeometryOptions;
 		this.showColladaOptions = showColladaOptions;
@@ -131,8 +132,8 @@ public class SurfaceStylingPanel extends AbstractPreferencesComponent {
 		initGui();
 	}
 
-	public SurfaceStylingPanel(String i18nTitle, Styles styles, Config config) {
-		this(i18nTitle, styles, true, true, true, false, config);
+	public SurfaceStylingPanel(String i18nTitle, Supplier<Styles> stylesSupplier, Config config) {
+		this(i18nTitle, stylesSupplier, true, true, true, false, config);
 	}
 
 	@Override
@@ -145,7 +146,9 @@ public class SurfaceStylingPanel extends AbstractPreferencesComponent {
 		try { geometryHLSurfaceDistanceText.commitEdit(); } catch (ParseException ignored) { }
 		try { colladaHLSurfaceDistanceText.commitEdit(); } catch (ParseException ignored) { }
 
+		Styles styles = stylesSupplier.get();
 		setInternalStyles();
+
 		for (DisplayFormType type : DisplayFormType.values()) {
 			if (notEqual(styles.getOrDefault(type), internalStyles.get(type))) {
 				return true;
@@ -423,6 +426,8 @@ public class SurfaceStylingPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void loadSettings() {
+		Styles styles = stylesSupplier.get();
+
 		for (DisplayFormType type : DisplayFormType.values()) {
 			Style style = styles.getOrDefault(type);
 			internalStyles.add(style.copy());
@@ -468,7 +473,9 @@ public class SurfaceStylingPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void setSettings() {
+		Styles styles = stylesSupplier.get();
 		setInternalStyles();
+
 		for (DisplayFormType type : DisplayFormType.values()) {
 			copyColorAndHighlightingValues(internalStyles.get(type), styles.getOrDefault(type));
 		}
@@ -523,10 +530,10 @@ public class SurfaceStylingPanel extends AbstractPreferencesComponent {
 			defaults.add(Style.of(type));
 		}
 
-		Styles tmp = styles;
-		styles = defaults;
+		Supplier<Styles> tmp = stylesSupplier;
+		stylesSupplier = () -> defaults;
 		loadSettings();
-		styles = tmp;
+		stylesSupplier = tmp;
 	}
 
 	private void setEnabledSettings() {

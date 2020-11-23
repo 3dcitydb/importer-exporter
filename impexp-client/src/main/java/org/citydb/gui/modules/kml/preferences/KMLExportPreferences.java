@@ -32,13 +32,10 @@ import org.citydb.ade.ADEExtensionManager;
 import org.citydb.ade.kmlExporter.ADEKmlExportExtension;
 import org.citydb.ade.kmlExporter.ADEKmlExportExtensionManager;
 import org.citydb.config.Config;
-import org.citydb.config.project.kmlExporter.ADEPreference;
-import org.citydb.config.project.kmlExporter.KmlExportConfig;
 import org.citydb.database.schema.mapping.AppSchema;
 import org.citydb.database.schema.mapping.FeatureType;
 import org.citydb.gui.modules.common.AbstractPreferences;
 import org.citydb.gui.modules.common.DefaultPreferencesEntry;
-import org.citydb.plugin.extension.view.ViewController;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -47,55 +44,54 @@ public class KMLExportPreferences extends AbstractPreferences {
 	
 	public KMLExportPreferences(Config config) {
 		super(new KMLExportEntry());
-		KmlExportConfig exportConfig = config.getKmlExportConfig();
 
 		DefaultPreferencesEntry renderingNode = new StylingPanel();
 		renderingNode.addChildEntry(new DefaultPreferencesEntry(new SurfaceStylingPanel(
 				"pref.tree.kmlExport.bridge.styling",
-				exportConfig.getBridgeStyles(),
+				() -> config.getKmlExportConfig().getBridgeStyles(),
 				true, true, true, true,
 				config)));
 		renderingNode.addChildEntry(new DefaultPreferencesEntry(new BuildingStylingPanel(config)));
 		renderingNode.addChildEntry(new DefaultPreferencesEntry(new SurfaceStylingPanel(
 				"pref.tree.kmlExport.cityFurniture.styling",
-				exportConfig.getCityFurnitureStyles(),
+				() -> config.getKmlExportConfig().getCityFurnitureStyles(),
 				config)));
 		renderingNode.addChildEntry(new DefaultPreferencesEntry(new SurfaceStylingPanel(
 				"pref.tree.kmlExport.cityObjectGroup.styling",
-				exportConfig.getReliefStyles(),
+				() -> config.getKmlExportConfig().getReliefStyles(),
 				true, false, false, false, config)));
 		DefaultPreferencesEntry genericCityObjectRenderingNode = new EmptyPanel(
 				"pref.tree.kmlExport.genericCityObject.styling");
 		genericCityObjectRenderingNode.addChildEntry(new DefaultPreferencesEntry(new SurfaceStylingPanel(
 				"pref.tree.kmlExport.surfaceAndSolid.styling",
-				exportConfig.getGenericCityObjectStyles(),
+				() -> config.getKmlExportConfig().getGenericCityObjectStyles(),
 				config)));
 		genericCityObjectRenderingNode.addChildEntry(new DefaultPreferencesEntry(new PointAndCurveStylingPanel(config)));
 		renderingNode.addChildEntry(genericCityObjectRenderingNode);
 		renderingNode.addChildEntry(new DefaultPreferencesEntry(new SurfaceStylingPanel(
 				"pref.tree.kmlExport.landUse.styling",
-				exportConfig.getLandUseStyles(),
+				() -> config.getKmlExportConfig().getLandUseStyles(),
 				config)));
 		renderingNode.addChildEntry(new DefaultPreferencesEntry(new SurfaceStylingPanel(
 				"pref.tree.kmlExport.relief.styling",
-				exportConfig.getReliefStyles(),
+				() -> config.getKmlExportConfig().getReliefStyles(),
 				config)));
 		renderingNode.addChildEntry(new DefaultPreferencesEntry(new SurfaceStylingPanel(
 				"pref.tree.kmlExport.transportation.styling",
-				exportConfig.getTransportationStyles(),
+				() -> config.getKmlExportConfig().getTransportationStyles(),
 				config)));
 		renderingNode.addChildEntry(new DefaultPreferencesEntry(new SurfaceStylingPanel(
 				"pref.tree.kmlExport.tunnel.styling",
-				exportConfig.getTunnelStyles(),
+				() -> config.getKmlExportConfig().getTunnelStyles(),
 				true, true, true, true,
 				config)));
 		renderingNode.addChildEntry(new DefaultPreferencesEntry(new SurfaceStylingPanel(
 				"pref.tree.kmlExport.vegetation.styling",
-				exportConfig.getVegetationStyles(),
+				() -> config.getKmlExportConfig().getVegetationStyles(),
 				config)));
 		renderingNode.addChildEntry(new DefaultPreferencesEntry(new SurfaceStylingPanel(
 				"pref.tree.kmlExport.waterBody.styling",
-				exportConfig.getWaterBodyStyles(),
+				() -> config.getKmlExportConfig().getWaterBodyStyles(),
 				config)));
 
 		DefaultPreferencesEntry balloonNode = new BalloonPanel();
@@ -130,12 +126,10 @@ public class KMLExportPreferences extends AbstractPreferences {
 
 				for (AppSchema schema : adeExtension.getSchemas()) {
 					for (FeatureType adeTopLevelFeatureType : schema.listTopLevelFeatureTypes(true)) {
-						ADEPreference preference = ADEKmlExportExtensionManager.getInstance().getPreference(config, adeTopLevelFeatureType);
-
 						DefaultPreferencesEntry adeFeatureRenderingNode = new ADEPanel(adeTopLevelFeatureType.toString());
 						adeFeatureRenderingNode.addChildEntry(new DefaultPreferencesEntry(new SurfaceStylingPanel(
 								"pref.tree.kmlExport.surfaceAndSolid.styling",
-								preference.getStyles(),
+								() -> ADEKmlExportExtensionManager.getInstance().getPreference(config, adeTopLevelFeatureType).getStyles(),
 								config)));
 
 						adeFeatureRenderingNode.addChildEntry(new DefaultPreferencesEntry(new ADEPointAndCurveStylingPanel(config, adeTopLevelFeatureType)));
