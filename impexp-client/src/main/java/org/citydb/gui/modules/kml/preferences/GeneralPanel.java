@@ -71,7 +71,7 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 	private JComboBox<String> packingAlgorithmsComboBox;
 	private JCheckBox textureAtlasPotsCheckbox;
 	private JCheckBox scaleTexImagesCheckbox;
-	private JFormattedTextField scaleFactorText;
+	private JSpinner scaleFactorSpinner;
 	private JCheckBox groupObjectsCheckbox;
 	private JFormattedTextField groupSizeText;
 
@@ -101,7 +101,6 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		KmlExportConfig kmlExportConfig = config.getKmlExportConfig();
 
 		try { autoTileSideLengthText.commitEdit(); } catch (ParseException e) {}
-		try { scaleFactorText.commitEdit(); } catch (ParseException ignored) { }
 		try { groupSizeText.commitEdit(); } catch (ParseException ignored) { }
 
 		if (kmzCheckbox.isSelected() != kmlExportConfig.isExportAsKmz()) return true;
@@ -121,7 +120,7 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		if (groupObjectsCheckbox.isSelected() != colladaOptions.isGroupObjects()) return true;
 		if (((Number) groupSizeText.getValue()).intValue() != colladaOptions.getGroupSize()) return true;
 		if (scaleTexImagesCheckbox.isSelected() != colladaOptions.isScaleImages()) return true;
-		if (((Number) scaleFactorText.getValue()).doubleValue() != colladaOptions.getImageScaleFactor()) return true;
+		if (((Number) scaleFactorSpinner.getValue()).doubleValue() != colladaOptions.getImageScaleFactor()) return true;
 
 		if (createGltfCheckbox.isSelected() != kmlExportConfig.isCreateGltfModel()) return true;
 		if (!gltfConverterBrowseText.getText().equals(kmlExportConfig.getPathOfGltfConverter())) return true;
@@ -173,11 +172,12 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		autoTileSideLengthText = new JFormattedTextField(tileSizeFormat);
 		autoTileSideLengthText.setColumns(5);
 
-		DecimalFormat scaleFormat = new DecimalFormat("#.###", DecimalFormatSymbols.getInstance(Locale.ENGLISH));
-		scaleFormat.setMaximumIntegerDigits(1);
-		scaleFormat.setMaximumFractionDigits(3);
-		scaleFactorText = new JFormattedTextField(scaleFormat);
-		scaleFactorText.setColumns(5);
+		SpinnerModel scaleFactor = new SpinnerNumberModel(1, 0.01, 1.0, 0.1);
+		scaleFactorSpinner = new JSpinner(scaleFactor);
+		JSpinner.NumberEditor editor = new JSpinner.NumberEditor(scaleFactorSpinner, "#.###");
+		DecimalFormat format = editor.getFormat();
+		format.setDecimalFormatSymbols(DecimalFormatSymbols.getInstance(Locale.ENGLISH));
+		scaleFactorSpinner.setEditor(editor);
 
 		DecimalFormat groupSizeFormat = new DecimalFormat("#");
 		groupSizeFormat.setMaximumIntegerDigits(8);
@@ -223,8 +223,7 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 				JPanel scaleTextures = new JPanel();
 				scaleTextures.setLayout(new GridBagLayout());
 				scaleTextures.add(scaleTexImagesCheckbox, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 5));
-				scaleTextures.add(scaleFactorText, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.NONE, 0, 5, 0, 5));
-				scaleTextures.add(new JLabel("(0.0-1.0)"), GuiUtil.setConstraints(2, 0, 1, 0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, 0, 0, 0, 0));
+				scaleTextures.add(scaleFactorSpinner, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.WEST, GridBagConstraints.NONE, 0, 5, 0, 5));
 
 				JPanel groupSize = new JPanel();
 				groupSize.setLayout(new GridBagLayout());
@@ -288,13 +287,6 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 			}
 		});
 
-		scaleFactorText.addPropertyChangeListener(evt -> {
-			if (scaleFactorText.getValue() == null
-					|| ((Number) scaleFactorText.getValue()).doubleValue() <= 0
-					|| ((Number) scaleFactorText.getValue()).doubleValue() > 1)
-				scaleFactorText.setValue(1);
-		});
-
 		groupSizeText.addPropertyChangeListener(evt -> {
 			if (groupSizeText.getValue() == null
 					|| ((Number) groupSizeText.getValue()).intValue() < 2)
@@ -306,7 +298,7 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 			textureAtlasPotsCheckbox.setEnabled(textureAtlasCheckbox.isSelected());
 		});
 
-		scaleTexImagesCheckbox.addActionListener(e -> scaleFactorText.setEnabled(scaleTexImagesCheckbox.isSelected()));
+		scaleTexImagesCheckbox.addActionListener(e -> scaleFactorSpinner.setEnabled(scaleTexImagesCheckbox.isSelected()));
 		groupObjectsCheckbox.addActionListener(e -> groupSizeText.setEnabled(groupObjectsCheckbox.isSelected()));
 	}
 
@@ -391,7 +383,7 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		}
 
 		scaleTexImagesCheckbox.setSelected(colladaOptions.isScaleImages());
-		scaleFactorText.setValue(colladaOptions.getImageScaleFactor());
+		scaleFactorSpinner.setValue(colladaOptions.getImageScaleFactor());
 		groupObjectsCheckbox.setSelected(colladaOptions.isGroupObjects());
 		groupSizeText.setValue(colladaOptions.getGroupSize());
 
@@ -426,7 +418,7 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		colladaOptions.setTextureAtlasPots(textureAtlasPotsCheckbox.isSelected());
 		colladaOptions.setPackingAlgorithm(packingAlgorithms.get(packingAlgorithmsComboBox.getSelectedItem()).intValue());
 		colladaOptions.setScaleImages(scaleTexImagesCheckbox.isSelected());
-		colladaOptions.setImageScaleFactor(((Number) scaleFactorText.getValue()).doubleValue());
+		colladaOptions.setImageScaleFactor(((Number) scaleFactorSpinner.getValue()).doubleValue());
 		colladaOptions.setGroupObjects(groupObjectsCheckbox.isSelected());
 		colladaOptions.setGroupSize(((Number) groupSizeText.getValue()).intValue());
 
@@ -446,7 +438,7 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 	}
 
 	private void setEnabledColladaComponents() {
-		scaleFactorText.setEnabled(scaleTexImagesCheckbox.isSelected());
+		scaleFactorSpinner.setEnabled(scaleTexImagesCheckbox.isSelected());
 		packingAlgorithmsComboBox.setEnabled(textureAtlasCheckbox.isSelected());
 		textureAtlasPotsCheckbox.setEnabled(textureAtlasCheckbox.isSelected());
 		groupSizeText.setEnabled(groupObjectsCheckbox.isSelected());
