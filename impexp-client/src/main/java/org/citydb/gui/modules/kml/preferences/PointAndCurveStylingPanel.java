@@ -134,25 +134,20 @@ public class PointAndCurveStylingPanel extends AbstractPreferencesComponent {
 		if (pacSettings.getPointThickness() != (Double) pointCrossLineThicknessSpinner.getValue()) return true;
 		if (pacSettings.getPointNormalColor() != pointCrossLineNormalColorButton.getBackground().getRGB()) return true;
 		if (pacSettings.isPointHighlightingEnabled() != pointCrossLineHighlightingCheckbox.isSelected()) return true;
-		if (pacSettings.getPointHighlightedThickness() != (Double) pointCrossLineHighlightingThicknessSpinner.getValue())
-			return true;
-		if (pacSettings.getPointHighlightedColor() != pointCrossLineHighlightingColorButton.getBackground().getRGB())
-			return true;
+		if (pacSettings.getPointHighlightedThickness() != (Double) pointCrossLineHighlightingThicknessSpinner.getValue()) return true;
+		if (pacSettings.getPointHighlightedColor() != pointCrossLineHighlightingColorButton.getBackground().getRGB()) return true;
 		if (pacSettings.getPointIconColor() != pointIconColorButton.getBackground().getRGB()) return true;
 		if (pacSettings.getPointIconScale() != (Double) pointIconScaleSpinner.getValue()) return true;
 		if (pacSettings.getPointCubeLengthOfSide() != (Double) pointCubeLengthOfSideSpinner.getValue()) return true;
 		if (pacSettings.getPointCubeFillColor() != pointCubeFillColorButton.getBackground().getRGB()) return true;
 		if (pacSettings.isPointCubeHighlightingEnabled() != pointCubeHighlightingCheckbox.isSelected()) return true;
-		if (pacSettings.getPointCubeHighlightedColor() != pointCubeHighlightingColorButton.getBackground().getRGB())
-			return true;
+		if (pacSettings.getPointCubeHighlightedColor() != pointCubeHighlightingColorButton.getBackground().getRGB()) return true;
 		if (!pacSettings.getCurveAltitudeMode().equals(curveAltitudeModeComboBox.getSelectedItem())) return true;
 		if (pacSettings.getCurveThickness() != (Double) curveThicknessSpinner.getValue()) return true;
 		if (pacSettings.getCurveNormalColor() != curveNormalColorButton.getBackground().getRGB()) return true;
 		if (pacSettings.isCurveHighlightingEnabled() != curveHighlightingCheckbox.isSelected()) return true;
-		if (pacSettings.getCurveHighlightedThickness() != (Double) curveHighlightingThicknessSpinner.getValue())
-			return true;
-		if (pacSettings.getCurveHighlightedColor() != curveHighlightingColorButton.getBackground().getRGB())
-			return true;
+		if (pacSettings.getCurveHighlightedThickness() != (Double) curveHighlightingThicknessSpinner.getValue()) return true;
+		if (pacSettings.getCurveHighlightedColor() != curveHighlightingColorButton.getBackground().getRGB()) return true;
 		return false;
 	}
 

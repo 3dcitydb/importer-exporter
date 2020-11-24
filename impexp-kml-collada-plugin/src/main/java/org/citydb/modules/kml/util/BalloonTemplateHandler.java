@@ -3064,17 +3064,15 @@ public class BalloonTemplateHandler {
 						" AND sd.id = a2sd.surface_data_id" +
 						" AND ti.id = sd.tex_image_id";
 			}
-			else {
-				if (checkADEHooks) {
-					String columnsClause = getColumnsClause(table, columns);
-					ADEBalloonManager balloonManager = ADEBalloonExtensionManager.getInstance().getBalloonManager(table);
-					ADEBalloonHandler adeBalloonHandler = balloonManager.getBalloonHandler(objectClassId);
-					if (adeBalloonHandler != null) {
-						String aggregateColumnsClause = aggregateString + columnsClause + aggregateClosingString;
-						sqlStatement = adeBalloonHandler.getSqlStatement(table, tableShortId, aggregateColumnsClause, lod, schemaName);
-						if (sqlStatement != null)
-							return sqlStatement;
-					}
+			else if (checkADEHooks && !_3DCITYDB_TABLES_AND_COLUMNS.containsKey(table)) {
+				String columnsClause = getColumnsClause(table, columns);
+				ADEBalloonManager balloonManager = ADEBalloonExtensionManager.getInstance().getBalloonManager(table);
+				ADEBalloonHandler adeBalloonHandler = balloonManager.getBalloonHandler(objectClassId);
+				if (adeBalloonHandler != null) {
+					String aggregateColumnsClause = aggregateString + columnsClause + aggregateClosingString;
+					sqlStatement = adeBalloonHandler.getSqlStatement(table, tableShortId, aggregateColumnsClause, lod, schemaName);
+					if (sqlStatement != null)
+						return sqlStatement;
 				}
 			}
 

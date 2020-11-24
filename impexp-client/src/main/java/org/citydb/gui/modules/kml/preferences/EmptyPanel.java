@@ -27,20 +27,21 @@
  */
 package org.citydb.gui.modules.kml.preferences;
 
-import org.citydb.config.i18n.Language;
 import org.citydb.gui.modules.common.DefaultPreferencesEntry;
 import org.citydb.gui.modules.common.NullComponent;
 
-public class EmptyPanel extends DefaultPreferencesEntry {
-	private  String i18nTitle;
+import java.util.function.Supplier;
 
-	public EmptyPanel(String i18nTitle) {
+public class EmptyPanel extends DefaultPreferencesEntry {
+	private final Supplier<String> stringSupplier;
+
+	public EmptyPanel(Supplier<String> stringSupplier) {
 		super(NullComponent.getInstance());
-		this.i18nTitle = i18nTitle;
+		this.stringSupplier = stringSupplier;
 	}
 
 	@Override
 	public String getLocalizedTitle() {
-		return Language.I18N.getString(i18nTitle);
+		return stringSupplier.get();
 	}
 }

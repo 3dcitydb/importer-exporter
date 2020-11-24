@@ -32,6 +32,7 @@ import org.citydb.ade.ADEExtensionManager;
 import org.citydb.ade.kmlExporter.ADEKmlExportExtension;
 import org.citydb.ade.kmlExporter.ADEKmlExportExtensionManager;
 import org.citydb.config.Config;
+import org.citydb.config.i18n.Language;
 import org.citydb.database.schema.mapping.AppSchema;
 import org.citydb.database.schema.mapping.FeatureType;
 import org.citydb.gui.modules.common.AbstractPreferences;
@@ -61,7 +62,7 @@ public class KMLExportPreferences extends AbstractPreferences {
 				() -> config.getKmlExportConfig().getReliefStyles(),
 				true, false, false, false, config)));
 		DefaultPreferencesEntry genericCityObjectRenderingNode = new EmptyPanel(
-				"pref.tree.kmlExport.genericCityObject.styling");
+				() -> Language.I18N.getString("pref.tree.kmlExport.genericCityObject.styling"));
 		genericCityObjectRenderingNode.addChildEntry(new DefaultPreferencesEntry(new SurfaceStylingPanel(
 				"pref.tree.kmlExport.surfaceAndSolid.styling",
 				() -> config.getKmlExportConfig().getGenericCityObjectStyles(),
@@ -97,20 +98,52 @@ public class KMLExportPreferences extends AbstractPreferences {
 				config)));
 
 		DefaultPreferencesEntry balloonNode = new BalloonPanel();
-		balloonNode.addChildEntry(new DefaultPreferencesEntry(new BuildingBalloonPanel(config)));
-		balloonNode.addChildEntry(new DefaultPreferencesEntry(new WaterBodyBalloonPanel(config)));
-		balloonNode.addChildEntry(new DefaultPreferencesEntry(new LandUseBalloonPanel(config)));
-		balloonNode.addChildEntry(new DefaultPreferencesEntry(new VegetationBalloonPanel(config)));
-		balloonNode.addChildEntry(new DefaultPreferencesEntry(new TransportationBalloonPanel(config)));
-		balloonNode.addChildEntry(new DefaultPreferencesEntry(new ReliefBalloonPanel(config)));
-		balloonNode.addChildEntry(new DefaultPreferencesEntry(new CityFurnitureBalloonPanel(config)));
-		DefaultPreferencesEntry genericCityObjectBalloonNode = new GenericCityObjectBalloonPanel();
-		genericCityObjectBalloonNode.addChildEntry(new DefaultPreferencesEntry(new ThreeDBalloonPanel(config)));
-		genericCityObjectBalloonNode.addChildEntry(new DefaultPreferencesEntry(new PointAndCurveBalloonPanel(config)));
-		balloonNode.addChildEntry(genericCityObjectBalloonNode);				
-		balloonNode.addChildEntry(new DefaultPreferencesEntry(new CityObjectGroupBalloonPanel(config)));
-		balloonNode.addChildEntry(new DefaultPreferencesEntry(new BridgeBalloonPanel(config)));
-		balloonNode.addChildEntry(new DefaultPreferencesEntry(new TunnelBalloonPanel(config)));
+		balloonNode.addChildEntry(new DefaultPreferencesEntry(new BalloonContentPanel(
+				() -> Language.I18N.getString("pref.tree.kmlExport.bridge.balloon"),
+				() -> config.getKmlExportConfig().getBridgeBalloon(),
+				config)));
+		balloonNode.addChildEntry(new DefaultPreferencesEntry(new BalloonContentPanel(
+				() -> Language.I18N.getString("pref.tree.kmlExport.building.balloon"),
+				() -> config.getKmlExportConfig().getBuildingBalloon(),
+				config)));
+		balloonNode.addChildEntry(new DefaultPreferencesEntry(new BalloonContentPanel(
+				() -> Language.I18N.getString("pref.tree.kmlExport.cityFurniture.balloon"),
+				() -> config.getKmlExportConfig().getCityFurnitureBalloon(),
+				config)));
+		balloonNode.addChildEntry(new DefaultPreferencesEntry(new BalloonContentPanel(
+				() -> Language.I18N.getString("pref.tree.kmlExport.cityObjectGroup.balloon"),
+				() -> config.getKmlExportConfig().getCityObjectGroupBalloon(),
+				config)));
+		balloonNode.addChildEntry(new DefaultPreferencesEntry(new BalloonContentPanel(
+				() -> Language.I18N.getString("pref.tree.kmlExport.genericCityObject.balloon"),
+				() -> config.getKmlExportConfig().getGenericCityObject3DBalloon(),
+				() -> config.getKmlExportConfig().getGenericCityObjectPointAndCurve().getPointBalloon(),
+				() -> config.getKmlExportConfig().getGenericCityObjectPointAndCurve().getCurveBalloon(),
+				config)));
+		balloonNode.addChildEntry(new DefaultPreferencesEntry(new BalloonContentPanel(
+				() -> Language.I18N.getString("pref.tree.kmlExport.landUse.balloon"),
+				() -> config.getKmlExportConfig().getLandUseBalloon(),
+				config)));
+		balloonNode.addChildEntry(new DefaultPreferencesEntry(new BalloonContentPanel(
+				() -> Language.I18N.getString("pref.tree.kmlExport.relief.balloon"),
+				() -> config.getKmlExportConfig().getReliefBalloon(),
+				config)));
+		balloonNode.addChildEntry(new DefaultPreferencesEntry(new BalloonContentPanel(
+				() -> Language.I18N.getString("pref.tree.kmlExport.transportation.balloon"),
+				() -> config.getKmlExportConfig().getTransportationBalloon(),
+				config)));
+		balloonNode.addChildEntry(new DefaultPreferencesEntry(new BalloonContentPanel(
+				() -> Language.I18N.getString("pref.tree.kmlExport.tunnel.balloon"),
+				() -> config.getKmlExportConfig().getTunnelBalloon(),
+				config)));
+		balloonNode.addChildEntry(new DefaultPreferencesEntry(new BalloonContentPanel(
+				() -> Language.I18N.getString("pref.tree.kmlExport.vegetation.balloon"),
+				() -> config.getKmlExportConfig().getVegetationBalloon(),
+				config)));
+		balloonNode.addChildEntry(new DefaultPreferencesEntry(new BalloonContentPanel(
+				() -> Language.I18N.getString("pref.tree.kmlExport.waterBody.balloon"),
+				() -> config.getKmlExportConfig().getWaterBodyBalloon(),
+				config)));
 
 		// ADEs
 		List<ADEExtension> adeExtensions = ADEExtensionManager.getInstance().getExtensions().stream()
@@ -118,38 +151,36 @@ public class KMLExportPreferences extends AbstractPreferences {
 				.collect(Collectors.toList());
 		
 		if (!adeExtensions.isEmpty()) {
-			DefaultPreferencesEntry adeRenderingRootNode = new ADEPanel("ADEs");
-			DefaultPreferencesEntry adeBalloonRootNode = new ADEPanel("ADEs");
+			ADEKmlExportExtensionManager adeManager = ADEKmlExportExtensionManager.getInstance();
 
 			for (ADEExtension adeExtension : adeExtensions) {
-				String name = adeExtension.getMetadata().getName();
-				DefaultPreferencesEntry adeRenderingNode = new ADEPanel(name);
-				DefaultPreferencesEntry adeBalloonNode = new ADEPanel(name);
+				DefaultPreferencesEntry adeRenderingNode = new EmptyPanel(adeExtension.getMetadata()::getName);
+				DefaultPreferencesEntry adeBalloonNode = new EmptyPanel(adeExtension.getMetadata()::getName);
 
 				for (AppSchema schema : adeExtension.getSchemas()) {
 					for (FeatureType adeTopLevelFeatureType : schema.listTopLevelFeatureTypes(true)) {
-						DefaultPreferencesEntry adeFeatureRenderingNode = new ADEPanel(adeTopLevelFeatureType.toString());
+						DefaultPreferencesEntry adeFeatureRenderingNode = new EmptyPanel(adeTopLevelFeatureType::toString);
 
 						adeFeatureRenderingNode.addChildEntry(new DefaultPreferencesEntry(new SurfaceStylingPanel(
 								"pref.tree.kmlExport.surfaceAndSolid.styling",
-								() -> ADEKmlExportExtensionManager.getInstance().getPreference(config, adeTopLevelFeatureType).getStyles(),
+								() -> adeManager.getPreference(config, adeTopLevelFeatureType).getStyles(),
 								config)));
 
 						adeFeatureRenderingNode.addChildEntry(new DefaultPreferencesEntry(new PointAndCurveStylingPanel(
-								() -> ADEKmlExportExtensionManager.getInstance().getPreference(config, adeTopLevelFeatureType).getPointAndCurve(),
+								() -> adeManager.getPreference(config, adeTopLevelFeatureType).getPointAndCurve(),
 								config)));
 
 						adeRenderingNode.addChildEntry(adeFeatureRenderingNode);
-						adeBalloonNode.addChildEntry(new DefaultPreferencesEntry(new ADEDBalloonPanel(config, adeTopLevelFeatureType)));
+						adeBalloonNode.addChildEntry(new DefaultPreferencesEntry(new BalloonContentPanel(
+								() -> adeManager.getPreference(config, adeTopLevelFeatureType).getTarget(),
+								() -> adeManager.getPreference(config, adeTopLevelFeatureType).getBalloon(),
+								config)));
 					}
 				}
 
-				adeRenderingRootNode.addChildEntry(adeRenderingNode);
-				adeBalloonRootNode.addChildEntry(adeBalloonNode);
+				renderingNode.addChildEntry(adeRenderingNode);
+				balloonNode.addChildEntry(adeBalloonNode);
 			}
-
-			renderingNode.addChildEntry(adeRenderingRootNode);
-			balloonNode.addChildEntry(adeBalloonRootNode);
 		}
 
 		root.addChildEntry(new DefaultPreferencesEntry(new GeneralPanel(config)));
@@ -157,5 +188,4 @@ public class KMLExportPreferences extends AbstractPreferences {
 		root.addChildEntry(balloonNode);
 		root.addChildEntry(new DefaultPreferencesEntry(new AltitudePanel(config)));
 	}
-
 }
