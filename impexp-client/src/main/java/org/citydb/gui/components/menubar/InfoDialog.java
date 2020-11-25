@@ -137,7 +137,7 @@ public class InfoDialog extends JDialog {
 		logos.setLayout(new GridBagLayout());
 		{
 			String tum = config.getGlobalConfig().getLanguage() == LanguageType.EN ?
-					"Chair of Geoinformatics,<br/>nTechnical University of Munich" :
+					"Chair of Geoinformatics,<br/>Technical University of Munich" :
 					"Lehrstuhl für Geoinformatik,<br/>Technische Universität München";
 
 			JLabel tumLogo = new JLabel(new ImageIcon(getClass().getResource("/org/citydb/gui/images/partner/tum_logo.png")));
