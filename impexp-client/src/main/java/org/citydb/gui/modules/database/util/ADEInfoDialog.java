@@ -90,8 +90,10 @@ public class ADEInfoDialog extends JDialog {
             JLabel nameLabel = new JLabel(Language.I18N.getString("db.dialog.ade.label.name"));
             JLabel versionLabel = new JLabel(Language.I18N.getString("db.dialog.ade.label.version"));
             JLabel descriptionLabel = new JLabel(Language.I18N.getString("db.dialog.ade.label.description"));
-            JScrollPane descriptionPane = new JScrollPane(descriptionText);
             JLabel idLabel = new JLabel(Language.I18N.getString("db.dialog.ade.label.identifier"));
+
+            JScrollPane descriptionPane = new JScrollPane(descriptionText);
+            descriptionPane.setMinimumSize(descriptionPane.getPreferredSize());
 
             JLabel cityGMLLabel = new JLabel("CityGML");
             JPanel cityGMLPanel = new JPanel();
@@ -154,6 +156,7 @@ public class ADEInfoDialog extends JDialog {
             // Top-level feature types
             JLabel featureTyesLabel = new JLabel(Language.I18N.getString("db.dialog.ade.label.feature.types"));
             JScrollPane featureTypesPane = new JScrollPane(featureTypesText);
+            featureTypesPane.setMinimumSize(featureTypesPane.getPreferredSize());
 
             JPanel content = new JPanel();
             content.setLayout(new GridBagLayout());
@@ -190,7 +193,6 @@ public class ADEInfoDialog extends JDialog {
         }
         {
             // XML schema information
-            JLabel xmlLabel = new JLabel(Language.I18N.getString("db.dialog.ade.label.xml.namespaces"));
             JPanel xmlPanel = new JPanel();
             xmlPanel.setLayout(new GridBagLayout());
             {
@@ -216,9 +218,10 @@ public class ADEInfoDialog extends JDialog {
                         JLabel prefixLabel = new JLabel(Language.I18N.getString("db.dialog.ade.label.xml.prefix"));
 
                         int bottom = i != max ? 5 : 0;
-                        xmlPanel.add(uriText, GuiUtil.setConstraints(0, i, 1, 0, GridBagConstraints.HORIZONTAL, 0, 0, bottom, 5));
-                        xmlPanel.add(prefixLabel, GuiUtil.setConstraints(1, i, 0, 0, GridBagConstraints.HORIZONTAL, 0, 10, bottom, 5));
-                        xmlPanel.add(prefixText, GuiUtil.setConstraints(2, i++, 0, 0, GridBagConstraints.HORIZONTAL, 0, 5, bottom, 0));
+                        xmlPanel.add(new JLabel("URI"), GuiUtil.setConstraints(0, i, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, bottom, 5));
+                        xmlPanel.add(uriText, GuiUtil.setConstraints(1, i, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, bottom, 5));
+                        xmlPanel.add(prefixLabel, GuiUtil.setConstraints(2, i, 0, 0, GridBagConstraints.HORIZONTAL, 0, 10, bottom, 5));
+                        xmlPanel.add(prefixText, GuiUtil.setConstraints(3, i++, 0, 0, GridBagConstraints.HORIZONTAL, 0, 5, bottom, 0));
 
                         PopupMenuDecorator.getInstance().decorate(uriText, prefixText);
                     }
@@ -228,12 +231,11 @@ public class ADEInfoDialog extends JDialog {
             JPanel content = new JPanel();
             content.setLayout(new GridBagLayout());
             {
-                content.add(xmlLabel, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, 0, 0, 0, 5));
-                content.add(xmlPanel, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 0));
+                content.add(xmlPanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
             }
 
             TitledPanel schemaPanel = new TitledPanel()
-                    .withTitle(Language.I18N.getString("db.dialog.ade.label.xml.schema"))
+                    .withTitle(Language.I18N.getString("db.dialog.ade.label.xml.namespaces"))
                     .build(content);
 
             main.add(schemaPanel, GuiUtil.setConstraints(0, 3, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
@@ -245,7 +247,7 @@ public class ADEInfoDialog extends JDialog {
         JPanel info = new JPanel();
         info.setLayout(new GridBagLayout());
         {
-            info.add(main, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 15, 10, 0, 10));
+            info.add(main, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 10, 10, 0, 10));
             info.add(Box.createVerticalGlue(), GuiUtil.setConstraints(0, 1, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
             info.add(closeButton, GuiUtil.setConstraints(0, 2, 1, 0, GridBagConstraints.EAST, GridBagConstraints.NONE, 0, 10, 10, 10));
         }
@@ -263,8 +265,6 @@ public class ADEInfoDialog extends JDialog {
         PopupMenuDecorator.getInstance().decorate(nameText, versionText, descriptionText, idText,
                 featureTypesText, dbPrefixText, objectClassIdText);
 
-        setMinimumSize(new Dimension(500, 450));
-        setResizable(true);
         pack();
     }
 
