@@ -766,12 +766,12 @@ public class MapWindow extends JDialog implements EventHandler {
 				} catch (InterruptedException | ExecutionException e) {
 					if (e.getCause() instanceof GeocodingServiceException) {
 						GeocodingServiceException exception = (GeocodingServiceException) e.getCause();
-						searchResult.setText("The geocoder failed due to an error. Check the console log.");
+						searchResult.setText(Language.I18N.getString("map.error.geocoder.lookup"));
 						log.error("The geocoder failed due to an error.");
 						for (String message : exception.getMessages())
 							log.error("Cause: " + message);
 					} else {
-						log.error("An error occured while calling the geocoding service.");
+						log.error("An error occurred while calling the geocoding service.");
 						log.error("Caused by: " + e.getMessage());
 					}
 				} finally {
