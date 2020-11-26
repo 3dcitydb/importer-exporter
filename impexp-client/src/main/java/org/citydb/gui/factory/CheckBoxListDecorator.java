@@ -62,7 +62,7 @@ public class CheckBoxListDecorator<T> extends MouseAdapter implements ListSelect
 
 		list.setCellRenderer(new CheckBoxListCellRenderer<T>());
 		list.addMouseListener(this); 
-		list.addPropertyChangeListener(this);
+		list.addPropertyChangeListener("enabled", this);
 		list.registerKeyboardAction(this, KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0), JComponent.WHEN_FOCUSED); 
 
 		checkBoxSelectionModel = new DefaultListSelectionModel();
@@ -121,8 +121,7 @@ public class CheckBoxListDecorator<T> extends MouseAdapter implements ListSelect
 
 	@Override
 	public void propertyChange(PropertyChangeEvent evt) {
-		if ("enabled".equals(evt.getPropertyName()))
-			list.repaint();
+		list.repaint();
 	}
 
 	@Override

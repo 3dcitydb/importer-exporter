@@ -192,16 +192,6 @@ public class FilterPanel extends JPanel {
 		useBBoxFilter.addActionListener(e -> setEnabledBBoxFilter());
 		useFeatureFilter.addActionListener(e -> setEnabledFeatureFilter());
 
-		countText.addPropertyChangeListener(e -> {
-			if (countText.getValue() != null && ((Number) countText.getValue()).longValue() < 0)
-				countText.setValue(null);
-		});
-
-		startIndexText.addPropertyChangeListener(e -> {
-			if (startIndexText.getValue() != null && ((Number) startIndexText.getValue()).longValue() < 0)
-				startIndexText.setValue(null);
-		});
-		
 		PopupMenuDecorator.getInstance().decorate(featureTree);
 		PopupMenuDecorator.getInstance().decorate(gmlNameText, gmlIdText, countText, startIndexText);
 	}

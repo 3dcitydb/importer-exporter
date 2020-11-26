@@ -453,34 +453,32 @@ public class MapWindow extends JDialog implements EventHandler {
 		});
 
 		PropertyChangeListener valueChangedListener = evt -> {
-			if (evt.getPropertyName().equals("value")) {
-				if (evt.getOldValue() instanceof Number && evt.getNewValue() instanceof Number) {
-					String oldValue = LAT_LON_FORMATTER.format(((Number)evt.getOldValue()).doubleValue());
-					String newValue = LAT_LON_FORMATTER.format(((Number)evt.getNewValue()).doubleValue());
-					if (oldValue.equals(newValue))
-						return;
-				}
+			if (evt.getOldValue() instanceof Number && evt.getNewValue() instanceof Number) {
+				String oldValue = LAT_LON_FORMATTER.format(((Number) evt.getOldValue()).doubleValue());
+				String newValue = LAT_LON_FORMATTER.format(((Number) evt.getNewValue()).doubleValue());
+				if (oldValue.equals(newValue))
+					return;
+			}
 
-				try {
-					minX.commitEdit();
-					minY.commitEdit();
-					maxX.commitEdit();
-					maxY.commitEdit();
+			try {
+				minX.commitEdit();
+				minY.commitEdit();
+				maxX.commitEdit();
+				maxY.commitEdit();
 
-					GeoPosition southWest = new GeoPosition(((Number)minY.getValue()).doubleValue(), ((Number)minX.getValue()).doubleValue());
-					GeoPosition northEast = new GeoPosition(((Number)maxY.getValue()).doubleValue(), ((Number)maxX.getValue()).doubleValue());
+				GeoPosition southWest = new GeoPosition(((Number) minY.getValue()).doubleValue(), ((Number) minX.getValue()).doubleValue());
+				GeoPosition northEast = new GeoPosition(((Number) maxY.getValue()).doubleValue(), ((Number) maxX.getValue()).doubleValue());
 
-					setEnabledApplyBoundingBox(map.getSelectionPainter().isVisibleOnScreen(southWest, northEast));
-				} catch (ParseException e) {
-					//
-				}
+				setEnabledApplyBoundingBox(map.getSelectionPainter().isVisibleOnScreen(southWest, northEast));
+			} catch (ParseException e) {
+				//
 			}
 		};
 
-		minX.addPropertyChangeListener(valueChangedListener);
-		minY.addPropertyChangeListener(valueChangedListener);
-		maxX.addPropertyChangeListener(valueChangedListener);
-		maxY.addPropertyChangeListener(valueChangedListener);
+		minX.addPropertyChangeListener("value", valueChangedListener);
+		minY.addPropertyChangeListener("value", valueChangedListener);
+		maxX.addPropertyChangeListener("value", valueChangedListener);
+		maxY.addPropertyChangeListener("value", valueChangedListener);
 
 		bbox.addMouseListener(new MouseAdapter() {
 			public void mousePressed(MouseEvent e) {

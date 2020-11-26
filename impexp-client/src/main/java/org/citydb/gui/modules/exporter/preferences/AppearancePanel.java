@@ -143,7 +143,7 @@ public class AppearancePanel extends AbstractPreferencesComponent {
 		exportAppearances.addActionListener(e -> setEnabledTextureExport());
 		useBuckets.addActionListener(e -> noOfBuckets.setEnabled(useBuckets.isSelected()));
 
-		noOfBuckets.addPropertyChangeListener(evt -> {
+		noOfBuckets.addPropertyChangeListener("value", evt -> {
 			if (noOfBuckets.getValue() == null || ((Number) noOfBuckets.getValue()).intValue() < 0)
 				noOfBuckets.setValue(0);
 		});

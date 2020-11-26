@@ -222,29 +222,33 @@ public class ResourcesPanel extends AbstractPreferencesComponent{
 		add(batchPanel, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 		add(idCachePanel, GuiUtil.setConstraints(0, 2, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 
-		expResMinThreadsText.addPropertyChangeListener(evt -> checkPositive(expResMinThreadsText, 1));
-		expResMaxThreadsText.addPropertyChangeListener(evt -> checkPositive(expResMaxThreadsText, 1));
-		expResFeatBatchText.addPropertyChangeListener(evt -> checkPositive(expResFeatBatchText, ExportBatching.DEFAULT_BATCH_SIZE));
-		expResGeomBatchText.addPropertyChangeListener(evt -> checkPositive(expResGeomBatchText, ExportBatching.DEFAULT_BATCH_SIZE));
-		expResBlobBatchText.addPropertyChangeListener(evt -> checkPositive(expResBlobBatchText, ExportBatching.DEFAULT_BATCH_SIZE));
-		expResGeomCacheText.addPropertyChangeListener(evt -> checkPositive(expResGeomCacheText, 200000));
-		expResFeatCacheText.addPropertyChangeListener(evt -> checkPositive(expResFeatCacheText, 200000));
-		expResGeomDrainText.addPropertyChangeListener(evt -> checkPositiveRange(expResGeomDrainText, 85, 100));
-		expResFeatDrainText.addPropertyChangeListener(evt -> checkPositiveRange(expResFeatDrainText, 85, 100));
-		expResGeomPartText.addPropertyChangeListener(evt -> checkPositiveRange(expResGeomPartText, 10, 100));
-		expResFeatPartText.addPropertyChangeListener(evt -> checkPositiveRange(expResFeatPartText, 10, 100));
+		expResMinThreadsText.addPropertyChangeListener("value", evt -> checkPositive(expResMinThreadsText, 1));
+		expResMaxThreadsText.addPropertyChangeListener("value", evt -> checkPositive(expResMaxThreadsText, 1));
+		expResFeatBatchText.addPropertyChangeListener("value", evt -> checkPositive(expResFeatBatchText, ExportBatching.DEFAULT_BATCH_SIZE));
+		expResGeomBatchText.addPropertyChangeListener("value", evt -> checkPositive(expResGeomBatchText, ExportBatching.DEFAULT_BATCH_SIZE));
+		expResBlobBatchText.addPropertyChangeListener("value", evt -> checkPositive(expResBlobBatchText, ExportBatching.DEFAULT_BATCH_SIZE));
+		expResGeomCacheText.addPropertyChangeListener("value", evt -> checkPositive(expResGeomCacheText, 200000));
+		expResFeatCacheText.addPropertyChangeListener("value", evt -> checkPositive(expResFeatCacheText, 200000));
+		expResGeomDrainText.addPropertyChangeListener("value", evt -> checkPositiveRange(expResGeomDrainText, 85, 100));
+		expResFeatDrainText.addPropertyChangeListener("value", evt -> checkPositiveRange(expResFeatDrainText, 85, 100));
+		expResGeomPartText.addPropertyChangeListener("value", evt -> checkPositiveRange(expResGeomPartText, 10, 100));
+		expResFeatPartText.addPropertyChangeListener("value", evt -> checkPositiveRange(expResFeatPartText, 10, 100));
 	}
 
 	private void checkPositive(JFormattedTextField field, int defaultValue) {
-		if (((Number)field.getValue()).intValue() <= 0)
+		if (field.getValue() == null || ((Number) field.getValue()).intValue() <= 0)
 			field.setValue(defaultValue);
 	}
 	
 	private void checkPositiveRange(JFormattedTextField field, int min, int max) {
-		if (((Number)field.getValue()).intValue() <= 0)
+		if (field.getValue() != null) {
+			if (((Number) field.getValue()).intValue() <= 0)
+				field.setValue(min);
+			else if (((Number) field.getValue()).intValue() > 100)
+				field.setValue(max);
+		} else {
 			field.setValue(min);
-		else if (((Number)field.getValue()).intValue() > 100)
-			field.setValue(max);
+		}
 	}
 
 	@Override

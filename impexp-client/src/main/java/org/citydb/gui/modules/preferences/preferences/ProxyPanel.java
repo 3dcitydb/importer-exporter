@@ -192,7 +192,7 @@ public class ProxyPanel extends AbstractPreferencesComponent implements EventHan
 			}
 		});
 
-		proxyPortText.addPropertyChangeListener(evt -> checkNonNegativeRange(proxyPortText, 0, 65535));
+		proxyPortText.addPropertyChangeListener("value", evt -> checkNonNegativeRange(proxyPortText, 0, 65535));
 		requiresAuthenticationBox.addActionListener(e -> setEnabledUserSettings());
 
 		proxyHostText.getDocument().addDocumentListener(new DocumentListener() {
@@ -258,10 +258,14 @@ public class ProxyPanel extends AbstractPreferencesComponent implements EventHan
 	}
 
 	private void checkNonNegativeRange(JFormattedTextField field, int min, int max) {
-		if (((Number)field.getValue()).intValue() < min)
+		if (field.getValue() != null) {
+			if (((Number) field.getValue()).intValue() < min)
+				field.setValue(min);
+			else if (((Number) field.getValue()).intValue() > max)
+				field.setValue(max);
+		} else {
 			field.setValue(min);
-		else if (((Number)field.getValue()).intValue() > max)
-			field.setValue(max);
+		}
 	}
 
 	private void setEnabledUserSettings() {

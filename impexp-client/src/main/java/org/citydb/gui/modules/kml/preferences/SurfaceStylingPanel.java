@@ -264,7 +264,7 @@ public class SurfaceStylingPanel extends AbstractPreferencesComponent {
 
 		PopupMenuDecorator.getInstance().decorate(geometryHLSurfaceDistanceText);
 
-		geometryHLSurfaceDistanceText.addPropertyChangeListener(evt -> checkHighlightingDistance(geometryHLSurfaceDistanceText));
+		geometryHLSurfaceDistanceText.addPropertyChangeListener("value", evt -> checkHighlightingDistance(geometryHLSurfaceDistanceText));
 		geometryHighlightingCheckbox.addActionListener(e -> setEnabledGeometryHighlighting());
 	}
 
@@ -325,7 +325,7 @@ public class SurfaceStylingPanel extends AbstractPreferencesComponent {
 
 		PopupMenuDecorator.getInstance().decorate(colladaHLSurfaceDistanceText);
 
-		colladaHLSurfaceDistanceText.addPropertyChangeListener(evt -> checkHighlightingDistance(colladaHLSurfaceDistanceText));
+		colladaHLSurfaceDistanceText.addPropertyChangeListener("value", evt -> checkHighlightingDistance(colladaHLSurfaceDistanceText));
 		colladaHighlightingCheckbox.addActionListener(e -> setEnabledColladaHighlighting());
 	}
 

@@ -175,15 +175,13 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 		PopupMenuDecorator.getInstance().decorate(sridText, (JTextField) srsComboBox.getEditor().getEditorComponent(),
 				descriptionText, fileText, dbSrsTypeText, dbSrsNameText);
 
-		sridText.addPropertyChangeListener(e -> {
-			if (e.getPropertyName().equals("value")) {
-				int srid = ((Number) sridText.getValue()).intValue();
-				if (srid < 0 || srid == Integer.MAX_VALUE)
-					srid = 0;
+		sridText.addPropertyChangeListener("value", e -> {
+			int srid = sridText.getValue() != null ? ((Number) sridText.getValue()).intValue() : 0;
+			if (srid < 0 || srid == Integer.MAX_VALUE)
+				srid = 0;
 
-				sridText.setValue(srid);
-				srsNameComboBox.updateSrid(srid);
-			}
+			sridText.setValue(srid);
+			srsNameComboBox.updateSrid(srid);
 		});
 
 		setLayout(new GridBagLayout());

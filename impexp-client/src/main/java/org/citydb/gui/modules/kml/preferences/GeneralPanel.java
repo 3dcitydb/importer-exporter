@@ -280,14 +280,14 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		gltfConverterBrowseButton.addActionListener(e -> browseGltfConverterFile(Language.I18N.getString("pref.kmlexport.dialog.gltf.title")));
 		exportGltfV1.addItemListener(e -> enableGltfDracoCompression.setEnabled(!exportGltfV1.isSelected()));
 
-		autoTileSideLengthText.addPropertyChangeListener(evt -> {
+		autoTileSideLengthText.addPropertyChangeListener("value", evt -> {
 			if (autoTileSideLengthText.getValue() == null
 					|| ((Number) autoTileSideLengthText.getValue()).intValue() <= 1) {
 				autoTileSideLengthText.setValue(125);
 			}
 		});
 
-		groupSizeText.addPropertyChangeListener(evt -> {
+		groupSizeText.addPropertyChangeListener("value", evt -> {
 			if (groupSizeText.getValue() == null
 					|| ((Number) groupSizeText.getValue()).intValue() < 2)
 				groupSizeText.setValue(1);

@@ -251,7 +251,7 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 		for (DatabaseType type : DatabaseType.values())
 			databaseTypeCombo.addItem(type);
 
-		portText.addPropertyChangeListener(e -> {
+		portText.addPropertyChangeListener("value", e -> {
 			if (portText.getValue() == null) {
 				DatabaseType type = (DatabaseType) databaseTypeCombo.getSelectedItem();
 				portText.setValue(type == DatabaseType.POSTGIS ? 5432 : 1521);

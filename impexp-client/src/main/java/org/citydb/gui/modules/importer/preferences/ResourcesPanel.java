@@ -265,32 +265,36 @@ public class ResourcesPanel extends AbstractPreferencesComponent{
 		add(idCachePanel, GuiUtil.setConstraints(0, 2, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 		add(textureCachePanel, GuiUtil.setConstraints(0, 3, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 
-		impResMinThreadsText.addPropertyChangeListener(evt -> checkPositive(impResMinThreadsText, 1));
-		impResMaxThreadsText.addPropertyChangeListener(evt -> checkPositive(impResMaxThreadsText, 1));
-		impResTransaktFeatureText.addPropertyChangeListener(evt -> checkPositive(impResTransaktFeatureText, 20));
-		impResTransaktCacheText.addPropertyChangeListener(evt -> checkPositive(impResTransaktCacheText, 1000));
-		impResTransaktTempText.addPropertyChangeListener(evt -> checkPositive(impResTransaktTempText, 1000));
-		impResGeomCacheText.addPropertyChangeListener(evt -> checkPositive(impResGeomCacheText, 200000));
-		impResFeatCacheText.addPropertyChangeListener(evt -> checkPositive(impResFeatCacheText, 200000));
-		impResTexCacheText.addPropertyChangeListener(evt -> checkPositive(impResTexCacheText, 200000));
-		impResGeomDrainText.addPropertyChangeListener(evt -> checkPositiveRange(impResGeomDrainText, 85, 100));
-		impResFeatDrainText.addPropertyChangeListener(evt -> checkPositiveRange(impResFeatDrainText, 85, 100));
-		impResTexDrainText.addPropertyChangeListener(evt -> checkPositiveRange(impResTexDrainText, 85, 100));
-		impResGeomPartText.addPropertyChangeListener(evt -> checkPositiveRange(impResGeomPartText, 10, 100));
-		impResFeatPartText.addPropertyChangeListener(evt -> checkPositiveRange(impResFeatPartText, 10, 100));
-		impResTexPartText.addPropertyChangeListener(evt -> checkPositiveRange(impResTexPartText, 10, 100));
+		impResMinThreadsText.addPropertyChangeListener("value", evt -> checkPositive(impResMinThreadsText, 1));
+		impResMaxThreadsText.addPropertyChangeListener("value", evt -> checkPositive(impResMaxThreadsText, 1));
+		impResTransaktFeatureText.addPropertyChangeListener("value", evt -> checkPositive(impResTransaktFeatureText, 20));
+		impResTransaktCacheText.addPropertyChangeListener("value", evt -> checkPositive(impResTransaktCacheText, 1000));
+		impResTransaktTempText.addPropertyChangeListener("value", evt -> checkPositive(impResTransaktTempText, 1000));
+		impResGeomCacheText.addPropertyChangeListener("value", evt -> checkPositive(impResGeomCacheText, 200000));
+		impResFeatCacheText.addPropertyChangeListener("value", evt -> checkPositive(impResFeatCacheText, 200000));
+		impResTexCacheText.addPropertyChangeListener("value", evt -> checkPositive(impResTexCacheText, 200000));
+		impResGeomDrainText.addPropertyChangeListener("value", evt -> checkPositiveRange(impResGeomDrainText, 85, 100));
+		impResFeatDrainText.addPropertyChangeListener("value", evt -> checkPositiveRange(impResFeatDrainText, 85, 100));
+		impResTexDrainText.addPropertyChangeListener("value", evt -> checkPositiveRange(impResTexDrainText, 85, 100));
+		impResGeomPartText.addPropertyChangeListener("value", evt -> checkPositiveRange(impResGeomPartText, 10, 100));
+		impResFeatPartText.addPropertyChangeListener("value", evt -> checkPositiveRange(impResFeatPartText, 10, 100));
+		impResTexPartText.addPropertyChangeListener("value", evt -> checkPositiveRange(impResTexPartText, 10, 100));
 	}
-	
+
 	private void checkPositive(JFormattedTextField field, int defaultValue) {
-		if (((Number)field.getValue()).intValue() <= 0)
+		if (field.getValue() == null || ((Number) field.getValue()).intValue() <= 0)
 			field.setValue(defaultValue);
 	}
 	
 	private void checkPositiveRange(JFormattedTextField field, int min, int max) {
-		if (((Number)field.getValue()).intValue() <= 0)
+		if (field.getValue() != null) {
+			if (((Number) field.getValue()).intValue() <= 0)
+				field.setValue(min);
+			else if (((Number) field.getValue()).intValue() > 100)
+				field.setValue(max);
+		} else {
 			field.setValue(min);
-		else if (((Number)field.getValue()).intValue() > 100)
-			field.setValue(max);
+		}
 	}
 
 	@Override

@@ -400,7 +400,7 @@ public class FilterPanel extends JPanel implements EventHandler {
 	}
 
 	private void checkNonNegative(JFormattedTextField field) {
-		if (field.getValue() == null || ((Number)field.getValue()).intValue() < 0)
+		if (field.getValue() == null || ((Number) field.getValue()).intValue() < 0)
 			field.setValue(0);
 	}
 
