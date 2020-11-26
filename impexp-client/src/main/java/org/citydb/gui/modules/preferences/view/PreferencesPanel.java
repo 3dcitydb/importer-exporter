@@ -331,10 +331,13 @@ public class PreferencesPanel extends JPanel implements TreeSelectionListener {
 	}
 
 	private void updateUI(PreferencesTreeNode node) {
-		try {
-			SwingUtilities.updateComponentTreeUI(node.entry.getViewComponent());
-		} catch (Exception e) {
-			log.error("Failed to update UI for component '" + node.entry.getViewComponent() + "'.", e);
+		if (menuTree.getSelectionPath() == null
+				|| menuTree.getSelectionPath().getLastPathComponent() != node) {
+			try {
+				SwingUtilities.updateComponentTreeUI(node.entry.getViewComponent());
+			} catch (Exception e) {
+				log.error("Failed to update UI for component '" + node.entry.getViewComponent() + "'.", e);
+			}
 		}
 
 		for (int i = 0; i < node.getChildCount(); i++) {

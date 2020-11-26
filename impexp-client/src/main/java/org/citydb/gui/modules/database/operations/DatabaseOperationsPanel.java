@@ -149,10 +149,12 @@ public class DatabaseOperationsPanel extends JPanel implements EventHandler {
 
         if (operations != null) {
             for (DatabaseOperationView operation : operations) {
-                try {
-                    SwingUtilities.updateComponentTreeUI(operation.getViewComponent());
-                } catch (Exception e) {
-                    log.error("Failed to update UI for component '" + operation.getViewComponent() + "'.", e);
+                if (operationsTab.getSelectedComponent() != operation.getViewComponent()) {
+                    try {
+                        SwingUtilities.updateComponentTreeUI(operation.getViewComponent());
+                    } catch (Exception e) {
+                        log.error("Failed to update UI for component '" + operation.getViewComponent() + "'.", e);
+                    }
                 }
             }
         }

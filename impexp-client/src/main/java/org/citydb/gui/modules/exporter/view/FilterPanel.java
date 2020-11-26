@@ -53,6 +53,7 @@ import org.citydb.gui.modules.exporter.view.filter.FilterView;
 import org.citydb.gui.modules.exporter.view.filter.SQLFilterView;
 import org.citydb.gui.modules.exporter.view.filter.XMLQueryView;
 import org.citydb.gui.util.GuiUtil;
+import org.citydb.log.Logger;
 import org.citydb.plugin.extension.view.ViewController;
 import org.citydb.plugin.extension.view.components.BoundingBoxPanel;
 import org.citydb.registry.ObjectRegistry;
@@ -576,6 +577,23 @@ public class FilterPanel extends JPanel implements EventHandler {
 	public void setSettings() {
 		setSimpleQuerySettings();
 		xmlQuery.setSettings();
+	}
+
+	@Override
+	public void updateUI() {
+		super.updateUI();
+
+		if (filters != null) {
+			for (FilterView filter : filters) {
+				if (filterTab.getSelectedComponent() != filter.getViewComponent()) {
+					try {
+						SwingUtilities.updateComponentTreeUI(filter.getViewComponent());
+					} catch (Exception e) {
+						Logger.getInstance().error("Failed to update UI for component '" + filter.getViewComponent() + "'.", e);
+					}
+				}
+			}
+		}
 	}
 
 	@Override
