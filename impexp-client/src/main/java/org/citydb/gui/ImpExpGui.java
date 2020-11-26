@@ -27,6 +27,9 @@
  */
 package org.citydb.gui;
 
+import com.formdev.flatlaf.FlatLaf;
+import com.formdev.flatlaf.FlatLightLaf;
+import com.formdev.flatlaf.extras.FlatAnimatedLafChange;
 import com.formdev.flatlaf.ui.FlatTabbedPaneUI;
 import org.citydb.ade.ADEExtensionManager;
 import org.citydb.config.Config;
@@ -147,14 +150,6 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 
 		// log exceptions for disabled ADE extensions
 		ADEExtensionManager.getInstance().logExceptions();
-	}
-
-	public void restoreDefaults() {
-		if (consoleWindow.isVisible() != config.getGuiConfig().getConsoleWindow().isDetached())
-			enableConsoleWindow(config.getGuiConfig().getConsoleWindow().isDetached(), false);
-
-		consoleWindow.setSize(0, 0);
-		showWindow();
 	}
 
 	private void initGui() {
@@ -358,6 +353,37 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 			enableConsoleWindow(true, false);
 			requestFocus();
 		}
+	}
+
+	public void restoreDefaults() {
+		if (consoleWindow.isVisible() != config.getGuiConfig().getConsoleWindow().isDetached())
+			enableConsoleWindow(config.getGuiConfig().getConsoleWindow().isDetached(), false);
+
+		consoleWindow.setSize(0, 0);
+		showWindow();
+	}
+
+	public void setLookAndFeel(String lafClassName) {
+		if (lafClassName.equals(UIManager.getLookAndFeel().getClass().getName())) {
+			return;
+		}
+
+		EventQueue.invokeLater(() -> {
+			try {
+				FlatAnimatedLafChange.showSnapshot();
+
+				UIManager.setLookAndFeel(lafClassName);
+				if (!(UIManager.getLookAndFeel() instanceof FlatLaf)) {
+					UIManager.put("defaultFont", null);
+				}
+
+				FlatLaf.updateUI();
+				FlatAnimatedLafChange.hideSnapshotWithAnimation();
+			} catch (Exception e) {
+				log.error("Failed to switch to look and feel theme '" + lafClassName + "'.");
+				FlatLightLaf.install();
+			}
+		});
 	}
 
 	public void doTranslation() {
