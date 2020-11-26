@@ -35,6 +35,7 @@ public class SrsNameComboBox extends JComboBox<String> {
 
     public SrsNameComboBox() {
         editor = new SrsNameEditor();
+        ((JTextField) editor.getEditorComponent()).setBorder(BorderFactory.createEmptyBorder());
         setEditor(editor);
         setEditable(true);
 
@@ -69,6 +70,16 @@ public class SrsNameComboBox extends JComboBox<String> {
                 super.setItem(anObject.toString().replace("<SRID>", String.valueOf(srid)));
             else
                 super.setItem("");
+        }
+    }
+
+    @Override
+    public void updateUI() {
+        String text = editor != null ? getText() : null;
+        super.updateUI();
+
+        if (text != null) {
+            setText(text);
         }
     }
 }

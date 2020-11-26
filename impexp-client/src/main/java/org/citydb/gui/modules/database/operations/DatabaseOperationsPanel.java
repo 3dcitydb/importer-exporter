@@ -44,7 +44,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.sql.SQLException;
 
-@SuppressWarnings("serial")
 public class DatabaseOperationsPanel extends JPanel implements EventHandler {
     private final Logger log = Logger.getInstance();
     private final Config config;
@@ -142,6 +141,21 @@ public class DatabaseOperationsPanel extends JPanel implements EventHandler {
 
     protected ViewController getViewController() {
         return viewController;
+    }
+
+    @Override
+    public void updateUI() {
+        super.updateUI();
+
+        if (operations != null) {
+            for (DatabaseOperationView operation : operations) {
+                try {
+                    SwingUtilities.updateComponentTreeUI(operation.getViewComponent());
+                } catch (Exception e) {
+                    log.error("Failed to update UI for component '" + operation.getViewComponent() + "'.", e);
+                }
+            }
+        }
     }
 
     @Override

@@ -172,7 +172,7 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 		srsComboBoxFactory = SrsComboBoxFactory.getInstance();
 		srsComboBox = srsComboBoxFactory.createSrsComboBox(false);
 
-		PopupMenuDecorator.getInstance().decorate(sridText, (JTextField) srsComboBox.getEditor().getEditorComponent(),
+		PopupMenuDecorator.getInstance().decorate(sridText, (JTextField) srsNameComboBox.getEditor().getEditorComponent(),
 				descriptionText, fileText, dbSrsTypeText, dbSrsNameText);
 
 		sridText.addPropertyChangeListener("value", e -> {
