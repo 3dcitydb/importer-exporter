@@ -31,6 +31,7 @@ import org.citydb.gui.components.popup.AbstractStandardPopupMenu;
 import org.citydb.gui.components.popup.CheckBoxGroupPopupMenu;
 import org.citydb.gui.components.popup.StandardEditingPopupMenu;
 import org.citydb.gui.components.popup.StandardTreePopupMenu;
+import org.citydb.log.Logger;
 import org.citydb.plugin.extension.view.components.StandardEditingPopupMenuDecorator;
 
 import javax.swing.*;
@@ -167,7 +168,11 @@ public class PopupMenuDecorator implements StandardEditingPopupMenuDecorator {
 
 	public void updateUI() {
 		for (AbstractStandardPopupMenu popupMenu : popupMenus) {
-			SwingUtilities.updateComponentTreeUI(popupMenu);
+			try {
+				SwingUtilities.updateComponentTreeUI(popupMenu);
+			} catch (Exception e) {
+				Logger.getInstance().error("Failed to update UI for component '" + popupMenu + "'.", e);
+			}
 		}
 	}
 
