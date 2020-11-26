@@ -43,16 +43,12 @@ import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
-@SuppressWarnings("serial")
-public class StatusDialog extends JDialog implements EventHandler {	
+public class StatusDialog extends JDialog implements EventHandler {
 	private EventDispatcher eventDispatcher;
 
 	private JLabel titleLabel;
 	private JLabel messageLabel;
 	private JProgressBar progressBar;
-	private JLabel detailsLabel;
-	private JPanel main;
-	private JPanel row;
 	private JButton button;
 	
 	private int progressBarCounter;
@@ -91,65 +87,66 @@ public class StatusDialog extends JDialog implements EventHandler {
 			String statusMessage, 
 			String statusDetails, 
 			boolean setButton) {
-
-		if (statusTitle == null)
-			statusTitle = "";
-
-		if (statusMessage == null)
-			statusMessage = "";
-
-		String[] details = null;
-		if (statusDetails != null)
-			details = statusDetails.split("<br\\s*/*>");
-
 		setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
-		titleLabel = new JLabel(statusTitle);
-		titleLabel.setFont(titleLabel.getFont().deriveFont(Font.BOLD));
-		messageLabel = new JLabel(statusMessage);
-		button = new JButton(Language.I18N.getString("common.button.cancel"));		
+		Object arc = UIManager.get("ProgressBar.arc");
+		UIManager.put("ProgressBar.arc", 0);
+
+		String[] details = statusDetails != null ?
+				statusDetails.split("<br\\s*/*>") :
+				new String[0];
+
+		button = new JButton(Language.I18N.getString("common.button.cancel"));
+
 		progressBar = new JProgressBar();
 
-		setLayout(new GridBagLayout()); {
-			main = new JPanel();
-			add(main, GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.BOTH,5,5,5,5));
-			main.setLayout(new GridBagLayout());
+		setLayout(new GridBagLayout());
+		JPanel main = new JPanel();
+		main.setLayout(new GridBagLayout());
+		{
+			JPanel messagePanel = new JPanel();
+			messagePanel.setBackground(UIManager.getColor("TextField.background"));
+			messagePanel.setLayout(new GridBagLayout());
 			{
-				main.add(titleLabel, GuiUtil.setConstraints(0,0,0.0,0.5,GridBagConstraints.HORIZONTAL,5,5,5,5));
-				main.add(messageLabel, GuiUtil.setConstraints(0,1,0.0,0.5,GridBagConstraints.HORIZONTAL,5,5,0,5));
-				main.add(progressBar, GuiUtil.setConstraints(0,2,1.0,0.0,GridBagConstraints.HORIZONTAL,0,5,5,5));
-
-				if (details != null) {
-					detailsLabel = new JLabel("Details");
-					main.add(detailsLabel, GuiUtil.setConstraints(0,3,1.0,0.0,GridBagConstraints.HORIZONTAL,5,5,0,5));
-
-					row = new JPanel();
-					row.setBackground(new Color(255, 255, 255));
-					row.setBorder(BorderFactory.createEtchedBorder());
-					main.add(row, GuiUtil.setConstraints(0,4,1.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
-					row.setLayout(new GridBagLayout());
-					{				
-						for (int i = 0; i < details.length; ++i) {
-							JLabel detail = new JLabel(details[i]);
-							detail.setBackground(row.getBackground());
-							row.add(detail, GuiUtil.setConstraints(0,i,1.0,0.0,GridBagConstraints.HORIZONTAL,i == 0 ? 5 : 2,5,i == details.length - 1 ? 5 : 0,5));
-						}
-					}
+				for (int i = 0; i < details.length; i++) {
+					JLabel detail = new JLabel(details[i]);
+					messagePanel.add(detail, GuiUtil.setConstraints(0, i, 1, 0, GridBagConstraints.HORIZONTAL,
+							i == 0 ? 5 : 3, 5, i == details.length - 1 ? 5 : 0, 5));
 				}
 			}
 
-			if (setButton)
-				add(button, GuiUtil.setConstraints(0,1,0.0,0.0,GridBagConstraints.NONE,5,5,10,5));
+			if (statusTitle != null) {
+				titleLabel = new JLabel(statusTitle);
+				titleLabel.setFont(titleLabel.getFont().deriveFont(Font.BOLD));
+				main.add(titleLabel, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 5, 0));
+			}
 
-			pack();
-			progressBar.setIndeterminate(true);
+			if (statusMessage != null) {
+				messageLabel = new JLabel(statusMessage);
+				main.add(messageLabel, GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.HORIZONTAL, 5, 0, 5, 0));
+			}
 
-			addWindowListener(new WindowAdapter() {
-				public void windowClosed(WindowEvent e) {
-					if (eventDispatcher != null)
-						eventDispatcher.removeEventHandler(StatusDialog.this);
-				}
-			});
+			main.add(progressBar, GuiUtil.setConstraints(0, 2, 1, 0, GridBagConstraints.HORIZONTAL, 5, 0, 0, 0));
+			main.add(messagePanel, GuiUtil.setConstraints(0, 3, 1, 1, GridBagConstraints.NORTH, GridBagConstraints.HORIZONTAL, 0, 0, 0, 0));
 		}
+
+		add(main, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.BOTH, 10, 10, 10, 10));
+		if (setButton) {
+			add(button, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.EAST, GridBagConstraints.NONE, 5, 10, 10, 10));
+		}
+
+		setMinimumSize(new Dimension(300, 100));
+		pack();
+
+		UIManager.put("ProgressBar.arc", arc);
+		progressBar.setIndeterminate(true);
+
+		addWindowListener(new WindowAdapter() {
+			public void windowClosed(WindowEvent e) {
+				if (eventDispatcher != null) {
+					eventDispatcher.removeEventHandler(StatusDialog.this);
+				}
+			}
+		});
 	}
 
 	public JLabel getStatusTitleLabel() {
@@ -170,18 +167,10 @@ public class StatusDialog extends JDialog implements EventHandler {
 			acceptStatusUpdate = false;
 			messageLabel.setText(Language.I18N.getString("common.dialog.msg.abort"));
 			progressBar.setIndeterminate(true);
-		}
-
-		else if (e.getEventType() == EventType.STATUS_DIALOG_PROGRESS_BAR && acceptStatusUpdate) {		
-			StatusDialogProgressBar progressBarEvent = (StatusDialogProgressBar)e;
-			
+		} else if (e.getEventType() == EventType.STATUS_DIALOG_PROGRESS_BAR && acceptStatusUpdate) {
+			StatusDialogProgressBar progressBarEvent = (StatusDialogProgressBar) e;
 			if (progressBarEvent.getType() == ProgressBarEventType.INIT) {
-				SwingUtilities.invokeLater(new Runnable() {
-					public void run() {		
-						progressBar.setIndeterminate(progressBarEvent.isSetIntermediate());
-					}
-				});
-				
+				SwingUtilities.invokeLater(() -> progressBar.setIndeterminate(progressBarEvent.isSetIntermediate()));
 				if (!progressBarEvent.isSetIntermediate()) {
 					progressBar.setMaximum(progressBarEvent.getValue());
 					progressBar.setValue(0);
@@ -191,15 +180,10 @@ public class StatusDialog extends JDialog implements EventHandler {
 				progressBarCounter += progressBarEvent.getValue();
 				progressBar.setValue(progressBarCounter);
 			}
-		}
-
-		else if (e.getEventType() == EventType.STATUS_DIALOG_MESSAGE && acceptStatusUpdate) {
-			messageLabel.setText(((StatusDialogMessage)e).getMessage());
-		}
-
-		else if (e.getEventType() == EventType.STATUS_DIALOG_TITLE && acceptStatusUpdate) {
-			titleLabel.setText(((StatusDialogTitle)e).getTitle());
+		} else if (e.getEventType() == EventType.STATUS_DIALOG_MESSAGE && acceptStatusUpdate) {
+			messageLabel.setText(((StatusDialogMessage) e).getMessage());
+		} else if (e.getEventType() == EventType.STATUS_DIALOG_TITLE && acceptStatusUpdate) {
+			titleLabel.setText(((StatusDialogTitle) e).getTitle());
 		}
 	}
-
 }

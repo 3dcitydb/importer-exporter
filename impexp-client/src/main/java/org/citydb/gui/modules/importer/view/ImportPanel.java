@@ -354,9 +354,7 @@ public class ImportPanel extends JPanel {
 			final XMLValidationStatusDialog validatorDialog = new XMLValidationStatusDialog(viewController.getTopFrame(),
 					Language.I18N.getString("validate.dialog.window"),
 					Language.I18N.getString("validate.dialog.title"),
-					" ",
 					Language.I18N.getString("validate.dialog.details") ,
-					true,
 					eventDispatcher);
 
 			SwingUtilities.invokeLater(() -> {
