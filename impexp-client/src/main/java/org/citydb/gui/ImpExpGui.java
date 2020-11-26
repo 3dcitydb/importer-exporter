@@ -378,6 +378,8 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 				}
 
 				FlatLaf.updateUI();
+				PopupMenuDecorator.getInstance().updateUI();
+
 				FlatAnimatedLafChange.hideSnapshotWithAnimation();
 			} catch (Exception e) {
 				log.error("Failed to switch to look and feel theme '" + lafClassName + "'.");

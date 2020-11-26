@@ -39,16 +39,14 @@ import org.citydb.registry.ObjectRegistry;
 
 import javax.swing.*;
 import java.awt.*;
-import java.lang.ref.WeakReference;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
+import java.util.Set;
+import java.util.WeakHashMap;
 
 public class SrsComboBoxFactory {
 	private static SrsComboBoxFactory instance = null;
 	private final DatabaseSrs dbRefSys;
-	private final List<WeakReference<SrsComboBox>> srsBoxes = new ArrayList<>();
+	private final Set<SrsComboBox> srsBoxes = Collections.newSetFromMap(new WeakHashMap<>());
 	private final DatabaseConnectionPool dbPool;
 	private final Config config;
 
@@ -72,9 +70,7 @@ public class SrsComboBoxFactory {
 	public SrsComboBox createSrsComboBox(boolean onlyShowSupported) {
 		SrsComboBox srsBox = new SrsComboBox(onlyShowSupported);
 		srsBox.init();
-
-		WeakReference<SrsComboBox> ref = new WeakReference<>(srsBox);
-		srsBoxes.add(ref);
+		srsBoxes.add(srsBox);
 
 		return srsBox;
 	}
@@ -93,23 +89,16 @@ public class SrsComboBoxFactory {
 	}
 
 	private void processSrsComboBoxes(boolean sort, boolean update) {
-		if (sort)
+		if (sort) {
 			Collections.sort(config.getDatabaseConfig().getReferenceSystems());
+		}
 
-		Iterator<WeakReference<SrsComboBox>> iter = srsBoxes.iterator();
-		while (iter.hasNext()) {
-			WeakReference<SrsComboBox> ref = iter.next();
-			SrsComboBox srsBox = ref.get();
-
-			if (srsBox == null) {
-				iter.remove();
-				continue;
-			}
-
-			if (update)
+		for (SrsComboBox srsBox : srsBoxes) {
+			if (update) {
 				srsBox.updateContent();
-			else
+			} else {
 				srsBox.reset();
+			}
 
 			srsBox.repaint();
 		}
