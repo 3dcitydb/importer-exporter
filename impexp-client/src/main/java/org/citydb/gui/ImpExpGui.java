@@ -251,8 +251,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		{
 			statusText = new JLabel();
 			connectText = new JLabel();
-			Box separator = Box.createHorizontalBox();
-			separator.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, UIManager.getColor("Component.borderColor")));
+			menu.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, UIManager.getColor("Component.borderColor")));
 
 			JPanel status = new JPanel();
 			status.setLayout(new GridBagLayout());
@@ -262,8 +261,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 			}
 
 			main.add(menu, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
-			main.add(separator, GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 0));
-			main.add(status, GuiUtil.setConstraints(0, 2, 0, 0, GridBagConstraints.HORIZONTAL, 5, 5, 5, 5));
+			main.add(status, GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.HORIZONTAL, 5, 5, 5, 5));
 		}
 
 		// console panel

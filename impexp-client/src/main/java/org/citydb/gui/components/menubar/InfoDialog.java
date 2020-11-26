@@ -70,19 +70,16 @@ public class InfoDialog extends JDialog {
 			header.add(img, GuiUtil.setConstraints(1, 0, 1, 2, 0, 1, GridBagConstraints.NONE, 5, 0, 5, 5));
 		}
 
-		Box separator = Box.createHorizontalBox();
-		separator.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, UIManager.getColor("Component.borderColor")));
+		header.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, UIManager.getColor("Component.borderColor")));
 
 		JTabbedPane tabs = new JTabbedPane(JTabbedPane.TOP, JTabbedPane.SCROLL_TAB_LAYOUT);
 		tabs.add(getGeneralTab(), Language.I18N.getString("menu.help.info.tab.general"));
 		tabs.add(getPartnerTab(), Language.I18N.getString("menu.help.info.tab.partner"));
-
 		JButton button = new JButton(Language.I18N.getString("common.button.ok"));
 
 		add(header, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
-		add(separator, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
-		add(tabs, GuiUtil.setConstraints(0, 2, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
-		add(button, GuiUtil.setConstraints(0, 3, 1, 0, GridBagConstraints.EAST, GridBagConstraints.NONE, 10, 10, 10, 10));
+		add(tabs, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+		add(button, GuiUtil.setConstraints(0, 2, 1, 0, GridBagConstraints.EAST, GridBagConstraints.NONE, 10, 10, 10, 10));
 
 		pack();
 
