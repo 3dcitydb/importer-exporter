@@ -51,7 +51,7 @@ public class ColorPicker extends JButton {
 
         JCheckBox dummy = new JCheckBox();
         Dimension size = dummy.getPreferredSize();
-        setPreferredSize(new Dimension(size.width * 3, size.height));
+        setPreferredSize(new Dimension(size.width * 2, (int) (size.height * 1.5)));
 
         addActionListener(e -> pickColor());
     }

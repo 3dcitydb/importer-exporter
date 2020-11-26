@@ -53,6 +53,10 @@ public class RSyntaxTextAreaHelper {
         };
 
         applyTheme.accept(textArea);
-        UIManager.addPropertyChangeListener(e -> applyTheme.accept(textArea));
+        UIManager.addPropertyChangeListener(e -> {
+            if ("lookAndFeel".equals(e.getPropertyName())) {
+                applyTheme.accept(textArea);
+            }
+        });
     }
 }
