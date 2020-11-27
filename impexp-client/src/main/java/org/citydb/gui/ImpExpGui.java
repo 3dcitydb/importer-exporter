@@ -33,6 +33,7 @@ import com.formdev.flatlaf.ui.FlatTabbedPaneUI;
 import org.citydb.ade.ADEExtensionManager;
 import org.citydb.config.Config;
 import org.citydb.config.ConfigUtil;
+import org.citydb.config.gui.style.Theme;
 import org.citydb.config.gui.window.MainWindow;
 import org.citydb.config.gui.window.WindowSize;
 import org.citydb.config.i18n.Language;
@@ -373,8 +374,9 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		showWindow();
 	}
 
-	public void setLookAndFeel(String lafClassName) {
-		if (lafClassName.equals(UIManager.getLookAndFeel().getClass().getName())) {
+	public void setLookAndFeel(Theme theme) {
+		String laf = GuiUtil.getLaf(theme);
+		if (laf.equals(UIManager.getLookAndFeel().getClass().getName())) {
 			return;
 		}
 
@@ -382,15 +384,17 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 			try {
 				FlatAnimatedLafChange.showSnapshot();
 
-				UIManager.setLookAndFeel(lafClassName);
+				UIManager.setLookAndFeel(laf);
 				if (!(UIManager.getLookAndFeel() instanceof FlatLaf)) {
 					UIManager.put("defaultFont", null);
 				}
 
 				FlatLaf.updateUI();
 				PopupMenuDecorator.getInstance().updateUI();
+
+				config.getGuiConfig().getAppearance().setTheme(theme);
 			} catch (Exception e) {
-				log.error("Failed to switch to look and feel theme '" + lafClassName + "'.", e);
+				log.error("Failed to switch to look and feel theme '" + laf + "'.", e);
 			} finally {
 				SwingUtilities.invokeLater(FlatAnimatedLafChange::hideSnapshotWithAnimation);
 			}

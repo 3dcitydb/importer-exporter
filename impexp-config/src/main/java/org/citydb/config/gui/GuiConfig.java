@@ -28,6 +28,7 @@
 package org.citydb.config.gui;
 
 import org.citydb.config.gui.components.SQLExportFilterComponent;
+import org.citydb.config.gui.style.Appearance;
 import org.citydb.config.gui.window.ConsoleWindow;
 import org.citydb.config.gui.window.MainWindow;
 import org.citydb.config.gui.window.MapWindow;
@@ -45,6 +46,7 @@ import java.util.List;
         "main",
         "console",
         "map",
+        "appearance",
         "sqlExportFilter",
         "showPreferencesConfirmDialog",
         "showOutdatedDatabaseVersionWarning",
@@ -57,6 +59,7 @@ public class GuiConfig {
     private MainWindow main;
     private ConsoleWindow console;
     private MapWindow map;
+    private Appearance appearance;
     private SQLExportFilterComponent sqlExportFilter;
     private boolean showPreferencesConfirmDialog = true;
     private boolean showOutdatedDatabaseVersionWarning = true;
@@ -74,6 +77,7 @@ public class GuiConfig {
         main = new MainWindow();
         console = new ConsoleWindow();
         map = new MapWindow();
+        appearance = new Appearance();
         sqlExportFilter = new SQLExportFilterComponent();
         recentlyUsedProjects = new ArrayList<>(maxLastUsedEntries + 1);
     }
@@ -103,6 +107,16 @@ public class GuiConfig {
     public void setMapWindow(MapWindow map) {
         if (map != null)
             this.map = map;
+    }
+
+    public Appearance getAppearance() {
+        return appearance;
+    }
+
+    public void setAppearance(Appearance appearance) {
+        if (appearance != null) {
+            this.appearance = appearance;
+        }
     }
 
     public void setSQLExportFilterComponent(SQLExportFilterComponent sqlExportFilter) {

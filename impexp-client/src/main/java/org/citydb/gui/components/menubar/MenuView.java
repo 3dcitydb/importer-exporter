@@ -27,10 +27,9 @@
  */
 package org.citydb.gui.components.menubar;
 
-import com.formdev.flatlaf.FlatDarkLaf;
-import com.formdev.flatlaf.FlatLightLaf;
 import org.citydb.config.Config;
 import org.citydb.config.gui.GuiConfig;
+import org.citydb.config.gui.style.Theme;
 import org.citydb.config.i18n.Language;
 import org.citydb.gui.ImpExpGui;
 import org.citydb.gui.components.mapviewer.MapWindow;
@@ -67,21 +66,29 @@ public class MenuView extends JMenu {
 		lafGroup.add(lightTheme);
 		lafGroup.add(darkTheme);
 
+		if (config.getGuiConfig().getAppearance().getTheme() == Theme.DARK) {
+			darkTheme.setSelected(true);
+		} else {
+			lightTheme.setSelected(true);
+		}
+
 		map.addActionListener(e -> {
 			SwingUtilities.invokeLater(() -> MapWindow.getInstance(mainView).setVisible(true));
 		});
-		
+
 		detachConsole.addActionListener(e -> mainView.enableConsoleWindow(!config.getGuiConfig().getConsoleWindow().isDetached(), true));
-		
-		lightTheme.setSelected(true);
-		lightTheme.addActionListener(e -> mainView.setLookAndFeel(FlatLightLaf.class.getName()));
-		darkTheme.addActionListener(e -> mainView.setLookAndFeel(FlatDarkLaf.class.getName()));
+		lightTheme.addActionListener(e -> mainView.setLookAndFeel(Theme.LIGHT));
+		darkTheme.addActionListener(e -> mainView.setLookAndFeel(Theme.DARK));
 
 		defaults.addActionListener(e -> {
-			// do not loose recently used projects
 			List<String> recentlyUsedProjects = config.getGuiConfig().getRecentlyUsedConfigFiles();
+			Theme theme = config.getGuiConfig().getAppearance().getTheme();
+
+			// replace existing GUI configuration with defaults
 			config.setGuiConfig(new GuiConfig());
+
 			config.getGuiConfig().setRecentlyUsedConfigFiles(recentlyUsedProjects);
+			config.getGuiConfig().getAppearance().setTheme(theme);
 			mainView.restoreDefaults();
 		});
 		
