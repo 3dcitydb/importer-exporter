@@ -77,6 +77,7 @@ public class ProxyPanel extends AbstractPreferencesComponent implements EventHan
 	private JLabel proxyPasswordLabel;
 	private JPasswordField proxyPasswordText;
 	private JCheckBox passwordCheck;
+	private JPanel proxyListPanel;
 
 	public ProxyPanel(Config config) {
 		super(config);
@@ -134,9 +135,8 @@ public class ProxyPanel extends AbstractPreferencesComponent implements EventHan
 		{
 			JPanel content = new JPanel();
 
-			JPanel proxyListPanel = new JPanel();
+			proxyListPanel = new JPanel();
 			proxyListPanel.setLayout(new BorderLayout());
-			proxyListPanel.setBorder(UIManager.getBorder("ScrollPane.border"));
 			proxyListPanel.add(proxyList);
 
 			content.setLayout(new GridBagLayout());
@@ -228,6 +228,18 @@ public class ProxyPanel extends AbstractPreferencesComponent implements EventHan
 
 			proxyList.repaint();
 		});
+
+		UIManager.addPropertyChangeListener(e -> {
+			if ("lookAndFeel".equals(e.getPropertyName())) {
+				SwingUtilities.invokeLater(this::updateComponentUI);
+			}
+		});
+
+		updateComponentUI();
+	}
+
+	private void updateComponentUI() {
+		proxyListPanel.setBorder(UIManager.getBorder("ScrollPane.border"));
 	}
 
 	private void initProxyList() {

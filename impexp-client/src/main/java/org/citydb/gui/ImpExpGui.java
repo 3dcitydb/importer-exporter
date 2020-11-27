@@ -161,7 +161,6 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		consolePane = new JTabbedPane();
 		consoleText.setAutoscrolls(true);
 		consoleText.setFont(new Font(Font.MONOSPACED, Font.PLAIN, UIManager.getFont("Label.font").getSize()));
-		consoleText.setBackground(UIManager.getColor("TextField.background"));
 		consoleText.setEditable(false);
 
 		consoleWindow = new ConsoleWindow(console, config, this);
@@ -245,7 +244,6 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		{
 			statusText = new JLabel();
 			connectText = new JLabel();
-			menu.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, UIManager.getColor("Component.borderColor")));
 
 			JPanel status = new JPanel();
 			status.setLayout(new GridBagLayout());
@@ -282,6 +280,19 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		splitPane.setLeftComponent(main);
 		splitPane.setRightComponent(console);
 		add(splitPane, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
+
+		UIManager.addPropertyChangeListener(e -> {
+			if ("lookAndFeel".equals(e.getPropertyName())) {
+				SwingUtilities.invokeLater(this::updateComponentUI);
+			}
+		});
+
+		updateComponentUI();
+	}
+
+	private void updateComponentUI() {
+		consoleText.setBackground(UIManager.getColor("TextField.background"));
+		menu.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, UIManager.getColor("Component.borderColor")));
 	}
 
 	private void showWindow() {

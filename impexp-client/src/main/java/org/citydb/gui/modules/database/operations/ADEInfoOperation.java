@@ -69,6 +69,7 @@ public class ADEInfoOperation extends DatabaseOperationView {
 
     private JPanel component;
     private JTable adeTable;
+    private JPanel tablePanel;
     private ADETableModel adeTableModel;
     private JButton infoButton;
 
@@ -102,11 +103,10 @@ public class ADEInfoOperation extends DatabaseOperationView {
         adeTable.getColumnModel().getColumn(2).setPreferredWidth(5);
         adeTable.getColumnModel().getColumn(3).setPreferredWidth(5);
 
-        JPanel tablePanel = new JPanel();
+        tablePanel = new JPanel();
         tablePanel.setLayout(new GridBagLayout());
         tablePanel.add(adeTable.getTableHeader(), GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
         tablePanel.add(adeTable, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
-        tablePanel.setBorder(UIManager.getBorder("ScrollPane.border"));
 
         infoButton = new JButton();
 
@@ -142,6 +142,18 @@ public class ADEInfoOperation extends DatabaseOperationView {
                 }
             }
         });
+
+        UIManager.addPropertyChangeListener(e -> {
+            if ("lookAndFeel".equals(e.getPropertyName())) {
+                SwingUtilities.invokeLater(this::updateComponentUI);
+            }
+        });
+
+        updateComponentUI();
+    }
+
+    private void updateComponentUI() {
+        tablePanel.setBorder(UIManager.getBorder("ScrollPane.border"));
     }
 
     @Override

@@ -54,6 +54,8 @@ public class Map {
 	private MapPopupMenu popupMenu;
 	private JPanel hints;
 
+	private JPanel headerMenu;
+	private JPanel footer;
 	private JLabel hintsLabel;
 	private JLabel[] hintLabels;
 	private JLabel label;
@@ -69,15 +71,11 @@ public class Map {
 		ZoomPainter zoomPainter = new ZoomPainter(mapKit.getMainMap());
 		popupMenu = new MapPopupMenu(this);
 
-		Color borderColor = UIManager.getColor("TabbedPane.background");
-		borderColor = new Color(borderColor.getRed(), borderColor.getGreen(), borderColor.getBlue(), 200);
-
 		JPanel header = new JPanel();
 		header.setOpaque(false);
 		header.setLayout(new GridBagLayout());
 
-		JPanel headerMenu = new JPanel();
-		headerMenu.setBackground(borderColor);
+		headerMenu = new JPanel();
 		headerMenu.setLayout(new GridBagLayout());
 		{
 			hintsLabel = new JLabel();
@@ -89,9 +87,7 @@ public class Map {
 
 			// usage hints
 			hints = new JPanel();
-			hints.setBackground(borderColor);
 			hints.setLayout(new GridBagLayout());
-			hints.setBorder(BorderFactory.createMatteBorder(1, 1, 1, 0, UIManager.getColor("Component.borderColor")));
 			hints.setVisible(false);
 
 			hintLabels = new JLabel[7];
@@ -120,8 +116,7 @@ public class Map {
 			header.add(hints, GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.EAST, GridBagConstraints.NONE, 0, 0, 0, 0));
 		}
 
-		JPanel footer = new JPanel();
-		footer.setBackground(borderColor);
+		footer = new JPanel();
 		footer.setLayout(new GridBagLayout());
 		JLabel copyright;
 		{
@@ -218,6 +213,26 @@ public class Map {
 		// just to disable double-click action
 		headerMenu.addMouseListener(new MouseAdapter() {});
 		footer.addMouseListener(new MouseAdapter() {});
+
+		UIManager.addPropertyChangeListener(e -> {
+			if ("lookAndFeel".equals(e.getPropertyName())) {
+				SwingUtilities.invokeLater(this::updateComponentUI);
+			}
+		});
+
+		updateComponentUI();
+	}
+
+	private void updateComponentUI() {
+		Color transparentBackground = UIManager.getColor("TabbedPane.background");
+		transparentBackground = new Color(transparentBackground.getRed(), transparentBackground.getGreen(), transparentBackground.getBlue(), 200);
+
+		headerMenu.setBackground(transparentBackground);
+		hints.setBackground(transparentBackground);
+		footer.setBackground(transparentBackground);
+		hints.setBorder(BorderFactory.createMatteBorder(1, 1, 1, 0, UIManager.getColor("Component.borderColor")));
+
+		SwingUtilities.updateComponentTreeUI(popupMenu);
 	}
 
 	public JXMapKit getMapKit() {

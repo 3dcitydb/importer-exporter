@@ -148,7 +148,8 @@ public class KmlExportPanel extends JPanel implements EventHandler {
     private JComboBox<String> themeComboBox;
     private JButton fetchThemesButton;
 
-    private FeatureTypeTree typeTree;
+    private FeatureTypeTree featureTree;
+    private JPanel featureTreePanel;
     private JCheckBox useFeatureFilter;
 
     private JButton exportButton;
@@ -236,11 +237,11 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		fetchThemesButton = new JButton();
 
         useFeatureFilter = new JCheckBox();
-        typeTree = new FeatureTypeTree(CityGMLVersion.v2_0_0, e -> e instanceof ADEKmlExportExtension);
-        typeTree.setRowHeight((int)(new JCheckBox().getPreferredSize().getHeight()) - 1);
+        featureTree = new FeatureTypeTree(CityGMLVersion.v2_0_0, e -> e instanceof ADEKmlExportExtension);
+        featureTree.setRowHeight((int)(new JCheckBox().getPreferredSize().getHeight()) - 1);
 
         // get rid of standard icons
-        DefaultCheckboxTreeCellRenderer renderer = (DefaultCheckboxTreeCellRenderer) typeTree.getCellRenderer();
+        DefaultCheckboxTreeCellRenderer renderer = (DefaultCheckboxTreeCellRenderer) featureTree.getCellRenderer();
         renderer.setLeafIcon(null);
         renderer.setOpenIcon(null);
         renderer.setClosedIcon(null);
@@ -331,16 +332,15 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 			mainPanel.add(content, GuiUtil.setConstraints(0, 2, 0, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
         }
         {
-            JPanel content = new JPanel();
-            content.setBorder(UIManager.getBorder("ScrollPane.border"));
-            content.setLayout(new GridBagLayout());
+            featureTreePanel = new JPanel();
+            featureTreePanel.setLayout(new GridBagLayout());
             {
-                content.add(typeTree, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
+                featureTreePanel.add(featureTree, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
             }
 
             featureFilterPanel = new TitledPanel()
                     .withToggleButton(useFeatureFilter)
-                    .build(content);
+                    .build(featureTreePanel);
 
             mainPanel.add(featureFilterPanel, GuiUtil.setConstraints(0, 3, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
         }
@@ -359,7 +359,19 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 
         PopupMenuDecorator.getInstance().decorate(browseText, gmlIdText, rowsText, columnsText,
                 footprintVisibleFromText, extrudedVisibleFromText, geometryVisibleFromText, colladaVisibleFromText,
-                typeTree);
+                featureTree);
+
+        UIManager.addPropertyChangeListener(e -> {
+            if ("lookAndFeel".equals(e.getPropertyName())) {
+                SwingUtilities.invokeLater(this::updateComponentUI);
+            }
+        });
+
+        updateComponentUI();
+    }
+
+    private void updateComponentUI() {
+        featureTreePanel.setBorder(UIManager.getBorder("ScrollPane.border"));
     }
 
     public void doTranslation() {
@@ -415,8 +427,8 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 
         // feature type filter
         FeatureTypeFilter featureTypeFilter = query.getFeatureTypeFilter();
-        typeTree.getCheckingModel().clearChecking();
-        typeTree.setSelected(featureTypeFilter.getTypeNames());
+        featureTree.getCheckingModel().clearChecking();
+        featureTree.setSelected(featureTypeFilter.getTypeNames());
 
         // gml:id filter
         ResourceIdOperator gmlIdFilter = query.getGmlIdFilter();
@@ -503,7 +515,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
         // feature type filter
         FeatureTypeFilter featureTypeFilter = query.getFeatureTypeFilter();
         featureTypeFilter.reset();
-        featureTypeFilter.setTypeNames(typeTree.getSelectedTypeNames());
+        featureTypeFilter.setTypeNames(featureTree.getSelectedTypeNames());
 
         // gml:id filter
         ResourceIdOperator gmlIdFilter = query.getGmlIdFilter();
@@ -834,25 +846,25 @@ public class KmlExportPanel extends JPanel implements EventHandler {
         fetchThemesButton.setEnabled(colladaCheckbox.isEnabled() && colladaCheckbox.isSelected());
 
         boolean enable = lodComboBox.getSelectedIndex() > 0;
-        typeTree.setPathEnabled("Bridge", BridgeModule.v2_0_0.getNamespaceURI(), enable);
-        typeTree.setPathEnabled("CityFurniture", CityFurnitureModule.v2_0_0.getNamespaceURI(), enable);
-        typeTree.setPathEnabled("CityObjectGroup", CityObjectGroupModule.v2_0_0.getNamespaceURI(), enable);
-        typeTree.setPathEnabled("ReliefFeature", ReliefModule.v2_0_0.getNamespaceURI(), enable);
-        typeTree.setPathEnabled("Tunnel", TunnelModule.v2_0_0.getNamespaceURI(), enable);
-        typeTree.setPathEnabled("SolitaryVegetationObject", VegetationModule.v2_0_0.getNamespaceURI(), enable);
-        typeTree.setPathEnabled("PlantCover", VegetationModule.v2_0_0.getNamespaceURI(), enable);
-        typeTree.repaint();
+        featureTree.setPathEnabled("Bridge", BridgeModule.v2_0_0.getNamespaceURI(), enable);
+        featureTree.setPathEnabled("CityFurniture", CityFurnitureModule.v2_0_0.getNamespaceURI(), enable);
+        featureTree.setPathEnabled("CityObjectGroup", CityObjectGroupModule.v2_0_0.getNamespaceURI(), enable);
+        featureTree.setPathEnabled("ReliefFeature", ReliefModule.v2_0_0.getNamespaceURI(), enable);
+        featureTree.setPathEnabled("Tunnel", TunnelModule.v2_0_0.getNamespaceURI(), enable);
+        featureTree.setPathEnabled("SolitaryVegetationObject", VegetationModule.v2_0_0.getNamespaceURI(), enable);
+        featureTree.setPathEnabled("PlantCover", VegetationModule.v2_0_0.getNamespaceURI(), enable);
+        featureTree.repaint();
     }
 
     private void setEnabledFeatureFilter() {
         if (useFeatureFilter.isSelected()) {
-            typeTree.expandRow(0);
+            featureTree.expandRow(0);
         } else {
-            typeTree.collapseRow(0);
-            typeTree.setSelectionPath(null);
+            featureTree.collapseRow(0);
+            featureTree.setSelectionPath(null);
         }
 
-        typeTree.setEnabled(useFeatureFilter.isSelected());
+        featureTree.setEnabled(useFeatureFilter.isSelected());
     }
 
     private void checkNonNegative(JFormattedTextField field) {

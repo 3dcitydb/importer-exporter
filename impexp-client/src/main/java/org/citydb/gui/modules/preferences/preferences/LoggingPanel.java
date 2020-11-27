@@ -69,6 +69,7 @@ public class LoggingPanel extends AbstractPreferencesComponent {
     private JCheckBox useAlternativeLogFile;
     private JTextField alternativeLogFileText;
     private JButton alternativeLogFileButton;
+    private JPanel listPanel;
 
     private JLabel colorSchemeLabel;
     private JList<LogColor> logColors;
@@ -128,8 +129,6 @@ public class LoggingPanel extends AbstractPreferencesComponent {
 
         preview = new JTextPane();
         preview.setFont(new Font(Font.MONOSPACED, Font.PLAIN, UIManager.getFont("Label.font").getSize()));
-        preview.setBackground(UIManager.getColor("TextField.background"));
-        preview.setBorder(UIManager.getBorder("ScrollPane.border"));
         preview.setEditable(false);
 
         useForeground = new JCheckBox();
@@ -169,8 +168,7 @@ public class LoggingPanel extends AbstractPreferencesComponent {
                 colorPanel.add(useBackground, GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 5, 5));
                 colorPanel.add(backgroundColor, GuiUtil.setConstraints(1, 1, 0, 0, GridBagConstraints.BOTH, 0, 5, 5, 0));
 
-                JPanel listPanel = new JPanel();
-                listPanel.setBorder(UIManager.getBorder("ScrollPane.border"));
+                listPanel = new JPanel();
                 listPanel.setLayout(new BorderLayout());
                 listPanel.add(logColors);
 
@@ -262,6 +260,20 @@ public class LoggingPanel extends AbstractPreferencesComponent {
         useAlternativeLogFile.addActionListener(logFileListener);
 
         PopupMenuDecorator.getInstance().decorate(alternativeLogFileText);
+
+        UIManager.addPropertyChangeListener(e -> {
+            if ("lookAndFeel".equals(e.getPropertyName())) {
+                SwingUtilities.invokeLater(this::updateComponentUI);
+            }
+        });
+
+        updateComponentUI();
+    }
+
+    private void updateComponentUI() {
+        preview.setBackground(UIManager.getColor("TextField.background"));
+        preview.setBorder(UIManager.getBorder("ScrollPane.border"));
+        listPanel.setBorder(UIManager.getBorder("ScrollPane.border"));
     }
 
     private void setEnabledLogFile() {

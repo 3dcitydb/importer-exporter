@@ -110,7 +110,14 @@ public class MapWindow extends JDialog implements EventHandler {
 	private final BoundingBoxValidator validator;
 	private final Config config;
 
-	private Map map;	
+	private Map map;
+	private JPanel top;
+	private JPanel left;
+	private JPanel reverse;
+	private JPanel geocoder;
+	private JPanel googleMaps;
+	private JPanel help;
+
 	private JComboBox<Location> searchBox;
 	private JLabel searchResult;
 	private ImageIcon loadIcon;
@@ -128,6 +135,7 @@ public class MapWindow extends JDialog implements EventHandler {
 	private JButton pasteBBox;
 	private JButton showBBox;
 	private JButton clearBBox;
+	private JPopupMenu popupMenu;
 
 	private JLabel bboxTitel;
 	private JLabel reverseTitle;
@@ -196,10 +204,9 @@ public class MapWindow extends JDialog implements EventHandler {
 		setLayout(new GridBagLayout());
 
 		map = new Map();
-		JPanel top = new JPanel();
-		JPanel left = new JPanel();
+		top = new JPanel();
+		left = new JPanel();
 
-		Color borderColor = UIManager.getColor("Component.borderColor");
 		int iconTextGap = new JCheckBox().getIconTextGap();
 		loadIcon = new ImageIcon(getClass().getResource("/org/citydb/gui/images/map/loader.gif"));
 
@@ -209,7 +216,6 @@ public class MapWindow extends JDialog implements EventHandler {
 
 		// top components
 		top.setLayout(new GridBagLayout());
-		top.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, borderColor));
 
 		goButton = new JButton();
 		searchBox = new JComboBox<>();
@@ -233,7 +239,6 @@ public class MapWindow extends JDialog implements EventHandler {
 
 		// left components
 		left.setLayout(new GridBagLayout());
-		left.setBorder(BorderFactory.createMatteBorder(0, 0, 0, 1, borderColor));
 
 		// BBox
 		final JPanel bbox = new JPanel();
@@ -296,9 +301,8 @@ public class MapWindow extends JDialog implements EventHandler {
 		bbox.add(bboxButtons, GuiUtil.setConstraints(0, 2, 1, 0, GridBagConstraints.HORIZONTAL, 10, 10, 0, 10));
 
 		// Reverse geocoder
-		JPanel reverse = new JPanel();
+		reverse = new JPanel();
 		reverse.setLayout(new GridBagLayout());
-		reverse.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, borderColor));
 
 		reverseTitle = new JLabel();
 		reverseTitle.setFont(reverseTitle.getFont().deriveFont(Font.BOLD));
@@ -313,7 +317,6 @@ public class MapWindow extends JDialog implements EventHandler {
 		reverseText.setWrapStyleWord(true);
 		reverseText.setEditable(false);
 		reverseText.setVisible(false);
-		reverseText.setBorder(UIManager.getBorder("TextField.border"));
 		reverseText.setFont(UIManager.getFont("Label.font"));
 		reverseText.setBackground(minX.getBackground());
 
@@ -327,9 +330,8 @@ public class MapWindow extends JDialog implements EventHandler {
 		reverse.add(reverseInfo, GuiUtil.setConstraints(0, 2, 0, 0, GridBagConstraints.HORIZONTAL, 10, 10, 0, 10));
 
 		// Geocoder picker
-		JPanel geocoder = new JPanel();
+		geocoder = new JPanel();
 		geocoder.setLayout(new GridBagLayout());
-		geocoder.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, borderColor));
 
 		geocoderTitle = new JLabel();
 		geocoderTitle.setFont(geocoderTitle.getFont().deriveFont(Font.BOLD));
@@ -343,9 +345,8 @@ public class MapWindow extends JDialog implements EventHandler {
 		geocoder.add(geocoderCombo, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.HORIZONTAL, 10, 10, 0, 10));
 
 		// Google maps
-		JPanel googleMaps = new JPanel();
+		googleMaps = new JPanel();
 		googleMaps.setLayout(new GridBagLayout());
-		googleMaps.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, borderColor));
 
 		JLabel googleMapsTitle = new JLabel();
 		googleMapsTitle.setFont(googleMapsTitle.getFont().deriveFont(Font.BOLD));
@@ -358,9 +359,8 @@ public class MapWindow extends JDialog implements EventHandler {
 		googleMaps.add(googleMapsButton, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.HORIZONTAL, 10, iconTextGap, 0, 10));
 
 		// help
-		JPanel help = new JPanel();
+		help = new JPanel();
 		help.setLayout(new GridBagLayout());
-		help.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, borderColor));
 
 		helpTitle = new JLabel();
 		helpTitle.setFont(help.getFont().deriveFont(Font.BOLD));
@@ -372,7 +372,6 @@ public class MapWindow extends JDialog implements EventHandler {
 		helpText.setEditable(false);
 		helpText.setFont(UIManager.getFont("Label.font"));
 		helpText.setHighlighter(null);
-		helpText.setBorder(BorderFactory.createMatteBorder(0, 0, 0, 0, borderColor));
 
 		help.add(helpTitle, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.HORIZONTAL, 10, 10, 0, 10));
 		help.add(helpText, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.HORIZONTAL, 10, 10, 0, 10));
@@ -435,7 +434,7 @@ public class MapWindow extends JDialog implements EventHandler {
 		popupMenuDecorator.decorate((JComponent)searchBox.getEditor().getEditorComponent(), reverseText);
 
 		// popup menu
-		final JPopupMenu popupMenu = new JPopupMenu();
+		popupMenu = new JPopupMenu();
 		bboxPopups = new BBoxPopupMenu[5];
 
 		bboxPopups[0] = new BBoxPopupMenu(popupMenuDecorator.decorateAndGet(minX), true);
@@ -600,6 +599,29 @@ public class MapWindow extends JDialog implements EventHandler {
 				}
 			});
 		});
+
+		UIManager.addPropertyChangeListener(e -> {
+			if ("lookAndFeel".equals(e.getPropertyName())) {
+				SwingUtilities.invokeLater(this::updateComponentUI);
+			}
+		});
+
+		updateComponentUI();
+	}
+
+	private void updateComponentUI() {
+		Color borderColor = UIManager.getColor("Component.borderColor");
+
+		top.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, borderColor));
+		left.setBorder(BorderFactory.createMatteBorder(0, 0, 0, 1, borderColor));
+		reverse.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, borderColor));
+		geocoder.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, borderColor));
+		googleMaps.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, borderColor));
+		help.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, borderColor));
+		helpText.setBorder(BorderFactory.createMatteBorder(0, 0, 0, 0, borderColor));
+		reverseText.setBorder(UIManager.getBorder("TextField.border"));
+
+		SwingUtilities.updateComponentTreeUI(popupMenu);
 	}
 
 	public MapWindow withBoundingBoxListener(BoundingBoxListener listener) {

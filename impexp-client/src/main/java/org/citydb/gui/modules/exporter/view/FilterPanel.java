@@ -112,6 +112,7 @@ public class FilterPanel extends JPanel implements EventHandler {
 	private JFormattedTextField tilingColumnsText;
 
 	private FeatureTypeTree featureTree;
+	private JPanel featureTreePanel;
 
 	public FilterPanel(ViewController viewController, Config config) {
 		this.config = config;
@@ -300,14 +301,13 @@ public class FilterPanel extends JPanel implements EventHandler {
 			guiPanel.add(bboxFilterPanel, GuiUtil.setConstraints(0, 4, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 		}
 		{
-			JPanel content = new JPanel();
-			content.setBorder(UIManager.getBorder("ScrollPane.border"));
-			content.setLayout(new GridBagLayout());
+			featureTreePanel = new JPanel();
+			featureTreePanel.setLayout(new GridBagLayout());
 			{
-				content.add(featureTree, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
+				featureTreePanel.add(featureTree, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
 			}
 
-			featureFilterPanel.build(content);
+			featureFilterPanel.build(featureTreePanel);
 			guiPanel.add(featureFilterPanel, GuiUtil.setConstraints(0, 5, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 		}
 		{
@@ -330,8 +330,19 @@ public class FilterPanel extends JPanel implements EventHandler {
 		tilingColumnsText.addPropertyChangeListener("value", evt -> checkNonNegative(tilingColumnsText));
 
 		PopupMenuDecorator.getInstance().decorateCheckBoxGroup(lods);
-		PopupMenuDecorator.getInstance().decorate(featureTree);
-		PopupMenuDecorator.getInstance().decorate(countText, startIndexText, tilingRowsText, tilingColumnsText);
+		PopupMenuDecorator.getInstance().decorate(featureTree, countText, startIndexText, tilingRowsText, tilingColumnsText);
+
+		UIManager.addPropertyChangeListener(e -> {
+			if ("lookAndFeel".equals(e.getPropertyName())) {
+				SwingUtilities.invokeLater(this::updateComponentUI);
+			}
+		});
+
+		updateComponentUI();
+	}
+
+	private void updateComponentUI() {
+		featureTreePanel.setBorder(UIManager.getBorder("ScrollPane.border"));
 	}
 
 	private void setEnabledFilterTab() {

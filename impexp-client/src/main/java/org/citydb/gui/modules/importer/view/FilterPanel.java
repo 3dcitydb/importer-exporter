@@ -80,6 +80,7 @@ public class FilterPanel extends JPanel {
 	private JRadioButton bboxOverlaps;
 	private JRadioButton bboxWithin;
 	private FeatureTypeTree featureTree;
+	private JPanel featureTreePanel;
 
 	public FilterPanel(ViewController viewController, Config config) {
 		this.config = config;
@@ -176,14 +177,13 @@ public class FilterPanel extends JPanel {
 			add(bboxFilterPanel, GuiUtil.setConstraints(0, 2, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 		}
 		{
-			JPanel content = new JPanel();
-			content.setBorder(UIManager.getBorder("ScrollPane.border"));
-			content.setLayout(new GridBagLayout());
+			featureTreePanel = new JPanel();
+			featureTreePanel.setLayout(new GridBagLayout());
 			{
-				content.add(featureTree, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
+				featureTreePanel.add(featureTree, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
 			}
 
-			featureFilterPanel.build(content);
+			featureFilterPanel.build(featureTreePanel);
 			add(featureFilterPanel, GuiUtil.setConstraints(0, 3, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 		}
 
@@ -192,8 +192,19 @@ public class FilterPanel extends JPanel {
 		useBBoxFilter.addActionListener(e -> setEnabledBBoxFilter());
 		useFeatureFilter.addActionListener(e -> setEnabledFeatureFilter());
 
-		PopupMenuDecorator.getInstance().decorate(featureTree);
-		PopupMenuDecorator.getInstance().decorate(gmlNameText, gmlIdText, countText, startIndexText);
+		PopupMenuDecorator.getInstance().decorate(featureTree, gmlNameText, gmlIdText, countText, startIndexText);
+
+		UIManager.addPropertyChangeListener(e -> {
+			if ("lookAndFeel".equals(e.getPropertyName())) {
+				SwingUtilities.invokeLater(this::updateComponentUI);
+			}
+		});
+
+		updateComponentUI();
+	}
+
+	private void updateComponentUI() {
+		featureTreePanel.setBorder(UIManager.getBorder("ScrollPane.border"));
 	}
 
 	private void setEnabledAttributeFilter() {
