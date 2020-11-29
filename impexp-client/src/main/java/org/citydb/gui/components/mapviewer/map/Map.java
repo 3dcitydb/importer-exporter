@@ -36,6 +36,7 @@ import org.jdesktop.swingx.JXMapKit.DefaultProviders;
 import org.jdesktop.swingx.JXMapViewer;
 import org.jdesktop.swingx.JXMapViewer.MouseWheelZoomStyle;
 import org.jdesktop.swingx.mapviewer.AbstractTileFactory;
+import org.jdesktop.swingx.mapviewer.DefaultTileFactory;
 import org.jdesktop.swingx.mapviewer.GeoPosition;
 import org.jdesktop.swingx.painter.CompoundPainter;
 
@@ -134,7 +135,10 @@ public class Map {
 		mapKit.getMainMap().add(header, GuiUtil.setConstraints(0, 0, 2, 1, 1, 1, GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, 0, 0, 0, 0));
 
 		mapKit.setDefaultProvider(DefaultProviders.OpenStreetMaps);
-		((AbstractTileFactory)mapKit.getMainMap().getTileFactory()).setThreadPoolSize(10);
+		DefaultTileFactory tileFactory = (DefaultTileFactory) mapKit.getMainMap().getTileFactory();
+		tileFactory.addHttpRequestProperty("User-Agent", "swingx-ws/1.1 (https://www.3dcitydb.org/)");
+		tileFactory.setThreadPoolSize(10);
+
 		mapKit.setDataProviderCreditShown(false);
 		mapKit.setAddressLocationShown(true);
 		mapKit.getMainMap().setRecenterOnClickEnabled(true);	
