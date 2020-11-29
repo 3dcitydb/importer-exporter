@@ -32,13 +32,15 @@ import org.citydb.gui.util.GuiUtil;
 import javax.swing.*;
 import java.awt.*;
 
-@SuppressWarnings("serial")
 public class SplashScreen extends JWindow {
 	private final JLabel message;
 	private final JProgressBar progressBar;
 
-	public SplashScreen(int messageX, int messageY, Color messageColor) {
-		ImageIcon icon = new ImageIcon(getToolkit().getImage(this.getClass().getResource("/org/citydb/gui/images/splash/splash.png")));
+	public SplashScreen(int left, int top, Color messageColor) {
+		Object arc = UIManager.get("ProgressBar.arc");
+		UIManager.put("ProgressBar.arc", 0);
+
+		ImageIcon icon = new ImageIcon(getToolkit().getImage(this.getClass().getResource("/org/citydb/gui/splash/splash.png")));
 		JPanel content = new JPanel() {
 			public boolean isOptimizedDrawingEnabled() {
 				return false;
@@ -59,14 +61,12 @@ public class SplashScreen extends JWindow {
 		progressBar = new JProgressBar();
 		progressBar.setIndeterminate(false);
 		progressBar.setVisible(false);
-		
-		GridBagConstraints c = GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.HORIZONTAL, 5 + messageY, 5 + messageX, 0, 5);
-		c.anchor = GridBagConstraints.NORTH;
-		dynamicContent.add(message, c);
-		
-		c = GuiUtil.setConstraints(0, 1, 1, 1, GridBagConstraints.HORIZONTAL, 5, 5, 5, 5);
-		c.anchor = GridBagConstraints.SOUTH;
-		dynamicContent.add(progressBar, c);
+
+		Component placeholder = Box.createVerticalStrut(progressBar.getPreferredSize().height);
+
+		dynamicContent.add(message, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.HORIZONTAL, top, left, 0, 5));
+		dynamicContent.add(placeholder, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.SOUTH, GridBagConstraints.HORIZONTAL, 0, 0, 0, 0));
+		dynamicContent.add(progressBar, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.SOUTH, GridBagConstraints.HORIZONTAL, 0, 0, 0, 0));
 		
 		dynamicContent.setAlignmentX(0f);
 		dynamicContent.setAlignmentY(0f);
@@ -78,6 +78,7 @@ public class SplashScreen extends JWindow {
 		content.add(image);
 		
 		add(content, BorderLayout.CENTER);
+		UIManager.put("ProgressBar.arc", arc);
 		
 		// center on screen
 		Toolkit t = Toolkit.getDefaultToolkit();

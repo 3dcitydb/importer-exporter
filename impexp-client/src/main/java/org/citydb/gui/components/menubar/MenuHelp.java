@@ -27,6 +27,7 @@
  */
 package org.citydb.gui.components.menubar;
 
+import com.formdev.flatlaf.extras.FlatSVGIcon;
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.gui.ImpExpGui;
@@ -54,7 +55,7 @@ public class MenuHelp extends JMenu {
 	}
 	
 	private void init() {
-		doc = new JMenuItem();
+		doc = new JMenuItem(new FlatSVGIcon("org/citydb/gui/icons/manual.svg"));
 		readMe = new JMenuItem();
 		info = new JMenuItem();
 

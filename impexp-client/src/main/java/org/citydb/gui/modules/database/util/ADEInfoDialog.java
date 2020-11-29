@@ -27,6 +27,7 @@
  */
 package org.citydb.gui.modules.database.util;
 
+import com.formdev.flatlaf.extras.FlatSVGIcon;
 import com.formdev.flatlaf.ui.FlatTabbedPaneUI;
 import org.citydb.config.i18n.Language;
 import org.citydb.database.schema.mapping.AbstractType;
@@ -122,11 +123,11 @@ public class ADEInfoDialog extends JDialog {
             JLabel statusText = new JLabel();
             if (adeInfo.hasDatabaseSupport() && adeInfo.hasImpexpSupport()) {
                 statusText.setText(Language.I18N.getString("db.dialog.ade.status.ok"));
-                statusText.setIcon(new ImageIcon(ADEInfoRow.class.getResource("/org/citydb/gui/images/common/done.png")));
+                statusText.setIcon(new FlatSVGIcon("org/citydb/gui/icons/check.svg"));
             } else {
                 statusText.setText(adeInfo.hasDatabaseSupport() ? Language.I18N.getString("db.dialog.ade.status.noImpExp") :
                         Language.I18N.getString("db.dialog.ade.status.noDB"));
-                statusText.setIcon(new ImageIcon(ADEInfoRow.class.getResource("/org/citydb/gui/images/common/error_outline.png")));
+                statusText.setIcon(new FlatSVGIcon("org/citydb/gui/icons/yellow_bulb.svg"));
             }
 
             JPanel content = new JPanel();

@@ -27,6 +27,7 @@
  */
 package org.citydb.gui.components.menubar;
 
+import com.formdev.flatlaf.extras.FlatSVGIcon;
 import org.citydb.config.Config;
 import org.citydb.config.gui.GuiConfig;
 import org.citydb.config.gui.style.Theme;
@@ -55,7 +56,7 @@ public class MenuView extends JMenu {
 	}
 	
 	private void init() {
-		map = new JMenuItem();
+		map = new JMenuItem(new FlatSVGIcon("org/citydb/gui/icons/map.svg"));
 		detachConsole = new JCheckBoxMenuItem();
 		detachConsole.setSelected(config.getGuiConfig().getConsoleWindow().isDetached());
 		lightTheme = new JCheckBoxMenuItem();

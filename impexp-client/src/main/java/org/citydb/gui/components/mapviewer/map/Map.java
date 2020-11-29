@@ -27,6 +27,7 @@
  */
 package org.citydb.gui.components.mapviewer.map;
 
+import com.formdev.flatlaf.extras.FlatSVGIcon;
 import org.citydb.config.i18n.Language;
 import org.citydb.gui.components.mapviewer.MapWindow;
 import org.citydb.gui.util.GuiUtil;
@@ -80,8 +81,7 @@ public class Map {
 		{
 			hintsLabel = new JLabel();
 			hintsLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
-			hintsLabel.setIcon(new ImageIcon(getClass().getResource("/org/citydb/gui/images/map/help.png")));
-			hintsLabel.setIconTextGap(new JCheckBox().getIconTextGap());
+			hintsLabel.setIcon(new FlatSVGIcon("org/citydb/gui/icons/help.svg"));
 
 			headerMenu.add(hintsLabel, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.EAST, GridBagConstraints.NONE, 2, 2, 2, 5));
 
@@ -99,13 +99,13 @@ public class Map {
 				hintIcons[i].setOpaque(false);
 			}
 
-			hintIcons[0].setIcon(new ImageIcon(getClass().getResource("/org/citydb/gui/images/map/selection.png")));
-			hintIcons[1].setIcon(new ImageIcon(getClass().getResource("/org/citydb/gui/images/map/waypoint_small.png")));
-			hintIcons[2].setIcon(new ImageIcon(getClass().getResource("/org/citydb/gui/images/map/magnifier.png")));
-			hintIcons[3].setIcon(new ImageIcon(getClass().getResource("/org/citydb/gui/images/map/magnifier_plus_selection.png")));
-			hintIcons[4].setIcon(new ImageIcon(getClass().getResource("/org/citydb/gui/images/map/move.png")));
-			hintIcons[5].setIcon(new ImageIcon(getClass().getResource("/org/citydb/gui/images/map/center.png")));
-			hintIcons[6].setIcon(new ImageIcon(getClass().getResource("/org/citydb/gui/images/map/popup.png")));
+			hintIcons[0].setIcon(new FlatSVGIcon("org/citydb/gui/map/bbox.svg"));
+			hintIcons[1].setIcon(new FlatSVGIcon("org/citydb/gui/map/address_search.svg"));
+			hintIcons[2].setIcon(new FlatSVGIcon("org/citydb/gui/map/zoom_in.svg"));
+			hintIcons[3].setIcon(new FlatSVGIcon("org/citydb/gui/map/zoom_out_map.svg"));
+			hintIcons[4].setIcon(new FlatSVGIcon("org/citydb/gui/map/pan_tool.svg"));
+			hintIcons[5].setIcon(new FlatSVGIcon("org/citydb/gui/map/center.svg"));
+			hintIcons[6].setIcon(new FlatSVGIcon("org/citydb/gui/map/popup_menu.svg"));
 
 			for (int i = 0; i < hintLabels.length; ++i) {
 				hints.add(hintIcons[i], GuiUtil.setConstraints(0, i, 0, 0, GridBagConstraints.NORTH, GridBagConstraints.HORIZONTAL, 5, 5, 1, 5));
@@ -225,7 +225,7 @@ public class Map {
 
 	private void updateComponentUI() {
 		Color transparentBackground = UIManager.getColor("TabbedPane.background");
-		transparentBackground = new Color(transparentBackground.getRed(), transparentBackground.getGreen(), transparentBackground.getBlue(), 200);
+		transparentBackground = new Color(transparentBackground.getRed(), transparentBackground.getGreen(), transparentBackground.getBlue(), 220);
 
 		headerMenu.setBackground(transparentBackground);
 		hints.setBackground(transparentBackground);

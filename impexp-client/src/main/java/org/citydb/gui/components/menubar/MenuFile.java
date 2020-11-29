@@ -27,6 +27,7 @@
  */
 package org.citydb.gui.components.menubar;
 
+import com.formdev.flatlaf.extras.FlatSVGIcon;
 import org.citydb.config.Config;
 import org.citydb.config.ConfigUtil;
 import org.citydb.config.ProjectConfig;
@@ -81,13 +82,15 @@ public class MenuFile extends JMenu {
 	}
 
 	private void init() {
-		openConfig = new JMenuItem();
-		saveConfig = new JMenuItem();
-		saveConfigAs = new JMenuItem();
-		defaults = new JMenuItem();
+		openConfig = new JMenuItem(new FlatSVGIcon("org/citydb/gui/icons/folder_open.svg"));
+		saveConfig = new JMenuItem(new FlatSVGIcon("org/citydb/gui/icons/save.svg"));
+		saveConfigAs = new JMenuItem(new FlatSVGIcon("org/citydb/gui/icons/save_alt.svg"));
+		defaults = new JMenuItem(new FlatSVGIcon("org/citydb/gui/icons/refresh.svg"));
 		xsdConfig = new JMenuItem();
 		lastUsed = new JMenu();
 		exit = new JMenuItem();
+
+		lastUsed.setIcon(new FlatSVGIcon("org/citydb/gui/icons/recently_used.svg"));
 
 		openConfig.addActionListener(e -> {
             File file = loadDialog(Language.I18N.getString("menu.file.open.label"));

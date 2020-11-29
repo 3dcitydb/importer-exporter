@@ -28,6 +28,7 @@
 
 package org.citydb.gui.modules.exporter.view.filter;
 
+import com.formdev.flatlaf.extras.FlatSVGIcon;
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.exporter.SimpleQuery;
@@ -61,15 +62,8 @@ public class SQLFilterView extends FilterView {
         component = new JPanel();
         component.setLayout(new GridBagLayout());
 
-        addButton = new JButton();
-        ImageIcon add = new ImageIcon(getClass().getResource("/org/citydb/gui/images/common/add.png"));
-        addButton.setIcon(add);
-        addButton.setMargin(new Insets(0, 0, 0, 0));
-
-        removeButton = new JButton();
-        ImageIcon remove = new ImageIcon(getClass().getResource("/org/citydb/gui/images/common/remove.png"));
-        removeButton.setIcon(remove);
-        removeButton.setMargin(new Insets(0, 0, 0, 0));
+        addButton = new JButton(new FlatSVGIcon("org/citydb/gui/icons/add.svg"));
+        removeButton = new JButton(new FlatSVGIcon("org/citydb/gui/icons/remove.svg"));
 
         sqlText = new RSyntaxTextArea("", 5, 1);
         RSyntaxTextAreaHelper.installDefaultTheme(sqlText);
@@ -81,13 +75,14 @@ public class SQLFilterView extends FilterView {
         rowHeight = sqlText.getFont().getSize() + 5;
         scrollPane = new RTextScrollPane(sqlText);
 
-        JPanel buttons = new JPanel();
-        buttons.setLayout(new GridBagLayout());
-        buttons.add(addButton, GuiUtil.setConstraints(0,0,0,0,GridBagConstraints.NONE,0,5,5,0));
-        buttons.add(removeButton, GuiUtil.setConstraints(0,1,0,0,GridBagConstraints.NONE,0,5,0,0));
+        JToolBar toolBar = new JToolBar();
+        toolBar.add(addButton);
+        toolBar.add(removeButton);
+        toolBar.setFloatable(false);
+        toolBar.setOrientation(JToolBar.VERTICAL);
 
-        component.add(scrollPane, GuiUtil.setConstraints(0,0,1,1,GridBagConstraints.BOTH,10,0,0,0));
-        component.add(buttons, GuiUtil.setConstraints(1,0,0,0,GridBagConstraints.NORTH,GridBagConstraints.NONE,10,0,0,0));
+        component.add(scrollPane, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.BOTH, 10, 0, 0, 0));
+        component.add(toolBar, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.NORTH, GridBagConstraints.NONE, 10, 5, 0, 0));
 
         addButton.addActionListener(e -> {
             Dimension size = scrollPane.getPreferredSize();

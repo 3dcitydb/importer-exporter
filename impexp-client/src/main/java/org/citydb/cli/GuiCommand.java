@@ -169,7 +169,7 @@ public class GuiCommand extends CliCommand implements StartupProgressListener {
         }
 
         if (OSXAdapter.IS_MAC_OS) {
-            OSXAdapter.setDockIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/org/citydb/gui/images/common/logo_small.png")));
+            OSXAdapter.setDockIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/org/citydb/gui/logos/logo_small.png")));
             if (System.getProperty("apple.laf.useScreenMenuBar") == null) {
                 System.setProperty("apple.laf.useScreenMenuBar", "true");
             }
@@ -185,7 +185,7 @@ public class GuiCommand extends CliCommand implements StartupProgressListener {
 
         // splash screen
         if (!hideSplash) {
-            splashScreen = new SplashScreen(3, 477, Color.BLACK);
+            splashScreen = new SplashScreen(5, 490, Color.BLACK);
             splashScreen.setMessage("Version \"" + getClass().getPackage().getImplementationVersion() + "\"");
             parent.withStartupProgressListener(this);
             splashScreen.setVisible(true);

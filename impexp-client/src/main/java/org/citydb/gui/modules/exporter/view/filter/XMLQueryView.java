@@ -28,6 +28,7 @@
 
 package org.citydb.gui.modules.exporter.view.filter;
 
+import com.formdev.flatlaf.extras.FlatSVGIcon;
 import com.sun.xml.bind.marshaller.NamespacePrefixMapper;
 import org.citydb.config.Config;
 import org.citydb.config.ConfigUtil;
@@ -142,29 +143,20 @@ public class XMLQueryView extends FilterView {
         xmlText.setTabSize(2);
         RTextScrollPane scrollPane = new RTextScrollPane(xmlText);
 
-        newButton = new JButton();
-        ImageIcon add = new ImageIcon(getClass().getResource("/org/citydb/gui/images/common/query_new.png"));
-        newButton.setIcon(add);
-        newButton.setMargin(new Insets(0, 0, 0, 0));
+        newButton = new JButton(new FlatSVGIcon("org/citydb/gui/icons/query_new.svg"));
+        duplicateButton = new JButton(new FlatSVGIcon("org/citydb/gui/icons/copy.svg"));
+        validateButton = new JButton(new FlatSVGIcon("org/citydb/gui/icons/check.svg"));
 
-        duplicateButton = new JButton();
-        ImageIcon duplicate = new ImageIcon(getClass().getResource("/org/citydb/gui/images/common/query_duplicate.png"));
-        duplicateButton.setIcon(duplicate);
-        duplicateButton.setMargin(new Insets(0, 0, 0, 0));
+        JToolBar toolBar = new JToolBar();
+        toolBar.add(newButton);
+        toolBar.add(duplicateButton);
+        toolBar.addSeparator();
+        toolBar.add(validateButton);
+        toolBar.setFloatable(false);
+        toolBar.setOrientation(JToolBar.VERTICAL);
 
-        validateButton = new JButton();
-        ImageIcon validate = new ImageIcon(getClass().getResource("/org/citydb/gui/images/common/done.png"));
-        validateButton.setIcon(validate);
-        validateButton.setMargin(new Insets(0, 0, 0, 0));
-
-        JPanel buttons = new JPanel();
-        buttons.setLayout(new GridBagLayout());
-        buttons.add(newButton, GuiUtil.setConstraints(0,0,0,0,GridBagConstraints.NONE,0,5,5,0));
-        buttons.add(duplicateButton, GuiUtil.setConstraints(0,1,0,0,GridBagConstraints.NONE,0,5,5,0));
-        buttons.add(validateButton, GuiUtil.setConstraints(0,2,0,0,GridBagConstraints.NONE,0,5,0,0));
-
-        component.add(scrollPane, GuiUtil.setConstraints(0,0,1,1,GridBagConstraints.BOTH,0,0,0,0));
-        component.add(buttons, GuiUtil.setConstraints(1,0,0,0,GridBagConstraints.NORTH,GridBagConstraints.NONE,0,0,0,0));
+        component.add(scrollPane, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
+        component.add(toolBar, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.NORTH, GridBagConstraints.NONE, 0, 5, 0, 0));
 
         newButton.addActionListener(e -> SwingUtilities.invokeLater(this::setEmptyQuery));
         duplicateButton.addActionListener(e -> SwingUtilities.invokeLater(this::setSimpleSettings));

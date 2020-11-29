@@ -43,15 +43,27 @@ public class TitledPanel extends JPanel {
     public static final int RIGHT = 0;
 
     private String title = "";
+    private Icon icon;
+    private int horizontalAlignment = SwingConstants.LEADING;
     private boolean showSeparator = true;
     private Insets margin;
 
     private JComponent header;
     private JToggleButton toggleButton;
 
-    public TitledPanel withTitle(String title) {
+    public TitledPanel withTitle(String title, Icon icon, int horizontalAlignment) {
         this.title = title;
+        this.icon = icon;
+        this.horizontalAlignment = horizontalAlignment;
         return this;
+    }
+
+    public TitledPanel withTitle(String title) {
+        return withTitle(title, null, SwingConstants.LEADING);
+    }
+
+    public TitledPanel withTitle(String title, Icon icon) {
+        return withTitle(title, icon, SwingConstants.LEADING);
     }
 
     public TitledPanel withToggleButton(JToggleButton toggleButton) {
@@ -99,8 +111,8 @@ public class TitledPanel extends JPanel {
         }
 
         header = showSeparator ?
-                new JXTitledSeparator(title) :
-                new JLabel(title);
+                new JXTitledSeparator(title, horizontalAlignment, icon) :
+                new JLabel(title, icon, horizontalAlignment);
 
         add(leading, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.NONE, top, left, 5, iconTextGap));
         add(header, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.HORIZONTAL, top, 0, 5, right));

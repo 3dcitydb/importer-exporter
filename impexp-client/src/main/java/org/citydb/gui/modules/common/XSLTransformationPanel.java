@@ -27,6 +27,7 @@
  */
 package org.citydb.gui.modules.common;
 
+import com.formdev.flatlaf.extras.FlatSVGIcon;
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.common.XSLTransformation;
@@ -268,26 +269,29 @@ public class XSLTransformationPanel extends AbstractPreferencesComponent {
             label = new JLabel(Language.I18N.getString("common.pref.xslt.label.stylesheets"));
             stylesheet = new JTextField();
             browseButton = new JButton(Language.I18N.getString("common.button.browse"));
-            browseButton.setMargin(new Insets(0, browseButton.getInsets().left, 0, browseButton.getInsets().right));
+            addButton = new JButton(new FlatSVGIcon("org/citydb/gui/icons/add.svg"));
+            removeButton = new JButton(new FlatSVGIcon("org/citydb/gui/icons/remove.svg"));
 
-            addButton = new JButton();
-            ImageIcon add = new ImageIcon(getClass().getResource("/org/citydb/gui/images/common/add.png"));
-            addButton.setIcon(add);
-            addButton.setMargin(new Insets(0, 0, 0, 0));
+            JToolBar toolBar = new JToolBar();
+            toolBar.setFloatable(false);
+            toolBar.add(addButton);
+            toolBar.add(removeButton);
 
-            removeButton = new JButton();
-            ImageIcon remove = new ImageIcon(getClass().getResource("/org/citydb/gui/images/common/remove.png"));
-            removeButton.setIcon(remove);
-            removeButton.setMargin(new Insets(0, 0, 0, 0));
-
-            stylesheet.setPreferredSize(new Dimension(0, 0));
+            stylesheet.setPreferredSize(new Dimension(0, stylesheet.getPreferredSize().height));
 
             panel.add(label, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 5, 5));
-            panel.add(stylesheet, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.BOTH, 0, 5, 5, 5));
-            panel.add(browseButton, GuiUtil.setConstraints(2, 0, 0, 0, GridBagConstraints.VERTICAL, 0, 5, 5, 5));
-            panel.add(addButton, GuiUtil.setConstraints(3, 0, 0, 0, GridBagConstraints.NONE, 0, 15, 5, 5));
-            panel.add(!first ? removeButton : Box.createRigidArea(removeButton.getPreferredSize()),
-                    GuiUtil.setConstraints(4, 0, 0, 0, GridBagConstraints.NONE, 0, 0, 5, 0));
+            panel.add(stylesheet, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, 5, 5));
+            panel.add(browseButton, GuiUtil.setConstraints(2, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 5, 5, 5));
+            panel.add(toolBar, GuiUtil.setConstraints(3, 0, 0, 0, GridBagConstraints.NONE, 0, 10, 5, 0));
+
+            if (first) {
+                Dimension size = toolBar.getPreferredSize();
+                toolBar.remove(removeButton);
+                Dimension reduced = toolBar.getPreferredSize();
+
+                panel.add(Box.createRigidArea(new Dimension(size.width - reduced.width, size.height - reduced.height)),
+                        GuiUtil.setConstraints(4, 0, 0, 0, GridBagConstraints.NONE, 0, 0, 5, 0));
+            }
 
             addButton.addActionListener(e -> {
                 add();

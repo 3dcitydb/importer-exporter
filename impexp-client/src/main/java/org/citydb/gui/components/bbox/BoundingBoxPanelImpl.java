@@ -27,6 +27,7 @@
  */
 package org.citydb.gui.components.bbox;
 
+import com.formdev.flatlaf.extras.FlatSVGIcon;
 import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.geometry.Position;
 import org.citydb.config.i18n.Language;
@@ -105,25 +106,19 @@ public class BoundingBoxPanelImpl extends BoundingBoxPanel implements EventHandl
         JPanel actionPanel = new JPanel();
         actionPanel.setLayout(new GridBagLayout());
 
-        map = new JButton();
-        ImageIcon mapIcon = new ImageIcon(getClass().getResource("/org/citydb/gui/images/common/map_select.png"));
-        map.setIcon(mapIcon);
-        map.setMargin(new Insets(1, 1, 1, 1));
+        map = new JButton(new FlatSVGIcon("org/citydb/gui/icons/map.svg"));
+        copy = new JButton(new FlatSVGIcon("org/citydb/gui/icons/copy.svg"));
+        paste = new JButton(new FlatSVGIcon("org/citydb/gui/icons/paste.svg"));
 
-        copy = new JButton();
-        ImageIcon copyIcon = new ImageIcon(getClass().getResource("/org/citydb/gui/images/common/bbox_copy.png"));
-        copy.setIcon(copyIcon);
-        copy.setMargin(new Insets(1, 1, 1, 1));
+        JToolBar toolBar = new JToolBar();
+        toolBar.add(map);
+        toolBar.addSeparator();
+        toolBar.add(copy);
+        toolBar.add(paste);
+        toolBar.setFloatable(false);
 
-        paste = new JButton();
-        ImageIcon pasteIcon = new ImageIcon(getClass().getResource("/org/citydb/gui/images/common/bbox_paste.png"));
-        paste.setIcon(pasteIcon);
-        paste.setMargin(new Insets(1, 1, 1, 1));
-
-        actionPanel.add(map, GuiUtil.setConstraints(0, 0, 0.0, 0.0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 5));
-        actionPanel.add(copy, GuiUtil.setConstraints(1, 0, 0.0, 0.0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 5));
-        actionPanel.add(paste, GuiUtil.setConstraints(2, 0, 0.0, 0.0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 5));
-        actionPanel.add(srsLabel, GuiUtil.setConstraints(3, 0, 0.0, 0.0, GridBagConstraints.HORIZONTAL, 0, 40, 0, 5));
+        actionPanel.add(toolBar, GuiUtil.setConstraints(0, 0, 0.0, 0.0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 5));
+        actionPanel.add(srsLabel, GuiUtil.setConstraints(3, 0, 0.0, 0.0, GridBagConstraints.HORIZONTAL, 0, 30, 0, 5));
         actionPanel.add(srsComboBox, GuiUtil.setConstraints(4, 0, 1.0, 1.0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 0));
         srsComboBox.setPreferredSize(new Dimension(50, srsComboBox.getPreferredSize().height));
 
@@ -132,7 +127,7 @@ public class BoundingBoxPanelImpl extends BoundingBoxPanel implements EventHandl
         inputFieldsPanel.setLayout(new GridBagLayout());
         inputFieldsPanel.add(xminLabel, GuiUtil.setConstraints(0, 0, 0.0, 0.0, GridBagConstraints.NONE, 0, 0, 0, 5));
         inputFieldsPanel.add(xmin, GuiUtil.setConstraints(1, 0, 1.0, 0.0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 5));
-        inputFieldsPanel.add(xmaxLabel, GuiUtil.setConstraints(2, 0, 0.0, 0.0, GridBagConstraints.NONE, 0, 10, 0, 5));
+        inputFieldsPanel.add(xmaxLabel, GuiUtil.setConstraints(2,0, 0.0, 0.0, GridBagConstraints.NONE, 0, 10, 0, 5));
         inputFieldsPanel.add(xmax, GuiUtil.setConstraints(3, 0, 1.0, 0.0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 0));
         inputFieldsPanel.add(yminLabel, GuiUtil.setConstraints(0, 1, 0.0, 0.0, GridBagConstraints.NONE, 5, 0, 0, 5));
         inputFieldsPanel.add(ymin, GuiUtil.setConstraints(1, 1, 1.0, 0.0, GridBagConstraints.HORIZONTAL, 5, 5, 0, 5));

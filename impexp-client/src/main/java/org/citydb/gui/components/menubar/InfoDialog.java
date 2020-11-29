@@ -27,6 +27,7 @@
  */
 package org.citydb.gui.components.menubar;
 
+import com.formdev.flatlaf.extras.FlatSVGIcon;
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.global.LanguageType;
@@ -63,7 +64,7 @@ public class InfoDialog extends JDialog {
 			JLabel version = new JLabel("Version " + getClass().getPackage().getImplementationVersion());
 			name.setFont(name.getFont().deriveFont(Font.BOLD));
 
-			JLabel img = new JLabel(new ImageIcon(getClass().getResource("/org/citydb/gui/images/common/logo.png")));
+			JLabel img = new JLabel(new ImageIcon(getClass().getResource("/org/citydb/gui/logos/logo.png")));
 
 			header.add(name, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.HORIZONTAL, 10, 10, 0, 20));
 			header.add(version, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, 0, 10, 0, 20));
@@ -79,7 +80,7 @@ public class InfoDialog extends JDialog {
 
 		add(header, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 		add(tabs, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
-		add(button, GuiUtil.setConstraints(0, 2, 1, 0, GridBagConstraints.EAST, GridBagConstraints.NONE, 10, 10, 10, 10));
+		add(button, GuiUtil.setConstraints(0, 2, 1, 0, GridBagConstraints.EAST, GridBagConstraints.NONE, 15, 10, 10, 10));
 
 		pack();
 
@@ -94,6 +95,8 @@ public class InfoDialog extends JDialog {
 		JLabel support = new JLabel(MessageFormat.format(text, "<html><a href=\"\">https://github.com/3dcitydb</a>"));
 		support.setCursor(new Cursor(Cursor.HAND_CURSOR));
 		support.addMouseListener(openInBrowserAdapter("https://github.com/3dcitydb"));
+		support.setIcon(new FlatSVGIcon("org/citydb/gui/icons/question_dialog.svg"));
+		support.setIconTextGap(10);
 
 		TitledPanel supportPanel = new TitledPanel()
 				.withTitle(Language.I18N.getString("menu.help.info.support"))
@@ -137,13 +140,13 @@ public class InfoDialog extends JDialog {
 					"Chair of Geoinformatics,<br/>Technical University of Munich" :
 					"Lehrstuhl für Geoinformatik,<br/>Technische Universität München";
 
-			JLabel tumLogo = new JLabel(new ImageIcon(getClass().getResource("/org/citydb/gui/images/partner/tum_logo.png")));
+			JLabel tumLogo = new JLabel(new ImageIcon(getClass().getResource("/org/citydb/gui/logos/tum_logo.png")));
 			Component tumInfo = createInfoText(tum, "https://www.lrg.tum.de/gis");
 
-			JLabel vcsLogo = new JLabel(new ImageIcon(getClass().getResource("/org/citydb/gui/images/partner/vcs_logo.png")));
+			JLabel vcsLogo = new JLabel(new ImageIcon(getClass().getResource("/org/citydb/gui/logos/vcs_logo.png")));
 			Component vcsInfo = createInfoText("Virtual City Systems, Berlin", "https://www.vc.systems");
 
-			JLabel mossLogo = new JLabel(new ImageIcon(getClass().getResource("/org/citydb/gui/images/partner/moss_logo.png")));
+			JLabel mossLogo = new JLabel(new ImageIcon(getClass().getResource("/org/citydb/gui/logos/moss_logo.png")));
 			Component mossInfo = createInfoText("M.O.S.S. Computer Grafik Systeme GmbH,<br/>Taufkirchen, Germany",
 					"https://www.moss.de");
 
