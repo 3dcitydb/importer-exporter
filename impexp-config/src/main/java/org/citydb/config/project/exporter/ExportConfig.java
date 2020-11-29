@@ -53,7 +53,7 @@ import javax.xml.bind.annotation.XmlType;
 })
 public class ExportConfig {
     @XmlAttribute
-    private boolean useSimpleQuery;
+    private boolean useSimpleQuery = true;
     private QueryConfig query;
     private SimpleQuery simpleQuery;
     private Path path;

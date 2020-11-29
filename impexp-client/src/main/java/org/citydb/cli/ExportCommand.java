@@ -89,6 +89,7 @@ public class ExportCommand extends CliCommand {
 
         // set user-defined query options
         if (queryOption != null) {
+            config.getExportConfig().setUseSimpleQuery(false);
             config.getExportConfig().setQuery(queryOption.toQueryConfig());
         }
 
