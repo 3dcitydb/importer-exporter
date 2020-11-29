@@ -60,22 +60,22 @@ public class BoundingBoxPanelImpl extends BoundingBoxPanel implements EventHandl
     private boolean isEnabled;
     private boolean isEditable;
 
-    private JButton map;
-    private JButton copy;
-    private JButton paste;
-    private JLabel srsLabel;
-    private SrsComboBox srsComboBox;
-    private JFormattedTextField xmin;
-    private JFormattedTextField ymin;
-    private JFormattedTextField xmax;
-    private JFormattedTextField ymax;
-    private JLabel xminLabel;
-    private JLabel xmaxLabel;
-    private JLabel yminLabel;
-    private JLabel ymaxLabel;
+    private final JButton map;
+    private final JButton copy;
+    private final JButton paste;
+    private final JLabel srsLabel;
+    private final SrsComboBox srsComboBox;
+    private final JFormattedTextField xmin;
+    private final JFormattedTextField ymin;
+    private final JFormattedTextField xmax;
+    private final JFormattedTextField ymax;
+    private final JLabel xminLabel;
+    private final JLabel xmaxLabel;
+    private final JLabel yminLabel;
+    private final JLabel ymaxLabel;
 
-    private BBoxPopupMenuWrapper[] bboxPopups;
-    private BoundingBoxClipboardHandler clipboardHandler;
+    private final BBoxPopupMenuWrapper[] bboxPopups;
+    private final BoundingBoxClipboardHandler clipboardHandler;
 
     public BoundingBoxPanelImpl(ViewController viewController) {
         ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(EventType.SWITCH_LOCALE, this);
@@ -149,6 +149,7 @@ public class BoundingBoxPanelImpl extends BoundingBoxPanel implements EventHandl
 
         // button actions
         map.addActionListener(e -> {
+            commitBoundingBox();
             SwingUtilities.invokeLater(() -> MapWindow.getInstance(viewController)
                     .withBoundingBoxListener(isEditable ? this : null)
                     .withBoundingBox(getBoundingBox())
@@ -184,16 +185,8 @@ public class BoundingBoxPanelImpl extends BoundingBoxPanel implements EventHandl
     }
 
     private void copyBoundingBoxToClipboard() {
-        try {
-            xmin.commitEdit();
-            ymin.commitEdit();
-            xmax.commitEdit();
-            ymax.commitEdit();
-
-            clipboardHandler.putBoundingBox(getBoundingBox());
-        } catch (ParseException e1) {
-            log.error("Failed to interpret values of input fields as bounding box.");
-        }
+        commitBoundingBox();
+        clipboardHandler.putBoundingBox(getBoundingBox());
     }
 
     private void pasteBoundingBoxFromClipboard() {
@@ -308,9 +301,21 @@ public class BoundingBoxPanelImpl extends BoundingBoxPanel implements EventHandl
         doTranslation();
     }
 
+    private void commitBoundingBox() {
+        try {
+            xmin.commitEdit();
+            ymin.commitEdit();
+            xmax.commitEdit();
+            ymax.commitEdit();
+        } catch (ParseException e) {
+            log.error("Failed to interpret [" + xmin.getText() + "," + ymin.getText() + "," +
+                    xmax.getText() + "," + ymax.getText() + "] as bounding box.");
+        }
+    }
+
     private final class BBoxPopupMenuWrapper {
-        private JMenuItem copy;
-        private JMenuItem paste;
+        private final JMenuItem copy;
+        private final JMenuItem paste;
 
         BBoxPopupMenuWrapper(JPopupMenu popupMenu) {
             copy = new JMenuItem();
