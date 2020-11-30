@@ -36,6 +36,7 @@ import org.apache.tika.mime.MediaType;
 import org.citydb.file.InputFile;
 
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -100,6 +101,10 @@ public class DirectoryScanner {
 
         List<InputFile> files = new ArrayList<>();
         for (Path base : bases) {
+            if (!Files.exists(base)) {
+                throw new FileNotFoundException("Failed to find resource '" + base.toString() + "'.");
+            }
+
             listFiles(base, files, pattern);
         }
 

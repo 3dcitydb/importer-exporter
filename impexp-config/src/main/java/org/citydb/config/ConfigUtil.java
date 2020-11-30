@@ -27,8 +27,10 @@
  */
 package org.citydb.config;
 
-import org.citydb.config.project.Project;
-import org.citydb.config.project.ProjectSchemaWriter;
+import org.citydb.config.gui.GuiConfig;
+import org.citydb.config.util.ConfigNamespaceFilter;
+import org.citydb.config.util.ProjectSchemaWriter;
+import org.citydb.config.util.QueryWrapper;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
@@ -44,35 +46,66 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 public class ConfigUtil {
 	public static final String CITYDB_CONFIG_NAMESPACE_URI = "http://www.3dcitydb.org/importer-exporter/config";
+	private static ConfigUtil instance;
 
-	public static void marshal(Object object, File file, JAXBContext ctx) throws JAXBException {
-		Marshaller m = ctx.createMarshaller();	
-		m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT,Boolean.TRUE);
+	private final Set<Class<?>> configClasses = new HashSet<>();
+	private JAXBContext context;
 
-		m.marshal(object, file);
+	public static synchronized ConfigUtil getInstance() {
+		if (instance == null) {
+			instance = new ConfigUtil().withConfigClasses(ProjectConfig.class, GuiConfig.class, QueryWrapper.class);
+		}
+
+		return instance;
 	}
 
-	public static Object unmarshal(File file, JAXBContext ctx) throws JAXBException, IOException {
+	public ConfigUtil withConfigClass(Class<?> configClass) {
+		configClasses.add(configClass);
+		context = null;
+		return this;
+	}
+
+	public ConfigUtil withConfigClasses(Class<?>... configClasses) {
+		Arrays.stream(configClasses).forEach(this::withConfigClass);
+		return this;
+	}
+
+	private ConfigUtil createJAXBContext() throws JAXBException {
+		if (context == null) {
+			context = JAXBContext.newInstance(configClasses.toArray(new Class[]{}));
+		}
+
+		return this;
+	}
+
+	public void marshal(Object object, File file) throws JAXBException {
+		Marshaller marshaller = createJAXBContext().context.createMarshaller();
+		marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+		marshaller.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");
+		marshaller.marshal(object, file);
+	}
+
+	public Object unmarshal(File file) throws JAXBException, IOException {
 		try (FileInputStream inputStream = new FileInputStream(file)) {
-			return unmarshal(inputStream, ctx);
+			return unmarshal(inputStream);
 		}
 	}
 	
-	public static Object unmarshal(InputStream inputStream, JAXBContext ctx) throws JAXBException, IOException {
-		Unmarshaller um = ctx.createUnmarshaller();
-		UnmarshallerHandler handler = um.getUnmarshallerHandler();
-
+	public Object unmarshal(InputStream inputStream) throws JAXBException, IOException {
+		Unmarshaller unmarshaller = createJAXBContext().context.createUnmarshaller();
+		UnmarshallerHandler handler = unmarshaller.getUnmarshallerHandler();
 		SAXParserFactory factory = SAXParserFactory.newInstance();
 		factory.setNamespaceAware(true);
 
-		XMLReader reader = null;
-		ConfigNamespaceFilter namespaceFilter = null;
-
+		ConfigNamespaceFilter namespaceFilter;
 		try {
-			reader = factory.newSAXParser().getXMLReader();
+			XMLReader reader = factory.newSAXParser().getXMLReader();
 			namespaceFilter = new ConfigNamespaceFilter(reader);	
 			namespaceFilter.setContentHandler(handler);
 			namespaceFilter.parse(new InputSource(inputStream));			
@@ -83,14 +116,17 @@ public class ConfigUtil {
 		}
 
 		Object result = handler.getResult();
-		if (result instanceof Project)
-			((Project)result).setNamespaceFilter(namespaceFilter);
+		if (result instanceof ProjectConfig)
+			((ProjectConfig) result).setNamespaceFilter(namespaceFilter);
 
 		return result;
 	}
 
-	public static void generateSchema(JAXBContext ctx, File file) throws IOException {
-		ctx.generateSchema(new ProjectSchemaWriter(file));
+	public void generateSchema(File file) throws JAXBException, IOException {
+		createJAXBContext().context.generateSchema(new ProjectSchemaWriter(file));
 	}
 
+	public JAXBContext getJAXBContext() throws JAXBException {
+		return createJAXBContext().context;
+	}
 }

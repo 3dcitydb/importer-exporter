@@ -30,41 +30,38 @@ package org.citydb.config.project.importer;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="ImportLogType", propOrder={
-		"logImportedFeatures",
-		"logFile"
+@XmlType(name = "ImportLogType", propOrder = {
+        "logImportedFeatures",
+        "logFile"
 })
 public class ImportLog {
-	@XmlElement(required=true, defaultValue="false")
-	private Boolean logImportedFeatures = false;
-	private String logFile;
-	
-	public boolean isSetLogImportedFeatures() {
-		if (logImportedFeatures != null)
-			return logImportedFeatures.booleanValue();
+    @XmlElement(required = true, defaultValue = "false")
+    private Boolean logImportedFeatures = false;
+    private String logFile;
 
-		return false;
-	}
+    public boolean isSetLogImportedFeatures() {
+        return logImportedFeatures != null ? logImportedFeatures : false;
+    }
 
-	public Boolean getLogImportedFeatures() {
-		return logImportedFeatures;
-	}
+    public Boolean getLogImportedFeatures() {
+        return logImportedFeatures;
+    }
 
-	public void setLogImportedFeatures(Boolean logImportedFeatures) {
-		this.logImportedFeatures = logImportedFeatures;
-	}
-	
-	public boolean isSetLogFile() {
-		return logFile != null;
-	}
+    public void setLogImportedFeatures(Boolean logImportedFeatures) {
+        this.logImportedFeatures = logImportedFeatures;
+    }
 
-	public String getLogFile() {
-		return logFile;
-	}
+    public boolean isSetLogFile() {
+        return logFile != null;
+    }
 
-	public void setLogFile(String logFile) {
-		if (logFile != null && !logFile.isEmpty())
-			this.logFile = logFile;
-	}
-	
+    public String getLogFile() {
+        return logFile;
+    }
+
+    public void setLogFile(String logFile) {
+        if (logFile != null && !logFile.isEmpty())
+            this.logFile = logFile;
+    }
+
 }

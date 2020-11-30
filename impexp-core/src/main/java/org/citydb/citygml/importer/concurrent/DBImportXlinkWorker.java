@@ -59,7 +59,7 @@ import org.citydb.citygml.importer.database.xlink.importer.DBXlinkImporterTextur
 import org.citydb.citygml.importer.database.xlink.importer.DBXlinkImporterTextureParam;
 import org.citydb.concurrent.Worker;
 import org.citydb.config.Config;
-import org.citydb.config.project.database.Database;
+import org.citydb.config.project.database.DatabaseConfig;
 import org.citydb.config.project.global.LogLevel;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.connection.DatabaseConnectionPool;
@@ -87,9 +87,9 @@ public class DBImportXlinkWorker extends Worker<DBXlink> implements EventHandler
 		dbXlinkManager = new DBXlinkImporterManager(cacheTableManager, eventDispatcher);
 
 		AbstractDatabaseAdapter databaseAdapter = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter();
-		Database database = config.getProject().getDatabase();
+		DatabaseConfig databaseConfig = config.getDatabaseConfig();
 
-		commitAfter = database.getImportBatching().getTempBatchSize();
+		commitAfter = databaseConfig.getImportBatching().getTempBatchSize();
 		if (commitAfter > databaseAdapter.getMaxBatchSize())
 			commitAfter = databaseAdapter.getMaxBatchSize();
 
@@ -120,8 +120,8 @@ public class DBImportXlinkWorker extends Worker<DBXlink> implements EventHandler
 		try {
 			if (shouldWork)
 				dbXlinkManager.executeBatch();
-		} catch (SQLException e) {
-			eventDispatcher.triggerEvent(new InterruptEvent("Aborting import due to SQL errors.", LogLevel.WARN, e, eventChannel, this));
+		} catch (Throwable e) {
+			eventDispatcher.triggerSyncEvent(new InterruptEvent("A fatal error occurred during import.", LogLevel.ERROR, e, eventChannel, this));
 		} finally {
 			try {
 				dbXlinkManager.close();
@@ -245,11 +245,8 @@ public class DBImportXlinkWorker extends Worker<DBXlink> implements EventHandler
 				updateCounter = 0;
 			}
 
-		} catch (SQLException e) {
-			eventDispatcher.triggerSyncEvent(new InterruptEvent("Aborting import due to SQL errors.", LogLevel.WARN, e, eventChannel, this));
-		} catch (Exception e) {
-			// this is to catch general exceptions that may occur during the import
-			eventDispatcher.triggerSyncEvent(new InterruptEvent("Aborting due to an unexpected " + e.getClass().getName() + " error.", LogLevel.ERROR, e, eventChannel, this));
+		} catch (Throwable e) {
+			eventDispatcher.triggerSyncEvent(new InterruptEvent("A fatal error occurred during import.", LogLevel.ERROR, e, eventChannel, this));
 		} finally {
 			runLock.unlock();
 		}

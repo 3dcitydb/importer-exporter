@@ -130,18 +130,18 @@ public class Tiling {
 		calculateTilingScheme();
 	}
 
-	public Tile getTileAt(int x, int y) throws FilterException {
-		if (x < 0 || y < 0 || x >= getRows() || y >= getColumns()) {
+	public Tile getTileAt(int row, int column) throws FilterException {
+		if (row < 0 || column < 0 || row >= getRows() || column >= getColumns()) {
 			throw new FilterException("Tile coordinates are out of bounds.");
 		}
 
 		BoundingBox tileExtent = new BoundingBox(
-				new Position(columns[x], rows[y]),
-				new Position(columns[x + 1], rows[y + 1]),
+				new Position(columns[column], rows[row]),
+				new Position(columns[column + 1], rows[row + 1]),
 				extent.getSrs()
 		);
 
-		return new Tile(tileExtent, x, y);
+		return new Tile(tileExtent, row, column);
 	}
 	
 	public Tile getActiveTile() {

@@ -34,20 +34,20 @@ import java.util.List;
 
 @XmlType(name = "ProjectionFilterType")
 public class ProjectionFilter {
-	@XmlElement(name="context")
-	private List<ProjectionContext> projectionContexts;
-	
-	public ProjectionFilter() {
-		projectionContexts = new ArrayList<>();
-	}
-	
-	public List<ProjectionContext> getProjectionContexts() {
-		return projectionContexts;
-	}
+    @XmlElement(name = "context")
+    private List<ProjectionContext> projectionContexts;
 
-	public void setProjectionContexts(List<ProjectionContext> projectionContexts) {
-		if (projectionContexts != null)
-			this.projectionContexts = projectionContexts;
-	}
-	
+    public ProjectionFilter() {
+        projectionContexts = new ArrayList<>();
+    }
+
+    public List<ProjectionContext> getProjectionContexts() {
+        return projectionContexts;
+    }
+
+    public void setProjectionContexts(List<ProjectionContext> projectionContexts) {
+        if (projectionContexts != null)
+            this.projectionContexts = projectionContexts;
+    }
+
 }

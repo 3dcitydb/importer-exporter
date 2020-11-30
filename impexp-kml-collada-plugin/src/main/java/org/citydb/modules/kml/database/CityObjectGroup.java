@@ -2,7 +2,7 @@
  * 3D City Database - The Open Source CityGML Database
  * http://www.3dcitydb.org/
  *
- * Copyright 2013 - 2019
+ * Copyright 2013 - 2020
  * Chair of Geoinformatics
  * Technical University of Munich, Germany
  * https://www.gis.bgu.tum.de/
@@ -27,14 +27,6 @@
  */
 package org.citydb.modules.kml.database;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.List;
-
-import javax.xml.bind.JAXBException;
-
 import org.citydb.config.Config;
 import org.citydb.config.project.kmlExporter.Balloon;
 import org.citydb.config.project.kmlExporter.ColladaOptions;
@@ -46,6 +38,13 @@ import org.citydb.log.Logger;
 import org.citydb.modules.kml.util.BalloonTemplateHandler;
 import org.citydb.modules.kml.util.ElevationServiceHandler;
 import org.citydb.query.Query;
+
+import javax.xml.bind.JAXBException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.List;
 
 public class CityObjectGroup extends KmlGenericObject{
 
@@ -75,7 +74,7 @@ public class CityObjectGroup extends KmlGenericObject{
 	}
 
 	protected List<DisplayForm> getDisplayForms() {
-		return config.getProject().getKmlExporter().getCityObjectGroupDisplayForms();
+		return config.getKmlExportConfig().getCityObjectGroupDisplayForms();
 	}
 
 	public ColladaOptions getColladaOptions() {
@@ -83,7 +82,7 @@ public class CityObjectGroup extends KmlGenericObject{
 	}
 
 	public Balloon getBalloonSettings() {
-		return config.getProject().getKmlExporter().getCityObjectGroupBalloon();
+		return config.getKmlExportConfig().getCityObjectGroupBalloon();
 	}
 
 	public String getStyleBasisName() {

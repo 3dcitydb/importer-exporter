@@ -34,13 +34,13 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="SimpleBBOXFilterType", propOrder={
+@XmlType(name = "SimpleBBOXFilterType", propOrder = {
         "extent"
 })
 public class SimpleBBOXOperator {
     @XmlAttribute(required = true)
     private SimpleBBOXMode mode = SimpleBBOXMode.BBOX;
-    @XmlElement(required=true)
+    @XmlElement(required = true)
     private BoundingBox extent;
 
     public SimpleBBOXOperator() {

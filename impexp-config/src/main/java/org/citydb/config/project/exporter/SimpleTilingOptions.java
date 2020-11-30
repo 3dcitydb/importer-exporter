@@ -33,63 +33,63 @@ import org.citydb.config.project.query.filter.tiling.AbstractTilingOptions;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="CityGMLTilingOptionsType", propOrder={
-		"tilePath",
-		"tilePathSuffix",
-		"tileNameSuffix",
-		"includeTileAsGenericAttribute",
-		"genericAttributeValue"
+@XmlType(name = "CityGMLTilingOptionsType", propOrder = {
+        "tilePath",
+        "tilePathSuffix",
+        "tileNameSuffix",
+        "includeTileAsGenericAttribute",
+        "genericAttributeValue"
 })
 public class SimpleTilingOptions extends AbstractTilingOptions {
-	private String tilePath = "tile";
-	private TileSuffixMode tilePathSuffix = TileSuffixMode.ROW_COLUMN;
-	private TileNameSuffixMode tileNameSuffix = TileNameSuffixMode.NONE;
-	@XmlElement(defaultValue="false")
-	private Boolean includeTileAsGenericAttribute = false;
-	private TileSuffixMode genericAttributeValue = TileSuffixMode.XMIN_YMIN_XMAX_YMAX;
+    private String tilePath = "tile";
+    private TileSuffixMode tilePathSuffix = TileSuffixMode.ROW_COLUMN;
+    private TileNameSuffixMode tileNameSuffix = TileNameSuffixMode.NONE;
+    @XmlElement(defaultValue = "false")
+    private Boolean includeTileAsGenericAttribute = false;
+    private TileSuffixMode genericAttributeValue = TileSuffixMode.XMIN_YMIN_XMAX_YMAX;
 
-	public String getTilePath() {
-		return tilePath;
-	}
+    public String getTilePath() {
+        return tilePath;
+    }
 
-	public void setTilePath(String tilePath) {
-		this.tilePath = tilePath;
-	}
+    public void setTilePath(String tilePath) {
+        this.tilePath = tilePath;
+    }
 
-	public TileSuffixMode getTilePathSuffix() {
-		return tilePathSuffix;
-	}
+    public TileSuffixMode getTilePathSuffix() {
+        return tilePathSuffix;
+    }
 
-	public void setTilePathSuffix(TileSuffixMode tilePathSuffix) {
-		this.tilePathSuffix = tilePathSuffix;
-	}
+    public void setTilePathSuffix(TileSuffixMode tilePathSuffix) {
+        this.tilePathSuffix = tilePathSuffix;
+    }
 
-	public TileNameSuffixMode getTileNameSuffix() {
-		return tileNameSuffix;
-	}
+    public TileNameSuffixMode getTileNameSuffix() {
+        return tileNameSuffix;
+    }
 
-	public void setTileNameSuffix(TileNameSuffixMode tileNameSuffix) {
-		this.tileNameSuffix = tileNameSuffix;
-	}
+    public void setTileNameSuffix(TileNameSuffixMode tileNameSuffix) {
+        this.tileNameSuffix = tileNameSuffix;
+    }
 
-	public Boolean getIncludeTileAsGenericAttribute() {
-		return includeTileAsGenericAttribute;
-	}
-	
-	public boolean isIncludeTileAsGenericAttribute() {
-		return includeTileAsGenericAttribute != null && includeTileAsGenericAttribute;
-	}
+    public Boolean getIncludeTileAsGenericAttribute() {
+        return includeTileAsGenericAttribute;
+    }
 
-	public void setIncludeTileAsGenericAttribute(Boolean includeTileAsGenericAttribute) {
-		this.includeTileAsGenericAttribute = includeTileAsGenericAttribute;
-	}
+    public boolean isIncludeTileAsGenericAttribute() {
+        return includeTileAsGenericAttribute != null && includeTileAsGenericAttribute;
+    }
 
-	public TileSuffixMode getGenericAttributeValue() {
-		return genericAttributeValue;
-	}
+    public void setIncludeTileAsGenericAttribute(Boolean includeTileAsGenericAttribute) {
+        this.includeTileAsGenericAttribute = includeTileAsGenericAttribute;
+    }
 
-	public void setGenericAttributeValue(TileSuffixMode genericAttributeValue) {
-		this.genericAttributeValue = genericAttributeValue;
-	}
-	
+    public TileSuffixMode getGenericAttributeValue() {
+        return genericAttributeValue;
+    }
+
+    public void setGenericAttributeValue(TileSuffixMode genericAttributeValue) {
+        this.genericAttributeValue = genericAttributeValue;
+    }
+
 }

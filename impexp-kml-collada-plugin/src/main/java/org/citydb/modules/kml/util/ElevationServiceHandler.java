@@ -2,7 +2,7 @@
  * 3D City Database - The Open Source CityGML Database
  * http://www.3dcitydb.org/
  *
- * Copyright 2013 - 2019
+ * Copyright 2013 - 2020
  * Chair of Geoinformatics
  * Technical University of Munich, Germany
  * https://www.gis.bgu.tum.de/
@@ -73,8 +73,8 @@ public class ElevationServiceHandler {
 	double lastLong = 0;
 
 	public ElevationServiceHandler(Config config) {
-		apiKey = config.getProject().getGlobal().getApiKeys().isSetGoogleElevation() ?
-				config.getProject().getGlobal().getApiKeys().getGoogleElevation() : "";
+		apiKey = config.getGlobalConfig().getApiKeys().isSetGoogleElevation() ?
+				config.getGlobalConfig().getApiKeys().getGoogleElevation() : "";
 	}
 
 	public double getZOffset(double[] candidateCoords) throws Exception {

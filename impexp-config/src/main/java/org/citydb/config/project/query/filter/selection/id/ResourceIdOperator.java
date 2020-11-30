@@ -33,26 +33,25 @@ import javax.xml.bind.annotation.XmlType;
 import java.util.ArrayList;
 import java.util.List;
 
-@XmlRootElement(name="resourceIds")
-@XmlType(name="ResourceIdType", propOrder={
-		"ids"
+@XmlRootElement(name = "resourceIds")
+@XmlType(name = "ResourceIdType", propOrder = {
+        "ids"
 })
 public class ResourceIdOperator extends AbstractIdOperator {
-	@XmlElement(name = "id")
-	private List<String> ids;
+    @XmlElement(name = "id")
+    private List<String> ids;
 
-	public ResourceIdOperator() {
-		ids = new ArrayList<>();
-	}
+    public ResourceIdOperator() {
+        ids = new ArrayList<>();
+    }
 
-	public boolean isSetResourceIds() {
-		return !ids.isEmpty();
-	}
+    public boolean isSetResourceIds() {
+        return !ids.isEmpty();
+    }
 
-	public List<String> getResourceIds() {
-		return ids;
-	}
-
+    public List<String> getResourceIds() {
+        return ids;
+    }
 
     public void addResourceId(String id) {
         ids.add(id);

@@ -33,9 +33,7 @@ import org.citydb.config.ConfigUtil;
 import org.citydb.config.gui.window.MainWindow;
 import org.citydb.config.gui.window.WindowSize;
 import org.citydb.config.i18n.Language;
-import org.citydb.config.internal.Internal;
 import org.citydb.config.project.global.LanguageType;
-import org.citydb.config.project.global.LogLevel;
 import org.citydb.database.connection.DatabaseConnectionPool;
 import org.citydb.event.Event;
 import org.citydb.event.EventDispatcher;
@@ -53,11 +51,11 @@ import org.citydb.gui.util.GuiUtil;
 import org.citydb.gui.util.OSXAdapter;
 import org.citydb.log.DefaultConsoleLogger;
 import org.citydb.log.Logger;
-import org.citydb.modules.citygml.exporter.CityGMLExportPlugin;
-import org.citydb.modules.citygml.importer.CityGMLImportPlugin;
-import org.citydb.modules.database.DatabasePlugin;
-import org.citydb.modules.kml.KMLExportPlugin;
-import org.citydb.modules.preferences.PreferencesPlugin;
+import org.citydb.gui.modules.exporter.CityGMLExportPlugin;
+import org.citydb.gui.modules.importer.CityGMLImportPlugin;
+import org.citydb.gui.modules.database.DatabasePlugin;
+import org.citydb.gui.modules.kml.KMLExportPlugin;
+import org.citydb.gui.modules.preferences.PreferencesPlugin;
 import org.citydb.plugin.Plugin;
 import org.citydb.plugin.PluginManager;
 import org.citydb.plugin.extension.view.View;
@@ -79,7 +77,6 @@ import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import javax.swing.plaf.basic.BasicSplitPaneDivider;
 import javax.swing.plaf.basic.BasicSplitPaneUI;
-import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
@@ -93,20 +90,23 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.MissingResourceException;
+import java.util.Objects;
 import java.util.ResourceBundle;
 
 @SuppressWarnings("serial")
 public final class ImpExpGui extends JFrame implements ViewController, EventHandler {
 	private final Logger log = Logger.getInstance();
-	private final EventDispatcher eventDispatcher; 
-
-	private Config config;
-	private JAXBContext jaxbProjectContext;
-	private JAXBContext jaxbGuiContext;
-	private PluginManager pluginManager;
-	private DatabaseConnectionPool dbPool;
+	private final Config config;
+	private final Path configFile;
+	private final PluginManager pluginManager;
+	private final DatabaseConnectionPool dbPool;
+	private final EventDispatcher eventDispatcher;
+	private final ConsoleTextPane consoleText;
+	private final StyledConsoleLogger consoleLogger;
+	private final ComponentFactory componentFactory;
+	private final PrintStream out = System.out;
+	private final PrintStream err = System.err;
 
 	private JPanel main;
 	private JLabel statusText;
@@ -114,33 +114,24 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 	private MenuBar menuBar;
 	private JTabbedPane menu;
 	private JSplitPane splitPane;
-
 	private JPanel console;
 	private JLabel consoleLabel;
 	private ConsolePopupMenuWrapper consolePopup;
 	private ConsoleWindow consoleWindow;
-	private ConsoleTextPane consoleText;
-	private StyledConsoleLogger consoleLogger;
-	private ComponentFactory componentFactory;
 
 	private int tmpConsoleWidth;
 	private int activePosition;
-
 	private List<View> views;
 	private PreferencesPlugin preferencesPlugin;
+	private LanguageType currentLang;
 
-	private PrintStream out = System.out;
-	private PrintStream err = System.err;
+	public ImpExpGui(Path configFile) {
+		this.configFile = Objects.requireNonNull(configFile, "configFile cannot be null.");
 
-	// internal state
-	private LanguageType currentLang = null;
-
-	public ImpExpGui() {
 		config = ObjectRegistry.getInstance().getConfig();
 		dbPool = DatabaseConnectionPool.getInstance();
 		pluginManager = PluginManager.getInstance();
 		componentFactory = new DefaultComponentFactory(this);
-
 		eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
 		eventDispatcher.addEventHandler(EventType.DATABASE_CONNECTION_STATE, this);
 
@@ -148,47 +139,35 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		consoleText = new ConsoleTextPane();
 		consoleLogger = new StyledConsoleLogger(consoleText, StandardCharsets.UTF_8);
 
-		Internal.IS_GUI_MODE = true;
+		CoreConstants.IS_GUI_MODE = true;
 	}
 
-	public void invoke(JAXBContext jaxbProjectContext,
-			JAXBContext jaxbGuiContext,
-			Map<LogLevel, String> logMessages) {
-		this.jaxbProjectContext = jaxbProjectContext;
-		this.jaxbGuiContext = jaxbGuiContext;		
-		
+	public void invoke() {
 		// init GUI elements
-		initGui(logMessages);
+		initGui();
 		doTranslation();
 		showWindow();
-
-		// initConsole;
 		initConsole();
-
-		if (!logMessages.isEmpty()) {
-			for (Map.Entry<LogLevel, String> entry : logMessages.entrySet())
-				log.log(entry.getKey(), entry.getValue());
-		}
 
 		// log exceptions for disabled ADE extensions
 		ADEExtensionManager.getInstance().logExceptions();
 	}
 
 	public void restoreDefaults() {
-		if (consoleWindow.isVisible() != config.getGui().getConsoleWindow().isDetached())
-			enableConsoleWindow(config.getGui().getConsoleWindow().isDetached(), false);
+		if (consoleWindow.isVisible() != config.getGuiConfig().getConsoleWindow().isDetached())
+			enableConsoleWindow(config.getGuiConfig().getConsoleWindow().isDetached(), false);
 
 		consoleWindow.setSize(0, 0);
 		showWindow();
 	}
 
-	private void initGui(Map<LogLevel, String> logMessages) {
+	private void initGui() {
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
 		activePosition = 0;
 		main = new JPanel();
 
-		menuBar = new MenuBar(this, jaxbProjectContext, config);
+		menuBar = new MenuBar(this, config);
 		setJMenuBar(menuBar);
 
 		console = new JPanel();
@@ -225,7 +204,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		for (ViewExtension viewExtension : pluginManager.getExternalPlugins(ViewExtension.class)) {
 			View view = viewExtension.getView();
 			if (view == null || view.getViewComponent() == null) {
-				logMessages.put(LogLevel.ERROR, "Failed to get view component from plugin " + viewExtension.getClass().getName() + ".");
+				log.error("Failed to get view component for plugin " + viewExtension.getClass().getName() + ".");
 				continue;
 			}
 
@@ -331,7 +310,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 	}
 
 	private void showWindow() {
-		WindowSize size = config.getGui().getMainWindow().getSize();
+		WindowSize size = config.getGuiConfig().getMainWindow().getSize();
 
 		Toolkit t = Toolkit.getDefaultToolkit();
 		Insets frame_insets = t.getScreenInsets(GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration());
@@ -353,7 +332,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		Integer y = size.getY();
 		Integer width = size.getWidth();
 		Integer height = size.getHeight();
-		Integer dividerLocation = config.getGui().getMainWindow().getDividerLocation();
+		Integer dividerLocation = config.getGuiConfig().getMainWindow().getDividerLocation();
 
 		// create default values for main window
 		if (x == null || y == null || width == null || height == null || 
@@ -368,7 +347,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 			y = user_insets_y / 2 + frame_insets.top;
 
 			// if console is detached, also create default values for console window
-			if (config.getGui().getConsoleWindow().isDetached()) {
+			if (config.getGuiConfig().getConsoleWindow().isDetached()) {
 				x -= 15;
 				width = width / 2 + 30;
 				consoleWindow.setLocation(x + width, y);
@@ -381,7 +360,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		setSize(width, height);
 		setVisible(true);
 
-		if (!config.getGui().getConsoleWindow().isDetached())
+		if (!config.getGuiConfig().getConsoleWindow().isDetached())
 			main.setPreferredSize(new Dimension((int)(width * .5) + 20, 1));
 
 		if (dividerLocation != null && dividerLocation > 0 && dividerLocation < width)
@@ -395,15 +374,15 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		System.setErr(consoleLogger.err());
 
 		// show console window if required
-		if (config.getGui().getConsoleWindow().isDetached()) {
+		if (config.getGuiConfig().getConsoleWindow().isDetached()) {
 			enableConsoleWindow(true, false);
 			requestFocus();
 		}
 	}
 
-	public void doTranslation () {
+	public void doTranslation() {
 		try {
-			LanguageType lang = config.getProject().getGlobal().getLanguage();
+			LanguageType lang = config.getGlobalConfig().getLanguage();
 			if (lang == currentLang)
 				return;
 
@@ -479,35 +458,42 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 			splitPane.setDividerLocation(dividerLocation);
 		}
 
-		config.getGui().getConsoleWindow().setDetached(enable);
+		config.getGuiConfig().getConsoleWindow().setDetached(enable);
 	}
 
 	public boolean saveProjectSettings() {
-		Path configDir = getConfigDir();
-		if (configDir == null)
+		return saveProjectSettings(false);
+	}
+
+	private boolean saveProjectSettings(boolean isShuttingDown) {
+		if (!createConfigDir(configFile.getParent()))
 			return false;
 
 		try {
-			Path projectFile = configDir.resolve(ClientConstants.PROJECT_SETTINGS_FILE);
-			ConfigUtil.marshal(config.getProject(), projectFile.toFile(), jaxbProjectContext);
+			ConfigUtil.getInstance().marshal(config.getProjectConfig(), configFile.toFile());
 			return true;
-		} catch (JAXBException jaxbE) {
-			errorMessage(Language.I18N.getString("common.dialog.error.io.title"),
-					Language.I18N.getString("common.dialog.error.io.general"));
+		} catch (JAXBException e) {
+			if (!isShuttingDown) {
+				errorMessage(Language.I18N.getString("common.dialog.error.io.title"),
+						Language.I18N.getString("common.dialog.error.io.general"));
+			} else {
+				log.error("Failed to write configuration file.", e);
+			}
 			return false;
 		}
 	}
 
 	private void saveGUISettings() {
-		Path configDir = getConfigDir();
-		if (configDir == null)
-			return;
+		Path guiConfigFile = CoreConstants.IMPEXP_DATA_DIR
+				.resolve(ClientConstants.CONFIG_DIR)
+				.resolve(ClientConstants.GUI_SETTINGS_FILE);
 
-		Path guiFile = configDir.resolve(ClientConstants.GUI_SETTINGS_FILE);
+		if (!createConfigDir(guiConfigFile.getParent()))
+			return;
 
 		// set window size
 		Rectangle rect = getBounds();
-		MainWindow window = config.getGui().getMainWindow();
+		MainWindow window = config.getGuiConfig().getMainWindow();
 		window.getSize().setX(rect.x);
 		window.getSize().setY(rect.y);
 		window.getSize().setWidth(rect.width);
@@ -518,29 +504,24 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		consoleWindow.setSettings();
 
 		try {
-			ConfigUtil.marshal(config.getGui(), guiFile.toFile(), jaxbGuiContext);
-		} catch (JAXBException jaxbE) {
-			errorMessage(Language.I18N.getString("common.dialog.error.io.title"), 
-					Language.I18N.getString("common.dialog.error.io.general"));
+			ConfigUtil.getInstance().marshal(config.getGuiConfig(), guiConfigFile.toFile());
+		} catch (JAXBException e) {
+			log.error("Failed to write GUI configuration file.", e);
 		}
 	}
 
-	private Path getConfigDir() {
-		Path configDir = CoreConstants.IMPEXP_DATA_DIR.resolve(ClientConstants.CONFIG_DIR);
-		if (!Files.exists(configDir)) {
+	private boolean createConfigDir(Path dir) {
+		if (!Files.exists(dir)) {
 			try {
-				Files.createDirectories(configDir);
+				Files.createDirectories(dir);
 			} catch (IOException e) {
 				String text = Language.I18N.getString("common.dialog.error.io.configPath");
-				Object[] args = new Object[]{ configDir.toString() };
-				String result = MessageFormat.format(text, args);
-
-				errorMessage(Language.I18N.getString("common.dialog.error.io.title"), result);
-				return null;
+				errorMessage(Language.I18N.getString("common.dialog.error.io.title"), MessageFormat.format(text, dir.toString()));
+				return false;
 			}
 		}
 
-		return configDir;
+		return true;
 	}
 
 	@Override
@@ -576,6 +557,10 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		return consoleLogger;
 	}
 
+	public Path getConfigFile() {
+		return configFile;
+	}
+
 	public void disconnectFromDatabase() {
 		ObjectRegistry.getInstance().getDatabaseController().disconnect();
 	}
@@ -587,9 +572,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		} else {
 			setTitle(Language.I18N.getString("main.window.title") + " : " + dbPool.getActiveDatabaseAdapter().getConnectionDetails().getDescription());
 			String text = Language.I18N.getString("main.status.database.connected.label");
-			Object[] args = new Object[]{ dbPool.getActiveDatabaseAdapter().getDatabaseType().toString() };
-			String result = MessageFormat.format(text, args);
-			connectText.setText(result);
+			connectText.setText(MessageFormat.format(text, dbPool.getActiveDatabaseAdapter().getDatabaseType().toString()));
 		}
 	}
 
@@ -615,7 +598,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 				plugin.shutdown();
 
 			log.info("Saving project settings");
-			saveProjectSettings();
+			saveProjectSettings(true);
 			saveGUISettings();
 
 			if (dbPool.isConnected()) {
@@ -627,6 +610,8 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		} catch (Throwable e) {
 			log.logStackTrace(e);
 			log.info("Application did not terminate normally");
+		} finally {
+			log.close();
 		}
 	}
 
@@ -636,8 +621,8 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 	}
 
 	private final class ConsolePopupMenuWrapper {
-		private JMenuItem clear;
-		private JMenuItem detach;
+		private final JMenuItem clear;
+		private final JMenuItem detach;
 
 		ConsolePopupMenuWrapper(JPopupMenu popupMenu) {
 			clear = new JMenuItem();
@@ -649,33 +634,29 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 			popupMenu.add(detach);
 
 			clear.addActionListener(e -> clearConsole());
-			detach.addActionListener(e -> enableConsoleWindow(!config.getGui().getConsoleWindow().isDetached(), true));
+			detach.addActionListener(e -> enableConsoleWindow(!config.getGuiConfig().getConsoleWindow().isDetached(), true));
 
 			popupMenu.addPopupMenuListener(new PopupMenuListener() {
 				@Override
 				public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
 					clear.setEnabled(consoleText.getDocument().getLength() != 0);
-					detach.setText(config.getGui().getConsoleWindow().isDetached() ?
+					detach.setText(config.getGuiConfig().getConsoleWindow().isDetached() ?
 							Language.I18N.getString("console.label.attach") :
 							Language.I18N.getString("console.label.detach"));
 				}
 
 				@Override
-				public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
-					// nothing to do
-				}
+				public void popupMenuWillBecomeInvisible(PopupMenuEvent e) { }
 
 				@Override
-				public void popupMenuCanceled(PopupMenuEvent e) {
-					// nothing to do
-				}
+				public void popupMenuCanceled(PopupMenuEvent e) { }
 			});
 
 		}
 
 		private void doTranslation() {
 			clear.setText(Language.I18N.getString("main.console.popup.clear"));
-			detach.setText(config.getGui().getConsoleWindow().isDetached() ?
+			detach.setText(config.getGuiConfig().getConsoleWindow().isDetached() ?
 					Language.I18N.getString("console.label.attach") :
 					Language.I18N.getString("console.label.detach"));
 		}

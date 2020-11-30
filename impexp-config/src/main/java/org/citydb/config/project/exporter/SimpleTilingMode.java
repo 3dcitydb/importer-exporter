@@ -31,10 +31,10 @@ import javax.xml.bind.annotation.XmlEnum;
 import javax.xml.bind.annotation.XmlEnumValue;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="SimpleTilingModeType")
+@XmlType(name = "SimpleTilingModeType")
 @XmlEnum
 public enum SimpleTilingMode {
-	@XmlEnumValue("within")
+    @XmlEnumValue("within")
     WITHIN("within"),
     @XmlEnumValue("overlap")
     BBOX("overlap"),
@@ -52,7 +52,7 @@ public enum SimpleTilingMode {
     }
 
     public static SimpleTilingMode fromValue(String v) {
-        for (SimpleTilingMode c: SimpleTilingMode.values()) {
+        for (SimpleTilingMode c : SimpleTilingMode.values()) {
             if (c.value.equals(v)) {
                 return c;
             }

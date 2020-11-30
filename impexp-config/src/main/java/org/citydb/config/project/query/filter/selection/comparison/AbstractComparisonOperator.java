@@ -34,48 +34,48 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="AbstractComparisonOperatorType", propOrder={
-		"valueReference"
+@XmlType(name = "AbstractComparisonOperatorType", propOrder = {
+        "valueReference"
 })
 @XmlSeeAlso({
-	AbstractBinaryComparisonOperator.class,
-	BetweenOperator.class,
-	LikeOperator.class,
-	NullOperator.class
+        AbstractBinaryComparisonOperator.class,
+        BetweenOperator.class,
+        LikeOperator.class,
+        NullOperator.class
 })
 public abstract class AbstractComparisonOperator extends AbstractPredicate {
-	@XmlElement(required = true)
-	private String valueReference;
+    @XmlElement(required = true)
+    private String valueReference;
 
-	public AbstractComparisonOperator() {
-	}
+    public AbstractComparisonOperator() {
+    }
 
-	public AbstractComparisonOperator(String valueReference) {
-		this.valueReference = valueReference;
-	}
-	
-	public abstract ComparisonOperatorName getOperatorName();
-	
-	public boolean isSetValueReference() {
-		return valueReference != null;
-	}
+    public AbstractComparisonOperator(String valueReference) {
+        this.valueReference = valueReference;
+    }
 
-	public String getValueReference() {
-		return valueReference;
-	}
+    public abstract ComparisonOperatorName getOperatorName();
 
-	public void setValueReference(String valueReference) {
-		this.valueReference = valueReference;
-	}
+    public boolean isSetValueReference() {
+        return valueReference != null;
+    }
 
-	@Override
-	public void reset() {
-		valueReference = null;
-	}
+    public String getValueReference() {
+        return valueReference;
+    }
 
-	@Override
-	public PredicateName getPredicateName() {
-		return PredicateName.COMPARISON_OPERATOR;
-	}
-	
+    public void setValueReference(String valueReference) {
+        this.valueReference = valueReference;
+    }
+
+    @Override
+    public void reset() {
+        valueReference = null;
+    }
+
+    @Override
+    public PredicateName getPredicateName() {
+        return PredicateName.COMPARISON_OPERATOR;
+    }
+
 }

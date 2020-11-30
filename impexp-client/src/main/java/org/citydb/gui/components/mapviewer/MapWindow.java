@@ -32,8 +32,8 @@ import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.gui.window.GeocodingServiceName;
 import org.citydb.config.gui.window.WindowSize;
 import org.citydb.config.i18n.Language;
-import org.citydb.config.project.database.Database;
-import org.citydb.config.project.database.Database.PredefinedSrsName;
+import org.citydb.config.project.database.DatabaseConfig;
+import org.citydb.config.project.database.DatabaseConfig.PredefinedSrsName;
 import org.citydb.config.project.database.DatabaseSrs;
 import org.citydb.event.Event;
 import org.citydb.event.EventHandler;
@@ -181,13 +181,13 @@ public class MapWindow extends JDialog implements EventHandler {
 		// update geocoder
 		GeocodingService service = null;
 		try {
-			service = instance.getGeocodingService(instance.config.getGui().getMapWindow().getGeocoder());
+			service = instance.getGeocodingService(instance.config.getGuiConfig().getMapWindow().getGeocoder());
 		} catch (GeocodingServiceException e) {
 			service = new OSMGeocoder();
-			instance.config.getGui().getMapWindow().setGeocoder(GeocodingServiceName.OSM_NOMINATIM);
+			instance.config.getGuiConfig().getMapWindow().setGeocoder(GeocodingServiceName.OSM_NOMINATIM);
 		} finally {
 			Geocoder.getInstance().setGeocodingService(service);
-			instance.geocoderCombo.setSelectedItem(instance.config.getGui().getMapWindow().getGeocoder());
+			instance.geocoderCombo.setSelectedItem(instance.config.getGuiConfig().getMapWindow().getGeocoder());
 		}
 
 		return instance;
@@ -537,7 +537,7 @@ public class MapWindow extends JDialog implements EventHandler {
 				((AbstractTileFactory)map.getMapKit().getMiniMap().getTileFactory()).clearTileCache();
 				((AbstractTileFactory)map.getMapKit().getMiniMap().getTileFactory()).shutdownTileServicePool();
 
-				WindowSize size = config.getGui().getMapWindow().getSize();
+				WindowSize size = config.getGuiConfig().getMapWindow().getSize();
 				Rectangle rect = MapWindow.this.getBounds();
 				size.setX(rect.x);
 				size.setY(rect.y);
@@ -559,8 +559,8 @@ public class MapWindow extends JDialog implements EventHandler {
 			bbox1.getUpperCorner().setY(Math.max(ymin, ymax));
 
 			DatabaseSrs wgs84 = null;
-			for (DatabaseSrs srs : config.getProject().getDatabase().getReferenceSystems()) {
-				if (srs.getSrid() == Database.PREDEFINED_SRS.get(PredefinedSrsName.WGS84_2D).getSrid()) {
+			for (DatabaseSrs srs : config.getDatabaseConfig().getReferenceSystems()) {
+				if (srs.getSrid() == DatabaseConfig.PREDEFINED_SRS.get(PredefinedSrsName.WGS84_2D).getSrid()) {
 					wgs84 = srs;
 					break;
 				}
@@ -580,7 +580,7 @@ public class MapWindow extends JDialog implements EventHandler {
 
 		geocoderCombo.addItemListener(l -> {
 			if (l.getStateChange() == ItemEvent.SELECTED
-					&& geocoderCombo.getSelectedItem() != config.getGui().getMapWindow().getGeocoder()) {
+					&& geocoderCombo.getSelectedItem() != config.getGuiConfig().getMapWindow().getGeocoder()) {
 				try {
 					GeocodingService service = getGeocodingService((GeocodingServiceName) geocoderCombo.getSelectedItem());
 					Geocoder.getInstance().setGeocodingService(service);
@@ -590,7 +590,7 @@ public class MapWindow extends JDialog implements EventHandler {
 								Language.I18N.getString("map.error.geocoder.title"), JOptionPane.ERROR_MESSAGE);
 					});
 
-					geocoderCombo.setSelectedItem(config.getGui().getMapWindow().getGeocoder());
+					geocoderCombo.setSelectedItem(config.getGuiConfig().getMapWindow().getGeocoder());
 				}
 			}
 		});
@@ -696,8 +696,8 @@ public class MapWindow extends JDialog implements EventHandler {
 			bbox.getUpperCorner().setX(maxX.isEditValid() && maxX.getValue() != null ? ((Number)maxX.getValue()).doubleValue() : null);
 			bbox.getUpperCorner().setY(maxY.isEditValid() && maxY.getValue() != null ? ((Number)maxY.getValue()).doubleValue() : null);
 
-			for (DatabaseSrs srs : config.getProject().getDatabase().getReferenceSystems()) {
-				if (srs.getSrid() == Database.PREDEFINED_SRS.get(PredefinedSrsName.WGS84_2D).getSrid()) {
+			for (DatabaseSrs srs : config.getDatabaseConfig().getReferenceSystems()) {
+				if (srs.getSrid() == DatabaseConfig.PREDEFINED_SRS.get(PredefinedSrsName.WGS84_2D).getSrid()) {
 					bbox.setSrs(srs);
 					break;
 				}
@@ -817,8 +817,8 @@ public class MapWindow extends JDialog implements EventHandler {
 		if (serviceName == GeocodingServiceName.OSM_NOMINATIM)
 			service = new OSMGeocoder();
 		else if (serviceName == GeocodingServiceName.GOOGLE_GEOCODING_API) {
-			if (config.getProject().getGlobal().getApiKeys().isSetGoogleGeocoding())
-				service = new GoogleGeocoder(config.getProject().getGlobal().getApiKeys().getGoogleGeocoding());
+			if (config.getGlobalConfig().getApiKeys().isSetGoogleGeocoding())
+				service = new GoogleGeocoder(config.getGlobalConfig().getApiKeys().getGoogleGeocoding());
 			else {
 				Logger.getInstance().error("Failed to initialize geocoder '" + serviceName.toString() + "' due to a missing API key.");
 				throw new GeocodingServiceException(MessageFormat.format(Language.I18N.getString("map.error.geocoder.apiKey"), serviceName));
@@ -826,13 +826,13 @@ public class MapWindow extends JDialog implements EventHandler {
 		}
 
 		if (service != null)
-			config.getGui().getMapWindow().setGeocoder(serviceName);
+			config.getGuiConfig().getMapWindow().setGeocoder(serviceName);
 
 		return service;
 	}
 
 	private void setSizeOnScreen() {
-		WindowSize size = config.getGui().getMapWindow().getSize();
+		WindowSize size = config.getGuiConfig().getMapWindow().getSize();
 
 		Integer x = size.getX();
 		Integer y = size.getY();

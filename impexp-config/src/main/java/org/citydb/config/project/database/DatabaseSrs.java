@@ -34,139 +34,139 @@ import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="DatabaseSrsType", propOrder={
-		"srid",
-		"gmlSrsName",
-		"description"
+@XmlType(name = "DatabaseSrsType", propOrder = {
+        "srid",
+        "gmlSrsName",
+        "description"
 })
-public final class DatabaseSrs implements Comparable<DatabaseSrs> {	
-	private static DatabaseSrs DEFAULT = new DatabaseSrs(0, "", "n/a", "n/a", DatabaseSrsType.UNKNOWN, false);
+public final class DatabaseSrs implements Comparable<DatabaseSrs> {
+    private static final DatabaseSrs DEFAULT = new DatabaseSrs(0, "", "n/a", "n/a", DatabaseSrsType.UNKNOWN, false);
 
-	@XmlAttribute
-	@XmlID
-	protected String id;
-	protected int srid;
-	protected String gmlSrsName;
-	protected String description;
-	@XmlTransient
-	private DatabaseSrsType type;
-	@XmlTransient
-	private boolean isSupported;
-	@XmlTransient
-	private String dbSrsName;
-	@XmlTransient
-	private String wkText;
+    @XmlAttribute
+    @XmlID
+    protected String id;
+    protected int srid;
+    protected String gmlSrsName;
+    protected String description;
+    @XmlTransient
+    private DatabaseSrsType type;
+    @XmlTransient
+    private boolean isSupported;
+    @XmlTransient
+    private String dbSrsName;
+    @XmlTransient
+    private String wkText;
 
-	protected DatabaseSrs() {
-		this(DEFAULT);
-	}
+    protected DatabaseSrs() {
+        this(DEFAULT);
+    }
 
-	public static DatabaseSrs createDefaultSrs() {
-		return new DatabaseSrs();
-	}
+    public static DatabaseSrs createDefaultSrs() {
+        return new DatabaseSrs();
+    }
 
-	public DatabaseSrs(int srid, String gmlSrsName, String description, String dbSrsName, DatabaseSrsType type, boolean isSupported) {
-		this(generateUUID(), srid, gmlSrsName, description, dbSrsName, type, isSupported);
-	}
+    public DatabaseSrs(int srid, String gmlSrsName, String description, String dbSrsName, DatabaseSrsType type, boolean isSupported) {
+        this(generateUUID(), srid, gmlSrsName, description, dbSrsName, type, isSupported);
+    }
 
-	public DatabaseSrs(int srid) {
-		this(srid, "", "n/a", "n/a", DatabaseSrsType.UNKNOWN, false);
-	}
-	
-	public DatabaseSrs(DatabaseSrs other) {
-		this(other.srid, other.gmlSrsName, other.description, other.dbSrsName, other.type, other.isSupported);
-	}
+    public DatabaseSrs(int srid) {
+        this(srid, "", "n/a", "n/a", DatabaseSrsType.UNKNOWN, false);
+    }
 
-	public DatabaseSrs(String id, int srid, String gmlSrsName, String description, String dbSrsName, DatabaseSrsType type, boolean isSupported) {
-		this.id = id;
-		this.srid = srid;
-		this.gmlSrsName = gmlSrsName;
-		this.description = description;
-		this.dbSrsName = dbSrsName;
-		this.type = type;
-		this.isSupported = isSupported;
-	}
+    public DatabaseSrs(DatabaseSrs other) {
+        this(other.srid, other.gmlSrsName, other.description, other.dbSrsName, other.type, other.isSupported);
+    }
 
-	public int getSrid() {
-		return srid;
-	}
+    public DatabaseSrs(String id, int srid, String gmlSrsName, String description, String dbSrsName, DatabaseSrsType type, boolean isSupported) {
+        this.id = id;
+        this.srid = srid;
+        this.gmlSrsName = gmlSrsName;
+        this.description = description;
+        this.dbSrsName = dbSrsName;
+        this.type = type;
+        this.isSupported = isSupported;
+    }
 
-	public String getGMLSrsName() {
-		return gmlSrsName;
-	}
+    public int getSrid() {
+        return srid;
+    }
 
-	public String getDescription() {
-		return description;
-	}
+    public String getGMLSrsName() {
+        return gmlSrsName;
+    }
 
-	public boolean isSupported() {
-		return isSupported;
-	}
+    public String getDescription() {
+        return description;
+    }
 
-	public String getId() {
-		return id;
-	}
+    public boolean isSupported() {
+        return isSupported;
+    }
 
-	public void setId(String id) {
-		this.id = id;
-	}
+    public String getId() {
+        return id;
+    }
 
-	public void setSrid(int srid) {
-		this.srid = srid;
-	}
+    public void setId(String id) {
+        this.id = id;
+    }
 
-	public void setGMLSrsName(String srsName) {
-		this.gmlSrsName = srsName;
-	}
+    public void setSrid(int srid) {
+        this.srid = srid;
+    }
 
-	public void setDescription(String description) {
-		this.description = description;
-	}
+    public void setGMLSrsName(String srsName) {
+        this.gmlSrsName = srsName;
+    }
 
-	public void setSupported(boolean isSupported) {
-		this.isSupported = isSupported;
-	}
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
-	public DatabaseSrsType getType() {
-		return type;
-	}
+    public void setSupported(boolean isSupported) {
+        this.isSupported = isSupported;
+    }
 
-	public void setType(DatabaseSrsType type) {
-		this.type = type;
-	}
+    public DatabaseSrsType getType() {
+        return type;
+    }
 
-	public boolean is3D() {
-		return type == DatabaseSrsType.COMPOUND || type == DatabaseSrsType.GEOGRAPHIC3D;
-	}
+    public void setType(DatabaseSrsType type) {
+        this.type = type;
+    }
 
-	public String getDatabaseSrsName() {
-		return dbSrsName;
-	}
+    public boolean is3D() {
+        return type == DatabaseSrsType.COMPOUND || type == DatabaseSrsType.GEOGRAPHIC3D;
+    }
 
-	public void setDatabaseSrsName(String dbSrsName) {
-		this.dbSrsName = dbSrsName;
-	}
+    public String getDatabaseSrsName() {
+        return dbSrsName;
+    }
 
-	public String getWkText() {
-		return wkText;
-	}
+    public void setDatabaseSrsName(String dbSrsName) {
+        this.dbSrsName = dbSrsName;
+    }
 
-	public void setWkText(String wkText) {
-		this.wkText = wkText;
-	}
+    public String getWkText() {
+        return wkText;
+    }
 
-	@Override
-	public int compareTo(DatabaseSrs o) {
-		return getDescription().toUpperCase().compareTo(o.getDescription().toUpperCase());
-	}
+    public void setWkText(String wkText) {
+        this.wkText = wkText;
+    }
 
-	@Override
-	public String toString() {
-		return getDescription();
-	}
+    @Override
+    public int compareTo(DatabaseSrs o) {
+        return getDescription().toUpperCase().compareTo(o.getDescription().toUpperCase());
+    }
 
-	private static String generateUUID() {
-		return new StringBuilder("UUID_").append(UUID.randomUUID().toString()).toString();
-	}
+    @Override
+    public String toString() {
+        return getDescription();
+    }
+
+    private static String generateUUID() {
+        return new StringBuilder("UUID_").append(UUID.randomUUID().toString()).toString();
+    }
 
 }

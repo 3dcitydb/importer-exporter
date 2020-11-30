@@ -68,14 +68,14 @@ public class DBAddress implements DBImporter {
 		this.batchConn = batchConn;
 		this.importer = importer;
 
-		importXALSource = config.getProject().getImporter().getAddress().isSetImportXAL();
+		importXALSource = config.getImportConfig().getAddress().isSetImportXAL();
 		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
 		hasGmlIdColumn = importer.getDatabaseAdapter().getConnectionMetaData().getCityDBVersion().compareTo(3, 1, 0) >= 0;
-		replaceGmlId = config.getProject().getImporter().getGmlId().isUUIDModeReplace();
+		replaceGmlId = config.getImportConfig().getGmlId().isUUIDModeReplace();
 		String gmlIdCodespace = null;
 
 		if (hasGmlIdColumn) {
-			gmlIdCodespace = config.getInternal().getCurrentGmlIdCodespace();
+			gmlIdCodespace = importer.getInternalConfig().getCurrentGmlIdCodespace();
 			if (gmlIdCodespace != null)
 				gmlIdCodespace = "'" + gmlIdCodespace + "', ";
 		}

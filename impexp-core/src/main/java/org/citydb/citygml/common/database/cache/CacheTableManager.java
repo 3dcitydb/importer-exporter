@@ -56,13 +56,13 @@ public class CacheTableManager {
 	private ConcurrentHashMap<CacheTableModel, BranchCacheTable> branchCacheTables;
 
 	public CacheTableManager(int concurrencyLevel, Config config) throws SQLException, IOException {
-		if (config.getProject().getGlobal().getCache().isUseDatabase()) {
+		if (config.getGlobalConfig().getCache().isUseDatabase()) {
 			cacheAdapter = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter();
 			cacheConnection = DatabaseConnectionPool.getInstance().getConnection();
 		}
 
 		else {
-			File tempDir = checkTempDir(config.getProject().getGlobal().getCache().getLocalCachePath());
+			File tempDir = checkTempDir(config.getGlobalConfig().getCache().getLocalCachePath());
 			log.debug("Local cache directory is '" + tempDir.getAbsolutePath() + "'.");
 			cacheAdapter = new H2Adapter();
 
@@ -249,7 +249,7 @@ public class CacheTableManager {
 		// some cache tables need to be created in the database
 		// hence, if we use a local cache, we must create a database adapter and connection 
 		if (databaseConnection == null) {
-			if (config.getProject().getGlobal().getCache().isUseDatabase()) {
+			if (config.getGlobalConfig().getCache().isUseDatabase()) {
 				databaseConnection = cacheConnection;
 				databaseAdapter = cacheAdapter;
 			} else {

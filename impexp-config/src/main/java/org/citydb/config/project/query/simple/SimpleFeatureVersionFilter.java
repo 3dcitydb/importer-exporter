@@ -33,7 +33,7 @@ import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.datatype.XMLGregorianCalendar;
 
-@XmlType(name="SimpleFeatureVersionFilterType", propOrder={
+@XmlType(name = "SimpleFeatureVersionFilterType", propOrder = {
         "startDate",
         "endDate"
 })

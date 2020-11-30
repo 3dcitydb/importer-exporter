@@ -34,38 +34,38 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="AbstractSpatialOperatorType", propOrder={
-		"valueReference"
+@XmlType(name = "AbstractSpatialOperatorType", propOrder = {
+        "valueReference"
 })
 @XmlSeeAlso({
-	BBOXOperator.class,
-	AbstractBinarySpatialOperator.class
+        BBOXOperator.class,
+        AbstractBinarySpatialOperator.class
 })
 public abstract class AbstractSpatialOperator extends AbstractPredicate {
-	@XmlElement
-	private String valueReference;
-	
-	public abstract SpatialOperatorName getOperatorName();
-	
-	public boolean isSetValueReference() {
-		return valueReference != null;
-	}
+    @XmlElement
+    private String valueReference;
 
-	public String getValueReference() {
-		return valueReference;
-	}
+    public abstract SpatialOperatorName getOperatorName();
 
-	public void setValueReference(String valueReference) {
-		this.valueReference = valueReference;
-	}
-		
-	@Override
-	public void reset() {
-		valueReference = null;
-	}
-	
-	@Override
-	public PredicateName getPredicateName() {
-		return PredicateName.SPATIAL_OPERATOR;
-	}
+    public boolean isSetValueReference() {
+        return valueReference != null;
+    }
+
+    public String getValueReference() {
+        return valueReference;
+    }
+
+    public void setValueReference(String valueReference) {
+        this.valueReference = valueReference;
+    }
+
+    @Override
+    public void reset() {
+        valueReference = null;
+    }
+
+    @Override
+    public PredicateName getPredicateName() {
+        return PredicateName.SPATIAL_OPERATOR;
+    }
 }

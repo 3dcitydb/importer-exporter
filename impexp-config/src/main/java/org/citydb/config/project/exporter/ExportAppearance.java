@@ -30,94 +30,82 @@ package org.citydb.config.project.exporter;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="ExportAppearanceType", propOrder={
-		"exportAppearances",
-		"exportTextureFiles",
-		"overwriteTextureFiles",
-		"uniqueTextureFileNames",
-		"texturePath"
+@XmlType(name = "ExportAppearanceType", propOrder = {
+        "exportAppearances",
+        "exportTextureFiles",
+        "overwriteTextureFiles",
+        "uniqueTextureFileNames",
+        "texturePath"
 })
 public class ExportAppearance {
-	@XmlElement(name="export", required=true, defaultValue="true")
-	private Boolean exportAppearances = true;
-	@XmlElement(required=true, defaultValue="true")
-	private Boolean exportTextureFiles = true;
-	@XmlElement(defaultValue="false")
-	private Boolean overwriteTextureFiles = true;
-	private Boolean uniqueTextureFileNames = true;
-	private TexturePath texturePath;
+    @XmlElement(name = "export", required = true, defaultValue = "true")
+    private Boolean exportAppearances = true;
+    @XmlElement(required = true, defaultValue = "true")
+    private Boolean exportTextureFiles = true;
+    @XmlElement(defaultValue = "false")
+    private Boolean overwriteTextureFiles = true;
+    private Boolean uniqueTextureFileNames = true;
+    private TexturePath texturePath;
 
-	public ExportAppearance() {
-		texturePath = new TexturePath();
-	}
+    public ExportAppearance() {
+        texturePath = new TexturePath();
+    }
 
-	public boolean isSetExportAppearance() {
-		if (exportAppearances != null)
-			return exportAppearances.booleanValue();
+    public boolean isSetExportAppearance() {
+        return exportAppearances != null ? exportAppearances : false;
+    }
 
-		return false;
-	}
+    public Boolean getExportAppearances() {
+        return exportAppearances;
+    }
 
-	public Boolean getExportAppearances() {
-		return exportAppearances;
-	}
+    public void setExportAppearances(Boolean exportAppearances) {
+        this.exportAppearances = exportAppearances;
+    }
 
-	public void setExportAppearances(Boolean exportAppearances) {
-		this.exportAppearances = exportAppearances;
-	}
+    public boolean isSetExportTextureFiles() {
+        return exportTextureFiles != null ? exportTextureFiles : false;
+    }
 
-	public boolean isSetExportTextureFiles() {
-		if (exportTextureFiles != null)
-			return exportTextureFiles.booleanValue();
+    public Boolean getExportTextureFiles() {
+        return exportTextureFiles;
+    }
 
-		return false;
-	}
+    public void setExportTextureFiles(Boolean exportTextureFiles) {
+        this.exportTextureFiles = exportTextureFiles;
+    }
 
-	public Boolean getExportTextureFiles() {
-		return exportTextureFiles;
-	}
+    public boolean isSetOverwriteTextureFiles() {
+        return overwriteTextureFiles != null ? overwriteTextureFiles : false;
+    }
 
-	public void setExportTextureFiles(Boolean exportTextureFiles) {
-		this.exportTextureFiles = exportTextureFiles;
-	}
+    public Boolean getOverwriteTextureFiles() {
+        return overwriteTextureFiles;
+    }
 
-	public boolean isSetOverwriteTextureFiles() {
-		if (overwriteTextureFiles != null)
-			return overwriteTextureFiles.booleanValue();
+    public void setOverwriteTextureFiles(Boolean overwriteTextureFiles) {
+        this.overwriteTextureFiles = overwriteTextureFiles;
+    }
 
-		return false;
-	}
+    public boolean isSetUniqueTextureFileNames() {
+        return uniqueTextureFileNames != null ? uniqueTextureFileNames : false;
+    }
 
-	public Boolean getOverwriteTextureFiles() {
-		return overwriteTextureFiles;
-	}
+    public Boolean getUniqueTextureFileNames() {
+        return uniqueTextureFileNames;
+    }
 
-	public void setOverwriteTextureFiles(Boolean overwriteTextureFiles) {
-		this.overwriteTextureFiles = overwriteTextureFiles;
-	}
+    public void setUniqueTextureFileNames(Boolean uniqueTextureFileNames) {
+        this.uniqueTextureFileNames = uniqueTextureFileNames;
+    }
 
-	public boolean isSetUniqueTextureFileNames() {
-		if (uniqueTextureFileNames != null)
-			return uniqueTextureFileNames.booleanValue();
+    public TexturePath getTexturePath() {
+        return texturePath;
+    }
 
-		return false;
-	}
-
-	public Boolean getUniqueTextureFileNames() {
-		return uniqueTextureFileNames;
-	}
-
-	public void setUniqueTextureFileNames(Boolean uniqueTextureFileNames) {
-		this.uniqueTextureFileNames = uniqueTextureFileNames;
-	}
-
-	public TexturePath getTexturePath() {
-		return texturePath;
-	}
-
-	public void setTexturePath(TexturePath texturePath) {
-		if (texturePath != null)
-			this.texturePath = texturePath;
-	}
+    public void setTexturePath(TexturePath texturePath) {
+        if (texturePath != null)
+            this.texturePath = texturePath;
+    }
 
 }

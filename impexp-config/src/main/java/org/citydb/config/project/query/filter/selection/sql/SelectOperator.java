@@ -34,8 +34,8 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlRootElement(name="sql")
-@XmlType(name="SelectOperatorType", propOrder={
+@XmlRootElement(name = "sql")
+@XmlType(name = "SelectOperatorType", propOrder = {
         "value"
 })
 public class SelectOperator extends AbstractPredicate {

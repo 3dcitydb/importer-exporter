@@ -2,7 +2,7 @@
  * 3D City Database - The Open Source CityGML Database
  * http://www.3dcitydb.org/
  *
- * Copyright 2013 - 2019
+ * Copyright 2013 - 2020
  * Chair of Geoinformatics
  * Technical University of Munich, Germany
  * https://www.gis.bgu.tum.de/
@@ -80,15 +80,15 @@ public class Tunnel extends KmlGenericObject{
 	}
 
 	protected List<DisplayForm> getDisplayForms() {
-		return config.getProject().getKmlExporter().getTunnelDisplayForms();
+		return config.getKmlExportConfig().getTunnelDisplayForms();
 	}
 
 	public ColladaOptions getColladaOptions() {
-		return config.getProject().getKmlExporter().getTunnelColladaOptions();
+		return config.getKmlExportConfig().getTunnelColladaOptions();
 	}
 
 	public Balloon getBalloonSettings() {
-		return config.getProject().getKmlExporter().getTunnelBalloon();
+		return config.getKmlExportConfig().getTunnelBalloon();
 	}
 
 	public String getStyleBasisName() {
@@ -121,7 +121,7 @@ public class Tunnel extends KmlGenericObject{
 		}
 		
 		if (placemarks.size() == 0) {
-			int lodToExportFrom = config.getProject().getKmlExporter().getLodToExportFrom();
+			int lodToExportFrom = config.getKmlExportConfig().getLodToExportFrom();
 			String fromMessage = " from LoD" + lodToExportFrom;
 			if (lodToExportFrom == 5) {
 				if (work.getDisplayForm().getForm() == DisplayForm.COLLADA)
@@ -165,7 +165,7 @@ public class Tunnel extends KmlGenericObject{
 		boolean reversePointOrder = false;
 
 		try {
-			currentLod = config.getProject().getKmlExporter().getLodToExportFrom();
+			currentLod = config.getKmlExportConfig().getLodToExportFrom();
 			int displayForm = work.getDisplayForm().getForm();
 
 			// we handle FOOTPRINT/EXTRUDED differently than GEOMETRY/COLLADA
@@ -330,7 +330,7 @@ public class Tunnel extends KmlGenericObject{
 					return placemarks;
 
 				case DisplayForm.COLLADA:
-					fillGenericObjectForCollada(rs, config.getProject().getKmlExporter().getTunnelColladaOptions().isGenerateTextureAtlases()); // fill and refill
+					fillGenericObjectForCollada(rs, config.getKmlExportConfig().getTunnelColladaOptions().isGenerateTextureAtlases()); // fill and refill
 					String currentgmlId = getGmlId();
 					setGmlId(work.getGmlId());
 					setId(work.getId());

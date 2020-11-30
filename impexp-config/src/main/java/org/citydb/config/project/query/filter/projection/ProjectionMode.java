@@ -31,26 +31,26 @@ import javax.xml.bind.annotation.XmlEnum;
 import javax.xml.bind.annotation.XmlEnumValue;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="ProjectionModeType")
+@XmlType(name = "ProjectionModeType")
 @XmlEnum
 public enum ProjectionMode {
-	@XmlEnumValue("keep")
-	KEEP("keep"),
-	@XmlEnumValue("remove")
-	REMOVE("remove");
-	
-	private final String value;
-	
-	private ProjectionMode(String v) {
-		value = v;
-	}
-	
-	public String value() {
+    @XmlEnumValue("keep")
+    KEEP("keep"),
+    @XmlEnumValue("remove")
+    REMOVE("remove");
+
+    private final String value;
+
+    private ProjectionMode(String v) {
+        value = v;
+    }
+
+    public String value() {
         return value;
     }
-	
-	public static ProjectionMode fromValue(String v) {
-        for (ProjectionMode c: ProjectionMode.values()) {
+
+    public static ProjectionMode fromValue(String v) {
+        for (ProjectionMode c : ProjectionMode.values()) {
             if (c.value.equals(v)) {
                 return c;
             }
@@ -58,5 +58,5 @@ public enum ProjectionMode {
 
         return KEEP;
     }
-	
+
 }

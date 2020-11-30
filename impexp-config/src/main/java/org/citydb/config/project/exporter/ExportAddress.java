@@ -48,10 +48,7 @@ public class ExportAddress {
 	}
 
 	public boolean isSetUseFallback() {
-		if (useFallback != null)
-			return useFallback.booleanValue();
-
-		return false;
+		return useFallback != null ? useFallback : false;
 	}
 
 	public Boolean getUseFallback() {

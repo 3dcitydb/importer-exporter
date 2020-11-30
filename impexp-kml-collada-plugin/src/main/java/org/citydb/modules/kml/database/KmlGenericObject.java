@@ -2,7 +2,7 @@
  * 3D City Database - The Open Source CityGML Database
  * http://www.3dcitydb.org/
  *
- * Copyright 2013 - 2019
+ * Copyright 2013 - 2020
  * Chair of Geoinformatics
  * Technical University of Munich, Germany
  * https://www.gis.bgu.tum.de/
@@ -29,15 +29,34 @@ package org.citydb.modules.kml.database;
 
 import com.sun.j3d.utils.geometry.GeometryInfo;
 import com.sun.j3d.utils.geometry.NormalGenerator;
-import net.opengis.kml._2.*;
+import net.opengis.kml._2.AbstractGeometryType;
+import net.opengis.kml._2.AltitudeModeEnumType;
+import net.opengis.kml._2.BoundaryType;
+import net.opengis.kml._2.LineStringType;
+import net.opengis.kml._2.LinearRingType;
+import net.opengis.kml._2.LinkType;
+import net.opengis.kml._2.LocationType;
+import net.opengis.kml._2.ModelType;
+import net.opengis.kml._2.MultiGeometryType;
+import net.opengis.kml._2.OrientationType;
+import net.opengis.kml._2.PlacemarkType;
+import net.opengis.kml._2.PointType;
+import net.opengis.kml._2.PolygonType;
 import org.citydb.config.Config;
 import org.citydb.config.geometry.ElementType;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.config.geometry.GeometryType;
-import org.citydb.config.project.database.Database;
+import org.citydb.config.project.database.DatabaseConfig;
 import org.citydb.config.project.database.DatabaseSrs;
 import org.citydb.config.project.global.LogLevel;
-import org.citydb.config.project.kmlExporter.*;
+import org.citydb.config.project.kmlExporter.AltitudeMode;
+import org.citydb.config.project.kmlExporter.AltitudeOffsetMode;
+import org.citydb.config.project.kmlExporter.Balloon;
+import org.citydb.config.project.kmlExporter.ColladaOptions;
+import org.citydb.config.project.kmlExporter.DisplayForm;
+import org.citydb.config.project.kmlExporter.KmlExportConfig;
+import org.citydb.config.project.kmlExporter.PointAndCurve;
+import org.citydb.config.project.kmlExporter.PointDisplayMode;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.adapter.AbstractGeometryConverterAdapter;
 import org.citydb.database.adapter.BlobExportAdapter;
@@ -113,9 +132,7 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
-import java.awt.Transparency;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -429,7 +446,7 @@ public abstract class KmlGenericObject {
 		mesh.setVertices(vertices);
 		if (getColladaOptions().isGenerateSurfaceNormals())
 			mesh.getSource().add(normalSource);
-		if (!config.getProject().getKmlExporter().getAppearanceTheme().equals(KmlExporter.THEME_NONE))
+		if (!config.getKmlExportConfig().getAppearanceTheme().equals(KmlExportConfig.THEME_NONE))
 			mesh.getSource().add(texCoordsSource);
 
 		geometry.setMesh(mesh);
@@ -1351,7 +1368,7 @@ public abstract class KmlGenericObject {
 		List<PlacemarkType> placemarkList = new ArrayList<PlacemarkType>();
 		PlacemarkType placemark = kmlFactory.createPlacemarkType();
 		placemark.setName(work.getGmlId());
-		placemark.setId(config.getProject().getKmlExporter().getIdPrefixes().getPlacemarkFootprint() + placemark.getName());
+		placemark.setId(config.getKmlExportConfig().getIdPrefixes().getPlacemarkFootprint() + placemark.getName());
 
 		if (work.getDisplayForm().isHighlightingEnabled()) {
 			placemark.setStyleUrl("#" + getStyleBasisName() + DisplayForm.FOOTPRINT_STR + "Style");
@@ -1421,7 +1438,7 @@ public abstract class KmlGenericObject {
 		List<PlacemarkType> placemarkList = new ArrayList<PlacemarkType>();
 		PlacemarkType placemark = kmlFactory.createPlacemarkType();
 		placemark.setName(work.getGmlId());
-		placemark.setId(config.getProject().getKmlExporter().getIdPrefixes().getPlacemarkExtruded() + placemark.getName());
+		placemark.setId(config.getKmlExportConfig().getIdPrefixes().getPlacemarkExtruded() + placemark.getName());
 		if (work.getDisplayForm().isHighlightingEnabled()) {
 			placemark.setStyleUrl("#" + getStyleBasisName() + DisplayForm.EXTRUDED_STR + "Style");
 		}
@@ -1571,7 +1588,7 @@ public abstract class KmlGenericObject {
 					eventDispatcher.triggerEvent(new GeometryCounterEvent(null, this));
 
 					polygon = kmlFactory.createPolygonType();
-					switch (config.getProject().getKmlExporter().getAltitudeMode()) {
+					switch (config.getKmlExportConfig().getAltitudeMode()) {
 					case ABSOLUTE:
 						polygon.setAltitudeModeGroup(kmlFactory.createAltitudeMode(AltitudeModeEnumType.ABSOLUTE));
 						break;
@@ -1712,12 +1729,12 @@ public abstract class KmlGenericObject {
 					|| work.getCityGMLClass() == CityGMLClass.BRIDGE
 					|| work.getCityGMLClass() == CityGMLClass.TUNNEL){
 				placemark.setName(work.getGmlId() + "_" + surfaceType);
-				placemark.setId(config.getProject().getKmlExporter().getIdPrefixes().getPlacemarkGeometry() + placemark.getName());
+				placemark.setId(config.getKmlExportConfig().getIdPrefixes().getPlacemarkGeometry() + placemark.getName());
 				placemark.setStyleUrl("#" + surfaceType + "Normal");
 			}
 			else{
 				placemark.setName(work.getGmlId());
-				placemark.setId(config.getProject().getKmlExporter().getIdPrefixes().getPlacemarkGeometry() + placemark.getName());
+				placemark.setId(config.getKmlExportConfig().getIdPrefixes().getPlacemarkGeometry() + placemark.getName());
 				placemark.setStyleUrl("#" + getStyleBasisName() + DisplayForm.GEOMETRY_STR + "Normal");
 			}
 
@@ -2099,8 +2116,8 @@ public abstract class KmlGenericObject {
 	protected void fillGenericObjectForCollada(ResultSet _rs, boolean generateTextureAtlas) throws SQLException {
 		HashSet<String> exportedGmlIds = new HashSet<String>();
 
-		String selectedTheme = config.getProject().getKmlExporter().getAppearanceTheme();
-		boolean exportAppearance = !selectedTheme.equals(KmlExporter.THEME_NONE);
+		String selectedTheme = config.getKmlExportConfig().getAppearanceTheme();
+		boolean exportAppearance = !selectedTheme.equals(KmlExportConfig.THEME_NONE);
 		int texImageCounter = 0;
 
 		DisplayForm colladaDisplayForm = null;
@@ -2238,7 +2255,7 @@ public abstract class KmlGenericObject {
 					}
 
 					// handle appearance
-					if (!selectedTheme.equals(KmlExporter.THEME_NONE)) {
+					if (!selectedTheme.equals(KmlExportConfig.THEME_NONE)) {
 						// skip if we have already assigned a texture
 						if (texImageUris.get(surfaceId) != null)
 							continue;
@@ -2341,7 +2358,7 @@ public abstract class KmlGenericObject {
 	public PlacemarkType createPlacemarkForColladaModel() throws SQLException {
 		PlacemarkType placemark = kmlFactory.createPlacemarkType();
 		placemark.setName(getGmlId());
-		placemark.setId(config.getProject().getKmlExporter().getIdPrefixes().getPlacemarkCollada() + placemark.getName());
+		placemark.setId(config.getKmlExportConfig().getIdPrefixes().getPlacemarkCollada() + placemark.getName());
 
 		DisplayForm colladaDisplayForm = null;
 		for (DisplayForm displayForm: getDisplayForms()) {
@@ -2363,7 +2380,7 @@ public abstract class KmlGenericObject {
 		ModelType model = kmlFactory.createModelType();
 		LocationType location = kmlFactory.createLocationType();
 
-		switch (config.getProject().getKmlExporter().getAltitudeMode()) {
+		switch (config.getKmlExportConfig().getAltitudeMode()) {
 		case ABSOLUTE:
 			model.setAltitudeModeGroup(kmlFactory.createAltitudeMode(AltitudeModeEnumType.ABSOLUTE));
 			break;
@@ -2395,8 +2412,8 @@ public abstract class KmlGenericObject {
 		model.setOrientation(orientation);
 
 		LinkType link = kmlFactory.createLinkType();
-		if (config.getProject().getKmlExporter().isOneFilePerObject() &&
-				!config.getProject().getKmlExporter().isExportAsKmz() &&
+		if (config.getKmlExportConfig().isOneFilePerObject() &&
+				!config.getKmlExportConfig().isExportAsKmz() &&
 				query.isSetTiling())
 		{
 			link.setHref(getGmlId() + ".dae");
@@ -2418,7 +2435,7 @@ public abstract class KmlGenericObject {
 		PlacemarkType placemark = kmlFactory.createPlacemarkType();
 		placemark.setStyleUrl("#" + getStyleBasisName() + work.getDisplayForm().getName() + "Style");
 		placemark.setName(work.getGmlId());
-		placemark.setId(config.getProject().getKmlExporter().getIdPrefixes().getPlacemarkHighlight() + placemark.getName());
+		placemark.setId(config.getKmlExportConfig().getIdPrefixes().getPlacemarkHighlight() + placemark.getName());
 		placemarkList.add(placemark);
 
 		if (getBalloonSettings().isIncludeDescription()) {
@@ -2522,7 +2539,7 @@ public abstract class KmlGenericObject {
 					unconvertedSurface = null;
 
 					PolygonType polygon = kmlFactory.createPolygonType();
-					switch (config.getProject().getKmlExporter().getAltitudeMode()) {
+					switch (config.getKmlExportConfig().getAltitudeMode()) {
 					case ABSOLUTE:
 						polygon.setAltitudeModeGroup(kmlFactory.createAltitudeMode(AltitudeModeEnumType.ABSOLUTE));
 						break;
@@ -2683,12 +2700,12 @@ public abstract class KmlGenericObject {
 
 		double zOffset = Double.MAX_VALUE;
 
-		switch (config.getProject().getKmlExporter().getAltitudeOffsetMode()) {
+		switch (config.getKmlExportConfig().getAltitudeOffsetMode()) {
 		case NO_OFFSET:
 			zOffset = 0;
 			break;
 		case CONSTANT:
-			zOffset = config.getProject().getKmlExporter().getAltitudeOffsetValue();
+			zOffset = config.getKmlExportConfig().getAltitudeOffsetValue();
 			break;
 		case BOTTOM_ZERO:
 			zOffset = Double.MAX_VALUE;
@@ -2729,7 +2746,7 @@ public abstract class KmlGenericObject {
 
 		double zOffset = 0;
 
-		if (config.getProject().getKmlExporter().getAltitudeOffsetMode() == AltitudeOffsetMode.BOTTOM_ZERO) {
+		if (config.getKmlExportConfig().getAltitudeOffsetMode() == AltitudeOffsetMode.BOTTOM_ZERO) {
 			try {
 				// convert candidate points to WGS84
 				double[] coords = new double[candidates.size()*3];
@@ -2757,7 +2774,7 @@ public abstract class KmlGenericObject {
 			}
 			catch (Exception e) {}
 		}
-		else if (config.getProject().getKmlExporter().isCallGElevationService()) { // allowed to query
+		else if (config.getKmlExportConfig().isCallGElevationService()) { // allowed to query
 			PreparedStatement insertQuery = null;
 			ResultSet rs = null;
 
@@ -2906,14 +2923,14 @@ public abstract class KmlGenericObject {
 	protected GeometryObject convertToWGS84(GeometryObject geomObj) throws SQLException {
 		GeometryObject convertedGeomObj = null;
 		try {
-			DatabaseSrs targetSrs = dbSrs.is3D() ? databaseAdapter.getUtil().getWGS843D() : Database.PREDEFINED_SRS.get(Database.PredefinedSrsName.WGS84_2D);
+			DatabaseSrs targetSrs = dbSrs.is3D() ? databaseAdapter.getUtil().getWGS843D() : DatabaseConfig.PREDEFINED_SRS.get(DatabaseConfig.PredefinedSrsName.WGS84_2D);
 			convertedGeomObj = databaseAdapter.getUtil().transform(geomObj, targetSrs);
 		} catch (SQLException e) {
 			log.warn("SQL exception when converting geometry to WGS84: " + e.getMessage());
 			throw e;
 		}
 
-		if (config.getProject().getKmlExporter().isUseOriginalZCoords() && geomObj.getDimension() == 3) {
+		if (config.getKmlExportConfig().isUseOriginalZCoords() && geomObj.getDimension() == 3) {
 			double[][] originalCoords = geomObj.getCoordinates();
 			double[][] convertedCoords = convertedGeomObj.getCoordinates();
 

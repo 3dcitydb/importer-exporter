@@ -33,22 +33,22 @@ import javax.xml.bind.annotation.XmlType;
 import org.citydb.config.project.resources.Resources;
 import org.citydb.config.project.resources.UIDCacheConfig;
 
-@XmlType(name="ImportResourcesType", propOrder={
-		"texImageCache"
+@XmlType(name = "ImportResourcesType", propOrder = {
+        "texImageCache"
 })
 public class ImportResources extends Resources {
-	@XmlElement(required=true)
-	private UIDCacheConfig texImageCache;
-	
-	public ImportResources() {
-		texImageCache = new UIDCacheConfig();
-	}
+    @XmlElement(required = true)
+    private UIDCacheConfig texImageCache;
 
-	public UIDCacheConfig getTexImageCache() {
-		return texImageCache;
-	}
+    public ImportResources() {
+        texImageCache = new UIDCacheConfig();
+    }
 
-	public void setTexImageCache(UIDCacheConfig texImageCache) {
-		this.texImageCache = texImageCache;
-	}
+    public UIDCacheConfig getTexImageCache() {
+        return texImageCache;
+    }
+
+    public void setTexImageCache(UIDCacheConfig texImageCache) {
+        this.texImageCache = texImageCache;
+    }
 }

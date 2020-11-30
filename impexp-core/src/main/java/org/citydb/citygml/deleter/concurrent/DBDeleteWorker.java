@@ -73,8 +73,8 @@ public class DBDeleteWorker extends Worker<DBSplittingResult> implements EventHa
 
 		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
 
-		if (config.getProject().getDeleter().getMode() == DeleteMode.TERMINATE) {
-			Continuation metadata = config.getProject().getDeleter().getContinuation();
+		if (config.getDeleteConfig().getMode() == DeleteMode.TERMINATE) {
+			Continuation metadata = config.getDeleteConfig().getContinuation();
 			StringBuilder update = new StringBuilder("update cityobject set termination_date = ?, last_modification_date = ?, updating_person = ? ");
 			if (metadata.isSetReasonForUpdate()) update.append(", reason_for_update = '").append(metadata.getReasonForUpdate()).append("'");
 			if (metadata.isSetLineage()) update.append(", lineage = '").append(metadata.getLineage()).append("' ");
@@ -133,10 +133,10 @@ public class DBDeleteWorker extends Worker<DBSplittingResult> implements EventHa
 			long objectId = work.getId();
 			long deletedObjectId;
 
-			if (config.getProject().getDeleter().getMode() == DeleteMode.TERMINATE) {
+			if (config.getDeleteConfig().getMode() == DeleteMode.TERMINATE) {
 				OffsetDateTime now = OffsetDateTime.now();
 
-				Continuation metadata = config.getProject().getDeleter().getContinuation();
+				Continuation metadata = config.getDeleteConfig().getContinuation();
 				OffsetDateTime terminationDate = metadata.isSetTerminationDate() ? metadata.getTerminationDate() : now;
 				String updatingPerson = metadata.isUpdatingPersonModeDatabase() || !metadata.isSetUpdatingPerson() ?
 						databaseAdapter.getConnectionDetails().getUser() : metadata.getUpdatingPerson();
@@ -164,10 +164,9 @@ public class DBDeleteWorker extends Worker<DBSplittingResult> implements EventHa
 
 			eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.UPDATE, 1, this));
 		} catch (SQLException e) {
-			eventDispatcher.triggerEvent(new InterruptEvent("Failed to delete " + work.getObjectType().getPath() + " (ID = " + work.getId() + ").", LogLevel.WARN, e, eventChannel, this));
+			eventDispatcher.triggerSyncEvent(new InterruptEvent("Failed to delete " + work.getObjectType().getPath() + " (ID = " + work.getId() + ").", LogLevel.ERROR, e, eventChannel, this));
 		} catch (Throwable e) {
-			// this is to catch general exceptions that may occur during the export
-			eventDispatcher.triggerSyncEvent(new InterruptEvent("Aborting due to an unexpected " + e.getClass().getName() + " error.", LogLevel.ERROR, e, eventChannel, this));
+			eventDispatcher.triggerSyncEvent(new InterruptEvent("A fatal error occurred during delete.", LogLevel.ERROR, e, eventChannel, this));
 		} finally {
 			lock.unlock();
 		}

@@ -34,16 +34,16 @@ import javax.xml.bind.annotation.XmlEnumValue;
 import javax.xml.bind.annotation.XmlType;
 import java.util.Locale;
 
-@XmlType(name="Lod0FootprintMode")
+@XmlType(name = "Lod0FootprintMode")
 @XmlEnum
 public enum Lod0FootprintMode {
-	@XmlEnumValue("footprint")
+    @XmlEnumValue("footprint")
     FOOTPRINT("footprint"),
     @XmlEnumValue("roofprint")
     ROOFPRINT("roofprint"),
     @XmlEnumValue("roofprint_prior_footprint")
     ROOFPRINT_PRIOR_FOOTPRINT("roofprint - if none then footprint");
-    
+
     private final String value;
 
     Lod0FootprintMode(String v) {
@@ -55,16 +55,16 @@ public enum Lod0FootprintMode {
     }
 
     public static Lod0FootprintMode fromValue(String v) {
-        for (Lod0FootprintMode c: Lod0FootprintMode.values()) {
+        for (Lod0FootprintMode c : Lod0FootprintMode.values()) {
             if (c.value.equals(v)) {
                 return c;
             }
         }
         return FOOTPRINT;
     }
-    
-	public String toString() {
-		return Language.I18N.getString("pref.kmlexport.lod0footprint.mode.label." + this.name().toLowerCase(Locale.ROOT));
-	}
+
+    public String toString() {
+        return Language.I18N.getString("pref.kmlexport.lod0footprint.mode.label." + this.name().toLowerCase(Locale.ROOT));
+    }
 
 }

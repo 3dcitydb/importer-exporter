@@ -31,16 +31,16 @@ import javax.xml.bind.annotation.XmlEnum;
 import javax.xml.bind.annotation.XmlEnumValue;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="PointDisplayMode")
+@XmlType(name = "PointDisplayMode")
 @XmlEnum
 public enum PointDisplayMode {
-	@XmlEnumValue("icon")
+    @XmlEnumValue("icon")
     ICON("icon"),
     @XmlEnumValue("crossLine")
     CROSS_LINE("crossLine"),
     @XmlEnumValue("cube")
     CUBE("cube");
-    
+
     private final String value;
 
     PointDisplayMode(String v) {
@@ -52,7 +52,7 @@ public enum PointDisplayMode {
     }
 
     public static PointDisplayMode fromValue(String v) {
-        for (PointDisplayMode c: PointDisplayMode.values()) {
+        for (PointDisplayMode c : PointDisplayMode.values()) {
             if (c.value.equals(v)) {
                 return c;
             }
@@ -60,5 +60,5 @@ public enum PointDisplayMode {
 
         return CROSS_LINE;
     }
-    
+
 }

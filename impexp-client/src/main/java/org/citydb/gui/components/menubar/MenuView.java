@@ -28,7 +28,7 @@
 package org.citydb.gui.components.menubar;
 
 import org.citydb.config.Config;
-import org.citydb.config.gui.Gui;
+import org.citydb.config.gui.GuiConfig;
 import org.citydb.config.i18n.Language;
 import org.citydb.gui.ImpExpGui;
 import org.citydb.gui.components.mapviewer.MapWindow;
@@ -55,20 +55,20 @@ public class MenuView extends JMenu {
 	private void init() {
 		map = new JMenuItem();
 		detachConsole = new JCheckBoxMenuItem();
-		detachConsole.setSelected(config.getGui().getConsoleWindow().isDetached());
+		detachConsole.setSelected(config.getGuiConfig().getConsoleWindow().isDetached());
 		defaults = new JMenuItem();
 		
 		map.addActionListener(e -> {
 			SwingUtilities.invokeLater(() -> MapWindow.getInstance(mainView).setVisible(true));
 		});
 		
-		detachConsole.addActionListener(e -> mainView.enableConsoleWindow(!config.getGui().getConsoleWindow().isDetached(), true));
+		detachConsole.addActionListener(e -> mainView.enableConsoleWindow(!config.getGuiConfig().getConsoleWindow().isDetached(), true));
 		
 		defaults.addActionListener(e -> {
 			// do not loose recently used projects
-			List<String> recentlyUsedProjects = config.getGui().getRecentlyUsedProjectFiles();
-			config.setGui(new Gui());
-			config.getGui().setRecentlyUsedProjectFiles(recentlyUsedProjects);
+			List<String> recentlyUsedProjects = config.getGuiConfig().getRecentlyUsedProjectFiles();
+			config.setGuiConfig(new GuiConfig());
+			config.getGuiConfig().setRecentlyUsedProjectFiles(recentlyUsedProjects);
 			mainView.restoreDefaults();
 		});
 		
@@ -90,7 +90,7 @@ public class MenuView extends JMenu {
 	}
 
 	public void update() {
-		detachConsole.setSelected(config.getGui().getConsoleWindow().isDetached());
+		detachConsole.setSelected(config.getGuiConfig().getConsoleWindow().isDetached());
 	}
 	
 }

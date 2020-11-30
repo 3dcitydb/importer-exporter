@@ -32,7 +32,7 @@ import javax.xml.bind.annotation.XmlEnum;
 import javax.xml.bind.annotation.XmlEnumValue;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="GeocodingServiceNameType")
+@XmlType(name = "GeocodingServiceNameType")
 @XmlEnum
 public enum GeocodingServiceName {
     @XmlEnumValue("nominatim")

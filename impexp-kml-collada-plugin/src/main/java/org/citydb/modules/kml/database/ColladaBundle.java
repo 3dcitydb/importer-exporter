@@ -2,7 +2,7 @@
  * 3D City Database - The Open Source CityGML Database
  * http://www.3dcitydb.org/
  *
- * Copyright 2013 - 2019
+ * Copyright 2013 - 2020
  * Chair of Geoinformatics
  * Technical University of Munich, Germany
  * https://www.gis.bgu.tum.de/
@@ -27,12 +27,11 @@
  */
 package org.citydb.modules.kml.database;
 
-import java.util.HashMap;
-
+import net.opengis.kml._2.PlacemarkType;
 import org.citydb.textureAtlas.model.TextureImage;
 import org.collada._2005._11.colladaschema.COLLADA;
 
-import net.opengis.kml._2.PlacemarkType;
+import java.util.HashMap;
 
 public class ColladaBundle {
 	

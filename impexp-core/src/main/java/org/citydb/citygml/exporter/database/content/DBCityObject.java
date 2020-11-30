@@ -404,7 +404,7 @@ public class DBCityObject implements DBExporter {
 						value = String.valueOf(minX) + ' ' + minY + ' ' + maxX + ' ' + maxY;
 						break;
 					default:
-						value = String.valueOf(activeTile.getX()) + ' ' + activeTile.getY();
+						value = String.valueOf(activeTile.getRow()) + ' ' + activeTile.getColumn();
 				}
 
 				StringAttribute genericStringAttrib = new StringAttribute();

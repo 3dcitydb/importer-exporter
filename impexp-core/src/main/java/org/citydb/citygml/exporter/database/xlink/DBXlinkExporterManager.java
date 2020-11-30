@@ -27,12 +27,11 @@
  */
 package org.citydb.citygml.exporter.database.xlink;
 
+import org.citydb.citygml.exporter.util.InternalConfig;
 import org.citydb.config.Config;
-import org.citydb.config.project.database.ExportBatching;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.event.Event;
 import org.citydb.event.EventDispatcher;
-import org.citydb.file.OutputFile;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -40,17 +39,17 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class DBXlinkExporterManager {
-	private final OutputFile outputFile;
 	private final Connection connection;
 	private final AbstractDatabaseAdapter databaseAdapter;
+	private final InternalConfig internalConfig;
 	private final Config config;
 	private final EventDispatcher eventDispatcher;
 	private final Map<DBXlinkExporterEnum, DBXlinkExporter> dbExporterMap;
 
-	public DBXlinkExporterManager(OutputFile outputFile, Connection connection, AbstractDatabaseAdapter databaseAdapter, Config config, EventDispatcher eventDispatcher) {
-		this.outputFile = outputFile;
+	public DBXlinkExporterManager(Connection connection, AbstractDatabaseAdapter databaseAdapter, InternalConfig internalConfig, Config config, EventDispatcher eventDispatcher) {
 		this.connection = connection;
 		this.databaseAdapter = databaseAdapter;
+		this.internalConfig = internalConfig;
 		this.config = config;
 		this.eventDispatcher = eventDispatcher;
 
@@ -76,8 +75,8 @@ public class DBXlinkExporterManager {
 		return dbExporter;
 	}
 
-	public OutputFile getOutputFile() {
-		return outputFile;
+	public InternalConfig getInternalConfig() {
+		return internalConfig;
 	}
 
 	public AbstractDatabaseAdapter getDatabaseAdapter() {
@@ -85,10 +84,8 @@ public class DBXlinkExporterManager {
 	}
 
 	public int getBlobBatchSize() {
-		int blobBatchSize = config.getProject().getDatabase().getExportBatching().getBlobBatchSize();
-		return blobBatchSize > databaseAdapter.getSQLAdapter().getMaximumNumberOfItemsForInOperator() ?
-				databaseAdapter.getSQLAdapter().getMaximumNumberOfItemsForInOperator() :
-				blobBatchSize;
+		int blobBatchSize = config.getDatabaseConfig().getExportBatching().getBlobBatchSize();
+		return Math.min(blobBatchSize, databaseAdapter.getSQLAdapter().getMaximumNumberOfItemsForInOperator());
 	}
 
 	public void propagateEvent(Event event) {

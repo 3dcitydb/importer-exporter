@@ -31,60 +31,60 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlRootElement(name="propertyIsBetween")
-@XmlType(name="BetweenOperatorType", propOrder={
-		"lowerBoundary",
-		"upperBoundary"
+@XmlRootElement(name = "propertyIsBetween")
+@XmlType(name = "BetweenOperatorType", propOrder = {
+        "lowerBoundary",
+        "upperBoundary"
 })
 public class BetweenOperator extends AbstractComparisonOperator {
-	@XmlElement(required = true)
-	private String lowerBoundary;
-	@XmlElement(required = true)
-	private String upperBoundary;
+    @XmlElement(required = true)
+    private String lowerBoundary;
+    @XmlElement(required = true)
+    private String upperBoundary;
 
-	public BetweenOperator() {
-	}
+    public BetweenOperator() {
+    }
 
-	public BetweenOperator(String valueReference, String lowerBoundary, String upperBoundary) {
-		super(valueReference);
-		this.lowerBoundary = lowerBoundary;
-		this.upperBoundary = upperBoundary;
-	}
-	
-	public boolean isSetLowerBoundary() {
-		return lowerBoundary != null;
-	}
+    public BetweenOperator(String valueReference, String lowerBoundary, String upperBoundary) {
+        super(valueReference);
+        this.lowerBoundary = lowerBoundary;
+        this.upperBoundary = upperBoundary;
+    }
 
-	public String getLowerBoundary() {
-		return lowerBoundary;
-	}
+    public boolean isSetLowerBoundary() {
+        return lowerBoundary != null;
+    }
 
-	public void setLowerBoundary(String lowerBoundary) {
-		this.lowerBoundary = lowerBoundary;
-	}
-	
-	public boolean isSetUpperBoundary() {
-		return upperBoundary != null;
-	}
+    public String getLowerBoundary() {
+        return lowerBoundary;
+    }
 
-	public String getUpperBoundary() {
-		return upperBoundary;
-	}
+    public void setLowerBoundary(String lowerBoundary) {
+        this.lowerBoundary = lowerBoundary;
+    }
 
-	public void setUpperBoundary(String upperBoundary) {
-		this.upperBoundary = upperBoundary;
-	}
-	
-	@Override
-	public void reset() {
-		lowerBoundary = null;
-		upperBoundary = null;
-		super.reset();
-	}
+    public boolean isSetUpperBoundary() {
+        return upperBoundary != null;
+    }
 
-	@Override
-	public ComparisonOperatorName getOperatorName() {
-		return ComparisonOperatorName.BETWEEN;
-	}
+    public String getUpperBoundary() {
+        return upperBoundary;
+    }
+
+    public void setUpperBoundary(String upperBoundary) {
+        this.upperBoundary = upperBoundary;
+    }
+
+    @Override
+    public void reset() {
+        lowerBoundary = null;
+        upperBoundary = null;
+        super.reset();
+    }
+
+    @Override
+    public ComparisonOperatorName getOperatorName() {
+        return ComparisonOperatorName.BETWEEN;
+    }
 
 }

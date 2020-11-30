@@ -35,48 +35,48 @@ import javax.xml.bind.annotation.XmlType;
 import java.util.Arrays;
 import java.util.List;
 
-@XmlType(name="AbstractBinaryLogicalOperatorType", propOrder={
-		"operands"
+@XmlType(name = "AbstractBinaryLogicalOperatorType", propOrder = {
+        "operands"
 })
 @XmlSeeAlso({
-	AndOperator.class,
-	OrOperator.class
+        AndOperator.class,
+        OrOperator.class
 })
 public abstract class AbstractBinaryLogicalOperator extends AbstractLogicalOperator {
-	@XmlElementRef
-	private List<AbstractPredicate> operands;
+    @XmlElementRef
+    private List<AbstractPredicate> operands;
 
-	public AbstractBinaryLogicalOperator() {
-	}
-	
-	public AbstractBinaryLogicalOperator(List<AbstractPredicate> operands) {
-		this.operands = operands;
-	}
+    public AbstractBinaryLogicalOperator() {
+    }
 
-	public AbstractBinaryLogicalOperator(AbstractPredicate... operands) {
-		this.operands = Arrays.asList(operands);
-	}
-	
-	public boolean isSetOperands() {
-		return operands != null;
-	}
+    public AbstractBinaryLogicalOperator(List<AbstractPredicate> operands) {
+        this.operands = operands;
+    }
 
-	public List<AbstractPredicate> getOperands() {
-		return operands;
-	}
+    public AbstractBinaryLogicalOperator(AbstractPredicate... operands) {
+        this.operands = Arrays.asList(operands);
+    }
 
-	public void setOperands(List<AbstractPredicate> operands) {
-		if (operands != null && !operands.isEmpty())
-			this.operands = operands;
-	}
-	
-	public int numberOfOperands() {
-		return operands != null ? operands.size() : 0;
-	}
+    public boolean isSetOperands() {
+        return operands != null;
+    }
 
-	@Override
-	public void reset() {
-		operands.clear();
-	}
+    public List<AbstractPredicate> getOperands() {
+        return operands;
+    }
+
+    public void setOperands(List<AbstractPredicate> operands) {
+        if (operands != null && !operands.isEmpty())
+            this.operands = operands;
+    }
+
+    public int numberOfOperands() {
+        return operands != null ? operands.size() : 0;
+    }
+
+    @Override
+    public void reset() {
+        operands.clear();
+    }
 
 }

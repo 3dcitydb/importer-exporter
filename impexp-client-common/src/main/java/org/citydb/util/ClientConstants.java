@@ -32,6 +32,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 public class ClientConstants {
+    public static final String CLI_NAME = "impexp";
     public static final Path IMPEXP_HOME;
     public static final Path WORKING_DIR;
 

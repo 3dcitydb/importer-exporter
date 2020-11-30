@@ -33,67 +33,67 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlRootElement(name="lineString")
-@XmlType(name="LineStringType", propOrder={
-		"posList"
+@XmlRootElement(name = "lineString")
+@XmlType(name = "LineStringType", propOrder = {
+        "posList"
 })
 public class LineString extends AbstractGeometry {
-	@XmlElement(required=true)
+    @XmlElement(required = true)
     private PositionList posList;
-		
-	public LineString() {
-		posList = new PositionList();
-	}
 
-	public PositionList getPosList() {
-		return posList;
-	}
+    public LineString() {
+        posList = new PositionList();
+    }
 
-	public void setPosList(PositionList posList) {
-		this.posList = posList;
-	}
-	
-	@Override
-	public BoundingBox toBoundingBox() {
-		int dim = is3D() ? 3 : 2;
-		BoundingBox bbox = new BoundingBox(new Position(Double.MAX_VALUE, dim), new Position(-Double.MAX_VALUE, dim));
-		
-		List<Double> coords = posList.getCoords();
-		for (int i = 0; i < coords.size(); i += dim) {
-			if (coords.get(i) < bbox.getLowerCorner().getX())
-				bbox.getLowerCorner().setX(coords.get(i));
-			else if (coords.get(i) > bbox.getUpperCorner().getX())
-				bbox.getUpperCorner().setX(coords.get(i));
-			
-			if (coords.get(i + 1) < bbox.getLowerCorner().getY())
-				bbox.getLowerCorner().setY(coords.get(i + 1));
-			else if (coords.get(i + 1) > bbox.getUpperCorner().getY())
-				bbox.getUpperCorner().setY(coords.get(i + 1));
-			
-			if (dim == 3) {
-				if (coords.get(i + 2) < bbox.getLowerCorner().getZ())
-					bbox.getLowerCorner().setZ(coords.get(i + 2));
-				else if (coords.get(i + 2) > bbox.getUpperCorner().getZ())
-					bbox.getUpperCorner().setZ(coords.get(i + 2));
-			}
-		}
-		
-		return bbox;
-	}
+    public PositionList getPosList() {
+        return posList;
+    }
 
-	@Override
-	public boolean is3D() {
-		return isValid() && posList.getDimension() == 3;
-	}
-	
-	@Override
-	public boolean isValid() {
-		return posList != null && posList.isValid();
-	}
+    public void setPosList(PositionList posList) {
+        this.posList = posList;
+    }
 
-	@Override
-	public GeometryType getGeometryType() {
-		return GeometryType.LINE_STRING;
-	}
+    @Override
+    public BoundingBox toBoundingBox() {
+        int dim = is3D() ? 3 : 2;
+        BoundingBox bbox = new BoundingBox(new Position(Double.MAX_VALUE, dim), new Position(-Double.MAX_VALUE, dim));
+
+        List<Double> coords = posList.getCoords();
+        for (int i = 0; i < coords.size(); i += dim) {
+            if (coords.get(i) < bbox.getLowerCorner().getX())
+                bbox.getLowerCorner().setX(coords.get(i));
+            else if (coords.get(i) > bbox.getUpperCorner().getX())
+                bbox.getUpperCorner().setX(coords.get(i));
+
+            if (coords.get(i + 1) < bbox.getLowerCorner().getY())
+                bbox.getLowerCorner().setY(coords.get(i + 1));
+            else if (coords.get(i + 1) > bbox.getUpperCorner().getY())
+                bbox.getUpperCorner().setY(coords.get(i + 1));
+
+            if (dim == 3) {
+                if (coords.get(i + 2) < bbox.getLowerCorner().getZ())
+                    bbox.getLowerCorner().setZ(coords.get(i + 2));
+                else if (coords.get(i + 2) > bbox.getUpperCorner().getZ())
+                    bbox.getUpperCorner().setZ(coords.get(i + 2));
+            }
+        }
+
+        return bbox;
+    }
+
+    @Override
+    public boolean is3D() {
+        return isValid() && posList.getDimension() == 3;
+    }
+
+    @Override
+    public boolean isValid() {
+        return posList != null && posList.isValid();
+    }
+
+    @Override
+    public GeometryType getGeometryType() {
+        return GeometryType.LINE_STRING;
+    }
 
 }

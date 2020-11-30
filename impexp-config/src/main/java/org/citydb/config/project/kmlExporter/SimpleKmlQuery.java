@@ -46,88 +46,88 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.namespace.QName;
 
-@XmlType(name="SimpleKmlExportQueryType", propOrder={
-		"featureTypeFilter",
-		"gmlIdFilter",
-		"bboxFilter"
+@XmlType(name = "SimpleKmlExportQueryType", propOrder = {
+        "featureTypeFilter",
+        "gmlIdFilter",
+        "bboxFilter"
 })
 public class SimpleKmlQuery {
-	@XmlAttribute
-	private SimpleKmlQueryMode mode = SimpleKmlQueryMode.BBOX;
+    @XmlAttribute
+    private SimpleKmlQueryMode mode = SimpleKmlQueryMode.BBOX;
 
-	@XmlElement(name = "typeNames")
-	protected FeatureTypeFilter featureTypeFilter;
-	@XmlElement(name = "gmlIds")
-	private ResourceIdOperator gmlIdFilter;
-	@XmlElement(name = "bbox", required = true)
-	private KmlTiling bboxFilter;
+    @XmlElement(name = "typeNames")
+    protected FeatureTypeFilter featureTypeFilter;
+    @XmlElement(name = "gmlIds")
+    private ResourceIdOperator gmlIdFilter;
+    @XmlElement(name = "bbox", required = true)
+    private KmlTiling bboxFilter;
 
-	public SimpleKmlQuery() {
-		featureTypeFilter = new FeatureTypeFilter();
-		gmlIdFilter = new ResourceIdOperator();
-		bboxFilter = new KmlTiling();
+    public SimpleKmlQuery() {
+        featureTypeFilter = new FeatureTypeFilter();
+        gmlIdFilter = new ResourceIdOperator();
+        bboxFilter = new KmlTiling();
 
-		// add CityGML types per default
-		featureTypeFilter.addTypeName(new QName(BridgeModule.v2_0_0.getNamespaceURI(), "Bridge"));
-		featureTypeFilter.addTypeName(new QName(BuildingModule.v2_0_0.getNamespaceURI(), "Building"));
-		featureTypeFilter.addTypeName(new QName(CityFurnitureModule.v2_0_0.getNamespaceURI(), "CityFurniture"));
-		featureTypeFilter.addTypeName(new QName(CityObjectGroupModule.v2_0_0.getNamespaceURI(), "CityObjectGroup"));
-		featureTypeFilter.addTypeName(new QName(GenericsModule.v2_0_0.getNamespaceURI(), "GenericCityObject"));
-		featureTypeFilter.addTypeName(new QName(LandUseModule.v2_0_0.getNamespaceURI(), "LandUse"));
-		featureTypeFilter.addTypeName(new QName(ReliefModule.v2_0_0.getNamespaceURI(), "ReliefFeature"));
-		featureTypeFilter.addTypeName(new QName(TransportationModule.v2_0_0.getNamespaceURI(), "TransportationComplex"));
-		featureTypeFilter.addTypeName(new QName(TransportationModule.v2_0_0.getNamespaceURI(), "Track"));
-		featureTypeFilter.addTypeName(new QName(TransportationModule.v2_0_0.getNamespaceURI(), "Railway"));
-		featureTypeFilter.addTypeName(new QName(TransportationModule.v2_0_0.getNamespaceURI(), "Road"));
-		featureTypeFilter.addTypeName(new QName(TransportationModule.v2_0_0.getNamespaceURI(), "Square"));
-		featureTypeFilter.addTypeName(new QName(TunnelModule.v2_0_0.getNamespaceURI(), "Tunnel"));
-		featureTypeFilter.addTypeName(new QName(VegetationModule.v2_0_0.getNamespaceURI(), "SolitaryVegetationObject"));
-		featureTypeFilter.addTypeName(new QName(VegetationModule.v2_0_0.getNamespaceURI(), "PlantCover"));
-		featureTypeFilter.addTypeName(new QName(WaterBodyModule.v2_0_0.getNamespaceURI(), "WaterBody"));
-	}
+        // add CityGML types per default
+        featureTypeFilter.addTypeName(new QName(BridgeModule.v2_0_0.getNamespaceURI(), "Bridge"));
+        featureTypeFilter.addTypeName(new QName(BuildingModule.v2_0_0.getNamespaceURI(), "Building"));
+        featureTypeFilter.addTypeName(new QName(CityFurnitureModule.v2_0_0.getNamespaceURI(), "CityFurniture"));
+        featureTypeFilter.addTypeName(new QName(CityObjectGroupModule.v2_0_0.getNamespaceURI(), "CityObjectGroup"));
+        featureTypeFilter.addTypeName(new QName(GenericsModule.v2_0_0.getNamespaceURI(), "GenericCityObject"));
+        featureTypeFilter.addTypeName(new QName(LandUseModule.v2_0_0.getNamespaceURI(), "LandUse"));
+        featureTypeFilter.addTypeName(new QName(ReliefModule.v2_0_0.getNamespaceURI(), "ReliefFeature"));
+        featureTypeFilter.addTypeName(new QName(TransportationModule.v2_0_0.getNamespaceURI(), "TransportationComplex"));
+        featureTypeFilter.addTypeName(new QName(TransportationModule.v2_0_0.getNamespaceURI(), "Track"));
+        featureTypeFilter.addTypeName(new QName(TransportationModule.v2_0_0.getNamespaceURI(), "Railway"));
+        featureTypeFilter.addTypeName(new QName(TransportationModule.v2_0_0.getNamespaceURI(), "Road"));
+        featureTypeFilter.addTypeName(new QName(TransportationModule.v2_0_0.getNamespaceURI(), "Square"));
+        featureTypeFilter.addTypeName(new QName(TunnelModule.v2_0_0.getNamespaceURI(), "Tunnel"));
+        featureTypeFilter.addTypeName(new QName(VegetationModule.v2_0_0.getNamespaceURI(), "SolitaryVegetationObject"));
+        featureTypeFilter.addTypeName(new QName(VegetationModule.v2_0_0.getNamespaceURI(), "PlantCover"));
+        featureTypeFilter.addTypeName(new QName(WaterBodyModule.v2_0_0.getNamespaceURI(), "WaterBody"));
+    }
 
-	public SimpleKmlQueryMode getMode() {
-		return mode;
-	}
+    public SimpleKmlQueryMode getMode() {
+        return mode;
+    }
 
-	public void setMode(SimpleKmlQueryMode mode) {
-		this.mode = mode;
-	}
+    public void setMode(SimpleKmlQueryMode mode) {
+        this.mode = mode;
+    }
 
-	public FeatureTypeFilter getFeatureTypeFilter() {
-		return featureTypeFilter;
-	}
+    public FeatureTypeFilter getFeatureTypeFilter() {
+        return featureTypeFilter;
+    }
 
-	public boolean isSetFeatureTypeFilter() {
-		return featureTypeFilter != null;
-	}
+    public boolean isSetFeatureTypeFilter() {
+        return featureTypeFilter != null;
+    }
 
-	public void setFeatureTypeFilter(FeatureTypeFilter featureTypeFilter) {
-		this.featureTypeFilter = featureTypeFilter;
-	}
+    public void setFeatureTypeFilter(FeatureTypeFilter featureTypeFilter) {
+        this.featureTypeFilter = featureTypeFilter;
+    }
 
-	public ResourceIdOperator getGmlIdFilter() {
-		return gmlIdFilter;
-	}
+    public ResourceIdOperator getGmlIdFilter() {
+        return gmlIdFilter;
+    }
 
-	public boolean isSetGmlIdFilter() {
-		return gmlIdFilter != null;
-	}
+    public boolean isSetGmlIdFilter() {
+        return gmlIdFilter != null;
+    }
 
-	public void setGmlIdFilter(ResourceIdOperator gmlIdFilter) {
-		this.gmlIdFilter = gmlIdFilter;
-	}
+    public void setGmlIdFilter(ResourceIdOperator gmlIdFilter) {
+        this.gmlIdFilter = gmlIdFilter;
+    }
 
-	public KmlTiling getBboxFilter() {
-		return bboxFilter;
-	}
+    public KmlTiling getBboxFilter() {
+        return bboxFilter;
+    }
 
-	public boolean isSetBboxFilter() {
-		return bboxFilter != null;
-	}
+    public boolean isSetBboxFilter() {
+        return bboxFilter != null;
+    }
 
-	public void setBboxFilter(KmlTiling bboxFilter) {
-		this.bboxFilter = bboxFilter;
-	}
+    public void setBboxFilter(KmlTiling bboxFilter) {
+        this.bboxFilter = bboxFilter;
+    }
 
 }

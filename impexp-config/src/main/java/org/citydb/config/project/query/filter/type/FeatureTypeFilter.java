@@ -33,39 +33,39 @@ import javax.xml.namespace.QName;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 
-@XmlType(name="FeatureTypeFilterType", propOrder={
-		"typeNames"
+@XmlType(name = "FeatureTypeFilterType", propOrder = {
+        "typeNames"
 })
 public class FeatureTypeFilter {
-	@XmlElement(name="typeName", required = true)
-	private LinkedHashSet<QName> typeNames;
-	
-	public FeatureTypeFilter() {
-		typeNames = new LinkedHashSet<>();
-	}
-	
-	public void addTypeName(QName typeName) {
-		typeNames.add(typeName);
-	}
-	
-	public boolean containsTypeName(QName typeName) {
-		return typeNames.contains(typeName);
-	}
+    @XmlElement(name = "typeName", required = true)
+    private LinkedHashSet<QName> typeNames;
 
-	public LinkedHashSet<QName> getTypeNames() {
-		return typeNames;
-	}
+    public FeatureTypeFilter() {
+        typeNames = new LinkedHashSet<>();
+    }
 
-	public void setTypeNames(Collection<QName> typeNames) {
-		this.typeNames = new LinkedHashSet<>(typeNames);
-	}
-	
-	public boolean isEmpty() {
-		return typeNames.isEmpty();
-	}
-	
-	public void reset() {
-		typeNames.clear();
-	}
-	
+    public void addTypeName(QName typeName) {
+        typeNames.add(typeName);
+    }
+
+    public boolean containsTypeName(QName typeName) {
+        return typeNames.contains(typeName);
+    }
+
+    public LinkedHashSet<QName> getTypeNames() {
+        return typeNames;
+    }
+
+    public void setTypeNames(Collection<QName> typeNames) {
+        this.typeNames = new LinkedHashSet<>(typeNames);
+    }
+
+    public boolean isEmpty() {
+        return typeNames.isEmpty();
+    }
+
+    public void reset() {
+        typeNames.clear();
+    }
+
 }

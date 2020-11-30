@@ -2,7 +2,7 @@
  * 3D City Database - The Open Source CityGML Database
  * http://www.3dcitydb.org/
  *
- * Copyright 2013 - 2019
+ * Copyright 2013 - 2020
  * Chair of Geoinformatics
  * Technical University of Munich, Germany
  * https://www.gis.bgu.tum.de/
@@ -27,10 +27,24 @@
  */
 package org.citydb.modules.kml.database;
 
-import net.opengis.kml._2.*;
+import net.opengis.kml._2.DocumentType;
+import net.opengis.kml._2.KmlType;
+import net.opengis.kml._2.LatLonAltBoxType;
+import net.opengis.kml._2.LinkType;
+import net.opengis.kml._2.LodType;
+import net.opengis.kml._2.NetworkLinkType;
+import net.opengis.kml._2.ObjectFactory;
+import net.opengis.kml._2.PlacemarkType;
+import net.opengis.kml._2.RegionType;
+import net.opengis.kml._2.ViewRefreshModeEnumType;
 import org.citydb.ade.ADEExtension;
 import org.citydb.ade.ADEExtensionManager;
-import org.citydb.ade.kmlExporter.*;
+import org.citydb.ade.kmlExporter.ADEKmlExportException;
+import org.citydb.ade.kmlExporter.ADEKmlExportExtension;
+import org.citydb.ade.kmlExporter.ADEKmlExportExtensionManager;
+import org.citydb.ade.kmlExporter.ADEKmlExportHelper;
+import org.citydb.ade.kmlExporter.ADEKmlExportManager;
+import org.citydb.ade.kmlExporter.ADEKmlExportQueryHelper;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
 import org.citydb.config.project.kmlExporter.DisplayForm;
@@ -53,10 +67,21 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import java.awt.image.BufferedImage;
-import java.io.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.StringWriter;
 import java.nio.charset.Charset;
+import java.nio.file.Path;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.IdentityHashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -73,20 +98,18 @@ public class KmlExporterManager implements ADEKmlExportHelper {
 	private final Config config;
 	private final ADEKmlExportQueryHelper sqlQueries;
 
-	private boolean useTiling;
-	private String mainFilename;
-	private HashMap<Integer, Long> objectCounter;
+	private final boolean useTiling;
+	private final HashMap<Integer, Long> objectCounter;
+	private final IdentityHashMap<ADEKmlExportExtension, ADEKmlExportManager> adeKmlExportManagers;
 
+	private String mainFilename;
 	private final String ENCODING = "UTF-8";
 	private final Charset CHARSET = Charset.forName(ENCODING);
 	private final String TEMP_FOLDER = "__temp";
-
 	private long implicitId;
 
-	private final IdentityHashMap<ADEKmlExportExtension, ADEKmlExportManager> adeKmlExportManagers;
-
-
-	public KmlExporterManager(JAXBContext jaxbKmlContext,
+	public KmlExporterManager(Path outputFile,
+			JAXBContext jaxbKmlContext,
 			JAXBContext jaxbColladaContext,
 			AbstractDatabaseAdapter databaseAdapter,
 			WorkerPool<SAXEventBuffer> writerPool,
@@ -110,7 +133,7 @@ public class KmlExporterManager implements ADEKmlExportHelper {
 		adeKmlExportManagers = new IdentityHashMap<>();
 
 		useTiling = query.isSetTiling();
-		mainFilename = config.getInternal().getExportFile().toAbsolutePath().normalize().toString();
+		mainFilename = outputFile.toAbsolutePath().normalize().toString();
 		if (mainFilename.lastIndexOf(File.separator) != -1) {
 			if (mainFilename.lastIndexOf(".") == -1) {
 				mainFilename = mainFilename.substring(mainFilename.lastIndexOf(File.separator) + 1);
@@ -168,7 +191,7 @@ public class KmlExporterManager implements ADEKmlExportHelper {
 			boolean balloonInSeparateFile) throws JAXBException {
 		SAXEventBuffer buffer = new SAXEventBuffer();
 		Marshaller kmlMarshaller = jaxbKmlContext.createMarshaller();
-		if (useTiling && config.getProject().getKmlExporter().isOneFilePerObject()) {
+		if (useTiling && config.getKmlExportConfig().isOneFilePerObject()) {
 			kmlMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
 		}
 		else {
@@ -207,8 +230,8 @@ public class KmlExporterManager implements ADEKmlExportHelper {
 
 							// --------------- create subfolder ---------------
 
-							if (config.getProject().getKmlExporter().isExportAsKmz()) {
-								if (!useTiling || !config.getProject().getKmlExporter().isOneFilePerObject()) {
+							if (config.getKmlExportConfig().isExportAsKmz()) {
+								if (!useTiling || !config.getKmlExportConfig().isOneFilePerObject()) {
 									// export temporarily as kml, it will be later added to kmz if needed
 									directory = new File(path, TEMP_FOLDER);
 									if (!directory.exists()) {
@@ -218,7 +241,7 @@ public class KmlExporterManager implements ADEKmlExportHelper {
 								}
 							}
 							else { // export as kml
-								if (config.getProject().getKmlExporter().isOneFilePerObject()) {
+								if (config.getKmlExportConfig().isOneFilePerObject()) {
 									directory = new File(path, String.valueOf(work.getId()));
 									if (!directory.exists()) {
 										directory.mkdir();
@@ -226,7 +249,7 @@ public class KmlExporterManager implements ADEKmlExportHelper {
 								}
 							}
 
-							if (!useTiling || !config.getProject().getKmlExporter().isOneFilePerObject() || !config.getProject().getKmlExporter().isExportAsKmz()) {
+							if (!useTiling || !config.getKmlExportConfig().isOneFilePerObject() || !config.getKmlExportConfig().isExportAsKmz()) {
 								try {
 									File balloonsDirectory = new File(directory, BalloonTemplateHandler.balloonDirectoryName);
 									if (!balloonsDirectory.exists()) {
@@ -247,14 +270,14 @@ public class KmlExporterManager implements ADEKmlExportHelper {
 						placemark.setDescription(parentFrame.toString());
 					}
 
-					if (useTiling && config.getProject().getKmlExporter().isOneFilePerObject()) {
+					if (useTiling && config.getKmlExportConfig().isOneFilePerObject()) {
 						if (gmlId == null) {
 							gmlId = work.getGmlId();
 
 							boolean isHighlighting = false;
 
 							String filename = gmlId + "_" + displayFormName;
-							if (placemark.getId().startsWith(config.getProject().getKmlExporter().getIdPrefixes().getPlacemarkHighlight())) {
+							if (placemark.getId().startsWith(config.getKmlExportConfig().getIdPrefixes().getPlacemarkHighlight())) {
 								filename = filename + "_" + DisplayForm.HIGHLIGTHTED_STR;
 								isHighlighting = true;
 							}
@@ -272,7 +295,7 @@ public class KmlExporterManager implements ADEKmlExportHelper {
 							kmlType.setAbstractFeatureGroup(kmlFactory.createDocument(document));
 
 							String fileExtension = ".kml";
-							if (config.getProject().getKmlExporter().isExportAsKmz()) {
+							if (config.getKmlExportConfig().isExportAsKmz()) {
 								fileExtension = ".kmz";
 								File placemarkFile = new File(placemarkDirectory, filename + ".kmz");
 								zipOut = new ZipOutputStream(new FileOutputStream(placemarkFile));
@@ -298,10 +321,10 @@ public class KmlExporterManager implements ADEKmlExportHelper {
 								linkType.setHref(work.getId() + "/" + gmlId + "_" + displayFormName + fileExtension);
 							}
 
-							linkType.setViewRefreshMode(ViewRefreshModeEnumType.fromValue(config.getProject().getKmlExporter().getViewRefreshMode()));
+							linkType.setViewRefreshMode(ViewRefreshModeEnumType.fromValue(config.getKmlExportConfig().getViewRefreshMode()));
 							linkType.setViewFormat("");
 							if (linkType.getViewRefreshMode() == ViewRefreshModeEnumType.ON_STOP) {
-								linkType.setViewRefreshTime(config.getProject().getKmlExporter().getViewRefreshTime());
+								linkType.setViewRefreshTime(config.getKmlExportConfig().getViewRefreshTime());
 							}
 
 							LatLonAltBoxType latLonAltBoxType = kmlFactory.createLatLonAltBoxType();
@@ -314,7 +337,7 @@ public class KmlExporterManager implements ADEKmlExportHelper {
 							}
 
 							LodType lodType = kmlFactory.createLodType();
-							lodType.setMinLodPixels(config.getProject().getKmlExporter().getSingleObjectRegionSize());
+							lodType.setMinLodPixels(config.getKmlExportConfig().getSingleObjectRegionSize());
 							if (work.getDisplayForm().getVisibleUpTo() == -1)
 								lodType.setMaxLodPixels(-1.0);
 							else
@@ -340,8 +363,8 @@ public class KmlExporterManager implements ADEKmlExportHelper {
 				}
 			}
 
-			if (useTiling && config.getProject().getKmlExporter().isOneFilePerObject() && kmlType != null) { // some Placemarks ARE null
-				if (config.getProject().getKmlExporter().isExportAsKmz()) {
+			if (useTiling && config.getKmlExportConfig().isOneFilePerObject() && kmlType != null) { // some Placemarks ARE null
+				if (config.getKmlExportConfig().isExportAsKmz()) {
 					kmlMarshaller.marshal(kmlFactory.createKml(kmlType), fileWriter);
 					zipOut.closeEntry();
 
@@ -386,7 +409,7 @@ public class KmlExporterManager implements ADEKmlExportHelper {
 		SAXEventBuffer buffer = new SAXEventBuffer();
 
 		Marshaller kmlMarshaller = jaxbKmlContext.createMarshaller();
-		if (useTiling && config.getProject().getKmlExporter().isOneFilePerObject()) {
+		if (useTiling && config.getKmlExportConfig().isOneFilePerObject()) {
 			kmlMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
 		}
 		else {
@@ -407,8 +430,8 @@ public class KmlExporterManager implements ADEKmlExportHelper {
 
 				StringBuilder parentFrame = new StringBuilder(BalloonTemplateHandler.parentFrameStart);
 				if (useTiling && 
-						config.getProject().getKmlExporter().isOneFilePerObject() &&
-						!config.getProject().getKmlExporter().isExportAsKmz())
+						config.getKmlExportConfig().isOneFilePerObject() &&
+						!config.getKmlExportConfig().isExportAsKmz())
 					parentFrame.append(".."); // one up
 				else
 					parentFrame.append("."); // same folder
@@ -418,7 +441,7 @@ public class KmlExporterManager implements ADEKmlExportHelper {
 				placemark.setDescription(parentFrame.toString());
 				colladaBundle.setExternalBalloonFileContent(placemarkDescription);
 			}
-			if (useTiling && config.getProject().getKmlExporter().isOneFilePerObject()) {
+			if (useTiling && config.getKmlExportConfig().isOneFilePerObject()) {
 
 				// the file per object
 				KmlType kmlType = kmlFactory.createKmlType();
@@ -435,7 +458,7 @@ public class KmlExporterManager implements ADEKmlExportHelper {
 
 				String fileExtension = ".kml";
 				try {
-					if (config.getProject().getKmlExporter().isExportAsKmz()) {
+					if (config.getKmlExportConfig().isExportAsKmz()) {
 						fileExtension = ".kmz";
 						File placemarkFile = new File(placemarkDirectory, colladaBundle.getGmlId() + "_collada.kmz");
 						zipOut = new ZipOutputStream(new FileOutputStream(placemarkFile));
@@ -472,17 +495,17 @@ public class KmlExporterManager implements ADEKmlExportHelper {
 				}
 
 				LodType lodType = kmlFactory.createLodType();
-				lodType.setMinLodPixels(config.getProject().getKmlExporter().getSingleObjectRegionSize());
+				lodType.setMinLodPixels(config.getKmlExportConfig().getSingleObjectRegionSize());
 
 				regionType.setLatLonAltBox(latLonAltBoxType);
 				regionType.setLod(lodType);
 
 				LinkType linkType = kmlFactory.createLinkType();
 				linkType.setHref(colladaBundle.getId() + "/" + colladaBundle.getGmlId() + "_" + DisplayForm.COLLADA_STR + fileExtension);
-				linkType.setViewRefreshMode(ViewRefreshModeEnumType.fromValue(config.getProject().getKmlExporter().getViewRefreshMode()));
+				linkType.setViewRefreshMode(ViewRefreshModeEnumType.fromValue(config.getKmlExportConfig().getViewRefreshMode()));
 				linkType.setViewFormat("");
 				if (linkType.getViewRefreshMode() == ViewRefreshModeEnumType.ON_STOP) {
-					linkType.setViewRefreshTime(config.getProject().getKmlExporter().getViewRefreshTime());
+					linkType.setViewRefreshTime(config.getKmlExportConfig().getViewRefreshTime());
 				}
 
 				// confusion between atom:link and kml:Link in ogckml22.xsd
@@ -491,7 +514,7 @@ public class KmlExporterManager implements ADEKmlExportHelper {
 
 				kmlMarshaller.marshal(kmlFactory.createNetworkLink(networkLinkType), buffer);
 			}
-			else { // !config.getProject().getKmlExporter().isOneFilePerObject()
+			else { // !config.getKmlExporter().isOneFilePerObject()
 				kmlMarshaller.marshal(kmlFactory.createPlacemark(placemark), buffer);
 			}
 
@@ -501,8 +524,8 @@ public class KmlExporterManager implements ADEKmlExportHelper {
 
 		// so much for the placemark, now model, images and balloon...
 
-		if (config.getProject().getKmlExporter().isExportAsKmz() &&	useTiling
-				&& config.getProject().getKmlExporter().isOneFilePerObject()) {
+		if (config.getKmlExportConfig().isExportAsKmz() &&	useTiling
+				&& config.getKmlExportConfig().isOneFilePerObject()) {
 
 			// marshalling in parallel threads should save some time
 			StringWriter sw = new StringWriter();
@@ -562,7 +585,7 @@ public class KmlExporterManager implements ADEKmlExportHelper {
 			zipOut.close();
 		}
 		else {
-			if (config.getProject().getKmlExporter().isExportAsKmz()) {
+			if (config.getKmlExportConfig().isExportAsKmz()) {
 
 				// export temporarily as kml, it will be later added to kmz if needed
 				File tempFolder = new File(path, TEMP_FOLDER);
@@ -587,8 +610,8 @@ public class KmlExporterManager implements ADEKmlExportHelper {
 			fos.close();
 
 			// ----------------- create glTF without embedded textures-----------------
-			boolean exportGltfV1 = config.getProject().getKmlExporter().isExportGltfV1();
-			if (config.getProject().getKmlExporter().isCreateGltfModel() && !config.getProject().getKmlExporter().isEmbedTexturesInGltfFiles()) {
+			boolean exportGltfV1 = config.getKmlExportConfig().isExportGltfV1();
+			if (config.getKmlExportConfig().isCreateGltfModel() && !config.getKmlExportConfig().isEmbedTexturesInGltfFiles()) {
 				convertColladaToglTF(colladaBundle, buildingDirectory, colladaModelFile, gltfModelFile, exportGltfV1);
 			}	        
 
@@ -618,9 +641,9 @@ public class KmlExporterManager implements ADEKmlExportHelper {
 			}
 
 			// ----------------- create glTF with embedded textures-----------------
-			if (config.getProject().getKmlExporter().isCreateGltfModel() && config.getProject().getKmlExporter().isEmbedTexturesInGltfFiles()) {
+			if (config.getKmlExportConfig().isCreateGltfModel() && config.getKmlExportConfig().isEmbedTexturesInGltfFiles()) {
 				convertColladaToglTF(colladaBundle, buildingDirectory, colladaModelFile, gltfModelFile, exportGltfV1);
-				if (config.getProject().getKmlExporter().isNotCreateColladaFiles() && gltfModelFile.exists()) {
+				if (config.getKmlExportConfig().isNotCreateColladaFiles() && gltfModelFile.exists()) {
 					Set<String> keySet = colladaBundle.getTexImages().keySet();
 					Iterator<String> iterator = keySet.iterator();
 					while (iterator.hasNext()) {
@@ -652,7 +675,7 @@ public class KmlExporterManager implements ADEKmlExportHelper {
 	}
 
 	private void convertColladaToglTF(ColladaBundle colladaBundle, File buildingDirectory, File colladaModelFile, File gltfModelFile, boolean exportGltfV1) {
-		String collada2gltfPath = config.getProject().getKmlExporter().getPathOfGltfConverter();
+		String collada2gltfPath = config.getKmlExportConfig().getPathOfGltfConverter();
 		File collada2gltfFile = new File(ClientConstants.IMPEXP_HOME.resolve(collada2gltfPath).toString());
 		if (collada2gltfFile.exists()) {
 			List<String> commands = new ArrayList<>();
@@ -661,27 +684,39 @@ public class KmlExporterManager implements ADEKmlExportHelper {
 			commands.add(colladaModelFile.getAbsolutePath());
 			commands.add("-o");
 			commands.add(gltfModelFile.getAbsolutePath());
-			commands.add("-v");
-			commands.add(exportGltfV1 ? "1.0" : "2.0");
-			if (!config.getProject().getKmlExporter().isEmbedTexturesInGltfFiles()) {
-				commands.add("-t");
+
+			if (!config.getKmlExportConfig().isSetGltfConverterOptions()) {
+				commands.add("-v");
+				commands.add(exportGltfV1 ? "1.0" : "2.0");
+				if (!config.getKmlExportConfig().isEmbedTexturesInGltfFiles()) {
+					commands.add("-t");
+				}
+				if (config.getKmlExportConfig().isExportGltfBinary()) {
+					commands.add("-b");
+				}
+				// do not apply Draco to gltF 1.0
+				if (!exportGltfV1 && config.getKmlExportConfig().isEnableGltfDracoCompression()) {
+					commands.add("-d");
+				}
+			} else {
+				commands.addAll(config.getKmlExportConfig().getGltfConverterOptions());
 			}
-			if (config.getProject().getKmlExporter().isExportGltfBinary()) {
-				commands.add("-b");
-			}
-			// do not apply Draco to gltF 1.0
-			if (!exportGltfV1 && config.getProject().getKmlExporter().isEnableGltfDracoCompression()) {
-				commands.add("-d");
-			}
-			ProcessBuilder pb = new ProcessBuilder(commands);
-			pb.directory(buildingDirectory);
+
 			try {
-				Process process = pb.start();
-				process.waitFor();
-			} catch (IOException | InterruptedException e) {
-				log.warn("Unexpected errors occurred while converting collada to glTF for city object '" + colladaBundle.getGmlId() + "' with output path: '" + gltfModelFile.getAbsolutePath() + "'" + "\n" + e.getMessage());
+				Process process = new ProcessBuilder(commands)
+						.directory(buildingDirectory)
+						.start();
+
+				int exitCode = process.waitFor();
+				if (exitCode != 0) {
+					throw new IOException("Exit code: " + exitCode);
+				}
+			} catch (Exception e) {
+				log.error("COLLADA2GLTF failed to convert '" + colladaModelFile.getAbsolutePath() + "'.", e);
 			} finally {
-				if (config.getProject().getKmlExporter().isNotCreateColladaFiles() && (gltfModelFile.exists() || (new File(gltfModelFile.getAbsolutePath().replace(".gltf", ".glb"))).exists())) {
+				if (config.getKmlExportConfig().isNotCreateColladaFiles()
+						&& (gltfModelFile.exists()
+						|| (new File(gltfModelFile.getAbsolutePath().replace(".gltf", ".glb"))).exists())) {
 					colladaModelFile.delete();
 				}
 			}

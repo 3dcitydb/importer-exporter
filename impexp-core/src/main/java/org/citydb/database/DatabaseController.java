@@ -28,7 +28,7 @@
 package org.citydb.database;
 
 import org.citydb.config.Config;
-import org.citydb.config.project.database.DBConnection;
+import org.citydb.config.project.database.DatabaseConnection;
 import org.citydb.config.project.database.DatabaseConfigurationException;
 import org.citydb.config.project.database.DatabaseSrs;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
@@ -70,26 +70,34 @@ public class DatabaseController implements ConnectionManager {
 	}
 
 	public synchronized boolean connect(boolean suppressDialog) {
-		if (!connectionPool.isConnected()) {
-			// request to commit connection details
-			if (viewHandler != null) {
-				viewHandler.commitConnectionDetails();
-			}
+		// request to commit connection details
+		if (viewHandler != null) {
+			viewHandler.commitConnectionDetails();
+		}
 
-			// fail if there is no active database connection
-			DBConnection connection = config.getProject().getDatabase().getActiveConnection();
+		DatabaseConnection connection = config.getDatabaseConfig().getActiveConnection();
+		return connect(connection, suppressDialog);
+	}
+
+	public synchronized boolean connect(DatabaseConnection connection) {
+		config.getDatabaseConfig().setActiveConnection(connection);
+		return connect(connection, false);
+	}
+
+	public synchronized boolean connect(DatabaseConnection connection, boolean suppressDialog) {
+		if (!connectionPool.isConnected()) {
 			if (connection == null) {
 				log.error("Connection to database could not be established.");
-				log.error("No valid database connection details provided.");
+				log.error("No valid database connection details provided in configuration.");
 				return false;
 			}
 
 			try {
-				log.info("Connecting to database profile '" + connection + "'.");
+				log.info("Connecting to database '" + connection + "'.");
 				showConnectionStatus(ConnectionState.INIT_CONNECT);
 
 				// connect to database
-				connectionPool.connect(config);
+				connectionPool.connect(connection);
 
 				// show connection warnings
 				for (DatabaseConnectionWarning warning : connectionPool.getActiveDatabaseAdapter().getConnectionWarnings()) {
@@ -106,7 +114,7 @@ public class DatabaseController implements ConnectionManager {
 				connectionPool.getActiveDatabaseAdapter().getConnectionMetaData().printToConsole();
 
 				// log unsupported user-defined SRSs
-				for (DatabaseSrs refSys : config.getProject().getDatabase().getReferenceSystems()) {
+				for (DatabaseSrs refSys : config.getDatabaseConfig().getReferenceSystems()) {
 					if (!refSys.isSupported()) {
 						log.warn("Reference system '" + refSys.getDescription() +
 								"' (SRID: " + refSys.getSrid() + ") is not supported.");
@@ -130,11 +138,18 @@ public class DatabaseController implements ConnectionManager {
 	}
 
 	public void disconnect() {
+		disconnect(false);
+	}
+
+	public void disconnect(boolean suppressLogMessages) {
 		if (connectionPool.isConnected()) {
 			showConnectionStatus(ConnectionState.INIT_DISCONNECT);
 			connectionPool.disconnect();
-			log.info("Disconnected from database.");
 			showConnectionStatus(ConnectionState.FINISH_DISCONNECT);
+
+			if (!suppressLogMessages) {
+				log.info("Disconnected from database.");
+			}
 		}
 	}
 
@@ -148,7 +163,7 @@ public class DatabaseController implements ConnectionManager {
 
 	public List<DatabaseConnectionDetails> getConnectionDetails() {
 		ArrayList<DatabaseConnectionDetails> result = new ArrayList<>();
-		for (DBConnection connection : config.getProject().getDatabase().getConnections()) {
+		for (DatabaseConnection connection : config.getDatabaseConfig().getConnections()) {
 			result.add(new DatabaseConnectionDetails(connection));
 		}
 
@@ -156,7 +171,7 @@ public class DatabaseController implements ConnectionManager {
 	}
 
 	public List<DatabaseSrs> getDatabaseSrs() {
-		return config.getProject().getDatabase().getReferenceSystems();
+		return config.getDatabaseConfig().getReferenceSystems();
 	}
 
 	public AbstractDatabaseAdapter getActiveDatabaseAdapter() {

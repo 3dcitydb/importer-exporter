@@ -2,7 +2,7 @@
  * 3D City Database - The Open Source CityGML Database
  * http://www.3dcitydb.org/
  *
- * Copyright 2013 - 2019
+ * Copyright 2013 - 2020
  * Chair of Geoinformatics
  * Technical University of Munich, Germany
  * https://www.gis.bgu.tum.de/
@@ -33,8 +33,8 @@ import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.config.geometry.GeometryType;
 import org.citydb.config.geometry.Position;
-import org.citydb.config.project.database.Database;
-import org.citydb.config.project.database.Database.PredefinedSrsName;
+import org.citydb.config.project.database.DatabaseConfig;
+import org.citydb.config.project.database.DatabaseConfig.PredefinedSrsName;
 import org.citydb.config.project.database.DatabaseSrs;
 import org.citydb.config.project.kmlExporter.DisplayForm;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
@@ -94,9 +94,9 @@ public class KmlSplitter {
 
 		// try and change workspace for connection if needed
 		if (databaseAdapter.hasVersioningSupport()) {
-			Database database = config.getProject().getDatabase();
+			DatabaseConfig databaseConfig = config.getDatabaseConfig();
 			databaseAdapter.getWorkspaceManager().gotoWorkspace(connection, 
-					database.getWorkspaces().getKmlExportWorkspace());
+					databaseConfig.getWorkspaces().getKmlExportWorkspace());
 		}
 
 		schema = databaseAdapter.getConnectionDetails().getSchema();
@@ -142,7 +142,7 @@ public class KmlSplitter {
 			}
 
 			if (query.isSetTiling())
-				Logger.getInstance().debug(objectCount + " candidate objects found for Tile_" + activeTile.getX() + "_" + activeTile.getY() + ".");
+				Logger.getInstance().debug(objectCount + " candidate objects found for Tile_" + activeTile.getRow() + "_" + activeTile.getColumn() + ".");
 		}
 	}
 
@@ -193,8 +193,8 @@ public class KmlSplitter {
 
 			// create json
 			CityObject4JSON cityObject4Json = new CityObject4JSON(gmlId);
-			cityObject4Json.setTileRow(activeTile != null ? activeTile.getX() : 0);
-			cityObject4Json.setTileColumn(activeTile != null ? activeTile.getY() : 0);
+			cityObject4Json.setTileRow(activeTile != null ? activeTile.getRow() : 0);
+			cityObject4Json.setTileColumn(activeTile != null ? activeTile.getColumn() : 0);
 			cityObject4Json.setEnvelope(getEnvelopeInWGS84(envelope));
 
 			// put on work queue
@@ -245,7 +245,7 @@ public class KmlSplitter {
 
 		double[] coordinates = envelope.getCoordinates(0);
 		BoundingBox bbox = new BoundingBox(new Position(coordinates[0], coordinates[1]), new Position(coordinates[3], coordinates[4]));
-		BoundingBox wgs84 = databaseAdapter.getUtil().transformBoundingBox(bbox, dbSrs, Database.PREDEFINED_SRS.get(PredefinedSrsName.WGS84_2D));
+		BoundingBox wgs84 = databaseAdapter.getUtil().transformBoundingBox(bbox, dbSrs, DatabaseConfig.PREDEFINED_SRS.get(PredefinedSrsName.WGS84_2D));
 
 		double[] result = new double[6];
 		result[0] = wgs84.getLowerCorner().getX();

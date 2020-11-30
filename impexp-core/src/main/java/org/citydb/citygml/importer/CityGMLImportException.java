@@ -28,23 +28,40 @@
 
 package org.citydb.citygml.importer;
 
-public class CityGMLImportException extends Exception {
-	private static final long serialVersionUID = -3716015045363231263L;
-	
+import org.citydb.config.exception.ApplicationException;
+import org.citydb.config.exception.ErrorCode;
+
+public class CityGMLImportException extends ApplicationException {
+
+	public CityGMLImportException(ErrorCode errorCode) {
+		super(errorCode);
+	}
+
+	public CityGMLImportException(ErrorCode errorCode, String message) {
+		super(errorCode, message);
+	}
+
+	public CityGMLImportException(ErrorCode errorCode, String message, Throwable cause) {
+		super(errorCode, message, cause);
+	}
+
+	public CityGMLImportException(ErrorCode errorCode, Throwable cause) {
+		super(errorCode, cause);
+	}
+
 	public CityGMLImportException() {
 		super();
 	}
-	
+
 	public CityGMLImportException(String message) {
 		super(message);
 	}
-	
-	public CityGMLImportException(Throwable cause) {
-		super(cause);
-	}
-	
+
 	public CityGMLImportException(String message, Throwable cause) {
 		super(message, cause);
 	}
-	
+
+	public CityGMLImportException(Throwable cause) {
+		super(cause);
+	}
 }

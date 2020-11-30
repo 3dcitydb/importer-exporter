@@ -31,10 +31,10 @@ import javax.xml.bind.annotation.XmlEnum;
 import javax.xml.bind.annotation.XmlEnumValue;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="XLinkModeType")
+@XmlType(name = "XLinkModeType")
 @XmlEnum
 public enum XLinkMode {
-	@XmlEnumValue("xlink")
+    @XmlEnumValue("xlink")
     XLINK("xlink"),
     @XmlEnumValue("copy")
     COPY("copy");
@@ -50,7 +50,7 @@ public enum XLinkMode {
     }
 
     public static XLinkMode fromValue(String v) {
-        for (XLinkMode c: XLinkMode.values()) {
+        for (XLinkMode c : XLinkMode.values()) {
             if (c.value.equals(v)) {
                 return c;
             }

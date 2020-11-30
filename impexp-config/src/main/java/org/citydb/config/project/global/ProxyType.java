@@ -31,39 +31,39 @@ import javax.xml.bind.annotation.XmlEnum;
 import javax.xml.bind.annotation.XmlEnumValue;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="ProxyType")
+@XmlType(name = "ProxyType")
 @XmlEnum
 public enum ProxyType {
-	@XmlEnumValue("http")
-	HTTP("HTTP", "http"),
-	@XmlEnumValue("https")
-	HTTPS("HTTPS", "https"),
-	@XmlEnumValue("socks")
-	SOCKS("SOCKS", "socket", "socks");
+    @XmlEnumValue("http")
+    HTTP("HTTP", "http"),
+    @XmlEnumValue("https")
+    HTTPS("HTTPS", "https"),
+    @XmlEnumValue("socks")
+    SOCKS("SOCKS", "socket", "socks");
 
-	private final String value;
-	private final String[] protocols;
+    private final String value;
+    private final String[] protocols;
 
-	ProxyType(String value, String... protocol) {
-		this.value = value;
-		this.protocols = protocol;
-	}
+    ProxyType(String value, String... protocol) {
+        this.value = value;
+        this.protocols = protocol;
+    }
 
-	public static ProxyType fromProtocol(String protocol) {
-		if (protocol != null) {
-			String p = protocol.toLowerCase().trim();
-			for (ProxyType type: ProxyType.values()) {
-				for (String tmp : type.protocols) {
-					if (tmp.equals(p))
-						return type;
-				}
-			}
-		}
+    public static ProxyType fromProtocol(String protocol) {
+        if (protocol != null) {
+            String p = protocol.toLowerCase().trim();
+            for (ProxyType type : ProxyType.values()) {
+                for (String tmp : type.protocols) {
+                    if (tmp.equals(p))
+                        return type;
+                }
+            }
+        }
 
-		return null;
-	}
+        return null;
+    }
 
-	public String toString() {
-		return value;
-	}
+    public String toString() {
+        return value;
+    }
 }

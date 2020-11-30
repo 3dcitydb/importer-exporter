@@ -27,48 +27,40 @@
  */
 package org.citydb.config.project.database;
 
-@SuppressWarnings("serial")
-public class DatabaseConfigurationException extends Exception {
-	private final Reason reason;
+import org.citydb.config.exception.ApplicationException;
+import org.citydb.config.exception.ErrorCode;
 
-	public DatabaseConfigurationException(Reason reason, Throwable cause) {
-		super(reason.toString(), cause);
-		this.reason = reason;
+public class DatabaseConfigurationException extends ApplicationException {
+
+	public DatabaseConfigurationException(ErrorCode errorCode) {
+		super(errorCode);
 	}
 
-	public DatabaseConfigurationException(Reason reason) {
-		this(reason, null);
+	public DatabaseConfigurationException(ErrorCode errorCode, String message) {
+		super(errorCode, message);
+	}
+
+	public DatabaseConfigurationException(ErrorCode errorCode, String message, Throwable cause) {
+		super(errorCode, message, cause);
+	}
+
+	public DatabaseConfigurationException(ErrorCode errorCode, Throwable cause) {
+		super(errorCode, cause);
+	}
+
+	public DatabaseConfigurationException() {
+		super();
+	}
+
+	public DatabaseConfigurationException(String message) {
+		super(message);
 	}
 
 	public DatabaseConfigurationException(String message, Throwable cause) {
 		super(message, cause);
-		reason = Reason.OTHER;
 	}
 
-	public DatabaseConfigurationException(String message) {
-		this(message, null);
-	}
-
-	public Reason getReason() {
-		return reason;
-	}
-
-	public enum Reason {
-		MISSING_HOSTNAME("Missing server hostname."),
-		MISSING_USERNAME("Missing username."),
-		MISSING_DB_NAME("Missing database name."),
-		MISSING_PORT("Missing server port."),
-		OTHER("Other configuration exception.");
-
-		private final String message;
-
-		Reason(String message) {
-			this.message = message;
-		}
-
-		@Override
-		public String toString() {
-			return message;
-		}
+	public DatabaseConfigurationException(Throwable cause) {
+		super(cause);
 	}
 }

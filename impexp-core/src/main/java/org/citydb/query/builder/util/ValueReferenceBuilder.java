@@ -1,6 +1,6 @@
 package org.citydb.query.builder.util;
 
-import org.citydb.config.ConfigNamespaceFilter;
+import org.citydb.config.util.ConfigNamespaceFilter;
 import org.citydb.config.project.query.filter.selection.comparison.AbstractComparisonOperator;
 import org.citydb.config.project.query.filter.selection.spatial.AbstractSpatialOperator;
 import org.citydb.config.project.query.filter.sorting.SortProperty;

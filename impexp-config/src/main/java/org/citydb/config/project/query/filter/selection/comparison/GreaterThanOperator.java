@@ -30,20 +30,20 @@ package org.citydb.config.project.query.filter.selection.comparison;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlRootElement(name="propertyIsGreaterThan")
-@XmlType(name="GreaterThanOperatorType")
+@XmlRootElement(name = "propertyIsGreaterThan")
+@XmlType(name = "GreaterThanOperatorType")
 public class GreaterThanOperator extends AbstractBinaryComparisonOperator {
 
-	public GreaterThanOperator() {
-	}
+    public GreaterThanOperator() {
+    }
 
-	public GreaterThanOperator(String valueReference, String literal) {
-		super(valueReference, literal);
-	}
+    public GreaterThanOperator(String valueReference, String literal) {
+        super(valueReference, literal);
+    }
 
-	@Override
-	public ComparisonOperatorName getOperatorName() {
-		return ComparisonOperatorName.GREATER_THAN;
-	}
-	
+    @Override
+    public ComparisonOperatorName getOperatorName() {
+        return ComparisonOperatorName.GREATER_THAN;
+    }
+
 }

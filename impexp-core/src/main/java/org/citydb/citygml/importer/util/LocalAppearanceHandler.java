@@ -41,19 +41,19 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class LocalAppearanceHandler {
 	private final CityGMLImportManager importer;
 	
-	private final HashMap<Long, List<Appearance>> appearances;
-	private final HashMap<Long, SurfaceGeometryTarget> targets;
-	private final HashMap<String, LinearRing> rings;
-	private final HashSet<SurfaceGeometryTarget> localContext;
+	private final Map<Long, List<Appearance>> appearances;
+	private final Map<Long, SurfaceGeometryTarget> targets;
+	private final Map<String, LinearRing> rings;
+	private final Set<SurfaceGeometryTarget> localContext;
 	private boolean hasParameterizedTextures;
 
 	public LocalAppearanceHandler(CityGMLImportManager importer) {
 		this.importer = importer;
-		
 		appearances = new HashMap<>();
 		targets = new HashMap<>();
 		rings = new HashMap<>();
@@ -83,19 +83,23 @@ public class LocalAppearanceHandler {
 					// check whether we have to deal with textures
 					if (!hasParameterizedTextures) {
 						for (SurfaceDataProperty surfaceDataProperty : appearance.getSurfaceDataMember()) {
-							if (surfaceDataProperty.getSurfaceData() instanceof ParameterizedTexture)
+							if (surfaceDataProperty.getSurfaceData() instanceof ParameterizedTexture) {
 								hasParameterizedTextures = true;
+								break;
+							}
 						}
 					}
 				} else {					
 					String href = property.getHref();
-					if (href != null && href.length() != 0)
+					if (href != null && href.length() != 0) {
 						importer.logOrThrowUnsupportedXLinkMessage(cityObject, Appearance.class, href);
+					}
 				}
 			}
 			
-			if (!appearances.isEmpty())
+			if (!appearances.isEmpty()) {
 				this.appearances.put(cityObjectId, appearances);
+			}
 		}
 	}
 
@@ -112,8 +116,9 @@ public class LocalAppearanceHandler {
 	}
 
 	public void registerLinearRing(String ringId, long surfaceGeometryId, boolean isReverse) {
-		if (rings.containsKey(ringId))
+		if (rings.containsKey(ringId)) {
 			return;
+		}
 
 		SurfaceGeometryTarget target = targets.get(surfaceGeometryId);
 		if (target == null) {
@@ -140,14 +145,16 @@ public class LocalAppearanceHandler {
 		return false;
 	}
 	
-	public HashSet<SurfaceGeometryTarget> getLocalContext() {
+	public Set<SurfaceGeometryTarget> getLocalContext() {
 		return localContext;
 	}
 	
 	public void clearLocalContext() {
-		for (SurfaceGeometryTarget target : localContext)
-			for (LinearRing ring : target.rings)
+		for (SurfaceGeometryTarget target : localContext) {
+			for (LinearRing ring : target.rings) {
 				ring.texCoords = null;
+			}
+		}
 		
 		localContext.clear();
 	}
@@ -160,13 +167,15 @@ public class LocalAppearanceHandler {
 		private SurfaceGeometryTarget(long surfaceGeometryId, boolean isReverse) {
 			this.surfaceGeometryId = surfaceGeometryId;
 			this.isReverse = isReverse;
-			rings = new ArrayList<LinearRing>();
+			rings = new ArrayList<>();
 		}
 		
 		public boolean isComplete() {
-			for (LinearRing ring : rings)
-				if (ring.texCoords == null)
+			for (LinearRing ring : rings) {
+				if (ring.texCoords == null) {
 					return false;
+				}
+			}
 			
 			return true;
 		}
@@ -179,8 +188,9 @@ public class LocalAppearanceHandler {
 				coordinates[i] = new double[ring.texCoords.size()];
 				
 				if (!isReverse) {
-					for (int j = 0; j < ring.texCoords.size(); j++)
+					for (int j = 0; j < ring.texCoords.size(); j++) {
 						coordinates[i][j] = ring.texCoords.get(j);
+					}
 				} else {
 					for (int j = ring.texCoords.size() - 2, k = 0; j >= 0; j -= 2) {
 						coordinates[i][k++] = ring.texCoords.get(j);
@@ -205,5 +215,4 @@ public class LocalAppearanceHandler {
 			this.target = target;
 		}
 	}
-
 }

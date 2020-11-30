@@ -111,10 +111,12 @@ public class Logger {
 	private void log(LogLevel level, String msg, Throwable e) {
 		log(level, msg);
 		if (e != null) {
-			do {
-				if (e.getMessage() != null)
-					log(level, "Caused by: " + e.getClass().getName() + ": " + e.getMessage());
-			} while ((e = e.getCause()) != null);
+			msg = "Caused by: " + e.getClass().getName();
+			if (e.getMessage() != null) {
+				msg += ": " + e.getMessage();
+			}
+
+			log(level, msg, e.getCause());
 		}
 	}
 
@@ -167,11 +169,9 @@ public class Logger {
 		
 		try {
 			detachLogFile();
-			info("Writing log messages to file: '" + logFile.toAbsolutePath() + "'");
-			writer = Files.newBufferedWriter(logFile,
-					StandardCharsets.UTF_8,
-					StandardOpenOption.CREATE,
-					StandardOpenOption.WRITE,
+			info("Writing log messages to file '" + logFile.toAbsolutePath() + "'.");
+			writer = Files.newBufferedWriter(logFile, StandardCharsets.UTF_8,
+					StandardOpenOption.CREATE, StandardOpenOption.WRITE,
 					mode == LogFileMode.TRUNCATE ?
 							StandardOpenOption.TRUNCATE_EXISTING :
 							StandardOpenOption.APPEND);
@@ -182,7 +182,7 @@ public class Logger {
 
 			return true;
 		} catch (IOException e) {
-			error("Failed to open log file '" + logFile + "': " + e.getMessage());
+			error("Failed to open log file '" + logFile + "'.", e);
 			error("Not writing log messages to file.");
 			return false;
 		}
@@ -190,8 +190,14 @@ public class Logger {
 
 	public void detachLogFile() {
 		if (writer != null) {
+			info("Stopped writing log messages to log file.");
+			close();
+		}
+	}
+
+	public void close() {
+		if (writer != null) {
 			try {
-				info("Stopped writing log messages to log file.");
 				writer.close();
 			} catch (IOException e) {
 				//
@@ -202,8 +208,6 @@ public class Logger {
 	}
 
 	public String getDefaultLogFileName() {
-		return "impexp-" +
-				LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE) +
-				".log";
+		return "impexp-" + LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE) + ".log";
 	}
 }

@@ -78,18 +78,18 @@ public class CityGMLWriterFactory implements FeatureWriterFactory {
 
 		version = query.getTargetVersion();
 		featureTypeFilter = query.getFeatureTypeFilter();
-		cityGMLOptions = config.getProject().getExporter().getCityGMLOptions();
+		cityGMLOptions = config.getExportConfig().getCityGMLOptions();
 
 		// require sequential writing if a sorting clause is defined for the query
 		useSequentialWriting = query.isSetSorting();
 
 		// build XSLT transformer chain
-		if (config.getProject().getExporter().getXSLTransformation().isEnabled()
-				&& config.getProject().getExporter().getXSLTransformation().isSetStylesheets()) {
+		if (config.getExportConfig().getXSLTransformation().isEnabled()
+				&& config.getExportConfig().getXSLTransformation().isSetStylesheets()) {
 			try {
 				log.info("Applying XSL transformations on export data.");
 
-				List<String> stylesheets = config.getProject().getExporter().getXSLTransformation().getStylesheets();
+				List<String> stylesheets = config.getExportConfig().getXSLTransformation().getStylesheets();
 				SAXTransformerFactory factory = (SAXTransformerFactory) TransformerFactory.newInstance();
 				Templates[] templates = new Templates[stylesheets.size()];
 
@@ -144,7 +144,7 @@ public class CityGMLWriterFactory implements FeatureWriterFactory {
 		}
 
 		Namespace appearance = namespaces.get(moduleContext.getModule(CityGMLModuleType.APPEARANCE).getNamespaceURI());
-		if (appearance.getMode() != NamespaceMode.SKIP && config.getProject().getExporter().getAppearances().isSetExportAppearance()) {
+		if (appearance.getMode() != NamespaceMode.SKIP && config.getExportConfig().getAppearances().isSetExportAppearance()) {
 			saxWriter.setPrefix(appearance.getPrefix(), appearance.getURI());
 			saxWriter.setSchemaLocation(appearance.getURI(), appearance.getSchemaLocation());
 		}
@@ -154,7 +154,7 @@ public class CityGMLWriterFactory implements FeatureWriterFactory {
 			if (!(module instanceof CityGMLModule)) {
 				// skip 3DCityDB ADE prefix and namespace if metadata shall not be exported
 				if ((module == CityDBADE200Module.v3_0 || module == CityDBADE100Module.v3_0)
-						&& !config.getProject().getExporter().getContinuation().isExportCityDBMetadata())
+						&& !config.getExportConfig().getContinuation().isExportCityDBMetadata())
 					continue;
 
 				Namespace namespace = namespaces.get(module.getNamespaceURI());

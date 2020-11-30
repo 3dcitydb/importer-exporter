@@ -32,56 +32,56 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="AbstractBinaryComparisonOperatorType", propOrder={
-		"literal"
+@XmlType(name = "AbstractBinaryComparisonOperatorType", propOrder = {
+        "literal"
 })
 @XmlSeeAlso({
-	EqualToOperator.class,
-	NotEqualToOperator.class,
-	LessThanOperator.class,
-	LessThanOrEqualToOperator.class,
-	GreaterThanOperator.class,
-	GreaterThanOrEqualToOperator.class
+        EqualToOperator.class,
+        NotEqualToOperator.class,
+        LessThanOperator.class,
+        LessThanOrEqualToOperator.class,
+        GreaterThanOperator.class,
+        GreaterThanOrEqualToOperator.class
 })
 public abstract class AbstractBinaryComparisonOperator extends AbstractComparisonOperator {
-	@XmlAttribute
-	private Boolean matchCase;
-	@XmlElement(required = true)
-	private String literal;
+    @XmlAttribute
+    private Boolean matchCase;
+    @XmlElement(required = true)
+    private String literal;
 
-	public AbstractBinaryComparisonOperator() {
-	}
+    public AbstractBinaryComparisonOperator() {
+    }
 
-	public AbstractBinaryComparisonOperator(String valueReference, String literal) {
-		super(valueReference);
-		this.literal = literal;
-	}
+    public AbstractBinaryComparisonOperator(String valueReference, String literal) {
+        super(valueReference);
+        this.literal = literal;
+    }
 
-	public boolean isSetLiteral() {
-		return literal != null;
-	}
-	
-	public String getLiteral() {
-		return literal;
-	}
+    public boolean isSetLiteral() {
+        return literal != null;
+    }
 
-	public void setLiteral(String literal) {
-		this.literal = literal;
-	}
-	
-	public boolean isMatchCase() {
-		return matchCase != null ? matchCase : true;
-	}
+    public String getLiteral() {
+        return literal;
+    }
 
-	public void setMatchCase(boolean matchCase) {
-		this.matchCase = matchCase;
-	}
-	
-	@Override
-	public void reset() {
-		matchCase = null;
-		literal = null;
-		super.reset();
-	}
-	
+    public void setLiteral(String literal) {
+        this.literal = literal;
+    }
+
+    public boolean isMatchCase() {
+        return matchCase != null ? matchCase : true;
+    }
+
+    public void setMatchCase(boolean matchCase) {
+        this.matchCase = matchCase;
+    }
+
+    @Override
+    public void reset() {
+        matchCase = null;
+        literal = null;
+        super.reset();
+    }
+
 }

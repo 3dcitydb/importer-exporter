@@ -31,6 +31,7 @@ import org.citydb.citygml.common.database.cache.CacheTable;
 import org.citydb.citygml.common.database.cache.CacheTableManager;
 import org.citydb.citygml.common.database.cache.model.CacheTableModel;
 import org.citydb.citygml.common.database.uid.UIDCache;
+import org.citydb.citygml.exporter.util.InternalConfig;
 import org.citydb.citygml.exporter.writer.FeatureWriteException;
 import org.citydb.citygml.exporter.writer.FeatureWriter;
 import org.citydb.concurrent.WorkerPool;
@@ -94,6 +95,7 @@ public class DBSplitter {
 	private final FeatureWriter writer;
 	private final UIDCache featureGmlIdCache;
 	private final CacheTableManager cacheTableManager;
+	private final InternalConfig internalConfig;
 	private final Config config;
 	private final EventDispatcher eventDispatcher;
 
@@ -115,7 +117,8 @@ public class DBSplitter {
 			Query query,
 			UIDCache featureGmlIdCache,
 			CacheTableManager cacheTableManager,
-			EventDispatcher eventDispatcher, 
+			EventDispatcher eventDispatcher,
+			InternalConfig internalConfig,
 			Config config) throws SQLException {
 		this.writer = writer;
 		this.schemaMapping = schemaMapping;
@@ -124,30 +127,31 @@ public class DBSplitter {
 		this.featureGmlIdCache = featureGmlIdCache;
 		this.cacheTableManager = cacheTableManager;
 		this.eventDispatcher = eventDispatcher;
+		this.internalConfig = internalConfig;
 		this.config = config;
 
 		databaseAdapter = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter();
 		connection = DatabaseConnectionPool.getInstance().getConnection();
 		connection.setAutoCommit(false);
 		schema = databaseAdapter.getConnectionDetails().getSchema();
-		calculateExtent = config.getProject().getExporter().getCityGMLOptions().getGMLEnvelope().isUseEnvelopeOnCityModel();
+		calculateExtent = config.getExportConfig().getCityGMLOptions().getGMLEnvelope().isUseEnvelopeOnCityModel();
 
 		// try and change workspace for connection
 		if (databaseAdapter.hasVersioningSupport()) {
 			databaseAdapter.getWorkspaceManager().gotoWorkspace(
 					connection, 
-					config.getProject().getDatabase().getWorkspaces().getExportWorkspace());
+					config.getDatabaseConfig().getWorkspaces().getExportWorkspace());
 		}
 
 		// create temporary table for global appearances if needed
-		if (config.getInternal().isExportGlobalAppearances()) {
+		if (internalConfig.isExportGlobalAppearances()) {
 			CacheTable temp = cacheTableManager.createCacheTableInDatabase(CacheTableModel.GLOBAL_APPEARANCE);
 
 			// try and change workspace for temporary table
 			if (databaseAdapter.hasVersioningSupport()) {
 				databaseAdapter.getWorkspaceManager().gotoWorkspace(
 						temp.getConnection(), 
-						config.getProject().getDatabase().getWorkspaces().getExportWorkspace());
+						config.getDatabaseConfig().getWorkspaces().getExportWorkspace());
 			}
 		}
 
@@ -213,7 +217,7 @@ public class DBSplitter {
 				}
 			}
 
-			if (config.getInternal().isExportGlobalAppearances() && sequenceId > 0)
+			if (internalConfig.isExportGlobalAppearances() && sequenceId > 0)
 				queryGlobalAppearance();
 
 		} finally {
@@ -281,7 +285,7 @@ public class DBSplitter {
 						double[] coordinates = extent.getCoordinates(0);
 
 						if (query.isSetTiling() &&
-								config.getProject().getExporter().getCityGMLOptions().getGMLEnvelope().getCityModelEnvelopeMode().isUseTileExtent()) {
+								config.getExportConfig().getCityGMLOptions().getGMLEnvelope().getCityModelEnvelopeMode().isUseTileExtent()) {
 							BoundingBox tileExtent = query.getTiling().getActiveTile().getExtent();
 							coordinates[0] = tileExtent.getLowerCorner().getX();
 							coordinates[1] = tileExtent.getLowerCorner().getY();
@@ -327,7 +331,7 @@ public class DBSplitter {
 
 				if (calculateExtent
 						&& query.isSetTiling()
-						&& config.getProject().getExporter().getCityGMLOptions().getGMLEnvelope().getCityModelEnvelopeMode().isUseTileExtent()) {
+						&& config.getExportConfig().getCityGMLOptions().getGMLEnvelope().getCityModelEnvelopeMode().isUseTileExtent()) {
 					BoundingBox extent = new BoundingBox(query.getTiling().getActiveTile().getExtent());
 					if (!extent.isSetSrs())
 						extent.setSrs(databaseAdapter.getConnectionMetaData().getReferenceSystem());
@@ -351,7 +355,7 @@ public class DBSplitter {
 
 		// first step: export group members
 		long hits = 0;
-		if (!config.getProject().getExporter().getCityObjectGroup().isExportMemberAsXLinks()
+		if (!config.getExportConfig().getCityObjectGroup().isExportMemberAsXLinks()
 				&& query.getFeatureTypeFilter().size() == 1
 				&& query.getFeatureTypeFilter().getFeatureTypes().get(0).isEqualToOrSubTypeOf(cityObjectGroupType)) {
 
@@ -540,7 +544,7 @@ public class DBSplitter {
 	}
 
 	private BoundingBox getSpatialExtent(GeometryObject extentObj) throws SQLException {
-		if (config.getInternal().isTransformCoordinates())
+		if (internalConfig.isTransformCoordinates())
 			extentObj = databaseAdapter.getUtil().transform(extentObj, query.getTargetSrs());
 
 		double[] coordinates = extentObj.getCoordinates(0);
@@ -553,7 +557,7 @@ public class DBSplitter {
 	private void writeDocumentHeader() throws FeatureWriteException {
 		if (metadataProvider != null) {
 			try {
-				metadataProvider.setMetadata(writer.getMetadata(), query, config.getProject().getExporter());
+				metadataProvider.setMetadata(writer.getMetadata(), query, config.getExportConfig());
 			} catch (PluginException e) {
 				throw new FeatureWriteException("Failed to set export metadata.", e);
 			}

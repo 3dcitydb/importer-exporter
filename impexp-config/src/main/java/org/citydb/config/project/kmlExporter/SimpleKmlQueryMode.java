@@ -30,9 +30,9 @@ package org.citydb.config.project.kmlExporter;
 import javax.xml.bind.annotation.XmlEnumValue;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="KmlExportModeType")
+@XmlType(name = "KmlExportModeType")
 public enum SimpleKmlQueryMode {
-	@XmlEnumValue("single")
+    @XmlEnumValue("single")
     SINGLE("single"),
     @XmlEnumValue("bbox")
     BBOX("bbox");
@@ -48,7 +48,7 @@ public enum SimpleKmlQueryMode {
     }
 
     public static SimpleKmlQueryMode fromValue(String v) {
-        for (SimpleKmlQueryMode c: SimpleKmlQueryMode.values()) {
+        for (SimpleKmlQueryMode c : SimpleKmlQueryMode.values()) {
             if (c.value.equals(v)) {
                 return c;
             }

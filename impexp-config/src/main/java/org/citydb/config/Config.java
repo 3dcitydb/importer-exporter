@@ -27,50 +27,113 @@
  */
 package org.citydb.config;
 
-import org.citydb.config.gui.Gui;
-import org.citydb.config.internal.Internal;
-import org.citydb.config.project.Project;
+import org.citydb.config.gui.GuiConfig;
+import org.citydb.config.project.database.DatabaseConfig;
+import org.citydb.config.project.deleter.DeleteConfig;
+import org.citydb.config.project.exporter.ExportConfig;
+import org.citydb.config.project.global.GlobalConfig;
+import org.citydb.config.project.importer.ImportConfig;
+import org.citydb.config.project.kmlExporter.KmlExportConfig;
+import org.citydb.config.project.plugin.PluginConfig;
+import org.citydb.config.util.ConfigNamespaceFilter;
 
 public class Config {
-	private Project project;
-	private Gui gui;
-	private Internal internal;
+	private ProjectConfig projectConfig;
+	private GuiConfig guiConfig;
 
-	public Config(Project project, Gui gui, Internal internal) {
-		this.project = project;
-		this.gui = gui;
-		this.internal = internal;
+	public Config(ProjectConfig projectConfig, GuiConfig guiConfig) {
+		this.projectConfig = projectConfig;
+		this.guiConfig = guiConfig;
 	}
 	
 	public Config() {
-		this(new Project(), new Gui(), new Internal());
+		this(new ProjectConfig(), new GuiConfig());
 	}
 
-	public Project getProject() {
-		return project;
+	public ProjectConfig getProjectConfig() {
+		return projectConfig;
 	}
 
-	public void setProject(Project project) {
-		if (project != null) {
-			this.project = project;
+	public void setProjectConfig(ProjectConfig projectConfig) {
+		if (projectConfig != null) {
+			this.projectConfig = projectConfig;
 			
 			// add things to be done after changing the project settings
 			// (e.g., after unmarshalling the config file) here 
-			project.getDatabase().addDefaultReferenceSystems();
+			projectConfig.getDatabaseConfig().addDefaultReferenceSystems();
 		}
 	}
 
-	public Gui getGui() {
-		return gui;
+	public DatabaseConfig getDatabaseConfig() {
+		return projectConfig.getDatabaseConfig();
 	}
 
-	public void setGui(Gui gui) {
-		if (gui != null)
-			this.gui = gui;
+	public void setDatabaseConfig(DatabaseConfig databaseConfig) {
+		projectConfig.setDatabaseConfig(databaseConfig);
 	}
 
-	public Internal getInternal() {
-		return internal;
+	public ImportConfig getImportConfig() {
+		return projectConfig.getImportConfig();
 	}
 
+	public void setImportConfig(ImportConfig importConfig) {
+		projectConfig.setImportConfig(importConfig);
+	}
+
+	public ExportConfig getExportConfig() {
+		return projectConfig.getExportConfig();
+	}
+
+	public void setExportConfig(ExportConfig exportConfig) {
+		projectConfig.setExportConfig(exportConfig);
+	}
+
+	public DeleteConfig getDeleteConfig() {
+		return projectConfig.getDeleteConfig();
+	}
+
+	public void setDeleteConfig(DeleteConfig deleteConfig) {
+		projectConfig.setDeleteConfig(deleteConfig);
+	}
+
+	public KmlExportConfig getKmlExportConfig() {
+		return projectConfig.getKmlExportConfig();
+	}
+
+	public void setKmlExportConfig(KmlExportConfig kmlExportConfig) {
+		projectConfig.setKmlExportConfig(kmlExportConfig);
+	}
+
+	public GlobalConfig getGlobalConfig() {
+		return projectConfig.getGlobalConfig();
+	}
+
+	public void setGlobalConfig(GlobalConfig globalConfig) {
+		projectConfig.setGlobalConfig(globalConfig);
+	}
+
+	public <T extends PluginConfig> T getPluginConfig(Class<T> type) {
+		return projectConfig.getPluginConfig(type);
+	}
+
+	public PluginConfig registerPluginConfig(PluginConfig pluginConfig) {
+		return projectConfig.registerPluginConfig(pluginConfig);
+	}
+
+	public ConfigNamespaceFilter getNamespaceFilter() {
+		return projectConfig.getNamespaceFilter();
+	}
+
+	public void setNamespaceFilter(ConfigNamespaceFilter namespaceFilter) {
+		projectConfig.setNamespaceFilter(namespaceFilter);
+	}
+
+	public GuiConfig getGuiConfig() {
+		return guiConfig;
+	}
+
+	public void setGuiConfig(GuiConfig guiConfig) {
+		if (guiConfig != null)
+			this.guiConfig = guiConfig;
+	}
 }

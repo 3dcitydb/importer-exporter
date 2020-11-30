@@ -2,7 +2,7 @@
  * 3D City Database - The Open Source CityGML Database
  * http://www.3dcitydb.org/
  *
- * Copyright 2013 - 2019
+ * Copyright 2013 - 2020
  * Chair of Geoinformatics
  * Technical University of Munich, Germany
  * https://www.gis.bgu.tum.de/
@@ -81,15 +81,15 @@ public class Building extends KmlGenericObject{
 	}
 
 	protected List<DisplayForm> getDisplayForms() {
-		return config.getProject().getKmlExporter().getBuildingDisplayForms();
+		return config.getKmlExportConfig().getBuildingDisplayForms();
 	}
 
 	public ColladaOptions getColladaOptions() {
-		return config.getProject().getKmlExporter().getBuildingColladaOptions();
+		return config.getKmlExportConfig().getBuildingColladaOptions();
 	}
 
 	public Balloon getBalloonSettings() {
-		return config.getProject().getKmlExporter().getBuildingBalloon();
+		return config.getKmlExportConfig().getBuildingBalloon();
 	}
 
 	public String getStyleBasisName() {
@@ -123,7 +123,7 @@ public class Building extends KmlGenericObject{
 		}
 
 		if (placemarks.size() == 0) {
-			int lodToExportFrom = config.getProject().getKmlExporter().getLodToExportFrom();
+			int lodToExportFrom = config.getKmlExportConfig().getLodToExportFrom();
 			String fromMessage = " from LoD" + lodToExportFrom;
 			if (lodToExportFrom == 5) {
 				if (work.getDisplayForm().getForm() == DisplayForm.COLLADA)
@@ -167,9 +167,9 @@ public class Building extends KmlGenericObject{
 		boolean reversePointOrder = false;
 
 		try {
-			currentLod = config.getProject().getKmlExporter().getLodToExportFrom();
+			currentLod = config.getKmlExportConfig().getLodToExportFrom();
 			int displayForm = work.getDisplayForm().getForm();
-			Lod0FootprintMode lod0FootprintMode = config.getProject().getKmlExporter().getLod0FootprintMode();
+			Lod0FootprintMode lod0FootprintMode = config.getKmlExportConfig().getLod0FootprintMode();
 
 			// we handle FOOTPRINT/EXTRUDED differently than GEOMETRY/COLLADA
 			if (displayForm >= DisplayForm.GEOMETRY) {
@@ -333,7 +333,7 @@ public class Building extends KmlGenericObject{
 					return placemarks;
 
 				case DisplayForm.COLLADA:
-					fillGenericObjectForCollada(rs, config.getProject().getKmlExporter().getBuildingColladaOptions().isGenerateTextureAtlases()); // fill and refill
+					fillGenericObjectForCollada(rs, config.getKmlExportConfig().getBuildingColladaOptions().isGenerateTextureAtlases()); // fill and refill
 					String currentgmlId = getGmlId();
 					setGmlId(work.getGmlId());
 					setId(work.getId());

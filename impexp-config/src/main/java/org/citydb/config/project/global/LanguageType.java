@@ -31,10 +31,10 @@ import javax.xml.bind.annotation.XmlEnum;
 import javax.xml.bind.annotation.XmlEnumValue;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="LanguageType")
+@XmlType(name = "LanguageType")
 @XmlEnum
 public enum LanguageType {
-	@XmlEnumValue("de")
+    @XmlEnumValue("de")
     DE("de"),
     @XmlEnumValue("en")
     EN("en");
@@ -50,7 +50,7 @@ public enum LanguageType {
     }
 
     public static LanguageType fromValue(String v) {
-        for (LanguageType c: LanguageType.values()) {
+        for (LanguageType c : LanguageType.values()) {
             if (c.value.equals(v)) {
                 return c;
             }

@@ -2,7 +2,7 @@
  * 3D City Database - The Open Source CityGML Database
  * http://www.3dcitydb.org/
  *
- * Copyright 2013 - 2019
+ * Copyright 2013 - 2020
  * Chair of Geoinformatics
  * Technical University of Munich, Germany
  * https://www.gis.bgu.tum.de/
@@ -43,12 +43,14 @@ import org.citydb.query.Query;
 import org.citygml4j.util.xml.SAXEventBuffer;
 
 import javax.xml.bind.JAXBContext;
+import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.SQLException;
 
 public class KmlExportWorkerFactory implements WorkerFactory<KmlSplittingResult> {
 	private final Logger log = Logger.getInstance();
-	
+
+	private final Path outputFile;
 	private final JAXBContext jaxbKmlContext;
 	private final JAXBContext jaxbColladaContext;
 	private final WorkerPool<SAXEventBuffer> writerPool;
@@ -58,7 +60,7 @@ public class KmlExportWorkerFactory implements WorkerFactory<KmlSplittingResult>
 	private final Config config;
 	private final EventDispatcher eventDispatcher;
 
-	public KmlExportWorkerFactory(
+	public KmlExportWorkerFactory(Path outputFile,
 			JAXBContext jaxbKmlContext,
 			JAXBContext jaxbColladaContext,
 			WorkerPool<SAXEventBuffer> writerPool,
@@ -67,6 +69,7 @@ public class KmlExportWorkerFactory implements WorkerFactory<KmlSplittingResult>
 			ObjectFactory kmlFactory,
 			Config config,
 			EventDispatcher eventDispatcher) {
+		this.outputFile = outputFile;
 		this.jaxbKmlContext = jaxbKmlContext;
 		this.jaxbColladaContext = jaxbColladaContext;
 		this.writerPool = writerPool;
@@ -88,12 +91,12 @@ public class KmlExportWorkerFactory implements WorkerFactory<KmlSplittingResult>
 			// try and change workspace if needed
 			AbstractDatabaseAdapter databaseAdapter = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter();
 			if (databaseAdapter.hasVersioningSupport()) {
-				Workspace workspace = config.getProject().getDatabase().getWorkspaces().getKmlExportWorkspace();
+				Workspace workspace = config.getDatabaseConfig().getWorkspaces().getKmlExportWorkspace();
 				databaseAdapter.getWorkspaceManager().gotoWorkspace(connection, workspace);
 			}
 
-			kmlWorker = new KmlExportWorker(connection, databaseAdapter, jaxbKmlContext, jaxbColladaContext, writerPool,
-					tracker, query, kmlFactory, config, eventDispatcher);
+			kmlWorker = new KmlExportWorker(outputFile, connection, databaseAdapter, jaxbKmlContext, jaxbColladaContext,
+					writerPool, tracker, query, kmlFactory, config, eventDispatcher);
 		} catch (SQLException e) {
 			log.error("Failed to create export worker: " + e.getMessage());
 		}

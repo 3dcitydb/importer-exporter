@@ -30,8 +30,8 @@ package org.citydb.gui.components.mapviewer.validation;
 import org.citydb.config.Config;
 import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.i18n.Language;
-import org.citydb.config.project.database.Database;
-import org.citydb.config.project.database.Database.PredefinedSrsName;
+import org.citydb.config.project.database.DatabaseConfig;
+import org.citydb.config.project.database.DatabaseConfig.PredefinedSrsName;
 import org.citydb.config.project.database.DatabaseSrs;
 import org.citydb.database.DatabaseController;
 import org.citydb.gui.components.mapviewer.MapWindow;
@@ -108,7 +108,7 @@ public class BoundingBoxValidator {
 		} 
 
 		// srs is known but not wgs84
-		else if (bbox.getSrs().getSrid() != Database.PREDEFINED_SRS.get(PredefinedSrsName.WGS84_2D).getSrid()) {
+		else if (bbox.getSrs().getSrid() != DatabaseConfig.PREDEFINED_SRS.get(PredefinedSrsName.WGS84_2D).getSrid()) {
 			if (isDBConnected) {
 				if (bbox.getSrs().isSupported())
 					return transformBoundingBox(bbox);
@@ -135,7 +135,7 @@ public class BoundingBoxValidator {
 		}
 
 		// srs is wgs84...
-		else if (bbox.getSrs().getSrid() == Database.PREDEFINED_SRS.get(PredefinedSrsName.WGS84_2D).getSrid()) {
+		else if (bbox.getSrs().getSrid() == DatabaseConfig.PREDEFINED_SRS.get(PredefinedSrsName.WGS84_2D).getSrid()) {
 			// ...but coordinate values are out of range
 			if (!(bbox.getLowerCorner().getX() != null && bbox.getLowerCorner().getX() >= -180 && bbox.getLowerCorner().getX() <= 180 && 
 					bbox.getUpperCorner().getX() != null && bbox.getUpperCorner().getX() >= -180 && bbox.getUpperCorner().getX() <= 180 &&
@@ -199,9 +199,9 @@ public class BoundingBoxValidator {
 		SwingUtilities.invokeLater(() -> transform.setMessage(Language.I18N.getString("map.dialog.label.transform")));
 		try {
 			if (bbox.getSrs().isSupported()) {
-				DatabaseSrs wgs84 = Database.PREDEFINED_SRS.get(PredefinedSrsName.WGS84_2D);
-				for (DatabaseSrs srs : config.getProject().getDatabase().getReferenceSystems()) {
-					if (srs.getSrid() == Database.PREDEFINED_SRS.get(PredefinedSrsName.WGS84_2D).getSrid()) {
+				DatabaseSrs wgs84 = DatabaseConfig.PREDEFINED_SRS.get(PredefinedSrsName.WGS84_2D);
+				for (DatabaseSrs srs : config.getDatabaseConfig().getReferenceSystems()) {
+					if (srs.getSrid() == DatabaseConfig.PREDEFINED_SRS.get(PredefinedSrsName.WGS84_2D).getSrid()) {
 						wgs84 = srs;
 						break;
 					}

@@ -30,20 +30,20 @@ package org.citydb.config.project.query.filter.selection.comparison;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlRootElement(name="propertyIsNull")
-@XmlType(name="NullOperatorType")
+@XmlRootElement(name = "propertyIsNull")
+@XmlType(name = "NullOperatorType")
 public class NullOperator extends AbstractComparisonOperator {
 
-	public NullOperator() {
-	}
+    public NullOperator() {
+    }
 
-	public NullOperator(String valueReference) {
-		super(valueReference);
-	}
+    public NullOperator(String valueReference) {
+        super(valueReference);
+    }
 
-	@Override
-	public ComparisonOperatorName getOperatorName() {
-		return ComparisonOperatorName.NULL;
-	}
+    @Override
+    public ComparisonOperatorName getOperatorName() {
+        return ComparisonOperatorName.NULL;
+    }
 
 }

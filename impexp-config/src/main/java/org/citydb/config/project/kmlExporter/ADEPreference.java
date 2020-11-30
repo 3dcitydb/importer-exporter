@@ -33,77 +33,77 @@ import javax.xml.bind.annotation.XmlType;
 import java.util.ArrayList;
 import java.util.List;
 
-@XmlType(name="ADEKmlExportPreferenceType", propOrder={
-		"target",
-		"displayForms",
-		"colladaOptions",
-		"balloon",
-		"pointAndCurve"
+@XmlType(name = "ADEKmlExportPreferenceType", propOrder = {
+        "target",
+        "displayForms",
+        "colladaOptions",
+        "balloon",
+        "pointAndCurve"
 })
 public class ADEPreference {
-	@XmlElement(required = true)
-	private String target;
-	@XmlElement(name = "displayForm", required = true)
-	@XmlElementWrapper(name = "displayForms")
-	private List<DisplayForm> displayForms;
-	private ColladaOptions colladaOptions;
-	private Balloon balloon;
-	private PointAndCurve pointAndCurve;
+    @XmlElement(required = true)
+    private String target;
+    @XmlElement(name = "displayForm", required = true)
+    @XmlElementWrapper(name = "displayForms")
+    private List<DisplayForm> displayForms;
+    private ColladaOptions colladaOptions;
+    private Balloon balloon;
+    private PointAndCurve pointAndCurve;
 
-	public ADEPreference() {
-		displayForms = new ArrayList<>();
-		colladaOptions = new ColladaOptions();
-		balloon = new Balloon();
-		pointAndCurve = new PointAndCurve();
-	}
+    public ADEPreference() {
+        displayForms = new ArrayList<>();
+        colladaOptions = new ColladaOptions();
+        balloon = new Balloon();
+        pointAndCurve = new PointAndCurve();
+    }
 
-	public ADEPreference(String target) {
-		this();
-		this.target = target;
-	}
+    public ADEPreference(String target) {
+        this();
+        this.target = target;
+    }
 
-	public String getTarget() {
-		return target;
-	}
+    public String getTarget() {
+        return target;
+    }
 
-	public boolean isSetTarget() {
-		return target != null;
-	}
+    public boolean isSetTarget() {
+        return target != null;
+    }
 
-	public void setTarget(String target) {
-		this.target = target;
-	}
+    public void setTarget(String target) {
+        this.target = target;
+    }
 
-	public List<DisplayForm> getDisplayForms() {
-		return displayForms;
-	}
+    public List<DisplayForm> getDisplayForms() {
+        return displayForms;
+    }
 
-	public void setDisplayForms(List<DisplayForm> displayForms) {
-		this.displayForms = displayForms;
-	}
+    public void setDisplayForms(List<DisplayForm> displayForms) {
+        this.displayForms = displayForms;
+    }
 
-	public ColladaOptions getColladaOptions() {
-		return colladaOptions;
-	}
+    public ColladaOptions getColladaOptions() {
+        return colladaOptions;
+    }
 
-	public void setColladaOptions(ColladaOptions colladaOptions) {
-		this.colladaOptions = colladaOptions;
-	}
+    public void setColladaOptions(ColladaOptions colladaOptions) {
+        this.colladaOptions = colladaOptions;
+    }
 
-	public Balloon getBalloon() {
-		return balloon;
-	}
+    public Balloon getBalloon() {
+        return balloon;
+    }
 
-	public void setBalloon(Balloon balloon) {
-		this.balloon = balloon;
-	}
+    public void setBalloon(Balloon balloon) {
+        this.balloon = balloon;
+    }
 
-	public PointAndCurve getPointAndCurve() {
-		return pointAndCurve;
-	}
+    public PointAndCurve getPointAndCurve() {
+        return pointAndCurve;
+    }
 
-	public void setPointAndCurve(PointAndCurve pointAndCurve) {
-		this.pointAndCurve = pointAndCurve;
-	}
+    public void setPointAndCurve(PointAndCurve pointAndCurve) {
+        this.pointAndCurve = pointAndCurve;
+    }
 
 }

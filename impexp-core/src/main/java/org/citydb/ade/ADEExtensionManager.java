@@ -287,14 +287,10 @@ public class ADEExtensionManager {
 	public void logExceptions() {
 		if (exceptions != null) {
 			Logger log = Logger.getInstance();
-			
 			for (Entry<String, List<ADEExtensionException>> entry : exceptions.entrySet()) {
 				log.error("Failed to initialize the ADE extension " + entry.getKey());
 				for (ADEExtensionException e : entry.getValue()) {
-					log.error("Cause: " + e.getMessage());
-					Throwable cause = e;
-					while ((cause = cause.getCause()) != null)
-						log.error(cause.getClass().getTypeName() + ": " + cause.getMessage());
+					log.error("Cause: " + e.getMessage(), e);
 				}
 			}
 		}

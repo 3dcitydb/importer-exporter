@@ -107,15 +107,15 @@ public class DBSurfaceData implements DBImporter {
 		this.batchConn = batchConn;
 		this.importer = importer;
 
-		affineTransformation = config.getProject().getImporter().getAffineTransformation().isEnabled();
-		replaceGmlId = config.getProject().getImporter().getGmlId().isUUIDModeReplace();
+		affineTransformation = config.getImportConfig().getAffineTransformation().isEnabled();
+		replaceGmlId = config.getImportConfig().getGmlId().isUUIDModeReplace();
 		dbSrid = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter().getConnectionMetaData().getReferenceSystem().getSrid();
-		affineTransformation = config.getProject().getImporter().getAffineTransformation().isEnabled();
+		affineTransformation = config.getImportConfig().getAffineTransformation().isEnabled();
 		nullGeometryType = importer.getDatabaseAdapter().getGeometryConverter().getNullGeometryType();
 		nullGeometryTypeName = importer.getDatabaseAdapter().getGeometryConverter().getNullGeometryTypeName();
 		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
 
-		String gmlIdCodespace = config.getInternal().getCurrentGmlIdCodespace();
+		String gmlIdCodespace = importer.getInternalConfig().getCurrentGmlIdCodespace();
 		if (gmlIdCodespace != null)
 			gmlIdCodespace = "'" + gmlIdCodespace + "', ";
 

@@ -36,7 +36,7 @@ public class AppearanceFilterBuilder {
 		
 	}
 
-	protected AppearanceFilter buildAppearanceFilter(org.citydb.config.project.query.filter.appearance.AppearanceFilter appearanceFilterConfig) throws QueryBuildException {	
+	protected AppearanceFilter buildAppearanceFilter(org.citydb.config.project.query.filter.appearance.AppearanceFilter appearanceFilterConfig) throws QueryBuildException {
 		AppearanceFilter appearanceFilter = new AppearanceFilter();
 		
 		appearanceFilter.setIncludeNullTheme(appearanceFilterConfig.isIncludeNullTheme());

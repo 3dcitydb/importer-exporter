@@ -35,6 +35,7 @@ import org.citydb.citygml.importer.filter.CityGMLFilter;
 import org.citydb.citygml.importer.util.AffineTransformer;
 import org.citydb.citygml.importer.util.ImportLogger;
 import org.citydb.citygml.importer.util.ImportLogger.ImportLogEntry;
+import org.citydb.citygml.importer.util.InternalConfig;
 import org.citydb.concurrent.Worker;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
@@ -50,7 +51,6 @@ import org.citydb.event.global.EventType;
 import org.citydb.event.global.GeometryCounterEvent;
 import org.citydb.event.global.InterruptEvent;
 import org.citydb.event.global.ObjectCounterEvent;
-import org.citydb.file.InputFile;
 import org.citydb.log.Logger;
 import org.citygml4j.builder.jaxb.CityGMLBuilder;
 import org.citygml4j.model.citygml.CityGML;
@@ -82,8 +82,7 @@ public class DBImportWorker extends Worker<CityGML> implements EventHandler {
 	private int topLevelFeatureCounter = 0;
 	private int commitAfter;
 
-	public DBImportWorker(InputFile inputFile,
-			Connection connection,
+	public DBImportWorker(Connection connection,
 			boolean isManagedTransaction,
 			AbstractDatabaseAdapter databaseAdapter,
 			SchemaMapping schemaMapping,
@@ -93,6 +92,7 @@ public class DBImportWorker extends Worker<CityGML> implements EventHandler {
 			CityGMLFilter filter,
 			AffineTransformer affineTransformer,
 			ImportLogger importLogger,
+			InternalConfig internalConfig,
 			Config config,
 			EventDispatcher eventDispatcher) throws SQLException {
 		this.connection = connection;
@@ -101,17 +101,17 @@ public class DBImportWorker extends Worker<CityGML> implements EventHandler {
 		this.importLogger = importLogger;
 		this.eventDispatcher = eventDispatcher;
 
-		importer = new CityGMLImportManager(inputFile,
-				connection,
+		importer = new CityGMLImportManager(connection,
 				databaseAdapter,
 				schemaMapping,
 				cityGMLBuilder,
 				xlinkPool,
 				uidCacheManager,
 				affineTransformer,
+				internalConfig,
 				config);
 
-		commitAfter = config.getProject().getDatabase().getImportBatching().getFeatureBatchSize();
+		commitAfter = config.getDatabaseConfig().getImportBatching().getFeatureBatchSize();
 		if (commitAfter > databaseAdapter.getMaxBatchSize())
 			commitAfter = databaseAdapter.getMaxBatchSize();
 
@@ -153,7 +153,9 @@ public class DBImportWorker extends Worker<CityGML> implements EventHandler {
 
 					updateImportContext();
 				}
-			} catch (CityGMLImportException | SQLException e) {
+			} catch (IOException e) {
+				eventDispatcher.triggerSyncEvent(new InterruptEvent("A fatal error occurred during update of import log.", LogLevel.ERROR, e, eventChannel, this));
+			} catch (Throwable e) {
 				if (!isManagedTransaction) {
 					try {
 						connection.rollback();
@@ -162,11 +164,8 @@ public class DBImportWorker extends Worker<CityGML> implements EventHandler {
 					}
 				}
 
-				eventDispatcher.triggerEvent(new InterruptEvent("Aborting import due to errors.", LogLevel.WARN, e, eventChannel, this));
-			} catch (IOException e) {
-				eventDispatcher.triggerEvent(new InterruptEvent("Aborting import due to I/O errors.", LogLevel.WARN, e, eventChannel, this));
+				eventDispatcher.triggerSyncEvent(new InterruptEvent("A fatal error occurred during import.", LogLevel.ERROR, e, eventChannel, this));
 			}
-
 		} finally {
 			try {
 				importer.close();
@@ -194,7 +193,7 @@ public class DBImportWorker extends Worker<CityGML> implements EventHandler {
 			if (!shouldWork)
 				return;
 
-			long id = 0;
+			long id;
 
 			if (work instanceof Appearance) {
 				// global appearances
@@ -241,17 +240,16 @@ public class DBImportWorker extends Worker<CityGML> implements EventHandler {
 				updateImportContext();
 			}
 
-		} catch (CityGMLImportException | SQLException e) {
+		} catch (IOException e) {
+			eventDispatcher.triggerSyncEvent(new InterruptEvent("A fatal error occurred during update of import log.", LogLevel.ERROR, e, eventChannel, this));
+		} catch (Throwable e) {
 			try {
 				connection.rollback();
 			} catch (SQLException sql) {
 				//
 			}
 
-			eventDispatcher.triggerSyncEvent(new InterruptEvent("Aborting import due to errors.", LogLevel.WARN, e, eventChannel, this));
-		} catch (Throwable e) {
-			// this is to catch general exceptions that may occur during the import
-			eventDispatcher.triggerSyncEvent(new InterruptEvent("Aborting due to an unexpected " + e.getClass().getName() + " error.", LogLevel.ERROR, e, eventChannel, this));
+			eventDispatcher.triggerSyncEvent(new InterruptEvent("A fatal error occurred during import.", LogLevel.ERROR, e, eventChannel, this));
 		} finally {
 			runLock.unlock();
 		}

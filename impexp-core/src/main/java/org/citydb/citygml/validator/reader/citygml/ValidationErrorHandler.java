@@ -43,14 +43,11 @@ class ValidationErrorHandler implements ErrorHandler {
     private boolean isReportAllErrors;
     private boolean isAborted;
     private boolean hasFatalErrors;
+    private String location;
 
     ValidationErrorHandler(Config config) {
         this.config = config;
         reset();
-    }
-
-    void setReportAllErrors(boolean reportAllErrors) {
-        this.isReportAllErrors = reportAllErrors;
     }
 
     long getValidationErrors() {
@@ -71,35 +68,42 @@ class ValidationErrorHandler implements ErrorHandler {
 
     void reset() {
         validationErrors = 0;
-        isReportAllErrors = !config.getProject().getImporter().getXMLValidation().isSetReportOneErrorPerFeature();
+        isReportAllErrors = !config.getImportConfig().getXMLValidation().isSetReportOneErrorPerFeature();
         isAborted = false;
         hasFatalErrors = false;
+        location = null;
     }
 
     @Override
     public void warning(SAXParseException e) throws SAXException {
-        write(e, "Warning", LogLevel.WARN);
+        report(e, "Warning", LogLevel.WARN);
     }
 
     @Override
     public void error(SAXParseException e) throws SAXException {
-        write(e, "Invalid content", LogLevel.ERROR);
+        report(e, "Invalid content", LogLevel.ERROR);
     }
 
     @Override
     public void fatalError(SAXParseException e) throws SAXException {
         isReportAllErrors = false;
         hasFatalErrors = true;
-        write(e, "Invalid content", LogLevel.ERROR);
+        report(e, "Invalid content", LogLevel.ERROR);
     }
 
-    private void write(SAXParseException e, String prefix, LogLevel level) throws SAXException {
+    private void report(SAXParseException e, String prefix, LogLevel level) throws SAXException {
         if (!isAborted) {
-            log.log(level, prefix + " at " + '[' + e.getLineNumber() + ',' + e.getColumnNumber() + "]: " + e.getMessage());
-            validationErrors++;
-            if (!isReportAllErrors) {
-                isAborted = true;
-                throw new SAXException(e.getException());
+            String location = e.getLineNumber() + ", " + e.getColumnNumber();
+            if (!location.equals(this.location)) {
+                this.location = location;
+                validationErrors++;
+
+                log.log(level, prefix + " at " + '[' + location + "]: " + e.getMessage());
+
+                if (!isReportAllErrors) {
+                    isAborted = true;
+                    throw new SAXException(e.getException());
+                }
             }
         }
     }

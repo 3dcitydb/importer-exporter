@@ -30,7 +30,7 @@ package org.citydb.config.project.global;
 
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="APIKeysType", propOrder={
+@XmlType(name = "APIKeysType", propOrder = {
         "googleGeocoding",
         "googleElevation"
 })

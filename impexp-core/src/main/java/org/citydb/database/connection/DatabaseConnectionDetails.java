@@ -27,7 +27,7 @@
  */
 package org.citydb.database.connection;
 
-import org.citydb.config.project.database.DBConnection;
+import org.citydb.config.project.database.DatabaseConnection;
 import org.citydb.config.project.database.DatabaseType;
 
 public class DatabaseConnectionDetails {
@@ -39,7 +39,7 @@ public class DatabaseConnectionDetails {
 	private String schema;
 	private String user;
 	
-	public DatabaseConnectionDetails(DBConnection connection) {
+	public DatabaseConnectionDetails(DatabaseConnection connection) {
 		description = connection.getDescription();
 		type = connection.getDatabaseType();
 		server = connection.getServer();

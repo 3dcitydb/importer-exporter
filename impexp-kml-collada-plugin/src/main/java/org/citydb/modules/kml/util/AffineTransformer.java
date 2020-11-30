@@ -2,7 +2,7 @@
  * 3D City Database - The Open Source CityGML Database
  * http://www.3dcitydb.org/
  *
- * Copyright 2013 - 2019
+ * Copyright 2013 - 2020
  * Chair of Geoinformatics
  * Technical University of Munich, Germany
  * https://www.gis.bgu.tum.de/
@@ -27,11 +27,11 @@
  */
 package org.citydb.modules.kml.util;
 
-import java.sql.SQLException;
-
 import org.citydb.config.geometry.GeometryObject;
 import org.citygml4j.geometry.Matrix;
 import org.citygml4j.geometry.Point;
+
+import java.sql.SQLException;
 
 public class AffineTransformer {
 	private final Matrix transformationMatrix;

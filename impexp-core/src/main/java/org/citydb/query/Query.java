@@ -54,7 +54,6 @@ public class Query {
 	private Tiling tiling;
 
 	public Query() {
-
 	}
 
 	public Query(Query other) {
@@ -228,5 +227,4 @@ public class Query {
 		sorting = query.sorting;
 		tiling = query.tiling;
 	}
-
 }

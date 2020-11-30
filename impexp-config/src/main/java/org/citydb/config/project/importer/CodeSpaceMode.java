@@ -30,15 +30,15 @@ package org.citydb.config.project.importer;
 import javax.xml.bind.annotation.XmlEnumValue;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="CodeSpaceModeType")
+@XmlType(name = "CodeSpaceModeType")
 public enum CodeSpaceMode {
-	@XmlEnumValue("none")
+    @XmlEnumValue("none")
     NONE("none"),
     @XmlEnumValue("relativeFileName")
     RELATIVE("relativefileName"),
     @XmlEnumValue("absoluteFileName")
     ABSOLUTE("absoluteFileName"),
-	@XmlEnumValue("user")
+    @XmlEnumValue("user")
     USER("user");
 
     private final String value;
@@ -52,7 +52,7 @@ public enum CodeSpaceMode {
     }
 
     public static CodeSpaceMode fromValue(String v) {
-        for (CodeSpaceMode c: CodeSpaceMode.values()) {
+        for (CodeSpaceMode c : CodeSpaceMode.values()) {
             if (c.value.equals(v)) {
                 return c;
             }

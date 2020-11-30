@@ -115,7 +115,7 @@ public class InfoDialog extends JDialog {
 			support.setText(Language.I18N.getString("menu.help.info.support.text"));				
 			general.add(support, GuiUtil.setConstraints(0,1,1.0,1.0,GridBagConstraints.BOTH,2,5,5,5));
 
-			String tum_label_text = config.getProject().getGlobal().getLanguage() == LanguageType.EN ?
+			String tum_label_text = config.getGlobalConfig().getLanguage() == LanguageType.EN ?
 					"Chair of Geoinformatics,\nTechnical University of Munich, Germany" : "Lehrstuhl für Geoinformatik,\nTechnische Universität München, Deutschland";
 			JLabel copyHeader = new JLabel("Copyright");
 			general.add(copyHeader, GuiUtil.setConstraints(0,2,1.0,0.0,GridBagConstraints.HORIZONTAL,15,5,0,5));
@@ -157,7 +157,7 @@ public class InfoDialog extends JDialog {
 				Font font = UIManager.getFont("Label.font");
 				String bodyRule = "body { font-family: " + font.getFamily() + "; " + "font-size: " + font.getSize() + "pt; }";
 
-				String tum_label_text = config.getProject().getGlobal().getLanguage() == LanguageType.EN ?
+				String tum_label_text = config.getGlobalConfig().getLanguage() == LanguageType.EN ?
 						"Chair of Geoinformatics,<br/>nTechnical University of Munich" : "Lehrstuhl für Geoinformatik,<br/>Technische Universität München";
 
 				JLabel tum_logo = new JLabel(new ImageIcon(getToolkit().getImage(this.getClass().getResource("/org/citydb/gui/images/partner/tum_logo.png"))));

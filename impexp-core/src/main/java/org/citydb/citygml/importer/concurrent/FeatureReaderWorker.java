@@ -56,7 +56,7 @@ public class FeatureReaderWorker extends Worker<XMLChunk> {
 		this.dbWorkerPool = dbWorkerPool;
 		this.eventDispatcher = eventDispatcher;
 
-		useValidation = config.getProject().getImporter().getXMLValidation().isSetUseXMLValidation();
+		useValidation = config.getImportConfig().getXMLValidation().isSetUseXMLValidation();
 	}
 	
 	@Override
@@ -94,10 +94,9 @@ public class FeatureReaderWorker extends Worker<XMLChunk> {
 				if (!useValidation || work.hasPassedXMLValidation())
 					log.error("Failed to unmarshal XML chunk.", e);
 			} catch (MissingADESchemaException e) {
-				eventDispatcher.triggerEvent(new InterruptEvent("Failed to read an ADE XML Schema.", LogLevel.ERROR, e, eventChannel, this));
-			} catch (Exception e) {
-				// this is to catch general exceptions that may occur during the import
-				eventDispatcher.triggerEvent(new InterruptEvent("Aborting due to an unexpected " + e.getClass().getName() + " error.", LogLevel.ERROR, e, eventChannel, this));
+				eventDispatcher.triggerSyncEvent(new InterruptEvent("Failed to read an ADE XML Schema.", LogLevel.ERROR, e, eventChannel, this));
+			} catch (Throwable e) {
+				eventDispatcher.triggerSyncEvent(new InterruptEvent("A fatal error occurred during parsing of input file.", LogLevel.ERROR, e, eventChannel, this));
 			}
 		} finally {
 			runLock.unlock();

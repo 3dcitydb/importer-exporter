@@ -31,18 +31,18 @@ import org.citydb.config.project.query.filter.tiling.AbstractTilingOptions;
 
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="KmlTilingOptionsType", propOrder={
-		"autoTileSideLength"
+@XmlType(name = "KmlTilingOptionsType", propOrder = {
+        "autoTileSideLength"
 })
 public class KmlTilingOptions extends AbstractTilingOptions {
-	private double autoTileSideLength = 125.0;
+    private double autoTileSideLength = 125.0;
 
-	public void setAutoTileSideLength(double autoTileSideLength) {
-		this.autoTileSideLength = autoTileSideLength;
-	}
+    public void setAutoTileSideLength(double autoTileSideLength) {
+        this.autoTileSideLength = autoTileSideLength;
+    }
 
-	public double getAutoTileSideLength() {
-		return autoTileSideLength;
-	}
-	
+    public double getAutoTileSideLength() {
+        return autoTileSideLength;
+    }
+
 }

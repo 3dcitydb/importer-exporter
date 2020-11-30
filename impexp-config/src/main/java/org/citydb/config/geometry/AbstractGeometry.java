@@ -34,56 +34,56 @@ import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="AbstractGeometryType")
+@XmlType(name = "AbstractGeometryType")
 @XmlSeeAlso({
-	BoundingBox.class,
-	Point.class,
-	MultiPoint.class,
-	LineString.class,
-	MultiLineString.class,
-	Polygon.class,
-	MultiPolygon.class
+        BoundingBox.class,
+        Point.class,
+        MultiPoint.class,
+        LineString.class,
+        MultiLineString.class,
+        Polygon.class,
+        MultiPolygon.class
 })
 public abstract class AbstractGeometry {
-	@XmlIDREF
-	@XmlAttribute(name="srsRef", required=false)
-	private DatabaseSrs srs;
-	@XmlAttribute
-	private Integer srid;
-	
-	public abstract boolean is3D();
-	public abstract boolean isValid();
-	public abstract GeometryType getGeometryType();
-	public abstract BoundingBox toBoundingBox();
-	
-	public DatabaseSrs getSrs() {
-		if (srs != null)
-			return srs;
-		else if (srid != null) {
-			DatabaseSrs srs = new DatabaseSrs(srid);
-			srs.setSupported(true);
-			return srs;
-		} else
-			return null;
-	}
+    @XmlIDREF
+    @XmlAttribute(name = "srsRef", required = false)
+    private DatabaseSrs srs;
+    @XmlAttribute
+    private Integer srid;
 
-	public boolean isSetSrs() {
-		return srs != null || srid != null;
-	}
+    public abstract boolean is3D();
+    public abstract boolean isValid();
+    public abstract GeometryType getGeometryType();
+    public abstract BoundingBox toBoundingBox();
 
-	public void setSrs(DatabaseSrs srs) {
-		this.srs = srs;
-		srid = null;
-	}
+    public DatabaseSrs getSrs() {
+        if (srs != null)
+            return srs;
+        else if (srid != null) {
+            DatabaseSrs srs = new DatabaseSrs(srid);
+            srs.setSupported(true);
+            return srs;
+        } else
+            return null;
+    }
 
-	public void setSrs(int srid) {
-		this.srid = srid;
-		srs = null;
-	}
+    public boolean isSetSrs() {
+        return srs != null || srid != null;
+    }
 
-	public void unsetSrs() {
-		srs = null;
-		srid = null;
-	}
-	
+    public void setSrs(DatabaseSrs srs) {
+        this.srs = srs;
+        srid = null;
+    }
+
+    public void setSrs(int srid) {
+        this.srid = srid;
+        srs = null;
+    }
+
+    public void unsetSrs() {
+        srs = null;
+        srid = null;
+    }
+
 }

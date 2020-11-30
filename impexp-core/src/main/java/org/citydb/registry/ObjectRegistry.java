@@ -36,7 +36,8 @@ import org.citygml4j.CityGMLContext;
 import org.citygml4j.builder.jaxb.CityGMLBuilder;
 import org.citygml4j.model.citygml.ade.ADEException;
 
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.HashMap;
+import java.util.Map;
 
 public class ObjectRegistry {
 	private static ObjectRegistry instance;
@@ -50,7 +51,7 @@ public class ObjectRegistry {
 		}
 	}
 
-	private ConcurrentHashMap<String, Object> properties;
+	private Map<String, Object> properties;
 	private Config config;
 	private EventDispatcher eventDispatcher;
 	private DatabaseController databaseController;
@@ -71,7 +72,7 @@ public class ObjectRegistry {
 
 	public void register(String name, Object object) {
 		if (properties == null) {
-			properties = new ConcurrentHashMap<>();
+			properties = new HashMap<>();
 		}
 
 		properties.put(name, object);

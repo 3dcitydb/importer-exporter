@@ -31,56 +31,56 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlType;
 
 @XmlType(name = "LogFileType", propOrder = {
-		"logLevel",
-		"logFileMode",
-		"useAlternativeLogFile",
-		"alternativeLogFile"
+        "logLevel",
+        "logFileMode",
+        "useAlternativeLogFile",
+        "alternativeLogFile"
 })
 public class LogFile {
-	@XmlAttribute
-	private boolean active = false;
-	private LogLevel logLevel;
-	private LogFileMode logFileMode;
-	private Boolean useAlternativeLogFile = false;
-	private String alternativeLogFile;
+    @XmlAttribute
+    private boolean active = false;
+    private LogLevel logLevel;
+    private LogFileMode logFileMode;
+    private Boolean useAlternativeLogFile = false;
+    private String alternativeLogFile;
 
-	public boolean isActive() {
-		return active;
-	}
+    public boolean isActive() {
+        return active;
+    }
 
-	public void setActive(boolean active) {
-		this.active = active;
-	}
+    public void setActive(boolean active) {
+        this.active = active;
+    }
 
-	public LogLevel getLogLevel() {
-		return logLevel != null ? logLevel : LogLevel.INFO;
-	}
+    public LogLevel getLogLevel() {
+        return logLevel != null ? logLevel : LogLevel.INFO;
+    }
 
-	public void setLogLevel(LogLevel logLevel) {
-		this.logLevel = logLevel;
-	}
+    public void setLogLevel(LogLevel logLevel) {
+        this.logLevel = logLevel;
+    }
 
-	public LogFileMode getLogFileMode() {
-		return logFileMode != null ? logFileMode : LogFileMode.APPEND;
-	}
+    public LogFileMode getLogFileMode() {
+        return logFileMode != null ? logFileMode : LogFileMode.APPEND;
+    }
 
-	public void setLogFileMode(LogFileMode logFileMode) {
-		this.logFileMode = logFileMode;
-	}
-	
-	public boolean isUseAlternativeLogFile() {
-		return useAlternativeLogFile != null && alternativeLogFile != null ? useAlternativeLogFile : false;
-	}
+    public void setLogFileMode(LogFileMode logFileMode) {
+        this.logFileMode = logFileMode;
+    }
 
-	public void setUseAlternativeLogFile(Boolean useAlternativeLogFile) {
-		this.useAlternativeLogFile = useAlternativeLogFile;
-	}
+    public boolean isUseAlternativeLogFile() {
+        return useAlternativeLogFile != null && alternativeLogFile != null ? useAlternativeLogFile : false;
+    }
 
-	public String getAlternativeLogFile() {
-		return alternativeLogFile != null ? alternativeLogFile : "";
-	}
+    public void setUseAlternativeLogFile(Boolean useAlternativeLogFile) {
+        this.useAlternativeLogFile = useAlternativeLogFile;
+    }
 
-	public void setAlternativeLogFile(String alternativeLogFile) {
-		this.alternativeLogFile = alternativeLogFile;
-	}
+    public String getAlternativeLogFile() {
+        return alternativeLogFile != null ? alternativeLogFile : "";
+    }
+
+    public void setAlternativeLogFile(String alternativeLogFile) {
+        this.alternativeLogFile = alternativeLogFile;
+    }
 }

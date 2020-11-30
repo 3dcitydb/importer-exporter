@@ -39,18 +39,20 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ValidatorFactoryBuilder {
-    private Map<MediaType, ValidatorFactory> factories = new HashMap<>();
+    private final Map<MediaType, ValidatorFactory> factories = new HashMap<>();
 
     public ValidatorFactory buildFactory(InputFile file, Config config) throws ValidationException {
         ValidatorFactory factory = factories.get(file.getMediaType());
         if (factory == null) {
-            if (file.getMediaType().equals(InputFile.APPLICATION_XML))
+            if (file.getMediaType().equals(InputFile.APPLICATION_XML)) {
                 factory = new CityGMLValidatorFactory();
-            else if (file.getMediaType().equals(InputFile.APPLICATION_JSON))
+            } else if (file.getMediaType().equals(InputFile.APPLICATION_JSON)) {
                 factory = new CityJSONValidatorFactory();
+            }
 
-            if (factory == null)
+            if (factory == null) {
                 throw new ValidationException("No validator available for media type '" + file.getMediaType() + "'.");
+            }
 
             factory.initializeContext(config);
             factories.put(file.getMediaType(), factory);

@@ -32,7 +32,7 @@ import javax.xml.bind.annotation.XmlEnum;
 import javax.xml.bind.annotation.XmlEnumValue;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="SimpleFeatureVersionFilterModeType")
+@XmlType(name = "SimpleFeatureVersionFilterModeType")
 @XmlEnum
 public enum SimpleFeatureVersionFilterMode {
     @XmlEnumValue("latest")
@@ -53,7 +53,7 @@ public enum SimpleFeatureVersionFilterMode {
     }
 
     public static SimpleFeatureVersionFilterMode fromValue(String v) {
-        for (SimpleFeatureVersionFilterMode c: SimpleFeatureVersionFilterMode.values()) {
+        for (SimpleFeatureVersionFilterMode c : SimpleFeatureVersionFilterMode.values()) {
             if (c.value.equals(v)) {
                 return c;
             }

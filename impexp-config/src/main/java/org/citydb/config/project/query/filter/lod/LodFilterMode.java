@@ -31,21 +31,21 @@ import javax.xml.bind.annotation.XmlEnum;
 import javax.xml.bind.annotation.XmlEnumValue;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="LodFilterModeType")
+@XmlType(name = "LodFilterModeType")
 @XmlEnum
 public enum LodFilterMode {
-	@XmlEnumValue("or")
-	OR("Or"),
-	@XmlEnumValue("and")
-	AND("And"),
+    @XmlEnumValue("or")
+    OR("Or"),
+    @XmlEnumValue("and")
+    AND("And"),
     @XmlEnumValue("minimum")
     MINIMUM("Minimum LoD"),
     @XmlEnumValue("maximum")
     MAXIMUM("Maximum LoD");
-	
-	private final String value;
 
-	LodFilterMode(String v) {
+    private final String value;
+
+    LodFilterMode(String v) {
         value = v;
     }
 
@@ -58,7 +58,7 @@ public enum LodFilterMode {
 
         return OR;
     }
-    
+
     @Override
     public String toString() {
         return value;

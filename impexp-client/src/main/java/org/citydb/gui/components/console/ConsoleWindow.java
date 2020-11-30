@@ -81,7 +81,7 @@ public class ConsoleWindow extends JFrame {
 	}
 
 	public void loadSettings() {
-		WindowSize size = config.getGui().getConsoleWindow().getSize();
+		WindowSize size = config.getGuiConfig().getConsoleWindow().getSize();
 		if (size.getX() != null && size.getY() != null && size.getWidth() != null & size.getHeight() != null) {
 			setLocation(size.getX(), size.getY());
 			setSize(size.getWidth(), size.getHeight());
@@ -89,14 +89,14 @@ public class ConsoleWindow extends JFrame {
 	}
 
 	public void setSettings() {
-		if (config.getGui().getConsoleWindow().isDetached()) {
-			WindowSize size = config.getGui().getConsoleWindow().getSize();
+		if (config.getGuiConfig().getConsoleWindow().isDetached()) {
+			WindowSize size = config.getGuiConfig().getConsoleWindow().getSize();
 			size.setX(getX());
 			size.setY(getY());
 			size.setWidth(getWidth());
 			size.setHeight(getHeight());
 		} else
-			config.getGui().getConsoleWindow().setSize(new WindowSize());
+			config.getGuiConfig().getConsoleWindow().setSize(new WindowSize());
 	}
 
 	public void doTranslation() {

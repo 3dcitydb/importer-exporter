@@ -31,7 +31,7 @@ import org.citydb.config.project.global.LogLevel;
 
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="ConsoleStyleType", propOrder={
+@XmlType(name = "ConsoleStyleType", propOrder = {
         "debug",
         "info",
         "warn",

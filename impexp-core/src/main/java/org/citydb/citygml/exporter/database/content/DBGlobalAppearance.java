@@ -57,12 +57,12 @@ public class DBGlobalAppearance extends AbstractAppearanceExporter {
 	private int batchSize;
 	private int batchCounter;
 
-	public DBGlobalAppearance(Connection connection, Query query, CacheTable cacheTable, CityGMLExportManager exporter, Config config) throws CityGMLExportException, SQLException {
-		super(true, connection, query, cacheTable, exporter, config);
+	public DBGlobalAppearance(CacheTable cacheTable, CityGMLExportManager exporter, Config config) throws CityGMLExportException, SQLException {
+		super(true, cacheTable, exporter, config);
 		ps = cacheTable.getConnection().prepareStatement(select.toString());
 
 		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
-		batchSize = config.getProject().getDatabase().getImportBatching().getTempBatchSize();
+		batchSize = config.getDatabaseConfig().getImportBatching().getTempBatchSize();
 		if (batchSize > exporter.getDatabaseAdapter().getMaxBatchSize())
 			batchSize = exporter.getDatabaseAdapter().getMaxBatchSize();
 

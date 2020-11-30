@@ -34,46 +34,46 @@ import java.util.Objects;
 
 @XmlType(name = "GenericAttributeNameType")
 public class GenericAttributeName extends AbstractPropertyName {
-	@XmlAttribute
-	private GenericAttributeType type;
-	@XmlValue
-	private String name;
+    @XmlAttribute
+    private GenericAttributeType type;
+    @XmlValue
+    private String name;
 
-	public GenericAttributeType getType() {
-		return type;
-	}
+    public GenericAttributeType getType() {
+        return type;
+    }
 
-	public void setType(GenericAttributeType type) {
-		this.type = type;
-	}
-	
-	public boolean isSetType() {
-		return type != null;
-	}
-	
-	public String getName() {
-		return name;
-	}
+    public void setType(GenericAttributeType type) {
+        this.type = type;
+    }
 
-	public void setName(String name) {
-		this.name = name;
-	}
+    public boolean isSetType() {
+        return type != null;
+    }
 
-	@Override
-	public int hashCode() {
-		return Objects.hash(name, type);
-	}
+    public String getName() {
+        return name;
+    }
 
-	@Override
-	public boolean equals(Object obj) {
-		if (obj == this)
-			return true;
+    public void setName(String name) {
+        this.name = name;
+    }
 
-		if (!(obj instanceof GenericAttributeName))
-			return false;
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, type);
+    }
 
-		GenericAttributeName other = (GenericAttributeName)obj;
-		return name.equals(other.name) && type == other.type;
-	}
-	
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this)
+            return true;
+
+        if (!(obj instanceof GenericAttributeName))
+            return false;
+
+        GenericAttributeName other = (GenericAttributeName) obj;
+        return name.equals(other.name) && type == other.type;
+    }
+
 }

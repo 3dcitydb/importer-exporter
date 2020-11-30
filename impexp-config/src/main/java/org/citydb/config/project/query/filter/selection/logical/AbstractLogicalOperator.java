@@ -33,16 +33,16 @@ import org.citydb.config.project.query.filter.selection.PredicateName;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="AbstractLogicalOperatorType")
+@XmlType(name = "AbstractLogicalOperatorType")
 @XmlSeeAlso({
-	AbstractBinaryLogicalOperator.class,
-	NotOperator.class
+        AbstractBinaryLogicalOperator.class,
+        NotOperator.class
 })
 public abstract class AbstractLogicalOperator extends AbstractPredicate {
-	public abstract LogicalOperatorName getOperatorName();
-	
-	@Override
-	public PredicateName getPredicateName() {
-		return PredicateName.LOGICAL_OPERATOR;
-	}
+    public abstract LogicalOperatorName getOperatorName();
+
+    @Override
+    public PredicateName getPredicateName() {
+        return PredicateName.LOGICAL_OPERATOR;
+    }
 }

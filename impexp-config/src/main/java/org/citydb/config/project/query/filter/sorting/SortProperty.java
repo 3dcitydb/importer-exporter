@@ -31,7 +31,7 @@ package org.citydb.config.project.query.filter.sorting;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="SortPropertyType", propOrder={
+@XmlType(name = "SortPropertyType", propOrder = {
         "valueReference",
         "sortOrder"
 })

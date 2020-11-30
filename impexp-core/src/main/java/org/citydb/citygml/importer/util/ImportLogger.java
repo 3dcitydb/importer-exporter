@@ -27,7 +27,7 @@
  */
 package org.citydb.citygml.importer.util;
 
-import org.citydb.config.project.database.DBConnection;
+import org.citydb.config.project.database.DatabaseConnection;
 import org.citydb.util.CoreConstants;
 
 import java.io.BufferedWriter;
@@ -43,9 +43,10 @@ public class ImportLogger {
 	private final Path logFile;
 	private final BufferedWriter writer;
 
-	public ImportLogger(Path logFile, Path importFile, DBConnection connection) throws IOException {
-		if (logFile.toAbsolutePath().normalize().startsWith(CoreConstants.IMPEXP_DATA_DIR.resolve(CoreConstants.IMPORT_LOG_DIR))) {
-			Files.createDirectories(CoreConstants.IMPEXP_DATA_DIR.resolve(CoreConstants.IMPORT_LOG_DIR));
+	public ImportLogger(Path logFile, Path importFile, DatabaseConnection connection) throws IOException {
+		Path defaultDir = CoreConstants.IMPEXP_DATA_DIR.resolve(CoreConstants.IMPORT_LOG_DIR);
+		if (logFile.toAbsolutePath().normalize().startsWith(defaultDir)) {
+			Files.createDirectories(defaultDir);
 		}
 
 		if (Files.exists(logFile) && Files.isDirectory(logFile)) {
@@ -63,10 +64,10 @@ public class ImportLogger {
 		return logFile;
 	}
 
-	private void writeHeader(Path fileName, DBConnection connection) throws IOException {
+	private void writeHeader(Path fileName, DatabaseConnection connection) throws IOException {
 		writer.write('#' + getClass().getPackage().getImplementationTitle() +
 				", version \"" + getClass().getPackage().getImplementationVersion() + "\"");
-		writer.newLine();		
+		writer.newLine();
 		writer.write("#Imported top-level features from file: ");
 		writer.write(fileName.toAbsolutePath().toString());
 		writer.newLine();
@@ -92,9 +93,7 @@ public class ImportLogger {
 	}
 
 	public String getDefaultLogFileName() {
-		return "imported_features-" +
-				date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss-SSS")) +
-				".log";
+		return "imported-features-" + date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss-SSS")) + ".log";
 	}
 
 	public void close(boolean success) throws IOException {

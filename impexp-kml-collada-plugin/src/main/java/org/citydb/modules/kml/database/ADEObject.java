@@ -2,7 +2,7 @@
  * 3D City Database - The Open Source CityGML Database
  * http://www.3dcitydb.org/
  *
- * Copyright 2013 - 2019
+ * Copyright 2013 - 2020
  * Chair of Geoinformatics
  * Technical University of Munich, Germany
  * https://www.gis.bgu.tum.de/
@@ -28,6 +28,10 @@
 package org.citydb.modules.kml.database;
 
 import net.opengis.kml._2.PlacemarkType;
+import org.citydb.ade.kmlExporter.ADEKmlExportException;
+import org.citydb.ade.kmlExporter.ADEKmlExportExtensionManager;
+import org.citydb.ade.kmlExporter.ADEKmlExportManager;
+import org.citydb.ade.kmlExporter.ADEKmlExporter;
 import org.citydb.config.Config;
 import org.citydb.config.project.kmlExporter.ADEPreference;
 import org.citydb.config.project.kmlExporter.Balloon;
@@ -38,10 +42,6 @@ import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.adapter.BlobExportAdapter;
 import org.citydb.event.EventDispatcher;
 import org.citydb.log.Logger;
-import org.citydb.ade.kmlExporter.ADEKmlExportException;
-import org.citydb.ade.kmlExporter.ADEKmlExportExtensionManager;
-import org.citydb.ade.kmlExporter.ADEKmlExportManager;
-import org.citydb.ade.kmlExporter.ADEKmlExporter;
 import org.citydb.modules.kml.util.BalloonTemplateHandler;
 import org.citydb.modules.kml.util.ElevationServiceHandler;
 import org.citydb.query.Query;
@@ -125,7 +125,7 @@ public class ADEObject extends KmlGenericObject{
 			ADEKmlExportManager adeKmlExportManager = kmlExporterManager.getADEKmlExportManager(adeObjectClassId);
 			ADEKmlExporter adeKmlExporter = adeKmlExportManager.getKmlExporter(adeObjectClassId);
 
-			int lodToExportFrom = config.getProject().getKmlExporter().getLodToExportFrom();
+			int lodToExportFrom = config.getKmlExportConfig().getLodToExportFrom();
 			currentLod = lodToExportFrom == 5 ? 4: lodToExportFrom;
 			int minLod = lodToExportFrom == 5 ? 0: lodToExportFrom;
 

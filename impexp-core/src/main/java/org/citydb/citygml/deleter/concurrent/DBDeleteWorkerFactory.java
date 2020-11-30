@@ -62,7 +62,7 @@ public class DBDeleteWorkerFactory implements WorkerFactory<DBSplittingResult>{
 			// try and change workspace the connections if needed
 			AbstractDatabaseAdapter databaseAdapter = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter();
 			if (databaseAdapter.hasVersioningSupport())
-				databaseAdapter.getWorkspaceManager().gotoWorkspace(connection, config.getProject().getDatabase().getWorkspaces().getDeleteWorkspace());
+				databaseAdapter.getWorkspaceManager().gotoWorkspace(connection, config.getDatabaseConfig().getWorkspaces().getDeleteWorkspace());
 
 			dbWorker = new DBDeleteWorker(connection, databaseAdapter, config, eventDispatcher);
 		} catch (SQLException e) {

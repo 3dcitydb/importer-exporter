@@ -33,12 +33,14 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-@XmlType(name="CityGMLOptionsType", propOrder={
+@XmlType(name = "CityGMLOptionsType", propOrder = {
+        "fileEncoding",
         "writeProductHeader",
         "gmlEnvelope",
         "namespaces"
 })
 public class CityGMLOptions {
+    private String fileEncoding;
     private Boolean writeProductHeader;
     private GMLEnvelope gmlEnvelope;
     @XmlJavaTypeAdapter(NamespaceAdapter.class)
@@ -46,6 +48,14 @@ public class CityGMLOptions {
 
     public CityGMLOptions() {
         gmlEnvelope = new GMLEnvelope();
+    }
+
+    public String getFileEncoding() {
+        return fileEncoding != null ? fileEncoding : "UTF-8";
+    }
+
+    public void setFileEncoding(String fileEncoding) {
+        this.fileEncoding = fileEncoding;
     }
 
     public boolean isWriteProductHeader() {

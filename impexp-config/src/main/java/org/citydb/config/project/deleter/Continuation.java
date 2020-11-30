@@ -33,83 +33,83 @@ import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import java.time.OffsetDateTime;
 
-@XmlType(name="DeleteContinuationType", propOrder={
-		"lineage",
-		"updatingPersonMode",
-		"updatingPerson",
-		"reasonForUpdate"
+@XmlType(name = "DeleteContinuationType", propOrder = {
+        "lineage",
+        "updatingPersonMode",
+        "updatingPerson",
+        "reasonForUpdate"
 })
 public class Continuation {
-	private String lineage;
-	private UpdatingPersonMode updatingPersonMode = UpdatingPersonMode.DATABASE;
-	private String updatingPerson;
-	private String reasonForUpdate;
+    private String lineage;
+    private UpdatingPersonMode updatingPersonMode = UpdatingPersonMode.DATABASE;
+    private String updatingPerson;
+    private String reasonForUpdate;
 
-	@XmlTransient
-	OffsetDateTime terminationDate;
+    @XmlTransient
+    OffsetDateTime terminationDate;
 
-	public boolean isSetLineage() {
-		return lineage != null;
-	}
+    public boolean isSetLineage() {
+        return lineage != null;
+    }
 
-	public String getLineage() {
-		return lineage;
-	}
+    public String getLineage() {
+        return lineage;
+    }
 
-	public void setLineage(String lineage) {
-		this.lineage = lineage;
-	}
+    public void setLineage(String lineage) {
+        this.lineage = lineage;
+    }
 
-	public boolean isUpdatingPersonModeDatabase() {
-		return updatingPersonMode == UpdatingPersonMode.DATABASE;
-	}
-	
-	public boolean isUpdatingPersonModeUser() {
-		return updatingPersonMode == UpdatingPersonMode.USER;
-	}
-	
-	public UpdatingPersonMode getUpdatingPersonMode() {
-		return updatingPersonMode;
-	}
+    public boolean isUpdatingPersonModeDatabase() {
+        return updatingPersonMode == UpdatingPersonMode.DATABASE;
+    }
 
-	public void setUpdatingPersonMode(UpdatingPersonMode updatingPersonMode) {
-		this.updatingPersonMode = updatingPersonMode;
-	}
+    public boolean isUpdatingPersonModeUser() {
+        return updatingPersonMode == UpdatingPersonMode.USER;
+    }
 
-	public boolean isSetUpdatingPerson() {
-		return updatingPerson != null;
-	}
+    public UpdatingPersonMode getUpdatingPersonMode() {
+        return updatingPersonMode;
+    }
 
-	public String getUpdatingPerson() {
-		return updatingPerson;
-	}
+    public void setUpdatingPersonMode(UpdatingPersonMode updatingPersonMode) {
+        this.updatingPersonMode = updatingPersonMode;
+    }
 
-	public void setUpdatingPerson(String updatingPerson) {
-		this.updatingPerson = updatingPerson;
-	}
+    public boolean isSetUpdatingPerson() {
+        return updatingPerson != null;
+    }
 
-	public boolean isSetReasonForUpdate() {
-		return reasonForUpdate != null;
-	}
+    public String getUpdatingPerson() {
+        return updatingPerson;
+    }
 
-	public String getReasonForUpdate() {
-		return reasonForUpdate;
-	}
+    public void setUpdatingPerson(String updatingPerson) {
+        this.updatingPerson = updatingPerson;
+    }
 
-	public void setReasonForUpdate(String reasonForUpdate) {
-		this.reasonForUpdate = reasonForUpdate;
-	}
+    public boolean isSetReasonForUpdate() {
+        return reasonForUpdate != null;
+    }
 
-	public boolean isSetTerminationDate() {
-		return terminationDate != null;
-	}
+    public String getReasonForUpdate() {
+        return reasonForUpdate;
+    }
 
-	public OffsetDateTime getTerminationDate() {
-		return terminationDate;
-	}
+    public void setReasonForUpdate(String reasonForUpdate) {
+        this.reasonForUpdate = reasonForUpdate;
+    }
 
-	public void setTerminationDate(OffsetDateTime terminationDate) {
-		this.terminationDate = terminationDate;
-	}
-  
+    public boolean isSetTerminationDate() {
+        return terminationDate != null;
+    }
+
+    public OffsetDateTime getTerminationDate() {
+        return terminationDate;
+    }
+
+    public void setTerminationDate(OffsetDateTime terminationDate) {
+        this.terminationDate = terminationDate;
+    }
+
 }

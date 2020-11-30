@@ -30,25 +30,22 @@ package org.citydb.config.project.importer;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="ImportXALType", propOrder={
-		"importXAL"
+@XmlType(name = "ImportXALType", propOrder = {
+        "importXAL"
 })
 public class ImportAddress {
-	@XmlElement(defaultValue="true")
-	private Boolean importXAL = true;
-	
-	public boolean isSetImportXAL() {
-		if (importXAL != null)
-			return importXAL.booleanValue();
+    @XmlElement(defaultValue = "true")
+    private Boolean importXAL = true;
 
-		return false;
-	}
+    public boolean isSetImportXAL() {
+        return importXAL != null? importXAL : false;
+    }
 
-	public Boolean getImportXAL() {
-		return importXAL;
-	}
+    public Boolean getImportXAL() {
+        return importXAL;
+    }
 
-	public void setImportXAL(Boolean importXAL) {
-		this.importXAL = importXAL;
-	}
+    public void setImportXAL(Boolean importXAL) {
+        this.importXAL = importXAL;
+    }
 }

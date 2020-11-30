@@ -61,7 +61,7 @@ public class DBTexImage implements DBImporter {
 		this.importer = importer;
 
 		String schema = importer.getDatabaseAdapter().getConnectionDetails().getSchema();
-		importTextureImage = config.getProject().getImporter().getAppearances().isSetImportTextureFiles();
+		importTextureImage = config.getImportConfig().getAppearances().isSetImportTextureFiles();
 		externalFileChecker = importer.getExternalFileChecker();
 
 		try {

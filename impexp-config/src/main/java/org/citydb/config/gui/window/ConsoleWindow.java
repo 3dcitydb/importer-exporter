@@ -32,44 +32,44 @@ import org.citydb.config.gui.style.ConsoleStyle;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="ConsoleWindowType", propOrder={
-		"size",
-		"style"
+@XmlType(name = "ConsoleWindowType", propOrder = {
+        "size",
+        "style"
 })
 public class ConsoleWindow {
-	@XmlAttribute(required=true)
-	private boolean isDetached = false;
-	private WindowSize size;
-	private ConsoleStyle style;
+    @XmlAttribute(required = true)
+    private boolean isDetached = false;
+    private WindowSize size;
+    private ConsoleStyle style;
 
-	public ConsoleWindow() {
-		size = new WindowSize();
-		style = new ConsoleStyle();
-	}
+    public ConsoleWindow() {
+        size = new WindowSize();
+        style = new ConsoleStyle();
+    }
 
-	public boolean isDetached() {
-		return isDetached;
-	}
+    public boolean isDetached() {
+        return isDetached;
+    }
 
-	public void setDetached(boolean isDetached) {
-		this.isDetached = isDetached;
-	}
+    public void setDetached(boolean isDetached) {
+        this.isDetached = isDetached;
+    }
 
-	public WindowSize getSize() {
-		return size;
-	}
+    public WindowSize getSize() {
+        return size;
+    }
 
-	public void setSize(WindowSize size) {
-		if (size != null)
-			this.size = size;
-	}
+    public void setSize(WindowSize size) {
+        if (size != null)
+            this.size = size;
+    }
 
-	public ConsoleStyle getStyle() {
-		return style;
-	}
+    public ConsoleStyle getStyle() {
+        return style;
+    }
 
-	public void setStyle(ConsoleStyle style) {
-		if (style != null)
-			this.style = style;
-	}
+    public void setStyle(ConsoleStyle style) {
+        if (style != null)
+            this.style = style;
+    }
 }

@@ -2,7 +2,7 @@
  * 3D City Database - The Open Source CityGML Database
  * http://www.3dcitydb.org/
  *
- * Copyright 2013 - 2019
+ * Copyright 2013 - 2020
  * Chair of Geoinformatics
  * Technical University of Munich, Germany
  * https://www.gis.bgu.tum.de/
@@ -55,15 +55,17 @@ import org.citydb.concurrent.PoolSizeAdaptationStrategy;
 import org.citydb.concurrent.SingleWorkerPool;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
+import org.citydb.config.exception.ErrorCode;
 import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.i18n.Language;
-import org.citydb.config.project.database.Database;
+import org.citydb.config.project.database.DatabaseConfig;
 import org.citydb.config.project.database.Workspace;
 import org.citydb.config.project.kmlExporter.ADEPreference;
 import org.citydb.config.project.kmlExporter.AltitudeOffsetMode;
 import org.citydb.config.project.kmlExporter.Balloon;
 import org.citydb.config.project.kmlExporter.BalloonContentMode;
 import org.citydb.config.project.kmlExporter.DisplayForm;
+import org.citydb.config.project.kmlExporter.KmlExportConfig;
 import org.citydb.config.project.kmlExporter.KmlTilingOptions;
 import org.citydb.config.project.kmlExporter.PointAndCurve;
 import org.citydb.config.project.kmlExporter.PointDisplayMode;
@@ -110,6 +112,7 @@ import org.citydb.query.filter.selection.operator.logical.LogicalOperationFactor
 import org.citydb.query.filter.tiling.Tile;
 import org.citydb.query.filter.tiling.Tiling;
 import org.citydb.query.filter.type.FeatureTypeFilter;
+import org.citydb.registry.ObjectRegistry;
 import org.citydb.util.ClientConstants;
 import org.citydb.util.Util;
 import org.citydb.writer.XMLWriterWorkerFactory;
@@ -151,106 +154,114 @@ import java.util.zip.ZipOutputStream;
 
 public class KmlExporter implements EventHandler {
 	private final Logger log = Logger.getInstance();
-
-	private final JAXBContext jaxbKmlContext;
-	private final JAXBContext jaxbColladaContext;
 	private final AbstractDatabaseAdapter databaseAdapter;
 	private final SchemaMapping schemaMapping;
 	private final Config config;
 	private final EventDispatcher eventDispatcher;
 
-	private ObjectFactory kmlFactory; 
+	private final AtomicBoolean isInterrupted = new AtomicBoolean(false);
+	private final ObjectFactory kmlFactory;
+	private final Map<Integer, Long> objectCounter = new HashMap<>();
+	private final Map<Integer, Long> totalObjectCounter = new HashMap<>();
+
+	private JAXBContext jaxbKmlContext;
 	private WorkerPool<KmlSplittingResult> kmlWorkerPool;
 	private SingleWorkerPool<SAXEventBuffer> writerPool;
 	private KmlSplitter kmlSplitter;
 
-	private volatile boolean shouldRun = true;
-	private AtomicBoolean isInterrupted = new AtomicBoolean(false);
-
 	private final String ENCODING = "UTF-8";
 	private final Charset CHARSET = Charset.forName(ENCODING);
-	private final String TEMP_FOLDER = "__temp";
 	private File lastTempFolder = null;
-
-	private Map<Integer, Long> objectCounter = new HashMap<>();
-	private Map<Integer, Long> totalObjectCounter = new HashMap<>();
 	private long geometryCounter;
 
-	public KmlExporter (JAXBContext jaxbKmlContext,
-			JAXBContext jaxbColladaContext,
-			SchemaMapping schemaMapping,
-			Config config,
-			EventDispatcher eventDispatcher) {
-		this.jaxbKmlContext = jaxbKmlContext;
-		this.jaxbColladaContext = jaxbColladaContext;
-		this.schemaMapping = schemaMapping;
-		this.config = config;
-		this.eventDispatcher = eventDispatcher;
+	private volatile boolean shouldRun = true;
+	private KmlExportException exception;
 
+	public KmlExporter() {
+		schemaMapping = ObjectRegistry.getInstance().getSchemaMapping();
+		config = ObjectRegistry.getInstance().getConfig();
+		eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
 		databaseAdapter = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter();
 		kmlFactory = new ObjectFactory();
 	}
 
-	public void cleanup() {
-		eventDispatcher.removeEventHandler(this);
-	}
+	public boolean doExport(Path outputFile) throws KmlExportException {
+		if (outputFile == null || outputFile.getFileName() == null) {
+			throw new KmlExportException("The output file '" + outputFile + "' is invalid.");
+		}
 
-	public boolean doProcess() throws KmlExportException {
-		// adding listener
 		eventDispatcher.addEventHandler(EventType.OBJECT_COUNTER, this);
 		eventDispatcher.addEventHandler(EventType.GEOMETRY_COUNTER, this);
 		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
 
+		try {
+			return process(outputFile);
+		} finally {
+			eventDispatcher.removeEventHandler(this);
+		}
+	}
+
+	private boolean process(Path outputFile) throws KmlExportException {
+		// get JAXB contexts for KML and COLLADA
+		JAXBContext jaxbColladaContext;
+		try {
+			log.debug("Initializing KML/COLLADA context.");
+			jaxbKmlContext = getKmlContext();
+			jaxbColladaContext = getColladaContext();
+		} catch (JAXBException e) {
+			throw new KmlExportException("Failed to initialize KML/COLLADA context.", e);
+		}
+
 		// checking workspace
-		Workspace workspace = config.getProject().getDatabase().getWorkspaces().getKmlExportWorkspace();
-		if (shouldRun && databaseAdapter.hasVersioningSupport() && 
-				!databaseAdapter.getWorkspaceManager().equalsDefaultWorkspaceName(workspace.getName()) &&
-				!databaseAdapter.getWorkspaceManager().existsWorkspace(workspace, true))
-			return false;
+		Workspace workspace = config.getDatabaseConfig().getWorkspaces().getKmlExportWorkspace();
+		if (shouldRun && databaseAdapter.hasVersioningSupport()
+				&& !databaseAdapter.getWorkspaceManager().equalsDefaultWorkspaceName(workspace.getName())) {
+			try {
+				log.info("Switching to database workspace " + workspace + ".");
+				databaseAdapter.getWorkspaceManager().checkWorkspace(workspace);
+			} catch (SQLException e) {
+				throw new KmlExportException("Failed to switch to database workspace.", e);
+			}
+		}
 
 		// check API key when using the elevation API
-		if (config.getProject().getKmlExporter().getAltitudeOffsetMode() == AltitudeOffsetMode.GENERIC_ATTRIBUTE
-			&& config.getProject().getKmlExporter().isCallGElevationService()
-			&& !config.getProject().getGlobal().getApiKeys().isSetGoogleElevation()) {
-			log.error("The Google Elevation API cannot be used due to a missing API key.");
-			log.error("Please enter an API key or change the export preferences.");
-			return false;
+		if (config.getKmlExportConfig().getAltitudeOffsetMode() == AltitudeOffsetMode.GENERIC_ATTRIBUTE
+				&& config.getKmlExportConfig().isCallGElevationService()
+				&& !config.getGlobalConfig().getApiKeys().isSetGoogleElevation()) {
+			throw new KmlExportException(ErrorCode.MISSING_GOOGLE_API_KEY, "The Google Elevation API cannot be used due to a missing API key.");
 		}
 
 		// check whether spatial indexes are enabled
 		log.info("Checking for spatial indexes on geometry columns of involved tables...");
 		try {
-			if (!databaseAdapter.getUtil().isIndexEnabled("CITYOBJECT", "ENVELOPE") ||
-					!databaseAdapter.getUtil().isIndexEnabled("SURFACE_GEOMETRY", "GEOMETRY")) {
-				log.error("Spatial indexes are not activated.");
-				log.error("Please use the database tab to activate the spatial indexes.");
-				return false;
+			if (!databaseAdapter.getUtil().isIndexEnabled("CITYOBJECT", "ENVELOPE")
+					|| !databaseAdapter.getUtil().isIndexEnabled("SURFACE_GEOMETRY", "GEOMETRY")) {
+				throw new KmlExportException(ErrorCode.SPATIAL_INDEXES_NOT_ACTIVATED, "Spatial indexes are not activated.");
 			}
 		} catch (SQLException e) {
 			throw new KmlExportException("Failed to retrieve status of spatial indexes.", e);
 		}
 
-		// check whether the selected theme existed in the database,just for Building Class...
-		String selectedTheme = config.getProject().getKmlExporter().getAppearanceTheme();
-		if (!selectedTheme.equals(org.citydb.config.project.kmlExporter.KmlExporter.THEME_NONE)) {
+		// check whether the selected theme existed in the database, just for Building Class...
+		String selectedTheme = config.getKmlExportConfig().getAppearanceTheme();
+		if (!selectedTheme.equals(KmlExportConfig.THEME_NONE)) {
 			try {
 				// displayForms Could be e.g. Footprint, Extruded, Geometry and COLLADA
-				for (DisplayForm displayForm : config.getProject().getKmlExporter().getBuildingDisplayForms()) {
+				for (DisplayForm displayForm : config.getKmlExportConfig().getBuildingDisplayForms()) {
 					if (displayForm.getForm() == DisplayForm.COLLADA && displayForm.isActive()) {
 						if (!databaseAdapter.getUtil().getAppearanceThemeList(workspace).contains(selectedTheme)) {
-							log.error("Database does not contain appearance theme \"" + selectedTheme + "\"");
-							return false;
+							throw new KmlExportException("The database does not contain the appearance theme '" + selectedTheme + "'");
 						}
 					}
 				}
 			} catch (SQLException e) {
-				throw new KmlExportException("Generic database error.", e);
+				throw new KmlExportException("Failed to check the appearance theme.", e);
 			}
 		}
 
 		// check collada2gltf tool
-		if (config.getProject().getKmlExporter().isCreateGltfModel()) {
-			Path collada2gltf = Paths.get(config.getProject().getKmlExporter().getPathOfGltfConverter());
+		if (config.getKmlExportConfig().isCreateGltfModel()) {
+			Path collada2gltf = Paths.get(config.getKmlExportConfig().getPathOfGltfConverter());
 			if (!collada2gltf.isAbsolute())
 				collada2gltf = ClientConstants.IMPEXP_HOME.resolve(collada2gltf);
 
@@ -260,17 +271,23 @@ public class KmlExporter implements EventHandler {
 				throw new KmlExportException("Failed to execute the COLLADA2glTF tool at " + collada2gltf + ".");
 		}
 
+		// check whether we have to deactivate KMZ
+		if (config.getKmlExportConfig().isCreateGltfModel() && config.getKmlExportConfig().isExportAsKmz()) {
+			log.warn("glTF export cannot be used with KMZ compression. Deactivating KMZ.");
+			config.getKmlExportConfig().setExportAsKmz(false);
+		}
+
 		// build query from filter settings
-		Query query = null;
+		Query query;
 		try {
 			ConfigQueryBuilder queryBuilder = new ConfigQueryBuilder(schemaMapping, databaseAdapter);
-			query = queryBuilder.buildQuery(config.getProject().getKmlExporter().getQuery(), config.getProject().getNamespaceFilter());
+			query = queryBuilder.buildQuery(config.getKmlExportConfig().getQuery(), config.getNamespaceFilter());
 		} catch (QueryBuildException e) {
 			throw new KmlExportException("Failed to build the export filter expression.", e);
 		}
 
 		// check whether CityGML features can be exported from LoD 0
-		if (config.getProject().getKmlExporter().getLodToExportFrom() == 0) {
+		if (config.getKmlExportConfig().getLodToExportFrom() == 0) {
 			FeatureTypeFilter featureTypeFilter = query.getFeatureTypeFilter();
 			for (FeatureType featureType : featureTypeFilter.getFeatureTypes()) {
 				String namespace = featureType.getSchema().getNamespace(CityGMLVersion.v2_0_0).getURI();
@@ -297,12 +314,12 @@ public class KmlExporter implements EventHandler {
 		if (useTiling) {
 			try {
 				// transform tiling extent to WGS84
-				tiling.transformExtent(Database.PREDEFINED_SRS.get(Database.PredefinedSrsName.WGS84_2D), databaseAdapter);
+				tiling.transformExtent(DatabaseConfig.PREDEFINED_SRS.get(DatabaseConfig.PredefinedSrsName.WGS84_2D), databaseAdapter);
 				tilingOptions = tiling.getTilingOptions() instanceof KmlTilingOptions ? (KmlTilingOptions)tiling.getTilingOptions() : new KmlTilingOptions();
 				predicate = query.isSetSelection() ? query.getSelection().getPredicate() : null;
 
 				// calculate and display number of tiles to be exported
-				int displayFormats = config.getProject().getKmlExporter().getActiveDisplayFormsAmount(config.getProject().getKmlExporter().getBuildingDisplayForms());
+				int displayFormats = config.getKmlExportConfig().getActiveDisplayFormsAmount(config.getKmlExportConfig().getBuildingDisplayForms());
 				remainingTiles = rows * columns * displayFormats;
 				log.info(remainingTiles + " (" + rows + "x" + columns + "x" + displayFormats + ") tiles will be generated.");	
 			} catch (FilterException e) {
@@ -338,8 +355,8 @@ public class KmlExporter implements EventHandler {
 		saxWriter.setPrefix("xal", "urn:oasis:names:tc:ciq:xsdschema:xAL:2.0");
 
 		// set export filename and path
-		String path = config.getInternal().getExportFile().toAbsolutePath().normalize().toString();
-		String fileExtension = config.getProject().getKmlExporter().isExportAsKmz() ? ".kmz" : ".kml";
+		String path = outputFile.toAbsolutePath().normalize().toString();
+		String fileExtension = config.getKmlExportConfig().isExportAsKmz() ? ".kmz" : ".kml";
 		String fileName = null;
 
 		if (path.lastIndexOf(File.separator) == -1) {
@@ -363,12 +380,12 @@ public class KmlExporter implements EventHandler {
 		// start writing cityobject JSON file if required
 		FileOutputStream jsonFileWriter = null;
 		boolean jsonHasContent = false;
-		if (config.getProject().getKmlExporter().isWriteJSONFile() && useTiling) {
+		if (config.getKmlExportConfig().isWriteJSONFile() && useTiling) {
 			try {
 				File jsonFile = new File(path + File.separator + fileName + ".json");
 				jsonFileWriter = new FileOutputStream(jsonFile);
-				if (config.getProject().getKmlExporter().isWriteJSONPFile())
-					jsonFileWriter.write((config.getProject().getKmlExporter().getCallbackNameJSONP() + "({\n").getBytes(CHARSET));
+				if (config.getKmlExportConfig().isWriteJSONPFile())
+					jsonFileWriter.write((config.getKmlExportConfig().getCallbackNameJSONP() + "({\n").getBytes(CHARSET));
 				else
 					jsonFileWriter.write("{\n".getBytes(CHARSET));
 			} catch (IOException e) {
@@ -379,8 +396,8 @@ public class KmlExporter implements EventHandler {
 		long start = System.currentTimeMillis();
 
 		// iterate over tiles
-		for (int i = 0; shouldRun && i < rows; i++) {
-			for (int j = 0; shouldRun && j < columns; j++) {
+		for (int row = 0; shouldRun && row < rows; row++) {
+			for (int column = 0; shouldRun && column < columns; column++) {
 
 				// track exported objects
 				ExportTracker tracker = new ExportTracker();
@@ -389,7 +406,7 @@ public class KmlExporter implements EventHandler {
 				Tile tile = null;
 				if (useTiling) {
 					try {
-						tile = tiling.getTileAt(i, j);
+						tile = tiling.getTileAt(row, column);
 						tiling.setActiveTile(tile);
 
 						Predicate bboxFilter = tile.getFilterPredicate(databaseAdapter);
@@ -399,12 +416,12 @@ public class KmlExporter implements EventHandler {
 							query.setSelection(new SelectionFilter(bboxFilter));
 					} catch (FilterException e) {
 						if (jsonFileWriter != null) try { jsonFileWriter.close(); } catch (IOException ioe) { }
-						throw new KmlExportException("Failed to get tile at [" + i + "," + j + "].", e);
+						throw new KmlExportException("Failed to get tile at [" + row + "," + column + "].", e);
 					}
 				}
 
 				// iterate over display forms
-				for (DisplayForm displayForm : config.getProject().getKmlExporter().getBuildingDisplayForms()) {
+				for (DisplayForm displayForm : config.getKmlExportConfig().getBuildingDisplayForms()) {
 					if (!displayForm.isActive()) 
 						continue;
 
@@ -418,11 +435,11 @@ public class KmlExporter implements EventHandler {
 						if (useTiling) {
 							File tilesRootDirectory = new File(path, "Tiles");
 							tilesRootDirectory.mkdir();
-							File rowTilesDirectory = new File(tilesRootDirectory.getPath(),  String.valueOf(i));
+							File rowTilesDirectory = new File(tilesRootDirectory.getPath(),  String.valueOf(row));
 							rowTilesDirectory.mkdir();
-							File columnTilesDirectory = new File(rowTilesDirectory.getPath(),  String.valueOf(j));
+							File columnTilesDirectory = new File(rowTilesDirectory.getPath(),  String.valueOf(column));
 							columnTilesDirectory.mkdir();
-							file = new File(columnTilesDirectory.getPath() + File.separator + fileName + "_Tile_" + i + "_" + j + "_" + displayForm.getName() + fileExtension);
+							file = new File(columnTilesDirectory.getPath() + File.separator + fileName + "_Tile_" + row + "_" + column + "_" + displayForm.getName() + fileExtension);
 							currentWorkingDirectoryPath = columnTilesDirectory.getPath();
 						} else {
 							file = new File(path + File.separator + fileName + "_" + displayForm.getName() + fileExtension);
@@ -437,7 +454,7 @@ public class KmlExporter implements EventHandler {
 						// open file for writing
 						try {
 							OutputStreamWriter fileWriter = null;
-							if (config.getProject().getKmlExporter().isExportAsKmz()) {
+							if (config.getKmlExportConfig().isExportAsKmz()) {
 								zipOut = new ZipOutputStream(new FileOutputStream(file));
 								ZipEntry zipEntry = new ZipEntry("doc.kml");
 								zipOut.putNextEntry(zipEntry);
@@ -461,10 +478,10 @@ public class KmlExporter implements EventHandler {
 
 						kmlWorkerPool = new WorkerPool<KmlSplittingResult>(
 								"db_exporter_pool",
-								config.getProject().getKmlExporter().getResources().getThreadPool().getDefaultPool().getMinThreads(),
-								config.getProject().getKmlExporter().getResources().getThreadPool().getDefaultPool().getMaxThreads(),
+								config.getKmlExportConfig().getResources().getThreadPool().getMinThreads(),
+								config.getKmlExportConfig().getResources().getThreadPool().getMaxThreads(),
 								PoolSizeAdaptationStrategy.AGGRESSIVE,
-								new KmlExportWorkerFactory(
+								new KmlExportWorkerFactory(outputFile,
 										jaxbKmlContext,
 										jaxbColladaContext,
 										writerPool,
@@ -496,7 +513,7 @@ public class KmlExporter implements EventHandler {
 
 						DocumentType document = kmlFactory.createDocumentType();
 						if (useTiling)
-							document.setName(fileName + "_Tile_" + i + "_" + j + "_" + displayForm.getName());
+							document.setName(fileName + "_Tile_" + row + "_" + column + "_" + displayForm.getName());
 						else 
 							document.setName(fileName + "_" + displayForm.getName());
 
@@ -510,7 +527,7 @@ public class KmlExporter implements EventHandler {
 							fragmentWriter.setWriteMode(WriteMode.HEAD);
 							marshaller.marshal(kml, fragmentWriter);
 
-							if (useTiling && config.getProject().getKmlExporter().isShowTileBorders())
+							if (useTiling && config.getKmlExportConfig().isShowTileBorders())
 								addBorder(tile.getExtent(), null, saxWriter);
 
 						} catch (JAXBException e) {
@@ -543,7 +560,7 @@ public class KmlExporter implements EventHandler {
 						try {
 							// add styles
 							if (!objectCounter.isEmpty() &&
-									(!config.getProject().getKmlExporter().isOneFilePerObject() || !useTiling)) {
+									(!config.getKmlExportConfig().isOneFilePerObject() || !useTiling)) {
 								for (int objectClassId : objectCounter.keySet()) {
 									if (objectCounter.get(objectClassId) > 0)
 										addStyle(displayForm, objectClassId, saxWriter);
@@ -564,15 +581,16 @@ public class KmlExporter implements EventHandler {
 						try {
 							if (!objectCounter.isEmpty()) {
 								saxWriter.flush();
-								if (config.getProject().getKmlExporter().isExportAsKmz()) {
+								if (config.getKmlExportConfig().isExportAsKmz()) {
 									zipOut.closeEntry();
 
 									List<File> filesToZip = new ArrayList<File>();
+									String TEMP_FOLDER = "__temp";
 									File tempFolder = new File(currentWorkingDirectoryPath, TEMP_FOLDER);
 									lastTempFolder = tempFolder;
 									int indexOfZipFilePath = tempFolder.getCanonicalPath().length() + 1;
 
-									if (tempFolder.exists()) { // !config.getProject().getKmlExporter().isOneFilePerObject()
+									if (tempFolder.exists()) { // !config.getKmlExporter().isOneFilePerObject()
 										log.info("Zipping to kmz archive from temporary folder...");
 										getAllFiles(tempFolder, filesToZip);
 										for (File fileToZip : filesToZip) {
@@ -611,8 +629,8 @@ public class KmlExporter implements EventHandler {
 						}
 
 						// delete empty tile file if requested
-						if (useTiling && objectCounter.isEmpty() && !config.getProject().getKmlExporter().isExportEmptyTiles()) {
-							log.debug("Tile_" + i + "_" + j + " is empty. Deleting file " + file.getName() + ".");
+						if (useTiling && objectCounter.isEmpty() && !config.getKmlExportConfig().isExportEmptyTiles()) {
+							log.debug("Tile_" + row + "_" + column + " is empty. Deleting file " + file.getName() + ".");
 							file.delete();
 						}
 
@@ -628,7 +646,7 @@ public class KmlExporter implements EventHandler {
 						try {
 							eventDispatcher.flushEvents();
 						} catch (InterruptedException e) {
-							e.printStackTrace();
+							//
 						}
 					}
 				}
@@ -691,7 +709,7 @@ public class KmlExporter implements EventHandler {
 		// close cityobject JSON file
 		if (jsonFileWriter != null) {
 			try {
-				if (config.getProject().getKmlExporter().isWriteJSONPFile())
+				if (config.getKmlExportConfig().isWriteJSONPFile())
 					jsonFileWriter.write("\n});\n".getBytes(CHARSET));
 				else
 					jsonFileWriter.write("\n}\n".getBytes(CHARSET));
@@ -714,8 +732,11 @@ public class KmlExporter implements EventHandler {
 		if (lastTempFolder != null && lastTempFolder.exists()) 
 			deleteFolder(lastTempFolder); // just in case
 
-		if (shouldRun)
+		if (shouldRun) {
 			log.info("Total export time: " + Util.formatElapsedTime(System.currentTimeMillis() - start) + ".");
+		} else if (exception != null) {
+			throw exception;
+		}
 
 		return shouldRun;
 	}
@@ -761,33 +782,33 @@ public class KmlExporter implements EventHandler {
 		fragmentWriter.setWriteMode(WriteMode.HEAD);
 		marshaller.marshal(kml, fragmentWriter);				
 
-		if (config.getProject().getKmlExporter().isOneFilePerObject()) {
+		if (config.getKmlExportConfig().isOneFilePerObject()) {
 			for (FeatureType featureType : query.getFeatureTypeFilter().getFeatureTypes()) {
 				int objectClassId = featureType.getObjectClassId();
 				
 				switch (Util.getCityGMLClass(objectClassId)) {
 				case BUILDING:
-					for (DisplayForm displayForm : config.getProject().getKmlExporter().getBuildingDisplayForms())
+					for (DisplayForm displayForm : config.getKmlExportConfig().getBuildingDisplayForms())
 						addStyle(displayForm, objectClassId, saxWriter);
 					break;
 				case CITY_FURNITURE:
-					for (DisplayForm displayForm : config.getProject().getKmlExporter().getCityFurnitureDisplayForms())
+					for (DisplayForm displayForm : config.getKmlExportConfig().getCityFurnitureDisplayForms())
 						addStyle(displayForm, objectClassId, saxWriter);
 					break;
 				case CITY_OBJECT_GROUP:
-					for (DisplayForm displayForm : config.getProject().getKmlExporter().getCityObjectGroupDisplayForms())
+					for (DisplayForm displayForm : config.getKmlExportConfig().getCityObjectGroupDisplayForms())
 						addStyle(displayForm, objectClassId, saxWriter);
 					break;
 				case GENERIC_CITY_OBJECT:
-					for (DisplayForm displayForm : config.getProject().getKmlExporter().getGenericCityObjectDisplayForms())
+					for (DisplayForm displayForm : config.getKmlExportConfig().getGenericCityObjectDisplayForms())
 						addStyle(displayForm, objectClassId, saxWriter);
 					break;
 				case LAND_USE:
-					for (DisplayForm displayForm : config.getProject().getKmlExporter().getLandUseDisplayForms())
+					for (DisplayForm displayForm : config.getKmlExportConfig().getLandUseDisplayForms())
 						addStyle(displayForm, objectClassId, saxWriter);
 					break;
 				case RELIEF_FEATURE:
-					for (DisplayForm displayForm : config.getProject().getKmlExporter().getReliefDisplayForms())
+					for (DisplayForm displayForm : config.getKmlExportConfig().getReliefDisplayForms())
 						addStyle(displayForm, objectClassId, saxWriter);
 					break;
 				case TRANSPORTATION_COMPLEX:
@@ -795,24 +816,24 @@ public class KmlExporter implements EventHandler {
 				case RAILWAY:
 				case ROAD:
 				case SQUARE:
-					for (DisplayForm displayForm : config.getProject().getKmlExporter().getTransportationDisplayForms())
+					for (DisplayForm displayForm : config.getKmlExportConfig().getTransportationDisplayForms())
 						addStyle(displayForm, objectClassId, saxWriter);
 					break;
 				case SOLITARY_VEGETATION_OBJECT:
 				case PLANT_COVER:
-					for (DisplayForm displayForm : config.getProject().getKmlExporter().getVegetationDisplayForms())
+					for (DisplayForm displayForm : config.getKmlExportConfig().getVegetationDisplayForms())
 						addStyle(displayForm, objectClassId, saxWriter);
 					break;
 				case WATER_BODY:
-					for (DisplayForm displayForm : config.getProject().getKmlExporter().getWaterBodyDisplayForms())
+					for (DisplayForm displayForm : config.getKmlExportConfig().getWaterBodyDisplayForms())
 						addStyle(displayForm, objectClassId, saxWriter);
 					break;
 				case BRIDGE:
-					for (DisplayForm displayForm : config.getProject().getKmlExporter().getBridgeDisplayForms())
+					for (DisplayForm displayForm : config.getKmlExportConfig().getBridgeDisplayForms())
 						addStyle(displayForm, objectClassId, saxWriter);
 					break;
 				case TUNNEL:
-					for (DisplayForm displayForm : config.getProject().getKmlExporter().getTunnelDisplayForms())
+					for (DisplayForm displayForm : config.getKmlExportConfig().getTunnelDisplayForms())
 						addStyle(displayForm, objectClassId, saxWriter);
 					break;
 				default:
@@ -821,7 +842,7 @@ public class KmlExporter implements EventHandler {
 			}
 		}
 
-		if (config.getProject().getKmlExporter().isShowBoundingBox()) {
+		if (config.getKmlExportConfig().isShowBoundingBox()) {
 			StyleType style = kmlFactory.createStyleType();
 			style.setId("frameStyle");
 			LineStyleType frameLineStyleType = kmlFactory.createLineStyleType();
@@ -843,16 +864,16 @@ public class KmlExporter implements EventHandler {
 
 		// tileName should not contain special characters,
 		// since it will be used as filename for all displayForm files
-		tileName = tileName + "_Tile_" + tile.getX() + "_" + tile.getY();
+		tileName = tileName + "_Tile_" + tile.getRow() + "_" + tile.getColumn();
 
 		FolderType folderType = kmlFactory.createFolderType();
 		folderType.setName(tileName);
 
-		for (DisplayForm displayForm : config.getProject().getKmlExporter().getBuildingDisplayForms()) {
+		for (DisplayForm displayForm : config.getKmlExportConfig().getBuildingDisplayForms()) {
 			if (!displayForm.isActive()) 
 				continue;
 
-			String fileExtension = config.getProject().getKmlExporter().isExportAsKmz() ? ".kmz" : ".kml";
+			String fileExtension = config.getKmlExportConfig().isExportAsKmz() ? ".kmz" : ".kml";
 			String tilenameForDisplayForm = tileName + "_" + displayForm.getName() + fileExtension; 
 
 			NetworkLinkType networkLinkType = kmlFactory.createNetworkLinkType();
@@ -875,11 +896,11 @@ public class KmlExporter implements EventHandler {
 			regionType.setLod(lodType);
 
 			LinkType linkType = kmlFactory.createLinkType();
-			linkType.setHref("Tiles/" + tile.getX() + "/" + tile.getY() + "/" + tilenameForDisplayForm);
-			linkType.setViewRefreshMode(ViewRefreshModeEnumType.fromValue(config.getProject().getKmlExporter().getViewRefreshMode()));
+			linkType.setHref("Tiles/" + tile.getRow() + "/" + tile.getColumn() + "/" + tilenameForDisplayForm);
+			linkType.setViewRefreshMode(ViewRefreshModeEnumType.fromValue(config.getKmlExportConfig().getViewRefreshMode()));
 			linkType.setViewFormat("");
 			if (linkType.getViewRefreshMode() == ViewRefreshModeEnumType.ON_STOP)
-				linkType.setViewRefreshTime(config.getProject().getKmlExporter().getViewRefreshTime());
+				linkType.setViewRefreshTime(config.getKmlExportConfig().getViewRefreshTime());
 
 			// confusion between atom:link and kml:Link in ogckml22.xsd
 			networkLinkType.getRest().add(kmlFactory.createLink(linkType));
@@ -907,7 +928,7 @@ public class KmlExporter implements EventHandler {
 	}
 
 	private void writeMasterJsonFileTileReference(String path, String fileName, String fileExtension, Tiling tiling) throws IOException {
-		for (DisplayForm displayForm : config.getProject().getKmlExporter().getBuildingDisplayForms()) {
+		for (DisplayForm displayForm : config.getKmlExportConfig().getBuildingDisplayForms()) {
 			if (displayForm.isActive()) {
 				File jsonFileForMasterFile = new File(path + File.separator + fileName + "_" + displayForm.getName() + "_MasterJSON" + ".json");
 				FileOutputStream jsonFileWriterForMasterFile = new FileOutputStream(jsonFileForMasterFile);
@@ -939,7 +960,7 @@ public class KmlExporter implements EventHandler {
 		case SOLITARY_VEGETATION_OBJECT:
 		case PLANT_COVER:
 			addStyle(currentDisplayForm,
-					config.getProject().getKmlExporter().getVegetationDisplayForms(),
+					config.getKmlExportConfig().getVegetationDisplayForms(),
 					SolitaryVegetationObject.STYLE_BASIS_NAME,
 					saxWriter);
 			break;
@@ -950,27 +971,27 @@ public class KmlExporter implements EventHandler {
 		case ROAD:
 		case SQUARE:
 			addStyle(currentDisplayForm,
-					config.getProject().getKmlExporter().getTransportationDisplayForms(),
+					config.getKmlExportConfig().getTransportationDisplayForms(),
 					Transportation.STYLE_BASIS_NAME,
 					saxWriter);
 			break;
 		case RELIEF_FEATURE:
 			addStyle(currentDisplayForm,
-					config.getProject().getKmlExporter().getReliefDisplayForms(),
+					config.getKmlExportConfig().getReliefDisplayForms(),
 					Relief.STYLE_BASIS_NAME,
 					saxWriter);
 			break;
 
 		case CITY_OBJECT_GROUP:
 			addStyle(new DisplayForm(DisplayForm.FOOTPRINT, -1, -1), // hard-coded for groups
-					config.getProject().getKmlExporter().getCityObjectGroupDisplayForms(),
+					config.getKmlExportConfig().getCityObjectGroupDisplayForms(),
 					CityObjectGroup.STYLE_BASIS_NAME,
 					saxWriter);
 			break;
 
 		case CITY_FURNITURE:
 			addStyle(currentDisplayForm,
-					config.getProject().getKmlExporter().getCityFurnitureDisplayForms(),
+					config.getKmlExportConfig().getCityFurnitureDisplayForms(),
 					CityFurniture.STYLE_BASIS_NAME,
 					saxWriter);
 			break;
@@ -978,39 +999,39 @@ public class KmlExporter implements EventHandler {
 		case GENERIC_CITY_OBJECT:
 			addGenericCityObjectPointAndCurveStyle(saxWriter);
 			addStyle(currentDisplayForm,
-					config.getProject().getKmlExporter().getGenericCityObjectDisplayForms(),
+					config.getKmlExportConfig().getGenericCityObjectDisplayForms(),
 					GenericCityObject.STYLE_BASIS_NAME,
 					saxWriter);
 			break;
 
 		case LAND_USE:
 			addStyle(currentDisplayForm,
-					config.getProject().getKmlExporter().getLandUseDisplayForms(),
+					config.getKmlExportConfig().getLandUseDisplayForms(),
 					LandUse.STYLE_BASIS_NAME,
 					saxWriter);
 			break;
 
 		case WATER_BODY:
 			addStyle(currentDisplayForm,
-					config.getProject().getKmlExporter().getWaterBodyDisplayForms(),
+					config.getKmlExportConfig().getWaterBodyDisplayForms(),
 					WaterBody.STYLE_BASIS_NAME,
 					saxWriter);
 			break;
 		case BRIDGE:
 			addStyle(currentDisplayForm, 
-					config.getProject().getKmlExporter().getBridgeDisplayForms(), 
+					config.getKmlExportConfig().getBridgeDisplayForms(),
 					Bridge.STYLE_BASIS_NAME,
 					saxWriter);
 			break;
 		case TUNNEL:
 			addStyle(currentDisplayForm, 
-					config.getProject().getKmlExporter().getTunnelDisplayForms(), 
+					config.getKmlExportConfig().getTunnelDisplayForms(),
 					Tunnel.STYLE_BASIS_NAME,
 					saxWriter);
 			break;
 		case BUILDING: // must be last, why?
 			addStyle(currentDisplayForm,
-					config.getProject().getKmlExporter().getBuildingDisplayForms(),
+					config.getKmlExportConfig().getBuildingDisplayForms(),
 					Building.STYLE_BASIS_NAME,
 					saxWriter);
 			break;
@@ -1032,7 +1053,7 @@ public class KmlExporter implements EventHandler {
 		BalloonStyleType balloonStyle = new BalloonStyleType();
 		balloonStyle.setText("$[description]");
 
-		PointAndCurve pacSettings = config.getProject().getKmlExporter().getGenericCityObjectPointAndCurve();
+		PointAndCurve pacSettings = config.getKmlExportConfig().getGenericCityObjectPointAndCurve();
 
 		if (pacSettings.getPointDisplayMode() == PointDisplayMode.ICON) {
 			StyleType pointStyleNormal = kmlFactory.createStyleType();
@@ -1620,39 +1641,39 @@ public class KmlExporter implements EventHandler {
 		Balloon[] balloonSettings = null;
 		switch (cityObjectType) {
 		case BUILDING:
-			balloonSettings = new Balloon[]{config.getProject().getKmlExporter().getBuildingBalloon()};
+			balloonSettings = new Balloon[]{config.getKmlExportConfig().getBuildingBalloon()};
 			break;
 		case WATER_BODY:
-			balloonSettings = new Balloon[]{config.getProject().getKmlExporter().getWaterBodyBalloon()};
+			balloonSettings = new Balloon[]{config.getKmlExportConfig().getWaterBodyBalloon()};
 			break;
 		case LAND_USE:
-			balloonSettings = new Balloon[]{config.getProject().getKmlExporter().getLandUseBalloon()};
+			balloonSettings = new Balloon[]{config.getKmlExportConfig().getLandUseBalloon()};
 			break;
 		case SOLITARY_VEGETATION_OBJECT:
-			balloonSettings = new Balloon[]{config.getProject().getKmlExporter().getVegetationBalloon()};
+			balloonSettings = new Balloon[]{config.getKmlExportConfig().getVegetationBalloon()};
 			break;
 		case TRANSPORTATION_COMPLEX:
-			balloonSettings = new Balloon[]{config.getProject().getKmlExporter().getTransportationBalloon()};
+			balloonSettings = new Balloon[]{config.getKmlExportConfig().getTransportationBalloon()};
 			break;
 		case RELIEF_FEATURE:
-			balloonSettings = new Balloon[]{config.getProject().getKmlExporter().getReliefBalloon()};
+			balloonSettings = new Balloon[]{config.getKmlExportConfig().getReliefBalloon()};
 			break;
 		case CITY_FURNITURE:
-			balloonSettings = new Balloon[]{config.getProject().getKmlExporter().getCityFurnitureBalloon()};
+			balloonSettings = new Balloon[]{config.getKmlExportConfig().getCityFurnitureBalloon()};
 			break;
 		case GENERIC_CITY_OBJECT:
-			balloonSettings = new Balloon[]{config.getProject().getKmlExporter().getGenericCityObject3DBalloon(),
-					config.getProject().getKmlExporter().getGenericCityObjectPointAndCurve().getPointBalloon(),
-					config.getProject().getKmlExporter().getGenericCityObjectPointAndCurve().getCurveBalloon()};
+			balloonSettings = new Balloon[]{config.getKmlExportConfig().getGenericCityObject3DBalloon(),
+					config.getKmlExportConfig().getGenericCityObjectPointAndCurve().getPointBalloon(),
+					config.getKmlExportConfig().getGenericCityObjectPointAndCurve().getCurveBalloon()};
 			break;
 		case CITY_OBJECT_GROUP:
-			balloonSettings = new Balloon[]{config.getProject().getKmlExporter().getCityObjectGroupBalloon()};
+			balloonSettings = new Balloon[]{config.getKmlExportConfig().getCityObjectGroupBalloon()};
 			break;
 		case BRIDGE:
-			balloonSettings = new Balloon[]{config.getProject().getKmlExporter().getBridgeBalloon()};
+			balloonSettings = new Balloon[]{config.getKmlExportConfig().getBridgeBalloon()};
 			break;
 		case TUNNEL:
-			balloonSettings = new Balloon[]{config.getProject().getKmlExporter().getTunnelBalloon()};
+			balloonSettings = new Balloon[]{config.getKmlExportConfig().getTunnelBalloon()};
 			break;
 		default:
 			return false;
@@ -1708,53 +1729,59 @@ public class KmlExporter implements EventHandler {
 	@Override
 	public void handleEvent(Event e) throws Exception {
 		if (e.getEventType() == EventType.OBJECT_COUNTER) {
-			Map<Integer, Long> counter = ((ObjectCounterEvent)e).getCounter();
-			
+			Map<Integer, Long> counter = ((ObjectCounterEvent) e).getCounter();
 			for (Entry<Integer, Long> entry : counter.entrySet()) {
 				Long tmp = objectCounter.get(entry.getKey());
 				objectCounter.put(entry.getKey(), tmp == null ? entry.getValue() : tmp + entry.getValue());
-				
 				tmp = totalObjectCounter.get(entry.getKey());
 				totalObjectCounter.put(entry.getKey(), tmp == null ? entry.getValue() : tmp + entry.getValue());
 			}
-		}
-		else if (e.getEventType() == EventType.GEOMETRY_COUNTER) {
+		} else if (e.getEventType() == EventType.GEOMETRY_COUNTER) {
 			geometryCounter++;
-		}
-		else if (e.getEventType() == EventType.INTERRUPT) {
+		} else if (e.getEventType() == EventType.INTERRUPT) {
 			if (isInterrupted.compareAndSet(false, true)) {
 				shouldRun = false;
-				InterruptEvent interruptEvent = (InterruptEvent)e;
+				InterruptEvent event = (InterruptEvent) e;
 
-				if (interruptEvent.getCause() != null) {
-					Throwable cause = interruptEvent.getCause();
-
-					if (cause instanceof SQLException) {
-						Iterator<Throwable> iter = ((SQLException)cause).iterator();
-						log.error("A SQL error occurred: " + iter.next().getMessage());
-						while (iter.hasNext())
-							log.error("Cause: " + iter.next().getMessage());
-					} else {
-						log.error("An error occurred: " + cause.getMessage());
-						while ((cause = cause.getCause()) != null)
-							log.error(cause.getClass().getTypeName() + ": " + cause.getMessage());
-					}
+				log.log(event.getLogLevelType(), event.getLogMessage());
+				if (event.getCause() != null) {
+					exception = new KmlExportException("Aborting export due to errors.", event.getCause());
 				}
-
-				String msg = interruptEvent.getLogMessage();
-				if (msg != null)
-					log.log(interruptEvent.getLogLevelType(), msg);
 
 				log.info("Waiting for objects being currently processed to end...");
 
-				if (kmlSplitter != null)
+				if (kmlSplitter != null) {
 					kmlSplitter.shutdown();
+				}
 
-				if (kmlWorkerPool != null)
+				if (kmlWorkerPool != null) {
 					kmlWorkerPool.drainWorkQueue();
+				}
 
-				if (lastTempFolder != null && lastTempFolder.exists()) deleteFolder(lastTempFolder); // just in case
+				if (lastTempFolder != null && lastTempFolder.exists()) {
+					deleteFolder(lastTempFolder); // just in case
+				}
 			}
 		}
+	}
+
+	private JAXBContext getKmlContext() throws JAXBException {
+		JAXBContext kmlContext = (JAXBContext) ObjectRegistry.getInstance().lookup("net.opengis.kml._2.JAXBContext");
+		if (kmlContext == null) {
+			kmlContext = JAXBContext.newInstance("net.opengis.kml._2", getClass().getClassLoader());
+			ObjectRegistry.getInstance().register("net.opengis.kml._2.JAXBContext", kmlContext);
+		}
+
+		return kmlContext;
+	}
+
+	private JAXBContext getColladaContext() throws JAXBException {
+		JAXBContext colladaContext = (JAXBContext) ObjectRegistry.getInstance().lookup("org.collada._2005._11.colladaschema.JAXBContext");
+		if (colladaContext == null) {
+			colladaContext = JAXBContext.newInstance("org.collada._2005._11.colladaschema", getClass().getClassLoader());
+			ObjectRegistry.getInstance().register("org.collada._2005._11.colladaschema.JAXBContext", colladaContext);
+		}
+
+		return colladaContext;
 	}
 }

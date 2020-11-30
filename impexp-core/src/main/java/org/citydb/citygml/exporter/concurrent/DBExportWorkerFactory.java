@@ -32,6 +32,7 @@ import org.citydb.citygml.common.database.uid.UIDCacheManager;
 import org.citydb.citygml.common.database.xlink.DBXlink;
 import org.citydb.citygml.exporter.CityGMLExportException;
 import org.citydb.citygml.exporter.database.content.DBSplittingResult;
+import org.citydb.citygml.exporter.util.InternalConfig;
 import org.citydb.citygml.exporter.writer.FeatureWriter;
 import org.citydb.concurrent.Worker;
 import org.citydb.concurrent.WorkerFactory;
@@ -41,7 +42,6 @@ import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.connection.DatabaseConnectionPool;
 import org.citydb.database.schema.mapping.SchemaMapping;
 import org.citydb.event.EventDispatcher;
-import org.citydb.file.OutputFile;
 import org.citydb.log.Logger;
 import org.citydb.query.Query;
 import org.citygml4j.builder.jaxb.CityGMLBuilder;
@@ -52,7 +52,6 @@ import java.sql.SQLException;
 public class DBExportWorkerFactory implements WorkerFactory<DBSplittingResult> {
 	private final Logger log = Logger.getInstance();
 
-	private final OutputFile outputFile;
 	private final SchemaMapping schemaMapping;
 	private final CityGMLBuilder cityGMLBuilder;
 	private final FeatureWriter featureWriter;
@@ -60,20 +59,20 @@ public class DBExportWorkerFactory implements WorkerFactory<DBSplittingResult> {
 	private final UIDCacheManager uidCacheManager;
 	private final CacheTableManager cacheTableManager;
 	private final Query query;
+	private final InternalConfig internalConfig;
 	private final Config config;
 	private final EventDispatcher eventDispatcher;
 
-	public DBExportWorkerFactory(OutputFile outputFile,
-			SchemaMapping schemaMapping,
+	public DBExportWorkerFactory(SchemaMapping schemaMapping,
 			CityGMLBuilder cityGMLBuilder,
 			FeatureWriter featureWriter,
 			WorkerPool<DBXlink> xlinkExporterPool,
 			UIDCacheManager uidCacheManager,
 			CacheTableManager cacheTableManager,
 			Query query,
+			InternalConfig internalConfig,
 			Config config,
 			EventDispatcher eventDispatcher) {
-		this.outputFile = outputFile;
 		this.schemaMapping = schemaMapping;
 		this.cityGMLBuilder = cityGMLBuilder;
 		this.featureWriter = featureWriter;
@@ -81,6 +80,7 @@ public class DBExportWorkerFactory implements WorkerFactory<DBSplittingResult> {
 		this.uidCacheManager = uidCacheManager;
 		this.cacheTableManager = cacheTableManager;
 		this.query = query;
+		this.internalConfig = internalConfig;
 		this.config = config;
 		this.eventDispatcher = eventDispatcher;
 	}
@@ -98,11 +98,11 @@ public class DBExportWorkerFactory implements WorkerFactory<DBSplittingResult> {
 			if (databaseAdapter.hasVersioningSupport()) {
 				databaseAdapter.getWorkspaceManager().gotoWorkspace(
 						connection,
-						config.getProject().getDatabase().getWorkspaces().getExportWorkspace());
+						config.getDatabaseConfig().getWorkspaces().getExportWorkspace());
 			}
 
-			dbWorker = new DBExportWorker(outputFile, connection, databaseAdapter, schemaMapping, cityGMLBuilder, featureWriter,
-					xlinkExporterPool, uidCacheManager, cacheTableManager, query, config, eventDispatcher);
+			dbWorker = new DBExportWorker(connection, databaseAdapter, schemaMapping, cityGMLBuilder, featureWriter,
+					xlinkExporterPool, uidCacheManager, cacheTableManager, query, internalConfig, config, eventDispatcher);
 		} catch (CityGMLExportException | SQLException e) {
 			log.error("Failed to create export worker.", e);
 		}

@@ -31,17 +31,17 @@ import javax.xml.bind.annotation.XmlEnum;
 import javax.xml.bind.annotation.XmlEnumValue;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="LogFileModeType")
+@XmlType(name = "LogFileModeType")
 @XmlEnum
 public enum LogFileMode {
     @XmlEnumValue("truncate")
     TRUNCATE("truncate"),
     @XmlEnumValue("append")
-	APPEND("append");
+    APPEND("append");
 
-	private final String value;
+    private final String value;
 
-	LogFileMode(String v) {
+    LogFileMode(String v) {
         value = v;
     }
 
@@ -50,7 +50,7 @@ public enum LogFileMode {
     }
 
     public static LogFileMode fromValue(String v) {
-        for (LogFileMode c: LogFileMode.values()) {
+        for (LogFileMode c : LogFileMode.values()) {
             if (c.value.equals(v)) {
                 return c;
             }

@@ -36,35 +36,35 @@ import java.util.Map;
 
 public class ProxyConfigAdapter extends XmlAdapter<ProxyConfigAdapter.ProxyConfigList, Map<ProxyType, ProxyConfig>> {
 
-	public static class ProxyConfigList {
-		@XmlElement(name = "proxy")
-		private List<ProxyConfig> proxies;
-	}
+    public static class ProxyConfigList {
+        @XmlElement(name = "proxy")
+        private List<ProxyConfig> proxies;
+    }
 
-	@Override
-	public Map<ProxyType, ProxyConfig> unmarshal(ProxyConfigList v) throws Exception {
-		Map<ProxyType, ProxyConfig> map = new HashMap<>();
-		
-		if (v != null && v.proxies != null) {
-			for (ProxyConfig proxy : v.proxies)
-				map.put(proxy.getType(), proxy);
-		}
-		
-		for (ProxyType type : ProxyType.values())
-			if (!map.containsKey(type))
-				map.put(type, new ProxyConfig(type));
+    @Override
+    public Map<ProxyType, ProxyConfig> unmarshal(ProxyConfigList v) throws Exception {
+        Map<ProxyType, ProxyConfig> map = new HashMap<>();
 
-		return map;
-	}
+        if (v != null && v.proxies != null) {
+            for (ProxyConfig proxy : v.proxies)
+                map.put(proxy.getType(), proxy);
+        }
 
-	@Override
-	public ProxyConfigList marshal(Map<ProxyType, ProxyConfig> v) throws Exception {
-		ProxyConfigList list = new ProxyConfigList();
+        for (ProxyType type : ProxyType.values())
+            if (!map.containsKey(type))
+                map.put(type, new ProxyConfig(type));
 
-		if (v != null)
-			list.proxies = new ArrayList<>(v.values());
+        return map;
+    }
 
-		return list;
-	}
-	
+    @Override
+    public ProxyConfigList marshal(Map<ProxyType, ProxyConfig> v) throws Exception {
+        ProxyConfigList list = new ProxyConfigList();
+
+        if (v != null)
+            list.proxies = new ArrayList<>(v.values());
+
+        return list;
+    }
+
 }

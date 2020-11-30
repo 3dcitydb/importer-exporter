@@ -27,41 +27,18 @@
  */
 package org.citydb.gui.components;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.GraphicsEnvironment;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.Toolkit;
-
-import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JProgressBar;
-import javax.swing.JWindow;
-import javax.swing.OverlayLayout;
-
 import org.citydb.gui.util.GuiUtil;
+
+import javax.swing.*;
+import java.awt.*;
 
 @SuppressWarnings("serial")
 public class SplashScreen extends JWindow {
-	private JLabel message;
-	private JProgressBar progressBar;
-	private ImageIcon icon;
-	
-	private int step;
+	private final JLabel message;
+	private final JProgressBar progressBar;
 
-	public SplashScreen(int numberOfSteps, int messageX, int messageY, Color messageColor) {
-		icon = new ImageIcon(getToolkit().getImage(this.getClass().getResource("/org/citydb/gui/images/splash/splash.png")));
-		
-		init(numberOfSteps, messageX, messageY, messageColor);
-	}
-
-	private void init(int numberOfSteps, int messageX, int messageY, Color messageColor) {
+	public SplashScreen(int messageX, int messageY, Color messageColor) {
+		ImageIcon icon = new ImageIcon(getToolkit().getImage(this.getClass().getResource("/org/citydb/gui/images/splash/splash.png")));
 		JPanel content = new JPanel() {
 			public boolean isOptimizedDrawingEnabled() {
 				return false;
@@ -82,7 +59,6 @@ public class SplashScreen extends JWindow {
 		progressBar = new JProgressBar();
 		progressBar.setPreferredSize(new Dimension(icon.getIconWidth(), 18));
 		progressBar.setIndeterminate(false);
-		progressBar.setMaximum(numberOfSteps);
 		progressBar.setVisible(false);
 		
 		GridBagConstraints c = GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.HORIZONTAL, 5 + messageY, 5 + messageX, 0, 5);
@@ -117,18 +93,20 @@ public class SplashScreen extends JWindow {
 		setLocation(x, y);
 		setAlwaysOnTop(true);
 	}
-	
+
 	public void setMessage(String message) {
 		this.message.setText(message);
 	}
-	
-	public void nextStep() {
-		if (step == 0)
+
+	public void nextStep(int current, int maximum) {
+		if (current == 1) {
+			progressBar.setMaximum(maximum);
 			progressBar.setVisible(true);
-		
-		progressBar.setValue(++step);
+		}
+
+		progressBar.setValue(current);
 	}
-	
+
 	public void close() {
 		dispose();
 	}

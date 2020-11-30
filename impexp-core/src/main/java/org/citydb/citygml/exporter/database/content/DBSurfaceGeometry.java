@@ -27,12 +27,10 @@
  */
 package org.citydb.citygml.exporter.database.content;
 
-import org.citydb.citygml.common.database.cache.CacheTable;
 import org.citydb.citygml.exporter.CityGMLExportException;
 import org.citydb.citygml.exporter.util.DefaultGeometrySetterHandler;
 import org.citydb.citygml.exporter.util.GeometrySetter;
 import org.citydb.citygml.exporter.util.GeometrySetterHandler;
-import org.citydb.config.Config;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.database.schema.TableEnum;
 import org.citydb.sqlbuilder.expression.LiteralSelectExpression;
@@ -86,12 +84,12 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryExporter {
 	private boolean appendOldGmlId;
 	private String gmlIdPrefix;
 
-	public DBSurfaceGeometry(Connection connection, CityGMLExportManager exporter, Config config) throws SQLException {
+	public DBSurfaceGeometry(Connection connection, CityGMLExportManager exporter) throws SQLException {
 		this.exporter = exporter;
 
 		batches = new ArrayList<>();
 		batchSize = exporter.getGeometryBatchSize();
-		exportAppearance = config.getInternal().isExportGlobalAppearances();
+		exportAppearance = exporter.getInternalConfig().isExportGlobalAppearances();
 		useXLink = exporter.getExportConfig().getXlink().getGeometry().isModeXLink();
 		String schema = exporter.getDatabaseAdapter().getConnectionDetails().getSchema();
 

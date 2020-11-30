@@ -32,7 +32,7 @@ import java.sql.SQLException;
 import org.citydb.citygml.importer.CityGMLImportException;
 import org.citydb.citygml.importer.database.content.GeometryConverter;
 import org.citydb.citygml.importer.util.AttributeValueJoiner;
-import org.citydb.config.project.importer.Importer;
+import org.citydb.config.project.importer.ImportConfig;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.schema.mapping.AbstractObjectType;
 import org.citydb.database.schema.mapping.FeatureType;
@@ -63,7 +63,7 @@ public interface CityGMLImportHelper {
 	public AttributeValueJoiner getAttributeValueJoiner();
 	
 	public boolean isFailOnError();
-	public Importer getImportConfig();
+	public ImportConfig getImportConfig();
 	
 	public void logOrThrowUnsupportedXLinkMessage(AbstractGML from, Class<? extends AbstractGML> to, String xlink) throws CityGMLImportException;
 	public void logOrThrowUnsupportedGeometryMessage(AbstractGML from, AbstractGeometry geometry) throws CityGMLImportException;

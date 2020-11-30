@@ -99,7 +99,7 @@ public class DBSplitter {
 		if (databaseAdapter.hasVersioningSupport()) {
 			databaseAdapter.getWorkspaceManager().gotoWorkspace(
 					connection,
-					config.getProject().getDatabase().getWorkspaces().getDeleteWorkspace());
+					config.getDatabaseConfig().getWorkspaces().getDeleteWorkspace());
 		}
 
 		builder = new SQLQueryBuilder(
@@ -141,11 +141,11 @@ public class DBSplitter {
 		if (!shouldRun)
 			return;
 
-		if (query.getFeatureTypeFilter().isEmpty())
+		if (!query.isSetFeatureTypeFilter() || query.getFeatureTypeFilter().isEmpty())
 			return;
 
 		// do not terminate city objects that have already been terminated
-		if (config.getProject().getDeleter().getMode() == DeleteMode.TERMINATE) {
+		if (config.getDeleteConfig().getMode() == DeleteMode.TERMINATE) {
 			try {
 				FeatureType superType = schemaMapping.getCommonSuperType(query.getFeatureTypeFilter().getFeatureTypes());
 				SchemaPath schemaPath = new SchemaPath(superType)

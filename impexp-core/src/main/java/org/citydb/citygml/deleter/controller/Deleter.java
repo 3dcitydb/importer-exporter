@@ -27,15 +27,15 @@
  */
 package org.citydb.citygml.deleter.controller;
 
-import org.citydb.citygml.deleter.CityGMLDeleteException;
+import org.citydb.citygml.deleter.DeleteException;
 import org.citydb.citygml.deleter.concurrent.DBDeleteWorkerFactory;
 import org.citydb.citygml.deleter.database.BundledConnection;
 import org.citydb.citygml.deleter.database.DBSplitter;
+import org.citydb.citygml.deleter.util.DeleteListParser;
 import org.citydb.citygml.exporter.database.content.DBSplittingResult;
 import org.citydb.concurrent.PoolSizeAdaptationStrategy;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
-import org.citydb.config.internal.Internal;
 import org.citydb.config.project.database.Workspace;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.connection.DatabaseConnectionPool;
@@ -50,10 +50,14 @@ import org.citydb.log.Logger;
 import org.citydb.query.Query;
 import org.citydb.query.builder.QueryBuildException;
 import org.citydb.query.builder.config.ConfigQueryBuilder;
+import org.citydb.registry.ObjectRegistry;
+import org.citydb.util.CoreConstants;
 import org.citydb.util.Util;
 
 import java.sql.SQLException;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -64,29 +68,55 @@ public class Deleter implements EventHandler {
 	private final EventDispatcher eventDispatcher;
 	private final AbstractDatabaseAdapter databaseAdapter;
 	private final Config config;
-	
+	private final AtomicBoolean isInterrupted = new AtomicBoolean(false);
+	private final Map<Integer, Long> objectCounter;
+
 	private DBSplitter dbSplitter;
-	private volatile boolean shouldRun = true;
-	private AtomicBoolean isInterrupted = new AtomicBoolean(false);
 	private WorkerPool<DBSplittingResult> dbWorkerPool;
-	private Map<Integer, Long> objectCounter;
 	private BundledConnection bundledConnection;
-	
-	public Deleter(Config config, 
-			SchemaMapping schemaMapping, 
-			EventDispatcher eventDispatcher) {
-		this.config = config;
-		this.schemaMapping = schemaMapping;
-		this.eventDispatcher = eventDispatcher;
-		this.databaseAdapter = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter();
-		this.objectCounter = new HashMap<>();
+
+	private volatile boolean shouldRun = true;
+	private DeleteException exception;
+
+	public Deleter() {
+		config = ObjectRegistry.getInstance().getConfig();
+		schemaMapping = ObjectRegistry.getInstance().getSchemaMapping();
+		eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
+		databaseAdapter = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter();
+		objectCounter = new HashMap<>();
 	}
 
-	public void cleanup() {
-		eventDispatcher.removeEventHandler(this);
+	public boolean doDelete() throws DeleteException {
+		try {
+			// build query from configuration
+			ConfigQueryBuilder queryBuilder = new ConfigQueryBuilder(schemaMapping, databaseAdapter);
+			Query query = config.getDeleteConfig().isUseSimpleQuery() ?
+					queryBuilder.buildQuery(config.getDeleteConfig().getSimpleQuery(), config.getNamespaceFilter()) :
+					queryBuilder.buildQuery(config.getDeleteConfig().getQuery(), config.getNamespaceFilter());
+
+			return doDelete(Collections.singletonList(query).iterator());
+		} catch (QueryBuildException e) {
+			throw new DeleteException("Failed to build the delete query expression.", e);
+		}
 	}
 
-	public boolean doProcess() throws CityGMLDeleteException {
+	public boolean doDelete(DeleteListParser parser) throws DeleteException {
+		log.info("Using delete list from CSV file: " + parser.getFile());
+		return doDelete(parser.queryIterator(schemaMapping, databaseAdapter));
+	}
+
+	private boolean doDelete(Iterator<Query> queries) throws DeleteException {
+		eventDispatcher.addEventHandler(EventType.OBJECT_COUNTER, this);
+		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
+
+		try {
+			return process(queries);
+		} finally {
+			eventDispatcher.removeEventHandler(this);
+		}
+	}
+
+	private boolean process(Iterator<Query> queries) throws DeleteException {
 		long start = System.currentTimeMillis();
 
 		// Multithreading may cause DB-Deadlock. It may occur when deleting a CityObjectGroup within
@@ -95,28 +125,16 @@ public class Deleter implements EventHandler {
 		int minThreads = 1;
 		int maxThreads = 1;
 		
-		// adding listeners
-		eventDispatcher.addEventHandler(EventType.OBJECT_COUNTER, this);
-		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
-
 		// checking workspace
-		Workspace workspace = config.getProject().getDatabase().getWorkspaces().getDeleteWorkspace();
-		if (shouldRun && databaseAdapter.hasVersioningSupport() && 
-				!databaseAdapter.getWorkspaceManager().equalsDefaultWorkspaceName(workspace.getName()) &&
-				!databaseAdapter.getWorkspaceManager().existsWorkspace(workspace, true))
-			return false;
-		
-		// build query from filter settings
-		Query query;
-		try {
-			ConfigQueryBuilder queryBuilder = new ConfigQueryBuilder(schemaMapping, databaseAdapter);
-			if (config.getProject().getDeleter().isUseSimpleQuery())
-				query = queryBuilder.buildQuery(config.getProject().getDeleter().getSimpleQuery(), config.getProject().getNamespaceFilter());
-			else
-				query = queryBuilder.buildQuery(config.getProject().getDeleter().getQuery(), config.getProject().getNamespaceFilter());
-
-		} catch (QueryBuildException e) {
-			throw new CityGMLDeleteException("Failed to build the delete query expression.", e);
+		Workspace workspace = config.getDatabaseConfig().getWorkspaces().getDeleteWorkspace();
+		if (shouldRun && databaseAdapter.hasVersioningSupport()
+				&& !databaseAdapter.getWorkspaceManager().equalsDefaultWorkspaceName(workspace.getName())) {
+			try {
+				log.info("Switching to database workspace " + workspace + ".");
+				databaseAdapter.getWorkspaceManager().checkWorkspace(workspace);
+			} catch (SQLException e) {
+				throw new DeleteException("Failed to switch to database workspace.", e);
+			}
 		}
 		
 		bundledConnection = new BundledConnection();
@@ -131,31 +149,32 @@ public class Deleter implements EventHandler {
 					false);
 
 			dbWorkerPool.prestartCoreWorkers();
-			if (dbWorkerPool.getPoolSize() == 0)
-				throw new CityGMLDeleteException("Failed to start database delete worker pool. Check the database connection pool settings.");
+			if (dbWorkerPool.getPoolSize() == 0) {
+				throw new DeleteException("Failed to start database delete worker pool. Check the database connection pool settings.");
+			}
 
 			log.info("Deleting city objects from database.");
 
-			// get database splitter and start query
-			try {
-				dbSplitter = new DBSplitter(schemaMapping, dbWorkerPool, query, config, eventDispatcher);
-				if (shouldRun) {
-					dbSplitter.setCalculateNumberMatched(Internal.IS_GUI_MODE);
+			while (shouldRun && queries.hasNext()) {
+				// get database splitter and start query
+				try {
+					dbSplitter = new DBSplitter(schemaMapping, dbWorkerPool, queries.next(), config, eventDispatcher);
+					dbSplitter.setCalculateNumberMatched(CoreConstants.IS_GUI_MODE);
 					dbSplitter.startQuery();
+				} catch (SQLException | QueryBuildException e) {
+					throw new DeleteException("Failed to query the database.", e);
 				}
-			} catch (SQLException | QueryBuildException e) {
-				throw new CityGMLDeleteException("Failed to query the database.", e);
 			}
 
 			try {
 				dbWorkerPool.shutdownAndWait();
 			} catch (InterruptedException e) {
-				throw new CityGMLDeleteException("Failed to shutdown worker pools.", e);
+				throw new DeleteException("Failed to shutdown worker pools.", e);
 			}
-		} catch (CityGMLDeleteException e) {
+		} catch (DeleteException e) {
 			throw e;
 		} catch (Throwable e) {
-			throw new CityGMLDeleteException("An unexpected error occurred.", e);
+			throw new DeleteException("An unexpected error occurred.", e);
 		} finally {
 			try {
 				bundledConnection.close();
@@ -163,9 +182,9 @@ public class Deleter implements EventHandler {
 				//
 			}
 			
-			// clean up
-			if (dbWorkerPool != null)
+			if (dbWorkerPool != null) {
 				dbWorkerPool.shutdownNow();
+			}
 
 			try {
 				eventDispatcher.flushEvents();
@@ -181,10 +200,11 @@ public class Deleter implements EventHandler {
 			typeNames.keySet().stream().sorted().forEach(object -> log.info(object + ": " + typeNames.get(object)));			
 		}
 
-		if (shouldRun)
-			log.info("Process time: " + Util.formatElapsedTime(System.currentTimeMillis() - start) + ".");
-
-		objectCounter.clear();
+		if (shouldRun) {
+			log.info("Total delete time: " + Util.formatElapsedTime(System.currentTimeMillis() - start) + ".");
+		} else if (exception != null) {
+			throw exception;
+		}
 
 		return shouldRun;
 	}
@@ -192,40 +212,30 @@ public class Deleter implements EventHandler {
 	@Override
 	public void handleEvent(Event e) throws Exception {
 		if (e.getEventType() == EventType.OBJECT_COUNTER) {
-			Map<Integer, Long> counter = ((ObjectCounterEvent)e).getCounter();
-			
+			Map<Integer, Long> counter = ((ObjectCounterEvent) e).getCounter();
 			for (Entry<Integer, Long> entry : counter.entrySet()) {
 				Long tmp = objectCounter.get(entry.getKey());
 				objectCounter.put(entry.getKey(), tmp == null ? entry.getValue() : tmp + entry.getValue());
 			}
-		}
-
-		else if (e.getEventType() == EventType.INTERRUPT) {
+		} else if (e.getEventType() == EventType.INTERRUPT) {
 			if (isInterrupted.compareAndSet(false, true)) {
 				shouldRun = false;
 				bundledConnection.setShouldRollback(true);
-				InterruptEvent interruptEvent = (InterruptEvent)e;
+				InterruptEvent event = (InterruptEvent) e;
 
-				if (interruptEvent.getCause() != null) {
-					Throwable cause = interruptEvent.getCause();
-					if (cause instanceof SQLException) {
-						log.error("A SQL error occurred.", cause);
-					} else {
-						log.error("An error occurred.", cause);
-					}
+				log.log(event.getLogLevelType(), event.getLogMessage());
+				if (event.getCause() != null) {
+					exception = new DeleteException("Aborting delete due to errors.", event.getCause());
 				}
 
-				String msg = interruptEvent.getLogMessage();
-				if (msg != null)
-					log.log(interruptEvent.getLogLevelType(), msg);
-
-				if (dbSplitter != null)
+				if (dbSplitter != null) {
 					dbSplitter.shutdown();
+				}
 
-				if (dbWorkerPool != null)
+				if (dbWorkerPool != null) {
 					dbWorkerPool.drainWorkQueue();
+				}
 			}
 		}
 	}
-	
 }

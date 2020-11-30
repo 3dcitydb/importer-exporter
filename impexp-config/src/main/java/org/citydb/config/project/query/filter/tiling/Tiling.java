@@ -34,28 +34,28 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElements;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="TilingType", propOrder={
-		"tilingOptions"
+@XmlType(name = "TilingType", propOrder = {
+        "tilingOptions"
 })
 public class Tiling extends AbstractTiling {
-	@XmlElements({
-		@XmlElement(name="cityGMLTilingOptions", type= SimpleTilingOptions.class),
-		@XmlElement(name="kmlTilingOptions", type=KmlTilingOptions.class)
-	})
-	private AbstractTilingOptions tilingOptions;
+    @XmlElements({
+            @XmlElement(name = "cityGMLTilingOptions", type = SimpleTilingOptions.class),
+            @XmlElement(name = "kmlTilingOptions", type = KmlTilingOptions.class)
+    })
+    private AbstractTilingOptions tilingOptions;
 
-	@Override
-	public AbstractTilingOptions getTilingOptions() {
-		return tilingOptions;
-	}
+    @Override
+    public AbstractTilingOptions getTilingOptions() {
+        return tilingOptions;
+    }
 
-	@Override
-	public boolean isSetTilingOptions() {
-		return tilingOptions != null;
-	}
+    @Override
+    public boolean isSetTilingOptions() {
+        return tilingOptions != null;
+    }
 
-	public void setTilingOptions(AbstractTilingOptions tilingOptions) {
-		this.tilingOptions = tilingOptions;
-	}
-	
+    public void setTilingOptions(AbstractTilingOptions tilingOptions) {
+        this.tilingOptions = tilingOptions;
+    }
+
 }

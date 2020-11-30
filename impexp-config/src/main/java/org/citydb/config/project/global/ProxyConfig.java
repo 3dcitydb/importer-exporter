@@ -37,197 +37,197 @@ import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.Proxy.Type;
 
-@XmlType(name="ProxyConfigType", propOrder={
-		"type",
-		"host",
-		"port",
-		"username",
-		"password",
-		"savePassword"
+@XmlType(name = "ProxyConfigType", propOrder = {
+        "type",
+        "host",
+        "port",
+        "username",
+        "password",
+        "savePassword"
 })
 public class ProxyConfig {
-	@XmlAttribute(required = true)
-	private Boolean isEnabled = false;
-	@XmlAttribute(required = true)
-	private Boolean requiresAuthentication;
-	@XmlAttribute(required = true)
-	private ProxyType type = ProxyType.HTTP;
-	private String host = "";
-	private Integer port = 0;
-	private String username = "";
-	private String password = "";
-	private Boolean savePassword = false;
-	@XmlTransient
-	private String tempPassword = "";
-	@XmlTransient
-	private int failedConnectAttempts = 0;
-	@XmlTransient
-	private ProxyConfig other = null;
+    @XmlAttribute(required = true)
+    private Boolean isEnabled = false;
+    @XmlAttribute(required = true)
+    private Boolean requiresAuthentication;
+    @XmlAttribute(required = true)
+    private ProxyType type = ProxyType.HTTP;
+    private String host = "";
+    private Integer port = 0;
+    private String username = "";
+    private String password = "";
+    private Boolean savePassword = false;
+    @XmlTransient
+    private String tempPassword = "";
+    @XmlTransient
+    private int failedConnectAttempts = 0;
+    @XmlTransient
+    private ProxyConfig other = null;
 
-	public ProxyConfig() {		
-	}
-	
-	public ProxyConfig(ProxyType type, ProxyConfig other) {
-		this.type = type;
-		this.other = other;
+    public ProxyConfig() {
+    }
 
-		isEnabled = other.isEnabled;
-		requiresAuthentication = other.requiresAuthentication;
-		host = other.host;
-		port = other.port;
-		username = other.username;
-		password = other.password;
-		savePassword = other.savePassword;
-		tempPassword = other.tempPassword;
-		failedConnectAttempts = other.failedConnectAttempts;
-	}
+    public ProxyConfig(ProxyType type, ProxyConfig other) {
+        this.type = type;
+        this.other = other;
 
-	public ProxyConfig(ProxyType type) {
-		this.type = type;
-		switch (type) {
-			case HTTP:
-				port = 80;
-				break;
-			case HTTPS:
-				port = 443;
-				break;
-			case SOCKS:
-				port = 1080;
-				break;
-		}
-	}
+        isEnabled = other.isEnabled;
+        requiresAuthentication = other.requiresAuthentication;
+        host = other.host;
+        port = other.port;
+        username = other.username;
+        password = other.password;
+        savePassword = other.savePassword;
+        tempPassword = other.tempPassword;
+        failedConnectAttempts = other.failedConnectAttempts;
+    }
 
-	public boolean isEnabled() {
-		return isEnabled != null ? isEnabled : false;
-	}
+    public ProxyConfig(ProxyType type) {
+        this.type = type;
+        switch (type) {
+            case HTTP:
+                port = 80;
+                break;
+            case HTTPS:
+                port = 443;
+                break;
+            case SOCKS:
+                port = 1080;
+                break;
+        }
+    }
 
-	public void setEnabled(boolean enable) {
-		this.isEnabled = enable;
-	}
+    public boolean isEnabled() {
+        return isEnabled != null ? isEnabled : false;
+    }
 
-	public boolean requiresAuthentication() {
-		return requiresAuthentication != null ? requiresAuthentication : false;
-	}
+    public void setEnabled(boolean enable) {
+        this.isEnabled = enable;
+    }
 
-	public void setRequiresAuthentication(boolean requiresAuthentication) {
-		this.requiresAuthentication = requiresAuthentication;
-	}
+    public boolean requiresAuthentication() {
+        return requiresAuthentication != null ? requiresAuthentication : false;
+    }
 
-	public ProxyType getType() {
-		return type;
-	}
+    public void setRequiresAuthentication(boolean requiresAuthentication) {
+        this.requiresAuthentication = requiresAuthentication;
+    }
 
-	public void setType(ProxyType type) {
-		this.type = type;
-	}
+    public ProxyType getType() {
+        return type;
+    }
 
-	public String getHost() {
-		return host;
-	}
+    public void setType(ProxyType type) {
+        this.type = type;
+    }
 
-	public void setHost(String host) {
-		if (host != null)
-			this.host = host;
-	}
+    public String getHost() {
+        return host;
+    }
 
-	public int getPort() {
-		return port != null ? port : 0;
-	}
+    public void setHost(String host) {
+        if (host != null)
+            this.host = host;
+    }
 
-	public void setPort(int port) {
-		if (port > 0)
-			this.port = port;
-	}
+    public int getPort() {
+        return port != null ? port : 0;
+    }
 
-	public String getUsername() {
-		return username;
-	}
+    public void setPort(int port) {
+        if (port > 0)
+            this.port = port;
+    }
 
-	public void setUsername(String user) {
-		if (user != null)
-			this.username = user;
-	}
+    public String getUsername() {
+        return username;
+    }
 
-	public String getPassword() {
-		return password;
-	}
+    public void setUsername(String user) {
+        if (user != null)
+            this.username = user;
+    }
 
-	public void setPassword(String password) {
-		if (password != null)
-			this.password = password;
-	}
+    public String getPassword() {
+        return password;
+    }
 
-	public boolean isSavePassword() {
-		return savePassword != null ? savePassword : false;
-	}
+    public void setPassword(String password) {
+        if (password != null)
+            this.password = password;
+    }
 
-	public void setSavePassword(boolean savePassword) {
-		this.savePassword = savePassword;
-	}
+    public boolean isSavePassword() {
+        return savePassword != null ? savePassword : false;
+    }
 
-	public int failed() {
-		return ++failedConnectAttempts;
-	}
-	
-	public void resetFailedConnectAttempts() {
-		failedConnectAttempts = 0;
-	}
+    public void setSavePassword(boolean savePassword) {
+        this.savePassword = savePassword;
+    }
 
-	public boolean hasValidProxySettings() {
-		return host.length() > 0 && port > 0;
-	}
+    public int failed() {
+        return ++failedConnectAttempts;
+    }
 
-	public boolean hasValidUserCredentials() {
-		return username.length() > 0 && password.length() > 0;
-	}
-	
-	public boolean isCopy() {
-		return other != null;
-	}
-	
-	public ProxyConfig getCopiedFrom() {
-		return other;
-	}
+    public void resetFailedConnectAttempts() {
+        failedConnectAttempts = 0;
+    }
 
-	public Proxy toProxy() {
-		if (hasValidProxySettings()) {
-			switch (type) {
-				case HTTP:
-				case HTTPS:
-					return new Proxy(Type.HTTP, new InetSocketAddress(host, port));
-				case SOCKS:
-					return new Proxy(Type.SOCKS, new InetSocketAddress(host, port));
-			}
-		}
+    public boolean hasValidProxySettings() {
+        return host.length() > 0 && port > 0;
+    }
 
-		return null;
-	}
+    public boolean hasValidUserCredentials() {
+        return username.length() > 0 && password.length() > 0;
+    }
 
-	@Override
-	public String toString() {
-		switch (type) {
-			case HTTP:
-				return Language.I18N.getString("pref.proxy.label.http");
-			case HTTPS:
-				return Language.I18N.getString("pref.proxy.label.https");
-			case SOCKS:
-				return Language.I18N.getString("pref.proxy.label.socks");
-			default:
-				return "n/a";
-		}
-	}
+    public boolean isCopy() {
+        return other != null;
+    }
 
-	void beforeMarshal(Marshaller marshaller) {
-		if (!isSavePassword()) {
-			tempPassword = password;
-			password = null;
-		}
-	}
+    public ProxyConfig getCopiedFrom() {
+        return other;
+    }
 
-	void afterMarshal(Marshaller marshaller) {
-		if (!isSavePassword()) {
-			password = tempPassword;
-			tempPassword = null;
-		}
-	}
+    public Proxy toProxy() {
+        if (hasValidProxySettings()) {
+            switch (type) {
+                case HTTP:
+                case HTTPS:
+                    return new Proxy(Type.HTTP, new InetSocketAddress(host, port));
+                case SOCKS:
+                    return new Proxy(Type.SOCKS, new InetSocketAddress(host, port));
+            }
+        }
+
+        return null;
+    }
+
+    @Override
+    public String toString() {
+        switch (type) {
+            case HTTP:
+                return Language.I18N.getString("pref.proxy.label.http");
+            case HTTPS:
+                return Language.I18N.getString("pref.proxy.label.https");
+            case SOCKS:
+                return Language.I18N.getString("pref.proxy.label.socks");
+            default:
+                return "n/a";
+        }
+    }
+
+    void beforeMarshal(Marshaller marshaller) {
+        if (!isSavePassword()) {
+            tempPassword = password;
+            password = null;
+        }
+    }
+
+    void afterMarshal(Marshaller marshaller) {
+        if (!isSavePassword()) {
+            password = tempPassword;
+            tempPassword = null;
+        }
+    }
 }

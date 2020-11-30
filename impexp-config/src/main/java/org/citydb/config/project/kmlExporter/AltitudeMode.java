@@ -33,16 +33,16 @@ import javax.xml.bind.annotation.XmlEnum;
 import javax.xml.bind.annotation.XmlEnumValue;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="AltitudeMode")
+@XmlType(name = "AltitudeMode")
 @XmlEnum
 public enum AltitudeMode {
-	@XmlEnumValue("relative")
+    @XmlEnumValue("relative")
     RELATIVE("relative"),
     @XmlEnumValue("absolute")
     ABSOLUTE("absolute"),
     @XmlEnumValue("clampToGround")
     CLAMP_TO_GROUND("clampToGround");
-    
+
     private final String value;
 
     AltitudeMode(String v) {
@@ -54,7 +54,7 @@ public enum AltitudeMode {
     }
 
     public static AltitudeMode fromValue(String v) {
-        for (AltitudeMode c: AltitudeMode.values()) {
+        for (AltitudeMode c : AltitudeMode.values()) {
             if (c.value.equals(v)) {
                 return c;
             }
@@ -62,9 +62,9 @@ public enum AltitudeMode {
 
         return ABSOLUTE;
     }
-    
-	public String toString() {
-		return Language.I18N.getString("pref.kmlexport.altitude.mode.label." + value());
-	}
+
+    public String toString() {
+        return Language.I18N.getString("pref.kmlexport.altitude.mode.label." + value());
+    }
 
 }

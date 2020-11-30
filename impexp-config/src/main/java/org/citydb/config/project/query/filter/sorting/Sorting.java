@@ -33,11 +33,11 @@ import javax.xml.bind.annotation.XmlType;
 import java.util.ArrayList;
 import java.util.List;
 
-@XmlType(name="SortingType", propOrder={
+@XmlType(name = "SortingType", propOrder = {
         "sortProperties"
 })
 public class Sorting {
-    @XmlElement(name="sortProperty", required = true)
+    @XmlElement(name = "sortProperty", required = true)
     private List<SortProperty> sortProperties;
 
     public Sorting() {

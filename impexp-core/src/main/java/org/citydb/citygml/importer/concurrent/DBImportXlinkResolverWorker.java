@@ -100,7 +100,7 @@ public class DBImportXlinkResolverWorker extends Worker<DBXlink> implements Even
 		this.isManagedTransaction = isManagedTransaction;
 		this.eventDispatcher = eventDispatcher;
 
-		commitAfter = config.getProject().getDatabase().getImportBatching().getFeatureBatchSize();
+		commitAfter = config.getDatabaseConfig().getImportBatching().getFeatureBatchSize();
 		if (commitAfter > databaseAdapter.getMaxBatchSize())
 			commitAfter = databaseAdapter.getMaxBatchSize();
 
@@ -145,16 +145,15 @@ public class DBImportXlinkResolverWorker extends Worker<DBXlink> implements Even
 					if (!isManagedTransaction)
 						connection.commit();
 				}
-			} catch (SQLException e) {
+			} catch (Throwable e) {
 				try {
 					connection.rollback();
 				} catch (SQLException sql) {
 					//
 				}
 
-				eventDispatcher.triggerEvent(new InterruptEvent("Aborting import due to SQL errors.", LogLevel.WARN, e, eventChannel, this));
+				eventDispatcher.triggerSyncEvent(new InterruptEvent("A fatal error occurred during XLink resolving.", LogLevel.ERROR, e, eventChannel, this));
 			}
-
 		} finally {
 			try {
 				xlinkResolverManager.close();
@@ -294,17 +293,14 @@ public class DBImportXlinkResolverWorker extends Worker<DBXlink> implements Even
 				updateCounter = 0;
 			}
 
-		} catch (SQLException e) {
+		} catch (Throwable e) {
 			try {
 				connection.rollback();
 			} catch (SQLException sql) {
 				//
 			}
 
-			eventDispatcher.triggerSyncEvent(new InterruptEvent("Aborting import due to SQL errors.", LogLevel.WARN, e, eventChannel, this));
-		} catch (Exception e) {
-			// this is to catch general exceptions that may occur during the import
-			eventDispatcher.triggerSyncEvent(new InterruptEvent("Aborting due to an unexpected " + e.getClass().getName() + " error.", LogLevel.ERROR, e, eventChannel, this));
+			eventDispatcher.triggerSyncEvent(new InterruptEvent("A fatal error occurred during XLink resolving.", LogLevel.WARN, e, eventChannel, this));
 		} finally {
 			runLock.unlock();
 		}

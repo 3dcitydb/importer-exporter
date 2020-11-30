@@ -3,7 +3,7 @@ package org.citydb.config.project.exporter;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="NamespaceType", propOrder={
+@XmlType(name = "NamespaceType", propOrder = {
         "prefix",
         "schemaLocation"
 })

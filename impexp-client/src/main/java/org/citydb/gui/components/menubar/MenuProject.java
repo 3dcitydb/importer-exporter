@@ -29,28 +29,24 @@ package org.citydb.gui.components.menubar;
 
 import org.citydb.config.Config;
 import org.citydb.config.ConfigUtil;
+import org.citydb.config.ProjectConfig;
 import org.citydb.config.i18n.Language;
-import org.citydb.config.project.Project;
 import org.citydb.config.project.global.Logging;
 import org.citydb.event.global.ProjectChangedEvent;
 import org.citydb.gui.ImpExpGui;
 import org.citydb.gui.factory.SrsComboBoxFactory;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.log.Logger;
-import org.citydb.modules.preferences.PreferencesPlugin;
+import org.citydb.gui.modules.preferences.PreferencesPlugin;
 import org.citydb.plugin.InternalPlugin;
-import org.citydb.plugin.PluginConfigController;
 import org.citydb.plugin.PluginException;
 import org.citydb.plugin.PluginManager;
 import org.citydb.plugin.extension.config.ConfigExtension;
 import org.citydb.plugin.extension.config.PluginConfigEvent;
 import org.citydb.registry.ObjectRegistry;
-import org.citydb.util.ClientConstants;
-import org.citydb.util.CoreConstants;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
-import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import java.awt.*;
 import java.awt.event.InputEvent;
@@ -62,10 +58,9 @@ import java.util.List;
 @SuppressWarnings("serial")
 public class MenuProject extends JMenu {
 	private final Logger log = Logger.getInstance();
-	private final PluginManager pluginService;
 	private final Config config;
-	private final JAXBContext ctx;
 	private final ImpExpGui mainView;
+	private final PluginManager pluginManager;
 
 	private JMenuItem openProject;
 	private JMenuItem saveProject;
@@ -77,11 +72,10 @@ public class MenuProject extends JMenu {
 	private String exportPath;
 	private String importPath;
 
-	MenuProject(PluginManager pluginService, JAXBContext ctx, ImpExpGui mainView, Config config) {
-		this.pluginService = pluginService;
+	MenuProject(ImpExpGui mainView, Config config) {
 		this.config = config;
-		this.ctx = ctx;
 		this.mainView = mainView;
+		pluginManager = PluginManager.getInstance();
 
 		init();
 	}
@@ -109,18 +103,16 @@ public class MenuProject extends JMenu {
 
 		saveProject.addActionListener(e -> {
             // set settings on internal plugins
-            for (InternalPlugin plugin : pluginService.getInternalPlugins())
+            for (InternalPlugin plugin : pluginManager.getInternalPlugins())
                 plugin.setSettings();
 
             // fire event to external plugins
-            for (ConfigExtension<?> plugin : pluginService.getExternalPlugins(ConfigExtension.class))
+            for (ConfigExtension<?> plugin : pluginManager.getExternalPlugins(ConfigExtension.class))
                 plugin.handleEvent(PluginConfigEvent.PRE_SAVE_CONFIG);
 
-            if (mainView.saveProjectSettings())
-                log.info("Settings successfully saved to config file '"
-                        + CoreConstants.IMPEXP_DATA_DIR
-                                .resolve(ClientConstants.CONFIG_DIR)
-                                .resolve(ClientConstants.PROJECT_SETTINGS_FILE) + "'.");
+            if (mainView.saveProjectSettings()) {
+				log.info("Settings successfully saved to config file '" + mainView.getConfigFile() + "'.");
+			}
         });
 
 		saveProjectAs.addActionListener(e -> {
@@ -130,14 +122,14 @@ public class MenuProject extends JMenu {
                 log.info("Saving project settings as file '" + file.toString() + "'.");
                 try {
                     // set settings on internal plugins
-                    for (InternalPlugin plugin : pluginService.getInternalPlugins())
+                    for (InternalPlugin plugin : pluginManager.getInternalPlugins())
                         plugin.setSettings();
 
                     // fire event to external plugins
-                    for (ConfigExtension<?> plugin : pluginService.getExternalPlugins(ConfigExtension.class))
+                    for (ConfigExtension<?> plugin : pluginManager.getExternalPlugins(ConfigExtension.class))
                         plugin.handleEvent(PluginConfigEvent.PRE_SAVE_CONFIG);
 
-                    ConfigUtil.marshal(config.getProject(), file, ctx);
+                    ConfigUtil.getInstance().marshal(config.getProjectConfig(), file);
 
                     addLastUsedProject(file.getAbsolutePath());
                     lastUsed.setEnabled(true);
@@ -158,17 +150,17 @@ public class MenuProject extends JMenu {
 				mainView.clearConsole();
 				mainView.disconnectFromDatabase();
 
-				config.setProject(new Project());
+				config.setProjectConfig(new ProjectConfig());
 
 				// reset contents of srs combo boxes
 				SrsComboBoxFactory.getInstance().resetAll(true);
 
 				// reset defaults on internal plugins
-				for (InternalPlugin plugin : pluginService.getInternalPlugins())
+				for (InternalPlugin plugin : pluginManager.getInternalPlugins())
 					plugin.loadSettings();
 
 				// update plugin configs
-				for (ConfigExtension<?> plugin : pluginService.getExternalPlugins(ConfigExtension.class))
+				for (ConfigExtension<?> plugin : pluginManager.getExternalPlugins(ConfigExtension.class))
 					plugin.handleEvent(PluginConfigEvent.RESET_DEFAULT_CONFIG);
 
 				// trigger event
@@ -185,8 +177,8 @@ public class MenuProject extends JMenu {
             if (path != null) {
                 log.info("Saving project XSD at location '" + path.toString() + "'.");
                 try {
-                    ConfigUtil.generateSchema(ctx, path);
-                } catch (IOException e1) {
+                    ConfigUtil.getInstance().generateSchema(path);
+                } catch (JAXBException | IOException e1) {
                     log.error("Failed to save project settings.", e1);
                 }
             }
@@ -206,7 +198,7 @@ public class MenuProject extends JMenu {
 		saveProject.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
 		saveProjectAs.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask() | InputEvent.SHIFT_MASK));
 
-		if (!config.getGui().getRecentlyUsedProjectFiles().isEmpty())
+		if (!config.getGuiConfig().getRecentlyUsedProjectFiles().isEmpty())
 			setLastUsedList();			
 		else
 			lastUsed.setEnabled(false);
@@ -233,40 +225,39 @@ public class MenuProject extends JMenu {
 		boolean success = false;
 
 		try {
-			Logging logging = config.getProject().getGlobal().getLogging();
-			Object object = ConfigUtil.unmarshal(file, ctx);
-			if (!(object instanceof Project)) {
+			Logging logging = config.getGlobalConfig().getLogging();
+			Object object = ConfigUtil.getInstance().unmarshal(file);
+			if (!(object instanceof ProjectConfig)) {
 				log.error("Failed to read project settings.");
 				return false;
 			}
 
-			Project project = (Project)object;
-			config.setProject(project);
+			ProjectConfig projectConfig = (ProjectConfig)object;
+			config.setProjectConfig(projectConfig);
 			mainView.doTranslation();
 
 			// reset contents of srs combo boxes
 			SrsComboBoxFactory.getInstance().resetAll(true);
 
 			// load settings for internal plugins
-			for (InternalPlugin plugin : pluginService.getInternalPlugins())
+			for (InternalPlugin plugin : pluginManager.getInternalPlugins())
 				plugin.loadSettings();
 
 			// update plugin configs
-			PluginConfigController pluginConfigController = PluginConfigController.getInstance();
-			for (ConfigExtension<?> plugin : pluginService.getExternalPlugins(ConfigExtension.class)) {
+			for (ConfigExtension<?> plugin : pluginManager.getExternalPlugins(ConfigExtension.class)) {
 				try {
-					pluginConfigController.setOrCreatePluginConfig(plugin);
+					pluginManager.propagatePluginConfig(plugin, config);
 				} catch (PluginException e) {
-					log.warn("Failed to load config for plugin " + plugin.getClass().getName());
+					log.error("Failed to load configuration for plugin " + plugin.getClass().getName() + ".");
 					log.warn("The plugin will most likely not work.");
 				}
 			}
 
 			// adapt logging subsystem
-			project.getGlobal().setLogging(logging);
+			config.getGlobalConfig().setLogging(logging);
 
 			// reset logging settings
-			pluginService.getInternalPlugin(PreferencesPlugin.class).setLoggingSettings();
+			pluginManager.getInternalPlugin(PreferencesPlugin.class).setLoggingSettings();
 			
 			// trigger event
 			ObjectRegistry.getInstance().getEventDispatcher().triggerEvent(new ProjectChangedEvent(this));
@@ -281,18 +272,18 @@ public class MenuProject extends JMenu {
 	}
 
 	private void addLastUsedProject(String fileName) {
-		List<String> lastUsedList = config.getGui().getRecentlyUsedProjectFiles();
+		List<String> lastUsedList = config.getGuiConfig().getRecentlyUsedProjectFiles();
 		lastUsedList.remove(fileName);
 		lastUsedList.add(0, fileName);
 
-		if (lastUsedList.size() > config.getGui().getMaxLastUsedEntries())
-			config.getGui().setRecentlyUsedProjectFiles(lastUsedList.subList(0, config.getGui().getMaxLastUsedEntries()));
+		if (lastUsedList.size() > config.getGuiConfig().getMaxLastUsedEntries())
+			config.getGuiConfig().setRecentlyUsedProjectFiles(lastUsedList.subList(0, config.getGuiConfig().getMaxLastUsedEntries()));
 	}
 
 	private void setLastUsedList() {
 		lastUsed.removeAll();
 
-		for (final String fileName : config.getGui().getRecentlyUsedProjectFiles()) {
+		for (final String fileName : config.getGuiConfig().getRecentlyUsedProjectFiles()) {
 			final JMenuItem item = new JMenuItem();
 
 			File tmp = new File(fileName);
@@ -318,7 +309,7 @@ public class MenuProject extends JMenu {
 			item.addActionListener(e -> {
                 boolean success = openProject(file);
                 if (!success) {
-                    config.getGui().getRecentlyUsedProjectFiles().remove(fileName);
+                    config.getGuiConfig().getRecentlyUsedProjectFiles().remove(fileName);
                     lastUsed.remove(item);
                     if (lastUsed.getItemCount() == 0)
                         lastUsed.setEnabled(false);

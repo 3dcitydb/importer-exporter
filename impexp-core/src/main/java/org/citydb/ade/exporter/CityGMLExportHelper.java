@@ -32,7 +32,7 @@ import org.citydb.citygml.exporter.database.content.GMLConverter;
 import org.citydb.citygml.exporter.database.content.SurfaceGeometryExporter;
 import org.citydb.citygml.exporter.util.AttributeValueSplitter;
 import org.citydb.config.geometry.GeometryObject;
-import org.citydb.config.project.exporter.Exporter;
+import org.citydb.config.project.exporter.ExportConfig;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.schema.mapping.AbstractObjectType;
 import org.citydb.database.schema.mapping.FeatureProperty;
@@ -70,7 +70,7 @@ public interface CityGMLExportHelper {
 	LodFilter getLodFilter();
 
 	boolean isFailOnError();
-	Exporter getExportConfig();
+	ExportConfig getExportConfig();
 	
 	String getTableNameWithSchema(String tableName);
 	ProjectionToken getGeometryColumn(Column column);

@@ -28,8 +28,25 @@
 
 package org.citydb.citygml.validator;
 
-public class ValidationException extends Exception {
-	private static final long serialVersionUID = 4539651915483540421L;
+import org.citydb.config.exception.ApplicationException;
+import org.citydb.config.exception.ErrorCode;
+
+public class ValidationException extends ApplicationException {
+	public ValidationException(ErrorCode errorCode) {
+		super(errorCode);
+	}
+
+	public ValidationException(ErrorCode errorCode, String message) {
+		super(errorCode, message);
+	}
+
+	public ValidationException(ErrorCode errorCode, String message, Throwable cause) {
+		super(errorCode, message, cause);
+	}
+
+	public ValidationException(ErrorCode errorCode, Throwable cause) {
+		super(errorCode, cause);
+	}
 
 	public ValidationException() {
 		super();
@@ -39,12 +56,11 @@ public class ValidationException extends Exception {
 		super(message);
 	}
 
-	public ValidationException(Throwable cause) {
-		super(cause);
-	}
-
 	public ValidationException(String message, Throwable cause) {
 		super(message, cause);
 	}
-	
+
+	public ValidationException(Throwable cause) {
+		super(cause);
+	}
 }

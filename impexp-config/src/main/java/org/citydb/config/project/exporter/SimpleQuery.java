@@ -40,193 +40,193 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="SimpleExportQueryType", propOrder={
-		"featureTypeFilter",
-		"featureVersionFilter",
-		"selectionFilter",
-		"counterFilter",
-		"lodFilter",
-		"bboxFilter"
+@XmlType(name = "SimpleExportQueryType", propOrder = {
+        "featureTypeFilter",
+        "featureVersionFilter",
+        "selectionFilter",
+        "counterFilter",
+        "lodFilter",
+        "bboxFilter"
 })
 public class SimpleQuery {
-	@XmlAttribute
-	protected CityGMLVersionType version;
-	@XmlIDREF
-	@XmlAttribute
-	protected DatabaseSrs targetSrs;
-	@XmlAttribute
-	private boolean useTypeNames;
-	@XmlAttribute
-	private boolean useFeatureVersionFilter;
-	@XmlAttribute
-	private boolean useSelectionFilter;
-	@XmlAttribute
-	private boolean useCountFilter;
-	@XmlAttribute
-	private boolean useLodFilter;
-	@XmlAttribute
-	private boolean useBboxFilter;
+    @XmlAttribute
+    protected CityGMLVersionType version;
+    @XmlIDREF
+    @XmlAttribute
+    protected DatabaseSrs targetSrs;
+    @XmlAttribute
+    private boolean useTypeNames;
+    @XmlAttribute
+    private boolean useFeatureVersionFilter;
+    @XmlAttribute
+    private boolean useSelectionFilter;
+    @XmlAttribute
+    private boolean useCountFilter;
+    @XmlAttribute
+    private boolean useLodFilter;
+    @XmlAttribute
+    private boolean useBboxFilter;
 
-	@XmlElement(name = "typeNames")
-	protected FeatureTypeFilter featureTypeFilter;
-	@XmlElement(name = "featureVersion")
-	private SimpleFeatureVersionFilter featureVersionFilter;
-	@XmlElement(name = "selection")
-	private SimpleSelectionFilter selectionFilter;
-	@XmlElement(name = "limit")
-	protected CounterFilter counterFilter;
-	@XmlElement(name = "lods")
-	protected LodFilter lodFilter;
-	@XmlElement(name = "bbox", required = true)
-	private SimpleTiling bboxFilter;
+    @XmlElement(name = "typeNames")
+    protected FeatureTypeFilter featureTypeFilter;
+    @XmlElement(name = "featureVersion")
+    private SimpleFeatureVersionFilter featureVersionFilter;
+    @XmlElement(name = "selection")
+    private SimpleSelectionFilter selectionFilter;
+    @XmlElement(name = "limit")
+    protected CounterFilter counterFilter;
+    @XmlElement(name = "lods")
+    protected LodFilter lodFilter;
+    @XmlElement(name = "bbox", required = true)
+    private SimpleTiling bboxFilter;
 
-	public SimpleQuery() {
-		featureTypeFilter = new FeatureTypeFilter();
-		featureVersionFilter = new SimpleFeatureVersionFilter();
-		selectionFilter = new SimpleSelectionFilter();
-		counterFilter = new CounterFilter();
-		lodFilter = new LodFilter();
-		bboxFilter = new SimpleTiling();
-	}
-	
-	public CityGMLVersionType getVersion() {
-		return version != null ? version : CityGMLVersionType.v2_0_0;
-	}
-	
-	public void setVersion(CityGMLVersionType version) {
-		this.version = version;
-	}
+    public SimpleQuery() {
+        featureTypeFilter = new FeatureTypeFilter();
+        featureVersionFilter = new SimpleFeatureVersionFilter();
+        selectionFilter = new SimpleSelectionFilter();
+        counterFilter = new CounterFilter();
+        lodFilter = new LodFilter();
+        bboxFilter = new SimpleTiling();
+    }
 
-	public DatabaseSrs getTargetSrs() {
-		return targetSrs;
-	}
-	
-	public boolean isSetTargetSrs() {
-		return targetSrs != null;
-	}
-	
-	public void setTargetSrs(DatabaseSrs targetSrs) {
-		this.targetSrs = targetSrs;
-	}
+    public CityGMLVersionType getVersion() {
+        return version != null ? version : CityGMLVersionType.v2_0_0;
+    }
 
-	public boolean isUseTypeNames() {
-		return useTypeNames;
-	}
+    public void setVersion(CityGMLVersionType version) {
+        this.version = version;
+    }
 
-	public void setUseTypeNames(boolean useTypeNames) {
-		this.useTypeNames = useTypeNames;
-	}
+    public DatabaseSrs getTargetSrs() {
+        return targetSrs;
+    }
 
-	public boolean isUseFeatureVersionFilter() {
-		return useFeatureVersionFilter;
-	}
+    public boolean isSetTargetSrs() {
+        return targetSrs != null;
+    }
 
-	public void setUseFeatureVersionFilter(boolean useFeatureVersionFilter) {
-		this.useFeatureVersionFilter = useFeatureVersionFilter;
-	}
+    public void setTargetSrs(DatabaseSrs targetSrs) {
+        this.targetSrs = targetSrs;
+    }
 
-	public boolean isUseSelectionFilter() {
-		return useSelectionFilter;
-	}
+    public boolean isUseTypeNames() {
+        return useTypeNames;
+    }
 
-	public void setUseSelectionFilter(boolean useSelectionFilter) {
-		this.useSelectionFilter = useSelectionFilter;
-	}
+    public void setUseTypeNames(boolean useTypeNames) {
+        this.useTypeNames = useTypeNames;
+    }
 
-	public boolean isUseLodFilter() {
-		return useLodFilter;
-	}
+    public boolean isUseFeatureVersionFilter() {
+        return useFeatureVersionFilter;
+    }
 
-	public boolean isUseCountFilter() {
-		return useCountFilter;
-	}
+    public void setUseFeatureVersionFilter(boolean useFeatureVersionFilter) {
+        this.useFeatureVersionFilter = useFeatureVersionFilter;
+    }
 
-	public void setUseCountFilter(boolean useCountFilter) {
-		this.useCountFilter = useCountFilter;
-	}
+    public boolean isUseSelectionFilter() {
+        return useSelectionFilter;
+    }
 
-	public void setUseLodFilter(boolean useLodFilter) {
-		this.useLodFilter = useLodFilter;
-	}
+    public void setUseSelectionFilter(boolean useSelectionFilter) {
+        this.useSelectionFilter = useSelectionFilter;
+    }
 
-	public boolean isUseBboxFilter() {
-		return useBboxFilter;
-	}
+    public boolean isUseLodFilter() {
+        return useLodFilter;
+    }
 
-	public void setUseBboxFilter(boolean useBboxFilter) {
-		this.useBboxFilter = useBboxFilter;
-	}
+    public boolean isUseCountFilter() {
+        return useCountFilter;
+    }
 
-	public FeatureTypeFilter getFeatureTypeFilter() {
-		return featureTypeFilter;
-	}
-	
-	public boolean isSetFeatureTypeFilter() {
-		return featureTypeFilter != null;
-	}
+    public void setUseCountFilter(boolean useCountFilter) {
+        this.useCountFilter = useCountFilter;
+    }
 
-	public void setFeatureTypeFilter(FeatureTypeFilter featureTypeFilter) {
-		this.featureTypeFilter = featureTypeFilter;
-	}
+    public void setUseLodFilter(boolean useLodFilter) {
+        this.useLodFilter = useLodFilter;
+    }
 
-	public SimpleFeatureVersionFilter getFeatureVersionFilter() {
-		return featureVersionFilter;
-	}
+    public boolean isUseBboxFilter() {
+        return useBboxFilter;
+    }
 
-	public boolean isSetFeatureVersionFilter() {
-		return featureVersionFilter != null;
-	}
+    public void setUseBboxFilter(boolean useBboxFilter) {
+        this.useBboxFilter = useBboxFilter;
+    }
 
-	public void setFeatureVersionFilter(SimpleFeatureVersionFilter featureVersionFilter) {
-		this.featureVersionFilter = featureVersionFilter;
-	}
-	
-	public SimpleSelectionFilter getSelectionFilter() {
-		return selectionFilter;
-	}
+    public FeatureTypeFilter getFeatureTypeFilter() {
+        return featureTypeFilter;
+    }
 
-	public boolean isSetSelectionFilter() {
-		return selectionFilter != null;
-	}
+    public boolean isSetFeatureTypeFilter() {
+        return featureTypeFilter != null;
+    }
 
-	public void setSelectionFilter(SimpleSelectionFilter selectionFilter) {
-		this.selectionFilter = selectionFilter;
-	}
-	
-	public CounterFilter getCounterFilter() {
-		return counterFilter;
-	}
-	
-	public boolean isSetCounterFilter() {
-		return counterFilter != null;
-	}
+    public void setFeatureTypeFilter(FeatureTypeFilter featureTypeFilter) {
+        this.featureTypeFilter = featureTypeFilter;
+    }
 
-	public void setCounterFilter(CounterFilter counterFilter) {
-		this.counterFilter = counterFilter;
-	}
-	
-	public LodFilter getLodFilter() {
-		return lodFilter;
-	}
-	
-	public boolean isSetLodFilter() {
-		return lodFilter != null;
-	}
+    public SimpleFeatureVersionFilter getFeatureVersionFilter() {
+        return featureVersionFilter;
+    }
 
-	public void setLodFilter(LodFilter lodFilter) {
-		this.lodFilter = lodFilter;
-	}
+    public boolean isSetFeatureVersionFilter() {
+        return featureVersionFilter != null;
+    }
 
-	public SimpleTiling getBboxFilter() {
-		return bboxFilter;
-	}
+    public void setFeatureVersionFilter(SimpleFeatureVersionFilter featureVersionFilter) {
+        this.featureVersionFilter = featureVersionFilter;
+    }
 
-	public boolean isSetBboxFilter() {
-		return bboxFilter != null;
-	}
+    public SimpleSelectionFilter getSelectionFilter() {
+        return selectionFilter;
+    }
 
-	public void setBboxFilter(SimpleTiling bboxFilter) {
-		this.bboxFilter = bboxFilter;
-	}
-	
+    public boolean isSetSelectionFilter() {
+        return selectionFilter != null;
+    }
+
+    public void setSelectionFilter(SimpleSelectionFilter selectionFilter) {
+        this.selectionFilter = selectionFilter;
+    }
+
+    public CounterFilter getCounterFilter() {
+        return counterFilter;
+    }
+
+    public boolean isSetCounterFilter() {
+        return counterFilter != null;
+    }
+
+    public void setCounterFilter(CounterFilter counterFilter) {
+        this.counterFilter = counterFilter;
+    }
+
+    public LodFilter getLodFilter() {
+        return lodFilter;
+    }
+
+    public boolean isSetLodFilter() {
+        return lodFilter != null;
+    }
+
+    public void setLodFilter(LodFilter lodFilter) {
+        this.lodFilter = lodFilter;
+    }
+
+    public SimpleTiling getBboxFilter() {
+        return bboxFilter;
+    }
+
+    public boolean isSetBboxFilter() {
+        return bboxFilter != null;
+    }
+
+    public void setBboxFilter(SimpleTiling bboxFilter) {
+        this.bboxFilter = bboxFilter;
+    }
+
 }

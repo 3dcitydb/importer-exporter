@@ -30,76 +30,76 @@ package org.citydb.config.project.database;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="WorkspacesType", propOrder={
-		"importWorkspace",
-		"exportWorkspace",
-		"deleteWorkspace",
-		"kmlExportWorkspace",
-		"operationWorkspace"
+@XmlType(name = "WorkspacesType", propOrder = {
+        "importWorkspace",
+        "exportWorkspace",
+        "deleteWorkspace",
+        "kmlExportWorkspace",
+        "operationWorkspace"
 })
 public class Workspaces {
-	@XmlElement(name="import")
-	private Workspace importWorkspace;
-	@XmlElement(name="export")
-	private Workspace exportWorkspace;
-	@XmlElement(name="delete")
-	private Workspace deleteWorkspace;
-	@XmlElement(name="kmlExport")
-	private Workspace kmlExportWorkspace;
-	@XmlElement(name="operations")
-	private Workspace operationWorkspace;
+    @XmlElement(name = "import")
+    private Workspace importWorkspace;
+    @XmlElement(name = "export")
+    private Workspace exportWorkspace;
+    @XmlElement(name = "delete")
+    private Workspace deleteWorkspace;
+    @XmlElement(name = "kmlExport")
+    private Workspace kmlExportWorkspace;
+    @XmlElement(name = "operations")
+    private Workspace operationWorkspace;
 
-	public Workspaces() {
-		importWorkspace = new Workspace();
-		exportWorkspace = new Workspace();
-		deleteWorkspace = new Workspace();
-		kmlExportWorkspace = new Workspace();
-		operationWorkspace = new Workspace();
-	}
+    public Workspaces() {
+        importWorkspace = new Workspace();
+        exportWorkspace = new Workspace();
+        deleteWorkspace = new Workspace();
+        kmlExportWorkspace = new Workspace();
+        operationWorkspace = new Workspace();
+    }
 
-	public Workspace getImportWorkspace() {
-		return importWorkspace;
-	}
+    public Workspace getImportWorkspace() {
+        return importWorkspace;
+    }
 
-	public void setImportWorkspace(Workspace importWorkspace) {
-		if (importWorkspace != null)
-			this.importWorkspace = importWorkspace;
-	}
+    public void setImportWorkspace(Workspace importWorkspace) {
+        if (importWorkspace != null)
+            this.importWorkspace = importWorkspace;
+    }
 
-	public Workspace getExportWorkspace() {
-		return exportWorkspace;
-	}
+    public Workspace getExportWorkspace() {
+        return exportWorkspace;
+    }
 
-	public void setExportWorkspace(Workspace exportWorkspace) {
-		if (exportWorkspace != null)
-			this.exportWorkspace = exportWorkspace;
-	}
-	
-	public Workspace getDeleteWorkspace() {
-		return exportWorkspace;
-	}
+    public void setExportWorkspace(Workspace exportWorkspace) {
+        if (exportWorkspace != null)
+            this.exportWorkspace = exportWorkspace;
+    }
 
-	public void setDeleteWorkspace(Workspace deleteWorkspace) {
-		if (deleteWorkspace != null)
-			this.deleteWorkspace = deleteWorkspace;
-	}
+    public Workspace getDeleteWorkspace() {
+        return exportWorkspace;
+    }
 
-	public void setKmlExportWorkspace(Workspace kmlExportWorkspace) {
-		if (kmlExportWorkspace != null)
-			this.kmlExportWorkspace = kmlExportWorkspace;
-	}
+    public void setDeleteWorkspace(Workspace deleteWorkspace) {
+        if (deleteWorkspace != null)
+            this.deleteWorkspace = deleteWorkspace;
+    }
 
-	public Workspace getKmlExportWorkspace() {
-		return kmlExportWorkspace;
-	}
-	
-	public Workspace getOperationWorkspace() {
-		return operationWorkspace;
-	}
+    public void setKmlExportWorkspace(Workspace kmlExportWorkspace) {
+        if (kmlExportWorkspace != null)
+            this.kmlExportWorkspace = kmlExportWorkspace;
+    }
 
-	public void setOperationWorkspace(Workspace operationWorkspace) {
-		if (operationWorkspace != null)
-			this.operationWorkspace = operationWorkspace;
-	}
+    public Workspace getKmlExportWorkspace() {
+        return kmlExportWorkspace;
+    }
+
+    public Workspace getOperationWorkspace() {
+        return operationWorkspace;
+    }
+
+    public void setOperationWorkspace(Workspace operationWorkspace) {
+        if (operationWorkspace != null)
+            this.operationWorkspace = operationWorkspace;
+    }
 
 }

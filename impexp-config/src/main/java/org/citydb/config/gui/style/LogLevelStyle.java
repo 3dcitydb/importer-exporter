@@ -30,7 +30,7 @@ package org.citydb.config.gui.style;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="LogLevelStyleType", propOrder={
+@XmlType(name = "LogLevelStyleType", propOrder = {
         "foreground",
         "background"
 })
@@ -41,7 +41,6 @@ public class LogLevelStyle {
     private String background;
 
     public LogLevelStyle() {
-
     }
 
     LogLevelStyle(String foreground) {

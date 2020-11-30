@@ -2,7 +2,7 @@
  * 3D City Database - The Open Source CityGML Database
  * http://www.3dcitydb.org/
  *
- * Copyright 2013 - 2019
+ * Copyright 2013 - 2020
  * Chair of Geoinformatics
  * Technical University of Munich, Germany
  * https://www.gis.bgu.tum.de/
@@ -28,23 +28,40 @@
 
 package org.citydb.modules.kml.controller;
 
-public class KmlExportException extends Exception {
-	private static final long serialVersionUID = -3716015045363231263L;
-	
+import org.citydb.config.exception.ApplicationException;
+import org.citydb.config.exception.ErrorCode;
+
+public class KmlExportException extends ApplicationException {
+
+	public KmlExportException(ErrorCode errorCode) {
+		super(errorCode);
+	}
+
+	public KmlExportException(ErrorCode errorCode, String message) {
+		super(errorCode, message);
+	}
+
+	public KmlExportException(ErrorCode errorCode, String message, Throwable cause) {
+		super(errorCode, message, cause);
+	}
+
+	public KmlExportException(ErrorCode errorCode, Throwable cause) {
+		super(errorCode, cause);
+	}
+
 	public KmlExportException() {
 		super();
 	}
-	
+
 	public KmlExportException(String message) {
 		super(message);
 	}
-	
-	public KmlExportException(Throwable cause) {
-		super(cause);
-	}
-	
+
 	public KmlExportException(String message, Throwable cause) {
 		super(message, cause);
 	}
-	
+
+	public KmlExportException(Throwable cause) {
+		super(cause);
+	}
 }

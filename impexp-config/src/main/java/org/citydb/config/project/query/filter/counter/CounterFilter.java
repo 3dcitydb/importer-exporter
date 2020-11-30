@@ -30,43 +30,43 @@ package org.citydb.config.project.query.filter.counter;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="CounterFilterType", propOrder={
-		"count",
-		"startIndex"
+@XmlType(name = "CounterFilterType", propOrder = {
+        "count",
+        "startIndex"
 })
 public class CounterFilter {
-	@XmlSchemaType(name="nonNegativeInteger")
-	private Long count;
-	@XmlSchemaType(name="nonNegativeInteger")
-	private Long startIndex;
-	
-	public boolean isSetCount() {
-		return count != null;
-	}
+    @XmlSchemaType(name = "nonNegativeInteger")
+    private Long count;
+    @XmlSchemaType(name = "nonNegativeInteger")
+    private Long startIndex;
 
-	public Long getCount() {
-		return count;
-	}
+    public boolean isSetCount() {
+        return count != null;
+    }
 
-	public void setCount(Long count) {
-		this.count = count;
-	}
-	
-	public boolean isSetStartIndex() {
-		return startIndex != null;
-	}
+    public Long getCount() {
+        return count;
+    }
 
-	public Long getStartIndex() {
-		return startIndex;
-	}
+    public void setCount(Long count) {
+        this.count = count;
+    }
 
-	public void setStartIndex(Long startIndex) {
-		this.startIndex = startIndex;
-	}
+    public boolean isSetStartIndex() {
+        return startIndex != null;
+    }
 
-	public void reset() {
-		count = null;
-		startIndex = null;
-	}
+    public Long getStartIndex() {
+        return startIndex;
+    }
+
+    public void setStartIndex(Long startIndex) {
+        this.startIndex = startIndex;
+    }
+
+    public void reset() {
+        count = null;
+        startIndex = null;
+    }
 
 }
