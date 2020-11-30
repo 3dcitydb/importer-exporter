@@ -315,24 +315,22 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryExporter {
 		}
 
 		// check for xlinks
-		if (geomNode.gmlId != null) {
-			if (geomNode.isXlink) {
+		if (geomNode.gmlId != null && geomNode.isXlink) {
+			if (useXLink) {
 				if (exporter.lookupAndPutGeometryUID(geomNode.gmlId, geomNode.id)) {
-					if (useXLink) {
-						// check whether we have to embrace the geometry with an orientableSurface
-						return geomNode.isReverse != isSetOrientableSurface ?
-								new SurfaceGeometry(reverseSurface("#" + geomNode.gmlId)) :
-								new SurfaceGeometry("#" + geomNode.gmlId, surfaceGeometryType);
-					} else {
-						geomNode.isXlink = false;
-						String gmlId = DefaultGMLIdManager.getInstance().generateUUID(gmlIdPrefix);
-						if (appendOldGmlId)
-							gmlId = gmlId + "-" + geomNode.gmlId;
-
-						geomNode.gmlId = gmlId;
-						return rebuildGeometry(geomNode, isSetOrientableSurface, true);
-					}
+					// check whether we have to embrace the geometry with an orientableSurface
+					return geomNode.isReverse != isSetOrientableSurface ?
+							new SurfaceGeometry(reverseSurface("#" + geomNode.gmlId)) :
+							new SurfaceGeometry("#" + geomNode.gmlId, surfaceGeometryType);
 				}
+			} else {
+				geomNode.isXlink = false;
+				String gmlId = DefaultGMLIdManager.getInstance().generateUUID(gmlIdPrefix);
+				if (appendOldGmlId)
+					gmlId = gmlId + "-" + geomNode.gmlId;
+
+				geomNode.gmlId = gmlId;
+				return rebuildGeometry(geomNode, isSetOrientableSurface, true);
 			}
 		}
 
