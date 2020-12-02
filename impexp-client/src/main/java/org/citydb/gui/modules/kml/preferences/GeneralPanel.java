@@ -27,6 +27,7 @@
  */
 package org.citydb.gui.modules.kml.preferences;
 
+import net.opengis.kml._2.ViewRefreshModeEnumType;
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.kmlExporter.ColladaOptions;
@@ -55,6 +56,7 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 	private TitledPanel generalPanel;
 	private TitledPanel colladaPanel;
 	private TitledPanel gltfPanel;
+	private TitledPanel kmlRegionPanel;
 
 	private JCheckBox kmzCheckbox;
 	private JCheckBox showBoundingBoxCheckbox;
@@ -85,7 +87,17 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 	private JRadioButton exportGltfV1;
 	private JRadioButton exportGltfV2;
 	private JCheckBox enableGltfDracoCompression;
-	
+
+	private JCheckBox oneObjectPerRegion;
+	private JLabel viewRefreshModeLabel;
+	private JComboBox<String> viewRefreshMode;
+	private JLabel visibleFromLabel;
+	private JFormattedTextField visibleFromText;
+	private JLabel visibleFromPixels;
+	private JLabel viewRefreshTimeLabel;
+	private JFormattedTextField viewRefreshTimeText;
+	private JLabel viewRefreshTimeSeconds;
+
 	public GeneralPanel(Config config) {
 		super(config);
 
@@ -102,6 +114,8 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 
 		try { autoTileSideLengthText.commitEdit(); } catch (ParseException e) {}
 		try { groupSizeText.commitEdit(); } catch (ParseException ignored) { }
+		try { visibleFromText.commitEdit(); } catch (ParseException ignored) { }
+		try { viewRefreshTimeText.commitEdit(); } catch (ParseException ignored) { }
 
 		if (kmzCheckbox.isSelected() != kmlExportConfig.isExportAsKmz()) return true;
 		if (showBoundingBoxCheckbox.isSelected() != kmlExportConfig.isShowBoundingBox()) return true;
@@ -130,7 +144,12 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		if (exportGltfV1.isSelected() != kmlExportConfig.isExportGltfV1()) return true;
 		if (exportGltfV2.isSelected() != kmlExportConfig.isExportGltfV2()) return true;
 		if (enableGltfDracoCompression.isSelected() != kmlExportConfig.isEnableGltfDracoCompression()) return true;
-		
+
+		if (oneObjectPerRegion.isSelected() != kmlExportConfig.isOneFilePerObject()) return true;
+		if (!viewRefreshMode.getSelectedItem().equals(kmlExportConfig.getViewRefreshMode())) return true;
+		if (((Number) visibleFromText.getValue()).intValue() != kmlExportConfig.getSingleObjectRegionSize()) return true;
+		if (((Number) viewRefreshTimeText.getValue()).doubleValue() != kmlExportConfig.getViewRefreshTime()) return true;
+
 		return false;
 	}
 
@@ -162,15 +181,25 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		exportGltfV2 = new JRadioButton();
 		enableGltfDracoCompression = new JCheckBox();
 
+		oneObjectPerRegion = new JCheckBox();
+		viewRefreshModeLabel = new JLabel();
+		viewRefreshMode = new JComboBox<>();
+		visibleFromLabel = new JLabel();
+		visibleFromPixels = new JLabel();
+		viewRefreshTimeLabel = new JLabel();
+		viewRefreshTimeSeconds = new JLabel("s");
+
 		ButtonGroup exportGltfVersions = new ButtonGroup();
 		exportGltfVersions.add(exportGltfV1);
 		exportGltfVersions.add(exportGltfV2);
 
-		DecimalFormat tileSizeFormat = new DecimalFormat("#");
-		tileSizeFormat.setMaximumIntegerDigits(4);
-		tileSizeFormat.setMinimumIntegerDigits(1);
-		autoTileSideLengthText = new JFormattedTextField(tileSizeFormat);
+		DecimalFormat fourIntFormat = new DecimalFormat("#");
+		fourIntFormat.setMaximumIntegerDigits(4);
+		fourIntFormat.setMinimumIntegerDigits(1);
+		autoTileSideLengthText = new JFormattedTextField(fourIntFormat);
 		autoTileSideLengthText.setColumns(5);
+		visibleFromText = new JFormattedTextField(fourIntFormat);
+		visibleFromText.setColumns(5);
 
 		SpinnerModel scaleFactor = new SpinnerNumberModel(1, 0.01, 1.0, 0.1);
 		scaleFactorSpinner = new JSpinner(scaleFactor);
@@ -185,9 +214,19 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		groupSizeText = new JFormattedTextField(groupSizeFormat);
 		groupSizeText.setColumns(5);
 
+		DecimalFormat refreshTime = new DecimalFormat("#.##", DecimalFormatSymbols.getInstance(Locale.ENGLISH));
+		groupSizeFormat.setMaximumIntegerDigits(4);
+		groupSizeFormat.setMaximumFractionDigits(2);
+		viewRefreshTimeText = new JFormattedTextField(refreshTime);
+		viewRefreshTimeText.setColumns(5);
+
 		packingAlgorithmsComboBox.addItem("BASIC");
 		packingAlgorithmsComboBox.addItem("TPIM");
 		packingAlgorithmsComboBox.addItem("TPIM w/o image rotation");
+
+		for (ViewRefreshModeEnumType refreshMode : ViewRefreshModeEnumType.values()) {
+			viewRefreshMode.addItem(refreshMode.value());
+		}
 
 		setLayout(new GridBagLayout());
 		{
@@ -266,13 +305,32 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 					.withToggleButton(createGltfCheckbox)
 					.build(content);
 		}
+		{
+			JPanel content = new JPanel();
+			content.setLayout(new GridBagLayout());
+			{
+				content.add(viewRefreshModeLabel, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 5, 5));
+				content.add(viewRefreshMode, GuiUtil.setConstraints(1, 0, 2, 1, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, 5, 0));
+				content.add(visibleFromLabel, GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 5, 5));
+				content.add(visibleFromText, GuiUtil.setConstraints(1, 1, 0, 0, GridBagConstraints.NONE, 0, 5, 5, 5));
+				content.add(visibleFromPixels, GuiUtil.setConstraints(2, 1, 1, 0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, 0, 0, 5, 0));
+				content.add(viewRefreshTimeLabel, GuiUtil.setConstraints(0, 2, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 5));
+				content.add(viewRefreshTimeText, GuiUtil.setConstraints(1, 2, 0, 0, GridBagConstraints.NONE, 0, 5, 0, 5));
+				content.add(viewRefreshTimeSeconds, GuiUtil.setConstraints(2, 2, 1, 0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, 0, 0, 0, 0));
+			}
 
+			kmlRegionPanel = new TitledPanel()
+					.withToggleButton(oneObjectPerRegion)
+					.build(content);
+		}
 
 		add(generalPanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 		add(colladaPanel, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 		add(gltfPanel, GuiUtil.setConstraints(0, 2, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+		add(kmlRegionPanel, GuiUtil.setConstraints(0, 3, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 
-		PopupMenuDecorator.getInstance().decorate(autoTileSideLengthText);
+		PopupMenuDecorator.getInstance().decorate(autoTileSideLengthText, groupSizeText, visibleFromText,
+				viewRefreshTimeText);
 
 		createGltfCheckbox.addActionListener(e -> excludeGltfAndKMZ(true));
 		kmzCheckbox.addActionListener(e -> excludeGltfAndKMZ(false));
@@ -300,6 +358,19 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 
 		scaleTexImagesCheckbox.addActionListener(e -> scaleFactorSpinner.setEnabled(scaleTexImagesCheckbox.isSelected()));
 		groupObjectsCheckbox.addActionListener(e -> groupSizeText.setEnabled(groupObjectsCheckbox.isSelected()));
+		oneObjectPerRegion.addActionListener(e -> setEnabledKmlRegionComponents());
+
+		visibleFromText.addPropertyChangeListener("value", evt -> {
+			if (visibleFromText.getValue() == null
+					|| ((Number) visibleFromText.getValue()).intValue() <= 0)
+				visibleFromText.setValue(0);
+		});
+
+		viewRefreshTimeText.addPropertyChangeListener("value", evt -> {
+			if (viewRefreshTimeText.getValue() == null
+					|| ((Number) viewRefreshTimeText.getValue()).intValue() <= 0)
+				groupSizeText.setValue(0);
+		});
 	}
 
 	private void excludeGltfAndKMZ(boolean deactivateKmz) {
@@ -356,6 +427,12 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		exportGltfV1.setText(Language.I18N.getString("pref.kmlexport.label.exportGltfV1"));
 		exportGltfV2.setText(Language.I18N.getString("pref.kmlexport.label.exportGltfV2"));
 		enableGltfDracoCompression.setText(Language.I18N.getString("pref.kmlexport.label.enableGltfDracoCompression"));
+
+		kmlRegionPanel.setTitle(Language.I18N.getString("pref.kmlexport.label.oneFeaturePerRegion"));
+		visibleFromLabel.setText(Language.I18N.getString("kmlExport.label.visibleFrom"));
+		visibleFromPixels.setText(Language.I18N.getString("kmlExport.label.pixels"));
+		viewRefreshModeLabel.setText(Language.I18N.getString("pref.kmlexport.label.viewRefreshMode"));
+		viewRefreshTimeLabel.setText(Language.I18N.getString("pref.kmlexport.label.viewRefreshTime"));
 	}
 
 	@Override
@@ -396,6 +473,11 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		exportGltfV2.setSelected(kmlExportConfig.isExportGltfV2());
 		enableGltfDracoCompression.setSelected(kmlExportConfig.isEnableGltfDracoCompression());
 
+		oneObjectPerRegion.setSelected(kmlExportConfig.isOneFilePerObject());
+		viewRefreshMode.setSelectedItem(kmlExportConfig.getViewRefreshMode());
+		visibleFromText.setValue(kmlExportConfig.getSingleObjectRegionSize());
+		viewRefreshTimeText.setValue(kmlExportConfig.getViewRefreshTime());
+
 		setEnabledComponents();
 	}
 
@@ -430,11 +512,17 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		kmlExportConfig.setExportGltfV1(exportGltfV1.isSelected());
 		kmlExportConfig.setExportGltfV2(exportGltfV2.isSelected());
 		kmlExportConfig.setEnableGltfDracoCompression(enableGltfDracoCompression.isSelected());
+
+		kmlExportConfig.setOneFilePerObject(oneObjectPerRegion.isSelected());
+		kmlExportConfig.setViewRefreshMode(viewRefreshMode.getSelectedItem().toString());
+		kmlExportConfig.setSingleObjectRegionSize(((Number) visibleFromText.getValue()).intValue());
+		kmlExportConfig.setViewRefreshTime(((Number) viewRefreshTimeText.getValue()).doubleValue());
 	}
 
 	private void setEnabledComponents() {
 		setEnabledColladaComponents();
 		setEnabledGltfComponents();
+		setEnabledKmlRegionComponents();
 	}
 
 	private void setEnabledColladaComponents() {
@@ -454,6 +542,17 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		exportGltfV1.setEnabled(createGltfCheckbox.isSelected());
 		exportGltfV2.setEnabled(createGltfCheckbox.isSelected());
 		enableGltfDracoCompression.setEnabled(createGltfCheckbox.isSelected());
+	}
+
+	private void setEnabledKmlRegionComponents() {
+		viewRefreshModeLabel.setEnabled(oneObjectPerRegion.isSelected());
+		viewRefreshMode.setEnabled(oneObjectPerRegion.isSelected());
+		visibleFromLabel.setEnabled(oneObjectPerRegion.isSelected());
+		visibleFromText.setEnabled(oneObjectPerRegion.isSelected());
+		visibleFromPixels.setEnabled(oneObjectPerRegion.isSelected());
+		viewRefreshTimeLabel.setEnabled(oneObjectPerRegion.isSelected());
+		viewRefreshTimeText.setEnabled(oneObjectPerRegion.isSelected());
+		viewRefreshTimeSeconds.setEnabled(oneObjectPerRegion.isSelected());
 	}
 	
 	private void browseGltfConverterFile(String title) {
