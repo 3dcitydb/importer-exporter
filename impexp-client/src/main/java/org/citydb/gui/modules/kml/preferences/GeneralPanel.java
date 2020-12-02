@@ -214,10 +214,10 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		groupSizeText = new JFormattedTextField(groupSizeFormat);
 		groupSizeText.setColumns(5);
 
-		DecimalFormat refreshTime = new DecimalFormat("#.##", DecimalFormatSymbols.getInstance(Locale.ENGLISH));
-		groupSizeFormat.setMaximumIntegerDigits(4);
-		groupSizeFormat.setMaximumFractionDigits(2);
-		viewRefreshTimeText = new JFormattedTextField(refreshTime);
+		DecimalFormat refreshTimeFormat = new DecimalFormat("#.##", DecimalFormatSymbols.getInstance(Locale.ENGLISH));
+		refreshTimeFormat.setMaximumIntegerDigits(4);
+		refreshTimeFormat.setMaximumFractionDigits(2);
+		viewRefreshTimeText = new JFormattedTextField(refreshTimeFormat);
 		viewRefreshTimeText.setColumns(5);
 
 		packingAlgorithmsComboBox.addItem("BASIC");
@@ -368,8 +368,8 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 
 		viewRefreshTimeText.addPropertyChangeListener("value", evt -> {
 			if (viewRefreshTimeText.getValue() == null
-					|| ((Number) viewRefreshTimeText.getValue()).intValue() <= 0)
-				groupSizeText.setValue(0);
+					|| ((Number) viewRefreshTimeText.getValue()).doubleValue() <= 0)
+				viewRefreshTimeText.setValue(0);
 		});
 	}
 
