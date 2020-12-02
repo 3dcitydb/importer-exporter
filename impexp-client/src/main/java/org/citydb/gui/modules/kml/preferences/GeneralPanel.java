@@ -429,7 +429,7 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		enableGltfDracoCompression.setText(Language.I18N.getString("pref.kmlexport.label.enableGltfDracoCompression"));
 
 		kmlRegionPanel.setTitle(Language.I18N.getString("pref.kmlexport.label.oneFeaturePerRegion"));
-		visibleFromLabel.setText(Language.I18N.getString("kmlExport.label.visibleFrom"));
+		visibleFromLabel.setText(Language.I18N.getString("pref.kmlexport.label.regionVisibleFrom"));
 		visibleFromPixels.setText(Language.I18N.getString("kmlExport.label.pixels"));
 		viewRefreshModeLabel.setText(Language.I18N.getString("pref.kmlexport.label.viewRefreshMode"));
 		viewRefreshTimeLabel.setText(Language.I18N.getString("pref.kmlexport.label.viewRefreshTime"));
