@@ -62,8 +62,6 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 	private JCheckBox showBoundingBoxCheckbox;
 	private JCheckBox showTileBordersCheckbox;
 	private JCheckBox exportEmptyTilesCheckbox;
-	private JLabel autoTileSideLengthLabel;
-	private JFormattedTextField autoTileSideLengthText;
 	private JCheckBox writeJSONCheckbox;
 
 	private JCheckBox ignoreSurfaceOrientationCheckbox;
@@ -112,7 +110,6 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 	public boolean isModified() {
 		KmlExportConfig kmlExportConfig = config.getKmlExportConfig();
 
-		try { autoTileSideLengthText.commitEdit(); } catch (ParseException e) {}
 		try { groupSizeText.commitEdit(); } catch (ParseException ignored) { }
 		try { visibleFromText.commitEdit(); } catch (ParseException ignored) { }
 		try { viewRefreshTimeText.commitEdit(); } catch (ParseException ignored) { }
@@ -122,7 +119,6 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		if (showTileBordersCheckbox.isSelected() != kmlExportConfig.isShowTileBorders()) return true;
 		if (exportEmptyTilesCheckbox.isSelected() != kmlExportConfig.isExportEmptyTiles()) return true;
 		if (writeJSONCheckbox.isSelected() != kmlExportConfig.isWriteJSONFile()) return true;
-		if (((Number) autoTileSideLengthText.getValue()).intValue() != kmlExportConfig.getQuery().getBboxFilter().getTilingOptions().getAutoTileSideLength()) return true;
 
 		ColladaOptions colladaOptions = kmlExportConfig.getColladaOptions();
 		if (ignoreSurfaceOrientationCheckbox.isSelected() != colladaOptions.isIgnoreSurfaceOrientation()) return true;
@@ -158,7 +154,6 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		showBoundingBoxCheckbox = new JCheckBox();
 		showTileBordersCheckbox = new JCheckBox();
 		exportEmptyTilesCheckbox = new JCheckBox();
-		autoTileSideLengthLabel = new JLabel();
 		writeJSONCheckbox = new JCheckBox();
 
 		ignoreSurfaceOrientationCheckbox = new JCheckBox();
@@ -193,12 +188,10 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		exportGltfVersions.add(exportGltfV1);
 		exportGltfVersions.add(exportGltfV2);
 
-		DecimalFormat fourIntFormat = new DecimalFormat("#");
-		fourIntFormat.setMaximumIntegerDigits(4);
-		fourIntFormat.setMinimumIntegerDigits(1);
-		autoTileSideLengthText = new JFormattedTextField(fourIntFormat);
-		autoTileSideLengthText.setColumns(5);
-		visibleFromText = new JFormattedTextField(fourIntFormat);
+		DecimalFormat visibleFromFormat = new DecimalFormat("#");
+		visibleFromFormat.setMaximumIntegerDigits(4);
+		visibleFromFormat.setMinimumIntegerDigits(1);
+		visibleFromText = new JFormattedTextField(visibleFromFormat);
 		visibleFromText.setColumns(5);
 
 		SpinnerModel scaleFactor = new SpinnerNumberModel(1, 0.01, 1.0, 0.1);
@@ -233,17 +226,10 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 			JPanel content = new JPanel();
 			content.setLayout(new GridBagLayout());
 			{
-				JPanel tileSize = new JPanel();
-				tileSize.setLayout(new GridBagLayout());
-				tileSize.add(autoTileSideLengthLabel, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 5));
-				tileSize.add(autoTileSideLengthText, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.NONE, 0, 5, 0, 5));
-				tileSize.add(new JLabel("m"), GuiUtil.setConstraints(2, 0, 1, 0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, 0, 0, 0, 0));
-
-				content.add(kmzCheckbox, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
-				content.add(showBoundingBoxCheckbox, GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.BOTH, 5, 0, 0, 0));
-				content.add(showTileBordersCheckbox, GuiUtil.setConstraints(0, 2, 0, 0, GridBagConstraints.BOTH, 5, 0, 0, 0));
-				content.add(writeJSONCheckbox, GuiUtil.setConstraints(0, 3, 0, 0, GridBagConstraints.BOTH, 5, 0, 0, 0));
-				content.add(tileSize, GuiUtil.setConstraints(0, 4, 1, 0, GridBagConstraints.BOTH, 5, 0, 0, 0));
+				content.add(kmzCheckbox, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+				content.add(showBoundingBoxCheckbox, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 5, 0, 0, 0));
+				content.add(showTileBordersCheckbox, GuiUtil.setConstraints(0, 2, 1, 0, GridBagConstraints.BOTH, 5, 0, 0, 0));
+				content.add(writeJSONCheckbox, GuiUtil.setConstraints(0, 3, 1, 0, GridBagConstraints.BOTH, 5, 0, 0, 0));
 			}
 
 			generalPanel = new TitledPanel().build(content);
@@ -329,21 +315,13 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		add(gltfPanel, GuiUtil.setConstraints(0, 2, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 		add(kmlRegionPanel, GuiUtil.setConstraints(0, 3, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 
-		PopupMenuDecorator.getInstance().decorate(autoTileSideLengthText, groupSizeText, visibleFromText,
-				viewRefreshTimeText);
+		PopupMenuDecorator.getInstance().decorate(groupSizeText, visibleFromText, viewRefreshTimeText);
 
 		createGltfCheckbox.addActionListener(e -> excludeGltfAndKMZ(true));
 		kmzCheckbox.addActionListener(e -> excludeGltfAndKMZ(false));
 		createGltfCheckbox.addActionListener(e -> setEnabledGltfComponents());
 		gltfConverterBrowseButton.addActionListener(e -> browseGltfConverterFile(Language.I18N.getString("pref.kmlexport.dialog.gltf.title")));
 		exportGltfV1.addItemListener(e -> enableGltfDracoCompression.setEnabled(!exportGltfV1.isSelected()));
-
-		autoTileSideLengthText.addPropertyChangeListener("value", evt -> {
-			if (autoTileSideLengthText.getValue() == null
-					|| ((Number) autoTileSideLengthText.getValue()).intValue() <= 1) {
-				autoTileSideLengthText.setValue(125);
-			}
-		});
 
 		groupSizeText.addPropertyChangeListener("value", evt -> {
 			if (groupSizeText.getValue() == null
@@ -407,7 +385,6 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		showTileBordersCheckbox.setText(Language.I18N.getString("pref.kmlexport.label.showTileBorders"));
 		exportEmptyTilesCheckbox.setText(Language.I18N.getString("pref.kmlexport.label.exportEmptyTiles"));
 		writeJSONCheckbox.setText(Language.I18N.getString("pref.kmlexport.label.writeJSONFile"));
-		autoTileSideLengthLabel.setText(Language.I18N.getString("pref.kmlexport.label.autoTileSideLength"));
 
 		colladaPanel.setTitle(Language.I18N.getString("pref.kmlexport.border.colladaOptions"));
 		ignoreSurfaceOrientationCheckbox.setText(Language.I18N.getString("pref.kmlexport.label.ignoreSurfaceOrientation"));
@@ -444,7 +421,6 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		showTileBordersCheckbox.setSelected(kmlExportConfig.isShowTileBorders());
 		exportEmptyTilesCheckbox.setSelected(kmlExportConfig.isExportEmptyTiles());
 		writeJSONCheckbox.setSelected(kmlExportConfig.isWriteJSONFile());
-		autoTileSideLengthText.setValue(kmlExportConfig.getQuery().getBboxFilter().getTilingOptions().getAutoTileSideLength());
 
 		ColladaOptions colladaOptions = kmlExportConfig.getColladaOptions();
 		ignoreSurfaceOrientationCheckbox.setSelected(colladaOptions.isIgnoreSurfaceOrientation());
@@ -490,7 +466,6 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		kmlExportConfig.setShowTileBorders(showTileBordersCheckbox.isEnabled() && showTileBordersCheckbox.isSelected());
 		kmlExportConfig.setExportEmptyTiles(exportEmptyTilesCheckbox.isSelected());
 		kmlExportConfig.setWriteJSONFile(writeJSONCheckbox.isSelected());
-		kmlExportConfig.getQuery().getBboxFilter().getTilingOptions().setAutoTileSideLength(((Number) autoTileSideLengthText.getValue()).intValue());
 
 		ColladaOptions colladaOptions = kmlExportConfig.getColladaOptions();
 		colladaOptions.setIgnoreSurfaceOrientation(ignoreSurfaceOrientationCheckbox.isSelected());
