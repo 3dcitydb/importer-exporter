@@ -81,6 +81,7 @@ import javax.xml.bind.JAXBException;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.geom.AffineTransform;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
@@ -118,7 +119,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 	private ConsolePopupMenuWrapper consolePopup;
 	private ConsoleWindow consoleWindow;
 
-	private int tmpConsoleWidth;
+	private int consoleWidth;
 	private int activePosition;
 	private List<View> views;
 	private PreferencesPlugin preferencesPlugin;
@@ -297,24 +298,24 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 	}
 
 	private void showWindow() {
-		WindowSize size = config.getGuiConfig().getMainWindow().getSize();
-
-		Toolkit t = Toolkit.getDefaultToolkit();
-		Insets frame_insets = t.getScreenInsets(GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration());
-		int frame_insets_x = frame_insets.left + frame_insets.right;
-		int frame_insets_y = frame_insets.bottom + frame_insets.top;
+		GraphicsDevice screen = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+		Insets screenInsets = Toolkit.getDefaultToolkit().getScreenInsets(screen.getDefaultConfiguration());
 
 		// derive virtual bounds of multiple screen layout
 		Rectangle virtualBounds = new Rectangle();
-		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-		GraphicsDevice[] gs = ge.getScreenDevices();
-
-		for (GraphicsDevice gd : gs) {
-			GraphicsConfiguration[] gc = gd.getConfigurations();
-			for (GraphicsConfiguration aGc : gc)
-				virtualBounds = virtualBounds.union(aGc.getBounds());
+		for (GraphicsDevice device : GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices()) {
+			for (GraphicsConfiguration configuration : device.getConfigurations()) {
+				virtualBounds = virtualBounds.union(configuration.getBounds());
+			}
 		}
 
+		Rectangle screenBounds = screen.getDefaultConfiguration().getBounds();
+		AffineTransform transform = screen.getDefaultConfiguration().getDefaultTransform();
+		screenBounds.width = screenBounds.width - (int) ((screenInsets.left + screenInsets.right) / transform.getScaleX() );
+		screenBounds.height = screenBounds.height - (int) ((screenInsets.top + screenInsets.bottom) / transform.getScaleY());
+
+		// get user-defined window size from GUI configuration
+		WindowSize size = config.getGuiConfig().getMainWindow().getSize();
 		Integer x = size.getX();
 		Integer y = size.getY();
 		Integer width = size.getWidth();
@@ -323,35 +324,41 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 
 		// create default values for main window
 		if (x == null || y == null || width == null || height == null ||
-				!virtualBounds.contains(x , y, frame_insets_x != 0 ? frame_insets_x : 40, frame_insets_y != 0 ? frame_insets_y : 40)) {
-			Dimension dim = t.getScreenSize();
-			int user_insets_x = 100;
-			int user_insets_y = 50;
+				!virtualBounds.contains(x , y, 50, 50)) {
+			int preferredWidth = 1700;
+			int preferredHeight = 1000;
 
-			width = dim.width - frame_insets_x - user_insets_x;
-			height = dim.height - frame_insets_y - user_insets_y;
-			x = user_insets_x / 2 + frame_insets.left;
-			y = user_insets_y / 2 + frame_insets.top;
+			if (screenBounds.width - preferredWidth >= 0 && screenBounds.height - preferredHeight >= 0) {
+				width = preferredWidth;
+				height = preferredHeight;
+			} else {
+				width = screenBounds.width- 50;
+				height = screenBounds.height - 50;
+			}
+
+			x = (screenBounds.width - width) / 2;
+			y = (screenBounds.height - height) / 2;
 
 			// if console is detached, also create default values for console window
 			if (config.getGuiConfig().getConsoleWindow().isDetached()) {
-				x -= 15;
-				width = width / 2 + 30;
+				width = width / 2 + 20;
 				consoleWindow.setLocation(x + width, y);
-				consoleWindow.setSize(width - 30, height);
-			} else
-				dividerLocation = (int)(width * .5) + 20;
+				consoleWindow.setSize(width - 20, height);
+			} else {
+				dividerLocation = width / 2 + 20;
+			}
 		}
 
 		setLocation(x, y);
 		setSize(width, height);
 		setVisible(true);
 
-		if (!config.getGuiConfig().getConsoleWindow().isDetached())
-			main.setPreferredSize(new Dimension((int)(width * .5) + 20, 1));
-
-		if (dividerLocation != null && dividerLocation > 0 && dividerLocation < width)
-			splitPane.setDividerLocation(dividerLocation);
+		if (!config.getGuiConfig().getConsoleWindow().isDetached()) {
+			if (dividerLocation != null && dividerLocation > 0 && dividerLocation < width)
+				splitPane.setDividerLocation(dividerLocation);
+		} else {
+			enableConsoleWindow(true, false);
+		}
 	}
 
 	private void initConsole() {
@@ -449,16 +456,8 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 
 		if (enable) {
 			if (resizeMain) {
-				tmpConsoleWidth = console.getWidth();
-				if (getExtendedState() == JFrame.MAXIMIZED_BOTH) {
-					Toolkit t = Toolkit.getDefaultToolkit();
-					Insets insets = t.getScreenInsets(getGraphicsConfiguration());
-					Rectangle bounds = getGraphicsConfiguration().getBounds();
-					setLocation(bounds.x, bounds.y);
-					setSize(bounds.width - insets.left - tmpConsoleWidth - insets.right,
-							bounds.height - insets.top - insets.bottom);
-				} else
-					setSize(getWidth() - tmpConsoleWidth, getHeight());
+				consoleWidth = console.getWidth();
+				setSize(getWidth() - consoleWidth, getHeight());
 			}
 
 			splitPane.setDividerSize(0);
@@ -466,21 +465,19 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		} else {
 			consoleWindow.dispose();
 
-			int width = tmpConsoleWidth;
-			if (width == 0)
-				width = consoleWindow.getWidth();
+			int dividerLocation = splitPane.getDividerLocation();
+			if (dividerLocation <= 0) {
+				dividerLocation = getWidth();
+			}
 
-			if (resizeMain)
+			if (resizeMain) {
+				int width = consoleWidth != 0 ? consoleWidth : consoleWindow.getWidth();
 				setSize(getWidth() + width, getHeight());
-
-			width = main.getWidth();
+			}
 
 			int dividerSize = UIManager.getInt("SplitPane.dividerSize");
 			splitPane.setDividerSize(dividerSize > 0 ? dividerSize : 5);
-
-			int dividerLocation = splitPane.getDividerLocation();
 			splitPane.setRightComponent(console);
-			main.setPreferredSize(new Dimension(width, 1));
 			splitPane.setDividerLocation(dividerLocation);
 		}
 

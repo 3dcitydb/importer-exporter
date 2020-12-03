@@ -41,7 +41,6 @@ import org.citydb.config.i18n.Language;
 import org.citydb.gui.ImpExpGui;
 import org.citydb.gui.util.GuiUtil;
 
-@SuppressWarnings("serial")
 public class ConsoleWindow extends JFrame {
 	private final Component content;
 	private final Config config;
