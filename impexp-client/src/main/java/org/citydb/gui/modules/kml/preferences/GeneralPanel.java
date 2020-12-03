@@ -42,6 +42,7 @@ import org.citydb.util.ClientConstants;
 import javax.swing.*;
 import javax.swing.text.NumberFormatter;
 import java.awt.*;
+import java.awt.event.ActionListener;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.DecimalFormat;
@@ -323,7 +324,10 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		kmzCheckbox.addActionListener(e -> excludeGltfAndKMZ(false));
 		createGltfCheckbox.addActionListener(e -> setEnabledGltfComponents());
 		gltfConverterBrowseButton.addActionListener(e -> browseGltfConverterFile(Language.I18N.getString("pref.kmlexport.dialog.gltf.title")));
-		exportGltfV1.addItemListener(e -> enableGltfDracoCompression.setEnabled(!exportGltfV1.isSelected()));
+
+		ActionListener dracoCompressionListener = e -> enableGltfDracoCompression.setEnabled(exportGltfV2.isSelected());
+		exportGltfV1.addActionListener(dracoCompressionListener);
+		exportGltfV2.addActionListener(dracoCompressionListener);
 
 		textureAtlasCheckbox.addActionListener(e -> {
 			packingAlgorithmsComboBox.setEnabled(textureAtlasCheckbox.isSelected());
