@@ -500,7 +500,7 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		exportGltfBinary.setEnabled(createGltfCheckbox.isSelected());
 		exportGltfV1.setEnabled(createGltfCheckbox.isSelected());
 		exportGltfV2.setEnabled(createGltfCheckbox.isSelected());
-		enableGltfDracoCompression.setEnabled(createGltfCheckbox.isSelected());
+		enableGltfDracoCompression.setEnabled(createGltfCheckbox.isSelected() && exportGltfV2.isSelected());
 	}
 
 	private void setEnabledKmlRegionComponents() {
