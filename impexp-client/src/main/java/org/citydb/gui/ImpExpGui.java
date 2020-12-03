@@ -311,7 +311,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 
 		Rectangle screenBounds = screen.getDefaultConfiguration().getBounds();
 		AffineTransform transform = screen.getDefaultConfiguration().getDefaultTransform();
-		screenBounds.width = screenBounds.width - (int) ((screenInsets.left + screenInsets.right) / transform.getScaleX() );
+		screenBounds.width = screenBounds.width - (int) ((screenInsets.left + screenInsets.right) / transform.getScaleX());
 		screenBounds.height = screenBounds.height - (int) ((screenInsets.top + screenInsets.bottom) / transform.getScaleY());
 
 		// get user-defined window size from GUI configuration
@@ -332,12 +332,12 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 				width = preferredWidth;
 				height = preferredHeight;
 			} else {
-				width = screenBounds.width- 50;
+				width = screenBounds.width - 50;
 				height = screenBounds.height - 50;
 			}
 
-			x = (screenBounds.width - width) / 2;
-			y = (screenBounds.height - height) / 2;
+			x = (screenBounds.width - width) / 2 + (int) (screenInsets.left / transform.getScaleX());
+			y = (screenBounds.height - height) / 2 + (int) (screenInsets.top / transform.getScaleY());
 
 			// if console is detached, also create default values for console window
 			if (config.getGuiConfig().getConsoleWindow().isDetached()) {
