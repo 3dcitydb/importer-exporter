@@ -31,7 +31,6 @@ import org.citydb.config.geometry.BoundingBox;
 
 import javax.swing.*;
 
-@SuppressWarnings("serial")
 public abstract class BoundingBoxPanel extends JPanel {
 	public abstract BoundingBox getBoundingBox();
 	public abstract void setBoundingBox(BoundingBox boundingBox);
@@ -41,5 +40,6 @@ public abstract class BoundingBoxPanel extends JPanel {
 	public abstract void showMapButton(boolean show);
 	public abstract void showCopyBoundingBoxButton(boolean show);
 	public abstract void showPasteBoundingBoxButton(boolean show);
+	public abstract void addComponent(JComponent component, boolean indent);
 	public abstract void addComponent(JComponent component);
 }

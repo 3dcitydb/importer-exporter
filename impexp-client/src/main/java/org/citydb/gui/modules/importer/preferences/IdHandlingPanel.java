@@ -39,6 +39,7 @@ import org.citydb.event.EventHandler;
 import org.citydb.event.global.DatabaseConnectionStateEvent;
 import org.citydb.event.global.EventType;
 import org.citydb.gui.components.common.TitledPanel;
+import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.modules.common.AbstractPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.registry.ObjectRegistry;
@@ -144,6 +145,8 @@ public class IdHandlingPanel extends AbstractPreferencesComponent implements Eve
 
 		add(idAssignmentPanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 		add(codespacePanel, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+
+		PopupMenuDecorator.getInstance().decorate(idPrefix, impIdCSUserText);
 
 		ActionListener gmlIdListener = e -> setEnabledGmlId();
 		ActionListener codeSpaceListener = e -> setEnabledCodeSpace();

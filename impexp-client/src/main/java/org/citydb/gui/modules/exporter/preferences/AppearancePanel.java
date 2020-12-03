@@ -36,6 +36,7 @@ import org.citydb.gui.modules.common.AbstractPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 
 import javax.swing.*;
+import javax.swing.text.NumberFormatter;
 import java.awt.*;
 import java.io.File;
 import java.text.DecimalFormat;
@@ -92,9 +93,9 @@ public class AppearancePanel extends AbstractPreferencesComponent {
 		browseButton = new JButton();
 
 		useBuckets = new JCheckBox();
-		DecimalFormat bucketsFormat = new DecimalFormat("########");
-		bucketsFormat.setMaximumIntegerDigits(8);
-		bucketsFormat.setMinimumIntegerDigits(1);		
+		NumberFormatter bucketsFormat = new NumberFormatter(new DecimalFormat("#"));
+		bucketsFormat.setMinimum(99999999);
+		bucketsFormat.setMinimum(0);
 		noOfBuckets = new JFormattedTextField(bucketsFormat);
 
 		PopupMenuDecorator.getInstance().decorate(pathText, noOfBuckets);
@@ -142,11 +143,6 @@ public class AppearancePanel extends AbstractPreferencesComponent {
 
 		exportAppearances.addActionListener(e -> setEnabledTextureExport());
 		useBuckets.addActionListener(e -> noOfBuckets.setEnabled(useBuckets.isSelected()));
-
-		noOfBuckets.addPropertyChangeListener("value", evt -> {
-			if (noOfBuckets.getValue() == null || ((Number) noOfBuckets.getValue()).intValue() < 0)
-				noOfBuckets.setValue(0);
-		});
 	}
 
 	private void setEnabledTextureExport() {

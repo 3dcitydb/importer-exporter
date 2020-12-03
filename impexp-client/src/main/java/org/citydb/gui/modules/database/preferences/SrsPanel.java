@@ -54,6 +54,7 @@ import org.citydb.util.ClientConstants;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.text.NumberFormatter;
 import javax.xml.bind.JAXBException;
 import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
@@ -139,10 +140,11 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 		srsComboBoxLabel = new JLabel();
 		sridLabel = new JLabel();
 
-		DecimalFormat tileFormat = new DecimalFormat("##########");	
-		tileFormat.setMaximumIntegerDigits(10);
-		tileFormat.setMinimumIntegerDigits(1);
-		sridText = new JFormattedTextField(tileFormat);
+		NumberFormatter sridFormat = new NumberFormatter(new DecimalFormat("#"));
+		sridFormat.setMaximum(Integer.MAX_VALUE);
+		sridFormat.setMinimum(0);
+		sridText = new JFormattedTextField(sridFormat);
+		sridText.setValue(0);
 
 		srsNameLabel = new JLabel();
 		srsNameComboBox = new SrsNameComboBox();
@@ -177,10 +179,6 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 
 		sridText.addPropertyChangeListener("value", e -> {
 			int srid = sridText.getValue() != null ? ((Number) sridText.getValue()).intValue() : 0;
-			if (srid < 0 || srid == Integer.MAX_VALUE)
-				srid = 0;
-
-			sridText.setValue(srid);
 			srsNameComboBox.updateSrid(srid);
 		});
 

@@ -170,8 +170,14 @@ public class BoundingBoxPanelImpl extends BoundingBoxPanel implements EventHandl
     }
 
     @Override
+    public void addComponent(JComponent component, boolean indent) {
+        int left = indent ? xminLabel.getPreferredSize().width + 10 : 0;
+        add(component, GuiUtil.setConstraints(0, 2, 1.0, 0.0, GridBagConstraints.HORIZONTAL, 5, left, 0, 0));
+    }
+
+    @Override
     public void addComponent(JComponent component) {
-        add(component, GuiUtil.setConstraints(0, 2, 1.0, 0.0, GridBagConstraints.HORIZONTAL, 5, 0, 0, 0));
+        addComponent(component, false);
     }
 
     private void doTranslation() {

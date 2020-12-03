@@ -76,6 +76,7 @@ import org.citygml4j.model.module.citygml.VegetationModule;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.text.NumberFormatter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -116,11 +117,11 @@ public class KmlExportPanel extends JPanel implements EventHandler {
     private JRadioButton bboxRadioButton;
     private BoundingBoxPanel bboxComponent;
 
-    private JLabel tilingLabel;
-    private JRadioButton noTilingRadioButton;
+    private JCheckBox tilingCheckBox;
     private JRadioButton automaticTilingRadioButton;
     private JRadioButton manualTilingRadioButton;
     private JFormattedTextField tileSizeText;
+    private JLabel tileSizeUnit;
     private JFormattedTextField rowsText;
     private JLabel columnsLabel;
     private JFormattedTextField columnsText;
@@ -183,27 +184,23 @@ public class KmlExportPanel extends JPanel implements EventHandler {
         contentButtongGroup.add(bboxRadioButton);
 
         bboxComponent = viewController.getComponentFactory().createBoundingBoxPanel();
-        tilingLabel = new JLabel();
-        noTilingRadioButton = new JRadioButton();
+        tilingCheckBox = new JCheckBox();
         automaticTilingRadioButton = new JRadioButton();
         manualTilingRadioButton = new JRadioButton();
+        tileSizeUnit = new JLabel("m");
         columnsLabel = new JLabel();
 
         ButtonGroup tilingButtonGroup = new ButtonGroup();
-        tilingButtonGroup.add(noTilingRadioButton);
         tilingButtonGroup.add(automaticTilingRadioButton);
         tilingButtonGroup.add(manualTilingRadioButton);
 
-        DecimalFormat tileSizeFormat = new DecimalFormat("#");
-        tileSizeFormat.setMaximumIntegerDigits(4);
-        tileSizeFormat.setMinimumIntegerDigits(1);
-        tileSizeText = new JFormattedTextField(tileSizeFormat);
-        tileSizeText.setColumns(5);
+        NumberFormatter format = new NumberFormatter(new DecimalFormat("#"));
+        format.setMinimum(0);
+        format.setMaximum(9999999);
+        tileSizeText = new JFormattedTextField(format);
 
-        BlankNumberFormatter tileFormat = new BlankNumberFormatter(new DecimalFormat("#######"));
-        tileFormat.setLimits(0, 9999999);
-        columnsText = new JFormattedTextField(tileFormat);
-        rowsText = new JFormattedTextField(tileFormat);
+        columnsText = new JFormattedTextField(format);
+        rowsText = new JFormattedTextField(format);
 
         lodComboBox = new JComboBox<>();
         for (int index = 0; index < 5; index++) {
@@ -226,7 +223,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		visibleFromColladaLabel = new JLabel();
 		pixelsColladaLabel = new JLabel();
 
-        BlankNumberFormatter visibleFromFormatter = new BlankNumberFormatter(new DecimalFormat("####"));
+        BlankNumberFormatter visibleFromFormatter = new BlankNumberFormatter(new DecimalFormat("#"));
         visibleFromFormatter.setLimits(0, 9999);
         footprintVisibleFromText = new JFormattedTextField(visibleFromFormatter);
         extrudedVisibleFromText = new JFormattedTextField(visibleFromFormatter);
@@ -274,16 +271,15 @@ public class KmlExportPanel extends JPanel implements EventHandler {
             // bbox
             JPanel tilingPanel = new JPanel();
             tilingPanel.setLayout(new GridBagLayout());
-            tilingPanel.add(tilingLabel, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 0));
-            tilingPanel.add(noTilingRadioButton, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 25, 0, 0));
-            tilingPanel.add(automaticTilingRadioButton, GuiUtil.setConstraints(2, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 25, 0, 5));
-            tilingPanel.add(tileSizeText, GuiUtil.setConstraints(3, 0, 0, 0, GridBagConstraints.NONE, 0, 5, 0, 0));
-            tilingPanel.add(new JLabel("m"), GuiUtil.setConstraints(4, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 0));
-            tilingPanel.add(manualTilingRadioButton, GuiUtil.setConstraints(5, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 25, 0, 5));
-            tilingPanel.add(rowsText, GuiUtil.setConstraints(7, 0, 0.5, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 5));
-            tilingPanel.add(columnsLabel, GuiUtil.setConstraints(8, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 10, 0, 5));
-            tilingPanel.add(columnsText, GuiUtil.setConstraints(9, 0, 0.5, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 0));
-            bboxComponent.addComponent(tilingPanel);
+            tilingPanel.add(tilingCheckBox, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 0));
+            tilingPanel.add(automaticTilingRadioButton, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 25, 0, 5));
+            tilingPanel.add(tileSizeText, GuiUtil.setConstraints(2, 0, 0.34, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 0));
+            tilingPanel.add(tileSizeUnit, GuiUtil.setConstraints(3, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 0));
+            tilingPanel.add(manualTilingRadioButton, GuiUtil.setConstraints(4, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 25, 0, 5));
+            tilingPanel.add(rowsText, GuiUtil.setConstraints(5, 0, 0.33, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 5));
+            tilingPanel.add(columnsLabel, GuiUtil.setConstraints(6, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 10, 0, 5));
+            tilingPanel.add(columnsText, GuiUtil.setConstraints(7, 0, 0.33, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 0));
+            bboxComponent.addComponent(tilingPanel, true);
 
             bboxPanel = new TitledPanel()
                     .withToggleButton(bboxRadioButton)
@@ -363,7 +359,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
         add(scrollPane, GuiUtil.setConstraints(0, 1, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
         add(exportButton, GuiUtil.setConstraints(0, 2, 0, 0, GridBagConstraints.NONE, 10, 10, 10, 10));
 
-        PopupMenuDecorator.getInstance().decorate(browseText, gmlIdText, rowsText, columnsText,
+        PopupMenuDecorator.getInstance().decorate(browseText, gmlIdText, tileSizeText, rowsText, columnsText,
                 footprintVisibleFromText, extrudedVisibleFromText, geometryVisibleFromText, colladaVisibleFromText,
                 featureTree);
 
@@ -385,8 +381,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
         gmlIdPanel.setTitle(Language.I18N.getString("kmlExport.label.singleBuilding"));
         bboxPanel.setTitle(Language.I18N.getString("filter.border.boundingBox"));
 
-        tilingLabel.setText(Language.I18N.getString("pref.export.boundingBox.border.tiling"));
-        noTilingRadioButton.setText(Language.I18N.getString("kmlExport.label.noTiling"));
+        tilingCheckBox.setText(Language.I18N.getString("pref.export.boundingBox.border.tiling"));
         manualTilingRadioButton.setText(Language.I18N.getString("pref.export.boundingBox.label.rows"));
         columnsLabel.setText(Language.I18N.getString("pref.export.boundingBox.label.columns"));
         automaticTilingRadioButton.setText(Language.I18N.getString("kmlExport.label.automatic"));
@@ -446,20 +441,16 @@ public class KmlExportPanel extends JPanel implements EventHandler {
             bboxComponent.setBoundingBox(bboxFilter.getExtent());
 
         // tiling
-        switch (bboxFilter.getMode()) {
-            case AUTOMATIC:
-                automaticTilingRadioButton.setSelected(true);
-                break;
-            case MANUAL:
-                manualTilingRadioButton.setSelected(true);
-                break;
-            default:
-                noTilingRadioButton.setSelected(true);
+        tilingCheckBox.setSelected(bboxFilter.getMode() != KmlTilingMode.NO_TILING);
+        if (bboxFilter.getMode() == KmlTilingMode.MANUAL) {
+            manualTilingRadioButton.setSelected(true);
+        } else {
+            automaticTilingRadioButton.setSelected(true);
         }
 
         tileSizeText.setValue(bboxFilter.getTilingOptions().getAutoTileSideLength());
-        rowsText.setText(String.valueOf(bboxFilter.getRows()));
-        columnsText.setText(String.valueOf(bboxFilter.getColumns()));
+        rowsText.setValue(bboxFilter.getRows());
+        columnsText.setValue(bboxFilter.getColumns());
 
         // display options
         KmlExportConfig kmlExportConfig = config.getKmlExportConfig();
@@ -473,25 +464,37 @@ public class KmlExportPanel extends JPanel implements EventHandler {
                 case FOOTPRINT:
                     if (displayForm.isActive()) {
                         footprintCheckbox.setSelected(true);
-                        footprintVisibleFromText.setText(String.valueOf(displayForm.getVisibleFrom()));
+                        footprintVisibleFromText.setValue(displayForm.getVisibleFrom());
+                        if (displayForm.getVisibleFrom() == 0) {
+                            footprintVisibleFromText.setText("");
+                        }
                     }
                     break;
                 case EXTRUDED:
                     if (displayForm.isActive()) {
                         extrudedCheckbox.setSelected(true);
-                        extrudedVisibleFromText.setText(String.valueOf(displayForm.getVisibleFrom()));
+                        extrudedVisibleFromText.setValue(displayForm.getVisibleFrom());
+                        if (displayForm.getVisibleFrom() == 0) {
+                            extrudedVisibleFromText.setText("");
+                        }
                     }
                     break;
                 case GEOMETRY:
                     if (displayForm.isActive()) {
                         geometryCheckbox.setSelected(true);
-                        geometryVisibleFromText.setText(String.valueOf(displayForm.getVisibleFrom()));
+                        geometryVisibleFromText.setValue(displayForm.getVisibleFrom());
+                        if (displayForm.getVisibleFrom() == 0) {
+                            geometryVisibleFromText.setText("");
+                        }
                     }
                     break;
                 case COLLADA:
                     if (displayForm.isActive()) {
                         colladaCheckbox.setSelected(true);
-                        colladaVisibleFromText.setText(String.valueOf(displayForm.getVisibleFrom()));
+                        colladaVisibleFromText.setValue(displayForm.getVisibleFrom());
+                        if (displayForm.getVisibleFrom() == 0) {
+                            colladaVisibleFromText.setText("");
+                        }
                     }
                     break;
             }
@@ -536,23 +539,26 @@ public class KmlExportPanel extends JPanel implements EventHandler {
         bboxFilter.setExtent(bboxComponent.getBoundingBox());
 
         // tiling
-        if (automaticTilingRadioButton.isSelected())
-            bboxFilter.setMode(KmlTilingMode.AUTOMATIC);
-        else if (manualTilingRadioButton.isSelected())
-            bboxFilter.setMode(KmlTilingMode.MANUAL);
-        else
+        if (tilingCheckBox.isSelected()) {
+            if (manualTilingRadioButton.isSelected()) {
+                bboxFilter.setMode(KmlTilingMode.MANUAL);
+            } else {
+                bboxFilter.setMode(KmlTilingMode.AUTOMATIC);
+            }
+        } else {
             bboxFilter.setMode(KmlTilingMode.NO_TILING);
+        }
 
         bboxFilter.getTilingOptions().setAutoTileSideLength(((Number) tileSizeText.getValue()).intValue());
 
         try {
-            bboxFilter.setRows(Integer.parseInt(rowsText.getText().trim()));
+            bboxFilter.setRows(((Number) rowsText.getValue()).intValue());
         } catch (NumberFormatException e) {
             bboxFilter.setRows(1);
         }
 
         try {
-            bboxFilter.setColumns(Integer.parseInt(columnsText.getText().trim()));
+            bboxFilter.setColumns(((Number) columnsText.getValue()).intValue());
         } catch (NumberFormatException e) {
             bboxFilter.setColumns(1);
         }
@@ -623,17 +629,9 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 
         gmlIdRadioButton.addActionListener(filterListener);
         bboxRadioButton.addActionListener(filterListener);
-        noTilingRadioButton.addActionListener(filterListener);
+        tilingCheckBox.addActionListener(filterListener);
         manualTilingRadioButton.addActionListener(filterListener);
         automaticTilingRadioButton.addActionListener(filterListener);
-        columnsText.addPropertyChangeListener("value", evt -> checkNonNegative(columnsText));
-        rowsText.addPropertyChangeListener("value", evt -> checkNonNegative(rowsText));
-
-        tileSizeText.addPropertyChangeListener("value", evt -> {
-            if (tileSizeText.getValue() == null || ((Number) tileSizeText.getValue()).intValue() <= 1) {
-                tileSizeText.setValue(125);
-            }
-        });
 
         lodComboBox.addItemListener(e -> {
             if (e.getStateChange() == ItemEvent.SELECTED) {
@@ -821,12 +819,12 @@ public class KmlExportPanel extends JPanel implements EventHandler {
         gmlIdText.setEnabled(gmlIdRadioButton.isSelected());
         bboxComponent.setEnabled(bboxRadioButton.isSelected());
 
-        tilingLabel.setEnabled(bboxRadioButton.isSelected());
-        noTilingRadioButton.setEnabled(bboxRadioButton.isSelected());
-        automaticTilingRadioButton.setEnabled(bboxRadioButton.isSelected());
-        manualTilingRadioButton.setEnabled(bboxRadioButton.isSelected());
+        tilingCheckBox.setEnabled(bboxRadioButton.isSelected());
+        automaticTilingRadioButton.setEnabled(bboxRadioButton.isSelected() && tilingCheckBox.isSelected());
+        manualTilingRadioButton.setEnabled(bboxRadioButton.isSelected() && tilingCheckBox.isSelected());
 
         tileSizeText.setEnabled(automaticTilingRadioButton.isEnabled() && automaticTilingRadioButton.isSelected());
+        tileSizeUnit.setEnabled(automaticTilingRadioButton.isEnabled() && automaticTilingRadioButton.isSelected());
         rowsText.setEnabled(manualTilingRadioButton.isEnabled() && manualTilingRadioButton.isSelected());
         columnsLabel.setEnabled(manualTilingRadioButton.isEnabled() && manualTilingRadioButton.isSelected());
         columnsText.setEnabled(manualTilingRadioButton.isEnabled() && manualTilingRadioButton.isSelected());
@@ -880,11 +878,6 @@ public class KmlExportPanel extends JPanel implements EventHandler {
         }
 
         featureTree.setEnabled(useFeatureFilter.isSelected());
-    }
-
-    private void checkNonNegative(JFormattedTextField field) {
-        if (field.getValue() == null || ((Number) field.getValue()).intValue() < 0)
-            field.setValue(0);
     }
 
     private void saveFile() {

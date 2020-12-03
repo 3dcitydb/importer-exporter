@@ -47,6 +47,7 @@ import org.citydb.util.InternalProxySelector;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.text.NumberFormatter;
 import java.awt.*;
 import java.awt.event.ItemEvent;
 import java.text.DecimalFormat;
@@ -121,11 +122,12 @@ public class ProxyPanel extends AbstractPreferencesComponent implements EventHan
 		proxyUserLabel = new JLabel();
 		proxyPasswordLabel = new JLabel();
 
-		DecimalFormat fiveIntFormat = new DecimalFormat("#####");	
-		fiveIntFormat.setMaximumIntegerDigits(5);
-		fiveIntFormat.setMinimumIntegerDigits(1);
+		NumberFormatter portFormat = new NumberFormatter(new DecimalFormat("#"));
+		portFormat.setMaximum(65535);
+		portFormat.setMinimum(0);
+		proxyPortText = new JFormattedTextField(portFormat);
+
 		proxyHostText = new JTextField();
-		proxyPortText = new JFormattedTextField(fiveIntFormat);
 		proxyUserText = new JTextField();
 		proxyPasswordText = new JPasswordField();
 		passwordCheck = new JCheckBox();
@@ -192,7 +194,6 @@ public class ProxyPanel extends AbstractPreferencesComponent implements EventHan
 			}
 		});
 
-		proxyPortText.addPropertyChangeListener("value", evt -> checkNonNegativeRange(proxyPortText, 0, 65535));
 		requiresAuthenticationBox.addActionListener(e -> setEnabledUserSettings());
 
 		proxyHostText.getDocument().addDocumentListener(new DocumentListener() {
@@ -266,17 +267,6 @@ public class ProxyPanel extends AbstractPreferencesComponent implements EventHan
 				proxy.setEnabled(false);
 				listDecorator.setCheckBoxSelected(index, false);
 			} 
-		}
-	}
-
-	private void checkNonNegativeRange(JFormattedTextField field, int min, int max) {
-		if (field.getValue() != null) {
-			if (((Number) field.getValue()).intValue() < min)
-				field.setValue(min);
-			else if (((Number) field.getValue()).intValue() > max)
-				field.setValue(max);
-		} else {
-			field.setValue(min);
 		}
 	}
 

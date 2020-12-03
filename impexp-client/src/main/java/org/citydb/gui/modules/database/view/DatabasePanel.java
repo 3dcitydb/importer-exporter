@@ -56,6 +56,7 @@ import org.citydb.plugin.extension.view.ViewListener;
 import org.citydb.registry.ObjectRegistry;
 
 import javax.swing.*;
+import javax.swing.text.NumberFormatter;
 import java.awt.*;
 import java.awt.event.ItemEvent;
 import java.sql.SQLException;
@@ -150,13 +151,15 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 		descriptionText = new JTextField();
 		databaseTypeCombo = new JComboBox<>();
 		serverText = new JTextField();
-		DecimalFormat df = new DecimalFormat("#####");
-		df.setMaximumIntegerDigits(5);
-		df.setMinimumIntegerDigits(1);
-		portText = new JFormattedTextField(df);
-		databaseText = new JTextField();
+
+		NumberFormatter format = new NumberFormatter(new DecimalFormat("#"));
+		format.setMaximum(99999);
+		format.setMinimum(0);
+		portText = new JFormattedTextField(format);
 		portText.setColumns(10);
-		databaseText = new JTextField();		
+
+		databaseText = new JTextField();
+		databaseText = new JTextField();
 		userText = new JTextField();
 		passwordText = new JPasswordField();
 		passwordCheck = new JCheckBox();
@@ -250,13 +253,6 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 
 		for (DatabaseType type : DatabaseType.values())
 			databaseTypeCombo.addItem(type);
-
-		portText.addPropertyChangeListener("value", e -> {
-			if (portText.getValue() == null) {
-				DatabaseType type = (DatabaseType) databaseTypeCombo.getSelectedItem();
-				portText.setValue(type == DatabaseType.POSTGIS ? 5432 : 1521);
-			}
-		});
 
 		applyButton.addActionListener(e -> apply());
 

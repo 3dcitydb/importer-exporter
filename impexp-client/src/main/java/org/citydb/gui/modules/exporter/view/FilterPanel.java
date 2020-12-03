@@ -61,6 +61,7 @@ import org.citydb.util.Util;
 import org.citygml4j.model.module.citygml.CityGMLVersion;
 
 import javax.swing.*;
+import javax.swing.text.NumberFormatter;
 import java.awt.*;
 import java.text.DecimalFormat;
 import java.util.stream.Collectors;
@@ -102,11 +103,9 @@ public class FilterPanel extends JPanel implements EventHandler {
 	private JSpinner lodDepth;
 
 	private BoundingBoxPanel bboxPanel;
-	private JLabel bboxMode;
 	private JRadioButton bboxOverlaps;
 	private JRadioButton bboxWithin;
 	private JRadioButton bboxTiling;
-	private JLabel tilingRowsLabel;
 	private JFormattedTextField tilingRowsText;
 	private JLabel tilingColumnsLabel;
 	private JFormattedTextField tilingColumnsText;
@@ -141,12 +140,12 @@ public class FilterPanel extends JPanel implements EventHandler {
 		countLabel = new JLabel();
 		startIndexLabel = new JLabel();
 
-		BlankNumberFormatter countFormatter = new BlankNumberFormatter(new DecimalFormat("##########"));
-		countFormatter.setLimits(0, Integer.MAX_VALUE);
+		BlankNumberFormatter countFormatter = new BlankNumberFormatter(new DecimalFormat("#"));
+		countFormatter.setLimits(0L, Long.MAX_VALUE);
 		countText = new JFormattedTextField(countFormatter);
 		countText.setColumns(10);
 
-		BlankNumberFormatter startIndexFormatter = new BlankNumberFormatter(new DecimalFormat("###################"));
+		BlankNumberFormatter startIndexFormatter = new BlankNumberFormatter(new DecimalFormat("#"));
 		startIndexFormatter.setLimits(0L, Long.MAX_VALUE);
 		startIndexText = new JFormattedTextField(startIndexFormatter);
 		startIndexText.setColumns(10);
@@ -161,11 +160,9 @@ public class FilterPanel extends JPanel implements EventHandler {
 			lodMode.addItem(mode);
 
 		bboxPanel = viewController.getComponentFactory().createBoundingBoxPanel();
-		bboxMode = new JLabel();
 		bboxOverlaps = new JRadioButton();
 		bboxWithin = new JRadioButton();
 		bboxTiling = new JRadioButton();
-		tilingRowsLabel = new JLabel();
 		tilingRowsText = new JFormattedTextField();
 		tilingColumnsLabel = new JLabel();
 		tilingColumnsText = new JFormattedTextField();
@@ -175,8 +172,9 @@ public class FilterPanel extends JPanel implements EventHandler {
 		bboxModeGroup.add(bboxWithin);
 		bboxModeGroup.add(bboxTiling);
 
-		BlankNumberFormatter tileFormat = new BlankNumberFormatter(new DecimalFormat("#######"));
-		tileFormat.setLimits(0, 9999999);
+		NumberFormatter tileFormat = new NumberFormatter(new DecimalFormat("#"));
+		tileFormat.setMaximum(9999999);
+		tileFormat.setMinimum(0);
 		tilingRowsText = new JFormattedTextField(tileFormat);
 		tilingColumnsText = new JFormattedTextField(tileFormat);
 
@@ -286,15 +284,13 @@ public class FilterPanel extends JPanel implements EventHandler {
 			JPanel bboxModePanel = new JPanel();
 			bboxModePanel.setLayout(new GridBagLayout());
 			{
-				bboxModePanel.add(bboxMode, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 5));
-				bboxModePanel.add(bboxOverlaps, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 15, 0, 5));
-				bboxModePanel.add(bboxWithin, GuiUtil.setConstraints(2, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 5));
-				bboxModePanel.add(bboxTiling, GuiUtil.setConstraints(3, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 5));
-				bboxModePanel.add(tilingRowsLabel, GuiUtil.setConstraints(4, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 25, 0, 5));
-				bboxModePanel.add(tilingRowsText, GuiUtil.setConstraints(5, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 5));
-				bboxModePanel.add(tilingColumnsLabel, GuiUtil.setConstraints(6, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 10, 0, 5));
-				bboxModePanel.add(tilingColumnsText, GuiUtil.setConstraints(7, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 0));
-				bboxPanel.addComponent(bboxModePanel);
+				bboxModePanel.add(bboxOverlaps, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 0));
+				bboxModePanel.add(bboxWithin, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 25, 0, 0));
+				bboxModePanel.add(bboxTiling, GuiUtil.setConstraints(2, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 25, 0, 5));
+				bboxModePanel.add(tilingRowsText, GuiUtil.setConstraints(3, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 5));
+				bboxModePanel.add(tilingColumnsLabel, GuiUtil.setConstraints(4, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 10, 0, 5));
+				bboxModePanel.add(tilingColumnsText, GuiUtil.setConstraints(5, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 0));
+				bboxPanel.addComponent(bboxModePanel, true);
 			}
 
 			bboxFilterPanel.build(bboxPanel);
@@ -326,8 +322,6 @@ public class FilterPanel extends JPanel implements EventHandler {
 		bboxOverlaps.addActionListener(e -> setEnabledTilingOptions());
 		bboxWithin.addActionListener(e -> setEnabledTilingOptions());
 		bboxTiling.addActionListener(e -> setEnabledTilingOptions());
-		tilingRowsText.addPropertyChangeListener("value", evt -> checkNonNegative(tilingRowsText));
-		tilingColumnsText.addPropertyChangeListener("value", evt -> checkNonNegative(tilingColumnsText));
 
 		PopupMenuDecorator.getInstance().decorateCheckBoxGroup(lods);
 		PopupMenuDecorator.getInstance().decorate(featureTree, countText, startIndexText, tilingRowsText, tilingColumnsText);
@@ -385,7 +379,6 @@ public class FilterPanel extends JPanel implements EventHandler {
 
 	private void setEnabledBBoxFilter() {
 		bboxPanel.setEnabled(useBBoxFilter.isSelected());
-		bboxMode.setEnabled(useBBoxFilter.isSelected());
 		bboxOverlaps.setEnabled(useBBoxFilter.isSelected());
 		bboxWithin.setEnabled(useBBoxFilter.isSelected());
 		bboxTiling.setEnabled(useBBoxFilter.isSelected());
@@ -393,7 +386,6 @@ public class FilterPanel extends JPanel implements EventHandler {
 	}
 
 	private void setEnabledTilingOptions() {
-		tilingRowsLabel.setEnabled(useBBoxFilter.isSelected() && bboxTiling.isSelected());
 		tilingRowsText.setEnabled(useBBoxFilter.isSelected() && bboxTiling.isSelected());
 		tilingColumnsLabel.setEnabled(useBBoxFilter.isSelected() && bboxTiling.isSelected());
 		tilingColumnsText.setEnabled(useBBoxFilter.isSelected() && bboxTiling.isSelected());
@@ -409,11 +401,6 @@ public class FilterPanel extends JPanel implements EventHandler {
 
 		featureTree.setPathsEnabled(useFeatureFilter.isSelected());
 		featureTree.setEnabled(useFeatureFilter.isSelected());
-	}
-
-	private void checkNonNegative(JFormattedTextField field) {
-		if (field.getValue() == null || ((Number) field.getValue()).intValue() < 0)
-			field.setValue(0);
 	}
 
 	void showFilterDialog(boolean showSimple) {
@@ -432,11 +419,9 @@ public class FilterPanel extends JPanel implements EventHandler {
 		lodDepthLabel.setText(Language.I18N.getString("filter.label.lod.depth"));
 		countLabel.setText(Language.I18N.getString("filter.label.counter.count"));
 		startIndexLabel.setText(Language.I18N.getString("filter.label.counter.startIndex"));
-		bboxMode.setText(Language.I18N.getString("filter.label.boundingBox.mode"));
 		bboxOverlaps.setText(Language.I18N.getString("filter.label.boundingBox.overlaps"));
 		bboxWithin.setText(Language.I18N.getString("filter.label.boundingBox.within"));
-		bboxTiling.setText(Language.I18N.getString("filter.label.boundingBox.tiling"));
-		tilingRowsLabel.setText(Language.I18N.getString("filter.label.boundingBox.rows"));
+		bboxTiling.setText(Language.I18N.getString("filter.label.boundingBox.rows"));
 		tilingColumnsLabel.setText(Language.I18N.getString("filter.label.boundingBox.columns"));
 
 		for (int i = 0; i < filters.length; ++i) {

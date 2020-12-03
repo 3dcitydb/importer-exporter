@@ -38,6 +38,7 @@ import org.citydb.gui.modules.common.AbstractPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 
 import javax.swing.*;
+import javax.swing.text.NumberFormatter;
 import java.awt.*;
 import java.text.DecimalFormat;
 import java.text.ParseException;
@@ -148,9 +149,9 @@ public class ResourcesPanel extends AbstractPreferencesComponent{
 		impResTexDrainLabel = new JLabel();
 		impResTexPartLabel = new JLabel();
 		
-		DecimalFormat threeIntFormat = new DecimalFormat("###");	
-		threeIntFormat.setMaximumIntegerDigits(3);
-		threeIntFormat.setMinimumIntegerDigits(1);
+		NumberFormatter threeIntFormat = new NumberFormatter(new DecimalFormat("#"));
+		threeIntFormat.setMaximum(999);
+		threeIntFormat.setMinimum(0);
 		impResMinThreadsText = new JFormattedTextField(threeIntFormat);
 		impResMaxThreadsText = new JFormattedTextField(threeIntFormat);
 		impResGeomDrainText = new JFormattedTextField(threeIntFormat);
@@ -168,9 +169,9 @@ public class ResourcesPanel extends AbstractPreferencesComponent{
 		impResTexDrainText.setColumns(8);
 		impResTexPartText.setColumns(8);
 
-		DecimalFormat batchFormat = new DecimalFormat("#####");
-		batchFormat.setMaximumIntegerDigits(5);
-		batchFormat.setMinimumIntegerDigits(1);		
+		NumberFormatter batchFormat = new NumberFormatter(new DecimalFormat("#"));
+		batchFormat.setMaximum(99999);
+		batchFormat.setMinimum(0);
 		impResTransaktFeatureText = new JFormattedTextField(batchFormat);
 		impResTransaktCacheText = new JFormattedTextField(batchFormat);
 		impResTransaktTempText = new JFormattedTextField(batchFormat);
@@ -178,9 +179,9 @@ public class ResourcesPanel extends AbstractPreferencesComponent{
 		impResTransaktCacheText.setColumns(8);
 		impResTransaktTempText.setColumns(8);
 
-		DecimalFormat cacheEntryFormat = new DecimalFormat("########");
-		cacheEntryFormat.setMaximumIntegerDigits(8);
-		cacheEntryFormat.setMinimumIntegerDigits(1);		
+		NumberFormatter cacheEntryFormat = new NumberFormatter(new DecimalFormat("#"));
+		cacheEntryFormat.setMaximum(99999999);
+		cacheEntryFormat.setMinimum(0);
 		impResGeomCacheText = new JFormattedTextField(cacheEntryFormat);
 		impResFeatCacheText = new JFormattedTextField(cacheEntryFormat);	
 		impResTexCacheText = new JFormattedTextField(cacheEntryFormat);

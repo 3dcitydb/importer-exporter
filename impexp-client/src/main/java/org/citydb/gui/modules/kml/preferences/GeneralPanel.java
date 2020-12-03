@@ -40,6 +40,7 @@ import org.citydb.textureAtlas.TextureAtlasCreator;
 import org.citydb.util.ClientConstants;
 
 import javax.swing.*;
+import javax.swing.text.NumberFormatter;
 import java.awt.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -188,9 +189,9 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		exportGltfVersions.add(exportGltfV1);
 		exportGltfVersions.add(exportGltfV2);
 
-		DecimalFormat visibleFromFormat = new DecimalFormat("#");
-		visibleFromFormat.setMaximumIntegerDigits(4);
-		visibleFromFormat.setMinimumIntegerDigits(1);
+		NumberFormatter visibleFromFormat = new NumberFormatter(new DecimalFormat("#"));
+		visibleFromFormat.setMaximum(9999);
+		visibleFromFormat.setMinimum(0);
 		visibleFromText = new JFormattedTextField(visibleFromFormat);
 		visibleFromText.setColumns(5);
 
@@ -201,15 +202,16 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		format.setDecimalFormatSymbols(DecimalFormatSymbols.getInstance(Locale.ENGLISH));
 		scaleFactorSpinner.setEditor(editor);
 
-		DecimalFormat groupSizeFormat = new DecimalFormat("#");
-		groupSizeFormat.setMaximumIntegerDigits(8);
-		groupSizeFormat.setMinimumIntegerDigits(1);
+		NumberFormatter groupSizeFormat = new NumberFormatter(new DecimalFormat("#"));
+		groupSizeFormat.setMaximum(99999999);
+		groupSizeFormat.setMinimum(1);
 		groupSizeText = new JFormattedTextField(groupSizeFormat);
 		groupSizeText.setColumns(5);
 
-		DecimalFormat refreshTimeFormat = new DecimalFormat("#.##", DecimalFormatSymbols.getInstance(Locale.ENGLISH));
-		refreshTimeFormat.setMaximumIntegerDigits(4);
-		refreshTimeFormat.setMaximumFractionDigits(2);
+		NumberFormatter refreshTimeFormat = new NumberFormatter(new DecimalFormat("#.##",
+				DecimalFormatSymbols.getInstance(Locale.ENGLISH)));
+		refreshTimeFormat.setMaximum(9999.99);
+		refreshTimeFormat.setMinimum(0.0);
 		viewRefreshTimeText = new JFormattedTextField(refreshTimeFormat);
 		viewRefreshTimeText.setColumns(5);
 
@@ -323,12 +325,6 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		gltfConverterBrowseButton.addActionListener(e -> browseGltfConverterFile(Language.I18N.getString("pref.kmlexport.dialog.gltf.title")));
 		exportGltfV1.addItemListener(e -> enableGltfDracoCompression.setEnabled(!exportGltfV1.isSelected()));
 
-		groupSizeText.addPropertyChangeListener("value", evt -> {
-			if (groupSizeText.getValue() == null
-					|| ((Number) groupSizeText.getValue()).intValue() < 2)
-				groupSizeText.setValue(1);
-		});
-
 		textureAtlasCheckbox.addActionListener(e -> {
 			packingAlgorithmsComboBox.setEnabled(textureAtlasCheckbox.isSelected());
 			textureAtlasPotsCheckbox.setEnabled(textureAtlasCheckbox.isSelected());
@@ -337,18 +333,6 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		scaleTexImagesCheckbox.addActionListener(e -> scaleFactorSpinner.setEnabled(scaleTexImagesCheckbox.isSelected()));
 		groupObjectsCheckbox.addActionListener(e -> groupSizeText.setEnabled(groupObjectsCheckbox.isSelected()));
 		oneObjectPerRegion.addActionListener(e -> setEnabledKmlRegionComponents());
-
-		visibleFromText.addPropertyChangeListener("value", evt -> {
-			if (visibleFromText.getValue() == null
-					|| ((Number) visibleFromText.getValue()).intValue() <= 0)
-				visibleFromText.setValue(0);
-		});
-
-		viewRefreshTimeText.addPropertyChangeListener("value", evt -> {
-			if (viewRefreshTimeText.getValue() == null
-					|| ((Number) viewRefreshTimeText.getValue()).doubleValue() <= 0)
-				viewRefreshTimeText.setValue(0);
-		});
 	}
 
 	private void excludeGltfAndKMZ(boolean deactivateKmz) {

@@ -37,6 +37,7 @@ import org.citydb.gui.modules.common.AbstractPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 
 import javax.swing.*;
+import javax.swing.text.NumberFormatter;
 import java.awt.*;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
@@ -107,11 +108,11 @@ public class AltitudePanel extends AbstractPreferencesComponent {
 		offsetRadioGroup.add(bottomZeroRadioButton);
 		offsetRadioGroup.add(genericAttributeRadioButton);
 
-		DecimalFormat format = new DecimalFormat("#.#", DecimalFormatSymbols.getInstance(Locale.ENGLISH));
-		format.setMaximumIntegerDigits(8);
-		format.setMaximumFractionDigits(5);
+		NumberFormatter format = new NumberFormatter(new DecimalFormat("#.#####", DecimalFormatSymbols.getInstance(Locale.ENGLISH)));
+		format.setMaximum(99999.99999);
+		format.setMinimum(-99999.99999);
 		constantOffsetText = new JFormattedTextField(format);
-		constantOffsetText.setColumns(5);
+		constantOffsetText.setColumns(6);
 
 		setLayout(new GridBagLayout());
 		{

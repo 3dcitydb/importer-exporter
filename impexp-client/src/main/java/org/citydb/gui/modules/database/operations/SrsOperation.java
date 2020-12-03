@@ -47,6 +47,7 @@ import org.citydb.plugin.extension.view.ViewController;
 import org.citydb.registry.ObjectRegistry;
 
 import javax.swing.*;
+import javax.swing.text.NumberFormatter;
 import java.awt.*;
 import java.sql.SQLException;
 import java.text.DecimalFormat;
@@ -95,12 +96,11 @@ public class SrsOperation extends DatabaseOperationView {
 		srsNameLabel = new JLabel();
 		geometriesLabel = new JLabel();
 
-		DecimalFormat sridFormat = new DecimalFormat("##########");
-		sridFormat.setMaximumIntegerDigits(10);
-		sridFormat.setMinimumIntegerDigits(1);
+		NumberFormatter sridFormat = new NumberFormatter(new DecimalFormat("#"));
+		sridFormat.setMaximum(Integer.MAX_VALUE);
+		sridFormat.setMinimum(0);
 		sridText = new JFormattedTextField(sridFormat);
 		sridText.setValue(0);
-		sridText.setText("");
 
 		srsNameComboBox = new SrsNameComboBox();
 		checkSridButton = new JButton();
@@ -145,10 +145,6 @@ public class SrsOperation extends DatabaseOperationView {
 
 		sridText.addPropertyChangeListener("value", e -> {
 			int srid = sridText.getValue() != null ? ((Number) sridText.getValue()).intValue() : 0;
-			if (srid < 0 || srid == Integer.MAX_VALUE)
-				srid = 0;
-
-			sridText.setValue(srid);
 			srsNameComboBox.updateSrid(srid);
 		});
 

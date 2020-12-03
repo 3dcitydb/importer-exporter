@@ -38,6 +38,7 @@ import org.citydb.gui.util.GuiUtil;
 import org.citygml4j.geometry.Matrix;
 
 import javax.swing.*;
+import javax.swing.text.NumberFormatter;
 import java.awt.*;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
@@ -98,11 +99,10 @@ public class GeometryPanel extends AbstractPreferencesComponent {
 			JPanel matrixFieldsPanel = new JPanel();
 			matrixFieldsPanel.setLayout(new GridBagLayout());
 			{
-				DecimalFormat format = new DecimalFormat("####################.#########################", DecimalFormatSymbols.getInstance(Locale.ENGLISH));
-				format.setMaximumIntegerDigits(20);
-				format.setMinimumIntegerDigits(1);
-				format.setMaximumFractionDigits(25);
-				format.setMinimumFractionDigits(0);
+				NumberFormatter formatter = new NumberFormatter(new DecimalFormat("#.#########################",
+						DecimalFormatSymbols.getInstance(Locale.ENGLISH)));
+				formatter.setMaximum(Double.MAX_VALUE);
+				formatter.setMinimum(-Double.MAX_VALUE);
 
 				for (int i = 0; i < matrixField.length; i++) {
 					StringBuilder label = new StringBuilder("<html>(m");
@@ -118,7 +118,8 @@ public class GeometryPanel extends AbstractPreferencesComponent {
 					matrixFieldsPanel.add(matrixLabels[i], GuiUtil.setConstraints(0, i, 0, 0, GridBagConstraints.NONE, 0, 0, 5, 0));
 
 					for (int j = 0; j < matrixField[i].length; j++) {
-						matrixField[i][j] = new JFormattedTextField(format);
+						matrixField[i][j] = new JFormattedTextField(formatter);
+						matrixField[i][j].setColumns(8);
 						matrixFieldsPanel.add(matrixField[i][j], GuiUtil.setConstraints(j + 1, i, 0.25, 0, GridBagConstraints.BOTH, 0, 5, 5, 0));
 					}
 

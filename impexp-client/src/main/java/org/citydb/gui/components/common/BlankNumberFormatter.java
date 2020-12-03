@@ -34,10 +34,6 @@ import java.text.ParseException;
 
 public class BlankNumberFormatter extends NumberFormatter {
 
-    public BlankNumberFormatter() {
-        super();
-    }
-
     public BlankNumberFormatter(NumberFormat format) {
         super(format);
     }

@@ -39,6 +39,7 @@ import org.citydb.gui.modules.common.AbstractPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 
 import javax.swing.*;
+import javax.swing.text.NumberFormatter;
 import java.awt.*;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
@@ -219,9 +220,10 @@ public class SurfaceStylingPanel extends AbstractPreferencesComponent {
 		geometryHLLineColorButton = new ColorPicker();
 		geometryHLDistanceHint = new JLabel("(0-10m)");
 
-		DecimalFormat format = new DecimalFormat("#.###", DecimalFormatSymbols.getInstance(Locale.ENGLISH));
-		format.setMaximumIntegerDigits(2);
-		format.setMaximumFractionDigits(3);
+		NumberFormatter format = new NumberFormatter(new DecimalFormat("#.###",
+				DecimalFormatSymbols.getInstance(Locale.ENGLISH)));
+		format.setMaximum(10.0);
+		format.setMinimum(0.0);
 		geometryHLSurfaceDistanceText = new JFormattedTextField(format);
 		geometryHLSurfaceDistanceText.setColumns(5);
 
@@ -264,7 +266,6 @@ public class SurfaceStylingPanel extends AbstractPreferencesComponent {
 
 		PopupMenuDecorator.getInstance().decorate(geometryHLSurfaceDistanceText);
 
-		geometryHLSurfaceDistanceText.addPropertyChangeListener("value", evt -> checkHighlightingDistance(geometryHLSurfaceDistanceText));
 		geometryHighlightingCheckbox.addActionListener(e -> setEnabledGeometryHighlighting());
 	}
 
@@ -281,10 +282,11 @@ public class SurfaceStylingPanel extends AbstractPreferencesComponent {
 		colladaHLLineColorButton = new ColorPicker();
 		colladaHLDistanceHint = new JLabel("(0-10m)");
 
-		DecimalFormat highlightFormat = new DecimalFormat("##.###", DecimalFormatSymbols.getInstance(Locale.ENGLISH));
-		highlightFormat.setMaximumIntegerDigits(2);
-		highlightFormat.setMaximumFractionDigits(3);
-		colladaHLSurfaceDistanceText = new JFormattedTextField(highlightFormat);
+		NumberFormatter format = new NumberFormatter(new DecimalFormat("#.###",
+				DecimalFormatSymbols.getInstance(Locale.ENGLISH)));
+		format.setMaximum(10.0);
+		format.setMinimum(0.0);
+		colladaHLSurfaceDistanceText = new JFormattedTextField(format);
 		colladaHLSurfaceDistanceText.setColumns(5);
 
 		colladaContentPanel = new JPanel();
@@ -325,7 +327,6 @@ public class SurfaceStylingPanel extends AbstractPreferencesComponent {
 
 		PopupMenuDecorator.getInstance().decorate(colladaHLSurfaceDistanceText);
 
-		colladaHLSurfaceDistanceText.addPropertyChangeListener("value", evt -> checkHighlightingDistance(colladaHLSurfaceDistanceText));
 		colladaHighlightingCheckbox.addActionListener(e -> setEnabledColladaHighlighting());
 	}
 
@@ -565,13 +566,6 @@ public class SurfaceStylingPanel extends AbstractPreferencesComponent {
 		if (first.getRgba4() != second.getRgba4()) return true;
 		if (first.getRgba5() != second.getRgba5()) return true;
 		return false;
-	}
-
-	private void checkHighlightingDistance(JFormattedTextField textField) {
-		if (textField.getValue() == null
-				|| ((Number) textField.getValue()).doubleValue() <= 0
-				|| ((Number) textField.getValue()).doubleValue() > 10)
-			textField.setValue(1);
 	}
 
 	private void copyColorAndHighlightingValues(Style source, Style target) {

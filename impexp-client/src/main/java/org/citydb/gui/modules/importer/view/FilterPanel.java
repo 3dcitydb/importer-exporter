@@ -51,7 +51,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.text.DecimalFormat;
 
-@SuppressWarnings("serial")
 public class FilterPanel extends JPanel {
 	private final Config config;
 
@@ -76,7 +75,6 @@ public class FilterPanel extends JPanel {
 	private JFormattedTextField startIndexText;
 
 	private BoundingBoxPanel bboxPanel;
-	private JLabel bboxMode;
 	private JRadioButton bboxOverlaps;
 	private JRadioButton bboxWithin;
 	private FeatureTypeTree featureTree;
@@ -107,18 +105,17 @@ public class FilterPanel extends JPanel {
 		countLabel = new JLabel();
 		startIndexLabel = new JLabel();
 
-		BlankNumberFormatter countFormatter = new BlankNumberFormatter(new DecimalFormat("##########"));
-		countFormatter.setLimits(0, Integer.MAX_VALUE);
+		BlankNumberFormatter countFormatter = new BlankNumberFormatter(new DecimalFormat("#"));
+		countFormatter.setLimits(0L, Long.MAX_VALUE);
 		countText = new JFormattedTextField(countFormatter);
 		countText.setColumns(10);
 
-		BlankNumberFormatter startIndexFormatter = new BlankNumberFormatter(new DecimalFormat("###################"));
+		BlankNumberFormatter startIndexFormatter = new BlankNumberFormatter(new DecimalFormat("#"));
 		startIndexFormatter.setLimits(0L, Long.MAX_VALUE);
 		startIndexText = new JFormattedTextField(startIndexFormatter);
 		startIndexText.setColumns(10);
 
 		bboxPanel = viewController.getComponentFactory().createBoundingBoxPanel();
-		bboxMode = new JLabel();
 		bboxOverlaps = new JRadioButton();
 		bboxWithin = new JRadioButton();
 
@@ -167,10 +164,9 @@ public class FilterPanel extends JPanel {
 			JPanel bboxModePanel = new JPanel();
 			bboxModePanel.setLayout(new GridBagLayout());
 			{
-				bboxModePanel.add(bboxMode, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 5));
-				bboxModePanel.add(bboxOverlaps, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 15, 0, 5));
-				bboxModePanel.add(bboxWithin, GuiUtil.setConstraints(2, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 0));
-				bboxPanel.addComponent(bboxModePanel);
+				bboxModePanel.add(bboxOverlaps, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 0));
+				bboxModePanel.add(bboxWithin, GuiUtil.setConstraints(2, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 25, 0, 0));
+				bboxPanel.addComponent(bboxModePanel, true);
 			}
 
 			bboxFilterPanel.build(bboxPanel);
@@ -223,7 +219,6 @@ public class FilterPanel extends JPanel {
 
 	private void setEnabledBBoxFilter() {
 		bboxPanel.setEnabled(useBBoxFilter.isSelected());
-		bboxMode.setEnabled(useBBoxFilter.isSelected());
 		bboxOverlaps.setEnabled(useBBoxFilter.isSelected());
 		bboxWithin.setEnabled(useBBoxFilter.isSelected());
 	}
@@ -249,7 +244,6 @@ public class FilterPanel extends JPanel {
 		gmlNameLabel.setText(Language.I18N.getString("filter.label.gmlName"));
 		countLabel.setText(Language.I18N.getString("filter.label.counter.count"));
 		startIndexLabel.setText(Language.I18N.getString("filter.label.counter.startIndex"));
-		bboxMode.setText(Language.I18N.getString("filter.label.boundingBox.mode"));
 		bboxOverlaps.setText(Language.I18N.getString("filter.label.boundingBox.overlaps"));
 		bboxWithin.setText(Language.I18N.getString("filter.label.boundingBox.within"));
 	}
