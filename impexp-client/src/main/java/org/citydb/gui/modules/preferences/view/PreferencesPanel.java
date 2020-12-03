@@ -66,6 +66,7 @@ public class PreferencesPanel extends JPanel implements TreeSelectionListener {
 	private final Config config;
 
 	private JSplitPane splitPane;
+	private JPanel treePanel;
 	private JTree menuTree;
 	private PreferencesEntry activeEntry;
 	private TreePath activePanelPath;
@@ -163,7 +164,7 @@ public class PreferencesPanel extends JPanel implements TreeSelectionListener {
 
 		// layout
 		setLayout(new GridBagLayout());
-		JPanel treePanel = new JPanel();
+		treePanel = new JPanel();
 		treePanel.setLayout(new GridBagLayout());
 		{
 			JScrollPane scroll = new JScrollPane(menuTree);
@@ -218,11 +219,13 @@ public class PreferencesPanel extends JPanel implements TreeSelectionListener {
 		menuTree.addTreeExpansionListener(new TreeExpansionListener() {
 			@Override
 			public void treeExpanded(TreeExpansionEvent event) {
-				splitPane.resetToPreferredSizes();
+				splitPane.setDividerLocation(treePanel.getPreferredSize().width);
 			}
 
 			@Override
-			public void treeCollapsed(TreeExpansionEvent event) { }
+			public void treeCollapsed(TreeExpansionEvent event) {
+				splitPane.setDividerLocation(treePanel.getPreferredSize().width);
+			}
 		});
 
 		PopupMenuDecorator.getInstance().decorate(menuTree);
@@ -236,7 +239,7 @@ public class PreferencesPanel extends JPanel implements TreeSelectionListener {
 
 		resetPreferencesMenu();
 		settingsNameLabel.setText(menuTree.getLastSelectedPathComponent().toString());
-		splitPane.resetToPreferredSizes();
+		splitPane.setDividerLocation(treePanel.getPreferredSize().width);
 	}
 
 	@Override
@@ -262,7 +265,7 @@ public class PreferencesPanel extends JPanel implements TreeSelectionListener {
 		activePanelPath = menuTree.getSelectionPath();
 		settingsNameLabel.setText(node.toString());
 		setEnabledButtons();
-		splitPane.resetToPreferredSizes();
+		splitPane.setDividerLocation(treePanel.getPreferredSize().width);
 	}
 
 	public boolean requestChange() {
