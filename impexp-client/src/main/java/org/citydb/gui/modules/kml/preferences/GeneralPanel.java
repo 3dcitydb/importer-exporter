@@ -324,10 +324,7 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		kmzCheckbox.addActionListener(e -> excludeGltfAndKMZ(false));
 		createGltfCheckbox.addActionListener(e -> setEnabledGltfComponents());
 		gltfConverterBrowseButton.addActionListener(e -> browseGltfConverterFile(Language.I18N.getString("pref.kmlexport.dialog.gltf.title")));
-
-		ActionListener dracoCompressionListener = e -> enableGltfDracoCompression.setEnabled(exportGltfV2.isSelected());
-		exportGltfV1.addActionListener(dracoCompressionListener);
-		exportGltfV2.addActionListener(dracoCompressionListener);
+		exportGltfV1.addItemListener(e -> enableGltfDracoCompression.setEnabled(!exportGltfV1.isSelected()));
 
 		textureAtlasCheckbox.addActionListener(e -> {
 			packingAlgorithmsComboBox.setEnabled(textureAtlasCheckbox.isSelected());
