@@ -29,10 +29,12 @@
 package org.citydb.cli;
 
 import org.citydb.cli.options.vis.DisplayOption;
+import org.citydb.cli.options.vis.ElevationOption;
 import org.citydb.cli.options.vis.GltfOption;
 import org.citydb.cli.options.vis.QueryOption;
 import org.citydb.config.Config;
 import org.citydb.config.project.database.DatabaseConnection;
+import org.citydb.config.project.kmlExporter.AltitudeOffsetMode;
 import org.citydb.config.project.kmlExporter.KmlExportConfig;
 import org.citydb.database.DatabaseController;
 import org.citydb.log.Logger;
@@ -73,6 +75,9 @@ public class ExportVisCommand extends CliCommand {
     @CommandLine.ArgGroup(exclusive = false, heading = "Query and filter options:%n")
     private QueryOption queryOption;
 
+    @CommandLine.ArgGroup(exclusive = false, heading = "Elevation options:%n")
+    private ElevationOption elevationOption = new ElevationOption();
+
     @CommandLine.ArgGroup(exclusive = false, heading = "glTF export options:%n")
     private GltfOption gltfOption;
 
@@ -106,6 +111,9 @@ public class ExportVisCommand extends CliCommand {
         if (queryOption != null) {
             config.getKmlExportConfig().setQuery(queryOption.toSimpleKmlQuery());
         }
+
+        // set elevation options
+        setElevationOptions(config);
 
         // set glTF options
         setGltfOptions(config.getKmlExportConfig());
@@ -144,6 +152,17 @@ public class ExportVisCommand extends CliCommand {
             kmlExportConfig.setAppearanceTheme(displayOption.getAppearanceTheme());
             kmlExportConfig.setDisplayForms(displayOption.toDisplayForms());
         }
+    }
+
+    private void setElevationOptions(Config config) {
+        KmlExportConfig kmlExportConfig = config.getKmlExportConfig();
+        kmlExportConfig.setAltitudeMode(elevationOption.getMode());
+        kmlExportConfig.setUseOriginalZCoords(elevationOption.isKeepOriginalHeight());
+        kmlExportConfig.setAltitudeOffsetMode(elevationOption.getOffsetMode());
+        kmlExportConfig.setAltitudeOffsetValue(elevationOption.getOffset());
+        kmlExportConfig.setCallGElevationService(elevationOption.getOffsetMode() == AltitudeOffsetMode.GENERIC_ATTRIBUTE
+                && elevationOption.getGoogleApiKey() != null);
+        config.getGlobalConfig().getApiKeys().setGoogleElevation(elevationOption.getGoogleApiKey());
     }
 
     private void setGltfOptions(KmlExportConfig kmlExportConfig) {

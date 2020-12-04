@@ -43,25 +43,25 @@ public class DisplayOption implements CliOption {
     @CommandLine.Option(names = {"-D", "--display-mode"}, split = ",", paramLabel = "<mode[=pixels]>", required = true,
             description = "Display mode: collada, geometry, extruded, footprint. Optionally specify the visibility " +
                     "in terms of screen pixels (default: 0).")
-    private String[] modeAndVisibilities;
+    private String[] modeOptions;
 
     @CommandLine.Option(names = {"-l", "--lod"}, paramLabel = "<0..4 | halod>", required = true,
             description = "LoD to export from.")
-    private String lod;
+    private String lodOption;
 
     @CommandLine.Option(names = {"-a", "--appearance-theme"}, paramLabel = "<theme>",
             description = "Appearance theme to use for COLLADA/glTF exports. Use 'none' for the null theme.")
     private String theme;
 
-    private final Map<Mode, Integer> displayModes = new HashMap<>();
-    private int targetLod;
+    private final Map<Mode, Integer> modes = new HashMap<>();
+    private int lod;
 
     public Set<Mode> getModes() {
-        return displayModes.keySet();
+        return modes.keySet();
     }
 
     public int getLod() {
-        return targetLod;
+        return lod;
     }
 
     public String getAppearanceTheme() {
@@ -78,9 +78,9 @@ public class DisplayOption implements CliOption {
         int visibleTo = -1;
         for (Mode mode : Mode.values()) {
             DisplayForm displayForm = DisplayForm.of(mode.type);
-            displayForm.setActive(displayModes.containsKey(mode) && mode.type.isAchievableFromLoD(targetLod));
+            displayForm.setActive(modes.containsKey(mode) && mode.type.isAchievableFromLoD(lod));
             if (displayForm.isActive()) {
-                int visibleFrom = displayModes.get(mode);
+                int visibleFrom = modes.get(mode);
                 displayForm.setVisibleFrom(visibleFrom);
                 displayForm.setVisibleTo(visibleTo);
                 visibleTo = visibleFrom;
@@ -93,29 +93,22 @@ public class DisplayOption implements CliOption {
     }
 
     public enum Mode {
-        collada("collada", DisplayFormType.COLLADA),
-        geometry("geometry", DisplayFormType.GEOMETRY),
-        extruded("extruded", DisplayFormType.EXTRUDED),
-        footprint("footprint", DisplayFormType.FOOTPRINT);
+        collada(DisplayFormType.COLLADA),
+        geometry(DisplayFormType.GEOMETRY),
+        extruded(DisplayFormType.EXTRUDED),
+        footprint(DisplayFormType.FOOTPRINT);
 
-        private final String value;
         private final DisplayFormType type;
 
-        Mode(String value, DisplayFormType type) {
-            this.value = value;
+        Mode(DisplayFormType type) {
             this.type = type;
-        }
-
-        @Override
-        public String toString() {
-            return value;
         }
     }
 
     @Override
     public void preprocess(CommandLine commandLine) throws Exception {
-        if (modeAndVisibilities != null) {
-            for (String modeAndVisibility : modeAndVisibilities) {
+        if (modeOptions != null) {
+            for (String modeAndVisibility : modeOptions) {
                 String[] items = modeAndVisibility.split("=");
 
                 if (items.length == 0 || items.length > 2) {
@@ -145,25 +138,25 @@ public class DisplayOption implements CliOption {
                     }
                 }
 
-                displayModes.put(mode, visibility);
+                modes.put(mode, visibility);
             }
         }
 
-        if (lod != null) {
-            switch (lod.toLowerCase()) {
+        if (lodOption != null) {
+            switch (lodOption.toLowerCase()) {
                 case "0":
                 case "1":
                 case "2":
                 case "3":
                 case "4":
-                    targetLod = Integer.parseInt(lod);
+                    lod = Integer.parseInt(lodOption);
                     break;
                 case "halod":
-                    targetLod = 5;
+                    lod = 5;
                     break;
                 default:
                     throw new CommandLine.ParameterException(commandLine, "Invalid value for option '--lod': expected " +
-                            "one of [0, 1, 2, 3, 4, halod] (case-insensitive) but was '" + lod + "'");
+                            "one of [0, 1, 2, 3, 4, halod] (case-insensitive) but was '" + lodOption + "'");
             }
         }
     }
