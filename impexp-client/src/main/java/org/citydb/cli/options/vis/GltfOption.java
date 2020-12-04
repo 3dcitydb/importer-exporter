@@ -32,36 +32,58 @@ import org.citydb.plugin.cli.CliOption;
 import picocli.CommandLine;
 
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class GltfOption implements CliOption {
+    public enum Version { v2, v1 }
+
     @CommandLine.Option(names = {"-G", "--gltf"}, required = true,
             description = "Convert COLLADA output to glTF.")
     private boolean exportGltf;
+
+    @CommandLine.Option(names = "--gltf-version", paramLabel = "<version>", defaultValue = "2.0",
+            description = "glTF version: 1.0, 2.0 (default: ${DEFAULT-VALUE}).")
+    private String version;
 
     @CommandLine.Option(names = "--gltf-converter", paramLabel = "<file>",
             description = "Path to the COLLADA2GLTF converter executable.")
     private Path file;
 
-    @CommandLine.Option(names = {"-O", "--gltf-option"}, split = ",", paramLabel = "'<option>'",
-            description = "CLI option to be passed to the COLLADA2GLTF converter (embrace with single quotes)")
-    private String[] options;
+    @CommandLine.Option(names = "--gltf-embed-textures",
+            description = "Embed textures in glTF files.")
+    private boolean embedTextures;
+
+    @CommandLine.Option(names = "--gltf-binary",
+            description = "Output binary glTF.")
+    private boolean binaryGltf;
+
+    @CommandLine.Option(names = "--gltf-draco-compression",
+            description = "Output meshes using Draco compression (requires glTF version 2.0).")
+    private boolean dracoCompression;
 
     @CommandLine.Option(names = {"-s", "--suppress-collada"},
             description = "Only keep glTF and remove the COLLADA output.")
     private boolean suppressCollada;
 
-    private List<String> parsedOptions;
+    private Version gltfVersion;
+
+    public Version getVersion() {
+        return gltfVersion;
+    }
 
     public Path getConverterPath() {
         return file;
     }
 
-    public List<String> getOptions() {
-        return parsedOptions;
+    public boolean isEmbedTextures() {
+        return embedTextures;
+    }
+
+    public boolean isBinaryGltf() {
+        return binaryGltf;
+    }
+
+    public boolean isDracoCompression() {
+        return dracoCompression;
     }
 
     public boolean isSuppressCollada() {
@@ -70,21 +92,23 @@ public class GltfOption implements CliOption {
 
     @Override
     public void preprocess(CommandLine commandLine) throws Exception {
-        if (options != null) {
-            parsedOptions = new ArrayList<>();
-            Pattern pattern = Pattern.compile("\"([^\"]*)\"|(\\S+)");
-            Matcher matcher = pattern.matcher("");
-
-            for (String option : options) {
-                if (option.charAt(0) == '\'' && option.charAt(option.length() - 1) == '\'') {
-                    option = option.substring(1, option.length() - 1);
-                }
-
-                matcher.reset(option);
-                while (matcher.find()) {
-                    parsedOptions.add(matcher.group(1) != null ? matcher.group(1) : matcher.group(2));
-                }
+        if (version != null) {
+            switch (version) {
+                case "1.0":
+                    gltfVersion = Version.v1;
+                    break;
+                case "2.0":
+                    gltfVersion = Version.v2;
+                    break;
+                default:
+                    throw new CommandLine.ParameterException(commandLine, "Invalid value for option '--gltf-version': " +
+                            "expected one of [1.0, 2.0] but was '" + version + "'");
             }
+        }
+
+        if (dracoCompression && gltfVersion == Version.v1) {
+            throw new CommandLine.ParameterException(commandLine,
+                    "Error: --gltf-draco-compression can only be used with glTF version 2.0");
         }
     }
 }

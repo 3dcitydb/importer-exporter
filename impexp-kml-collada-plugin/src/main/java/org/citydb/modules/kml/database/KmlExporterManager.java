@@ -685,22 +685,17 @@ public class KmlExporterManager implements ADEKmlExportHelper {
 			commands.add(colladaModelFile.getAbsolutePath());
 			commands.add("-o");
 			commands.add(gltfModelFile.getAbsolutePath());
-
-			if (!config.getKmlExportConfig().isSetGltfConverterOptions()) {
-				commands.add("-v");
-				commands.add(exportGltfV1 ? "1.0" : "2.0");
-				if (!config.getKmlExportConfig().isEmbedTexturesInGltfFiles()) {
-					commands.add("-t");
-				}
-				if (config.getKmlExportConfig().isExportGltfBinary()) {
-					commands.add("-b");
-				}
-				// do not apply Draco to gltF 1.0
-				if (!exportGltfV1 && config.getKmlExportConfig().isEnableGltfDracoCompression()) {
-					commands.add("-d");
-				}
-			} else {
-				commands.addAll(config.getKmlExportConfig().getGltfConverterOptions());
+			commands.add("-v");
+			commands.add(exportGltfV1 ? "1.0" : "2.0");
+			if (!config.getKmlExportConfig().isEmbedTexturesInGltfFiles()) {
+				commands.add("-t");
+			}
+			if (config.getKmlExportConfig().isExportGltfBinary()) {
+				commands.add("-b");
+			}
+			// do not apply Draco to gltF 1.0
+			if (!exportGltfV1 && config.getKmlExportConfig().isEnableGltfDracoCompression()) {
+				commands.add("-d");
 			}
 
 			try {

@@ -45,7 +45,7 @@ public class DisplayOption implements CliOption {
 
     @CommandLine.Option(names = {"-l", "--lod"}, paramLabel = "<0..4 | halod>", required = true,
             description = "LoD to export from.")
-    private Lod lod;
+    private String lod;
 
     @CommandLine.Option(names = {"-v", "--visible-from"}, split = ",", paramLabel = "<mode=value>",
             description = "Visibility for each display mode (default: 0).")
@@ -55,12 +55,14 @@ public class DisplayOption implements CliOption {
             description = "Appearance theme to use for COLLADA/glTF exports. Use 'none' for the null theme.")
     private String theme;
 
+    private int targetLod;
+
     public Set<Mode> getModes() {
         return modes;
     }
 
     public int getLod() {
-        return lod.ordinal();
+        return targetLod;
     }
 
     public String getAppearanceTheme() {
@@ -77,7 +79,7 @@ public class DisplayOption implements CliOption {
         int visibleTo = -1;
         for (Mode mode : Mode.values()) {
             DisplayForm displayForm = DisplayForm.of(mode.type);
-            displayForm.setActive(modes.contains(mode) && mode.type.isAchievableFromLoD(lod.ordinal()));
+            displayForm.setActive(modes.contains(mode) && mode.type.isAchievableFromLoD(targetLod));
             if (displayForm.isActive()) {
                 int visibleFrom = this.visibleFrom != null ? this.visibleFrom.getOrDefault(mode, 0) : 0;
                 displayForm.setVisibleFrom(visibleFrom);
@@ -111,23 +113,24 @@ public class DisplayOption implements CliOption {
         }
     }
 
-    enum Lod {
-        lod0("0"),
-        lod1("1"),
-        lod2("2"),
-        lod3("3"),
-        lod4("4"),
-        halod("halod");
-
-        private final String value;
-
-        Lod(String value) {
-            this.value = value;
-        }
-
-        @Override
-        public String toString() {
-            return value;
+    @Override
+    public void preprocess(CommandLine commandLine) throws Exception {
+        if (lod != null) {
+            switch (lod.toLowerCase()) {
+                case "0":
+                case "1":
+                case "2":
+                case "3":
+                case "4":
+                    targetLod = Integer.parseInt(lod);
+                    break;
+                case "halod":
+                    targetLod = 5;
+                    break;
+                default:
+                    throw new CommandLine.ParameterException(commandLine, "Invalid value for option '--lod': expected " +
+                            "one of [0, 1, 2, 3, 4, halod] (case-insensitive) but was '" + lod + "'");
+            }
         }
     }
 }

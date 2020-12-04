@@ -149,14 +149,15 @@ public class ExportVisCommand extends CliCommand {
     private void setGltfOptions(KmlExportConfig kmlExportConfig) {
         if (gltfOption != null) {
             kmlExportConfig.setCreateGltfModel(true);
+            kmlExportConfig.setExportGltfV1(gltfOption.getVersion() == GltfOption.Version.v1);
+            kmlExportConfig.setExportGltfV2(gltfOption.getVersion() == GltfOption.Version.v2);
+            kmlExportConfig.setEmbedTexturesInGltfFiles(gltfOption.isEmbedTextures());
+            kmlExportConfig.setExportGltfBinary(gltfOption.isBinaryGltf());
+            kmlExportConfig.setEnableGltfDracoCompression(gltfOption.isDracoCompression());
             kmlExportConfig.setNotCreateColladaFiles(gltfOption.isSuppressCollada());
 
             if (gltfOption.getConverterPath() != null) {
                 kmlExportConfig.setPathOfGltfConverter(gltfOption.getConverterPath().toAbsolutePath().toString());
-            }
-
-            if (gltfOption.getOptions() != null) {
-                kmlExportConfig.setGltfConverterOptions(gltfOption.getOptions());
             }
         }
     }
@@ -166,6 +167,13 @@ public class ExportVisCommand extends CliCommand {
         if (gltfOption != null && exportAsKmz) {
             throw new CommandLine.ParameterException(commandLine,
                     "Error: --gltf and --kmz are mutually exclusive (specify only one)");
+        }
+
+        if (gltfOption != null
+                && (displayOption == null
+                || !displayOption.getModes().contains(DisplayOption.Mode.collada))) {
+            throw new CommandLine.ParameterException(commandLine,
+                    "Error: --gltf requires the data to be exported as COLLADA");
         }
     }
 }
