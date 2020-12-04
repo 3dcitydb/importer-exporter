@@ -35,30 +35,29 @@ import org.citydb.config.project.kmlExporter.KmlExportConfig;
 import org.citydb.plugin.cli.CliOption;
 import picocli.CommandLine;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
 public class DisplayOption implements CliOption {
-    @CommandLine.Option(names = {"-D", "--display-mode"}, split = ",", paramLabel = "<mode>", required = true,
-            description = "Display mode: ${COMPLETION-CANDIDATES}.")
-    private Set<Mode> modes;
+    @CommandLine.Option(names = {"-D", "--display-mode"}, split = ",", paramLabel = "<mode[=pixels]>", required = true,
+            description = "Display mode: collada, geometry, extruded, footprint. Optionally specify the visibility " +
+                    "in terms of screen pixels (default: 0).")
+    private String[] modeAndVisibilities;
 
     @CommandLine.Option(names = {"-l", "--lod"}, paramLabel = "<0..4 | halod>", required = true,
             description = "LoD to export from.")
     private String lod;
 
-    @CommandLine.Option(names = {"-v", "--visible-from"}, split = ",", paramLabel = "<mode=value>",
-            description = "Visibility for each display mode (default: 0).")
-    private Map<Mode, Integer> visibleFrom;
-
     @CommandLine.Option(names = {"-a", "--appearance-theme"}, paramLabel = "<theme>",
             description = "Appearance theme to use for COLLADA/glTF exports. Use 'none' for the null theme.")
     private String theme;
 
+    private final Map<Mode, Integer> displayModes = new HashMap<>();
     private int targetLod;
 
     public Set<Mode> getModes() {
-        return modes;
+        return displayModes.keySet();
     }
 
     public int getLod() {
@@ -79,9 +78,9 @@ public class DisplayOption implements CliOption {
         int visibleTo = -1;
         for (Mode mode : Mode.values()) {
             DisplayForm displayForm = DisplayForm.of(mode.type);
-            displayForm.setActive(modes.contains(mode) && mode.type.isAchievableFromLoD(targetLod));
+            displayForm.setActive(displayModes.containsKey(mode) && mode.type.isAchievableFromLoD(targetLod));
             if (displayForm.isActive()) {
-                int visibleFrom = this.visibleFrom != null ? this.visibleFrom.getOrDefault(mode, 0) : 0;
+                int visibleFrom = displayModes.get(mode);
                 displayForm.setVisibleFrom(visibleFrom);
                 displayForm.setVisibleTo(visibleTo);
                 visibleTo = visibleFrom;
@@ -115,6 +114,41 @@ public class DisplayOption implements CliOption {
 
     @Override
     public void preprocess(CommandLine commandLine) throws Exception {
+        if (modeAndVisibilities != null) {
+            for (String modeAndVisibility : modeAndVisibilities) {
+                String[] items = modeAndVisibility.split("=");
+
+                if (items.length == 0 || items.length > 2) {
+                    throw new CommandLine.ParameterException(commandLine,
+                            "A display mode must be in MODE[=PIXELS] format but was '" + modeAndVisibility + "'");
+                }
+
+                Mode mode;
+                try {
+                    mode = Mode.valueOf(items[0].toLowerCase());
+                } catch (IllegalArgumentException e) {
+                    throw new CommandLine.ParameterException(commandLine, "Invalid value for option '--display-mode': " +
+                            "expected one of [collada, geometry, extruded, footprint] (case-insensitive) but was '" + items[0] + "'");
+                }
+
+                int visibility = 0;
+                if (items.length == 2) {
+                    try {
+                        visibility = Integer.parseInt(items[1]);
+                        if (visibility < 0) {
+                            throw new CommandLine.ParameterException(commandLine, "Error: The number of visibility pixels " +
+                                    "for a display mode must be a non-negative integer but was '" + items[1] + "'");
+                        }
+                    } catch (NumberFormatException e) {
+                        throw new CommandLine.ParameterException(commandLine, "Error: The number of visibility pixels " +
+                                "for a display mode must be a non-negative integer but was '" + items[1] + "'");
+                    }
+                }
+
+                displayModes.put(mode, visibility);
+            }
+        }
+
         if (lod != null) {
             switch (lod.toLowerCase()) {
                 case "0":
