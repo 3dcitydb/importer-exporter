@@ -610,51 +610,39 @@ public class KmlExporterManager implements ADEKmlExportHelper {
 			colladaMarshaller.marshal(colladaBundle.getCollada(), fos);
 			fos.close();
 
-			// ----------------- create glTF without embedded textures-----------------
-			boolean exportGltfV1 = config.getKmlExportConfig().isExportGltfV1();
-			if (config.getKmlExportConfig().isCreateGltfModel() && !config.getKmlExportConfig().isEmbedTexturesInGltfFiles()) {
-				convertColladaToglTF(colladaBundle, buildingDirectory, colladaModelFile, gltfModelFile, exportGltfV1);
-			}	        
-
 			// ----------------- image saving -----------------
 			if (colladaBundle.getUnsupportedTexImageIds() != null) {
-				Set<String> keySet = colladaBundle.getUnsupportedTexImageIds().keySet();
-				Iterator<String> iterator = keySet.iterator();
-				while (iterator.hasNext()) {
-					String imageFilename = iterator.next();
+				for (String imageFilename : colladaBundle.getUnsupportedTexImageIds().keySet()) {
 					String fileName = buildingDirectory + File.separator + imageFilename;
 					textureExportAdapter.writeToFile(colladaBundle.getUnsupportedTexImageIds().get(imageFilename), fileName);
 				}
 			}
 
 			if (colladaBundle.getTexImages() != null) {
-				Set<String> keySet = colladaBundle.getTexImages().keySet();
-				Iterator<String> iterator = keySet.iterator();
-				while (iterator.hasNext()) {
-					String imageFilename = iterator.next();
+				for (String imageFilename : colladaBundle.getTexImages().keySet()) {
 					BufferedImage texImage = colladaBundle.getTexImages().get(imageFilename).getBufferedImage();
 					String imageType = imageFilename.substring(imageFilename.lastIndexOf('.') + 1);
 
 					File imageFile = new File(buildingDirectory, imageFilename);
 					if (!imageFile.exists()) // avoid overwriting and access conflicts
-						ImageIO.write(texImage, imageType, imageFile);					
+						ImageIO.write(texImage, imageType, imageFile);
 				}
 			}
 
-			// ----------------- create glTF with embedded textures-----------------
-			if (config.getKmlExportConfig().isCreateGltfModel() && config.getKmlExportConfig().isEmbedTexturesInGltfFiles()) {
-				convertColladaToglTF(colladaBundle, buildingDirectory, colladaModelFile, gltfModelFile, exportGltfV1);
-				if (config.getKmlExportConfig().isNotCreateColladaFiles() && gltfModelFile.exists()) {
-					Set<String> keySet = colladaBundle.getTexImages().keySet();
-					Iterator<String> iterator = keySet.iterator();
-					while (iterator.hasNext()) {
-						String imageFilename = iterator.next();
+			// ----------------- create glTF -----------------
+			if (config.getKmlExportConfig().isCreateGltfModel()) {
+				convertColladaToglTF(buildingDirectory, colladaModelFile, gltfModelFile);
+
+				if (config.getKmlExportConfig().isEmbedTexturesInGltfFiles()
+						&& config.getKmlExportConfig().isNotCreateColladaFiles()
+						&& gltfModelFile.exists()) {
+					for (String imageFilename : colladaBundle.getTexImages().keySet()) {
 						File imageFile = new File(buildingDirectory, imageFilename);
-						if (imageFile.exists()) 
-							imageFile.delete();					
+						if (imageFile.exists())
+							imageFile.delete();
 					}
 				}
-			}			
+			}
 
 			// ----------------- balloon saving -----------------
 			if (colladaBundle.getExternalBalloonFileContent() != null) {
@@ -675,10 +663,12 @@ public class KmlExporterManager implements ADEKmlExportHelper {
 		}
 	}
 
-	private void convertColladaToglTF(ColladaBundle colladaBundle, File buildingDirectory, File colladaModelFile, File gltfModelFile, boolean exportGltfV1) {
+	private void convertColladaToglTF(File buildingDirectory, File colladaModelFile, File gltfModelFile) {
 		String collada2gltfPath = config.getKmlExportConfig().getPathOfGltfConverter();
 		File collada2gltfFile = new File(ClientConstants.IMPEXP_HOME.resolve(collada2gltfPath).toString());
 		if (collada2gltfFile.exists()) {
+			boolean exportGltfV1 = config.getKmlExportConfig().isExportGltfV1();
+
 			List<String> commands = new ArrayList<>();
 			commands.add(collada2gltfFile.getAbsolutePath());
 			commands.add("-i");
