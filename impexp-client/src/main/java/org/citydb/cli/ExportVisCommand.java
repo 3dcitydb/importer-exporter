@@ -157,7 +157,7 @@ public class ExportVisCommand extends CliCommand {
     private void setElevationOptions(Config config) {
         KmlExportConfig kmlExportConfig = config.getKmlExportConfig();
         kmlExportConfig.setAltitudeMode(elevationOption.getMode());
-        kmlExportConfig.setUseOriginalZCoords(elevationOption.isKeepOriginalHeight());
+        kmlExportConfig.setUseOriginalZCoords(!elevationOption.isTransformHeight());
         kmlExportConfig.setAltitudeOffsetMode(elevationOption.getOffsetMode());
         kmlExportConfig.setAltitudeOffsetValue(elevationOption.getOffset());
         kmlExportConfig.setCallGElevationService(elevationOption.getOffsetMode() == AltitudeOffsetMode.GENERIC_ATTRIBUTE

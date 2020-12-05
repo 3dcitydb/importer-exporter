@@ -38,11 +38,7 @@ public class ElevationOption implements CliOption {
             description = "Altitude mode: ${COMPLETION-CANDIDATES} (default: ${DEFAULT-VALUE}).")
     private Mode mode;
 
-    @CommandLine.Option(names = {"--no-original-z"}, negatable = true, defaultValue = "true",
-            description = "Keep original height values (default: true).")
-    private boolean keepOriginalHeight;
-
-    @CommandLine.Option(names = {"-O", "--altitude-offset"}, paramLabel = "<number|globe|generic>", required = true,
+    @CommandLine.Option(names = {"-O", "--altitude-offset"}, paramLabel = "<number|globe|generic>",
             description = "Apply offset to height values. Provide a <number> as constant offset, <globe> for zero " +
                     "elevation or <generic> to use the generic attribute GE_LoDn_zOffset as per-feature offset.")
     private String offsetOption;
@@ -52,15 +48,15 @@ public class ElevationOption implements CliOption {
                     "Requires an API key.")
     private String googleApiKey;
 
+    @CommandLine.Option(names = {"--transform-height"},
+            description = "Transform height to WGS84 ellipsoid height (default: keep original height values).")
+    private boolean transformHeight;
+
     private AltitudeOffsetMode offsetMode = AltitudeOffsetMode.NO_OFFSET;
     private int offset;
 
     public AltitudeMode getMode() {
         return mode.type;
-    }
-
-    public boolean isKeepOriginalHeight() {
-        return keepOriginalHeight;
     }
 
     public AltitudeOffsetMode getOffsetMode() {
@@ -73,6 +69,10 @@ public class ElevationOption implements CliOption {
 
     public String getGoogleApiKey() {
         return googleApiKey;
+    }
+
+    public boolean isTransformHeight() {
+        return transformHeight;
     }
 
     enum Mode {
