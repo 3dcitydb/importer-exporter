@@ -42,8 +42,8 @@ public class Config {
 	private GuiConfig guiConfig;
 
 	public Config(ProjectConfig projectConfig, GuiConfig guiConfig) {
-		this.projectConfig = projectConfig;
-		this.guiConfig = guiConfig;
+		setProjectConfig(projectConfig);
+		setGuiConfig(guiConfig);
 	}
 	
 	public Config() {
