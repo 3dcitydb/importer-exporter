@@ -1592,7 +1592,7 @@ public abstract class KmlGenericObject {
 					eventDispatcher.triggerEvent(new GeometryCounterEvent(null, this));
 
 					polygon = kmlFactory.createPolygonType();
-					switch (config.getKmlExportConfig().getAltitudeMode()) {
+					switch (config.getKmlExportConfig().getElevation().getAltitudeMode()) {
 					case ABSOLUTE:
 						polygon.setAltitudeModeGroup(kmlFactory.createAltitudeMode(AltitudeModeEnumType.ABSOLUTE));
 						break;
@@ -2371,7 +2371,7 @@ public abstract class KmlGenericObject {
 		ModelType model = kmlFactory.createModelType();
 		LocationType location = kmlFactory.createLocationType();
 
-		switch (config.getKmlExportConfig().getAltitudeMode()) {
+		switch (config.getKmlExportConfig().getElevation().getAltitudeMode()) {
 		case ABSOLUTE:
 			model.setAltitudeModeGroup(kmlFactory.createAltitudeMode(AltitudeModeEnumType.ABSOLUTE));
 			break;
@@ -2530,7 +2530,7 @@ public abstract class KmlGenericObject {
 					unconvertedSurface = null;
 
 					PolygonType polygon = kmlFactory.createPolygonType();
-					switch (config.getKmlExportConfig().getAltitudeMode()) {
+					switch (config.getKmlExportConfig().getElevation().getAltitudeMode()) {
 					case ABSOLUTE:
 						polygon.setAltitudeModeGroup(kmlFactory.createAltitudeMode(AltitudeModeEnumType.ABSOLUTE));
 						break;
@@ -2691,12 +2691,12 @@ public abstract class KmlGenericObject {
 
 		double zOffset = Double.MAX_VALUE;
 
-		switch (config.getKmlExportConfig().getAltitudeOffsetMode()) {
+		switch (config.getKmlExportConfig().getElevation().getAltitudeOffsetMode()) {
 		case NO_OFFSET:
 			zOffset = 0;
 			break;
 		case CONSTANT:
-			zOffset = config.getKmlExportConfig().getAltitudeOffsetValue();
+			zOffset = config.getKmlExportConfig().getElevation().getAltitudeOffsetValue();
 			break;
 		case BOTTOM_ZERO:
 			zOffset = Double.MAX_VALUE;
@@ -2737,7 +2737,7 @@ public abstract class KmlGenericObject {
 
 		double zOffset = 0;
 
-		if (config.getKmlExportConfig().getAltitudeOffsetMode() == AltitudeOffsetMode.BOTTOM_ZERO) {
+		if (config.getKmlExportConfig().getElevation().getAltitudeOffsetMode() == AltitudeOffsetMode.BOTTOM_ZERO) {
 			try {
 				// convert candidate points to WGS84
 				double[] coords = new double[candidates.size()*3];
@@ -2765,7 +2765,7 @@ public abstract class KmlGenericObject {
 			}
 			catch (Exception e) {}
 		}
-		else if (config.getKmlExportConfig().isCallGElevationService()) { // allowed to query
+		else if (config.getKmlExportConfig().getElevation().isCallGElevationService()) { // allowed to query
 			PreparedStatement insertQuery = null;
 			ResultSet rs = null;
 
@@ -2921,7 +2921,7 @@ public abstract class KmlGenericObject {
 			throw e;
 		}
 
-		if (config.getKmlExportConfig().isUseOriginalZCoords() && geomObj.getDimension() == 3) {
+		if (config.getKmlExportConfig().getElevation().isUseOriginalZCoords() && geomObj.getDimension() == 3) {
 			double[][] originalCoords = geomObj.getCoordinates();
 			double[][] convertedCoords = convertedGeomObj.getCoordinates();
 

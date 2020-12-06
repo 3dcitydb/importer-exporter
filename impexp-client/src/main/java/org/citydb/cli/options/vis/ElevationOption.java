@@ -30,6 +30,7 @@ package org.citydb.cli.options.vis;
 
 import org.citydb.config.project.kmlExporter.AltitudeMode;
 import org.citydb.config.project.kmlExporter.AltitudeOffsetMode;
+import org.citydb.config.project.kmlExporter.Elevation;
 import org.citydb.plugin.cli.CliOption;
 import picocli.CommandLine;
 
@@ -53,26 +54,21 @@ public class ElevationOption implements CliOption {
     private boolean transformHeight;
 
     private AltitudeOffsetMode offsetMode = AltitudeOffsetMode.NO_OFFSET;
-    private int offset;
+    private double offset;
 
-    public AltitudeMode getMode() {
-        return mode.type;
-    }
+    public Elevation toElevation() {
+        Elevation elevation = new Elevation();
+        elevation.setAltitudeMode(mode.type);
+        elevation.setUseOriginalZCoords(!transformHeight);
+        elevation.setAltitudeOffsetMode(offsetMode);
+        elevation.setAltitudeOffsetValue(offset);
+        elevation.setCallGElevationService(offsetMode == AltitudeOffsetMode.GENERIC_ATTRIBUTE && googleApiKey != null);
 
-    public AltitudeOffsetMode getOffsetMode() {
-        return offsetMode;
-    }
-
-    public int getOffset() {
-        return offset;
+        return elevation;
     }
 
     public String getGoogleApiKey() {
         return googleApiKey;
-    }
-
-    public boolean isTransformHeight() {
-        return transformHeight;
     }
 
     enum Mode {
@@ -96,11 +92,11 @@ public class ElevationOption implements CliOption {
                 offsetMode = AltitudeOffsetMode.GENERIC_ATTRIBUTE;
             } else {
                 try {
-                    offset = Integer.parseInt(offsetOption);
+                    offset = Double.parseDouble(offsetOption);
                     offsetMode = AltitudeOffsetMode.CONSTANT;
                 } catch (NumberFormatException e) {
                     throw new CommandLine.ParameterException(commandLine, "Invalid value for option '--altitude-offset': " +
-                            "expected an integer as constant offset or one of [globe, generic] (case-insensitive) " +
+                            "expected a number as constant offset or one of [globe, generic] (case-insensitive) " +
                             "but was '" + offsetOption + "'");
                 }
             }

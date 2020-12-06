@@ -227,8 +227,8 @@ public class KmlExporter implements EventHandler {
 		}
 
 		// check API key when using the elevation API
-		if (config.getKmlExportConfig().getAltitudeOffsetMode() == AltitudeOffsetMode.GENERIC_ATTRIBUTE
-				&& config.getKmlExportConfig().isCallGElevationService()
+		if (config.getKmlExportConfig().getElevation().getAltitudeOffsetMode() == AltitudeOffsetMode.GENERIC_ATTRIBUTE
+				&& config.getKmlExportConfig().getElevation().isCallGElevationService()
 				&& !config.getGlobalConfig().getApiKeys().isSetGoogleElevation()) {
 			throw new KmlExportException(ErrorCode.MISSING_GOOGLE_API_KEY, "The Google Elevation API cannot be used due to a missing API key.");
 		}

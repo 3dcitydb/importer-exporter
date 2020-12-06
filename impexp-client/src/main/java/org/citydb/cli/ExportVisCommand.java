@@ -34,7 +34,6 @@ import org.citydb.cli.options.vis.GltfOption;
 import org.citydb.cli.options.vis.QueryOption;
 import org.citydb.config.Config;
 import org.citydb.config.project.database.DatabaseConnection;
-import org.citydb.config.project.kmlExporter.AltitudeOffsetMode;
 import org.citydb.config.project.kmlExporter.KmlExportConfig;
 import org.citydb.database.DatabaseController;
 import org.citydb.log.Logger;
@@ -157,13 +156,7 @@ public class ExportVisCommand extends CliCommand {
     }
 
     private void setElevationOptions(Config config) {
-        KmlExportConfig kmlExportConfig = config.getKmlExportConfig();
-        kmlExportConfig.setAltitudeMode(elevationOption.getMode());
-        kmlExportConfig.setUseOriginalZCoords(!elevationOption.isTransformHeight());
-        kmlExportConfig.setAltitudeOffsetMode(elevationOption.getOffsetMode());
-        kmlExportConfig.setAltitudeOffsetValue(elevationOption.getOffset());
-        kmlExportConfig.setCallGElevationService(elevationOption.getOffsetMode() == AltitudeOffsetMode.GENERIC_ATTRIBUTE
-                && elevationOption.getGoogleApiKey() != null);
+        config.getKmlExportConfig().setElevation(elevationOption.toElevation());
         config.getGlobalConfig().getApiKeys().setGoogleElevation(elevationOption.getGoogleApiKey());
     }
 

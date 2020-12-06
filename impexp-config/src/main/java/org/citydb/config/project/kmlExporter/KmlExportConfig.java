@@ -44,6 +44,7 @@ import java.util.Map;
         "displayForms",
         "colladaOptions",
         "gltfOptions",
+        "elevation",
         "buildingStyles",
         "buildingBalloon",
         "waterBodyStyles",
@@ -78,11 +79,6 @@ import java.util.Map;
         "viewRefreshTime",
         "writeJSONFile",
         "appearanceTheme",
-        "altitudeMode",
-        "altitudeOffsetMode",
-        "altitudeOffsetValue",
-        "callGElevationService",
-        "useOriginalZCoords",
         "idPrefixes",
         "adePreferences",
         "resources"
@@ -95,6 +91,7 @@ public class KmlExportConfig {
     private DisplayForms displayForms;
     private ColladaOptions colladaOptions;
     private GltfOptions gltfOptions;
+    private Elevation elevation;
     @XmlJavaTypeAdapter(StylesAdapter.class)
     private Styles buildingStyles;
     private Balloon buildingBalloon;
@@ -140,11 +137,6 @@ public class KmlExportConfig {
     private boolean writeJSONFile;
     private boolean exportAsKmz;
     private String appearanceTheme;
-    private AltitudeMode altitudeMode;
-    private AltitudeOffsetMode altitudeOffsetMode;
-    private double altitudeOffsetValue;
-    private boolean callGElevationService;
-    private boolean useOriginalZCoords;
     private IdPrefixes idPrefixes;
     @XmlJavaTypeAdapter(ADEPreferencesAdapter.class)
     private Map<String, ADEPreferences> adePreferences;
@@ -160,6 +152,7 @@ public class KmlExportConfig {
         displayForms = new DisplayForms();
         colladaOptions = new ColladaOptions();
         gltfOptions = new GltfOptions();
+        elevation = new Elevation();
 
         buildingStyles = new Styles();
         buildingBalloon = new Balloon();
@@ -197,12 +190,6 @@ public class KmlExportConfig {
         writeJSONFile = false;
 
         appearanceTheme = THEME_NONE;
-        altitudeMode = AltitudeMode.ABSOLUTE;
-        altitudeOffsetMode = AltitudeOffsetMode.NO_OFFSET;
-        altitudeOffsetValue = 0;
-        callGElevationService = false;
-        useOriginalZCoords = true;
-
         idPrefixes = new IdPrefixes();
         adePreferences = new HashMap<>();
         resources = new Resources();
@@ -261,6 +248,16 @@ public class KmlExportConfig {
     public void setGltfOptions(GltfOptions gltfOptions) {
         if (gltfOptions != null) {
             this.gltfOptions = gltfOptions;
+        }
+    }
+
+    public Elevation getElevation() {
+        return elevation;
+    }
+
+    public void setElevation(Elevation elevation) {
+        if (elevation != null) {
+            this.elevation = elevation;
         }
     }
 
@@ -362,38 +359,6 @@ public class KmlExportConfig {
         return appearanceTheme;
     }
 
-    public void setAltitudeMode(AltitudeMode altitudeMode) {
-        this.altitudeMode = altitudeMode;
-    }
-
-    public AltitudeMode getAltitudeMode() {
-        return altitudeMode;
-    }
-
-    public void setAltitudeOffsetMode(AltitudeOffsetMode altitudeOffsetMode) {
-        this.altitudeOffsetMode = altitudeOffsetMode;
-    }
-
-    public AltitudeOffsetMode getAltitudeOffsetMode() {
-        return altitudeOffsetMode;
-    }
-
-    public void setAltitudeOffsetValue(double altitudeOffsetValue) {
-        this.altitudeOffsetValue = altitudeOffsetValue;
-    }
-
-    public double getAltitudeOffsetValue() {
-        return altitudeOffsetValue;
-    }
-
-    public void setCallGElevationService(boolean callGElevationService) {
-        this.callGElevationService = callGElevationService;
-    }
-
-    public boolean isCallGElevationService() {
-        return callGElevationService;
-    }
-
     public void setWriteJSONFile(boolean writeJSONFile) {
         this.writeJSONFile = writeJSONFile;
     }
@@ -432,14 +397,6 @@ public class KmlExportConfig {
 
     public double getViewRefreshTime() {
         return viewRefreshTime;
-    }
-
-    public void setUseOriginalZCoords(boolean useOriginalZCoords) {
-        this.useOriginalZCoords = useOriginalZCoords;
-    }
-
-    public boolean isUseOriginalZCoords() {
-        return useOriginalZCoords;
     }
 
     public void setBuildingBalloon(Balloon buildingBalloon) {
