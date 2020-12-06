@@ -31,6 +31,7 @@ import org.citydb.gui.util.GuiUtil;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.geom.AffineTransform;
 
 public class SplashScreen extends JWindow {
 	private final JLabel message;
@@ -68,27 +69,29 @@ public class SplashScreen extends JWindow {
 		dynamicContent.add(placeholder, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.SOUTH, GridBagConstraints.HORIZONTAL, 0, 0, 0, 0));
 		dynamicContent.add(progressBar, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.SOUTH, GridBagConstraints.HORIZONTAL, 0, 0, 0, 0));
 		
-		dynamicContent.setAlignmentX(0f);
-		dynamicContent.setAlignmentY(0f);
+		dynamicContent.setAlignmentX(0);
+		dynamicContent.setAlignmentY(0);
 		content.add(dynamicContent);
 		
 		JLabel image = new JLabel(icon);
-		image.setAlignmentX(0f);
-		image.setAlignmentY(0f);
+		image.setAlignmentX(0);
+		image.setAlignmentY(0);
 		content.add(image);
 		
 		add(content, BorderLayout.CENTER);
 		UIManager.put("ProgressBar.arc", arc);
 		
 		// center on screen
-		Toolkit t = Toolkit.getDefaultToolkit();
-		Insets frame_insets = t.getScreenInsets(GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration());
-		int frame_insets_x = frame_insets.left + frame_insets.right;
-		int frame_insets_y = frame_insets.bottom + frame_insets.top;
-		
-		Dimension dim = t.getScreenSize();
-		int x = (dim.width - icon.getIconWidth() - frame_insets_x) / 2;
-		int y = (dim.height - icon.getIconHeight() - frame_insets_y) / 2;		
+		GraphicsDevice screen = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+		Insets screenInsets = Toolkit.getDefaultToolkit().getScreenInsets(screen.getDefaultConfiguration());
+
+		Rectangle screenBounds = screen.getDefaultConfiguration().getBounds();
+		AffineTransform transform = screen.getDefaultConfiguration().getDefaultTransform();
+		screenBounds.width = screenBounds.width - (int) ((screenInsets.left + screenInsets.right) / transform.getScaleX());
+		screenBounds.height = screenBounds.height - (int) ((screenInsets.top + screenInsets.bottom) / transform.getScaleY());
+
+		int x = (screenBounds.width - icon.getIconWidth()) / 2;
+		int y = (screenBounds.height - icon.getIconHeight()) / 2;
 		setMinimumSize(new Dimension(icon.getIconWidth(), icon.getIconHeight()));
 		setLocation(x, y);
 		setAlwaysOnTop(true);
