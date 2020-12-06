@@ -74,11 +74,11 @@ public class ExportVisCommand extends CliCommand {
     @CommandLine.ArgGroup(exclusive = false, heading = "Query and filter options:%n")
     private QueryOption queryOption;
 
-    @CommandLine.ArgGroup(exclusive = false, heading = "Elevation options:%n")
-    private ElevationOption elevationOption = new ElevationOption();
-
     @CommandLine.ArgGroup(exclusive = false, heading = "glTF export options:%n")
     private GltfOption gltfOption;
+
+    @CommandLine.ArgGroup(exclusive = false, heading = "Elevation options:%n")
+    private final ElevationOption elevationOption = new ElevationOption();
 
     @CommandLine.ArgGroup(exclusive = false, heading = "Database connection options:%n")
     private DatabaseOption databaseOption;
@@ -111,13 +111,13 @@ public class ExportVisCommand extends CliCommand {
             config.getKmlExportConfig().setQuery(queryOption.toSimpleKmlQuery());
         }
 
-        // set elevation options
-        setElevationOptions(config);
-
         // set glTF options
         if (gltfOption != null) {
             config.getKmlExportConfig().setGltfOptions(gltfOption.toGltfOptions());
         }
+
+        // set elevation options
+        setElevationOptions(config);
 
         try {
             new KmlExporter().doExport(file);

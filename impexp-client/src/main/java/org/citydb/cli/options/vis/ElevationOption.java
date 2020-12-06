@@ -50,7 +50,7 @@ public class ElevationOption implements CliOption {
     private String googleApiKey;
 
     @CommandLine.Option(names = "--transform-height",
-            description = "Transform height to WGS84 ellipsoid height (default: keep original height values).")
+            description = "Transform height to WGS84 ellipsoid height.")
     private boolean transformHeight;
 
     private AltitudeOffsetMode offsetMode = AltitudeOffsetMode.NO_OFFSET;
