@@ -49,7 +49,7 @@ public class ElevationOption implements CliOption {
                     "Requires an API key.")
     private String googleApiKey;
 
-    @CommandLine.Option(names = {"--transform-height"},
+    @CommandLine.Option(names = "--transform-height",
             description = "Transform height to WGS84 ellipsoid height (default: keep original height values).")
     private boolean transformHeight;
 
