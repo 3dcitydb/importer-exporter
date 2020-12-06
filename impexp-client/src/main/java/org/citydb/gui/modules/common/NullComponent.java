@@ -27,7 +27,6 @@
  */
 package org.citydb.gui.modules.common;
 
-@SuppressWarnings("serial")
 public class NullComponent extends AbstractPreferencesComponent {
 	private static final NullComponent instance = new NullComponent();
 	

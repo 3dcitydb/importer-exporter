@@ -41,7 +41,6 @@ import org.citydb.config.i18n.Language;
 import org.citydb.gui.ImpExpGui;
 import org.citydb.gui.util.GuiUtil;
 
-@SuppressWarnings("serial")
 public class ConsoleWindow extends JFrame {
 	private final Component content;
 	private final Config config;
@@ -60,7 +59,7 @@ public class ConsoleWindow extends JFrame {
 	private void init() {
 		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		setModalExclusionType(ModalExclusionType.APPLICATION_EXCLUDE);
-		setIconImage(Toolkit.getDefaultToolkit().getImage(ConsoleWindow.class.getResource("/org/citydb/gui/images/common/logo_small.png")));
+		setIconImage(Toolkit.getDefaultToolkit().getImage(ConsoleWindow.class.getResource("/org/citydb/gui/logos/logo_small.png")));
 		setLayout(new GridBagLayout());
 	}
 

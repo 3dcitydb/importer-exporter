@@ -27,22 +27,6 @@
  */
 package org.citydb.gui.components.dialog;
 
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JProgressBar;
-import javax.swing.SwingConstants;
-
 import org.citydb.config.i18n.Language;
 import org.citydb.event.Event;
 import org.citydb.event.EventDispatcher;
@@ -54,18 +38,18 @@ import org.citydb.event.global.StatusDialogMessage;
 import org.citydb.event.global.StatusDialogTitle;
 import org.citydb.gui.util.GuiUtil;
 
-@SuppressWarnings("serial")
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+
 public class XMLValidationStatusDialog extends JDialog implements EventHandler {
-	private EventDispatcher eventDispatcher;
+	private final EventDispatcher eventDispatcher;
 	
 	private JLabel titleLabel;
 	private JLabel messageLabel;
 	private JProgressBar progressBar;
-	private JLabel detailsLabel;
-	private JLabel fileCounter;
 	private JLabel fileCounterLabel;
-	private JPanel main;
-	private JPanel row;
 	private JButton button;
 	
 	private volatile boolean acceptStatusUpdate = true;
@@ -73,9 +57,7 @@ public class XMLValidationStatusDialog extends JDialog implements EventHandler {
 	public XMLValidationStatusDialog(JFrame frame, 
 			String windowTitle, 
 			String statusTitle,
-			String statusMessage,
-			String statusDetails, 
-			boolean setButton,
+			String statusDetails,
 			EventDispatcher eventDispatcher) {
 		super(frame, windowTitle, true);
 		
@@ -85,100 +67,69 @@ public class XMLValidationStatusDialog extends JDialog implements EventHandler {
 		eventDispatcher.addEventHandler(EventType.STATUS_DIALOG_TITLE, this);
 		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
 		
-		initGUI(windowTitle, statusTitle, statusMessage, statusDetails, setButton);
-	}
-	
-	public XMLValidationStatusDialog(JFrame frame, 
-			String windowTitle, 
-			String statusTitle,
-			String statusMessage,
-			String statusDetails, 
-			boolean setButton) {
-		super(frame, windowTitle, true);
-		
-		initGUI(windowTitle, statusTitle, statusMessage, statusDetails, setButton);
+		initGUI(statusTitle, statusDetails);
 	}
 
-	private void initGUI(String windowTitle, 
-			String statusTitle, 
-			String statusMessage, 
-			String statusDetails, 
-			boolean setButton) {
-		
-		if (statusTitle == null)
-			statusTitle = "";
-		
-		if (statusMessage == null)
-			statusMessage = "";
-		
-		String[] details = null;
-		if (statusDetails != null)
-			details = statusDetails.split("<br\\s*/*>");
-		
+	private void initGUI(
+			String statusTitle,
+			String statusDetails) {
 		setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
-		titleLabel = new JLabel(statusTitle);
+		Object arc = UIManager.get("ProgressBar.arc");
+		UIManager.put("ProgressBar.arc", 0);
+
+		String[] details = statusDetails != null ?
+				statusDetails.split("<br\\s*/*>") :
+				new String[0];
+
+		titleLabel = new JLabel(statusTitle != null ? statusDetails : "");
 		titleLabel.setFont(titleLabel.getFont().deriveFont(Font.BOLD));
-		messageLabel = new JLabel(statusMessage);
-		fileCounter = new JLabel(Language.I18N.getString("common.status.dialog.fileCounter"));
+		messageLabel = new JLabel(" ");
+		button = new JButton(Language.I18N.getString("common.button.cancel"));
+
+		JLabel fileCounter = new JLabel(Language.I18N.getString("common.status.dialog.fileCounter"));
 		fileCounterLabel = new JLabel("n/a", SwingConstants.TRAILING);
-		button = new JButton(Language.I18N.getString("common.button.cancel"));		
+		fileCounterLabel.setPreferredSize(new Dimension(100, fileCounterLabel.getPreferredSize().height));
+
 		progressBar = new JProgressBar();
 
-		setLayout(new GridBagLayout()); {
-			main = new JPanel();
-			add(main, GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.BOTH,5,5,5,5));
-			main.setLayout(new GridBagLayout());
+		setLayout(new GridBagLayout());
+		JPanel main = new JPanel();
+		main.setLayout(new GridBagLayout());
+		{
+			JPanel messagePanel = new JPanel();
+			messagePanel.setBackground(UIManager.getColor("TextField.background"));
+			messagePanel.setLayout(new GridBagLayout());
 			{
-				main.add(titleLabel, GuiUtil.setConstraints(0,0,0.0,0.5,GridBagConstraints.HORIZONTAL,5,5,5,5));
-				main.add(messageLabel, GuiUtil.setConstraints(0,1,0.0,0.5,GridBagConstraints.HORIZONTAL,5,5,0,5));
-				main.add(progressBar, GuiUtil.setConstraints(0,2,1.0,0.0,GridBagConstraints.HORIZONTAL,0,5,5,5));
-
-				if (details != null) {
-					detailsLabel = new JLabel("Details");
-					main.add(detailsLabel, GuiUtil.setConstraints(0,3,1.0,0.0,GridBagConstraints.HORIZONTAL,5,5,0,5));
-
-					row = new JPanel();
-					row.setBackground(new Color(255, 255, 255));
-					row.setBorder(BorderFactory.createEtchedBorder());
-					main.add(row, GuiUtil.setConstraints(0,4,1.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
-					row.setLayout(new GridBagLayout());
-					{				
-						int i = 0;
-						for ( ; i < details.length; ++i) {
-							JLabel detail = new JLabel(details[i]);
-							detail.setBackground(row.getBackground());
-							GridBagConstraints c = GuiUtil.setConstraints(0,i,1.0,0.0,GridBagConstraints.HORIZONTAL,i == 0 ? 5 : 2,5,i == details.length - 1 ? 5 : 0,5);
-							c.gridwidth = 2;
-							row.add(detail, c);
-						}
-						
-						row.add(fileCounter, GuiUtil.setConstraints(0,i+1,1.0,0.0,GridBagConstraints.HORIZONTAL,1,5,5,5));
-						row.add(fileCounterLabel, GuiUtil.setConstraints(1,i+1,1.0,0.0,GridBagConstraints.HORIZONTAL,1,5,5,5));
-					}
+				int i = 0;
+				for (; i < details.length; i++) {
+					JLabel detail = new JLabel(details[i]);
+					messagePanel.add(detail, GuiUtil.setConstraints(0, i, 2, 1, 1, 0, GridBagConstraints.HORIZONTAL, i == 0 ? 5 : 3, 5, 0, 5));
 				}
+
+				messagePanel.add(fileCounter, GuiUtil.setConstraints(0, i, 1, 0, GridBagConstraints.HORIZONTAL, i == 0 ? 5 : 10, 5, 5, 5));
+				messagePanel.add(fileCounterLabel, GuiUtil.setConstraints(1, i, 1, 0, GridBagConstraints.HORIZONTAL, i == 0 ? 5 : 10, 5, 5, 5));
 			}
 
-			if (setButton)
-				add(button, GuiUtil.setConstraints(0,1,0.0,0.0,GridBagConstraints.NONE,5,5,5,5));
-
-			pack();
-			progressBar.setIndeterminate(true);
-			
-			addWindowListener(new WindowAdapter() {
-				public void windowClosed(WindowEvent e) {
-					if (eventDispatcher != null)
-						eventDispatcher.removeEventHandler(XMLValidationStatusDialog.this);
-				}
-			});
+			main.add(titleLabel, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 5, 0));
+			main.add(messageLabel, GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.HORIZONTAL, 5, 0, 5, 0));
+			main.add(progressBar, GuiUtil.setConstraints(0, 2, 1, 0, GridBagConstraints.HORIZONTAL, 5, 0, 0, 0));
+			main.add(messagePanel, GuiUtil.setConstraints(0, 3, 1, 1, GridBagConstraints.NORTH, GridBagConstraints.HORIZONTAL, 0, 0, 0, 0));
 		}
-	}
 
-	public JLabel getStatusTitleLabel() {
-		return titleLabel;
-	}
+		add(main, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.BOTH, 10, 10, 0, 10));
+		add(button, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.EAST, GridBagConstraints.NONE, 15, 10, 10, 10));
 
-	public JLabel getStatusMessageLabel() {
-		return messageLabel;
+		setMinimumSize(new Dimension(300, 100));
+		pack();
+
+		UIManager.put("ProgressBar.arc", arc);
+		progressBar.setIndeterminate(true);
+
+		addWindowListener(new WindowAdapter() {
+			public void windowClosed(WindowEvent e) {
+				eventDispatcher.removeEventHandler(XMLValidationStatusDialog.this);
+			}
+		});
 	}
 	
 	public JButton getButton() {
@@ -191,20 +142,12 @@ public class XMLValidationStatusDialog extends JDialog implements EventHandler {
 			acceptStatusUpdate = false;
 			messageLabel.setText(Language.I18N.getString("common.dialog.msg.abort"));
 			progressBar.setIndeterminate(true);
-		}
-
-		else if (e.getEventType() == EventType.STATUS_DIALOG_MESSAGE && acceptStatusUpdate) {
-			messageLabel.setText(((StatusDialogMessage)e).getMessage());
-		}
-
-		else if (e.getEventType() == EventType.STATUS_DIALOG_TITLE && acceptStatusUpdate) {
-			titleLabel.setText(((StatusDialogTitle)e).getTitle());
-		}
-		
-		else if (e.getEventType() == EventType.COUNTER &&
-				((CounterEvent)e).getType() == CounterType.FILE) {
-			fileCounterLabel.setText(String.valueOf(((CounterEvent)e).getCounter()));
+		} else if (e.getEventType() == EventType.STATUS_DIALOG_MESSAGE && acceptStatusUpdate) {
+			messageLabel.setText(((StatusDialogMessage) e).getMessage());
+		} else if (e.getEventType() == EventType.STATUS_DIALOG_TITLE && acceptStatusUpdate) {
+			titleLabel.setText(((StatusDialogTitle) e).getTitle());
+		} else if (e.getEventType() == EventType.COUNTER && ((CounterEvent) e).getType() == CounterType.FILE) {
+			fileCounterLabel.setText(String.valueOf(((CounterEvent) e).getCounter()));
 		}
 	}
-	
 }

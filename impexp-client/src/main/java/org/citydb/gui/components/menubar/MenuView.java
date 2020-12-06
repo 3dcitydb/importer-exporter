@@ -27,8 +27,10 @@
  */
 package org.citydb.gui.components.menubar;
 
+import com.formdev.flatlaf.extras.FlatSVGIcon;
 import org.citydb.config.Config;
 import org.citydb.config.gui.GuiConfig;
+import org.citydb.config.gui.style.Theme;
 import org.citydb.config.i18n.Language;
 import org.citydb.gui.ImpExpGui;
 import org.citydb.gui.components.mapviewer.MapWindow;
@@ -37,13 +39,14 @@ import org.citydb.gui.util.GuiUtil;
 import javax.swing.*;
 import java.util.List;
 
-@SuppressWarnings("serial")
 public class MenuView extends JMenu {
 	private final ImpExpGui mainView;
 	private final Config config;
 	
 	private JMenuItem map;
 	private JCheckBoxMenuItem detachConsole;
+	private JCheckBoxMenuItem lightTheme;
+	private JCheckBoxMenuItem darkTheme;
 	private JMenuItem defaults;
 	
 	public MenuView(ImpExpGui mainView, Config config) {
@@ -53,22 +56,40 @@ public class MenuView extends JMenu {
 	}
 	
 	private void init() {
-		map = new JMenuItem();
+		map = new JMenuItem(new FlatSVGIcon("org/citydb/gui/icons/map.svg"));
 		detachConsole = new JCheckBoxMenuItem();
 		detachConsole.setSelected(config.getGuiConfig().getConsoleWindow().isDetached());
+		lightTheme = new JCheckBoxMenuItem();
+		darkTheme = new JCheckBoxMenuItem();
 		defaults = new JMenuItem();
-		
+
+		ButtonGroup lafGroup = new ButtonGroup();
+		lafGroup.add(lightTheme);
+		lafGroup.add(darkTheme);
+
+		if (config.getGuiConfig().getAppearance().getTheme() == Theme.DARK) {
+			darkTheme.setSelected(true);
+		} else {
+			lightTheme.setSelected(true);
+		}
+
 		map.addActionListener(e -> {
 			SwingUtilities.invokeLater(() -> MapWindow.getInstance(mainView).setVisible(true));
 		});
-		
+
 		detachConsole.addActionListener(e -> mainView.enableConsoleWindow(!config.getGuiConfig().getConsoleWindow().isDetached(), true));
-		
+		lightTheme.addActionListener(e -> mainView.setLookAndFeel(Theme.LIGHT));
+		darkTheme.addActionListener(e -> mainView.setLookAndFeel(Theme.DARK));
+
 		defaults.addActionListener(e -> {
-			// do not loose recently used projects
-			List<String> recentlyUsedProjects = config.getGuiConfig().getRecentlyUsedProjectFiles();
+			List<String> recentlyUsedProjects = config.getGuiConfig().getRecentlyUsedConfigFiles();
+			Theme theme = config.getGuiConfig().getAppearance().getTheme();
+
+			// replace existing GUI configuration with defaults
 			config.setGuiConfig(new GuiConfig());
-			config.getGuiConfig().setRecentlyUsedProjectFiles(recentlyUsedProjects);
+
+			config.getGuiConfig().setRecentlyUsedConfigFiles(recentlyUsedProjects);
+			config.getGuiConfig().getAppearance().setTheme(theme);
 			mainView.restoreDefaults();
 		});
 		
@@ -76,16 +97,23 @@ public class MenuView extends JMenu {
 		addSeparator();
 		add(detachConsole);
 		addSeparator();
+		add(lightTheme);
+		add(darkTheme);
+		addSeparator();
 		add(defaults);
 	}
 	
 	public void doTranslation() {
 		map.setText(Language.I18N.getString("menu.view.map.label"));
 		detachConsole.setText(Language.I18N.getString("menu.view.detach.label"));
+		lightTheme.setText(Language.I18N.getString("map.view.laf.light.label"));
+		darkTheme.setText(Language.I18N.getString("map.view.laf.dark.label"));
 		defaults.setText(Language.I18N.getString("menu.view.defaults.label"));
 		
 		GuiUtil.setMnemonic(map, "menu.view.map.label", "menu.view.map.label.mnemonic");
 		GuiUtil.setMnemonic(detachConsole, "menu.view.detach.label", "menu.view.detach.label.mnemonic");
+		GuiUtil.setMnemonic(lightTheme, "map.view.laf.light.label", "map.view.laf.light.label.mnemonic");
+		GuiUtil.setMnemonic(darkTheme, "map.view.laf.dark.label", "map.view.laf.dark.label.mnemonic");
 		GuiUtil.setMnemonic(defaults, "menu.view.defaults.label", "menu.view.defaults.label.mnemonic");
 	}
 

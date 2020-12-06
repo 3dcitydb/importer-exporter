@@ -53,10 +53,12 @@ import org.citydb.config.project.kmlExporter.AltitudeMode;
 import org.citydb.config.project.kmlExporter.AltitudeOffsetMode;
 import org.citydb.config.project.kmlExporter.Balloon;
 import org.citydb.config.project.kmlExporter.ColladaOptions;
-import org.citydb.config.project.kmlExporter.DisplayForm;
+import org.citydb.config.project.kmlExporter.DisplayFormType;
 import org.citydb.config.project.kmlExporter.KmlExportConfig;
 import org.citydb.config.project.kmlExporter.PointAndCurve;
 import org.citydb.config.project.kmlExporter.PointDisplayMode;
+import org.citydb.config.project.kmlExporter.Style;
+import org.citydb.config.project.kmlExporter.Styles;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.adapter.AbstractGeometryConverterAdapter;
 import org.citydb.database.adapter.BlobExportAdapter;
@@ -248,10 +250,12 @@ public abstract class KmlGenericObject {
 
 	public abstract void read(KmlSplittingResult work);
 	public abstract String getStyleBasisName();
-	public abstract ColladaOptions getColladaOptions();
 	public abstract Balloon getBalloonSettings();
-	protected abstract List<DisplayForm> getDisplayForms();
+	protected abstract Styles getStyles();
 
+	protected Style getStyle(DisplayFormType type) {
+		return getStyles().getOrDefault(type);
+	}
 
 	protected BalloonTemplateHandler getBalloonTemplateHandler() {
 		return balloonTemplateHandler;
@@ -444,7 +448,7 @@ public abstract class KmlGenericObject {
 		Mesh mesh = colladaFactory.createMesh();
 		mesh.getSource().add(positionSource);
 		mesh.setVertices(vertices);
-		if (getColladaOptions().isGenerateSurfaceNormals())
+		if (config.getKmlExportConfig().getColladaOptions().isGenerateSurfaceNormals())
 			mesh.getSource().add(normalSource);
 		if (!config.getKmlExportConfig().getAppearanceTheme().equals(KmlExportConfig.THEME_NONE))
 			mesh.getSource().add(texCoordsSource);
@@ -668,7 +672,7 @@ public abstract class KmlGenericObject {
 				inputV.setOffset(BigInteger.valueOf(offset++));
 				triangles.getInput().add(inputV);
 
-				if (getColladaOptions().isGenerateSurfaceNormals()) {
+				if (config.getKmlExportConfig().getColladaOptions().isGenerateSurfaceNormals()) {
 					InputLocalOffset inputN = colladaFactory.createInputLocalOffset();
 					inputN.setSemantic("NORMAL"); // ColladaConstants.INPUT_NORMAL_VERTEX
 					inputN.setSource("#" + normalSource.getId());
@@ -755,7 +759,7 @@ public abstract class KmlGenericObject {
 				VertexInfo vertexInfo = vertexInfos.get(indexes[i]);
 				triangles.getP().add(vertexInfo.getVertexId());
 
-				if (getColladaOptions().isGenerateSurfaceNormals())
+				if (config.getKmlExportConfig().getColladaOptions().isGenerateSurfaceNormals())
 					triangles.getP().add(BigInteger.valueOf(normalIndexes[i] + normalIndexOffset));
 
 				if (surfaceTextured) {
@@ -1370,11 +1374,11 @@ public abstract class KmlGenericObject {
 		placemark.setName(work.getGmlId());
 		placemark.setId(config.getKmlExportConfig().getIdPrefixes().getPlacemarkFootprint() + placemark.getName());
 
-		if (work.getDisplayForm().isHighlightingEnabled()) {
-			placemark.setStyleUrl("#" + getStyleBasisName() + DisplayForm.FOOTPRINT_STR + "Style");
+		if (getStyle(work.getDisplayForm().getType()).isHighlightingEnabled()) {
+			placemark.setStyleUrl("#" + getStyleBasisName() + DisplayFormType.FOOTPRINT.getName() + "Style");
 		}
 		else {
-			placemark.setStyleUrl("#" + getStyleBasisName() + DisplayForm.FOOTPRINT_STR + "Normal");
+			placemark.setStyleUrl("#" + getStyleBasisName() + DisplayFormType.FOOTPRINT.getName() + "Normal");
 		}
 
 		if (getBalloonSettings().isIncludeDescription()) {
@@ -1439,11 +1443,11 @@ public abstract class KmlGenericObject {
 		PlacemarkType placemark = kmlFactory.createPlacemarkType();
 		placemark.setName(work.getGmlId());
 		placemark.setId(config.getKmlExportConfig().getIdPrefixes().getPlacemarkExtruded() + placemark.getName());
-		if (work.getDisplayForm().isHighlightingEnabled()) {
-			placemark.setStyleUrl("#" + getStyleBasisName() + DisplayForm.EXTRUDED_STR + "Style");
+		if (getStyle(work.getDisplayForm().getType()).isHighlightingEnabled()) {
+			placemark.setStyleUrl("#" + getStyleBasisName() + DisplayFormType.EXTRUDED.getName() + "Style");
 		}
 		else {
-			placemark.setStyleUrl("#" + getStyleBasisName() + DisplayForm.EXTRUDED_STR + "Normal");
+			placemark.setStyleUrl("#" + getStyleBasisName() + DisplayFormType.EXTRUDED.getName() + "Normal");
 		}
 		if (getBalloonSettings().isIncludeDescription()) {
 			addBalloonContents(placemark, work.getId());
@@ -1735,11 +1739,11 @@ public abstract class KmlGenericObject {
 			else{
 				placemark.setName(work.getGmlId());
 				placemark.setId(config.getKmlExportConfig().getIdPrefixes().getPlacemarkGeometry() + placemark.getName());
-				placemark.setStyleUrl("#" + getStyleBasisName() + DisplayForm.GEOMETRY_STR + "Normal");
+				placemark.setStyleUrl("#" + getStyleBasisName() + DisplayFormType.GEOMETRY.getName() + "Normal");
 			}
 
 			if (getBalloonSettings().isIncludeDescription() &&
-					!work.getDisplayForm().isHighlightingEnabled()) { // avoid double description
+					!getStyle(work.getDisplayForm().getType()).isHighlightingEnabled()) { // avoid double description
 				addBalloonContents(placemark, work.getId());
 			}
 			multiGeometry = multiGeometries.get(surfaceType);
@@ -1750,9 +1754,10 @@ public abstract class KmlGenericObject {
 		return placemarkList;
 	}
 
-	protected List<PlacemarkType> createPlacemarksForPointOrCurve(ResultSet rs,
-	                                                              KmlSplittingResult work,
-	                                                              PointAndCurve pacSettings) throws SQLException {
+	protected List<PlacemarkType> createPlacemarksForPointOrCurve(
+			ResultSet rs,
+			KmlSplittingResult work,
+			PointAndCurve pacSettings) throws SQLException {
 		List<PlacemarkType> placemarkList= new ArrayList<>();
 
 		double zOffset = getZOffsetFromConfigOrDB(work.getId());
@@ -2106,7 +2111,7 @@ public abstract class KmlGenericObject {
 		X3DMaterial x3dMaterial =  new X3DMaterial();
 		x3dMaterial.setAmbientIntensity(0.2d);
 		x3dMaterial.setShininess(0.2d);
-		x3dMaterial.setTransparency(Double.valueOf(1 - floatAlpha));
+		x3dMaterial.setTransparency(1 - floatAlpha);
 		x3dMaterial.setDiffuseColor(getX3dColorFromString(String.valueOf(floatRed) + " " + String.valueOf(floatGreen) + " " + String.valueOf(floatBlue)));
 		x3dMaterial.setSpecularColor(getX3dColorFromString("1.0 1.0 1.0"));
 		x3dMaterial.setEmissiveColor(getX3dColorFromString("0.0 0.0 0.0"));
@@ -2120,18 +2125,11 @@ public abstract class KmlGenericObject {
 		boolean exportAppearance = !selectedTheme.equals(KmlExportConfig.THEME_NONE);
 		int texImageCounter = 0;
 
-		DisplayForm colladaDisplayForm = null;
-		for (DisplayForm displayForm: getDisplayForms()) {
-			if (displayForm.getForm() == DisplayForm.COLLADA) {
-				colladaDisplayForm = displayForm;
-				break;
-			}
-		}
-
-		X3DMaterial x3dWallMaterial = getX3dMaterialFromIntColor(colladaDisplayForm.getRgba0());
+		Style style = getStyle(DisplayFormType.COLLADA);
+		X3DMaterial x3dWallMaterial = getX3dMaterialFromIntColor(style.getRgba0());
 		X3DMaterial x3dRoofMaterial = null;
-		if (colladaDisplayForm.isSetRgba2())
-			x3dRoofMaterial = getX3dMaterialFromIntColor(colladaDisplayForm.getRgba2());
+		if (style.isSetRgba2())
+			x3dRoofMaterial = getX3dMaterialFromIntColor(style.getRgba2());
 
 		HashMap<Long, Long> implicitIdMap = new HashMap<Long, Long>();
 
@@ -2360,18 +2358,11 @@ public abstract class KmlGenericObject {
 		placemark.setName(getGmlId());
 		placemark.setId(config.getKmlExportConfig().getIdPrefixes().getPlacemarkCollada() + placemark.getName());
 
-		DisplayForm colladaDisplayForm = null;
-		for (DisplayForm displayForm: getDisplayForms()) {
-			if (displayForm.getForm() == DisplayForm.COLLADA) {
-				colladaDisplayForm = displayForm;
-				break;
-			}
-		}
+		Style style = getStyle(DisplayFormType.COLLADA);
 
 		if (getBalloonSettings().isIncludeDescription()
-				&& !colladaDisplayForm.isHighlightingEnabled()) { // avoid double description
-
-			ColladaOptions colladaOptions = getColladaOptions();
+				&& !style.isHighlightingEnabled()) { // avoid double description
+			ColladaOptions colladaOptions = config.getKmlExportConfig().getColladaOptions();
 			if (!colladaOptions.isGroupObjects() || colladaOptions.getGroupSize() == 1) {
 				addBalloonContents(placemark, getId());
 			}
@@ -2445,7 +2436,7 @@ public abstract class KmlGenericObject {
 		MultiGeometryType multiGeometry =  kmlFactory.createMultiGeometryType();
 		placemark.setAbstractGeometryGroup(kmlFactory.createMultiGeometry(multiGeometry));
 
-		double hlDistance = work.getDisplayForm().getHighlightingDistance();
+		double hlDistance = getStyle(work.getDisplayForm().getType()).getHighlightingDistance();
 
 		_rs.beforeFirst(); // return cursor to beginning
 		double zOffset = getZOffsetFromConfigOrDB(work.getId());

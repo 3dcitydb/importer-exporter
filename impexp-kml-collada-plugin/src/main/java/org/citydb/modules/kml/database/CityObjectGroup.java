@@ -30,7 +30,7 @@ package org.citydb.modules.kml.database;
 import org.citydb.config.Config;
 import org.citydb.config.project.kmlExporter.Balloon;
 import org.citydb.config.project.kmlExporter.ColladaOptions;
-import org.citydb.config.project.kmlExporter.DisplayForm;
+import org.citydb.config.project.kmlExporter.Styles;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.adapter.BlobExportAdapter;
 import org.citydb.event.EventDispatcher;
@@ -44,7 +44,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.List;
 
 public class CityObjectGroup extends KmlGenericObject{
 
@@ -73,8 +72,8 @@ public class CityObjectGroup extends KmlGenericObject{
 				config);
 	}
 
-	protected List<DisplayForm> getDisplayForms() {
-		return config.getKmlExportConfig().getCityObjectGroupDisplayForms();
+	protected Styles getStyles() {
+		return config.getKmlExportConfig().getCityObjectGroupStyles();
 	}
 
 	public ColladaOptions getColladaOptions() {
@@ -110,11 +109,6 @@ public class CityObjectGroup extends KmlGenericObject{
 				Logger.getInstance().info("Could not display CityObjectGroup " + work.getGmlId());
 			}
 			else { // result not empty
-				// get the proper displayForm (for highlighting)
-				int indexOfDf = getDisplayForms().indexOf(work.getDisplayForm());
-				if (indexOfDf != -1)
-					work.setDisplayForm(getDisplayForms().get(indexOfDf));
-
 				// hard-coded for groups
 				kmlExporterManager.updateFeatureTracker(work);
 				kmlExporterManager.print(createPlacemarksForFootprint(rs, work),

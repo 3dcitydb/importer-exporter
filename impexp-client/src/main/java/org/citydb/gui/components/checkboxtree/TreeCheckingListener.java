@@ -2,7 +2,7 @@
  * 3D City Database - The Open Source CityGML Database
  * http://www.3dcitydb.org/
  *
- * Copyright 2013 - 2019
+ * Copyright 2013 - 2020
  * Chair of Geoinformatics
  * Technical University of Munich, Germany
  * https://www.gis.bgu.tum.de/
@@ -30,16 +30,17 @@ package org.citydb.gui.components.checkboxtree;
 import java.util.EventListener;
 
 /**
- * The listener that's notified when the checking in a TreeCheckingModel
- * changes.
- * 
+ * The listener notified when the checking in a TreeCheckingModel changes.
+ *
  * @author Enrico Boldrini
+ * @see TreeCheckingModel
+ * @see CheckboxTree
  */
 public interface TreeCheckingListener extends EventListener {
     /**
-         * Called whenever the value of the checking changes.
-         * 
-         * @param e the event that characterizes the change.
-         */
+     * Called whenever the value of the checking changes.
+     *
+     * @param e the event that characterizes the change.
+     */
     void valueChanged(TreeCheckingEvent e);
 }

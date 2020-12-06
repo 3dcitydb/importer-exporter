@@ -31,22 +31,21 @@ package org.citydb.gui.modules.preferences.preferences;
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.global.APIKeys;
+import org.citydb.gui.components.common.TitledPanel;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.modules.common.AbstractPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
-import org.jdesktop.swingx.JXTextField;
 
 import javax.swing.*;
-import javax.swing.border.TitledBorder;
 import java.awt.*;
 
 public class APIKeysPanel extends AbstractPreferencesComponent {
-    private JPanel google;
+    private TitledPanel google;
 
     private JLabel googleGeocodingLabel;
-    private JXTextField googleGeocodingText;
+    private JTextField googleGeocodingText;
     private JLabel googleElevationLabel;
-    private JXTextField googleElevationText;
+    private JTextField googleElevationText;
 
     public APIKeysPanel(Config config) {
         super(config);
@@ -65,30 +64,32 @@ public class APIKeysPanel extends AbstractPreferencesComponent {
 
     private void initGui() {
         googleGeocodingLabel = new JLabel();
-        googleGeocodingText = new JXTextField();
+        googleGeocodingText = new JTextField();
         googleElevationLabel = new JLabel();
-        googleElevationText = new JXTextField();
+        googleElevationText = new JTextField();
 
         setLayout(new GridBagLayout());
         {
-            google = new JPanel();
-            add(google, GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.BOTH,5,0,5,0));
-            google.setBorder(BorderFactory.createTitledBorder(""));
-            google.setLayout(new GridBagLayout());
+            JPanel content = new JPanel();
+            content.setLayout(new GridBagLayout());
             {
-                google.add(googleGeocodingLabel, GuiUtil.setConstraints(0,0,0,0,GridBagConstraints.HORIZONTAL,0,5,5,5));
-                google.add(googleGeocodingText, GuiUtil.setConstraints(1,0,1,0,GridBagConstraints.HORIZONTAL,0,5,5,5));
-                google.add(googleElevationLabel, GuiUtil.setConstraints(0,1,0,0,GridBagConstraints.HORIZONTAL,0,5,5,5));
-                google.add(googleElevationText, GuiUtil.setConstraints(1,1,1,0,GridBagConstraints.HORIZONTAL,0,5,5,5));
+                content.add(googleGeocodingLabel, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 5, 5));
+                content.add(googleGeocodingText, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, 5, 0));
+                content.add(googleElevationLabel, GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 5));
+                content.add(googleElevationText, GuiUtil.setConstraints(1, 1, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 0));
             }
+
+            google = new TitledPanel().build(content);
         }
+
+        add(google, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 
         PopupMenuDecorator.getInstance().decorate(googleGeocodingText, googleElevationText);
     }
 
     @Override
     public void doTranslation() {
-        ((TitledBorder)google.getBorder()).setTitle(Language.I18N.getString("pref.general.apiKeys.google.border"));
+        google.setTitle(Language.I18N.getString("pref.general.apiKeys.google.border"));
         googleGeocodingLabel.setText(Language.I18N.getString("pref.general.apiKeys.google.geocoding.label"));
         googleElevationLabel.setText(Language.I18N.getString("pref.general.apiKeys.google.elevation.label"));
     }

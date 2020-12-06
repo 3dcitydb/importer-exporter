@@ -28,31 +28,25 @@
 package org.citydb.config.project.kmlExporter;
 
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlType;
-import java.util.ArrayList;
-import java.util.List;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 @XmlType(name = "ADEKmlExportPreferenceType", propOrder = {
         "target",
-        "displayForms",
-        "colladaOptions",
+        "styles",
         "balloon",
         "pointAndCurve"
 })
 public class ADEPreference {
     @XmlElement(required = true)
     private String target;
-    @XmlElement(name = "displayForm", required = true)
-    @XmlElementWrapper(name = "displayForms")
-    private List<DisplayForm> displayForms;
-    private ColladaOptions colladaOptions;
+    @XmlJavaTypeAdapter(StylesAdapter.class)
+    private Styles styles;
     private Balloon balloon;
     private PointAndCurve pointAndCurve;
 
     public ADEPreference() {
-        displayForms = new ArrayList<>();
-        colladaOptions = new ColladaOptions();
+        styles = new Styles();
         balloon = new Balloon();
         pointAndCurve = new PointAndCurve();
     }
@@ -74,20 +68,14 @@ public class ADEPreference {
         this.target = target;
     }
 
-    public List<DisplayForm> getDisplayForms() {
-        return displayForms;
+    public Styles getStyles() {
+        return styles;
     }
 
-    public void setDisplayForms(List<DisplayForm> displayForms) {
-        this.displayForms = displayForms;
-    }
-
-    public ColladaOptions getColladaOptions() {
-        return colladaOptions;
-    }
-
-    public void setColladaOptions(ColladaOptions colladaOptions) {
-        this.colladaOptions = colladaOptions;
+    public void setStyles(Styles styles) {
+        if (styles != null) {
+            this.styles = styles;
+        }
     }
 
     public Balloon getBalloon() {

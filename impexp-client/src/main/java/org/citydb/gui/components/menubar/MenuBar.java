@@ -31,7 +31,6 @@ import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.gui.ImpExpGui;
 import org.citydb.gui.util.GuiUtil;
-import org.citydb.gui.util.OSXAdapter;
 import org.citydb.log.Logger;
 import org.citydb.plugin.PluginManager;
 import org.citydb.plugin.extension.menu.Menu;
@@ -41,31 +40,23 @@ import javax.swing.*;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
 
-@SuppressWarnings("serial")
 public class MenuBar extends JMenuBar {
 	private final PluginManager pluginManager;
 
-	private MenuFile file;
-	private MenuProject project;
-	private MenuView view;
-	private MenuHelp help;
+	private final MenuFile file;
+	private final MenuView view;
+	private final MenuHelp help;
 
 	private JMenu extensions;
 
 	public MenuBar(ImpExpGui mainView, Config config) {
 		pluginManager = PluginManager.getInstance();
 		
-		file = new MenuFile();
-		project = new MenuProject(mainView, config);
+		file = new MenuFile(mainView, config);
 		view = new MenuView(mainView, config);
 		help = new MenuHelp(mainView, config);
-
-		// as long as the file menu only allows to close the application
-		// we do not need it on Mac OS X
-		if (!OSXAdapter.IS_MAC_OS_X)
-			add(file);
 		
-		add(project);
+		add(file);
 
 		for (MenuExtension extension : pluginManager.getExternalPlugins(MenuExtension.class)) {
 			Menu menu = extension.getMenu();
@@ -106,12 +97,10 @@ public class MenuBar extends JMenuBar {
 
 	public void doTranslation() {
 		file.setText(Language.I18N.getString("menu.file.label"));
-		project.setText(Language.I18N.getString("menu.project.label"));
 		view.setText(Language.I18N.getString("menu.view.label"));
 		help.setText(Language.I18N.getString("menu.help.label"));
 
 		GuiUtil.setMnemonic(file, "menu.file.label", "menu.file.label.mnemonic");
-		GuiUtil.setMnemonic(project, "menu.project.label", "menu.project.label.mnemonic");
 		GuiUtil.setMnemonic(view, "menu.view.label", "menu.view.label.mnemonic");
 		GuiUtil.setMnemonic(help, "menu.help.label", "menu.help.label.mnemonic");
 
@@ -125,7 +114,6 @@ public class MenuBar extends JMenuBar {
 		}
 
 		file.doTranslation();
-		project.doTranslation();
 		view.doTranslation();
 		help.doTranslation();
 	}

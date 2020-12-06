@@ -30,16 +30,15 @@ package org.citydb.gui.modules.importer.preferences;
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.importer.XMLValidation;
+import org.citydb.gui.components.common.TitledPanel;
 import org.citydb.gui.modules.common.AbstractPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 
 import javax.swing.*;
-import javax.swing.border.TitledBorder;
 import java.awt.*;
 
-@SuppressWarnings("serial")
 public class XMLValidationPanel extends AbstractPreferencesComponent {
-	private JPanel block1;
+	private TitledPanel validationPanel;
 	private JCheckBox useXMLValidation;
 	private JLabel useXMLValidationDescr;
 	private JCheckBox oneError;
@@ -66,28 +65,34 @@ public class XMLValidationPanel extends AbstractPreferencesComponent {
 
 		setLayout(new GridBagLayout());
 		{
-			block1 = new JPanel();
-			add(block1, GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.BOTH,5,0,5,0));
-			block1.setBorder(BorderFactory.createTitledBorder(""));
-			block1.setLayout(new GridBagLayout());
-			useXMLValidation.setIconTextGap(10);
+			JPanel content = new JPanel();
+			content.setLayout(new GridBagLayout());
 			useXMLValidationDescr.setFont(useXMLValidationDescr.getFont().deriveFont(Font.ITALIC));
-			int lmargin = (int)(useXMLValidation.getPreferredSize().getWidth()) + 11;
-			oneError.setIconTextGap(10);
 			{
-				block1.add(useXMLValidation, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
-				block1.add(useXMLValidationDescr, GuiUtil.setConstraints(0,1,1.0,0.0,GridBagConstraints.BOTH,0,lmargin,5,5));		
-				block1.add(oneError, GuiUtil.setConstraints(0,2,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
+				content.add(useXMLValidationDescr, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+				content.add(oneError, GuiUtil.setConstraints(0, 2, 1, 1, GridBagConstraints.BOTH, 5, 0, 0, 0));
 			}
+
+			validationPanel = new TitledPanel()
+					.withToggleButton(useXMLValidation)
+					.build(content);
+
+			add(validationPanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 		}
+
+		useXMLValidation.addActionListener(e -> setEnabledValidation());
 	}
 	
 	@Override
 	public void doTranslation() {
-		((TitledBorder)block1.getBorder()).setTitle(Language.I18N.getString("pref.import.xmlValidation.border.import"));	
-		useXMLValidation.setText(Language.I18N.getString("pref.import.xmlValidation.label.useXMLValidation"));
+		validationPanel.setTitle(Language.I18N.getString("pref.import.xmlValidation.label.useXMLValidation"));
 		useXMLValidationDescr.setText(Language.I18N.getString("pref.import.xmlValidation.label.useXMLValidation.description"));
 		oneError.setText(Language.I18N.getString("pref.import.xmlValidation.label.oneError"));
+	}
+
+	private void setEnabledValidation() {
+		useXMLValidationDescr.setEnabled(useXMLValidation.isSelected());
+		oneError.setEnabled(useXMLValidation.isSelected());
 	}
 
 	@Override
@@ -95,7 +100,9 @@ public class XMLValidationPanel extends AbstractPreferencesComponent {
 		XMLValidation xmlValidation = config.getImportConfig().getXMLValidation();
 
 		useXMLValidation.setSelected(xmlValidation.isSetUseXMLValidation());
-		oneError.setSelected(xmlValidation.isSetReportOneErrorPerFeature());	
+		oneError.setSelected(xmlValidation.isSetReportOneErrorPerFeature());
+
+		setEnabledValidation();
 	}
 
 	@Override

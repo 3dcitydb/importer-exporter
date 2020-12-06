@@ -29,14 +29,14 @@
 package org.citydb.cli.options.vis;
 
 import org.citydb.config.project.kmlExporter.DisplayForm;
+import org.citydb.config.project.kmlExporter.DisplayFormType;
+import org.citydb.config.project.kmlExporter.DisplayForms;
 import org.citydb.config.project.kmlExporter.KmlExportConfig;
 import org.citydb.plugin.cli.CliOption;
 import picocli.CommandLine;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public class DisplayOption implements CliOption {
     @CommandLine.Option(names = {"-D", "--display-mode"}, split = ",", paramLabel = "<mode>", required = true,
@@ -71,43 +71,38 @@ public class DisplayOption implements CliOption {
         return "none".equalsIgnoreCase(theme) ? KmlExportConfig.THEME_NULL : theme;
     }
 
-    public void toDisplayForms(List<DisplayForm> displayForms) {
-        Map<Integer, DisplayForm> candidates = displayForms.stream()
-                .collect(Collectors.toMap(DisplayForm::getForm, d -> d));
+    public DisplayForms toDisplayForms() {
+        DisplayForms displayForms = new DisplayForms();
 
         int visibleTo = -1;
         for (Mode mode : Mode.values()) {
-            DisplayForm displayForm = candidates.computeIfAbsent(mode.type, v -> new DisplayForm(mode.type, -1, -1));
-            displayForm.setActive(modes.contains(mode) && lod.ordinal() >= mode.minimumLod);
+            DisplayForm displayForm = DisplayForm.of(mode.type);
+            displayForm.setActive(modes.contains(mode) && mode.type.isAchievableFromLoD(lod.ordinal()));
             if (displayForm.isActive()) {
                 int visibleFrom = this.visibleFrom != null ? this.visibleFrom.getOrDefault(mode, 0) : 0;
                 displayForm.setVisibleFrom(visibleFrom);
-                displayForm.setVisibleUpTo(visibleTo);
+                displayForm.setVisibleTo(visibleTo);
                 visibleTo = visibleFrom;
             }
+
+            displayForms.add(displayForm);
         }
 
-        candidates.values().forEach(displayForm -> {
-            if (!displayForms.contains(displayForm)) {
-                displayForms.add(displayForm);
-            }
-        });
+        return displayForms;
     }
 
     public enum Mode {
-        collada("collada", DisplayForm.COLLADA, 1),
-        geometry("geometry", DisplayForm.GEOMETRY, 1),
-        extruded("extruded", DisplayForm.EXTRUDED, 1),
-        footprint("footprint", DisplayForm.FOOTPRINT, 0);
+        collada("collada", DisplayFormType.COLLADA),
+        geometry("geometry", DisplayFormType.GEOMETRY),
+        extruded("extruded", DisplayFormType.EXTRUDED),
+        footprint("footprint", DisplayFormType.FOOTPRINT);
 
         private final String value;
-        private final int type;
-        private final int minimumLod;
+        private final DisplayFormType type;
 
-        Mode(String value, int type, int minimumLod) {
+        Mode(String value, DisplayFormType type) {
             this.value = value;
             this.type = type;
-            this.minimumLod = minimumLod;
         }
 
         @Override

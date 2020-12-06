@@ -27,6 +27,8 @@
  */
 package org.citydb.gui.modules.database.util;
 
+import com.formdev.flatlaf.extras.FlatSVGIcon;
+import com.formdev.flatlaf.ui.FlatTabbedPaneUI;
 import org.citydb.config.i18n.Language;
 import org.citydb.database.schema.mapping.AbstractType;
 import org.citydb.database.schema.mapping.AppSchema;
@@ -34,10 +36,10 @@ import org.citydb.database.schema.mapping.FeatureType;
 import org.citydb.database.schema.mapping.Metadata;
 import org.citydb.database.schema.mapping.Namespace;
 import org.citydb.database.schema.mapping.SchemaMapping;
+import org.citydb.gui.components.common.TitledPanel;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.util.GuiUtil;
 import org.citygml4j.model.module.citygml.CityGMLVersion;
-import org.jdesktop.swingx.JXTitledSeparator;
 
 import javax.swing.*;
 import java.awt.*;
@@ -59,41 +61,47 @@ public class ADEInfoDialog extends JDialog {
 
         Metadata metadata = adeSchema.getMetadata();
 
-        JPanel header = new JPanel();
-        header.setBackground(Color.WHITE);
-        add(header, GuiUtil.setConstraints(0,0,1,0,GridBagConstraints.HORIZONTAL,0,0,0,0));
-        header.setLayout(new GridBagLayout());
-        {
-            JLabel name = new JLabel(metadata.getIdentifier());
-            name.setFont(name.getFont().deriveFont(Font.BOLD));
-            header.add(name, GuiUtil.setConstraints(0,0,1,0,GridBagConstraints.NORTHWEST,GridBagConstraints.NONE,5,5,5,5));
+        JTextField nameText = createTextField(metadata.getName());
+        JTextField versionText = createTextField(metadata.getVersion());
+        JTextArea descriptionText = createTextArea(metadata.getDescription(), 2);
+        JTextField idText = createTextField(adeInfo.getId());
+        JTextField dbPrefixText = createTextField(metadata.getDBPrefix());
+
+        List<FeatureType> featureTypes = adeSchema.listTopLevelFeatureTypes(true);
+        JTextArea featureTypesText = createTextArea(featureTypes.stream()
+                        .map(FeatureType::toString)
+                        .collect(Collectors.joining("\n")), Math.min(featureTypes.size(), 5));
+
+        int lowerObjectClassId = Integer.MAX_VALUE;
+        int upperObjectClassId = -Integer.MAX_VALUE;
+        for (AbstractType<?> types : adeSchema.getAbstractTypes()) {
+            int objectClassId = types.getObjectClassId();
+            if (objectClassId < lowerObjectClassId)
+                lowerObjectClassId = objectClassId;
+            else if (objectClassId > upperObjectClassId)
+                upperObjectClassId = objectClassId;
         }
 
-        JSeparator separator = new JSeparator(JSeparator.HORIZONTAL);
-        add(separator, GuiUtil.setConstraints(0,1,1,0,GridBagConstraints.HORIZONTAL,0,0,0,0));
+        JTextField objectClassIdText = createTextField(lowerObjectClassId + " .. " + upperObjectClassId);
 
         JPanel main = new JPanel();
-        add(main, GuiUtil.setConstraints(0,2,1,1,GridBagConstraints.BOTH,5,5,5,5));
         main.setLayout(new GridBagLayout());
         {
             // general information
             JLabel nameLabel = new JLabel(Language.I18N.getString("db.dialog.ade.label.name"));
-            JTextField nameText = createTextField(metadata.getName());
             JLabel versionLabel = new JLabel(Language.I18N.getString("db.dialog.ade.label.version"));
-            JTextField versionText = createTextField(metadata.getVersion());
             JLabel descriptionLabel = new JLabel(Language.I18N.getString("db.dialog.ade.label.description"));
-            JTextArea descriptionText = createTextArea(metadata.getDescription(), 2);
-            JScrollPane descriptionPane = new JScrollPane(descriptionText);
-            descriptionPane.setBorder(BorderFactory.createEmptyBorder());
             JLabel idLabel = new JLabel(Language.I18N.getString("db.dialog.ade.label.identifier"));
-            JTextField idText = createTextField(adeInfo.getId());
+
+            JScrollPane descriptionPane = new JScrollPane(descriptionText);
+            descriptionPane.setMinimumSize(descriptionPane.getPreferredSize());
 
             JLabel cityGMLLabel = new JLabel("CityGML");
             JPanel cityGMLPanel = new JPanel();
             cityGMLPanel.setLayout(new OverlayLayout(cityGMLPanel));
             {
                 JPanel glassPane = new JPanel();
-                glassPane.addMouseListener(new MouseAdapter() {});
+                glassPane.addMouseListener(new MouseAdapter() { });
                 glassPane.setOpaque(false);
                 cityGMLPanel.add(glassPane);
 
@@ -104,10 +112,10 @@ public class ADEInfoDialog extends JDialog {
                 for (CityGMLVersion cityGMLVersion : CityGMLVersion.getInstances()) {
                     JCheckBox versionCheck = new JCheckBox(cityGMLVersion.toString());
                     versionCheck.setSelected(adeSchema.getSchemas().stream().anyMatch(s -> s.isAvailableForCityGML(cityGMLVersion)));
-                    content.add(versionCheck, GuiUtil.setConstraints(i++,0,0,0,GridBagConstraints.NONE,0,0,0,10));
+                    content.add(versionCheck, GuiUtil.setConstraints(i++, 0, 0, 0, GridBagConstraints.NONE, 0, 0, 0, 10));
                 }
 
-                content.add(Box.createHorizontalGlue(), GuiUtil.setConstraints(i,0,1,0,GridBagConstraints.HORIZONTAL,0,0,0,0));
+                content.add(Box.createHorizontalGlue(), GuiUtil.setConstraints(i, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 0));
                 cityGMLPanel.add(content);
             }
 
@@ -115,47 +123,83 @@ public class ADEInfoDialog extends JDialog {
             JLabel statusText = new JLabel();
             if (adeInfo.hasDatabaseSupport() && adeInfo.hasImpexpSupport()) {
                 statusText.setText(Language.I18N.getString("db.dialog.ade.status.ok"));
-                statusText.setIcon(new ImageIcon(ADEInfoRow.class.getResource("/org/citydb/gui/images/common/done.png")));
+                statusText.setIcon(new FlatSVGIcon("org/citydb/gui/icons/check.svg"));
             } else {
                 statusText.setText(adeInfo.hasDatabaseSupport() ? Language.I18N.getString("db.dialog.ade.status.noImpExp") :
                         Language.I18N.getString("db.dialog.ade.status.noDB"));
-                statusText.setIcon(new ImageIcon(ADEInfoRow.class.getResource("/org/citydb/gui/images/common/error_outline.png")));
+                statusText.setIcon(new FlatSVGIcon("org/citydb/gui/icons/yellow_bulb.svg"));
             }
 
+            JPanel content = new JPanel();
+            content.setLayout(new GridBagLayout());
+            {
+                content.add(nameLabel, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 5, 5));
+                content.add(nameText, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, 5, 0));
+                content.add(versionLabel, GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 5, 5));
+                content.add(versionText, GuiUtil.setConstraints(1, 1, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, 5, 0));
+                content.add(descriptionLabel, GuiUtil.setConstraints(0, 2, 0, 0, GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, 0, 0, 5, 5));
+                content.add(descriptionPane, GuiUtil.setConstraints(1, 2, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, 5, 0));
+                content.add(idLabel, GuiUtil.setConstraints(0, 3, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 5, 5));
+                content.add(idText, GuiUtil.setConstraints(1, 3, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, 5, 0));
+                content.add(cityGMLLabel, GuiUtil.setConstraints(0, 4, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 5, 5));
+                content.add(cityGMLPanel, GuiUtil.setConstraints(1, 4, 2, 1, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, 5, 0));
+                content.add(statusLabel, GuiUtil.setConstraints(0, 5, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 5));
+                content.add(statusText, GuiUtil.setConstraints(1, 5, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 0));
+            }
+
+            TitledPanel generalPanel = new TitledPanel()
+                    .withTitle(Language.I18N.getString("db.dialog.ade.label.general"))
+                    .build(content);
+
+            main.add(generalPanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+        }
+        {
             // Top-level feature types
-            JXTitledSeparator featureTypesSeparator = new JXTitledSeparator(Language.I18N.getString("db.dialog.ade.label.feature"));
             JLabel featureTyesLabel = new JLabel(Language.I18N.getString("db.dialog.ade.label.feature.types"));
-            List<FeatureType> featureTypes = adeSchema.listTopLevelFeatureTypes(true);
-            JTextArea featureTypesText = createTextArea(featureTypes.stream().map(FeatureType::toString)
-                    .collect(Collectors.joining("\n")), Math.min(featureTypes.size(), 5));
             JScrollPane featureTypesPane = new JScrollPane(featureTypesText);
-            featureTypesPane.setBorder(BorderFactory.createEmptyBorder());
+            featureTypesPane.setMinimumSize(featureTypesPane.getPreferredSize());
 
-            // database information
-            JXTitledSeparator dbSeparator = new JXTitledSeparator(Language.I18N.getString("main.tabbedPane.database"));
-            JLabel dbPrefixLabel = new JLabel(Language.I18N.getString("db.dialog.ade.label.dbPrefix"));
-            JTextField dbPrefixText = createTextField(metadata.getDBPrefix());
-
-            int lowerObjectClassId = Integer.MAX_VALUE;
-            int upperObjectClassId = -Integer.MAX_VALUE;
-            for (AbstractType<?> types : adeSchema.getAbstractTypes()) {
-                int objectClassId = types.getObjectClassId();
-                if (objectClassId < lowerObjectClassId)
-                    lowerObjectClassId = objectClassId;
-                else if (objectClassId > upperObjectClassId)
-                    upperObjectClassId = objectClassId;
+            JPanel content = new JPanel();
+            content.setLayout(new GridBagLayout());
+            {
+                content.add(featureTyesLabel, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, 0, 0, 0, 5));
+                content.add(featureTypesPane, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 0));
             }
 
-            JLabel objectClassIdLabel = new JLabel("ObjectClassId");
-            JTextField objectClassIdText = createTextField(lowerObjectClassId + " .. " + upperObjectClassId);
+            TitledPanel featurePanel = new TitledPanel()
+                    .withTitle(Language.I18N.getString("db.dialog.ade.label.feature"))
+                    .build(content);
 
+            main.add(featurePanel, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+        }
+        {
+            // database information
+            JLabel dbPrefixLabel = new JLabel(Language.I18N.getString("db.dialog.ade.label.dbPrefix"));
+            JLabel objectClassIdLabel = new JLabel("ObjectClassId");
+
+            JPanel content = new JPanel();
+            content.setLayout(new GridBagLayout());
+            {
+                content.add(dbPrefixLabel, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 5, 5));
+                content.add(dbPrefixText, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, 5, 0));
+                content.add(objectClassIdLabel, GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 5));
+                content.add(objectClassIdText, GuiUtil.setConstraints(1, 1, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 0));
+            }
+
+            TitledPanel databasePanel = new TitledPanel()
+                    .withTitle(Language.I18N.getString("main.tabbedPane.database"))
+                    .build(content);
+
+            main.add(databasePanel, GuiUtil.setConstraints(0, 2, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+        }
+        {
             // XML schema information
-            JXTitledSeparator xmlSeparator = new JXTitledSeparator(Language.I18N.getString("db.dialog.ade.label.xml.schema"));
-            JLabel xmlLabel = new JLabel(Language.I18N.getString("db.dialog.ade.label.xml.namespaces"));
             JPanel xmlPanel = new JPanel();
             xmlPanel.setLayout(new GridBagLayout());
             {
                 int i = 0;
+                int max = adeSchema.getSchemas().size() - 1;
+
                 for (AppSchema appSchema : adeSchema.getSchemas()) {
                     for (Namespace namespace : appSchema.getNamespaces()) {
                         AppSchema tmp = rootSchema.getSchema(namespace.getURI());
@@ -174,71 +218,71 @@ public class ADEInfoDialog extends JDialog {
                         JTextField uriText = createTextField(namespace.getURI());
                         JLabel prefixLabel = new JLabel(Language.I18N.getString("db.dialog.ade.label.xml.prefix"));
 
-                        xmlPanel.add(uriText, GuiUtil.setConstraints(0,i,1,0,GridBagConstraints.HORIZONTAL,0,0,5,5));
-                        xmlPanel.add(prefixLabel, GuiUtil.setConstraints(1,i,0,0,GridBagConstraints.HORIZONTAL,0,10,5,5));
-                        xmlPanel.add(prefixText, GuiUtil.setConstraints(2,i++,0,0,GridBagConstraints.HORIZONTAL,0,5,5,0));
+                        int bottom = i != max ? 5 : 0;
+                        xmlPanel.add(new JLabel("URI"), GuiUtil.setConstraints(0, i, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, bottom, 5));
+                        xmlPanel.add(uriText, GuiUtil.setConstraints(1, i, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, bottom, 5));
+                        xmlPanel.add(prefixLabel, GuiUtil.setConstraints(2, i, 0, 0, GridBagConstraints.HORIZONTAL, 0, 10, bottom, 5));
+                        xmlPanel.add(prefixText, GuiUtil.setConstraints(3, i++, 0, 0, GridBagConstraints.HORIZONTAL, 0, 5, bottom, 0));
 
                         PopupMenuDecorator.getInstance().decorate(uriText, prefixText);
                     }
                 }
             }
 
-            main.add(nameLabel, GuiUtil.setConstraints(0,0,0,0,GridBagConstraints.HORIZONTAL,0,5,5,5));
-            main.add(nameText, GuiUtil.setConstraints(1,0,1,0,GridBagConstraints.HORIZONTAL,0,5,5,5));
-            main.add(versionLabel, GuiUtil.setConstraints(0,1,0,0,GridBagConstraints.HORIZONTAL,0,5,5,5));
-            main.add(versionText, GuiUtil.setConstraints(1,1,1,0,GridBagConstraints.HORIZONTAL,0,5,5,5));
-            main.add(descriptionLabel, GuiUtil.setConstraints(0,2,0,0,GridBagConstraints.NORTHWEST,GridBagConstraints.HORIZONTAL,0,5,5,5));
-            main.add(descriptionPane, GuiUtil.setConstraints(1,2,1,0,GridBagConstraints.HORIZONTAL,0,5,5,5));
-            main.add(idLabel, GuiUtil.setConstraints(0,3,0,0,GridBagConstraints.HORIZONTAL,0,5,5,5));
-            main.add(idText, GuiUtil.setConstraints(1,3,1,0,GridBagConstraints.HORIZONTAL,0,5,5,5));
-            main.add(cityGMLLabel, GuiUtil.setConstraints(0,4,0,0,GridBagConstraints.HORIZONTAL,0,5,5,5));
-            main.add(cityGMLPanel, GuiUtil.setConstraints(1,4,2,1,1,0,GridBagConstraints.HORIZONTAL,0,5,5,5));
-            main.add(statusLabel, GuiUtil.setConstraints(0,5,0,0,GridBagConstraints.HORIZONTAL,0,5,5,5));
-            main.add(statusText, GuiUtil.setConstraints(1,5,1,0,GridBagConstraints.HORIZONTAL,0,5,5,5));
-            main.add(featureTypesSeparator, GuiUtil.setConstraints(0,6,2,1,1,0,GridBagConstraints.HORIZONTAL,10,5,5,5));
-            main.add(featureTyesLabel, GuiUtil.setConstraints(0,7,0,0,GridBagConstraints.NORTHWEST,GridBagConstraints.HORIZONTAL,0,5,5,5));
-            main.add(featureTypesPane, GuiUtil.setConstraints(1,7,2,1,1,0,GridBagConstraints.HORIZONTAL,0,5,5,5));
-            main.add(dbSeparator, GuiUtil.setConstraints(0,8,2,1,1,0,GridBagConstraints.HORIZONTAL,10,5,5,5));
-            main.add(dbPrefixLabel, GuiUtil.setConstraints(0,9,0,0,GridBagConstraints.HORIZONTAL,0,5,5,5));
-            main.add(dbPrefixText, GuiUtil.setConstraints(1,9,2,1,1,0,GridBagConstraints.HORIZONTAL,0,5,5,5));
-            main.add(objectClassIdLabel, GuiUtil.setConstraints(0,10,0,0,GridBagConstraints.HORIZONTAL,0,5,5,5));
-            main.add(objectClassIdText, GuiUtil.setConstraints(1,10,2,1,1,0,GridBagConstraints.HORIZONTAL,0,5,5,5));
-            main.add(xmlSeparator, GuiUtil.setConstraints(0,11,2,1,1,0,GridBagConstraints.HORIZONTAL,10,5,5,5));
-            main.add(xmlLabel, GuiUtil.setConstraints(0,12,0,0,GridBagConstraints.NORTHWEST,GridBagConstraints.HORIZONTAL,0,5,5,5));
-            main.add(xmlPanel, GuiUtil.setConstraints(1,12,2,1,1,0,GridBagConstraints.HORIZONTAL,0,5,0,5));
-            main.add(Box.createVerticalGlue(), GuiUtil.setConstraints(0,13,2,1,1,1,GridBagConstraints.BOTH,0,0,0,0));
+            JPanel content = new JPanel();
+            content.setLayout(new GridBagLayout());
+            {
+                content.add(xmlPanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+            }
 
-            PopupMenuDecorator.getInstance().decorate(nameText, versionText, descriptionText, idText,
-                    featureTypesText, dbPrefixText, objectClassIdText);
+            TitledPanel schemaPanel = new TitledPanel()
+                    .withTitle(Language.I18N.getString("db.dialog.ade.label.xml.namespaces"))
+                    .build(content);
+
+            main.add(schemaPanel, GuiUtil.setConstraints(0, 3, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
         }
 
         JButton closeButton = new JButton(Language.I18N.getString("common.button.ok"));
-        closeButton.addActionListener(l -> dispose());
+        closeButton.addActionListener(e -> dispose());
 
-        closeButton.setMargin(new Insets(closeButton.getMargin().top, 25, closeButton.getMargin().bottom, 25));
-        add(closeButton, GuiUtil.setConstraints(0,3,0,0,GridBagConstraints.NONE,5,5,5,5));
+        JPanel info = new JPanel();
+        info.setLayout(new GridBagLayout());
+        {
+            info.add(main, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 10, 10, 0, 10));
+            info.add(Box.createVerticalGlue(), GuiUtil.setConstraints(0, 1, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
+            info.add(closeButton, GuiUtil.setConstraints(0, 2, 1, 0, GridBagConstraints.EAST, GridBagConstraints.NONE, 0, 10, 10, 10));
+        }
 
-        setMinimumSize(new Dimension(500, 450));
-        setResizable(true);
+        JTabbedPane infoPane = new JTabbedPane();
+        infoPane.add(metadata.getIdentifier(), info);
+        infoPane.setUI(new FlatTabbedPaneUI() {
+            protected void paintTabBackground(Graphics g, int p, int i, int x, int y, int w, int h, boolean s) {
+                // do not paint tab background
+            }
+        });
+
+        add(infoPane, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
+
+        PopupMenuDecorator.getInstance().decorate(nameText, versionText, descriptionText, idText,
+                featureTypesText, dbPrefixText, objectClassIdText);
+
         pack();
     }
 
     private JTextField createTextField(String text) {
         JTextField textField = new JTextField(text);
-        textField.setBackground(Color.WHITE);
         textField.setEditable(false);
-        textField.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
+        textField.setBackground(UIManager.getColor("TextField.background"));
         return textField;
     }
 
     private JTextArea createTextArea(String text, int rows) {
         JTextArea textArea = new JTextArea(text);
-        textArea.setBackground(Color.WHITE);
         textArea.setEditable(false);
         textArea.setLineWrap(true);
         textArea.setRows(rows);
         textArea.setFont(UIManager.getFont("Label.font"));
-        textArea.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
+        textArea.setBackground(UIManager.getColor("TextField.background"));
         return textArea;
     }
 }

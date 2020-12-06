@@ -34,6 +34,7 @@ import org.citydb.database.schema.mapping.FeatureType;
 import org.citydb.database.schema.mapping.Namespace;
 import org.citydb.database.schema.mapping.SchemaMapping;
 import org.citydb.gui.components.checkboxtree.CheckboxTree;
+import org.citydb.gui.components.checkboxtree.TreeCheckingModel;
 import org.citydb.registry.ObjectRegistry;
 import org.citygml4j.model.module.citygml.BridgeModule;
 import org.citygml4j.model.module.citygml.BuildingModule;
@@ -70,6 +71,7 @@ public class FeatureTypeTree extends CheckboxTree {
 		schemaMapping = ObjectRegistry.getInstance().getSchemaMapping();
 		adeManager = ADEExtensionManager.getInstance();
 		populate(adeFilter);
+		getCheckingModel().setCheckingMode(TreeCheckingModel.CheckingMode.PROPAGATE_UP_UNCHECK);
 	}
 
 	public FeatureTypeTree(boolean withADESupport) {

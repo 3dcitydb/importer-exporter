@@ -28,6 +28,7 @@
 
 package org.citydb.gui.modules.exporter.view.filter;
 
+import com.formdev.flatlaf.extras.FlatSVGIcon;
 import com.sun.xml.bind.marshaller.NamespacePrefixMapper;
 import org.citydb.config.Config;
 import org.citydb.config.ConfigUtil;
@@ -38,7 +39,6 @@ import org.citydb.config.project.exporter.SimpleQuery;
 import org.citydb.config.project.exporter.SimpleTiling;
 import org.citydb.config.project.exporter.SimpleTilingMode;
 import org.citydb.config.project.query.QueryConfig;
-import org.citydb.config.util.QueryWrapper;
 import org.citydb.config.project.query.filter.appearance.AppearanceFilter;
 import org.citydb.config.project.query.filter.counter.CounterFilter;
 import org.citydb.config.project.query.filter.lod.LodFilter;
@@ -59,10 +59,12 @@ import org.citydb.config.project.query.filter.type.FeatureTypeFilter;
 import org.citydb.config.project.query.simple.SimpleFeatureVersionFilter;
 import org.citydb.config.project.query.simple.SimpleFeatureVersionFilterMode;
 import org.citydb.config.project.query.simple.SimpleSelectionFilter;
+import org.citydb.config.util.QueryWrapper;
 import org.citydb.database.connection.DatabaseConnectionPool;
 import org.citydb.database.schema.mapping.FeatureType;
 import org.citydb.database.schema.mapping.SchemaMapping;
 import org.citydb.gui.factory.PopupMenuDecorator;
+import org.citydb.gui.factory.RSyntaxTextAreaHelper;
 import org.citydb.gui.modules.exporter.view.FilterPanel;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.log.Logger;
@@ -77,7 +79,6 @@ import org.citygml4j.util.xml.SAXWriter;
 import org.citygml4j.xml.CityGMLNamespaceContext;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
-import org.fife.ui.rsyntaxtextarea.Theme;
 import org.fife.ui.rtextarea.RTextScrollPane;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
@@ -98,7 +99,6 @@ import javax.xml.validation.Validator;
 import java.awt.*;
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -134,11 +134,7 @@ public class XMLQueryView extends FilterView {
         component.setLayout(new GridBagLayout());
 
         xmlText = new RSyntaxTextArea("", 5, 1);
-        try (InputStream in = getClass().getResourceAsStream("/org/fife/ui/rsyntaxtextarea/themes/idea.xml")) {
-            Theme.load(in).apply(xmlText);
-        } catch (IOException e) {
-            throw new IllegalStateException("Failed to initialize XML editor.", e);
-        }
+        RSyntaxTextAreaHelper.installDefaultTheme(xmlText);
 
         xmlText.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_XML);
         xmlText.setAutoIndentEnabled(true);
@@ -147,29 +143,20 @@ public class XMLQueryView extends FilterView {
         xmlText.setTabSize(2);
         RTextScrollPane scrollPane = new RTextScrollPane(xmlText);
 
-        newButton = new JButton();
-        ImageIcon add = new ImageIcon(getClass().getResource("/org/citydb/gui/images/common/query_new.png"));
-        newButton.setIcon(add);
-        newButton.setMargin(new Insets(0, 0, 0, 0));
+        newButton = new JButton(new FlatSVGIcon("org/citydb/gui/icons/query_new.svg"));
+        duplicateButton = new JButton(new FlatSVGIcon("org/citydb/gui/icons/copy.svg"));
+        validateButton = new JButton(new FlatSVGIcon("org/citydb/gui/icons/check.svg"));
 
-        duplicateButton = new JButton();
-        ImageIcon duplicate = new ImageIcon(getClass().getResource("/org/citydb/gui/images/common/query_duplicate.png"));
-        duplicateButton.setIcon(duplicate);
-        duplicateButton.setMargin(new Insets(0, 0, 0, 0));
+        JToolBar toolBar = new JToolBar();
+        toolBar.add(newButton);
+        toolBar.add(duplicateButton);
+        toolBar.addSeparator();
+        toolBar.add(validateButton);
+        toolBar.setFloatable(false);
+        toolBar.setOrientation(JToolBar.VERTICAL);
 
-        validateButton = new JButton();
-        ImageIcon validate = new ImageIcon(getClass().getResource("/org/citydb/gui/images/common/done.png"));
-        validateButton.setIcon(validate);
-        validateButton.setMargin(new Insets(0, 0, 0, 0));
-
-        JPanel buttons = new JPanel();
-        buttons.setLayout(new GridBagLayout());
-        buttons.add(newButton, GuiUtil.setConstraints(0,0,0,0,GridBagConstraints.NONE,0,5,5,0));
-        buttons.add(duplicateButton, GuiUtil.setConstraints(0,1,0,0,GridBagConstraints.NONE,0,5,5,0));
-        buttons.add(validateButton, GuiUtil.setConstraints(0,2,0,0,GridBagConstraints.NONE,0,5,0,0));
-
-        component.add(scrollPane, GuiUtil.setConstraints(0,0,1,1,GridBagConstraints.BOTH,10,5,5,0));
-        component.add(buttons, GuiUtil.setConstraints(1,0,0,0,GridBagConstraints.NORTH,GridBagConstraints.NONE,10,0,5,5));
+        component.add(scrollPane, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
+        component.add(toolBar, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.NORTH, GridBagConstraints.NONE, 0, 5, 0, 0));
 
         newButton.addActionListener(e -> SwingUtilities.invokeLater(this::setEmptyQuery));
         duplicateButton.addActionListener(e -> SwingUtilities.invokeLater(this::setSimpleSettings));
@@ -219,6 +206,11 @@ public class XMLQueryView extends FilterView {
 
         if (!typeFilter.isEmpty())
             query.setFeatureTypeFilter(typeFilter);
+
+        if (simpleQuery.isSetTargetSrs() && !isDefaultDatabaseSrs(simpleQuery.getTargetSrs())) {
+            DatabaseSrs targetSrs = simpleQuery.getTargetSrs();
+            query.setTargetSrs(targetSrs.getSrid(), targetSrs.getGMLSrsName());
+        }
 
         if (simpleQuery.isUseLodFilter()
                 && simpleQuery.isSetLodFilter()

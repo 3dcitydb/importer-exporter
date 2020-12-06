@@ -32,18 +32,17 @@ import org.citydb.config.i18n.Language;
 import org.citydb.config.project.exporter.SimpleTilingOptions;
 import org.citydb.config.project.exporter.TileNameSuffixMode;
 import org.citydb.config.project.exporter.TileSuffixMode;
+import org.citydb.gui.components.common.TitledPanel;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.modules.common.AbstractPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 
 import javax.swing.*;
-import javax.swing.border.TitledBorder;
 import java.awt.*;
 
-@SuppressWarnings("serial")
 public class TilingOptionsPanel extends AbstractPreferencesComponent {
-	private JPanel block1;
-	private JPanel block2;
+	private TitledPanel filePanel;
+	private TitledPanel optionsPanel;
 
 	private JLabel tilePathInfo;
 	private JLabel tilePathSuffixLabel;
@@ -86,7 +85,7 @@ public class TilingOptionsPanel extends AbstractPreferencesComponent {
 
 		setGenAttr = new JCheckBox();
 		genAttrNameLabel = new JLabel();
-		genAttrNameText = new JTextField("TILE");
+		genAttrNameText = new JTextField("tile");
 		genAttrNameText.setEditable(false);
 		genAttrValueLabel = new JLabel();
 		genAttrValueComboBox = new JComboBox<>();
@@ -95,41 +94,38 @@ public class TilingOptionsPanel extends AbstractPreferencesComponent {
 
 		setLayout(new GridBagLayout());
 		{
-			block1 = new JPanel();
-			add(block1, GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.BOTH,5,0,5,0));
-			block1.setBorder(BorderFactory.createTitledBorder(""));
-			block1.setLayout(new GridBagLayout());
+			JPanel content = new JPanel();
+			content.setLayout(new GridBagLayout());
 			{
 				tilePathInfo.setFont(tilePathInfo.getFont().deriveFont(Font.ITALIC));
-				GridBagConstraints c = GuiUtil.setConstraints(0,0,0.0,1.0,GridBagConstraints.BOTH,0,5,5,5);
-				c.gridwidth = 2;
-
-				block1.add(tilePathInfo, c);
-				block1.add(tilePathNameLabel, GuiUtil.setConstraints(0,1,0.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
-				block1.add(tilePathName, GuiUtil.setConstraints(1,1,1.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
-				block1.add(tilePathSuffixLabel, GuiUtil.setConstraints(0,2,0.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
-				block1.add(tilePathSuffixComboBox, GuiUtil.setConstraints(1,2,1.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
-				block1.add(tileNameSuffixLabel, GuiUtil.setConstraints(0,3,0.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
-				block1.add(tileNameSuffixComboBox, GuiUtil.setConstraints(1,3,1.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
+				content.add(tilePathInfo, GuiUtil.setConstraints(0, 0, 2, 1, 0, 1, GridBagConstraints.BOTH, 0, 0, 5, 0));
+				content.add(tilePathNameLabel, GuiUtil.setConstraints(0, 1, 0, 1, GridBagConstraints.BOTH, 0, 0, 5, 5));
+				content.add(tilePathName, GuiUtil.setConstraints(1, 1, 1, 1, GridBagConstraints.BOTH, 0, 5, 5, 0));
+				content.add(tilePathSuffixLabel, GuiUtil.setConstraints(0, 2, 0, 1, GridBagConstraints.BOTH, 0, 0, 5, 5));
+				content.add(tilePathSuffixComboBox, GuiUtil.setConstraints(1, 2, 1, 1, GridBagConstraints.BOTH, 0, 5, 5, 0));
+				content.add(tileNameSuffixLabel, GuiUtil.setConstraints(0, 3, 0, 1, GridBagConstraints.BOTH, 0, 0, 0, 5));
+				content.add(tileNameSuffixComboBox, GuiUtil.setConstraints(1, 3, 1, 1, GridBagConstraints.BOTH, 0, 5, 0, 0));
 			}
 
-			block2 = new JPanel();
-			add(block2, GuiUtil.setConstraints(0,1,1.0,0.0,GridBagConstraints.BOTH,5,0,5,0));
-			block2.setBorder(BorderFactory.createTitledBorder(""));
-			block2.setLayout(new GridBagLayout());
-			{	
-				setGenAttr.setIconTextGap(10);
-				int lmargin = (int)(setGenAttr.getPreferredSize().getWidth()) + 11;
-				GridBagConstraints c = GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5);
-				c.gridwidth = 2;
-
-				block2.add(setGenAttr, c);
-				block2.add(genAttrNameLabel, GuiUtil.setConstraints(0,1,0.0,1.0,GridBagConstraints.BOTH,0,lmargin,5,5));
-				block2.add(genAttrNameText, GuiUtil.setConstraints(1,1,1.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
-				block2.add(genAttrValueLabel, GuiUtil.setConstraints(0,2,0.0,1.0,GridBagConstraints.BOTH,0,lmargin,5,5));
-				block2.add(genAttrValueComboBox, GuiUtil.setConstraints(1,2,1.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
-			}
+			filePanel = new TitledPanel().build(content);
 		}
+		{
+			JPanel content = new JPanel();
+			content.setLayout(new GridBagLayout());
+			{
+				content.add(genAttrNameLabel, GuiUtil.setConstraints(0, 0, 0, 1, GridBagConstraints.BOTH, 0, 0, 5, 5));
+				content.add(genAttrNameText, GuiUtil.setConstraints(1, 0, 1, 1, GridBagConstraints.BOTH, 0, 5, 5, 0));
+				content.add(genAttrValueLabel, GuiUtil.setConstraints(0, 1, 0, 1, GridBagConstraints.BOTH, 0, 0, 0, 5));
+				content.add(genAttrValueComboBox, GuiUtil.setConstraints(1, 1, 1, 1, GridBagConstraints.BOTH, 0, 5, 0, 0));
+			}
+
+			optionsPanel = new TitledPanel()
+					.withToggleButton(setGenAttr)
+					.build(content);
+		}
+
+		add(filePanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+		add(optionsPanel, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 
 		for (TileSuffixMode mode : TileSuffixMode.values())
 			tilePathSuffixComboBox.addItem(mode);
@@ -152,12 +148,11 @@ public class TilingOptionsPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void doTranslation() {
-		((TitledBorder) block1.getBorder()).setTitle(Language.I18N.getString("pref.export.boundingBox.border.path"));
-		((TitledBorder) block2.getBorder()).setTitle(Language.I18N.getString("pref.export.boundingBox.border.options"));
+		filePanel.setTitle(Language.I18N.getString("pref.export.boundingBox.border.path"));
+		optionsPanel.setTitle(Language.I18N.getString("pref.export.boundingBox.label.tile.genericAttr"));
 
 		tilePathNameLabel.setText(Language.I18N.getString("pref.export.boundingBox.label.tile.pathName"));
 
-		setGenAttr.setText(Language.I18N.getString("pref.export.boundingBox.label.tile.genericAttr"));
 		genAttrNameLabel.setText(Language.I18N.getString("pref.export.boundingBox.label.tile.genericAttrName"));
 		genAttrValueLabel.setText(Language.I18N.getString("pref.export.boundingBox.label.tile.genericAttrValue"));
 

@@ -27,9 +27,13 @@
  */
 package org.citydb.gui;
 
+import com.formdev.flatlaf.FlatLaf;
+import com.formdev.flatlaf.extras.FlatAnimatedLafChange;
+import com.formdev.flatlaf.ui.FlatTabbedPaneUI;
 import org.citydb.ade.ADEExtensionManager;
 import org.citydb.config.Config;
 import org.citydb.config.ConfigUtil;
+import org.citydb.config.gui.style.Theme;
 import org.citydb.config.gui.window.MainWindow;
 import org.citydb.config.gui.window.WindowSize;
 import org.citydb.config.i18n.Language;
@@ -47,15 +51,15 @@ import org.citydb.gui.components.console.StyledConsoleLogger;
 import org.citydb.gui.components.menubar.MenuBar;
 import org.citydb.gui.factory.DefaultComponentFactory;
 import org.citydb.gui.factory.PopupMenuDecorator;
+import org.citydb.gui.modules.database.DatabasePlugin;
+import org.citydb.gui.modules.exporter.CityGMLExportPlugin;
+import org.citydb.gui.modules.importer.CityGMLImportPlugin;
+import org.citydb.gui.modules.kml.KMLExportPlugin;
+import org.citydb.gui.modules.preferences.PreferencesPlugin;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.gui.util.OSXAdapter;
 import org.citydb.log.DefaultConsoleLogger;
 import org.citydb.log.Logger;
-import org.citydb.gui.modules.exporter.CityGMLExportPlugin;
-import org.citydb.gui.modules.importer.CityGMLImportPlugin;
-import org.citydb.gui.modules.database.DatabasePlugin;
-import org.citydb.gui.modules.kml.KMLExportPlugin;
-import org.citydb.gui.modules.preferences.PreferencesPlugin;
 import org.citydb.plugin.Plugin;
 import org.citydb.plugin.PluginManager;
 import org.citydb.plugin.extension.view.View;
@@ -69,18 +73,15 @@ import org.citydb.util.ClientConstants;
 import org.citydb.util.CoreConstants;
 
 import javax.swing.*;
-import javax.swing.border.Border;
-import javax.swing.border.CompoundBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
-import javax.swing.plaf.basic.BasicSplitPaneDivider;
-import javax.swing.plaf.basic.BasicSplitPaneUI;
 import javax.xml.bind.JAXBException;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.geom.AffineTransform;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
@@ -94,7 +95,6 @@ import java.util.MissingResourceException;
 import java.util.Objects;
 import java.util.ResourceBundle;
 
-@SuppressWarnings("serial")
 public final class ImpExpGui extends JFrame implements ViewController, EventHandler {
 	private final Logger log = Logger.getInstance();
 	private final Config config;
@@ -115,11 +115,11 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 	private JTabbedPane menu;
 	private JSplitPane splitPane;
 	private JPanel console;
-	private JLabel consoleLabel;
+	private JTabbedPane consolePane;
 	private ConsolePopupMenuWrapper consolePopup;
 	private ConsoleWindow consoleWindow;
 
-	private int tmpConsoleWidth;
+	private int consoleWidth;
 	private int activePosition;
 	private List<View> views;
 	private PreferencesPlugin preferencesPlugin;
@@ -153,45 +153,20 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		ADEExtensionManager.getInstance().logExceptions();
 	}
 
-	public void restoreDefaults() {
-		if (consoleWindow.isVisible() != config.getGuiConfig().getConsoleWindow().isDetached())
-			enableConsoleWindow(config.getGuiConfig().getConsoleWindow().isDetached(), false);
-
-		consoleWindow.setSize(0, 0);
-		showWindow();
-	}
-
 	private void initGui() {
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-
-		activePosition = 0;
-		main = new JPanel();
 
 		menuBar = new MenuBar(this, config);
 		setJMenuBar(menuBar);
 
 		console = new JPanel();
-		consoleLabel = new JLabel();
+		consolePane = new JTabbedPane();
 		consoleText.setAutoscrolls(true);
 		consoleText.setFont(new Font(Font.MONOSPACED, Font.PLAIN, UIManager.getFont("Label.font").getSize()));
 		consoleText.setEditable(false);
+
 		consoleWindow = new ConsoleWindow(console, config, this);
 		consolePopup = new ConsolePopupMenuWrapper(PopupMenuDecorator.getInstance().decorateAndGet(consoleText));
-
-		statusText = new JLabel();
-		connectText = new JLabel();
-
-		Border border = BorderFactory.createEtchedBorder();
-		Border margin = BorderFactory.createEmptyBorder(0, 2, 0, 2);
-		statusText.setBorder(new CompoundBorder(border, margin));
-		statusText.setOpaque(true);
-		statusText.setBackground(new Color(255,255,255));		
-
-		connectText.setBorder(new CompoundBorder(border, margin));
-		connectText.setBackground(new Color(255,255,255));
-		connectText.setOpaque(true);
-
-		menu = new JTabbedPane();
 
 		// retrieve all views
 		views = new ArrayList<>();
@@ -215,13 +190,16 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		views.add(preferencesPlugin.getView());
 
 		// attach views to gui
+		menu = new JTabbedPane();
+		menu.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
+
 		int index = 0;
 		for (View view : views)
 			menu.insertTab(null, view.getIcon(), view.getViewComponent(), view.getToolTip(), index++);
 
 		menu.addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent e) {
-				if (menu.getSelectedIndex() == activePosition) 
+				if (menu.getSelectedIndex() == activePosition)
 					return;
 
 				if (menu.getComponentAt(activePosition) == preferencesPlugin.getView().getViewComponent()) {
@@ -247,8 +225,8 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 			}
 		});
 
-		// settings specific to Mac OS X
-		if (OSXAdapter.IS_MAC_OS_X) {
+		// settings specific to macOS
+		if (OSXAdapter.IS_MAC_OS) {
 			try {
 				OSXAdapter.setQuitHandler(this, getClass().getDeclaredMethod("shutdown"));
 				OSXAdapter.setAboutHandler(menuBar, menuBar.getClass().getDeclaredMethod("printInfo"));
@@ -258,76 +236,86 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 			}
 		}
 
-		//layout
-		setIconImage(Toolkit.getDefaultToolkit().getImage(ImpExpGui.class.getResource("/org/citydb/gui/images/common/logo_small.png")));
+		// layout
+		setIconImage(Toolkit.getDefaultToolkit().getImage(ImpExpGui.class.getResource("/org/citydb/gui/logos/logo_small.png")));
 		setLayout(new GridBagLayout());
 
 		// main panel
-		main.setBorder(BorderFactory.createEmptyBorder());
-		main.setBackground(this.getBackground());
+		main = new JPanel();
 		main.setLayout(new GridBagLayout());
 		{
-			main.add(menu, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,5,5,5,5));
+			statusText = new JLabel();
+			connectText = new JLabel();
+
 			JPanel status = new JPanel();
-			status.setBorder(BorderFactory.createEmptyBorder());
-			status.setBackground(this.getBackground());
-			main.add(status, GuiUtil.setConstraints(0,1,1.0,0.0,GridBagConstraints.HORIZONTAL,5,5,0,5));
 			status.setLayout(new GridBagLayout());
 			{
-				status.add(statusText, GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.HORIZONTAL,0,0,0,2));
-				status.add(connectText, GuiUtil.setConstraints(1,0,0.0,0.0,GridBagConstraints.HORIZONTAL,0,2,0,0));
+				status.add(statusText, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 0));
+				status.add(connectText, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 0));
 			}
+
+			main.add(menu, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
+			main.add(status, GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.HORIZONTAL, 5, 5, 5, 5));
 		}
 
 		// console panel
-		console.setBorder(BorderFactory.createEmptyBorder());
-		console.setBackground(this.getBackground());
 		console.setLayout(new GridBagLayout());
 		{
-			console.add(consoleLabel, GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.BOTH,5,5,0,5));
 			JScrollPane scroll = new JScrollPane(consoleText);
-			scroll.setBorder(BorderFactory.createEtchedBorder());
+			scroll.setBorder(BorderFactory.createEmptyBorder());
 			scroll.setViewportBorder(BorderFactory.createEmptyBorder());
-			console.add(scroll, GuiUtil.setConstraints(0,1,1.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
+
+			consolePane.addTab(null, scroll);
+			consolePane.putClientProperty("JTabbedPane.hasFullBorder", true);
+			consolePane.setUI(new FlatTabbedPaneUI() {
+				protected void paintTabBackground(Graphics g, int p, int i, int x, int y, int w, int h, boolean s) {
+					// do not paint tab background
+				}
+			});
+
+			console.add(consolePane, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.BOTH, 0, 10, 10, 10));
 		}
 
 		splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
 		splitPane.setContinuousLayout(true);
 		splitPane.setBorder(BorderFactory.createEmptyBorder());
-		splitPane.setOpaque(false);
-		splitPane.setUI(new BasicSplitPaneUI() {
-			public BasicSplitPaneDivider createDefaultDivider() {
-				return new BasicSplitPaneDivider(this) {
-					public void setBorder(Border b) {
-					}
-				};
+		splitPane.setLeftComponent(main);
+		splitPane.setRightComponent(console);
+		add(splitPane, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
+
+		UIManager.addPropertyChangeListener(e -> {
+			if ("lookAndFeel".equals(e.getPropertyName())) {
+				SwingUtilities.invokeLater(this::updateComponentUI);
 			}
 		});
 
-		splitPane.setLeftComponent(main);
-		splitPane.setRightComponent(console);
-		add(splitPane, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,0,0,0,0));
+		updateComponentUI();
+	}
+
+	private void updateComponentUI() {
+		consoleText.setBackground(UIManager.getColor("TextField.background"));
+		menu.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, UIManager.getColor("Component.borderColor")));
 	}
 
 	private void showWindow() {
-		WindowSize size = config.getGuiConfig().getMainWindow().getSize();
-
-		Toolkit t = Toolkit.getDefaultToolkit();
-		Insets frame_insets = t.getScreenInsets(GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration());
-		int frame_insets_x = frame_insets.left + frame_insets.right;
-		int frame_insets_y = frame_insets.bottom + frame_insets.top;
+		GraphicsDevice screen = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+		Insets screenInsets = Toolkit.getDefaultToolkit().getScreenInsets(screen.getDefaultConfiguration());
 
 		// derive virtual bounds of multiple screen layout
 		Rectangle virtualBounds = new Rectangle();
-		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-		GraphicsDevice[] gs = ge.getScreenDevices();
-
-		for (GraphicsDevice gd : gs) {
-			GraphicsConfiguration[] gc = gd.getConfigurations();
-			for (GraphicsConfiguration aGc : gc)
-				virtualBounds = virtualBounds.union(aGc.getBounds());
+		for (GraphicsDevice device : GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices()) {
+			for (GraphicsConfiguration configuration : device.getConfigurations()) {
+				virtualBounds = virtualBounds.union(configuration.getBounds());
+			}
 		}
 
+		Rectangle screenBounds = screen.getDefaultConfiguration().getBounds();
+		AffineTransform transform = screen.getDefaultConfiguration().getDefaultTransform();
+		screenBounds.width = screenBounds.width - (int) ((screenInsets.left + screenInsets.right) / transform.getScaleX());
+		screenBounds.height = screenBounds.height - (int) ((screenInsets.top + screenInsets.bottom) / transform.getScaleY());
+
+		// get user-defined window size from GUI configuration
+		WindowSize size = config.getGuiConfig().getMainWindow().getSize();
 		Integer x = size.getX();
 		Integer y = size.getY();
 		Integer width = size.getWidth();
@@ -335,41 +323,46 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		Integer dividerLocation = config.getGuiConfig().getMainWindow().getDividerLocation();
 
 		// create default values for main window
-		if (x == null || y == null || width == null || height == null || 
-				!virtualBounds.contains(x , y, frame_insets_x != 0 ? frame_insets_x : 40, frame_insets_y != 0 ? frame_insets_y : 40)) {
-			Dimension dim = t.getScreenSize();
-			int user_insets_x = 100;
-			int user_insets_y = 50;
+		if (x == null || y == null || width == null || height == null ||
+				!virtualBounds.contains(x , y, 50, 50)) {
+			int preferredWidth = 1700;
+			int preferredHeight = 1000;
 
-			width = dim.width - frame_insets_x - user_insets_x;
-			height = dim.height - frame_insets_y - user_insets_y;
-			x = user_insets_x / 2 + frame_insets.left;
-			y = user_insets_y / 2 + frame_insets.top;
+			if (screenBounds.width - preferredWidth >= 0 && screenBounds.height - preferredHeight >= 0) {
+				width = preferredWidth;
+				height = preferredHeight;
+			} else {
+				width = screenBounds.width - 50;
+				height = screenBounds.height - 50;
+			}
+
+			x = (screenBounds.width - width) / 2 + (int) (screenInsets.left / transform.getScaleX());
+			y = (screenBounds.height - height) / 2 + (int) (screenInsets.top / transform.getScaleY());
 
 			// if console is detached, also create default values for console window
 			if (config.getGuiConfig().getConsoleWindow().isDetached()) {
-				x -= 15;
-				width = width / 2 + 30;
+				width = width / 2 + 20;
 				consoleWindow.setLocation(x + width, y);
-				consoleWindow.setSize(width - 30, height);
-			} else
-				dividerLocation = (int)(width * .5) + 20;
+				consoleWindow.setSize(width - 20, height);
+			} else {
+				dividerLocation = width / 2 + 20;
+			}
 		}
 
 		setLocation(x, y);
 		setSize(width, height);
 		setVisible(true);
 
-		if (!config.getGuiConfig().getConsoleWindow().isDetached())
-			main.setPreferredSize(new Dimension((int)(width * .5) + 20, 1));
-
-		if (dividerLocation != null && dividerLocation > 0 && dividerLocation < width)
-			splitPane.setDividerLocation(dividerLocation);
+		if (!config.getGuiConfig().getConsoleWindow().isDetached()) {
+			if (dividerLocation != null && dividerLocation > 0 && dividerLocation < width)
+				splitPane.setDividerLocation(dividerLocation);
+		} else {
+			enableConsoleWindow(true, false);
+		}
 	}
 
 	private void initConsole() {
 		log.setConsoleLogger(consoleLogger);
-
 		System.setOut(consoleLogger.out());
 		System.setErr(consoleLogger.err());
 
@@ -378,6 +371,41 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 			enableConsoleWindow(true, false);
 			requestFocus();
 		}
+	}
+
+	public void restoreDefaults() {
+		if (consoleWindow.isVisible() != config.getGuiConfig().getConsoleWindow().isDetached())
+			enableConsoleWindow(config.getGuiConfig().getConsoleWindow().isDetached(), false);
+
+		consoleWindow.setSize(0, 0);
+		showWindow();
+	}
+
+	public void setLookAndFeel(Theme theme) {
+		String laf = GuiUtil.getLaf(theme);
+		if (laf.equals(UIManager.getLookAndFeel().getClass().getName())) {
+			return;
+		}
+
+		EventQueue.invokeLater(() -> {
+			try {
+				FlatAnimatedLafChange.showSnapshot();
+
+				UIManager.setLookAndFeel(laf);
+				if (!(UIManager.getLookAndFeel() instanceof FlatLaf)) {
+					UIManager.put("defaultFont", null);
+				}
+
+				FlatLaf.updateUI();
+				PopupMenuDecorator.getInstance().updateUI();
+
+				config.getGuiConfig().getAppearance().setTheme(theme);
+			} catch (Exception e) {
+				log.error("Failed to switch to look and feel theme '" + laf + "'.", e);
+			} finally {
+				SwingUtilities.invokeLater(FlatAnimatedLafChange::hideSnapshotWithAnimation);
+			}
+		});
 	}
 
 	public void doTranslation() {
@@ -392,7 +420,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 
 			setDatabaseStatus(dbPool.isConnected());
 			statusText.setText(Language.I18N.getString("main.status.ready.label"));
-			consoleLabel.setText(Language.I18N.getString("main.console.label"));
+			consolePane.setTitleAt(0, Language.I18N.getString("main.console.label"));
 
 			// fire translation notification to plugins
 			for (Plugin plugin : pluginManager.getPlugins()) {
@@ -428,44 +456,39 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 
 		if (enable) {
 			if (resizeMain) {
-				tmpConsoleWidth = console.getWidth();
-				if (getExtendedState() == JFrame.MAXIMIZED_BOTH) {
-					Toolkit t = Toolkit.getDefaultToolkit();
-					Insets insets = t.getScreenInsets(getGraphicsConfiguration());
-					Rectangle bounds = getGraphicsConfiguration().getBounds();
-					setLocation(bounds.x, bounds.y);
-					setSize(bounds.width - insets.left - tmpConsoleWidth - insets.right, 
-							bounds.height - insets.top - insets.bottom);					
-				} else				
-					setSize(getWidth() - tmpConsoleWidth, getHeight());
+				consoleWidth = console.getWidth();
+				setSize(getWidth() - consoleWidth, getHeight());
 			}
 
-			consoleWindow.activate();			
+			splitPane.setDividerSize(0);
+			consoleWindow.activate();
 		} else {
 			consoleWindow.dispose();
 
-			int width = tmpConsoleWidth;
-			if (width == 0)
-				width = consoleWindow.getWidth();
-
-			if (resizeMain)	
-				setSize(getWidth() + width, getHeight());
-
-			width = main.getWidth();
 			int dividerLocation = splitPane.getDividerLocation();
+			if (dividerLocation <= 0) {
+				dividerLocation = getWidth();
+			}
+
+			if (resizeMain) {
+				int width = consoleWidth != 0 ? consoleWidth : consoleWindow.getWidth();
+				setSize(getWidth() + width, getHeight());
+			}
+
+			int dividerSize = UIManager.getInt("SplitPane.dividerSize");
+			splitPane.setDividerSize(dividerSize > 0 ? dividerSize : 5);
 			splitPane.setRightComponent(console);
-			main.setPreferredSize(new Dimension(width, 1));
 			splitPane.setDividerLocation(dividerLocation);
 		}
 
 		config.getGuiConfig().getConsoleWindow().setDetached(enable);
 	}
 
-	public boolean saveProjectSettings() {
-		return saveProjectSettings(false);
+	public boolean saveSettings() {
+		return saveSettings(false);
 	}
 
-	private boolean saveProjectSettings(boolean isShuttingDown) {
+	private boolean saveSettings(boolean isShuttingDown) {
 		if (!createConfigDir(configFile.getParent()))
 			return false;
 
@@ -598,7 +621,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 				plugin.shutdown();
 
 			log.info("Saving project settings");
-			saveProjectSettings(true);
+			saveSettings(true);
 			saveGUISettings();
 
 			if (dbPool.isConnected()) {

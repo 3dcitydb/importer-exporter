@@ -51,6 +51,7 @@ public class QueryOption implements CliOption {
         query.setMode(resourceIdOption != null ? SimpleKmlQueryMode.SINGLE : SimpleKmlQueryMode.BBOX);
 
         if (typeNamesOption != null) {
+            query.setUseTypeNames(true);
             query.setFeatureTypeFilter(typeNamesOption.toFeatureTypeFilter());
         }
 

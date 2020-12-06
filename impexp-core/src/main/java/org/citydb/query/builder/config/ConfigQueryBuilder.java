@@ -302,12 +302,13 @@ public class ConfigQueryBuilder {
 		PredicateBuilder predicateBuilder = new PredicateBuilder(valueReferenceBuilder, databaseAdapter);
 
 		// feature type filter
-		if (queryConfig.isSetFeatureTypeFilter()) {
-			if (queryConfig.getFeatureTypeFilter().isEmpty())
+		if (queryConfig.isUseTypeNames()) {
+			if (queryConfig.isSetFeatureTypeFilter() && !queryConfig.getFeatureTypeFilter().isEmpty()) {
+				FeatureTypeFilterBuilder featureTypeFilterBuilder = new FeatureTypeFilterBuilder(query, schemaMapping);
+				query.setFeatureTypeFilter(featureTypeFilterBuilder.buildFeatureTypeFilter(queryConfig.getFeatureTypeFilter(), CityGMLVersion.v2_0_0));
+			} else {
 				throw new QueryBuildException("The feature type filter must not be empty.");
-
-			FeatureTypeFilterBuilder featureTypeFilterBuilder = new FeatureTypeFilterBuilder(query, schemaMapping);
-			query.setFeatureTypeFilter(featureTypeFilterBuilder.buildFeatureTypeFilter(queryConfig.getFeatureTypeFilter(), CityGMLVersion.v2_0_0));
+			}
 		} else {
 			try {
 				query.setFeatureTypeFilter(new FeatureTypeFilter(schemaMapping.getFeatureType("_CityObject", CoreModule.v2_0_0.getNamespaceURI())));
@@ -334,5 +335,4 @@ public class ConfigQueryBuilder {
 
 		return query;
 	}
-
 }

@@ -28,10 +28,12 @@
 
 package org.citydb.cli;
 
+import com.formdev.flatlaf.FlatLightLaf;
 import org.citydb.ImpExpException;
 import org.citydb.config.Config;
 import org.citydb.config.ConfigUtil;
 import org.citydb.config.gui.GuiConfig;
+import org.citydb.config.gui.style.Theme;
 import org.citydb.database.DatabaseController;
 import org.citydb.gui.ImpExpGui;
 import org.citydb.gui.components.SplashScreen;
@@ -40,7 +42,9 @@ import org.citydb.gui.modules.exporter.CityGMLExportPlugin;
 import org.citydb.gui.modules.importer.CityGMLImportPlugin;
 import org.citydb.gui.modules.kml.KMLExportPlugin;
 import org.citydb.gui.modules.preferences.PreferencesPlugin;
+import org.citydb.gui.util.GuiUtil;
 import org.citydb.gui.util.OSXAdapter;
+import org.citydb.log.Logger;
 import org.citydb.plugin.CliCommand;
 import org.citydb.plugin.InternalPlugin;
 import org.citydb.plugin.Plugin;
@@ -74,6 +78,9 @@ public class GuiCommand extends CliCommand implements StartupProgressListener {
     private ImpExpCli parent;
 
     private final PluginManager pluginManager = PluginManager.getInstance();
+    private final Logger log = Logger.getInstance();
+
+    private GuiConfig guiConfig;
     private int processSteps;
     private SplashScreen splashScreen;
 
@@ -81,8 +88,8 @@ public class GuiCommand extends CliCommand implements StartupProgressListener {
     public Integer call() throws Exception {
         Config config = ObjectRegistry.getInstance().getConfig();
 
-        // load GUI configuration
-        loadGuiConfig(config);
+        // set GUI configuration
+        config.setGuiConfig(guiConfig);
 
         // initialize predefined GUI components
         ImpExpGui impExpGui = new ImpExpGui(parent.getConfigFile());
@@ -102,19 +109,19 @@ public class GuiCommand extends CliCommand implements StartupProgressListener {
         return 0;
     }
 
-    private void loadGuiConfig(Config config) {
+    private GuiConfig loadGuiConfig() {
         Path guiConfigFile = CoreConstants.IMPEXP_DATA_DIR
                 .resolve(ClientConstants.CONFIG_DIR)
                 .resolve(ClientConstants.GUI_SETTINGS_FILE);
 
+        Object object = null;
         try {
-            Object object = ConfigUtil.getInstance().unmarshal(guiConfigFile.toFile());
-            if (object instanceof GuiConfig) {
-                config.setGuiConfig((GuiConfig) object);
-            }
+            object = ConfigUtil.getInstance().unmarshal(guiConfigFile.toFile());
         } catch (JAXBException | IOException e) {
             //
         }
+
+        return object instanceof GuiConfig ? (GuiConfig) object : new GuiConfig();
     }
 
     private void initializeViewComponents(ImpExpGui impExpGui, Config config) {
@@ -148,23 +155,40 @@ public class GuiCommand extends CliCommand implements StartupProgressListener {
         parent.useDefaultConfiguration(true)
                 .failOnADEExceptions(false);
 
-        // set look & feel
+        // load GUI configuration
+        guiConfig = loadGuiConfig();
+        String laf = GuiUtil.getLaf(guiConfig.getAppearance().getTheme());
+
         try {
-            javax.swing.UIManager.setLookAndFeel(javax.swing.UIManager.getSystemLookAndFeelClassName());
-            if (OSXAdapter.IS_MAC_OS_X) {
-                OSXAdapter.setDockIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/org/citydb/gui/images/common/logo_small.png")));
+            // set look and feel
+            UIManager.setLookAndFeel(laf);
+        } catch (Exception e) {
+            log.error("Failed to install look and feel theme '" + laf + "'.", e);
+            guiConfig.getAppearance().setTheme(Theme.LIGHT);
+            FlatLightLaf.install();
+        }
+
+        if (OSXAdapter.IS_MAC_OS) {
+            OSXAdapter.setDockIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/org/citydb/gui/logos/logo_small.png")));
+            if (System.getProperty("apple.laf.useScreenMenuBar") == null) {
                 System.setProperty("apple.laf.useScreenMenuBar", "true");
             }
-        } catch (Exception e) {
-            throw new ImpExpException("Failed to initialize user interface.", e);
         }
+
+        // enable window decorations
+        JFrame.setDefaultLookAndFeelDecorated(true);
+        JDialog.setDefaultLookAndFeelDecorated(true);
+
+        // set UI defaults
+        UIManager.put("CheckBox.iconTextGap", 6);
+        UIManager.put("RadioButton.iconTextGap", 6);
 
         // splash screen
         if (!hideSplash) {
-            splashScreen = new SplashScreen(3, 477, Color.BLACK);
+            splashScreen = new SplashScreen(5, 485, Color.BLACK);
             splashScreen.setMessage("Version \"" + getClass().getPackage().getImplementationVersion() + "\"");
             parent.withStartupProgressListener(this);
-            SwingUtilities.invokeLater(() -> splashScreen.setVisible(true));
+            splashScreen.setVisible(true);
         }
     }
 

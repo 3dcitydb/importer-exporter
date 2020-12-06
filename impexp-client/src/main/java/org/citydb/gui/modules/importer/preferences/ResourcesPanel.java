@@ -32,24 +32,23 @@ import org.citydb.config.i18n.Language;
 import org.citydb.config.project.database.ImportBatching;
 import org.citydb.config.project.resources.ThreadPool;
 import org.citydb.config.project.resources.UIDCacheConfig;
+import org.citydb.gui.components.common.TitledPanel;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.modules.common.AbstractPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 
 import javax.swing.*;
-import javax.swing.border.TitledBorder;
+import javax.swing.text.NumberFormatter;
 import java.awt.*;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 
-@SuppressWarnings("serial")
 public class ResourcesPanel extends AbstractPreferencesComponent{
-	private JPanel block1;
-	private JPanel block2;
-	private JPanel block3;
-	private JPanel block4;
+	private TitledPanel multithreadingPanel;
+	private TitledPanel batchPanel;
+	private TitledPanel idCachePanel;
+	private TitledPanel textureCachePanel;
+
 	private JLabel impResMinThreadsLabel;
 	private JFormattedTextField impResMinThreadsText;
 	private JLabel impResMaxThreadsLabel;
@@ -130,11 +129,7 @@ public class ResourcesPanel extends AbstractPreferencesComponent{
 		return false;
 	}
 
-	private void initGui(){
-		block1 = new JPanel();
-		block2 = new JPanel();
-		block3 = new JPanel();
-		block4 = new JPanel();
+	private void initGui() {
 		impResMinThreadsLabel = new JLabel();
 		impResMaxThreadsLabel = new JLabel();
 		impResTransaktLabel = new JLabel();
@@ -154,9 +149,9 @@ public class ResourcesPanel extends AbstractPreferencesComponent{
 		impResTexDrainLabel = new JLabel();
 		impResTexPartLabel = new JLabel();
 		
-		DecimalFormat threeIntFormat = new DecimalFormat("###");	
-		threeIntFormat.setMaximumIntegerDigits(3);
-		threeIntFormat.setMinimumIntegerDigits(1);
+		NumberFormatter threeIntFormat = new NumberFormatter(new DecimalFormat("#"));
+		threeIntFormat.setMaximum(999);
+		threeIntFormat.setMinimum(0);
 		impResMinThreadsText = new JFormattedTextField(threeIntFormat);
 		impResMaxThreadsText = new JFormattedTextField(threeIntFormat);
 		impResGeomDrainText = new JFormattedTextField(threeIntFormat);
@@ -165,183 +160,150 @@ public class ResourcesPanel extends AbstractPreferencesComponent{
 		impResFeatPartText = new JFormattedTextField(threeIntFormat);
 		impResTexDrainText = new JFormattedTextField(threeIntFormat);
 		impResTexPartText = new JFormattedTextField(threeIntFormat);
-		
-		DecimalFormat batchFormat = new DecimalFormat("#####");
-		batchFormat.setMaximumIntegerDigits(5);
-		batchFormat.setMinimumIntegerDigits(1);		
+		impResMinThreadsText.setColumns(8);
+		impResMaxThreadsText.setColumns(8);
+		impResGeomDrainText.setColumns(8);
+		impResFeatDrainText.setColumns(8);
+		impResGeomPartText.setColumns(8);
+		impResFeatPartText.setColumns(8);
+		impResTexDrainText.setColumns(8);
+		impResTexPartText.setColumns(8);
+
+		NumberFormatter batchFormat = new NumberFormatter(new DecimalFormat("#"));
+		batchFormat.setMaximum(99999);
+		batchFormat.setMinimum(0);
 		impResTransaktFeatureText = new JFormattedTextField(batchFormat);
 		impResTransaktCacheText = new JFormattedTextField(batchFormat);
 		impResTransaktTempText = new JFormattedTextField(batchFormat);
-		
-		DecimalFormat cacheEntryFormat = new DecimalFormat("########");
-		cacheEntryFormat.setMaximumIntegerDigits(8);
-		cacheEntryFormat.setMinimumIntegerDigits(1);		
+		impResTransaktFeatureText.setColumns(8);
+		impResTransaktCacheText.setColumns(8);
+		impResTransaktTempText.setColumns(8);
+
+		NumberFormatter cacheEntryFormat = new NumberFormatter(new DecimalFormat("#"));
+		cacheEntryFormat.setMaximum(99999999);
+		cacheEntryFormat.setMinimum(0);
 		impResGeomCacheText = new JFormattedTextField(cacheEntryFormat);
 		impResFeatCacheText = new JFormattedTextField(cacheEntryFormat);	
 		impResTexCacheText = new JFormattedTextField(cacheEntryFormat);
+		impResGeomCacheText.setColumns(8);
+		impResFeatCacheText.setColumns(8);
+		impResTexCacheText.setColumns(8);
 
 		PopupMenuDecorator.getInstance().decorate(impResMinThreadsText, impResMaxThreadsText,
 				impResGeomDrainText, impResFeatDrainText, impResTexDrainText, impResGeomPartText, impResFeatPartText, impResTexPartText,
 				impResTransaktFeatureText, impResTransaktCacheText, impResTransaktTempText,
 				impResGeomCacheText, impResFeatCacheText, impResTexCacheText);
-		
-		impResMinThreadsText.addPropertyChangeListener(new PropertyChangeListener() {
-			public void propertyChange(PropertyChangeEvent evt) {
-				checkPositive(impResMinThreadsText, 1);
-			}
-		});
-		
-		impResMaxThreadsText.addPropertyChangeListener(new PropertyChangeListener() {
-			public void propertyChange(PropertyChangeEvent evt) {
-				checkPositive(impResMaxThreadsText, 1);
-			}
-		});
-		
-		impResTransaktFeatureText.addPropertyChangeListener(new PropertyChangeListener() {
-			public void propertyChange(PropertyChangeEvent evt) {
-				checkPositive(impResTransaktFeatureText, 20);
-			}
-		});
-		
-		impResTransaktCacheText.addPropertyChangeListener(new PropertyChangeListener() {
-			public void propertyChange(PropertyChangeEvent evt) {
-				checkPositive(impResTransaktCacheText, 1000);
-			}
-		});
-		
-		impResTransaktTempText.addPropertyChangeListener(new PropertyChangeListener() {
-			public void propertyChange(PropertyChangeEvent evt) {
-				checkPositive(impResTransaktTempText, 1000);
-			}
-		});
-		
-		impResGeomCacheText.addPropertyChangeListener(new PropertyChangeListener() {
-			public void propertyChange(PropertyChangeEvent evt) {
-				checkPositive(impResGeomCacheText, 200000);
-			}
-		});
-		
-		impResFeatCacheText.addPropertyChangeListener(new PropertyChangeListener() {
-			public void propertyChange(PropertyChangeEvent evt) {
-				checkPositive(impResFeatCacheText, 200000);
-			}
-		});
-		
-		impResTexCacheText.addPropertyChangeListener(new PropertyChangeListener() {
-			public void propertyChange(PropertyChangeEvent evt) {
-				checkPositive(impResTexCacheText, 200000);
-			}
-		});
 
-		impResGeomDrainText.addPropertyChangeListener(new PropertyChangeListener() {
-			public void propertyChange(PropertyChangeEvent evt) {
-				checkPositiveRange(impResGeomDrainText, 85, 100);
-			}
-		});
-		
-		impResFeatDrainText.addPropertyChangeListener(new PropertyChangeListener() {
-			public void propertyChange(PropertyChangeEvent evt) {
-				checkPositiveRange(impResFeatDrainText, 85, 100);
-			}
-		});
-		
-		impResTexDrainText.addPropertyChangeListener(new PropertyChangeListener() {
-			public void propertyChange(PropertyChangeEvent evt) {
-				checkPositiveRange(impResTexDrainText, 85, 100);
-			}
-		});
-		
-		impResGeomPartText.addPropertyChangeListener(new PropertyChangeListener() {
-			public void propertyChange(PropertyChangeEvent evt) {
-				checkPositiveRange(impResGeomPartText, 10, 100);
-			}
-		});
-		
-		impResFeatPartText.addPropertyChangeListener(new PropertyChangeListener() {
-			public void propertyChange(PropertyChangeEvent evt) {
-				checkPositiveRange(impResFeatPartText, 10, 100);
-			}
-		});
-		
-		impResTexPartText.addPropertyChangeListener(new PropertyChangeListener() {
-			public void propertyChange(PropertyChangeEvent evt) {
-				checkPositiveRange(impResTexPartText, 10, 100);
-			}
-		});
-		
 		setLayout(new GridBagLayout());
-		add(block1, GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.BOTH,5,0,5,0));
-		block1.setBorder(BorderFactory.createTitledBorder(""));
-		block1.setLayout(new GridBagLayout());
 		{
-			block1.add(impResMinThreadsLabel, GuiUtil.setConstraints(0,0,0.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
-			block1.add(impResMinThreadsText, GuiUtil.setConstraints(1,0,1.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
-			block1.add(impResMaxThreadsLabel, GuiUtil.setConstraints(0,1,0.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
-			block1.add(impResMaxThreadsText, GuiUtil.setConstraints(1,1,1.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
+			JPanel content = new JPanel();
+			content.setLayout(new GridBagLayout());
+			{
+				content.add(impResMinThreadsLabel, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.BOTH, 0, 0, 5, 5));
+				content.add(impResMinThreadsText, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.WEST, GridBagConstraints.NONE, 0, 5, 5, 0));
+				content.add(impResMaxThreadsLabel, GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.BOTH, 0, 0, 0, 5));
+				content.add(impResMaxThreadsText, GuiUtil.setConstraints(1, 1, 1, 0, GridBagConstraints.WEST, GridBagConstraints.NONE, 0, 5, 0, 0));
+			}
+
+			multithreadingPanel = new TitledPanel().build(content);
 		}
-		add(block2, GuiUtil.setConstraints(0,1,1.0,0.0,GridBagConstraints.BOTH,5,0,5,0));
-		block2.setBorder(BorderFactory.createTitledBorder(""));
-		block2.setLayout(new GridBagLayout());
 		{
-			block2.add(impResTransaktLabel, GuiUtil.setConstraints(0,0,0.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
-			block2.add(impResTransaktFeatureText, GuiUtil.setConstraints(1,0,1.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
-			block2.add(impResTransaktFeatureLabel, GuiUtil.setConstraints(2,0,0.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
-			block2.add(impResTransaktCacheText, GuiUtil.setConstraints(1,1,1.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
-			block2.add(impResTransaktCacheLabel, GuiUtil.setConstraints(2,1,0.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
-			block2.add(impResTransaktTempText, GuiUtil.setConstraints(1,2,1.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
-			block2.add(impResTransaktTempLabel, GuiUtil.setConstraints(2,2,0.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
+			JPanel content = new JPanel();
+			content.setLayout(new GridBagLayout());
+			{
+				content.add(impResTransaktLabel, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.BOTH, 0, 0, 5, 5));
+				content.add(impResTransaktFeatureText, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.BOTH, 0, 5, 5, 5));
+				content.add(impResTransaktFeatureLabel, GuiUtil.setConstraints(2, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 5, 0));
+				content.add(impResTransaktCacheText, GuiUtil.setConstraints(1, 1, 0, 0, GridBagConstraints.BOTH, 0, 5, 5, 5));
+				content.add(impResTransaktCacheLabel, GuiUtil.setConstraints(2, 1, 1, 0, GridBagConstraints.BOTH, 0, 0, 5, 0));
+				content.add(impResTransaktTempText, GuiUtil.setConstraints(1, 2, 0, 0, GridBagConstraints.BOTH, 0, 5, 0, 5));
+				content.add(impResTransaktTempLabel, GuiUtil.setConstraints(2, 2, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+			}
+
+			batchPanel = new TitledPanel().build(content);
 		}
-		add(block3, GuiUtil.setConstraints(0,2,1.0,0.0,GridBagConstraints.BOTH,5,0,5,0));
-		block3.setBorder(BorderFactory.createTitledBorder(""));
-		block3.setLayout(new GridBagLayout());
 		{
-			block3.add(impResGeomLabel, GuiUtil.setConstraints(0,0,0.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
-			block3.add(impResGeomCacheText, GuiUtil.setConstraints(1,0,1.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
-			block3.add(impResGeomCacheLabel, GuiUtil.setConstraints(2,0,0.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
-			block3.add(impResGeomDrainText, GuiUtil.setConstraints(1,1,1.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
-			block3.add(impResGeomDrainLabel, GuiUtil.setConstraints(2,1,0.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
-			block3.add(impResGeomPartText, GuiUtil.setConstraints(1,2,1.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
-			block3.add(impResGeomPartLabel, GuiUtil.setConstraints(2,2,0.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
-			block3.add(impResFeatLabel, GuiUtil.setConstraints(0,3,0.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
-			block3.add(impResFeatCacheText, GuiUtil.setConstraints(1,3,1.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
-			block3.add(impResFeatCacheLabel, GuiUtil.setConstraints(2,3,0.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
-			block3.add(impResFeatDrainText, GuiUtil.setConstraints(1,4,1.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
-			block3.add(impResFeatDrainLabel, GuiUtil.setConstraints(2,4,0.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
-			block3.add(impResFeatPartText, GuiUtil.setConstraints(1,5,1.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
-			block3.add(impResFeatPartLabel, GuiUtil.setConstraints(2,5,0.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
+			JPanel content = new JPanel();
+			content.setLayout(new GridBagLayout());
+			{
+				content.add(impResGeomLabel, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.BOTH, 0, 0, 5, 5));
+				content.add(impResGeomCacheText, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.BOTH, 0, 5, 5, 5));
+				content.add(impResGeomCacheLabel, GuiUtil.setConstraints(2, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 5, 0));
+				content.add(impResGeomDrainText, GuiUtil.setConstraints(1, 1, 0, 0, GridBagConstraints.BOTH, 0, 5, 5, 5));
+				content.add(impResGeomDrainLabel, GuiUtil.setConstraints(2, 1, 1, 0, GridBagConstraints.BOTH, 0, 0, 5, 0));
+				content.add(impResGeomPartText, GuiUtil.setConstraints(1, 2, 0, 0, GridBagConstraints.BOTH, 0, 5, 5, 5));
+				content.add(impResGeomPartLabel, GuiUtil.setConstraints(2, 2, 1, 0, GridBagConstraints.BOTH, 0, 0, 5, 0));
+
+				content.add(impResFeatLabel, GuiUtil.setConstraints(0, 3, 0, 0, GridBagConstraints.BOTH, 10, 0, 5, 5));
+				content.add(impResFeatCacheText, GuiUtil.setConstraints(1, 3, 0, 0, GridBagConstraints.BOTH, 10, 5, 5, 5));
+				content.add(impResFeatCacheLabel, GuiUtil.setConstraints(2, 3, 1, 0, GridBagConstraints.BOTH, 10, 0, 5, 0));
+				content.add(impResFeatDrainText, GuiUtil.setConstraints(1, 4, 0, 0, GridBagConstraints.BOTH, 0, 5, 5, 5));
+				content.add(impResFeatDrainLabel, GuiUtil.setConstraints(2, 4, 1, 0, GridBagConstraints.BOTH, 0, 0, 5, 0));
+				content.add(impResFeatPartText, GuiUtil.setConstraints(1, 5, 0, 0, GridBagConstraints.BOTH, 0, 5, 0, 5));
+				content.add(impResFeatPartLabel, GuiUtil.setConstraints(2, 5, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+			}
+
+			idCachePanel = new TitledPanel().build(content);
 		}
-		add(block4, GuiUtil.setConstraints(0,3,1.0,0.0,GridBagConstraints.BOTH,5,0,5,0));
-		block4.setBorder(BorderFactory.createTitledBorder(""));
-		block4.setLayout(new GridBagLayout());
 		{
-			block4.add(impResTexLabel, GuiUtil.setConstraints(0,0,0.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
-			block4.add(impResTexCacheText, GuiUtil.setConstraints(1,0,1.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
-			block4.add(impResTexCacheLabel, GuiUtil.setConstraints(2,0,0.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
-			block4.add(impResTexDrainText, GuiUtil.setConstraints(1,1,1.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
-			block4.add(impResTexDrainLabel, GuiUtil.setConstraints(2,1,0.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
-			block4.add(impResTexPartText, GuiUtil.setConstraints(1,2,1.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
-			block4.add(impResTexPartLabel, GuiUtil.setConstraints(2,2,0.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
+			JPanel content = new JPanel();
+			content.setLayout(new GridBagLayout());
+			{
+				content.add(impResTexLabel, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.BOTH, 0, 0, 5, 5));
+				content.add(impResTexCacheText, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.BOTH, 0, 5, 5, 5));
+				content.add(impResTexCacheLabel, GuiUtil.setConstraints(2, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 5, 0));
+				content.add(impResTexDrainText, GuiUtil.setConstraints(1, 1, 0, 0, GridBagConstraints.BOTH, 0, 5, 5, 5));
+				content.add(impResTexDrainLabel, GuiUtil.setConstraints(2, 1, 1, 0, GridBagConstraints.BOTH, 0, 0, 5, 0));
+				content.add(impResTexPartText, GuiUtil.setConstraints(1, 2, 0, 0, GridBagConstraints.BOTH, 0, 5, 0, 5));
+				content.add(impResTexPartLabel, GuiUtil.setConstraints(2, 2, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+			}
+
+			textureCachePanel = new TitledPanel().build(content);
 		}
+
+		add(multithreadingPanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+		add(batchPanel, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+		add(idCachePanel, GuiUtil.setConstraints(0, 2, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+		add(textureCachePanel, GuiUtil.setConstraints(0, 3, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+
+		impResMinThreadsText.addPropertyChangeListener("value", evt -> checkPositive(impResMinThreadsText, 1));
+		impResMaxThreadsText.addPropertyChangeListener("value", evt -> checkPositive(impResMaxThreadsText, 1));
+		impResTransaktFeatureText.addPropertyChangeListener("value", evt -> checkPositive(impResTransaktFeatureText, 20));
+		impResTransaktCacheText.addPropertyChangeListener("value", evt -> checkPositive(impResTransaktCacheText, 1000));
+		impResTransaktTempText.addPropertyChangeListener("value", evt -> checkPositive(impResTransaktTempText, 1000));
+		impResGeomCacheText.addPropertyChangeListener("value", evt -> checkPositive(impResGeomCacheText, 200000));
+		impResFeatCacheText.addPropertyChangeListener("value", evt -> checkPositive(impResFeatCacheText, 200000));
+		impResTexCacheText.addPropertyChangeListener("value", evt -> checkPositive(impResTexCacheText, 200000));
+		impResGeomDrainText.addPropertyChangeListener("value", evt -> checkPositiveRange(impResGeomDrainText, 85, 100));
+		impResFeatDrainText.addPropertyChangeListener("value", evt -> checkPositiveRange(impResFeatDrainText, 85, 100));
+		impResTexDrainText.addPropertyChangeListener("value", evt -> checkPositiveRange(impResTexDrainText, 85, 100));
+		impResGeomPartText.addPropertyChangeListener("value", evt -> checkPositiveRange(impResGeomPartText, 10, 100));
+		impResFeatPartText.addPropertyChangeListener("value", evt -> checkPositiveRange(impResFeatPartText, 10, 100));
+		impResTexPartText.addPropertyChangeListener("value", evt -> checkPositiveRange(impResTexPartText, 10, 100));
 	}
-	
+
 	private void checkPositive(JFormattedTextField field, int defaultValue) {
-		if (((Number)field.getValue()).intValue() <= 0)
+		if (field.getValue() == null || ((Number) field.getValue()).intValue() <= 0)
 			field.setValue(defaultValue);
 	}
 	
 	private void checkPositiveRange(JFormattedTextField field, int min, int max) {
-		if (((Number)field.getValue()).intValue() <= 0)
+		if (field.getValue() != null) {
+			if (((Number) field.getValue()).intValue() <= 0)
+				field.setValue(min);
+			else if (((Number) field.getValue()).intValue() > 100)
+				field.setValue(max);
+		} else {
 			field.setValue(min);
-		else if (((Number)field.getValue()).intValue() > 100)
-			field.setValue(max);
+		}
 	}
 
 	@Override
 	public void doTranslation() {
-		((TitledBorder)block1.getBorder()).setTitle(Language.I18N.getString("common.pref.resources.border.multiCPU"));	
-		((TitledBorder)block2.getBorder()).setTitle(Language.I18N.getString("pref.import.resources.border.commit"));	
-		((TitledBorder)block3.getBorder()).setTitle(Language.I18N.getString("common.pref.resources.border.idCache"));	
-		((TitledBorder)block4.getBorder()).setTitle(Language.I18N.getString("pref.import.resources.border.texImageCache"));	
+		multithreadingPanel.setTitle(Language.I18N.getString("common.pref.resources.border.multiCPU"));
+		batchPanel.setTitle(Language.I18N.getString("pref.import.resources.border.commit"));
+		idCachePanel.setTitle(Language.I18N.getString("common.pref.resources.border.idCache"));
+		textureCachePanel.setTitle(Language.I18N.getString("pref.import.resources.border.texImageCache"));
 
 		impResMinThreadsLabel.setText(Language.I18N.getString("common.pref.resources.label.minThreads"));
 		impResMaxThreadsLabel.setText(Language.I18N.getString("common.pref.resources.label.maxThreads"));

@@ -47,7 +47,8 @@ import org.citydb.ade.kmlExporter.ADEKmlExportManager;
 import org.citydb.ade.kmlExporter.ADEKmlExportQueryHelper;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
-import org.citydb.config.project.kmlExporter.DisplayForm;
+import org.citydb.config.project.kmlExporter.DisplayFormType;
+import org.citydb.config.project.kmlExporter.Style;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.adapter.BlobExportAdapter;
 import org.citydb.event.EventDispatcher;
@@ -278,7 +279,7 @@ public class KmlExporterManager implements ADEKmlExportHelper {
 
 							String filename = gmlId + "_" + displayFormName;
 							if (placemark.getId().startsWith(config.getKmlExportConfig().getIdPrefixes().getPlacemarkHighlight())) {
-								filename = filename + "_" + DisplayForm.HIGHLIGTHTED_STR;
+								filename = filename + "_" + Style.HIGHLIGTHTED_STR;
 								isHighlighting = true;
 							}
 
@@ -313,8 +314,8 @@ public class KmlExporterManager implements ADEKmlExportHelper {
 							LinkType linkType = kmlFactory.createLinkType();
 
 							if (isHighlighting) {
-								networkLinkType.setName(gmlId + " " + displayFormName + " " + DisplayForm.HIGHLIGTHTED_STR);
-								linkType.setHref(work.getId() + "/" + gmlId + "_" + displayFormName + "_" + DisplayForm.HIGHLIGTHTED_STR + fileExtension);
+								networkLinkType.setName(gmlId + " " + displayFormName + " " + Style.HIGHLIGTHTED_STR);
+								linkType.setHref(work.getId() + "/" + gmlId + "_" + displayFormName + "_" + Style.HIGHLIGTHTED_STR + fileExtension);
 							}
 							else { // actual placemark, non-highlighting
 								networkLinkType.setName(gmlId + " " + displayFormName);
@@ -338,10 +339,10 @@ public class KmlExporterManager implements ADEKmlExportHelper {
 
 							LodType lodType = kmlFactory.createLodType();
 							lodType.setMinLodPixels(config.getKmlExportConfig().getSingleObjectRegionSize());
-							if (work.getDisplayForm().getVisibleUpTo() == -1)
+							if (work.getDisplayForm().getVisibleTo() == -1)
 								lodType.setMaxLodPixels(-1.0);
 							else
-								lodType.setMaxLodPixels((double)work.getDisplayForm().getVisibleUpTo() * (lodType.getMinLodPixels()/work.getDisplayForm().getVisibleFrom()));
+								lodType.setMaxLodPixels((double)work.getDisplayForm().getVisibleTo() * (lodType.getMinLodPixels()/work.getDisplayForm().getVisibleFrom()));
 
 							RegionType regionType = kmlFactory.createRegionType();
 							regionType.setLatLonAltBox(latLonAltBoxType);
@@ -481,7 +482,7 @@ public class KmlExporterManager implements ADEKmlExportHelper {
 
 				// the network link pointing to the file
 				NetworkLinkType networkLinkType = kmlFactory.createNetworkLinkType();
-				networkLinkType.setName(colladaBundle.getGmlId() + " " + DisplayForm.COLLADA_STR);
+				networkLinkType.setName(colladaBundle.getGmlId() + " " + DisplayFormType.COLLADA.getName());
 
 				RegionType regionType = kmlFactory.createRegionType();
 
@@ -501,7 +502,7 @@ public class KmlExporterManager implements ADEKmlExportHelper {
 				regionType.setLod(lodType);
 
 				LinkType linkType = kmlFactory.createLinkType();
-				linkType.setHref(colladaBundle.getId() + "/" + colladaBundle.getGmlId() + "_" + DisplayForm.COLLADA_STR + fileExtension);
+				linkType.setHref(colladaBundle.getId() + "/" + colladaBundle.getGmlId() + "_" + DisplayFormType.COLLADA.getName() + fileExtension);
 				linkType.setViewRefreshMode(ViewRefreshModeEnumType.fromValue(config.getKmlExportConfig().getViewRefreshMode()));
 				linkType.setViewFormat("");
 				if (linkType.getViewRefreshMode() == ViewRefreshModeEnumType.ON_STOP) {

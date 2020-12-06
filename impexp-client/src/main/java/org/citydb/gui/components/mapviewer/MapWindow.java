@@ -27,6 +27,7 @@
  */
 package org.citydb.gui.components.mapviewer;
 
+import com.formdev.flatlaf.extras.FlatSVGIcon;
 import org.citydb.config.Config;
 import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.gui.window.GeocodingServiceName;
@@ -68,8 +69,6 @@ import org.jdesktop.swingx.mapviewer.GeoPosition;
 import org.jdesktop.swingx.mapviewer.TileFactory;
 
 import javax.swing.*;
-import javax.swing.border.Border;
-import javax.swing.text.html.HTMLDocument;
 import java.awt.*;
 import java.awt.Desktop.Action;
 import java.awt.event.ItemEvent;
@@ -95,11 +94,10 @@ import java.util.HashSet;
 import java.util.Locale;
 import java.util.concurrent.ExecutionException;
 
-@SuppressWarnings("serial")
 public class MapWindow extends JDialog implements EventHandler {
 	private final Logger log = Logger.getInstance();
 	private static MapWindow instance = null;
-	public static DecimalFormat LAT_LON_FORMATTER = new DecimalFormat("##0.0000000", DecimalFormatSymbols.getInstance(Locale.ENGLISH));
+	public static DecimalFormat LAT_LON_FORMATTER = new DecimalFormat("#0.0000000", DecimalFormatSymbols.getInstance(Locale.ENGLISH));
 
 	static {
 		LAT_LON_FORMATTER.setMaximumIntegerDigits(3);
@@ -108,9 +106,19 @@ public class MapWindow extends JDialog implements EventHandler {
 		LAT_LON_FORMATTER.setMaximumFractionDigits(7);
 	}
 
+	private final JFrame mainFrame;
+	private final BoundingBoxClipboardHandler clipboardHandler;
+	private final BoundingBoxValidator validator;
 	private final Config config;
 
-	private Map map;	
+	private Map map;
+	private JPanel top;
+	private JPanel left;
+	private JPanel reverse;
+	private JPanel geocoder;
+	private JPanel googleMaps;
+	private JPanel help;
+
 	private JComboBox<Location> searchBox;
 	private JLabel searchResult;
 	private ImageIcon loadIcon;
@@ -128,17 +136,17 @@ public class MapWindow extends JDialog implements EventHandler {
 	private JButton pasteBBox;
 	private JButton showBBox;
 	private JButton clearBBox;
+	private JPopupMenu popupMenu;
 
 	private JLabel bboxTitel;
 	private JLabel reverseTitle;
 	private JLabel reverseInfo;
-	private JTextPane reverseText;
+	private JTextArea reverseText;
 	private JLabel reverseSearchProgress;
 
 	private JLabel helpTitle;
-	private JLabel helpText;
+	private JTextArea helpText;
 
-	private JLabel googleMapsTitle;
 	private JButton googleMapsButton;
 
 	private JLabel geocoderTitle;
@@ -146,9 +154,6 @@ public class MapWindow extends JDialog implements EventHandler {
 
 	private BoundingBoxListener listener;
 	private BBoxPopupMenu[] bboxPopups;
-	private JFrame mainFrame;
-	private BoundingBoxClipboardHandler clipboardHandler;
-	private BoundingBoxValidator validator;
 
 	private MapWindow(ViewController viewController) {
 		super(viewController.getTopFrame(), true);
@@ -195,66 +200,54 @@ public class MapWindow extends JDialog implements EventHandler {
 
 	private void init() {
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/org/citydb/gui/images/map/map_icon.png")));
+		setIconImage(new FlatSVGIcon("org/citydb/gui/icons/map.svg").getImage());
 
 		setLayout(new GridBagLayout());
-		getContentPane().setBackground(Color.WHITE);
 
-		Color borderColor = new Color(0, 0, 0, 150);
-		loadIcon = new ImageIcon(getClass().getResource("/org/citydb/gui/images/map/loader.gif"));
+		map = new Map();
+		top = new JPanel();
+		left = new JPanel();
 
-		map = new Map(config);
-		JPanel top = new JPanel();
-		JPanel left = new JPanel();
+		int iconTextGap = new JLabel().getIconTextGap();
+		loadIcon = new ImageIcon(getClass().getResource("/org/citydb/gui/icons/loader.gif"));
 
-		// map
-		map.getMapKit().setBorder(BorderFactory.createMatteBorder(1, 2, 0, 0, borderColor));
-
-		GridBagConstraints gridBagConstraints = GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0);
-		gridBagConstraints.gridwidth = 2;
-		add(top, gridBagConstraints);
-		add(left, GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.BOTH, 5, 5, 5, 5));
+		add(top, GuiUtil.setConstraints(0, 0, 2, 1, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+		add(left, GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 		add(map.getMapKit(), GuiUtil.setConstraints(1, 1, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
 
 		// top components
 		top.setLayout(new GridBagLayout());
-		top.setBackground(new Color(245, 245, 245));
-		top.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, borderColor));
 
-		goButton = new JButton();
+		goButton = new JButton(new FlatSVGIcon("org/citydb/gui/icons/search.svg"));
 		searchBox = new JComboBox<>();
 		searchResult = new JLabel();
 		searchResult.setPreferredSize(new Dimension(searchResult.getPreferredSize().width, loadIcon.getIconHeight()));
 
 		searchBox.setEditable(true);
-		searchBox.setPreferredSize(new Dimension(500, (int)searchBox.getPreferredSize().getHeight()));
+		searchBox.setPreferredSize(new Dimension(600, (int) searchBox.getPreferredSize().getHeight()));
 
 		applyButton = new JButton();
 		cancelButton = new JButton();
 		applyButton.setFont(applyButton.getFont().deriveFont(Font.BOLD));
 		applyButton.setEnabled(false);
 
-		top.add(searchBox, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.HORIZONTAL, 10, 10, 0, 5));
-		top.add(goButton, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.BOTH, 10, 5, 0, 10));
+		top.add(searchBox, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.HORIZONTAL, 15, 10, 0, 5));
+		top.add(goButton, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.BOTH, 15, 5, 0, 10));
 		top.add(Box.createHorizontalGlue(), GuiUtil.setConstraints(2, 0, 1, 0, GridBagConstraints.HORIZONTAL, 10, 5, 0, 0));
-		top.add(applyButton, GuiUtil.setConstraints(3, 0, 0, 0, GridBagConstraints.BOTH, 10, 0, 0, 5));
-		top.add(cancelButton, GuiUtil.setConstraints(4, 0, 0, 0, GridBagConstraints.BOTH, 10, 5, 0, 5));
-		top.add(searchResult, GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.BOTH, 2, 10, 2, 10));
+		top.add(applyButton, GuiUtil.setConstraints(3, 0, 0, 0, GridBagConstraints.BOTH, 15, 0, 0, 5));
+		top.add(cancelButton, GuiUtil.setConstraints(4, 0, 0, 0, GridBagConstraints.BOTH, 15, 5, 0, 10));
+		top.add(searchResult, GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.BOTH, 2, 10, 5, 10));
 
 		// left components
 		left.setLayout(new GridBagLayout());
-		left.setBackground(Color.WHITE);
-		Border componentBorder = BorderFactory.createCompoundBorder(UIManager.getBorder("TitledBorder.border"), BorderFactory.createEmptyBorder(5, 5, 5, 5));		
 
 		// BBox
 		final JPanel bbox = new JPanel();
-		bbox.setBorder(componentBorder);
-		bbox.setLayout(new GridBagLayout());	
+		bbox.setLayout(new GridBagLayout());
 
 		bboxTitel = new JLabel();
 		bboxTitel.setFont(bbox.getFont().deriveFont(Font.BOLD));
-		bboxTitel.setIcon(new ImageIcon(getClass().getResource("/org/citydb/gui/images/map/selection.png")));
-		bboxTitel.setIconTextGap(5);
+		bboxTitel.setIcon(new FlatSVGIcon("org/citydb/gui/map/bbox.svg"));
 
 		final JPanel bboxFields = new JPanel();
 		bboxFields.setLayout(new GridBagLayout());		
@@ -263,38 +256,15 @@ public class MapWindow extends JDialog implements EventHandler {
 		minY = new JFormattedTextField(LAT_LON_FORMATTER);
 		maxX = new JFormattedTextField(LAT_LON_FORMATTER);
 		maxY = new JFormattedTextField(LAT_LON_FORMATTER);
+		minX.setColumns(7);
+		minY.setColumns(7);
+		maxX.setColumns(7);
+		maxY.setColumns(7);
 
-		minX.setBackground(Color.WHITE);
-		minY.setBackground(Color.WHITE);
-		maxX.setBackground(Color.WHITE);
-		maxY.setBackground(Color.WHITE);
-
-		Dimension dim = new Dimension(90, minX.getPreferredSize().height);		
-		minX.setPreferredSize(dim);
-		minY.setPreferredSize(dim);
-		maxX.setPreferredSize(dim);
-		maxY.setPreferredSize(dim);
-		minX.setMinimumSize(dim);
-		minY.setMinimumSize(dim);
-		maxX.setMinimumSize(dim);
-		maxY.setMinimumSize(dim);
-
-		gridBagConstraints = GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.NONE, 5, 2, 0, 2);
-		gridBagConstraints.gridwidth = 2;
-		gridBagConstraints.anchor = GridBagConstraints.CENTER;		
-		bboxFields.add(maxY, gridBagConstraints);
-		gridBagConstraints.gridwidth = 1;
-		gridBagConstraints.gridy = 1;
-		gridBagConstraints.anchor = GridBagConstraints.EAST;
-		bboxFields.add(minX, gridBagConstraints);
-		gridBagConstraints.gridx = 1;
-		gridBagConstraints.anchor = GridBagConstraints.WEST;
-		bboxFields.add(maxX, gridBagConstraints);
-		gridBagConstraints.gridwidth = 2;
-		gridBagConstraints.gridy = 2;
-		gridBagConstraints.gridx = 0;	
-		gridBagConstraints.anchor = GridBagConstraints.CENTER;
-		bboxFields.add(minY, gridBagConstraints);
+		bboxFields.add(maxY, GuiUtil.setConstraints(0, 0, 2, 1, 0, 0, GridBagConstraints.CENTER, GridBagConstraints.NONE, 5, 2, 0, 2));
+		bboxFields.add(minX, GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.EAST, GridBagConstraints.NONE, 5, 2, 0, 2));
+		bboxFields.add(maxX, GuiUtil.setConstraints(1, 1, 0, 0, GridBagConstraints.WEST, GridBagConstraints.NONE, 5, 2, 0, 2));
+		bboxFields.add(minY, GuiUtil.setConstraints(0, 2, 2, 1, 0, 0, GridBagConstraints.CENTER, GridBagConstraints.NONE, 5, 2, 0, 2));
 
 		// BBox buttons
 		JPanel bboxButtons = new JPanel();
@@ -305,16 +275,17 @@ public class MapWindow extends JDialog implements EventHandler {
 		clearBBox = new JButton();
 
 		copyBBox = new JButton();
-		ImageIcon copyIcon = new ImageIcon(getClass().getResource("/org/citydb/gui/images/common/bbox_copy.png"));
-		copyBBox.setIcon(copyIcon);
-		copyBBox.setMargin(new Insets(1, 1, 1, 1));
+		copyBBox.setIcon(new FlatSVGIcon("org/citydb/gui/icons/copy.svg"));
 		copyBBox.setEnabled(false);
 
 		pasteBBox = new JButton();
-		ImageIcon pasteIcon = new ImageIcon(getClass().getResource("/org/citydb/gui/images/common/bbox_paste.png"));
-		pasteBBox.setIcon(pasteIcon);
-		pasteBBox.setMargin(new Insets(1, 1, 1, 1));
+		pasteBBox.setIcon(new FlatSVGIcon("org/citydb/gui/icons/paste.svg"));
 		pasteBBox.setEnabled(clipboardHandler.containsPossibleBoundingBox());
+
+		JToolBar toolBar = new JToolBar();
+		toolBar.add(copyBBox);
+		toolBar.add(pasteBBox);
+		toolBar.setFloatable(false);
 
 		bboxButtons.add(showBBox, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 0));
 		bboxButtons.add(clearBBox, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 0));
@@ -322,99 +293,94 @@ public class MapWindow extends JDialog implements EventHandler {
 		Box bboxTitelBox = Box.createHorizontalBox();
 		bboxTitelBox.add(bboxTitel);
 		bboxTitelBox.add(Box.createHorizontalGlue());
-		bboxTitelBox.add(copyBBox);
-		bboxTitelBox.add(Box.createHorizontalStrut(5));
-		bboxTitelBox.add(pasteBBox);
+		bboxTitelBox.add(toolBar);
 
-		bbox.add(bboxTitelBox, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 0, 2, 0));
-		bbox.add(bboxFields, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.HORIZONTAL, 5, 0, 5, 0));
-		bbox.add(bboxButtons, GuiUtil.setConstraints(0, 2, 1, 0, GridBagConstraints.HORIZONTAL, 10, 0, 0, 0));
+		bbox.add(bboxTitelBox, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.HORIZONTAL, 10, 10, 0, 10));
+		bbox.add(bboxFields, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.HORIZONTAL, 5, 10, 5, 10));
+		bbox.add(bboxButtons, GuiUtil.setConstraints(0, 2, 1, 0, GridBagConstraints.HORIZONTAL, 10, 10, 0, 10));
 
 		// Reverse geocoder
-		JPanel reverse = new JPanel();
-		reverse.setBorder(componentBorder);
+		reverse = new JPanel();
 		reverse.setLayout(new GridBagLayout());
 
 		reverseTitle = new JLabel();
 		reverseTitle.setFont(reverseTitle.getFont().deriveFont(Font.BOLD));
-		reverseTitle.setIcon(new ImageIcon(getClass().getResource("/org/citydb/gui/images/map/waypoint_small.png")));
+		reverseTitle.setIcon(new FlatSVGIcon("org/citydb/gui/map/address_search.svg"));
 
-		reverseTitle.setIconTextGap(5);
 		reverseSearchProgress = new JLabel();
 		reverseInfo = new JLabel();
 
-		reverseText = new JTextPane();
+		reverseText = new JTextArea();
+		reverseText.setLineWrap(true);
+		reverseText.setWrapStyleWord(true);
 		reverseText.setEditable(false);
-		reverseText.setBorder(minX.getBorder());
-		reverseText.setBackground(Color.WHITE);
-		reverseText.setContentType("text/html");
-		((HTMLDocument)reverseText.getDocument()).getStyleSheet().addRule(
-				"body { font-family: " + reverseText.getFont().getFamily() + "; " + "font-size: " + reverseText.getFont().getSize() + "pt; }");
 		reverseText.setVisible(false);
+		reverseText.setFont(UIManager.getFont("Label.font"));
+		reverseText.setBackground(minX.getBackground());
 
 		Box reverseTitelBox = Box.createHorizontalBox();
 		reverseTitelBox.add(reverseTitle);
 		reverseTitelBox.add(Box.createHorizontalGlue());
 		reverseTitelBox.add(reverseSearchProgress);
 
-		reverse.add(reverseTitelBox, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 0, 2, 0));
-		reverse.add(reverseText, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 10, 0, 0, 0));
-		reverse.add(reverseInfo, GuiUtil.setConstraints(0, 2, 0, 0, GridBagConstraints.HORIZONTAL, 10, 0, 0, 0));
+		reverse.add(reverseTitelBox, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.HORIZONTAL, 10, 10, 0, 10));
+		reverse.add(reverseText, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.HORIZONTAL, 10, 10, 0, 10));
+		reverse.add(reverseInfo, GuiUtil.setConstraints(0, 2, 0, 0, GridBagConstraints.HORIZONTAL, 10, 10, 0, 10));
 
 		// Geocoder picker
-		JPanel geocoder = new JPanel();
-		geocoder.setBorder(componentBorder);
+		geocoder = new JPanel();
 		geocoder.setLayout(new GridBagLayout());
 
 		geocoderTitle = new JLabel();
 		geocoderTitle.setFont(geocoderTitle.getFont().deriveFont(Font.BOLD));
-		geocoderTitle.setIcon(new ImageIcon(getClass().getResource("/org/citydb/gui/images/map/magnifier.png")));
+		geocoderTitle.setIcon(new FlatSVGIcon("org/citydb/gui/icons/search.svg"));
 
 		geocoderCombo = new JComboBox<>();
 		for (GeocodingServiceName serviceName : GeocodingServiceName.values())
 			geocoderCombo.addItem(serviceName);
 
-		geocoder.add(geocoderTitle, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 0, 2, 0));
-		geocoder.add(geocoderCombo, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.HORIZONTAL, 10, 0, 0, 0));
+		geocoder.add(geocoderTitle, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.HORIZONTAL, 10, 10, 0, 10));
+		geocoder.add(geocoderCombo, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.HORIZONTAL, 10, 10, 0, 10));
 
 		// Google maps
-		JPanel googleMaps = new JPanel();
-		googleMaps.setBorder(componentBorder);
+		googleMaps = new JPanel();
 		googleMaps.setLayout(new GridBagLayout());
 
-		googleMapsTitle = new JLabel();
+		JLabel googleMapsTitle = new JLabel();
 		googleMapsTitle.setFont(googleMapsTitle.getFont().deriveFont(Font.BOLD));
-		googleMapsTitle.setIcon(new ImageIcon(getClass().getResource("/org/citydb/gui/images/map/google_maps.png")));
+		googleMapsTitle.setIcon(new FlatSVGIcon("org/citydb/gui/map/google_maps.svg"));
 
 		googleMapsButton = new JButton();
 		googleMapsButton.setEnabled(Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Action.BROWSE));
 
-		googleMaps.add(googleMapsTitle, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 2, 0));
-		googleMaps.add(googleMapsButton, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.NONE, 0, 5, 0, 0));
+		googleMaps.add(googleMapsTitle, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.HORIZONTAL, 10, 10, 0, 0));
+		googleMaps.add(googleMapsButton, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.HORIZONTAL, 10, iconTextGap, 0, 10));
 
 		// help
-		JPanel help = new JPanel();
-		help.setBorder(componentBorder);
-		help.setLayout(new GridBagLayout());	
+		help = new JPanel();
+		help.setLayout(new GridBagLayout());
 
 		helpTitle = new JLabel();
 		helpTitle.setFont(help.getFont().deriveFont(Font.BOLD));
-		helpTitle.setIcon(new ImageIcon(getClass().getResource("/org/citydb/gui/images/map/help.png")));
-		helpTitle.setIconTextGap(5);		
-		helpText = new JLabel();
+		helpTitle.setIcon(new FlatSVGIcon("org/citydb/gui/icons/help.svg"));
+		helpText = new JTextArea();
+		helpText.setLineWrap(true);
+		helpText.setWrapStyleWord(true);
+		helpText.setEditable(false);
+		helpText.setFont(UIManager.getFont("Label.font"));
+		helpText.setHighlighter(null);
 
-		help.add(helpTitle, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 0, 2, 0));
-		help.add(helpText, GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.BOTH, 10, 0, 0, 0));
+		help.add(helpTitle, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.HORIZONTAL, 10, 10, 0, 10));
+		help.add(helpText, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.HORIZONTAL, 10, 10, 0, 10));
 
-		left.add(bbox, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 5, 0, 5, 0));		
-		left.add(reverse, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 5, 0, 5, 0));
-		left.add(geocoder, GuiUtil.setConstraints(0, 2, 1, 0, GridBagConstraints.BOTH, 5, 0, 5, 0));
-		left.add(googleMaps, GuiUtil.setConstraints(0, 3, 1, 0, GridBagConstraints.BOTH, 5, 0, 5, 0));
-		left.add(help, GuiUtil.setConstraints(0, 4, 1, 0, GridBagConstraints.BOTH, 5, 0, 5, 0));
+		left.add(bbox, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+		left.add(reverse, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 15, 0, 0, 0));
+		left.add(geocoder, GuiUtil.setConstraints(0, 2, 1, 0, GridBagConstraints.BOTH, 15, 0, 0, 0));
+		left.add(googleMaps, GuiUtil.setConstraints(0, 3, 1, 0, GridBagConstraints.BOTH, 15, 0, 0, 0));
+		left.add(help, GuiUtil.setConstraints(0, 4, 1, 0, GridBagConstraints.BOTH, 15, 0, 0, 0));
 		left.add(Box.createVerticalGlue(), GuiUtil.setConstraints(0, 5, 0, 1, GridBagConstraints.VERTICAL, 5, 0, 2, 0));
 
-		left.setMinimumSize(left.getPreferredSize());
-		left.setPreferredSize(left.getMinimumSize());
+		pack();
 
 		// actions
 		goButton.addActionListener(e -> {
@@ -465,7 +431,7 @@ public class MapWindow extends JDialog implements EventHandler {
 		popupMenuDecorator.decorate((JComponent)searchBox.getEditor().getEditorComponent(), reverseText);
 
 		// popup menu
-		final JPopupMenu popupMenu = new JPopupMenu();
+		popupMenu = new JPopupMenu();
 		bboxPopups = new BBoxPopupMenu[5];
 
 		bboxPopups[0] = new BBoxPopupMenu(popupMenuDecorator.decorateAndGet(minX), true);
@@ -483,34 +449,32 @@ public class MapWindow extends JDialog implements EventHandler {
 		});
 
 		PropertyChangeListener valueChangedListener = evt -> {
-			if (evt.getPropertyName().equals("value")) {
-				if (evt.getOldValue() instanceof Number && evt.getNewValue() instanceof Number) {
-					String oldValue = LAT_LON_FORMATTER.format(((Number)evt.getOldValue()).doubleValue());
-					String newValue = LAT_LON_FORMATTER.format(((Number)evt.getNewValue()).doubleValue());
-					if (oldValue.equals(newValue))
-						return;
-				}
+			if (evt.getOldValue() instanceof Number && evt.getNewValue() instanceof Number) {
+				String oldValue = LAT_LON_FORMATTER.format(((Number) evt.getOldValue()).doubleValue());
+				String newValue = LAT_LON_FORMATTER.format(((Number) evt.getNewValue()).doubleValue());
+				if (oldValue.equals(newValue))
+					return;
+			}
 
-				try {
-					minX.commitEdit();
-					minY.commitEdit();
-					maxX.commitEdit();
-					maxY.commitEdit();
+			try {
+				minX.commitEdit();
+				minY.commitEdit();
+				maxX.commitEdit();
+				maxY.commitEdit();
 
-					GeoPosition southWest = new GeoPosition(((Number)minY.getValue()).doubleValue(), ((Number)minX.getValue()).doubleValue());
-					GeoPosition northEast = new GeoPosition(((Number)maxY.getValue()).doubleValue(), ((Number)maxX.getValue()).doubleValue());
+				GeoPosition southWest = new GeoPosition(((Number) minY.getValue()).doubleValue(), ((Number) minX.getValue()).doubleValue());
+				GeoPosition northEast = new GeoPosition(((Number) maxY.getValue()).doubleValue(), ((Number) maxX.getValue()).doubleValue());
 
-					setEnabledApplyBoundingBox(map.getSelectionPainter().isVisibleOnScreen(southWest, northEast));
-				} catch (ParseException e) {
-					//
-				}
+				setEnabledApplyBoundingBox(map.getSelectionPainter().isVisibleOnScreen(southWest, northEast));
+			} catch (ParseException e) {
+				//
 			}
 		};
 
-		minX.addPropertyChangeListener(valueChangedListener);
-		minY.addPropertyChangeListener(valueChangedListener);
-		maxX.addPropertyChangeListener(valueChangedListener);
-		maxY.addPropertyChangeListener(valueChangedListener);
+		minX.addPropertyChangeListener("value", valueChangedListener);
+		minY.addPropertyChangeListener("value", valueChangedListener);
+		maxX.addPropertyChangeListener("value", valueChangedListener);
+		maxY.addPropertyChangeListener("value", valueChangedListener);
 
 		bbox.addMouseListener(new MouseAdapter() {
 			public void mousePressed(MouseEvent e) {
@@ -585,10 +549,10 @@ public class MapWindow extends JDialog implements EventHandler {
 					GeocodingService service = getGeocodingService((GeocodingServiceName) geocoderCombo.getSelectedItem());
 					Geocoder.getInstance().setGeocodingService(service);
 				} catch (GeocodingServiceException e) {
-					SwingUtilities.invokeLater(() -> {
-						JOptionPane.showMessageDialog(this, e.getMessage(),
-								Language.I18N.getString("map.error.geocoder.title"), JOptionPane.ERROR_MESSAGE);
-					});
+					SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(
+							this, e.getMessage(),
+							Language.I18N.getString("map.error.geocoder.title"),
+							JOptionPane.ERROR_MESSAGE));
 
 					geocoderCombo.setSelectedItem(config.getGuiConfig().getMapWindow().getGeocoder());
 				}
@@ -632,6 +596,29 @@ public class MapWindow extends JDialog implements EventHandler {
 				}
 			});
 		});
+
+		UIManager.addPropertyChangeListener(e -> {
+			if ("lookAndFeel".equals(e.getPropertyName())) {
+				SwingUtilities.invokeLater(this::updateComponentUI);
+			}
+		});
+
+		updateComponentUI();
+	}
+
+	private void updateComponentUI() {
+		Color borderColor = UIManager.getColor("Component.borderColor");
+
+		top.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, borderColor));
+		left.setBorder(BorderFactory.createMatteBorder(0, 0, 0, 1, borderColor));
+		reverse.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, borderColor));
+		geocoder.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, borderColor));
+		googleMaps.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, borderColor));
+		help.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, borderColor));
+		helpText.setBorder(BorderFactory.createMatteBorder(0, 0, 0, 0, borderColor));
+		reverseText.setBorder(UIManager.getBorder("TextField.border"));
+
+		SwingUtilities.updateComponentTreeUI(popupMenu);
 	}
 
 	public MapWindow withBoundingBoxListener(BoundingBoxListener listener) {
@@ -796,12 +783,12 @@ public class MapWindow extends JDialog implements EventHandler {
 				} catch (InterruptedException | ExecutionException e) {
 					if (e.getCause() instanceof GeocodingServiceException) {
 						GeocodingServiceException exception = (GeocodingServiceException) e.getCause();
-						searchResult.setText("The geocoder failed due to an error. Check the console log.");
+						searchResult.setText(Language.I18N.getString("map.error.geocoder.lookup"));
 						log.error("The geocoder failed due to an error.");
 						for (String message : exception.getMessages())
 							log.error("Cause: " + message);
 					} else {
-						log.error("An error occured while calling the geocoding service.");
+						log.error("An error occurred while calling the geocoding service.");
 						log.error("Caused by: " + e.getMessage());
 					}
 				} finally {
@@ -876,7 +863,6 @@ public class MapWindow extends JDialog implements EventHandler {
 		setTitle(Language.I18N.getString("map.window.title"));
 		applyButton.setText(Language.I18N.getString("common.button.apply"));
 		cancelButton.setText(Language.I18N.getString("common.button.cancel"));
-		goButton.setText(Language.I18N.getString("map.button.go"));
 		bboxTitel.setText(Language.I18N.getString("map.boundingBox.label"));
 		showBBox.setText(Language.I18N.getString("map.boundingBox.show.button"));
 		showBBox.setToolTipText(Language.I18N.getString("map.boundingBox.show.tooltip"));
@@ -888,7 +874,7 @@ public class MapWindow extends JDialog implements EventHandler {
 		reverseInfo.setText("<html>" + Language.I18N.getString("map.reverseGeocoder.hint.label") + "</html>");
 		geocoderTitle.setText(Language.I18N.getString("map.geocoder.label"));
 		helpTitle.setText(Language.I18N.getString("map.help.label"));
-		helpText.setText("<html>" + Language.I18N.getString("map.help.hint") + "</html>");
+		helpText.setText(Language.I18N.getString("map.help.hint"));
 		googleMapsButton.setText(Language.I18N.getString("map.google.label"));
 
 		map.doTranslation();
@@ -955,26 +941,26 @@ public class MapWindow extends JDialog implements EventHandler {
 					updateSearchBox = true;
 
 				} else {
-					reverseText.setVisible(false);
-					reverseInfo.setVisible(true);
+					reverseText.setVisible(true);
+					reverseInfo.setVisible(false);
 					reverseSearchProgress.setIcon(null);
 
 					if (e.getStatus() == ReverseGeocoderStatus.ERROR) {
-						reverseInfo.setText("<html>The geocoder failed due to an error. Check the console log.</html>");
+						reverseText.setText(Language.I18N.getString("map.error.geocoder.lookup"));
 						GeocodingServiceException exception = e.getException();
 						log.error("The geocoder failed due to an error.");
 						for (String message : exception.getMessages())
 							log.error("Cause: " + message);
 					} else
-						reverseInfo.setText("<html>No address found at this location.</html>");
+						reverseText.setText("No address found at this location.");
 				}
 			});
 		}
 	}
 
 	private final class BBoxPopupMenu extends JPopupMenu {
-		private JMenuItem copy;	
-		private JMenuItem paste;
+		private final JMenuItem copy;
+		private final JMenuItem paste;
 
 		BBoxPopupMenu(JPopupMenu popupMenu, boolean addSeparator) {
 			copy = new JMenuItem();	

@@ -33,13 +33,11 @@ import org.citydb.cli.options.vis.GltfOption;
 import org.citydb.cli.options.vis.QueryOption;
 import org.citydb.config.Config;
 import org.citydb.config.project.database.DatabaseConnection;
-import org.citydb.config.project.kmlExporter.ADEPreference;
-import org.citydb.config.project.kmlExporter.ADEPreferences;
 import org.citydb.config.project.kmlExporter.KmlExportConfig;
 import org.citydb.database.DatabaseController;
+import org.citydb.log.Logger;
 import org.citydb.modules.kml.controller.KmlExportException;
 import org.citydb.modules.kml.controller.KmlExporter;
-import org.citydb.log.Logger;
 import org.citydb.plugin.CliCommand;
 import org.citydb.plugin.cli.DatabaseOption;
 import org.citydb.plugin.cli.ThreadPoolOption;
@@ -144,24 +142,7 @@ public class ExportVisCommand extends CliCommand {
         if (displayOption != null) {
             kmlExportConfig.setLodToExportFrom(displayOption.getLod());
             kmlExportConfig.setAppearanceTheme(displayOption.getAppearanceTheme());
-
-            displayOption.toDisplayForms(kmlExportConfig.getBuildingDisplayForms());
-            displayOption.toDisplayForms(kmlExportConfig.getWaterBodyDisplayForms());
-            displayOption.toDisplayForms(kmlExportConfig.getLandUseDisplayForms());
-            displayOption.toDisplayForms(kmlExportConfig.getVegetationDisplayForms());
-            displayOption.toDisplayForms(kmlExportConfig.getTransportationDisplayForms());
-            displayOption.toDisplayForms(kmlExportConfig.getReliefDisplayForms());
-            displayOption.toDisplayForms(kmlExportConfig.getCityFurnitureDisplayForms());
-            displayOption.toDisplayForms(kmlExportConfig.getGenericCityObjectDisplayForms());
-            displayOption.toDisplayForms(kmlExportConfig.getCityObjectGroupDisplayForms());
-            displayOption.toDisplayForms(kmlExportConfig.getBridgeDisplayForms());
-            displayOption.toDisplayForms(kmlExportConfig.getTunnelDisplayForms());
-
-            for (ADEPreferences preferences : kmlExportConfig.getADEPreferences().values()) {
-                for (ADEPreference preference : preferences.getPreferences().values()) {
-                    displayOption.toDisplayForms(preference.getDisplayForms());
-                }
-            }
+            kmlExportConfig.setDisplayForms(displayOption.toDisplayForms());
         }
     }
 

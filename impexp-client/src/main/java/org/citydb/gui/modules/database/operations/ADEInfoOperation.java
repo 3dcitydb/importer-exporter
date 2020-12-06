@@ -39,12 +39,12 @@ import org.citydb.database.schema.mapping.SchemaMappingException;
 import org.citydb.database.schema.mapping.SchemaMappingValidationException;
 import org.citydb.database.schema.util.SchemaMappingUtil;
 import org.citydb.event.global.DatabaseConnectionStateEvent;
-import org.citydb.gui.util.GuiUtil;
-import org.citydb.log.Logger;
 import org.citydb.gui.modules.database.util.ADEInfoDialog;
 import org.citydb.gui.modules.database.util.ADEInfoRow;
 import org.citydb.gui.modules.database.util.ADETableCellRenderer;
 import org.citydb.gui.modules.database.util.ADETableModel;
+import org.citydb.gui.util.GuiUtil;
+import org.citydb.log.Logger;
 import org.citydb.plugin.extension.view.ViewController;
 import org.citydb.registry.ObjectRegistry;
 
@@ -69,6 +69,7 @@ public class ADEInfoOperation extends DatabaseOperationView {
 
     private JPanel component;
     private JTable adeTable;
+    private JPanel tablePanel;
     private ADETableModel adeTableModel;
     private JButton infoButton;
 
@@ -88,32 +89,35 @@ public class ADEInfoOperation extends DatabaseOperationView {
         adeTableModel.addRow(ADEInfoRow.NO_ADES_ENTRY);
 
         adeTable = new JTable(adeTableModel);
-        adeTable.setRowHeight(ADEInfoRow.getDefaultRowHeight());
         adeTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        adeTable.setShowVerticalLines(true);
 
         adeTable.getTableHeader().setDefaultRenderer(new ADETableCellRenderer(adeTable.getTableHeader().getDefaultRenderer()));
-        for (int i = 0; i < adeTable.getColumnModel().getColumnCount(); i++)
+        for (int i = 0; i < adeTable.getColumnModel().getColumnCount(); i++) {
             adeTable.getColumnModel().getColumn(i).setCellRenderer(
                     new ADETableCellRenderer(adeTable.getDefaultRenderer(adeTableModel.getColumnClass(i))));
+        }
 
         adeTable.getColumnModel().getColumn(0).setPreferredWidth(200);
         adeTable.getColumnModel().getColumn(1).setPreferredWidth(5);
         adeTable.getColumnModel().getColumn(2).setPreferredWidth(5);
         adeTable.getColumnModel().getColumn(3).setPreferredWidth(5);
 
-        Box tablePanel = Box.createVerticalBox();
-        tablePanel.add(adeTable.getTableHeader());
-        tablePanel.add(adeTable);
+        tablePanel = new JPanel();
+        tablePanel.setLayout(new GridBagLayout());
+        tablePanel.add(adeTable.getTableHeader(), GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+        tablePanel.add(adeTable, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 
         infoButton = new JButton();
 
-        component.add(tablePanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 10, 5, 5, 5));
-        component.add(infoButton, GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.NONE, 10, 5, 10, 5));
+        component.add(tablePanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 15, 0, 0, 0));
+        component.add(infoButton, GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.NONE, 15, 0, 10, 0));
 
         adeTable.getSelectionModel().addListSelectionListener(l -> {
             if (!infoButton.isEnabled()) {
-                if (adeTableModel.getRow(adeTable.getSelectedRow()) != ADEInfoRow.NO_ADES_ENTRY)
+                if (adeTableModel.getRow(adeTable.getSelectedRow()) != ADEInfoRow.NO_ADES_ENTRY) {
                     infoButton.setEnabled(true);
+                }
             }
         });
 
@@ -133,10 +137,23 @@ public class ADEInfoOperation extends DatabaseOperationView {
 
         adeTable.addMouseListener(new MouseAdapter() {
             public void mousePressed(MouseEvent e) {
-                if (e.getClickCount() == 2)
+                if (e.getClickCount() == 2) {
                     infoListener.actionPerformed(new ActionEvent(adeTable, 1, "Info"));
+                }
             }
         });
+
+        UIManager.addPropertyChangeListener(e -> {
+            if ("lookAndFeel".equals(e.getPropertyName())) {
+                SwingUtilities.invokeLater(this::updateComponentUI);
+            }
+        });
+
+        updateComponentUI();
+    }
+
+    private void updateComponentUI() {
+        tablePanel.setBorder(UIManager.getBorder("ScrollPane.border"));
     }
 
     @Override
@@ -205,24 +222,24 @@ public class ADEInfoOperation extends DatabaseOperationView {
 
             for (ADEExtension adeExtension : adeManager.getExtensions()) {
                 ADEInfoRow adeInfoRow = adeInfoRows.get(adeExtension.getId());
-                if (adeInfoRow != null)
+                if (adeInfoRow != null) {
                     adeInfoRow.setImpexpSupport(adeExtension.isEnabled());
-                else {
+                } else {
                     Metadata metadata = adeExtension.getMetadata();
                     adeInfoRow = new ADEInfoRow(adeExtension.getId(), metadata.getName(), metadata.getVersion(), false, true);
                     adeInfoRows.put(adeExtension.getId(), adeInfoRow);
                 }
             }
 
-            for (ADEInfoRow adeInfoRow : adeInfoRows.values())
+            for (ADEInfoRow adeInfoRow : adeInfoRows.values()) {
                 adeTableModel.addRow(adeInfoRow);
+            }
 
             adeTable.setRowSelectionAllowed(true);
         }
 
         if (!adeTableModel.hasRows()) {
             adeTableModel.addRow(ADEInfoRow.NO_ADES_ENTRY);
-            adeTable.setRowSelectionAllowed(false);
         }
 
         adeTableModel.fireTableDataChanged();

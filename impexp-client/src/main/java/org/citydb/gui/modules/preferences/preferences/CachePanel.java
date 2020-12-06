@@ -27,32 +27,22 @@
  */
 package org.citydb.gui.modules.preferences.preferences;
 
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.File;
-
-import javax.swing.BorderFactory;
-import javax.swing.ButtonGroup;
-import javax.swing.JButton;
-import javax.swing.JFileChooser;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JTextField;
-import javax.swing.border.TitledBorder;
-
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.global.Cache;
 import org.citydb.config.project.global.CacheMode;
+import org.citydb.gui.components.common.TitledPanel;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.modules.common.AbstractPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 
-@SuppressWarnings("serial")
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionListener;
+import java.io.File;
+
 public class CachePanel extends AbstractPreferencesComponent {
-	private JPanel block1;
+	private TitledPanel cachePanel;
 	private JRadioButton useDatabase;
 	private JRadioButton useLocalCache;
 	private JTextField localCachePath;
@@ -84,41 +74,30 @@ public class CachePanel extends AbstractPreferencesComponent {
 		browseButton = new JButton();
 		
 		PopupMenuDecorator.getInstance().decorate(localCachePath);
-		
-		browseButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				String dir = browseFile(Language.I18N.getString("pref.general.cache.label.useLocal"), localCachePath.getText());
-				if (!dir.isEmpty())
-					localCachePath.setText(dir);
-			}
-		});
-		
+
 		setLayout(new GridBagLayout());
 		{
-
-			block1 = new JPanel();
-			add(block1, GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.BOTH,5,0,5,0));
-
-			block1.setBorder(BorderFactory.createTitledBorder(""));
-			block1.setLayout(new GridBagLayout());
-			useDatabase.setIconTextGap(10);
-			useLocalCache.setIconTextGap(10);
-			localCachePath.setPreferredSize(localCachePath.getSize());
-			int lmargin = (int)(useDatabase.getPreferredSize().getWidth()) + 11;
+			JPanel content = new JPanel();
+			content.setLayout(new GridBagLayout());
 			{
-				block1.add(useDatabase, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
-				block1.add(useLocalCache, GuiUtil.setConstraints(0,1,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
-				block1.add(localCachePath, GuiUtil.setConstraints(0,2,1.0,1.0,GridBagConstraints.BOTH,0,lmargin,5,5));
-				block1.add(browseButton, GuiUtil.setConstraints(1,2,0.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
+				content.add(useDatabase, GuiUtil.setConstraints(0, 0, 3, 1, 1, 0, GridBagConstraints.BOTH, 0, 0, 5, 0));
+				content.add(useLocalCache, GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.BOTH, 0, 0, 0, 5));
+				content.add(localCachePath, GuiUtil.setConstraints(1, 1, 1, 0, GridBagConstraints.BOTH, 0, 5, 0, 5));
+				content.add(browseButton, GuiUtil.setConstraints(2, 1, 0, 0, GridBagConstraints.BOTH, 0, 5, 0, 0));
 			}
+
+			cachePanel = new TitledPanel().build(content);
 		}
-		
-		ActionListener cacheListener = new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				setEnabledLocalCachePath();
-			}
-		};
-		
+
+		add(cachePanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+
+		browseButton.addActionListener(e -> {
+			String dir = browseFile(Language.I18N.getString("pref.general.cache.label.useLocal"), localCachePath.getText());
+			if (!dir.isEmpty())
+				localCachePath.setText(dir);
+		});
+
+		ActionListener cacheListener = e -> setEnabledLocalCachePath();
 		useDatabase.addActionListener(cacheListener);
 		useLocalCache.addActionListener(cacheListener);
 	}
@@ -130,7 +109,7 @@ public class CachePanel extends AbstractPreferencesComponent {
 	
 	@Override
 	public void doTranslation() {
-		((TitledBorder)block1.getBorder()).setTitle(Language.I18N.getString("pref.general.cache.border"));
+		cachePanel.setTitle(Language.I18N.getString("pref.general.cache.border"));
 		useDatabase.setText(Language.I18N.getString("pref.general.cache.label.useDatabase"));
 		useLocalCache.setText(Language.I18N.getString("pref.general.cache.label.useLocal"));
 		browseButton.setText(Language.I18N.getString("common.button.browse"));		
@@ -169,7 +148,6 @@ public class CachePanel extends AbstractPreferencesComponent {
 
 		int result = chooser.showSaveDialog(getTopLevelAncestor());
 		if (result == JFileChooser.CANCEL_OPTION) return "";
-		String browseString = chooser.getSelectedFile().toString();
-		return browseString;
+		return chooser.getSelectedFile().toString();
 	}
 }

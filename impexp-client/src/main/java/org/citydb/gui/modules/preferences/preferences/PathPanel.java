@@ -27,37 +27,27 @@
  */
 package org.citydb.gui.modules.preferences.preferences;
 
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.File;
-
-import javax.swing.BorderFactory;
-import javax.swing.ButtonGroup;
-import javax.swing.JButton;
-import javax.swing.JFileChooser;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JTextField;
-import javax.swing.border.TitledBorder;
-
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.common.Path;
 import org.citydb.config.project.common.PathMode;
+import org.citydb.gui.components.common.TitledPanel;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.modules.common.AbstractPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 
-@SuppressWarnings("serial")
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionListener;
+import java.io.File;
+
 public class PathPanel extends AbstractPreferencesComponent {
-	private JPanel block1;
+	private TitledPanel importPanel;
 	private JRadioButton importPathRadioLast;
 	private JRadioButton importPathRadioDef;
 	private JTextField importPathText;
 	private JButton importPathButton;
-	private JPanel block2;
+	private TitledPanel exportPanel;
 	private JRadioButton exportPathRadioLast;
 	private JRadioButton exportPathRadioDef;
 	private JTextField exportPathText;
@@ -102,69 +92,50 @@ public class PathPanel extends AbstractPreferencesComponent {
 		exportPathButton = new JButton();
 
 		PopupMenuDecorator.getInstance().decorate(importPathText, exportPathText);
-		
-		importPathButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				String sImp = browseFile(Language.I18N.getString("pref.general.path.label.importDefaultPath"), importPathText.getText());
-				if (!sImp.isEmpty())
-					importPathText.setText(sImp);
-			}
-		});
-		
-		exportPathButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				String sExp = browseFile(Language.I18N.getString("pref.general.path.label.exportDefaultPath"), exportPathText.getText());
-				if (!sExp.isEmpty())
-					exportPathText.setText(sExp);
-			}
-		});
 
 		setLayout(new GridBagLayout());
 		{
-
-			block1 = new JPanel();
-			block2 = new JPanel();
-
-			add(block1, GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.BOTH,5,0,5,0));
-			add(block2, GuiUtil.setConstraints(0,1,1.0,0.0,GridBagConstraints.BOTH,5,0,5,0));
-
-			block1.setBorder(BorderFactory.createTitledBorder(""));
-			block1.setLayout(new GridBagLayout());
-			importPathRadioLast.setIconTextGap(10);
-			importPathRadioDef.setIconTextGap(10);
-			importPathText.setPreferredSize(importPathText.getSize());
-			int lmargin = (int)(importPathRadioLast.getPreferredSize().getWidth()) + 11;
+			JPanel content = new JPanel();
+			content.setLayout(new GridBagLayout());
 			{
-				block1.add(importPathRadioLast, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
-				block1.add(importPathRadioDef, GuiUtil.setConstraints(0,1,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
-				block1.add(importPathText, GuiUtil.setConstraints(0,2,1.0,1.0,GridBagConstraints.BOTH,0,lmargin,5,5));
-				block1.add(importPathButton, GuiUtil.setConstraints(1,2,0.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
+				content.add(importPathRadioLast, GuiUtil.setConstraints(0, 0, 3, 1, 1, 0, GridBagConstraints.BOTH, 0, 0, 5, 0));
+				content.add(importPathRadioDef, GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.BOTH, 0, 0, 0, 5));
+				content.add(importPathText, GuiUtil.setConstraints(1, 1, 1, 0, GridBagConstraints.BOTH, 0, 5, 0, 5));
+				content.add(importPathButton, GuiUtil.setConstraints(2, 1, 0, 0, GridBagConstraints.BOTH, 0, 5, 0, 0));
 			}
-			
-			block2.setBorder(BorderFactory.createTitledBorder(""));
-			block2.setLayout(new GridBagLayout());
-			exportPathRadioLast.setIconTextGap(10);
-			exportPathRadioDef.setIconTextGap(10);
-			exportPathText.setPreferredSize(exportPathText.getSize());
-			{
-				block2.add(exportPathRadioLast, GuiUtil.setConstraints(0,0,0.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
-				block2.add(exportPathRadioDef, GuiUtil.setConstraints(0,1,0.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
-				block2.add(exportPathText, GuiUtil.setConstraints(0,2,1.0,1.0,GridBagConstraints.BOTH,0,lmargin,5,5));
-				block2.add(exportPathButton, GuiUtil.setConstraints(1,2,0.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
-			}
+
+			importPanel = new TitledPanel().build(content);
 		}
-		
-		ActionListener importListener = new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				setEnabledImportPath();
+		{
+			JPanel content = new JPanel();
+			content.setLayout(new GridBagLayout());
+			{
+				content.add(exportPathRadioLast, GuiUtil.setConstraints(0, 0, 3, 1, 1, 0, GridBagConstraints.BOTH, 0, 0, 5, 0));
+				content.add(exportPathRadioDef, GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.BOTH, 0, 0, 0, 5));
+				content.add(exportPathText, GuiUtil.setConstraints(1, 1, 1, 0, GridBagConstraints.BOTH, 0, 5, 0, 5));
+				content.add(exportPathButton, GuiUtil.setConstraints(2, 1, 0, 0, GridBagConstraints.BOTH, 0, 5, 0, 0));
 			}
-		};
+
+			exportPanel = new TitledPanel().build(content);
+		}
+
+		add(importPanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+		add(exportPanel, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+
+		importPathButton.addActionListener(e -> {
+			String sImp = browseFile(Language.I18N.getString("pref.general.path.label.importDefaultPath"), importPathText.getText());
+			if (!sImp.isEmpty())
+				importPathText.setText(sImp);
+		});
+
+		exportPathButton.addActionListener(e -> {
+			String sExp = browseFile(Language.I18N.getString("pref.general.path.label.exportDefaultPath"), exportPathText.getText());
+			if (!sExp.isEmpty())
+				exportPathText.setText(sExp);
+		});
 		
-		ActionListener exportListener = new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				setEnabledExportPath();
-			}
-		};
+		ActionListener importListener = e -> setEnabledImportPath();
+		ActionListener exportListener = e -> setEnabledExportPath();
 		
 		importPathRadioLast.addActionListener(importListener);
 		importPathRadioDef.addActionListener(importListener);
@@ -185,11 +156,11 @@ public class PathPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void doTranslation() {
-		((TitledBorder)block1.getBorder()).setTitle(Language.I18N.getString("pref.general.path.border.importPath"));
+		importPanel.setTitle(Language.I18N.getString("pref.general.path.border.importPath"));
 		importPathRadioLast.setText(Language.I18N.getString("pref.general.path.label.importLastUsedPath"));
 		importPathRadioDef.setText(Language.I18N.getString("pref.general.path.label.importDefaultPath"));
-		importPathButton.setText(Language.I18N.getString("common.button.browse"));		
-		((TitledBorder)block2.getBorder()).setTitle(Language.I18N.getString("pref.general.path.border.exportPath"));
+		importPathButton.setText(Language.I18N.getString("common.button.browse"));
+		exportPanel.setTitle(Language.I18N.getString("pref.general.path.border.exportPath"));
 		exportPathRadioLast.setText(Language.I18N.getString("pref.general.path.label.exportLastUsedPath"));
 		exportPathRadioDef.setText(Language.I18N.getString("pref.general.path.label.exportDefaultPath"));
 		exportPathButton.setText(Language.I18N.getString("common.button.browse"));
@@ -199,18 +170,20 @@ public class PathPanel extends AbstractPreferencesComponent {
 	public void loadSettings() {
 		Path path = config.getImportConfig().getPath();
 
-		if (path.isSetLastUsedMode())
+		if (path.isSetLastUsedMode()) {
 			importPathRadioLast.setSelected(true);
-		else
+		} else {
 			importPathRadioDef.setSelected(true);
+		}
 
 		importPathText.setText(path.getStandardPath());
 
 		path = config.getExportConfig().getPath();
-		if (path.isSetLastUsedMode())
+		if (path.isSetLastUsedMode()) {
 			exportPathRadioLast.setSelected(true);
-		else
+		} else {
 			exportPathRadioDef.setSelected(true);
+		}
 
 		exportPathText.setText(path.getStandardPath());
 
@@ -224,8 +197,7 @@ public class PathPanel extends AbstractPreferencesComponent {
 		
 		if (importPathRadioDef.isSelected()) {
 			path.setPathMode(PathMode.STANDARD);
-		}
-		else {
+		} else {
 			path.setPathMode(PathMode.LASTUSED);
 		}
 
@@ -234,8 +206,7 @@ public class PathPanel extends AbstractPreferencesComponent {
 		
 		if (exportPathRadioDef.isSelected()) {
 			path.setPathMode(PathMode.STANDARD);
-		}
-		else {
+		} else {
 			path.setPathMode(PathMode.LASTUSED);
 		}
 
@@ -255,7 +226,6 @@ public class PathPanel extends AbstractPreferencesComponent {
 
 		int result = chooser.showSaveDialog(getTopLevelAncestor());
 		if (result == JFileChooser.CANCEL_OPTION) return "";
-		String browseString = chooser.getSelectedFile().toString();
-		return browseString;
+		return chooser.getSelectedFile().toString();
 	}
 }

@@ -27,19 +27,17 @@
  */
 package org.citydb.gui.modules.database.util;
 
+import com.formdev.flatlaf.extras.FlatSVGIcon;
+
 import javax.swing.*;
 
 public class ADEInfoRow {
     public static final ADEInfoRow NO_ADES_ENTRY = new ADEInfoRow(null, "n/a", "n/a", false, false);
-    private static final ImageIcon isSupported;
-    private static final ImageIcon isNotSupported;
-
-    static {
-        isSupported = new ImageIcon(ADEInfoRow.class.getResource("/org/citydb/gui/images/common/done.png"));
-        isNotSupported = new ImageIcon(ADEInfoRow.class.getResource("/org/citydb/gui/images/common/clear.png"));
-    }
 
     private final String id;
+    private final ImageIcon isSupported = new FlatSVGIcon("org/citydb/gui/icons/check.svg");
+    private final ImageIcon isNotSupported = new FlatSVGIcon("org/citydb/gui/icons/close.svg");
+
     private String name;
     private String version;
     private boolean databaseSupport;
@@ -103,9 +101,4 @@ public class ADEInfoRow {
     public void setImpexpSupport(boolean impexpSupport) {
         this.impexpSupport = impexpSupport;
     }
-
-    public static int getDefaultRowHeight() {
-        return Math.max(UIManager.getFont("Table.font").getSize(), isSupported.getIconHeight()) + 2;
-    }
-
 }

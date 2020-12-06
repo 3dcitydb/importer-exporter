@@ -40,13 +40,14 @@ import org.citydb.event.global.PropertyChangeEvent;
 import org.citydb.gui.components.dialog.StatusDialog;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.factory.SrsComboBoxFactory;
+import org.citydb.gui.modules.database.util.SrsNameComboBox;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.log.Logger;
-import org.citydb.gui.modules.database.util.SrsNameComboBox;
 import org.citydb.plugin.extension.view.ViewController;
 import org.citydb.registry.ObjectRegistry;
 
 import javax.swing.*;
+import javax.swing.text.NumberFormatter;
 import java.awt.*;
 import java.sql.SQLException;
 import java.text.DecimalFormat;
@@ -95,12 +96,11 @@ public class SrsOperation extends DatabaseOperationView {
 		srsNameLabel = new JLabel();
 		geometriesLabel = new JLabel();
 
-		DecimalFormat sridFormat = new DecimalFormat("##########");
-		sridFormat.setMaximumIntegerDigits(10);
-		sridFormat.setMinimumIntegerDigits(1);
+		NumberFormatter sridFormat = new NumberFormatter(new DecimalFormat("#"));
+		sridFormat.setMaximum(Integer.MAX_VALUE);
+		sridFormat.setMinimum(0);
 		sridText = new JFormattedTextField(sridFormat);
 		sridText.setValue(0);
-		sridText.setText("");
 
 		srsNameComboBox = new SrsNameComboBox();
 		checkSridButton = new JButton();
@@ -108,8 +108,6 @@ public class SrsOperation extends DatabaseOperationView {
 
 		metadataButton = new JRadioButton();
 		transformButton = new JRadioButton();
-		metadataButton.setIconTextGap(10);
-		transformButton.setIconTextGap(10);
 
 		ButtonGroup group = new ButtonGroup();
 		group.add(transformButton);
@@ -129,34 +127,28 @@ public class SrsOperation extends DatabaseOperationView {
 		buttonsPanel.add(Box.createRigidArea(new Dimension(10, 0)));
 		buttonsPanel.add(applyButton);
 
-		component.add(sridLabel, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.BOTH, 10, 5, 5, 5));
-		component.add(sridText, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.HORIZONTAL, 10, 5, 5, 5));
-		component.add(editSridButton, GuiUtil.setConstraints(2, 0, 0, 0, GridBagConstraints.HORIZONTAL, 10, 5, 5, 5));
-		component.add(checkSridButton, GuiUtil.setConstraints(3, 0, 0, 0, GridBagConstraints.HORIZONTAL, 10, 5, 5, 5));
-		component.add(srsNameLabel, GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.BOTH, 0, 5, 5, 5));
-		component.add(srsNameComboBox, GuiUtil.setConstraints(1, 1, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, 5, 5));
-		component.add(geometriesLabel, GuiUtil.setConstraints(0, 2, 0, 0, GridBagConstraints.BOTH, 0, 5, 5, 5));
-		component.add(dbContentPanel, GuiUtil.setConstraints(1, 2, 0, 0, GridBagConstraints.BOTH, 0, 5, 5, 5));
-		component.add(buttonsPanel, GuiUtil.setConstraints(0, 3, 4, 1, 0, 0, GridBagConstraints.NONE, 5, 5, 10, 5));
+		component.add(sridLabel, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.BOTH, 15, 0, 5, 5));
+		component.add(sridText, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.HORIZONTAL, 15, 5, 5, 0));
+		component.add(editSridButton, GuiUtil.setConstraints(2, 0, 0, 0, GridBagConstraints.HORIZONTAL, 15, 20, 5, 5));
+		component.add(checkSridButton, GuiUtil.setConstraints(3, 0, 0, 0, GridBagConstraints.HORIZONTAL, 15, 5, 5, 0));
+		component.add(srsNameLabel, GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.BOTH, 0, 0, 5, 5));
+		component.add(srsNameComboBox, GuiUtil.setConstraints(1, 1, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, 5, 0));
+		component.add(geometriesLabel, GuiUtil.setConstraints(0, 2, 0, 0, GridBagConstraints.BOTH, 0, 0, 5, 5));
+		component.add(dbContentPanel, GuiUtil.setConstraints(1, 2, 0, 0, GridBagConstraints.BOTH, 0, 5, 5, 0));
+		component.add(buttonsPanel, GuiUtil.setConstraints(0, 3, 4, 1, 0, 0, GridBagConstraints.NONE, 10, 0, 10, 0));
 
-		PopupMenuDecorator.getInstance().decorate(sridText, srsNameComboBox.getEditor().getEditorComponent());
+		PopupMenuDecorator.getInstance().decorate(sridText, (JTextField) srsNameComboBox.getEditor().getEditorComponent());
 
 		// influence focus behavior
 		checkSridButton.setFocusable(false);
 		editSridButton.setFocusable(false);
 
-		sridText.addPropertyChangeListener(e -> {
-			if (e.getPropertyName().equals("value")) {
-				int srid = ((Number) sridText.getValue()).intValue();
-				if (srid < 0 || srid == Integer.MAX_VALUE)
-					srid = 0;
-
-				sridText.setValue(srid);
-				srsNameComboBox.updateSrid(srid);
-			}
+		sridText.addPropertyChangeListener("value", e -> {
+			int srid = sridText.getValue() != null ? ((Number) sridText.getValue()).intValue() : 0;
+			srsNameComboBox.updateSrid(srid);
 		});
 
-		editSridButton.addActionListener(l -> {
+		editSridButton.addActionListener(e -> {
 			sridText.setEditable(true);
 			checkSridButton.setEnabled(true);
 			geometriesLabel.setEnabled(true);
@@ -174,7 +166,7 @@ public class SrsOperation extends DatabaseOperationView {
 				log.warn("SRID " + srs.getSrid() + " is NOT supported.");
 		});
 
-		restoreButton.addActionListener(l -> {
+		restoreButton.addActionListener(e -> {
 			if (dbConnectionPool.isConnected()) {
 				DatabaseSrs srs = dbConnectionPool.getActiveDatabaseAdapter().getConnectionMetaData().getReferenceSystem();
 				sridText.setValue(srs.getSrid());
@@ -182,7 +174,7 @@ public class SrsOperation extends DatabaseOperationView {
 			}
 		});
 
-		applyButton.addActionListener(l -> new SwingWorker<Void, Void>() {
+		applyButton.addActionListener(e -> new SwingWorker<Void, Void>() {
 			protected Void doInBackground() {
 				doOperation();
 				return null;
@@ -243,7 +235,7 @@ public class SrsOperation extends DatabaseOperationView {
 		applyButton.setEnabled(enable);
 
 		sridText.setEditable(false);
-		srsNameComboBox.setEditorEditable(enable);
+		srsNameComboBox.setEnabled(enable);
 	}
 
 	@Override
@@ -295,7 +287,6 @@ public class SrsOperation extends DatabaseOperationView {
 			if (changeSrid && config.getGuiConfig().isShowChangeSridWarning()) {
 				JPanel confirmPanel = new JPanel(new GridBagLayout());
 				JCheckBox confirmDialogNoShow = new JCheckBox(Language.I18N.getString("common.dialog.msg.noShow"));
-				confirmDialogNoShow.setIconTextGap(10);
 
 				JLabel headerLabel = new JLabel(Language.I18N.getString("db.dialog.srs.changeSrid"));
 				JLabel sridLabel = new JLabel(Language.I18N.getString("pref.db.srs.label.srid") + ":");

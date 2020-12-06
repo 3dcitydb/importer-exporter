@@ -38,8 +38,8 @@ import javax.xml.bind.annotation.XmlType;
 public class XLinkConfig {
     @XmlElement(name = "multipleRepresentationMode", required = true)
     private XLinkMode mode = XLinkMode.XLINK;
-    @XmlElement(defaultValue = "UUID_")
-    private String idPrefix = "UUID_";
+    @XmlElement(defaultValue = "ID_")
+    private String idPrefix = "ID_";
     @XmlElement(defaultValue = "false")
     private Boolean appendId = false;
 

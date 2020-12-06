@@ -36,8 +36,9 @@ import org.citydb.config.Config;
 import org.citydb.config.project.kmlExporter.ADEPreference;
 import org.citydb.config.project.kmlExporter.Balloon;
 import org.citydb.config.project.kmlExporter.ColladaOptions;
-import org.citydb.config.project.kmlExporter.DisplayForm;
+import org.citydb.config.project.kmlExporter.DisplayFormType;
 import org.citydb.config.project.kmlExporter.PointAndCurve;
+import org.citydb.config.project.kmlExporter.Styles;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.adapter.BlobExportAdapter;
 import org.citydb.event.EventDispatcher;
@@ -54,7 +55,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
-public class ADEObject extends KmlGenericObject{
+public class ADEObject extends KmlGenericObject {
 	private final Logger log = Logger.getInstance();
 
 	public static final String POINT = "Point";
@@ -91,12 +92,9 @@ public class ADEObject extends KmlGenericObject{
 	private ADEPreference getPreference() {
 		return ADEKmlExportExtensionManager.getInstance().getPreference(config, adeObjectClassId);
 	}
-	protected List<DisplayForm> getDisplayForms() {
-		return getPreference().getDisplayForms();
-	}
 
-	public ColladaOptions getColladaOptions() {
-		return getPreference().getColladaOptions();
+	protected Styles getStyles() {
+		return getPreference().getStyles();
 	}
 
 	public PointAndCurve getPointAndCurve() {
@@ -171,7 +169,7 @@ public class ADEObject extends KmlGenericObject{
 			if (!hasBrep && !hasPointAndCurve) {
 				String fromMessage = " from LoD" + lodToExportFrom;
 				if (lodToExportFrom == 5) {
-					if (work.getDisplayForm().getForm() == DisplayForm.COLLADA)
+					if (work.getDisplayForm().getType() == DisplayFormType.COLLADA)
 						fromMessage = ". LoD1 or higher required";
 					else
 						fromMessage = " from any LoD";
@@ -190,7 +188,7 @@ public class ADEObject extends KmlGenericObject{
 
 				if (hasBrep) {
 					String query;
-					if (work.getDisplayForm().getForm() == DisplayForm.FOOTPRINT || work.getDisplayForm().getForm() == DisplayForm.EXTRUDED) {
+					if (work.getDisplayForm().getType() == DisplayFormType.FOOTPRINT || work.getDisplayForm().getType() == DisplayFormType.EXTRUDED) {
 						query = adeKmlExporter.getSurfaceGeometryQuery(currentLod);
 					} else {
 						query = adeKmlExporter.getSurfaceGeometryRefIdsQuery(currentLod);
@@ -200,19 +198,14 @@ public class ADEObject extends KmlGenericObject{
 						brepGeometriesQueryPs.setLong(i, work.getId());
 					brepGeometriesQueryRs = brepGeometriesQueryPs.executeQuery();
 
-					// get the proper displayForm (for highlighting)
-					int indexOfDf = getDisplayForms().indexOf(work.getDisplayForm());
-					if (indexOfDf != -1)
-						work.setDisplayForm(getDisplayForms().get(indexOfDf));
-
-					switch (work.getDisplayForm().getForm()) {
-						case DisplayForm.FOOTPRINT:
+					switch (work.getDisplayForm().getType()) {
+						case FOOTPRINT:
 							kmlExporterManager.print(createPlacemarksForFootprint(brepGeometriesQueryRs, work),
 									work,
 									getBalloonSettings().isBalloonContentInSeparateFile());
 							break;
 
-						case DisplayForm.EXTRUDED:
+						case EXTRUDED:
 							PreparedStatement psQuery = null;
 							ResultSet rs = null;
 
@@ -233,21 +226,23 @@ public class ADEObject extends KmlGenericObject{
 								try { if (psQuery != null) psQuery.close(); } catch (SQLException e) {}
 							}
 
-						case DisplayForm.GEOMETRY:
+						case GEOMETRY:
 							setGmlId(work.getGmlId());
 							setId(work.getId());
 
 							kmlExporterManager.print(createPlacemarksForGeometry(brepGeometriesQueryRs, work), work, getBalloonSettings().isBalloonContentInSeparateFile());
-							if (work.getDisplayForm().isHighlightingEnabled())
+							if (getStyle(work.getDisplayForm().getType()).isHighlightingEnabled())
 								kmlExporterManager.print(createPlacemarksForHighlighting(brepGeometriesQueryRs, work), work, getBalloonSettings().isBalloonContentInSeparateFile());
 
 							break;
 
-						case DisplayForm.COLLADA:
+						case COLLADA:
+							ColladaOptions colladaOptions = config.getKmlExportConfig().getColladaOptions();
+
 							String currentgmlId = getGmlId();
 							setGmlId(work.getGmlId());
 							setId(work.getId());
-							fillGenericObjectForCollada(brepGeometriesQueryRs, getColladaOptions().isGenerateTextureAtlases());
+							fillGenericObjectForCollada(brepGeometriesQueryRs, colladaOptions.isGenerateTextureAtlases());
 
 							if (currentgmlId != null && !currentgmlId.equals(work.getGmlId()) && getGeometryAmount() > GEOMETRY_AMOUNT_WARNING)
 								log.info("Object " + work.getGmlId() + " has more than " + GEOMETRY_AMOUNT_WARNING + " geometries. This may take a while to process...");
@@ -259,10 +254,9 @@ public class ADEObject extends KmlGenericObject{
 							}
 							setZOffset(zOffset);
 
-							ColladaOptions colladaOptions = getColladaOptions();
 							setIgnoreSurfaceOrientation(colladaOptions.isIgnoreSurfaceOrientation());
 							try {
-								if (work.getDisplayForm().isHighlightingEnabled())
+								if (getStyle(work.getDisplayForm().getType()).isHighlightingEnabled())
 									kmlExporterManager.print(createPlacemarksForHighlighting(brepGeometriesQueryRs, work), work, getBalloonSettings().isBalloonContentInSeparateFile());
 							} catch (Exception ioe) {
 								log.logStackTrace(ioe);

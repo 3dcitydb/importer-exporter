@@ -28,7 +28,6 @@
 package org.citydb.gui.modules.database.operations;
 
 import org.citydb.config.Config;
-import org.citydb.config.i18n.Language;
 import org.citydb.config.project.database.DatabaseConfig;
 import org.citydb.config.project.database.Workspace;
 import org.citydb.database.connection.DatabaseConnectionPool;
@@ -36,61 +35,32 @@ import org.citydb.event.Event;
 import org.citydb.event.EventHandler;
 import org.citydb.event.global.DatabaseConnectionStateEvent;
 import org.citydb.event.global.EventType;
-import org.citydb.gui.components.common.DatePicker;
-import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.log.Logger;
 import org.citydb.plugin.extension.view.ViewController;
 import org.citydb.registry.ObjectRegistry;
-import org.jdesktop.swingx.JXTextField;
-import org.jdesktop.swingx.prompt.PromptSupport.FocusBehavior;
 
 import javax.swing.*;
 import java.awt.*;
 import java.sql.SQLException;
 
-@SuppressWarnings("serial")
 public class DatabaseOperationsPanel extends JPanel implements EventHandler {
-	private final Logger log = Logger.getInstance();
-	private final Config config;
-	private final DatabaseConnectionPool dbConnectionPool;
-	private final ViewController viewController;
+    private final Logger log = Logger.getInstance();
+    private final Config config;
+    private final DatabaseConnectionPool dbConnectionPool;
+    private final ViewController viewController;
+    private final JTabbedPane operationsTab;
+    private final DatabaseOperationView[] operations;
 
-	private JLabel workspaceLabel;
-	private JLabel timestampLabel;
-	private JXTextField workspace;
-	private DatePicker datePicker;
+    public DatabaseOperationsPanel(ViewController viewController, Config config) {
+        this.config = config;
+        this.viewController = viewController;
 
-	private JTabbedPane operationsTab;
-	private DatabaseOperationView[] operations;
+        dbConnectionPool = DatabaseConnectionPool.getInstance();
+        ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(EventType.DATABASE_CONNECTION_STATE, this);
 
-	public DatabaseOperationsPanel(ViewController viewController, Config config) {
-		this.config = config;
-		this.viewController = viewController;
-
-		dbConnectionPool = DatabaseConnectionPool.getInstance();
-		ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(EventType.DATABASE_CONNECTION_STATE, this);
-
-		init();
-	}
-
-	private void init() {
-		setLayout(new GridBagLayout());
-
-		workspace = new JXTextField();
-		workspace.setPromptForeground(Color.LIGHT_GRAY);
-		workspace.setFocusBehavior(FocusBehavior.SHOW_PROMPT);
-		datePicker = new DatePicker();
-		workspaceLabel = new JLabel();
-		timestampLabel = new JLabel();
-
-		add(workspaceLabel, GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.BOTH,0,0,5,5));
-		add(workspace, GuiUtil.setConstraints(1,0,1.0,0.0,GridBagConstraints.HORIZONTAL,0,5,5,5));
-		add(timestampLabel, GuiUtil.setConstraints(2,0,0.0,0.0,GridBagConstraints.NONE,0,10,5,5));
-		add(datePicker, GuiUtil.setConstraints(3,0,0.0,0.0,GridBagConstraints.HORIZONTAL,0,5,5,0));
-
-		operationsTab = new JTabbedPane(JTabbedPane.TOP, JTabbedPane.SCROLL_TAB_LAYOUT);
-		add(operationsTab, GuiUtil.setConstraints(0,2,4,1,1.0,1.0,GridBagConstraints.BOTH,5,0,0,0));
+        setLayout(new GridBagLayout());
+        operationsTab = new JTabbedPane(JTabbedPane.TOP, JTabbedPane.SCROLL_TAB_LAYOUT);
 
 		operations = new DatabaseOperationView[]{
 				new ReportOperation(this),
@@ -100,102 +70,101 @@ public class DatabaseOperationsPanel extends JPanel implements EventHandler {
 				new ADEInfoOperation(this)
 		};
 
-		for (int i = 0; i < operations.length; ++i)
-			operationsTab.insertTab(null, operations[i].getIcon(), null, operations[i].getToolTip(), i);
-
-		operationsTab.addChangeListener(e -> {
-			int index = operationsTab.getSelectedIndex();
-			for (int i = 0; i < operationsTab.getTabCount(); i++)
-				operationsTab.setComponentAt(i, index == i ? operations[index].getViewComponent() : null);
-		});
-
-		PopupMenuDecorator.getInstance().decorate(workspace, datePicker.getEditor());
-	}
-
-	public void doTranslation() {
-		workspaceLabel.setText(Language.I18N.getString("common.label.workspace"));
-		workspace.setPrompt(Language.I18N.getString("common.label.workspace.prompt"));
-		timestampLabel.setText(Language.I18N.getString("common.label.timestamp"));
-		
-		for (int i = 0; i < operations.length; ++i) {
-			operationsTab.setTitleAt(i, operations[i].getLocalizedTitle());
-			operations[i].doTranslation();
-		}
-	}
-
-	public void loadSettings() {
-		DatabaseConfig db = config.getDatabaseConfig();
-		workspace.setText(db.getWorkspaces().getOperationWorkspace().getName());
-		datePicker.setDate(db.getWorkspaces().getOperationWorkspace().getTimestamp());
-
-		int index = 0;
-		for (int i = 0; i < operations.length; ++i) {
-			operations[i].loadSettings();			
-			if (operations[i].getType() == db.getOperation().lastUsed())
-				index = i;
+        for (int i = 0; i < operations.length; ++i) {
+        	operationsTab.insertTab(null, operations[i].getIcon(), null, operations[i].getToolTip(), i);
 		}
 
-		operationsTab.setSelectedIndex(-1);
-		operationsTab.setSelectedIndex(index);
-	}
-
-	public void setSettings() {
-		DatabaseConfig db = config.getDatabaseConfig();
-		db.getOperation().setLastUsed(operations[operationsTab.getSelectedIndex()].getType());
-		db.getWorkspaces().getOperationWorkspace().setName(workspace.getText());
-		db.getWorkspaces().getOperationWorkspace().setTimestamp(datePicker.getDate());
-
-		for (DatabaseOperationView operation : operations)
-			operation.setSettings();
-	}
-
-	public void setEnabled(boolean enable) {		
-		setEnabledWorkspace(enable);
-
-		operationsTab.setEnabled(enable);
-		for (DatabaseOperationView operation : operations)
-			operation.setEnabled(enable);
-	}
-	
-	public void setEnabledWorkspace(boolean enable) {
-		if (enable && dbConnectionPool.isConnected() && !dbConnectionPool.getActiveDatabaseAdapter().hasVersioningSupport())
-			enable = false;
-		
-		workspaceLabel.setEnabled(enable);
-		workspace.setEnabled(enable);
-		timestampLabel.setEnabled(enable);
-		datePicker.setEnabled(enable);
-	}
-	
-	public boolean checkWorkspace() {
-		if (!dbConnectionPool.getActiveDatabaseAdapter().getWorkspaceManager().equalsDefaultWorkspaceName(workspace.getText())) {
-			try {
-				Workspace tmp = new Workspace(workspace.getText().trim(), datePicker.getDate());
-				log.info("Switching to database workspace " + tmp + ".");
-				dbConnectionPool.getActiveDatabaseAdapter().getWorkspaceManager().checkWorkspace(tmp);
-			} catch (SQLException e) {
-				log.error(e.getMessage(), e.getCause());
-				return false;
+        operationsTab.addChangeListener(e -> {
+            int index = operationsTab.getSelectedIndex();
+            for (int i = 0; i < operationsTab.getTabCount(); i++) {
+            	operationsTab.setComponentAt(i, index == i ? operations[index].getViewComponent() : null);
 			}
+        });
+
+		add(operationsTab, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
+	}
+
+    public void doTranslation() {
+        for (int i = 0; i < operations.length; ++i) {
+            operationsTab.setTitleAt(i, operations[i].getLocalizedTitle());
+            operations[i].doTranslation();
+        }
+    }
+
+    public void loadSettings() {
+        DatabaseConfig databaseConfig = config.getDatabaseConfig();
+        int index = 0;
+        for (int i = 0; i < operations.length; ++i) {
+            operations[i].loadSettings();
+            if (operations[i].getType() == databaseConfig.getOperation().lastUsed()) {
+            	index = i;
+			}
+        }
+
+        operationsTab.setSelectedIndex(-1);
+        operationsTab.setSelectedIndex(index);
+    }
+
+    public void setSettings() {
+		config.getDatabaseConfig().getOperation().setLastUsed(operations[operationsTab.getSelectedIndex()].getType());
+        for (DatabaseOperationView operation : operations) {
+        	operation.setSettings();
 		}
+    }
 
-		return true;
-	}
-	
-	public Workspace getWorkspace() {
-		setSettings();
-		return config.getDatabaseConfig().getWorkspaces().getOperationWorkspace();
-	}
+    public void setEnabled(boolean enable) {
+        operationsTab.setEnabled(enable);
+        for (DatabaseOperationView operation : operations) {
+        	operation.setEnabled(enable);
+		}
+    }
 
-	protected ViewController getViewController() {
-		return viewController;
-	}
-	
-	@Override
-	public void handleEvent(Event event) throws Exception {
-		DatabaseConnectionStateEvent state = (DatabaseConnectionStateEvent)event;
-		for (DatabaseOperationView operation : operations)
-			operation.handleDatabaseConnectionStateEvent(state);
-	}
+    public boolean checkWorkspace() {
+    	Workspace workspace = getWorkspace();
+        if (!dbConnectionPool.getActiveDatabaseAdapter().getWorkspaceManager().equalsDefaultWorkspaceName(workspace.getName())) {
+            try {
+                Workspace tmp = new Workspace(workspace.getName(), workspace.getTimestamp());
+                log.info("Switching to database workspace " + tmp + ".");
+                dbConnectionPool.getActiveDatabaseAdapter().getWorkspaceManager().checkWorkspace(tmp);
+            } catch (SQLException e) {
+                log.error("Failed to switch to database workspace.", e);
+                return false;
+            }
+        }
 
+        return true;
+    }
+
+    public Workspace getWorkspace() {
+        return config.getDatabaseConfig().getWorkspaces().getOperationWorkspace();
+    }
+
+    protected ViewController getViewController() {
+        return viewController;
+    }
+
+    @Override
+    public void updateUI() {
+        super.updateUI();
+
+        if (operations != null) {
+            for (DatabaseOperationView operation : operations) {
+                if (operationsTab.getSelectedComponent() != operation.getViewComponent()) {
+                    try {
+                        SwingUtilities.updateComponentTreeUI(operation.getViewComponent());
+                    } catch (Exception e) {
+                        log.error("Failed to update UI for component '" + operation.getViewComponent() + "'.", e);
+                    }
+                }
+            }
+        }
+    }
+
+    @Override
+    public void handleEvent(Event event) throws Exception {
+        DatabaseConnectionStateEvent state = (DatabaseConnectionStateEvent) event;
+        for (DatabaseOperationView operation : operations) {
+        	operation.handleDatabaseConnectionStateEvent(state);
+		}
+    }
 }

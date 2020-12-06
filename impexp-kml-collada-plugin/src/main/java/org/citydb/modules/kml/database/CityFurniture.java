@@ -31,7 +31,8 @@ import net.opengis.kml._2.PlacemarkType;
 import org.citydb.config.Config;
 import org.citydb.config.project.kmlExporter.Balloon;
 import org.citydb.config.project.kmlExporter.ColladaOptions;
-import org.citydb.config.project.kmlExporter.DisplayForm;
+import org.citydb.config.project.kmlExporter.DisplayFormType;
+import org.citydb.config.project.kmlExporter.Styles;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.adapter.BlobExportAdapter;
 import org.citydb.event.EventDispatcher;
@@ -76,12 +77,8 @@ public class CityFurniture extends KmlGenericObject{
 				config);
 	}
 
-	protected List<DisplayForm> getDisplayForms() {
-		return config.getKmlExportConfig().getCityFurnitureDisplayForms();
-	}
-
-	public ColladaOptions getColladaOptions() {
-		return config.getKmlExportConfig().getCityFurnitureColladaOptions();
+	protected Styles getStyles() {
+		return config.getKmlExportConfig().getCityFurnitureStyles();
 	}
 
 	public Balloon getBalloonSettings() {
@@ -133,7 +130,7 @@ public class CityFurniture extends KmlGenericObject{
 			if (rs == null) { // result empty, give up
 				String fromMessage = " from LoD" + lodToExportFrom;
 				if (lodToExportFrom == 5) {
-					if (work.getDisplayForm().getForm() == DisplayForm.COLLADA)
+					if (work.getDisplayForm().getType() == DisplayFormType.COLLADA)
 						fromMessage = ". LoD1 or higher required";
 					else
 						fromMessage = " from any LoD";
@@ -152,19 +149,14 @@ public class CityFurniture extends KmlGenericObject{
 				
 				kmlExporterManager.updateFeatureTracker(work);
 
-				// get the proper displayForm (for highlighting)
-				int indexOfDf = getDisplayForms().indexOf(work.getDisplayForm());
-				if (indexOfDf != -1)
-					work.setDisplayForm(getDisplayForms().get(indexOfDf));
-
-				switch (work.getDisplayForm().getForm()) {
-				case DisplayForm.FOOTPRINT:
+				switch (work.getDisplayForm().getType()) {
+				case FOOTPRINT:
 					kmlExporterManager.print(createPlacemarksForFootprint(rs, work),
 							work,
 							getBalloonSettings().isBalloonContentInSeparateFile());
 					break;
 
-				case DisplayForm.EXTRUDED:
+				case EXTRUDED:
 					PreparedStatement psQuery2 = null;
 					ResultSet rs2 = null;
 
@@ -186,19 +178,21 @@ public class CityFurniture extends KmlGenericObject{
 						try { if (psQuery2 != null) psQuery2.close(); } catch (SQLException e) {}
 					}
 
-				case DisplayForm.GEOMETRY:
+				case GEOMETRY:
 					setGmlId(work.getGmlId());
 					setId(work.getId());
 					kmlExporterManager.print(createPlacemarksForGeometry(rs, work), work, getBalloonSettings().isBalloonContentInSeparateFile());
-					if (work.getDisplayForm().isHighlightingEnabled())
+					if (getStyle(work.getDisplayForm().getType()).isHighlightingEnabled())
 						kmlExporterManager.print(createPlacemarksForHighlighting(rs, work), work, getBalloonSettings().isBalloonContentInSeparateFile());
 					break;
 
-				case DisplayForm.COLLADA:
+				case COLLADA:
+					ColladaOptions colladaOptions = config.getKmlExportConfig().getColladaOptions();
+
 					String currentgmlId = getGmlId();
 					setGmlId(work.getGmlId());
 					setId(work.getId());
-					fillGenericObjectForCollada(rs, config.getKmlExportConfig().getCityFurnitureColladaOptions().isGenerateTextureAtlases());
+					fillGenericObjectForCollada(rs, colladaOptions.isGenerateTextureAtlases());
 
 					if (currentgmlId != null && !currentgmlId.equals(work.getGmlId()) && getGeometryAmount() > GEOMETRY_AMOUNT_WARNING)
 						log.info("Object " + work.getGmlId() + " has more than " + GEOMETRY_AMOUNT_WARNING + " geometries. This may take a while to process...");
@@ -210,10 +204,9 @@ public class CityFurniture extends KmlGenericObject{
 					}
 					setZOffset(zOffset);
 
-					ColladaOptions colladaOptions = getColladaOptions();
 					setIgnoreSurfaceOrientation(colladaOptions.isIgnoreSurfaceOrientation());
 					try {
-						if (work.getDisplayForm().isHighlightingEnabled()) 
+						if (getStyle(work.getDisplayForm().getType()).isHighlightingEnabled())
 							kmlExporterManager.print(createPlacemarksForHighlighting(rs, work), work, getBalloonSettings().isBalloonContentInSeparateFile());
 					} catch (Exception ioe) {
 						log.logStackTrace(ioe);

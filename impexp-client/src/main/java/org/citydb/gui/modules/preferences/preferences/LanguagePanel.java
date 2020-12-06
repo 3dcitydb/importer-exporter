@@ -27,30 +27,24 @@
  */
 package org.citydb.gui.modules.preferences.preferences;
 
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-
-import javax.swing.BorderFactory;
-import javax.swing.ButtonGroup;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.border.TitledBorder;
-
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.global.GlobalConfig;
 import org.citydb.config.project.global.LanguageType;
 import org.citydb.gui.ImpExpGui;
+import org.citydb.gui.components.common.TitledPanel;
 import org.citydb.gui.modules.common.AbstractPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 
-@SuppressWarnings("serial")
+import javax.swing.*;
+import java.awt.*;
+
 public class LanguagePanel extends AbstractPreferencesComponent {
+	private final ImpExpGui mainView;
 	private JRadioButton importLanguageRadioDe;
 	private JRadioButton importLanguageRadioEn;
-	private JPanel language;
-	private ImpExpGui mainView;
-	
+	private TitledPanel language;
+
 	public LanguagePanel(ImpExpGui mainView, Config config) {
 		super(config);
 		this.mainView = mainView;
@@ -67,30 +61,30 @@ public class LanguagePanel extends AbstractPreferencesComponent {
 	}
 	
 	private void initGui() {		
-		importLanguageRadioDe = new JRadioButton("");
-		importLanguageRadioEn = new JRadioButton("");
+		importLanguageRadioDe = new JRadioButton();
+		importLanguageRadioEn = new JRadioButton();
 		ButtonGroup importLanguageRadio = new ButtonGroup();
 		importLanguageRadio.add(importLanguageRadioDe);
 		importLanguageRadio.add(importLanguageRadioEn);
 		
 		setLayout(new GridBagLayout());
 		{
-			language = new JPanel();
-			add(language, GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.BOTH,5,0,5,0));
-			language.setBorder(BorderFactory.createTitledBorder(""));
-			language.setLayout(new GridBagLayout());
-			importLanguageRadioDe.setIconTextGap(10);
-			importLanguageRadioEn.setIconTextGap(10);
+			JPanel content = new JPanel();
+			content.setLayout(new GridBagLayout());
 			{
-				language.add(importLanguageRadioDe, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
-				language.add(importLanguageRadioEn, GuiUtil.setConstraints(0,1,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
+				content.add(importLanguageRadioDe, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
+				content.add(importLanguageRadioEn, GuiUtil.setConstraints(0, 1, 1, 1, GridBagConstraints.BOTH, 5, 0, 0, 0));
 			}
+
+			language = new TitledPanel().build(content);
 		}
+
+		add(language, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 	}
 	
 	@Override
 	public void doTranslation() {
-		((TitledBorder)language.getBorder()).setTitle(Language.I18N.getString("pref.general.language.border.selection"));
+		language.setTitle(Language.I18N.getString("pref.general.language.border.selection"));
 		importLanguageRadioDe.setText(Language.I18N.getString("pref.general.language.label.de"));
 		importLanguageRadioEn.setText(Language.I18N.getString("pref.general.language.label.en"));
 	}

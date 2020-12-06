@@ -27,7 +27,7 @@
  */
 package org.citydb.gui.components.mapviewer.map;
 
-import org.citydb.config.Config;
+import com.formdev.flatlaf.extras.FlatSVGIcon;
 import org.citydb.config.i18n.Language;
 import org.citydb.gui.components.mapviewer.MapWindow;
 import org.citydb.gui.util.GuiUtil;
@@ -36,21 +36,12 @@ import org.jdesktop.swingx.JXMapKit.DefaultProviders;
 import org.jdesktop.swingx.JXMapViewer;
 import org.jdesktop.swingx.JXMapViewer.MouseWheelZoomStyle;
 import org.jdesktop.swingx.mapviewer.AbstractTileFactory;
+import org.jdesktop.swingx.mapviewer.DefaultTileFactory;
 import org.jdesktop.swingx.mapviewer.GeoPosition;
 import org.jdesktop.swingx.painter.CompoundPainter;
 
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.ImageIcon;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
-import java.awt.Color;
-import java.awt.Cursor;
-import java.awt.Desktop;
-import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
@@ -62,113 +53,92 @@ public class Map {
 	private JXMapKit mapKit;
 	private BBoxSelectionPainter selectionPainter;
 	private DefaultWaypointPainter waypointPainter;
-	private ZoomPainter zoomPainter;
 	private MapPopupMenu popupMenu;
 	private JPanel hints;
 
+	private JPanel headerMenu;
+	private JPanel footer;
 	private JLabel hintsLabel;
-	private JLabel hintLabels[];
-	private JLabel hintIcons[];
+	private JLabel[] hintLabels;
 	private JLabel label;
 
-	public Map(Config config) {
-		initComponents(config);
+	public Map() {
+		initComponents();
 	}
 
-	private void initComponents(Config config) {
+	private void initComponents() {
 		mapKit = new JXMapKit();
 		selectionPainter = new BBoxSelectionPainter(mapKit.getMainMap());
 		waypointPainter = new DefaultWaypointPainter();
-		zoomPainter = new ZoomPainter(mapKit.getMainMap());
+		ZoomPainter zoomPainter = new ZoomPainter(mapKit.getMainMap());
 		popupMenu = new MapPopupMenu(this);
-
-		Color borderColor = new Color(0, 0, 0, 150);
-
-		final JPanel footer = new JPanel();
-		footer.setBackground(borderColor);
-		footer.setLayout(new GridBagLayout());
 
 		JPanel header = new JPanel();
 		header.setOpaque(false);
 		header.setLayout(new GridBagLayout());
 
-		GridBagConstraints gridBagConstraints = GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.HORIZONTAL, 0, 0, 0, 0);
-		gridBagConstraints.gridwidth = 2;
-		gridBagConstraints.anchor = GridBagConstraints.SOUTHWEST;
-		mapKit.getMainMap().add(footer, gridBagConstraints);		
-		gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
-		mapKit.getMainMap().add(header, gridBagConstraints);
-
-		JPanel headerMenu = new JPanel();
-		headerMenu.setBackground(borderColor);
+		headerMenu = new JPanel();
 		headerMenu.setLayout(new GridBagLayout());
+		{
+			hintsLabel = new JLabel();
+			hintsLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
+			hintsLabel.setIcon(new FlatSVGIcon("org/citydb/gui/icons/help.svg"));
 
-		hints = new JPanel();
-		hints.setBackground(new Color(hints.getBackground().getRed(), hints.getBackground().getBlue(), hints.getBackground().getGreen(), 220));
-		hints.setLayout(new GridBagLayout());
-		hints.setBorder(BorderFactory.createMatteBorder(0, 2, 2, 2, borderColor));
-		hints.setVisible(false);
+			headerMenu.add(hintsLabel, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.EAST, GridBagConstraints.NONE, 2, 2, 2, 5));
 
-		header.add(headerMenu, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
-		gridBagConstraints = GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.NONE, 0, 0, 0, 0);
-		gridBagConstraints.anchor = GridBagConstraints.EAST;
-		header.add(hints, gridBagConstraints);
+			// usage hints
+			hints = new JPanel();
+			hints.setLayout(new GridBagLayout());
+			hints.setVisible(false);
 
-		hintsLabel = new JLabel();
-		hintsLabel.setBackground(borderColor);
-		hintsLabel.setForeground(Color.WHITE);
-		hintsLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
-		hintsLabel.setIcon(new ImageIcon(getClass().getResource("/org/citydb/gui/images/map/help.png")));
-		hintsLabel.setIconTextGap(5);
+			hintLabels = new JLabel[7];
+			JLabel[] hintIcons = new JLabel[7];
 
-		headerMenu.add(Box.createHorizontalGlue(), GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
-		headerMenu.add(hintsLabel, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.BOTH, 2, 2, 2, 5));
+			for (int i = 0; i < hintLabels.length; ++i) {
+				hintLabels[i] = new JLabel();
+				hintIcons[i] = new JLabel();
+				hintIcons[i].setOpaque(false);
+			}
 
-		// usage hints
-		hintLabels = new JLabel[7];
-		hintIcons = new JLabel[7];
+			hintIcons[0].setIcon(new FlatSVGIcon("org/citydb/gui/map/bbox.svg"));
+			hintIcons[1].setIcon(new FlatSVGIcon("org/citydb/gui/map/address_search.svg"));
+			hintIcons[2].setIcon(new FlatSVGIcon("org/citydb/gui/map/zoom_in.svg"));
+			hintIcons[3].setIcon(new FlatSVGIcon("org/citydb/gui/map/zoom_out_map.svg"));
+			hintIcons[4].setIcon(new FlatSVGIcon("org/citydb/gui/map/pan_tool.svg"));
+			hintIcons[5].setIcon(new FlatSVGIcon("org/citydb/gui/map/center.svg"));
+			hintIcons[6].setIcon(new FlatSVGIcon("org/citydb/gui/map/popup_menu.svg"));
 
-		for (int i = 0; i < hintLabels.length; ++i) {
-			hintLabels[i] = new JLabel();
-			hintIcons[i] = new JLabel();
-			hintIcons[i].setOpaque(false);
-		}
-		
-		hintIcons[0].setIcon(new ImageIcon(getClass().getResource("/org/citydb/gui/images/map/selection.png")));
-		hintIcons[1].setIcon(new ImageIcon(getClass().getResource("/org/citydb/gui/images/map/waypoint_small.png")));
-		hintIcons[2].setIcon(new ImageIcon(getClass().getResource("/org/citydb/gui/images/map/magnifier.png")));
-		hintIcons[3].setIcon(new ImageIcon(getClass().getResource("/org/citydb/gui/images/map/magnifier_plus_selection.png")));
-		hintIcons[4].setIcon(new ImageIcon(getClass().getResource("/org/citydb/gui/images/map/move.png")));
-		hintIcons[5].setIcon(new ImageIcon(getClass().getResource("/org/citydb/gui/images/map/center.png")));
-		hintIcons[6].setIcon(new ImageIcon(getClass().getResource("/org/citydb/gui/images/map/popup.png")));
+			for (int i = 0; i < hintLabels.length; ++i) {
+				hints.add(hintIcons[i], GuiUtil.setConstraints(0, i, 0, 0, GridBagConstraints.NORTH, GridBagConstraints.HORIZONTAL, 5, 5, 1, 5));
+				hints.add(hintLabels[i], GuiUtil.setConstraints(1, i, 0, 0, GridBagConstraints.NORTH, GridBagConstraints.HORIZONTAL, 5, 5, 1, 5));
+			}
 
-		gridBagConstraints = GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.HORIZONTAL, 5, 5, 1, 5);
-		gridBagConstraints.anchor = GridBagConstraints.NORTH;
-
-		for (int i = 0; i < hintLabels.length; ++i) {			
-			gridBagConstraints.gridy = i;
-			gridBagConstraints.gridx = 0;
-			hints.add(hintIcons[i], gridBagConstraints);
-			gridBagConstraints.gridx = 1;
-			hints.add(hintLabels[i], gridBagConstraints);
+			header.add(headerMenu, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+			header.add(hints, GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.EAST, GridBagConstraints.NONE, 0, 0, 0, 0));
 		}
 
-		// footer label
-		label = new JLabel("[n/a]");
-		label.setForeground(Color.WHITE);
-		label.setPreferredSize(new Dimension(200, label.getPreferredSize().height));
-		JLabel copyright = new JLabel("<html><body>&copy; <u>OpenStreetMap</u> contributors</html></body>");
-		copyright.setBackground(borderColor);
-		copyright.setForeground(Color.WHITE);
-		copyright.setCursor(new Cursor(Cursor.HAND_CURSOR));
+		footer = new JPanel();
+		footer.setLayout(new GridBagLayout());
+		JLabel copyright;
+		{
+			// footer label
+			label = new JLabel("[n/a]");
+			label.setPreferredSize(new Dimension(200, label.getPreferredSize().height));
+			copyright = new JLabel("<html><body>&copy; <a href=\"\">OpenStreetMap</a> contributors</html></body>");
+			copyright.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
-		footer.add(label, GuiUtil.setConstraints(0, 0, 0, 1, GridBagConstraints.HORIZONTAL, 2, 2, 2, 2));
-		gridBagConstraints = GuiUtil.setConstraints(1, 0, 1, 1, GridBagConstraints.NONE, 2, 2, 2, 105);
-		gridBagConstraints.anchor = GridBagConstraints.EAST;
-		footer.add(copyright, gridBagConstraints);
+			footer.add(label, GuiUtil.setConstraints(0, 0, 0, 1, GridBagConstraints.HORIZONTAL, 2, 2, 2, 2));
+			footer.add(copyright, GuiUtil.setConstraints(1, 0, 1, 1, GridBagConstraints.EAST, GridBagConstraints.NONE, 2, 2, 2, 105));
+		}
+
+		mapKit.getMainMap().add(footer, GuiUtil.setConstraints(0, 0, 2, 1, 1, 1, GridBagConstraints.SOUTHWEST, GridBagConstraints.HORIZONTAL, 0, 0, 0, 0));
+		mapKit.getMainMap().add(header, GuiUtil.setConstraints(0, 0, 2, 1, 1, 1, GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, 0, 0, 0, 0));
 
 		mapKit.setDefaultProvider(DefaultProviders.OpenStreetMaps);
-		((AbstractTileFactory)mapKit.getMainMap().getTileFactory()).setThreadPoolSize(10);
+		DefaultTileFactory tileFactory = (DefaultTileFactory) mapKit.getMainMap().getTileFactory();
+		tileFactory.addHttpRequestProperty("User-Agent", "swingx-ws/1.1 (https://www.3dcitydb.org/)");
+		tileFactory.setThreadPoolSize(10);
+
 		mapKit.setDataProviderCreditShown(false);
 		mapKit.setAddressLocationShown(true);
 		mapKit.getMainMap().setRecenterOnClickEnabled(true);	
@@ -179,7 +149,7 @@ public class Map {
 		mapKit.getMiniMap().setRestrictOutsidePanning(true);
 		mapKit.getMiniMap().setHorizontalWrapped(false);
 
-		CompoundPainter<JXMapViewer> compound = new CompoundPainter<JXMapViewer>();		
+		CompoundPainter<JXMapViewer> compound = new CompoundPainter<>();
 		compound.setPainters(selectionPainter, zoomPainter, waypointPainter);
 		mapKit.getMainMap().setOverlayPainter(compound);
 
@@ -225,7 +195,7 @@ public class Map {
 				if (SwingUtilities.isLeftMouseButton(e)) {
 					boolean visible = !hints.isVisible();
 					String hintsText = !visible ? Language.I18N.getString("map.hints.show") : Language.I18N.getString("map.hints.hide");
-					hintsLabel.setText("<html><u>" + hintsText + "</u></html>");
+					hintsLabel.setText("<html><a href=\"\">" + hintsText + "</a></html>");
 					hints.setVisible(visible);
 				}
 			}
@@ -247,6 +217,26 @@ public class Map {
 		// just to disable double-click action
 		headerMenu.addMouseListener(new MouseAdapter() {});
 		footer.addMouseListener(new MouseAdapter() {});
+
+		UIManager.addPropertyChangeListener(e -> {
+			if ("lookAndFeel".equals(e.getPropertyName())) {
+				SwingUtilities.invokeLater(this::updateComponentUI);
+			}
+		});
+
+		updateComponentUI();
+	}
+
+	private void updateComponentUI() {
+		Color transparentBackground = UIManager.getColor("TabbedPane.background");
+		transparentBackground = new Color(transparentBackground.getRed(), transparentBackground.getGreen(), transparentBackground.getBlue(), 220);
+
+		headerMenu.setBackground(transparentBackground);
+		hints.setBackground(transparentBackground);
+		footer.setBackground(transparentBackground);
+		hints.setBorder(BorderFactory.createMatteBorder(1, 1, 1, 0, UIManager.getColor("Component.borderColor")));
+
+		SwingUtilities.updateComponentTreeUI(popupMenu);
 	}
 
 	public JXMapKit getMapKit() {
@@ -263,7 +253,7 @@ public class Map {
 
 	public void doTranslation() {
 		String hintsText = !hints.isVisible() ? Language.I18N.getString("map.hints.show") : Language.I18N.getString("map.hints.hide");
-		hintsLabel.setText("<html><u>" + hintsText + "</u></html>");
+		hintsLabel.setText("<html><a href=\"\">" + hintsText + "</a></html>");
 
 		hintLabels[0].setText("<html><b>" + Language.I18N.getString("map.hints.selectBoundingBox")+ "</b><br/>" + Language.I18N.getString("map.hints.selectBoundingBox.hint") + "</html>");
 		hintLabels[1].setText("<html><b>" + Language.I18N.getString("map.hints.reverseGeocoder")+ "</b><br/>" + Language.I18N.getString("map.hints.reverseGeocoder.hint") + "</html>");

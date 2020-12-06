@@ -31,15 +31,15 @@ import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.gui.ImpExpGui;
 import org.citydb.gui.factory.PopupMenuDecorator;
-import org.citydb.gui.modules.preferences.preferences.RootPreferencesEntry;
 import org.citydb.gui.modules.common.NullComponent;
-import org.citydb.gui.util.GuiUtil;
-import org.citydb.log.Logger;
+import org.citydb.gui.modules.database.DatabasePlugin;
 import org.citydb.gui.modules.exporter.CityGMLExportPlugin;
 import org.citydb.gui.modules.importer.CityGMLImportPlugin;
-import org.citydb.gui.modules.database.DatabasePlugin;
 import org.citydb.gui.modules.kml.KMLExportPlugin;
 import org.citydb.gui.modules.preferences.preferences.GeneralPreferences;
+import org.citydb.gui.modules.preferences.preferences.RootPreferencesEntry;
+import org.citydb.gui.util.GuiUtil;
+import org.citydb.log.Logger;
 import org.citydb.plugin.PluginManager;
 import org.citydb.plugin.extension.preferences.Preferences;
 import org.citydb.plugin.extension.preferences.PreferencesEntry;
@@ -47,6 +47,8 @@ import org.citydb.plugin.extension.preferences.PreferencesEvent;
 import org.citydb.plugin.extension.preferences.PreferencesExtension;
 
 import javax.swing.*;
+import javax.swing.event.TreeExpansionEvent;
+import javax.swing.event.TreeExpansionListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -56,29 +58,23 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
-@SuppressWarnings("serial")
 public class PreferencesPanel extends JPanel implements TreeSelectionListener {
 	private final Logger log = Logger.getInstance();
 	private final ImpExpGui mainView;
 	private final PluginManager pluginManager;
 	private final Config config;
 
+	private JSplitPane splitPane;
+	private JPanel treePanel;
 	private JTree menuTree;
 	private PreferencesEntry activeEntry;
 	private TreePath activePanelPath;
 
-	private JPanel col1;
-	private JPanel col2;
-	private JPanel col2panel;
-	private JScrollPane scrollPane;
-	private JLabel prefLabel;
-	private JPanel noticePanel;
-	private JLabel noticeLabel;
-	private JPanel confirmPanel;
-	private JCheckBox confirmDialogNoShow;
+	private JPanel settingsContentPanel;
+	private JLabel settingsNameLabel;
+	private JPanel hintPanel;
+	private JLabel hintLabel;
 	private JButton restoreButton;
 	private JButton standardButton;
 	private JButton applyButton;
@@ -99,33 +95,27 @@ public class PreferencesPanel extends JPanel implements TreeSelectionListener {
 		standardButton = new JButton();
 		applyButton = new JButton();
 
-		restoreButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				if (activeEntry != null) 
-					activeEntry.handleEvent(PreferencesEvent.RESTORE_SETTINGS);
+		restoreButton.addActionListener(e -> {
+			if (activeEntry != null)
+				activeEntry.handleEvent(PreferencesEvent.RESTORE_SETTINGS);
+		});
+
+		standardButton.addActionListener(e -> {
+			if (activeEntry != null)
+				activeEntry.handleEvent(PreferencesEvent.SET_DEFAULT_SETTINGS);
+		});
+
+		applyButton.addActionListener(e -> {
+			if (activeEntry != null) {
+				boolean success = activeEntry.handleEvent(PreferencesEvent.APPLY_SETTINGS);
+				if (success)
+					log.info("Settings successfully applied.");
 			}
 		});
 
-		standardButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				if (activeEntry != null)
-					activeEntry.handleEvent(PreferencesEvent.SET_DEFAULT_SETTINGS);
-			}
-		});
-
-		applyButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				if (activeEntry != null) {
-					boolean success = activeEntry.handleEvent(PreferencesEvent.APPLY_SETTINGS);
-					if (success)
-						log.info("Settings successfully applied.");
-				}
-			}
-		});
-
-		rootNode = new PreferencesTreeNode(new RootPreferencesEntry());
 		generalPreferences = new GeneralPreferences(mainView, config);
 
+		rootNode = new PreferencesTreeNode(new RootPreferencesEntry());
 		rootNode.add(pluginManager.getInternalPlugin(CityGMLImportPlugin.class).getPreferences().getPreferencesEntry());
 		rootNode.add(pluginManager.getInternalPlugin(CityGMLExportPlugin.class).getPreferences().getPreferencesEntry());
 		rootNode.add(pluginManager.getInternalPlugin(KMLExportPlugin.class).getPreferences().getPreferencesEntry());
@@ -148,92 +138,95 @@ public class PreferencesPanel extends JPanel implements TreeSelectionListener {
 		menuTree.addTreeSelectionListener(this);
 		menuTree.setRootVisible(false);
 		menuTree.setShowsRootHandles(true);
-		
+		menuTree.setBorder(BorderFactory.createEmptyBorder(10, 10, 0, 10));
+
+		// render top-level entries in bold
+		DefaultTreeCellRenderer renderer = new DefaultTreeCellRenderer() {
+			@Override
+			public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
+				super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
+
+				if (((DefaultMutableTreeNode) value).getLevel() == 1) {
+					setFont(getFont().deriveFont(Font.BOLD));
+				} else {
+					setFont(getFont().deriveFont(Font.PLAIN));
+				}
+
+				return this;
+			}
+		};
+
 		// get rid of icons
-		DefaultTreeCellRenderer renderer = new DefaultTreeCellRenderer();
 		renderer.setLeafIcon(null);
 		renderer.setOpenIcon(null);
 		renderer.setClosedIcon(null);
 		menuTree.setCellRenderer(renderer);
-		
-		// set row height
-		int padding = menuTree.getRowHeight() - UIManager.getFont("Tree.font").getSize();
-		menuTree.setRowHeight(UIManager.getFont("Tree.font").getSize() + Math.max(padding, 5));
 
-		//layout
+		// layout
 		setLayout(new GridBagLayout());
-		{			
-			col1 = new JPanel();
-			col1.setBackground(menuTree.getBackground());
-			col1.setLayout(new GridBagLayout());
-			{
-				JScrollPane scroll = new JScrollPane(menuTree);
-				scroll.setBorder(BorderFactory.createEmptyBorder());
-				scroll.setViewportBorder(BorderFactory.createEmptyBorder());
-				col1.add(scroll, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,9,4,4,4));
-			}
-		}
+		treePanel = new JPanel();
+		treePanel.setLayout(new GridBagLayout());
 		{
-			col2 = new JPanel();
-			col2.setLayout(new GridBagLayout());
-			{
-				prefLabel = new JLabel();
-				Font font = prefLabel.getFont();
-				prefLabel.setFont(font.deriveFont(font.getStyle() | Font.BOLD));
-				col2.add(prefLabel, GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.BOTH,10,10,10,10));
-
-				JSeparator sep = new JSeparator(JSeparator.HORIZONTAL);
-				sep.setMinimumSize(sep.getPreferredSize());
-				col2.add(sep, GuiUtil.setConstraints(0,1,0.0,0.0,GridBagConstraints.BOTH,0,0,0,0));
-
-				noticePanel = new JPanel();
-				noticePanel.setBorder(BorderFactory.createEmptyBorder());
-				noticePanel.setLayout(new GridBagLayout());
-				{
-					noticeLabel = new JLabel("");			
-					noticePanel.add(noticeLabel, GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.HORIZONTAL,0,5,0,0));
-				}
-
-				col2panel = new JPanel();
-				col2panel.setBorder(BorderFactory.createEmptyBorder());
-				col2panel.setLayout(new GridBagLayout());
-
-				scrollPane = new JScrollPane(col2panel);
-				scrollPane.setBorder(BorderFactory.createEmptyBorder());
-				scrollPane.setViewportBorder(BorderFactory.createEmptyBorder());
-
-				col2.add(scrollPane, GuiUtil.setConstraints(0,3,1.0,1.0,GridBagConstraints.BOTH,0,0,0,0));
-
-				JPanel col2buttons = new JPanel();
-				col2.add(col2buttons, GuiUtil.setConstraints(0,4,0.0,0.0,GridBagConstraints.BOTH,5,5,5,5));
-				col2buttons.setLayout(new GridBagLayout());
-				{
-					col2buttons.add(restoreButton, GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.BOTH,5,5,5,5));
-					col2buttons.add(standardButton, GuiUtil.setConstraints(1,0,0.0,0.0,GridBagConstraints.BOTH,5,5,5,5));
-					col2buttons.add(applyButton, GuiUtil.setConstraints(2,0,0.0,0.0,GridBagConstraints.BOTH,5,5,5,5));
-				}
-			}
+			JScrollPane scroll = new JScrollPane(menuTree);
+			scroll.setBorder(BorderFactory.createEmptyBorder());
+			scroll.setViewportBorder(BorderFactory.createEmptyBorder());
+			treePanel.add(scroll, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
 		}
 
-		resetPreferencesMenu();
-		for (int i = 0; i < menuTree.getRowCount(); i++)
-			performActionOnNodes(menuTree.getPathForRow(i), true, true);
+		JPanel contentPanel = new JPanel();
+		contentPanel.setLayout(new GridBagLayout());
+		{
+			settingsNameLabel = new JLabel();
+			settingsNameLabel.setFont(settingsNameLabel.getFont().deriveFont(Font.BOLD));
+			contentPanel.add(settingsNameLabel, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.BOTH, 15, 10, 15, 10));
 
-		JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+			hintPanel = new JPanel();
+			hintPanel.setLayout(new GridBagLayout());
+			{
+				hintLabel = new JLabel();
+				hintPanel.add(hintLabel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 0));
+			}
+
+			settingsContentPanel = new JPanel();
+			settingsContentPanel.setLayout(new GridBagLayout());
+
+			JScrollPane scrollPane = new JScrollPane(settingsContentPanel);
+			scrollPane.setBorder(BorderFactory.createEmptyBorder());
+			scrollPane.setViewportBorder(BorderFactory.createEmptyBorder());
+
+			JPanel buttons = new JPanel();
+			buttons.setLayout(new GridBagLayout());
+			{
+				buttons.add(restoreButton, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.BOTH, 5, 0, 5, 5));
+				buttons.add(standardButton, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.BOTH, 5, 5, 5, 5));
+				buttons.add(applyButton, GuiUtil.setConstraints(2, 0, 0, 0, GridBagConstraints.BOTH, 5, 5, 5, 0));
+			}
+
+			contentPanel.add(scrollPane, GuiUtil.setConstraints(0, 1, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
+			contentPanel.add(buttons, GuiUtil.setConstraints(0, 2, 0, 0, GridBagConstraints.BOTH, 5, 10, 5, 10));
+		}
+
+		splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
 		splitPane.setContinuousLayout(true);
 		splitPane.setBorder(BorderFactory.createEmptyBorder());
+		splitPane.setLeftComponent(treePanel);
+		splitPane.setRightComponent(contentPanel);
 
-		splitPane.setLeftComponent(col1);
-		splitPane.setRightComponent(col2);
-		splitPane.setDividerLocation(menuTree.getPreferredSize().width + 10);
-		splitPane.setDividerSize(1);
-		
-		add(splitPane, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,0,0,0,0));
+		add(splitPane, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
 		setBorder(BorderFactory.createEmptyBorder());
 
 		menuTree.setSelectionPath(new TreePath(new Object[]{rootNode}));
-		for (int i = 0; i < menuTree.getRowCount(); i++)
-			performActionOnNodes(menuTree.getPathForRow(i), false, true);
+		menuTree.addTreeExpansionListener(new TreeExpansionListener() {
+			@Override
+			public void treeExpanded(TreeExpansionEvent event) {
+				splitPane.setDividerLocation(treePanel.getPreferredSize().width);
+			}
+
+			@Override
+			public void treeCollapsed(TreeExpansionEvent event) {
+				splitPane.setDividerLocation(treePanel.getPreferredSize().width);
+			}
+		});
 
 		PopupMenuDecorator.getInstance().decorate(menuTree);
 	}
@@ -242,11 +235,11 @@ public class PreferencesPanel extends JPanel implements TreeSelectionListener {
 		restoreButton.setText(Language.I18N.getString("common.button.restore"));
 		standardButton.setText(Language.I18N.getString("common.button.standard"));
 		applyButton.setText(Language.I18N.getString("common.button.apply"));
-		noticeLabel.setText(Language.I18N.getString("common.pref.menu.expand.label"));
+		hintLabel.setText(Language.I18N.getString("common.pref.menu.expand.label"));
 
 		resetPreferencesMenu();
-		menuTree.repaint();
-		prefLabel.setText(((PreferencesTreeNode)menuTree.getLastSelectedPathComponent()).toString());	
+		settingsNameLabel.setText(menuTree.getLastSelectedPathComponent().toString());
+		splitPane.setDividerLocation(treePanel.getPreferredSize().width);
 	}
 
 	@Override
@@ -260,21 +253,19 @@ public class PreferencesPanel extends JPanel implements TreeSelectionListener {
 			return;
 		}
 
-		col2panel.removeAll();
+		settingsContentPanel.removeAll();
 		if (node.entry.getViewComponent() == null || node.entry.getViewComponent() == NullComponent.getInstance()) {
-			col2panel.add(noticePanel, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.NORTH,GridBagConstraints.HORIZONTAL,5,5,5,5));
+			settingsContentPanel.add(hintPanel, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.NORTH, GridBagConstraints.HORIZONTAL, 0, 10, 0, 10));
 			activeEntry = null;
 		} else {
-			col2panel.add(node.entry.getViewComponent(), GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.NORTH,GridBagConstraints.HORIZONTAL,5,5,5,5));
+			settingsContentPanel.add(node.entry.getViewComponent(), GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.NORTH, GridBagConstraints.HORIZONTAL, 0, 10, 0, 10));
 			activeEntry = node.entry;
 		}
 
-		revalidate();
-
-		prefLabel.setText(node.toString());
 		activePanelPath = menuTree.getSelectionPath();
+		settingsNameLabel.setText(node.toString());
 		setEnabledButtons();
-		repaint();
+		splitPane.setDividerLocation(treePanel.getPreferredSize().width);
 	}
 
 	public boolean requestChange() {
@@ -282,16 +273,14 @@ public class PreferencesPanel extends JPanel implements TreeSelectionListener {
 			return true;
 
 		if (activeEntry.isModified()) {			
-			int res = -1;
-
+			int res;
 			if (config.getGuiConfig().isShowPreferencesConfirmDialog()) {
-				confirmPanel = new JPanel(new GridBagLayout());
-				confirmDialogNoShow = new JCheckBox(Language.I18N.getString("common.dialog.msg.noShow"));
-				confirmDialogNoShow.setIconTextGap(10);
-				confirmPanel.add(new JLabel(Language.I18N.getString("pref.dialog.apply.msg")), GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.BOTH,0,0,0,0));
-				confirmPanel.add(confirmDialogNoShow, GuiUtil.setConstraints(0,2,1.0,0.0,GridBagConstraints.BOTH,10,0,0,0));
+				JPanel confirmPanel = new JPanel(new GridBagLayout());
+				JCheckBox confirmDialogNoShow = new JCheckBox(Language.I18N.getString("common.dialog.msg.noShow"));
+				confirmPanel.add(new JLabel(Language.I18N.getString("pref.dialog.apply.msg")), GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+				confirmPanel.add(confirmDialogNoShow, GuiUtil.setConstraints(0, 2, 1, 0, GridBagConstraints.BOTH, 10, 0, 0, 0));
 
-				res = JOptionPane.showConfirmDialog(getTopLevelAncestor(), 
+				res = JOptionPane.showConfirmDialog(getTopLevelAncestor(),
 						confirmPanel, 
 						Language.I18N.getString("pref.dialog.apply.title"), 
 						JOptionPane.YES_NO_CANCEL_OPTION);
@@ -331,20 +320,35 @@ public class PreferencesPanel extends JPanel implements TreeSelectionListener {
 			nodesChanged(model, node.getChildAt(i));
 	}
 
-	private void performActionOnNodes(TreePath parent, boolean expand, boolean recursive) {
-		TreeNode node = (TreeNode)parent.getLastPathComponent();
+	@Override
+	public void updateUI() {
+		super.updateUI();
 
-		if (recursive)
-			for (int i = 0; i < node.getChildCount(); ++i)
-				performActionOnNodes(parent.pathByAddingChild(node.getChildAt(i)), expand, recursive);
+		if (rootNode != null) {
+			updateUI(rootNode);
+		}
 
-		if (expand)
-			menuTree.expandPath(parent);
-		else
-			menuTree.collapsePath(parent);
+		if (hintPanel != null) {
+			SwingUtilities.updateComponentTreeUI(hintPanel);
+		}
 	}
 
-	private final class PreferencesTreeNode extends DefaultMutableTreeNode {
+	private void updateUI(PreferencesTreeNode node) {
+		if (menuTree.getSelectionPath() == null
+				|| menuTree.getSelectionPath().getLastPathComponent() != node) {
+			try {
+				SwingUtilities.updateComponentTreeUI(node.entry.getViewComponent());
+			} catch (Exception e) {
+				log.error("Failed to update UI for component '" + node.entry.getViewComponent() + "'.", e);
+			}
+		}
+
+		for (int i = 0; i < node.getChildCount(); i++) {
+			updateUI((PreferencesTreeNode) node.getChildAt(i));
+		}
+	}
+
+	private static final class PreferencesTreeNode extends DefaultMutableTreeNode {
 		private final PreferencesEntry entry;
 
 		public PreferencesTreeNode(PreferencesEntry entry) {

@@ -31,23 +31,15 @@ import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.common.AffineTransformation;
 import org.citydb.config.project.common.TransformationMatrix;
+import org.citydb.gui.components.common.TitledPanel;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.modules.common.AbstractPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 import org.citygml4j.geometry.Matrix;
 
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JFormattedTextField;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.UIManager;
-import javax.swing.border.TitledBorder;
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
+import javax.swing.*;
+import javax.swing.text.NumberFormatter;
+import java.awt.*;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.ParseException;
@@ -55,14 +47,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-@SuppressWarnings("serial")
-public class GeometryPanel extends AbstractPreferencesComponent {	
-	private JPanel block1;
-	private JPanel block2;
+public class GeometryPanel extends AbstractPreferencesComponent {
+	private TitledPanel matrixPanel;
+	private JPanel buttonsPanel;
 	private JCheckBox useAffineTransformation;
 	private JLabel matrixDescr;
 	private JFormattedTextField[][] matrixField;
-	private JLabel[] matrixLabel;
+	private JLabel[] matrixLabels;
 	private JButton identityMatrixButton;
 	private JButton swapXYMatrixButton;
 	
@@ -94,74 +85,65 @@ public class GeometryPanel extends AbstractPreferencesComponent {
 		useAffineTransformation = new JCheckBox();
 		matrixDescr = new JLabel();
 		matrixField = new JFormattedTextField[3][4];
-		matrixLabel = new JLabel[3];
+		matrixLabels = new JLabel[3];
 		identityMatrixButton = new JButton();
 		swapXYMatrixButton = new JButton();
 
+		matrixDescr.setFont(matrixDescr.getFont().deriveFont(Font.BOLD));
+
 		setLayout(new GridBagLayout());
 		{
-			block1 = new JPanel();
-			add(block1, GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.BOTH,5,0,5,0));
-			block1.setBorder(BorderFactory.createTitledBorder(""));
-			block1.setLayout(new GridBagLayout());
+			JPanel content = new JPanel();
+			content.setLayout(new GridBagLayout());
+
+			JPanel matrixFieldsPanel = new JPanel();
+			matrixFieldsPanel.setLayout(new GridBagLayout());
 			{
-				JPanel row1 = new JPanel();
-				row1.setBorder(BorderFactory.createEmptyBorder());
-				block1.add(row1, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,0,0,5,0));
-				row1.setLayout(new GridBagLayout());
-				{
-					useAffineTransformation.setIconTextGap(10);
-					matrixDescr.setFont(matrixDescr.getFont().deriveFont(Font.BOLD));
-					row1.add(useAffineTransformation, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,0,5,15,5));
-					row1.add(matrixDescr, GuiUtil.setConstraints(0,1,1.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
-				}
+				NumberFormatter formatter = new NumberFormatter(new DecimalFormat("#.#########################",
+						DecimalFormatSymbols.getInstance(Locale.ENGLISH)));
+				formatter.setMaximum(Double.MAX_VALUE);
+				formatter.setMinimum(-Double.MAX_VALUE);
 
-				JPanel row2 = new JPanel();
-				row2.setBorder(BorderFactory.createEmptyBorder());
-				block1.add(row2, GuiUtil.setConstraints(0,1,1.0,1.0,GridBagConstraints.BOTH,0,0,0,5));
-				row2.setLayout(new GridBagLayout());
-				{
-					DecimalFormat format = new DecimalFormat("####################.#########################", DecimalFormatSymbols.getInstance(Locale.ENGLISH));	
-					format.setMaximumIntegerDigits(20);
-					format.setMinimumIntegerDigits(1);
-					format.setMaximumFractionDigits(25);
-					format.setMinimumFractionDigits(0);
-					
-					for (int i = 0; i < matrixField.length; i++) {
-						StringBuilder label = new StringBuilder("<html>(m");
-						for (int k = 0; k < matrixField[i].length; k++) {
-							label.append("<sub>").append(i+1).append(k+1).append("</sub>");
-
-							if (k < matrixField[i].length - 1)
-								label.append(",m");
-							else
-								label.append(") =</html>");
-						}
-
-						matrixLabel[i] = new JLabel(label.toString());
-						row2.add(matrixLabel[i], GuiUtil.setConstraints(0,i,0.0,0.0,GridBagConstraints.NONE,0,5,5,0));
-						
-						for (int j = 0; j < matrixField[i].length; j++) {
-							matrixField[i][j] = new JFormattedTextField(format);							
-							row2.add(matrixField[i][j], GuiUtil.setConstraints(j+1,i,0.25,0.0,GridBagConstraints.BOTH,0,5,5,0));
-							matrixField[i][j].setPreferredSize(matrixField[i][j].getPreferredSize());
-						}
-						
-						PopupMenuDecorator.getInstance().decorate(matrixField[i]);
+				for (int i = 0; i < matrixField.length; i++) {
+					StringBuilder label = new StringBuilder("<html>(m");
+					for (int k = 0; k < matrixField[i].length; k++) {
+						label.append("<sub>").append(i + 1).append(k + 1).append("</sub>");
+						if (k < matrixField[i].length - 1)
+							label.append(",m");
+						else
+							label.append(") =</html>");
 					}
+
+					matrixLabels[i] = new JLabel(label.toString());
+					matrixFieldsPanel.add(matrixLabels[i], GuiUtil.setConstraints(0, i, 0, 0, GridBagConstraints.NONE, 0, 0, 5, 0));
+
+					for (int j = 0; j < matrixField[i].length; j++) {
+						matrixField[i][j] = new JFormattedTextField(formatter);
+						matrixField[i][j].setColumns(8);
+						matrixFieldsPanel.add(matrixField[i][j], GuiUtil.setConstraints(j + 1, i, 0.25, 0, GridBagConstraints.BOTH, 0, 5, 5, 0));
+					}
+
+					PopupMenuDecorator.getInstance().decorate(matrixField[i]);
 				}
 			}
-						
-			block2 = new JPanel();
-			block2.setBorder(BorderFactory.createTitledBorder(""));
-			add(block2, GuiUtil.setConstraints(0,1,1.0,0.0,GridBagConstraints.BOTH,5,0,5,0));
-			block2.setBorder(BorderFactory.createTitledBorder(""));
-			block2.setLayout(new GridBagLayout());
+
+			buttonsPanel = new JPanel();
+			buttonsPanel.setLayout(new GridBagLayout());
 			{
-				block2.add(identityMatrixButton, GuiUtil.setConstraints(0,0,0.0,1.0,GridBagConstraints.BOTH,5,5,5,5));
-				block2.add(swapXYMatrixButton, GuiUtil.setConstraints(1,0,0.0,1.0,GridBagConstraints.BOTH,5,5,5,5));
+				buttonsPanel.add(identityMatrixButton, GuiUtil.setConstraints(0, 0, 0, 1, GridBagConstraints.BOTH, 0, 0, 0, 5));
+				buttonsPanel.add(swapXYMatrixButton, GuiUtil.setConstraints(1, 0, 0, 1, GridBagConstraints.BOTH, 0, 5, 0, 0));
 			}
+
+			content.add(matrixDescr, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 5, 0));
+			content.add(matrixFieldsPanel, GuiUtil.setConstraints(0, 1, 1, 1, GridBagConstraints.BOTH, 5, 0, 5, 0));
+			content.add(buttonsPanel, GuiUtil.setConstraints(0, 2, 1, 1, GridBagConstraints.BOTH, 5, 0, 0, 0));
+
+			matrixPanel = new TitledPanel()
+					.withToggleButton(useAffineTransformation)
+					.build(content);
 		}
+
+		add(matrixPanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 
 		identityMatrixButton.addActionListener(e -> {
 			Matrix matrix = Matrix.identity(3, 4);
@@ -175,10 +157,10 @@ public class GeometryPanel extends AbstractPreferencesComponent {
 		});
 		
 		swapXYMatrixButton.addActionListener(e -> {
-			Matrix matrix = new Matrix(3, 4, 0.0);
-			matrix.set(0, 1, 1.0);
-			matrix.set(1, 0, 1.0);
-			matrix.set(2, 2, 1.0);
+			Matrix matrix = new Matrix(3, 4, 0);
+			matrix.set(0, 1, 1);
+			matrix.set(1, 0, 1);
+			matrix.set(2, 2, 1);
 			double[][] values = matrix.getArray();
 
 			for (int i = 0; i < values.length; i++) {
@@ -190,22 +172,13 @@ public class GeometryPanel extends AbstractPreferencesComponent {
 		
 		useAffineTransformation.addActionListener(e -> setEnabledTransformation());
 	}
-
-	private void setEnabledBorderTitle() {
-		boolean enabled = useAffineTransformation.isSelected();
-
-		Color titleColor = enabled ? UIManager.getColor("TitledBorder.titleColor") : UIManager.getColor("Label.disabledForeground");
-		((TitledBorder)block2.getBorder()).setTitleColor(titleColor);
-		block2.repaint();
-	}
 	
 	private void setEnabledTransformation() {
 		boolean enabled = useAffineTransformation.isSelected();
-		Color labelColor = enabled ? UIManager.getColor("Label.enableForeground") : UIManager.getColor("Label.disabledForeground");
-		
+
 		matrixDescr.setEnabled(enabled);
 		for (int i = 0; i < matrixField.length; i++) {
-			matrixLabel[i].setForeground(labelColor);
+			matrixLabels[i].setEnabled(enabled);
 			for (int j = 0; j < matrixField[i].length; j++) {
 				matrixField[i][j].setEnabled(enabled);
 			}
@@ -213,20 +186,14 @@ public class GeometryPanel extends AbstractPreferencesComponent {
 				
 		identityMatrixButton.setEnabled(enabled);
 		swapXYMatrixButton.setEnabled(enabled);
-		setEnabledBorderTitle();
 	}
 
 	@Override
 	public void doTranslation() {
-		((TitledBorder)block1.getBorder()).setTitle(Language.I18N.getString("common.pref.geometry.border.transformation"));	
-		((TitledBorder)block2.getBorder()).setTitle(Language.I18N.getString("common.pref.geometry.border.preset"));	
-
-		useAffineTransformation.setText(Language.I18N.getString("common.pref.geometry.label.useTransformation"));
+		matrixPanel.setTitle(Language.I18N.getString("common.pref.geometry.border.transformation"));
 		matrixDescr.setText(Language.I18N.getString("common.pref.geometry.label.matrix"));
 		identityMatrixButton.setText(Language.I18N.getString("common.pref.geometry.button.identity"));
 		swapXYMatrixButton.setText(Language.I18N.getString("common.pref.geometry.button.swapXY"));
-		
-		setEnabledBorderTitle();
 	}
 
 	@Override
@@ -272,8 +239,10 @@ public class GeometryPanel extends AbstractPreferencesComponent {
 	}
 	
 	private Matrix toMatrix3x4(TransformationMatrix transformationMatrix) {
-		return transformationMatrix.isSetValue() && transformationMatrix.getValue().size() == 12 ? 
-				new Matrix(transformationMatrix.getValue(), 3) : Matrix.identity(3, 4);
+		return transformationMatrix.isSetValue()
+				&& transformationMatrix.getValue().size() == 12 ?
+				new Matrix(transformationMatrix.getValue(), 3) :
+				Matrix.identity(3, 4);
 	}
 
 }

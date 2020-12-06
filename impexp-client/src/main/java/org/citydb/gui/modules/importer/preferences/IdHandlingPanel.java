@@ -38,34 +38,25 @@ import org.citydb.event.Event;
 import org.citydb.event.EventHandler;
 import org.citydb.event.global.DatabaseConnectionStateEvent;
 import org.citydb.event.global.EventType;
+import org.citydb.gui.components.common.TitledPanel;
+import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.modules.common.AbstractPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.registry.ObjectRegistry;
 import org.citygml4j.util.gmlid.DefaultGMLIdManager;
 
-import javax.swing.BorderFactory;
-import javax.swing.ButtonGroup;
-import javax.swing.JCheckBox;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JTextField;
-import javax.swing.UIManager;
-import javax.swing.border.TitledBorder;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.event.ActionEvent;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionListener;
 
-@SuppressWarnings("serial")
 public class IdHandlingPanel extends AbstractPreferencesComponent implements EventHandler {
-	private JPanel block1;
+	private TitledPanel idAssignmentPanel;
 	private JLabel idPrefixLabel;
 	private JTextField idPrefix;
 	private JCheckBox impIdCheckExtRef;
 	private JRadioButton impIdRadioAdd;
 	private JRadioButton impIdRadioExchange;
-	private JPanel block2;
+	private TitledPanel codespacePanel;
 	private JRadioButton impIdCSRadioNone;
 	private JRadioButton impIdCSRadioFile;
 	private JRadioButton impIdCSRadioFilePath;
@@ -118,59 +109,51 @@ public class IdHandlingPanel extends AbstractPreferencesComponent implements Eve
 		
 		setLayout(new GridBagLayout());
 		{
-			block1 = new JPanel();
-			add(block1, GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.BOTH,5,0,5,0));
-			block1.setBorder(BorderFactory.createTitledBorder(""));
-			block1.setLayout(new GridBagLayout());
-			impIdRadioAdd.setIconTextGap(10);
-			impIdRadioExchange.setIconTextGap(10);
-			impIdCheckExtRef.setIconTextGap(10);
-			JPanel block1_1 = new JPanel();
-			int lmargin = (int)(impIdRadioAdd.getPreferredSize().getWidth()) + 11;
-			{
-				block1_1.setLayout(new GridBagLayout());
-				block1_1.setBorder(BorderFactory.createEmptyBorder());
-				block1_1.add(idPrefixLabel, GuiUtil.setConstraints(0,0,0,0,GridBagConstraints.BOTH,0,0,0,5));
-				block1_1.add(idPrefix, GuiUtil.setConstraints(1,0,1.0,1.0,GridBagConstraints.BOTH,0,5,0,0));
+			JPanel content = new JPanel();
+			content.setLayout(new GridBagLayout());
+			int lmargin = GuiUtil.getTextOffset(impIdRadioAdd);
 
-				block1.add(block1_1, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
-				block1.add(impIdRadioAdd, GuiUtil.setConstraints(0,1,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
-				block1.add(impIdRadioExchange, GuiUtil.setConstraints(0,2,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
-				block1.add(impIdCheckExtRef, GuiUtil.setConstraints(0,3,1.0,1.0,GridBagConstraints.BOTH,0,lmargin,0,5));
-			}
-			
-			block2 = new JPanel();
-			add(block2, GuiUtil.setConstraints(0,1,1.0,0.0,GridBagConstraints.BOTH,5,0,5,0));
-			block2.setBorder(BorderFactory.createTitledBorder(""));
-			block2.setLayout(new GridBagLayout());
-			impIdCSRadioNone.setIconTextGap(10);
-			impIdCSRadioFile.setIconTextGap(10);
-			impIdCSRadioFilePath.setIconTextGap(10);
-			impIdCSRadioUser.setIconTextGap(10);
+			JPanel prefixContent = new JPanel();
+			prefixContent.setLayout(new GridBagLayout());
 			{
-				block2.add(impIdCSRadioNone, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
-				block2.add(impIdCSRadioFile, GuiUtil.setConstraints(0,1,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
-				block2.add(impIdCSRadioFilePath, GuiUtil.setConstraints(0,2,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
-				block2.add(impIdCSRadioUser, GuiUtil.setConstraints(0,3,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
-				block2.add(impIdCSUserText, GuiUtil.setConstraints(0,4,1.0,1.0,GridBagConstraints.BOTH,0,lmargin,5,5));
+				prefixContent.setBorder(BorderFactory.createEmptyBorder());
+				prefixContent.add(idPrefixLabel, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.BOTH, 0, 0, 0, 5));
+				prefixContent.add(idPrefix, GuiUtil.setConstraints(1, 0, 1, 1, GridBagConstraints.BOTH, 0, 5, 0, 0));
 			}
+
+			content.add(prefixContent, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
+			content.add(impIdRadioAdd, GuiUtil.setConstraints(0, 1, 1, 1, GridBagConstraints.BOTH, 5, 0, 0, 0));
+			content.add(impIdRadioExchange, GuiUtil.setConstraints(0, 2, 1, 1, GridBagConstraints.BOTH, 5, 0, 0, 0));
+			content.add(impIdCheckExtRef, GuiUtil.setConstraints(0, 3, 1, 1, GridBagConstraints.BOTH, 5, lmargin, 0, 0));
+
+			idAssignmentPanel = new TitledPanel().build(content);
 		}
-		
-		ActionListener gmlIdListener = new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				setEnabledGmlId();
+		{
+			JPanel content = new JPanel();
+			int lmargin = GuiUtil.getTextOffset(impIdCSRadioUser);
+			content.setLayout(new GridBagLayout());
+			{
+				content.add(impIdCSRadioNone, GuiUtil.setConstraints(0, 0, 2, 1, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+				content.add(impIdCSRadioFile, GuiUtil.setConstraints(0, 1, 2, 1, 1, 0, GridBagConstraints.BOTH, 5, 0, 0, 0));
+				content.add(impIdCSRadioFilePath, GuiUtil.setConstraints(0, 2, 2, 1, 1, 0, GridBagConstraints.BOTH, 5, 0, 0, 0));
+				content.add(impIdCSRadioUser, GuiUtil.setConstraints(0, 3, 0, 0, GridBagConstraints.BOTH, 5, 0, 0, 5));
+				content.add(impIdCSUserText, GuiUtil.setConstraints(1, 3, 1, 1, GridBagConstraints.BOTH, 5, 5, 0, 0));
 			}
-		};
-		
-		ActionListener codeSpaceListener = new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				setEnabledCodeSpace();
-			}
-		};
+
+			codespacePanel = new TitledPanel().build(content);
+		}
+
+		add(idAssignmentPanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+		add(codespacePanel, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+
+		PopupMenuDecorator.getInstance().decorate(idPrefix, impIdCSUserText);
+
+		ActionListener gmlIdListener = e -> setEnabledGmlId();
+		ActionListener codeSpaceListener = e -> setEnabledCodeSpace();
 		
 		impIdRadioAdd.addActionListener(gmlIdListener);
 		impIdRadioExchange.addActionListener(gmlIdListener);
-		
+
 		impIdCSRadioNone.addActionListener(codeSpaceListener);
 		impIdCSRadioFile.addActionListener(codeSpaceListener);
 		impIdCSRadioFilePath.addActionListener(codeSpaceListener);
@@ -186,11 +169,6 @@ public class IdHandlingPanel extends AbstractPreferencesComponent implements Eve
 	}
 	
 	private void setEnabledCodespaceDialog(boolean enable) {
-		((TitledBorder)block2.getBorder()).setTitleColor(enable ? 
-				UIManager.getColor("TitledBorder.titleColor"):
-					UIManager.getColor("Label.disabledForeground"));
-		block2.repaint();
-		
 		impIdCSRadioNone.setEnabled(enable);
 		impIdCSRadioFile.setEnabled(enable);
 		impIdCSRadioFilePath.setEnabled(enable);
@@ -200,13 +178,13 @@ public class IdHandlingPanel extends AbstractPreferencesComponent implements Eve
 	
 	@Override
 	public void doTranslation() {
-		((TitledBorder)block1.getBorder()).setTitle(Language.I18N.getString("pref.import.idHandling.border.id"));
+		idAssignmentPanel.setTitle(Language.I18N.getString("pref.import.idHandling.border.id"));
 		idPrefixLabel.setText(Language.I18N.getString("pref.import.idHandling.label.id.prefix"));
 		impIdCheckExtRef.setText(Language.I18N.getString("pref.import.idHandling.label.id.extReference"));
 		impIdRadioAdd.setText(Language.I18N.getString("pref.import.idHandling.label.id.add"));
 		impIdRadioExchange.setText(Language.I18N.getString("pref.import.idHandling.label.id.exchange"));
 
-		((TitledBorder)block2.getBorder()).setTitle(Language.I18N.getString("pref.import.idHandling.border.idCodeSpace"));
+		codespacePanel.setTitle(Language.I18N.getString("pref.import.idHandling.border.idCodeSpace"));
 		impIdCSRadioNone.setText(Language.I18N.getString("pref.import.idHandling.label.idCodeSpace.none"));
 		impIdCSRadioFile.setText(Language.I18N.getString("pref.import.idHandling.label.idCodeSpace.file"));
 		impIdCSRadioFilePath.setText(Language.I18N.getString("pref.import.idHandling.label.idCodeSpace.filePath"));
@@ -291,7 +269,7 @@ public class IdHandlingPanel extends AbstractPreferencesComponent implements Eve
 	@Override
 	public void handleEvent(Event event) throws Exception {
 		boolean showCodespaceDialog = true;
-		if (((DatabaseConnectionStateEvent)event).isConnected()) {
+		if (((DatabaseConnectionStateEvent) event).isConnected()) {
 			AbstractDatabaseAdapter databaseAdapter = ObjectRegistry.getInstance().getDatabaseController().getActiveDatabaseAdapter();
 			DatabaseVersion version = databaseAdapter.getConnectionMetaData().getCityDBVersion();
 			showCodespaceDialog = version.compareTo(3, 1, 0) >= 0;

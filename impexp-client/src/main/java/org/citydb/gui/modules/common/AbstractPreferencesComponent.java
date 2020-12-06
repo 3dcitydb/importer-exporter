@@ -27,11 +27,12 @@
  */
 package org.citydb.gui.modules.common;
 
-import javax.swing.JPanel;
-
 import org.citydb.config.Config;
+import org.citydb.config.ProjectConfig;
+import org.citydb.config.gui.GuiConfig;
 
-@SuppressWarnings("serial")
+import javax.swing.*;
+
 public abstract class AbstractPreferencesComponent extends JPanel {
 	protected Config config;
 	
@@ -46,10 +47,15 @@ public abstract class AbstractPreferencesComponent extends JPanel {
 	public abstract String getTitle();
 	
 	public void resetSettings() {
-		Config tmp = config;
-		config = new Config();
+		ProjectConfig projectConfig = config.getProjectConfig();
+		GuiConfig guiConfig = config.getGuiConfig();
+
+		config.setProjectConfig(new ProjectConfig());
+		config.setGuiConfig(new GuiConfig());
 		loadSettings();
-		config = tmp;
+
+		config.setProjectConfig(projectConfig);
+		config.setGuiConfig(guiConfig);
 	}
 
 }

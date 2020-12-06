@@ -27,12 +27,13 @@
  */
 package org.citydb.gui.util;
 
+import com.formdev.flatlaf.FlatDarkLaf;
+import com.formdev.flatlaf.FlatLightLaf;
+import org.citydb.config.gui.style.Theme;
 import org.citydb.config.i18n.Language;
 
-import javax.swing.JMenuItem;
-import java.awt.Color;
-import java.awt.GridBagConstraints;
-import java.awt.Insets;
+import javax.swing.*;
+import java.awt.*;
 
 public class GuiUtil {
 
@@ -75,6 +76,10 @@ public class GuiUtil {
 		return constraint;
 	}
 
+	public static String getLaf(Theme theme) {
+		return theme == Theme.DARK ? FlatDarkLaf.class.getName() : FlatLightLaf.class.getName();
+	}
+
 	public static void setMnemonic(JMenuItem item, String label, int index) {
 		try {
 			char mnemonic = label.charAt(index);
@@ -87,7 +92,7 @@ public class GuiUtil {
 
 	public static void setMnemonic(JMenuItem item, String labelKey, String indexKey) {		
 		try {
-			setMnemonic(item, Language.I18N.getString(labelKey), Integer.valueOf(Language.I18N.getString(indexKey)));
+			setMnemonic(item, Language.I18N.getString(labelKey), Integer.parseInt(Language.I18N.getString(indexKey)));
 		} catch (NumberFormatException e) {
 			//
 		}
@@ -117,4 +122,15 @@ public class GuiUtil {
 		return color != null ? "#" + Integer.toHexString(color.getRGB()) : null;
 	}
 
+	public static int getTextOffset(JCheckBox checkBox) {
+		return new JCheckBox().getPreferredSize().width +
+				checkBox.getIconTextGap() -
+				checkBox.getMargin().right;
+	}
+
+	public static int getTextOffset(JRadioButton radioButton) {
+		return new JRadioButton().getPreferredSize().width +
+				radioButton.getIconTextGap() -
+				radioButton.getMargin().right;
+	}
 }
