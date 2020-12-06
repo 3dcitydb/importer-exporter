@@ -28,14 +28,14 @@
 
 package org.citydb.cli.options.vis;
 
+import org.citydb.config.project.kmlExporter.GltfOptions;
+import org.citydb.config.project.kmlExporter.GltfVersion;
 import org.citydb.plugin.cli.CliOption;
 import picocli.CommandLine;
 
 import java.nio.file.Path;
 
 public class GltfOption implements CliOption {
-    public enum Version { v2, v1 }
-
     @CommandLine.Option(names = {"-G", "--gltf"}, required = true,
             description = "Convert COLLADA output to glTF.")
     private boolean exportGltf;
@@ -60,34 +60,26 @@ public class GltfOption implements CliOption {
             description = "Output meshes using Draco compression (requires glTF version 2.0).")
     private boolean dracoCompression;
 
-    @CommandLine.Option(names = {"-s", "--suppress-collada"},
+    @CommandLine.Option(names = {"-r", "--remove-collada"},
             description = "Only keep glTF and remove the COLLADA output.")
-    private boolean suppressCollada;
+    private boolean removeCollada;
 
-    private Version gltfVersion;
+    private GltfVersion gltfVersion;
 
-    public Version getVersion() {
-        return gltfVersion;
-    }
+    public GltfOptions toGltfOptions() {
+        GltfOptions gltfOptions = new GltfOptions();
+        gltfOptions.setCreateGltfModel(exportGltf);
+        gltfOptions.setGltfVersion(gltfVersion);
+        gltfOptions.setEmbedTextures(embedTextures);
+        gltfOptions.setUseBinaryGltf(binaryGltf);
+        gltfOptions.setUseDracoCompression(dracoCompression);
+        gltfOptions.setRemoveColladaFiles(removeCollada);
 
-    public Path getConverterPath() {
-        return file;
-    }
+        if (file != null) {
+            gltfOptions.setPathToConverter(file.toAbsolutePath().toString());
+        }
 
-    public boolean isEmbedTextures() {
-        return embedTextures;
-    }
-
-    public boolean isBinaryGltf() {
-        return binaryGltf;
-    }
-
-    public boolean isDracoCompression() {
-        return dracoCompression;
-    }
-
-    public boolean isSuppressCollada() {
-        return suppressCollada;
+        return gltfOptions;
     }
 
     @Override
@@ -95,10 +87,10 @@ public class GltfOption implements CliOption {
         if (version != null) {
             switch (version) {
                 case "1.0":
-                    gltfVersion = Version.v1;
+                    gltfVersion = GltfVersion.v1_0;
                     break;
                 case "2.0":
-                    gltfVersion = Version.v2;
+                    gltfVersion = GltfVersion.v2_0;
                     break;
                 default:
                     throw new CommandLine.ParameterException(commandLine, "Invalid value for option '--gltf-version': " +
@@ -106,7 +98,7 @@ public class GltfOption implements CliOption {
             }
         }
 
-        if (dracoCompression && gltfVersion == Version.v1) {
+        if (dracoCompression && gltfVersion == GltfVersion.v1_0) {
             throw new CommandLine.ParameterException(commandLine,
                     "Error: --gltf-draco-compression can only be used with glTF version 2.0");
         }

@@ -116,7 +116,9 @@ public class ExportVisCommand extends CliCommand {
         setElevationOptions(config);
 
         // set glTF options
-        setGltfOptions(config.getKmlExportConfig());
+        if (gltfOption != null) {
+            config.getKmlExportConfig().setGltfOptions(gltfOption.toGltfOptions());
+        }
 
         try {
             new KmlExporter().doExport(file);
@@ -163,22 +165,6 @@ public class ExportVisCommand extends CliCommand {
         kmlExportConfig.setCallGElevationService(elevationOption.getOffsetMode() == AltitudeOffsetMode.GENERIC_ATTRIBUTE
                 && elevationOption.getGoogleApiKey() != null);
         config.getGlobalConfig().getApiKeys().setGoogleElevation(elevationOption.getGoogleApiKey());
-    }
-
-    private void setGltfOptions(KmlExportConfig kmlExportConfig) {
-        if (gltfOption != null) {
-            kmlExportConfig.setCreateGltfModel(true);
-            kmlExportConfig.setExportGltfV1(gltfOption.getVersion() == GltfOption.Version.v1);
-            kmlExportConfig.setExportGltfV2(gltfOption.getVersion() == GltfOption.Version.v2);
-            kmlExportConfig.setEmbedTexturesInGltfFiles(gltfOption.isEmbedTextures());
-            kmlExportConfig.setExportGltfBinary(gltfOption.isBinaryGltf());
-            kmlExportConfig.setEnableGltfDracoCompression(gltfOption.isDracoCompression());
-            kmlExportConfig.setNotCreateColladaFiles(gltfOption.isSuppressCollada());
-
-            if (gltfOption.getConverterPath() != null) {
-                kmlExportConfig.setPathOfGltfConverter(gltfOption.getConverterPath().toAbsolutePath().toString());
-            }
-        }
     }
 
     @Override

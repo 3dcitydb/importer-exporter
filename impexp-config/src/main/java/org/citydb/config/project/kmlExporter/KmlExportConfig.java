@@ -31,13 +31,9 @@ import org.citydb.config.project.common.Path;
 import org.citydb.config.project.resources.Resources;
 
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import java.io.File;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 @XmlRootElement(name = "kmlExport")
@@ -47,6 +43,7 @@ import java.util.Map;
         "lodToExportFrom",
         "displayForms",
         "colladaOptions",
+        "gltfOptions",
         "buildingStyles",
         "buildingBalloon",
         "waterBodyStyles",
@@ -80,13 +77,6 @@ import java.util.Map;
         "viewRefreshMode",
         "viewRefreshTime",
         "writeJSONFile",
-        "createGltfModel",
-        "pathOfGltfConverter",
-        "notCreateColladaFiles",
-        "embedTexturesInGltfFiles",
-        "exportGltfBinary",
-        "exportGltfV1",
-        "enableGltfDracoCompression",
         "appearanceTheme",
         "altitudeMode",
         "altitudeOffsetMode",
@@ -104,6 +94,7 @@ public class KmlExportConfig {
     @XmlJavaTypeAdapter(DisplayFormsAdapter.class)
     private DisplayForms displayForms;
     private ColladaOptions colladaOptions;
+    private GltfOptions gltfOptions;
     @XmlJavaTypeAdapter(StylesAdapter.class)
     private Styles buildingStyles;
     private Balloon buildingBalloon;
@@ -147,14 +138,7 @@ public class KmlExportConfig {
     private String viewRefreshMode;
     private double viewRefreshTime;
     private boolean writeJSONFile;
-    private boolean createGltfModel;
-    private String pathOfGltfConverter;
-    private boolean notCreateColladaFiles;
     private boolean exportAsKmz;
-    private boolean embedTexturesInGltfFiles;
-    private boolean exportGltfBinary;
-    private boolean exportGltfV1;
-    private boolean enableGltfDracoCompression;
     private String appearanceTheme;
     private AltitudeMode altitudeMode;
     private AltitudeOffsetMode altitudeOffsetMode;
@@ -175,6 +159,7 @@ public class KmlExportConfig {
         lodToExportFrom = 2;
         displayForms = new DisplayForms();
         colladaOptions = new ColladaOptions();
+        gltfOptions = new GltfOptions();
 
         buildingStyles = new Styles();
         buildingBalloon = new Balloon();
@@ -202,7 +187,6 @@ public class KmlExportConfig {
 
         lod0FootprintMode = Lod0FootprintMode.FOOTPRINT;
         exportAsKmz = false;
-        exportGltfV1 = true;
         showBoundingBox = false;
         showTileBorders = false;
         exportEmptyTiles = true;
@@ -211,21 +195,6 @@ public class KmlExportConfig {
         viewRefreshMode = "onRegion";
         viewRefreshTime = 1;
         writeJSONFile = false;
-        createGltfModel = false;
-        notCreateColladaFiles = false;
-        embedTexturesInGltfFiles = true;
-        exportGltfBinary = false;
-        exportGltfV1 = false;
-        enableGltfDracoCompression = true;
-
-        pathOfGltfConverter = "contribs" + File.separator + "collada2gltf";
-        String osName = System.getProperty("os.name").toLowerCase(Locale.ENGLISH);
-        if (osName.contains("windows"))
-            pathOfGltfConverter += File.separator + "COLLADA2GLTF-v2.1.3-windows-Release-x64" + File.separator + "COLLADA2GLTF-bin.exe";
-        else if (osName.contains("mac"))
-            pathOfGltfConverter += File.separator + "COLLADA2GLTF-v2.1.3-osx" + File.separator + "COLLADA2GLTF-bin";
-        else if (osName.contains("nux"))
-            pathOfGltfConverter += File.separator + "COLLADA2GLTF-v2.1.3-linux" + File.separator + "COLLADA2GLTF-bin";
 
         appearanceTheme = THEME_NONE;
         altitudeMode = AltitudeMode.ABSOLUTE;
@@ -282,6 +251,16 @@ public class KmlExportConfig {
     public void setColladaOptions(ColladaOptions colladaOptions) {
         if (colladaOptions != null) {
             this.colladaOptions = colladaOptions;
+        }
+    }
+
+    public GltfOptions getGltfOptions() {
+        return gltfOptions;
+    }
+
+    public void setGltfOptions(GltfOptions gltfOptions) {
+        if (gltfOptions != null) {
+            this.gltfOptions = gltfOptions;
         }
     }
 
@@ -349,70 +328,6 @@ public class KmlExportConfig {
 
     public boolean isExportAsKmz() {
         return exportAsKmz;
-    }
-
-    public boolean isExportGltfV1() {
-        return exportGltfV1;
-    }
-
-    public void setExportGltfV1(boolean exportGltfV1) {
-        this.exportGltfV1 = exportGltfV1;
-    }
-
-    public boolean isExportGltfV2() {
-        return !exportGltfV1;
-    }
-
-    public void setExportGltfV2(boolean exportGltfV2) {
-        this.exportGltfV1 = !exportGltfV2;
-    }
-
-    public void setCreateGltfModel(boolean createGltfModel) {
-        this.createGltfModel = createGltfModel;
-    }
-
-    public boolean isCreateGltfModel() {
-        return createGltfModel;
-    }
-
-    public void setPathOfGltfConverter(String pathOfGltfConverter) {
-        this.pathOfGltfConverter = pathOfGltfConverter;
-    }
-
-    public String getPathOfGltfConverter() {
-        return pathOfGltfConverter;
-    }
-
-    public void setNotCreateColladaFiles(boolean notCreateColladaFiles) {
-        this.notCreateColladaFiles = notCreateColladaFiles;
-    }
-
-    public boolean isNotCreateColladaFiles() {
-        return notCreateColladaFiles;
-    }
-
-    public void setEmbedTexturesInGltfFiles(boolean embedTexturesInGltfFiles) {
-        this.embedTexturesInGltfFiles = embedTexturesInGltfFiles;
-    }
-
-    public boolean isEmbedTexturesInGltfFiles() {
-        return this.embedTexturesInGltfFiles;
-    }
-
-    public void setExportGltfBinary(boolean exportGltfBinary) {
-        this.exportGltfBinary = exportGltfBinary;
-    }
-
-    public boolean isExportGltfBinary() {
-        return this.exportGltfBinary;
-    }
-
-    public void setEnableGltfDracoCompression(boolean enableGltfDracoCompression) {
-        this.enableGltfDracoCompression = enableGltfDracoCompression;
-    }
-
-    public boolean isEnableGltfDracoCompression() {
-        return this.enableGltfDracoCompression;
     }
 
     public void setShowBoundingBox(boolean showBoundingBox) {

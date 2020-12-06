@@ -48,6 +48,8 @@ import org.citydb.ade.kmlExporter.ADEKmlExportQueryHelper;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
 import org.citydb.config.project.kmlExporter.DisplayFormType;
+import org.citydb.config.project.kmlExporter.GltfOptions;
+import org.citydb.config.project.kmlExporter.GltfVersion;
 import org.citydb.config.project.kmlExporter.Style;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.adapter.BlobExportAdapter;
@@ -630,11 +632,11 @@ public class KmlExporterManager implements ADEKmlExportHelper {
 			}
 
 			// ----------------- create glTF -----------------
-			if (config.getKmlExportConfig().isCreateGltfModel()) {
+			if (config.getKmlExportConfig().getGltfOptions().isCreateGltfModel()) {
 				convertColladaToglTF(buildingDirectory, colladaModelFile, gltfModelFile);
 
-				if (config.getKmlExportConfig().isEmbedTexturesInGltfFiles()
-						&& config.getKmlExportConfig().isNotCreateColladaFiles()
+				if (config.getKmlExportConfig().getGltfOptions().isEmbedTextures()
+						&& config.getKmlExportConfig().getGltfOptions().isRemoveColladaFiles()
 						&& gltfModelFile.exists()) {
 					for (String imageFilename : colladaBundle.getTexImages().keySet()) {
 						File imageFile = new File(buildingDirectory, imageFilename);
@@ -664,11 +666,11 @@ public class KmlExporterManager implements ADEKmlExportHelper {
 	}
 
 	private void convertColladaToglTF(File buildingDirectory, File colladaModelFile, File gltfModelFile) {
-		String collada2gltfPath = config.getKmlExportConfig().getPathOfGltfConverter();
+		GltfOptions gltfOptions = config.getKmlExportConfig().getGltfOptions();
+
+		String collada2gltfPath = gltfOptions.getPathToConverter();
 		File collada2gltfFile = new File(ClientConstants.IMPEXP_HOME.resolve(collada2gltfPath).toString());
 		if (collada2gltfFile.exists()) {
-			boolean exportGltfV1 = config.getKmlExportConfig().isExportGltfV1();
-
 			List<String> commands = new ArrayList<>();
 			commands.add(collada2gltfFile.getAbsolutePath());
 			commands.add("-i");
@@ -676,15 +678,15 @@ public class KmlExporterManager implements ADEKmlExportHelper {
 			commands.add("-o");
 			commands.add(gltfModelFile.getAbsolutePath());
 			commands.add("-v");
-			commands.add(exportGltfV1 ? "1.0" : "2.0");
-			if (!config.getKmlExportConfig().isEmbedTexturesInGltfFiles()) {
+			commands.add(gltfOptions.getGltfVersion() == GltfVersion.v1_0 ? "1.0" : "2.0");
+			if (!gltfOptions.isEmbedTextures()) {
 				commands.add("-t");
 			}
-			if (config.getKmlExportConfig().isExportGltfBinary()) {
+			if (gltfOptions.isUseBinaryGltf()) {
 				commands.add("-b");
 			}
-			// do not apply Draco to gltF 1.0
-			if (!exportGltfV1 && config.getKmlExportConfig().isEnableGltfDracoCompression()) {
+			// only use Draco compressions with gltF 1.0
+			if (gltfOptions.getGltfVersion() == GltfVersion.v2_0 && gltfOptions.isUseDracoCompression()) {
 				commands.add("-d");
 			}
 
@@ -700,7 +702,7 @@ public class KmlExporterManager implements ADEKmlExportHelper {
 			} catch (Exception e) {
 				log.error("COLLADA2GLTF failed to convert '" + colladaModelFile.getAbsolutePath() + "'.", e);
 			} finally {
-				if (config.getKmlExportConfig().isNotCreateColladaFiles()
+				if (gltfOptions.isRemoveColladaFiles()
 						&& (gltfModelFile.exists()
 						|| (new File(gltfModelFile.getAbsolutePath().replace(".gltf", ".glb"))).exists())) {
 					colladaModelFile.delete();

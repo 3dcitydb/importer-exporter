@@ -714,8 +714,8 @@ public class KmlExportPanel extends JPanel implements EventHandler {
             }
 
             // check collada2gltf tool
-            if (config.getKmlExportConfig().isCreateGltfModel()) {
-                Path collada2gltf = Paths.get(config.getKmlExportConfig().getPathOfGltfConverter());
+            if (config.getKmlExportConfig().getGltfOptions().isCreateGltfModel()) {
+                Path collada2gltf = Paths.get(config.getKmlExportConfig().getGltfOptions().getPathToConverter());
                 if (!collada2gltf.isAbsolute())
                     collada2gltf = ClientConstants.IMPEXP_HOME.resolve(collada2gltf);
 
@@ -740,7 +740,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
                     permissions.add(PosixFilePermission.OTHERS_EXECUTE);
 
                     try {
-                        Files.setPosixFilePermissions(Paths.get(config.getKmlExportConfig().getPathOfGltfConverter()), permissions);
+                        Files.setPosixFilePermissions(Paths.get(config.getKmlExportConfig().getGltfOptions().getPathToConverter()), permissions);
                     } catch (IOException e) {
                         String text = Language.I18N.getString("kmlExport.dialog.error.collada2gltf.notExecutable");
                         Object[] args = new Object[]{collada2gltf.toString()};

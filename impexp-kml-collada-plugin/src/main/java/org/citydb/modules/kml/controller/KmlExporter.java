@@ -259,9 +259,10 @@ public class KmlExporter implements EventHandler {
 			}
 		}
 
-		// check collada2gltf tool
-		if (config.getKmlExportConfig().isCreateGltfModel()) {
-			Path collada2gltf = Paths.get(config.getKmlExportConfig().getPathOfGltfConverter());
+		// check gltf options
+		if (config.getKmlExportConfig().getGltfOptions().isCreateGltfModel()) {
+			// check collada2gltf converter tool
+			Path collada2gltf = Paths.get(config.getKmlExportConfig().getGltfOptions().getPathToConverter());
 			if (!collada2gltf.isAbsolute())
 				collada2gltf = ClientConstants.IMPEXP_HOME.resolve(collada2gltf);
 
@@ -269,12 +270,12 @@ public class KmlExporter implements EventHandler {
 				throw new KmlExportException("Failed to find the COLLADA2glTF tool at the provided path " + collada2gltf + ".");
 			else if (!Files.isExecutable(collada2gltf))
 				throw new KmlExportException("Failed to execute the COLLADA2glTF tool at " + collada2gltf + ".");
-		}
 
-		// check whether we have to deactivate KMZ
-		if (config.getKmlExportConfig().isCreateGltfModel() && config.getKmlExportConfig().isExportAsKmz()) {
-			log.warn("glTF export cannot be used with KMZ compression. Deactivating KMZ.");
-			config.getKmlExportConfig().setExportAsKmz(false);
+			// check whether we have to deactivate KMZ
+			if (config.getKmlExportConfig().isExportAsKmz()) {
+				log.warn("glTF export cannot be used with KMZ compression. Deactivating KMZ.");
+				config.getKmlExportConfig().setExportAsKmz(false);
+			}
 		}
 
 		// build query from filter settings

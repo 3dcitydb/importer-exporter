@@ -31,6 +31,8 @@ import net.opengis.kml._2.ViewRefreshModeEnumType;
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.kmlExporter.ColladaOptions;
+import org.citydb.config.project.kmlExporter.GltfOptions;
+import org.citydb.config.project.kmlExporter.GltfVersion;
 import org.citydb.config.project.kmlExporter.KmlExportConfig;
 import org.citydb.gui.components.common.TitledPanel;
 import org.citydb.gui.factory.PopupMenuDecorator;
@@ -42,7 +44,6 @@ import org.citydb.util.ClientConstants;
 import javax.swing.*;
 import javax.swing.text.NumberFormatter;
 import java.awt.*;
-import java.awt.event.ActionListener;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.DecimalFormat;
@@ -134,14 +135,15 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		if (scaleTexImagesCheckbox.isSelected() != colladaOptions.isScaleImages()) return true;
 		if (((Number) scaleFactorSpinner.getValue()).doubleValue() != colladaOptions.getImageScaleFactor()) return true;
 
-		if (createGltfCheckbox.isSelected() != kmlExportConfig.isCreateGltfModel()) return true;
-		if (!gltfConverterBrowseText.getText().equals(kmlExportConfig.getPathOfGltfConverter())) return true;
-		if (notCreateColladaCheckbox.isSelected() != kmlExportConfig.isNotCreateColladaFiles()) return true;
-		if (embedTexturesInGltfCheckbox.isSelected() != kmlExportConfig.isEmbedTexturesInGltfFiles()) return true;
-		if (exportGltfBinary.isSelected() != kmlExportConfig.isExportGltfBinary()) return true;
-		if (exportGltfV1.isSelected() != kmlExportConfig.isExportGltfV1()) return true;
-		if (exportGltfV2.isSelected() != kmlExportConfig.isExportGltfV2()) return true;
-		if (enableGltfDracoCompression.isSelected() != kmlExportConfig.isEnableGltfDracoCompression()) return true;
+		GltfOptions gltfOptions = kmlExportConfig.getGltfOptions();
+		if (createGltfCheckbox.isSelected() != gltfOptions.isCreateGltfModel()) return true;
+		if (!gltfConverterBrowseText.getText().equals(gltfOptions.getPathToConverter())) return true;
+		if (notCreateColladaCheckbox.isSelected() != gltfOptions.isRemoveColladaFiles()) return true;
+		if (embedTexturesInGltfCheckbox.isSelected() != gltfOptions.isEmbedTextures()) return true;
+		if (exportGltfBinary.isSelected() != gltfOptions.isUseBinaryGltf()) return true;
+		if (exportGltfV1.isSelected() && gltfOptions.getGltfVersion() != GltfVersion.v1_0) return true;
+		if (exportGltfV2.isSelected() && gltfOptions.getGltfVersion() != GltfVersion.v2_0) return true;
+		if (enableGltfDracoCompression.isSelected() != gltfOptions.isUseDracoCompression()) return true;
 
 		if (oneObjectPerRegion.isSelected() != kmlExportConfig.isOneFilePerObject()) return true;
 		if (!viewRefreshMode.getSelectedItem().equals(kmlExportConfig.getViewRefreshMode())) return true;
@@ -425,14 +427,15 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		groupObjectsCheckbox.setSelected(colladaOptions.isGroupObjects());
 		groupSizeText.setValue(colladaOptions.getGroupSize());
 
-		createGltfCheckbox.setSelected(kmlExportConfig.isCreateGltfModel());
-		gltfConverterBrowseText.setText(kmlExportConfig.getPathOfGltfConverter());
-		notCreateColladaCheckbox.setSelected(kmlExportConfig.isNotCreateColladaFiles());
-		embedTexturesInGltfCheckbox.setSelected(kmlExportConfig.isEmbedTexturesInGltfFiles());
-		exportGltfBinary.setSelected(kmlExportConfig.isExportGltfBinary());
-		exportGltfV1.setSelected(kmlExportConfig.isExportGltfV1());
-		exportGltfV2.setSelected(kmlExportConfig.isExportGltfV2());
-		enableGltfDracoCompression.setSelected(kmlExportConfig.isEnableGltfDracoCompression());
+		GltfOptions gltfOptions = kmlExportConfig.getGltfOptions();
+		createGltfCheckbox.setSelected(gltfOptions.isCreateGltfModel());
+		gltfConverterBrowseText.setText(gltfOptions.getPathToConverter());
+		notCreateColladaCheckbox.setSelected(gltfOptions.isRemoveColladaFiles());
+		embedTexturesInGltfCheckbox.setSelected(gltfOptions.isEmbedTextures());
+		exportGltfBinary.setSelected(gltfOptions.isUseBinaryGltf());
+		exportGltfV1.setSelected(gltfOptions.getGltfVersion() == GltfVersion.v1_0);
+		exportGltfV2.setSelected(gltfOptions.getGltfVersion() == GltfVersion.v2_0);
+		enableGltfDracoCompression.setSelected(gltfOptions.isUseDracoCompression());
 
 		oneObjectPerRegion.setSelected(kmlExportConfig.isOneFilePerObject());
 		viewRefreshMode.setSelectedItem(kmlExportConfig.getViewRefreshMode());
@@ -464,14 +467,14 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		colladaOptions.setGroupObjects(groupObjectsCheckbox.isSelected());
 		colladaOptions.setGroupSize(((Number) groupSizeText.getValue()).intValue());
 
-		kmlExportConfig.setCreateGltfModel(createGltfCheckbox.isSelected());
-		kmlExportConfig.setPathOfGltfConverter(gltfConverterBrowseText.getText());
-		kmlExportConfig.setNotCreateColladaFiles(notCreateColladaCheckbox.isSelected());
-		kmlExportConfig.setEmbedTexturesInGltfFiles(embedTexturesInGltfCheckbox.isSelected());
-		kmlExportConfig.setExportGltfBinary(exportGltfBinary.isSelected());
-		kmlExportConfig.setExportGltfV1(exportGltfV1.isSelected());
-		kmlExportConfig.setExportGltfV2(exportGltfV2.isSelected());
-		kmlExportConfig.setEnableGltfDracoCompression(enableGltfDracoCompression.isSelected());
+		GltfOptions gltfOptions = kmlExportConfig.getGltfOptions();
+		gltfOptions.setCreateGltfModel(createGltfCheckbox.isSelected());
+		gltfOptions.setPathToConverter(gltfConverterBrowseText.getText());
+		gltfOptions.setRemoveColladaFiles(notCreateColladaCheckbox.isSelected());
+		gltfOptions.setEmbedTextures(embedTexturesInGltfCheckbox.isSelected());
+		gltfOptions.setUseBinaryGltf(exportGltfBinary.isSelected());
+		gltfOptions.setGltfVersion(exportGltfV1.isSelected() ? GltfVersion.v1_0 : GltfVersion.v2_0);
+		gltfOptions.setUseDracoCompression(enableGltfDracoCompression.isSelected());
 
 		kmlExportConfig.setOneFilePerObject(oneObjectPerRegion.isSelected());
 		kmlExportConfig.setViewRefreshMode(viewRefreshMode.getSelectedItem().toString());
