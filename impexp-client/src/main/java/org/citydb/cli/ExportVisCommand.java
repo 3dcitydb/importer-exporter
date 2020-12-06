@@ -28,6 +28,7 @@
 
 package org.citydb.cli;
 
+import org.citydb.cli.options.vis.ColladaOption;
 import org.citydb.cli.options.vis.DisplayOption;
 import org.citydb.cli.options.vis.ElevationOption;
 import org.citydb.cli.options.vis.GltfOption;
@@ -74,6 +75,9 @@ public class ExportVisCommand extends CliCommand {
     @CommandLine.ArgGroup(exclusive = false, heading = "Query and filter options:%n")
     private QueryOption queryOption;
 
+    @CommandLine.ArgGroup(exclusive = false, heading = "COLLADA/glTF rendering options:%n")
+    private final ColladaOption colladaOption = new ColladaOption();
+
     @CommandLine.ArgGroup(exclusive = false, heading = "glTF export options:%n")
     private GltfOption gltfOption;
 
@@ -110,6 +114,9 @@ public class ExportVisCommand extends CliCommand {
         if (queryOption != null) {
             config.getKmlExportConfig().setQuery(queryOption.toSimpleKmlQuery());
         }
+
+        // set COLLADA/glTF rendering options
+        config.getKmlExportConfig().setColladaOptions(colladaOption.toColladaOptions());
 
         // set glTF options
         if (gltfOption != null) {
