@@ -30,6 +30,7 @@ package org.citydb.config.project.kmlExporter;
 import org.citydb.config.project.common.Path;
 import org.citydb.config.project.resources.Resources;
 
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
@@ -87,6 +88,7 @@ public class KmlExportConfig {
     private SimpleKmlQuery query;
     private Path path;
     private int lodToExportFrom;
+    @XmlElement(required = true)
     @XmlJavaTypeAdapter(DisplayFormsAdapter.class)
     private DisplayForms displayForms;
     private ColladaOptions colladaOptions;

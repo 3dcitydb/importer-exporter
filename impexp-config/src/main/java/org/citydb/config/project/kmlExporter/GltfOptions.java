@@ -102,7 +102,7 @@ public class GltfOptions {
     }
 
     public boolean isEmbedTextures() {
-        return embedTextures != null ? embedTextures : false;
+        return embedTextures != null ? embedTextures : true;
     }
 
     public void setEmbedTextures(boolean embedTextures) {
@@ -118,7 +118,7 @@ public class GltfOptions {
     }
 
     public boolean isUseDracoCompression() {
-        return useDracoCompression != null ? useDracoCompression : false;
+        return useDracoCompression != null ? useDracoCompression : true;
     }
 
     public void setUseDracoCompression(boolean useDracoCompression) {

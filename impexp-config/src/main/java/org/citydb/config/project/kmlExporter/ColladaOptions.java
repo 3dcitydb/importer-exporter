@@ -75,7 +75,7 @@ public class ColladaOptions {
     }
 
     public boolean isGenerateSurfaceNormals() {
-        return generateSurfaceNormals != null ? generateSurfaceNormals : false;
+        return generateSurfaceNormals != null ? generateSurfaceNormals : true;
     }
 
     public void setCropImages(boolean cropImages) {
@@ -91,7 +91,7 @@ public class ColladaOptions {
     }
 
     public boolean isGenerateTextureAtlases() {
-        return generateTextureAtlases != null ? generateTextureAtlases : false;
+        return generateTextureAtlases != null ? generateTextureAtlases : true;
     }
 
     public void setPackingAlgorithm(int packingAlgorithm) {
@@ -99,7 +99,7 @@ public class ColladaOptions {
     }
 
     public int getPackingAlgorithm() {
-        return packingAlgorithm;
+        return packingAlgorithm != null ? packingAlgorithm : 1;
     }
 
     public void setTextureAtlasPots(boolean textureAtlasPots) {
@@ -107,7 +107,7 @@ public class ColladaOptions {
     }
 
     public boolean isTextureAtlasPots() {
-        return textureAtlasPots != null ? textureAtlasPots : false;
+        return textureAtlasPots != null ? textureAtlasPots : true;
     }
 
     public void setScaleImages(boolean scaleImages) {

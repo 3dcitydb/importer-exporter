@@ -86,7 +86,7 @@ public class Elevation {
     }
 
     public boolean isUseOriginalZCoords() {
-        return useOriginalZCoords != null ? useOriginalZCoords : false;
+        return useOriginalZCoords != null ? useOriginalZCoords : true;
     }
 
     public void setUseOriginalZCoords(boolean useOriginalZCoords) {
