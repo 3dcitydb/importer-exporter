@@ -205,12 +205,11 @@ public class ADEInfoDialog extends JDialog {
                         AppSchema tmp = rootSchema.getSchema(namespace.getURI());
 
                         String prefix;
-                        if (tmp != null)
+                        if (tmp != null) {
                             prefix = tmp.getXMLPrefix();
-                        else {
-                            if (!appSchema.isSetXMLPrefix())
-                                appSchema.generateXMLPrefix();
-
+                        } else if (!appSchema.isSetXMLPrefix() || appSchema.isGeneratedXMLPrefix()) {
+                            prefix = "n/a";
+                        } else {
                             prefix = appSchema.getXMLPrefix();
                         }
 
