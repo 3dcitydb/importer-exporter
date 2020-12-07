@@ -52,8 +52,8 @@ public class ColladaOption implements CliOption {
             description = "Texture atlas mode: ${COMPLETION-CANDIDATES} (default: ${DEFAULT-VALUE}).")
     private Mode textureAtlas;
 
-    @CommandLine.Option(names = "--texture-atlas-pot",
-            description = "Texture atlases must be power-of-two sized.")
+    @CommandLine.Option(names = "--no-pot-atlases", defaultValue = "true",
+            description = "Do not create power-of-two sized texture atlases.")
     private boolean requirePot;
 
     public ColladaOptions toColladaOptions() {
@@ -79,13 +79,5 @@ public class ColladaOption implements CliOption {
         }
 
         return colladaOptions;
-    }
-
-    @Override
-    public void preprocess(CommandLine commandLine) throws Exception {
-        if (requirePot && textureAtlas == Mode.none) {
-            throw new CommandLine.ParameterException(commandLine,
-                    "Error: --texture-atlas-pot requires texture atlases to be created");
-        }
     }
 }
