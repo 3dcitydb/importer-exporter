@@ -685,7 +685,7 @@ public class KmlExporterManager implements ADEKmlExportHelper {
 			if (gltfOptions.isUseBinaryGltf()) {
 				commands.add("-b");
 			}
-			// only use Draco compressions with gltF 1.0
+			// only use Draco compressions with gltF 2.0
 			if (gltfOptions.getGltfVersion() == GltfVersion.v2_0 && gltfOptions.isUseDracoCompression()) {
 				commands.add("-d");
 			}
