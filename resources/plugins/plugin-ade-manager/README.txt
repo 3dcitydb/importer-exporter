@@ -1,6 +1,6 @@
 ﻿3D City Database Importer/Exporter ADE Manager Plugin
 
-Version 1.1.4-SNAPSHOT (2020-08-31)
+Version 1.2.0-SNAPSHOT (2020-12-07)
 
   This software is free software and is distributed on an "AS IS" BASIS,
   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -62,7 +62,7 @@ previous or later version of the 3D City Database Importer/Exporter.
 -------------------
 
 The plugin is shipped as a precompiled and ready-to-use ZIP package
-called "plugin-ade-manager-1.1.4-SNAPSHOT.zip".
+called "plugin-ade-manager-1.2.0-SNAPSHOT.zip".
 
 The following simple steps will guide you through the install process:
 * Open the installation directory of your local installation of the
@@ -70,12 +70,12 @@ The following simple steps will guide you through the install process:
 * Open the "plugins" subfolder. If it is not available, create a new
   subfolder and name it "plugins".
 * Extract the downloaded ZIP file in the plugins folder. As a result a new
-  folder named "plugin-ade-manager-1.1.4-SNAPSHOT" will be created. This
+  folder named "plugin-ade-manager-1.2.0-SNAPSHOT" will be created. This
   folder will contain all required files and subfolders.
 * Run the 3D City Database Importer/Exporter.
 
 If you want to uninstall the ADE Manager Plugin, simply delete
-the "plugin-ade-manager-1.1.4-SNAPSHOT" subfolder and all its contents.
+the "plugin-ade-manager-1.2.0-SNAPSHOT" subfolder and all its contents.
 
 
 6. Developers
