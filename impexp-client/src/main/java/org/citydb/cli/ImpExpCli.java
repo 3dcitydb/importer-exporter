@@ -425,7 +425,7 @@ public class ImpExpCli extends CliCommand implements CommandLine.IVersionProvide
 
     private void initializeEnvironment(Config config)  {
         // create application-wide event dispatcher
-        EventDispatcher eventDispatcher = new EventDispatcher();
+        EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
         eventDispatcher.addEventHandler(EventType.DATABASE_CONNECTION_STATE, IllegalEventSourceChecker.getInstance());
         eventDispatcher.addEventHandler(EventType.SWITCH_LOCALE, IllegalEventSourceChecker.getInstance());
 

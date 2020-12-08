@@ -12,7 +12,7 @@ ext {
     citydbShortName = '3DCityDB'
     citydbName = '3D City Database'
     citydbVersion = '4.0.x'
-    citydbWebsiteUrl = 'http://www.3dcitydb.org'
+    citydbWebsiteUrl = 'https://www.3dcitydb.org'
     citydbVcsUrl = 'https://github.com/3dcitydb'
 
     // Importer/Exporter

@@ -48,7 +48,7 @@ public class BoundingBoxOption implements CliOption {
             description = "Bounding box filter mode: ${COMPLETION-CANDIDATES} (default: ${DEFAULT-VALUE}).")
     private Mode mode;
 
-    @CommandLine.Option(names = "--bbox-tiling", paramLabel = "<rows,columns>",
+    @CommandLine.Option(names = {"-g", "--bbox-tiling"}, paramLabel = "<rows,columns>",
             description = "Tile the bounding box into a rows x columns grid.")
     private String tiling;
 

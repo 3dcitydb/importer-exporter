@@ -65,7 +65,7 @@ public class SplashScreen extends JWindow {
 
 		Component placeholder = Box.createVerticalStrut(progressBar.getPreferredSize().height);
 
-		dynamicContent.add(message, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.HORIZONTAL, top, left, 0, 5));
+		dynamicContent.add(message, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.NORTH, GridBagConstraints.HORIZONTAL, top, left, 0, 5));
 		dynamicContent.add(placeholder, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.SOUTH, GridBagConstraints.HORIZONTAL, 0, 0, 0, 0));
 		dynamicContent.add(progressBar, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.SOUTH, GridBagConstraints.HORIZONTAL, 0, 0, 0, 0));
 		

@@ -123,14 +123,6 @@ public class ObjectRegistry {
 		return databaseController;
 	}
 
-	public void setDatabaseController(DatabaseController databaseController) {
-		if (this.databaseController != null) {
-			throw new IllegalArgumentException("Database controller is already registered with the object registry.");
-		}
-
-		this.databaseController = databaseController;
-	}
-
 	public CityGMLBuilder getCityGMLBuilder() {
 		return cityGMLBuilder;
 	}

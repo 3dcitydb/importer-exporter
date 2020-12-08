@@ -93,10 +93,8 @@ application {
             def unixScript = getUnixScript()
             windowsScript.text = windowsScript.text
                     .replaceFirst('set APP_HOME=.*', '$0\r\nset WORKING_DIR=%CD%')
-                    .replaceAll('3_D_CITY_DB_', '')
             unixScript.text = unixScript.text
                     .replaceFirst('APP_HOME=.*', '$0\nexport APP_HOME\nexport WORKING_DIR=\\$SAVED')
-                    .replaceAll('3_D_CITY_DB_', '')
         }
     }
 }
