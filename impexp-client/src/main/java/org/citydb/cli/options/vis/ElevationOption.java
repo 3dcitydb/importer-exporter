@@ -40,8 +40,8 @@ public class ElevationOption implements CliOption {
     private Mode mode;
 
     @CommandLine.Option(names = {"-O", "--altitude-offset"}, paramLabel = "<number|globe|generic>",
-            description = "Apply offset to height values. Provide a <number> as constant offset, <globe> for zero " +
-                    "elevation or <generic> to use the generic attribute GE_LoDn_zOffset as per-feature offset.")
+            description = "Apply offset to height values. Provide a number as constant offset, 'globe' for zero " +
+                    "elevation or 'generic' to use the generic attribute GE_LoDn_zOffset as per-feature offset.")
     private String offsetOption;
 
     @CommandLine.Option(names = "--google-elevation-api", paramLabel = "<api-key>",
