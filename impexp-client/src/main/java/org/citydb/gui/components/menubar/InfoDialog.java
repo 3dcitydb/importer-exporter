@@ -42,6 +42,7 @@ import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.net.URI;
 import java.text.MessageFormat;
+import java.time.LocalDate;
 
 public class InfoDialog extends JDialog {
 	private final Config config;
@@ -106,7 +107,7 @@ public class InfoDialog extends JDialog {
 				"Chair of Geoinformatics,\nTechnical University of Munich, Germany" :
 				"Lehrstuhl für Geoinformatik,\nTechnische Universität München, Deutschland";
 
-		JTextArea copyright = createTextArea("(C) 2013 - 2020\n" +
+		JTextArea copyright = createTextArea("(C) 2013 - " + LocalDate.now().getYear() + "\n" +
 				tum + "\n" +
 				"https://www.lrg.tum.de/gis\n\n" +
 				"This program is free software and licensed under the\n" +
