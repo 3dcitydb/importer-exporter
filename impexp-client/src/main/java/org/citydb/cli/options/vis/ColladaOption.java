@@ -48,6 +48,10 @@ public class ColladaOption implements CliOption {
             description = "Crop texture images.")
     private boolean cropTextures;
 
+    @CommandLine.Option(names = {"-f", "--texture-scale-factor"}, paramLabel = "<0..1>", defaultValue = "1.0",
+            description = "Scale texture images by the given factor (default: ${DEFAULT-VALUE}).")
+    private double scaleFactor;
+
     @CommandLine.Option(names = {"-x", "--texture-atlas"}, paramLabel = "<mode>", defaultValue = "basic",
             description = "Texture atlas mode: ${COMPLETION-CANDIDATES} (default: ${DEFAULT-VALUE}).")
     private Mode textureAtlas;
@@ -61,6 +65,12 @@ public class ColladaOption implements CliOption {
         colladaOptions.setIgnoreSurfaceOrientation(doubleSided);
         colladaOptions.setGenerateSurfaceNormals(surfaceNormals);
         colladaOptions.setCropImages(cropTextures);
+
+        colladaOptions.setScaleImages(scaleFactor != 1);
+        if (scaleFactor != 1) {
+            colladaOptions.setImageScaleFactor(scaleFactor);
+        }
+
         colladaOptions.setGenerateTextureAtlases(textureAtlas != Mode.none);
         if (textureAtlas != Mode.none) {
             switch (textureAtlas) {
@@ -79,5 +89,13 @@ public class ColladaOption implements CliOption {
         }
 
         return colladaOptions;
+    }
+
+    @Override
+    public void preprocess(CommandLine commandLine) throws Exception {
+        if (scaleFactor < 0 || scaleFactor > 1) {
+            throw new CommandLine.ParameterException(commandLine, "Error: The texture scale factor " +
+                    "must be a number within 0 and 1 but was '" + scaleFactor + "'");
+        }
     }
 }
