@@ -198,7 +198,6 @@ public class KmlExportPanel extends JPanel implements EventHandler {
         format.setMinimum(0);
         format.setMaximum(9999999);
         tileSizeText = new JFormattedTextField(format);
-
         columnsText = new JFormattedTextField(format);
         rowsText = new JFormattedTextField(format);
 

@@ -80,13 +80,19 @@ public class BoundingBoxOption implements CliOption {
                 }
 
                 try {
+                    int rows = Integer.parseInt(numbers[0]);
+                    int columns = Integer.parseInt(numbers[1]);
+                    if (rows <= 0 || columns <= 0) {
+                        throw new NumberFormatException();
+                    }
+
                     tilingOperator = new Tiling();
                     tilingOperator.setExtent(envelope);
-                    tilingOperator.setRows(Integer.parseInt(numbers[0]));
-                    tilingOperator.setColumns(Integer.parseInt(numbers[1]));
+                    tilingOperator.setRows(rows);
+                    tilingOperator.setColumns(columns);
                 } catch (NumberFormatException e) {
                     throw new CommandLine.ParameterException(commandLine,
-                            "Error: The number of rows and columns for tiling must be integers but were '" +
+                            "Error: The number of rows and columns for tiling must be positive integers but were '" +
                                     String.join(",", numbers) + "'");
                 }
             } else if (mode == Mode.within) {

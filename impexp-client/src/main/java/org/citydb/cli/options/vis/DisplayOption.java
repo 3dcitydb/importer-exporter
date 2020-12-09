@@ -129,8 +129,7 @@ public class DisplayOption implements CliOption {
                     try {
                         visibility = Integer.parseInt(items[1]);
                         if (visibility < 0) {
-                            throw new CommandLine.ParameterException(commandLine, "Error: The number of visibility pixels " +
-                                    "for a display mode must be a non-negative integer but was '" + items[1] + "'");
+                            throw new NumberFormatException();
                         }
                     } catch (NumberFormatException e) {
                         throw new CommandLine.ParameterException(commandLine, "Error: The number of visibility pixels " +

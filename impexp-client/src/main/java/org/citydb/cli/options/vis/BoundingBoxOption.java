@@ -31,17 +31,22 @@ package org.citydb.cli.options.vis;
 import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.project.kmlExporter.KmlTiling;
 import org.citydb.config.project.kmlExporter.KmlTilingMode;
+import org.citydb.config.project.kmlExporter.KmlTilingOptions;
 import org.citydb.plugin.cli.CliOption;
 import org.citydb.plugin.cli.CliOptionBuilder;
 import picocli.CommandLine;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class BoundingBoxOption implements CliOption {
     @CommandLine.Option(names = {"-b", "--bbox"}, paramLabel = "<minx,miny,maxx,maxy[,srid]>", required = true,
             description = "Bounding box to use as spatial filter.")
     private String bbox;
 
-    @CommandLine.Option(names = {"-g", "--bbox-tiling"}, paramLabel = "<rows,columns | auto>",
-            description = "Tile the bounding box into a rows x columns grid or automatically.")
+    @CommandLine.Option(names = {"-g", "--bbox-tiling"}, paramLabel = "<rows,columns | auto[=length]>",
+            description = "Tile the bounding box into a rows x columns grid or use 'auto' to create tiles with a " +
+                    "fixed side length. Optionally specify the side length in meters (default: 125).")
     private String tiling;
 
     private KmlTiling kmlTiling;
@@ -58,25 +63,50 @@ public class BoundingBoxOption implements CliOption {
             kmlTiling.setExtent(envelope);
 
             if (tiling != null) {
-                if ("auto".equalsIgnoreCase(tiling)) {
-                    kmlTiling.setMode(KmlTilingMode.AUTOMATIC);
-                } else {
-                    String[] numbers = tiling.split(",");
-                    if (numbers.length != 2) {
-                        throw new CommandLine.ParameterException(commandLine,
-                                "Error: The value for '--bbox-tiling' must be in ROWS,COLUMNS format or 'auto' " +
-                                        "but was '" + tiling + "'");
-                    }
+                Pattern pattern = Pattern.compile("^(.+,.+)|(auto(?:=.+)?)$", Pattern.CASE_INSENSITIVE);
+                Matcher matcher = pattern.matcher(tiling);
+                if (matcher.matches()) {
+                    if (matcher.group(2) != null) {
+                        kmlTiling.setMode(KmlTilingMode.AUTOMATIC);
+                        String[] tokens = tiling.split("=");
+                        if (tokens.length == 2) {
+                            try {
+                                double length = Double.parseDouble(tokens[1]);
+                                if (length <= 0) {
+                                    throw new NumberFormatException();
+                                }
 
-                    try {
+                                KmlTilingOptions tilingOptions = new KmlTilingOptions();
+                                tilingOptions.setAutoTileSideLength(length);
+                                kmlTiling.setTilingOptions(tilingOptions);
+                            } catch (NumberFormatException e) {
+                                throw new CommandLine.ParameterException(commandLine,
+                                        "Error: The side length for automatic tiling must be a positive number " +
+                                                "but was '" + tokens[1] + "'");
+                            }
+                        }
+                    } else {
                         kmlTiling.setMode(KmlTilingMode.MANUAL);
-                        kmlTiling.setRows(Integer.parseInt(numbers[0]));
-                        kmlTiling.setColumns(Integer.parseInt(numbers[1]));
-                    } catch (NumberFormatException e) {
-                        throw new CommandLine.ParameterException(commandLine,
-                                "Error: The number of rows and columns for tiling must be integers but were '" +
-                                        String.join(",", numbers) + "'");
+                        String[] numbers = tiling.split(",");
+                        try {
+                            int rows = Integer.parseInt(numbers[0]);
+                            int columns = Integer.parseInt(numbers[1]);
+                            if (rows <= 0 || columns <= 0) {
+                                throw new NumberFormatException();
+                            }
+
+                            kmlTiling.setRows(rows);
+                            kmlTiling.setColumns(columns);
+                        } catch (NumberFormatException e) {
+                            throw new CommandLine.ParameterException(commandLine,
+                                    "Error: The number of rows and columns for tiling must be positive integers but were '" +
+                                            String.join(",", numbers) + "'");
+                        }
                     }
+                } else {
+                    throw new CommandLine.ParameterException(commandLine,
+                            "Error: The value for '--bbox-tiling' must be in ROWS,COLUMNS or AUTO[=LENGTH] format " +
+                                    "but was '" + tiling + "'");
                 }
             } else {
                 kmlTiling.setMode(KmlTilingMode.NO_TILING);
