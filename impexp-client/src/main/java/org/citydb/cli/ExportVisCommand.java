@@ -28,7 +28,9 @@
 
 package org.citydb.cli;
 
+import org.citydb.cli.options.vis.ColladaOption;
 import org.citydb.cli.options.vis.DisplayOption;
+import org.citydb.cli.options.vis.ElevationOption;
 import org.citydb.cli.options.vis.GltfOption;
 import org.citydb.cli.options.vis.QueryOption;
 import org.citydb.config.Config;
@@ -73,8 +75,14 @@ public class ExportVisCommand extends CliCommand {
     @CommandLine.ArgGroup(exclusive = false, heading = "Query and filter options:%n")
     private QueryOption queryOption;
 
+    @CommandLine.ArgGroup(exclusive = false, heading = "COLLADA/glTF rendering options:%n")
+    private final ColladaOption colladaOption = new ColladaOption();
+
     @CommandLine.ArgGroup(exclusive = false, heading = "glTF export options:%n")
     private GltfOption gltfOption;
+
+    @CommandLine.ArgGroup(exclusive = false, heading = "Elevation options:%n")
+    private final ElevationOption elevationOption = new ElevationOption();
 
     @CommandLine.ArgGroup(exclusive = false, heading = "Database connection options:%n")
     private DatabaseOption databaseOption;
@@ -107,8 +115,16 @@ public class ExportVisCommand extends CliCommand {
             config.getKmlExportConfig().setQuery(queryOption.toSimpleKmlQuery());
         }
 
+        // set COLLADA/glTF rendering options
+        config.getKmlExportConfig().setColladaOptions(colladaOption.toColladaOptions());
+
         // set glTF options
-        setGltfOptions(config.getKmlExportConfig());
+        if (gltfOption != null) {
+            config.getKmlExportConfig().setGltfOptions(gltfOption.toGltfOptions());
+        }
+
+        // set elevation options
+        setElevationOptions(config);
 
         try {
             new KmlExporter().doExport(file);
@@ -146,19 +162,9 @@ public class ExportVisCommand extends CliCommand {
         }
     }
 
-    private void setGltfOptions(KmlExportConfig kmlExportConfig) {
-        if (gltfOption != null) {
-            kmlExportConfig.setCreateGltfModel(true);
-            kmlExportConfig.setNotCreateColladaFiles(gltfOption.isSuppressCollada());
-
-            if (gltfOption.getConverterPath() != null) {
-                kmlExportConfig.setPathOfGltfConverter(gltfOption.getConverterPath().toAbsolutePath().toString());
-            }
-
-            if (gltfOption.getOptions() != null) {
-                kmlExportConfig.setGltfConverterOptions(gltfOption.getOptions());
-            }
-        }
+    private void setElevationOptions(Config config) {
+        config.getKmlExportConfig().setElevation(elevationOption.toElevation());
+        config.getGlobalConfig().getApiKeys().setGoogleElevation(elevationOption.getGoogleApiKey());
     }
 
     @Override
@@ -166,6 +172,13 @@ public class ExportVisCommand extends CliCommand {
         if (gltfOption != null && exportAsKmz) {
             throw new CommandLine.ParameterException(commandLine,
                     "Error: --gltf and --kmz are mutually exclusive (specify only one)");
+        }
+
+        if (gltfOption != null
+                && (displayOption == null
+                || !displayOption.getModes().contains(DisplayOption.Mode.collada))) {
+            throw new CommandLine.ParameterException(commandLine,
+                    "Error: --gltf requires the data to be exported as COLLADA");
         }
     }
 }

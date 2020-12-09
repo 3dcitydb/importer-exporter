@@ -296,7 +296,7 @@ public class Transportation extends KmlGenericObject{
 						}
 					}
 					
-					switch (config.getKmlExportConfig().getAltitudeMode()) {
+					switch (config.getKmlExportConfig().getElevation().getAltitudeMode()) {
 					case ABSOLUTE:
 						lineString.setAltitudeModeGroup(kmlFactory.createAltitudeMode(AltitudeModeEnumType.ABSOLUTE));
 						break;

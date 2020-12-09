@@ -29,7 +29,7 @@ package org.citydb.config.project.kmlExporter;
 
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name = "ColladaOptions", propOrder = {
+@XmlType(name = "ColladaOptionsType", propOrder = {
         "ignoreSurfaceOrientation",
         "generateSurfaceNormals",
         "cropImages",
@@ -42,27 +42,23 @@ import javax.xml.bind.annotation.XmlType;
         "groupSize"
 })
 public class ColladaOptions {
-    private boolean ignoreSurfaceOrientation;
-    private boolean generateSurfaceNormals;
-    private boolean cropImages;
-    private boolean generateTextureAtlases;
-    private int packingAlgorithm;
-    private boolean textureAtlasPots;
-    private boolean scaleImages;
-    private double imageScaleFactor;
-    private boolean groupObjects;
-    private int groupSize;
+    private Boolean ignoreSurfaceOrientation;
+    private Boolean generateSurfaceNormals;
+    private Boolean cropImages;
+    private Boolean generateTextureAtlases;
+    private Integer packingAlgorithm;
+    private Boolean textureAtlasPots;
+    private Boolean scaleImages;
+    private Double imageScaleFactor;
+    private Boolean groupObjects;
+    private Integer groupSize;
 
     public ColladaOptions() {
-        ignoreSurfaceOrientation = false;
         generateSurfaceNormals = true;
-        cropImages = false;
         generateTextureAtlases = true;
         packingAlgorithm = 1; // TextureAtlasGenerator.TPIM
         textureAtlasPots = true;
-        scaleImages = false;
         imageScaleFactor = 1.0;
-        groupObjects = false;
         groupSize = 1;
     }
 
@@ -71,7 +67,7 @@ public class ColladaOptions {
     }
 
     public boolean isIgnoreSurfaceOrientation() {
-        return ignoreSurfaceOrientation;
+        return ignoreSurfaceOrientation != null ? ignoreSurfaceOrientation : false;
     }
 
     public void setGenerateSurfaceNormals(boolean generateSurfaceNormals) {
@@ -79,7 +75,7 @@ public class ColladaOptions {
     }
 
     public boolean isGenerateSurfaceNormals() {
-        return generateSurfaceNormals;
+        return generateSurfaceNormals != null ? generateSurfaceNormals : true;
     }
 
     public void setCropImages(boolean cropImages) {
@@ -87,7 +83,7 @@ public class ColladaOptions {
     }
 
     public boolean isCropImages() {
-        return cropImages;
+        return cropImages != null ? cropImages : false;
     }
 
     public void setGenerateTextureAtlases(boolean generateTextureAtlases) {
@@ -95,7 +91,7 @@ public class ColladaOptions {
     }
 
     public boolean isGenerateTextureAtlases() {
-        return generateTextureAtlases;
+        return generateTextureAtlases != null ? generateTextureAtlases : true;
     }
 
     public void setPackingAlgorithm(int packingAlgorithm) {
@@ -103,7 +99,7 @@ public class ColladaOptions {
     }
 
     public int getPackingAlgorithm() {
-        return packingAlgorithm;
+        return packingAlgorithm != null ? packingAlgorithm : 1;
     }
 
     public void setTextureAtlasPots(boolean textureAtlasPots) {
@@ -111,7 +107,7 @@ public class ColladaOptions {
     }
 
     public boolean isTextureAtlasPots() {
-        return textureAtlasPots;
+        return textureAtlasPots != null ? textureAtlasPots : true;
     }
 
     public void setScaleImages(boolean scaleImages) {
@@ -119,15 +115,17 @@ public class ColladaOptions {
     }
 
     public boolean isScaleImages() {
-        return scaleImages;
+        return scaleImages != null ? scaleImages : false;
     }
 
     public void setImageScaleFactor(double imageScaleFactor) {
-        this.imageScaleFactor = imageScaleFactor;
+        if (imageScaleFactor >= 0 && imageScaleFactor <= 1) {
+            this.imageScaleFactor = imageScaleFactor;
+        }
     }
 
     public double getImageScaleFactor() {
-        return imageScaleFactor;
+        return imageScaleFactor != null ? imageScaleFactor : 1.0;
     }
 
     public void setGroupObjects(boolean groupObjects) {
@@ -135,14 +133,16 @@ public class ColladaOptions {
     }
 
     public boolean isGroupObjects() {
-        return groupObjects;
+        return groupObjects != null ? groupObjects : false;
     }
 
     public void setGroupSize(int groupSize) {
-        this.groupSize = groupSize;
+        if (groupSize > 0) {
+            this.groupSize = groupSize;
+        }
     }
 
     public int getGroupSize() {
-        return groupSize;
+        return groupSize != null ? groupSize : 1;
     }
 }
