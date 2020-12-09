@@ -129,7 +129,6 @@ public class MapWindow extends JDialog implements EventHandler {
 	private JFormattedTextField maxX;
 	private JFormattedTextField maxY;
 
-	private JButton goButton;
 	private JButton applyButton;
 	private JButton cancelButton;
 	private JButton copyBBox;
@@ -218,7 +217,7 @@ public class MapWindow extends JDialog implements EventHandler {
 		// top components
 		top.setLayout(new GridBagLayout());
 
-		goButton = new JButton(new FlatSVGIcon("org/citydb/gui/icons/search.svg"));
+		JButton goButton = new JButton(new FlatSVGIcon("org/citydb/gui/icons/search.svg"));
 		searchBox = new JComboBox<>();
 		searchResult = new JLabel();
 		searchResult.setPreferredSize(new Dimension(searchResult.getPreferredSize().width, loadIcon.getIconHeight()));
