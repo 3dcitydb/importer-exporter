@@ -58,11 +58,11 @@ public class GltfOptions {
         pathToConverter = "contribs" + File.separator + "collada2gltf";
         String osName = System.getProperty("os.name").toLowerCase(Locale.ENGLISH);
         if (osName.contains("windows"))
-            pathToConverter += File.separator + "COLLADA2GLTF-v2.1.3-windows-Release-x64" + File.separator + "COLLADA2GLTF-bin.exe";
+            pathToConverter += File.separator + "COLLADA2GLTF-v2.1.4-windows-Release-x64" + File.separator + "COLLADA2GLTF-bin.exe";
         else if (osName.contains("mac"))
-            pathToConverter += File.separator + "COLLADA2GLTF-v2.1.3-osx" + File.separator + "COLLADA2GLTF-bin";
+            pathToConverter += File.separator + "COLLADA2GLTF-v2.1.4-osx" + File.separator + "COLLADA2GLTF-bin";
         else if (osName.contains("nux"))
-            pathToConverter += File.separator + "COLLADA2GLTF-v2.1.3-linux" + File.separator + "COLLADA2GLTF-bin";
+            pathToConverter += File.separator + "COLLADA2GLTF-v2.1.4-linux" + File.separator + "COLLADA2GLTF-bin";
     }
 
     public boolean isCreateGltfModel() {

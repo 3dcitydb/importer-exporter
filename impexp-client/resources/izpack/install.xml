@@ -111,9 +111,9 @@
             <file src="@installDir@/@cliDir@/@cliName@.bat" targetdir="$INSTALL_PATH/@cliDir@" os="windows" override="true"/>
             <file src="@installDir@/@cliDir@/@cliName@" targetdir="$INSTALL_PATH/@cliDir@" os="unix" override="true"/>
             <fileset dir="@installDir@/@templatesDir@" targetdir="$INSTALL_PATH/@templatesDir@" override="true"/>
-            <fileset dir="@installDir@/@contribsDir@/collada2gltf/COLLADA2GLTF-v2.1.3-windows-Release-x64" targetdir="$INSTALL_PATH/@contribsDir@/collada2gltf/COLLADA2GLTF-v2.1.3-windows-Release-x64" os="windows" override="true"/>
-            <fileset dir="@installDir@/@contribsDir@/collada2gltf/COLLADA2GLTF-v2.1.3-linux" targetdir="$INSTALL_PATH/@contribsDir@/collada2gltf/COLLADA2GLTF-v2.1.3-linux" os="unix" condition="!izpack.macinstall" override="true"/>
-            <fileset dir="@installDir@/@contribsDir@/collada2gltf/COLLADA2GLTF-v2.1.3-osx" targetdir="$INSTALL_PATH/@contribsDir@/collada2gltf/COLLADA2GLTF-v2.1.3-osx" os="mac" override="true"/>
+            <fileset dir="@installDir@/@contribsDir@/collada2gltf/COLLADA2GLTF-v2.1.4-windows-Release-x64" targetdir="$INSTALL_PATH/@contribsDir@/collada2gltf/COLLADA2GLTF-v2.1.4-windows-Release-x64" os="windows" override="true"/>
+            <fileset dir="@installDir@/@contribsDir@/collada2gltf/COLLADA2GLTF-v2.1.4-linux" targetdir="$INSTALL_PATH/@contribsDir@/collada2gltf/COLLADA2GLTF-v2.1.4-linux" os="unix" condition="!izpack.macinstall" override="true"/>
+            <fileset dir="@installDir@/@contribsDir@/collada2gltf/COLLADA2GLTF-v2.1.4-osx" targetdir="$INSTALL_PATH/@contribsDir@/collada2gltf/COLLADA2GLTF-v2.1.4-osx" os="mac" override="true"/>
             <!-- the following filesets are just to create empty folders -->
             <fileset dir="@installDir@/@pluginsDir@" targetdir="$INSTALL_PATH/@pluginsDir@" excludes="**/*"/>
             <fileset dir="@installDir@/@adeExtensionsDir@" targetdir="$INSTALL_PATH/@adeExtensionsDir@" excludes="**/*"/>
@@ -123,10 +123,10 @@
             <executable targetfile="$INSTALL_PATH/@cliDir@/@cliName@" stage="never">
                 <os family="unix"/>
             </executable>
-            <executable targetfile="$INSTALL_PATH/@contribsDir@/collada2gltf/COLLADA2GLTF-v2.1.3-linux/COLLADA2GLTF-bin" condition="!izpack.macinstall" stage="never">
+            <executable targetfile="$INSTALL_PATH/@contribsDir@/collada2gltf/COLLADA2GLTF-v2.1.4-linux/COLLADA2GLTF-bin" condition="!izpack.macinstall" stage="never">
                 <os family="unix"/>
             </executable>
-            <executable targetfile="$INSTALL_PATH/@contribsDir@/collada2gltf/COLLADA2GLTF-v2.1.3-osx/COLLADA2GLTF-bin" stage="never">
+            <executable targetfile="$INSTALL_PATH/@contribsDir@/collada2gltf/COLLADA2GLTF-v2.1.4-osx/COLLADA2GLTF-bin" stage="never">
                 <os family="mac"/>
             </executable>
         </pack>
