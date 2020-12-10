@@ -29,16 +29,27 @@ package org.citydb.database.adapter;
 
 import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.geometry.GeometryObject;
+import org.citydb.config.geometry.Position;
 import org.citydb.config.project.database.DatabaseSrs;
 import org.citydb.config.project.database.Workspace;
 import org.citydb.config.project.kmlExporter.KmlExportConfig;
 import org.citydb.database.adapter.IndexStatusInfo.IndexType;
 import org.citydb.database.connection.ADEMetadata;
+import org.citydb.database.connection.DatabaseConnectionPool;
 import org.citydb.database.connection.DatabaseMetaData;
+import org.citydb.database.schema.mapping.MappingConstants;
 import org.citydb.database.schema.mapping.SchemaMapping;
 import org.citydb.database.schema.mapping.SchemaMappingException;
 import org.citydb.database.schema.mapping.SchemaMappingValidationException;
 import org.citydb.database.schema.util.SchemaMappingUtil;
+import org.citydb.query.Query;
+import org.citydb.query.builder.QueryBuildException;
+import org.citydb.query.builder.sql.BuildProperties;
+import org.citydb.query.builder.sql.SQLQueryBuilder;
+import org.citydb.query.filter.FilterException;
+import org.citydb.query.filter.tiling.Tiling;
+import org.citydb.sqlbuilder.schema.Table;
+import org.citydb.sqlbuilder.select.Select;
 import org.geotools.referencing.CRS;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -182,6 +193,48 @@ public abstract class AbstractUtilAdapter {
 
             return calcBoundingBox(schema, objectClassIds, conn);
         }
+    }
+
+    public BoundingBox calcBoundingBox(Workspace workspace, Query query, SchemaMapping schemaMapping) throws QueryBuildException, SQLException, FilterException {
+        BoundingBox bbox = null;
+
+        try (Connection conn = databaseAdapter.connectionPool.getConnection()) {
+            if (databaseAdapter.hasVersioningSupport())
+                databaseAdapter.getWorkspaceManager().gotoWorkspace(conn, workspace);
+
+            SQLQueryBuilder builder = new SQLQueryBuilder(
+                    schemaMapping,
+                    databaseAdapter,
+                    BuildProperties.defaults().addProjectionColumn(MappingConstants.ENVELOPE));
+            Select select = builder.buildQuery(query);
+            Table table = new Table(select);
+            select = new Select().addProjection(databaseAdapter.getSQLAdapter().getAggregateExtentFunction(table.getColumn(MappingConstants.ENVELOPE)));
+
+            try (PreparedStatement stmt = databaseAdapter.getSQLAdapter().prepareStatement(select, conn);
+                 ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    Object extentObj = rs.getObject(1);
+                    if (!rs.wasNull() && extentObj != null) {
+                        GeometryObject extent = databaseAdapter.getGeometryConverter().getEnvelope(extentObj);
+                        double[] coordinates = extent.getCoordinates(0);
+                        bbox = new BoundingBox(
+                            new Position(coordinates[0], coordinates[1]),
+                            new Position(coordinates[2], coordinates[3])
+                        );
+                        bbox.setSrs(extent.getSrid());
+
+                        DatabaseSrs targetSrs = query.getTargetSrs();
+                        if (targetSrs != null && bbox.getSrs().getSrid() != targetSrs.getSrid()) {
+                            Tiling tiling = new Tiling(bbox, 1, 1);
+                            tiling.transformExtent(targetSrs, databaseAdapter);
+                            bbox = tiling.getExtent();
+                        }
+                    }
+                }
+            }
+        }
+
+        return bbox;
     }
 
     public BoundingBox createBoundingBoxes(Workspace workspace, List<Integer> objectClassIds, boolean onlyIfNull) throws SQLException {

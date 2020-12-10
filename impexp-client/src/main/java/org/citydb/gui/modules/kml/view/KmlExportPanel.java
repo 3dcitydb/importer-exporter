@@ -34,14 +34,7 @@ import org.citydb.config.i18n.Language;
 import org.citydb.config.project.database.DatabaseConnection;
 import org.citydb.config.project.database.Workspace;
 import org.citydb.config.project.global.LogLevel;
-import org.citydb.config.project.kmlExporter.AltitudeOffsetMode;
-import org.citydb.config.project.kmlExporter.DisplayForm;
-import org.citydb.config.project.kmlExporter.DisplayFormType;
-import org.citydb.config.project.kmlExporter.KmlExportConfig;
-import org.citydb.config.project.kmlExporter.KmlTiling;
-import org.citydb.config.project.kmlExporter.KmlTilingMode;
-import org.citydb.config.project.kmlExporter.SimpleKmlQuery;
-import org.citydb.config.project.kmlExporter.SimpleKmlQueryMode;
+import org.citydb.config.project.kmlExporter.*;
 import org.citydb.config.project.query.filter.selection.id.ResourceIdOperator;
 import org.citydb.config.project.query.filter.type.FeatureTypeFilter;
 import org.citydb.database.DatabaseController;
@@ -66,13 +59,7 @@ import org.citydb.plugin.extension.view.components.BoundingBoxPanel;
 import org.citydb.registry.ObjectRegistry;
 import org.citydb.util.ClientConstants;
 import org.citydb.util.Util;
-import org.citygml4j.model.module.citygml.BridgeModule;
-import org.citygml4j.model.module.citygml.CityFurnitureModule;
-import org.citygml4j.model.module.citygml.CityGMLVersion;
-import org.citygml4j.model.module.citygml.CityObjectGroupModule;
-import org.citygml4j.model.module.citygml.ReliefModule;
-import org.citygml4j.model.module.citygml.TunnelModule;
-import org.citygml4j.model.module.citygml.VegetationModule;
+import org.citygml4j.model.module.citygml.*;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -111,10 +98,10 @@ public class KmlExportPanel extends JPanel implements EventHandler {
     private TitledPanel displayAsPanel;
 	private TitledPanel featureFilterPanel;
 
-    private JRadioButton gmlIdRadioButton;
+    private JCheckBox useGmlIdFilter;
     private JLabel gmlIdLabel;
     private JTextField gmlIdText;
-    private JRadioButton bboxRadioButton;
+    private JCheckBox useBboxFilter;
     private BoundingBoxPanel bboxComponent;
 
     private JCheckBox tilingCheckBox;
@@ -174,14 +161,10 @@ public class KmlExportPanel extends JPanel implements EventHandler {
         browsePanel.add(browseText, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 5));
         browsePanel.add(browseButton, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.NONE, 0, 5, 0, 0));
 
-        gmlIdRadioButton = new JRadioButton();
-        bboxRadioButton = new JRadioButton("");
+        useGmlIdFilter = new JCheckBox();
+        useBboxFilter = new JCheckBox();
         gmlIdLabel = new JLabel("gml:id");
         gmlIdText = new JTextField();
-
-        ButtonGroup contentButtongGroup = new ButtonGroup();
-        contentButtongGroup.add(gmlIdRadioButton);
-        contentButtongGroup.add(bboxRadioButton);
 
         bboxComponent = viewController.getComponentFactory().createBoundingBoxPanel();
         tilingCheckBox = new JCheckBox();
@@ -261,7 +244,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
             gmlIdConent.add(gmlIdText, GuiUtil.setConstraints(1, 0, 1, 1, GridBagConstraints.HORIZONTAL, 0, 5, 0, 0));
 
             gmlIdPanel = new TitledPanel()
-                    .withToggleButton(gmlIdRadioButton)
+                    .withToggleButton(useGmlIdFilter)
                     .build(gmlIdConent);
 
             mainPanel.add(gmlIdPanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
@@ -281,7 +264,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
             bboxComponent.addComponent(tilingPanel, true);
 
             bboxPanel = new TitledPanel()
-                    .withToggleButton(bboxRadioButton)
+                    .withToggleButton(useBboxFilter)
                     .build(bboxComponent);
 
             mainPanel.add(bboxPanel, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
@@ -419,10 +402,8 @@ public class KmlExportPanel extends JPanel implements EventHandler {
         SimpleKmlQuery query = config.getKmlExportConfig().getQuery();
 
         useFeatureFilter.setSelected(query.isUseTypeNames());
-        if (query.getMode() == SimpleKmlQueryMode.SINGLE)
-            gmlIdRadioButton.setSelected(true);
-        else
-            bboxRadioButton.setSelected(true);
+        useGmlIdFilter.setSelected(query.isUseGmlIdFilter());
+        useBboxFilter.setSelected(query.isUseBboxFilter());
 
         // feature type filter
         FeatureTypeFilter featureTypeFilter = query.getFeatureTypeFilter();
@@ -517,8 +498,9 @@ public class KmlExportPanel extends JPanel implements EventHandler {
         // filter
         SimpleKmlQuery query = config.getKmlExportConfig().getQuery();
 
+        query.setUseGmlIdFilter(useGmlIdFilter.isSelected());
+        query.setUseBboxFilter(useBboxFilter.isSelected());
         query.setUseTypeNames(useFeatureFilter.isSelected());
-        query.setMode(gmlIdRadioButton.isSelected() ? SimpleKmlQueryMode.SINGLE : SimpleKmlQueryMode.BBOX);
 
         // feature type filter
         FeatureTypeFilter featureTypeFilter = query.getFeatureTypeFilter();
@@ -626,8 +608,8 @@ public class KmlExportPanel extends JPanel implements EventHandler {
         browseButton.addActionListener(e -> saveFile());
         ActionListener filterListener = e -> setFilterEnabledValues();
 
-        gmlIdRadioButton.addActionListener(filterListener);
-        bboxRadioButton.addActionListener(filterListener);
+        useGmlIdFilter.addActionListener(filterListener);
+        useBboxFilter.addActionListener(filterListener);
         tilingCheckBox.addActionListener(filterListener);
         manualTilingRadioButton.addActionListener(filterListener);
         automaticTilingRadioButton.addActionListener(filterListener);
@@ -664,7 +646,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
             }
 
             // gmlId
-            if (query.getMode() == SimpleKmlQueryMode.SINGLE
+            if (query.isUseGmlIdFilter()
                     && !query.getGmlIdFilter().isSetResourceIds()) {
                 viewController.errorMessage(Language.I18N.getString("export.dialog.error.incorrectData"),
                         Language.I18N.getString("common.dialog.error.incorrectData.gmlId"));
@@ -691,7 +673,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
             }
 
             // BoundingBox check
-            if (query.getMode() == SimpleKmlQueryMode.BBOX && query.isSetBboxFilter()) {
+            if (query.isUseBboxFilter() && query.isSetBboxFilter()) {
                 BoundingBox bbox = query.getBboxFilter().getExtent();
                 Double xMin = bbox.getLowerCorner().getX();
                 Double yMin = bbox.getLowerCorner().getY();
@@ -814,13 +796,13 @@ public class KmlExportPanel extends JPanel implements EventHandler {
     }
 
     private void setFilterEnabledValues() {
-        gmlIdLabel.setEnabled(gmlIdRadioButton.isSelected());
-        gmlIdText.setEnabled(gmlIdRadioButton.isSelected());
-        bboxComponent.setEnabled(bboxRadioButton.isSelected());
+        gmlIdLabel.setEnabled(useGmlIdFilter.isSelected());
+        gmlIdText.setEnabled(useGmlIdFilter.isSelected());
+        bboxComponent.setEnabled(useBboxFilter.isSelected());
 
-        tilingCheckBox.setEnabled(bboxRadioButton.isSelected());
-        automaticTilingRadioButton.setEnabled(bboxRadioButton.isSelected() && tilingCheckBox.isSelected());
-        manualTilingRadioButton.setEnabled(bboxRadioButton.isSelected() && tilingCheckBox.isSelected());
+        tilingCheckBox.setEnabled(useBboxFilter.isSelected());
+        automaticTilingRadioButton.setEnabled(useBboxFilter.isSelected() && tilingCheckBox.isSelected());
+        manualTilingRadioButton.setEnabled(useBboxFilter.isSelected() && tilingCheckBox.isSelected());
 
         tileSizeText.setEnabled(automaticTilingRadioButton.isEnabled() && automaticTilingRadioButton.isSelected());
         tileSizeUnit.setEnabled(automaticTilingRadioButton.isEnabled() && automaticTilingRadioButton.isSelected());
@@ -837,21 +819,21 @@ public class KmlExportPanel extends JPanel implements EventHandler {
         geometryCheckbox.setEnabled(DisplayFormType.GEOMETRY.isAchievableFromLoD(lodComboBox.getSelectedIndex()));
         colladaCheckbox.setEnabled(DisplayFormType.COLLADA.isAchievableFromLoD(lodComboBox.getSelectedIndex()));
 
-        visibleFromFootprintLabel.setEnabled(bboxRadioButton.isSelected() && footprintCheckbox.isEnabled() && footprintCheckbox.isSelected());
-        footprintVisibleFromText.setEnabled(bboxRadioButton.isSelected() && footprintCheckbox.isEnabled() && footprintCheckbox.isSelected());
-        pixelsFootprintLabel.setEnabled(bboxRadioButton.isSelected() && footprintCheckbox.isEnabled() && footprintCheckbox.isSelected());
+        visibleFromFootprintLabel.setEnabled(footprintCheckbox.isEnabled() && footprintCheckbox.isSelected());
+        footprintVisibleFromText.setEnabled(footprintCheckbox.isEnabled() && footprintCheckbox.isSelected());
+        pixelsFootprintLabel.setEnabled(footprintCheckbox.isEnabled() && footprintCheckbox.isSelected());
 
-        visibleFromExtrudedLabel.setEnabled(bboxRadioButton.isSelected() && extrudedCheckbox.isEnabled() && extrudedCheckbox.isSelected());
-        extrudedVisibleFromText.setEnabled(bboxRadioButton.isSelected() && extrudedCheckbox.isEnabled() && extrudedCheckbox.isSelected());
-        pixelsExtrudedLabel.setEnabled(bboxRadioButton.isSelected() && extrudedCheckbox.isEnabled() && extrudedCheckbox.isSelected());
+        visibleFromExtrudedLabel.setEnabled(extrudedCheckbox.isEnabled() && extrudedCheckbox.isSelected());
+        extrudedVisibleFromText.setEnabled(extrudedCheckbox.isEnabled() && extrudedCheckbox.isSelected());
+        pixelsExtrudedLabel.setEnabled(extrudedCheckbox.isEnabled() && extrudedCheckbox.isSelected());
 
-        visibleFromGeometryLabel.setEnabled(bboxRadioButton.isSelected() && geometryCheckbox.isEnabled() && geometryCheckbox.isSelected());
-        geometryVisibleFromText.setEnabled(bboxRadioButton.isSelected() && geometryCheckbox.isEnabled() && geometryCheckbox.isSelected());
-        pixelsGeometryLabel.setEnabled(bboxRadioButton.isSelected() && geometryCheckbox.isEnabled() && geometryCheckbox.isSelected());
+        visibleFromGeometryLabel.setEnabled(geometryCheckbox.isEnabled() && geometryCheckbox.isSelected());
+        geometryVisibleFromText.setEnabled(geometryCheckbox.isEnabled() && geometryCheckbox.isSelected());
+        pixelsGeometryLabel.setEnabled(geometryCheckbox.isEnabled() && geometryCheckbox.isSelected());
 
-        visibleFromColladaLabel.setEnabled(bboxRadioButton.isSelected() && colladaCheckbox.isEnabled() && colladaCheckbox.isSelected());
-        colladaVisibleFromText.setEnabled(bboxRadioButton.isSelected() && colladaCheckbox.isEnabled() && colladaCheckbox.isSelected());
-        pixelsColladaLabel.setEnabled(bboxRadioButton.isSelected() && colladaCheckbox.isEnabled() && colladaCheckbox.isSelected());
+        visibleFromColladaLabel.setEnabled(colladaCheckbox.isEnabled() && colladaCheckbox.isSelected());
+        colladaVisibleFromText.setEnabled(colladaCheckbox.isEnabled() && colladaCheckbox.isSelected());
+        pixelsColladaLabel.setEnabled(colladaCheckbox.isEnabled() && colladaCheckbox.isSelected());
 
         themeLabel.setEnabled(colladaCheckbox.isEnabled() && colladaCheckbox.isSelected());
         themeComboBox.setEnabled(databaseController.isConnected() && colladaCheckbox.isEnabled() && colladaCheckbox.isSelected());

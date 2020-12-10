@@ -43,7 +43,9 @@ public class SimpleKmlQuery {
     @XmlAttribute
     private boolean useTypeNames;
     @XmlAttribute
-    private SimpleKmlQueryMode mode = SimpleKmlQueryMode.BBOX;
+    private boolean useGmlIdFilter;
+    @XmlAttribute
+    private boolean useBboxFilter;
 
     @XmlElement(name = "typeNames")
     protected FeatureTypeFilter featureTypeFilter;
@@ -66,14 +68,6 @@ public class SimpleKmlQuery {
         this.useTypeNames = useTypeNames;
     }
 
-    public SimpleKmlQueryMode getMode() {
-        return mode;
-    }
-
-    public void setMode(SimpleKmlQueryMode mode) {
-        this.mode = mode;
-    }
-
     public FeatureTypeFilter getFeatureTypeFilter() {
         return featureTypeFilter;
     }
@@ -86,6 +80,14 @@ public class SimpleKmlQuery {
         this.featureTypeFilter = featureTypeFilter;
     }
 
+    public boolean isUseGmlIdFilter() {
+        return useGmlIdFilter;
+    }
+
+    public void setUseGmlIdFilter(boolean useGmlIdFilter) {
+        this.useGmlIdFilter = useGmlIdFilter;
+    }
+
     public ResourceIdOperator getGmlIdFilter() {
         return gmlIdFilter;
     }
@@ -96,6 +98,14 @@ public class SimpleKmlQuery {
 
     public void setGmlIdFilter(ResourceIdOperator gmlIdFilter) {
         this.gmlIdFilter = gmlIdFilter;
+    }
+
+    public boolean isUseBboxFilter() {
+        return useBboxFilter;
+    }
+
+    public void setUseBboxFilter(boolean useBboxFilter) {
+        this.useBboxFilter = useBboxFilter;
     }
 
     public KmlTiling getBboxFilter() {

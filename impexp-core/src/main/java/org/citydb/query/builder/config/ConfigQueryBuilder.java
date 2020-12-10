@@ -33,7 +33,6 @@ import org.citydb.config.project.exporter.SimpleTiling;
 import org.citydb.config.project.exporter.SimpleTilingMode;
 import org.citydb.config.project.kmlExporter.KmlTiling;
 import org.citydb.config.project.kmlExporter.SimpleKmlQuery;
-import org.citydb.config.project.kmlExporter.SimpleKmlQueryMode;
 import org.citydb.config.project.query.QueryConfig;
 import org.citydb.config.project.query.filter.selection.AbstractPredicate;
 import org.citydb.config.project.query.filter.selection.comparison.GreaterThanOperator;
@@ -317,20 +316,19 @@ public class ConfigQueryBuilder {
 			}
 		}
 
-		if (queryConfig.getMode() == SimpleKmlQueryMode.SINGLE) {
-			// gml:id filter
-			if (queryConfig.isSetGmlIdFilter() && queryConfig.getGmlIdFilter().isSetResourceIds())
-				query.setSelection(new SelectionFilter(predicateBuilder.buildPredicate(queryConfig.getGmlIdFilter())));
-		} else {
-			// bbox filter
-			if (queryConfig.isSetBboxFilter()) {
-				KmlTiling bboxFilter = queryConfig.getBboxFilter();
-				if (!bboxFilter.isSetExtent())
-					throw new QueryBuildException("The bounding box filter requires an " + GeometryType.ENVELOPE + " as spatial operand.");
+		// gml:id filter
+		if (queryConfig.isUseGmlIdFilter() && queryConfig.isSetGmlIdFilter() && queryConfig.getGmlIdFilter().isSetResourceIds()) {
+			query.setSelection(new SelectionFilter(predicateBuilder.buildPredicate(queryConfig.getGmlIdFilter())));
+		}
 
-				TilingFilterBuilder tilingFilterBuilder = new TilingFilterBuilder(databaseAdapter);
-				query.setTiling(tilingFilterBuilder.buildTilingFilter(bboxFilter));
-			}
+		// bbox filter
+		if (queryConfig.isUseBboxFilter() && queryConfig.isSetBboxFilter()) {
+			KmlTiling bboxFilter = queryConfig.getBboxFilter();
+			if (!bboxFilter.isSetExtent())
+				throw new QueryBuildException("The bounding box filter requires an " + GeometryType.ENVELOPE + " as spatial operand.");
+
+			TilingFilterBuilder tilingFilterBuilder = new TilingFilterBuilder(databaseAdapter);
+			query.setTiling(tilingFilterBuilder.buildTilingFilter(bboxFilter));
 		}
 
 		return query;
