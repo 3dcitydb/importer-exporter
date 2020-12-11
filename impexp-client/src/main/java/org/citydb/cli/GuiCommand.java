@@ -185,7 +185,7 @@ public class GuiCommand extends CliCommand implements StartupProgressListener {
 
         // splash screen
         if (!hideSplash) {
-            splashScreen = new SplashScreen(5, 485, Color.BLACK);
+            splashScreen = new SplashScreen(5, 487, Color.BLACK);
             splashScreen.setMessage("Version \"" + getClass().getPackage().getImplementationVersion() + "\"");
             parent.withStartupProgressListener(this);
             splashScreen.setVisible(true);
