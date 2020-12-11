@@ -33,8 +33,8 @@
         <appsubpath>@appSubPath@</appsubpath>
         <url>@url@</url>
         <authors>
-            <author name="Claus Nagel" email="cnagel@virtualcitysystems.de"/>
-            <author name="Zhihang Yao" email="zyao@virtualcitysystems.de"/>
+            <author name="Claus Nagel" email="cnagel@vc.systems"/>
+            <author name="Zhihang Yao" email="zyao@vc.systems"/>
             <author name="György Hudra" email="ghudra@moss.de"/>
             <author name="Felix Kunde" email="felix-kunde@gmx.de"/>
             <author name="Son H. Nguyen" email="son.nguyen@tum.de"/>
@@ -58,7 +58,7 @@
         <variable name="ApplicationShortcutPath" value="shortcuts"/>
     </variables>
 
-    <guiprefs width="680" height="500" resizable="yes">
+    <guiprefs width="640" height="500" resizable="yes">
         <modifier key="layoutAnchor" value="NORTH"/>
         <modifier key="labelGap" value="2"/>
         <modifier key="paragraphYGap" value="10"/>
