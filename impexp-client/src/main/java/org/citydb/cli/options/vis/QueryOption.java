@@ -42,8 +42,11 @@ public class QueryOption implements CliOption {
     @CommandLine.ArgGroup
     private ResourceIdOption resourceIdOption;
 
-    @CommandLine.ArgGroup(exclusive = false)
+    @CommandLine.ArgGroup
     private BoundingBoxOption boundingBoxOption;
+
+    @CommandLine.ArgGroup
+    private TilingOption tilingOption;
 
     public SimpleKmlQuery toSimpleKmlQuery() {
         SimpleKmlQuery query = new SimpleKmlQuery();
@@ -61,9 +64,13 @@ public class QueryOption implements CliOption {
             }
         }
 
+        if (tilingOption != null) {
+            query.setSpatialFilter(tilingOption.toKmlTiling());
+        }
+
         if (boundingBoxOption != null) {
             query.setUseBboxFilter(true);
-            query.setBboxFilter(boundingBoxOption.toKmlTiling());
+            query.getSpatialFilter().setExtent(boundingBoxOption.toBoundingBox());
         }
 
         return query;
@@ -77,6 +84,10 @@ public class QueryOption implements CliOption {
 
         if (boundingBoxOption != null) {
             boundingBoxOption.preprocess(commandLine);
+        }
+
+        if (tilingOption != null) {
+            tilingOption.preprocess(commandLine);
         }
     }
 }

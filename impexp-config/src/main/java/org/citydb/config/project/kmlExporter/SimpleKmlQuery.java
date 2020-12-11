@@ -37,7 +37,7 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "SimpleKmlExportQueryType", propOrder = {
         "featureTypeFilter",
         "gmlIdFilter",
-        "bboxFilter"
+        "spatialFilter"
 })
 public class SimpleKmlQuery {
     @XmlAttribute
@@ -52,12 +52,12 @@ public class SimpleKmlQuery {
     @XmlElement(name = "gmlIds")
     private ResourceIdOperator gmlIdFilter;
     @XmlElement(name = "bbox", required = true)
-    private KmlTiling bboxFilter;
+    private KmlTiling spatialFilter;
 
     public SimpleKmlQuery() {
         featureTypeFilter = new FeatureTypeFilter();
         gmlIdFilter = new ResourceIdOperator();
-        bboxFilter = new KmlTiling();
+        spatialFilter = new KmlTiling();
     }
 
     public boolean isUseTypeNames() {
@@ -108,15 +108,15 @@ public class SimpleKmlQuery {
         this.useBboxFilter = useBboxFilter;
     }
 
-    public KmlTiling getBboxFilter() {
-        return bboxFilter;
+    public KmlTiling getSpatialFilter() {
+        return spatialFilter;
     }
 
     public boolean isSetBboxFilter() {
-        return bboxFilter != null;
+        return spatialFilter != null;
     }
 
-    public void setBboxFilter(KmlTiling bboxFilter) {
-        this.bboxFilter = bboxFilter;
+    public void setSpatialFilter(KmlTiling spatialFilter) {
+        this.spatialFilter = spatialFilter;
     }
 }

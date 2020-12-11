@@ -28,10 +28,12 @@
 package org.citydb.query.builder.config;
 
 import org.citydb.config.geometry.GeometryType;
+import org.citydb.config.project.database.Workspace;
 import org.citydb.config.project.exporter.SimpleQuery;
 import org.citydb.config.project.exporter.SimpleTiling;
 import org.citydb.config.project.exporter.SimpleTilingMode;
 import org.citydb.config.project.kmlExporter.KmlTiling;
+import org.citydb.config.project.kmlExporter.KmlTilingMode;
 import org.citydb.config.project.kmlExporter.SimpleKmlQuery;
 import org.citydb.config.project.query.QueryConfig;
 import org.citydb.config.project.query.filter.selection.AbstractPredicate;
@@ -63,6 +65,7 @@ import org.citygml4j.model.module.citygml.CoreModule;
 
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.NamespaceContext;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -290,7 +293,7 @@ public class ConfigQueryBuilder {
 		return query;
 	}
 
-	public Query buildQuery(SimpleKmlQuery queryConfig, NamespaceContext namespaceContext) throws QueryBuildException {
+	public Query buildQuery(SimpleKmlQuery queryConfig, NamespaceContext namespaceContext, Workspace workspace) throws QueryBuildException {
 		// support for legacy KML export filter
 		Query query = new Query();
 
@@ -316,19 +319,53 @@ public class ConfigQueryBuilder {
 			}
 		}
 
+		List<Predicate> predicates = new ArrayList<>();
+
 		// gml:id filter
 		if (queryConfig.isUseGmlIdFilter() && queryConfig.isSetGmlIdFilter() && queryConfig.getGmlIdFilter().isSetResourceIds()) {
-			query.setSelection(new SelectionFilter(predicateBuilder.buildPredicate(queryConfig.getGmlIdFilter())));
+			predicates.add(predicateBuilder.buildPredicate(queryConfig.getGmlIdFilter()));
+		}
+
+		// calculate extent if the bbox filter is disabled
+		KmlTiling spatialFilter = queryConfig.getSpatialFilter();
+		if (!queryConfig.isUseBboxFilter()) {
+			try {
+				Query extentQuery = new Query(query);
+				if (!predicates.isEmpty()) {
+					// add gml:id filter to selection
+					extentQuery.setSelection(new SelectionFilter(predicates.get(0)));
+				}
+				spatialFilter.setExtent(databaseAdapter.getUtil().calcBoundingBox(workspace, query, schemaMapping));
+			} catch (SQLException | FilterException e) {
+				throw new QueryBuildException("Failed to calculate bounding box based on the non-spatial filter settings.", e);
+			}
 		}
 
 		// bbox filter
-		if (queryConfig.isUseBboxFilter() && queryConfig.isSetBboxFilter()) {
-			KmlTiling bboxFilter = queryConfig.getBboxFilter();
-			if (!bboxFilter.isSetExtent())
+		if (queryConfig.isUseBboxFilter()) {
+			if (!spatialFilter.isSetExtent())
 				throw new QueryBuildException("The bounding box filter requires an " + GeometryType.ENVELOPE + " as spatial operand.");
 
+			if (spatialFilter.getMode() == KmlTilingMode.NO_TILING) {
+				BBOXOperator bbox = new BBOXOperator();
+				bbox.setEnvelope(spatialFilter.getExtent());
+				predicates.add(predicateBuilder.buildPredicate(bbox));
+			}
+		}
+
+		// apply tiling
+		if (spatialFilter.getMode() != KmlTilingMode.NO_TILING && spatialFilter.isSetExtent()) {
 			TilingFilterBuilder tilingFilterBuilder = new TilingFilterBuilder(databaseAdapter);
-			query.setTiling(tilingFilterBuilder.buildTilingFilter(bboxFilter));
+			query.setTiling(tilingFilterBuilder.buildTilingFilter(spatialFilter));
+		}
+
+		if (!predicates.isEmpty()) {
+			try {
+				BinaryLogicalOperator predicate = new BinaryLogicalOperator(LogicalOperatorName.AND, predicates);
+				query.setSelection(new SelectionFilter(predicate));
+			} catch (FilterException e) {
+				throw new QueryBuildException("Failed to build the export filter.", e);
+			}
 		}
 
 		return query;

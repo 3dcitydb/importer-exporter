@@ -94,6 +94,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 
     private TitledPanel gmlIdPanel;
     private TitledPanel bboxPanel;
+    private TitledPanel tilingPanel;
     private TitledPanel lodPanel;
     private TitledPanel displayAsPanel;
 	private TitledPanel featureFilterPanel;
@@ -251,23 +252,29 @@ public class KmlExportPanel extends JPanel implements EventHandler {
         }
         {
             // bbox
-            JPanel tilingPanel = new JPanel();
-            tilingPanel.setLayout(new GridBagLayout());
-            tilingPanel.add(tilingCheckBox, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 0));
-            tilingPanel.add(automaticTilingRadioButton, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 25, 0, 5));
-            tilingPanel.add(tileSizeText, GuiUtil.setConstraints(2, 0, 0.34, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 0));
-            tilingPanel.add(tileSizeUnit, GuiUtil.setConstraints(3, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 0));
-            tilingPanel.add(manualTilingRadioButton, GuiUtil.setConstraints(4, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 25, 0, 5));
-            tilingPanel.add(rowsText, GuiUtil.setConstraints(5, 0, 0.33, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 5));
-            tilingPanel.add(columnsLabel, GuiUtil.setConstraints(6, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 10, 0, 5));
-            tilingPanel.add(columnsText, GuiUtil.setConstraints(7, 0, 0.33, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 0));
-            bboxComponent.addComponent(tilingPanel, true);
-
             bboxPanel = new TitledPanel()
                     .withToggleButton(useBboxFilter)
                     .build(bboxComponent);
 
             mainPanel.add(bboxPanel, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+        }
+        {
+            // tiling
+            JPanel tilingContent = new JPanel();
+            tilingContent.setLayout(new GridBagLayout());
+            tilingContent.add(automaticTilingRadioButton, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 5));
+            tilingContent.add(tileSizeText, GuiUtil.setConstraints(1, 0, 0.34, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 0));
+            tilingContent.add(tileSizeUnit, GuiUtil.setConstraints(2, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 0));
+            tilingContent.add(manualTilingRadioButton, GuiUtil.setConstraints(3, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 25, 0, 5));
+            tilingContent.add(rowsText, GuiUtil.setConstraints(4, 0, 0.33, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 5));
+            tilingContent.add(columnsLabel, GuiUtil.setConstraints(5, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 10, 0, 5));
+            tilingContent.add(columnsText, GuiUtil.setConstraints(6, 0, 0.33, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 0));
+
+            tilingPanel = new TitledPanel()
+                    .withToggleButton(tilingCheckBox)
+                    .build(tilingContent);
+
+            mainPanel.add(tilingPanel, GuiUtil.setConstraints(0, 2, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
         }
         {
             // lod to export from
@@ -313,7 +320,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 			content.add(lodPanel, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 			content.add(displayAsPanel, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.BOTH, 0, 20, 0, 0));
 
-			mainPanel.add(content, GuiUtil.setConstraints(0, 2, 0, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+			mainPanel.add(content, GuiUtil.setConstraints(0, 3, 0, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
         }
         {
             featureTreePanel = new JPanel();
@@ -326,7 +333,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
                     .withToggleButton(useFeatureFilter)
                     .build(featureTreePanel);
 
-            mainPanel.add(featureFilterPanel, GuiUtil.setConstraints(0, 3, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+            mainPanel.add(featureFilterPanel, GuiUtil.setConstraints(0, 4, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
         }
 
         JPanel view = new JPanel();
@@ -360,10 +367,10 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 
     public void doTranslation() {
         browseButton.setText(Language.I18N.getString("common.button.browse"));
-        gmlIdPanel.setTitle(Language.I18N.getString("kmlExport.label.singleBuilding"));
+        gmlIdPanel.setTitle(Language.I18N.getString("filter.border.attributes"));
         bboxPanel.setTitle(Language.I18N.getString("filter.border.boundingBox"));
+        tilingPanel.setTitle(Language.I18N.getString("pref.export.boundingBox.border.tiling"));
 
-        tilingCheckBox.setText(Language.I18N.getString("pref.export.boundingBox.border.tiling"));
         manualTilingRadioButton.setText(Language.I18N.getString("pref.export.boundingBox.label.rows"));
         columnsLabel.setText(Language.I18N.getString("pref.export.boundingBox.label.columns"));
         automaticTilingRadioButton.setText(Language.I18N.getString("kmlExport.label.automatic"));
@@ -415,7 +422,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
         gmlIdText.setText(String.join(",", gmlIdFilter.getResourceIds()));
 
         // bbox filter
-        KmlTiling bboxFilter = query.getBboxFilter();
+        KmlTiling bboxFilter = query.getSpatialFilter();
         BoundingBox bbox = bboxFilter.getExtent();
         if (bbox != null)
             bboxComponent.setBoundingBox(bboxFilter.getExtent());
@@ -516,7 +523,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
         }
 
         // bbox filter
-        KmlTiling bboxFilter = query.getBboxFilter();
+        KmlTiling bboxFilter = query.getSpatialFilter();
         bboxFilter.setExtent(bboxComponent.getBoundingBox());
 
         // tiling
@@ -674,7 +681,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 
             // BoundingBox check
             if (query.isUseBboxFilter() && query.isSetBboxFilter()) {
-                BoundingBox bbox = query.getBboxFilter().getExtent();
+                BoundingBox bbox = query.getSpatialFilter().getExtent();
                 Double xMin = bbox.getLowerCorner().getX();
                 Double yMin = bbox.getLowerCorner().getY();
                 Double xMax = bbox.getUpperCorner().getX();
@@ -800,9 +807,8 @@ public class KmlExportPanel extends JPanel implements EventHandler {
         gmlIdText.setEnabled(useGmlIdFilter.isSelected());
         bboxComponent.setEnabled(useBboxFilter.isSelected());
 
-        tilingCheckBox.setEnabled(useBboxFilter.isSelected());
-        automaticTilingRadioButton.setEnabled(useBboxFilter.isSelected() && tilingCheckBox.isSelected());
-        manualTilingRadioButton.setEnabled(useBboxFilter.isSelected() && tilingCheckBox.isSelected());
+        automaticTilingRadioButton.setEnabled(tilingCheckBox.isSelected());
+        manualTilingRadioButton.setEnabled(tilingCheckBox.isSelected());
 
         tileSizeText.setEnabled(automaticTilingRadioButton.isEnabled() && automaticTilingRadioButton.isSelected());
         tileSizeUnit.setEnabled(automaticTilingRadioButton.isEnabled() && automaticTilingRadioButton.isSelected());
