@@ -422,22 +422,22 @@ public class KmlExportPanel extends JPanel implements EventHandler {
         gmlIdText.setText(String.join(",", gmlIdFilter.getResourceIds()));
 
         // bbox filter
-        KmlTiling bboxFilter = query.getSpatialFilter();
-        BoundingBox bbox = bboxFilter.getExtent();
+        KmlTiling spatialFilter = query.getSpatialFilter();
+        BoundingBox bbox = spatialFilter.getExtent();
         if (bbox != null)
-            bboxComponent.setBoundingBox(bboxFilter.getExtent());
+            bboxComponent.setBoundingBox(spatialFilter.getExtent());
 
         // tiling
-        tilingCheckBox.setSelected(bboxFilter.getMode() != KmlTilingMode.NO_TILING);
-        if (bboxFilter.getMode() == KmlTilingMode.MANUAL) {
+        tilingCheckBox.setSelected(spatialFilter.getMode() != KmlTilingMode.NO_TILING);
+        if (spatialFilter.getMode() == KmlTilingMode.MANUAL) {
             manualTilingRadioButton.setSelected(true);
         } else {
             automaticTilingRadioButton.setSelected(true);
         }
 
-        tileSizeText.setValue(bboxFilter.getTilingOptions().getAutoTileSideLength());
-        rowsText.setValue(bboxFilter.getRows());
-        columnsText.setValue(bboxFilter.getColumns());
+        tileSizeText.setValue(spatialFilter.getTilingOptions().getAutoTileSideLength());
+        rowsText.setValue(spatialFilter.getRows());
+        columnsText.setValue(spatialFilter.getColumns());
 
         // display options
         KmlExportConfig kmlExportConfig = config.getKmlExportConfig();
@@ -523,32 +523,32 @@ public class KmlExportPanel extends JPanel implements EventHandler {
         }
 
         // bbox filter
-        KmlTiling bboxFilter = query.getSpatialFilter();
-        bboxFilter.setExtent(bboxComponent.getBoundingBox());
+        KmlTiling spatialFilter = query.getSpatialFilter();
+        spatialFilter.setExtent(query.isUseBboxFilter()? bboxComponent.getBoundingBox() : null);
 
         // tiling
         if (tilingCheckBox.isSelected()) {
             if (manualTilingRadioButton.isSelected()) {
-                bboxFilter.setMode(KmlTilingMode.MANUAL);
+                spatialFilter.setMode(KmlTilingMode.MANUAL);
             } else {
-                bboxFilter.setMode(KmlTilingMode.AUTOMATIC);
+                spatialFilter.setMode(KmlTilingMode.AUTOMATIC);
             }
         } else {
-            bboxFilter.setMode(KmlTilingMode.NO_TILING);
+            spatialFilter.setMode(KmlTilingMode.NO_TILING);
         }
 
-        bboxFilter.getTilingOptions().setAutoTileSideLength(((Number) tileSizeText.getValue()).intValue());
+        spatialFilter.getTilingOptions().setAutoTileSideLength(((Number) tileSizeText.getValue()).intValue());
 
         try {
-            bboxFilter.setRows(((Number) rowsText.getValue()).intValue());
+            spatialFilter.setRows(((Number) rowsText.getValue()).intValue());
         } catch (NumberFormatException e) {
-            bboxFilter.setRows(1);
+            spatialFilter.setRows(1);
         }
 
         try {
-            bboxFilter.setColumns(((Number) columnsText.getValue()).intValue());
+            spatialFilter.setColumns(((Number) columnsText.getValue()).intValue());
         } catch (NumberFormatException e) {
-            bboxFilter.setColumns(1);
+            spatialFilter.setColumns(1);
         }
 
         // display options

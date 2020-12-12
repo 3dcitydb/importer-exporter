@@ -71,6 +71,8 @@ public class QueryOption implements CliOption {
         if (boundingBoxOption != null) {
             query.setUseBboxFilter(true);
             query.getSpatialFilter().setExtent(boundingBoxOption.toBoundingBox());
+        } else {
+            query.getSpatialFilter().setExtent(null);
         }
 
         return query;

@@ -223,7 +223,19 @@ public class KmlExporter implements EventHandler {
 		Query query;
 		try {
 			ConfigQueryBuilder queryBuilder = new ConfigQueryBuilder(schemaMapping, databaseAdapter);
-			query = queryBuilder.buildQuery(config.getKmlExportConfig().getQuery(), config.getNamespaceFilter(), workspace);
+			SimpleKmlQuery queryConfig = config.getKmlExportConfig().getQuery();
+			query = queryBuilder.buildQuery(queryConfig, config.getNamespaceFilter());
+
+			// calculate extent if the bbox filter is disabled
+			KmlTiling spatialFilter = queryConfig.getSpatialFilter();
+			if (!spatialFilter.isSetExtent()) {
+				try {
+					spatialFilter.setExtent(databaseAdapter.getUtil().calcBoundingBox(workspace, query, schemaMapping));
+					query = queryBuilder.buildQuery(queryConfig, config.getNamespaceFilter());
+				} catch (SQLException | FilterException e) {
+					throw new QueryBuildException("Failed to calculate bounding box based on the non-spatial filter settings.", e);
+				}
+			}
 		} catch (QueryBuildException e) {
 			throw new KmlExportException("Failed to build the export filter expression.", e);
 		}
