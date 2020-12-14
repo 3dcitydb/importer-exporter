@@ -2044,17 +2044,20 @@ public abstract class KmlGenericObject {
 
 				if (pacSettings.getPointDisplayMode() == PointDisplayMode.CROSS_LINE){
 					if (pacSettings.isPointHighlightingEnabled() || pacSettings.isPointCubeHighlightingEnabled())
-						placemark.setStyleUrl("#" + getStyleBasisName() + ADEObject.POINT + "Style");
+						placemark.setStyleUrl("#" + getStyleBasisName() + "PointStyle");
 					else
-						placemark.setStyleUrl("#" + getStyleBasisName() + ADEObject.POINT + "Normal");
+						placemark.setStyleUrl("#" + getStyleBasisName() + "PointNormal");
 				} else if (pacSettings.getPointDisplayMode() == PointDisplayMode.ICON) {
-					placemark.setStyleUrl("#" + getStyleBasisName() + ADEObject.POINT + "Normal");
+					if (pacSettings.isPointIconHighlightingEnabled())
+						placemark.setStyleUrl("#" + getStyleBasisName() + "PointStyle");
+					else
+						placemark.setStyleUrl("#" + getStyleBasisName() + "PointNormal");
 				} else if (pacSettings.getPointDisplayMode() == PointDisplayMode.CUBE) {
 					// setting Style references
 					if (pacSettings.isPointCubeHighlightingEnabled())
-						placemark.setStyleUrl("#" + getStyleBasisName() + ADEObject.POINT + "Style");
+						placemark.setStyleUrl("#" + getStyleBasisName() + "PointStyle");
 					else
-						placemark.setStyleUrl("#" + getStyleBasisName() + ADEObject.POINT + "Normal");
+						placemark.setStyleUrl("#" + getStyleBasisName() + "PointNormal");
 				}
 			}
 			else if (pointOrCurveGeometry.getGeometryType() == GeometryType.MULTI_LINE_STRING ||
@@ -2084,9 +2087,9 @@ public abstract class KmlGenericObject {
 				}
 
 				if (pacSettings.isCurveHighlightingEnabled())
-					placemark.setStyleUrl("#" + getStyleBasisName() + ADEObject.CURVE + "Style");
+					placemark.setStyleUrl("#" + getStyleBasisName() + "CurveStyle");
 				else
-					placemark.setStyleUrl("#" + getStyleBasisName() + ADEObject.CURVE + "Normal");
+					placemark.setStyleUrl("#" + getStyleBasisName() + "CurveNormal");
 			}
 
 			if (getBalloonSettings().isIncludeDescription()) {

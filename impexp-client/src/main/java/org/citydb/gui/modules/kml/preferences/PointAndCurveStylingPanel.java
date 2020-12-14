@@ -76,6 +76,11 @@ public class PointAndCurveStylingPanel extends AbstractPreferencesComponent {
 	private ColorPicker pointIconColorButton;
 	private JLabel pointIconScaleLabel;
 	private JSpinner pointIconScaleSpinner;
+	private JCheckBox pointIconHighlightingCheckbox;
+	private JLabel pointIconHighlightingColorLabel;
+	private ColorPicker pointIconHighlightingColorButton;
+	private JLabel pointIconHighlightingScaleLabel;
+	private JSpinner pointIconHighlightingScaleSpinner;
 
 	private JLabel pointCubeDefaultStyle;
 	private JLabel pointCubeLengthOfSideLabel;
@@ -85,6 +90,8 @@ public class PointAndCurveStylingPanel extends AbstractPreferencesComponent {
 	private JCheckBox pointCubeHighlightingCheckbox;
 	private JLabel pointCubeHighlightingColorLabel;
 	private ColorPicker pointCubeHighlightingColorButton;
+	private JLabel pointCubeHighlightingLineThicknessLabel;
+	private JSpinner pointCubeHighlightingLineThicknessSpinner;
 
 	private JLabel curveDefaultStyle;
 	private JLabel curveAltitudeModeLabel;
@@ -138,10 +145,14 @@ public class PointAndCurveStylingPanel extends AbstractPreferencesComponent {
 		if (pacSettings.getPointHighlightedColor() != pointCrossLineHighlightingColorButton.getBackground().getRGB()) return true;
 		if (pacSettings.getPointIconColor() != pointIconColorButton.getBackground().getRGB()) return true;
 		if (pacSettings.getPointIconScale() != (Double) pointIconScaleSpinner.getValue()) return true;
+		if (pacSettings.isPointIconHighlightingEnabled() != pointIconHighlightingCheckbox.isSelected()) return true;
+		if (pacSettings.getPointIconHighlightedColor() != pointIconHighlightingColorButton.getBackground().getRGB()) return true;
+		if (pacSettings.getPointIconHighlightedScale() != (Double) pointIconHighlightingScaleSpinner.getValue()) return true;
 		if (pacSettings.getPointCubeLengthOfSide() != (Double) pointCubeLengthOfSideSpinner.getValue()) return true;
 		if (pacSettings.getPointCubeFillColor() != pointCubeFillColorButton.getBackground().getRGB()) return true;
 		if (pacSettings.isPointCubeHighlightingEnabled() != pointCubeHighlightingCheckbox.isSelected()) return true;
 		if (pacSettings.getPointCubeHighlightedColor() != pointCubeHighlightingColorButton.getBackground().getRGB()) return true;
+		if (pacSettings.getPointCubeHighlightedOutlineThickness() != (Double) pointCubeHighlightingLineThicknessSpinner.getValue()) return true;
 		if (!pacSettings.getCurveAltitudeMode().equals(curveAltitudeModeComboBox.getSelectedItem())) return true;
 		if (pacSettings.getCurveThickness() != (Double) curveThicknessSpinner.getValue()) return true;
 		if (pacSettings.getCurveNormalColor() != curveNormalColorButton.getBackground().getRGB()) return true;
@@ -171,6 +182,10 @@ public class PointAndCurveStylingPanel extends AbstractPreferencesComponent {
 		pointIconColorLabel = new JLabel();
 		pointIconColorButton = new ColorPicker();
 		pointIconScaleLabel = new JLabel();
+		pointIconHighlightingCheckbox = new JCheckBox();
+		pointIconHighlightingColorLabel = new JLabel();
+		pointIconHighlightingColorButton = new ColorPicker();
+		pointIconHighlightingScaleLabel = new JLabel();
 
 		pointCubeDefaultStyle = new JLabel();
 		pointCubeLengthOfSideLabel = new JLabel();
@@ -179,6 +194,7 @@ public class PointAndCurveStylingPanel extends AbstractPreferencesComponent {
 		pointCubeHighlightingCheckbox = new JCheckBox();
 		pointCubeHighlightingColorLabel = new JLabel();
 		pointCubeHighlightingColorButton = new ColorPicker();
+		pointCubeHighlightingLineThicknessLabel = new JLabel();
 
 		curveDefaultStyle = new JLabel();
 		curveAltitudeModeLabel = new JLabel();
@@ -196,27 +212,35 @@ public class PointAndCurveStylingPanel extends AbstractPreferencesComponent {
 		pointRadioGroup.add(iconRButton);
 		pointRadioGroup.add(cubeRButton);
 
-		SpinnerModel pointThicknessModel = new SpinnerNumberModel(1, 0.1, 9.9, 0.1);
+		SpinnerModel pointThicknessModel = new SpinnerNumberModel(1, 0.1, 10, 0.1);
 		pointCrossLineThicknessSpinner = new JSpinner(pointThicknessModel);
 		setSpinnerFormat(pointCrossLineThicknessSpinner, "#.#");
 
-		SpinnerModel pointHighlightingThicknessModel = new SpinnerNumberModel(2, 0.1, 9.9, 0.1);
+		SpinnerModel pointHighlightingThicknessModel = new SpinnerNumberModel(2, 0.1, 10, 0.1);
 		pointCrossLineHighlightingThicknessSpinner = new JSpinner(pointHighlightingThicknessModel);
 		setSpinnerFormat(pointCrossLineHighlightingThicknessSpinner, "#.#");
 
-		SpinnerModel pointIconScaleModel = new SpinnerNumberModel(1, 0.1, 9.9, 0.1);
+		SpinnerModel pointIconScaleModel = new SpinnerNumberModel(1, 0.1, 10, 0.1);
 		pointIconScaleSpinner = new JSpinner(pointIconScaleModel);
 		setSpinnerFormat(pointIconScaleSpinner, "#.#");
 
-		SpinnerModel pointCubeLengthOfSideModel = new SpinnerNumberModel(1, 0.1, 9.9, 0.1);
+		SpinnerModel pointIconHighlightingScaleModel = new SpinnerNumberModel(1, 0.1, 10, 0.1);
+		pointIconHighlightingScaleSpinner = new JSpinner(pointIconHighlightingScaleModel);
+		setSpinnerFormat(pointIconHighlightingScaleSpinner, "#.#");
+
+		SpinnerModel pointCubeLengthOfSideModel = new SpinnerNumberModel(1, 0.1, 10, 0.1);
 		pointCubeLengthOfSideSpinner = new JSpinner(pointCubeLengthOfSideModel);
 		setSpinnerFormat(pointCubeLengthOfSideSpinner, "#.#");
 
-		SpinnerModel curveThicknessModel = new SpinnerNumberModel(1, 0.1, 9.9, 0.1);
+		SpinnerModel pointCubeHighlightingThicknessModel = new SpinnerNumberModel(2, 0.1, 10, 0.1);
+		pointCubeHighlightingLineThicknessSpinner = new JSpinner(pointCubeHighlightingThicknessModel);
+		setSpinnerFormat(pointCubeHighlightingLineThicknessSpinner, "#.#");
+
+		SpinnerModel curveThicknessModel = new SpinnerNumberModel(1, 0.1, 10, 0.1);
 		curveThicknessSpinner = new JSpinner(curveThicknessModel);
 		setSpinnerFormat(curveThicknessSpinner, "#.#");
 
-		SpinnerModel curveHighlightingThicknessModel = new SpinnerNumberModel(2, 0.1, 9.9, 0.1);
+		SpinnerModel curveHighlightingThicknessModel = new SpinnerNumberModel(2, 0.1, 10, 0.1);
 		curveHighlightingThicknessSpinner = new JSpinner(curveHighlightingThicknessModel);
 		setSpinnerFormat(curveHighlightingThicknessSpinner, "#.#");
 
@@ -247,8 +271,13 @@ public class PointAndCurveStylingPanel extends AbstractPreferencesComponent {
 			{
 				JPanel defaultStyle = createStylePanel(pointIconColorLabel, pointIconColorButton,
 						pointIconScaleLabel, pointIconScaleSpinner);
+				JPanel highlightStyle = createStylePanel(pointIconHighlightingColorLabel, pointIconHighlightingColorButton,
+						pointIconHighlightingScaleLabel, pointIconHighlightingScaleSpinner);
+
 				iconContent.add(pointIconDefaultStyle, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 10));
 				iconContent.add(defaultStyle, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.WEST, GridBagConstraints.NONE, 0, 0, 0, 0));
+				iconContent.add(pointIconHighlightingCheckbox, GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.HORIZONTAL, 5, 0, 0, 10));
+				iconContent.add(highlightStyle, GuiUtil.setConstraints(1, 1, 1, 0, GridBagConstraints.WEST, GridBagConstraints.NONE, 5, 0, 0, 0));
 			}
 
 			iconPanel = new TitledPanel()
@@ -262,7 +291,8 @@ public class PointAndCurveStylingPanel extends AbstractPreferencesComponent {
 			{
 				JPanel defaultStyle = createStylePanel(pointCubeFillColorLabel, pointCubeFillColorButton,
 						pointCubeLengthOfSideLabel, pointCubeLengthOfSideSpinner);
-				JPanel highlightStyle = createStylePanel(pointCubeHighlightingColorLabel, pointCubeHighlightingColorButton);
+				JPanel highlightStyle = createStylePanel(pointCubeHighlightingColorLabel, pointCubeHighlightingColorButton,
+						pointCubeHighlightingLineThicknessLabel, pointCubeHighlightingLineThicknessSpinner);
 
 				cubeContent.add(pointCubeDefaultStyle, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 10));
 				cubeContent.add(defaultStyle, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.WEST, GridBagConstraints.NONE, 0, 0, 0, 0));
@@ -313,6 +343,7 @@ public class PointAndCurveStylingPanel extends AbstractPreferencesComponent {
         crossLineRButton.addActionListener(e -> setEnabledPointComponents());
         cubeRButton.addActionListener(e -> setEnabledPointComponents());
 		pointCrossLineHighlightingCheckbox.addActionListener(e -> setEnabledPointComponents());
+		pointIconHighlightingCheckbox.addActionListener(e -> setEnabledPointComponents());
 		pointCubeHighlightingCheckbox.addActionListener(e -> setEnabledPointComponents());
 		curveHighlightingCheckbox.addActionListener(e -> setEnabledCurveComponents());
 	}
@@ -362,20 +393,24 @@ public class PointAndCurveStylingPanel extends AbstractPreferencesComponent {
 
 		pointCubeDefaultStyle.setText(Language.I18N.getString("pref.kmlexport.label.defaultStyle"));
         pointCubeLengthOfSideLabel.setText(Language.I18N.getString("pref.kmlexport.label.cubeSideLength"));
-        pointCubeFillColorLabel.setText(Language.I18N.getString("pref.kmlexport.label.fillColor"));
+        pointCubeFillColorLabel.setText(Language.I18N.getString("pref.kmlexport.label.pointColor"));
         pointCubeHighlightingCheckbox.setText(Language.I18N.getString("pref.kmlexport.label.highlightStyle"));
-        pointCubeHighlightingColorLabel.setText(Language.I18N.getString("pref.kmlexport.label.fillColor"));
+        pointCubeHighlightingColorLabel.setText(Language.I18N.getString("pref.kmlexport.label.pointColor"));
+		pointCubeHighlightingLineThicknessLabel.setText(Language.I18N.getString("pref.kmlexport.label.curveThickness"));
 
 		pointIconDefaultStyle.setText(Language.I18N.getString("pref.kmlexport.label.defaultStyle"));
-        pointIconColorLabel.setText(Language.I18N.getString("pref.kmlexport.label.pointIconColor"));
+        pointIconColorLabel.setText(Language.I18N.getString("pref.kmlexport.label.pointColor"));
         pointIconScaleLabel.setText(Language.I18N.getString("pref.kmlexport.label.pointIconScale"));
+        pointIconHighlightingCheckbox.setText(Language.I18N.getString("pref.kmlexport.label.highlightStyle"));
+		pointIconHighlightingColorLabel.setText(Language.I18N.getString("pref.kmlexport.label.pointColor"));
+		pointIconHighlightingScaleLabel.setText(Language.I18N.getString("pref.kmlexport.label.pointIconScale"));
         pointAltitudeModeComboBox.setSelectedItem(pacSettings.getPointAltitudeMode());
        
         pointCrossLineThicknessLabel.setText(Language.I18N.getString("pref.kmlexport.label.curveThickness"));
-        pointCrossLineNormalColorLabel.setText(Language.I18N.getString("pref.kmlexport.label.curveColor"));
+        pointCrossLineNormalColorLabel.setText(Language.I18N.getString("pref.kmlexport.label.pointColor"));
 		pointCrossLineHighlightingCheckbox.setText(Language.I18N.getString("pref.kmlexport.label.highlightStyle"));
 		pointCrossLineHighlightingThicknessLabel.setText(Language.I18N.getString("pref.kmlexport.label.curveThickness"));
-		pointCrossLineHighlightingColorLabel.setText(Language.I18N.getString("pref.kmlexport.label.curveColor"));
+		pointCrossLineHighlightingColorLabel.setText(Language.I18N.getString("pref.kmlexport.label.pointColor"));
 
 		curvePanel.setTitle(Language.I18N.getString("pref.kmlexport.border.curve"));
     	curveAltitudeModeLabel.setText(Language.I18N.getString("pref.kmlexport.label.curveAltitudeMode"));
@@ -417,12 +452,16 @@ public class PointAndCurveStylingPanel extends AbstractPreferencesComponent {
 		pointCrossLineHighlightingColorButton.setColor(new Color(pacSettings.getPointHighlightedColor(), true));
 
 		pointIconColorButton.setColor(new Color(pacSettings.getPointIconColor(), true));
-		pointIconScaleSpinner.setValue(pacSettings.getPointIconScale());		
+		pointIconScaleSpinner.setValue(pacSettings.getPointIconScale());
+		pointIconHighlightingCheckbox.setSelected(pacSettings.isPointIconHighlightingEnabled());
+		pointIconHighlightingColorButton.setColor(new Color(pacSettings.getPointIconHighlightedColor(), true));
+		pointIconHighlightingScaleSpinner.setValue(pacSettings.getPointIconHighlightedScale());
 		
 		pointCubeLengthOfSideSpinner.setValue(pacSettings.getPointCubeLengthOfSide());
 		pointCubeFillColorButton.setColor(new Color(pacSettings.getPointCubeFillColor(), true));
 		pointCubeHighlightingCheckbox.setSelected(pacSettings.isPointCubeHighlightingEnabled());
 		pointCubeHighlightingColorButton.setColor(new Color(pacSettings.getPointCubeHighlightedColor(), true));
+		pointCubeHighlightingLineThicknessSpinner.setValue(pacSettings.getPointCubeHighlightedOutlineThickness());
 
 		curveAltitudeModeComboBox.setSelectedItem(pacSettings.getCurveAltitudeMode());
 		curveThicknessSpinner.setValue(pacSettings.getCurveThickness());
@@ -454,11 +493,15 @@ public class PointAndCurveStylingPanel extends AbstractPreferencesComponent {
 		pacSettings.setPointHighlightedColor(pointCrossLineHighlightingColorButton.getColor().getRGB());
 		pacSettings.setPointIconColor(pointIconColorButton.getColor().getRGB());
 		pacSettings.setPointIconScale((Double) pointIconScaleSpinner.getValue());
+		pacSettings.setPointIconHighlightingEnabled(pointIconHighlightingCheckbox.isSelected());
+		pacSettings.setPointIconHighlightedColor(pointIconHighlightingColorButton.getColor().getRGB());
+		pacSettings.setPointIconHighlightedScale((Double) pointIconHighlightingScaleSpinner.getValue());
 
 		pacSettings.setPointCubeLengthOfSide((Double) pointCubeLengthOfSideSpinner.getValue());
 		pacSettings.setPointCubeFillColor(pointCubeFillColorButton.getColor().getRGB());
 		pacSettings.setPointCubeHighlightingEnabled(pointCubeHighlightingCheckbox.isSelected());
 		pacSettings.setPointCubeHighlightedColor(pointCubeHighlightingColorButton.getColor().getRGB());
+		pacSettings.setPointCubeHighlightedOutlineThickness((Double) pointCubeHighlightingLineThicknessSpinner.getValue());
 
 		pacSettings.setCurveAltitudeMode((AltitudeMode) curveAltitudeModeComboBox.getSelectedItem());
 		pacSettings.setCurveThickness((Double) curveThicknessSpinner.getValue());
@@ -479,6 +522,11 @@ public class PointAndCurveStylingPanel extends AbstractPreferencesComponent {
 		pointIconColorButton.setEnabled(iconRButton.isSelected());
 		pointIconScaleLabel.setEnabled(iconRButton.isSelected());
 		pointIconScaleSpinner.setEnabled(iconRButton.isSelected());
+		pointIconHighlightingCheckbox.setEnabled(iconRButton.isSelected());
+		pointIconHighlightingColorLabel.setEnabled(pointIconHighlightingCheckbox.isSelected() && iconRButton.isSelected());
+		pointIconHighlightingColorButton.setEnabled(pointIconHighlightingCheckbox.isSelected() && iconRButton.isSelected());
+		pointIconHighlightingScaleLabel.setEnabled(pointIconHighlightingCheckbox.isSelected() && iconRButton.isSelected());
+		pointIconHighlightingScaleSpinner.setEnabled(pointIconHighlightingCheckbox.isSelected() && iconRButton.isSelected());
 
 		pointCrossLineDefaultStyle.setEnabled(crossLineRButton.isSelected());
 		pointCrossLineThicknessLabel.setEnabled(crossLineRButton.isSelected());
@@ -499,6 +547,8 @@ public class PointAndCurveStylingPanel extends AbstractPreferencesComponent {
 		pointCubeHighlightingCheckbox.setEnabled(cubeRButton.isSelected());
 		pointCubeHighlightingColorLabel.setEnabled(pointCubeHighlightingCheckbox.isSelected() && cubeRButton.isSelected());
 		pointCubeHighlightingColorButton.setEnabled(pointCubeHighlightingCheckbox.isSelected() && cubeRButton.isSelected());
+		pointCubeHighlightingLineThicknessLabel.setEnabled(pointCubeHighlightingCheckbox.isSelected() && cubeRButton.isSelected());
+		pointCubeHighlightingLineThicknessSpinner.setEnabled(pointCubeHighlightingCheckbox.isSelected() && cubeRButton.isSelected());
 	}
 
 	private void setEnabledCurveComponents() {

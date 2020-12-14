@@ -57,10 +57,6 @@ import java.util.List;
 
 public class ADEObject extends KmlGenericObject {
 	private final Logger log = Logger.getInstance();
-
-	public static final String POINT = "Point";
-	public static final String CURVE = "Curve";
-
 	private final int adeObjectClassId;
 
 	public ADEObject(Connection connection,
