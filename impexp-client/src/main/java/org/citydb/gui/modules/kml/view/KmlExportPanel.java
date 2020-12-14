@@ -238,25 +238,50 @@ public class KmlExportPanel extends JPanel implements EventHandler {
         JPanel mainPanel = new JPanel();
         mainPanel.setLayout(new GridBagLayout());
         {
-            // gml:id
-            JPanel gmlIdConent = new JPanel();
-            gmlIdConent.setLayout(new GridBagLayout());
-            gmlIdConent.add(gmlIdLabel, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 5));
-            gmlIdConent.add(gmlIdText, GuiUtil.setConstraints(1, 0, 1, 1, GridBagConstraints.HORIZONTAL, 0, 5, 0, 0));
+            // lod to export from
+            JPanel lodContent = new JPanel();
+            lodContent.setLayout(new GridBagLayout());
+            lodContent.add(lodComboBox, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.NORTH, GridBagConstraints.NONE, 0, 0, 0, 0));
+            lodPanel = new TitledPanel().build(lodContent);
 
-            gmlIdPanel = new TitledPanel()
-                    .withToggleButton(useGmlIdFilter)
-                    .build(gmlIdConent);
+            // display forms
+            JPanel displayAsContent = new JPanel();
+            displayAsContent.setLayout(new GridBagLayout());
+            displayAsContent.add(footprintCheckbox, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 5));
+            displayAsContent.add(visibleFromFootprintLabel, GuiUtil.setConstraints(1, 0, 0, 1, GridBagConstraints.EAST, GridBagConstraints.NONE, 0, 5, 0, 5));
+            displayAsContent.add(footprintVisibleFromText, GuiUtil.setConstraints(2, 0, 0, 1, GridBagConstraints.HORIZONTAL, 0, 5, 0, 5));
+            displayAsContent.add(pixelsFootprintLabel, GuiUtil.setConstraints(3, 0, 0, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
+            displayAsContent.add(extrudedCheckbox, GuiUtil.setConstraints(0, 1, 1, 1, GridBagConstraints.BOTH, 5, 0, 0, 5));
+            displayAsContent.add(visibleFromExtrudedLabel, GuiUtil.setConstraints(1, 1, 0, 1, GridBagConstraints.EAST, GridBagConstraints.NONE, 5, 5, 0, 5));
+            displayAsContent.add(extrudedVisibleFromText, GuiUtil.setConstraints(2, 1, 0, 1, GridBagConstraints.HORIZONTAL, 5, 5, 0, 5));
+            displayAsContent.add(pixelsExtrudedLabel, GuiUtil.setConstraints(3, 1, 0, 1, GridBagConstraints.BOTH, 5, 0, 0, 0));
+            displayAsContent.add(geometryCheckbox, GuiUtil.setConstraints(0, 2, 1, 1, GridBagConstraints.BOTH, 5, 0, 0, 5));
+            displayAsContent.add(visibleFromGeometryLabel, GuiUtil.setConstraints(1, 2, 0, 1, GridBagConstraints.EAST, GridBagConstraints.NONE, 5, 5, 0, 5));
+            displayAsContent.add(geometryVisibleFromText, GuiUtil.setConstraints(2, 2, 0, 1, GridBagConstraints.HORIZONTAL, 5, 5, 0, 5));
+            displayAsContent.add(pixelsGeometryLabel, GuiUtil.setConstraints(3, 2, 0, 1, GridBagConstraints.BOTH, 5, 0, 0, 0));
+            displayAsContent.add(colladaCheckbox, GuiUtil.setConstraints(0, 3, 1, 1, GridBagConstraints.BOTH, 5, 0, 0, 5));
+            displayAsContent.add(visibleFromColladaLabel, GuiUtil.setConstraints(1, 3, 0, 1, GridBagConstraints.EAST, GridBagConstraints.NONE, 5, 5, 0, 5));
+            displayAsContent.add(colladaVisibleFromText, GuiUtil.setConstraints(2, 3, 0, 1, GridBagConstraints.HORIZONTAL, 5, 5, 0, 5));
+            displayAsContent.add(pixelsColladaLabel, GuiUtil.setConstraints(3, 3, 0, 1, GridBagConstraints.BOTH, 5, 0, 0, 0));
 
-            mainPanel.add(gmlIdPanel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
-        }
-        {
-            // bbox
-            bboxPanel = new TitledPanel()
-                    .withToggleButton(useBboxFilter)
-                    .build(bboxComponent);
+            // appearance
+            JPanel appearanceContent = new JPanel();
+            appearanceContent.setLayout(new GridBagLayout());
+            int lmargin = GuiUtil.getTextOffset(colladaCheckbox);
+            appearanceContent.add(themeLabel, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 5));
+            appearanceContent.add(themeComboBox, GuiUtil.setConstraints(1, 0, 1, 1, GridBagConstraints.HORIZONTAL, 0, 5, 0, 15));
+            themeComboBox.setPreferredSize(new Dimension(50, themeComboBox.getPreferredSize().height));
 
-            mainPanel.add(bboxPanel, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+            displayAsContent.add(appearanceContent, GuiUtil.setConstraints(0, 4, 1, 1, GridBagConstraints.BOTH, 5, lmargin, 0, 0));
+            displayAsContent.add(fetchThemesButton, GuiUtil.setConstraints(1, 4, 3, 1, 0, 1, GridBagConstraints.WEST, GridBagConstraints.NONE, 5, 5, 0, 0));
+            displayAsPanel = new TitledPanel().build(displayAsContent);
+
+            JPanel content = new JPanel();
+            content.setLayout(new GridBagLayout());
+            content.add(lodPanel, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+            content.add(displayAsPanel, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.BOTH, 0, 20, 0, 0));
+
+            mainPanel.add(content, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
         }
         {
             // tiling
@@ -274,53 +299,28 @@ public class KmlExportPanel extends JPanel implements EventHandler {
                     .withToggleButton(tilingCheckBox)
                     .build(tilingContent);
 
-            mainPanel.add(tilingPanel, GuiUtil.setConstraints(0, 2, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+            mainPanel.add(tilingPanel, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
         }
         {
-            // lod to export from
-            JPanel lodContent = new JPanel();
-            lodContent.setLayout(new GridBagLayout());
-			lodContent.add(lodComboBox, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.NORTH, GridBagConstraints.NONE, 0, 0, 0, 0));
-            lodPanel = new TitledPanel().build(lodContent);
+            // gml:id
+            JPanel gmlIdConent = new JPanel();
+            gmlIdConent.setLayout(new GridBagLayout());
+            gmlIdConent.add(gmlIdLabel, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 5));
+            gmlIdConent.add(gmlIdText, GuiUtil.setConstraints(1, 0, 1, 1, GridBagConstraints.HORIZONTAL, 0, 5, 0, 0));
 
-            // display forms
-			JPanel displayAsContent = new JPanel();
-			displayAsContent.setLayout(new GridBagLayout());
-			displayAsContent.add(footprintCheckbox, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 5));
-			displayAsContent.add(visibleFromFootprintLabel, GuiUtil.setConstraints(1, 0, 0, 1, GridBagConstraints.EAST, GridBagConstraints.NONE, 0, 5, 0, 5));
-			displayAsContent.add(footprintVisibleFromText, GuiUtil.setConstraints(2, 0, 0, 1, GridBagConstraints.HORIZONTAL, 0, 5, 0, 5));
-			displayAsContent.add(pixelsFootprintLabel, GuiUtil.setConstraints(3, 0, 0, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
-			displayAsContent.add(extrudedCheckbox, GuiUtil.setConstraints(0, 1, 1, 1, GridBagConstraints.BOTH, 5, 0, 0, 5));
-			displayAsContent.add(visibleFromExtrudedLabel, GuiUtil.setConstraints(1, 1, 0, 1, GridBagConstraints.EAST, GridBagConstraints.NONE, 5, 5, 0, 5));
-			displayAsContent.add(extrudedVisibleFromText, GuiUtil.setConstraints(2, 1, 0, 1, GridBagConstraints.HORIZONTAL, 5, 5, 0, 5));
-			displayAsContent.add(pixelsExtrudedLabel, GuiUtil.setConstraints(3, 1, 0, 1, GridBagConstraints.BOTH, 5, 0, 0, 0));
-			displayAsContent.add(geometryCheckbox, GuiUtil.setConstraints(0, 2, 1, 1, GridBagConstraints.BOTH, 5, 0, 0, 5));
-			displayAsContent.add(visibleFromGeometryLabel, GuiUtil.setConstraints(1, 2, 0, 1, GridBagConstraints.EAST, GridBagConstraints.NONE, 5, 5, 0, 5));
-			displayAsContent.add(geometryVisibleFromText, GuiUtil.setConstraints(2, 2, 0, 1, GridBagConstraints.HORIZONTAL, 5, 5, 0, 5));
-			displayAsContent.add(pixelsGeometryLabel, GuiUtil.setConstraints(3, 2, 0, 1, GridBagConstraints.BOTH, 5, 0, 0, 0));
-			displayAsContent.add(colladaCheckbox, GuiUtil.setConstraints(0, 3, 1, 1, GridBagConstraints.BOTH, 5, 0, 0, 5));
-			displayAsContent.add(visibleFromColladaLabel, GuiUtil.setConstraints(1, 3, 0, 1, GridBagConstraints.EAST, GridBagConstraints.NONE, 5, 5, 0, 5));
-			displayAsContent.add(colladaVisibleFromText, GuiUtil.setConstraints(2, 3, 0, 1, GridBagConstraints.HORIZONTAL, 5, 5, 0, 5));
-			displayAsContent.add(pixelsColladaLabel, GuiUtil.setConstraints(3, 3, 0, 1, GridBagConstraints.BOTH, 5, 0, 0, 0));
+            gmlIdPanel = new TitledPanel()
+                    .withToggleButton(useGmlIdFilter)
+                    .build(gmlIdConent);
 
-			// appearance
-			JPanel appearanceContent = new JPanel();
-			appearanceContent.setLayout(new GridBagLayout());
-			int lmargin = GuiUtil.getTextOffset(colladaCheckbox);
-			appearanceContent.add(themeLabel, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 5));
-			appearanceContent.add(themeComboBox, GuiUtil.setConstraints(1, 0, 1, 1, GridBagConstraints.HORIZONTAL, 0, 5, 0, 15));
-			themeComboBox.setPreferredSize(new Dimension(50, themeComboBox.getPreferredSize().height));
+            mainPanel.add(gmlIdPanel, GuiUtil.setConstraints(0, 2, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+        }
+        {
+            // bbox
+            bboxPanel = new TitledPanel()
+                    .withToggleButton(useBboxFilter)
+                    .build(bboxComponent);
 
-			displayAsContent.add(appearanceContent, GuiUtil.setConstraints(0, 4, 1, 1, GridBagConstraints.BOTH, 5, lmargin, 0, 0));
-			displayAsContent.add(fetchThemesButton, GuiUtil.setConstraints(1, 4, 3, 1, 0, 1, GridBagConstraints.WEST, GridBagConstraints.NONE, 5, 5, 0, 0));
-			displayAsPanel = new TitledPanel().build(displayAsContent);
-
-			JPanel content = new JPanel();
-			content.setLayout(new GridBagLayout());
-			content.add(lodPanel, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
-			content.add(displayAsPanel, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.BOTH, 0, 20, 0, 0));
-
-			mainPanel.add(content, GuiUtil.setConstraints(0, 3, 0, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+            mainPanel.add(bboxPanel, GuiUtil.setConstraints(0, 3, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
         }
         {
             featureTreePanel = new JPanel();
