@@ -870,7 +870,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
     private void saveFile() {
         JFileChooser chooser = new JFileChooser();
 
-        FileNameExtensionFilter filter = new FileNameExtensionFilter("KML Files (*.kml, *.kmz)", "kml", "kmz");
+        FileNameExtensionFilter filter = new FileNameExtensionFilter("KML Files (*.kml)", "kml");
         chooser.addChoosableFileFilter(filter);
         chooser.addChoosableFileFilter(chooser.getAcceptAllFileFilter());
         chooser.setFileFilter(filter);
@@ -896,9 +896,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
                 exportString = Util.stripFileExtension(exportString);
             }
 
-            exportString = config.getKmlExportConfig().isExportAsKmz() ?
-                    exportString + ".kmz" :
-                    exportString + ".kml";
+            exportString += ".kml";
 
             browseText.setText(exportString);
             config.getKmlExportConfig().getPath().setLastUsedPath(chooser.getCurrentDirectory().getAbsolutePath());
