@@ -37,25 +37,27 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "SimpleKmlExportQueryType", propOrder = {
         "featureTypeFilter",
         "gmlIdFilter",
-        "bboxFilter"
+        "spatialFilter"
 })
 public class SimpleKmlQuery {
     @XmlAttribute
     private boolean useTypeNames;
     @XmlAttribute
-    private SimpleKmlQueryMode mode = SimpleKmlQueryMode.BBOX;
+    private boolean useGmlIdFilter;
+    @XmlAttribute
+    private boolean useBboxFilter;
 
     @XmlElement(name = "typeNames")
     protected FeatureTypeFilter featureTypeFilter;
     @XmlElement(name = "gmlIds")
     private ResourceIdOperator gmlIdFilter;
     @XmlElement(name = "bbox", required = true)
-    private KmlTiling bboxFilter;
+    private KmlTiling spatialFilter;
 
     public SimpleKmlQuery() {
         featureTypeFilter = new FeatureTypeFilter();
         gmlIdFilter = new ResourceIdOperator();
-        bboxFilter = new KmlTiling();
+        spatialFilter = new KmlTiling();
     }
 
     public boolean isUseTypeNames() {
@@ -64,14 +66,6 @@ public class SimpleKmlQuery {
 
     public void setUseTypeNames(boolean useTypeNames) {
         this.useTypeNames = useTypeNames;
-    }
-
-    public SimpleKmlQueryMode getMode() {
-        return mode;
-    }
-
-    public void setMode(SimpleKmlQueryMode mode) {
-        this.mode = mode;
     }
 
     public FeatureTypeFilter getFeatureTypeFilter() {
@@ -86,6 +80,14 @@ public class SimpleKmlQuery {
         this.featureTypeFilter = featureTypeFilter;
     }
 
+    public boolean isUseGmlIdFilter() {
+        return useGmlIdFilter;
+    }
+
+    public void setUseGmlIdFilter(boolean useGmlIdFilter) {
+        this.useGmlIdFilter = useGmlIdFilter;
+    }
+
     public ResourceIdOperator getGmlIdFilter() {
         return gmlIdFilter;
     }
@@ -98,15 +100,23 @@ public class SimpleKmlQuery {
         this.gmlIdFilter = gmlIdFilter;
     }
 
-    public KmlTiling getBboxFilter() {
-        return bboxFilter;
+    public boolean isUseBboxFilter() {
+        return useBboxFilter;
+    }
+
+    public void setUseBboxFilter(boolean useBboxFilter) {
+        this.useBboxFilter = useBboxFilter;
+    }
+
+    public KmlTiling getSpatialFilter() {
+        return spatialFilter;
     }
 
     public boolean isSetBboxFilter() {
-        return bboxFilter != null;
+        return spatialFilter != null;
     }
 
-    public void setBboxFilter(KmlTiling bboxFilter) {
-        this.bboxFilter = bboxFilter;
+    public void setSpatialFilter(KmlTiling spatialFilter) {
+        this.spatialFilter = spatialFilter;
     }
 }

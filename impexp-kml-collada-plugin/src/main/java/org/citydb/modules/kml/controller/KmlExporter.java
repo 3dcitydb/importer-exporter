@@ -27,29 +27,7 @@
  */
 package org.citydb.modules.kml.controller;
 
-import net.opengis.kml._2.BalloonStyleType;
-import net.opengis.kml._2.BasicLinkType;
-import net.opengis.kml._2.DocumentType;
-import net.opengis.kml._2.FolderType;
-import net.opengis.kml._2.IconStyleType;
-import net.opengis.kml._2.KmlType;
-import net.opengis.kml._2.LabelStyleType;
-import net.opengis.kml._2.LatLonAltBoxType;
-import net.opengis.kml._2.LineStringType;
-import net.opengis.kml._2.LineStyleType;
-import net.opengis.kml._2.LinkType;
-import net.opengis.kml._2.LodType;
-import net.opengis.kml._2.LookAtType;
-import net.opengis.kml._2.NetworkLinkType;
-import net.opengis.kml._2.ObjectFactory;
-import net.opengis.kml._2.PairType;
-import net.opengis.kml._2.PlacemarkType;
-import net.opengis.kml._2.PolyStyleType;
-import net.opengis.kml._2.RegionType;
-import net.opengis.kml._2.StyleMapType;
-import net.opengis.kml._2.StyleStateEnumType;
-import net.opengis.kml._2.StyleType;
-import net.opengis.kml._2.ViewRefreshModeEnumType;
+import net.opengis.kml._2.*;
 import org.citydb.ade.kmlExporter.ADEKmlExportExtensionManager;
 import org.citydb.concurrent.PoolSizeAdaptationStrategy;
 import org.citydb.concurrent.SingleWorkerPool;
@@ -60,17 +38,7 @@ import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.database.DatabaseConfig;
 import org.citydb.config.project.database.Workspace;
-import org.citydb.config.project.kmlExporter.ADEPreference;
-import org.citydb.config.project.kmlExporter.AltitudeOffsetMode;
-import org.citydb.config.project.kmlExporter.Balloon;
-import org.citydb.config.project.kmlExporter.BalloonContentMode;
-import org.citydb.config.project.kmlExporter.DisplayForm;
-import org.citydb.config.project.kmlExporter.DisplayFormType;
-import org.citydb.config.project.kmlExporter.KmlExportConfig;
-import org.citydb.config.project.kmlExporter.KmlTilingOptions;
-import org.citydb.config.project.kmlExporter.PointAndCurve;
-import org.citydb.config.project.kmlExporter.PointDisplayMode;
-import org.citydb.config.project.kmlExporter.Style;
+import org.citydb.config.project.kmlExporter.*;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.connection.DatabaseConnectionPool;
 import org.citydb.database.schema.mapping.FeatureType;
@@ -78,29 +46,10 @@ import org.citydb.database.schema.mapping.SchemaMapping;
 import org.citydb.event.Event;
 import org.citydb.event.EventDispatcher;
 import org.citydb.event.EventHandler;
-import org.citydb.event.global.CounterEvent;
-import org.citydb.event.global.CounterType;
-import org.citydb.event.global.EventType;
-import org.citydb.event.global.InterruptEvent;
-import org.citydb.event.global.ObjectCounterEvent;
-import org.citydb.event.global.StatusDialogMessage;
-import org.citydb.event.global.StatusDialogTitle;
+import org.citydb.event.global.*;
 import org.citydb.log.Logger;
 import org.citydb.modules.kml.concurrent.KmlExportWorkerFactory;
-import org.citydb.modules.kml.database.ADEObject;
-import org.citydb.modules.kml.database.Bridge;
-import org.citydb.modules.kml.database.Building;
-import org.citydb.modules.kml.database.CityFurniture;
-import org.citydb.modules.kml.database.CityObjectGroup;
-import org.citydb.modules.kml.database.GenericCityObject;
-import org.citydb.modules.kml.database.KmlSplitter;
-import org.citydb.modules.kml.database.KmlSplittingResult;
-import org.citydb.modules.kml.database.LandUse;
-import org.citydb.modules.kml.database.Relief;
-import org.citydb.modules.kml.database.SolitaryVegetationObject;
-import org.citydb.modules.kml.database.Transportation;
-import org.citydb.modules.kml.database.Tunnel;
-import org.citydb.modules.kml.database.WaterBody;
+import org.citydb.modules.kml.database.*;
 import org.citydb.modules.kml.datatype.TypeAttributeValueEnum;
 import org.citydb.modules.kml.util.CityObject4JSON;
 import org.citydb.modules.kml.util.ExportTracker;
@@ -134,21 +83,13 @@ import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.namespace.QName;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
+import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.zip.ZipEntry;
@@ -282,10 +223,23 @@ public class KmlExporter implements EventHandler {
 		Query query;
 		try {
 			ConfigQueryBuilder queryBuilder = new ConfigQueryBuilder(schemaMapping, databaseAdapter);
-			query = queryBuilder.buildQuery(config.getKmlExportConfig().getQuery(), config.getNamespaceFilter());
+			SimpleKmlQuery queryConfig = config.getKmlExportConfig().getQuery();
+			query = queryBuilder.buildQuery(queryConfig, config.getNamespaceFilter());
+
+			// calculate extent if the bbox filter is disabled
+			KmlTiling spatialFilter = queryConfig.getSpatialFilter();
+			if (!spatialFilter.isSetExtent()) {
+				try {
+					spatialFilter.setExtent(databaseAdapter.getUtil().calcBoundingBox(workspace, query, schemaMapping));
+					query = queryBuilder.buildQuery(queryConfig, config.getNamespaceFilter());
+				} catch (SQLException | FilterException e) {
+					throw new QueryBuildException("Failed to calculate bounding box based on the non-spatial filter settings.", e);
+				}
+			}
 		} catch (QueryBuildException e) {
 			throw new KmlExportException("Failed to build the export filter expression.", e);
 		}
+		Predicate predicate = query.isSetSelection() ? query.getSelection().getPredicate() : null;
 
 		// check whether CityGML features can be exported from LoD 0
 		if (config.getKmlExportConfig().getLodToExportFrom() == 0) {
@@ -305,28 +259,28 @@ public class KmlExporter implements EventHandler {
 
 		// tiling
 		Tiling tiling = query.getTiling();
-		KmlTilingOptions tilingOptions = null;
-		Predicate predicate = null;
 		boolean useTiling = query.isSetTiling();
-		int remainingTiles = 1;
-		int rows = useTiling ? tiling.getRows() : 1;  
+		int rows = useTiling ? tiling.getRows() : 1;
 		int columns = useTiling ? tiling.getColumns() : 1;
-
-		if (useTiling) {
+		if (!useTiling) {
 			try {
-				// transform tiling extent to WGS84
-				tiling.transformExtent(DatabaseConfig.PREDEFINED_SRS.get(DatabaseConfig.PredefinedSrsName.WGS84_2D), databaseAdapter);
-				tilingOptions = tiling.getTilingOptions() instanceof KmlTilingOptions ? (KmlTilingOptions)tiling.getTilingOptions() : new KmlTilingOptions();
-				predicate = query.isSetSelection() ? query.getSelection().getPredicate() : null;
-
-				// calculate and display number of tiles to be exported
-				int displayFormats = config.getKmlExportConfig().getDisplayForms().getActiveDisplayFormsAmount();
-				remainingTiles = rows * columns * displayFormats;
-				log.info(remainingTiles + " (" + rows + "x" + columns + "x" + displayFormats + ") tiles will be generated.");	
+				tiling = new Tiling(config.getKmlExportConfig().getQuery().getSpatialFilter().getExtent(), rows, columns);
 			} catch (FilterException e) {
-				throw new KmlExportException("Failed to transform tiling extent.", e);
+				throw new KmlExportException("Failed to build the internal fallback tiling.", e);
 			}
 		}
+
+		// transform tiling extent to WGS84
+		try {
+			tiling.transformExtent(DatabaseConfig.PREDEFINED_SRS.get(DatabaseConfig.PredefinedSrsName.WGS84_2D), databaseAdapter);
+		} catch (FilterException e) {
+			throw new KmlExportException("Failed to transform tiling extent.", e);
+		}
+
+		// calculate and display number of tiles to be exported
+		int displayFormats = config.getKmlExportConfig().getDisplayForms().getActiveDisplayFormsAmount();
+		int remainingTiles = rows * columns * displayFormats;
+		log.info(remainingTiles + " (" + rows + "x" + columns + "x" + displayFormats + ") tiles will be generated.");
 
 		// check whether the Balloon template files existed, if not, error message will be printed out: file not found! 
 		boolean balloonCheck = checkBalloonSettings(CityGMLClass.BUILDING, query);
@@ -358,7 +312,7 @@ public class KmlExporter implements EventHandler {
 		// set export filename and path
 		String path = outputFile.toAbsolutePath().normalize().toString();
 		String fileExtension = config.getKmlExportConfig().isExportAsKmz() ? ".kmz" : ".kml";
-		String fileName = null;
+		String fileName;
 
 		if (path.lastIndexOf(File.separator) == -1) {
 			fileName = path.lastIndexOf(".") == -1 ? path : path.substring(0, path.lastIndexOf("."));			
@@ -368,20 +322,18 @@ public class KmlExporter implements EventHandler {
 			path = path.substring(0, path.lastIndexOf(File.separator));
 		}
 
-		// start writing KML master file if required
-		SAXWriter masterFileWriter = null;
-		if (useTiling) {
-			try {
-				masterFileWriter = writeMasterFileHeader(fileName, path, query);
-			} catch (JAXBException | IOException | SAXException e) {
-				throw new KmlExportException("Failed to write KML master file header.", e);
-			}
+		// start writing KML master file
+		SAXWriter masterFileWriter;
+		try {
+			masterFileWriter = writeMasterFileHeader(fileName, path, tiling, query.getFeatureTypeFilter().getFeatureTypes());
+		} catch (JAXBException | IOException | SAXException e) {
+			throw new KmlExportException("Failed to write KML master file header.", e);
 		}
 
 		// start writing cityobject JSON file if required
 		FileOutputStream jsonFileWriter = null;
 		boolean jsonHasContent = false;
-		if (config.getKmlExportConfig().isWriteJSONFile() && useTiling) {
+		if (config.getKmlExportConfig().isWriteJSONFile()) {
 			try {
 				File jsonFile = new File(path + File.separator + fileName + ".json");
 				jsonFileWriter = new FileOutputStream(jsonFile);
@@ -401,21 +353,19 @@ public class KmlExporter implements EventHandler {
 				ExportTracker tracker = new ExportTracker();
 
 				// set active tile and get tile extent in WGS84
-				Tile tile = null;
-				if (useTiling) {
-					try {
-						tile = tiling.getTileAt(row, column);
-						tiling.setActiveTile(tile);
+				Tile tile;
+				try {
+					tile = tiling.getTileAt(row, column);
+					tiling.setActiveTile(tile);
 
-						Predicate bboxFilter = tile.getFilterPredicate(databaseAdapter);
-						if (predicate != null)
-							query.setSelection(new SelectionFilter(LogicalOperationFactory.AND(predicate, bboxFilter)));
-						else
-							query.setSelection(new SelectionFilter(bboxFilter));
-					} catch (FilterException e) {
-						if (jsonFileWriter != null) try { jsonFileWriter.close(); } catch (IOException ioe) { }
-						throw new KmlExportException("Failed to get tile at [" + row + "," + column + "].", e);
-					}
+					Predicate bboxFilter = tile.getFilterPredicate(databaseAdapter);
+					if (predicate != null)
+						query.setSelection(new SelectionFilter(LogicalOperationFactory.AND(predicate, bboxFilter)));
+					else
+						query.setSelection(new SelectionFilter(bboxFilter));
+				} catch (FilterException e) {
+					if (jsonFileWriter != null) try { jsonFileWriter.close(); } catch (IOException ioe) { }
+					throw new KmlExportException("Failed to get tile at [" + row + "," + column + "].", e);
 				}
 
 				// iterate over display forms
@@ -426,23 +376,18 @@ public class KmlExporter implements EventHandler {
 					if (lastTempFolder != null && lastTempFolder.exists()) 
 						deleteFolder(lastTempFolder); // just in case
 
-					File file = null;
+					File file;
 					ZipOutputStream zipOut = null;
-					String currentWorkingDirectoryPath = null;
+					String currentWorkingDirectoryPath;
 					try {
-						if (useTiling) {
-							File tilesRootDirectory = new File(path, "Tiles");
-							tilesRootDirectory.mkdir();
-							File rowTilesDirectory = new File(tilesRootDirectory.getPath(),  String.valueOf(row));
-							rowTilesDirectory.mkdir();
-							File columnTilesDirectory = new File(rowTilesDirectory.getPath(),  String.valueOf(column));
-							columnTilesDirectory.mkdir();
-							file = new File(columnTilesDirectory.getPath() + File.separator + fileName + "_Tile_" + row + "_" + column + "_" + displayForm.getName() + fileExtension);
-							currentWorkingDirectoryPath = columnTilesDirectory.getPath();
-						} else {
-							file = new File(path + File.separator + fileName + "_" + displayForm.getName() + fileExtension);
-							currentWorkingDirectoryPath = path;
-						}
+						File tilesRootDirectory = new File(path, "Tiles");
+						tilesRootDirectory.mkdir();
+						File rowTilesDirectory = new File(tilesRootDirectory.getPath(),  String.valueOf(row));
+						rowTilesDirectory.mkdir();
+						File columnTilesDirectory = new File(rowTilesDirectory.getPath(),  String.valueOf(column));
+						columnTilesDirectory.mkdir();
+						file = new File(columnTilesDirectory.getPath() + File.separator + fileName + "_Tile_" + row + "_" + column + "_" + displayForm.getName() + fileExtension);
+						currentWorkingDirectoryPath = columnTilesDirectory.getPath();
 						tracker.setCurrentWorkingDirectoryPath(currentWorkingDirectoryPath);
 
 						eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("kmlExport.dialog.writingToFile"), this));
@@ -510,10 +455,7 @@ public class KmlExporter implements EventHandler {
 						JAXBElement<KmlType> kml = kmlFactory.createKml(kmlType);
 
 						DocumentType document = kmlFactory.createDocumentType();
-						if (useTiling)
-							document.setName(fileName + "_Tile_" + row + "_" + column + "_" + displayForm.getName());
-						else 
-							document.setName(fileName + "_" + displayForm.getName());
+						document.setName(fileName + "_Tile_" + row + "_" + column + "_" + displayForm.getName());
 
 						document.setOpen(false);
 						kmlType.setAbstractFeatureGroup(kmlFactory.createDocument(document));
@@ -525,7 +467,7 @@ public class KmlExporter implements EventHandler {
 							fragmentWriter.setWriteMode(WriteMode.HEAD);
 							marshaller.marshal(kml, fragmentWriter);
 
-							if (useTiling && config.getKmlExportConfig().isShowTileBorders())
+							if (config.getKmlExportConfig().isShowTileBorders())
 								addBorder(tile.getExtent(), null, saxWriter);
 
 						} catch (JAXBException e) {
@@ -557,9 +499,7 @@ public class KmlExporter implements EventHandler {
 
 						try {
 							// add styles
-							if (!objectCounter.isEmpty()
-									&& (!config.getKmlExportConfig().isOneFilePerObject()
-									|| !useTiling)) {
+							if (!objectCounter.isEmpty() && !config.getKmlExportConfig().isOneFilePerObject()) {
 								for (int objectClassId : objectCounter.keySet()) {
 									if (objectCounter.get(objectClassId) > 0)
 										addStyle(displayForm, objectClassId, saxWriter);
@@ -628,7 +568,7 @@ public class KmlExporter implements EventHandler {
 						}
 
 						// delete empty tile file if requested
-						if (useTiling && objectCounter.isEmpty() && !config.getKmlExportConfig().isExportEmptyTiles()) {
+						if (objectCounter.isEmpty() && !config.getKmlExportConfig().isExportEmptyTiles()) {
 							log.debug("Tile_" + row + "_" + column + " is empty. Deleting file " + file.getName() + ".");
 							file.delete();
 						}
@@ -653,7 +593,7 @@ public class KmlExporter implements EventHandler {
 				// create reference to tile file in master file
 				if (masterFileWriter != null && !objectCounter.isEmpty()) {
 					try {
-						writeMasterFileTileReference(fileName, tile, tilingOptions, masterFileWriter);
+						writeMasterFileTileReference(fileName, tile, masterFileWriter);
 					} catch (JAXBException e) {
 						if (jsonFileWriter != null) try { jsonFileWriter.close(); } catch (IOException ioe) { }
 						throw new KmlExportException("Failed to write tile reference to master file.", e);
@@ -697,12 +637,10 @@ public class KmlExporter implements EventHandler {
 		}
 
 		// write master JSON file
-		if (useTiling) {
-			try {
-				writeMasterJsonFileTileReference(path, fileName, fileExtension, tiling);
-			} catch (IOException e) {
-				throw new KmlExportException("Failed to write master JSON file.", e);
-			}
+		try {
+			writeMasterJsonFileTileReference(path, fileName, fileExtension, tiling);
+		} catch (IOException e) {
+			throw new KmlExportException("Failed to write master JSON file.", e);
 		}
 
 		// close cityobject JSON file
@@ -736,11 +674,11 @@ public class KmlExporter implements EventHandler {
 		return shouldRun;
 	}
 
-	private SAXWriter writeMasterFileHeader(String fileName, String path, Query query) throws JAXBException, IOException, SAXException {
+	private SAXWriter writeMasterFileHeader(String fileName, String path, Tiling tiling, List<FeatureType> featureTypes) throws JAXBException, IOException, SAXException {
 		SAXWriter saxWriter = new SAXWriter();
 		saxWriter.setIndentString("  ");
 		saxWriter.setHeaderComment("Written by " + this.getClass().getPackage().getImplementationTitle() + ", version \"" +
-				this.getClass().getPackage().getImplementationVersion() + '"', 
+						this.getClass().getPackage().getImplementationVersion() + '"',
 				this.getClass().getPackage().getImplementationVendor());
 		saxWriter.setDefaultNamespace("http://www.opengis.net/kml/2.2"); // default namespace
 		saxWriter.setPrefix("gx", "http://www.google.com/kml/ext/2.2");
@@ -754,7 +692,7 @@ public class KmlExporter implements EventHandler {
 		saxWriter.setOutput(outputStream, ENCODING);
 
 		// create file header
-		SAXFragmentWriter fragmentWriter = new SAXFragmentWriter(new QName("http://www.opengis.net/kml/2.2", "Document"), saxWriter);						
+		SAXFragmentWriter fragmentWriter = new SAXFragmentWriter(new QName("http://www.opengis.net/kml/2.2", "Document"), saxWriter);
 
 		// create kml root element
 		KmlType kmlType = kmlFactory.createKmlType();
@@ -764,7 +702,7 @@ public class KmlExporter implements EventHandler {
 		document.setName(fileName);
 		LookAtType lookAtType = kmlFactory.createLookAtType();
 
-		BoundingBox extent = query.getTiling().getExtent();
+		BoundingBox extent = tiling.getExtent();
 		lookAtType.setLongitude(extent.getLowerCorner().getX() + Math.abs((extent.getUpperCorner().getX() - extent.getLowerCorner().getX())/2));
 		lookAtType.setLatitude(extent.getLowerCorner().getY() + Math.abs((extent.getUpperCorner().getY() - extent.getLowerCorner().getY())/2));
 		lookAtType.setAltitude(0.0);
@@ -775,11 +713,11 @@ public class KmlExporter implements EventHandler {
 		kmlType.setAbstractFeatureGroup(kmlFactory.createDocument(document));
 
 		fragmentWriter.setWriteMode(WriteMode.HEAD);
-		marshaller.marshal(kml, fragmentWriter);				
+		marshaller.marshal(kml, fragmentWriter);
 
 		if (config.getKmlExportConfig().isOneFilePerObject()) {
 			for (DisplayForm displayForm : config.getKmlExportConfig().getDisplayForms().values()) {
-				for (FeatureType featureType : query.getFeatureTypeFilter().getFeatureTypes()) {
+				for (FeatureType featureType : featureTypes) {
 					addStyle(displayForm, featureType.getObjectClassId(), saxWriter);
 				}
 			}
@@ -798,7 +736,7 @@ public class KmlExporter implements EventHandler {
 		return saxWriter;
 	}
 
-	private void writeMasterFileTileReference(String tileName, Tile tile, KmlTilingOptions tilingOptions, SAXWriter saxWriter) throws JAXBException {
+	private void writeMasterFileTileReference(String tileName, Tile tile, SAXWriter saxWriter) throws JAXBException {
 		if (tile == null)
 			return;
 
@@ -880,7 +818,7 @@ public class KmlExporter implements EventHandler {
 				jsonFileWriterForMasterFile.write(("\t\"" + "version" + "\": \"" + versionNumber + "\",").getBytes(CHARSET));
 				jsonFileWriterForMasterFile.write(("\n\t\"" + "layername" + "\": \"" + fileName + "\",").getBytes(CHARSET));
 				jsonFileWriterForMasterFile.write(("\n\t\"" + "fileextension" + "\": \"" + fileExtension + "\",").getBytes(CHARSET));
-				jsonFileWriterForMasterFile.write(("\n\t\"" + "displayform" + "\": \"" + displayForm.getName() + "\",").getBytes(CHARSET));	
+				jsonFileWriterForMasterFile.write(("\n\t\"" + "displayform" + "\": \"" + displayForm.getName() + "\",").getBytes(CHARSET));
 				jsonFileWriterForMasterFile.write(("\n\t\"" + "minLodPixels" + "\": " + displayForm.getVisibleFrom() + ",").getBytes(CHARSET));
 				jsonFileWriterForMasterFile.write(("\n\t\"" + "maxLodPixels" + "\": " + displayForm.getVisibleTo() + ",").getBytes(CHARSET));
 				jsonFileWriterForMasterFile.write(("\n\t\"" + "colnum" + "\": " + tiling.getColumns() + ",").getBytes(CHARSET));
@@ -891,10 +829,10 @@ public class KmlExporter implements EventHandler {
 				jsonFileWriterForMasterFile.write(("\n\t\t\"" + "ymin" + "\": " + tiling.getExtent().getLowerCorner().getY() + ",").getBytes(CHARSET));
 				jsonFileWriterForMasterFile.write(("\n\t\t\"" + "ymax" + "\": " + tiling.getExtent().getUpperCorner().getY()).getBytes(CHARSET));
 				jsonFileWriterForMasterFile.write(("\n\t}").getBytes(CHARSET));
-				jsonFileWriterForMasterFile.write("\n}\n".getBytes(CHARSET));				
+				jsonFileWriterForMasterFile.write("\n}\n".getBytes(CHARSET));
 				jsonFileWriterForMasterFile.close();
-			}							
-		}		
+			}
+		}
 	}
 
 	private void addStyle(DisplayForm displayForm, int objectClassId, SAXWriter saxWriter) throws JAXBException {
