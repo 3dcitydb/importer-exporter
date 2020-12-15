@@ -357,8 +357,6 @@ public class UtilAdapter extends AbstractUtilAdapter {
 
     @Override
     protected GeometryObject transform(GeometryObject geometry, DatabaseSrs targetSrs, Connection connection) throws SQLException {
-        GeometryObject result = null;
-
         // get source srs
         DatabaseSrs sourceSrs = srsInfoMap.get(geometry.getSrid());
         if (sourceSrs == null) {
@@ -371,28 +369,30 @@ public class UtilAdapter extends AbstractUtilAdapter {
         int targetSrid = targetSrs.getSrid();
 
         // change srids if required
-        if (sourceSrs.is3D() && !targetSrs.is3D())
+        if (sourceSrs.is3D() && !targetSrs.is3D()) {
             geometry.changeSrid(get2DSrid(sourceSrs, connection));
-        else if (!sourceSrs.is3D() && targetSrs.is3D())
+        } else if (!sourceSrs.is3D() && targetSrs.is3D()) {
             targetSrid = get2DSrid(targetSrs, connection);
+        }
 
         Object unconverted = databaseAdapter.getGeometryConverter().getDatabaseObject(geometry, connection);
-        if (unconverted == null)
-            return null;
+        if (unconverted != null) {
+            try (PreparedStatement psQuery = connection.prepareStatement(
+                    "select SDO_CS.TRANSFORM(?, " + targetSrid + ") from dual")) {
+                psQuery.setObject(1, unconverted);
 
-        try (PreparedStatement psQuery = connection.prepareStatement("select SDO_CS.TRANSFORM(?, " + targetSrid + ") from dual")) {
-            psQuery.setObject(1, unconverted);
-
-            try (ResultSet rs = psQuery.executeQuery()) {
-                if (rs.next()) {
-                    Object converted = rs.getObject(1);
-                    if (!rs.wasNull() && converted != null)
-                        result = databaseAdapter.getGeometryConverter().getGeometry(converted);
+                try (ResultSet rs = psQuery.executeQuery()) {
+                    if (rs.next()) {
+                        Object converted = rs.getObject(1);
+                        if (!rs.wasNull()) {
+                            return databaseAdapter.getGeometryConverter().getGeometry(converted);
+                        }
+                    }
                 }
             }
-
-            return result;
         }
+
+        return null;
     }
 
     @Override

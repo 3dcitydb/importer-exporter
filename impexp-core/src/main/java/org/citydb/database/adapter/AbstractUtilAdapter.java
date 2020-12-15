@@ -29,6 +29,7 @@ package org.citydb.database.adapter;
 
 import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.geometry.GeometryObject;
+import org.citydb.config.geometry.GeometryType;
 import org.citydb.config.geometry.Position;
 import org.citydb.config.project.database.DatabaseSrs;
 import org.citydb.config.project.database.Workspace;
@@ -54,7 +55,13 @@ import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import javax.xml.bind.JAXBException;
-import java.sql.*;
+import java.sql.CallableStatement;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -353,7 +360,12 @@ public abstract class AbstractUtilAdapter {
 
     public GeometryObject transform(GeometryObject geometry, DatabaseSrs targetSrs) throws SQLException {
         try (Connection conn = databaseAdapter.connectionPool.getConnection()) {
-            return transform(geometry, targetSrs, conn);
+            GeometryObject transformed = transform(geometry, targetSrs, conn);
+            if (geometry.getGeometryType() == GeometryType.ENVELOPE && transformed != null) {
+                transformed = transformed.toEnvelope();
+            }
+
+            return transformed;
         }
     }
 

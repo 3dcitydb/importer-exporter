@@ -373,25 +373,24 @@ public class UtilAdapter extends AbstractUtilAdapter {
 
     @Override
     protected GeometryObject transform(GeometryObject geometry, DatabaseSrs targetSrs, Connection connection) throws SQLException {
-        GeometryObject result = null;
-
         Object unconverted = databaseAdapter.getGeometryConverter().getDatabaseObject(geometry, connection);
-        if (unconverted == null)
-            return null;
+        if (unconverted != null) {
+            try (PreparedStatement psQuery = connection.prepareStatement(
+                    "select ST_Transform(?, " + targetSrs.getSrid() + ')')) {
+                psQuery.setObject(1, unconverted);
 
-        try (PreparedStatement psQuery = connection.prepareStatement("select ST_Transform(?, " + targetSrs.getSrid() + ')')) {
-            psQuery.setObject(1, unconverted);
-
-            try (ResultSet rs = psQuery.executeQuery()) {
-                if (rs.next()) {
-                    Object converted = rs.getObject(1);
-                    if (!rs.wasNull() && converted != null)
-                        result = databaseAdapter.getGeometryConverter().getGeometry(converted);
+                try (ResultSet rs = psQuery.executeQuery()) {
+                    if (rs.next()) {
+                        Object converted = rs.getObject(1);
+                        if (!rs.wasNull()) {
+                            return databaseAdapter.getGeometryConverter().getGeometry(converted);
+                        }
+                    }
                 }
-
-                return result;
             }
         }
+
+        return null;
     }
 
     @Override
