@@ -116,6 +116,14 @@ public class ImpExpCli extends CliCommand implements CommandLine.IVersionProvide
             description = "Create a file containing the current process ID.")
     private Path pidFile;
 
+    @CommandLine.Option(names = "--plugins", scope = CommandLine.ScopeType.INHERIT, paramLabel = "<file>",
+            description = "Load plugins from this folder.")
+    private Path pluginsFolder;
+
+    @CommandLine.Option(names = "--ade-extensions", scope = CommandLine.ScopeType.INHERIT, paramLabel = "<file>",
+            description = "Load ADE extensions from this folder.")
+    private Path adeExtensionsFolder;
+
     private final Logger log = Logger.getInstance();
     private final PluginManager pluginManager = PluginManager.getInstance();
     private final ADEExtensionManager adeManager = ADEExtensionManager.getInstance();
@@ -202,8 +210,17 @@ public class ImpExpCli extends CliCommand implements CommandLine.IVersionProvide
         CommandLine cmd = new CommandLine(this);
 
         try {
+            // just for parsing the '--plugins' argument if exists
+            new CommandLine(this).setUnmatchedArgumentsAllowed(true).parseArgs(args);
+
+            if (pluginsFolder == null) {
+                pluginsFolder = ClientConstants.IMPEXP_HOME.resolve(ClientConstants.PLUGINS_DIR);
+            } else if (!pluginsFolder.isAbsolute()) {
+                pluginsFolder = ClientConstants.IMPEXP_HOME.resolve(pluginsFolder);
+            }
+
             // load CLI commands from plugins
-            loadClasses(ClientConstants.IMPEXP_HOME.resolve(ClientConstants.PLUGINS_DIR), classLoader);
+            loadClasses(pluginsFolder, classLoader);
             pluginManager.loadCliCommands(classLoader);
             for (CliCommand command : pluginManager.getCliCommands()) {
                 cmd.addSubcommand(command);
@@ -362,7 +379,13 @@ public class ImpExpCli extends CliCommand implements CommandLine.IVersionProvide
 
     private void loadADEExtensions() throws ImpExpException {
         try {
-            loadClasses(ClientConstants.IMPEXP_HOME.resolve(ClientConstants.ADE_EXTENSIONS_DIR), classLoader);
+            if (adeExtensionsFolder == null) {
+                adeExtensionsFolder = ClientConstants.IMPEXP_HOME.resolve(ClientConstants.ADE_EXTENSIONS_DIR);
+            } else if (!adeExtensionsFolder.isAbsolute()) {
+                adeExtensionsFolder = ClientConstants.IMPEXP_HOME.resolve(adeExtensionsFolder);
+            }
+
+            loadClasses(adeExtensionsFolder, classLoader);
         } catch (IOException e) {
             throw new ImpExpException("Failed to initialize ADE extension support.", e);
         }
