@@ -116,11 +116,11 @@ public class ImpExpCli extends CliCommand implements CommandLine.IVersionProvide
             description = "Create a file containing the current process ID.")
     private Path pidFile;
 
-    @CommandLine.Option(names = "--plugins", scope = CommandLine.ScopeType.INHERIT, paramLabel = "<file>",
+    @CommandLine.Option(names = "--plugins", scope = CommandLine.ScopeType.INHERIT, paramLabel = "<folder>",
             description = "Load plugins from this folder.")
     private Path pluginsFolder;
 
-    @CommandLine.Option(names = "--ade-extensions", scope = CommandLine.ScopeType.INHERIT, paramLabel = "<file>",
+    @CommandLine.Option(names = "--ade-extensions", scope = CommandLine.ScopeType.INHERIT, paramLabel = "<folder>",
             description = "Load ADE extensions from this folder.")
     private Path adeExtensionsFolder;
 
@@ -210,8 +210,13 @@ public class ImpExpCli extends CliCommand implements CommandLine.IVersionProvide
         CommandLine cmd = new CommandLine(this);
 
         try {
-            // just for parsing the '--plugins' argument if exists
-            new CommandLine(this).setUnmatchedArgumentsAllowed(true).parseArgs(args);
+            // parse '--plugins' argument if exists
+            for (int i = 0; i < args.length - 1; i++) {
+                if ("--plugins".equalsIgnoreCase(args[i])) {
+                    pluginsFolder = Paths.get(args[i + 1]);
+                    break;
+                }
+            }
 
             if (pluginsFolder == null) {
                 pluginsFolder = ClientConstants.IMPEXP_HOME.resolve(ClientConstants.PLUGINS_DIR);
