@@ -189,7 +189,7 @@ public class DBSurfaceGeometry implements DBImporter {
     }
 
     private void doImport(AbstractGeometry geometry, long parentId, long rootId, boolean reverse, boolean isXlink, boolean isCopy, long cityObjectId) throws CityGMLImportException, SQLException {
-        long id = geometry instanceof OrientableSurface ? parentId : ids.next(geometry);
+        long id = geometry instanceof OrientableSurface ? parentId : ids.next();
         doImport(geometry, id, parentId, rootId, reverse, isXlink, isCopy, cityObjectId);
     }
 
@@ -1004,11 +1004,11 @@ public class DBSurfaceGeometry implements DBImporter {
                 while (rs.next())
                     ids[i++] = rs.getLong(1);
 
-                return next(geometry);
+                return next();
             }
         }
 
-        private long next(AbstractGeometry geometry) {
+        private long next() {
             return ids[index++];
         }
     }
