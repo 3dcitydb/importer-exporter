@@ -336,7 +336,7 @@ public class DBSplitter {
 					if (!extent.isSetSrs())
 						extent.setSrs(databaseAdapter.getConnectionMetaData().getReferenceSystem());
 
-					GeometryObject extentObj = GeometryObject.createEnvelope(extent, true);
+					GeometryObject extentObj = GeometryObject.createEnvelope(extent, 3);
 					writer.getMetadata().setSpatialExtent(getSpatialExtent(extentObj));
 				}
 

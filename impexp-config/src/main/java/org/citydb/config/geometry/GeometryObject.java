@@ -63,15 +63,20 @@ public class GeometryObject {
         }
     }
 
-    public static GeometryObject createEnvelope(BoundingBox bbox, boolean force3D) {
-        if (!bbox.is3D() && force3D)
-            return createEnvelope(new BoundingBox(
+    public static GeometryObject createEnvelope(BoundingBox bbox, int dimension) {
+        if (dimension == 2 && bbox.is3D()) {
+            bbox = new BoundingBox(
+                    new Position(bbox.getLowerCorner().getX(), bbox.getLowerCorner().getY()),
+                    new Position(bbox.getUpperCorner().getX(), bbox.getUpperCorner().getY()),
+                    bbox.getSrs());
+        } else if (dimension == 3 && !bbox.is3D()) {
+            bbox = new BoundingBox(
                     new Position(bbox.getLowerCorner().getX(), bbox.getLowerCorner().getY(), 0.0),
                     new Position(bbox.getUpperCorner().getX(), bbox.getUpperCorner().getY(), 0.0),
-                    bbox.getSrs()
-            ));
-        else
-            return createEnvelope(bbox);
+                    bbox.getSrs());
+        }
+
+        return createEnvelope(bbox);
     }
 
     public static GeometryObject createPoint(double[] coordinates, int dimension, int srid) {
