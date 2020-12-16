@@ -186,7 +186,7 @@ public class Tunnel extends KmlGenericObject{
 							if (rs.isBeforeFirst())
 								break;
 						} catch (SQLException e) {
-							log.error("SQL error while querying the highest available LOD: " + e.getMessage());
+							log.error("SQL error while querying the highest available LOD.", e);
 							try { connection.commit(); } catch (SQLException sqle) {}
 						} finally {
 							try { if (rs != null) rs.close(); } catch (SQLException sqle) {} 
@@ -207,7 +207,7 @@ public class Tunnel extends KmlGenericObject{
 
 						rs = psQuery.executeQuery();
 					} catch (SQLException e) {
-						log.error("SQL error while querying geometries in LOD " + currentLod + ": " + e.getMessage());
+						log.error("SQL error while querying geometries in LOD " + currentLod + ".", e);
 						try { if (psQuery != null) psQuery.close(); } catch (SQLException sqle) {}
 						try { connection.commit(); } catch (SQLException sqle) {}
 						rs = null;
@@ -240,7 +240,7 @@ public class Tunnel extends KmlGenericObject{
 						try { rs.close(); } catch (SQLException sqle) {} 
 						try { psQuery.close(); } catch (SQLException sqle) {}
 					} catch (SQLException e) {
-						log.error("SQL error while querying geometries in LOD " + currentLod + ": " + e.getMessage());
+						log.error("SQL error while querying geometries in LOD " + currentLod + ".", e);
 						try { if (rs != null) rs.close(); } catch (SQLException sqle) {} 
 						try { if (psQuery != null) psQuery.close(); } catch (SQLException sqle) {}
 						try { connection.commit(); } catch (SQLException sqle) {}
@@ -275,7 +275,7 @@ public class Tunnel extends KmlGenericObject{
 						try { psQuery.close(); } catch (SQLException sqle) {}
 						rs = null;
 					} catch (SQLException e) {
-						log.error("SQL error while aggregating geometries in LOD " + currentLod + ": " + e.getMessage());
+						log.error("SQL error while aggregating geometries in LOD " + currentLod + ".", e);
 						try { if (rs != null) rs.close(); } catch (SQLException sqle) {}
 						try { if (psQuery != null) psQuery.close(); } catch (SQLException sqle) {}
 						try { connection.commit(); } catch (SQLException sqle) {}

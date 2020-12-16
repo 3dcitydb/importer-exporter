@@ -85,8 +85,7 @@ public class MenuHelp extends JMenu {
 			appProperties.load(getClass().getResourceAsStream("/org/citydb/application.properties"));
 			Desktop.getDesktop().browse(URI.create(appProperties.getProperty("docUrl")));
 		} catch (IOException e) {
-			log.error("Failed to open the 3DCityDB online documentation.");
-			log.error("Cause: " + e.getMessage());
+			log.error("Failed to open the 3DCityDB online documentation.", e);
 		}
 	}
 	

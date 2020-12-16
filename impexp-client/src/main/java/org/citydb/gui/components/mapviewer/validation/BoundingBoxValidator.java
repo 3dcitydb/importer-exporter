@@ -221,7 +221,7 @@ public class BoundingBoxValidator {
 			} else
 				throw new SQLException("The spatial reference system '" + bbox.getSrs().getDescription() + "' is not supported.");
 		} catch (SQLException e) {
-			log.error("Failed to transform bounding box to WGS 84: " + e.getMessage());
+			log.error("Failed to transform bounding box to WGS 84.", e);
 			SwingUtilities.invokeLater(transform::dispose);
 			JOptionPane.showMessageDialog(map, Language.I18N.getString("map.dialog.label.error.db"),
 					Language.I18N.getString("map.dialog.label.error.transform"), JOptionPane.ERROR_MESSAGE);

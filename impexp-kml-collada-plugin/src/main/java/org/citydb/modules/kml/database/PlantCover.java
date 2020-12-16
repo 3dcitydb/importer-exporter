@@ -115,7 +115,7 @@ public class PlantCover extends KmlGenericObject{
 					else
 						currentLod--;
 				} catch (Exception e) {
-					log.error("SQL error while querying the highest available LOD: " + e.getMessage());
+					log.error("SQL error while querying the highest available LOD.", e);
 					try { connection.commit(); } catch (SQLException sqle) {}
 				} finally {
 					if (!found) {

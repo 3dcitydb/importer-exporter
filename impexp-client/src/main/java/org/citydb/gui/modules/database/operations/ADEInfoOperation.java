@@ -264,8 +264,7 @@ public class ADEInfoOperation extends DatabaseOperationView {
                 }
 
             } catch (SQLException | JAXBException | SchemaMappingException | SchemaMappingValidationException e) {
-                log.error("Failed to retrieve ADE information for '" + adeInfo.getName() + "'.");
-                log.error(e.getClass().getTypeName() + ": " + e.getMessage());
+                log.error("Failed to retrieve ADE information for '" + adeInfo.getName() + "'.", e);
                 return;
             }
 
