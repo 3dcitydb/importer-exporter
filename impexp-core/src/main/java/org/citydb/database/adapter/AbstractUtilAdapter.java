@@ -246,6 +246,7 @@ public abstract class AbstractUtilAdapter {
 
             try {
                 bbox = createBoundingBoxes(objectClassIds, onlyIfNull, conn);
+                bbox.setSrs(databaseAdapter.getConnectionMetaData().getReferenceSystem());
                 conn.commit();
                 return bbox;
             } catch (SQLException e) {

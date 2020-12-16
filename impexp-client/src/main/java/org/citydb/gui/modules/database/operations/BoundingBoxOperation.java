@@ -279,7 +279,6 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 						}
 
 						bboxPanel.setBoundingBox(bbox);	
-						bbox.setSrs(targetSrs);
 						BoundingBoxClipboardHandler.getInstance().putBoundingBox(bbox);
 						log.info("Bounding box for " + featureType + " features successfully calculated.");							
 					} else {
@@ -380,7 +379,6 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 						}
 
 						bboxPanel.setBoundingBox(bbox);	
-						bbox.setSrs(targetSrs);
 						BoundingBoxClipboardHandler.getInstance().putBoundingBox(bbox);
 						log.info("Bounding box for " + featureType + " features successfully created.");							
 					} else {
