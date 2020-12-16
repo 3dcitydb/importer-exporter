@@ -153,7 +153,7 @@ public class ADEObject extends KmlGenericObject {
 							hasPointAndCurve = true;
 					}
 				} catch (Exception e) {
-					log.error("SQL error while querying the highest available LOD: " + e.getMessage());
+					log.error("SQL error while querying the highest available LOD.", e);
 				}
 
 				if (hasBrep || hasPointAndCurve)
@@ -262,12 +262,12 @@ public class ADEObject extends KmlGenericObject {
 					}
 				}
 			}
-		} catch (SQLException sqlEx) {
-			log.error("SQL error while querying city object " + work.getGmlId() + ": " + sqlEx.getMessage());
-		} catch (JAXBException jaxbEx) {
-			log.error("XML error while working on city object " + work.getGmlId() + ": " + jaxbEx.getMessage());
+		} catch (SQLException e) {
+			log.error("SQL error while querying city object " + work.getGmlId() + ".", e);
+		} catch (JAXBException e) {
+			log.error("XML error while working on city object " + work.getGmlId() + ".", e);
 		} catch (ADEKmlExportException e) {
-			log.error("ADE Kml-Export error while working on city object " + work.getGmlId() + ": " + e.getMessage());
+			log.error("ADE Kml-Export error while working on city object " + work.getGmlId() + ".", e);
 		} finally {
 			if (brepGeometriesQueryPs != null)
 				try { brepGeometriesQueryPs.close(); } catch (SQLException e) {}

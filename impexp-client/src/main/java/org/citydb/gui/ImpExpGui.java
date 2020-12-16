@@ -295,6 +295,11 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 	private void updateComponentUI() {
 		consoleText.setBackground(UIManager.getColor("TextField.background"));
 		menu.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, UIManager.getColor("Component.borderColor")));
+		consolePane.setUI(new FlatTabbedPaneUI() {
+			protected void paintTabBackground(Graphics g, int p, int i, int x, int y, int w, int h, boolean s) {
+				// do not paint tab background
+			}
+		});
 	}
 
 	private void showWindow() {

@@ -1714,7 +1714,7 @@ public abstract class KmlGenericObject {
 					multiGeometry.getAbstractGeometryGroup().add(kmlFactory.createPolygon(polygon));
 				}
 			} catch (SQLException e) {
-				log.error("SQL error while querying surface geometries: " + e.getMessage());
+				log.error("SQL error while querying surface geometries.", e);
 			} finally {
 				if (rs != null)
 					try { rs.close(); } catch (SQLException e) {}
@@ -2344,7 +2344,7 @@ public abstract class KmlGenericObject {
 					}
 				}
 			} catch (SQLException e) {
-				log.error("SQL error while querying surface geometries: " + e.getMessage());
+				log.error("SQL error while querying surface geometries.", e);
 			} finally {
 				if (rs != null)
 					try { rs.close(); } catch (SQLException e) {}
@@ -2565,7 +2565,7 @@ public abstract class KmlGenericObject {
 					}
 				}
 			} catch (SQLException e) {
-				log.error("SQL error while querying surface geometries: " + e.getMessage());
+				log.error("SQL error while querying surface geometries.", e);
 			} finally {
 				if (rs != null)
 					try { rs.close(); } catch (SQLException e) {}
@@ -2920,7 +2920,7 @@ public abstract class KmlGenericObject {
 			DatabaseSrs targetSrs = dbSrs.is3D() ? databaseAdapter.getUtil().getWGS843D() : DatabaseConfig.PREDEFINED_SRS.get(DatabaseConfig.PredefinedSrsName.WGS84_2D);
 			convertedGeomObj = databaseAdapter.getUtil().transform(geomObj, targetSrs);
 		} catch (SQLException e) {
-			log.warn("SQL exception when converting geometry to WGS84: " + e.getMessage());
+			log.warn("SQL exception when converting geometry to WGS84.", e);
 			throw e;
 		}
 

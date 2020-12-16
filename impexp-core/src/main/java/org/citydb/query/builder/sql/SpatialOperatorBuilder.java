@@ -125,7 +125,7 @@ public class SpatialOperatorBuilder {
 			try {
 				spatialDescription = databaseAdapter.getUtil().transform(spatialDescription, targetSrs);
 			} catch (SQLException e) {
-				throw new QueryBuildException("Failed to transform coordinates of test geometry: " + e.getMessage());
+				throw new QueryBuildException("Failed to transform coordinates of test geometry.", e);
 			}
 		}
 
@@ -193,7 +193,7 @@ public class SpatialOperatorBuilder {
 			try {
 				spatialDescription = databaseAdapter.getUtil().transform(spatialDescription, targetSrs);
 			} catch (SQLException e) {
-				throw new QueryBuildException("Failed to transform coordinates of test geometry: " + e.getMessage());
+				throw new QueryBuildException("Failed to transform coordinates of test geometry.", e);
 			}
 		}
 

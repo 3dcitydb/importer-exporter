@@ -55,7 +55,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
-@SuppressWarnings("serial")
 public class MapPopupMenu extends JPopupMenu {
 	private final Map mapViewer;
 	private final JXMapViewer map;
