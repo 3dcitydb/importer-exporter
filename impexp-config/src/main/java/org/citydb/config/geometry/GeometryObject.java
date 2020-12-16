@@ -48,35 +48,30 @@ public class GeometryObject {
         return geometryObject;
     }
 
-    public static GeometryObject createEnvelope(BoundingBox bbox) {
-        if (!bbox.isSetSrs())
-            throw new IllegalArgumentException("The bounding box lacks a spatial reference system.");
-
+    public static GeometryObject createEnvelope(BoundingBox bbox, int srid) {
         if (bbox.is3D()) {
             return createEnvelope(new double[]{
                     bbox.getLowerCorner().getX(), bbox.getLowerCorner().getY(), bbox.getLowerCorner().getZ(),
-                    bbox.getUpperCorner().getX(), bbox.getUpperCorner().getY(), bbox.getUpperCorner().getZ()}, 3, bbox.getSrs().getSrid());
+                    bbox.getUpperCorner().getX(), bbox.getUpperCorner().getY(), bbox.getUpperCorner().getZ()}, 3, srid);
         } else {
             return createEnvelope(new double[]{
                     bbox.getLowerCorner().getX(), bbox.getLowerCorner().getY(),
-                    bbox.getUpperCorner().getX(), bbox.getUpperCorner().getY()}, 2, bbox.getSrs().getSrid());
+                    bbox.getUpperCorner().getX(), bbox.getUpperCorner().getY()}, 2, srid);
         }
     }
 
-    public static GeometryObject createEnvelope(BoundingBox bbox, int dimension) {
+    public static GeometryObject createEnvelope(BoundingBox bbox, int dimension, int srid) {
         if (dimension == 2 && bbox.is3D()) {
-            bbox = new BoundingBox(
-                    new Position(bbox.getLowerCorner().getX(), bbox.getLowerCorner().getY()),
-                    new Position(bbox.getUpperCorner().getX(), bbox.getUpperCorner().getY()),
-                    bbox.getSrs());
+            bbox = new BoundingBox(new Position(
+                    bbox.getLowerCorner().getX(), bbox.getLowerCorner().getY()),
+                    new Position(bbox.getUpperCorner().getX(), bbox.getUpperCorner().getY()));
         } else if (dimension == 3 && !bbox.is3D()) {
-            bbox = new BoundingBox(
-                    new Position(bbox.getLowerCorner().getX(), bbox.getLowerCorner().getY(), 0.0),
-                    new Position(bbox.getUpperCorner().getX(), bbox.getUpperCorner().getY(), 0.0),
-                    bbox.getSrs());
+            bbox = new BoundingBox(new Position(
+                    bbox.getLowerCorner().getX(), bbox.getLowerCorner().getY(), 0.0),
+                    new Position(bbox.getUpperCorner().getX(), bbox.getUpperCorner().getY(), 0.0));
         }
 
-        return createEnvelope(bbox);
+        return createEnvelope(bbox, srid);
     }
 
     public static GeometryObject createPoint(double[] coordinates, int dimension, int srid) {
