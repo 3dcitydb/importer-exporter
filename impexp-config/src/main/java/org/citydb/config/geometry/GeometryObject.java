@@ -291,6 +291,10 @@ public class GeometryObject {
     }
 
     public GeometryObject toEnvelope() {
+        if (geometryType == GeometryType.ENVELOPE) {
+            return this;
+        }
+
         GeometryObject envelope = new GeometryObject(GeometryType.ENVELOPE, dimension, srid);
         envelope.elementTypes = new ElementType[]{ElementType.BOUNDING_RECTANGLE};
         envelope.coordinates = new double[1][];

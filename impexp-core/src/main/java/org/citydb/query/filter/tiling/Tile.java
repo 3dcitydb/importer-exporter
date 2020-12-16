@@ -86,8 +86,6 @@ public class Tile {
 			GeometryObject transformedExtent = null;
 			try {
 				transformedExtent = databaseAdapter.getUtil().transform(extentObj, dbSrs);
-				if (transformedExtent == null)
-					throw new FilterException("Failed to transform tiling extent to SRS " + dbSrs.getDescription() + ".");
 			} catch (SQLException e) {
 				throw new FilterException("Failed to transform tiling extent to SRS " + dbSrs.getDescription() + ".", e);
 			}
@@ -124,9 +122,6 @@ public class Tile {
 		if (pointSrs.getSrid() != extentSrs.getSrid()) {			
 			try {
 				GeometryObject transformed = databaseAdapter.getUtil().transform(GeometryObject.createPoint(new double[]{point.getX(), point.getY()}, 2, pointSrs.getSrid()), extentSrs);
-				if (transformed == null)
-					throw new FilterException("Failed to convert input geometry to tile SRS.");
-					
 				pos = new Position(transformed.getCoordinates(0)[0], transformed.getCoordinates(0)[1]);
 			} catch (SQLException e) {
 				throw new FilterException("Failed to convert input geometry to tile SRS.", e);

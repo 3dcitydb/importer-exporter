@@ -111,9 +111,6 @@ public class Tiling {
 		GeometryObject transformedExtent;
 		try {
 			transformedExtent = databaseAdapter.getUtil().transform(extentObj, targetSrs);
-			if (transformedExtent == null) {
-				throw new FilterException("Failed to transform tiling extent to SRS " + targetSrs.getDescription() + ".");
-			}
 		} catch (SQLException e) {
 			throw new FilterException("Failed to transform tiling extent to SRS " + targetSrs.getDescription() + ".", e);
 		}

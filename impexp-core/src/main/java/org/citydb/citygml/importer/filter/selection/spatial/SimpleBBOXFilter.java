@@ -72,8 +72,6 @@ public class SimpleBBOXFilter {
 		GeometryObject transformedBbox = null;
 		try {
 			transformedBbox = databaseAdapter.getUtil().transform(extentObj, targetSrs);
-			if (transformedBbox == null)
-				throw new FilterException("Failed to transform tiling extent to SRS " + targetSrs.getDescription() + ".");
 		} catch (SQLException e) {
 			throw new FilterException("Failed to transform tiling extent to SRS " + targetSrs.getDescription() + ".", e);
 		}

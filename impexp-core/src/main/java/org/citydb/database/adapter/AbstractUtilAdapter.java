@@ -381,7 +381,13 @@ public abstract class AbstractUtilAdapter {
 
     public GeometryObject transform(GeometryObject geometry, DatabaseSrs targetSrs) throws SQLException {
         try (Connection conn = databaseAdapter.connectionPool.getConnection()) {
-            return transform(geometry, targetSrs, conn);
+            GeometryObject transformed = transform(geometry, targetSrs, conn);
+            if (transformed == null) {
+                throw new SQLException("Failed to transform " + geometry.getGeometryType() + " geometry from " +
+                        "source SRID " + geometry.getSrid() + " to target SRID " + targetSrs.getSrid() + ".");
+            }
+
+            return transformed;
         }
     }
 
