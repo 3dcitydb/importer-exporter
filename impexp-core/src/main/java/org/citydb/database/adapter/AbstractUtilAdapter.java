@@ -218,7 +218,7 @@ public abstract class AbstractUtilAdapter {
 
                         DatabaseSrs targetSrs = query.getTargetSrs();
                         if (targetSrs != null && extent.getSrid() != targetSrs.getSrid()) {
-                            extent = transform(extent, targetSrs);
+                            extent = transform(extent, targetSrs).toEnvelope();
                         }
 
                         double[] coordinates = extent.getCoordinates(0);
