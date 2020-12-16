@@ -358,35 +358,6 @@ public abstract class AbstractUtilAdapter {
         }
     }
 
-    public BoundingBox transform2D(BoundingBox bbox, DatabaseSrs sourceSrs, DatabaseSrs targetSrs) throws SQLException {
-        return transform(bbox, 2, sourceSrs, targetSrs);
-    }
-
-    public BoundingBox transform(BoundingBox bbox, DatabaseSrs sourceSrs, DatabaseSrs targetSrs) throws SQLException {
-        return transform(bbox, bbox.is3D() ? 3 : 2, sourceSrs, targetSrs);
-    }
-
-    public BoundingBox transform(BoundingBox bbox, int dimension, DatabaseSrs sourceSrs, DatabaseSrs targetSrs) throws SQLException {
-        GeometryObject geometryObject = GeometryObject.createEnvelope(bbox, dimension, sourceSrs.getSrid());
-        GeometryObject transformed = transform(geometryObject, targetSrs);
-
-        // create new bounding box from transformed polygon
-        double[] coordinates = transformed.getCoordinates(0);
-        if (dimension == 2) {
-            return new BoundingBox(
-                    new Position(coordinates[0], coordinates[1]),
-                    new Position(coordinates[2], coordinates[3]),
-                    targetSrs
-            );
-        } else {
-            return new BoundingBox(
-                    new Position(coordinates[0], coordinates[1], coordinates[2]),
-                    new Position(coordinates[3], coordinates[4], coordinates[5]),
-                    targetSrs
-            );
-        }
-    }
-
     public GeometryObject transform(GeometryObject geometry, DatabaseSrs targetSrs) throws SQLException {
         try (Connection conn = databaseAdapter.connectionPool.getConnection()) {
             GeometryObject transformed = transform(geometry, targetSrs, conn);

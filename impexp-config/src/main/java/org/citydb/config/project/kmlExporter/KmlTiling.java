@@ -42,7 +42,6 @@ public class KmlTiling extends AbstractTiling {
     private KmlTilingOptions tilingOptions;
 
     public KmlTiling() {
-        setExtent(null);
         tilingOptions = new KmlTilingOptions();
     }
 
