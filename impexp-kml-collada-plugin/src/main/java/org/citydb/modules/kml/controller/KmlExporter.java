@@ -27,7 +27,29 @@
  */
 package org.citydb.modules.kml.controller;
 
-import net.opengis.kml._2.*;
+import net.opengis.kml._2.BalloonStyleType;
+import net.opengis.kml._2.BasicLinkType;
+import net.opengis.kml._2.DocumentType;
+import net.opengis.kml._2.FolderType;
+import net.opengis.kml._2.IconStyleType;
+import net.opengis.kml._2.KmlType;
+import net.opengis.kml._2.LabelStyleType;
+import net.opengis.kml._2.LatLonAltBoxType;
+import net.opengis.kml._2.LineStringType;
+import net.opengis.kml._2.LineStyleType;
+import net.opengis.kml._2.LinkType;
+import net.opengis.kml._2.LodType;
+import net.opengis.kml._2.LookAtType;
+import net.opengis.kml._2.NetworkLinkType;
+import net.opengis.kml._2.ObjectFactory;
+import net.opengis.kml._2.PairType;
+import net.opengis.kml._2.PlacemarkType;
+import net.opengis.kml._2.PolyStyleType;
+import net.opengis.kml._2.RegionType;
+import net.opengis.kml._2.StyleMapType;
+import net.opengis.kml._2.StyleStateEnumType;
+import net.opengis.kml._2.StyleType;
+import net.opengis.kml._2.ViewRefreshModeEnumType;
 import org.citydb.ade.kmlExporter.ADEKmlExportExtensionManager;
 import org.citydb.concurrent.PoolSizeAdaptationStrategy;
 import org.citydb.concurrent.SingleWorkerPool;
@@ -38,7 +60,17 @@ import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.database.DatabaseConfig;
 import org.citydb.config.project.database.Workspace;
-import org.citydb.config.project.kmlExporter.*;
+import org.citydb.config.project.kmlExporter.ADEPreference;
+import org.citydb.config.project.kmlExporter.AltitudeOffsetMode;
+import org.citydb.config.project.kmlExporter.Balloon;
+import org.citydb.config.project.kmlExporter.BalloonContentMode;
+import org.citydb.config.project.kmlExporter.DisplayForm;
+import org.citydb.config.project.kmlExporter.DisplayFormType;
+import org.citydb.config.project.kmlExporter.KmlExportConfig;
+import org.citydb.config.project.kmlExporter.PointAndCurve;
+import org.citydb.config.project.kmlExporter.PointDisplayMode;
+import org.citydb.config.project.kmlExporter.SimpleKmlQuery;
+import org.citydb.config.project.kmlExporter.Style;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.connection.DatabaseConnectionPool;
 import org.citydb.database.schema.mapping.FeatureType;
@@ -46,10 +78,28 @@ import org.citydb.database.schema.mapping.SchemaMapping;
 import org.citydb.event.Event;
 import org.citydb.event.EventDispatcher;
 import org.citydb.event.EventHandler;
-import org.citydb.event.global.*;
+import org.citydb.event.global.CounterEvent;
+import org.citydb.event.global.CounterType;
+import org.citydb.event.global.EventType;
+import org.citydb.event.global.InterruptEvent;
+import org.citydb.event.global.ObjectCounterEvent;
+import org.citydb.event.global.StatusDialogMessage;
+import org.citydb.event.global.StatusDialogTitle;
 import org.citydb.log.Logger;
 import org.citydb.modules.kml.concurrent.KmlExportWorkerFactory;
-import org.citydb.modules.kml.database.*;
+import org.citydb.modules.kml.database.Bridge;
+import org.citydb.modules.kml.database.Building;
+import org.citydb.modules.kml.database.CityFurniture;
+import org.citydb.modules.kml.database.CityObjectGroup;
+import org.citydb.modules.kml.database.GenericCityObject;
+import org.citydb.modules.kml.database.KmlSplitter;
+import org.citydb.modules.kml.database.KmlSplittingResult;
+import org.citydb.modules.kml.database.LandUse;
+import org.citydb.modules.kml.database.Relief;
+import org.citydb.modules.kml.database.SolitaryVegetationObject;
+import org.citydb.modules.kml.database.Transportation;
+import org.citydb.modules.kml.database.Tunnel;
+import org.citydb.modules.kml.database.WaterBody;
 import org.citydb.modules.kml.datatype.TypeAttributeValueEnum;
 import org.citydb.modules.kml.util.CityObject4JSON;
 import org.citydb.modules.kml.util.ExportTracker;
@@ -83,13 +133,21 @@ import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.namespace.QName;
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.zip.ZipEntry;
@@ -259,17 +317,18 @@ public class KmlExporter implements EventHandler {
 		}
 
 		// tiling
-		Tiling tiling = query.getTiling();
-		boolean useTiling = query.isSetTiling();
-		int rows = useTiling ? tiling.getRows() : 1;
-		int columns = useTiling ? tiling.getColumns() : 1;
-		if (!useTiling) {
+		if (!query.isSetTiling()) {
 			try {
-				tiling = new Tiling(config.getKmlExportConfig().getQuery().getSpatialFilter().getExtent(), rows, columns);
+				// set default tiling
+				query.setTiling(new Tiling(config.getKmlExportConfig().getQuery().getSpatialFilter().getExtent(), 1, 1));
 			} catch (FilterException e) {
 				throw new KmlExportException("Failed to build the internal fallback tiling.", e);
 			}
 		}
+
+		Tiling tiling = query.getTiling();
+		int rows = tiling.getRows();
+		int columns = tiling.getColumns();
 
 		// transform tiling extent to WGS84
 		try {
