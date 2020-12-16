@@ -545,8 +545,9 @@ public class DBSplitter {
 	}
 
 	private BoundingBox getSpatialExtent(GeometryObject extentObj) throws SQLException {
-		if (internalConfig.isTransformCoordinates())
-			extentObj = databaseAdapter.getUtil().transform(extentObj, query.getTargetSrs());
+		if (internalConfig.isTransformCoordinates()) {
+			extentObj = databaseAdapter.getUtil().transform(extentObj, query.getTargetSrs()).toEnvelope();
+		}
 
 		double[] coordinates = extentObj.getCoordinates(0);
 		return new BoundingBox(
