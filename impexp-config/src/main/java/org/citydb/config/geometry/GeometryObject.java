@@ -61,6 +61,10 @@ public class GeometryObject {
     }
 
     public static GeometryObject createEnvelope(BoundingBox bbox, int dimension, int srid) {
+        if (dimension < 2 || dimension > 3) {
+            throw new IllegalArgumentException("Envelope dimension must be either 2 or 3.");
+        }
+
         if (dimension == 2 && bbox.is3D()) {
             bbox = new BoundingBox(new Position(
                     bbox.getLowerCorner().getX(), bbox.getLowerCorner().getY()),

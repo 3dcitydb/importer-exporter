@@ -47,7 +47,6 @@ import org.citydb.query.builder.QueryBuildException;
 import org.citydb.query.builder.sql.BuildProperties;
 import org.citydb.query.builder.sql.SQLQueryBuilder;
 import org.citydb.query.filter.FilterException;
-import org.citydb.query.filter.tiling.Tiling;
 import org.citydb.sqlbuilder.schema.Table;
 import org.citydb.sqlbuilder.select.Select;
 import org.geotools.referencing.CRS;
@@ -191,7 +190,9 @@ public abstract class AbstractUtilAdapter {
             if (databaseAdapter.hasVersioningSupport())
                 databaseAdapter.getWorkspaceManager().gotoWorkspace(conn, workspace);
 
-            return calcBoundingBox(schema, objectClassIds, conn);
+            BoundingBox bbox = calcBoundingBox(schema, objectClassIds, conn);
+            bbox.setSrs(databaseAdapter.getConnectionMetaData().getReferenceSystem());
+            return bbox;
         }
     }
 
@@ -214,21 +215,20 @@ public abstract class AbstractUtilAdapter {
                  ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     Object extentObj = rs.getObject(1);
-                    if (!rs.wasNull() && extentObj != null) {
+                    if (!rs.wasNull()) {
                         GeometryObject extent = databaseAdapter.getGeometryConverter().getEnvelope(extentObj);
+
+                        DatabaseSrs targetSrs = query.getTargetSrs();
+                        if (targetSrs != null && extent.getSrid() != targetSrs.getSrid()) {
+                            extent = transform(extent, targetSrs);
+                        }
+
                         double[] coordinates = extent.getCoordinates(0);
                         bbox = new BoundingBox(
                             new Position(coordinates[0], coordinates[1]),
                             new Position(coordinates[2], coordinates[3])
                         );
                         bbox.setSrs(extent.getSrid());
-
-                        DatabaseSrs targetSrs = query.getTargetSrs();
-                        if (targetSrs != null && bbox.getSrs().getSrid() != targetSrs.getSrid()) {
-                            Tiling tiling = new Tiling(bbox, 1, 1);
-                            tiling.transformExtent(targetSrs, databaseAdapter);
-                            bbox = tiling.getExtent();
-                        }
                     }
                 }
             }
@@ -355,6 +355,35 @@ public abstract class AbstractUtilAdapter {
     public BoundingBox transformBoundingBox(BoundingBox bbox, DatabaseSrs sourceSrs, DatabaseSrs targetSrs) throws SQLException {
         try (Connection conn = databaseAdapter.connectionPool.getConnection()) {
             return transformBoundingBox(bbox, sourceSrs, targetSrs, conn);
+        }
+    }
+
+    public BoundingBox transform2D(BoundingBox bbox, DatabaseSrs sourceSrs, DatabaseSrs targetSrs) throws SQLException {
+        return transform(bbox, 2, sourceSrs, targetSrs);
+    }
+
+    public BoundingBox transform(BoundingBox bbox, DatabaseSrs sourceSrs, DatabaseSrs targetSrs) throws SQLException {
+        return transform(bbox, bbox.is3D() ? 3 : 2, sourceSrs, targetSrs);
+    }
+
+    public BoundingBox transform(BoundingBox bbox, int dimension, DatabaseSrs sourceSrs, DatabaseSrs targetSrs) throws SQLException {
+        GeometryObject geometryObject = GeometryObject.createEnvelope(bbox, dimension, sourceSrs.getSrid());
+        GeometryObject transformed = transform(geometryObject, targetSrs);
+
+        // create new bounding box from transformed polygon
+        double[] coordinates = transformed.getCoordinates(0);
+        if (dimension == 2) {
+            return new BoundingBox(
+                    new Position(coordinates[0], coordinates[1]),
+                    new Position(coordinates[2], coordinates[3]),
+                    targetSrs
+            );
+        } else {
+            return new BoundingBox(
+                    new Position(coordinates[0], coordinates[1], coordinates[2]),
+                    new Position(coordinates[3], coordinates[4], coordinates[5]),
+                    targetSrs
+            );
         }
     }
 

@@ -230,6 +230,7 @@ public class KmlExporter implements EventHandler {
 			KmlTiling spatialFilter = queryConfig.getSpatialFilter();
 			if (!spatialFilter.isSetExtent()) {
 				try {
+					log.info("Calculating the bounding box of matching top-level features...");
 					spatialFilter.setExtent(databaseAdapter.getUtil().calcBoundingBox(workspace, query, schemaMapping));
 					query = queryBuilder.buildQuery(queryConfig, config.getNamespaceFilter());
 				} catch (SQLException | FilterException e) {
@@ -239,6 +240,7 @@ public class KmlExporter implements EventHandler {
 		} catch (QueryBuildException e) {
 			throw new KmlExportException("Failed to build the export filter expression.", e);
 		}
+
 		Predicate predicate = query.isSetSelection() ? query.getSelection().getPredicate() : null;
 
 		// check whether CityGML features can be exported from LoD 0
