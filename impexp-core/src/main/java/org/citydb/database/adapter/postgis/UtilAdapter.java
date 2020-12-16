@@ -337,41 +337,6 @@ public class UtilAdapter extends AbstractUtilAdapter {
     }
 
     @Override
-    protected BoundingBox transformBoundingBox(BoundingBox bbox, DatabaseSrs sourceSrs, DatabaseSrs targetSrs, Connection connection) throws SQLException {
-        BoundingBox result = new BoundingBox(bbox);
-        int sourceSrid = sourceSrs.getSrid();
-        int targetSrid = targetSrs.getSrid();
-
-        StringBuilder boxGeom = new StringBuilder()
-                .append("SRID=").append(sourceSrid).append(";POLYGON((")
-                .append(bbox.getLowerCorner().getX()).append(" ").append(bbox.getLowerCorner().getY()).append(",")
-                .append(bbox.getLowerCorner().getX()).append(" ").append(bbox.getUpperCorner().getY()).append(",")
-                .append(bbox.getUpperCorner().getX()).append(" ").append(bbox.getUpperCorner().getY()).append(",")
-                .append(bbox.getUpperCorner().getX()).append(" ").append(bbox.getLowerCorner().getY()).append(",")
-                .append(bbox.getLowerCorner().getX()).append(" ").append(bbox.getLowerCorner().getY()).append("))");
-
-        try (PreparedStatement psQuery = connection.prepareStatement("select ST_Transform(ST_GeomFromEWKT(?), " + targetSrid + ')')) {
-            psQuery.setString(1, boxGeom.toString());
-
-            try (ResultSet rs = psQuery.executeQuery()) {
-                if (rs.next()) {
-                    PGgeometry pgGeom = (PGgeometry) rs.getObject(1);
-                    if (!rs.wasNull() && pgGeom != null) {
-                        Geometry geom = pgGeom.getGeometry();
-                        result.getLowerCorner().setX(geom.getPoint(0).x);
-                        result.getLowerCorner().setY(geom.getPoint(0).y);
-                        result.getUpperCorner().setX(geom.getPoint(2).x);
-                        result.getUpperCorner().setY(geom.getPoint(2).y);
-                        result.setSrs(targetSrs);
-                    }
-                }
-            }
-
-            return result;
-        }
-    }
-
-    @Override
     protected GeometryObject transform(GeometryObject geometry, DatabaseSrs targetSrs, Connection connection) throws SQLException {
         Object unconverted = databaseAdapter.getGeometryConverter().getDatabaseObject(geometry, connection);
         if (unconverted != null) {

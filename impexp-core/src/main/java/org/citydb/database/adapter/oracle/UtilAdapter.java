@@ -322,40 +322,6 @@ public class UtilAdapter extends AbstractUtilAdapter {
     }
 
     @Override
-    protected BoundingBox transformBoundingBox(BoundingBox bbox, DatabaseSrs sourceSrs, DatabaseSrs targetSrs, Connection connection) throws SQLException {
-        BoundingBox result = new BoundingBox(bbox);
-        int sourceSrid = get2DSrid(sourceSrs, connection);
-        int targetSrid = get2DSrid(targetSrs, connection);
-
-        try (PreparedStatement psQuery = connection.prepareStatement("select SDO_CS.TRANSFORM(MDSYS.SDO_GEOMETRY(2003, " +
-                sourceSrid + ", NULL, MDSYS.SDO_ELEM_INFO_ARRAY(1, 1003, 1), " +
-                "MDSYS.SDO_ORDINATE_ARRAY(?,?,?,?)), " + targetSrid + ") from dual")) {
-            psQuery.setDouble(1, bbox.getLowerCorner().getX());
-            psQuery.setDouble(2, bbox.getLowerCorner().getY());
-            psQuery.setDouble(3, bbox.getUpperCorner().getX());
-            psQuery.setDouble(4, bbox.getUpperCorner().getY());
-
-            try (ResultSet rs = psQuery.executeQuery()) {
-                if (rs.next()) {
-                    Struct struct = (Struct) rs.getObject(1);
-                    if (!rs.wasNull() && struct != null) {
-                        JGeometry geom = JGeometry.loadJS(struct);
-                        double[] ordinatesArray = geom.getOrdinatesArray();
-
-                        result.getLowerCorner().setX(ordinatesArray[0]);
-                        result.getLowerCorner().setY(ordinatesArray[1]);
-                        result.getUpperCorner().setX(ordinatesArray[2]);
-                        result.getUpperCorner().setY(ordinatesArray[3]);
-                        result.setSrs(targetSrs);
-                    }
-                }
-            }
-
-            return result;
-        }
-    }
-
-    @Override
     protected GeometryObject transform(GeometryObject geometry, DatabaseSrs targetSrs, Connection connection) throws SQLException {
         // get source srs
         DatabaseSrs sourceSrs = srsInfoMap.get(geometry.getSrid());

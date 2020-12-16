@@ -87,7 +87,6 @@ public abstract class AbstractUtilAdapter {
     protected abstract String[] createDatabaseReport(String schema, Connection connection) throws SQLException;
     protected abstract BoundingBox calcBoundingBox(String schema, List<Integer> classIds, Connection connection) throws SQLException;
     protected abstract BoundingBox createBoundingBoxes(List<Integer> classIds, boolean onlyIfNull, Connection connection) throws SQLException;
-    @Deprecated protected abstract BoundingBox transformBoundingBox(BoundingBox bbox, DatabaseSrs sourceSrs, DatabaseSrs targetSrs, Connection connection) throws SQLException;
     protected abstract GeometryObject transform(GeometryObject geometry, DatabaseSrs targetSrs, Connection connection) throws SQLException;
     protected abstract int get2DSrid(DatabaseSrs srs, Connection connection) throws SQLException;
     protected abstract IndexStatusInfo manageIndexes(String operation, IndexType type, String schema, Connection connection) throws SQLException;
