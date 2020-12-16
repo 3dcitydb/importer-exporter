@@ -33,11 +33,12 @@ import org.citydb.citygml.deleter.database.BundledConnection;
 import org.citydb.citygml.deleter.database.DBSplitter;
 import org.citydb.citygml.deleter.util.DeleteListParser;
 import org.citydb.citygml.exporter.database.content.DBSplittingResult;
-import org.citydb.concurrent.PoolSizeAdaptationStrategy;
+import org.citydb.concurrent.SingleWorkerPool;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
 import org.citydb.config.project.database.Workspace;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
+import org.citydb.database.connection.ConnectionManager;
 import org.citydb.database.connection.DatabaseConnectionPool;
 import org.citydb.database.schema.mapping.SchemaMapping;
 import org.citydb.event.Event;
@@ -119,12 +120,6 @@ public class Deleter implements EventHandler {
 	private boolean process(Iterator<Query> queries) throws DeleteException {
 		long start = System.currentTimeMillis();
 
-		// Multithreading may cause DB-Deadlock. It may occur when deleting a CityObjectGroup within
-		// one thread, and the cityObjectMembers are being deleted within other threads at the same time.
-		// Hence, we use single thread per-default to avoid this issue.
-		int minThreads = 1;
-		int maxThreads = 1;
-		
 		// checking workspace
 		Workspace workspace = config.getDatabaseConfig().getWorkspaces().getDeleteWorkspace();
 		if (shouldRun && databaseAdapter.hasVersioningSupport()
@@ -136,24 +131,16 @@ public class Deleter implements EventHandler {
 				throw new DeleteException("Failed to switch to database workspace.", e);
 			}
 		}
-		
-		bundledConnection = new BundledConnection();
-		try {				
-			dbWorkerPool = new WorkerPool<>(
-					"db_deleter_pool",
-					minThreads,
-					maxThreads,
-					PoolSizeAdaptationStrategy.AGGRESSIVE,
-					new DBDeleteWorkerFactory(bundledConnection, config, eventDispatcher),
-					300,
-					false);
 
+		bundledConnection = new BundledConnection();
+		try {
+			dbWorkerPool = createWorkerPool(bundledConnection, config, eventDispatcher);
 			dbWorkerPool.prestartCoreWorkers();
 			if (dbWorkerPool.getPoolSize() == 0) {
 				throw new DeleteException("Failed to start database delete worker pool. Check the database connection pool settings.");
 			}
 
-			log.info("Deleting city objects from database.");
+			log.info("Deleting from database.");
 
 			while (shouldRun && queries.hasNext()) {
 				// get database splitter and start query
@@ -181,7 +168,7 @@ public class Deleter implements EventHandler {
 			} catch (SQLException e) {
 				//
 			}
-			
+
 			if (dbWorkerPool != null) {
 				dbWorkerPool.shutdownNow();
 			}
@@ -191,13 +178,13 @@ public class Deleter implements EventHandler {
 			} catch (InterruptedException e) {
 				//
 			}
-		}		
-		
+		}
+
 		// show deleted features
 		if (!objectCounter.isEmpty()) {
-			log.info("Deleted city objects:");
-			Map<String, Long> typeNames = Util.mapObjectCounter(objectCounter, schemaMapping);					
-			typeNames.keySet().stream().sorted().forEach(object -> log.info(object + ": " + typeNames.get(object)));			
+			log.info("Processed city objects:");
+			Map<String, Long> typeNames = Util.mapObjectCounter(objectCounter, schemaMapping);
+			typeNames.keySet().stream().sorted().forEach(object -> log.info(object + ": " + typeNames.get(object)));
 		}
 
 		if (shouldRun) {
@@ -208,7 +195,18 @@ public class Deleter implements EventHandler {
 
 		return shouldRun;
 	}
-	
+
+	protected WorkerPool<DBSplittingResult> createWorkerPool(ConnectionManager connectionManager, Config config, EventDispatcher eventDispatcher) {
+		// Multithreading may cause DB-Deadlock. It may occur when deleting a CityObjectGroup within
+		// one thread, and the cityObjectMembers are being deleted within other threads at the same time.
+		// Hence, we use single thread to avoid this issue.
+		return new SingleWorkerPool<>(
+				"db_deleter_pool",
+				new DBDeleteWorkerFactory(connectionManager, config, eventDispatcher),
+				300,
+				false);
+	}
+
 	@Override
 	public void handleEvent(Event e) throws Exception {
 		if (e.getEventType() == EventType.OBJECT_COUNTER) {
