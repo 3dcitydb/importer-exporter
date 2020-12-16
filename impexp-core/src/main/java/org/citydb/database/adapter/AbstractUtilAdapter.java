@@ -29,7 +29,6 @@ package org.citydb.database.adapter;
 
 import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.geometry.GeometryObject;
-import org.citydb.config.geometry.GeometryType;
 import org.citydb.config.geometry.Position;
 import org.citydb.config.project.database.DatabaseSrs;
 import org.citydb.config.project.database.Workspace;
@@ -361,9 +360,9 @@ public abstract class AbstractUtilAdapter {
 
     public BoundingBox transform(BoundingBox bbox, int dimension, DatabaseSrs sourceSrs, DatabaseSrs targetSrs) throws SQLException {
         GeometryObject geometryObject = GeometryObject.createEnvelope(bbox, dimension, sourceSrs.getSrid());
-        GeometryObject transformed = transform(geometryObject, targetSrs);
+        GeometryObject transformed = transform(geometryObject, targetSrs).toEnvelope();
 
-        // create new bounding box from transformed polygon
+        // create new bounding box from transformed envelope
         double[] coordinates = transformed.getCoordinates(0);
         if (dimension == 2) {
             return new BoundingBox(
@@ -382,12 +381,7 @@ public abstract class AbstractUtilAdapter {
 
     public GeometryObject transform(GeometryObject geometry, DatabaseSrs targetSrs) throws SQLException {
         try (Connection conn = databaseAdapter.connectionPool.getConnection()) {
-            GeometryObject transformed = transform(geometry, targetSrs, conn);
-            if (geometry.getGeometryType() == GeometryType.ENVELOPE && transformed != null) {
-                transformed = transformed.toEnvelope();
-            }
-
-            return transformed;
+            return transform(geometry, targetSrs, conn);
         }
     }
 
