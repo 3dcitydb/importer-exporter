@@ -2915,9 +2915,11 @@ public abstract class KmlGenericObject {
 	}
 
 	protected GeometryObject convertToWGS84(GeometryObject geomObj) throws SQLException {
-		GeometryObject convertedGeomObj = null;
+		GeometryObject convertedGeomObj;
 		try {
-			DatabaseSrs targetSrs = dbSrs.is3D() ? databaseAdapter.getUtil().getWGS843D() : DatabaseConfig.PREDEFINED_SRS.get(DatabaseConfig.PredefinedSrsName.WGS84_2D);
+			DatabaseSrs targetSrs = dbSrs.is3D() ?
+					databaseAdapter.getUtil().getWGS843D() :
+					DatabaseConfig.PREDEFINED_SRS.get(DatabaseConfig.PredefinedSrsName.WGS84_2D);
 			convertedGeomObj = databaseAdapter.getUtil().transform(geomObj, targetSrs);
 		} catch (SQLException e) {
 			log.warn("SQL exception when converting geometry to WGS84.", e);

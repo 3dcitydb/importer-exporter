@@ -71,37 +71,20 @@ public class Tile {
 		DatabaseSrs extentSrs = extent.isSetSrs() ? extent.getSrs() : databaseAdapter.getConnectionMetaData().getReferenceSystem();
 		DatabaseSrs dbSrs = databaseAdapter.getConnectionMetaData().getReferenceSystem();
 
-		BoundingBox envelope = null;
+		BoundingBox envelope;
 		if (extentSrs.getSrid() != dbSrs.getSrid()) {
-			// convert extent into polygon
-			GeometryObject extentObj = GeometryObject.createPolygon(new double[]{
-					extent.getLowerCorner().getX(), extent.getLowerCorner().getY(),
-					extent.getUpperCorner().getX(), extent.getLowerCorner().getY(),
-					extent.getUpperCorner().getX(), extent.getUpperCorner().getY(),
-					extent.getLowerCorner().getX(), extent.getUpperCorner().getY(),
-					extent.getLowerCorner().getX(), extent.getLowerCorner().getY(),
-			}, 2, extentSrs.getSrid());
-			
-			// transform polygon to new srs
-			GeometryObject transformedExtent = null;
 			try {
-				transformedExtent = databaseAdapter.getUtil().transform(extentObj, dbSrs);
+				envelope = databaseAdapter.getUtil().transform2D(extent, extentSrs, dbSrs);
 			} catch (SQLException e) {
 				throw new FilterException("Failed to transform tiling extent to SRS " + dbSrs.getDescription() + ".", e);
 			}
-			
-			// create new extent from transformed polygon
-			double[] coordinates = transformedExtent.getCoordinates(0);		
-			envelope = new BoundingBox(
-					new Position(Math.min(coordinates[0], coordinates[6]), Math.min(coordinates[1], coordinates[3])),
-					new Position(Math.max(coordinates[2], coordinates[4]), Math.max(coordinates[5], coordinates[7])),
-					dbSrs
-					);
-		} else
+		} else {
 			envelope = new BoundingBox(extent);
+		}
 		
 		filterGeometry = GeometryObject.createEnvelope(new double[]{
-				envelope.getLowerCorner().getX(), envelope.getLowerCorner().getY(), envelope.getUpperCorner().getX(), envelope.getUpperCorner().getY()
+				envelope.getLowerCorner().getX(), envelope.getLowerCorner().getY(),
+				envelope.getUpperCorner().getX(), envelope.getUpperCorner().getY()
 		}, 2, dbSrs.getSrid());
 		
 		return filterGeometry;
@@ -118,16 +101,18 @@ public class Tile {
 		if (!pointSrs.isSupported())
 			throw new FilterException("The reference system " + pointSrs.getDescription() + " is not supported.");
 		
-		Position pos = null;
+		Position pos;
 		if (pointSrs.getSrid() != extentSrs.getSrid()) {			
 			try {
-				GeometryObject transformed = databaseAdapter.getUtil().transform(GeometryObject.createPoint(new double[]{point.getX(), point.getY()}, 2, pointSrs.getSrid()), extentSrs);
+				GeometryObject transformed = databaseAdapter.getUtil().transform(GeometryObject.createPoint(
+						new double[]{point.getX(), point.getY()}, 2, pointSrs.getSrid()), extentSrs);
 				pos = new Position(transformed.getCoordinates(0)[0], transformed.getCoordinates(0)[1]);
 			} catch (SQLException e) {
 				throw new FilterException("Failed to convert input geometry to tile SRS.", e);
 			}
-		} else
+		} else {
 			pos = point.getPos();
+		}
 		
 		return pos.getX() > extent.getLowerCorner().getX() 
 				&& pos.getX() <= extent.getUpperCorner().getX() 
