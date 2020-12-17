@@ -101,6 +101,7 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class XMLQueryView extends FilterView {
@@ -109,6 +110,7 @@ public class XMLQueryView extends FilterView {
     private final SchemaMapping schemaMapping;
     private final DatabaseConnectionPool connectionPool;
     private final Supplier<QueryConfig> queryConfigSupplier;
+    private final Consumer<QueryConfig> queryConfigConsumer;
 
     private JPanel component;
     private RSyntaxTextArea xmlText;
@@ -119,10 +121,12 @@ public class XMLQueryView extends FilterView {
 
     public XMLQueryView(ViewController viewController,
                         Supplier<SimpleQuery> simpleQuerySupplier,
-                        Supplier<QueryConfig> queryConfigSupplier) {
+                        Supplier<QueryConfig> queryConfigSupplier,
+                        Consumer<QueryConfig> queryConfigConsumer) {
         super(simpleQuerySupplier);
         this.viewController = viewController;
         this.queryConfigSupplier = queryConfigSupplier;
+        this.queryConfigConsumer = queryConfigConsumer;
 
         schemaMapping = ObjectRegistry.getInstance().getSchemaMapping();
         connectionPool = DatabaseConnectionPool.getInstance();
@@ -470,7 +474,7 @@ public class XMLQueryView extends FilterView {
     @Override
     public void setSettings() {
         QueryConfig query = unmarshalQuery();
-        queryConfigSupplier.get().copyFrom(query);
+        queryConfigConsumer.accept(query);
     }
 
     private boolean isDefaultDatabaseSrs(DatabaseSrs srs) {

@@ -194,7 +194,8 @@ public class FilterPanel extends JPanel implements EventHandler {
 		JPanel guiPanel = new JPanel();
 		xmlQuery = new XMLQueryView(viewController,
 				() -> config.getExportConfig().getSimpleQuery(),
-				() -> config.getExportConfig().getQuery());
+				() -> config.getExportConfig().getQuery(),
+				(query) -> config.getExportConfig().setQuery(query));
 		mainPanel.add(guiPanel, "simple");
 		mainPanel.add(xmlQuery.getViewComponent(), "advanced");
 
