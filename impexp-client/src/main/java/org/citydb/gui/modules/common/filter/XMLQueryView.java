@@ -58,7 +58,6 @@ import org.citydb.config.project.query.filter.type.FeatureTypeFilter;
 import org.citydb.config.project.query.simple.SimpleFeatureVersionFilter;
 import org.citydb.config.project.query.simple.SimpleFeatureVersionFilterMode;
 import org.citydb.config.project.query.simple.SimpleSelectionFilter;
-import org.citydb.config.util.ConfigNamespaceFilter;
 import org.citydb.config.util.QueryWrapper;
 import org.citydb.database.connection.DatabaseConnectionPool;
 import org.citydb.database.schema.mapping.FeatureType;
@@ -110,7 +109,6 @@ public class XMLQueryView extends FilterView {
     private final SchemaMapping schemaMapping;
     private final DatabaseConnectionPool connectionPool;
     private final Supplier<QueryConfig> queryConfigSupplier;
-    private final Supplier<ConfigNamespaceFilter> configNamespaceFilterSupplier;
 
     private JPanel component;
     private RSyntaxTextArea xmlText;
@@ -121,12 +119,10 @@ public class XMLQueryView extends FilterView {
 
     public XMLQueryView(ViewController viewController,
                         Supplier<SimpleQuery> simpleQuerySupplier,
-                        Supplier<QueryConfig> queryConfigSupplier,
-                        Supplier<ConfigNamespaceFilter> configNamespaceFilterSupplier) {
+                        Supplier<QueryConfig> queryConfigSupplier) {
         super(simpleQuerySupplier);
         this.viewController = viewController;
         this.queryConfigSupplier = queryConfigSupplier;
-        this.configNamespaceFilterSupplier = configNamespaceFilterSupplier;
 
         schemaMapping = ObjectRegistry.getInstance().getSchemaMapping();
         connectionPool = DatabaseConnectionPool.getInstance();
@@ -468,21 +464,13 @@ public class XMLQueryView extends FilterView {
     @Override
     public void loadSettings() {
         QueryConfig query = queryConfigSupplier.get();
-        xmlText.setText(marshalQuery(query, configNamespaceFilterSupplier.get()));
+        xmlText.setText(marshalQuery(query, ObjectRegistry.getInstance().getConfig().getNamespaceFilter()));
     }
 
     @Override
     public void setSettings() {
         QueryConfig query = unmarshalQuery();
-        queryConfigSupplier.get().setTargetSrs(query.getTargetSrs());
-        queryConfigSupplier.get().setFeatureTypeFilter(query.getFeatureTypeFilter());
-        queryConfigSupplier.get().setAppearanceFilter(query.getAppearanceFilter());
-        queryConfigSupplier.get().setCounterFilter(query.getCounterFilter());
-        queryConfigSupplier.get().setLodFilter(query.getLodFilter());
-        queryConfigSupplier.get().setProjectionFilter(query.getProjectionFilter());
-        queryConfigSupplier.get().setSelectionFilter(query.getSelectionFilter());
-        queryConfigSupplier.get().setSorting(query.getSorting());
-        queryConfigSupplier.get().setTiling(query.getTiling());
+        queryConfigSupplier.get().copyFrom(query);
     }
 
     private boolean isDefaultDatabaseSrs(DatabaseSrs srs) {
