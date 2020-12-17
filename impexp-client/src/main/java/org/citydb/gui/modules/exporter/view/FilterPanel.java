@@ -48,10 +48,7 @@ import org.citydb.gui.components.common.TitledPanel;
 import org.citydb.gui.components.feature.FeatureTypeTree;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.factory.SrsComboBoxFactory;
-import org.citydb.gui.modules.exporter.view.filter.AttributeFilterView;
-import org.citydb.gui.modules.exporter.view.filter.FilterView;
-import org.citydb.gui.modules.exporter.view.filter.SQLFilterView;
-import org.citydb.gui.modules.exporter.view.filter.XMLQueryView;
+import org.citydb.gui.modules.common.filter.*;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.log.Logger;
 import org.citydb.plugin.extension.view.ViewController;
@@ -63,6 +60,8 @@ import org.citygml4j.model.module.citygml.CityGMLVersion;
 import javax.swing.*;
 import javax.swing.text.NumberFormatter;
 import java.awt.*;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.text.DecimalFormat;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -193,7 +192,10 @@ public class FilterPanel extends JPanel implements EventHandler {
 		add(mainPanel, GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.BOTH, 0, 0, 0, 0));
 
 		JPanel guiPanel = new JPanel();
-		xmlQuery = new XMLQueryView(this, viewController, config);
+		xmlQuery = new XMLQueryView(viewController,
+				() -> config.getExportConfig().getSimpleQuery(),
+				() -> config.getExportConfig().getQuery(),
+				() -> config.getNamespaceFilter());
 		mainPanel.add(guiPanel, "simple");
 		mainPanel.add(xmlQuery.getViewComponent(), "advanced");
 
@@ -232,8 +234,8 @@ public class FilterPanel extends JPanel implements EventHandler {
 				filterRow.add(filterTab, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 0));
 
 				filters = new FilterView[]{
-						new AttributeFilterView(config),
-						new SQLFilterView(config)
+						new AttributeFilterView(() -> config.getExportConfig().getSimpleQuery()),
+						new SQLFilterView(() -> config.getExportConfig().getSimpleQuery(), () -> config.getGuiConfig().getSQLExportFilterComponent())
 				};
 
 				for (int i = 0; i < filters.length; ++i)
@@ -322,6 +324,13 @@ public class FilterPanel extends JPanel implements EventHandler {
 		bboxOverlaps.addActionListener(e -> setEnabledTilingOptions());
 		bboxWithin.addActionListener(e -> setEnabledTilingOptions());
 		bboxTiling.addActionListener(e -> setEnabledTilingOptions());
+
+		xmlQuery.getViewComponent().addComponentListener(new ComponentAdapter() {
+			@Override
+			public void componentShown(ComponentEvent e) {
+				setSimpleQuerySettings();
+			}
+		});
 
 		PopupMenuDecorator.getInstance().decorateCheckBoxGroup(lods);
 		PopupMenuDecorator.getInstance().decorate(featureTree, countText, startIndexText, tilingRowsText, tilingColumnsText);
