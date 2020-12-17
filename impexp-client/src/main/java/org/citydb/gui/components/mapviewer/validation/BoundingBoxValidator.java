@@ -215,7 +215,7 @@ public class BoundingBoxValidator {
 					}
 				}
 				
-				bbox.copyFrom(dbController.getActiveDatabaseAdapter().getUtil().transformBoundingBox(bbox, bbox.getSrs(), wgs84));
+				bbox.copyFrom(dbController.getActiveDatabaseAdapter().getUtil().transform2D(bbox, bbox.getSrs(), wgs84));
 				SwingUtilities.invokeLater(transform::dispose);
 				return validate(bbox);
 			} else

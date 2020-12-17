@@ -239,23 +239,13 @@ public class KmlSplitter {
 		}
 	}
 
-	private double[] getEnvelopeInWGS84(GeometryObject envelope) throws SQLException {
+	private BoundingBox getEnvelopeInWGS84(GeometryObject envelope) throws SQLException {
 		if (envelope == null)
 			return null;
 
 		double[] coordinates = envelope.getCoordinates(0);
 		BoundingBox bbox = new BoundingBox(new Position(coordinates[0], coordinates[1]), new Position(coordinates[3], coordinates[4]));
-		BoundingBox wgs84 = databaseAdapter.getUtil().transformBoundingBox(bbox, dbSrs, DatabaseConfig.PREDEFINED_SRS.get(PredefinedSrsName.WGS84_2D));
-
-		double[] result = new double[6];
-		result[0] = wgs84.getLowerCorner().getX();
-		result[1] = wgs84.getLowerCorner().getY();
-		result[2] = 0;
-		result[3] = wgs84.getUpperCorner().getX();
-		result[4] = wgs84.getUpperCorner().getY();
-		result[5] = 0;
-
-		return result;
+		return databaseAdapter.getUtil().transform2D(bbox, dbSrs, DatabaseConfig.PREDEFINED_SRS.get(PredefinedSrsName.WGS84_2D));
 	}
 
 }

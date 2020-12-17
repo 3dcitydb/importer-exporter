@@ -295,8 +295,16 @@ public class GeometryObject {
         envelope.elementTypes = new ElementType[]{ElementType.BOUNDING_RECTANGLE};
         envelope.coordinates = new double[1][];
 
-        if (geometryType != GeometryType.POINT) {
-            double[] bbox = dimension == 2 ? new double[]{Double.MAX_VALUE, Double.MAX_VALUE, -Double.MAX_VALUE, -Double.MAX_VALUE} :
+        if (geometryType == GeometryType.ENVELOPE) {
+            envelope.coordinates[0] = new double[coordinates[0].length];
+            System.arraycopy(coordinates[0], 0, envelope.coordinates[0], 0, coordinates[0].length);
+        } else if (geometryType == GeometryType.POINT) {
+            envelope.coordinates[0] = dimension == 2 ?
+                    new double[]{coordinates[0][0], coordinates[0][1], coordinates[0][0], coordinates[0][1]} :
+                    new double[]{coordinates[0][0], coordinates[0][1], coordinates[0][2], coordinates[0][0], coordinates[0][1], coordinates[0][2]};
+        } else {
+            double[] bbox = dimension == 2 ?
+                    new double[]{Double.MAX_VALUE, Double.MAX_VALUE, -Double.MAX_VALUE, -Double.MAX_VALUE} :
                     new double[]{Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE, -Double.MAX_VALUE, -Double.MAX_VALUE, -Double.MAX_VALUE};
 
             for (int i = 0; i < elementTypes.length; i++) {
@@ -325,12 +333,8 @@ public class GeometryObject {
             }
 
             envelope.coordinates[0] = bbox;
-        } else {
-            envelope.coordinates[0] = dimension == 2 ? new double[]{coordinates[0][0], coordinates[0][1], coordinates[0][0], coordinates[0][1]} :
-                    new double[]{coordinates[0][0], coordinates[0][1], coordinates[0][2], coordinates[0][0], coordinates[0][1], coordinates[0][2]};
         }
 
         return envelope;
     }
-
 }

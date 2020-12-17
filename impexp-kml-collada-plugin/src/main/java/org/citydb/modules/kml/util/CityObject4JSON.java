@@ -27,15 +27,12 @@
  */
 package org.citydb.modules.kml.util;
 
-public class CityObject4JSON {
+import org.citydb.config.geometry.BoundingBox;
 
+public class CityObject4JSON {
 	private String gmlId;
 
-	private double envelopeXmin;
-	private double envelopeXmax;
-	private double envelopeYmin;
-	private double envelopeYmax;
-
+	private BoundingBox envelope;
 	private int tileRow = 0;
 	private int tileColumn = 0;
 
@@ -45,72 +42,33 @@ public class CityObject4JSON {
 
 	@Override
 	public String toString() {
-
-		return "\t\"" + gmlId + "\": {" +
-				"\n\t\"envelope\": [" + envelopeXmin + ", " + envelopeYmin + ", " + envelopeXmax + ", " + envelopeYmax +
-				"],\n\t\"tile\": [" + tileRow + ", " + tileColumn + "]}";
-		/*
-		return "\n\t\"envelope\": [" + envelopeXmin + ", " + envelopeYmin + ", " + envelopeXmax + ", " + envelopeYmax +
-		   	   "],\n\t\"tile\": [" + tileRow + ", " + tileColumn + "]}";
-		 */
+		return " \"" + gmlId + "\": {" +
+				"\"envelope\": [" + getEnvelopeXmin() + "," + getEnvelopeYmin() + "," + getEnvelopeXmax() + "," + getEnvelopeYmax() + "]," +
+				"\"tile\": [" + tileRow + "," + tileColumn + "]}";
 	}
 
-	/*
-	@Override
-	public boolean equals(Object obj) {
-
-		try {
-			CityObject4JSON cityObject4Json = (CityObject4JSON) obj;
-			return this.gmlId.equals(cityObject4Json.getGmlId());
-		}
-		catch (Exception e) {}
-		return false;
+	public String getGmlId() {
+		return gmlId;
 	}
 
-	@Override
-	public int hashCode(){
-		return this.gmlId.hashCode();
-	}
-	 */
-
-	public void setEnvelope (double[] ordinatesArray) {
-		if (ordinatesArray == null) return;
-		envelopeXmin = ordinatesArray[0];
-		envelopeYmin = ordinatesArray[1];
-		envelopeXmax = ordinatesArray[3];
-		envelopeYmax = ordinatesArray[4];
-	}
-
-	public void setEnvelopeXmin(double envelopeXmin) {
-		this.envelopeXmin = envelopeXmin;
+	public void setEnvelope(BoundingBox envelope) {
+		this.envelope = envelope;
 	}
 
 	public double getEnvelopeXmin() {
-		return envelopeXmin;
-	}
-
-	public void setEnvelopeXmax(double envelopeXmax) {
-		this.envelopeXmax = envelopeXmax;
+		return envelope != null ? envelope.getLowerCorner().getX() : 0;
 	}
 
 	public double getEnvelopeXmax() {
-		return envelopeXmax;
-	}
-
-	public void setEnvelopeYmin(double envelopeYmin) {
-		this.envelopeYmin = envelopeYmin;
+		return envelope != null ? envelope.getUpperCorner().getX() : 0;
 	}
 
 	public double getEnvelopeYmin() {
-		return envelopeYmin;
-	}
-
-	public void setEnvelopeYmax(double envelopeYmax) {
-		this.envelopeYmax = envelopeYmax;
+		return envelope != null ? envelope.getLowerCorner().getY() : 0;
 	}
 
 	public double getEnvelopeYmax() {
-		return envelopeYmax;
+		return envelope != null ? envelope.getUpperCorner().getY() : 0;
 	}
 
 	public void setTileRow(int tileRow) {
@@ -128,9 +86,4 @@ public class CityObject4JSON {
 	public int getTileColumn() {
 		return tileColumn;
 	}
-	/*
-	public String getGmlId() {
-		return gmlId;
-	}
-	 */
 }
