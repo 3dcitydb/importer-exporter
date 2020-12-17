@@ -26,11 +26,10 @@
  * limitations under the License.
  */
 
-package org.citydb.gui.modules.exporter.view.filter;
+package org.citydb.gui.modules.common.filter;
 
 import com.formdev.flatlaf.extras.FlatSVGIcon;
 import com.sun.xml.bind.marshaller.NamespacePrefixMapper;
-import org.citydb.config.Config;
 import org.citydb.config.ConfigUtil;
 import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.i18n.Language;
@@ -65,7 +64,6 @@ import org.citydb.database.schema.mapping.FeatureType;
 import org.citydb.database.schema.mapping.SchemaMapping;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.factory.RSyntaxTextAreaHelper;
-import org.citydb.gui.modules.exporter.view.FilterPanel;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.log.Logger;
 import org.citydb.plugin.extension.view.ViewController;
@@ -103,13 +101,16 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 public class XMLQueryView extends FilterView {
     private final Logger log = Logger.getInstance();
-    private final FilterPanel filterPanel;
     private final ViewController viewController;
     private final SchemaMapping schemaMapping;
     private final DatabaseConnectionPool connectionPool;
+    private final Supplier<QueryConfig> queryConfigSupplier;
+    private final Consumer<QueryConfig> queryConfigConsumer;
 
     private JPanel component;
     private RSyntaxTextArea xmlText;
@@ -118,10 +119,14 @@ public class XMLQueryView extends FilterView {
     private JButton duplicateButton;
     private JButton validateButton;
 
-    public XMLQueryView(FilterPanel filterPanel, ViewController viewController, Config config) {
-        super(config);
-        this.filterPanel = filterPanel;
+    public XMLQueryView(ViewController viewController,
+                        Supplier<SimpleQuery> simpleQuerySupplier,
+                        Supplier<QueryConfig> queryConfigSupplier,
+                        Consumer<QueryConfig> queryConfigConsumer) {
+        super(simpleQuerySupplier);
         this.viewController = viewController;
+        this.queryConfigSupplier = queryConfigSupplier;
+        this.queryConfigConsumer = queryConfigConsumer;
 
         schemaMapping = ObjectRegistry.getInstance().getSchemaMapping();
         connectionPool = DatabaseConnectionPool.getInstance();
@@ -184,8 +189,7 @@ public class XMLQueryView extends FilterView {
     }
 
     private void setSimpleSettings() {
-        filterPanel.setSimpleQuerySettings();
-        SimpleQuery simpleQuery = config.getExportConfig().getSimpleQuery();
+        SimpleQuery simpleQuery = simpleQuerySupplier.get();
         CityGMLVersion version = Util.toCityGMLVersion(simpleQuery.getVersion());
 
         QueryConfig query = new QueryConfig();
@@ -463,14 +467,14 @@ public class XMLQueryView extends FilterView {
 
     @Override
     public void loadSettings() {
-        QueryConfig query = config.getExportConfig().getQuery();
-        xmlText.setText(marshalQuery(query, config.getNamespaceFilter()));
+        QueryConfig query = queryConfigSupplier.get();
+        xmlText.setText(marshalQuery(query, ObjectRegistry.getInstance().getConfig().getNamespaceFilter()));
     }
 
     @Override
     public void setSettings() {
         QueryConfig query = unmarshalQuery();
-        config.getExportConfig().setQuery(query);
+        queryConfigConsumer.accept(query);
     }
 
     private boolean isDefaultDatabaseSrs(DatabaseSrs srs) {

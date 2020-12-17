@@ -26,20 +26,19 @@
  * limitations under the License.
  */
 
-package org.citydb.gui.modules.exporter.view.filter;
+package org.citydb.gui.modules.common.filter;
 
-import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.exporter.SimpleQuery;
 import org.citydb.config.project.query.filter.selection.comparison.LikeOperator;
 import org.citydb.config.project.query.filter.selection.id.ResourceIdOperator;
-import org.citydb.gui.components.common.TitledPanel;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.util.Util;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.function.Supplier;
 
 public class AttributeFilterView extends FilterView {
     private JPanel component;
@@ -51,8 +50,8 @@ public class AttributeFilterView extends FilterView {
     private JLabel lineageLabel;
     private JTextField lineageText;
 
-    public AttributeFilterView(Config config) {
-        super(config);
+    public AttributeFilterView(Supplier<SimpleQuery> simpleQuerySupplier) {
+        super(simpleQuerySupplier);
         init();
     }
 
@@ -122,7 +121,7 @@ public class AttributeFilterView extends FilterView {
 
     @Override
     public void loadSettings() {
-        SimpleQuery query = config.getExportConfig().getSimpleQuery();
+        SimpleQuery query = simpleQuerySupplier.get();
 
         // gml:id filter
         ResourceIdOperator gmlIdFilter = query.getSelectionFilter().getGmlIdFilter();
@@ -139,7 +138,7 @@ public class AttributeFilterView extends FilterView {
 
     @Override
     public void setSettings() {
-        SimpleQuery query = config.getExportConfig().getSimpleQuery();
+        SimpleQuery query = simpleQuerySupplier.get();
 
         // gml:id filter
         ResourceIdOperator gmlIdFilter = query.getSelectionFilter().getGmlIdFilter();
