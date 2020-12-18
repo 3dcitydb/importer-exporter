@@ -40,6 +40,7 @@ import org.citydb.database.schema.mapping.SchemaMapping;
 import org.citydb.database.schema.path.InvalidSchemaPathException;
 import org.citydb.database.schema.path.SchemaPath;
 import org.citydb.event.EventDispatcher;
+import org.citydb.event.global.ObjectCounterEvent;
 import org.citydb.event.global.ProgressBarEventType;
 import org.citydb.event.global.StatusDialogProgressBar;
 import org.citydb.log.Logger;
@@ -64,6 +65,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Collections;
+import java.util.Map;
 
 public class DBSplitter {
 	private final Logger log = Logger.getInstance();
@@ -77,6 +80,7 @@ public class DBSplitter {
 	private final Connection connection;
 	private final SchemaMapping schemaMapping;
 	private final SQLQueryBuilder builder;
+	private final boolean preview;
 
 	private volatile boolean shouldRun = true;
 	private boolean calculateNumberMatched;
@@ -85,13 +89,16 @@ public class DBSplitter {
 			WorkerPool<DBSplittingResult> dbWorkerPool, 
 			Query query,
 			Config config,
-			EventDispatcher eventDispatcher) throws SQLException {
+			EventDispatcher eventDispatcher,
+			boolean preview) throws SQLException {
 		
 		this.schemaMapping = schemaMapping;
 		this.dbWorkerPool = dbWorkerPool;
 		this.query = query;
 		this.config = config;
 		this.eventDispatcher = eventDispatcher;
+		this.preview = preview;
+
 		databaseAdapter = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter();
 		connection = DatabaseConnectionPool.getInstance().getConnection();
 
@@ -202,9 +209,14 @@ public class DBSplitter {
 						continue;
 					}
 
-					// set initial context...
-					DBSplittingResult splitter = new DBSplittingResult(id, objectType);
-					dbWorkerPool.addWork(splitter);
+					if (preview) {
+						Map<Integer, Long> objectCounter = Collections.singletonMap(objectClassId, 1L);
+						eventDispatcher.triggerEvent(new ObjectCounterEvent(objectCounter, this));
+					} else {
+						// set initial context...
+						DBSplittingResult splitter = new DBSplittingResult(id, objectType);
+						dbWorkerPool.addWork(splitter);
+					}
 				} while (rs.next() && shouldRun);
 			} else
 				log.info("No feature matches the request.");

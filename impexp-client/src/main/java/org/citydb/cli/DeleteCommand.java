@@ -54,6 +54,9 @@ public class DeleteCommand extends CliCommand {
             description = "Delete mode: ${COMPLETION-CANDIDATES} (default: ${DEFAULT-VALUE}).")
     private Mode mode;
 
+    @CommandLine.Option(names = "--preview", description = "Only print a report of the matched top-level city objects.")
+    private boolean preview;
+
     @CommandLine.ArgGroup(exclusive = false, heading = "Query and filter options:%n")
     private QueryOption queryOption;
 
@@ -68,6 +71,7 @@ public class DeleteCommand extends CliCommand {
     @Override
     public Integer call() throws Exception {
         Config config = ObjectRegistry.getInstance().getConfig();
+        String operation = preview? "preview" : mode.name();
 
         // connect to database
         DatabaseController database = ObjectRegistry.getInstance().getDatabaseController();
@@ -76,7 +80,7 @@ public class DeleteCommand extends CliCommand {
                 config.getDatabaseConfig().getActiveConnection();
 
         if (!database.connect(connection)) {
-            log.warn("Database delete aborted.");
+            log.warn("Database " + operation + " aborted.");
             return 1;
         }
 
@@ -90,20 +94,20 @@ public class DeleteCommand extends CliCommand {
         try {
             Deleter deleter = new Deleter();
             if (deleteListOption != null) {
-                deleter.doDelete(deleteListOption.toDeleteListParser());
+                deleter.doDelete(deleteListOption.toDeleteListParser(), preview);
             } else {
                 // set user-defined query options
                 if (queryOption != null) {
                     config.getDeleteConfig().setQuery(queryOption.toQueryConfig());
                 }
 
-                deleter.doDelete();
+                deleter.doDelete(preview);
             }
 
-            log.info("Database delete successfully finished.");
+            log.info("Database " + operation + " successfully finished.");
         } catch (DeleteException e) {
             log.error(e.getMessage(), e.getCause());
-            log.warn("Database delete aborted.");
+            log.warn("Database " + operation + " aborted.");
             return 1;
         } finally {
             database.disconnect(true);
