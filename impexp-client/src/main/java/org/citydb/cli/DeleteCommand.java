@@ -54,7 +54,7 @@ public class DeleteCommand extends CliCommand {
             description = "Delete mode: ${COMPLETION-CANDIDATES} (default: ${DEFAULT-VALUE}).")
     private Mode mode;
 
-    @CommandLine.Option(names = "--preview", description = "Only print a report of the matched top-level city objects.")
+    @CommandLine.Option(names = {"-v", "--preview"}, description = "Only print a report of the matched top-level city objects.")
     private boolean preview;
 
     @CommandLine.ArgGroup(exclusive = false, heading = "Query and filter options:%n")
