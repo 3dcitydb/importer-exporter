@@ -54,7 +54,8 @@ public class DeleteCommand extends CliCommand {
             description = "Delete mode: ${COMPLETION-CANDIDATES} (default: ${DEFAULT-VALUE}).")
     private Mode mode;
 
-    @CommandLine.Option(names = {"-v", "--preview"}, description = "Only print a report of the matched top-level city objects.")
+    @CommandLine.Option(names = {"-v", "--preview"},
+            description = "Only check which top-level features would be affected, but that the features will not be deleted or terminated.")
     private boolean preview;
 
     @CommandLine.ArgGroup(exclusive = false, heading = "Query and filter options:%n")
@@ -71,7 +72,6 @@ public class DeleteCommand extends CliCommand {
     @Override
     public Integer call() throws Exception {
         Config config = ObjectRegistry.getInstance().getConfig();
-        String operation = preview? "preview" : mode.name();
 
         // connect to database
         DatabaseController database = ObjectRegistry.getInstance().getDatabaseController();
@@ -80,7 +80,7 @@ public class DeleteCommand extends CliCommand {
                 config.getDatabaseConfig().getActiveConnection();
 
         if (!database.connect(connection)) {
-            log.warn("Database " + operation + " aborted.");
+            log.warn("Database " + mode.name() + " aborted.");
             return 1;
         }
 
@@ -92,6 +92,11 @@ public class DeleteCommand extends CliCommand {
         }
 
         try {
+            if (preview) {
+                log.info("The process will only check which top-level features " +
+                        "would be affected, but that the features will not be deleted or terminated.");
+            }
+
             Deleter deleter = new Deleter();
             if (deleteListOption != null) {
                 deleter.doDelete(deleteListOption.toDeleteListParser(), preview);
@@ -104,10 +109,10 @@ public class DeleteCommand extends CliCommand {
                 deleter.doDelete(preview);
             }
 
-            log.info("Database " + operation + " successfully finished.");
+            log.info("Database " + mode.name() + " successfully finished.");
         } catch (DeleteException e) {
             log.error(e.getMessage(), e.getCause());
-            log.warn("Database " + operation + " aborted.");
+            log.warn("Database " + mode.name() + " aborted.");
             return 1;
         } finally {
             database.disconnect(true);
