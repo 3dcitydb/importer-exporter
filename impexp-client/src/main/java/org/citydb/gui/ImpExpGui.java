@@ -29,6 +29,7 @@ package org.citydb.gui;
 
 import com.formdev.flatlaf.FlatLaf;
 import com.formdev.flatlaf.extras.FlatAnimatedLafChange;
+import com.formdev.flatlaf.extras.components.FlatTabbedPane;
 import com.formdev.flatlaf.ui.FlatTabbedPaneUI;
 import org.citydb.ade.ADEExtensionManager;
 import org.citydb.config.Config;
@@ -115,7 +116,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 	private JTabbedPane menu;
 	private JSplitPane splitPane;
 	private JPanel console;
-	private JTabbedPane consolePane;
+	private FlatTabbedPane consolePane;
 	private ConsolePopupMenuWrapper consolePopup;
 	private ConsoleWindow consoleWindow;
 
@@ -160,7 +161,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		setJMenuBar(menuBar);
 
 		console = new JPanel();
-		consolePane = new JTabbedPane();
+		consolePane = new FlatTabbedPane();
 		consoleText.setAutoscrolls(true);
 		consoleText.setFont(new Font(Font.MONOSPACED, Font.PLAIN, UIManager.getFont("Label.font").getSize()));
 		consoleText.setEditable(false);
@@ -266,7 +267,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 			scroll.setViewportBorder(BorderFactory.createEmptyBorder());
 
 			consolePane.addTab(null, scroll);
-			consolePane.putClientProperty("JTabbedPane.hasFullBorder", true);
+			consolePane.setHasFullBorder(true);
 			consolePane.setUI(new FlatTabbedPaneUI() {
 				protected void paintTabBackground(Graphics g, int p, int i, int x, int y, int w, int h, boolean s) {
 					// do not paint tab background
