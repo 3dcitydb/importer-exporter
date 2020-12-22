@@ -27,6 +27,7 @@
  */
 package org.citydb.gui.modules.database.view;
 
+import com.formdev.flatlaf.extras.components.FlatComboBox;
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.database.DatabaseConfig;
@@ -79,7 +80,7 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 	private JTextField serverText;
 	private JFormattedTextField portText;
 	private JTextField databaseText;
-	private JComboBox<String> schemaCombo;
+	private FlatComboBox<String> schemaCombo;
 	private JTextField userText;
 	private JPasswordField passwordText;
 	private JCheckBox passwordCheck;
@@ -164,7 +165,7 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 		passwordText = new JPasswordField();
 		passwordCheck = new JCheckBox();
 
-		schemaCombo = new JComboBox<>();
+		schemaCombo = new FlatComboBox<>();
 		schemaCombo.setEditable(true);
 
 		applyButton = new JButton();
@@ -346,7 +347,7 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 		portLabel.setText(Language.I18N.getString("common.label.port"));
 		databaseLabel.setText(Language.I18N.getString("db.label.sid"));
 		schemaLabel.setText(Language.I18N.getString("common.label.schema"));
-		schemaCombo.putClientProperty("JTextField.placeholderText", Language.I18N.getString("common.label.schema.prompt"));
+		schemaCombo.setPlaceholderText(Language.I18N.getString("common.label.schema.prompt"));
 		passwordCheck.setText(Language.I18N.getString("common.label.passwordCheck"));
 		applyButton.setText(Language.I18N.getString("common.button.apply"));
 		newButton.setText(Language.I18N.getString("db.button.new"));
