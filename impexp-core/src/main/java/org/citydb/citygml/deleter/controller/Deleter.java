@@ -37,6 +37,7 @@ import org.citydb.concurrent.SingleWorkerPool;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
 import org.citydb.config.project.database.Workspace;
+import org.citydb.config.project.deleter.DeleteMode;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.connection.ConnectionManager;
 import org.citydb.database.connection.DatabaseConnectionPool;
@@ -140,7 +141,13 @@ public class Deleter implements EventHandler {
 				throw new DeleteException("Failed to start database delete worker pool. Check the database connection pool settings.");
 			}
 
-			log.info("Querying the database.");
+			DeleteMode mode = config.getDeleteConfig().getMode();
+			if (preview) {
+				log.info("Running " + mode.value() + " in preview mode. Affected city objects will not be " +
+						(mode == DeleteMode.TERMINATE ? "terminated." : "deleted."));
+			} else {
+				log.info((mode == DeleteMode.TERMINATE ? "Terminating" : "Deleting") + " city objects from database.");
+			}
 
 			while (shouldRun && queries.hasNext()) {
 				// get database splitter and start query

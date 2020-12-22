@@ -92,11 +92,6 @@ public class DeleteCommand extends CliCommand {
         }
 
         try {
-            if (preview) {
-                log.info("The process will only check which top-level features " +
-                        "would be affected, but that the features will not be deleted or terminated.");
-            }
-
             Deleter deleter = new Deleter();
             if (deleteListOption != null) {
                 deleter.doDelete(deleteListOption.toDeleteListParser(), preview);
