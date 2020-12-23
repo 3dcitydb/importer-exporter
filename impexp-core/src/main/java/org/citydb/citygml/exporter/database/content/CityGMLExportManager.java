@@ -160,6 +160,7 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 	private final InternalConfig internalConfig;
 	private final Config config;
 
+	private final Set<String> localGeometryCache;
 	private final AttributeValueSplitter attributeValueSplitter;
 	private final ExportCounter exportCounter;
 	private final JAXBUnmarshaller jaxbUnmarshaller;
@@ -198,6 +199,7 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 		hasADESupport = !adeManager.getEnabledExtensions().isEmpty();
 		plugins = PluginManager.getInstance().getExternalPlugins(CityGMLExportExtension.class);
 
+		localGeometryCache = new HashSet<>();
 		attributeValueSplitter = new AttributeValueSplitter();
 		exportCounter = new ExportCounter(schemaMapping);
 
@@ -257,6 +259,9 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 			if (isLazyTextureExport() && config.getExportConfig().getAppearances().isSetExportAppearance())
 				getExporter(DBLocalAppearance.class).triggerLazyTextureExport(feature);
 		}
+
+		// clear local geometry cache
+		localGeometryCache.clear();
 
 		return object;
 	}
@@ -747,14 +752,31 @@ public class CityGMLExportManager implements CityGMLExportHelper {
 			cache.put(gmlId, id, -1, false, null, objectClassId);
 	}	
 
-	public boolean lookupAndPutGeometryUID(String gmlId, long id) {
-		UIDCache cache = uidCacheManager.getCache(UIDCacheType.GEOMETRY);
-		return cache != null && cache.lookupAndPut(gmlId, id, MappingConstants.SURFACE_GEOMETRY_OBJECTCLASS_ID);
+	public boolean lookupAndPutGeometryUID(String gmlId, long id, boolean useLocalScope) {
+		boolean isCached = !localGeometryCache.add(gmlId);
+
+		if (!useLocalScope) {
+			UIDCache cache = uidCacheManager.getCache(UIDCacheType.GEOMETRY);
+			if (cache != null) {
+				if (isCached) {
+					cache.put(gmlId, id, 0, false, null, MappingConstants.SURFACE_GEOMETRY_OBJECTCLASS_ID);
+				} else {
+					isCached = cache.lookupAndPut(gmlId, id, MappingConstants.SURFACE_GEOMETRY_OBJECTCLASS_ID);
+				}
+			}
+		}
+
+		return isCached;
 	}
 
 	public boolean lookupGeometryUID(String gmlId) {
-		UIDCache cache = uidCacheManager.getCache(UIDCacheType.GEOMETRY);
-		return cache != null && cache.get(gmlId) != null;
+		boolean isCached = localGeometryCache.contains(gmlId);
+		if (!isCached) {
+			UIDCache cache = uidCacheManager.getCache(UIDCacheType.GEOMETRY);
+			isCached = cache != null && cache.get(gmlId) != null;
+		}
+
+		return isCached;
 	}
 
 	public String getGeometrySignature(AbstractGeometry geometry, long id) {
