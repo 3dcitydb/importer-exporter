@@ -37,6 +37,7 @@ import org.citydb.concurrent.SingleWorkerPool;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
 import org.citydb.config.project.database.Workspace;
+import org.citydb.config.project.deleter.DeleteMode;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.connection.ConnectionManager;
 import org.citydb.database.connection.DatabaseConnectionPool;
@@ -87,7 +88,7 @@ public class Deleter implements EventHandler {
 		objectCounter = new HashMap<>();
 	}
 
-	public boolean doDelete() throws DeleteException {
+	public boolean doDelete(boolean preview) throws DeleteException {
 		try {
 			// build query from configuration
 			ConfigQueryBuilder queryBuilder = new ConfigQueryBuilder(schemaMapping, databaseAdapter);
@@ -95,29 +96,29 @@ public class Deleter implements EventHandler {
 					queryBuilder.buildQuery(config.getDeleteConfig().getSimpleQuery(), config.getNamespaceFilter()) :
 					queryBuilder.buildQuery(config.getDeleteConfig().getQuery(), config.getNamespaceFilter());
 
-			return doDelete(Collections.singletonList(query).iterator());
+			return doDelete(Collections.singletonList(query).iterator(), preview);
 		} catch (QueryBuildException e) {
 			throw new DeleteException("Failed to build the delete query expression.", e);
 		}
 	}
 
-	public boolean doDelete(DeleteListParser parser) throws DeleteException {
+	public boolean doDelete(DeleteListParser parser, boolean preview) throws DeleteException {
 		log.info("Using delete list from CSV file: " + parser.getFile());
-		return doDelete(parser.queryIterator(schemaMapping, databaseAdapter));
+		return doDelete(parser.queryIterator(schemaMapping, databaseAdapter), preview);
 	}
 
-	private boolean doDelete(Iterator<Query> queries) throws DeleteException {
+	private boolean doDelete(Iterator<Query> queries, boolean preview) throws DeleteException {
 		eventDispatcher.addEventHandler(EventType.OBJECT_COUNTER, this);
 		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
 
 		try {
-			return process(queries);
+			return process(queries, preview);
 		} finally {
 			eventDispatcher.removeEventHandler(this);
 		}
 	}
 
-	private boolean process(Iterator<Query> queries) throws DeleteException {
+	private boolean process(Iterator<Query> queries, boolean preview) throws DeleteException {
 		long start = System.currentTimeMillis();
 
 		// checking workspace
@@ -140,12 +141,18 @@ public class Deleter implements EventHandler {
 				throw new DeleteException("Failed to start database delete worker pool. Check the database connection pool settings.");
 			}
 
-			log.info("Deleting from database.");
+			DeleteMode mode = config.getDeleteConfig().getMode();
+			if (preview) {
+				log.info("Running " + mode.value() + " in preview mode. Affected city objects will not be " +
+						(mode == DeleteMode.TERMINATE ? "terminated." : "deleted."));
+			} else {
+				log.info((mode == DeleteMode.TERMINATE ? "Terminating" : "Deleting") + " city objects from database.");
+			}
 
 			while (shouldRun && queries.hasNext()) {
 				// get database splitter and start query
 				try {
-					dbSplitter = new DBSplitter(schemaMapping, dbWorkerPool, queries.next(), config, eventDispatcher);
+					dbSplitter = new DBSplitter(schemaMapping, dbWorkerPool, queries.next(), config, eventDispatcher, preview);
 					dbSplitter.setCalculateNumberMatched(CoreConstants.IS_GUI_MODE);
 					dbSplitter.startQuery();
 				} catch (SQLException | QueryBuildException e) {
@@ -188,7 +195,7 @@ public class Deleter implements EventHandler {
 		}
 
 		if (shouldRun) {
-			log.info("Total delete time: " + Util.formatElapsedTime(System.currentTimeMillis() - start) + ".");
+			log.info("Total processing time: " + Util.formatElapsedTime(System.currentTimeMillis() - start) + ".");
 		} else if (exception != null) {
 			throw exception;
 		}
@@ -196,7 +203,7 @@ public class Deleter implements EventHandler {
 		return shouldRun;
 	}
 
-	protected WorkerPool<DBSplittingResult> createWorkerPool(ConnectionManager connectionManager, Config config, EventDispatcher eventDispatcher) {
+	protected WorkerPool<DBSplittingResult> createWorkerPool(ConnectionManager connectionManager,Config config, EventDispatcher eventDispatcher) {
 		// Multithreading may cause DB-Deadlock. It may occur when deleting a CityObjectGroup within
 		// one thread, and the cityObjectMembers are being deleted within other threads at the same time.
 		// Hence, we use single thread to avoid this issue.
