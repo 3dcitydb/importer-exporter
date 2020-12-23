@@ -36,7 +36,6 @@ import org.citydb.gui.modules.common.AbstractPreferencesComponent;
 import org.citydb.gui.util.GuiUtil;
 import org.citydb.registry.ObjectRegistry;
 import org.citydb.util.Util;
-import org.citygml4j.model.module.citygml.CityGMLVersion;
 
 import javax.swing.*;
 import java.awt.*;
@@ -70,20 +69,6 @@ public class VersionPanel extends AbstractPreferencesComponent {
 			cityGMLVersionBox[i] = new JRadioButton();
 			cityGMLVersionBox[i].setText(CityGMLVersionType.values()[i].toString());
 			group.add(cityGMLVersionBox[i]);
-
-			if (Util.toCityGMLVersion(CityGMLVersionType.values()[i]) == CityGMLVersion.DEFAULT)
-				cityGMLVersionBox[i].setSelected(true);
-			
-			// fire property change event
-			cityGMLVersionBox[i].addActionListener(e -> {
-				for (int i1 = 0; i1 < CityGMLVersionType.values().length; i1++) {
-					if (cityGMLVersionBox[i1] == e.getSource()) {
-						ObjectRegistry.getInstance().getEventDispatcher().triggerEvent(
-								new PropertyChangeEvent("citygml.version", null, Util.toCityGMLVersion(CityGMLVersionType.values()[i1]), VersionPanel.this));
-						break;
-					}
-				}
-			});
 		}
 
 		setLayout(new GridBagLayout());
@@ -115,8 +100,12 @@ public class VersionPanel extends AbstractPreferencesComponent {
 					break;
 				}
 			}
-		} else
+		} else {
 			cityGMLVersionBox[0].setSelected(true);
+			version = CityGMLVersionType.values()[0];
+		}
+
+		firePropertyChange(version);
 	}
 
 	@Override
@@ -124,6 +113,7 @@ public class VersionPanel extends AbstractPreferencesComponent {
 		for (int i = 0; i < CityGMLVersionType.values().length; i++) {
 			if (cityGMLVersionBox[i].isSelected()) {
 				config.getExportConfig().getSimpleQuery().setVersion(CityGMLVersionType.fromValue(cityGMLVersionBox[i].getText()));
+				firePropertyChange(CityGMLVersionType.values()[i]);
 				break;
 			}
 		}
@@ -134,4 +124,8 @@ public class VersionPanel extends AbstractPreferencesComponent {
 		return Language.I18N.getString("pref.tree.export.version");
 	}
 
+	private void firePropertyChange(CityGMLVersionType version) {
+		ObjectRegistry.getInstance().getEventDispatcher().triggerEvent(
+				new PropertyChangeEvent("citygml.version", null, Util.toCityGMLVersion(version), VersionPanel.this));
+	}
 }
