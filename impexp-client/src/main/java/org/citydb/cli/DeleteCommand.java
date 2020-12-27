@@ -54,6 +54,10 @@ public class DeleteCommand extends CliCommand {
             description = "Delete mode: ${COMPLETION-CANDIDATES} (default: ${DEFAULT-VALUE}).")
     private Mode mode;
 
+    @CommandLine.Option(names = {"-v", "--preview"},
+            description = "Only check which top-level features would be affected, but that the features will not be deleted or terminated.")
+    private boolean preview;
+
     @CommandLine.ArgGroup(exclusive = false, heading = "Query and filter options:%n")
     private QueryOption queryOption;
 
@@ -76,7 +80,7 @@ public class DeleteCommand extends CliCommand {
                 config.getDatabaseConfig().getActiveConnection();
 
         if (!database.connect(connection)) {
-            log.warn("Database delete aborted.");
+            log.warn("Database " + mode.name() + " aborted.");
             return 1;
         }
 
@@ -90,20 +94,20 @@ public class DeleteCommand extends CliCommand {
         try {
             Deleter deleter = new Deleter();
             if (deleteListOption != null) {
-                deleter.doDelete(deleteListOption.toDeleteListParser());
+                deleter.doDelete(deleteListOption.toDeleteListParser(), preview);
             } else {
                 // set user-defined query options
                 if (queryOption != null) {
                     config.getDeleteConfig().setQuery(queryOption.toQueryConfig());
                 }
 
-                deleter.doDelete();
+                deleter.doDelete(preview);
             }
 
-            log.info("Database delete successfully finished.");
+            log.info("Database " + mode.name() + " successfully finished.");
         } catch (DeleteException e) {
             log.error(e.getMessage(), e.getCause());
-            log.warn("Database delete aborted.");
+            log.warn("Database " + mode.name() + " aborted.");
             return 1;
         } finally {
             database.disconnect(true);

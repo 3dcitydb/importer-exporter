@@ -316,14 +316,14 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryExporter {
 		}
 
 		// check for xlinks
-		if (geomNode.gmlId != null && geomNode.isXlink > 0) {
+		if (geomNode.gmlId != null
+				&& geomNode.isXlink > 0
+				&& exporter.lookupAndPutGeometryUID(geomNode.gmlId, geomNode.id, geomNode.isXlink == XlinkType.LOCAL.value())) {
 			if (useXLink) {
-				if (exporter.lookupAndPutGeometryUID(geomNode.gmlId, geomNode.id, geomNode.isXlink == XlinkType.LOCAL.value())) {
-					// check whether we have to embrace the geometry with an orientableSurface
-					return geomNode.isReverse != isSetOrientableSurface ?
-							new SurfaceGeometry(reverseSurface("#" + geomNode.gmlId)) :
-							new SurfaceGeometry("#" + geomNode.gmlId, surfaceGeometryType);
-				}
+				// check whether we have to embrace the geometry with an orientableSurface
+				return geomNode.isReverse != isSetOrientableSurface ?
+						new SurfaceGeometry(reverseSurface("#" + geomNode.gmlId)) :
+						new SurfaceGeometry("#" + geomNode.gmlId, surfaceGeometryType);
 			} else {
 				geomNode.isXlink = XlinkType.NONE.value();
 				String gmlId = DefaultGMLIdManager.getInstance().generateUUID(gmlIdPrefix);
