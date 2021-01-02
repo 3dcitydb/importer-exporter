@@ -1569,7 +1569,7 @@ public abstract class KmlGenericObject {
 				while (rs.next()) {
 					// skip duplicate geometries
 					String gmlId = rs.getString("gmlid");
-					boolean isXlink = rs.getBoolean("is_xlink");
+					boolean isXlink = rs.getInt("is_xlink") > 0;
 					if (isXlink && gmlId != null && !exportedGmlIds.add(gmlId))
 						continue;
 
@@ -2195,7 +2195,7 @@ public abstract class KmlGenericObject {
 					if (previousSurfaceId != surfaceId) {
 						// skip duplicate geometries
 						String gmlId = rs.getString("gmlid");
-						boolean isXlink = rs.getBoolean("is_xlink");
+						boolean isXlink = rs.getInt("is_xlink") > 0;
 						if (isXlink && gmlId != null && !exportedGmlIds.add(gmlId))
 							continue;
 
@@ -2480,7 +2480,7 @@ public abstract class KmlGenericObject {
 				while (rs.next()) {
 					// skip duplicate geometries
 					String gmlId = rs.getString("gmlid");
-					boolean isXlink = rs.getBoolean("is_xlink");
+					boolean isXlink = rs.getInt("is_xlink") > 0;
 					if (isXlink && gmlId != null && !exportedGmlIds.add(gmlId))
 						continue;
 
