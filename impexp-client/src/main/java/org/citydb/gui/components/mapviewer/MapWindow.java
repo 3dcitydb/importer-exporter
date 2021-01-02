@@ -787,8 +787,7 @@ public class MapWindow extends JDialog implements EventHandler {
 						for (String message : exception.getMessages())
 							log.error("Cause: " + message);
 					} else {
-						log.error("An error occurred while calling the geocoding service.");
-						log.error("Caused by: " + e.getMessage());
+						log.error("An error occurred while calling the geocoding service.", e);
 					}
 				} finally {
 					searchResult.setIcon(null);

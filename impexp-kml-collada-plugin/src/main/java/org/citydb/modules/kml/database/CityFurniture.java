@@ -117,7 +117,7 @@ public class CityFurniture extends KmlGenericObject{
 					try { psQuery.close(); } catch (SQLException sqle) {}
 					rs = null;
 				} catch (Exception e) {
-					log.error("SQL error while querying the highest available LOD: " + e.getMessage());
+					log.error("SQL error while querying the highest available LOD.", e);
 					try { if (rs != null) rs.close(); } catch (SQLException sqle) {} 
 					try { if (psQuery != null) psQuery.close(); } catch (SQLException sqle) {}
 					try { connection.commit(); } catch (SQLException sqle) {}

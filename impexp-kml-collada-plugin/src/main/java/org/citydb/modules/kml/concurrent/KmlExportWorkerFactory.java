@@ -98,7 +98,7 @@ public class KmlExportWorkerFactory implements WorkerFactory<KmlSplittingResult>
 			kmlWorker = new KmlExportWorker(outputFile, connection, databaseAdapter, jaxbKmlContext, jaxbColladaContext,
 					writerPool, tracker, query, kmlFactory, config, eventDispatcher);
 		} catch (SQLException e) {
-			log.error("Failed to create export worker: " + e.getMessage());
+			log.error("Failed to create export worker.", e);
 		}
 
 		return kmlWorker;

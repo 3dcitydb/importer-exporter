@@ -35,15 +35,15 @@ import org.citydb.config.project.kmlExporter.KmlExportConfig;
 import org.citydb.plugin.cli.CliOption;
 import picocli.CommandLine;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
 public class DisplayOption implements CliOption {
-    @CommandLine.Option(names = {"-D", "--display-mode"}, split = ",", paramLabel = "<mode[=pixels]>", required = true,
+    @CommandLine.Option(names = {"-D", "--display-mode"}, split = ",", paramLabel = "<mode[=pixels]>",
+            required = true, mapFallbackValue = "0",
             description = "Display mode: collada, geometry, extruded, footprint. Optionally specify the visibility " +
-                    "in terms of screen pixels (default: 0).")
-    private String[] modeOptions;
+                    "in terms of screen pixels (default: ${MAP-FALLBACK-VALUE}).")
+    private Map<Mode, Integer> modes;
 
     @CommandLine.Option(names = {"-l", "--lod"}, paramLabel = "<0..4 | halod>", required = true,
             description = "LoD to export from.")
@@ -53,7 +53,6 @@ public class DisplayOption implements CliOption {
             description = "Appearance theme to use for COLLADA/glTF exports. Use 'none' for the null theme.")
     private String theme;
 
-    private final Map<Mode, Integer> modes = new HashMap<>();
     private int lod;
 
     public Set<Mode> getModes() {
@@ -107,40 +106,6 @@ public class DisplayOption implements CliOption {
 
     @Override
     public void preprocess(CommandLine commandLine) throws Exception {
-        if (modeOptions != null) {
-            for (String modeAndVisibility : modeOptions) {
-                String[] items = modeAndVisibility.split("=");
-
-                if (items.length == 0 || items.length > 2) {
-                    throw new CommandLine.ParameterException(commandLine,
-                            "A display mode must be in MODE[=PIXELS] format but was '" + modeAndVisibility + "'");
-                }
-
-                Mode mode;
-                try {
-                    mode = Mode.valueOf(items[0].toLowerCase());
-                } catch (IllegalArgumentException e) {
-                    throw new CommandLine.ParameterException(commandLine, "Invalid value for option '--display-mode': " +
-                            "expected one of [collada, geometry, extruded, footprint] (case-insensitive) but was '" + items[0] + "'");
-                }
-
-                int visibility = 0;
-                if (items.length == 2) {
-                    try {
-                        visibility = Integer.parseInt(items[1]);
-                        if (visibility < 0) {
-                            throw new NumberFormatException();
-                        }
-                    } catch (NumberFormatException e) {
-                        throw new CommandLine.ParameterException(commandLine, "Error: The number of visibility pixels " +
-                                "for a display mode must be a non-negative integer but was '" + items[1] + "'");
-                    }
-                }
-
-                modes.put(mode, visibility);
-            }
-        }
-
         if (lodOption != null) {
             switch (lodOption.toLowerCase()) {
                 case "0":

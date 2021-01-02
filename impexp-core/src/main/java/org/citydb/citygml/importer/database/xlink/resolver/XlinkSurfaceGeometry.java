@@ -33,6 +33,7 @@ import org.citydb.citygml.common.database.xlink.DBXlinkSurfaceGeometry;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.config.project.database.DatabaseType;
 import org.citydb.database.schema.SequenceEnum;
+import org.citydb.database.schema.XlinkType;
 import org.citydb.database.schema.mapping.MappingConstants;
 import org.citydb.util.Util;
 
@@ -70,16 +71,17 @@ public class XlinkSurfaceGeometry implements DBXlinkResolver {
 		updates = new HashMap<>();
 		counters = new HashMap<>();
 		schema = manager.getDatabaseAdapter().getConnectionDetails().getSchema();
+		int globalXlink = XlinkType.GLOBAL.value();
 
 		psSelectTmpSurfGeom = cacheTable.getConnection().prepareStatement("select ID from " + cacheTable.getTableName() +
 				" where PARENT_ID=? or ROOT_ID=?");
 
 		psSelectSurfGeom = connection.prepareStatement(manager.getDatabaseAdapter().getSQLAdapter().getHierarchicalGeometryQuery());
-		psUpdateSurfGeom = connection.prepareStatement("update " + schema + ".SURFACE_GEOMETRY set IS_XLINK=1 where ID=?");
-		
+		psUpdateSurfGeom = connection.prepareStatement("update " + schema + ".SURFACE_GEOMETRY set IS_XLINK=" + globalXlink + " where ID=?");
+
 		StringBuilder parentStmt = new StringBuilder()
-		.append("insert into ").append(schema).append(".SURFACE_GEOMETRY (ID, GMLID, PARENT_ID, ROOT_ID, IS_SOLID, IS_COMPOSITE, IS_TRIANGULATED, IS_XLINK, IS_REVERSE, GEOMETRY, SOLID_GEOMETRY, CITYOBJECT_ID) values ")
-		.append("(?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ");
+				.append("insert into ").append(schema).append(".SURFACE_GEOMETRY (ID, GMLID, PARENT_ID, ROOT_ID, IS_SOLID, IS_COMPOSITE, IS_TRIANGULATED, IS_XLINK, IS_REVERSE, GEOMETRY, SOLID_GEOMETRY, CITYOBJECT_ID) values ")
+				.append("(?, ?, ?, ?, ?, ?, ?, ").append(globalXlink).append(", ?, ?, ");
 		
 		if (manager.getDatabaseAdapter().getDatabaseType() == DatabaseType.POSTGIS) {
 			// the current PostGIS JDBC driver lacks support for geometry objects of type PolyhedralSurface
@@ -95,7 +97,7 @@ public class XlinkSurfaceGeometry implements DBXlinkResolver {
 		psMemberElem = connection.prepareStatement("insert into " + schema + ".SURFACE_GEOMETRY (ID, GMLID, PARENT_ID, " +
 				"ROOT_ID, IS_SOLID, IS_COMPOSITE, IS_TRIANGULATED, IS_XLINK, IS_REVERSE, GEOMETRY, CITYOBJECT_ID) " +
 				"values (" + manager.getDatabaseAdapter().getSQLAdapter().getNextSequenceValue(SequenceEnum.SURFACE_GEOMETRY_ID_SEQ.getName()) +
-				", ?, ?, ?, 0, 0, 0, 1, ?, ?, ?)");
+				", ?, ?, ?, 0, 0, 0, " + globalXlink + ", ?, ?, ?)");
 	}
 
 	public boolean insert(DBXlinkSurfaceGeometry xlink) throws SQLException {

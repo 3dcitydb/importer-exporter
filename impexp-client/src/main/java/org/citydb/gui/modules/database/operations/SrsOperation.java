@@ -256,7 +256,7 @@ public class SrsOperation extends DatabaseOperationView {
 			srs.setSrid(((Number) sridText.getValue()).intValue());
 			dbConnectionPool.getActiveDatabaseAdapter().getUtil().getSrsInfo(srs);
 		} catch (SQLException | ParseException e) {
-			log.error("Error while checking SRID: " + e.getMessage().trim());
+			log.error("Error while checking SRID.", e);
 		}
 
 		return srs;

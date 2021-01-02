@@ -230,4 +230,18 @@ public class QueryConfig {
         return localProperties != null && localProperties.containsKey(name);
     }
 
+    public void copyFrom(QueryConfig other) {
+        targetSrs = other.targetSrs;
+        targetSrid = other.targetSrid;
+        targetSrsName = other.targetSrsName;
+        featureTypeFilter = other.featureTypeFilter;
+        appearanceFilter = other.appearanceFilter;
+        counterFilter = other.counterFilter;
+        lodFilter = other.lodFilter;
+        projectionFilter = other.projectionFilter;
+        selectionFilter = other.selectionFilter;
+        sorting = other.sorting;
+        tiling = other.tiling;
+        localProperties = other.localProperties;
+    }
 }

@@ -26,20 +26,22 @@
  * limitations under the License.
  */
 
-package org.citydb.gui.modules.exporter.view.filter;
+package org.citydb.gui.modules.common.filter;
 
-import org.citydb.config.Config;
+import org.citydb.config.project.exporter.SimpleQuery;
 import org.citydb.plugin.extension.view.View;
 
+import java.util.function.Supplier;
+
 public abstract class FilterView extends View {
-    final Config config;
+    final Supplier<SimpleQuery> simpleQuerySupplier;
 
     public abstract void doTranslation();
     public abstract void setEnabled(boolean enable);
     public abstract void loadSettings();
     public abstract void setSettings();
 
-    public FilterView(Config config) {
-        this.config = config;
+    public FilterView(Supplier<SimpleQuery> simpleQuerySupplier) {
+        this.simpleQuerySupplier = simpleQuerySupplier;
     }
 }

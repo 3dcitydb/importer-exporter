@@ -322,43 +322,7 @@ public class UtilAdapter extends AbstractUtilAdapter {
     }
 
     @Override
-    protected BoundingBox transformBoundingBox(BoundingBox bbox, DatabaseSrs sourceSrs, DatabaseSrs targetSrs, Connection connection) throws SQLException {
-        BoundingBox result = new BoundingBox(bbox);
-        int sourceSrid = get2DSrid(sourceSrs, connection);
-        int targetSrid = get2DSrid(targetSrs, connection);
-
-        try (PreparedStatement psQuery = connection.prepareStatement("select SDO_CS.TRANSFORM(MDSYS.SDO_GEOMETRY(2003, " +
-                sourceSrid + ", NULL, MDSYS.SDO_ELEM_INFO_ARRAY(1, 1003, 1), " +
-                "MDSYS.SDO_ORDINATE_ARRAY(?,?,?,?)), " + targetSrid + ") from dual")) {
-            psQuery.setDouble(1, bbox.getLowerCorner().getX());
-            psQuery.setDouble(2, bbox.getLowerCorner().getY());
-            psQuery.setDouble(3, bbox.getUpperCorner().getX());
-            psQuery.setDouble(4, bbox.getUpperCorner().getY());
-
-            try (ResultSet rs = psQuery.executeQuery()) {
-                if (rs.next()) {
-                    Struct struct = (Struct) rs.getObject(1);
-                    if (!rs.wasNull() && struct != null) {
-                        JGeometry geom = JGeometry.loadJS(struct);
-                        double[] ordinatesArray = geom.getOrdinatesArray();
-
-                        result.getLowerCorner().setX(ordinatesArray[0]);
-                        result.getLowerCorner().setY(ordinatesArray[1]);
-                        result.getUpperCorner().setX(ordinatesArray[2]);
-                        result.getUpperCorner().setY(ordinatesArray[3]);
-                        result.setSrs(targetSrs);
-                    }
-                }
-            }
-
-            return result;
-        }
-    }
-
-    @Override
     protected GeometryObject transform(GeometryObject geometry, DatabaseSrs targetSrs, Connection connection) throws SQLException {
-        GeometryObject result = null;
-
         // get source srs
         DatabaseSrs sourceSrs = srsInfoMap.get(geometry.getSrid());
         if (sourceSrs == null) {
@@ -371,28 +335,30 @@ public class UtilAdapter extends AbstractUtilAdapter {
         int targetSrid = targetSrs.getSrid();
 
         // change srids if required
-        if (sourceSrs.is3D() && !targetSrs.is3D())
+        if (sourceSrs.is3D() && !targetSrs.is3D()) {
             geometry.changeSrid(get2DSrid(sourceSrs, connection));
-        else if (!sourceSrs.is3D() && targetSrs.is3D())
+        } else if (!sourceSrs.is3D() && targetSrs.is3D()) {
             targetSrid = get2DSrid(targetSrs, connection);
+        }
 
         Object unconverted = databaseAdapter.getGeometryConverter().getDatabaseObject(geometry, connection);
-        if (unconverted == null)
-            return null;
+        if (unconverted != null) {
+            try (PreparedStatement psQuery = connection.prepareStatement(
+                    "select SDO_CS.TRANSFORM(?, " + targetSrid + ") from dual")) {
+                psQuery.setObject(1, unconverted);
 
-        try (PreparedStatement psQuery = connection.prepareStatement("select SDO_CS.TRANSFORM(?, " + targetSrid + ") from dual")) {
-            psQuery.setObject(1, unconverted);
-
-            try (ResultSet rs = psQuery.executeQuery()) {
-                if (rs.next()) {
-                    Object converted = rs.getObject(1);
-                    if (!rs.wasNull() && converted != null)
-                        result = databaseAdapter.getGeometryConverter().getGeometry(converted);
+                try (ResultSet rs = psQuery.executeQuery()) {
+                    if (rs.next()) {
+                        Object converted = rs.getObject(1);
+                        if (!rs.wasNull()) {
+                            return databaseAdapter.getGeometryConverter().getGeometry(converted);
+                        }
+                    }
                 }
             }
-
-            return result;
         }
+
+        return null;
     }
 
     @Override

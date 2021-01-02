@@ -48,30 +48,34 @@ public class GeometryObject {
         return geometryObject;
     }
 
-    public static GeometryObject createEnvelope(BoundingBox bbox) {
-        if (!bbox.isSetSrs())
-            throw new IllegalArgumentException("The bounding box lacks a spatial reference system.");
-
+    public static GeometryObject createEnvelope(BoundingBox bbox, int srid) {
         if (bbox.is3D()) {
             return createEnvelope(new double[]{
                     bbox.getLowerCorner().getX(), bbox.getLowerCorner().getY(), bbox.getLowerCorner().getZ(),
-                    bbox.getUpperCorner().getX(), bbox.getUpperCorner().getY(), bbox.getUpperCorner().getZ()}, 3, bbox.getSrs().getSrid());
+                    bbox.getUpperCorner().getX(), bbox.getUpperCorner().getY(), bbox.getUpperCorner().getZ()}, 3, srid);
         } else {
             return createEnvelope(new double[]{
                     bbox.getLowerCorner().getX(), bbox.getLowerCorner().getY(),
-                    bbox.getUpperCorner().getX(), bbox.getUpperCorner().getY()}, 2, bbox.getSrs().getSrid());
+                    bbox.getUpperCorner().getX(), bbox.getUpperCorner().getY()}, 2, srid);
         }
     }
 
-    public static GeometryObject createEnvelope(BoundingBox bbox, boolean force3D) {
-        if (!bbox.is3D() && force3D)
-            return createEnvelope(new BoundingBox(
-                    new Position(bbox.getLowerCorner().getX(), bbox.getLowerCorner().getY(), 0.0),
-                    new Position(bbox.getUpperCorner().getX(), bbox.getUpperCorner().getY(), 0.0),
-                    bbox.getSrs()
-            ));
-        else
-            return createEnvelope(bbox);
+    public static GeometryObject createEnvelope(BoundingBox bbox, int dimension, int srid) {
+        if (dimension < 2 || dimension > 3) {
+            throw new IllegalArgumentException("Envelope dimension must be either 2 or 3.");
+        }
+
+        if (dimension == 2 && bbox.is3D()) {
+            bbox = new BoundingBox(new Position(
+                    bbox.getLowerCorner().getX(), bbox.getLowerCorner().getY()),
+                    new Position(bbox.getUpperCorner().getX(), bbox.getUpperCorner().getY()));
+        } else if (dimension == 3 && !bbox.is3D()) {
+            bbox = new BoundingBox(new Position(
+                    bbox.getLowerCorner().getX(), bbox.getLowerCorner().getY(), 0.0),
+                    new Position(bbox.getUpperCorner().getX(), bbox.getUpperCorner().getY(), 0.0));
+        }
+
+        return createEnvelope(bbox, srid);
     }
 
     public static GeometryObject createPoint(double[] coordinates, int dimension, int srid) {
@@ -291,8 +295,16 @@ public class GeometryObject {
         envelope.elementTypes = new ElementType[]{ElementType.BOUNDING_RECTANGLE};
         envelope.coordinates = new double[1][];
 
-        if (geometryType != GeometryType.POINT) {
-            double[] bbox = dimension == 2 ? new double[]{Double.MAX_VALUE, Double.MAX_VALUE, -Double.MAX_VALUE, -Double.MAX_VALUE} :
+        if (geometryType == GeometryType.ENVELOPE) {
+            envelope.coordinates[0] = new double[coordinates[0].length];
+            System.arraycopy(coordinates[0], 0, envelope.coordinates[0], 0, coordinates[0].length);
+        } else if (geometryType == GeometryType.POINT) {
+            envelope.coordinates[0] = dimension == 2 ?
+                    new double[]{coordinates[0][0], coordinates[0][1], coordinates[0][0], coordinates[0][1]} :
+                    new double[]{coordinates[0][0], coordinates[0][1], coordinates[0][2], coordinates[0][0], coordinates[0][1], coordinates[0][2]};
+        } else {
+            double[] bbox = dimension == 2 ?
+                    new double[]{Double.MAX_VALUE, Double.MAX_VALUE, -Double.MAX_VALUE, -Double.MAX_VALUE} :
                     new double[]{Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE, -Double.MAX_VALUE, -Double.MAX_VALUE, -Double.MAX_VALUE};
 
             for (int i = 0; i < elementTypes.length; i++) {
@@ -321,12 +333,8 @@ public class GeometryObject {
             }
 
             envelope.coordinates[0] = bbox;
-        } else {
-            envelope.coordinates[0] = dimension == 2 ? new double[]{coordinates[0][0], coordinates[0][1], coordinates[0][0], coordinates[0][1]} :
-                    new double[]{coordinates[0][0], coordinates[0][1], coordinates[0][2], coordinates[0][0], coordinates[0][1], coordinates[0][2]};
         }
 
         return envelope;
     }
-
 }

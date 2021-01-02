@@ -26,10 +26,10 @@
  * limitations under the License.
  */
 
-package org.citydb.gui.modules.exporter.view.filter;
+package org.citydb.gui.modules.common.filter;
 
 import com.formdev.flatlaf.extras.FlatSVGIcon;
-import org.citydb.config.Config;
+import org.citydb.config.gui.components.SQLExportFilterComponent;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.exporter.SimpleQuery;
 import org.citydb.config.project.query.filter.selection.sql.SelectOperator;
@@ -42,6 +42,7 @@ import org.fife.ui.rtextarea.RTextScrollPane;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.function.Supplier;
 
 public class SQLFilterView extends FilterView {
     private JPanel component;
@@ -53,8 +54,11 @@ public class SQLFilterView extends FilterView {
     private int additionalRows;
     private int rowHeight;
 
-    public SQLFilterView(Config config) {
-        super(config);
+    private final Supplier<SQLExportFilterComponent> sqlFilterComponentSupplier;
+
+    public SQLFilterView(Supplier<SimpleQuery> simpleQuerySupplier, Supplier<SQLExportFilterComponent> sqlFilterComponentSupplier) {
+        super(simpleQuerySupplier);
+        this.sqlFilterComponentSupplier = sqlFilterComponentSupplier;
         init();
     }
 
@@ -153,12 +157,12 @@ public class SQLFilterView extends FilterView {
 
     @Override
     public void loadSettings() {
-        SimpleQuery query = config.getExportConfig().getSimpleQuery();
+        SimpleQuery query = simpleQuerySupplier.get();
 
         SelectOperator sql = query.getSelectionFilter().getSQLFilter();
         sqlText.setText(sql.getValue());
 
-        additionalRows = config.getGuiConfig().getSQLExportFilterComponent().getAdditionalRows();
+        additionalRows = sqlFilterComponentSupplier.get().getAdditionalRows();
         SwingUtilities.invokeLater(() -> {
             if (additionalRows > 0) {
                 Dimension size = scrollPane.getPreferredSize();
@@ -176,7 +180,7 @@ public class SQLFilterView extends FilterView {
 
     @Override
     public void setSettings() {
-        SimpleQuery query = config.getExportConfig().getSimpleQuery();
+        SimpleQuery query = simpleQuerySupplier.get();
 
         SelectOperator sql = query.getSelectionFilter().getSQLFilter();
         sql.reset();
@@ -184,6 +188,6 @@ public class SQLFilterView extends FilterView {
         if (!value.isEmpty())
             sql.setValue(value.replaceAll(";", " "));
 
-        config.getGuiConfig().getSQLExportFilterComponent().setAdditionalRows(additionalRows);
+        sqlFilterComponentSupplier.get().setAdditionalRows(additionalRows);
     }
 }

@@ -333,10 +333,11 @@ public class DBSplitter {
 						&& query.isSetTiling()
 						&& config.getExportConfig().getCityGMLOptions().getGMLEnvelope().getCityModelEnvelopeMode().isUseTileExtent()) {
 					BoundingBox extent = new BoundingBox(query.getTiling().getActiveTile().getExtent());
-					if (!extent.isSetSrs())
-						extent.setSrs(databaseAdapter.getConnectionMetaData().getReferenceSystem());
+					int srid = extent.isSetSrs() ?
+							extent.getSrs().getSrid() :
+							databaseAdapter.getConnectionMetaData().getReferenceSystem().getSrid();
 
-					GeometryObject extentObj = GeometryObject.createEnvelope(extent, true);
+					GeometryObject extentObj = GeometryObject.createEnvelope(extent, 3, srid);
 					writer.getMetadata().setSpatialExtent(getSpatialExtent(extentObj));
 				}
 
@@ -544,8 +545,9 @@ public class DBSplitter {
 	}
 
 	private BoundingBox getSpatialExtent(GeometryObject extentObj) throws SQLException {
-		if (internalConfig.isTransformCoordinates())
-			extentObj = databaseAdapter.getUtil().transform(extentObj, query.getTargetSrs());
+		if (internalConfig.isTransformCoordinates()) {
+			extentObj = databaseAdapter.getUtil().transform(extentObj, query.getTargetSrs()).toEnvelope();
+		}
 
 		double[] coordinates = extentObj.getCoordinates(0);
 		return new BoundingBox(

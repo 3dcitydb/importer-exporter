@@ -28,7 +28,6 @@
 package org.citydb.query.filter.tiling;
 
 import org.citydb.config.geometry.BoundingBox;
-import org.citydb.config.geometry.GeometryObject;
 import org.citydb.config.geometry.Position;
 import org.citydb.config.project.database.DatabaseSrs;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
@@ -98,33 +97,11 @@ public class Tiling {
 			return;
 		}
 
-		// convert extent into polygon
-		GeometryObject extentObj = GeometryObject.createPolygon(new double[]{
-				extent.getLowerCorner().getX(), extent.getLowerCorner().getY(),
-				extent.getUpperCorner().getX(), extent.getLowerCorner().getY(),
-				extent.getUpperCorner().getX(), extent.getUpperCorner().getY(),
-				extent.getLowerCorner().getX(), extent.getUpperCorner().getY(),
-				extent.getLowerCorner().getX(), extent.getLowerCorner().getY(),
-		}, 2, extentSrs.getSrid());
-
-		// transform polygon to new srs
-		GeometryObject transformedExtent;
 		try {
-			transformedExtent = databaseAdapter.getUtil().transform(extentObj, targetSrs);
-			if (transformedExtent == null) {
-				throw new FilterException("Failed to transform tiling extent to SRS " + targetSrs.getDescription() + ".");
-			}
+			extent = databaseAdapter.getUtil().transform2D(extent, extentSrs, targetSrs);
 		} catch (SQLException e) {
 			throw new FilterException("Failed to transform tiling extent to SRS " + targetSrs.getDescription() + ".", e);
 		}
-
-		// create new extent from transformed polygon
-		double[] coordinates = transformedExtent.getCoordinates(0);
-		extent = new BoundingBox(
-				new Position(Math.min(coordinates[0], coordinates[6]), Math.min(coordinates[1], coordinates[3])),
-				new Position(Math.max(coordinates[2], coordinates[4]), Math.max(coordinates[5], coordinates[7])),
-				targetSrs
-		);
 		
 		// adapt tiling scheme
 		calculateTilingScheme();

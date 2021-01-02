@@ -33,6 +33,7 @@ import org.citydb.citygml.exporter.util.GeometrySetter;
 import org.citydb.citygml.exporter.util.GeometrySetterHandler;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.database.schema.TableEnum;
+import org.citydb.database.schema.XlinkType;
 import org.citydb.sqlbuilder.expression.LiteralSelectExpression;
 import org.citydb.sqlbuilder.expression.PlaceHolder;
 import org.citydb.sqlbuilder.schema.Table;
@@ -257,7 +258,7 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryExporter {
 		geomNode.isSolid = rs.getBoolean(4);
 		geomNode.isComposite = rs.getBoolean(5);
 		geomNode.isTriangulated = rs.getBoolean(6);
-		geomNode.isXlink = rs.getBoolean(7);
+		geomNode.isXlink = rs.getInt(7);
 		geomNode.isReverse = rs.getBoolean(8);
 
 		GeometryObject geometry = null;
@@ -315,16 +316,16 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryExporter {
 		}
 
 		// check for xlinks
-		if (geomNode.gmlId != null && geomNode.isXlink) {
+		if (geomNode.gmlId != null
+				&& geomNode.isXlink > 0
+				&& exporter.lookupAndPutGeometryUID(geomNode.gmlId, geomNode.id, geomNode.isXlink == XlinkType.LOCAL.value())) {
 			if (useXLink) {
-				if (exporter.lookupAndPutGeometryUID(geomNode.gmlId, geomNode.id)) {
-					// check whether we have to embrace the geometry with an orientableSurface
-					return geomNode.isReverse != isSetOrientableSurface ?
-							new SurfaceGeometry(reverseSurface("#" + geomNode.gmlId)) :
-							new SurfaceGeometry("#" + geomNode.gmlId, surfaceGeometryType);
-				}
+				// check whether we have to embrace the geometry with an orientableSurface
+				return geomNode.isReverse != isSetOrientableSurface ?
+						new SurfaceGeometry(reverseSurface("#" + geomNode.gmlId)) :
+						new SurfaceGeometry("#" + geomNode.gmlId, surfaceGeometryType);
 			} else {
-				geomNode.isXlink = false;
+				geomNode.isXlink = XlinkType.NONE.value();
 				String gmlId = DefaultGMLIdManager.getInstance().generateUUID(gmlIdPrefix);
 				if (appendOldGmlId)
 					gmlId = gmlId + "-" + geomNode.gmlId;
@@ -600,7 +601,7 @@ public class DBSurfaceGeometry implements DBExporter, SurfaceGeometryExporter {
 		boolean isSolid;
 		boolean isComposite;
 		boolean isTriangulated;
-		boolean isXlink;
+		int isXlink;
 		boolean isReverse;
 		GeometryObject geometry;
 		List<GeometryNode> childNodes;

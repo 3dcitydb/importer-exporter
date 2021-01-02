@@ -330,7 +330,9 @@ public class ConfigQueryBuilder {
 		}
 
 		// apply tiling
-		if (spatialFilter.getMode() != KmlTilingMode.NO_TILING && spatialFilter.isSetExtent()) {
+		if (spatialFilter.getMode() != KmlTilingMode.NO_TILING
+				&& spatialFilter.isSetExtent()
+				&& spatialFilter.getExtent().isValid()) {
 			TilingFilterBuilder tilingFilterBuilder = new TilingFilterBuilder(databaseAdapter);
 			query.setTiling(tilingFilterBuilder.buildTilingFilter(spatialFilter));
 		}

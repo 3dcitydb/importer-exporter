@@ -46,7 +46,6 @@ import org.citydb.query.builder.QueryBuildException;
 import org.citydb.query.builder.sql.BuildProperties;
 import org.citydb.query.builder.sql.SQLQueryBuilder;
 import org.citydb.query.filter.FilterException;
-import org.citydb.query.filter.tiling.Tiling;
 import org.citydb.sqlbuilder.schema.Table;
 import org.citydb.sqlbuilder.select.Select;
 import org.geotools.referencing.CRS;
@@ -54,7 +53,13 @@ import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import javax.xml.bind.JAXBException;
-import java.sql.*;
+import java.sql.CallableStatement;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -81,7 +86,6 @@ public abstract class AbstractUtilAdapter {
     protected abstract String[] createDatabaseReport(String schema, Connection connection) throws SQLException;
     protected abstract BoundingBox calcBoundingBox(String schema, List<Integer> classIds, Connection connection) throws SQLException;
     protected abstract BoundingBox createBoundingBoxes(List<Integer> classIds, boolean onlyIfNull, Connection connection) throws SQLException;
-    @Deprecated protected abstract BoundingBox transformBoundingBox(BoundingBox bbox, DatabaseSrs sourceSrs, DatabaseSrs targetSrs, Connection connection) throws SQLException;
     protected abstract GeometryObject transform(GeometryObject geometry, DatabaseSrs targetSrs, Connection connection) throws SQLException;
     protected abstract int get2DSrid(DatabaseSrs srs, Connection connection) throws SQLException;
     protected abstract IndexStatusInfo manageIndexes(String operation, IndexType type, String schema, Connection connection) throws SQLException;
@@ -184,7 +188,9 @@ public abstract class AbstractUtilAdapter {
             if (databaseAdapter.hasVersioningSupport())
                 databaseAdapter.getWorkspaceManager().gotoWorkspace(conn, workspace);
 
-            return calcBoundingBox(schema, objectClassIds, conn);
+            BoundingBox bbox = calcBoundingBox(schema, objectClassIds, conn);
+            bbox.setSrs(databaseAdapter.getConnectionMetaData().getReferenceSystem());
+            return bbox;
         }
     }
 
@@ -207,21 +213,20 @@ public abstract class AbstractUtilAdapter {
                  ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     Object extentObj = rs.getObject(1);
-                    if (!rs.wasNull() && extentObj != null) {
+                    if (!rs.wasNull()) {
                         GeometryObject extent = databaseAdapter.getGeometryConverter().getEnvelope(extentObj);
+
+                        DatabaseSrs targetSrs = query.getTargetSrs();
+                        if (targetSrs != null && extent.getSrid() != targetSrs.getSrid()) {
+                            extent = transform(extent, targetSrs).toEnvelope();
+                        }
+
                         double[] coordinates = extent.getCoordinates(0);
                         bbox = new BoundingBox(
                             new Position(coordinates[0], coordinates[1]),
                             new Position(coordinates[2], coordinates[3])
                         );
                         bbox.setSrs(extent.getSrid());
-
-                        DatabaseSrs targetSrs = query.getTargetSrs();
-                        if (targetSrs != null && bbox.getSrs().getSrid() != targetSrs.getSrid()) {
-                            Tiling tiling = new Tiling(bbox, 1, 1);
-                            tiling.transformExtent(targetSrs, databaseAdapter);
-                            bbox = tiling.getExtent();
-                        }
                     }
                 }
             }
@@ -240,6 +245,7 @@ public abstract class AbstractUtilAdapter {
 
             try {
                 bbox = createBoundingBoxes(objectClassIds, onlyIfNull, conn);
+                bbox.setSrs(databaseAdapter.getConnectionMetaData().getReferenceSystem());
                 conn.commit();
                 return bbox;
             } catch (SQLException e) {
@@ -344,16 +350,44 @@ public abstract class AbstractUtilAdapter {
         return isIndexed;
     }
 
-    @Deprecated
-    public BoundingBox transformBoundingBox(BoundingBox bbox, DatabaseSrs sourceSrs, DatabaseSrs targetSrs) throws SQLException {
-        try (Connection conn = databaseAdapter.connectionPool.getConnection()) {
-            return transformBoundingBox(bbox, sourceSrs, targetSrs, conn);
+    public BoundingBox transform2D(BoundingBox bbox, DatabaseSrs sourceSrs, DatabaseSrs targetSrs) throws SQLException {
+        return transform(bbox, 2, sourceSrs, targetSrs);
+    }
+
+    public BoundingBox transform(BoundingBox bbox, DatabaseSrs sourceSrs, DatabaseSrs targetSrs) throws SQLException {
+        return transform(bbox, bbox.is3D() ? 3 : 2, sourceSrs, targetSrs);
+    }
+
+    public BoundingBox transform(BoundingBox bbox, int dimension, DatabaseSrs sourceSrs, DatabaseSrs targetSrs) throws SQLException {
+        GeometryObject geometryObject = GeometryObject.createEnvelope(bbox, dimension, sourceSrs.getSrid());
+        GeometryObject transformed = transform(geometryObject, targetSrs).toEnvelope();
+
+        // create new bounding box from transformed envelope
+        double[] coordinates = transformed.getCoordinates(0);
+        if (dimension == 2) {
+            return new BoundingBox(
+                    new Position(coordinates[0], coordinates[1]),
+                    new Position(coordinates[2], coordinates[3]),
+                    targetSrs
+            );
+        } else {
+            return new BoundingBox(
+                    new Position(coordinates[0], coordinates[1], coordinates[2]),
+                    new Position(coordinates[3], coordinates[4], coordinates[5]),
+                    targetSrs
+            );
         }
     }
 
     public GeometryObject transform(GeometryObject geometry, DatabaseSrs targetSrs) throws SQLException {
         try (Connection conn = databaseAdapter.connectionPool.getConnection()) {
-            return transform(geometry, targetSrs, conn);
+            GeometryObject transformed = transform(geometry, targetSrs, conn);
+            if (transformed == null) {
+                throw new SQLException("Failed to transform " + geometry.getGeometryType() + " geometry from " +
+                        "source SRID " + geometry.getSrid() + " to target SRID " + targetSrs.getSrid() + ".");
+            }
+
+            return transformed;
         }
     }
 

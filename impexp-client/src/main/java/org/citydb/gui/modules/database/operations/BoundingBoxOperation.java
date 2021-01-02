@@ -272,14 +272,13 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 
 						if (targetSrs.isSupported() && targetSrs.getSrid() != dbSrs.getSrid()) {
 							try {
-								bbox = dbConnectionPool.getActiveDatabaseAdapter().getUtil().transformBoundingBox(bbox, dbSrs, targetSrs);
+								bbox = dbConnectionPool.getActiveDatabaseAdapter().getUtil().transform2D(bbox, dbSrs, targetSrs);
 							} catch (SQLException e) {
 								//
 							}					
 						}
 
 						bboxPanel.setBoundingBox(bbox);	
-						bbox.setSrs(targetSrs);
 						BoundingBoxClipboardHandler.getInstance().putBoundingBox(bbox);
 						log.info("Bounding box for " + featureType + " features successfully calculated.");							
 					} else {
@@ -373,14 +372,13 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 
 						if (targetSrs.isSupported() && targetSrs.getSrid() != dbSrs.getSrid()) {
 							try {
-								bbox = dbConnectionPool.getActiveDatabaseAdapter().getUtil().transformBoundingBox(bbox, dbSrs, targetSrs);
+								bbox = dbConnectionPool.getActiveDatabaseAdapter().getUtil().transform2D(bbox, dbSrs, targetSrs);
 							} catch (SQLException e) {
 								//
 							}					
 						}
 
 						bboxPanel.setBoundingBox(bbox);	
-						bbox.setSrs(targetSrs);
 						BoundingBoxClipboardHandler.getInstance().putBoundingBox(bbox);
 						log.info("Bounding box for " + featureType + " features successfully created.");							
 					} else {

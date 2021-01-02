@@ -69,8 +69,7 @@ public class Position {
 
     public Position(Double value, int dimension) {
         this(dimension);
-        for (int i = 0; i < coords.length; i++)
-            coords[i] = value;
+        Arrays.fill(coords, value);
     }
 
     public Double getX() {

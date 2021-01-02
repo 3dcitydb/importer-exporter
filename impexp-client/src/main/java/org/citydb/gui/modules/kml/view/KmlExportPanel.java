@@ -524,7 +524,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 
         // bbox filter
         KmlTiling spatialFilter = query.getSpatialFilter();
-        spatialFilter.setExtent(query.isUseBboxFilter()? bboxComponent.getBoundingBox() : null);
+        spatialFilter.setExtent(bboxComponent.getBoundingBox());
 
         // tiling
         if (tilingCheckBox.isSelected()) {
