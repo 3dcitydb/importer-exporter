@@ -203,6 +203,11 @@ public class KmlExporter implements EventHandler {
 	}
 
 	private boolean process(Path outputFile) throws KmlExportException {
+		// check whether a display form is provided
+		if (config.getKmlExportConfig().getDisplayForms().getActiveDisplayFormsAmount() == 0) {
+			throw new KmlExportException("No valid display form for export provided.");
+		}
+
 		// get JAXB contexts for KML and COLLADA
 		JAXBContext jaxbColladaContext;
 		try {
