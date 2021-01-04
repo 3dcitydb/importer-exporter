@@ -2,7 +2,7 @@
  * 3D City Database - The Open Source CityGML Database
  * http://www.3dcitydb.org/
  *
- * Copyright 2013 - 2019
+ * Copyright 2013 - 2021
  * Chair of Geoinformatics
  * Technical University of Munich, Germany
  * https://www.gis.bgu.tum.de/
@@ -25,37 +25,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.citydb.citygml.importer.util;
+package org.citydb.citygml.deleter.util;
 
+import org.citydb.config.project.deleter.Continuation;
 import org.citydb.config.project.global.UpdatingPersonMode;
-import org.citydb.config.project.importer.Continuation;
-import org.citydb.file.InputFile;
+
+import java.time.OffsetDateTime;
 
 public class InternalConfig {
-	private InputFile inputFile;
-	private String currentGmlIdCodespace;
 	private UpdatingPersonMode updatingPersonMode;
 	private String updatingPerson;
 	private String reasonForUpdate;
 	private String lineage;
-
-	public InputFile getInputFile() {
-		return inputFile;
-	}
-
-	public void setInputFile(InputFile inputFile) {
-		this.inputFile = inputFile;
-	}
-
-	public String getCurrentGmlIdCodespace() {
-		return currentGmlIdCodespace;
-	}
-
-	public void setCurrentGmlIdCodespace(String currentGmlIdCodespace) {
-		if (currentGmlIdCodespace != null && !currentGmlIdCodespace.trim().isEmpty()) {
-			this.currentGmlIdCodespace = currentGmlIdCodespace.trim();
-		}
-	}
+	private OffsetDateTime terminationDate;
 
 	public UpdatingPersonMode getUpdatingPersonMode() {
 		return updatingPersonMode != null ? updatingPersonMode : UpdatingPersonMode.DATABASE;
@@ -95,10 +77,19 @@ public class InternalConfig {
 		}
 	}
 
+	public OffsetDateTime getTerminationDate() {
+		return terminationDate;
+	}
+
+	public void setTerminationDate(OffsetDateTime terminationDate) {
+		this.terminationDate = terminationDate;
+	}
+
 	public void setMetadata(Continuation continuation) {
 		setUpdatingPersonMode(continuation.getUpdatingPersonMode());
 		setUpdatingPerson(continuation.getUpdatingPerson());
 		setReasonForUpdate(continuation.getReasonForUpdate());
 		setLineage(continuation.getLineage());
+		setTerminationDate(continuation.getTerminationDate());
 	}
 }

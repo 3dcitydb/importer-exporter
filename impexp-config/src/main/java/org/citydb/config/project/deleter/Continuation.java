@@ -46,7 +46,7 @@ public class Continuation {
     private String reasonForUpdate;
 
     @XmlTransient
-    OffsetDateTime terminationDate;
+    private OffsetDateTime terminationDate;
 
     public boolean isSetLineage() {
         return lineage != null;

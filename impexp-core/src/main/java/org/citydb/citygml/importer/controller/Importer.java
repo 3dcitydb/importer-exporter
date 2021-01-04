@@ -267,6 +267,9 @@ public class Importer implements EventHandler {
                 eventDispatcher.triggerEvent(new StatusDialogProgressBar(true, this));
                 eventDispatcher.triggerEvent(new CounterEvent(CounterType.FILE, --remainingFiles, this));
 
+                // set metadata
+                internalConfig.setMetadata(config.getImportConfig().getContinuation());
+
                 // set gml:id codespace starting from version 3.1
                 if (databaseAdapter.getConnectionMetaData().getCityDBVersion().compareTo(3, 1, 0) >= 0) {
                     if (config.getImportConfig().getGmlId().isSetNoneCodeSpaceMode()) {
