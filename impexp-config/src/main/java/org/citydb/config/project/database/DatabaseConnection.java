@@ -55,13 +55,13 @@ public class DatabaseConnection implements Comparable<DatabaseConnection> {
     private String id;
     private String description;
     @XmlElement(required = true)
-    private DatabaseType type = DatabaseType.ORACLE;
+    private DatabaseType type = DatabaseType.POSTGIS;
     @XmlSchemaType(name = "anyURI")
     @XmlElement(required = true)
     private String server;
     @XmlSchemaType(name = "positiveInteger")
     @XmlElement(required = true)
-    private Integer port = 1521;
+    private Integer port = 5432;
     @XmlElement(required = true)
     private String sid;
     private String schema;
