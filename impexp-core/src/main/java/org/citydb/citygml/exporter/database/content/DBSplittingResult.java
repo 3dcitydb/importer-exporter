@@ -46,6 +46,10 @@ public class DBSplittingResult {
 		this(id, objectType, envelope, -1);
 	}
 
+	public DBSplittingResult(long id, AbstractObjectType<?> objectType, long sequenceId) {
+		this(id, objectType, null, sequenceId);
+	}
+
 	public DBSplittingResult(long id, AbstractObjectType<?> objectType) {
 		this(id, objectType, null, -1);
 	}
