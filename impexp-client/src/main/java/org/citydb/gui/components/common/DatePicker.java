@@ -54,6 +54,15 @@ public class DatePicker extends JXDatePicker implements EventHandler {
     }
 
     @Override
+    public void updateUI() {
+        super.updateUI();
+
+        if (linkPanel != null) {
+            SwingUtilities.updateComponentTreeUI(linkPanel);
+        }
+    }
+
+    @Override
     public void handleEvent(Event event) {
         SwitchLocaleEvent localeEvent = (SwitchLocaleEvent) event;
         setLocale(localeEvent.getLocale());
