@@ -378,7 +378,7 @@ public class XMLQueryView extends FilterView {
             Object object = unmarshaller.unmarshal(new StringReader(wrapQuery(xmlText.getText().trim())));
             if (object instanceof QueryWrapper)
                 query = ((QueryWrapper) object).getQueryConfig();
-        } catch (JAXBException ignored) {
+        } catch (Exception e) {
            //
         }
 
