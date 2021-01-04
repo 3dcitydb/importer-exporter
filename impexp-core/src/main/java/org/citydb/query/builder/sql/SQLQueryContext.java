@@ -103,6 +103,7 @@ public class SQLQueryContext {
 
 	void setFromTable(Table fromTable) {
 		this.fromTable = fromTable;
+		buildContext.currentTable = fromTable;
 	}
 
 	public Table getToTable() {
@@ -181,8 +182,8 @@ public class SQLQueryContext {
 
 	class BuildContext {
 		private final AbstractNode<?> node;
-		private final Table currentTable;
 		private final Map<String, Table> tableContext;
+		private Table currentTable;
 		private List<BuildContext> children;
 		private ReuseMode reuseMode;
 		private int reuseContext;

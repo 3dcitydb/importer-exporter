@@ -120,7 +120,7 @@ public class SQLQueryBuilder {
 
 		// remove unnecessary joins
 		if (buildProperties.isOptimizeJoins())
-			optimizeJoins(builder, queryContext);
+			optimizeJoins(builder, queryContext, false);
 
 		// lod filter
 		if (query.isSetLodFilter()) {
@@ -169,7 +169,7 @@ public class SQLQueryBuilder {
 
 		// remove unnecessary joins
 		if (buildProperties.isOptimizeJoins())
-			optimizeJoins(builder, queryContext);
+			optimizeJoins(builder, queryContext, true);
 
 		return queryContext;
 	}
@@ -178,7 +178,7 @@ public class SQLQueryBuilder {
 		return buildProperties;
 	}
 
-	private void optimizeJoins(SchemaPathBuilder builder, SQLQueryContext queryContext) throws QueryBuildException {
+	private void optimizeJoins(SchemaPathBuilder builder, SQLQueryContext queryContext, boolean keepToTable) throws QueryBuildException {
 		Select select = queryContext.getSelect();
 		Set<Table> from = new HashSet<>();
 		boolean removedJoins = false;
@@ -191,6 +191,11 @@ public class SQLQueryBuilder {
 		// add the table of the target column to make sure we do not remove it
 		if (queryContext.getTargetColumn() != null)
 			from.add(queryContext.getTargetColumn().getTable());
+
+		// keep the target table if required
+		if (keepToTable) {
+			from.add(queryContext.getToTable());
+		}
 
 		for (Join join : select.getJoins()) {
 			Set<Table> tables = new HashSet<>(from);
