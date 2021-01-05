@@ -23,8 +23,6 @@ public class DatePicker extends JXDatePicker implements EventHandler {
     public DatePicker() {
         ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(EventType.SWITCH_LOCALE, this);
         setFormats("yyyy-MM-dd", "dd.MM.yyyy");
-        getEditor().putClientProperty("JTextField.placeholderText", "YYYY-MM-DD");
-        getEditor().setColumns(8);
     }
 
     @Override
@@ -51,6 +49,16 @@ public class DatePicker extends JXDatePicker implements EventHandler {
         });
 
         return linkPanel;
+    }
+
+    @Override
+    public void updateUI() {
+        super.updateUI();
+        getEditor().putClientProperty("JTextField.placeholderText", "YYYY-MM-DD");
+
+        if (linkPanel != null) {
+            SwingUtilities.updateComponentTreeUI(linkPanel);
+        }
     }
 
     @Override

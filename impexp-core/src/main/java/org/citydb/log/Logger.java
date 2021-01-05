@@ -49,6 +49,9 @@ public class Logger {
 	private LogLevel fileLevel = LogLevel.INFO;
 	private BufferedWriter writer;
 
+	private boolean logToConsole = true;
+	private boolean logToFile = false;
+
 	private Logger() {
 		consoleLogger = new DefaultConsoleLogger();
 	}
@@ -57,9 +60,18 @@ public class Logger {
 		return instance;
 	}
 
+	public void enableConsoleLogging(boolean enable) {
+		logToConsole = enable;
+	}
+
+	public void enableFileLogging(boolean enable) {
+		logToFile = enable;
+	}
+
 	public void setConsoleLogger(ConsoleLogger consoleLogger) {
-		if (consoleLogger != null)
+		if (consoleLogger != null) {
 			this.consoleLogger = consoleLogger;
+		}
 	}
 
 	public void setConsoleLogLevel(LogLevel level) {
@@ -89,15 +101,17 @@ public class Logger {
 	public void log(LogLevel level, String msg) {
 		msg = getPrefix(level) + msg;
 
-		if (consoleLevel.ordinal() >= level.ordinal())
+		if (logToConsole && consoleLevel.ordinal() >= level.ordinal()) {
 			consoleLogger.log(level, msg);
+		}
 
-		if (fileLevel.ordinal() >= level.ordinal())
+		if (fileLevel.ordinal() >= level.ordinal()) {
 			logToFile(msg);
+		}
 	}
 
 	public void logToFile(String msg) {
-		if (writer != null) {
+		if (logToFile && writer != null) {
 			try {
 				writer.write(msg);
 				writer.newLine();
@@ -149,7 +163,10 @@ public class Logger {
 	}
 
 	public void print(String msg) {
-		consoleLogger.log(msg);
+		if (logToConsole) {
+			consoleLogger.log(msg);
+		}
+
 		logToFile(msg);
 	}
 
@@ -180,6 +197,7 @@ public class Logger {
 							StandardOpenOption.TRUNCATE_EXISTING :
 							StandardOpenOption.APPEND);
 
+			logToFile = true;
 			logToFile("*** Starting new log file session on " + LocalDateTime.now()
 					.withNano(0)
 					.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
@@ -207,6 +225,7 @@ public class Logger {
 				//
 			} finally {
 				writer = null;
+				logToFile = false;
 			}
 		}
 	}

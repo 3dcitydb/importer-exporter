@@ -37,6 +37,7 @@ import org.citydb.citygml.importer.util.LocalAppearanceHandler;
 import org.citydb.citygml.importer.util.LocalGeometryXlinkResolver;
 import org.citydb.config.Config;
 import org.citydb.config.geometry.GeometryObject;
+import org.citydb.config.project.global.UpdatingPersonMode;
 import org.citydb.config.project.importer.CreationDateMode;
 import org.citydb.config.project.importer.TerminationDateMode;
 import org.citydb.database.connection.DatabaseConnectionPool;
@@ -104,20 +105,11 @@ public class DBCityObject implements DBImporter {
 		terminationDateMode = config.getImportConfig().getContinuation().getTerminationDateMode();
 
 		importCityDBMetadata = config.getImportConfig().getContinuation().isImportCityDBMetadata();
-		reasonForUpdate = config.getImportConfig().getContinuation().getReasonForUpdate();
-		lineage = config.getImportConfig().getContinuation().getLineage();
-		updatingPerson = config.getImportConfig().getContinuation().isUpdatingPersonModeDatabase() ?
-				importer.getDatabaseAdapter().getConnectionDetails().getUser() :
-				config.getImportConfig().getContinuation().getUpdatingPerson();
-
-		if (reasonForUpdate != null && reasonForUpdate.trim().isEmpty())
-			reasonForUpdate = null;
-
-		if (lineage != null && lineage.trim().isEmpty())
-			lineage = null;
-
-		if (updatingPerson != null && updatingPerson.trim().isEmpty())
-			updatingPerson = null;
+		reasonForUpdate = importer.getInternalConfig().getReasonForUpdate();
+		lineage = importer.getInternalConfig().getLineage();
+		updatingPerson = importer.getInternalConfig().getUpdatingPersonMode() == UpdatingPersonMode.USER ?
+				importer.getInternalConfig().getUpdatingPerson() :
+				importer.getDatabaseAdapter().getConnectionDetails().getUser();
 
 		String gmlIdCodespace = importer.getInternalConfig().getCurrentGmlIdCodespace();
 		if (gmlIdCodespace != null)

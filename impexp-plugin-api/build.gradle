@@ -4,7 +4,7 @@ plugins {
 
 dependencies {
     api project(':impexp-config')
-    api 'info.picocli:picocli:4.6.0'
+    api 'info.picocli:picocli:4.6.1'
 }
 
 bintray {

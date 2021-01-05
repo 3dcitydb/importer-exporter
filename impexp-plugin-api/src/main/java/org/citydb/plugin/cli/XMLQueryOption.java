@@ -65,7 +65,7 @@ public class XMLQueryOption implements CliOption {
             if (object instanceof QueryWrapper) {
                 return ((QueryWrapper) object).getQueryConfig();
             }
-        } catch (JAXBException ignored) {
+        } catch (Exception e) {
             //
         }
 

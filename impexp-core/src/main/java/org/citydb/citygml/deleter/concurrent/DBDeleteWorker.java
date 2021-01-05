@@ -27,12 +27,13 @@
  */
 package org.citydb.citygml.deleter.concurrent;
 
+import org.citydb.citygml.deleter.util.InternalConfig;
 import org.citydb.citygml.exporter.database.content.DBSplittingResult;
 import org.citydb.concurrent.Worker;
 import org.citydb.config.Config;
-import org.citydb.config.project.deleter.Continuation;
 import org.citydb.config.project.deleter.DeleteMode;
 import org.citydb.config.project.global.LogLevel;
+import org.citydb.config.project.global.UpdatingPersonMode;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.event.Event;
 import org.citydb.event.EventDispatcher;
@@ -60,24 +61,31 @@ public class DBDeleteWorker extends Worker<DBSplittingResult> implements EventHa
 
 	private final PreparedStatement stmt;
 	private final AbstractDatabaseAdapter databaseAdapter;
+	private final InternalConfig internalConfig;
 	private final Config config;
 	private final EventDispatcher eventDispatcher;
 
 	private volatile boolean shouldRun = true;
 	private volatile boolean shouldWork = true;
 
-	public DBDeleteWorker(Connection connection, AbstractDatabaseAdapter databaseAdapter, Config config, EventDispatcher eventDispatcher) throws SQLException {
+	public DBDeleteWorker(Connection connection, AbstractDatabaseAdapter databaseAdapter, InternalConfig internalConfig, Config config, EventDispatcher eventDispatcher) throws SQLException {
 		this.databaseAdapter = databaseAdapter;
+		this.internalConfig = internalConfig;
 		this.config = config;
 		this.eventDispatcher = eventDispatcher;
 
 		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
 
 		if (config.getDeleteConfig().getMode() == DeleteMode.TERMINATE) {
-			Continuation metadata = config.getDeleteConfig().getContinuation();
 			StringBuilder update = new StringBuilder("update cityobject set termination_date = ?, last_modification_date = ?, updating_person = ? ");
-			if (metadata.isSetReasonForUpdate()) update.append(", reason_for_update = '").append(metadata.getReasonForUpdate()).append("'");
-			if (metadata.isSetLineage()) update.append(", lineage = '").append(metadata.getLineage()).append("' ");
+			if (internalConfig.getReasonForUpdate() != null) {
+				update.append(", reason_for_update = '").append(internalConfig.getReasonForUpdate()).append("'");
+			}
+
+			if (internalConfig.getLineage() != null) {
+				update.append(", lineage = '").append(internalConfig.getLineage()).append("' ");
+			}
+
 			update.append("where id = ?");
 
 			stmt = connection.prepareStatement(update.toString());
@@ -136,10 +144,13 @@ public class DBDeleteWorker extends Worker<DBSplittingResult> implements EventHa
 			if (config.getDeleteConfig().getMode() == DeleteMode.TERMINATE) {
 				OffsetDateTime now = OffsetDateTime.now();
 
-				Continuation metadata = config.getDeleteConfig().getContinuation();
-				OffsetDateTime terminationDate = metadata.isSetTerminationDate() ? metadata.getTerminationDate() : now;
-				String updatingPerson = metadata.isUpdatingPersonModeDatabase() || !metadata.isSetUpdatingPerson() ?
-						databaseAdapter.getConnectionDetails().getUser() : metadata.getUpdatingPerson();
+				OffsetDateTime terminationDate = internalConfig.getTerminationDate() != null ?
+						internalConfig.getTerminationDate() :
+						now;
+
+				String updatingPerson = internalConfig.getUpdatingPersonMode() == UpdatingPersonMode.USER ?
+						internalConfig.getUpdatingPerson() :
+						databaseAdapter.getConnectionDetails().getUser();
 
 				stmt.setObject(1, terminationDate);
 				stmt.setObject(2, now);

@@ -32,6 +32,7 @@ import org.citydb.citygml.deleter.concurrent.DBDeleteWorkerFactory;
 import org.citydb.citygml.deleter.database.BundledConnection;
 import org.citydb.citygml.deleter.database.DBSplitter;
 import org.citydb.citygml.deleter.util.DeleteListParser;
+import org.citydb.citygml.deleter.util.InternalConfig;
 import org.citydb.citygml.exporter.database.content.DBSplittingResult;
 import org.citydb.concurrent.SingleWorkerPool;
 import org.citydb.concurrent.WorkerPool;
@@ -135,7 +136,11 @@ public class Deleter implements EventHandler {
 
 		bundledConnection = new BundledConnection();
 		try {
-			dbWorkerPool = createWorkerPool(bundledConnection, config, eventDispatcher);
+			// create internal config and set metadata
+			InternalConfig internalConfig = new InternalConfig();
+			internalConfig.setMetadata(config.getDeleteConfig().getContinuation());
+
+			dbWorkerPool = createWorkerPool(bundledConnection, internalConfig, config, eventDispatcher);
 			dbWorkerPool.prestartCoreWorkers();
 			if (dbWorkerPool.getPoolSize() == 0) {
 				throw new DeleteException("Failed to start database delete worker pool. Check the database connection pool settings.");
@@ -203,13 +208,13 @@ public class Deleter implements EventHandler {
 		return shouldRun;
 	}
 
-	protected WorkerPool<DBSplittingResult> createWorkerPool(ConnectionManager connectionManager,Config config, EventDispatcher eventDispatcher) {
+	protected WorkerPool<DBSplittingResult> createWorkerPool(ConnectionManager connectionManager, InternalConfig internalConfig, Config config, EventDispatcher eventDispatcher) {
 		// Multithreading may cause DB-Deadlock. It may occur when deleting a CityObjectGroup within
 		// one thread, and the cityObjectMembers are being deleted within other threads at the same time.
 		// Hence, we use single thread to avoid this issue.
 		return new SingleWorkerPool<>(
 				"db_deleter_pool",
-				new DBDeleteWorkerFactory(connectionManager, config, eventDispatcher),
+				new DBDeleteWorkerFactory(connectionManager, internalConfig, config, eventDispatcher),
 				300,
 				false);
 	}
