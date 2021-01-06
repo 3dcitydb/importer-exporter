@@ -210,22 +210,8 @@ public class ImpExpCli extends CliCommand implements CommandLine.IVersionProvide
         CommandLine cmd = new CommandLine(this);
 
         try {
-            // parse '--plugins' argument if exists
-            for (int i = 0; i < args.length - 1; i++) {
-                if ("--plugins".equalsIgnoreCase(args[i])) {
-                    pluginsFolder = Paths.get(args[i + 1]);
-                    break;
-                }
-            }
-
-            if (pluginsFolder == null) {
-                pluginsFolder = ClientConstants.IMPEXP_HOME.resolve(ClientConstants.PLUGINS_DIR);
-            } else if (!pluginsFolder.isAbsolute()) {
-                pluginsFolder = ClientConstants.IMPEXP_HOME.resolve(pluginsFolder);
-            }
-
             // load CLI commands from plugins
-            loadClasses(pluginsFolder, classLoader);
+            loadClasses(getPluginsFolder(args), classLoader);
             pluginManager.loadCliCommands(classLoader);
             for (CliCommand command : pluginManager.getCliCommands()) {
                 cmd.addSubcommand(command);
@@ -384,11 +370,9 @@ public class ImpExpCli extends CliCommand implements CommandLine.IVersionProvide
 
     private void loadADEExtensions() throws ImpExpException {
         try {
-            if (adeExtensionsFolder == null) {
-                adeExtensionsFolder = ClientConstants.IMPEXP_HOME.resolve(ClientConstants.ADE_EXTENSIONS_DIR);
-            } else if (!adeExtensionsFolder.isAbsolute()) {
-                adeExtensionsFolder = ClientConstants.IMPEXP_HOME.resolve(adeExtensionsFolder);
-            }
+            adeExtensionsFolder = adeExtensionsFolder != null ?
+                    ClientConstants.WORKING_DIR.resolve(adeExtensionsFolder) :
+                    ClientConstants.IMPEXP_HOME.resolve(ClientConstants.ADE_EXTENSIONS_DIR);
 
             loadClasses(adeExtensionsFolder, classLoader);
         } catch (IOException e) {
@@ -542,6 +526,25 @@ public class ImpExpCli extends CliCommand implements CommandLine.IVersionProvide
     private void logError(Throwable t) {
         log.error("Aborting due to a fatal " + t.getClass().getName() + " exception.");
         log.logStackTrace(t);
+    }
+
+    private Path getPluginsFolder(String[] args) {
+        String value = null;
+        int candidate = 0;
+
+        for (int i = 0; i < args.length; i++) {
+            int length = args[i].length();
+            if (length > 2
+                    && "--plugins".startsWith(args[i])
+                    && length > candidate) {
+                value = i + 1 < args.length ? args[(i++) + 1] : null;
+                candidate = length;
+            }
+        }
+
+        return value != null ?
+                ClientConstants.WORKING_DIR.resolve(value) :
+                ClientConstants.IMPEXP_HOME.resolve(ClientConstants.PLUGINS_DIR);
     }
 
     private String readPassword(CommandLine.ParseResult parseResult) {
