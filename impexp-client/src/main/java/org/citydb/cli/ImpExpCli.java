@@ -529,21 +529,19 @@ public class ImpExpCli extends CliCommand implements CommandLine.IVersionProvide
     }
 
     private Path getPluginsFolder(String[] args) {
-        String value = null;
-        int candidate = 0;
+        String pluginsFolder = null;
+        int candidate = 2;
 
         for (int i = 0; i < args.length; i++) {
             int length = args[i].length();
-            if (length > 2
-                    && "--plugins".startsWith(args[i])
-                    && length > candidate) {
-                value = i + 1 < args.length ? args[(i++) + 1] : null;
+            if (length > candidate && "--plugins".startsWith(args[i])) {
+                pluginsFolder = i + 1 < args.length ? args[(i++) + 1] : null;
                 candidate = length;
             }
         }
 
-        return value != null ?
-                ClientConstants.WORKING_DIR.resolve(value) :
+        return pluginsFolder != null ?
+                ClientConstants.WORKING_DIR.resolve(pluginsFolder) :
                 ClientConstants.IMPEXP_HOME.resolve(ClientConstants.PLUGINS_DIR);
     }
 
