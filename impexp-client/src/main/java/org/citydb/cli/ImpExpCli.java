@@ -173,8 +173,9 @@ public class ImpExpCli extends CliCommand implements CommandLine.IVersionProvide
 
     public ImpExpCli withADEExtension(ADEExtension extension) {
         if (extension != null) {
-            if (extension.getBasePath() == null)
+            if (extension.getBasePath() == null) {
                 extension.setBasePath(Paths.get(""));
+            }
 
             adeManager.loadExtension(extension);
         }
@@ -546,7 +547,7 @@ public class ImpExpCli extends CliCommand implements CommandLine.IVersionProvide
     }
 
     private String readPassword(CommandLine.ParseResult parseResult) {
-        String prompt = "Enter password for " + parseResult.matchedOptionValue("-u", "") +": ";
+        String prompt = "Enter password for " + parseResult.matchedOptionValue("-u", "") + ": ";
         Console console = System.console();
         if (console != null) {
             char[] input = console.readPassword(prompt);

@@ -70,8 +70,6 @@ public class SQLFilterView extends FilterView {
         removeButton = new JButton(new FlatSVGIcon("org/citydb/gui/icons/remove.svg"));
 
         sqlText = new RSyntaxTextArea("", 5, 1);
-        RSyntaxTextAreaHelper.installDefaultTheme(sqlText);
-
         sqlText.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_SQL);
         sqlText.setAutoIndentEnabled(true);
         sqlText.setHighlightCurrentLine(true);
@@ -116,6 +114,7 @@ public class SQLFilterView extends FilterView {
             }
         });
 
+        RSyntaxTextAreaHelper.installDefaultTheme(sqlText);
         PopupMenuDecorator.getInstance().decorate(sqlText);
     }
 

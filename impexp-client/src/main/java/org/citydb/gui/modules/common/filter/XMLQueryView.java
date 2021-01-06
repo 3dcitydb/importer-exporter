@@ -139,8 +139,6 @@ public class XMLQueryView extends FilterView {
         component.setLayout(new GridBagLayout());
 
         xmlText = new RSyntaxTextArea("", 5, 1);
-        RSyntaxTextAreaHelper.installDefaultTheme(xmlText);
-
         xmlText.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_XML);
         xmlText.setAutoIndentEnabled(true);
         xmlText.setHighlightCurrentLine(true);
@@ -167,6 +165,7 @@ public class XMLQueryView extends FilterView {
         duplicateButton.addActionListener(e -> SwingUtilities.invokeLater(this::setSimpleSettings));
         validateButton.addActionListener(e -> SwingUtilities.invokeLater(this::validate));
 
+        RSyntaxTextAreaHelper.installDefaultTheme(xmlText);
         PopupMenuDecorator.getInstance().decorate(xmlText);
     }
 
