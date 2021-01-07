@@ -141,6 +141,21 @@ distributions.main {
     }
 }
 
+distributions {
+    minimized {
+        distributionBaseName = project.appName + '-Minimized'
+        contents {
+            with distributions.main.contents
+            exclude {
+                it.getFile().getParentFile().compareTo(file("$rootDir/resources/3dcitydb")) == 0 ||
+                it.getFile().getParentFile().compareTo(file("$rootDir/resources/samples")) == 0 ||
+                it.getFile().getParentFile().compareTo(file("$rootDir/resources/templates")) == 0 ||
+                it.getFile().getParentFile().compareTo(file("$rootDir/resources/3d-web-map-client")) == 0
+            }
+        }
+    }
+}
+
 task buildInstaller(dependsOn: installDist, group: 'distribution') {
     def installDir = installDist.destinationDir.toString()
     def distDir = distZip.destinationDirectory.get()
