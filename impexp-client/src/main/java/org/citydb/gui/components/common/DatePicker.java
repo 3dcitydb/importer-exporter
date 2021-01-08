@@ -55,6 +55,7 @@ public class DatePicker extends JXDatePicker implements EventHandler {
     public void updateUI() {
         super.updateUI();
         getEditor().putClientProperty("JTextField.placeholderText", "YYYY-MM-DD");
+        getEditor().setColumns(8);
 
         if (linkPanel != null) {
             SwingUtilities.updateComponentTreeUI(linkPanel);
