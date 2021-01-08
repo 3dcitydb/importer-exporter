@@ -34,10 +34,10 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "DatabaseTypeType")
 @XmlEnum
 public enum DatabaseType {
-    @XmlEnumValue("Oracle")
-    ORACLE("Oracle"),
     @XmlEnumValue("PostGIS")
-    POSTGIS("PostgreSQL/PostGIS");
+    POSTGIS("PostgreSQL/PostGIS"),
+    @XmlEnumValue("Oracle")
+    ORACLE("Oracle");
 
     private final String value;
 
@@ -51,12 +51,12 @@ public enum DatabaseType {
 
     public static DatabaseType fromValue(String v) {
         for (DatabaseType c : DatabaseType.values()) {
-            if (c.value.toLowerCase().equals(v.toLowerCase())) {
+            if (c.value.equalsIgnoreCase(v)) {
                 return c;
             }
         }
 
-        return ORACLE;
+        return POSTGIS;
     }
 
     public String toString() {
