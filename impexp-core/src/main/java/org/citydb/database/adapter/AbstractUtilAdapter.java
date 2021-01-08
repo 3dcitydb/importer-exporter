@@ -170,23 +170,27 @@ public abstract class AbstractUtilAdapter {
         }
     }
 
-    public String[] createDatabaseReport(Workspace workspace) throws SQLException {
+    public String[] createDatabaseReport() throws SQLException {
         String schema = databaseAdapter.getConnectionDetails().getSchema();
 
         try (Connection conn = databaseAdapter.connectionPool.getConnection()) {
-            if (databaseAdapter.hasVersioningSupport())
+            if (databaseAdapter.hasVersioningSupport() && databaseAdapter.getConnectionDetails().isSetWorkspace()) {
+                Workspace workspace = databaseAdapter.getConnectionDetails().getWorkspace();
                 databaseAdapter.getWorkspaceManager().gotoWorkspace(conn, workspace);
+            }
 
             return createDatabaseReport(schema, conn);
         }
     }
 
-    public BoundingBox calcBoundingBox(Workspace workspace, List<Integer> objectClassIds) throws SQLException {
+    public BoundingBox calcBoundingBox(List<Integer> objectClassIds) throws SQLException {
         String schema = databaseAdapter.getConnectionDetails().getSchema();
 
         try (Connection conn = databaseAdapter.connectionPool.getConnection()) {
-            if (databaseAdapter.hasVersioningSupport())
+            if (databaseAdapter.hasVersioningSupport() && databaseAdapter.getConnectionDetails().isSetWorkspace()) {
+                Workspace workspace = databaseAdapter.getConnectionDetails().getWorkspace();
                 databaseAdapter.getWorkspaceManager().gotoWorkspace(conn, workspace);
+            }
 
             BoundingBox bbox = calcBoundingBox(schema, objectClassIds, conn);
             bbox.setSrs(databaseAdapter.getConnectionMetaData().getReferenceSystem());
@@ -194,12 +198,14 @@ public abstract class AbstractUtilAdapter {
         }
     }
 
-    public BoundingBox calcBoundingBox(Workspace workspace, Query query, SchemaMapping schemaMapping) throws QueryBuildException, SQLException, FilterException {
+    public BoundingBox calcBoundingBox(Query query, SchemaMapping schemaMapping) throws QueryBuildException, SQLException, FilterException {
         BoundingBox bbox = null;
 
         try (Connection conn = databaseAdapter.connectionPool.getConnection()) {
-            if (databaseAdapter.hasVersioningSupport())
+            if (databaseAdapter.hasVersioningSupport() && databaseAdapter.getConnectionDetails().isSetWorkspace()) {
+                Workspace workspace = databaseAdapter.getConnectionDetails().getWorkspace();
                 databaseAdapter.getWorkspaceManager().gotoWorkspace(conn, workspace);
+            }
 
             SQLQueryBuilder builder = new SQLQueryBuilder(
                     schemaMapping,
@@ -235,13 +241,15 @@ public abstract class AbstractUtilAdapter {
         return bbox;
     }
 
-    public BoundingBox createBoundingBoxes(Workspace workspace, List<Integer> objectClassIds, boolean onlyIfNull) throws SQLException {
+    public BoundingBox createBoundingBoxes(List<Integer> objectClassIds, boolean onlyIfNull) throws SQLException {
         BoundingBox bbox = null;
 
         try (Connection conn = databaseAdapter.connectionPool.getConnection()) {
             conn.setAutoCommit(false);
-            if (databaseAdapter.hasVersioningSupport())
+            if (databaseAdapter.hasVersioningSupport() && databaseAdapter.getConnectionDetails().isSetWorkspace()) {
+                Workspace workspace = databaseAdapter.getConnectionDetails().getWorkspace();
                 databaseAdapter.getWorkspaceManager().gotoWorkspace(conn, workspace);
+            }
 
             try {
                 bbox = createBoundingBoxes(objectClassIds, onlyIfNull, conn);
@@ -400,12 +408,14 @@ public abstract class AbstractUtilAdapter {
         }
     }
 
-    public List<String> getAppearanceThemeList(Workspace workspace) throws SQLException {
+    public List<String> getAppearanceThemeList() throws SQLException {
         ArrayList<String> appearanceThemes = new ArrayList<>();
 
         try (Connection conn = databaseAdapter.connectionPool.getConnection()) {
-            if (databaseAdapter.hasVersioningSupport())
+            if (databaseAdapter.hasVersioningSupport() && databaseAdapter.getConnectionDetails().isSetWorkspace()) {
+                Workspace workspace = databaseAdapter.getConnectionDetails().getWorkspace();
                 databaseAdapter.getWorkspaceManager().gotoWorkspace(conn, workspace);
+            }
 
             try (Statement stmt = conn.createStatement();
                  ResultSet rs = stmt.executeQuery("select distinct theme from " +
@@ -424,21 +434,14 @@ public abstract class AbstractUtilAdapter {
         }
     }
 
-    public boolean containsGlobalAppearances(Workspace workspace) throws SQLException {
+    public boolean containsGlobalAppearances() throws SQLException {
         try (Connection conn = databaseAdapter.connectionPool.getConnection()) {
-            if (databaseAdapter.hasVersioningSupport())
+            if (databaseAdapter.hasVersioningSupport() && databaseAdapter.getConnectionDetails().isSetWorkspace()) {
+                Workspace workspace = databaseAdapter.getConnectionDetails().getWorkspace();
                 databaseAdapter.getWorkspaceManager().gotoWorkspace(conn, workspace);
+            }
 
             return containsGlobalAppearances(conn);
-        }
-    }
-
-    public int cleanupGlobalAppearances(Workspace workspace, String schema) throws SQLException {
-        try (Connection conn = databaseAdapter.connectionPool.getConnection()) {
-            if (databaseAdapter.hasVersioningSupport())
-                databaseAdapter.getWorkspaceManager().gotoWorkspace(conn, workspace);
-
-            return cleanupGlobalAppearances(schema, conn);
         }
     }
 

@@ -151,8 +151,9 @@ public class Importer implements EventHandler {
         int lookupCacheBatchSize = config.getDatabaseConfig().getImportBatching().getGmlIdCacheBatchSize();
 
         // check database workspace
-        Workspace workspace = config.getDatabaseConfig().getWorkspaces().getImportWorkspace();
-        if (shouldRun && databaseAdapter.hasVersioningSupport()
+        Workspace workspace = databaseAdapter.getConnectionDetails().getWorkspace();
+        if (shouldRun && workspace != null
+                && databaseAdapter.hasVersioningSupport()
                 && !databaseAdapter.getWorkspaceManager().equalsDefaultWorkspaceName(workspace.getName())) {
             try {
                 log.info("Switching to database workspace " + workspace + ".");

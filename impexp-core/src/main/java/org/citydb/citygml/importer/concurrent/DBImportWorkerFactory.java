@@ -136,8 +136,8 @@ public class DBImportWorkerFactory implements WorkerFactory<CityGML> {
 				connection.setAutoCommit(false);
 
 			// try and change workspace for both connections if needed
-			if (databaseAdapter.hasVersioningSupport()) {
-				Workspace workspace = config.getDatabaseConfig().getWorkspaces().getImportWorkspace();
+			if (databaseAdapter.hasVersioningSupport() && databaseAdapter.getConnectionDetails().isSetWorkspace()) {
+				Workspace workspace = databaseAdapter.getConnectionDetails().getWorkspace();
 				databaseAdapter.getWorkspaceManager().gotoWorkspace(connection, workspace);
 			}
 

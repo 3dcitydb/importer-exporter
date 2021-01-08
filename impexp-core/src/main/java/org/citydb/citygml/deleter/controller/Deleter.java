@@ -123,8 +123,9 @@ public class Deleter implements EventHandler {
 		long start = System.currentTimeMillis();
 
 		// checking workspace
-		Workspace workspace = config.getDatabaseConfig().getWorkspaces().getDeleteWorkspace();
-		if (shouldRun && databaseAdapter.hasVersioningSupport()
+		Workspace workspace = databaseAdapter.getConnectionDetails().getWorkspace();
+		if (shouldRun && workspace != null
+				&& databaseAdapter.hasVersioningSupport()
 				&& !databaseAdapter.getWorkspaceManager().equalsDefaultWorkspaceName(workspace.getName())) {
 			try {
 				log.info("Switching to database workspace " + workspace + ".");

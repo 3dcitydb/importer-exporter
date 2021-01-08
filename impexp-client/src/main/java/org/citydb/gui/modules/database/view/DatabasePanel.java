@@ -28,12 +28,14 @@
 package org.citydb.gui.modules.database.view;
 
 import com.formdev.flatlaf.extras.components.FlatComboBox;
+import com.formdev.flatlaf.extras.components.FlatTextField;
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.database.DatabaseConfig;
 import org.citydb.config.project.database.DatabaseConfigurationException;
 import org.citydb.config.project.database.DatabaseConnection;
 import org.citydb.config.project.database.DatabaseType;
+import org.citydb.config.project.database.Workspace;
 import org.citydb.database.DatabaseController;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.adapter.DatabaseAdapterFactory;
@@ -46,6 +48,7 @@ import org.citydb.event.Event;
 import org.citydb.event.EventHandler;
 import org.citydb.event.global.DatabaseConnectionStateEvent;
 import org.citydb.event.global.EventType;
+import org.citydb.gui.components.common.DatePicker;
 import org.citydb.gui.components.common.TitledPanel;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.modules.database.operations.DatabaseOperationsPanel;
@@ -91,8 +94,11 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 	private JButton connectButton;
 	private JButton infoButton;	
 	private JButton schemaButton;
+	private FlatTextField workspaceText;
+	private DatePicker timestamp;
 
-    private TitledPanel connectionDetails;
+	private TitledPanel connectionDetails;
+	private JPanel workspacePanel;
 
 	private JLabel connLabel;
 	private JLabel descriptionLabel;
@@ -103,6 +109,8 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 	private JLabel portLabel;
 	private JLabel databaseLabel;
 	private JLabel schemaLabel;
+	private JLabel workspaceLabel;
+	private JLabel timestampLabel;
 
 	private DatabaseOperationsPanel operationsPanel;
 
@@ -134,6 +142,19 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 		if (schema != null && schema.trim().length() == 0) schema = null;
 		if (schema != null && !schema.equals(databaseConnection.getSchema())) return true;
 		if (schema == null && databaseConnection.getSchema() != null) return true;
+
+		if (databaseTypeCombo.getSelectedItem() == DatabaseType.ORACLE) {
+			String workspace = workspaceLabel.getText().trim();
+			if (workspace.isEmpty() == databaseConnection.isSetWorkspace()) return true;
+			if (databaseConnection.isSetWorkspace()) {
+				if (!workspace.equals(databaseConnection.getWorkspace().getName())) return true;
+				if (timestamp.getDate() == null) {
+					if (databaseConnection.getWorkspace().getTimestamp() != null) return true;
+				} else {
+					if (!timestamp.getDate().equals(databaseConnection.getWorkspace().getTimestamp())) return true;
+				}
+			}
+		}
 
 		return false;
 	}
@@ -168,6 +189,9 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 		schemaCombo = new FlatComboBox<>();
 		schemaCombo.setEditable(true);
 
+		workspaceText = new FlatTextField();
+		timestamp = new DatePicker();
+
 		applyButton = new JButton();
 		newButton = new JButton();
 		copyButton = new JButton();
@@ -175,6 +199,8 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 		connectButton = new JButton();
 		infoButton = new JButton();
 		schemaButton = new JButton();
+		workspaceLabel = new JLabel();
+		timestampLabel = new JLabel();
 
 		PopupMenuDecorator.getInstance().decorate(descriptionText, serverText, portText, databaseText, 
 				userText, passwordText, (JTextField) schemaCombo.getEditor().getEditorComponent());
@@ -215,7 +241,15 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 		schemaPanel.setLayout(new GridBagLayout());
         schemaPanel.add(schemaCombo, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 5));
         schemaPanel.add(schemaButton, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 0));
-        content.add(schemaPanel, GuiUtil.setConstraints(1, 7, 1, 0, GridBagConstraints.BOTH, 0, 5, 0, 0));
+        content.add(schemaPanel, GuiUtil.setConstraints(1, 7, 1, 0, GridBagConstraints.BOTH, 0, 5, 5, 0));
+		content.add(workspaceLabel, GuiUtil.setConstraints(0, 8, 0, 0, GridBagConstraints.BOTH, 0, 0, 0, 5));
+
+        workspacePanel = new JPanel();
+        workspacePanel.setLayout(new GridBagLayout());
+        workspacePanel.add(workspaceText, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 5));
+        workspacePanel.add(timestampLabel, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 10, 0, 5));
+        workspacePanel.add(timestamp, GuiUtil.setConstraints(2, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 0));
+		content.add(workspacePanel, GuiUtil.setConstraints(1, 8, 1, 0, GridBagConstraints.BOTH, 0, 5, 0, 0));
 
         JPanel buttons = new JPanel();
         buttons.setLayout(new GridBagLayout());
@@ -324,13 +358,12 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 
 		databaseTypeCombo.addItemListener(e -> {
 			if (e.getStateChange() == ItemEvent.SELECTED) {
-				switch ((DatabaseType)e.getItem()) {
-				case ORACLE:
+				if (e.getItem() == DatabaseType.ORACLE) {
 					portText.setValue(1521);
-					break;
-				case POSTGIS:
+					setWorkspaceVisible(true);
+				} else {
 					portText.setValue(5432);
-					break;
+					setWorkspaceVisible(false);
 				}
 			}
 		});
@@ -355,6 +388,9 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 		deleteButton.setText(Language.I18N.getString("db.button.delete"));
 		infoButton.setText(Language.I18N.getString("db.button.info"));
 		schemaButton.setText(Language.I18N.getString("db.button.schema"));
+		workspaceLabel.setText(Language.I18N.getString("common.label.workspace"));
+		workspaceText.setPlaceholderText(Language.I18N.getString("common.label.workspace.prompt"));
+		timestampLabel.setText(Language.I18N.getString("common.label.timestamp"));
 		operationsPanel.doTranslation();
 
         connectButton.setText(Language.I18N.getString(!databaseController.isConnected() ?
@@ -563,6 +599,7 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 		connCombo.setSelectedItem(databaseConnection);
 		operationsPanel.loadSettings();
 		setEnabledDBOperations(false);
+		setWorkspaceVisible(databaseTypeCombo.getSelectedItem() == DatabaseType.ORACLE);
 		isSettingsLoaded = true;
 	}
 
@@ -589,6 +626,15 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 		databaseConnection.setUser(userText.getText());
 		databaseConnection.setPassword(String.valueOf(passwordText.getPassword()));
 		databaseConnection.setSavePassword(passwordCheck.isSelected());
+
+		if (databaseTypeCombo.getSelectedItem() == DatabaseType.ORACLE && !workspaceText.getText().trim().isEmpty()) {
+			Workspace workspace = new Workspace();
+			workspace.setName(workspaceText.getText());
+			workspace.setTimestamp(timestamp.getDate());
+			databaseConnection.setWorkspace(workspace);
+		} else {
+			databaseConnection.setWorkspace(null);
+		}
 	}
 
 	private void getDbConnection(DatabaseConnection databaseConnection) {
@@ -602,6 +648,14 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 
 		schemaCombo.removeAllItems();
 		schemaCombo.setSelectedItem(databaseConnection.getSchema());
+
+		if (databaseConnection.isSetWorkspace()) {
+			workspaceText.setText(databaseConnection.getWorkspace().getName());
+			timestamp.setDate(databaseConnection.getWorkspace().getTimestamp());
+		} else {
+			workspaceText.setText(null);
+			timestamp.setDate(null);
+		}
 
 		if (databaseConnection.getPort() == null || databaseConnection.getPort() == 0) {
 			databaseConnection.setPort(1521);
@@ -666,9 +720,13 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 	}
 
 	private void setEnabledDBOperations(boolean enable) {
-
 		infoButton.setEnabled(enable);		
 		operationsPanel.setEnabled(enable);
+	}
+
+	private void setWorkspaceVisible(boolean visible) {
+		workspaceLabel.setVisible(visible);
+		workspacePanel.setVisible(visible);
 	}
 
 	@Override

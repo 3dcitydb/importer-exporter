@@ -32,6 +32,7 @@ import org.citydb.citygml.exporter.database.content.DBSplittingResult;
 import org.citydb.concurrent.Worker;
 import org.citydb.concurrent.WorkerFactory;
 import org.citydb.config.Config;
+import org.citydb.config.project.database.Workspace;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.connection.ConnectionManager;
 import org.citydb.database.connection.DatabaseConnectionPool;
@@ -64,8 +65,10 @@ public class DBDeleteWorkerFactory implements WorkerFactory<DBSplittingResult>{
 
 			// try and change workspace the connections if needed
 			AbstractDatabaseAdapter databaseAdapter = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter();
-			if (databaseAdapter.hasVersioningSupport())
-				databaseAdapter.getWorkspaceManager().gotoWorkspace(connection, config.getDatabaseConfig().getWorkspaces().getDeleteWorkspace());
+			if (databaseAdapter.hasVersioningSupport() && databaseAdapter.getConnectionDetails().isSetWorkspace()) {
+				Workspace workspace = databaseAdapter.getConnectionDetails().getWorkspace();
+				databaseAdapter.getWorkspaceManager().gotoWorkspace(connection, workspace);
+			}
 
 			dbWorker = new DBDeleteWorker(connection, databaseAdapter, internalConfig, config, eventDispatcher);
 		} catch (SQLException e) {

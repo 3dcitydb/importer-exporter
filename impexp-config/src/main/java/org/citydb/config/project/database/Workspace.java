@@ -58,6 +58,11 @@ public class Workspace {
         setTimestamp(timestamp);
     }
 
+    public Workspace(Workspace other) {
+        name = other.name;
+        timestamp = other.timestamp;
+    }
+
     public String getName() {
         return name;
     }

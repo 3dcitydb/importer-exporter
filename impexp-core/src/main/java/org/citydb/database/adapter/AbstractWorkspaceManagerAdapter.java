@@ -42,14 +42,20 @@ public abstract class AbstractWorkspaceManagerAdapter {
 
 	public abstract String getDefaultWorkspaceName();
 	public abstract boolean equalsDefaultWorkspaceName(String workspaceName);
-	public abstract boolean gotoWorkspace(Connection connection, Workspace workspace);
+	protected abstract boolean changeWorkspace(Connection connection, Workspace workspace);
 
 	public void checkWorkspace(Workspace workspace) throws SQLException {
-		try (Connection conn = databaseAdapter.connectionPool.getConnection()) {
-			if (!gotoWorkspace(conn, workspace)) {
-				throw new SQLException("The database workspace " + workspace + " is not available.");
+		if (workspace != null) {
+			try (Connection conn = databaseAdapter.connectionPool.getConnection()) {
+				if (!gotoWorkspace(conn, workspace)) {
+					throw new SQLException("The database workspace " + workspace + " is not available.");
+				}
 			}
 		}
+	}
+
+	public boolean gotoWorkspace(Connection connection, Workspace workspace) {
+		return workspace == null || changeWorkspace(connection, workspace);
 	}
 
 	public boolean gotoWorkspace(Connection connection, String workspaceName, Date timestamp) {

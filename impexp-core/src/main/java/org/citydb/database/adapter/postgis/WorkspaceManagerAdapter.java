@@ -50,7 +50,7 @@ public class WorkspaceManagerAdapter extends AbstractWorkspaceManagerAdapter {
 	}
 
 	@Override
-	public boolean gotoWorkspace(Connection connection, Workspace workspace) {
+	protected boolean changeWorkspace(Connection connection, Workspace workspace) {
 		return false;
 	}
 

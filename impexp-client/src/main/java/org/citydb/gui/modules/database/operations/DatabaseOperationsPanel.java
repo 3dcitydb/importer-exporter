@@ -30,6 +30,7 @@ package org.citydb.gui.modules.database.operations;
 import org.citydb.config.Config;
 import org.citydb.config.project.database.DatabaseConfig;
 import org.citydb.config.project.database.Workspace;
+import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.connection.DatabaseConnectionPool;
 import org.citydb.event.Event;
 import org.citydb.event.EventHandler;
@@ -120,12 +121,12 @@ public class DatabaseOperationsPanel extends JPanel implements EventHandler {
     }
 
     public boolean checkWorkspace() {
-    	Workspace workspace = getWorkspace();
-        if (!dbConnectionPool.getActiveDatabaseAdapter().getWorkspaceManager().equalsDefaultWorkspaceName(workspace.getName())) {
+        AbstractDatabaseAdapter databaseAdapter = dbConnectionPool.getActiveDatabaseAdapter();
+        Workspace workspace = databaseAdapter.getConnectionDetails().getWorkspace();
+        if (workspace != null && !databaseAdapter.getWorkspaceManager().equalsDefaultWorkspaceName(workspace.getName())) {
             try {
-                Workspace tmp = new Workspace(workspace.getName(), workspace.getTimestamp());
-                log.info("Switching to database workspace " + tmp + ".");
-                dbConnectionPool.getActiveDatabaseAdapter().getWorkspaceManager().checkWorkspace(tmp);
+                log.info("Switching to database workspace " + workspace + ".");
+                databaseAdapter.getWorkspaceManager().checkWorkspace(workspace);
             } catch (SQLException e) {
                 log.error("Failed to switch to database workspace.", e);
                 return false;
@@ -133,10 +134,6 @@ public class DatabaseOperationsPanel extends JPanel implements EventHandler {
         }
 
         return true;
-    }
-
-    public Workspace getWorkspace() {
-        return config.getDatabaseConfig().getWorkspaces().getOperationWorkspace();
     }
 
     protected ViewController getViewController() {

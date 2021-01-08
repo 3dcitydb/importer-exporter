@@ -38,17 +38,7 @@ import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import java.util.UUID;
 
-@XmlType(name = "ConnectionType", propOrder = {
-        "description",
-        "type",
-        "server",
-        "port",
-        "sid",
-        "schema",
-        "user",
-        "password",
-        "savePassword"
-})
+@XmlType(name = "ConnectionType", propOrder = {})
 public class DatabaseConnection implements Comparable<DatabaseConnection> {
     @XmlID
     @XmlAttribute
@@ -65,6 +55,7 @@ public class DatabaseConnection implements Comparable<DatabaseConnection> {
     @XmlElement(required = true)
     private String sid;
     private String schema;
+    private Workspace workspace;
     @XmlElement(required = true)
     private String user;
     private String password;
@@ -187,6 +178,18 @@ public class DatabaseConnection implements Comparable<DatabaseConnection> {
 
     public void setSchema(String schema) {
         this.schema = (schema != null && !schema.trim().isEmpty()) ? schema.trim() : null;
+    }
+
+    public Workspace getWorkspace() {
+        return workspace;
+    }
+
+    public boolean isSetWorkspace() {
+        return workspace != null;
+    }
+
+    public void setWorkspace(Workspace workspace) {
+        this.workspace = workspace;
     }
 
     public String getUser() {

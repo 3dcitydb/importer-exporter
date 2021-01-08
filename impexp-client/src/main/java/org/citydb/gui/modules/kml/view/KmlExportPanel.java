@@ -34,7 +34,13 @@ import org.citydb.config.i18n.Language;
 import org.citydb.config.project.database.DatabaseConnection;
 import org.citydb.config.project.database.Workspace;
 import org.citydb.config.project.global.LogLevel;
-import org.citydb.config.project.kmlExporter.*;
+import org.citydb.config.project.kmlExporter.AltitudeOffsetMode;
+import org.citydb.config.project.kmlExporter.DisplayForm;
+import org.citydb.config.project.kmlExporter.DisplayFormType;
+import org.citydb.config.project.kmlExporter.KmlExportConfig;
+import org.citydb.config.project.kmlExporter.KmlTiling;
+import org.citydb.config.project.kmlExporter.KmlTilingMode;
+import org.citydb.config.project.kmlExporter.SimpleKmlQuery;
 import org.citydb.config.project.query.filter.selection.id.ResourceIdOperator;
 import org.citydb.config.project.query.filter.type.FeatureTypeFilter;
 import org.citydb.database.DatabaseController;
@@ -59,7 +65,13 @@ import org.citydb.plugin.extension.view.components.BoundingBoxPanel;
 import org.citydb.registry.ObjectRegistry;
 import org.citydb.util.ClientConstants;
 import org.citydb.util.Util;
-import org.citygml4j.model.module.citygml.*;
+import org.citygml4j.model.module.citygml.BridgeModule;
+import org.citygml4j.model.module.citygml.CityFurnitureModule;
+import org.citygml4j.model.module.citygml.CityGMLVersion;
+import org.citygml4j.model.module.citygml.CityObjectGroupModule;
+import org.citygml4j.model.module.citygml.ReliefModule;
+import org.citygml4j.model.module.citygml.TunnelModule;
+import org.citygml4j.model.module.citygml.VegetationModule;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -943,15 +955,16 @@ public class KmlExportPanel extends JPanel implements EventHandler {
                     themeComboBox.setSelectedItem(KmlExportConfig.THEME_NONE);
 
                     // checking workspace
-                    Workspace workspace = config.getDatabaseConfig().getWorkspaces().getKmlExportWorkspace();
-                    if (databaseController.getActiveDatabaseAdapter().hasVersioningSupport()
+                    Workspace workspace = databaseController.getActiveDatabaseAdapter().getConnectionDetails().getWorkspace();
+                    if (workspace != null
+                            && databaseController.getActiveDatabaseAdapter().hasVersioningSupport()
                             && !databaseController.getActiveDatabaseAdapter().getWorkspaceManager().equalsDefaultWorkspaceName(workspace.getName())) {
                         log.info("Switching to database workspace " + workspace + ".");
                         databaseController.getActiveDatabaseAdapter().getWorkspaceManager().checkWorkspace(workspace);
                     }
 
                     // fetching themes
-                    for (String theme : databaseController.getActiveDatabaseAdapter().getUtil().getAppearanceThemeList(workspace)) {
+                    for (String theme : databaseController.getActiveDatabaseAdapter().getUtil().getAppearanceThemeList()) {
                         if (theme != null) {
                             themeComboBox.addItem(theme);
                             if (theme.equals(config.getKmlExportConfig().getAppearanceTheme())) {

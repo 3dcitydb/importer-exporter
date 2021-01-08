@@ -29,6 +29,7 @@ package org.citydb.database.connection;
 
 import org.citydb.config.project.database.DatabaseConnection;
 import org.citydb.config.project.database.DatabaseType;
+import org.citydb.config.project.database.Workspace;
 
 public class DatabaseConnectionDetails {
 	private String description;
@@ -38,7 +39,8 @@ public class DatabaseConnectionDetails {
 	private String sid;
 	private String schema;
 	private String user;
-	
+	private Workspace workspace;
+
 	public DatabaseConnectionDetails(DatabaseConnection connection) {
 		description = connection.getDescription();
 		type = connection.getDatabaseType();
@@ -47,6 +49,10 @@ public class DatabaseConnectionDetails {
 		sid = connection.getSid();
 		schema = connection.getSchema();
 		user = connection.getUser();
+
+		if (connection.isSetWorkspace()) {
+			workspace = new Workspace(connection.getWorkspace());
+		}
 	}
 	
 	public String getDescription() {
@@ -108,7 +114,19 @@ public class DatabaseConnectionDetails {
 	protected void setUser(String user) {
 		this.user = user;
 	}
-	
+
+	public Workspace getWorkspace() {
+		return workspace;
+	}
+
+	public boolean isSetWorkspace() {
+		return workspace != null;
+	}
+
+	public void setWorkspace(Workspace workspace) {
+		this.workspace = workspace;
+	}
+
 	public String toConnectString() {
 		return user + "@" + server + ":" + port + "/" + sid;
 	}
