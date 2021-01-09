@@ -101,7 +101,7 @@ public class UtilAdapter extends AbstractUtilAdapter {
 				} else
 					throw new SQLException("Failed to retrieve metadata information from database.");
 			} catch (SQLException e) {
-				throw new SQLException("No 3DCityDB instance found in given database schema.", e);
+				throw new SQLException("No 3DCityDB instance found in given database schema '" + schema + "'.", e);
 			}
 		}
 	}

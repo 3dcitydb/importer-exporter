@@ -128,7 +128,7 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 	}
 
 	private boolean isModified() {
-		DatabaseConnection databaseConnection = (DatabaseConnection)connCombo.getSelectedItem();
+		DatabaseConnection databaseConnection = (DatabaseConnection) connCombo.getSelectedItem();
 		if (!descriptionText.getText().trim().equals(databaseConnection.getDescription())) return true;
 		if (databaseTypeCombo.getSelectedItem() != databaseConnection.getDatabaseType()) return true;
 		if (!serverText.getText().equals(databaseConnection.getServer())) return true;
@@ -136,10 +136,9 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 		if (!String.valueOf(passwordText.getPassword()).equals(databaseConnection.getPassword())) return true;
 		if (!databaseText.getText().equals(databaseConnection.getSid())) return true;
 		if (passwordCheck.isSelected() != databaseConnection.isSetSavePassword()) return true;
-		if (portText.getValue() != null && ((Number)portText.getValue()).intValue() != databaseConnection.getPort()) return true;
+		if (portText.getValue() != null && ((Number) portText.getValue()).intValue() != databaseConnection.getPort()) return true;
 
-		String schema = (String)(schemaCombo.getSelectedIndex() != -1 ? schemaCombo.getSelectedItem() : schemaCombo.getEditor().getItem());
-		if (schema != null && schema.trim().length() == 0) schema = null;
+		String schema = getValue(schemaCombo);
 		if (schema != null && !schema.equals(databaseConnection.getSchema())) return true;
 		if (schema == null && databaseConnection.getSchema() != null) return true;
 
@@ -510,6 +509,9 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 			case MISSING_DB_NAME:
 				message = Language.I18N.getString("db.dialog.error.conn.sid");
 				break;
+			case EMPTY_DB_SCHEMA:
+				message = Language.I18N.getString("db.dialog.error.conn.emptySchema");
+				break;
 			default:
 				message = e.getMessage();
 		}
@@ -618,11 +620,11 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 		} else
 			descriptionText.setText(databaseConnection.getDescription());
 
-		databaseConnection.setDatabaseType((DatabaseType)databaseTypeCombo.getSelectedItem());
-		databaseConnection.setServer(serverText.getText().trim());
-		databaseConnection.setPort(((Number)portText.getValue()).intValue());
+		databaseConnection.setDatabaseType((DatabaseType) databaseTypeCombo.getSelectedItem());
+		databaseConnection.setServer(serverText.getText());
+		databaseConnection.setPort(((Number) portText.getValue()).intValue());
 		databaseConnection.setSid(databaseText.getText());
-		databaseConnection.setSchema((String)(schemaCombo.getSelectedIndex() != -1 ? schemaCombo.getSelectedItem() : schemaCombo.getEditor().getItem()));
+		databaseConnection.setSchema(getValue(schemaCombo));
 		databaseConnection.setUser(userText.getText());
 		databaseConnection.setPassword(String.valueOf(passwordText.getPassword()));
 		databaseConnection.setSavePassword(passwordCheck.isSelected());
@@ -727,6 +729,19 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 	private void setWorkspaceVisible(boolean visible) {
 		workspaceLabel.setVisible(visible);
 		workspacePanel.setVisible(visible);
+	}
+
+	private String getValue(JComboBox<String> comboBox) {
+		String value = (String) (comboBox.getSelectedIndex() != -1 ?
+				comboBox.getSelectedItem() :
+				comboBox.getEditor().getItem());
+
+		value = value != null && value.trim().isEmpty() ? null : value;
+		if (value == null && comboBox.getSelectedItem() != null) {
+			comboBox.setSelectedItem(null);
+		}
+
+		return value;
 	}
 
 	@Override
