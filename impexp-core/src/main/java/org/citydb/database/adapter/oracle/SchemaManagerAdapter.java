@@ -51,7 +51,8 @@ public class SchemaManagerAdapter extends AbstractSchemaManagerAdapter {
 	
 	@Override
 	public boolean equalsDefaultSchema(String schema) {
-		return (schema == null || schema.trim().length() == 0 || getDefaultSchema().equalsIgnoreCase(schema.trim()));
+		schema = formatSchema(schema);
+		return schema == null || schema.isEmpty() || getDefaultSchema().equals(schema);
 	}
 	
 	@Override
@@ -59,10 +60,9 @@ public class SchemaManagerAdapter extends AbstractSchemaManagerAdapter {
 		if (schema == null)
 			throw new IllegalArgumentException("Schema name may not be null.");
 
-		String defaultSchema = getDefaultSchema();
 		schema = formatSchema(schema);
-		if (!schema.equals(defaultSchema) && (schema.length() == 0 || defaultSchema.equalsIgnoreCase(schema)))
-			schema = defaultSchema;
+		if (schema.isEmpty())
+			schema = getDefaultSchema();
 		
 		try (PreparedStatement stmt = connection.prepareStatement("select count(*) from all_users where username = ?")) {
 			stmt.setString(1, schema);

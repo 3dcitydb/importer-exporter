@@ -181,12 +181,8 @@ public class DatabaseConnection implements Comparable<DatabaseConnection> {
         return schema;
     }
 
-    public boolean isSetSchema() {
-        return schema != null && !schema.trim().isEmpty();
-    }
-
     public void setSchema(String schema) {
-        this.schema = (schema != null && !schema.trim().isEmpty()) ? schema.trim() : null;
+        this.schema = (schema != null && !schema.trim().isEmpty()) ? schema : null;
     }
 
     public String getUser() {
@@ -449,17 +445,20 @@ public class DatabaseConnection implements Comparable<DatabaseConnection> {
     }
 
     public void validate() throws DatabaseConfigurationException {
-        if (user == null || user.trim().length() == 0)
+        if (user == null || user.trim().isEmpty())
             throw new DatabaseConfigurationException(ErrorCode.MISSING_DB_USERNAME, "Missing username.");
 
-        if (server == null || server.trim().length() == 0)
+        if (server == null || server.trim().isEmpty())
             throw new DatabaseConfigurationException(ErrorCode.MISSING_DB_HOSTNAME, "Missing server hostname.");
 
         if (port == null)
             throw new DatabaseConfigurationException(ErrorCode.MISSING_DB_PORT, "Missing server port.");
 
-        if (sid == null || sid.trim().length() == 0)
+        if (sid == null || sid.trim().isEmpty())
             throw new DatabaseConfigurationException(ErrorCode.MISSING_DB_NAME, "Missing database name.");
+
+        if (schema != null && schema.trim().isEmpty())
+            throw new DatabaseConfigurationException(ErrorCode.EMPTY_DB_SCHEMA, "Database schema cannot be empty.");
     }
 
     public String toConnectString() {

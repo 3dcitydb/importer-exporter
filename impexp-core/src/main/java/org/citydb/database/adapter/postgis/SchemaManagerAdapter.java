@@ -52,7 +52,7 @@ public class SchemaManagerAdapter extends AbstractSchemaManagerAdapter {
 
 	@Override
 	public boolean equalsDefaultSchema(String schema) {
-		return (schema == null || schema.trim().length() == 0 || defaultSchema.equals(schema.trim()));
+		return schema == null || schema.trim().isEmpty() || defaultSchema.equals(schema);
 	}
 
 	@Override
@@ -60,8 +60,7 @@ public class SchemaManagerAdapter extends AbstractSchemaManagerAdapter {
 		if (schema == null)
 			throw new IllegalArgumentException("Schema name may not be null.");
 
-		schema = formatSchema(schema);
-		if (!schema.equals(defaultSchema) && schema.length() == 0)
+		if (schema.trim().isEmpty())
 			schema = defaultSchema;
 
 		try (PreparedStatement stmt = connection.prepareStatement("select exists(select schema_name from information_schema.schemata where schema_name = ?)")) {
@@ -91,7 +90,7 @@ public class SchemaManagerAdapter extends AbstractSchemaManagerAdapter {
 
 	@Override
 	public String formatSchema(String schema) {
-		return schema != null ? schema.trim() : null;
+		return schema;
 	}
 
 }
