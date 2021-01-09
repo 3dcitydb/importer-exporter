@@ -142,11 +142,13 @@ distributions {
         }
     }
 
-    minimized {
-        distributionBaseName = project.appName + '-Minimized'
+    docker {
+        distributionBaseName = project.appName + '-Docker'
         contents {
             with distributions.main.contents
+            exclude ('*.bat', 'collada2gltf/*osx*', 'collada2gltf/*windows*')
             exclude {
+                it.getFile().compareTo(file("$rootDir/resources/plugins/plugin-ade-manager")) == 0 ||
                 it.getFile().getParentFile().compareTo(file("$rootDir/resources/3dcitydb")) == 0 ||
                 it.getFile().getParentFile().compareTo(file("$rootDir/resources/samples")) == 0 ||
                 it.getFile().getParentFile().compareTo(file("$rootDir/resources/templates")) == 0 ||
