@@ -606,7 +606,7 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 		schemaCombo.setSelectedItem(databaseConnection.getSchema());
 
 		if (databaseConnection.getPort() == null || databaseConnection.getPort() == 0) {
-			databaseConnection.setPort(1521);
+			databaseConnection.setPort(5432);
 		}
 
 		portText.setValue(databaseConnection.getPort());
