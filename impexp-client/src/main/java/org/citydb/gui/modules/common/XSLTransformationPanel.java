@@ -113,7 +113,8 @@ public class XSLTransformationPanel extends AbstractPreferencesComponent {
 
     @Override
     public void setSettings() {
-        XSLTransformation transformation = isExport ? config.getExportConfig().getXSLTransformation() :
+        XSLTransformation transformation = isExport ?
+                config.getExportConfig().getXSLTransformation() :
                 config.getImportConfig().getXSLTransformation();
 
         transformation.setEnabled(applyStylesheets.isSelected());
@@ -156,12 +157,13 @@ public class XSLTransformationPanel extends AbstractPreferencesComponent {
 
     @Override
     public void loadSettings() {
-        XSLTransformation transformation = isExport ? config.getExportConfig().getXSLTransformation() :
+        XSLTransformation transformation = isExport ?
+                config.getExportConfig().getXSLTransformation() :
                 config.getImportConfig().getXSLTransformation();
 
         applyStylesheets.setSelected(transformation.isEnabled());
 
-        boolean componentsChanged = false;
+        first.next = null;
         if (transformation.isSetStylesheets()) {
             StylesheetComponent current = first;
             Iterator<String> iter = transformation.getStylesheets().iterator();
@@ -169,14 +171,12 @@ public class XSLTransformationPanel extends AbstractPreferencesComponent {
                 current.stylesheet.setText(iter.next());
                 if (iter.hasNext()) {
                     current = current.add();
-                    componentsChanged = true;
                 }
             }
         }
 
+        updateComponents();
         setEnabledComponents();
-        if (componentsChanged)
-            updateComponents();
     }
 
     @Override
