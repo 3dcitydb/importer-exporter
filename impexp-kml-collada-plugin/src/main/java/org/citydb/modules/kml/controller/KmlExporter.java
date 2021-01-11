@@ -218,16 +218,11 @@ public class KmlExporter implements EventHandler {
 			throw new KmlExportException("Failed to initialize KML/COLLADA context.", e);
 		}
 
-		// checking workspace
-		Workspace workspace = databaseAdapter.getConnectionDetails().getWorkspace();
-		if (shouldRun && workspace != null
-				&& databaseAdapter.hasVersioningSupport()
-				&& !databaseAdapter.getWorkspaceManager().equalsDefaultWorkspaceName(workspace.getName())) {
-			try {
-				log.info("Switching to database workspace " + workspace + ".");
-				databaseAdapter.getWorkspaceManager().checkWorkspace(workspace);
-			} catch (SQLException e) {
-				throw new KmlExportException("Failed to switch to database workspace.", e);
+		// log workspace
+		if (databaseAdapter.hasVersioningSupport() && databaseAdapter.getConnectionDetails().isSetWorkspace()) {
+			Workspace workspace = databaseAdapter.getConnectionDetails().getWorkspace();
+			if (!databaseAdapter.getWorkspaceManager().equalsDefaultWorkspaceName(workspace.getName())) {
+				log.info("Exporting from workspace " + databaseAdapter.getConnectionDetails().getWorkspace() + ".");
 			}
 		}
 

@@ -32,7 +32,6 @@ import org.citydb.concurrent.Worker;
 import org.citydb.concurrent.WorkerFactory;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
-import org.citydb.config.project.database.Workspace;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.connection.DatabaseConnectionPool;
 import org.citydb.event.EventDispatcher;
@@ -85,15 +84,9 @@ public class KmlExportWorkerFactory implements WorkerFactory<KmlSplittingResult>
 		KmlExportWorker kmlWorker = null;
 
 		try {
+			AbstractDatabaseAdapter databaseAdapter = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter();
 			Connection connection = DatabaseConnectionPool.getInstance().getConnection();
 			connection.setAutoCommit(false);
-
-			// try and change workspace if needed
-			AbstractDatabaseAdapter databaseAdapter = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter();
-			if (databaseAdapter.hasVersioningSupport() && databaseAdapter.getConnectionDetails().isSetWorkspace()) {
-				Workspace workspace = databaseAdapter.getConnectionDetails().getWorkspace();
-				databaseAdapter.getWorkspaceManager().gotoWorkspace(connection, workspace);
-			}
 
 			kmlWorker = new KmlExportWorker(outputFile, connection, databaseAdapter, jaxbKmlContext, jaxbColladaContext,
 					writerPool, tracker, query, kmlFactory, config, eventDispatcher);

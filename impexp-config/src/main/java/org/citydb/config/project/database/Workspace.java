@@ -68,8 +68,7 @@ public class Workspace {
     }
 
     public void setName(String name) {
-        if (name != null)
-            this.name = name.trim();
+        this.name = (name != null && !name.trim().isEmpty()) ? name : null;
     }
 
     public boolean isSetName() {
@@ -92,16 +91,17 @@ public class Workspace {
             } catch (DatatypeConfigurationException e) {
                 this.timestamp = null;
             }
-        } else
+        } else {
             this.timestamp = null;
+        }
     }
 
     @Override
     public String toString() {
-        StringBuilder builder = new StringBuilder()
-                .append("'").append(getName()).append("'");
-        if (timestamp != null)
+        StringBuilder builder = new StringBuilder(isSetName() ? name : "");
+        if (timestamp != null) {
             builder.append(" at timestamp ").append(timestamp.toXMLFormat());
+        }
 
         return builder.toString();
     }

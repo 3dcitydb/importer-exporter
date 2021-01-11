@@ -29,8 +29,6 @@ package org.citydb.gui.modules.database.operations;
 
 import org.citydb.config.Config;
 import org.citydb.config.project.database.DatabaseConfig;
-import org.citydb.config.project.database.Workspace;
-import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.connection.DatabaseConnectionPool;
 import org.citydb.event.Event;
 import org.citydb.event.EventHandler;
@@ -43,7 +41,6 @@ import org.citydb.registry.ObjectRegistry;
 
 import javax.swing.*;
 import java.awt.*;
-import java.sql.SQLException;
 
 public class DatabaseOperationsPanel extends JPanel implements EventHandler {
     private final Logger log = Logger.getInstance();
@@ -118,22 +115,6 @@ public class DatabaseOperationsPanel extends JPanel implements EventHandler {
         for (DatabaseOperationView operation : operations) {
         	operation.setEnabled(enable);
 		}
-    }
-
-    public boolean checkWorkspace() {
-        AbstractDatabaseAdapter databaseAdapter = dbConnectionPool.getActiveDatabaseAdapter();
-        Workspace workspace = databaseAdapter.getConnectionDetails().getWorkspace();
-        if (workspace != null && !databaseAdapter.getWorkspaceManager().equalsDefaultWorkspaceName(workspace.getName())) {
-            try {
-                log.info("Switching to database workspace " + workspace + ".");
-                databaseAdapter.getWorkspaceManager().checkWorkspace(workspace);
-            } catch (SQLException e) {
-                log.error("Failed to switch to database workspace.", e);
-                return false;
-            }
-        }
-
-        return true;
     }
 
     protected ViewController getViewController() {

@@ -40,7 +40,6 @@ import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.config.geometry.Position;
 import org.citydb.config.i18n.Language;
-import org.citydb.config.project.database.Workspace;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.connection.DatabaseConnectionPool;
 import org.citydb.database.schema.mapping.AbstractObjectType;
@@ -137,21 +136,9 @@ public class DBSplitter {
 		schema = databaseAdapter.getConnectionDetails().getSchema();
 		calculateExtent = config.getExportConfig().getCityGMLOptions().getGMLEnvelope().isUseEnvelopeOnCityModel();
 
-		// try and change workspace for connection
-		if (databaseAdapter.hasVersioningSupport() && databaseAdapter.getConnectionDetails().isSetWorkspace()) {
-			Workspace workspace = databaseAdapter.getConnectionDetails().getWorkspace();
-			databaseAdapter.getWorkspaceManager().gotoWorkspace(connection, workspace);
-		}
-
 		// create temporary table for global appearances if needed
 		if (internalConfig.isExportGlobalAppearances()) {
-			CacheTable temp = cacheTableManager.createCacheTableInDatabase(CacheTableModel.GLOBAL_APPEARANCE);
-
-			// try and change workspace for temporary table
-			if (databaseAdapter.hasVersioningSupport() && databaseAdapter.getConnectionDetails().isSetWorkspace()) {
-				Workspace workspace = databaseAdapter.getConnectionDetails().getWorkspace();
-				databaseAdapter.getWorkspaceManager().gotoWorkspace(connection, workspace);
-			}
+			cacheTableManager.createCacheTableInDatabase(CacheTableModel.GLOBAL_APPEARANCE);
 		}
 
 		BuildProperties buildProperties = BuildProperties.defaults()

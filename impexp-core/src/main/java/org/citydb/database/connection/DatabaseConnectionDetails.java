@@ -38,9 +38,9 @@ public class DatabaseConnectionDetails {
 	private int port;
 	private String sid;
 	private String schema;
-	private String user;
 	private Workspace workspace;
-
+	private String user;
+	
 	public DatabaseConnectionDetails(DatabaseConnection connection) {
 		description = connection.getDescription();
 		type = connection.getDatabaseType();
@@ -59,7 +59,7 @@ public class DatabaseConnectionDetails {
 		return description;
 	}
 	
-	protected void setDescription(String description) {
+	void setDescription(String description) {
 		this.description = description;
 	}
 	
@@ -67,7 +67,7 @@ public class DatabaseConnectionDetails {
 		return type;
 	}
 	
-	protected void setType(DatabaseType type) {
+	void setType(DatabaseType type) {
 		this.type = type;
 	}
 	
@@ -75,7 +75,7 @@ public class DatabaseConnectionDetails {
 		return server;
 	}
 	
-	protected void setServer(String server) {
+	void setServer(String server) {
 		this.server = server;
 	}
 	
@@ -83,7 +83,7 @@ public class DatabaseConnectionDetails {
 		return port;
 	}
 	
-	protected void setPort(int port) {
+	void setPort(int port) {
 		this.port = port;
 	}
 	
@@ -91,7 +91,7 @@ public class DatabaseConnectionDetails {
 		return sid;
 	}
 	
-	protected void setSid(String sid) {
+	void setSid(String sid) {
 		this.sid = sid;
 	}
 	
@@ -99,20 +99,12 @@ public class DatabaseConnectionDetails {
 		return schema;
 	}
 	
-	protected boolean isSetSchema() {
+	public boolean isSetSchema() {
 		return schema != null && !schema.trim().isEmpty();
 	}
 
-	protected void setSchema(String schema) {
+	void setSchema(String schema) {
 		this.schema = schema;
-	}
-	
-	public String getUser() {
-		return user;
-	}
-	
-	protected void setUser(String user) {
-		this.user = user;
 	}
 
 	public Workspace getWorkspace() {
@@ -120,13 +112,21 @@ public class DatabaseConnectionDetails {
 	}
 
 	public boolean isSetWorkspace() {
-		return workspace != null;
+		return workspace != null && workspace.isSetName();
 	}
 
-	public void setWorkspace(Workspace workspace) {
+	void setWorkspace(Workspace workspace) {
 		this.workspace = workspace;
 	}
 
+	public String getUser() {
+		return user;
+	}
+	
+	void setUser(String user) {
+		this.user = user;
+	}
+	
 	public String toConnectString() {
 		return user + "@" + server + ":" + port + "/" + sid;
 	}

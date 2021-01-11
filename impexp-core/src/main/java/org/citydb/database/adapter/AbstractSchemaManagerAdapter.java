@@ -58,10 +58,11 @@ public abstract class AbstractSchemaManagerAdapter {
 		try (Connection conn = databaseAdapter.connectionPool.getConnection()) {
 			boolean exists = existsSchema(conn, schema);
 			if (logResult) {
-				if (!exists)
-					log.error("Database schema '" + schema + "' is not available.");
-				else 
+				if (!exists) {
+					log.error("The database schema '" + schema + "' does not exist.");
+				} else {
 					log.info("Switching to database schema '" + schema + "'.");
+				}
 			}
 
 			return exists;

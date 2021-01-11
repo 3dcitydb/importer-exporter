@@ -161,16 +161,11 @@ public class Exporter implements EventHandler {
     private boolean process(Path outputFile) throws CityGMLExportException {
         InternalConfig internalConfig = new InternalConfig();
 
-        // checking workspace
-        Workspace workspace = databaseAdapter.getConnectionDetails().getWorkspace();
-        if (shouldRun && workspace != null
-                && databaseAdapter.hasVersioningSupport()
-                && !databaseAdapter.getWorkspaceManager().equalsDefaultWorkspaceName(workspace.getName())) {
-            try {
-                log.info("Switching to database workspace " + workspace + ".");
-                databaseAdapter.getWorkspaceManager().checkWorkspace(workspace);
-            } catch (SQLException e) {
-                throw new CityGMLExportException("Failed to switch to database workspace.", e);
+        // log workspace
+        if (databaseAdapter.hasVersioningSupport() && databaseAdapter.getConnectionDetails().isSetWorkspace()) {
+            Workspace workspace = databaseAdapter.getConnectionDetails().getWorkspace();
+            if (!databaseAdapter.getWorkspaceManager().equalsDefaultWorkspaceName(workspace.getName())) {
+                log.info("Exporting from workspace " + databaseAdapter.getConnectionDetails().getWorkspace() + ".");
             }
         }
 

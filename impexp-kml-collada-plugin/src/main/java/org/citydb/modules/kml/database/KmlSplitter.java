@@ -36,7 +36,6 @@ import org.citydb.config.geometry.Position;
 import org.citydb.config.project.database.DatabaseConfig;
 import org.citydb.config.project.database.DatabaseConfig.PredefinedSrsName;
 import org.citydb.config.project.database.DatabaseSrs;
-import org.citydb.config.project.database.Workspace;
 import org.citydb.config.project.kmlExporter.DisplayForm;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.connection.DatabaseConnectionPool;
@@ -92,13 +91,6 @@ public class KmlSplitter {
 		databaseAdapter = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter();
 		connection = DatabaseConnectionPool.getInstance().getConnection();
 		dbSrs = databaseAdapter.getConnectionMetaData().getReferenceSystem();		
-
-		// try and change workspace for connection if needed
-		if (databaseAdapter.hasVersioningSupport() && databaseAdapter.getConnectionDetails().isSetWorkspace()) {
-			Workspace workspace = databaseAdapter.getConnectionDetails().getWorkspace();
-			databaseAdapter.getWorkspaceManager().gotoWorkspace(connection, workspace);
-		}
-
 		schema = databaseAdapter.getConnectionDetails().getSchema();
 
 		BuildProperties buildProperties = BuildProperties.defaults()

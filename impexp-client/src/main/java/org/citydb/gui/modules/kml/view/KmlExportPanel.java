@@ -32,7 +32,6 @@ import org.citydb.config.Config;
 import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.database.DatabaseConnection;
-import org.citydb.config.project.database.Workspace;
 import org.citydb.config.project.global.LogLevel;
 import org.citydb.config.project.kmlExporter.AltitudeOffsetMode;
 import org.citydb.config.project.kmlExporter.DisplayForm;
@@ -410,7 +409,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
         pixelsColladaLabel.setText(Language.I18N.getString("kmlExport.label.pixels"));
 
         themeLabel.setText(Language.I18N.getString("pref.kmlexport.label.theme"));
-        fetchThemesButton.setText(Language.I18N.getString("pref.kmlexport.label.fetchTheme"));
+        fetchThemesButton.setText(Language.I18N.getString("common.button.query"));
 
         featureFilterPanel.setTitle(Language.I18N.getString("filter.border.featureClass"));
         exportButton.setText(Language.I18N.getString("export.button.export"));
@@ -953,15 +952,6 @@ public class KmlExportPanel extends JPanel implements EventHandler {
                     themeComboBox.removeAllItems();
                     themeComboBox.addItem(KmlExportConfig.THEME_NONE);
                     themeComboBox.setSelectedItem(KmlExportConfig.THEME_NONE);
-
-                    // checking workspace
-                    Workspace workspace = databaseController.getActiveDatabaseAdapter().getConnectionDetails().getWorkspace();
-                    if (workspace != null
-                            && databaseController.getActiveDatabaseAdapter().hasVersioningSupport()
-                            && !databaseController.getActiveDatabaseAdapter().getWorkspaceManager().equalsDefaultWorkspaceName(workspace.getName())) {
-                        log.info("Switching to database workspace " + workspace + ".");
-                        databaseController.getActiveDatabaseAdapter().getWorkspaceManager().checkWorkspace(workspace);
-                    }
 
                     // fetching themes
                     for (String theme : databaseController.getActiveDatabaseAdapter().getUtil().getAppearanceThemeList()) {

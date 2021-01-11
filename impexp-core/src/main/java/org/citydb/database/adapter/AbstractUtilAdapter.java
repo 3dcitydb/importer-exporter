@@ -31,7 +31,6 @@ import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.geometry.GeometryObject;
 import org.citydb.config.geometry.Position;
 import org.citydb.config.project.database.DatabaseSrs;
-import org.citydb.config.project.database.Workspace;
 import org.citydb.config.project.kmlExporter.KmlExportConfig;
 import org.citydb.database.adapter.IndexStatusInfo.IndexType;
 import org.citydb.database.connection.ADEMetadata;
@@ -174,11 +173,6 @@ public abstract class AbstractUtilAdapter {
         String schema = databaseAdapter.getConnectionDetails().getSchema();
 
         try (Connection conn = databaseAdapter.connectionPool.getConnection()) {
-            if (databaseAdapter.hasVersioningSupport() && databaseAdapter.getConnectionDetails().isSetWorkspace()) {
-                Workspace workspace = databaseAdapter.getConnectionDetails().getWorkspace();
-                databaseAdapter.getWorkspaceManager().gotoWorkspace(conn, workspace);
-            }
-
             return createDatabaseReport(schema, conn);
         }
     }
@@ -187,11 +181,6 @@ public abstract class AbstractUtilAdapter {
         String schema = databaseAdapter.getConnectionDetails().getSchema();
 
         try (Connection conn = databaseAdapter.connectionPool.getConnection()) {
-            if (databaseAdapter.hasVersioningSupport() && databaseAdapter.getConnectionDetails().isSetWorkspace()) {
-                Workspace workspace = databaseAdapter.getConnectionDetails().getWorkspace();
-                databaseAdapter.getWorkspaceManager().gotoWorkspace(conn, workspace);
-            }
-
             BoundingBox bbox = calcBoundingBox(schema, objectClassIds, conn);
             bbox.setSrs(databaseAdapter.getConnectionMetaData().getReferenceSystem());
             return bbox;
@@ -202,11 +191,6 @@ public abstract class AbstractUtilAdapter {
         BoundingBox bbox = null;
 
         try (Connection conn = databaseAdapter.connectionPool.getConnection()) {
-            if (databaseAdapter.hasVersioningSupport() && databaseAdapter.getConnectionDetails().isSetWorkspace()) {
-                Workspace workspace = databaseAdapter.getConnectionDetails().getWorkspace();
-                databaseAdapter.getWorkspaceManager().gotoWorkspace(conn, workspace);
-            }
-
             SQLQueryBuilder builder = new SQLQueryBuilder(
                     schemaMapping,
                     databaseAdapter,
@@ -246,11 +230,6 @@ public abstract class AbstractUtilAdapter {
 
         try (Connection conn = databaseAdapter.connectionPool.getConnection()) {
             conn.setAutoCommit(false);
-            if (databaseAdapter.hasVersioningSupport() && databaseAdapter.getConnectionDetails().isSetWorkspace()) {
-                Workspace workspace = databaseAdapter.getConnectionDetails().getWorkspace();
-                databaseAdapter.getWorkspaceManager().gotoWorkspace(conn, workspace);
-            }
-
             try {
                 bbox = createBoundingBoxes(objectClassIds, onlyIfNull, conn);
                 bbox.setSrs(databaseAdapter.getConnectionMetaData().getReferenceSystem());
@@ -412,11 +391,6 @@ public abstract class AbstractUtilAdapter {
         ArrayList<String> appearanceThemes = new ArrayList<>();
 
         try (Connection conn = databaseAdapter.connectionPool.getConnection()) {
-            if (databaseAdapter.hasVersioningSupport() && databaseAdapter.getConnectionDetails().isSetWorkspace()) {
-                Workspace workspace = databaseAdapter.getConnectionDetails().getWorkspace();
-                databaseAdapter.getWorkspaceManager().gotoWorkspace(conn, workspace);
-            }
-
             try (Statement stmt = conn.createStatement();
                  ResultSet rs = stmt.executeQuery("select distinct theme from " +
                          databaseAdapter.getConnectionDetails().getSchema() +
@@ -436,12 +410,13 @@ public abstract class AbstractUtilAdapter {
 
     public boolean containsGlobalAppearances() throws SQLException {
         try (Connection conn = databaseAdapter.connectionPool.getConnection()) {
-            if (databaseAdapter.hasVersioningSupport() && databaseAdapter.getConnectionDetails().isSetWorkspace()) {
-                Workspace workspace = databaseAdapter.getConnectionDetails().getWorkspace();
-                databaseAdapter.getWorkspaceManager().gotoWorkspace(conn, workspace);
-            }
-
             return containsGlobalAppearances(conn);
+        }
+    }
+
+    public int cleanupGlobalAppearances(String schema) throws SQLException {
+        try (Connection conn = databaseAdapter.connectionPool.getConnection()) {
+            return cleanupGlobalAppearances(schema, conn);
         }
     }
 

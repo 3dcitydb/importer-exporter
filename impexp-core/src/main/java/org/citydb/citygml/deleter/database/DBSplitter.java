@@ -30,7 +30,6 @@ package org.citydb.citygml.deleter.database;
 import org.citydb.citygml.exporter.database.content.DBSplittingResult;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
-import org.citydb.config.project.database.Workspace;
 import org.citydb.config.project.deleter.DeleteMode;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.connection.DatabaseConnectionPool;
@@ -102,12 +101,6 @@ public class DBSplitter {
 
 		databaseAdapter = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter();
 		connection = DatabaseConnectionPool.getInstance().getConnection();
-
-		// try and change workspace for connection
-		if (databaseAdapter.hasVersioningSupport() && databaseAdapter.getConnectionDetails().isSetWorkspace()) {
-			Workspace workspace = databaseAdapter.getConnectionDetails().getWorkspace();
-			databaseAdapter.getWorkspaceManager().gotoWorkspace(connection, workspace);
-		}
 
 		builder = new SQLQueryBuilder(
 				schemaMapping, 

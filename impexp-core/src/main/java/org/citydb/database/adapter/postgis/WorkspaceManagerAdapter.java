@@ -32,6 +32,9 @@ import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.adapter.AbstractWorkspaceManagerAdapter;
 
 import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.Collections;
+import java.util.List;
 
 public class WorkspaceManagerAdapter extends AbstractWorkspaceManagerAdapter {
 	
@@ -50,8 +53,17 @@ public class WorkspaceManagerAdapter extends AbstractWorkspaceManagerAdapter {
 	}
 
 	@Override
-	protected boolean changeWorkspace(Connection connection, Workspace workspace) {
+	public boolean gotoWorkspace(Connection connection, Workspace workspace) {
 		return false;
 	}
 
+	@Override
+	public List<String> fetchWorkspacesFromDatabase(Connection connection) throws SQLException {
+		return Collections.emptyList();
+	}
+
+	@Override
+	public String formatWorkspaceName(String workspaceName) {
+		return workspaceName;
+	}
 }

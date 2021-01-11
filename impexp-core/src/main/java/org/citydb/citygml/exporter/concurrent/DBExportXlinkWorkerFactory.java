@@ -32,7 +32,6 @@ import org.citydb.citygml.exporter.util.InternalConfig;
 import org.citydb.concurrent.Worker;
 import org.citydb.concurrent.WorkerFactory;
 import org.citydb.config.Config;
-import org.citydb.config.project.database.Workspace;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.connection.DatabaseConnectionPool;
 import org.citydb.event.EventDispatcher;
@@ -59,15 +58,9 @@ public class DBExportXlinkWorkerFactory implements WorkerFactory<DBXlink> {
 		DBExportXlinkWorker dbWorker = null;
 
 		try {
+			AbstractDatabaseAdapter databaseAdapter = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter();
 			Connection connection = DatabaseConnectionPool.getInstance().getConnection();
 			connection.setAutoCommit(false);
-
-			// try and change workspace for the connection if needed
-			AbstractDatabaseAdapter databaseAdapter = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter();
-			if (databaseAdapter.hasVersioningSupport() && databaseAdapter.getConnectionDetails().isSetWorkspace()) {
-				Workspace workspace = databaseAdapter.getConnectionDetails().getWorkspace();
-				databaseAdapter.getWorkspaceManager().gotoWorkspace(connection, workspace);
-			}
 
 			dbWorker = new DBExportXlinkWorker(connection, databaseAdapter, internalConfig, config, eventDispatcher);
 		} catch (SQLException e) {

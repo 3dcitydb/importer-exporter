@@ -159,12 +159,19 @@ public class DatabaseMetaData {
 		log.info("SRID: " + srs.getSrid() + " (" + srs.getType() + ')');
 		log.info("SRS: " + srs.getDatabaseSrsName());
 		log.info("gml:srsName: " + srs.getGMLSrsName());
-		log.info("Versioning: " + versioning);
+
+		if (versioning != Versioning.NOT_SUPPORTED) {
+			log.info("Versioning: " + versioning);
+			if (versioning != Versioning.OFF && connectionDetails.isSetWorkspace()) {
+				log.info("Workspace: " + connectionDetails.getWorkspace());
+			}
+		}
 
 		if (hasRegisteredADEs()) {
 			for (ADEMetadata ade : ades) {
-				if (ade.isSupported())
+				if (ade.isSupported()) {
 					log.info("CityGML ADE: " + ade);
+				}
 			}
 		}
 	}
@@ -177,7 +184,7 @@ public class DatabaseMetaData {
 		
 		private final String value;
 		
-		private Versioning(String value) {
+		Versioning(String value) {
 			this.value = value;
 		}
 		
@@ -185,10 +192,10 @@ public class DatabaseMetaData {
 			return value;
 		}
 
-		public static Versioning fromValue(String v) {
-			for (Versioning c: Versioning.values()) {
-				if (c.value.toLowerCase().equals(v.toLowerCase())) {
-					return c;
+		public static Versioning fromValue(String value) {
+			for (Versioning versioning: Versioning.values()) {
+				if (versioning.value.equalsIgnoreCase(value)) {
+					return versioning;
 				}
 			}
 

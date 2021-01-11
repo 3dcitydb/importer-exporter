@@ -181,7 +181,7 @@ public class DatabaseConnection implements Comparable<DatabaseConnection> {
     }
 
     public boolean isSetWorkspace() {
-        return workspace != null;
+        return workspace != null && workspace.isSetName();
     }
 
     public void setWorkspace(Workspace workspace) {
@@ -448,20 +448,29 @@ public class DatabaseConnection implements Comparable<DatabaseConnection> {
     }
 
     public void validate() throws DatabaseConfigurationException {
-        if (user == null || user.trim().isEmpty())
+        if (user == null || user.trim().isEmpty()) {
             throw new DatabaseConfigurationException(ErrorCode.MISSING_DB_USERNAME, "Missing username.");
+        }
 
-        if (server == null || server.trim().isEmpty())
+        if (server == null || server.trim().isEmpty()) {
             throw new DatabaseConfigurationException(ErrorCode.MISSING_DB_HOSTNAME, "Missing server hostname.");
+        }
 
-        if (port == null)
+        if (port == null) {
             throw new DatabaseConfigurationException(ErrorCode.MISSING_DB_PORT, "Missing server port.");
+        }
 
-        if (sid == null || sid.trim().isEmpty())
+        if (sid == null || sid.trim().isEmpty()) {
             throw new DatabaseConfigurationException(ErrorCode.MISSING_DB_NAME, "Missing database name.");
+        }
 
-        if (schema != null && schema.trim().isEmpty())
+        if (schema != null && schema.trim().isEmpty()) {
             throw new DatabaseConfigurationException(ErrorCode.EMPTY_DB_SCHEMA, "Database schema cannot be empty.");
+        }
+
+        if (workspace != null && !workspace.isSetName()) {
+            throw new DatabaseConfigurationException(ErrorCode.EMPTY_DB_WORKSPACE_NAME, "Workspace name cannot be empty.");
+        }
     }
 
     public String toConnectString() {
