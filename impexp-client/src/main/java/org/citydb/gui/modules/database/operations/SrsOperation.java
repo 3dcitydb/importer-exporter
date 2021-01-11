@@ -100,7 +100,6 @@ public class SrsOperation extends DatabaseOperationView {
 		sridFormat.setMaximum(Integer.MAX_VALUE);
 		sridFormat.setMinimum(0);
 		sridText = new JFormattedTextField(sridFormat);
-		sridText.setValue(0);
 
 		srsNameComboBox = new SrsNameComboBox();
 		checkSridButton = new JButton();

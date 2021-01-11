@@ -218,6 +218,9 @@ public class MapWindow extends JDialog implements EventHandler {
 		top.setLayout(new GridBagLayout());
 
 		JButton goButton = new JButton(new FlatSVGIcon("org/citydb/gui/icons/search.svg"));
+		Insets margin = UIManager.getInsets("Button.margin");
+		goButton.setMargin(new Insets(margin.top, margin.left, margin.bottom, margin.right));
+
 		searchBox = new JComboBox<>();
 		searchResult = new JLabel();
 		searchResult.setPreferredSize(new Dimension(searchResult.getPreferredSize().width, loadIcon.getIconHeight()));
