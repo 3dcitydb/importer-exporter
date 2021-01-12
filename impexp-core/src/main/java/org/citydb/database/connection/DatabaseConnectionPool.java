@@ -150,16 +150,6 @@ public class DatabaseConnectionPool implements ConnectionManager {
 			DatabaseConnectionDetails connectionDetails = new DatabaseConnectionDetails(connection);
 			databaseAdapter.setConnectionDetails(connectionDetails);
 
-			// check database schema
-			if (connectionDetails.isSetSchema()) {
-				connectionDetails.setSchema(databaseAdapter.getSchemaManager().formatSchema(connectionDetails.getSchema()));
-				if (!databaseAdapter.getSchemaManager().existsSchema(connectionDetails.getSchema())) {
-					throw new SQLException("The database schema '" + connectionDetails.getSchema() + "' does not exist.");
-				}
-			} else {
-				connectionDetails.setSchema(databaseAdapter.getSchemaManager().getDefaultSchema());
-			}
-
 			// check workspace
 			if (databaseAdapter.hasVersioningSupport()) {
 				if (connectionDetails.isSetWorkspace()) {
@@ -172,6 +162,16 @@ public class DatabaseConnectionPool implements ConnectionManager {
 					String name = databaseAdapter.getWorkspaceManager().getDefaultWorkspaceName();
 					connectionDetails.setWorkspace(new Workspace(name));
 				}
+			}
+
+			// check database schema
+			if (connectionDetails.isSetSchema()) {
+				connectionDetails.setSchema(databaseAdapter.getSchemaManager().formatSchema(connectionDetails.getSchema()));
+				if (!databaseAdapter.getSchemaManager().existsSchema(connectionDetails.getSchema())) {
+					throw new SQLException("The database schema '" + connectionDetails.getSchema() + "' does not exist.");
+				}
+			} else {
+				connectionDetails.setSchema(databaseAdapter.getSchemaManager().getDefaultSchema());
 			}
 
 			// retrieve connection metadata
