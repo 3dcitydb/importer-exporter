@@ -181,7 +181,7 @@ public class DatabaseConnection implements Comparable<DatabaseConnection> {
     }
 
     public boolean isSetWorkspace() {
-        return workspace != null && workspace.isSetName();
+        return workspace != null;
     }
 
     public void setWorkspace(Workspace workspace) {
@@ -468,8 +468,8 @@ public class DatabaseConnection implements Comparable<DatabaseConnection> {
             throw new DatabaseConfigurationException(ErrorCode.EMPTY_DB_SCHEMA, "Database schema cannot be empty.");
         }
 
-        if (workspace != null && !workspace.isSetName()) {
-            throw new DatabaseConfigurationException(ErrorCode.EMPTY_DB_WORKSPACE_NAME, "Workspace name cannot be empty.");
+        if (workspace != null && !workspace.isSetName() && !workspace.isSetTimestamp()) {
+            throw new DatabaseConfigurationException(ErrorCode.INVALID_DB_WORKSPACE, "The database workspace must define a name and/or a timestamp.");
         }
     }
 

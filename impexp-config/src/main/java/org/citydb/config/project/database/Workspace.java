@@ -27,7 +27,6 @@
  */
 package org.citydb.config.project.database;
 
-import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.datatype.DatatypeConfigurationException;
@@ -41,7 +40,6 @@ import java.util.Date;
         "timestamp"
 })
 public class Workspace {
-    @XmlElement(required = true)
     private String name;
     @XmlSchemaType(name = "date")
     private XMLGregorianCalendar timestamp;

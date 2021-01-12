@@ -154,7 +154,10 @@ public class DatabaseConnectionPool implements ConnectionManager {
 			if (databaseAdapter.hasVersioningSupport()) {
 				if (connectionDetails.isSetWorkspace()) {
 					Workspace workspace = connectionDetails.getWorkspace();
-					workspace.setName(databaseAdapter.getWorkspaceManager().formatWorkspaceName(workspace.getName()));
+					workspace.setName(!workspace.isSetName() ?
+							databaseAdapter.getWorkspaceManager().getDefaultWorkspaceName() :
+							databaseAdapter.getWorkspaceManager().formatWorkspaceName(workspace.getName()));
+
 					if (!databaseAdapter.getWorkspaceManager().existsWorkspace(workspace)) {
 						throw new SQLException("The database workspace '" + workspace + "' does not exist.");
 					}

@@ -65,7 +65,6 @@ import java.awt.event.ItemEvent;
 import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.text.MessageFormat;
-import java.text.ParseException;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
@@ -147,16 +146,14 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 
 		if (databaseConnection.getDatabaseType() == DatabaseType.ORACLE) {
 			String workspace = getValue(workspaceCombo);
+			if (!databaseConnection.isSetWorkspace() && (workspace != null || timestamp.getDate() != null)) return true;
 			if (databaseConnection.isSetWorkspace()) {
 				if (workspace == null || !workspace.equals(databaseConnection.getWorkspace().getName())) return true;
-				try { timestamp.getEditor().commitEdit(); } catch (ParseException e) {  }
 				if (timestamp.getDate() == null) {
 					if (databaseConnection.getWorkspace().getTimestamp() != null) return true;
 				} else {
 					if (!timestamp.getDate().equals(databaseConnection.getWorkspace().getTimestamp())) return true;
 				}
-			} else {
-				if (workspace != null) return true;
 			}
 		}
 
@@ -530,8 +527,8 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 			case EMPTY_DB_SCHEMA:
 				message = Language.I18N.getString("db.dialog.error.conn.emptySchema");
 				break;
-			case EMPTY_DB_WORKSPACE_NAME:
-				message = Language.I18N.getString("db.dialog.error.conn.emptyWorkspace");
+			case INVALID_DB_WORKSPACE:
+				message = Language.I18N.getString("db.dialog.error.conn.invalidWorkspace");
 				break;
 			default:
 				message = e.getMessage();
@@ -651,7 +648,9 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 		databaseConnection.setSavePassword(passwordCheck.isSelected());
 
 		String workspace = getValue(workspaceCombo);
-		if (databaseTypeCombo.getSelectedItem() == DatabaseType.ORACLE && workspace != null) {
+		if (databaseTypeCombo.getSelectedItem() == DatabaseType.ORACLE
+				&& (workspace != null
+				|| timestamp.getDate() != null)) {
 			databaseConnection.setWorkspace(new Workspace(workspace, timestamp.getDate()));
 		} else {
 			databaseConnection.setWorkspace(null);

@@ -112,7 +112,7 @@ public class DatabaseConnectionDetails {
 	}
 
 	public boolean isSetWorkspace() {
-		return workspace != null && workspace.isSetName();
+		return workspace != null;
 	}
 
 	void setWorkspace(Workspace workspace) {
