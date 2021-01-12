@@ -158,9 +158,8 @@ public class DatabaseConnectionPool implements ConnectionManager {
 							databaseAdapter.getWorkspaceManager().getDefaultWorkspaceName() :
 							databaseAdapter.getWorkspaceManager().formatWorkspaceName(workspace.getName()));
 
-					if (!databaseAdapter.getWorkspaceManager().existsWorkspace(workspace)) {
-						throw new SQLException("The database workspace '" + workspace + "' does not exist.");
-					}
+					// fail fast if workspace is not available
+					databaseAdapter.getWorkspaceManager().gotoWorkspace(dataSource.getConnection(), workspace);
 				} else {
 					String name = databaseAdapter.getWorkspaceManager().getDefaultWorkspaceName();
 					connectionDetails.setWorkspace(new Workspace(name));

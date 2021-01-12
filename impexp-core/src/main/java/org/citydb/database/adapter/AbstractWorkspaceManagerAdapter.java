@@ -48,37 +48,16 @@ public abstract class AbstractWorkspaceManagerAdapter {
 
 	public abstract String getDefaultWorkspaceName();
 	public abstract boolean equalsDefaultWorkspaceName(String workspaceName);
-	public abstract boolean gotoWorkspace(Connection connection, Workspace workspace);
+	public abstract void gotoWorkspace(Connection connection, Workspace workspace) throws SQLException;
 	public abstract List<String> fetchWorkspacesFromDatabase(Connection connection) throws SQLException;
 	public abstract String formatWorkspaceName(String workspaceName);
 
-	public boolean existsWorkspace(Workspace workspace) {
-		return existsWorkspace(workspace, false);
+	public void gotoWorkspace(Connection connection, String workspaceName, Date timestamp) throws SQLException {
+		gotoWorkspace(connection, new Workspace(workspaceName, timestamp));
 	}
 
-	public boolean existsWorkspace(Workspace workspace, boolean logResult) {
-		try (Connection conn = databaseAdapter.connectionPool.getConnection()) {
-			boolean exists = gotoWorkspace(conn, workspace);
-			if (logResult) {
-				if (!exists) {
-					log.error("The database workspace '" + workspace + "' does not exist.");
-				} else {
-					log.info("Switching to database workspace '" + workspace + "'.");
-				}
-			}
-
-			return exists;
-		} catch (SQLException e) {
-			return false;
-		}
-	}
-
-	public boolean gotoWorkspace(Connection connection, String workspaceName, Date timestamp) {
-		return gotoWorkspace(connection, new Workspace(workspaceName, timestamp));
-	}
-
-	public boolean gotoWorkspace(Connection connection, String workspaceName) {
-		return gotoWorkspace(connection, workspaceName, null);
+	public void gotoWorkspace(Connection connection, String workspaceName) throws SQLException {
+		gotoWorkspace(connection, workspaceName, null);
 	}
 
 	public List<String> fetchWorkspacesFromDatabase(DatabaseConnection databaseConnection) throws SQLException {

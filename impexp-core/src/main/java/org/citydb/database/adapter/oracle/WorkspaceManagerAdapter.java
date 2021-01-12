@@ -60,7 +60,7 @@ public class WorkspaceManagerAdapter extends AbstractWorkspaceManagerAdapter {
 	}
 
 	@Override
-	public boolean gotoWorkspace(Connection connection, Workspace workspace) {
+	public void gotoWorkspace(Connection connection, Workspace workspace) throws SQLException {
 		String workspaceName = formatWorkspaceName(workspace.getName());
 		if (workspaceName == null || workspaceName.isEmpty()) {
 			workspaceName = defaultWorkspaceName;
@@ -73,10 +73,6 @@ public class WorkspaceManagerAdapter extends AbstractWorkspaceManagerAdapter {
 					timestampStmt.executeQuery();
 				}
 			}
-
-			return true;
-		} catch (SQLException e) {
-			return false;
 		}
 	}
 
