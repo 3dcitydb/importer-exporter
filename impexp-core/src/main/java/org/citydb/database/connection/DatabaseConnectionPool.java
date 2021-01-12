@@ -229,7 +229,7 @@ public class DatabaseConnectionPool implements ConnectionManager {
 		connection.setAutoCommit(true);
 
 		// change workspace if required
-		if (databaseAdapter.hasVersioningSupport()) {
+		if (databaseAdapter.hasVersioningSupport() && databaseAdapter.getConnectionDetails().isSetWorkspace()) {
 			Workspace workspace = databaseAdapter.getConnectionDetails().getWorkspace();
 			databaseAdapter.getWorkspaceManager().gotoWorkspace(connection, workspace);
 		}
