@@ -43,7 +43,6 @@ import java.util.List;
         "activeConnection",
         "importBatching",
         "exportBatching",
-        "workspaces",
         "operation"
 })
 public class DatabaseConfig {
@@ -66,7 +65,6 @@ public class DatabaseConfig {
     private DatabaseConnection activeConnection;
     private ImportBatching importBatching;
     private ExportBatching exportBatching;
-    private Workspaces workspaces;
     private DatabaseOperation operation;
 
     public DatabaseConfig() {
@@ -74,7 +72,6 @@ public class DatabaseConfig {
         connections = new ArrayList<>();
         importBatching = new ImportBatching();
         exportBatching = new ExportBatching();
-        workspaces = new Workspaces();
         operation = new DatabaseOperation();
     }
 
@@ -136,15 +133,6 @@ public class DatabaseConfig {
     public void setExportBatching(ExportBatching exportBatching) {
         if (exportBatching != null)
             this.exportBatching = exportBatching;
-    }
-
-    public Workspaces getWorkspaces() {
-        return workspaces;
-    }
-
-    public void setWorkspaces(Workspaces workspaces) {
-        if (workspaces != null)
-            this.workspaces = workspaces;
     }
 
     public DatabaseOperation getOperation() {

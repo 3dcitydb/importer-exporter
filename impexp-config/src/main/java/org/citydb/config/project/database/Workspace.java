@@ -27,7 +27,6 @@
  */
 package org.citydb.config.project.database;
 
-import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.datatype.DatatypeConfigurationException;
@@ -41,7 +40,6 @@ import java.util.Date;
         "timestamp"
 })
 public class Workspace {
-    @XmlElement(required = true)
     private String name;
     @XmlSchemaType(name = "date")
     private XMLGregorianCalendar timestamp;
@@ -58,13 +56,17 @@ public class Workspace {
         setTimestamp(timestamp);
     }
 
+    public Workspace(Workspace other) {
+        name = other.name;
+        timestamp = other.timestamp;
+    }
+
     public String getName() {
         return name;
     }
 
     public void setName(String name) {
-        if (name != null)
-            this.name = name.trim();
+        this.name = (name != null && !name.trim().isEmpty()) ? name : null;
     }
 
     public boolean isSetName() {
@@ -87,16 +89,17 @@ public class Workspace {
             } catch (DatatypeConfigurationException e) {
                 this.timestamp = null;
             }
-        } else
+        } else {
             this.timestamp = null;
+        }
     }
 
     @Override
     public String toString() {
-        StringBuilder builder = new StringBuilder()
-                .append("'").append(getName()).append("'");
-        if (timestamp != null)
+        StringBuilder builder = new StringBuilder(isSetName() ? name : "");
+        if (timestamp != null) {
             builder.append(" at timestamp ").append(timestamp.toXMLFormat());
+        }
 
         return builder.toString();
     }

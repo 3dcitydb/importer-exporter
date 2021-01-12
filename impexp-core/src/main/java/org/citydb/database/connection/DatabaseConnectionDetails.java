@@ -29,6 +29,7 @@ package org.citydb.database.connection;
 
 import org.citydb.config.project.database.DatabaseConnection;
 import org.citydb.config.project.database.DatabaseType;
+import org.citydb.config.project.database.Workspace;
 
 public class DatabaseConnectionDetails {
 	private String description;
@@ -37,6 +38,7 @@ public class DatabaseConnectionDetails {
 	private int port;
 	private String sid;
 	private String schema;
+	private Workspace workspace;
 	private String user;
 	
 	public DatabaseConnectionDetails(DatabaseConnection connection) {
@@ -47,13 +49,17 @@ public class DatabaseConnectionDetails {
 		sid = connection.getSid();
 		schema = connection.getSchema();
 		user = connection.getUser();
+
+		if (connection.isSetWorkspace()) {
+			workspace = new Workspace(connection.getWorkspace());
+		}
 	}
 	
 	public String getDescription() {
 		return description;
 	}
 	
-	protected void setDescription(String description) {
+	void setDescription(String description) {
 		this.description = description;
 	}
 	
@@ -61,7 +67,7 @@ public class DatabaseConnectionDetails {
 		return type;
 	}
 	
-	protected void setType(DatabaseType type) {
+	void setType(DatabaseType type) {
 		this.type = type;
 	}
 	
@@ -69,7 +75,7 @@ public class DatabaseConnectionDetails {
 		return server;
 	}
 	
-	protected void setServer(String server) {
+	void setServer(String server) {
 		this.server = server;
 	}
 	
@@ -77,7 +83,7 @@ public class DatabaseConnectionDetails {
 		return port;
 	}
 	
-	protected void setPort(int port) {
+	void setPort(int port) {
 		this.port = port;
 	}
 	
@@ -85,7 +91,7 @@ public class DatabaseConnectionDetails {
 		return sid;
 	}
 	
-	protected void setSid(String sid) {
+	void setSid(String sid) {
 		this.sid = sid;
 	}
 	
@@ -93,19 +99,31 @@ public class DatabaseConnectionDetails {
 		return schema;
 	}
 	
-	protected boolean isSetSchema() {
+	public boolean isSetSchema() {
 		return schema != null && !schema.trim().isEmpty();
 	}
 
-	protected void setSchema(String schema) {
+	void setSchema(String schema) {
 		this.schema = schema;
 	}
-	
+
+	public Workspace getWorkspace() {
+		return workspace;
+	}
+
+	public boolean isSetWorkspace() {
+		return workspace != null;
+	}
+
+	void setWorkspace(Workspace workspace) {
+		this.workspace = workspace;
+	}
+
 	public String getUser() {
 		return user;
 	}
 	
-	protected void setUser(String user) {
+	void setUser(String user) {
 		this.user = user;
 	}
 	

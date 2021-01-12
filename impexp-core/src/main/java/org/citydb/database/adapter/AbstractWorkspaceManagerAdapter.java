@@ -27,13 +27,19 @@
  */
 package org.citydb.database.adapter;
 
+import org.citydb.config.project.database.DatabaseConnection;
 import org.citydb.config.project.database.Workspace;
+import org.citydb.log.Logger;
 
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Date;
+import java.util.List;
+import java.util.Properties;
 
 public abstract class AbstractWorkspaceManagerAdapter {
+	private final Logger log = Logger.getInstance();
 	protected final AbstractDatabaseAdapter databaseAdapter;
 
 	protected AbstractWorkspaceManagerAdapter(AbstractDatabaseAdapter databaseAdapter) {
@@ -42,21 +48,26 @@ public abstract class AbstractWorkspaceManagerAdapter {
 
 	public abstract String getDefaultWorkspaceName();
 	public abstract boolean equalsDefaultWorkspaceName(String workspaceName);
-	public abstract boolean gotoWorkspace(Connection connection, Workspace workspace);
+	public abstract void gotoWorkspace(Connection connection, Workspace workspace) throws SQLException;
+	public abstract List<String> fetchWorkspacesFromDatabase(Connection connection) throws SQLException;
+	public abstract String formatWorkspaceName(String workspaceName);
 
-	public void checkWorkspace(Workspace workspace) throws SQLException {
-		try (Connection conn = databaseAdapter.connectionPool.getConnection()) {
-			if (!gotoWorkspace(conn, workspace)) {
-				throw new SQLException("The database workspace " + workspace + " is not available.");
-			}
+	public void gotoWorkspace(Connection connection, String workspaceName, Date timestamp) throws SQLException {
+		gotoWorkspace(connection, new Workspace(workspaceName, timestamp));
+	}
+
+	public void gotoWorkspace(Connection connection, String workspaceName) throws SQLException {
+		gotoWorkspace(connection, workspaceName, null);
+	}
+
+	public List<String> fetchWorkspacesFromDatabase(DatabaseConnection databaseConnection) throws SQLException {
+		Properties properties = new Properties();
+		properties.setProperty("user", databaseConnection.getUser());
+		properties.setProperty("password", databaseConnection.getPassword());
+
+		try (Connection conn = DriverManager.getConnection(databaseAdapter.getJDBCUrl(
+				databaseConnection.getServer(), databaseConnection.getPort(), databaseConnection.getSid()), properties)) {
+			return fetchWorkspacesFromDatabase(conn);
 		}
-	}
-
-	public boolean gotoWorkspace(Connection connection, String workspaceName, Date timestamp) {
-		return gotoWorkspace(connection, new Workspace(workspaceName, timestamp));
-	}
-
-	public boolean gotoWorkspace(Connection connection, String workspaceName) {
-		return gotoWorkspace(connection, workspaceName, null);
 	}
 }

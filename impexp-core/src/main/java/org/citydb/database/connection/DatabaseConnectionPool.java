@@ -37,6 +37,7 @@ import org.citydb.config.project.database.DatabaseConfig;
 import org.citydb.config.project.database.DatabaseConfigurationException;
 import org.citydb.config.project.database.DatabaseConnection;
 import org.citydb.config.project.database.DatabaseSrs;
+import org.citydb.config.project.database.Workspace;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.adapter.DatabaseAdapterFactory;
 import org.citydb.database.connection.DatabaseConnectionWarning.ConnectionWarningType;
@@ -77,8 +78,9 @@ public class DatabaseConnectionPool implements ConnectionManager {
 	}
 
 	public static synchronized DatabaseConnectionPool getInstance() {
-		if (instance == null)
+		if (instance == null) {
 			instance = new DatabaseConnectionPool();
+		}
 
 		return instance;
 	}
@@ -88,8 +90,9 @@ public class DatabaseConnectionPool implements ConnectionManager {
 		connection.validate();
 
 		// disconnect if we are currently connected to another database
-		if (isConnected())
+		if (isConnected()) {
 			disconnect();
+		}
 
 		// get database adapter
 		databaseAdapter = DatabaseAdapterFactory.getInstance().createDatabaseAdapter(connection.getDatabaseType());
@@ -135,7 +138,9 @@ public class DatabaseConnectionPool implements ConnectionManager {
 
 		// create new data source
 		dataSource = new DataSource(properties);
-		dataSource.setLoginTimeout(connection.isSetLoginTimeout() ? connection.getLoginTimeout() : DEFAULT_LOGIN_TIMEOUT);
+		dataSource.setLoginTimeout(connection.isSetLoginTimeout() ?
+				connection.getLoginTimeout() :
+				DEFAULT_LOGIN_TIMEOUT);
 
 		try {
 			// create connection pool
@@ -145,45 +150,71 @@ public class DatabaseConnectionPool implements ConnectionManager {
 			DatabaseConnectionDetails connectionDetails = new DatabaseConnectionDetails(connection);
 			databaseAdapter.setConnectionDetails(connectionDetails);
 
+			// check workspace
+			if (databaseAdapter.hasVersioningSupport()) {
+				if (connectionDetails.isSetWorkspace()) {
+					Workspace workspace = connectionDetails.getWorkspace();
+					workspace.setName(!workspace.isSetName() ?
+							databaseAdapter.getWorkspaceManager().getDefaultWorkspaceName() :
+							databaseAdapter.getWorkspaceManager().formatWorkspaceName(workspace.getName()));
+
+					// fail fast if workspace is not available
+					databaseAdapter.getWorkspaceManager().gotoWorkspace(dataSource.getConnection(), workspace);
+				} else {
+					String name = databaseAdapter.getWorkspaceManager().getDefaultWorkspaceName();
+					connectionDetails.setWorkspace(new Workspace(name));
+				}
+			}
+
 			// check database schema
 			if (connectionDetails.isSetSchema()) {
 				connectionDetails.setSchema(databaseAdapter.getSchemaManager().formatSchema(connectionDetails.getSchema()));
-				if (!databaseAdapter.getSchemaManager().existsSchema(connectionDetails.getSchema()))
+				if (!databaseAdapter.getSchemaManager().existsSchema(connectionDetails.getSchema())) {
 					throw new SQLException("The database schema '" + connectionDetails.getSchema() + "' does not exist.");
-			} else
+				}
+			} else {
 				connectionDetails.setSchema(databaseAdapter.getSchemaManager().getDefaultSchema());
-			
+			}
+
 			// retrieve connection metadata
 			databaseAdapter.setConnectionMetaData(databaseAdapter.getUtil().getDatabaseInfo(connectionDetails.getSchema()));
 
 			// check for supported database version
 			List<DatabaseConnectionWarning> warnings = versionChecker.checkVersionSupport(databaseAdapter);
-			if (!warnings.isEmpty())
+			if (!warnings.isEmpty()) {
 				databaseAdapter.addConnectionWarnings(warnings);
+			}
 
 			// check for registered ADEs
 			List<ADEMetadata> ades = Collections.emptyList();
 			if (databaseAdapter.getConnectionMetaData().getCityDBVersion().compareTo(4, 0, 0) >= 0) {
 				ades = databaseAdapter.getUtil().getADEInfo();
-				if (!ades.isEmpty())
+				if (!ades.isEmpty()) {
 					databaseAdapter.getConnectionMetaData().setRegisteredADEs(ades);
+				}
 			}
 
 			// check whether registered ADE are supported by ADE extensions
 			DatabaseConnectionWarning warning = checkADESupport(ades);
-			if (warning != null)
+			if (warning != null) {
 				databaseAdapter.addConnectionWarning(warning);
+			}
 
 			// check whether user-defined reference systems are supported
-			for (DatabaseSrs refSys : config.getDatabaseConfig().getReferenceSystems())
-				databaseAdapter.getUtil().getSrsInfo(refSys);			
-
+			for (DatabaseSrs refSys : config.getDatabaseConfig().getReferenceSystems()) {
+				databaseAdapter.getUtil().getSrsInfo(refSys);
+			}
 		} catch (DatabaseVersionException | SQLException e) {
-			try { disconnect(); } catch (Exception ignored) { }
+			try {
+				disconnect();
+			} catch (Exception ignored) {
+				//
+			}
+
 			throw e;
 		}
 
-		// fire property change events
+		// fire property change event
 		eventDispatcher.triggerSyncEvent(new DatabaseConnectionStateEvent(false, true, this));
 	}
 
@@ -192,22 +223,32 @@ public class DatabaseConnectionPool implements ConnectionManager {
 	}
 
 	public Connection getConnection() throws SQLException {
-		if (!isConnected())
+		if (!isConnected()) {
 			throw new SQLException("Database is not connected.");
+		}
 
 		Connection connection = dataSource.getConnection();
 		connection.setAutoCommit(true);
+
+		// change workspace if required
+		if (databaseAdapter.hasVersioningSupport() && databaseAdapter.getConnectionDetails().isSetWorkspace()) {
+			Workspace workspace = databaseAdapter.getConnectionDetails().getWorkspace();
+			databaseAdapter.getWorkspaceManager().gotoWorkspace(connection, workspace);
+		}
 
 		return connection;
 	}
 
 	public synchronized boolean isConnected() {
-		return dataSource != null && dataSource.getPool() != null && !dataSource.getPool().isClosed();
+		return dataSource != null
+				&& dataSource.getPool() != null
+				&& !dataSource.getPool().isClosed();
 	}
 
 	public synchronized void purge() {
-		if (isConnected())
+		if (isConnected()) {
 			dataSource.purge();
+		}
 	}
 
 	public synchronized void disconnect() {
@@ -216,10 +257,11 @@ public class DatabaseConnectionPool implements ConnectionManager {
 		dataSource.close(true);
 		dataSource = null;
 
-		if (databaseAdapter != null)
+		if (databaseAdapter != null) {
 			databaseAdapter = null;
+		}
 
-		// fire property change events
+		// fire property change event
 		eventDispatcher.triggerSyncEvent(new DatabaseConnectionStateEvent(wasConnected, false, this));
 	}
 
@@ -228,8 +270,9 @@ public class DatabaseConnectionPool implements ConnectionManager {
 	}
 
 	public void setDatabaseVersionChecker(DatabaseVersionChecker versionChecker) {
-		if (versionChecker != null)
+		if (versionChecker != null) {
 			this.versionChecker = versionChecker;
+		}
 	}
 
 	public ADEExtensionManager getADEExtensionManager() {
@@ -241,8 +284,9 @@ public class DatabaseConnectionPool implements ConnectionManager {
 
 		if (adeManager != null) {
 			// disable ADE extensions per default
-			for (ADEExtension extension : adeManager.getExtensions())
+			for (ADEExtension extension : adeManager.getExtensions()) {
 				extension.setEnabled(false);
+			}
 			
 			// search and enable ADE extensions for the ADEs registered in database
 			for (ADEMetadata ade : ades) {
@@ -257,7 +301,8 @@ public class DatabaseConnectionPool implements ConnectionManager {
 		// create connection warning for unsupported ADEs
 		List<ADEMetadata> unsupported = ades.stream().filter(ade -> !ade.isSupported()).collect(Collectors.toList());
 		if (!unsupported.isEmpty()) {
-			String message = "The following CityGML ADEs are registered in the database but are not supported:\n" + Util.collection2string(unsupported, "\n");
+			String message = "The following CityGML ADEs are registered in the database but are not supported:\n" +
+					Util.collection2string(unsupported, "\n");
 			String formattedMessage = MessageFormat.format(Language.I18N.getString("db.dialog.warn.ade.unsupported"),
 					Util.collection2string(unsupported, "<br>"));
 			warning = new DatabaseConnectionWarning(message, formattedMessage, DatabaseConfig.CITYDB_PRODUCT_NAME, ConnectionWarningType.UNSUPPORTED_ADE);

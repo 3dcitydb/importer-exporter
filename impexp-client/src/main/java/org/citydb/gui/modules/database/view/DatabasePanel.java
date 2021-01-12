@@ -34,6 +34,7 @@ import org.citydb.config.project.database.DatabaseConfig;
 import org.citydb.config.project.database.DatabaseConfigurationException;
 import org.citydb.config.project.database.DatabaseConnection;
 import org.citydb.config.project.database.DatabaseType;
+import org.citydb.config.project.database.Workspace;
 import org.citydb.database.DatabaseController;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.adapter.DatabaseAdapterFactory;
@@ -46,6 +47,7 @@ import org.citydb.event.Event;
 import org.citydb.event.EventHandler;
 import org.citydb.event.global.DatabaseConnectionStateEvent;
 import org.citydb.event.global.EventType;
+import org.citydb.gui.components.common.DatePicker;
 import org.citydb.gui.components.common.TitledPanel;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.modules.database.operations.DatabaseOperationsPanel;
@@ -66,6 +68,7 @@ import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.BiFunction;
 
 public class DatabasePanel extends JPanel implements ConnectionViewHandler, EventHandler, ViewListener {
 	private final ReentrantLock mainLock = new ReentrantLock();
@@ -81,18 +84,23 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 	private JFormattedTextField portText;
 	private JTextField databaseText;
 	private FlatComboBox<String> schemaCombo;
+	private FlatComboBox<String> workspaceCombo;
+	private DatePicker timestamp;
 	private JTextField userText;
 	private JPasswordField passwordText;
 	private JCheckBox passwordCheck;
+
 	private JButton applyButton;
 	private JButton newButton;
 	private JButton copyButton;
 	private JButton deleteButton;
 	private JButton connectButton;
-	private JButton infoButton;	
+	private JButton infoButton;
 	private JButton schemaButton;
+	private JButton workspaceButton;
 
     private TitledPanel connectionDetails;
+    private JPanel workspacePanel;
 
 	private JLabel connLabel;
 	private JLabel descriptionLabel;
@@ -103,6 +111,8 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 	private JLabel portLabel;
 	private JLabel databaseLabel;
 	private JLabel schemaLabel;
+	private JLabel workspaceLabel;
+	private JLabel timestampLabel;
 
 	private DatabaseOperationsPanel operationsPanel;
 
@@ -111,7 +121,7 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 
 	public DatabasePanel(ViewController viewController, Config config) {
 		this.viewController = viewController;
-		this.config = config;		
+		this.config = config;
 
 		databaseController = ObjectRegistry.getInstance().getDatabaseController();
 
@@ -134,6 +144,19 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 		if (schema != null && !schema.equals(databaseConnection.getSchema())) return true;
 		if (schema == null && databaseConnection.getSchema() != null) return true;
 
+		if (databaseConnection.getDatabaseType() == DatabaseType.ORACLE) {
+			String workspace = getValue(workspaceCombo);
+			if (!databaseConnection.isSetWorkspace() && (workspace != null || timestamp.getDate() != null)) return true;
+			if (databaseConnection.isSetWorkspace()) {
+				if (workspace == null || !workspace.equals(databaseConnection.getWorkspace().getName())) return true;
+				if (timestamp.getDate() == null) {
+					if (databaseConnection.getWorkspace().getTimestamp() != null) return true;
+				} else {
+					if (!timestamp.getDate().equals(databaseConnection.getWorkspace().getTimestamp())) return true;
+				}
+			}
+		}
+
 		return false;
 	}
 
@@ -147,6 +170,9 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
         portLabel = new JLabel();
         databaseLabel = new JLabel();
         schemaLabel = new JLabel();
+        workspaceLabel = new JLabel();
+        timestampLabel = new JLabel();
+
 		connCombo = new JComboBox<>();
 		descriptionText = new JTextField();
 		databaseTypeCombo = new JComboBox<>();
@@ -166,6 +192,9 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 
 		schemaCombo = new FlatComboBox<>();
 		schemaCombo.setEditable(true);
+		workspaceCombo = new FlatComboBox<>();
+		workspaceCombo.setEditable(true);
+		timestamp = new DatePicker();
 
 		applyButton = new JButton();
 		newButton = new JButton();
@@ -174,9 +203,11 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 		connectButton = new JButton();
 		infoButton = new JButton();
 		schemaButton = new JButton();
+		workspaceButton = new JButton();
 
-		PopupMenuDecorator.getInstance().decorate(descriptionText, serverText, portText, databaseText, 
-				userText, passwordText, (JTextField) schemaCombo.getEditor().getEditorComponent());
+		PopupMenuDecorator.getInstance().decorate(descriptionText, serverText, portText, databaseText,
+				userText, passwordText, (JTextField) schemaCombo.getEditor().getEditorComponent(),
+				(JTextField) workspaceCombo.getEditor().getEditorComponent());
 
 		JPanel chooserPanel = new JPanel();
 		chooserPanel.setLayout(new GridBagLayout());
@@ -209,12 +240,21 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
         content.add(databaseLabel, GuiUtil.setConstraints(0, 6, 0, 0, GridBagConstraints.BOTH, 0, 0, 5, 5));
         content.add(databaseText, GuiUtil.setConstraints(1, 6, 1, 0, GridBagConstraints.BOTH, 0, 5, 5, 0));
         content.add(schemaLabel, GuiUtil.setConstraints(0, 7, 0, 0, GridBagConstraints.BOTH, 0, 0, 5, 5));
+		content.add(workspaceLabel, GuiUtil.setConstraints(0, 8, 0, 0, GridBagConstraints.BOTH, 0, 0, 0, 5));
 
 		JPanel schemaPanel = new JPanel();
 		schemaPanel.setLayout(new GridBagLayout());
         schemaPanel.add(schemaCombo, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 5));
         schemaPanel.add(schemaButton, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 0));
-        content.add(schemaPanel, GuiUtil.setConstraints(1, 7, 1, 0, GridBagConstraints.BOTH, 0, 5, 0, 0));
+        content.add(schemaPanel, GuiUtil.setConstraints(1, 7, 1, 0, GridBagConstraints.BOTH, 0, 5, 5, 0));
+
+		workspacePanel = new JPanel();
+		workspacePanel.setLayout(new GridBagLayout());
+		workspacePanel.add(workspaceCombo, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 5));
+		workspacePanel.add(timestampLabel, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 10, 0, 5));
+		workspacePanel.add(timestamp, GuiUtil.setConstraints(2, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 5));
+		workspacePanel.add(workspaceButton, GuiUtil.setConstraints(3, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 0));
+		content.add(workspacePanel, GuiUtil.setConstraints(1, 8, 1, 0, GridBagConstraints.BOTH, 0, 5, 0, 0));
 
         JPanel buttons = new JPanel();
         buttons.setLayout(new GridBagLayout());
@@ -250,6 +290,7 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 		deleteButton.setFocusable(false);
 		infoButton.setFocusable(false);
 		schemaButton.setFocusable(false);
+		workspaceButton.setFocusable(false);
 
 		for (DatabaseType type : DatabaseType.values())
 			databaseTypeCombo.addItem(type);
@@ -291,27 +332,14 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 
 		schemaButton.addActionListener(e -> new SwingWorker<Void, Void>() {
 			protected Void doInBackground() throws Exception {
-				try {
-					commitConnectionDetails();
-					DatabaseConnection connection = (DatabaseConnection)connCombo.getSelectedItem();
-					connection.validate();
+				getValues(schemaCombo, DatabasePanel.this::fetchSchemas);
+				return null;
+			}
+		}.execute());
 
-					AbstractDatabaseAdapter adapter = DatabaseAdapterFactory.getInstance().createDatabaseAdapter(connection.getDatabaseType());
-					List<String> schemas = adapter.getSchemaManager().fetchSchemasFromDatabase(connection);
-
-					if (schemas != null && !schemas.isEmpty()) {
-						String schema = (String)schemaCombo.getSelectedItem();
-						schemaCombo.removeAllItems();
-						schemas.forEach(schemaCombo::addItem);
-						schemaCombo.setSelectedItem(schema);
-						schemaCombo.setPopupVisible(true);
-					}
-				} catch (SQLException e) {
-					showError(e);
-				} catch (DatabaseConfigurationException e) {
-					showError(e);
-				}
-
+		workspaceButton.addActionListener(e -> new SwingWorker<Void, Void>() {
+			protected Void doInBackground() throws Exception {
+				getValues(workspaceCombo, DatabasePanel.this::fetchWorkspaces);
 				return null;
 			}
 		}.execute());
@@ -323,13 +351,12 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 
 		databaseTypeCombo.addItemListener(e -> {
 			if (e.getStateChange() == ItemEvent.SELECTED) {
-				switch ((DatabaseType)e.getItem()) {
-				case ORACLE:
+				if (e.getItem() == DatabaseType.ORACLE) {
 					portText.setValue(1521);
-					break;
-				case POSTGIS:
+					setWorkspaceVisible(true);
+				} else {
 					portText.setValue(5432);
-					break;
+					setWorkspaceVisible(false);
 				}
 			}
 		});
@@ -353,7 +380,11 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 		copyButton.setText(Language.I18N.getString("db.button.copy"));
 		deleteButton.setText(Language.I18N.getString("db.button.delete"));
 		infoButton.setText(Language.I18N.getString("db.button.info"));
-		schemaButton.setText(Language.I18N.getString("db.button.schema"));
+		schemaButton.setText(Language.I18N.getString("common.button.query"));
+		workspaceLabel.setText(Language.I18N.getString("common.label.workspace"));
+		workspaceCombo.setPlaceholderText(Language.I18N.getString("common.label.workspace.prompt"));
+		timestampLabel.setText(Language.I18N.getString("common.label.timestamp"));
+		workspaceButton.setText(Language.I18N.getString("common.button.query"));
 		operationsPanel.doTranslation();
 
         connectButton.setText(Language.I18N.getString(!databaseController.isConnected() ?
@@ -413,26 +444,46 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 		if (connCombo.getItemCount() == 0)
 			newConn();
 		else
-			connCombo.setSelectedIndex(index < connCombo.getItemCount() ? index : index - 1);		
+			connCombo.setSelectedIndex(index < connCombo.getItemCount() ? index : index - 1);
 	}
 
 	public void connect() {
 		final ReentrantLock lock = this.mainLock;
-		lock.lock();
-		try {
-			databaseController.connect();
-		} finally {
-			lock.unlock();
+		if (lock.tryLock()) {
+			try {
+				databaseController.connect();
+			} finally {
+				lock.unlock();
+			}
 		}
 	}
 
 	public void disconnect() {
 		final ReentrantLock lock = this.mainLock;
-		lock.lock();
+		if (lock.tryLock()) {
+			try {
+				databaseController.disconnect();
+			} finally {
+				lock.unlock();
+			}
+		}
+	}
+
+	private List<String> fetchSchemas(AbstractDatabaseAdapter adapter, DatabaseConnection connection) {
 		try {
-			databaseController.disconnect();
-		} finally {
-			lock.unlock();
+			return adapter.getSchemaManager().fetchSchemasFromDatabase(connection);
+		} catch (SQLException e) {
+			showError(e);
+			return null;
+		}
+	}
+
+	private List<String> fetchWorkspaces(AbstractDatabaseAdapter adapter, DatabaseConnection connection) {
+		try {
+			return adapter.getWorkspaceManager().fetchWorkspacesFromDatabase(connection);
+		} catch (SQLException e) {
+			showError(e);
+			return null;
 		}
 	}
 
@@ -475,6 +526,9 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 				break;
 			case EMPTY_DB_SCHEMA:
 				message = Language.I18N.getString("db.dialog.error.conn.emptySchema");
+				break;
+			case INVALID_DB_WORKSPACE:
+				message = Language.I18N.getString("db.dialog.error.conn.invalidWorkspace");
 				break;
 			default:
 				message = e.getMessage();
@@ -563,6 +617,7 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 			connCombo.addItem(conn);
 
 		connCombo.setSelectedItem(databaseConnection);
+		setWorkspaceVisible(databaseTypeCombo.getSelectedItem() == DatabaseType.ORACLE);
 		operationsPanel.loadSettings();
 		setEnabledDBOperations(false);
 		isSettingsLoaded = true;
@@ -574,12 +629,12 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 	}
 
 	private void setDbConnection(DatabaseConnection databaseConnection) {
-		String description = descriptionText.getText().trim();		
+		String description = descriptionText.getText().trim();
 		if (description.length() > 0) {
 			boolean repaint = databaseConnection == databaseConfig.getActiveConnection() && !description.equals(databaseConnection.getDescription());
 			databaseConnection.setDescription(description);
-			if (repaint) 
-				connCombo.repaint();			
+			if (repaint)
+				connCombo.repaint();
 		} else
 			descriptionText.setText(databaseConnection.getDescription());
 
@@ -591,6 +646,15 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 		databaseConnection.setUser(userText.getText());
 		databaseConnection.setPassword(String.valueOf(passwordText.getPassword()));
 		databaseConnection.setSavePassword(passwordCheck.isSelected());
+
+		String workspace = getValue(workspaceCombo);
+		if (databaseTypeCombo.getSelectedItem() == DatabaseType.ORACLE
+				&& (workspace != null
+				|| timestamp.getDate() != null)) {
+			databaseConnection.setWorkspace(new Workspace(workspace, timestamp.getDate()));
+		} else {
+			databaseConnection.setWorkspace(null);
+		}
 	}
 
 	private void getDbConnection(DatabaseConnection databaseConnection) {
@@ -601,7 +665,6 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 		userText.setText(databaseConnection.getUser());
 		passwordText.setText(databaseConnection.getPassword());
 		passwordCheck.setSelected(databaseConnection.isSetSavePassword());
-
 		schemaCombo.removeAllItems();
 		schemaCombo.setSelectedItem(databaseConnection.getSchema());
 
@@ -610,6 +673,17 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 		}
 
 		portText.setValue(databaseConnection.getPort());
+
+		if (databaseConnection.getDatabaseType() == DatabaseType.ORACLE) {
+			workspaceCombo.removeAllItems();
+			if (databaseConnection.isSetWorkspace()) {
+				Workspace workspace = databaseConnection.getWorkspace();
+				workspaceCombo.setSelectedItem(workspace.getName());
+				timestamp.setDate(workspace.getTimestamp());
+			} else {
+				timestamp.setDate(null);
+			}
+		}
 	}
 
 	private String getCopyOfDescription(DatabaseConnection databaseConnection) {
@@ -644,9 +718,9 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 
 	private boolean requestChange() {
 		if (isModified()) {
-			int res = JOptionPane.showConfirmDialog(getTopLevelAncestor(), Language.I18N.getString("db.dialog.apply.msg"), 
+			int res = JOptionPane.showConfirmDialog(getTopLevelAncestor(), Language.I18N.getString("db.dialog.apply.msg"),
 					Language.I18N.getString("db.dialog.apply.title"), JOptionPane.YES_NO_CANCEL_OPTION);
-			if (res==JOptionPane.CANCEL_OPTION) 
+			if (res==JOptionPane.CANCEL_OPTION)
 				return false;
 			else if (res==JOptionPane.YES_OPTION)
 				apply();
@@ -668,8 +742,13 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 	}
 
 	private void setEnabledDBOperations(boolean enable) {
-		infoButton.setEnabled(enable);		
+		infoButton.setEnabled(enable);
 		operationsPanel.setEnabled(enable);
+	}
+
+	private void setWorkspaceVisible(boolean visible) {
+		workspaceLabel.setVisible(visible);
+		workspacePanel.setVisible(visible);
 	}
 
 	private String getValue(JComboBox<String> comboBox) {
@@ -683,6 +762,31 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 		}
 
 		return value;
+	}
+
+	private void getValues(JComboBox<String> comboBox, BiFunction<AbstractDatabaseAdapter, DatabaseConnection, List<String>> function) {
+		final ReentrantLock lock = this.mainLock;
+		if (lock.tryLock()) {
+			try {
+				commitConnectionDetails();
+				DatabaseConnection connection = (DatabaseConnection) connCombo.getSelectedItem();
+				connection.validate();
+
+				AbstractDatabaseAdapter adapter = DatabaseAdapterFactory.getInstance().createDatabaseAdapter(connection.getDatabaseType());
+				List<String> values = function.apply(adapter, connection);
+				if (values != null && !values.isEmpty()) {
+					String value = (String) comboBox.getSelectedItem();
+					comboBox.removeAllItems();
+					values.forEach(comboBox::addItem);
+					comboBox.setSelectedItem(value);
+					comboBox.setPopupVisible(true);
+				}
+			} catch (DatabaseConfigurationException e) {
+				showError(e);
+			} finally {
+				lock.unlock();
+			}
+		}
 	}
 
 	@Override

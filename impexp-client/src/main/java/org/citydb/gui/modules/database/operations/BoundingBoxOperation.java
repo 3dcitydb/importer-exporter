@@ -34,7 +34,6 @@ import org.citydb.config.geometry.BoundingBox;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.database.DatabaseOperationType;
 import org.citydb.config.project.database.DatabaseSrs;
-import org.citydb.config.project.database.Workspace;
 import org.citydb.database.connection.DatabaseConnectionPool;
 import org.citydb.database.schema.mapping.AbstractPathElement;
 import org.citydb.database.schema.mapping.FeatureType;
@@ -231,16 +230,10 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 		lock.lock();
 
 		try {
-			Workspace workspace = parent.getWorkspace();
-			if (workspace == null)
-				return;
-
 			viewController.clearConsole();
 			viewController.setStatusText(Language.I18N.getString("main.status.database.bbox.label"));
 
 			log.info("Calculating bounding box...");			
-			if (dbConnectionPool.getActiveDatabaseAdapter().hasVersioningSupport() && !parent.checkWorkspace())
-				return;
 
 			final StatusDialog bboxDialog = new StatusDialog(viewController.getTopFrame(), 
 					Language.I18N.getString("db.dialog.bbox.window"), 
@@ -259,7 +252,7 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 
 			try {
 				FeatureType featureType = (FeatureType)featureComboBox.getSelectedItem();
-				BoundingBox bbox = dbConnectionPool.getActiveDatabaseAdapter().getUtil().calcBoundingBox(workspace, getObjectClassIds(featureType, true));
+				BoundingBox bbox = dbConnectionPool.getActiveDatabaseAdapter().getUtil().calcBoundingBox(getObjectClassIds(featureType, true));
 
 				if (bbox != null) {
 					if (bbox.getLowerCorner().getX() != Double.MAX_VALUE && 
@@ -323,10 +316,6 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 		lock.lock();
 
 		try {
-			Workspace workspace = parent.getWorkspace();
-			if (workspace == null)
-				return;
-
 			viewController.clearConsole();
 			viewController.setStatusText(Language.I18N.getString("main.status.database.setbbox.label"));
 
@@ -339,10 +328,7 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 			if (featureType == cityObject && !adeManager.getEnabledExtensions().isEmpty())
 				log.warn("NOTE: This operation does not work on ADE features.");
 			
-			if (dbConnectionPool.getActiveDatabaseAdapter().hasVersioningSupport() && !parent.checkWorkspace())
-				return;
-
-			final StatusDialog bboxDialog = new StatusDialog(viewController.getTopFrame(), 
+			final StatusDialog bboxDialog = new StatusDialog(viewController.getTopFrame(),
 					Language.I18N.getString("db.dialog.setbbox.window"), 
 					Language.I18N.getString("db.dialog.setbbox.title"), 
 					null,
@@ -359,7 +345,7 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 
 			try {
 				List<Integer> objectClassIds = getObjectClassIds(featureType, false);
-				BoundingBox bbox = dbConnectionPool.getActiveDatabaseAdapter().getUtil().createBoundingBoxes(workspace, objectClassIds, mode == BoundingBoxMode.PARTIAL);
+				BoundingBox bbox = dbConnectionPool.getActiveDatabaseAdapter().getUtil().createBoundingBoxes(objectClassIds, mode == BoundingBoxMode.PARTIAL);
 
 				if (bbox != null) {
 					if (bbox.getLowerCorner().getX() != Double.MAX_VALUE && 

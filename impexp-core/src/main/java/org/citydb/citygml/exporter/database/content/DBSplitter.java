@@ -136,23 +136,9 @@ public class DBSplitter {
 		schema = databaseAdapter.getConnectionDetails().getSchema();
 		calculateExtent = config.getExportConfig().getCityGMLOptions().getGMLEnvelope().isUseEnvelopeOnCityModel();
 
-		// try and change workspace for connection
-		if (databaseAdapter.hasVersioningSupport()) {
-			databaseAdapter.getWorkspaceManager().gotoWorkspace(
-					connection, 
-					config.getDatabaseConfig().getWorkspaces().getExportWorkspace());
-		}
-
 		// create temporary table for global appearances if needed
 		if (internalConfig.isExportGlobalAppearances()) {
-			CacheTable temp = cacheTableManager.createCacheTableInDatabase(CacheTableModel.GLOBAL_APPEARANCE);
-
-			// try and change workspace for temporary table
-			if (databaseAdapter.hasVersioningSupport()) {
-				databaseAdapter.getWorkspaceManager().gotoWorkspace(
-						temp.getConnection(), 
-						config.getDatabaseConfig().getWorkspaces().getExportWorkspace());
-			}
+			cacheTableManager.createCacheTableInDatabase(CacheTableModel.GLOBAL_APPEARANCE);
 		}
 
 		BuildProperties buildProperties = BuildProperties.defaults()

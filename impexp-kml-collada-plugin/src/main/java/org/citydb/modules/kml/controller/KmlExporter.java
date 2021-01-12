@@ -218,15 +218,11 @@ public class KmlExporter implements EventHandler {
 			throw new KmlExportException("Failed to initialize KML/COLLADA context.", e);
 		}
 
-		// checking workspace
-		Workspace workspace = config.getDatabaseConfig().getWorkspaces().getKmlExportWorkspace();
-		if (shouldRun && databaseAdapter.hasVersioningSupport()
-				&& !databaseAdapter.getWorkspaceManager().equalsDefaultWorkspaceName(workspace.getName())) {
-			try {
-				log.info("Switching to database workspace " + workspace + ".");
-				databaseAdapter.getWorkspaceManager().checkWorkspace(workspace);
-			} catch (SQLException e) {
-				throw new KmlExportException("Failed to switch to database workspace.", e);
+		// log workspace
+		if (databaseAdapter.hasVersioningSupport() && databaseAdapter.getConnectionDetails().isSetWorkspace()) {
+			Workspace workspace = databaseAdapter.getConnectionDetails().getWorkspace();
+			if (!databaseAdapter.getWorkspaceManager().equalsDefaultWorkspaceName(workspace.getName())) {
+				log.info("Exporting from workspace " + databaseAdapter.getConnectionDetails().getWorkspace() + ".");
 			}
 		}
 
@@ -255,7 +251,7 @@ public class KmlExporter implements EventHandler {
 				DisplayForm displayForm = config.getKmlExportConfig().getDisplayForms().get(DisplayFormType.COLLADA);
 				if (displayForm != null
 						&& displayForm.isActive()
-						&& !databaseAdapter.getUtil().getAppearanceThemeList(workspace).contains(selectedTheme)) {
+						&& !databaseAdapter.getUtil().getAppearanceThemeList().contains(selectedTheme)) {
 					throw new KmlExportException("The database does not contain the appearance theme '" + selectedTheme + "'.");
 				}
 			} catch (SQLException e) {
@@ -293,7 +289,7 @@ public class KmlExporter implements EventHandler {
 			if (!queryConfig.isUseBboxFilter()) {
 				try {
 					log.info("Calculating the bounding box of matching top-level features...");
-					queryConfig.getSpatialFilter().setExtent(databaseAdapter.getUtil().calcBoundingBox(workspace, query, schemaMapping));
+					queryConfig.getSpatialFilter().setExtent(databaseAdapter.getUtil().calcBoundingBox(query, schemaMapping));
 					query = queryBuilder.buildQuery(queryConfig, config.getNamespaceFilter());
 				} catch (SQLException | FilterException e) {
 					throw new QueryBuildException("Failed to calculate bounding box based on the non-spatial filter settings.", e);

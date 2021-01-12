@@ -58,16 +58,9 @@ public class DBExportXlinkWorkerFactory implements WorkerFactory<DBXlink> {
 		DBExportXlinkWorker dbWorker = null;
 
 		try {
+			AbstractDatabaseAdapter databaseAdapter = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter();
 			Connection connection = DatabaseConnectionPool.getInstance().getConnection();
 			connection.setAutoCommit(false);
-
-			// try and change workspace for the connection if needed
-			AbstractDatabaseAdapter databaseAdapter = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter();
-			if (databaseAdapter.hasVersioningSupport()) {
-				databaseAdapter.getWorkspaceManager().gotoWorkspace(
-						connection,
-						config.getDatabaseConfig().getWorkspaces().getExportWorkspace());
-			}
 
 			dbWorker = new DBExportXlinkWorker(connection, databaseAdapter, internalConfig, config, eventDispatcher);
 		} catch (SQLException e) {

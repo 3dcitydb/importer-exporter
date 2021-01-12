@@ -38,17 +38,7 @@ import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import java.util.UUID;
 
-@XmlType(name = "ConnectionType", propOrder = {
-        "description",
-        "type",
-        "server",
-        "port",
-        "sid",
-        "schema",
-        "user",
-        "password",
-        "savePassword"
-})
+@XmlType(name = "ConnectionType", propOrder = {})
 public class DatabaseConnection implements Comparable<DatabaseConnection> {
     @XmlID
     @XmlAttribute
@@ -65,6 +55,7 @@ public class DatabaseConnection implements Comparable<DatabaseConnection> {
     @XmlElement(required = true)
     private String sid;
     private String schema;
+    private Workspace workspace;
     @XmlElement(required = true)
     private String user;
     private String password;
@@ -183,6 +174,18 @@ public class DatabaseConnection implements Comparable<DatabaseConnection> {
 
     public void setSchema(String schema) {
         this.schema = (schema != null && !schema.trim().isEmpty()) ? schema : null;
+    }
+
+    public Workspace getWorkspace() {
+        return workspace;
+    }
+
+    public boolean isSetWorkspace() {
+        return workspace != null;
+    }
+
+    public void setWorkspace(Workspace workspace) {
+        this.workspace = workspace;
     }
 
     public String getUser() {
@@ -445,20 +448,29 @@ public class DatabaseConnection implements Comparable<DatabaseConnection> {
     }
 
     public void validate() throws DatabaseConfigurationException {
-        if (user == null || user.trim().isEmpty())
+        if (user == null || user.trim().isEmpty()) {
             throw new DatabaseConfigurationException(ErrorCode.MISSING_DB_USERNAME, "Missing username.");
+        }
 
-        if (server == null || server.trim().isEmpty())
+        if (server == null || server.trim().isEmpty()) {
             throw new DatabaseConfigurationException(ErrorCode.MISSING_DB_HOSTNAME, "Missing server hostname.");
+        }
 
-        if (port == null)
+        if (port == null) {
             throw new DatabaseConfigurationException(ErrorCode.MISSING_DB_PORT, "Missing server port.");
+        }
 
-        if (sid == null || sid.trim().isEmpty())
+        if (sid == null || sid.trim().isEmpty()) {
             throw new DatabaseConfigurationException(ErrorCode.MISSING_DB_NAME, "Missing database name.");
+        }
 
-        if (schema != null && schema.trim().isEmpty())
+        if (schema != null && schema.trim().isEmpty()) {
             throw new DatabaseConfigurationException(ErrorCode.EMPTY_DB_SCHEMA, "Database schema cannot be empty.");
+        }
+
+        if (workspace != null && !workspace.isSetName() && !workspace.isSetTimestamp()) {
+            throw new DatabaseConfigurationException(ErrorCode.INVALID_DB_WORKSPACE, "The database workspace must define a name and/or a timestamp.");
+        }
     }
 
     public String toConnectString() {

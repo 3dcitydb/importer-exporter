@@ -121,16 +121,14 @@ public class Deleter implements EventHandler {
 
 	private boolean process(Iterator<Query> queries, boolean preview) throws DeleteException {
 		long start = System.currentTimeMillis();
+		DeleteMode mode = config.getDeleteConfig().getMode();
 
-		// checking workspace
-		Workspace workspace = config.getDatabaseConfig().getWorkspaces().getDeleteWorkspace();
-		if (shouldRun && databaseAdapter.hasVersioningSupport()
-				&& !databaseAdapter.getWorkspaceManager().equalsDefaultWorkspaceName(workspace.getName())) {
-			try {
-				log.info("Switching to database workspace " + workspace + ".");
-				databaseAdapter.getWorkspaceManager().checkWorkspace(workspace);
-			} catch (SQLException e) {
-				throw new DeleteException("Failed to switch to database workspace.", e);
+		// log workspace
+		if (databaseAdapter.hasVersioningSupport() && databaseAdapter.getConnectionDetails().isSetWorkspace()) {
+			Workspace workspace = databaseAdapter.getConnectionDetails().getWorkspace();
+			if (!databaseAdapter.getWorkspaceManager().equalsDefaultWorkspaceName(workspace.getName())) {
+				log.info((mode == DeleteMode.TERMINATE ? "Terminating" : "Deleting") +
+						" from workspace " + databaseAdapter.getConnectionDetails().getWorkspace() + ".");
 			}
 		}
 
@@ -146,7 +144,6 @@ public class Deleter implements EventHandler {
 				throw new DeleteException("Failed to start database delete worker pool. Check the database connection pool settings.");
 			}
 
-			DeleteMode mode = config.getDeleteConfig().getMode();
 			if (preview) {
 				log.info("Running " + mode.value() + " in preview mode. Affected city objects will not be " +
 						(mode == DeleteMode.TERMINATE ? "terminated." : "deleted."));

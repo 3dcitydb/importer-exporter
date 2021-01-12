@@ -33,8 +33,12 @@ import org.citydb.database.adapter.AbstractWorkspaceManagerAdapter;
 
 import java.sql.CallableStatement;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.List;
 
 public class WorkspaceManagerAdapter extends AbstractWorkspaceManagerAdapter {
 	private final String defaultWorkspaceName = "LIVE";
@@ -51,14 +55,16 @@ public class WorkspaceManagerAdapter extends AbstractWorkspaceManagerAdapter {
 	
 	@Override
 	public boolean equalsDefaultWorkspaceName(String workspaceName) {
-		return (workspaceName == null || workspaceName.trim().isEmpty() || defaultWorkspaceName.equalsIgnoreCase(workspaceName.trim()));
+		workspaceName = formatWorkspaceName(workspaceName);
+		return workspaceName == null || workspaceName.isEmpty() || defaultWorkspaceName.equals(workspaceName);
 	}
 
 	@Override
-	public boolean gotoWorkspace(Connection connection, Workspace workspace) {
-		String workspaceName = workspace.getName();
-		if (workspaceName == null || workspaceName.trim().isEmpty() || defaultWorkspaceName.equalsIgnoreCase(workspaceName))
+	public void gotoWorkspace(Connection connection, Workspace workspace) throws SQLException {
+		String workspaceName = formatWorkspaceName(workspace.getName());
+		if (workspaceName == null || workspaceName.isEmpty()) {
 			workspaceName = defaultWorkspaceName;
+		}
 
 		try (CallableStatement workspaceStmt = connection.prepareCall("{call dbms_wm.GotoWorkspace('" + workspaceName + "')}")) {
 			workspaceStmt.executeQuery();
@@ -67,11 +73,24 @@ public class WorkspaceManagerAdapter extends AbstractWorkspaceManagerAdapter {
 					timestampStmt.executeQuery();
 				}
 			}
-
-			return true;
-		} catch (SQLException e) {
-			return false;
 		}
 	}
 
+	@Override
+	public List<String> fetchWorkspacesFromDatabase(Connection connection) throws SQLException {
+		try (Statement stmt = connection.createStatement();
+			 ResultSet rs = stmt.executeQuery("select workspace from all_workspaces order by workspace")) {
+			List<String> schemas = new ArrayList<>();
+			while (rs.next()) {
+				schemas.add(rs.getString(1));
+			}
+
+			return schemas;
+		}
+	}
+
+	@Override
+	public String formatWorkspaceName(String workspaceName) {
+		return workspaceName != null ? workspaceName.trim() : null;
+	}
 }

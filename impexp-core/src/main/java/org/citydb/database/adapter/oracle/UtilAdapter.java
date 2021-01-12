@@ -100,7 +100,7 @@ public class UtilAdapter extends AbstractUtilAdapter {
 					srs.setWkText(fixWKT(rs.getString("WKTEXT")));
 					srs.setSupported(true);
 
-					metaData.setVersioning(Versioning.valueOf(rs.getString("VERSIONING")));
+					metaData.setVersioning(Versioning.fromValue(rs.getString("VERSIONING")));
 				} else
 					throw new SQLException("Failed to retrieve metadata information from database.");
 			} catch (SQLException e) {

@@ -29,7 +29,6 @@ package org.citydb.gui.modules.database.operations;
 
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.database.DatabaseOperationType;
-import org.citydb.config.project.database.Workspace;
 import org.citydb.database.connection.DatabaseConnectionPool;
 import org.citydb.gui.components.dialog.StatusDialog;
 import org.citydb.gui.util.GuiUtil;
@@ -128,16 +127,10 @@ public class ReportOperation extends DatabaseOperationView {
 		lock.lock();
 
 		try {
-			Workspace workspace = parent.getWorkspace();
-			if (workspace == null)
-				return;
-			
 			viewController.clearConsole();
 			viewController.setStatusText(Language.I18N.getString("main.status.database.report.label"));
 
 			log.info("Generating database report...");
-			if (dbConnectionPool.getActiveDatabaseAdapter().hasVersioningSupport() && !parent.checkWorkspace())
-				return;
 
 			final StatusDialog reportDialog = new StatusDialog(viewController.getTopFrame(), 
 					Language.I18N.getString("db.dialog.report.window"), 
@@ -155,7 +148,7 @@ public class ReportOperation extends DatabaseOperationView {
 			});
 
 			try {
-				String[] report = dbConnectionPool.getActiveDatabaseAdapter().getUtil().createDatabaseReport(workspace);
+				String[] report = dbConnectionPool.getActiveDatabaseAdapter().getUtil().createDatabaseReport();
 				Pattern pattern = Pattern.compile("^(#[^\\s\\\\]+)[^\\d]+(\\d+).*$");
 				Matcher matcher = pattern.matcher("");
 

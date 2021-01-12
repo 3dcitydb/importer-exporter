@@ -91,14 +91,6 @@ public class KmlSplitter {
 		databaseAdapter = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter();
 		connection = DatabaseConnectionPool.getInstance().getConnection();
 		dbSrs = databaseAdapter.getConnectionMetaData().getReferenceSystem();		
-
-		// try and change workspace for connection if needed
-		if (databaseAdapter.hasVersioningSupport()) {
-			DatabaseConfig databaseConfig = config.getDatabaseConfig();
-			databaseAdapter.getWorkspaceManager().gotoWorkspace(connection, 
-					databaseConfig.getWorkspaces().getKmlExportWorkspace());
-		}
-
 		schema = databaseAdapter.getConnectionDetails().getSchema();
 
 		BuildProperties buildProperties = BuildProperties.defaults()

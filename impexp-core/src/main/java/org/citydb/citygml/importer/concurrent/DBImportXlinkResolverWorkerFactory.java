@@ -34,7 +34,6 @@ import org.citydb.concurrent.Worker;
 import org.citydb.concurrent.WorkerFactory;
 import org.citydb.concurrent.WorkerPool;
 import org.citydb.config.Config;
-import org.citydb.config.project.database.Workspace;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.connection.ConnectionManager;
 import org.citydb.database.connection.DatabaseConnectionPool;
@@ -105,13 +104,8 @@ public class DBImportXlinkResolverWorkerFactory implements WorkerFactory<DBXlink
 
 		try {
 			Connection connection = connectionManager.getConnection();
-			if (!isManagedTransaction)
+			if (!isManagedTransaction) {
 				connection.setAutoCommit(false);
-
-			// try and change workspace for the connection if needed
-			if (databaseAdapter.hasVersioningSupport()) {
-				Workspace workspace = config.getDatabaseConfig().getWorkspaces().getImportWorkspace();
-				databaseAdapter.getWorkspaceManager().gotoWorkspace(connection, workspace);
 			}
 
 			dbWorker = new DBImportXlinkResolverWorker(inputFile, connection, isManagedTransaction, databaseAdapter,
