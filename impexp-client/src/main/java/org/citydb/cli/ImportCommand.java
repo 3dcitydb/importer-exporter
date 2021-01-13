@@ -102,6 +102,10 @@ public class ImportCommand extends CliCommand {
             importConfig.getImportLog().setLogImportedFeatures(true);
         }
 
+        if (filterOption != null) {
+            importConfig.getAppearances().setImportAppearances(filterOption.isImportAppearances());
+        }
+
         if (threadPoolOption != null) {
             importConfig.getResources().setThreadPool(threadPoolOption.toThreadPool());
         }

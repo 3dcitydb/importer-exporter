@@ -34,9 +34,9 @@ import picocli.CommandLine;
 public class AppearanceOption implements CliOption {
     @CommandLine.Option(names = "--no-appearance", defaultValue = "true",
             description = "Do not import appearance information.")
-    private boolean exportAppearances;
+    private boolean importAppearances;
 
-    public boolean isExportAppearances() {
-        return exportAppearances;
+    public boolean isImportAppearances() {
+        return importAppearances;
     }
 }

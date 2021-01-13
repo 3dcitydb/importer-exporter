@@ -28,13 +28,11 @@
 
 package org.citydb.cli.options.importer;
 
-import org.citydb.config.project.importer.ImportAppearance;
 import org.citydb.config.project.importer.ImportFilter;
 import org.citydb.config.project.query.simple.SimpleAttributeFilter;
 import org.citydb.plugin.cli.CliOption;
 import org.citydb.plugin.cli.ResourceIdOption;
 import org.citydb.plugin.cli.TypeNamesOption;
-import org.citydb.registry.ObjectRegistry;
 import picocli.CommandLine;
 
 public class FilterOption implements CliOption {
@@ -52,6 +50,10 @@ public class FilterOption implements CliOption {
 
     @CommandLine.ArgGroup
     private AppearanceOption appearanceOption;
+
+    public boolean isImportAppearances() {
+        return appearanceOption == null || appearanceOption.isImportAppearances();
+    }
 
     public ImportFilter toImportFilter() {
         ImportFilter importFilter = new ImportFilter();
@@ -76,11 +78,6 @@ public class FilterOption implements CliOption {
         if (counterOption != null) {
             importFilter.setCounterFilter(counterOption.toCounterFilter());
             importFilter.setUseCountFilter(true);
-        }
-
-        if (appearanceOption != null && !appearanceOption.isExportAppearances()) {
-            ImportAppearance appearance = ObjectRegistry.getInstance().getConfig().getImportConfig().getAppearances();
-            appearance.setImportAppearances(false);
         }
 
         return importFilter;
