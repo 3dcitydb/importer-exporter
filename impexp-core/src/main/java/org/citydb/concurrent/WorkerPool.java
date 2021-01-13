@@ -935,8 +935,4 @@ public class WorkerPool<T> {
 	public String getName() {
 		return poolName;
 	}
-
-	protected void finalize() {
-		shutdown();
-	}
 }
