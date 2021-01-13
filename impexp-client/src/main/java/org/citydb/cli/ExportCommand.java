@@ -110,6 +110,10 @@ public class ExportCommand extends CliCommand {
     private void setExportOptions(ExportConfig exportConfig) {
         exportConfig.getCityGMLOptions().setFileEncoding(encoding);
 
+        if (queryOption != null) {
+            exportConfig.getAppearances().setExportAppearances(queryOption.isExportAppearances());
+        }
+
         if (threadPoolOption != null) {
             exportConfig.getResources().setThreadPool(threadPoolOption.toThreadPool());
         }

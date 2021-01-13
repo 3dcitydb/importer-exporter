@@ -28,7 +28,6 @@
 
 package org.citydb.cli.options.exporter;
 
-import org.citydb.config.project.exporter.ExportAppearance;
 import org.citydb.config.project.query.QueryConfig;
 import org.citydb.config.project.query.filter.selection.AbstractPredicate;
 import org.citydb.config.project.query.filter.selection.SelectionFilter;
@@ -44,7 +43,6 @@ import org.citydb.plugin.cli.ResourceIdOption;
 import org.citydb.plugin.cli.SQLSelectOption;
 import org.citydb.plugin.cli.TypeNamesOption;
 import org.citydb.plugin.cli.XMLQueryOption;
-import org.citydb.registry.ObjectRegistry;
 import picocli.CommandLine;
 
 import java.util.ArrayList;
@@ -78,6 +76,10 @@ public class QueryOption implements CliOption {
     @CommandLine.ArgGroup
     private XMLQueryOption xmlQueryOption;
 
+    public boolean isExportAppearances() {
+        return appearanceOption == null || appearanceOption.isExportAppearances();
+    }
+
     public QueryConfig toQueryConfig() {
         if (typeNamesOption != null
                 || resourceIdOption != null
@@ -85,7 +87,7 @@ public class QueryOption implements CliOption {
                 || boundingBoxOption != null
                 || counterOption != null
                 || lodOption != null
-                || appearanceOption != null
+                || (appearanceOption != null && appearanceOption.isSetAppearanceFilter())
                 || sqlSelectOption != null) {
             QueryConfig queryConfig = new QueryConfig();
             List<AbstractPredicate> predicates = new ArrayList<>();
@@ -127,13 +129,8 @@ public class QueryOption implements CliOption {
                 queryConfig.setLodFilter(lodOption.toLodFilter());
             }
 
-            if (appearanceOption != null) {
-                if (appearanceOption.isExportAppearances()) {
-                    queryConfig.setAppearanceFilter(appearanceOption.toAppearanceFilter());
-                } else {
-                    ExportAppearance appearance = ObjectRegistry.getInstance().getConfig().getExportConfig().getAppearances();
-                    appearance.setExportAppearances(false);
-                }
+            if (appearanceOption != null && appearanceOption.isSetAppearanceFilter()) {
+                queryConfig.setAppearanceFilter(appearanceOption.toAppearanceFilter());
             }
 
             if (sqlSelectOption != null) {
@@ -152,9 +149,11 @@ public class QueryOption implements CliOption {
             }
 
             return queryConfig;
-        } else {
+        } else if (xmlQueryOption != null) {
             return xmlQueryOption.toQueryConfig();
         }
+
+        return new QueryConfig();
     }
 
     @Override
@@ -175,9 +174,9 @@ public class QueryOption implements CliOption {
             } else if (lodOption != null) {
                 throw new CommandLine.ParameterException(commandLine,
                         "Error: --lod and --xml-query are mutually exclusive (specify only one)");
-            } else if (appearanceOption != null && appearanceOption.isExportAppearances()) {
+            } else if (appearanceOption != null && appearanceOption.isSetAppearanceFilter()) {
                 throw new CommandLine.ParameterException(commandLine,
-                        "Error: Appearance options and --xml-query are mutually exclusive (specify only one)");
+                        "Error: --appearance-theme and --xml-query are mutually exclusive (specify only one)");
             } else if (sqlSelectOption != null) {
                 throw new CommandLine.ParameterException(commandLine,
                         "Error: --sql-select and --xml-query are mutually exclusive (specify only one)");

@@ -45,6 +45,10 @@ public class AppearanceOption implements CliOption {
         return exportAppearances;
     }
 
+    public boolean isSetAppearanceFilter() {
+        return exportAppearances && themes != null;
+    }
+
     public AppearanceFilter toAppearanceFilter() {
         if (exportAppearances && themes != null) {
             AppearanceFilter appearanceFilter = new AppearanceFilter();
