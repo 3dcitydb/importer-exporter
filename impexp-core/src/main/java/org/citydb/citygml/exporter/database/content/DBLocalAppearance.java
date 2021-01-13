@@ -103,7 +103,7 @@ public class DBLocalAppearance extends AbstractAppearanceExporter {
 				int i = 1;
 				if (themes != null) {
 					for (PlaceHolder<?> theme : themes)
-						psSelect.setString(i++, (String) theme.getValue());
+						psBulk.setString(i++, (String) theme.getValue());
 				}
 
 				Long[] ids = batches.keySet().toArray(new Long[0]);
