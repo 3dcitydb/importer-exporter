@@ -73,8 +73,8 @@ public class GeometryConverterAdapter extends AbstractGeometryConverterAdapter {
 			envelope = getEnvelope(((PGgeometry)geomObj).getGeometry());
 		else if (geomObj instanceof PGbox2d) {
 			PGbox2d box = (PGbox2d)geomObj;
-			return GeometryObject.createEnvelope(new double[]{box.getLLB().x, box.getLLB().y, box.getURT().x, box.getURT().y},
-					2, databaseAdapter.getConnectionMetaData().getReferenceSystem().getSrid());
+			return GeometryObject.createEnvelope(new double[]{box.getLLB().x, box.getLLB().y, 0, box.getURT().x, box.getURT().y, 0},
+					3, databaseAdapter.getConnectionMetaData().getReferenceSystem().getSrid());
 		} else if (geomObj instanceof PGbox3d) {
 			PGbox3d box = (PGbox3d)geomObj;
 			return GeometryObject.createEnvelope(new double[]{box.getLLB().x, box.getLLB().y, box.getLLB().z, box.getURT().x, box.getURT().y, box.getURT().z},
