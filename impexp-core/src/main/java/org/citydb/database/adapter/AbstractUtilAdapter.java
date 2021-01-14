@@ -214,7 +214,7 @@ public abstract class AbstractUtilAdapter {
                         double[] coordinates = extent.getCoordinates(0);
                         bbox = new BoundingBox(
                             new Position(coordinates[0], coordinates[1]),
-                            new Position(coordinates[2], coordinates[3])
+                            new Position(coordinates[3], coordinates[4])
                         );
                         bbox.setSrs(extent.getSrid());
                     }
