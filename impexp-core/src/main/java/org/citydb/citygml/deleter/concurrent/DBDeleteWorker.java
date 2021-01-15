@@ -62,8 +62,8 @@ public class DBDeleteWorker extends Worker<DBSplittingResult> implements EventHa
 	private final PreparedStatement stmt;
 	private final AbstractDatabaseAdapter databaseAdapter;
 	private final InternalConfig internalConfig;
-	private final Config config;
 	private final EventDispatcher eventDispatcher;
+	private final DeleteMode mode;
 
 	private volatile boolean shouldRun = true;
 	private volatile boolean shouldWork = true;
@@ -71,12 +71,12 @@ public class DBDeleteWorker extends Worker<DBSplittingResult> implements EventHa
 	public DBDeleteWorker(Connection connection, AbstractDatabaseAdapter databaseAdapter, InternalConfig internalConfig, Config config, EventDispatcher eventDispatcher) throws SQLException {
 		this.databaseAdapter = databaseAdapter;
 		this.internalConfig = internalConfig;
-		this.config = config;
 		this.eventDispatcher = eventDispatcher;
 
 		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
 
-		if (config.getDeleteConfig().getMode() == DeleteMode.TERMINATE) {
+		mode = config.getDeleteConfig().getMode();
+		if (mode == DeleteMode.TERMINATE) {
 			StringBuilder update = new StringBuilder("update cityobject set termination_date = ?, last_modification_date = ?, updating_person = ? ");
 			if (internalConfig.getReasonForUpdate() != null) {
 				update.append(", reason_for_update = '").append(internalConfig.getReasonForUpdate()).append("'");
@@ -141,7 +141,7 @@ public class DBDeleteWorker extends Worker<DBSplittingResult> implements EventHa
 			long objectId = work.getId();
 			long deletedObjectId;
 
-			if (config.getDeleteConfig().getMode() == DeleteMode.TERMINATE) {
+			if (mode == DeleteMode.TERMINATE) {
 				OffsetDateTime now = OffsetDateTime.now();
 
 				OffsetDateTime terminationDate = internalConfig.getTerminationDate() != null ?
@@ -166,18 +166,20 @@ public class DBDeleteWorker extends Worker<DBSplittingResult> implements EventHa
 			}
 
 			if (deletedObjectId == objectId) {
-				log.debug(work.getObjectType().getPath() + " (ID = " + objectId + ") deleted.");
+				log.debug(work.getObjectType().getPath() + " (ID = " + objectId + ") " +
+						(mode == DeleteMode.TERMINATE ? "terminated." : "deleted.") + ".");
 				Map<Integer, Long> objectCounter = new HashMap<>();
 				objectCounter.put(work.getObjectType().getObjectClassId(), 1L);
 				eventDispatcher.triggerEvent(new ObjectCounterEvent(objectCounter, eventChannel, this));
-			} else
+			} else {
 				log.debug(work.getObjectType().getPath() + " (ID = " + objectId + ") is already deleted.");
+			}
 
 			eventDispatcher.triggerEvent(new StatusDialogProgressBar(ProgressBarEventType.UPDATE, 1, this));
 		} catch (SQLException e) {
-			eventDispatcher.triggerSyncEvent(new InterruptEvent("Failed to delete " + work.getObjectType().getPath() + " (ID = " + work.getId() + ").", LogLevel.ERROR, e, eventChannel, this));
+			eventDispatcher.triggerSyncEvent(new InterruptEvent("Failed to " + mode.value() + " " + work.getObjectType().getPath() + " (ID = " + work.getId() + ").", LogLevel.ERROR, e, eventChannel, this));
 		} catch (Throwable e) {
-			eventDispatcher.triggerSyncEvent(new InterruptEvent("A fatal error occurred during delete.", LogLevel.ERROR, e, eventChannel, this));
+			eventDispatcher.triggerSyncEvent(new InterruptEvent("A fatal error occurred during " + mode.value() + ".", LogLevel.ERROR, e, eventChannel, this));
 		} finally {
 			lock.unlock();
 		}
@@ -185,8 +187,8 @@ public class DBDeleteWorker extends Worker<DBSplittingResult> implements EventHa
 
 	@Override
 	public void handleEvent(Event event) throws Exception {
-		if (event.getChannel() == eventChannel) 
-			shouldWork = false;		 			
+		if (event.getChannel() == eventChannel) {
+			shouldWork = false;
+		}
 	}
-
 }
