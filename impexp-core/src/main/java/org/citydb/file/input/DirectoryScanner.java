@@ -33,6 +33,7 @@ import org.apache.tika.exception.TikaException;
 import org.apache.tika.io.TikaInputStream;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.mime.MediaType;
+import org.apache.tika.mime.MimeTypes;
 import org.citydb.file.InputFile;
 
 import java.io.FileInputStream;
@@ -69,8 +70,11 @@ public class DirectoryScanner {
 
     public DirectoryScanner() throws TikaException, IOException {
         tikaConfig = new TikaConfig();
-        contentFile = Pattern.compile("(?i).+\\.((gml)|(xml)|(json)|(gz)|(gzip))$");
+        contentFile = Pattern.compile("(?i).+\\.((gml)|(xml)|(json)|(cityjson)|(gz)|(gzip))$");
         matcher = Pattern.compile("").matcher("");
+
+        // map additional file extensions to mime types
+        tikaConfig.getMimeRepository().addPattern(MimeTypes.getDefaultMimeTypes().forName("application/json"), "*.cityjson");
     }
 
     public DirectoryScanner(boolean recursive) throws TikaException, IOException {
@@ -87,7 +91,7 @@ public class DirectoryScanner {
     }
 
     public String[] getDefaultFileEndings() {
-        return new String[]{"gml", "xml", "json", "gz", "gzip", "zip"};
+        return new String[]{"gml", "xml", "json", "cityjson", "gz", "gzip", "zip"};
     }
 
     public List<InputFile> listFiles(List<Path> bases, String... fileEndings) throws IOException {
@@ -163,11 +167,19 @@ public class DirectoryScanner {
 
     private void processGZipFile(Path gzipFile, List<InputFile> files) {
         try (InputStream stream = new GZIPInputStream(new FileInputStream(gzipFile.toFile()))) {
-            MediaType mediaType = getMediaType(stream);
+            // pass file name without gzip extension as hint for content detection
+            String fileName = gzipFile.getFileName().toString();
+            if (fileName.endsWith(".gz")) {
+                fileName = fileName.substring(0, fileName.length() - 3);
+            } else if (fileName.endsWith(".gzip")) {
+                fileName = fileName.substring(0, fileName.length() - 5);
+            }
+
+            MediaType mediaType = getMediaType(stream, fileName);
             if (isSupportedContentType(mediaType)) {
                 files.add(new GZipInputFile(gzipFile, mediaType));
             }
-        } catch (IOException ignored) {
+        } catch (IOException e) {
             //
         }
     }
@@ -220,9 +232,14 @@ public class DirectoryScanner {
         }
     }
 
-    private MediaType getMediaType(InputStream stream) {
+    private MediaType getMediaType(InputStream stream, String fileName) {
         try {
-            return tikaConfig.getDetector().detect(TikaInputStream.get(stream), new Metadata());
+            Metadata metadata = new Metadata();
+            if (fileName != null) {
+                metadata.set(Metadata.RESOURCE_NAME_KEY, fileName);
+            }
+
+            return tikaConfig.getDetector().detect(TikaInputStream.get(stream), metadata);
         } catch (IOException e) {
             return MediaType.EMPTY;
         }
