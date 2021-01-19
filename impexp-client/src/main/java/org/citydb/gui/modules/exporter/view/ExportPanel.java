@@ -73,7 +73,6 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
-@SuppressWarnings("serial")
 public class ExportPanel extends JPanel implements DropTargetListener {
 	private final ReentrantLock mainLock = new ReentrantLock();
 	private final Logger log = Logger.getInstance();
@@ -201,8 +200,8 @@ public class ExportPanel extends JPanel implements DropTargetListener {
 				if (query.isUseSelectionFilter()) {
 					SimpleSelectionFilter selectionFilter = query.getSelectionFilter();
 					if (!selectionFilter.isUseSQLFilter()
-							&& !selectionFilter.getGmlIdFilter().isSetResourceIds()
-							&& !selectionFilter.getGmlNameFilter().isSetLiteral()
+							&& !selectionFilter.getResourceIdFilter().isSetResourceIds()
+							&& !selectionFilter.getNameFilter().isSetLiteral()
 							&& !selectionFilter.getLineageFilter().isSetLiteral()) {
 						viewController.errorMessage(Language.I18N.getString("export.dialog.error.incorrectData"),
 								Language.I18N.getString("export.dialog.error.incorrectData.attributes"));

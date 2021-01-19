@@ -64,13 +64,13 @@ public class CityGMLFilterBuilder {
 		if (filterConfig.isUseAttributeFilter() && filterConfig.isSetAttributeFilter()) {
 			SimpleAttributeFilter attributeFilterConfig = filterConfig.getAttributeFilter();
 
-			// gml:id filter
-			if (attributeFilterConfig.isSetGmlIdFilter() && attributeFilterConfig.getGmlIdFilter().isSetResourceIds())
-				filter.getSelectionFilter().setResourceIdFilter(new ResourceIdFilter(attributeFilterConfig.getGmlIdFilter()));
+			// resource id filter
+			if (attributeFilterConfig.isSetResourceIdFilter() && attributeFilterConfig.getResourceIdFilter().isSetResourceIds())
+				filter.getSelectionFilter().setResourceIdFilter(new ResourceIdFilter(attributeFilterConfig.getResourceIdFilter()));
 
-			// gml:name filter
-			if (attributeFilterConfig.isSetGmlNameFilter() && attributeFilterConfig.getGmlNameFilter().isSetLiteral()) {
-				LikeOperator likeOperator = attributeFilterConfig.getGmlNameFilter();
+			// name filter
+			if (attributeFilterConfig.isSetNameFilter() && attributeFilterConfig.getNameFilter().isSetLiteral()) {
+				LikeOperator likeOperator = attributeFilterConfig.getNameFilter();
 				if (!likeOperator.isSetWildCard() || likeOperator.getWildCard().length() > 1)
 					throw new FilterException("Wildcards must be defined by a single character.");
 
@@ -80,7 +80,7 @@ public class CityGMLFilterBuilder {
 				if (!likeOperator.isSetEscapeCharacter() || likeOperator.getEscapeCharacter().length() > 1)
 					throw new FilterException("An escape character must be defined by a single character.");
 
-				filter.getSelectionFilter().setGmlNameFilter(new LikeFilter(attributeFilterConfig.getGmlNameFilter()));
+				filter.getSelectionFilter().setNameFilter(new LikeFilter(attributeFilterConfig.getNameFilter()));
 			}
 		}
 

@@ -225,8 +225,8 @@ public class ImportPanel extends JPanel {
 
 			// attribute filter
 			if (filter.isUseAttributeFilter()
-					&& !filter.getAttributeFilter().getGmlIdFilter().isSetResourceIds()
-					&& !filter.getAttributeFilter().getGmlNameFilter().isSetLiteral()) {
+					&& !filter.getAttributeFilter().getResourceIdFilter().isSetResourceIds()
+					&& !filter.getAttributeFilter().getNameFilter().isSetLiteral()) {
 				viewController.errorMessage(Language.I18N.getString("import.dialog.error.incorrectData"),
 						Language.I18N.getString("common.dialog.error.incorrectData.attributes"));
 				return;

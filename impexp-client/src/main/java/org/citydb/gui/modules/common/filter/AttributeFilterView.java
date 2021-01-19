@@ -43,10 +43,10 @@ import java.util.function.Supplier;
 public class AttributeFilterView extends FilterView {
     private JPanel component;
 
-    private JLabel gmlIdLabel;
-    private JTextField gmlIdText;
-    private JLabel gmlNameLabel;
-    private JTextField gmlNameText;
+    private JLabel resourceIdLabel;
+    private JTextField resourceIdText;
+    private JLabel nameLabel;
+    private JTextField nameText;
     private JLabel lineageLabel;
     private JTextField lineageText;
 
@@ -59,42 +59,42 @@ public class AttributeFilterView extends FilterView {
         component = new JPanel();
         component.setLayout(new GridBagLayout());
 
-        gmlIdLabel = new JLabel();
-        gmlIdText = new JTextField();
-        gmlNameLabel = new JLabel();
-        gmlNameText = new JTextField();
+        resourceIdLabel = new JLabel();
+        resourceIdText = new JTextField();
+        nameLabel = new JLabel();
+        nameText = new JTextField();
         lineageLabel = new JLabel();
         lineageText = new JTextField();
 
-        // gml:id filter
-        component.add(gmlIdLabel, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.HORIZONTAL, 10, 0, 5, 5));
-        component.add(gmlIdText, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.HORIZONTAL, 10, 5, 5, 0));
+        // resource id filter
+        component.add(resourceIdLabel, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.HORIZONTAL, 10, 0, 5, 5));
+        component.add(resourceIdText, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.HORIZONTAL, 10, 5, 5, 0));
 
-        // gml:name filter
-        component.add(gmlNameLabel, GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 5, 5));
-        component.add(gmlNameText, GuiUtil.setConstraints(1, 1, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, 5, 0));
+        // name filter
+        component.add(nameLabel, GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 5, 5));
+        component.add(nameText, GuiUtil.setConstraints(1, 1, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, 5, 0));
 
         // citydb:lineage filter
         component.add(lineageLabel, GuiUtil.setConstraints(0, 2, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 5));
         component.add(lineageText, GuiUtil.setConstraints(1, 2, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 0));
 
-        PopupMenuDecorator.getInstance().decorate(gmlNameText, gmlIdText, lineageText);
+        PopupMenuDecorator.getInstance().decorate(nameText, resourceIdText, lineageText);
     }
 
 
     @Override
     public void doTranslation() {
-        gmlIdLabel.setText(Language.I18N.getString("filter.label.gmlId"));
-        gmlNameLabel.setText(Language.I18N.getString("filter.label.gmlName"));
+        resourceIdLabel.setText(Language.I18N.getString("filter.label.gmlId"));
+        nameLabel.setText(Language.I18N.getString("filter.label.gmlName"));
         lineageLabel.setText(Language.I18N.getString("filter.label.lineage"));
     }
 
     @Override
     public void setEnabled(boolean enable) {
-        gmlIdLabel.setEnabled(enable);
-        gmlIdText.setEnabled(enable);
-        gmlNameLabel.setEnabled(enable);
-        gmlNameText.setEnabled(enable);
+        resourceIdLabel.setEnabled(enable);
+        resourceIdText.setEnabled(enable);
+        nameLabel.setEnabled(enable);
+        nameText.setEnabled(enable);
         lineageLabel.setEnabled(enable);
         lineageText.setEnabled(enable);
     }
@@ -123,13 +123,13 @@ public class AttributeFilterView extends FilterView {
     public void loadSettings() {
         SimpleQuery query = simpleQuerySupplier.get();
 
-        // gml:id filter
-        ResourceIdOperator gmlIdFilter = query.getSelectionFilter().getGmlIdFilter();
-        gmlIdText.setText(String.join(",", gmlIdFilter.getResourceIds()));
+        // resource id filter
+        ResourceIdOperator resourceIdFilter = query.getSelectionFilter().getResourceIdFilter();
+        resourceIdText.setText(String.join(",", resourceIdFilter.getResourceIds()));
 
-        // gml:name
-        LikeOperator gmlNameFilter = query.getSelectionFilter().getGmlNameFilter();
-        gmlNameText.setText(gmlNameFilter.getLiteral());
+        // name
+        LikeOperator nameFilter = query.getSelectionFilter().getNameFilter();
+        nameText.setText(nameFilter.getLiteral());
 
         // citydb:lineage
         LikeOperator lineageFilter = query.getSelectionFilter().getLineageFilter();
@@ -140,19 +140,19 @@ public class AttributeFilterView extends FilterView {
     public void setSettings() {
         SimpleQuery query = simpleQuerySupplier.get();
 
-        // gml:id filter
-        ResourceIdOperator gmlIdFilter = query.getSelectionFilter().getGmlIdFilter();
-        gmlIdFilter.reset();
-        if (!gmlIdText.getText().trim().isEmpty()) {
-            String trimmed = gmlIdText.getText().replaceAll("\\s+", "");
-            gmlIdFilter.setResourceIds(Util.string2string(trimmed, ","));
+        // resource id filter
+        ResourceIdOperator resourceIdFilter = query.getSelectionFilter().getResourceIdFilter();
+        resourceIdFilter.reset();
+        if (!resourceIdText.getText().trim().isEmpty()) {
+            String trimmed = resourceIdText.getText().replaceAll("\\s+", "");
+            resourceIdFilter.setResourceIds(Util.string2string(trimmed, ","));
         }
 
-        // gml:name
-        LikeOperator gmlNameFilter = query.getSelectionFilter().getGmlNameFilter();
-        gmlNameFilter.reset();
-        if (!gmlNameText.getText().trim().isEmpty())
-            gmlNameFilter.setLiteral(gmlNameText.getText().trim());
+        // name
+        LikeOperator nameFilter = query.getSelectionFilter().getNameFilter();
+        nameFilter.reset();
+        if (!nameText.getText().trim().isEmpty())
+            nameFilter.setLiteral(nameText.getText().trim());
 
         // citydb:lineage
         LikeOperator lineageFilter = query.getSelectionFilter().getLineageFilter();

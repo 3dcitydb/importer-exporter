@@ -33,7 +33,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-@XmlType(name = "CityGMLOptionsType", propOrder = {
+@XmlType(name = "CityGMLExportOptionsType", propOrder = {
         "fileEncoding",
         "writeProductHeader",
         "gmlEnvelope",
