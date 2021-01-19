@@ -68,7 +68,7 @@ class ValidationErrorHandler implements ErrorHandler {
 
     void reset() {
         validationErrors = 0;
-        isReportAllErrors = !config.getImportConfig().getXMLValidation().isSetReportOneErrorPerFeature();
+        isReportAllErrors = !config.getImportConfig().getCityGMLOptions().getXMLValidation().isSetReportOneErrorPerFeature();
         isAborted = false;
         hasFatalErrors = false;
         location = null;

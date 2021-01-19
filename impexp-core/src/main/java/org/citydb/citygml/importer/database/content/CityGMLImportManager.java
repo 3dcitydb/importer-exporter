@@ -202,7 +202,7 @@ public class CityGMLImportManager implements CityGMLImportHelper {
 		if (config.getImportConfig().getAffineTransformation().isEnabled())
 			this.affineTransformer = affineTransformer;
 
-		if (config.getImportConfig().getAddress().isSetImportXAL()) {
+		if (config.getImportConfig().getCityGMLOptions().getAddress().isSetImportXAL()) {
 			cityGMLVersion = CityGMLVersion.DEFAULT;
 			jaxbMarshaller = cityGMLBuilder.createJAXBMarshaller(cityGMLVersion);
 			saxWriter = new SAXWriter();
@@ -540,7 +540,7 @@ public class CityGMLImportManager implements CityGMLImportHelper {
 	}
 
 	public String generateNewGmlId() {
-		return DefaultGMLIdManager.getInstance().generateUUID(config.getImportConfig().getGmlId().getIdPrefix());
+		return DefaultGMLIdManager.getInstance().generateUUID(config.getImportConfig().getResourceId().getIdPrefix());
 	}
 
 	public LocalAppearanceHandler getLocalAppearanceHandler() {

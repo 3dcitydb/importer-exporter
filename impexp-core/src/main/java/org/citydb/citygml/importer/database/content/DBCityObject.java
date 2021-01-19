@@ -115,8 +115,8 @@ public class DBCityObject implements DBImporter {
 		if (gmlIdCodespace != null)
 			gmlIdCodespace = "'" + gmlIdCodespace + "', ";
 
-		replaceGmlId = config.getImportConfig().getGmlId().isUUIDModeReplace();
-		rememberGmlId = config.getImportConfig().getGmlId().isSetKeepGmlIdAsExternalReference();
+		replaceGmlId = config.getImportConfig().getResourceId().isUUIDModeReplace();
+		rememberGmlId = config.getImportConfig().getResourceId().isSetKeepIdAsExternalReference();
 		if (replaceGmlId && rememberGmlId && importer.getInternalConfig().getInputFile() != null)
 			importFileName = importer.getInternalConfig().getInputFile().getFile().toString();
 

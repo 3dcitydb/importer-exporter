@@ -30,26 +30,26 @@ package org.citydb.config.project.importer;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name = "ImportGmlIdType", propOrder = {
+@XmlType(name = "ImportResourceIdType", propOrder = {
         "uuidMode",
         "idPrefix",
-        "keepGmlIdAsExternalReference",
+        "keepIdAsExternalReference",
         "codeSpaceMode",
         "codeSpace"
 })
-public class ImportGmlId {
+public class ImportResourceId {
     @XmlElement(required = true)
     private UUIDMode uuidMode = UUIDMode.COMPLEMENT;
     @XmlElement(defaultValue = "ID_")
     private String idPrefix = "ID_";
     @XmlElement(defaultValue = "true")
-    private Boolean keepGmlIdAsExternalReference = true;
+    private Boolean keepIdAsExternalReference = true;
     @XmlElement(required = true)
     private CodeSpaceMode codeSpaceMode = CodeSpaceMode.NONE;
     @XmlElement(defaultValue = "ID")
     private String codeSpace = "ID";
 
-    public ImportGmlId() {
+    public ImportResourceId() {
     }
 
     public boolean isUUIDModeReplace() {
@@ -76,16 +76,16 @@ public class ImportGmlId {
         this.idPrefix = idPrefix;
     }
 
-    public boolean isSetKeepGmlIdAsExternalReference() {
-        return keepGmlIdAsExternalReference != null ? keepGmlIdAsExternalReference : false;
+    public boolean isSetKeepIdAsExternalReference() {
+        return keepIdAsExternalReference != null ? keepIdAsExternalReference : false;
     }
 
-    public Boolean getKeepGmlIdAsExternalReference() {
-        return keepGmlIdAsExternalReference;
+    public Boolean getKeepIdAsExternalReference() {
+        return keepIdAsExternalReference;
     }
 
-    public void setKeepGmlIdAsExternalReference(Boolean keepGmlIdAsExternalReference) {
-        this.keepGmlIdAsExternalReference = keepGmlIdAsExternalReference;
+    public void setKeepIdAsExternalReference(Boolean keepIdAsExternalReference) {
+        this.keepIdAsExternalReference = keepIdAsExternalReference;
     }
 
     public boolean isSetNoneCodeSpaceMode() {

@@ -48,7 +48,7 @@ public class AddressPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public boolean isModified() {
-		ImportAddress address = config.getImportConfig().getAddress();
+		ImportAddress address = config.getImportConfig().getCityGMLOptions().getAddress();
 		if (importXAL.isSelected() != address.isSetImportXAL()) return true;
 		return false;
 	}
@@ -67,13 +67,13 @@ public class AddressPanel extends AbstractPreferencesComponent {
 	
 	@Override
 	public void loadSettings() {
-		ImportAddress address = config.getImportConfig().getAddress();
+		ImportAddress address = config.getImportConfig().getCityGMLOptions().getAddress();
 		importXAL.setSelected(address.isSetImportXAL());
 	}
 
 	@Override
 	public void setSettings() {
-		ImportAddress address = config.getImportConfig().getAddress();
+		ImportAddress address = config.getImportConfig().getCityGMLOptions().getAddress();
 		address.setImportXAL(importXAL.isSelected());
 	}
 

@@ -110,7 +110,7 @@ public class DBSurfaceGeometry implements DBImporter {
         this.batchConn = batchConn;
         this.importer = importer;
 
-        replaceGmlId = config.getImportConfig().getGmlId().isUUIDModeReplace();
+        replaceGmlId = config.getImportConfig().getResourceId().isUUIDModeReplace();
         dbSrid = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter().getConnectionMetaData().getReferenceSystem().getSrid();
         importAppearance = config.getImportConfig().getAppearances().isSetImportAppearance();
         applyTransformation = config.getImportConfig().getAffineTransformation().isEnabled();

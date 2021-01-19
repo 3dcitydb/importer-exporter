@@ -30,7 +30,7 @@ package org.citydb.gui.modules.importer.preferences;
 import org.citydb.config.Config;
 import org.citydb.config.i18n.Language;
 import org.citydb.config.project.importer.CodeSpaceMode;
-import org.citydb.config.project.importer.ImportGmlId;
+import org.citydb.config.project.importer.ImportResourceId;
 import org.citydb.config.project.importer.UUIDMode;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.version.DatabaseVersion;
@@ -72,17 +72,17 @@ public class IdHandlingPanel extends AbstractPreferencesComponent implements Eve
 
 	@Override
 	public boolean isModified() {
-		ImportGmlId gmlId = config.getImportConfig().getGmlId();
+		ImportResourceId resourceId = config.getImportConfig().getResourceId();
 
-		if (!idPrefix.getText().equals(gmlId.getIdPrefix())) return true;
-		if (impIdCheckExtRef.isSelected() != gmlId.isSetKeepGmlIdAsExternalReference()) return true;
-		if (impIdRadioAdd.isSelected() != gmlId.isUUIDModeComplement()) return true;
-		if (impIdRadioExchange.isSelected() != gmlId.isUUIDModeReplace()) return true;
-		if (!impIdCSUserText.getText().equals(gmlId.getCodeSpace())) return true;
-		if (impIdCSRadioNone.isSelected() != gmlId.isSetNoneCodeSpaceMode()) return true;
-		if (impIdCSRadioFile.isSelected() != gmlId.isSetRelativeCodeSpaceMode()) return true;
-		if (impIdCSRadioFilePath.isSelected() != gmlId.isSetAbsoluteCodeSpaceMode()) return true;
-		if (impIdCSRadioUser.isSelected() != gmlId.isSetUserCodeSpaceMode()) return true;
+		if (!idPrefix.getText().equals(resourceId.getIdPrefix())) return true;
+		if (impIdCheckExtRef.isSelected() != resourceId.isSetKeepIdAsExternalReference()) return true;
+		if (impIdRadioAdd.isSelected() != resourceId.isUUIDModeComplement()) return true;
+		if (impIdRadioExchange.isSelected() != resourceId.isUUIDModeReplace()) return true;
+		if (!impIdCSUserText.getText().equals(resourceId.getCodeSpace())) return true;
+		if (impIdCSRadioNone.isSelected() != resourceId.isSetNoneCodeSpaceMode()) return true;
+		if (impIdCSRadioFile.isSelected() != resourceId.isSetRelativeCodeSpaceMode()) return true;
+		if (impIdCSRadioFilePath.isSelected() != resourceId.isSetAbsoluteCodeSpaceMode()) return true;
+		if (impIdCSRadioUser.isSelected() != resourceId.isSetUserCodeSpaceMode()) return true;
 		return false;
 	}
 
@@ -130,7 +130,6 @@ public class IdHandlingPanel extends AbstractPreferencesComponent implements Eve
 		}
 		{
 			JPanel content = new JPanel();
-			int lmargin = GuiUtil.getTextOffset(impIdCSRadioUser);
 			content.setLayout(new GridBagLayout());
 			{
 				content.add(impIdCSRadioNone, GuiUtil.setConstraints(0, 0, 2, 1, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
@@ -148,11 +147,11 @@ public class IdHandlingPanel extends AbstractPreferencesComponent implements Eve
 
 		PopupMenuDecorator.getInstance().decorate(idPrefix, impIdCSUserText);
 
-		ActionListener gmlIdListener = e -> setEnabledGmlId();
+		ActionListener resourceIdListener = e -> setEnabledResourceId();
 		ActionListener codeSpaceListener = e -> setEnabledCodeSpace();
 		
-		impIdRadioAdd.addActionListener(gmlIdListener);
-		impIdRadioExchange.addActionListener(gmlIdListener);
+		impIdRadioAdd.addActionListener(resourceIdListener);
+		impIdRadioExchange.addActionListener(resourceIdListener);
 
 		impIdCSRadioNone.addActionListener(codeSpaceListener);
 		impIdCSRadioFile.addActionListener(codeSpaceListener);
@@ -160,7 +159,7 @@ public class IdHandlingPanel extends AbstractPreferencesComponent implements Eve
 		impIdCSRadioUser.addActionListener(codeSpaceListener);
 	}
 	
-	private void setEnabledGmlId() {
+	private void setEnabledResourceId() {
 		impIdCheckExtRef.setEnabled(impIdRadioExchange.isSelected());
 	}
 
@@ -193,72 +192,72 @@ public class IdHandlingPanel extends AbstractPreferencesComponent implements Eve
 
 	@Override
 	public void loadSettings() {
-		ImportGmlId gmlId = config.getImportConfig().getGmlId();
+		ImportResourceId resourceId = config.getImportConfig().getResourceId();
 
-		if (gmlId.getIdPrefix() != null && gmlId.getIdPrefix().trim().length() != 0)
-			idPrefix.setText(gmlId.getIdPrefix());
+		if (resourceId.getIdPrefix() != null && resourceId.getIdPrefix().trim().length() != 0)
+			idPrefix.setText(resourceId.getIdPrefix());
 		else {
 			idPrefix.setText(DefaultGMLIdManager.getInstance().getDefaultPrefix());
-			gmlId.setIdPrefix(DefaultGMLIdManager.getInstance().getDefaultPrefix());
+			resourceId.setIdPrefix(DefaultGMLIdManager.getInstance().getDefaultPrefix());
 		}
 		
-		if (gmlId.isUUIDModeReplace())
+		if (resourceId.isUUIDModeReplace())
 			impIdRadioExchange.setSelected(true);
 		else
 			impIdRadioAdd.setSelected(true);
 
-		impIdCheckExtRef.setSelected(gmlId.isSetKeepGmlIdAsExternalReference());
+		impIdCheckExtRef.setSelected(resourceId.isSetKeepIdAsExternalReference());
 
-		setEnabledGmlId();
+		setEnabledResourceId();
 		
-		if (gmlId.isSetNoneCodeSpaceMode())
+		if (resourceId.isSetNoneCodeSpaceMode())
 			impIdCSRadioNone.setSelected(true);
-		else if (gmlId.isSetUserCodeSpaceMode())
+		else if (resourceId.isSetUserCodeSpaceMode())
 			impIdCSRadioUser.setSelected(true);
-		else if (gmlId.isSetRelativeCodeSpaceMode())
+		else if (resourceId.isSetRelativeCodeSpaceMode())
 			impIdCSRadioFile.setSelected(true);
 		else
 			impIdCSRadioFilePath.setSelected(true);
 
-		impIdCSUserText.setText(gmlId.getCodeSpace());
+		impIdCSUserText.setText(resourceId.getCodeSpace());
 		
 		setEnabledCodeSpace();
 	}
 
 	@Override
 	public void setSettings() {
-		ImportGmlId gmlId = config.getImportConfig().getGmlId();
+		ImportResourceId resourceId = config.getImportConfig().getResourceId();
 
 		if (idPrefix.getText() != null && DefaultGMLIdManager.getInstance().isValidPrefix(idPrefix.getText()))
-			gmlId.setIdPrefix(idPrefix.getText());
+			resourceId.setIdPrefix(idPrefix.getText());
 		else {
-			gmlId.setIdPrefix(DefaultGMLIdManager.getInstance().getDefaultPrefix());
+			resourceId.setIdPrefix(DefaultGMLIdManager.getInstance().getDefaultPrefix());
 			idPrefix.setText(DefaultGMLIdManager.getInstance().getDefaultPrefix());
 		}
 		
 		if (impIdRadioAdd.isSelected())
-			gmlId.setUuidMode(UUIDMode.COMPLEMENT);
+			resourceId.setUuidMode(UUIDMode.COMPLEMENT);
 		else
-			gmlId.setUuidMode(UUIDMode.REPLACE);
+			resourceId.setUuidMode(UUIDMode.REPLACE);
 
-		gmlId.setKeepGmlIdAsExternalReference(impIdCheckExtRef.isSelected());
+		resourceId.setKeepIdAsExternalReference(impIdCheckExtRef.isSelected());
 		
 		if (impIdCSRadioNone.isSelected())
-			gmlId.setCodeSpaceMode(CodeSpaceMode.NONE);
+			resourceId.setCodeSpaceMode(CodeSpaceMode.NONE);
 		else if (impIdCSRadioFile.isSelected())
-			gmlId.setCodeSpaceMode(CodeSpaceMode.RELATIVE);
+			resourceId.setCodeSpaceMode(CodeSpaceMode.RELATIVE);
 		else if (impIdCSRadioFilePath.isSelected())
-			gmlId.setCodeSpaceMode(CodeSpaceMode.ABSOLUTE);
+			resourceId.setCodeSpaceMode(CodeSpaceMode.ABSOLUTE);
 		else
-			gmlId.setCodeSpaceMode(CodeSpaceMode.USER);
+			resourceId.setCodeSpaceMode(CodeSpaceMode.USER);
 		
-		String gmlIdCodeSpace = impIdCSUserText.getText().trim();
-		if (gmlIdCodeSpace.length() > 0)
-			gmlId.setCodeSpace(gmlIdCodeSpace);
+		String codeSpace = impIdCSUserText.getText().trim();
+		if (codeSpace.length() > 0)
+			resourceId.setCodeSpace(codeSpace);
 		else
-			gmlIdCodeSpace = gmlId.getCodeSpace();
+			codeSpace = resourceId.getCodeSpace();
 		
-		impIdCSUserText.setText(gmlIdCodeSpace);
+		impIdCSUserText.setText(codeSpace);
 	}
 	
 	@Override

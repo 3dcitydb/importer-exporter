@@ -268,14 +268,14 @@ public class Importer implements EventHandler {
 
                 // set gml:id codespace starting from version 3.1
                 if (databaseAdapter.getConnectionMetaData().getCityDBVersion().compareTo(3, 1, 0) >= 0) {
-                    if (config.getImportConfig().getGmlId().isSetNoneCodeSpaceMode()) {
+                    if (config.getImportConfig().getResourceId().isSetNoneCodeSpaceMode()) {
                     	internalConfig.setCurrentGmlIdCodespace(null);
-					} else if (config.getImportConfig().getGmlId().isSetRelativeCodeSpaceMode()) {
+					} else if (config.getImportConfig().getResourceId().isSetRelativeCodeSpaceMode()) {
                     	internalConfig.setCurrentGmlIdCodespace(file.getFile().getFileName().toString());
-					} else if (config.getImportConfig().getGmlId().isSetAbsoluteCodeSpaceMode()) {
+					} else if (config.getImportConfig().getResourceId().isSetAbsoluteCodeSpaceMode()) {
                     	internalConfig.setCurrentGmlIdCodespace(file.getFile().toString());
-					} else if (config.getImportConfig().getGmlId().isSetUserCodeSpaceMode()) {
-                        String codespace = config.getImportConfig().getGmlId().getCodeSpace();
+					} else if (config.getImportConfig().getResourceId().isSetUserCodeSpaceMode()) {
+                        String codespace = config.getImportConfig().getResourceId().getCodeSpace();
                         if (codespace != null && !codespace.isEmpty()) {
                         	internalConfig.setCurrentGmlIdCodespace(codespace);
 						}
