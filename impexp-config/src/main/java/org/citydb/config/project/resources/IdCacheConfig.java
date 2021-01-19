@@ -31,12 +31,12 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name = "UIDCacheConfigType", propOrder = {
+@XmlType(name = "IdCacheConfigType", propOrder = {
         "cacheSize",
         "pageFactor",
         "partitions"
 })
-public class UIDCacheConfig {
+public class IdCacheConfig {
     @XmlSchemaType(name = "positiveInteger")
     @XmlElement(required = true, defaultValue = "200000")
     private Integer cacheSize = 200000;
@@ -45,7 +45,7 @@ public class UIDCacheConfig {
     @XmlElement(required = true, defaultValue = "10")
     private Integer partitions = 10;
 
-    public UIDCacheConfig() {
+    public IdCacheConfig() {
     }
 
     public Integer getCacheSize() {

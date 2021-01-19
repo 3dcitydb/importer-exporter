@@ -30,35 +30,35 @@ package org.citydb.config.project.resources;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name = "UIDCacheType", propOrder = {
+@XmlType(name = "IdCacheType", propOrder = {
         "feature",
         "geometry"
 })
-public class UIDCache {
+public class IdCache {
     @XmlElement(required = true)
-    private UIDCacheConfig feature;
+    private IdCacheConfig feature;
     @XmlElement(required = true)
-    private UIDCacheConfig geometry;
+    private IdCacheConfig geometry;
 
-    public UIDCache() {
-        feature = new UIDCacheConfig();
-        geometry = new UIDCacheConfig();
+    public IdCache() {
+        feature = new IdCacheConfig();
+        geometry = new IdCacheConfig();
     }
 
-    public UIDCacheConfig getFeature() {
+    public IdCacheConfig getFeature() {
         return feature;
     }
 
-    public void setFeature(UIDCacheConfig feature) {
+    public void setFeature(IdCacheConfig feature) {
         if (feature != null)
             this.feature = feature;
     }
 
-    public UIDCacheConfig getGeometry() {
+    public IdCacheConfig getGeometry() {
         return geometry;
     }
 
-    public void setGeometry(UIDCacheConfig geometry) {
+    public void setGeometry(IdCacheConfig geometry) {
         if (geometry != null)
             this.geometry = geometry;
     }

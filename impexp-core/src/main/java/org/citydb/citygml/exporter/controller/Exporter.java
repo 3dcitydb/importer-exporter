@@ -423,19 +423,19 @@ public class Exporter implements EventHandler {
                         uidCacheManager.initCache(
                                 UIDCacheType.GEOMETRY,
                                 new GeometryGmlIdCache(cacheTableManager,
-                                        config.getExportConfig().getResources().getGmlIdCache().getGeometry().getPartitions(),
+                                        config.getExportConfig().getResources().getIdCache().getGeometry().getPartitions(),
                                         config.getDatabaseConfig().getImportBatching().getGmlIdCacheBatchSize()),
-                                config.getExportConfig().getResources().getGmlIdCache().getGeometry().getCacheSize(),
-                                config.getExportConfig().getResources().getGmlIdCache().getGeometry().getPageFactor(),
+                                config.getExportConfig().getResources().getIdCache().getGeometry().getCacheSize(),
+                                config.getExportConfig().getResources().getIdCache().getGeometry().getPageFactor(),
                                 config.getExportConfig().getResources().getThreadPool().getMaxThreads());
 
                         uidCacheManager.initCache(
                                 UIDCacheType.OBJECT,
                                 new FeatureGmlIdCache(cacheTableManager,
-                                        config.getExportConfig().getResources().getGmlIdCache().getFeature().getPartitions(),
+                                        config.getExportConfig().getResources().getIdCache().getFeature().getPartitions(),
                                         config.getDatabaseConfig().getImportBatching().getGmlIdCacheBatchSize()),
-                                config.getExportConfig().getResources().getGmlIdCache().getFeature().getCacheSize(),
-                                config.getExportConfig().getResources().getGmlIdCache().getFeature().getPageFactor(),
+                                config.getExportConfig().getResources().getIdCache().getFeature().getCacheSize(),
+                                config.getExportConfig().getResources().getIdCache().getFeature().getPageFactor(),
                                 config.getExportConfig().getResources().getThreadPool().getMaxThreads());
                     } catch (SQLException e) {
                         throw new CityGMLExportException("Failed to initialize internal gml:id caches.", e);

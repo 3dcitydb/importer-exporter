@@ -310,19 +310,19 @@ public class Importer implements EventHandler {
                     uidCacheManager.initCache(
                             UIDCacheType.GEOMETRY,
                             new GeometryGmlIdCache(cacheTableManager,
-                                    config.getImportConfig().getResources().getGmlIdCache().getGeometry().getPartitions(),
+                                    config.getImportConfig().getResources().getIdCache().getGeometry().getPartitions(),
                                     lookupCacheBatchSize),
-                            config.getImportConfig().getResources().getGmlIdCache().getGeometry().getCacheSize(),
-                            config.getImportConfig().getResources().getGmlIdCache().getGeometry().getPageFactor(),
+                            config.getImportConfig().getResources().getIdCache().getGeometry().getCacheSize(),
+                            config.getImportConfig().getResources().getIdCache().getGeometry().getPageFactor(),
                             maxThreads);
 
                     uidCacheManager.initCache(
                             UIDCacheType.OBJECT,
                             new FeatureGmlIdCache(cacheTableManager,
-                                    config.getImportConfig().getResources().getGmlIdCache().getFeature().getPartitions(),
+                                    config.getImportConfig().getResources().getIdCache().getFeature().getPartitions(),
                                     lookupCacheBatchSize),
-                            config.getImportConfig().getResources().getGmlIdCache().getFeature().getCacheSize(),
-                            config.getImportConfig().getResources().getGmlIdCache().getFeature().getPageFactor(),
+                            config.getImportConfig().getResources().getIdCache().getFeature().getCacheSize(),
+                            config.getImportConfig().getResources().getIdCache().getFeature().getPageFactor(),
                             maxThreads);
 
                     if (config.getImportConfig().getAppearances().isSetImportAppearance() &&
