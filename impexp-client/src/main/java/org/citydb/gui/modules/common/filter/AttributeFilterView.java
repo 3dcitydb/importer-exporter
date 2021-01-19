@@ -84,8 +84,8 @@ public class AttributeFilterView extends FilterView {
 
     @Override
     public void doTranslation() {
-        resourceIdLabel.setText(Language.I18N.getString("filter.label.gmlId"));
-        nameLabel.setText(Language.I18N.getString("filter.label.gmlName"));
+        resourceIdLabel.setText(Language.I18N.getString("filter.label.id"));
+        nameLabel.setText(Language.I18N.getString("filter.label.name"));
         lineageLabel.setText(Language.I18N.getString("filter.label.lineage"));
     }
 

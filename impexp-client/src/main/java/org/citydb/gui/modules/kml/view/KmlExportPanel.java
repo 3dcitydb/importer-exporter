@@ -385,7 +385,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
         manualTilingRadioButton.setText(Language.I18N.getString("pref.export.boundingBox.label.rows"));
         columnsLabel.setText(Language.I18N.getString("pref.export.boundingBox.label.columns"));
         automaticTilingRadioButton.setText(Language.I18N.getString("kmlExport.label.automatic"));
-        resourceIdLabel.setText(Language.I18N.getString("filter.label.gmlId"));
+        resourceIdLabel.setText(Language.I18N.getString("filter.label.id"));
 
         lodPanel.setTitle(Language.I18N.getString("kmlExport.label.fromLOD"));
         int selectedIndex = lodComboBox.getSelectedIndex();
@@ -668,7 +668,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
             if (query.isUseResourceIdFilter()
                     && !query.getResourceIdFilter().isSetResourceIds()) {
                 viewController.errorMessage(Language.I18N.getString("export.dialog.error.incorrectData"),
-                        Language.I18N.getString("common.dialog.error.incorrectData.gmlId"));
+                        Language.I18N.getString("common.dialog.error.incorrectData.id"));
                 return;
             }
 

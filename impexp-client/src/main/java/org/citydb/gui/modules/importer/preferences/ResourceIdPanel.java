@@ -49,7 +49,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
 
-public class IdHandlingPanel extends AbstractPreferencesComponent implements EventHandler {
+public class ResourceIdPanel extends AbstractPreferencesComponent implements EventHandler {
 	private TitledPanel idAssignmentPanel;
 	private JLabel idPrefixLabel;
 	private JTextField idPrefix;
@@ -63,7 +63,7 @@ public class IdHandlingPanel extends AbstractPreferencesComponent implements Eve
 	private JRadioButton impIdCSRadioUser;
 	private JTextField impIdCSUserText;
 
-	public IdHandlingPanel(Config config) {
+	public ResourceIdPanel(Config config) {
 		super(config);
 		initGui();
 
@@ -130,6 +130,7 @@ public class IdHandlingPanel extends AbstractPreferencesComponent implements Eve
 		}
 		{
 			JPanel content = new JPanel();
+			int lmargin = GuiUtil.getTextOffset(impIdCSRadioUser);
 			content.setLayout(new GridBagLayout());
 			{
 				content.add(impIdCSRadioNone, GuiUtil.setConstraints(0, 0, 2, 1, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
@@ -177,17 +178,17 @@ public class IdHandlingPanel extends AbstractPreferencesComponent implements Eve
 	
 	@Override
 	public void doTranslation() {
-		idAssignmentPanel.setTitle(Language.I18N.getString("pref.import.idHandling.border.id"));
-		idPrefixLabel.setText(Language.I18N.getString("pref.import.idHandling.label.id.prefix"));
-		impIdCheckExtRef.setText(Language.I18N.getString("pref.import.idHandling.label.id.extReference"));
-		impIdRadioAdd.setText(Language.I18N.getString("pref.import.idHandling.label.id.add"));
-		impIdRadioExchange.setText(Language.I18N.getString("pref.import.idHandling.label.id.exchange"));
+		idAssignmentPanel.setTitle(Language.I18N.getString("pref.import.id.border.id"));
+		idPrefixLabel.setText(Language.I18N.getString("pref.import.id.label.id.prefix"));
+		impIdCheckExtRef.setText(Language.I18N.getString("pref.import.id.label.id.extReference"));
+		impIdRadioAdd.setText(Language.I18N.getString("pref.import.id.label.id.add"));
+		impIdRadioExchange.setText(Language.I18N.getString("pref.import.id.label.id.exchange"));
 
-		codespacePanel.setTitle(Language.I18N.getString("pref.import.idHandling.border.idCodeSpace"));
-		impIdCSRadioNone.setText(Language.I18N.getString("pref.import.idHandling.label.idCodeSpace.none"));
-		impIdCSRadioFile.setText(Language.I18N.getString("pref.import.idHandling.label.idCodeSpace.file"));
-		impIdCSRadioFilePath.setText(Language.I18N.getString("pref.import.idHandling.label.idCodeSpace.filePath"));
-		impIdCSRadioUser.setText(Language.I18N.getString("pref.import.idHandling.label.idCodeSpace.user"));
+		codespacePanel.setTitle(Language.I18N.getString("pref.import.id.border.idCodeSpace"));
+		impIdCSRadioNone.setText(Language.I18N.getString("pref.import.id.label.idCodeSpace.none"));
+		impIdCSRadioFile.setText(Language.I18N.getString("pref.import.id.label.idCodeSpace.file"));
+		impIdCSRadioFilePath.setText(Language.I18N.getString("pref.import.id.label.idCodeSpace.filePath"));
+		impIdCSRadioUser.setText(Language.I18N.getString("pref.import.id.label.idCodeSpace.user"));
 	}
 
 	@Override
@@ -262,7 +263,7 @@ public class IdHandlingPanel extends AbstractPreferencesComponent implements Eve
 	
 	@Override
 	public String getTitle() {
-		return Language.I18N.getString("pref.tree.import.idHandling");
+		return Language.I18N.getString("pref.tree.import.id");
 	}
 
 	@Override

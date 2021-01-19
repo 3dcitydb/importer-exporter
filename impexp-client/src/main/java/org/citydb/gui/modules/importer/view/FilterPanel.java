@@ -240,8 +240,8 @@ public class FilterPanel extends JPanel {
 		bboxFilterPanel.setTitle(Language.I18N.getString("filter.border.boundingBox"));
 		featureFilterPanel.setTitle(Language.I18N.getString("filter.border.featureClass"));
 
-		resourceIdLabel.setText(Language.I18N.getString("filter.label.gmlId"));
-		nameLabel.setText(Language.I18N.getString("filter.label.gmlName"));
+		resourceIdLabel.setText(Language.I18N.getString("filter.label.id"));
+		nameLabel.setText(Language.I18N.getString("filter.label.name"));
 		countLabel.setText(Language.I18N.getString("filter.label.counter.count"));
 		startIndexLabel.setText(Language.I18N.getString("filter.label.counter.startIndex"));
 		bboxOverlaps.setText(Language.I18N.getString("filter.label.boundingBox.overlaps"));
